@@ -1,9 +1,0 @@
-
-> @mad/shared@1.0.0 circular-check
-> madge --extensions ts --ts-config tsconfig.json --circular src
-
-- Finding files
-Processed 4 files (280ms) 
-
-✔ No circular dependency found!
-
