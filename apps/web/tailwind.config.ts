@@ -9,6 +9,11 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      // ─── Custom Font Sizes ────────────────────────
+      fontSize: {
+        'display-xl': ['clamp(3.5rem, 9vw, 6rem)', { lineHeight: '1.05' }],
+      },
+      colors: {
       colors: {
         background: 'var(--color-bg)',
         'bg-secondary': 'var(--color-bg-secondary)',
