@@ -269,7 +269,11 @@ export class PaymentService {
 
       // confirmBooking() uses findOneAndUpdate with { status: AWAITING_PAYMENT } guard.
       // If the booking expired or was already confirmed by the frontend, this is a no-op.
-      await this.confirmBooking(booking, payment);
+      const confirmedBooking = await this.confirmBooking(booking, payment);
+
+      if (!confirmedBooking) {
+        return { status: 'skipped', bookingId: booking._id.toString() };
+      }
 
       logger.info(
         {
@@ -357,6 +361,7 @@ export class PaymentService {
     }
 
     const env = getEnv();
+    let confirmedBooking: IBooking | null = null;
 
     if (payment.gateway === 'razorpay') {
       const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = gatewayPayload;
@@ -406,7 +411,7 @@ export class PaymentService {
         description: `Verified Razorpay payment ${razorpay_payment_id} for booking ${booking.bookingId}`
       });
 
-      await this.confirmBooking(booking, payment);
+      confirmedBooking = await this.confirmBooking(booking, payment);
     } else {
       // ── Stripe verification (PR-02 hardened) ──────────────────────────────────
       const { paymentIntentId } = gatewayPayload;
@@ -598,10 +603,15 @@ export class PaymentService {
         description: `Verified Stripe payment intent ${paymentIntentId} for booking ${booking.bookingId}`
       });
 
-      await this.confirmBooking(booking, payment);
+      confirmedBooking = await this.confirmBooking(booking, payment);
     }
 
-    return booking;
+    if (confirmedBooking) {
+      return confirmedBooking;
+    }
+
+    const latestBooking = await Booking.findById(booking._id);
+    return latestBooking || booking;
   }
 
   private static safeEmit(label: string, emit: () => void, data: Record<string, unknown>) {
@@ -687,7 +697,7 @@ export class PaymentService {
     logger.info({ bookingId: booking._id, paymentId: payment._id, releasedSeatIds, reason }, 'Payment failed and reserved inventory released');
   }
 
-  private static async confirmBooking(booking: IBooking, _payment: IPayment) {
+  private static async confirmBooking(booking: IBooking, _payment: IPayment): Promise<IBooking | null> {
     // 1. Confirm booking status exactly once. Concurrent payment callbacks must
     // not double-increment event inventory or create duplicate tickets.
     const confirmedBooking = await Booking.findOneAndUpdate(
@@ -697,8 +707,18 @@ export class PaymentService {
     );
 
     if (!confirmedBooking) {
-      logger.info({ bookingId: booking._id }, 'Booking confirmation skipped because booking is no longer awaiting payment');
-      return;
+      const currentBooking = await Booking.findById(booking._id).select('status bookingId').lean();
+      logger.info(
+        {
+          bookingId: booking._id,
+          paymentId: _payment._id,
+          gateway: _payment.gateway,
+          correlationId: booking.bookingId,
+          existingStatus: currentBooking?.status,
+        },
+        'payment_confirmation_skipped'
+      );
+      return null;
     }
 
     booking = confirmedBooking;
@@ -804,7 +824,7 @@ export class PaymentService {
         `booking:confirm:${booking._id}`
       );
       logger.info({ bookingId: booking._id }, 'Asynchronous checkout enabled. Handed off confirmation tasks to background queue.');
-      return;
+      return booking;
     }
 
     // 5. Generate scan-ready QR Tickets
@@ -916,5 +936,6 @@ export class PaymentService {
     } catch (err) {
       logger.error({ err }, 'Failed to record notification confirmation log or send email');
     }
+    return booking;
   }
 }
