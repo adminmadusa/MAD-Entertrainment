@@ -12,3 +12,4 @@ import './ticket.schema';
 import './webhook-event.schema';
 import './dead-letter-job.schema';
 import './popup-campaign.schema';
+import './admin.schema';

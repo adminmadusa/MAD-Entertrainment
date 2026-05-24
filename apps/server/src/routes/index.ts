@@ -6,7 +6,6 @@ import publicBookingRoutes from './public/booking.routes';
 import publicDJOperatorRoutes from './public/dj-operator.routes';
 import publicEventRoutes from './public/event.routes';
 import publicPaymentRoutes from './public/payment.routes';
-import { adminLimiter } from '../middleware/rate.middleware';
 import publicPopupRoutes from './public/popup.routes';
 
 const router: Router = Router();
@@ -33,17 +32,22 @@ router.use('/venues', unreconstructed);
 router.use('/popups', publicPopupRoutes);
 
 // ─── Admin: Auth ──────────────────────────────────────────────
-router.use('/admin', adminLimiter as any);
-router.use('/admin/auth', unreconstructed);
+import adminAuthRoutes from './admin/auth.routes';
+router.use('/admin/auth', adminAuthRoutes);
 
 // ─── Admin: Uploads (Cloudinary) ─────────────────────────────
 router.use('/admin/uploads', unreconstructed);
 
 // ─── Admin: Phase 3 — Content CRUD ───────────────────────────
-router.use('/admin/events', unreconstructed);
-router.use('/admin/venues', unreconstructed);
-router.use('/admin/artists', unreconstructed);
-router.use('/admin/dj-operators', unreconstructed);
+import adminEventRoutes from './admin/event.routes';
+import adminVenueRoutes from './admin/venue.routes';
+import adminArtistRoutes from './admin/artist.routes';
+import adminDjOperatorRoutes from './admin/dj-operator.routes';
+
+router.use('/admin/events', adminEventRoutes);
+router.use('/admin/venues', adminVenueRoutes);
+router.use('/admin/artists', adminArtistRoutes);
+router.use('/admin/dj-operators', adminDjOperatorRoutes);
 
 // ─── Admin: Phase 4 — Bookings & Refunds ─────────────────────
 router.use('/admin/bookings', unreconstructed);
