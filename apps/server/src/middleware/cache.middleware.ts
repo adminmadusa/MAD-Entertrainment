@@ -11,3 +11,20 @@ export const noStoreApiCache: RequestHandler = (_req, res, next) => {
   res.setHeader('X-Cache-Debug', 'MISS; store=disabled');
   next();
 };
+
+export const cdnCache = (maxAgeSeconds: number, sMaxAgeSeconds: number): RequestHandler => {
+  return (req, res, next) => {
+    if (req.method !== 'GET') {
+      res.setHeader('Cache-Control', 'no-store');
+      return next();
+    }
+    
+    const staleWhileRevalidate = Math.round(sMaxAgeSeconds * 0.2);
+    res.setHeader(
+      'Cache-Control',
+      `public, max-age=${maxAgeSeconds}, s-maxage=${sMaxAgeSeconds}, stale-while-revalidate=${staleWhileRevalidate}`
+    );
+    res.setHeader('X-Cache-Policy', 'cdn-cache-enabled');
+    next();
+  };
+};

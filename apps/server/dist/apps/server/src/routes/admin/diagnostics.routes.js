@@ -8,5 +8,8 @@ router.use(auth_middleware_1.requireAdmin);
 router.get('/consistency', diagnostics_controller_1.getConsistencyDiagnostics);
 router.post('/consistency/repair', diagnostics_controller_1.repairConsistency);
 router.get('/reservations', diagnostics_controller_1.listReservations);
+router.get('/system', diagnostics_controller_1.getSystemDiagnostics);
+router.post('/dlq/:id/retry', diagnostics_controller_1.retryFailedJob);
+router.post('/dlq/retry-all', diagnostics_controller_1.retryAllFailedJobs);
 exports.default = router;
 //# sourceMappingURL=diagnostics.routes.js.map

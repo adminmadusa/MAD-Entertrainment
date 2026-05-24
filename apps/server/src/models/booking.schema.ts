@@ -8,6 +8,7 @@ export interface IBooking extends Document {
   guestName?: string;
   guestEmail?: string;
   guestPhone?: string;
+  sessionId?: string;
   tickets: {
     tier: TicketTier;
     tierName: string;
@@ -55,6 +56,7 @@ const bookingSchema = new Schema<IBooking>(
     guestName: String,
     guestEmail: { type: String, lowercase: true, trim: true },
     guestPhone: String,
+    sessionId: { type: String, index: true },
     tickets: [
       {
         tier: { type: String, enum: Object.values(TicketTier), required: true },
@@ -90,28 +92,27 @@ const bookingSchema = new Schema<IBooking>(
       index: true,
     },
     paymentId: { type: Schema.Types.ObjectId, ref: 'Payment' },
+    reservationIds: [{ type: String }],
+    bookingVersion: { type: Number, default: 1, min: 1 },
     expiresAt: { type: Date, index: { expireAfterSeconds: 0 } }, // TTL for pending bookings
     cancellationReason: String,
     cancelledAt: Date,
   },
-<<<<<<< Updated upstream
-  { timestamps: true }
+  { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
 );
-=======
-  paymentId: { type: Schema.Types.ObjectId, ref: 'Payment' },
-  reservationIds: [{ type: String }],
-  bookingVersion: { type: Number, default: 1, min: 1 },
-  expiresAt: { type: Date, index: { expireAfterSeconds: 0 } }, // TTL for pending bookings
-  cancellationReason: String,
-  cancelledAt: Date,
-}, { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } });
-bookingSchema.virtual('price').get(function(this: any) { return this.pricePerTicket; });
-bookingSchema.virtual('amount').get(function(this: any) { return this.totalAmount; });
->>>>>>> Stashed changes
+
+bookingSchema.virtual('price').get(function (this: IBooking) {
+  return this.tickets?.[0]?.pricePerTicket;
+});
+
+bookingSchema.virtual('amount').get(function (this: IBooking) {
+  return this.totalAmount;
+});
 
 bookingSchema.index({ guestEmail: 1, createdAt: -1 });
 bookingSchema.index({ guestPhone: 1, createdAt: -1 });
 bookingSchema.index({ eventId: 1, status: 1 });
+bookingSchema.index({ userId: 1, createdAt: -1 });
 
 bookingSchema.pre('validate', function (next) {
   if (!this.bookingId) {

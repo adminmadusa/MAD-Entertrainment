@@ -1,8 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.requireSuperAdmin = exports.requireAdmin = exports.optionalAuth = exports.requireAuth = void 0;
 exports.ensureBookingOwner = ensureBookingOwner;
+exports.requireAuth = requireAuth;
+exports.optionalAuth = optionalAuth;
+exports.requireAdmin = requireAdmin;
 exports.requireRole = requireRole;
+exports.requireSuperAdmin = requireSuperAdmin;
 const shared_1 = require("@mad/shared");
 function ensureBookingOwner(reqUserId, bookingUserId) {
     if (bookingUserId) {
@@ -18,7 +21,7 @@ const jwt_1 = require("../utils/jwt");
 const logger_1 = require("../utils/logger");
 const response_1 = require("../utils/response");
 // ─── Require Authenticated User ───────────────────────────────
-const requireAuth = (req, res, next) => {
+function requireAuth(req, res, next) {
     const token = (0, jwt_1.extractBearerToken)(req.headers.authorization);
     if (!token) {
         (0, response_1.sendUnauthorized)(res, 'Authentication token required');
@@ -32,10 +35,9 @@ const requireAuth = (req, res, next) => {
         logger_1.logger.debug({ err }, 'Invalid user token');
         (0, response_1.sendUnauthorized)(res, 'Invalid or expired token');
     }
-};
-exports.requireAuth = requireAuth;
+}
 // ─── Optional Auth (doesn't fail if no token) ────────────────
-const optionalAuth = (req, _res, next) => {
+function optionalAuth(req, _res, next) {
     const token = (0, jwt_1.extractBearerToken)(req.headers.authorization);
     if (token) {
         try {
@@ -46,10 +48,9 @@ const optionalAuth = (req, _res, next) => {
         }
     }
     next();
-};
-exports.optionalAuth = optionalAuth;
+}
 // ─── Require Admin ────────────────────────────────────────────
-const requireAdmin = (req, res, next) => {
+function requireAdmin(req, res, next) {
     const token = (0, jwt_1.extractBearerToken)(req.headers.authorization);
     if (!token) {
         (0, response_1.sendUnauthorized)(res, 'Admin authentication required');
@@ -63,8 +64,7 @@ const requireAdmin = (req, res, next) => {
         logger_1.logger.debug({ err }, 'Invalid admin token');
         (0, response_1.sendUnauthorized)(res, 'Invalid or expired admin token');
     }
-};
-exports.requireAdmin = requireAdmin;
+}
 // ─── Require Specific Admin Roles ────────────────────────────
 function requireRole(...roles) {
     return (req, res, next) => {
@@ -80,7 +80,7 @@ function requireRole(...roles) {
     };
 }
 // ─── Require Super Admin ──────────────────────────────────────
-const requireSuperAdmin = (req, res, next) => {
+function requireSuperAdmin(req, res, next) {
     if (!req.admin) {
         (0, response_1.sendUnauthorized)(res, 'Admin authentication required');
         return;
@@ -90,6 +90,5 @@ const requireSuperAdmin = (req, res, next) => {
         return;
     }
     next();
-};
-exports.requireSuperAdmin = requireSuperAdmin;
+}
 //# sourceMappingURL=auth.middleware.js.map

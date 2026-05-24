@@ -66,7 +66,7 @@ const eventSchema = new mongoose_1.Schema({
     showCountdown: { type: Boolean, default: false },
     isEarlyBird: { type: Boolean, default: false },
     earlyBirdDeadline: Date,
-}, { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } });
+}, { timestamps: true });
 // ─── Indexes ──────────────────────────────────────────────────
 eventSchema.index({ startDate: 1, status: 1 });
 eventSchema.index({ category: 1, status: 1, startDate: 1 });

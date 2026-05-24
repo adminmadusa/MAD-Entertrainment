@@ -41,7 +41,7 @@ const seatLayoutSchema = new mongoose_1.Schema({
         },
     ],
     seats: [seatSchema],
-}, { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } });
+}, { timestamps: true });
 seatLayoutSchema.index({ 'seats.seatId': 1, eventId: 1 });
 seatLayoutSchema.index({ 'seats.status': 1, eventId: 1 });
 exports.SeatLayout = (0, mongoose_1.model)('SeatLayout', seatLayoutSchema);

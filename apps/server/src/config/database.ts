@@ -12,7 +12,7 @@ let retryCount = 0;
 const connectOptions: mongoose.ConnectOptions = {
   serverSelectionTimeoutMS: 10000,
   socketTimeoutMS: 45000,
-  maxPoolSize: 10,
+  maxPoolSize: 100,
   minPoolSize: 2,
   bufferCommands: false,
   autoIndex: process.env.NODE_ENV !== 'production',
@@ -64,3 +64,5 @@ export async function disconnectDatabase(): Promise<void> {
 export function isDatabaseConnected(): boolean {
   return mongoose.connection.readyState === 1;
 }
+
+export { mongoose };

@@ -1,4 +1,4 @@
 
-> @mad/server@1.0.0 type-check
-> tsc --noEmit
+> @mad/server@1.0.0 type-check /Users/admin/Desktop/MAD Entertrainment/apps/server
+> tsc -p tsconfig.json --noEmit
 

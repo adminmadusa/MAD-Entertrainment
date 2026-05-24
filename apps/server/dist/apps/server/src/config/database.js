@@ -3,10 +3,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.mongoose = void 0;
 exports.connectDatabase = connectDatabase;
 exports.disconnectDatabase = disconnectDatabase;
 exports.isDatabaseConnected = isDatabaseConnected;
 const mongoose_1 = __importDefault(require("mongoose"));
+exports.mongoose = mongoose_1.default;
 const logger_1 = require("../utils/logger");
 const env_1 = require("./env");
 const MAX_RETRIES = 5;
@@ -15,7 +17,7 @@ let retryCount = 0;
 const connectOptions = {
     serverSelectionTimeoutMS: 10000,
     socketTimeoutMS: 45000,
-    maxPoolSize: 10,
+    maxPoolSize: 100,
     minPoolSize: 2,
     bufferCommands: false,
     autoIndex: process.env.NODE_ENV !== 'production',

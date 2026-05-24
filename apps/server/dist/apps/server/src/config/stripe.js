@@ -7,30 +7,22 @@ exports.initStripe = initStripe;
 exports.getStripe = getStripe;
 exports.isStripeEnabled = isStripeEnabled;
 const stripe_1 = __importDefault(require("stripe"));
-const logger_1 = require("../utils/logger");
 const env_1 = require("./env");
-let stripeInstance = null;
+let stripe;
 function initStripe() {
-    const env = (0, env_1.getEnv)();
-    const secretKey = env.STRIPE_SECRET_KEY;
-    if (!secretKey) {
-        logger_1.logger.warn('⚠️  Stripe secret key missing — Stripe payments will be disabled');
-        return null;
-    }
-    stripeInstance = new stripe_1.default(secretKey, {
-        apiVersion: '2025-02-24.acacia',
-        typescript: true,
-    });
-    logger_1.logger.info('✅ Stripe initialized');
-    return stripeInstance;
+    const key = (0, env_1.getEnv)().STRIPE_SECRET_KEY;
+    if (!key)
+        return undefined;
+    stripe = new stripe_1.default(key);
+    return stripe;
 }
 function getStripe() {
-    if (!stripeInstance) {
-        throw new Error('Stripe is not initialized. Call initStripe() first.');
-    }
-    return stripeInstance;
+    const instance = stripe ?? initStripe();
+    if (!instance)
+        throw new Error('Stripe is not configured');
+    return instance;
 }
 function isStripeEnabled() {
-    return stripeInstance !== null;
+    return Boolean((0, env_1.getEnv)().STRIPE_SECRET_KEY);
 }
 //# sourceMappingURL=stripe.js.map

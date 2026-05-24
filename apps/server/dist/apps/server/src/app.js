@@ -10,6 +10,8 @@ const cors_1 = __importDefault(require("cors"));
 const express_1 = __importDefault(require("express"));
 const helmet_1 = __importDefault(require("helmet"));
 const morgan_1 = __importDefault(require("morgan"));
+const swagger_ui_express_1 = __importDefault(require("swagger-ui-express"));
+const openapi_1 = require("./config/openapi");
 const env_1 = require("./config/env");
 const cache_middleware_1 = require("./middleware/cache.middleware");
 const correlation_middleware_1 = require("./middleware/correlation.middleware");
@@ -17,7 +19,6 @@ const error_middleware_1 = require("./middleware/error.middleware");
 const rate_middleware_1 = require("./middleware/rate.middleware");
 const routes_1 = __importDefault(require("./routes"));
 const logger_1 = require("./utils/logger");
-const metrics_1 = require("./monitoring/metrics");
 function createApp() {
     const app = (0, express_1.default)();
     const env = (0, env_1.getEnv)();
@@ -25,16 +26,6 @@ function createApp() {
     app.set('trust proxy', 1);
     // ─── Request Correlation ──────────────────────────────────
     app.use(correlation_middleware_1.correlationMiddleware);
-    // ─── Request Metrics ─────────────────────────────────────
-    app.use((req, res, next) => {
-        const end = metrics_1.httpRequestDurationMicroseconds.startTimer();
-        res.on('finish', () => {
-            end({ method: req.method, route: req.path, code: res.statusCode });
-            const log = req.log || logger_1.logger;
-            log.info({ method: req.method, path: req.path, status: res.statusCode }, 'request completed');
-        });
-        next();
-    });
     // ─── Security Headers ─────────────────────────────────────
     app.use((0, helmet_1.default)({
         crossOriginEmbedderPolicy: false,
@@ -66,7 +57,14 @@ function createApp() {
     // ─── Compression ───────────────────────────────────────────
     app.use((0, compression_1.default)());
     // ─── Body Parsers ──────────────────────────────────────────
-    app.use(express_1.default.json({ limit: '10mb' }));
+    app.use(express_1.default.json({
+        limit: '10mb',
+        verify: (req, res, buf) => {
+            if (req.originalUrl && req.originalUrl.includes('/webhook/')) {
+                req.rawBody = buf;
+            }
+        }
+    }));
     app.use(express_1.default.urlencoded({ extended: true, limit: '10mb' }));
     // ─── Request Logging ──────────────────────────────────────
     if (env.NODE_ENV !== 'test') {
@@ -86,21 +84,10 @@ function createApp() {
     app.use('/api', cache_middleware_1.noStoreApiCache);
     // ─── General Rate Limiter ─────────────────────────────────
     app.use('/api', rate_middleware_1.generalLimiter);
+    // ─── API Docs ─────────────────────────────────────────────
+    app.use('/api/docs', swagger_ui_express_1.default.serve, swagger_ui_express_1.default.setup((0, openapi_1.generateOpenApiDocument)()));
     // ─── API Routes ───────────────────────────────────────────
     app.use('/api', routes_1.default);
-    // ─── Metrics Endpoint ─────────────────────────────────────
-    if (env.NODE_ENV !== 'test') {
-        app.get('/metrics', async (req, res) => {
-            try {
-                const metrics = await metrics_1.register.metrics();
-                res.set('Content-Type', metrics_1.register.contentType);
-                res.end(metrics);
-            }
-            catch (ex) {
-                res.status(500).end(ex.toString());
-            }
-        });
-    }
     // ─── 404 Handler ──────────────────────────────────────────
     app.use(error_middleware_1.notFoundHandler);
     // ─── Global Error Handler ─────────────────────────────────

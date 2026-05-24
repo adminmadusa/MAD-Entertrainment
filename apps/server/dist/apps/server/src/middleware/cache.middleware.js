@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.noStoreApiCache = void 0;
+exports.cdnCache = exports.noStoreApiCache = void 0;
 const NO_STORE_VALUE = 'no-store, no-cache, must-revalidate, proxy-revalidate';
 const noStoreApiCache = (_req, res, next) => {
     res.setHeader('Cache-Control', NO_STORE_VALUE);
@@ -12,4 +12,17 @@ const noStoreApiCache = (_req, res, next) => {
     next();
 };
 exports.noStoreApiCache = noStoreApiCache;
+const cdnCache = (maxAgeSeconds, sMaxAgeSeconds) => {
+    return (req, res, next) => {
+        if (req.method !== 'GET') {
+            res.setHeader('Cache-Control', 'no-store');
+            return next();
+        }
+        const staleWhileRevalidate = Math.round(sMaxAgeSeconds * 0.2);
+        res.setHeader('Cache-Control', `public, max-age=${maxAgeSeconds}, s-maxage=${sMaxAgeSeconds}, stale-while-revalidate=${staleWhileRevalidate}`);
+        res.setHeader('X-Cache-Policy', 'cdn-cache-enabled');
+        next();
+    };
+};
+exports.cdnCache = cdnCache;
 //# sourceMappingURL=cache.middleware.js.map

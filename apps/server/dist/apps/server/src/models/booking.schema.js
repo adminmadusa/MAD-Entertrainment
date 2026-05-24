@@ -11,12 +11,12 @@ const bookingSchema = new mongoose_1.Schema({
         index: true,
         // Format: MAD-YYYY-XXXXX
     },
-    bookingFingerprint: { type: String, unique: true, sparse: true },
     eventId: { type: mongoose_1.Schema.Types.ObjectId, ref: 'Event', required: true, index: true },
     userId: { type: mongoose_1.Schema.Types.ObjectId, ref: 'User', index: true },
     guestName: String,
     guestEmail: { type: String, lowercase: true, trim: true },
     guestPhone: String,
+    sessionId: { type: String, index: true },
     tickets: [
         {
             tier: { type: String, enum: Object.values(shared_1.TicketTier), required: true },
@@ -58,11 +58,16 @@ const bookingSchema = new mongoose_1.Schema({
     cancellationReason: String,
     cancelledAt: Date,
 }, { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } });
-bookingSchema.virtual('price').get(function () { return this.pricePerTicket; });
-bookingSchema.virtual('amount').get(function () { return this.totalAmount; });
+bookingSchema.virtual('price').get(function () {
+    return this.tickets?.[0]?.pricePerTicket;
+});
+bookingSchema.virtual('amount').get(function () {
+    return this.totalAmount;
+});
 bookingSchema.index({ guestEmail: 1, createdAt: -1 });
 bookingSchema.index({ guestPhone: 1, createdAt: -1 });
 bookingSchema.index({ eventId: 1, status: 1 });
+bookingSchema.index({ userId: 1, createdAt: -1 });
 bookingSchema.pre('validate', function (next) {
     if (!this.bookingId) {
         const year = new Date().getFullYear();

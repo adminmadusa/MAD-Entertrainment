@@ -22,7 +22,7 @@ function startConsistencyWorker() {
         finally {
             running = false;
         }
-    }, 30000);
+    }, 30_000);
     interval.unref?.();
     logger_1.logger.info('Consistency worker started');
 }

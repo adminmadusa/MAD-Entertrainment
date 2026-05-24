@@ -7,31 +7,23 @@ exports.initRazorpay = initRazorpay;
 exports.getRazorpay = getRazorpay;
 exports.isRazorpayEnabled = isRazorpayEnabled;
 const razorpay_1 = __importDefault(require("razorpay"));
-const logger_1 = require("../utils/logger");
 const env_1 = require("./env");
-let razorpayInstance = null;
+let razorpay;
 function initRazorpay() {
     const env = (0, env_1.getEnv)();
-    const keyId = env.RAZORPAY_KEY_ID;
-    const keySecret = env.RAZORPAY_KEY_SECRET;
-    if (!keyId || !keySecret) {
-        logger_1.logger.error('❌ Razorpay credentials missing — server cannot start without them');
-        throw new Error('Missing Razorpay credentials');
-    }
-    razorpayInstance = new razorpay_1.default({
-        key_id: keyId,
-        key_secret: keySecret,
-    });
-    logger_1.logger.info('✅ Razorpay initialized');
-    return razorpayInstance;
+    if (!env.RAZORPAY_KEY_ID || !env.RAZORPAY_KEY_SECRET)
+        return undefined;
+    razorpay = new razorpay_1.default({ key_id: env.RAZORPAY_KEY_ID, key_secret: env.RAZORPAY_KEY_SECRET });
+    return razorpay;
 }
 function getRazorpay() {
-    if (!razorpayInstance) {
-        throw new Error('Razorpay is not initialized. Call initRazorpay() first.');
-    }
-    return razorpayInstance;
+    const instance = razorpay ?? initRazorpay();
+    if (!instance)
+        throw new Error('Razorpay is not configured');
+    return instance;
 }
 function isRazorpayEnabled() {
-    return razorpayInstance !== null;
+    const env = (0, env_1.getEnv)();
+    return Boolean(env.RAZORPAY_KEY_ID && env.RAZORPAY_KEY_SECRET);
 }
 //# sourceMappingURL=razorpay.js.map

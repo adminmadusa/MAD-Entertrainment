@@ -9,6 +9,7 @@ import { Coupon } from '../../models/coupon.schema';
 import { Event } from '../../models/event.schema';
 import { IReservation } from '../../models/reservation.schema';
 import { SeatLayout } from '../../models/seat-layout.schema';
+import { Ticket } from '../../models/ticket.schema';
 import { logger } from '../../utils/logger';
 import { ReservationService } from '../reservation.service';
 
@@ -348,7 +349,6 @@ export class PublicBookingService {
       throw AppError.notFound('Booking not found');
     }
 
-    const { Ticket } = await import('../../models/ticket.schema');
     const tickets = await Ticket.find({ bookingId: booking._id });
 
     return { booking, tickets };
@@ -362,7 +362,6 @@ export class PublicBookingService {
       })
       .sort({ createdAt: -1 });
 
-    const { Ticket } = await import('../../models/ticket.schema');
     const bookingIds = bookings.map((b) => b._id);
     const tickets = await Ticket.find({ bookingId: { $in: bookingIds } });
 

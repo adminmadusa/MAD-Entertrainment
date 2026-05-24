@@ -8,7 +8,6 @@ const crypto_1 = __importDefault(require("crypto"));
 const shared_1 = require("@mad/shared");
 const socket_1 = require("../../config/socket");
 const env_1 = require("../../config/env");
-const payment_errors_1 = require("./payment.errors");
 const razorpay_1 = require("../../config/razorpay");
 const stripe_1 = require("../../config/stripe");
 const error_middleware_1 = require("../../middleware/error.middleware");
@@ -23,6 +22,7 @@ const logger_1 = require("../../utils/logger");
 const email_1 = require("../../utils/email");
 const pdf_1 = require("../../utils/pdf");
 const reservation_service_1 = require("../reservation.service");
+const queue_service_1 = require("../queue.service");
 class PaymentService {
     static async createPaymentIntent(bookingId, gateway) {
         const booking = await booking_schema_1.Booking.findById(bookingId);
@@ -34,25 +34,22 @@ class PaymentService {
         }
         const env = (0, env_1.getEnv)();
         if (gateway === 'razorpay') {
-            return await this.handleRazorpayIntent(booking, env);
+            return this.handleRazorpayIntent(booking, env);
         }
-        else {
-            return await this.handleStripeIntent(booking, env);
-        }
+        return this.handleStripeIntent(booking, env);
     }
-    // Private helper for Razorpay intent creation
     static async handleRazorpayIntent(booking, env) {
         if (!(0, razorpay_1.isRazorpayEnabled)()) {
             throw error_middleware_1.AppError.badRequest('Razorpay is not enabled / credentials missing');
         }
         const amountPaise = Math.round(booking.totalAmount * 100);
         if (amountPaise < 100) {
-            throw new payment_errors_1.InsufficientAmountError();
+            throw error_middleware_1.AppError.badRequest('Amount must be at least 1 INR (100 paise) for Razorpay transactions');
         }
         try {
             const rzp = (0, razorpay_1.getRazorpay)();
             const order = await rzp.orders.create({
-                amount: amountPaise, // Paise
+                amount: amountPaise,
                 currency: 'INR',
                 receipt: booking.bookingId,
             });
@@ -89,7 +86,6 @@ class PaymentService {
             throw new error_middleware_1.AppError(`Razorpay payment intent failed: ${description}`, statusCode);
         }
     }
-    // Private helper for Stripe intent creation
     static async handleStripeIntent(booking, env) {
         if (!(0, stripe_1.isStripeEnabled)()) {
             throw error_middleware_1.AppError.badRequest('Stripe is not enabled / credentials missing');
@@ -97,7 +93,7 @@ class PaymentService {
         try {
             const stripe = (0, stripe_1.getStripe)();
             const paymentIntent = await stripe.paymentIntents.create({
-                amount: Math.round(booking.totalAmount * 100), // Cents / Paise depending on currency
+                amount: Math.round(booking.totalAmount * 100),
                 currency: booking.currency?.toLowerCase() || 'inr',
                 metadata: {
                     bookingId: booking._id.toString(),
@@ -312,6 +308,12 @@ class PaymentService {
         // 4. Update Coupon used count if applied
         if (booking.couponId) {
             await coupon_schema_1.Coupon.findByIdAndUpdate(booking.couponId, { $inc: { usedCount: 1 } });
+        }
+        // Feature Flag Rollout: if asynchronous checkout is enabled, offload ticket & PDF generation
+        if ((0, env_1.getEnv)().ENABLE_ASYNC_CHECKOUT) {
+            await queue_service_1.QueueService.enqueue('booking-queue', 'booking:confirm', { bookingId: booking._id.toString() }, `booking:confirm:${booking._id}`);
+            logger_1.logger.info({ bookingId: booking._id }, 'Asynchronous checkout enabled. Handed off confirmation tasks to background queue.');
+            return;
         }
         // 5. Generate scan-ready QR Tickets
         let ticketIndex = 1;

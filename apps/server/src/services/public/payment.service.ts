@@ -18,6 +18,7 @@ import { logger } from '../../utils/logger';
 import { sendEmail } from '../../utils/email';
 import { generateTicketPDF } from '../../utils/pdf';
 import { ReservationService } from '../reservation.service';
+import { QueueService } from '../queue.service';
 
 export class PaymentService {
   static async createPaymentIntent(bookingId: string, gateway: 'stripe' | 'razorpay') {
@@ -33,115 +34,26 @@ export class PaymentService {
     const env = getEnv();
 
     if (gateway === 'razorpay') {
-      if (!isRazorpayEnabled()) {
-        // Developmental fallback mode
-        const mockOrderId = 'order_mock_' + Math.random().toString(36).substring(2, 10);
-        const payment = await Payment.create({
-          bookingId: booking._id,
-          gateway: 'razorpay',
-          status: PaymentStatus.PENDING,
-          amount: booking.totalAmount,
-          currency: 'INR',
-          gatewayOrderId: mockOrderId,
-        });
+      return this.handleRazorpayIntent(booking, env);
+    }
 
-        booking.paymentId = payment._id as any;
-        await booking.save();
+    return this.handleStripeIntent(booking, env);
+  }
 
-        return {
-          gateway: 'razorpay',
-          keyId: 'rzp_test_mockkey',
-          orderId: mockOrderId,
-          amount: Math.round(booking.totalAmount * 100),
-          currency: 'INR',
-          bookingId: booking._id,
-          isMock: true,
-        };
-      }
-
-<<<<<<< Updated upstream
-      const amountPaise = Math.round(booking.totalAmount * 100);
-      if (amountPaise < 100) {
-        throw AppError.badRequest('Amount must be at least 1 INR (100 paise) for Razorpay transactions');
-      }
-
-      const rzp = getRazorpay();
-      const order = await rzp.orders.create({
-        amount: amountPaise, // Paise
-        currency: 'INR',
-        receipt: booking.bookingId,
-      });
-
-      const payment = await Payment.create({
-        bookingId: booking._id,
-        gateway: 'razorpay',
-        status: PaymentStatus.PENDING,
-        amount: booking.totalAmount,
-        currency: 'INR',
-        gatewayOrderId: order.id,
-      });
-
-      booking.paymentId = payment._id as any;
-      await booking.save();
-
-      return {
-        gateway: 'razorpay',
-        keyId: env.RAZORPAY_KEY_ID,
-        orderId: order.id,
-        amount: order.amount,
-        currency: order.currency,
-        bookingId: booking._id,
-      };
-    } else {
-      if (!isStripeEnabled()) {
-        // Developmental fallback mode
-        const mockIntentId = 'pi_mock_' + Math.random().toString(36).substring(2, 10);
-        const payment = await Payment.create({
-          bookingId: booking._id,
-          gateway: 'stripe',
-          status: PaymentStatus.PENDING,
-          amount: booking.totalAmount,
-          currency: booking.currency || 'INR',
-          gatewayOrderId: mockIntentId,
-        });
-=======
-  // Private helper for Razorpay intent creation
-  private static async handleRazorpayIntent(booking: any, env: any) {
+  private static async handleRazorpayIntent(booking: IBooking, env: ReturnType<typeof getEnv>) {
     if (!isRazorpayEnabled()) {
       throw AppError.badRequest('Razorpay is not enabled / credentials missing');
     }
->>>>>>> Stashed changes
 
-        booking.paymentId = payment._id as any;
-        await booking.save();
+    const amountPaise = Math.round(booking.totalAmount * 100);
+    if (amountPaise < 100) {
+      throw AppError.badRequest('Amount must be at least 1 INR (100 paise) for Razorpay transactions');
+    }
 
-<<<<<<< Updated upstream
-        return {
-          gateway: 'stripe',
-          publishableKey: 'pk_test_mockkey',
-          clientSecret: mockIntentId + '_secret_mock',
-          amount: booking.totalAmount,
-          currency: booking.currency || 'INR',
-          bookingId: booking._id,
-          isMock: true,
-        };
-      }
-
-      const stripe = getStripe();
-      const paymentIntent = await stripe.paymentIntents.create({
-        amount: Math.round(booking.totalAmount * 100), // Cents / Paise depending on currency
-        currency: booking.currency?.toLowerCase() || 'inr',
-        metadata: {
-          bookingId: booking._id.toString(),
-          bookingRef: booking.bookingId,
-        },
-      });
-
-=======
     try {
       const rzp = getRazorpay();
       const order = await rzp.orders.create({
-        amount: amountPaise, // Paise
+        amount: amountPaise,
         currency: 'INR',
         receipt: booking.bookingId,
       });
@@ -181,8 +93,7 @@ export class PaymentService {
     }
   }
 
-  // Private helper for Stripe intent creation
-  private static async handleStripeIntent(booking: any, env: any) {
+  private static async handleStripeIntent(booking: IBooking, env: ReturnType<typeof getEnv>) {
     if (!isStripeEnabled()) {
       throw AppError.badRequest('Stripe is not enabled / credentials missing');
     }
@@ -190,7 +101,7 @@ export class PaymentService {
     try {
       const stripe = getStripe();
       const paymentIntent = await stripe.paymentIntents.create({
-        amount: Math.round(booking.totalAmount * 100), // Cents / Paise depending on currency
+        amount: Math.round(booking.totalAmount * 100),
         currency: booking.currency?.toLowerCase() || 'inr',
         metadata: {
           bookingId: booking._id.toString(),
@@ -198,7 +109,6 @@ export class PaymentService {
         },
       });
 
->>>>>>> Stashed changes
       const payment = await Payment.create({
         bookingId: booking._id,
         gateway: 'stripe',
@@ -480,6 +390,18 @@ export class PaymentService {
     // 4. Update Coupon used count if applied
     if (booking.couponId) {
       await Coupon.findByIdAndUpdate(booking.couponId, { $inc: { usedCount: 1 } });
+    }
+
+    // Feature Flag Rollout: if asynchronous checkout is enabled, offload ticket & PDF generation
+    if (getEnv().ENABLE_ASYNC_CHECKOUT) {
+      await QueueService.enqueue(
+        'booking-queue',
+        'booking:confirm',
+        { bookingId: booking._id.toString() },
+        `booking:confirm:${booking._id}`
+      );
+      logger.info({ bookingId: booking._id }, 'Asynchronous checkout enabled. Handed off confirmation tasks to background queue.');
+      return;
     }
 
     // 5. Generate scan-ready QR Tickets

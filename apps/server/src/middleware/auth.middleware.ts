@@ -1,9 +1,6 @@
 import { AdminRole } from '@mad/shared';
-<<<<<<< Updated upstream
 import { Request, Response, NextFunction } from 'express';
-=======
 import { Types } from 'mongoose';
-import { Request, Response, NextFunction, RequestHandler } from 'express';
 
 export function ensureBookingOwner(reqUserId: string | undefined, bookingUserId: Types.ObjectId | undefined): void {
   if (bookingUserId) {
@@ -15,8 +12,6 @@ export function ensureBookingOwner(reqUserId: string | undefined, bookingUserId:
     }
   }
 }
-
->>>>>>> Stashed changes
 
 import { verifyUserToken, verifyAdminToken, extractBearerToken, JwtUserPayload, JwtAdminPayload } from '../utils/jwt';
 import { logger } from '../utils/logger';

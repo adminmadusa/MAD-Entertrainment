@@ -4,7 +4,9 @@ import cors from 'cors';
 import express, { Application } from 'express';
 import helmet from 'helmet';
 import morgan from 'morgan';
+import swaggerUi from 'swagger-ui-express';
 
+import { generateOpenApiDocument } from './config/openapi';
 import { getEnv } from './config/env';
 import { noStoreApiCache } from './middleware/cache.middleware';
 import { correlationMiddleware } from './middleware/correlation.middleware';
@@ -61,7 +63,14 @@ export function createApp(): Application {
   app.use(compression());
 
   // ─── Body Parsers ──────────────────────────────────────────
-  app.use(express.json({ limit: '10mb' }));
+  app.use(express.json({
+    limit: '10mb',
+    verify: (req: any, res, buf) => {
+      if (req.originalUrl && req.originalUrl.includes('/webhook/')) {
+        req.rawBody = buf;
+      }
+    }
+  }));
   app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
   // ─── Request Logging ──────────────────────────────────────
@@ -86,7 +95,10 @@ export function createApp(): Application {
   app.use('/api', noStoreApiCache);
 
   // ─── General Rate Limiter ─────────────────────────────────
-  app.use('/api', generalLimiter);
+  app.use('/api', generalLimiter as any);
+
+  // ─── API Docs ─────────────────────────────────────────────
+  app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(generateOpenApiDocument()));
 
   // ─── API Routes ───────────────────────────────────────────
   app.use('/api', routes);

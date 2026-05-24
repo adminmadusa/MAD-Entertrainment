@@ -108,15 +108,26 @@ function registerSocketHandlers(socket) {
     });
     // Seat locking handler
     socket.on('seat:lock', async ({ eventId, seatIds, sessionId }) => {
+        if (socket.data.sessionId && socket.data.sessionId !== sessionId) {
+            socket.emit('seat:lock:status', { success: false, seatIds, message: 'Unauthorized session' });
+            logger_1.logger.warn({ socketId: socket.id, expectedSessionId: socket.data.sessionId, receivedSessionId: sessionId }, 'Unauthorized lock attempt');
+            return;
+        }
         socket.data.sessionId = sessionId;
-        const success = await acquireLocks(eventId, seatIds, sessionId);
+        const { isRedisConnected } = require('../config/redis');
+        let success = false;
+        if (isRedisConnected()) {
+            success = await acquireLocks(eventId, seatIds, sessionId);
+        }
+        else {
+            logger_1.logger.warn('Redis disconnected. Falling back to MongoDB for seat validation (degraded mode).');
+            success = await verifySeatsAvailable(eventId, seatIds);
+        }
         if (success) {
-            // Track locally on the socket to allow cleanup on disconnect
             const lockedSet = socket.data.lockedSeats;
             for (const seatId of seatIds) {
                 lockedSet.add(`${eventId}:${seatId}`);
             }
-            // Broadcast to other clients in this event room
             socket.to(`event:${eventId}`).emit('seat:locked', { seatIds, sessionId });
             socket.emit('seat:lock:status', { success: true, seatIds });
             logger_1.logger.info({ socketId: socket.id, eventId, seatIds, sessionId }, 'Seat locks acquired');
@@ -128,8 +139,16 @@ function registerSocketHandlers(socket) {
     });
     // Seat unlocking handler
     socket.on('seat:unlock', async ({ eventId, seatIds, sessionId }) => {
-        const releasedKeys = await releaseLocks(eventId, seatIds, sessionId);
-        const releasedSeatIds = releasedKeys.map((key) => key.split(':').at(-1)).filter(Boolean);
+        if (socket.data.sessionId && socket.data.sessionId !== sessionId) {
+            socket.emit('seat:unlock:status', { success: false, seatIds, message: 'Unauthorized session' });
+            return;
+        }
+        const { isRedisConnected } = require('../config/redis');
+        let releasedSeatIds = seatIds;
+        if (isRedisConnected()) {
+            const releasedKeys = await releaseLocks(eventId, seatIds, sessionId);
+            releasedSeatIds = releasedKeys.map((key) => key.split(':').at(-1)).filter(Boolean);
+        }
         const lockedSet = socket.data.lockedSeats;
         for (const seatId of releasedSeatIds) {
             lockedSet.delete(`${eventId}:${seatId}`);

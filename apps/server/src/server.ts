@@ -11,10 +11,14 @@ import { initCloudinary } from './config/cloudinary';
 import { connectDatabase, disconnectDatabase } from './config/database';
 import { initRazorpay } from './config/razorpay';
 import { getRedis, waitForRedisReady, disconnectRedis } from './config/redis';
+import { initializeSentry } from './instrument';
+initializeSentry();
+
 import { initSocketIO, getIO } from './config/socket';
 import { initStripe } from './config/stripe';
 import { logger } from './utils/logger';
 import { startConsistencyWorker, stopConsistencyWorker } from './workers/consistency.worker';
+import { startAllWorkers, stopAllWorkers } from './workers';
 
 const env = getEnv();
 const PORT = env.PORT;
@@ -29,8 +33,12 @@ async function bootstrap(): Promise<void> {
   await connectDatabase();
   
   // Connect Redis and await connection readiness
-  getRedis();
-  await waitForRedisReady();
+  try {
+    getRedis();
+    await waitForRedisReady();
+  } catch (err) {
+    logger.warn({ err }, 'Redis connection failed during bootstrap. Starting in degraded mode.');
+  }
   
   initCloudinary();
   initRazorpay();
@@ -43,6 +51,7 @@ async function bootstrap(): Promise<void> {
   // ─── Initialize Socket.IO ──────────────────────────────────
   initSocketIO(httpServer);
   startConsistencyWorker();
+  startAllWorkers();
 
   // ─── Start Listening ───────────────────────────────────────
   httpServer.listen(PORT, () => {
@@ -67,6 +76,7 @@ async function bootstrap(): Promise<void> {
       }
 
       stopConsistencyWorker();
+      await stopAllWorkers();
       await disconnectDatabase();
       await disconnectRedis();
       logger.info('✅ Graceful shutdown complete');
