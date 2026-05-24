@@ -32,7 +32,8 @@ router.use('/venues', unreconstructed);
 router.use('/popups', publicPopupRoutes);
 
 // ─── Admin: Auth ──────────────────────────────────────────────
-router.use('/admin/auth', unreconstructed);
+import adminAuthRoutes from './admin/auth.routes';
+router.use('/admin/auth', adminAuthRoutes);
 
 // ─── Admin: Uploads (Cloudinary) ─────────────────────────────
 router.use('/admin/uploads', unreconstructed);

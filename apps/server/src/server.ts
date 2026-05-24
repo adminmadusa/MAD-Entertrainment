@@ -19,6 +19,7 @@ import { initStripe } from './config/stripe';
 import { logger } from './utils/logger';
 import { startConsistencyWorker, stopConsistencyWorker } from './workers/consistency.worker';
 import { startAllWorkers, stopAllWorkers } from './workers';
+import { seedAdmin } from './utils/seed-admin';
 
 const env = getEnv();
 const PORT = env.PORT;
@@ -31,6 +32,9 @@ async function bootstrap(): Promise<void> {
 
   // ─── Initialize Services ───────────────────────────────────
   await connectDatabase();
+  
+  // Seed initial admin user if needed
+  await seedAdmin();
   
   // Connect Redis and await connection readiness
   try {
