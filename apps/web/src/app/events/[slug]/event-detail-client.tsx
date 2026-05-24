@@ -1,9 +1,9 @@
 'use client';
 
-import { SeatStatus } from '@mad/shared';
-import { SeatLayout } from '@mad/types';
+import { QUERY_KEYS, SeatStatus, STORAGE_VERSION } from '@mad/shared';
+import { SeatLayout, Event as EventData } from '@mad/types';
 import { Button } from '@mad/ui';
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useParams, useRouter } from 'next/navigation';
 import { useState, useEffect, useMemo } from 'react';
 
@@ -13,12 +13,14 @@ import {
   publicGetEventSeatLayout,
   publicCreateBooking,
 } from '@/lib/api/public.service';
+import { invalidatePublicBookingFlow } from '@/lib/query/query-invalidation.service';
 import { useSocket } from '@/providers/socket.provider';
 
 
 export default function PublicEventDetailPage() {
   const params = useParams();
   const router = useRouter();
+  const queryClient = useQueryClient();
   const slug = params.slug as string;
 
   const { socket } = useSocket();
@@ -43,18 +45,20 @@ export default function PublicEventDetailPage() {
   // Setup unique Session ID
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      let sess = sessionStorage.getItem('mad_checkout_session');
+      const sessionKey = `mad_checkout_session_${STORAGE_VERSION}`;
+      let sess = sessionStorage.getItem(sessionKey);
       if (!sess) {
         sess = 'sess_' + Math.random().toString(36).substring(2, 15);
-        sessionStorage.setItem('mad_checkout_session', sess);
+        sessionStorage.removeItem('mad_checkout_session');
+        sessionStorage.setItem(sessionKey, sess);
       }
       setSessionId(sess);
     }
   }, []);
 
   // 1. Fetch Event
-  const { data: event, isLoading: isLoadingEvent } = useQuery({
-    queryKey: ['public-event', slug],
+  const { data: event, isLoading: isLoadingEvent } = useQuery<EventData>({
+    queryKey: QUERY_KEYS.public.events.detail(slug),
     queryFn: () => publicGetEventBySlug(slug),
     enabled: !!slug,
   });
@@ -63,7 +67,7 @@ export default function PublicEventDetailPage() {
 
   // 2. Fetch Seat Layout if seat-based
   const { data: seatLayout, isLoading: isLoadingLayout } = useQuery({
-    queryKey: ['public-event-seats', eventId],
+    queryKey: QUERY_KEYS.public.events.seats(eventId),
     queryFn: () => publicGetEventSeatLayout(eventId!),
     enabled: !!eventId && event?.bookingMode === 'seat_based',
   });
@@ -75,7 +79,7 @@ export default function PublicEventDetailPage() {
       const initialStatuses: Record<string, { status: SeatStatus; lockedBy?: string }> = {};
       seatLayout.seats.forEach((seat) => {
         initialStatuses[seat.seatId] = {
-          status: seat.status,
+          status: seat.status as SeatStatus,
           lockedBy: seat.lockedBy,
         };
       });
@@ -93,7 +97,7 @@ export default function PublicEventDetailPage() {
     socket.emit('event:join', { eventId });
 
     // Listen to real-time locks
-    socket.on('seat:locked', ({ seatIds, sessionId: lockHolderSessionId }: { seatIds: string[]; sessionId: string }) => {
+    const handleSeatLocked = ({ seatIds, sessionId: lockHolderSessionId }: { seatIds: string[]; sessionId: string }) => {
       setLiveSeatStatus((prev) => {
         const next = { ...prev };
         seatIds.forEach((seatId) => {
@@ -101,9 +105,30 @@ export default function PublicEventDetailPage() {
         });
         return next;
       });
-    });
+    };
 
-    socket.on('seat:unlocked', ({ seatIds }: { seatIds: string[] }) => {
+    const handleSeatReserved = ({ seatIds }: { seatIds: string[]; bookingId?: string }) => {
+      setLiveSeatStatus((prev) => {
+        const next = { ...prev };
+        seatIds.forEach((seatId) => {
+          next[seatId] = { status: SeatStatus.LOCKED };
+        });
+        return next;
+      });
+    };
+
+    const handleSeatBooked = ({ seatIds }: { seatIds: string[]; bookingId?: string }) => {
+      setLiveSeatStatus((prev) => {
+        const next = { ...prev };
+        seatIds.forEach((seatId) => {
+          next[seatId] = { status: SeatStatus.BOOKED };
+        });
+        return next;
+      });
+      setSelectedSeatIds((prev) => prev.filter((seatId) => !seatIds.includes(seatId)));
+    };
+
+    const handleSeatUnlocked = ({ seatIds }: { seatIds: string[] }) => {
       setLiveSeatStatus((prev) => {
         const next = { ...prev };
         seatIds.forEach((seatId) => {
@@ -113,10 +138,10 @@ export default function PublicEventDetailPage() {
         });
         return next;
       });
-    });
+    };
 
     // Listen to lock confirmation for this connection
-    socket.on('seat:lock:status', ({ success, seatIds, message }: { success: boolean; seatIds: string[]; message?: string }) => {
+    const handleSeatLockStatus = ({ success, seatIds, message }: { success: boolean; seatIds: string[]; message?: string }) => {
       if (success) {
         setSelectedSeatIds((prev) => {
           const next = [...prev];
@@ -135,9 +160,9 @@ export default function PublicEventDetailPage() {
       } else {
         alert(message || 'Failed to lock seats. They may have been reserved by another user.');
       }
-    });
+    };
 
-    socket.on('seat:unlock:status', ({ success, seatIds }: { success: boolean; seatIds: string[] }) => {
+    const handleSeatUnlockStatus = ({ success, seatIds }: { success: boolean; seatIds: string[] }) => {
       if (success) {
         setSelectedSeatIds((prev) => prev.filter((id) => !seatIds.includes(id)));
         setLiveSeatStatus((prev) => {
@@ -150,21 +175,36 @@ export default function PublicEventDetailPage() {
           return next;
         });
       }
-    });
+    };
+
+    socket.on('seat:locked', handleSeatLocked);
+    socket.on('seat:reserved', handleSeatReserved);
+    socket.on('seat:booked', handleSeatBooked);
+    socket.on('seat:unlocked', handleSeatUnlocked);
+    socket.on('seat:lock:status', handleSeatLockStatus);
+    socket.on('seat:unlock:status', handleSeatUnlockStatus);
 
     return () => {
       socket.emit('event:leave', { eventId });
-      socket.off('seat:locked');
-      socket.off('seat:unlocked');
-      socket.off('seat:lock:status');
-      socket.off('seat:unlock:status');
+      socket.off('seat:locked', handleSeatLocked);
+      socket.off('seat:reserved', handleSeatReserved);
+      socket.off('seat:booked', handleSeatBooked);
+      socket.off('seat:unlocked', handleSeatUnlocked);
+      socket.off('seat:lock:status', handleSeatLockStatus);
+      socket.off('seat:unlock:status', handleSeatUnlockStatus);
     };
   }, [socket, eventId, sessionId]);
 
   // Booking Mutation
   const createBookingMutation = useMutation({
     mutationFn: (payload: any) => publicCreateBooking(payload, sessionId),
-    onSuccess: (booking) => {
+    onSuccess: async (booking) => {
+      await invalidatePublicBookingFlow(queryClient, {
+        bookingId: booking._id,
+        bookingRef: booking.bookingId,
+        eventId,
+        eventSlug: slug,
+      });
       router.push(`/checkout/${booking._id}`);
     },
     onError: (err) => {
@@ -393,7 +433,7 @@ export default function PublicEventDetailPage() {
                           {/* Seats */}
                           <div className="flex gap-1.5">
                             {rowSeats.map((seat) => {
-                              const liveState = liveSeatStatus[seat.seatId] || { status: seat.status };
+                              const liveState = liveSeatStatus[seat.seatId] || { status: seat.status as SeatStatus };
                               const isSelected = selectedSeatIds.includes(seat.seatId);
                               const isLockedByOthers = liveState.status === 'locked' && liveState.lockedBy !== sessionId;
                               const isOccupied = liveState.status === 'booked' || liveState.status === 'blocked' || isLockedByOthers;

@@ -1,4 +1,4 @@
 
-> @mad/web@1.0.0 type-check
+> @mad/web@1.0.0 type-check /Users/admin/Desktop/MAD Entertrainment/apps/web
 > tsc --noEmit
 
