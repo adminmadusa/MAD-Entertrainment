@@ -13,7 +13,7 @@
     "clean": "rm -rf dist .turbo tsconfig.tsbuildinfo"
   },
   "dependencies": {
-    "@asteasolutions/zod-to-openapi": "^8.5.0",
+    "@asteasolutions/zod-to-openapi": "^7.3.4",
     "@mad/shared": "workspace:*",
     "bcryptjs": "^2.4.3",
     "bullmq": "^5.41.3",
