@@ -1,4 +1,0 @@
-
-> @mad/shared@1.0.0 type-check /Users/admin/Desktop/MAD Entertrainment/packages/shared
-> tsc -p tsconfig.json --noEmit
-
