@@ -1,7 +1,8 @@
 import { STORAGE_KEYS } from '@mad/shared';
 import axios, { AxiosError, AxiosInstance, InternalAxiosRequestConfig } from 'axios';
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:5000/api';
+import { API_URL } from '@mad/shared/config/frontend';
+const BASE_URL = API_URL;
 
 // ─── Create Axios Instance ────────────────────────────────────
 

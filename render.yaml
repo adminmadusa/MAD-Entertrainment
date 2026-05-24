@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: mad-server
+    env: node
+    rootDir: .
+    buildCommand: pnpm install --frozen-lockfile && pnpm --filter @mad/shared build && pnpm --filter @mad/server build
+    startCommand: node apps/server/dist/server.js
+    envVars:
+      - key: NODE_ENV
+        value: production

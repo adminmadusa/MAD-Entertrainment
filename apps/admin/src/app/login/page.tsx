@@ -222,7 +222,7 @@ export default function AdminLoginPage() {
         {/* Back to site */}
         <p className="text-center mt-6">
           <a
-            href="http://localhost:3000"
+            href="/"
             className="text-text-muted text-sm hover:text-text-secondary transition-colors inline-flex items-center gap-1.5"
           >
             <ArrowLeftIcon />
