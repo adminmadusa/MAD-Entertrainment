@@ -1,9 +1,10 @@
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 
 import { Reservation } from '../../models/reservation.schema';
 import { ConsistencyService } from '../../services/consistency.service';
 import { DiagnosticsService } from '../../services/diagnostics.service';
-import { sendSuccess, sendError } from '../../utils/response';
+import { sendSuccess } from '../../utils/response';
+import { AppError } from '../../middleware/error.middleware';
 
 export async function getConsistencyDiagnostics(_req: Request, res: Response): Promise<void> {
   const report = await ConsistencyService.generateReport();
@@ -28,13 +29,16 @@ export async function getSystemDiagnostics(_req: Request, res: Response): Promis
   sendSuccess(res, report, 'System health diagnostics retrieved');
 }
 
-export async function retryFailedJob(req: Request, res: Response): Promise<void> {
-  const dlqId = req.params.id;
-  const success = await DiagnosticsService.retryDeadLetterJob(dlqId);
-  if (success) {
+export async function retryFailedJob(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const dlqId = req.params.id;
+    const success = await DiagnosticsService.retryDeadLetterJob(dlqId);
+    if (!success) {
+      throw AppError.badRequest('Failed to re-enqueue job');
+    }
     sendSuccess(res, null, 'Job successfully re-enqueued and clean up complete');
-  } else {
-    res.status(400).json({ success: false, message: 'Failed to re-enqueue job' });
+  } catch (err) {
+    next(err);
   }
 }
 

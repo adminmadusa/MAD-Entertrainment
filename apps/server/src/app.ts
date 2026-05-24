@@ -1,6 +1,7 @@
 import 'express-async-errors';
 import compression from 'compression';
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
 import express, { Application } from 'express';
 import helmet from 'helmet';
 import morgan from 'morgan';
@@ -11,14 +12,18 @@ import { getEnv } from './config/env';
 import { noStoreApiCache } from './middleware/cache.middleware';
 import { correlationMiddleware } from './middleware/correlation.middleware';
 import { errorHandler, notFoundHandler } from './middleware/error.middleware';
-import { generalLimiter } from './middleware/rate.middleware';
+import { generalLimiter, initRateLimiters } from './middleware/rate.middleware';
 import routes from './routes';
 import { logger } from './utils/logger';
+import { botMitigation } from './middleware/security.middleware';
 
 export function createApp(): Application {
   const app = express();
   const env = getEnv();
 
+  // Initialize rate limiters here — createApp() is called from bootstrap() after
+  // waitForRedisReady(), so Redis is ready and we are NOT inside a request handler.
+  initRateLimiters();
   // ─── Trust Proxy (for Vercel/Railway/Render) ─────────────
   app.set('trust proxy', 1);
 
@@ -28,10 +33,27 @@ export function createApp(): Application {
   // ─── Security Headers ─────────────────────────────────────
   app.use(
     helmet({
-      crossOriginEmbedderPolicy: false,
-      contentSecurityPolicy: false, // CSP is handled by Next.js
+      crossOriginEmbedderPolicy: true,
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: ["'self'"],
+          scriptSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com"],
+          styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+          imgSrc: ["'self'", "data:", "https://res.cloudinary.com"],
+          fontSrc: ["'self'", "https://fonts.gstatic.com"],
+          objectSrc: ["'none'"],
+          upgradeInsecureRequests: [],
+        },
+      },
+      referrerPolicy: { policy: 'same-origin' },
     })
   );
+
+  // ─── Cookies ──────────────────────────────────────────────
+  app.use(cookieParser(env.JWT_SECRET));
+
+  // ─── Bot Mitigation ───────────────────────────────────────
+  app.use(botMitigation);
 
   // ─── CORS ──────────────────────────────────────────────────
   const allowedOrigins = env.ALLOWED_ORIGINS.split(',').map((s) => s.trim());
@@ -59,19 +81,32 @@ export function createApp(): Application {
     })
   );
 
-  // ─── Compression ───────────────────────────────────────────
-  app.use(compression());
+  // ─── Compression (BREACH mitigation) ──────────────────────
+  app.use(
+    compression({
+      filter: (req, res) => {
+        const contentType = res.getHeader('Content-Type');
+        if (contentType && typeof contentType === 'string' && contentType.includes('text/event-stream')) {
+          return false;
+        }
+        if (req.headers.authorization || req.headers.cookie) {
+          return false;
+        }
+        return compression.filter(req, res);
+      },
+    })
+  );
 
-  // ─── Body Parsers ──────────────────────────────────────────
+  // ─── Body Parsers (Payload size hardening) ────────────────
   app.use(express.json({
-    limit: '10mb',
+    limit: '100kb',
     verify: (req: any, res, buf) => {
       if (req.originalUrl && req.originalUrl.includes('/webhook/')) {
         req.rawBody = buf;
       }
     }
   }));
-  app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+  app.use(express.urlencoded({ extended: true, limit: '100kb' }));
 
   // ─── Request Logging ──────────────────────────────────────
   if (env.NODE_ENV !== 'test') {

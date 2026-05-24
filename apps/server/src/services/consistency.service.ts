@@ -8,6 +8,9 @@ import { Payment } from '../models/payment.schema';
 import { Reservation } from '../models/reservation.schema';
 import { SeatLayout } from '../models/seat-layout.schema';
 import { logger } from '../utils/logger';
+import { runWithContext } from '../utils/context';
+import { auditLog } from '../utils/audit';
+import crypto from 'crypto';
 
 import { ReservationService } from './reservation.service';
 
@@ -29,6 +32,7 @@ export interface ConsistencyReport {
     expiredReservations: number;
     phantomRedisLocks: number;
     staleSeatReservations: number;
+    eventInventoryMismatchesRepaired?: number;
   };
 }
 
@@ -57,7 +61,7 @@ async function cleanupPhantomRedisLocks(): Promise<number> {
     for (const key of keys) {
       const [, , , eventId, , seatId] = key.split(':');
       if (!eventId || !seatId) continue;
-      const layout = await SeatLayout.findOne({ eventId, 'seats.seatId': seatId }).lean();
+      const layout = await SeatLayout.findOne({ eventId, 'seats.seatId': seatId }).select({ seats: { $elemMatch: { seatId } } }).lean();
       const seat = layout?.seats.find((candidate) => candidate.seatId === seatId);
       if (!seat || seat.status !== SeatStatus.AVAILABLE) {
         await redis.del(key);
@@ -139,33 +143,110 @@ async function countEventInventoryMismatches(): Promise<number> {
   return mismatches;
 }
 
-export class ConsistencyService {
-  static async runRepairCycle(): Promise<ConsistencyReport> {
-    const [expiredReservations, phantomRedisLocks, staleSeatReservations] = await Promise.all([
-      ReservationService.expireReservations(),
-      cleanupPhantomRedisLocks(),
-      repairStaleSeatReservations(),
+async function repairEventInventoryMismatches(): Promise<number> {
+  const events = await Event.find({}).select('_id soldCount reservedCount ticketTiers eventVersion');
+  let repairedCount = 0;
+
+  for (const event of events) {
+    const [confirmedBookings, activeReservations] = await Promise.all([
+      Booking.aggregate([
+        { $match: { eventId: event._id, status: BookingStatus.CONFIRMED } },
+        { $group: { _id: null, total: { $sum: '$totalTickets' } } },
+      ]),
+      Reservation.aggregate([
+        {
+          $match: {
+            eventId: event._id,
+            status: { $in: [ReservationStatus.RESERVED, ReservationStatus.PENDING_PAYMENT] },
+          },
+        },
+        { $group: { _id: null, total: { $sum: '$quantity' } } },
+      ]),
     ]);
 
-    const report = await this.generateReport();
-    report.repairs = {
-      expiredReservations: expiredReservations.length,
-      phantomRedisLocks,
-      staleSeatReservations,
-    };
+    const soldTotal = confirmedBookings[0]?.total ?? 0;
+    const reservedTotal = activeReservations[0]?.total ?? 0;
 
-    if (expiredReservations.length > 0 || phantomRedisLocks > 0 || staleSeatReservations > 0) {
-      logger.warn({ report }, 'Consistency repair cycle completed with repairs');
-      emitToAdmin('inventory', 'consistency:repaired', report);
-      for (const [eventId, reservations] of ReservationService.groupByEvent(expiredReservations).entries()) {
-        emitToEvent(eventId, 'inventory:sync-required', {
-          eventId,
-          reservationIds: reservations.map((reservation) => reservation.reservationId),
-        });
+    if (event.soldCount !== soldTotal || event.reservedCount !== reservedTotal) {
+      // Also update individual tier soldCounts based on confirmed bookings
+      const tierSoldCounts = new Map<string, number>();
+      const confirmedBookingsDocs = await Booking.find({ eventId: event._id, status: BookingStatus.CONFIRMED }).lean();
+      for (const bookingDoc of confirmedBookingsDocs) {
+        for (const t of bookingDoc.tickets) {
+          tierSoldCounts.set(t.tier, (tierSoldCounts.get(t.tier) ?? 0) + t.quantity);
+        }
       }
-    }
 
-    return report;
+      const updatedTiers = event.ticketTiers.map(t => {
+        const actualSold = tierSoldCounts.get(t.tier) ?? 0;
+        t.soldCount = actualSold;
+        return t;
+      });
+
+      await Event.updateOne(
+        { _id: event._id },
+        { 
+          $set: { 
+            soldCount: soldTotal, 
+            reservedCount: reservedTotal, 
+            ticketTiers: updatedTiers,
+            eventVersion: event.eventVersion + 1 
+          } 
+        }
+      );
+      repairedCount++;
+    }
+  }
+  return repairedCount;
+}
+
+export class ConsistencyService {
+  static async runRepairCycle(): Promise<ConsistencyReport> {
+    const correlationId = `repair-cycle-${crypto.randomUUID().slice(0, 8)}`;
+    return runWithContext({ correlationId }, async () => {
+      const startTime = Date.now();
+      const [expiredReservations, phantomRedisLocks, staleSeatReservations, eventInventoryMismatchesRepaired] = await Promise.all([
+        ReservationService.expireReservations(),
+        cleanupPhantomRedisLocks(),
+        repairStaleSeatReservations(),
+        repairEventInventoryMismatches(),
+      ]);
+
+      const report = await this.generateReport();
+      report.repairs = {
+        expiredReservations: expiredReservations.length,
+        phantomRedisLocks,
+        staleSeatReservations,
+        eventInventoryMismatchesRepaired,
+      };
+
+      const durationMs = Date.now() - startTime;
+
+      auditLog({
+        action: 'CONSISTENCY_REPAIR_CYCLE',
+        status: 'success',
+        metadata: {
+          durationMs,
+          repairs: report.repairs,
+          drift: report.drift,
+          counts: report.counts,
+        },
+        description: `Consistency repair cycle finished in ${durationMs}ms with ${expiredReservations.length} expired reservations, ${phantomRedisLocks} phantom locks, ${staleSeatReservations} stale seats, and ${eventInventoryMismatchesRepaired} inventory mismatches repaired.`,
+      });
+
+      if (expiredReservations.length > 0 || phantomRedisLocks > 0 || staleSeatReservations > 0 || eventInventoryMismatchesRepaired > 0) {
+        logger.warn({ report }, 'Consistency repair cycle completed with repairs');
+        emitToAdmin('inventory', 'consistency:repaired', report);
+        for (const [eventId, reservations] of ReservationService.groupByEvent(expiredReservations).entries()) {
+          emitToEvent(eventId, 'inventory:sync-required', {
+            eventId,
+            reservationIds: reservations.map((reservation) => reservation.reservationId),
+          });
+        }
+      }
+
+      return report;
+    });
   }
 
   static async generateReport(): Promise<ConsistencyReport> {

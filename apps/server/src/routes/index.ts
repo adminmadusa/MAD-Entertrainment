@@ -5,6 +5,7 @@ import healthRoutes from './health.routes';
 import publicBookingRoutes from './public/booking.routes';
 import publicEventRoutes from './public/event.routes';
 import publicPaymentRoutes from './public/payment.routes';
+import { adminLimiter } from '../middleware/rate.middleware';
 
 const router: Router = Router();
 const unreconstructed: Router = Router();
@@ -30,6 +31,7 @@ router.use('/venues', unreconstructed);
 router.use('/popups', unreconstructed);
 
 // ─── Admin: Auth ──────────────────────────────────────────────
+router.use('/admin', adminLimiter as any);
 router.use('/admin/auth', unreconstructed);
 
 // ─── Admin: Uploads (Cloudinary) ─────────────────────────────

@@ -1,11 +1,11 @@
 import rateLimit, { MemoryStore, Store } from 'express-rate-limit';
 import RedisStore from 'rate-limit-redis';
 
+
 import { getEnv } from '../config/env';
 import { getRedis, isRedisConnected } from '../config/redis';
 import { logger } from '../utils/logger';
 
-const env = () => getEnv();
 
 class ResilientRedisStore implements Store {
   private redisStore?: RedisStore;
@@ -88,30 +88,98 @@ class ResilientRedisStore implements Store {
   }
 }
 
-export const generalLimiter = rateLimit({
-  windowMs: env().RATE_LIMIT_WINDOW_MS,
-  limit: env().RATE_LIMIT_MAX_REQUESTS,
-  standardHeaders: true,
-  legacyHeaders: false,
-  passOnStoreError: true,
-  store: new ResilientRedisStore('general'),
-});
 
-export const authLimiter = rateLimit({
-  windowMs: env().RATE_LIMIT_WINDOW_MS,
-  limit: env().RATE_LIMIT_AUTH_MAX,
-  standardHeaders: true,
-  legacyHeaders: false,
-  passOnStoreError: true,
-  store: new ResilientRedisStore('auth'),
-});
+// ─── Rate Limiter Instances ───────────────────────────────────
+// Limiters are created by initRateLimiters(), which is called from createApp()
+// AFTER waitForRedisReady() completes. express-rate-limit v7 throws
+// ERR_ERL_CREATED_IN_REQUEST_HANDLER if rateLimit() is called inside a request
+// handler (detected via stack-frame inspection). By initializing eagerly at app
+// bootstrap time — not lazily on first request — we satisfy both constraints:
+// (1) Redis is ready, (2) rateLimit() is not called from within a request.
 
-export const paymentLimiter = rateLimit({
-  windowMs: env().RATE_LIMIT_WINDOW_MS,
-  limit: env().RATE_LIMIT_PAYMENT_MAX,
-  standardHeaders: true,
-  legacyHeaders: false,
-  passOnStoreError: true,
-  store: new ResilientRedisStore('payment'),
-});
+type RateLimiter = ReturnType<typeof rateLimit>;
 
+let _generalLimiter: RateLimiter | undefined;
+let _authLimiter: RateLimiter | undefined;
+let _paymentLimiter: RateLimiter | undefined;
+let _webhookLimiter: RateLimiter | undefined;
+let _adminLimiter: RateLimiter | undefined;
+
+function makeLimiter(prefix: 'general' | 'auth' | 'payment' | 'webhook' | 'admin'): RateLimiter {
+  const e = getEnv();
+  const limits: Record<typeof prefix, number> = {
+    general: e.RATE_LIMIT_MAX_REQUESTS,
+    auth: e.RATE_LIMIT_AUTH_MAX,
+    payment: e.RATE_LIMIT_PAYMENT_MAX,
+    webhook: 60,
+    admin: 30,
+  };
+  const windows: Record<typeof prefix, number> = {
+    general: e.RATE_LIMIT_WINDOW_MS,
+    auth: e.RATE_LIMIT_WINDOW_MS,
+    payment: e.RATE_LIMIT_WINDOW_MS,
+    webhook: 10 * 60 * 1000, // 10 minutes
+    admin: 15 * 60 * 1000, // 15 minutes
+  };
+  return rateLimit({
+    windowMs: windows[prefix],
+    limit: limits[prefix],
+    standardHeaders: true,
+    legacyHeaders: false,
+    passOnStoreError: true,
+    store: new ResilientRedisStore(prefix),
+  });
+}
+
+/**
+ * Must be called once from createApp(), after Redis is ready.
+ * Creates all rate limiter instances at app initialization time,
+ * not inside request handlers.
+ */
+export function initRateLimiters(): void {
+  _generalLimiter = makeLimiter('general');
+  _authLimiter = makeLimiter('auth');
+  _paymentLimiter = makeLimiter('payment');
+  _webhookLimiter = makeLimiter('webhook');
+  _adminLimiter = makeLimiter('admin');
+}
+
+export const generalLimiter = (req: any, res: any, next: any) => {
+  if (!_generalLimiter) {
+    logger.error('generalLimiter called before initRateLimiters() — rate limiting inactive');
+    return next();
+  }
+  return _generalLimiter(req, res, next);
+};
+
+export const authLimiter = (req: any, res: any, next: any) => {
+  if (!_authLimiter) {
+    logger.error('authLimiter called before initRateLimiters() — rate limiting inactive');
+    return next();
+  }
+  return _authLimiter(req, res, next);
+};
+
+export const paymentLimiter = (req: any, res: any, next: any) => {
+  if (!_paymentLimiter) {
+    logger.error('paymentLimiter called before initRateLimiters() — rate limiting inactive');
+    return next();
+  }
+  return _paymentLimiter(req, res, next);
+};
+
+export const webhookLimiter = (req: any, res: any, next: any) => {
+  if (!_webhookLimiter) {
+    logger.error('webhookLimiter called before initRateLimiters() — rate limiting inactive');
+    return next();
+  }
+  return _webhookLimiter(req, res, next);
+};
+
+export const adminLimiter = (req: any, res: any, next: any) => {
+  if (!_adminLimiter) {
+    logger.error('adminLimiter called before initRateLimiters() — rate limiting inactive');
+    return next();
+  }
+  return _adminLimiter(req, res, next);
+};

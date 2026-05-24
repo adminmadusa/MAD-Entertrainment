@@ -44,7 +44,7 @@ describe('Socket Handlers (Seat Locks)', () => {
     mockSocket = {
       id: 'socket-123',
       data: {
-        sessionId: 'session-xyz',
+        sessionId: '123e4567-e89b-12d3-a456-426614174000',
         lockedSeats: new Set<string>(),
       },
       on: vi.fn((event, handler) => {
@@ -68,7 +68,11 @@ describe('Socket Handlers (Seat Locks)', () => {
       registerSocketHandlers(mockSocket);
       const lockHandler = handlers['seat:lock'];
 
-      await lockHandler({ eventId: 'evt-1', seatIds: ['A1'], sessionId: 'wrong-session' });
+      await lockHandler({
+        eventId: '507f1f77bcf86cd799439011',
+        seatIds: ['A1'],
+        sessionId: '987f6543-e21b-12d3-a456-426614174999',
+      });
 
       expect(mockSocket.emit).toHaveBeenCalledWith('seat:lock:status', {
         success: false,
@@ -83,7 +87,11 @@ describe('Socket Handlers (Seat Locks)', () => {
       registerSocketHandlers(mockSocket);
       const unlockHandler = handlers['seat:unlock'];
 
-      await unlockHandler({ eventId: 'evt-1', seatIds: ['A1'], sessionId: 'wrong-session' });
+      await unlockHandler({
+        eventId: '507f1f77bcf86cd799439011',
+        seatIds: ['A1'],
+        sessionId: '987f6543-e21b-12d3-a456-426614174999',
+      });
 
       expect(mockSocket.emit).toHaveBeenCalledWith('seat:unlock:status', {
         success: false,

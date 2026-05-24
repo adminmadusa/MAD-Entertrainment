@@ -1,12 +1,14 @@
 import { BookingMode, InventoryState, ReservationStatus, SeatStatus, TicketTier } from '@mad/shared';
 import { Types } from 'mongoose';
 
+import { getRedis } from '../config/redis';
 import { emitToAdmin, emitToEvent } from '../config/socket';
 import { AppError } from '../middleware/error.middleware';
 import { Event } from '../models/event.schema';
 import { Reservation, IReservation } from '../models/reservation.schema';
 import { SeatLayout } from '../models/seat-layout.schema';
 import { logger } from '../utils/logger';
+import { auditLog } from '../utils/audit';
 
 import { assertReservationTransition, reservationToInventoryState } from './inventory-state.service';
 
@@ -49,39 +51,110 @@ export class ReservationService {
   }
 
   private static async reserveGeneralAdmission(request: ReservationRequest): Promise<IReservation[]> {
-    const updatedEvent = await Event.findOneAndUpdate(
-      {
-        _id: request.eventId,
-        $expr: { $lte: [{ $add: ['$soldCount', '$reservedCount', request.quantity] }, '$totalCapacity'] },
-      },
-      { $inc: { reservedCount: request.quantity, eventVersion: 1 } },
-      { new: true }
-    );
+    const redis = getRedis();
+    const lockKey = `mad:lock:reserve:event:${request.eventId}:tier:${request.tier}`;
+    const lockVal = request.sessionId;
 
-    if (!updatedEvent) {
-      throw AppError.badRequest('Requested quantity exceeds remaining event capacity');
+    // Acquire distributed lock with retry backoff
+    let acquired = false;
+    for (let attempt = 0; attempt < 5; attempt++) {
+      const ok = await redis.set(lockKey, lockVal, 'EX', 5, 'NX');
+      if (ok === 'OK') {
+        acquired = true;
+        break;
+      }
+      await new Promise((resolve) => setTimeout(resolve, 50));
     }
 
-    const reservation = await Reservation.create({
-      eventId: request.eventId,
-      tier: request.tier,
-      section: request.tier,
-      sessionId: request.sessionId,
-      socketId: request.socketId,
-      userId: request.userId ? new Types.ObjectId(request.userId) : undefined,
-      quantity: request.quantity,
-      status: ReservationStatus.RESERVED,
-      inventoryState: InventoryState.RESERVED,
-      expiresAt: request.expiresAt,
-      bookingId: request.bookingId,
-      bookingReference: request.bookingReference,
-      correlationId: request.correlationId,
-      eventVersion: updatedEvent.eventVersion,
-      transitionLog: [{ from: InventoryState.AVAILABLE, to: InventoryState.RESERVED, reason: 'booking-created', correlationId: request.correlationId }],
-    });
+    if (!acquired) {
+      throw AppError.badRequest('The ticketing system is currently busy. Please try again.');
+    }
 
-    this.emitReservationChange(updatedEvent._id.toString(), [reservation], 'reservation:reserved');
-    return [reservation];
+    try {
+      const event = await Event.findById(request.eventId);
+      if (!event) throw AppError.notFound('Event not found');
+
+      const tierConfig = event.ticketTiers.find((t) => t.tier === request.tier);
+      if (!tierConfig) {
+        throw AppError.badRequest(`Ticket tier "${request.tier}" is invalid`);
+      }
+
+      // 1. Fetch active reservations count for this specific tier
+      const activeTierAgg = await Reservation.aggregate([
+        {
+          $match: {
+            eventId: request.eventId,
+            tier: request.tier,
+            status: { $in: [ReservationStatus.RESERVED, ReservationStatus.PENDING_PAYMENT] }
+          }
+        },
+        { $group: { _id: null, total: { $sum: '$quantity' } } }
+      ]);
+      const tierReserved = activeTierAgg[0]?.total ?? 0;
+
+      // 2. Validate tier capacity
+      if (tierConfig.soldCount + tierReserved + request.quantity > tierConfig.totalCapacity) {
+        throw AppError.badRequest(`Requested quantity for tier "${tierConfig.name}" exceeds remaining capacity`);
+      }
+
+      // 3. Validate overall event capacity
+      if (event.soldCount + event.reservedCount + request.quantity > event.totalCapacity) {
+        throw AppError.badRequest('Requested quantity exceeds remaining event capacity');
+      }
+
+      // 4. Atomically increment global event reserved count
+      const updatedEvent = await Event.findByIdAndUpdate(
+        request.eventId,
+        { $inc: { reservedCount: request.quantity, eventVersion: 1 } },
+        { new: true }
+      );
+
+      if (!updatedEvent) {
+        throw AppError.badRequest('Failed to reserve capacity');
+      }
+
+      const reservation = await Reservation.create({
+        eventId: request.eventId,
+        tier: request.tier,
+        section: request.tier,
+        sessionId: request.sessionId,
+        socketId: request.socketId,
+        userId: request.userId ? new Types.ObjectId(request.userId) : undefined,
+        quantity: request.quantity,
+        status: ReservationStatus.RESERVED,
+        inventoryState: InventoryState.RESERVED,
+        expiresAt: request.expiresAt,
+        bookingId: request.bookingId,
+        bookingReference: request.bookingReference,
+        correlationId: request.correlationId,
+        eventVersion: updatedEvent.eventVersion,
+        transitionLog: [{ from: InventoryState.AVAILABLE, to: InventoryState.RESERVED, reason: 'booking-created', correlationId: request.correlationId }],
+      });
+
+      this.emitReservationChange(updatedEvent._id.toString(), [reservation], 'reservation:reserved');
+
+      auditLog({
+        action: 'RESERVATION_ACQUIRED',
+        actor: request.userId ? { type: 'user', id: request.userId } : { type: 'guest', id: request.sessionId },
+        status: 'success',
+        metadata: {
+          eventId: request.eventId.toString(),
+          reservationId: reservation.reservationId,
+          tier: request.tier,
+          quantity: request.quantity,
+          bookingId: request.bookingId?.toString(),
+        },
+        description: `Reserved ${request.quantity} General Admission ticket(s) in tier "${request.tier}" for session ${request.sessionId}`
+      });
+
+      return [reservation];
+    } finally {
+      // Safely release the lock
+      const currentVal = await redis.get(lockKey);
+      if (currentVal === lockVal) {
+        await redis.del(lockKey);
+      }
+    }
   }
 
   private static async reserveSeats(request: ReservationRequest): Promise<IReservation[]> {
@@ -118,6 +191,21 @@ export class ReservationService {
     });
 
     this.emitReservationChange(request.eventId.toString(), reservations, 'reservation:reserved');
+
+    auditLog({
+      action: 'RESERVATION_ACQUIRED',
+      actor: request.userId ? { type: 'user', id: request.userId } : { type: 'guest', id: request.sessionId },
+      status: 'success',
+      metadata: {
+        eventId: request.eventId.toString(),
+        seatIds: seats.map((s) => s.seatId),
+        tier: request.tier,
+        quantity: request.quantity,
+        bookingId: request.bookingId?.toString(),
+      },
+      description: `Reserved ${request.quantity} seat(s) [${seats.map(s => s.seatId).join(', ')}] in tier "${request.tier}" for session ${request.sessionId}`
+    });
+
     return reservations;
   }
 
@@ -156,6 +244,18 @@ export class ReservationService {
     if (transitioned.length > 0) {
       const eventId = transitioned[0].eventId.toString();
       this.emitReservationChange(eventId, transitioned, `reservation:${toStatus}`);
+
+      auditLog({
+        action: `RESERVATION_TRANSITION_${toStatus.toUpperCase()}`,
+        status: 'success',
+        metadata: {
+          bookingId: bookingId.toString(),
+          toStatus,
+          details,
+          transitionedIds: transitioned.map((t) => t.reservationId),
+        },
+        description: `Transitioned ${transitioned.length} reservation(s) for booking ${bookingId} to status ${toStatus}`,
+      });
     }
 
     return transitioned;
@@ -212,6 +312,23 @@ export class ReservationService {
       for (const [eventId, reservations] of this.groupByEvent(expired).entries()) {
         this.emitReservationChange(eventId, reservations, 'reservation:expired');
       }
+
+      auditLog({
+        action: 'RESERVATIONS_EXPIRED',
+        status: 'success',
+        metadata: {
+          expiredCount: expired.length,
+          reservations: expired.map((r) => ({
+            reservationId: r.reservationId,
+            eventId: r.eventId.toString(),
+            tier: r.tier,
+            quantity: r.quantity,
+            seatId: r.seatId,
+            bookingId: r.bookingId?.toString(),
+          })),
+        },
+        description: `Expired ${expired.length} stale reservation(s) and released capacity/seats`,
+      });
     }
 
     return expired;
