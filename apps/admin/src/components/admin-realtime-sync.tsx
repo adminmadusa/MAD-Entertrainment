@@ -4,6 +4,7 @@ import { STORAGE_KEYS } from '@mad/shared';
 import { useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { io } from 'socket.io-client';
+import { SOCKET_URL } from '@mad/shared/config/frontend';
 
 import { useAdminAuth } from '@/hooks/use-admin-auth.hook';
 import { invalidateAdminRealtimeState } from '@/lib/query/query-invalidation.service';
@@ -18,7 +19,7 @@ export function AdminRealtimeSync() {
     const token = localStorage.getItem(STORAGE_KEYS.ADMIN_TOKEN);
     if (!token) return;
 
-    const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL ?? 'http://localhost:5000';
+    const socketUrl = SOCKET_URL;
     const socket = io(`${socketUrl}/admin`, {
       auth: { token },
       transports: ['websocket'],
