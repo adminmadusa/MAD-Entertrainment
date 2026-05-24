@@ -223,7 +223,7 @@ function HowItWorksSection() {
                   </div>
                   <div className="text-2xl sm:text-4xl mb-2 sm:mb-4 animate-float" aria-hidden="true">{step.icon}</div>
                   <h3 className="text-white font-bold text-xs sm:text-lg mb-1 sm:mb-2">{step.title}</h3>
-                  <p className="text-text-secondary text-[9px] sm:text-sm leading-snug sm:leading-relaxed">{step.description}</p>
+                  <p className="hidden sm:block text-text-secondary sm:text-sm leading-snug sm:leading-relaxed">{step.description}</p>
                 </div>
               </div>
             </StaggerItem>
