@@ -17,6 +17,7 @@ const cache_middleware_1 = require("./middleware/cache.middleware");
 const correlation_middleware_1 = require("./middleware/correlation.middleware");
 const error_middleware_1 = require("./middleware/error.middleware");
 const rate_middleware_1 = require("./middleware/rate.middleware");
+require("./models");
 const routes_1 = __importDefault(require("./routes"));
 const logger_1 = require("./utils/logger");
 function createApp() {

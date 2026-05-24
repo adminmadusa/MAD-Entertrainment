@@ -88,6 +88,15 @@ const nextConfig: NextConfig = {
     return [];
   },
 
+  // ─── Webpack ───────────────────────────────────────────────
+  webpack: (config, { dev }) => {
+    if (dev) {
+      // Disable disk caching in dev mode to prevent ENOENT errors
+      config.cache = { type: 'memory' };
+    }
+    return config;
+  },
+
   // ─── Transpile Shared Package ──────────────────────────────
   transpilePackages: ['@mad/shared'],
 };

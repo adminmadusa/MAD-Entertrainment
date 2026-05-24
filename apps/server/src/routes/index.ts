@@ -3,8 +3,10 @@ import { Router } from 'express';
 import adminDiagnosticsRoutes from './admin/diagnostics.routes';
 import healthRoutes from './health.routes';
 import publicBookingRoutes from './public/booking.routes';
+import publicDJOperatorRoutes from './public/dj-operator.routes';
 import publicEventRoutes from './public/event.routes';
 import publicPaymentRoutes from './public/payment.routes';
+import publicPopupRoutes from './public/popup.routes';
 
 const router: Router = Router();
 const unreconstructed: Router = Router();
@@ -24,10 +26,10 @@ router.use('/auth', unreconstructed);
 router.use('/events', publicEventRoutes);
 router.use('/bookings', publicBookingRoutes);
 router.use('/payments', publicPaymentRoutes);
-router.use('/dj-operators', unreconstructed);
+router.use('/dj-operators', publicDJOperatorRoutes);
 router.use('/artists', unreconstructed);
 router.use('/venues', unreconstructed);
-router.use('/popups', unreconstructed);
+router.use('/popups', publicPopupRoutes);
 
 // ─── Admin: Auth ──────────────────────────────────────────────
 router.use('/admin/auth', unreconstructed);

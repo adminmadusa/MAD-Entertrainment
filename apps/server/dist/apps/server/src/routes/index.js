@@ -7,8 +7,10 @@ const express_1 = require("express");
 const diagnostics_routes_1 = __importDefault(require("./admin/diagnostics.routes"));
 const health_routes_1 = __importDefault(require("./health.routes"));
 const booking_routes_1 = __importDefault(require("./public/booking.routes"));
+const dj_operator_routes_1 = __importDefault(require("./public/dj-operator.routes"));
 const event_routes_1 = __importDefault(require("./public/event.routes"));
 const payment_routes_1 = __importDefault(require("./public/payment.routes"));
+const popup_routes_1 = __importDefault(require("./public/popup.routes"));
 const router = (0, express_1.Router)();
 const unreconstructed = (0, express_1.Router)();
 unreconstructed.use((_req, res) => {
@@ -24,10 +26,10 @@ router.use('/auth', unreconstructed);
 router.use('/events', event_routes_1.default);
 router.use('/bookings', booking_routes_1.default);
 router.use('/payments', payment_routes_1.default);
-router.use('/dj-operators', unreconstructed);
+router.use('/dj-operators', dj_operator_routes_1.default);
 router.use('/artists', unreconstructed);
 router.use('/venues', unreconstructed);
-router.use('/popups', unreconstructed);
+router.use('/popups', popup_routes_1.default);
 // ─── Admin: Auth ──────────────────────────────────────────────
 router.use('/admin/auth', unreconstructed);
 // ─── Admin: Uploads (Cloudinary) ─────────────────────────────

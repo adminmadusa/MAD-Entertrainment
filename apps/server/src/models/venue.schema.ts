@@ -21,5 +21,5 @@ const venueSchema = new Schema<IVenue>(
 
 export const Venue =
   // Prevent OverwriteModelError when hot‑reloading with tsx/nodemon
-  (mongoose.models.Venue as typeof model) ||
-  model<IVenue>('Venue', venueSchema);
+  (mongoose.models.Venue as mongoose.Model<IVenue>) ||
+  mongoose.model<IVenue>('Venue', venueSchema);
