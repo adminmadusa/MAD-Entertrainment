@@ -36,7 +36,8 @@ import adminAuthRoutes from './admin/auth.routes';
 router.use('/admin/auth', adminAuthRoutes);
 
 // ─── Admin: Uploads (Cloudinary) ─────────────────────────────
-router.use('/admin/uploads', unreconstructed);
+import adminUploadRoutes from './admin/upload.routes';
+router.use('/admin/uploads', adminUploadRoutes);
 
 // ─── Admin: Phase 3 — Content CRUD ───────────────────────────
 import adminEventRoutes from './admin/event.routes';
