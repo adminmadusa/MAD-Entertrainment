@@ -117,6 +117,17 @@ const nextConfig: NextConfig = {
     return [];
   },
 
+  // ─── Rewrites (API Proxy) ──────────────────────────────────
+  async rewrites() {
+    return [
+      {
+        source: '/api/:path*',
+        // Proxy to the actual backend if NEXT_PUBLIC_API_URL is configured, else fallback to local
+        destination: `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001/api'}/:path*`,
+      },
+    ];
+  },
+
   // ─── Webpack ───────────────────────────────────────────────
   webpack: (config, { dev }) => {
     if (dev) {
