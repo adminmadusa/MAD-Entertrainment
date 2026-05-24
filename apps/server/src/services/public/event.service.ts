@@ -14,6 +14,7 @@ export class PublicEventService {
 
     const query: Record<string, any> = {
       status: EventStatus.PUBLISHED,
+      isDeleted: { $ne: true },
     };
 
     if (filters.category) {
@@ -40,13 +41,18 @@ export class PublicEventService {
   }
 
   static async getEventBySlug(slug: string) {
-    const event = await Event.findOne({ slug, status: EventStatus.PUBLISHED })
+    const event = await Event.findOne({ slug, status: EventStatus.PUBLISHED, isDeleted: { $ne: true } })
+      .populate('venueId')
       .populate('artistIds')
       .populate('djOperatorIds')
       .lean();
 
     if (!event) {
       throw AppError.notFound('Event');
+    }
+
+    if (event.ticketTiers) {
+      event.ticketTiers = event.ticketTiers.filter(tier => tier.isDeleted !== true);
     }
 
     return event;

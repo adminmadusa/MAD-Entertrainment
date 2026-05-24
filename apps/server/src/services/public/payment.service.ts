@@ -20,6 +20,7 @@ import { sendEmail } from '../../utils/email';
 import { generateTicketPDF } from '../../utils/pdf';
 import { ReservationService } from '../reservation.service';
 import { QueueService } from '../queue.service';
+import { CacheService } from '../cache.service';
 
 export class PaymentService {
   static async createPaymentIntent(bookingId: string, gateway: 'stripe' | 'razorpay') {
@@ -744,16 +745,9 @@ export class PaymentService {
           incUpdate[`ticketTiers.${tierIndex}.soldCount`] = bookedTicket.quantity;
         }
       }
-
-      const updatedEvent = await Event.findOneAndUpdate(
-        { _id: booking.eventId },
-        { $inc: incUpdate },
-        { new: true }
-      );
-
-      if (updatedEvent && updatedEvent.soldCount >= updatedEvent.totalCapacity && !updatedEvent.isSoldOut) {
-        await Event.updateOne({ _id: booking.eventId }, { $set: { isSoldOut: true } });
-      }
+      event.eventVersion += 1;
+      await event.save();
+      await CacheService.delPattern('events:*');
     }
 
     // 3. Update Seat Layout statuses from LOCKED to BOOKED
