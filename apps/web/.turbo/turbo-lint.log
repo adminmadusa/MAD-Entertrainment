@@ -1,0 +1,32 @@
+
+> @mad/web@1.0.0 lint
+> next lint
+
+`next lint` is deprecated and will be removed in Next.js 16.
+For new projects, use create-next-app to choose your preferred linter.
+For existing projects, migrate to the ESLint CLI:
+npx @next/codemod@canary next-lint-to-eslint-cli .
+
+
+ ⚠ The Next.js plugin was not detected in your ESLint configuration. See https://nextjs.org/docs/app/api-reference/config/eslint#migrating-existing-config
+
+./src/app/events/%5Bslug%5D/page.tsx
+23:19  Warning: 'isConnected' is assigned a value but never used. Allowed unused vars must match /^_/u.  unused-imports/no-unused-vars
+63:66  Warning: 'refetchLayout' is assigned a value but never used. Allowed unused vars must match /^_/u.  unused-imports/no-unused-vars
+
+./src/app/events/page.tsx
+10:1  Warning: `next/image` import should occur before import of `next/link`  import/order
+
+./src/components/common/floating-countdown.tsx
+7:1  Warning: `next/image` import should occur before import of `react`  import/order
+
+./src/components/common/popup-manager.tsx
+7:1  Warning: `next/image` import should occur before import of `react`  import/order
+
+./src/components/ui/dj-operators-section.tsx
+7:1  Warning: `next/image` import should occur before import of `next/link`  import/order
+
+./src/components/ui/featured-events-section.tsx
+8:1  Warning: `next/image` import should occur before import of `next/link`  import/order
+
+info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/app/api-reference/config/eslint#disabling-rules

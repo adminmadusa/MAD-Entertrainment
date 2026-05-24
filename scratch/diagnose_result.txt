@@ -1,0 +1,1330 @@
+Connecting to MongoDB at: mongodb://localhost:27017
+✅ Connected successfully!
+
+=== Databases ===
+{
+  "databases": [
+    {
+      "name": "admin",
+      "sizeOnDisk": 81920,
+      "empty": false
+    },
+    {
+      "name": "amaravathi_tea",
+      "sizeOnDisk": 16384,
+      "empty": false
+    },
+    {
+      "name": "amaravathi_tea_pricing",
+      "sizeOnDisk": 2150400,
+      "empty": false
+    },
+    {
+      "name": "config",
+      "sizeOnDisk": 368640,
+      "empty": false
+    },
+    {
+      "name": "esparex",
+      "sizeOnDisk": 81920,
+      "empty": false
+    },
+    {
+      "name": "esparex_admin",
+      "sizeOnDisk": 1998848,
+      "empty": false
+    },
+    {
+      "name": "esparex_admin_db",
+      "sizeOnDisk": 249856,
+      "empty": false
+    },
+    {
+      "name": "esparex_admin_sandbox",
+      "sizeOnDisk": 274432,
+      "empty": false
+    },
+    {
+      "name": "esparex_test",
+      "sizeOnDisk": 106496,
+      "empty": false
+    },
+    {
+      "name": "esparex_user",
+      "sizeOnDisk": 7172096,
+      "empty": false
+    },
+    {
+      "name": "local",
+      "sizeOnDisk": 8052736,
+      "empty": false
+    },
+    {
+      "name": "test",
+      "sizeOnDisk": 294912,
+      "empty": false
+    }
+  ],
+  "totalSize": 20848640,
+  "totalSizeMb": 19,
+  "ok": 1,
+  "$clusterTime": {
+    "clusterTime": {
+      "$timestamp": "7643271865217056769"
+    },
+    "signature": {
+      "hash": "AAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+      "keyId": 0
+    }
+  },
+  "operationTime": {
+    "$timestamp": "7643271865217056769"
+  }
+}
+
+=== Database: admin ===
+Collections count: 2
+
+  - Collection: system.version 
+    Document Count: 1
+    Size: 0.00 MB
+    Storage Size: 0.02 MB
+    Indexes: [
+  "_id_"
+]
+    Sample Fields: _id, version
+
+  - Collection: system.keys 
+    Document Count: 2
+    Size: 0.00 MB
+    Storage Size: 0.02 MB
+    Indexes: [
+  "_id_"
+]
+    Sample Fields: _id, purpose, key, expiresAt
+
+=== Database: amaravathi_tea ===
+Collections count: 1
+
+  - Collection: addpurchasebatches 
+    Document Count: 0
+    Size: 0.00 MB
+    Storage Size: 0.00 MB
+    Indexes: [
+  "_id_",
+  "uniq_purchase_batch_identity",
+  "batchCode_1"
+]
+
+=== Database: amaravathi_tea_pricing ===
+Collections count: 17
+
+  - Collection: pricehistories 
+    Document Count: 0
+    Size: 0.00 MB
+    Storage Size: 0.00 MB
+    Indexes: [
+  "_id_",
+  "customerId_1",
+  "customerId_1_createdAt_-1"
+]
+
+  - Collection: users 
+    Document Count: 4
+    Size: 0.00 MB
+    Storage Size: 0.04 MB
+    Indexes: [
+  "_id_",
+  "email_1"
+]
+    Sample Fields: _id, email, __v, active, createdAt, name, passwordHash, role, updatedAt
+
+  - Collection: purchaserates 
+    Document Count: 1
+    Size: 0.00 MB
+    Storage Size: 0.04 MB
+    Indexes: [
+  "_id_",
+  "batchCode_1",
+  "purchaseDate_-1",
+  "supplierName_1"
+]
+    Sample Fields: _id, batchCode, __v, createdAt, invoiceNumber, notes, numberOfBags, purchaseDate, rates, supplier, updatedAt, items, supplierName
+
+  - Collection: teapowdertypes 
+    Document Count: 9
+    Size: 0.00 MB
+    Storage Size: 0.04 MB
+    Indexes: [
+  "_id_",
+  "nameKey_1"
+]
+    Sample Fields: _id, name, __v, active, createdAt, description, updatedAt, nameKey
+
+  - Collection: customerrecipes 
+    Document Count: 1
+    Size: 0.00 MB
+    Storage Size: 0.04 MB
+    Indexes: [
+  "_id_",
+  "customerId_1"
+]
+    Sample Fields: _id, customerId, __v, active, createdAt, formulaId, laborCostPerKg, marginType, marginValue, notes, otherCostPerKg, packingCostPerKg, selectedGrades, updatedAt
+
+  - Collection: teacategories 
+    Document Count: 7
+    Size: 0.00 MB
+    Storage Size: 0.04 MB
+    Indexes: [
+  "_id_",
+  "nameKey_1"
+]
+    Sample Fields: _id, nameKey, __v, active, createdAt, description, name, updatedAt
+
+  - Collection: sellers 
+    Document Count: 2
+    Size: 0.00 MB
+    Storage Size: 0.04 MB
+    Indexes: [
+  "_id_",
+  "nameKey_1"
+]
+    Sample Fields: _id, name, __v, active, contactPerson, createdAt, email, nameKey, phone, updatedAt
+
+  - Collection: customerteaformulas 
+    Document Count: 1
+    Size: 0.00 MB
+    Storage Size: 0.04 MB
+    Indexes: [
+  "_id_",
+  "formulaCode_1",
+  "customerId_1_leafCategoryId_1_cuttingTypeId_1_deletedAt_1",
+  "formulaName_1",
+  "customerId_1",
+  "leafCategoryId_1",
+  "cuttingTypeId_1"
+]
+    Sample Fields: _id, customerId, formulaName, leafCategoryId, cuttingTypeId, addons, finalPrice, marginPercent, isDefault, notes, status, deletedAt, formulaCode, createdAt, updatedAt, __v
+
+  - Collection: leafcategories 
+    Document Count: 4
+    Size: 0.00 MB
+    Storage Size: 0.04 MB
+    Indexes: [
+  "_id_",
+  "nameKey_1"
+]
+    Sample Fields: _id, name, description, active, deletedAt, nameKey, createdAt, updatedAt, __v
+
+  - Collection: tasteparameters 
+    Document Count: 3
+    Size: 0.00 MB
+    Storage Size: 0.04 MB
+    Indexes: [
+  "_id_",
+  "nameKey_1"
+]
+    Sample Fields: _id, name, defaultPriceAdjustment, description, active, deletedAt, nameKey, createdAt, updatedAt, __v
+
+  - Collection: teagrades 
+    Document Count: 6
+    Size: 0.00 MB
+    Storage Size: 0.04 MB
+    Indexes: [
+  "_id_",
+  "categoryId_1_nameKey_1",
+  "teaPowderTypeId_1_nameKey_1"
+]
+    Sample Fields: _id, categoryId, nameKey, __v, active, createdAt, description, name, updatedAt, teaPowderTypeId
+
+  - Collection: cuttingtypes 
+    Document Count: 4
+    Size: 0.00 MB
+    Storage Size: 0.04 MB
+    Indexes: [
+  "_id_",
+  "nameKey_1"
+]
+    Sample Fields: _id, name, basePrice, leafCategoryId, description, active, deletedAt, nameKey, createdAt, updatedAt, __v
+
+  - Collection: formulas 
+    Document Count: 1
+    Size: 0.00 MB
+    Storage Size: 0.04 MB
+    Indexes: [
+  "_id_",
+  "nameKey_1"
+]
+    Sample Fields: _id, nameKey, __v, active, baseWeightGrams, createdAt, items, name, notes, updatedAt
+
+  - Collection: customerteaformulahistories 
+    Document Count: 2
+    Size: 0.00 MB
+    Storage Size: 0.04 MB
+    Indexes: [
+  "_id_"
+]
+    Sample Fields: _id, formulaId, snapshot, changedBy, changeType, createdAt, __v
+
+  - Collection: purchasebatches 
+    Document Count: 1
+    Size: 0.00 MB
+    Storage Size: 0.04 MB
+    Indexes: [
+  "_id_",
+  "serialNumber_1",
+  "batchCode_1",
+  "purchaseDate_-1",
+  "sellerName_1"
+]
+    Sample Fields: _id, serialNumber, numberOfBags, purchaseDate, billNumber, sellerName, batchCode, items, createdAt, updatedAt, __v
+
+  - Collection: customers 
+    Document Count: 2
+    Size: 0.00 MB
+    Storage Size: 0.04 MB
+    Indexes: [
+  "_id_",
+  "name_1",
+  "mobile_1",
+  "name_text_mobile_text"
+]
+    Sample Fields: _id, mobile, __v, active, address, contactPerson, createdAt, name, notes, updatedAt
+
+  - Collection: addpurchasebatches 
+    Document Count: 5
+    Size: 0.00 MB
+    Storage Size: 0.04 MB
+    Indexes: [
+  "_id_",
+  "serialNumber_1",
+  "batchCode_1",
+  "purchaseDate_-1",
+  "sellerName_1",
+  "billNumber_1",
+  "items.teaPowderType_1"
+]
+    Sample Fields: _id, numberOfBags, purchaseDate, billNumber, sellerName, items, serialNumber, batchCode, createdAt, updatedAt, __v
+
+=== Database: config ===
+Collections count: 11
+
+  - Collection: analyzeShardKeySplitPoints 
+    Document Count: 0
+    Size: 0.00 MB
+    Storage Size: 0.00 MB
+    Indexes: [
+  "_id_",
+  "AnalyzeShardKeySplitPointsTTLIndex"
+]
+
+  - Collection: system.indexBuilds 
+    Document Count: 0
+    Size: 0.00 MB
+    Storage Size: 0.03 MB
+    Indexes: [
+  "_id_"
+]
+
+  - Collection: system.preimages 
+    Document Count: 0
+    Size: 0.00 MB
+    Storage Size: 0.00 MB
+    Indexes: [
+  "_id_"
+]
+
+  - Collection: tenantMigrationDonors 
+    Document Count: 0
+    Size: 0.00 MB
+    Storage Size: 0.00 MB
+    Indexes: [
+  "_id_",
+  "TenantMigrationDonorTTLIndex"
+]
+
+  - Collection: external_validation_keys 
+    Document Count: 0
+    Size: 0.00 MB
+    Storage Size: 0.00 MB
+    Indexes: [
+  "_id_",
+  "ExternalKeysTTLIndex"
+]
+
+  - Collection: system.sessions 
+    Document Count: 3
+    Size: 0.00 MB
+    Storage Size: 0.04 MB
+    Indexes: [
+  "_id_",
+  "lsidTTLIndex"
+]
+    Sample Fields: _id, lastUse
+
+  - Collection: sampledQueriesDiff 
+    Document Count: 0
+    Size: 0.00 MB
+    Storage Size: 0.00 MB
+    Indexes: [
+  "_id_",
+  "SampledQueriesDiffTTLIndex"
+]
+
+  - Collection: transactions 
+    Document Count: 0
+    Size: 0.00 MB
+    Storage Size: 0.03 MB
+    Indexes: [
+  "_id_",
+  "parent_lsid"
+]
+
+  - Collection: tenantMigrationRecipients 
+    Document Count: 0
+    Size: 0.00 MB
+    Storage Size: 0.00 MB
+    Indexes: [
+  "_id_",
+  "TenantMigrationRecipientTTLIndex"
+]
+
+  - Collection: sampledQueries 
+    Document Count: 0
+    Size: 0.00 MB
+    Storage Size: 0.00 MB
+    Indexes: [
+  "_id_",
+  "SampledQueriesTTLIndex"
+]
+
+  - Collection: image_collection 
+    Document Count: 0
+    Size: 0.00 MB
+    Storage Size: 0.03 MB
+    Indexes: [
+  "_id_"
+]
+
+=== Database: esparex ===
+Collections count: 6
+
+  - Collection: screensizes 
+    Document Count: 0
+    Size: 0.00 MB
+    Storage Size: 0.00 MB
+    Indexes: [
+  "_id_"
+]
+
+  - Collection: locations 
+    Document Count: 3
+    Size: 0.00 MB
+    Storage Size: 0.02 MB
+    Indexes: [
+  "_id_"
+]
+    Sample Fields: _id, name, slug, level, state, country, isActive, coordinates, createdAt, updatedAt
+
+  - Collection: users 
+    Document Count: 0
+    Size: 0.00 MB
+    Storage Size: 0.00 MB
+    Indexes: [
+  "_id_"
+]
+
+  - Collection: brands 
+    Document Count: 0
+    Size: 0.00 MB
+    Storage Size: 0.00 MB
+    Indexes: [
+  "_id_"
+]
+
+  - Collection: categories 
+    Document Count: 0
+    Size: 0.00 MB
+    Storage Size: 0.00 MB
+    Indexes: [
+  "_id_"
+]
+
+  - Collection: ads 
+    Document Count: 0
+    Size: 0.00 MB
+    Storage Size: 0.00 MB
+    Indexes: [
+  "_id_"
+]
+
+=== Database: esparex_admin ===
+Collections count: 17
+
+  - Collection: categories 
+    Document Count: 11
+    Size: 0.00 MB
+    Storage Size: 0.04 MB
+    Indexes: [
+  "_id_",
+  "category_slug_unique_idx",
+  "idx_category_type_active",
+  "idx_category_status",
+  "idx_category_name_unique_ci",
+  "idx_category_parent",
+  "idx_category_isDeleted"
+]
+    Sample Fields: _id, slug, __v, icon, isActive, name, isDeleted, status, type, updatedAt, listingType
+
+  - Collection: admins 
+    Document Count: 2
+    Size: 0.00 MB
+    Storage Size: 0.04 MB
+    Indexes: [
+  "_id_"
+]
+    Sample Fields: _id, firstName, lastName, email, password, role, permissions, status, createdAt, updatedAt, __v, lastLogin, isDeleted, twoFactorEnabled, isActive
+
+  - Collection: brands 
+    Document Count: 61
+    Size: 0.01 MB
+    Storage Size: 0.04 MB
+    Indexes: [
+  "_id_",
+  "idx_brand_status",
+  "idx_brand_isDeleted",
+  "brand_categoryId_name_unique",
+  "brand_categoryId_slug_unique",
+  "idx_brand_categoryIds",
+  "idx_brand_categoryIds_name"
+]
+    Sample Fields: _id, name, isActive, isDeleted, createdAt, updatedAt, __v, status, needsReview
+
+  - Collection: admin_sessions 
+    Document Count: 46
+    Size: 0.02 MB
+    Storage Size: 0.04 MB
+    Indexes: [
+  "_id_"
+]
+    Sample Fields: _id, adminId, tokenHash, tokenId, ip, device, expiresAt, createdAt, updatedAt, __v
+
+  - Collection: system_configs 
+    Document Count: 3
+    Size: 0.00 MB
+    Storage Size: 0.04 MB
+    Indexes: [
+  "_id_"
+]
+    Sample Fields: _id, ai, security, notifications, maintenance, featureFlags, createdAt, updatedAt, __v
+
+  - Collection: notifications 
+    Document Count: 10
+    Size: 0.00 MB
+    Storage Size: 0.04 MB
+    Indexes: [
+  "_id_"
+]
+    Sample Fields: _id, userId, type, title, message, data, isRead, __v, createdAt, updatedAt
+
+  - Collection: adminmetrics 
+    Document Count: 8
+    Size: 0.00 MB
+    Storage Size: 0.04 MB
+    Indexes: [
+  "_id_"
+]
+    Sample Fields: _id, aggregationDate, metricModule, __v, createdAt, payload, updatedAt
+
+  - Collection: automoderationrules 
+    Document Count: 0
+    Size: 0.00 MB
+    Storage Size: 0.00 MB
+    Indexes: [
+  "_id_"
+]
+
+  - Collection: screensizes 
+    Document Count: 8
+    Size: 0.00 MB
+    Storage Size: 0.04 MB
+    Indexes: [
+  "_id_"
+]
+    Sample Fields: _id, size, name, value, categoryId, isActive, createdAt, updatedAt
+
+  - Collection: spareparts 
+    Document Count: 41
+    Size: 0.01 MB
+    Storage Size: 0.04 MB
+    Indexes: [
+  "_id_",
+  "idx_sparepart_slug_unique",
+  "idx_sparepart_categoryIds",
+  "idx_sparepart_status",
+  "idx_sparepart_categoryIds_status",
+  "idx_sparepart_brand_model",
+  "idx_sparepart_sortOrder",
+  "idx_sparepart_createdBy",
+  "idx_sparepart_isDeleted"
+]
+    Sample Fields: _id, name, slug, type, sortOrder, usageCount, isActive, createdBy, createdAt, updatedAt, __v, categoryIds, status, needsReview, listingType
+
+  - Collection: servicetypes 
+    Document Count: 32
+    Size: 0.00 MB
+    Storage Size: 0.04 MB
+    Indexes: [
+  "_id_"
+]
+    Sample Fields: _id, name, isActive, isDeleted, createdAt, updatedAt, categoryId, categoryIds
+
+  - Collection: joblogs 
+    Document Count: 3
+    Size: 0.00 MB
+    Storage Size: 0.04 MB
+    Indexes: [
+  "_id_"
+]
+    Sample Fields: _id, jobName, status, triggeredBy, startedAt, createdAt, updatedAt, __v, completedAt, durationMs, result
+
+  - Collection: settings 
+    Document Count: 0
+    Size: 0.00 MB
+    Storage Size: 0.00 MB
+    Indexes: [
+  "_id_"
+]
+
+  - Collection: banners 
+    Document Count: 4
+    Size: 0.00 MB
+    Storage Size: 0.02 MB
+    Indexes: [
+  "_id_"
+]
+    Sample Fields: _id, title, subtitle, imageUrl, linkUrl, order, isActive, __v, createdAt, updatedAt
+
+  - Collection: adminlogs 
+    Document Count: 246
+    Size: 0.08 MB
+    Storage Size: 0.05 MB
+    Indexes: [
+  "_id_"
+]
+    Sample Fields: _id, adminId, action, targetType, targetId, metadata, ipAddress, userAgent, createdAt, __v
+
+  - Collection: models 
+    Document Count: 249
+    Size: 0.06 MB
+    Storage Size: 0.05 MB
+    Indexes: [
+  "_id_",
+  "idx_model_category_brand_name",
+  "idx_model_categoryId",
+  "idx_model_isActive",
+  "idx_model_isDeleted"
+]
+    Sample Fields: _id, name, brandId, categoryId, isActive, isDeleted, status, createdAt, updatedAt, __v, categoryIds
+
+  - Collection: notificationlogs 
+    Document Count: 1
+    Size: 0.00 MB
+    Storage Size: 0.02 MB
+    Indexes: [
+  "_id_"
+]
+    Sample Fields: _id, title, body, type, targetType, targetValue, userIds, sentBy, successCount, failureCount, status, createdAt, __v
+
+=== Database: esparex_admin_db ===
+Collections count: 7
+
+  - Collection: duplicate_fingerprint_conflicts 
+    Document Count: 0
+    Size: 0.00 MB
+    Storage Size: 0.00 MB
+    Indexes: [
+  "_id_",
+  "migrationTag_1_adId_1_canonicalAdId_1",
+  "fingerprint_1_updatedAt_-1"
+]
+
+  - Collection: businesses 
+    Document Count: 0
+    Size: 0.00 MB
+    Storage Size: 0.00 MB
+    Indexes: [
+  "_id_",
+  "business_user_unique_active",
+  "business_gst_unique_active_ci",
+  "business_registration_unique_active_ci"
+]
+
+  - Collection: migration_test 
+    Document Count: 0
+    Size: 0.00 MB
+    Storage Size: 0.01 MB
+    Indexes: [
+  "_id_"
+]
+
+  - Collection: ads 
+    Document Count: 0
+    Size: 0.00 MB
+    Storage Size: 0.00 MB
+    Indexes: [
+  "_id_",
+  "seller_status_category_brand_model_location_createdAt",
+  "duplicateFingerprint_lookup_1"
+]
+
+  - Collection: duplicate_fingerprint_backfill_reports 
+    Document Count: 1
+    Size: 0.00 MB
+    Storage Size: 0.02 MB
+    Indexes: [
+  "_id_",
+  "migrationTag_1"
+]
+    Sample Fields: _id, migrationTag, completedAt, conflictCount, createdAt, resolutionPolicy, scanned, strictIndexCreated, strictIndexRequested, updated
+
+  - Collection: business_unique_index_audit 
+    Document Count: 1
+    Size: 0.00 MB
+    Storage Size: 0.02 MB
+    Indexes: [
+  "_id_",
+  "migrationTag_1"
+]
+    Sample Fields: _id, migrationTag, completedAt, createdAt, duplicateGstGroups, duplicateRegistrationGroups, duplicateSummary, duplicateUserGroups, scanned
+
+  - Collection: changelog 
+    Document Count: 3
+    Size: 0.00 MB
+    Storage Size: 0.02 MB
+    Indexes: [
+  "_id_"
+]
+    Sample Fields: _id, fileName, appliedAt, migrationBlock
+
+=== Database: esparex_admin_sandbox ===
+Collections count: 8
+
+  - Collection: services 
+    Document Count: 0
+    Size: 0.00 MB
+    Storage Size: 0.00 MB
+    Indexes: [
+  "_id_",
+  "service_expiresAt_status_idx"
+]
+
+  - Collection: duplicate_fingerprint_conflicts 
+    Document Count: 0
+    Size: 0.00 MB
+    Storage Size: 0.00 MB
+    Indexes: [
+  "_id_",
+  "migrationTag_1_adId_1_canonicalAdId_1",
+  "fingerprint_1_updatedAt_-1"
+]
+
+  - Collection: business_unique_index_audit 
+    Document Count: 1
+    Size: 0.00 MB
+    Storage Size: 0.02 MB
+    Indexes: [
+  "_id_",
+  "migrationTag_1"
+]
+    Sample Fields: _id, migrationTag, completedAt, createdAt, duplicateGstGroups, duplicateRegistrationGroups, duplicateSummary, duplicateUserGroups, scanned
+
+  - Collection: businesses 
+    Document Count: 0
+    Size: 0.00 MB
+    Storage Size: 0.00 MB
+    Indexes: [
+  "_id_",
+  "business_user_unique_active",
+  "business_gst_unique_active_ci",
+  "business_registration_unique_active_ci"
+]
+
+  - Collection: changelog 
+    Document Count: 16
+    Size: 0.00 MB
+    Storage Size: 0.04 MB
+    Indexes: [
+  "_id_"
+]
+    Sample Fields: _id, fileName, appliedAt, migrationBlock
+
+  - Collection: ads 
+    Document Count: 0
+    Size: 0.00 MB
+    Storage Size: 0.00 MB
+    Indexes: [
+  "_id_",
+  "seller_status_category_brand_model_location_createdAt",
+  "duplicateFingerprint_lookup_1"
+]
+
+  - Collection: duplicate_fingerprint_backfill_reports 
+    Document Count: 1
+    Size: 0.00 MB
+    Storage Size: 0.02 MB
+    Indexes: [
+  "_id_",
+  "migrationTag_1"
+]
+    Sample Fields: _id, migrationTag, completedAt, conflictCount, createdAt, resolutionPolicy, scanned, strictIndexCreated, strictIndexRequested, updated
+
+  - Collection: spare_part_listings 
+    Document Count: 0
+    Size: 0.00 MB
+    Storage Size: 0.00 MB
+    Indexes: [
+  "_id_",
+  "spl_expiresAt_status_idx"
+]
+
+=== Database: esparex_test ===
+Collections count: 6
+
+  - Collection: ads 
+    Document Count: 0
+    Size: 0.00 MB
+    Storage Size: 0.01 MB
+    Indexes: [
+  "_id_"
+]
+
+  - Collection: locations 
+    Document Count: 0
+    Size: 0.00 MB
+    Storage Size: 0.01 MB
+    Indexes: [
+  "_id_"
+]
+
+  - Collection: idempotencyrequests 
+    Document Count: 0
+    Size: 0.00 MB
+    Storage Size: 0.01 MB
+    Indexes: [
+  "_id_"
+]
+
+  - Collection: admins 
+    Document Count: 0
+    Size: 0.00 MB
+    Storage Size: 0.01 MB
+    Indexes: [
+  "_id_"
+]
+
+  - Collection: categories 
+    Document Count: 0
+    Size: 0.00 MB
+    Storage Size: 0.01 MB
+    Indexes: [
+  "_id_"
+]
+
+  - Collection: users 
+    Document Count: 0
+    Size: 0.00 MB
+    Storage Size: 0.01 MB
+    Indexes: [
+  "_id_"
+]
+
+=== Database: esparex_user ===
+Collections count: 32
+
+  - Collection: invoices 
+    Document Count: 10
+    Size: 0.00 MB
+    Storage Size: 0.04 MB
+    Indexes: [
+  "_id_",
+  "invoiceNumber_1",
+  "userId_1"
+]
+    Sample Fields: _id, invoiceNumber, userId, transactionId, planSnapshot, amount, currency, tax, issuedAt, __v
+
+  - Collection: fraudsignals 
+    Document Count: 123
+    Size: 0.02 MB
+    Storage Size: 0.04 MB
+    Indexes: [
+  "_id_"
+]
+    Sample Fields: _id, ip, deviceFingerprint, signalType, score, createdAt, __v
+
+  - Collection: userplans 
+    Document Count: 15
+    Size: 0.00 MB
+    Storage Size: 0.04 MB
+    Indexes: [
+  "_id_",
+  "userId_1",
+  "status_1"
+]
+    Sample Fields: _id, userId, planId, startDate, endDate, status, __v
+
+  - Collection: contactsubmissions 
+    Document Count: 0
+    Size: 0.00 MB
+    Storage Size: 0.00 MB
+    Indexes: [
+  "_id_"
+]
+
+  - Collection: messages 
+    Document Count: 102
+    Size: 0.02 MB
+    Storage Size: 0.04 MB
+    Indexes: [
+  "_id_",
+  "senderId_1_receiverId_1",
+  "contextId_1_contextType_1",
+  "adId_1",
+  "adId_1_senderId_1_receiverId_1"
+]
+    Sample Fields: _id, senderId, receiverId, adId, content, isRead, createdAt, updatedAt, __v
+
+  - Collection: otps 
+    Document Count: 0
+    Size: 0.00 MB
+    Storage Size: 0.03 MB
+    Indexes: [
+  "_id_",
+  "createdAt_1"
+]
+
+  - Collection: deviceconditions 
+    Document Count: 20
+    Size: 0.00 MB
+    Storage Size: 0.02 MB
+    Indexes: [
+  "_id_",
+  "isDeleted_1"
+]
+    Sample Fields: _id, name, description, categoryId, isActive, isDeleted, createdAt, updatedAt, __v
+
+  - Collection: heatmaps 
+    Document Count: 0
+    Size: 0.00 MB
+    Storage Size: 0.00 MB
+    Indexes: [
+  "_id_",
+  "date_1",
+  "date_1_type_1_location.lat_1_location.lng_1"
+]
+
+  - Collection: statushistories 
+    Document Count: 165
+    Size: 0.06 MB
+    Storage Size: 0.04 MB
+    Indexes: [
+  "_id_"
+]
+    Sample Fields: _id, domain, entityId, fromStatus, toStatus, actorType, actorId, reason, metadata, createdAt, updatedAt, __v
+
+  - Collection: idempotencyrequests 
+    Document Count: 10
+    Size: 0.02 MB
+    Storage Size: 0.04 MB
+    Indexes: [
+  "_id_"
+]
+    Sample Fields: _id, userId, key, scope, __v, createdAt, expiresAt, requestHash, status, updatedAt, responseBody, responseStatus
+
+  - Collection: user_plans 
+    Document Count: 2
+    Size: 0.00 MB
+    Storage Size: 0.04 MB
+    Indexes: [
+  "_id_"
+]
+    Sample Fields: _id, userId, planId, status, startDate, endDate, paymentId
+
+  - Collection: userwallets 
+    Document Count: 135
+    Size: 0.03 MB
+    Storage Size: 0.04 MB
+    Indexes: [
+  "_id_"
+]
+    Sample Fields: _id, userId, __v, adCredits, consumedSlots, createdAt, lastMonthlyReset, monthlyFreeAdsUsed, smartAlertSlots, spotlightCredits, updatedAt
+
+  - Collection: conversations 
+    Document Count: 3
+    Size: 0.00 MB
+    Storage Size: 0.04 MB
+    Indexes: [
+  "_id_"
+]
+    Sample Fields: _id, type, referenceId, participants, lastMessage, createdAt, updatedAt, __v
+
+  - Collection: businesses 
+    Document Count: 15
+    Size: 0.01 MB
+    Storage Size: 0.04 MB
+    Indexes: [
+  "_id_",
+  "userId_1",
+  "status_1",
+  "isVerified_1",
+  "location.coordinates_2dsphere",
+  "location.city_1",
+  "deviceCategoryIds_1",
+  "locationId_1"
+]
+    Sample Fields: _id, userId, name, description, businessTypes, deviceCategories, address, city, state, pincode, phone, email, images, documents, status, createdAt, updatedAt, __v, isDeleted
+
+  - Collection: locationanalytics 
+    Document Count: 121
+    Size: 0.02 MB
+    Storage Size: 0.04 MB
+    Indexes: [
+  "_id_"
+]
+    Sample Fields: _id, locationId, adsCount, searchCount, chatCount, viewCount, lastUpdated, popularityScore, isHotZone
+
+  - Collection: categories 
+    Document Count: 1
+    Size: 0.00 MB
+    Storage Size: 0.02 MB
+    Indexes: [
+  "_id_"
+]
+    Sample Fields: _id, name, slug, type, isActive, status, filters, listingType, serviceSelectionMode, hasScreenSizes, isDeleted, createdAt, updatedAt, __v
+
+  - Collection: transactions 
+    Document Count: 13
+    Size: 0.00 MB
+    Storage Size: 0.04 MB
+    Indexes: [
+  "_id_",
+  "userId_1",
+  "gatewayPaymentId_1",
+  "status_1"
+]
+    Sample Fields: _id, userId, planId, planSnapshot, paymentGateway, gatewayOrderId, amount, currency, status, applied, createdAt, updatedAt, __v
+
+  - Collection: blockedusers 
+    Document Count: 0
+    Size: 0.00 MB
+    Storage Size: 0.03 MB
+    Indexes: [
+  "_id_"
+]
+
+  - Collection: fraudscores 
+    Document Count: 6
+    Size: 0.00 MB
+    Storage Size: 0.04 MB
+    Indexes: [
+  "_id_"
+]
+    Sample Fields: _id, userId, __v, currentScore, lastUpdated, riskLevel
+
+  - Collection: plans 
+    Document Count: 1
+    Size: 0.00 MB
+    Storage Size: 0.04 MB
+    Indexes: [
+  "_id_",
+  "code_1",
+  "type_1"
+]
+    Sample Fields: _id, code, name, type, userType, durationDays, limits, features, smartAlertConfig, credits, price, currency, active, isDefault, createdAt, updatedAt, __v
+
+  - Collection: services 
+    Document Count: 1
+    Size: 0.00 MB
+    Storage Size: 0.04 MB
+    Indexes: [
+  "_id_",
+  "seoSlug_1",
+  "categoryId_1",
+  "brandId_1",
+  "modelId_1",
+  "locationId_1",
+  "location.coordinates_2dsphere",
+  "location.city_1"
+]
+    Sample Fields: _id, userId, title, deviceType, categoryId, locationId, location, priceMin, priceMax, onsiteService, description, images, serviceTypes, status, createdAt, updatedAt, seoSlug, __v, listingQualityScore
+
+  - Collection: adminlogs 
+    Document Count: 13
+    Size: 0.00 MB
+    Storage Size: 0.04 MB
+    Indexes: [
+  "_id_",
+  "adminId_1",
+  "action_1",
+  "targetId_1",
+  "createdAt_1"
+]
+    Sample Fields: _id, adminId, action, targetType, targetId, metadata, ipAddress, userAgent, createdAt, __v
+
+  - Collection: locations 
+    Document Count: 12608
+    Size: 5.46 MB
+    Storage Size: 2.22 MB
+    Indexes: [
+  "_id_",
+  "locations_coordinates_2dsphere"
+]
+    Sample Fields: _id, name, city, state, country, level, coordinates, isActive, isPopular, createdAt, updatedAt, __v, parentId, path, aliases, priority, slug, tier
+
+  - Collection: savedads 
+    Document Count: 1
+    Size: 0.00 MB
+    Storage Size: 0.04 MB
+    Indexes: [
+  "_id_",
+  "userId_1",
+  "userId_1_adId_1"
+]
+    Sample Fields: _id, userId, adId, createdAt, updatedAt, __v
+
+  - Collection: reports 
+    Document Count: 20
+    Size: 0.01 MB
+    Storage Size: 0.04 MB
+    Indexes: [
+  "_id_",
+  "idx_reports_targetType_status_createdAt",
+  "idx_reports_targetId_targetType_status_createdAt"
+]
+    Sample Fields: _id, adId, adTitle, reportedBy, reason, description, status, createdAt, updatedAt, __v, reporterId, targetId, targetType, resolution, resolvedAt
+
+  - Collection: smartalerts 
+    Document Count: 10
+    Size: 0.00 MB
+    Storage Size: 0.04 MB
+    Indexes: [
+  "_id_"
+]
+    Sample Fields: _id, userId, name, criteria, coordinates, radiusKm, isActive, notificationChannels, createdAt, updatedAt, __v
+
+  - Collection: locationevents 
+    Document Count: 144
+    Size: 0.02 MB
+    Storage Size: 0.04 MB
+    Indexes: [
+  "_id_"
+]
+    Sample Fields: _id, source, city, state, reason, createdAt, __v
+
+  - Collection: ads 
+    Document Count: 99
+    Size: 0.16 MB
+    Storage Size: 0.10 MB
+    Indexes: [
+  "_id_",
+  "idx_ad_seoSlug_unique",
+  "idx_ad_geo_coordinates_2dsphere",
+  "idx_ad_status",
+  "idx_ad_sellerId_status",
+  "idx_ad_duplicateScore",
+  "idx_ad_isDuplicateFlag",
+  "idx_ad_fraudScore",
+  "idx_ad_isSpotlight",
+  "idx_ad_sellerTrustSnapshot",
+  "idx_ad_categoryId",
+  "idx_ad_expiresAt",
+  "idx_ad_duplicateOf",
+  "idx_ad_brandId",
+  "idx_ad_modelId",
+  "idx_ad_text_search",
+  "idx_ad_listingType_status",
+  "idx_ad_isDeleted",
+  "idx_ad_public_visibility",
+  "idx_ad_spotlight_live",
+  "idx_ad_location_hierarchy_visibility",
+  "idx_ad_status_category_freshness",
+  "idx_ad_location_category_freshness",
+  "idx_ad_status_locationPath_freshness",
+  "idx_ad_seller_clustering",
+  "idx_ad_category_listing_search",
+  "idx_ad_seller_complex_listing",
+  "idx_ad_duplicateFingerprint_unique_partial"
+]
+    Sample Fields: _id, title, description, price, currency, brand, deviceModel, screenSize, conditions, spareParts, devicePowerOn, images, sellerId, sellerType, status, fraudScore, fraudFlags, moderationStatus, location, planType, isSpotlight, views, expiresAt, createdAt, updatedAt, __v, categoryId, approvedAt, isActive, isDeleted, isSold, listingQualityScore, listingType, compatibleModels, duplicateScore, freshnessScore, imageHashes, isChatLocked, isDuplicateFlag, isFree, locationPath, onsiteService, reviewVersion, sellerTrustSnapshot, seoSlug, serviceTypeIds, sparePartIds, sparePartsSnapshot, timeline
+
+  - Collection: system_configs 
+    Document Count: 1
+    Size: 0.00 MB
+    Storage Size: 0.04 MB
+    Indexes: [
+  "_id_"
+]
+    Sample Fields: _id, ai, security, notifications, maintenance, featureFlags, createdAt, updatedAt, __v
+
+  - Collection: users 
+    Document Count: 17
+    Size: 0.01 MB
+    Storage Size: 0.04 MB
+    Indexes: [
+  "_id_",
+  "user_location_2dsphere"
+]
+    Sample Fields: _id, role, mobile, name, email, businessStatus, isPhoneVerified, isEmailVerified, isVerified, trustScore, adminBadges, status, mobileVisibility, adminPermissions, fcmTokens, notificationSettings, createdAt, updatedAt, __v
+
+  - Collection: citypopularities 
+    Document Count: 0
+    Size: 0.00 MB
+    Storage Size: 0.00 MB
+    Indexes: [
+  "_id_",
+  "score_-1",
+  "city_1_state_1"
+]
+
+  - Collection: notifications 
+    Document Count: 1
+    Size: 0.00 MB
+    Storage Size: 0.04 MB
+    Indexes: [
+  "_id_"
+]
+    Sample Fields: _id, userId, type, title, message, data, isRead, priority, channel, createdAt, updatedAt, __v, readAt
+
+=== Database: local ===
+Collections count: 10
+
+  - Collection: replset.election 
+    Document Count: 1
+    Size: 0.00 MB
+    Storage Size: 0.04 MB
+    Indexes: [
+  "_id_"
+]
+    Sample Fields: _id, term, candidateIndex
+
+  - Collection: startup_log 
+    Document Count: 68
+    Size: 0.21 MB
+    Storage Size: 0.07 MB
+    Indexes: [
+  "_id_"
+]
+    Sample Fields: _id, hostname, startTime, startTimeLocal, cmdLine, pid, buildinfo
+
+  - Collection: oplog.rs 
+    Document Count: 332811
+    Size: 36.53 MB
+    Storage Size: 7.24 MB
+    Indexes: []
+    Sample Fields: op, ns, o, ts, v, wall
+
+  - Collection: replset.minvalid 
+    Document Count: 1
+    Size: 0.00 MB
+    Storage Size: 0.02 MB
+    Indexes: [
+  "_id_"
+]
+    Sample Fields: _id, t, ts
+
+  - Collection: system.replset 
+    Document Count: 1
+    Size: 0.00 MB
+    Storage Size: 0.04 MB
+    Indexes: [
+  "_id_"
+]
+    Sample Fields: _id, version, term, members, protocolVersion, writeConcernMajorityJournalDefault, settings
+
+  - Collection: system.rollback.id 
+    Document Count: 1
+    Size: 0.00 MB
+    Storage Size: 0.04 MB
+    Indexes: [
+  "_id_"
+]
+    Sample Fields: _id, rollbackId
+
+  - Collection: system.views 
+    Document Count: 1
+    Size: 0.00 MB
+    Storage Size: 0.02 MB
+    Indexes: [
+  "_id_"
+]
+    Sample Fields: _id, viewOn, pipeline
+
+  - Collection: replset.oplogTruncateAfterPoint 
+    Document Count: 1
+    Size: 0.00 MB
+    Storage Size: 0.04 MB
+    Indexes: [
+  "_id_"
+]
+    Sample Fields: _id, oplogTruncateAfterPoint
+
+  - Collection: replset.initialSyncId 
+    Document Count: 1
+    Size: 0.00 MB
+    Storage Size: 0.02 MB
+    Indexes: [
+  "_id_"
+]
+    Sample Fields: _id, wallTime
+
+  - Collection: system.tenantMigration.oplogView [VIEW]
+    Document Count: N/A (View)
+    Size: 0.00 MB
+    Storage Size: 0.00 MB
+    Indexes: []
+
+=== Database: test ===
+Collections count: 4
+
+  - Collection: ads 
+    Document Count: 1
+    Size: 0.00 MB
+    Storage Size: 0.04 MB
+    Indexes: [
+  "_id_"
+]
+    Sample Fields: _id, title, description, price, currency, categoryId, conditions, spareParts, devicePowerOn, images, sellerId, sellerType, status, fraudScore, fraudFlags, moderationStatus, location, expiresAt, createdAt, updatedAt, __v
+
+  - Collection: plans 
+    Document Count: 1
+    Size: 0.00 MB
+    Storage Size: 0.04 MB
+    Indexes: [
+  "_id_"
+]
+    Sample Fields: _id, code, name, type, credits, price, currency, active, createdAt, updatedAt, __v
+
+  - Collection: businesses 
+    Document Count: 1
+    Size: 0.00 MB
+    Storage Size: 0.04 MB
+    Indexes: [
+  "_id_"
+]
+    Sample Fields: _id, userId, name, description, businessTypes, deviceCategories, deviceCategoryIds, location, phone, email, images, documents, status, createdAt, updatedAt, __v
+
+  - Collection: users 
+    Document Count: 1
+    Size: 0.00 MB
+    Storage Size: 0.04 MB
+    Indexes: [
+  "_id_"
+]
+    Sample Fields: _id, role, mobile, name, email, businessStatus, isPhoneVerified, isEmailVerified, trustScore, adminBadges, adminPermissions, password, status, fcmTokens, createdAt, updatedAt, __v
+
+=== Server Status Summary ===
+MongoDB Version: 7.0.29
+Storage Engine: wiredTiger
+Process: mongod
+Connections: {"current":6,"available":51194,"totalCreated":20,"rejected":0,"active":3,"queuedForEstablishment":0,"establishmentRateLimit":{"rejected":0,"exempted":0,"interruptedDueToClientDisconnect":0},"threaded":6,"exhaustIsMaster":0,"exhaustHello":1,"awaitingTopologyChanges":2}
+Uptime: 2600 seconds

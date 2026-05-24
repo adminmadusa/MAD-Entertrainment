@@ -1,0 +1,44 @@
+
+> @mad/web@1.0.0 prebuild
+> rm -rf .next
+
+
+> @mad/web@1.0.0 build
+> next build
+
+   ▲ Next.js 15.5.18
+   - Environments: .env.local
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully in 6.3s
+   Linting and checking validity of types ...
+
+ ⚠ The Next.js plugin was not detected in your ESLint configuration. See https://nextjs.org/docs/app/api-reference/config/eslint#migrating-existing-config
+   Collecting page data ...
+   Generating static pages (0/9) ...
+   Generating static pages (2/9) 
+   Generating static pages (4/9) 
+   Generating static pages (6/9) 
+ ✓ Generating static pages (9/9)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                 Size  First Load JS
+┌ ○ /                                    3.31 kB         186 kB
+├ ○ /_not-found                            991 B         103 kB
+├ ƒ /checkout/[bookingId]                2.96 kB         179 kB
+├ ○ /dashboard                           3.56 kB         175 kB
+├ ○ /events                              3.11 kB         186 kB
+├ ƒ /events/[slug]                       4.49 kB         193 kB
+├ ○ /login                               2.01 kB         176 kB
+├ ○ /my-booking                          3.75 kB         172 kB
+└ ○ /register                            2.15 kB         176 kB
++ First Load JS shared by all             102 kB
+  ├ chunks/18-4ce5efc64451836b.js        46.3 kB
+  ├ chunks/87c73c54-24122e7b92478d00.js  54.2 kB
+  └ other shared chunks (total)          1.92 kB
+
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+

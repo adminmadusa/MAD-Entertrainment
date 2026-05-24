@@ -1,0 +1,34 @@
+
+> @mad/shared@1.0.0 dead-code-check
+> depcheck && ts-prune
+
+No depcheck issue
+src/constants/index.ts:9 - EventCategory (used in module)
+src/constants/index.ts:23 - BookingMode
+src/constants/index.ts:29 - EventStatus
+src/constants/index.ts:39 - BookingStatus
+src/constants/index.ts:49 - PaymentStatus
+src/constants/index.ts:60 - ReservationStatus
+src/constants/index.ts:71 - InventoryState
+src/constants/index.ts:83 - PaymentGateway
+src/constants/index.ts:89 - PaymentMethod
+src/constants/index.ts:98 - TicketTier
+src/constants/index.ts:114 - EventMode
+src/constants/index.ts:121 - SeatStatus
+src/constants/index.ts:130 - AdminRole
+src/constants/index.ts:139 - RefundStatus
+src/constants/index.ts:148 - PopupTrigger
+src/constants/index.ts:156 - NotificationType
+src/constants/index.ts:167 - HTTP_STATUS
+src/constants/index.ts:184 - SEAT_LOCK_TTL_SECONDS
+src/constants/index.ts:187 - MAX_TICKETS_PER_BOOKING
+src/constants/index.ts:190 - POPUP_COOLDOWN_HOURS
+src/constants/index.ts:191 - POPUP_SESSION_KEY_PREFIX
+src/constants/index.ts:194 - API_ROUTES
+src/constants/index.ts:214 - SUPPORTED_CURRENCIES (used in module)
+src/constants/index.ts:215 - SupportedCurrency
+src/constants/index.ts:218 - EVENT_CATEGORY_LABELS
+src/constants/index.ts:5 - QUERY_KEYS
+src/constants/index.ts:1 - STORAGE_KEYS
+src/constants/index.ts:11 - STORAGE_VERSION
+src/constants/index.ts:13 - StorageKey

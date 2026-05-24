@@ -1,0 +1,45 @@
+{
+  "name": "@mad/admin",
+  "version": "1.0.0",
+  "private": true,
+  "description": "MAD Entertrainment — Standalone Admin Dashboard",
+  "scripts": {
+    "prebuild": "rm -rf .next",
+    "predev": "rm -rf .next",
+    "dev": "next dev --port 3001",
+    "build": "next build",
+    "start": "next start --port 3001",
+    "lint": "next lint",
+    "type-check": "tsc --noEmit",
+    "circular-check": "madge --extensions ts,tsx --ts-config tsconfig.json --circular src",
+    "dead-code-check": "depcheck",
+    "clean": "rm -rf .next out"
+  },
+  "dependencies": {
+    "@ducanh2912/next-pwa": "^10.2.9",
+    "@mad/shared": "*",
+    "@mad/types": "*",
+    "@mad/ui": "*",
+    "@mad/utils": "*",
+    "@mad/validations": "*",
+    "@tanstack/react-query": "^5.62.16",
+    "@tanstack/react-query-devtools": "^5.62.16",
+    "axios": "^1.7.9",
+    "framer-motion": "^11.15.0",
+    "next": "^15.1.3",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "recharts": "^3.8.1",
+    "socket.io-client": "^4.8.1",
+    "zustand": "^5.0.3"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.6",
+    "@types/react": "^19.0.4",
+    "@types/react-dom": "^19.0.2",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.7.2"
+  }
+}

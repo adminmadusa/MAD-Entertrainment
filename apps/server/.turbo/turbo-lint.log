@@ -1,0 +1,25 @@
+
+> @mad/server@1.0.0 lint
+> eslint src --ext .ts
+
+Pages directory cannot be found at /Users/admin/Desktop/MAD Entertrainment/apps/server/pages or /Users/admin/Desktop/MAD Entertrainment/apps/server/src/pages. If using a custom path, please configure with the `no-html-link-for-pages` rule in your eslint config file.
+
+/Users/admin/Desktop/MAD Entertrainment/apps/server/src/controllers/public/payment.controller.ts
+  20:9  warning  'event' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+  26:9  warning  'event' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/Users/admin/Desktop/MAD Entertrainment/apps/server/src/routes/index.ts
+  17:1  warning  There should be no empty line within import group  import/order
+
+/Users/admin/Desktop/MAD Entertrainment/apps/server/src/server.ts
+   2:1   warning  `./config/env` import should occur after import of `./config/database`  import/order
+  63:16  warning  'err' is defined but never used                                         unused-imports/no-unused-vars
+
+/Users/admin/Desktop/MAD Entertrainment/apps/server/src/services/public/payment.service.ts
+  253:58  warning  'payment' is defined but never used. Allowed unused args must match /^_/u  unused-imports/no-unused-vars
+
+/Users/admin/Desktop/MAD Entertrainment/apps/server/src/sockets/index.ts
+  61:65  warning  'sessionId' is defined but never used. Allowed unused args must match /^_/u  unused-imports/no-unused-vars
+
+✖ 7 problems (0 errors, 7 warnings)
+
