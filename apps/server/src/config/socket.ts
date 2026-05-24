@@ -77,13 +77,25 @@ export function getIO(): SocketIOServer {
 }
 
 export function emitToEvent(eventId: string, event: string, data: unknown): void {
-  getIO().to(`event:${eventId}`).emit(event, data);
+  if (!io) {
+    logger.debug({ eventId, event }, 'Socket.IO is not initialized — skipping event emit');
+    return;
+  }
+  io.to(`event:${eventId}`).emit(event, data);
 }
 
 export function emitToBooking(bookingId: string, event: string, data: unknown): void {
-  getIO().to(`booking:${bookingId}`).emit(event, data);
+  if (!io) {
+    logger.debug({ bookingId, event }, 'Socket.IO is not initialized — skipping booking emit');
+    return;
+  }
+  io.to(`booking:${bookingId}`).emit(event, data);
 }
 
 export function emitToAdmin(room: string, event: string, data: unknown): void {
-  getIO().of('/admin').to(`admin:${room}`).emit(event, data);
+  if (!io) {
+    logger.debug({ room, event }, 'Socket.IO is not initialized — skipping admin emit');
+    return;
+  }
+  io.of('/admin').to(`admin:${room}`).emit(event, data);
 }
