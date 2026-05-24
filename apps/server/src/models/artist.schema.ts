@@ -10,6 +10,9 @@ export interface IArtist extends Document {
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
+  isDeleted: boolean;
+  deletedAt?: Date;
+  deletedBy?: mongoose.Types.ObjectId;
 }
 
 const cloudinaryImageSchema = new Schema(
@@ -31,6 +34,9 @@ const artistSchema = new Schema<IArtist>(
       ),
     ],
     isActive: { type: Boolean, default: true, index: true },
+    isDeleted: { type: Boolean, default: false, index: true },
+    deletedAt: Date,
+    deletedBy: { type: Schema.Types.ObjectId, ref: 'AdminUser' },
   },
   { timestamps: true }
 );

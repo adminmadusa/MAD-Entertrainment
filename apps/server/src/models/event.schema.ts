@@ -34,6 +34,9 @@ const ticketTierConfigSchema = new Schema(
     },
     isActive: { type: Boolean, default: true },
     maxPerBooking: { type: Number, default: 10 },
+    isDeleted: { type: Boolean, default: false },
+    deletedAt: Date,
+    deletedBy: { type: Schema.Types.ObjectId, ref: 'AdminUser' },
   },
   { _id: false }
 );
@@ -77,6 +80,9 @@ export interface IEvent extends Document {
     };
     isActive: boolean;
     maxPerBooking?: number;
+    isDeleted: boolean;
+    deletedAt?: Date;
+    deletedBy?: Types.ObjectId;
   }[];
   totalCapacity: number;
   soldCount: number;
@@ -94,6 +100,9 @@ export interface IEvent extends Document {
   earlyBirdDeadline?: Date;
   createdAt: Date;
   updatedAt: Date;
+  isDeleted: boolean;
+  deletedAt?: Date;
+  deletedBy?: Types.ObjectId;
 }
 
 const eventSchema = new Schema<IEvent>(
@@ -138,6 +147,9 @@ const eventSchema = new Schema<IEvent>(
     showCountdown: { type: Boolean, default: false },
     isEarlyBird: { type: Boolean, default: false },
     earlyBirdDeadline: Date,
+    isDeleted: { type: Boolean, default: false, index: true },
+    deletedAt: Date,
+    deletedBy: { type: Schema.Types.ObjectId, ref: 'AdminUser' },
   },
   { timestamps: true }
 );

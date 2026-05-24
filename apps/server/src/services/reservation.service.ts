@@ -4,6 +4,7 @@ import { Types } from 'mongoose';
 import { emitToAdmin, emitToEvent } from '../config/socket';
 import { AppError } from '../middleware/error.middleware';
 import { Event } from '../models/event.schema';
+import { CacheService } from './cache.service';
 import { Reservation, IReservation } from '../models/reservation.schema';
 import { SeatLayout } from '../models/seat-layout.schema';
 import { logger } from '../utils/logger';
@@ -81,6 +82,7 @@ export class ReservationService {
     });
 
     this.emitReservationChange(updatedEvent._id.toString(), [reservation], 'reservation:reserved');
+    await CacheService.delPattern('events:*');
     return [reservation];
   }
 
@@ -118,6 +120,7 @@ export class ReservationService {
     });
 
     this.emitReservationChange(request.eventId.toString(), reservations, 'reservation:reserved');
+    await CacheService.delPattern('events:*');
     return reservations;
   }
 
@@ -158,6 +161,7 @@ export class ReservationService {
       this.emitReservationChange(eventId, transitioned, `reservation:${toStatus}`);
     }
 
+    await CacheService.delPattern('events:*');
     return transitioned;
   }
 
@@ -212,6 +216,7 @@ export class ReservationService {
       for (const [eventId, reservations] of this.groupByEvent(expired).entries()) {
         this.emitReservationChange(eventId, reservations, 'reservation:expired');
       }
+      await CacheService.delPattern('events:*');
     }
 
     return expired;

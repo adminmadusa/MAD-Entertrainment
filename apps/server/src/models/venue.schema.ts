@@ -6,6 +6,9 @@ export interface IVenue extends Document {
   state?: string;
   address?: string;
   capacity?: number;
+  isDeleted: boolean;
+  deletedAt?: Date;
+  deletedBy?: Types.ObjectId;
 }
 
 const venueSchema = new Schema<IVenue>(
@@ -15,6 +18,9 @@ const venueSchema = new Schema<IVenue>(
     state: { type: String },
     address: { type: String },
     capacity: { type: Number, min: 0 },
+    isDeleted: { type: Boolean, default: false, index: true },
+    deletedAt: Date,
+    deletedBy: { type: Schema.Types.ObjectId, ref: 'AdminUser' },
   },
   { timestamps: true }
 );
