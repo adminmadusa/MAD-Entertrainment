@@ -1,6 +1,5 @@
 'use client';
 
-import { QUERY_KEYS } from '@mad/shared';
 import { useQuery } from '@tanstack/react-query';
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 
@@ -8,12 +7,12 @@ import { adminGetDashboardSummary, adminGetRevenueChart } from '@/lib/api/admin/
 
 export default function AdminAnalyticsPage() {
   const { data: summary, isLoading } = useQuery({
-    queryKey: QUERY_KEYS.admin.analytics.summary(),
+    queryKey: ['admin-analytics-summary'],
     queryFn: adminGetDashboardSummary,
   });
 
   const { data: revenue } = useQuery({
-    queryKey: QUERY_KEYS.admin.analytics.revenue(30),
+    queryKey: ['admin-revenue-chart', 30],
     queryFn: () => adminGetRevenueChart(30),
   });
 

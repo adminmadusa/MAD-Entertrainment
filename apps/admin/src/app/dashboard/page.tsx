@@ -1,6 +1,5 @@
 'use client';
 
-import { QUERY_KEYS } from '@mad/shared';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
@@ -12,7 +11,7 @@ export default function AdminDashboardPage() {
   const { admin } = useAdminAuth();
 
   const { data: summary, isLoading } = useQuery({
-    queryKey: QUERY_KEYS.admin.analytics.summary(),
+    queryKey: ['admin-analytics-summary'],
     queryFn: adminGetDashboardSummary,
   });
 

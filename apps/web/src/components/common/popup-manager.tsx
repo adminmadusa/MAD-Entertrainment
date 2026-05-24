@@ -1,6 +1,6 @@
 'use client';
 
-import { PopupTrigger, POPUP_SESSION_KEY_PREFIX, QUERY_KEYS } from '@mad/shared';
+import { PopupTrigger, POPUP_SESSION_KEY_PREFIX } from '@mad/shared';
 import { PopupCampaign } from '@mad/types';
 import { useQuery } from '@tanstack/react-query';
 import Image from 'next/image';
@@ -123,7 +123,7 @@ export function PopupManager() {
   const [dismissed, setDismissed] = useState(false);
 
   const { data: popups } = useQuery({
-    queryKey: QUERY_KEYS.public.popups.active(),
+    queryKey: ['active-popups'],
     queryFn: publicGetActivePopups,
     staleTime: 1000 * 60 * 10, // 10 min
   });

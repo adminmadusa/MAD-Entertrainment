@@ -1,6 +1,5 @@
 'use client';
 
-import { QUERY_KEYS } from '@mad/shared';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
@@ -8,7 +7,6 @@ import { useState } from 'react';
 
 import { adminGetEvents, adminDeleteEvent, adminToggleFeatured, adminUpdateEventStatus, type AdminEvent } from '@/lib/api/admin/event.service';
 import { extractApiError } from '@/lib/api/client';
-import { invalidateAdminRealtimeState } from '@/lib/query/query-invalidation.service';
 
 const STATUS_COLORS: Record<string, string> = {
   draft: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/30',
@@ -26,26 +24,26 @@ export default function AdminEventsPage() {
   const [deleteTarget, setDeleteTarget] = useState<AdminEvent | null>(null);
 
   const { data, isLoading } = useQuery({
-    queryKey: QUERY_KEYS.admin.events.list({ page, search, status: statusFilter }),
+    queryKey: ['admin-events', { page, search, status: statusFilter }],
     queryFn: () => adminGetEvents({ page, limit: 15, search, status: statusFilter }),
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => adminDeleteEvent(id),
     onSuccess: () => {
-      invalidateAdminRealtimeState(qc, { source: 'event-delete' });
+      qc.invalidateQueries({ queryKey: ['admin-events'] });
       setDeleteTarget(null);
     },
   });
 
   const featureMutation = useMutation({
     mutationFn: (id: string) => adminToggleFeatured(id),
-    onSuccess: () => invalidateAdminRealtimeState(qc, { source: 'event-feature-toggle' }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin-events'] }),
   });
 
   const statusMutation = useMutation({
     mutationFn: ({ id, status }: { id: string; status: string }) => adminUpdateEventStatus(id, status),
-    onSuccess: () => invalidateAdminRealtimeState(qc, { source: 'event-status-update' }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin-events'] }),
   });
 
   const events = data?.data ?? [];

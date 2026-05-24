@@ -15,7 +15,6 @@ const SocketContext = createContext<SocketContextValue>({
 
 export function SocketProvider({ children }: { children: React.ReactNode }) {
   const socketRef = useRef<Socket | null>(null);
-  const [socketState, setSocketState] = useState<Socket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
@@ -30,36 +29,22 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
     });
 
     socketRef.current = socket;
-    setSocketState(socket);
 
-    const handleConnect = () => {
-      if (process.env.NODE_ENV !== 'production') {
-        console.debug('[socket] connected', { id: socket.id });
-      }
+    socket.on('connect', () => {
       setIsConnected(true);
-    };
+    });
 
-    const handleDisconnect = (reason: string) => {
-      if (process.env.NODE_ENV !== 'production') {
-        console.debug('[socket] disconnected', { id: socket.id, reason });
-      }
+    socket.on('disconnect', () => {
       setIsConnected(false);
-    };
-
-    socket.on('connect', handleConnect);
-    socket.on('disconnect', handleDisconnect);
+    });
 
     return () => {
-      socket.off('connect', handleConnect);
-      socket.off('disconnect', handleDisconnect);
       socket.disconnect();
-      socketRef.current = null;
-      setSocketState(null);
     };
   }, []);
 
   return (
-    <SocketContext.Provider value={{ socket: socketState, isConnected }}>
+    <SocketContext.Provider value={{ socket: socketRef.current, isConnected }}>
       {children}
     </SocketContext.Provider>
   );

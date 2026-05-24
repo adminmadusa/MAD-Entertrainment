@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM"],
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "skipLibCheck": true,
+    "strict": false,
+    "forceConsistentCasingInFileNames": true,
+    "baseUrl": ".",
+    "paths": {
+      "@mad/shared": ["packages/shared/src"],
+      "@mad/shared/*": ["packages/shared/src/*"],
+      "@mad/types": ["packages/types/src"],
+      "@mad/types/*": ["packages/types/src/*"],
+      "@mad/ui": ["packages/ui/src"],
+      "@mad/ui/*": ["packages/ui/src/*"],
+      "@mad/utils": ["packages/utils/src"],
+      "@mad/utils/*": ["packages/utils/src/*"],
+      "@mad/validations": ["packages/validations/src"],
+      "@mad/validations/*": ["packages/validations/src/*"]
+    }
+  }
+}

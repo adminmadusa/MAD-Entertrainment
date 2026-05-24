@@ -1,21 +1,18 @@
 'use client';
 
-import { QUERY_KEYS } from '@mad/shared';
 import { Button } from '@mad/ui';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { AnimatePresence } from 'framer-motion';
 import { useParams, useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 
 import { extractApiError } from '@/lib/api/client';
 import { publicGetBookingDetails, publicCreatePaymentIntent, publicVerifyPayment } from '@/lib/api/public.service';
-import { invalidatePublicBookingFlow } from '@/lib/query/query-invalidation.service';
 
 
 export default function CheckoutPage() {
   const params = useParams();
   const router = useRouter();
-  const queryClient = useQueryClient();
   const bookingId = params.bookingId as string;
 
   const [selectedGateway, setSelectedGateway] = useState<'stripe' | 'razorpay'>('razorpay');
@@ -24,7 +21,7 @@ export default function CheckoutPage() {
   const [isProcessing, setIsProcessing] = useState(false);
 
   const { data: details, isLoading } = useQuery({
-    queryKey: QUERY_KEYS.public.bookings.checkout(bookingId),
+    queryKey: ['booking-checkout-details', bookingId],
     queryFn: () => publicGetBookingDetails(bookingId),
     enabled: !!bookingId,
     retry: (failureCount, error: any) => {
@@ -121,17 +118,11 @@ export default function CheckoutPage() {
 
   const verifyPaymentMutation = useMutation({
     mutationFn: (payload: any) => publicVerifyPayment(bookingId, payload),
-    onSuccess: async (confirmedBooking) => {
-      await invalidatePublicBookingFlow(queryClient, {
-        bookingId,
-        bookingRef: confirmedBooking.bookingId ?? booking?.bookingId,
-        eventId: typeof confirmedBooking.eventId === 'string' ? confirmedBooking.eventId : (confirmedBooking.eventId as any)?._id,
-      });
-      router.push(`/my-booking?ref=${confirmedBooking.bookingId ?? booking?.bookingId}`);
+    onSuccess: () => {
+      router.push(`/my-booking?ref=${booking?.bookingId}`);
     },
     onError: (err) => {
       setError(extractApiError(err).message);
-      invalidatePublicBookingFlow(queryClient, { bookingId, bookingRef: booking?.bookingId }).catch(() => {});
       setIsProcessing(false);
     },
   });

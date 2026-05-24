@@ -1,12 +1,10 @@
 'use client';
 
-import { QUERY_KEYS } from '@mad/shared';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useState } from 'react';
 
 import { adminGetBookings, adminCancelBooking, type AdminBooking } from '@/lib/api/admin/booking.service';
-import { invalidateAdminRealtimeState } from '@/lib/query/query-invalidation.service';
 
 const STATUS_COLORS: Record<string, string> = {
   confirmed: 'bg-green-500/10 text-green-400 border-green-500/30',
@@ -24,14 +22,14 @@ export default function AdminBookingsPage() {
   const [cancelReason, setCancelReason] = useState('');
 
   const { data, isLoading } = useQuery({
-    queryKey: QUERY_KEYS.admin.bookings.list({ page, search, status: statusFilter }),
+    queryKey: ['admin-bookings', { page, search, status: statusFilter }],
     queryFn: () => adminGetBookings({ page, limit: 15, ...(search && { search }), ...(statusFilter && { status: statusFilter }) }),
   });
 
   const cancelMutation = useMutation({
     mutationFn: ({ id, reason }: { id: string; reason: string }) => adminCancelBooking(id, reason),
     onSuccess: () => {
-      invalidateAdminRealtimeState(qc, { source: 'booking-cancel' });
+      qc.invalidateQueries({ queryKey: ['admin-bookings'] });
       setCancelTarget(null);
       setCancelReason('');
     },

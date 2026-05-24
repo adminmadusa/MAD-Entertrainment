@@ -1,11 +1,9 @@
 'use client';
-import { QUERY_KEYS } from '@mad/shared';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useState } from 'react';
 
 import { adminGetRefunds, adminProcessRefund, type AdminRefund } from '@/lib/api/admin/booking.service';
-import { invalidateAdminRealtimeState } from '@/lib/query/query-invalidation.service';
 
 
 export default function AdminRefundsPage() {
@@ -18,13 +16,13 @@ export default function AdminRefundsPage() {
   const [gatewayId, setGatewayId] = useState('');
 
   const { data, isLoading } = useQuery({
-    queryKey: QUERY_KEYS.admin.refunds.list({ page, status: statusFilter }),
+    queryKey: ['admin-refunds', { page, status: statusFilter }],
     queryFn: () => adminGetRefunds({ page: String(page), limit: '15', ...(statusFilter && { status: statusFilter }) }),
   });
 
   const processMutation = useMutation({
     mutationFn: () => adminProcessRefund(processTarget!._id, action, adminNotes, gatewayId),
-    onSuccess: () => { invalidateAdminRealtimeState(qc, { source: 'refund-process' }); setProcessTarget(null); setAdminNotes(''); setGatewayId(''); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['admin-refunds'] }); setProcessTarget(null); setAdminNotes(''); setGatewayId(''); },
   });
 
   const refunds = data?.data ?? [];

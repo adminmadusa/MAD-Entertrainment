@@ -1,6 +1,6 @@
 'use client';
 
-import { STORAGE_KEYS, STORAGE_VERSION } from '@mad/shared';
+import { STORAGE_KEYS } from '@mad/shared';
 import { createContext, useContext, useEffect, useState, useCallback } from 'react';
 
 interface AuthUser {
@@ -38,13 +38,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Hydrate from localStorage on mount
   useEffect(() => {
     try {
-      const storedVersion = localStorage.getItem(STORAGE_KEYS.STORAGE_VERSION);
-      if (storedVersion !== STORAGE_VERSION) {
-        localStorage.removeItem(STORAGE_KEYS.USER_TOKEN);
-        localStorage.removeItem(STORAGE_KEYS.USER_DATA);
-        localStorage.setItem(STORAGE_KEYS.STORAGE_VERSION, STORAGE_VERSION);
-      }
-
       const storedToken = localStorage.getItem(STORAGE_KEYS.USER_TOKEN);
       const storedUser = localStorage.getItem(STORAGE_KEYS.USER_DATA);
 
@@ -64,7 +57,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(newUser);
     localStorage.setItem(STORAGE_KEYS.USER_TOKEN, newToken);
     localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(newUser));
-    localStorage.setItem(STORAGE_KEYS.STORAGE_VERSION, STORAGE_VERSION);
   }, []);
 
   const logout = useCallback(() => {

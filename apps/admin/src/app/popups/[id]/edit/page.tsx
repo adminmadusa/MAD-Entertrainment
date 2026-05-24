@@ -1,6 +1,5 @@
 'use client';
 
-import { QUERY_KEYS } from '@mad/shared';
 import { PopupCampaign } from '@mad/types';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
@@ -46,7 +45,7 @@ export default function EditPopupPage() {
 
   // Fetch current popup
   const { data: popup, isLoading } = useQuery({
-    queryKey: QUERY_KEYS.admin.popups.detail(id),
+    queryKey: ['admin-popup', id],
     queryFn: () => adminGetPopup(id),
     enabled: !!id,
   });

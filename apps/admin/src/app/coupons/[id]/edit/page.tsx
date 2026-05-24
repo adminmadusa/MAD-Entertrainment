@@ -1,6 +1,6 @@
 'use client';
 
-import { EventCategory, QUERY_KEYS } from '@mad/shared';
+import { EventCategory } from '@mad/shared';
 import { Coupon } from '@mad/types';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
@@ -56,14 +56,14 @@ export default function EditCouponPage() {
 
   // Fetch current coupon details
   const { data: coupon, isLoading: isLoadingCoupon } = useQuery({
-    queryKey: QUERY_KEYS.admin.coupons.detail(id),
+    queryKey: ['admin-coupon', id],
     queryFn: () => adminGetCoupon(id),
     enabled: !!id,
   });
 
   // Fetch events list
   const { data: eventsData, isLoading: isLoadingEvents } = useQuery({
-    queryKey: QUERY_KEYS.admin.events.listForSelect(),
+    queryKey: ['admin-events-list'],
     queryFn: () => adminGetEvents({ limit: 100 }),
   });
 

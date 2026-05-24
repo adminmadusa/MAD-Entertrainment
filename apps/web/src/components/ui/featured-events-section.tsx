@@ -1,6 +1,6 @@
 'use client';
 
-import { EventCategory, EVENT_CATEGORY_LABELS, QUERY_KEYS } from '@mad/shared';
+import { EventCategory, EVENT_CATEGORY_LABELS } from '@mad/shared';
 import { EventGridSkeleton } from '@mad/ui';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
@@ -28,7 +28,7 @@ function CalendarIcon({ className = '' }: { className?: string }) {
 
 export function FeaturedEventsSection() {
   const { data, isLoading } = useQuery({
-    queryKey: QUERY_KEYS.public.events.featured(),
+    queryKey: ['featured-events'],
     queryFn: () => publicGetEvents({ page: 1, limit: 4 }),
   });
 

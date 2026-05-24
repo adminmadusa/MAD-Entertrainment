@@ -1,6 +1,5 @@
 'use client';
 
-import { QUERY_KEYS } from '@mad/shared';
 import { Coupon } from '@mad/types';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -18,21 +17,21 @@ export default function AdminCouponsPage() {
   const [deleteTarget, setDeleteTarget] = useState<Coupon | null>(null);
 
   const { data, isLoading } = useQuery({
-    queryKey: QUERY_KEYS.admin.coupons.list(page, activeFilter),
+    queryKey: ['admin-coupons', page, activeFilter],
     queryFn: () => adminGetCoupons(page, 15, activeFilter || undefined),
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => adminDeleteCoupon(id),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: QUERY_KEYS.admin.coupons.all });
+      qc.invalidateQueries({ queryKey: ['admin-coupons'] });
       setDeleteTarget(null);
     },
   });
 
   const toggleMutation = useMutation({
     mutationFn: (id: string) => adminToggleCoupon(id),
-    onSuccess: () => qc.invalidateQueries({ queryKey: QUERY_KEYS.admin.coupons.all }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin-coupons'] }),
   });
 
   const coupons = data?.data ?? [];

@@ -1,6 +1,5 @@
 'use client';
 
-import { QUERY_KEYS } from '@mad/shared';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
@@ -21,7 +20,7 @@ export default function UserDashboard() {
   }, [isAuthLoading, isAuthenticated, router]);
 
   const { data, isLoading } = useQuery({
-    queryKey: QUERY_KEYS.public.bookings.mine(),
+    queryKey: ['my-bookings'],
     queryFn: publicGetMyBookings,
     enabled: isAuthenticated,
   });

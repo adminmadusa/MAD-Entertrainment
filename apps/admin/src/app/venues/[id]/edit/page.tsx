@@ -1,6 +1,5 @@
 'use client';
 
-import { QUERY_KEYS } from '@mad/shared';
 import { Venue } from '@mad/types';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
@@ -52,7 +51,7 @@ export default function EditVenuePage() {
 
   // Fetch current venue
   const { data: venue, isLoading } = useQuery({
-    queryKey: QUERY_KEYS.admin.venues.detail(id),
+    queryKey: ['admin-venue', id],
     queryFn: () => adminGetVenue(id),
     enabled: !!id,
   });

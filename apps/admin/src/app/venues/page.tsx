@@ -1,6 +1,5 @@
 'use client';
 
-import { QUERY_KEYS } from '@mad/shared';
 import { Venue } from '@mad/types';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -19,14 +18,14 @@ export default function AdminVenuesPage() {
   const [deleteTarget, setDeleteTarget] = useState<Venue | null>(null);
 
   const { data, isLoading } = useQuery({
-    queryKey: QUERY_KEYS.admin.venues.list({ page, search, city: cityFilter }),
+    queryKey: ['admin-venues', { page, search, city: cityFilter }],
     queryFn: () => adminGetVenues({ page, limit: 15, search, city: cityFilter }),
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => adminDeleteVenue(id),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: QUERY_KEYS.admin.venues.all });
+      qc.invalidateQueries({ queryKey: ['admin-venues'] });
       setDeleteTarget(null);
     },
   });
@@ -34,7 +33,7 @@ export default function AdminVenuesPage() {
   const statusMutation = useMutation({
     mutationFn: ({ id, isActive }: { id: string; isActive: boolean }) =>
       adminUpdateVenue(id, { isActive }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: QUERY_KEYS.admin.venues.all }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin-venues'] }),
   });
 
   const venues = data?.data ?? [];

@@ -1,6 +1,5 @@
 'use client';
 
-import { QUERY_KEYS } from '@mad/shared';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useRef, useEffect } from 'react';
@@ -19,7 +18,7 @@ export default function ScannerPage() {
 
   // Fetch active events for selection
   const { data: eventsRes, isLoading: isLoadingEvents } = useQuery({
-    queryKey: QUERY_KEYS.admin.events.list({ status: 'published' }),
+    queryKey: ['admin-events', { status: 'published' }],
     queryFn: () => adminGetEvents({ limit: 100 }), // Simplified fetch
   });
 

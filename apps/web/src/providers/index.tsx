@@ -1,6 +1,6 @@
 'use client';
 
-import { MutationCache, QueryCache, QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { useState } from 'react';
 
@@ -15,28 +15,12 @@ export function Providers({ children }: ProvidersProps) {
   const [queryClient] = useState(
     () =>
       new QueryClient({
-        queryCache: new QueryCache({
-          onError: (error, query) => {
-            if (process.env.NODE_ENV !== 'production') {
-              console.debug('[react-query] query error', { queryKey: query.queryKey, error });
-            }
-          },
-        }),
-        mutationCache: new MutationCache({
-          onSuccess: (_data, _variables, _context, mutation) => {
-            if (process.env.NODE_ENV !== 'production') {
-              console.debug('[react-query] mutation success', { mutationKey: mutation.options.mutationKey });
-            }
-          },
-        }),
         defaultOptions: {
           queries: {
-            staleTime: 0,
-            gcTime: 1000 * 60 * 5,
+            staleTime: 1000 * 60 * 5, // 5 minutes
+            gcTime: 1000 * 60 * 30,   // 30 minutes
             retry: 2,
-            refetchOnMount: true,
-            refetchOnWindowFocus: true,
-            refetchOnReconnect: true,
+            refetchOnWindowFocus: false,
           },
           mutations: {
             retry: 0,

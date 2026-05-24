@@ -1,6 +1,6 @@
 'use client';
 
-import { EventCategory, QUERY_KEYS } from '@mad/shared';
+import { EventCategory } from '@mad/shared';
 import { Coupon } from '@mad/types';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
@@ -47,7 +47,7 @@ export default function CreateCouponPage() {
 
   // Fetch events for target selection
   const { data: eventsData, isLoading: isLoadingEvents } = useQuery({
-    queryKey: QUERY_KEYS.admin.events.listForSelect(),
+    queryKey: ['admin-events-list'],
     queryFn: () => adminGetEvents({ limit: 100 }),
   });
 

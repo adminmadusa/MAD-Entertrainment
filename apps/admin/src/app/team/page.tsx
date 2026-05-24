@@ -1,6 +1,6 @@
 'use client';
 
-import { AdminRole, QUERY_KEYS } from '@mad/shared';
+import { AdminRole } from '@mad/shared';
 import { Admin } from '@mad/types';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -24,7 +24,7 @@ export default function AdminTeamPage() {
 
   // Fetch logged in admin to prevent deactivating self
   const { data: meProfile } = useQuery({
-    queryKey: QUERY_KEYS.admin.team.me(),
+    queryKey: ['admin-profile-me'],
     queryFn: async () => {
       const { data } = await adminApiClient.get<{ data: { admin: Admin } }>('/admin/auth/me');
       return data.data.admin;
@@ -32,19 +32,19 @@ export default function AdminTeamPage() {
   });
 
   const { data, isLoading } = useQuery({
-    queryKey: QUERY_KEYS.admin.team.list(page),
+    queryKey: ['admin-team', page],
     queryFn: () => adminGetAdmins(page, 15),
   });
 
   const toggleMutation = useMutation({
     mutationFn: (id: string) => adminToggleAdminActive(id),
-    onSuccess: () => qc.invalidateQueries({ queryKey: QUERY_KEYS.admin.team.all }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin-team'] }),
   });
 
   const inviteMutation = useMutation({
     mutationFn: adminCreateAdmin,
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: QUERY_KEYS.admin.team.all });
+      qc.invalidateQueries({ queryKey: ['admin-team'] });
       setIsInviteOpen(false);
       setName('');
       setEmail('');

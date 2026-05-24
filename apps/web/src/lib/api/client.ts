@@ -11,8 +11,6 @@ export const apiClient: AxiosInstance = axios.create({
   headers: {
     'Content-Type': 'application/json',
     Accept: 'application/json',
-    'Cache-Control': 'no-cache',
-    Pragma: 'no-cache',
   },
 });
 
@@ -26,8 +24,6 @@ apiClient.interceptors.request.use(
         config.headers.Authorization = `Bearer ${token}`;
       }
     }
-    config.headers.set('Cache-Control', 'no-cache');
-    config.headers.set('Pragma', 'no-cache');
     return config;
   },
   (error) => Promise.reject(error)
@@ -36,18 +32,7 @@ apiClient.interceptors.request.use(
 // ─── Response Interceptor — Normalize Errors ──────────────────
 
 apiClient.interceptors.response.use(
-  (response) => {
-    if (process.env.NODE_ENV !== 'production') {
-      console.debug('[api-cache]', {
-        url: response.config.url,
-        cacheControl: response.headers['cache-control'],
-        cachePolicy: response.headers['x-cache-policy'],
-        cacheDebug: response.headers['x-cache-debug'],
-        requestId: response.headers['x-request-id'],
-      });
-    }
-    return response;
-  },
+  (response) => response,
   (error: AxiosError<{ message?: string; errors?: Record<string, string[]> }>) => {
     // Token expired — clear auth and reload
     if (error.response?.status === 401) {

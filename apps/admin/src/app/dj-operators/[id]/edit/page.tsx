@@ -1,6 +1,5 @@
 'use client';
 
-import { QUERY_KEYS } from '@mad/shared';
 import { DJOperator } from '@mad/types';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
@@ -41,7 +40,7 @@ export default function EditDJPage() {
 
   // Fetch current DJ
   const { data: dj, isLoading } = useQuery({
-    queryKey: QUERY_KEYS.admin.djs.detail(id),
+    queryKey: ['admin-dj', id],
     queryFn: () => adminGetDJ(id),
     enabled: !!id,
   });

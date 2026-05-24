@@ -1,6 +1,6 @@
 'use client';
 
-import { EventCategory, EVENT_CATEGORY_LABELS, QUERY_KEYS } from '@mad/shared';
+import { EventCategory, EVENT_CATEGORY_LABELS } from '@mad/shared';
 import { EventGridSkeleton } from '@mad/ui';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
@@ -48,7 +48,7 @@ function EventsList() {
   const [page, setPage] = useState(1);
 
   const { data, isLoading } = useQuery({
-    queryKey: QUERY_KEYS.public.events.list({ category: urlCategory, search, page }),
+    queryKey: ['public-events', urlCategory, search, page],
     queryFn: () =>
       publicGetEvents({
         category: urlCategory || undefined,

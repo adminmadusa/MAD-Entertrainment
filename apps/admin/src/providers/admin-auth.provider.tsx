@@ -1,6 +1,6 @@
 'use client';
 
-import { STORAGE_KEYS, STORAGE_VERSION } from '@mad/shared';
+import { STORAGE_KEYS } from '@mad/shared';
 import {
   createContext,
   useContext,
@@ -39,13 +39,6 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const hydrate = async () => {
       try {
-        const storedVersion = localStorage.getItem(STORAGE_KEYS.STORAGE_VERSION);
-        if (storedVersion !== STORAGE_VERSION) {
-          localStorage.removeItem(STORAGE_KEYS.ADMIN_TOKEN);
-          localStorage.removeItem(STORAGE_KEYS.ADMIN_DATA);
-          localStorage.setItem(STORAGE_KEYS.STORAGE_VERSION, STORAGE_VERSION);
-        }
-
         const storedToken = localStorage.getItem(STORAGE_KEYS.ADMIN_TOKEN);
         if (!storedToken) {
           setIsLoading(false);
@@ -74,7 +67,6 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
     setToken(newToken);
     setAdmin(newAdmin);
     localStorage.setItem(STORAGE_KEYS.ADMIN_TOKEN, newToken);
-    localStorage.setItem(STORAGE_KEYS.STORAGE_VERSION, STORAGE_VERSION);
   }, []);
 
   const logout = useCallback(async () => {

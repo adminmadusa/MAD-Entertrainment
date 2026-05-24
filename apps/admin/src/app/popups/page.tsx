@@ -1,6 +1,5 @@
 'use client';
 
-import { QUERY_KEYS } from '@mad/shared';
 import { PopupCampaign } from '@mad/types';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -17,21 +16,21 @@ export default function AdminPopupsPage() {
   const [deleteTarget, setDeleteTarget] = useState<PopupCampaign | null>(null);
 
   const { data, isLoading } = useQuery({
-    queryKey: QUERY_KEYS.admin.popups.list(page),
+    queryKey: ['admin-popups', page],
     queryFn: () => adminGetPopups(page, 15),
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => adminDeletePopup(id),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: QUERY_KEYS.admin.popups.all });
+      qc.invalidateQueries({ queryKey: ['admin-popups'] });
       setDeleteTarget(null);
     },
   });
 
   const toggleMutation = useMutation({
     mutationFn: (id: string) => adminTogglePopup(id),
-    onSuccess: () => qc.invalidateQueries({ queryKey: QUERY_KEYS.admin.popups.all }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin-popups'] }),
   });
 
   const popups = data?.data ?? [];

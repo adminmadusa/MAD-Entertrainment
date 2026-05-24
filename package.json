@@ -1,0 +1,23 @@
+{
+  "name": "mad-entertrainment",
+  "version": "1.0.0",
+  "private": true,
+  "packageManager": "pnpm@9.15.0",
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "type-check": "turbo type-check",
+    "lint": "turbo lint",
+    "test": "vitest run",
+    "clean": "turbo clean && rm -rf node_modules .turbo"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.60.0",
+    "@sentry/nextjs": "^10.53.1",
+    "@sentry/node": "^10.53.1",
+    "@vitest/coverage-v8": "^4.1.7",
+    "turbo": "^2.9.14",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.7"
+  }
+}

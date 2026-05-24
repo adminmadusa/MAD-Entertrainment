@@ -1,6 +1,5 @@
 'use client';
 
-import { QUERY_KEYS } from '@mad/shared';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { useSearchParams } from 'next/navigation';
@@ -19,7 +18,7 @@ function MyBookingContent() {
   const [errorMsg, setErrorMsg] = useState('');
 
   const { data: result, isLoading, error } = useQuery({
-    queryKey: QUERY_KEYS.public.bookings.detail(queryRef),
+    queryKey: ['public-booking-details', queryRef],
     queryFn: () => publicGetBookingDetails(queryRef),
     enabled: !!queryRef,
     retry: false,

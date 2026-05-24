@@ -1,6 +1,5 @@
 'use client';
 
-import { QUERY_KEYS } from '@mad/shared';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 
@@ -13,7 +12,7 @@ export default function AdminNotificationsPage() {
   const [statusFilter, setStatusFilter] = useState('');
 
   const { data, isLoading } = useQuery({
-    queryKey: QUERY_KEYS.admin.notifications.list({ page, channel: channelFilter, sent: statusFilter }),
+    queryKey: ['admin-notifications', { page, channel: channelFilter, sent: statusFilter }],
     queryFn: () =>
       adminGetNotifications({
         page,
@@ -25,7 +24,7 @@ export default function AdminNotificationsPage() {
 
   const retryMutation = useMutation({
     mutationFn: (id: string) => adminRetryNotification(id),
-    onSuccess: () => qc.invalidateQueries({ queryKey: QUERY_KEYS.admin.notifications.all }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin-notifications'] }),
   });
 
   const notifications = data?.data ?? [];

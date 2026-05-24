@@ -1,6 +1,5 @@
 'use client';
 
-import { QUERY_KEYS } from '@mad/shared';
 import { DJOperator } from '@mad/types';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
@@ -82,7 +81,7 @@ function DJSkeleton() {
 
 export function DJOperatorsSection() {
   const { data, isLoading } = useQuery({
-    queryKey: QUERY_KEYS.public.djs.list(),
+    queryKey: ['public-dj-operators'],
     queryFn: () => publicGetDJs({ limit: 6 }),
     staleTime: 1000 * 60 * 10,
   });

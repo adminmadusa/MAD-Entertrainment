@@ -1,6 +1,5 @@
 'use client';
 
-import { QUERY_KEYS } from '@mad/shared';
 import { Artist } from '@mad/types';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -18,14 +17,14 @@ export default function AdminArtistsPage() {
   const [deleteTarget, setDeleteTarget] = useState<Artist | null>(null);
 
   const { data, isLoading } = useQuery({
-    queryKey: QUERY_KEYS.admin.artists.list({ page, search }),
+    queryKey: ['admin-artists', { page, search }],
     queryFn: () => adminGetArtists({ page, limit: 15, search }),
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => adminDeleteArtist(id),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: QUERY_KEYS.admin.artists.all });
+      qc.invalidateQueries({ queryKey: ['admin-artists'] });
       setDeleteTarget(null);
     },
   });
@@ -33,7 +32,7 @@ export default function AdminArtistsPage() {
   const statusMutation = useMutation({
     mutationFn: ({ id, isActive }: { id: string; isActive: boolean }) =>
       adminUpdateArtist(id, { isActive }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: QUERY_KEYS.admin.artists.all }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin-artists'] }),
   });
 
   const artists = data?.data ?? [];

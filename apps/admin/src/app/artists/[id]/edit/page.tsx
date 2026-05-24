@@ -1,6 +1,5 @@
 'use client';
 
-import { QUERY_KEYS } from '@mad/shared';
 import { Artist } from '@mad/types';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
@@ -43,7 +42,7 @@ export default function EditArtistPage() {
 
   // Fetch current artist
   const { data: artist, isLoading } = useQuery({
-    queryKey: QUERY_KEYS.admin.artists.detail(id),
+    queryKey: ['admin-artist', id],
     queryFn: () => adminGetArtist(id),
     enabled: !!id,
   });

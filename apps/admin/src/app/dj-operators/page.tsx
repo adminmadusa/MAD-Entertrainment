@@ -1,6 +1,5 @@
 'use client';
 
-import { QUERY_KEYS } from '@mad/shared';
 import { DJOperator } from '@mad/types';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -18,14 +17,14 @@ export default function AdminDJsPage() {
   const [deleteTarget, setDeleteTarget] = useState<DJOperator | null>(null);
 
   const { data, isLoading } = useQuery({
-    queryKey: QUERY_KEYS.admin.djs.list({ page, search }),
+    queryKey: ['admin-djs', { page, search }],
     queryFn: () => adminGetDJs({ page, limit: 15, search }),
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => adminDeleteDJ(id),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: QUERY_KEYS.admin.djs.all });
+      qc.invalidateQueries({ queryKey: ['admin-djs'] });
       setDeleteTarget(null);
     },
   });
@@ -33,7 +32,7 @@ export default function AdminDJsPage() {
   const statusMutation = useMutation({
     mutationFn: ({ id, isActive }: { id: string; isActive: boolean }) =>
       adminUpdateDJ(id, { isActive }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: QUERY_KEYS.admin.djs.all }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin-djs'] }),
   });
 
   const djs = data?.data ?? [];
