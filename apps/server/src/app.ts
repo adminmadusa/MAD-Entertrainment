@@ -12,6 +12,7 @@ import { noStoreApiCache } from './middleware/cache.middleware';
 import { correlationMiddleware } from './middleware/correlation.middleware';
 import { errorHandler, notFoundHandler } from './middleware/error.middleware';
 import { generalLimiter } from './middleware/rate.middleware';
+import './models';
 import routes from './routes';
 import { logger } from './utils/logger';
 

@@ -1,0 +1,13 @@
+import './venue.schema';
+import './event.schema';
+import './artist.schema';
+import './dj-operator.schema';
+import './seat-layout.schema';
+import './booking.schema';
+import './payment.schema';
+import './reservation.schema';
+import './coupon.schema';
+import './notification.schema';
+import './ticket.schema';
+import './webhook-event.schema';
+import './dead-letter-job.schema';
