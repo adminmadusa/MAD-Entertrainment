@@ -1,3 +1,5 @@
+export * from './query-keys';
+export * from './storage-keys';
 export declare enum EventCategory {
     MAD_EVENT = "mad_event",
     DJ_NIGHT = "dj_night",
@@ -38,6 +40,25 @@ export declare enum PaymentStatus {
     REFUNDED = "refunded",
     CANCELLED = "cancelled",
     PARTIALLY_REFUNDED = "partially_refunded"
+}
+export declare enum ReservationStatus {
+    RESERVED = "reserved",
+    PENDING_PAYMENT = "pending_payment",
+    CONFIRMED = "confirmed",
+    EXPIRED = "expired",
+    CANCELLED = "cancelled",
+    FAILED = "failed",
+    REFUNDED = "refunded"
+}
+export declare enum InventoryState {
+    AVAILABLE = "available",
+    RESERVED = "reserved",
+    PENDING_PAYMENT = "pending_payment",
+    BOOKED = "booked",
+    EXPIRED = "expired",
+    FAILED = "failed",
+    REFUNDED = "refunded",
+    CANCELLED = "cancelled"
 }
 export declare enum PaymentGateway {
     RAZORPAY = "razorpay",

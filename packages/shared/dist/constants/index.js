@@ -1,8 +1,27 @@
+"use strict";
 // ============================================================
 // MAD Entertrainment — Shared Constants & Enums
 // ============================================================
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.EVENT_CATEGORY_LABELS = exports.SUPPORTED_CURRENCIES = exports.API_ROUTES = exports.POPUP_SESSION_KEY_PREFIX = exports.POPUP_COOLDOWN_HOURS = exports.MAX_TICKETS_PER_BOOKING = exports.SEAT_LOCK_TTL_SECONDS = exports.HTTP_STATUS = exports.NotificationType = exports.PopupTrigger = exports.RefundStatus = exports.AdminRole = exports.SeatStatus = exports.EventMode = exports.TicketTier = exports.PaymentMethod = exports.PaymentGateway = exports.InventoryState = exports.ReservationStatus = exports.PaymentStatus = exports.BookingStatus = exports.EventStatus = exports.BookingMode = exports.EventCategory = void 0;
+__exportStar(require("./query-keys"), exports);
+__exportStar(require("./storage-keys"), exports);
 // ─── Event Categories ────────────────────────────────────────
-export var EventCategory;
+var EventCategory;
 (function (EventCategory) {
     EventCategory["MAD_EVENT"] = "mad_event";
     EventCategory["DJ_NIGHT"] = "dj_night";
@@ -14,15 +33,15 @@ export var EventCategory;
     EventCategory["CINEMA"] = "cinema";
     EventCategory["VIP_EVENT"] = "vip_event";
     EventCategory["LIVE_SHOW"] = "live_show";
-})(EventCategory || (EventCategory = {}));
+})(EventCategory || (exports.EventCategory = EventCategory = {}));
 // ─── Booking Mode ────────────────────────────────────────────
-export var BookingMode;
+var BookingMode;
 (function (BookingMode) {
     BookingMode["SEAT_BASED"] = "seat_based";
     BookingMode["GENERAL_ADMISSION"] = "general_admission";
-})(BookingMode || (BookingMode = {}));
+})(BookingMode || (exports.BookingMode = BookingMode = {}));
 // ─── Event Status ────────────────────────────────────────────
-export var EventStatus;
+var EventStatus;
 (function (EventStatus) {
     EventStatus["DRAFT"] = "draft";
     EventStatus["PUBLISHED"] = "published";
@@ -30,9 +49,9 @@ export var EventStatus;
     EventStatus["POSTPONED"] = "postponed";
     EventStatus["COMPLETED"] = "completed";
     EventStatus["SOLD_OUT"] = "sold_out";
-})(EventStatus || (EventStatus = {}));
+})(EventStatus || (exports.EventStatus = EventStatus = {}));
 // ─── Booking Status ──────────────────────────────────────────
-export var BookingStatus;
+var BookingStatus;
 (function (BookingStatus) {
     BookingStatus["PENDING"] = "pending";
     BookingStatus["CONFIRMED"] = "confirmed";
@@ -40,9 +59,9 @@ export var BookingStatus;
     BookingStatus["REFUNDED"] = "refunded";
     BookingStatus["FAILED"] = "failed";
     BookingStatus["AWAITING_PAYMENT"] = "awaiting_payment";
-})(BookingStatus || (BookingStatus = {}));
+})(BookingStatus || (exports.BookingStatus = BookingStatus = {}));
 // ─── Payment Status ──────────────────────────────────────────
-export var PaymentStatus;
+var PaymentStatus;
 (function (PaymentStatus) {
     PaymentStatus["PENDING"] = "pending";
     PaymentStatus["PROCESSING"] = "processing";
@@ -51,24 +70,47 @@ export var PaymentStatus;
     PaymentStatus["REFUNDED"] = "refunded";
     PaymentStatus["CANCELLED"] = "cancelled";
     PaymentStatus["PARTIALLY_REFUNDED"] = "partially_refunded";
-})(PaymentStatus || (PaymentStatus = {}));
+})(PaymentStatus || (exports.PaymentStatus = PaymentStatus = {}));
+// ─── Reservation Status ──────────────────────────────────────
+var ReservationStatus;
+(function (ReservationStatus) {
+    ReservationStatus["RESERVED"] = "reserved";
+    ReservationStatus["PENDING_PAYMENT"] = "pending_payment";
+    ReservationStatus["CONFIRMED"] = "confirmed";
+    ReservationStatus["EXPIRED"] = "expired";
+    ReservationStatus["CANCELLED"] = "cancelled";
+    ReservationStatus["FAILED"] = "failed";
+    ReservationStatus["REFUNDED"] = "refunded";
+})(ReservationStatus || (exports.ReservationStatus = ReservationStatus = {}));
+// ─── Inventory State ─────────────────────────────────────────
+var InventoryState;
+(function (InventoryState) {
+    InventoryState["AVAILABLE"] = "available";
+    InventoryState["RESERVED"] = "reserved";
+    InventoryState["PENDING_PAYMENT"] = "pending_payment";
+    InventoryState["BOOKED"] = "booked";
+    InventoryState["EXPIRED"] = "expired";
+    InventoryState["FAILED"] = "failed";
+    InventoryState["REFUNDED"] = "refunded";
+    InventoryState["CANCELLED"] = "cancelled";
+})(InventoryState || (exports.InventoryState = InventoryState = {}));
 // ─── Payment Gateway ─────────────────────────────────────────
-export var PaymentGateway;
+var PaymentGateway;
 (function (PaymentGateway) {
     PaymentGateway["RAZORPAY"] = "razorpay";
     PaymentGateway["STRIPE"] = "stripe";
-})(PaymentGateway || (PaymentGateway = {}));
+})(PaymentGateway || (exports.PaymentGateway = PaymentGateway = {}));
 // ─── Payment Method ──────────────────────────────────────────
-export var PaymentMethod;
+var PaymentMethod;
 (function (PaymentMethod) {
     PaymentMethod["UPI"] = "upi";
     PaymentMethod["CARD"] = "card";
     PaymentMethod["NET_BANKING"] = "net_banking";
     PaymentMethod["WALLET"] = "wallet";
     PaymentMethod["STRIPE_CARD"] = "stripe_card";
-})(PaymentMethod || (PaymentMethod = {}));
+})(PaymentMethod || (exports.PaymentMethod = PaymentMethod = {}));
 // ─── Ticket Tier ─────────────────────────────────────────────
-export var TicketTier;
+var TicketTier;
 (function (TicketTier) {
     TicketTier["GENERAL"] = "general";
     TicketTier["SILVER"] = "silver";
@@ -82,51 +124,51 @@ export var TicketTier;
     TicketTier["FAMILY"] = "family";
     TicketTier["EARLY_BIRD"] = "early_bird";
     TicketTier["CUSTOM"] = "custom";
-})(TicketTier || (TicketTier = {}));
+})(TicketTier || (exports.TicketTier = TicketTier = {}));
 // ─── Event Mode ──────────────────────────────────────────────
-export var EventMode;
+var EventMode;
 (function (EventMode) {
     EventMode["LIVE"] = "live";
     EventMode["ONLINE"] = "online";
     EventMode["HYBRID"] = "hybrid";
-})(EventMode || (EventMode = {}));
+})(EventMode || (exports.EventMode = EventMode = {}));
 // ─── Seat Status ─────────────────────────────────────────────
-export var SeatStatus;
+var SeatStatus;
 (function (SeatStatus) {
     SeatStatus["AVAILABLE"] = "available";
     SeatStatus["LOCKED"] = "locked";
     SeatStatus["BOOKED"] = "booked";
     SeatStatus["BLOCKED"] = "blocked";
     SeatStatus["WHEELCHAIR"] = "wheelchair";
-})(SeatStatus || (SeatStatus = {}));
+})(SeatStatus || (exports.SeatStatus = SeatStatus = {}));
 // ─── Admin Role ──────────────────────────────────────────────
-export var AdminRole;
+var AdminRole;
 (function (AdminRole) {
     AdminRole["SUPER_ADMIN"] = "super_admin";
     AdminRole["ADMIN"] = "admin";
     AdminRole["MANAGER"] = "manager";
     AdminRole["SUPPORT"] = "support";
     AdminRole["SCANNER"] = "scanner";
-})(AdminRole || (AdminRole = {}));
+})(AdminRole || (exports.AdminRole = AdminRole = {}));
 // ─── Refund Status ───────────────────────────────────────────
-export var RefundStatus;
+var RefundStatus;
 (function (RefundStatus) {
     RefundStatus["REQUESTED"] = "requested";
     RefundStatus["PROCESSING"] = "processing";
     RefundStatus["COMPLETED"] = "completed";
     RefundStatus["REJECTED"] = "rejected";
     RefundStatus["FAILED"] = "failed";
-})(RefundStatus || (RefundStatus = {}));
+})(RefundStatus || (exports.RefundStatus = RefundStatus = {}));
 // ─── Popup Trigger ───────────────────────────────────────────
-export var PopupTrigger;
+var PopupTrigger;
 (function (PopupTrigger) {
     PopupTrigger["ON_LOAD"] = "on_load";
     PopupTrigger["ON_EXIT"] = "on_exit";
     PopupTrigger["AFTER_DELAY"] = "after_delay";
     PopupTrigger["ON_SCROLL"] = "on_scroll";
-})(PopupTrigger || (PopupTrigger = {}));
+})(PopupTrigger || (exports.PopupTrigger = PopupTrigger = {}));
 // ─── Notification Type ───────────────────────────────────────
-export var NotificationType;
+var NotificationType;
 (function (NotificationType) {
     NotificationType["BOOKING_CONFIRMED"] = "booking_confirmed";
     NotificationType["PAYMENT_FAILED"] = "payment_failed";
@@ -135,9 +177,9 @@ export var NotificationType;
     NotificationType["EVENT_CANCELLED"] = "event_cancelled";
     NotificationType["EVENT_UPDATED"] = "event_updated";
     NotificationType["OTP"] = "otp";
-})(NotificationType || (NotificationType = {}));
+})(NotificationType || (exports.NotificationType = NotificationType = {}));
 // ─── HTTP Status Codes ───────────────────────────────────────
-export const HTTP_STATUS = {
+exports.HTTP_STATUS = {
     OK: 200,
     CREATED: 201,
     NO_CONTENT: 204,
@@ -153,14 +195,14 @@ export const HTTP_STATUS = {
     SERVICE_UNAVAILABLE: 503,
 };
 // ─── Seat Lock Duration ──────────────────────────────────────
-export const SEAT_LOCK_TTL_SECONDS = 10 * 60; // 10 minutes
+exports.SEAT_LOCK_TTL_SECONDS = 10 * 60; // 10 minutes
 // ─── Max Tickets Per Booking ─────────────────────────────────
-export const MAX_TICKETS_PER_BOOKING = 10;
+exports.MAX_TICKETS_PER_BOOKING = 10;
 // ─── Popup Cooldown ──────────────────────────────────────────
-export const POPUP_COOLDOWN_HOURS = 24;
-export const POPUP_SESSION_KEY_PREFIX = 'mad_popup_';
+exports.POPUP_COOLDOWN_HOURS = 24;
+exports.POPUP_SESSION_KEY_PREFIX = 'mad_popup_';
 // ─── API Routes ──────────────────────────────────────────────
-export const API_ROUTES = {
+exports.API_ROUTES = {
     HEALTH: '/api/health',
     EVENTS: '/api/events',
     BOOKINGS: '/api/bookings',
@@ -179,9 +221,9 @@ export const API_ROUTES = {
     MEDIA: '/api/media',
 };
 // ─── Currency ────────────────────────────────────────────────
-export const SUPPORTED_CURRENCIES = ['INR', 'USD', 'GBP', 'EUR'];
+exports.SUPPORTED_CURRENCIES = ['INR', 'USD', 'GBP', 'EUR'];
 // ─── Event Category Labels ───────────────────────────────────
-export const EVENT_CATEGORY_LABELS = {
+exports.EVENT_CATEGORY_LABELS = {
     [EventCategory.MAD_EVENT]: 'MAD Event',
     [EventCategory.DJ_NIGHT]: 'DJ Night',
     [EventCategory.CONCERT]: 'Concert',
@@ -194,5 +236,5 @@ export const EVENT_CATEGORY_LABELS = {
     [EventCategory.LIVE_SHOW]: 'Live Show',
 };
 // ─── LocalStorage Keys ───────────────────────────────────────
-export * from './storage-keys';
+__exportStar(require("./storage-keys"), exports);
 //# sourceMappingURL=index.js.map
