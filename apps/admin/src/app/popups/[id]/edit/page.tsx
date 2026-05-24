@@ -67,7 +67,7 @@ export default function EditPopupPage() {
       setLinkedEventId(popup.linkedEventId ? String(popup.linkedEventId) : '');
       setStartDate(popup.startDate ? new Date(popup.startDate).toISOString().slice(0, 16) : '');
       setEndDate(popup.endDate ? new Date(popup.endDate).toISOString().slice(0, 16) : '');
-      setImage(popup.image || null);
+      setImage((popup.image as any) || null);
     }
   }, [popup]);
 

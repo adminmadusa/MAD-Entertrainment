@@ -56,8 +56,8 @@ export default function EditDJPage() {
       setInstagram(dj.socialLinks?.instagram || '');
       setSoundcloud(dj.socialLinks?.soundcloud || '');
       setYoutube(dj.socialLinks?.youtube || '');
-      setProfileImage(dj.profileImage || null);
-      setGalleryImages(dj.galleryImages || []);
+      setProfileImage((dj.profileImage as any) || null);
+      setGalleryImages((dj.galleryImages as any) || []);
     }
   }, [dj]);
 

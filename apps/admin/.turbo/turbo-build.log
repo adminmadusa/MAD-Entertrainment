@@ -1,9 +1,9 @@
 
-> @mad/admin@1.0.0 prebuild
+> @mad/admin@1.0.0 prebuild /Users/admin/Desktop/MAD Entertrainment/apps/admin
 > rm -rf .next
 
 
-> @mad/admin@1.0.0 build
+> @mad/admin@1.0.0 build /Users/admin/Desktop/MAD Entertrainment/apps/admin
 > next build
 
    ▲ Next.js 15.5.18
@@ -16,50 +16,50 @@
  ○ (pwa) Service worker: /Users/admin/Desktop/MAD Entertrainment/apps/admin/public/sw.js
  ○ (pwa)   URL: /sw.js
  ○ (pwa)   Scope: /
- ✓ Compiled successfully in 8.8s
+ ○ (pwa) Custom runtimeCaching array found, using it to extend the default one.
+ ✓ Compiled successfully in 8.6s
    Linting and checking validity of types ...
-
- ⚠ The Next.js plugin was not detected in your ESLint configuration. See https://nextjs.org/docs/app/api-reference/config/eslint#migrating-existing-config
    Collecting page data ...
-   Generating static pages (0/24) ...
-   Generating static pages (6/24) 
-   Generating static pages (12/24) 
-   Generating static pages (18/24) 
- ✓ Generating static pages (24/24)
+   Generating static pages (0/25) ...
+   Generating static pages (6/25) 
+   Generating static pages (12/25) 
+   Generating static pages (18/25) 
+ ✓ Generating static pages (25/25)
    Finalizing page optimization ...
    Collecting build traces ...
 
 Route (app)                                 Size  First Load JS
-┌ ○ /                                      354 B         106 kB
+┌ ○ /                                      351 B         105 kB
 ├ ○ /_not-found                             1 kB         106 kB
-├ ○ /analytics                            107 kB         244 kB
-├ ○ /artists                             6.72 kB         182 kB
-├ ƒ /artists/[id]/edit                   2.81 kB         179 kB
+├ ○ /analytics                            105 kB         243 kB
+├ ○ /artists                             5.89 kB         182 kB
+├ ƒ /artists/[id]/edit                   2.81 kB         180 kB
 ├ ○ /artists/new                         2.52 kB         174 kB
-├ ○ /bookings                            3.74 kB         179 kB
-├ ○ /coupons                             6.79 kB         182 kB
-├ ƒ /coupons/[id]/edit                   6.18 kB         178 kB
-├ ○ /coupons/new                         5.88 kB         178 kB
-├ ○ /dashboard                           2.97 kB         178 kB
-├ ○ /dj-operators                        6.71 kB         182 kB
-├ ƒ /dj-operators/[id]/edit              2.72 kB         179 kB
-├ ○ /dj-operators/new                    2.45 kB         173 kB
-├ ○ /events                              7.04 kB         182 kB
-├ ○ /events/new                          3.24 kB         174 kB
-├ ○ /login                               3.87 kB         167 kB
-├ ○ /notifications                       4.54 kB         141 kB
-├ ○ /popups                               6.5 kB         182 kB
-├ ƒ /popups/[id]/edit                     2.9 kB         179 kB
+├ ○ /bookings                            2.92 kB         179 kB
+├ ○ /coupons                             5.95 kB         182 kB
+├ ƒ /coupons/[id]/edit                   5.44 kB         178 kB
+├ ○ /coupons/new                         5.19 kB         178 kB
+├ ○ /dashboard                           2.19 kB         179 kB
+├ ○ /diagnostics                         3.55 kB         141 kB
+├ ○ /dj-operators                         5.9 kB         182 kB
+├ ƒ /dj-operators/[id]/edit              2.73 kB         180 kB
+├ ○ /dj-operators/new                    2.45 kB         174 kB
+├ ○ /events                              6.22 kB         183 kB
+├ ○ /events/new                          3.23 kB         174 kB
+├ ○ /login                               3.11 kB         167 kB
+├ ○ /notifications                       3.69 kB         141 kB
+├ ○ /popups                              5.69 kB         182 kB
+├ ƒ /popups/[id]/edit                     2.9 kB         180 kB
 ├ ○ /popups/new                          2.56 kB         174 kB
-├ ○ /refunds                             3.32 kB         179 kB
-├ ○ /scanner                             6.62 kB         179 kB
-├ ○ /team                                6.88 kB         179 kB
-├ ○ /venues                              6.87 kB         182 kB
+├ ○ /refunds                              2.5 kB         179 kB
+├ ○ /scanner                             5.81 kB         179 kB
+├ ○ /team                                6.06 kB         179 kB
+├ ○ /venues                              6.04 kB         182 kB
 ├ ƒ /venues/[id]/edit                    3.11 kB         180 kB
-└ ○ /venues/new                          2.71 kB         174 kB
+└ ○ /venues/new                           2.7 kB         174 kB
 + First Load JS shared by all             105 kB
-  ├ chunks/8626-e647b2afcfdd5456.js        49 kB
-  ├ chunks/87c73c54-09e1ba5c70e60a51.js  54.2 kB
+  ├ chunks/2b8b5421-f99d7e6d00ebeb74.js  54.2 kB
+  ├ chunks/5125-6c380489fd04cc32.js      48.6 kB
   └ other shared chunks (total)          1.97 kB
 
 
