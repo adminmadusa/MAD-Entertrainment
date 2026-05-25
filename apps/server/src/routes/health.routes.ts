@@ -8,16 +8,11 @@ import mongoose from 'mongoose';
 
 router.get('/', (_req, res) => {
   const mongoState = mongoose.connection.readyState;
-  const dbStatus = mongoState === 1 ? 'connected' : 'disconnected';
+  const status = mongoState === 1 ? 'ok' : 'degraded';
   
   res.json({
-    success: true,
-    status: dbStatus === 'connected' ? 'ok' : 'degraded',
-    redisConnected: isRedisConnected(),
-    mongoConnected: dbStatus === 'connected',
-    mongoConnectionState: mongoState,
-    uptime: process.uptime(),
-    memoryUsage: process.memoryUsage(),
+    status,
+    timestamp: new Date().toISOString(),
   });
 });
 
