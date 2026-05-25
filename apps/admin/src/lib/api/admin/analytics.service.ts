@@ -33,7 +33,7 @@ export async function adminGetDashboardSummary(): Promise<DashboardSummary> {
 export async function adminGetRevenueChart(days = 30): Promise<RevenuePoint[]> {
   try {
     const { data } = await adminApiClient.get<{ data: RevenuePoint[] }>(`/admin/analytics/revenue?days=${days}`);
-    return Array.isArray(data?.data) ? data.data : [];
+    return Array.isArray(data?.data) ? data.data : (data?.data && Object.values(data.data).find(v => Array.isArray(v)) || []);
   } catch (error) {
     console.error('[Analytics Service] Failed to fetch revenue chart, returning empty list:', error);
     return [];

@@ -1,13 +1,14 @@
 'use client';
 
 import { Venue } from '@mad/types';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 
 import { adminCreateVenue } from '@/lib/api/admin/venue.service';
+import { venueQueryKey } from '@/lib/query/venue-query-key';
 import { extractApiError } from '@/lib/api/client';
 
 
@@ -35,9 +36,14 @@ export default function CreateVenuePage() {
 
   const [error, setError] = useState('');
 
+  const qc = useQueryClient();
   const createMutation = useMutation({
     mutationFn: adminCreateVenue,
-    onSuccess: () => router.push('/venues'),
+    onSuccess: () => {
+      // Invalidate the venue list cache (default filters) so the new venue appears immediately
+      qc.invalidateQueries({ queryKey: venueQueryKey({ page: 1, search: '', city: '' }) });
+      router.push('/venues');
+    },
     onError: (err) => setError(extractApiError(err).message),
   });
 

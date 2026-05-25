@@ -30,7 +30,7 @@ export async function adminGetCoupons(page = 1, limit = 15, active?: string): Pr
     }
     const { data } = await adminApiClient.get<CouponsResponse>(url);
     return {
-      items: Array.isArray(data?.data) ? data.data : [],
+      items: Array.isArray(data?.data) ? data.data : (data?.data && Object.values(data.data).find(v => Array.isArray(v)) || []),
       pagination: {
         page: data?.pagination?.page ?? 1,
         limit: data?.pagination?.limit ?? 15,
@@ -54,8 +54,9 @@ export async function adminGetCoupons(page = 1, limit = 15, active?: string): Pr
 
 export async function adminGetCoupon(id: string): Promise<Coupon | null> {
   try {
-    const { data } = await adminApiClient.get<{ data: Coupon }>(`/admin/coupons/${id}`);
-    return data.data;
+    const { data } = await adminApiClient.get<any>(`/admin/coupons/${id}`);
+    const payload = data?.data;
+    return payload?.coupon || payload;
   } catch (error) {
     console.error(`[Coupon Service] Failed to fetch coupon ${id}:`, error);
     return null;

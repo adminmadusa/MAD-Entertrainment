@@ -8,7 +8,6 @@ const navLinks = [
   { label: 'Events', href: '/events' },
   { label: 'Artists', href: '/artists' },
   { label: 'DJs', href: '/dj-operators' },
-  { label: 'Venues', href: '/venues' },
 ];
 
 export function Navbar() {

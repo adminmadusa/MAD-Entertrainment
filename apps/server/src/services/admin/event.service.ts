@@ -2,6 +2,26 @@ import { Event, IEvent } from '../../models/event.schema';
 import { CacheService } from '../cache.service';
 
 export const createEvent = async (data: Partial<IEvent>): Promise<IEvent> => {
+  if (data.title && !data.slug) {
+    data.slug = data.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+  }
+  
+  if (data.slug) {
+    let slug = data.slug.toLowerCase().trim();
+    let isUnique = false;
+    let count = 0;
+    while (!isUnique) {
+      const currentSlug = count === 0 ? slug : `${slug}-${count}`;
+      const existing = await Event.findOne({ slug: currentSlug, isDeleted: { $ne: true } });
+      if (!existing) {
+        data.slug = currentSlug;
+        isUnique = true;
+      } else {
+        count++;
+      }
+    }
+  }
+
   const event = new Event(data);
   const result = await event.save();
   await CacheService.delPattern('events:*');
@@ -13,7 +33,6 @@ export const getEvents = async (page: number = 1, limit: number = 10): Promise<{
   const total = await Event.countDocuments({ isDeleted: { $ne: true } });
   // Populate related entities for admin view
   const events = await Event.find({ isDeleted: { $ne: true } })
-    .populate('venueId', 'name city')
     .populate('artistIds', 'name')
     .populate('djOperatorIds', 'name')
     .sort({ createdAt: -1 })
@@ -29,7 +48,6 @@ export const getEvents = async (page: number = 1, limit: number = 10): Promise<{
 
 export const getEventById = async (id: string): Promise<IEvent | null> => {
   return await Event.findById(id)
-    .populate('venueId', 'name city')
     .populate('artistIds', 'name')
     .populate('djOperatorIds', 'name');
 };

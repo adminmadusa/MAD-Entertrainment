@@ -39,7 +39,7 @@ export async function adminGetNotifications(filters: NotificationFilters = {}): 
     });
     const { data } = await adminApiClient.get<NotificationsResponse>(`/admin/notifications?${params}`);
     return {
-      items: Array.isArray(data?.data) ? data.data : [],
+      items: Array.isArray(data?.data) ? data.data : (data?.data && Object.values(data.data).find(v => Array.isArray(v)) || []),
       pagination: {
         page: data?.pagination?.page ?? 1,
         limit: data?.pagination?.limit ?? 15,

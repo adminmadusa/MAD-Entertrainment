@@ -26,7 +26,7 @@ export async function adminGetPopups(page = 1, limit = 15): Promise<NormalizedPo
   try {
     const { data } = await adminApiClient.get<PopupsResponse>(`/admin/popups?page=${page}&limit=${limit}`);
     return {
-      items: Array.isArray(data?.data) ? data.data : [],
+      items: Array.isArray(data?.data) ? data.data : (data?.data && Object.values(data.data).find(v => Array.isArray(v)) || []),
       pagination: {
         page: data?.pagination?.page ?? 1,
         limit: data?.pagination?.limit ?? 15,
@@ -50,8 +50,9 @@ export async function adminGetPopups(page = 1, limit = 15): Promise<NormalizedPo
 
 export async function adminGetPopup(id: string): Promise<PopupCampaign | null> {
   try {
-    const { data } = await adminApiClient.get<{ data: PopupCampaign }>(`/admin/popups/${id}`);
-    return data.data;
+    const { data } = await adminApiClient.get<any>(`/admin/popups/${id}`);
+    const payload = data?.data;
+    return payload?.popup || payload?.popupCampaign || payload;
   } catch (error) {
     console.error(`[Popup Service] Failed to fetch popup campaign ${id}:`, error);
     return null;

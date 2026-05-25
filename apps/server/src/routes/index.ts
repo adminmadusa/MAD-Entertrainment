@@ -18,17 +18,23 @@ unreconstructed.use((_req, res) => {
   });
 });
 
+import publicAuthRoutes from './public/auth.routes';
+import publicArtistRoutes from './public/artist.routes';
+import publicVenueRoutes from './public/venue.routes';
+import publicCategoryRoutes from './public/category.routes';
+
 // ─── Health ───────────────────────────────────────────────────
 router.use('/health', healthRoutes);
 
 // ─── Public routes ───────────────────────────────────────────
-router.use('/auth', unreconstructed);
+router.use('/auth', publicAuthRoutes);
 router.use('/events', publicEventRoutes);
 router.use('/bookings', publicBookingRoutes);
 router.use('/payments', publicPaymentRoutes);
 router.use('/dj-operators', publicDJOperatorRoutes);
-router.use('/artists', unreconstructed);
-router.use('/venues', unreconstructed);
+router.use('/artists', publicArtistRoutes);
+router.use('/venues', publicVenueRoutes);
+router.use('/categories', publicCategoryRoutes);
 router.use('/popups', publicPopupRoutes);
 
 // ─── Admin: Auth ──────────────────────────────────────────────
@@ -58,9 +64,14 @@ router.use('/admin/refunds', adminRefundRoutes);
 
 // ─── Admin: Phase 5 — Coupons & Analytics ────────────────────
 import adminCouponRoutes from './admin/coupon.routes';
+import adminAnalyticsRoutes from './admin/analytics.routes';
+import adminCategoryRoutes from './admin/category.routes';
+import adminTierRoutes from './admin/tier.routes';
 router.use('/admin/coupons', adminCouponRoutes);
-router.use('/admin/analytics', unreconstructed);
+router.use('/admin/analytics', adminAnalyticsRoutes);
 router.use('/admin/diagnostics', adminDiagnosticsRoutes);
+router.use('/admin/categories', adminCategoryRoutes);
+router.use('/admin/tiers', adminTierRoutes);
 
 // ─── Admin: Phase 7 — Popups, Notifications, Team ────────────
 import adminScannerRoutes from './admin/scanner.routes';

@@ -39,7 +39,7 @@ export async function adminGetVenues(filters: VenueFilters = {}): Promise<Normal
     });
     const { data } = await adminApiClient.get<VenuesResponse>(`/admin/venues?${params}`);
     return {
-      items: Array.isArray(data?.data) ? data.data : [],
+      items: Array.isArray(data?.data) ? data.data : (data?.data && Object.values(data.data).find(v => Array.isArray(v)) || []),
       pagination: {
         page: data?.pagination?.page ?? 1,
         limit: data?.pagination?.limit ?? 15,
@@ -62,18 +62,18 @@ export async function adminGetVenues(filters: VenueFilters = {}): Promise<Normal
 }
 
 export async function adminGetVenue(id: string): Promise<Venue> {
-  const { data } = await adminApiClient.get<{ data: Venue }>(`/admin/venues/${id}`);
-  return data.data;
+  const { data } = await adminApiClient.get<{ data: { venue: Venue } }>(`/admin/venues/${id}`);
+  return data.data.venue;
 }
 
 export async function adminCreateVenue(payload: Partial<Venue>): Promise<Venue> {
-  const { data } = await adminApiClient.post<{ data: Venue }>('/admin/venues', payload);
-  return data.data;
+  const { data } = await adminApiClient.post<{ data: { venue: Venue } }>('/admin/venues', payload);
+  return data.data.venue;
 }
 
 export async function adminUpdateVenue(id: string, payload: Partial<Venue>): Promise<Venue> {
-  const { data } = await adminApiClient.put<{ data: Venue }>(`/admin/venues/${id}`, payload);
-  return data.data;
+  const { data } = await adminApiClient.put<{ data: { venue: Venue } }>(`/admin/venues/${id}`, payload);
+  return data.data.venue;
 }
 
 export async function adminDeleteVenue(id: string): Promise<void> {

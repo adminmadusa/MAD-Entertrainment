@@ -19,8 +19,20 @@ export async function publicGetEvents(filters: { category?: string; search?: str
   if (filters.page) params.set('page', String(filters.page));
   if (filters.limit) params.set('limit', String(filters.limit));
 
-  const { data } = await apiClient.get<PublicEventsResponse>(`/events?${params}`);
-  return data;
+  const page = filters.page || 1;
+  const limit = filters.limit || 12;
+  const { data } = await apiClient.get<any>(`/events?${params}`);
+  const payload = data?.data || {};
+  const items = Array.isArray(payload.events) ? payload.events : [];
+  return {
+    data: items,
+    pagination: {
+      page,
+      limit,
+      total: payload.total || 0,
+      totalPages: Math.ceil((payload.total || 0) / limit)
+    }
+  };
 }
 
 export async function publicGetEventBySlug(slug: string): Promise<Event> {
@@ -48,8 +60,35 @@ export async function publicGetDJs(
   if (filters.page) params.set('page', String(filters.page));
   if (filters.limit) params.set('limit', String(filters.limit));
 
-  const { data } = await apiClient.get<PublicDJsResponse>(`/dj-operators?${params}`);
-  return data;
+  const page = filters.page || 1;
+  const limit = filters.limit || 12;
+  const { data } = await apiClient.get<any>(`/dj-operators?${params}`);
+  const payload = data?.data || {};
+  const items = Array.isArray(payload.data)
+    ? payload.data
+    : Array.isArray(payload.djOperators)
+    ? payload.djOperators
+    : Array.isArray(payload.djs)
+    ? payload.djs
+    : [];
+
+  const total = payload.pagination?.total ?? payload.total ?? 0;
+  const totalPages = payload.pagination?.totalPages ?? Math.ceil(total / limit);
+
+  return {
+    data: items,
+    pagination: {
+      page,
+      limit,
+      total,
+      totalPages,
+    }
+  };
+}
+
+export async function publicGetDJBySlug(slug: string): Promise<DJOperator> {
+  const { data } = await apiClient.get<{ data: DJOperator }>(`/dj-operators/${slug}`);
+  return data.data;
 }
 
 export async function publicGetEventSeatLayout(eventId: string): Promise<SeatLayout> {
@@ -85,8 +124,17 @@ export async function publicCreateBooking(
   return data.data;
 }
 
-export async function publicGetBookingDetails(bookingId: string): Promise<{ booking: Booking; tickets: Ticket[] }> {
-  const { data } = await apiClient.get<{ data: { booking: Booking; tickets: Ticket[] } }>(`/bookings/${bookingId}`);
+export async function publicGetBookingDetails(
+  bookingId: string,
+  sessionId?: string
+): Promise<{ booking: Booking; tickets: Ticket[] }> {
+  const headers: Record<string, string> = {};
+  if (sessionId) {
+    headers['x-session-id'] = sessionId;
+  }
+  const { data } = await apiClient.get<{ data: { booking: Booking; tickets: Ticket[] } }>(`/bookings/${bookingId}`, {
+    headers,
+  });
   return data.data;
 }
 
@@ -144,8 +192,20 @@ export async function publicGetArtists(
   if (filters.page) params.set('page', String(filters.page));
   if (filters.limit) params.set('limit', String(filters.limit));
 
-  const { data } = await apiClient.get<PublicArtistsResponse>(`/artists?${params}`);
-  return data;
+  const page = filters.page || 1;
+  const limit = filters.limit || 12;
+  const { data } = await apiClient.get<any>(`/artists?${params}`);
+  const payload = data?.data || {};
+  const items = Array.isArray(payload.artists) ? payload.artists : [];
+  return {
+    data: items,
+    pagination: {
+      page,
+      limit,
+      total: payload.total || 0,
+      totalPages: Math.ceil((payload.total || 0) / limit)
+    }
+  };
 }
 
 export async function publicGetArtistBySlug(slug: string): Promise<Artist> {
@@ -174,8 +234,20 @@ export async function publicGetVenues(
   if (filters.page) params.set('page', String(filters.page));
   if (filters.limit) params.set('limit', String(filters.limit));
 
-  const { data } = await apiClient.get<PublicVenuesResponse>(`/venues?${params}`);
-  return data;
+  const page = filters.page || 1;
+  const limit = filters.limit || 12;
+  const { data } = await apiClient.get<any>(`/venues?${params}`);
+  const payload = data?.data || {};
+  const items = Array.isArray(payload.venues) ? payload.venues : [];
+  return {
+    data: items,
+    pagination: {
+      page,
+      limit,
+      total: payload.total || 0,
+      totalPages: Math.ceil((payload.total || 0) / limit)
+    }
+  };
 }
 
 export async function publicGetVenueBySlug(slug: string): Promise<Venue> {
@@ -210,4 +282,15 @@ export async function publicGetMe() {
 export async function publicLogout() {
   const { data } = await apiClient.post('/auth/logout');
   return data.data;
+}
+
+export interface PublicCategory {
+  _id: string;
+  name: string;
+  slug: string;
+}
+
+export async function publicGetCategories(): Promise<PublicCategory[]> {
+  const { data } = await apiClient.get<{ data: PublicCategory[] }>('/categories');
+  return Array.isArray(data?.data) ? data.data : [];
 }

@@ -27,6 +27,14 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'images.unsplash.com',
       },
+      {
+        protocol: 'http',
+        hostname: 'example.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'example.com',
+      },
     ],
     formats: ['image/avif', 'image/webp'],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
@@ -94,7 +102,7 @@ const nextConfig: NextConfig = {
       {
         source: '/api/:path*',
         // Proxy to the actual backend if NEXT_PUBLIC_API_URL is configured, else fallback to local
-        destination: `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001/api'}/:path*`,
+        destination: `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api'}/:path*`,
       },
     ];
   },

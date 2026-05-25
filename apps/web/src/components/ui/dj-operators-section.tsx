@@ -12,54 +12,56 @@ import { publicGetDJs } from '@/lib/api/public.service';
 
 function DJCard({ dj }: { dj: DJOperator }) {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="group glass rounded-2xl border border-border-subtle hover:border-accent-purple/40 hover:shadow-glow-sm transition-all duration-300 overflow-hidden flex flex-col"
-    >
-      {/* Avatar / Profile image */}
-      <div className="relative aspect-square w-full overflow-hidden bg-white/5">
-        {dj.profileImage?.url ? (
-          <Image
-            src={dj.profileImage.url}
-            alt={dj.name}
-            fill
-            className="object-cover group-hover:scale-105 transition-transform duration-500"
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center text-5xl bg-gradient-to-br from-accent-purple/20 to-accent-pink/10">
-            🎧
-          </div>
-        )}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
-      </div>
+    <Link href={`/dj-operators/${dj.slug || dj._id}`} className="block h-full w-full">
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="group glass rounded-2xl border border-border-subtle hover:border-accent-purple/40 hover:shadow-glow-sm transition-all duration-300 overflow-hidden flex flex-col h-full"
+      >
+        {/* Avatar / Profile image */}
+        <div className="relative aspect-square w-full overflow-hidden bg-white/5">
+          {dj.profileImage?.url ? (
+            <Image
+              src={dj.profileImage.url}
+              alt={dj.name}
+              fill
+              className="object-cover group-hover:scale-105 transition-transform duration-500"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-5xl bg-gradient-to-br from-accent-purple/20 to-accent-pink/10">
+              🎧
+            </div>
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+        </div>
 
-      {/* Info */}
-      <div className="p-4 flex flex-col gap-1 flex-1">
-        <h3 className="text-white font-bold text-base line-clamp-1 group-hover:text-accent-purple-light transition-colors">
-          {dj.name}
-        </h3>
+        {/* Info */}
+        <div className="p-4 flex flex-col gap-1 flex-1">
+          <h3 className="text-white font-bold text-base line-clamp-1 group-hover:text-accent-purple-light transition-colors">
+            {dj.name}
+          </h3>
 
-        {dj.specialties && dj.specialties.length > 0 && (
-          <div className="flex flex-wrap gap-1 mt-1">
-            {dj.specialties.slice(0, 3).map((s) => (
-              <span
-                key={s}
-                className="px-2 py-0.5 text-[10px] font-semibold rounded-full bg-accent-purple/10 border border-accent-purple/20 text-accent-purple-light uppercase tracking-wider"
-              >
-                {s}
-              </span>
-            ))}
-          </div>
-        )}
+          {dj.specialties && dj.specialties.length > 0 && (
+            <div className="flex flex-wrap gap-1 mt-1">
+              {dj.specialties.slice(0, 3).map((s) => (
+                <span
+                  key={s}
+                  className="px-2 py-0.5 text-[10px] font-semibold rounded-full bg-accent-purple/10 border border-accent-purple/20 text-accent-purple-light uppercase tracking-wider"
+                >
+                  {s}
+                </span>
+              ))}
+            </div>
+          )}
 
-        {dj.bio && (
-          <p className="text-text-muted text-xs line-clamp-2 mt-1 leading-relaxed">
-            {dj.bio}
-          </p>
-        )}
-      </div>
-    </motion.div>
+          {dj.bio && (
+            <p className="text-text-muted text-xs line-clamp-2 mt-1 leading-relaxed">
+              {dj.bio}
+            </p>
+          )}
+        </div>
+      </motion.div>
+    </Link>
   );
 }
 
@@ -125,12 +127,12 @@ export function DJOperatorsSection() {
         {/* CTA */}
         {!isLoading && data?.pagination && data.pagination.total > 6 && (
           <div className="text-center mt-10">
-            <Link href="/events?category=dj_night">
+            <Link href="/dj-operators">
               <button
                 id="dj-operators-view-all"
                 className="px-7 py-3.5 glass border border-accent-purple/30 text-accent-purple-light font-semibold rounded-xl hover:border-accent-purple/60 hover:bg-accent-purple/10 transition-all"
               >
-                View All DJ Events →
+                View All DJs →
               </button>
             </Link>
           </div>

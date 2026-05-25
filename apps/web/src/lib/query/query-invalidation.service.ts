@@ -14,7 +14,7 @@ export async function invalidatePublicBookingFlow(
   logInvalidation('public-booking-flow', details);
   await Promise.all([
     queryClient.invalidateQueries({ queryKey: QUERY_KEYS.public.bookings.all }),
-    queryClient.invalidateQueries({ queryKey: QUERY_KEYS.public.bookings.checkout(details.bookingId) }),
+    queryClient.invalidateQueries({ queryKey: QUERY_KEYS.public.bookings.checkout(details.bookingRef ?? details.bookingId) }),
     queryClient.invalidateQueries({ queryKey: QUERY_KEYS.public.bookings.detail(details.bookingRef ?? details.bookingId) }),
     queryClient.invalidateQueries({ queryKey: QUERY_KEYS.public.bookings.mine() }),
     queryClient.invalidateQueries({ queryKey: QUERY_KEYS.public.events.all }),

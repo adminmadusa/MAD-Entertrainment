@@ -26,7 +26,7 @@ export async function adminGetAdmins(page = 1, limit = 15): Promise<NormalizedAd
   try {
     const { data } = await adminApiClient.get<AdminsResponse>(`/admin/team?page=${page}&limit=${limit}`);
     return {
-      items: Array.isArray(data?.data) ? data.data : [],
+      items: Array.isArray(data?.data) ? data.data : (data?.data && Object.values(data.data).find(v => Array.isArray(v)) || []),
       pagination: {
         page: data?.pagination?.page ?? 1,
         limit: data?.pagination?.limit ?? 15,

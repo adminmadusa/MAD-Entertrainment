@@ -34,7 +34,7 @@ export interface AdminEvent {
   status: string;
   coverImage?: CloudinaryImage;
   gallery?: CloudinaryImage[];
-  venueId?: { _id: string; name: string; city: string } | null;
+  venue: string;
   startDate: string;
   endDate?: string;
   ticketTiers: EventTier[];
@@ -64,13 +64,15 @@ export async function adminGetEvents(filters: EventFilters = {}): Promise<{ item
   const params = new URLSearchParams();
   Object.entries(filters).forEach(([k, v]) => { if (v !== undefined) params.set(k, String(v)); });
   const { data } = await adminApiClient.get<EventsResponse>(`/admin/events?${params}`);
-  const items = Array.isArray(data?.data) ? data?.data : [];
-  return { items, pagination: data?.pagination };
+  const payload: any = data?.data || {};
+  const items = Array.isArray(payload.events) ? payload.events : [];
+  return { items, pagination: payload?.pagination || (data as any)?.pagination || { page: 1, limit: 10, total: 0, totalPages: 0 } };
 }
 
 export async function adminGetEvent(id: string): Promise<AdminEvent> {
-  const { data } = await adminApiClient.get<{ data: AdminEvent }>(`/admin/events/${id}`);
-  return data.data;
+  const { data } = await adminApiClient.get<any>(`/admin/events/${id}`);
+  const payload = data?.data;
+  return payload?.event || payload;
 }
 
 export async function adminCreateEvent(payload: Partial<AdminEvent>): Promise<AdminEvent> {

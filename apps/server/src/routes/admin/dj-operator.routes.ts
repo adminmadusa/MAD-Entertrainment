@@ -12,7 +12,7 @@ router.use(requireAdmin);
 router.post('/', validate(createDJOperatorSchema), djOperatorController.createDJOperator);
 router.get('/', djOperatorController.getDJOperators);
 router.get('/:id', djOperatorController.getDJOperatorById);
-router.patch('/:id', validate(updateDJOperatorSchema), djOperatorController.updateDJOperator);
+router.put('/:id', validate(updateDJOperatorSchema), djOperatorController.updateDJOperator);
 router.delete('/:id', djOperatorController.deleteDJOperator);
 
 export default router;

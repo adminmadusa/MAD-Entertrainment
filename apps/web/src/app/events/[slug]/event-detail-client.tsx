@@ -48,7 +48,15 @@ export default function PublicEventDetailPage() {
       const sessionKey = `mad_checkout_session_${STORAGE_VERSION}`;
       let sess = sessionStorage.getItem(sessionKey);
       if (!sess) {
-        sess = 'sess_' + Math.random().toString(36).substring(2, 15);
+        if (typeof window.crypto !== 'undefined' && window.crypto.randomUUID) {
+          sess = window.crypto.randomUUID();
+        } else {
+          sess = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+            const r = (Math.random() * 16) | 0;
+            const v = c === 'x' ? r : (r & 0x3) | 0x8;
+            return v.toString(16);
+          });
+        }
         sessionStorage.removeItem('mad_checkout_session');
         sessionStorage.setItem(sessionKey, sess);
       }
@@ -205,7 +213,7 @@ export default function PublicEventDetailPage() {
         eventId,
         eventSlug: slug,
       });
-      router.push(`/checkout/${booking._id}`);
+      router.push(`/checkout/${booking.bookingId}`);
     },
     onError: (err) => {
       const apiErr = extractApiError(err);
@@ -396,8 +404,8 @@ export default function PublicEventDetailPage() {
               <div className="flex flex-wrap items-center gap-4 text-xs text-text-secondary">
                 <span className="flex items-center gap-1">📅 {showDateTime}</span>
                 <span className="flex items-center gap-1">⏰ Doors: {event.doorsOpenTime || 'TBA'} · Show: {event.showTime}</span>
-                {event.venueId && (
-                  <span className="flex items-center gap-1">📍 {(event.venueId as any).name}, {(event.venueId as any).city}</span>
+                {event.venue && (
+                  <span className="flex items-center gap-1">📍 {event.venue}</span>
                 )}
               </div>
             </div>

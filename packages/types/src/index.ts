@@ -36,11 +36,14 @@ export type Event = {
   bookingMode?: string;
   doorsOpenTime?: string;
   showTime?: string;
-  venueId?: any;
+  venue: string;
   startDate: string | Date;
   bannerImage?: ImageAsset;
   ticketTiers: TicketTierConfig[];
   isSoldOut?: boolean;
+  highlights?: string[];
+  refundPolicy?: string;
+  organizerName?: string;
 };
 
 export type Seat = {

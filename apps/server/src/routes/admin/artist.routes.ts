@@ -12,7 +12,7 @@ router.use(requireAdmin);
 router.post('/', validate(createArtistSchema), artistController.createArtist);
 router.get('/', artistController.getArtists);
 router.get('/:id', artistController.getArtistById);
-router.patch('/:id', validate(updateArtistSchema), artistController.updateArtist);
+router.put('/:id', validate(updateArtistSchema), artistController.updateArtist);
 router.delete('/:id', artistController.deleteArtist);
 
 export default router;

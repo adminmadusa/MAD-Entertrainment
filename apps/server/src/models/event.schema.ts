@@ -55,7 +55,7 @@ export interface IEvent extends Document {
   endDate?: Date;
   doorsOpenTime?: string;
   showTime: string;
-  venueId: Types.ObjectId;
+  venue: string;
   onlineStreamUrl?: string;
   isOnline?: boolean;
   artistIds?: Types.ObjectId[];
@@ -103,6 +103,9 @@ export interface IEvent extends Document {
   isDeleted: boolean;
   deletedAt?: Date;
   deletedBy?: Types.ObjectId;
+  highlights?: string[];
+  refundPolicy?: string;
+  organizerName?: string;
 }
 
 const eventSchema = new Schema<IEvent>(
@@ -110,7 +113,7 @@ const eventSchema = new Schema<IEvent>(
     title: { type: String, required: true, trim: true, maxlength: 200 },
     slug: { type: String, required: true, unique: true, lowercase: true, index: true },
     description: { type: String, required: true, maxlength: 5000 },
-    category: { type: String, enum: Object.values(EventCategory), required: true, index: true },
+    category: { type: String, required: true, index: true },
     status: { type: String, enum: Object.values(EventStatus), default: EventStatus.DRAFT, index: true },
     bookingMode: { type: String, enum: Object.values(BookingMode), required: true },
 
@@ -123,7 +126,7 @@ const eventSchema = new Schema<IEvent>(
     doorsOpenTime: String,
     showTime: { type: String, required: true },
 
-    venueId: { type: Schema.Types.ObjectId, ref: 'Venue', required: true, index: true },
+    venue: { type: String, required: true, index: true },
     onlineStreamUrl: String,
     isOnline: { type: Boolean, default: false },
 
@@ -150,6 +153,9 @@ const eventSchema = new Schema<IEvent>(
     isDeleted: { type: Boolean, default: false, index: true },
     deletedAt: Date,
     deletedBy: { type: Schema.Types.ObjectId, ref: 'AdminUser' },
+    highlights: [String],
+    refundPolicy: { type: String, maxlength: 1000 },
+    organizerName: { type: String, maxlength: 100 },
   },
   { timestamps: true }
 );

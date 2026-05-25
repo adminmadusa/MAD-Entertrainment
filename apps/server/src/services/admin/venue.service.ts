@@ -2,6 +2,15 @@ import { Venue, IVenue } from '../../models/venue.schema';
 import { CacheService } from '../cache.service';
 
 export const createVenue = async (data: Partial<IVenue>): Promise<IVenue> => {
+  if (data.name) {
+    const existing = await Venue.findOne({
+      name: { $regex: new RegExp(`^${data.name.trim()}$`, 'i') },
+      isDeleted: { $ne: true }
+    });
+    if (existing) {
+      return existing;
+    }
+  }
   const venue = new Venue(data);
   const result = await venue.save();
   await CacheService.delPattern('venues:*');

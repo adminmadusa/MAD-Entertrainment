@@ -38,7 +38,7 @@ export async function adminGetDJs(filters: DJFilters = {}): Promise<NormalizedDJ
     });
     const { data } = await adminApiClient.get<DJsResponse>(`/admin/dj-operators?${params}`);
     return {
-      items: Array.isArray(data?.data) ? data.data : [],
+      items: Array.isArray(data?.data) ? data.data : (data?.data && Object.values(data.data).find(v => Array.isArray(v)) || []),
       pagination: {
         page: data?.pagination?.page ?? 1,
         limit: data?.pagination?.limit ?? 15,
@@ -62,8 +62,9 @@ export async function adminGetDJs(filters: DJFilters = {}): Promise<NormalizedDJ
 
 export async function adminGetDJ(id: string): Promise<DJOperator | null> {
   try {
-    const { data } = await adminApiClient.get<{ data: DJOperator }>(`/admin/dj-operators/${id}`);
-    return data.data;
+    const { data } = await adminApiClient.get<any>(`/admin/dj-operators/${id}`);
+    const payload = data?.data;
+    return payload?.djOperator || payload?.dj || payload;
   } catch (error) {
     console.error(`[DJ Service] Failed to fetch DJ Operator ${id}:`, error);
     return null;

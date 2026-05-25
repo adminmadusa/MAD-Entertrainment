@@ -7,6 +7,7 @@ import { Suspense, useState, useEffect } from 'react';
 
 import { extractApiError } from '@/lib/api/client';
 import { publicGetBookingDetails } from '@/lib/api/public.service';
+import { STORAGE_VERSION } from '@mad/shared';
 
 
 function MyBookingContent() {
@@ -19,7 +20,14 @@ function MyBookingContent() {
 
   const { data: result, isLoading, error } = useQuery({
     queryKey: ['public-booking-details', queryRef],
-    queryFn: () => publicGetBookingDetails(queryRef),
+    queryFn: () => {
+      let sess: string | undefined;
+      if (typeof window !== 'undefined') {
+        const sessionKey = `mad_checkout_session_${STORAGE_VERSION}`;
+        sess = sessionStorage.getItem(sessionKey) || undefined;
+      }
+      return publicGetBookingDetails(queryRef, sess);
+    },
     enabled: !!queryRef,
     retry: false,
   });
@@ -110,10 +118,10 @@ function MyBookingContent() {
                       📅 {formatDate((booking.eventId as any).startDate)} · ⏰ {(booking.eventId as any).showTime}
                     </p>
                   )}
-                  {booking.eventId && (booking.eventId as any).venueId && (
-                    <p className="text-text-muted text-xs mt-0.5">
-                      📍 {((booking.eventId as any).venueId as any).name}, {((booking.eventId as any).venueId as any).city}
-                    </p>
+                  {booking.eventId && (booking.eventId as any).venue && (
+                    <span className="text-sm opacity-80 mt-1 block">
+                      📍 {(booking.eventId as any).venue}
+                    </span>
                   )}
                 </div>
                 <div className="text-right">

@@ -5,7 +5,7 @@ const envSchema = z.object({
     .enum(['development', 'production', 'test'])
     .default('development'),
 
-  PORT: z.coerce.number().default(5001),
+  PORT: z.coerce.number().default(3001),
 
   MONGODB_URI: z.string().url(),
 
