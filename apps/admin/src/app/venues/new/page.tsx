@@ -6,24 +6,18 @@ import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
-import { CloudinaryUpload } from '@/components/cloudinary-upload';
+
 import { adminCreateVenue } from '@/lib/api/admin/venue.service';
 import { extractApiError } from '@/lib/api/client';
 
 
-interface CloudinaryAsset {
-  url: string;
-  publicId: string;
-  alt?: string;
-}
+
 
 export default function CreateVenuePage() {
   const router = useRouter();
 
   // Basic Info
   const [name, setName] = useState('');
-  const [slug, setSlug] = useState('');
-  const [description, setDescription] = useState('');
   const [capacity, setCapacity] = useState<number | ''>('');
 
   // Address
@@ -37,14 +31,8 @@ export default function CreateVenuePage() {
   const [lat, setLat] = useState<number | ''>('');
   const [lng, setLng] = useState<number | ''>('');
 
-  // Contact & Extras
-  const [contactEmail, setContactEmail] = useState('');
-  const [contactPhone, setContactPhone] = useState('');
-  const [amenities, setAmenities] = useState('');
-  const [isActive, setIsActive] = useState(true);
 
-  // Gallery
-  const [images, setImages] = useState<CloudinaryAsset[]>([]);
+
   const [error, setError] = useState('');
 
   const createMutation = useMutation({
@@ -53,21 +41,7 @@ export default function CreateVenuePage() {
     onError: (err) => setError(extractApiError(err).message),
   });
 
-  const handleImageChange = (index: number, asset: CloudinaryAsset | null) => {
-    if (asset === null) {
-      // Remove
-      setImages((prev) => prev.filter((_, idx) => idx !== index));
-    } else {
-      // Update
-      setImages((prev) => prev.map((img, idx) => (idx === index ? asset : img)));
-    }
-  };
 
-  const handleAddImage = (asset: CloudinaryAsset | null) => {
-    if (asset) {
-      setImages((prev) => [...prev, asset]);
-    }
-  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -84,11 +58,6 @@ export default function CreateVenuePage() {
       state: state.trim() || undefined,
       address: street.trim() || undefined,
       capacity: Number(capacity),
-      images,
-      amenities: amenities.split(',').map((a) => a.trim()).filter(Boolean),
-      contactEmail: contactEmail.trim() || undefined,
-      contactPhone: contactPhone.trim() || undefined,
-      isActive,
     };
 
     createMutation.mutate(payload);
@@ -121,35 +90,6 @@ export default function CreateVenuePage() {
           </motion.div>
         )}
 
-        {/* Gallery Section */}
-        <div className="glass rounded-2xl border border-border-subtle p-6 space-y-4">
-          <h2 className="text-white font-semibold">Venue Gallery</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-            {images.map((img, index) => (
-              <div key={img.publicId} className="relative">
-                <CloudinaryUpload
-                  folder="venues"
-                  value={img}
-                  onChange={(asset) => handleImageChange(index, asset)}
-                  aspectRatio="aspect-video"
-                  label=""
-                />
-              </div>
-            ))}
-            {images.length < 10 && (
-              <div>
-                <CloudinaryUpload
-                  folder="venues"
-                  value={null}
-                  onChange={handleAddImage}
-                  aspectRatio="aspect-video"
-                  label="Add Image to Gallery"
-                />
-              </div>
-            )}
-          </div>
-        </div>
-
         {/* Basic Info */}
         <div className="glass rounded-2xl border border-border-subtle p-6 space-y-5">
           <h2 className="text-white font-semibold">Basic Information</h2>
@@ -163,37 +103,16 @@ export default function CreateVenuePage() {
               className={inputCls}
             />
           </Field>
-          <div className="grid grid-cols-2 gap-4">
-            <Field label="Slug (optional)">
-              <input
-                id="venue-slug"
-                value={slug}
-                onChange={(e) => setSlug(e.target.value)}
-                placeholder="e.g. nsci-dome-worli"
-                className={inputCls}
-              />
-            </Field>
-            <Field label="Total Capacity *">
-              <input
-                id="venue-capacity"
-                type="number"
-                min="1"
-                value={capacity}
-                onChange={(e) => setCapacity(e.target.value === '' ? '' : Number(e.target.value))}
-                placeholder="e.g. 5000"
-                required
-                className={inputCls}
-              />
-            </Field>
-          </div>
-          <Field label="Description (optional)">
-            <textarea
-              id="venue-description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Describe the venue features, history, and layout..."
-              rows={4}
-              className={`${inputCls} resize-none`}
+          <Field label="Total Capacity *">
+            <input
+              id="venue-capacity"
+              type="number"
+              min="1"
+              value={capacity}
+              onChange={(e) => setCapacity(e.target.value === '' ? '' : Number(e.target.value))}
+              placeholder="e.g. 5000"
+              required
+              className={inputCls}
             />
           </Field>
         </div>
@@ -288,50 +207,7 @@ export default function CreateVenuePage() {
           </div>
         </div>
 
-        {/* Contact & Extra Details */}
-        <div className="glass rounded-2xl border border-border-subtle p-6 space-y-5">
-          <h2 className="text-white font-semibold">Contact & Extras</h2>
-          <div className="grid grid-cols-2 gap-4">
-            <Field label="Contact Email">
-              <input
-                type="email"
-                value={contactEmail}
-                onChange={(e) => setContactEmail(e.target.value)}
-                placeholder="info@nsci.com"
-                className={inputCls}
-              />
-            </Field>
-            <Field label="Contact Phone">
-              <input
-                type="tel"
-                value={contactPhone}
-                onChange={(e) => setContactPhone(e.target.value)}
-                placeholder="02224938813"
-                className={inputCls}
-              />
-            </Field>
-          </div>
-          <Field label="Amenities (comma-separated)">
-            <input
-              value={amenities}
-              onChange={(e) => setAmenities(e.target.value)}
-              placeholder="e.g. AC, Parking, Bar, Valet, VIP Lounge"
-              className={inputCls}
-            />
-          </Field>
-          <div className="flex items-center gap-3 cursor-pointer select-none py-1">
-            <input
-              type="checkbox"
-              id="venue-active"
-              checked={isActive}
-              onChange={(e) => setIsActive(e.target.checked)}
-              className="w-4 h-4 accent-accent-purple rounded"
-            />
-            <label htmlFor="venue-active" className="text-text-secondary text-sm">
-              Mark this venue as active for scheduling events
-            </label>
-          </div>
-        </div>
+        
 
         {/* Submit Actions */}
         <div className="flex gap-4 pb-6">
