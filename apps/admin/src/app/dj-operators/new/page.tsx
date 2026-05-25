@@ -77,9 +77,15 @@ export default function CreateDJPage() {
 
     const cleanSlug = slug.trim()
       ? slug.trim().toLowerCase().replace(/[^a-z0-9-]/g, '-')
-      : undefined;
+      : name.trim().toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
 
     const specs = specialties.split(',').map((s) => s.trim()).filter(Boolean);
+    const links = [
+      ...(instagram.trim() ? [{ platform: 'instagram', url: instagram.trim() }] : []),
+      ...(soundcloud.trim() ? [{ platform: 'soundcloud', url: soundcloud.trim() }] : []),
+      ...(youtube.trim() ? [{ platform: 'youtube', url: youtube.trim() }] : []),
+    ];
+
     const payload: Partial<DJOperator> = {
       name: name.trim(),
       slug: cleanSlug,
@@ -87,11 +93,7 @@ export default function CreateDJPage() {
       specialties: specs.length > 0 ? specs : undefined,
       profileImage: profileImage ?? undefined,
       galleryImages,
-      socialLinks: {
-        instagram: instagram.trim() || '',
-        soundcloud: soundcloud.trim() || '',
-        youtube: youtube.trim() || '',
-      },
+      socialLinks: links.length > 0 ? links : undefined,
       isActive,
     };
 

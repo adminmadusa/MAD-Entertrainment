@@ -146,8 +146,8 @@ export default function AdminVenuesPage() {
                       </div>
                     </td>
                     <td className="py-4 px-4 text-text-secondary">
-                      <p className="font-medium">{venue.address.city}, {venue.address.state}</p>
-                      <p className="text-text-muted text-xs truncate max-w-40">{venue.address.street || venue.address.country}</p>
+                      <p className="font-medium">{venue.city || 'N/A'}, {venue.state || 'N/A'}</p>
+                      <p className="text-text-muted text-xs truncate max-w-40">{venue.address || 'N/A'}</p>
                     </td>
                     <td className="py-4 px-4 text-text-secondary font-semibold">
                       {venue.capacity.toLocaleString('en-IN')}

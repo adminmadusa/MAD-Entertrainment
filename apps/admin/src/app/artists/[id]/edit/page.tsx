@@ -55,11 +55,16 @@ export default function EditArtistPage() {
       setBio(artist.bio || '');
       setGenre(artist.genre?.join(', ') || '');
       setIsActive(artist.isActive ?? true);
-      setInstagram(artist.socialLinks?.instagram || '');
-      setYoutube(artist.socialLinks?.youtube || '');
-      setSpotify(artist.socialLinks?.spotify || '');
-      setTwitter(artist.socialLinks?.twitter || '');
-      setFacebook(artist.socialLinks?.facebook || '');
+      
+      const getSocialUrl = (platform: string) => {
+        return (artist.socialLinks as any)?.find((link: any) => link.platform === platform)?.url || '';
+      };
+      setInstagram(getSocialUrl('instagram'));
+      setYoutube(getSocialUrl('youtube'));
+      setSpotify(getSocialUrl('spotify'));
+      setTwitter(getSocialUrl('twitter'));
+      setFacebook(getSocialUrl('facebook'));
+      
       setProfileImage(artist.profileImage || null);
       setGalleryImages(artist.galleryImages || []);
     }
@@ -106,9 +111,17 @@ export default function EditArtistPage() {
 
     const cleanSlug = slug.trim()
       ? slug.trim().toLowerCase().replace(/[^a-z0-9-]/g, '-')
-      : undefined;
+      : name.trim().toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
 
     const genres = genre.split(',').map((g) => g.trim()).filter(Boolean);
+    const links = [
+      ...(instagram.trim() ? [{ platform: 'instagram', url: instagram.trim() }] : []),
+      ...(youtube.trim() ? [{ platform: 'youtube', url: youtube.trim() }] : []),
+      ...(spotify.trim() ? [{ platform: 'spotify', url: spotify.trim() }] : []),
+      ...(twitter.trim() ? [{ platform: 'twitter', url: twitter.trim() }] : []),
+      ...(facebook.trim() ? [{ platform: 'facebook', url: facebook.trim() }] : []),
+    ];
+
     const payload: Partial<Artist> = {
       name: name.trim(),
       slug: cleanSlug,
@@ -116,13 +129,7 @@ export default function EditArtistPage() {
       genre: genres.length > 0 ? genres : undefined,
       profileImage: (profileImage === null ? null : profileImage) as any,
       galleryImages,
-      socialLinks: {
-        instagram: instagram.trim() || '',
-        youtube: youtube.trim() || '',
-        spotify: spotify.trim() || '',
-        twitter: twitter.trim() || '',
-        facebook: facebook.trim() || '',
-      },
+      socialLinks: links.length > 0 ? links : undefined,
       isActive,
     };
 

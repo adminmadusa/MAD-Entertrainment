@@ -53,9 +53,14 @@ export default function EditDJPage() {
       setBio(dj.bio || '');
       setSpecialties(dj.specialties?.join(', ') || '');
       setIsActive(dj.isActive ?? true);
-      setInstagram(dj.socialLinks?.instagram || '');
-      setSoundcloud(dj.socialLinks?.soundcloud || '');
-      setYoutube(dj.socialLinks?.youtube || '');
+      
+      const getSocialUrl = (platform: string) => {
+        return (dj.socialLinks as any)?.find((link: any) => link.platform === platform)?.url || '';
+      };
+      setInstagram(getSocialUrl('instagram'));
+      setSoundcloud(getSocialUrl('soundcloud'));
+      setYoutube(getSocialUrl('youtube'));
+      
       setProfileImage((dj.profileImage as any) || null);
       setGalleryImages((dj.galleryImages as any) || []);
     }
@@ -102,9 +107,15 @@ export default function EditDJPage() {
 
     const cleanSlug = slug.trim()
       ? slug.trim().toLowerCase().replace(/[^a-z0-9-]/g, '-')
-      : undefined;
+      : name.trim().toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
 
     const specs = specialties.split(',').map((s) => s.trim()).filter(Boolean);
+    const links = [
+      ...(instagram.trim() ? [{ platform: 'instagram', url: instagram.trim() }] : []),
+      ...(soundcloud.trim() ? [{ platform: 'soundcloud', url: soundcloud.trim() }] : []),
+      ...(youtube.trim() ? [{ platform: 'youtube', url: youtube.trim() }] : []),
+    ];
+
     const payload: Partial<DJOperator> = {
       name: name.trim(),
       slug: cleanSlug,
@@ -112,11 +123,7 @@ export default function EditDJPage() {
       specialties: specs.length > 0 ? specs : undefined,
       profileImage: (profileImage === null ? null : profileImage) as any,
       galleryImages,
-      socialLinks: {
-        instagram: instagram.trim() || '',
-        soundcloud: soundcloud.trim() || '',
-        youtube: youtube.trim() || '',
-      },
+      socialLinks: links.length > 0 ? links : undefined,
       isActive,
     };
 

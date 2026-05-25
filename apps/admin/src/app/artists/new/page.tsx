@@ -79,9 +79,17 @@ export default function CreateArtistPage() {
 
     const cleanSlug = slug.trim()
       ? slug.trim().toLowerCase().replace(/[^a-z0-9-]/g, '-')
-      : undefined;
+      : name.trim().toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
 
     const genres = genre.split(',').map((g) => g.trim()).filter(Boolean);
+    const links = [
+      ...(instagram.trim() ? [{ platform: 'instagram', url: instagram.trim() }] : []),
+      ...(youtube.trim() ? [{ platform: 'youtube', url: youtube.trim() }] : []),
+      ...(spotify.trim() ? [{ platform: 'spotify', url: spotify.trim() }] : []),
+      ...(twitter.trim() ? [{ platform: 'twitter', url: twitter.trim() }] : []),
+      ...(facebook.trim() ? [{ platform: 'facebook', url: facebook.trim() }] : []),
+    ];
+
     const payload: Partial<Artist> = {
       name: name.trim(),
       slug: cleanSlug,
@@ -89,13 +97,7 @@ export default function CreateArtistPage() {
       genre: genres.length > 0 ? genres : undefined,
       profileImage: profileImage ?? undefined,
       galleryImages,
-      socialLinks: {
-        instagram: instagram.trim() || '',
-        youtube: youtube.trim() || '',
-        spotify: spotify.trim() || '',
-        twitter: twitter.trim() || '',
-        facebook: facebook.trim() || '',
-      },
+      socialLinks: links.length > 0 ? links : undefined,
       isActive,
     };
 

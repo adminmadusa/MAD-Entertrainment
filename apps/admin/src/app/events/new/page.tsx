@@ -1,13 +1,14 @@
 'use client';
 
 import { EventCategory, EVENT_CATEGORY_LABELS } from '@mad/shared';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 import { CloudinaryUpload } from '@/components/cloudinary-upload';
 import { adminCreateEvent } from '@/lib/api/admin/event.service';
+import { adminGetVenues } from '@/lib/api/admin/venue.service';
 import { extractApiError } from '@/lib/api/client';
 
 
@@ -42,6 +43,9 @@ export default function CreateEventPage() {
   const [shortDescription, setShortDescription] = useState('');
   const [category, setCategory] = useState<string>(EventCategory.CONCERT);
   const [status, setStatus] = useState('draft');
+  const [bookingMode, setBookingMode] = useState('general_admission');
+  const [venueId, setVenueId] = useState('');
+  const [showTime, setShowTime] = useState('20:00');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [tags, setTags] = useState('');
@@ -52,10 +56,34 @@ export default function CreateEventPage() {
   const [tiers, setTiers] = useState<TicketTierInput[]>([defaultTier()]);
   const [error, setError] = useState('');
 
+  // Fetch Venues for selection dropdown
+  const { data: venuesData } = useQuery({
+    queryKey: ['admin-venues-list'],
+    queryFn: () => adminGetVenues({ limit: 100 }),
+  });
+  const venuesList = venuesData?.items || [];
+
+  // Set default venueId once loaded
+  useEffect(() => {
+    if (venuesList.length > 0 && !venueId) {
+      setVenueId(venuesList[0]._id);
+    }
+  }, [venuesList, venueId]);
+
   const createMutation = useMutation({
     mutationFn: adminCreateEvent,
     onSuccess: () => router.push('/events'),
-    onError: (err) => setError(extractApiError(err).message),
+    onError: (err) => {
+      const apiErr = extractApiError(err);
+      if (apiErr.errors) {
+        const details = Object.entries(apiErr.errors)
+          .map(([field, msgs]) => `${field}: ${msgs.join(', ')}`)
+          .join('; ');
+        setError(`Validation failed — ${details}`);
+      } else {
+        setError(apiErr.message);
+      }
+    },
   });
 
   const addTier = () => setTiers((prev) => [...prev, defaultTier()]);
@@ -72,37 +100,65 @@ export default function CreateEventPage() {
       return;
     }
 
+    if (!venueId) {
+      setError('Please select a venue.');
+      return;
+    }
+
+    if (!coverImage) {
+      setError('Cover Image is required.');
+      return;
+    }
+
+    // Auto-generate URL-friendly slug
+    const generatedSlug = title
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9-]/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-|-$/g, '');
+
     const ticketTiers = tiers.map((t) => ({
-      name: t.name,
+      tier: t.name,
+      name: t.name.toUpperCase(),
       price: Number(t.price),
-      capacity: Number(t.capacity),
+      totalCapacity: Number(t.capacity),
       groupSize: t.groupSize !== '' ? Number(t.groupSize) : undefined,
       minPerBooking: t.minPerBooking !== '' ? Number(t.minPerBooking) : undefined,
       discount: t.discount !== '' ? Number(t.discount) : undefined,
-      taxPercent: t.taxPercent !== '' ? Number(t.taxPercent) : undefined,
+      taxPercent: t.taxPercent !== '' ? Number(t.taxPercent) : 18,
       availabilityWindow: t.startDate && t.endDate ? {
         startDate: new Date(t.startDate).toISOString(),
         endDate: new Date(t.endDate).toISOString(),
       } : undefined,
-      description: t.description,
-      isAvailable: t.isAvailable,
+      description: t.description || undefined,
+      isActive: t.isAvailable,
     }));
+
+    const totalCapacity = ticketTiers.reduce((acc, t) => acc + t.totalCapacity, 0);
 
     createMutation.mutate({
       title: title.trim(),
+      slug: generatedSlug,
       description: description.trim(),
       shortDescription: shortDescription.trim() || undefined,
       category,
       status,
+      bookingMode,
       startDate: new Date(startDate).toISOString() as never,
       endDate: endDate ? new Date(endDate).toISOString() as never : undefined,
-      coverImage: coverImage ?? undefined,
+      showTime: showTime.trim(),
+      venueId: venueId as any,
+      bannerImage: {
+        url: coverImage.url,
+        publicId: coverImage.publicId,
+      } as any,
       ticketTiers: ticketTiers as never,
+      totalCapacity,
       isFeatured,
-      isAgeRestricted,
-      minimumAge: isAgeRestricted ? minimumAge : undefined,
+      ageRestriction: isAgeRestricted ? minimumAge : undefined,
       tags: tags.split(',').map((t) => t.trim()).filter(Boolean),
-    });
+    } as any);
   };
 
   return (
@@ -164,6 +220,24 @@ export default function CreateEventPage() {
               </select>
             </Field>
           </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <Field label="Venue *">
+              <select id="event-venue" value={venueId} onChange={(e) => setVenueId(e.target.value)} required className={inputCls}>
+                <option value="" disabled className="bg-background-card">Select a venue</option>
+                {venuesList.map((v) => (
+                  <option key={v._id} value={v._id} className="bg-background-card">{v.name}</option>
+                ))}
+              </select>
+            </Field>
+            <Field label="Booking Mode *">
+              <select id="event-booking-mode" value={bookingMode} onChange={(e) => setBookingMode(e.target.value)} required className={inputCls}>
+                <option value="general_admission" className="bg-background-card">General Admission</option>
+                <option value="seat_based" className="bg-background-card">Seat Based</option>
+              </select>
+            </Field>
+          </div>
+
           <Field label="Short Description (max 300 chars)">
             <input value={shortDescription} onChange={(e) => setShortDescription(e.target.value)}
               placeholder="A one-liner for cards and previews"
@@ -179,12 +253,15 @@ export default function CreateEventPage() {
         {/* Schedule */}
         <div className="glass rounded-2xl border border-border-subtle p-6 space-y-5">
           <h2 className="text-white font-semibold">Schedule</h2>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-3 gap-4">
             <Field label="Start Date & Time *">
               <input id="event-start-date" type="datetime-local" value={startDate} onChange={(e) => setStartDate(e.target.value)} required className={inputCls} />
             </Field>
             <Field label="End Date & Time">
               <input type="datetime-local" value={endDate} onChange={(e) => setEndDate(e.target.value)} className={inputCls} />
+            </Field>
+            <Field label="Show Time (e.g. 20:00) *">
+              <input id="event-showtime" value={showTime} onChange={(e) => setShowTime(e.target.value)} placeholder="e.g. 20:00" required className={inputCls} />
             </Field>
           </div>
         </div>

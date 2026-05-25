@@ -63,13 +63,13 @@ export default function EditVenuePage() {
       setSlug(venue.slug || '');
       setDescription(venue.description || '');
       setCapacity(venue.capacity ?? '');
-      setStreet(venue.address?.street || '');
-      setCity(venue.address?.city || '');
-      setState(venue.address?.state || '');
-      setPincode(venue.address?.pincode || '');
-      setCountry(venue.address?.country || 'India');
-      setLat(venue.address?.coordinates?.lat ?? '');
-      setLng(venue.address?.coordinates?.lng ?? '');
+      setStreet(venue.address || '');
+      setCity(venue.city || '');
+      setState(venue.state || '');
+      setPincode('');
+      setCountry('India');
+      setLat('');
+      setLng('');
       setContactEmail(venue.contactEmail || '');
       setContactPhone(venue.contactPhone || '');
       setAmenities(venue.amenities?.join(', ') || '');
@@ -109,17 +109,10 @@ export default function EditVenuePage() {
 
     const payload: Partial<Venue> = {
       name: name.trim(),
-      slug: slug.trim() || undefined,
-      description: description.trim() || undefined,
+      city: city.trim() || undefined,
+      state: state.trim() || undefined,
+      address: street.trim() || undefined,
       capacity: Number(capacity),
-      address: {
-        street: street.trim() || undefined,
-        city: city.trim(),
-        state: state.trim(),
-        pincode: pincode.trim(),
-        country: country.trim(),
-        coordinates: lat !== '' && lng !== '' ? { lat: Number(lat), lng: Number(lng) } : undefined,
-      },
       images,
       amenities: amenities.split(',').map((a) => a.trim()).filter(Boolean),
       contactEmail: contactEmail.trim() || undefined,
