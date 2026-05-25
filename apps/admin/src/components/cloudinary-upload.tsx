@@ -10,17 +10,6 @@ interface CloudinaryAsset {
   alt?: string;
 }
 
-interface UploadSignatureResponse {
-  data: {
-    signature: string;
-    timestamp: number;
-    cloudName: string;
-    apiKey: string;
-    folder: string;
-    transformation: string;
-  };
-}
-
 interface CloudinaryUploadProps {
   folder?: 'events' | 'venues' | 'artists' | 'dj-operators' | 'popups';
   value?: CloudinaryAsset | null;
@@ -69,45 +58,28 @@ export function CloudinaryUpload({
       setErrorMessage('');
 
       try {
-        // 1. Get signed upload credentials from our server
-        const { data: sigData } = await adminApiClient.get<UploadSignatureResponse>(
-          `/admin/uploads/signature?folder=${folder}`
-        );
-        const { signature, timestamp, cloudName, apiKey, folder: uploadFolder, transformation } = sigData.data;
-
-        // 2. Upload directly to Cloudinary
         const formData = new FormData();
-        formData.append('file', file);
-        formData.append('signature', signature);
-        formData.append('timestamp', String(timestamp));
-        formData.append('api_key', apiKey);
-        formData.append('folder', uploadFolder);
-        formData.append('transformation', transformation);
+        formData.append('image', file);
 
-        const xhr = new XMLHttpRequest();
-        xhr.open('POST', `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`);
-
-        xhr.upload.onprogress = (e) => {
-          if (e.lengthComputable) {
-            setProgress(Math.round((e.loaded / e.total) * 100));
+        const { data: uploadRes } = await adminApiClient.post<{ data: { url: string; publicId: string } }>(
+          `/admin/uploads/image?folder=${folder}`,
+          formData,
+          {
+            headers: {
+              'Content-Type': 'multipart/form-data',
+            },
+            onUploadProgress: (progressEvent) => {
+              if (progressEvent.total) {
+                setProgress(Math.round((progressEvent.loaded / progressEvent.total) * 100));
+              }
+            },
           }
-        };
+        );
 
-        await new Promise<void>((resolve, reject) => {
-          xhr.onload = () => {
-            if (xhr.status === 200) {
-              const result = JSON.parse(xhr.responseText) as { secure_url: string; public_id: string };
-              onChange({ url: result.secure_url, publicId: result.public_id });
-              setUploadState('success');
-              resolve();
-            } else {
-              reject(new Error('Upload failed'));
-            }
-          };
-          xhr.onerror = () => reject(new Error('Network error'));
-          xhr.send(formData);
-        });
-      } catch {
+        onChange({ url: uploadRes.data.url, publicId: uploadRes.data.publicId });
+        setUploadState('success');
+      } catch (err) {
+        console.error('[CloudinaryUpload] Upload failed:', err);
         setErrorMessage('Upload failed. Please try again.');
         setUploadState('error');
       }

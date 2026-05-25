@@ -6,7 +6,7 @@ import { uploadImage } from '../../controllers/admin/upload.controller';
 const router: Router = Router();
 
 // Apply admin protection to the entire router
-router.use(requireAuth, requireAdmin);
+router.use(requireAdmin);
 
 /**
  * @route POST /api/admin/uploads/image
