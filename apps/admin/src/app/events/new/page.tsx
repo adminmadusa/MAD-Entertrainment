@@ -1,13 +1,15 @@
 'use client';
 
-import { EventCategory, EVENT_CATEGORY_LABELS } from '@mad/shared';
-import { useMutation } from '@tanstack/react-query';
+import { EventCategory, EVENT_CATEGORY_LABELS, BookingMode, TicketTier } from '@mad/shared';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 import { CloudinaryUpload } from '@/components/cloudinary-upload';
 import { adminCreateEvent } from '@/lib/api/admin/event.service';
+import { adminGetCategories } from '@/lib/api/admin/category.service';
+import { adminGetTiers } from '@/lib/api/admin/tier.service';
 import { extractApiError } from '@/lib/api/client';
 
 
@@ -39,8 +41,7 @@ export default function CreateEventPage() {
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [shortDescription, setShortDescription] = useState('');
-  const [category, setCategory] = useState<string>(EventCategory.CONCERT);
+  const [category, setCategory] = useState<string>('concert');
   const [status, setStatus] = useState('draft');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
@@ -51,6 +52,22 @@ export default function CreateEventPage() {
   const [coverImage, setCoverImage] = useState<CloudinaryImage | null>(null);
   const [tiers, setTiers] = useState<TicketTierInput[]>([defaultTier()]);
   const [error, setError] = useState('');
+  const [venueName, setVenueName] = useState<string>('');
+  const [organizerName, setOrganizerName] = useState('');
+  const [refundPolicy, setRefundPolicy] = useState('');
+  const [highlightsInput, setHighlightsInput] = useState('');
+
+  // Fetch live categories from database
+  const { data: dbCategories = [] } = useQuery({
+    queryKey: ['adminCategories'],
+    queryFn: adminGetCategories,
+  });
+
+  // Fetch live ticket tiers from database
+  const { data: dbTiers = [] } = useQuery({
+    queryKey: ['adminTiers'],
+    queryFn: adminGetTiers,
+  });
 
   const createMutation = useMutation({
     mutationFn: adminCreateEvent,
@@ -63,7 +80,7 @@ export default function CreateEventPage() {
   const updateTier = (i: number, field: keyof TicketTierInput, value: unknown) =>
     setTiers((prev) => prev.map((t, idx) => idx === i ? { ...t, [field]: value } : t));
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
@@ -72,37 +89,67 @@ export default function CreateEventPage() {
       return;
     }
 
-    const ticketTiers = tiers.map((t) => ({
-      name: t.name,
-      price: Number(t.price),
-      capacity: Number(t.capacity),
-      groupSize: t.groupSize !== '' ? Number(t.groupSize) : undefined,
-      minPerBooking: t.minPerBooking !== '' ? Number(t.minPerBooking) : undefined,
-      discount: t.discount !== '' ? Number(t.discount) : undefined,
-      taxPercent: t.taxPercent !== '' ? Number(t.taxPercent) : undefined,
-      availabilityWindow: t.startDate && t.endDate ? {
-        startDate: new Date(t.startDate).toISOString(),
-        endDate: new Date(t.endDate).toISOString(),
-      } : undefined,
-      description: t.description,
-      isAvailable: t.isAvailable,
-    }));
+    if (!venueName.trim()) {
+      setError('Venue name is required.');
+      return;
+    }
 
-    createMutation.mutate({
-      title: title.trim(),
-      description: description.trim(),
-      shortDescription: shortDescription.trim() || undefined,
-      category,
-      status,
-      startDate: new Date(startDate).toISOString() as never,
-      endDate: endDate ? new Date(endDate).toISOString() as never : undefined,
-      coverImage: coverImage ?? undefined,
-      ticketTiers: ticketTiers as never,
-      isFeatured,
-      isAgeRestricted,
-      minimumAge: isAgeRestricted ? minimumAge : undefined,
-      tags: tags.split(',').map((t) => t.trim()).filter(Boolean),
-    });
+    try {
+      if (!coverImage) {
+        setError('Cover image is required for event creation.');
+        return;
+      }
+
+      const ticketTiers = tiers.map((t) => ({
+        name: t.name,
+        price: Number(t.price),
+        capacity: Number(t.capacity),
+        groupSize: 1,
+        minPerBooking: 1,
+        discount: 0,
+        taxPercent: 0,
+        isAvailable: true,
+      }));
+
+      // Generate slug from title if not provided
+      const generatedSlug = title.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^[-]+|[-]+$/g, '');
+
+      createMutation.mutate({
+        title: title.trim(),
+        slug: generatedSlug,
+        description: description.trim(),
+        category,
+        status,
+        bookingMode: BookingMode.GENERAL_ADMISSION,
+        bannerImage: coverImage ?? undefined,
+        showTime: '00:00',
+        venue: venueName.trim(),
+        startDate: new Date(startDate).toISOString() as never,
+        endDate: endDate ? new Date(endDate).toISOString() as never : undefined,
+        ticketTiers: ticketTiers.map(t => {
+          const resolvedTierEnum = Object.values(TicketTier).includes(t.name as TicketTier)
+            ? (t.name as TicketTier)
+            : TicketTier.CUSTOM;
+          return {
+            ...t,
+            tier: resolvedTierEnum,
+            slug: t.name,
+            totalCapacity: t.capacity,
+          };
+        }) as never,
+        totalCapacity: ticketTiers.reduce((sum, t) => sum + Number(t.capacity || 0), 0),
+        isFeatured,
+        isAgeRestricted,
+        minimumAge: isAgeRestricted ? minimumAge : undefined,
+        tags: tags.split(',').map((t) => t.trim()).filter(Boolean),
+        highlights: highlightsInput.split(',').map(h => h.trim()).filter(Boolean),
+        refundPolicy: refundPolicy.trim() || undefined,
+        organizerName: organizerName.trim() || undefined,
+        coverImage: coverImage ?? undefined,
+      } as any);
+    } catch (err: any) {
+      setError(err?.message || 'Failed to handle venue creation');
+    }
   };
 
   return (
@@ -152,26 +199,72 @@ export default function CreateEventPage() {
           <div className="grid grid-cols-2 gap-4">
             <Field label="Category">
               <select id="event-category" value={category} onChange={(e) => setCategory(e.target.value)} className={inputCls}>
-                {Object.entries(EVENT_CATEGORY_LABELS).map(([val, label]) => (
-                  <option key={val} value={val} className="bg-background-card">{label}</option>
-                ))}
+                {dbCategories.length > 0
+                  ? dbCategories.map((cat) => (
+                      <option key={cat._id} value={cat.slug} className="bg-background-card">
+                        {cat.name}
+                      </option>
+                    ))
+                  : Object.entries(EVENT_CATEGORY_LABELS).map(([val, label]) => (
+                      <option key={val} value={val} className="bg-background-card">{label}</option>
+                    ))}
               </select>
             </Field>
-            <Field label="Status">
+                        <Field label="Status">
               <select id="event-status" value={status} onChange={(e) => setStatus(e.target.value)} className={inputCls}>
                 <option value="draft" className="bg-background-card">Draft</option>
                 <option value="published" className="bg-background-card">Published</option>
               </select>
             </Field>
+            <Field label="Venue *">
+              <div className="relative">
+                <input
+                  id="event-venue"
+                  value={venueName}
+                  onChange={(e) => setVenueName(e.target.value)}
+                  placeholder="Enter venue name"
+                  required
+                  className={inputCls + " pl-10"}
+                />
+                <span className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5 text-text-muted"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 11c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm0 2c-4.418 0-8 1.79-8 4v3h16v-3c0-2.21-3.582-4-8-4z" />
+                  </svg>
+                </span>
+              </div>
+            </Field>
           </div>
-          <Field label="Short Description (max 300 chars)">
-            <input value={shortDescription} onChange={(e) => setShortDescription(e.target.value)}
-              placeholder="A one-liner for cards and previews"
-              maxLength={300} className={inputCls} />
-          </Field>
           <Field label="Full Description *">
             <textarea id="event-description" value={description} onChange={(e) => setDescription(e.target.value)}
               placeholder="Describe the event in detail..." required rows={5}
+              className={`${inputCls} resize-none`} />
+          </Field>
+        </div>
+
+        {/* Additional Details */}
+        <div className="glass rounded-2xl border border-border-subtle p-6 space-y-5">
+          <h2 className="text-white font-semibold">Additional Details</h2>
+          <div className="grid grid-cols-2 gap-4">
+            <Field label="Organizer Name">
+              <input id="event-organizer" value={organizerName} onChange={(e) => setOrganizerName(e.target.value)}
+                placeholder="e.g. Ellen Colby, The MARM Farm"
+                className={inputCls} />
+            </Field>
+            <Field label="Highlights (comma separated)">
+              <input id="event-highlights" value={highlightsInput} onChange={(e) => setHighlightsInput(e.target.value)}
+                placeholder="e.g. 12 hours, In person, Family friendly"
+                className={inputCls} />
+            </Field>
+          </div>
+          <Field label="Refund Policy">
+            <textarea id="event-refund-policy" value={refundPolicy} onChange={(e) => setRefundPolicy(e.target.value)}
+              placeholder="e.g. Refunds up to 7 days before event" rows={2}
               className={`${inputCls} resize-none`} />
           </Field>
         </div>
@@ -209,9 +302,15 @@ export default function CreateEventPage() {
               <div className="grid grid-cols-2 gap-4">
                 <Field label="Tier Name">
                   <select value={tier.name} onChange={(e) => updateTier(i, 'name', e.target.value)} className={inputCls}>
-                    {TICKET_TIER_NAMES.map((n) => (
-                      <option key={n} value={n} className="bg-background-card capitalize">{n}</option>
-                    ))}
+                    {dbTiers.length > 0
+                      ? dbTiers.map((t) => (
+                          <option key={t._id} value={t.slug} className="bg-background-card capitalize">
+                            {t.name}
+                          </option>
+                        ))
+                      : TICKET_TIER_NAMES.map((n) => (
+                          <option key={n} value={n} className="bg-background-card capitalize">{n}</option>
+                        ))}
                   </select>
                 </Field>
                 <Field label="Price (₹)">
@@ -221,54 +320,12 @@ export default function CreateEventPage() {
                 </Field>
               </div>
               <div className="grid grid-cols-2 gap-4">
-                <Field label="Capacity">
+                <Field label="Capacity *">
                   <input type="number" min="1" value={tier.capacity}
                     onChange={(e) => updateTier(i, 'capacity', e.target.value === '' ? '' : Number(e.target.value))}
                     placeholder="100" required className={inputCls} />
                 </Field>
-                <Field label="Group Size (Admits X)">
-                  <input type="number" min="1" value={tier.groupSize}
-                    onChange={(e) => updateTier(i, 'groupSize', e.target.value === '' ? '' : Number(e.target.value))}
-                    placeholder="1" className={inputCls} />
-                </Field>
               </div>
-              
-              <div className="grid grid-cols-3 gap-4">
-                <Field label="Min Per Booking">
-                  <input type="number" min="1" value={tier.minPerBooking}
-                    onChange={(e) => updateTier(i, 'minPerBooking', e.target.value === '' ? '' : Number(e.target.value))}
-                    placeholder="1" className={inputCls} />
-                </Field>
-                <Field label="Discount (₹)">
-                  <input type="number" min="0" value={tier.discount}
-                    onChange={(e) => updateTier(i, 'discount', e.target.value === '' ? '' : Number(e.target.value))}
-                    placeholder="0" className={inputCls} />
-                </Field>
-                <Field label="Tax Percent (%)">
-                  <input type="number" min="0" max="100" value={tier.taxPercent}
-                    onChange={(e) => updateTier(i, 'taxPercent', e.target.value === '' ? '' : Number(e.target.value))}
-                    placeholder="18" className={inputCls} />
-                </Field>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4 border-t border-white/5 pt-4 mt-2">
-                <Field label="Available From (Early Bird)">
-                  <input type="datetime-local" value={tier.startDate}
-                    onChange={(e) => updateTier(i, 'startDate', e.target.value)}
-                    className={inputCls} />
-                </Field>
-                <Field label="Available Until">
-                  <input type="datetime-local" value={tier.endDate}
-                    onChange={(e) => updateTier(i, 'endDate', e.target.value)}
-                    className={inputCls} />
-                </Field>
-              </div>
-
-              <Field label="Description (optional)">
-                <input value={tier.description}
-                  onChange={(e) => updateTier(i, 'description', e.target.value)}
-                  placeholder="e.g. Standing area, includes 1 drink" className={inputCls} />
-              </Field>
             </div>
           ))}
         </div>

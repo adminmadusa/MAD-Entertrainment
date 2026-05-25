@@ -7,11 +7,7 @@ import { usePathname } from 'next/navigation';
 export default function NavigationTracker() {
   const pathname = usePathname();
 
-  useEffect(() => {
-    if (pathname) {
-      console.log('Navigation breadcrumb:', pathname);
-    }
-  }, [pathname]);
+    // Breadcrumb tracking hook (can integrate with central logger if needed)
 
   return null;
 }

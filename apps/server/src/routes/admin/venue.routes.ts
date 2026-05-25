@@ -12,7 +12,7 @@ router.use(requireAdmin);
 router.post('/', validate(createVenueSchema), venueController.createVenue);
 router.get('/', venueController.getVenues);
 router.get('/:id', venueController.getVenueById);
-router.patch('/:id', validate(updateVenueSchema), venueController.updateVenue);
+router.put('/:id', validate(updateVenueSchema), venueController.updateVenue);
 router.delete('/:id', venueController.deleteVenue);
 
 export default router;

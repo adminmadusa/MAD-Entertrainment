@@ -5,7 +5,6 @@ const footerLinks = {
     { label: 'Browse Events', href: '/events' },
     { label: 'Artists', href: '/artists' },
     { label: 'DJ Operators', href: '/dj-operators' },
-    { label: 'Venues', href: '/venues' },
   ],
   Support: [
     { label: 'My Booking', href: '/my-booking' },

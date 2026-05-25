@@ -12,7 +12,7 @@ router.use(requireAdmin);
 router.post('/', validate(createEventSchema), eventController.createEvent);
 router.get('/', eventController.getEvents);
 router.get('/:id', eventController.getEventById);
-router.patch('/:id', validate(updateEventSchema), eventController.updateEvent);
+router.put('/:id', validate(updateEventSchema), eventController.updateEvent);
 router.delete('/:id', eventController.deleteEvent);
 
 export default router;

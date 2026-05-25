@@ -100,7 +100,7 @@ export async function adminGetBookings(params: Record<string, string | number> =
     const qs = new URLSearchParams(Object.entries(params).map(([k, v]) => [k, String(v)]));
     const { data } = await adminApiClient.get<{ data: AdminBooking[]; pagination: { page: number; limit: number; total: number; totalPages: number } }>(`/admin/bookings?${qs}`);
     return {
-      items: Array.isArray(data?.data) ? data.data : [],
+      items: Array.isArray(data?.data) ? data.data : (data?.data && Object.values(data.data).find(v => Array.isArray(v)) || []),
       pagination: {
         page: data?.pagination?.page ?? 1,
         limit: data?.pagination?.limit ?? 15,
@@ -196,7 +196,7 @@ export async function adminGetRefunds(params: Record<string, string> = {}): Prom
     const qs = new URLSearchParams(params);
     const { data } = await adminApiClient.get<{ data: AdminRefund[]; pagination: { page: number; limit: number; total: number; totalPages: number } }>(`/admin/refunds?${qs}`);
     return {
-      items: Array.isArray(data?.data) ? data.data : [],
+      items: Array.isArray(data?.data) ? data.data : (data?.data && Object.values(data.data).find(v => Array.isArray(v)) || []),
       pagination: {
         page: data?.pagination?.page ?? 1,
         limit: data?.pagination?.limit ?? 15,

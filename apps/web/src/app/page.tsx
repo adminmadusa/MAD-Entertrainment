@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Reveal, StaggerContainer, StaggerItem } from '@/components/common/page-transition';
 import { DJOperatorsSection } from '@/components/ui/dj-operators-section';
 import { FeaturedEventsSection } from '@/components/ui/featured-events-section';
+import { MarqueeBanner } from '@/components/ui/marquee-banner';
 
 export const metadata: Metadata = {
   title: 'MAD Entertrainment — Book Shows, Events & DJ Nights',
@@ -137,35 +138,7 @@ function HeroSection() {
   );
 }
 
-// ─── Marquee Banner ───────────────────────────────────────────
-
-const marqueeItems = [
-  '🎧 DJ NIGHTS',
-  '🎵 LIVE CONCERTS',
-  '😂 COMEDY SHOWS',
-  '🎪 MAD EVENTS',
-  '🎡 FESTIVALS',
-  '💎 VIP EVENTS',
-  '🎭 THEATRE',
-  '🎬 CINEMA',
-];
-
-function MarqueeBanner() {
-  const items = [...marqueeItems, ...marqueeItems];
-
-  return (
-    <section className="py-8 overflow-hidden border-y border-border-subtle bg-background-secondary/50" aria-hidden="true">
-      <div className="flex animate-marquee whitespace-nowrap">
-        {items.map((item, i) => (
-          <span key={i} className="mx-8 text-text-muted text-sm font-semibold uppercase tracking-widest inline-flex items-center gap-2">
-            {item}
-            <span className="text-accent-purple/40 mx-2">•</span>
-          </span>
-        ))}
-      </div>
-    </section>
-  );
-}
+// MarqueeBanner is imported dynamically from '@/components/ui/marquee-banner'
 
 
 

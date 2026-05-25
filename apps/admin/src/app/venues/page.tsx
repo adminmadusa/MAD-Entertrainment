@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 
 import { adminGetVenues, adminDeleteVenue, adminUpdateVenue } from '@/lib/api/admin/venue.service';
+import { venueQueryKey } from '@/lib/query/venue-query-key';
 import { extractApiError } from '@/lib/api/client';
 import ErrorState from '@/components/states/ErrorState';
 
@@ -19,14 +20,14 @@ export default function AdminVenuesPage() {
   const [deleteTarget, setDeleteTarget] = useState<Venue | null>(null);
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ['admin-venues', { page, search, city: cityFilter }],
+    queryKey: venueQueryKey({ page, search, city: cityFilter }),
     queryFn: () => adminGetVenues({ page, limit: 15, search, city: cityFilter }),
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => adminDeleteVenue(id),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['admin-venues'] });
+       qc.invalidateQueries({ queryKey: venueQueryKey({ page, search, city: cityFilter }) });
       setDeleteTarget(null);
     },
   });
@@ -34,7 +35,7 @@ export default function AdminVenuesPage() {
   const statusMutation = useMutation({
     mutationFn: ({ id, isActive }: { id: string; isActive: boolean }) =>
       adminUpdateVenue(id, { isActive }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin-venues'] }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: venueQueryKey({ page, search, city: cityFilter }) }),
   });
 
   const venues = data?.items ?? [];

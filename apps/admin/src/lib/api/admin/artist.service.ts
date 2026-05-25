@@ -38,7 +38,7 @@ export async function adminGetArtists(filters: ArtistFilters = {}): Promise<Norm
     });
     const { data } = await adminApiClient.get<ArtistsResponse>(`/admin/artists?${params}`);
     return {
-      items: Array.isArray(data?.data) ? data.data : [],
+      items: Array.isArray(data?.data) ? data.data : (data?.data && Object.values(data.data).find(v => Array.isArray(v)) || []),
       pagination: {
         page: data?.pagination?.page ?? 1,
         limit: data?.pagination?.limit ?? 15,
@@ -62,8 +62,9 @@ export async function adminGetArtists(filters: ArtistFilters = {}): Promise<Norm
 
 export async function adminGetArtist(id: string): Promise<Artist | null> {
   try {
-    const { data } = await adminApiClient.get<{ data: Artist }>(`/admin/artists/${id}`);
-    return data.data;
+    const { data } = await adminApiClient.get<any>(`/admin/artists/${id}`);
+    const payload = data?.data;
+    return payload?.artist || payload;
   } catch (error) {
     console.error(`[Artist Service] Failed to fetch artist ${id}:`, error);
     return null;

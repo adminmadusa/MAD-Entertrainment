@@ -14,4 +14,6 @@ import './dead-letter-job.schema';
 import './popup-campaign.schema';
 import './admin.schema';
 import './refund.schema';
+import './category.schema';
+import './tier.schema';
 

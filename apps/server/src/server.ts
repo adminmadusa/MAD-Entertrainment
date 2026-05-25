@@ -21,6 +21,7 @@ import { logger } from './utils/logger';
 import { startConsistencyWorker, stopConsistencyWorker } from './workers/consistency.worker';
 import { startAllWorkers, stopAllWorkers } from './workers';
 import { seedAdmin } from './utils/seed-admin';
+import { seedCategoriesAndTiers } from './utils/seed-categories-tiers';
 
 const env = getEnv();
 const PORT = env.PORT;
@@ -36,6 +37,9 @@ async function bootstrap(): Promise<void> {
   
   // Seed initial admin user if needed
   await seedAdmin();
+  
+  // Seed default categories and tiers if needed
+  await seedCategoriesAndTiers();
   
   // Connect Redis and await connection readiness
   try {

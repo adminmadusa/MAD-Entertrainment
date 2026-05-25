@@ -1,4 +1,5 @@
 import crypto from 'crypto';
+import { Types } from 'mongoose';
 
 import { BookingStatus, PaymentStatus, ReservationStatus, SeatStatus, NotificationType } from '@mad/shared';
 
@@ -24,7 +25,8 @@ import { CacheService } from '../cache.service';
 
 export class PaymentService {
   static async createPaymentIntent(bookingId: string, gateway: 'stripe' | 'razorpay') {
-    const booking = await Booking.findById(bookingId);
+    const query = Types.ObjectId.isValid(bookingId) ? { _id: bookingId } : { bookingId };
+    const booking = await Booking.findOne(query);
     if (!booking) {
       throw AppError.notFound('Booking not found');
     }
@@ -347,7 +349,8 @@ export class PaymentService {
 
   static async verifyPayment(bookingId: string, gatewayPayload: any) {
 
-    const booking = await Booking.findById(bookingId);
+    const query = Types.ObjectId.isValid(bookingId) ? { _id: bookingId } : { bookingId };
+    const booking = await Booking.findOne(query);
     if (!booking) {
       throw AppError.notFound('Booking not found');
     }
@@ -857,7 +860,7 @@ export class PaymentService {
             seatNumber: seat.number,
             section: seat.section,
             qrCode: qrCodeText,
-            qrCodeImage: `https://chart.googleapis.com/chart?cht=qr&chs=300x300&chl=${encodeURIComponent(qrCodeText)}`,
+            qrCodeImage: `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(qrCodeText)}`,
           });
           ticketIndex++;
         }
@@ -884,7 +887,7 @@ export class PaymentService {
             tier: bookedTicket.tier,
             admits,
             qrCode: qrCodeText,
-            qrCodeImage: `https://chart.googleapis.com/chart?cht=qr&chs=300x300&chl=${encodeURIComponent(qrCodeText)}`,
+            qrCodeImage: `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(qrCodeText)}`,
           });
           ticketIndex++;
         }

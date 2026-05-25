@@ -123,7 +123,7 @@ const nextConfig: NextConfig = {
       {
         source: '/api/:path*',
         // Proxy to the actual backend if NEXT_PUBLIC_API_URL is configured, else fallback to local
-        destination: `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001/api'}/:path*`,
+        destination: `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api'}/:path*`,
       },
     ];
   },

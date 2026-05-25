@@ -6,6 +6,7 @@ import { AnimatePresence } from 'framer-motion';
 import { useParams, useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 
+import { STORAGE_VERSION } from '@mad/shared';
 import { extractApiError } from '@/lib/api/client';
 import { publicGetBookingDetails, publicCreatePaymentIntent, publicVerifyPayment } from '@/lib/api/public.service';
 
@@ -22,7 +23,14 @@ export default function CheckoutPage() {
 
   const { data: details, isLoading } = useQuery({
     queryKey: ['booking-checkout-details', bookingId],
-    queryFn: () => publicGetBookingDetails(bookingId),
+    queryFn: () => {
+      let sess: string | undefined;
+      if (typeof window !== 'undefined') {
+        const sessionKey = `mad_checkout_session_${STORAGE_VERSION}`;
+        sess = sessionStorage.getItem(sessionKey) || undefined;
+      }
+      return publicGetBookingDetails(bookingId, sess);
+    },
     enabled: !!bookingId,
     retry: (failureCount, error: any) => {
       if (error?.response?.status === 404) {

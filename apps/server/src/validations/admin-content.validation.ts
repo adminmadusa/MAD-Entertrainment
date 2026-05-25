@@ -79,7 +79,7 @@ export const createEventSchema = z.object({
     title: z.string().min(1).max(200),
     slug: z.string().min(1),
     description: z.string().min(1).max(5000),
-    category: z.nativeEnum(EventCategory),
+    category: z.string().min(1),
     status: z.nativeEnum(EventStatus).optional(),
     bookingMode: z.nativeEnum(BookingMode),
     bannerImage: cloudinaryImageSchema,
@@ -89,7 +89,7 @@ export const createEventSchema = z.object({
     endDate: z.string().datetime().optional(),
     doorsOpenTime: z.string().optional(),
     showTime: z.string(),
-    venueId: z.string(),
+    venue: z.string().min(1),
     onlineStreamUrl: z.string().url().optional(),
     isOnline: z.boolean().optional(),
     artistIds: z.array(z.string()).optional(),
@@ -130,6 +130,9 @@ export const createEventSchema = z.object({
     showCountdown: z.boolean().optional(),
     isEarlyBird: z.boolean().optional(),
     earlyBirdDeadline: z.string().datetime().optional(),
+    highlights: z.array(z.string()).optional(),
+    refundPolicy: z.string().max(1000).optional(),
+    organizerName: z.string().max(100).optional(),
   }),
 });
 
