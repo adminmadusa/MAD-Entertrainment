@@ -9,7 +9,9 @@ export class AppError extends Error {
     message: string,
     public statusCode: number = HTTP_STATUS.INTERNAL_SERVER_ERROR,
     public errors?: Record<string, string[]>,
-    public isOperational = true
+    public isOperational = true,
+    public code?: string,
+    public retryable?: boolean
   ) {
     super(message);
     Object.setPrototypeOf(this, AppError.prototype);
@@ -48,10 +50,12 @@ export const errorHandler: ErrorRequestHandler = (err, req, res, _next) => {
   const reqLogger = req.log ?? logger;
 
   if (err instanceof AppError) {
-    reqLogger.warn({ statusCode: err.statusCode, path: req.path }, err.message);
+    reqLogger.warn({ statusCode: err.statusCode, path: req.path, code: err.code }, err.message);
     res.status(err.statusCode).json({
       success: false,
       message: err.message,
+      ...(err.code ? { error: err.code } : {}),
+      ...(err.retryable !== undefined ? { retryable: err.retryable } : {}),
       ...(err.errors ? { errors: err.errors } : {}),
     });
     return;

@@ -319,7 +319,7 @@ export class PublicBookingService {
           eventId: event._id.toString(),
           bookingId: booking._id.toString(),
           seatIds: allSeatIds,
-        });
+        }, booking.bookingId);
       } catch (err) {
         logger.debug({ err, eventId: event._id, bookingId: booking._id }, 'Socket emit skipped for seat reservation');
       }
@@ -333,7 +333,7 @@ export class PublicBookingService {
         status: booking.status,
         reservationIds: booking.reservationIds,
         bookingVersion: booking.bookingVersion,
-      });
+      }, booking.bookingId);
     } catch (err) {
       logger.debug({ err, bookingId: booking._id }, 'Admin socket emit skipped for booking creation');
     }

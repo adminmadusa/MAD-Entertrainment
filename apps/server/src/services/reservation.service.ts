@@ -1,4 +1,4 @@
-import { BookingMode, InventoryState, ReservationStatus, SeatStatus, TicketTier } from '@mad/shared';
+import { BookingMode, InventoryState, ReservationStatus, SeatStatus, TicketTier, HTTP_STATUS } from '@mad/shared';
 import { Types } from 'mongoose';
 
 import { getRedis } from '../config/redis';
@@ -58,13 +58,25 @@ export class ReservationService {
 
     // Acquire distributed lock with retry backoff
     let acquired = false;
-    for (let attempt = 0; attempt < 5; attempt++) {
-      const ok = await redis.set(lockKey, lockVal, 'EX', 5, 'NX');
-      if (ok === 'OK') {
-        acquired = true;
-        break;
+    try {
+      for (let attempt = 0; attempt < 5; attempt++) {
+        const ok = await redis.set(lockKey, lockVal, 'EX', 5, 'NX');
+        if (ok === 'OK') {
+          acquired = true;
+          break;
+        }
+        await new Promise((resolve) => setTimeout(resolve, 50));
       }
-      await new Promise((resolve) => setTimeout(resolve, 50));
+    } catch (err: any) {
+      logger.error({ err, eventId: request.eventId, correlationId: request.correlationId }, 'Redis connection error during lock acquisition');
+      throw new AppError(
+        'Booking service is temporarily recovering. Please retry.',
+        HTTP_STATUS.SERVICE_UNAVAILABLE,
+        undefined,
+        true,
+        'booking_temporarily_unavailable',
+        true
+      );
     }
 
     if (!acquired) {
@@ -152,9 +164,13 @@ export class ReservationService {
       return [reservation];
     } finally {
       // Safely release the lock
-      const currentVal = await redis.get(lockKey);
-      if (currentVal === lockVal) {
-        await redis.del(lockKey);
+      try {
+        const currentVal = await redis.get(lockKey);
+        if (currentVal === lockVal) {
+          await redis.del(lockKey);
+        }
+      } catch (err) {
+        logger.warn({ err, eventId: request.eventId, correlationId: request.correlationId }, 'Redis connection error during lock release');
       }
     }
   }
@@ -349,7 +365,8 @@ export class ReservationService {
       status: reservations[0]?.status,
     };
 
-    safeEmit(eventName, () => emitToEvent(eventId, eventName, payload), { eventId, eventName });
-    safeEmit(eventName, () => emitToAdmin('inventory', eventName, payload), { eventId, eventName });
+    const correlationId = reservations[0]?.correlationId;
+    safeEmit(eventName, () => emitToEvent(eventId, eventName, payload, correlationId), { eventId, eventName, correlationId });
+    safeEmit(eventName, () => emitToAdmin('inventory', eventName, payload, correlationId), { eventId, eventName, correlationId });
   }
 }

@@ -87,6 +87,9 @@ describe('Diagnostics Service', () => {
       expect(report.queues.length).toBe(3); // Handles 3 standard queues
       expect(report.queues[0].waiting).toBe(2);
       expect(report.queues[0].oldestWaitingJobAgeMs).toBeGreaterThan(0);
+      expect(report.sockets).toBeDefined();
+      expect(report.sockets.initialized).toBe(false);
+      expect(report.sockets.connectedClients).toBe(0);
     });
 
     it('should return empty queues array and disconnected redis status if Redis is offline', async () => {

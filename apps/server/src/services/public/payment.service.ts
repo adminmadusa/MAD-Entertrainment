@@ -679,19 +679,19 @@ export class PaymentService {
     if (event && releasedSeatIds.length > 0) {
       this.safeEmit(
         'seat:unlocked',
-        () => emitToEvent(event._id.toString(), 'seat:unlocked', { seatIds: releasedSeatIds }),
+        () => emitToEvent(event._id.toString(), 'seat:unlocked', { seatIds: releasedSeatIds }, booking.bookingId),
         { eventId: event._id.toString(), bookingId: booking._id.toString(), seatIds: releasedSeatIds }
       );
     }
 
     this.safeEmit(
       'booking:updated',
-      () => emitToBooking(booking._id.toString(), 'booking:updated', { bookingId: booking._id.toString(), status: booking.status, bookingVersion: booking.bookingVersion }),
+      () => emitToBooking(booking._id.toString(), 'booking:updated', { bookingId: booking._id.toString(), status: booking.status, bookingVersion: booking.bookingVersion }, booking.bookingId),
       { bookingId: booking._id.toString(), status: booking.status, bookingVersion: booking.bookingVersion }
     );
     this.safeEmit(
       'admin booking:updated',
-      () => emitToAdmin('bookings', 'booking:updated', { bookingId: booking._id.toString(), status: booking.status, bookingVersion: booking.bookingVersion }),
+      () => emitToAdmin('bookings', 'booking:updated', { bookingId: booking._id.toString(), status: booking.status, bookingVersion: booking.bookingVersion }, booking.bookingId),
       { bookingId: booking._id.toString(), status: booking.status, bookingVersion: booking.bookingVersion }
     );
 
@@ -792,24 +792,24 @@ export class PaymentService {
           eventId: event._id.toString(),
           bookingId: booking._id.toString(),
           seatIds: allSeatIds,
-        }),
+        }, booking.bookingId),
         { eventId: event._id.toString(), bookingId: booking._id.toString(), seatIds: allSeatIds }
       );
     }
 
     this.safeEmit(
       'booking:updated',
-      () => emitToBooking(booking._id.toString(), 'booking:updated', { bookingId: booking._id.toString(), status: booking.status, bookingVersion: booking.bookingVersion }),
+      () => emitToBooking(booking._id.toString(), 'booking:updated', { bookingId: booking._id.toString(), status: booking.status, bookingVersion: booking.bookingVersion }, booking.bookingId),
       { bookingId: booking._id.toString(), status: booking.status, bookingVersion: booking.bookingVersion }
     );
     this.safeEmit(
       'admin booking:updated',
-      () => emitToAdmin('bookings', 'booking:updated', { bookingId: booking._id.toString(), status: booking.status, bookingVersion: booking.bookingVersion }),
+      () => emitToAdmin('bookings', 'booking:updated', { bookingId: booking._id.toString(), status: booking.status, bookingVersion: booking.bookingVersion }, booking.bookingId),
       { bookingId: booking._id.toString(), status: booking.status, bookingVersion: booking.bookingVersion }
     );
     this.safeEmit(
       'admin analytics:changed',
-      () => emitToAdmin('analytics', 'analytics:changed', { bookingId: booking._id.toString(), eventId: booking.eventId.toString() }),
+      () => emitToAdmin('analytics', 'analytics:changed', { bookingId: booking._id.toString(), eventId: booking.eventId.toString() }, booking.bookingId),
       { bookingId: booking._id.toString(), eventId: booking.eventId.toString() }
     );
 

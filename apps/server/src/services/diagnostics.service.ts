@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 
 import { getQueueConnection } from '../config/queue.config';
 import { isRedisConnected } from '../config/redis';
+import { getSocketTelemetry } from '../config/socket';
 import { DeadLetterJob } from '../models/dead-letter-job.schema';
 import { QueueService } from './queue.service';
 import { logger } from '../utils/logger';
@@ -30,6 +31,14 @@ export interface SystemDiagnosticsReport {
   queues: QueueHealthStats[];
   dlq: {
     totalFailedCount: number;
+  };
+  sockets: {
+    initialized: boolean;
+    connectedClients: number;
+    adminClients: number;
+    emitsCount: Record<string, number>;
+    emitFailures: Record<string, number>;
+    skippedEmits: Record<string, number>;
   };
 }
 
@@ -86,6 +95,8 @@ export class DiagnosticsService {
 
     const dlqCount = await DeadLetterJob.countDocuments({});
 
+    const socketTelemetry = getSocketTelemetry();
+
     return {
       timestamp: new Date().toISOString(),
       database: {
@@ -100,6 +111,7 @@ export class DiagnosticsService {
       dlq: {
         totalFailedCount: dlqCount,
       },
+      sockets: socketTelemetry,
     };
   }
 

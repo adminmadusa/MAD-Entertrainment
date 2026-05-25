@@ -9,6 +9,41 @@ import { getEnv } from './env';
 
 let io: SocketIOServer | undefined;
 
+const telemetry = {
+  emitsCount: {} as Record<string, number>,
+  emitFailures: {} as Record<string, number>,
+  skippedEmits: {} as Record<string, number>,
+};
+
+export interface SocketTelemetry {
+  initialized: boolean;
+  connectedClients: number;
+  adminClients: number;
+  emitsCount: Record<string, number>;
+  emitFailures: Record<string, number>;
+  skippedEmits: Record<string, number>;
+}
+
+export function getSocketTelemetry(): SocketTelemetry {
+  const isInit = io !== undefined;
+  let connectedClients = 0;
+  let adminClients = 0;
+
+  if (isInit && io) {
+    connectedClients = io.of('/').sockets.size;
+    adminClients = io.of('/admin').sockets.size;
+  }
+
+  return {
+    initialized: isInit,
+    connectedClients,
+    adminClients,
+    emitsCount: { ...telemetry.emitsCount },
+    emitFailures: { ...telemetry.emitFailures },
+    skippedEmits: { ...telemetry.skippedEmits },
+  };
+}
+
 export function initSocketIO(httpServer: Server): SocketIOServer {
   if (io) return io;
 
@@ -76,26 +111,47 @@ export function getIO(): SocketIOServer {
   return io;
 }
 
-export function emitToEvent(eventId: string, event: string, data: unknown): void {
+export function emitToEvent(eventId: string, event: string, data: unknown, correlationId?: string): void {
   if (!io) {
-    logger.debug({ eventId, event }, 'Socket.IO is not initialized — skipping event emit');
+    telemetry.skippedEmits[event] = (telemetry.skippedEmits[event] || 0) + 1;
+    logger.warn({ event, eventId, correlationId }, 'Socket.IO is not initialized — skipping event emit');
     return;
   }
-  io.to(`event:${eventId}`).emit(event, data);
+  try {
+    telemetry.emitsCount[event] = (telemetry.emitsCount[event] || 0) + 1;
+    io.to(`event:${eventId}`).emit(event, data);
+  } catch (err) {
+    telemetry.emitFailures[event] = (telemetry.emitFailures[event] || 0) + 1;
+    logger.error({ err, event, eventId, correlationId }, 'Failed to emit to event room');
+  }
 }
 
-export function emitToBooking(bookingId: string, event: string, data: unknown): void {
+export function emitToBooking(bookingId: string, event: string, data: unknown, correlationId?: string): void {
   if (!io) {
-    logger.debug({ bookingId, event }, 'Socket.IO is not initialized — skipping booking emit');
+    telemetry.skippedEmits[event] = (telemetry.skippedEmits[event] || 0) + 1;
+    logger.warn({ event, bookingId, correlationId }, 'Socket.IO is not initialized — skipping booking emit');
     return;
   }
-  io.to(`booking:${bookingId}`).emit(event, data);
+  try {
+    telemetry.emitsCount[event] = (telemetry.emitsCount[event] || 0) + 1;
+    io.to(`booking:${bookingId}`).emit(event, data);
+  } catch (err) {
+    telemetry.emitFailures[event] = (telemetry.emitFailures[event] || 0) + 1;
+    logger.error({ err, event, bookingId, correlationId }, 'Failed to emit to booking room');
+  }
 }
 
-export function emitToAdmin(room: string, event: string, data: unknown): void {
+export function emitToAdmin(room: string, event: string, data: unknown, correlationId?: string): void {
   if (!io) {
-    logger.debug({ room, event }, 'Socket.IO is not initialized — skipping admin emit');
+    telemetry.skippedEmits[event] = (telemetry.skippedEmits[event] || 0) + 1;
+    logger.warn({ event, room, correlationId }, 'Socket.IO is not initialized — skipping admin emit');
     return;
   }
-  io.of('/admin').to(`admin:${room}`).emit(event, data);
+  try {
+    telemetry.emitsCount[event] = (telemetry.emitsCount[event] || 0) + 1;
+    io.of('/admin').to(`admin:${room}`).emit(event, data);
+  } catch (err) {
+    telemetry.emitFailures[event] = (telemetry.emitFailures[event] || 0) + 1;
+    logger.error({ err, event, room, correlationId }, 'Failed to emit to admin namespace/room');
+  }
 }
