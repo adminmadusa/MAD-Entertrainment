@@ -2,7 +2,7 @@
 
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 
 import { adminGetEvents } from '@/lib/api/admin/event.service';
 import { adminScanTicket } from '@/lib/api/admin/scanner.service';
@@ -62,7 +62,7 @@ export default function ScannerPage() {
     };
   }, []);
 
-  const syncOfflineScans = async () => {
+  const syncOfflineScans = useCallback(async () => {
     if (isOffline) return;
     const { getOfflineScans, clearOfflineScans } = await import('@/lib/offline-scanner.service');
     const pendingScans = await getOfflineScans();
@@ -78,7 +78,7 @@ export default function ScannerPage() {
     await clearOfflineScans(pendingScans.map(s => s.id));
     setOfflineCount(0);
     alert(`Successfully synced ${pendingScans.length} offline scans!`);
-  };
+  }, [isOffline]);
 
   useEffect(() => {
     if (!isOffline) {
@@ -88,7 +88,7 @@ export default function ScannerPage() {
         getOfflineScans().then(scans => setOfflineCount(scans.length));
       });
     }
-  }, [isOffline]);
+  }, [isOffline, syncOfflineScans]);
 
   const handleScanSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

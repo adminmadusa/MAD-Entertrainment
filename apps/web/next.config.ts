@@ -28,12 +28,9 @@ const nextConfig: NextConfig = {
         hostname: 'images.unsplash.com',
       },
       {
-        protocol: 'http',
-        hostname: 'example.com',
-      },
-      {
+        // api.qrserver.com — for QR code images on ticket pages
         protocol: 'https',
-        hostname: 'example.com',
+        hostname: 'api.qrserver.com',
       },
     ],
     formats: ['image/avif', 'image/webp'],

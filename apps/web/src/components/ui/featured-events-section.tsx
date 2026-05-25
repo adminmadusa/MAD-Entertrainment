@@ -9,6 +9,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 import { Reveal } from '@/components/common/page-transition';
+import { useWindowWidth } from '@/hooks/use-window.hook';
 import { publicGetEvents } from '@/lib/api/public.service';
 
 function ArrowRight({ className = '', size = 16 }: { className?: string; size?: number }) {
@@ -44,6 +45,10 @@ export function FeaturedEventsSection() {
 
   const events = data?.data ?? [];
   const [activeIndex, setActiveIndex] = useState(0);
+
+  // SSR-safe responsive value — defaults to 1024 (desktop) on server,
+  // updates to real viewport on mount. Never reads window during render.
+  const windowWidth = useWindowWidth();
 
   const nextSlide = () => {
     setActiveIndex((prev) => (prev + 1) % events.length);
@@ -113,8 +118,8 @@ export function FeaturedEventsSection() {
                   
                   const isActive = absoluteOffset === 0;
                   
-                  // Responsiveness adjustments
-                  const spread = typeof window !== 'undefined' && window.innerWidth < 640 ? 100 : 160;
+                  // Responsiveness adjustments — uses state-based windowWidth to avoid hydration mismatch
+                  const spread = windowWidth < 640 ? 100 : 160;
                   
                   // Cover flow 3D math
                   const x = absoluteOffset * spread;

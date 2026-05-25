@@ -6,7 +6,6 @@ import ErrorBoundary from '@/components/ErrorBoundary';
 import NavigationTracker from '@/components/NavigationTracker';
 // Load observability only on the server to avoid client‑side dynamic require warnings
 if (typeof window === 'undefined') {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
   require('@/lib/observability');
 }
 
