@@ -3,7 +3,7 @@ services:
     name: mad-server
     env: node
     rootDir: .
-    buildCommand: pnpm install --frozen-lockfile && pnpm --filter @mad/shared build && pnpm --filter @mad/server build
+    buildCommand: pnpm install --frozen-lockfile && pnpm --filter @mad/shared build && pnpm --filter @mad/validations build && pnpm --filter @mad/server build
     startCommand: node apps/server/dist/apps/server/src/server.js
     envVars:
       - key: NODE_ENV

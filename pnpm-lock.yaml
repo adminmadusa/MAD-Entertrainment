@@ -115,6 +115,9 @@ importers:
       '@mad/shared':
         specifier: workspace:*
         version: link:../../packages/shared
+      '@mad/validations':
+        specifier: workspace:*
+        version: link:../../packages/validations
       bcryptjs:
         specifier: ^2.4.3
         version: 2.4.3
