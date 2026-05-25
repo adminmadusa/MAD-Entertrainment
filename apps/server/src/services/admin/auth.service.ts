@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
 import { AdminModel } from '../../models/admin.schema';
 import { getEnv } from '../../config/env';
+import { AppError } from '../../middleware/error.middleware';
 
 const env = getEnv();
 
@@ -8,16 +9,16 @@ export const adminAuthService = {
   async login(email: string, password: string) {
     const admin = await AdminModel.findOne({ email });
     if (!admin) {
-      throw new Error('Invalid email or password');
+      throw AppError.unauthorized('Invalid email or password');
     }
 
     const isMatch = await admin.comparePassword(password);
     if (!isMatch) {
-      throw new Error('Invalid email or password');
+      throw AppError.unauthorized('Invalid email or password');
     }
 
     if (!admin.isActive) {
-      throw new Error('Account has been deactivated');
+      throw AppError.forbidden('Account has been deactivated');
     }
 
     admin.lastLogin = new Date();
@@ -46,7 +47,7 @@ export const adminAuthService = {
   async getMe(adminId: string) {
     const admin = await AdminModel.findById(adminId).select('-passwordHash');
     if (!admin) {
-      throw new Error('Admin not found');
+      throw AppError.notFound('Admin not found');
     }
     return {
       id: admin._id,

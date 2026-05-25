@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-05-25T05:00:18.483Z",
+  "timestamp": "2026-05-25T08:43:51.652Z",
   "packages": [
     {
       "name": "@mad/shared",
@@ -206,6 +206,54 @@
     },
     {
       "method": "GET",
+      "path": "/api/admin/bookings"
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/bookings/:id"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/admin/bookings/:id/cancel"
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/refunds"
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/refunds"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/admin/refunds/:id/process"
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/coupons"
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/coupons"
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/coupons/:id"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/admin/coupons/:id"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/admin/coupons/:id"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/admin/coupons/:id/toggle"
+    },
+    {
+      "method": "GET",
       "path": "/api/admin/diagnostics/consistency"
     },
     {
@@ -227,6 +275,54 @@
     {
       "method": "POST",
       "path": "/api/admin/diagnostics/dlq/retry-all"
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/popups"
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/popups"
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/popups/:id"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/admin/popups/:id"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/admin/popups/:id"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/admin/popups/:id/toggle"
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/notifications"
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/notifications/:id/retry"
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/team"
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/team"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/admin/team/:id/toggle"
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/scanner/scan"
     }
   ],
   "envVars": [
