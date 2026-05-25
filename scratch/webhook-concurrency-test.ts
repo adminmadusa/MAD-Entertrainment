@@ -106,6 +106,8 @@ async function createAwaitingPaymentBooking(eventId: Types.ObjectId, orderId: st
   });
   await reservation.save();
 
+  // Increment event reserved count to match the reservation
+  await Event.updateOne({ _id: eventId }, { $inc: { reservedCount: 1 } });
 
   booking.reservationIds = [reservation.reservationId];
   await booking.save();
