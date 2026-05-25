@@ -35,7 +35,7 @@ export default function CreateArtistPage() {
 
   // Media
   const [profileImage, setProfileImage] = useState<CloudinaryAsset | null>(null);
-  const [galleryImages, setGalleryImages] = useState<CloudinaryAsset[]>([]);
+
   const [error, setError] = useState('');
 
   const createMutation = useMutation({
@@ -54,19 +54,7 @@ export default function CreateArtistPage() {
     },
   });
 
-  const handleImageChange = (index: number, asset: CloudinaryAsset | null) => {
-    if (asset === null) {
-      setGalleryImages((prev) => prev.filter((_, idx) => idx !== index));
-    } else {
-      setGalleryImages((prev) => prev.map((img, idx) => (idx === index ? asset : img)));
-    }
-  };
 
-  const handleAddImage = (asset: CloudinaryAsset | null) => {
-    if (asset) {
-      setGalleryImages((prev) => [...prev, asset]);
-    }
-  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -96,7 +84,6 @@ export default function CreateArtistPage() {
       bio: bio.trim() || undefined,
       genre: genres.length > 0 ? genres : undefined,
       profileImage: profileImage ?? undefined,
-      galleryImages,
       socialLinks: links.length > 0 ? links : undefined,
       isActive,
     };
@@ -129,47 +116,6 @@ export default function CreateArtistPage() {
             {error}
           </motion.div>
         )}
-
-        {/* Profile Image & Gallery */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="glass rounded-2xl border border-border-subtle p-6 md:col-span-1">
-            <CloudinaryUpload
-              folder="artists"
-              value={profileImage}
-              onChange={setProfileImage}
-              label="Profile Photo"
-              aspectRatio="aspect-square"
-              id="artist-profile-photo"
-            />
-          </div>
-          <div className="glass rounded-2xl border border-border-subtle p-6 md:col-span-2 space-y-4">
-            <h2 className="text-white font-semibold">Artist Gallery</h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-              {galleryImages.map((img, index) => (
-                <div key={img.publicId} className="relative">
-                  <CloudinaryUpload
-                    folder="artists"
-                    value={img}
-                    onChange={(asset) => handleImageChange(index, asset)}
-                    aspectRatio="aspect-video"
-                    label=""
-                  />
-                </div>
-              ))}
-              {galleryImages.length < 10 && (
-                <div>
-                  <CloudinaryUpload
-                    folder="artists"
-                    value={null}
-                    onChange={handleAddImage}
-                    aspectRatio="aspect-video"
-                    label="Add Gallery Photo"
-                  />
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
 
         {/* Basic Info */}
         <div className="glass rounded-2xl border border-border-subtle p-6 space-y-5">
