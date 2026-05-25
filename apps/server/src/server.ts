@@ -11,6 +11,7 @@ import { initCloudinary } from './config/cloudinary';
 import { connectDatabase, disconnectDatabase } from './config/database';
 import { initRazorpay } from './config/razorpay';
 import { getRedis, waitForRedisReady, disconnectRedis } from './config/redis';
+import { initRateLimiters } from './middleware/rate.middleware';
 import { initializeSentry } from './instrument';
 initializeSentry();
 
@@ -43,6 +44,9 @@ async function bootstrap(): Promise<void> {
   } catch (err) {
     logger.warn({ err }, 'Redis connection failed during bootstrap. Starting in degraded mode.');
   }
+
+  // Initialize rate limiters (falls back to memory if Redis is unavailable)
+  initRateLimiters();
   
   initCloudinary();
   initRazorpay();
