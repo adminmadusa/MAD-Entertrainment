@@ -8,6 +8,7 @@ import { useState } from 'react';
 
 import { adminGetPopups, adminDeletePopup, adminTogglePopup } from '@/lib/api/admin/popup.service';
 import { extractApiError } from '@/lib/api/client';
+import ErrorState from '@/components/states/ErrorState';
 
 
 export default function AdminPopupsPage() {
@@ -15,7 +16,7 @@ export default function AdminPopupsPage() {
   const [page, setPage] = useState(1);
   const [deleteTarget, setDeleteTarget] = useState<PopupCampaign | null>(null);
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, error } = useQuery({
     queryKey: ['admin-popups', page],
     queryFn: () => adminGetPopups(page, 15),
   });
@@ -33,8 +34,16 @@ export default function AdminPopupsPage() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['admin-popups'] }),
   });
 
-  const popups = data?.data ?? [];
+  const popups = data?.items ?? [];
   const pagination = data?.pagination;
+
+  if (error) {
+    return (
+      <div className="py-12">
+        <ErrorState message={(error as Error).message || 'Failed to load popup campaigns.'} />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

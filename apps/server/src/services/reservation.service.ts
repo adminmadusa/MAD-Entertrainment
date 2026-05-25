@@ -1,5 +1,5 @@
 import { BookingMode, InventoryState, ReservationStatus, SeatStatus, TicketTier, HTTP_STATUS } from '@mad/shared';
-import { Types } from 'mongoose';
+import { Types, ClientSession } from 'mongoose';
 
 import { getRedis } from '../config/redis';
 import { emitToAdmin, emitToEvent } from '../config/socket';
@@ -216,9 +216,10 @@ export class ReservationService {
   static async transitionForBooking(
     bookingId: Types.ObjectId | string,
     toStatus: ReservationStatus,
-    details: { paymentReference?: string; paymentId?: Types.ObjectId; correlationId?: string; reason?: string } = {}
+    details: { paymentReference?: string; paymentId?: Types.ObjectId; correlationId?: string; reason?: string } = {},
+    session?: ClientSession
   ): Promise<IReservation[]> {
-    const reservations = await Reservation.find({ bookingId, status: { $in: ACTIVE_RESERVATION_STATUSES } });
+    const reservations = await Reservation.find({ bookingId, status: { $in: ACTIVE_RESERVATION_STATUSES } }).session(session || null);
     const transitioned: IReservation[] = [];
 
     for (const reservation of reservations) {
@@ -241,7 +242,7 @@ export class ReservationService {
         correlationId: details.correlationId,
         createdAt: new Date(),
       });
-      await reservation.save();
+      await reservation.save({ session });
       transitioned.push(reservation);
     }
 
@@ -266,7 +267,7 @@ export class ReservationService {
     return transitioned;
   }
 
-  static async releaseCapacityForTerminalReservations(reservations: IReservation[]): Promise<void> {
+  static async releaseCapacityForTerminalReservations(reservations: IReservation[], session?: ClientSession): Promise<void> {
     const byEvent = new Map<string, number>();
     for (const reservation of reservations) {
       const eventId = reservation.eventId.toString();
@@ -276,7 +277,7 @@ export class ReservationService {
     for (const [eventId, quantity] of byEvent.entries()) {
       await Event.findByIdAndUpdate(eventId, {
         $inc: { reservedCount: -quantity, eventVersion: 1 },
-      });
+      }).session(session || null);
     }
   }
 

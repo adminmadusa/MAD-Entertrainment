@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 
 import { adminGetNotifications, adminRetryNotification } from '@/lib/api/admin/notification.service';
+import ErrorState from '@/components/states/ErrorState';
 
 export default function AdminNotificationsPage() {
   const qc = useQueryClient();
@@ -11,7 +12,7 @@ export default function AdminNotificationsPage() {
   const [channelFilter, setChannelFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, error } = useQuery({
     queryKey: ['admin-notifications', { page, channel: channelFilter, sent: statusFilter }],
     queryFn: () =>
       adminGetNotifications({
@@ -27,8 +28,16 @@ export default function AdminNotificationsPage() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['admin-notifications'] }),
   });
 
-  const notifications = data?.data ?? [];
+  const notifications = data?.items ?? [];
   const pagination = data?.pagination;
+
+  if (error) {
+    return (
+      <div className="py-12">
+        <ErrorState message={(error as Error).message || 'Failed to load notifications.'} />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

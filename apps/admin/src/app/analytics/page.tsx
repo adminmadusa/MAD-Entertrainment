@@ -80,7 +80,7 @@ export default function AdminAnalyticsPage() {
       </div>
 
       {/* Top Events */}
-      {summary?.topEvents && summary.topEvents.length > 0 && (
+      {Array.isArray(summary?.topEvents) && summary.topEvents.length > 0 ? (
         <div className="glass rounded-2xl border border-border-subtle overflow-hidden">
           <div className="px-6 py-4 border-b border-border-subtle">
             <h2 className="text-white font-semibold">Top Events by Revenue</h2>
@@ -104,7 +104,7 @@ export default function AdminAnalyticsPage() {
             </tbody>
           </table>
         </div>
-      )}
+      ) : null}
     </div>
   );
 }

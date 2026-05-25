@@ -60,11 +60,12 @@ export interface EventFilters {
   featured?: boolean;
 }
 
-export async function adminGetEvents(filters: EventFilters = {}): Promise<EventsResponse> {
+export async function adminGetEvents(filters: EventFilters = {}): Promise<{ items: AdminEvent[]; pagination: EventsResponse['pagination'] }> {
   const params = new URLSearchParams();
   Object.entries(filters).forEach(([k, v]) => { if (v !== undefined) params.set(k, String(v)); });
   const { data } = await adminApiClient.get<EventsResponse>(`/admin/events?${params}`);
-  return data;
+  const items = Array.isArray(data?.data) ? data?.data : [];
+  return { items, pagination: data?.pagination };
 }
 
 export async function adminGetEvent(id: string): Promise<AdminEvent> {

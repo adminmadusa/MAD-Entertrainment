@@ -1,6 +1,5 @@
+import { PopupTrigger } from '@mad/shared';
 import mongoose, { Schema, Document } from 'mongoose';
-
-export type PopupTrigger = 'onLoad' | 'onExit' | 'onScroll' | 'onTimer';
 
 export interface IPopupCampaign extends Document {
   name: string;
@@ -12,6 +11,7 @@ export interface IPopupCampaign extends Document {
   trigger: PopupTrigger;
   triggerDelay?: number;
   cooldownHours?: number;
+  priority: number;
   showOnPages?: string[];
   isActive: boolean;
   startDate?: Date;
@@ -40,12 +40,13 @@ const popupCampaignSchema = new Schema<IPopupCampaign>(
     ctaText: String,
     trigger: {
       type: String,
-      enum: ['onLoad', 'onExit', 'onScroll', 'onTimer'],
+      enum: Object.values(PopupTrigger),
       required: true,
-      default: 'onLoad',
+      default: PopupTrigger.ON_LOAD,
     },
     triggerDelay: { type: Number, min: 0, default: 0 },
     cooldownHours: { type: Number, min: 0, default: 24 },
+    priority: { type: Number, default: 0, min: 0 },
     showOnPages: [String],
     isActive: { type: Boolean, default: true, index: true },
     startDate: Date,

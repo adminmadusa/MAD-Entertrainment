@@ -8,6 +8,7 @@ import { useState } from 'react';
 
 import { adminGetDJs, adminDeleteDJ, adminUpdateDJ } from '@/lib/api/admin/dj.service';
 import { extractApiError } from '@/lib/api/client';
+import ErrorState from '@/components/states/ErrorState';
 
 
 export default function AdminDJsPage() {
@@ -16,7 +17,7 @@ export default function AdminDJsPage() {
   const [page, setPage] = useState(1);
   const [deleteTarget, setDeleteTarget] = useState<DJOperator | null>(null);
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, error } = useQuery({
     queryKey: ['admin-djs', { page, search }],
     queryFn: () => adminGetDJs({ page, limit: 15, search }),
   });
@@ -35,8 +36,16 @@ export default function AdminDJsPage() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['admin-djs'] }),
   });
 
-  const djs = data?.data ?? [];
+  const djs = data?.items ?? [];
   const pagination = data?.pagination;
+
+  if (error) {
+    return (
+      <div className="py-12">
+        <ErrorState message={(error as Error).message || 'Failed to load DJ Operators.'} />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

@@ -1,5 +1,16 @@
 import { adminApiClient } from '@/lib/api/client';
 
+export type PaginatedResponse<T> = {
+  data: T[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+};
+
+
 export interface AdminBooking {
   _id: string;
   bookingId: string;
@@ -30,27 +41,181 @@ export interface AdminRefund {
   processedAt?: string;
 }
 
-type PaginatedResponse<T> = { data: T[]; pagination: { page: number; limit: number; total: number; totalPages: number } };
-
-export async function adminGetBookings(params: Record<string, string | number> = {}): Promise<PaginatedResponse<AdminBooking>> {
-  const qs = new URLSearchParams(Object.entries(params).map(([k, v]) => [k, String(v)]));
-  const { data } = await adminApiClient.get<PaginatedResponse<AdminBooking>>(`/admin/bookings?${qs}`);
-  return data;
+export interface NormalizedBookingsResponse {
+  items: AdminBooking[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
 }
 
-export async function adminGetBooking(id: string): Promise<AdminBooking> {
-  const { data } = await adminApiClient.get<{ data: AdminBooking }>(`/admin/bookings/${id}`);
-  return data.data;
+export interface EventSummary {
+  _id: string;
+  title: string;
+  startDate: string;
+  coverImage?: { url: string };
+}
+
+export interface CustomerSummary {
+  _id?: string;
+  name: string;
+  email: string;
+  phone?: string;
+}
+
+export interface TicketSummary {
+  tierName: string;
+  quantity: number;
+  price: number;
+}
+
+export interface PaymentSummary {
+  amount: number;
+  currency: string;
+  status: string;
+}
+
+export interface NormalizedBookingDetail {
+  booking: {
+    _id: string;
+    bookingId: string;
+    status: string;
+    totalAmount: number;
+    currency: string;
+    mode: string;
+    createdAt: string;
+    cancellationReason?: string;
+    cancelledAt?: string;
+  } | null;
+  customer: CustomerSummary | null;
+  tickets: TicketSummary[];
+  payment: PaymentSummary | null;
+  event: EventSummary | null;
+}
+
+export async function adminGetBookings(params: Record<string, string | number> = {}): Promise<NormalizedBookingsResponse> {
+  try {
+    const qs = new URLSearchParams(Object.entries(params).map(([k, v]) => [k, String(v)]));
+    const { data } = await adminApiClient.get<{ data: AdminBooking[]; pagination: { page: number; limit: number; total: number; totalPages: number } }>(`/admin/bookings?${qs}`);
+    return {
+      items: Array.isArray(data?.data) ? data.data : [],
+      pagination: {
+        page: data?.pagination?.page ?? 1,
+        limit: data?.pagination?.limit ?? 15,
+        total: data?.pagination?.total ?? 0,
+        totalPages: data?.pagination?.totalPages ?? 1,
+      },
+    };
+  } catch (error) {
+    console.error('[Booking Service] Failed to fetch bookings, returning safe default NormalizedBookingsResponse:', error);
+    return {
+      items: [],
+      pagination: {
+        page: 1,
+        limit: 15,
+        total: 0,
+        totalPages: 1,
+      },
+    };
+  }
+}
+
+export async function adminGetBooking(id: string): Promise<NormalizedBookingDetail> {
+  try {
+    const { data } = await adminApiClient.get<{ data: AdminBooking }>(`/admin/bookings/${id}`);
+    const booking = data?.data;
+    if (!booking) throw new Error('Booking not found');
+
+    const customer = booking.userId ?? booking.guestInfo;
+
+    return {
+      booking: {
+        _id: booking._id,
+        bookingId: booking.bookingId,
+        status: booking.status,
+        totalAmount: booking.totalAmount,
+        currency: booking.currency,
+        mode: booking.mode,
+        createdAt: booking.createdAt,
+        cancellationReason: booking.cancellationReason,
+        cancelledAt: booking.cancelledAt,
+      },
+      customer: customer ? {
+        _id: (customer as any)._id,
+        name: (customer as any).name ?? '—',
+        email: (customer as any).email ?? '—',
+        phone: (customer as any).phone,
+      } : null,
+      tickets: Array.isArray(booking.tickets) ? booking.tickets.map(t => ({
+        tierName: t.tierName ?? '—',
+        quantity: t.quantity ?? 0,
+        price: t.price ?? 0,
+      })) : [],
+      payment: {
+        amount: booking.totalAmount,
+        currency: booking.currency,
+        status: booking.status,
+      },
+      event: booking.eventId ? {
+        _id: booking.eventId._id,
+        title: booking.eventId.title ?? '—',
+        startDate: booking.eventId.startDate,
+        coverImage: booking.eventId.coverImage,
+      } : null,
+    };
+  } catch (error) {
+    console.error('[Booking Detail Service] Failed to fetch booking detail, returning default fallback DTO:', error);
+    return {
+      booking: null,
+      customer: null,
+      tickets: [],
+      payment: null,
+      event: null,
+    };
+  }
 }
 
 export async function adminCancelBooking(id: string, reason?: string): Promise<void> {
   await adminApiClient.patch(`/admin/bookings/${id}/cancel`, { reason });
 }
 
-export async function adminGetRefunds(params: Record<string, string> = {}): Promise<PaginatedResponse<AdminRefund>> {
-  const qs = new URLSearchParams(params);
-  const { data } = await adminApiClient.get<PaginatedResponse<AdminRefund>>(`/admin/refunds?${qs}`);
-  return data;
+export interface NormalizedRefundsResponse {
+  items: AdminRefund[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+}
+
+export async function adminGetRefunds(params: Record<string, string> = {}): Promise<NormalizedRefundsResponse> {
+  try {
+    const qs = new URLSearchParams(params);
+    const { data } = await adminApiClient.get<{ data: AdminRefund[]; pagination: { page: number; limit: number; total: number; totalPages: number } }>(`/admin/refunds?${qs}`);
+    return {
+      items: Array.isArray(data?.data) ? data.data : [],
+      pagination: {
+        page: data?.pagination?.page ?? 1,
+        limit: data?.pagination?.limit ?? 15,
+        total: data?.pagination?.total ?? 0,
+        totalPages: data?.pagination?.totalPages ?? 1,
+      },
+    };
+  } catch (error) {
+    console.error('[Booking Service] Failed to fetch refunds, returning safe default NormalizedRefundsResponse:', error);
+    return {
+      items: [],
+      pagination: {
+        page: 1,
+        limit: 15,
+        total: 0,
+        totalPages: 1,
+      },
+    };
+  }
 }
 
 export async function adminProcessRefund(id: string, action: 'approve' | 'reject', adminNotes?: string, gatewayRefundId?: string): Promise<void> {

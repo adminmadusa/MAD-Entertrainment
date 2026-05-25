@@ -87,12 +87,14 @@ export default function AdminDashboardPage() {
               </tr>
             </thead>
             <tbody>
-              {summary.topEvents.slice(0, 5).map((ev) => (
-                <tr key={ev._id} className="border-b border-border-subtle/40 hover:bg-white/2">
-                  <td className="py-3 px-6 text-text-primary">{ev.event?.title ?? 'Deleted Event'}</td>
-                  <td className="py-3 px-6 text-right text-white font-semibold">₹{ev.revenue.toLocaleString('en-IN')}</td>
-                </tr>
-              ))}
+              {Array.isArray(summary?.topEvents) && summary.topEvents.length > 0 ? (
+                summary.topEvents.slice(0, 5).map((ev) => (
+                  <tr key={ev._id} className="border-b border-border-subtle/40 hover:bg-white/2">
+                    <td className="py-3.5 px-6 text-text-primary">{ev.event?.title ?? 'Deleted Event'}</td>
+                    <td className="py-3.5 px-4 text-text-secondary">{ev.revenue.toLocaleString('en-IN')}</td>
+                  </tr>
+                ))
+              ) : null}
             </tbody>
           </table>
         </div>

@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useState } from 'react';
 
 import { adminGetRefunds, adminProcessRefund, type AdminRefund } from '@/lib/api/admin/booking.service';
+import ErrorState from '@/components/states/ErrorState';
 
 
 export default function AdminRefundsPage() {
@@ -15,7 +16,7 @@ export default function AdminRefundsPage() {
   const [adminNotes, setAdminNotes] = useState('');
   const [gatewayId, setGatewayId] = useState('');
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, error } = useQuery({
     queryKey: ['admin-refunds', { page, status: statusFilter }],
     queryFn: () => adminGetRefunds({ page: String(page), limit: '15', ...(statusFilter && { status: statusFilter }) }),
   });
@@ -25,8 +26,16 @@ export default function AdminRefundsPage() {
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['admin-refunds'] }); setProcessTarget(null); setAdminNotes(''); setGatewayId(''); },
   });
 
-  const refunds = data?.data ?? [];
+  const refunds = data?.items ?? [];
   const pagination = data?.pagination;
+
+  if (error) {
+    return (
+      <div className="py-12">
+        <ErrorState message={(error as Error).message || 'Failed to load refunds.'} />
+      </div>
+    );
+  }
 
   const STATUS_COLORS: Record<string, string> = {
     requested: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/30',

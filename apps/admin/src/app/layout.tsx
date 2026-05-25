@@ -1,5 +1,10 @@
 import type { Metadata, Viewport } from 'next';
 import { Outfit } from 'next/font/google';
+import React from 'react';
+import * as Sentry from '@sentry/nextjs';
+import ErrorBoundary from '@/components/ErrorBoundary';
+import NavigationTracker from '@/components/NavigationTracker';
+import '@/lib/observability';
 
 import { AdminShell } from '@/components/admin-shell';
 import { Providers } from '@/providers';
@@ -33,10 +38,13 @@ interface RootLayoutProps {
 
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
-    <html lang="en" className={`${outfit.variable} dark`} suppressHydrationWarning>
+    <html lang="en" className={`${outfit.variable} dark`} suppressHydrationWarning data-scroll-behavior="smooth">
       <body className="bg-background text-text-primary antialiased">
+        <NavigationTracker />
         <Providers>
-          <AdminShell>{children}</AdminShell>
+          <ErrorBoundary>
+            <AdminShell>{children}</AdminShell>
+          </ErrorBoundary>
         </Providers>
       </body>
     </html>

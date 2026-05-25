@@ -12,6 +12,16 @@ export interface VenuesResponse {
   };
 }
 
+export interface NormalizedVenuesResponse {
+  items: Venue[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+}
+
 export interface VenueFilters {
   page?: number;
   limit?: number;
@@ -19,15 +29,36 @@ export interface VenueFilters {
   city?: string;
 }
 
-export async function adminGetVenues(filters: VenueFilters = {}): Promise<VenuesResponse> {
-  const params = new URLSearchParams();
-  Object.entries(filters).forEach(([k, v]) => {
-    if (v !== undefined && v !== '') {
-      params.set(k, String(v));
-    }
-  });
-  const { data } = await adminApiClient.get<VenuesResponse>(`/admin/venues?${params}`);
-  return data;
+export async function adminGetVenues(filters: VenueFilters = {}): Promise<NormalizedVenuesResponse> {
+  try {
+    const params = new URLSearchParams();
+    Object.entries(filters).forEach(([k, v]) => {
+      if (v !== undefined && v !== '') {
+        params.set(k, String(v));
+      }
+    });
+    const { data } = await adminApiClient.get<VenuesResponse>(`/admin/venues?${params}`);
+    return {
+      items: Array.isArray(data?.data) ? data.data : [],
+      pagination: {
+        page: data?.pagination?.page ?? 1,
+        limit: data?.pagination?.limit ?? 15,
+        total: data?.pagination?.total ?? 0,
+        totalPages: data?.pagination?.totalPages ?? 1,
+      },
+    };
+  } catch (error) {
+    console.error('[Venue Service] Failed to fetch venues, returning safe default NormalizedVenuesResponse:', error);
+    return {
+      items: [],
+      pagination: {
+        page: 1,
+        limit: 15,
+        total: 0,
+        totalPages: 1,
+      },
+    };
+  }
 }
 
 export async function adminGetVenue(id: string): Promise<Venue> {

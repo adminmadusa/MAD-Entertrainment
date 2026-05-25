@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useState } from 'react';
 
 import { adminGetBookings, adminCancelBooking, type AdminBooking } from '@/lib/api/admin/booking.service';
+import ErrorState from '@/components/states/ErrorState';
 
 const STATUS_COLORS: Record<string, string> = {
   confirmed: 'bg-green-500/10 text-green-400 border-green-500/30',
@@ -21,7 +22,7 @@ export default function AdminBookingsPage() {
   const [cancelTarget, setCancelTarget] = useState<AdminBooking | null>(null);
   const [cancelReason, setCancelReason] = useState('');
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, error } = useQuery({
     queryKey: ['admin-bookings', { page, search, status: statusFilter }],
     queryFn: () => adminGetBookings({ page, limit: 15, ...(search && { search }), ...(statusFilter && { status: statusFilter }) }),
   });
@@ -35,8 +36,16 @@ export default function AdminBookingsPage() {
     },
   });
 
-  const bookings = data?.data ?? [];
+  const bookings = data?.items ?? [];
   const pagination = data?.pagination;
+
+  if (error) {
+    return (
+      <div className="py-12">
+        <ErrorState message={(error as Error).message || 'Failed to load bookings.'} />
+      </div>
+    );
+  }
 
   const handleExportCSV = () => {
     if (!bookings || bookings.length === 0) return;

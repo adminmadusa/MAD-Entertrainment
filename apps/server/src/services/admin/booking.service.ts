@@ -1,0 +1,304 @@
+import { BookingStatus, ReservationStatus, SeatStatus, InventoryState } from '@mad/shared';
+import mongoose, { Types, ClientSession } from 'mongoose';
+
+import { emitToAdmin, emitToEvent, emitToBooking } from '../../config/socket';
+import { AppError } from '../../middleware/error.middleware';
+import { Booking } from '../../models/booking.schema';
+import { Event } from '../../models/event.schema';
+import { SeatLayout } from '../../models/seat-layout.schema';
+import { logger } from '../../utils/logger';
+import { auditLog } from '../../utils/audit';
+import { ReservationService } from '../reservation.service';
+import { CacheService } from '../cache.service';
+
+/**
+ * Resilient transaction execution helper. Runs the callback inside a session
+ * transaction if replica sets are supported by the deployment, otherwise falls
+ * back gracefully to atomic non-transactional operations.
+ */
+export async function runInTransaction<T>(
+  fn: (session: ClientSession | undefined) => Promise<T>
+): Promise<T> {
+  const session = await mongoose.startSession().catch(() => null);
+  if (!session) {
+    return fn(undefined);
+  }
+
+  try {
+    let result: T;
+    await session.withTransaction(async () => {
+      result = await fn(session);
+    });
+    return result!;
+  } catch (err: any) {
+    if (
+      err?.message?.includes('replica set') ||
+      err?.message?.includes('Transaction') ||
+      err?.codeName === 'CommandNotSupported'
+    ) {
+      logger.warn(
+        { err },
+        'MongoDB transactions are not supported on this deployment. Falling back to non-transactional execution.'
+      );
+      return fn(undefined);
+    }
+    throw err;
+  } finally {
+    await session.endSession().catch(() => {});
+  }
+}
+
+/**
+ * Maps a Mongoose Booking document onto a safe Normalized AdminBooking DTO representation.
+ */
+const mapBookingToAdminDTO = (booking: any) => {
+  const isSeatBased = booking.tickets?.[0]?.seats?.length > 0;
+  const mode = booking.eventId?.bookingMode || (isSeatBased ? 'seat_based' : 'general_admission');
+
+  const customerObj = {
+    _id: booking.userId ? booking.userId.toString() : undefined,
+    name: booking.guestName || '—',
+    email: booking.guestEmail || '—',
+    phone: booking.guestPhone,
+  };
+
+  return {
+    _id: booking._id.toString(),
+    bookingId: booking.bookingId,
+    status: booking.status,
+    totalAmount: booking.totalAmount,
+    currency: booking.currency || 'INR',
+    mode,
+    eventId: booking.eventId ? {
+      _id: booking.eventId._id.toString(),
+      title: booking.eventId.title || '—',
+      startDate: booking.eventId.startDate,
+      coverImage: booking.eventId.bannerImage ? { url: booking.eventId.bannerImage.url } : undefined,
+    } : null,
+    userId: booking.userId ? customerObj : null,
+    guestInfo: !booking.userId ? {
+      name: booking.guestName || '—',
+      email: booking.guestEmail || '—',
+      phone: booking.guestPhone || '',
+    } : undefined,
+    tickets: Array.isArray(booking.tickets) ? booking.tickets.map((t: any) => ({
+      tierName: t.tierName || '—',
+      quantity: t.quantity || 0,
+      price: t.pricePerTicket || 0,
+    })) : [],
+    createdAt: booking.createdAt ? booking.createdAt.toISOString() : new Date().toISOString(),
+    cancellationReason: booking.cancellationReason,
+    cancelledAt: booking.cancelledAt ? booking.cancelledAt.toISOString() : undefined,
+  };
+};
+
+/**
+ * Fetch paginated list of bookings with optional status and fuzzy reference/email filtering.
+ */
+export const getBookings = async (
+  page: number = 1,
+  limit: number = 10,
+  search?: string,
+  status?: string
+) => {
+  const skip = (page - 1) * limit;
+  const filter: any = {};
+
+  if (status) {
+    filter.status = status;
+  }
+
+  if (search) {
+    const searchRegex = new RegExp(search, 'i');
+    filter.$or = [
+      { bookingId: searchRegex },
+      { guestEmail: searchRegex },
+      { guestName: searchRegex },
+    ];
+  }
+
+  const total = await Booking.countDocuments(filter);
+  const bookings = await Booking.find(filter)
+    .populate('eventId')
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(limit);
+
+  const mappedBookings = bookings.map(mapBookingToAdminDTO);
+
+  return {
+    data: mappedBookings,
+    pagination: {
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit) || 1,
+    },
+  };
+};
+
+/**
+ * Fetch single booking populated detailed DTO representation.
+ */
+export const getBookingById = async (id: string) => {
+  const query = Types.ObjectId.isValid(id) ? { _id: id } : { bookingId: id };
+  const booking = await Booking.findOne(query).populate('eventId');
+  if (!booking) {
+    return null;
+  }
+  return mapBookingToAdminDTO(booking);
+};
+
+/**
+ * Atomically cancel a booking, log reasons, transition reservations, and release inventory/seats.
+ */
+export const cancelBooking = async (id: string, reason?: string) => {
+  return runInTransaction(async (session) => {
+    const booking = await Booking.findById(id).session(session || null);
+    if (!booking) {
+      throw AppError.notFound('Booking not found');
+    }
+
+    if (booking.status === BookingStatus.CANCELLED || booking.status === BookingStatus.FAILED) {
+      throw AppError.badRequest(`Booking is already in a terminal state: ${booking.status}`);
+    }
+
+    const previousStatus = booking.status;
+
+    // 1. Update Booking Status
+    booking.status = BookingStatus.CANCELLED;
+    booking.cancellationReason = reason || 'Admin cancelled';
+    booking.cancelledAt = new Date();
+    booking.bookingVersion += 1;
+    if (booking.expiresAt) {
+      booking.expiresAt = undefined;
+    }
+    await booking.save({ session });
+
+    // 2. Transition corresponding reservations
+    const transitioned = await ReservationService.transitionForBooking(
+      booking._id,
+      ReservationStatus.CANCELLED,
+      {
+        reason: reason || 'Admin cancelled',
+        correlationId: booking.bookingId,
+      },
+      session
+    );
+
+    // 3. Update Event Statistics based on status
+    const event = await Event.findById(booking.eventId).session(session || null);
+    if (event) {
+      if (previousStatus === BookingStatus.CONFIRMED) {
+        // Decrease soldCount properties
+        const decUpdate: Record<string, number> = {
+          soldCount: -booking.totalTickets,
+          eventVersion: 1,
+        };
+
+        for (const bookedTicket of booking.tickets) {
+          const tierIndex = event.ticketTiers.findIndex((t) => t.tier === bookedTicket.tier);
+          if (tierIndex !== -1) {
+            decUpdate[`ticketTiers.${tierIndex}.soldCount`] = -bookedTicket.quantity;
+          }
+        }
+
+        await Event.findOneAndUpdate(
+          { _id: booking.eventId },
+          { $inc: decUpdate, $set: { isSoldOut: false } },
+          { new: true, session }
+        );
+      } else if (previousStatus === BookingStatus.AWAITING_PAYMENT) {
+        // Decrement reservedCount since it was never confirmed
+        await ReservationService.releaseCapacityForTerminalReservations(transitioned, session);
+      }
+    }
+
+    // 4. Release Seat Layout if seat-based event
+    const releasedSeatIds: string[] = [];
+    if (event && event.bookingMode === 'seat_based') {
+      const allSeatIds = booking.tickets.flatMap((ticket) => ticket.seats || []).map((seat) => seat.seatId);
+      if (allSeatIds.length > 0) {
+        await SeatLayout.updateOne(
+          { eventId: event._id },
+          {
+            $set: {
+              'seats.$[seat].status': SeatStatus.AVAILABLE,
+            },
+            $unset: {
+              'seats.$[seat].lockedBy': '',
+              'seats.$[seat].lockedAt': '',
+              'seats.$[seat].bookedByBookingId': '',
+              'seats.$[seat].reservationId': '',
+            },
+            $inc: {
+              'seats.$[seat].seatVersion': 1,
+            },
+          },
+          {
+            arrayFilters: [
+              {
+                'seat.seatId': { $in: allSeatIds },
+                $or: [
+                  { 'seat.bookedByBookingId': booking._id.toString() },
+                  { 'seat.reservationId': { $in: booking.reservationIds || [] } }
+                ]
+              },
+            ],
+            session,
+          }
+        );
+        releasedSeatIds.push(...allSeatIds);
+      }
+    }
+
+    await CacheService.delPattern('events:*');
+
+    // 5. Emit real-time updates via WebSockets
+    if (event && releasedSeatIds.length > 0) {
+      try {
+        emitToEvent(event._id.toString(), 'seat:unlocked', { seatIds: releasedSeatIds }, booking.bookingId);
+      } catch (err) {
+        logger.debug({ err, eventId: event._id }, 'Seat unlock emit skipped');
+      }
+    }
+
+    try {
+      emitToBooking(
+        booking._id.toString(),
+        'booking:updated',
+        { bookingId: booking._id.toString(), status: booking.status, bookingVersion: booking.bookingVersion },
+        booking.bookingId
+      );
+    } catch (err) {
+      logger.debug({ err, bookingId: booking._id }, 'Booking update emit skipped');
+    }
+
+    try {
+      emitToAdmin(
+        'bookings',
+        'booking:updated',
+        { bookingId: booking._id.toString(), status: booking.status, bookingVersion: booking.bookingVersion },
+        booking.bookingId
+      );
+    } catch (err) {
+      logger.debug({ err, bookingId: booking._id }, 'Admin booking update emit skipped');
+    }
+
+    auditLog({
+      action: 'BOOKING_CANCELLED',
+      actor: { type: 'admin', id: 'system' },
+      status: 'success',
+      metadata: {
+        bookingId: booking._id.toString(),
+        bookingReference: booking.bookingId,
+        eventId: event?._id.toString(),
+        reason: reason || 'Admin cancelled',
+        releasedSeatIds,
+      },
+      description: `Cancelled booking ${booking.bookingId} and released associated capacity/seats`,
+    });
+
+    return booking;
+  });
+};

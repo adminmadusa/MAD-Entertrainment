@@ -8,6 +8,7 @@ import { useState } from 'react';
 
 import { adminGetArtists, adminDeleteArtist, adminUpdateArtist } from '@/lib/api/admin/artist.service';
 import { extractApiError } from '@/lib/api/client';
+import ErrorState from '@/components/states/ErrorState';
 
 
 export default function AdminArtistsPage() {
@@ -16,7 +17,7 @@ export default function AdminArtistsPage() {
   const [page, setPage] = useState(1);
   const [deleteTarget, setDeleteTarget] = useState<Artist | null>(null);
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, error } = useQuery({
     queryKey: ['admin-artists', { page, search }],
     queryFn: () => adminGetArtists({ page, limit: 15, search }),
   });
@@ -35,8 +36,16 @@ export default function AdminArtistsPage() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['admin-artists'] }),
   });
 
-  const artists = data?.data ?? [];
+  const artists = data?.items ?? [];
   const pagination = data?.pagination;
+
+  if (error) {
+    return (
+      <div className="py-12">
+        <ErrorState message={(error as Error).message || 'Failed to load artists.'} />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

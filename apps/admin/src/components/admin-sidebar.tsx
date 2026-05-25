@@ -9,6 +9,7 @@ interface NavItem {
   href: string;
   icon: React.ReactNode;
   badge?: string;
+  disabled?: boolean;
 }
 
 interface NavGroup {
@@ -115,6 +116,36 @@ export function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps) {
             <ul className="space-y-0.5">
               {group.items.map((item) => {
                 const active = isActive(item.href);
+                if (item.disabled) {
+                  return (
+                    <li key={item.href}>
+                      <div
+                        title={collapsed ? `${item.label} (Coming Soon)` : undefined}
+                        className="flex items-center gap-3 px-2 py-2.5 rounded-xl opacity-40 cursor-not-allowed select-none text-text-secondary group relative"
+                      >
+                        <span className="flex-shrink-0 w-5 h-5 flex items-center justify-center">
+                          {item.icon}
+                        </span>
+                        <AnimatePresence>
+                          {!collapsed && (
+                            <motion.span
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              exit={{ opacity: 0 }}
+                              className="text-sm font-medium whitespace-nowrap overflow-hidden flex items-center gap-2"
+                            >
+                              {item.label}
+                              <span className="text-[9px] font-bold tracking-wider uppercase px-1 py-0.5 rounded bg-white/10 text-text-muted">
+                                Soon
+                              </span>
+                            </motion.span>
+                          )}
+                        </AnimatePresence>
+                      </div>
+                    </li>
+                  );
+                }
+
                 return (
                   <li key={item.href}>
                     <Link

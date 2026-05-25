@@ -16,6 +16,13 @@ export const adminAuthService = {
       throw new Error('Invalid email or password');
     }
 
+    if (!admin.isActive) {
+      throw new Error('Account has been deactivated');
+    }
+
+    admin.lastLogin = new Date();
+    await admin.save();
+
     const payload = {
       id: admin._id,
       role: admin.role,

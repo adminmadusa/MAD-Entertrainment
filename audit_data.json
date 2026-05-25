@@ -1,0 +1,441 @@
+{
+  "timestamp": "2026-05-25T05:00:18.483Z",
+  "packages": [
+    {
+      "name": "@mad/shared",
+      "path": "/Users/admin/Desktop/MAD Entertrainment/packages/shared",
+      "buildable": true,
+      "distExists": true,
+      "mainResolves": true,
+      "typesResolves": true,
+      "errors": []
+    },
+    {
+      "name": "@mad/types",
+      "path": "/Users/admin/Desktop/MAD Entertrainment/packages/types",
+      "buildable": true,
+      "distExists": true,
+      "mainResolves": true,
+      "typesResolves": true,
+      "errors": []
+    },
+    {
+      "name": "@mad/ui",
+      "path": "/Users/admin/Desktop/MAD Entertrainment/packages/ui",
+      "buildable": true,
+      "distExists": true,
+      "mainResolves": true,
+      "typesResolves": true,
+      "errors": []
+    },
+    {
+      "name": "@mad/utils",
+      "path": "/Users/admin/Desktop/MAD Entertrainment/packages/utils",
+      "buildable": true,
+      "distExists": true,
+      "mainResolves": true,
+      "typesResolves": true,
+      "errors": []
+    },
+    {
+      "name": "@mad/validations",
+      "path": "/Users/admin/Desktop/MAD Entertrainment/packages/validations",
+      "buildable": true,
+      "distExists": true,
+      "mainResolves": true,
+      "typesResolves": true,
+      "errors": []
+    }
+  ],
+  "routes": [
+    {
+      "method": "GET",
+      "path": "/api/health"
+    },
+    {
+      "method": "GET",
+      "path": "/api/events"
+    },
+    {
+      "method": "GET",
+      "path": "/api/events/:slug"
+    },
+    {
+      "method": "GET",
+      "path": "/api/events/:eventId/seats"
+    },
+    {
+      "method": "GET",
+      "path": "/api/bookings/session"
+    },
+    {
+      "method": "POST",
+      "path": "/api/bookings"
+    },
+    {
+      "method": "GET",
+      "path": "/api/bookings/me"
+    },
+    {
+      "method": "GET",
+      "path": "/api/bookings/:bookingId"
+    },
+    {
+      "method": "POST",
+      "path": "/api/payments/create-intent"
+    },
+    {
+      "method": "POST",
+      "path": "/api/payments/verify"
+    },
+    {
+      "method": "POST",
+      "path": "/api/payments/webhook/stripe"
+    },
+    {
+      "method": "POST",
+      "path": "/api/payments/webhook/razorpay"
+    },
+    {
+      "method": "GET",
+      "path": "/api/dj-operators"
+    },
+    {
+      "method": "GET",
+      "path": "/api/dj-operators/:slug"
+    },
+    {
+      "method": "GET",
+      "path": "/api/popups/active"
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/auth/login"
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/auth/me"
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/auth/logout"
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/uploads/image"
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/events"
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/events"
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/events/:id"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/admin/events/:id"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/admin/events/:id"
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/venues"
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/venues"
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/venues/:id"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/admin/venues/:id"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/admin/venues/:id"
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/artists"
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/artists"
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/artists/:id"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/admin/artists/:id"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/admin/artists/:id"
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/dj-operators"
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/dj-operators"
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/dj-operators/:id"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/admin/dj-operators/:id"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/admin/dj-operators/:id"
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/diagnostics/consistency"
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/diagnostics/consistency/repair"
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/diagnostics/reservations"
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/diagnostics/system"
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/diagnostics/dlq/:id/retry"
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/diagnostics/dlq/retry-all"
+    }
+  ],
+  "envVars": [
+    {
+      "variable": "NODE_ENV",
+      "required": false,
+      "secret": false,
+      "defaultValue": "development",
+      "source": "env.ts"
+    },
+    {
+      "variable": "PORT",
+      "required": false,
+      "secret": false,
+      "defaultValue": "5001",
+      "source": "env.ts"
+    },
+    {
+      "variable": "MONGODB_URI",
+      "required": true,
+      "secret": false,
+      "source": "env.ts"
+    },
+    {
+      "variable": "REDIS_URL",
+      "required": false,
+      "secret": false,
+      "source": "env.ts"
+    },
+    {
+      "variable": "JWT_SECRET",
+      "required": true,
+      "secret": true,
+      "source": "env.ts"
+    },
+    {
+      "variable": "JWT_EXPIRES_IN",
+      "required": false,
+      "secret": false,
+      "defaultValue": "7d",
+      "source": "env.ts"
+    },
+    {
+      "variable": "JWT_ADMIN_SECRET",
+      "required": true,
+      "secret": true,
+      "source": "env.ts"
+    },
+    {
+      "variable": "JWT_ADMIN_EXPIRES_IN",
+      "required": false,
+      "secret": false,
+      "defaultValue": "1d",
+      "source": "env.ts"
+    },
+    {
+      "variable": "JWT_SESSION_SECRET",
+      "required": true,
+      "secret": true,
+      "source": "env.ts"
+    },
+    {
+      "variable": "ALLOWED_ORIGINS",
+      "required": false,
+      "secret": false,
+      "defaultValue": "http://localhost:3000",
+      "source": "env.ts"
+    },
+    {
+      "variable": "CLOUDINARY_CLOUD_NAME",
+      "required": false,
+      "secret": false,
+      "source": "env.ts"
+    },
+    {
+      "variable": "CLOUDINARY_API_KEY",
+      "required": false,
+      "secret": true,
+      "source": "env.ts"
+    },
+    {
+      "variable": "CLOUDINARY_API_SECRET",
+      "required": false,
+      "secret": true,
+      "source": "env.ts"
+    },
+    {
+      "variable": "SMTP_HOST",
+      "required": false,
+      "secret": false,
+      "source": "env.ts"
+    },
+    {
+      "variable": "SMTP_PORT",
+      "required": false,
+      "secret": false,
+      "source": "env.ts"
+    },
+    {
+      "variable": "SMTP_USER",
+      "required": false,
+      "secret": false,
+      "source": "env.ts"
+    },
+    {
+      "variable": "SMTP_PASS",
+      "required": false,
+      "secret": false,
+      "source": "env.ts"
+    },
+    {
+      "variable": "EMAIL_FROM",
+      "required": false,
+      "secret": false,
+      "source": "env.ts"
+    },
+    {
+      "variable": "RAZORPAY_KEY_ID",
+      "required": false,
+      "secret": true,
+      "source": "env.ts"
+    },
+    {
+      "variable": "RAZORPAY_KEY_SECRET",
+      "required": false,
+      "secret": true,
+      "source": "env.ts"
+    },
+    {
+      "variable": "RAZORPAY_WEBHOOK_SECRET",
+      "required": false,
+      "secret": true,
+      "source": "env.ts"
+    },
+    {
+      "variable": "STRIPE_SECRET_KEY",
+      "required": false,
+      "secret": true,
+      "source": "env.ts"
+    },
+    {
+      "variable": "STRIPE_PUBLISHABLE_KEY",
+      "required": false,
+      "secret": true,
+      "source": "env.ts"
+    },
+    {
+      "variable": "STRIPE_WEBHOOK_SECRET",
+      "required": false,
+      "secret": true,
+      "source": "env.ts"
+    },
+    {
+      "variable": "LOG_LEVEL",
+      "required": false,
+      "secret": false,
+      "source": "env.ts"
+    },
+    {
+      "variable": "RATE_LIMIT_WINDOW_MS",
+      "required": false,
+      "secret": false,
+      "defaultValue": "900000",
+      "source": "env.ts"
+    },
+    {
+      "variable": "RATE_LIMIT_MAX_REQUESTS",
+      "required": false,
+      "secret": false,
+      "defaultValue": "100",
+      "source": "env.ts"
+    },
+    {
+      "variable": "RATE_LIMIT_AUTH_MAX",
+      "required": false,
+      "secret": false,
+      "defaultValue": "10",
+      "source": "env.ts"
+    },
+    {
+      "variable": "RATE_LIMIT_PAYMENT_MAX",
+      "required": false,
+      "secret": false,
+      "defaultValue": "20",
+      "source": "env.ts"
+    },
+    {
+      "variable": "ENABLE_ASYNC_CHECKOUT",
+      "required": false,
+      "secret": false,
+      "defaultValue": "false",
+      "source": "env.ts"
+    }
+  ],
+  "deployments": [
+    {
+      "system": "backend",
+      "platform": "Render",
+      "configFile": "render.yaml"
+    },
+    {
+      "system": "frontend/web",
+      "platform": "Vercel",
+      "configFile": "vercel.json"
+    },
+    {
+      "system": "frontend/admin",
+      "platform": "Vercel",
+      "configFile": "vercel.json"
+    }
+  ]
+}

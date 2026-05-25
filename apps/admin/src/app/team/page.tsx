@@ -8,6 +8,7 @@ import { useState } from 'react';
 
 import { adminGetAdmins, adminCreateAdmin, adminToggleAdminActive } from '@/lib/api/admin/team.service';
 import { adminApiClient, extractApiError } from '@/lib/api/client';
+import ErrorState from '@/components/states/ErrorState';
 
 
 export default function AdminTeamPage() {
@@ -31,7 +32,7 @@ export default function AdminTeamPage() {
     },
   });
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, error } = useQuery({
     queryKey: ['admin-team', page],
     queryFn: () => adminGetAdmins(page, 15),
   });
@@ -42,7 +43,7 @@ export default function AdminTeamPage() {
   });
 
   const inviteMutation = useMutation({
-    mutationFn: adminCreateAdmin,
+    mutationFn: (payload: Record<string, unknown>) => adminCreateAdmin(payload),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['admin-team'] });
       setIsInviteOpen(false);
@@ -55,8 +56,16 @@ export default function AdminTeamPage() {
     onError: (err) => setInviteError(extractApiError(err).message),
   });
 
-  const admins = data?.data ?? [];
+  const admins = data?.items ?? [];
   const pagination = data?.pagination;
+
+  if (error) {
+    return (
+      <div className="py-12">
+        <ErrorState message={(error as Error).message || 'Failed to load team members.'} />
+      </div>
+    );
+  }
 
   const handleInviteSubmit = (e: React.FormEvent) => {
     e.preventDefault();

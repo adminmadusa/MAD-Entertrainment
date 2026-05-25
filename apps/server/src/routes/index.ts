@@ -51,18 +51,25 @@ router.use('/admin/artists', adminArtistRoutes);
 router.use('/admin/dj-operators', adminDjOperatorRoutes);
 
 // ─── Admin: Phase 4 — Bookings & Refunds ─────────────────────
-router.use('/admin/bookings', unreconstructed);
-router.use('/admin/refunds', unreconstructed);
+import adminBookingRoutes from './admin/booking.routes';
+import adminRefundRoutes from './admin/refund.routes';
+router.use('/admin/bookings', adminBookingRoutes);
+router.use('/admin/refunds', adminRefundRoutes);
 
 // ─── Admin: Phase 5 — Coupons & Analytics ────────────────────
-router.use('/admin/coupons', unreconstructed);
+import adminCouponRoutes from './admin/coupon.routes';
+router.use('/admin/coupons', adminCouponRoutes);
 router.use('/admin/analytics', unreconstructed);
 router.use('/admin/diagnostics', adminDiagnosticsRoutes);
 
 // ─── Admin: Phase 7 — Popups, Notifications, Team ────────────
-router.use('/admin/popups', unreconstructed);
-router.use('/admin/notifications', unreconstructed);
-router.use('/admin/team', unreconstructed);
-router.use('/admin/scanner', unreconstructed);
+import adminScannerRoutes from './admin/scanner.routes';
+import adminNotificationRoutes from './admin/notification.routes';
+import adminTeamRoutes from './admin/team.routes';
+import adminPopupRoutes from './admin/popup.routes';
+router.use('/admin/popups', adminPopupRoutes);
+router.use('/admin/notifications', adminNotificationRoutes);
+router.use('/admin/team', adminTeamRoutes);
+router.use('/admin/scanner', adminScannerRoutes);
 
 export default router;

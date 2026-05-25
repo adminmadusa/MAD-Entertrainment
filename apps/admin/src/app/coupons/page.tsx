@@ -8,6 +8,7 @@ import { useState } from 'react';
 
 import { adminGetCoupons, adminDeleteCoupon, adminToggleCoupon } from '@/lib/api/admin/coupon.service';
 import { extractApiError } from '@/lib/api/client';
+import ErrorState from '@/components/states/ErrorState';
 
 
 export default function AdminCouponsPage() {
@@ -16,7 +17,7 @@ export default function AdminCouponsPage() {
   const [activeFilter, setActiveFilter] = useState<string>('');
   const [deleteTarget, setDeleteTarget] = useState<Coupon | null>(null);
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, error } = useQuery({
     queryKey: ['admin-coupons', page, activeFilter],
     queryFn: () => adminGetCoupons(page, 15, activeFilter || undefined),
   });
@@ -34,8 +35,16 @@ export default function AdminCouponsPage() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['admin-coupons'] }),
   });
 
-  const coupons = data?.data ?? [];
+  const coupons = data?.items ?? [];
   const pagination = data?.pagination;
+
+  if (error) {
+    return (
+      <div className="py-12">
+        <ErrorState message={(error as Error).message || 'Failed to load coupons.'} />
+      </div>
+    );
+  }
 
   const formatDate = (dateStr: Date | string) => {
     return new Date(dateStr).toLocaleDateString('en-US', {

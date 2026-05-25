@@ -109,3 +109,63 @@ pnpm run audit-data
 
 ### Future CI/CD Integration:
 When integrating tests into CI/CD pipelines (e.g. GitHub Actions), `pnpm run audit-data` should run as a blocking task. If `audit_data.json` contains any validation failures or an empty routing stack, the CI pipeline must fail, preventing invalid configurations from reaching staging or production.
+
+---
+
+## 7. Frontend Component Governance
+
+These rules apply to all components under `apps/admin/src/` and `apps/web/src/`. Violations are treated as build-blocking defects.
+
+### Rule 1 — No Direct HTTP Calls in Components
+
+**Components must never call `axios`, `fetch`, or any HTTP client directly.**
+
+All data fetching must be delegated to a service layer function (e.g. `services/venues.ts`) or a React Query hook. This enforces a clean separation between UI rendering and data transport.
+
+```tsx
+// ❌ FORBIDDEN — direct fetch in component
+const res = await axios.get('/api/venues');
+
+// ✅ CORRECT — delegate to service layer
+import { venueService } from '@/services/venues';
+const venues = await venueService.getAll();
+```
+
+### Rule 2 — All Pages Must Handle Four Render States
+
+Every page and data-driven component **must** explicitly handle:
+
+| State | Requirement |
+|---|---|
+| `loading` | Render `<LoadingState />` or equivalent skeleton |
+| `error` | Render `<ErrorState />` with actionable message |
+| `empty` | Render `<EmptyState />` with contextual CTA |
+| `success` | Render the actual data UI |
+
+Silently rendering `null`, an empty `<div>`, or falling through to a broken layout is forbidden. Use the primitives in `apps/admin/src/components/states/`.
+
+```tsx
+// ✅ CORRECT pattern
+if (isLoading) return <LoadingState />;
+if (error)     return <ErrorState message={error.message} />;
+if (!data?.length) return <EmptyState title="No venues found" />;
+return <VenueList venues={data} />;
+```
+
+### Rule 3 — No Placeholder 501 API Routes in Production
+
+**Backend routes that return `501 Not Implemented` are forbidden in the production branch.**
+
+Every route registered in Express must either:
+- Have a complete, tested controller implementation, **or**
+- Be removed from the router until it is ready
+
+Stub routes that silently return `501` disguise missing backend functionality, cause frontend pages to crash, and create false confidence in audit tooling. If a feature is not ready, do not register its route.
+
+```ts
+// ❌ FORBIDDEN — placeholder stub
+router.get('/analytics', (req, res) => res.status(501).json({ message: 'Not implemented' }));
+
+// ✅ CORRECT — real implementation or route omitted until ready
+router.get('/analytics', analyticsController.getSummary);
+```

@@ -8,6 +8,7 @@ import { useState } from 'react';
 
 import { adminGetVenues, adminDeleteVenue, adminUpdateVenue } from '@/lib/api/admin/venue.service';
 import { extractApiError } from '@/lib/api/client';
+import ErrorState from '@/components/states/ErrorState';
 
 
 export default function AdminVenuesPage() {
@@ -17,7 +18,7 @@ export default function AdminVenuesPage() {
   const [page, setPage] = useState(1);
   const [deleteTarget, setDeleteTarget] = useState<Venue | null>(null);
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, error } = useQuery({
     queryKey: ['admin-venues', { page, search, city: cityFilter }],
     queryFn: () => adminGetVenues({ page, limit: 15, search, city: cityFilter }),
   });
@@ -36,8 +37,16 @@ export default function AdminVenuesPage() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['admin-venues'] }),
   });
 
-  const venues = data?.data ?? [];
+  const venues = data?.items ?? [];
   const pagination = data?.pagination;
+
+  if (error) {
+    return (
+      <div className="py-12">
+        <ErrorState message={(error as Error).message || 'Failed to load venues.'} />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
