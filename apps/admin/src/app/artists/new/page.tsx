@@ -96,7 +96,6 @@ export default function CreateArtistPage() {
       bio: bio.trim() || undefined,
       genre: genres.length > 0 ? genres : undefined,
       profileImage: profileImage ?? undefined,
-      galleryImages,
       socialLinks: links.length > 0 ? links : undefined,
       isActive,
     };

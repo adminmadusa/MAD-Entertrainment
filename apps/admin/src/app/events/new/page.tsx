@@ -40,7 +40,7 @@ export default function CreateEventPage() {
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [shortDescription, setShortDescription] = useState('');
+
   const [category, setCategory] = useState<string>(EventCategory.CONCERT);
   const [status, setStatus] = useState('draft');
   const [bookingMode, setBookingMode] = useState('general_admission');
@@ -141,7 +141,6 @@ export default function CreateEventPage() {
       title: title.trim(),
       slug: generatedSlug,
       description: description.trim(),
-      shortDescription: shortDescription.trim() || undefined,
       category,
       status,
       bookingMode,
@@ -238,11 +237,6 @@ export default function CreateEventPage() {
             </Field>
           </div>
 
-          <Field label="Short Description (max 300 chars)">
-            <input value={shortDescription} onChange={(e) => setShortDescription(e.target.value)}
-              placeholder="A one-liner for cards and previews"
-              maxLength={300} className={inputCls} />
-          </Field>
           <Field label="Full Description *">
             <textarea id="event-description" value={description} onChange={(e) => setDescription(e.target.value)}
               placeholder="Describe the event in detail..." required rows={5}
