@@ -745,8 +745,17 @@ export class PaymentService {
           incUpdate[`ticketTiers.${tierIndex}.soldCount`] = bookedTicket.quantity;
         }
       }
-      event.eventVersion += 1;
-      await event.save();
+
+      const updatedEvent = await Event.findOneAndUpdate(
+        { _id: booking.eventId },
+        { $inc: incUpdate },
+        { new: true }
+      );
+
+      if (updatedEvent && updatedEvent.soldCount >= updatedEvent.totalCapacity && !updatedEvent.isSoldOut) {
+        await Event.updateOne({ _id: booking.eventId }, { $set: { isSoldOut: true } });
+      }
+
       await CacheService.delPattern('events:*');
     }
 
