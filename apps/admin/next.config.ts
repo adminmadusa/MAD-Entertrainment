@@ -16,16 +16,153 @@ const withPWA = withPWAInit({
   aggressiveFrontEndNavCaching: false,
   reloadOnOnline: true,
   disable: process.env.NODE_ENV === 'development',
-  extendDefaultRuntimeCaching: true,
+  // Do NOT extend default runtime caching — we define all routes explicitly
+  // to avoid duplicate route conflicts that cause no-response errors.
+  extendDefaultRuntimeCaching: false,
+  fallbacks: {
+    // When a page navigation fails (network error, stale chunk, offline),
+    // serve the cached app shell at "/" instead of throwing no-response.
+    document: '/',
+  },
   workboxOptions: {
     disableDevLogs: true,
     runtimeCaching: [
+      // ── API calls: never cache, always network ──────────────────────────
       {
-        urlPattern: /^.*\/api\/.*/i,
+        urlPattern: /^\/api\/.*/i,
         handler: 'NetworkOnly',
         method: 'GET',
+        options: { cacheName: 'api-get' },
+      },
+      {
+        urlPattern: /^\/api\/.*/i,
+        handler: 'NetworkOnly',
+        method: 'POST',
+        options: { cacheName: 'api-post' },
+      },
+      {
+        urlPattern: /^\/api\/.*/i,
+        handler: 'NetworkOnly',
+        method: 'PUT',
+        options: { cacheName: 'api-put' },
+      },
+      {
+        urlPattern: /^\/api\/.*/i,
+        handler: 'NetworkOnly',
+        method: 'DELETE',
+        options: { cacheName: 'api-delete' },
+      },
+      // ── Next.js RSC prefetch requests ────────────────────────────────────
+      {
+        urlPattern: ({ request, url, sameOrigin }: { request: Request; url: URL; sameOrigin: boolean }) =>
+          request.headers.get('RSC') === '1' &&
+          request.headers.get('Next-Router-Prefetch') === '1' &&
+          sameOrigin &&
+          !url.pathname.startsWith('/api/'),
+        handler: 'NetworkFirst',
         options: {
-          cacheName: 'apis',
+          cacheName: 'pages-rsc-prefetch',
+          networkTimeoutSeconds: 10,
+          expiration: { maxEntries: 32, maxAgeSeconds: 60 * 60 * 24 },
+        },
+      },
+      // ── Next.js RSC navigation requests ─────────────────────────────────
+      {
+        urlPattern: ({ request, url, sameOrigin }: { request: Request; url: URL; sameOrigin: boolean }) =>
+          request.headers.get('RSC') === '1' &&
+          sameOrigin &&
+          !url.pathname.startsWith('/api/'),
+        handler: 'NetworkFirst',
+        options: {
+          cacheName: 'pages-rsc',
+          networkTimeoutSeconds: 10,
+          expiration: { maxEntries: 32, maxAgeSeconds: 60 * 60 * 24 },
+        },
+      },
+      // ── HTML page navigations ─────────────────────────────────────────────
+      // networkTimeoutSeconds: 10 means if network doesn't respond in 10s,
+      // fall back to cache. Combined with fallbacks.document above, this
+      // prevents the no-response throw on navigation failures.
+      {
+        urlPattern: ({ url, sameOrigin }: { url: URL; sameOrigin: boolean }) =>
+          sameOrigin && !url.pathname.startsWith('/api/'),
+        handler: 'NetworkFirst',
+        options: {
+          cacheName: 'pages',
+          networkTimeoutSeconds: 10,
+          expiration: { maxEntries: 32, maxAgeSeconds: 60 * 60 * 24 },
+        },
+      },
+      // ── Next.js static JS chunks ──────────────────────────────────────────
+      {
+        urlPattern: /\/_next\/static.+\.js$/i,
+        handler: 'CacheFirst',
+        options: {
+          cacheName: 'next-static-js',
+          expiration: { maxEntries: 128, maxAgeSeconds: 60 * 60 * 24 * 365 },
+        },
+      },
+      // ── Next.js image optimisation ────────────────────────────────────────
+      {
+        urlPattern: /\/_next\/image\?url=.+$/i,
+        handler: 'StaleWhileRevalidate',
+        options: {
+          cacheName: 'next-image',
+          expiration: { maxEntries: 64, maxAgeSeconds: 60 * 60 * 24 },
+        },
+      },
+      // ── Next.js data routes ───────────────────────────────────────────────
+      {
+        urlPattern: /\/_next\/data\/.+\/.+\.json$/i,
+        handler: 'StaleWhileRevalidate',
+        options: {
+          cacheName: 'next-data',
+          expiration: { maxEntries: 32, maxAgeSeconds: 60 * 60 * 24 },
+        },
+      },
+      // ── Google Fonts stylesheets ──────────────────────────────────────────
+      {
+        urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
+        handler: 'StaleWhileRevalidate',
+        options: {
+          cacheName: 'google-fonts-stylesheets',
+          expiration: { maxEntries: 4, maxAgeSeconds: 60 * 60 * 24 * 7 },
+        },
+      },
+      // ── Google Fonts web font files ───────────────────────────────────────
+      {
+        urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/i,
+        handler: 'CacheFirst',
+        options: {
+          cacheName: 'google-fonts-webfonts',
+          expiration: { maxEntries: 4, maxAgeSeconds: 60 * 60 * 24 * 365 },
+        },
+      },
+      // ── Static images ─────────────────────────────────────────────────────
+      {
+        urlPattern: /\.(?:jpg|jpeg|gif|png|svg|ico|webp|avif)$/i,
+        handler: 'StaleWhileRevalidate',
+        options: {
+          cacheName: 'static-images',
+          expiration: { maxEntries: 64, maxAgeSeconds: 60 * 60 * 24 * 30 },
+        },
+      },
+      // ── Static fonts ──────────────────────────────────────────────────────
+      {
+        urlPattern: /\.(?:eot|otf|ttf|woff|woff2)$/i,
+        handler: 'StaleWhileRevalidate',
+        options: {
+          cacheName: 'static-fonts',
+          expiration: { maxEntries: 8, maxAgeSeconds: 60 * 60 * 24 * 7 },
+        },
+      },
+      // ── Static CSS ────────────────────────────────────────────────────────
+      {
+        urlPattern: /\.(?:css|less)$/i,
+        handler: 'StaleWhileRevalidate',
+        options: {
+          cacheName: 'static-styles',
+          expiration: { maxEntries: 32, maxAgeSeconds: 60 * 60 * 24 },
         },
       },
     ],
