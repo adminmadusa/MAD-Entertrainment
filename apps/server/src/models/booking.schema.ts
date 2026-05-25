@@ -51,8 +51,8 @@ const bookingSchema = new Schema<IBooking>(
       index: true,
       // Format: MAD-YYYY-XXXXX
     },
-    eventId: { type: Schema.Types.ObjectId, ref: 'Event', required: true, index: true },
-    userId: { type: Schema.Types.ObjectId, ref: 'User', index: true },
+    eventId: { type: Schema.Types.ObjectId, ref: 'Event', required: true },
+    userId: { type: Schema.Types.ObjectId, ref: 'User' },
     guestName: String,
     guestEmail: { type: String, lowercase: true, trim: true },
     guestPhone: String,
@@ -111,7 +111,7 @@ bookingSchema.virtual('amount').get(function (this: IBooking) {
 
 bookingSchema.index({ guestEmail: 1, createdAt: -1 });
 bookingSchema.index({ guestPhone: 1, createdAt: -1 });
-bookingSchema.index({ eventId: 1, status: 1 });
+bookingSchema.index({ eventId: 1, status: 1, totalTickets: 1 });
 bookingSchema.index({ userId: 1, createdAt: -1 });
 
 bookingSchema.pre('validate', function (next) {

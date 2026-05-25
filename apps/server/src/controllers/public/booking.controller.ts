@@ -1,76 +1,151 @@
 import crypto from 'crypto';
 import { Request, Response, NextFunction } from 'express';
 
+import { sendSuccess } from '../../utils/response';
+import { AppError } from '../../middleware/error.middleware';
+import { signSessionToken } from '../../utils/jwt';
 import { PublicBookingService } from '../../services/public/booking.service';
-import { sendCreated, sendSuccess } from '../../utils/response';
-import { signSessionToken, verifySessionToken } from '../../utils/jwt';
 
-export async function getSessionToken(req: Request, res: Response, next: NextFunction): Promise<void> {
+// ─────────────────────────────────────────────
+// Issue Guest Session Token
+// ─────────────────────────────────────────────
+
+export async function getSessionToken(
+  _req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
   try {
     const sessionId = crypto.randomUUID();
     const token = signSessionToken(sessionId);
-    res.json({ success: true, data: { token, sessionId } });
+
+    sendSuccess(
+      res,
+      {
+        token,
+        sessionId,
+      },
+      'Session token issued'
+    );
   } catch (err) {
     next(err);
   }
 }
 
-export async function createBooking(req: Request, res: Response, next: NextFunction): Promise<void> {
-  try {
-    const sessionToken = req.header('x-session-id');
-    if (!sessionToken) {
-       res.status(401).json({ success: false, message: 'Missing session token' });
-       return;
-    }
-    const sessionId = verifySessionToken(sessionToken);
-    const booking = await PublicBookingService.createBooking(req.body, sessionId, req.user?.sub);
-    sendCreated(res, booking, 'Booking created');
-  } catch (err) {
-    next(err);
-  }
-}
+// ─────────────────────────────────────────────
+// Create Booking
+// ─────────────────────────────────────────────
 
-export async function getBooking(req: Request, res: Response, next: NextFunction): Promise<void> {
+export async function createBooking(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
   try {
-    const bookingId = Array.isArray(req.params.bookingId) ? req.params.bookingId[0] : req.params.bookingId;
-    
-    const sessionToken = req.header('x-session-id');
-    let sessionId: string | undefined;
-    if (sessionToken) {
-      try {
-        sessionId = verifySessionToken(sessionToken);
-      } catch (err) {
-        // invalid token ignored for now
-      }
-    }
+    // Logged-in user
     const userId = req.user?.sub;
-    
-    const result = await PublicBookingService.getBookingByReference(bookingId);
-    
-    const isOwner = result.booking.userId?.toString() === userId;
-    const isSessionOwner = result.booking.sessionId === sessionId;
-    const isLegacy = !result.booking.userId && !result.booking.sessionId;
 
-    if (!isOwner && !isSessionOwner && !isLegacy) {
-      res.status(403).json({ success: false, message: 'Forbidden' });
-      return;
+    // Guest session UUID
+    const sessionId = req.header('x-session-id') || undefined;
+
+    // Require either:
+    // - authenticated user
+    // - guest session
+    if (!userId && !sessionId) {
+      throw AppError.unauthorized('Authentication required');
     }
-    
-    sendSuccess(res, result, 'Booking retrieved');
+
+    // Create booking
+    const booking = await PublicBookingService.createBooking(
+      req.body,
+      sessionId,
+      userId
+    );
+
+    sendSuccess(
+      res,
+      booking,
+      'Booking created successfully'
+    );
   } catch (err) {
     next(err);
   }
 }
 
-export async function getMyBookings(req: Request, res: Response, next: NextFunction): Promise<void> {
+// ─────────────────────────────────────────────
+// Get Logged-in User Bookings
+// ─────────────────────────────────────────────
+
+export async function getMyBookings(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
   try {
-    const userId = req.user?.sub;
-    if (!userId) {
-      res.status(401).json({ success: false, message: 'Authentication required' });
-      return;
+    if (!req.user?.sub) {
+      throw AppError.unauthorized('Authentication required');
     }
-    const result = await PublicBookingService.getMyBookings(userId);
-    sendSuccess(res, result, 'Bookings retrieved');
+
+    const bookings = await PublicBookingService.getMyBookings(
+      req.user.sub
+    );
+
+    sendSuccess(
+      res,
+      bookings,
+      'Bookings retrieved successfully'
+    );
+  } catch (err) {
+    next(err);
+  }
+}
+
+// ─────────────────────────────────────────────
+// Get Single Booking
+// ─────────────────────────────────────────────
+
+export async function getBooking(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    const { bookingId } = req.params;
+
+    const result = await PublicBookingService.getBookingByReference(
+      bookingId
+    );
+
+    if (!result) {
+      throw AppError.notFound('Booking');
+    }
+
+    const booking = result.booking;
+    const reqUserId = req.user?.sub;
+    const reqSessionId = req.header('x-session-id') || undefined;
+
+    // Logged-in ownership
+    const isUserOwner =
+      !!booking.userId &&
+      !!reqUserId &&
+      booking.userId.toString() === reqUserId;
+
+    // Guest ownership
+    const isGuestOwner =
+      !!booking.sessionId &&
+      !!reqSessionId &&
+      booking.sessionId === reqSessionId;
+
+    // Access denied
+    if (!isUserOwner && !isGuestOwner) {
+      throw AppError.forbidden('You do not have access to this booking');
+    }
+
+    sendSuccess(
+      res,
+      result,
+      'Booking retrieved successfully'
+    );
   } catch (err) {
     next(err);
   }

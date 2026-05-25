@@ -69,15 +69,19 @@ async function bootstrap(): Promise<void> {
   const shutdown = async (signal: string): Promise<void> => {
     logger.info(`📴 Received ${signal}. Starting graceful shutdown...`);
 
+    // Close Socket.IO FIRST so all persistent WS connections are released
+    // before we ask httpServer.close() to drain. If Socket.IO is closed inside
+    // the httpServer.close() callback it can never fire because Socket.IO
+    // itself is what keeps the HTTP server from draining.
+    try {
+      getIO().close();
+      logger.info('Socket.IO connections closed');
+    } catch (_err) {
+      // Not yet initialized or already closed — safe to ignore
+    }
+
     httpServer.close(async () => {
       logger.info('HTTP server closed');
-      
-      try {
-        getIO().close();
-        logger.info('Socket.IO connections closed');
-      } catch (err) {
-        // Socket may not be fully initialized or already closed
-      }
 
       stopConsistencyWorker();
       await stopAllWorkers();
@@ -87,15 +91,27 @@ async function bootstrap(): Promise<void> {
       process.exit(0);
     });
 
-    // Force exit after 10 seconds
-    setTimeout(() => {
+    // Force exit after 10 seconds. unref() ensures this timer does NOT hold
+    // the event loop alive if everything else already exited cleanly.
+    const forceExit = setTimeout(() => {
       logger.error('⚠️  Forceful shutdown after timeout');
       process.exit(1);
     }, 10000);
+    forceExit.unref();
   };
 
-  process.on('SIGTERM', () => shutdown('SIGTERM'));
-  process.on('SIGINT', () => shutdown('SIGINT'));
+  process.on('SIGTERM', () =>
+    shutdown('SIGTERM').catch((err) => {
+      logger.fatal({ err }, '❌ Unhandled error during SIGTERM shutdown');
+      process.exit(1);
+    })
+  );
+  process.on('SIGINT', () =>
+    shutdown('SIGINT').catch((err) => {
+      logger.fatal({ err }, '❌ Unhandled error during SIGINT shutdown');
+      process.exit(1);
+    })
+  );
 
   // ─── Unhandled Rejections ─────────────────────────────────
   process.on('unhandledRejection', (reason) => {

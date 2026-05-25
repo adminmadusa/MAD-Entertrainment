@@ -5,7 +5,6 @@
   "description": "MAD Entertrainment — Standalone Admin Dashboard",
   "scripts": {
     "prebuild": "rm -rf .next",
-    "predev": "rm -rf .next",
     "dev": "next dev --port 3001",
     "build": "next build",
     "start": "next start --port 3001",

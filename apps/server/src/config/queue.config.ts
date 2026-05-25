@@ -16,6 +16,12 @@ export function getQueueConnection(): ConnectionOptions {
       password: parsed.password ? decodeURIComponent(parsed.password) : undefined,
       username: parsed.username ? decodeURIComponent(parsed.username) : undefined,
       maxRetriesPerRequest: null, // Strictly required by BullMQ to prevent connection blocks
+      // Suppress the per-connection "Eviction policy is volatile-lru" console.warn.
+      // BullMQ issues a Redis INFO command on every RedisConnection init and warns
+      // when maxmemory_policy !== 'noeviction'. With 3 Workers + up to 3 Queues this
+      // fires 6 times. skipVersionCheck disables that INFO call entirely. The correct
+      // long-term fix is setting maxmemory-policy noeviction on the Redis server.
+      skipVersionCheck: true,
     };
   } catch (err) {
     logger.error({ err, url }, 'Failed to parse REDIS_URL for Queue connection');

@@ -47,7 +47,7 @@ const transitionSchema = new Schema(
 const reservationSchema = new Schema<IReservation>(
   {
     reservationId: { type: String, required: true, unique: true, index: true },
-    eventId: { type: Schema.Types.ObjectId, ref: 'Event', required: true, index: true },
+    eventId: { type: Schema.Types.ObjectId, ref: 'Event', required: true },
     seatId: { type: String, index: true, sparse: true },
     section: String,
     tier: { type: String, enum: Object.values(TicketTier) },
@@ -55,7 +55,7 @@ const reservationSchema = new Schema<IReservation>(
     socketId: String,
     userId: { type: Schema.Types.ObjectId, ref: 'User', index: true },
     quantity: { type: Number, required: true, min: 1 },
-    status: { type: String, enum: Object.values(ReservationStatus), required: true, index: true },
+    status: { type: String, enum: Object.values(ReservationStatus), required: true },
     inventoryState: { type: String, enum: Object.values(InventoryState), required: true, index: true },
     expiresAt: { type: Date, required: true, index: true },
     paymentReference: String,
@@ -81,7 +81,17 @@ reservationSchema.index(
     },
   }
 );
-reservationSchema.index({ eventId: 1, tier: 1, status: 1 });
+reservationSchema.index({ eventId: 1, tier: 1, status: 1, quantity: 1 });
+reservationSchema.index({ eventId: 1, status: 1, quantity: 1 });
+reservationSchema.index(
+  { status: 1, updatedAt: -1 },
+  {
+    partialFilterExpression: {
+      seatId: { $exists: true },
+    },
+  }
+);
+reservationSchema.index({ status: 1, updatedAt: -1 });
 reservationSchema.index({ status: 1, expiresAt: 1 });
 reservationSchema.index({ bookingId: 1, status: 1 });
 

@@ -8,6 +8,7 @@ vi.mock('../config/env', () => ({
     JWT_EXPIRES_IN: '1h',
     JWT_ADMIN_SECRET: 'test-admin-secret',
     JWT_ADMIN_EXPIRES_IN: '2h',
+    JWT_SESSION_SECRET: 'test-session-secret',
   })),
 }));
 

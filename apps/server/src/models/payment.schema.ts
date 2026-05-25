@@ -24,7 +24,7 @@ const paymentSchema = new Schema<IPayment>(
     status: { type: String, enum: Object.values(PaymentStatus), default: PaymentStatus.PENDING, index: true },
     amount: { type: Number, required: true, min: 0 },
     currency: { type: String, default: 'INR' },
-    gatewayOrderId: { type: String, index: true },
+    gatewayOrderId: { type: String },
     gatewayPaymentId: { type: String, index: true },
     gatewaySignature: String,
     paidAt: Date,
@@ -35,5 +35,6 @@ const paymentSchema = new Schema<IPayment>(
 );
 
 paymentSchema.index({ bookingId: 1, createdAt: -1 });
+paymentSchema.index({ gatewayOrderId: 1, gateway: 1 });
 
 export const Payment = model<IPayment>('Payment', paymentSchema);

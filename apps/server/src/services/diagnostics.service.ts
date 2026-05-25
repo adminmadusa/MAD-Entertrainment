@@ -47,7 +47,7 @@ export class DiagnosticsService {
       const connection = getQueueConnection();
       for (const name of this.QUEUE_NAMES) {
         try {
-          const queue = new Queue(name, { connection });
+          const queue = new Queue(name, { connection, skipVersionCheck: true });
           const [counts, waitingJobs] = await Promise.all([
             queue.getJobCounts('active', 'waiting', 'delayed', 'failed', 'completed'),
             queue.getJobs(['waiting'], 0, 1, true),

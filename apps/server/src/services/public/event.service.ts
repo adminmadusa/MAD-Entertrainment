@@ -33,7 +33,6 @@ export class PublicEventService {
         .sort({ startDate: 1 })
         .skip(skip)
         .limit(limit)
-        .populate('venueId', 'name city state')
         .lean(),
       Event.countDocuments(query),
     ]);

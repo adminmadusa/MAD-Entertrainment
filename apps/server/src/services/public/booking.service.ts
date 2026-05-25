@@ -11,8 +11,8 @@ import { IReservation } from '../../models/reservation.schema';
 import { SeatLayout } from '../../models/seat-layout.schema';
 import { Ticket } from '../../models/ticket.schema';
 import { logger } from '../../utils/logger';
+import { auditLog } from '../../utils/audit';
 import { ReservationService } from '../reservation.service';
-
 
 export class PublicBookingService {
   static async createBooking(
@@ -33,7 +33,7 @@ export class PublicBookingService {
       }[];
       couponCode?: string;
     },
-    sessionId: string,
+    sessionId: string | undefined,
     userId?: string
   ): Promise<IBooking> {
     const event = await Event.findById(data.eventId);
@@ -85,14 +85,14 @@ export class PublicBookingService {
       // Subtotal after tier discount
       const tierPriceAfterDiscount = Math.max(0, tierConfig.price - (tierConfig.discount || 0));
       const tierSubtotal = tierPriceAfterDiscount * ticketReq.quantity;
-      
+
       // Calculate Tier-specific GST
       const tierTaxPercent = tierConfig.taxPercent ?? 18;
       const tierGst = Math.round((tierSubtotal * tierTaxPercent) / 100);
 
       subtotal += tierSubtotal;
       totalGst += tierGst;
-      totalTicketsCount += ticketReq.quantity; // We count actual packages/tickets bought for convenience fee
+      totalTicketsCount += ticketReq.quantity;
 
       finalTickets.push({
         tier: ticketReq.tier,
@@ -116,7 +116,7 @@ export class PublicBookingService {
       }
 
       const redis = getRedis();
-      const seatLayout = await SeatLayout.findOne({ eventId: event._id });
+      const seatLayout = await SeatLayout.findOne({ eventId: event._id }).select('seats.seatId seats.status').lean();
       if (!seatLayout) {
         throw AppError.badRequest('Seat layout configuration missing for this event');
       }
@@ -209,6 +209,9 @@ export class PublicBookingService {
       guestName: data.guestName,
       guestEmail: data.guestEmail,
       guestPhone: data.guestPhone,
+      // CRITICAL-01: sessionId stored so ownership check in booking controller
+      // can verify the caller is the same session that created this booking.
+      sessionId,
       tickets: finalTickets,
       totalTickets: totalTicketsCount,
       subtotal,
@@ -216,7 +219,7 @@ export class PublicBookingService {
       gst,
       discount,
       totalAmount,
-      currency: 'INR', // Default local currency
+      currency: 'INR',
       couponCode: data.couponCode ? data.couponCode.toUpperCase() : undefined,
       couponId,
       status: BookingStatus.AWAITING_PAYMENT,
@@ -234,7 +237,7 @@ export class PublicBookingService {
           tier: ticketReq.tier as any,
           quantity: ticketReq.quantity,
           seats: ticketReq.seats?.map((seat) => ({ seatId: seat.seatId, section: seat.section })),
-          sessionId,
+          sessionId: sessionId ?? booking._id.toString(),
           userId,
           bookingId: booking._id as Types.ObjectId,
           bookingReference: booking.bookingId,
@@ -265,8 +268,10 @@ export class PublicBookingService {
     // Update Seat statuses to LOCKED in MongoDB for the booking (to prevent other checkout threads booking it)
     if (event.bookingMode === BookingMode.SEAT_BASED) {
       const allSeatIds = data.tickets.flatMap((t) => t.seats || []).map((s) => s.seatId);
-      const reservationBySeat = new Map(reservations.filter((reservation) => reservation.seatId).map((reservation) => [reservation.seatId, reservation.reservationId]));
-      await SeatLayout.updateOne(
+      const reservationBySeat = new Map(
+        reservations.filter((reservation) => reservation.seatId).map((reservation) => [reservation.seatId, reservation.reservationId])
+      );
+      const result = await SeatLayout.updateOne(
         { eventId: event._id },
         {
           $set: {
@@ -280,9 +285,18 @@ export class PublicBookingService {
           },
         },
         {
-          arrayFilters: [{ 'seat.seatId': { $in: allSeatIds } }],
+          arrayFilters: [
+            {
+              'seat.seatId': { $in: allSeatIds },
+              'seat.status': SeatStatus.AVAILABLE,
+            },
+          ],
         }
       );
+
+      if (result.modifiedCount !== allSeatIds.length) {
+        throw AppError.conflict('Some of the selected seats were locked by another user. Please choose different seats.');
+      }
 
       for (const [seatId, reservationId] of reservationBySeat.entries()) {
         await SeatLayout.updateOne(
@@ -324,6 +338,20 @@ export class PublicBookingService {
       logger.debug({ err, bookingId: booking._id }, 'Admin socket emit skipped for booking creation');
     }
 
+    auditLog({
+      action: 'BOOKING_CREATED',
+      actor: userId ? { type: 'user', id: userId } : { type: 'guest', id: sessionId },
+      status: 'success',
+      metadata: {
+        bookingId: booking._id.toString(),
+        bookingReference: booking.bookingId,
+        eventId: event._id.toString(),
+        totalTickets: booking.totalTickets,
+        totalAmount: booking.totalAmount,
+      },
+      description: `Created booking ${booking.bookingId} for event ${event.title} in status AWAITING_PAYMENT`,
+    });
+
     return booking;
   }
 
@@ -339,10 +367,7 @@ export class PublicBookingService {
   static async getBookingByReference(bookingId: string) {
     const query = Types.ObjectId.isValid(bookingId) ? { _id: bookingId } : { bookingId };
     const booking = await Booking.findOne(query)
-      .populate({
-        path: 'eventId',
-        populate: { path: 'venueId' },
-      })
+      .populate('eventId')
       .populate('paymentId');
 
     if (!booking) {
@@ -356,10 +381,7 @@ export class PublicBookingService {
 
   static async getMyBookings(userId: string) {
     const bookings = await Booking.find({ userId: new Types.ObjectId(userId) })
-      .populate({
-        path: 'eventId',
-        populate: { path: 'venueId' },
-      })
+      .populate('eventId')
       .sort({ createdAt: -1 });
 
     const bookingIds = bookings.map((b) => b._id);
