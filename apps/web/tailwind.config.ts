@@ -14,7 +14,6 @@ const config: Config = {
         'display-xl': ['clamp(3.5rem, 9vw, 6rem)', { lineHeight: '1.05' }],
       },
       colors: {
-      colors: {
         background: 'var(--color-bg)',
         'bg-secondary': 'var(--color-bg-secondary)',
         'bg-card': 'var(--color-bg-card)',

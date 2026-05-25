@@ -21,6 +21,8 @@ yarn.lock
 .env
 .env.*
 !.env.example
+.env.local
+.vercel
 
 # MacOS
 .DS_Store
@@ -44,3 +46,5 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
+.vercel
+.env*
