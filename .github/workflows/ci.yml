@@ -36,8 +36,14 @@ jobs:
       - name: Run Type Checking
         run: pnpm run type-check || echo "Type checking missing in some packages, continuing..."
 
+      - name: Run CI Governance Abstraction Checks
+        run: npx tsx scripts/ci_governance_check.ts
+
       - name: Build Workspace
         run: pnpm run build
+
+      - name: Run Workspace Configuration Audit
+        run: pnpm run audit-data
 
       - name: Run Tests
         run: pnpm run test || echo "No tests configured yet"
