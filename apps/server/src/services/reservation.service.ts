@@ -71,9 +71,92 @@ export class ReservationService {
       throw AppError.badRequest('The ticketing system is currently busy. Please try again.');
     }
 
-    this.emitReservationChange(updatedEvent._id.toString(), [reservation], 'reservation:reserved');
-    await CacheService.delPattern('events:*');
-    return [reservation];
+    try {
+      const event = await Event.findById(request.eventId);
+      if (!event) throw AppError.notFound('Event not found');
+
+      const tierConfig = event.ticketTiers.find((t) => t.tier === request.tier);
+      if (!tierConfig) {
+        throw AppError.badRequest(`Ticket tier "${request.tier}" is invalid`);
+      }
+
+      // 1. Fetch active reservations count for this specific tier
+      const activeTierAgg = await Reservation.aggregate([
+        {
+          $match: {
+            eventId: request.eventId,
+            tier: request.tier,
+            status: { $in: [ReservationStatus.RESERVED, ReservationStatus.PENDING_PAYMENT] }
+          }
+        },
+        { $group: { _id: null, total: { $sum: '$quantity' } } }
+      ]);
+      const tierReserved = activeTierAgg[0]?.total ?? 0;
+
+      // 2. Validate tier capacity
+      if (tierConfig.soldCount + tierReserved + request.quantity > tierConfig.totalCapacity) {
+        throw AppError.badRequest(`Requested quantity for tier "${tierConfig.name}" exceeds remaining capacity`);
+      }
+
+      // 3. Validate overall event capacity
+      if (event.soldCount + event.reservedCount + request.quantity > event.totalCapacity) {
+        throw AppError.badRequest('Requested quantity exceeds remaining event capacity');
+      }
+
+      // 4. Atomically increment global event reserved count
+      const updatedEvent = await Event.findByIdAndUpdate(
+        request.eventId,
+        { $inc: { reservedCount: request.quantity, eventVersion: 1 } },
+        { new: true }
+      );
+
+      if (!updatedEvent) {
+        throw AppError.badRequest('Failed to reserve capacity');
+      }
+
+      const reservation = await Reservation.create({
+        eventId: request.eventId,
+        tier: request.tier,
+        section: request.tier,
+        sessionId: request.sessionId,
+        socketId: request.socketId,
+        userId: request.userId ? new Types.ObjectId(request.userId) : undefined,
+        quantity: request.quantity,
+        status: ReservationStatus.RESERVED,
+        inventoryState: InventoryState.RESERVED,
+        expiresAt: request.expiresAt,
+        bookingId: request.bookingId,
+        bookingReference: request.bookingReference,
+        correlationId: request.correlationId,
+        eventVersion: updatedEvent.eventVersion,
+        transitionLog: [{ from: InventoryState.AVAILABLE, to: InventoryState.RESERVED, reason: 'booking-created', correlationId: request.correlationId }],
+      });
+
+      this.emitReservationChange(updatedEvent._id.toString(), [reservation], 'reservation:reserved');
+      await CacheService.delPattern('events:*');
+
+      auditLog({
+        action: 'RESERVATION_ACQUIRED',
+        actor: request.userId ? { type: 'user', id: request.userId } : { type: 'guest', id: request.sessionId },
+        status: 'success',
+        metadata: {
+          eventId: request.eventId.toString(),
+          reservationId: reservation.reservationId,
+          tier: request.tier,
+          quantity: request.quantity,
+          bookingId: request.bookingId?.toString(),
+        },
+        description: `Reserved ${request.quantity} General Admission ticket(s) in tier "${request.tier}" for session ${request.sessionId}`
+      });
+
+      return [reservation];
+    } finally {
+      // Safely release the lock
+      const currentVal = await redis.get(lockKey);
+      if (currentVal === lockVal) {
+        await redis.del(lockKey);
+      }
+    }
   }
 
   private static async reserveSeats(request: ReservationRequest): Promise<IReservation[]> {
