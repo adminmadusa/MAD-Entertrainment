@@ -22,7 +22,7 @@ export default function ScannerPage() {
     queryFn: () => adminGetEvents({ limit: 100 }), // Simplified fetch
   });
 
-  const events = eventsRes?.data || [];
+  const events = eventsRes?.items || [];
 
   // Auto-focus input when event is selected
   useEffect(() => {

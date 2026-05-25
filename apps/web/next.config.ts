@@ -105,6 +105,11 @@ const nextConfig: NextConfig = {
       // Disable disk caching in dev mode to prevent ENOENT errors
       config.cache = { type: 'memory' };
     }
+    // Suppress OpenTelemetry dynamic require warnings during server builds
+    if (!config.ignoreWarnings) {
+      config.ignoreWarnings = [];
+    }
+    config.ignoreWarnings.push({ module: /opentelemetry/ });
     return config;
   },
 

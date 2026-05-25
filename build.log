@@ -1,0 +1,156 @@
+
+> mad-entertrainment@1.0.0 build /Users/admin/Desktop/MAD Entertrainment
+> turbo build
+
+• turbo 2.9.14
+
+   • Packages in scope: @mad/admin, @mad/server, @mad/shared, @mad/types, @mad/ui, @mad/utils, @mad/validations, @mad/web
+   • Running build in 8 packages
+   • Remote caching disabled
+
+@mad/utils:build: cache hit, replaying logs d0e9e49660920993
+@mad/ui:build: cache hit, replaying logs 27c46f965220ad8e
+@mad/shared:build: cache hit, replaying logs b924ecc5a11c2cb0
+@mad/types:build: cache hit, replaying logs a6eab7740e13ceb4
+@mad/ui:build: 
+@mad/ui:build: > @mad/ui@1.0.0 build /Users/admin/Desktop/MAD Entertrainment/packages/ui
+@mad/ui:build: > rm -rf dist tsconfig.tsbuildinfo && tsc -p tsconfig.json
+@mad/ui:build: 
+@mad/shared:build: 
+@mad/shared:build: > @mad/shared@1.0.0 build /Users/admin/Desktop/MAD Entertrainment/packages/shared
+@mad/shared:build: > rm -rf dist tsconfig.tsbuildinfo && tsc -p tsconfig.json
+@mad/shared:build: 
+@mad/utils:build: 
+@mad/utils:build: > @mad/utils@1.0.0 build /Users/admin/Desktop/MAD Entertrainment/packages/utils
+@mad/utils:build: > rm -rf dist tsconfig.tsbuildinfo && tsc -p tsconfig.json
+@mad/types:build: 
+@mad/types:build: > @mad/types@1.0.0 build /Users/admin/Desktop/MAD Entertrainment/packages/types
+@mad/types:build: > rm -rf dist tsconfig.tsbuildinfo && tsc -p tsconfig.json
+@mad/types:build: 
+@mad/utils:build: 
+@mad/validations:build: cache hit, replaying logs 5b5742b4b553ee82
+@mad/validations:build: 
+@mad/validations:build: > @mad/validations@1.0.0 build /Users/admin/Desktop/MAD Entertrainment/packages/validations
+@mad/validations:build: > rm -rf dist tsconfig.tsbuildinfo && tsc -p tsconfig.json
+@mad/validations:build: 
+@mad/admin:build: cache miss, executing 4b35b4004b5b058f
+@mad/web:build: cache hit, replaying logs 095df99017612ded
+@mad/web:build: 
+@mad/web:build: > @mad/web@1.0.0 prebuild /Users/admin/Desktop/MAD Entertrainment/apps/web
+@mad/web:build: > rm -rf .next
+@mad/web:build: 
+@mad/web:build: 
+@mad/web:build: > @mad/web@1.0.0 build /Users/admin/Desktop/MAD Entertrainment/apps/web
+@mad/web:build: > next build
+@mad/web:build: 
+@mad/web:build:    ▲ Next.js 15.5.18
+@mad/web:build: 
+@mad/web:build:    Creating an optimized production build ...
+@mad/web:build:  ✓ Compiled successfully in 7.9s
+@mad/web:build:    Linting and checking validity of types ...
+@mad/web:build:    Collecting page data ...
+@mad/web:build:    Generating static pages (0/9) ...
+@mad/web:build:    Generating static pages (2/9) 
+@mad/web:build:    Generating static pages (4/9) 
+@mad/web:build:    Generating static pages (6/9) 
+@mad/web:build:  ✓ Generating static pages (9/9)
+@mad/web:build:    Finalizing page optimization ...
+@mad/web:build:    Collecting build traces ...
+@mad/web:build: 
+@mad/web:build: Route (app)                                 Size  First Load JS
+@mad/web:build: ┌ ○ /                                    5.66 kB         185 kB
+@mad/web:build: ├ ○ /_not-found                            999 B         103 kB
+@mad/web:build: ├ ƒ /checkout/[bookingId]                6.86 kB         142 kB
+@mad/web:build: ├ ○ /dashboard                           2.24 kB         176 kB
+@mad/web:build: ├ ○ /events                              3.42 kB         183 kB
+@mad/web:build: ├ ƒ /events/[slug]                       5.99 kB         155 kB
+@mad/web:build: ├ ○ /login                                4.1 kB         137 kB
+@mad/web:build: ├ ○ /my-booking                          2.44 kB         173 kB
+@mad/web:build: └ ○ /register                            4.27 kB         137 kB
+@mad/web:build: + First Load JS shared by all             102 kB
+@mad/web:build:   ├ chunks/2b8b5421-930fc985398788e3.js  54.2 kB
+@mad/web:build:   ├ chunks/854-37c31e0aaf03fb0b.js       46.3 kB
+@mad/web:build:   └ other shared chunks (total)          1.92 kB
+@mad/web:build: 
+@mad/web:build: 
+@mad/web:build: ○  (Static)   prerendered as static content
+@mad/web:build: ƒ  (Dynamic)  server-rendered on demand
+@mad/web:build: 
+@mad/server:build: cache hit, replaying logs 9bf6c9689119f095
+@mad/server:build: 
+@mad/server:build: > @mad/server@1.0.0 build /Users/admin/Desktop/MAD Entertrainment/apps/server
+@mad/server:build: > rm -rf dist tsconfig.tsbuildinfo && tsc -p tsconfig.json
+@mad/server:build: 
+@mad/admin:build: 
+@mad/admin:build: > @mad/admin@1.0.0 prebuild /Users/admin/Desktop/MAD Entertrainment/apps/admin
+@mad/admin:build: > rm -rf .next
+@mad/admin:build: 
+@mad/admin:build: 
+@mad/admin:build: > @mad/admin@1.0.0 build /Users/admin/Desktop/MAD Entertrainment/apps/admin
+@mad/admin:build: > next build
+@mad/admin:build: 
+@mad/admin:build:    ▲ Next.js 15.5.18
+@mad/admin:build: 
+@mad/admin:build:    Creating an optimized production build ...
+@mad/admin:build:  ✓ (pwa) Compiling for server...
+@mad/admin:build:  ✓ (pwa) Compiling for server...
+@mad/admin:build:  ✓ (pwa) Compiling for client (static)...
+@mad/admin:build:  ○ (pwa) Service worker: /Users/admin/Desktop/MAD Entertrainment/apps/admin/public/sw.js
+@mad/admin:build:  ○ (pwa)   URL: /sw.js
+@mad/admin:build:  ○ (pwa)   Scope: /
+@mad/admin:build:  ○ (pwa) Custom runtimeCaching array found, using it to extend the default one.
+@mad/admin:build:  ⚠ Compiled with warnings in 9.8s
+@mad/admin:build: 
+@mad/admin:build: ../../node_modules/.pnpm/@opentelemetry+instrumentation@0.212.0_@opentelemetry+api@1.9.1/node_modules/@opentelemetry/instrumentation/build/esm/platform/node/instrumentation.js
+@mad/admin:build: Critical dependency: the request of a dependency is an expression
+@mad/admin:build: 
+@mad/admin:build: Import trace for requested module:
+@mad/admin:build: ../../node_modules/.pnpm/@opentelemetry+instrumentation@0.212.0_@opentelemetry+api@1.9.1/node_modules/@opentelemetry/instrumentation/build/esm/platform/node/instrumentation.js
+@mad/admin:build: ../../node_modules/.pnpm/@opentelemetry+instrumentation@0.212.0_@opentelemetry+api@1.9.1/node_modules/@opentelemetry/instrumentation/build/esm/platform/node/index.js
+@mad/admin:build: ../../node_modules/.pnpm/@opentelemetry+instrumentation@0.212.0_@opentelemetry+api@1.9.1/node_modules/@opentelemetry/instrumentation/build/esm/platform/index.js
+@mad/admin:build: ../../node_modules/.pnpm/@opentelemetry+instrumentation@0.212.0_@opentelemetry+api@1.9.1/node_modules/@opentelemetry/instrumentation/build/esm/index.js
+@mad/admin:build: ../../node_modules/.pnpm/@fastify+otel@0.18.0_@opentelemetry+api@1.9.1/node_modules/@fastify/otel/index.js
+@mad/admin:build: ../../node_modules/.pnpm/@sentry+node@10.53.1/node_modules/@sentry/node/build/cjs/integrations/tracing/fastify/index.js
+@mad/admin:build: ../../node_modules/.pnpm/@sentry+node@10.53.1/node_modules/@sentry/node/build/cjs/index.js
+@mad/admin:build: ../../node_modules/.pnpm/@sentry+nextjs@10.53.1_@opentelemetry+core@2.7.1_@opentelemetry+api@1.9.1__@opentelemetry+sdk_3msmpw42did3rkhxr6wswd3hmy/node_modules/@sentry/nextjs/build/cjs/index.server.js
+@mad/admin:build: ./src/components/NavigationTracker.tsx
+@mad/admin:build: 
+@mad/admin:build: ../../node_modules/.pnpm/@opentelemetry+instrumentation@0.212.0_@opentelemetry+api@1.9.1/node_modules/@opentelemetry/instrumentation/build/esm/platform/node/instrumentation.js
+@mad/admin:build: Critical dependency: the request of a dependency is an expression
+@mad/admin:build: 
+@mad/admin:build: Import trace for requested module:
+@mad/admin:build: ../../node_modules/.pnpm/@opentelemetry+instrumentation@0.212.0_@opentelemetry+api@1.9.1/node_modules/@opentelemetry/instrumentation/build/esm/platform/node/instrumentation.js
+@mad/admin:build: ../../node_modules/.pnpm/@opentelemetry+instrumentation@0.212.0_@opentelemetry+api@1.9.1/node_modules/@opentelemetry/instrumentation/build/esm/platform/node/index.js
+@mad/admin:build: ../../node_modules/.pnpm/@opentelemetry+instrumentation@0.212.0_@opentelemetry+api@1.9.1/node_modules/@opentelemetry/instrumentation/build/esm/platform/index.js
+@mad/admin:build: ../../node_modules/.pnpm/@opentelemetry+instrumentation@0.212.0_@opentelemetry+api@1.9.1/node_modules/@opentelemetry/instrumentation/build/esm/index.js
+@mad/admin:build: ../../node_modules/.pnpm/@fastify+otel@0.18.0_@opentelemetry+api@1.9.1/node_modules/@fastify/otel/index.js
+@mad/admin:build: ../../node_modules/.pnpm/@sentry+node@10.53.1/node_modules/@sentry/node/build/cjs/integrations/tracing/fastify/index.js
+@mad/admin:build: ../../node_modules/.pnpm/@sentry+node@10.53.1/node_modules/@sentry/node/build/cjs/index.js
+@mad/admin:build: ../../node_modules/.pnpm/@sentry+nextjs@10.53.1_@opentelemetry+core@2.7.1_@opentelemetry+api@1.9.1__@opentelemetry+sdk_3msmpw42did3rkhxr6wswd3hmy/node_modules/@sentry/nextjs/build/cjs/index.server.js
+@mad/admin:build: ./src/lib/observability.ts
+@mad/admin:build: ./src/app/layout.tsx
+@mad/admin:build: 
+@mad/admin:build:    Linting and checking validity of types ...
+@mad/admin:build: Failed to compile.
+@mad/admin:build: 
+@mad/admin:build: ./src/app/coupons/[id]/edit/page.tsx:338:33
+@mad/admin:build: Type error: Property 'data' does not exist on type '{ items: AdminEvent[]; pagination: { page: number; limit: number; total: number; totalPages: number; }; }'.
+@mad/admin:build: 
+@mad/admin:build: [0m [90m 336 |[39m               ) [33m:[39m (
+@mad/admin:build:  [90m 337 |[39m                 [33m<[39m[33mdiv[39m className[33m=[39m[32m"max-h-48 overflow-y-auto border border-border-subtle bg-white/2 rounded-xl p-3 space-y-2 custom-scrollbar"[39m[33m>[39m
+@mad/admin:build: [31m[1m>[22m[39m[90m 338 |[39m                   {(eventsData[33m?[39m[33m.[39mdata [33m?[39m[33m?[39m [])[33m.[39mmap((event) [33m=>[39m {
+@mad/admin:build:  [90m     |[39m                                 [31m[1m^[22m[39m
+@mad/admin:build:  [90m 339 |[39m                     [36mconst[39m isSelected [33m=[39m selectedEvents[33m.[39mincludes(event[33m.[39m_id)[33m;[39m
+@mad/admin:build:  [90m 340 |[39m                     [36mreturn[39m (
+@mad/admin:build:  [90m 341 |[39m                       [33m<[39m[33mdiv[39m[0m
+@mad/admin:build: Next.js build worker exited with code: 1 and signal: null
+@mad/admin:build:  ELIFECYCLE  Command failed with exit code 1.
+ ERROR  @mad/admin#build: command (/Users/admin/Desktop/MAD Entertrainment/apps/admin) /Users/admin/Library/pnpm/store/v11/links/@/pnpm/9.15.0/dabcd8222099706e9d5613e2bbde82a6ffe5e77c8ba18b78fcd77c3eac869433/bin/pnpm run build exited (1)
+
+ Tasks:    7 successful, 8 total
+Cached:    7 cached, 8 total
+  Time:    14.934s 
+Failed:    @mad/admin#build
+
+ ERROR  run failed: command  exited (1)
+ ELIFECYCLE  Command failed with exit code 1.

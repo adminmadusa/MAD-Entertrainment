@@ -46,7 +46,7 @@ export default function AdminEventsPage() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['admin-events'] }),
   });
 
-  const events = Array.isArray(data?.data) ? data?.data : [];
+  const events = Array.isArray(data?.items) ? data?.items : [];
   const pagination = data?.pagination;
 
   return (

@@ -2,18 +2,14 @@
 
 import { useEffect } from 'react';
 import { usePathname } from 'next/navigation';
-import * as Sentry from '@sentry/nextjs';
+// Sentry import removed for client-side telemetry isolation
 
 export default function NavigationTracker() {
   const pathname = usePathname();
 
   useEffect(() => {
     if (pathname) {
-      Sentry.addBreadcrumb({
-        category: 'navigation',
-        message: `Navigated to ${pathname}`,
-        level: 'info',
-      });
+      console.log('Navigation breadcrumb:', pathname);
     }
   }, [pathname]);
 

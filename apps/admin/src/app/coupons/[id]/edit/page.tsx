@@ -335,7 +335,7 @@ export default function EditCouponPage() {
                 <div className="text-xs text-text-muted animate-pulse">Loading events list...</div>
               ) : (
                 <div className="max-h-48 overflow-y-auto border border-border-subtle bg-white/2 rounded-xl p-3 space-y-2 custom-scrollbar">
-                  {(eventsData?.data ?? []).map((event) => {
+                  {(eventsData?.items ?? []).map((event) => {
                     const isSelected = selectedEvents.includes(event._id);
                     return (
                       <div
@@ -355,7 +355,7 @@ export default function EditCouponPage() {
                       </div>
                     );
                   })}
-                  {(eventsData?.data ?? []).length === 0 && (
+                  {(eventsData?.items ?? []).length === 0 && (
                     <div className="text-xs text-text-muted text-center py-4">No events found.</div>
                   )}
                 </div>
