@@ -9,6 +9,7 @@ import Link from 'next/link';
 
 import { Reveal } from '@/components/common/PageTransition';
 import { useWindowWidth } from '@/hooks/use-window.hook';
+import { getOptimizedImageUrl } from '@/utils/image';
 
 function ArrowRight({ className = '', size = 16 }: { className?: string; size?: number }) {
   return (
@@ -216,7 +217,7 @@ export function FeaturedEventsSection({ initialEvents = [] }: { initialEvents: E
                         <div className="aspect-[4/3] w-full overflow-hidden relative bg-white/5 flex-shrink-0">
                           {event.bannerImage?.url ? (
                             <Image
-                              src={event.bannerImage.url}
+                              src={getOptimizedImageUrl(event.bannerImage.url, 600)}
                               alt={`Promotional poster for ${event.title}`}
                               fill
                               priority={isActive}

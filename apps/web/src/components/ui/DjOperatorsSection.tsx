@@ -5,6 +5,8 @@ import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
 
+import { getOptimizedImageUrl } from '@/utils/image';
+
 // ─── DJ Card ──────────────────────────────────────────────────
 
 function DJCard({ dj }: { dj: DJOperator }) {
@@ -19,7 +21,7 @@ function DJCard({ dj }: { dj: DJOperator }) {
         <div className="relative aspect-square w-full overflow-hidden bg-white/5">
           {dj.profileImage?.url ? (
             <Image
-              src={dj.profileImage.url}
+              src={getOptimizedImageUrl(dj.profileImage.url, 300)}
               alt={dj.name}
               fill
               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 200px"

@@ -1,11 +1,17 @@
 import { ScrollIndicator } from '@mad/ui';
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { Suspense } from 'react';
 
 import { Reveal, StaggerContainer, StaggerItem } from '@/components/common/PageTransition';
 import { DJOperatorsSection } from '@/components/ui/DjOperatorsSection';
 import { FeaturedEventsSection } from '@/components/ui/FeaturedEventsSection';
 import { MarqueeBanner } from '@/components/ui/MarqueeBanner';
+import {
+  FeaturedEventsSkeleton,
+  DJOperatorsSkeleton,
+  MarqueeBannerSkeleton,
+} from '@/components/ui/HomeSkeletons';
 import { serverGetFeaturedEvents, serverGetDJs, serverGetCategories } from '@/lib/api/server.service';
 
 export const metadata: Metadata = {
@@ -14,26 +20,45 @@ export const metadata: Metadata = {
     'Discover and book tickets for the hottest shows, events, DJ nights, concerts, festivals, comedy, and VIP events near you.',
 };
 
-export default async function HomePage() {
-  const [events, djs, categories] = await Promise.all([
-    serverGetFeaturedEvents(),
-    serverGetDJs(),
-    serverGetCategories(),
-  ]);
+// ─── Parallel Server Data Loaders ─────────────────────────────────
 
+async function FeaturedEventsServerSection() {
+  const events = await serverGetFeaturedEvents();
+  return <FeaturedEventsSection initialEvents={events} />;
+}
+
+async function DJOperatorsServerSection() {
+  const djs = await serverGetDJs();
+  return <DJOperatorsSection initialDJs={djs} />;
+}
+
+async function MarqueeBannerServerSection() {
+  const categories = await serverGetCategories();
+  return <MarqueeBanner initialCategories={categories} />;
+}
+
+// ─── Main HomePage Component (Instant TTFB / Streaming) ───────────
+
+export default function HomePage() {
   return (
     <>
       {/* ─── Hero Section ─────────────────────────────────── */}
       <HeroSection />
 
-      {/* ─── Featured Events ──────────────────────────────── */}
-      <FeaturedEventsSection initialEvents={events} />
+      {/* ─── Featured Events (Streamed) ────────────────────── */}
+      <Suspense fallback={<FeaturedEventsSkeleton />}>
+        <FeaturedEventsServerSection />
+      </Suspense>
 
-      {/* ─── DJ Operators ─────────────────────────────────── */}
-      <DJOperatorsSection initialDJs={djs} />
+      {/* ─── DJ Operators (Streamed) ───────────────────────── */}
+      <Suspense fallback={<DJOperatorsSkeleton />}>
+        <DJOperatorsServerSection />
+      </Suspense>
 
-      {/* ─── Marquee Banner ───────────────────────────────── */}
-      <MarqueeBanner initialCategories={categories} />
+      {/* ─── Marquee Banner (Streamed) ─────────────────────── */}
+      <Suspense fallback={<MarqueeBannerSkeleton />}>
+        <MarqueeBannerServerSection />
+      </Suspense>
 
       {/* ─── How It Works ─────────────────────────────────── */}
       <HowItWorksSection />
