@@ -4,6 +4,8 @@ export interface EventTier {
   name: string;
   price: number;
   capacity: number;
+  totalCapacity?: number;
+  quantity?: number;
   groupSize?: number;
   minPerBooking?: number;
   discount?: number;
@@ -15,6 +17,7 @@ export interface EventTier {
   description?: string;
   perks?: string[];
   isAvailable: boolean;
+  isActive?: boolean;
 }
 
 export interface CloudinaryImage {
@@ -44,6 +47,13 @@ export interface AdminEvent {
   minimumAge?: number;
   tags?: string[];
   createdAt: string;
+  ticketProfileId?: string;
+  ticketOverrides?: {
+    tier: string;
+    price?: number;
+    totalCapacity?: number;
+    isActive?: boolean;
+  }[];
 }
 
 export interface EventsResponse {

@@ -13,6 +13,17 @@ const cloudinaryImageSchema = new Schema(
   { _id: false }
 );
 
+const ticketOfferRulesSchema = new Schema(
+  {
+    discountType: { type: String, enum: ['percentage', 'flat', 'none'], default: 'none' },
+    discountValue: { type: Number, default: 0 },
+    minQtyRequired: { type: Number, default: 1 },
+    buyQty: Number,
+    freeTicketQty: Number,
+  },
+  { _id: false }
+);
+
 const ticketTierConfigSchema = new Schema(
   {
     tier: { type: String, enum: Object.values(TicketTier), required: true },
@@ -37,6 +48,10 @@ const ticketTierConfigSchema = new Schema(
     isDeleted: { type: Boolean, default: false },
     deletedAt: Date,
     deletedBy: { type: Schema.Types.ObjectId, ref: 'AdminUser' },
+    groupId: String,
+    groupName: String,
+    isFree: { type: Boolean, default: false },
+    offerRules: ticketOfferRulesSchema,
   },
   { _id: false }
 );
@@ -83,8 +98,27 @@ export interface IEvent extends Document {
     isDeleted: boolean;
     deletedAt?: Date;
     deletedBy?: Types.ObjectId;
+    groupId?: string;
+    groupName?: string;
+    isFree?: boolean;
+    offerRules?: {
+      discountType: 'percentage' | 'flat' | 'none';
+      discountValue: number;
+      minQtyRequired: number;
+      buyQty?: number;
+      freeTicketQty?: number;
+    };
   }[];
   totalCapacity: number;
+  ticketProfileId?: Types.ObjectId;
+  ticketOverrides?: {
+    tier: string;
+    price?: number;
+    totalCapacity?: number;
+    isActive?: boolean;
+    maxPerBooking?: number;
+    minPerBooking?: number;
+  }[];
   soldCount: number;
   reservedCount: number;
   eventVersion: number;
@@ -134,6 +168,21 @@ const eventSchema = new Schema<IEvent>(
     djOperatorIds: [{ type: Schema.Types.ObjectId, ref: 'DJOperator' }],
 
     ticketTiers: { type: [ticketTierConfigSchema], default: [] },
+    ticketProfileId: { type: Schema.Types.ObjectId, ref: 'TicketProfile', index: true },
+    ticketOverrides: {
+      type: [
+        {
+          tier: { type: String, required: true },
+          price: Number,
+          totalCapacity: Number,
+          isActive: Boolean,
+          maxPerBooking: Number,
+          minPerBooking: Number,
+          _id: false,
+        },
+      ],
+      default: [],
+    },
     totalCapacity: { type: Number, required: true, min: 1 },
     soldCount: { type: Number, default: 0, min: 0 },
     reservedCount: { type: Number, default: 0, min: 0 },
@@ -157,8 +206,16 @@ const eventSchema = new Schema<IEvent>(
     refundPolicy: { type: String, maxlength: 1000 },
     organizerName: { type: String, maxlength: 100 },
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+  }
 );
+
+eventSchema.virtual('coverImage').get(function (this: any) {
+  return this.bannerImage;
+});
 
 // ─── Indexes ──────────────────────────────────────────────────
 eventSchema.index({ startDate: 1, status: 1 });

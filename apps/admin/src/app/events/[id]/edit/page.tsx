@@ -3,19 +3,17 @@
 import { EventCategory, EVENT_CATEGORY_LABELS, BookingMode, TicketTier } from '@mad/shared';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
 
 import { CloudinaryUpload } from '@/components/CloudinaryUpload';
-import { adminCreateEvent } from '@/lib/api/admin/event.service';
+import { adminGetEvent, adminUpdateEvent } from '@/lib/api/admin/event.service';
 import { adminGetCategories } from '@/lib/api/admin/category.service';
 import { adminGetTiers } from '@/lib/api/admin/tier.service';
 import { adminGetTicketProfiles } from '@/lib/api/admin/ticket-profile.service';
 import { extractApiError } from '@/lib/api/client';
 
-
 interface CloudinaryImage { url: string; publicId: string; alt?: string; }
-
 
 const TICKET_TIER_NAMES = ['general', 'silver', 'gold', 'platinum', 'vip', 'vvip', 'backstage', 'couple', 'group', 'family', 'early_bird', 'custom'];
 
@@ -37,7 +35,8 @@ const defaultTier = (): TicketTierInput => ({
   name: 'general', price: '', capacity: '', groupSize: '', minPerBooking: '', discount: '', taxPercent: '', startDate: '', endDate: '', description: '', isAvailable: true,
 });
 
-export default function CreateEventPage() {
+export default function EditEventPage() {
+  const { id } = useParams() as { id: string };
   const router = useRouter();
 
   const [title, setTitle] = useState('');
@@ -52,17 +51,22 @@ export default function CreateEventPage() {
   const [minimumAge, setMinimumAge] = useState(18);
   const [coverImage, setCoverImage] = useState<CloudinaryImage | null>(null);
   const [tiers, setTiers] = useState<TicketTierInput[]>([defaultTier()]);
-  
-  // Ticket Profile and Overrides state
-  const [ticketingType, setTicketingType] = useState<'custom' | 'profile'>('custom');
-  const [selectedProfileId, setSelectedProfileId] = useState('');
-  const [overrides, setOverrides] = useState<Record<string, { price?: number; totalCapacity?: number; isActive?: boolean }>>({});
-
   const [error, setError] = useState('');
   const [venueName, setVenueName] = useState<string>('');
   const [organizerName, setOrganizerName] = useState('');
   const [refundPolicy, setRefundPolicy] = useState('');
   const [highlightsInput, setHighlightsInput] = useState('');
+
+  // Ticket Profile and Overrides state
+  const [ticketingType, setTicketingType] = useState<'custom' | 'profile'>('custom');
+  const [selectedProfileId, setSelectedProfileId] = useState('');
+  const [overrides, setOverrides] = useState<Record<string, { price?: number; totalCapacity?: number; isActive?: boolean }>>({});
+
+  // Fetch Event details
+  const { data: event, isLoading: isEventLoading } = useQuery({
+    queryKey: ['admin-event', id],
+    queryFn: () => adminGetEvent(id),
+  });
 
   // Fetch live categories from database
   const { data: dbCategories = [] } = useQuery({
@@ -84,6 +88,69 @@ export default function CreateEventPage() {
 
   const activeProfile = dbProfiles.find((p: any) => p._id === selectedProfileId);
 
+  useEffect(() => {
+    if (event) {
+      setTitle(event.title || '');
+      setDescription(event.description || '');
+      setCategory(event.category || 'concert');
+      setStatus(event.status || 'draft');
+      setStartDate(event.startDate ? new Date(event.startDate).toISOString().slice(0, 16) : '');
+      setEndDate(event.endDate ? new Date(event.endDate).toISOString().slice(0, 16) : '');
+      setVenueName(event.venue || '');
+      // @ts-ignore
+      setOrganizerName(event.organizerName || '');
+      // @ts-ignore
+      setRefundPolicy(event.refundPolicy || '');
+      // @ts-ignore
+      setHighlightsInput(event.highlights?.join(', ') || '');
+      setTags(event.tags?.join(', ') || '');
+      setIsFeatured(!!event.isFeatured);
+      setIsAgeRestricted(!!event.isAgeRestricted);
+      setMinimumAge(event.minimumAge || 18);
+      // @ts-ignore
+      setCoverImage(event.coverImage || event.bannerImage || null);
+
+      if (event.ticketProfileId) {
+        setTicketingType('profile');
+        setSelectedProfileId(event.ticketProfileId);
+        
+        // Map overrides from event
+        const ovs: Record<string, { price?: number; totalCapacity?: number; isActive?: boolean }> = {};
+        if (event.ticketOverrides) {
+          event.ticketOverrides.forEach((ov) => {
+            ovs[ov.tier] = {
+              price: ov.price,
+              totalCapacity: ov.totalCapacity,
+              isActive: ov.isActive,
+            };
+          });
+        }
+        setOverrides(ovs);
+      } else {
+        setTicketingType('custom');
+        if (event.ticketTiers && event.ticketTiers.length > 0) {
+          setTiers(
+            event.ticketTiers.map((t) => ({
+              name: t.name,
+              price: t.price,
+              capacity: t.totalCapacity || t.quantity || 100,
+              groupSize: t.groupSize || 1,
+              minPerBooking: t.minPerBooking || 1,
+              discount: t.discount || 0,
+              taxPercent: t.taxPercent || 0,
+              startDate: '',
+              endDate: '',
+              description: t.description || '',
+              isAvailable: t.isActive !== false,
+            }))
+          );
+        } else {
+          setTiers([defaultTier()]);
+        }
+      }
+    }
+  }, [event]);
+
   const handleOverrideChange = (tier: string, field: 'price' | 'totalCapacity' | 'isActive', value: any) => {
     setOverrides((prev) => ({
       ...prev,
@@ -94,8 +161,8 @@ export default function CreateEventPage() {
     }));
   };
 
-  const createMutation = useMutation({
-    mutationFn: adminCreateEvent,
+  const updateMutation = useMutation({
+    mutationFn: (payload: any) => adminUpdateEvent(id, payload),
     onSuccess: () => router.push('/events'),
     onError: (err) => setError(extractApiError(err).message),
   });
@@ -121,11 +188,10 @@ export default function CreateEventPage() {
 
     try {
       if (!coverImage) {
-        setError('Cover image is required for event creation.');
+        setError('Cover image is required for event update.');
         return;
       }
 
-      // Generate slug from title if not provided
       const generatedSlug = title.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^[-]+|[-]+$/g, '');
 
       const isProfileType = ticketingType === 'profile';
@@ -166,8 +232,8 @@ export default function CreateEventPage() {
           }))
           .filter((o) => o.totalCapacity !== undefined || o.isActive !== undefined);
         
-        // Let server calculate totalCapacity
-        payload.totalCapacity = 1; // Temporary mock, server computes correctly
+        // Remove normal ticketTiers to let server compile from profile
+        payload.ticketTiers = [];
       } else {
         const ticketTiers = tiers.map((t) => ({
           name: t.name,
@@ -180,6 +246,8 @@ export default function CreateEventPage() {
           isAvailable: true,
         }));
 
+        payload.ticketProfileId = null; // Clear linked profile
+        payload.ticketOverrides = [];
         payload.ticketTiers = ticketTiers.map(t => {
           const resolvedTierEnum = Object.values(TicketTier).includes(t.name as TicketTier)
             ? (t.name as TicketTier)
@@ -191,21 +259,28 @@ export default function CreateEventPage() {
             totalCapacity: t.capacity,
           };
         });
-        payload.totalCapacity = ticketTiers.reduce((sum, t) => sum + Number(t.capacity || 0), 0);
       }
 
-      createMutation.mutate(payload);
+      updateMutation.mutate(payload);
     } catch (err: any) {
-      setError(err?.message || 'Failed to handle venue creation');
+      setError(err?.message || 'Failed to update event');
     }
   };
 
+  if (isEventLoading) {
+    return (
+      <div className="py-12 flex justify-center items-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-accent-purple" />
+      </div>
+    );
+  }
+
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
+    <div className="max-w-3xl mx-auto space-y-6 text-white">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-black text-white">Create Event</h1>
-          <p className="text-text-muted text-sm mt-0.5">Fill in the details below</p>
+          <h1 className="text-2xl font-black text-white">Edit Event</h1>
+          <p className="text-text-muted text-sm mt-0.5">Modify event parameters and ticketing overrides</p>
         </div>
         <button
           onClick={() => router.back()}
@@ -216,7 +291,6 @@ export default function CreateEventPage() {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Error */}
         {error && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
             className="px-4 py-3 bg-error/10 border border-error/30 rounded-xl text-sm text-red-400">
@@ -258,10 +332,13 @@ export default function CreateEventPage() {
                     ))}
               </select>
             </Field>
-                        <Field label="Status">
+            <Field label="Status">
               <select id="event-status" value={status} onChange={(e) => setStatus(e.target.value)} className={inputCls}>
                 <option value="draft" className="bg-background-card">Draft</option>
                 <option value="published" className="bg-background-card">Published</option>
+                <option value="cancelled" className="bg-background-card">Cancelled</option>
+                <option value="sold_out" className="bg-background-card">Sold Out</option>
+                <option value="completed" className="bg-background-card">Completed</option>
               </select>
             </Field>
             <Field label="Venue *">
@@ -523,9 +600,9 @@ export default function CreateEventPage() {
             className="flex-1 py-3 glass border border-border-subtle rounded-xl text-text-secondary font-medium hover:text-white transition-colors">
             Cancel
           </button>
-          <button id="event-submit" type="submit" disabled={createMutation.isPending}
+          <button id="event-submit" type="submit" disabled={updateMutation.isPending}
             className="flex-1 py-3 btn-gradient text-white font-bold rounded-xl shadow-glow-sm disabled:opacity-60 transition-all">
-            {createMutation.isPending ? 'Creating...' : 'Create Event'}
+            {updateMutation.isPending ? 'Saving...' : 'Save Changes'}
           </button>
         </div>
       </form>
@@ -533,7 +610,6 @@ export default function CreateEventPage() {
   );
 }
 
-// Shared field wrapper
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="space-y-1.5">
