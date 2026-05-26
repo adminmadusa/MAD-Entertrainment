@@ -521,110 +521,133 @@ export default function CheckoutPage() {
                 </div>
               </div>
 
-              {/* Pay With / Gateways */}
-              <div className="glass rounded-2xl border border-white/5 p-6 space-y-4">
-                <h2 className="text-white font-bold text-base border-b border-white/10 pb-3">Pay with</h2>
-
-                <div className="space-y-3">
-                  <label className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all ${
-                    selectedGateway === 'stripe' 
-                      ? 'bg-accent-purple/10 border-accent-purple' 
-                      : 'bg-white/2 border-white/5 hover:border-white/10'
-                  }`}>
-                    <div className="flex items-center gap-3">
-                      <input
-                        type="radio"
-                        name="gateway"
-                        checked={selectedGateway === 'stripe'}
-                        onChange={() => setSelectedGateway('stripe')}
-                        className="accent-accent-purple"
-                      />
-                      <span className="text-xs font-semibold text-white">Credit or debit card</span>
-                    </div>
-                    <span className="text-base">💳</span>
-                  </label>
-
-                  <label className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all ${
-                    selectedGateway === 'razorpay' 
-                      ? 'bg-accent-purple/10 border-accent-purple' 
-                      : 'bg-white/2 border-white/5 hover:border-white/10'
-                  }`}>
-                    <div className="flex items-center gap-3">
-                      <input
-                        type="radio"
-                        name="gateway"
-                        checked={selectedGateway === 'razorpay'}
-                        onChange={() => setSelectedGateway('razorpay')}
-                        className="accent-accent-purple"
-                      />
-                      <span className="text-xs font-semibold text-white">PayPal</span>
-                    </div>
-                    <span className="text-xs text-accent-cyan font-bold">PayPal</span>
-                  </label>
-
-                  <label className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all ${
-                    selectedGateway === 'razorpay' && false /* Just display third alternative */
-                      ? 'bg-accent-purple/10 border-accent-purple' 
-                      : 'bg-white/2 border-white/5 hover:border-white/10'
-                  }`}>
-                    <div className="flex items-center gap-3">
-                      <input
-                        type="radio"
-                        name="gateway"
-                        checked={selectedGateway === 'razorpay'}
-                        onChange={() => setSelectedGateway('razorpay')}
-                        className="accent-accent-purple"
-                      />
-                      <span className="text-xs font-semibold text-white">Google Pay</span>
-                    </div>
-                    <span className="text-[10px] text-white font-mono bg-white/5 px-2 py-1 rounded border border-white/10">GPay</span>
-                  </label>
-                </div>
-              </div>
-
             </form>
           </div>
 
-          {/* Right Column: Checkout Breakdown */}
-          <div className="lg:col-span-4 glass rounded-2xl border border-white/5 p-6 space-y-6">
-            <h2 className="text-white font-bold text-sm uppercase tracking-wider">Payment Details</h2>
+          {/* Right Column: Checkout Breakdown, Payment Details, and Actions */}
+          <div className="lg:col-span-4 space-y-6">
+            {/* Payment Details Card */}
+            <div className="glass rounded-2xl border border-white/5 p-6 space-y-6">
+              <h2 className="text-white font-bold text-sm uppercase tracking-wider">Payment Details</h2>
 
-            <div className="space-y-3 text-xs border-b border-white/5 pb-4">
-              <div className="flex justify-between text-text-secondary">
-                <span>Subtotal</span>
-                <span>₹{booking.subtotal}</span>
-              </div>
-              <div className="flex justify-between text-text-secondary">
-                <span>Convenience Fee</span>
-                <span>₹{booking.convenienceFee}</span>
-              </div>
-              <div className="flex justify-between text-text-secondary">
-                <span>GST (18%)</span>
-                <span>₹{booking.gst}</span>
-              </div>
-              {booking.discount > 0 && (
-                <div className="flex justify-between text-emerald-400 font-medium">
-                  <span>Discount</span>
-                  <span>-₹{booking.discount}</span>
+              <div className="space-y-3 text-xs border-b border-white/5 pb-4">
+                <div className="flex justify-between text-text-secondary">
+                  <span>Subtotal</span>
+                  <span>₹{booking.subtotal}</span>
                 </div>
-              )}
+                <div className="flex justify-between text-text-secondary">
+                  <span>Convenience Fee</span>
+                  <span>₹{booking.convenienceFee}</span>
+                </div>
+                <div className="flex justify-between text-text-secondary">
+                  <span>GST (18%)</span>
+                  <span>₹{booking.gst}</span>
+                </div>
+                {booking.discount > 0 && (
+                  <div className="flex justify-between text-emerald-400 font-medium">
+                    <span>Discount</span>
+                    <span>-₹{booking.discount}</span>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex justify-between items-center text-sm font-black">
+                <span className="text-white">Total Amount</span>
+                <span className="text-accent-purple-light text-base">₹{booking.totalAmount}</span>
+              </div>
             </div>
 
-            <div className="flex justify-between items-center text-sm font-black">
-              <span className="text-white">Total Amount</span>
-              <span className="text-accent-purple-light text-base">₹{booking.totalAmount}</span>
+            {/* Pay With / Gateways */}
+            <div className="glass rounded-2xl border border-white/5 p-6 space-y-4">
+              <h2 className="text-white font-bold text-base border-b border-white/10 pb-3">Pay with</h2>
+
+              <div className="space-y-3">
+                <label className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all ${
+                  selectedGateway === 'stripe' 
+                    ? 'bg-accent-purple/10 border-accent-purple' 
+                    : 'bg-white/2 border-white/5 hover:border-white/10'
+                }`}>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="radio"
+                      name="gateway"
+                      checked={selectedGateway === 'stripe'}
+                      onChange={() => setSelectedGateway('stripe')}
+                      className="accent-accent-purple"
+                    />
+                    <span className="text-xs font-semibold text-white">Credit or debit card</span>
+                  </div>
+                  <span className="text-base">💳</span>
+                </label>
+
+                <label className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all ${
+                  selectedGateway === 'razorpay' 
+                    ? 'bg-accent-purple/10 border-accent-purple' 
+                    : 'bg-white/2 border-white/5 hover:border-white/10'
+                }`}>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="radio"
+                      name="gateway"
+                      checked={selectedGateway === 'razorpay'}
+                      onChange={() => setSelectedGateway('razorpay')}
+                      className="accent-accent-purple"
+                    />
+                    <span className="text-xs font-semibold text-white">PayPal</span>
+                  </div>
+                  <span className="text-xs text-accent-cyan font-bold">PayPal</span>
+                </label>
+
+                <label className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all ${
+                  selectedGateway === 'razorpay' && false /* Just display third alternative */
+                    ? 'bg-accent-purple/10 border-accent-purple' 
+                    : 'bg-white/2 border-white/5 hover:border-white/10'
+                }`}>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="radio"
+                      name="gateway"
+                      checked={selectedGateway === 'razorpay'}
+                      onChange={() => setSelectedGateway('razorpay')}
+                      className="accent-accent-purple"
+                    />
+                    <span className="text-xs font-semibold text-white">Google Pay</span>
+                  </div>
+                  <span className="text-[10px] text-white font-mono bg-white/5 px-2 py-1 rounded border border-white/10">GPay</span>
+                </label>
+              </div>
             </div>
 
-            {/* Terms of Service notice */}
-            <p className="text-[10px] text-text-muted leading-relaxed">
-              By selecting Place Order, I agree to the MAD Entertainment Terms of Service and Privacy Policy.
-            </p>
+            {/* Place Order & Terms (Desktop Only) */}
+            <div className="hidden lg:block glass rounded-2xl border border-white/5 p-6 space-y-4">
+              <div className="flex justify-between items-center text-sm font-black mb-2">
+                <span className="text-white">Total Amount</span>
+                <span className="text-accent-purple-light text-base">₹{booking.totalAmount}</span>
+              </div>
+              
+              <button
+                type="submit"
+                form="checkout-form"
+                disabled={isExpired || saveDetailsMutation.isPending || paymentIntentMutation.isPending || isProcessing}
+                className="w-full px-8 py-3.5 rounded-xl bg-gradient-to-r from-accent-purple to-accent-pink hover:from-accent-purple-light hover:to-accent-pink/80 text-white font-black text-sm transition-all hover:scale-[1.02] active:scale-95 shadow-glow disabled:opacity-50"
+              >
+                {saveDetailsMutation.isPending || paymentIntentMutation.isPending || isProcessing
+                  ? 'Processing...'
+                  : isExpired
+                  ? 'Session Expired'
+                  : 'Place Order'}
+              </button>
+
+              <p className="text-[10px] text-text-muted leading-relaxed pt-2 border-t border-white/5">
+                By selecting Place Order, I agree to the MAD Entertainment Terms of Service and Privacy Policy.
+              </p>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Sticky Place Order Footer */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 bg-[#0d111d]/95 backdrop-blur-lg border-t border-white/10 shadow-2xl">
+      <div className="fixed bottom-0 left-0 right-0 z-40 bg-[#0d111d]/95 backdrop-blur-lg border-t border-white/10 shadow-2xl lg:hidden">
         <div className="container-mad max-w-4xl px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] flex items-center gap-4">
           <div className="flex-1">
             <div className="text-[10px] text-text-muted font-semibold uppercase tracking-wider">Total Amount</div>
