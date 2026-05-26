@@ -508,16 +508,16 @@ export default function EditEventPage() {
               {activeProfile && (
                 <div className="space-y-6 pt-4 border-t border-white/5">
                   <h3 className="text-white font-bold text-sm">Profile Preview & Event-Specific Overrides</h3>
-                  {activeProfile.groups?.map((group: any) => (
-                    <div key={group.slug} className="space-y-3 p-4 bg-white/3 rounded-xl border border-white/5">
+                  {activeProfile.groups?.map((group: any, gIdx: number) => (
+                    <div key={`${group.slug}-${gIdx}`} className="space-y-3 p-4 bg-white/3 rounded-xl border border-white/5">
                       <h4 className="text-accent-purple-light font-bold text-sm">{group.name}</h4>
                       <p className="text-text-muted text-xs">{group.description}</p>
                       
                       <div className="space-y-3 pt-2">
-                        {group.tickets?.map((ticket: any) => {
+                        {group.tickets?.map((ticket: any, tIdx: number) => {
                           const override = overrides[ticket.tier] || {};
                           return (
-                            <div key={ticket.tier} className="p-3 bg-background rounded-lg border border-border-subtle flex flex-col md:flex-row md:items-center justify-between gap-4">
+                            <div key={`${ticket.tier}-${tIdx}`} className="p-3 bg-background rounded-lg border border-border-subtle flex flex-col md:flex-row md:items-center justify-between gap-4">
                               <div className="flex-1">
                                 <span className="text-sm font-bold text-white block">{ticket.name.replace(/\{eventName\}/g, title || 'Event')}</span>
                                 <span className="text-xs text-text-muted">
