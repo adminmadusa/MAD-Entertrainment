@@ -274,14 +274,13 @@ export default function EventDetailClient() {
             <div className="text-xs text-text-muted font-medium">Tickets from</div>
             <div className="text-base font-black text-accent-purple-light">{priceDisplay}</div>
           </div>
-          <Link href={`/events/${slug}/book`}>
-            <button 
-              type="button" 
-              className="px-8 py-3 bg-gradient-to-r from-accent-purple to-accent-pink hover:from-accent-purple-light hover:to-accent-pink/80 text-white font-black text-sm rounded-xl shadow-glow transition-all duration-300 hover:scale-105 active:scale-95"
-            >
-              Get tickets
-            </button>
-          </Link>
+          <button 
+            type="button" 
+            onClick={() => setIsBookingModalOpen(true)}
+            className="px-8 py-3 bg-gradient-to-r from-accent-purple to-accent-pink hover:from-accent-purple-light hover:to-accent-pink/80 text-white font-black text-sm rounded-xl shadow-glow transition-all duration-300 hover:scale-105 active:scale-95"
+          >
+            Get tickets
+          </button>
         </div>
       </div>
 
@@ -319,13 +318,13 @@ export default function EventDetailClient() {
           </div>
         </div>
       )}
-      {/* Desktop Booking Modal overlay */}
+      {/* Ticket Selection Modal overlay */}
       {isBookingModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-fade-in">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm md:p-4 animate-fade-in">
           {/* Backdrop click to close */}
           <div className="absolute inset-0" onClick={() => setIsBookingModalOpen(false)} />
 
-          <div className="w-full max-w-4xl bg-[#0d111d] rounded-2xl border border-white/10 overflow-hidden relative flex flex-col md:flex-row h-[600px] md:h-[650px] shadow-2xl z-10">
+          <div className="w-full h-full md:h-[650px] max-w-4xl bg-[#0d111d] md:rounded-2xl border border-white/10 overflow-hidden relative flex flex-col md:flex-row shadow-2xl z-10">
             {/* Close button */}
             <button
               type="button"
@@ -336,8 +335,8 @@ export default function EventDetailClient() {
             </button>
 
             {/* Left Panel: Ticket selection */}
-            <div className="w-full md:w-3/5 p-6 md:p-8 flex flex-col justify-between overflow-y-auto custom-scrollbar border-r border-white/5">
-              <div className="space-y-4">
+            <div className="w-full md:w-3/5 p-6 md:p-8 flex flex-col h-full border-r border-white/5 bg-[#0d111d]">
+              <div className="flex-1 overflow-y-auto custom-scrollbar pr-1 space-y-4">
                 <div>
                   <h3 className="text-base font-bold text-white pr-8">{event.title}</h3>
                   <p className="text-xs text-text-muted mt-1">{showDateTime} · {event.venue}</p>
@@ -362,7 +361,7 @@ export default function EventDetailClient() {
               </div>
 
               {/* Modal Sticky Bottom Action Footer */}
-              <div className="border-t border-white/10 pt-4 mt-6 flex items-center justify-between bg-[#0d111d]">
+              <div className="border-t border-white/10 pt-4 mt-4 flex items-center justify-between bg-[#0d111d] shrink-0">
                 <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 bg-amber-500/10 border border-amber-500/20 text-amber-400 rounded-md animate-pulse">
                   🔥 Few tickets left
                 </span>
@@ -442,11 +441,11 @@ export default function EventDetailClient() {
 
       {/* Desktop Checkout Modal overlay */}
       {isCheckoutModalOpen && checkoutBookingId && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-fade-in">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm md:p-4 animate-fade-in">
           {/* Backdrop click to close */}
           <div className="absolute inset-0" onClick={() => setIsCheckoutModalOpen(false)} />
 
-          <div className="w-full max-w-4xl bg-[#0d111d] rounded-2xl border border-white/10 overflow-y-auto max-h-[90vh] shadow-2xl relative z-10 p-6 custom-scrollbar">
+          <div className="w-full h-full md:max-h-[95vh] max-w-4xl bg-[#0d111d] md:rounded-2xl border border-white/10 overflow-y-auto shadow-2xl relative z-10 p-6 custom-scrollbar">
             <CheckoutContent
               bookingId={checkoutBookingId}
               isModal={true}
