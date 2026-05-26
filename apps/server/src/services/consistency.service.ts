@@ -8,7 +8,7 @@ import { Payment } from '../models/payment.schema';
 import { Reservation } from '../models/reservation.schema';
 import { SeatLayout } from '../models/seat-layout.schema';
 import { logger } from '../utils/logger';
-import { runWithContext } from '../utils/context';
+import { runWithContext, getTraceContext } from '../utils/context';
 import { auditLog } from '../utils/audit';
 import crypto from 'crypto';
 
@@ -222,19 +222,29 @@ export class ConsistencyService {
 
       const durationMs = Date.now() - startTime;
 
-      auditLog({
-        action: 'CONSISTENCY_REPAIR_CYCLE',
-        status: 'success',
-        metadata: {
-          durationMs,
-          repairs: report.repairs,
-          drift: report.drift,
-          counts: report.counts,
-        },
-        description: `Consistency repair cycle finished in ${durationMs}ms with ${expiredReservations.length} expired reservations, ${phantomRedisLocks} phantom locks, ${staleSeatReservations} stale seats, and ${eventInventoryMismatchesRepaired} inventory mismatches repaired.`,
-      });
+      const hasRepairs = expiredReservations.length > 0 ||
+        phantomRedisLocks > 0 ||
+        staleSeatReservations > 0 ||
+        eventInventoryMismatchesRepaired > 0;
 
-      if (expiredReservations.length > 0 || phantomRedisLocks > 0 || staleSeatReservations > 0 || eventInventoryMismatchesRepaired > 0) {
+      const context = getTraceContext();
+      const isManual = !!(context?.userId || context?.sessionId);
+
+      if (hasRepairs || isManual) {
+        auditLog({
+          action: 'CONSISTENCY_REPAIR_CYCLE',
+          status: 'success',
+          metadata: {
+            durationMs,
+            repairs: report.repairs,
+            drift: report.drift,
+            counts: report.counts,
+          },
+          description: `Consistency repair cycle finished in ${durationMs}ms with ${expiredReservations.length} expired reservations, ${phantomRedisLocks} phantom locks, ${staleSeatReservations} stale seats, and ${eventInventoryMismatchesRepaired} inventory mismatches repaired.`,
+        });
+      }
+
+      if (hasRepairs) {
         logger.warn({ report }, 'Consistency repair cycle completed with repairs');
         emitToAdmin('inventory', 'consistency:repaired', report);
         for (const [eventId, reservations] of ReservationService.groupByEvent(expiredReservations).entries()) {
