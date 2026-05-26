@@ -175,7 +175,7 @@ export function TicketSelectionContent({
             onChange={(e) => setCouponCode(e.target.value)}
             placeholder="Enter code"
             disabled={couponApplied}
-            className="flex-1 px-4 py-2.5 rounded-xl bg-background border border-white/10 text-sm font-mono uppercase text-white focus:outline-none focus:border-accent-purple transition-colors disabled:opacity-50"
+            className="flex-1 px-4 py-2.5 rounded-xl bg-background border border-white/10 text-base lg:text-sm font-mono uppercase text-white focus:outline-none focus:border-accent-purple transition-colors disabled:opacity-50"
           />
           <button
             type="submit"

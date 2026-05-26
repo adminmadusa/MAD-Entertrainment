@@ -387,7 +387,7 @@ export default function CheckoutPage() {
                       value={firstName}
                       onChange={(e) => setFirstName(e.target.value)}
                       placeholder="First name"
-                      className={`w-full px-4 py-2.5 rounded-xl bg-background border text-sm text-white focus:outline-none transition-colors ${
+                      className={`w-full px-4 py-2.5 rounded-xl bg-background border text-base lg:text-sm text-white focus:outline-none transition-colors ${
                         fieldErrors.firstName ? 'border-red-500' : 'border-white/10 focus:border-accent-purple'
                       }`}
                     />
@@ -400,7 +400,7 @@ export default function CheckoutPage() {
                       value={lastName}
                       onChange={(e) => setLastName(e.target.value)}
                       placeholder="Last name"
-                      className={`w-full px-4 py-2.5 rounded-xl bg-background border text-sm text-white focus:outline-none transition-colors ${
+                      className={`w-full px-4 py-2.5 rounded-xl bg-background border text-base lg:text-sm text-white focus:outline-none transition-colors ${
                         fieldErrors.lastName ? 'border-red-500' : 'border-white/10 focus:border-accent-purple'
                       }`}
                     />
@@ -415,7 +415,7 @@ export default function CheckoutPage() {
                     value={guestEmail}
                     onChange={(e) => setGuestEmail(e.target.value)}
                     placeholder="email@example.com"
-                    className={`w-full px-4 py-2.5 rounded-xl bg-background border text-sm text-white focus:outline-none transition-colors ${
+                    className={`w-full px-4 py-2.5 rounded-xl bg-background border text-base lg:text-sm text-white focus:outline-none transition-colors ${
                       fieldErrors.guestEmail ? 'border-red-500' : 'border-white/10 focus:border-accent-purple'
                     }`}
                   />
@@ -429,7 +429,7 @@ export default function CheckoutPage() {
                     value={guestEmailConfirm}
                     onChange={(e) => setGuestEmailConfirm(e.target.value)}
                     placeholder="Confirm email address"
-                    className={`w-full px-4 py-2.5 rounded-xl bg-background border text-sm text-white focus:outline-none transition-colors ${
+                    className={`w-full px-4 py-2.5 rounded-xl bg-background border text-base lg:text-sm text-white focus:outline-none transition-colors ${
                       fieldErrors.guestEmailConfirm ? 'border-red-500' : 'border-white/10 focus:border-accent-purple'
                     }`}
                   />
@@ -443,7 +443,7 @@ export default function CheckoutPage() {
                     value={guestPhone}
                     onChange={(e) => setGuestPhone(e.target.value)}
                     placeholder="+91 98765 43210"
-                    className={`w-full px-4 py-2.5 rounded-xl bg-background border text-sm text-white focus:outline-none transition-colors ${
+                    className={`w-full px-4 py-2.5 rounded-xl bg-background border text-base lg:text-sm text-white focus:outline-none transition-colors ${
                       fieldErrors.guestPhone ? 'border-red-500' : 'border-white/10 focus:border-accent-purple'
                     }`}
                   />
@@ -457,7 +457,7 @@ export default function CheckoutPage() {
                     <select
                       value={birthMonth}
                       onChange={(e) => setBirthMonth(e.target.value)}
-                      className={`px-3 py-2.5 rounded-xl bg-background border text-xs text-white focus:outline-none ${
+                      className={`px-3 py-2.5 rounded-xl bg-background border text-base lg:text-xs text-white focus:outline-none ${
                         fieldErrors.birthMonth ? 'border-red-500' : 'border-white/10 focus:border-accent-purple'
                       }`}
                     >
@@ -470,7 +470,7 @@ export default function CheckoutPage() {
                     <select
                       value={birthDay}
                       onChange={(e) => setBirthDay(e.target.value)}
-                      className={`px-3 py-2.5 rounded-xl bg-background border text-xs text-white focus:outline-none ${
+                      className={`px-3 py-2.5 rounded-xl bg-background border text-base lg:text-xs text-white focus:outline-none ${
                         fieldErrors.birthDay ? 'border-red-500' : 'border-white/10 focus:border-accent-purple'
                       }`}
                     >
@@ -483,7 +483,7 @@ export default function CheckoutPage() {
                     <select
                       value={birthYear}
                       onChange={(e) => setBirthYear(e.target.value)}
-                      className={`px-3 py-2.5 rounded-xl bg-background border text-xs text-white focus:outline-none ${
+                      className={`px-3 py-2.5 rounded-xl bg-background border text-base lg:text-xs text-white focus:outline-none ${
                         fieldErrors.birthYear ? 'border-red-500' : 'border-white/10 focus:border-accent-purple'
                       }`}
                     >
