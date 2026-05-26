@@ -100,7 +100,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
 
         <Providers>
           <Navbar />
-          <main id="main-content" className="min-h-screen relative z-10">
+          <main id="main-content" className="min-h-screen relative">
             {children}
           </main>
           <Footer />

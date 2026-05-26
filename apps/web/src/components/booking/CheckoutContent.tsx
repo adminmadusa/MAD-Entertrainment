@@ -336,7 +336,7 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
   }
 
   return (
-    <div className={isModal ? "relative text-white" : "pt-24 pb-32 min-h-screen bg-[#0d111d] text-white relative overflow-x-hidden"}>
+    <div className={isModal ? "relative text-white" : "pt-24 pb-24 min-h-screen bg-[#0d111d] text-white relative overflow-x-hidden flex flex-col items-center justify-center"}>
       {!isModal && (
         <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-accent-purple/5 rounded-full blur-[150px] pointer-events-none" />
       )}
@@ -371,16 +371,16 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
         </div>
       </div>
 
-      <div className={isModal ? "space-y-6 relative z-10 mt-4" : "container-mad max-w-4xl space-y-6 relative z-10 px-4 mt-8"}>
+      <div className={isModal ? "space-y-4 relative z-10 mt-4" : "container-mad max-w-4xl space-y-4 relative z-10 px-4 mt-20 w-full"}>
         {error && (
-          <div className="p-3.5 bg-error/10 border border-error/30 rounded-xl text-xs text-red-400 text-center">
+          <div className="p-3 bg-error/10 border border-error/30 rounded-xl text-xs text-red-400 text-center">
             {error}
           </div>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           {/* Left Column: Event summary card & Billing details */}
-          <div className="lg:col-span-8 space-y-6">
+          <div className="lg:col-span-8 space-y-4">
             
             {/* Event Summary Card */}
             {event && (
@@ -400,9 +400,9 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
             )}
 
             {/* Billing Information Form */}
-            <form id="checkout-form" onSubmit={handlePlaceOrderSubmit} className="space-y-6">
-              <div className="glass rounded-2xl border border-white/5 p-6 space-y-4">
-                <div className="flex justify-between items-center border-b border-white/10 pb-3">
+            <form id="checkout-form" onSubmit={handlePlaceOrderSubmit} className="space-y-4">
+              <div className="glass rounded-2xl border border-white/5 p-5 space-y-4">
+                <div className="flex justify-between items-center border-b border-white/10 pb-2.5">
                   <h2 className="text-white font-bold text-base">Billing information</h2>
                   <span className="text-[10px] text-text-muted uppercase">* Required</span>
                 </div>
@@ -415,7 +415,7 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
                       value={firstName}
                       onChange={(e) => setFirstName(e.target.value)}
                       placeholder="First name"
-                      className={`w-full px-4 py-2.5 rounded-xl bg-background border text-base lg:text-sm text-white focus:outline-none transition-colors ${
+                      className={`w-full px-4 py-2 rounded-xl bg-background border text-base lg:text-sm text-white focus:outline-none transition-colors ${
                         fieldErrors.firstName ? 'border-red-500' : 'border-white/10 focus:border-accent-purple'
                       }`}
                     />
@@ -428,7 +428,7 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
                       value={lastName}
                       onChange={(e) => setLastName(e.target.value)}
                       placeholder="Last name"
-                      className={`w-full px-4 py-2.5 rounded-xl bg-background border text-base lg:text-sm text-white focus:outline-none transition-colors ${
+                      className={`w-full px-4 py-2 rounded-xl bg-background border text-base lg:text-sm text-white focus:outline-none transition-colors ${
                         fieldErrors.lastName ? 'border-red-500' : 'border-white/10 focus:border-accent-purple'
                       }`}
                     />
@@ -436,113 +436,115 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
                   </div>
                 </div>
 
-                <div className="space-y-1">
-                  <label className="text-xs text-text-secondary font-medium">Email address *</label>
-                  <input
-                    type="email"
-                    value={guestEmail}
-                    onChange={(e) => setGuestEmail(e.target.value)}
-                    placeholder="email@example.com"
-                    className={`w-full px-4 py-2.5 rounded-xl bg-background border text-base lg:text-sm text-white focus:outline-none transition-colors ${
-                      fieldErrors.guestEmail ? 'border-red-500' : 'border-white/10 focus:border-accent-purple'
-                    }`}
-                  />
-                  {fieldErrors.guestEmail && <p className="text-red-400 text-[10px]">{fieldErrors.guestEmail}</p>}
-                </div>
-
-                <div className="space-y-1">
-                  <label className="text-xs text-text-secondary font-medium">Confirm email *</label>
-                  <input
-                    type="email"
-                    value={guestEmailConfirm}
-                    onChange={(e) => setGuestEmailConfirm(e.target.value)}
-                    placeholder="Confirm email address"
-                    className={`w-full px-4 py-2.5 rounded-xl bg-background border text-base lg:text-sm text-white focus:outline-none transition-colors ${
-                      fieldErrors.guestEmailConfirm ? 'border-red-500' : 'border-white/10 focus:border-accent-purple'
-                    }`}
-                  />
-                  {fieldErrors.guestEmailConfirm && <p className="text-red-400 text-[10px]">{fieldErrors.guestEmailConfirm}</p>}
-                </div>
-
-                <div className="space-y-1">
-                  <label className="text-xs text-text-secondary font-medium">Cell phone *</label>
-                  <input
-                    type="tel"
-                    value={guestPhone}
-                    onChange={(e) => setGuestPhone(e.target.value)}
-                    placeholder="+91 98765 43210"
-                    className={`w-full px-4 py-2.5 rounded-xl bg-background border text-base lg:text-sm text-white focus:outline-none transition-colors ${
-                      fieldErrors.guestPhone ? 'border-red-500' : 'border-white/10 focus:border-accent-purple'
-                    }`}
-                  />
-                  {fieldErrors.guestPhone && <p className="text-red-400 text-[10px]">{fieldErrors.guestPhone}</p>}
-                </div>
-
-                {/* Birthdate selection */}
-                <div className="space-y-2">
-                  <label className="text-xs text-text-secondary font-medium">Birthdate *</label>
-                  <div className="grid grid-cols-3 gap-2">
-                    <select
-                      value={birthMonth}
-                      onChange={(e) => setBirthMonth(e.target.value)}
-                      className={`px-3 py-2.5 rounded-xl bg-background border text-base lg:text-xs text-white focus:outline-none ${
-                        fieldErrors.birthMonth ? 'border-red-500' : 'border-white/10 focus:border-accent-purple'
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="text-xs text-text-secondary font-medium">Email address *</label>
+                    <input
+                      type="email"
+                      value={guestEmail}
+                      onChange={(e) => setGuestEmail(e.target.value)}
+                      placeholder="email@example.com"
+                      className={`w-full px-4 py-2 rounded-xl bg-background border text-base lg:text-sm text-white focus:outline-none transition-colors ${
+                        fieldErrors.guestEmail ? 'border-red-500' : 'border-white/10 focus:border-accent-purple'
                       }`}
-                    >
-                      <option value="">Month</option>
-                      {MONTHS.map((m) => (
-                        <option key={m.value} value={m.value}>{m.name}</option>
-                      ))}
-                    </select>
-
-                    <select
-                      value={birthDay}
-                      onChange={(e) => setBirthDay(e.target.value)}
-                      className={`px-3 py-2.5 rounded-xl bg-background border text-base lg:text-xs text-white focus:outline-none ${
-                        fieldErrors.birthDay ? 'border-red-500' : 'border-white/10 focus:border-accent-purple'
-                      }`}
-                    >
-                      <option value="">Day</option>
-                      {DAYS.map((d) => (
-                        <option key={d} value={d}>{d}</option>
-                      ))}
-                    </select>
-
-                    <select
-                      value={birthYear}
-                      onChange={(e) => setBirthYear(e.target.value)}
-                      className={`px-3 py-2.5 rounded-xl bg-background border text-base lg:text-xs text-white focus:outline-none ${
-                        fieldErrors.birthYear ? 'border-red-500' : 'border-white/10 focus:border-accent-purple'
-                      }`}
-                    >
-                      <option value="">Year</option>
-                      {YEARS.map((y) => (
-                        <option key={y} value={y}>{y}</option>
-                      ))}
-                    </select>
+                    />
+                    {fieldErrors.guestEmail && <p className="text-red-400 text-[10px]">{fieldErrors.guestEmail}</p>}
                   </div>
-                  {(fieldErrors.birthMonth || fieldErrors.birthDay || fieldErrors.birthYear) && (
-                    <p className="text-red-400 text-[10px]">Valid birthdate is required (Age 18+)</p>
-                  )}
+                  <div className="space-y-1">
+                    <label className="text-xs text-text-secondary font-medium">Confirm email *</label>
+                    <input
+                      type="email"
+                      value={guestEmailConfirm}
+                      onChange={(e) => setGuestEmailConfirm(e.target.value)}
+                      placeholder="Confirm email address"
+                      className={`w-full px-4 py-2 rounded-xl bg-background border text-base lg:text-sm text-white focus:outline-none transition-colors ${
+                        fieldErrors.guestEmailConfirm ? 'border-red-500' : 'border-white/10 focus:border-accent-purple'
+                      }`}
+                    />
+                    {fieldErrors.guestEmailConfirm && <p className="text-red-400 text-[10px]">{fieldErrors.guestEmailConfirm}</p>}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="text-xs text-text-secondary font-medium">Cell phone *</label>
+                    <input
+                      type="tel"
+                      value={guestPhone}
+                      onChange={(e) => setGuestPhone(e.target.value)}
+                      placeholder="+91 98765 43210"
+                      className={`w-full px-4 py-2 rounded-xl bg-background border text-base lg:text-sm text-white focus:outline-none transition-colors ${
+                        fieldErrors.guestPhone ? 'border-red-500' : 'border-white/10 focus:border-accent-purple'
+                      }`}
+                    />
+                    {fieldErrors.guestPhone && <p className="text-red-400 text-[10px]">{fieldErrors.guestPhone}</p>}
+                  </div>
+
+                  <div className="space-y-1 flex flex-col justify-between">
+                    <label className="text-xs text-text-secondary font-medium">Birthdate *</label>
+                    <div className="grid grid-cols-3 gap-2">
+                      <select
+                        value={birthMonth}
+                        onChange={(e) => setBirthMonth(e.target.value)}
+                        className={`px-3 py-2 rounded-xl bg-background border text-base lg:text-xs text-white focus:outline-none ${
+                          fieldErrors.birthMonth ? 'border-red-500' : 'border-white/10 focus:border-accent-purple'
+                        }`}
+                      >
+                        <option value="">Month</option>
+                        {MONTHS.map((m) => (
+                          <option key={m.value} value={m.value}>{m.name}</option>
+                        ))}
+                      </select>
+
+                      <select
+                        value={birthDay}
+                        onChange={(e) => setBirthDay(e.target.value)}
+                        className={`px-3 py-2 rounded-xl bg-background border text-base lg:text-xs text-white focus:outline-none ${
+                          fieldErrors.birthDay ? 'border-red-500' : 'border-white/10 focus:border-accent-purple'
+                        }`}
+                      >
+                        <option value="">Day</option>
+                        {DAYS.map((d) => (
+                          <option key={d} value={d}>{d}</option>
+                        ))}
+                      </select>
+
+                      <select
+                        value={birthYear}
+                        onChange={(e) => setBirthYear(e.target.value)}
+                        className={`px-3 py-2 rounded-xl bg-background border text-base lg:text-xs text-white focus:outline-none ${
+                          fieldErrors.birthYear ? 'border-red-500' : 'border-white/10 focus:border-accent-purple'
+                        }`}
+                      >
+                        <option value="">Year</option>
+                        {YEARS.map((y) => (
+                          <option key={y} value={y}>{y}</option>
+                        ))}
+                      </select>
+                    </div>
+                    {(fieldErrors.birthMonth || fieldErrors.birthDay || fieldErrors.birthYear) && (
+                      <p className="text-red-400 text-[10px] mt-1">Valid birthdate is required (Age 18+)</p>
+                    )}
+                  </div>
                 </div>
 
                 {/* Subscriptions */}
-                <div className="space-y-3 pt-3 border-t border-white/5">
-                  <label className="flex items-start gap-3 cursor-pointer text-xs text-text-secondary leading-relaxed">
+                <div className="space-y-2 pt-3 border-t border-white/5">
+                  <label className="flex items-start gap-2.5 cursor-pointer text-[11px] text-text-secondary leading-normal">
                     <input
                       type="checkbox"
                       checked={keepUpdated}
                       onChange={(e) => setKeepUpdated(e.target.checked)}
-                      className="mt-1 rounded border-white/10 bg-background accent-accent-purple"
+                      className="mt-0.5 rounded border-white/10 bg-background accent-accent-purple"
                     />
                     <span>Keep me updated on more events and news from this event organizer.</span>
                   </label>
-                  <label className="flex items-start gap-3 cursor-pointer text-xs text-text-secondary leading-relaxed">
+                  <label className="flex items-start gap-2.5 cursor-pointer text-[11px] text-text-secondary leading-normal">
                     <input
                       type="checkbox"
                       checked={sendBestEvents}
                       onChange={(e) => setSendBestEvents(e.target.checked)}
-                      className="mt-1 rounded border-white/10 bg-background accent-accent-purple"
+                      className="mt-0.5 rounded border-white/10 bg-background accent-accent-purple"
                     />
                     <span>Send me emails about the best events happening nearby or online.</span>
                   </label>
@@ -552,12 +554,12 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
           </div>
 
           {/* Right Column: Checkout Breakdown, Payment Details, and Actions */}
-          <div className="lg:col-span-4 space-y-6">
+          <div className="lg:col-span-4 space-y-4">
             {/* Payment Details Card */}
-            <div className="glass rounded-2xl border border-white/5 p-6 space-y-6">
+            <div className="glass rounded-2xl border border-white/5 p-5 space-y-4">
               <h2 className="text-white font-bold text-sm uppercase tracking-wider">Payment Details</h2>
 
-              <div className="space-y-3 text-xs border-b border-white/5 pb-4">
+              <div className="space-y-2 text-xs border-b border-white/5 pb-3">
                 <div className="flex justify-between text-text-secondary">
                   <span>Subtotal</span>
                   <span>₹{booking.subtotal}</span>
@@ -585,11 +587,11 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
             </div>
 
             {/* Pay With / Gateways */}
-            <div className="glass rounded-2xl border border-white/5 p-6 space-y-4">
-              <h2 className="text-white font-bold text-base border-b border-white/10 pb-3">Pay with</h2>
+            <div className="glass rounded-2xl border border-white/5 p-5 space-y-3">
+              <h2 className="text-white font-bold text-sm border-b border-white/10 pb-2">Pay with</h2>
 
-              <div className="space-y-3">
-                <label className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all ${
+              <div className="space-y-2.5">
+                <label className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all ${
                   selectedGateway === 'stripe' 
                     ? 'bg-accent-purple/10 border-accent-purple' 
                     : 'bg-white/2 border-white/5 hover:border-white/10'
@@ -607,7 +609,7 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
                   <span className="text-base">💳</span>
                 </label>
 
-                <label className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all ${
+                <label className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all ${
                   selectedGateway === 'razorpay' 
                     ? 'bg-accent-purple/10 border-accent-purple' 
                     : 'bg-white/2 border-white/5 hover:border-white/10'
@@ -625,7 +627,7 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
                   <span className="text-xs text-accent-cyan font-bold">PayPal</span>
                 </label>
 
-                <label className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all ${
+                <label className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all ${
                   selectedGateway === 'razorpay' && false /* Just display third alternative */
                     ? 'bg-accent-purple/10 border-accent-purple' 
                     : 'bg-white/2 border-white/5 hover:border-white/10'
@@ -646,17 +648,12 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
             </div>
 
             {/* Place Order & Terms (Desktop Only) */}
-            <div className="hidden lg:block glass rounded-2xl border border-white/5 p-6 space-y-4">
-              <div className="flex justify-between items-center text-sm font-black mb-2">
-                <span className="text-white">Total Amount</span>
-                <span className="text-accent-purple-light text-base">₹{booking.totalAmount}</span>
-              </div>
-              
+            <div className="hidden lg:block glass rounded-2xl border border-white/5 p-5 space-y-3">
               <button
                 type="submit"
                 form="checkout-form"
                 disabled={isExpired || saveDetailsMutation.isPending || paymentIntentMutation.isPending || isProcessing}
-                className="w-full px-8 py-3.5 rounded-xl bg-gradient-to-r from-accent-purple to-accent-pink hover:from-accent-purple-light hover:to-accent-pink/80 text-white font-black text-sm transition-all hover:scale-[1.02] active:scale-95 shadow-glow disabled:opacity-50"
+                className="w-full px-8 py-3 rounded-xl bg-gradient-to-r from-accent-purple to-accent-pink hover:from-accent-purple-light hover:to-accent-pink/80 text-white font-black text-sm transition-all hover:scale-[1.02] active:scale-95 shadow-glow disabled:opacity-50"
               >
                 {saveDetailsMutation.isPending || paymentIntentMutation.isPending || isProcessing
                   ? 'Processing...'

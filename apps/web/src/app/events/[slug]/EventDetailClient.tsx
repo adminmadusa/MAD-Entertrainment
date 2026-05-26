@@ -40,6 +40,17 @@ export default function EventDetailClient() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  useEffect(() => {
+    if (isBookingModalOpen || isCheckoutModalOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isBookingModalOpen, isCheckoutModalOpen]);
+
   // 1. Fetch Event
   const { data: event, isLoading: isLoadingEvent } = useQuery<EventData>({
     queryKey: QUERY_KEYS.public.events.detail(slug),
@@ -443,17 +454,23 @@ export default function EventDetailClient() {
       {isCheckoutModalOpen && checkoutBookingId && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm md:p-4 animate-fade-in">
           {/* Backdrop click to close */}
-          <div className="absolute inset-0" onClick={() => setIsCheckoutModalOpen(false)} />
+          <div className="absolute inset-0" onClick={() => {
+            setIsPending(false);
+            setIsCheckoutModalOpen(false);
+            setCheckoutBookingId(null);
+          }} />
 
           <div className="w-full h-full md:max-h-[95vh] max-w-4xl bg-[#0d111d] md:rounded-2xl border border-white/10 overflow-y-auto shadow-2xl relative z-10 p-6 custom-scrollbar">
             <CheckoutContent
               bookingId={checkoutBookingId}
               isModal={true}
               onBack={() => {
+                setIsPending(false);
                 setIsCheckoutModalOpen(false);
                 setIsBookingModalOpen(true);
               }}
               onClose={() => {
+                setIsPending(false);
                 setIsCheckoutModalOpen(false);
                 setCheckoutBookingId(null);
               }}
