@@ -101,18 +101,18 @@ export function FeaturedEventsSkeleton() {
  */
 export function DJOperatorsSkeleton() {
   return (
-    <section className="py-20" aria-hidden="true">
+    <section className="py-12 md:py-16" aria-hidden="true">
       <div className="container-mad">
         {/* Header Shimmer */}
-        <div className="text-center mb-12 space-y-3">
+        <div className="text-center mb-8 space-y-3">
           <div className="w-20 h-4 bg-white/10 rounded animate-pulse mx-auto" />
           <div className="w-48 h-8 bg-white/15 rounded animate-pulse mx-auto" />
           <div className="w-80 h-4 bg-white/5 rounded animate-pulse mx-auto" />
         </div>
 
         {/* Grid Shimmer */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-          {Array.from({ length: 6 }).map((_, i) => (
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+          {Array.from({ length: 5 }).map((_, i) => (
             <div 
               key={i} 
               className="flex flex-col bg-white/2 border border-white/5 rounded-2xl overflow-hidden h-full"

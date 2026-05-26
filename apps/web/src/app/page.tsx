@@ -101,7 +101,7 @@ function HeroSection() {
 
         {/* Headline */}
         <Reveal delay={0.2}>
-          <h1 className="text-display-xl font-black text-white mb-6 leading-[1.02]">
+          <h1 className="text-display-xl font-black text-white mb-6 leading-[1.02] text-glow-neon">
             Experience the{' '}
             <span className="text-gradient block">Extraordinary</span>
           </h1>
@@ -129,7 +129,7 @@ function HeroSection() {
             <Link href="/my-booking">
               <button
                 id="hero-my-booking"
-                className="px-8 py-4 glass border border-border-subtle text-text-primary font-semibold text-lg rounded-2xl hover:border-accent-purple/40 transition-all"
+                className="px-8 py-4 glass border border-border-subtle hover:border-accent-purple/50 text-text-primary hover:text-white hover:bg-accent-purple/10 font-semibold text-lg rounded-2xl transition-all duration-300 hover:shadow-glow-sm"
               >
                 My Booking
               </button>
@@ -201,7 +201,7 @@ function HowItWorksSection() {
     <section className="py-20 bg-background-secondary/30 overflow-hidden" aria-label="How booking works">
       <div className="container-mad">
         <Reveal className="text-center mb-14">
-          <h2 className="text-display-sm font-black text-white">
+          <h2 className="text-display-sm font-black text-white text-glow-neon">
             How It Works
           </h2>
         </Reveal>
@@ -245,7 +245,7 @@ function CTASection() {
             <div className="absolute bottom-0 right-1/4 w-64 h-32 bg-accent-pink/15 blur-[60px] rounded-full" />
 
             <div className="relative z-10">
-              <h2 className="text-display-md font-black text-white mb-5">
+              <h2 className="text-display-md font-black text-white mb-5 text-glow-neon">
                 Ready for an{' '}
                 <span className="text-gradient">Unforgettable</span>{' '}
                 Night?
@@ -261,7 +261,7 @@ function CTASection() {
                   </button>
                 </Link>
                 <Link href="/my-booking">
-                  <button id="cta-my-booking" className="px-10 py-4 glass border border-border-subtle text-text-primary font-semibold text-lg rounded-2xl hover:border-accent-purple/40 transition-all">
+                  <button id="cta-my-booking" className="px-10 py-4 glass border border-border-subtle hover:border-accent-purple/50 text-text-primary hover:text-white hover:bg-accent-purple/10 font-semibold text-lg rounded-2xl transition-all duration-300 hover:shadow-glow-sm">
                     Track My Booking
                   </button>
                 </Link>

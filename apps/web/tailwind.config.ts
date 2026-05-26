@@ -12,6 +12,9 @@ const config: Config = {
       // ─── Custom Font Sizes ────────────────────────
       fontSize: {
         'display-xl': ['clamp(3.5rem, 9vw, 6rem)', { lineHeight: '1.05' }],
+        'display-lg': ['clamp(2.8rem, 7vw, 5rem)', { lineHeight: '1.02' }],
+        'display-md': ['clamp(2.2rem, 5vw, 3.5rem)', { lineHeight: '1.05' }],
+        'display-sm': ['clamp(1.8rem, 4vw, 2.5rem)', { lineHeight: '1.1' }],
       },
       colors: {
         background: 'var(--color-bg)',
@@ -23,6 +26,10 @@ const config: Config = {
         primary: 'var(--color-accent-purple)',
         accent: 'var(--color-accent-pink)',
         cyan: 'var(--color-accent-cyan)',
+        'accent-purple': 'var(--color-accent-purple)',
+        'accent-purple-light': '#a78bfa',
+        'accent-pink': 'var(--color-accent-pink)',
+        'accent-cyan': 'var(--color-accent-cyan)',
       },
     },
   },

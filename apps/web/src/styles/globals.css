@@ -235,6 +235,81 @@ video {
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
+
+  /* ─── Phase 2: Premium Cards & Hover Interactions ─── */
+  .card-interactive {
+    transition: transform var(--transition-base) var(--transition-bounce),
+                box-shadow var(--transition-base) var(--transition-smooth),
+                border-color var(--transition-base) var(--transition-smooth);
+  }
+
+  .card-interactive:hover {
+    transform: translateY(-6px) scale(1.02);
+    box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.6), 
+                0 0 30px rgba(124, 58, 237, 0.25);
+  }
+
+  .neon-glow-border {
+    position: relative;
+    border: 1px solid var(--glass-border);
+    transition: border-color var(--transition-base) var(--transition-smooth);
+  }
+
+  .neon-glow-border::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(135deg, var(--color-accent-purple), var(--color-accent-pink), var(--color-accent-cyan));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity var(--transition-base) var(--transition-smooth);
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .neon-glow-border:hover::before {
+    opacity: 0.6;
+  }
+
+  .neon-glow-border:hover {
+    border-color: transparent;
+    box-shadow: 0 0 30px rgba(124, 58, 237, 0.3), 
+                inset 0 0 15px rgba(124, 58, 237, 0.15);
+  }
+
+  .image-overlay-vignette {
+    position: relative;
+  }
+
+  .image-overlay-vignette::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at center, transparent 30%, rgba(11, 15, 26, 0.4) 70%, rgba(11, 15, 26, 0.8) 100%);
+    pointer-events: none;
+    transition: opacity var(--transition-base) var(--transition-smooth);
+    z-index: 2;
+  }
+
+  /* ─── Phase 3: Typography & Neon Glows ─── */
+  .text-glow-neon {
+    text-shadow: 0 0 20px rgba(124, 58, 237, 0.4), 
+                 0 0 40px rgba(124, 58, 237, 0.2);
+  }
+  
+  .text-glow-neon-cyan {
+    text-shadow: 0 0 20px rgba(6, 182, 212, 0.4), 
+                 0 0 40px rgba(6, 182, 212, 0.2);
+  }
+
+  .text-glow-neon-pink {
+    text-shadow: 0 0 20px rgba(236, 72, 153, 0.4), 
+                 0 0 40px rgba(236, 72, 153, 0.2);
+  }
 }
 
 /* ─── Keyframes ──────────────────────────────────────────────── */
@@ -302,4 +377,50 @@ video {
 .page-exit-active {
   opacity: 0;
   transition: opacity 200ms var(--transition-smooth);
+}
+
+/* ─── Phase 4 Keyframes & Animations ───────────────────────── */
+@keyframes ambient-shift-1 {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(10%, 15%) scale(1.1);
+  }
+  66% {
+    transform: translate(-5%, -10%) scale(0.95);
+  }
+}
+
+@keyframes ambient-shift-2 {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(-15%, -10%) scale(0.9);
+  }
+  66% {
+    transform: translate(5%, 15%) scale(1.08);
+  }
+}
+
+@keyframes ambient-shift-3 {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(-10%, 10%) scale(1.15);
+  }
+}
+
+.animate-ambient-shift-1 {
+  animation: ambient-shift-1 25s infinite alternate ease-in-out;
+}
+
+.animate-ambient-shift-2 {
+  animation: ambient-shift-2 30s infinite alternate ease-in-out;
+}
+
+.animate-ambient-shift-3 {
+  animation: ambient-shift-3 20s infinite alternate ease-in-out;
 }

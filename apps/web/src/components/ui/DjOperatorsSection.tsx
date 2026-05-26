@@ -15,29 +15,34 @@ function DJCard({ dj }: { dj: DJOperator }) {
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        className="group glass rounded-2xl border border-border-subtle hover:border-accent-purple/40 hover:shadow-glow-sm transition-all duration-300 overflow-hidden flex flex-col h-full"
+        whileHover={{ y: -6, scale: 1.02 }}
+        transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+        className="group glass neon-glow-border rounded-2xl overflow-hidden flex flex-col h-full relative"
       >
+        {/* Hover Gradient Glow Backdrop */}
+        <div className="absolute -inset-px rounded-2xl bg-gradient-to-r from-primary via-accent to-cyan opacity-0 group-hover:opacity-10 transition-opacity duration-500 blur-sm pointer-events-none z-0" />
+
         {/* Avatar / Profile image */}
-        <div className="relative aspect-square w-full overflow-hidden bg-white/5">
+        <div className="relative aspect-square w-full overflow-hidden bg-white/5 image-overlay-vignette z-10">
           {dj.profileImage?.url ? (
             <Image
               src={getOptimizedImageUrl(dj.profileImage.url, 300)}
               alt={dj.name}
               fill
-              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 200px"
+              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 300px"
               className="object-cover group-hover:scale-105 transition-transform duration-500"
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-5xl bg-gradient-to-br from-accent-purple/20 to-accent-pink/10">
+            <div className="w-full h-full flex items-center justify-center text-5xl bg-gradient-to-br from-primary/20 to-accent/10">
               🎧
             </div>
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent z-10" />
         </div>
 
         {/* Info */}
-        <div className="p-4 flex flex-col gap-1 flex-1">
-          <h3 className="text-white font-bold text-base line-clamp-1 group-hover:text-accent-purple-light transition-colors">
+        <div className="p-4 flex flex-col gap-1 flex-1 relative z-10">
+          <h3 className="text-white font-bold text-base line-clamp-1 group-hover:text-primary transition-colors">
             {dj.name}
           </h3>
 
@@ -46,7 +51,7 @@ function DJCard({ dj }: { dj: DJOperator }) {
               {dj.specialties.slice(0, 3).map((s) => (
                 <span
                   key={s}
-                  className="px-2 py-0.5 text-[10px] font-semibold rounded-full bg-accent-purple/10 border border-accent-purple/20 text-accent-purple-light uppercase tracking-wider"
+                  className="px-2 py-0.5 text-[10px] font-semibold rounded-full bg-primary/10 border border-primary/20 text-primary uppercase tracking-wider"
                 >
                   {s}
                 </span>
@@ -73,14 +78,14 @@ export function DJOperatorsSection({ initialDJs = [] }: { initialDJs: DJOperator
   if (djs.length === 0) return null;
 
   return (
-    <section className="py-20" aria-label="DJ Operators">
+    <section className="py-12 md:py-16" aria-label="DJ Operators">
       <div className="container-mad">
         {/* Header */}
-        <div className="text-center mb-12">
+        <div className="text-center mb-8">
           <p className="text-accent-pink text-sm font-semibold uppercase tracking-wider mb-3">
             Our Artists
           </p>
-          <h2 className="text-display-sm font-black text-white mb-4">
+          <h2 className="text-display-sm font-black text-white mb-4 text-glow-neon-cyan">
             MAD <span className="text-gradient-cyan">DJ Operators</span>
           </h2>
           <p className="text-text-secondary text-base max-w-xl mx-auto leading-relaxed">
@@ -89,19 +94,19 @@ export function DJOperatorsSection({ initialDJs = [] }: { initialDJs: DJOperator
         </div>
 
         {/* Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
             {djs.map((dj) => (
               <DJCard key={dj._id} dj={dj} />
             ))}
           </div>
 
         {/* CTA */}
-        {djs.length >= 6 && (
+        {djs.length >= 5 && (
           <div className="text-center mt-10">
             <Link href="/dj-operators">
               <button
                 id="dj-operators-view-all"
-                className="px-7 py-3.5 glass border border-accent-purple/30 text-accent-purple-light font-semibold rounded-xl hover:border-accent-purple/60 hover:bg-accent-purple/10 transition-all"
+                className="px-8 py-4 glass border border-accent-purple/30 text-accent-purple-light hover:text-white font-bold rounded-2xl hover:border-accent-purple/60 hover:bg-accent-purple/20 hover:shadow-glow transition-all duration-300"
               >
                 View All DJs →
               </button>

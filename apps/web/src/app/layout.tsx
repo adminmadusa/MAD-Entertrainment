@@ -89,10 +89,18 @@ interface RootLayoutProps {
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="en" className={`${outfit.variable} dark`} suppressHydrationWarning>
-      <body className="bg-background text-text-primary antialiased">
+      <body className="bg-background text-text-primary antialiased relative min-h-screen">
+        {/* Ambient Entertainment Backdrop (Phase 4) */}
+        <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden" aria-hidden="true">
+          <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] rounded-full bg-accent-purple/8 blur-[160px] animate-ambient-shift-1" />
+          <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] rounded-full bg-accent-pink/6 blur-[160px] animate-ambient-shift-2" />
+          <div className="absolute top-[40%] left-[50%] -translate-x-1/2 w-[50%] h-[50%] rounded-full bg-accent-cyan/4 blur-[130px] animate-ambient-shift-3" />
+          <div className="absolute inset-0 noise-overlay opacity-[0.25]" />
+        </div>
+
         <Providers>
           <Navbar />
-          <main id="main-content" className="min-h-screen">
+          <main id="main-content" className="min-h-screen relative z-10">
             {children}
           </main>
           <Footer />
