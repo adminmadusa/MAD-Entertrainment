@@ -309,7 +309,7 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="pt-24 pb-16 min-h-screen bg-[#0d111d] text-white relative overflow-x-hidden">
+    <div className="pt-24 pb-32 min-h-screen bg-[#0d111d] text-white relative overflow-x-hidden">
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-accent-purple/5 rounded-full blur-[150px] pointer-events-none" />
 
       {/* Sticky Top Checkout Header */}
@@ -359,7 +359,7 @@ export default function CheckoutPage() {
               <div className="glass rounded-2xl border border-white/5 p-4 flex gap-4 items-center">
                 {event.bannerImage?.url && (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={event.bannerImage.url} alt={event.title} className="w-20 h-20 object-cover rounded-xl border border-white/10" />
+                  <img src={event.bannerImage.url} alt={event.title} className="w-20 h-20 object-contain bg-black/20 rounded-xl border border-white/10" />
                 )}
                 <div className="space-y-1">
                   <h2 className="text-sm font-bold text-white line-clamp-1">{event.title}</h2>
@@ -372,7 +372,7 @@ export default function CheckoutPage() {
             )}
 
             {/* Billing Information Form */}
-            <form onSubmit={handlePlaceOrderSubmit} className="space-y-6">
+            <form id="checkout-form" onSubmit={handlePlaceOrderSubmit} className="space-y-6">
               <div className="glass rounded-2xl border border-white/5 p-6 space-y-4">
                 <div className="flex justify-between items-center border-b border-white/10 pb-3">
                   <h2 className="text-white font-bold text-base">Billing information</h2>
@@ -582,19 +582,6 @@ export default function CheckoutPage() {
                 </div>
               </div>
 
-              {/* Action Button */}
-              <div className="pt-2">
-                <Button
-                  type="submit"
-                  variant="primary"
-                  fullWidth
-                  disabled={isExpired}
-                  isLoading={saveDetailsMutation.isPending || paymentIntentMutation.isPending || isProcessing}
-                  className="py-4 bg-gradient-to-r from-accent-purple to-accent-pink hover:from-accent-purple-light hover:to-accent-pink/80 text-white font-black rounded-xl shadow-glow"
-                >
-                  Place Order
-                </Button>
-              </div>
             </form>
           </div>
 
@@ -633,6 +620,28 @@ export default function CheckoutPage() {
               By selecting Place Order, I agree to the MAD Entertainment Terms of Service and Privacy Policy.
             </p>
           </div>
+        </div>
+      </div>
+
+      {/* Sticky Place Order Footer */}
+      <div className="fixed bottom-0 left-0 right-0 z-40 bg-[#0d111d]/95 backdrop-blur-lg border-t border-white/10 shadow-2xl">
+        <div className="container-mad max-w-4xl px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] flex items-center gap-4">
+          <div className="flex-1">
+            <div className="text-[10px] text-text-muted font-semibold uppercase tracking-wider">Total Amount</div>
+            <div className="text-white font-black text-lg">₹{booking.totalAmount}</div>
+          </div>
+          <button
+            type="submit"
+            form="checkout-form"
+            disabled={isExpired || saveDetailsMutation.isPending || paymentIntentMutation.isPending || isProcessing}
+            className="flex-shrink-0 px-8 py-3.5 rounded-xl bg-gradient-to-r from-accent-purple to-accent-pink hover:from-accent-purple-light hover:to-accent-pink/80 text-white font-black text-sm transition-all hover:scale-[1.02] active:scale-95 shadow-glow disabled:opacity-50"
+          >
+            {saveDetailsMutation.isPending || paymentIntentMutation.isPending || isProcessing
+              ? 'Processing...'
+              : isExpired
+              ? 'Session Expired'
+              : 'Place Order'}
+          </button>
         </div>
       </div>
 

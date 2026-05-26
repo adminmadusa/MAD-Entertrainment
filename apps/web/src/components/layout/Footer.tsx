@@ -1,4 +1,7 @@
+'use client';
+
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 const footerLinks = {
   Platform: [
@@ -28,6 +31,11 @@ const socialLinks = [
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
+  const pathname = usePathname();
+  const isCheckoutOrBook = pathname?.endsWith('/book') || pathname?.startsWith('/checkout/');
+
+  if (isCheckoutOrBook) return null;
+
 
   return (
     <footer className="bg-background-secondary border-t border-border-subtle mt-20">

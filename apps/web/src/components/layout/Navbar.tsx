@@ -2,6 +2,7 @@
 
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useState, useEffect, useRef } from 'react';
 
 const navLinks = [
@@ -11,12 +12,17 @@ const navLinks = [
 ];
 
 export function Navbar() {
+  const pathname = usePathname();
+  const isCheckoutOrBook = pathname?.endsWith('/book') || pathname?.startsWith('/checkout/');
+
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const lastScrollY = useRef(0);
   const [visible, setVisible] = useState(true);
 
   useEffect(() => {
+    if (isCheckoutOrBook) return;
+
     const handleScroll = () => {
       const currentY = window.scrollY;
       setScrolled(currentY > 20);
@@ -27,12 +33,14 @@ export function Navbar() {
 
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [isCheckoutOrBook]);
 
   // Close mobile menu on route change
   useEffect(() => {
     setMobileOpen(false);
   }, []);
+
+  if (isCheckoutOrBook) return null;
 
   return (
     <motion.header

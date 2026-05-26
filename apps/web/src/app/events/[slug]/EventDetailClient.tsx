@@ -89,9 +89,9 @@ export default function EventDetailClient() {
             <img 
               src={event.bannerImage.url} 
               alt={event.title} 
-              className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105" 
+              className="w-full h-full object-contain bg-black/40 transition-transform duration-500 ease-out" 
               style={{
-                transform: `scale(${1 + Math.min(scrollY / 2000, 0.08)})`,
+                transform: `scale(${1 + Math.min(scrollY / 4000, 0.03)})`,
               }}
             />
           )}
@@ -373,13 +373,13 @@ export default function EventDetailClient() {
             {/* Right Panel: Cart/Event Image summary */}
             <div className="hidden md:flex md:w-2/5 bg-[#121625] flex-col border-l border-white/5">
               {/* Event Image */}
-              <div className="aspect-[16/9] w-full overflow-hidden bg-white/5 relative border-b border-white/10">
+              <div className="aspect-[16/9] w-full overflow-hidden bg-black/40 relative border-b border-white/10">
                 {event.bannerImage?.url && (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={event.bannerImage.url}
                     alt={event.title}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-contain"
                   />
                 )}
               </div>
