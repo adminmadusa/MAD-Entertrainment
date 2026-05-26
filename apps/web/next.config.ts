@@ -119,7 +119,7 @@ const nextConfig: NextConfig = {
   },
 
   // ─── Transpile Shared Package ──────────────────────────────
-  transpilePackages: ['@mad/shared', '@mad/ui'],
+  transpilePackages: ['@mad/shared', '@mad/ui', '@mad/types', '@mad/validations'],
 };
 
 export default nextConfig;

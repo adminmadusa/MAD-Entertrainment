@@ -19,8 +19,27 @@ export interface AdminBooking {
   currency: string;
   mode: string;
   eventId?: { _id: string; title: string; startDate: string; coverImage?: { url: string } } | null;
-  userId?: { _id: string; name: string; email: string; phone?: string } | null;
-  guestInfo?: { name: string; email: string; phone: string };
+  userId?: {
+    _id: string;
+    name: string;
+    firstName?: string;
+    lastName?: string;
+    email: string;
+    phone?: string;
+    birthdate?: string;
+    keepUpdated?: boolean;
+    sendBestEvents?: boolean;
+  } | null;
+  guestInfo?: {
+    name: string;
+    firstName?: string;
+    lastName?: string;
+    email: string;
+    phone: string;
+    birthdate?: string;
+    keepUpdated?: boolean;
+    sendBestEvents?: boolean;
+  };
   tickets: { tierName: string; quantity: number; price: number }[];
   createdAt: string;
   cancellationReason?: string;
@@ -61,8 +80,13 @@ export interface EventSummary {
 export interface CustomerSummary {
   _id?: string;
   name: string;
+  firstName?: string;
+  lastName?: string;
   email: string;
   phone?: string;
+  birthdate?: string;
+  keepUpdated?: boolean;
+  sendBestEvents?: boolean;
 }
 
 export interface TicketSummary {
@@ -145,8 +169,13 @@ export async function adminGetBooking(id: string): Promise<NormalizedBookingDeta
       customer: customer ? {
         _id: (customer as any)._id,
         name: (customer as any).name ?? '—',
+        firstName: (customer as any).firstName,
+        lastName: (customer as any).lastName,
         email: (customer as any).email ?? '—',
         phone: (customer as any).phone,
+        birthdate: (customer as any).birthdate,
+        keepUpdated: (customer as any).keepUpdated,
+        sendBestEvents: (customer as any).sendBestEvents,
       } : null,
       tickets: Array.isArray(booking.tickets) ? booking.tickets.map(t => ({
         tierName: t.tierName ?? '—',

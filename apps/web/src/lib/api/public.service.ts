@@ -124,6 +124,28 @@ export async function publicCreateBooking(
   return data.data;
 }
 
+export async function publicSaveCheckoutDetails(
+  bookingId: string,
+  payload: {
+    firstName: string;
+    lastName: string;
+    guestEmail: string;
+    guestEmailConfirm: string;
+    guestPhone: string;
+    birthdate: string;
+    keepUpdated: boolean;
+    sendBestEvents: boolean;
+  },
+  sessionId: string
+): Promise<Booking> {
+  const { data } = await apiClient.put<{ data: Booking }>(`/bookings/${bookingId}/checkout-details`, payload, {
+    headers: {
+      'x-session-id': sessionId,
+    },
+  });
+  return data.data;
+}
+
 export async function publicGetBookingDetails(
   bookingId: string,
   sessionId?: string

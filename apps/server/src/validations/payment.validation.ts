@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { objectIdSchema, checkoutSchema as createBookingSchema } from '@mad/validations';
-export { createBookingSchema };
+import { objectIdSchema, checkoutSchema as createBookingSchema, reserveTicketsSchema, checkoutDetailsSchema } from '@mad/validations';
+export { createBookingSchema, reserveTicketsSchema, checkoutDetailsSchema };
 
 // ─── Shared Validators ──────────────────────────────────────────
 

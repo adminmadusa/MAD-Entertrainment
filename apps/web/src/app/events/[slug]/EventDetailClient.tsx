@@ -1,87 +1,38 @@
 'use client';
 
-import { QUERY_KEYS, SeatStatus, STORAGE_VERSION } from '@mad/shared';
-import { SeatLayout, Event as EventData, Seat } from '@mad/types';
-import { Button } from '@mad/ui';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { QUERY_KEYS } from '@mad/shared';
+import { Event as EventData } from '@mad/types';
+import { useQuery } from '@tanstack/react-query';
 import { useParams, useRouter } from 'next/navigation';
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import Link from 'next/link';
 
-import { extractApiError } from '@/lib/api/client';
-import {
-  publicGetEventBySlug,
-  publicGetEventSeatLayout,
-  publicCreateBooking,
-} from '@/lib/api/public.service';
-import { invalidatePublicBookingFlow } from '@/lib/query/query-invalidation.service';
-import { useSocket } from '@/providers/SocketProvider';
+import { publicGetEventBySlug } from '@/lib/api/public.service';
+import { TicketSelectionContent } from '@/components/booking/TicketSelectionContent';
 
-export type BookingTicketPayload = {
-  tier: string;
-  quantity: number;
-  seats?: Array<{
-    seatId: string;
-    row: string;
-    number: number;
-    section?: string;
-  }>;
-};
-
-export type BookingPayload = {
-  eventId: string;
-  guestName: string;
-  guestEmail: string;
-  guestPhone: string;
-  tickets: BookingTicketPayload[];
-  couponCode?: string;
-};
-
-
-export default function PublicEventDetailPage() {
+export default function EventDetailClient() {
   const params = useParams();
   const router = useRouter();
-  const queryClient = useQueryClient();
   const slug = params.slug as string;
 
-  const { socket } = useSocket();
-  const [sessionId, setSessionId] = useState('');
+  const [isOverviewOpen, setIsOverviewOpen] = useState(false);
+  const [isFavorited, setIsFavorited] = useState(false);
+  const [scrollY, setScrollY] = useState(0);
 
-  // Form State
-  const [guestName, setGuestName] = useState('');
-  const [guestEmail, setGuestEmail] = useState('');
-  const [guestPhone, setGuestPhone] = useState('');
-  const [couponCode, setCouponCode] = useState('');
-  const [formError, setFormError] = useState('');
-  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
-
-  // General Admission quantities selection
+  // States for Desktop Ticket Selection Modal
+  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
   const [quantities, setQuantities] = useState<Record<string, number>>({});
+  const [subtotal, setSubtotal] = useState(0);
+  const [selectedCount, setSelectedCount] = useState(0);
+  const [isPending, setIsPending] = useState(false);
+  const checkoutTriggerRef = useRef<(() => void) | null>(null);
 
-  // Seat map state
-  const [dbLayout, setDbLayout] = useState<SeatLayout | null>(null);
-  const [liveSeatStatus, setLiveSeatStatus] = useState<Record<string, { status: SeatStatus; lockedBy?: string }>>({});
-  const [selectedSeatIds, setSelectedSeatIds] = useState<string[]>([]);
-
-  // Setup unique Session ID
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const sessionKey = `mad_checkout_session_${STORAGE_VERSION}`;
-      let sess = sessionStorage.getItem(sessionKey);
-      if (!sess) {
-        if (typeof window.crypto !== 'undefined' && window.crypto.randomUUID) {
-          sess = window.crypto.randomUUID();
-        } else {
-          sess = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-            const r = (Math.random() * 16) | 0;
-            const v = c === 'x' ? r : (r & 0x3) | 0x8;
-            return v.toString(16);
-          });
-        }
-        sessionStorage.removeItem('mad_checkout_session');
-        sessionStorage.setItem(sessionKey, sess);
-      }
-      setSessionId(sess);
-    }
+    const handleScroll = () => {
+      setScrollY(window.scrollY);
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   // 1. Fetch Event
@@ -90,298 +41,6 @@ export default function PublicEventDetailPage() {
     queryFn: () => publicGetEventBySlug(slug),
     enabled: !!slug,
   });
-
-  const eventId = event?._id;
-
-  // 2. Fetch Seat Layout if seat-based
-  const { data: seatLayout, isLoading: isLoadingLayout } = useQuery({
-    queryKey: QUERY_KEYS.public.events.seats(eventId),
-    queryFn: () => publicGetEventSeatLayout(eventId!),
-    enabled: !!eventId && event?.bookingMode === 'seat_based',
-  });
-
-  // Keep track of layout in local state
-  useEffect(() => {
-    if (seatLayout) {
-      setDbLayout(seatLayout);
-      const initialStatuses: Record<string, { status: SeatStatus; lockedBy?: string }> = {};
-      seatLayout.seats.forEach((seat) => {
-        initialStatuses[seat.seatId] = {
-          status: seat.status as SeatStatus,
-          lockedBy: seat.lockedBy,
-        };
-      });
-      setLiveSeatStatus(initialStatuses);
-      // Reset selected seats on layout reload
-      setSelectedSeatIds([]);
-    }
-  }, [seatLayout]);
-
-  // 3. WebSockets integration
-  useEffect(() => {
-    if (!socket || !eventId || !sessionId) return;
-
-    // Join room
-    socket.emit('event:join', { eventId });
-
-    // Listen to real-time locks
-    const handleSeatLocked = ({ seatIds, sessionId: lockHolderSessionId }: { seatIds: string[]; sessionId: string }) => {
-      setLiveSeatStatus((prev) => {
-        const next = { ...prev };
-        seatIds.forEach((seatId) => {
-          next[seatId] = { status: SeatStatus.LOCKED, lockedBy: lockHolderSessionId };
-        });
-        return next;
-      });
-    };
-
-    const handleSeatReserved = ({ seatIds }: { seatIds: string[]; bookingId?: string }) => {
-      setLiveSeatStatus((prev) => {
-        const next = { ...prev };
-        seatIds.forEach((seatId) => {
-          next[seatId] = { status: SeatStatus.LOCKED };
-        });
-        return next;
-      });
-    };
-
-    const handleSeatBooked = ({ seatIds }: { seatIds: string[]; bookingId?: string }) => {
-      setLiveSeatStatus((prev) => {
-        const next = { ...prev };
-        seatIds.forEach((seatId) => {
-          next[seatId] = { status: SeatStatus.BOOKED };
-        });
-        return next;
-      });
-      setSelectedSeatIds((prev) => prev.filter((seatId) => !seatIds.includes(seatId)));
-    };
-
-    const handleSeatUnlocked = ({ seatIds }: { seatIds: string[] }) => {
-      setLiveSeatStatus((prev) => {
-        const next = { ...prev };
-        seatIds.forEach((seatId) => {
-          if (next[seatId]?.status === SeatStatus.LOCKED) {
-            next[seatId] = { status: SeatStatus.AVAILABLE };
-          }
-        });
-        return next;
-      });
-    };
-
-    // Listen to lock confirmation for this connection
-    const handleSeatLockStatus = ({ success, seatIds, message }: { success: boolean; seatIds: string[]; message?: string }) => {
-      if (success) {
-        setSelectedSeatIds((prev) => {
-          const next = [...prev];
-          seatIds.forEach((id) => {
-            if (!next.includes(id)) next.push(id);
-          });
-          return next;
-        });
-        setLiveSeatStatus((prev) => {
-          const next = { ...prev };
-          seatIds.forEach((id) => {
-            next[id] = { status: SeatStatus.LOCKED, lockedBy: sessionId };
-          });
-          return next;
-        });
-      } else {
-        alert(message || 'Failed to lock seats. They may have been reserved by another user.');
-      }
-    };
-
-    const handleSeatUnlockStatus = ({ success, seatIds }: { success: boolean; seatIds: string[] }) => {
-      if (success) {
-        setSelectedSeatIds((prev) => prev.filter((id) => !seatIds.includes(id)));
-        setLiveSeatStatus((prev) => {
-          const next = { ...prev };
-          seatIds.forEach((id) => {
-            if (next[id]?.lockedBy === sessionId) {
-              next[id] = { status: SeatStatus.AVAILABLE };
-            }
-          });
-          return next;
-        });
-      }
-    };
-
-    socket.on('seat:locked', handleSeatLocked);
-    socket.on('seat:reserved', handleSeatReserved);
-    socket.on('seat:booked', handleSeatBooked);
-    socket.on('seat:unlocked', handleSeatUnlocked);
-    socket.on('seat:lock:status', handleSeatLockStatus);
-    socket.on('seat:unlock:status', handleSeatUnlockStatus);
-
-    return () => {
-      socket.emit('event:leave', { eventId });
-      socket.off('seat:locked', handleSeatLocked);
-      socket.off('seat:reserved', handleSeatReserved);
-      socket.off('seat:booked', handleSeatBooked);
-      socket.off('seat:unlocked', handleSeatUnlocked);
-      socket.off('seat:lock:status', handleSeatLockStatus);
-      socket.off('seat:unlock:status', handleSeatUnlockStatus);
-    };
-  }, [socket, eventId, sessionId]);
-
-  // Booking Mutation
-  const createBookingMutation = useMutation({
-    mutationFn: (payload: BookingPayload) => publicCreateBooking(payload, sessionId),
-    onSuccess: async (booking) => {
-      await invalidatePublicBookingFlow(queryClient, {
-        bookingId: booking._id,
-        bookingRef: booking.bookingId,
-        eventId,
-        eventSlug: slug,
-      });
-      router.push(`/checkout/${booking.bookingId}`);
-    },
-    onError: (err) => {
-      const apiErr = extractApiError(err);
-      if (apiErr.errors && Object.keys(apiErr.errors).length > 0) {
-        const mapped: Record<string, string> = {};
-        for (const [key, msgs] of Object.entries(apiErr.errors)) {
-          mapped[key] = msgs[0];
-        }
-        setFieldErrors(mapped);
-        const firstErrorId = Object.keys(mapped)[0];
-        setTimeout(() => {
-          const el = document.getElementById(firstErrorId);
-          if (el) {
-            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            el.focus();
-          }
-        }, 100);
-      } else {
-        setFormError(apiErr.message);
-      }
-    },
-  });
-
-  const handleSeatClick = (seatId: string) => {
-    if (!socket || !eventId || !sessionId) return;
-
-    const seatState = liveSeatStatus[seatId];
-    const isCurrentlySelected = selectedSeatIds.includes(seatId);
-
-    if (isCurrentlySelected) {
-      // Unlock seat
-      socket.emit('seat:unlock', { eventId, seatIds: [seatId], sessionId });
-    } else {
-      if (seatState && seatState.status !== SeatStatus.AVAILABLE) {
-        return; // Cannot select occupied seats
-      }
-      if (selectedSeatIds.length >= 10) {
-        alert('You can book a maximum of 10 seats at a time.');
-        return;
-      }
-      // Lock seat
-      socket.emit('seat:lock', { eventId, seatIds: [seatId], sessionId });
-    }
-  };
-
-  const handleQtyChange = (tier: string, change: number) => {
-    setQuantities((prev) => {
-      const val = (prev[tier] || 0) + change;
-      return {
-        ...prev,
-        [tier]: Math.max(0, Math.min(10, val)),
-      };
-    });
-  };
-
-  const handleCheckoutSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setFormError('');
-    setFieldErrors({});
-
-    const newErrors: Record<string, string> = {};
-    if (!guestName.trim()) newErrors.guestName = 'Name is required';
-    if (!guestEmail.trim()) newErrors.guestEmail = 'Email is required';
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(guestEmail)) newErrors.guestEmail = 'Invalid email format';
-    
-    if (!guestPhone.trim()) newErrors.guestPhone = 'Phone is required';
-
-    if (Object.keys(newErrors).length > 0) {
-      setFieldErrors(newErrors);
-      const firstErrorId = Object.keys(newErrors)[0];
-      setTimeout(() => {
-        const el = document.getElementById(firstErrorId);
-        if (el) {
-          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          el.focus();
-        }
-      }, 100);
-      return;
-    }
-
-    if (!eventId) return;
-
-    let ticketsPayload: BookingTicketPayload[] = [];
-
-    if (event.bookingMode === 'seat_based') {
-      if (selectedSeatIds.length === 0) {
-        setFormError('Please select at least one seat from the seat layout.');
-        return;
-      }
-
-      // Group selected seats by tier
-      const seatsByTier: Record<string, Seat[]> = {};
-      selectedSeatIds.forEach((id) => {
-        const seat = dbLayout?.seats.find((s) => s.seatId === id);
-        if (seat) {
-          if (!seatsByTier[seat.tier]) seatsByTier[seat.tier] = [];
-          seatsByTier[seat.tier].push(seat);
-        }
-      });
-
-      ticketsPayload = Object.entries(seatsByTier).map(([tier, seats]) => ({
-        tier,
-        quantity: seats.length,
-        seats: seats.map((s) => ({
-          seatId: s.seatId,
-          row: s.row,
-          number: s.number,
-          section: s.section,
-        })),
-      }));
-    } else {
-      ticketsPayload = Object.entries(quantities)
-        .filter(([_, qty]) => qty > 0)
-        .map(([tier, qty]) => ({
-          tier,
-          quantity: qty,
-        }));
-
-      if (ticketsPayload.length === 0) {
-        setFormError('Please select at least 1 ticket.');
-        return;
-      }
-    }
-
-    createBookingMutation.mutate({
-      eventId,
-      guestName: guestName.trim(),
-      guestEmail: guestEmail.trim().toLowerCase(),
-      guestPhone: guestPhone.trim(),
-      tickets: ticketsPayload,
-      couponCode: couponCode.trim() || undefined,
-    });
-  };
-
-  // Group layout seats by Row
-  const seatsByRow = useMemo(() => {
-    if (!dbLayout) return {};
-    const rows: Record<string, typeof dbLayout.seats> = {};
-    dbLayout.seats.forEach((seat) => {
-      if (!rows[seat.row]) rows[seat.row] = [];
-      rows[seat.row].push(seat);
-    });
-    // Sort columns
-    Object.keys(rows).forEach((rowKey) => {
-      rows[rowKey].sort((a, b) => a.number - b.number);
-    });
-    return rows;
-  }, [dbLayout]);
 
   if (isLoadingEvent) {
     return (
@@ -406,274 +65,371 @@ export default function PublicEventDetailPage() {
     year: 'numeric',
   });
 
+  // Calculate price range
+  const prices = event.ticketTiers?.map((t) => t.price - (t.discount || 0)) || [];
+  const minPrice = prices.length > 0 ? Math.min(...prices) : 0;
+  const maxPrice = prices.length > 0 ? Math.max(...prices) : 0;
+  const priceDisplay = minPrice === maxPrice ? `₹${minPrice}` : `₹${minPrice} - ₹${maxPrice}`;
+
+  // Truncated description (150 chars limit)
+  const descriptionPreview = event.description.length > 150 
+    ? `${event.description.substring(0, 150)}...`
+    : event.description;
+
   return (
-    <div className="pt-28 pb-16 min-h-screen bg-background">
-      <div className="container-mad grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        {/* Left: Event Details & Seat Selector */}
-        <div className="lg:col-span-8 space-y-6">
-          {/* Main Info */}
-          <div className="glass rounded-3xl border border-border-subtle p-6 space-y-4">
-            <div className="aspect-[21/9] w-full rounded-2xl overflow-hidden bg-white/5 relative">
-              {event.bannerImage?.url && (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={event.bannerImage.url} alt={event.title} className="w-full h-full object-cover" />
-              )}
+    <div className="pt-24 pb-32 min-h-screen bg-background text-white relative overflow-x-hidden">
+      {/* Dynamic Background Glow */}
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-accent-purple/5 rounded-full blur-[150px] pointer-events-none" />
+
+      <div className="container-mad max-w-3xl space-y-8 relative z-10 px-4">
+        {/* Media Header with Play video overlay */}
+        <div className="aspect-[16/9] w-full rounded-3xl overflow-hidden bg-white/5 relative border border-white/10 group shadow-2xl">
+          {event.bannerImage?.url && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img 
+              src={event.bannerImage.url} 
+              alt={event.title} 
+              className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105" 
+              style={{
+                transform: `scale(${1 + Math.min(scrollY / 2000, 0.08)})`,
+              }}
+            />
+          )}
+          {/* Play Overlay */}
+          <div className="absolute inset-0 bg-black/35 flex items-center justify-center group-hover:bg-black/25 transition-colors duration-300">
+            <button 
+              type="button" 
+              className="w-16 h-16 rounded-full bg-white/20 hover:bg-white/40 border border-white/50 backdrop-blur-md flex items-center justify-center text-white text-2xl shadow-glow transition-all hover:scale-110 active:scale-95"
+              onClick={() => alert('Playing video presentation...')}
+            >
+              ▶
+            </button>
+          </div>
+        </div>
+
+        {/* Badges and Meta Controls */}
+        <div className="flex items-center justify-between">
+          <span className="text-[10px] uppercase font-bold tracking-widest px-3 py-1.5 bg-amber-500/10 border border-amber-500/20 text-amber-400 rounded-full animate-pulse">
+            ⏳ SALES END SOON
+          </span>
+          <div className="flex gap-2">
+            <button 
+              type="button" 
+              onClick={() => {
+                navigator.clipboard.writeText(window.location.href);
+                alert('Event link copied to clipboard!');
+              }}
+              className="w-10 h-10 rounded-full glass border border-white/10 flex items-center justify-center text-sm text-text-secondary hover:text-white hover:border-white/30 hover:scale-105 active:scale-95 transition-all"
+              title="Share Event"
+            >
+              🔗
+            </button>
+            <button 
+              type="button" 
+              onClick={() => setIsFavorited(!isFavorited)}
+              className={`w-10 h-10 rounded-full glass border flex items-center justify-center text-sm transition-all hover:scale-105 active:scale-95 ${
+                isFavorited 
+                  ? 'border-accent-pink bg-accent-pink/10 text-accent-pink' 
+                  : 'border-white/10 text-text-secondary hover:text-accent-pink hover:border-accent-pink/30'
+              }`}
+              title="Favorite Event"
+            >
+              ❤️
+            </button>
+          </div>
+        </div>
+
+        {/* Title and Date/Location */}
+        <div className="space-y-4">
+          <h1 className="text-display-md font-black text-white leading-tight">{event.title}</h1>
+          <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-text-secondary border-b border-border-subtle/50 pb-4">
+            <span className="flex items-center gap-1.5">📅 {showDateTime}</span>
+            <span className="flex items-center gap-1.5">📍 {event.venue}</span>
+          </div>
+        </div>
+
+        {/* Desktop-only Ticket Booking Card */}
+        <div className="hidden md:flex items-center justify-between p-6 glass rounded-2xl border border-white/10 shadow-lg bg-white/3">
+          <div>
+            <span className="text-xs text-text-muted font-medium">Tickets from</span>
+            <div className="text-xl font-black text-accent-purple-light mt-0.5">{priceDisplay}</div>
+          </div>
+          <button 
+            type="button" 
+            onClick={() => setIsBookingModalOpen(true)}
+            className="px-10 py-3.5 bg-gradient-to-r from-accent-purple to-accent-pink hover:from-accent-purple-light hover:to-accent-pink/80 text-white font-black text-sm rounded-xl shadow-glow transition-all duration-300 hover:scale-105 active:scale-95"
+          >
+            Get tickets
+          </button>
+        </div>
+
+        {/* Organizer Card */}
+        <div className="glass rounded-2xl border border-white/5 p-5 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center font-bold text-lg text-accent-purple-light">
+              {event.organizerName?.charAt(0).toUpperCase() || 'M'}
             </div>
-            <div className="space-y-2">
-              <h1 className="text-display-sm font-black text-white">{event.title}</h1>
-              <div className="flex flex-wrap items-center gap-4 text-xs text-text-secondary">
-                <span className="flex items-center gap-1">📅 {showDateTime}</span>
-                <span className="flex items-center gap-1">⏰ Doors: {event.doorsOpenTime || 'TBA'} · Show: {event.showTime}</span>
-                {event.venue && (
-                  <span className="flex items-center gap-1">📍 {event.venue}</span>
-                )}
+            <div>
+              <div className="flex items-center gap-1.5 text-sm font-bold text-white">
+                <span>{event.organizerName || 'MAD Organizer'}</span>
+                <span className="text-[10px] text-accent-cyan px-2 py-0.5 bg-accent-cyan/10 rounded-full border border-accent-cyan/20">
+                  TOP ORGANIZER
+                </span>
+              </div>
+              <div className="text-xs text-text-muted mt-0.5">
+                20.5k followers · {event.category} events
               </div>
             </div>
-            <p className="text-text-secondary text-sm leading-relaxed pt-2 border-t border-border-subtle/50">
-              {event.description}
+          </div>
+          <button 
+            type="button" 
+            onClick={() => alert('Following organizer!')}
+            className="px-5 py-2 text-xs font-semibold rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white transition-all active:scale-95"
+          >
+            Follow
+          </button>
+        </div>
+
+        {/* Overview Section */}
+        <div className="space-y-3">
+          <h2 className="text-white font-bold text-lg">Overview</h2>
+          <div className="text-text-secondary text-sm leading-relaxed space-y-2">
+            <p>{descriptionPreview}</p>
+            {event.description.length > 150 && (
+              <button 
+                type="button" 
+                onClick={() => setIsOverviewOpen(true)}
+                className="text-accent-cyan hover:text-accent-cyan/80 font-semibold inline-flex items-center gap-1 mt-1 hover:underline"
+              >
+                Read more
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Good to Know Card */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="glass rounded-2xl border border-white/5 p-5 space-y-4">
+            <h3 className="text-white font-bold text-sm uppercase tracking-wider">Good to know</h3>
+            <div className="space-y-3 text-xs text-text-secondary">
+              <div className="flex items-center gap-3">
+                <span className="text-base">⏱️</span>
+                <span>Doors Open: {event.doorsOpenTime || 'TBA'} · Show: {event.showTime}</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="text-base">🔞</span>
+                <span>Age Limit: {event.ageRestriction ? `${event.ageRestriction}+` : 'All ages'}</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="text-base">🕺</span>
+                <span>Dresscode: {event.dresscode || 'Casual / Smart Casual'}</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="text-base">ℹ️</span>
+                <span>{event.additionalInfo || 'Free parking available around the venue'}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Refund policy */}
+          <div className="glass rounded-2xl border border-white/5 p-5 space-y-4">
+            <h3 className="text-white font-bold text-sm uppercase tracking-wider">Refund Policy</h3>
+            <p className="text-xs text-text-secondary leading-relaxed">
+              {event.refundPolicy || 'All sales are final. No refunds or exchanges are permitted unless the event is cancelled or postponed.'}
             </p>
           </div>
+        </div>
 
-          {/* Ticket Booking Area */}
-          <div className="glass rounded-3xl border border-border-subtle p-6 space-y-6">
-            <h2 className="text-white font-bold text-lg">Select Tickets</h2>
-
-            {event.bookingMode === 'seat_based' ? (
-              // ─── Seat Map Layout ───
-              <div className="space-y-6">
-                <div className="text-center bg-white/2 border border-white/5 rounded-2xl py-2 text-[10px] text-text-muted tracking-widest uppercase">
-                  🎬 STAGE THIS WAY
-                </div>
-
-                {isLoadingLayout ? (
-                  <div className="text-center py-12 text-text-muted text-xs animate-pulse">
-                    Loading interactive seat layout...
-                  </div>
-                ) : (
-                  <div className="overflow-x-auto pb-4 custom-scrollbar flex justify-center">
-                    <div className="inline-block space-y-2 min-w-[450px]">
-                      {Object.entries(seatsByRow).map(([rowLabel, rowSeats]) => (
-                        <div key={rowLabel} className="flex items-center gap-2">
-                          {/* Row Indicator */}
-                          <div className="w-6 text-xs text-text-muted font-bold text-center">
-                            {rowLabel}
-                          </div>
-                          {/* Seats */}
-                          <div className="flex gap-1.5">
-                            {rowSeats.map((seat) => {
-                              const liveState = liveSeatStatus[seat.seatId] || { status: seat.status as SeatStatus };
-                              const isSelected = selectedSeatIds.includes(seat.seatId);
-                              const isLockedByOthers = liveState.status === 'locked' && liveState.lockedBy !== sessionId;
-                              const isOccupied = liveState.status === 'booked' || liveState.status === 'blocked' || isLockedByOthers;
-
-                              let bgCls = 'bg-white/10 hover:bg-white/20 border-white/10 text-white';
-                              if (seat.tier === 'vip' || seat.tier === 'vvip') {
-                                bgCls = 'bg-accent-purple/20 hover:bg-accent-purple/40 border-accent-purple/30 text-accent-purple-light';
-                              } else if (seat.tier === 'gold') {
-                                bgCls = 'bg-amber-500/20 hover:bg-amber-500/40 border-amber-500/30 text-amber-300';
-                              } else if (seat.tier === 'silver') {
-                                bgCls = 'bg-slate-400/20 hover:bg-slate-400/40 border-slate-400/30 text-slate-300';
-                              }
-
-                              if (isSelected) {
-                                bgCls = 'bg-accent-cyan border-accent-cyan text-black font-black scale-105';
-                              } else if (isOccupied) {
-                                bgCls = 'bg-red-500/10 border-red-500/20 text-red-500/30 cursor-not-allowed opacity-40';
-                              }
-
-                              return (
-                                <button
-                                  type="button"
-                                  key={seat.seatId}
-                                  disabled={isOccupied}
-                                  onClick={() => handleSeatClick(seat.seatId)}
-                                  className={`w-7 h-7 text-[10px] rounded-lg border font-bold flex items-center justify-center transition-all ${bgCls}`}
-                                  title={`${seat.seatId} - Tier: ${seat.tier} - ₹${seat.price}`}
-                                >
-                                  {seat.number}
-                                </button>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Seat Map Legend */}
-                <div className="flex flex-wrap justify-center gap-6 text-xs text-text-muted pt-4 border-t border-border-subtle/50">
-                  <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 rounded bg-white/15 border border-white/20" /> Available
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 rounded bg-accent-cyan border border-accent-cyan" /> Selected
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 rounded bg-red-500/10 border border-red-500/20 opacity-40" /> Occupied
-                  </div>
-                </div>
-              </div>
-            ) : (
-              // ─── General Admission Selectors ───
-              <div className="space-y-4">
-                {event.ticketTiers.map((tier) => (
-                  <div
-                    key={tier.tier}
-                    className="flex items-center justify-between p-4 bg-white/2 border border-white/5 rounded-2xl hover:border-white/10 transition-colors"
-                  >
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <div className="text-white font-bold">{tier.name}</div>
-                        {tier.groupSize && tier.groupSize > 1 && (
-                          <div className="text-[10px] text-emerald-400 font-medium px-2 py-0.5 bg-emerald-500/10 rounded-full">
-                            Admits {tier.groupSize}
-                          </div>
-                        )}
-                      </div>
-                      <div className="text-xs text-text-muted mt-0.5">{tier.description || 'General Access Ticket'}</div>
-                      
-                      <div className="flex items-center gap-2 mt-2">
-                        <div className="text-accent-purple-light font-black text-sm">
-                          ₹{Math.max(0, tier.price - (tier.discount || 0))}
-                        </div>
-                        {tier.discount && tier.discount > 0 && (
-                          <div className="text-xs text-text-muted line-through">₹{tier.price}</div>
-                        )}
-                      </div>
-                      
-                      {tier.availabilityWindow?.endDate && new Date() < new Date(tier.availabilityWindow.endDate) && (
-                        <div className="text-[10px] text-accent-cyan mt-1">
-                          Available until {new Date(tier.availabilityWindow.endDate).toLocaleDateString()}
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-3 bg-background border border-border-subtle rounded-xl p-1">
-                      <button
-                        type="button"
-                        onClick={() => handleQtyChange(tier.tier, -1)}
-                        className="w-8 h-8 rounded-lg hover:bg-white/5 flex items-center justify-center text-white"
-                      >
-                        -
-                      </button>
-                      <span className="w-6 text-center text-sm font-semibold text-white">
-                        {quantities[tier.tier] || 0}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => handleQtyChange(tier.tier, 1)}
-                        className="w-8 h-8 rounded-lg hover:bg-white/5 flex items-center justify-center text-white"
-                      >
-                        +
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
+        {/* Location Section */}
+        <div className="glass rounded-2xl border border-white/5 p-5 space-y-4">
+          <h2 className="text-white font-bold text-sm uppercase tracking-wider">Location</h2>
+          <div>
+            <div className="text-sm font-bold text-white">{event.venue}</div>
+            <div className="text-xs text-text-secondary mt-1">Atlanta, GA</div>
+          </div>
+          {/* Mock Map View */}
+          <div className="aspect-[21/9] w-full rounded-xl bg-white/5 border border-white/10 relative overflow-hidden flex items-center justify-center text-text-muted text-xs">
+            {/* Embedded maps or mock design */}
+            <div className="absolute inset-0 bg-[radial-gradient(#ffffff0a_1px,transparent_1px)] [background-size:16px_16px] opacity-40" />
+            <div className="z-10 text-center space-y-1">
+              <span>🗺️ Map Thumbnail</span>
+              <span className="block opacity-65 text-[10px]">Forsyth Street Southwest, Atlanta, GA</span>
+            </div>
           </div>
         </div>
 
-        {/* Right: Guest Info Checkout Summary */}
-        <div className="lg:col-span-4 glass rounded-3xl border border-border-subtle p-6 space-y-6">
-          <h2 className="text-white font-bold text-lg">Checkout Details</h2>
+        {/* Mobile Spacer to prevent overlap with sticky footer */}
+        <div className="h-20 md:hidden" aria-hidden="true" />
+      </div>
 
-          <form onSubmit={handleCheckoutSubmit} className="space-y-4">
-            {formError && (
-              <div className="p-3 bg-error/10 border border-error/30 rounded-xl text-xs text-red-400">
-                {formError}
-              </div>
-            )}
-
-            <div className="space-y-1">
-              <label className="text-xs text-text-secondary font-medium">Full Name *</label>
-              <input
-                id="guestName"
-                type="text"
-                value={guestName}
-                onChange={(e) => setGuestName(e.target.value)}
-                placeholder="Jane Doe"
-                required
-                aria-invalid={!!fieldErrors.guestName}
-                className={`w-full px-4 py-2.5 rounded-xl bg-background border text-sm text-text-primary focus:outline-none transition-colors ${
-                  fieldErrors.guestName ? 'border-red-500 focus:border-red-500' : 'border-border-subtle focus:border-accent-purple'
-                }`}
-              />
-              {fieldErrors.guestName && (
-                <div className="text-red-400 text-xs mt-1">{fieldErrors.guestName}</div>
-              )}
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-xs text-text-secondary font-medium">Email Address *</label>
-              <input
-                id="guestEmail"
-                type="email"
-                value={guestEmail}
-                onChange={(e) => setGuestEmail(e.target.value)}
-                placeholder="jane@example.com"
-                required
-                aria-invalid={!!fieldErrors.guestEmail}
-                className={`w-full px-4 py-2.5 rounded-xl bg-background border text-sm text-text-primary focus:outline-none transition-colors ${
-                  fieldErrors.guestEmail ? 'border-red-500 focus:border-red-500' : 'border-border-subtle focus:border-accent-purple'
-                }`}
-              />
-              {fieldErrors.guestEmail && (
-                <div className="text-red-400 text-xs mt-1">{fieldErrors.guestEmail}</div>
-              )}
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-xs text-text-secondary font-medium">Phone Number *</label>
-              <input
-                id="guestPhone"
-                type="tel"
-                value={guestPhone}
-                onChange={(e) => setGuestPhone(e.target.value)}
-                placeholder="+91 9876543210"
-                required
-                aria-invalid={!!fieldErrors.guestPhone}
-                className={`w-full px-4 py-2.5 rounded-xl bg-background border text-sm text-text-primary focus:outline-none transition-colors ${
-                  fieldErrors.guestPhone ? 'border-red-500 focus:border-red-500' : 'border-border-subtle focus:border-accent-purple'
-                }`}
-              />
-              {fieldErrors.guestPhone && (
-                <div className="text-red-400 text-xs mt-1">{fieldErrors.guestPhone}</div>
-              )}
-            </div>
-
-            <div className="space-y-1 pt-3 border-t border-border-subtle/40">
-              <label className="text-xs text-text-secondary font-medium">Promo Coupon (Optional)</label>
-              <input
-                id="couponCode"
-                type="text"
-                value={couponCode}
-                onChange={(e) => setCouponCode(e.target.value)}
-                placeholder="PROMOCODE"
-                aria-invalid={!!fieldErrors.couponCode}
-                className={`w-full px-4 py-2.5 rounded-xl bg-background border font-mono uppercase text-sm text-text-primary focus:outline-none transition-colors ${
-                  fieldErrors.couponCode ? 'border-red-500 focus:border-red-500' : 'border-border-subtle focus:border-accent-purple'
-                }`}
-              />
-              {fieldErrors.couponCode && (
-                <div className="text-red-400 text-xs mt-1">{fieldErrors.couponCode}</div>
-              )}
-            </div>
-
-            <div className="mt-4">
-              <Button
-                id="checkout-proceed-btn"
-                type="submit"
-                variant="primary"
-                fullWidth
-                isLoading={createBookingMutation.isPending}
-              >
-                Proceed to Checkout
-              </Button>
-            </div>
-          </form>
+      {/* Sticky Bottom Footer Bar (Mobile Only) */}
+      <div className="fixed bottom-0 left-0 right-0 bg-background/80 backdrop-blur-lg border-t border-white/10 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] z-50 shadow-2xl md:hidden">
+        <div className="container-mad max-w-3xl px-4 flex items-center justify-between gap-4">
+          <div>
+            <div className="text-xs text-text-muted font-medium">Tickets from</div>
+            <div className="text-base font-black text-accent-purple-light">{priceDisplay}</div>
+          </div>
+          <Link href={`/events/${slug}/book`}>
+            <button 
+              type="button" 
+              className="px-8 py-3 bg-gradient-to-r from-accent-purple to-accent-pink hover:from-accent-purple-light hover:to-accent-pink/80 text-white font-black text-sm rounded-xl shadow-glow transition-all duration-300 hover:scale-105 active:scale-95"
+            >
+              Get tickets
+            </button>
+          </Link>
         </div>
       </div>
+
+      {/* Overview Modal Drawer */}
+      {isOverviewOpen && (
+        <div className="fixed inset-0 z-[100] flex justify-end bg-black/60 backdrop-blur-sm">
+          {/* Backdrop click to close */}
+          <div className="absolute inset-0" onClick={() => setIsOverviewOpen(false)} />
+
+          <div className="w-full max-w-md bg-[#0d111d] h-full shadow-2xl relative z-10 border-l border-white/10 p-6 flex flex-col justify-between animate-slide-in">
+            <div className="space-y-6">
+              <div className="flex items-center justify-between border-b border-white/10 pb-4">
+                <h3 className="text-white font-bold text-lg">Overview</h3>
+                <button 
+                  type="button" 
+                  onClick={() => setIsOverviewOpen(false)}
+                  className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-text-secondary hover:text-white transition-colors"
+                >
+                  ✕
+                </button>
+              </div>
+              <div className="overflow-y-auto max-h-[80vh] text-text-secondary text-sm leading-relaxed pr-2 custom-scrollbar">
+                {event.description}
+              </div>
+            </div>
+            <div className="pt-4 border-t border-white/10 flex justify-end">
+              <button 
+                type="button" 
+                onClick={() => setIsOverviewOpen(false)}
+                className="px-5 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white text-xs font-semibold"
+              >
+                Close Drawer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Desktop Booking Modal overlay */}
+      {isBookingModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-fade-in">
+          {/* Backdrop click to close */}
+          <div className="absolute inset-0" onClick={() => setIsBookingModalOpen(false)} />
+
+          <div className="w-full max-w-4xl bg-[#0d111d] rounded-2xl border border-white/10 overflow-hidden relative flex flex-col md:flex-row h-[600px] md:h-[650px] shadow-2xl z-10">
+            {/* Close button */}
+            <button
+              type="button"
+              onClick={() => setIsBookingModalOpen(false)}
+              className="absolute right-4 top-4 w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center text-text-secondary hover:text-white transition-colors z-20"
+            >
+              ✕
+            </button>
+
+            {/* Left Panel: Ticket selection */}
+            <div className="w-full md:w-3/5 p-6 md:p-8 flex flex-col justify-between overflow-y-auto custom-scrollbar border-r border-white/5">
+              <div className="space-y-4">
+                <div>
+                  <h3 className="text-base font-bold text-white pr-8">{event.title}</h3>
+                  <p className="text-xs text-text-muted mt-1">{showDateTime} · {event.venue}</p>
+                </div>
+                
+                <TicketSelectionContent
+                  event={event}
+                  isModal={true}
+                  onClose={() => setIsBookingModalOpen(false)}
+                  onQuantitiesChange={(q, s, c) => {
+                    setQuantities(q);
+                    setSubtotal(s);
+                    setSelectedCount(c);
+                  }}
+                  checkoutTriggerRef={checkoutTriggerRef}
+                  setIsPendingChange={setIsPending}
+                />
+              </div>
+
+              {/* Modal Sticky Bottom Action Footer */}
+              <div className="border-t border-white/10 pt-4 mt-6 flex items-center justify-between bg-[#0d111d]">
+                <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 bg-amber-500/10 border border-amber-500/20 text-amber-400 rounded-md animate-pulse">
+                  🔥 Few tickets left
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (checkoutTriggerRef.current) checkoutTriggerRef.current();
+                  }}
+                  disabled={isPending}
+                  className="px-8 py-3 rounded-xl bg-gradient-to-r from-accent-purple to-accent-pink hover:from-accent-purple-light hover:to-accent-pink/80 text-white font-black text-sm transition-all hover:scale-105 active:scale-95 shadow-glow disabled:opacity-50"
+                >
+                  {isPending ? 'Processing...' : 'Check out'}
+                </button>
+              </div>
+            </div>
+
+            {/* Right Panel: Cart/Event Image summary */}
+            <div className="hidden md:flex md:w-2/5 bg-[#121625] flex-col border-l border-white/5">
+              {/* Event Image */}
+              <div className="aspect-[16/9] w-full overflow-hidden bg-white/5 relative border-b border-white/10">
+                {event.bannerImage?.url && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={event.bannerImage.url}
+                    alt={event.title}
+                    className="w-full h-full object-cover"
+                  />
+                )}
+              </div>
+
+              {/* Order Summary details */}
+              <div className="flex-1 flex flex-col justify-between p-6">
+                <div className="space-y-4">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-text-secondary">Order Summary</h3>
+                  {selectedCount === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-20 text-text-muted space-y-2">
+                      <span className="text-4xl">🛒</span>
+                      <span className="text-xs font-medium">Select tickets to see summary</span>
+                    </div>
+                  ) : (
+                    <div className="space-y-3 max-h-[220px] overflow-y-auto pr-2 custom-scrollbar">
+                      {Object.entries(quantities).map(([tierKey, qty]) => {
+                        if (qty === 0) return null;
+                        const tier = event.ticketTiers.find((t) => t.tier === tierKey);
+                        if (!tier) return null;
+                        const price = Math.max(0, tier.price - (tier.discount || 0));
+                        return (
+                          <div key={tierKey} className="flex justify-between items-center text-xs">
+                            <div>
+                              <span className="font-bold text-white">{qty}x</span>{' '}
+                              <span className="text-text-secondary">{tier.name}</span>
+                            </div>
+                            <span className="font-semibold text-accent-purple-light">₹{price * qty}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+                
+                {selectedCount > 0 && (
+                  <div className="border-t border-white/5 pt-4 space-y-2">
+                    <div className="flex justify-between text-xs text-text-secondary">
+                      <span>Subtotal</span>
+                      <span className="font-semibold text-white">₹{subtotal}</span>
+                    </div>
+                    <p className="text-[9px] text-text-muted leading-relaxed">
+                      Convenience fees, GST, and discounts will be calculated at checkout details stage.
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -6,8 +6,14 @@ export interface IBooking extends Document {
   eventId: Types.ObjectId;
   userId?: Types.ObjectId;
   guestName?: string;
+  firstName?: string;
+  lastName?: string;
   guestEmail?: string;
+  guestEmailConfirm?: string;
   guestPhone?: string;
+  birthdate?: Date;
+  keepUpdated?: boolean;
+  sendBestEvents?: boolean;
   sessionId?: string;
   tickets: {
     tier: TicketTier;
@@ -54,8 +60,14 @@ const bookingSchema = new Schema<IBooking>(
     eventId: { type: Schema.Types.ObjectId, ref: 'Event', required: true },
     userId: { type: Schema.Types.ObjectId, ref: 'User' },
     guestName: String,
+    firstName: String,
+    lastName: String,
     guestEmail: { type: String, lowercase: true, trim: true },
+    guestEmailConfirm: { type: String, lowercase: true, trim: true },
     guestPhone: String,
+    birthdate: Date,
+    keepUpdated: { type: Boolean, default: false },
+    sendBestEvents: { type: Boolean, default: false },
     sessionId: { type: String, index: true },
     tickets: [
       {

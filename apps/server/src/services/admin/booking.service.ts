@@ -58,8 +58,13 @@ const mapBookingToAdminDTO = (booking: any) => {
   const customerObj = {
     _id: booking.userId ? booking.userId.toString() : undefined,
     name: booking.guestName || '—',
+    firstName: booking.firstName || (booking.guestName ? booking.guestName.split(' ')[0] : undefined) || '—',
+    lastName: booking.lastName || (booking.guestName ? booking.guestName.split(' ').slice(1).join(' ') : undefined) || '—',
     email: booking.guestEmail || '—',
     phone: booking.guestPhone,
+    birthdate: booking.birthdate ? booking.birthdate.toISOString() : undefined,
+    keepUpdated: booking.keepUpdated ?? false,
+    sendBestEvents: booking.sendBestEvents ?? false,
   };
 
   return {
@@ -76,11 +81,7 @@ const mapBookingToAdminDTO = (booking: any) => {
       coverImage: booking.eventId.bannerImage ? { url: booking.eventId.bannerImage.url } : undefined,
     } : null,
     userId: booking.userId ? customerObj : null,
-    guestInfo: !booking.userId ? {
-      name: booking.guestName || '—',
-      email: booking.guestEmail || '—',
-      phone: booking.guestPhone || '',
-    } : undefined,
+    guestInfo: !booking.userId ? customerObj : undefined,
     tickets: Array.isArray(booking.tickets) ? booking.tickets.map((t: any) => ({
       tierName: t.tierName || '—',
       quantity: t.quantity || 0,

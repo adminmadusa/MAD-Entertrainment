@@ -18,9 +18,9 @@ export class PublicBookingService {
   static async createBooking(
     data: {
       eventId: string;
-      guestName: string;
-      guestEmail: string;
-      guestPhone: string;
+      guestName?: string;
+      guestEmail?: string;
+      guestPhone?: string;
       tickets: {
         tier: string;
         quantity: number;
@@ -388,5 +388,66 @@ export class PublicBookingService {
     const tickets = await Ticket.find({ bookingId: { $in: bookingIds } });
 
     return { bookings, tickets };
+  }
+
+  static async saveCheckoutDetails(
+    bookingId: string,
+    data: {
+      firstName: string;
+      lastName: string;
+      guestEmail: string;
+      guestEmailConfirm: string;
+      guestPhone: string;
+      birthdate: string | Date;
+      keepUpdated?: boolean;
+      sendBestEvents?: boolean;
+    },
+    sessionId: string | undefined,
+    userId: string | undefined
+  ): Promise<IBooking> {
+    const query = Types.ObjectId.isValid(bookingId) ? { _id: bookingId } : { bookingId };
+    const booking = await Booking.findOne(query);
+    if (!booking) {
+      throw AppError.notFound('Booking not found');
+    }
+
+    // Verify ownership
+    const isUserOwner = !!booking.userId && !!userId && booking.userId.toString() === userId;
+    const isGuestOwner = !!booking.sessionId && !!sessionId && booking.sessionId === sessionId;
+    if (!isUserOwner && !isGuestOwner) {
+      throw AppError.forbidden('You do not have access to this booking');
+    }
+
+    if (booking.status !== BookingStatus.AWAITING_PAYMENT) {
+      throw AppError.badRequest('Booking details can only be updated while awaiting payment');
+    }
+
+    // Update details
+    booking.firstName = data.firstName;
+    booking.lastName = data.lastName;
+    booking.guestName = `${data.firstName} ${data.lastName}`.trim();
+    booking.guestEmail = data.guestEmail.toLowerCase().trim();
+    booking.guestEmailConfirm = data.guestEmailConfirm.toLowerCase().trim();
+    booking.guestPhone = data.guestPhone.trim();
+    booking.birthdate = new Date(data.birthdate);
+    booking.keepUpdated = !!data.keepUpdated;
+    booking.sendBestEvents = !!data.sendBestEvents;
+
+    booking.bookingVersion += 1;
+    await booking.save();
+
+    // Emit socket event to notify admins
+    try {
+      emitToAdmin('bookings', 'booking:updated', {
+        bookingId: booking._id.toString(),
+        eventId: booking.eventId.toString(),
+        status: booking.status,
+        bookingVersion: booking.bookingVersion,
+      }, booking.bookingId);
+    } catch (err) {
+      logger.debug({ err, bookingId: booking._id }, 'Admin socket emit skipped for booking update');
+    }
+
+    return booking;
   }
 }

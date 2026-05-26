@@ -27,6 +27,7 @@ vi.mock('../../config/stripe', () => ({
 vi.mock('../../models/booking.schema', () => ({
   Booking: {
     findById: vi.fn(),
+    findOne: vi.fn(),
     findOneAndUpdate: vi.fn(),
   },
 }));
@@ -80,19 +81,19 @@ describe('Payment Service', () => {
 
   describe('createPaymentIntent', () => {
     it('should throw error if booking not found', async () => {
-      vi.mocked(Booking.findById).mockResolvedValue(null);
+      vi.mocked(Booking.findOne).mockResolvedValue(null);
       await expect(PaymentService.createPaymentIntent('fake-id', 'stripe')).rejects.toThrow('Booking not found');
     });
 
     it('should throw error if booking is not awaiting payment', async () => {
-      vi.mocked(Booking.findById).mockResolvedValue({ status: BookingStatus.CONFIRMED } as any);
+      vi.mocked(Booking.findOne).mockResolvedValue({ status: BookingStatus.CONFIRMED } as any);
       await expect(PaymentService.createPaymentIntent('fake-id', 'stripe')).rejects.toThrow('cannot accept payment');
     });
   });
 
   describe('verifyPayment', () => {
     it('should throw error if razorpay signature verification fails', async () => {
-      vi.mocked(Booking.findById).mockResolvedValue({ _id: 'b-123', status: BookingStatus.AWAITING_PAYMENT, save: vi.fn() } as any);
+      vi.mocked(Booking.findOne).mockResolvedValue({ _id: 'b-123', status: BookingStatus.AWAITING_PAYMENT, save: vi.fn() } as any);
       vi.mocked(Payment.findOne).mockReturnValue({
         sort: vi.fn().mockResolvedValue({ _id: 'p-123', gateway: 'razorpay', status: PaymentStatus.PENDING, save: vi.fn() }),
       } as any);
@@ -110,7 +111,7 @@ describe('Payment Service', () => {
       const mockBooking = { _id: 'b-123', eventId: 'e-123', status: BookingStatus.AWAITING_PAYMENT, tickets: [], save: vi.fn() };
       const mockPayment = { _id: 'p-123', gateway: 'razorpay', status: PaymentStatus.PENDING, save: vi.fn() };
 
-      vi.mocked(Booking.findById).mockResolvedValue(mockBooking as any);
+      vi.mocked(Booking.findOne).mockResolvedValue(mockBooking as any);
       vi.mocked(Payment.findOne).mockReturnValue({ sort: vi.fn().mockResolvedValue(mockPayment) } as any);
       vi.mocked(Booking.findOneAndUpdate).mockResolvedValue({ ...mockBooking, status: BookingStatus.CONFIRMED } as any);
 

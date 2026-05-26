@@ -44,6 +44,9 @@ export type Event = {
   highlights?: string[];
   refundPolicy?: string;
   organizerName?: string;
+  ageRestriction?: number;
+  dresscode?: string;
+  additionalInfo?: string;
 };
 
 export type Seat = {
@@ -106,8 +109,14 @@ export type Booking = {
   eventId: string;
   userId?: string;
   guestName?: string;
+  firstName?: string;
+  lastName?: string;
   guestEmail?: string;
+  guestEmailConfirm?: string;
   guestPhone?: string;
+  birthdate?: string | Date;
+  keepUpdated?: boolean;
+  sendBestEvents?: boolean;
   sessionId?: string;
   tickets: {
     tier: string;

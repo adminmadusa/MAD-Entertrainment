@@ -150,3 +150,34 @@ export async function getBooking(
     next(err);
   }
 }
+
+// ─────────────────────────────────────────────
+// Save Checkout Details
+// ─────────────────────────────────────────────
+
+export async function saveCheckoutDetails(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    const { bookingId } = req.params;
+    const sessionId = req.header('x-session-id') || undefined;
+    const userId = req.user?.sub;
+
+    const booking = await PublicBookingService.saveCheckoutDetails(
+      bookingId,
+      req.body,
+      sessionId,
+      userId
+    );
+
+    sendSuccess(
+      res,
+      booking,
+      'Checkout details saved successfully'
+    );
+  } catch (err) {
+    next(err);
+  }
+}

@@ -5,6 +5,7 @@ import {
     getBooking,
     getMyBookings,
     getSessionToken,
+    saveCheckoutDetails,
 } from '../../controllers/public/booking.controller';
 
 import {
@@ -14,7 +15,7 @@ import {
 import { authLimiter } from '../../middleware/rate.middleware';
 
 import { validateBody, validateParams } from '../../middleware/validation.middleware';
-import { createBookingSchema, bookingReferenceParamSchema } from '../../validations/payment.validation';
+import { reserveTicketsSchema, checkoutDetailsSchema, bookingReferenceParamSchema } from '../../validations/payment.validation';
 
 const router: Router = Router();
 
@@ -34,8 +35,16 @@ router.get('/session', authLimiter as any, getSessionToken);
 router.post(
     '/',
     optionalAuth,
-    validateBody(createBookingSchema),
+    validateBody(reserveTicketsSchema),
     createBooking
+);
+
+router.put(
+    '/:bookingId/checkout-details',
+    optionalAuth,
+    validateParams(bookingReferenceParamSchema),
+    validateBody(checkoutDetailsSchema),
+    saveCheckoutDetails
 );
 
 // ─────────────────────────────────────────────
