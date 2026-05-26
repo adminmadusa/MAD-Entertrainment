@@ -346,13 +346,15 @@ export default function EventDetailClient() {
             </button>
 
             {/* Left Panel: Ticket selection */}
-            <div className="w-full md:w-3/5 p-6 md:p-8 flex flex-col h-full border-r border-white/5 bg-[#0d111d]">
-              <div className="flex-1 overflow-y-auto custom-scrollbar pr-1 space-y-4">
-                <div>
-                  <h3 className="text-base font-bold text-white pr-8">{event.title}</h3>
-                  <p className="text-xs text-text-muted mt-1">{showDateTime} · {event.venue}</p>
-                </div>
-                
+            <div className="w-full md:w-3/5 p-6 md:p-8 flex flex-col h-full border-r border-white/5 bg-[#0d111d] overflow-hidden">
+              {/* Fixed Header */}
+              <div className="pb-4 border-b border-white/5 shrink-0 pr-12">
+                <h3 className="text-base font-bold text-white leading-snug">{event.title}</h3>
+                <p className="text-xs text-text-muted mt-1">{showDateTime} · {event.venue}</p>
+              </div>
+
+              {/* Scrollable ticket content */}
+              <div className="flex-1 overflow-y-auto custom-scrollbar pr-1 pt-4 space-y-4">
                 <TicketSelectionContent
                   event={event}
                   isModal={true}
