@@ -18,6 +18,7 @@ interface TicketSelectionContentProps {
   // External triggers for checkout when rendered inside a modal
   checkoutTriggerRef?: React.RefObject<(() => void) | null>;
   setIsPendingChange?: (isPending: boolean) => void;
+  onBookingSuccess?: (bookingId: string) => void;
 }
 
 export function TicketSelectionContent({
@@ -27,6 +28,7 @@ export function TicketSelectionContent({
   onQuantitiesChange,
   checkoutTriggerRef,
   setIsPendingChange,
+  onBookingSuccess,
 }: TicketSelectionContentProps) {
   const router = useRouter();
   const eventId = event._id;
@@ -65,7 +67,11 @@ export function TicketSelectionContent({
     onSuccess: (booking) => {
       // Close modal before redirecting
       if (onClose) onClose();
-      router.push(`/checkout/${booking.bookingId}`);
+      if (onBookingSuccess) {
+        onBookingSuccess(booking.bookingId);
+      } else {
+        router.push(`/checkout/${booking.bookingId}`);
+      }
     },
     onError: (err) => {
       setError(extractApiError(err).message);

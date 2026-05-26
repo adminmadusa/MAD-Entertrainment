@@ -9,6 +9,7 @@ import Link from 'next/link';
 
 import { publicGetEventBySlug } from '@/lib/api/public.service';
 import { TicketSelectionContent } from '@/components/booking/TicketSelectionContent';
+import { CheckoutContent } from '@/components/booking/CheckoutContent';
 
 export default function EventDetailClient() {
   const params = useParams();
@@ -26,6 +27,10 @@ export default function EventDetailClient() {
   const [selectedCount, setSelectedCount] = useState(0);
   const [isPending, setIsPending] = useState(false);
   const checkoutTriggerRef = useRef<(() => void) | null>(null);
+
+  // States for Desktop Checkout Modal
+  const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState(false);
+  const [checkoutBookingId, setCheckoutBookingId] = useState<string | null>(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -349,6 +354,10 @@ export default function EventDetailClient() {
                   }}
                   checkoutTriggerRef={checkoutTriggerRef}
                   setIsPendingChange={setIsPending}
+                  onBookingSuccess={(bookingId) => {
+                    setCheckoutBookingId(bookingId);
+                    setIsCheckoutModalOpen(true);
+                  }}
                 />
               </div>
 
@@ -427,6 +436,29 @@ export default function EventDetailClient() {
                 )}
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Desktop Checkout Modal overlay */}
+      {isCheckoutModalOpen && checkoutBookingId && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-fade-in">
+          {/* Backdrop click to close */}
+          <div className="absolute inset-0" onClick={() => setIsCheckoutModalOpen(false)} />
+
+          <div className="w-full max-w-4xl bg-[#0d111d] rounded-2xl border border-white/10 overflow-y-auto max-h-[90vh] shadow-2xl relative z-10 p-6 custom-scrollbar">
+            <CheckoutContent
+              bookingId={checkoutBookingId}
+              isModal={true}
+              onBack={() => {
+                setIsCheckoutModalOpen(false);
+                setIsBookingModalOpen(true);
+              }}
+              onClose={() => {
+                setIsCheckoutModalOpen(false);
+                setCheckoutBookingId(null);
+              }}
+            />
           </div>
         </div>
       )}
