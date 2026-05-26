@@ -16,4 +16,5 @@ import './admin.schema';
 import './refund.schema';
 import './category.schema';
 import './tier.schema';
+import './ticket-profile.schema';
 

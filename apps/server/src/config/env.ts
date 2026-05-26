@@ -123,6 +123,13 @@ const envSchema = z.object({
       z.boolean()
     )
     .default(false),
+
+  MOCK_PAYMENTS: z
+    .preprocess(
+      (val) => val === 'true' || val === true,
+      z.boolean()
+    )
+    .default(false),
 });
 
 export type Env = z.infer<typeof envSchema>;

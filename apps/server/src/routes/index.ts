@@ -67,11 +67,14 @@ import adminCouponRoutes from './admin/coupon.routes';
 import adminAnalyticsRoutes from './admin/analytics.routes';
 import adminCategoryRoutes from './admin/category.routes';
 import adminTierRoutes from './admin/tier.routes';
+import adminTicketProfileRoutes from './admin/ticket-profile.routes';
 router.use('/admin/coupons', adminCouponRoutes);
 router.use('/admin/analytics', adminAnalyticsRoutes);
 router.use('/admin/diagnostics', adminDiagnosticsRoutes);
 router.use('/admin/categories', adminCategoryRoutes);
 router.use('/admin/tiers', adminTierRoutes);
+router.use('/admin/ticket-profiles', adminTicketProfileRoutes);
+
 
 // ─── Admin: Phase 7 — Popups, Notifications, Team ────────────
 import adminScannerRoutes from './admin/scanner.routes';

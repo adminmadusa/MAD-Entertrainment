@@ -11,6 +11,14 @@ export type ImageAsset = {
   publicId?: string;
 };
 
+export type TicketOfferRules = {
+  discountType: 'percentage' | 'flat' | 'none';
+  discountValue: number;
+  minQtyRequired: number;
+  buyQty?: number;
+  freeTicketQty?: number;
+};
+
 export type TicketTierConfig = {
   tier: string;
   tierName?: string;
@@ -25,6 +33,56 @@ export type TicketTierConfig = {
     startDate?: string | Date;
     endDate?: string | Date;
   };
+  groupId?: string;
+  groupName?: string;
+  isFree?: boolean;
+  offerRules?: TicketOfferRules;
+  isActive?: boolean;
+};
+
+export type TicketConfig = {
+  tier: string;
+  name: string;
+  description?: string;
+  price: number;
+  isFree?: boolean;
+  totalCapacity: number;
+  minPerBooking?: number;
+  maxPerBooking?: number;
+  groupSize?: number;
+  availabilityWindow?: {
+    startDate?: string | Date;
+    endDate?: string | Date;
+  };
+  offerRules?: TicketOfferRules;
+  isActive?: boolean;
+};
+
+export type TicketGroup = {
+  name: string;
+  slug: string;
+  description?: string;
+  tickets: TicketConfig[];
+};
+
+export type TicketProfile = {
+  _id: string;
+  name: string;
+  description?: string;
+  groups: TicketGroup[];
+  isActive: boolean;
+  isDeleted: boolean;
+  createdAt: string | Date;
+  updatedAt: string | Date;
+};
+
+export type TicketOverride = {
+  tier: string;
+  price?: number;
+  totalCapacity?: number;
+  isActive?: boolean;
+  maxPerBooking?: number;
+  minPerBooking?: number;
 };
 
 export type Event = {
@@ -39,6 +97,7 @@ export type Event = {
   venue: string;
   startDate: string | Date;
   bannerImage?: ImageAsset;
+  coverImage?: ImageAsset;
   ticketTiers: TicketTierConfig[];
   isSoldOut?: boolean;
   highlights?: string[];
@@ -47,6 +106,8 @@ export type Event = {
   ageRestriction?: number;
   dresscode?: string;
   additionalInfo?: string;
+  ticketProfileId?: string;
+  ticketOverrides?: TicketOverride[];
 };
 
 export type Seat = {
