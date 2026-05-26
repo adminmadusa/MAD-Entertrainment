@@ -73,14 +73,20 @@ export function TicketSelectionContent({
     },
   });
 
-  const handleQtyChange = (tier: string, change: number) => {
-    setQuantities((prev) => {
-      const val = (prev[tier] || 0) + change;
-      const next = {
-        ...prev,
-        [tier]: Math.max(0, Math.min(10, val)),
-      };
+  const handleQtyChange = useCallback((tier: string, change: number) => {
+    const prevQty = quantities[tier] || 0;
+    const newQty = Math.max(0, Math.min(10, prevQty + change));
 
+    if (newQty === prevQty) return;
+
+    const next = {
+      ...quantities,
+      [tier]: newQty,
+    };
+
+    setQuantities(next);
+
+    if (onQuantitiesChange) {
       let totalCount = 0;
       let sub = 0;
       event.ticketTiers.forEach((t) => {
@@ -90,15 +96,9 @@ export function TicketSelectionContent({
           sub += Math.max(0, t.price - (t.discount || 0)) * qty;
         }
       });
-
-      // Notify parent of subtotal/quantity changes if callback provided
-      if (onQuantitiesChange) {
-        onQuantitiesChange(next, sub, totalCount);
-      }
-
-      return next;
-    });
-  };
+      onQuantitiesChange(next, sub, totalCount);
+    }
+  }, [quantities, event.ticketTiers, onQuantitiesChange]);
 
   const handleApplyCoupon = (e: React.FormEvent) => {
     e.preventDefault();
