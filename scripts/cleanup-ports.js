@@ -1,6 +1,6 @@
 const { execSync } = require('child_process');
 
-const PORTS = [3000, 3001, 5001, 5002];
+const PORTS = [3000, 3001, 3002, 5001, 5002];
 
 console.log('⚡ Auditing and reclaiming development ports...');
 
