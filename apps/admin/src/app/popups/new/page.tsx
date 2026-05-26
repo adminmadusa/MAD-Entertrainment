@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
-import { CloudinaryUpload } from '@/components/cloudinary-upload';
+import { CloudinaryUpload } from '@/components/CloudinaryUpload';
 import { adminCreatePopup } from '@/lib/api/admin/popup.service';
 import { extractApiError } from '@/lib/api/client';
 

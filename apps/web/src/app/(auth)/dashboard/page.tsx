@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 
 import { publicGetMyBookings } from '@/lib/api/public.service';
-import { useAuth } from '@/providers/auth.provider';
+import { useAuth } from '@/providers/AuthProvider';
 
 export default function UserDashboard() {
   const router = useRouter();

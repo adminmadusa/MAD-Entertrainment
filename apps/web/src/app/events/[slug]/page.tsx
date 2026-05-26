@@ -2,7 +2,7 @@ import { Metadata, ResolvingMetadata } from 'next';
 
 import { publicGetEventBySlug } from '@/lib/api/public.service';
 
-import EventDetailClient from './event-detail-client';
+import EventDetailClient from './EventDetailClient';
 
 type Props = {
   params: Promise<{ slug: string }>;

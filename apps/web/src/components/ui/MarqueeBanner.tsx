@@ -1,7 +1,6 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
-import { publicGetCategories } from '@/lib/api/public.service';
+import { PublicCategory } from '@/lib/api/public.service';
 
 const getCategoryEmoji = (name: string): string => {
   const lower = name.toLowerCase();
@@ -16,11 +15,8 @@ const getCategoryEmoji = (name: string): string => {
   return '✨';
 };
 
-export function MarqueeBanner() {
-  const { data: categories = [] } = useQuery({
-    queryKey: ['publicCategories'],
-    queryFn: publicGetCategories,
-  });
+export function MarqueeBanner({ initialCategories = [] }: { initialCategories: PublicCategory[] }) {
+  const categories = initialCategories;
 
   const defaultItems = [
     '🎧 DJ NIGHTS',
@@ -41,7 +37,7 @@ export function MarqueeBanner() {
 
   return (
     <section className="py-8 overflow-hidden border-y border-border-subtle bg-background-secondary/50" aria-hidden="true">
-      <div className="flex animate-marquee whitespace-nowrap">
+      <div className="flex items-center animate-marquee whitespace-nowrap">
         {items.map((item, i) => (
           <span key={i} className="mx-8 text-text-muted text-sm font-semibold uppercase tracking-widest inline-flex items-center gap-2">
             {item}

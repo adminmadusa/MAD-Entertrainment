@@ -1,3 +1,3 @@
 'use client';
 
-export { useSocket } from '@/providers/socket.provider';
+export { useSocket } from '@/providers/SocketProvider';

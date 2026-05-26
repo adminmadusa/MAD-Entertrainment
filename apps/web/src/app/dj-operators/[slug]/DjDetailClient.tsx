@@ -47,6 +47,7 @@ export default function DJDetailClient() {
             src={dj.profileImage.url}
             alt={dj.name}
             fill
+            sizes="100vw"
             className="object-cover opacity-40 blur-md"
             priority
           />
@@ -68,6 +69,7 @@ export default function DJDetailClient() {
                   src={dj.profileImage.url}
                   alt={dj.name}
                   fill
+                  sizes="(max-width: 768px) 192px, 256px"
                   className="object-cover"
                   priority
                 />

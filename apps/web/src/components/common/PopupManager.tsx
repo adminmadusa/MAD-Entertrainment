@@ -10,7 +10,7 @@ import { useEffect, useState } from 'react';
 import { publicGetActivePopups } from '@/lib/api/public.service';
 
 
-import { FloatingCountdown } from './floating-countdown';
+import { FloatingCountdown } from './FloatingCountdown';
 
 // ─── Helper — cooldown check ──────────────────────────────────
 
@@ -71,6 +71,7 @@ function PopupModal({ popup, onClose }: PopupModalProps) {
               src={popup.image.url}
               alt=""
               fill
+              sizes="(max-width: 480px) 100vw, 448px"
               className="object-cover"
             />
           </div>

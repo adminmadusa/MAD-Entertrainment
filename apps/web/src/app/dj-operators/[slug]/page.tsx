@@ -2,7 +2,7 @@ import { Metadata, ResolvingMetadata } from 'next';
 
 import { publicGetDJBySlug } from '@/lib/api/public.service';
 
-import DJDetailClient from './dj-detail-client';
+import DJDetailClient from './DjDetailClient';
 
 type Props = {
   params: Promise<{ slug: string }>;

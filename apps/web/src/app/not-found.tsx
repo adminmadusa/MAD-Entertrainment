@@ -64,6 +64,7 @@ export default function NotFound() {
               src="/images/dj_turntables_404.png"
               alt="Neon DJ Equipment Lost in Sound"
               fill
+              sizes="(max-width: 480px) 100vw, 448px"
               className="object-cover group-hover:scale-105 transition-transform duration-700"
               priority
             />
@@ -160,16 +161,18 @@ export default function NotFound() {
               {/* Volume Slider */}
               <div className="flex flex-col flex-1 gap-1.5">
                 <div className="flex justify-between text-[8px] font-mono text-text-muted uppercase tracking-wider font-bold">
-                  <span>Fader Volume</span>
-                  <span>{Math.round(volume * 100)}%</span>
+                  <label htmlFor="fader-volume-slider" className="cursor-pointer">Fader Volume</label>
+                  <span aria-live="polite" aria-atomic="true">{Math.round(volume * 100)}%</span>
                 </div>
                 <input
+                  id="fader-volume-slider"
                   type="range"
                   min="0"
                   max="1"
                   step="0.1"
                   value={volume}
                   onChange={(e) => setVolume(Number(e.target.value))}
+                  aria-label="DJ Fader Volume Mixer"
                   className="w-full accent-accent-purple cursor-pointer bg-background rounded-lg appearance-none h-1.5"
                 />
               </div>

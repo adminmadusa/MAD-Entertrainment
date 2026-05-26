@@ -7,7 +7,7 @@ import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { Suspense, useState } from 'react';
+import { Suspense, useState, useRef } from 'react';
 
 import { publicGetEvents } from '@/lib/api/public.service';
 
@@ -46,6 +46,30 @@ function EventsList() {
   const urlCategory = searchParams.get('category') || '';
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
+
+  const categoryListRef = useRef<HTMLDivElement>(null);
+
+  const handleTabKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    const buttons = categoryListRef.current?.querySelectorAll<HTMLButtonElement>('button[role="tab"]');
+    if (!buttons) return;
+    
+    const buttonsArray = Array.from(buttons);
+    const currentIndex = buttonsArray.findIndex((btn) => document.activeElement === btn);
+    if (currentIndex === -1) return;
+
+    let nextIndex: number | null = null;
+    if (e.key === 'ArrowRight') {
+      nextIndex = (currentIndex + 1) % buttonsArray.length;
+    } else if (e.key === 'ArrowLeft') {
+      nextIndex = (currentIndex - 1 + buttonsArray.length) % buttonsArray.length;
+    }
+
+    if (nextIndex !== null) {
+      buttonsArray[nextIndex].focus();
+      buttonsArray[nextIndex].click();
+      e.preventDefault();
+    }
+  };
 
   const { data, isLoading } = useQuery({
     queryKey: ['public-events', urlCategory, search, page],
@@ -95,21 +119,25 @@ function EventsList() {
 
         {/* Filters */}
         <div className="flex flex-col lg:flex-row gap-4 items-center justify-between glass border border-border-subtle p-4 rounded-2xl">
-          {/* Categories Scrollable list */}
+          {/* Categories Scrollable list - Removed tabIndex={0} from wrapper to prevent double focus */}
           <div
-            className="flex gap-2 overflow-x-auto w-full scrollbar-hide py-1.5 snap-x snap-mandatory scroll-smooth touch-pan-x focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent-purple rounded-xl"
+            ref={categoryListRef}
+            className="flex gap-2 overflow-x-auto w-full scrollbar-hide py-1.5 snap-x snap-mandatory scroll-smooth touch-pan-x focus-visible:outline-none rounded-xl relative"
             role="tablist"
             aria-label="Event categories"
-            tabIndex={0}
+            onKeyDown={handleTabKeyDown}
           >
-            {CATEGORIES.map((cat) => {
+            {CATEGORIES.map((cat, idx) => {
               const active = urlCategory === cat.value;
+              // Only the selected category should start as tabbable to support keyboard Arrow navigation flow
+              const tabFlowIndex = active || (urlCategory === '' && idx === 0) ? 0 : -1;
               return (
                 <button
                   key={cat.label}
                   onClick={() => handleCategoryChange(cat.value)}
                   role="tab"
                   aria-selected={active}
+                  tabIndex={tabFlowIndex}
                   className={`px-4 py-2 text-xs rounded-xl font-semibold border whitespace-nowrap transition-all snap-center focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:outline-none ${
                     active
                       ? 'bg-accent-purple border-accent-purple text-white shadow-glow-sm'
@@ -178,6 +206,7 @@ function EventsList() {
                         src={event.bannerImage.url}
                         alt=""
                         fill
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 300px"
                         className="object-cover group-hover:scale-105 transition-transform duration-500"
                       />
                     ) : (
@@ -220,9 +249,8 @@ function EventsList() {
                       ₹{Math.min(...event.ticketTiers.map((t) => t.price))}
                     </div>
                   </div>
-                  <Link href={`/events/${event.slug}`} id={`event-card-book-${event.slug}`} tabIndex={-1}>
+                  <Link href={`/events/${event.slug}`} id={`event-card-book-${event.slug}`}>
                     <button
-                      tabIndex={-1}
                       className="px-3.5 py-2 text-xs font-bold text-white btn-gradient rounded-xl shadow-glow-sm group-hover:scale-105 transition-transform"
                     >
                       {event.isSoldOut ? 'Details' : 'Book Now'}

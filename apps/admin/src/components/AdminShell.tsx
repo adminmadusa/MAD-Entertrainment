@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 
 import { useAdminAuth } from '@/hooks/use-admin-auth.hook';
 
-import { AdminSidebar } from './admin-sidebar';
+import { AdminSidebar } from './AdminSidebar';
 
 
 const PUBLIC_ADMIN_PATHS = ['/login'];

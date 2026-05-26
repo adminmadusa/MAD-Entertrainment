@@ -1,7 +1,7 @@
 'use client';
 
 import { QUERY_KEYS, SeatStatus, STORAGE_VERSION } from '@mad/shared';
-import { SeatLayout, Event as EventData } from '@mad/types';
+import { SeatLayout, Event as EventData, Seat } from '@mad/types';
 import { Button } from '@mad/ui';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useParams, useRouter } from 'next/navigation';
@@ -14,7 +14,27 @@ import {
   publicCreateBooking,
 } from '@/lib/api/public.service';
 import { invalidatePublicBookingFlow } from '@/lib/query/query-invalidation.service';
-import { useSocket } from '@/providers/socket.provider';
+import { useSocket } from '@/providers/SocketProvider';
+
+export type BookingTicketPayload = {
+  tier: string;
+  quantity: number;
+  seats?: Array<{
+    seatId: string;
+    row: string;
+    number: number;
+    section?: string;
+  }>;
+};
+
+export type BookingPayload = {
+  eventId: string;
+  guestName: string;
+  guestEmail: string;
+  guestPhone: string;
+  tickets: BookingTicketPayload[];
+  couponCode?: string;
+};
 
 
 export default function PublicEventDetailPage() {
@@ -205,7 +225,7 @@ export default function PublicEventDetailPage() {
 
   // Booking Mutation
   const createBookingMutation = useMutation({
-    mutationFn: (payload: any) => publicCreateBooking(payload, sessionId),
+    mutationFn: (payload: BookingPayload) => publicCreateBooking(payload, sessionId),
     onSuccess: async (booking) => {
       await invalidatePublicBookingFlow(queryClient, {
         bookingId: booking._id,
@@ -296,7 +316,7 @@ export default function PublicEventDetailPage() {
 
     if (!eventId) return;
 
-    let ticketsPayload: any[] = [];
+    let ticketsPayload: BookingTicketPayload[] = [];
 
     if (event.bookingMode === 'seat_based') {
       if (selectedSeatIds.length === 0) {
@@ -305,7 +325,7 @@ export default function PublicEventDetailPage() {
       }
 
       // Group selected seats by tier
-      const seatsByTier: Record<string, any[]> = {};
+      const seatsByTier: Record<string, Seat[]> = {};
       selectedSeatIds.forEach((id) => {
         const seat = dbLayout?.seats.find((s) => s.seatId === id);
         if (seat) {

@@ -7,8 +7,14 @@ import { useParams, useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 
 import { STORAGE_VERSION } from '@mad/shared';
+import { Event, Booking } from '@mad/types';
 import { extractApiError } from '@/lib/api/client';
 import { publicGetBookingDetails, publicCreatePaymentIntent, publicVerifyPayment } from '@/lib/api/public.service';
+
+interface RazorpayInstance {
+  open(): void;
+  on(event: string, callback: (response: { error: { description: string } }) => void): void;
+}
 
 
 export default function CheckoutPage() {
@@ -32,8 +38,8 @@ export default function CheckoutPage() {
       return publicGetBookingDetails(bookingId, sess);
     },
     enabled: !!bookingId,
-    retry: (failureCount, error: any) => {
-      if (error?.response?.status === 404) {
+    retry: (failureCount, error: unknown) => {
+      if ((error as { response?: { status: number } })?.response?.status === 404) {
         return false;
       }
       return failureCount < 2;
@@ -86,7 +92,11 @@ export default function CheckoutPage() {
           name: 'MAD Entertainment',
           description: `Booking ${res.bookingId}`,
           order_id: res.orderId,
-          handler: function (response: any) {
+          handler: function (response: {
+            razorpay_order_id: string;
+            razorpay_payment_id: string;
+            razorpay_signature: string;
+          }) {
             setIsProcessing(true);
             verifyPaymentMutation.mutate({
               razorpay_order_id: response.razorpay_order_id,
@@ -102,8 +112,9 @@ export default function CheckoutPage() {
           },
         };
 
-        const rzp = new (window as any).Razorpay(options);
-        rzp.on('payment.failed', function (response: any) {
+        const Razorpay = (window as unknown as { Razorpay: new (options: unknown) => RazorpayInstance }).Razorpay;
+        const rzp = new Razorpay(options);
+        rzp.on('payment.failed', function (response) {
           setError(`Payment Failed: ${response.error.description}`);
           setIsProcessing(false);
         });
@@ -125,7 +136,7 @@ export default function CheckoutPage() {
   });
 
   const verifyPaymentMutation = useMutation({
-    mutationFn: (payload: any) => publicVerifyPayment(bookingId, payload),
+    mutationFn: (payload: Record<string, unknown>) => publicVerifyPayment(bookingId, payload),
     onSuccess: () => {
       router.push(`/my-booking?ref=${booking?.bookingId}`);
     },
@@ -193,7 +204,7 @@ export default function CheckoutPage() {
 
               <div className="flex items-center justify-between pb-3 border-b border-border-subtle/50">
                 <div>
-                  <div className="text-white font-bold text-base">{booking.eventId ? (booking.eventId as any).title : 'Event Booking'}</div>
+                  <div className="text-white font-bold text-base">{booking.eventId ? (booking.eventId as unknown as Event).title : 'Event Booking'}</div>
                   <div className="text-xs text-text-muted mt-0.5">Reference ID: {booking.bookingId}</div>
                 </div>
               </div>
@@ -201,7 +212,7 @@ export default function CheckoutPage() {
               {/* Tickets list */}
               <div className="space-y-3">
                 {booking.tickets.map((t, idx) => {
-                  const eventConfig = (booking.eventId as any)?.ticketTiers?.find((tier: any) => tier.tier === t.tier);
+                  const eventConfig = (booking.eventId as unknown as Event)?.ticketTiers?.find((tier) => tier.tier === t.tier);
                   const groupSize = eventConfig?.groupSize || 1;
                   const discount = eventConfig?.discount || 0;
                   return (

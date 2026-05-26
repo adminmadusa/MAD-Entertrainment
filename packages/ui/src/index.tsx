@@ -1,3 +1,5 @@
+'use client';
+
 import type { ButtonHTMLAttributes, ReactNode } from 'react';
 
 type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
@@ -43,7 +45,15 @@ export function EventGridSkeleton({ count = 4, className = '' }: { count?: numbe
   );
 }
 
-export function Modal({ isOpen, onClose, size, showCloseButton, children }: any) {
+export interface ModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  size?: string;
+  showCloseButton?: boolean;
+  children?: ReactNode;
+}
+
+export function Modal({ isOpen, onClose, size, showCloseButton, children }: ModalProps) {
   if (!isOpen) return null;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80">

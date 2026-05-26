@@ -1,12 +1,9 @@
 'use client';
 
 import { DJOperator } from '@mad/types';
-import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
-
-import { publicGetDJs } from '@/lib/api/public.service';
 
 // ─── DJ Card ──────────────────────────────────────────────────
 
@@ -25,6 +22,7 @@ function DJCard({ dj }: { dj: DJOperator }) {
               src={dj.profileImage.url}
               alt={dj.name}
               fill
+              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 200px"
               className="object-cover group-hover:scale-105 transition-transform duration-500"
             />
           ) : (
@@ -64,34 +62,13 @@ function DJCard({ dj }: { dj: DJOperator }) {
     </Link>
   );
 }
-
-// ─── DJ Skeleton ──────────────────────────────────────────────
-
-function DJSkeleton() {
-  return (
-    <div className="glass rounded-2xl border border-border-subtle overflow-hidden animate-pulse">
-      <div className="aspect-square w-full bg-white/5" />
-      <div className="p-4 space-y-2">
-        <div className="h-4 bg-white/8 rounded-lg w-2/3" />
-        <div className="h-3 bg-white/5 rounded-lg w-1/2" />
-      </div>
-    </div>
-  );
-}
-
 // ─── DJ Operators Section ─────────────────────────────────────
 
-export function DJOperatorsSection() {
-  const { data, isLoading } = useQuery({
-    queryKey: ['public-dj-operators'],
-    queryFn: () => publicGetDJs({ limit: 6 }),
-    staleTime: 1000 * 60 * 10,
-  });
+export function DJOperatorsSection({ initialDJs = [] }: { initialDJs: DJOperator[] }) {
+  const djs = initialDJs;
 
-  const djs = data?.data ?? [];
-
-  // Don't render the section if no DJs and not loading
-  if (!isLoading && djs.length === 0) return null;
+  // Don't render the section if no DJs
+  if (djs.length === 0) return null;
 
   return (
     <section className="py-20" aria-label="DJ Operators">
@@ -110,22 +87,14 @@ export function DJOperatorsSection() {
         </div>
 
         {/* Grid */}
-        {isLoading ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <DJSkeleton key={i} />
-            ))}
-          </div>
-        ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
             {djs.map((dj) => (
               <DJCard key={dj._id} dj={dj} />
             ))}
           </div>
-        )}
 
         {/* CTA */}
-        {!isLoading && data?.pagination && data.pagination.total > 6 && (
+        {djs.length >= 6 && (
           <div className="text-center mt-10">
             <Link href="/dj-operators">
               <button

@@ -8,7 +8,7 @@ import { useState } from 'react';
 
 import { extractApiError } from '@/lib/api/client';
 import { publicLogin } from '@/lib/api/public.service';
-import { useAuth } from '@/providers/auth.provider';
+import { useAuth } from '@/providers/AuthProvider';
 
 export default function LoginPage() {
   const router = useRouter();

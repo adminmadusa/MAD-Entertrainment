@@ -1,9 +1,9 @@
 import type { Metadata, Viewport } from 'next';
 import { Outfit } from 'next/font/google';
 
-import { PopupManager } from '@/components/common/popup-manager';
-import { Footer } from '@/components/layout/footer';
-import { Navbar } from '@/components/layout/navbar';
+import { PopupManager } from '@/components/common/PopupManager';
+import { Footer } from '@/components/layout/Footer';
+import { Navbar } from '@/components/layout/Navbar';
 import { Providers } from '@/providers';
 import '@/styles/globals.css';
 

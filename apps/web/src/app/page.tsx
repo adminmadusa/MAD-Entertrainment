@@ -2,10 +2,11 @@ import { ScrollIndicator } from '@mad/ui';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
-import { Reveal, StaggerContainer, StaggerItem } from '@/components/common/page-transition';
-import { DJOperatorsSection } from '@/components/ui/dj-operators-section';
-import { FeaturedEventsSection } from '@/components/ui/featured-events-section';
-import { MarqueeBanner } from '@/components/ui/marquee-banner';
+import { Reveal, StaggerContainer, StaggerItem } from '@/components/common/PageTransition';
+import { DJOperatorsSection } from '@/components/ui/DjOperatorsSection';
+import { FeaturedEventsSection } from '@/components/ui/FeaturedEventsSection';
+import { MarqueeBanner } from '@/components/ui/MarqueeBanner';
+import { serverGetFeaturedEvents, serverGetDJs, serverGetCategories } from '@/lib/api/server.service';
 
 export const metadata: Metadata = {
   title: 'MAD Entertrainment — Book Shows, Events & DJ Nights',
@@ -13,20 +14,26 @@ export const metadata: Metadata = {
     'Discover and book tickets for the hottest shows, events, DJ nights, concerts, festivals, comedy, and VIP events near you.',
 };
 
-export default function HomePage() {
+export default async function HomePage() {
+  const [events, djs, categories] = await Promise.all([
+    serverGetFeaturedEvents(),
+    serverGetDJs(),
+    serverGetCategories(),
+  ]);
+
   return (
     <>
       {/* ─── Hero Section ─────────────────────────────────── */}
       <HeroSection />
 
       {/* ─── Featured Events ──────────────────────────────── */}
-      <FeaturedEventsSection />
+      <FeaturedEventsSection initialEvents={events} />
 
       {/* ─── DJ Operators ─────────────────────────────────── */}
-      <DJOperatorsSection />
+      <DJOperatorsSection initialDJs={djs} />
 
       {/* ─── Marquee Banner ───────────────────────────────── */}
-      <MarqueeBanner />
+      <MarqueeBanner initialCategories={categories} />
 
       {/* ─── How It Works ─────────────────────────────────── */}
       <HowItWorksSection />
@@ -66,13 +73,6 @@ function HeroSection() {
 
       {/* Content */}
       <div className="container-mad relative z-10 text-center pt-24 pb-16">
-        {/* Badge */}
-        <Reveal delay={0.1}>
-          <div className="inline-flex items-center gap-2 px-4 py-2 glass rounded-full border border-accent-purple/30 text-accent-purple-light text-sm font-medium mb-8">
-            <span className="w-2 h-2 bg-accent-cyan rounded-full animate-pulse" />
-            Premium Entertainment Booking
-          </div>
-        </Reveal>
 
         {/* Headline */}
         <Reveal delay={0.2}>
@@ -138,7 +138,7 @@ function HeroSection() {
   );
 }
 
-// MarqueeBanner is imported dynamically from '@/components/ui/marquee-banner'
+// MarqueeBanner is imported dynamically from '@/components/ui/MarqueeBanner'
 
 
 

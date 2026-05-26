@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
 import { useRouter, useParams } from 'next/navigation';
 import { useState, useEffect } from 'react';
 
-import { CloudinaryUpload } from '@/components/cloudinary-upload';
+import { CloudinaryUpload } from '@/components/CloudinaryUpload';
 import { adminGetVenue, adminUpdateVenue } from '@/lib/api/admin/venue.service';
 import { extractApiError } from '@/lib/api/client';
 

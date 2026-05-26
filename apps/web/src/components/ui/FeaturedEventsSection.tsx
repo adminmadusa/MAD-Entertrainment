@@ -1,16 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { EventCategory, EVENT_CATEGORY_LABELS } from '@mad/shared';
-import { EventGridSkeleton } from '@mad/ui';
-import { useQuery } from '@tanstack/react-query';
-import { motion, AnimatePresence } from 'framer-motion';
+import { Event } from '@mad/types';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
 
-import { Reveal } from '@/components/common/page-transition';
+import { Reveal } from '@/components/common/PageTransition';
 import { useWindowWidth } from '@/hooks/use-window.hook';
-import { publicGetEvents } from '@/lib/api/public.service';
 
 function ArrowRight({ className = '', size = 16 }: { className?: string; size?: number }) {
   return (
@@ -36,26 +34,52 @@ function CalendarIcon({ className = '' }: { className?: string }) {
   );
 }
 
-export function FeaturedEventsSection() {
-  const { data, isLoading } = useQuery({
-    queryKey: ['featured-events'],
-    // Fetching 6 items so the cover flow looks populated
-    queryFn: () => publicGetEvents({ page: 1, limit: 6 }),
-  });
-
-  const events = data?.data ?? [];
+export function FeaturedEventsSection({ initialEvents = [] }: { initialEvents: Event[] }) {
+  const events = initialEvents;
   const [activeIndex, setActiveIndex] = useState(0);
+  const [isMounted, setIsMounted] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  
+  const prefersReducedMotion = useReducedMotion();
+
+  // Set mounted on client to prevent SSR hydration mismatch and layout shift
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   // SSR-safe responsive value — defaults to 1024 (desktop) on server,
   // updates to real viewport on mount. Never reads window during render.
   const windowWidth = useWindowWidth();
 
   const nextSlide = () => {
+    if (events.length === 0) return;
     setActiveIndex((prev) => (prev + 1) % events.length);
   };
 
   const prevSlide = () => {
+    if (events.length === 0) return;
     setActiveIndex((prev) => (prev - 1 + events.length) % events.length);
+  };
+
+  // Keyboard navigation within the carousel
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'ArrowLeft') {
+      prevSlide();
+      e.preventDefault();
+    } else if (e.key === 'ArrowRight') {
+      nextSlide();
+      e.preventDefault();
+    }
+  };
+
+  // Mobile Drag / Swipe handling using Framer Motion gesture metadata
+  const handleDragEnd = (event: any, info: any) => {
+    const threshold = 50; // swipe threshold in pixels
+    if (info.offset.x < -threshold) {
+      nextSlide();
+    } else if (info.offset.x > threshold) {
+      prevSlide();
+    }
   };
 
   const formatDate = (dateStr: Date | string) => {
@@ -68,7 +92,11 @@ export function FeaturedEventsSection() {
   };
 
   return (
-    <section className="py-16 overflow-hidden" aria-label="Featured events">
+    <section 
+      className="py-16 overflow-hidden" 
+      aria-label="Featured events"
+      role="region"
+    >
       <div className="container-mad">
         <Reveal>
           <div className="flex items-end justify-between mb-10">
@@ -90,9 +118,7 @@ export function FeaturedEventsSection() {
           </div>
         </Reveal>
 
-        {isLoading ? (
-          <EventGridSkeleton count={4} className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6" />
-        ) : events.length === 0 ? (
+        {events.length === 0 ? (
           <div className="text-center py-20 glass rounded-2xl border border-border-subtle">
             <div className="flex justify-center mb-4 text-accent-purple/60 animate-pulse" aria-hidden="true">
               <svg className="w-14 h-14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
@@ -105,7 +131,21 @@ export function FeaturedEventsSection() {
             </p>
           </div>
         ) : (
-          <div className="relative w-full max-w-6xl mx-auto h-[450px] sm:h-[500px] mt-8" style={{ perspective: '1200px' }}>
+          <div 
+            ref={containerRef}
+            className="relative w-full max-w-6xl mx-auto h-[450px] sm:h-[500px] mt-8 focus:outline-none" 
+            style={{ perspective: '1200px' }}
+            role="group"
+            aria-roledescription="carousel"
+            aria-label="Upcoming featured events"
+            tabIndex={0}
+            onKeyDown={handleKeyDown}
+          >
+            {/* Visual Screen Reader Instruction */}
+            <span className="sr-only">
+              Interactive 3D Carousel. Use Left and Right arrow keys to navigate between slides.
+            </span>
+
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
               <AnimatePresence initial={false} mode="popLayout">
                 {events.map((event, index) => {
@@ -118,8 +158,9 @@ export function FeaturedEventsSection() {
                   
                   const isActive = absoluteOffset === 0;
                   
-                  // Responsiveness adjustments — uses state-based windowWidth to avoid hydration mismatch
-                  const spread = windowWidth < 640 ? 100 : 160;
+                  // Safe server default (1024 width) prevents layout shifts
+                  const currentWidth = isMounted ? windowWidth : 1024;
+                  const spread = currentWidth < 640 ? 100 : 160;
                   
                   // Cover flow 3D math
                   const x = absoluteOffset * spread;
@@ -137,8 +178,8 @@ export function FeaturedEventsSection() {
                       initial={false}
                       animate={{
                         x,
-                        z,
-                        rotateY,
+                        z: prefersReducedMotion ? 0 : z,
+                        rotateY: prefersReducedMotion ? 0 : rotateY,
                         opacity,
                         scale: isActive ? 1 : 0.85,
                       }}
@@ -148,6 +189,10 @@ export function FeaturedEventsSection() {
                         damping: 20,
                         mass: 1,
                       }}
+                      drag="x"
+                      dragConstraints={{ left: 0, right: 0 }}
+                      dragElastic={0.4}
+                      onDragEnd={handleDragEnd}
                       style={{
                         zIndex,
                         position: "absolute",
@@ -155,6 +200,10 @@ export function FeaturedEventsSection() {
                       }}
                       className={`pointer-events-auto w-[260px] sm:w-[320px] h-[380px] sm:h-[450px] group glass rounded-2xl border ${isActive ? 'border-accent-purple/50 shadow-glow' : 'border-border-subtle cursor-pointer'} overflow-hidden flex flex-col focus-within:ring-2 focus-within:ring-accent-purple focus-within:border-accent-purple/40`}
                       onClick={() => !isActive && setActiveIndex(index)}
+                      role="group"
+                      aria-roledescription="slide"
+                      aria-label={`${index + 1} of ${events.length}: ${event.title}`}
+                      aria-hidden={!isActive}
                     >
                       {/* Wrap the image, date, title, and description in a link */}
                       <Link
@@ -168,7 +217,7 @@ export function FeaturedEventsSection() {
                           {event.bannerImage?.url ? (
                             <Image
                               src={event.bannerImage.url}
-                              alt=""
+                              alt={`Promotional poster for ${event.title}`}
                               fill
                               priority={isActive}
                               sizes="(max-width: 768px) 100vw, 320px"
@@ -217,9 +266,14 @@ export function FeaturedEventsSection() {
                             ₹{Math.min(...event.ticketTiers.map((t) => t.price))}
                           </div>
                         </div>
-                        <Link href={`/events/${event.slug}`} id={`event-card-book-${event.slug}`} tabIndex={-1} className={!isActive ? 'pointer-events-none' : ''}>
+                        <Link 
+                          href={`/events/${event.slug}`} 
+                          id={`event-card-book-${event.slug}`} 
+                          tabIndex={isActive ? 0 : -1} 
+                          className={!isActive ? 'pointer-events-none' : ''}
+                        >
                           <button
-                            tabIndex={-1}
+                            tabIndex={isActive ? 0 : -1}
                             disabled={!isActive}
                             className="px-2.5 py-1.5 sm:px-3.5 sm:py-2 text-[10px] sm:text-xs font-bold text-white btn-gradient rounded-xl shadow-glow-sm group-hover:scale-105 transition-transform disabled:opacity-50 disabled:cursor-not-allowed"
                           >
@@ -252,11 +306,13 @@ export function FeaturedEventsSection() {
                 </button>
 
                 {/* Dots indicator */}
-                <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 flex gap-2 z-30">
+                <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 flex gap-2 z-30" role="tablist" aria-label="Carousel slide triggers">
                   {events.map((_, idx) => (
                     <button
                       key={idx}
                       onClick={() => setActiveIndex(idx)}
+                      role="tab"
+                      aria-selected={idx === activeIndex}
                       className={`w-2 h-2 rounded-full transition-all duration-300 ${
                         idx === activeIndex 
                           ? 'bg-accent-purple w-6 shadow-glow-sm' 
