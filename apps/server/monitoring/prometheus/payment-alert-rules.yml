@@ -1,0 +1,80 @@
+groups:
+  - name: payment-observability-alerts
+    interval: 30s
+    rules:
+      - alert: OutboxDeadLetterDetected
+        expr: outbox_dead_letter_count > 0
+        for: 1m
+        labels:
+          severity: critical
+          service: mad-server
+          domain: payments
+        annotations:
+          summary: "Outbox dead-letter events detected"
+          description: "outbox_dead_letter_count is {{ $value }}. Immediate triage required for poison messages."
+
+      - alert: WebhookFailureSpike
+        expr: rate(webhook_failed_count[5m]) > 5
+        for: 5m
+        labels:
+          severity: critical
+          service: mad-server
+          domain: payments
+        annotations:
+          summary: "Webhook failure spike detected"
+          description: "Webhook failures are above threshold for 5m. Current rate: {{ $value }} failures/sec."
+
+      - alert: QueueStallDetected
+        expr: max(queue_oldest_waiting_job_age_ms) > 300000
+        for: 5m
+        labels:
+          severity: critical
+          service: mad-server
+          domain: workers
+        annotations:
+          summary: "Queue stall detected"
+          description: "At least one queue has waiting jobs older than 5 minutes. Max oldest age: {{ $value }} ms."
+
+      - alert: OutboxBacklogGrowing
+        expr: increase(outbox_queue_depth[10m]) > 100
+        for: 10m
+        labels:
+          severity: high
+          service: mad-server
+          domain: outbox
+        annotations:
+          summary: "Outbox backlog growth detected"
+          description: "Outbox queue depth increased by more than 100 over 10 minutes (value: {{ $value }})."
+
+      - alert: OutboxRetryStorm
+        expr: increase(outbox_retry_count[10m]) > 50
+        for: 10m
+        labels:
+          severity: high
+          service: mad-server
+          domain: outbox
+        annotations:
+          summary: "Outbox retry storm detected"
+          description: "Outbox retries increased by more than 50 over 10 minutes (value: {{ $value }})."
+
+      - alert: RedisDisconnected
+        expr: redis_connected == 0
+        for: 2m
+        labels:
+          severity: critical
+          service: mad-server
+          domain: infrastructure
+        annotations:
+          summary: "Redis connectivity lost"
+          description: "redis_connected is 0 for more than 2 minutes. Queue degradation likely."
+
+      - alert: MongoDisconnected
+        expr: mongodb_ready_state != 1
+        for: 1m
+        labels:
+          severity: critical
+          service: mad-server
+          domain: infrastructure
+        annotations:
+          summary: "MongoDB not ready"
+          description: "mongodb_ready_state is {{ $value }} (expected 1)."
