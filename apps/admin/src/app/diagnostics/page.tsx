@@ -167,8 +167,15 @@ export default function DiagnosticsPage() {
               ))}
               {!reservations?.length && (
                 <tr>
-                  <td colSpan={8} className="py-10 text-center text-text-muted">
-                    No reservations found.
+                  <td colSpan={8} className="px-4 py-10">
+                    <div className="min-h-[240px] flex flex-col items-center justify-center gap-3 text-center">
+                      <p className="text-white text-sm font-medium">
+                        No reservations found
+                      </p>
+                      <p className="text-text-muted text-xs">
+                        There are currently no active reservation records.
+                      </p>
+                    </div>
                   </td>
                 </tr>
               )}

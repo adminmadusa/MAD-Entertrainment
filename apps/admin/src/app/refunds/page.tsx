@@ -126,8 +126,15 @@ export default function AdminRefundsPage() {
                 ))
               ) : refunds.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-16 text-center text-text-muted">
-                    No refunds found.
+                  <td colSpan={6} className="px-4 py-10">
+                    <div className="min-h-[240px] flex flex-col items-center justify-center gap-3 text-center">
+                      <p className="text-white text-sm font-medium">
+                        No refunds found
+                      </p>
+                      <p className="text-text-muted text-xs">
+                        Try adjusting filters to view historical requests.
+                      </p>
+                    </div>
                   </td>
                 </tr>
               ) : (

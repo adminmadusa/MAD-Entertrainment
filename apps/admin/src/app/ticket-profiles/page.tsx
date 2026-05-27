@@ -138,14 +138,21 @@ export default function AdminTicketProfilesPage() {
                 ))
               ) : profiles.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-16 text-center text-text-muted">
-                    No ticket profiles found.{" "}
-                    <Link
-                      href="/ticket-profiles/new"
-                      className="text-accent-purple hover:underline"
-                    >
-                      Create one →
-                    </Link>
+                  <td colSpan={6} className="px-4 py-10">
+                    <div className="min-h-[240px] flex flex-col items-center justify-center gap-3 text-center">
+                      <p className="text-white text-sm font-medium">
+                        No ticket profiles found
+                      </p>
+                      <p className="text-text-muted text-xs">
+                        Create reusable ticket templates for faster event setup.
+                      </p>
+                      <Link
+                        href="/ticket-profiles/new"
+                        className="text-accent-purple text-sm hover:underline"
+                      >
+                        Create your first ticket profile →
+                      </Link>
+                    </div>
                   </td>
                 </tr>
               ) : (
