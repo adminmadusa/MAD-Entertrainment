@@ -1,6 +1,7 @@
 'use client';
 
 import { FormActions } from '@/components/forms/primitives/FormActions';
+import { EVENT_FORM_INPUT_CLASS } from '@/components/forms/constants/event-form.constants';
 import { useEventForm } from '@/hooks/forms/use-event-form';
 import { AdminCategory } from '@/lib/api/admin/category.service';
 import { AdminTier } from '@/lib/api/admin/tier.service';
@@ -97,4 +98,4 @@ export function EventForm({
   );
 }
 
-const inputCls = 'w-full px-4 py-2.5 rounded-xl bg-background border border-border-subtle text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-purple transition-colors';
+const inputCls = EVENT_FORM_INPUT_CLASS;

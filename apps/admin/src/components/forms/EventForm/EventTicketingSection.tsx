@@ -2,10 +2,9 @@ import { TicketProfile } from '@mad/types';
 
 import { FormField } from '@/components/forms/primitives/FormField';
 import { FormSection } from '@/components/forms/primitives/FormSection';
+import { EVENT_FORM_FALLBACK_TIER_NAMES } from '@/components/forms/constants/event-form.constants';
 import { AdminTier } from '@/lib/api/admin/tier.service';
 import { EventFormValues } from '@/types/event-form';
-
-const FALLBACK_TIER_NAMES = ['general', 'silver', 'gold', 'platinum', 'vip', 'vvip', 'backstage', 'couple', 'group', 'family', 'early_bird', 'custom'];
 
 export function EventTicketingSection({
   values,
@@ -49,10 +48,10 @@ export function EventTicketingSection({
             <div key={i} className="p-4 bg-white/3 rounded-xl border border-border-subtle space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <FormField label="Tier Name">
-                  <select value={tier.name} onChange={(e) => updateTier(i, 'name', e.target.value)} className={inputCls}>
-                    {tiers.length > 0
-                      ? tiers.map((item) => <option key={item._id} value={item.slug} className="bg-background-card capitalize">{item.name}</option>)
-                      : FALLBACK_TIER_NAMES.map((name) => <option key={name} value={name} className="bg-background-card capitalize">{name}</option>)}
+                      <select value={tier.name} onChange={(e) => updateTier(i, 'name', e.target.value)} className={inputCls}>
+                        {tiers.length > 0
+                          ? tiers.map((item) => <option key={item._id} value={item.slug} className="bg-background-card capitalize">{item.name}</option>)
+                      : EVENT_FORM_FALLBACK_TIER_NAMES.map((name) => <option key={name} value={name} className="bg-background-card capitalize">{name}</option>)}
                   </select>
                 </FormField>
                 <FormField label="Price (₹)"><input type="number" min="0" value={tier.price} onChange={(e) => updateTier(i, 'price', e.target.value === '' ? '' : Number(e.target.value))} className={inputCls} /></FormField>
