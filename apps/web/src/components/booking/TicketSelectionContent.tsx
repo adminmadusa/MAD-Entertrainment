@@ -1,6 +1,6 @@
 'use client';
 
-import { QUERY_KEYS, STORAGE_VERSION } from '@mad/shared';
+import { STORAGE_VERSION } from '@mad/shared';
 import { Event as EventData } from '@mad/types';
 import { Button } from '@mad/ui';
 import { useMutation } from '@tanstack/react-query';
@@ -159,12 +159,10 @@ export function TicketSelectionContent({
   }, [checkoutTriggerRef, handleCheckoutSubmit]);
 
   // Calculate local subtotal estimation for sticky footer
-  let selectedCount = 0;
   let subtotal = 0;
   event.ticketTiers.forEach((tier) => {
     const qty = quantities[tier.tier] || 0;
     if (qty > 0) {
-      selectedCount += qty;
       const price = Math.max(0, tier.price - (tier.discount || 0));
       subtotal += price * qty;
     }

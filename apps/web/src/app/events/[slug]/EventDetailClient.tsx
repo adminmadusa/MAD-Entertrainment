@@ -3,7 +3,6 @@
 import { QUERY_KEYS } from '@mad/shared';
 import { Event as EventData } from '@mad/types';
 import { useQuery } from '@tanstack/react-query';
-import { useRouter } from 'next/navigation';
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -25,8 +24,6 @@ interface EventDetailClientProps {
 }
 
 export default function EventDetailClient({ slug, initialEvent }: EventDetailClientProps) {
-  const router = useRouter();
-
   const [isOverviewOpen, setIsOverviewOpen] = useState(false);
   const [isFavorited, setIsFavorited] = useState(false);
   const [scrollY, setScrollY] = useState(0);
@@ -123,9 +120,10 @@ export default function EventDetailClient({ slug, initialEvent }: EventDetailCli
   const priceDisplay = minPrice === maxPrice ? `₹${minPrice}` : `₹${minPrice} - ₹${maxPrice}`;
 
   // Truncated description (150 chars limit)
-  const descriptionPreview = event.description.length > 150 
-    ? `${event.description.substring(0, 150)}...`
-    : event.description;
+  const safeDescription = event.description ?? '';
+  const descriptionPreview = safeDescription.length > 150
+    ? `${safeDescription.substring(0, 150)}...`
+    : safeDescription;
 
   // Social proof mock data
   const SOCIAL_AVATARS = ['A', 'R', 'K', 'S', 'P'];
@@ -291,7 +289,7 @@ export default function EventDetailClient({ slug, initialEvent }: EventDetailCli
               <h2 className="text-base font-bold text-white">Overview</h2>
               <div className="text-text-secondary text-sm leading-relaxed">
                 <p>{descriptionPreview}</p>
-                {event.description.length > 150 && (
+                {safeDescription.length > 150 && (
                   <button
                     type="button"
                     onClick={() => setIsOverviewOpen(true)}

@@ -1,4 +1,4 @@
-import { Metadata, ResolvingMetadata } from 'next';
+import { Metadata } from 'next';
 import { publicGetEventBySlug } from '@/lib/api/public.service';
 import TicketSelectionClient from './TicketSelectionClient';
 
@@ -7,8 +7,7 @@ type Props = {
 };
 
 export async function generateMetadata(
-  { params }: Props,
-  parent: ResolvingMetadata
+  { params }: Props
 ): Promise<Metadata> {
   const { slug } = await params;
   try {

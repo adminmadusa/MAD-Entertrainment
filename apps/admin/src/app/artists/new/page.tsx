@@ -6,7 +6,6 @@ import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
-import { CloudinaryUpload } from '@/components/CloudinaryUpload';
 import { adminCreateArtist } from '@/lib/api/admin/artist.service';
 import { extractApiError } from '@/lib/api/client';
 
@@ -34,7 +33,7 @@ export default function CreateArtistPage() {
   const [facebook, setFacebook] = useState('');
 
   // Media
-  const [profileImage, setProfileImage] = useState<CloudinaryAsset | null>(null);
+  const [profileImage] = useState<CloudinaryAsset | null>(null);
 
   const [error, setError] = useState('');
 

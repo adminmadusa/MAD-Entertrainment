@@ -1,4 +1,5 @@
-import { AdminEvent, CloudinaryImage } from '@/lib/api/admin/event.service';
+import { CloudinaryImage } from '@/lib/api/admin/event.service';
+import type { EventMutationInput } from '@mad/contracts';
 
 export type EventFormMode = 'create' | 'edit';
 export type TicketingType = 'custom' | 'profile';
@@ -44,26 +45,6 @@ export interface EventFormValues {
   overrides: Record<string, TicketOverrideValue>;
 }
 
-export interface EventMutationPayload extends Partial<AdminEvent> {
-  bookingMode: string;
-  showTime?: string;
-  organizerName?: string;
-  refundPolicy?: string;
-  highlights?: string[];
-  bannerImage?: CloudinaryImage;
-  ticketProfileId?: string | null;
-  ticketOverrides?: Array<{ tier: string; totalCapacity?: number; isActive?: boolean }>;
-  ticketTiers?: Array<{
-    name: string;
-    price: number;
-    capacity: number;
-    groupSize: number;
-    minPerBooking: number;
-    discount: number;
-    taxPercent: number;
-    isAvailable: boolean;
-    tier: string;
-    slug: string;
-    totalCapacity: number;
-  }>;
-}
+export type EventMutationPayload = EventMutationInput & {
+  coverImage?: CloudinaryImage;
+};
