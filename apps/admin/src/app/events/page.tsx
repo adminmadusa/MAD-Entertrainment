@@ -60,8 +60,8 @@ export default function AdminEventsPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0">
           <h1 className="text-2xl font-black text-white">Events</h1>
           <p className="text-text-muted text-sm mt-0.5">
             {pagination?.total ?? 0} events total
@@ -70,7 +70,7 @@ export default function AdminEventsPage() {
         <Link
           href="/events/new"
           id="admin-create-event"
-          className="px-4 py-2.5 btn-gradient text-white font-semibold text-sm rounded-xl shadow-glow-sm hover:scale-105 transition-transform flex items-center gap-2"
+          className="w-full sm:w-auto px-4 py-2.5 btn-gradient text-white font-semibold text-sm rounded-xl shadow-glow-sm hover:scale-105 transition-transform flex items-center justify-center gap-2"
         >
           <span>+</span> Create Event
         </Link>
@@ -86,7 +86,7 @@ export default function AdminEventsPage() {
             setSearch(e.target.value);
             setPage(1);
           }}
-          className="flex-1 min-w-48 px-4 py-2.5 rounded-xl bg-background-card border border-border-subtle text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-purple transition-colors"
+          className="flex-1 min-w-0 sm:min-w-48 px-4 py-2.5 rounded-xl bg-background-card border border-border-subtle text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-purple transition-colors"
         />
         <select
           value={statusFilter}
@@ -108,7 +108,7 @@ export default function AdminEventsPage() {
       {/* Table */}
       <div className="glass rounded-2xl border border-border-subtle overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="w-full min-w-[720px] text-sm">
             <thead>
               <tr className="border-b border-border-subtle">
                 <th className="text-left text-text-muted font-medium py-3.5 px-5">
@@ -252,7 +252,7 @@ export default function AdminEventsPage() {
                       </button>
                     </td>
                     <td className="py-4 px-5">
-                      <div className="flex items-center justify-end gap-2">
+                      <div className="flex flex-wrap items-center justify-end gap-2">
                         <Link
                           href={`/events/${event._id}/edit`}
                           className="px-3 py-1.5 text-xs font-medium glass border border-border-subtle rounded-lg text-text-secondary hover:text-white hover:border-accent-purple/40 transition-all"

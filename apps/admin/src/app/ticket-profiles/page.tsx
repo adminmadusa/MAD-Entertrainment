@@ -84,7 +84,7 @@ export default function AdminTicketProfilesPage() {
         <Link
           href="/ticket-profiles/new"
           id="admin-create-ticket-profile"
-          className="px-4 py-2.5 btn-gradient text-white font-semibold text-sm rounded-xl shadow-glow-sm hover:scale-105 transition-transform flex items-center gap-2"
+          className="w-full sm:w-auto px-4 py-2.5 btn-gradient text-white font-semibold text-sm rounded-xl shadow-glow-sm hover:scale-105 transition-transform flex items-center justify-center gap-2"
         >
           <span>+</span> Create Profile
         </Link>
@@ -93,7 +93,7 @@ export default function AdminTicketProfilesPage() {
       {/* Table */}
       <div className="glass rounded-2xl border border-border-subtle overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-sm text-left">
+          <table className="w-full min-w-[820px] text-sm text-left">
             <thead>
               <tr className="border-b border-border-subtle text-text-muted">
                 <th className="py-3.5 px-5 font-medium">
@@ -194,7 +194,7 @@ export default function AdminTicketProfilesPage() {
                       </button>
                     </td>
                     <td className="py-4 px-5">
-                      <div className="flex items-center justify-end gap-2">
+                      <div className="flex flex-wrap items-center justify-end gap-2">
                         <Link
                           href={`/ticket-profiles/${profile._id}/edit`}
                           className="px-3 py-1.5 text-xs font-medium glass border border-border-subtle rounded-lg text-text-secondary hover:text-white hover:border-accent-purple/40 transition-all"

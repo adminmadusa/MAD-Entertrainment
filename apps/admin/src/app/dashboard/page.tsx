@@ -139,35 +139,38 @@ export default function AdminDashboardPage() {
               View all →
             </Link>
           </div>
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-border-subtle">
-                <th className="text-left text-text-muted font-medium py-3 px-6">
-                  Event
-                </th>
-                <th className="text-right text-text-muted font-medium py-3 px-6">
-                  Revenue
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {Array.isArray(summary?.topEvents) && summary.topEvents.length > 0
-                ? summary.topEvents.slice(0, 5).map((ev) => (
-                    <tr
-                      key={ev._id}
-                      className="border-b border-border-subtle/40 hover:bg-white/2"
-                    >
-                      <td className="py-3.5 px-6 text-text-primary">
-                        {ev.event?.title ?? "Deleted Event"}
-                      </td>
-                      <td className="py-3.5 px-4 text-text-secondary">
-                        {ev.revenue.toLocaleString("en-IN")}
-                      </td>
-                    </tr>
-                  ))
-                : null}
-            </tbody>
-          </table>
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[520px] text-sm">
+              <thead>
+                <tr className="border-b border-border-subtle">
+                  <th className="text-left text-text-muted font-medium py-3 px-6">
+                    Event
+                  </th>
+                  <th className="text-right text-text-muted font-medium py-3 px-6">
+                    Revenue
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {Array.isArray(summary?.topEvents) &&
+                summary.topEvents.length > 0
+                  ? summary.topEvents.slice(0, 5).map((ev) => (
+                      <tr
+                        key={ev._id}
+                        className="border-b border-border-subtle/40 hover:bg-white/2"
+                      >
+                        <td className="py-3.5 px-6 text-text-primary">
+                          {ev.event?.title ?? "Deleted Event"}
+                        </td>
+                        <td className="py-3.5 px-4 text-text-secondary">
+                          {ev.revenue.toLocaleString("en-IN")}
+                        </td>
+                      </tr>
+                    ))
+                  : null}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
     </div>
