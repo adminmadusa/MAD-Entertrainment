@@ -75,13 +75,14 @@ export default function AdminArtistsPage() {
       <div className="flex flex-wrap gap-3">
         <input
           type="search"
+          aria-label="Search artists"
           placeholder="Search artists..."
           value={search}
           onChange={(e) => {
             setSearch(e.target.value);
             setPage(1);
           }}
-          className="flex-1 min-w-48 px-4 py-2.5 rounded-xl bg-background-card border border-border-subtle text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-purple transition-colors"
+          className="flex-1 min-w-0 sm:min-w-48 px-4 py-2.5 rounded-xl bg-background-card border border-border-subtle text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-purple focus-visible:ring-2 focus-visible:ring-accent-purple transition-colors"
         />
       </div>
 
@@ -134,7 +135,10 @@ export default function AdminArtistsPage() {
                 ))
               ) : artists.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="py-16 text-center text-text-muted">
+                  <td
+                    colSpan={5}
+                    className="py-16 px-4 text-center text-text-muted text-sm"
+                  >
                     No artists found.{" "}
                     <Link
                       href="/artists/new"

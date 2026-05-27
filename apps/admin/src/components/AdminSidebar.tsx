@@ -204,7 +204,7 @@ export function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps) {
       <div className="p-2 border-t border-border-subtle">
         <button
           onClick={onToggle}
-          className="w-full flex items-center justify-center p-2 rounded-xl text-text-muted hover:text-text-primary hover:bg-white/5 transition-colors"
+          className="w-full flex items-center justify-center p-2 rounded-xl text-text-muted hover:text-text-primary hover:bg-white/5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple"
           aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
           <motion.div

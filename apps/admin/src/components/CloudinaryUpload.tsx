@@ -131,18 +131,20 @@ export function CloudinaryUpload({
             alt={value.alt ?? "Uploaded image"}
             className="w-full h-full object-cover"
           />
-          <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
+          <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity flex items-center justify-center gap-3">
             <button
               type="button"
               onClick={() => inputRef.current?.click()}
-              className="px-3 py-2 bg-white/20 backdrop-blur text-white text-xs font-medium rounded-lg hover:bg-white/30 transition-colors"
+              aria-label="Replace image"
+              className="px-3 py-2 bg-white/20 backdrop-blur text-white text-xs font-medium rounded-lg hover:bg-white/30 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80"
             >
               Replace
             </button>
             <button
               type="button"
               onClick={handleRemove}
-              className="px-3 py-2 bg-error/70 backdrop-blur text-white text-xs font-medium rounded-lg hover:bg-error transition-colors"
+              aria-label="Remove image"
+              className="px-3 py-2 bg-error/70 backdrop-blur text-white text-xs font-medium rounded-lg hover:bg-error transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80"
             >
               Remove
             </button>
@@ -167,7 +169,20 @@ export function CloudinaryUpload({
               ? "border-accent-purple bg-accent-purple/10"
               : "border-border-subtle hover:border-accent-purple/50 hover:bg-white/2",
             uploadState === "error" ? "border-error/50" : "",
+            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple",
           ].join(" ")}
+          role="button"
+          tabIndex={uploadState === "uploading" ? -1 : 0}
+          aria-label={label ? `Upload image for ${label}` : "Upload image"}
+          onKeyDown={(e) => {
+            if (
+              uploadState !== "uploading" &&
+              (e.key === "Enter" || e.key === " ")
+            ) {
+              e.preventDefault();
+              inputRef.current?.click();
+            }
+          }}
         >
           {uploadState === "uploading" ? (
             <div className="text-center space-y-3 px-4">

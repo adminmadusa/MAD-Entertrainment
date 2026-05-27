@@ -80,13 +80,14 @@ export default function AdminEventsPage() {
       <div className="flex flex-wrap gap-3">
         <input
           type="search"
+          aria-label="Search events"
           placeholder="Search events..."
           value={search}
           onChange={(e) => {
             setSearch(e.target.value);
             setPage(1);
           }}
-          className="flex-1 min-w-0 sm:min-w-48 px-4 py-2.5 rounded-xl bg-background-card border border-border-subtle text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-purple transition-colors"
+          className="flex-1 min-w-0 sm:min-w-48 px-4 py-2.5 rounded-xl bg-background-card border border-border-subtle text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-purple focus-visible:ring-2 focus-visible:ring-accent-purple transition-colors"
         />
         <select
           value={statusFilter}
@@ -94,7 +95,7 @@ export default function AdminEventsPage() {
             setStatusFilter(e.target.value);
             setPage(1);
           }}
-          className="px-4 py-2.5 rounded-xl bg-background-card border border-border-subtle text-sm text-text-primary focus:outline-none focus:border-accent-purple transition-colors"
+          className="px-4 py-2.5 rounded-xl bg-background-card border border-border-subtle text-sm text-text-primary focus:outline-none focus:border-accent-purple focus-visible:ring-2 focus-visible:ring-accent-purple transition-colors"
         >
           <option value="">All Statuses</option>
           <option value="draft">Draft</option>
@@ -160,7 +161,10 @@ export default function AdminEventsPage() {
                 ))
               ) : events.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-16 text-center text-text-muted">
+                  <td
+                    colSpan={6}
+                    className="py-16 px-4 text-center text-text-muted text-sm"
+                  >
                     No events found.{" "}
                     <Link
                       href="/events/new"
@@ -241,7 +245,12 @@ export default function AdminEventsPage() {
                     <td className="py-4 px-4">
                       <button
                         onClick={() => featureMutation.mutate(event._id)}
-                        className={`text-lg transition-transform hover:scale-110 ${event.isFeatured ? "text-yellow-400" : "text-text-muted"}`}
+                        aria-label={
+                          event.isFeatured
+                            ? "Remove event from featured"
+                            : "Add event to featured"
+                        }
+                        className={`text-lg transition-transform hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple rounded ${event.isFeatured ? "text-yellow-400" : "text-text-muted"}`}
                         title={
                           event.isFeatured
                             ? "Remove from featured"
