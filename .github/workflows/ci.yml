@@ -177,6 +177,8 @@ jobs:
         run: pnpm governance:serializer-parity
 
       - name: Run Workspace Configuration Audit
+        env:
+          ALLOWED_ORIGINS: http://localhost:3000
         run: pnpm audit-data
 
   unused-imports-report:
