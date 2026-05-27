@@ -1,7 +1,8 @@
 import { EventCategory } from '@mad/shared';
 import { z } from 'zod';
 
-import { isPercentageInRange, isPositiveNumber, isValidDateRange } from '../forms/rules';
+import { validateDateRange } from '../forms/scheduling';
+import { isPercentageInRange, isPositiveNumber } from '../forms/rules';
 
 const numberOrEmpty = z.union([z.number(), z.literal('')]);
 
@@ -25,7 +26,7 @@ export const couponFormSchema = z
       ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['usageLimit'], message: 'Usage limit must be at least 1.' });
     }
 
-    if (!isValidDateRange(values.validFrom, values.validUntil)) {
+    if (!validateDateRange(values.validFrom, values.validUntil)) {
       ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['validUntil'], message: 'End date must be after or equal to start date.' });
     }
 

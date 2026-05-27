@@ -1,12 +1,10 @@
 import { Coupon } from '@mad/types';
 
+import { toIsoDateTime, toLocalDateTimeInput } from '../forms/scheduling';
 import { CouponFormValues, CouponMutationPayload } from '@/types/coupon-form';
 
 export function toLocalDatetimeString(dateStr: Date | string | undefined): string {
-  if (!dateStr) return '';
-  const date = new Date(dateStr);
-  const tzOffset = date.getTimezoneOffset() * 60000;
-  return new Date(date.getTime() - tzOffset).toISOString().slice(0, 16);
+  return toLocalDateTimeInput(dateStr);
 }
 
 export function getDefaultCouponFormValues(): CouponFormValues {
@@ -54,8 +52,8 @@ export function mapCouponFormToPayload(values: CouponFormValues): CouponMutation
     maxDiscount: values.discountType === 'fixed' ? null : maxDiscountValue,
     minOrderAmount: Number(values.minOrderAmount || 0),
     usageLimit: Number(values.usageLimit || 1),
-    validFrom: new Date(values.validFrom).toISOString(),
-    validUntil: new Date(values.validUntil).toISOString(),
+    validFrom: toIsoDateTime(values.validFrom),
+    validUntil: toIsoDateTime(values.validUntil),
     isActive: values.isActive,
     applicableEventIds: values.applicableEventIds.length > 0 ? values.applicableEventIds : [],
     applicableCategories: values.applicableCategories.length > 0 ? values.applicableCategories : [],

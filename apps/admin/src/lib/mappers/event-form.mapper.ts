@@ -1,6 +1,7 @@
 import { BookingMode, TicketTier } from '@mad/shared';
 
 import { AdminEvent, CloudinaryImage } from '@/lib/api/admin/event.service';
+import { toIsoDateTime, toLocalDateTimeInput } from '../forms/scheduling';
 import { EventFormValues, EventMutationPayload, TicketTierFormValues } from '@/types/event-form';
 
 const defaultTier = (): TicketTierFormValues => ({
@@ -54,8 +55,8 @@ export function mapEventToFormValues(event: AdminEvent): EventFormValues {
     description: event.description || '',
     category: event.category || 'concert',
     status: event.status || 'draft',
-    startDate: event.startDate ? new Date(event.startDate).toISOString().slice(0, 16) : '',
-    endDate: event.endDate ? new Date(event.endDate).toISOString().slice(0, 16) : '',
+    startDate: toLocalDateTimeInput(event.startDate),
+    endDate: toLocalDateTimeInput(event.endDate),
     tags: (event.tags || []).join(', '),
     isFeatured: !!event.isFeatured,
     isAgeRestricted: !!event.isAgeRestricted,
@@ -99,8 +100,8 @@ export function mapFormValuesToPayload(values: EventFormValues): EventMutationPa
     coverImage: values.coverImage as CloudinaryImage,
     showTime: '00:00',
     venue: values.venueName.trim(),
-    startDate: new Date(values.startDate).toISOString(),
-    endDate: values.endDate ? new Date(values.endDate).toISOString() : undefined,
+    startDate: toIsoDateTime(values.startDate) || '',
+    endDate: toIsoDateTime(values.endDate),
     isFeatured: values.isFeatured,
     isAgeRestricted: values.isAgeRestricted,
     minimumAge: values.isAgeRestricted ? values.minimumAge : undefined,
