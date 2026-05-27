@@ -1,4 +1,5 @@
 import { Metadata } from 'next';
+
 import { publicGetEventBySlug } from '@/lib/api/public.service';
 import TicketSelectionClient from './TicketSelectionClient';
 

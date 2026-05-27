@@ -1,7 +1,7 @@
 import { STORAGE_KEYS } from '@mad/shared';
+import { API_URL } from '@mad/shared/config/frontend';
 import axios, { AxiosError, AxiosInstance, InternalAxiosRequestConfig } from 'axios';
 
-import { API_URL } from '@mad/shared/config/frontend';
 const BASE_URL = API_URL;
 
 // ─── Admin Axios Instance ──────────────────────────────────────

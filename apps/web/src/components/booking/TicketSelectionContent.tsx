@@ -5,11 +5,11 @@ import { Event as EventData } from '@mad/types';
 import { Button } from '@mad/ui';
 import { useMutation } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
+import { ReserveTicketsInput } from '@mad/validations';
 import { extractApiError } from '@/lib/api/client';
 import { publicCreateBooking } from '@/lib/api/public.service';
-import { ReserveTicketsInput } from '@mad/validations';
 
 interface TicketSelectionContentProps {
   event: EventData;

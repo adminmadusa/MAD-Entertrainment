@@ -8,8 +8,6 @@ import { useState } from 'react';
 
 import { adminCreateArtist } from '@/lib/api/admin/artist.service';
 import { extractApiError } from '@/lib/api/client';
-
-
 interface CloudinaryAsset {
   url: string;
   publicId: string;

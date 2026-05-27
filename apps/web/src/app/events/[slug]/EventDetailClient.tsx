@@ -3,14 +3,14 @@
 import { QUERY_KEYS } from '@mad/shared';
 import { Event as EventData } from '@mad/types';
 import { useQuery } from '@tanstack/react-query';
-import { useState, useEffect, useRef } from 'react';
-import Link from 'next/link';
 import Image from 'next/image';
+import Link from 'next/link';
+import { useEffect, useRef, useState } from 'react';
 import { useFocusTrap } from '@mad/ui';
 
-import { publicGetEventBySlug } from '@/lib/api/public.service';
-import { TicketSelectionContent } from '@/components/booking/TicketSelectionContent';
 import { CheckoutContent } from '@/components/booking/CheckoutContent';
+import { TicketSelectionContent } from '@/components/booking/TicketSelectionContent';
+import { publicGetEventBySlug } from '@/lib/api/public.service';
 
 interface EventDetailClientProps {
   /** Slug extracted by the server page — avoids useParams() call */

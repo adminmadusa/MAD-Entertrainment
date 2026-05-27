@@ -1,5 +1,6 @@
-import { CloudinaryImage } from '@/lib/api/admin/event.service';
 import type { EventMutationInput } from '@mad/contracts';
+
+import { CloudinaryImage } from '@/lib/api/admin/event.service';
 
 export type EventFormMode = 'create' | 'edit';
 export type TicketingType = 'custom' | 'profile';
