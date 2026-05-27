@@ -11,6 +11,7 @@ coverage/
 apps/*/public/sw.js
 apps/*/public/workbox-*.js
 apps/*/public/swe-worker-*.js
+apps/*/public/fallback-*.js
 
 # Node modules and dependency files
 node_modules/
@@ -47,7 +48,6 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 .vercel
-.env*
 
 # Local scratchpad scripts
 scratch/

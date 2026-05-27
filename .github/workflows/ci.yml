@@ -6,11 +6,13 @@ on:
   pull_request:
     branches: [main, master]
 
-jobs:
-  build-lint-test:
-    name: Build, Lint, and Test
-    runs-on: ubuntu-latest
+permissions:
+  contents: read
 
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -25,28 +27,184 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: "pnpm"
+          cache: pnpm
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Run Linting
-        run: pnpm run lint
+      - name: Run lint
+        run: pnpm lint
 
-      - name: Run Type Checking
-        run: pnpm run type-check || echo "Type checking missing in some packages, continuing..."
+  type-check:
+    name: Type Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 9.15.0
+          run_install: false
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run type-check
+        run: pnpm type-check:apps
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 9.15.0
+          run_install: false
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run tests
+        run: pnpm test
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    needs: [lint, type-check, test]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 9.15.0
+          run_install: false
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build workspace
+        run: pnpm build
+
+  governance-checks:
+    name: Governance Checks
+    runs-on: ubuntu-latest
+    needs: [lint, type-check, test]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 9.15.0
+          run_install: false
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
       - name: Run CI Governance Abstraction Checks
         run: npx tsx scripts/ci_governance_check.ts
 
-      - name: Build Workspace
-        run: pnpm run build
+      - name: Run Contract Compatibility Gates
+        run: pnpm governance:contracts:check
+
+      - name: Run Serializer/Schema Parity Gates
+        run: pnpm governance:serializer-parity
 
       - name: Run Workspace Configuration Audit
-        run: pnpm run audit-data
+        run: pnpm audit-data
 
-      - name: Run Tests
-        run: pnpm run test || echo "No tests configured yet"
+  unused-imports-report:
+    name: Unused Imports Report
+    runs-on: ubuntu-latest
+    needs: [lint, type-check, test]
+    continue-on-error: true
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 9.15.0
+          run_install: false
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Prepare report output directory
+        run: mkdir -p governance/hygiene/reports
+
+      - name: Generate unused imports JSON report (admin)
+        run: pnpm --filter @mad/admin exec eslint src -f json -o ../../governance/hygiene/reports/unused-imports-admin.json
+        env:
+          UNUSED_IMPORTS_REPORT: "1"
+        continue-on-error: true
+
+      - name: Generate unused imports JSON report (web)
+        run: pnpm --filter @mad/web exec eslint src -f json -o ../../governance/hygiene/reports/unused-imports-web.json
+        env:
+          UNUSED_IMPORTS_REPORT: "1"
+        continue-on-error: true
+
+      - name: Generate deterministic hygiene summary
+        run: npx tsx scripts/unused_imports_report.ts --admin governance/hygiene/reports/unused-imports-admin.json --web governance/hygiene/reports/unused-imports-web.json --out-json governance/hygiene/reports/unused-imports-summary.json --out-text governance/hygiene/reports/unused-imports-summary.txt --history governance/hygiene/unused-imports-history.json --update-history
+        continue-on-error: true
+
+      - name: Show hygiene summary
+        run: cat governance/hygiene/reports/unused-imports-summary.txt
+        continue-on-error: true
+
+      - name: Upload unused imports artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: unused-imports-report-${{ github.run_id }}
+          path: |
+            governance/hygiene/reports/unused-imports-admin.json
+            governance/hygiene/reports/unused-imports-web.json
+            governance/hygiene/reports/unused-imports-summary.json
+            governance/hygiene/reports/unused-imports-summary.txt
+            governance/hygiene/unused-imports-history.json
+          if-no-files-found: warn
 
   secret-scanning:
     name: Trufflehog Secret Scanning
@@ -58,7 +216,7 @@ jobs:
           fetch-depth: 0
 
       - name: TruffleHog OSS
-        uses: trufflesecurity/trufflehog@main
+        uses: trufflesecurity/trufflehog@ec67ff26cdeb5c8600a2ca83992d9347975c172a
         if: |
           github.event_name == 'pull_request' || 
           (github.event_name == 'push' && 
@@ -80,6 +238,16 @@ jobs:
         uses: pnpm/action-setup@v3
         with:
           version: 9.15.0
+          run_install: false
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
       - name: Run pnpm audit
-        run: pnpm audit --prod || echo "Audit found vulnerabilities, check report."
+        run: pnpm audit --prod
