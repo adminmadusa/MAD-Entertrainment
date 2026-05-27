@@ -1,5 +1,5 @@
-import { InventoryState, ReservationStatus, TicketTier } from '@mad/shared';
-import { Schema, model, Document, Types } from 'mongoose';
+import { InventoryState, ReservationStatus, TicketTier } from "@mad/shared";
+import { Schema, model, Document, Types } from "mongoose";
 
 export interface IReservation extends Document {
   reservationId: string;
@@ -41,34 +41,43 @@ const transitionSchema = new Schema(
     correlationId: String,
     createdAt: { type: Date, default: Date.now },
   },
-  { _id: false }
+  { _id: false },
 );
 
 const reservationSchema = new Schema<IReservation>(
   {
     reservationId: { type: String, required: true, unique: true, index: true },
-    eventId: { type: Schema.Types.ObjectId, ref: 'Event', required: true },
+    eventId: { type: Schema.Types.ObjectId, ref: "Event", required: true },
     seatId: { type: String, index: true, sparse: true },
     section: String,
     tier: { type: String, enum: Object.values(TicketTier) },
     sessionId: { type: String, index: true },
     socketId: String,
-    userId: { type: Schema.Types.ObjectId, ref: 'User', index: true },
+    userId: { type: Schema.Types.ObjectId, ref: "User", index: true },
     quantity: { type: Number, required: true, min: 1 },
-    status: { type: String, enum: Object.values(ReservationStatus), required: true },
-    inventoryState: { type: String, enum: Object.values(InventoryState), required: true, index: true },
+    status: {
+      type: String,
+      enum: Object.values(ReservationStatus),
+      required: true,
+    },
+    inventoryState: {
+      type: String,
+      enum: Object.values(InventoryState),
+      required: true,
+      index: true,
+    },
     expiresAt: { type: Date, required: true, index: true },
     paymentReference: String,
     bookingReference: { type: String, index: true },
-    bookingId: { type: Schema.Types.ObjectId, ref: 'Booking', index: true },
-    paymentId: { type: Schema.Types.ObjectId, ref: 'Payment', index: true },
+    bookingId: { type: Schema.Types.ObjectId, ref: "Booking", index: true },
+    paymentId: { type: Schema.Types.ObjectId, ref: "Payment", index: true },
     correlationId: { type: String, index: true },
     reservationVersion: { type: Number, default: 1, min: 1 },
     eventVersion: { type: Number, default: 1, min: 1 },
     seatVersion: { type: Number, default: 1, min: 1 },
     transitionLog: { type: [transitionSchema], default: [] },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 reservationSchema.index(
@@ -77,9 +86,15 @@ reservationSchema.index(
     unique: true,
     partialFilterExpression: {
       seatId: { $exists: true },
-      status: { $in: [ReservationStatus.RESERVED, ReservationStatus.PENDING_PAYMENT, ReservationStatus.CONFIRMED] },
+      status: {
+        $in: [
+          ReservationStatus.RESERVED,
+          ReservationStatus.PENDING_PAYMENT,
+          ReservationStatus.CONFIRMED,
+        ],
+      },
     },
-  }
+  },
 );
 reservationSchema.index({ eventId: 1, tier: 1, status: 1, quantity: 1 });
 reservationSchema.index({ eventId: 1, status: 1, quantity: 1 });
@@ -89,17 +104,20 @@ reservationSchema.index(
     partialFilterExpression: {
       seatId: { $exists: true },
     },
-  }
+  },
 );
 reservationSchema.index({ status: 1, updatedAt: -1 });
 reservationSchema.index({ status: 1, expiresAt: 1 });
 reservationSchema.index({ bookingId: 1, status: 1 });
 
-reservationSchema.pre('validate', function (next) {
+reservationSchema.pre("validate", function (next) {
   if (!this.reservationId) {
     this.reservationId = `RSV-${Date.now()}-${Math.random().toString(36).slice(2, 10).toUpperCase()}`;
   }
   next();
 });
 
-export const Reservation = model<IReservation>('Reservation', reservationSchema);
+export const Reservation = model<IReservation>(
+  "Reservation",
+  reservationSchema,
+);

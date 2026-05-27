@@ -1,12 +1,12 @@
-import { Queue, Job } from 'bullmq';
-import mongoose from 'mongoose';
+import { Queue, Job } from "bullmq";
+import mongoose from "mongoose";
 
-import { getQueueConnection } from '../config/queue.config';
-import { isRedisConnected } from '../config/redis';
-import { getSocketTelemetry } from '../config/socket';
-import { DeadLetterJob } from '../models/dead-letter-job.schema';
-import { QueueService } from './queue.service';
-import { logger } from '../utils/logger';
+import { getQueueConnection } from "../config/queue.config";
+import { isRedisConnected } from "../config/redis";
+import { getSocketTelemetry } from "../config/socket";
+import { DeadLetterJob } from "../models/dead-letter-job.schema";
+import { QueueService } from "./queue.service";
+import { logger } from "../utils/logger";
 
 export interface QueueHealthStats {
   name: string;
@@ -43,7 +43,11 @@ export interface SystemDiagnosticsReport {
 }
 
 export class DiagnosticsService {
-  private static readonly QUEUE_NAMES = ['booking-queue', 'pdf-queue', 'notification-queue'];
+  private static readonly QUEUE_NAMES = [
+    "booking-queue",
+    "pdf-queue",
+    "notification-queue",
+  ];
 
   /**
    * Generates a complete system operational metrics and diagnostics report.
@@ -58,8 +62,14 @@ export class DiagnosticsService {
         try {
           const queue = new Queue(name, { connection, skipVersionCheck: true });
           const [counts, waitingJobs] = await Promise.all([
-            queue.getJobCounts('active', 'waiting', 'delayed', 'failed', 'completed'),
-            queue.getJobs(['waiting'], 0, 1, true),
+            queue.getJobCounts(
+              "active",
+              "waiting",
+              "delayed",
+              "failed",
+              "completed",
+            ),
+            queue.getJobs(["waiting"], 0, 1, true),
           ]);
 
           let oldestWaitingJobAgeMs = 0;
@@ -79,7 +89,10 @@ export class DiagnosticsService {
 
           await queue.close();
         } catch (err) {
-          logger.error({ err, queue: name }, 'Diagnostics failed to retrieve queue stats');
+          logger.error(
+            { err, queue: name },
+            "Diagnostics failed to retrieve queue stats",
+          );
           queuesStats.push({
             name,
             active: 0,
@@ -100,9 +113,11 @@ export class DiagnosticsService {
     return {
       timestamp: new Date().toISOString(),
       database: {
-        state: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
+        state:
+          mongoose.connection.readyState === 1 ? "connected" : "disconnected",
         readyState: mongoose.connection.readyState,
-        connectionsCount: (mongoose.connection as any).base?.connections?.length || 1,
+        connectionsCount:
+          (mongoose.connection as any).base?.connections?.length || 1,
       },
       redis: {
         connected: redisActive,
@@ -121,7 +136,7 @@ export class DiagnosticsService {
   static async retryDeadLetterJob(dlqId: string): Promise<boolean> {
     const dlqJob = await DeadLetterJob.findById(dlqId);
     if (!dlqJob) {
-      logger.warn({ dlqId }, 'DeadLetterJob not found for retry execution');
+      logger.warn({ dlqId }, "DeadLetterJob not found for retry execution");
       return false;
     }
 
@@ -130,15 +145,18 @@ export class DiagnosticsService {
         dlqJob.queueName,
         dlqJob.jobName,
         dlqJob.data,
-        dlqJob.jobId
+        dlqJob.jobId,
       );
 
       // Clean up from DLQ list upon successful re-enqueue
       await DeadLetterJob.findByIdAndDelete(dlqId);
-      logger.info({ dlqId, queue: dlqJob.queueName, jobId: dlqJob.jobId }, 'Dead letter job re-enqueued and clean up complete.');
+      logger.info(
+        { dlqId, queue: dlqJob.queueName, jobId: dlqJob.jobId },
+        "Dead letter job re-enqueued and clean up complete.",
+      );
       return true;
     } catch (err) {
-      logger.error({ err, dlqId }, 'Failed to re-enqueue Dead Letter Job');
+      logger.error({ err, dlqId }, "Failed to re-enqueue Dead Letter Job");
       return false;
     }
   }
@@ -146,7 +164,10 @@ export class DiagnosticsService {
   /**
    * DLQ Tooling: Retries all logged failed jobs in the collection.
    */
-  static async retryAllDeadLetterJobs(): Promise<{ successCount: number; failedCount: number }> {
+  static async retryAllDeadLetterJobs(): Promise<{
+    successCount: number;
+    failedCount: number;
+  }> {
     const failedJobs = await DeadLetterJob.find({}).limit(500);
     let successCount = 0;
     let failedCount = 0;

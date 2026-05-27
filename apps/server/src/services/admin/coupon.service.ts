@@ -1,6 +1,8 @@
-import { Coupon, ICoupon } from '../../models/coupon.schema';
+import { Coupon, ICoupon } from "../../models/coupon.schema";
 
-export const createCoupon = async (data: Partial<ICoupon>): Promise<ICoupon> => {
+export const createCoupon = async (
+  data: Partial<ICoupon>,
+): Promise<ICoupon> => {
   const coupon = new Coupon(data);
   return await coupon.save();
 };
@@ -8,13 +10,13 @@ export const createCoupon = async (data: Partial<ICoupon>): Promise<ICoupon> => 
 export const getCoupons = async (
   page: number = 1,
   limit: number = 15,
-  active?: string
+  active?: string,
 ): Promise<{ coupons: ICoupon[]; total: number; totalPages: number }> => {
   const skip = (page - 1) * limit;
   const filter: Record<string, any> = {};
 
-  if (active !== undefined && active !== '') {
-    filter.isActive = active === 'true';
+  if (active !== undefined && active !== "") {
+    filter.isActive = active === "true";
   }
 
   const total = await Coupon.countDocuments(filter);
@@ -34,7 +36,10 @@ export const getCouponById = async (id: string): Promise<ICoupon | null> => {
   return await Coupon.findById(id);
 };
 
-export const updateCoupon = async (id: string, data: Partial<ICoupon>): Promise<ICoupon | null> => {
+export const updateCoupon = async (
+  id: string,
+  data: Partial<ICoupon>,
+): Promise<ICoupon | null> => {
   return await Coupon.findByIdAndUpdate(id, data, { new: true });
 };
 

@@ -1,31 +1,34 @@
-'use client';
+"use client";
 
-import { DJOperator } from '@mad/types';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { motion, AnimatePresence } from 'framer-motion';
-import Link from 'next/link';
-import { useState } from 'react';
+import { DJOperator } from "@mad/types";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { motion, AnimatePresence } from "framer-motion";
+import Link from "next/link";
+import { useState } from "react";
 
-import { adminGetDJs, adminDeleteDJ, adminUpdateDJ } from '@/lib/api/admin/dj.service';
-import { extractApiError } from '@/lib/api/client';
-import ErrorState from '@/components/states/ErrorState';
-
+import {
+  adminGetDJs,
+  adminDeleteDJ,
+  adminUpdateDJ,
+} from "@/lib/api/admin/dj-operator.service";
+import { extractApiError } from "@/lib/api/client";
+import ErrorState from "@/components/states/ErrorState";
 
 export default function AdminDJsPage() {
   const qc = useQueryClient();
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [deleteTarget, setDeleteTarget] = useState<DJOperator | null>(null);
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ['admin-djs', { page, search }],
+    queryKey: ["admin-djs", { page, search }],
     queryFn: () => adminGetDJs({ page, limit: 15, search }),
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => adminDeleteDJ(id),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['admin-djs'] });
+      qc.invalidateQueries({ queryKey: ["admin-djs"] });
       setDeleteTarget(null);
     },
   });
@@ -33,7 +36,7 @@ export default function AdminDJsPage() {
   const statusMutation = useMutation({
     mutationFn: ({ id, isActive }: { id: string; isActive: boolean }) =>
       adminUpdateDJ(id, { isActive }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin-djs'] }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["admin-djs"] }),
   });
 
   const djs = data?.items ?? [];
@@ -42,7 +45,9 @@ export default function AdminDJsPage() {
   if (error) {
     return (
       <div className="py-12">
-        <ErrorState message={(error as Error).message || 'Failed to load DJ Operators.'} />
+        <ErrorState
+          message={(error as Error).message || "Failed to load DJ Operators."}
+        />
       </div>
     );
   }
@@ -86,60 +91,102 @@ export default function AdminDJsPage() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border-subtle">
-                <th className="text-left text-text-muted font-medium py-3.5 px-5">DJ Operator</th>
-                <th className="text-left text-text-muted font-medium py-3.5 px-4">Bio</th>
-                <th className="text-left text-text-muted font-medium py-3.5 px-4">Specialties</th>
-                <th className="text-left text-text-muted font-medium py-3.5 px-4">Status</th>
-                <th className="text-right text-text-muted font-medium py-3.5 px-5">Actions</th>
+                <th className="text-left text-text-muted font-medium py-3.5 px-5">
+                  DJ Operator
+                </th>
+                <th className="text-left text-text-muted font-medium py-3.5 px-4">
+                  Bio
+                </th>
+                <th className="text-left text-text-muted font-medium py-3.5 px-4">
+                  Specialties
+                </th>
+                <th className="text-left text-text-muted font-medium py-3.5 px-4">
+                  Status
+                </th>
+                <th className="text-right text-text-muted font-medium py-3.5 px-5">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody>
               {isLoading ? (
                 Array.from({ length: 5 }).map((_, i) => (
-                  <tr key={i} className="border-b border-border-subtle/50 animate-pulse">
-                    <td className="py-4 px-5"><div className="h-4 bg-white/5 rounded w-48" /></td>
-                    <td className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-48" /></td>
-                    <td className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-20" /></td>
-                    <td className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-12" /></td>
-                    <td className="py-4 px-5"><div className="h-4 bg-white/5 rounded w-20 ml-auto" /></td>
+                  <tr
+                    key={i}
+                    className="border-b border-border-subtle/50 animate-pulse"
+                  >
+                    <td className="py-4 px-5">
+                      <div className="h-4 bg-white/5 rounded w-48" />
+                    </td>
+                    <td className="py-4 px-4">
+                      <div className="h-4 bg-white/5 rounded w-48" />
+                    </td>
+                    <td className="py-4 px-4">
+                      <div className="h-4 bg-white/5 rounded w-20" />
+                    </td>
+                    <td className="py-4 px-4">
+                      <div className="h-4 bg-white/5 rounded w-12" />
+                    </td>
+                    <td className="py-4 px-5">
+                      <div className="h-4 bg-white/5 rounded w-20 ml-auto" />
+                    </td>
                   </tr>
                 ))
               ) : djs.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="py-16 text-center text-text-muted">
-                    No DJ Operators found.{' '}
-                    <Link href="/dj-operators/new" className="text-accent-purple hover:underline">
+                    No DJ Operators found.{" "}
+                    <Link
+                      href="/dj-operators/new"
+                      className="text-accent-purple hover:underline"
+                    >
                       Create one →
                     </Link>
                   </td>
                 </tr>
               ) : (
                 djs.map((dj) => (
-                  <tr key={dj._id} className="border-b border-border-subtle/40 hover:bg-white/2 transition-colors">
+                  <tr
+                    key={dj._id}
+                    className="border-b border-border-subtle/40 hover:bg-white/2 transition-colors"
+                  >
                     <td className="py-4 px-5">
                       <div className="flex items-center gap-3">
                         {dj.profileImage?.url ? (
                           // eslint-disable-next-line @next/next/no-img-element
-                          <img src={dj.profileImage.url} alt={dj.name} className="w-10 h-10 rounded-full object-cover flex-shrink-0" />
+                          <img
+                            src={dj.profileImage.url}
+                            alt={dj.name}
+                            className="w-10 h-10 rounded-full object-cover flex-shrink-0"
+                          />
                         ) : (
                           <div className="w-10 h-10 rounded-full bg-accent-purple/10 flex-shrink-0 flex items-center justify-center text-accent-purple text-xs font-bold">
                             {dj.name[0]}
                           </div>
                         )}
                         <div className="min-w-0">
-                          <p className="text-text-primary font-medium truncate max-w-52">{dj.name}</p>
-                          <p className="text-text-muted text-xs truncate">{dj.slug}</p>
+                          <p className="text-text-primary font-medium truncate max-w-52">
+                            {dj.name}
+                          </p>
+                          <p className="text-text-muted text-xs truncate">
+                            {dj.slug}
+                          </p>
                         </div>
                       </div>
                     </td>
                     <td className="py-4 px-4 text-text-secondary">
-                      <p className="truncate max-w-xs text-xs">{dj.bio || '—'}</p>
+                      <p className="truncate max-w-xs text-xs">
+                        {dj.bio || "—"}
+                      </p>
                     </td>
                     <td className="py-4 px-4 text-text-secondary">
                       <div className="flex flex-wrap gap-1 max-w-40">
                         {dj.specialties && dj.specialties.length > 0 ? (
                           dj.specialties.map((s) => (
-                            <span key={s} className="text-[10px] px-2 py-0.5 rounded bg-white/5 border border-white/10 text-text-secondary capitalize">
+                            <span
+                              key={s}
+                              className="text-[10px] px-2 py-0.5 rounded bg-white/5 border border-white/10 text-text-secondary capitalize"
+                            >
                               {s}
                             </span>
                           ))
@@ -150,14 +197,19 @@ export default function AdminDJsPage() {
                     </td>
                     <td className="py-4 px-4">
                       <button
-                        onClick={() => statusMutation.mutate({ id: dj._id, isActive: !dj.isActive })}
+                        onClick={() =>
+                          statusMutation.mutate({
+                            id: dj._id,
+                            isActive: !dj.isActive,
+                          })
+                        }
                         className={`text-xs px-2.5 py-1 rounded-full border font-medium transition-all ${
                           dj.isActive
-                            ? 'bg-green-500/10 text-green-400 border-green-500/30'
-                            : 'bg-red-500/10 text-red-400 border-red-500/30'
+                            ? "bg-green-500/10 text-green-400 border-green-500/30"
+                            : "bg-red-500/10 text-red-400 border-red-500/30"
                         }`}
                       >
-                        {dj.isActive ? 'Active' : 'Inactive'}
+                        {dj.isActive ? "Active" : "Inactive"}
                       </button>
                     </td>
                     <td className="py-4 px-5">
@@ -187,7 +239,8 @@ export default function AdminDJsPage() {
         {pagination && pagination.totalPages > 1 && (
           <div className="flex items-center justify-between px-5 py-3 border-t border-border-subtle">
             <p className="text-text-muted text-xs">
-              Page {pagination.page} of {pagination.totalPages} · {pagination.total} operators
+              Page {pagination.page} of {pagination.totalPages} ·{" "}
+              {pagination.total} operators
             </p>
             <div className="flex gap-2">
               <button
@@ -219,13 +272,20 @@ export default function AdminDJsPage() {
               exit={{ opacity: 0, scale: 0.95 }}
               className="glass-strong rounded-2xl border border-border-subtle p-6 max-w-sm w-full"
             >
-              <h3 className="text-white font-bold text-lg mb-2">Delete DJ Operator?</h3>
+              <h3 className="text-white font-bold text-lg mb-2">
+                Delete DJ Operator?
+              </h3>
               <p className="text-text-secondary text-sm mb-1">
-                <strong className="text-white">{deleteTarget.name}</strong> will be permanently deleted.
+                <strong className="text-white">{deleteTarget.name}</strong> will
+                be permanently deleted.
               </p>
-              <p className="text-error text-xs mb-5">This action cannot be undone.</p>
+              <p className="text-error text-xs mb-5">
+                This action cannot be undone.
+              </p>
               {deleteMutation.error && (
-                <p className="text-red-400 text-xs mb-3">{extractApiError(deleteMutation.error).message}</p>
+                <p className="text-red-400 text-xs mb-3">
+                  {extractApiError(deleteMutation.error).message}
+                </p>
               )}
               <div className="flex gap-3">
                 <button
@@ -239,7 +299,7 @@ export default function AdminDJsPage() {
                   disabled={deleteMutation.isPending}
                   className="flex-1 py-2.5 bg-error/80 hover:bg-error rounded-xl text-white text-sm font-medium transition-colors disabled:opacity-60"
                 >
-                  {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
+                  {deleteMutation.isPending ? "Deleting..." : "Delete"}
                 </button>
               </div>
             </motion.div>

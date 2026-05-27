@@ -7,22 +7,51 @@
     "dev": "node scripts/cleanup-ports.js && turbo dev",
     "build": "turbo build",
     "type-check": "turbo type-check",
-    "lint": "turbo lint",
+    "type-check:apps": "pnpm --filter @mad/server type-check && pnpm --filter @mad/admin type-check && pnpm --filter @mad/web type-check",
+    "lint": "turbo run lint",
+    "lint:strict": "turbo run lint:strict",
     "test": "vitest run",
     "clean": "turbo clean && rm -rf node_modules .turbo",
-    "audit-data": "tsx ./scripts/gather_audit_data.ts"
+    "audit-data": "tsx ./scripts/gather_audit_data.ts",
+    "bench:webhook-storm": "tsx ./apps/server/scripts/load/webhook-storm.ts",
+    "bench:outbox-backlog": "tsx ./apps/server/scripts/load/outbox-backlog.ts",
+    "bench:retry-storm": "tsx ./apps/server/scripts/load/retry-storm.ts",
+    "bench:collect-baseline": "bash ./apps/server/scripts/load/collect-baseline.sh",
+    "governance:contracts:update-snapshot": "tsx ./scripts/contract_compatibility_check.ts --update",
+    "governance:contracts:check": "tsx ./scripts/contract_compatibility_check.ts",
+    "governance:serializer-parity": "tsx ./scripts/serializer_parity_check.ts",
+    "governance:compatibility": "pnpm governance:contracts:check && pnpm governance:serializer-parity",
+    "governance:hygiene:report": "UNUSED_IMPORTS_REPORT=1 pnpm --filter @mad/admin exec eslint src -f json -o ../../governance/hygiene/reports/unused-imports-admin.json && UNUSED_IMPORTS_REPORT=1 pnpm --filter @mad/web exec eslint src -f json -o ../../governance/hygiene/reports/unused-imports-web.json && tsx ./scripts/unused_imports_report.ts --admin governance/hygiene/reports/unused-imports-admin.json --web governance/hygiene/reports/unused-imports-web.json --out-json governance/hygiene/reports/unused-imports-summary.json --out-text governance/hygiene/reports/unused-imports-summary.txt --history governance/hygiene/unused-imports-history.json --update-history",
+    "prepare": "husky",
+    "format:check": "prettier --check ."
+  },
+  "lint-staged": {
+    "apps/admin/src/**/*.{js,jsx,ts,tsx}": [
+      "pnpm --filter @mad/admin exec eslint --fix"
+    ],
+    "apps/web/src/**/*.{js,jsx,ts,tsx}": [
+      "pnpm --filter @mad/web exec eslint --fix"
+    ],
+    "*.{json,md,css,scss,yml,yaml,html}": [
+      "prettier --write"
+    ]
   },
   "devDependencies": {
     "@playwright/test": "^1.60.0",
+    "@secretlint/secretlint-rule-preset-recommend": "^13.0.2",
     "@sentry/nextjs": "^10.53.1",
     "@sentry/node": "^10.53.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
+    "@vitejs/plugin-react": "^6.0.2",
     "@vitest/coverage-v8": "^4.1.7",
+    "jsdom": "^29.1.1",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.5.2",
+    "prettier": "^3.6.2",
     "turbo": "^2.9.14",
     "typescript": "^5.9.3",
-    "vitest": "^4.1.7",
-    "ts-node": "^10.9.2"
-  },
-  "dependencies": {
-    "socket.io-client": "^4.8.1"
+    "vite-tsconfig-paths": "^6.1.1",
+    "vitest": "^4.1.7"
   }
 }

@@ -1,6 +1,6 @@
-import { v2 as cloudinary } from 'cloudinary';
-import { getEnv } from '../../config/env';
-import { AppError } from '../../middleware/error.middleware';
+import { v2 as cloudinary } from "cloudinary";
+import { getEnv } from "../../config/env";
+import { AppError } from "../../middleware/error.middleware";
 
 const env = getEnv();
 
@@ -20,7 +20,7 @@ export class UploadService {
   static async uploadImageBuffer(
     buffer: Buffer,
     secureFilename: string,
-    folderPath: string = 'general'
+    folderPath: string = "general",
   ): Promise<{ url: string; publicId: string }> {
     return new Promise((resolve, reject) => {
       const uploadStream = cloudinary.uploader.upload_stream(
@@ -28,21 +28,23 @@ export class UploadService {
           folder: `mad-entertrainment/${folderPath}`,
           public_id: secureFilename,
           // Hard-enforce formatting on Cloudinary's side as a second layer of defense
-          format: 'webp', 
-          resource_type: 'image',
+          format: "webp",
+          resource_type: "image",
         },
         (error, result) => {
           if (error) {
-            reject(new AppError(`Cloudinary upload failed: ${error.message}`, 500));
+            reject(
+              new AppError(`Cloudinary upload failed: ${error.message}`, 500),
+            );
           } else if (result) {
             resolve({
               url: result.secure_url,
               publicId: result.public_id,
             });
           } else {
-            reject(new AppError('Cloudinary upload returned null', 500));
+            reject(new AppError("Cloudinary upload returned null", 500));
           }
-        }
+        },
       );
 
       // Write the buffer to the stream and end it

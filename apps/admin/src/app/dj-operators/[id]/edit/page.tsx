@@ -1,15 +1,14 @@
-'use client';
+"use client";
 
-import { DJOperator } from '@mad/types';
-import { useQuery, useMutation } from '@tanstack/react-query';
-import { motion } from 'framer-motion';
-import { useRouter, useParams } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { DJOperator } from "@mad/types";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { motion } from "framer-motion";
+import { useRouter, useParams } from "next/navigation";
+import { useState, useEffect } from "react";
 
-import { CloudinaryUpload } from '@/components/CloudinaryUpload';
-import { adminGetDJ, adminUpdateDJ } from '@/lib/api/admin/dj.service';
-import { extractApiError } from '@/lib/api/client';
-
+import { CloudinaryUpload } from "@/components/CloudinaryUpload";
+import { adminGetDJ, adminUpdateDJ } from "@/lib/api/admin/dj-operator.service";
+import { extractApiError } from "@/lib/api/client";
 
 interface CloudinaryAsset {
   url: string;
@@ -22,25 +21,27 @@ export default function EditDJPage() {
   const params = useParams();
   const id = params.id as string;
 
-  const [name, setName] = useState('');
-  const [slug, setSlug] = useState('');
-  const [bio, setBio] = useState('');
-  const [specialties, setSpecialties] = useState('');
+  const [name, setName] = useState("");
+  const [slug, setSlug] = useState("");
+  const [bio, setBio] = useState("");
+  const [specialties, setSpecialties] = useState("");
   const [isActive, setIsActive] = useState(true);
 
   // Social Links
-  const [instagram, setInstagram] = useState('');
-  const [soundcloud, setSoundcloud] = useState('');
-  const [youtube, setYoutube] = useState('');
+  const [instagram, setInstagram] = useState("");
+  const [soundcloud, setSoundcloud] = useState("");
+  const [youtube, setYoutube] = useState("");
 
   // Media
-  const [profileImage, setProfileImage] = useState<CloudinaryAsset | null>(null);
+  const [profileImage, setProfileImage] = useState<CloudinaryAsset | null>(
+    null,
+  );
   const [galleryImages, setGalleryImages] = useState<CloudinaryAsset[]>([]);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   // Fetch current DJ
   const { data: dj, isLoading } = useQuery({
-    queryKey: ['admin-dj', id],
+    queryKey: ["admin-dj-operator", id],
     queryFn: () => adminGetDJ(id),
     enabled: !!id,
   });
@@ -48,19 +49,23 @@ export default function EditDJPage() {
   // Prepopulate state
   useEffect(() => {
     if (dj) {
-      setName(dj.name || '');
-      setSlug(dj.slug || '');
-      setBio(dj.bio || '');
-      setSpecialties(dj.specialties?.join(', ') || '');
+      setName(dj.name || "");
+      setSlug(dj.slug || "");
+      setBio(dj.bio || "");
+      setSpecialties(dj.specialties?.join(", ") || "");
       setIsActive(dj.isActive ?? true);
-      
+
       const getSocialUrl = (platform: string) => {
-        return (dj.socialLinks as any)?.find((link: any) => link.platform === platform)?.url || '';
+        return (
+          (dj.socialLinks as any)?.find(
+            (link: any) => link.platform === platform,
+          )?.url || ""
+        );
       };
-      setInstagram(getSocialUrl('instagram'));
-      setSoundcloud(getSocialUrl('soundcloud'));
-      setYoutube(getSocialUrl('youtube'));
-      
+      setInstagram(getSocialUrl("instagram"));
+      setSoundcloud(getSocialUrl("soundcloud"));
+      setYoutube(getSocialUrl("youtube"));
+
       setProfileImage((dj.profileImage as any) || null);
       setGalleryImages((dj.galleryImages as any) || []);
     }
@@ -68,13 +73,13 @@ export default function EditDJPage() {
 
   const updateMutation = useMutation({
     mutationFn: (payload: Partial<DJOperator>) => adminUpdateDJ(id, payload),
-    onSuccess: () => router.push('/dj-operators'),
+    onSuccess: () => router.push("/dj-operators"),
     onError: (err) => {
       const apiErr = extractApiError(err);
       if (apiErr.errors) {
         const details = Object.entries(apiErr.errors)
-          .map(([field, msgs]) => `${field}: ${msgs.join(', ')}`)
-          .join('; ');
+          .map(([field, msgs]) => `${field}: ${msgs.join(", ")}`)
+          .join("; ");
         setError(`Validation failed — ${details}`);
       } else {
         setError(apiErr.message);
@@ -86,7 +91,9 @@ export default function EditDJPage() {
     if (asset === null) {
       setGalleryImages((prev) => prev.filter((_, idx) => idx !== index));
     } else {
-      setGalleryImages((prev) => prev.map((img, idx) => (idx === index ? asset : img)));
+      setGalleryImages((prev) =>
+        prev.map((img, idx) => (idx === index ? asset : img)),
+      );
     }
   };
 
@@ -98,22 +105,37 @@ export default function EditDJPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
 
     if (!name.trim()) {
-      setError('Name is required.');
+      setError("Name is required.");
       return;
     }
 
     const cleanSlug = slug.trim()
-      ? slug.trim().toLowerCase().replace(/[^a-z0-9-]/g, '-')
-      : name.trim().toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+      ? slug
+          .trim()
+          .toLowerCase()
+          .replace(/[^a-z0-9-]/g, "-")
+      : name
+          .trim()
+          .toLowerCase()
+          .replace(/[^a-z0-9-]/g, "-")
+          .replace(/-+/g, "-")
+          .replace(/^-|-$/g, "");
 
-    const specs = specialties.split(',').map((s) => s.trim()).filter(Boolean);
+    const specs = specialties
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
     const links = [
-      ...(instagram.trim() ? [{ platform: 'instagram', url: instagram.trim() }] : []),
-      ...(soundcloud.trim() ? [{ platform: 'soundcloud', url: soundcloud.trim() }] : []),
-      ...(youtube.trim() ? [{ platform: 'youtube', url: youtube.trim() }] : []),
+      ...(instagram.trim()
+        ? [{ platform: "instagram", url: instagram.trim() }]
+        : []),
+      ...(soundcloud.trim()
+        ? [{ platform: "soundcloud", url: soundcloud.trim() }]
+        : []),
+      ...(youtube.trim() ? [{ platform: "youtube", url: youtube.trim() }] : []),
     ];
 
     const payload: Partial<DJOperator> = {
@@ -121,7 +143,7 @@ export default function EditDJPage() {
       slug: cleanSlug,
       bio: bio.trim() || undefined,
       specialties: specs.length > 0 ? specs : undefined,
-      profileImage: (profileImage === null ? null : profileImage) as any,
+      profileImage: profileImage as any,
       galleryImages,
       socialLinks: links.length > 0 ? links : undefined,
       isActive,
@@ -133,7 +155,9 @@ export default function EditDJPage() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[300px]">
-        <div className="text-white/40 text-sm animate-pulse">Loading DJ parameters...</div>
+        <div className="text-white/40 text-sm animate-pulse">
+          Loading DJ parameters...
+        </div>
       </div>
     );
   }
@@ -143,7 +167,9 @@ export default function EditDJPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-black text-white">Edit DJ Operator</h1>
-          <p className="text-text-muted text-sm mt-0.5">Modify DJ particulars</p>
+          <p className="text-text-muted text-sm mt-0.5">
+            Modify DJ particulars
+          </p>
         </div>
         <button
           onClick={() => router.back()}
@@ -252,7 +278,9 @@ export default function EditDJPage() {
 
         {/* Social Links */}
         <div className="glass rounded-2xl border border-border-subtle p-6 space-y-5">
-          <h2 className="text-white font-semibold">Social & Streaming Profiles</h2>
+          <h2 className="text-white font-semibold">
+            Social & Streaming Profiles
+          </h2>
           <div className="grid grid-cols-2 gap-4">
             <Field label="Instagram URL">
               <input
@@ -308,7 +336,7 @@ export default function EditDJPage() {
             disabled={updateMutation.isPending}
             className="flex-1 py-3 btn-gradient text-white font-bold rounded-xl shadow-glow-sm disabled:opacity-60 transition-all"
           >
-            {updateMutation.isPending ? 'Saving Changes...' : 'Save Changes'}
+            {updateMutation.isPending ? "Saving Changes..." : "Save Changes"}
           </button>
         </div>
       </form>
@@ -316,14 +344,22 @@ export default function EditDJPage() {
   );
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
   return (
     <div className="space-y-1.5">
-      <label className="text-text-secondary text-sm font-medium block">{label}</label>
+      <label className="text-text-secondary text-sm font-medium block">
+        {label}
+      </label>
       {children}
     </div>
   );
 }
 
 const inputCls =
-  'w-full px-4 py-2.5 rounded-xl bg-background border border-border-subtle text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-purple transition-colors';
+  "w-full px-4 py-2.5 rounded-xl bg-background border border-border-subtle text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-purple transition-colors";

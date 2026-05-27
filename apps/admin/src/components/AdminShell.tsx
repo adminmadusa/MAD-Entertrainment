@@ -1,14 +1,13 @@
-'use client';
+"use client";
 
-import { usePathname, useRouter } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { usePathname, useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
 
-import { useAdminAuth } from '@/hooks/use-admin-auth.hook';
+import { useAdminAuth } from "@/hooks/use-admin-auth.hook";
 
-import { AdminSidebar } from './AdminSidebar';
+import { AdminSidebar } from "./AdminSidebar";
 
-
-const PUBLIC_ADMIN_PATHS = ['/login'];
+const PUBLIC_ADMIN_PATHS = ["/login"];
 
 export function AdminShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -21,7 +20,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   // Auth guard for protected admin pages
   useEffect(() => {
     if (!isLoading && !isAuthenticated && !isPublicPage) {
-      router.replace('/login');
+      router.replace("/login");
     }
   }, [isAuthenticated, isLoading, isPublicPage, router]);
 
@@ -42,7 +41,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
 
   const handleLogout = async () => {
     await logout();
-    router.replace('/login');
+    router.replace("/login");
   };
 
   return (
@@ -59,14 +58,14 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
         <header className="h-16 flex-shrink-0 flex items-center justify-between px-6 border-b border-border-subtle glass-strong z-40">
           <div className="flex items-center gap-3">
             <h1 className="text-white font-semibold text-sm capitalize">
-              {pathname.split('/').slice(1).join(' / ') || 'Dashboard'}
+              {pathname.split("/").slice(1).join(" / ") || "Dashboard"}
             </h1>
           </div>
           <div className="flex items-center gap-4">
             <span className="text-text-muted text-sm hidden md:block">
               {admin?.name}
               <span className="ml-2 text-xs px-2 py-0.5 glass border border-accent-purple/30 text-accent-purple rounded-full capitalize">
-                {admin?.role?.replace('_', ' ')}
+                {admin?.role?.replace("_", " ")}
               </span>
             </span>
             <button
@@ -80,9 +79,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 overflow-y-auto p-6">
-          {children}
-        </main>
+        <main className="flex-1 overflow-y-auto p-6">{children}</main>
       </div>
     </div>
   );

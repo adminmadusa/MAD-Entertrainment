@@ -1,5 +1,5 @@
-const DB_NAME = 'mad-offline-scanner';
-const STORE_NAME = 'scans';
+const DB_NAME = "mad-offline-scanner";
+const STORE_NAME = "scans";
 
 function initDB(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
@@ -7,7 +7,10 @@ function initDB(): Promise<IDBDatabase> {
     request.onupgradeneeded = (e) => {
       const db = (e.target as IDBOpenDBRequest).result;
       if (!db.objectStoreNames.contains(STORE_NAME)) {
-        db.createObjectStore(STORE_NAME, { keyPath: 'id', autoIncrement: true });
+        db.createObjectStore(STORE_NAME, {
+          keyPath: "id",
+          autoIncrement: true,
+        });
       }
     };
     request.onsuccess = () => resolve(request.result);
@@ -15,10 +18,13 @@ function initDB(): Promise<IDBDatabase> {
   });
 }
 
-export async function saveOfflineScan(ticketId: string, eventId: string): Promise<void> {
+export async function saveOfflineScan(
+  ticketId: string,
+  eventId: string,
+): Promise<void> {
   const db = await initDB();
   return new Promise((resolve, reject) => {
-    const tx = db.transaction(STORE_NAME, 'readwrite');
+    const tx = db.transaction(STORE_NAME, "readwrite");
     const store = tx.objectStore(STORE_NAME);
     store.add({ ticketId, eventId, timestamp: Date.now() });
     tx.oncomplete = () => resolve();
@@ -29,7 +35,7 @@ export async function saveOfflineScan(ticketId: string, eventId: string): Promis
 export async function getOfflineScans(): Promise<any[]> {
   const db = await initDB();
   return new Promise((resolve, reject) => {
-    const tx = db.transaction(STORE_NAME, 'readonly');
+    const tx = db.transaction(STORE_NAME, "readonly");
     const store = tx.objectStore(STORE_NAME);
     const request = store.getAll();
     request.onsuccess = () => resolve(request.result);
@@ -40,7 +46,7 @@ export async function getOfflineScans(): Promise<any[]> {
 export async function clearOfflineScans(ids: number[]): Promise<void> {
   const db = await initDB();
   return new Promise((resolve, reject) => {
-    const tx = db.transaction(STORE_NAME, 'readwrite');
+    const tx = db.transaction(STORE_NAME, "readwrite");
     const store = tx.objectStore(STORE_NAME);
     ids.forEach((id) => store.delete(id));
     tx.oncomplete = () => resolve();

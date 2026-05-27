@@ -1,5 +1,5 @@
-'use client';
-import React, { Component, ErrorInfo, ReactNode } from 'react';
+"use client";
+import React, { Component, ErrorInfo, ReactNode } from "react";
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -9,7 +9,10 @@ interface ErrorBoundaryState {
   hasError: boolean;
 }
 
-export default class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+export default class ErrorBoundary extends Component<
+  ErrorBoundaryProps,
+  ErrorBoundaryState
+> {
   constructor(props: ErrorBoundaryProps) {
     super(props);
     this.state = { hasError: false };
@@ -21,7 +24,7 @@ export default class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     // You can log the error to an error reporting service
-    console.error('ErrorBoundary caught an error', error, errorInfo);
+    console.error("ErrorBoundary caught an error", error, errorInfo);
   }
 
   render() {
@@ -29,7 +32,9 @@ export default class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
       return (
         <div className="fixed inset-0 flex items-center justify-center bg-black/70 backdrop-blur-sm">
           <div className="glass-strong rounded-xl p-8 max-w-md w-full text-center">
-            <h2 className="text-2xl font-bold text-white mb-4">Something went wrong</h2>
+            <h2 className="text-2xl font-bold text-white mb-4">
+              Something went wrong
+            </h2>
             <p className="text-text-muted mb-6">
               An unexpected error occurred. Please try refreshing the page.
             </p>

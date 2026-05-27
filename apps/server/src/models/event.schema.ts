@@ -1,5 +1,10 @@
-import { EventCategory, BookingMode, EventStatus, TicketTier } from '@mad/shared';
-import { Schema, model, Document, Types } from 'mongoose';
+import {
+  EventCategory,
+  BookingMode,
+  EventStatus,
+  TicketTier,
+} from "@mad/shared";
+import { Schema, model, Document, Types } from "mongoose";
 
 const cloudinaryImageSchema = new Schema(
   {
@@ -10,7 +15,22 @@ const cloudinaryImageSchema = new Schema(
     format: String,
     blurDataUrl: String,
   },
-  { _id: false }
+  { _id: false },
+);
+
+const ticketOfferRulesSchema = new Schema(
+  {
+    discountType: {
+      type: String,
+      enum: ["percentage", "flat", "none"],
+      default: "none",
+    },
+    discountValue: { type: Number, default: 0 },
+    minQtyRequired: { type: Number, default: 1 },
+    buyQty: Number,
+    freeTicketQty: Number,
+  },
+  { _id: false },
 );
 
 const ticketTierConfigSchema = new Schema(
@@ -36,9 +56,13 @@ const ticketTierConfigSchema = new Schema(
     maxPerBooking: { type: Number, default: 10 },
     isDeleted: { type: Boolean, default: false },
     deletedAt: Date,
-    deletedBy: { type: Schema.Types.ObjectId, ref: 'AdminUser' },
+    deletedBy: { type: Schema.Types.ObjectId, ref: "AdminUser" },
+    groupId: String,
+    groupName: String,
+    isFree: { type: Boolean, default: false },
+    offerRules: ticketOfferRulesSchema,
   },
-  { _id: false }
+  { _id: false },
 );
 
 export interface IEvent extends Document {
@@ -83,8 +107,27 @@ export interface IEvent extends Document {
     isDeleted: boolean;
     deletedAt?: Date;
     deletedBy?: Types.ObjectId;
+    groupId?: string;
+    groupName?: string;
+    isFree?: boolean;
+    offerRules?: {
+      discountType: "percentage" | "flat" | "none";
+      discountValue: number;
+      minQtyRequired: number;
+      buyQty?: number;
+      freeTicketQty?: number;
+    };
   }[];
   totalCapacity: number;
+  ticketProfileId?: Types.ObjectId;
+  ticketOverrides?: {
+    tier: string;
+    price?: number;
+    totalCapacity?: number;
+    isActive?: boolean;
+    maxPerBooking?: number;
+    minPerBooking?: number;
+  }[];
   soldCount: number;
   reservedCount: number;
   eventVersion: number;
@@ -111,11 +154,26 @@ export interface IEvent extends Document {
 const eventSchema = new Schema<IEvent>(
   {
     title: { type: String, required: true, trim: true, maxlength: 200 },
-    slug: { type: String, required: true, unique: true, lowercase: true, index: true },
+    slug: {
+      type: String,
+      required: true,
+      unique: true,
+      lowercase: true,
+      index: true,
+    },
     description: { type: String, required: true, maxlength: 5000 },
     category: { type: String, required: true, index: true },
-    status: { type: String, enum: Object.values(EventStatus), default: EventStatus.DRAFT, index: true },
-    bookingMode: { type: String, enum: Object.values(BookingMode), required: true },
+    status: {
+      type: String,
+      enum: Object.values(EventStatus),
+      default: EventStatus.DRAFT,
+      index: true,
+    },
+    bookingMode: {
+      type: String,
+      enum: Object.values(BookingMode),
+      required: true,
+    },
 
     bannerImage: { type: cloudinaryImageSchema, required: true },
     posterImage: cloudinaryImageSchema,
@@ -130,10 +188,29 @@ const eventSchema = new Schema<IEvent>(
     onlineStreamUrl: String,
     isOnline: { type: Boolean, default: false },
 
-    artistIds: [{ type: Schema.Types.ObjectId, ref: 'Artist' }],
-    djOperatorIds: [{ type: Schema.Types.ObjectId, ref: 'DJOperator' }],
+    artistIds: [{ type: Schema.Types.ObjectId, ref: "Artist" }],
+    djOperatorIds: [{ type: Schema.Types.ObjectId, ref: "DJOperator" }],
 
     ticketTiers: { type: [ticketTierConfigSchema], default: [] },
+    ticketProfileId: {
+      type: Schema.Types.ObjectId,
+      ref: "TicketProfile",
+      index: true,
+    },
+    ticketOverrides: {
+      type: [
+        {
+          tier: { type: String, required: true },
+          price: Number,
+          totalCapacity: Number,
+          isActive: Boolean,
+          maxPerBooking: Number,
+          minPerBooking: Number,
+          _id: false,
+        },
+      ],
+      default: [],
+    },
     totalCapacity: { type: Number, required: true, min: 1 },
     soldCount: { type: Number, default: 0, min: 0 },
     reservedCount: { type: Number, default: 0, min: 0 },
@@ -141,7 +218,7 @@ const eventSchema = new Schema<IEvent>(
     isFeatured: { type: Boolean, default: false, index: true },
     isSoldOut: { type: Boolean, default: false },
 
-    seatLayoutId: { type: Schema.Types.ObjectId, ref: 'SeatLayout' },
+    seatLayoutId: { type: Schema.Types.ObjectId, ref: "SeatLayout" },
 
     tags: [String],
     ageRestriction: Number,
@@ -152,18 +229,26 @@ const eventSchema = new Schema<IEvent>(
     earlyBirdDeadline: Date,
     isDeleted: { type: Boolean, default: false, index: true },
     deletedAt: Date,
-    deletedBy: { type: Schema.Types.ObjectId, ref: 'AdminUser' },
+    deletedBy: { type: Schema.Types.ObjectId, ref: "AdminUser" },
     highlights: [String],
     refundPolicy: { type: String, maxlength: 1000 },
     organizerName: { type: String, maxlength: 100 },
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+  },
 );
+
+eventSchema.virtual("coverImage").get(function (this: any) {
+  return this.bannerImage;
+});
 
 // ─── Indexes ──────────────────────────────────────────────────
 eventSchema.index({ startDate: 1, status: 1 });
 eventSchema.index({ category: 1, status: 1, startDate: 1 });
 eventSchema.index({ isFeatured: 1, status: 1 });
-eventSchema.index({ title: 'text', description: 'text', tags: 'text' });
+eventSchema.index({ title: "text", description: "text", tags: "text" });
 
-export const Event = model<IEvent>('Event', eventSchema);
+export const Event = model<IEvent>("Event", eventSchema);

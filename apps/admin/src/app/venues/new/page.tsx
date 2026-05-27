@@ -1,60 +1,60 @@
-'use client';
+"use client";
 
-import { Venue } from '@mad/types';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { motion } from 'framer-motion';
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { Venue } from "@mad/types";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { motion } from "framer-motion";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
-
-import { adminCreateVenue } from '@/lib/api/admin/venue.service';
-import { venueQueryKey } from '@/lib/query/venue-query-key';
-import { extractApiError } from '@/lib/api/client';
-
-
-
+import { adminCreateVenue } from "@/lib/api/admin/venue.service";
+import { venueQueryKey } from "@/lib/query/venue-query-key";
+import { extractApiError } from "@/lib/api/client";
 
 export default function CreateVenuePage() {
   const router = useRouter();
 
   // Basic Info
-  const [name, setName] = useState('');
-  const [capacity, setCapacity] = useState<number | ''>('');
+  const [name, setName] = useState("");
+  const [capacity, setCapacity] = useState<number | "">("");
 
   // Address
-  const [street, setStreet] = useState('');
-  const [city, setCity] = useState('');
-  const [state, setState] = useState('');
-  const [pincode, setPincode] = useState('');
-  const [country, setCountry] = useState('India');
+  const [street, setStreet] = useState("");
+  const [city, setCity] = useState("");
+  const [state, setState] = useState("");
+  const [pincode, setPincode] = useState("");
+  const [country, setCountry] = useState("India");
 
   // Coordinates
-  const [lat, setLat] = useState<number | ''>('');
-  const [lng, setLng] = useState<number | ''>('');
+  const [lat, setLat] = useState<number | "">("");
+  const [lng, setLng] = useState<number | "">("");
 
-
-
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   const qc = useQueryClient();
   const createMutation = useMutation({
     mutationFn: adminCreateVenue,
     onSuccess: () => {
       // Invalidate the venue list cache (default filters) so the new venue appears immediately
-      qc.invalidateQueries({ queryKey: venueQueryKey({ page: 1, search: '', city: '' }) });
-      router.push('/venues');
+      qc.invalidateQueries({
+        queryKey: venueQueryKey({ page: 1, search: "", city: "" }),
+      });
+      router.push("/venues");
     },
     onError: (err) => setError(extractApiError(err).message),
   });
 
-
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
 
-    if (!name.trim() || !city.trim() || !state.trim() || !pincode.trim() || capacity === '') {
-      setError('Name, city, state, pincode, and capacity are required.');
+    if (
+      !name.trim() ||
+      !city.trim() ||
+      !state.trim() ||
+      !pincode.trim() ||
+      capacity === ""
+    ) {
+      setError("Name, city, state, pincode, and capacity are required.");
       return;
     }
 
@@ -74,7 +74,9 @@ export default function CreateVenuePage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-black text-white">Add Venue</h1>
-          <p className="text-text-muted text-sm mt-0.5">Register a new event venue</p>
+          <p className="text-text-muted text-sm mt-0.5">
+            Register a new event venue
+          </p>
         </div>
         <button
           onClick={() => router.back()}
@@ -115,7 +117,9 @@ export default function CreateVenuePage() {
               type="number"
               min="1"
               value={capacity}
-              onChange={(e) => setCapacity(e.target.value === '' ? '' : Number(e.target.value))}
+              onChange={(e) =>
+                setCapacity(e.target.value === "" ? "" : Number(e.target.value))
+              }
               placeholder="e.g. 5000"
               required
               className={inputCls}
@@ -183,7 +187,9 @@ export default function CreateVenuePage() {
         <div className="glass rounded-2xl border border-border-subtle p-6 space-y-5">
           <div className="flex items-center justify-between">
             <h2 className="text-white font-semibold">Coordinates (optional)</h2>
-            <span className="text-[10px] text-text-muted">Used for map pins</span>
+            <span className="text-[10px] text-text-muted">
+              Used for map pins
+            </span>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <Field label="Latitude">
@@ -193,7 +199,9 @@ export default function CreateVenuePage() {
                 min="-90"
                 max="90"
                 value={lat}
-                onChange={(e) => setLat(e.target.value === '' ? '' : Number(e.target.value))}
+                onChange={(e) =>
+                  setLat(e.target.value === "" ? "" : Number(e.target.value))
+                }
                 placeholder="e.g. 18.9902"
                 className={inputCls}
               />
@@ -205,15 +213,15 @@ export default function CreateVenuePage() {
                 min="-180"
                 max="180"
                 value={lng}
-                onChange={(e) => setLng(e.target.value === '' ? '' : Number(e.target.value))}
+                onChange={(e) =>
+                  setLng(e.target.value === "" ? "" : Number(e.target.value))
+                }
                 placeholder="e.g. 72.8130"
                 className={inputCls}
               />
             </Field>
           </div>
         </div>
-
-        
 
         {/* Submit Actions */}
         <div className="flex gap-4 pb-6">
@@ -230,7 +238,7 @@ export default function CreateVenuePage() {
             disabled={createMutation.isPending}
             className="flex-1 py-3 btn-gradient text-white font-bold rounded-xl shadow-glow-sm disabled:opacity-60 transition-all"
           >
-            {createMutation.isPending ? 'Creating...' : 'Create Venue'}
+            {createMutation.isPending ? "Creating..." : "Create Venue"}
           </button>
         </div>
       </form>
@@ -238,14 +246,22 @@ export default function CreateVenuePage() {
   );
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
   return (
     <div className="space-y-1.5">
-      <label className="text-text-secondary text-sm font-medium block">{label}</label>
+      <label className="text-text-secondary text-sm font-medium block">
+        {label}
+      </label>
       {children}
     </div>
   );
 }
 
 const inputCls =
-  'w-full px-4 py-2.5 rounded-xl bg-background border border-border-subtle text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-purple transition-colors';
+  "w-full px-4 py-2.5 rounded-xl bg-background border border-border-subtle text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-purple transition-colors";

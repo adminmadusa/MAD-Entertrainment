@@ -1,22 +1,25 @@
-'use client';
+"use client";
 
-import { DJOperator } from '@mad/types';
-import { motion } from 'framer-motion';
-import Image from 'next/image';
-import Link from 'next/link';
+import { DJOperator } from "@mad/types";
+import { motion } from "framer-motion";
+import Image from "next/image";
+import Link from "next/link";
 
-import { getOptimizedImageUrl } from '@/utils/image';
+import { getOptimizedImageUrl } from "@/utils/image";
 
 // ─── DJ Card ──────────────────────────────────────────────────
 
 function DJCard({ dj }: { dj: DJOperator }) {
   return (
-    <Link href={`/dj-operators/${dj.slug || dj._id}`} className="block h-full w-full">
+    <Link
+      href={`/dj-operators/${dj.slug || dj._id}`}
+      className="block h-full w-full"
+    >
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         whileHover={{ y: -6, scale: 1.02 }}
-        transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+        transition={{ type: "spring", stiffness: 300, damping: 20 }}
         className="group glass neon-glow-border rounded-2xl overflow-hidden flex flex-col h-full relative"
       >
         {/* Hover Gradient Glow Backdrop */}
@@ -71,7 +74,11 @@ function DJCard({ dj }: { dj: DJOperator }) {
 }
 // ─── DJ Operators Section ─────────────────────────────────────
 
-export function DJOperatorsSection({ initialDJs = [] }: { initialDJs: DJOperator[] }) {
+export function DJOperatorsSection({
+  initialDJs = [],
+}: {
+  initialDJs: DJOperator[];
+}) {
   const djs = initialDJs;
 
   // Don't render the section if no DJs
@@ -89,16 +96,17 @@ export function DJOperatorsSection({ initialDJs = [] }: { initialDJs: DJOperator
             MAD <span className="text-gradient-cyan">DJ Operators</span>
           </h2>
           <p className="text-text-secondary text-base max-w-xl mx-auto leading-relaxed">
-            The names behind the nights. From underground bass to mainstream bangers — curated by MAD Entertrainment.
+            The names behind the nights. From underground bass to mainstream
+            bangers — curated by MAD Entertrainment.
           </p>
         </div>
 
         {/* Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-            {djs.map((dj) => (
-              <DJCard key={dj._id} dj={dj} />
-            ))}
-          </div>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+          {djs.map((dj) => (
+            <DJCard key={dj._id} dj={dj} />
+          ))}
+        </div>
 
         {/* CTA */}
         {djs.length >= 5 && (

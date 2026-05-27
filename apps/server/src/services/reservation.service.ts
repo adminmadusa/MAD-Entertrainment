@@ -1,17 +1,27 @@
-import { BookingMode, InventoryState, ReservationStatus, SeatStatus, TicketTier, HTTP_STATUS } from '@mad/shared';
-import { Types, ClientSession } from 'mongoose';
+import {
+  BookingMode,
+  InventoryState,
+  ReservationStatus,
+  SeatStatus,
+  TicketTier,
+  HTTP_STATUS,
+} from "@mad/shared";
+import { Types, ClientSession } from "mongoose";
 
-import { getRedis } from '../config/redis';
-import { emitToAdmin, emitToEvent } from '../config/socket';
-import { AppError } from '../middleware/error.middleware';
-import { Event } from '../models/event.schema';
-import { CacheService } from './cache.service';
-import { Reservation, IReservation } from '../models/reservation.schema';
-import { SeatLayout } from '../models/seat-layout.schema';
-import { logger } from '../utils/logger';
-import { auditLog } from '../utils/audit';
+import { getRedis } from "../config/redis";
+import { emitToAdmin, emitToEvent } from "../config/socket";
+import { AppError } from "../middleware/error.middleware";
+import { Event } from "../models/event.schema";
+import { CacheService } from "./cache.service";
+import { Reservation, IReservation } from "../models/reservation.schema";
+import { SeatLayout } from "../models/seat-layout.schema";
+import { logger } from "../utils/logger";
+import { auditLog } from "../utils/audit";
 
-import { assertReservationTransition, reservationToInventoryState } from './inventory-state.service';
+import {
+  assertReservationTransition,
+  reservationToInventoryState,
+} from "./inventory-state.service";
 
 const ACTIVE_RESERVATION_STATUSES = [
   ReservationStatus.RESERVED,
@@ -34,7 +44,11 @@ interface ReservationRequest {
   expiresAt: Date;
 }
 
-function safeEmit(label: string, emit: () => void, details: Record<string, unknown>) {
+function safeEmit(
+  label: string,
+  emit: () => void,
+  details: Record<string, unknown>,
+) {
   try {
     emit();
   } catch (err) {
@@ -43,7 +57,9 @@ function safeEmit(label: string, emit: () => void, details: Record<string, unkno
 }
 
 export class ReservationService {
-  static async reserveForBooking(request: ReservationRequest): Promise<IReservation[]> {
+  static async reserveForBooking(
+    request: ReservationRequest,
+  ): Promise<IReservation[]> {
     if (request.bookingMode === BookingMode.SEAT_BASED) {
       return this.reserveSeats(request);
     }
@@ -51,7 +67,9 @@ export class ReservationService {
     return this.reserveGeneralAdmission(request);
   }
 
-  private static async reserveGeneralAdmission(request: ReservationRequest): Promise<IReservation[]> {
+  private static async reserveGeneralAdmission(
+    request: ReservationRequest,
+  ): Promise<IReservation[]> {
     const redis = getRedis();
     const lockKey = `mad:lock:reserve:event:${request.eventId}:tier:${request.tier}`;
     const lockVal = request.sessionId;
@@ -60,32 +78,37 @@ export class ReservationService {
     let acquired = false;
     try {
       for (let attempt = 0; attempt < 5; attempt++) {
-        const ok = await redis.set(lockKey, lockVal, 'EX', 5, 'NX');
-        if (ok === 'OK') {
+        const ok = await redis.set(lockKey, lockVal, "EX", 5, "NX");
+        if (ok === "OK") {
           acquired = true;
           break;
         }
         await new Promise((resolve) => setTimeout(resolve, 50));
       }
     } catch (err: any) {
-      logger.error({ err, eventId: request.eventId, correlationId: request.correlationId }, 'Redis connection error during lock acquisition');
+      logger.error(
+        { err, eventId: request.eventId, correlationId: request.correlationId },
+        "Redis connection error during lock acquisition",
+      );
       throw new AppError(
-        'Booking service is temporarily recovering. Please retry.',
+        "Booking service is temporarily recovering. Please retry.",
         HTTP_STATUS.SERVICE_UNAVAILABLE,
         undefined,
         true,
-        'booking_temporarily_unavailable',
-        true
+        "booking_temporarily_unavailable",
+        true,
       );
     }
 
     if (!acquired) {
-      throw AppError.badRequest('The ticketing system is currently busy. Please try again.');
+      throw AppError.badRequest(
+        "The ticketing system is currently busy. Please try again.",
+      );
     }
 
     try {
       const event = await Event.findById(request.eventId);
-      if (!event) throw AppError.notFound('Event not found');
+      if (!event) throw AppError.notFound("Event not found");
 
       const tierConfig = event.ticketTiers.find((t) => t.tier === request.tier);
       if (!tierConfig) {
@@ -98,32 +121,47 @@ export class ReservationService {
           $match: {
             eventId: request.eventId,
             tier: request.tier,
-            status: { $in: [ReservationStatus.RESERVED, ReservationStatus.PENDING_PAYMENT] }
-          }
+            status: {
+              $in: [
+                ReservationStatus.RESERVED,
+                ReservationStatus.PENDING_PAYMENT,
+              ],
+            },
+          },
         },
-        { $group: { _id: null, total: { $sum: '$quantity' } } }
+        { $group: { _id: null, total: { $sum: "$quantity" } } },
       ]);
       const tierReserved = activeTierAgg[0]?.total ?? 0;
 
       // 2. Validate tier capacity
-      if (tierConfig.soldCount + tierReserved + request.quantity > tierConfig.totalCapacity) {
-        throw AppError.badRequest(`Requested quantity for tier "${tierConfig.name}" exceeds remaining capacity`);
+      if (
+        tierConfig.soldCount + tierReserved + request.quantity >
+        tierConfig.totalCapacity
+      ) {
+        throw AppError.badRequest(
+          `Requested quantity for tier "${tierConfig.name}" exceeds remaining capacity`,
+        );
       }
 
       // 3. Validate overall event capacity
-      if (event.soldCount + event.reservedCount + request.quantity > event.totalCapacity) {
-        throw AppError.badRequest('Requested quantity exceeds remaining event capacity');
+      if (
+        event.soldCount + event.reservedCount + request.quantity >
+        event.totalCapacity
+      ) {
+        throw AppError.badRequest(
+          "Requested quantity exceeds remaining event capacity",
+        );
       }
 
       // 4. Atomically increment global event reserved count
       const updatedEvent = await Event.findByIdAndUpdate(
         request.eventId,
         { $inc: { reservedCount: request.quantity, eventVersion: 1 } },
-        { new: true }
+        { new: true },
       );
 
       if (!updatedEvent) {
-        throw AppError.badRequest('Failed to reserve capacity');
+        throw AppError.badRequest("Failed to reserve capacity");
       }
 
       const reservation = await Reservation.create({
@@ -141,16 +179,29 @@ export class ReservationService {
         bookingReference: request.bookingReference,
         correlationId: request.correlationId,
         eventVersion: updatedEvent.eventVersion,
-        transitionLog: [{ from: InventoryState.AVAILABLE, to: InventoryState.RESERVED, reason: 'booking-created', correlationId: request.correlationId }],
+        transitionLog: [
+          {
+            from: InventoryState.AVAILABLE,
+            to: InventoryState.RESERVED,
+            reason: "booking-created",
+            correlationId: request.correlationId,
+          },
+        ],
       });
 
-      this.emitReservationChange(updatedEvent._id.toString(), [reservation], 'reservation:reserved');
-      await CacheService.delPattern('events:*');
+      this.emitReservationChange(
+        updatedEvent._id.toString(),
+        [reservation],
+        "reservation:reserved",
+      );
+      await CacheService.delPattern("events:*");
 
       auditLog({
-        action: 'RESERVATION_ACQUIRED',
-        actor: request.userId ? { type: 'user', id: request.userId } : { type: 'guest', id: request.sessionId },
-        status: 'success',
+        action: "RESERVATION_ACQUIRED",
+        actor: request.userId
+          ? { type: "user", id: request.userId }
+          : { type: "guest", id: request.sessionId },
+        status: "success",
         metadata: {
           eventId: request.eventId.toString(),
           reservationId: reservation.reservationId,
@@ -158,7 +209,7 @@ export class ReservationService {
           quantity: request.quantity,
           bookingId: request.bookingId?.toString(),
         },
-        description: `Reserved ${request.quantity} General Admission ticket(s) in tier "${request.tier}" for session ${request.sessionId}`
+        description: `Reserved ${request.quantity} General Admission ticket(s) in tier "${request.tier}" for session ${request.sessionId}`,
       });
 
       return [reservation];
@@ -170,15 +221,26 @@ export class ReservationService {
           await redis.del(lockKey);
         }
       } catch (err) {
-        logger.warn({ err, eventId: request.eventId, correlationId: request.correlationId }, 'Redis connection error during lock release');
+        logger.warn(
+          {
+            err,
+            eventId: request.eventId,
+            correlationId: request.correlationId,
+          },
+          "Redis connection error during lock release",
+        );
       }
     }
   }
 
-  private static async reserveSeats(request: ReservationRequest): Promise<IReservation[]> {
+  private static async reserveSeats(
+    request: ReservationRequest,
+  ): Promise<IReservation[]> {
     const seats = request.seats ?? [];
     if (seats.length !== request.quantity) {
-      throw AppError.badRequest('Seat reservation quantity must match selected seats');
+      throw AppError.badRequest(
+        "Seat reservation quantity must match selected seats",
+      );
     }
 
     const reservations: IReservation[] = [];
@@ -198,7 +260,14 @@ export class ReservationService {
         bookingId: request.bookingId,
         bookingReference: request.bookingReference,
         correlationId: request.correlationId,
-        transitionLog: [{ from: InventoryState.AVAILABLE, to: InventoryState.RESERVED, reason: 'booking-created', correlationId: request.correlationId }],
+        transitionLog: [
+          {
+            from: InventoryState.AVAILABLE,
+            to: InventoryState.RESERVED,
+            reason: "booking-created",
+            correlationId: request.correlationId,
+          },
+        ],
       });
       await reservation.save();
       reservations.push(reservation);
@@ -208,18 +277,30 @@ export class ReservationService {
       $inc: { reservedCount: request.quantity, eventVersion: 1 },
     });
 
-    this.emitReservationChange(request.eventId.toString(), reservations, 'reservation:reserved');
-    await CacheService.delPattern('events:*');
+    this.emitReservationChange(
+      request.eventId.toString(),
+      reservations,
+      "reservation:reserved",
+    );
+    await CacheService.delPattern("events:*");
     return reservations;
   }
 
   static async transitionForBooking(
     bookingId: Types.ObjectId | string,
     toStatus: ReservationStatus,
-    details: { paymentReference?: string; paymentId?: Types.ObjectId; correlationId?: string; reason?: string } = {},
-    session?: ClientSession
+    details: {
+      paymentReference?: string;
+      paymentId?: Types.ObjectId;
+      correlationId?: string;
+      reason?: string;
+    } = {},
+    session?: ClientSession,
   ): Promise<IReservation[]> {
-    const reservations = await Reservation.find({ bookingId, status: { $in: ACTIVE_RESERVATION_STATUSES } }).session(session || null);
+    const reservations = await Reservation.find({
+      bookingId,
+      status: { $in: ACTIVE_RESERVATION_STATUSES },
+    }).session(session || null);
     const transitioned: IReservation[] = [];
 
     for (const reservation of reservations) {
@@ -231,9 +312,11 @@ export class ReservationService {
       const previousStatus = reservation.status;
       reservation.status = toStatus;
       reservation.inventoryState = reservationToInventoryState(toStatus);
-      reservation.paymentReference = details.paymentReference ?? reservation.paymentReference;
+      reservation.paymentReference =
+        details.paymentReference ?? reservation.paymentReference;
       reservation.paymentId = details.paymentId ?? reservation.paymentId;
-      reservation.correlationId = details.correlationId ?? reservation.correlationId;
+      reservation.correlationId =
+        details.correlationId ?? reservation.correlationId;
       reservation.reservationVersion += 1;
       reservation.transitionLog.push({
         from: previousStatus,
@@ -248,11 +331,15 @@ export class ReservationService {
 
     if (transitioned.length > 0) {
       const eventId = transitioned[0].eventId.toString();
-      this.emitReservationChange(eventId, transitioned, `reservation:${toStatus}`);
+      this.emitReservationChange(
+        eventId,
+        transitioned,
+        `reservation:${toStatus}`,
+      );
 
       auditLog({
         action: `RESERVATION_TRANSITION_${toStatus.toUpperCase()}`,
-        status: 'success',
+        status: "success",
         metadata: {
           bookingId: bookingId.toString(),
           toStatus,
@@ -263,11 +350,14 @@ export class ReservationService {
       });
     }
 
-    await CacheService.delPattern('events:*');
+    await CacheService.delPattern("events:*");
     return transitioned;
   }
 
-  static async releaseCapacityForTerminalReservations(reservations: IReservation[], session?: ClientSession): Promise<void> {
+  static async releaseCapacityForTerminalReservations(
+    reservations: IReservation[],
+    session?: ClientSession,
+  ): Promise<void> {
     const byEvent = new Map<string, number>();
     for (const reservation of reservations) {
       const eventId = reservation.eventId.toString();
@@ -297,7 +387,9 @@ export class ReservationService {
 
   static async expireReservations(now = new Date()): Promise<IReservation[]> {
     const stale = await Reservation.find({
-      status: { $in: [ReservationStatus.RESERVED, ReservationStatus.PENDING_PAYMENT] },
+      status: {
+        $in: [ReservationStatus.RESERVED, ReservationStatus.PENDING_PAYMENT],
+      },
       expiresAt: { $lte: now },
     }).limit(500);
 
@@ -307,7 +399,12 @@ export class ReservationService {
       reservation.status = ReservationStatus.EXPIRED;
       reservation.inventoryState = InventoryState.EXPIRED;
       reservation.reservationVersion += 1;
-      reservation.transitionLog.push({ from: previousStatus, to: ReservationStatus.EXPIRED, reason: 'reservation-expired', createdAt: new Date() });
+      reservation.transitionLog.push({
+        from: previousStatus,
+        to: ReservationStatus.EXPIRED,
+        reason: "reservation-expired",
+        createdAt: new Date(),
+      });
       await reservation.save();
       expired.push(reservation);
     }
@@ -315,39 +412,58 @@ export class ReservationService {
     if (expired.length > 0) {
       await this.releaseCapacityForTerminalReservations(expired);
       await this.releaseExpiredSeats(expired);
-      for (const [eventId, reservations] of this.groupByEvent(expired).entries()) {
-        this.emitReservationChange(eventId, reservations, 'reservation:expired');
+      for (const [eventId, reservations] of this.groupByEvent(
+        expired,
+      ).entries()) {
+        this.emitReservationChange(
+          eventId,
+          reservations,
+          "reservation:expired",
+        );
       }
-      await CacheService.delPattern('events:*');
+      await CacheService.delPattern("events:*");
     }
 
     return expired;
   }
 
   private static async releaseExpiredSeats(reservations: IReservation[]) {
-    const byEvent = this.groupByEvent(reservations.filter((reservation) => reservation.seatId));
+    const byEvent = this.groupByEvent(
+      reservations.filter((reservation) => reservation.seatId),
+    );
     for (const [eventId, eventReservations] of byEvent.entries()) {
-      const seatIds = eventReservations.map((reservation) => reservation.seatId).filter(Boolean);
+      const seatIds = eventReservations
+        .map((reservation) => reservation.seatId)
+        .filter(Boolean);
       await SeatLayout.updateOne(
         { eventId },
         {
           $set: {
-            'seats.$[seat].status': SeatStatus.AVAILABLE,
+            "seats.$[seat].status": SeatStatus.AVAILABLE,
           },
           $unset: {
-            'seats.$[seat].lockedBy': '',
-            'seats.$[seat].lockedAt': '',
-            'seats.$[seat].bookedByBookingId': '',
-            'seats.$[seat].reservationId': '',
+            "seats.$[seat].lockedBy": "",
+            "seats.$[seat].lockedAt": "",
+            "seats.$[seat].bookedByBookingId": "",
+            "seats.$[seat].reservationId": "",
           },
-          $inc: { 'seats.$[seat].seatVersion': 1 },
+          $inc: { "seats.$[seat].seatVersion": 1 },
         },
-        { arrayFilters: [{ 'seat.seatId': { $in: seatIds }, 'seat.status': SeatStatus.LOCKED }] }
+        {
+          arrayFilters: [
+            {
+              "seat.seatId": { $in: seatIds },
+              "seat.status": SeatStatus.LOCKED,
+            },
+          ],
+        },
       );
     }
   }
 
-  static groupByEvent(reservations: IReservation[]): Map<string, IReservation[]> {
+  static groupByEvent(
+    reservations: IReservation[],
+  ): Map<string, IReservation[]> {
     const grouped = new Map<string, IReservation[]>();
     for (const reservation of reservations) {
       const eventId = reservation.eventId.toString();
@@ -357,17 +473,35 @@ export class ReservationService {
     return grouped;
   }
 
-  private static emitReservationChange(eventId: string, reservations: IReservation[], eventName: string) {
+  private static emitReservationChange(
+    eventId: string,
+    reservations: IReservation[],
+    eventName: string,
+  ) {
     const payload = {
       eventId,
-      reservationIds: reservations.map((reservation) => reservation.reservationId),
-      seatIds: reservations.map((reservation) => reservation.seatId).filter(Boolean),
-      version: Math.max(...reservations.map((reservation) => reservation.reservationVersion)),
+      reservationIds: reservations.map(
+        (reservation) => reservation.reservationId,
+      ),
+      seatIds: reservations
+        .map((reservation) => reservation.seatId)
+        .filter(Boolean),
+      version: Math.max(
+        ...reservations.map((reservation) => reservation.reservationVersion),
+      ),
       status: reservations[0]?.status,
     };
 
     const correlationId = reservations[0]?.correlationId;
-    safeEmit(eventName, () => emitToEvent(eventId, eventName, payload, correlationId), { eventId, eventName, correlationId });
-    safeEmit(eventName, () => emitToAdmin('inventory', eventName, payload, correlationId), { eventId, eventName, correlationId });
+    safeEmit(
+      eventName,
+      () => emitToEvent(eventId, eventName, payload, correlationId),
+      { eventId, eventName, correlationId },
+    );
+    safeEmit(
+      eventName,
+      () => emitToAdmin("inventory", eventName, payload, correlationId),
+      { eventId, eventName, correlationId },
+    );
   }
 }

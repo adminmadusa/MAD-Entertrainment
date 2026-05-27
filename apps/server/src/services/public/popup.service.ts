@@ -1,4 +1,4 @@
-import { PopupCampaign } from '../../models/popup-campaign.schema';
+import { PopupCampaign } from "../../models/popup-campaign.schema";
 
 export class PublicPopupService {
   static async getActivePopups() {
@@ -13,7 +13,7 @@ export class PublicPopupService {
         },
       ],
     })
-      .select('-__v')
+      .select("-__v")
       .lean();
 
     return popups;

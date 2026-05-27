@@ -1,5 +1,5 @@
-import { Request, Response } from 'express';
-import { adminAuthService } from '../../services/admin/auth.service';
+import { Request, Response } from "express";
+import { adminAuthService } from "../../services/admin/auth.service";
 
 export const adminAuthController = {
   async login(req: Request, res: Response) {
@@ -29,7 +29,7 @@ export const adminAuthController = {
     // For now, we return success.
     res.json({
       success: true,
-      message: 'Logged out successfully',
+      message: "Logged out successfully",
     });
   },
 };

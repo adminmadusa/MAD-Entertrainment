@@ -1,6 +1,6 @@
-import { Coupon } from '@mad/types';
+import { Coupon } from "@mad/types";
 
-import { adminApiClient } from '@/lib/api/client';
+import { adminApiClient } from "@/lib/api/client";
 
 export interface CouponsResponse {
   data: Coupon[];
@@ -22,7 +22,11 @@ export interface NormalizedCouponsResponse {
   };
 }
 
-export async function adminGetCoupons(page = 1, limit = 15, active?: string): Promise<NormalizedCouponsResponse> {
+export async function adminGetCoupons(
+  page = 1,
+  limit = 15,
+  active?: string,
+): Promise<NormalizedCouponsResponse> {
   try {
     let url = `/admin/coupons?page=${page}&limit=${limit}`;
     if (active) {
@@ -30,7 +34,11 @@ export async function adminGetCoupons(page = 1, limit = 15, active?: string): Pr
     }
     const { data } = await adminApiClient.get<CouponsResponse>(url);
     return {
-      items: Array.isArray(data?.data) ? data.data : (data?.data && Object.values(data.data).find(v => Array.isArray(v)) || []),
+      items: Array.isArray(data?.data)
+        ? data.data
+        : (data?.data &&
+            Object.values(data.data).find((v) => Array.isArray(v))) ||
+          [],
       pagination: {
         page: data?.pagination?.page ?? 1,
         limit: data?.pagination?.limit ?? 15,
@@ -39,7 +47,10 @@ export async function adminGetCoupons(page = 1, limit = 15, active?: string): Pr
       },
     };
   } catch (error) {
-    console.error('[Coupon Service] Failed to fetch coupons, returning safe default NormalizedCouponsResponse:', error);
+    console.error(
+      "[Coupon Service] Failed to fetch coupons, returning safe default NormalizedCouponsResponse:",
+      error,
+    );
     return {
       items: [],
       pagination: {
@@ -63,19 +74,30 @@ export async function adminGetCoupon(id: string): Promise<Coupon | null> {
   }
 }
 
-export async function adminCreateCoupon(payload: Partial<Coupon>): Promise<Coupon | null> {
+export async function adminCreateCoupon(
+  payload: Partial<Coupon>,
+): Promise<Coupon | null> {
   try {
-    const { data } = await adminApiClient.post<{ data: Coupon }>('/admin/coupons', payload);
+    const { data } = await adminApiClient.post<{ data: Coupon }>(
+      "/admin/coupons",
+      payload,
+    );
     return data.data;
   } catch (error) {
-    console.error('[Coupon Service] Failed to create coupon:', error);
+    console.error("[Coupon Service] Failed to create coupon:", error);
     return null;
   }
 }
 
-export async function adminUpdateCoupon(id: string, payload: Partial<Coupon>): Promise<Coupon | null> {
+export async function adminUpdateCoupon(
+  id: string,
+  payload: Partial<Coupon>,
+): Promise<Coupon | null> {
   try {
-    const { data } = await adminApiClient.put<{ data: Coupon }>(`/admin/coupons/${id}`, payload);
+    const { data } = await adminApiClient.put<{ data: Coupon }>(
+      `/admin/coupons/${id}`,
+      payload,
+    );
     return data.data;
   } catch (error) {
     console.error(`[Coupon Service] Failed to update coupon ${id}:`, error);
@@ -91,9 +113,13 @@ export async function adminDeleteCoupon(id: string): Promise<void> {
   }
 }
 
-export async function adminToggleCoupon(id: string): Promise<{ isActive: boolean } | null> {
+export async function adminToggleCoupon(
+  id: string,
+): Promise<{ isActive: boolean } | null> {
   try {
-    const { data } = await adminApiClient.patch<{ data: { isActive: boolean } }>(`/admin/coupons/${id}/toggle`);
+    const { data } = await adminApiClient.patch<{
+      data: { isActive: boolean };
+    }>(`/admin/coupons/${id}/toggle`);
     return data.data;
   } catch (error) {
     console.error(`[Coupon Service] Failed to toggle coupon ${id}:`, error);

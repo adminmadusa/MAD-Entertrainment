@@ -8,7 +8,9 @@
     "dev": "next dev --port 3000",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint src --max-warnings 0",
+    "lint": "eslint src --quiet",
+    "lint:strict": "eslint src --max-warnings 0",
+    "lint:unused-imports:report": "UNUSED_IMPORTS_REPORT=1 eslint src",
     "type-check": "tsc --noEmit",
     "circular-check": "madge --extensions ts,tsx --ts-config tsconfig.json --circular src",
     "dead-code-check": "depcheck",
@@ -27,16 +29,16 @@
     "next": "^15.1.3",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "socket.io-client": "^4.8.1",
-    "zustand": "^5.0.3"
+    "socket.io-client": "^4.8.1"
   },
   "devDependencies": {
+    "@mad/config-eslint": "workspace:*",
+    "@mad/config-postcss": "workspace:*",
     "@types/node": "^22.10.6",
     "@types/react": "^19.0.4",
     "@types/react-dom": "^19.0.2",
     "autoprefixer": "^10.4.20",
     "eslint": "^9.39.4",
-    "eslint-config-next": "^16.2.6",
     "postcss": "^8.4.49",
     "tailwindcss": "^3.4.17",
     "typescript": "^5.7.2"

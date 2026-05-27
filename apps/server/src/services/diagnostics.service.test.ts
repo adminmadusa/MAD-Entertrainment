@@ -1,23 +1,23 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { Types } from 'mongoose';
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { Types } from "mongoose";
 
-import { DiagnosticsService } from './diagnostics.service';
-import { isRedisConnected } from '../config/redis';
-import { DeadLetterJob } from '../models/dead-letter-job.schema';
-import { QueueService } from './queue.service';
+import { DiagnosticsService } from "./diagnostics.service";
+import { isRedisConnected } from "../config/redis";
+import { DeadLetterJob } from "../models/dead-letter-job.schema";
+import { QueueService } from "./queue.service";
 
 // Local toggle variables for strict state control
 let redisConnectedState = true;
 
-vi.mock('../config/redis', () => ({
+vi.mock("../config/redis", () => ({
   isRedisConnected: () => redisConnectedState,
 }));
 
-vi.mock('../config/queue.config', () => ({
+vi.mock("../config/queue.config", () => ({
   getQueueConnection: () => ({}),
 }));
 
-vi.mock('bullmq', () => {
+vi.mock("bullmq", () => {
   class MockQueue {
     name: string;
     options: any;
@@ -44,7 +44,7 @@ vi.mock('bullmq', () => {
   };
 });
 
-vi.mock('../models/dead-letter-job.schema', () => ({
+vi.mock("../models/dead-letter-job.schema", () => ({
   DeadLetterJob: {
     countDocuments: vi.fn(),
     findById: vi.fn(),
@@ -53,13 +53,13 @@ vi.mock('../models/dead-letter-job.schema', () => ({
   },
 }));
 
-vi.mock('./queue.service', () => ({
+vi.mock("./queue.service", () => ({
   QueueService: {
     enqueue: vi.fn(),
   },
 }));
 
-vi.mock('../utils/logger', () => ({
+vi.mock("../utils/logger", () => ({
   logger: {
     info: vi.fn(),
     warn: vi.fn(),
@@ -68,14 +68,14 @@ vi.mock('../utils/logger', () => ({
   },
 }));
 
-describe('Diagnostics Service', () => {
+describe("Diagnostics Service", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     redisConnectedState = true;
   });
 
-  describe('generateReport', () => {
-    it('should generate complete system diagnostic report when Redis is active', async () => {
+  describe("generateReport", () => {
+    it("should generate complete system diagnostic report when Redis is active", async () => {
       redisConnectedState = true;
       vi.mocked(DeadLetterJob.countDocuments).mockResolvedValue(4);
 
@@ -92,7 +92,7 @@ describe('Diagnostics Service', () => {
       expect(report.sockets.connectedClients).toBe(0);
     });
 
-    it('should return empty queues array and disconnected redis status if Redis is offline', async () => {
+    it("should return empty queues array and disconnected redis status if Redis is offline", async () => {
       redisConnectedState = false;
       vi.mocked(DeadLetterJob.countDocuments).mockResolvedValue(1);
 
@@ -104,15 +104,15 @@ describe('Diagnostics Service', () => {
     });
   });
 
-  describe('retryDeadLetterJob', () => {
-    it('should re-enqueue and delete DLQ job if it exists', async () => {
+  describe("retryDeadLetterJob", () => {
+    it("should re-enqueue and delete DLQ job if it exists", async () => {
       const mockDlqId = new Types.ObjectId().toString();
       const mockDlqJob = {
         _id: mockDlqId,
-        queueName: 'pdf-queue',
-        jobName: 'pdf:generate',
-        data: { bookingId: 'b-777' },
-        jobId: 'pdf-777',
+        queueName: "pdf-queue",
+        jobName: "pdf:generate",
+        data: { bookingId: "b-777" },
+        jobId: "pdf-777",
       };
 
       vi.mocked(DeadLetterJob.findById).mockResolvedValue(mockDlqJob as any);
@@ -121,32 +121,32 @@ describe('Diagnostics Service', () => {
 
       expect(res).toBe(true);
       expect(QueueService.enqueue).toHaveBeenCalledWith(
-        'pdf-queue',
-        'pdf:generate',
-        { bookingId: 'b-777' },
-        'pdf-777'
+        "pdf-queue",
+        "pdf:generate",
+        { bookingId: "b-777" },
+        "pdf-777",
       );
       expect(DeadLetterJob.findByIdAndDelete).toHaveBeenCalledWith(mockDlqId);
     });
 
-    it('should return false if DLQ job is not found', async () => {
+    it("should return false if DLQ job is not found", async () => {
       vi.mocked(DeadLetterJob.findById).mockResolvedValue(null);
 
-      const res = await DiagnosticsService.retryDeadLetterJob('fake-id');
+      const res = await DiagnosticsService.retryDeadLetterJob("fake-id");
 
       expect(res).toBe(false);
       expect(QueueService.enqueue).not.toHaveBeenCalled();
     });
   });
 
-  describe('retryAllDeadLetterJobs', () => {
-    it('should bulk retry all logged dead letter jobs', async () => {
+  describe("retryAllDeadLetterJobs", () => {
+    it("should bulk retry all logged dead letter jobs", async () => {
       const mockDlqId1 = new Types.ObjectId().toString();
       const mockDlqId2 = new Types.ObjectId().toString();
 
       const mockJobs = [
-        { _id: mockDlqId1, queueName: 'a', jobName: 'j', data: {}, jobId: '1' },
-        { _id: mockDlqId2, queueName: 'b', jobName: 'j', data: {}, jobId: '2' },
+        { _id: mockDlqId1, queueName: "a", jobName: "j", data: {}, jobId: "1" },
+        { _id: mockDlqId2, queueName: "b", jobName: "j", data: {}, jobId: "2" },
       ];
 
       vi.mocked(DeadLetterJob.find).mockReturnValue({

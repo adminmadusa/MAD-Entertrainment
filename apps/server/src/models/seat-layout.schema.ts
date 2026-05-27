@@ -1,5 +1,5 @@
-import { SeatStatus, TicketTier } from '@mad/shared';
-import { Schema, model, Document, Types } from 'mongoose';
+import { SeatStatus, TicketTier } from "@mad/shared";
+import { Schema, model, Document, Types } from "mongoose";
 
 export interface ISeatLayout extends Document {
   eventId: Types.ObjectId;
@@ -48,14 +48,14 @@ const seatSchema = new Schema(
     reservationId: String,
     seatVersion: { type: Number, default: 1, min: 1 },
   },
-  { _id: false }
+  { _id: false },
 );
 
 const seatLayoutSchema = new Schema<ISeatLayout>(
   {
     eventId: {
       type: Schema.Types.ObjectId,
-      ref: 'Event',
+      ref: "Event",
       required: true,
       unique: true,
       index: true,
@@ -73,10 +73,10 @@ const seatLayoutSchema = new Schema<ISeatLayout>(
     ],
     seats: [seatSchema],
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
-seatLayoutSchema.index({ 'seats.seatId': 1, eventId: 1 });
-seatLayoutSchema.index({ 'seats.status': 1, eventId: 1 });
+seatLayoutSchema.index({ "seats.seatId": 1, eventId: 1 });
+seatLayoutSchema.index({ "seats.status": 1, eventId: 1 });
 
-export const SeatLayout = model<ISeatLayout>('SeatLayout', seatLayoutSchema);
+export const SeatLayout = model<ISeatLayout>("SeatLayout", seatLayoutSchema);

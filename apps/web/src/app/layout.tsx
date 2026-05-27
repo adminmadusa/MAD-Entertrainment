@@ -1,81 +1,100 @@
-import type { Metadata, Viewport } from 'next';
-import { Outfit } from 'next/font/google';
+import type { Metadata, Viewport } from "next";
+import { Outfit } from "next/font/google";
 
-import { PopupManager } from '@/components/common/PopupManager';
-import { Footer } from '@/components/layout/Footer';
-import { Navbar } from '@/components/layout/Navbar';
-import { Providers } from '@/providers';
-import '@/styles/globals.css';
+import { PopupManager } from "@/components/common/PopupManager";
+import { Footer } from "@/components/layout/Footer";
+import { Navbar } from "@/components/layout/Navbar";
+import { Providers } from "@/providers";
+import "@/styles/globals.css";
 
 // ─── Fonts ────────────────────────────────────────────────────
 
 const outfit = Outfit({
-  subsets: ['latin'],
-  variable: '--font-outfit',
-  display: 'swap',
-  weight: ['300', '400', '500', '600', '700', '800', '900'],
+  subsets: ["latin"],
+  variable: "--font-outfit",
+  display: "swap",
+  weight: ["300", "400", "500", "600", "700", "800", "900"],
 });
 
 // ─── Metadata ─────────────────────────────────────────────────
 
 export const metadata: Metadata = {
+  /**
+   * metadataBase is required for Next.js to resolve relative URLs in OG images
+   * across all pages. Without it, opengraph-image paths are left unresolved.
+   */
+  metadataBase: new URL("https://madentertainment.in"),
+
   title: {
-    default: 'MAD Entertrainment — Book Shows, Events & DJ Nights',
-    template: '%s | MAD Entertrainment',
+    default: "MAD Entertrainment — Book Shows, Events & DJ Nights",
+    template: "%s | MAD Entertrainment",
   },
   description:
-    'Book tickets for the hottest shows, events, DJ nights, concerts, comedy shows, and live performances. Premium entertainment booking platform.',
+    "Book tickets for the hottest shows, events, DJ nights, concerts, comedy shows, and live performances. Premium entertainment booking platform.",
   keywords: [
-    'MAD Entertrainment',
-    'event booking',
-    'DJ nights',
-    'concerts',
-    'live shows',
-    'comedy shows',
-    'festivals',
-    'ticket booking',
-    'entertainment',
-    'VIP events',
+    "MAD Entertrainment",
+    "event booking",
+    "DJ nights",
+    "concerts",
+    "live shows",
+    "comedy shows",
+    "festivals",
+    "ticket booking",
+    "entertainment",
+    "VIP events",
   ],
-  authors: [{ name: 'MAD Entertrainment' }],
-  creator: 'MAD Entertrainment',
-  publisher: 'MAD Entertrainment',
+  authors: [{ name: "MAD Entertrainment" }],
+  creator: "MAD Entertrainment",
+  publisher: "MAD Entertrainment",
+  alternates: {
+    canonical: "https://madentertainment.in",
+  },
   robots: {
     index: true,
     follow: true,
     googleBot: {
       index: true,
       follow: true,
-      'max-video-preview': -1,
-      'max-image-preview': 'large',
-      'max-snippet': -1,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
     },
   },
   openGraph: {
-    type: 'website',
-    siteName: 'MAD Entertrainment',
-    title: 'MAD Entertrainment — Book Shows, Events & DJ Nights',
+    type: "website",
+    siteName: "MAD Entertrainment",
+    title: "MAD Entertrainment — Book Shows, Events & DJ Nights",
     description:
-      'Book tickets for the hottest shows, events, DJ nights, concerts, comedy shows, and live performances.',
-    locale: 'en_IN',
+      "Book tickets for the hottest shows, events, DJ nights, concerts, comedy shows, and live performances.",
+    url: "https://madentertainment.in",
+    locale: "en_IN",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "MAD Entertrainment — Premium Event Booking",
+      },
+    ],
   },
   twitter: {
-    card: 'summary_large_image',
-    title: 'MAD Entertrainment — Book Shows, Events & DJ Nights',
+    card: "summary_large_image",
+    title: "MAD Entertrainment — Book Shows, Events & DJ Nights",
     description:
-      'Book tickets for the hottest shows, events, DJ nights, concerts, comedy shows, and live performances.',
+      "Book tickets for the hottest shows, events, DJ nights, concerts, comedy shows, and live performances.",
+    images: ["/og-image.png"],
   },
   icons: {
-    icon: '/favicon.ico',
-    apple: '/apple-touch-icon.png',
+    icon: "/favicon.ico",
+    apple: "/apple-touch-icon.png",
   },
-  manifest: '/site.webmanifest',
+  manifest: "/site.webmanifest",
 };
 
 export const viewport: Viewport = {
-  themeColor: '#0B0F1A',
-  colorScheme: 'dark',
-  width: 'device-width',
+  themeColor: "#0B0F1A",
+  colorScheme: "dark",
+  width: "device-width",
   initialScale: 1,
   maximumScale: 5,
 };
@@ -88,10 +107,17 @@ interface RootLayoutProps {
 
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
-    <html lang="en" className={`${outfit.variable} dark`} suppressHydrationWarning>
+    <html
+      lang="en"
+      className={`${outfit.variable} dark`}
+      suppressHydrationWarning
+    >
       <body className="bg-background text-text-primary antialiased relative min-h-screen">
         {/* Ambient Entertainment Backdrop (Phase 4) */}
-        <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden" aria-hidden="true">
+        <div
+          className="fixed inset-0 pointer-events-none z-0 overflow-hidden"
+          aria-hidden="true"
+        >
           <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] rounded-full bg-accent-purple/8 blur-[160px] animate-ambient-shift-1" />
           <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] rounded-full bg-accent-pink/6 blur-[160px] animate-ambient-shift-2" />
           <div className="absolute top-[40%] left-[50%] -translate-x-1/2 w-[50%] h-[50%] rounded-full bg-accent-cyan/4 blur-[130px] animate-ambient-shift-3" />
@@ -100,7 +126,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
 
         <Providers>
           <Navbar />
-          <main id="main-content" className="min-h-screen relative z-10">
+          <main id="main-content" className="min-h-screen relative">
             {children}
           </main>
           <Footer />

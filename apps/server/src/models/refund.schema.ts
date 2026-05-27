@@ -1,4 +1,4 @@
-import { Schema, model, Document, Types } from 'mongoose';
+import { Schema, model, Document, Types } from "mongoose";
 
 export interface IRefund extends Document {
   bookingId: Types.ObjectId;
@@ -6,7 +6,7 @@ export interface IRefund extends Document {
   amount: number;
   currency: string;
   reason?: string;
-  status: 'requested' | 'processing' | 'completed' | 'failed';
+  status: "requested" | "processing" | "completed" | "failed";
   adminNotes?: string;
   gatewayRefundId?: string;
   processedAt?: Date;
@@ -16,22 +16,32 @@ export interface IRefund extends Document {
 
 const refundSchema = new Schema<IRefund>(
   {
-    bookingId: { type: Schema.Types.ObjectId, ref: 'Booking', required: true, index: true },
-    paymentId: { type: Schema.Types.ObjectId, ref: 'Payment', required: true, index: true },
+    bookingId: {
+      type: Schema.Types.ObjectId,
+      ref: "Booking",
+      required: true,
+      index: true,
+    },
+    paymentId: {
+      type: Schema.Types.ObjectId,
+      ref: "Payment",
+      required: true,
+      index: true,
+    },
     amount: { type: Number, required: true, min: 0 },
-    currency: { type: String, default: 'INR' },
+    currency: { type: String, default: "INR" },
     reason: String,
     status: {
       type: String,
-      enum: ['requested', 'processing', 'completed', 'failed'],
-      default: 'requested',
+      enum: ["requested", "processing", "completed", "failed"],
+      default: "requested",
       index: true,
     },
     adminNotes: String,
     gatewayRefundId: String,
     processedAt: Date,
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
-export const Refund = model<IRefund>('Refund', refundSchema);
+export const Refund = model<IRefund>("Refund", refundSchema);

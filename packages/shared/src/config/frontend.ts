@@ -1,6 +1,9 @@
 // Safety guard – prevent accidental localhost usage in production builds
-if (process.env.NODE_ENV === 'production' && process.env.NEXT_PUBLIC_API_URL?.includes('localhost')) {
-  throw new Error('Production build cannot use localhost API URL');
+if (
+  process.env.NODE_ENV === "production" &&
+  process.env.NEXT_PUBLIC_API_URL?.includes("localhost")
+) {
+  throw new Error("Production build cannot use localhost API URL");
 }
 
 // Centralized frontend configuration for API and Socket URLs

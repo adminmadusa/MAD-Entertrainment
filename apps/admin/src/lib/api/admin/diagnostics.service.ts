@@ -1,4 +1,4 @@
-import { adminApiClient } from '@/lib/api/client';
+import { adminApiClient } from "@/lib/api/client";
 
 export interface ConsistencyReport {
   generatedAt: string;
@@ -40,18 +40,26 @@ export interface ReservationDiagnosticsRow {
 }
 
 export async function adminGetConsistencyReport(): Promise<ConsistencyReport> {
-  const { data } = await adminApiClient.get<{ data: ConsistencyReport }>('/admin/diagnostics/consistency');
+  const { data } = await adminApiClient.get<{ data: ConsistencyReport }>(
+    "/admin/diagnostics/consistency",
+  );
   return data.data;
 }
 
 export async function adminRepairConsistency(): Promise<ConsistencyReport> {
-  const { data } = await adminApiClient.post<{ data: ConsistencyReport }>('/admin/diagnostics/consistency/repair');
+  const { data } = await adminApiClient.post<{ data: ConsistencyReport }>(
+    "/admin/diagnostics/consistency/repair",
+  );
   return data.data;
 }
 
-export async function adminGetReservations(status?: string): Promise<ReservationDiagnosticsRow[]> {
+export async function adminGetReservations(
+  status?: string,
+): Promise<ReservationDiagnosticsRow[]> {
   const qs = new URLSearchParams();
-  if (status) qs.set('status', status);
-  const { data } = await adminApiClient.get<{ data: ReservationDiagnosticsRow[] }>(`/admin/diagnostics/reservations?${qs}`);
+  if (status) qs.set("status", status);
+  const { data } = await adminApiClient.get<{
+    data: ReservationDiagnosticsRow[];
+  }>(`/admin/diagnostics/reservations?${qs}`);
   return data.data;
 }

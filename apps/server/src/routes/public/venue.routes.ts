@@ -1,9 +1,9 @@
-import { Router } from 'express';
-import { Venue } from '../../models/venue.schema';
+import { Router } from "express";
+import { Venue } from "../../models/venue.schema";
 
 const router: Router = Router();
 
-router.get('/', async (req, res, next) => {
+router.get("/", async (req, res, next) => {
   try {
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
@@ -23,18 +23,23 @@ router.get('/', async (req, res, next) => {
         limit,
         total,
         totalPages: Math.ceil(total / limit),
-      }
+      },
     });
   } catch (error) {
     next(error);
   }
 });
 
-router.get('/:id', async (req, res, next) => {
+router.get("/:id", async (req, res, next) => {
   try {
-    const venue = await Venue.findOne({ _id: req.params.id, isDeleted: { $ne: true } });
+    const venue = await Venue.findOne({
+      _id: req.params.id,
+      isDeleted: { $ne: true },
+    });
     if (!venue) {
-      return res.status(404).json({ success: false, message: 'Venue not found' });
+      return res
+        .status(404)
+        .json({ success: false, message: "Venue not found" });
     }
     res.status(200).json({ success: true, data: venue });
   } catch (error) {

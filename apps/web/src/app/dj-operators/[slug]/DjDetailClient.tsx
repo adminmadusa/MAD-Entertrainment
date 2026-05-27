@@ -1,36 +1,30 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
-import Image from 'next/image';
-import Link from 'next/link';
-import { useParams } from 'next/navigation';
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
+import Image from "next/image";
+import Link from "next/link";
+import { useParams } from "next/navigation";
+import { ArrowRight, ArrowLeft } from "@mad/ui";
 
-import { publicGetDJBySlug } from '@/lib/api/public.service';
-import { useWindowWidth } from '@/hooks/use-window.hook';
+import { publicGetDJBySlug } from "@/lib/api/public.service";
+import { useWindowWidth } from "@/hooks/use-window.hook";
 
 // ─── SVG Icons ────────────────────────────────────────────────
 
-function ArrowRight({ className = '', size = 16 }: { className?: string; size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className={className}>
-      <path d="M5 12h14M12 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
-function ArrowLeft({ className = '', size = 16 }: { className?: string; size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className={className}>
-      <path d="M19 12H5M12 19l-7-7 7-7" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
 function InstagramIcon() {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
       <circle cx="12" cy="12" r="4" />
       <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
@@ -48,7 +42,16 @@ function TwitterIcon() {
 
 function FacebookIcon() {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
     </svg>
   );
@@ -58,7 +61,10 @@ function YouTubeIcon() {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
       <path d="M22.54 6.42a2.78 2.78 0 0 0-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46A2.78 2.78 0 0 0 1.46 6.42 29 29 0 0 0 1 12a29 29 0 0 0 .46 5.58 2.78 2.78 0 0 0 1.95 1.96C5.12 20 12 20 12 20s6.88 0 8.59-.46a2.78 2.78 0 0 0 1.95-1.96A29 29 0 0 0 23 12a29 29 0 0 0-.46-5.58z" />
-      <polygon points="9.75,15.02 15.5,12 9.75,8.98 9.75,15.02" fill="#0B0F1A" />
+      <polygon
+        points="9.75,15.02 15.5,12 9.75,8.98 9.75,15.02"
+        fill="#0B0F1A"
+      />
     </svg>
   );
 }
@@ -73,21 +79,25 @@ function SoundCloudIcon() {
 
 // ─── Helpers ──────────────────────────────────────────────────
 
-function normalizeSocialLinks(socialLinks: any): { platform: string; url: string }[] {
+function normalizeSocialLinks(
+  socialLinks: any,
+): { platform: string; url: string }[] {
   if (!socialLinks) return [];
   if (Array.isArray(socialLinks)) {
-    return socialLinks.map((link: any) => ({
-      platform: link?.platform || '',
-      url: link?.url || '',
-    })).filter(link => link.platform && link.url);
+    return socialLinks
+      .map((link: any) => ({
+        platform: link?.platform || "",
+        url: link?.url || "",
+      }))
+      .filter((link) => link.platform && link.url);
   }
-  if (typeof socialLinks === 'object') {
+  if (typeof socialLinks === "object") {
     return Object.entries(socialLinks)
       .map(([platform, url]) => ({
         platform,
         url: url as string,
       }))
-      .filter(link => link.platform && link.url);
+      .filter((link) => link.platform && link.url);
   }
   return [];
 }
@@ -95,20 +105,29 @@ function normalizeSocialLinks(socialLinks: any): { platform: string; url: string
 function getSocialIcon(platform: string) {
   const p = platform.toLowerCase();
   switch (p) {
-    case 'instagram':
+    case "instagram":
       return <InstagramIcon />;
-    case 'twitter':
-    case 'x':
+    case "twitter":
+    case "x":
       return <TwitterIcon />;
-    case 'facebook':
+    case "facebook":
       return <FacebookIcon />;
-    case 'youtube':
+    case "youtube":
       return <YouTubeIcon />;
-    case 'soundcloud':
+    case "soundcloud":
       return <SoundCloudIcon />;
     default:
       return (
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <svg
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
           <circle cx="12" cy="12" r="10" />
           <line x1="2" y1="12" x2="22" y2="12" />
           <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
@@ -120,16 +139,17 @@ function getSocialIcon(platform: string) {
 // ─── Gallery Carousel Component ───────────────────────────────
 
 function GalleryCarousel({ galleryImages }: { galleryImages?: any[] }) {
-  const images = galleryImages && galleryImages.length > 0
-    ? galleryImages
-    : [
-        { url: '', _id: '1', title: 'Live Set Glimpse 1' },
-        { url: '', _id: '2', title: 'Live Set Glimpse 2' },
-        { url: '', _id: '3', title: 'Live Set Glimpse 3' },
-        { url: '', _id: '4', title: 'Live Set Glimpse 4' },
-        { url: '', _id: '5', title: 'Live Set Glimpse 5' },
-        { url: '', _id: '6', title: 'Live Set Glimpse 6' },
-      ];
+  const images =
+    galleryImages && galleryImages.length > 0
+      ? galleryImages
+      : [
+          { url: "", _id: "1", title: "Live Set Glimpse 1" },
+          { url: "", _id: "2", title: "Live Set Glimpse 2" },
+          { url: "", _id: "3", title: "Live Set Glimpse 3" },
+          { url: "", _id: "4", title: "Live Set Glimpse 4" },
+          { url: "", _id: "5", title: "Live Set Glimpse 5" },
+          { url: "", _id: "6", title: "Live Set Glimpse 6" },
+        ];
 
   const [activeIndex, setActiveIndex] = useState(0);
   const windowWidth = useWindowWidth();
@@ -146,10 +166,10 @@ function GalleryCarousel({ galleryImages }: { galleryImages?: any[] }) {
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'ArrowLeft') {
+    if (e.key === "ArrowLeft") {
       prevSlide();
       e.preventDefault();
-    } else if (e.key === 'ArrowRight') {
+    } else if (e.key === "ArrowRight") {
       nextSlide();
       e.preventDefault();
     }
@@ -168,9 +188,9 @@ function GalleryCarousel({ galleryImages }: { galleryImages?: any[] }) {
   const cardHeight = cardWidth * (9 / 16);
 
   return (
-    <div 
-      className="relative w-full max-w-4xl mx-auto mt-6 focus:outline-none flex flex-col items-center" 
-      style={{ perspective: '1200px' }}
+    <div
+      className="relative w-full max-w-4xl mx-auto mt-6 focus:outline-none flex flex-col items-center"
+      style={{ perspective: "1200px" }}
       tabIndex={0}
       onKeyDown={handleKeyDown}
       role="group"
@@ -178,12 +198,12 @@ function GalleryCarousel({ galleryImages }: { galleryImages?: any[] }) {
       aria-label="DJ Media Gallery Carousel"
     >
       {/* Centered relative wrapper of the exact active card dimensions */}
-      <div 
+      <div
         className="relative pointer-events-none flex items-center justify-center"
-        style={{ 
-          width: `${cardWidth}px`, 
+        style={{
+          width: `${cardWidth}px`,
           height: `${cardHeight}px`,
-          transformStyle: 'preserve-3d'
+          transformStyle: "preserve-3d",
         }}
       >
         <AnimatePresence initial={false} mode="popLayout">
@@ -195,11 +215,13 @@ function GalleryCarousel({ galleryImages }: { galleryImages?: any[] }) {
 
             const isActive = absoluteOffset === 0;
             const spread = windowWidth < 640 ? 110 : 180;
-            
+
             const x = absoluteOffset * spread;
             const z = isActive ? 0 : -150 - Math.abs(absoluteOffset) * 60;
             const rotateY = isActive ? 0 : absoluteOffset > 0 ? -25 : 25;
-            const opacity = isActive ? 1 : Math.max(0, 1 - Math.abs(absoluteOffset) * 0.4);
+            const opacity = isActive
+              ? 1
+              : Math.max(0, 1 - Math.abs(absoluteOffset) * 0.4);
             const zIndex = 20 - Math.abs(absoluteOffset);
 
             if (Math.abs(absoluteOffset) > 2) return null;
@@ -232,10 +254,12 @@ function GalleryCarousel({ galleryImages }: { galleryImages?: any[] }) {
                   top: 0,
                   width: "100%",
                   height: "100%",
-                  transformStyle: "preserve-3d"
+                  transformStyle: "preserve-3d",
                 }}
                 className={`pointer-events-auto group glass rounded-2xl border ${
-                  isActive ? 'border-accent-pink/50 shadow-glow' : 'border-border-subtle cursor-pointer'
+                  isActive
+                    ? "border-accent-pink/50 shadow-glow"
+                    : "border-border-subtle cursor-pointer"
                 } overflow-hidden flex flex-col`}
                 onClick={() => !isActive && setActiveIndex(index)}
               >
@@ -254,7 +278,9 @@ function GalleryCarousel({ galleryImages }: { galleryImages?: any[] }) {
                       📸
                     </div>
                   )}
-                  {!isActive && <div className="absolute inset-0 bg-black/40 transition-opacity" />}
+                  {!isActive && (
+                    <div className="absolute inset-0 bg-black/40 transition-opacity" />
+                  )}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent z-10 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-3">
                     <span className="text-[10px] font-bold text-white uppercase tracking-wider">
                       {img.title || `Live Set Glimpse ${index + 1}`}
@@ -269,14 +295,14 @@ function GalleryCarousel({ galleryImages }: { galleryImages?: any[] }) {
 
       {images.length > 1 && (
         <div className="w-full relative mt-6 h-12 flex items-center justify-center">
-          <button 
+          <button
             onClick={prevSlide}
             className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 z-30 p-2 sm:p-3 rounded-full glass border border-border-subtle text-white hover:text-accent-pink hover:border-accent-pink/50 transition-all focus:outline-none shadow-lg pointer-events-auto"
             aria-label="Previous image"
           >
             <ArrowLeft size={16} />
           </button>
-          <button 
+          <button
             onClick={nextSlide}
             className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 z-30 p-2 sm:p-3 rounded-full glass border border-border-subtle text-white hover:text-accent-pink hover:border-accent-pink/50 transition-all focus:outline-none shadow-lg pointer-events-auto"
             aria-label="Next image"
@@ -290,9 +316,9 @@ function GalleryCarousel({ galleryImages }: { galleryImages?: any[] }) {
                 key={idx}
                 onClick={() => setActiveIndex(idx)}
                 className={`w-1.5 h-1.5 rounded-full transition-all duration-300 pointer-events-auto ${
-                  idx === activeIndex 
-                    ? 'bg-accent-pink w-5 shadow-glow-sm' 
-                    : 'bg-border-subtle hover:bg-accent-pink/50'
+                  idx === activeIndex
+                    ? "bg-accent-pink w-5 shadow-glow-sm"
+                    : "bg-border-subtle hover:bg-accent-pink/50"
                 }`}
                 aria-label={`Go to slide ${idx + 1}`}
               />
@@ -310,8 +336,12 @@ export default function DJDetailClient() {
   const params = useParams();
   const slug = params.slug as string;
 
-  const { data: dj, isLoading, error } = useQuery({
-    queryKey: ['public-dj', slug],
+  const {
+    data: dj,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["public-dj", slug],
     queryFn: () => publicGetDJBySlug(slug),
   });
 
@@ -328,8 +358,13 @@ export default function DJDetailClient() {
     return (
       <div className="pt-32 pb-20 min-h-screen bg-background flex flex-col items-center justify-center">
         <h1 className="text-3xl font-bold text-white mb-4">DJ Not Found</h1>
-        <p className="text-text-muted mb-8">The DJ Operator you are looking for does not exist.</p>
-        <Link href="/dj-operators" className="btn-gradient text-white px-6 py-2 rounded-xl">
+        <p className="text-text-muted mb-8">
+          The DJ Operator you are looking for does not exist.
+        </p>
+        <Link
+          href="/dj-operators"
+          className="btn-gradient text-white px-6 py-2 rounded-xl"
+        >
           Back to DJs
         </Link>
       </div>
@@ -357,11 +392,10 @@ export default function DJDetailClient() {
         ) : (
           <div className="absolute inset-0 bg-gradient-to-br from-background-secondary to-background z-0" />
         )}
-        
+
         {/* Banner Details */}
         <div className="container-mad w-full relative z-10">
           <div className="flex flex-col md:flex-row gap-6 md:gap-10 items-center md:items-end">
-            
             {/* Small Profile Image Card */}
             <div className="relative w-36 sm:w-48 lg:w-64 aspect-[3/4] rounded-2xl overflow-hidden border-2 border-white/10 shadow-2xl bg-white/5 image-overlay-vignette group flex-shrink-0">
               {dj.profileImage?.url ? (
@@ -407,7 +441,6 @@ export default function DJDetailClient() {
                 </div>
               )}
 
-
               {/* Biography in Hero */}
               {dj.bio && (
                 <p className="text-text-secondary text-sm leading-relaxed max-w-2xl text-center md:text-left line-clamp-4 font-medium pt-1">
@@ -417,13 +450,13 @@ export default function DJDetailClient() {
 
               {/* Quick Action buttons */}
               <div className="hidden md:flex flex-wrap justify-center md:justify-start gap-3 pt-2">
-                <Link 
+                <Link
                   href="/events"
                   className="px-5 py-2.5 text-xs font-bold text-white btn-gradient rounded-xl shadow-glow-sm hover:scale-105 active:scale-100 transition-transform block text-center"
                 >
                   Book Tickets
                 </Link>
-                <a 
+                <a
                   href={`mailto:bookings@madentertainment.in?subject=Booking Inquiry: ${dj.name}`}
                   className="px-5 py-2.5 text-xs font-semibold text-text-primary glass border border-border-subtle hover:border-accent-purple/40 hover:bg-accent-purple/5 rounded-xl transition-all block text-center"
                 >
@@ -431,7 +464,6 @@ export default function DJDetailClient() {
                 </a>
               </div>
             </div>
-
           </div>
         </div>
       </section>
@@ -440,7 +472,6 @@ export default function DJDetailClient() {
       <section className="relative z-20 mt-8 pb-28 md:pb-20">
         <div className="container-mad">
           <div className="max-w-4xl mx-auto space-y-8">
-            
             {/* Media Gallery Carousel */}
             <div className="glass p-5 md:p-8 rounded-3xl border border-border-subtle bg-bg-card/30 backdrop-blur-md">
               <h2 className="text-xl font-bold text-white mb-4 uppercase tracking-wider border-b border-border-subtle/50 pb-3 flex items-center gap-2 text-glow-neon-pink">
@@ -467,26 +498,27 @@ export default function DJDetailClient() {
                       className="group flex items-center gap-2.5 px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-xs text-text-secondary hover:text-white transition-all duration-200 border border-transparent hover:border-white/10 shadow-glow-sm hover:scale-[1.03] active:scale-100"
                     >
                       {getSocialIcon(link.platform)}
-                      <span className="capitalize font-bold tracking-wide">{link.platform}</span>
+                      <span className="capitalize font-bold tracking-wide">
+                        {link.platform}
+                      </span>
                     </a>
                   ))}
                 </div>
               </div>
             )}
-
           </div>
         </div>
       </section>
 
       {/* Sticky Mobile Bottom Navigation Menu */}
       <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-background/80 backdrop-blur-lg border-t border-border-subtle/50 p-4 pb-6 flex gap-3 shadow-glow-sm">
-        <Link 
+        <Link
           href="/events"
           className="flex-1 py-3 text-sm font-bold text-white btn-gradient rounded-xl shadow-glow-sm active:scale-[0.98] transition-transform text-center flex items-center justify-center"
         >
           Book Tickets
         </Link>
-        <a 
+        <a
           href={`mailto:bookings@madentertainment.in?subject=Booking Inquiry: ${dj.name}`}
           className="flex-1 py-3 text-sm font-semibold text-text-primary glass border border-border-subtle hover:border-accent-purple/40 hover:bg-accent-purple/5 rounded-xl transition-all text-center flex items-center justify-center"
         >

@@ -1,15 +1,19 @@
-'use client';
+"use client";
 
-import { STORAGE_KEYS } from '@mad/shared';
+import { STORAGE_KEYS } from "@mad/shared";
 import {
   createContext,
   useContext,
   useEffect,
   useState,
   useCallback,
-} from 'react';
+} from "react";
 
-import { adminGetMe, adminLogout as apiLogout, AdminUser } from '@/lib/api/admin/auth.service';
+import {
+  adminGetMe,
+  adminLogout as apiLogout,
+  AdminUser,
+} from "@/lib/api/admin/auth.service";
 
 interface AdminAuthContextValue {
   admin: AdminUser | null;
@@ -28,7 +32,6 @@ const AdminAuthContext = createContext<AdminAuthContextValue>({
   setAuth: () => {},
   logout: async () => {},
 });
-
 
 export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
   const [admin, setAdmin] = useState<AdminUser | null>(null);

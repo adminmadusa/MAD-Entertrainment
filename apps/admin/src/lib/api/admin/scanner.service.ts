@@ -1,4 +1,4 @@
-import { adminApiClient } from '../client';
+import { adminApiClient } from "../client";
 
 export interface ScanResponse {
   ticketId: string;
@@ -7,8 +7,15 @@ export interface ScanResponse {
   scannedAt: string;
 }
 
-export async function adminScanTicket(ticketId: string, eventId: string): Promise<ScanResponse> {
-  const { data } = await adminApiClient.post<{ status: string; message: string; data: ScanResponse }>('/admin/scanner/scan', {
+export async function adminScanTicket(
+  ticketId: string,
+  eventId: string,
+): Promise<ScanResponse> {
+  const { data } = await adminApiClient.post<{
+    status: string;
+    message: string;
+    data: ScanResponse;
+  }>("/admin/scanner/scan", {
     ticketId,
     eventId,
   });

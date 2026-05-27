@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 
 export interface CountdownState {
   days: number;
@@ -8,7 +8,9 @@ export interface CountdownState {
   isExpired: boolean;
 }
 
-export function useCountdown(targetDate: Date | string | undefined): CountdownState {
+export function useCountdown(
+  targetDate: Date | string | undefined,
+): CountdownState {
   const [timeLeft, setTimeLeft] = useState<CountdownState>({
     days: 0,
     hours: 0,
@@ -44,7 +46,9 @@ export function useCountdown(targetDate: Date | string | undefined): CountdownSt
       }
 
       const days = Math.floor(difference / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const hours = Math.floor(
+        (difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60),
+      );
       const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
       const seconds = Math.floor((difference % (1000 * 60)) / 1000);
 

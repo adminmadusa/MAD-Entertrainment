@@ -1,11 +1,9 @@
-import rateLimit, { MemoryStore, Store } from 'express-rate-limit';
-import RedisStore from 'rate-limit-redis';
+import rateLimit, { MemoryStore, Store } from "express-rate-limit";
+import RedisStore from "rate-limit-redis";
 
-
-import { getEnv } from '../config/env';
-import { getRedis, isRedisConnected } from '../config/redis';
-import { logger } from '../utils/logger';
-
+import { getEnv } from "../config/env";
+import { getRedis, isRedisConnected } from "../config/redis";
+import { logger } from "../utils/logger";
 
 class ResilientRedisStore implements Store {
   private redisStore?: RedisStore;
@@ -17,7 +15,7 @@ class ResilientRedisStore implements Store {
       this.redisStore = new RedisStore({
         sendCommand: async (...args: string[]) => {
           if (!isRedisConnected()) {
-            throw new Error('Redis not connected');
+            throw new Error("Redis not connected");
           }
           const client = getRedis();
           return client.call(args[0], ...args.slice(1)) as Promise<any>;
@@ -25,28 +23,40 @@ class ResilientRedisStore implements Store {
         prefix: `mad:limiter:${prefix}:`,
       });
     } catch (err) {
-      logger.error({ err }, `Failed to initialize RedisStore for limiter ${prefix}`);
+      logger.error(
+        { err },
+        `Failed to initialize RedisStore for limiter ${prefix}`,
+      );
     }
   }
 
   init(options: any) {
-    if (this.redisStore && typeof this.redisStore.init === 'function') {
+    if (this.redisStore && typeof this.redisStore.init === "function") {
       const initPromise = this.redisStore.init(options);
-      if (initPromise && typeof initPromise.catch === 'function') {
+      if (initPromise && typeof initPromise.catch === "function") {
         initPromise.catch((err: any) => {
-          logger.debug({ err }, 'Redis rate limit store initialization deferred');
+          logger.debug(
+            { err },
+            "Redis rate limit store initialization deferred",
+          );
         });
       }
 
       // Prevent unhandled promise rejections if Redis is not connected during startup
-      if (this.redisStore.incrementScriptSha && typeof this.redisStore.incrementScriptSha.catch === 'function') {
+      if (
+        this.redisStore.incrementScriptSha &&
+        typeof this.redisStore.incrementScriptSha.catch === "function"
+      ) {
         this.redisStore.incrementScriptSha.catch(() => {});
       }
-      if (this.redisStore.getScriptSha && typeof this.redisStore.getScriptSha.catch === 'function') {
+      if (
+        this.redisStore.getScriptSha &&
+        typeof this.redisStore.getScriptSha.catch === "function"
+      ) {
         this.redisStore.getScriptSha.catch(() => {});
       }
     }
-    if (typeof this.memoryStore.init === 'function') {
+    if (typeof this.memoryStore.init === "function") {
       this.memoryStore.init(options);
     }
   }
@@ -56,7 +66,10 @@ class ResilientRedisStore implements Store {
       try {
         return await this.redisStore.increment(key);
       } catch (err) {
-        logger.error({ err, key }, 'Redis rate limit store increment failed, falling back to memory');
+        logger.error(
+          { err, key },
+          "Redis rate limit store increment failed, falling back to memory",
+        );
         return await this.memoryStore.increment(key);
       }
     }
@@ -69,7 +82,10 @@ class ResilientRedisStore implements Store {
         await this.redisStore.decrement(key);
         return;
       } catch (err) {
-        logger.error({ err, key }, 'Redis rate limit store decrement failed, falling back to memory');
+        logger.error(
+          { err, key },
+          "Redis rate limit store decrement failed, falling back to memory",
+        );
       }
     }
     await this.memoryStore.decrement(key);
@@ -81,13 +97,15 @@ class ResilientRedisStore implements Store {
         await this.redisStore.resetKey(key);
         return;
       } catch (err) {
-        logger.error({ err, key }, 'Redis rate limit store resetKey failed, falling back to memory');
+        logger.error(
+          { err, key },
+          "Redis rate limit store resetKey failed, falling back to memory",
+        );
       }
     }
     await this.memoryStore.resetKey(key);
   }
 }
-
 
 // ─── Rate Limiter Instances ───────────────────────────────────
 // Limiters are created by initRateLimiters(), which is called from createApp()
@@ -105,7 +123,9 @@ let _paymentLimiter: RateLimiter | undefined;
 let _webhookLimiter: RateLimiter | undefined;
 let _adminLimiter: RateLimiter | undefined;
 
-function makeLimiter(prefix: 'general' | 'auth' | 'payment' | 'webhook' | 'admin'): RateLimiter {
+function makeLimiter(
+  prefix: "general" | "auth" | "payment" | "webhook" | "admin",
+): RateLimiter {
   const e = getEnv();
   const limits: Record<typeof prefix, number> = {
     general: e.RATE_LIMIT_MAX_REQUESTS,
@@ -137,16 +157,18 @@ function makeLimiter(prefix: 'general' | 'auth' | 'payment' | 'webhook' | 'admin
  * not inside request handlers.
  */
 export function initRateLimiters(): void {
-  _generalLimiter = makeLimiter('general');
-  _authLimiter = makeLimiter('auth');
-  _paymentLimiter = makeLimiter('payment');
-  _webhookLimiter = makeLimiter('webhook');
-  _adminLimiter = makeLimiter('admin');
+  _generalLimiter = makeLimiter("general");
+  _authLimiter = makeLimiter("auth");
+  _paymentLimiter = makeLimiter("payment");
+  _webhookLimiter = makeLimiter("webhook");
+  _adminLimiter = makeLimiter("admin");
 }
 
 export const generalLimiter = (req: any, res: any, next: any) => {
   if (!_generalLimiter) {
-    logger.error('generalLimiter called before initRateLimiters() — rate limiting inactive');
+    logger.error(
+      "generalLimiter called before initRateLimiters() — rate limiting inactive",
+    );
     return next();
   }
   return _generalLimiter(req, res, next);
@@ -154,7 +176,9 @@ export const generalLimiter = (req: any, res: any, next: any) => {
 
 export const authLimiter = (req: any, res: any, next: any) => {
   if (!_authLimiter) {
-    logger.error('authLimiter called before initRateLimiters() — rate limiting inactive');
+    logger.error(
+      "authLimiter called before initRateLimiters() — rate limiting inactive",
+    );
     return next();
   }
   return _authLimiter(req, res, next);
@@ -162,7 +186,9 @@ export const authLimiter = (req: any, res: any, next: any) => {
 
 export const paymentLimiter = (req: any, res: any, next: any) => {
   if (!_paymentLimiter) {
-    logger.error('paymentLimiter called before initRateLimiters() — rate limiting inactive');
+    logger.error(
+      "paymentLimiter called before initRateLimiters() — rate limiting inactive",
+    );
     return next();
   }
   return _paymentLimiter(req, res, next);
@@ -170,7 +196,9 @@ export const paymentLimiter = (req: any, res: any, next: any) => {
 
 export const webhookLimiter = (req: any, res: any, next: any) => {
   if (!_webhookLimiter) {
-    logger.error('webhookLimiter called before initRateLimiters() — rate limiting inactive');
+    logger.error(
+      "webhookLimiter called before initRateLimiters() — rate limiting inactive",
+    );
     return next();
   }
   return _webhookLimiter(req, res, next);
@@ -178,7 +206,9 @@ export const webhookLimiter = (req: any, res: any, next: any) => {
 
 export const adminLimiter = (req: any, res: any, next: any) => {
   if (!_adminLimiter) {
-    logger.error('adminLimiter called before initRateLimiters() — rate limiting inactive');
+    logger.error(
+      "adminLimiter called before initRateLimiters() — rate limiting inactive",
+    );
     return next();
   }
   return _adminLimiter(req, res, next);

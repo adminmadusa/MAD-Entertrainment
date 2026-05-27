@@ -1,9 +1,9 @@
-import { Queue, QueueOptions } from 'bullmq';
-import { EventEmitter } from 'events';
+import { Queue, QueueOptions } from "bullmq";
+import { EventEmitter } from "events";
 
-import { getQueueConnection } from '../config/queue.config';
-import { isRedisConnected } from '../config/redis';
-import { logger } from '../utils/logger';
+import { getQueueConnection } from "../config/queue.config";
+import { isRedisConnected } from "../config/redis";
+import { logger } from "../utils/logger";
 
 // Local Event Emitter to serve as the local in-memory fallback queue when Redis is offline.
 export const localFallbackEmitter = new EventEmitter();
@@ -30,19 +30,22 @@ export class QueueService {
         defaultJobOptions: {
           attempts: 3,
           backoff: {
-            type: 'exponential',
+            type: "exponential",
             delay: 5000, // Starts at 5s, then 10s, 20s...
           },
           removeOnComplete: true, // Auto-cleanup successful jobs
-          removeOnFail: false,   // Retain failed jobs for dead-letter processing
+          removeOnFail: false, // Retain failed jobs for dead-letter processing
         },
       };
 
       this.queues[queueName] = new Queue(queueName, options);
-      logger.info({ queueName }, 'BullMQ Queue initialized successfully');
+      logger.info({ queueName }, "BullMQ Queue initialized successfully");
       return this.queues[queueName];
     } catch (err) {
-      logger.error({ err, queueName }, 'Failed to initialize BullMQ Queue. Operating in degraded mode.');
+      logger.error(
+        { err, queueName },
+        "Failed to initialize BullMQ Queue. Operating in degraded mode.",
+      );
       return null;
     }
   }
@@ -54,24 +57,27 @@ export class QueueService {
     queueName: string,
     jobName: string,
     data: T,
-    jobId?: string
+    jobId?: string,
   ): Promise<void> {
     const queue = this.getQueue(queueName);
 
     if (queue) {
       try {
         await queue.add(jobName, data, { jobId });
-        logger.debug({ queueName, jobName, jobId }, 'Job enqueued in BullMQ');
+        logger.debug({ queueName, jobName, jobId }, "Job enqueued in BullMQ");
         return;
       } catch (err) {
-        logger.error({ err, queueName, jobName }, 'Failed to enqueue job in BullMQ. Attempting local fallback.');
+        logger.error(
+          { err, queueName, jobName },
+          "Failed to enqueue job in BullMQ. Attempting local fallback.",
+        );
       }
     }
 
     // Local Degraded Fallback Execution
     logger.warn(
       { queueName, jobName, jobId },
-      'Redis offline or queue failed. Processing job via local in-memory degraded fallback.'
+      "Redis offline or queue failed. Processing job via local in-memory degraded fallback.",
     );
 
     // Run in-memory execution in the next tick of the event loop to ensure non-blocking dispatch
@@ -79,7 +85,9 @@ export class QueueService {
       localFallbackEmitter.emit(queueName, {
         name: jobName,
         data,
-        id: jobId || `local-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
+        id:
+          jobId ||
+          `local-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
         isFallback: true,
       });
     });
@@ -95,7 +103,10 @@ export class QueueService {
       try {
         await queue.close();
       } catch (err) {
-        logger.error({ err, queue: queue.name }, 'Error closing queue connection');
+        logger.error(
+          { err, queue: queue.name },
+          "Error closing queue connection",
+        );
       }
     }
   }

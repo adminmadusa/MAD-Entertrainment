@@ -1,4 +1,4 @@
-import { AsyncLocalStorage } from 'async_hooks';
+import { AsyncLocalStorage } from "async_hooks";
 
 export interface TraceContext {
   correlationId: string;
@@ -19,6 +19,9 @@ export function getTraceContext(): TraceContext | undefined {
   return traceStorage.getStore();
 }
 
-export function runWithContext<T>(context: TraceContext, fn: () => T | Promise<T>): T | Promise<T> {
+export function runWithContext<T>(
+  context: TraceContext,
+  fn: () => T | Promise<T>,
+): T | Promise<T> {
   return traceStorage.run(context, fn);
 }

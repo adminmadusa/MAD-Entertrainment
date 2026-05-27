@@ -1,4 +1,4 @@
-import { adminApiClient } from '@/lib/api/client';
+import { adminApiClient } from "@/lib/api/client";
 
 export interface AdminLoginPayload {
   email: string;
@@ -17,19 +17,23 @@ export interface AdminLoginResponse {
   admin: AdminUser;
 }
 
-export async function adminLogin(payload: AdminLoginPayload): Promise<AdminLoginResponse> {
+export async function adminLogin(
+  payload: AdminLoginPayload,
+): Promise<AdminLoginResponse> {
   const { data } = await adminApiClient.post<{ data: AdminLoginResponse }>(
-    '/admin/auth/login',
-    payload
+    "/admin/auth/login",
+    payload,
   );
   return data.data;
 }
 
 export async function adminGetMe(): Promise<AdminUser> {
-  const { data } = await adminApiClient.get<{ data: AdminUser }>('/admin/auth/me');
+  const { data } = await adminApiClient.get<{ data: AdminUser }>(
+    "/admin/auth/me",
+  );
   return data.data;
 }
 
 export async function adminLogout(): Promise<void> {
-  await adminApiClient.post('/admin/auth/logout');
+  await adminApiClient.post("/admin/auth/logout");
 }

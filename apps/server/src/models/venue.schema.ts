@@ -1,4 +1,4 @@
-import mongoose, { Schema, model, Document, Types } from 'mongoose';
+import mongoose, { Schema, model, Document, Types } from "mongoose";
 
 export interface IVenue extends Document {
   name: string;
@@ -20,12 +20,12 @@ const venueSchema = new Schema<IVenue>(
     capacity: { type: Number, min: 0 },
     isDeleted: { type: Boolean, default: false, index: true },
     deletedAt: Date,
-    deletedBy: { type: Schema.Types.ObjectId, ref: 'AdminUser' },
+    deletedBy: { type: Schema.Types.ObjectId, ref: "AdminUser" },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 export const Venue =
   // Prevent OverwriteModelError when hot‑reloading with tsx/nodemon
   (mongoose.models.Venue as mongoose.Model<IVenue>) ||
-  mongoose.model<IVenue>('Venue', venueSchema);
+  mongoose.model<IVenue>("Venue", venueSchema);

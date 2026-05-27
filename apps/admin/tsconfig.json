@@ -2,11 +2,7 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "target": "ES2017",
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
+    "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": false,
@@ -21,6 +17,8 @@
     "jsx": "preserve",
     "paths": {
       "@/*": ["./src/*"],
+      "@mad/contracts": ["../../packages/contracts/src"],
+      "@mad/contracts/*": ["../../packages/contracts/src/*"],
       "@mad/shared": ["../../packages/shared/src"],
       "@mad/shared/*": ["../../packages/shared/src/*"],
       "@mad/types": ["../../packages/types/src"],
@@ -38,13 +36,6 @@
       }
     ]
   },
-  "include": [
-    "next-env.d.ts",
-    ".next/types/**/*.ts",
-    "**/*.ts",
-    "**/*.tsx"
-  ],
-  "exclude": [
-    "node_modules"
-  ]
+  "include": ["next-env.d.ts", ".next/types/**/*.ts", "**/*.ts", "**/*.tsx"],
+  "exclude": ["node_modules"]
 }

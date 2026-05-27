@@ -1,6 +1,6 @@
-import Stripe from 'stripe';
+import Stripe from "stripe";
 
-import { getEnv } from './env';
+import { getEnv } from "./env";
 
 let stripe: Stripe | undefined;
 
@@ -13,7 +13,7 @@ export function initStripe(): Stripe | undefined {
 
 export function getStripe(): Stripe {
   const instance = stripe ?? initStripe();
-  if (!instance) throw new Error('Stripe is not configured');
+  if (!instance) throw new Error("Stripe is not configured");
   return instance;
 }
 

@@ -1,19 +1,20 @@
-'use client';
+"use client";
 
-import { motion, AnimatePresence } from 'framer-motion';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from "framer-motion";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useState, useEffect, useRef } from "react";
 
 const navLinks = [
-  { label: 'Events', href: '/events' },
-  { label: 'Artists', href: '/artists' },
-  { label: 'DJs', href: '/dj-operators' },
+  { label: "Events", href: "/events" },
+  { label: "Artists", href: "/artists" },
+  { label: "DJs", href: "/dj-operators" },
 ];
 
 export function Navbar() {
   const pathname = usePathname();
-  const isCheckoutOrBook = pathname?.endsWith('/book') || pathname?.startsWith('/checkout/');
+  const isCheckoutOrBook =
+    pathname?.endsWith("/book") || pathname?.startsWith("/checkout/");
 
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -31,31 +32,37 @@ export function Navbar() {
       lastScrollY.current = currentY;
     };
 
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
   }, [isCheckoutOrBook]);
 
-  // Close mobile menu on route change
+  // H-07 FIX: Close mobile menu on every route change.
+  // Previously used [], which only ran once on mount — navigating away left
+  // the menu open on the new page.
   useEffect(() => {
     setMobileOpen(false);
-  }, []);
+  }, [pathname]);
 
   if (isCheckoutOrBook) return null;
 
   return (
     <motion.header
       animate={{ y: visible ? 0 : -100 }}
-      transition={{ duration: 0.3, ease: 'easeInOut' }}
+      transition={{ duration: 0.3, ease: "easeInOut" }}
       className={[
-        'fixed top-0 left-0 right-0 z-50 transition-all duration-300 border-b',
+        "fixed top-0 left-0 right-0 z-50 transition-all duration-300 border-b",
         scrolled
-          ? 'bg-background/80 backdrop-blur-lg border-border-subtle py-3'
-          : 'bg-transparent border-transparent py-5',
-      ].join(' ')}
+          ? "bg-background/80 backdrop-blur-lg border-border-subtle py-3"
+          : "bg-transparent border-transparent py-5",
+      ].join(" ")}
     >
       <nav className="container-mad flex items-center justify-between">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2 group" aria-label="MAD Entertrainment Home">
+        <Link
+          href="/"
+          className="flex items-center gap-2 group"
+          aria-label="MAD Entertrainment Home"
+        >
           <motion.div
             whileHover={{ scale: 1.05 }}
             transition={{ duration: 0.2 }}
@@ -65,8 +72,7 @@ export function Navbar() {
               <span className="text-white font-black text-sm">M</span>
             </div>
             <span className="text-white font-bold text-lg tracking-tight">
-              MAD{' '}
-              <span className="text-gradient">Entertrainment</span>
+              MAD <span className="text-gradient">Entertrainment</span>
             </span>
           </motion.div>
         </Link>
@@ -82,23 +88,18 @@ export function Navbar() {
 
         {/* Desktop CTA */}
         <div className="hidden md:flex items-center gap-3">
-          <Link href="/my-booking">
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              className="px-4 py-2 text-sm font-medium text-text-secondary hover:text-text-primary transition-colors"
-            >
-              My Booking
-            </motion.button>
+          {/* H-08 FIX: replaced Link>button nesting (invalid HTML) with styled Link */}
+          <Link
+            href="/my-booking"
+            className="px-4 py-2 text-sm font-medium text-text-secondary hover:text-text-primary transition-colors"
+          >
+            My Booking
           </Link>
-          <Link href="/events">
-            <motion.button
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.98 }}
-              className="px-5 py-2.5 text-sm font-semibold btn-gradient text-white rounded-xl shadow-glow-sm"
-            >
-              Book Now
-            </motion.button>
+          <Link
+            href="/events"
+            className="px-5 py-2.5 text-sm font-semibold btn-gradient text-white rounded-xl shadow-glow-sm hover:scale-[1.03] active:scale-95 transition-transform"
+          >
+            Book Now
           </Link>
         </div>
 
@@ -106,11 +107,11 @@ export function Navbar() {
         <button
           className="md:hidden p-2 rounded-xl hover:bg-white/10 transition-colors text-text-primary"
           onClick={() => setMobileOpen((v) => !v)}
-          aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
+          aria-label={mobileOpen ? "Close menu" : "Open menu"}
           aria-expanded={mobileOpen}
         >
           <motion.div
-            animate={mobileOpen ? 'open' : 'closed'}
+            animate={mobileOpen ? "open" : "closed"}
             className="w-5 h-5 flex flex-col justify-center gap-1.5"
           >
             <motion.span
@@ -143,9 +144,9 @@ export function Navbar() {
         {mobileOpen && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
+            animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.25, ease: 'easeInOut' }}
+            transition={{ duration: 0.25, ease: "easeInOut" }}
             className="md:hidden glass-strong border-t border-border-subtle overflow-hidden"
           >
             <div className="container-mad py-4 flex flex-col gap-1">
@@ -166,15 +167,20 @@ export function Navbar() {
                 </motion.div>
               ))}
               <div className="mt-3 pt-3 border-t border-border-subtle flex flex-col gap-2">
-                <Link href="/my-booking" onClick={() => setMobileOpen(false)}>
-                  <button className="w-full py-3 px-4 text-text-secondary hover:text-text-primary hover:bg-white/5 rounded-xl transition-colors font-medium text-left">
-                    My Booking
-                  </button>
+                {/* H-08 FIX: replaced Link>button nesting with styled Link */}
+                <Link
+                  href="/my-booking"
+                  onClick={() => setMobileOpen(false)}
+                  className="w-full py-3 px-4 text-text-secondary hover:text-text-primary hover:bg-white/5 rounded-xl transition-colors font-medium text-left block"
+                >
+                  My Booking
                 </Link>
-                <Link href="/events" onClick={() => setMobileOpen(false)}>
-                  <button className="w-full py-3 px-4 btn-gradient text-white rounded-xl font-semibold text-center">
-                    Book Now
-                  </button>
+                <Link
+                  href="/events"
+                  onClick={() => setMobileOpen(false)}
+                  className="w-full py-3 px-4 btn-gradient text-white rounded-xl font-semibold text-center block"
+                >
+                  Book Now
                 </Link>
               </div>
             </div>
@@ -185,11 +191,17 @@ export function Navbar() {
   );
 }
 
-function NavLink({ href, children }: { href: string; children: React.ReactNode }) {
+function NavLink({
+  href,
+  children,
+}: {
+  href: string;
+  children: React.ReactNode;
+}) {
   return (
     <Link href={href}>
       <motion.span
-        whileHover={{ color: '#FFFFFF' }}
+        whileHover={{ color: "#FFFFFF" }}
         className="px-4 py-2 rounded-xl text-sm font-medium text-text-secondary hover:text-text-primary hover:bg-white/5 transition-colors inline-block cursor-pointer"
       >
         {children}

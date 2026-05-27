@@ -1,8 +1,8 @@
-import { getRedis, isRedisConnected } from '../config/redis';
-import { logger } from '../utils/logger';
+import { getRedis, isRedisConnected } from "../config/redis";
+import { logger } from "../utils/logger";
 
 export class CacheService {
-  private static readonly PREFIX = 'mad:cache:';
+  private static readonly PREFIX = "mad:cache:";
 
   private static getFullKey(key: string): string {
     return `${this.PREFIX}${key}`;
@@ -22,7 +22,7 @@ export class CacheService {
 
       return JSON.parse(data) as T;
     } catch (err) {
-      logger.error({ err, key }, 'CacheService.get failed');
+      logger.error({ err, key }, "CacheService.get failed");
       return null;
     }
   }
@@ -39,12 +39,12 @@ export class CacheService {
       const serialized = JSON.stringify(value);
 
       if (ttlSeconds > 0) {
-        await redis.set(fullKey, serialized, 'EX', ttlSeconds);
+        await redis.set(fullKey, serialized, "EX", ttlSeconds);
       } else {
         await redis.set(fullKey, serialized);
       }
     } catch (err) {
-      logger.error({ err, key }, 'CacheService.set failed');
+      logger.error({ err, key }, "CacheService.set failed");
     }
   }
 
@@ -59,7 +59,7 @@ export class CacheService {
       const fullKey = this.getFullKey(key);
       await redis.del(fullKey);
     } catch (err) {
-      logger.error({ err, key }, 'CacheService.del failed');
+      logger.error({ err, key }, "CacheService.del failed");
     }
   }
 
@@ -72,17 +72,23 @@ export class CacheService {
     try {
       const redis = getRedis();
       const fullPattern = this.getFullKey(pattern);
-      
-      let cursor = '0';
+
+      let cursor = "0";
       do {
-        const [nextCursor, keys] = await redis.scan(cursor, 'MATCH', fullPattern, 'COUNT', 250);
+        const [nextCursor, keys] = await redis.scan(
+          cursor,
+          "MATCH",
+          fullPattern,
+          "COUNT",
+          250,
+        );
         cursor = nextCursor;
         if (keys.length > 0) {
           await redis.del(...keys);
         }
-      } while (cursor !== '0');
+      } while (cursor !== "0");
     } catch (err) {
-      logger.error({ err, pattern }, 'CacheService.delPattern failed');
+      logger.error({ err, pattern }, "CacheService.delPattern failed");
     }
   }
 }

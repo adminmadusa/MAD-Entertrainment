@@ -1,6 +1,6 @@
-import { Refund, IRefund } from '../../models/refund.schema';
-import { Booking } from '../../models/booking.schema';
-import { Payment } from '../../models/payment.schema';
+import { Refund, IRefund } from "../../models/refund.schema";
+import { Booking } from "../../models/booking.schema";
+import { Payment } from "../../models/payment.schema";
 
 export const createRefund = async (data: {
   bookingId: string;
@@ -13,7 +13,7 @@ export const createRefund = async (data: {
     paymentId: data.paymentId,
     amount: data.amount,
     reason: data.reason,
-    status: 'requested',
+    status: "requested",
   });
   return await refund.save();
 };
@@ -21,7 +21,7 @@ export const createRefund = async (data: {
 export const getRefunds = async (
   page: number = 1,
   limit: number = 15,
-  status?: string
+  status?: string,
 ): Promise<{ refunds: IRefund[]; total: number; totalPages: number }> => {
   const skip = (page - 1) * limit;
   const filter: Record<string, any> = {};
@@ -31,8 +31,8 @@ export const getRefunds = async (
 
   const total = await Refund.countDocuments(filter);
   const refunds = await Refund.find(filter)
-    .populate('bookingId', 'bookingId totalAmount status')
-    .populate('paymentId', 'gatewayPaymentId amount status gateway')
+    .populate("bookingId", "bookingId totalAmount status")
+    .populate("paymentId", "gatewayPaymentId amount status gateway")
     .sort({ createdAt: -1 })
     .skip(skip)
     .limit(limit);
@@ -46,11 +46,11 @@ export const getRefunds = async (
 
 export const processRefund = async (
   id: string,
-  action: 'approve' | 'reject',
+  action: "approve" | "reject",
   adminNotes?: string,
-  gatewayRefundId?: string
+  gatewayRefundId?: string,
 ): Promise<IRefund | null> => {
-  const status = action === 'approve' ? 'completed' : 'failed';
+  const status = action === "approve" ? "completed" : "failed";
   const updated = await Refund.findByIdAndUpdate(
     id,
     {
@@ -59,18 +59,18 @@ export const processRefund = async (
       gatewayRefundId,
       processedAt: new Date(),
     },
-    { new: true }
+    { new: true },
   );
 
-  if (updated && status === 'completed') {
+  if (updated && status === "completed") {
     // If the refund is successfully completed, update the booking status to cancelled/refunded
     await Booking.findByIdAndUpdate(updated.bookingId, {
-      status: 'cancelled',
-      cancellationReason: adminNotes || 'Admin Refund Processed',
+      status: "cancelled",
+      cancellationReason: adminNotes || "Admin Refund Processed",
       cancelledAt: new Date(),
     });
     await Payment.findByIdAndUpdate(updated.paymentId, {
-      status: 'refunded',
+      status: "refunded",
     });
   }
 

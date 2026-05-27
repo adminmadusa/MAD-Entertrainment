@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { createContext, useContext, useEffect, useRef, useState } from 'react';
-import { io, Socket } from 'socket.io-client';
+import { createContext, useContext, useEffect, useState } from "react";
+import { io, Socket } from "socket.io-client";
 
 interface SocketContextValue {
   socket: Socket | null;
@@ -13,38 +13,49 @@ const SocketContext = createContext<SocketContextValue>({
   isConnected: false,
 });
 
+/**
+ * SocketProvider — manages a single Socket.IO connection for the app lifetime.
+ *
+ * FIX (C-04): The previous implementation passed `socketRef.current` directly
+ * as the context value. Because React captures the value at render time, and
+ * refs don't trigger re-renders, all consumers received `socket: null` forever.
+ *
+ * Solution: store the socket instance in `useState`. When the socket is created
+ * inside `useEffect`, calling `setSocket(sock)` triggers a re-render that
+ * propagates the live Socket instance to all consumers.
+ */
 export function SocketProvider({ children }: { children: React.ReactNode }) {
-  const socketRef = useRef<Socket | null>(null);
+  const [socket, setSocket] = useState<Socket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
-    const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL ?? 'http://localhost:5000';
+    const socketUrl =
+      process.env.NEXT_PUBLIC_SOCKET_URL ?? "http://localhost:5000";
 
-    const socket = io(socketUrl, {
+    const sock = io(socketUrl, {
       autoConnect: true,
       reconnection: true,
       reconnectionAttempts: 5,
       reconnectionDelay: 1000,
-      transports: ['websocket'],
+      transports: ["websocket"],
     });
 
-    socketRef.current = socket;
+    // Expose to context — triggers a re-render so consumers get the live instance
+    setSocket(sock);
 
-    socket.on('connect', () => {
-      setIsConnected(true);
-    });
-
-    socket.on('disconnect', () => {
-      setIsConnected(false);
-    });
+    sock.on("connect", () => setIsConnected(true));
+    sock.on("disconnect", () => setIsConnected(false));
 
     return () => {
-      socket.disconnect();
+      sock.disconnect();
+      // Reset state so a future mount starts fresh
+      setSocket(null);
+      setIsConnected(false);
     };
   }, []);
 
   return (
-    <SocketContext.Provider value={{ socket: socketRef.current, isConnected }}>
+    <SocketContext.Provider value={{ socket, isConnected }}>
       {children}
     </SocketContext.Provider>
   );

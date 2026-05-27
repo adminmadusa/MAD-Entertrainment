@@ -1,15 +1,17 @@
-'use client';
+"use client";
 
-import { Artist } from '@mad/types';
-import { useQuery, useMutation } from '@tanstack/react-query';
-import { motion } from 'framer-motion';
-import { useRouter, useParams } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { Artist } from "@mad/types";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { motion } from "framer-motion";
+import { useRouter, useParams } from "next/navigation";
+import { useState, useEffect } from "react";
 
-import { CloudinaryUpload } from '@/components/CloudinaryUpload';
-import { adminGetArtist, adminUpdateArtist } from '@/lib/api/admin/artist.service';
-import { extractApiError } from '@/lib/api/client';
-
+import { CloudinaryUpload } from "@/components/CloudinaryUpload";
+import {
+  adminGetArtist,
+  adminUpdateArtist,
+} from "@/lib/api/admin/artist.service";
+import { extractApiError } from "@/lib/api/client";
 
 interface CloudinaryAsset {
   url: string;
@@ -22,27 +24,29 @@ export default function EditArtistPage() {
   const params = useParams();
   const id = params.id as string;
 
-  const [name, setName] = useState('');
-  const [slug, setSlug] = useState('');
-  const [bio, setBio] = useState('');
-  const [genre, setGenre] = useState('');
+  const [name, setName] = useState("");
+  const [slug, setSlug] = useState("");
+  const [bio, setBio] = useState("");
+  const [genre, setGenre] = useState("");
   const [isActive, setIsActive] = useState(true);
 
   // Social Links
-  const [instagram, setInstagram] = useState('');
-  const [youtube, setYoutube] = useState('');
-  const [spotify, setSpotify] = useState('');
-  const [twitter, setTwitter] = useState('');
-  const [facebook, setFacebook] = useState('');
+  const [instagram, setInstagram] = useState("");
+  const [youtube, setYoutube] = useState("");
+  const [spotify, setSpotify] = useState("");
+  const [twitter, setTwitter] = useState("");
+  const [facebook, setFacebook] = useState("");
 
   // Media
-  const [profileImage, setProfileImage] = useState<CloudinaryAsset | null>(null);
+  const [profileImage, setProfileImage] = useState<CloudinaryAsset | null>(
+    null,
+  );
   const [galleryImages, setGalleryImages] = useState<CloudinaryAsset[]>([]);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   // Fetch current artist
   const { data: artist, isLoading } = useQuery({
-    queryKey: ['admin-artist', id],
+    queryKey: ["admin-artist", id],
     queryFn: () => adminGetArtist(id),
     enabled: !!id,
   });
@@ -50,21 +54,25 @@ export default function EditArtistPage() {
   // Prepopulate state
   useEffect(() => {
     if (artist) {
-      setName(artist.name || '');
-      setSlug(artist.slug || '');
-      setBio(artist.bio || '');
-      setGenre(artist.genre?.join(', ') || '');
+      setName(artist.name || "");
+      setSlug(artist.slug || "");
+      setBio(artist.bio || "");
+      setGenre(artist.genre?.join(", ") || "");
       setIsActive(artist.isActive ?? true);
-      
+
       const getSocialUrl = (platform: string) => {
-        return (artist.socialLinks as any)?.find((link: any) => link.platform === platform)?.url || '';
+        return (
+          (artist.socialLinks as any)?.find(
+            (link: any) => link.platform === platform,
+          )?.url || ""
+        );
       };
-      setInstagram(getSocialUrl('instagram'));
-      setYoutube(getSocialUrl('youtube'));
-      setSpotify(getSocialUrl('spotify'));
-      setTwitter(getSocialUrl('twitter'));
-      setFacebook(getSocialUrl('facebook'));
-      
+      setInstagram(getSocialUrl("instagram"));
+      setYoutube(getSocialUrl("youtube"));
+      setSpotify(getSocialUrl("spotify"));
+      setTwitter(getSocialUrl("twitter"));
+      setFacebook(getSocialUrl("facebook"));
+
       setProfileImage(artist.profileImage || null);
       setGalleryImages(artist.galleryImages || []);
     }
@@ -72,13 +80,13 @@ export default function EditArtistPage() {
 
   const updateMutation = useMutation({
     mutationFn: (payload: Partial<Artist>) => adminUpdateArtist(id, payload),
-    onSuccess: () => router.push('/artists'),
+    onSuccess: () => router.push("/artists"),
     onError: (err) => {
       const apiErr = extractApiError(err);
       if (apiErr.errors) {
         const details = Object.entries(apiErr.errors)
-          .map(([field, msgs]) => `${field}: ${msgs.join(', ')}`)
-          .join('; ');
+          .map(([field, msgs]) => `${field}: ${msgs.join(", ")}`)
+          .join("; ");
         setError(`Validation failed — ${details}`);
       } else {
         setError(apiErr.message);
@@ -90,7 +98,9 @@ export default function EditArtistPage() {
     if (asset === null) {
       setGalleryImages((prev) => prev.filter((_, idx) => idx !== index));
     } else {
-      setGalleryImages((prev) => prev.map((img, idx) => (idx === index ? asset : img)));
+      setGalleryImages((prev) =>
+        prev.map((img, idx) => (idx === index ? asset : img)),
+      );
     }
   };
 
@@ -102,24 +112,39 @@ export default function EditArtistPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
 
     if (!name.trim()) {
-      setError('Name is required.');
+      setError("Name is required.");
       return;
     }
 
     const cleanSlug = slug.trim()
-      ? slug.trim().toLowerCase().replace(/[^a-z0-9-]/g, '-')
-      : name.trim().toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+      ? slug
+          .trim()
+          .toLowerCase()
+          .replace(/[^a-z0-9-]/g, "-")
+      : name
+          .trim()
+          .toLowerCase()
+          .replace(/[^a-z0-9-]/g, "-")
+          .replace(/-+/g, "-")
+          .replace(/^-|-$/g, "");
 
-    const genres = genre.split(',').map((g) => g.trim()).filter(Boolean);
+    const genres = genre
+      .split(",")
+      .map((g) => g.trim())
+      .filter(Boolean);
     const links = [
-      ...(instagram.trim() ? [{ platform: 'instagram', url: instagram.trim() }] : []),
-      ...(youtube.trim() ? [{ platform: 'youtube', url: youtube.trim() }] : []),
-      ...(spotify.trim() ? [{ platform: 'spotify', url: spotify.trim() }] : []),
-      ...(twitter.trim() ? [{ platform: 'twitter', url: twitter.trim() }] : []),
-      ...(facebook.trim() ? [{ platform: 'facebook', url: facebook.trim() }] : []),
+      ...(instagram.trim()
+        ? [{ platform: "instagram", url: instagram.trim() }]
+        : []),
+      ...(youtube.trim() ? [{ platform: "youtube", url: youtube.trim() }] : []),
+      ...(spotify.trim() ? [{ platform: "spotify", url: spotify.trim() }] : []),
+      ...(twitter.trim() ? [{ platform: "twitter", url: twitter.trim() }] : []),
+      ...(facebook.trim()
+        ? [{ platform: "facebook", url: facebook.trim() }]
+        : []),
     ];
 
     const payload: Partial<Artist> = {
@@ -127,7 +152,7 @@ export default function EditArtistPage() {
       slug: cleanSlug,
       bio: bio.trim() || undefined,
       genre: genres.length > 0 ? genres : undefined,
-      profileImage: (profileImage === null ? null : profileImage) as any,
+      profileImage: profileImage as any,
       galleryImages,
       socialLinks: links.length > 0 ? links : undefined,
       isActive,
@@ -139,7 +164,9 @@ export default function EditArtistPage() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[300px]">
-        <div className="text-white/40 text-sm animate-pulse">Loading artist parameters...</div>
+        <div className="text-white/40 text-sm animate-pulse">
+          Loading artist parameters...
+        </div>
       </div>
     );
   }
@@ -149,7 +176,9 @@ export default function EditArtistPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-black text-white">Edit Artist</h1>
-          <p className="text-text-muted text-sm mt-0.5">Modify artist details</p>
+          <p className="text-text-muted text-sm mt-0.5">
+            Modify artist details
+          </p>
         </div>
         <button
           onClick={() => router.back()}
@@ -258,7 +287,9 @@ export default function EditArtistPage() {
 
         {/* Social Links */}
         <div className="glass rounded-2xl border border-border-subtle p-6 space-y-5">
-          <h2 className="text-white font-semibold">Social & Streaming Profiles</h2>
+          <h2 className="text-white font-semibold">
+            Social & Streaming Profiles
+          </h2>
           <div className="grid grid-cols-2 gap-4">
             <Field label="Instagram URL">
               <input
@@ -311,7 +342,10 @@ export default function EditArtistPage() {
               onChange={(e) => setIsActive(e.target.checked)}
               className="w-4 h-4 accent-accent-purple rounded"
             />
-            <label htmlFor="artist-active" className="text-text-secondary text-sm">
+            <label
+              htmlFor="artist-active"
+              className="text-text-secondary text-sm"
+            >
               Mark this artist as active for event lineups
             </label>
           </div>
@@ -332,7 +366,7 @@ export default function EditArtistPage() {
             disabled={updateMutation.isPending}
             className="flex-1 py-3 btn-gradient text-white font-bold rounded-xl shadow-glow-sm disabled:opacity-60 transition-all"
           >
-            {updateMutation.isPending ? 'Saving Changes...' : 'Save Changes'}
+            {updateMutation.isPending ? "Saving Changes..." : "Save Changes"}
           </button>
         </div>
       </form>
@@ -340,14 +374,22 @@ export default function EditArtistPage() {
   );
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
   return (
     <div className="space-y-1.5">
-      <label className="text-text-secondary text-sm font-medium block">{label}</label>
+      <label className="text-text-secondary text-sm font-medium block">
+        {label}
+      </label>
       {children}
     </div>
   );
 }
 
 const inputCls =
-  'w-full px-4 py-2.5 rounded-xl bg-background border border-border-subtle text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-purple transition-colors';
+  "w-full px-4 py-2.5 rounded-xl bg-background border border-border-subtle text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-purple transition-colors";
