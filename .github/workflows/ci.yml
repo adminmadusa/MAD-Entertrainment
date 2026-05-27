@@ -35,6 +35,12 @@ jobs:
       - name: Run lint
         run: pnpm lint
 
+      - name: Lint warnings report (non-blocking)
+        run: |
+          pnpm --filter @mad/admin exec eslint src --max-warnings=9999
+          pnpm --filter @mad/web exec eslint src --max-warnings=9999
+        continue-on-error: true
+
   type-check:
     name: Type Check
     runs-on: ubuntu-latest
