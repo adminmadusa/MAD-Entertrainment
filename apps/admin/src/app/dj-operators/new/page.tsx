@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { CloudinaryUpload } from "@/components/CloudinaryUpload";
-import { adminCreateDJ } from "@/lib/api/admin/dj.service";
+import { adminCreateDJ } from "@/lib/api/admin/dj-operator.service";
 import { extractApiError } from "@/lib/api/client";
 
 interface CloudinaryAsset {

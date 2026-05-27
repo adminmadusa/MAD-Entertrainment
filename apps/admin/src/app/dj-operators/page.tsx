@@ -10,7 +10,7 @@ import {
   adminGetDJs,
   adminDeleteDJ,
   adminUpdateDJ,
-} from "@/lib/api/admin/dj.service";
+} from "@/lib/api/admin/dj-operator.service";
 import { extractApiError } from "@/lib/api/client";
 import ErrorState from "@/components/states/ErrorState";
 
