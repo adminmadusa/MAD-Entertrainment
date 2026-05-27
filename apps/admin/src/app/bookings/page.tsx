@@ -114,8 +114,8 @@ export default function AdminBookingsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0">
           <h1 className="text-2xl font-black text-white">Bookings</h1>
           <p className="text-text-muted text-sm mt-0.5">
             {pagination?.total ?? 0} total bookings
@@ -124,7 +124,7 @@ export default function AdminBookingsPage() {
         <button
           onClick={handleExportCSV}
           disabled={bookings.length === 0}
-          className="px-4 py-2 bg-white/5 hover:bg-white/10 border border-border-subtle rounded-xl text-sm font-semibold text-white transition-colors disabled:opacity-50"
+          className="w-full sm:w-auto px-4 py-2 bg-white/5 hover:bg-white/10 border border-border-subtle rounded-xl text-sm font-semibold text-white transition-colors disabled:opacity-50"
         >
           Export CSV
         </button>
@@ -139,7 +139,7 @@ export default function AdminBookingsPage() {
             setSearch(e.target.value);
             setPage(1);
           }}
-          className="flex-1 min-w-48 px-4 py-2.5 rounded-xl bg-background-card border border-border-subtle text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-purple"
+          className="flex-1 min-w-0 sm:min-w-48 px-4 py-2.5 rounded-xl bg-background-card border border-border-subtle text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-purple"
         />
         <select
           value={statusFilter}
