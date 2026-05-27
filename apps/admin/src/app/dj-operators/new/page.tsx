@@ -119,8 +119,8 @@ export default function CreateDJPage() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="max-w-3xl mx-auto space-y-6 min-w-0">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h1 className="text-2xl font-black text-white">Add DJ Operator</h1>
           <p className="text-text-muted text-sm mt-0.5">
@@ -129,7 +129,7 @@ export default function CreateDJPage() {
         </div>
         <button
           onClick={() => router.back()}
-          className="text-text-muted text-sm hover:text-text-secondary transition-colors flex items-center gap-1.5"
+          className="text-text-muted text-sm hover:text-text-secondary transition-colors flex items-center gap-1.5 self-start"
         >
           ← Back
         </button>
@@ -148,7 +148,7 @@ export default function CreateDJPage() {
 
         {/* Profile Image & Gallery */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="glass rounded-2xl border border-border-subtle p-6 md:col-span-1">
+          <div className="glass rounded-2xl border border-border-subtle p-4 sm:p-6 md:col-span-1">
             <CloudinaryUpload
               folder="dj-operators"
               value={profileImage}
@@ -158,7 +158,7 @@ export default function CreateDJPage() {
               id="dj-profile-photo"
             />
           </div>
-          <div className="glass rounded-2xl border border-border-subtle p-6 md:col-span-2 space-y-4">
+          <div className="glass rounded-2xl border border-border-subtle p-4 sm:p-6 md:col-span-2 space-y-4">
             <h2 className="text-white font-semibold">DJ Gallery</h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
               {galleryImages.map((img, index) => (
@@ -188,7 +188,7 @@ export default function CreateDJPage() {
         </div>
 
         {/* Basic Info */}
-        <div className="glass rounded-2xl border border-border-subtle p-6 space-y-5">
+        <div className="glass rounded-2xl border border-border-subtle p-4 sm:p-6 space-y-5">
           <h2 className="text-white font-semibold">Basic Information</h2>
           <Field label="DJ Name / Stage Name *">
             <input
@@ -200,7 +200,7 @@ export default function CreateDJPage() {
               className={inputCls}
             />
           </Field>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Field label="Slug (optional)">
               <input
                 id="dj-slug"
@@ -233,11 +233,11 @@ export default function CreateDJPage() {
         </div>
 
         {/* Social Links */}
-        <div className="glass rounded-2xl border border-border-subtle p-6 space-y-5">
+        <div className="glass rounded-2xl border border-border-subtle p-4 sm:p-6 space-y-5">
           <h2 className="text-white font-semibold">
             Social & Streaming Profiles
           </h2>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Field label="Instagram URL">
               <input
                 value={instagram}
@@ -278,11 +278,11 @@ export default function CreateDJPage() {
         </div>
 
         {/* Submit Actions */}
-        <div className="flex gap-4 pb-6">
+        <div className="flex flex-col sm:flex-row gap-4 pb-6">
           <button
             type="button"
             onClick={() => router.back()}
-            className="flex-1 py-3 glass border border-border-subtle rounded-xl text-text-secondary font-medium hover:text-white transition-colors"
+            className="w-full sm:flex-1 py-3 glass border border-border-subtle rounded-xl text-text-secondary font-medium hover:text-white transition-colors"
           >
             Cancel
           </button>
@@ -290,7 +290,7 @@ export default function CreateDJPage() {
             id="dj-submit"
             type="submit"
             disabled={createMutation.isPending}
-            className="flex-1 py-3 btn-gradient text-white font-bold rounded-xl shadow-glow-sm disabled:opacity-60 transition-all"
+            className="w-full sm:flex-1 py-3 btn-gradient text-white font-bold rounded-xl shadow-glow-sm disabled:opacity-60 transition-all"
           >
             {createMutation.isPending ? "Creating..." : "Create DJ Operator"}
           </button>
@@ -318,4 +318,4 @@ function Field({
 }
 
 const inputCls =
-  "w-full px-4 py-2.5 rounded-xl bg-background border border-border-subtle text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-purple transition-colors";
+  "w-full min-w-0 max-w-full px-4 py-2.5 rounded-xl bg-background border border-border-subtle text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-purple transition-colors";

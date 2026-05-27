@@ -16,7 +16,7 @@ export function CouponDetailsSection({
 }: CouponDetailsSectionProps) {
   return (
     <FormSection title="General Details">
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <FormField label="Coupon Code *">
           <input
             id="coupon-code"

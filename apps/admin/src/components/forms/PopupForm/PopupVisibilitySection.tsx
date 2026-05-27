@@ -16,7 +16,7 @@ export function PopupVisibilitySection({
 }: PopupVisibilitySectionProps) {
   return (
     <FormSection title="Trigger & Constraints">
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <FormField label="Trigger Type">
           <select
             value={values.trigger}
@@ -57,7 +57,7 @@ export function PopupVisibilitySection({
           />
         </FormField>
       </div>
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <FormField label="Cooldown Hours">
           <input
             type="number"

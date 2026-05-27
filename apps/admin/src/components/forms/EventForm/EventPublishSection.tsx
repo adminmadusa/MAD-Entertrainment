@@ -55,7 +55,7 @@ export function EventPublishSection({
             onChange={(e) =>
               onFieldChange("minimumAge", Number(e.target.value))
             }
-            className={`${inputCls} max-w-24`}
+            className={`${inputCls} w-full max-w-full sm:max-w-24`}
           />
         </FormField>
       )}

@@ -37,7 +37,7 @@ export function TicketProfileGroupsSection({
 }) {
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <h2 className="text-white font-bold text-lg">
           Ticket Groups / Sections
         </h2>
@@ -53,7 +53,7 @@ export function TicketProfileGroupsSection({
       {values.groups.map((group, groupIndex) => (
         <div
           key={groupIndex}
-          className="glass rounded-2xl border border-border-subtle p-6 space-y-6 relative"
+          className="glass rounded-2xl border border-border-subtle p-4 sm:p-6 space-y-6 relative"
         >
           {values.groups.length > 1 && (
             <button
@@ -107,7 +107,7 @@ export function TicketProfileGroupsSection({
           </div>
 
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
               <h3 className="text-white font-semibold text-sm">Tickets</h3>
               <button
                 type="button"
@@ -207,7 +207,7 @@ export function TicketProfileGroupsSection({
                     />
                   </div>
                 </div>
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                   <label className="text-xs text-text-secondary flex items-center gap-2">
                     <input
                       type="checkbox"

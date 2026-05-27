@@ -17,7 +17,7 @@ export function PopupContentSection({
 }: PopupContentSectionProps) {
   return (
     <>
-      <div className="glass rounded-2xl border border-border-subtle p-6">
+      <div className="glass rounded-2xl border border-border-subtle p-4 sm:p-6">
         <CloudinaryUpload
           folder="popups"
           value={values.image}
@@ -56,7 +56,7 @@ export function PopupContentSection({
             className={`${POPUP_INPUT_CLASSNAME} resize-none`}
           />
         </FormField>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField label="CTA Button Text (optional)">
             <input
               value={values.ctaText}

@@ -16,7 +16,7 @@ export function CouponDiscountSection({
 }: CouponDiscountSectionProps) {
   return (
     <FormSection title="Discount Configuration">
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <FormField
           label={
             values.discountType === "percentage"

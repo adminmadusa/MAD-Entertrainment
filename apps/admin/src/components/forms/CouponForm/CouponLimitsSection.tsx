@@ -16,7 +16,7 @@ export function CouponLimitsSection({
 }: CouponLimitsSectionProps) {
   return (
     <FormSection title="Usage Rules">
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <FormField label="Min Order Amount (₹)">
           <input
             id="coupon-min-order"

@@ -57,18 +57,18 @@ export function EventTicketingSection({
 
   return (
     <FormSection title="Ticketing Configuration">
-      <div className="flex bg-white/5 p-1 rounded-xl border border-white/10 w-fit">
+      <div className="flex bg-white/5 p-1 rounded-xl border border-white/10 w-full sm:w-fit">
         <button
           type="button"
           onClick={() => onFieldChange("ticketingType", "custom")}
-          className={`px-3 py-1.5 rounded-lg text-xs font-semibold ${values.ticketingType === "custom" ? "bg-accent-purple text-white" : "text-text-secondary"}`}
+          className={`flex-1 sm:flex-none px-3 py-1.5 rounded-lg text-xs font-semibold ${values.ticketingType === "custom" ? "bg-accent-purple text-white" : "text-text-secondary"}`}
         >
           Custom Tiers
         </button>
         <button
           type="button"
           onClick={() => onFieldChange("ticketingType", "profile")}
-          className={`px-3 py-1.5 rounded-lg text-xs font-semibold ${values.ticketingType === "profile" ? "bg-accent-purple text-white" : "text-text-secondary"}`}
+          className={`flex-1 sm:flex-none px-3 py-1.5 rounded-lg text-xs font-semibold ${values.ticketingType === "profile" ? "bg-accent-purple text-white" : "text-text-secondary"}`}
         >
           Ticket Profile
         </button>
@@ -76,7 +76,7 @@ export function EventTicketingSection({
 
       {values.ticketingType === "custom" ? (
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
             <span className="text-text-secondary text-sm font-medium">
               Define custom ticket tiers for this event
             </span>
@@ -93,7 +93,7 @@ export function EventTicketingSection({
               key={i}
               className="p-4 bg-white/3 rounded-xl border border-border-subtle space-y-4"
             >
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField label="Tier Name">
                   <select
                     value={tier.name}
