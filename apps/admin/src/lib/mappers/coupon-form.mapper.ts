@@ -1,6 +1,7 @@
 import { Coupon } from '@mad/types';
 
 import { toIsoDateTime, toLocalDateTimeInput } from '../forms/scheduling';
+import { normalizeCategoryArray, normalizeStringArray, toCouponTargetingPayload } from '../forms/targeting';
 import { CouponFormValues, CouponMutationPayload } from '@/types/coupon-form';
 
 export function toLocalDatetimeString(dateStr: Date | string | undefined): string {
@@ -36,13 +37,14 @@ export function mapCouponToFormValues(coupon: Coupon): CouponFormValues {
     validFrom: toLocalDatetimeString(coupon.validFrom),
     validUntil: toLocalDatetimeString(coupon.validUntil),
     isActive: coupon.isActive ?? true,
-    applicableEventIds: coupon.applicableEventIds || [],
-    applicableCategories: coupon.applicableCategories || [],
+    applicableEventIds: normalizeStringArray(coupon.applicableEventIds),
+    applicableCategories: normalizeCategoryArray(coupon.applicableCategories),
   };
 }
 
 export function mapCouponFormToPayload(values: CouponFormValues): CouponMutationPayload {
   const maxDiscountValue = values.maxDiscount === '' ? undefined : Number(values.maxDiscount);
+  const targetingPayload = toCouponTargetingPayload(values.applicableEventIds, values.applicableCategories);
 
   return {
     code: values.code.trim().toUpperCase(),
@@ -55,7 +57,6 @@ export function mapCouponFormToPayload(values: CouponFormValues): CouponMutation
     validFrom: toIsoDateTime(values.validFrom),
     validUntil: toIsoDateTime(values.validUntil),
     isActive: values.isActive,
-    applicableEventIds: values.applicableEventIds.length > 0 ? values.applicableEventIds : [],
-    applicableCategories: values.applicableCategories.length > 0 ? values.applicableCategories : [],
+    ...targetingPayload,
   };
 }

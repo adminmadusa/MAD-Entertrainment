@@ -1,6 +1,8 @@
 import { z } from 'zod';
 
 import { validatePublishWindow } from '../forms/scheduling';
+import { validateTargetingRules } from '../forms/targeting';
+import { canPublish } from '../forms/visibility';
 
 export const popupFormSchema = z
   .object({
@@ -35,11 +37,31 @@ export const popupFormSchema = z
       });
     }
 
+    if (!canPublish(values.startDate || undefined, values.endDate || undefined)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['endDate'],
+        message: 'Invalid publish window.',
+      });
+    }
+
     if (values.ctaUrl && !/^https?:\/\//i.test(values.ctaUrl)) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ['ctaUrl'],
         message: 'CTA URL must start with http:// or https://',
+      });
+    }
+
+    if (
+      !validateTargetingRules({
+        pages: values.showOnPages ? values.showOnPages.split(',').map((page) => page.trim()).filter(Boolean) : [],
+      })
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['showOnPages'],
+        message: 'Invalid targeting rules.',
       });
     }
   });

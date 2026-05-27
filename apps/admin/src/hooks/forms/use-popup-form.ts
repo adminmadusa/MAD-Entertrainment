@@ -4,6 +4,7 @@ import { PopupCampaign } from '@mad/types';
 import { useState } from 'react';
 
 import { getFirstValidationError, runFormSubmit } from '@/lib/forms/core';
+import { resolveVisibilityState } from '@/lib/forms/visibility';
 import { getDefaultPopupFormValues, mapPopupFormToPayload, mapPopupToFormValues } from '@/lib/mappers/popup-form.mapper';
 import { popupFormSchema } from '@/lib/validators/popup-form.schema';
 import { PopupFormMode, PopupFormValues } from '@/types/popup-form';
@@ -35,5 +36,7 @@ export function usePopupForm({ mode, initialPopup, onSubmitPayload }: UsePopupFo
     }, setError);
   };
 
-  return { values, error, setField, setError, submit };
+  const visibilityState = resolveVisibilityState(values.isActive, values.startDate || undefined, values.endDate || undefined);
+
+  return { values, error, visibilityState, setField, setError, submit };
 }

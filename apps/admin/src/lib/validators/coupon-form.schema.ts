@@ -2,6 +2,7 @@ import { EventCategory } from '@mad/shared';
 import { z } from 'zod';
 
 import { validateDateRange } from '../forms/scheduling';
+import { validateTargetingRules } from '../forms/targeting';
 import { isPercentageInRange, isPositiveNumber } from '../forms/rules';
 
 const numberOrEmpty = z.union([z.number(), z.literal('')]);
@@ -44,5 +45,14 @@ export const couponFormSchema = z
 
     if (values.minOrderAmount !== '' && typeof values.minOrderAmount === 'number' && values.minOrderAmount < 0) {
       ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['minOrderAmount'], message: 'Min order amount cannot be negative.' });
+    }
+
+    if (
+      !validateTargetingRules({
+        eventIds: values.applicableEventIds,
+        categories: values.applicableCategories,
+      })
+    ) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['applicableEventIds'], message: 'Invalid targeting rules.' });
     }
   });

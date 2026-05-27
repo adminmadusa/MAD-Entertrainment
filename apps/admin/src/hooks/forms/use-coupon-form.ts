@@ -5,6 +5,7 @@ import { Coupon } from '@mad/types';
 import { useState } from 'react';
 
 import { getFirstValidationError, runFormSubmit } from '@/lib/forms/core';
+import { normalizeId } from '@/lib/forms/targeting';
 import {
   getDefaultCouponFormValues,
   mapCouponFormToPayload,
@@ -30,11 +31,14 @@ export function useCouponForm({ mode, initialCoupon, onSubmitPayload }: UseCoupo
   };
 
   const toggleEventSelection = (eventId: string) => {
+    const normalizedEventId = normalizeId(eventId);
+    if (!normalizedEventId) return;
+
     setValues((prev) => ({
       ...prev,
-      applicableEventIds: prev.applicableEventIds.includes(eventId)
-        ? prev.applicableEventIds.filter((id) => id !== eventId)
-        : [...prev.applicableEventIds, eventId],
+      applicableEventIds: prev.applicableEventIds.includes(normalizedEventId)
+        ? prev.applicableEventIds.filter((id) => id !== normalizedEventId)
+        : [...prev.applicableEventIds, normalizedEventId],
     }));
   };
 

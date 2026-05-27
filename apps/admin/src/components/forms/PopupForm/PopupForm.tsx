@@ -22,7 +22,7 @@ interface PopupFormProps {
 }
 
 export function PopupForm({ mode, initialPopup, isSubmitting, serverError, onBack, onSubmitPayload }: PopupFormProps) {
-  const { values, error, setField, submit } = usePopupForm({ mode, initialPopup, onSubmitPayload });
+  const { values, error, visibilityState, setField, submit } = usePopupForm({ mode, initialPopup, onSubmitPayload });
 
   const submitLabel = isSubmitting
     ? mode === 'create'
@@ -40,6 +40,7 @@ export function PopupForm({ mode, initialPopup, isSubmitting, serverError, onBac
           <p className="text-text-muted text-sm mt-0.5">
             {mode === 'create' ? 'Configure a new engagement popup banner' : 'Modify campaign parameters'}
           </p>
+          <p className="text-xs text-text-muted mt-1 uppercase tracking-wider">Visibility: {visibilityState}</p>
         </div>
         <button onClick={onBack} className="text-text-muted text-sm hover:text-text-secondary transition-colors flex items-center gap-1.5">← Back</button>
       </div>

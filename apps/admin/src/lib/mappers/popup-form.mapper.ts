@@ -1,6 +1,7 @@
 import { PopupCampaign } from '@mad/types';
 
 import { toIsoDateTime, toLocalDateTimeInput } from '../forms/scheduling';
+import { normalizeId, toPopupTargetingPayload } from '../forms/targeting';
 import { PopupFormValues, PopupMutationPayload } from '@/types/popup-form';
 
 export function getDefaultPopupFormValues(): PopupFormValues {
@@ -36,7 +37,7 @@ export function mapPopupToFormValues(popup: PopupCampaign): PopupFormValues {
     priority: popup.priority ?? 0,
     isActive: popup.isActive ?? true,
     showOnPages: popup.showOnPages?.join(', ') || '',
-    linkedEventId: popup.linkedEventId ? String(popup.linkedEventId) : '',
+    linkedEventId: normalizeId(popup.linkedEventId),
     startDate: toLocalDateTimeInput(popup.startDate),
     endDate: toLocalDateTimeInput(popup.endDate),
     image: (popup.image as PopupFormValues['image']) || null,
@@ -44,6 +45,8 @@ export function mapPopupToFormValues(popup: PopupCampaign): PopupFormValues {
 }
 
 export function mapPopupFormToPayload(values: PopupFormValues): PopupMutationPayload {
+  const targetingPayload = toPopupTargetingPayload(values.showOnPages, values.linkedEventId);
+
   return {
     name: values.name.trim(),
     title: values.title.trim(),
@@ -55,13 +58,7 @@ export function mapPopupFormToPayload(values: PopupFormValues): PopupMutationPay
     cooldownHours: Number(values.cooldownHours || 1),
     priority: Number(values.priority || 0),
     isActive: values.isActive,
-    showOnPages: values.showOnPages
-      ? values.showOnPages
-          .split(',')
-          .map((page) => page.trim())
-          .filter(Boolean)
-      : undefined,
-    linkedEventId: values.linkedEventId.trim() || undefined,
+    ...targetingPayload,
     startDate: toIsoDateTime(values.startDate),
     endDate: toIsoDateTime(values.endDate),
     image: values.image || undefined,
