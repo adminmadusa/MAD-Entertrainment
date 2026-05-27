@@ -57,8 +57,9 @@ describe("useFormMutation integration", () => {
       { wrapper: createWrapper() },
     );
 
-    const submitPromise = act(async () => {
-      await result.current.submit({ name: "foo" });
+    let submitPromise: Promise<void>;
+    await act(async () => {
+      submitPromise = result.current.submit({ name: "foo" });
     });
 
     await waitFor(() => expect(result.current.isPending).toBe(true));
@@ -67,7 +68,7 @@ describe("useFormMutation integration", () => {
       resolveMutation?.({ id: "evt_1" });
     });
 
-    await submitPromise;
+    await submitPromise!;
     await waitFor(() => expect(result.current.isPending).toBe(false));
 
     expect(mutationFn).toHaveBeenCalledTimes(1);

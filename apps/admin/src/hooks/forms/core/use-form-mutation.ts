@@ -8,6 +8,7 @@ import { extractApiError } from "@/lib/api/client";
 
 interface UseFormMutationOptions<TPayload, TResult> {
   mutationFn: (payload: TPayload) => Promise<TResult>;
+  retry?: number | boolean;
   redirectTo?: string;
   onSuccess?: (result: TResult) => void | Promise<void>;
   onError?: (error: unknown) => void | Promise<void>;
@@ -15,6 +16,7 @@ interface UseFormMutationOptions<TPayload, TResult> {
 
 export function useFormMutation<TPayload, TResult>({
   mutationFn,
+  retry,
   redirectTo,
   onSuccess,
   onError,
@@ -23,6 +25,7 @@ export function useFormMutation<TPayload, TResult>({
 
   const mutation = useMutation({
     mutationFn,
+    retry,
     onSuccess: async (result) => {
       if (onSuccess) await onSuccess(result);
       if (redirectTo) router.push(redirectTo);
