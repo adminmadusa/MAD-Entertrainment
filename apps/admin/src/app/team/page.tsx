@@ -161,8 +161,15 @@ export default function AdminTeamPage() {
                 ))
               ) : admins.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="py-16 text-center text-text-muted">
-                    No team members registered.
+                  <td colSpan={5} className="px-4 py-10">
+                    <div className="min-h-[240px] flex flex-col items-center justify-center gap-3 text-center">
+                      <p className="text-white text-sm font-medium">
+                        No team members registered
+                      </p>
+                      <p className="text-text-muted text-xs">
+                        Invite your first teammate to get started.
+                      </p>
+                    </div>
                   </td>
                 </tr>
               ) : (

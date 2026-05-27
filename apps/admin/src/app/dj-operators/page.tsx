@@ -138,17 +138,21 @@ export default function AdminDJsPage() {
                 ))
               ) : djs.length === 0 ? (
                 <tr>
-                  <td
-                    colSpan={5}
-                    className="py-16 px-4 text-center text-text-muted text-sm"
-                  >
-                    No DJ Operators found.{" "}
-                    <Link
-                      href="/dj-operators/new"
-                      className="text-accent-purple hover:underline"
-                    >
-                      Create one →
-                    </Link>
+                  <td colSpan={5} className="px-4 py-10">
+                    <div className="min-h-[240px] flex flex-col items-center justify-center gap-3 text-center">
+                      <p className="text-white text-sm font-medium">
+                        No DJ operators found
+                      </p>
+                      <p className="text-text-muted text-xs">
+                        Try adjusting filters or add your first DJ operator.
+                      </p>
+                      <Link
+                        href="/dj-operators/new"
+                        className="text-accent-purple text-sm hover:underline"
+                      >
+                        Add your first DJ operator →
+                      </Link>
+                    </div>
                   </td>
                 </tr>
               ) : (

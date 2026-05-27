@@ -205,8 +205,15 @@ export default function AdminBookingsPage() {
                 ))
               ) : bookings.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="py-16 text-center text-text-muted">
-                    No bookings found.
+                  <td colSpan={7} className="px-4 py-10">
+                    <div className="min-h-[240px] flex flex-col items-center justify-center gap-3 text-center">
+                      <p className="text-white text-sm font-medium">
+                        No bookings found
+                      </p>
+                      <p className="text-text-muted text-xs">
+                        Try adjusting search or status filters.
+                      </p>
+                    </div>
                   </td>
                 </tr>
               ) : (

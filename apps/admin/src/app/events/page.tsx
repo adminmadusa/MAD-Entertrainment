@@ -164,17 +164,21 @@ export default function AdminEventsPage() {
                 ))
               ) : events.length === 0 ? (
                 <tr>
-                  <td
-                    colSpan={6}
-                    className="py-16 px-4 text-center text-text-muted text-sm"
-                  >
-                    No events found.{" "}
-                    <Link
-                      href="/events/new"
-                      className="text-accent-purple hover:underline"
-                    >
-                      Create one →
-                    </Link>
+                  <td colSpan={6} className="px-4 py-10">
+                    <div className="min-h-[240px] flex flex-col items-center justify-center gap-3 text-center">
+                      <p className="text-white text-sm font-medium">
+                        No events found
+                      </p>
+                      <p className="text-text-muted text-xs">
+                        Try adjusting filters or create your first event.
+                      </p>
+                      <Link
+                        href="/events/new"
+                        className="text-accent-purple text-sm hover:underline"
+                      >
+                        Create your first event →
+                      </Link>
+                    </div>
                   </td>
                 </tr>
               ) : (

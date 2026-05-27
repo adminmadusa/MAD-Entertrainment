@@ -138,17 +138,21 @@ export default function AdminArtistsPage() {
                 ))
               ) : artists.length === 0 ? (
                 <tr>
-                  <td
-                    colSpan={5}
-                    className="py-16 px-4 text-center text-text-muted text-sm"
-                  >
-                    No artists found.{" "}
-                    <Link
-                      href="/artists/new"
-                      className="text-accent-purple hover:underline"
-                    >
-                      Create one →
-                    </Link>
+                  <td colSpan={5} className="px-4 py-10">
+                    <div className="min-h-[240px] flex flex-col items-center justify-center gap-3 text-center">
+                      <p className="text-white text-sm font-medium">
+                        No artists found
+                      </p>
+                      <p className="text-text-muted text-xs">
+                        Try adjusting filters or add your first artist.
+                      </p>
+                      <Link
+                        href="/artists/new"
+                        className="text-accent-purple text-sm hover:underline"
+                      >
+                        Add your first artist →
+                      </Link>
+                    </div>
                   </td>
                 </tr>
               ) : (
