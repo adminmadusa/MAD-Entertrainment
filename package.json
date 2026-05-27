@@ -26,8 +26,11 @@
     "format:check": "prettier --check ."
   },
   "lint-staged": {
-    "*.{js,jsx,ts,tsx,mjs,cjs}": [
-      "eslint --fix"
+    "apps/admin/src/**/*.{js,jsx,ts,tsx}": [
+      "pnpm --filter @mad/admin exec eslint --fix"
+    ],
+    "apps/web/src/**/*.{js,jsx,ts,tsx}": [
+      "pnpm --filter @mad/web exec eslint --fix"
     ],
     "*.{json,md,css,scss,yml,yaml,html}": [
       "prettier --write"
