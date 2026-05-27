@@ -5,5 +5,10 @@
   "type": "module",
   "exports": {
     ".": "./index.mjs"
+  },
+  "dependencies": {
+    "eslint": "^9.39.4",
+    "eslint-config-next": "^16.2.6",
+    "eslint-plugin-unused-imports": "^4.1.4"
   }
 }
