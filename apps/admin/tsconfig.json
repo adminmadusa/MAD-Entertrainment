@@ -17,6 +17,8 @@
     "jsx": "preserve",
     "paths": {
       "@/*": ["./src/*"],
+      "@mad/contracts": ["../../packages/contracts/src"],
+      "@mad/contracts/*": ["../../packages/contracts/src/*"],
       "@mad/shared": ["../../packages/shared/src"],
       "@mad/shared/*": ["../../packages/shared/src/*"],
       "@mad/types": ["../../packages/types/src"],
