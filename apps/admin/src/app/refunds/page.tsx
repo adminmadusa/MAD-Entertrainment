@@ -196,17 +196,17 @@ export default function AdminRefundsPage() {
 
       <AnimatePresence>
         {processTarget && (
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 sm:p-6 overflow-y-auto">
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="glass-strong rounded-2xl border border-border-subtle p-6 max-w-sm w-full space-y-4"
+              className="glass-strong rounded-2xl border border-border-subtle p-4 sm:p-6 max-w-sm w-full space-y-4 my-auto max-h-[90vh] overflow-y-auto"
             >
               <h3 className="text-white font-bold">
                 Process Refund — ₹{processTarget.amount.toLocaleString("en-IN")}
               </h3>
-              <div className="flex gap-3">
+              <div className="flex flex-col sm:flex-row gap-3">
                 {(["approve", "reject"] as const).map((a) => (
                   <button
                     key={a}
@@ -241,7 +241,7 @@ export default function AdminRefundsPage() {
                   />
                 </div>
               )}
-              <div className="flex gap-3">
+              <div className="flex flex-col-reverse sm:flex-row gap-3">
                 <button
                   onClick={() => setProcessTarget(null)}
                   className="flex-1 py-2.5 glass border border-border-subtle rounded-xl text-sm text-text-secondary"

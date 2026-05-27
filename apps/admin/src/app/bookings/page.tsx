@@ -295,12 +295,12 @@ export default function AdminBookingsPage() {
       {/* Cancel Modal */}
       <AnimatePresence>
         {cancelTarget && (
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 sm:p-6 overflow-y-auto">
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="glass-strong rounded-2xl border border-border-subtle p-6 max-w-sm w-full space-y-4"
+              className="glass-strong rounded-2xl border border-border-subtle p-4 sm:p-6 max-w-sm w-full space-y-4 my-auto max-h-[90vh] overflow-y-auto"
             >
               <h3 className="text-white font-bold">Cancel Booking</h3>
               <p className="text-text-secondary text-sm">
@@ -321,7 +321,7 @@ export default function AdminBookingsPage() {
                   className="w-full px-4 py-2.5 rounded-xl bg-background border border-border-subtle text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-purple"
                 />
               </div>
-              <div className="flex gap-3">
+              <div className="flex flex-col-reverse sm:flex-row gap-3">
                 <button
                   onClick={() => {
                     setCancelTarget(null);
@@ -370,12 +370,12 @@ export default function AdminBookingsPage() {
             const sendBestEvents = customer?.sendBestEvents ? "Yes" : "No";
 
             return (
-              <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-40 p-4">
+              <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-40 p-4 sm:p-6 overflow-y-auto">
                 <motion.div
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.95 }}
-                  className="glass-strong rounded-2xl border border-border-subtle p-6 max-w-lg w-full space-y-6 overflow-y-auto max-h-[90vh] scrollbar-thin"
+                  className="glass-strong rounded-2xl border border-border-subtle p-4 sm:p-6 max-w-lg w-full space-y-6 overflow-y-auto max-h-[90vh] my-auto scrollbar-thin"
                 >
                   <div className="flex items-center justify-between border-b border-white/10 pb-4">
                     <div>
@@ -393,7 +393,7 @@ export default function AdminBookingsPage() {
                     </span>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                     <div>
                       <h4 className="text-text-muted font-medium text-xs uppercase tracking-wider mb-1">
                         Customer Info
