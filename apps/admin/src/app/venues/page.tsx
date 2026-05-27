@@ -185,14 +185,18 @@ export default function AdminVenuesPage() {
                     <td className="py-4 px-5">
                       <div className="flex items-center gap-3">
                         {venue.images && venue.images[0]?.url ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
-                            src={venue.images[0].url}
-                            alt={venue.name}
-                            className="w-10 h-10 rounded-lg object-cover flex-shrink-0"
-                          />
+                          <div className="w-10 h-10 rounded-md overflow-hidden bg-white/5 flex-shrink-0">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={venue.images[0].url}
+                              alt={venue.name}
+                              loading="lazy"
+                              decoding="async"
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
                         ) : (
-                          <div className="w-10 h-10 rounded-lg bg-accent-purple/10 flex-shrink-0 flex items-center justify-center text-accent-purple text-xs font-bold">
+                          <div className="w-10 h-10 rounded-md bg-accent-purple/10 flex-shrink-0 flex items-center justify-center text-accent-purple text-xs font-bold">
                             {venue.name[0]}
                           </div>
                         )}

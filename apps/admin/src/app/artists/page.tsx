@@ -160,12 +160,16 @@ export default function AdminArtistsPage() {
                     <td className="py-4 px-5">
                       <div className="flex items-center gap-3">
                         {artist.profileImage?.url ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
-                            src={artist.profileImage.url}
-                            alt={artist.name}
-                            className="w-10 h-10 rounded-full object-cover flex-shrink-0"
-                          />
+                          <div className="w-10 h-10 rounded-full overflow-hidden bg-white/5 flex-shrink-0">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={artist.profileImage.url}
+                              alt={artist.name}
+                              loading="lazy"
+                              decoding="async"
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
                         ) : (
                           <div className="w-10 h-10 rounded-full bg-accent-purple/10 flex-shrink-0 flex items-center justify-center text-accent-purple text-xs font-bold">
                             {artist.name[0]}

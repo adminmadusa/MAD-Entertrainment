@@ -123,13 +123,16 @@ export function CloudinaryUpload({
       {/* Preview */}
       {value?.url ? (
         <div
-          className={`relative ${aspectRatio} rounded-xl overflow-hidden border border-border-subtle group`}
+          className={`relative ${aspectRatio} min-h-[140px] rounded-xl overflow-hidden border border-border-subtle bg-white/2 group`}
         >
+          <div className="absolute inset-0 animate-pulse bg-white/5" />
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={value.url}
             alt={value.alt ?? "Uploaded image"}
-            className="w-full h-full object-cover"
+            loading="lazy"
+            decoding="async"
+            className="relative z-[1] w-full h-full object-cover"
           />
           <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity flex items-center justify-center gap-3">
             <button
@@ -163,7 +166,7 @@ export function CloudinaryUpload({
             uploadState !== "uploading" && inputRef.current?.click()
           }
           className={[
-            `${aspectRatio} rounded-xl border-2 border-dashed flex flex-col items-center justify-center gap-3`,
+            `${aspectRatio} min-h-[140px] rounded-xl border-2 border-dashed flex flex-col items-center justify-center gap-3`,
             "cursor-pointer transition-all duration-200",
             isDragging
               ? "border-accent-purple bg-accent-purple/10"
