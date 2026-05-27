@@ -30,8 +30,8 @@ export default class ErrorBoundary extends Component<
   render() {
     if (this.state.hasError) {
       return (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/70 backdrop-blur-sm">
-          <div className="glass-strong rounded-xl p-8 max-w-md w-full text-center">
+        <div className="fixed inset-0 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 sm:p-6 overflow-y-auto">
+          <div className="glass-strong rounded-xl p-6 sm:p-8 max-w-md w-full text-center my-auto max-h-[90vh] overflow-y-auto">
             <h2 className="text-2xl font-bold text-white mb-4">
               Something went wrong
             </h2>
