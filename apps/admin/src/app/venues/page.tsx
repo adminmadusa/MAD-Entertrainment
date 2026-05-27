@@ -106,7 +106,10 @@ export default function AdminVenuesPage() {
       </div>
 
       {/* Table */}
-      <div className="glass rounded-2xl border border-border-subtle overflow-hidden">
+      <div
+        className="glass rounded-2xl border border-border-subtle overflow-hidden min-h-[360px]"
+        aria-busy={isLoading}
+      >
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
