@@ -75,7 +75,8 @@ export async function adminGetDJ(id: string): Promise<DJOperator | null> {
   try {
     const { data } = await adminApiClient.get<any>(`/admin/dj-operators/${id}`);
     const payload = data?.data;
-    return payload?.djOperator || payload?.dj || payload;
+    // Prefer canonical keys first; keep legacy alias fallback for compatibility.
+    return payload?.data || payload?.djOperator || payload?.dj || payload;
   } catch (error) {
     console.error(`[DJ Service] Failed to fetch DJ Operator ${id}:`, error);
     return null;
