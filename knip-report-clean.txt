@@ -1,0 +1,165 @@
+Unused files (13)
+apps/admin/src/components/AdminRealtimeSync.tsx       
+apps/admin/src/components/forms/types/index.ts        
+apps/admin/src/components/ServiceWorkerDiagnostics.tsx
+apps/admin/src/components/states/EmptyState.tsx       
+apps/admin/src/components/states/LoadingState.tsx     
+apps/admin/src/lib/api/admin/_helpers.ts              
+apps/admin/src/lib/query/query-invalidation.service.ts
+apps/server/src/utils/fix-popups.ts                   
+apps/web/src/hooks/use-api.hook.ts                    
+apps/web/src/hooks/use-auth.hook.ts                   
+apps/web/src/hooks/use-socket.hook.ts                 
+apps/web/src/lib/api/health.service.ts                
+apps/web/src/lib/query/query-invalidation.service.ts  
+Unused dependencies (6)
+@mad/ui           apps/admin/package.json:24:6        
+@mad/validations  apps/admin/package.json:26:6        
+socket.io-client  apps/admin/package.json:35:6        
+csurf             apps/server/package.json:26:6       
+socket.io-client  package.json:43:6                   
+@mad/shared       packages/contracts/package.json:14:6
+Unused devDependencies (8)
+eslint-config-next                            apps/admin/package.json:45:6 
+eslint-plugin-unused-imports                  apps/admin/package.json:46:6 
+@types/csurf                                  apps/server/package.json:52:6
+autocannon                                    apps/server/package.json:62:6
+eslint-config-next                            apps/web/package.json:42:6   
+eslint-plugin-unused-imports                  apps/web/package.json:43:6   
+@secretlint/secretlint-rule-preset-recommend  package.json:28:6            
+ts-node                                       package.json:36:6            
+Unlisted dependencies (10)
+zod                                 apps/admin/src/lib/forms/core/validation-error.ts:1:19          
+zod                                 apps/admin/src/lib/validators/coupon-form.schema.ts:2:19        
+zod                                 apps/admin/src/lib/validators/event-form.schema.ts:1:19         
+zod                                 apps/admin/src/lib/validators/popup-form.schema.ts:1:19         
+zod                                 apps/admin/src/lib/validators/ticket-profile-form.schema.ts:1:19
+server-only                         apps/web/src/lib/api/server.service.ts:1:8                      
+eslint-config-next/core-web-vitals  packages/config-eslint/index.mjs:1:24                           
+eslint-plugin-unused-imports        packages/config-eslint/index.mjs:2:27                           
+eslint                              packages/config-eslint/index.mjs:4:10                           
+zod                                 scripts/contract_compatibility_check.ts:3:59                    
+Unlisted binaries (6)
+tsx       .github/workflows/ci.yml
+madge     apps/admin/package.json 
+depcheck  apps/admin/package.json 
+madge     apps/web/package.json   
+depcheck  apps/web/package.json   
+tsx       package.json            
+Unused exports (74)
+EventDetailsSection                                                …s/admin/src/components/forms/EventForm/index.ts:2:10
+EventAdditionalSection                                             …s/admin/src/components/forms/EventForm/index.ts:3:10
+EventMediaSection                                                  …s/admin/src/components/forms/EventForm/index.ts:4:10
+EventScheduleSection                                               …s/admin/src/components/forms/EventForm/index.ts:5:10
+EventTicketingSection                                              …s/admin/src/components/forms/EventForm/index.ts:6:10
+EventPublishSection                                                …s/admin/src/components/forms/EventForm/index.ts:7:10
+TicketProfileDetailsSection                                        …src/components/forms/TicketProfileForm/index.ts:2:10
+TicketProfileGroupsSection                                         …src/components/forms/TicketProfileForm/index.ts:3:10
+adminGetBooking                                          function  …ps/admin/src/lib/api/admin/booking.service.ts:149:23
+adminCreateRefund                                        function  …ps/admin/src/lib/api/admin/booking.service.ts:254:23
+consumeFlashMessage                                                apps/admin/src/lib/forms/flash/index.ts:2:27         
+parseDateTime                                                      apps/admin/src/lib/forms/scheduling/index.ts:1:10    
+isExpiredRange                                                     apps/admin/src/lib/forms/scheduling/index.ts:2:47    
+canPublish                                                         apps/admin/src/lib/forms/scheduling/index.ts:4:10    
+shouldAutoExpire                                                   apps/admin/src/lib/forms/scheduling/index.ts:4:43    
+getLocalTimezoneOffsetMinutes                                      apps/admin/src/lib/forms/scheduling/index.ts:5:10    
+getLocalTimezoneOffsetMs                                           apps/admin/src/lib/forms/scheduling/index.ts:5:41    
+canPublish                                               function  …dmin/src/lib/forms/scheduling/publish-state.ts:17:17
+shouldAutoExpire                                         function  …dmin/src/lib/forms/scheduling/publish-state.ts:23:17
+isExpiredRange                                           function  apps/admin/src/lib/forms/scheduling/ranges.ts:25:17  
+getLocalTimezoneOffsetMinutes                            function  apps/admin/src/lib/forms/scheduling/timezone.ts:1:17 
+getLocalTimezoneOffsetMs                                 function  apps/admin/src/lib/forms/scheduling/timezone.ts:5:17 
+canSchedule                                              function  apps/admin/src/lib/forms/visibility/guards.ts:7:17   
+canExpire                                                function  apps/admin/src/lib/forms/visibility/guards.ts:11:17  
+canExpire                                                          apps/admin/src/lib/forms/visibility/index.ts:1:10    
+canSchedule                                                        apps/admin/src/lib/forms/visibility/index.ts:1:33    
+canBeVisible                                                       apps/admin/src/lib/forms/visibility/index.ts:3:10    
+isDraft                                                            apps/admin/src/lib/forms/visibility/index.ts:3:24    
+isPublishedState                                                   apps/admin/src/lib/forms/visibility/index.ts:3:33    
+resolvePublishState                                                apps/admin/src/lib/forms/visibility/index.ts:5:10    
+isDraft                                                  function  apps/admin/src/lib/forms/visibility/publish.ts:4:17  
+isPublishedState                                         function  apps/admin/src/lib/forms/visibility/publish.ts:8:17  
+canBeVisible                                             function  apps/admin/src/lib/forms/visibility/publish.ts:12:17 
+resolvePublishState                                      function  apps/admin/src/lib/forms/visibility/states.ts:14:17  
+eventTierSchema                                                    …s/admin/src/lib/validators/event-form.schema.ts:3:14
+ticketProfileTicketSchema                                          …rc/lib/validators/ticket-profile-form.schema.ts:3:14
+ticketProfileGroupSchema                                           …c/lib/validators/ticket-profile-form.schema.ts:21:14
+cloudinary                                                         apps/server/src/config/cloudinary.ts:20:10           
+isDatabaseConnected                                      function  apps/server/src/config/database.ts:64:17             
+mongoose                                                           apps/server/src/config/database.ts:68:10             
+registry                                                           apps/server/src/config/openapi.ts:13:14              
+ensureBookingOwner                                       function  apps/server/src/middleware/auth.middleware.ts:25:17  
+requireRole                                              function  apps/server/src/middleware/auth.middleware.ts:168:17 
+requireSuperAdmin                                        function  apps/server/src/middleware/auth.middleware.ts:196:17 
+adminLimiter                                                       apps/server/src/middleware/rate.middleware.ts:179:14 
+OUTBOX_STATUSES                                                    apps/server/src/models/outbox-event.schema.ts:3:14   
+OUTBOX_EVENT_TYPES                                                 apps/server/src/models/outbox-event.schema.ts:6:14   
+WEBHOOK_EVENT_STATES                                               apps/server/src/models/webhook-event.schema.ts:3:14  
+runInTransaction                   bookingService        function  …s/server/src/services/admin/booking.service.ts:19:23
+syncProfileEvents                  ticketProfileService            …r/src/services/admin/ticket-profile.service.ts:74:14
+traceStorage                                                       apps/server/src/utils/context.ts:12:14               
+sendError                                                function  apps/server/src/utils/response.ts:17:17              
+createBookingSchema                                                …ps/server/src/validations/payment.validation.ts:3:10
+bookingReferenceSchema                                             …ps/server/src/validations/payment.validation.ts:7:14
+PageTransition                                           function  …s/web/src/components/common/PageTransition.tsx:33:17
+useIsMobile                                              function  apps/web/src/hooks/use-window.hook.ts:56:17          
+useMounted                                               function  apps/web/src/hooks/use-window.hook.ts:68:17          
+publicGetEventSeatLayout                                 function  apps/web/src/lib/api/public.service.ts:154:23        
+publicGetArtists                                         function  apps/web/src/lib/api/public.service.ts:243:23        
+publicGetArtistBySlug                                    function  apps/web/src/lib/api/public.service.ts:268:23        
+publicGetVenues                                          function  apps/web/src/lib/api/public.service.ts:285:23        
+publicGetVenueBySlug                                     function  apps/web/src/lib/api/public.service.ts:310:23        
+publicGetMe                                              function  apps/web/src/lib/api/public.service.ts:339:23        
+publicLogout                                             function  apps/web/src/lib/api/public.service.ts:344:23        
+publicGetCategories                                      function  apps/web/src/lib/api/public.service.ts:355:23        
+useSocket                                                function  apps/web/src/providers/SocketProvider.tsx:63:17      
+getOptimizedCloudinaryUrl                                function  apps/web/src/utils/image.ts:8:17                     
+getOptimizedUnsplashUrl                                  function  apps/web/src/utils/image.ts:35:17                    
+CloudinaryImageResponseSchema                                      packages/contracts/src/event-response.ts:20:14       
+EventTicketTierResponseSchema                                      packages/contracts/src/event-response.ts:34:14       
+EventTicketOverrideResponseSchema                                  packages/contracts/src/event-response.ts:60:14       
+PopupImageResponseSchema                                           packages/contracts/src/popup-response.ts:5:14        
+PopupLinkedEventResponseSchema                                     packages/contracts/src/popup-response.ts:11:14       
+SOCKET_URL                                                         packages/shared/src/config/frontend.ts:13:14         
+Unused exported types (41)
+ArtistsResponse                     interface  apps/admin/src/lib/api/admin/artist.service.ts:5:18      
+PaginatedResponse                   type       apps/admin/src/lib/api/admin/booking.service.ts:3:13     
+EventSummary                        interface  apps/admin/src/lib/api/admin/booking.service.ts:73:18    
+CustomerSummary                     interface  apps/admin/src/lib/api/admin/booking.service.ts:80:18    
+TicketSummary                       interface  apps/admin/src/lib/api/admin/booking.service.ts:92:18    
+PaymentSummary                      interface  apps/admin/src/lib/api/admin/booking.service.ts:98:18    
+NormalizedBookingDetail             interface  apps/admin/src/lib/api/admin/booking.service.ts:104:18   
+DJsResponse                         interface  apps/admin/src/lib/api/admin/dj-operator.service.ts:5:18 
+EventTier                           interface  apps/admin/src/lib/api/admin/event.service.ts:4:18       
+NotificationsResponse               interface  apps/admin/src/lib/api/admin/notification.service.ts:5:18
+AdminsResponse                      interface  apps/admin/src/lib/api/admin/team.service.ts:5:18        
+VenuesResponse                      interface  apps/admin/src/lib/api/admin/venue.service.ts:5:18       
+ApiError                            type       apps/admin/src/lib/api/client.ts:55:15                   
+FlashMessage                        type       apps/admin/src/lib/forms/flash/index.ts:4:15             
+FlashKind                           type       apps/admin/src/lib/forms/flash/index.ts:4:29             
+FlashKind                           type       apps/admin/src/lib/forms/flash/types.ts:1:13             
+FormNotification                    type       apps/admin/src/lib/forms/notifications/index.ts:30:15    
+TargetingRules                      type       apps/admin/src/lib/forms/targeting/index.ts:5:15         
+VisibilityState                     type       apps/admin/src/lib/forms/visibility/index.ts:6:15        
+CouponDiscountType                  type       apps/admin/src/types/coupon-form.ts:6:13                 
+TicketingType                       type       apps/admin/src/types/event-form.ts:6:13                  
+TicketOverrideValue                 interface  apps/admin/src/types/event-form.ts:22:18                 
+PopupTriggerType                    type       apps/admin/src/types/popup-form.ts:4:13                  
+PopupFormImage                      interface  apps/admin/src/types/popup-form.ts:6:18                  
+RequiredEnvKey                      type       apps/server/src/config/env/required-env.ts:9:13          
+OutboxStatus                        type       apps/server/src/models/outbox-event.schema.ts:4:13       
+ITicketOfferRules                   interface  apps/server/src/models/ticket-profile.schema.ts:4:18     
+ITicketConfig                       interface  apps/server/src/models/ticket-profile.schema.ts:12:18    
+ITicketGroup                        interface  apps/server/src/models/ticket-profile.schema.ts:30:18    
+QueueHealthStats                    interface  apps/server/src/services/diagnostics.service.ts:13:18    
+TicketIssueMode                     type       apps/server/src/types/outbox-events.ts:1:13              
+SocketChannel                       type       apps/server/src/types/outbox-events.ts:3:13              
+EmailAttachment                     interface  apps/server/src/utils/email.ts:6:18                      
+JwtSessionPayload         jwtUtils  interface  apps/server/src/utils/jwt.ts:23:18                       
+ApiError                            type       apps/web/src/lib/api/client.ts:58:15                     
+PublicEventsApiResponse             interface  apps/web/src/lib/api/public.service.ts:29:18             
+PublicDJsApiResponse                interface  apps/web/src/lib/api/public.service.ts:36:18             
+PublicArtistsApiResponse            interface  apps/web/src/lib/api/public.service.ts:50:18             
+PublicVenuesApiResponse             interface  apps/web/src/lib/api/public.service.ts:57:18             
+PublicArtistsResponse               interface  apps/web/src/lib/api/public.service.ts:233:18            
+PublicVenuesResponse                interface  apps/web/src/lib/api/public.service.ts:275:18            
