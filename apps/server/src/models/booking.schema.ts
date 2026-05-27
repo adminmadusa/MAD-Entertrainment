@@ -1,5 +1,5 @@
-import { BookingStatus, TicketTier } from '@mad/shared';
-import { Schema, model, Document, Types } from 'mongoose';
+import { BookingStatus, TicketTier } from "@mad/shared";
+import { Schema, model, Document, Types } from "mongoose";
 
 export interface IBooking extends Document {
   bookingId: string;
@@ -57,8 +57,8 @@ const bookingSchema = new Schema<IBooking>(
       index: true,
       // Format: MAD-YYYY-XXXXX
     },
-    eventId: { type: Schema.Types.ObjectId, ref: 'Event', required: true },
-    userId: { type: Schema.Types.ObjectId, ref: 'User' },
+    eventId: { type: Schema.Types.ObjectId, ref: "Event", required: true },
+    userId: { type: Schema.Types.ObjectId, ref: "User" },
     guestName: String,
     firstName: String,
     lastName: String,
@@ -94,30 +94,34 @@ const bookingSchema = new Schema<IBooking>(
     gst: { type: Number, default: 0 },
     discount: { type: Number, default: 0 },
     totalAmount: { type: Number, required: true, min: 0 },
-    currency: { type: String, default: 'INR' },
+    currency: { type: String, default: "INR" },
     couponCode: String,
-    couponId: { type: Schema.Types.ObjectId, ref: 'Coupon' },
+    couponId: { type: Schema.Types.ObjectId, ref: "Coupon" },
     status: {
       type: String,
       enum: Object.values(BookingStatus),
       default: BookingStatus.AWAITING_PAYMENT,
       index: true,
     },
-    paymentId: { type: Schema.Types.ObjectId, ref: 'Payment' },
+    paymentId: { type: Schema.Types.ObjectId, ref: "Payment" },
     reservationIds: [{ type: String }],
     bookingVersion: { type: Number, default: 1, min: 1 },
     expiresAt: { type: Date, index: { expireAfterSeconds: 0 } }, // TTL for pending bookings
     cancellationReason: String,
     cancelledAt: Date,
   },
-  { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
+  {
+    timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+  },
 );
 
-bookingSchema.virtual('price').get(function (this: IBooking) {
+bookingSchema.virtual("price").get(function (this: IBooking) {
   return this.tickets?.[0]?.pricePerTicket;
 });
 
-bookingSchema.virtual('amount').get(function (this: IBooking) {
+bookingSchema.virtual("amount").get(function (this: IBooking) {
   return this.totalAmount;
 });
 
@@ -126,11 +130,11 @@ bookingSchema.index({ guestPhone: 1, createdAt: -1 });
 bookingSchema.index({ eventId: 1, status: 1, totalTickets: 1 });
 bookingSchema.index({ userId: 1, createdAt: -1 });
 
-bookingSchema.pre('validate', function (next) {
+bookingSchema.pre("validate", function (next) {
   if (!this.bookingId) {
     const year = new Date().getFullYear();
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    let randomPart = '';
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    let randomPart = "";
     for (let i = 0; i < 5; i++) {
       randomPart += chars.charAt(Math.floor(Math.random() * chars.length));
     }
@@ -139,4 +143,4 @@ bookingSchema.pre('validate', function (next) {
   next();
 });
 
-export const Booking = model<IBooking>('Booking', bookingSchema);
+export const Booking = model<IBooking>("Booking", bookingSchema);

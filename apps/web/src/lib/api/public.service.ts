@@ -1,7 +1,17 @@
-import { Event, SeatLayout, Booking, Ticket, DJOperator, Artist, Venue, PopupCampaign, AuthUser } from '@mad/types';
-import { ReserveTicketsInput, CheckoutDetailsInput } from '@mad/validations';
+import {
+  Event,
+  SeatLayout,
+  Booking,
+  Ticket,
+  DJOperator,
+  Artist,
+  Venue,
+  PopupCampaign,
+  AuthUser,
+} from "@mad/types";
+import { ReserveTicketsInput, CheckoutDetailsInput } from "@mad/validations";
 
-import { apiClient } from './client';
+import { apiClient } from "./client";
 
 export interface LoginPayload {
   email: string;
@@ -69,16 +79,25 @@ export interface PublicEventsResponse {
   };
 }
 
-export async function publicGetEvents(filters: { category?: string; search?: string; page?: number; limit?: number } = {}): Promise<PublicEventsResponse> {
+export async function publicGetEvents(
+  filters: {
+    category?: string;
+    search?: string;
+    page?: number;
+    limit?: number;
+  } = {},
+): Promise<PublicEventsResponse> {
   const params = new URLSearchParams();
-  if (filters.category) params.set('category', filters.category);
-  if (filters.search) params.set('search', filters.search);
-  if (filters.page) params.set('page', String(filters.page));
-  if (filters.limit) params.set('limit', String(filters.limit));
+  if (filters.category) params.set("category", filters.category);
+  if (filters.search) params.set("search", filters.search);
+  if (filters.page) params.set("page", String(filters.page));
+  if (filters.limit) params.set("limit", String(filters.limit));
 
   const page = filters.page || 1;
   const limit = filters.limit || 12;
-  const { data } = await apiClient.get<PublicEventsApiResponse>(`/events?${params}`);
+  const { data } = await apiClient.get<PublicEventsApiResponse>(
+    `/events?${params}`,
+  );
   const payload = data?.data || { events: [], total: 0 };
   const items = Array.isArray(payload.events) ? payload.events : [];
   return {
@@ -87,8 +106,8 @@ export async function publicGetEvents(filters: { category?: string; search?: str
       page,
       limit,
       total: payload.total || 0,
-      totalPages: Math.ceil((payload.total || 0) / limit)
-    }
+      totalPages: Math.ceil((payload.total || 0) / limit),
+    },
   };
 }
 
@@ -110,24 +129,26 @@ export interface PublicDJsResponse {
 }
 
 export async function publicGetDJs(
-  filters: { search?: string; page?: number; limit?: number } = {}
+  filters: { search?: string; page?: number; limit?: number } = {},
 ): Promise<PublicDJsResponse> {
   const params = new URLSearchParams();
-  if (filters.search) params.set('search', filters.search);
-  if (filters.page) params.set('page', String(filters.page));
-  if (filters.limit) params.set('limit', String(filters.limit));
+  if (filters.search) params.set("search", filters.search);
+  if (filters.page) params.set("page", String(filters.page));
+  if (filters.limit) params.set("limit", String(filters.limit));
 
   const page = filters.page || 1;
   const limit = filters.limit || 12;
-  const { data } = await apiClient.get<PublicDJsApiResponse>(`/dj-operators?${params}`);
-  const payload: PublicDJsApiResponse['data'] = data?.data || {};
+  const { data } = await apiClient.get<PublicDJsApiResponse>(
+    `/dj-operators?${params}`,
+  );
+  const payload: PublicDJsApiResponse["data"] = data?.data || {};
   const items = Array.isArray(payload.data)
     ? payload.data
     : Array.isArray(payload.djOperators)
-    ? payload.djOperators
-    : Array.isArray(payload.djs)
-    ? payload.djs
-    : [];
+      ? payload.djOperators
+      : Array.isArray(payload.djs)
+        ? payload.djs
+        : [];
 
   const total = payload.pagination?.total ?? payload.total ?? 0;
   const totalPages = payload.pagination?.totalPages ?? Math.ceil(total / limit);
@@ -139,86 +160,116 @@ export async function publicGetDJs(
       limit,
       total,
       totalPages,
-    }
+    },
   };
 }
 
 export async function publicGetDJBySlug(slug: string): Promise<DJOperator> {
-  const { data } = await apiClient.get<{ data: DJOperator }>(`/dj-operators/${slug}`);
+  const { data } = await apiClient.get<{ data: DJOperator }>(
+    `/dj-operators/${slug}`,
+  );
   return data.data;
 }
 
-export async function publicGetEventSeatLayout(eventId: string): Promise<SeatLayout> {
-  const { data } = await apiClient.get<{ data: SeatLayout }>(`/events/${eventId}/seats`);
+export async function publicGetEventSeatLayout(
+  eventId: string,
+): Promise<SeatLayout> {
+  const { data } = await apiClient.get<{ data: SeatLayout }>(
+    `/events/${eventId}/seats`,
+  );
   return data.data;
 }
 
 export async function publicCreateBooking(
   payload: ReserveTicketsInput,
-  sessionId: string
+  sessionId: string,
 ): Promise<Booking> {
-  const { data } = await apiClient.post<{ data: Booking }>('/bookings', payload, {
-    headers: {
-      'x-session-id': sessionId,
+  const { data } = await apiClient.post<{ data: Booking }>(
+    "/bookings",
+    payload,
+    {
+      headers: {
+        "x-session-id": sessionId,
+      },
     },
-  });
+  );
   return data.data;
 }
 
 export async function publicSaveCheckoutDetails(
   bookingId: string,
   payload: CheckoutDetailsInput,
-  sessionId: string
+  sessionId: string,
 ): Promise<Booking> {
-  const { data } = await apiClient.put<{ data: Booking }>(`/bookings/${bookingId}/checkout-details`, payload, {
-    headers: {
-      'x-session-id': sessionId,
+  const { data } = await apiClient.put<{ data: Booking }>(
+    `/bookings/${bookingId}/checkout-details`,
+    payload,
+    {
+      headers: {
+        "x-session-id": sessionId,
+      },
     },
-  });
+  );
   return data.data;
 }
 
 export async function publicGetBookingDetails(
   bookingId: string,
-  sessionId?: string
+  sessionId?: string,
 ): Promise<{ booking: Booking; tickets: Ticket[] }> {
   const headers: Record<string, string> = {};
   if (sessionId) {
-    headers['x-session-id'] = sessionId;
+    headers["x-session-id"] = sessionId;
   }
-  const { data } = await apiClient.get<{ data: { booking: Booking; tickets: Ticket[] } }>(`/bookings/${bookingId}`, {
+  const { data } = await apiClient.get<{
+    data: { booking: Booking; tickets: Ticket[] };
+  }>(`/bookings/${bookingId}`, {
     headers,
   });
   return data.data;
 }
 
-export async function publicGetMyBookings(): Promise<{ bookings: Booking[]; tickets: Ticket[] }> {
-  const { data } = await apiClient.get<{ data: { bookings: Booking[]; tickets: Ticket[] } }>('/bookings/me');
+export async function publicGetMyBookings(): Promise<{
+  bookings: Booking[];
+  tickets: Ticket[];
+}> {
+  const { data } = await apiClient.get<{
+    data: { bookings: Booking[]; tickets: Ticket[] };
+  }>("/bookings/me");
   return data.data;
 }
 
 export interface PaymentIntentResponse {
-  gateway: 'stripe' | 'razorpay';
-  keyId?: string;       // Razorpay Key
-  orderId?: string;     // Razorpay Order ID
+  gateway: "stripe" | "razorpay";
+  keyId?: string; // Razorpay Key
+  orderId?: string; // Razorpay Order ID
   publishableKey?: string; // Stripe Key
-  clientSecret?: string;   // Stripe Secret
+  clientSecret?: string; // Stripe Secret
   amount: number;
   currency: string;
   bookingId: string;
-  isMock?: boolean;     // Sandbox mock indicator
+  isMock?: boolean; // Sandbox mock indicator
 }
 
-export async function publicCreatePaymentIntent(bookingId: string, gateway: 'stripe' | 'razorpay'): Promise<PaymentIntentResponse> {
-  const { data } = await apiClient.post<{ data: PaymentIntentResponse }>('/payments/create-intent', {
-    bookingId,
-    gateway,
-  });
+export async function publicCreatePaymentIntent(
+  bookingId: string,
+  gateway: "stripe" | "razorpay",
+): Promise<PaymentIntentResponse> {
+  const { data } = await apiClient.post<{ data: PaymentIntentResponse }>(
+    "/payments/create-intent",
+    {
+      bookingId,
+      gateway,
+    },
+  );
   return data.data;
 }
 
-export async function publicVerifyPayment(bookingId: string, gatewayPayload: VerifyPaymentPayload): Promise<Booking> {
-  const { data } = await apiClient.post<{ data: Booking }>('/payments/verify', {
+export async function publicVerifyPayment(
+  bookingId: string,
+  gatewayPayload: VerifyPaymentPayload,
+): Promise<Booking> {
+  const { data } = await apiClient.post<{ data: Booking }>("/payments/verify", {
     bookingId,
     ...gatewayPayload,
   });
@@ -238,17 +289,24 @@ export interface PublicArtistsResponse {
 }
 
 export async function publicGetArtists(
-  filters: { search?: string; genre?: string; page?: number; limit?: number } = {}
+  filters: {
+    search?: string;
+    genre?: string;
+    page?: number;
+    limit?: number;
+  } = {},
 ): Promise<PublicArtistsResponse> {
   const params = new URLSearchParams();
-  if (filters.search) params.set('search', filters.search);
-  if (filters.genre) params.set('genre', filters.genre);
-  if (filters.page) params.set('page', String(filters.page));
-  if (filters.limit) params.set('limit', String(filters.limit));
+  if (filters.search) params.set("search", filters.search);
+  if (filters.genre) params.set("genre", filters.genre);
+  if (filters.page) params.set("page", String(filters.page));
+  if (filters.limit) params.set("limit", String(filters.limit));
 
   const page = filters.page || 1;
   const limit = filters.limit || 12;
-  const { data } = await apiClient.get<PublicArtistsApiResponse>(`/artists?${params}`);
+  const { data } = await apiClient.get<PublicArtistsApiResponse>(
+    `/artists?${params}`,
+  );
   const payload = data?.data || { artists: [], total: 0 };
   const items = Array.isArray(payload.artists) ? payload.artists : [];
   return {
@@ -257,8 +315,8 @@ export async function publicGetArtists(
       page,
       limit,
       total: payload.total || 0,
-      totalPages: Math.ceil((payload.total || 0) / limit)
-    }
+      totalPages: Math.ceil((payload.total || 0) / limit),
+    },
   };
 }
 
@@ -280,17 +338,24 @@ export interface PublicVenuesResponse {
 }
 
 export async function publicGetVenues(
-  filters: { search?: string; city?: string; page?: number; limit?: number } = {}
+  filters: {
+    search?: string;
+    city?: string;
+    page?: number;
+    limit?: number;
+  } = {},
 ): Promise<PublicVenuesResponse> {
   const params = new URLSearchParams();
-  if (filters.search) params.set('search', filters.search);
-  if (filters.city) params.set('city', filters.city);
-  if (filters.page) params.set('page', String(filters.page));
-  if (filters.limit) params.set('limit', String(filters.limit));
+  if (filters.search) params.set("search", filters.search);
+  if (filters.city) params.set("city", filters.city);
+  if (filters.page) params.set("page", String(filters.page));
+  if (filters.limit) params.set("limit", String(filters.limit));
 
   const page = filters.page || 1;
   const limit = filters.limit || 12;
-  const { data } = await apiClient.get<PublicVenuesApiResponse>(`/venues?${params}`);
+  const { data } = await apiClient.get<PublicVenuesApiResponse>(
+    `/venues?${params}`,
+  );
   const payload = data?.data || { venues: [], total: 0 };
   const items = Array.isArray(payload.venues) ? payload.venues : [];
   return {
@@ -299,8 +364,8 @@ export async function publicGetVenues(
       page,
       limit,
       total: payload.total || 0,
-      totalPages: Math.ceil((payload.total || 0) / limit)
-    }
+      totalPages: Math.ceil((payload.total || 0) / limit),
+    },
   };
 }
 
@@ -312,29 +377,41 @@ export async function publicGetVenueBySlug(slug: string): Promise<Venue> {
 // ─── Popup Campaigns ─────────────────────────────────────────
 
 export async function publicGetActivePopups(): Promise<PopupCampaign[]> {
-  const { data } = await apiClient.get<{ data: PopupCampaign[] }>('/popups/active');
+  const { data } = await apiClient.get<{ data: PopupCampaign[] }>(
+    "/popups/active",
+  );
   return data.data;
 }
 
 // ─── Auth ────────────────────────────────────────────────────
 
-export async function publicLogin(payload: LoginPayload): Promise<{ token: string; user: AuthUser }> {
-  const { data } = await apiClient.post<{ data: { token: string; user: AuthUser } }>('/auth/login', payload);
+export async function publicLogin(
+  payload: LoginPayload,
+): Promise<{ token: string; user: AuthUser }> {
+  const { data } = await apiClient.post<{
+    data: { token: string; user: AuthUser };
+  }>("/auth/login", payload);
   return data.data;
 }
 
-export async function publicRegister(payload: RegisterPayload): Promise<{ token: string; user: AuthUser }> {
-  const { data } = await apiClient.post<{ data: { token: string; user: AuthUser } }>('/auth/register', payload);
+export async function publicRegister(
+  payload: RegisterPayload,
+): Promise<{ token: string; user: AuthUser }> {
+  const { data } = await apiClient.post<{
+    data: { token: string; user: AuthUser };
+  }>("/auth/register", payload);
   return data.data;
 }
 
 export async function publicGetMe(): Promise<AuthUser> {
-  const { data } = await apiClient.get<{ data: AuthUser }>('/auth/me');
+  const { data } = await apiClient.get<{ data: AuthUser }>("/auth/me");
   return data.data;
 }
 
 export async function publicLogout(): Promise<{ success: boolean }> {
-  const { data } = await apiClient.post<{ data: { success: boolean } }>('/auth/logout');
+  const { data } = await apiClient.post<{ data: { success: boolean } }>(
+    "/auth/logout",
+  );
   return data.data;
 }
 
@@ -345,6 +422,8 @@ export interface PublicCategory {
 }
 
 export async function publicGetCategories(): Promise<PublicCategory[]> {
-  const { data } = await apiClient.get<{ data: PublicCategory[] }>('/categories');
+  const { data } = await apiClient.get<{ data: PublicCategory[] }>(
+    "/categories",
+  );
   return Array.isArray(data?.data) ? data.data : [];
 }

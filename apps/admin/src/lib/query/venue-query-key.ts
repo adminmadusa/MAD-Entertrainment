@@ -4,4 +4,4 @@ export const venueQueryKey = (filters: {
   page?: number;
   search?: string;
   city?: string;
-}) => ['admin-venues', filters];
+}) => ["admin-venues", filters];

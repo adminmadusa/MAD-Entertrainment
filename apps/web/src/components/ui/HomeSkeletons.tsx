@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 /**
  * FeaturedEventsSkeleton
@@ -7,10 +7,7 @@ import React from 'react';
  */
 export function FeaturedEventsSkeleton() {
   return (
-    <section 
-      className="py-16 overflow-hidden" 
-      aria-hidden="true"
-    >
+    <section className="py-16 overflow-hidden" aria-hidden="true">
       <div className="container-mad">
         {/* Header Shimmer */}
         <div className="flex items-end justify-between mb-10">
@@ -47,7 +44,7 @@ export function FeaturedEventsSkeleton() {
               <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
               <div className="absolute top-3 left-3 w-16 h-5 bg-white/10 rounded-full" />
             </div>
-            
+
             {/* Details Shimmer */}
             <div className="p-4 flex-grow flex flex-col justify-between">
               <div className="space-y-3">
@@ -113,8 +110,8 @@ export function DJOperatorsSkeleton() {
         {/* Grid Shimmer */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
           {Array.from({ length: 5 }).map((_, i) => (
-            <div 
-              key={i} 
+            <div
+              key={i}
               className="flex flex-col bg-white/2 border border-white/5 rounded-2xl overflow-hidden h-full"
             >
               {/* Profile Image Shimmer */}
@@ -142,7 +139,10 @@ export function DJOperatorsSkeleton() {
  */
 export function MarqueeBannerSkeleton() {
   return (
-    <section className="py-8 border-y border-border-subtle bg-background-secondary/50 overflow-hidden" aria-hidden="true">
+    <section
+      className="py-8 border-y border-border-subtle bg-background-secondary/50 overflow-hidden"
+      aria-hidden="true"
+    >
       <div className="flex items-center justify-around whitespace-nowrap opacity-40">
         {Array.from({ length: 5 }).map((_, i) => (
           <span key={i} className="mx-8 flex items-center gap-2 animate-pulse">

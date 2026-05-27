@@ -12,7 +12,7 @@ export type ImageAsset = {
 };
 
 export type TicketOfferRules = {
-  discountType: 'percentage' | 'flat' | 'none';
+  discountType: "percentage" | "flat" | "none";
   discountValue: number;
   minQtyRequired: number;
   buyQty?: number;
@@ -240,7 +240,7 @@ export type Ticket = {
 export type Payment = {
   _id?: string;
   bookingId: string;
-  gateway: 'stripe' | 'razorpay';
+  gateway: "stripe" | "razorpay";
   status: string;
   amount: number;
   currency: string;
@@ -312,4 +312,3 @@ export interface AuthUser {
   name?: string;
   isGuest: boolean;
 }
-

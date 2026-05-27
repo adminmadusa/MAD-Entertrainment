@@ -1,15 +1,20 @@
-import { BookingStatus, ReservationStatus, SeatStatus, InventoryState } from '@mad/shared';
-import mongoose, { Types, ClientSession } from 'mongoose';
+import {
+  BookingStatus,
+  ReservationStatus,
+  SeatStatus,
+  InventoryState,
+} from "@mad/shared";
+import mongoose, { Types, ClientSession } from "mongoose";
 
-import { emitToAdmin, emitToEvent, emitToBooking } from '../../config/socket';
-import { AppError } from '../../middleware/error.middleware';
-import { Booking } from '../../models/booking.schema';
-import { Event } from '../../models/event.schema';
-import { SeatLayout } from '../../models/seat-layout.schema';
-import { logger } from '../../utils/logger';
-import { auditLog } from '../../utils/audit';
-import { ReservationService } from '../reservation.service';
-import { CacheService } from '../cache.service';
+import { emitToAdmin, emitToEvent, emitToBooking } from "../../config/socket";
+import { AppError } from "../../middleware/error.middleware";
+import { Booking } from "../../models/booking.schema";
+import { Event } from "../../models/event.schema";
+import { SeatLayout } from "../../models/seat-layout.schema";
+import { logger } from "../../utils/logger";
+import { auditLog } from "../../utils/audit";
+import { ReservationService } from "../reservation.service";
+import { CacheService } from "../cache.service";
 
 /**
  * Resilient transaction execution helper. Runs the callback inside a session
@@ -17,7 +22,7 @@ import { CacheService } from '../cache.service';
  * back gracefully to atomic non-transactional operations.
  */
 export async function runInTransaction<T>(
-  fn: (session: ClientSession | undefined) => Promise<T>
+  fn: (session: ClientSession | undefined) => Promise<T>,
 ): Promise<T> {
   const session = await mongoose.startSession().catch(() => null);
   if (!session) {
@@ -32,13 +37,13 @@ export async function runInTransaction<T>(
     return result!;
   } catch (err: any) {
     if (
-      err?.message?.includes('replica set') ||
-      err?.message?.includes('Transaction') ||
-      err?.codeName === 'CommandNotSupported'
+      err?.message?.includes("replica set") ||
+      err?.message?.includes("Transaction") ||
+      err?.codeName === "CommandNotSupported"
     ) {
       logger.warn(
         { err },
-        'MongoDB transactions are not supported on this deployment. Falling back to non-transactional execution.'
+        "MongoDB transactions are not supported on this deployment. Falling back to non-transactional execution.",
       );
       return fn(undefined);
     }
@@ -53,14 +58,24 @@ export async function runInTransaction<T>(
  */
 const mapBookingToAdminDTO = (booking: any) => {
   const isSeatBased = booking.tickets?.[0]?.seats?.length > 0;
-  const mode = booking.eventId?.bookingMode || (isSeatBased ? 'seat_based' : 'general_admission');
+  const mode =
+    booking.eventId?.bookingMode ||
+    (isSeatBased ? "seat_based" : "general_admission");
 
   const customerObj = {
     _id: booking.userId ? booking.userId.toString() : undefined,
-    name: booking.guestName || '—',
-    firstName: booking.firstName || (booking.guestName ? booking.guestName.split(' ')[0] : undefined) || '—',
-    lastName: booking.lastName || (booking.guestName ? booking.guestName.split(' ').slice(1).join(' ') : undefined) || '—',
-    email: booking.guestEmail || '—',
+    name: booking.guestName || "—",
+    firstName:
+      booking.firstName ||
+      (booking.guestName ? booking.guestName.split(" ")[0] : undefined) ||
+      "—",
+    lastName:
+      booking.lastName ||
+      (booking.guestName
+        ? booking.guestName.split(" ").slice(1).join(" ")
+        : undefined) ||
+      "—",
+    email: booking.guestEmail || "—",
     phone: booking.guestPhone,
     birthdate: booking.birthdate ? booking.birthdate.toISOString() : undefined,
     keepUpdated: booking.keepUpdated ?? false,
@@ -72,24 +87,34 @@ const mapBookingToAdminDTO = (booking: any) => {
     bookingId: booking.bookingId,
     status: booking.status,
     totalAmount: booking.totalAmount,
-    currency: booking.currency || 'INR',
+    currency: booking.currency || "INR",
     mode,
-    eventId: booking.eventId ? {
-      _id: booking.eventId._id.toString(),
-      title: booking.eventId.title || '—',
-      startDate: booking.eventId.startDate,
-      coverImage: booking.eventId.bannerImage ? { url: booking.eventId.bannerImage.url } : undefined,
-    } : null,
+    eventId: booking.eventId
+      ? {
+          _id: booking.eventId._id.toString(),
+          title: booking.eventId.title || "—",
+          startDate: booking.eventId.startDate,
+          coverImage: booking.eventId.bannerImage
+            ? { url: booking.eventId.bannerImage.url }
+            : undefined,
+        }
+      : null,
     userId: booking.userId ? customerObj : null,
     guestInfo: !booking.userId ? customerObj : undefined,
-    tickets: Array.isArray(booking.tickets) ? booking.tickets.map((t: any) => ({
-      tierName: t.tierName || '—',
-      quantity: t.quantity || 0,
-      price: t.pricePerTicket || 0,
-    })) : [],
-    createdAt: booking.createdAt ? booking.createdAt.toISOString() : new Date().toISOString(),
+    tickets: Array.isArray(booking.tickets)
+      ? booking.tickets.map((t: any) => ({
+          tierName: t.tierName || "—",
+          quantity: t.quantity || 0,
+          price: t.pricePerTicket || 0,
+        }))
+      : [],
+    createdAt: booking.createdAt
+      ? booking.createdAt.toISOString()
+      : new Date().toISOString(),
     cancellationReason: booking.cancellationReason,
-    cancelledAt: booking.cancelledAt ? booking.cancelledAt.toISOString() : undefined,
+    cancelledAt: booking.cancelledAt
+      ? booking.cancelledAt.toISOString()
+      : undefined,
   };
 };
 
@@ -100,7 +125,7 @@ export const getBookings = async (
   page: number = 1,
   limit: number = 10,
   search?: string,
-  status?: string
+  status?: string,
 ) => {
   const skip = (page - 1) * limit;
   const filter: any = {};
@@ -110,7 +135,7 @@ export const getBookings = async (
   }
 
   if (search) {
-    const searchRegex = new RegExp(search, 'i');
+    const searchRegex = new RegExp(search, "i");
     filter.$or = [
       { bookingId: searchRegex },
       { guestEmail: searchRegex },
@@ -120,7 +145,7 @@ export const getBookings = async (
 
   const total = await Booking.countDocuments(filter);
   const bookings = await Booking.find(filter)
-    .populate('eventId')
+    .populate("eventId")
     .sort({ createdAt: -1 })
     .skip(skip)
     .limit(limit);
@@ -143,7 +168,7 @@ export const getBookings = async (
  */
 export const getBookingById = async (id: string) => {
   const query = Types.ObjectId.isValid(id) ? { _id: id } : { bookingId: id };
-  const booking = await Booking.findOne(query).populate('eventId');
+  const booking = await Booking.findOne(query).populate("eventId");
   if (!booking) {
     return null;
   }
@@ -157,18 +182,23 @@ export const cancelBooking = async (id: string, reason?: string) => {
   return runInTransaction(async (session) => {
     const booking = await Booking.findById(id).session(session || null);
     if (!booking) {
-      throw AppError.notFound('Booking not found');
+      throw AppError.notFound("Booking not found");
     }
 
-    if (booking.status === BookingStatus.CANCELLED || booking.status === BookingStatus.FAILED) {
-      throw AppError.badRequest(`Booking is already in a terminal state: ${booking.status}`);
+    if (
+      booking.status === BookingStatus.CANCELLED ||
+      booking.status === BookingStatus.FAILED
+    ) {
+      throw AppError.badRequest(
+        `Booking is already in a terminal state: ${booking.status}`,
+      );
     }
 
     const previousStatus = booking.status;
 
     // 1. Update Booking Status
     booking.status = BookingStatus.CANCELLED;
-    booking.cancellationReason = reason || 'Admin cancelled';
+    booking.cancellationReason = reason || "Admin cancelled";
     booking.cancelledAt = new Date();
     booking.bookingVersion += 1;
     if (booking.expiresAt) {
@@ -181,14 +211,16 @@ export const cancelBooking = async (id: string, reason?: string) => {
       booking._id,
       ReservationStatus.CANCELLED,
       {
-        reason: reason || 'Admin cancelled',
+        reason: reason || "Admin cancelled",
         correlationId: booking.bookingId,
       },
-      session
+      session,
     );
 
     // 3. Update Event Statistics based on status
-    const event = await Event.findById(booking.eventId).session(session || null);
+    const event = await Event.findById(booking.eventId).session(
+      session || null,
+    );
     if (event) {
       if (previousStatus === BookingStatus.CONFIRMED) {
         // Decrease soldCount properties
@@ -198,103 +230,132 @@ export const cancelBooking = async (id: string, reason?: string) => {
         };
 
         for (const bookedTicket of booking.tickets) {
-          const tierIndex = event.ticketTiers.findIndex((t) => t.tier === bookedTicket.tier);
+          const tierIndex = event.ticketTiers.findIndex(
+            (t) => t.tier === bookedTicket.tier,
+          );
           if (tierIndex !== -1) {
-            decUpdate[`ticketTiers.${tierIndex}.soldCount`] = -bookedTicket.quantity;
+            decUpdate[`ticketTiers.${tierIndex}.soldCount`] =
+              -bookedTicket.quantity;
           }
         }
 
         await Event.findOneAndUpdate(
           { _id: booking.eventId },
           { $inc: decUpdate, $set: { isSoldOut: false } },
-          { new: true, session }
+          { new: true, session },
         );
       } else if (previousStatus === BookingStatus.AWAITING_PAYMENT) {
         // Decrement reservedCount since it was never confirmed
-        await ReservationService.releaseCapacityForTerminalReservations(transitioned, session);
+        await ReservationService.releaseCapacityForTerminalReservations(
+          transitioned,
+          session,
+        );
       }
     }
 
     // 4. Release Seat Layout if seat-based event
     const releasedSeatIds: string[] = [];
-    if (event && event.bookingMode === 'seat_based') {
-      const allSeatIds = booking.tickets.flatMap((ticket) => ticket.seats || []).map((seat) => seat.seatId);
+    if (event && event.bookingMode === "seat_based") {
+      const allSeatIds = booking.tickets
+        .flatMap((ticket) => ticket.seats || [])
+        .map((seat) => seat.seatId);
       if (allSeatIds.length > 0) {
         await SeatLayout.updateOne(
           { eventId: event._id },
           {
             $set: {
-              'seats.$[seat].status': SeatStatus.AVAILABLE,
+              "seats.$[seat].status": SeatStatus.AVAILABLE,
             },
             $unset: {
-              'seats.$[seat].lockedBy': '',
-              'seats.$[seat].lockedAt': '',
-              'seats.$[seat].bookedByBookingId': '',
-              'seats.$[seat].reservationId': '',
+              "seats.$[seat].lockedBy": "",
+              "seats.$[seat].lockedAt": "",
+              "seats.$[seat].bookedByBookingId": "",
+              "seats.$[seat].reservationId": "",
             },
             $inc: {
-              'seats.$[seat].seatVersion': 1,
+              "seats.$[seat].seatVersion": 1,
             },
           },
           {
             arrayFilters: [
               {
-                'seat.seatId': { $in: allSeatIds },
+                "seat.seatId": { $in: allSeatIds },
                 $or: [
-                  { 'seat.bookedByBookingId': booking._id.toString() },
-                  { 'seat.reservationId': { $in: booking.reservationIds || [] } }
-                ]
+                  { "seat.bookedByBookingId": booking._id.toString() },
+                  {
+                    "seat.reservationId": { $in: booking.reservationIds || [] },
+                  },
+                ],
               },
             ],
             session,
-          }
+          },
         );
         releasedSeatIds.push(...allSeatIds);
       }
     }
 
-    await CacheService.delPattern('events:*');
+    await CacheService.delPattern("events:*");
 
     // 5. Emit real-time updates via WebSockets
     if (event && releasedSeatIds.length > 0) {
       try {
-        emitToEvent(event._id.toString(), 'seat:unlocked', { seatIds: releasedSeatIds }, booking.bookingId);
+        emitToEvent(
+          event._id.toString(),
+          "seat:unlocked",
+          { seatIds: releasedSeatIds },
+          booking.bookingId,
+        );
       } catch (err) {
-        logger.debug({ err, eventId: event._id }, 'Seat unlock emit skipped');
+        logger.debug({ err, eventId: event._id }, "Seat unlock emit skipped");
       }
     }
 
     try {
       emitToBooking(
         booking._id.toString(),
-        'booking:updated',
-        { bookingId: booking._id.toString(), status: booking.status, bookingVersion: booking.bookingVersion },
-        booking.bookingId
+        "booking:updated",
+        {
+          bookingId: booking._id.toString(),
+          status: booking.status,
+          bookingVersion: booking.bookingVersion,
+        },
+        booking.bookingId,
       );
     } catch (err) {
-      logger.debug({ err, bookingId: booking._id }, 'Booking update emit skipped');
+      logger.debug(
+        { err, bookingId: booking._id },
+        "Booking update emit skipped",
+      );
     }
 
     try {
       emitToAdmin(
-        'bookings',
-        'booking:updated',
-        { bookingId: booking._id.toString(), status: booking.status, bookingVersion: booking.bookingVersion },
-        booking.bookingId
+        "bookings",
+        "booking:updated",
+        {
+          bookingId: booking._id.toString(),
+          status: booking.status,
+          bookingVersion: booking.bookingVersion,
+        },
+        booking.bookingId,
       );
     } catch (err) {
-      logger.debug({ err, bookingId: booking._id }, 'Admin booking update emit skipped');
+      logger.debug(
+        { err, bookingId: booking._id },
+        "Admin booking update emit skipped",
+      );
     }
 
     auditLog({
-      action: 'BOOKING_CANCELLED',
-      actor: { type: 'admin', id: 'system' },
-      status: 'success',
+      action: "BOOKING_CANCELLED",
+      actor: { type: "admin", id: "system" },
+      status: "success",
       metadata: {
         bookingId: booking._id.toString(),
         bookingReference: booking.bookingId,
         eventId: event?._id.toString(),
-        reason: reason || 'Admin cancelled',
+        reason: reason || "Admin cancelled",
         releasedSeatIds,
       },
       description: `Cancelled booking ${booking.bookingId} and released associated capacity/seats`,

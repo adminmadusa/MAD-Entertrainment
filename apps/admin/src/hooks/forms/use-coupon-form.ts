@@ -1,32 +1,43 @@
-'use client';
+"use client";
 
-import { EventCategory } from '@mad/shared';
-import { Coupon } from '@mad/types';
-import { useState } from 'react';
+import { EventCategory } from "@mad/shared";
+import { Coupon } from "@mad/types";
+import { useState } from "react";
 
-import { getFirstValidationError, runFormSubmit } from '@/lib/forms/core';
-import { normalizeId } from '@/lib/forms/targeting';
+import { getFirstValidationError, runFormSubmit } from "@/lib/forms/core";
+import { normalizeId } from "@/lib/forms/targeting";
 import {
   getDefaultCouponFormValues,
   mapCouponFormToPayload,
   mapCouponToFormValues,
-} from '@/lib/mappers/coupon-form.mapper';
-import { couponFormSchema } from '@/lib/validators/coupon-form.schema';
-import { CouponFormMode, CouponFormValues } from '@/types/coupon-form';
+} from "@/lib/mappers/coupon-form.mapper";
+import { couponFormSchema } from "@/lib/validators/coupon-form.schema";
+import { CouponFormMode, CouponFormValues } from "@/types/coupon-form";
 
 interface UseCouponFormOptions {
   mode: CouponFormMode;
   initialCoupon?: Coupon;
-  onSubmitPayload: (payload: ReturnType<typeof mapCouponFormToPayload>) => Promise<void> | void;
+  onSubmitPayload: (
+    payload: ReturnType<typeof mapCouponFormToPayload>,
+  ) => Promise<void> | void;
 }
 
-export function useCouponForm({ mode, initialCoupon, onSubmitPayload }: UseCouponFormOptions) {
+export function useCouponForm({
+  mode,
+  initialCoupon,
+  onSubmitPayload,
+}: UseCouponFormOptions) {
   const [values, setValues] = useState<CouponFormValues>(
-    mode === 'edit' && initialCoupon ? mapCouponToFormValues(initialCoupon) : getDefaultCouponFormValues()
+    mode === "edit" && initialCoupon
+      ? mapCouponToFormValues(initialCoupon)
+      : getDefaultCouponFormValues(),
   );
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
-  const setField = <K extends keyof CouponFormValues>(field: K, value: CouponFormValues[K]) => {
+  const setField = <K extends keyof CouponFormValues>(
+    field: K,
+    value: CouponFormValues[K],
+  ) => {
     setValues((prev) => ({ ...prev, [field]: value }));
   };
 

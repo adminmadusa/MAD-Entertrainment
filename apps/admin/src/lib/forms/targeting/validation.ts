@@ -1,4 +1,4 @@
-import { EventCategory } from '@mad/shared';
+import { EventCategory } from "@mad/shared";
 
 export interface TargetingRules {
   eventIds?: string[];

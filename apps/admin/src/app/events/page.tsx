@@ -1,49 +1,57 @@
-'use client';
+"use client";
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { motion, AnimatePresence } from 'framer-motion';
-import Link from 'next/link';
-import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { motion, AnimatePresence } from "framer-motion";
+import Link from "next/link";
+import { useState } from "react";
 
-import { adminGetEvents, adminDeleteEvent, adminToggleFeatured, adminUpdateEventStatus, type AdminEvent } from '@/lib/api/admin/event.service';
-import { extractApiError } from '@/lib/api/client';
+import {
+  adminGetEvents,
+  adminDeleteEvent,
+  adminToggleFeatured,
+  adminUpdateEventStatus,
+  type AdminEvent,
+} from "@/lib/api/admin/event.service";
+import { extractApiError } from "@/lib/api/client";
 
 const STATUS_COLORS: Record<string, string> = {
-  draft: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/30',
-  published: 'bg-green-500/10 text-green-400 border-green-500/30',
-  cancelled: 'bg-red-500/10 text-red-400 border-red-500/30',
-  sold_out: 'bg-orange-500/10 text-orange-400 border-orange-500/30',
-  completed: 'bg-blue-500/10 text-blue-400 border-blue-500/30',
+  draft: "bg-yellow-500/10 text-yellow-400 border-yellow-500/30",
+  published: "bg-green-500/10 text-green-400 border-green-500/30",
+  cancelled: "bg-red-500/10 text-red-400 border-red-500/30",
+  sold_out: "bg-orange-500/10 text-orange-400 border-orange-500/30",
+  completed: "bg-blue-500/10 text-blue-400 border-blue-500/30",
 };
 
 export default function AdminEventsPage() {
   const qc = useQueryClient();
-  const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
   const [page, setPage] = useState(1);
   const [deleteTarget, setDeleteTarget] = useState<AdminEvent | null>(null);
 
   const { data, isLoading } = useQuery({
-    queryKey: ['admin-events', { page, search, status: statusFilter }],
-    queryFn: () => adminGetEvents({ page, limit: 15, search, status: statusFilter }),
+    queryKey: ["admin-events", { page, search, status: statusFilter }],
+    queryFn: () =>
+      adminGetEvents({ page, limit: 15, search, status: statusFilter }),
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => adminDeleteEvent(id),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['admin-events'] });
+      qc.invalidateQueries({ queryKey: ["admin-events"] });
       setDeleteTarget(null);
     },
   });
 
   const featureMutation = useMutation({
     mutationFn: (id: string) => adminToggleFeatured(id),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin-events'] }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["admin-events"] }),
   });
 
   const statusMutation = useMutation({
-    mutationFn: ({ id, status }: { id: string; status: string }) => adminUpdateEventStatus(id, status),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin-events'] }),
+    mutationFn: ({ id, status }: { id: string; status: string }) =>
+      adminUpdateEventStatus(id, status),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["admin-events"] }),
   });
 
   const events = Array.isArray(data?.items) ? data?.items : [];
@@ -74,12 +82,18 @@ export default function AdminEventsPage() {
           type="search"
           placeholder="Search events..."
           value={search}
-          onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+          onChange={(e) => {
+            setSearch(e.target.value);
+            setPage(1);
+          }}
           className="flex-1 min-w-48 px-4 py-2.5 rounded-xl bg-background-card border border-border-subtle text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-purple transition-colors"
         />
         <select
           value={statusFilter}
-          onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
+          onChange={(e) => {
+            setStatusFilter(e.target.value);
+            setPage(1);
+          }}
           className="px-4 py-2.5 rounded-xl bg-background-card border border-border-subtle text-sm text-text-primary focus:outline-none focus:border-accent-purple transition-colors"
         >
           <option value="">All Statuses</option>
@@ -97,74 +111,142 @@ export default function AdminEventsPage() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border-subtle">
-                <th className="text-left text-text-muted font-medium py-3.5 px-5">Event</th>
-                <th className="text-left text-text-muted font-medium py-3.5 px-4">Category</th>
-                <th className="text-left text-text-muted font-medium py-3.5 px-4">Date</th>
-                <th className="text-left text-text-muted font-medium py-3.5 px-4">Status</th>
-                <th className="text-left text-text-muted font-medium py-3.5 px-4">Featured</th>
-                <th className="text-right text-text-muted font-medium py-3.5 px-5">Actions</th>
+                <th className="text-left text-text-muted font-medium py-3.5 px-5">
+                  Event
+                </th>
+                <th className="text-left text-text-muted font-medium py-3.5 px-4">
+                  Category
+                </th>
+                <th className="text-left text-text-muted font-medium py-3.5 px-4">
+                  Date
+                </th>
+                <th className="text-left text-text-muted font-medium py-3.5 px-4">
+                  Status
+                </th>
+                <th className="text-left text-text-muted font-medium py-3.5 px-4">
+                  Featured
+                </th>
+                <th className="text-right text-text-muted font-medium py-3.5 px-5">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody>
               {isLoading ? (
                 Array.from({ length: 5 }).map((_, i) => (
-                  <tr key={i} className="border-b border-border-subtle/50 animate-pulse">
-                    <td className="py-4 px-5"><div className="h-4 bg-white/5 rounded w-48" /></td>
-                    <td className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-20" /></td>
-                    <td className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-24" /></td>
-                    <td className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-16" /></td>
-                    <td className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-12" /></td>
-                    <td className="py-4 px-5"><div className="h-4 bg-white/5 rounded w-20 ml-auto" /></td>
+                  <tr
+                    key={i}
+                    className="border-b border-border-subtle/50 animate-pulse"
+                  >
+                    <td className="py-4 px-5">
+                      <div className="h-4 bg-white/5 rounded w-48" />
+                    </td>
+                    <td className="py-4 px-4">
+                      <div className="h-4 bg-white/5 rounded w-20" />
+                    </td>
+                    <td className="py-4 px-4">
+                      <div className="h-4 bg-white/5 rounded w-24" />
+                    </td>
+                    <td className="py-4 px-4">
+                      <div className="h-4 bg-white/5 rounded w-16" />
+                    </td>
+                    <td className="py-4 px-4">
+                      <div className="h-4 bg-white/5 rounded w-12" />
+                    </td>
+                    <td className="py-4 px-5">
+                      <div className="h-4 bg-white/5 rounded w-20 ml-auto" />
+                    </td>
                   </tr>
                 ))
               ) : events.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="py-16 text-center text-text-muted">
-                    No events found.{' '}
-                    <Link href="/events/new" className="text-accent-purple hover:underline">
+                    No events found.{" "}
+                    <Link
+                      href="/events/new"
+                      className="text-accent-purple hover:underline"
+                    >
                       Create one →
                     </Link>
                   </td>
                 </tr>
               ) : (
                 events.map((event) => (
-                  <tr key={event._id} className="border-b border-border-subtle/40 hover:bg-white/2 transition-colors">
+                  <tr
+                    key={event._id}
+                    className="border-b border-border-subtle/40 hover:bg-white/2 transition-colors"
+                  >
                     <td className="py-4 px-5">
                       <div className="flex items-center gap-3">
                         {event.coverImage?.url ? (
                           // eslint-disable-next-line @next/next/no-img-element
-                          <img src={event.coverImage.url} alt={event.title} className="w-10 h-10 rounded-lg object-cover flex-shrink-0" />
+                          <img
+                            src={event.coverImage.url}
+                            alt={event.title}
+                            className="w-10 h-10 rounded-lg object-cover flex-shrink-0"
+                          />
                         ) : (
                           <div className="w-10 h-10 rounded-lg bg-accent-purple/10 flex-shrink-0 flex items-center justify-center text-accent-purple text-xs font-bold">
                             {event.title[0]}
                           </div>
                         )}
                         <div className="min-w-0">
-                          <p className="text-text-primary font-medium truncate max-w-52">{event.title}</p>
-                          <p className="text-text-muted text-xs truncate">{event.slug}</p>
+                          <p className="text-text-primary font-medium truncate max-w-52">
+                            {event.title}
+                          </p>
+                          <p className="text-text-muted text-xs truncate">
+                            {event.slug}
+                          </p>
                         </div>
                       </div>
                     </td>
-                    <td className="py-4 px-4 capitalize text-text-secondary">{event.category.replace('_', ' ')}</td>
+                    <td className="py-4 px-4 capitalize text-text-secondary">
+                      {event.category.replace("_", " ")}
+                    </td>
                     <td className="py-4 px-4 text-text-secondary">
-                      {new Date(event.startDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                      {new Date(event.startDate).toLocaleDateString("en-IN", {
+                        day: "numeric",
+                        month: "short",
+                        year: "numeric",
+                      })}
                     </td>
                     <td className="py-4 px-4">
                       <select
                         value={event.status}
-                        onChange={(e) => statusMutation.mutate({ id: event._id, status: e.target.value })}
-                        className={`text-xs px-2.5 py-1 rounded-full border font-medium bg-transparent cursor-pointer ${STATUS_COLORS[event.status] ?? ''}`}
+                        onChange={(e) =>
+                          statusMutation.mutate({
+                            id: event._id,
+                            status: e.target.value,
+                          })
+                        }
+                        className={`text-xs px-2.5 py-1 rounded-full border font-medium bg-transparent cursor-pointer ${STATUS_COLORS[event.status] ?? ""}`}
                       >
-                        {['draft', 'published', 'cancelled', 'sold_out', 'completed'].map((s) => (
-                          <option key={s} value={s} className="bg-background-card text-text-primary">{s.replace('_', ' ')}</option>
+                        {[
+                          "draft",
+                          "published",
+                          "cancelled",
+                          "sold_out",
+                          "completed",
+                        ].map((s) => (
+                          <option
+                            key={s}
+                            value={s}
+                            className="bg-background-card text-text-primary"
+                          >
+                            {s.replace("_", " ")}
+                          </option>
                         ))}
                       </select>
                     </td>
                     <td className="py-4 px-4">
                       <button
                         onClick={() => featureMutation.mutate(event._id)}
-                        className={`text-lg transition-transform hover:scale-110 ${event.isFeatured ? 'text-yellow-400' : 'text-text-muted'}`}
-                        title={event.isFeatured ? 'Remove from featured' : 'Add to featured'}
+                        className={`text-lg transition-transform hover:scale-110 ${event.isFeatured ? "text-yellow-400" : "text-text-muted"}`}
+                        title={
+                          event.isFeatured
+                            ? "Remove from featured"
+                            : "Add to featured"
+                        }
                       >
                         ★
                       </button>
@@ -196,7 +278,8 @@ export default function AdminEventsPage() {
         {pagination && pagination.totalPages > 1 && (
           <div className="flex items-center justify-between px-5 py-3 border-t border-border-subtle">
             <p className="text-text-muted text-xs">
-              Page {pagination.page} of {pagination.totalPages} · {pagination.total} events
+              Page {pagination.page} of {pagination.totalPages} ·{" "}
+              {pagination.total} events
             </p>
             <div className="flex gap-2">
               <button
@@ -228,14 +311,20 @@ export default function AdminEventsPage() {
               exit={{ opacity: 0, scale: 0.95 }}
               className="glass-strong rounded-2xl border border-border-subtle p-6 max-w-sm w-full"
             >
-              <h3 className="text-white font-bold text-lg mb-2">Delete Event?</h3>
+              <h3 className="text-white font-bold text-lg mb-2">
+                Delete Event?
+              </h3>
               <p className="text-text-secondary text-sm mb-1">
-                <strong className="text-white">{deleteTarget.title}</strong> will be permanently deleted
-                along with its Cloudinary images.
+                <strong className="text-white">{deleteTarget.title}</strong>{" "}
+                will be permanently deleted along with its Cloudinary images.
               </p>
-              <p className="text-error text-xs mb-5">This action cannot be undone.</p>
+              <p className="text-error text-xs mb-5">
+                This action cannot be undone.
+              </p>
               {deleteMutation.error && (
-                <p className="text-red-400 text-xs mb-3">{extractApiError(deleteMutation.error).message}</p>
+                <p className="text-red-400 text-xs mb-3">
+                  {extractApiError(deleteMutation.error).message}
+                </p>
               )}
               <div className="flex gap-3">
                 <button
@@ -249,7 +338,7 @@ export default function AdminEventsPage() {
                   disabled={deleteMutation.isPending}
                   className="flex-1 py-2.5 bg-error/80 hover:bg-error rounded-xl text-white text-sm font-medium transition-colors disabled:opacity-60"
                 >
-                  {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
+                  {deleteMutation.isPending ? "Deleting..." : "Delete"}
                 </button>
               </div>
             </motion.div>

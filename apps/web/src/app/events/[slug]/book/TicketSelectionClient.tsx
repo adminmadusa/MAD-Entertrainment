@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import { QUERY_KEYS } from '@mad/shared';
-import { Event as EventData } from '@mad/types';
-import { useQuery } from '@tanstack/react-query';
-import { useParams, useRouter } from 'next/navigation';
+import { QUERY_KEYS } from "@mad/shared";
+import { Event as EventData } from "@mad/types";
+import { useQuery } from "@tanstack/react-query";
+import { useParams, useRouter } from "next/navigation";
 
-import { publicGetEventBySlug } from '@/lib/api/public.service';
-import { TicketSelectionContent } from '@/components/booking/TicketSelectionContent';
+import { publicGetEventBySlug } from "@/lib/api/public.service";
+import { TicketSelectionContent } from "@/components/booking/TicketSelectionContent";
 
 export default function TicketSelectionClient() {
   const params = useParams();
@@ -23,7 +23,9 @@ export default function TicketSelectionClient() {
   if (isLoadingEvent) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-background">
-        <div className="text-white/40 animate-pulse text-sm">Loading tickets selection...</div>
+        <div className="text-white/40 animate-pulse text-sm">
+          Loading tickets selection...
+        </div>
       </div>
     );
   }
@@ -36,11 +38,11 @@ export default function TicketSelectionClient() {
     );
   }
 
-  const showDateTime = new Date(event.startDate).toLocaleDateString('en-US', {
-    weekday: 'long',
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric',
+  const showDateTime = new Date(event.startDate).toLocaleDateString("en-US", {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+    year: "numeric",
   });
 
   return (
@@ -52,8 +54,12 @@ export default function TicketSelectionClient() {
       <div className="fixed top-0 left-0 right-0 bg-[#0d111d]/90 backdrop-blur-lg border-b border-white/10 py-3 z-50 shadow-md">
         <div className="container-mad max-w-2xl px-4 flex items-center justify-between">
           <div className="space-y-0.5 max-w-[85%]">
-            <h1 className="text-sm font-black text-white truncate">{event.title}</h1>
-            <p className="text-[10px] text-text-muted font-medium truncate">{showDateTime} · {event.venue}</p>
+            <h1 className="text-sm font-black text-white truncate">
+              {event.title}
+            </h1>
+            <p className="text-[10px] text-text-muted font-medium truncate">
+              {showDateTime} · {event.venue}
+            </p>
           </div>
           <button
             type="button"

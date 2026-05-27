@@ -1,7 +1,7 @@
-import { Router } from 'express';
-import { requireAuth, requireAdmin } from '../../middleware/auth.middleware';
-import { uploadMiddleware } from '../../middleware/upload.middleware';
-import { uploadImage } from '../../controllers/admin/upload.controller';
+import { Router } from "express";
+import { requireAuth, requireAdmin } from "../../middleware/auth.middleware";
+import { uploadMiddleware } from "../../middleware/upload.middleware";
+import { uploadImage } from "../../controllers/admin/upload.controller";
 
 const router: Router = Router();
 
@@ -13,10 +13,6 @@ router.use(requireAdmin);
  * @desc Securely upload an image to Cloudinary via backend parsing
  * @access Private/Admin
  */
-router.post(
-  '/image',
-  uploadMiddleware.single('image'),
-  uploadImage
-);
+router.post("/image", uploadMiddleware.single("image"), uploadImage);
 
 export default router;

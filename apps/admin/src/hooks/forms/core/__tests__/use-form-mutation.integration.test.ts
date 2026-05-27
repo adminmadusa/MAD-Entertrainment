@@ -1,19 +1,19 @@
 /* @vitest-environment jsdom */
 
-import React from 'react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { act, renderHook, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import React from "react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { act, renderHook, waitFor } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { useFormMutation } from '../use-form-mutation';
+import { useFormMutation } from "../use-form-mutation";
 
 const push = vi.fn();
 
-vi.mock('next/navigation', () => ({
+vi.mock("next/navigation", () => ({
   useRouter: () => ({ push }),
 }));
 
-describe('useFormMutation integration', () => {
+describe("useFormMutation integration", () => {
   beforeEach(() => {
     push.mockReset();
   });
@@ -26,19 +26,23 @@ describe('useFormMutation integration', () => {
     });
 
     const Wrapper = ({ children }: { children: React.ReactNode }) =>
-      React.createElement(QueryClientProvider, { client: queryClient }, children);
-    Wrapper.displayName = 'QueryClientTestWrapper';
+      React.createElement(
+        QueryClientProvider,
+        { client: queryClient },
+        children,
+      );
+    Wrapper.displayName = "QueryClientTestWrapper";
     return Wrapper;
   };
 
-  it('exposes pending state during submit and completes success lifecycle', async () => {
+  it("exposes pending state during submit and completes success lifecycle", async () => {
     let resolveMutation: ((value: { id: string }) => void) | undefined;
 
     const mutationFn = vi.fn(
       () =>
         new Promise<{ id: string }>((resolve) => {
           resolveMutation = resolve;
-        })
+        }),
     );
 
     const onSuccess = vi.fn(async () => undefined);
@@ -48,19 +52,19 @@ describe('useFormMutation integration', () => {
         useFormMutation({
           mutationFn,
           onSuccess,
-          redirectTo: '/events',
+          redirectTo: "/events",
         }),
-      { wrapper: createWrapper() }
+      { wrapper: createWrapper() },
     );
 
     const submitPromise = act(async () => {
-      await result.current.submit({ name: 'foo' });
+      await result.current.submit({ name: "foo" });
     });
 
     await waitFor(() => expect(result.current.isPending).toBe(true));
 
     await act(async () => {
-      resolveMutation?.({ id: 'evt_1' });
+      resolveMutation?.({ id: "evt_1" });
     });
 
     await submitPromise;
@@ -68,35 +72,35 @@ describe('useFormMutation integration', () => {
 
     expect(mutationFn).toHaveBeenCalledTimes(1);
     expect(onSuccess).toHaveBeenCalledTimes(1);
-    expect(push).toHaveBeenCalledWith('/events');
+    expect(push).toHaveBeenCalledWith("/events");
   });
 
-  it('normalizes errors and calls onError callback', async () => {
+  it("normalizes errors and calls onError callback", async () => {
     const onError = vi.fn(async () => undefined);
 
     const { result } = renderHook(
       () =>
         useFormMutation({
           mutationFn: async () => {
-            throw new Error('Request failed');
+            throw new Error("Request failed");
           },
           onError,
         }),
-      { wrapper: createWrapper() }
+      { wrapper: createWrapper() },
     );
 
-    await expect(result.current.submit({})).rejects.toThrow('Request failed');
+    await expect(result.current.submit({})).rejects.toThrow("Request failed");
 
     await waitFor(() => {
       expect(onError).toHaveBeenCalledTimes(1);
-      expect(result.current.serverError).toContain('Request failed');
+      expect(result.current.serverError).toContain("Request failed");
     });
   });
 
-  it('retries failed mutations when retry policy allows it', async () => {
+  it("retries failed mutations when retry policy allows it", async () => {
     const mutationFn = vi
       .fn<() => Promise<{ ok: true }>>()
-      .mockRejectedValueOnce(new Error('temporary failure'))
+      .mockRejectedValueOnce(new Error("temporary failure"))
       .mockResolvedValueOnce({ ok: true });
 
     const { result } = renderHook(
@@ -105,7 +109,7 @@ describe('useFormMutation integration', () => {
           mutationFn,
           retry: 1,
         }),
-      { wrapper: createWrapper() }
+      { wrapper: createWrapper() },
     );
 
     await act(async () => {
@@ -115,13 +119,13 @@ describe('useFormMutation integration', () => {
     expect(mutationFn).toHaveBeenCalledTimes(2);
   });
 
-  it('does not redirect when redirect target is not provided', async () => {
+  it("does not redirect when redirect target is not provided", async () => {
     const { result } = renderHook(
       () =>
         useFormMutation({
           mutationFn: async () => ({ ok: true }),
         }),
-      { wrapper: createWrapper() }
+      { wrapper: createWrapper() },
     );
 
     await act(async () => {

@@ -1,7 +1,7 @@
-import Redis from 'ioredis';
+import Redis from "ioredis";
 
-import { logger } from '../utils/logger';
-import { getEnv } from './env';
+import { logger } from "../utils/logger";
+import { getEnv } from "./env";
 
 let redisClient: Redis | undefined;
 
@@ -10,7 +10,9 @@ export function getRedis(): Redis {
 
   const url = getEnv().REDIS_URL;
   if (!url) {
-    throw new Error('REDIS_URL is required before Redis-backed operations can run');
+    throw new Error(
+      "REDIS_URL is required before Redis-backed operations can run",
+    );
   }
 
   redisClient = new Redis(url, {
@@ -21,21 +23,21 @@ export function getRedis(): Redis {
     },
   });
 
-  redisClient.on('ready', () => logger.info('Redis ready'));
-  redisClient.on('error', (err) => logger.error({ err }, 'Redis error'));
-  redisClient.on('close', () => logger.warn('Redis connection closed'));
+  redisClient.on("ready", () => logger.info("Redis ready"));
+  redisClient.on("error", (err) => logger.error({ err }, "Redis error"));
+  redisClient.on("close", () => logger.warn("Redis connection closed"));
 
   return redisClient;
 }
 
 export async function waitForRedisReady(): Promise<void> {
   const client = getRedis();
-  if (client.status === 'ready') return;
+  if (client.status === "ready") return;
 
   await new Promise<void>((resolve, reject) => {
     const cleanup = () => {
-      client.off('ready', onReady);
-      client.off('error', onError);
+      client.off("ready", onReady);
+      client.off("error", onError);
     };
     const onReady = () => {
       cleanup();
@@ -45,8 +47,8 @@ export async function waitForRedisReady(): Promise<void> {
       cleanup();
       reject(err);
     };
-    client.once('ready', onReady);
-    client.once('error', onError);
+    client.once("ready", onReady);
+    client.once("error", onError);
   });
 }
 
@@ -57,5 +59,5 @@ export async function disconnectRedis(): Promise<void> {
 }
 
 export function isRedisConnected(): boolean {
-  return redisClient?.status === 'ready';
+  return redisClient?.status === "ready";
 }

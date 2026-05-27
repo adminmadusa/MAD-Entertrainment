@@ -1,18 +1,18 @@
-import type { EventMutationInput } from '@mad/contracts';
+import type { EventMutationInput } from "@mad/contracts";
 
-import { CloudinaryImage } from '@/lib/api/admin/event.service';
+import { CloudinaryImage } from "@/lib/api/admin/event.service";
 
-export type EventFormMode = 'create' | 'edit';
-export type TicketingType = 'custom' | 'profile';
+export type EventFormMode = "create" | "edit";
+export type TicketingType = "custom" | "profile";
 
 export interface TicketTierFormValues {
   name: string;
-  price: number | '';
-  capacity: number | '';
-  groupSize: number | '';
-  minPerBooking: number | '';
-  discount: number | '';
-  taxPercent: number | '';
+  price: number | "";
+  capacity: number | "";
+  groupSize: number | "";
+  minPerBooking: number | "";
+  discount: number | "";
+  taxPercent: number | "";
   startDate: string;
   endDate: string;
   description: string;

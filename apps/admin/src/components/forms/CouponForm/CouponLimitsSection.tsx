@@ -1,13 +1,19 @@
-import { FormField, FormSection } from '@/components/forms/primitives';
-import { COUPON_INPUT_CLASSNAME } from '@/components/forms/CouponForm/constants/coupon-form.constants';
-import { CouponFormValues } from '@/types/coupon-form';
+import { FormField, FormSection } from "@/components/forms/primitives";
+import { COUPON_INPUT_CLASSNAME } from "@/components/forms/CouponForm/constants/coupon-form.constants";
+import { CouponFormValues } from "@/types/coupon-form";
 
 interface CouponLimitsSectionProps {
   values: CouponFormValues;
-  onFieldChange: <K extends keyof CouponFormValues>(field: K, value: CouponFormValues[K]) => void;
+  onFieldChange: <K extends keyof CouponFormValues>(
+    field: K,
+    value: CouponFormValues[K],
+  ) => void;
 }
 
-export function CouponLimitsSection({ values, onFieldChange }: CouponLimitsSectionProps) {
+export function CouponLimitsSection({
+  values,
+  onFieldChange,
+}: CouponLimitsSectionProps) {
   return (
     <FormSection title="Usage Rules">
       <div className="grid grid-cols-2 gap-4">
@@ -17,7 +23,12 @@ export function CouponLimitsSection({ values, onFieldChange }: CouponLimitsSecti
             type="number"
             min="0"
             value={values.minOrderAmount}
-            onChange={(e) => onFieldChange('minOrderAmount', e.target.value === '' ? '' : Number(e.target.value))}
+            onChange={(e) =>
+              onFieldChange(
+                "minOrderAmount",
+                e.target.value === "" ? "" : Number(e.target.value),
+              )
+            }
             className={COUPON_INPUT_CLASSNAME}
           />
         </FormField>
@@ -28,7 +39,12 @@ export function CouponLimitsSection({ values, onFieldChange }: CouponLimitsSecti
             type="number"
             min="1"
             value={values.usageLimit}
-            onChange={(e) => onFieldChange('usageLimit', e.target.value === '' ? '' : Number(e.target.value))}
+            onChange={(e) =>
+              onFieldChange(
+                "usageLimit",
+                e.target.value === "" ? "" : Number(e.target.value),
+              )
+            }
             required
             className={COUPON_INPUT_CLASSNAME}
           />

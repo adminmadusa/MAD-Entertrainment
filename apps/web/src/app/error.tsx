@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { useEffect } from 'react';
+import { useEffect } from "react";
 
 interface ErrorPageProps {
   error: Error & { digest?: string };
@@ -10,7 +10,7 @@ interface ErrorPageProps {
 export default function ErrorPage({ error, reset }: ErrorPageProps) {
   useEffect(() => {
     // Log to your error tracking service here (e.g. Sentry)
-    console.error('[MAD Error Boundary]', error);
+    console.error("[MAD Error Boundary]", error);
   }, [error]);
 
   return (
@@ -26,8 +26,7 @@ export default function ErrorPage({ error, reset }: ErrorPageProps) {
 
         {/* Heading */}
         <h1 className="text-3xl font-black text-white">
-          Something Went{' '}
-          <span className="text-gradient">Wrong</span>
+          Something Went <span className="text-gradient">Wrong</span>
         </h1>
 
         <p className="text-text-secondary text-sm leading-relaxed">

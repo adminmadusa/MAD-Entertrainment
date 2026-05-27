@@ -1,15 +1,14 @@
-'use client';
+"use client";
 
-import { Venue } from '@mad/types';
-import { useQuery, useMutation } from '@tanstack/react-query';
-import { motion } from 'framer-motion';
-import { useRouter, useParams } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { Venue } from "@mad/types";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { motion } from "framer-motion";
+import { useRouter, useParams } from "next/navigation";
+import { useState, useEffect } from "react";
 
-import { CloudinaryUpload } from '@/components/CloudinaryUpload';
-import { adminGetVenue, adminUpdateVenue } from '@/lib/api/admin/venue.service';
-import { extractApiError } from '@/lib/api/client';
-
+import { CloudinaryUpload } from "@/components/CloudinaryUpload";
+import { adminGetVenue, adminUpdateVenue } from "@/lib/api/admin/venue.service";
+import { extractApiError } from "@/lib/api/client";
 
 interface CloudinaryAsset {
   url: string;
@@ -23,35 +22,35 @@ export default function EditVenuePage() {
   const id = params.id as string;
 
   // Basic Info
-  const [name, setName] = useState('');
-  const [slug, setSlug] = useState('');
-  const [description, setDescription] = useState('');
-  const [capacity, setCapacity] = useState<number | ''>('');
+  const [name, setName] = useState("");
+  const [slug, setSlug] = useState("");
+  const [description, setDescription] = useState("");
+  const [capacity, setCapacity] = useState<number | "">("");
 
   // Address
-  const [street, setStreet] = useState('');
-  const [city, setCity] = useState('');
-  const [state, setState] = useState('');
-  const [pincode, setPincode] = useState('');
-  const [country, setCountry] = useState('India');
+  const [street, setStreet] = useState("");
+  const [city, setCity] = useState("");
+  const [state, setState] = useState("");
+  const [pincode, setPincode] = useState("");
+  const [country, setCountry] = useState("India");
 
   // Coordinates
-  const [lat, setLat] = useState<number | ''>('');
-  const [lng, setLng] = useState<number | ''>('');
+  const [lat, setLat] = useState<number | "">("");
+  const [lng, setLng] = useState<number | "">("");
 
   // Contact & Extras
-  const [contactEmail, setContactEmail] = useState('');
-  const [contactPhone, setContactPhone] = useState('');
-  const [amenities, setAmenities] = useState('');
+  const [contactEmail, setContactEmail] = useState("");
+  const [contactPhone, setContactPhone] = useState("");
+  const [amenities, setAmenities] = useState("");
   const [isActive, setIsActive] = useState(true);
 
   // Gallery
   const [images, setImages] = useState<CloudinaryAsset[]>([]);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   // Fetch current venue
   const { data: venue, isLoading } = useQuery({
-    queryKey: ['admin-venue', id],
+    queryKey: ["admin-venue", id],
     queryFn: () => adminGetVenue(id),
     enabled: !!id,
   });
@@ -59,20 +58,20 @@ export default function EditVenuePage() {
   // Prepopulate state
   useEffect(() => {
     if (venue) {
-      setName(venue.name || '');
-      setSlug(venue.slug || '');
-      setDescription(venue.description || '');
-      setCapacity(venue.capacity ?? '');
-      setStreet(venue.address || '');
-      setCity(venue.city || '');
-      setState(venue.state || '');
-      setPincode('');
-      setCountry('India');
-      setLat('');
-      setLng('');
-      setContactEmail(venue.contactEmail || '');
-      setContactPhone(venue.contactPhone || '');
-      setAmenities(venue.amenities?.join(', ') || '');
+      setName(venue.name || "");
+      setSlug(venue.slug || "");
+      setDescription(venue.description || "");
+      setCapacity(venue.capacity ?? "");
+      setStreet(venue.address || "");
+      setCity(venue.city || "");
+      setState(venue.state || "");
+      setPincode("");
+      setCountry("India");
+      setLat("");
+      setLng("");
+      setContactEmail(venue.contactEmail || "");
+      setContactPhone(venue.contactPhone || "");
+      setAmenities(venue.amenities?.join(", ") || "");
       setIsActive(venue.isActive ?? true);
       setImages(venue.images || []);
     }
@@ -80,7 +79,7 @@ export default function EditVenuePage() {
 
   const updateMutation = useMutation({
     mutationFn: (payload: Partial<Venue>) => adminUpdateVenue(id, payload),
-    onSuccess: () => router.push('/venues'),
+    onSuccess: () => router.push("/venues"),
     onError: (err) => setError(extractApiError(err).message),
   });
 
@@ -88,7 +87,9 @@ export default function EditVenuePage() {
     if (asset === null) {
       setImages((prev) => prev.filter((_, idx) => idx !== index));
     } else {
-      setImages((prev) => prev.map((img, idx) => (idx === index ? asset : img)));
+      setImages((prev) =>
+        prev.map((img, idx) => (idx === index ? asset : img)),
+      );
     }
   };
 
@@ -100,10 +101,16 @@ export default function EditVenuePage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
 
-    if (!name.trim() || !city.trim() || !state.trim() || !pincode.trim() || capacity === '') {
-      setError('Name, city, state, pincode, and capacity are required.');
+    if (
+      !name.trim() ||
+      !city.trim() ||
+      !state.trim() ||
+      !pincode.trim() ||
+      capacity === ""
+    ) {
+      setError("Name, city, state, pincode, and capacity are required.");
       return;
     }
 
@@ -114,7 +121,10 @@ export default function EditVenuePage() {
       address: street.trim() || undefined,
       capacity: Number(capacity),
       images,
-      amenities: amenities.split(',').map((a) => a.trim()).filter(Boolean),
+      amenities: amenities
+        .split(",")
+        .map((a) => a.trim())
+        .filter(Boolean),
       contactEmail: contactEmail.trim() || undefined,
       contactPhone: contactPhone.trim() || undefined,
       isActive,
@@ -126,7 +136,9 @@ export default function EditVenuePage() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[300px]">
-        <div className="text-white/40 text-sm animate-pulse">Loading venue parameters...</div>
+        <div className="text-white/40 text-sm animate-pulse">
+          Loading venue parameters...
+        </div>
       </div>
     );
   }
@@ -136,7 +148,9 @@ export default function EditVenuePage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-black text-white">Edit Venue</h1>
-          <p className="text-text-muted text-sm mt-0.5">Modify venue particulars</p>
+          <p className="text-text-muted text-sm mt-0.5">
+            Modify venue particulars
+          </p>
         </div>
         <button
           onClick={() => router.back()}
@@ -216,7 +230,11 @@ export default function EditVenuePage() {
                 type="number"
                 min="1"
                 value={capacity}
-                onChange={(e) => setCapacity(e.target.value === '' ? '' : Number(e.target.value))}
+                onChange={(e) =>
+                  setCapacity(
+                    e.target.value === "" ? "" : Number(e.target.value),
+                  )
+                }
                 placeholder="e.g. 5000"
                 required
                 className={inputCls}
@@ -295,7 +313,9 @@ export default function EditVenuePage() {
         <div className="glass rounded-2xl border border-border-subtle p-6 space-y-5">
           <div className="flex items-center justify-between">
             <h2 className="text-white font-semibold">Coordinates (optional)</h2>
-            <span className="text-[10px] text-text-muted">Used for map pins</span>
+            <span className="text-[10px] text-text-muted">
+              Used for map pins
+            </span>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <Field label="Latitude">
@@ -305,7 +325,9 @@ export default function EditVenuePage() {
                 min="-90"
                 max="90"
                 value={lat}
-                onChange={(e) => setLat(e.target.value === '' ? '' : Number(e.target.value))}
+                onChange={(e) =>
+                  setLat(e.target.value === "" ? "" : Number(e.target.value))
+                }
                 placeholder="e.g. 18.9902"
                 className={inputCls}
               />
@@ -317,7 +339,9 @@ export default function EditVenuePage() {
                 min="-180"
                 max="180"
                 value={lng}
-                onChange={(e) => setLng(e.target.value === '' ? '' : Number(e.target.value))}
+                onChange={(e) =>
+                  setLng(e.target.value === "" ? "" : Number(e.target.value))
+                }
                 placeholder="e.g. 72.8130"
                 className={inputCls}
               />
@@ -364,7 +388,10 @@ export default function EditVenuePage() {
               onChange={(e) => setIsActive(e.target.checked)}
               className="w-4 h-4 accent-accent-purple rounded"
             />
-            <label htmlFor="venue-active" className="text-text-secondary text-sm">
+            <label
+              htmlFor="venue-active"
+              className="text-text-secondary text-sm"
+            >
               Mark this venue as active for scheduling events
             </label>
           </div>
@@ -385,7 +412,7 @@ export default function EditVenuePage() {
             disabled={updateMutation.isPending}
             className="flex-1 py-3 btn-gradient text-white font-bold rounded-xl shadow-glow-sm disabled:opacity-60 transition-all"
           >
-            {updateMutation.isPending ? 'Saving Changes...' : 'Save Changes'}
+            {updateMutation.isPending ? "Saving Changes..." : "Save Changes"}
           </button>
         </div>
       </form>
@@ -393,14 +420,22 @@ export default function EditVenuePage() {
   );
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
   return (
     <div className="space-y-1.5">
-      <label className="text-text-secondary text-sm font-medium block">{label}</label>
+      <label className="text-text-secondary text-sm font-medium block">
+        {label}
+      </label>
       {children}
     </div>
   );
 }
 
 const inputCls =
-  'w-full px-4 py-2.5 rounded-xl bg-background border border-border-subtle text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-purple transition-colors';
+  "w-full px-4 py-2.5 rounded-xl bg-background border border-border-subtle text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-purple transition-colors";

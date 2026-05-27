@@ -1,23 +1,23 @@
-import { Request, Response } from 'express';
-import { AppError } from '../../middleware/error.middleware';
-import { sendSuccess } from '../../utils/response';
-import { 
-  validateFilenameAndExtension, 
-  validateMagicBytes, 
-  generateSecureFilename 
-} from '../../utils/file-security';
-import { UploadService } from '../../services/admin/upload.service';
-import { uploadImageQuerySchema } from '@mad/validations';
+import { Request, Response } from "express";
+import { AppError } from "../../middleware/error.middleware";
+import { sendSuccess } from "../../utils/response";
+import {
+  validateFilenameAndExtension,
+  validateMagicBytes,
+  generateSecureFilename,
+} from "../../utils/file-security";
+import { UploadService } from "../../services/admin/upload.service";
+import { uploadImageQuerySchema } from "@mad/validations";
 
 export const uploadImage = async (req: Request, res: Response) => {
   // 1. Ensure file exists (multer handles parsing it into req.file)
   if (!req.file) {
-    throw AppError.badRequest('No image file provided');
+    throw AppError.badRequest("No image file provided");
   }
 
   // Parse query params to know which folder to put it in
   const queryResult = uploadImageQuerySchema.safeParse(req.query);
-  const folder = queryResult.success ? queryResult.data.folder : 'general';
+  const folder = queryResult.success ? queryResult.data.folder : "general";
 
   const { originalname, buffer, mimetype } = req.file;
 
@@ -31,7 +31,11 @@ export const uploadImage = async (req: Request, res: Response) => {
   const secureFilename = generateSecureFilename();
 
   // 5. Stream securely to Cloudinary
-  const result = await UploadService.uploadImageBuffer(buffer, secureFilename, folder);
+  const result = await UploadService.uploadImageBuffer(
+    buffer,
+    secureFilename,
+    folder,
+  );
 
-  sendSuccess(res, result, 'Image uploaded securely');
+  sendSuccess(res, result, "Image uploaded securely");
 };

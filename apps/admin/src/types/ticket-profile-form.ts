@@ -1,22 +1,22 @@
-import { TicketProfile } from '@mad/types';
+import { TicketProfile } from "@mad/types";
 
-export type TicketProfileFormMode = 'create' | 'edit';
+export type TicketProfileFormMode = "create" | "edit";
 
 export interface TicketProfileTicketFormValues {
   tier: string;
   name: string;
   description: string;
-  price: number | '';
+  price: number | "";
   isFree: boolean;
-  totalCapacity: number | '';
-  minPerBooking: number | '';
-  maxPerBooking: number | '';
-  groupSize: number | '';
-  discountType: 'percentage' | 'flat' | 'none';
-  discountValue: number | '';
-  minQtyRequired: number | '';
-  buyQty: number | '';
-  freeTicketQty: number | '';
+  totalCapacity: number | "";
+  minPerBooking: number | "";
+  maxPerBooking: number | "";
+  groupSize: number | "";
+  discountType: "percentage" | "flat" | "none";
+  discountValue: number | "";
+  minQtyRequired: number | "";
+  buyQty: number | "";
+  freeTicketQty: number | "";
   isActive: boolean;
 }
 
@@ -33,4 +33,7 @@ export interface TicketProfileFormValues {
   groups: TicketProfileGroupFormValues[];
 }
 
-export type TicketProfileMutationPayload = Pick<TicketProfile, 'name' | 'description' | 'groups'>;
+export type TicketProfileMutationPayload = Pick<
+  TicketProfile,
+  "name" | "description" | "groups"
+>;

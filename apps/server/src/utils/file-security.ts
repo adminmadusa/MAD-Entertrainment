@@ -1,7 +1,7 @@
-import path from 'path';
-import crypto from 'crypto';
-import { AppError } from '../middleware/error.middleware';
-import { UPLOAD_CONSTANTS } from '@mad/validations';
+import path from "path";
+import crypto from "crypto";
+import { AppError } from "../middleware/error.middleware";
+import { UPLOAD_CONSTANTS } from "@mad/validations";
 
 /**
  * Validates the file extension to prevent double extensions (e.g. image.php.png)
@@ -9,25 +9,31 @@ import { UPLOAD_CONSTANTS } from '@mad/validations';
  */
 export function validateFilenameAndExtension(originalName: string) {
   // Ensure no null bytes
-  if (originalName.indexOf('\0') !== -1) {
-    throw AppError.badRequest('Invalid filename: Contains null bytes');
+  if (originalName.indexOf("\0") !== -1) {
+    throw AppError.badRequest("Invalid filename: Contains null bytes");
   }
 
   // Ensure no directory traversal
   const basename = path.basename(originalName);
   if (basename !== originalName) {
-    throw AppError.badRequest('Invalid filename: Contains directory traversal characters');
+    throw AppError.badRequest(
+      "Invalid filename: Contains directory traversal characters",
+    );
   }
 
   // Count dots to prevent double extensions (e.g., .php.png)
   const dotCount = (basename.match(/\./g) || []).length;
   if (dotCount > 1) {
-    throw AppError.badRequest('Invalid filename: Multiple extensions are not allowed');
+    throw AppError.badRequest(
+      "Invalid filename: Multiple extensions are not allowed",
+    );
   }
 
   const ext = path.extname(basename).toLowerCase();
   if (!UPLOAD_CONSTANTS.ALLOWED_EXTENSIONS.includes(ext as any)) {
-    throw AppError.badRequest(`Invalid extension: ${ext}. Allowed: ${UPLOAD_CONSTANTS.ALLOWED_EXTENSIONS.join(', ')}`);
+    throw AppError.badRequest(
+      `Invalid extension: ${ext}. Allowed: ${UPLOAD_CONSTANTS.ALLOWED_EXTENSIONS.join(", ")}`,
+    );
   }
 
   return true;
@@ -40,7 +46,7 @@ export function validateFilenameAndExtension(originalName: string) {
 export function validateMagicBytes(buffer: Buffer, mimetype: string) {
   // We need at least 12 bytes to check WEBP
   if (!buffer || buffer.length < 12) {
-    throw AppError.badRequest('File is too small or empty');
+    throw AppError.badRequest("File is too small or empty");
   }
 
   // JPEG: FF D8 FF
@@ -59,28 +65,30 @@ export function validateMagicBytes(buffer: Buffer, mimetype: string) {
 
   // WEBP: starts with RIFF, 8-11 is WEBP
   const isWebp =
-    buffer.toString('ascii', 0, 4) === 'RIFF' &&
-    buffer.toString('ascii', 8, 12) === 'WEBP';
+    buffer.toString("ascii", 0, 4) === "RIFF" &&
+    buffer.toString("ascii", 8, 12) === "WEBP";
 
-  if (mimetype === 'image/jpeg' && !isJpeg) {
-    throw AppError.badRequest('File signature does not match image/jpeg');
+  if (mimetype === "image/jpeg" && !isJpeg) {
+    throw AppError.badRequest("File signature does not match image/jpeg");
   }
-  if (mimetype === 'image/png' && !isPng) {
-    throw AppError.badRequest('File signature does not match image/png');
+  if (mimetype === "image/png" && !isPng) {
+    throw AppError.badRequest("File signature does not match image/png");
   }
-  if (mimetype === 'image/webp' && !isWebp) {
-    throw AppError.badRequest('File signature does not match image/webp');
+  if (mimetype === "image/webp" && !isWebp) {
+    throw AppError.badRequest("File signature does not match image/webp");
   }
 
   if (!isJpeg && !isPng && !isWebp) {
-    throw AppError.badRequest('File signature is not a recognized valid image format');
+    throw AppError.badRequest(
+      "File signature is not a recognized valid image format",
+    );
   }
 
   return true;
 }
 
 /**
- * Generates a completely secure, random UUID filename to prevent 
+ * Generates a completely secure, random UUID filename to prevent
  * path traversal, overwrites, or execution based on filename guessing.
  */
 export function generateSecureFilename() {

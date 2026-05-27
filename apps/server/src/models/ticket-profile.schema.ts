@@ -1,8 +1,8 @@
-import mongoose, { Schema, model, Document } from 'mongoose';
-import { TicketTier } from '@mad/shared';
+import mongoose, { Schema, model, Document } from "mongoose";
+import { TicketTier } from "@mad/shared";
 
 export interface ITicketOfferRules {
-  discountType: 'percentage' | 'flat' | 'none';
+  discountType: "percentage" | "flat" | "none";
   discountValue: number;
   minQtyRequired: number;
   buyQty?: number;
@@ -46,13 +46,17 @@ export interface ITicketProfile extends Document {
 
 const ticketOfferRulesSchema = new Schema(
   {
-    discountType: { type: String, enum: ['percentage', 'flat', 'none'], default: 'none' },
+    discountType: {
+      type: String,
+      enum: ["percentage", "flat", "none"],
+      default: "none",
+    },
     discountValue: { type: Number, default: 0 },
     minQtyRequired: { type: Number, default: 1 },
     buyQty: Number,
     freeTicketQty: Number,
   },
-  { _id: false }
+  { _id: false },
 );
 
 const ticketConfigSchema = new Schema(
@@ -73,7 +77,7 @@ const ticketConfigSchema = new Schema(
     offerRules: ticketOfferRulesSchema,
     isActive: { type: Boolean, default: true },
   },
-  { _id: false }
+  { _id: false },
 );
 
 const ticketGroupSchema = new Schema(
@@ -83,7 +87,7 @@ const ticketGroupSchema = new Schema(
     description: String,
     tickets: { type: [ticketConfigSchema], default: [] },
   },
-  { _id: false }
+  { _id: false },
 );
 
 const ticketProfileSchema = new Schema<ITicketProfile>(
@@ -94,9 +98,9 @@ const ticketProfileSchema = new Schema<ITicketProfile>(
     isActive: { type: Boolean, default: true, index: true },
     isDeleted: { type: Boolean, default: false, index: true },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 export const TicketProfile =
   (mongoose.models.TicketProfile as mongoose.Model<ITicketProfile>) ||
-  mongoose.model<ITicketProfile>('TicketProfile', ticketProfileSchema);
+  mongoose.model<ITicketProfile>("TicketProfile", ticketProfileSchema);

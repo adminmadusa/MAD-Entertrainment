@@ -13,7 +13,7 @@
  *   const isMobile = windowWidth < 640;
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 
 /**
  * Returns the current window.innerWidth, updating on resize.
@@ -36,9 +36,9 @@ export function useWindowWidth(defaultWidth = 1024): number {
       rafId = requestAnimationFrame(() => setWidth(window.innerWidth));
     };
 
-    window.addEventListener('resize', handler, { passive: true });
+    window.addEventListener("resize", handler, { passive: true });
     return () => {
-      window.removeEventListener('resize', handler);
+      window.removeEventListener("resize", handler);
       cancelAnimationFrame(rafId); // prevent stale update after unmount
     };
   }, []);

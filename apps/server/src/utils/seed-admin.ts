@@ -1,6 +1,6 @@
-import bcrypt from 'bcryptjs';
-import { AdminModel } from '../models/admin.schema';
-import { logger } from '../utils/logger';
+import bcrypt from "bcryptjs";
+import { AdminModel } from "../models/admin.schema";
+import { logger } from "../utils/logger";
 
 export const seedAdmin = async () => {
   try {
@@ -8,7 +8,9 @@ export const seedAdmin = async () => {
     const password = process.env.ADMIN_SEED_PASSWORD;
 
     if (!email || !password) {
-      logger.warn('ADMIN_SEED_EMAIL or ADMIN_SEED_PASSWORD not provided in .env');
+      logger.warn(
+        "ADMIN_SEED_EMAIL or ADMIN_SEED_PASSWORD not provided in .env",
+      );
       return;
     }
 
@@ -19,14 +21,14 @@ export const seedAdmin = async () => {
       await AdminModel.create({
         email,
         passwordHash,
-        name: 'Super Admin',
-        role: 'SUPER_ADMIN',
+        name: "Super Admin",
+        role: "SUPER_ADMIN",
       });
       logger.info(`Seeded initial admin user with email: ${email}`);
     } else {
       logger.info(`Admin user with email ${email} already exists.`);
     }
   } catch (error) {
-    logger.error({ err: error }, 'Error seeding admin user');
+    logger.error({ err: error }, "Error seeding admin user");
   }
 };

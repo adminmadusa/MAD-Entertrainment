@@ -1,11 +1,11 @@
-import * as Sentry from '@sentry/node';
+import * as Sentry from "@sentry/node";
 
-import { getEnv } from './config/env';
+import { getEnv } from "./config/env";
 
 export function initializeSentry() {
   const env = getEnv();
-  
-  if (env.NODE_ENV !== 'production' || !process.env.SENTRY_DSN) {
+
+  if (env.NODE_ENV !== "production" || !process.env.SENTRY_DSN) {
     return;
   }
 

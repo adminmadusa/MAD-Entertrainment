@@ -1,5 +1,10 @@
-import { z } from 'zod';
-import { EventCategory, BookingMode, EventStatus, TicketTier } from '@mad/shared';
+import { z } from "zod";
+import {
+  EventCategory,
+  BookingMode,
+  EventStatus,
+  TicketTier,
+} from "@mad/shared";
 
 // -- Common schemas --
 const cloudinaryImageSchema = z.object({
@@ -10,7 +15,7 @@ const cloudinaryImageSchema = z.object({
 // -- Venue Validation --
 export const createVenueSchema = z.object({
   body: z.object({
-    name: z.string().min(1, 'Name is required'),
+    name: z.string().min(1, "Name is required"),
     city: z.string().optional(),
     state: z.string().optional(),
     address: z.string().optional(),
@@ -26,8 +31,8 @@ export const updateVenueSchema = z.object({
 // -- Artist Validation --
 export const createArtistSchema = z.object({
   body: z.object({
-    name: z.string().min(1, 'Name is required'),
-    slug: z.string().min(1, 'Slug is required'),
+    name: z.string().min(1, "Name is required"),
+    slug: z.string().min(1, "Slug is required"),
     bio: z.string().max(3000).optional(),
     genre: z.array(z.string()).optional(),
     profileImage: cloudinaryImageSchema.optional(),
@@ -36,7 +41,7 @@ export const createArtistSchema = z.object({
         z.object({
           platform: z.string(),
           url: z.string().url(),
-        })
+        }),
       )
       .optional(),
     isActive: z.boolean().optional(),
@@ -51,8 +56,8 @@ export const updateArtistSchema = z.object({
 // -- DJ Operator Validation --
 export const createDJOperatorSchema = z.object({
   body: z.object({
-    name: z.string().min(1, 'Name is required'),
-    slug: z.string().min(1, 'Slug is required'),
+    name: z.string().min(1, "Name is required"),
+    slug: z.string().min(1, "Slug is required"),
     bio: z.string().max(3000).optional(),
     specialties: z.array(z.string()).optional(),
     profileImage: cloudinaryImageSchema.optional(),
@@ -61,7 +66,7 @@ export const createDJOperatorSchema = z.object({
         z.object({
           platform: z.string(),
           url: z.string().url(),
-        })
+        }),
       )
       .optional(),
     isActive: z.boolean().optional(),
@@ -117,7 +122,7 @@ export const createEventSchema = z.object({
             })
             .optional(),
           isActive: z.boolean().optional(),
-        })
+        }),
       )
       .optional(),
     totalCapacity: z.number().int().min(1),
@@ -133,15 +138,23 @@ export const createEventSchema = z.object({
     highlights: z.array(z.string()).optional(),
     refundPolicy: z.string().max(1000).optional(),
     organizerName: z.string().max(100).optional(),
-    ticketProfileId: z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid Mongoose ObjectId identifier').nullable().optional(),
-    ticketOverrides: z.array(z.object({
-      tier: z.string(),
-      price: z.number().min(0).optional(),
-      totalCapacity: z.number().int().min(1).optional(),
-      isActive: z.boolean().optional(),
-      maxPerBooking: z.number().int().min(1).optional(),
-      minPerBooking: z.number().int().min(1).optional(),
-    })).optional(),
+    ticketProfileId: z
+      .string()
+      .regex(/^[0-9a-fA-F]{24}$/, "Invalid Mongoose ObjectId identifier")
+      .nullable()
+      .optional(),
+    ticketOverrides: z
+      .array(
+        z.object({
+          tier: z.string(),
+          price: z.number().min(0).optional(),
+          totalCapacity: z.number().int().min(1).optional(),
+          isActive: z.boolean().optional(),
+          maxPerBooking: z.number().int().min(1).optional(),
+          minPerBooking: z.number().int().min(1).optional(),
+        }),
+      )
+      .optional(),
   }),
 });
 
@@ -152,7 +165,7 @@ export const updateEventSchema = z.object({
 
 // -- Ticket Profile Validation --
 const ticketOfferRulesSchema = z.object({
-  discountType: z.enum(['percentage', 'flat', 'none']),
+  discountType: z.enum(["percentage", "flat", "none"]),
   discountValue: z.number().min(0),
   minQtyRequired: z.number().int().min(1),
   buyQty: z.number().int().min(1).optional(),
@@ -169,10 +182,12 @@ const ticketConfigSchema = z.object({
   minPerBooking: z.number().int().min(1).optional(),
   maxPerBooking: z.number().int().min(1).optional(),
   groupSize: z.number().int().min(1).optional(),
-  availabilityWindow: z.object({
-    startDate: z.string().datetime().or(z.date()),
-    endDate: z.string().datetime().or(z.date()),
-  }).optional(),
+  availabilityWindow: z
+    .object({
+      startDate: z.string().datetime().or(z.date()),
+      endDate: z.string().datetime().or(z.date()),
+    })
+    .optional(),
   offerRules: ticketOfferRulesSchema.optional(),
   isActive: z.boolean().optional(),
 });
@@ -186,7 +201,7 @@ const ticketGroupSchema = z.object({
 
 export const createTicketProfileSchema = z.object({
   body: z.object({
-    name: z.string().min(1, 'Profile name is required'),
+    name: z.string().min(1, "Profile name is required"),
     description: z.string().optional(),
     groups: z.array(ticketGroupSchema).default([]),
     isActive: z.boolean().optional(),

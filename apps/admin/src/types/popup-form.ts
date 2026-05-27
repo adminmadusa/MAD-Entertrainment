@@ -1,7 +1,11 @@
-import { PopupCampaign } from '@mad/types';
+import { PopupCampaign } from "@mad/types";
 
-export type PopupFormMode = 'create' | 'edit';
-export type PopupTriggerType = 'on_load' | 'after_delay' | 'on_exit' | 'on_scroll';
+export type PopupFormMode = "create" | "edit";
+export type PopupTriggerType =
+  | "on_load"
+  | "after_delay"
+  | "on_exit"
+  | "on_scroll";
 
 export interface PopupFormImage {
   url: string;
@@ -16,9 +20,9 @@ export interface PopupFormValues {
   ctaText: string;
   ctaUrl: string;
   trigger: PopupTriggerType;
-  triggerDelay: number | '';
-  cooldownHours: number | '';
-  priority: number | '';
+  triggerDelay: number | "";
+  cooldownHours: number | "";
+  priority: number | "";
   isActive: boolean;
   showOnPages: string;
   linkedEventId: string;
@@ -30,19 +34,19 @@ export interface PopupFormValues {
 export type PopupMutationPayload = Partial<
   Pick<
     PopupCampaign,
-    | 'name'
-    | 'title'
-    | 'description'
-    | 'ctaText'
-    | 'ctaUrl'
-    | 'trigger'
-    | 'triggerDelay'
-    | 'cooldownHours'
-    | 'priority'
-    | 'isActive'
-    | 'showOnPages'
-    | 'startDate'
-    | 'endDate'
-    | 'image'
+    | "name"
+    | "title"
+    | "description"
+    | "ctaText"
+    | "ctaUrl"
+    | "trigger"
+    | "triggerDelay"
+    | "cooldownHours"
+    | "priority"
+    | "isActive"
+    | "showOnPages"
+    | "startDate"
+    | "endDate"
+    | "image"
   > & { linkedEventId?: string }
 >;

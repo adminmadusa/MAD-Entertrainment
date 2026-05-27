@@ -1,15 +1,18 @@
-'use client';
+"use client";
 
-import { AdminRole } from '@mad/shared';
-import { Admin } from '@mad/types';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useState } from 'react';
+import { AdminRole } from "@mad/shared";
+import { Admin } from "@mad/types";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { motion, AnimatePresence } from "framer-motion";
+import { useState } from "react";
 
-import { adminGetAdmins, adminCreateAdmin, adminToggleAdminActive } from '@/lib/api/admin/team.service';
-import { adminApiClient, extractApiError } from '@/lib/api/client';
-import ErrorState from '@/components/states/ErrorState';
-
+import {
+  adminGetAdmins,
+  adminCreateAdmin,
+  adminToggleAdminActive,
+} from "@/lib/api/admin/team.service";
+import { adminApiClient, extractApiError } from "@/lib/api/client";
+import ErrorState from "@/components/states/ErrorState";
 
 export default function AdminTeamPage() {
   const qc = useQueryClient();
@@ -17,41 +20,43 @@ export default function AdminTeamPage() {
   const [isInviteOpen, setIsInviteOpen] = useState(false);
 
   // Invite states
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [role, setRole] = useState(AdminRole.ADMIN);
-  const [inviteError, setInviteError] = useState('');
+  const [inviteError, setInviteError] = useState("");
 
   // Fetch logged in admin to prevent deactivating self
   const { data: meProfile } = useQuery({
-    queryKey: ['admin-profile-me'],
+    queryKey: ["admin-profile-me"],
     queryFn: async () => {
-      const { data } = await adminApiClient.get<{ data: { admin: Admin } }>('/admin/auth/me');
+      const { data } = await adminApiClient.get<{ data: { admin: Admin } }>(
+        "/admin/auth/me",
+      );
       return data.data.admin;
     },
   });
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ['admin-team', page],
+    queryKey: ["admin-team", page],
     queryFn: () => adminGetAdmins(page, 15),
   });
 
   const toggleMutation = useMutation({
     mutationFn: (id: string) => adminToggleAdminActive(id),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin-team'] }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["admin-team"] }),
   });
 
   const inviteMutation = useMutation({
     mutationFn: (payload: Record<string, unknown>) => adminCreateAdmin(payload),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['admin-team'] });
+      qc.invalidateQueries({ queryKey: ["admin-team"] });
       setIsInviteOpen(false);
-      setName('');
-      setEmail('');
-      setPassword('');
+      setName("");
+      setEmail("");
+      setPassword("");
       setRole(AdminRole.ADMIN);
-      setInviteError('');
+      setInviteError("");
     },
     onError: (err) => setInviteError(extractApiError(err).message),
   });
@@ -62,17 +67,19 @@ export default function AdminTeamPage() {
   if (error) {
     return (
       <div className="py-12">
-        <ErrorState message={(error as Error).message || 'Failed to load team members.'} />
+        <ErrorState
+          message={(error as Error).message || "Failed to load team members."}
+        />
       </div>
     );
   }
 
   const handleInviteSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setInviteError('');
+    setInviteError("");
 
     if (!name.trim() || !email.trim() || !password) {
-      setInviteError('All fields are required.');
+      setInviteError("All fields are required.");
       return;
     }
 
@@ -108,22 +115,45 @@ export default function AdminTeamPage() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border-subtle">
-                <th className="text-left text-text-muted font-medium py-3.5 px-5">Member</th>
-                <th className="text-left text-text-muted font-medium py-3.5 px-4">Role</th>
-                <th className="text-left text-text-muted font-medium py-3.5 px-4">Last Active</th>
-                <th className="text-left text-text-muted font-medium py-3.5 px-4">Status</th>
-                <th className="text-right text-text-muted font-medium py-3.5 px-5">Actions</th>
+                <th className="text-left text-text-muted font-medium py-3.5 px-5">
+                  Member
+                </th>
+                <th className="text-left text-text-muted font-medium py-3.5 px-4">
+                  Role
+                </th>
+                <th className="text-left text-text-muted font-medium py-3.5 px-4">
+                  Last Active
+                </th>
+                <th className="text-left text-text-muted font-medium py-3.5 px-4">
+                  Status
+                </th>
+                <th className="text-right text-text-muted font-medium py-3.5 px-5">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody>
               {isLoading ? (
                 Array.from({ length: 3 }).map((_, i) => (
-                  <tr key={i} className="border-b border-border-subtle/50 animate-pulse">
-                    <td className="py-4 px-5"><div className="h-4 bg-white/5 rounded w-48" /></td>
-                    <td className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-20" /></td>
-                    <td className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-24" /></td>
-                    <td className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-16" /></td>
-                    <td className="py-4 px-5"><div className="h-4 bg-white/5 rounded w-12 ml-auto" /></td>
+                  <tr
+                    key={i}
+                    className="border-b border-border-subtle/50 animate-pulse"
+                  >
+                    <td className="py-4 px-5">
+                      <div className="h-4 bg-white/5 rounded w-48" />
+                    </td>
+                    <td className="py-4 px-4">
+                      <div className="h-4 bg-white/5 rounded w-20" />
+                    </td>
+                    <td className="py-4 px-4">
+                      <div className="h-4 bg-white/5 rounded w-24" />
+                    </td>
+                    <td className="py-4 px-4">
+                      <div className="h-4 bg-white/5 rounded w-16" />
+                    </td>
+                    <td className="py-4 px-5">
+                      <div className="h-4 bg-white/5 rounded w-12 ml-auto" />
+                    </td>
                   </tr>
                 ))
               ) : admins.length === 0 ? (
@@ -134,34 +164,51 @@ export default function AdminTeamPage() {
                 </tr>
               ) : (
                 admins.map((admin) => (
-                  <tr key={admin._id} className="border-b border-border-subtle/40 hover:bg-white/2 transition-colors">
+                  <tr
+                    key={admin._id}
+                    className="border-b border-border-subtle/40 hover:bg-white/2 transition-colors"
+                  >
                     <td className="py-4 px-5">
                       <div>
-                        <p className="text-text-primary font-medium">{admin.name}</p>
+                        <p className="text-text-primary font-medium">
+                          {admin.name}
+                        </p>
                         <p className="text-text-muted text-xs">{admin.email}</p>
                       </div>
                     </td>
                     <td className="py-4 px-4">
-                      <span className={`text-xs px-2 py-0.5 rounded font-medium capitalize border ${
-                        admin.role === AdminRole.SUPER_ADMIN
-                          ? 'bg-accent-purple/10 border-accent-purple/30 text-accent-purple'
-                          : 'bg-white/5 border-white/10 text-text-secondary'
-                      }`}>
-                        {admin.role.replace('_', ' ')}
+                      <span
+                        className={`text-xs px-2 py-0.5 rounded font-medium capitalize border ${
+                          admin.role === AdminRole.SUPER_ADMIN
+                            ? "bg-accent-purple/10 border-accent-purple/30 text-accent-purple"
+                            : "bg-white/5 border-white/10 text-text-secondary"
+                        }`}
+                      >
+                        {admin.role.replace("_", " ")}
                       </span>
                     </td>
                     <td className="py-4 px-4 text-text-secondary">
                       {admin.lastLogin
-                        ? new Date(admin.lastLogin).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
-                        : 'Never logged in'}
+                        ? new Date(admin.lastLogin).toLocaleDateString(
+                            "en-IN",
+                            {
+                              day: "numeric",
+                              month: "short",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            },
+                          )
+                        : "Never logged in"}
                     </td>
                     <td className="py-4 px-4">
-                      <span className={`text-xs px-2.5 py-1 rounded-full border font-medium ${
-                        admin.isActive
-                          ? 'bg-green-500/10 text-green-400 border-green-500/30'
-                          : 'bg-red-500/10 text-red-400 border-red-500/30'
-                      }`}>
-                        {admin.isActive ? 'Active' : 'Inactive'}
+                      <span
+                        className={`text-xs px-2.5 py-1 rounded-full border font-medium ${
+                          admin.isActive
+                            ? "bg-green-500/10 text-green-400 border-green-500/30"
+                            : "bg-red-500/10 text-red-400 border-red-500/30"
+                        }`}
+                      >
+                        {admin.isActive ? "Active" : "Inactive"}
                       </span>
                     </td>
                     <td className="py-4 px-5 text-right">
@@ -170,13 +217,15 @@ export default function AdminTeamPage() {
                           onClick={() => toggleMutation.mutate(admin._id)}
                           disabled={toggleMutation.isPending}
                           className={`text-xs font-semibold hover:underline ${
-                            admin.isActive ? 'text-error' : 'text-green-400'
+                            admin.isActive ? "text-error" : "text-green-400"
                           }`}
                         >
-                          {admin.isActive ? 'Deactivate' : 'Activate'}
+                          {admin.isActive ? "Deactivate" : "Activate"}
                         </button>
                       ) : (
-                        <span className="text-text-muted text-xs italic">Logged in</span>
+                        <span className="text-text-muted text-xs italic">
+                          Logged in
+                        </span>
                       )}
                     </td>
                   </tr>
@@ -190,7 +239,8 @@ export default function AdminTeamPage() {
         {pagination && pagination.totalPages > 1 && (
           <div className="flex items-center justify-between px-5 py-3 border-t border-border-subtle">
             <p className="text-text-muted text-xs">
-              Page {pagination.page} of {pagination.totalPages} · {pagination.total} members
+              Page {pagination.page} of {pagination.totalPages} ·{" "}
+              {pagination.total} members
             </p>
             <div className="flex gap-2">
               <button
@@ -223,8 +273,12 @@ export default function AdminTeamPage() {
               className="glass-strong rounded-2xl border border-border-subtle p-6 max-w-md w-full space-y-4"
             >
               <div>
-                <h3 className="text-white font-bold text-lg">Invite Team Member</h3>
-                <p className="text-text-muted text-xs">Assign access credentials and roles</p>
+                <h3 className="text-white font-bold text-lg">
+                  Invite Team Member
+                </h3>
+                <p className="text-text-muted text-xs">
+                  Assign access credentials and roles
+                </p>
               </div>
 
               {inviteError && (
@@ -235,7 +289,9 @@ export default function AdminTeamPage() {
 
               <form onSubmit={handleInviteSubmit} className="space-y-4">
                 <div className="space-y-1.5">
-                  <label className="text-text-secondary text-xs font-medium block">Full Name</label>
+                  <label className="text-text-secondary text-xs font-medium block">
+                    Full Name
+                  </label>
                   <input
                     value={name}
                     onChange={(e) => setName(e.target.value)}
@@ -246,7 +302,9 @@ export default function AdminTeamPage() {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-text-secondary text-xs font-medium block">Email Address</label>
+                  <label className="text-text-secondary text-xs font-medium block">
+                    Email Address
+                  </label>
                   <input
                     type="email"
                     value={email}
@@ -258,7 +316,9 @@ export default function AdminTeamPage() {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-text-secondary text-xs font-medium block">Access Password</label>
+                  <label className="text-text-secondary text-xs font-medium block">
+                    Access Password
+                  </label>
                   <input
                     type="password"
                     value={password}
@@ -268,19 +328,32 @@ export default function AdminTeamPage() {
                     className={inputCls}
                   />
                   <p className="text-[10px] text-text-muted leading-relaxed">
-                    Must contain at least 8 chars, 1 uppercase, 1 lowercase, 1 number, and 1 special character.
+                    Must contain at least 8 chars, 1 uppercase, 1 lowercase, 1
+                    number, and 1 special character.
                   </p>
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-text-secondary text-xs font-medium block">Dashboard Role</label>
+                  <label className="text-text-secondary text-xs font-medium block">
+                    Dashboard Role
+                  </label>
                   <select
                     value={role}
                     onChange={(e) => setRole(e.target.value as AdminRole)}
                     className={inputCls}
                   >
-                    <option value={AdminRole.ADMIN} className="bg-background-card">Standard Admin</option>
-                    <option value={AdminRole.SUPER_ADMIN} className="bg-background-card">Super Admin (full controls)</option>
+                    <option
+                      value={AdminRole.ADMIN}
+                      className="bg-background-card"
+                    >
+                      Standard Admin
+                    </option>
+                    <option
+                      value={AdminRole.SUPER_ADMIN}
+                      className="bg-background-card"
+                    >
+                      Super Admin (full controls)
+                    </option>
                   </select>
                 </div>
 
@@ -289,7 +362,7 @@ export default function AdminTeamPage() {
                     type="button"
                     onClick={() => {
                       setIsInviteOpen(false);
-                      setInviteError('');
+                      setInviteError("");
                     }}
                     className="flex-1 py-2.5 glass border border-border-subtle rounded-xl text-sm font-medium text-text-secondary hover:text-white transition-colors"
                   >
@@ -300,7 +373,7 @@ export default function AdminTeamPage() {
                     disabled={inviteMutation.isPending}
                     className="flex-1 py-2.5 btn-gradient text-white font-bold rounded-xl shadow-glow-sm disabled:opacity-60 transition-all text-sm"
                   >
-                    {inviteMutation.isPending ? 'Inviting...' : 'Invite'}
+                    {inviteMutation.isPending ? "Inviting..." : "Invite"}
                   </button>
                 </div>
               </form>
@@ -313,4 +386,4 @@ export default function AdminTeamPage() {
 }
 
 const inputCls =
-  'w-full px-4 py-2.5 rounded-xl bg-background border border-border-subtle text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-purple transition-colors';
+  "w-full px-4 py-2.5 rounded-xl bg-background border border-border-subtle text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-purple transition-colors";

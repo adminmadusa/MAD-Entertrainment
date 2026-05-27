@@ -1,4 +1,4 @@
-import mongoose, { Schema, model, Document } from 'mongoose';
+import mongoose, { Schema, model, Document } from "mongoose";
 
 export interface ITier extends Document {
   name: string;
@@ -11,12 +11,18 @@ export interface ITier extends Document {
 const tierSchema = new Schema<ITier>(
   {
     name: { type: String, required: true, trim: true },
-    slug: { type: String, required: true, unique: true, lowercase: true, trim: true },
+    slug: {
+      type: String,
+      required: true,
+      unique: true,
+      lowercase: true,
+      trim: true,
+    },
     isDeleted: { type: Boolean, default: false, index: true },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 export const Tier =
   (mongoose.models.Tier as mongoose.Model<ITier>) ||
-  mongoose.model<ITier>('Tier', tierSchema);
+  mongoose.model<ITier>("Tier", tierSchema);

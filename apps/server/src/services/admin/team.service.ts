@@ -1,15 +1,15 @@
-import bcrypt from 'bcryptjs';
-import { AdminModel, IAdmin } from '../../models/admin.schema';
+import bcrypt from "bcryptjs";
+import { AdminModel, IAdmin } from "../../models/admin.schema";
 
 export const getAdmins = async (
   page: number = 1,
-  limit: number = 15
+  limit: number = 15,
 ): Promise<{ admins: IAdmin[]; total: number; totalPages: number }> => {
   const skip = (page - 1) * limit;
 
   const total = await AdminModel.countDocuments();
   const admins = await AdminModel.find()
-    .select('-passwordHash')
+    .select("-passwordHash")
     .sort({ createdAt: -1 })
     .skip(skip)
     .limit(limit);
@@ -21,16 +21,18 @@ export const getAdmins = async (
   };
 };
 
-export const createAdmin = async (payload: Record<string, any>): Promise<IAdmin> => {
+export const createAdmin = async (
+  payload: Record<string, any>,
+): Promise<IAdmin> => {
   const { email, password, name, role } = payload;
 
   if (!email || !password || !name || !role) {
-    throw new Error('All fields (email, password, name, role) are required');
+    throw new Error("All fields (email, password, name, role) are required");
   }
 
   const existing = await AdminModel.findOne({ email: email.toLowerCase() });
   if (existing) {
-    throw new Error('An administrator with this email already exists');
+    throw new Error("An administrator with this email already exists");
   }
 
   const passwordHash = await bcrypt.hash(password, 10);
@@ -53,10 +55,10 @@ export const createAdmin = async (payload: Record<string, any>): Promise<IAdmin>
 
 export const toggleAdminActive = async (
   id: string,
-  requestingAdminId: string
+  requestingAdminId: string,
 ): Promise<IAdmin | null> => {
   if (id === requestingAdminId) {
-    throw new Error('You cannot deactivate your own administrative account');
+    throw new Error("You cannot deactivate your own administrative account");
   }
 
   const admin = await AdminModel.findById(id);

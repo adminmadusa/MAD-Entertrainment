@@ -1,1 +1,1 @@
-module.exports = require('@mad/config-postcss');
+module.exports = require("@mad/config-postcss");

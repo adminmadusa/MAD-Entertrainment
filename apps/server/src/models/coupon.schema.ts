@@ -1,9 +1,9 @@
-import { EventCategory } from '@mad/shared';
-import { Document, model, Schema, Types } from 'mongoose';
+import { EventCategory } from "@mad/shared";
+import { Document, model, Schema, Types } from "mongoose";
 
 export interface ICoupon extends Document {
   code: string;
-  discountType: 'percentage' | 'fixed';
+  discountType: "percentage" | "fixed";
   discountValue: number;
   maxDiscount?: number;
   minOrderAmount?: number;
@@ -18,8 +18,19 @@ export interface ICoupon extends Document {
 
 const couponSchema = new Schema<ICoupon>(
   {
-    code: { type: String, required: true, unique: true, uppercase: true, trim: true, index: true },
-    discountType: { type: String, enum: ['percentage', 'fixed'], required: true },
+    code: {
+      type: String,
+      required: true,
+      unique: true,
+      uppercase: true,
+      trim: true,
+      index: true,
+    },
+    discountType: {
+      type: String,
+      enum: ["percentage", "fixed"],
+      required: true,
+    },
     discountValue: { type: Number, required: true, min: 0 },
     maxDiscount: { type: Number, min: 0 },
     minOrderAmount: { type: Number, min: 0 },
@@ -28,10 +39,12 @@ const couponSchema = new Schema<ICoupon>(
     usageLimit: { type: Number, required: true, min: 1 },
     usedCount: { type: Number, default: 0, min: 0 },
     isActive: { type: Boolean, default: true, index: true },
-    applicableEventIds: [{ type: Schema.Types.ObjectId, ref: 'Event' }],
-    applicableCategories: [{ type: String, enum: Object.values(EventCategory) }],
+    applicableEventIds: [{ type: Schema.Types.ObjectId, ref: "Event" }],
+    applicableCategories: [
+      { type: String, enum: Object.values(EventCategory) },
+    ],
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
-export const Coupon = model<ICoupon>('Coupon', couponSchema);
+export const Coupon = model<ICoupon>("Coupon", couponSchema);

@@ -1,19 +1,25 @@
-'use client';
+"use client";
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 
-import { adminGetNotifications, adminRetryNotification } from '@/lib/api/admin/notification.service';
-import ErrorState from '@/components/states/ErrorState';
+import {
+  adminGetNotifications,
+  adminRetryNotification,
+} from "@/lib/api/admin/notification.service";
+import ErrorState from "@/components/states/ErrorState";
 
 export default function AdminNotificationsPage() {
   const qc = useQueryClient();
   const [page, setPage] = useState(1);
-  const [channelFilter, setChannelFilter] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
+  const [channelFilter, setChannelFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ['admin-notifications', { page, channel: channelFilter, sent: statusFilter }],
+    queryKey: [
+      "admin-notifications",
+      { page, channel: channelFilter, sent: statusFilter },
+    ],
     queryFn: () =>
       adminGetNotifications({
         page,
@@ -25,7 +31,8 @@ export default function AdminNotificationsPage() {
 
   const retryMutation = useMutation({
     mutationFn: (id: string) => adminRetryNotification(id),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin-notifications'] }),
+    onSuccess: () =>
+      qc.invalidateQueries({ queryKey: ["admin-notifications"] }),
   });
 
   const notifications = data?.items ?? [];
@@ -34,7 +41,9 @@ export default function AdminNotificationsPage() {
   if (error) {
     return (
       <div className="py-12">
-        <ErrorState message={(error as Error).message || 'Failed to load notifications.'} />
+        <ErrorState
+          message={(error as Error).message || "Failed to load notifications."}
+        />
       </div>
     );
   }
@@ -84,24 +93,51 @@ export default function AdminNotificationsPage() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border-subtle">
-                <th className="text-left text-text-muted font-medium py-3.5 px-5">Recipient</th>
-                <th className="text-left text-text-muted font-medium py-3.5 px-4">Channel</th>
-                <th className="text-left text-text-muted font-medium py-3.5 px-4">Message</th>
-                <th className="text-left text-text-muted font-medium py-3.5 px-4">Attempts</th>
-                <th className="text-left text-text-muted font-medium py-3.5 px-4">Status</th>
-                <th className="text-right text-text-muted font-medium py-3.5 px-5">Actions</th>
+                <th className="text-left text-text-muted font-medium py-3.5 px-5">
+                  Recipient
+                </th>
+                <th className="text-left text-text-muted font-medium py-3.5 px-4">
+                  Channel
+                </th>
+                <th className="text-left text-text-muted font-medium py-3.5 px-4">
+                  Message
+                </th>
+                <th className="text-left text-text-muted font-medium py-3.5 px-4">
+                  Attempts
+                </th>
+                <th className="text-left text-text-muted font-medium py-3.5 px-4">
+                  Status
+                </th>
+                <th className="text-right text-text-muted font-medium py-3.5 px-5">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody>
               {isLoading ? (
                 Array.from({ length: 5 }).map((_, i) => (
-                  <tr key={i} className="border-b border-border-subtle/50 animate-pulse">
-                    <td className="py-4 px-5"><div className="h-4 bg-white/5 rounded w-32" /></td>
-                    <td className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-16" /></td>
-                    <td className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-64" /></td>
-                    <td className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-8" /></td>
-                    <td className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-16" /></td>
-                    <td className="py-4 px-5"><div className="h-4 bg-white/5 rounded w-12 ml-auto" /></td>
+                  <tr
+                    key={i}
+                    className="border-b border-border-subtle/50 animate-pulse"
+                  >
+                    <td className="py-4 px-5">
+                      <div className="h-4 bg-white/5 rounded w-32" />
+                    </td>
+                    <td className="py-4 px-4">
+                      <div className="h-4 bg-white/5 rounded w-16" />
+                    </td>
+                    <td className="py-4 px-4">
+                      <div className="h-4 bg-white/5 rounded w-64" />
+                    </td>
+                    <td className="py-4 px-4">
+                      <div className="h-4 bg-white/5 rounded w-8" />
+                    </td>
+                    <td className="py-4 px-4">
+                      <div className="h-4 bg-white/5 rounded w-16" />
+                    </td>
+                    <td className="py-4 px-5">
+                      <div className="h-4 bg-white/5 rounded w-12 ml-auto" />
+                    </td>
                   </tr>
                 ))
               ) : notifications.length === 0 ? (
@@ -112,16 +148,29 @@ export default function AdminNotificationsPage() {
                 </tr>
               ) : (
                 notifications.map((notif) => (
-                  <tr key={notif._id} className="border-b border-border-subtle/40 hover:bg-white/2 transition-colors">
+                  <tr
+                    key={notif._id}
+                    className="border-b border-border-subtle/40 hover:bg-white/2 transition-colors"
+                  >
                     <td className="py-4 px-5">
-                      <div className="font-medium text-text-primary truncate max-w-40">{notif.recipient}</div>
-                      <div className="text-[10px] text-text-muted font-mono">{notif._id}</div>
+                      <div className="font-medium text-text-primary truncate max-w-40">
+                        {notif.recipient}
+                      </div>
+                      <div className="text-[10px] text-text-muted font-mono">
+                        {notif._id}
+                      </div>
                     </td>
                     <td className="py-4 px-4">
-                      <span className="text-xs text-text-secondary capitalize font-medium">{notif.channel}</span>
+                      <span className="text-xs text-text-secondary capitalize font-medium">
+                        {notif.channel}
+                      </span>
                     </td>
                     <td className="py-4 px-4 max-w-xs text-text-secondary">
-                      {notif.subject && <div className="font-semibold text-xs text-white truncate">{notif.subject}</div>}
+                      {notif.subject && (
+                        <div className="font-semibold text-xs text-white truncate">
+                          {notif.subject}
+                        </div>
+                      )}
                       <p className="text-xs truncate">{notif.body}</p>
                       {notif.failureReason && (
                         <p className="text-[10px] text-red-400 mt-1 italic truncate">
@@ -133,12 +182,14 @@ export default function AdminNotificationsPage() {
                       {notif.retryCount}
                     </td>
                     <td className="py-4 px-4">
-                      <span className={`text-xs px-2.5 py-1 rounded-full border font-medium ${
-                        notif.isSent
-                          ? 'bg-green-500/10 text-green-400 border-green-500/30'
-                          : 'bg-red-500/10 text-red-400 border-red-500/30'
-                      }`}>
-                        {notif.isSent ? 'Sent' : 'Failed'}
+                      <span
+                        className={`text-xs px-2.5 py-1 rounded-full border font-medium ${
+                          notif.isSent
+                            ? "bg-green-500/10 text-green-400 border-green-500/30"
+                            : "bg-red-500/10 text-red-400 border-red-500/30"
+                        }`}
+                      >
+                        {notif.isSent ? "Sent" : "Failed"}
                       </span>
                     </td>
                     <td className="py-4 px-5 text-right">
@@ -165,7 +216,8 @@ export default function AdminNotificationsPage() {
         {pagination && pagination.totalPages > 1 && (
           <div className="flex items-center justify-between px-5 py-3 border-t border-border-subtle">
             <p className="text-text-muted text-xs">
-              Page {pagination.page} of {pagination.totalPages} · {pagination.total} notifications
+              Page {pagination.page} of {pagination.totalPages} ·{" "}
+              {pagination.total} notifications
             </p>
             <div className="flex gap-2">
               <button

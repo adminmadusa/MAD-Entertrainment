@@ -1,4 +1,4 @@
-import { defineWorkspace as maybeDefineWorkspace } from 'vitest/config';
+import { defineWorkspace as maybeDefineWorkspace } from "vitest/config";
 
 type WorkspaceProject = {
   test: {
@@ -10,25 +10,17 @@ type WorkspaceProject = {
 };
 
 const defineWorkspaceCompat =
-  typeof maybeDefineWorkspace === 'function'
+  typeof maybeDefineWorkspace === "function"
     ? maybeDefineWorkspace
     : (projects: WorkspaceProject[]) => projects;
 
 export default defineWorkspaceCompat([
   {
     test: {
-      name: 'unit',
-      environment: 'node',
-      include: [
-        'apps/*/src/**/*.test.ts',
-        'packages/*/src/**/*.test.ts'
-      ],
-      exclude: [
-        '**/node_modules/**',
-        '**/dist/**',
-        '**/e2e/**',
-        '**/.next/**'
-      ]
-    }
-  }
+      name: "unit",
+      environment: "node",
+      include: ["apps/*/src/**/*.test.ts", "packages/*/src/**/*.test.ts"],
+      exclude: ["**/node_modules/**", "**/dist/**", "**/e2e/**", "**/.next/**"],
+    },
+  },
 ]);

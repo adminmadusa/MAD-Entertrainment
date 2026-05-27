@@ -1,51 +1,56 @@
-import { PopupCampaign } from '@mad/types';
+import { PopupCampaign } from "@mad/types";
 
-import { toIsoDateTime, toLocalDateTimeInput } from '../forms/scheduling';
-import { normalizeId, toPopupTargetingPayload } from '../forms/targeting';
-import { PopupFormValues, PopupMutationPayload } from '@/types/popup-form';
+import { toIsoDateTime, toLocalDateTimeInput } from "../forms/scheduling";
+import { normalizeId, toPopupTargetingPayload } from "../forms/targeting";
+import { PopupFormValues, PopupMutationPayload } from "@/types/popup-form";
 
 export function getDefaultPopupFormValues(): PopupFormValues {
   return {
-    name: '',
-    title: '',
-    description: '',
-    ctaText: '',
-    ctaUrl: '',
-    trigger: 'on_load',
+    name: "",
+    title: "",
+    description: "",
+    ctaText: "",
+    ctaUrl: "",
+    trigger: "on_load",
     triggerDelay: 3000,
     cooldownHours: 24,
     priority: 0,
     isActive: true,
-    showOnPages: '',
-    linkedEventId: '',
-    startDate: '',
-    endDate: '',
+    showOnPages: "",
+    linkedEventId: "",
+    startDate: "",
+    endDate: "",
     image: null,
   };
 }
 
 export function mapPopupToFormValues(popup: PopupCampaign): PopupFormValues {
   return {
-    name: popup.name || '',
-    title: popup.title || '',
-    description: popup.description || '',
-    ctaText: popup.ctaText || '',
-    ctaUrl: popup.ctaUrl || '',
-    trigger: (popup.trigger as PopupFormValues['trigger']) || 'on_load',
+    name: popup.name || "",
+    title: popup.title || "",
+    description: popup.description || "",
+    ctaText: popup.ctaText || "",
+    ctaUrl: popup.ctaUrl || "",
+    trigger: (popup.trigger as PopupFormValues["trigger"]) || "on_load",
     triggerDelay: popup.triggerDelay ?? 3000,
     cooldownHours: popup.cooldownHours ?? 24,
     priority: popup.priority ?? 0,
     isActive: popup.isActive ?? true,
-    showOnPages: popup.showOnPages?.join(', ') || '',
+    showOnPages: popup.showOnPages?.join(", ") || "",
     linkedEventId: normalizeId(popup.linkedEventId),
     startDate: toLocalDateTimeInput(popup.startDate),
     endDate: toLocalDateTimeInput(popup.endDate),
-    image: (popup.image as PopupFormValues['image']) || null,
+    image: (popup.image as PopupFormValues["image"]) || null,
   };
 }
 
-export function mapPopupFormToPayload(values: PopupFormValues): PopupMutationPayload {
-  const targetingPayload = toPopupTargetingPayload(values.showOnPages, values.linkedEventId);
+export function mapPopupFormToPayload(
+  values: PopupFormValues,
+): PopupMutationPayload {
+  const targetingPayload = toPopupTargetingPayload(
+    values.showOnPages,
+    values.linkedEventId,
+  );
 
   return {
     name: values.name.trim(),

@@ -1,6 +1,6 @@
-import { DJOperator } from '@mad/types';
+import { DJOperator } from "@mad/types";
 
-import { adminApiClient } from '@/lib/api/client';
+import { adminApiClient } from "@/lib/api/client";
 
 export interface DJsResponse {
   data: DJOperator[];
@@ -28,17 +28,25 @@ export interface DJFilters {
   search?: string;
 }
 
-export async function adminGetDJs(filters: DJFilters = {}): Promise<NormalizedDJsResponse> {
+export async function adminGetDJs(
+  filters: DJFilters = {},
+): Promise<NormalizedDJsResponse> {
   try {
     const params = new URLSearchParams();
     Object.entries(filters).forEach(([k, v]) => {
-      if (v !== undefined && v !== '') {
+      if (v !== undefined && v !== "") {
         params.set(k, String(v));
       }
     });
-    const { data } = await adminApiClient.get<DJsResponse>(`/admin/dj-operators?${params}`);
+    const { data } = await adminApiClient.get<DJsResponse>(
+      `/admin/dj-operators?${params}`,
+    );
     return {
-      items: Array.isArray(data?.data) ? data.data : (data?.data && Object.values(data.data).find(v => Array.isArray(v)) || []),
+      items: Array.isArray(data?.data)
+        ? data.data
+        : (data?.data &&
+            Object.values(data.data).find((v) => Array.isArray(v))) ||
+          [],
       pagination: {
         page: data?.pagination?.page ?? 1,
         limit: data?.pagination?.limit ?? 15,
@@ -47,7 +55,10 @@ export async function adminGetDJs(filters: DJFilters = {}): Promise<NormalizedDJ
       },
     };
   } catch (error) {
-    console.error('[DJ Service] Failed to fetch DJ Operators, returning safe default NormalizedDJsResponse:', error);
+    console.error(
+      "[DJ Service] Failed to fetch DJ Operators, returning safe default NormalizedDJsResponse:",
+      error,
+    );
     return {
       items: [],
       pagination: {
@@ -71,19 +82,30 @@ export async function adminGetDJ(id: string): Promise<DJOperator | null> {
   }
 }
 
-export async function adminCreateDJ(payload: Partial<DJOperator>): Promise<DJOperator | null> {
+export async function adminCreateDJ(
+  payload: Partial<DJOperator>,
+): Promise<DJOperator | null> {
   try {
-    const { data } = await adminApiClient.post<{ data: DJOperator }>('/admin/dj-operators', payload);
+    const { data } = await adminApiClient.post<{ data: DJOperator }>(
+      "/admin/dj-operators",
+      payload,
+    );
     return data.data;
   } catch (error) {
-    console.error('[DJ Service] Failed to create DJ Operator:', error);
+    console.error("[DJ Service] Failed to create DJ Operator:", error);
     throw error;
   }
 }
 
-export async function adminUpdateDJ(id: string, payload: Partial<DJOperator>): Promise<DJOperator | null> {
+export async function adminUpdateDJ(
+  id: string,
+  payload: Partial<DJOperator>,
+): Promise<DJOperator | null> {
   try {
-    const { data } = await adminApiClient.put<{ data: DJOperator }>(`/admin/dj-operators/${id}`, payload);
+    const { data } = await adminApiClient.put<{ data: DJOperator }>(
+      `/admin/dj-operators/${id}`,
+      payload,
+    );
     return data.data;
   } catch (error) {
     console.error(`[DJ Service] Failed to update DJ Operator ${id}:`, error);

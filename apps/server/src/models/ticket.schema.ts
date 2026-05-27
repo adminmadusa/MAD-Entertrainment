@@ -1,5 +1,5 @@
-import { TicketTier } from '@mad/shared';
-import { Document, model, Schema, Types } from 'mongoose';
+import { TicketTier } from "@mad/shared";
+import { Document, model, Schema, Types } from "mongoose";
 
 export interface ITicket extends Document {
   ticketId: string;
@@ -20,8 +20,18 @@ export interface ITicket extends Document {
 const ticketSchema = new Schema<ITicket>(
   {
     ticketId: { type: String, required: true, unique: true, index: true },
-    bookingId: { type: Schema.Types.ObjectId, ref: 'Booking', required: true, index: true },
-    eventId: { type: Schema.Types.ObjectId, ref: 'Event', required: true, index: true },
+    bookingId: {
+      type: Schema.Types.ObjectId,
+      ref: "Booking",
+      required: true,
+      index: true,
+    },
+    eventId: {
+      type: Schema.Types.ObjectId,
+      ref: "Event",
+      required: true,
+      index: true,
+    },
     tierName: { type: String, required: true },
     tier: { type: String, enum: Object.values(TicketTier), required: true },
     admits: { type: Number, default: 1, min: 1 },
@@ -33,7 +43,7 @@ const ticketSchema = new Schema<ITicket>(
     qrCodeImage: String,
     scannedAt: Date,
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
-export const Ticket = model<ITicket>('Ticket', ticketSchema);
+export const Ticket = model<ITicket>("Ticket", ticketSchema);

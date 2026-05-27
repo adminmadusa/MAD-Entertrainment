@@ -1,5 +1,5 @@
-import { Schema, model, Document } from 'mongoose';
-import bcrypt from 'bcryptjs';
+import { Schema, model, Document } from "mongoose";
+import bcrypt from "bcryptjs";
 
 export interface IAdmin extends Document {
   email: string;
@@ -30,8 +30,8 @@ const adminSchema = new Schema<IAdmin>(
     },
     role: {
       type: String,
-      enum: ['SUPER_ADMIN', 'ADMIN', 'MODERATOR'],
-      default: 'ADMIN',
+      enum: ["SUPER_ADMIN", "ADMIN", "MODERATOR"],
+      default: "ADMIN",
     },
     isActive: {
       type: Boolean,
@@ -44,11 +44,13 @@ const adminSchema = new Schema<IAdmin>(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
-adminSchema.methods.comparePassword = async function (password: string): Promise<boolean> {
+adminSchema.methods.comparePassword = async function (
+  password: string,
+): Promise<boolean> {
   return bcrypt.compare(password, this.passwordHash);
 };
 
-export const AdminModel = model<IAdmin>('Admin', adminSchema);
+export const AdminModel = model<IAdmin>("Admin", adminSchema);

@@ -1,24 +1,30 @@
-import { Coupon } from '@mad/types';
+import { Coupon } from "@mad/types";
 
-import { toIsoDateTime, toLocalDateTimeInput } from '../forms/scheduling';
-import { normalizeCategoryArray, normalizeStringArray, toCouponTargetingPayload } from '../forms/targeting';
-import { CouponFormValues, CouponMutationPayload } from '@/types/coupon-form';
+import { toIsoDateTime, toLocalDateTimeInput } from "../forms/scheduling";
+import {
+  normalizeCategoryArray,
+  normalizeStringArray,
+  toCouponTargetingPayload,
+} from "../forms/targeting";
+import { CouponFormValues, CouponMutationPayload } from "@/types/coupon-form";
 
-export function toLocalDatetimeString(dateStr: Date | string | undefined): string {
+export function toLocalDatetimeString(
+  dateStr: Date | string | undefined,
+): string {
   return toLocalDateTimeInput(dateStr);
 }
 
 export function getDefaultCouponFormValues(): CouponFormValues {
   return {
-    code: '',
-    description: '',
-    discountType: 'percentage',
-    discountValue: '',
-    maxDiscount: '',
-    minOrderAmount: '',
+    code: "",
+    description: "",
+    discountType: "percentage",
+    discountValue: "",
+    maxDiscount: "",
+    minOrderAmount: "",
     usageLimit: 100,
-    validFrom: '',
-    validUntil: '',
+    validFrom: "",
+    validUntil: "",
     isActive: true,
     applicableEventIds: [],
     applicableCategories: [],
@@ -27,12 +33,12 @@ export function getDefaultCouponFormValues(): CouponFormValues {
 
 export function mapCouponToFormValues(coupon: Coupon): CouponFormValues {
   return {
-    code: coupon.code || '',
-    description: coupon.description || '',
-    discountType: coupon.discountType || 'percentage',
-    discountValue: coupon.discountValue ?? '',
-    maxDiscount: coupon.maxDiscount ?? '',
-    minOrderAmount: coupon.minOrderAmount ?? '',
+    code: coupon.code || "",
+    description: coupon.description || "",
+    discountType: coupon.discountType || "percentage",
+    discountValue: coupon.discountValue ?? "",
+    maxDiscount: coupon.maxDiscount ?? "",
+    minOrderAmount: coupon.minOrderAmount ?? "",
     usageLimit: coupon.usageLimit ?? 100,
     validFrom: toLocalDatetimeString(coupon.validFrom),
     validUntil: toLocalDatetimeString(coupon.validUntil),
@@ -42,16 +48,22 @@ export function mapCouponToFormValues(coupon: Coupon): CouponFormValues {
   };
 }
 
-export function mapCouponFormToPayload(values: CouponFormValues): CouponMutationPayload {
-  const maxDiscountValue = values.maxDiscount === '' ? undefined : Number(values.maxDiscount);
-  const targetingPayload = toCouponTargetingPayload(values.applicableEventIds, values.applicableCategories);
+export function mapCouponFormToPayload(
+  values: CouponFormValues,
+): CouponMutationPayload {
+  const maxDiscountValue =
+    values.maxDiscount === "" ? undefined : Number(values.maxDiscount);
+  const targetingPayload = toCouponTargetingPayload(
+    values.applicableEventIds,
+    values.applicableCategories,
+  );
 
   return {
     code: values.code.trim().toUpperCase(),
     description: values.description.trim() || undefined,
     discountType: values.discountType,
     discountValue: Number(values.discountValue || 0),
-    maxDiscount: values.discountType === 'fixed' ? null : maxDiscountValue,
+    maxDiscount: values.discountType === "fixed" ? null : maxDiscountValue,
     minOrderAmount: Number(values.minOrderAmount || 0),
     usageLimit: Number(values.usageLimit || 1),
     validFrom: toIsoDateTime(values.validFrom),

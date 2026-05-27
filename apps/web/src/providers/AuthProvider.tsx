@@ -1,7 +1,13 @@
-'use client';
+"use client";
 
-import { STORAGE_KEYS } from '@mad/shared';
-import { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import { STORAGE_KEYS } from "@mad/shared";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useCallback,
+} from "react";
 
 interface AuthUser {
   userId: string;
@@ -29,24 +35,27 @@ const AuthContext = createContext<AuthContextValue>({
   logout: () => {},
 });
 
-
 function isTokenExpired(token: string): boolean {
   try {
-    const parts = token.split('.');
+    const parts = token.split(".");
     if (parts.length !== 3) return true;
 
     const payload = parts[1];
-    const base64 = payload.replace(/-/g, '+').replace(/_/g, '/');
-    const padded = base64.padEnd(base64.length + (4 - (base64.length % 4)) % 4, '=');
+    const base64 = payload.replace(/-/g, "+").replace(/_/g, "/");
+    const padded = base64.padEnd(
+      base64.length + ((4 - (base64.length % 4)) % 4),
+      "=",
+    );
     const jsonPayload = decodeURIComponent(
-      window.atob(padded)
-        .split('')
-        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-        .join('')
+      window
+        .atob(padded)
+        .split("")
+        .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+        .join(""),
     );
 
     const decoded = JSON.parse(jsonPayload);
-    if (typeof decoded.exp !== 'number') return false;
+    if (typeof decoded.exp !== "number") return false;
 
     return decoded.exp * 1000 < Date.now();
   } catch {

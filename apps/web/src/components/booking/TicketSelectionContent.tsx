@@ -1,32 +1,36 @@
-'use client';
+"use client";
 
-import { STORAGE_VERSION } from '@mad/shared';
-import { Event as EventData } from '@mad/types';
-import { Button } from '@mad/ui';
-import { useMutation } from '@tanstack/react-query';
-import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useState } from 'react';
+import { STORAGE_VERSION } from "@mad/shared";
+import { Event as EventData } from "@mad/types";
+import { Button } from "@mad/ui";
+import { useMutation } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
 
-import { ReserveTicketsInput } from '@mad/validations';
-import { extractApiError } from '@/lib/api/client';
-import { publicCreateBooking } from '@/lib/api/public.service';
+import { ReserveTicketsInput } from "@mad/validations";
+import { extractApiError } from "@/lib/api/client";
+import { publicCreateBooking } from "@/lib/api/public.service";
 
 interface TicketSelectionContentProps {
   event: EventData;
   onClose?: () => void;
   isModal?: boolean;
-  onQuantitiesChange?: (quantities: Record<string, number>, subtotal: number, selectedCount: number) => void;
+  onQuantitiesChange?: (
+    quantities: Record<string, number>,
+    subtotal: number,
+    selectedCount: number,
+  ) => void;
   // External triggers for checkout when rendered inside a modal
   checkoutTriggerRef?: React.MutableRefObject<(() => void) | null>;
   setIsPendingChange?: (isPending: boolean) => void;
   onBookingSuccess?: (bookingId: string) => void;
 }
 
-type TicketTierWithOptionalFields = EventData['ticketTiers'][number] & {
+type TicketTierWithOptionalFields = EventData["ticketTiers"][number] & {
   groupName?: string;
   isFree?: boolean;
   offerRules?: {
-    discountType?: 'none' | 'percentage' | 'flat';
+    discountType?: "none" | "percentage" | "flat";
     discountValue?: number;
     buyQty?: number;
     freeTicketQty?: number;
@@ -45,24 +49,26 @@ export function TicketSelectionContent({
   const router = useRouter();
   const eventId = event._id;
 
-  const [sessionId, setSessionId] = useState('');
+  const [sessionId, setSessionId] = useState("");
   const [quantities, setQuantities] = useState<Record<string, number>>({});
-  const [couponCode, setCouponCode] = useState('');
+  const [couponCode, setCouponCode] = useState("");
   const [couponApplied, setCouponApplied] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   // Setup unique Session ID
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       const sessionKey = `mad_checkout_session_${STORAGE_VERSION}`;
       let sess = sessionStorage.getItem(sessionKey);
       if (!sess) {
-        if (typeof window.crypto === 'undefined' || !window.crypto.randomUUID) {
-          setError('Secure session initialization failed. Please refresh and try again.');
+        if (typeof window.crypto === "undefined" || !window.crypto.randomUUID) {
+          setError(
+            "Secure session initialization failed. Please refresh and try again.",
+          );
           return;
         }
         sess = window.crypto.randomUUID();
-        sessionStorage.removeItem('mad_checkout_session');
+        sessionStorage.removeItem("mad_checkout_session");
         sessionStorage.setItem(sessionKey, sess);
       }
       setSessionId(sess);
@@ -71,7 +77,8 @@ export function TicketSelectionContent({
 
   // Booking Mutation (creates temporary hold/reservation)
   const createBookingMutation = useMutation({
-    mutationFn: (payload: ReserveTicketsInput) => publicCreateBooking(payload, sessionId),
+    mutationFn: (payload: ReserveTicketsInput) =>
+      publicCreateBooking(payload, sessionId),
     onSuccess: (booking) => {
       // Close modal before redirecting
       if (onClose) onClose();
@@ -88,42 +95,45 @@ export function TicketSelectionContent({
     },
   });
 
-  const handleQtyChange = useCallback((tier: string, change: number) => {
-    const prevQty = quantities[tier] || 0;
-    const newQty = Math.max(0, Math.min(10, prevQty + change));
+  const handleQtyChange = useCallback(
+    (tier: string, change: number) => {
+      const prevQty = quantities[tier] || 0;
+      const newQty = Math.max(0, Math.min(10, prevQty + change));
 
-    if (newQty === prevQty) return;
+      if (newQty === prevQty) return;
 
-    const next = {
-      ...quantities,
-      [tier]: newQty,
-    };
+      const next = {
+        ...quantities,
+        [tier]: newQty,
+      };
 
-    setQuantities(next);
+      setQuantities(next);
 
-    if (onQuantitiesChange) {
-      let totalCount = 0;
-      let sub = 0;
-      event.ticketTiers.forEach((t) => {
-        const qty = next[t.tier] || 0;
-        if (qty > 0) {
-          totalCount += qty;
-          sub += Math.max(0, t.price - (t.discount || 0)) * qty;
-        }
-      });
-      onQuantitiesChange(next, sub, totalCount);
-    }
-  }, [quantities, event.ticketTiers, onQuantitiesChange]);
+      if (onQuantitiesChange) {
+        let totalCount = 0;
+        let sub = 0;
+        event.ticketTiers.forEach((t) => {
+          const qty = next[t.tier] || 0;
+          if (qty > 0) {
+            totalCount += qty;
+            sub += Math.max(0, t.price - (t.discount || 0)) * qty;
+          }
+        });
+        onQuantitiesChange(next, sub, totalCount);
+      }
+    },
+    [quantities, event.ticketTiers, onQuantitiesChange],
+  );
 
   const handleApplyCoupon = (e: React.FormEvent) => {
     e.preventDefault();
     if (!couponCode.trim()) return;
     setCouponApplied(true);
-    alert('Coupon applied! Subtotal will be updated at checkout.');
+    alert("Coupon applied! Subtotal will be updated at checkout.");
   };
 
   const handleCheckoutSubmit = useCallback(() => {
-    setError('');
+    setError("");
     if (!eventId) return;
 
     const ticketsPayload = Object.entries(quantities)
@@ -134,7 +144,7 @@ export function TicketSelectionContent({
       }));
 
     if (ticketsPayload.length === 0) {
-      setError('Please select at least 1 ticket.');
+      setError("Please select at least 1 ticket.");
       return;
     }
 
@@ -144,7 +154,13 @@ export function TicketSelectionContent({
       tickets: ticketsPayload,
       couponCode: couponCode.trim() || undefined,
     });
-  }, [eventId, quantities, couponCode, setIsPendingChange, createBookingMutation]);
+  }, [
+    eventId,
+    quantities,
+    couponCode,
+    setIsPendingChange,
+    createBookingMutation,
+  ]);
 
   // Expose the checkout submit method externally (for modal button clicks)
   useEffect(() => {
@@ -169,7 +185,9 @@ export function TicketSelectionContent({
   });
 
   return (
-    <div className={`space-y-6 text-white ${isModal ? '' : 'container-mad max-w-2xl px-4 pb-32 pt-6'}`}>
+    <div
+      className={`space-y-6 text-white ${isModal ? "" : "container-mad max-w-2xl px-4 pb-32 pt-6"}`}
+    >
       {error && (
         <div className="p-3.5 bg-error/10 border border-error/30 rounded-xl text-xs text-red-400 text-center">
           {error}
@@ -177,8 +195,16 @@ export function TicketSelectionContent({
       )}
 
       {/* Promo Code Block */}
-      <form onSubmit={handleApplyCoupon} className="glass rounded-2xl border border-white/5 p-4 space-y-2">
-        <label htmlFor="promo-code-input" className="text-xs text-text-secondary font-semibold">Promo Code</label>
+      <form
+        onSubmit={handleApplyCoupon}
+        className="glass rounded-2xl border border-white/5 p-4 space-y-2"
+      >
+        <label
+          htmlFor="promo-code-input"
+          className="text-xs text-text-secondary font-semibold"
+        >
+          Promo Code
+        </label>
         <div className="flex gap-2">
           <input
             id="promo-code-input"
@@ -201,16 +227,20 @@ export function TicketSelectionContent({
 
       {/* Ticket Tiers List */}
       <div className="space-y-6">
-        <h2 className="text-sm font-black uppercase tracking-wider text-text-secondary">Select Tickets</h2>
+        <h2 className="text-sm font-black uppercase tracking-wider text-text-secondary">
+          Select Tickets
+        </h2>
         <div className="space-y-6">
           {Object.entries(
-            event.ticketTiers.reduce<Record<string, TicketTierWithOptionalFields[]>>((acc, tier) => {
+            event.ticketTiers.reduce<
+              Record<string, TicketTierWithOptionalFields[]>
+            >((acc, tier) => {
               const tierWithMeta = tier as TicketTierWithOptionalFields;
-              const groupName = tierWithMeta.groupName || 'Passes';
+              const groupName = tierWithMeta.groupName || "Passes";
               if (!acc[groupName]) acc[groupName] = [];
               acc[groupName].push(tierWithMeta);
               return acc;
-            }, {})
+            }, {}),
           ).map(([groupName, tiersInGroup]) => (
             <div key={groupName} className="space-y-3">
               <h3 className="text-xs font-bold uppercase tracking-wider text-accent-purple-light px-1">
@@ -221,7 +251,9 @@ export function TicketSelectionContent({
                   const isFree = !!tier.isFree || tier.price === 0;
                   const offer = tier.offerRules;
                   const discount = tier.discount || 0;
-                  const finalPrice = isFree ? 0 : Math.max(0, tier.price - discount);
+                  const finalPrice = isFree
+                    ? 0
+                    : Math.max(0, tier.price - discount);
 
                   return (
                     <div
@@ -230,7 +262,9 @@ export function TicketSelectionContent({
                     >
                       <div className="space-y-2 flex-1">
                         <div className="flex flex-wrap items-center gap-2">
-                          <span className="text-base font-bold text-white">{tier.name}</span>
+                          <span className="text-base font-bold text-white">
+                            {tier.name}
+                          </span>
                           {tier.groupSize && tier.groupSize > 1 && (
                             <span className="text-[9px] text-emerald-400 font-semibold px-2 py-0.5 bg-emerald-500/10 rounded-full border border-emerald-500/20">
                               Admits {tier.groupSize}
@@ -241,9 +275,9 @@ export function TicketSelectionContent({
                               FREE TICKET
                             </span>
                           )}
-                          {offer && offer.discountType !== 'none' && (
+                          {offer && offer.discountType !== "none" && (
                             <span className="text-[9px] text-accent-pink font-semibold px-2 py-0.5 bg-accent-pink/10 rounded-full border border-accent-pink/20">
-                              {offer.discountType === 'percentage'
+                              {offer.discountType === "percentage"
                                 ? `${offer.discountValue}% OFF`
                                 : `₹${offer.discountValue} OFF`}
                             </span>
@@ -255,9 +289,9 @@ export function TicketSelectionContent({
                           )}
                         </div>
                         <p className="text-xs text-text-muted leading-relaxed">
-                          {tier.description || 'General Entry Ticket'}
+                          {tier.description || "General Entry Ticket"}
                         </p>
-                        
+
                         <div className="flex items-center gap-2">
                           {isFree ? (
                             <span className="text-emerald-400 font-black text-sm uppercase tracking-wider">
@@ -269,7 +303,9 @@ export function TicketSelectionContent({
                                 ₹{finalPrice}
                               </span>
                               {discount > 0 && (
-                                <span className="text-xs text-text-muted line-through">₹{tier.price}</span>
+                                <span className="text-xs text-text-muted line-through">
+                                  ₹{tier.price}
+                                </span>
                               )}
                             </>
                           )}
@@ -277,7 +313,10 @@ export function TicketSelectionContent({
 
                         {tier.availabilityWindow?.endDate && (
                           <div className="text-[10px] text-accent-cyan">
-                            Sales end on {new Date(tier.availabilityWindow.endDate).toLocaleDateString()}
+                            Sales end on{" "}
+                            {new Date(
+                              tier.availabilityWindow.endDate,
+                            ).toLocaleDateString()}
                           </div>
                         )}
                       </div>
@@ -322,7 +361,9 @@ export function TicketSelectionContent({
                 🔥 Few tickets left
               </span>
               <div className="text-right">
-                <span className="text-lg font-black text-white">₹{subtotal}</span>
+                <span className="text-lg font-black text-white">
+                  ₹{subtotal}
+                </span>
               </div>
             </div>
             <Button

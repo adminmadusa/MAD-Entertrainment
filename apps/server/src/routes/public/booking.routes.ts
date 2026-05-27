@@ -1,21 +1,25 @@
-import { Router } from 'express';
+import { Router } from "express";
 
 import {
-    createBooking,
-    getBooking,
-    getMyBookings,
-    getSessionToken,
-    saveCheckoutDetails,
-} from '../../controllers/public/booking.controller';
+  createBooking,
+  getBooking,
+  getMyBookings,
+  getSessionToken,
+  saveCheckoutDetails,
+} from "../../controllers/public/booking.controller";
+
+import { requireAuth, optionalAuth } from "../../middleware/auth.middleware";
+import { authLimiter } from "../../middleware/rate.middleware";
 
 import {
-    requireAuth,
-    optionalAuth,
-} from '../../middleware/auth.middleware';
-import { authLimiter } from '../../middleware/rate.middleware';
-
-import { validateBody, validateParams } from '../../middleware/validation.middleware';
-import { reserveTicketsSchema, checkoutDetailsSchema, bookingReferenceParamSchema } from '../../validations/payment.validation';
+  validateBody,
+  validateParams,
+} from "../../middleware/validation.middleware";
+import {
+  reserveTicketsSchema,
+  checkoutDetailsSchema,
+  bookingReferenceParamSchema,
+} from "../../validations/payment.validation";
 
 const router: Router = Router();
 
@@ -23,7 +27,7 @@ const router: Router = Router();
 // Guest Session Token
 // ─────────────────────────────────────────────
 
-router.get('/session', authLimiter as any, getSessionToken);
+router.get("/session", authLimiter as any, getSessionToken);
 
 // ─────────────────────────────────────────────
 // Create Booking
@@ -33,18 +37,18 @@ router.get('/session', authLimiter as any, getSessionToken);
 // ─────────────────────────────────────────────
 
 router.post(
-    '/',
-    optionalAuth,
-    validateBody(reserveTicketsSchema),
-    createBooking
+  "/",
+  optionalAuth,
+  validateBody(reserveTicketsSchema),
+  createBooking,
 );
 
 router.put(
-    '/:bookingId/checkout-details',
-    optionalAuth,
-    validateParams(bookingReferenceParamSchema),
-    validateBody(checkoutDetailsSchema),
-    saveCheckoutDetails
+  "/:bookingId/checkout-details",
+  optionalAuth,
+  validateParams(bookingReferenceParamSchema),
+  validateBody(checkoutDetailsSchema),
+  saveCheckoutDetails,
 );
 
 // ─────────────────────────────────────────────
@@ -52,11 +56,7 @@ router.put(
 // USER JWT ONLY
 // ─────────────────────────────────────────────
 
-router.get(
-    '/me',
-    requireAuth,
-    getMyBookings
-);
+router.get("/me", requireAuth, getMyBookings);
 
 // ─────────────────────────────────────────────
 // Single Booking Access
@@ -66,10 +66,10 @@ router.get(
 // ─────────────────────────────────────────────
 
 router.get(
-    '/:bookingId',
-    optionalAuth,
-    validateParams(bookingReferenceParamSchema),
-    getBooking
+  "/:bookingId",
+  optionalAuth,
+  validateParams(bookingReferenceParamSchema),
+  getBooking,
 );
 
 export default router;

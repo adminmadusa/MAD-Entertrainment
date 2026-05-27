@@ -1,9 +1,9 @@
 export async function runFormSubmit(
   submitter: () => Promise<void> | void,
   setError: (message: string) => void,
-  fallbackMessage = 'Failed to submit form.'
+  fallbackMessage = "Failed to submit form.",
 ) {
-  setError('');
+  setError("");
   try {
     await submitter();
   } catch (error) {

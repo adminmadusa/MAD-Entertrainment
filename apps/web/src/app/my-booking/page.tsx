@@ -1,28 +1,31 @@
-'use client';
+"use client";
 
-import { useQuery } from '@tanstack/react-query';
-import { motion } from 'framer-motion';
-import { useSearchParams } from 'next/navigation';
-import { Suspense, useState, useEffect } from 'react';
+import { useQuery } from "@tanstack/react-query";
+import { motion } from "framer-motion";
+import { useSearchParams } from "next/navigation";
+import { Suspense, useState, useEffect } from "react";
 
-import { extractApiError } from '@/lib/api/client';
-import { publicGetBookingDetails } from '@/lib/api/public.service';
-import { STORAGE_VERSION } from '@mad/shared';
-
+import { extractApiError } from "@/lib/api/client";
+import { publicGetBookingDetails } from "@/lib/api/public.service";
+import { STORAGE_VERSION } from "@mad/shared";
 
 function MyBookingContent() {
   const searchParams = useSearchParams();
-  const initialRef = searchParams.get('ref') || '';
+  const initialRef = searchParams.get("ref") || "";
 
   const [bookingRefInput, setBookingRefInput] = useState(initialRef);
   const [queryRef, setQueryRef] = useState(initialRef);
-  const [errorMsg, setErrorMsg] = useState('');
+  const [errorMsg, setErrorMsg] = useState("");
 
-  const { data: result, isLoading, error } = useQuery({
-    queryKey: ['public-booking-details', queryRef],
+  const {
+    data: result,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["public-booking-details", queryRef],
     queryFn: () => {
       let sess: string | undefined;
-      if (typeof window !== 'undefined') {
+      if (typeof window !== "undefined") {
         const sessionKey = `mad_checkout_session_${STORAGE_VERSION}`;
         sess = sessionStorage.getItem(sessionKey) || undefined;
       }
@@ -36,15 +39,15 @@ function MyBookingContent() {
     if (error) {
       setErrorMsg(extractApiError(error).message);
     } else {
-      setErrorMsg('');
+      setErrorMsg("");
     }
   }, [error]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setErrorMsg('');
+    setErrorMsg("");
     if (!bookingRefInput.trim()) {
-      setErrorMsg('Please enter a booking reference ID.');
+      setErrorMsg("Please enter a booking reference ID.");
       return;
     }
     setQueryRef(bookingRefInput.trim());
@@ -54,11 +57,11 @@ function MyBookingContent() {
   const tickets = result?.tickets || [];
 
   const formatDate = (dateStr: Date | string) => {
-    return new Date(dateStr).toLocaleDateString('en-US', {
-      weekday: 'short',
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
+    return new Date(dateStr).toLocaleDateString("en-US", {
+      weekday: "short",
+      month: "short",
+      day: "numeric",
+      year: "numeric",
     });
   };
 
@@ -67,16 +70,23 @@ function MyBookingContent() {
       <div className="container-mad max-w-3xl space-y-8">
         {/* Header */}
         <div className="text-center space-y-3">
-          <h1 className="text-display-sm font-black text-white">Track Booking</h1>
+          <h1 className="text-display-sm font-black text-white">
+            Track Booking
+          </h1>
           <p className="text-text-secondary text-sm">
             Retrieve your tickets and view active booking status reports.
           </p>
         </div>
 
         {/* Search Reference Form */}
-        <form onSubmit={handleSearchSubmit} className="glass rounded-2xl border border-border-subtle p-6 flex flex-col sm:flex-row gap-3">
+        <form
+          onSubmit={handleSearchSubmit}
+          className="glass rounded-2xl border border-border-subtle p-6 flex flex-col sm:flex-row gap-3"
+        >
           <div className="flex-grow space-y-1">
-            <label className="text-[10px] text-text-secondary font-medium tracking-wider uppercase">Booking Reference ID</label>
+            <label className="text-[10px] text-text-secondary font-medium tracking-wider uppercase">
+              Booking Reference ID
+            </label>
             <input
               type="text"
               value={bookingRefInput}
@@ -90,7 +100,7 @@ function MyBookingContent() {
             disabled={isLoading}
             className="sm:self-end h-11 px-6 btn-gradient text-white text-sm font-bold rounded-xl shadow-glow-sm disabled:opacity-60 transition-transform"
           >
-            {isLoading ? 'Searching...' : 'Retrieve Tickets'}
+            {isLoading ? "Searching..." : "Retrieve Tickets"}
           </button>
         </form>
 
@@ -111,11 +121,18 @@ function MyBookingContent() {
             <div className="glass rounded-3xl border border-border-subtle p-6 space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <span className="text-[10px] text-text-muted font-medium tracking-wider uppercase">Event Info</span>
-                  <h2 className="text-white font-bold text-lg">{booking.eventId ? (booking.eventId as any).title : 'Event Booking'}</h2>
+                  <span className="text-[10px] text-text-muted font-medium tracking-wider uppercase">
+                    Event Info
+                  </span>
+                  <h2 className="text-white font-bold text-lg">
+                    {booking.eventId
+                      ? (booking.eventId as any).title
+                      : "Event Booking"}
+                  </h2>
                   {booking.eventId && (
                     <p className="text-text-muted text-xs mt-1">
-                      📅 {formatDate((booking.eventId as any).startDate)} · ⏰ {(booking.eventId as any).showTime}
+                      📅 {formatDate((booking.eventId as any).startDate)} · ⏰{" "}
+                      {(booking.eventId as any).showTime}
                     </p>
                   )}
                   {booking.eventId && (booking.eventId as any).venue && (
@@ -125,14 +142,19 @@ function MyBookingContent() {
                   )}
                 </div>
                 <div className="text-right">
-                  <span className="text-[10px] text-text-muted font-medium tracking-wider uppercase">Status</span>
-                  <div className={`text-xs px-2.5 py-1 rounded-full border font-bold mt-1 ${
-                    booking.status === 'confirmed'
-                      ? 'bg-green-500/10 text-green-400 border-green-500/30'
-                      : booking.status === 'pending' || booking.status === 'awaiting_payment'
-                      ? 'bg-amber-500/10 text-amber-400 border-amber-500/30'
-                      : 'bg-red-500/10 text-red-400 border-red-500/30'
-                  }`}>
+                  <span className="text-[10px] text-text-muted font-medium tracking-wider uppercase">
+                    Status
+                  </span>
+                  <div
+                    className={`text-xs px-2.5 py-1 rounded-full border font-bold mt-1 ${
+                      booking.status === "confirmed"
+                        ? "bg-green-500/10 text-green-400 border-green-500/30"
+                        : booking.status === "pending" ||
+                            booking.status === "awaiting_payment"
+                          ? "bg-amber-500/10 text-amber-400 border-amber-500/30"
+                          : "bg-red-500/10 text-red-400 border-red-500/30"
+                    }`}
+                  >
                     {booking.status.toUpperCase()}
                   </div>
                 </div>
@@ -140,22 +162,34 @@ function MyBookingContent() {
 
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 pt-4 border-t border-border-subtle/40 text-xs text-text-secondary">
                 <div>
-                  <span className="text-[10px] text-text-muted uppercase block">Guest Name</span>
-                  <span className="text-white font-semibold">{booking.guestName}</span>
+                  <span className="text-[10px] text-text-muted uppercase block">
+                    Guest Name
+                  </span>
+                  <span className="text-white font-semibold">
+                    {booking.guestName}
+                  </span>
                 </div>
                 <div>
-                  <span className="text-[10px] text-text-muted uppercase block">Total Tickets</span>
-                  <span className="text-white font-semibold">{booking.totalTickets} Ticket(s)</span>
+                  <span className="text-[10px] text-text-muted uppercase block">
+                    Total Tickets
+                  </span>
+                  <span className="text-white font-semibold">
+                    {booking.totalTickets} Ticket(s)
+                  </span>
                 </div>
                 <div className="col-span-2 sm:col-span-1">
-                  <span className="text-[10px] text-text-muted uppercase block">Reference ID</span>
-                  <span className="text-white font-mono font-bold select-all">{booking.bookingId}</span>
+                  <span className="text-[10px] text-text-muted uppercase block">
+                    Reference ID
+                  </span>
+                  <span className="text-white font-mono font-bold select-all">
+                    {booking.bookingId}
+                  </span>
                 </div>
               </div>
             </div>
 
             {/* Tickets / QR List */}
-            {booking.status === 'confirmed' ? (
+            {booking.status === "confirmed" ? (
               <div className="space-y-6">
                 <h3 className="text-white font-bold text-base">Your Tickets</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -173,7 +207,9 @@ function MyBookingContent() {
                         </div>
                         {ticket.seatId && (
                           <div className="text-white font-bold text-sm mt-1">
-                            Seat: <span className="font-mono">{ticket.seatId}</span> (Row {ticket.row}, Seat {ticket.seatNumber})
+                            Seat:{" "}
+                            <span className="font-mono">{ticket.seatId}</span>{" "}
+                            (Row {ticket.row}, Seat {ticket.seatNumber})
                           </div>
                         )}
                         <div className="text-text-muted text-[10px] mt-0.5 font-mono">
@@ -195,7 +231,8 @@ function MyBookingContent() {
                       )}
 
                       <div className="text-[10px] text-text-muted max-w-[200px] leading-relaxed">
-                        Present this QR code at the venue entry scanner for digital validation. Do not share this code.
+                        Present this QR code at the venue entry scanner for
+                        digital validation. Do not share this code.
                       </div>
                     </motion.div>
                   ))}
@@ -203,7 +240,8 @@ function MyBookingContent() {
               </div>
             ) : (
               <div className="glass rounded-2xl border border-border-subtle p-8 text-center text-text-secondary text-sm">
-                🎁 Tickets will be generated automatically once payment is finalized.
+                🎁 Tickets will be generated automatically once payment is
+                finalized.
               </div>
             )}
           </div>
@@ -221,11 +259,15 @@ function MyBookingContent() {
 
 export default function MyBookingPage() {
   return (
-    <Suspense fallback={
-      <div className="pt-28 pb-16 min-h-screen bg-background flex items-center justify-center">
-        <div className="text-white/40 animate-pulse text-sm">Loading tickets details...</div>
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <div className="pt-28 pb-16 min-h-screen bg-background flex items-center justify-center">
+          <div className="text-white/40 animate-pulse text-sm">
+            Loading tickets details...
+          </div>
+        </div>
+      }
+    >
       <MyBookingContent />
     </Suspense>
   );

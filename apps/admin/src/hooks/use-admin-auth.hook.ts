@@ -1,3 +1,3 @@
-'use client';
+"use client";
 
-export { useAdminAuth } from '@/providers/AdminAuthProvider';
+export { useAdminAuth } from "@/providers/AdminAuthProvider";

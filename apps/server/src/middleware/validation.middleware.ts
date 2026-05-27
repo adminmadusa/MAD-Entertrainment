@@ -1,23 +1,27 @@
-import { Request, Response, NextFunction } from 'express';
-import { AnyZodObject, z, ZodError } from 'zod';
-import { AppError } from './error.middleware';
+import { Request, Response, NextFunction } from "express";
+import { AnyZodObject, z, ZodError } from "zod";
+import { AppError } from "./error.middleware";
 
-export const validate = (schema: AnyZodObject) => async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    await schema.parseAsync({
-      body: req.body,
-      query: req.query,
-      params: req.params,
-    });
-    return next();
-  } catch (error) {
-    if (error instanceof ZodError) {
-      const messages = error.errors.map((e) => `${e.path.join('.')}: ${e.message}`);
-      return next(AppError.badRequest(messages.join(', ')));
+export const validate =
+  (schema: AnyZodObject) =>
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      await schema.parseAsync({
+        body: req.body,
+        query: req.query,
+        params: req.params,
+      });
+      return next();
+    } catch (error) {
+      if (error instanceof ZodError) {
+        const messages = error.errors.map(
+          (e) => `${e.path.join(".")}: ${e.message}`,
+        );
+        return next(AppError.badRequest(messages.join(", ")));
+      }
+      return next(error);
     }
-    return next(error);
-  }
-};
+  };
 
 /**
  * Validates request body against a Zod schema.
@@ -26,7 +30,9 @@ export function validateBody<T extends z.ZodTypeAny>(schema: T) {
   return (req: Request, _res: Response, next: NextFunction): void => {
     const result = schema.safeParse(req.body);
     if (!result.success) {
-      return next(AppError.badRequest('Validation failed', formatZodErrors(result.error)));
+      return next(
+        AppError.badRequest("Validation failed", formatZodErrors(result.error)),
+      );
     }
     req.body = result.data;
     next();
@@ -40,7 +46,9 @@ export function validateQuery<T extends z.ZodTypeAny>(schema: T) {
   return (req: Request, _res: Response, next: NextFunction): void => {
     const result = schema.safeParse(req.query);
     if (!result.success) {
-      return next(AppError.badRequest('Validation failed', formatZodErrors(result.error)));
+      return next(
+        AppError.badRequest("Validation failed", formatZodErrors(result.error)),
+      );
     }
     req.query = result.data;
     next();
@@ -54,7 +62,9 @@ export function validateParams<T extends z.ZodTypeAny>(schema: T) {
   return (req: Request, _res: Response, next: NextFunction): void => {
     const result = schema.safeParse(req.params);
     if (!result.success) {
-      return next(AppError.badRequest('Validation failed', formatZodErrors(result.error)));
+      return next(
+        AppError.badRequest("Validation failed", formatZodErrors(result.error)),
+      );
     }
     req.params = result.data;
     next();
@@ -67,7 +77,7 @@ export function validateParams<T extends z.ZodTypeAny>(schema: T) {
 function formatZodErrors(error: ZodError): Record<string, string[]> {
   const errors: Record<string, string[]> = {};
   for (const issue of error.issues) {
-    const path = issue.path.join('.') || 'body';
+    const path = issue.path.join(".") || "body";
     if (!errors[path]) {
       errors[path] = [];
     }

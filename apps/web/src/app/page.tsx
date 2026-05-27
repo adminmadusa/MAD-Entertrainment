@@ -1,34 +1,42 @@
-import { ScrollIndicator, ArrowRight } from '@mad/ui';
-import type { Metadata } from 'next';
-import Link from 'next/link';
-import { Suspense } from 'react';
+import { ScrollIndicator, ArrowRight } from "@mad/ui";
+import type { Metadata } from "next";
+import Link from "next/link";
+import { Suspense } from "react";
 
-import { Reveal, StaggerContainer, StaggerItem } from '@/components/common/PageTransition';
-import { DJOperatorsSection } from '@/components/ui/DjOperatorsSection';
-import { FeaturedEventsSection } from '@/components/ui/FeaturedEventsSection';
-import { MarqueeBanner } from '@/components/ui/MarqueeBanner';
+import {
+  Reveal,
+  StaggerContainer,
+  StaggerItem,
+} from "@/components/common/PageTransition";
+import { DJOperatorsSection } from "@/components/ui/DjOperatorsSection";
+import { FeaturedEventsSection } from "@/components/ui/FeaturedEventsSection";
+import { MarqueeBanner } from "@/components/ui/MarqueeBanner";
 import {
   FeaturedEventsSkeleton,
   DJOperatorsSkeleton,
   MarqueeBannerSkeleton,
-} from '@/components/ui/HomeSkeletons';
-import { serverGetFeaturedEvents, serverGetDJs, serverGetCategories } from '@/lib/api/server.service';
+} from "@/components/ui/HomeSkeletons";
+import {
+  serverGetFeaturedEvents,
+  serverGetDJs,
+  serverGetCategories,
+} from "@/lib/api/server.service";
 
 export const metadata: Metadata = {
-  title: 'MAD Entertrainment — Book Shows, Events & DJ Nights',
+  title: "MAD Entertrainment — Book Shows, Events & DJ Nights",
   description:
-    'Discover and book tickets for the hottest shows, events, DJ nights, concerts, festivals, comedy, and VIP events near you.',
+    "Discover and book tickets for the hottest shows, events, DJ nights, concerts, festivals, comedy, and VIP events near you.",
   alternates: {
-    canonical: 'https://madentertainment.in',
+    canonical: "https://madentertainment.in",
   },
   openGraph: {
-    url: 'https://madentertainment.in',
+    url: "https://madentertainment.in",
     images: [
       {
-        url: '/og-image.png',
+        url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: 'MAD Entertrainment — Premium Event Booking',
+        alt: "MAD Entertrainment — Premium Event Booking",
       },
     ],
   },
@@ -108,18 +116,17 @@ function HeroSection() {
         className="absolute inset-0 opacity-[0.03]"
         style={{
           backgroundImage:
-            'linear-gradient(rgba(124, 58, 237, 0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(124, 58, 237, 0.5) 1px, transparent 1px)',
-          backgroundSize: '60px 60px',
+            "linear-gradient(rgba(124, 58, 237, 0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(124, 58, 237, 0.5) 1px, transparent 1px)",
+          backgroundSize: "60px 60px",
         }}
       />
 
       {/* Content */}
       <div className="container-mad relative z-10 text-center pt-24 pb-16">
-
         {/* Headline */}
         <Reveal delay={0.2}>
           <h1 className="text-display-xl font-black text-white mb-6 leading-[1.02] text-glow-neon">
-            Experience the{' '}
+            Experience the{" "}
             <span className="text-gradient block">Extraordinary</span>
           </h1>
         </Reveal>
@@ -127,7 +134,8 @@ function HeroSection() {
         {/* Subheadline */}
         <Reveal delay={0.3}>
           <p className="text-text-secondary text-lg md:text-xl max-w-2xl mx-auto mb-10 leading-relaxed">
-            Book tickets for DJ nights, concerts, comedy shows, festivals, VIP events and unforgettable live experiences — all in one place.
+            Book tickets for DJ nights, concerts, comedy shows, festivals, VIP
+            events and unforgettable live experiences — all in one place.
           </p>
         </Reveal>
 
@@ -156,12 +164,14 @@ function HeroSection() {
         <Reveal delay={0.5}>
           <div className="mt-16 grid grid-cols-3 gap-6 max-w-xl mx-auto">
             {[
-              { value: '500+', label: 'Events' },
-              { value: '50K+', label: 'Tickets Sold' },
-              { value: '100+', label: 'Artists' },
+              { value: "500+", label: "Events" },
+              { value: "50K+", label: "Tickets Sold" },
+              { value: "100+", label: "Artists" },
             ].map((stat) => (
               <div key={stat.label} className="text-center">
-                <div className="text-2xl md:text-3xl font-black text-gradient">{stat.value}</div>
+                <div className="text-2xl md:text-3xl font-black text-gradient">
+                  {stat.value}
+                </div>
                 <div className="text-text-muted text-sm mt-1">{stat.label}</div>
               </div>
             ))}
@@ -182,34 +192,41 @@ function HeroSection() {
 
 const steps = [
   {
-    step: '01',
-    title: 'Browse Events',
-    description: 'Discover upcoming events, DJ nights, concerts, and shows near you.',
-    icon: '🔍',
+    step: "01",
+    title: "Browse Events",
+    description:
+      "Discover upcoming events, DJ nights, concerts, and shows near you.",
+    icon: "🔍",
   },
   {
-    step: '02',
-    title: 'Select Tickets',
-    description: 'Choose your seats or ticket tier — General, Gold, VIP, or Platinum.',
-    icon: '🎟️',
+    step: "02",
+    title: "Select Tickets",
+    description:
+      "Choose your seats or ticket tier — General, Gold, VIP, or Platinum.",
+    icon: "🎟️",
   },
   {
-    step: '03',
-    title: 'Secure Payment',
-    description: 'Pay securely via UPI, cards, or wallets with Razorpay or Stripe.',
-    icon: '💳',
+    step: "03",
+    title: "Secure Payment",
+    description:
+      "Pay securely via UPI, cards, or wallets with Razorpay or Stripe.",
+    icon: "💳",
   },
   {
-    step: '04',
-    title: 'Get QR Ticket',
-    description: 'Receive your encrypted QR ticket instantly via email and SMS.',
-    icon: '📱',
+    step: "04",
+    title: "Get QR Ticket",
+    description:
+      "Receive your encrypted QR ticket instantly via email and SMS.",
+    icon: "📱",
   },
 ];
 
 function HowItWorksSection() {
   return (
-    <section className="py-20 bg-background-secondary/30 overflow-hidden" aria-label="How booking works">
+    <section
+      className="py-20 bg-background-secondary/30 overflow-hidden"
+      aria-label="How booking works"
+    >
       <div className="container-mad">
         <Reveal className="text-center mb-14">
           <h2 className="text-display-sm font-black text-white text-glow-neon">
@@ -217,22 +234,26 @@ function HowItWorksSection() {
           </h2>
         </Reveal>
 
-        <StaggerContainer
-          className="grid grid-cols-4 gap-2 sm:gap-4 lg:gap-6 w-full focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent-purple rounded-2xl"
-        >
+        <StaggerContainer className="grid grid-cols-4 gap-2 sm:gap-4 lg:gap-6 w-full focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent-purple rounded-2xl">
           {steps.map((step, i) => (
-            <StaggerItem
-              key={step.step}
-              className="flex flex-col"
-            >
+            <StaggerItem key={step.step} className="flex flex-col">
               <div className="glass rounded-2xl p-2.5 xs:p-4 sm:p-6 border border-border-subtle relative group hover:border-accent-purple/30 transition-all duration-300 flex-1 flex flex-col justify-between min-h-[140px] xs:min-h-[170px] sm:min-h-[200px]">
                 <div>
                   <div className="absolute -top-2 -right-2 sm:-top-3 sm:-right-3 w-6 h-6 sm:w-10 sm:h-10 bg-gradient-brand rounded-lg sm:rounded-xl flex items-center justify-center text-white text-[9px] sm:text-xs font-black shadow-glow-sm">
-                    {String(i + 1).padStart(2, '0')}
+                    {String(i + 1).padStart(2, "0")}
                   </div>
-                  <div className="text-2xl sm:text-4xl mb-2 sm:mb-4 animate-float" aria-hidden="true">{step.icon}</div>
-                  <h3 className="text-white font-bold text-xs sm:text-lg mb-1 sm:mb-2">{step.title}</h3>
-                  <p className="hidden sm:block text-text-secondary sm:text-sm leading-snug sm:leading-relaxed">{step.description}</p>
+                  <div
+                    className="text-2xl sm:text-4xl mb-2 sm:mb-4 animate-float"
+                    aria-hidden="true"
+                  >
+                    {step.icon}
+                  </div>
+                  <h3 className="text-white font-bold text-xs sm:text-lg mb-1 sm:mb-2">
+                    {step.title}
+                  </h3>
+                  <p className="hidden sm:block text-text-secondary sm:text-sm leading-snug sm:leading-relaxed">
+                    {step.description}
+                  </p>
                 </div>
               </div>
             </StaggerItem>
@@ -257,12 +278,12 @@ function CTASection() {
 
             <div className="relative z-10">
               <h2 className="text-display-md font-black text-white mb-5 text-glow-neon">
-                Ready for an{' '}
-                <span className="text-gradient">Unforgettable</span>{' '}
-                Night?
+                Ready for an{" "}
+                <span className="text-gradient">Unforgettable</span> Night?
               </h2>
               <p className="text-text-secondary text-lg mb-10 max-w-lg mx-auto">
-                Join thousands of event-goers booking their next great experience on MAD Entertrainment.
+                Join thousands of event-goers booking their next great
+                experience on MAD Entertrainment.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link
@@ -288,4 +309,3 @@ function CTASection() {
     </section>
   );
 }
-

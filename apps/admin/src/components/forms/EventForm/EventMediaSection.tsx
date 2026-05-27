@@ -1,6 +1,6 @@
-import { CloudinaryUpload } from '@/components/CloudinaryUpload';
-import { CloudinaryImage } from '@/lib/api/admin/event.service';
-import { FormSection } from '@/components/forms/primitives/FormSection';
+import { CloudinaryUpload } from "@/components/CloudinaryUpload";
+import { CloudinaryImage } from "@/lib/api/admin/event.service";
+import { FormSection } from "@/components/forms/primitives/FormSection";
 
 export function EventMediaSection({
   coverImage,

@@ -1,6 +1,6 @@
-import type { MetadataRoute } from 'next';
+import type { MetadataRoute } from "next";
 
-const SITE_URL = 'https://madentertainment.in';
+const SITE_URL = "https://madentertainment.in";
 
 /**
  * robots.ts — Next.js App Router robots convention
@@ -16,9 +16,9 @@ export default function robots(): MetadataRoute.Robots {
   return {
     rules: [
       {
-        userAgent: '*',
-        allow: '/',
-        disallow: ['/checkout/', '/dashboard/', '/api/'],
+        userAgent: "*",
+        allow: "/",
+        disallow: ["/checkout/", "/dashboard/", "/api/"],
       },
     ],
     sitemap: `${SITE_URL}/sitemap.xml`,

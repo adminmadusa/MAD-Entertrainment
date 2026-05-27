@@ -1,10 +1,10 @@
-import crypto from 'crypto';
+import crypto from "crypto";
 
-import { RequestHandler } from 'express';
-import { Logger } from 'pino';
+import { RequestHandler } from "express";
+import { Logger } from "pino";
 
-import { logger } from '../utils/logger';
-import { runWithContext } from '../utils/context';
+import { logger } from "../utils/logger";
+import { runWithContext } from "../utils/context";
 
 declare global {
   namespace Express {
@@ -16,10 +16,13 @@ declare global {
 }
 
 export const correlationMiddleware: RequestHandler = (req, res, next) => {
-  const requestId = req.header('x-request-id') || req.header('x-correlation-id') || crypto.randomUUID();
+  const requestId =
+    req.header("x-request-id") ||
+    req.header("x-correlation-id") ||
+    crypto.randomUUID();
   req.id = requestId;
   req.log = logger.child({ requestId });
-  res.setHeader('x-request-id', requestId);
+  res.setHeader("x-request-id", requestId);
 
   runWithContext({ correlationId: requestId }, () => {
     next();

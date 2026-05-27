@@ -1,4 +1,4 @@
-import { adminApiClient } from '@/lib/api/client';
+import { adminApiClient } from "@/lib/api/client";
 
 export interface EventTier {
   name: string;
@@ -58,7 +58,12 @@ export interface AdminEvent {
 
 export interface EventsResponse {
   data: AdminEvent[];
-  pagination: { page: number; limit: number; total: number; totalPages: number };
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
 }
 
 export interface EventFilters {
@@ -70,13 +75,28 @@ export interface EventFilters {
   featured?: boolean;
 }
 
-export async function adminGetEvents(filters: EventFilters = {}): Promise<{ items: AdminEvent[]; pagination: EventsResponse['pagination'] }> {
+export async function adminGetEvents(
+  filters: EventFilters = {},
+): Promise<{ items: AdminEvent[]; pagination: EventsResponse["pagination"] }> {
   const params = new URLSearchParams();
-  Object.entries(filters).forEach(([k, v]) => { if (v !== undefined) params.set(k, String(v)); });
-  const { data } = await adminApiClient.get<EventsResponse>(`/admin/events?${params}`);
+  Object.entries(filters).forEach(([k, v]) => {
+    if (v !== undefined) params.set(k, String(v));
+  });
+  const { data } = await adminApiClient.get<EventsResponse>(
+    `/admin/events?${params}`,
+  );
   const payload: any = data?.data || {};
   const items = Array.isArray(payload.events) ? payload.events : [];
-  return { items, pagination: payload?.pagination || (data as any)?.pagination || { page: 1, limit: 10, total: 0, totalPages: 0 } };
+  return {
+    items,
+    pagination: payload?.pagination ||
+      (data as any)?.pagination || {
+        page: 1,
+        limit: 10,
+        total: 0,
+        totalPages: 0,
+      },
+  };
 }
 
 export async function adminGetEvent(id: string): Promise<AdminEvent> {
@@ -85,13 +105,24 @@ export async function adminGetEvent(id: string): Promise<AdminEvent> {
   return payload?.event || payload;
 }
 
-export async function adminCreateEvent(payload: Partial<AdminEvent>): Promise<AdminEvent> {
-  const { data } = await adminApiClient.post<{ data: AdminEvent }>('/admin/events', payload);
+export async function adminCreateEvent(
+  payload: Partial<AdminEvent>,
+): Promise<AdminEvent> {
+  const { data } = await adminApiClient.post<{ data: AdminEvent }>(
+    "/admin/events",
+    payload,
+  );
   return data.data;
 }
 
-export async function adminUpdateEvent(id: string, payload: Partial<AdminEvent>): Promise<AdminEvent> {
-  const { data } = await adminApiClient.put<{ data: AdminEvent }>(`/admin/events/${id}`, payload);
+export async function adminUpdateEvent(
+  id: string,
+  payload: Partial<AdminEvent>,
+): Promise<AdminEvent> {
+  const { data } = await adminApiClient.put<{ data: AdminEvent }>(
+    `/admin/events/${id}`,
+    payload,
+  );
   return data.data;
 }
 
@@ -99,11 +130,18 @@ export async function adminDeleteEvent(id: string): Promise<void> {
   await adminApiClient.delete(`/admin/events/${id}`);
 }
 
-export async function adminToggleFeatured(id: string): Promise<{ isFeatured: boolean }> {
-  const { data } = await adminApiClient.patch<{ data: { isFeatured: boolean } }>(`/admin/events/${id}/featured`);
+export async function adminToggleFeatured(
+  id: string,
+): Promise<{ isFeatured: boolean }> {
+  const { data } = await adminApiClient.patch<{
+    data: { isFeatured: boolean };
+  }>(`/admin/events/${id}/featured`);
   return data.data;
 }
 
-export async function adminUpdateEventStatus(id: string, status: string): Promise<void> {
+export async function adminUpdateEventStatus(
+  id: string,
+  status: string,
+): Promise<void> {
   await adminApiClient.patch(`/admin/events/${id}/status`, { status });
 }

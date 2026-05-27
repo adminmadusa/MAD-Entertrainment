@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { createContext, useContext, useEffect, useState } from 'react';
-import { io, Socket } from 'socket.io-client';
+import { createContext, useContext, useEffect, useState } from "react";
+import { io, Socket } from "socket.io-client";
 
 interface SocketContextValue {
   socket: Socket | null;
@@ -29,21 +29,22 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
   const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
-    const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL ?? 'http://localhost:5000';
+    const socketUrl =
+      process.env.NEXT_PUBLIC_SOCKET_URL ?? "http://localhost:5000";
 
     const sock = io(socketUrl, {
       autoConnect: true,
       reconnection: true,
       reconnectionAttempts: 5,
       reconnectionDelay: 1000,
-      transports: ['websocket'],
+      transports: ["websocket"],
     });
 
     // Expose to context — triggers a re-render so consumers get the live instance
     setSocket(sock);
 
-    sock.on('connect', () => setIsConnected(true));
-    sock.on('disconnect', () => setIsConnected(false));
+    sock.on("connect", () => setIsConnected(true));
+    sock.on("disconnect", () => setIsConnected(false));
 
     return () => {
       sock.disconnect();

@@ -1,4 +1,4 @@
-import { Booking } from '@mad/types';
+import { Booking } from "@mad/types";
 
 interface CheckoutPricingProps {
   booking: Booking;
@@ -7,7 +7,9 @@ interface CheckoutPricingProps {
 export function CheckoutPricing({ booking }: CheckoutPricingProps) {
   return (
     <div className="glass rounded-2xl border border-white/5 p-5 space-y-4">
-      <h2 className="text-white font-bold text-sm uppercase tracking-wider">Payment Details</h2>
+      <h2 className="text-white font-bold text-sm uppercase tracking-wider">
+        Payment Details
+      </h2>
 
       <div className="space-y-2 text-xs border-b border-white/5 pb-3">
         <div className="flex justify-between text-text-secondary">
@@ -32,7 +34,9 @@ export function CheckoutPricing({ booking }: CheckoutPricingProps) {
 
       <div className="flex justify-between items-center text-sm font-black">
         <span className="text-white">Total Amount</span>
-        <span className="text-accent-purple-light text-base">₹{booking.totalAmount}</span>
+        <span className="text-accent-purple-light text-base">
+          ₹{booking.totalAmount}
+        </span>
       </div>
     </div>
   );

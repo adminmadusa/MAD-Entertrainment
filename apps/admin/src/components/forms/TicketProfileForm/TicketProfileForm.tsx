@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import { FormActions } from '@/components/forms/primitives';
-import { useTicketProfileForm } from '@/hooks/forms/use-ticket-profile-form';
-import { AdminTier } from '@/lib/api/admin/tier.service';
-import { TicketProfile } from '@mad/types';
-import { TicketProfileFormMode } from '@/types/ticket-profile-form';
-import { TicketProfileDetailsSection } from './TicketProfileDetailsSection';
-import { TicketProfileGroupsSection } from './TicketProfileGroupsSection';
+import { FormActions } from "@/components/forms/primitives";
+import { useTicketProfileForm } from "@/hooks/forms/use-ticket-profile-form";
+import { AdminTier } from "@/lib/api/admin/tier.service";
+import { TicketProfile } from "@mad/types";
+import { TicketProfileFormMode } from "@/types/ticket-profile-form";
+import { TicketProfileDetailsSection } from "./TicketProfileDetailsSection";
+import { TicketProfileGroupsSection } from "./TicketProfileGroupsSection";
 
 interface TicketProfileFormProps {
   mode: TicketProfileFormMode;
@@ -15,7 +15,9 @@ interface TicketProfileFormProps {
   isSubmitting: boolean;
   serverError: string;
   onBack: () => void;
-  onSubmitPayload: Parameters<typeof useTicketProfileForm>[0]['onSubmitPayload'];
+  onSubmitPayload: Parameters<
+    typeof useTicketProfileForm
+  >[0]["onSubmitPayload"];
 }
 
 export function TicketProfileForm({
@@ -40,19 +42,32 @@ export function TicketProfileForm({
     submit,
   } = useTicketProfileForm({ mode, initialProfile, onSubmitPayload });
 
-  let submitLabel = mode === 'create' ? 'Create Ticket Profile' : 'Save Changes';
-  if (isSubmitting) submitLabel = mode === 'create' ? 'Creating...' : 'Saving...';
+  let submitLabel =
+    mode === "create" ? "Create Ticket Profile" : "Save Changes";
+  if (isSubmitting)
+    submitLabel = mode === "create" ? "Creating..." : "Saving...";
 
   return (
     <div className="max-w-4xl mx-auto space-y-6 text-white">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-black text-white">{mode === 'create' ? 'Create Ticket Profile' : 'Edit Ticket Profile'}</h1>
+          <h1 className="text-2xl font-black text-white">
+            {mode === "create"
+              ? "Create Ticket Profile"
+              : "Edit Ticket Profile"}
+          </h1>
           <p className="text-text-muted text-sm mt-0.5">
-            {mode === 'create' ? 'Define reusable event ticket templates' : 'Modify centralized event ticket template'}
+            {mode === "create"
+              ? "Define reusable event ticket templates"
+              : "Modify centralized event ticket template"}
           </p>
         </div>
-        <button onClick={onBack} className="text-text-muted text-sm hover:text-text-secondary transition-colors flex items-center gap-1.5">← Back</button>
+        <button
+          onClick={onBack}
+          className="text-text-muted text-sm hover:text-text-secondary transition-colors flex items-center gap-1.5"
+        >
+          ← Back
+        </button>
       </div>
 
       <form
@@ -80,7 +95,11 @@ export function TicketProfileForm({
           updateTicketField={updateTicketField}
         />
 
-        <FormActions onCancel={onBack} isSubmitting={isSubmitting} submitLabel={submitLabel} />
+        <FormActions
+          onCancel={onBack}
+          isSubmitting={isSubmitting}
+          submitLabel={submitLabel}
+        />
       </form>
     </div>
   );

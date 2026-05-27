@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 
 interface UseCheckoutNavGuardProps {
   isModal: boolean;
@@ -12,33 +12,33 @@ export function useCheckoutNavGuard({
   onClose,
 }: UseCheckoutNavGuardProps) {
   const [isLeaveModalOpen, setIsLeaveModalOpen] = useState(false);
-  const [leaveAction, setLeaveAction] = useState<'back' | 'close'>('close');
+  const [leaveAction, setLeaveAction] = useState<"back" | "close">("close");
   const [shouldAllowNavigation, setShouldAllowNavigation] = useState(false);
 
   useEffect(() => {
     if (isModal || shouldAllowNavigation) return;
 
-    window.history.pushState(null, '', window.location.href);
+    window.history.pushState(null, "", window.location.href);
 
     const handlePopState = () => {
-      setLeaveAction('back');
+      setLeaveAction("back");
       setIsLeaveModalOpen(true);
-      window.history.pushState(null, '', window.location.href);
+      window.history.pushState(null, "", window.location.href);
     };
 
-    window.addEventListener('popstate', handlePopState);
+    window.addEventListener("popstate", handlePopState);
     return () => {
-      window.removeEventListener('popstate', handlePopState);
+      window.removeEventListener("popstate", handlePopState);
     };
   }, [shouldAllowNavigation, isModal]);
 
   const handleBackClick = () => {
-    setLeaveAction('back');
+    setLeaveAction("back");
     setIsLeaveModalOpen(true);
   };
 
   const handleCloseClick = () => {
-    setLeaveAction('close');
+    setLeaveAction("close");
     setIsLeaveModalOpen(true);
   };
 
@@ -46,7 +46,7 @@ export function useCheckoutNavGuard({
     setShouldAllowNavigation(true);
     setIsLeaveModalOpen(false);
     setTimeout(() => {
-      if (leaveAction === 'back') {
+      if (leaveAction === "back") {
         onBack();
       } else {
         onClose();

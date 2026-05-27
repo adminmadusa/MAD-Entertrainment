@@ -1,15 +1,14 @@
-'use client';
+"use client";
 
-import { DJOperator } from '@mad/types';
-import { useMutation } from '@tanstack/react-query';
-import { motion } from 'framer-motion';
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { DJOperator } from "@mad/types";
+import { useMutation } from "@tanstack/react-query";
+import { motion } from "framer-motion";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
-import { CloudinaryUpload } from '@/components/CloudinaryUpload';
-import { adminCreateDJ } from '@/lib/api/admin/dj.service';
-import { extractApiError } from '@/lib/api/client';
-
+import { CloudinaryUpload } from "@/components/CloudinaryUpload";
+import { adminCreateDJ } from "@/lib/api/admin/dj.service";
+import { extractApiError } from "@/lib/api/client";
 
 interface CloudinaryAsset {
   url: string;
@@ -20,31 +19,33 @@ interface CloudinaryAsset {
 export default function CreateDJPage() {
   const router = useRouter();
 
-  const [name, setName] = useState('');
-  const [slug, setSlug] = useState('');
-  const [bio, setBio] = useState('');
-  const [specialties, setSpecialties] = useState('');
+  const [name, setName] = useState("");
+  const [slug, setSlug] = useState("");
+  const [bio, setBio] = useState("");
+  const [specialties, setSpecialties] = useState("");
   const [isActive, setIsActive] = useState(true);
 
   // Social Links
-  const [instagram, setInstagram] = useState('');
-  const [soundcloud, setSoundcloud] = useState('');
-  const [youtube, setYoutube] = useState('');
+  const [instagram, setInstagram] = useState("");
+  const [soundcloud, setSoundcloud] = useState("");
+  const [youtube, setYoutube] = useState("");
 
   // Media
-  const [profileImage, setProfileImage] = useState<CloudinaryAsset | null>(null);
+  const [profileImage, setProfileImage] = useState<CloudinaryAsset | null>(
+    null,
+  );
   const [galleryImages, setGalleryImages] = useState<CloudinaryAsset[]>([]);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   const createMutation = useMutation({
     mutationFn: adminCreateDJ,
-    onSuccess: () => router.push('/dj-operators'),
+    onSuccess: () => router.push("/dj-operators"),
     onError: (err) => {
       const apiErr = extractApiError(err);
       if (apiErr.errors) {
         const details = Object.entries(apiErr.errors)
-          .map(([field, msgs]) => `${field}: ${msgs.join(', ')}`)
-          .join('; ');
+          .map(([field, msgs]) => `${field}: ${msgs.join(", ")}`)
+          .join("; ");
         setError(`Validation failed — ${details}`);
       } else {
         setError(apiErr.message);
@@ -56,7 +57,9 @@ export default function CreateDJPage() {
     if (asset === null) {
       setGalleryImages((prev) => prev.filter((_, idx) => idx !== index));
     } else {
-      setGalleryImages((prev) => prev.map((img, idx) => (idx === index ? asset : img)));
+      setGalleryImages((prev) =>
+        prev.map((img, idx) => (idx === index ? asset : img)),
+      );
     }
   };
 
@@ -68,22 +71,37 @@ export default function CreateDJPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
 
     if (!name.trim()) {
-      setError('Name is required.');
+      setError("Name is required.");
       return;
     }
 
     const cleanSlug = slug.trim()
-      ? slug.trim().toLowerCase().replace(/[^a-z0-9-]/g, '-')
-      : name.trim().toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+      ? slug
+          .trim()
+          .toLowerCase()
+          .replace(/[^a-z0-9-]/g, "-")
+      : name
+          .trim()
+          .toLowerCase()
+          .replace(/[^a-z0-9-]/g, "-")
+          .replace(/-+/g, "-")
+          .replace(/^-|-$/g, "");
 
-    const specs = specialties.split(',').map((s) => s.trim()).filter(Boolean);
+    const specs = specialties
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
     const links = [
-      ...(instagram.trim() ? [{ platform: 'instagram', url: instagram.trim() }] : []),
-      ...(soundcloud.trim() ? [{ platform: 'soundcloud', url: soundcloud.trim() }] : []),
-      ...(youtube.trim() ? [{ platform: 'youtube', url: youtube.trim() }] : []),
+      ...(instagram.trim()
+        ? [{ platform: "instagram", url: instagram.trim() }]
+        : []),
+      ...(soundcloud.trim()
+        ? [{ platform: "soundcloud", url: soundcloud.trim() }]
+        : []),
+      ...(youtube.trim() ? [{ platform: "youtube", url: youtube.trim() }] : []),
     ];
 
     const payload: Partial<DJOperator> = {
@@ -105,7 +123,9 @@ export default function CreateDJPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-black text-white">Add DJ Operator</h1>
-          <p className="text-text-muted text-sm mt-0.5">Register a new DJ or resident artist</p>
+          <p className="text-text-muted text-sm mt-0.5">
+            Register a new DJ or resident artist
+          </p>
         </div>
         <button
           onClick={() => router.back()}
@@ -214,7 +234,9 @@ export default function CreateDJPage() {
 
         {/* Social Links */}
         <div className="glass rounded-2xl border border-border-subtle p-6 space-y-5">
-          <h2 className="text-white font-semibold">Social & Streaming Profiles</h2>
+          <h2 className="text-white font-semibold">
+            Social & Streaming Profiles
+          </h2>
           <div className="grid grid-cols-2 gap-4">
             <Field label="Instagram URL">
               <input
@@ -270,7 +292,7 @@ export default function CreateDJPage() {
             disabled={createMutation.isPending}
             className="flex-1 py-3 btn-gradient text-white font-bold rounded-xl shadow-glow-sm disabled:opacity-60 transition-all"
           >
-            {createMutation.isPending ? 'Creating...' : 'Create DJ Operator'}
+            {createMutation.isPending ? "Creating..." : "Create DJ Operator"}
           </button>
         </div>
       </form>
@@ -278,14 +300,22 @@ export default function CreateDJPage() {
   );
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
   return (
     <div className="space-y-1.5">
-      <label className="text-text-secondary text-sm font-medium block">{label}</label>
+      <label className="text-text-secondary text-sm font-medium block">
+        {label}
+      </label>
       {children}
     </div>
   );
 }
 
 const inputCls =
-  'w-full px-4 py-2.5 rounded-xl bg-background border border-border-subtle text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-purple transition-colors';
+  "w-full px-4 py-2.5 rounded-xl bg-background border border-border-subtle text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-purple transition-colors";

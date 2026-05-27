@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useParams, useRouter } from 'next/navigation';
-import { CheckoutContent } from '@/components/booking/CheckoutContent';
+import { useParams, useRouter } from "next/navigation";
+import { CheckoutContent } from "@/components/booking/CheckoutContent";
 
 export default function CheckoutPage() {
   const params = useParams();
@@ -16,7 +16,7 @@ export default function CheckoutPage() {
         router.back();
       }}
       onClose={() => {
-        router.push('/events');
+        router.push("/events");
       }}
     />
   );

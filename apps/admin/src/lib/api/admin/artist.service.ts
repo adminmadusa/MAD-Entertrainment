@@ -1,6 +1,6 @@
-import { Artist } from '@mad/types';
+import { Artist } from "@mad/types";
 
-import { adminApiClient } from '@/lib/api/client';
+import { adminApiClient } from "@/lib/api/client";
 
 export interface ArtistsResponse {
   data: Artist[];
@@ -28,17 +28,25 @@ export interface ArtistFilters {
   search?: string;
 }
 
-export async function adminGetArtists(filters: ArtistFilters = {}): Promise<NormalizedArtistsResponse> {
+export async function adminGetArtists(
+  filters: ArtistFilters = {},
+): Promise<NormalizedArtistsResponse> {
   try {
     const params = new URLSearchParams();
     Object.entries(filters).forEach(([k, v]) => {
-      if (v !== undefined && v !== '') {
+      if (v !== undefined && v !== "") {
         params.set(k, String(v));
       }
     });
-    const { data } = await adminApiClient.get<ArtistsResponse>(`/admin/artists?${params}`);
+    const { data } = await adminApiClient.get<ArtistsResponse>(
+      `/admin/artists?${params}`,
+    );
     return {
-      items: Array.isArray(data?.data) ? data.data : (data?.data && Object.values(data.data).find(v => Array.isArray(v)) || []),
+      items: Array.isArray(data?.data)
+        ? data.data
+        : (data?.data &&
+            Object.values(data.data).find((v) => Array.isArray(v))) ||
+          [],
       pagination: {
         page: data?.pagination?.page ?? 1,
         limit: data?.pagination?.limit ?? 15,
@@ -47,7 +55,10 @@ export async function adminGetArtists(filters: ArtistFilters = {}): Promise<Norm
       },
     };
   } catch (error) {
-    console.error('[Artist Service] Failed to fetch artists, returning safe default NormalizedArtistsResponse:', error);
+    console.error(
+      "[Artist Service] Failed to fetch artists, returning safe default NormalizedArtistsResponse:",
+      error,
+    );
     return {
       items: [],
       pagination: {
@@ -71,19 +82,30 @@ export async function adminGetArtist(id: string): Promise<Artist | null> {
   }
 }
 
-export async function adminCreateArtist(payload: Partial<Artist>): Promise<Artist | null> {
+export async function adminCreateArtist(
+  payload: Partial<Artist>,
+): Promise<Artist | null> {
   try {
-    const { data } = await adminApiClient.post<{ data: Artist }>('/admin/artists', payload);
+    const { data } = await adminApiClient.post<{ data: Artist }>(
+      "/admin/artists",
+      payload,
+    );
     return data.data;
   } catch (error) {
-    console.error('[Artist Service] Failed to create artist:', error);
+    console.error("[Artist Service] Failed to create artist:", error);
     throw error;
   }
 }
 
-export async function adminUpdateArtist(id: string, payload: Partial<Artist>): Promise<Artist | null> {
+export async function adminUpdateArtist(
+  id: string,
+  payload: Partial<Artist>,
+): Promise<Artist | null> {
   try {
-    const { data } = await adminApiClient.put<{ data: Artist }>(`/admin/artists/${id}`, payload);
+    const { data } = await adminApiClient.put<{ data: Artist }>(
+      `/admin/artists/${id}`,
+      payload,
+    );
     return data.data;
   } catch (error) {
     console.error(`[Artist Service] Failed to update artist ${id}:`, error);

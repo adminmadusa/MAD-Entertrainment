@@ -1,6 +1,6 @@
-import { Venue } from '@mad/types';
+import { Venue } from "@mad/types";
 
-import { adminApiClient } from '@/lib/api/client';
+import { adminApiClient } from "@/lib/api/client";
 
 export interface VenuesResponse {
   data: Venue[];
@@ -29,17 +29,25 @@ export interface VenueFilters {
   city?: string;
 }
 
-export async function adminGetVenues(filters: VenueFilters = {}): Promise<NormalizedVenuesResponse> {
+export async function adminGetVenues(
+  filters: VenueFilters = {},
+): Promise<NormalizedVenuesResponse> {
   try {
     const params = new URLSearchParams();
     Object.entries(filters).forEach(([k, v]) => {
-      if (v !== undefined && v !== '') {
+      if (v !== undefined && v !== "") {
         params.set(k, String(v));
       }
     });
-    const { data } = await adminApiClient.get<VenuesResponse>(`/admin/venues?${params}`);
+    const { data } = await adminApiClient.get<VenuesResponse>(
+      `/admin/venues?${params}`,
+    );
     return {
-      items: Array.isArray(data?.data) ? data.data : (data?.data && Object.values(data.data).find(v => Array.isArray(v)) || []),
+      items: Array.isArray(data?.data)
+        ? data.data
+        : (data?.data &&
+            Object.values(data.data).find((v) => Array.isArray(v))) ||
+          [],
       pagination: {
         page: data?.pagination?.page ?? 1,
         limit: data?.pagination?.limit ?? 15,
@@ -48,7 +56,10 @@ export async function adminGetVenues(filters: VenueFilters = {}): Promise<Normal
       },
     };
   } catch (error) {
-    console.error('[Venue Service] Failed to fetch venues, returning safe default NormalizedVenuesResponse:', error);
+    console.error(
+      "[Venue Service] Failed to fetch venues, returning safe default NormalizedVenuesResponse:",
+      error,
+    );
     return {
       items: [],
       pagination: {
@@ -62,17 +73,30 @@ export async function adminGetVenues(filters: VenueFilters = {}): Promise<Normal
 }
 
 export async function adminGetVenue(id: string): Promise<Venue> {
-  const { data } = await adminApiClient.get<{ data: { venue: Venue } }>(`/admin/venues/${id}`);
+  const { data } = await adminApiClient.get<{ data: { venue: Venue } }>(
+    `/admin/venues/${id}`,
+  );
   return data.data.venue;
 }
 
-export async function adminCreateVenue(payload: Partial<Venue>): Promise<Venue> {
-  const { data } = await adminApiClient.post<{ data: { venue: Venue } }>('/admin/venues', payload);
+export async function adminCreateVenue(
+  payload: Partial<Venue>,
+): Promise<Venue> {
+  const { data } = await adminApiClient.post<{ data: { venue: Venue } }>(
+    "/admin/venues",
+    payload,
+  );
   return data.data.venue;
 }
 
-export async function adminUpdateVenue(id: string, payload: Partial<Venue>): Promise<Venue> {
-  const { data } = await adminApiClient.put<{ data: { venue: Venue } }>(`/admin/venues/${id}`, payload);
+export async function adminUpdateVenue(
+  id: string,
+  payload: Partial<Venue>,
+): Promise<Venue> {
+  const { data } = await adminApiClient.put<{ data: { venue: Venue } }>(
+    `/admin/venues/${id}`,
+    payload,
+  );
   return data.data.venue;
 }
 

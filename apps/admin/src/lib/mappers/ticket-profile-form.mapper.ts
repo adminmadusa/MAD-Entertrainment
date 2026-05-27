@@ -1,70 +1,72 @@
-import { TicketProfile } from '@mad/types';
+import { TicketProfile } from "@mad/types";
 
 import {
   TicketProfileFormValues,
   TicketProfileGroupFormValues,
   TicketProfileMutationPayload,
   TicketProfileTicketFormValues,
-} from '@/types/ticket-profile-form';
+} from "@/types/ticket-profile-form";
 
 export const defaultTicket = (): TicketProfileTicketFormValues => ({
-  tier: 'general',
-  name: 'General Admission',
-  description: '',
-  price: '',
+  tier: "general",
+  name: "General Admission",
+  description: "",
+  price: "",
   isFree: false,
-  totalCapacity: '',
+  totalCapacity: "",
   minPerBooking: 1,
   maxPerBooking: 10,
   groupSize: 1,
-  discountType: 'none',
-  discountValue: '',
+  discountType: "none",
+  discountValue: "",
   minQtyRequired: 1,
-  buyQty: '',
-  freeTicketQty: '',
+  buyQty: "",
+  freeTicketQty: "",
   isActive: true,
 });
 
 export const defaultGroup = (): TicketProfileGroupFormValues => ({
-  name: 'General Passes',
-  slug: 'general-passes',
-  description: '',
+  name: "General Passes",
+  slug: "general-passes",
+  description: "",
   tickets: [defaultTicket()],
 });
 
 export function getDefaultTicketProfileFormValues(): TicketProfileFormValues {
   return {
-    name: '',
-    description: '',
+    name: "",
+    description: "",
     groups: [defaultGroup()],
   };
 }
 
-export function mapTicketProfileToFormValues(profile: TicketProfile): TicketProfileFormValues {
+export function mapTicketProfileToFormValues(
+  profile: TicketProfile,
+): TicketProfileFormValues {
   return {
-    name: profile.name || '',
-    description: profile.description || '',
+    name: profile.name || "",
+    description: profile.description || "",
     groups: (profile.groups || []).map((group) => ({
       name: group.name,
       slug: group.slug,
-      description: group.description || '',
+      description: group.description || "",
       tickets: (group.tickets || []).map((ticket) => {
         const rules = ticket.offerRules;
         return {
           tier: ticket.tier,
           name: ticket.name,
-          description: ticket.description || '',
+          description: ticket.description || "",
           price: ticket.price,
           isFree: !!ticket.isFree,
           totalCapacity: ticket.totalCapacity,
           minPerBooking: ticket.minPerBooking || 1,
           maxPerBooking: ticket.maxPerBooking || 10,
           groupSize: ticket.groupSize || 1,
-          discountType: rules?.discountType || 'none',
-          discountValue: rules?.discountValue || '',
+          discountType: rules?.discountType || "none",
+          discountValue: rules?.discountValue || "",
           minQtyRequired: rules?.minQtyRequired || 1,
-          buyQty: rules?.buyQty || '',
-          freeTicketQty: rules?.freeTicketQty || '',
+          buyQty: rules?.buyQty || "",
+          freeTicketQty: rules?.freeTicketQty || "",
           isActive: ticket.isActive !== false,
         };
       }),
@@ -72,13 +74,16 @@ export function mapTicketProfileToFormValues(profile: TicketProfile): TicketProf
   };
 }
 
-export function mapTicketProfileFormToPayload(values: TicketProfileFormValues): TicketProfileMutationPayload {
+export function mapTicketProfileFormToPayload(
+  values: TicketProfileFormValues,
+): TicketProfileMutationPayload {
   const groups = values.groups.map((group) => ({
     name: group.name.trim(),
-    slug: group.slug.trim() || group.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+    slug:
+      group.slug.trim() || group.name.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
     description: group.description.trim() || undefined,
     tickets: group.tickets.map((ticket) => {
-      const hasOffer = ticket.discountType !== 'none';
+      const hasOffer = ticket.discountType !== "none";
       return {
         tier: ticket.tier,
         name: ticket.name.trim(),
@@ -96,7 +101,9 @@ export function mapTicketProfileFormToPayload(values: TicketProfileFormValues): 
               discountValue: Number(ticket.discountValue || 0),
               minQtyRequired: Number(ticket.minQtyRequired || 1),
               buyQty: ticket.buyQty ? Number(ticket.buyQty) : undefined,
-              freeTicketQty: ticket.freeTicketQty ? Number(ticket.freeTicketQty) : undefined,
+              freeTicketQty: ticket.freeTicketQty
+                ? Number(ticket.freeTicketQty)
+                : undefined,
             }
           : undefined,
       };

@@ -1,5 +1,5 @@
-import { NotificationType } from '@mad/shared';
-import { Document, model, Schema, Types } from 'mongoose';
+import { NotificationType } from "@mad/shared";
+import { Document, model, Schema, Types } from "mongoose";
 
 export interface INotification extends Document {
   type: NotificationType;
@@ -15,9 +15,14 @@ export interface INotification extends Document {
 
 const notificationSchema = new Schema<INotification>(
   {
-    type: { type: String, enum: Object.values(NotificationType), required: true, index: true },
-    bookingId: { type: Schema.Types.ObjectId, ref: 'Booking', index: true },
-    eventId: { type: Schema.Types.ObjectId, ref: 'Event', index: true },
+    type: {
+      type: String,
+      enum: Object.values(NotificationType),
+      required: true,
+      index: true,
+    },
+    bookingId: { type: Schema.Types.ObjectId, ref: "Booking", index: true },
+    eventId: { type: Schema.Types.ObjectId, ref: "Event", index: true },
     channel: { type: String, required: true },
     recipient: String,
     subject: String,
@@ -25,7 +30,10 @@ const notificationSchema = new Schema<INotification>(
     isSent: { type: Boolean, default: false },
     retryCount: { type: Number, default: 0, min: 0 },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
-export const Notification = model<INotification>('Notification', notificationSchema);
+export const Notification = model<INotification>(
+  "Notification",
+  notificationSchema,
+);

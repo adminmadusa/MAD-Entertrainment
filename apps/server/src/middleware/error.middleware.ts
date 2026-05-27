@@ -1,8 +1,8 @@
-import { HTTP_STATUS } from '@mad/shared';
-import { ErrorRequestHandler, RequestHandler } from 'express';
+import { HTTP_STATUS } from "@mad/shared";
+import { ErrorRequestHandler, RequestHandler } from "express";
 
-import { getEnv } from '../config/env';
-import { logger } from '../utils/logger';
+import { getEnv } from "../config/env";
+import { logger } from "../utils/logger";
 
 export class AppError extends Error {
   constructor(
@@ -11,7 +11,7 @@ export class AppError extends Error {
     public errors?: Record<string, string[]>,
     public isOperational = true,
     public code?: string,
-    public retryable?: boolean
+    public retryable?: boolean,
   ) {
     super(message);
     Object.setPrototypeOf(this, AppError.prototype);
@@ -21,16 +21,18 @@ export class AppError extends Error {
     return new AppError(message, HTTP_STATUS.BAD_REQUEST, errors);
   }
 
-  static unauthorized(message = 'Unauthorized') {
+  static unauthorized(message = "Unauthorized") {
     return new AppError(message, HTTP_STATUS.UNAUTHORIZED);
   }
 
-  static forbidden(message = 'Access denied') {
+  static forbidden(message = "Access denied") {
     return new AppError(message, HTTP_STATUS.FORBIDDEN);
   }
 
-  static notFound(resource = 'Resource') {
-    const message = resource.endsWith('not found') ? resource : `${resource} not found`;
+  static notFound(resource = "Resource") {
+    const message = resource.endsWith("not found")
+      ? resource
+      : `${resource} not found`;
     return new AppError(message, HTTP_STATUS.NOT_FOUND);
   }
 
@@ -50,7 +52,10 @@ export const errorHandler: ErrorRequestHandler = (err, req, res, _next) => {
   const reqLogger = req.log ?? logger;
 
   if (err instanceof AppError) {
-    reqLogger.warn({ statusCode: err.statusCode, path: req.path, code: err.code }, err.message);
+    reqLogger.warn(
+      { statusCode: err.statusCode, path: req.path, code: err.code },
+      err.message,
+    );
     res.status(err.statusCode).json({
       success: false,
       message: err.message,
@@ -61,33 +66,38 @@ export const errorHandler: ErrorRequestHandler = (err, req, res, _next) => {
     return;
   }
 
-  if (err?.name === 'ValidationError') {
+  if (err?.name === "ValidationError") {
     res.status(HTTP_STATUS.UNPROCESSABLE_ENTITY).json({
       success: false,
-      message: 'Validation failed',
+      message: "Validation failed",
       errors: parseMongooseValidationError(err),
     });
     return;
   }
 
-  if (err?.code === 11000 || err?.code === '11000') {
-    res.status(HTTP_STATUS.CONFLICT).json({ success: false, message: 'Duplicate entry' });
+  if (err?.code === 11000 || err?.code === "11000") {
+    res
+      .status(HTTP_STATUS.CONFLICT)
+      .json({ success: false, message: "Duplicate entry" });
     return;
   }
 
   const env = getEnv();
-  reqLogger.error({ err, path: req.path }, 'Unhandled request error');
+  reqLogger.error({ err, path: req.path }, "Unhandled request error");
   res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
     success: false,
-    message: env.NODE_ENV === 'production' ? 'An internal server error occurred' : err.message,
-    ...(env.NODE_ENV !== 'production' ? { stack: err.stack } : {}),
+    message:
+      env.NODE_ENV === "production"
+        ? "An internal server error occurred"
+        : err.message,
+    ...(env.NODE_ENV !== "production" ? { stack: err.stack } : {}),
   });
 };
 
 function parseMongooseValidationError(err: any) {
   const errors: Record<string, string[]> = {};
   for (const [field, value] of Object.entries(err.errors ?? {})) {
-    errors[field] = [(value as any).message ?? 'Invalid value'];
+    errors[field] = [(value as any).message ?? "Invalid value"];
   }
   return errors;
 }

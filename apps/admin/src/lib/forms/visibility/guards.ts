@@ -1,6 +1,9 @@
-import { validatePublishWindow } from '../scheduling';
+import { validatePublishWindow } from "../scheduling";
 
-export function canPublish(start?: string | Date | null, end?: string | Date | null): boolean {
+export function canPublish(
+  start?: string | Date | null,
+  end?: string | Date | null,
+): boolean {
   return validatePublishWindow(start || undefined, end || undefined);
 }
 

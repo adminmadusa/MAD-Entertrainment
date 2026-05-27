@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import { useQuery } from '@tanstack/react-query';
-import { motion } from 'framer-motion';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useQuery } from "@tanstack/react-query";
+import { motion } from "framer-motion";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
-import { publicGetMyBookings } from '@/lib/api/public.service';
-import { useAuth } from '@/providers/AuthProvider';
-import { Booking, Event } from '@mad/types';
+import { publicGetMyBookings } from "@/lib/api/public.service";
+import { useAuth } from "@/providers/AuthProvider";
+import { Booking, Event } from "@mad/types";
 
 export default function UserDashboard() {
   const router = useRouter();
@@ -16,12 +16,12 @@ export default function UserDashboard() {
 
   useEffect(() => {
     if (!isAuthLoading && !isAuthenticated) {
-      router.replace('/login');
+      router.replace("/login");
     }
   }, [isAuthLoading, isAuthenticated, router]);
 
   const { data, isLoading } = useQuery({
-    queryKey: ['my-bookings'],
+    queryKey: ["my-bookings"],
     queryFn: publicGetMyBookings,
     enabled: isAuthenticated,
   });
@@ -38,7 +38,7 @@ export default function UserDashboard() {
 
   const handleLogout = () => {
     logout();
-    router.push('/login');
+    router.push("/login");
   };
 
   return (
@@ -50,10 +50,12 @@ export default function UserDashboard() {
         <div className="glass-strong rounded-3xl border border-border-subtle p-8 flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-5">
             <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-accent-purple to-accent-purple-light flex items-center justify-center text-2xl font-black shadow-glow-sm">
-              {user?.name?.[0]?.toUpperCase() || '👤'}
+              {user?.name?.[0]?.toUpperCase() || "👤"}
             </div>
             <div>
-              <h1 className="text-2xl font-black text-white">{user?.name || 'Guest User'}</h1>
+              <h1 className="text-2xl font-black text-white">
+                {user?.name || "Guest User"}
+              </h1>
               <p className="text-text-muted text-sm">{user?.email}</p>
             </div>
           </div>
@@ -72,17 +74,26 @@ export default function UserDashboard() {
           {isLoading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {[1, 2].map((i) => (
-                <div key={i} className="h-40 glass rounded-2xl border border-border-subtle animate-pulse" />
+                <div
+                  key={i}
+                  className="h-40 glass rounded-2xl border border-border-subtle animate-pulse"
+                />
               ))}
             </div>
           ) : bookings.length === 0 ? (
             <div className="glass rounded-3xl border border-border-subtle p-12 text-center">
               <div className="text-4xl mb-4 opacity-50">🎫</div>
-              <h3 className="text-lg font-bold text-white mb-2">No Bookings Yet</h3>
+              <h3 className="text-lg font-bold text-white mb-2">
+                No Bookings Yet
+              </h3>
               <p className="text-text-muted text-sm mb-6 max-w-md mx-auto">
-                You haven't booked any events yet. Explore our upcoming events to secure your tickets!
+                You haven't booked any events yet. Explore our upcoming events
+                to secure your tickets!
               </p>
-              <Link href="/events" className="btn-gradient px-6 py-3 rounded-xl font-bold text-sm shadow-glow-sm">
+              <Link
+                href="/events"
+                className="btn-gradient px-6 py-3 rounded-xl font-bold text-sm shadow-glow-sm"
+              >
                 Explore Events
               </Link>
             </div>
@@ -102,37 +113,49 @@ export default function UserDashboard() {
                         <div className="px-2.5 py-1 bg-white/5 border border-white/10 rounded-lg text-xs font-mono text-white/80">
                           {booking.bookingId}
                         </div>
-                        <span className={`text-[10px] uppercase font-bold tracking-wider px-2 py-1 rounded-md ${
-                          booking.status === 'confirmed' ? 'bg-emerald-500/10 text-emerald-400' :
-                          booking.status === 'awaiting_payment' ? 'bg-amber-500/10 text-amber-400' :
-                          'bg-red-500/10 text-red-400'
-                        }`}>
-                          {booking.status.replace('_', ' ')}
+                        <span
+                          className={`text-[10px] uppercase font-bold tracking-wider px-2 py-1 rounded-md ${
+                            booking.status === "confirmed"
+                              ? "bg-emerald-500/10 text-emerald-400"
+                              : booking.status === "awaiting_payment"
+                                ? "bg-amber-500/10 text-amber-400"
+                                : "bg-red-500/10 text-red-400"
+                          }`}
+                        >
+                          {booking.status.replace("_", " ")}
                         </span>
                       </div>
 
                       <h3 className="text-lg font-bold text-white mb-1 line-clamp-1">
-                        {bookingEvent?.title || 'Unknown Event'}
+                        {bookingEvent?.title || "Unknown Event"}
                       </h3>
-                    <p className="text-text-muted text-xs mb-4">
-                      {new Date(booking.createdAt).toLocaleDateString('en-US', {
-                        month: 'short', day: 'numeric', year: 'numeric'
-                      })} • {booking.totalTickets} Tickets
-                    </p>
-                  </div>
+                      <p className="text-text-muted text-xs mb-4">
+                        {new Date(booking.createdAt).toLocaleDateString(
+                          "en-US",
+                          {
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                          },
+                        )}{" "}
+                        • {booking.totalTickets} Tickets
+                      </p>
+                    </div>
 
-                  <div className="pt-4 border-t border-border-subtle flex justify-between items-center">
-                    <span className="text-white font-bold">₹{booking.totalAmount}</span>
-                    <Link
-                      href={`/my-booking?ref=${booking.bookingId}`}
-                      className="text-xs text-accent-purple-light hover:text-white transition-colors font-semibold"
-                    >
-                      View Details →
-                    </Link>
-                  </div>
-                </motion.div>
-              );
-            })}
+                    <div className="pt-4 border-t border-border-subtle flex justify-between items-center">
+                      <span className="text-white font-bold">
+                        ₹{booking.totalAmount}
+                      </span>
+                      <Link
+                        href={`/my-booking?ref=${booking.bookingId}`}
+                        className="text-xs text-accent-purple-light hover:text-white transition-colors font-semibold"
+                      >
+                        View Details →
+                      </Link>
+                    </div>
+                  </motion.div>
+                );
+              })}
             </div>
           )}
         </div>

@@ -1,50 +1,60 @@
-import { Router } from 'express';
-import { Booking } from '../../models/booking.schema';
-import { Event } from '../../models/event.schema';
-import { BookingStatus } from '@mad/shared';
-import { requireAdmin } from '../../middleware/auth.middleware';
+import { Router } from "express";
+import { Booking } from "../../models/booking.schema";
+import { Event } from "../../models/event.schema";
+import { BookingStatus } from "@mad/shared";
+import { requireAdmin } from "../../middleware/auth.middleware";
 
 const router: Router = Router();
 
 // Require admin for all analytics routes
 router.use(requireAdmin);
 
-router.get('/summary', async (req, res, next) => {
+router.get("/summary", async (req, res, next) => {
   try {
-    const totalBookings = await Booking.countDocuments({ status: BookingStatus.CONFIRMED });
-    
+    const totalBookings = await Booking.countDocuments({
+      status: BookingStatus.CONFIRMED,
+    });
+
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
     const recentBookings = await Booking.countDocuments({
       status: BookingStatus.CONFIRMED,
-      createdAt: { $gte: thirtyDaysAgo }
+      createdAt: { $gte: thirtyDaysAgo },
     });
 
     const revenueResult = await Booking.aggregate([
       { $match: { status: BookingStatus.CONFIRMED } },
-      { $group: { _id: null, total: { $sum: '$totalAmount' } } }
+      { $group: { _id: null, total: { $sum: "$totalAmount" } } },
     ]);
     const totalRevenue = revenueResult[0]?.total || 0;
 
     // Get top events by booking count
     const topEventsGroup = await Booking.aggregate([
       { $match: { status: BookingStatus.CONFIRMED } },
-      { $group: { _id: '$eventId', count: { $sum: 1 }, revenue: { $sum: '$totalAmount' } } },
+      {
+        $group: {
+          _id: "$eventId",
+          count: { $sum: 1 },
+          revenue: { $sum: "$totalAmount" },
+        },
+      },
       { $sort: { count: -1 } },
-      { $limit: 5 }
+      { $limit: 5 },
     ]);
 
     // Populate event details manually
     const topEvents = await Promise.all(
       topEventsGroup.map(async (item) => {
-        const event = await Event.findById(item._id).select('title startDate');
+        const event = await Event.findById(item._id).select("title startDate");
         return {
           _id: item._id,
           count: item.count,
           revenue: item.revenue,
-          event: event ? { title: event.title, startDate: event.startDate.toISOString() } : null
+          event: event
+            ? { title: event.title, startDate: event.startDate.toISOString() }
+            : null,
         };
-      })
+      }),
     );
 
     res.status(200).json({
@@ -53,15 +63,15 @@ router.get('/summary', async (req, res, next) => {
         totalBookings,
         recentBookings,
         totalRevenue,
-        topEvents
-      }
+        topEvents,
+      },
     });
   } catch (error) {
     next(error);
   }
 });
 
-router.get('/revenue', async (req, res, next) => {
+router.get("/revenue", async (req, res, next) => {
   try {
     const days = parseInt(req.query.days as string) || 30;
     const startDate = new Date();
@@ -72,22 +82,22 @@ router.get('/revenue', async (req, res, next) => {
       {
         $match: {
           status: BookingStatus.CONFIRMED,
-          createdAt: { $gte: startDate }
-        }
+          createdAt: { $gte: startDate },
+        },
       },
       {
         $group: {
-          _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
-          revenue: { $sum: '$totalAmount' },
-          count: { $sum: 1 }
-        }
+          _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+          revenue: { $sum: "$totalAmount" },
+          count: { $sum: 1 },
+        },
       },
-      { $sort: { _id: 1 } }
+      { $sort: { _id: 1 } },
     ]);
 
     res.status(200).json({
       success: true,
-      data: revenueData
+      data: revenueData,
     });
   } catch (error) {
     next(error);

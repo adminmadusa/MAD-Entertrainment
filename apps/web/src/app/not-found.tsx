@@ -9,15 +9,16 @@
  * Solution: Static structure stays here (server). The interactive DJ widget is
  * a separate 'use client' child component that is only mounted when needed.
  */
-import type { Metadata } from 'next';
-import Image from 'next/image';
-import Link from 'next/link';
+import type { Metadata } from "next";
+import Image from "next/image";
+import Link from "next/link";
 
-import { NotFoundDJWidget } from './_components/NotFoundDJWidget';
+import { NotFoundDJWidget } from "./_components/NotFoundDJWidget";
 
 export const metadata: Metadata = {
-  title: '404 — Page Not Found | MAD Entertrainment',
-  description: "Looks like this page dropped off the playlist. Head back to the main stage and discover live events, DJ nights, and concerts.",
+  title: "404 — Page Not Found | MAD Entertrainment",
+  description:
+    "Looks like this page dropped off the playlist. Head back to the main stage and discover live events, DJ nights, and concerts.",
   robots: {
     index: false,
     follow: true,
@@ -40,14 +41,13 @@ export default function NotFound() {
         aria-hidden="true"
         style={{
           backgroundImage:
-            'linear-gradient(rgba(124, 58, 237, 0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(124, 58, 237, 0.4) 1px, transparent 1px)',
-          backgroundSize: '40px 40px',
+            "linear-gradient(rgba(124, 58, 237, 0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(124, 58, 237, 0.4) 1px, transparent 1px)",
+          backgroundSize: "40px 40px",
         }}
       />
 
       {/* ─── Main Content ─────────────────────────────────────── */}
       <div className="relative z-10 w-full max-w-5xl grid grid-cols-1 lg:grid-cols-12 gap-8 items-center pt-8 pb-16">
-
         {/* Left: DJ Console illustration */}
         <div className="lg:col-span-6 flex flex-col items-center justify-center">
           <div className="relative group max-w-md w-full aspect-square rounded-3xl overflow-hidden border border-border-subtle shadow-glow-hover transition-all duration-300">
@@ -60,14 +60,20 @@ export default function NotFound() {
               priority
             />
             {/* Cinematic Gradient overlay */}
-            <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent opacity-80" aria-hidden="true" />
+            <div
+              className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent opacity-80"
+              aria-hidden="true"
+            />
           </div>
         </div>
 
         {/* Right: Copy + Interactive DJ Widget */}
         <div className="lg:col-span-6 space-y-6 text-center lg:text-left">
           {/* Error Tag */}
-          <div className="inline-flex items-center gap-2 px-3 py-1 glass border border-accent-pink/30 rounded-full text-accent-pink text-xs font-semibold uppercase tracking-widest" aria-hidden="true">
+          <div
+            className="inline-flex items-center gap-2 px-3 py-1 glass border border-accent-pink/30 rounded-full text-accent-pink text-xs font-semibold uppercase tracking-widest"
+            aria-hidden="true"
+          >
             🛑 Status 404 // Lost in the Mix
           </div>
 
@@ -76,7 +82,9 @@ export default function NotFound() {
           </h1>
 
           <p className="text-text-secondary text-base leading-relaxed">
-            Looks like the DJ pulled the fader and you got lost in the crowd. The track you are searching for is no longer in the playlist. Let&apos;s get you back to the main stage.
+            Looks like the DJ pulled the fader and you got lost in the crowd.
+            The track you are searching for is no longer in the playlist.
+            Let&apos;s get you back to the main stage.
           </p>
 
           {/* Interactive client widget — only this part loads JS */}
@@ -98,7 +106,6 @@ export default function NotFound() {
             </Link>
           </div>
         </div>
-
       </div>
     </div>
   );

@@ -1,4 +1,4 @@
-import { Schema, model, Document } from 'mongoose';
+import { Schema, model, Document } from "mongoose";
 
 export interface IDeadLetterJob extends Document {
   queueName: string;
@@ -24,4 +24,7 @@ const deadLetterJobSchema = new Schema<IDeadLetterJob>({
 
 deadLetterJobSchema.index({ queueName: 1, processedAt: -1 });
 
-export const DeadLetterJob = model<IDeadLetterJob>('DeadLetterJob', deadLetterJobSchema);
+export const DeadLetterJob = model<IDeadLetterJob>(
+  "DeadLetterJob",
+  deadLetterJobSchema,
+);

@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { useMutation } from '@tanstack/react-query';
-import { useRouter } from 'next/navigation';
-import { useMemo } from 'react';
+import { useMutation } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
+import { useMemo } from "react";
 
-import { extractApiError } from '@/lib/api/client';
+import { extractApiError } from "@/lib/api/client";
 
 interface UseFormMutationOptions<TPayload, TResult> {
   mutationFn: (payload: TPayload) => Promise<TResult>;
@@ -32,7 +32,10 @@ export function useFormMutation<TPayload, TResult>({
     },
   });
 
-  const serverError = useMemo(() => (mutation.error ? extractApiError(mutation.error).message : ''), [mutation.error]);
+  const serverError = useMemo(
+    () => (mutation.error ? extractApiError(mutation.error).message : ""),
+    [mutation.error],
+  );
 
   const submit = async (payload: TPayload) => {
     await mutation.mutateAsync(payload);

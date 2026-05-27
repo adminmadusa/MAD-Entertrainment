@@ -1,5 +1,5 @@
-import { PopupTrigger } from '@mad/shared';
-import mongoose, { Schema, Document } from 'mongoose';
+import { PopupTrigger } from "@mad/shared";
+import mongoose, { Schema, Document } from "mongoose";
 
 export interface IPopupCampaign extends Document {
   name: string;
@@ -26,8 +26,11 @@ export interface IPopupCampaign extends Document {
 }
 
 const cloudinaryImageSchema = new Schema(
-  { url: { type: String, required: true }, publicId: { type: String, required: true } },
-  { _id: false }
+  {
+    url: { type: String, required: true },
+    publicId: { type: String, required: true },
+  },
+  { _id: false },
 );
 
 const popupCampaignSchema = new Schema<IPopupCampaign>(
@@ -53,16 +56,16 @@ const popupCampaignSchema = new Schema<IPopupCampaign>(
     endDate: { type: Date, index: true },
     linkedEvent: new Schema(
       {
-        eventId: { type: Schema.Types.ObjectId, ref: 'Event' },
+        eventId: { type: Schema.Types.ObjectId, ref: "Event" },
         showCountdown: { type: Boolean, default: false },
         earlyBirdDeadline: Date,
       },
-      { _id: false }
+      { _id: false },
     ),
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 export const PopupCampaign =
   (mongoose.models.PopupCampaign as mongoose.Model<IPopupCampaign>) ||
-  mongoose.model<IPopupCampaign>('PopupCampaign', popupCampaignSchema);
+  mongoose.model<IPopupCampaign>("PopupCampaign", popupCampaignSchema);

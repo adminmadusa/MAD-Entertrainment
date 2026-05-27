@@ -94,7 +94,7 @@ function cleanRegexpSource(src: string): string {
     .replace(/\/\?\(\?=\/\|\$\)\/?$/, "")
     .replace(/\/\(\?=\/\|\$\)\/?$/, "")
     .replace(/\?$/, "");
-  
+
   if (cleaned.startsWith("(?=")) return "";
   if (cleaned === "/?") return "";
   if (cleaned && !cleaned.startsWith("/")) {
@@ -111,10 +111,13 @@ function cleanPath(p: string): string {
   return result;
 }
 
-function extractRoutesFromRouter(routerOrApp: any, basePath: string = ""): Array<{ method: string; path: string }> {
+function extractRoutesFromRouter(
+  routerOrApp: any,
+  basePath: string = "",
+): Array<{ method: string; path: string }> {
   const routes: Array<{ method: string; path: string }> = [];
   const stack = routerOrApp._router?.stack || routerOrApp.stack || [];
-  
+
   stack.forEach((layer: any) => {
     if (layer.route) {
       const path = cleanPath(basePath + layer.route.path);
@@ -127,16 +130,20 @@ function extractRoutesFromRouter(routerOrApp: any, basePath: string = ""): Array
       routes.push(...extractRoutesFromRouter(layer.handle, basePath + prefix));
     }
   });
-  
+
   return routes;
 }
 
 function introspectRoutes() {
   // Provide dummy environment variables required by app initialization
-  process.env.MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost/dummy";
-  process.env.JWT_SECRET = process.env.JWT_SECRET || "dummyjwtsecretdummyjwtsecretdummy";
-  process.env.JWT_ADMIN_SECRET = process.env.JWT_ADMIN_SECRET || "dummyadminsecretdummyadminsecretdum";
-  process.env.JWT_SESSION_SECRET = process.env.JWT_SESSION_SECRET || "dummysessionsecretdummysessionse";
+  process.env.MONGODB_URI =
+    process.env.MONGODB_URI || "mongodb://localhost/dummy";
+  process.env.JWT_SECRET =
+    process.env.JWT_SECRET || "dummyjwtsecretdummyjwtsecretdummy";
+  process.env.JWT_ADMIN_SECRET =
+    process.env.JWT_ADMIN_SECRET || "dummyadminsecretdummyadminsecretdum";
+  process.env.JWT_SESSION_SECRET =
+    process.env.JWT_SESSION_SECRET || "dummysessionsecretdummysessionse";
   // Load the Express app without listening
   const { createApp } = require("../apps/server/src/app");
   const app = createApp();
@@ -147,15 +154,18 @@ function extractEnvContract(): any[] {
   const envPath = join("apps", "server", "src", "config", "env.ts");
   if (!existsSync(envPath)) return [];
   const content = readFileSync(envPath, "utf8");
-  
+
   const schemaStartIndex = content.indexOf("const envSchema = z.object({");
   if (schemaStartIndex === -1) return [];
-  
+
   const schemaEndIndex = content.indexOf("});", schemaStartIndex);
   if (schemaEndIndex === -1) return [];
-  
-  const schemaContent = content.substring(schemaStartIndex + "const envSchema = z.object({".length, schemaEndIndex);
-  
+
+  const schemaContent = content.substring(
+    schemaStartIndex + "const envSchema = z.object({".length,
+    schemaEndIndex,
+  );
+
   // Find all key declarations: e.g. "  PORT: z" or "  MONGODB_URI: z"
   const regex = /^\s+([A-Z][A-Z0-9_]*)\s*:\s*/gm;
   const keys: Array<{ name: string; index: number }> = [];
@@ -163,32 +173,35 @@ function extractEnvContract(): any[] {
   while ((match = regex.exec(schemaContent)) !== null) {
     keys.push({ name: match[1], index: match.index });
   }
-  
+
   const list: any[] = [];
   for (let i = 0; i < keys.length; i++) {
     const key = keys[i];
-    const nextKeyIndex = i + 1 < keys.length ? keys[i+1].index : schemaContent.length;
-    const keyDefinition = schemaContent.substring(key.index, nextKeyIndex).trim();
-    
+    const nextKeyIndex =
+      i + 1 < keys.length ? keys[i + 1].index : schemaContent.length;
+    const keyDefinition = schemaContent
+      .substring(key.index, nextKeyIndex)
+      .trim();
+
     const isOptional = keyDefinition.includes(".optional()");
     const hasDefault = keyDefinition.includes(".default(");
     const isSecret = /SECRET|KEY|PASSWORD|TOKEN/.test(key.name);
-    
+
     let defaultValue = undefined;
     if (hasDefault) {
       // Find the first default(...) match in this block
       const defaultMatch = keyDefinition.match(/\.default\(([\s\S]*?)\)/);
       if (defaultMatch) {
-        defaultValue = defaultMatch[1].trim().replace(/^['"]|['"]$/g, ''); // strip quotes
+        defaultValue = defaultMatch[1].trim().replace(/^['"]|['"]$/g, ""); // strip quotes
       }
     }
-    
+
     list.push({
       variable: key.name,
       required: !isOptional && !hasDefault,
       secret: isSecret,
       defaultValue: defaultValue,
-      source: "env.ts"
+      source: "env.ts",
     });
   }
   return list;
@@ -199,13 +212,25 @@ function parseDeploymentContracts() {
   // Render (backend)
   const renderPath = "render.yaml";
   if (existsSync(renderPath)) {
-    contracts.push({ system: "backend", platform: "Render", configFile: renderPath });
+    contracts.push({
+      system: "backend",
+      platform: "Render",
+      configFile: renderPath,
+    });
   }
   // Vercel (frontend/admin)
   const vercelPath = "vercel.json";
   if (existsSync(vercelPath)) {
-    contracts.push({ system: "frontend/web", platform: "Vercel", configFile: vercelPath });
-    contracts.push({ system: "frontend/admin", platform: "Vercel", configFile: vercelPath });
+    contracts.push({
+      system: "frontend/web",
+      platform: "Vercel",
+      configFile: vercelPath,
+    });
+    contracts.push({
+      system: "frontend/admin",
+      platform: "Vercel",
+      configFile: vercelPath,
+    });
   }
   return contracts;
 }

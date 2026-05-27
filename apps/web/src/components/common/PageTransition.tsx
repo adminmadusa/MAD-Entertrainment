@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { motion, AnimatePresence } from 'framer-motion';
-import { usePathname } from 'next/navigation';
+import { motion, AnimatePresence } from "framer-motion";
+import { usePathname } from "next/navigation";
 
 interface PageTransitionProps {
   children: React.ReactNode;
@@ -54,7 +54,7 @@ export function PageTransition({ children }: PageTransitionProps) {
 interface RevealProps {
   children: React.ReactNode;
   delay?: number;
-  direction?: 'up' | 'down' | 'left' | 'right';
+  direction?: "up" | "down" | "left" | "right";
   className?: string;
 }
 
@@ -65,12 +65,17 @@ const directionVariants = {
   right: { x: -30, opacity: 0 },
 };
 
-export function Reveal({ children, delay = 0, direction = 'up', className = '' }: RevealProps) {
+export function Reveal({
+  children,
+  delay = 0,
+  direction = "up",
+  className = "",
+}: RevealProps) {
   return (
     <motion.div
       initial={directionVariants[direction]}
       whileInView={{ x: 0, y: 0, opacity: 1 }}
-      viewport={{ once: true, margin: '-50px' }}
+      viewport={{ once: true, margin: "-50px" }}
       transition={{
         duration: 0.6,
         delay,
@@ -91,7 +96,11 @@ interface StaggerProps {
   staggerDelay?: number;
 }
 
-export function StaggerContainer({ children, className = '', staggerDelay = 0.08 }: StaggerProps) {
+export function StaggerContainer({
+  children,
+  className = "",
+  staggerDelay = 0.08,
+}: StaggerProps) {
   return (
     <motion.div
       variants={{
@@ -105,7 +114,7 @@ export function StaggerContainer({ children, className = '', staggerDelay = 0.08
       }}
       initial="hidden"
       whileInView="visible"
-      viewport={{ once: true, margin: '-50px' }}
+      viewport={{ once: true, margin: "-50px" }}
       className={className}
     >
       {children}
@@ -113,12 +122,22 @@ export function StaggerContainer({ children, className = '', staggerDelay = 0.08
   );
 }
 
-export function StaggerItem({ children, className = '' }: { children: React.ReactNode; className?: string }) {
+export function StaggerItem({
+  children,
+  className = "",
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
   return (
     <motion.div
       variants={{
         hidden: { opacity: 0, y: 20 },
-        visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.4, 0, 0.2, 1] } },
+        visible: {
+          opacity: 1,
+          y: 0,
+          transition: { duration: 0.5, ease: [0.4, 0, 0.2, 1] },
+        },
       }}
       className={className}
     >

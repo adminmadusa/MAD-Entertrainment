@@ -1,27 +1,42 @@
-'use client';
+"use client";
 
-import { PopupCampaign } from '@mad/types';
-import { useState } from 'react';
+import { PopupCampaign } from "@mad/types";
+import { useState } from "react";
 
-import { getFirstValidationError, runFormSubmit } from '@/lib/forms/core';
-import { resolveVisibilityState } from '@/lib/forms/visibility';
-import { getDefaultPopupFormValues, mapPopupFormToPayload, mapPopupToFormValues } from '@/lib/mappers/popup-form.mapper';
-import { popupFormSchema } from '@/lib/validators/popup-form.schema';
-import { PopupFormMode, PopupFormValues } from '@/types/popup-form';
+import { getFirstValidationError, runFormSubmit } from "@/lib/forms/core";
+import { resolveVisibilityState } from "@/lib/forms/visibility";
+import {
+  getDefaultPopupFormValues,
+  mapPopupFormToPayload,
+  mapPopupToFormValues,
+} from "@/lib/mappers/popup-form.mapper";
+import { popupFormSchema } from "@/lib/validators/popup-form.schema";
+import { PopupFormMode, PopupFormValues } from "@/types/popup-form";
 
 interface UsePopupFormOptions {
   mode: PopupFormMode;
   initialPopup?: PopupCampaign;
-  onSubmitPayload: (payload: ReturnType<typeof mapPopupFormToPayload>) => Promise<void> | void;
+  onSubmitPayload: (
+    payload: ReturnType<typeof mapPopupFormToPayload>,
+  ) => Promise<void> | void;
 }
 
-export function usePopupForm({ mode, initialPopup, onSubmitPayload }: UsePopupFormOptions) {
+export function usePopupForm({
+  mode,
+  initialPopup,
+  onSubmitPayload,
+}: UsePopupFormOptions) {
   const [values, setValues] = useState<PopupFormValues>(
-    mode === 'edit' && initialPopup ? mapPopupToFormValues(initialPopup) : getDefaultPopupFormValues()
+    mode === "edit" && initialPopup
+      ? mapPopupToFormValues(initialPopup)
+      : getDefaultPopupFormValues(),
   );
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
-  const setField = <K extends keyof PopupFormValues>(field: K, value: PopupFormValues[K]) => {
+  const setField = <K extends keyof PopupFormValues>(
+    field: K,
+    value: PopupFormValues[K],
+  ) => {
     setValues((prev) => ({ ...prev, [field]: value }));
   };
 
@@ -36,7 +51,11 @@ export function usePopupForm({ mode, initialPopup, onSubmitPayload }: UsePopupFo
     }, setError);
   };
 
-  const visibilityState = resolveVisibilityState(values.isActive, values.startDate || undefined, values.endDate || undefined);
+  const visibilityState = resolveVisibilityState(
+    values.isActive,
+    values.startDate || undefined,
+    values.endDate || undefined,
+  );
 
   return { values, error, visibilityState, setField, setError, submit };
 }

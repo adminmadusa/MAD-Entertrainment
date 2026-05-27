@@ -1,8 +1,11 @@
-import { PopupCampaign, IPopupCampaign } from '../../models/popup-campaign.schema';
+import {
+  PopupCampaign,
+  IPopupCampaign,
+} from "../../models/popup-campaign.schema";
 
 export const getPopups = async (
   page: number = 1,
-  limit: number = 15
+  limit: number = 15,
 ): Promise<{ popups: IPopupCampaign[]; total: number; totalPages: number }> => {
   const skip = (page - 1) * limit;
 
@@ -19,27 +22,35 @@ export const getPopups = async (
   };
 };
 
-export const getPopupById = async (id: string): Promise<IPopupCampaign | null> => {
+export const getPopupById = async (
+  id: string,
+): Promise<IPopupCampaign | null> => {
   return await PopupCampaign.findById(id);
 };
 
-export const createPopup = async (payload: Partial<IPopupCampaign>): Promise<IPopupCampaign> => {
+export const createPopup = async (
+  payload: Partial<IPopupCampaign>,
+): Promise<IPopupCampaign> => {
   const popup = new PopupCampaign(payload);
   return await popup.save();
 };
 
 export const updatePopup = async (
   id: string,
-  payload: Partial<IPopupCampaign>
+  payload: Partial<IPopupCampaign>,
 ): Promise<IPopupCampaign | null> => {
   return await PopupCampaign.findByIdAndUpdate(id, payload, { new: true });
 };
 
-export const deletePopup = async (id: string): Promise<IPopupCampaign | null> => {
+export const deletePopup = async (
+  id: string,
+): Promise<IPopupCampaign | null> => {
   return await PopupCampaign.findByIdAndDelete(id);
 };
 
-export const togglePopup = async (id: string): Promise<IPopupCampaign | null> => {
+export const togglePopup = async (
+  id: string,
+): Promise<IPopupCampaign | null> => {
   const popup = await PopupCampaign.findById(id);
   if (!popup) {
     return null;

@@ -1,37 +1,53 @@
-import { z } from 'zod';
-import { objectIdSchema, checkoutSchema as createBookingSchema, reserveTicketsSchema, checkoutDetailsSchema } from '@mad/validations';
+import { z } from "zod";
+import {
+  objectIdSchema,
+  checkoutSchema as createBookingSchema,
+  reserveTicketsSchema,
+  checkoutDetailsSchema,
+} from "@mad/validations";
 export { createBookingSchema, reserveTicketsSchema, checkoutDetailsSchema };
 
 // ─── Shared Validators ──────────────────────────────────────────
 
 export const bookingReferenceSchema = z
   .string()
-  .regex(/^MAD-\d{4}-[A-Z0-9]{5}$/, 'Invalid booking reference format (expected MAD-YYYY-XXXXX)')
+  .regex(
+    /^MAD-\d{4}-[A-Z0-9]{5}$/,
+    "Invalid booking reference format (expected MAD-YYYY-XXXXX)",
+  )
   .max(20);
 
 // ─── REST Endpoint Payloads ─────────────────────────────────────
 
-export const bookingReferenceParamSchema = z.object({
-  bookingId: bookingReferenceSchema,
-}).strict();
+export const bookingReferenceParamSchema = z
+  .object({
+    bookingId: bookingReferenceSchema,
+  })
+  .strict();
 
-export const listEventsQuerySchema = z.object({
-  category: z.string().max(100).optional(),
-  search: z.string().max(200).optional(),
-  page: z.coerce.number().int().positive().default(1),
-  limit: z.coerce.number().int().positive().default(12),
-}).strict();
+export const listEventsQuerySchema = z
+  .object({
+    category: z.string().max(100).optional(),
+    search: z.string().max(200).optional(),
+    page: z.coerce.number().int().positive().default(1),
+    limit: z.coerce.number().int().positive().default(12),
+  })
+  .strict();
 
-export const getEventSeatLayoutParamSchema = z.object({
-  eventId: objectIdSchema,
-}).strict();
+export const getEventSeatLayoutParamSchema = z
+  .object({
+    eventId: objectIdSchema,
+  })
+  .strict();
 
-export const createPaymentIntentSchema = z.object({
-  bookingId: bookingReferenceSchema,
-  gateway: z.enum(['stripe', 'razorpay'], {
-    errorMap: () => ({ message: "Gateway must be 'stripe' or 'razorpay'" }),
-  }),
-}).strict();
+export const createPaymentIntentSchema = z
+  .object({
+    bookingId: bookingReferenceSchema,
+    gateway: z.enum(["stripe", "razorpay"], {
+      errorMap: () => ({ message: "Gateway must be 'stripe' or 'razorpay'" }),
+    }),
+  })
+  .strict();
 
 export const verifyPaymentSchema = z
   .object({
@@ -44,38 +60,56 @@ export const verifyPaymentSchema = z
   .strict()
   .refine(
     (data) =>
-      (data.razorpay_order_id && data.razorpay_payment_id && data.razorpay_signature) || data.paymentIntentId,
-    { message: 'Stripe paymentIntentId or Razorpay verification fields are required' }
+      (data.razorpay_order_id &&
+        data.razorpay_payment_id &&
+        data.razorpay_signature) ||
+      data.paymentIntentId,
+    {
+      message:
+        "Stripe paymentIntentId or Razorpay verification fields are required",
+    },
   );
 
-export const listReservationsQuerySchema = z.object({
-  status: z.string().max(50).optional(),
-  limit: z.coerce
-    .number()
-    .int()
-    .positive()
-    .default(50)
-    .transform((val) => Math.min(val, 100)),
-}).strict();
+export const listReservationsQuerySchema = z
+  .object({
+    status: z.string().max(50).optional(),
+    limit: z.coerce
+      .number()
+      .int()
+      .positive()
+      .default(50)
+      .transform((val) => Math.min(val, 100)),
+  })
+  .strict();
 
-export const retryFailedJobParamSchema = z.object({
-  id: objectIdSchema,
-}).strict();
+export const retryFailedJobParamSchema = z
+  .object({
+    id: objectIdSchema,
+  })
+  .strict();
 
 // createBookingSchema is imported directly from @mad/validations (as checkoutSchema)
 
 // ─── Socket Event Payloads ──────────────────────────────────────
 
-export const socketEventJoinSchema = z.object({
-  eventId: objectIdSchema,
-}).strict();
+export const socketEventJoinSchema = z
+  .object({
+    eventId: objectIdSchema,
+  })
+  .strict();
 
-export const socketBookingJoinSchema = z.object({
-  bookingId: objectIdSchema,
-}).strict();
+export const socketBookingJoinSchema = z
+  .object({
+    bookingId: objectIdSchema,
+  })
+  .strict();
 
-export const socketSeatActionSchema = z.object({
-  eventId: objectIdSchema,
-  seatIds: z.array(z.string().max(100)).min(1, 'At least one seat must be selected'),
-  sessionId: z.string().uuid('Invalid session UUID format'),
-}).strict();
+export const socketSeatActionSchema = z
+  .object({
+    eventId: objectIdSchema,
+    seatIds: z
+      .array(z.string().max(100))
+      .min(1, "At least one seat must be selected"),
+    sessionId: z.string().uuid("Invalid session UUID format"),
+  })
+  .strict();

@@ -1,6 +1,6 @@
-import { AdminRole } from '@mad/shared';
-import { Request, Response, NextFunction } from 'express';
-import { Types } from 'mongoose';
+import { AdminRole } from "@mad/shared";
+import { Request, Response, NextFunction } from "express";
+import { Types } from "mongoose";
 
 import {
   verifyUserToken,
@@ -9,14 +9,11 @@ import {
   extractBearerToken,
   JwtUserPayload,
   JwtAdminPayload,
-} from '../utils/jwt';
+} from "../utils/jwt";
 
-import { logger } from '../utils/logger';
+import { logger } from "../utils/logger";
 
-import {
-  sendUnauthorized,
-  sendForbidden,
-} from '../utils/response';
+import { sendUnauthorized, sendForbidden } from "../utils/response";
 
 // ─────────────────────────────────────────────
 // Booking Ownership Helper
@@ -24,15 +21,15 @@ import {
 
 export function ensureBookingOwner(
   reqUserId: string | undefined,
-  bookingUserId: Types.ObjectId | undefined
+  bookingUserId: Types.ObjectId | undefined,
 ): void {
   if (bookingUserId) {
     if (!reqUserId) {
-      throw new Error('User not authenticated');
+      throw new Error("User not authenticated");
     }
 
     if (bookingUserId.toString() !== reqUserId) {
-      throw new Error('User does not own the booking');
+      throw new Error("User does not own the booking");
     }
   }
 }
@@ -62,12 +59,12 @@ declare global {
 export function requireAuth(
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): void {
   const token = extractBearerToken(req.headers.authorization);
 
   if (!token) {
-    sendUnauthorized(res, 'Authentication token required');
+    sendUnauthorized(res, "Authentication token required");
     return;
   }
 
@@ -76,9 +73,9 @@ export function requireAuth(
 
     next();
   } catch (err) {
-    logger.debug({ err }, 'Invalid user token');
+    logger.debug({ err }, "Invalid user token");
 
-    sendUnauthorized(res, 'Invalid or expired token');
+    sendUnauthorized(res, "Invalid or expired token");
   }
 }
 
@@ -92,7 +89,7 @@ export function requireAuth(
 export function optionalAuth(
   req: Request,
   _res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): void {
   const token = extractBearerToken(req.headers.authorization);
 
@@ -128,7 +125,7 @@ export function optionalAuth(
     next();
     return;
   } catch (err) {
-    logger.debug({ err }, 'Invalid session token');
+    logger.debug({ err }, "Invalid session token");
   }
 
   next();
@@ -141,12 +138,12 @@ export function optionalAuth(
 export function requireAdmin(
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): void {
   const token = extractBearerToken(req.headers.authorization);
 
   if (!token) {
-    sendUnauthorized(res, 'Admin authentication required');
+    sendUnauthorized(res, "Admin authentication required");
     return;
   }
 
@@ -155,9 +152,9 @@ export function requireAdmin(
 
     next();
   } catch (err) {
-    logger.debug({ err }, 'Invalid admin token');
+    logger.debug({ err }, "Invalid admin token");
 
-    sendUnauthorized(res, 'Invalid or expired admin token');
+    sendUnauthorized(res, "Invalid or expired admin token");
   }
 }
 
@@ -166,21 +163,14 @@ export function requireAdmin(
 // ─────────────────────────────────────────────
 
 export function requireRole(...roles: AdminRole[]) {
-  return (
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ): void => {
+  return (req: Request, res: Response, next: NextFunction): void => {
     if (!req.admin) {
-      sendUnauthorized(res, 'Admin authentication required');
+      sendUnauthorized(res, "Admin authentication required");
       return;
     }
 
     if (!roles.includes(req.admin.role as AdminRole)) {
-      sendForbidden(
-        res,
-        `Access denied. Required role: ${roles.join(' or ')}`
-      );
+      sendForbidden(res, `Access denied. Required role: ${roles.join(" or ")}`);
 
       return;
     }
@@ -196,16 +186,16 @@ export function requireRole(...roles: AdminRole[]) {
 export function requireSuperAdmin(
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): void {
   if (!req.admin) {
-    sendUnauthorized(res, 'Admin authentication required');
+    sendUnauthorized(res, "Admin authentication required");
 
     return;
   }
 
   if (req.admin.role !== AdminRole.SUPER_ADMIN) {
-    sendForbidden(res, 'Super admin access required');
+    sendForbidden(res, "Super admin access required");
 
     return;
   }

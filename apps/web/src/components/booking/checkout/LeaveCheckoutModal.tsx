@@ -1,4 +1,4 @@
-import { useFocusTrap } from '@mad/ui';
+import { useFocusTrap } from "@mad/ui";
 
 interface LeaveCheckoutModalProps {
   isOpen: boolean;
@@ -6,7 +6,11 @@ interface LeaveCheckoutModalProps {
   onConfirm: () => void;
 }
 
-export function LeaveCheckoutModal({ isOpen, onClose, onConfirm }: LeaveCheckoutModalProps) {
+export function LeaveCheckoutModal({
+  isOpen,
+  onClose,
+  onConfirm,
+}: LeaveCheckoutModalProps) {
   const modalRef = useFocusTrap<HTMLDivElement>({
     isActive: isOpen,
     onClose,
@@ -28,12 +32,15 @@ export function LeaveCheckoutModal({ isOpen, onClose, onConfirm }: LeaveCheckout
         className="w-full max-w-sm bg-[#0d111d] rounded-2xl border border-white/10 p-6 space-y-6 text-center shadow-2xl relative z-10 focus:outline-none"
       >
         <div className="space-y-2">
-          <h2 id="leave-modal-title" className="text-xl font-bold text-white">Leave Checkout?</h2>
+          <h2 id="leave-modal-title" className="text-xl font-bold text-white">
+            Leave Checkout?
+          </h2>
           <p className="text-xs text-text-secondary leading-relaxed">
-            Are you sure you want to leave checkout? The items you've selected may not be available later.
+            Are you sure you want to leave checkout? The items you've selected
+            may not be available later.
           </p>
         </div>
-        
+
         <div className="grid grid-cols-2 gap-3 pt-2">
           <button
             type="button"
