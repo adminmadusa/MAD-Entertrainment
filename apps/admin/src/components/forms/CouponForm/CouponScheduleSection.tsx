@@ -13,6 +13,7 @@ export function CouponScheduleSection({ values, onFieldChange }: CouponScheduleS
       <div className="grid grid-cols-2 gap-4">
         <FormField label="Valid From *">
           <input
+            id="coupon-valid-from"
             type="datetime-local"
             value={values.validFrom}
             onChange={(e) => onFieldChange('validFrom', e.target.value)}
@@ -23,6 +24,7 @@ export function CouponScheduleSection({ values, onFieldChange }: CouponScheduleS
 
         <FormField label="Valid Until *">
           <input
+            id="coupon-valid-until"
             type="datetime-local"
             value={values.validUntil}
             onChange={(e) => onFieldChange('validUntil', e.target.value)}

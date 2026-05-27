@@ -24,6 +24,7 @@ export function CouponDetailsSection({ values, onFieldChange }: CouponDetailsSec
 
         <FormField label="Discount Type">
           <select
+            id="coupon-discount-type"
             value={values.discountType}
             onChange={(e) => onFieldChange('discountType', e.target.value as CouponFormValues['discountType'])}
             className={COUPON_INPUT_CLASSNAME}

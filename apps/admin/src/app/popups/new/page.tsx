@@ -1,29 +1,28 @@
 'use client';
 
-import { useMutation } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 
 import { PopupForm } from '@/components/forms/PopupForm';
+import { useFormMutation } from '@/hooks/forms/core';
 import { adminCreatePopup } from '@/lib/api/admin/popup.service';
-import { extractApiError } from '@/lib/api/client';
 import { PopupMutationPayload } from '@/types/popup-form';
 
 export default function CreatePopupPage() {
   const router = useRouter();
 
-  const createMutation = useMutation({
-    mutationFn: (payload: PopupMutationPayload) => adminCreatePopup(payload),
-    onSuccess: () => router.push('/popups'),
+  const createMutation = useFormMutation<PopupMutationPayload, Awaited<ReturnType<typeof adminCreatePopup>>>({
+    mutationFn: (payload) => adminCreatePopup(payload),
+    redirectTo: '/popups',
   });
 
   return (
     <PopupForm
       mode="create"
       isSubmitting={createMutation.isPending}
-      serverError={createMutation.error ? extractApiError(createMutation.error).message : ''}
+      serverError={createMutation.serverError}
       onBack={() => router.back()}
       onSubmitPayload={async (payload) => {
-        await createMutation.mutateAsync(payload);
+        await createMutation.submit(payload);
       }}
     />
   );

@@ -1,12 +1,12 @@
 'use client';
 
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useParams, useRouter } from 'next/navigation';
 
 import { CouponForm } from '@/components/forms/CouponForm';
+import { useFormMutation } from '@/hooks/forms/core';
 import { adminGetCoupon, adminUpdateCoupon } from '@/lib/api/admin/coupon.service';
 import { adminGetEvents } from '@/lib/api/admin/event.service';
-import { extractApiError } from '@/lib/api/client';
 import { CouponMutationPayload } from '@/types/coupon-form';
 
 export default function EditCouponPage() {
@@ -24,9 +24,9 @@ export default function EditCouponPage() {
     queryFn: () => adminGetEvents({ limit: 100 }),
   });
 
-  const updateMutation = useMutation({
-    mutationFn: (payload: CouponMutationPayload) => adminUpdateCoupon(id, payload),
-    onSuccess: () => router.push('/coupons'),
+  const updateMutation = useFormMutation<CouponMutationPayload, Awaited<ReturnType<typeof adminUpdateCoupon>>>({
+    mutationFn: (payload) => adminUpdateCoupon(id, payload),
+    redirectTo: '/coupons',
   });
 
   if (isLoading || !coupon) {
@@ -44,10 +44,10 @@ export default function EditCouponPage() {
       events={eventsData?.items ?? []}
       isLoadingEvents={isLoadingEvents}
       isSubmitting={updateMutation.isPending}
-      serverError={updateMutation.error ? extractApiError(updateMutation.error).message : ''}
+      serverError={updateMutation.serverError}
       onBack={() => router.back()}
       onSubmitPayload={async (payload) => {
-        await updateMutation.mutateAsync(payload);
+        await updateMutation.submit(payload);
       }}
     />
   );

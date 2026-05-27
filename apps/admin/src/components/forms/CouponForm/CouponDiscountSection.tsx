@@ -13,6 +13,7 @@ export function CouponDiscountSection({ values, onFieldChange }: CouponDiscountS
       <div className="grid grid-cols-2 gap-4">
         <FormField label={values.discountType === 'percentage' ? 'Discount Percentage (%) *' : 'Discount Amount (₹) *'}>
           <input
+            id="coupon-discount-value"
             type="number"
             min="0"
             max={values.discountType === 'percentage' ? '100' : undefined}
@@ -25,6 +26,7 @@ export function CouponDiscountSection({ values, onFieldChange }: CouponDiscountS
 
         <FormField label="Max Discount (₹, blank for unlimited)">
           <input
+            id="coupon-max-discount"
             type="number"
             min="0"
             value={values.maxDiscount}

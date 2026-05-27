@@ -12,10 +12,10 @@ export function PopupScheduleSection({ values, onFieldChange }: PopupScheduleSec
     <FormSection title="Schedule">
       <div className="grid grid-cols-2 gap-4">
         <FormField label="Start Date">
-          <input type="datetime-local" value={values.startDate} onChange={(e) => onFieldChange('startDate', e.target.value)} className={POPUP_INPUT_CLASSNAME} />
+          <input id="popup-start-date" type="datetime-local" value={values.startDate} onChange={(e) => onFieldChange('startDate', e.target.value)} className={POPUP_INPUT_CLASSNAME} />
         </FormField>
         <FormField label="End Date">
-          <input type="datetime-local" value={values.endDate} onChange={(e) => onFieldChange('endDate', e.target.value)} className={POPUP_INPUT_CLASSNAME} />
+          <input id="popup-end-date" type="datetime-local" value={values.endDate} onChange={(e) => onFieldChange('endDate', e.target.value)} className={POPUP_INPUT_CLASSNAME} />
         </FormField>
       </div>
     </FormSection>

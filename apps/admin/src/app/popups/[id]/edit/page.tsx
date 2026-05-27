@@ -1,11 +1,11 @@
 'use client';
 
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useParams, useRouter } from 'next/navigation';
 
 import { PopupForm } from '@/components/forms/PopupForm';
+import { useFormMutation } from '@/hooks/forms/core';
 import { adminGetPopup, adminUpdatePopup } from '@/lib/api/admin/popup.service';
-import { extractApiError } from '@/lib/api/client';
 import { PopupMutationPayload } from '@/types/popup-form';
 
 export default function EditPopupPage() {
@@ -18,9 +18,9 @@ export default function EditPopupPage() {
     enabled: !!id,
   });
 
-  const updateMutation = useMutation({
-    mutationFn: (payload: PopupMutationPayload) => adminUpdatePopup(id, payload),
-    onSuccess: () => router.push('/popups'),
+  const updateMutation = useFormMutation<PopupMutationPayload, Awaited<ReturnType<typeof adminUpdatePopup>>>({
+    mutationFn: (payload) => adminUpdatePopup(id, payload),
+    redirectTo: '/popups',
   });
 
   if (isLoading || !popup) {
@@ -36,10 +36,10 @@ export default function EditPopupPage() {
       mode="edit"
       initialPopup={popup}
       isSubmitting={updateMutation.isPending}
-      serverError={updateMutation.error ? extractApiError(updateMutation.error).message : ''}
+      serverError={updateMutation.serverError}
       onBack={() => router.back()}
       onSubmitPayload={async (payload) => {
-        await updateMutation.mutateAsync(payload);
+        await updateMutation.submit(payload);
       }}
     />
   );

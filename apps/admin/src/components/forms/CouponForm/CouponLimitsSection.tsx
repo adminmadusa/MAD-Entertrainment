@@ -13,6 +13,7 @@ export function CouponLimitsSection({ values, onFieldChange }: CouponLimitsSecti
       <div className="grid grid-cols-2 gap-4">
         <FormField label="Min Order Amount (₹)">
           <input
+            id="coupon-min-order"
             type="number"
             min="0"
             value={values.minOrderAmount}
@@ -23,6 +24,7 @@ export function CouponLimitsSection({ values, onFieldChange }: CouponLimitsSecti
 
         <FormField label="Usage Limit (Total times redeemable)">
           <input
+            id="coupon-usage-limit"
             type="number"
             min="1"
             value={values.usageLimit}

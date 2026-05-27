@@ -1,12 +1,12 @@
 'use client';
 
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 
 import { CouponForm } from '@/components/forms/CouponForm';
+import { useFormMutation } from '@/hooks/forms/core';
 import { adminCreateCoupon } from '@/lib/api/admin/coupon.service';
 import { adminGetEvents } from '@/lib/api/admin/event.service';
-import { extractApiError } from '@/lib/api/client';
 import { CouponMutationPayload } from '@/types/coupon-form';
 
 export default function CreateCouponPage() {
@@ -17,9 +17,9 @@ export default function CreateCouponPage() {
     queryFn: () => adminGetEvents({ limit: 100 }),
   });
 
-  const createMutation = useMutation({
-    mutationFn: (payload: CouponMutationPayload) => adminCreateCoupon(payload),
-    onSuccess: () => router.push('/coupons'),
+  const createMutation = useFormMutation<CouponMutationPayload, Awaited<ReturnType<typeof adminCreateCoupon>>>({
+    mutationFn: (payload) => adminCreateCoupon(payload),
+    redirectTo: '/coupons',
   });
 
   return (
@@ -28,10 +28,10 @@ export default function CreateCouponPage() {
       events={eventsData?.items ?? []}
       isLoadingEvents={isLoadingEvents}
       isSubmitting={createMutation.isPending}
-      serverError={createMutation.error ? extractApiError(createMutation.error).message : ''}
+      serverError={createMutation.serverError}
       onBack={() => router.back()}
       onSubmitPayload={async (payload) => {
-        await createMutation.mutateAsync(payload);
+        await createMutation.submit(payload);
       }}
     />
   );
