@@ -38,8 +38,5 @@
     "typescript": "^5.9.3",
     "vite-tsconfig-paths": "^6.1.1",
     "vitest": "^4.1.7"
-  },
-  "dependencies": {
-    "socket.io-client": "^4.8.1"
   }
 }
