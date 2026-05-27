@@ -8,7 +8,7 @@ import morgan from 'morgan';
 import swaggerUi from 'swagger-ui-express';
 
 import { generateOpenApiDocument } from './config/openapi';
-import { getEnv } from './config/env';
+import { getAllowedOrigins, getEnv } from './config/env';
 import { noStoreApiCache } from './middleware/cache.middleware';
 import { correlationMiddleware } from './middleware/correlation.middleware';
 import { errorHandler, notFoundHandler } from './middleware/error.middleware';
@@ -54,7 +54,7 @@ export function createApp(): Application {
   app.use(botMitigation);
 
   // ─── CORS ──────────────────────────────────────────────────
-  const allowedOrigins = env.ALLOWED_ORIGINS.split(',').map((s) => s.trim());
+  const allowedOrigins = getAllowedOrigins();
 
   app.use(
     cors({
@@ -98,7 +98,7 @@ export function createApp(): Application {
   // ─── Body Parsers (Payload size hardening) ────────────────
   app.use(express.json({
     limit: '100kb',
-    verify: (req: any, res, buf) => {
+    verify: (req: any, _res, buf) => {
       if (req.originalUrl && req.originalUrl.includes('/webhook/')) {
         req.rawBody = buf;
       }

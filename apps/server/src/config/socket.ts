@@ -5,7 +5,7 @@ import crypto from 'crypto';
 import { registerAdminSocketHandlers, registerSocketHandlers } from '../sockets';
 import { verifyAdminToken, verifySessionToken, verifyUserToken, extractBearerToken } from '../utils/jwt';
 import { logger } from '../utils/logger';
-import { getEnv } from './env';
+import { getAllowedOrigins } from './env';
 
 let io: SocketIOServer | undefined;
 
@@ -47,7 +47,7 @@ export function getSocketTelemetry(): SocketTelemetry {
 export function initSocketIO(httpServer: Server): SocketIOServer {
   if (io) return io;
 
-  const allowedOrigins = getEnv().ALLOWED_ORIGINS.split(',').map((origin) => origin.trim());
+  const allowedOrigins = getAllowedOrigins();
   io = new SocketIOServer(httpServer, {
     cors: { origin: allowedOrigins, credentials: true },
     pingTimeout: 60000,

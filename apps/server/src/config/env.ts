@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { assertRequiredEnv, parseAllowedOrigins } from './env/validate-env';
 
 const envSchema = z.object({
   NODE_ENV: z
@@ -130,6 +131,16 @@ const envSchema = z.object({
       z.boolean()
     )
     .default(false),
+
+  // ─────────────────────────────────────────
+  // Outbox Worker Tuning
+  // ─────────────────────────────────────────
+  OUTBOX_WORKER_BATCH_SIZE: z.coerce.number().int().min(1).max(500).default(20),
+  OUTBOX_WORKER_POLL_INTERVAL_MS: z.coerce.number().int().min(100).max(60000).default(2000),
+  OUTBOX_WORKER_CONCURRENCY: z.coerce.number().int().min(1).max(64).default(4),
+  OUTBOX_WORKER_HEARTBEAT_MS: z.coerce.number().int().min(100).max(60000).default(5000),
+  OUTBOX_STALE_LOCK_MS: z.coerce.number().int().min(1000).max(3600000).default(60000),
+  OUTBOX_MAX_ATTEMPTS: z.coerce.number().int().min(1).max(50).default(8),
 });
 
 export type Env = z.infer<typeof envSchema>;
@@ -142,6 +153,8 @@ let env: Readonly<Env> | undefined;
 
 export function validateEnv(): Readonly<Env> {
   if (env) return env;
+
+  assertRequiredEnv(process.env);
 
   const result = envSchema.safeParse(process.env);
   if (!result.success) {
@@ -161,4 +174,8 @@ export function validateEnv(): Readonly<Env> {
 
 export function getEnv(): Readonly<Env> {
   return env ?? validateEnv();
+}
+
+export function getAllowedOrigins(): string[] {
+  return parseAllowedOrigins(getEnv().ALLOWED_ORIGINS);
 }
