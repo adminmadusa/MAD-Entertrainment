@@ -127,7 +127,7 @@ export default function EditArtistPage() {
       slug: cleanSlug,
       bio: bio.trim() || undefined,
       genre: genres.length > 0 ? genres : undefined,
-      profileImage: (profileImage === null ? null : profileImage) as any,
+      profileImage: profileImage as any,
       galleryImages,
       socialLinks: links.length > 0 ? links : undefined,
       isActive,

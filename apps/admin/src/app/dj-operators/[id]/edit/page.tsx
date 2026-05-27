@@ -7,7 +7,7 @@ import { useRouter, useParams } from 'next/navigation';
 import { useState, useEffect } from 'react';
 
 import { CloudinaryUpload } from '@/components/CloudinaryUpload';
-import { adminGetDJ, adminUpdateDJ } from '@/lib/api/admin/dj.service';
+import { adminGetDJ, adminUpdateDJ } from '@/lib/api/admin/dj-operator.service';
 import { extractApiError } from '@/lib/api/client';
 
 
@@ -40,7 +40,7 @@ export default function EditDJPage() {
 
   // Fetch current DJ
   const { data: dj, isLoading } = useQuery({
-    queryKey: ['admin-dj', id],
+    queryKey: ['admin-dj-operator', id],
     queryFn: () => adminGetDJ(id),
     enabled: !!id,
   });
@@ -121,7 +121,7 @@ export default function EditDJPage() {
       slug: cleanSlug,
       bio: bio.trim() || undefined,
       specialties: specs.length > 0 ? specs : undefined,
-      profileImage: (profileImage === null ? null : profileImage) as any,
+      profileImage: profileImage as any,
       galleryImages,
       socialLinks: links.length > 0 ? links : undefined,
       isActive,
