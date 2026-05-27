@@ -44,8 +44,8 @@ export function PopupForm({
       : "Save Changes";
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="max-w-3xl mx-auto space-y-6 min-w-0">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h1 className="text-2xl font-black text-white">
             {mode === "create" ? "Create Campaign" : "Edit Campaign"}
@@ -61,7 +61,7 @@ export function PopupForm({
         </div>
         <button
           onClick={onBack}
-          className="text-text-muted text-sm hover:text-text-secondary transition-colors flex items-center gap-1.5"
+          className="text-text-muted text-sm hover:text-text-secondary transition-colors flex items-center gap-1.5 self-start"
         >
           ← Back
         </button>
