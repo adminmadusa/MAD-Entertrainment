@@ -1,6 +1,20 @@
-import { defineWorkspace } from 'vitest/config';
+import { defineWorkspace as maybeDefineWorkspace } from 'vitest/config';
 
-export default defineWorkspace([
+type WorkspaceProject = {
+  test: {
+    name: string;
+    environment: string;
+    include: string[];
+    exclude: string[];
+  };
+};
+
+const defineWorkspaceCompat =
+  typeof maybeDefineWorkspace === 'function'
+    ? maybeDefineWorkspace
+    : (projects: WorkspaceProject[]) => projects;
+
+export default defineWorkspaceCompat([
   {
     test: {
       name: 'unit',
