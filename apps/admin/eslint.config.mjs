@@ -28,7 +28,17 @@ export default [
       'react/jsx-no-undef': 'error',
       'react/no-danger': 'warn',
       'no-dupe-keys': 'error',
+      'no-console': ['warn', { allow: ['warn', 'error'] }],
+      'no-nested-ternary': 'warn',
+      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/ban-ts-comment': ['warn', { 'ts-ignore': true }],
+      'no-restricted-syntax': [
+        'warn',
+        {
+          selector: "CallExpression[callee.object.name='Math'][callee.property.name='random']",
+          message: 'Avoid Math.random for IDs or security-sensitive values.',
+        },
+      ],
     },
   },
 ];
-

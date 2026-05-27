@@ -17,7 +17,6 @@ interface FloatingCountdownProps {
 
 export function FloatingCountdown({ popup, onClose }: FloatingCountdownProps) {
   const [isExpanded, setIsExpanded] = useState(false);
-  const [isMinimized, setIsMinimized] = useState(false);
 
   // We rely on the endDate of the campaign or the linkedEvent's earlyBirdDeadline/startDate
   const targetDate = popup.endDate || popup.linkedEvent?.earlyBirdDeadline || popup.linkedEvent?.startDate;
@@ -44,8 +43,7 @@ export function FloatingCountdown({ popup, onClose }: FloatingCountdownProps) {
         <button
           onClick={(e) => {
             e.stopPropagation();
-            setIsMinimized(true);
-            onClose(); // Notify parent to mark it shown/dismissed if needed
+            onClose();
           }}
           className="absolute top-2 right-2 p-1 text-white/50 hover:text-white bg-white/5 hover:bg-white/10 rounded-full transition-colors z-10"
           aria-label="Minimize widget"
@@ -87,7 +85,7 @@ export function FloatingCountdown({ popup, onClose }: FloatingCountdownProps) {
     </motion.div>
   );
 
-  const expandedModal = (
+  const expandedModal = isExpanded ? (
     <Modal
       isOpen={isExpanded}
       onClose={() => setIsExpanded(false)}
@@ -153,9 +151,6 @@ export function FloatingCountdown({ popup, onClose }: FloatingCountdownProps) {
               href={popup.ctaUrl}
               className="flex-1 py-3.5 btn-gradient text-white font-bold rounded-xl shadow-glow text-center hover:scale-[1.02] transition-transform"
               onClick={() => {
-                // If it's internal navigation, we let standard <a> tag behavior handle it or wrap in Link. 
-                // For simplicity, standard href works for app router if we just let browser navigate, 
-                // but if we used next/link it would be better. We will just close the modal.
                 setIsExpanded(false);
                 onClose();
               }}
@@ -176,12 +171,12 @@ export function FloatingCountdown({ popup, onClose }: FloatingCountdownProps) {
         </div>
       </div>
     </Modal>
-  );
+  ) : null;
 
   return (
     <>
       <AnimatePresence>
-        {!isMinimized && !isExpanded && collapsedWidget}
+        {!isExpanded && collapsedWidget}
       </AnimatePresence>
       {expandedModal}
     </>

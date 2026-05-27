@@ -108,6 +108,8 @@ export type Event = {
   additionalInfo?: string;
   ticketProfileId?: string;
   ticketOverrides?: TicketOverride[];
+  totalCapacity?: number;
+  soldCount?: number;
 };
 
 export type Seat = {
@@ -302,3 +304,12 @@ export type DiagnosticsReport = {
     totalFailedCount: number;
   };
 };
+
+export interface AuthUser {
+  userId: string;
+  email?: string;
+  phone?: string;
+  name?: string;
+  isGuest: boolean;
+}
+

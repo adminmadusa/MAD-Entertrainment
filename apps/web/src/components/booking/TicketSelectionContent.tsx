@@ -9,6 +9,7 @@ import { useState, useEffect, useCallback } from 'react';
 
 import { extractApiError } from '@/lib/api/client';
 import { publicCreateBooking } from '@/lib/api/public.service';
+import { ReserveTicketsInput } from '@mad/validations';
 
 interface TicketSelectionContentProps {
   event: EventData;
@@ -16,10 +17,21 @@ interface TicketSelectionContentProps {
   isModal?: boolean;
   onQuantitiesChange?: (quantities: Record<string, number>, subtotal: number, selectedCount: number) => void;
   // External triggers for checkout when rendered inside a modal
-  checkoutTriggerRef?: React.RefObject<(() => void) | null>;
+  checkoutTriggerRef?: React.MutableRefObject<(() => void) | null>;
   setIsPendingChange?: (isPending: boolean) => void;
   onBookingSuccess?: (bookingId: string) => void;
 }
+
+type TicketTierWithOptionalFields = EventData['ticketTiers'][number] & {
+  groupName?: string;
+  isFree?: boolean;
+  offerRules?: {
+    discountType?: 'none' | 'percentage' | 'flat';
+    discountValue?: number;
+    buyQty?: number;
+    freeTicketQty?: number;
+  };
+};
 
 export function TicketSelectionContent({
   event,
@@ -45,15 +57,11 @@ export function TicketSelectionContent({
       const sessionKey = `mad_checkout_session_${STORAGE_VERSION}`;
       let sess = sessionStorage.getItem(sessionKey);
       if (!sess) {
-        if (typeof window.crypto !== 'undefined' && window.crypto.randomUUID) {
-          sess = window.crypto.randomUUID();
-        } else {
-          sess = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-            const r = (Math.random() * 16) | 0;
-            const v = c === 'x' ? r : (r & 0x3) | 0x8;
-            return v.toString(16);
-          });
+        if (typeof window.crypto === 'undefined' || !window.crypto.randomUUID) {
+          setError('Secure session initialization failed. Please refresh and try again.');
+          return;
         }
+        sess = window.crypto.randomUUID();
         sessionStorage.removeItem('mad_checkout_session');
         sessionStorage.setItem(sessionKey, sess);
       }
@@ -63,7 +71,7 @@ export function TicketSelectionContent({
 
   // Booking Mutation (creates temporary hold/reservation)
   const createBookingMutation = useMutation({
-    mutationFn: (payload: any) => publicCreateBooking(payload, sessionId),
+    mutationFn: (payload: ReserveTicketsInput) => publicCreateBooking(payload, sessionId),
     onSuccess: (booking) => {
       // Close modal before redirecting
       if (onClose) onClose();
@@ -141,16 +149,14 @@ export function TicketSelectionContent({
   // Expose the checkout submit method externally (for modal button clicks)
   useEffect(() => {
     if (checkoutTriggerRef) {
-      // @ts-ignore
       checkoutTriggerRef.current = handleCheckoutSubmit;
     }
     return () => {
       if (checkoutTriggerRef) {
-        // @ts-ignore
         checkoutTriggerRef.current = null;
       }
     };
-  }, [quantities, eventId, sessionId, couponCode, checkoutTriggerRef, handleCheckoutSubmit]);
+  }, [checkoutTriggerRef, handleCheckoutSubmit]);
 
   // Calculate local subtotal estimation for sticky footer
   let selectedCount = 0;
@@ -174,9 +180,10 @@ export function TicketSelectionContent({
 
       {/* Promo Code Block */}
       <form onSubmit={handleApplyCoupon} className="glass rounded-2xl border border-white/5 p-4 space-y-2">
-        <label className="text-xs text-text-secondary font-semibold">Promo Code</label>
+        <label htmlFor="promo-code-input" className="text-xs text-text-secondary font-semibold">Promo Code</label>
         <div className="flex gap-2">
           <input
+            id="promo-code-input"
             type="text"
             value={couponCode}
             onChange={(e) => setCouponCode(e.target.value)}
@@ -199,13 +206,13 @@ export function TicketSelectionContent({
         <h2 className="text-sm font-black uppercase tracking-wider text-text-secondary">Select Tickets</h2>
         <div className="space-y-6">
           {Object.entries(
-            event.ticketTiers.reduce((acc, tier) => {
-              // @ts-ignore
-              const groupName = tier.groupName || 'Passes';
+            event.ticketTiers.reduce<Record<string, TicketTierWithOptionalFields[]>>((acc, tier) => {
+              const tierWithMeta = tier as TicketTierWithOptionalFields;
+              const groupName = tierWithMeta.groupName || 'Passes';
               if (!acc[groupName]) acc[groupName] = [];
-              acc[groupName].push(tier);
+              acc[groupName].push(tierWithMeta);
               return acc;
-            }, {} as Record<string, typeof event.ticketTiers>)
+            }, {})
           ).map(([groupName, tiersInGroup]) => (
             <div key={groupName} className="space-y-3">
               <h3 className="text-xs font-bold uppercase tracking-wider text-accent-purple-light px-1">
@@ -213,9 +220,7 @@ export function TicketSelectionContent({
               </h3>
               <div className="space-y-3">
                 {tiersInGroup.map((tier) => {
-                  // @ts-ignore
                   const isFree = !!tier.isFree || tier.price === 0;
-                  // @ts-ignore
                   const offer = tier.offerRules;
                   const discount = tier.discount || 0;
                   const finalPrice = isFree ? 0 : Math.max(0, tier.price - discount);
@@ -284,7 +289,8 @@ export function TicketSelectionContent({
                         <button
                           type="button"
                           onClick={() => handleQtyChange(tier.tier, -1)}
-                          className="w-8 h-8 rounded-lg hover:bg-white/5 flex items-center justify-center text-white text-sm font-bold active:scale-90 transition-transform"
+                          aria-label={`Decrease ${tier.name} tickets`}
+                          className="w-10 h-10 rounded-lg hover:bg-white/5 flex items-center justify-center text-white text-base font-bold active:scale-90 transition-transform focus:outline-none focus:ring-1 focus:ring-accent-purple"
                         >
                           -
                         </button>
@@ -294,7 +300,8 @@ export function TicketSelectionContent({
                         <button
                           type="button"
                           onClick={() => handleQtyChange(tier.tier, 1)}
-                          className="w-8 h-8 rounded-lg hover:bg-white/5 flex items-center justify-center text-white text-sm font-bold active:scale-90 transition-transform"
+                          aria-label={`Increase ${tier.name} tickets`}
+                          className="w-10 h-10 rounded-lg hover:bg-white/5 flex items-center justify-center text-white text-base font-bold active:scale-90 transition-transform focus:outline-none focus:ring-1 focus:ring-accent-purple"
                         >
                           +
                         </button>

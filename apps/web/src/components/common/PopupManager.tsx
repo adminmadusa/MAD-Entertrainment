@@ -3,6 +3,7 @@
 import { PopupTrigger, POPUP_SESSION_KEY_PREFIX } from '@mad/shared';
 import { PopupCampaign } from '@mad/types';
 import { useQuery } from '@tanstack/react-query';
+import { useFocusTrap } from '@mad/ui';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
@@ -37,9 +38,16 @@ interface PopupModalProps {
 }
 
 function PopupModal({ popup, onClose }: PopupModalProps) {
+  const modalRef = useFocusTrap<HTMLDivElement>({
+    isActive: true,
+    onClose,
+  });
+
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      ref={modalRef}
+      tabIndex={-1}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 focus:outline-none"
       role="dialog"
       aria-modal="true"
       aria-labelledby={`popup-title-${popup._id}`}
@@ -57,7 +65,7 @@ function PopupModal({ popup, onClose }: PopupModalProps) {
         <button
           onClick={onClose}
           aria-label="Close popup"
-          className="absolute top-3 right-3 z-20 w-8 h-8 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white/70 hover:text-white transition-all"
+          className="absolute top-3 right-3 z-20 w-10 h-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white/70 hover:text-white transition-all focus:outline-none focus:ring-2 focus:ring-accent-purple"
         >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
             <path d="M18 6L6 18M6 6l12 12" strokeLinecap="round" />

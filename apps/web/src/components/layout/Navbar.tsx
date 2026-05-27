@@ -35,10 +35,12 @@ export function Navbar() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [isCheckoutOrBook]);
 
-  // Close mobile menu on route change
+  // H-07 FIX: Close mobile menu on every route change.
+  // Previously used [], which only ran once on mount — navigating away left
+  // the menu open on the new page.
   useEffect(() => {
     setMobileOpen(false);
-  }, []);
+  }, [pathname]);
 
   if (isCheckoutOrBook) return null;
 
@@ -82,23 +84,18 @@ export function Navbar() {
 
         {/* Desktop CTA */}
         <div className="hidden md:flex items-center gap-3">
-          <Link href="/my-booking">
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              className="px-4 py-2 text-sm font-medium text-text-secondary hover:text-text-primary transition-colors"
-            >
-              My Booking
-            </motion.button>
+          {/* H-08 FIX: replaced Link>button nesting (invalid HTML) with styled Link */}
+          <Link
+            href="/my-booking"
+            className="px-4 py-2 text-sm font-medium text-text-secondary hover:text-text-primary transition-colors"
+          >
+            My Booking
           </Link>
-          <Link href="/events">
-            <motion.button
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.98 }}
-              className="px-5 py-2.5 text-sm font-semibold btn-gradient text-white rounded-xl shadow-glow-sm"
-            >
-              Book Now
-            </motion.button>
+          <Link
+            href="/events"
+            className="px-5 py-2.5 text-sm font-semibold btn-gradient text-white rounded-xl shadow-glow-sm hover:scale-[1.03] active:scale-95 transition-transform"
+          >
+            Book Now
           </Link>
         </div>
 
@@ -166,15 +163,20 @@ export function Navbar() {
                 </motion.div>
               ))}
               <div className="mt-3 pt-3 border-t border-border-subtle flex flex-col gap-2">
-                <Link href="/my-booking" onClick={() => setMobileOpen(false)}>
-                  <button className="w-full py-3 px-4 text-text-secondary hover:text-text-primary hover:bg-white/5 rounded-xl transition-colors font-medium text-left">
-                    My Booking
-                  </button>
+                {/* H-08 FIX: replaced Link>button nesting with styled Link */}
+                <Link
+                  href="/my-booking"
+                  onClick={() => setMobileOpen(false)}
+                  className="w-full py-3 px-4 text-text-secondary hover:text-text-primary hover:bg-white/5 rounded-xl transition-colors font-medium text-left block"
+                >
+                  My Booking
                 </Link>
-                <Link href="/events" onClick={() => setMobileOpen(false)}>
-                  <button className="w-full py-3 px-4 btn-gradient text-white rounded-xl font-semibold text-center">
-                    Book Now
-                  </button>
+                <Link
+                  href="/events"
+                  onClick={() => setMobileOpen(false)}
+                  className="w-full py-3 px-4 btn-gradient text-white rounded-xl font-semibold text-center block"
+                >
+                  Book Now
                 </Link>
               </div>
             </div>

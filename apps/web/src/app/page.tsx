@@ -1,4 +1,4 @@
-import { ScrollIndicator } from '@mad/ui';
+import { ScrollIndicator, ArrowRight } from '@mad/ui';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Suspense } from 'react';
@@ -18,7 +18,24 @@ export const metadata: Metadata = {
   title: 'MAD Entertrainment — Book Shows, Events & DJ Nights',
   description:
     'Discover and book tickets for the hottest shows, events, DJ nights, concerts, festivals, comedy, and VIP events near you.',
+  alternates: {
+    canonical: 'https://madentertainment.in',
+  },
+  openGraph: {
+    url: 'https://madentertainment.in',
+    images: [
+      {
+        url: '/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'MAD Entertrainment — Premium Event Booking',
+      },
+    ],
+  },
 };
+
+// ISR: revalidate every 60 s so featured events stay fresh without per-request SSR
+export const revalidate = 60;
 
 // ─── Parallel Server Data Loaders ─────────────────────────────────
 
@@ -75,15 +92,15 @@ function HeroSection() {
   return (
     <section
       id="hero"
-      className="relative min-h-screen flex items-center justify-center overflow-hidden"
+      className="relative min-h-[85vh] md:min-h-screen flex items-center justify-center overflow-hidden"
       aria-label="Hero section"
     >
       {/* Animated Background */}
       <div className="absolute inset-0 bg-gradient-hero" />
       <div className="absolute inset-0">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-accent-purple/10 rounded-full blur-[120px] animate-float" />
-        <div className="absolute bottom-1/3 right-1/4 w-80 h-80 bg-accent-pink/10 rounded-full blur-[100px] animate-float-delayed" />
-        <div className="absolute top-1/2 right-1/3 w-64 h-64 bg-accent-cyan/8 rounded-full blur-[80px]" />
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-accent-purple/10 rounded-full blur-[60px] md:blur-[120px] animate-float" />
+        <div className="absolute bottom-1/3 right-1/4 w-80 h-80 bg-accent-pink/10 rounded-full blur-[50px] md:blur-[100px] animate-float-delayed" />
+        <div className="absolute top-1/2 right-1/3 w-64 h-64 bg-accent-cyan/8 rounded-full blur-[40px] md:blur-[80px]" />
       </div>
 
       {/* Grid Pattern */}
@@ -117,22 +134,20 @@ function HeroSection() {
         {/* CTAs */}
         <Reveal delay={0.4}>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/events">
-              <button
-                id="hero-book-now"
-                className="px-8 py-4 btn-gradient text-white font-bold text-lg rounded-2xl shadow-glow inline-flex items-center gap-2 group"
-              >
-                Browse Events
-                <ArrowRight className="group-hover:translate-x-1 transition-transform" />
-              </button>
+            <Link
+              id="hero-book-now"
+              href="/events"
+              className="px-8 py-4 btn-gradient text-white font-bold text-lg rounded-2xl shadow-glow inline-flex items-center gap-2 group"
+            >
+              Browse Events
+              <ArrowRight className="group-hover:translate-x-1 transition-transform" />
             </Link>
-            <Link href="/my-booking">
-              <button
-                id="hero-my-booking"
-                className="px-8 py-4 glass border border-border-subtle hover:border-accent-purple/50 text-text-primary hover:text-white hover:bg-accent-purple/10 font-semibold text-lg rounded-2xl transition-all duration-300 hover:shadow-glow-sm"
-              >
-                My Booking
-              </button>
+            <Link
+              id="hero-my-booking"
+              href="/my-booking"
+              className="px-8 py-4 glass border border-border-subtle hover:border-accent-purple/50 text-text-primary hover:text-white hover:bg-accent-purple/10 font-semibold text-lg rounded-2xl transition-all duration-300 hover:shadow-glow-sm"
+            >
+              My Booking
             </Link>
           </div>
         </Reveal>
@@ -162,10 +177,6 @@ function HeroSection() {
     </section>
   );
 }
-
-// MarqueeBanner is imported dynamically from '@/components/ui/MarqueeBanner'
-
-
 
 // ─── How It Works ─────────────────────────────────────────────
 
@@ -254,16 +265,20 @@ function CTASection() {
                 Join thousands of event-goers booking their next great experience on MAD Entertrainment.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link href="/events">
-                  <button id="cta-browse-events" className="px-10 py-4 btn-gradient text-white font-bold text-lg rounded-2xl shadow-glow inline-flex items-center gap-2 group">
-                    Browse All Events
-                    <ArrowRight className="group-hover:translate-x-1 transition-transform" />
-                  </button>
+                <Link
+                  id="cta-browse-events"
+                  href="/events"
+                  className="px-10 py-4 btn-gradient text-white font-bold text-lg rounded-2xl shadow-glow inline-flex items-center gap-2 group"
+                >
+                  Browse All Events
+                  <ArrowRight className="group-hover:translate-x-1 transition-transform" />
                 </Link>
-                <Link href="/my-booking">
-                  <button id="cta-my-booking" className="px-10 py-4 glass border border-border-subtle hover:border-accent-purple/50 text-text-primary hover:text-white hover:bg-accent-purple/10 font-semibold text-lg rounded-2xl transition-all duration-300 hover:shadow-glow-sm">
-                    Track My Booking
-                  </button>
+                <Link
+                  id="cta-my-booking"
+                  href="/my-booking"
+                  className="px-10 py-4 glass border border-border-subtle hover:border-accent-purple/50 text-text-primary hover:text-white hover:bg-accent-purple/10 font-semibold text-lg rounded-2xl transition-all duration-300 hover:shadow-glow-sm"
+                >
+                  Track My Booking
                 </Link>
               </div>
             </div>
@@ -274,12 +289,3 @@ function CTASection() {
   );
 }
 
-// ─── Icons ────────────────────────────────────────────────────
-
-function ArrowRight({ className = '', size = 16 }: { className?: string; size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className={className}>
-      <path d="M5 12h14M12 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
