@@ -24,6 +24,7 @@ import { Ticket } from "../../models/ticket.schema";
 import { logger } from "../../utils/logger";
 import { auditLog } from "../../utils/audit";
 import { sendEmail } from "../../utils/email";
+import { bookingConfirmationHtml } from "../../lib/email";
 import { generateTicketPDF } from "../../utils/pdf";
 import { ReservationService } from "../reservation.service";
 import { QueueService } from "../queue.service";
@@ -1286,16 +1287,28 @@ export class PaymentService {
 
     // 6. Generate PDF and Send Email asynchronously
     try {
-      const emailBody = `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto;">
-          <h2>Hi ${booking.guestName},</h2>
-          <p>Your booking <strong>${booking.bookingId}</strong> for the event <strong>"${event?.title || "MAD Event"}"</strong> has been successfully confirmed!</p>
-          <p>Please find your ticket attached as a PDF document. You can present the QR code at the gate for entry.</p>
-          <p>Enjoy the show!</p>
-          <br/>
-          <p>MAD Entertainment Team</p>
-        </div>
-      `;
+      const formattedDate = new Date(
+        event?.startDate || booking.createdAt,
+      ).toLocaleDateString("en-IN", {
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      });
+
+      const emailBody = await bookingConfirmationHtml({
+        customerName: booking.guestName,
+        eventTitle: event?.title || "MAD Event",
+        bookingReference: booking.bookingId,
+        eventDate: formattedDate,
+        tickets: booking.tickets.map((t) => ({
+          tierName: t.tierName,
+          quantity: t.quantity,
+          price: t.pricePerTicket,
+        })),
+        totalAmount: booking.totalAmount,
+        currency: booking.currency || "INR",
+      });
 
       // Generate the PDF buffer
       const pdfBuffer = await generateTicketPDF(booking, event);

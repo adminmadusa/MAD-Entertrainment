@@ -1,7 +1,4 @@
-import nodemailer from "nodemailer";
-
-import { getEnv } from "../config/env";
-import { logger } from "./logger";
+import { sendEmail as libSendEmail } from "../lib/email/send-email";
 
 export interface EmailAttachment {
   filename: string;
@@ -16,28 +13,12 @@ export interface SendEmailInput {
   attachments?: EmailAttachment[];
 }
 
+/**
+ * Reusable wrapper that maps the legacy email helper function to the Resend-based sendEmail.
+ * Preserves the exact signature so existing workers/services do not require refactoring.
+ */
 export async function sendEmail(input: SendEmailInput): Promise<void> {
-  const env = getEnv();
-  if (!env.SMTP_HOST || !env.SMTP_PORT) {
-    logger.warn(
-      { to: input.to, subject: input.subject },
-      "SMTP not configured; email skipped",
-    );
-    return;
-  }
-
-  const transporter = nodemailer.createTransport({
-    host: env.SMTP_HOST,
-    port: env.SMTP_PORT,
-    secure: env.SMTP_PORT === 465,
-    auth:
-      env.SMTP_USER && env.SMTP_PASS
-        ? { user: env.SMTP_USER, pass: env.SMTP_PASS }
-        : undefined,
-  });
-
-  await transporter.sendMail({
-    from: env.EMAIL_FROM ?? env.SMTP_USER,
+  await libSendEmail({
     to: input.to,
     subject: input.subject,
     html: input.html,

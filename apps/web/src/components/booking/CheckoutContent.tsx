@@ -231,10 +231,8 @@ export function CheckoutContent({
     mutationFn: (payload: Record<string, unknown>) =>
       publicVerifyPayment(bookingId, payload),
     onSuccess: () => {
-      if (typeof window !== "undefined") {
-        const sessionKey = `mad_checkout_session_${STORAGE_VERSION}`;
-        sessionStorage.removeItem(sessionKey);
-      }
+      // Guest session ID is retained in sessionStorage so the user can reliably
+      // retrieve their newly confirmed tickets in the /my-booking wallet flow.
       allowNavigation();
       setIsProcessing(false);
       setShowSuccess(true);
