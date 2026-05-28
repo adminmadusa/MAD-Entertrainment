@@ -49,6 +49,95 @@ export default function AdminEventsPage() {
   const events = Array.isArray(data?.items) ? data?.items : [];
   const pagination = data?.pagination;
 
+  const renderTableBody = () => {
+    if (isLoading) {
+      return Array.from({ length: 5 }).map((_, i) => (
+        <tr key={i} className="border-b border-border-subtle/50 animate-pulse">
+          <td className="py-4 px-5"><div className="h-4 bg-white/5 rounded w-48" /></td>
+          <td className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-20" /></td>
+          <td className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-24" /></td>
+          <td className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-16" /></td>
+          <td className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-12" /></td>
+          <td className="py-4 px-5"><div className="h-4 bg-white/5 rounded w-20 ml-auto" /></td>
+        </tr>
+      ));
+    }
+
+    if (events.length === 0) {
+      return (
+        <tr>
+          <td colSpan={6} className="py-16 text-center text-text-muted">
+            No events found.{' '}
+            <Link href="/events/new" className="text-accent-purple hover:underline">
+              Create one →
+            </Link>
+          </td>
+        </tr>
+      );
+    }
+
+    return events.map((event) => (
+      <tr key={event._id} className="border-b border-border-subtle/40 hover:bg-white/2 transition-colors">
+        <td className="py-4 px-5">
+          <div className="flex items-center gap-3">
+            {event.coverImage?.url ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={event.coverImage.url} alt={event.title} className="w-10 h-10 rounded-lg object-cover flex-shrink-0" />
+            ) : (
+              <div className="w-10 h-10 rounded-lg bg-accent-purple/10 flex-shrink-0 flex items-center justify-center text-accent-purple text-xs font-bold">
+                {event.title[0]}
+              </div>
+            )}
+            <div className="min-w-0">
+              <p className="text-text-primary font-medium truncate max-w-52">{event.title}</p>
+              <p className="text-text-muted text-xs truncate">{event.slug}</p>
+            </div>
+          </div>
+        </td>
+        <td className="py-4 px-4 capitalize text-text-secondary">{event.category.replace('_', ' ')}</td>
+        <td className="py-4 px-4 text-text-secondary">
+          {new Date(event.startDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+        </td>
+        <td className="py-4 px-4">
+          <select
+            value={event.status}
+            onChange={(e) => statusMutation.mutate({ id: event._id, status: e.target.value })}
+            className={`text-xs px-2.5 py-1 rounded-full border font-medium bg-transparent cursor-pointer ${STATUS_COLORS[event.status] ?? ''}`}
+          >
+            {['draft', 'published', 'cancelled', 'sold_out', 'completed'].map((s) => (
+              <option key={s} value={s} className="bg-background-card text-text-primary">{s.replace('_', ' ')}</option>
+            ))}
+          </select>
+        </td>
+        <td className="py-4 px-4">
+          <button
+            onClick={() => featureMutation.mutate(event._id)}
+            className={`text-lg transition-transform hover:scale-110 ${event.isFeatured ? 'text-yellow-400' : 'text-text-muted'}`}
+            title={event.isFeatured ? 'Remove from featured' : 'Add to featured'}
+          >
+            ★
+          </button>
+        </td>
+        <td className="py-4 px-5">
+          <div className="flex items-center justify-end gap-2">
+            <Link
+              href={`/events/${event._id}/edit`}
+              className="px-3 py-1.5 text-xs font-medium glass border border-border-subtle rounded-lg text-text-secondary hover:text-white hover:border-accent-purple/40 transition-all"
+            >
+              Edit
+            </Link>
+            <button
+              onClick={() => setDeleteTarget(event)}
+              className="px-3 py-1.5 text-xs font-medium glass border border-border-subtle rounded-lg text-text-muted hover:text-red-400 hover:border-red-500/40 transition-all"
+            >
+              Delete
+            </button>
+          </div>
+        </td>
+      </tr>
+    ));
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -106,88 +195,7 @@ export default function AdminEventsPage() {
               </tr>
             </thead>
             <tbody>
-              {isLoading ? (
-                Array.from({ length: 5 }).map((_, i) => (
-                  <tr key={i} className="border-b border-border-subtle/50 animate-pulse">
-                    <td className="py-4 px-5"><div className="h-4 bg-white/5 rounded w-48" /></td>
-                    <td className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-20" /></td>
-                    <td className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-24" /></td>
-                    <td className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-16" /></td>
-                    <td className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-12" /></td>
-                    <td className="py-4 px-5"><div className="h-4 bg-white/5 rounded w-20 ml-auto" /></td>
-                  </tr>
-                ))
-              ) : events.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="py-16 text-center text-text-muted">
-                    No events found.{' '}
-                    <Link href="/events/new" className="text-accent-purple hover:underline">
-                      Create one →
-                    </Link>
-                  </td>
-                </tr>
-              ) : (
-                events.map((event) => (
-                  <tr key={event._id} className="border-b border-border-subtle/40 hover:bg-white/2 transition-colors">
-                    <td className="py-4 px-5">
-                      <div className="flex items-center gap-3">
-                        {event.coverImage?.url ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img src={event.coverImage.url} alt={event.title} className="w-10 h-10 rounded-lg object-cover flex-shrink-0" />
-                        ) : (
-                          <div className="w-10 h-10 rounded-lg bg-accent-purple/10 flex-shrink-0 flex items-center justify-center text-accent-purple text-xs font-bold">
-                            {event.title[0]}
-                          </div>
-                        )}
-                        <div className="min-w-0">
-                          <p className="text-text-primary font-medium truncate max-w-52">{event.title}</p>
-                          <p className="text-text-muted text-xs truncate">{event.slug}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="py-4 px-4 capitalize text-text-secondary">{event.category.replace('_', ' ')}</td>
-                    <td className="py-4 px-4 text-text-secondary">
-                      {new Date(event.startDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
-                    </td>
-                    <td className="py-4 px-4">
-                      <select
-                        value={event.status}
-                        onChange={(e) => statusMutation.mutate({ id: event._id, status: e.target.value })}
-                        className={`text-xs px-2.5 py-1 rounded-full border font-medium bg-transparent cursor-pointer ${STATUS_COLORS[event.status] ?? ''}`}
-                      >
-                        {['draft', 'published', 'cancelled', 'sold_out', 'completed'].map((s) => (
-                          <option key={s} value={s} className="bg-background-card text-text-primary">{s.replace('_', ' ')}</option>
-                        ))}
-                      </select>
-                    </td>
-                    <td className="py-4 px-4">
-                      <button
-                        onClick={() => featureMutation.mutate(event._id)}
-                        className={`text-lg transition-transform hover:scale-110 ${event.isFeatured ? 'text-yellow-400' : 'text-text-muted'}`}
-                        title={event.isFeatured ? 'Remove from featured' : 'Add to featured'}
-                      >
-                        ★
-                      </button>
-                    </td>
-                    <td className="py-4 px-5">
-                      <div className="flex items-center justify-end gap-2">
-                        <Link
-                          href={`/events/${event._id}/edit`}
-                          className="px-3 py-1.5 text-xs font-medium glass border border-border-subtle rounded-lg text-text-secondary hover:text-white hover:border-accent-purple/40 transition-all"
-                        >
-                          Edit
-                        </Link>
-                        <button
-                          onClick={() => setDeleteTarget(event)}
-                          className="px-3 py-1.5 text-xs font-medium glass border border-border-subtle rounded-lg text-text-muted hover:text-red-400 hover:border-red-500/40 transition-all"
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
+              {renderTableBody()}
             </tbody>
           </table>
         </div>

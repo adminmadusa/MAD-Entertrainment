@@ -29,6 +29,55 @@ export default function AdminRefundsPage() {
   const refunds = data?.items ?? [];
   const pagination = data?.pagination;
 
+  const getActionClass = (a: 'approve' | 'reject') => {
+    if (action === a) {
+      return a === 'approve'
+        ? 'bg-green-500/20 border-green-500/50 text-green-400'
+        : 'bg-red-500/20 border-red-500/50 text-red-400';
+    }
+    return 'glass border-border-subtle text-text-secondary';
+  };
+
+  const renderTableBody = () => {
+    if (isLoading) {
+      return Array.from({ length: 5 }).map((_, i) => (
+        <tr key={i} className="border-b border-border-subtle/40 animate-pulse">
+          {Array.from({ length: 6 }).map((__, j) => <td key={j} className="py-4 px-4"><div className="h-3.5 bg-white/5 rounded w-20" /></td>)}
+        </tr>
+      ));
+    }
+
+    if (refunds.length === 0) {
+      return (
+        <tr><td colSpan={6} className="py-16 text-center text-text-muted">No refunds found.</td></tr>
+      );
+    }
+
+    return refunds.map((refund) => (
+      <tr key={refund._id} className="border-b border-border-subtle/40 hover:bg-white/2">
+        <td className="py-3.5 px-4 font-mono text-xs text-accent-purple">
+          {(refund.bookingId as { bookingId?: string })?.bookingId ?? String(refund.bookingId).slice(-8)}
+        </td>
+        <td className="py-3.5 px-4 text-white font-semibold">₹{refund.amount.toLocaleString('en-IN')}</td>
+        <td className="py-3.5 px-4 text-text-secondary max-w-40 truncate">{refund.reason ?? '—'}</td>
+        <td className="py-3.5 px-4">
+          <span className={`text-xs px-2.5 py-1 rounded-full border font-medium ${STATUS_COLORS[refund.status] ?? ''}`}>
+            {refund.status}
+          </span>
+        </td>
+        <td className="py-3.5 px-4 text-text-muted text-xs">{new Date(refund.createdAt).toLocaleDateString('en-IN')}</td>
+        <td className="py-3.5 px-4">
+          {refund.status === 'requested' && (
+            <button onClick={() => setProcessTarget(refund)}
+              className="px-3 py-1.5 text-xs glass border border-accent-purple/30 rounded-lg text-accent-purple hover:bg-accent-purple/10 transition-all">
+              Process
+            </button>
+          )}
+        </td>
+      </tr>
+    ));
+  };
+
   if (error) {
     return (
       <div className="py-12">
@@ -72,35 +121,7 @@ export default function AdminRefundsPage() {
               </tr>
             </thead>
             <tbody>
-              {isLoading ? Array.from({ length: 5 }).map((_, i) => (
-                <tr key={i} className="border-b border-border-subtle/40 animate-pulse">
-                  {Array.from({ length: 6 }).map((__, j) => <td key={j} className="py-4 px-4"><div className="h-3.5 bg-white/5 rounded w-20" /></td>)}
-                </tr>
-              )) : refunds.length === 0 ? (
-                <tr><td colSpan={6} className="py-16 text-center text-text-muted">No refunds found.</td></tr>
-              ) : refunds.map((refund) => (
-                <tr key={refund._id} className="border-b border-border-subtle/40 hover:bg-white/2">
-                  <td className="py-3.5 px-4 font-mono text-xs text-accent-purple">
-                    {(refund.bookingId as { bookingId?: string })?.bookingId ?? String(refund.bookingId).slice(-8)}
-                  </td>
-                  <td className="py-3.5 px-4 text-white font-semibold">₹{refund.amount.toLocaleString('en-IN')}</td>
-                  <td className="py-3.5 px-4 text-text-secondary max-w-40 truncate">{refund.reason ?? '—'}</td>
-                  <td className="py-3.5 px-4">
-                    <span className={`text-xs px-2.5 py-1 rounded-full border font-medium ${STATUS_COLORS[refund.status] ?? ''}`}>
-                      {refund.status}
-                    </span>
-                  </td>
-                  <td className="py-3.5 px-4 text-text-muted text-xs">{new Date(refund.createdAt).toLocaleDateString('en-IN')}</td>
-                  <td className="py-3.5 px-4">
-                    {refund.status === 'requested' && (
-                      <button onClick={() => setProcessTarget(refund)}
-                        className="px-3 py-1.5 text-xs glass border border-accent-purple/30 rounded-lg text-accent-purple hover:bg-accent-purple/10 transition-all">
-                        Process
-                      </button>
-                    )}
-                  </td>
-                </tr>
-              ))}
+              {renderTableBody()}
             </tbody>
           </table>
         </div>
@@ -124,7 +145,7 @@ export default function AdminRefundsPage() {
               <div className="flex gap-3">
                 {(['approve', 'reject'] as const).map((a) => (
                   <button key={a} onClick={() => setAction(a)}
-                    className={`flex-1 py-2 rounded-xl text-sm font-medium border transition-all capitalize ${action === a ? (a === 'approve' ? 'bg-green-500/20 border-green-500/50 text-green-400' : 'bg-red-500/20 border-red-500/50 text-red-400') : 'glass border-border-subtle text-text-secondary'}`}>
+                    className={`flex-1 py-2 rounded-xl text-sm font-medium border transition-all capitalize ${getActionClass(a)}`}>
                     {a}
                   </button>
                 ))}

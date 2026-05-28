@@ -32,6 +32,12 @@ export default function DiagnosticsPage() {
 
   const hasDrift = !!report && Object.values(report.drift).some((value) => value > 0);
 
+  const getDriftMessage = () => {
+    if (isLoading) return 'Checking consistency...';
+    if (hasDrift) return 'Drift detected';
+    return 'No inventory drift detected';
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between gap-4">
@@ -53,7 +59,7 @@ export default function DiagnosticsPage() {
 
       <div className={`rounded-2xl border p-4 ${hasDrift ? 'border-yellow-500/30 bg-yellow-500/10' : 'border-green-500/30 bg-green-500/10'}`}>
         <div className="text-sm font-bold text-white">
-          {isLoading ? 'Checking consistency...' : hasDrift ? 'Drift detected' : 'No inventory drift detected'}
+          {getDriftMessage()}
         </div>
         <div className="text-xs text-text-muted mt-1">
           Last report: {report?.generatedAt ? new Date(report.generatedAt).toLocaleString('en-IN') : '-'}
@@ -124,8 +130,15 @@ export default function DiagnosticsPage() {
 }
 
 function MetricCard({ label, value, tone }: { label: string; value: number; tone?: 'ok' | 'warn' }) {
+  let borderClass = 'border-border-subtle';
+  if (tone === 'warn') {
+    borderClass = 'border-yellow-500/30';
+  } else if (tone === 'ok') {
+    borderClass = 'border-green-500/30';
+  }
+
   return (
-    <div className={`glass rounded-xl border p-4 ${tone === 'warn' ? 'border-yellow-500/30' : tone === 'ok' ? 'border-green-500/30' : 'border-border-subtle'}`}>
+    <div className={`glass rounded-xl border p-4 ${borderClass}`}>
       <div className="text-[10px] uppercase tracking-wider text-text-muted">{label.replace(/([A-Z])/g, ' $1')}</div>
       <div className="text-2xl font-black text-white mt-2">{value.toLocaleString('en-IN')}</div>
     </div>
