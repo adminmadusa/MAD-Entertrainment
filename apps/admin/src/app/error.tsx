@@ -1,5 +1,8 @@
 "use client";
 
+import { useEffect } from "react";
+import * as Sentry from "@sentry/nextjs";
+
 import ErrorBoundary from "@/components/ErrorBoundary";
 
 export default function GlobalError({
@@ -9,6 +12,15 @@ export default function GlobalError({
   error: Error;
   reset: () => void;
 }) {
+  useEffect(() => {
+    // Report to Sentry when DSN is configured; fall back to console in dev.
+    if (process.env.NEXT_PUBLIC_SENTRY_DSN) {
+      Sentry.captureException(error);
+    } else {
+      console.error("[MAD Admin Error Boundary]", error);
+    }
+  }, [error]);
+
   return (
     <div className="bg-background text-text-primary antialiased min-h-screen flex items-center justify-center">
       <ErrorBoundary>
