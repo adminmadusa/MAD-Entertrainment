@@ -85,4 +85,11 @@ router.use("/admin/notifications", adminNotificationRoutes);
 router.use("/admin/team", adminTeamRoutes);
 router.use("/admin/scanner", adminScannerRoutes);
 
+// ─── Dev: Email testing (development only) ───────────────────
+if (process.env.NODE_ENV !== "production") {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const devEmailRoutes = require("./admin/dev-email.routes").default;
+  router.use("/admin/dev", devEmailRoutes);
+}
+
 export default router;
