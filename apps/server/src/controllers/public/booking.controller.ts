@@ -161,3 +161,31 @@ export async function saveCheckoutDetails(
     next(err);
   }
 }
+
+// ─────────────────────────────────────────────
+// Resend Tickets
+// ─────────────────────────────────────────────
+
+export async function resendTickets(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> {
+  try {
+    const { bookingId } = req.params;
+    const { email } = req.body;
+    const sessionId = req.header("x-session-id") || undefined;
+    const userId = req.user?.sub;
+
+    const booking = await PublicBookingService.resendTickets(
+      bookingId,
+      email,
+      sessionId,
+      userId,
+    );
+
+    sendSuccess(res, booking, "Tickets resent successfully");
+  } catch (err) {
+    next(err);
+  }
+}

@@ -16,6 +16,7 @@ import {
   publicCreatePaymentIntent,
   publicVerifyPayment,
   publicSaveCheckoutDetails,
+  publicResendTickets,
 } from "@/lib/api/public.service";
 import { CheckoutDetailsInput } from "@mad/validations";
 
@@ -115,11 +116,11 @@ export function CheckoutContent({
 
   // Redirect if already confirmed
   useEffect(() => {
-    if (booking && booking.status === "confirmed") {
+    if (booking && booking.status === "confirmed" && !showSuccess) {
       allowNavigation();
       router.push(`/my-booking?ref=${booking.bookingId}`);
     }
-  }, [booking, router, allowNavigation]);
+  }, [booking, router, allowNavigation, showSuccess]);
 
   const countdown = useCountdown(booking?.expiresAt);
   const isExpired = countdown.isExpired;
@@ -245,33 +246,50 @@ export function CheckoutContent({
     },
   });
 
+  const resendTicketsMutation = useMutation({
+    mutationFn: (email: string) => {
+      let sess: string | undefined;
+      if (typeof window !== "undefined") {
+        const sessionKey = `mad_checkout_session_${STORAGE_VERSION}`;
+        sess = sessionStorage.getItem(sessionKey) || undefined;
+      }
+      return publicResendTickets(bookingId, email, sess);
+    },
+    onSuccess: (updatedBooking) => {
+      if (updatedBooking?.guestEmail) {
+        setDeliveryEmail(updatedBooking.guestEmail);
+      }
+      setResendStep("success");
+    },
+    onError: (err: any) => {
+      setResendError(extractApiError(err).message);
+      setResendStep("failed");
+    },
+  });
+
   const handleFormSubmit = (detailsPayload: CheckoutDetailsInput) => {
     saveDetailsMutation.mutate(detailsPayload);
   };
 
   if (showSuccess) {
-    const handleSimulatedResend = (e: React.FormEvent) => {
-      e.preventDefault();
-      if (!resendEmailInput.trim()) {
+    const triggerResend = (email: string) => {
+      const emailToUse = email.trim();
+      if (!emailToUse) {
         setResendError("Email address is required");
         return;
       }
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(resendEmailInput)) {
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailToUse)) {
         setResendError("Invalid email format");
         return;
       }
       setResendError("");
       setResendStep("sending");
+      resendTicketsMutation.mutate(emailToUse);
+    };
 
-      // Simulate API call for 1.5 seconds
-      setTimeout(() => {
-        if (resendEmailInput.trim().toLowerCase() === "fail@example.com") {
-          setResendStep("failed");
-        } else {
-          setDeliveryEmail(resendEmailInput.trim().toLowerCase());
-          setResendStep("success");
-        }
-      }, 1500);
+    const handleActualResend = (e: React.FormEvent) => {
+      e.preventDefault();
+      triggerResend(resendEmailInput);
     };
 
     const containerClasses = isModal
@@ -367,10 +385,7 @@ export function CheckoutContent({
           )}
 
           {resendStep === "edit" && (
-            <form
-              onSubmit={handleSimulatedResend}
-              className="space-y-5 text-left"
-            >
+            <form onSubmit={handleActualResend} className="space-y-5 text-left">
               <div className="text-center space-y-1">
                 <h3 className="text-lg font-black text-white">
                   Resend Tickets
@@ -528,12 +543,7 @@ export function CheckoutContent({
                 <button
                   type="button"
                   onClick={() => {
-                    setResendError("");
-                    setResendStep("sending");
-                    setTimeout(() => {
-                      setDeliveryEmail(resendEmailInput.trim().toLowerCase());
-                      setResendStep("success");
-                    }, 1500);
+                    triggerResend(resendEmailInput);
                   }}
                   className="flex-1 py-3 btn-gradient text-white rounded-xl font-bold text-xs shadow-glow transition-transform active:scale-95 text-center focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple"
                 >

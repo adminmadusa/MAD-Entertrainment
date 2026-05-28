@@ -6,6 +6,7 @@ import {
   getMyBookings,
   getSessionToken,
   saveCheckoutDetails,
+  resendTickets,
 } from "../../controllers/public/booking.controller";
 
 import { requireAuth, optionalAuth } from "../../middleware/auth.middleware";
@@ -19,6 +20,7 @@ import {
   reserveTicketsSchema,
   checkoutDetailsSchema,
   bookingReferenceParamSchema,
+  resendTicketsSchema,
 } from "../../validations/payment.validation";
 
 const router: Router = Router();
@@ -70,6 +72,14 @@ router.get(
   optionalAuth,
   validateParams(bookingReferenceParamSchema),
   getBooking,
+);
+
+router.post(
+  "/:bookingId/resend",
+  optionalAuth,
+  validateParams(bookingReferenceParamSchema),
+  validateBody(resendTicketsSchema),
+  resendTickets,
 );
 
 export default router;

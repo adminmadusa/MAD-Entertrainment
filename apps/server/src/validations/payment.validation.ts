@@ -113,3 +113,9 @@ export const socketSeatActionSchema = z
     sessionId: z.string().uuid("Invalid session UUID format"),
   })
   .strict();
+
+export const resendTicketsSchema = z
+  .object({
+    email: z.string().email("Invalid email format"),
+  })
+  .strict();

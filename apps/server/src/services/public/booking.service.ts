@@ -3,6 +3,7 @@ import {
   BookingMode,
   ReservationStatus,
   SeatStatus,
+  NotificationType,
 } from "@mad/shared";
 import { Types } from "mongoose";
 
@@ -15,8 +16,11 @@ import { Event } from "../../models/event.schema";
 import { IReservation } from "../../models/reservation.schema";
 import { SeatLayout } from "../../models/seat-layout.schema";
 import { Ticket } from "../../models/ticket.schema";
+import { Notification } from "../../models/notification.schema";
 import { logger } from "../../utils/logger";
 import { auditLog } from "../../utils/audit";
+import { generateTicketPDF } from "../../utils/pdf";
+import { sendEmail } from "../../utils/email";
 import { ReservationService } from "../reservation.service";
 
 export class PublicBookingService {
@@ -578,6 +582,122 @@ export class PublicBookingService {
         "Admin socket emit skipped for booking update",
       );
     }
+
+    return booking;
+  }
+
+  static async resendTickets(
+    bookingId: string,
+    newEmail: string,
+    sessionId: string | undefined,
+    userId: string | undefined,
+  ): Promise<IBooking> {
+    const result = await PublicBookingService.getBookingByReference(bookingId);
+    if (!result) {
+      throw AppError.notFound("Booking not found");
+    }
+
+    const { booking } = result;
+
+    // Validate ownership
+    const isUserOwner =
+      !!booking.userId && !!userId && booking.userId.toString() === userId;
+    const isGuestOwner =
+      !!booking.sessionId && !!sessionId && booking.sessionId === sessionId;
+    if (!isUserOwner && !isGuestOwner) {
+      throw AppError.forbidden("You do not have access to this booking");
+    }
+
+    // Validate booking status is confirmed (paid/successful and active)
+    if (booking.status !== BookingStatus.CONFIRMED) {
+      throw AppError.badRequest(
+        `Tickets can only be resent for confirmed bookings (current status: ${booking.status})`,
+      );
+    }
+
+    const emailToUse = newEmail.toLowerCase().trim();
+    const oldEmail = booking.guestEmail;
+    const hasEmailChanged = oldEmail !== emailToUse;
+
+    if (hasEmailChanged) {
+      booking.guestEmail = emailToUse;
+      booking.guestEmailConfirm = emailToUse;
+      booking.bookingVersion += 1;
+      await booking.save();
+
+      // Audit log the email change
+      auditLog({
+        action: "BOOKING_EMAIL_UPDATED",
+        actor: userId
+          ? { type: "user", id: userId }
+          : { type: "guest", id: sessionId },
+        status: "success",
+        metadata: {
+          bookingId: booking._id.toString(),
+          bookingReference: booking.bookingId,
+          oldEmail,
+          newEmail: emailToUse,
+        },
+        description: `Updated delivery email for booking ${booking.bookingId} from ${oldEmail} to ${emailToUse}`,
+      });
+    }
+
+    const event = booking.eventId as any;
+
+    const emailBody = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto;">
+        <h2>Hi ${booking.guestName},</h2>
+        <p>Your booking <strong>${booking.bookingId}</strong> for the event <strong>"${event?.title || "MAD Event"}"</strong> has been successfully confirmed!</p>
+        <p>Please find your ticket attached as a PDF document. You can present the QR code at the gate for entry.</p>
+        <p>Enjoy the show!</p>
+        <br/>
+        <p>MAD Entertainment Team</p>
+      </div>
+    `;
+
+    // Generate the PDF buffer
+    const pdfBuffer = await generateTicketPDF(booking, event);
+
+    // Send email
+    await sendEmail({
+      to: emailToUse,
+      subject: `Your Ticket for ${event?.title || "MAD Event"} [${booking.bookingId}]`,
+      html: emailBody,
+      attachments: [
+        {
+          filename: `MAD_Ticket_${booking.bookingId}.pdf`,
+          content: pdfBuffer,
+          contentType: "application/pdf",
+        },
+      ],
+    });
+
+    // Log the notification
+    await Notification.create({
+      type: NotificationType.BOOKING_CONFIRMED,
+      bookingId: booking._id,
+      eventId: booking.eventId,
+      channel: "email",
+      recipient: emailToUse,
+      subject: `Booking Confirmed (Resend): ${booking.bookingId}`,
+      body: "Email resent with PDF ticket attached.",
+      isSent: true,
+      retryCount: 0,
+    });
+
+    auditLog({
+      action: "BOOKING_TICKETS_RESENT",
+      actor: userId
+        ? { type: "user", id: userId }
+        : { type: "guest", id: sessionId },
+      status: "success",
+      metadata: {
+        bookingId: booking._id.toString(),
+        bookingReference: booking.bookingId,
+        recipient: emailToUse,
+      },
+      description: `Resent ticket PDF for booking ${booking.bookingId} to ${emailToUse}`,
+    });
 
     return booking;
   }

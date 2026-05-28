@@ -427,3 +427,20 @@ export async function publicGetCategories(): Promise<PublicCategory[]> {
   );
   return Array.isArray(data?.data) ? data.data : [];
 }
+
+export async function publicResendTickets(
+  bookingId: string,
+  email: string,
+  sessionId?: string,
+): Promise<Booking> {
+  const headers: Record<string, string> = {};
+  if (sessionId) {
+    headers["x-session-id"] = sessionId;
+  }
+  const { data } = await apiClient.post<{ data: Booking }>(
+    `/bookings/${bookingId}/resend`,
+    { email },
+    { headers },
+  );
+  return data.data;
+}
