@@ -45,14 +45,14 @@ export function LeaveCheckoutModal({
           <button
             type="button"
             onClick={onClose}
-            className="px-5 py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold text-sm transition-colors"
+            className="px-5 py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold text-sm transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:border-transparent"
           >
             Stay
           </button>
           <button
             type="button"
             onClick={onConfirm}
-            className="px-5 py-3 rounded-xl bg-gradient-to-r from-accent-purple to-accent-pink hover:from-accent-purple-light hover:to-accent-pink/80 text-white font-bold text-sm transition-colors shadow-glow"
+            className="px-5 py-3 rounded-xl bg-gradient-to-r from-accent-purple to-accent-pink hover:from-accent-purple-light hover:to-accent-pink/80 text-white font-bold text-sm transition-colors shadow-glow focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:border-transparent"
           >
             Leave
           </button>

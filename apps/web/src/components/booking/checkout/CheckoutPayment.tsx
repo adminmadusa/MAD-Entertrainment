@@ -16,7 +16,7 @@ export function CheckoutPayment({
       <div className="space-y-2.5">
         {/* Razorpay — primary supported gateway */}
         <label
-          className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all ${
+          className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all focus-within:ring-2 focus-within:ring-accent-purple/50 ${
             selectedGateway === "razorpay"
               ? "bg-accent-purple/10 border-accent-purple"
               : "bg-white/2 border-white/5 hover:border-white/10"
@@ -43,7 +43,7 @@ export function CheckoutPayment({
         {/* Stripe — shown only when explicitly enabled via env flag */}
         {process.env.NEXT_PUBLIC_STRIPE_ENABLED === "true" && (
           <label
-            className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all ${
+            className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all focus-within:ring-2 focus-within:ring-accent-purple/50 ${
               selectedGateway === "stripe"
                 ? "bg-[#a855f7]/10 border-accent-purple"
                 : "bg-white/2 border-white/5 hover:border-white/10"
