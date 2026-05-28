@@ -28,8 +28,11 @@ export const getEvents = async (
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
     // Normalize the status query param – treat empty strings/whitespace as undefined
-  const rawStatus = typeof req.query.status === "string" ? req.query.status.trim() : undefined;
-  const status = rawStatus && rawStatus.length > 0 ? rawStatus : undefined;
+    const rawStatus =
+      typeof req.query.status === "string"
+        ? req.query.status.trim()
+        : undefined;
+    const status = rawStatus && rawStatus.length > 0 ? rawStatus : undefined;
     const result = await eventService.getEvents(page, limit, status);
     res.status(200).json({
       success: true,
