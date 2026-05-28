@@ -24,6 +24,7 @@ import { LeaveCheckoutModal } from './checkout/LeaveCheckoutModal';
 import { CheckoutForm } from './checkout/CheckoutForm';
 import { CheckoutPricing } from './checkout/CheckoutPricing';
 import { CheckoutPayment } from './checkout/CheckoutPayment';
+import { CheckoutAuthCard } from './CheckoutAuthCard';
 
 interface RazorpayInstance {
   open(): void;
@@ -298,6 +299,9 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
                 </div>
               </div>
             )}
+
+            {/* Optional Eventbrite-Style Authentication Card */}
+            <CheckoutAuthCard />
 
             {/* Billing Information Form */}
             <CheckoutForm
