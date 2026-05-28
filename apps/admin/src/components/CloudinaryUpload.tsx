@@ -167,7 +167,7 @@ export function CloudinaryUpload({
           }
           className={[
             `${aspectRatio} min-h-[140px] rounded-xl border-2 border-dashed flex flex-col items-center justify-center gap-3`,
-            "cursor-pointer transition-all motion-reduce:transition-none duration-200",
+            "cursor-pointer transition-colors motion-reduce:transition-none duration-200",
             isDragging
               ? "border-accent-purple bg-accent-purple/10"
               : "border-border-subtle hover:border-accent-purple/50 hover:bg-white/2",
@@ -191,7 +191,7 @@ export function CloudinaryUpload({
             <div className="text-center space-y-3 px-4">
               <div className="w-full h-1.5 bg-background-card rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-gradient-brand rounded-full transition-all motion-reduce:transition-none duration-300"
+                  className="h-full bg-gradient-brand rounded-full transition-[width] motion-reduce:transition-none duration-300"
                   style={{ width: `${progress}%` }}
                 />
               </div>

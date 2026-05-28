@@ -364,7 +364,7 @@ export default function EditArtistPage() {
             id="artist-submit"
             type="submit"
             disabled={updateMutation.isPending}
-            className="w-full sm:flex-1 py-3 btn-gradient text-white font-bold rounded-xl shadow-glow-sm disabled:opacity-60 transition-all"
+            className="w-full sm:flex-1 py-3 btn-gradient text-white font-bold rounded-xl shadow-glow-sm disabled:opacity-60 transition-colors"
           >
             {updateMutation.isPending ? "Saving Changes..." : "Save Changes"}
           </button>

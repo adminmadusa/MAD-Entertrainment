@@ -194,7 +194,7 @@ export default function AdminBookingsPage() {
                 Array.from({ length: 6 }).map((_, i) => (
                   <tr
                     key={i}
-                    className="border-b border-border-subtle/40 animate-pulse"
+                    className="border-b border-border-subtle/40 animate-pulse motion-reduce:animate-none"
                   >
                     {Array.from({ length: 7 }).map((__, j) => (
                       <td key={j} className="py-4 px-4">
@@ -265,7 +265,7 @@ export default function AdminBookingsPage() {
                               e.stopPropagation();
                               setCancelTarget(booking);
                             }}
-                            className="px-3 py-1.5 text-xs glass border border-border-subtle rounded-lg text-text-muted hover:text-red-400 hover:border-red-500/40 transition-all"
+                            className="px-3 py-1.5 text-xs glass border border-border-subtle rounded-lg text-text-muted hover:text-red-400 hover:border-red-500/40 transition-colors motion-reduce:transition-none"
                           >
                             Cancel
                           </button>

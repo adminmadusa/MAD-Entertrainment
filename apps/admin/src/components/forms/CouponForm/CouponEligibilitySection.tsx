@@ -40,7 +40,7 @@ export function CouponEligibilitySection({
                   type="button"
                   key={category}
                   onClick={() => onToggleCategory(category)}
-                  className={`px-3 py-2 text-xs rounded-xl border font-medium text-left transition-all ${
+                  className={`px-3 py-2 text-xs rounded-xl border font-medium text-left transition-colors ${
                     isSelected
                       ? "bg-accent-purple/10 border-accent-purple text-white"
                       : "bg-white/2 border-white/5 text-text-muted hover:border-white/10 hover:text-text-secondary"
@@ -71,7 +71,7 @@ export function CouponEligibilitySection({
                   <div
                     key={event._id}
                     onClick={() => onToggleEvent(event._id)}
-                    className={`flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer transition-all ${
+                    className={`flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer transition-colors ${
                       isSelected
                         ? "bg-accent-purple/10 text-white"
                         : "hover:bg-white/5 text-text-secondary"

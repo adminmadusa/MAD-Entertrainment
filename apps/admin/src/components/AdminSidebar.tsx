@@ -163,7 +163,7 @@ export function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps) {
                       href={item.href}
                       title={collapsed ? item.label : undefined}
                       className={[
-                        "flex items-center gap-3 px-2 py-2.5 rounded-xl transition-all duration-150 group relative",
+                        "flex items-center gap-3 px-2 py-2.5 rounded-xl transition-colors duration-150 group relative",
                         active
                           ? "bg-accent-purple/15 text-accent-purple-light"
                           : "text-text-secondary hover:text-text-primary hover:bg-white/5",
