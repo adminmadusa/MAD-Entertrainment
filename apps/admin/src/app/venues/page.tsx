@@ -4,7 +4,7 @@ import { Venue } from "@mad/types";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import {
   adminGetVenues,
@@ -18,21 +18,50 @@ import ErrorState from "@/components/states/ErrorState";
 export default function AdminVenuesPage() {
   const qc = useQueryClient();
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [cityFilter, setCityFilter] = useState("");
+  const [debouncedCityFilter, setDebouncedCityFilter] = useState("");
   const [page, setPage] = useState(1);
   const [deleteTarget, setDeleteTarget] = useState<Venue | null>(null);
 
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 300);
+    return () => clearTimeout(handler);
+  }, [search]);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedCityFilter(cityFilter);
+    }, 300);
+    return () => clearTimeout(handler);
+  }, [cityFilter]);
+
   const { data, isLoading, error } = useQuery({
-    queryKey: venueQueryKey({ page, search, city: cityFilter }),
+    queryKey: venueQueryKey({
+      page,
+      search: debouncedSearch,
+      city: debouncedCityFilter,
+    }),
     queryFn: () =>
-      adminGetVenues({ page, limit: 15, search, city: cityFilter }),
+      adminGetVenues({
+        page,
+        limit: 15,
+        search: debouncedSearch,
+        city: debouncedCityFilter,
+      }),
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => adminDeleteVenue(id),
     onSuccess: () => {
       qc.invalidateQueries({
-        queryKey: venueQueryKey({ page, search, city: cityFilter }),
+        queryKey: venueQueryKey({
+          page,
+          search: debouncedSearch,
+          city: debouncedCityFilter,
+        }),
       });
       setDeleteTarget(null);
     },
@@ -43,7 +72,11 @@ export default function AdminVenuesPage() {
       adminUpdateVenue(id, { isActive }),
     onSuccess: () =>
       qc.invalidateQueries({
-        queryKey: venueQueryKey({ page, search, city: cityFilter }),
+        queryKey: venueQueryKey({
+          page,
+          search: debouncedSearch,
+          city: debouncedCityFilter,
+        }),
       }),
   });
 

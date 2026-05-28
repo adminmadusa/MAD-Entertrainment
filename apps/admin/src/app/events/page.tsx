@@ -3,7 +3,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import {
   adminGetEvents,
@@ -25,14 +25,30 @@ const STATUS_COLORS: Record<string, string> = {
 export default function AdminEventsPage() {
   const qc = useQueryClient();
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [page, setPage] = useState(1);
   const [deleteTarget, setDeleteTarget] = useState<AdminEvent | null>(null);
 
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 300);
+    return () => clearTimeout(handler);
+  }, [search]);
+
   const { data, isLoading } = useQuery({
-    queryKey: ["admin-events", { page, search, status: statusFilter }],
+    queryKey: [
+      "admin-events",
+      { page, search: debouncedSearch, status: statusFilter },
+    ],
     queryFn: () =>
-      adminGetEvents({ page, limit: 15, search, status: statusFilter }),
+      adminGetEvents({
+        page,
+        limit: 15,
+        search: debouncedSearch,
+        status: statusFilter,
+      }),
   });
 
   const deleteMutation = useMutation({

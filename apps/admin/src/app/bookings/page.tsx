@@ -2,7 +2,7 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import {
   adminGetBookings,
@@ -21,6 +21,7 @@ const STATUS_COLORS: Record<string, string> = {
 export default function AdminBookingsPage() {
   const qc = useQueryClient();
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [page, setPage] = useState(1);
   const [cancelTarget, setCancelTarget] = useState<AdminBooking | null>(null);
@@ -29,13 +30,23 @@ export default function AdminBookingsPage() {
     null,
   );
 
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 300);
+    return () => clearTimeout(handler);
+  }, [search]);
+
   const { data, isLoading, error } = useQuery({
-    queryKey: ["admin-bookings", { page, search, status: statusFilter }],
+    queryKey: [
+      "admin-bookings",
+      { page, search: debouncedSearch, status: statusFilter },
+    ],
     queryFn: () =>
       adminGetBookings({
         page,
         limit: 15,
-        ...(search && { search }),
+        ...(debouncedSearch && { search: debouncedSearch }),
         ...(statusFilter && { status: statusFilter }),
       }),
   });

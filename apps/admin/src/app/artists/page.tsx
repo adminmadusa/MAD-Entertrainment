@@ -4,7 +4,7 @@ import { Artist } from "@mad/types";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import {
   adminGetArtists,
@@ -17,12 +17,21 @@ import ErrorState from "@/components/states/ErrorState";
 export default function AdminArtistsPage() {
   const qc = useQueryClient();
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [page, setPage] = useState(1);
   const [deleteTarget, setDeleteTarget] = useState<Artist | null>(null);
 
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 300);
+    return () => clearTimeout(handler);
+  }, [search]);
+
   const { data, isLoading, error } = useQuery({
-    queryKey: ["admin-artists", { page, search }],
-    queryFn: () => adminGetArtists({ page, limit: 15, search }),
+    queryKey: ["admin-artists", { page, search: debouncedSearch }],
+    queryFn: () =>
+      adminGetArtists({ page, limit: 15, search: debouncedSearch }),
   });
 
   const deleteMutation = useMutation({
