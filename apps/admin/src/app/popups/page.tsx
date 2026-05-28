@@ -37,6 +37,93 @@ export default function AdminPopupsPage() {
   const popups = data?.items ?? [];
   const pagination = data?.pagination;
 
+  const renderTableBody = () => {
+    if (isLoading) {
+      return Array.from({ length: 5 }).map((_, i) => (
+        <tr key={i} className="border-b border-border-subtle/50 animate-pulse">
+          <td className="py-4 px-5"><div className="h-4 bg-white/5 rounded w-48" /></td>
+          <td className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-28" /></td>
+          <td className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-16" /></td>
+          <td className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-12" /></td>
+          <td className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-16" /></td>
+          <td className="py-4 px-5"><div className="h-4 bg-white/5 rounded w-20 ml-auto" /></td>
+        </tr>
+      ));
+    }
+
+    if (popups.length === 0) {
+      return (
+        <tr>
+          <td colSpan={6} className="py-16 text-center text-text-muted">
+            No popup campaigns found.{' '}
+            <Link href="/popups/new" className="text-accent-purple hover:underline">
+              Create one →
+            </Link>
+          </td>
+        </tr>
+      );
+    }
+
+    return popups.map((popup) => (
+      <tr key={popup._id} className="border-b border-border-subtle/40 hover:bg-white/2 transition-colors">
+        <td className="py-4 px-5">
+          <div className="flex items-center gap-3">
+            {popup.image?.url ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={popup.image.url} alt={popup.name} className="w-10 h-10 rounded-lg object-cover flex-shrink-0" />
+            ) : (
+              <div className="w-10 h-10 rounded-lg bg-accent-purple/10 flex-shrink-0 flex items-center justify-center text-accent-purple text-xs font-bold">
+                💬
+              </div>
+            )}
+            <div className="min-w-0">
+              <p className="text-text-primary font-medium truncate max-w-52">{popup.name}</p>
+              <p className="text-text-muted text-xs truncate">{popup.title}</p>
+            </div>
+          </div>
+        </td>
+        <td className="py-4 px-4 text-text-secondary capitalize">
+          {popup.trigger.replace('_', ' ')}
+          {popup.triggerDelay ? ` (${popup.triggerDelay / 1000}s)` : ''}
+        </td>
+        <td className="py-4 px-4 text-text-secondary">
+          {popup.cooldownHours}h
+        </td>
+        <td className="py-4 px-4 text-text-secondary font-semibold">
+          {popup.priority}
+        </td>
+        <td className="py-4 px-4">
+          <button
+            onClick={() => toggleMutation.mutate(popup._id)}
+            className={`text-xs px-2.5 py-1 rounded-full border font-medium transition-all ${
+              popup.isActive
+                ? 'bg-green-500/10 text-green-400 border-green-500/30'
+                : 'bg-red-500/10 text-red-400 border-red-500/30'
+            }`}
+          >
+            {popup.isActive ? 'Active' : 'Inactive'}
+          </button>
+        </td>
+        <td className="py-4 px-5">
+          <div className="flex items-center justify-end gap-2">
+            <Link
+              href={`/popups/${popup._id}/edit`}
+              className="px-3 py-1.5 text-xs font-medium glass border border-border-subtle rounded-lg text-text-secondary hover:text-white hover:border-accent-purple/40 transition-all"
+            >
+              Edit
+            </Link>
+            <button
+              onClick={() => setDeleteTarget(popup)}
+              className="px-3 py-1.5 text-xs font-medium glass border border-border-subtle rounded-lg text-text-muted hover:text-red-400 hover:border-red-500/40 transition-all"
+            >
+              Delete
+            </button>
+          </div>
+        </td>
+      </tr>
+    ));
+  };
+
   if (error) {
     return (
       <div className="py-12">
@@ -79,86 +166,7 @@ export default function AdminPopupsPage() {
               </tr>
             </thead>
             <tbody>
-              {isLoading ? (
-                Array.from({ length: 5 }).map((_, i) => (
-                  <tr key={i} className="border-b border-border-subtle/50 animate-pulse">
-                    <td className="py-4 px-5"><div className="h-4 bg-white/5 rounded w-48" /></td>
-                    <td className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-28" /></td>
-                    <td className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-16" /></td>
-                    <td className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-12" /></td>
-                    <td className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-16" /></td>
-                    <td className="py-4 px-5"><div className="h-4 bg-white/5 rounded w-20 ml-auto" /></td>
-                  </tr>
-                ))
-              ) : popups.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="py-16 text-center text-text-muted">
-                    No popup campaigns found.{' '}
-                    <Link href="/popups/new" className="text-accent-purple hover:underline">
-                      Create one →
-                    </Link>
-                  </td>
-                </tr>
-              ) : (
-                popups.map((popup) => (
-                  <tr key={popup._id} className="border-b border-border-subtle/40 hover:bg-white/2 transition-colors">
-                    <td className="py-4 px-5">
-                      <div className="flex items-center gap-3">
-                        {popup.image?.url ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img src={popup.image.url} alt={popup.name} className="w-10 h-10 rounded-lg object-cover flex-shrink-0" />
-                        ) : (
-                          <div className="w-10 h-10 rounded-lg bg-accent-purple/10 flex-shrink-0 flex items-center justify-center text-accent-purple text-xs font-bold">
-                            💬
-                          </div>
-                        )}
-                        <div className="min-w-0">
-                          <p className="text-text-primary font-medium truncate max-w-52">{popup.name}</p>
-                          <p className="text-text-muted text-xs truncate">{popup.title}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="py-4 px-4 text-text-secondary capitalize">
-                      {popup.trigger.replace('_', ' ')}
-                      {popup.triggerDelay ? ` (${popup.triggerDelay / 1000}s)` : ''}
-                    </td>
-                    <td className="py-4 px-4 text-text-secondary">
-                      {popup.cooldownHours}h
-                    </td>
-                    <td className="py-4 px-4 text-text-secondary font-semibold">
-                      {popup.priority}
-                    </td>
-                    <td className="py-4 px-4">
-                      <button
-                        onClick={() => toggleMutation.mutate(popup._id)}
-                        className={`text-xs px-2.5 py-1 rounded-full border font-medium transition-all ${
-                          popup.isActive
-                            ? 'bg-green-500/10 text-green-400 border-green-500/30'
-                            : 'bg-red-500/10 text-red-400 border-red-500/30'
-                        }`}
-                      >
-                        {popup.isActive ? 'Active' : 'Inactive'}
-                      </button>
-                    </td>
-                    <td className="py-4 px-5">
-                      <div className="flex items-center justify-end gap-2">
-                        <Link
-                          href={`/popups/${popup._id}/edit`}
-                          className="px-3 py-1.5 text-xs font-medium glass border border-border-subtle rounded-lg text-text-secondary hover:text-white hover:border-accent-purple/40 transition-all"
-                        >
-                          Edit
-                        </Link>
-                        <button
-                          onClick={() => setDeleteTarget(popup)}
-                          className="px-3 py-1.5 text-xs font-medium glass border border-border-subtle rounded-lg text-text-muted hover:text-red-400 hover:border-red-500/40 transition-all"
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
+              {renderTableBody()}
             </tbody>
           </table>
         </div>

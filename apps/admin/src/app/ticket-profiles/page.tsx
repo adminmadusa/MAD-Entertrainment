@@ -42,6 +42,90 @@ export default function AdminTicketProfilesPage() {
     );
   }
 
+  const renderTableBody = () => {
+    if (isLoading) {
+      return Array.from({ length: 3 }).map((_, i) => (
+        <tr key={i} className="border-b border-border-subtle/50 animate-pulse">
+          <td className="py-4 px-5"><div className="h-4 bg-white/5 rounded w-48" /></td>
+          <td className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-12" /></td>
+          <td className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-16" /></td>
+          <td className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-24" /></td>
+          <td className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-16" /></td>
+          <td className="py-4 px-5"><div className="h-4 bg-white/5 rounded w-20 ml-auto" /></td>
+        </tr>
+      ));
+    }
+
+    if (profiles.length === 0) {
+      return (
+        <tr>
+          <td colSpan={6} className="py-16 text-center text-text-muted">
+            No ticket profiles found.{' '}
+            <Link href="/ticket-profiles/new" className="text-accent-purple hover:underline">
+              Create one →
+            </Link>
+          </td>
+        </tr>
+      );
+    }
+
+    return profiles.map((profile) => (
+      <tr key={profile._id} className="border-b border-border-subtle/40 hover:bg-white/2 transition-colors">
+        <td className="py-4 px-5">
+          <div>
+            <span className="text-white font-bold text-sm block">
+              {profile.name}
+            </span>
+            {profile.description && (
+              <p className="text-text-muted text-xs mt-1 max-w-xs truncate">{profile.description}</p>
+            )}
+          </div>
+        </td>
+        <td className="py-4 px-4 text-text-secondary font-medium">
+          <span className="text-white bg-white/5 px-2.5 py-0.5 rounded-lg border border-white/10 font-mono">
+            {profile.groups?.length || 0}
+          </span>
+        </td>
+        <td className="py-4 px-4 text-text-secondary font-medium">
+          <span className="text-accent-purple-light font-semibold font-mono">
+            {getTicketsCount(profile)}
+          </span>
+        </td>
+        <td className="py-4 px-4 text-text-secondary text-xs">
+          {formatDate(profile.createdAt)}
+        </td>
+        <td className="py-4 px-4">
+          <button
+            onClick={() => toggleStatusMutation.mutate({ id: profile._id, isActive: !profile.isActive })}
+            className={`text-xs px-2.5 py-1 rounded-full border font-medium transition-all ${
+              profile.isActive
+                ? 'bg-green-500/10 text-green-400 border-green-500/30'
+                : 'bg-red-500/10 text-red-400 border-red-500/30'
+            }`}
+          >
+            {profile.isActive ? 'Active' : 'Inactive'}
+          </button>
+        </td>
+        <td className="py-4 px-5">
+          <div className="flex items-center justify-end gap-2">
+            <Link
+              href={`/ticket-profiles/${profile._id}/edit`}
+              className="px-3 py-1.5 text-xs font-medium glass border border-border-subtle rounded-lg text-text-secondary hover:text-white hover:border-accent-purple/40 transition-all"
+            >
+              Edit
+            </Link>
+            <button
+              onClick={() => setDeleteTarget(profile)}
+              className="px-3 py-1.5 text-xs font-medium glass border border-border-subtle rounded-lg text-text-muted hover:text-red-400 hover:border-red-500/40 transition-all"
+            >
+              Delete
+            </button>
+          </div>
+        </td>
+      </tr>
+    ));
+  };
+
   const formatDate = (dateStr: Date | string) => {
     return new Date(dateStr).toLocaleDateString('en-IN', {
       month: 'short',
@@ -88,83 +172,7 @@ export default function AdminTicketProfilesPage() {
               </tr>
             </thead>
             <tbody>
-              {isLoading ? (
-                Array.from({ length: 3 }).map((_, i) => (
-                  <tr key={i} className="border-b border-border-subtle/50 animate-pulse">
-                    <td className="py-4 px-5"><div className="h-4 bg-white/5 rounded w-48" /></td>
-                    <td className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-12" /></td>
-                    <td className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-16" /></td>
-                    <td className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-24" /></td>
-                    <td className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-16" /></td>
-                    <td className="py-4 px-5"><div className="h-4 bg-white/5 rounded w-20 ml-auto" /></td>
-                  </tr>
-                ))
-              ) : profiles.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="py-16 text-center text-text-muted">
-                    No ticket profiles found.{' '}
-                    <Link href="/ticket-profiles/new" className="text-accent-purple hover:underline">
-                      Create one →
-                    </Link>
-                  </td>
-                </tr>
-              ) : (
-                profiles.map((profile) => (
-                  <tr key={profile._id} className="border-b border-border-subtle/40 hover:bg-white/2 transition-colors">
-                    <td className="py-4 px-5">
-                      <div>
-                        <span className="text-white font-bold text-sm block">
-                          {profile.name}
-                        </span>
-                        {profile.description && (
-                          <p className="text-text-muted text-xs mt-1 max-w-xs truncate">{profile.description}</p>
-                        )}
-                      </div>
-                    </td>
-                    <td className="py-4 px-4 text-text-secondary font-medium">
-                      <span className="text-white bg-white/5 px-2.5 py-0.5 rounded-lg border border-white/10 font-mono">
-                        {profile.groups?.length || 0}
-                      </span>
-                    </td>
-                    <td className="py-4 px-4 text-text-secondary font-medium">
-                      <span className="text-accent-purple-light font-semibold font-mono">
-                        {getTicketsCount(profile)}
-                      </span>
-                    </td>
-                    <td className="py-4 px-4 text-text-secondary text-xs">
-                      {formatDate(profile.createdAt)}
-                    </td>
-                    <td className="py-4 px-4">
-                      <button
-                        onClick={() => toggleStatusMutation.mutate({ id: profile._id, isActive: !profile.isActive })}
-                        className={`text-xs px-2.5 py-1 rounded-full border font-medium transition-all ${
-                          profile.isActive
-                            ? 'bg-green-500/10 text-green-400 border-green-500/30'
-                            : 'bg-red-500/10 text-red-400 border-red-500/30'
-                        }`}
-                      >
-                        {profile.isActive ? 'Active' : 'Inactive'}
-                      </button>
-                    </td>
-                    <td className="py-4 px-5">
-                      <div className="flex items-center justify-end gap-2">
-                        <Link
-                          href={`/ticket-profiles/${profile._id}/edit`}
-                          className="px-3 py-1.5 text-xs font-medium glass border border-border-subtle rounded-lg text-text-secondary hover:text-white hover:border-accent-purple/40 transition-all"
-                        >
-                          Edit
-                        </Link>
-                        <button
-                          onClick={() => setDeleteTarget(profile)}
-                          className="px-3 py-1.5 text-xs font-medium glass border border-border-subtle rounded-lg text-text-muted hover:text-red-400 hover:border-red-500/40 transition-all"
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
+              {renderTableBody()}
             </tbody>
           </table>
         </div>

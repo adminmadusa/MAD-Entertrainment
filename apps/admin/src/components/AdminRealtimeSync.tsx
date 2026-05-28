@@ -32,13 +32,13 @@ export function AdminRealtimeSync() {
       socket.emit('admin:join', { room: 'bookings' });
       socket.emit('admin:join', { room: 'analytics' });
       if (process.env.NODE_ENV !== 'production') {
-        console.debug('[admin-socket] connected', { id: socket.id });
+        console.warn('[admin-socket] connected', { id: socket.id });
       }
     };
 
     const handleDisconnect = (reason: string) => {
       if (process.env.NODE_ENV !== 'production') {
-        console.debug('[admin-socket] disconnected', { reason });
+        console.warn('[admin-socket] disconnected', { reason });
       }
     };
 

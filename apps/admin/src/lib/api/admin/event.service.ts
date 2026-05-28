@@ -54,11 +54,19 @@ export interface AdminEvent {
     totalCapacity?: number;
     isActive?: boolean;
   }[];
+  organizerName?: string;
+  refundPolicy?: string;
+  highlights?: string[];
+  bannerImage?: CloudinaryImage;
 }
 
 export interface EventsResponse {
-  data: AdminEvent[];
-  pagination: { page: number; limit: number; total: number; totalPages: number };
+  success: boolean;
+  data: {
+    events: AdminEvent[];
+    pagination: { page: number; limit: number; total: number; totalPages: number };
+  };
+  message?: string;
 }
 
 export interface EventFilters {
@@ -70,19 +78,24 @@ export interface EventFilters {
   featured?: boolean;
 }
 
-export async function adminGetEvents(filters: EventFilters = {}): Promise<{ items: AdminEvent[]; pagination: EventsResponse['pagination'] }> {
+export async function adminGetEvents(filters: EventFilters = {}): Promise<{ items: AdminEvent[]; pagination: EventsResponse['data']['pagination'] }> {
   const params = new URLSearchParams();
   Object.entries(filters).forEach(([k, v]) => { if (v !== undefined) params.set(k, String(v)); });
   const { data } = await adminApiClient.get<EventsResponse>(`/admin/events?${params}`);
-  const payload: any = data?.data || {};
-  const items = Array.isArray(payload.events) ? payload.events : [];
-  return { items, pagination: payload?.pagination || (data as any)?.pagination || { page: 1, limit: 10, total: 0, totalPages: 0 } };
+  const payload = data?.data;
+  const items = Array.isArray(payload?.events) ? payload.events : [];
+  const pagination = payload?.pagination || { page: 1, limit: 10, total: 0, totalPages: 0 };
+  return { items, pagination };
 }
 
 export async function adminGetEvent(id: string): Promise<AdminEvent> {
-  const { data } = await adminApiClient.get<any>(`/admin/events/${id}`);
+  const { data } = await adminApiClient.get<{ data: { event: AdminEvent } | AdminEvent }>(`/admin/events/${id}`);
   const payload = data?.data;
-  return payload?.event || payload;
+  if (!payload) throw new Error('Event not found');
+  if ('event' in payload && payload.event) {
+    return payload.event as AdminEvent;
+  }
+  return payload as AdminEvent;
 }
 
 export async function adminCreateEvent(payload: Partial<AdminEvent>): Promise<AdminEvent> {

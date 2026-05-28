@@ -7,7 +7,8 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 import { CloudinaryUpload } from '@/components/CloudinaryUpload';
-import { adminCreateEvent } from '@/lib/api/admin/event.service';
+import { adminCreateEvent, AdminEvent } from '@/lib/api/admin/event.service';
+import { TicketProfile, TicketGroup, TicketConfig } from '@mad/types';
 import { adminGetCategories } from '@/lib/api/admin/category.service';
 import { adminGetTiers } from '@/lib/api/admin/tier.service';
 import { adminGetTicketProfiles } from '@/lib/api/admin/ticket-profile.service';
@@ -82,9 +83,9 @@ export default function CreateEventPage() {
     queryFn: adminGetTicketProfiles,
   });
 
-  const activeProfile = dbProfiles.find((p: any) => p._id === selectedProfileId);
+  const activeProfile = dbProfiles.find((p: TicketProfile) => p._id === selectedProfileId);
 
-  const handleOverrideChange = (tier: string, field: 'price' | 'totalCapacity' | 'isActive', value: any) => {
+  const handleOverrideChange = (tier: string, field: 'price' | 'totalCapacity' | 'isActive', value: number | boolean | undefined) => {
     setOverrides((prev) => ({
       ...prev,
       [tier]: {
@@ -130,7 +131,7 @@ export default function CreateEventPage() {
 
       const isProfileType = ticketingType === 'profile';
       
-      const payload: any = {
+      const payload: Partial<AdminEvent> & { bookingMode?: string } = {
         title: title.trim(),
         slug: generatedSlug,
         description: description.trim(),
@@ -138,10 +139,9 @@ export default function CreateEventPage() {
         status,
         bookingMode: BookingMode.GENERAL_ADMISSION,
         bannerImage: coverImage ?? undefined,
-        showTime: '00:00',
         venue: venueName.trim(),
-        startDate: new Date(startDate).toISOString() as never,
-        endDate: endDate ? new Date(endDate).toISOString() as never : undefined,
+        startDate: new Date(startDate).toISOString(),
+        endDate: endDate ? new Date(endDate).toISOString() : undefined,
         isFeatured,
         isAgeRestricted,
         minimumAge: isAgeRestricted ? minimumAge : undefined,
@@ -195,8 +195,8 @@ export default function CreateEventPage() {
       }
 
       createMutation.mutate(payload);
-    } catch (err: any) {
-      setError(err?.message || 'Failed to handle venue creation');
+    } catch (err) {
+      setError(extractApiError(err).message || 'Failed to handle venue creation');
     }
   };
 
@@ -420,7 +420,7 @@ export default function CreateEventPage() {
                   className={inputCls}
                 >
                   <option value="" className="bg-background-card">-- Select a Profile --</option>
-                  {dbProfiles.map((p: any) => (
+                  {dbProfiles.map((p: TicketProfile) => (
                     <option key={p._id} value={p._id} className="bg-background-card">
                       {p.name} ({p.groups?.length || 0} groups)
                     </option>
@@ -431,13 +431,13 @@ export default function CreateEventPage() {
               {activeProfile && (
                 <div className="space-y-6 pt-4 border-t border-white/5">
                   <h3 className="text-white font-bold text-sm">Profile Preview & Event-Specific Overrides</h3>
-                  {activeProfile.groups?.map((group: any, gIdx: number) => (
+                  {activeProfile.groups?.map((group: TicketGroup, gIdx: number) => (
                     <div key={`${group.slug}-${gIdx}`} className="space-y-3 p-4 bg-white/3 rounded-xl border border-white/5">
                       <h4 className="text-accent-purple-light font-bold text-sm">{group.name}</h4>
                       <p className="text-text-muted text-xs">{group.description}</p>
                       
                       <div className="space-y-3 pt-2">
-                        {group.tickets?.map((ticket: any, tIdx: number) => {
+                        {group.tickets?.map((ticket: TicketConfig, tIdx: number) => {
                           const override = overrides[ticket.tier] || {};
                           return (
                             <div key={`${ticket.tier}-${tIdx}`} className="p-3 bg-background rounded-lg border border-border-subtle flex flex-col md:flex-row md:items-center justify-between gap-4">

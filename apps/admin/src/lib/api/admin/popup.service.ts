@@ -50,9 +50,16 @@ export async function adminGetPopups(page = 1, limit = 15): Promise<NormalizedPo
 
 export async function adminGetPopup(id: string): Promise<PopupCampaign | null> {
   try {
-    const { data } = await adminApiClient.get<any>(`/admin/popups/${id}`);
+    const { data } = await adminApiClient.get<{ data: Record<string, unknown> | PopupCampaign }>(`/admin/popups/${id}`);
     const payload = data?.data;
-    return payload?.popup || payload?.popupCampaign || payload;
+    if (!payload) return null;
+    if ('popup' in payload && payload.popup) {
+      return payload.popup as PopupCampaign;
+    }
+    if ('popupCampaign' in payload && payload.popupCampaign) {
+      return payload.popupCampaign as PopupCampaign;
+    }
+    return payload as PopupCampaign;
   } catch (error) {
     console.error(`[Popup Service] Failed to fetch popup campaign ${id}:`, error);
     return null;

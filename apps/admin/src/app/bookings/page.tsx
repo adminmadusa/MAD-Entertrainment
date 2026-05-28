@@ -40,6 +40,59 @@ export default function AdminBookingsPage() {
   const bookings = data?.items ?? [];
   const pagination = data?.pagination;
 
+  const renderTableBody = () => {
+    if (isLoading) {
+      return Array.from({ length: 6 }).map((_, i) => (
+        <tr key={i} className="border-b border-border-subtle/40 animate-pulse">
+          {Array.from({ length: 7 }).map((__, j) => (
+            <td key={j} className="py-4 px-4"><div className="h-3.5 bg-white/5 rounded w-20" /></td>
+          ))}
+        </tr>
+      ));
+    }
+
+    if (bookings.length === 0) {
+      return (
+        <tr><td colSpan={7} className="py-16 text-center text-text-muted">No bookings found.</td></tr>
+      );
+    }
+
+    return bookings.map((booking) => {
+      const customer = booking.userId ?? booking.guestInfo;
+      const customerName = (customer as { name?: string })?.name ?? '—';
+      const customerEmail = (customer as { email?: string })?.email ?? '—';
+      return (
+        <tr key={booking._id} onClick={() => setSelectedBooking(booking)} className="border-b border-border-subtle/40 hover:bg-white/2 cursor-pointer transition-colors">
+          <td className="py-4 px-5 font-mono text-xs text-accent-purple">{booking.bookingId}</td>
+          <td className="py-4 px-4">
+            <p className="text-text-primary text-sm">{customerName}</p>
+            <p className="text-text-muted text-xs">{customerEmail}</p>
+          </td>
+          <td className="py-4 px-4 text-text-secondary text-sm max-w-40 truncate">
+            {(booking.eventId as { title?: string })?.title ?? '—'}
+          </td>
+          <td className="py-4 px-4 text-text-primary font-medium">₹{booking.totalAmount.toLocaleString('en-IN')}</td>
+          <td className="py-4 px-4">
+            <span className={`text-xs px-2.5 py-1 rounded-full border font-medium ${STATUS_COLORS[booking.status] ?? 'text-text-muted border-border-subtle'}`}>
+              {booking.status}
+            </span>
+          </td>
+          <td className="py-4 px-4 text-text-muted text-xs">
+            {new Date(booking.createdAt).toLocaleDateString('en-IN')}
+          </td>
+          <td className="py-4 px-5 text-right">
+            {booking.status === 'confirmed' && (
+              <button onClick={(e) => { e.stopPropagation(); setCancelTarget(booking); }}
+                className="px-3 py-1.5 text-xs glass border border-border-subtle rounded-lg text-text-muted hover:text-red-400 hover:border-red-500/40 transition-all">
+                Cancel
+              </button>
+            )}
+          </td>
+        </tr>
+      );
+    });
+  };
+
   if (error) {
     return (
       <div className="py-12">
@@ -136,48 +189,7 @@ export default function AdminBookingsPage() {
               </tr>
             </thead>
             <tbody>
-              {isLoading ? Array.from({ length: 6 }).map((_, i) => (
-                <tr key={i} className="border-b border-border-subtle/40 animate-pulse">
-                  {Array.from({ length: 7 }).map((__, j) => (
-                    <td key={j} className="py-4 px-4"><div className="h-3.5 bg-white/5 rounded w-20" /></td>
-                  ))}
-                </tr>
-              )) : bookings.length === 0 ? (
-                <tr><td colSpan={7} className="py-16 text-center text-text-muted">No bookings found.</td></tr>
-              ) : bookings.map((booking) => {
-                const customer = booking.userId ?? booking.guestInfo;
-                const customerName = (customer as { name?: string })?.name ?? '—';
-                const customerEmail = (customer as { email?: string })?.email ?? '—';
-                return (
-                  <tr key={booking._id} onClick={() => setSelectedBooking(booking)} className="border-b border-border-subtle/40 hover:bg-white/2 cursor-pointer transition-colors">
-                    <td className="py-4 px-5 font-mono text-xs text-accent-purple">{booking.bookingId}</td>
-                    <td className="py-4 px-4">
-                      <p className="text-text-primary text-sm">{customerName}</p>
-                      <p className="text-text-muted text-xs">{customerEmail}</p>
-                    </td>
-                    <td className="py-4 px-4 text-text-secondary text-sm max-w-40 truncate">
-                      {(booking.eventId as { title?: string })?.title ?? '—'}
-                    </td>
-                    <td className="py-4 px-4 text-text-primary font-medium">₹{booking.totalAmount.toLocaleString('en-IN')}</td>
-                    <td className="py-4 px-4">
-                      <span className={`text-xs px-2.5 py-1 rounded-full border font-medium ${STATUS_COLORS[booking.status] ?? 'text-text-muted border-border-subtle'}`}>
-                        {booking.status}
-                      </span>
-                    </td>
-                    <td className="py-4 px-4 text-text-muted text-xs">
-                      {new Date(booking.createdAt).toLocaleDateString('en-IN')}
-                    </td>
-                    <td className="py-4 px-5 text-right">
-                      {booking.status === 'confirmed' && (
-                        <button onClick={(e) => { e.stopPropagation(); setCancelTarget(booking); }}
-                          className="px-3 py-1.5 text-xs glass border border-border-subtle rounded-lg text-text-muted hover:text-red-400 hover:border-red-500/40 transition-all">
-                          Cancel
-                        </button>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
+              {renderTableBody()}
             </tbody>
           </table>
         </div>

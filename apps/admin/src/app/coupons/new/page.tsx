@@ -164,7 +164,7 @@ export default function CreateCouponPage() {
             <Field label="Discount Type">
               <select
                 value={discountType}
-                onChange={(e) => setDiscountType(e.target.value as any)}
+                onChange={(e) => setDiscountType(e.target.value as 'percentage' | 'fixed')}
                 className={inputCls}
               >
                 <option value="percentage" className="bg-background-card">Percentage (%)</option>

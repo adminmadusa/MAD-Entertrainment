@@ -8,6 +8,7 @@ import { useState, useEffect } from 'react';
 import { adminGetTicketProfile, adminUpdateTicketProfile } from '@/lib/api/admin/ticket-profile.service';
 import { adminGetTiers } from '@/lib/api/admin/tier.service';
 import { extractApiError } from '@/lib/api/client';
+import { TicketProfile, TicketGroup } from '@mad/types';
 
 interface TicketInput {
   tier: string;
@@ -113,7 +114,7 @@ export default function EditTicketProfilePage() {
   }, [profile]);
 
   const updateMutation = useMutation({
-    mutationFn: (payload: any) => adminUpdateTicketProfile(id, payload),
+    mutationFn: (payload: Partial<TicketProfile>) => adminUpdateTicketProfile(id, payload),
     onSuccess: () => router.push('/ticket-profiles'),
     onError: (err) => setError(extractApiError(err).message),
   });
@@ -153,7 +154,7 @@ export default function EditTicketProfilePage() {
     );
   };
 
-  const updateTicketField = (gIdx: number, tIdx: number, field: keyof TicketInput, value: any) => {
+  const updateTicketField = (gIdx: number, tIdx: number, field: keyof TicketInput, value: unknown) => {
     setGroups((prev) =>
       prev.map((g, idx) => {
         if (idx !== gIdx) return g;
@@ -162,7 +163,7 @@ export default function EditTicketProfilePage() {
           if (field === 'price' && value === 0) {
             return { ...t, price: 0, isFree: true };
           }
-          return { ...t, [field]: value };
+          return { ...t, [field]: value as never };
         });
         return { ...g, tickets: updatedTickets };
       })

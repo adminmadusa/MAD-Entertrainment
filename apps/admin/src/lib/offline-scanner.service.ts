@@ -26,7 +26,14 @@ export async function saveOfflineScan(ticketId: string, eventId: string): Promis
   });
 }
 
-export async function getOfflineScans(): Promise<any[]> {
+export interface OfflineScan {
+  id?: number;
+  ticketId: string;
+  eventId: string;
+  timestamp: number;
+}
+
+export async function getOfflineScans(): Promise<OfflineScan[]> {
   const db = await initDB();
   return new Promise((resolve, reject) => {
     const tx = db.transaction(STORE_NAME, 'readonly');

@@ -54,9 +54,13 @@ export async function adminGetCoupons(page = 1, limit = 15, active?: string): Pr
 
 export async function adminGetCoupon(id: string): Promise<Coupon | null> {
   try {
-    const { data } = await adminApiClient.get<any>(`/admin/coupons/${id}`);
+    const { data } = await adminApiClient.get<{ data: Record<string, unknown> | Coupon }>(`/admin/coupons/${id}`);
     const payload = data?.data;
-    return payload?.coupon || payload;
+    if (!payload) return null;
+    if ('coupon' in payload && payload.coupon) {
+      return payload.coupon as Coupon;
+    }
+    return payload as Coupon;
   } catch (error) {
     console.error(`[Coupon Service] Failed to fetch coupon ${id}:`, error);
     return null;

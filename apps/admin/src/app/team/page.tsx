@@ -59,6 +59,79 @@ export default function AdminTeamPage() {
   const admins = data?.items ?? [];
   const pagination = data?.pagination;
 
+  const renderTableBody = () => {
+    if (isLoading) {
+      return Array.from({ length: 3 }).map((_, i) => (
+        <tr key={i} className="border-b border-border-subtle/50 animate-pulse">
+          <td className="py-4 px-5"><div className="h-4 bg-white/5 rounded w-48" /></td>
+          <td className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-20" /></td>
+          <td className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-24" /></td>
+          <td className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-16" /></td>
+          <td className="py-4 px-5"><div className="h-4 bg-white/5 rounded w-12 ml-auto" /></td>
+        </tr>
+      ));
+    }
+
+    if (admins.length === 0) {
+      return (
+        <tr>
+          <td colSpan={5} className="py-16 text-center text-text-muted">
+            No team members registered.
+          </td>
+        </tr>
+      );
+    }
+
+    return admins.map((admin) => (
+      <tr key={admin._id} className="border-b border-border-subtle/40 hover:bg-white/2 transition-colors">
+        <td className="py-4 px-5">
+          <div>
+            <p className="text-text-primary font-medium">{admin.name}</p>
+            <p className="text-text-muted text-xs">{admin.email}</p>
+          </div>
+        </td>
+        <td className="py-4 px-4">
+          <span className={`text-xs px-2 py-0.5 rounded font-medium capitalize border ${
+            admin.role === AdminRole.SUPER_ADMIN
+              ? 'bg-accent-purple/10 border-accent-purple/30 text-accent-purple'
+              : 'bg-white/5 border-white/10 text-text-secondary'
+          }`}>
+            {admin.role.replace('_', ' ')}
+          </span>
+        </td>
+        <td className="py-4 px-4 text-text-secondary">
+          {admin.lastLogin
+            ? new Date(admin.lastLogin).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
+            : 'Never logged in'}
+        </td>
+        <td className="py-4 px-4">
+          <span className={`text-xs px-2.5 py-1 rounded-full border font-medium ${
+            admin.isActive
+              ? 'bg-green-500/10 text-green-400 border-green-500/30'
+              : 'bg-red-500/10 text-red-400 border-red-500/30'
+          }`}>
+            {admin.isActive ? 'Active' : 'Inactive'}
+          </span>
+        </td>
+        <td className="py-4 px-5 text-right">
+          {meProfile && meProfile._id !== admin._id ? (
+            <button
+              onClick={() => toggleMutation.mutate(admin._id)}
+              disabled={toggleMutation.isPending}
+              className={`text-xs font-semibold hover:underline ${
+                admin.isActive ? 'text-error' : 'text-green-400'
+              }`}
+            >
+              {admin.isActive ? 'Deactivate' : 'Activate'}
+            </button>
+          ) : (
+            <span className="text-text-muted text-xs italic">Logged in</span>
+          )}
+        </td>
+      </tr>
+    ));
+  };
+
   if (error) {
     return (
       <div className="py-12">
@@ -116,72 +189,7 @@ export default function AdminTeamPage() {
               </tr>
             </thead>
             <tbody>
-              {isLoading ? (
-                Array.from({ length: 3 }).map((_, i) => (
-                  <tr key={i} className="border-b border-border-subtle/50 animate-pulse">
-                    <td className="py-4 px-5"><div className="h-4 bg-white/5 rounded w-48" /></td>
-                    <td className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-20" /></td>
-                    <td className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-24" /></td>
-                    <td className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-16" /></td>
-                    <td className="py-4 px-5"><div className="h-4 bg-white/5 rounded w-12 ml-auto" /></td>
-                  </tr>
-                ))
-              ) : admins.length === 0 ? (
-                <tr>
-                  <td colSpan={5} className="py-16 text-center text-text-muted">
-                    No team members registered.
-                  </td>
-                </tr>
-              ) : (
-                admins.map((admin) => (
-                  <tr key={admin._id} className="border-b border-border-subtle/40 hover:bg-white/2 transition-colors">
-                    <td className="py-4 px-5">
-                      <div>
-                        <p className="text-text-primary font-medium">{admin.name}</p>
-                        <p className="text-text-muted text-xs">{admin.email}</p>
-                      </div>
-                    </td>
-                    <td className="py-4 px-4">
-                      <span className={`text-xs px-2 py-0.5 rounded font-medium capitalize border ${
-                        admin.role === AdminRole.SUPER_ADMIN
-                          ? 'bg-accent-purple/10 border-accent-purple/30 text-accent-purple'
-                          : 'bg-white/5 border-white/10 text-text-secondary'
-                      }`}>
-                        {admin.role.replace('_', ' ')}
-                      </span>
-                    </td>
-                    <td className="py-4 px-4 text-text-secondary">
-                      {admin.lastLogin
-                        ? new Date(admin.lastLogin).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
-                        : 'Never logged in'}
-                    </td>
-                    <td className="py-4 px-4">
-                      <span className={`text-xs px-2.5 py-1 rounded-full border font-medium ${
-                        admin.isActive
-                          ? 'bg-green-500/10 text-green-400 border-green-500/30'
-                          : 'bg-red-500/10 text-red-400 border-red-500/30'
-                      }`}>
-                        {admin.isActive ? 'Active' : 'Inactive'}
-                      </span>
-                    </td>
-                    <td className="py-4 px-5 text-right">
-                      {meProfile && meProfile._id !== admin._id ? (
-                        <button
-                          onClick={() => toggleMutation.mutate(admin._id)}
-                          disabled={toggleMutation.isPending}
-                          className={`text-xs font-semibold hover:underline ${
-                            admin.isActive ? 'text-error' : 'text-green-400'
-                          }`}
-                        >
-                          {admin.isActive ? 'Deactivate' : 'Activate'}
-                        </button>
-                      ) : (
-                        <span className="text-text-muted text-xs italic">Logged in</span>
-                      )}
-                    </td>
-                  </tr>
-                ))
-              )}
+              {renderTableBody()}
             </tbody>
           </table>
         </div>

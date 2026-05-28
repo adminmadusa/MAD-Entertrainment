@@ -38,6 +38,91 @@ export default function AdminCouponsPage() {
   const coupons = data?.items ?? [];
   const pagination = data?.pagination;
 
+  const renderTableBody = () => {
+    if (isLoading) {
+      return Array.from({ length: 5 }).map((_, i) => (
+        <tr key={i} className="border-b border-border-subtle/50 animate-pulse">
+          <td className="py-4 px-5"><div className="h-4 bg-white/5 rounded w-48" /></td>
+          <td className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-24" /></td>
+          <td className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-16" /></td>
+          <td className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-36" /></td>
+          <td className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-16" /></td>
+          <td className="py-4 px-5"><div className="h-4 bg-white/5 rounded w-20 ml-auto" /></td>
+        </tr>
+      ));
+    }
+
+    if (coupons.length === 0) {
+      return (
+        <tr>
+          <td colSpan={6} className="py-16 text-center text-text-muted">
+            No coupons found.{' '}
+            <Link href="/coupons/new" className="text-accent-purple hover:underline">
+              Create one →
+            </Link>
+          </td>
+        </tr>
+      );
+    }
+
+    return coupons.map((coupon) => (
+      <tr key={coupon._id} className="border-b border-border-subtle/40 hover:bg-white/2 transition-colors">
+        <td className="py-4 px-5">
+          <div>
+            <span className="text-white font-mono font-bold bg-white/5 border border-white/10 px-2 py-0.5 rounded-lg text-sm mr-2 select-all">
+              {coupon.code}
+            </span>
+            {coupon.description && (
+              <p className="text-text-muted text-xs mt-1.5 max-w-xs truncate">{coupon.description}</p>
+            )}
+          </div>
+        </td>
+        <td className="py-4 px-4 text-text-secondary font-medium">
+          {coupon.discountType === 'percentage' ? (
+            <span className="text-accent-purple font-semibold">{coupon.discountValue}% Off</span>
+          ) : (
+            <span className="text-emerald-400 font-semibold">₹{coupon.discountValue} Off</span>
+          )}
+        </td>
+        <td className="py-4 px-4 text-text-secondary">
+          <span className="text-text-primary font-semibold">{coupon.usedCount}</span> / {coupon.usageLimit}
+        </td>
+        <td className="py-4 px-4 text-text-secondary text-xs">
+          <div>{formatDate(coupon.validFrom)}</div>
+          <div className="text-text-muted mt-0.5">to {formatDate(coupon.validUntil)}</div>
+        </td>
+        <td className="py-4 px-4">
+          <button
+            onClick={() => toggleMutation.mutate(coupon._id)}
+            className={`text-xs px-2.5 py-1 rounded-full border font-medium transition-all ${
+              coupon.isActive
+                ? 'bg-green-500/10 text-green-400 border-green-500/30'
+                : 'bg-red-500/10 text-red-400 border-red-500/30'
+            }`}
+          >
+            {coupon.isActive ? 'Active' : 'Inactive'}
+          </button>
+        </td>
+        <td className="py-4 px-5">
+          <div className="flex items-center justify-end gap-2">
+            <Link
+              href={`/coupons/${coupon._id}/edit`}
+              className="px-3 py-1.5 text-xs font-medium glass border border-border-subtle rounded-lg text-text-secondary hover:text-white hover:border-accent-purple/40 transition-all"
+            >
+              Edit
+            </Link>
+            <button
+              onClick={() => setDeleteTarget(coupon)}
+              className="px-3 py-1.5 text-xs font-medium glass border border-border-subtle rounded-lg text-text-muted hover:text-red-400 hover:border-red-500/40 transition-all"
+            >
+              Delete
+            </button>
+          </div>
+        </td>
+      </tr>
+    ));
+  };
+
   if (error) {
     return (
       <div className="py-12">
@@ -102,84 +187,7 @@ export default function AdminCouponsPage() {
               </tr>
             </thead>
             <tbody>
-              {isLoading ? (
-                Array.from({ length: 5 }).map((_, i) => (
-                  <tr key={i} className="border-b border-border-subtle/50 animate-pulse">
-                    <td className="py-4 px-5"><div className="h-4 bg-white/5 rounded w-48" /></td>
-                    <td className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-24" /></td>
-                    <td className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-16" /></td>
-                    <td className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-36" /></td>
-                    <td className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-16" /></td>
-                    <td className="py-4 px-5"><div className="h-4 bg-white/5 rounded w-20 ml-auto" /></td>
-                  </tr>
-                ))
-              ) : coupons.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="py-16 text-center text-text-muted">
-                    No coupons found.{' '}
-                    <Link href="/coupons/new" className="text-accent-purple hover:underline">
-                      Create one →
-                    </Link>
-                  </td>
-                </tr>
-              ) : (
-                coupons.map((coupon) => (
-                  <tr key={coupon._id} className="border-b border-border-subtle/40 hover:bg-white/2 transition-colors">
-                    <td className="py-4 px-5">
-                      <div>
-                        <span className="text-white font-mono font-bold bg-white/5 border border-white/10 px-2 py-0.5 rounded-lg text-sm mr-2 select-all">
-                          {coupon.code}
-                        </span>
-                        {coupon.description && (
-                          <p className="text-text-muted text-xs mt-1.5 max-w-xs truncate">{coupon.description}</p>
-                        )}
-                      </div>
-                    </td>
-                    <td className="py-4 px-4 text-text-secondary font-medium">
-                      {coupon.discountType === 'percentage' ? (
-                        <span className="text-accent-purple font-semibold">{coupon.discountValue}% Off</span>
-                      ) : (
-                        <span className="text-emerald-400 font-semibold">₹{coupon.discountValue} Off</span>
-                      )}
-                    </td>
-                    <td className="py-4 px-4 text-text-secondary">
-                      <span className="text-text-primary font-semibold">{coupon.usedCount}</span> / {coupon.usageLimit}
-                    </td>
-                    <td className="py-4 px-4 text-text-secondary text-xs">
-                      <div>{formatDate(coupon.validFrom)}</div>
-                      <div className="text-text-muted mt-0.5">to {formatDate(coupon.validUntil)}</div>
-                    </td>
-                    <td className="py-4 px-4">
-                      <button
-                        onClick={() => toggleMutation.mutate(coupon._id)}
-                        className={`text-xs px-2.5 py-1 rounded-full border font-medium transition-all ${
-                          coupon.isActive
-                            ? 'bg-green-500/10 text-green-400 border-green-500/30'
-                            : 'bg-red-500/10 text-red-400 border-red-500/30'
-                        }`}
-                      >
-                        {coupon.isActive ? 'Active' : 'Inactive'}
-                      </button>
-                    </td>
-                    <td className="py-4 px-5">
-                      <div className="flex items-center justify-end gap-2">
-                        <Link
-                          href={`/coupons/${coupon._id}/edit`}
-                          className="px-3 py-1.5 text-xs font-medium glass border border-border-subtle rounded-lg text-text-secondary hover:text-white hover:border-accent-purple/40 transition-all"
-                        >
-                          Edit
-                        </Link>
-                        <button
-                          onClick={() => setDeleteTarget(coupon)}
-                          className="px-3 py-1.5 text-xs font-medium glass border border-border-subtle rounded-lg text-text-muted hover:text-red-400 hover:border-red-500/40 transition-all"
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
+              {renderTableBody()}
             </tbody>
           </table>
         </div>

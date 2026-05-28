@@ -4,8 +4,8 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
 
-import { adminGetCategories, adminCreateCategory, adminUpdateCategory, adminDeleteCategory } from '@/lib/api/admin/category.service';
-import { adminGetTiers, adminCreateTier, adminUpdateTier, adminDeleteTier } from '@/lib/api/admin/tier.service';
+import { adminGetCategories, adminCreateCategory, adminUpdateCategory, adminDeleteCategory, type AdminCategory } from '@/lib/api/admin/category.service';
+import { adminGetTiers, adminCreateTier, adminUpdateTier, adminDeleteTier, type AdminTier } from '@/lib/api/admin/tier.service';
 import { extractApiError } from '@/lib/api/client';
 
 export default function SettingsPage() {
@@ -32,7 +32,7 @@ export default function SettingsPage() {
   });
 
   const updateCategoryMutation = useMutation({
-    mutationFn: ({ id, payload }: { id: string; payload: any }) => adminUpdateCategory(id, payload),
+    mutationFn: ({ id, payload }: { id: string; payload: Partial<AdminCategory> }) => adminUpdateCategory(id, payload),
     onSuccess: () => {
       setEditingId(null);
       queryClient.invalidateQueries({ queryKey: ['adminCategories'] });
@@ -64,7 +64,7 @@ export default function SettingsPage() {
   });
 
   const updateTierMutation = useMutation({
-    mutationFn: ({ id, payload }: { id: string; payload: any }) => adminUpdateTier(id, payload),
+    mutationFn: ({ id, payload }: { id: string; payload: Partial<AdminTier> }) => adminUpdateTier(id, payload),
     onSuccess: () => {
       setEditingId(null);
       queryClient.invalidateQueries({ queryKey: ['adminTiers'] });
@@ -86,9 +86,9 @@ export default function SettingsPage() {
     if (!nameInput.trim()) return;
 
     if (activeTab === 'categories') {
-      createCategoryMutation.mutate({ name: nameInput.trim() } as any);
+      createCategoryMutation.mutate({ name: nameInput.trim() });
     } else {
-      createTierMutation.mutate({ name: nameInput.trim() } as any);
+      createTierMutation.mutate({ name: nameInput.trim() });
     }
   };
 
@@ -115,6 +115,82 @@ export default function SettingsPage() {
 
   const items = activeTab === 'categories' ? categories : tiers;
   const isLoading = activeTab === 'categories' ? loadingCategories : loadingTiers;
+
+  const renderListContent = () => {
+    if (isLoading) {
+      return (
+        <div className="p-12 text-center text-text-muted text-sm animate-pulse">Loading list...</div>
+      );
+    }
+
+    if (items.length === 0) {
+      return (
+        <div className="p-12 text-center text-text-muted text-sm capitalize">
+          No custom {activeTab} defined yet. Add one on the left!
+        </div>
+      );
+    }
+
+    return (
+      <div className="divide-y divide-border-subtle/50">
+        <AnimatePresence>
+          {(items as (AdminCategory | AdminTier)[]).map((item) => (
+            <motion.div
+              key={item._id}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="p-5 flex items-center justify-between gap-4 hover:bg-white/2 transition-colors"
+            >
+              {editingId === item._id ? (
+                <div className="flex-1 flex items-center gap-2">
+                  <input
+                    value={editingName}
+                    onChange={(e) => setEditingName(e.target.value)}
+                    className="flex-1 max-w-xs px-3 py-1.5 rounded-lg bg-background border border-border-subtle text-sm text-text-primary focus:outline-none focus:border-accent-purple"
+                  />
+                  <button
+                    onClick={() => handleSaveEdit(item._id)}
+                    className="px-3 py-1.5 bg-accent-purple/20 text-accent-purple-light text-xs font-bold rounded-lg hover:bg-accent-purple/30 transition-colors"
+                  >
+                    Save
+                  </button>
+                  <button
+                    onClick={() => setEditingId(null)}
+                    className="px-3 py-1.5 bg-white/5 text-text-secondary text-xs font-bold rounded-lg hover:text-white transition-colors"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              ) : (
+                <div className="flex-1">
+                  <p className="text-white font-semibold text-sm">{item.name}</p>
+                  <p className="text-text-muted text-xs font-mono mt-0.5">{item.slug}</p>
+                </div>
+              )}
+
+              {editingId !== item._id && (
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => { setEditingId(item._id); setEditingName(item.name); }}
+                    className="px-3 py-1.5 bg-white/5 text-text-secondary hover:text-white text-xs font-bold rounded-lg transition-colors border border-white/5"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => handleDelete(item._id)}
+                    className="px-3 py-1.5 bg-error/10 text-error hover:bg-error/20 text-xs font-bold rounded-lg transition-colors"
+                  >
+                    Delete
+                  </button>
+                </div>
+              )}
+            </motion.div>
+          ))}
+        </AnimatePresence>
+      </div>
+    );
+  };
 
   return (
     <div className="max-w-4xl mx-auto space-y-8">
@@ -189,69 +265,7 @@ export default function SettingsPage() {
             </span>
           </div>
 
-          {isLoading ? (
-            <div className="p-12 text-center text-text-muted text-sm animate-pulse">Loading list...</div>
-          ) : items.length === 0 ? (
-            <div className="p-12 text-center text-text-muted text-sm capitalize">No custom {activeTab} defined yet. Add one on the left!</div>
-          ) : (
-            <div className="divide-y divide-border-subtle/50">
-              <AnimatePresence>
-                {items.map((item: any) => (
-                  <motion.div
-                    key={item._id}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="p-5 flex items-center justify-between gap-4 hover:bg-white/2 transition-colors"
-                  >
-                    {editingId === item._id ? (
-                      <div className="flex-1 flex items-center gap-2">
-                        <input
-                          value={editingName}
-                          onChange={(e) => setEditingName(e.target.value)}
-                          className="flex-1 max-w-xs px-3 py-1.5 rounded-lg bg-background border border-border-subtle text-sm text-text-primary focus:outline-none focus:border-accent-purple"
-                        />
-                        <button
-                          onClick={() => handleSaveEdit(item._id)}
-                          className="px-3 py-1.5 bg-accent-purple/20 text-accent-purple-light text-xs font-bold rounded-lg hover:bg-accent-purple/30 transition-colors"
-                        >
-                          Save
-                        </button>
-                        <button
-                          onClick={() => setEditingId(null)}
-                          className="px-3 py-1.5 bg-white/5 text-text-secondary text-xs font-bold rounded-lg hover:text-white transition-colors"
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="flex-1">
-                        <p className="text-white font-semibold text-sm">{item.name}</p>
-                        <p className="text-text-muted text-xs font-mono mt-0.5">{item.slug}</p>
-                      </div>
-                    )}
-
-                    {editingId !== item._id && (
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => { setEditingId(item._id); setEditingName(item.name); }}
-                          className="px-3 py-1.5 bg-white/5 text-text-secondary hover:text-white text-xs font-bold rounded-lg transition-colors border border-white/5"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => handleDelete(item._id)}
-                          className="px-3 py-1.5 bg-error/10 text-error hover:bg-error/20 text-xs font-bold rounded-lg transition-colors"
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    )}
-                  </motion.div>
-                ))}
-              </AnimatePresence>
-            </div>
-          )}
+          {renderListContent()}
         </div>
       </div>
     </div>

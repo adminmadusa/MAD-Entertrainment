@@ -7,7 +7,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 
 import { CloudinaryUpload } from '@/components/CloudinaryUpload';
-import { adminGetEvent, adminUpdateEvent } from '@/lib/api/admin/event.service';
+import { adminGetEvent, adminUpdateEvent, AdminEvent } from '@/lib/api/admin/event.service';
 import { adminGetCategories } from '@/lib/api/admin/category.service';
 import { adminGetTiers } from '@/lib/api/admin/tier.service';
 import { adminGetTicketProfiles } from '@/lib/api/admin/ticket-profile.service';
@@ -86,7 +86,7 @@ export default function EditEventPage() {
     queryFn: adminGetTicketProfiles,
   });
 
-  const activeProfile = dbProfiles.find((p: any) => p._id === selectedProfileId);
+  const activeProfile = dbProfiles.find((p) => p._id === selectedProfileId);
 
   useEffect(() => {
     if (event) {
@@ -97,17 +97,13 @@ export default function EditEventPage() {
       setStartDate(event.startDate ? new Date(event.startDate).toISOString().slice(0, 16) : '');
       setEndDate(event.endDate ? new Date(event.endDate).toISOString().slice(0, 16) : '');
       setVenueName(event.venue || '');
-      // @ts-ignore
       setOrganizerName(event.organizerName || '');
-      // @ts-ignore
       setRefundPolicy(event.refundPolicy || '');
-      // @ts-ignore
       setHighlightsInput(event.highlights?.join(', ') || '');
       setTags(event.tags?.join(', ') || '');
       setIsFeatured(!!event.isFeatured);
       setIsAgeRestricted(!!event.isAgeRestricted);
       setMinimumAge(event.minimumAge || 18);
-      // @ts-ignore
       setCoverImage(event.coverImage || event.bannerImage || null);
 
       if (event.ticketProfileId) {
@@ -151,7 +147,7 @@ export default function EditEventPage() {
     }
   }, [event]);
 
-  const handleOverrideChange = (tier: string, field: 'price' | 'totalCapacity' | 'isActive', value: any) => {
+  const handleOverrideChange = (tier: string, field: 'price' | 'totalCapacity' | 'isActive', value: number | boolean | undefined) => {
     setOverrides((prev) => ({
       ...prev,
       [tier]: {
@@ -162,7 +158,7 @@ export default function EditEventPage() {
   };
 
   const updateMutation = useMutation({
-    mutationFn: (payload: any) => adminUpdateEvent(id, payload),
+    mutationFn: (payload: Partial<AdminEvent>) => adminUpdateEvent(id, payload),
     onSuccess: () => router.push('/events'),
     onError: (err) => setError(extractApiError(err).message),
   });
@@ -196,7 +192,7 @@ export default function EditEventPage() {
 
       const isProfileType = ticketingType === 'profile';
       
-      const payload: any = {
+      const payload: Partial<AdminEvent> & Record<string, unknown> = {
         title: title.trim(),
         slug: generatedSlug,
         description: description.trim(),
@@ -262,8 +258,8 @@ export default function EditEventPage() {
       }
 
       updateMutation.mutate(payload);
-    } catch (err: any) {
-      setError(err?.message || 'Failed to update event');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update event');
     }
   };
 
@@ -497,7 +493,7 @@ export default function EditEventPage() {
                   className={inputCls}
                 >
                   <option value="" className="bg-background-card">-- Select a Profile --</option>
-                  {dbProfiles.map((p: any) => (
+                  {dbProfiles.map((p) => (
                     <option key={p._id} value={p._id} className="bg-background-card">
                       {p.name} ({p.groups?.length || 0} groups)
                     </option>
@@ -508,13 +504,13 @@ export default function EditEventPage() {
               {activeProfile && (
                 <div className="space-y-6 pt-4 border-t border-white/5">
                   <h3 className="text-white font-bold text-sm">Profile Preview & Event-Specific Overrides</h3>
-                  {activeProfile.groups?.map((group: any, gIdx: number) => (
+                  {activeProfile.groups?.map((group, gIdx) => (
                     <div key={`${group.slug}-${gIdx}`} className="space-y-3 p-4 bg-white/3 rounded-xl border border-white/5">
                       <h4 className="text-accent-purple-light font-bold text-sm">{group.name}</h4>
                       <p className="text-text-muted text-xs">{group.description}</p>
                       
                       <div className="space-y-3 pt-2">
-                        {group.tickets?.map((ticket: any, tIdx: number) => {
+                        {group.tickets?.map((ticket, tIdx) => {
                           const override = overrides[ticket.tier] || {};
                           return (
                             <div key={`${ticket.tier}-${tIdx}`} className="p-3 bg-background rounded-lg border border-border-subtle flex flex-col md:flex-row md:items-center justify-between gap-4">
