@@ -63,6 +63,7 @@ export function CheckoutContent({
   );
   const [error, setError] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
 
   const {
     isLeaveModalOpen,
@@ -215,8 +216,13 @@ export function CheckoutContent({
     mutationFn: (payload: Record<string, unknown>) =>
       publicVerifyPayment(bookingId, payload),
     onSuccess: () => {
+      if (typeof window !== "undefined") {
+        const sessionKey = `mad_checkout_session_${STORAGE_VERSION}`;
+        sessionStorage.removeItem(sessionKey);
+      }
       allowNavigation();
-      router.push(`/my-booking?ref=${booking?.bookingId}`);
+      setIsProcessing(false);
+      setShowSuccess(true);
     },
     onError: (err) => {
       setError(extractApiError(err).message);
@@ -227,6 +233,56 @@ export function CheckoutContent({
   const handleFormSubmit = (detailsPayload: CheckoutDetailsInput) => {
     saveDetailsMutation.mutate(detailsPayload);
   };
+
+  if (showSuccess) {
+    return (
+      <div
+        className={
+          isModal
+            ? "relative text-white flex flex-col items-center justify-center space-y-6 px-6 py-12 text-center"
+            : "pt-24 pb-24 min-h-screen bg-[#0d111d] text-white relative flex flex-col items-center justify-center px-6 py-12 text-center"
+        }
+      >
+        <div className="w-20 h-20 rounded-full bg-green-500/10 border border-green-500/30 flex items-center justify-center text-green-400 text-4xl shadow-glow-sm">
+          ✓
+        </div>
+        <div className="space-y-2">
+          <h2 className="text-2xl font-black text-white tracking-tight">
+            Payment Successful
+          </h2>
+          <p className="text-green-400 font-bold text-sm">
+            Booking Confirmed!
+          </p>
+          <p className="text-text-secondary text-xs max-w-sm mx-auto leading-relaxed mt-2">
+            Your booking reference is{" "}
+            <span className="font-mono text-white font-bold select-all bg-white/5 px-2 py-0.5 rounded">
+              {bookingId}
+            </span>
+            . We have sent the confirmation and digital tickets to your email.
+          </p>
+        </div>
+
+        <div className="flex flex-col sm:flex-row gap-3 w-full max-w-md pt-4">
+          <button
+            onClick={() => {
+              router.push(`/my-booking?ref=${bookingId}`);
+            }}
+            className="flex-1 px-6 py-3 btn-gradient text-white rounded-xl font-bold text-sm shadow-glow transition-transform active:scale-95 text-center"
+          >
+            View Tickets
+          </button>
+          <button
+            onClick={() => {
+              router.push("/my-booking");
+            }}
+            className="flex-1 px-6 py-3 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-xl font-bold text-sm transition-all active:scale-95 text-center"
+          >
+            Go to My Bookings
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (
