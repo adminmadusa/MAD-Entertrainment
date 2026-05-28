@@ -15,12 +15,14 @@ export const getBookings = async (
     const limit = parseInt(req.query.limit as string) || 15;
     const search = req.query.search as string | undefined;
     const status = req.query.status as string | undefined;
+    const eventId = req.query.eventId as string | undefined;
 
     const result = await bookingService.getBookings(
       page,
       limit,
       search,
       status,
+      eventId,
     );
     res.status(200).json({
       success: true,
