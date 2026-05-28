@@ -67,7 +67,7 @@ export default function EditPopupPage() {
       setLinkedEventId(popup.linkedEventId ? String(popup.linkedEventId) : '');
       setStartDate(popup.startDate ? new Date(popup.startDate).toISOString().slice(0, 16) : '');
       setEndDate(popup.endDate ? new Date(popup.endDate).toISOString().slice(0, 16) : '');
-      setImage((popup.image as any) || null);
+      setImage((popup.image as CloudinaryAsset) || null);
     }
   }, [popup]);
 
@@ -92,15 +92,15 @@ export default function EditPopupPage() {
       description: description.trim() || undefined,
       ctaText: ctaText.trim() || undefined,
       ctaUrl: ctaUrl.trim() || undefined,
-      trigger: trigger as any,
+      trigger,
       triggerDelay: Number(triggerDelay),
       cooldownHours: Number(cooldownHours),
       priority: Number(priority),
       isActive,
       showOnPages: showOnPages ? showOnPages.split(',').map((p) => p.trim()).filter(Boolean) : undefined,
       linkedEventId: linkedEventId.trim() || undefined,
-      startDate: startDate ? new Date(startDate).toISOString() as any : undefined,
-      endDate: endDate ? new Date(endDate).toISOString() as any : undefined,
+      startDate: startDate ? new Date(startDate).toISOString() : undefined,
+      endDate: endDate ? new Date(endDate).toISOString() : undefined,
       image: image ?? undefined,
     };
 

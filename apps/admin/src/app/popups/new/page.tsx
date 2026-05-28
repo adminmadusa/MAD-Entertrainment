@@ -62,15 +62,15 @@ export default function CreatePopupPage() {
       description: description.trim() || undefined,
       ctaText: ctaText.trim() || undefined,
       ctaUrl: ctaUrl.trim() || undefined,
-      trigger: trigger as any,
+      trigger,
       triggerDelay: Number(triggerDelay),
       cooldownHours: Number(cooldownHours),
       priority: Number(priority),
       isActive,
       showOnPages: showOnPages ? showOnPages.split(',').map((p) => p.trim()).filter(Boolean) : undefined,
       linkedEventId: linkedEventId.trim() || undefined,
-      startDate: startDate ? new Date(startDate).toISOString() as any : undefined,
-      endDate: endDate ? new Date(endDate).toISOString() as any : undefined,
+      startDate: startDate ? new Date(startDate).toISOString() : undefined,
+      endDate: endDate ? new Date(endDate).toISOString() : undefined,
       image: image ?? undefined,
     };
 

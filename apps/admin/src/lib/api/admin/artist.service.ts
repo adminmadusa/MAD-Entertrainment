@@ -62,9 +62,13 @@ export async function adminGetArtists(filters: ArtistFilters = {}): Promise<Norm
 
 export async function adminGetArtist(id: string): Promise<Artist | null> {
   try {
-    const { data } = await adminApiClient.get<any>(`/admin/artists/${id}`);
+    const { data } = await adminApiClient.get<{ data: Record<string, unknown> | Artist }>(`/admin/artists/${id}`);
     const payload = data?.data;
-    return payload?.artist || payload;
+    if (!payload) return null;
+    if ('artist' in payload && payload.artist) {
+      return payload.artist as Artist;
+    }
+    return payload as Artist;
   } catch (error) {
     console.error(`[Artist Service] Failed to fetch artist ${id}:`, error);
     return null;

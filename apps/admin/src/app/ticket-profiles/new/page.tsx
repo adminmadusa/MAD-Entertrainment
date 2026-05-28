@@ -8,6 +8,7 @@ import { useState } from 'react';
 import { adminCreateTicketProfile } from '@/lib/api/admin/ticket-profile.service';
 import { adminGetTiers } from '@/lib/api/admin/tier.service';
 import { extractApiError } from '@/lib/api/client';
+import { TicketProfile, TicketGroup, TicketConfig } from '@mad/types';
 
 interface TicketInput {
   tier: string;
@@ -112,7 +113,7 @@ export default function CreateTicketProfilePage() {
     );
   };
 
-  const updateTicketField = (gIdx: number, tIdx: number, field: keyof TicketInput, value: any) => {
+  const updateTicketField = (gIdx: number, tIdx: number, field: keyof TicketInput, value: unknown) => {
     setGroups((prev) =>
       prev.map((g, idx) => {
         if (idx !== gIdx) return g;
@@ -121,7 +122,7 @@ export default function CreateTicketProfilePage() {
           if (field === 'price' && value === 0) {
             return { ...t, price: 0, isFree: true };
           }
-          return { ...t, [field]: value };
+          return { ...t, [field]: value as never };
         });
         return { ...g, tickets: updatedTickets };
       })
@@ -143,7 +144,7 @@ export default function CreateTicketProfilePage() {
     }
 
     // Prepare payload
-    const formattedGroups = groups.map((g) => ({
+    const formattedGroups: TicketGroup[] = groups.map((g) => ({
       name: g.name.trim(),
       slug: g.slug.trim() || g.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
       description: g.description.trim() || undefined,
@@ -190,7 +191,7 @@ export default function CreateTicketProfilePage() {
     createMutation.mutate({
       name: name.trim(),
       description: description.trim() || undefined,
-      groups: formattedGroups as any,
+      groups: formattedGroups,
     });
   };
 

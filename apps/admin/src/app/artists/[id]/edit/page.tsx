@@ -57,7 +57,8 @@ export default function EditArtistPage() {
       setIsActive(artist.isActive ?? true);
       
       const getSocialUrl = (platform: string) => {
-        return (artist.socialLinks as any)?.find((link: any) => link.platform === platform)?.url || '';
+        const socialLinks = artist.socialLinks as { platform: string; url: string }[] | undefined;
+        return socialLinks?.find((link) => link.platform === platform)?.url || '';
       };
       setInstagram(getSocialUrl('instagram'));
       setYoutube(getSocialUrl('youtube'));
@@ -127,7 +128,7 @@ export default function EditArtistPage() {
       slug: cleanSlug,
       bio: bio.trim() || undefined,
       genre: genres.length > 0 ? genres : undefined,
-      profileImage: (profileImage === null ? null : profileImage) as any,
+      profileImage: (profileImage === null ? null : profileImage) as unknown as Artist['profileImage'],
       galleryImages,
       socialLinks: links.length > 0 ? links : undefined,
       isActive,

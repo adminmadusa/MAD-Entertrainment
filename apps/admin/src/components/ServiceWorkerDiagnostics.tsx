@@ -14,7 +14,7 @@ export function ServiceWorkerDiagnostics() {
     const inspect = async () => {
       const registrations = await navigator.serviceWorker.getRegistrations();
       if (process.env.NODE_ENV !== 'production') {
-        console.debug('[service-worker] diagnostics', {
+        console.warn('[service-worker] diagnostics', {
           cacheVersion,
           currentVersion,
           registrations: registrations.map((registration) => registration.active?.scriptURL ?? registration.scope),
@@ -40,7 +40,7 @@ export function ServiceWorkerDiagnostics() {
 
     inspect().catch((error) => {
       if (process.env.NODE_ENV !== 'production') {
-        console.debug('[service-worker] diagnostics failed', error);
+        console.warn('[service-worker] diagnostics failed', error);
       }
     });
   }, []);

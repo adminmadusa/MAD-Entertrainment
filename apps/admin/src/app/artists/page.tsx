@@ -39,6 +39,98 @@ export default function AdminArtistsPage() {
   const artists = data?.items ?? [];
   const pagination = data?.pagination;
 
+  const renderTableBody = () => {
+    if (isLoading) {
+      return Array.from({ length: 5 }).map((_, i) => (
+        <tr key={i} className="border-b border-border-subtle/50 animate-pulse">
+          <td className="py-4 px-5"><div className="h-4 bg-white/5 rounded w-48" /></td>
+          <td className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-48" /></td>
+          <td className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-20" /></td>
+          <td className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-12" /></td>
+          <td className="py-4 px-5"><div className="h-4 bg-white/5 rounded w-20 ml-auto" /></td>
+        </tr>
+      ));
+    }
+
+    if (artists.length === 0) {
+      return (
+        <tr>
+          <td colSpan={5} className="py-16 text-center text-text-muted">
+            No artists found.{' '}
+            <Link href="/artists/new" className="text-accent-purple hover:underline">
+              Create one →
+            </Link>
+          </td>
+        </tr>
+      );
+    }
+
+    return artists.map((artist) => (
+      <tr key={artist._id} className="border-b border-border-subtle/40 hover:bg-white/2 transition-colors">
+        <td className="py-4 px-5">
+          <div className="flex items-center gap-3">
+            {artist.profileImage?.url ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={artist.profileImage.url} alt={artist.name} className="w-10 h-10 rounded-full object-cover flex-shrink-0" />
+            ) : (
+              <div className="w-10 h-10 rounded-full bg-accent-purple/10 flex-shrink-0 flex items-center justify-center text-accent-purple text-xs font-bold">
+                {artist.name[0]}
+              </div>
+            )}
+            <div className="min-w-0">
+              <p className="text-text-primary font-medium truncate max-w-52">{artist.name}</p>
+              <p className="text-text-muted text-xs truncate">{artist.slug}</p>
+            </div>
+          </div>
+        </td>
+        <td className="py-4 px-4 text-text-secondary">
+          <p className="truncate max-w-xs text-xs">{artist.bio || '—'}</p>
+        </td>
+        <td className="py-4 px-4 text-text-secondary">
+          <div className="flex flex-wrap gap-1 max-w-40">
+            {artist.genre && artist.genre.length > 0 ? (
+              artist.genre.map((g) => (
+                <span key={g} className="text-[10px] px-2 py-0.5 rounded bg-white/5 border border-white/10 text-text-secondary capitalize">
+                  {g}
+                </span>
+              ))
+            ) : (
+              <span className="text-text-muted text-xs">—</span>
+            )}
+          </div>
+        </td>
+        <td className="py-4 px-4">
+          <button
+            onClick={() => statusMutation.mutate({ id: artist._id, isActive: !artist.isActive })}
+            className={`text-xs px-2.5 py-1 rounded-full border font-medium transition-all ${
+              artist.isActive
+                ? 'bg-green-500/10 text-green-400 border-green-500/30'
+                : 'bg-red-500/10 text-red-400 border-red-500/30'
+            }`}
+          >
+            {artist.isActive ? 'Active' : 'Inactive'}
+          </button>
+        </td>
+        <td className="py-4 px-5">
+          <div className="flex items-center justify-end gap-2">
+            <Link
+              href={`/artists/${artist._id}/edit`}
+              className="px-3 py-1.5 text-xs font-medium glass border border-border-subtle rounded-lg text-text-secondary hover:text-white hover:border-accent-purple/40 transition-all"
+            >
+              Edit
+            </Link>
+            <button
+              onClick={() => setDeleteTarget(artist)}
+              className="px-3 py-1.5 text-xs font-medium glass border border-border-subtle rounded-lg text-text-muted hover:text-red-400 hover:border-red-500/40 transition-all"
+            >
+              Delete
+            </button>
+          </div>
+        </td>
+      </tr>
+    ));
+  };
+
   if (error) {
     return (
       <div className="py-12">
@@ -94,91 +186,7 @@ export default function AdminArtistsPage() {
               </tr>
             </thead>
             <tbody>
-              {isLoading ? (
-                Array.from({ length: 5 }).map((_, i) => (
-                  <tr key={i} className="border-b border-border-subtle/50 animate-pulse">
-                    <td className="py-4 px-5"><div className="h-4 bg-white/5 rounded w-48" /></td>
-                    <td className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-48" /></td>
-                    <td className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-20" /></td>
-                    <td className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-12" /></td>
-                    <td className="py-4 px-5"><div className="h-4 bg-white/5 rounded w-20 ml-auto" /></td>
-                  </tr>
-                ))
-              ) : artists.length === 0 ? (
-                <tr>
-                  <td colSpan={5} className="py-16 text-center text-text-muted">
-                    No artists found.{' '}
-                    <Link href="/artists/new" className="text-accent-purple hover:underline">
-                      Create one →
-                    </Link>
-                  </td>
-                </tr>
-              ) : (
-                artists.map((artist) => (
-                  <tr key={artist._id} className="border-b border-border-subtle/40 hover:bg-white/2 transition-colors">
-                    <td className="py-4 px-5">
-                      <div className="flex items-center gap-3">
-                        {artist.profileImage?.url ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img src={artist.profileImage.url} alt={artist.name} className="w-10 h-10 rounded-full object-cover flex-shrink-0" />
-                        ) : (
-                          <div className="w-10 h-10 rounded-full bg-accent-purple/10 flex-shrink-0 flex items-center justify-center text-accent-purple text-xs font-bold">
-                            {artist.name[0]}
-                          </div>
-                        )}
-                        <div className="min-w-0">
-                          <p className="text-text-primary font-medium truncate max-w-52">{artist.name}</p>
-                          <p className="text-text-muted text-xs truncate">{artist.slug}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="py-4 px-4 text-text-secondary">
-                      <p className="truncate max-w-xs text-xs">{artist.bio || '—'}</p>
-                    </td>
-                    <td className="py-4 px-4 text-text-secondary">
-                      <div className="flex flex-wrap gap-1 max-w-40">
-                        {artist.genre && artist.genre.length > 0 ? (
-                          artist.genre.map((g) => (
-                            <span key={g} className="text-[10px] px-2 py-0.5 rounded bg-white/5 border border-white/10 text-text-secondary capitalize">
-                              {g}
-                            </span>
-                          ))
-                        ) : (
-                          <span className="text-text-muted text-xs">—</span>
-                        )}
-                      </div>
-                    </td>
-                    <td className="py-4 px-4">
-                      <button
-                        onClick={() => statusMutation.mutate({ id: artist._id, isActive: !artist.isActive })}
-                        className={`text-xs px-2.5 py-1 rounded-full border font-medium transition-all ${
-                          artist.isActive
-                            ? 'bg-green-500/10 text-green-400 border-green-500/30'
-                            : 'bg-red-500/10 text-red-400 border-red-500/30'
-                        }`}
-                      >
-                        {artist.isActive ? 'Active' : 'Inactive'}
-                      </button>
-                    </td>
-                    <td className="py-4 px-5">
-                      <div className="flex items-center justify-end gap-2">
-                        <Link
-                          href={`/artists/${artist._id}/edit`}
-                          className="px-3 py-1.5 text-xs font-medium glass border border-border-subtle rounded-lg text-text-secondary hover:text-white hover:border-accent-purple/40 transition-all"
-                        >
-                          Edit
-                        </Link>
-                        <button
-                          onClick={() => setDeleteTarget(artist)}
-                          className="px-3 py-1.5 text-xs font-medium glass border border-border-subtle rounded-lg text-text-muted hover:text-red-400 hover:border-red-500/40 transition-all"
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
+              {renderTableBody()}
             </tbody>
           </table>
         </div>

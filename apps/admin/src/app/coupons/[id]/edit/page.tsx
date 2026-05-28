@@ -130,7 +130,7 @@ export default function EditCouponPage() {
       description: description.trim() || undefined,
       discountType,
       discountValue: Number(discountValue),
-      maxDiscount: maxDiscount ? Number(maxDiscount) : null as any,
+      maxDiscount: maxDiscount ? Number(maxDiscount) : (null as number | null),
       minOrderAmount: Number(minOrderAmount),
       usageLimit: Number(usageLimit),
       validFrom: new Date(validFrom).toISOString(),
@@ -206,7 +206,7 @@ export default function EditCouponPage() {
             <Field label="Discount Type">
               <select
                 value={discountType}
-                onChange={(e) => setDiscountType(e.target.value as any)}
+                onChange={(e) => setDiscountType(e.target.value as 'percentage' | 'fixed')}
                 className={inputCls}
               >
                 <option value="percentage" className="bg-background-card">Percentage (%)</option>

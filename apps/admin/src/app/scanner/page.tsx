@@ -5,13 +5,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useRef, useEffect, useCallback } from 'react';
 
 import { adminGetEvents } from '@/lib/api/admin/event.service';
-import { adminScanTicket } from '@/lib/api/admin/scanner.service';
+import { adminScanTicket, ScanResponse } from '@/lib/api/admin/scanner.service';
 import { extractApiError } from '@/lib/api/client';
 
 export default function ScannerPage() {
   const [selectedEventId, setSelectedEventId] = useState<string>('');
   const [ticketId, setTicketId] = useState('');
-  const [lastScanResult, setLastScanResult] = useState<any>(null);
+  const [lastScanResult, setLastScanResult] = useState<ScanResponse | { ticketId: string; admits: string | number; tierName: string } | null>(null);
   const [lastScanError, setLastScanError] = useState<string | null>(null);
 
   const inputRef = useRef<HTMLInputElement>(null);
@@ -200,7 +200,7 @@ export default function ScannerPage() {
             
             <div className="mt-4 px-6 py-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
               <p className="text-emerald-400 font-bold text-lg">
-                ADMIT: {lastScanResult.admits} {lastScanResult.admits > 1 ? 'PEOPLE' : 'PERSON'}
+                ADMIT: {lastScanResult.admits} {typeof lastScanResult.admits === 'number' && lastScanResult.admits > 1 ? 'PEOPLE' : 'PERSON'}
               </p>
               <p className="text-text-muted text-xs uppercase mt-1 tracking-wider">{lastScanResult.tierName}</p>
             </div>

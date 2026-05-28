@@ -3,7 +3,7 @@ import { QueryClient } from '@tanstack/react-query';
 
 function logInvalidation(scope: string, details?: Record<string, unknown>) {
   if (process.env.NODE_ENV !== 'production') {
-    console.debug('[react-query] invalidate', { scope, ...details });
+    console.warn('[react-query] invalidate', { scope, ...details });
   }
 }
 

@@ -55,14 +55,15 @@ export default function EditDJPage() {
       setIsActive(dj.isActive ?? true);
       
       const getSocialUrl = (platform: string) => {
-        return (dj.socialLinks as any)?.find((link: any) => link.platform === platform)?.url || '';
+        const socialLinks = dj.socialLinks as { platform: string; url: string }[] | undefined;
+        return socialLinks?.find((link) => link.platform === platform)?.url || '';
       };
       setInstagram(getSocialUrl('instagram'));
       setSoundcloud(getSocialUrl('soundcloud'));
       setYoutube(getSocialUrl('youtube'));
       
-      setProfileImage((dj.profileImage as any) || null);
-      setGalleryImages((dj.galleryImages as any) || []);
+      setProfileImage((dj.profileImage as unknown as CloudinaryAsset) || null);
+      setGalleryImages((dj.galleryImages as unknown as CloudinaryAsset[]) || []);
     }
   }, [dj]);
 
@@ -121,7 +122,7 @@ export default function EditDJPage() {
       slug: cleanSlug,
       bio: bio.trim() || undefined,
       specialties: specs.length > 0 ? specs : undefined,
-      profileImage: (profileImage === null ? null : profileImage) as any,
+      profileImage: (profileImage === null ? null : profileImage) as unknown as DJOperator['profileImage'],
       galleryImages,
       socialLinks: links.length > 0 ? links : undefined,
       isActive,
