@@ -13,12 +13,20 @@ export interface TicketDeliveryData {
   bookingReference: string;
 }
 
+const previewData: TicketDeliveryData = {
+  customerName: "John Doe",
+  eventTitle: "MAD Summer Festival",
+  eventDate: "August 12, 2026",
+  venue: "MAD Arena",
+  bookingReference: "MAD-2026-12345",
+};
+
 interface TicketDeliveryEmailProps {
-  data: TicketDeliveryData;
+  data?: TicketDeliveryData;
 }
 
 export default function TicketDeliveryEmail({
-  data,
+  data = previewData,
 }: TicketDeliveryEmailProps) {
   const { customerName, eventTitle, eventDate, venue, bookingReference } = data;
 

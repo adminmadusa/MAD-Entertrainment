@@ -15,12 +15,25 @@ export interface BookingConfirmationData {
   currency?: string;
 }
 
+const previewData: BookingConfirmationData = {
+  customerName: "John Doe",
+  eventTitle: "MAD Summer Festival",
+  bookingReference: "MAD-2026-12345",
+  eventDate: "August 12, 2026",
+  tickets: [
+    { tierName: "General Admission", quantity: 2, price: 999 },
+    { tierName: "VIP", quantity: 1, price: 1999 },
+  ],
+  totalAmount: 3997,
+  currency: "INR",
+};
+
 interface BookingConfirmationEmailProps {
-  data: BookingConfirmationData;
+  data?: BookingConfirmationData;
 }
 
 export default function BookingConfirmationEmail({
-  data,
+  data = previewData,
 }: BookingConfirmationEmailProps) {
   const {
     customerName,
