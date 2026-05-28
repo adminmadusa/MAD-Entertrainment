@@ -9,6 +9,7 @@ import {
   adminCancelBooking,
   type AdminBooking,
 } from "@/lib/api/admin/booking.service";
+import { adminGetEvents } from "@/lib/api/admin/event.service";
 import ErrorState from "@/components/states/ErrorState";
 
 const STATUS_COLORS: Record<string, string> = {
@@ -23,6 +24,7 @@ export default function AdminBookingsPage() {
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
+  const [eventFilter, setEventFilter] = useState("");
   const [page, setPage] = useState(1);
   const [cancelTarget, setCancelTarget] = useState<AdminBooking | null>(null);
   const [cancelReason, setCancelReason] = useState("");
@@ -37,10 +39,17 @@ export default function AdminBookingsPage() {
     return () => clearTimeout(handler);
   }, [search]);
 
+  const { data: eventsData } = useQuery({
+    queryKey: ["admin-events-list"],
+    queryFn: () => adminGetEvents({ limit: 50, status: "published" }),
+    staleTime: 5 * 60 * 1000,
+  });
+  const eventOptions = eventsData?.items ?? [];
+
   const { data, isLoading, error } = useQuery({
     queryKey: [
       "admin-bookings",
-      { page, search: debouncedSearch, status: statusFilter },
+      { page, search: debouncedSearch, status: statusFilter, eventFilter },
     ],
     queryFn: () =>
       adminGetBookings({
@@ -48,6 +57,7 @@ export default function AdminBookingsPage() {
         limit: 15,
         ...(debouncedSearch && { search: debouncedSearch }),
         ...(statusFilter && { status: statusFilter }),
+        ...(eventFilter && { eventId: eventFilter }),
       }),
   });
 
@@ -166,6 +176,22 @@ export default function AdminBookingsPage() {
           <option value="pending">Pending</option>
           <option value="cancelled">Cancelled</option>
           <option value="failed">Failed</option>
+        </select>
+        <select
+          value={eventFilter}
+          onChange={(e) => {
+            setEventFilter(e.target.value);
+            setPage(1);
+          }}
+          aria-label="Filter by event"
+          className="px-4 py-2.5 rounded-xl bg-background-card border border-border-subtle text-sm text-text-primary focus:outline-none focus:border-accent-purple focus-visible:ring-2 focus-visible:ring-accent-purple max-w-52"
+        >
+          <option value="">All Events</option>
+          {eventOptions.map((ev) => (
+            <option key={ev._id} value={ev._id}>
+              {ev.title}
+            </option>
+          ))}
         </select>
       </div>
 
