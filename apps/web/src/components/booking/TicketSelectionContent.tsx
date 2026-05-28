@@ -254,6 +254,7 @@ export function TicketSelectionContent({
                   const finalPrice = isFree
                     ? 0
                     : Math.max(0, tier.price - discount);
+                  const qty = quantities[tier.tier] || 0;
 
                   return (
                     <div
@@ -326,19 +327,21 @@ export function TicketSelectionContent({
                         <button
                           type="button"
                           onClick={() => handleQtyChange(tier.tier, -1)}
+                          disabled={qty === 0}
                           aria-label={`Decrease ${tier.name} tickets`}
-                          className="w-10 h-10 rounded-lg hover:bg-white/5 flex items-center justify-center text-white text-base font-bold active:scale-90 transition-transform focus:outline-none focus:ring-1 focus:ring-accent-purple"
+                          className="w-10 h-10 rounded-lg hover:bg-white/5 disabled:opacity-30 disabled:cursor-not-allowed disabled:pointer-events-none flex items-center justify-center text-white text-base font-bold active:scale-90 transition-transform focus:outline-none focus:ring-1 focus:ring-accent-purple"
                         >
                           -
                         </button>
                         <span className="w-5 text-center text-sm font-semibold text-white">
-                          {quantities[tier.tier] || 0}
+                          {qty}
                         </span>
                         <button
                           type="button"
                           onClick={() => handleQtyChange(tier.tier, 1)}
+                          disabled={qty >= 10}
                           aria-label={`Increase ${tier.name} tickets`}
-                          className="w-10 h-10 rounded-lg hover:bg-white/5 flex items-center justify-center text-white text-base font-bold active:scale-90 transition-transform focus:outline-none focus:ring-1 focus:ring-accent-purple"
+                          className="w-10 h-10 rounded-lg hover:bg-white/5 disabled:opacity-30 disabled:cursor-not-allowed disabled:pointer-events-none flex items-center justify-center text-white text-base font-bold active:scale-90 transition-transform focus:outline-none focus:ring-1 focus:ring-accent-purple"
                         >
                           +
                         </button>
