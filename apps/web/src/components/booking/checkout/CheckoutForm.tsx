@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { CheckoutDetailsInput } from '@mad/validations';
+import { useAuth } from '@/providers/AuthProvider';
 
 const MONTHS = [
   { name: 'January', value: '01' },
@@ -27,6 +28,8 @@ interface CheckoutFormProps {
 }
 
 export function CheckoutForm({ isExpired, isDisabled, onSubmit, onErrorSet }: CheckoutFormProps) {
+  const { user } = useAuth();
+
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [guestEmail, setGuestEmail] = useState('');
@@ -38,7 +41,34 @@ export function CheckoutForm({ isExpired, isDisabled, onSubmit, onErrorSet }: Ch
   const [keepUpdated, setKeepUpdated] = useState(true);
   const [sendBestEvents, setSendBestEvents] = useState(false);
 
+  const [hasPrefilled, setHasPrefilled] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+
+  // Auto-fill billing fields from authenticated session user (Eventbrite-style)
+  useEffect(() => {
+    if (user && !hasPrefilled) {
+      let fName = '';
+      let lName = '';
+      if (user.name) {
+        const parts = user.name.trim().split(/\s+/);
+        fName = parts[0] || '';
+        lName = parts.slice(1).join(' ') || '';
+      }
+      setFirstName(fName);
+      setLastName(lName);
+      setGuestEmail(user.email || '');
+      setGuestEmailConfirm(user.email || '');
+      setGuestPhone(user.phone || '');
+      setHasPrefilled(true);
+    } else if (!user && hasPrefilled) {
+      setFirstName('');
+      setLastName('');
+      setGuestEmail('');
+      setGuestEmailConfirm('');
+      setGuestPhone('');
+      setHasPrefilled(false);
+    }
+  }, [user, hasPrefilled]);
 
   const handlePlaceOrderSubmit = (e: React.FormEvent) => {
     e.preventDefault();

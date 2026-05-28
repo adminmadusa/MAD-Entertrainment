@@ -1,8 +1,16 @@
 import * as React from "react";
-import { Section, Text, Button, Heading } from "@react-email/components";
-import { EmailLayout } from "./components/EmailLayout";
-import { EmailHeader } from "./components/EmailHeader";
-import { EmailFooter } from "./components/EmailFooter";
+import {
+  Html,
+  Head,
+  Body,
+  Container,
+  Section,
+  Text,
+  Button,
+  Heading,
+  Hr,
+  Preview,
+} from "@react-email/components";
 import { renderTemplate } from "../render-template";
 
 export interface MagicLinkEmailData {
@@ -22,53 +30,72 @@ interface MagicLinkEmailProps {
 }
 
 export default function MagicLinkEmail({ data = previewData }: MagicLinkEmailProps) {
-  const { email, magicLinkUrl, otpCode } = data;
+  const { magicLinkUrl, otpCode } = data;
 
   // Format OTP as XXX XXX for readability
-  const formattedOtp = otpCode.length === 6 
-    ? `${otpCode.slice(0, 3)} ${otpCode.slice(3)}` 
-    : otpCode;
+  const formattedOtp =
+    otpCode.length === 6 ? `${otpCode.slice(0, 3)} ${otpCode.slice(3)}` : otpCode;
 
   return (
-    <EmailLayout previewText="Sign in to MAD Entertainment">
-      <EmailHeader />
+    <Html lang="en">
+      <Head />
+      <Preview>Sign in to MAD Entertainment</Preview>
+      <Body style={bodyStyle}>
+        <Container style={containerStyle}>
+          {/* Header */}
+          <Section style={headerStyle}>
+            <Heading style={brandStyle}>MAD Entertainment</Heading>
+          </Section>
 
-      <Section style={cardStyle}>
-        <Heading style={titleStyle}>Verify Your Login</Heading>
-        <Text style={textStyle}>
-          You requested a secure login to MAD Entertainment. Click the button below to sign in instantly.
-        </Text>
+          {/* Card Content */}
+          <Section style={cardStyle}>
+            <Heading style={titleStyle}>Verify Your Login</Heading>
+            <Text style={textStyle}>
+              You requested a secure login to MAD Entertainment. Click the button below to sign in
+              instantly.
+            </Text>
 
-        <Section style={buttonContainer}>
-          <Button href={magicLinkUrl} style={buttonStyle}>
-            Sign In Instantly
-          </Button>
-        </Section>
+            <Section style={buttonContainer}>
+              <Button href={magicLinkUrl} style={buttonStyle}>
+                Sign In Instantly
+              </Button>
+            </Section>
 
-        <Text style={subtextStyle}>
-          This link will expire in 15 minutes. If the button doesn't work, you can copy and paste the following URL into your browser:
-          <br />
-          <a href={magicLinkUrl} style={linkStyle}>{magicLinkUrl}</a>
-        </Text>
+            <Text style={subtextStyle}>
+              This link will expire in 15 minutes. If the button doesn&apos;t work, copy and paste
+              the URL below into your browser:
+              <br />
+              <a href={magicLinkUrl} style={linkStyle}>
+                {magicLinkUrl}
+              </a>
+            </Text>
 
-        <Section style={dividerStyle} />
+            <Hr style={dividerStyle} />
 
-        <Heading style={otpTitleStyle}>One-Time Passcode</Heading>
-        <Text style={textStyle}>
-          If you are on a different device or need an OTP, enter the 6-digit passcode below:
-        </Text>
+            <Heading style={otpTitleStyle}>One-Time Passcode</Heading>
+            <Text style={textStyle}>
+              If you are on a different device or need an OTP, enter the 6-digit passcode below:
+            </Text>
 
-        <Section style={otpCardStyle}>
-          <Text style={otpValueStyle}>{formattedOtp}</Text>
-        </Section>
+            <Section style={otpCardStyle}>
+              <Text style={otpValueStyle}>{formattedOtp}</Text>
+            </Section>
 
-        <Text style={footerWarningStyle}>
-          If you didn't request this login, you can safely ignore this email. Your account remains secure.
-        </Text>
-      </Section>
+            <Text style={footerWarningStyle}>
+              If you didn&apos;t request this login, you can safely ignore this email. Your account
+              remains secure.
+            </Text>
+          </Section>
 
-      <EmailFooter />
-    </EmailLayout>
+          {/* Footer */}
+          <Section style={footerStyle}>
+            <Text style={footerTextStyle}>
+              &copy; {new Date().getFullYear()} MAD Entertainment. All rights reserved.
+            </Text>
+          </Section>
+        </Container>
+      </Body>
+    </Html>
   );
 }
 
@@ -77,6 +104,35 @@ export async function magicLinkHtml(data: MagicLinkEmailData): Promise<string> {
 }
 
 // Inline Styles
+const bodyStyle: React.CSSProperties = {
+  backgroundColor: "#0d0d0d",
+  fontFamily: "Outfit, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+  margin: "0",
+  padding: "0",
+};
+
+const containerStyle: React.CSSProperties = {
+  maxWidth: "600px",
+  margin: "0 auto",
+  padding: "24px 16px",
+};
+
+const headerStyle: React.CSSProperties = {
+  textAlign: "center" as const,
+  paddingBottom: "24px",
+  borderBottom: "1px solid #2a2a2a",
+  marginBottom: "24px",
+};
+
+const brandStyle: React.CSSProperties = {
+  margin: "0",
+  fontSize: "20px",
+  fontWeight: 900,
+  color: "#a78bfa",
+  letterSpacing: "0.05em",
+  fontFamily: "Outfit, sans-serif",
+};
+
 const cardStyle: React.CSSProperties = {
   background: "#1a1a1a",
   borderRadius: "16px",
@@ -131,11 +187,11 @@ const subtextStyle: React.CSSProperties = {
 const linkStyle: React.CSSProperties = {
   color: "#a78bfa",
   textDecoration: "underline",
-  wordBreak: "break-all" as any,
+  wordBreak: "break-all" as const,
 };
 
 const dividerStyle: React.CSSProperties = {
-  borderTop: "1px solid #2a2a2a",
+  borderColor: "#2a2a2a",
   margin: "24px 0",
 };
 
@@ -173,3 +229,18 @@ const footerWarningStyle: React.CSSProperties = {
   lineHeight: "1.5",
   textAlign: "center" as const,
 };
+
+const footerStyle: React.CSSProperties = {
+  textAlign: "center" as const,
+  paddingTop: "24px",
+  borderTop: "1px solid #2a2a2a",
+  marginTop: "24px",
+};
+
+const footerTextStyle: React.CSSProperties = {
+  margin: "0",
+  fontSize: "11px",
+  color: "#555555",
+  lineHeight: "1.5",
+};
+
