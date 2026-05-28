@@ -10,6 +10,18 @@ import { publicGetBookingDetails } from "@/lib/api/public.service";
 import { STORAGE_VERSION } from "@mad/shared";
 
 // ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+function formatDate(dateStr: Date | string) {
+  return new Date(dateStr).toLocaleDateString("en-US", {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+// ---------------------------------------------------------------------------
 // Skeleton sub-component — shown while fetching
 // ---------------------------------------------------------------------------
 function BookingDetailsSkeleton() {
@@ -28,19 +40,13 @@ function BookingDetailsSkeleton() {
             <div className="h-6 bg-white/10 rounded-full w-20 ml-auto" />
           </div>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 pt-4 border-t border-border-subtle/40">
-          <div className="space-y-1.5">
-            <div className="h-2.5 bg-white/5 rounded w-16" />
-            <div className="h-4 bg-white/10 rounded w-24" />
-          </div>
-          <div className="space-y-1.5">
-            <div className="h-2.5 bg-white/5 rounded w-16" />
-            <div className="h-4 bg-white/10 rounded w-12" />
-          </div>
-          <div className="col-span-2 sm:col-span-1 space-y-1.5">
-            <div className="h-2.5 bg-white/5 rounded w-16" />
-            <div className="h-4 bg-white/10 rounded w-32" />
-          </div>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-4 border-t border-border-subtle/40">
+          {[32, 20, 28, 36].map((w, i) => (
+            <div key={i} className="space-y-1.5">
+              <div className={`h-2.5 bg-white/5 rounded w-${w}`} />
+              <div className="h-4 bg-white/10 rounded w-full" />
+            </div>
+          ))}
         </div>
       </div>
 
@@ -53,8 +59,11 @@ function BookingDetailsSkeleton() {
               key={i}
               className="glass rounded-2xl border border-border-subtle p-6 space-y-4 flex flex-col items-center"
             >
-              <div className="h-4 bg-white/10 rounded w-24" />
-              <div className="w-48 h-48 bg-white/5 rounded-xl" />
+              <div className="w-full space-y-1.5">
+                <div className="h-3 bg-white/10 rounded w-24 mx-auto" />
+                <div className="h-4 bg-white/5 rounded w-16 mx-auto" />
+              </div>
+              <div className="w-56 h-56 bg-white/5 rounded-xl" />
               <div className="h-3 bg-white/5 rounded w-40" />
             </div>
           ))}
@@ -79,6 +88,35 @@ function PageSkeleton() {
           <div className="h-10 bg-white/5 rounded-xl" />
         </div>
         <BookingDetailsSkeleton />
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Idle / no-query state — shown when user hasn't searched yet
+// ---------------------------------------------------------------------------
+function IdleState() {
+  return (
+    <div className="glass rounded-2xl border border-border-subtle p-8 sm:p-12 text-center space-y-4">
+      <div
+        className="text-5xl"
+        role="img"
+        aria-label="Ticket wallet illustration"
+      >
+        🎫
+      </div>
+      <div className="space-y-2">
+        <p className="text-white font-semibold text-sm">
+          Enter your booking reference above
+        </p>
+        <p className="text-text-muted text-xs max-w-xs mx-auto leading-relaxed">
+          Your reference ID was emailed to you after booking. It looks like{" "}
+          <span className="font-mono text-white/60 text-[11px]">
+            MAD-2026-XXXXX
+          </span>
+          .
+        </p>
       </div>
     </div>
   );
@@ -142,15 +180,6 @@ function MyBookingContent() {
   const booking = result?.booking;
   const tickets = result?.tickets || [];
 
-  const formatDate = (dateStr: Date | string) => {
-    return new Date(dateStr).toLocaleDateString("en-US", {
-      weekday: "short",
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    });
-  };
-
   const isConfirmed = booking?.status === "confirmed";
   const isAwaitingPayment =
     booking?.status === "pending" || booking?.status === "awaiting_payment";
@@ -158,24 +187,22 @@ function MyBookingContent() {
   return (
     <div className="pt-28 pb-16 min-h-screen bg-background">
       <div className="container-mad max-w-3xl space-y-8">
-        {/* ----------------------------------------------------------------- */}
-        {/* Page header                                                        */}
-        {/* ----------------------------------------------------------------- */}
+        {/* --------------------------------------------------------------- */}
+        {/* Page header                                                      */}
+        {/* --------------------------------------------------------------- */}
         <div className="text-center space-y-3">
-          <h1 className="text-display-sm font-black text-white">
-            Track Booking
-          </h1>
+          <h1 className="text-display-sm font-black text-white">My Tickets</h1>
           <p className="text-text-secondary text-sm">
             Retrieve your tickets and view your booking status.
           </p>
         </div>
 
-        {/* ----------------------------------------------------------------- */}
-        {/* Search form                                                        */}
-        {/* ----------------------------------------------------------------- */}
+        {/* --------------------------------------------------------------- */}
+        {/* Search form                                                      */}
+        {/* --------------------------------------------------------------- */}
         <form
           onSubmit={handleSearchSubmit}
-          className="glass rounded-2xl border border-border-subtle p-6 flex flex-col sm:flex-row gap-3"
+          className="glass rounded-2xl border border-border-subtle p-5 sm:p-6 flex flex-col sm:flex-row gap-3"
         >
           <div className="flex-grow space-y-1">
             <label
@@ -190,6 +217,10 @@ function MyBookingContent() {
               value={bookingRefInput}
               onChange={(e) => setBookingRefInput(e.target.value)}
               placeholder="e.g. MAD-2026-ABCDE"
+              autoComplete="off"
+              autoCorrect="off"
+              autoCapitalize="characters"
+              spellCheck={false}
               className="w-full px-4 py-2.5 rounded-xl bg-background border border-border-subtle text-sm text-text-primary focus:outline-none focus:border-accent-purple font-mono uppercase tracking-wider transition-colors focus-visible:ring-2 focus-visible:ring-accent-purple"
             />
           </div>
@@ -213,25 +244,30 @@ function MyBookingContent() {
           </div>
         )}
 
-        {/* ----------------------------------------------------------------- */}
-        {/* Loading state                                                      */}
-        {/* ----------------------------------------------------------------- */}
+        {/* --------------------------------------------------------------- */}
+        {/* Loading state                                                    */}
+        {/* --------------------------------------------------------------- */}
         {isLoading && <BookingDetailsSkeleton />}
 
-        {/* ----------------------------------------------------------------- */}
-        {/* Booking details                                                    */}
-        {/* ----------------------------------------------------------------- */}
+        {/* --------------------------------------------------------------- */}
+        {/* Idle state (no search made yet)                                  */}
+        {/* --------------------------------------------------------------- */}
+        {!isLoading && !queryRef && <IdleState />}
+
+        {/* --------------------------------------------------------------- */}
+        {/* Booking details                                                  */}
+        {/* --------------------------------------------------------------- */}
         {!isLoading && booking && (
           <div className="space-y-6">
-            {/* ---- Success banner (confirmed bookings only) ---------------- */}
+            {/* ---- Confirmed success banner -------------------------------- */}
             {isConfirmed && (
               <motion.div
                 initial={{ opacity: 0, y: -8 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4 }}
-                className="flex flex-col sm:flex-row items-center gap-4 glass rounded-2xl border border-green-500/30 bg-green-500/5 p-5"
+                transition={{ duration: 0.35 }}
+                className="motion-safe:animate-none flex flex-col sm:flex-row items-center gap-4 glass rounded-2xl border border-green-500/30 bg-green-500/5 p-5"
               >
-                <div className="w-12 h-12 flex-shrink-0 rounded-full bg-green-500/15 border border-green-500/30 flex items-center justify-center text-2xl">
+                <div className="w-12 h-12 flex-shrink-0 rounded-full bg-green-500/15 border border-green-500/30 flex items-center justify-center text-xl">
                   ✓
                 </div>
                 <div className="text-center sm:text-left">
@@ -249,7 +285,7 @@ function MyBookingContent() {
             {/* ---- Awaiting-payment guidance ------------------------------- */}
             {isAwaitingPayment && (
               <div className="flex flex-col sm:flex-row items-center gap-4 glass rounded-2xl border border-amber-500/30 bg-amber-500/5 p-5">
-                <div className="w-12 h-12 flex-shrink-0 rounded-full bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-2xl">
+                <div className="w-12 h-12 flex-shrink-0 rounded-full bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-xl">
                   ⏳
                 </div>
                 <div className="text-center sm:text-left">
@@ -266,7 +302,7 @@ function MyBookingContent() {
             )}
 
             {/* ---- Summary card ------------------------------------------- */}
-            <div className="glass rounded-3xl border border-border-subtle p-6 space-y-4">
+            <div className="glass rounded-3xl border border-border-subtle p-5 sm:p-6 space-y-4">
               <div className="flex items-start justify-between gap-4">
                 <div className="space-y-1 min-w-0">
                   <span className="text-[10px] text-text-muted font-medium tracking-wider uppercase">
@@ -309,8 +345,8 @@ function MyBookingContent() {
                 </div>
               </div>
 
-              {/* Meta grid */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 pt-4 border-t border-border-subtle/40 text-xs text-text-secondary">
+              {/* Meta grid — now includes total amount */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-4 border-t border-border-subtle/40 text-xs text-text-secondary">
                 <div>
                   <span className="text-[10px] text-text-muted uppercase block mb-0.5">
                     Guest Name
@@ -321,26 +357,43 @@ function MyBookingContent() {
                 </div>
                 <div>
                   <span className="text-[10px] text-text-muted uppercase block mb-0.5">
-                    Total Tickets
+                    Tickets
                   </span>
                   <span className="text-white font-semibold">
-                    {booking.totalTickets} Ticket
-                    {booking.totalTickets !== 1 ? "s" : ""}
+                    {booking.totalTickets}
                   </span>
                 </div>
-                <div className="col-span-2 sm:col-span-1">
+                <div>
+                  <span className="text-[10px] text-text-muted uppercase block mb-0.5">
+                    Total Paid
+                  </span>
+                  <span className="text-white font-semibold font-mono">
+                    ₹{booking.totalAmount}
+                  </span>
+                </div>
+                <div>
                   <span className="text-[10px] text-text-muted uppercase block mb-0.5">
                     Reference ID
                   </span>
                   <button
                     type="button"
                     onClick={() => handleCopyRef(booking.bookingId)}
-                    title={copied ? "Copied!" : "Copy to clipboard"}
-                    className="flex items-center gap-1.5 text-white font-mono font-bold select-all hover:text-accent-purple-light transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple rounded"
+                    title={copied ? "Copied!" : "Copy reference to clipboard"}
+                    aria-label={
+                      copied
+                        ? "Copied to clipboard"
+                        : `Copy booking reference ${booking.bookingId}`
+                    }
+                    className="flex items-center gap-1 text-white font-mono font-bold hover:text-accent-purple-light transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple rounded"
                   >
-                    <span>{booking.bookingId}</span>
-                    <span className="text-[10px] font-sans font-normal text-text-muted">
-                      {copied ? "✓ Copied" : "⎘"}
+                    <span className="truncate max-w-[120px]">
+                      {booking.bookingId}
+                    </span>
+                    <span
+                      aria-live="polite"
+                      className="text-[10px] font-sans font-normal text-text-muted flex-shrink-0"
+                    >
+                      {copied ? "✓" : "⎘"}
                     </span>
                   </button>
                 </div>
@@ -350,34 +403,55 @@ function MyBookingContent() {
             {/* ---- Tickets / QR section ----------------------------------- */}
             {isConfirmed ? (
               <div className="space-y-4">
+                {/* Section header + print action */}
                 <div className="flex items-center justify-between">
                   <h3 className="text-white font-bold text-base">
                     Your Tickets
+                    <span className="ml-2 text-text-muted text-xs font-normal">
+                      ({tickets.length})
+                    </span>
                   </h3>
-                  <span className="text-text-muted text-xs">
-                    {tickets.length} ticket{tickets.length !== 1 ? "s" : ""}
-                  </span>
+                  <button
+                    type="button"
+                    onClick={() => window.print()}
+                    className="flex items-center gap-1.5 text-xs text-text-secondary hover:text-white border border-border-subtle hover:border-white/20 px-3 py-1.5 rounded-lg transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple"
+                    aria-label="Print or save tickets"
+                  >
+                    <span>🖨️</span>
+                    <span>Print / Save</span>
+                  </button>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {tickets.map((ticket, index) => (
                     <motion.div
                       key={ticket._id}
-                      initial={{ opacity: 0, scale: 0.96 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: index * 0.08, duration: 0.3 }}
-                      className="glass rounded-2xl border border-border-subtle overflow-hidden flex flex-col items-center p-6 text-center space-y-4"
+                      initial={{ opacity: 0, scale: 0.96, y: 8 }}
+                      animate={{ opacity: 1, scale: 1, y: 0 }}
+                      transition={{
+                        delay: index * 0.07,
+                        duration: 0.28,
+                        ease: "easeOut",
+                      }}
+                      className="glass rounded-2xl border border-border-subtle overflow-hidden flex flex-col items-center text-center"
                     >
-                      {/* Tier header */}
-                      <div className="w-full pb-3 border-b border-border-subtle/40 space-y-1">
-                        <div className="text-accent-purple-light text-xs font-bold uppercase tracking-wider">
-                          {ticket.tierName} Entry
+                      {/* Ticket header strip */}
+                      <div className="w-full bg-white/[0.03] border-b border-border-subtle/50 px-5 py-3 space-y-1">
+                        {/* Tier pill */}
+                        <div className="flex items-center justify-center gap-2">
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold tracking-wider bg-accent-purple/15 text-accent-purple-light border border-accent-purple/25">
+                            {ticket.tierName}
+                          </span>
                         </div>
+                        {/* Ticket number */}
+                        <div className="text-[10px] text-text-muted font-medium">
+                          Ticket {index + 1} of {tickets.length}
+                        </div>
+                        {/* Seat info (optional) */}
                         {ticket.seatId && (
-                          <div className="text-white font-bold text-sm">
-                            Seat{" "}
-                            <span className="font-mono">{ticket.seatId}</span> —
-                            Row {ticket.row}, Seat {ticket.seatNumber}
+                          <div className="text-white font-semibold text-xs">
+                            Row {ticket.row} · Seat {ticket.seatNumber}
+                            {ticket.section && ` · ${ticket.section}`}
                           </div>
                         )}
                         <div className="text-text-muted text-[10px] font-mono">
@@ -385,59 +459,93 @@ function MyBookingContent() {
                         </div>
                       </div>
 
-                      {/* QR code */}
-                      {ticket.qrCodeImage ? (
-                        <div className="relative">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                      {/* QR section */}
+                      <div className="flex flex-col items-center gap-3 px-5 py-5">
+                        {/* "Scan at entry" label */}
+                        <div className="flex items-center gap-1.5 text-[10px] font-bold tracking-widest text-text-muted uppercase">
+                          <span className="w-8 h-px bg-border-subtle/60 inline-block" />
+                          Scan at Entry
+                          <span className="w-8 h-px bg-border-subtle/60 inline-block" />
+                        </div>
+
+                        {/* QR code */}
+                        {ticket.qrCodeImage ? (
+                          // eslint-disable-next-line @next/next/no-img-element
                           <img
                             src={ticket.qrCodeImage}
-                            alt={`QR code for ticket ${ticket.ticketId}`}
-                            className="w-48 h-48 bg-white p-2 rounded-xl"
+                            alt={`QR code for ticket ${index + 1} of ${tickets.length} — ${ticket.tierName}`}
+                            className="w-52 h-52 sm:w-56 sm:h-56 bg-white p-2.5 rounded-xl"
                           />
-                        </div>
-                      ) : (
-                        <div className="w-48 h-48 bg-white/5 rounded-xl flex items-center justify-center text-text-muted text-xs border border-border-subtle/40">
-                          QR Unavailable
-                        </div>
-                      )}
+                        ) : (
+                          <div className="w-52 h-52 sm:w-56 sm:h-56 bg-white/5 rounded-xl flex flex-col items-center justify-center gap-2 border border-border-subtle/40">
+                            <span className="text-text-muted text-xs">
+                              QR Unavailable
+                            </span>
+                            <span className="text-text-muted text-[10px] leading-relaxed text-center px-4">
+                              Refresh the page or contact support if this
+                              persists.
+                            </span>
+                          </div>
+                        )}
 
-                      {/* Scan instruction */}
-                      <p className="text-[10px] text-text-muted max-w-[200px] leading-relaxed">
-                        Show this QR code at the venue scanner. One ticket per
-                        guest — do not share.
-                      </p>
+                        {/* Scan hint */}
+                        <p className="text-[10px] text-text-muted max-w-[210px] leading-relaxed">
+                          One ticket per guest. Do not share this QR code.
+                        </p>
+                      </div>
                     </motion.div>
                   ))}
                 </div>
 
-                {/* Post-confirmation guidance */}
+                {/* Post-confirmation "What to bring" guidance */}
                 <div className="glass rounded-2xl border border-border-subtle p-5 space-y-3">
                   <p className="text-text-secondary text-xs font-semibold tracking-wide uppercase">
                     What to bring
                   </p>
-                  <ul className="space-y-2 text-xs text-text-muted leading-relaxed">
+                  <ul className="space-y-2.5 text-xs text-text-muted leading-relaxed">
                     <li className="flex items-start gap-2">
-                      <span className="mt-0.5 flex-shrink-0">🎟️</span>
+                      <span
+                        className="mt-0.5 flex-shrink-0"
+                        role="img"
+                        aria-label="Ticket"
+                      >
+                        🎟️
+                      </span>
                       <span>
                         These QR codes — screenshot or keep this page open at
                         the venue.
                       </span>
                     </li>
                     <li className="flex items-start gap-2">
-                      <span className="mt-0.5 flex-shrink-0">🪪</span>
+                      <span
+                        className="mt-0.5 flex-shrink-0"
+                        role="img"
+                        aria-label="ID card"
+                      >
+                        🪪
+                      </span>
                       <span>
-                        A valid photo ID matching the guest name on your
-                        booking.
+                        A valid photo ID matching the name on your booking:{" "}
+                        <span className="text-white/70 font-medium">
+                          {booking.guestName}
+                        </span>
+                        .
                       </span>
                     </li>
                     <li className="flex items-start gap-2">
-                      <span className="mt-0.5 flex-shrink-0">📋</span>
+                      <span
+                        className="mt-0.5 flex-shrink-0"
+                        role="img"
+                        aria-label="Clipboard"
+                      >
+                        📋
+                      </span>
                       <span>
-                        Reference ID{" "}
+                        Reference{" "}
                         <span className="font-mono text-white/70">
                           {booking.bookingId}
                         </span>{" "}
-                        in case of any query.
+                        in case of any query at the venue.
                       </span>
                     </li>
                   </ul>
@@ -446,7 +554,9 @@ function MyBookingContent() {
             ) : (
               /* Non-confirmed state */
               <div className="glass rounded-2xl border border-border-subtle p-8 text-center space-y-3">
-                <div className="text-3xl">🎁</div>
+                <div className="text-3xl" role="img" aria-label="Gift">
+                  🎁
+                </div>
                 <p className="text-text-secondary text-sm font-semibold">
                   Tickets Pending
                 </p>
@@ -460,18 +570,19 @@ function MyBookingContent() {
           </div>
         )}
 
-        {/* ----------------------------------------------------------------- */}
-        {/* Not-found state                                                    */}
-        {/* ----------------------------------------------------------------- */}
+        {/* --------------------------------------------------------------- */}
+        {/* Not-found state                                                  */}
+        {/* --------------------------------------------------------------- */}
         {!isLoading && !booking && queryRef && !errorMsg && (
-          <div className="text-center py-12 space-y-3">
-            <div className="text-3xl">🔍</div>
-            <p className="text-text-muted text-sm">
-              No booking found for reference{" "}
-              <span className="font-mono text-white/60">{queryRef}</span>.
-            </p>
+          <div className="glass rounded-2xl border border-border-subtle p-10 text-center space-y-3">
+            <div className="text-3xl" role="img" aria-label="Magnifying glass">
+              🔍
+            </div>
+            <p className="text-white font-semibold text-sm">No booking found</p>
             <p className="text-text-muted text-xs">
-              Double-check the reference ID and try again.
+              No result for reference{" "}
+              <span className="font-mono text-white/60">{queryRef}</span>.
+              Double-check the ID and try again.
             </p>
           </div>
         )}
