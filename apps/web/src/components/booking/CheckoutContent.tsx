@@ -282,7 +282,7 @@ export function CheckoutContent({
           <button
             type="button"
             onClick={handleBackClick}
-            className="w-10 h-10 rounded-full hover:bg-white/5 border border-white/10 flex items-center justify-center text-white text-lg transition-colors"
+            className="w-10 h-10 rounded-full hover:bg-white/5 border border-white/10 flex items-center justify-center text-white text-lg transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:border-transparent"
             aria-label="Go back"
           >
             ←
@@ -305,7 +305,7 @@ export function CheckoutContent({
           <button
             type="button"
             onClick={handleCloseClick}
-            className="w-10 h-10 rounded-full hover:bg-white/5 border border-white/10 flex items-center justify-center text-white text-sm transition-colors"
+            className="w-10 h-10 rounded-full hover:bg-white/5 border border-white/10 flex items-center justify-center text-white text-sm transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:border-transparent"
             aria-label="Close checkout"
           >
             ✕
@@ -331,9 +331,9 @@ export function CheckoutContent({
           <div className="lg:col-span-8 space-y-4">
             {/* Event Summary Card */}
             {event && (
-              <div className="glass rounded-2xl border border-white/5 p-4 flex gap-4 items-center">
+              <div className="glass rounded-2xl border border-white/5 p-4 sm:p-6 flex flex-col sm:flex-row gap-4 items-start sm:items-center">
                 {event.bannerImage?.url && (
-                  <div className="relative w-20 h-20 bg-black/20 rounded-xl border border-white/10 overflow-hidden">
+                  <div className="relative w-20 h-20 bg-black/20 rounded-xl border border-white/10 overflow-hidden flex-shrink-0">
                     <Image
                       src={event.bannerImage.url}
                       alt={event.title}
@@ -343,11 +343,11 @@ export function CheckoutContent({
                     />
                   </div>
                 )}
-                <div className="space-y-1">
-                  <h2 className="text-sm font-bold text-white line-clamp-1">
+                <div className="space-y-1.5 flex-1 w-full">
+                  <h2 className="text-sm sm:text-base font-bold text-white tracking-tight line-clamp-1">
                     {event.title}
                   </h2>
-                  <p className="text-xs text-text-muted">
+                  <p className="text-xs text-text-secondary font-medium">
                     {new Date(event.startDate).toLocaleDateString("en-US", {
                       weekday: "short",
                       month: "short",
@@ -395,7 +395,7 @@ export function CheckoutContent({
                   paymentIntentMutation.isPending ||
                   isProcessing
                 }
-                className="w-full px-8 py-3 rounded-xl bg-gradient-to-r from-accent-purple to-accent-pink hover:from-accent-purple-light hover:to-accent-pink/80 text-white font-black text-sm transition-all hover:scale-[1.02] active:scale-95 shadow-glow disabled:opacity-50"
+                className="w-full px-8 py-3 rounded-xl bg-gradient-to-r from-accent-purple to-accent-pink hover:from-accent-purple-light hover:to-accent-pink/80 text-white font-black text-sm transition-all hover:scale-[1.02] active:scale-95 shadow-glow disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:border-transparent"
               >
                 {saveDetailsMutation.isPending ||
                 paymentIntentMutation.isPending ||
@@ -441,7 +441,7 @@ export function CheckoutContent({
               paymentIntentMutation.isPending ||
               isProcessing
             }
-            className="flex-shrink-0 px-8 py-3.5 rounded-xl bg-gradient-to-r from-accent-purple to-accent-pink hover:from-accent-purple-light hover:to-accent-pink/80 text-white font-black text-sm transition-all hover:scale-[1.02] active:scale-95 shadow-glow disabled:opacity-50"
+            className="flex-shrink-0 px-8 py-3.5 rounded-xl bg-gradient-to-r from-accent-purple to-accent-pink hover:from-accent-purple-light hover:to-accent-pink/80 text-white font-black text-sm transition-all hover:scale-[1.02] active:scale-95 shadow-glow disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:border-transparent"
           >
             {saveDetailsMutation.isPending ||
             paymentIntentMutation.isPending ||
