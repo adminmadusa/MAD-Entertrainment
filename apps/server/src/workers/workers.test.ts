@@ -140,11 +140,22 @@ describe("Asynchronous Workers", () => {
         bookingId: "MAD-2026-X7Y8Z",
         guestName: "Jane Guest",
         guestEmail: "guest@example.com",
+        tickets: [
+          {
+            tierName: "VIP",
+            quantity: 1,
+            pricePerTicket: 1000,
+          },
+        ],
+        totalAmount: 1000,
+        currency: "INR",
+        createdAt: new Date().toISOString(),
       };
 
       const mockEvent = {
         _id: mockEventId,
         title: "Sunset Beach Concert",
+        startDate: new Date().toISOString(),
       };
 
       vi.mocked(Booking.findById).mockResolvedValue(mockBooking as any);

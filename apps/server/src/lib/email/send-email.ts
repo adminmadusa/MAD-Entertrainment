@@ -1,5 +1,5 @@
+import { getResendClient } from "./resend";
 import { getEnv } from "../../config/env";
-import { getEmailTransporter, isEmailConfigured } from "../../config/email";
 import { logger } from "../../utils/logger";
 
 export interface EmailPayload {
@@ -9,6 +9,11 @@ export interface EmailPayload {
   html: string;
   /** Optional reply-to override; falls back to EMAIL_REPLY_TO env var */
   replyTo?: string;
+  attachments?: {
+    filename: string;
+    content: Buffer;
+    contentType?: string;
+  }[];
 }
 
 export type SendEmailResult =
@@ -16,49 +21,56 @@ export type SendEmailResult =
   | { ok: false; error: string };
 
 /**
- * Send a transactional email.
+ * Send a transactional email via Resend.
  *
  * - Never throws. Returns a structured result so callers can handle
  *   failures without crashing the booking flow.
- * - Safely no-ops (returns ok: false) when SMTP is not configured.
  * - Logs success/failure without exposing PII beyond the recipient domain.
  */
 export async function sendEmail(
   payload: EmailPayload,
 ): Promise<SendEmailResult> {
-  if (!isEmailConfigured()) {
-    logger.warn(
-      { subject: payload.subject },
-      "[email] SMTP not configured — email skipped",
-    );
-    return { ok: false, error: "SMTP not configured" };
-  }
-
   const env = getEnv();
-  const from =
-    env.EMAIL_FROM ?? env.SMTP_USER ?? "noreply@madentertrainment.com";
-  const replyTo = payload.replyTo ?? env.EMAIL_REPLY_TO ?? from;
+  const from = env.EMAIL_FROM ?? "MAD Entertainment <onboarding@resend.dev>";
+  const replyTo = payload.replyTo ?? env.EMAIL_REPLY_TO;
 
   try {
-    const info = await getEmailTransporter().sendMail({
+    const resend = getResendClient();
+    const { data, error } = await resend.emails.send({
       from,
       to: payload.to,
       subject: payload.subject,
       html: payload.html,
-      replyTo,
+      ...(replyTo ? { replyTo } : {}),
+      ...(payload.attachments?.length
+        ? {
+            attachments: payload.attachments.map((att) => ({
+              filename: att.filename,
+              content: att.content,
+            })),
+          }
+        : {}),
     });
 
+    if (error) {
+      logger.error(
+        { subject: payload.subject, err: error.message },
+        "[email] Resend rejected the message",
+      );
+      return { ok: false, error: error.message };
+    }
+
     logger.info(
-      { messageId: info.messageId, subject: payload.subject },
-      "[email] Sent successfully",
+      { messageId: data?.id, subject: payload.subject },
+      "[email] Sent successfully via Resend",
     );
 
-    return { ok: true, messageId: info.messageId as string };
+    return { ok: true, messageId: data?.id ?? "" };
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
     logger.error(
       { subject: payload.subject, err: message },
-      "[email] Delivery failed",
+      "[email] Resend delivery failed",
     );
     return { ok: false, error: message };
   }

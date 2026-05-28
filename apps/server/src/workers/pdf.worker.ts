@@ -8,6 +8,7 @@ import { Event } from "../models/event.schema";
 import { DeadLetterJob } from "../models/dead-letter-job.schema";
 import { QueueService, localFallbackEmitter } from "../services/queue.service";
 import { generateTicketPDF } from "../utils/pdf";
+import { bookingConfirmationHtml } from "../lib/email";
 import { logger } from "../utils/logger";
 
 const QUEUE_NAME = "pdf-queue";
@@ -30,16 +31,28 @@ export async function processPDFGenerate(
   // 1. Generate PDF buffer in memory
   const pdfBuffer = await generateTicketPDF(booking, event);
 
-  const emailBody = `
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto;">
-      <h2>Hi ${booking.guestName},</h2>
-      <p>Your booking <strong>${booking.bookingId}</strong> for the event <strong>"${event.title || "MAD Event"}"</strong> has been successfully confirmed!</p>
-      <p>Please find your ticket attached as a PDF document. You can present the QR code at the gate for entry.</p>
-      <p>Enjoy the show!</p>
-      <br/>
-      <p>MAD Entertainment Team</p>
-    </div>
-  `;
+  const formattedDate = new Date(
+    event.startDate || booking.createdAt,
+  ).toLocaleDateString("en-IN", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+
+  const emailBody = await bookingConfirmationHtml({
+    customerName: booking.guestName,
+    eventTitle: event.title || "MAD Event",
+    bookingReference: booking.bookingId,
+    eventDate: formattedDate,
+    tickets: booking.tickets.map((t) => ({
+      tierName: t.tierName,
+      quantity: t.quantity,
+      price: t.pricePerTicket,
+    })),
+    totalAmount: booking.totalAmount,
+    currency: booking.currency || "INR",
+  });
 
   // 2. Enqueue the final notification task with the base64-encoded attachment
   await QueueService.enqueue(
