@@ -213,12 +213,12 @@ export function TicketSelectionContent({
             onChange={(e) => setCouponCode(e.target.value)}
             placeholder="Enter code"
             disabled={couponApplied}
-            className="flex-1 px-4 py-2.5 rounded-xl bg-background border border-white/10 text-base lg:text-sm font-mono uppercase text-white focus:outline-none focus:border-accent-purple transition-colors disabled:opacity-50"
+            className="flex-1 px-4 py-2.5 rounded-xl bg-background border border-white/10 text-base lg:text-sm font-mono uppercase text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:border-transparent transition-colors disabled:opacity-50"
           />
           <button
             type="submit"
             disabled={couponApplied || !couponCode.trim()}
-            className="px-6 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 font-bold text-xs text-white transition-all disabled:opacity-40"
+            className="px-6 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 font-bold text-xs text-white transition-all disabled:opacity-40 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:border-transparent"
           >
             Apply
           </button>
@@ -254,6 +254,11 @@ export function TicketSelectionContent({
                   const finalPrice = isFree
                     ? 0
                     : Math.max(0, tier.price - discount);
+                  const qty = quantities[tier.tier] || 0;
+                  const isSoldOut =
+                    tier.quantity !== undefined &&
+                    tier.soldCount !== undefined &&
+                    tier.soldCount >= tier.quantity;
 
                   return (
                     <div
@@ -265,6 +270,11 @@ export function TicketSelectionContent({
                           <span className="text-base font-bold text-white">
                             {tier.name}
                           </span>
+                          {isSoldOut && (
+                            <span className="text-[9px] text-red-400 font-bold px-2 py-0.5 bg-red-500/15 rounded-full border border-red-500/30">
+                              SOLD OUT
+                            </span>
+                          )}
                           {tier.groupSize && tier.groupSize > 1 && (
                             <span className="text-[9px] text-emerald-400 font-semibold px-2 py-0.5 bg-emerald-500/10 rounded-full border border-emerald-500/20">
                               Admits {tier.groupSize}
@@ -322,26 +332,35 @@ export function TicketSelectionContent({
                       </div>
 
                       {/* Counter */}
-                      <div className="flex items-center gap-3 bg-background border border-white/10 rounded-xl p-1 shadow-inner">
-                        <button
-                          type="button"
-                          onClick={() => handleQtyChange(tier.tier, -1)}
-                          aria-label={`Decrease ${tier.name} tickets`}
-                          className="w-10 h-10 rounded-lg hover:bg-white/5 flex items-center justify-center text-white text-base font-bold active:scale-90 transition-transform focus:outline-none focus:ring-1 focus:ring-accent-purple"
-                        >
-                          -
-                        </button>
-                        <span className="w-5 text-center text-sm font-semibold text-white">
-                          {quantities[tier.tier] || 0}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => handleQtyChange(tier.tier, 1)}
-                          aria-label={`Increase ${tier.name} tickets`}
-                          className="w-10 h-10 rounded-lg hover:bg-white/5 flex items-center justify-center text-white text-base font-bold active:scale-90 transition-transform focus:outline-none focus:ring-1 focus:ring-accent-purple"
-                        >
-                          +
-                        </button>
+                      <div className="flex flex-col items-end gap-1.5">
+                        <div className="flex items-center gap-3 bg-background border border-white/10 rounded-xl p-1 shadow-inner">
+                          <button
+                            type="button"
+                            onClick={() => handleQtyChange(tier.tier, -1)}
+                            disabled={qty === 0 || isSoldOut}
+                            aria-label={`Decrease ${tier.name} tickets`}
+                            className="w-10 h-10 rounded-lg hover:bg-white/5 disabled:opacity-30 disabled:cursor-not-allowed disabled:pointer-events-none flex items-center justify-center text-white text-base font-bold active:scale-90 transition-transform focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:outline-none"
+                          >
+                            −
+                          </button>
+                          <span className="w-5 text-center text-sm font-semibold text-white">
+                            {qty}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => handleQtyChange(tier.tier, 1)}
+                            disabled={qty >= 10 || isSoldOut}
+                            aria-label={`Increase ${tier.name} tickets`}
+                            className="w-10 h-10 rounded-lg hover:bg-white/5 disabled:opacity-30 disabled:cursor-not-allowed disabled:pointer-events-none flex items-center justify-center text-white text-base font-bold active:scale-90 transition-transform focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:outline-none"
+                          >
+                            +
+                          </button>
+                        </div>
+                        {qty >= 10 && (
+                          <span className="text-[10px] text-amber-400 font-semibold animate-pulse">
+                            Maximum 10 tickets allowed
+                          </span>
+                        )}
                       </div>
                     </div>
                   );
