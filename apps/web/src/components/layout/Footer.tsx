@@ -98,7 +98,10 @@ export function Footer() {
       {/* Bottom Bar */}
       <div className="border-t border-border-subtle">
         <div className="container-mad py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-text-muted text-sm">
+          {/* suppressHydrationWarning: year is evaluated on both server and client.
+              If the server renders Dec 31 and the client hydrates Jan 1, React
+              would log a hydration mismatch. Scoped to this single node only. */}
+          <p className="text-text-muted text-sm" suppressHydrationWarning>
             © {currentYear} MAD Entertrainment. All rights reserved.
           </p>
           <div className="flex items-center gap-4">

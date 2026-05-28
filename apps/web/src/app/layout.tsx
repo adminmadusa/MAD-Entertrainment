@@ -19,6 +19,12 @@ const outfit = Outfit({
 // ─── Metadata ─────────────────────────────────────────────────
 
 export const metadata: Metadata = {
+  /**
+   * metadataBase is required for Next.js to resolve relative URLs in OG images
+   * across all pages. Without it, opengraph-image paths are left unresolved.
+   */
+  metadataBase: new URL('https://madentertainment.in'),
+
   title: {
     default: 'MAD Entertrainment — Book Shows, Events & DJ Nights',
     template: '%s | MAD Entertrainment',
@@ -40,6 +46,9 @@ export const metadata: Metadata = {
   authors: [{ name: 'MAD Entertrainment' }],
   creator: 'MAD Entertrainment',
   publisher: 'MAD Entertrainment',
+  alternates: {
+    canonical: 'https://madentertainment.in',
+  },
   robots: {
     index: true,
     follow: true,
@@ -57,13 +66,23 @@ export const metadata: Metadata = {
     title: 'MAD Entertrainment — Book Shows, Events & DJ Nights',
     description:
       'Book tickets for the hottest shows, events, DJ nights, concerts, comedy shows, and live performances.',
+    url: 'https://madentertainment.in',
     locale: 'en_IN',
+    images: [
+      {
+        url: '/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'MAD Entertrainment — Premium Event Booking',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'MAD Entertrainment — Book Shows, Events & DJ Nights',
     description:
       'Book tickets for the hottest shows, events, DJ nights, concerts, comedy shows, and live performances.',
+    images: ['/og-image.png'],
   },
   icons: {
     icon: '/favicon.ico',

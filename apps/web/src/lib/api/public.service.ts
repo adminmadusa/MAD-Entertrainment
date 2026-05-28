@@ -1,6 +1,64 @@
 import { Event, SeatLayout, Booking, Ticket, DJOperator, Artist, Venue, PopupCampaign } from '@mad/types';
+import { AuthUser, AuthResponse, MagicLinkRequestResponse, VerifyMagicLinkOrOTPPayload } from '../../types/auth';
+import { ReserveTicketsInput, CheckoutDetailsInput } from '@mad/validations';
 
 import { apiClient } from './client';
+
+export interface LoginPayload {
+  email: string;
+  password?: string;
+  [key: string]: unknown;
+}
+
+export interface RegisterPayload {
+  name: string;
+  email: string;
+  phone: string;
+  password?: string;
+  [key: string]: unknown;
+}
+
+export interface VerifyPaymentPayload {
+  razorpay_order_id?: string;
+  razorpay_payment_id?: string;
+  razorpay_signature?: string;
+  paymentIntentId?: string;
+  [key: string]: unknown;
+}
+
+export interface PublicEventsApiResponse {
+  data: {
+    events: Event[];
+    total: number;
+  };
+}
+
+export interface PublicDJsApiResponse {
+  data: {
+    data?: DJOperator[];
+    djOperators?: DJOperator[];
+    djs?: DJOperator[];
+    total?: number;
+    pagination?: {
+      total?: number;
+      totalPages?: number;
+    };
+  };
+}
+
+export interface PublicArtistsApiResponse {
+  data: {
+    artists: Artist[];
+    total: number;
+  };
+}
+
+export interface PublicVenuesApiResponse {
+  data: {
+    venues: Venue[];
+    total: number;
+  };
+}
 
 export interface PublicEventsResponse {
   data: Event[];
@@ -21,8 +79,8 @@ export async function publicGetEvents(filters: { category?: string; search?: str
 
   const page = filters.page || 1;
   const limit = filters.limit || 12;
-  const { data } = await apiClient.get<any>(`/events?${params}`);
-  const payload = data?.data || {};
+  const { data } = await apiClient.get<PublicEventsApiResponse>(`/events?${params}`);
+  const payload = data?.data || { events: [], total: 0 };
   const items = Array.isArray(payload.events) ? payload.events : [];
   return {
     data: items,
@@ -62,15 +120,16 @@ export async function publicGetDJs(
 
   const page = filters.page || 1;
   const limit = filters.limit || 12;
-  const { data } = await apiClient.get<any>(`/dj-operators?${params}`);
-  const payload = data?.data || {};
-  const items = Array.isArray(payload.data)
-    ? payload.data
-    : Array.isArray(payload.djOperators)
-    ? payload.djOperators
-    : Array.isArray(payload.djs)
-    ? payload.djs
-    : [];
+  const { data } = await apiClient.get<PublicDJsApiResponse>(`/dj-operators?${params}`);
+  const payload: PublicDJsApiResponse['data'] = data?.data || {};
+  let items: DJOperator[] = [];
+  if (Array.isArray(payload.data)) {
+    items = payload.data;
+  } else if (Array.isArray(payload.djOperators)) {
+    items = payload.djOperators;
+  } else if (Array.isArray(payload.djs)) {
+    items = payload.djs;
+  }
 
   const total = payload.pagination?.total ?? payload.total ?? 0;
   const totalPages = payload.pagination?.totalPages ?? Math.ceil(total / limit);
@@ -97,23 +156,7 @@ export async function publicGetEventSeatLayout(eventId: string): Promise<SeatLay
 }
 
 export async function publicCreateBooking(
-  payload: {
-    eventId: string;
-    guestName: string;
-    guestEmail: string;
-    guestPhone: string;
-    tickets: {
-      tier: string;
-      quantity: number;
-      seats?: {
-        seatId: string;
-        row: string;
-        number: number;
-        section?: string;
-      }[];
-    }[];
-    couponCode?: string;
-  },
+  payload: ReserveTicketsInput,
   sessionId: string
 ): Promise<Booking> {
   const { data } = await apiClient.post<{ data: Booking }>('/bookings', payload, {
@@ -126,16 +169,7 @@ export async function publicCreateBooking(
 
 export async function publicSaveCheckoutDetails(
   bookingId: string,
-  payload: {
-    firstName: string;
-    lastName: string;
-    guestEmail: string;
-    guestEmailConfirm: string;
-    guestPhone: string;
-    birthdate: string;
-    keepUpdated: boolean;
-    sendBestEvents: boolean;
-  },
+  payload: CheckoutDetailsInput,
   sessionId: string
 ): Promise<Booking> {
   const { data } = await apiClient.put<{ data: Booking }>(`/bookings/${bookingId}/checkout-details`, payload, {
@@ -185,7 +219,7 @@ export async function publicCreatePaymentIntent(bookingId: string, gateway: 'str
   return data.data;
 }
 
-export async function publicVerifyPayment(bookingId: string, gatewayPayload: any): Promise<Booking> {
+export async function publicVerifyPayment(bookingId: string, gatewayPayload: VerifyPaymentPayload): Promise<Booking> {
   const { data } = await apiClient.post<{ data: Booking }>('/payments/verify', {
     bookingId,
     ...gatewayPayload,
@@ -216,8 +250,8 @@ export async function publicGetArtists(
 
   const page = filters.page || 1;
   const limit = filters.limit || 12;
-  const { data } = await apiClient.get<any>(`/artists?${params}`);
-  const payload = data?.data || {};
+  const { data } = await apiClient.get<PublicArtistsApiResponse>(`/artists?${params}`);
+  const payload = data?.data || { artists: [], total: 0 };
   const items = Array.isArray(payload.artists) ? payload.artists : [];
   return {
     data: items,
@@ -258,8 +292,8 @@ export async function publicGetVenues(
 
   const page = filters.page || 1;
   const limit = filters.limit || 12;
-  const { data } = await apiClient.get<any>(`/venues?${params}`);
-  const payload = data?.data || {};
+  const { data } = await apiClient.get<PublicVenuesApiResponse>(`/venues?${params}`);
+  const payload = data?.data || { venues: [], total: 0 };
   const items = Array.isArray(payload.venues) ? payload.venues : [];
   return {
     data: items,
@@ -286,23 +320,45 @@ export async function publicGetActivePopups(): Promise<PopupCampaign[]> {
 
 // ─── Auth ────────────────────────────────────────────────────
 
-export async function publicLogin(payload: any) {
-  const { data } = await apiClient.post('/auth/login', payload);
+export async function publicLogin(payload: LoginPayload): Promise<AuthResponse> {
+  // Gracefully adapt legacy publicLogin to trigger Magic Link sending
+  const { data } = await apiClient.post<{ data: AuthResponse }>('/auth/magic-link', payload);
   return data.data;
 }
 
-export async function publicRegister(payload: any) {
-  const { data } = await apiClient.post('/auth/register', payload);
+export async function publicRegister(payload: RegisterPayload): Promise<AuthResponse> {
+  // Gracefully adapt legacy publicRegister to trigger Magic Link sending
+  const { data } = await apiClient.post<{ data: AuthResponse }>('/auth/magic-link', payload);
   return data.data;
 }
 
-export async function publicGetMe() {
-  const { data } = await apiClient.get('/auth/me');
+export async function publicGoogleLogin(idToken: string): Promise<AuthResponse> {
+  const { data } = await apiClient.post<{ data: AuthResponse }>('/auth/google', { idToken });
   return data.data;
 }
 
-export async function publicLogout() {
-  const { data } = await apiClient.post('/auth/logout');
+export async function publicRequestMagicLink(email: string): Promise<MagicLinkRequestResponse> {
+  const { data } = await apiClient.post<MagicLinkRequestResponse>('/auth/magic-link', { email });
+  return data;
+}
+
+export async function publicVerifyMagicLinkOrOTP(payload: VerifyMagicLinkOrOTPPayload): Promise<AuthResponse> {
+  const { data } = await apiClient.post<{ data: AuthResponse }>('/auth/verify', payload);
+  return data.data;
+}
+
+export async function publicGetMyAuthBookings(): Promise<Booking[]> {
+  const { data } = await apiClient.get<{ data: Booking[] }>('/my-bookings');
+  return data.data;
+}
+
+export async function publicGetMe(): Promise<AuthUser> {
+  const { data } = await apiClient.get<{ data: AuthUser }>('/auth/me');
+  return data.data;
+}
+
+export async function publicLogout(): Promise<{ success: boolean }> {
+  const { data } = await apiClient.post<{ data: { success: boolean } }>('/auth/logout');
   return data.data;
 }
 

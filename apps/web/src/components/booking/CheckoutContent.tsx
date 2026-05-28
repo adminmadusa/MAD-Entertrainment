@@ -1,43 +1,44 @@
 'use client';
 
-import { Button } from '@mad/ui';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { AnimatePresence } from 'framer-motion';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 
 import { STORAGE_VERSION } from '@mad/shared';
 import { Event, Booking } from '@mad/types';
+import { useCountdown } from '@/hooks/use-countdown.hook';
 import { extractApiError } from '@/lib/api/client';
+import { loadScriptOnce } from '@/lib/utils/load-script-once';
 import { 
   publicGetBookingDetails, 
   publicCreatePaymentIntent, 
   publicVerifyPayment, 
   publicSaveCheckoutDetails 
 } from '@/lib/api/public.service';
+import { CheckoutDetailsInput } from '@mad/validations';
+
+import { useCheckoutNavGuard } from './checkout/useCheckoutNavGuard';
+import { LeaveCheckoutModal } from './checkout/LeaveCheckoutModal';
+import { CheckoutForm } from './checkout/CheckoutForm';
+import { CheckoutPricing } from './checkout/CheckoutPricing';
+import { CheckoutPayment } from './checkout/CheckoutPayment';
 
 interface RazorpayInstance {
   open(): void;
   on(event: string, callback: (response: { error: { description: string } }) => void): void;
 }
 
-const MONTHS = [
-  { name: 'January', value: '01' },
-  { name: 'February', value: '02' },
-  { name: 'March', value: '03' },
-  { name: 'April', value: '04' },
-  { name: 'May', value: '05' },
-  { name: 'June', value: '06' },
-  { name: 'July', value: '07' },
-  { name: 'August', value: '08' },
-  { name: 'September', value: '09' },
-  { name: 'October', value: '10' },
-  { name: 'November', value: '11' },
-  { name: 'December', value: '12' },
-];
+interface RazorpayWindow extends Window {
+  Razorpay?: new (options: unknown) => RazorpayInstance;
+}
 
-const DAYS = Array.from({ length: 31 }, (_, i) => String(i + 1).padStart(2, '0'));
-const YEARS = Array.from({ length: 80 }, (_, i) => String(new Date().getFullYear() - 18 - i)); // Ages 18+ enforced
+function asEvent(value: unknown): Event | null {
+  if (typeof value !== 'object' || value === null) return null;
+  if (!('title' in value) || !('startDate' in value)) return null;
+  return value as Event;
+}
 
 interface CheckoutContentProps {
   bookingId: string;
@@ -53,24 +54,14 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
   const [error, setError] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // States for Leave Checkout Guard
-  const [isLeaveModalOpen, setIsLeaveModalOpen] = useState(false);
-  const [leaveAction, setLeaveAction] = useState<'back' | 'close'>('close');
-  const [shouldAllowNavigation, setShouldAllowNavigation] = useState(false);
-
-  // Form Fields
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [guestEmail, setGuestEmail] = useState('');
-  const [guestEmailConfirm, setGuestEmailConfirm] = useState('');
-  const [guestPhone, setGuestPhone] = useState('');
-  const [birthMonth, setBirthMonth] = useState('');
-  const [birthDay, setBirthDay] = useState('');
-  const [birthYear, setBirthYear] = useState('');
-  const [keepUpdated, setKeepUpdated] = useState(true);
-  const [sendBestEvents, setSendBestEvents] = useState(false);
-
-  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const {
+    isLeaveModalOpen,
+    setIsLeaveModalOpen,
+    handleBackClick,
+    handleCloseClick,
+    handleConfirmLeave,
+    allowNavigation,
+  } = useCheckoutNavGuard({ isModal, onBack, onClose });
 
   const { data: details, isLoading } = useQuery({
     queryKey: ['booking-checkout-details', bookingId],
@@ -92,60 +83,25 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
   });
 
   const booking = details?.booking;
-  const event = booking?.eventId as unknown as Event;
+  const event = asEvent((booking as Booking | undefined)?.eventId);
 
   // Redirect if already confirmed
   useEffect(() => {
     if (booking && booking.status === 'confirmed') {
-      setShouldAllowNavigation(true);
+      allowNavigation();
       router.push(`/my-booking?ref=${booking.bookingId}`);
     }
-  }, [booking, router]);
+  }, [booking, router, allowNavigation]);
 
-  // Back navigation interceptor (standalone page only)
-  useEffect(() => {
-    if (isModal || shouldAllowNavigation) return;
-    
-    // Push dummy state to capture popstate back
-    window.history.pushState(null, '', window.location.href);
-
-    const handlePopState = () => {
-      setLeaveAction('back');
-      setIsLeaveModalOpen(true);
-      window.history.pushState(null, '', window.location.href);
-    };
-
-    window.addEventListener('popstate', handlePopState);
-    return () => {
-      window.removeEventListener('popstate', handlePopState);
-    };
-  }, [shouldAllowNavigation, isModal]);
-
-  // Reservation Timer Countdown
-  const [timeLeft, setTimeLeft] = useState('');
-  const [isExpired, setIsExpired] = useState(false);
-
-  useEffect(() => {
-    if (!booking?.expiresAt) return;
-    const intervalId = setInterval(() => {
-      const distance = new Date(booking.expiresAt).getTime() - new Date().getTime();
-      if (distance <= 0) {
-        clearInterval(intervalId);
-        setTimeLeft('Expired');
-        setIsExpired(true);
-      } else {
-        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-        setTimeLeft(`Time left ${minutes}:${seconds.toString().padStart(2, '0')}`);
-      }
-    }, 1000);
-
-    return () => clearInterval(intervalId);
-  }, [booking]);
+  const countdown = useCountdown(booking?.expiresAt);
+  const isExpired = countdown.isExpired;
+  const timeLeft = isExpired
+    ? 'Expired'
+    : `Time left ${countdown.minutes}:${String(countdown.seconds).padStart(2, '0')}`;
 
   // Save checkout details mutation
   const saveDetailsMutation = useMutation({
-    mutationFn: (payload: any) => {
+    mutationFn: (payload: CheckoutDetailsInput) => {
       let sess = '';
       if (typeof window !== 'undefined') {
         const sessionKey = `mad_checkout_session_${STORAGE_VERSION}`;
@@ -176,17 +132,9 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
           return;
         }
 
-        const loadRazorpay = () =>
-          new Promise((resolve) => {
-            const script = document.createElement('script');
-            script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-            script.onload = () => resolve(true);
-            script.onerror = () => resolve(false);
-            document.body.appendChild(script);
-          });
-
-        const resLoaded = await loadRazorpay();
-        if (!resLoaded) {
+        try {
+          await loadScriptOnce('https://checkout.razorpay.com/v1/checkout.js');
+        } catch {
           setError('Failed to load Razorpay SDK. Check your connection.');
           return;
         }
@@ -218,7 +166,11 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
           },
         };
 
-        const Razorpay = (window as unknown as { Razorpay: new (options: unknown) => RazorpayInstance }).Razorpay;
+        const Razorpay = (window as RazorpayWindow).Razorpay;
+        if (!Razorpay) {
+          setError('Razorpay SDK is unavailable. Please retry.');
+          return;
+        }
         const rzp = new Razorpay(options);
         rzp.on('payment.failed', function (response) {
           setError(`Payment Failed: ${response.error.description}`);
@@ -244,7 +196,7 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
   const verifyPaymentMutation = useMutation({
     mutationFn: (payload: Record<string, unknown>) => publicVerifyPayment(bookingId, payload),
     onSuccess: () => {
-      setShouldAllowNavigation(true);
+      allowNavigation();
       router.push(`/my-booking?ref=${booking?.bookingId}`);
     },
     onError: (err) => {
@@ -253,64 +205,8 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
     },
   });
 
-  const handlePlaceOrderSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (isExpired) {
-      setError('Your booking reservation has expired. Please start a new booking.');
-      return;
-    }
-    setError('');
-    setFieldErrors({});
-
-    const errors: Record<string, string> = {};
-    if (!firstName.trim()) errors.firstName = 'First name is required';
-    if (!lastName.trim()) errors.lastName = 'Last name is required';
-    if (!guestEmail.trim()) errors.guestEmail = 'Email is required';
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(guestEmail)) errors.guestEmail = 'Invalid email format';
-    
-    if (guestEmailConfirm !== guestEmail) errors.guestEmailConfirm = 'Emails do not match';
-    if (!guestPhone.trim()) errors.guestPhone = 'Phone number is required';
-    if (!birthMonth) errors.birthMonth = 'Month is required';
-    if (!birthDay) errors.birthDay = 'Day is required';
-    if (!birthYear) errors.birthYear = 'Year is required';
-
-    if (Object.keys(errors).length > 0) {
-      setFieldErrors(errors);
-      return;
-    }
-
-    const birthdateStr = `${birthYear}-${birthMonth}-${birthDay}T00:00:00.000Z`;
-
-    saveDetailsMutation.mutate({
-      firstName: firstName.trim(),
-      lastName: lastName.trim(),
-      guestEmail: guestEmail.trim().toLowerCase(),
-      guestEmailConfirm: guestEmailConfirm.trim().toLowerCase(),
-      guestPhone: guestPhone.trim(),
-      birthdate: birthdateStr,
-      keepUpdated,
-      sendBestEvents,
-    });
-  };
-
-  const handleBackClick = () => {
-    setLeaveAction('back');
-    setIsLeaveModalOpen(true);
-  };
-
-  const handleCloseClick = () => {
-    setLeaveAction('close');
-    setIsLeaveModalOpen(true);
-  };
-
-  const handleConfirmLeave = () => {
-    setShouldAllowNavigation(true);
-    setIsLeaveModalOpen(false);
-    if (leaveAction === 'back') {
-      onBack();
-    } else {
-      onClose();
-    }
+  const handleFormSubmit = (detailsPayload: CheckoutDetailsInput) => {
+    saveDetailsMutation.mutate(detailsPayload);
   };
 
   if (isLoading) {
@@ -328,9 +224,12 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
         <p className="text-text-muted text-sm max-w-md">
           We couldn't find your booking details. It may have expired due to inactivity. Please select tickets again.
         </p>
-        <Button variant="primary" onClick={onClose}>
+        <button
+          onClick={onClose}
+          className="px-6 py-3 btn-gradient text-white rounded-xl font-bold text-sm shadow-glow-sm transition-transform active:scale-95"
+        >
           Start New Booking
-        </Button>
+        </button>
       </div>
     );
   }
@@ -354,7 +253,7 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
           </button>
           
           <div className="text-center">
-            <h1 className="text-sm font-bold text-white tracking-wide">Checkout</h1>
+            <h1 id="checkout-modal-title" className="text-sm font-bold text-white tracking-wide">Checkout</h1>
             <div className={`text-[10px] font-semibold mt-0.5 ${isExpired ? 'text-red-400' : 'text-accent-cyan animate-pulse'}`}>
               {timeLeft}
             </div>
@@ -386,8 +285,9 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
             {event && (
               <div className="glass rounded-2xl border border-white/5 p-4 flex gap-4 items-center">
                 {event.bannerImage?.url && (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={event.bannerImage.url} alt={event.title} className="w-20 h-20 object-contain bg-black/20 rounded-xl border border-white/10" />
+                  <div className="relative w-20 h-20 bg-black/20 rounded-xl border border-white/10 overflow-hidden">
+                    <Image src={event.bannerImage.url} alt={event.title} fill sizes="80px" className="object-contain" />
+                  </div>
                 )}
                 <div className="space-y-1">
                   <h2 className="text-sm font-bold text-white line-clamp-1">{event.title}</h2>
@@ -400,252 +300,22 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
             )}
 
             {/* Billing Information Form */}
-            <form id="checkout-form" onSubmit={handlePlaceOrderSubmit} className="space-y-4">
-              <div className="glass rounded-2xl border border-white/5 p-5 space-y-4">
-                <div className="flex justify-between items-center border-b border-white/10 pb-2.5">
-                  <h2 className="text-white font-bold text-base">Billing information</h2>
-                  <span className="text-[10px] text-text-muted uppercase">* Required</span>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <label className="text-xs text-text-secondary font-medium">First name *</label>
-                    <input
-                      type="text"
-                      value={firstName}
-                      onChange={(e) => setFirstName(e.target.value)}
-                      placeholder="First name"
-                      className={`w-full px-4 py-2 rounded-xl bg-background border text-base lg:text-sm text-white focus:outline-none transition-colors ${
-                        fieldErrors.firstName ? 'border-red-500' : 'border-white/10 focus:border-accent-purple'
-                      }`}
-                    />
-                    {fieldErrors.firstName && <p className="text-red-400 text-[10px]">{fieldErrors.firstName}</p>}
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-xs text-text-secondary font-medium">Last name *</label>
-                    <input
-                      type="text"
-                      value={lastName}
-                      onChange={(e) => setLastName(e.target.value)}
-                      placeholder="Last name"
-                      className={`w-full px-4 py-2 rounded-xl bg-background border text-base lg:text-sm text-white focus:outline-none transition-colors ${
-                        fieldErrors.lastName ? 'border-red-500' : 'border-white/10 focus:border-accent-purple'
-                      }`}
-                    />
-                    {fieldErrors.lastName && <p className="text-red-400 text-[10px]">{fieldErrors.lastName}</p>}
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <label className="text-xs text-text-secondary font-medium">Email address *</label>
-                    <input
-                      type="email"
-                      value={guestEmail}
-                      onChange={(e) => setGuestEmail(e.target.value)}
-                      placeholder="email@example.com"
-                      className={`w-full px-4 py-2 rounded-xl bg-background border text-base lg:text-sm text-white focus:outline-none transition-colors ${
-                        fieldErrors.guestEmail ? 'border-red-500' : 'border-white/10 focus:border-accent-purple'
-                      }`}
-                    />
-                    {fieldErrors.guestEmail && <p className="text-red-400 text-[10px]">{fieldErrors.guestEmail}</p>}
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-xs text-text-secondary font-medium">Confirm email *</label>
-                    <input
-                      type="email"
-                      value={guestEmailConfirm}
-                      onChange={(e) => setGuestEmailConfirm(e.target.value)}
-                      placeholder="Confirm email address"
-                      className={`w-full px-4 py-2 rounded-xl bg-background border text-base lg:text-sm text-white focus:outline-none transition-colors ${
-                        fieldErrors.guestEmailConfirm ? 'border-red-500' : 'border-white/10 focus:border-accent-purple'
-                      }`}
-                    />
-                    {fieldErrors.guestEmailConfirm && <p className="text-red-400 text-[10px]">{fieldErrors.guestEmailConfirm}</p>}
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <label className="text-xs text-text-secondary font-medium">Cell phone *</label>
-                    <input
-                      type="tel"
-                      value={guestPhone}
-                      onChange={(e) => setGuestPhone(e.target.value)}
-                      placeholder="+91 98765 43210"
-                      className={`w-full px-4 py-2 rounded-xl bg-background border text-base lg:text-sm text-white focus:outline-none transition-colors ${
-                        fieldErrors.guestPhone ? 'border-red-500' : 'border-white/10 focus:border-accent-purple'
-                      }`}
-                    />
-                    {fieldErrors.guestPhone && <p className="text-red-400 text-[10px]">{fieldErrors.guestPhone}</p>}
-                  </div>
-
-                  <div className="space-y-1 flex flex-col justify-between">
-                    <label className="text-xs text-text-secondary font-medium">Birthdate *</label>
-                    <div className="grid grid-cols-3 gap-2">
-                      <select
-                        value={birthMonth}
-                        onChange={(e) => setBirthMonth(e.target.value)}
-                        className={`px-3 py-2 rounded-xl bg-background border text-base lg:text-xs text-white focus:outline-none ${
-                          fieldErrors.birthMonth ? 'border-red-500' : 'border-white/10 focus:border-accent-purple'
-                        }`}
-                      >
-                        <option value="">Month</option>
-                        {MONTHS.map((m) => (
-                          <option key={m.value} value={m.value}>{m.name}</option>
-                        ))}
-                      </select>
-
-                      <select
-                        value={birthDay}
-                        onChange={(e) => setBirthDay(e.target.value)}
-                        className={`px-3 py-2 rounded-xl bg-background border text-base lg:text-xs text-white focus:outline-none ${
-                          fieldErrors.birthDay ? 'border-red-500' : 'border-white/10 focus:border-accent-purple'
-                        }`}
-                      >
-                        <option value="">Day</option>
-                        {DAYS.map((d) => (
-                          <option key={d} value={d}>{d}</option>
-                        ))}
-                      </select>
-
-                      <select
-                        value={birthYear}
-                        onChange={(e) => setBirthYear(e.target.value)}
-                        className={`px-3 py-2 rounded-xl bg-background border text-base lg:text-xs text-white focus:outline-none ${
-                          fieldErrors.birthYear ? 'border-red-500' : 'border-white/10 focus:border-accent-purple'
-                        }`}
-                      >
-                        <option value="">Year</option>
-                        {YEARS.map((y) => (
-                          <option key={y} value={y}>{y}</option>
-                        ))}
-                      </select>
-                    </div>
-                    {(fieldErrors.birthMonth || fieldErrors.birthDay || fieldErrors.birthYear) && (
-                      <p className="text-red-400 text-[10px] mt-1">Valid birthdate is required (Age 18+)</p>
-                    )}
-                  </div>
-                </div>
-
-                {/* Subscriptions */}
-                <div className="space-y-2 pt-3 border-t border-white/5">
-                  <label className="flex items-start gap-2.5 cursor-pointer text-[11px] text-text-secondary leading-normal">
-                    <input
-                      type="checkbox"
-                      checked={keepUpdated}
-                      onChange={(e) => setKeepUpdated(e.target.checked)}
-                      className="mt-0.5 rounded border-white/10 bg-background accent-accent-purple"
-                    />
-                    <span>Keep me updated on more events and news from this event organizer.</span>
-                  </label>
-                  <label className="flex items-start gap-2.5 cursor-pointer text-[11px] text-text-secondary leading-normal">
-                    <input
-                      type="checkbox"
-                      checked={sendBestEvents}
-                      onChange={(e) => setSendBestEvents(e.target.checked)}
-                      className="mt-0.5 rounded border-white/10 bg-background accent-accent-purple"
-                    />
-                    <span>Send me emails about the best events happening nearby or online.</span>
-                  </label>
-                </div>
-              </div>
-            </form>
+            <CheckoutForm
+              isExpired={isExpired}
+              isDisabled={isProcessing || saveDetailsMutation.isPending || paymentIntentMutation.isPending}
+              onSubmit={handleFormSubmit}
+              onErrorSet={setError}
+            />
           </div>
 
           {/* Right Column: Checkout Breakdown, Payment Details, and Actions */}
           <div className="lg:col-span-4 space-y-4">
-            {/* Payment Details Card */}
-            <div className="glass rounded-2xl border border-white/5 p-5 space-y-4">
-              <h2 className="text-white font-bold text-sm uppercase tracking-wider">Payment Details</h2>
+            <CheckoutPricing booking={booking} />
 
-              <div className="space-y-2 text-xs border-b border-white/5 pb-3">
-                <div className="flex justify-between text-text-secondary">
-                  <span>Subtotal</span>
-                  <span>₹{booking.subtotal}</span>
-                </div>
-                <div className="flex justify-between text-text-secondary">
-                  <span>Convenience Fee</span>
-                  <span>₹{booking.convenienceFee}</span>
-                </div>
-                <div className="flex justify-between text-text-secondary">
-                  <span>GST (18%)</span>
-                  <span>₹{booking.gst}</span>
-                </div>
-                {booking.discount > 0 && (
-                  <div className="flex justify-between text-emerald-400 font-medium">
-                    <span>Discount</span>
-                    <span>-₹{booking.discount}</span>
-                  </div>
-                )}
-              </div>
-
-              <div className="flex justify-between items-center text-sm font-black">
-                <span className="text-white">Total Amount</span>
-                <span className="text-accent-purple-light text-base">₹{booking.totalAmount}</span>
-              </div>
-            </div>
-
-            {/* Pay With / Gateways */}
-            <div className="glass rounded-2xl border border-white/5 p-5 space-y-3">
-              <h2 className="text-white font-bold text-sm border-b border-white/10 pb-2">Pay with</h2>
-
-              <div className="space-y-2.5">
-                <label className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all ${
-                  selectedGateway === 'stripe' 
-                    ? 'bg-accent-purple/10 border-accent-purple' 
-                    : 'bg-white/2 border-white/5 hover:border-white/10'
-                }`}>
-                  <div className="flex items-center gap-3">
-                    <input
-                      type="radio"
-                      name="gateway"
-                      checked={selectedGateway === 'stripe'}
-                      onChange={() => setSelectedGateway('stripe')}
-                      className="accent-accent-purple"
-                    />
-                    <span className="text-xs font-semibold text-white">Credit or debit card</span>
-                  </div>
-                  <span className="text-base">💳</span>
-                </label>
-
-                <label className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all ${
-                  selectedGateway === 'razorpay' 
-                    ? 'bg-accent-purple/10 border-accent-purple' 
-                    : 'bg-white/2 border-white/5 hover:border-white/10'
-                }`}>
-                  <div className="flex items-center gap-3">
-                    <input
-                      type="radio"
-                      name="gateway"
-                      checked={selectedGateway === 'razorpay'}
-                      onChange={() => setSelectedGateway('razorpay')}
-                      className="accent-accent-purple"
-                    />
-                    <span className="text-xs font-semibold text-white">PayPal</span>
-                  </div>
-                  <span className="text-xs text-accent-cyan font-bold">PayPal</span>
-                </label>
-
-                <label className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all ${
-                  selectedGateway === 'razorpay' && false /* Just display third alternative */
-                    ? 'bg-accent-purple/10 border-accent-purple' 
-                    : 'bg-white/2 border-white/5 hover:border-white/10'
-                }`}>
-                  <div className="flex items-center gap-3">
-                    <input
-                      type="radio"
-                      name="gateway"
-                      checked={selectedGateway === 'razorpay'}
-                      onChange={() => setSelectedGateway('razorpay')}
-                      className="accent-accent-purple"
-                    />
-                    <span className="text-xs font-semibold text-white">Google Pay</span>
-                  </div>
-                  <span className="text-[10px] text-white font-mono bg-white/5 px-2 py-1 rounded border border-white/10">GPay</span>
-                </label>
-              </div>
-            </div>
+            <CheckoutPayment
+              selectedGateway={selectedGateway}
+              onChangeGateway={setSelectedGateway}
+            />
 
             {/* Place Order & Terms (Desktop Only) */}
             <div className="hidden lg:block glass rounded-2xl border border-white/5 p-5 space-y-3">
@@ -670,7 +340,7 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
         </div>
       </div>
 
-      {/* Sticky Place Order Footer */}
+      {/* Sticky Place Order Footer (Mobile Only) */}
       <div className={isModal ? "sticky bottom-0 z-40 bg-[#0d111d]/95 border-t border-white/10 py-3 mt-8 shadow-2xl lg:hidden" : "fixed bottom-0 left-0 right-0 z-40 bg-[#0d111d]/95 backdrop-blur-lg border-t border-white/10 shadow-2xl lg:hidden"}>
         <div className="container-mad max-w-4xl px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] flex items-center gap-4">
           <div className="flex-1">
@@ -704,38 +374,11 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
       </AnimatePresence>
       
       {/* Leave Checkout Confirmation Modal */}
-      {isLeaveModalOpen && (
-        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-fade-in">
-          {/* Backdrop click to close */}
-          <div className="absolute inset-0" onClick={() => setIsLeaveModalOpen(false)} />
-
-          <div className="w-full max-w-sm bg-[#0d111d] rounded-2xl border border-white/10 p-6 space-y-6 text-center shadow-2xl relative z-10">
-            <div className="space-y-2">
-              <h2 className="text-xl font-bold text-white">Leave Checkout?</h2>
-              <p className="text-xs text-text-secondary leading-relaxed">
-                Are you sure you want to leave checkout? The items you've selected may not be available later.
-              </p>
-            </div>
-            
-            <div className="grid grid-cols-2 gap-3 pt-2">
-              <button
-                type="button"
-                onClick={() => setIsLeaveModalOpen(false)}
-                className="px-5 py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold text-sm transition-colors"
-              >
-                Stay
-              </button>
-              <button
-                type="button"
-                onClick={handleConfirmLeave}
-                className="px-5 py-3 rounded-xl bg-gradient-to-r from-accent-purple to-accent-pink hover:from-accent-purple-light hover:to-accent-pink/80 text-white font-bold text-sm transition-colors shadow-glow"
-              >
-                Leave
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <LeaveCheckoutModal
+        isOpen={isLeaveModalOpen}
+        onClose={() => setIsLeaveModalOpen(false)}
+        onConfirm={handleConfirmLeave}
+      />
     </div>
   );
 }

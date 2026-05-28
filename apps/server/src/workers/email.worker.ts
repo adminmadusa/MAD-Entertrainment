@@ -19,7 +19,8 @@ export async function processEmailDispatch(
   html: string,
   attachments?: { filename: string; content: string; contentType?: string }[],
   bookingId?: string,
-  eventId?: string
+  eventId?: string,
+  notificationType?: NotificationType
 ): Promise<void> {
   // 1. Decode base64 attachments back into Buffer instances
   const parsedAttachments = attachments?.map((att) => ({
@@ -38,18 +39,20 @@ export async function processEmailDispatch(
 
   // 3. Save Notification confirmation document to MongoDB
   await Notification.create({
-    type: NotificationType.BOOKING_CONFIRMED,
+    type: notificationType ?? NotificationType.BOOKING_CONFIRMED,
     bookingId: bookingId ? new Types.ObjectId(bookingId) : undefined,
     eventId: eventId ? new Types.ObjectId(eventId) : undefined,
     channel: 'email',
     recipient: to,
     subject: subject,
-    body: 'Email dispatched asynchronously with PDF ticket attached.',
+    body: notificationType === NotificationType.OTP 
+      ? 'Magic Link login email with OTP fallback dispatched asynchronously.'
+      : 'Email dispatched asynchronously with PDF ticket attached.',
     isSent: true,
     retryCount: 0,
   });
 
-  logger.info({ to, bookingId }, 'Email receipt successfully dispatched and logged in database.');
+  logger.info({ to, bookingId, type: notificationType }, 'Email successfully dispatched and logged in database.');
 }
 
 async function handleJobExecution(jobId: string, data: any): Promise<void> {
@@ -59,12 +62,12 @@ async function handleJobExecution(jobId: string, data: any): Promise<void> {
       name: `worker:${QUEUE_NAME}`,
     },
     async () => {
-      const { to, subject, html, attachments, bookingId, eventId } = data;
+      const { to, subject, html, attachments, bookingId, eventId, notificationType } = data;
       if (!to || !subject || !html) {
         throw new Error('Missing parameters in email dispatch payload');
       }
 
-      await processEmailDispatch(to, subject, html, attachments, bookingId, eventId);
+      await processEmailDispatch(to, subject, html, attachments, bookingId, eventId, notificationType);
     }
   );
 }

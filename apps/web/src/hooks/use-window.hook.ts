@@ -23,12 +23,24 @@ export function useWindowWidth(defaultWidth = 1024): number {
   const [width, setWidth] = useState(defaultWidth);
 
   useEffect(() => {
-    // Set real width on mount (client only)
+    // Set real width immediately on mount
     setWidth(window.innerWidth);
 
-    const handler = () => setWidth(window.innerWidth);
+    let rafId: number;
+
+    // requestAnimationFrame throttles resize events to ~60 fps.
+    // Without this, every pixel of window dragging fires a setState,
+    // causing 60+ re-renders per second in every consumer of this hook.
+    const handler = () => {
+      cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(() => setWidth(window.innerWidth));
+    };
+
     window.addEventListener('resize', handler, { passive: true });
-    return () => window.removeEventListener('resize', handler);
+    return () => {
+      window.removeEventListener('resize', handler);
+      cancelAnimationFrame(rafId); // prevent stale update after unmount
+    };
   }, []);
 
   return width;

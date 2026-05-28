@@ -22,6 +22,9 @@ import publicAuthRoutes from './public/auth.routes';
 import publicArtistRoutes from './public/artist.routes';
 import publicVenueRoutes from './public/venue.routes';
 import publicCategoryRoutes from './public/category.routes';
+import { AuthController } from '../controllers/public/auth.controller';
+import { requireAuth } from '../middleware/auth.middleware';
+
 
 // ─── Health ───────────────────────────────────────────────────
 router.use('/health', healthRoutes);
@@ -36,6 +39,10 @@ router.use('/artists', publicArtistRoutes);
 router.use('/venues', publicVenueRoutes);
 router.use('/categories', publicCategoryRoutes);
 router.use('/popups', publicPopupRoutes);
+
+// ─── Direct Auth Accessors ──────────────────────────────────
+router.get('/me', requireAuth, AuthController.getMe);
+router.get('/my-bookings', requireAuth, AuthController.getMyBookings);
 
 // ─── Admin: Auth ──────────────────────────────────────────────
 import adminAuthRoutes from './admin/auth.routes';

@@ -8,6 +8,7 @@ import { useEffect } from 'react';
 
 import { publicGetMyBookings } from '@/lib/api/public.service';
 import { useAuth } from '@/providers/AuthProvider';
+import { Booking, Event } from '@mad/types';
 
 export default function UserDashboard() {
   const router = useRouter();
@@ -87,30 +88,32 @@ export default function UserDashboard() {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {bookings.map((booking: any) => (
-                <motion.div
-                  key={booking._id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="glass rounded-2xl border border-border-subtle p-6 hover:border-accent-purple/30 transition-all flex flex-col justify-between"
-                >
-                  <div>
-                    <div className="flex justify-between items-start mb-4">
-                      <div className="px-2.5 py-1 bg-white/5 border border-white/10 rounded-lg text-xs font-mono text-white/80">
-                        {booking.bookingId}
+              {bookings.map((booking: Booking) => {
+                const bookingEvent = booking.eventId as unknown as Event;
+                return (
+                  <motion.div
+                    key={booking._id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="glass rounded-2xl border border-border-subtle p-6 hover:border-accent-purple/30 transition-all flex flex-col justify-between"
+                  >
+                    <div>
+                      <div className="flex justify-between items-start mb-4">
+                        <div className="px-2.5 py-1 bg-white/5 border border-white/10 rounded-lg text-xs font-mono text-white/80">
+                          {booking.bookingId}
+                        </div>
+                        <span className={`text-[10px] uppercase font-bold tracking-wider px-2 py-1 rounded-md ${
+                          booking.status === 'confirmed' ? 'bg-emerald-500/10 text-emerald-400' :
+                          booking.status === 'awaiting_payment' ? 'bg-amber-500/10 text-amber-400' :
+                          'bg-red-500/10 text-red-400'
+                        }`}>
+                          {booking.status.replace('_', ' ')}
+                        </span>
                       </div>
-                      <span className={`text-[10px] uppercase font-bold tracking-wider px-2 py-1 rounded-md ${
-                        booking.status === 'confirmed' ? 'bg-emerald-500/10 text-emerald-400' :
-                        booking.status === 'awaiting_payment' ? 'bg-amber-500/10 text-amber-400' :
-                        'bg-red-500/10 text-red-400'
-                      }`}>
-                        {booking.status.replace('_', ' ')}
-                      </span>
-                    </div>
 
-                    <h3 className="text-lg font-bold text-white mb-1 line-clamp-1">
-                      {booking.eventId?.title || 'Unknown Event'}
-                    </h3>
+                      <h3 className="text-lg font-bold text-white mb-1 line-clamp-1">
+                        {bookingEvent?.title || 'Unknown Event'}
+                      </h3>
                     <p className="text-text-muted text-xs mb-4">
                       {new Date(booking.createdAt).toLocaleDateString('en-US', {
                         month: 'short', day: 'numeric', year: 'numeric'
@@ -128,7 +131,8 @@ export default function UserDashboard() {
                     </Link>
                   </div>
                 </motion.div>
-              ))}
+              );
+            })}
             </div>
           )}
         </div>
