@@ -50,7 +50,6 @@ export default function AdminEventsPage() {
         status: statusFilter,
       }),
   });
-
   const deleteMutation = useMutation({
     mutationFn: (id: string) => adminDeleteEvent(id),
     onSuccess: () => {
