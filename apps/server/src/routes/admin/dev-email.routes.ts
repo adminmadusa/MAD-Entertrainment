@@ -45,7 +45,7 @@ router.post(
 
     logger.info({ to }, "[dev] Sending test email");
 
-    const html = bookingConfirmationHtml({
+    const html = await bookingConfirmationHtml({
       customerName: "Test User",
       eventTitle: "MAD Night Out — Test Event",
       bookingReference: "TEST-000001",
