@@ -19,7 +19,7 @@ interface BookingConfirmationEmailProps {
   data: BookingConfirmationData;
 }
 
-export function BookingConfirmationEmail({
+export default function BookingConfirmationEmail({
   data,
 }: BookingConfirmationEmailProps) {
   const {

@@ -17,7 +17,9 @@ interface TicketDeliveryEmailProps {
   data: TicketDeliveryData;
 }
 
-export function TicketDeliveryEmail({ data }: TicketDeliveryEmailProps) {
+export default function TicketDeliveryEmail({
+  data,
+}: TicketDeliveryEmailProps) {
   const { customerName, eventTitle, eventDate, venue, bookingReference } = data;
 
   return (

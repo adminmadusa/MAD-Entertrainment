@@ -10,7 +10,8 @@
     "start": "node dist/apps/server/src/server.js",
     "type-check": "tsc -p tsconfig.json --noEmit",
     "lint": "echo 'No linting configured'",
-    "clean": "rm -rf dist .turbo tsconfig.tsbuildinfo"
+    "clean": "rm -rf dist .turbo tsconfig.tsbuildinfo",
+    "email:dev": "react-email dev --dir src/lib/email/templates"
   },
   "dependencies": {
     "@asteasolutions/zod-to-openapi": "^7.3.4",
@@ -64,6 +65,7 @@
     "@types/react-dom": "^19.2.3",
     "@types/swagger-ui-express": "^4.1.8",
     "autocannon": "^8.0.0",
+    "react-email": "^6.4.0",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3"
   }
