@@ -21,6 +21,7 @@ export async function processEmailDispatch(
   bookingId?: string,
   eventId?: string,
 ): Promise<void> {
+  console.log("[EMAIL WORKER] Processing booking:", bookingId);
   // 1. Decode base64 attachments back into Buffer instances
   const parsedAttachments = attachments?.map((att) => ({
     filename: att.filename,

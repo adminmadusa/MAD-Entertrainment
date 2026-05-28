@@ -52,6 +52,8 @@ export async function sendEmail(
         : {}),
     });
 
+    console.log("RESEND RESPONSE:", { data, error });
+
     if (error) {
       logger.error(
         { subject: payload.subject, err: error.message },
