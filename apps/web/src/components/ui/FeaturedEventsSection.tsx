@@ -62,12 +62,21 @@ export function FeaturedEventsSection({ initialEvents = [] }: { initialEvents: E
   };
 
   const formatDate = (dateStr: Date | string) => {
-    return new Date(dateStr).toLocaleDateString('en-US', {
-      weekday: 'short',
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    });
+    try {
+      if (!dateStr) return 'Date TBA';
+      const d = new Date(dateStr);
+      if (isNaN(d.getTime())) {
+        return 'Date TBA';
+      }
+      return d.toLocaleDateString('en-US', {
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+      });
+    } catch {
+      return 'Date TBA';
+    }
   };
 
   return (
@@ -139,12 +148,13 @@ export function FeaturedEventsSection({ initialEvents = [] }: { initialEvents: E
                   
                   // Safe server default (1024 width) prevents layout shifts
                   const currentWidth = isMounted ? windowWidth : 1024;
-                  const spread = currentWidth < 640 ? 100 : 160;
+                  const isMobile = currentWidth < 640;
+                  const spread = isMobile ? 100 : 160;
                   
                   // Cover flow 3D math
                   const x = absoluteOffset * spread;
-                  const z = isActive ? 0 : -150 - Math.abs(absoluteOffset) * 60;
-                  const rotateY = isActive ? 0 : absoluteOffset > 0 ? -25 : 25;
+                  const z = isActive || isMobile ? 0 : -150 - Math.abs(absoluteOffset) * 60;
+                  const rotateY = isActive || isMobile ? 0 : absoluteOffset > 0 ? -25 : 25;
                   const opacity = isActive ? 1 : Math.max(0, 1 - Math.abs(absoluteOffset) * 0.4);
                   const zIndex = 20 - Math.abs(absoluteOffset);
 
@@ -175,7 +185,7 @@ export function FeaturedEventsSection({ initialEvents = [] }: { initialEvents: E
                       style={{
                         zIndex,
                         position: "absolute",
-                        transformStyle: "preserve-3d"
+                        transformStyle: isMobile ? "flat" : "preserve-3d"
                       }}
                       className={`pointer-events-auto w-[260px] sm:w-[320px] h-[380px] sm:h-[450px] group glass rounded-2xl border ${isActive ? 'border-accent-purple/50 shadow-glow' : 'border-border-subtle cursor-pointer'} overflow-hidden flex flex-col focus-within:ring-2 focus-within:ring-accent-purple focus-within:border-accent-purple/40`}
                       onClick={() => !isActive && setActiveIndex(index)}
@@ -242,7 +252,7 @@ export function FeaturedEventsSection({ initialEvents = [] }: { initialEvents: E
                         <div>
                           <div className="text-[9px] sm:text-[10px] text-text-muted font-medium">Tickets from</div>
                           <div className="text-white font-black text-xs sm:text-sm">
-                            ₹{Math.min(...event.ticketTiers.map((t) => t.price))}
+                            ₹{event.ticketTiers && event.ticketTiers.length > 0 ? Math.min(...event.ticketTiers.map((t) => t.price)) : 0}
                           </div>
                         </div>
                         <Link 

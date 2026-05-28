@@ -56,6 +56,7 @@ interface RevealProps {
   delay?: number;
   direction?: 'up' | 'down' | 'left' | 'right';
   className?: string;
+  trigger?: 'mount' | 'scroll';
 }
 
 const directionVariants = {
@@ -65,12 +66,15 @@ const directionVariants = {
   right: { x: -30, opacity: 0 },
 };
 
-export function Reveal({ children, delay = 0, direction = 'up', className = '' }: RevealProps) {
+export function Reveal({ children, delay = 0, direction = 'up', className = '', trigger = 'scroll' }: RevealProps) {
+  const isScroll = trigger === 'scroll';
+
   return (
     <motion.div
       initial={directionVariants[direction]}
-      whileInView={{ x: 0, y: 0, opacity: 1 }}
-      viewport={{ once: true, margin: '-50px' }}
+      animate={!isScroll ? { x: 0, y: 0, opacity: 1 } : undefined}
+      whileInView={isScroll ? { x: 0, y: 0, opacity: 1 } : undefined}
+      viewport={isScroll ? { once: true, margin: '-20px' } : undefined}
       transition={{
         duration: 0.6,
         delay,

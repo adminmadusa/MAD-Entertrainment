@@ -117,7 +117,7 @@ function HeroSection() {
       <div className="container-mad relative z-10 text-center pt-24 pb-16">
 
         {/* Headline */}
-        <Reveal delay={0.2}>
+        <Reveal delay={0.2} trigger="mount">
           <h1 className="text-display-xl font-black text-white mb-6 leading-[1.02] text-glow-neon">
             Experience the{' '}
             <span className="text-gradient block">Extraordinary</span>
@@ -125,14 +125,14 @@ function HeroSection() {
         </Reveal>
 
         {/* Subheadline */}
-        <Reveal delay={0.3}>
+        <Reveal delay={0.3} trigger="mount">
           <p className="text-text-secondary text-lg md:text-xl max-w-2xl mx-auto mb-10 leading-relaxed">
             Book tickets for DJ nights, concerts, comedy shows, festivals, VIP events and unforgettable live experiences — all in one place.
           </p>
         </Reveal>
 
         {/* CTAs */}
-        <Reveal delay={0.4}>
+        <Reveal delay={0.4} trigger="mount">
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
               id="hero-book-now"
@@ -153,7 +153,7 @@ function HeroSection() {
         </Reveal>
 
         {/* Stats */}
-        <Reveal delay={0.5}>
+        <Reveal delay={0.5} trigger="mount">
           <div className="mt-16 grid grid-cols-3 gap-6 max-w-xl mx-auto">
             {[
               { value: '500+', label: 'Events' },
