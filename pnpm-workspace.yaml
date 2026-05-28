@@ -1,3 +1,23 @@
 packages:
   - "apps/*"
   - "packages/*"
+
+allowBuilds:
+  "@scarf/scarf": true
+  "@sentry/cli": true
+  esbuild: true
+  msgpackr-extract: true
+  sharp: true
+  unrs-resolver: true
+
+overrides:
+  serialize-javascript: "7.0.5"
+  postcss: "8.5.10"
+
+packageExtensions:
+  "next@*":
+    dependencies:
+      postcss: "8.5.10"
+  "@rollup/plugin-terser@*":
+    dependencies:
+      serialize-javascript: "7.0.5"
