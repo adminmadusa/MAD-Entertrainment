@@ -22,19 +22,10 @@ export function getTransporter(): nodemailer.Transporter | null {
   if (transporter) return transporter;
 
   const env = getEnv();
-  logger.info({
-    host: env.SMTP_HOST,
-    port: env.SMTP_PORT,
-    from: env.MAIL_FROM,
-    secure: env.SMTP_SECURE,
-  }, "SMTP runtime configuration");
-
   if (!env.SMTP_HOST || !env.SMTP_PORT) {
     logger.warn('SMTP_HOST or SMTP_PORT is missing. SMTP transporter will not be initialized.');
     return null;
   }
-
-  logger.info("SMTP transporter initializing");
 
   // Safe startup logging (strictly no passwords/secrets exposed)
   logger.info({
@@ -67,14 +58,11 @@ export async function verifyTransporter(): Promise<boolean> {
   }
 
   try {
-    logger.info("SMTP verify starting");
     logger.info("Verifying SMTP transporter connection pool...");
     await tx.verify();
-    logger.info("SMTP verify success");
     logger.info("SMTP transporter ready and verified successfully");
     return true;
   } catch (error) {
-    logger.error(error, "SMTP verify failed");
     logger.error(error, "SMTP transporter failed verification");
     return false;
   }
@@ -88,8 +76,6 @@ export async function sendEmail(input: SendEmailInput): Promise<void> {
     return;
   }
 
-  const { to, subject } = input;
-  logger.info({ to, subject }, "Sending email");
   logger.info({ to: input.to, subject: input.subject }, "Sending transactional email");
 
   try {
@@ -101,10 +87,8 @@ export async function sendEmail(input: SendEmailInput): Promise<void> {
       html: input.html,
       attachments: input.attachments,
     });
-    logger.info({ messageId: info.messageId }, "Email sent");
     logger.info({ messageId: info.messageId, to: input.to }, "Transactional email delivered successfully");
   } catch (error) {
-    logger.error(error, "Email send failed");
     logger.error({
       error,
       to: input.to,
