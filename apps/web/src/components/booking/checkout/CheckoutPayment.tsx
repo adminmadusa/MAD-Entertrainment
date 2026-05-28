@@ -1,11 +1,13 @@
 interface CheckoutPaymentProps {
   selectedGateway: "stripe" | "razorpay";
   onChangeGateway: (gateway: "stripe" | "razorpay") => void;
+  isDisabled?: boolean;
 }
 
 export function CheckoutPayment({
   selectedGateway,
   onChangeGateway,
+  isDisabled = false,
 }: CheckoutPaymentProps) {
   return (
     <div className="glass rounded-2xl border border-white/5 p-5 space-y-3">
@@ -20,7 +22,7 @@ export function CheckoutPayment({
             selectedGateway === "razorpay"
               ? "bg-accent-purple/10 border-accent-purple"
               : "bg-white/2 border-white/5 hover:border-white/10"
-          }`}
+          } ${isDisabled ? "opacity-50 cursor-not-allowed pointer-events-none" : ""}`}
         >
           <div className="flex items-center gap-3">
             <input
@@ -28,6 +30,7 @@ export function CheckoutPayment({
               name="gateway"
               checked={selectedGateway === "razorpay"}
               onChange={() => onChangeGateway("razorpay")}
+              disabled={isDisabled}
               className="accent-accent-purple"
               aria-label="Pay with UPI, Cards or Net Banking via Razorpay"
             />
@@ -47,7 +50,7 @@ export function CheckoutPayment({
               selectedGateway === "stripe"
                 ? "bg-[#a855f7]/10 border-accent-purple"
                 : "bg-white/2 border-white/5 hover:border-white/10"
-            }`}
+            } ${isDisabled ? "opacity-50 cursor-not-allowed pointer-events-none" : ""}`}
           >
             <div className="flex items-center gap-3">
               <input
@@ -55,6 +58,7 @@ export function CheckoutPayment({
                 name="gateway"
                 checked={selectedGateway === "stripe"}
                 onChange={() => onChangeGateway("stripe")}
+                disabled={isDisabled}
                 className="accent-accent-purple"
                 aria-label="Pay with International Credit or Debit Card via Stripe"
               />

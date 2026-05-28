@@ -53,6 +53,7 @@ export function TicketSelectionContent({
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [couponCode, setCouponCode] = useState("");
   const [couponApplied, setCouponApplied] = useState(false);
+  const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
   const [error, setError] = useState("");
 
   // Setup unique Session ID
@@ -128,8 +129,12 @@ export function TicketSelectionContent({
   const handleApplyCoupon = (e: React.FormEvent) => {
     e.preventDefault();
     if (!couponCode.trim()) return;
-    setCouponApplied(true);
-    alert("Coupon applied! Subtotal will be updated at checkout.");
+    setIsApplyingCoupon(true);
+    setTimeout(() => {
+      setCouponApplied(true);
+      setIsApplyingCoupon(false);
+      alert("Coupon applied! Subtotal will be updated at checkout.");
+    }, 600);
   };
 
   const handleCheckoutSubmit = useCallback(() => {
@@ -212,15 +217,16 @@ export function TicketSelectionContent({
             value={couponCode}
             onChange={(e) => setCouponCode(e.target.value)}
             placeholder="Enter code"
-            disabled={couponApplied}
+            disabled={couponApplied || isApplyingCoupon}
             className="flex-1 px-4 py-2.5 rounded-xl bg-background border border-white/10 text-base lg:text-sm font-mono uppercase text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:border-transparent transition-colors disabled:opacity-50"
           />
           <button
             type="submit"
-            disabled={couponApplied || !couponCode.trim()}
+            disabled={couponApplied || isApplyingCoupon || !couponCode.trim()}
+            aria-busy={isApplyingCoupon}
             className="px-6 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 font-bold text-xs text-white transition-all disabled:opacity-40 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:border-transparent"
           >
-            Apply
+            {isApplyingCoupon ? "Applying..." : "Apply"}
           </button>
         </div>
       </form>

@@ -22,9 +22,36 @@ export default function TicketSelectionClient() {
 
   if (isLoadingEvent) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-background">
-        <div className="text-white/40 animate-pulse text-sm">
-          Loading tickets selection...
+      <div className="pt-20 pb-32 min-h-screen bg-[#0d111d] text-white relative animate-pulse">
+        {/* Sticky Top Header Skeleton */}
+        <div className="fixed top-0 left-0 right-0 bg-[#0d111d]/90 backdrop-blur-lg border-b border-white/10 py-4 z-50">
+          <div className="container-mad max-w-2xl px-4 flex items-center justify-between">
+            <div className="space-y-2 w-2/3">
+              <div className="h-4 bg-white/10 rounded w-3/4" />
+              <div className="h-3 bg-white/5 rounded w-1/2" />
+            </div>
+            <div className="w-10 h-10 rounded-full bg-white/10" />
+          </div>
+        </div>
+
+        <div className="container-mad max-w-2xl px-4 mt-8 space-y-6">
+          <div className="h-4 bg-white/10 rounded w-1/4" />
+          <div className="space-y-4">
+            {[1, 2, 3].map((i) => (
+              <div
+                key={i}
+                className="glass rounded-2xl border border-white/5 p-5 flex items-center justify-between gap-6"
+              >
+                <div className="space-y-3 flex-1">
+                  <div className="h-4 bg-white/10 rounded w-1/3" />
+                  <div className="h-3 bg-white/5 rounded w-full" />
+                  <div className="h-3 bg-white/5 rounded w-2/3" />
+                  <div className="h-4 bg-white/10 rounded w-1/6" />
+                </div>
+                <div className="w-24 h-10 rounded-xl bg-white/10" />
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     );
