@@ -4,7 +4,7 @@ import { Artist } from "@mad/types";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import {
   adminGetArtists,
@@ -17,12 +17,21 @@ import ErrorState from "@/components/states/ErrorState";
 export default function AdminArtistsPage() {
   const qc = useQueryClient();
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [page, setPage] = useState(1);
   const [deleteTarget, setDeleteTarget] = useState<Artist | null>(null);
 
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 300);
+    return () => clearTimeout(handler);
+  }, [search]);
+
   const { data, isLoading, error } = useQuery({
-    queryKey: ["admin-artists", { page, search }],
-    queryFn: () => adminGetArtists({ page, limit: 15, search }),
+    queryKey: ["admin-artists", { page, search: debouncedSearch }],
+    queryFn: () =>
+      adminGetArtists({ page, limit: 15, search: debouncedSearch }),
   });
 
   const deleteMutation = useMutation({
@@ -65,7 +74,7 @@ export default function AdminArtistsPage() {
         <Link
           href="/artists/new"
           id="admin-create-artist"
-          className="px-4 py-2.5 btn-gradient text-white font-semibold text-sm rounded-xl shadow-glow-sm motion-safe:hover:scale-105 transition-transform motion-reduce:transition-none flex items-center gap-2"
+          className="px-4 py-2.5 btn-gradient text-white font-semibold text-sm rounded-xl shadow-glow-sm motion-safe:hover:scale-[1.02] transition-transform motion-reduce:transition-none flex items-center gap-2"
         >
           <span>+</span> Add Artist
         </Link>
@@ -218,7 +227,7 @@ export default function AdminArtistsPage() {
                             isActive: !artist.isActive,
                           })
                         }
-                        className={`text-xs px-2.5 py-1 rounded-full border font-medium transition-all motion-reduce:transition-none ${
+                        className={`text-xs px-2.5 py-1 rounded-full border font-medium transition-colors motion-reduce:transition-none ${
                           artist.isActive
                             ? "bg-green-500/10 text-green-400 border-green-500/30"
                             : "bg-red-500/10 text-red-400 border-red-500/30"
@@ -231,13 +240,13 @@ export default function AdminArtistsPage() {
                       <div className="flex items-center justify-end gap-2">
                         <Link
                           href={`/artists/${artist._id}/edit`}
-                          className="px-3 py-1.5 text-xs font-medium glass border border-border-subtle rounded-lg text-text-secondary hover:text-white hover:border-accent-purple/40 transition-all motion-reduce:transition-none"
+                          className="px-3 py-1.5 text-xs font-medium glass border border-border-subtle rounded-lg text-text-secondary hover:text-white hover:border-accent-purple/40 transition-colors motion-reduce:transition-none"
                         >
                           Edit
                         </Link>
                         <button
                           onClick={() => setDeleteTarget(artist)}
-                          className="px-3 py-1.5 text-xs font-medium glass border border-border-subtle rounded-lg text-text-muted hover:text-red-400 hover:border-red-500/40 transition-all motion-reduce:transition-none"
+                          className="px-3 py-1.5 text-xs font-medium glass border border-border-subtle rounded-lg text-text-muted hover:text-red-400 hover:border-red-500/40 transition-colors motion-reduce:transition-none"
                         >
                           Delete
                         </button>
@@ -261,14 +270,14 @@ export default function AdminArtistsPage() {
               <button
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page === 1}
-                className="px-3 py-1.5 text-xs glass border border-border-subtle rounded-lg disabled:opacity-40 text-text-secondary hover:text-white transition-all motion-reduce:transition-none"
+                className="px-3 py-1.5 text-xs glass border border-border-subtle rounded-lg disabled:opacity-40 text-text-secondary hover:text-white transition-colors motion-reduce:transition-none"
               >
                 ← Prev
               </button>
               <button
                 onClick={() => setPage((p) => p + 1)}
                 disabled={page >= pagination.totalPages}
-                className="px-3 py-1.5 text-xs glass border border-border-subtle rounded-lg disabled:opacity-40 text-text-secondary hover:text-white transition-all motion-reduce:transition-none"
+                className="px-3 py-1.5 text-xs glass border border-border-subtle rounded-lg disabled:opacity-40 text-text-secondary hover:text-white transition-colors motion-reduce:transition-none"
               >
                 Next →
               </button>

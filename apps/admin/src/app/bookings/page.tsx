@@ -2,7 +2,7 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import {
   adminGetBookings,
@@ -21,6 +21,7 @@ const STATUS_COLORS: Record<string, string> = {
 export default function AdminBookingsPage() {
   const qc = useQueryClient();
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [page, setPage] = useState(1);
   const [cancelTarget, setCancelTarget] = useState<AdminBooking | null>(null);
@@ -29,13 +30,23 @@ export default function AdminBookingsPage() {
     null,
   );
 
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 300);
+    return () => clearTimeout(handler);
+  }, [search]);
+
   const { data, isLoading, error } = useQuery({
-    queryKey: ["admin-bookings", { page, search, status: statusFilter }],
+    queryKey: [
+      "admin-bookings",
+      { page, search: debouncedSearch, status: statusFilter },
+    ],
     queryFn: () =>
       adminGetBookings({
         page,
         limit: 15,
-        ...(search && { search }),
+        ...(debouncedSearch && { search: debouncedSearch }),
         ...(statusFilter && { status: statusFilter }),
       }),
   });
@@ -194,7 +205,7 @@ export default function AdminBookingsPage() {
                 Array.from({ length: 6 }).map((_, i) => (
                   <tr
                     key={i}
-                    className="border-b border-border-subtle/40 animate-pulse"
+                    className="border-b border-border-subtle/40 animate-pulse motion-reduce:animate-none"
                   >
                     {Array.from({ length: 7 }).map((__, j) => (
                       <td key={j} className="py-4 px-4">
@@ -265,7 +276,7 @@ export default function AdminBookingsPage() {
                               e.stopPropagation();
                               setCancelTarget(booking);
                             }}
-                            className="px-3 py-1.5 text-xs glass border border-border-subtle rounded-lg text-text-muted hover:text-red-400 hover:border-red-500/40 transition-all"
+                            className="px-3 py-1.5 text-xs glass border border-border-subtle rounded-lg text-text-muted hover:text-red-400 hover:border-red-500/40 transition-colors motion-reduce:transition-none"
                           >
                             Cancel
                           </button>

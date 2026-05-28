@@ -4,7 +4,7 @@ import { Venue } from "@mad/types";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import {
   adminGetVenues,
@@ -18,21 +18,50 @@ import ErrorState from "@/components/states/ErrorState";
 export default function AdminVenuesPage() {
   const qc = useQueryClient();
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [cityFilter, setCityFilter] = useState("");
+  const [debouncedCityFilter, setDebouncedCityFilter] = useState("");
   const [page, setPage] = useState(1);
   const [deleteTarget, setDeleteTarget] = useState<Venue | null>(null);
 
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 300);
+    return () => clearTimeout(handler);
+  }, [search]);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedCityFilter(cityFilter);
+    }, 300);
+    return () => clearTimeout(handler);
+  }, [cityFilter]);
+
   const { data, isLoading, error } = useQuery({
-    queryKey: venueQueryKey({ page, search, city: cityFilter }),
+    queryKey: venueQueryKey({
+      page,
+      search: debouncedSearch,
+      city: debouncedCityFilter,
+    }),
     queryFn: () =>
-      adminGetVenues({ page, limit: 15, search, city: cityFilter }),
+      adminGetVenues({
+        page,
+        limit: 15,
+        search: debouncedSearch,
+        city: debouncedCityFilter,
+      }),
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => adminDeleteVenue(id),
     onSuccess: () => {
       qc.invalidateQueries({
-        queryKey: venueQueryKey({ page, search, city: cityFilter }),
+        queryKey: venueQueryKey({
+          page,
+          search: debouncedSearch,
+          city: debouncedCityFilter,
+        }),
       });
       setDeleteTarget(null);
     },
@@ -43,7 +72,11 @@ export default function AdminVenuesPage() {
       adminUpdateVenue(id, { isActive }),
     onSuccess: () =>
       qc.invalidateQueries({
-        queryKey: venueQueryKey({ page, search, city: cityFilter }),
+        queryKey: venueQueryKey({
+          page,
+          search: debouncedSearch,
+          city: debouncedCityFilter,
+        }),
       }),
   });
 
@@ -73,7 +106,7 @@ export default function AdminVenuesPage() {
         <Link
           href="/venues/new"
           id="admin-create-venue"
-          className="px-4 py-2.5 btn-gradient text-white font-semibold text-sm rounded-xl shadow-glow-sm motion-safe:hover:scale-105 transition-transform motion-reduce:transition-none flex items-center gap-2"
+          className="px-4 py-2.5 btn-gradient text-white font-semibold text-sm rounded-xl shadow-glow-sm motion-safe:hover:scale-[1.02] transition-transform motion-reduce:transition-none flex items-center gap-2"
         >
           <span>+</span> Add Venue
         </Link>
@@ -254,7 +287,7 @@ export default function AdminVenuesPage() {
                             isActive: !venue.isActive,
                           })
                         }
-                        className={`text-xs px-2.5 py-1 rounded-full border font-medium transition-all motion-reduce:transition-none ${
+                        className={`text-xs px-2.5 py-1 rounded-full border font-medium transition-colors motion-reduce:transition-none ${
                           venue.isActive
                             ? "bg-green-500/10 text-green-400 border-green-500/30"
                             : "bg-red-500/10 text-red-400 border-red-500/30"
@@ -267,13 +300,13 @@ export default function AdminVenuesPage() {
                       <div className="flex items-center justify-end gap-2">
                         <Link
                           href={`/venues/${venue._id}/edit`}
-                          className="px-3 py-1.5 text-xs font-medium glass border border-border-subtle rounded-lg text-text-secondary hover:text-white hover:border-accent-purple/40 transition-all motion-reduce:transition-none"
+                          className="px-3 py-1.5 text-xs font-medium glass border border-border-subtle rounded-lg text-text-secondary hover:text-white hover:border-accent-purple/40 transition-colors motion-reduce:transition-none"
                         >
                           Edit
                         </Link>
                         <button
                           onClick={() => setDeleteTarget(venue)}
-                          className="px-3 py-1.5 text-xs font-medium glass border border-border-subtle rounded-lg text-text-muted hover:text-red-400 hover:border-red-500/40 transition-all motion-reduce:transition-none"
+                          className="px-3 py-1.5 text-xs font-medium glass border border-border-subtle rounded-lg text-text-muted hover:text-red-400 hover:border-red-500/40 transition-colors motion-reduce:transition-none"
                         >
                           Delete
                         </button>
@@ -297,14 +330,14 @@ export default function AdminVenuesPage() {
               <button
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page === 1}
-                className="px-3 py-1.5 text-xs glass border border-border-subtle rounded-lg disabled:opacity-40 text-text-secondary hover:text-white transition-all motion-reduce:transition-none"
+                className="px-3 py-1.5 text-xs glass border border-border-subtle rounded-lg disabled:opacity-40 text-text-secondary hover:text-white transition-colors motion-reduce:transition-none"
               >
                 ← Prev
               </button>
               <button
                 onClick={() => setPage((p) => p + 1)}
                 disabled={page >= pagination.totalPages}
-                className="px-3 py-1.5 text-xs glass border border-border-subtle rounded-lg disabled:opacity-40 text-text-secondary hover:text-white transition-all motion-reduce:transition-none"
+                className="px-3 py-1.5 text-xs glass border border-border-subtle rounded-lg disabled:opacity-40 text-text-secondary hover:text-white transition-colors motion-reduce:transition-none"
               >
                 Next →
               </button>

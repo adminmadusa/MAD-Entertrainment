@@ -253,7 +253,7 @@ export default function CreateArtistPage() {
             id="artist-submit"
             type="submit"
             disabled={createMutation.isPending}
-            className="w-full sm:flex-1 py-3 btn-gradient text-white font-bold rounded-xl shadow-glow-sm disabled:opacity-60 transition-all"
+            className="w-full sm:flex-1 py-3 btn-gradient text-white font-bold rounded-xl shadow-glow-sm disabled:opacity-60 transition-colors"
           >
             {createMutation.isPending ? "Creating..." : "Create Artist"}
           </button>

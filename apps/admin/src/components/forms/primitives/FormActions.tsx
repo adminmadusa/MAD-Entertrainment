@@ -20,7 +20,7 @@ export function FormActions({
         id="event-submit"
         type="submit"
         disabled={isSubmitting}
-        className="w-full sm:flex-1 py-3 btn-gradient text-white font-bold rounded-xl shadow-glow-sm disabled:opacity-60 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple transition-all"
+        className="w-full sm:flex-1 py-3 btn-gradient text-white font-bold rounded-xl shadow-glow-sm disabled:opacity-60 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple transition-colors"
       >
         {submitLabel}
       </button>

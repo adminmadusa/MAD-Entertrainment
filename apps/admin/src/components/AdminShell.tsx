@@ -76,7 +76,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
             <button
               id="admin-topbar-logout"
               onClick={handleLogout}
-              className="px-3 py-1.5 text-xs font-medium text-text-secondary hover:text-white glass border border-border-subtle rounded-lg transition-all motion-reduce:transition-none hover:border-error/40 hover:text-red-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple"
+              className="px-3 py-1.5 text-xs font-medium text-text-secondary hover:text-white glass border border-border-subtle rounded-lg transition-colors motion-reduce:transition-none hover:border-error/40 hover:text-red-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple"
             >
               Sign out
             </button>

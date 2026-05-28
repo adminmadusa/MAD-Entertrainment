@@ -97,7 +97,7 @@ export default function AdminDashboardPage() {
               <div className="text-3xl mb-3">{stat.icon}</div>
               <p className="text-text-muted text-sm">{stat.label}</p>
               <p
-                className={`text-2xl font-black mt-1 group-hover:text-gradient transition-all ${isLoading ? "text-text-muted animate-pulse" : "text-white"}`}
+                className={`text-2xl font-black mt-1 group-hover:text-gradient transition-colors ${isLoading ? "text-text-muted animate-pulse motion-reduce:animate-none" : "text-white"}`}
               >
                 {isLoading
                   ? "..."
@@ -116,7 +116,7 @@ export default function AdminDashboardPage() {
             <Link
               key={link.href}
               href={link.href}
-              className={`glass rounded-xl border ${link.color} p-4 flex flex-col items-center gap-2 text-center transition-all hover:bg-white/3`}
+              className={`glass rounded-xl border ${link.color} p-4 flex flex-col items-center gap-2 text-center transition-colors hover:bg-white/3`}
             >
               <span className="text-2xl">{link.icon}</span>
               <span className="text-text-secondary text-sm font-medium">

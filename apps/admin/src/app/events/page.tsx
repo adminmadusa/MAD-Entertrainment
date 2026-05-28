@@ -3,7 +3,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import {
   adminGetEvents,
@@ -25,14 +25,30 @@ const STATUS_COLORS: Record<string, string> = {
 export default function AdminEventsPage() {
   const qc = useQueryClient();
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [page, setPage] = useState(1);
   const [deleteTarget, setDeleteTarget] = useState<AdminEvent | null>(null);
 
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 300);
+    return () => clearTimeout(handler);
+  }, [search]);
+
   const { data, isLoading } = useQuery({
-    queryKey: ["admin-events", { page, search, status: statusFilter }],
+    queryKey: [
+      "admin-events",
+      { page, search: debouncedSearch, status: statusFilter },
+    ],
     queryFn: () =>
-      adminGetEvents({ page, limit: 15, search, status: statusFilter }),
+      adminGetEvents({
+        page,
+        limit: 15,
+        search: debouncedSearch,
+        status: statusFilter,
+      }),
   });
 
   const deleteMutation = useMutation({
@@ -70,7 +86,7 @@ export default function AdminEventsPage() {
         <Link
           href="/events/new"
           id="admin-create-event"
-          className="w-full sm:w-auto px-4 py-2.5 btn-gradient text-white font-semibold text-sm rounded-xl shadow-glow-sm motion-safe:hover:scale-105 transition-transform motion-reduce:transition-none flex items-center justify-center gap-2"
+          className="w-full sm:w-auto px-4 py-2.5 btn-gradient text-white font-semibold text-sm rounded-xl shadow-glow-sm motion-safe:hover:scale-[1.02] transition-transform motion-reduce:transition-none flex items-center justify-center gap-2"
         >
           <span>+</span> Create Event
         </Link>
@@ -261,7 +277,7 @@ export default function AdminEventsPage() {
                             ? "Remove event from featured"
                             : "Add event to featured"
                         }
-                        className={`text-lg transition-transform motion-reduce:transition-none motion-safe:hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple rounded ${event.isFeatured ? "text-yellow-400" : "text-text-muted"}`}
+                        className={`text-lg transition-transform motion-reduce:transition-none motion-safe:hover:scale-[1.02] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple rounded ${event.isFeatured ? "text-yellow-400" : "text-text-muted"}`}
                         title={
                           event.isFeatured
                             ? "Remove from featured"
@@ -275,13 +291,13 @@ export default function AdminEventsPage() {
                       <div className="flex flex-wrap items-center justify-end gap-2">
                         <Link
                           href={`/events/${event._id}/edit`}
-                          className="px-3 py-1.5 text-xs font-medium glass border border-border-subtle rounded-lg text-text-secondary hover:text-white hover:border-accent-purple/40 transition-all motion-reduce:transition-none"
+                          className="px-3 py-1.5 text-xs font-medium glass border border-border-subtle rounded-lg text-text-secondary hover:text-white hover:border-accent-purple/40 transition-colors motion-reduce:transition-none"
                         >
                           Edit
                         </Link>
                         <button
                           onClick={() => setDeleteTarget(event)}
-                          className="px-3 py-1.5 text-xs font-medium glass border border-border-subtle rounded-lg text-text-muted hover:text-red-400 hover:border-red-500/40 transition-all motion-reduce:transition-none"
+                          className="px-3 py-1.5 text-xs font-medium glass border border-border-subtle rounded-lg text-text-muted hover:text-red-400 hover:border-red-500/40 transition-colors motion-reduce:transition-none"
                         >
                           Delete
                         </button>
@@ -305,14 +321,14 @@ export default function AdminEventsPage() {
               <button
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page === 1}
-                className="px-3 py-1.5 text-xs glass border border-border-subtle rounded-lg disabled:opacity-40 text-text-secondary hover:text-white transition-all motion-reduce:transition-none"
+                className="px-3 py-1.5 text-xs glass border border-border-subtle rounded-lg disabled:opacity-40 text-text-secondary hover:text-white transition-colors motion-reduce:transition-none"
               >
                 ← Prev
               </button>
               <button
                 onClick={() => setPage((p) => p + 1)}
                 disabled={page >= pagination.totalPages}
-                className="px-3 py-1.5 text-xs glass border border-border-subtle rounded-lg disabled:opacity-40 text-text-secondary hover:text-white transition-all motion-reduce:transition-none"
+                className="px-3 py-1.5 text-xs glass border border-border-subtle rounded-lg disabled:opacity-40 text-text-secondary hover:text-white transition-colors motion-reduce:transition-none"
               >
                 Next →
               </button>

@@ -44,7 +44,7 @@ export function TicketProfileGroupsSection({
         <button
           type="button"
           onClick={addGroup}
-          className="px-3.5 py-2 rounded-xl bg-accent-purple/10 border border-accent-purple/20 text-accent-purple-light text-xs font-semibold hover:bg-accent-purple/20 transition-all"
+          className="px-3.5 py-2 rounded-xl bg-accent-purple/10 border border-accent-purple/20 text-accent-purple-light text-xs font-semibold hover:bg-accent-purple/20 transition-colors"
         >
           + Add Group
         </button>

@@ -236,7 +236,7 @@ export default function CreateVenuePage() {
             id="venue-submit"
             type="submit"
             disabled={createMutation.isPending}
-            className="flex-1 py-3 btn-gradient text-white font-bold rounded-xl shadow-glow-sm disabled:opacity-60 transition-all"
+            className="flex-1 py-3 btn-gradient text-white font-bold rounded-xl shadow-glow-sm disabled:opacity-60 transition-colors"
           >
             {createMutation.isPending ? "Creating..." : "Create Venue"}
           </button>
