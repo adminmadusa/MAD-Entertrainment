@@ -6,6 +6,7 @@ import Link from "next/link";
 
 import { useAdminAuth } from "@/hooks/use-admin-auth.hook";
 import { adminGetDashboardSummary } from "@/lib/api/admin/analytics.service";
+import { adminGetBookings } from "@/lib/api/admin/booking.service";
 
 export default function AdminDashboardPage() {
   const { admin } = useAdminAuth();
@@ -14,6 +15,13 @@ export default function AdminDashboardPage() {
     queryKey: ["admin-analytics-summary"],
     queryFn: adminGetDashboardSummary,
   });
+
+  const { data: recentBookingsRes, isLoading: isLoadingRecent } = useQuery({
+    queryKey: ["admin-recent-bookings"],
+    queryFn: () => adminGetBookings({ page: 1, limit: 5 }),
+  });
+
+  const recentBookings = recentBookingsRes?.items ?? [];
 
   const stats = [
     {
@@ -173,6 +181,103 @@ export default function AdminDashboardPage() {
           </div>
         </div>
       )}
+
+      {/* Recent Bookings */}
+      <div className="glass rounded-2xl border border-border-subtle overflow-hidden">
+        <div className="px-6 py-4 border-b border-border-subtle flex items-center justify-between">
+          <h2 className="text-white font-semibold">Recent Bookings</h2>
+          <Link
+            href="/bookings"
+            className="text-accent-purple text-sm hover:underline"
+          >
+            View all →
+          </Link>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[600px] text-sm">
+            <thead>
+              <tr className="border-b border-border-subtle">
+                <th className="text-left text-text-muted font-medium py-3 px-6">
+                  Reference
+                </th>
+                <th className="text-left text-text-muted font-medium py-3 px-4">
+                  Guest
+                </th>
+                <th className="text-left text-text-muted font-medium py-3 px-4">
+                  Event
+                </th>
+                <th className="text-right text-text-muted font-medium py-3 px-4">
+                  Amount
+                </th>
+                <th className="text-right text-text-muted font-medium py-3 px-6">
+                  Status
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {isLoadingRecent ? (
+                <tr>
+                  <td
+                    colSpan={5}
+                    className="py-8 text-center text-text-muted animate-pulse"
+                  >
+                    Loading recent bookings...
+                  </td>
+                </tr>
+              ) : recentBookings.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="py-8 text-center text-text-muted">
+                    No bookings yet.
+                  </td>
+                </tr>
+              ) : (
+                recentBookings.map((b) => {
+                  const guest = b.userId?.name ?? b.guestInfo?.name ?? "—";
+                  const email = b.userId?.email ?? b.guestInfo?.email ?? "—";
+                  const eventTitle = b.eventId?.title ?? "—";
+                  const isConfirmed = b.status === "confirmed";
+                  const isCancelled = b.status === "cancelled";
+                  return (
+                    <tr
+                      key={b._id}
+                      className="border-b border-border-subtle/40 hover:bg-white/2"
+                    >
+                      <td className="py-3.5 px-6 font-mono text-xs text-text-secondary">
+                        {b.bookingId}
+                      </td>
+                      <td className="py-3.5 px-4">
+                        <p className="text-text-primary text-xs font-medium">
+                          {guest}
+                        </p>
+                        <p className="text-text-muted text-xs">{email}</p>
+                      </td>
+                      <td className="py-3.5 px-4 text-text-secondary text-xs">
+                        {eventTitle}
+                      </td>
+                      <td className="py-3.5 px-4 text-right text-text-secondary text-xs">
+                        ₹{b.totalAmount.toLocaleString("en-IN")}
+                      </td>
+                      <td className="py-3.5 px-6 text-right">
+                        <span
+                          className={`inline-block px-2 py-0.5 rounded-full text-xs font-semibold ${
+                            isConfirmed
+                              ? "bg-emerald-500/15 text-emerald-400"
+                              : isCancelled
+                                ? "bg-red-500/15 text-red-400"
+                                : "bg-amber-500/15 text-amber-400"
+                          }`}
+                        >
+                          {b.status}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
 }
