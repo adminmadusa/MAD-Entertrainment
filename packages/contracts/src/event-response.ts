@@ -97,6 +97,7 @@ export const EventResponseSchema = z.object({
   venue: z
     .string()
     .nullish()
+    .transform((v) => v ?? ""),
   isFeatured: z.boolean(),
   isSoldOut: z.boolean(),
   isAgeRestricted: z.boolean().optional(),
