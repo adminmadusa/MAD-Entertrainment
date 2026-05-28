@@ -61,11 +61,20 @@ const envSchema = z.object({
 
   SMTP_PORT: z.coerce.number().optional(),
 
+  SMTP_SECURE: z
+    .preprocess(
+      (val) => val === 'true' || val === true,
+      z.boolean()
+    )
+    .optional(),
+
   SMTP_USER: z.string().optional(),
 
   SMTP_PASS: z.string().optional(),
 
-  EMAIL_FROM: z.string().optional(),
+  MAIL_FROM: z.string().optional(),
+
+  EMAIL_REPLY_TO: z.string().optional(),
 
   // ─────────────────────────────────────────
   // Razorpay

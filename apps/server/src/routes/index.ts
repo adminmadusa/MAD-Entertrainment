@@ -1,6 +1,7 @@
 import { Router } from 'express';
 
 import adminDiagnosticsRoutes from './admin/diagnostics.routes';
+import devRoutes from './dev.routes';
 import healthRoutes from './health.routes';
 import publicBookingRoutes from './public/booking.routes';
 import publicDJOperatorRoutes from './public/dj-operator.routes';
@@ -28,6 +29,11 @@ import { requireAuth } from '../middleware/auth.middleware';
 
 // ─── Health ───────────────────────────────────────────────────
 router.use('/health', healthRoutes);
+
+// Dev Diagnostics (Exposed in development only)
+if (process.env.NODE_ENV !== 'production') {
+  router.use('/dev', devRoutes);
+}
 
 // ─── Public routes ───────────────────────────────────────────
 router.use('/auth', publicAuthRoutes);

@@ -56,6 +56,10 @@ async function bootstrap(): Promise<void> {
   initRazorpay();
   initStripe();
 
+  // Verify SMTP Transporter pool connection
+  const { verifyTransporter } = await import('./utils/email.js');
+  await verifyTransporter();
+
   // ─── Create HTTP Server ────────────────────────────────────
   const app = createApp();
   const httpServer = http.createServer(app);
