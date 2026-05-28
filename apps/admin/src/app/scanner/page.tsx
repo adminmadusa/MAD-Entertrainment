@@ -19,7 +19,7 @@ export default function ScannerPage() {
   // Fetch active events for selection
   const { data: eventsRes, isLoading: isLoadingEvents } = useQuery({
     queryKey: ["admin-events", { status: "published" }],
-    queryFn: () => adminGetEvents({ limit: 100 }), // Simplified fetch
+    queryFn: () => adminGetEvents({ limit: 100, status: "published" }),
   });
 
   const events = eventsRes?.items || [];
@@ -145,13 +145,22 @@ export default function ScannerPage() {
             }}
             className="w-full bg-background border border-border-subtle rounded-xl px-4 py-3 text-white text-sm focus:border-accent-purple focus:ring-1 focus:ring-accent-purple transition-all"
             disabled={isLoadingEvents}
+            aria-label="Select an event to start scanning"
           >
-            <option value="">-- Select Event to Start Scanning --</option>
-            {events.map((ev) => (
-              <option key={ev._id} value={ev._id}>
-                {ev.title} ({new Date(ev.startDate).toLocaleDateString()})
-              </option>
-            ))}
+            {isLoadingEvents ? (
+              <option value="">Loading events...</option>
+            ) : events.length === 0 ? (
+              <option value="">No published events found</option>
+            ) : (
+              <>
+                <option value="">-- Select Event to Start Scanning --</option>
+                {events.map((ev) => (
+                  <option key={ev._id} value={ev._id}>
+                    {ev.title} ({new Date(ev.startDate).toLocaleDateString()})
+                  </option>
+                ))}
+              </>
+            )}
           </select>
         </div>
 

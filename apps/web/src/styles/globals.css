@@ -433,3 +433,34 @@ video {
 .animate-ambient-shift-3 {
   animation: ambient-shift-3 20s infinite alternate ease-in-out;
 }
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  #print-ticket-area,
+  #print-ticket-area * {
+    visibility: visible;
+  }
+
+  #print-ticket-area {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    background: white;
+  }
+
+  /* Stabilize page-break formatting */
+  #print-ticket-area > div > * {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  @page {
+    margin: 12mm;
+    size: auto;
+  }
+}

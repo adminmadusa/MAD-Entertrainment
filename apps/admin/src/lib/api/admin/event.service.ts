@@ -64,7 +64,6 @@ export async function adminGetEvents(
   const params = new URLSearchParams();
 
   Object.entries(filters).forEach(([k, v]) => {
-    if (v === undefined || v === "") return;
 
     params.set(k, String(v));
   });
@@ -73,10 +72,6 @@ export async function adminGetEvents(
   const limit = filters.limit || 10;
 
   const { data } = await adminApiClient.get<any>(`/admin/events?${params}`);
-
-  const parsed = EventListResponseSchema.safeParse(data?.data);
-
-  if (!parsed.success) {
     return {
       items: [],
       pagination: {
@@ -87,18 +82,6 @@ export async function adminGetEvents(
       },
     };
   }
-
-  return {
-    items: Array.isArray(parsed.data.events)
-      ? (parsed.data.events as AdminEvent[])
-      : [],
-    pagination: {
-      page,
-      limit,
-      total: parsed.data.total,
-      totalPages: parsed.data.pages ?? Math.ceil(parsed.data.total / limit),
-    },
-  };
 }
 
 export async function adminGetEvent(id: string): Promise<AdminEvent> {
