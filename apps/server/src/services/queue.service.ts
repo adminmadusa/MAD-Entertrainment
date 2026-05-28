@@ -58,12 +58,26 @@ export class QueueService {
     jobName: string,
     data: T,
     jobId?: string,
+    attempts?: number,
+    backoffDelay?: number,
   ): Promise<void> {
     const queue = this.getQueue(queueName);
 
     if (queue) {
       try {
-        await queue.add(jobName, data, { jobId });
+        console.log("[EMAIL QUEUE] Job added:", jobId || "unknown");
+        await queue.add(jobName, data, {
+          jobId,
+          ...(attempts !== undefined ? { attempts } : {}),
+          ...(backoffDelay !== undefined
+            ? {
+                backoff: {
+                  type: "exponential",
+                  delay: backoffDelay,
+                },
+              }
+            : {}),
+        });
         logger.debug({ queueName, jobName, jobId }, "Job enqueued in BullMQ");
         return;
       } catch (err) {

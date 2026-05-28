@@ -75,6 +75,8 @@ export async function processPDFGenerate(
       eventId: event._id.toString(),
     },
     `email:dispatch:${booking._id}`,
+    3, // attempts: 3
+    5000, // backoffDelay: 5000ms
   );
 
   logger.info(
