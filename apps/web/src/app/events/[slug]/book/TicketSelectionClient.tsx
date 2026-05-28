@@ -85,7 +85,7 @@ export default function TicketSelectionClient() {
               {event.title}
             </h1>
             <p className="text-[10px] text-text-muted font-medium truncate">
-              {showDateTime} · {event.venue}
+              {showDateTime} · {event.venue || "Venue TBA"}
             </p>
           </div>
           <button
