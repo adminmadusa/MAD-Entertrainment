@@ -16,5 +16,9 @@ import './admin.schema';
 import './refund.schema';
 import './category.schema';
 import './tier.schema';
+import './user.schema';
+import './magic-token.schema';
+import './refresh-token.schema';
+
 import './ticket-profile.schema';
 

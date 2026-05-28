@@ -8,8 +8,9 @@
     "sourceMap": true,
     "composite": true,
     "noEmit": false,
-    "types": ["node"]
+    "types": ["node"],
+    "jsx": "react-jsx"
   },
-  "include": ["src/**/*.ts", "../../packages/shared/src/**/*.ts", "../../packages/validations/src/**/*.ts"],
+  "include": ["src/**/*.ts", "src/**/*.tsx", "../../packages/shared/src/**/*.ts", "../../packages/validations/src/**/*.ts"],
   "exclude": ["dist", "node_modules"]
 }

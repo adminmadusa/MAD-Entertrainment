@@ -1,4 +1,5 @@
-import { Event, SeatLayout, Booking, Ticket, DJOperator, Artist, Venue, PopupCampaign, AuthUser } from '@mad/types';
+import { Event, SeatLayout, Booking, Ticket, DJOperator, Artist, Venue, PopupCampaign } from '@mad/types';
+import { AuthUser, AuthResponse, MagicLinkRequestResponse, VerifyMagicLinkOrOTPPayload } from '../../types/auth';
 import { ReserveTicketsInput, CheckoutDetailsInput } from '@mad/validations';
 
 import { apiClient } from './client';
@@ -121,13 +122,14 @@ export async function publicGetDJs(
   const limit = filters.limit || 12;
   const { data } = await apiClient.get<PublicDJsApiResponse>(`/dj-operators?${params}`);
   const payload: PublicDJsApiResponse['data'] = data?.data || {};
-  const items = Array.isArray(payload.data)
-    ? payload.data
-    : Array.isArray(payload.djOperators)
-    ? payload.djOperators
-    : Array.isArray(payload.djs)
-    ? payload.djs
-    : [];
+  let items: DJOperator[] = [];
+  if (Array.isArray(payload.data)) {
+    items = payload.data;
+  } else if (Array.isArray(payload.djOperators)) {
+    items = payload.djOperators;
+  } else if (Array.isArray(payload.djs)) {
+    items = payload.djs;
+  }
 
   const total = payload.pagination?.total ?? payload.total ?? 0;
   const totalPages = payload.pagination?.totalPages ?? Math.ceil(total / limit);
@@ -318,13 +320,35 @@ export async function publicGetActivePopups(): Promise<PopupCampaign[]> {
 
 // ─── Auth ────────────────────────────────────────────────────
 
-export async function publicLogin(payload: LoginPayload): Promise<{ token: string; user: AuthUser }> {
-  const { data } = await apiClient.post<{ data: { token: string; user: AuthUser } }>('/auth/login', payload);
+export async function publicLogin(payload: LoginPayload): Promise<AuthResponse> {
+  // Gracefully adapt legacy publicLogin to trigger Magic Link sending
+  const { data } = await apiClient.post<{ data: AuthResponse }>('/auth/magic-link', payload);
   return data.data;
 }
 
-export async function publicRegister(payload: RegisterPayload): Promise<{ token: string; user: AuthUser }> {
-  const { data } = await apiClient.post<{ data: { token: string; user: AuthUser } }>('/auth/register', payload);
+export async function publicRegister(payload: RegisterPayload): Promise<AuthResponse> {
+  // Gracefully adapt legacy publicRegister to trigger Magic Link sending
+  const { data } = await apiClient.post<{ data: AuthResponse }>('/auth/magic-link', payload);
+  return data.data;
+}
+
+export async function publicGoogleLogin(idToken: string): Promise<AuthResponse> {
+  const { data } = await apiClient.post<{ data: AuthResponse }>('/auth/google', { idToken });
+  return data.data;
+}
+
+export async function publicRequestMagicLink(email: string): Promise<MagicLinkRequestResponse> {
+  const { data } = await apiClient.post<MagicLinkRequestResponse>('/auth/magic-link', { email });
+  return data;
+}
+
+export async function publicVerifyMagicLinkOrOTP(payload: VerifyMagicLinkOrOTPPayload): Promise<AuthResponse> {
+  const { data } = await apiClient.post<{ data: AuthResponse }>('/auth/verify', payload);
+  return data.data;
+}
+
+export async function publicGetMyAuthBookings(): Promise<Booking[]> {
+  const { data } = await apiClient.get<{ data: Booking[] }>('/my-bookings');
   return data.data;
 }
 
