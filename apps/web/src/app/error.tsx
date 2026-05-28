@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import * as Sentry from "@sentry/nextjs";
 
 interface ErrorPageProps {
   error: Error & { digest?: string };
@@ -9,8 +10,12 @@ interface ErrorPageProps {
 
 export default function ErrorPage({ error, reset }: ErrorPageProps) {
   useEffect(() => {
-    // Log to your error tracking service here (e.g. Sentry)
-    console.error("[MAD Error Boundary]", error);
+    // Report to Sentry when DSN is configured; fall back to console in dev.
+    if (process.env.NEXT_PUBLIC_SENTRY_DSN) {
+      Sentry.captureException(error);
+    } else {
+      console.error("[MAD Error Boundary]", error);
+    }
   }, [error]);
 
   return (
