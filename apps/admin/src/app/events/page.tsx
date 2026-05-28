@@ -70,7 +70,7 @@ export default function AdminEventsPage() {
         <Link
           href="/events/new"
           id="admin-create-event"
-          className="w-full sm:w-auto px-4 py-2.5 btn-gradient text-white font-semibold text-sm rounded-xl shadow-glow-sm hover:scale-105 transition-transform flex items-center justify-center gap-2"
+          className="w-full sm:w-auto px-4 py-2.5 btn-gradient text-white font-semibold text-sm rounded-xl shadow-glow-sm motion-safe:hover:scale-105 transition-transform motion-reduce:transition-none flex items-center justify-center gap-2"
         >
           <span>+</span> Create Event
         </Link>
@@ -140,7 +140,7 @@ export default function AdminEventsPage() {
                 Array.from({ length: 5 }).map((_, i) => (
                   <tr
                     key={i}
-                    className="border-b border-border-subtle/50 animate-pulse"
+                    className="border-b border-border-subtle/50 animate-pulse motion-reduce:animate-none"
                   >
                     <td className="py-4 px-5">
                       <div className="h-4 bg-white/5 rounded w-48" />
@@ -261,7 +261,7 @@ export default function AdminEventsPage() {
                             ? "Remove event from featured"
                             : "Add event to featured"
                         }
-                        className={`text-lg transition-transform hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple rounded ${event.isFeatured ? "text-yellow-400" : "text-text-muted"}`}
+                        className={`text-lg transition-transform motion-reduce:transition-none motion-safe:hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple rounded ${event.isFeatured ? "text-yellow-400" : "text-text-muted"}`}
                         title={
                           event.isFeatured
                             ? "Remove from featured"
@@ -275,13 +275,13 @@ export default function AdminEventsPage() {
                       <div className="flex flex-wrap items-center justify-end gap-2">
                         <Link
                           href={`/events/${event._id}/edit`}
-                          className="px-3 py-1.5 text-xs font-medium glass border border-border-subtle rounded-lg text-text-secondary hover:text-white hover:border-accent-purple/40 transition-all"
+                          className="px-3 py-1.5 text-xs font-medium glass border border-border-subtle rounded-lg text-text-secondary hover:text-white hover:border-accent-purple/40 transition-all motion-reduce:transition-none"
                         >
                           Edit
                         </Link>
                         <button
                           onClick={() => setDeleteTarget(event)}
-                          className="px-3 py-1.5 text-xs font-medium glass border border-border-subtle rounded-lg text-text-muted hover:text-red-400 hover:border-red-500/40 transition-all"
+                          className="px-3 py-1.5 text-xs font-medium glass border border-border-subtle rounded-lg text-text-muted hover:text-red-400 hover:border-red-500/40 transition-all motion-reduce:transition-none"
                         >
                           Delete
                         </button>
@@ -305,14 +305,14 @@ export default function AdminEventsPage() {
               <button
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page === 1}
-                className="px-3 py-1.5 text-xs glass border border-border-subtle rounded-lg disabled:opacity-40 text-text-secondary hover:text-white transition-all"
+                className="px-3 py-1.5 text-xs glass border border-border-subtle rounded-lg disabled:opacity-40 text-text-secondary hover:text-white transition-all motion-reduce:transition-none"
               >
                 ← Prev
               </button>
               <button
                 onClick={() => setPage((p) => p + 1)}
                 disabled={page >= pagination.totalPages}
-                className="px-3 py-1.5 text-xs glass border border-border-subtle rounded-lg disabled:opacity-40 text-text-secondary hover:text-white transition-all"
+                className="px-3 py-1.5 text-xs glass border border-border-subtle rounded-lg disabled:opacity-40 text-text-secondary hover:text-white transition-all motion-reduce:transition-none"
               >
                 Next →
               </button>

@@ -121,7 +121,7 @@ export default function AdminNotificationsPage() {
                 Array.from({ length: 5 }).map((_, i) => (
                   <tr
                     key={i}
-                    className="border-b border-border-subtle/50 animate-pulse"
+                    className="border-b border-border-subtle/50 animate-pulse motion-reduce:animate-none"
                   >
                     <td className="py-4 px-5">
                       <div className="h-4 bg-white/5 rounded w-32" />
@@ -207,7 +207,7 @@ export default function AdminNotificationsPage() {
                         <button
                           onClick={() => retryMutation.mutate(notif._id)}
                           disabled={retryMutation.isPending}
-                          className="px-3 py-1.5 text-xs font-semibold btn-gradient rounded-lg text-white shadow-glow-sm hover:scale-105 transition-transform disabled:opacity-60"
+                          className="px-3 py-1.5 text-xs font-semibold btn-gradient rounded-lg text-white shadow-glow-sm motion-safe:hover:scale-105 transition-transform motion-reduce:transition-none disabled:opacity-60"
                         >
                           Retry
                         </button>
@@ -233,14 +233,14 @@ export default function AdminNotificationsPage() {
               <button
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page === 1}
-                className="px-3 py-1.5 text-xs glass border border-border-subtle rounded-lg disabled:opacity-40 text-text-secondary hover:text-white transition-all"
+                className="px-3 py-1.5 text-xs glass border border-border-subtle rounded-lg disabled:opacity-40 text-text-secondary hover:text-white transition-all motion-reduce:transition-none"
               >
                 ← Prev
               </button>
               <button
                 onClick={() => setPage((p) => p + 1)}
                 disabled={page >= pagination.totalPages}
-                className="px-3 py-1.5 text-xs glass border border-border-subtle rounded-lg disabled:opacity-40 text-text-secondary hover:text-white transition-all"
+                className="px-3 py-1.5 text-xs glass border border-border-subtle rounded-lg disabled:opacity-40 text-text-secondary hover:text-white transition-all motion-reduce:transition-none"
               >
                 Next →
               </button>
