@@ -274,7 +274,9 @@ export default function EventDetailClient({
                 ⏱️ {event.showTime}
               </span>
             )}
-            <span className="flex items-center gap-1.5">📍 {event.venue}</span>
+            <span className="flex items-center gap-1.5">
+              📍 {event.venue || "Venue TBA"}
+            </span>
           </div>
         </div>
 
@@ -483,7 +485,7 @@ export default function EventDetailClient({
                 </div>
                 <div className="flex items-center gap-2.5">
                   <span className="text-base">📍</span>
-                  <span>{event.venue}</span>
+                  <span>{event.venue || "Venue TBA"}</span>
                 </div>
               </div>
 
@@ -651,7 +653,7 @@ export default function EventDetailClient({
                   {event.title}
                 </h3>
                 <p className="text-xs text-text-muted mt-1">
-                  {showDateTime} · {event.venue}
+                  {showDateTime} · {event.venue || "Venue TBA"}
                 </p>
               </div>
 
