@@ -2,9 +2,153 @@ services:
   - type: web
     name: mad-server
     env: node
+    # Use "starter" for staging; upgrade to "standard" before production traffic
+    plan: starter
     rootDir: .
     buildCommand: pnpm install --frozen-lockfile && pnpm --filter @mad/server... run clean && pnpm --filter @mad/server... build
     startCommand: node apps/server/dist/apps/server/src/server.js
+    # Render routes traffic to this path to confirm the instance is healthy.
+    # The endpoint returns HTTP 200 when Mongo+Redis are up, 503 when degraded.
+    healthCheckPath: /api/health
+
     envVars:
+      # ── Runtime ────────────────────────────────────────────────────
       - key: NODE_ENV
         value: production
+
+      - key: PORT
+        value: 3001
+
+      # ── Database ───────────────────────────────────────────────────
+      # Set this in the Render dashboard — never commit real URIs.
+      - key: MONGODB_URI
+        sync: false
+
+      # ── Cache / Rate-Limiting ──────────────────────────────────────
+      # Optional but strongly recommended; rate limiting degrades to
+      # in-memory (per-instance) without Redis.
+      - key: REDIS_URL
+        sync: false
+
+      # ── Auth Secrets ───────────────────────────────────────────────
+      # All three are REQUIRED — server will refuse to start without them.
+      - key: JWT_SECRET
+        generateValue: true
+
+      - key: JWT_ADMIN_SECRET
+        generateValue: true
+
+      - key: JWT_SESSION_SECRET
+        generateValue: true
+
+      - key: JWT_EXPIRES_IN
+        value: 7d
+
+      - key: JWT_ADMIN_EXPIRES_IN
+        value: 1d
+
+      # ── CORS Allowlist ─────────────────────────────────────────────
+      # Comma-separated list of allowed frontend origins.
+      - key: ALLOWED_ORIGINS
+        value: https://mad.esparex.in,https://madmin.esparex.in
+
+      # ── Cloudinary (Image Uploads) ─────────────────────────────────
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+
+      - key: CLOUDINARY_API_KEY
+        sync: false
+
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+
+      # ── Email / SMTP ───────────────────────────────────────────────
+      - key: SMTP_HOST
+        sync: false
+
+      - key: SMTP_PORT
+        value: 587
+
+      - key: SMTP_USER
+        sync: false
+
+      - key: SMTP_PASS
+        sync: false
+
+      - key: EMAIL_FROM
+        sync: false
+
+      # ── Payment — Razorpay ─────────────────────────────────────────
+      # Use test keys (rzp_test_...) for staging; live keys for production.
+      - key: RAZORPAY_KEY_ID
+        sync: false
+
+      - key: RAZORPAY_KEY_SECRET
+        sync: false
+
+      # Must match the webhook secret set in the Razorpay dashboard.
+      - key: RAZORPAY_WEBHOOK_SECRET
+        sync: false
+
+      # ── Payment — Stripe (optional) ────────────────────────────────
+      - key: STRIPE_SECRET_KEY
+        sync: false
+
+      - key: STRIPE_PUBLISHABLE_KEY
+        sync: false
+
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+
+      # ── Payment Safety Flag ────────────────────────────────────────
+      # CRITICAL: Must be "false" in staging and production.
+      # Setting this to "true" bypasses all real payment processing.
+      - key: MOCK_PAYMENTS
+        value: false
+
+      # ── Feature Flags ──────────────────────────────────────────────
+      - key: ENABLE_ASYNC_CHECKOUT
+        value: false
+
+      # ── Logging ───────────────────────────────────────────────────
+      - key: LOG_LEVEL
+        value: info
+
+      # ── Rate Limiting ──────────────────────────────────────────────
+      - key: RATE_LIMIT_WINDOW_MS
+        value: 900000
+
+      - key: RATE_LIMIT_MAX_REQUESTS
+        value: 100
+
+      - key: RATE_LIMIT_AUTH_MAX
+        value: 10
+
+      - key: RATE_LIMIT_PAYMENT_MAX
+        value: 20
+
+      # ── Observability (Sentry) ─────────────────────────────────────
+      # Optional — Sentry is silently disabled when this is not set.
+      - key: SENTRY_DSN
+        sync: false
+
+      # ── Outbox Worker Tuning ───────────────────────────────────────
+      # These values are safe defaults; only change if you observe
+      # booking/email processing lag under real load.
+      - key: OUTBOX_WORKER_BATCH_SIZE
+        value: 20
+
+      - key: OUTBOX_WORKER_POLL_INTERVAL_MS
+        value: 2000
+
+      - key: OUTBOX_WORKER_CONCURRENCY
+        value: 4
+
+      - key: OUTBOX_WORKER_HEARTBEAT_MS
+        value: 5000
+
+      - key: OUTBOX_STALE_LOCK_MS
+        value: 60000
+
+      - key: OUTBOX_MAX_ATTEMPTS
+        value: 8
