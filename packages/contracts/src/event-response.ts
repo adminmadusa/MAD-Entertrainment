@@ -60,7 +60,7 @@ export const EventTicketTierResponseSchema = z.object({
     })
     .optional(),
   isActive: z.boolean(),
-  isFree: z.boolean(),
+  isFree: z.boolean().default(false),
   groupId: z.string().optional(),
   groupName: z.string().optional(),
   offerRules: EventOfferRulesResponseSchema.optional(),
