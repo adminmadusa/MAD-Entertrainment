@@ -13,6 +13,7 @@
     "test": "vitest run",
     "clean": "turbo clean && rm -rf node_modules .turbo",
     "audit-data": "tsx ./scripts/gather_audit_data.ts",
+    "migration:ticket-tier-isfree": "tsx ./scripts/backfill-ticket-tiers.ts",
     "bench:webhook-storm": "tsx ./apps/server/scripts/load/webhook-storm.ts",
     "bench:outbox-backlog": "tsx ./apps/server/scripts/load/outbox-backlog.ts",
     "bench:retry-storm": "tsx ./apps/server/scripts/load/retry-storm.ts",
