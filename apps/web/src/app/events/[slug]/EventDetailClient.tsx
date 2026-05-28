@@ -97,9 +97,35 @@ export default function EventDetailClient({
 
   if (isLoadingEvent) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-background">
-        <div className="text-white/40 animate-pulse text-sm">
-          Loading event details...
+      <div className="min-h-screen bg-[#0d111d] text-white relative overflow-x-hidden animate-pulse">
+        {/* Cinema Hero Skeleton */}
+        <div className="relative w-full h-[58vh] min-h-[400px] bg-white/5 border-b border-white/10 flex items-end p-6 md:p-8">
+          <div className="space-y-3 w-1/3">
+            <div className="h-6 bg-white/10 rounded w-1/2" />
+            <div className="h-4 bg-white/5 rounded w-1/3" />
+          </div>
+        </div>
+        {/* Content Skeleton */}
+        <div className="container-mad max-w-7xl px-4 md:px-8 space-y-6 mt-8">
+          <div className="py-6 space-y-4 border-b border-white/5">
+            <div className="h-10 bg-white/10 rounded w-3/4" />
+            <div className="flex gap-4">
+              <div className="h-4 bg-white/5 rounded w-1/4" />
+              <div className="h-4 bg-white/5 rounded w-1/4" />
+            </div>
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 pt-4">
+            <div className="lg:col-span-7 space-y-6">
+              <div className="h-8 bg-white/5 rounded w-1/2" />
+              <div className="h-20 bg-white/5 border border-white/10 rounded-2xl" />
+              <div className="space-y-3">
+                <div className="h-4 bg-white/10 rounded w-1/4" />
+                <div className="h-3 bg-white/5 rounded w-full" />
+                <div className="h-3 bg-white/5 rounded w-5/6" />
+              </div>
+            </div>
+            <div className="lg:col-span-5 h-72 bg-white/5 border border-white/10 rounded-2xl" />
+          </div>
         </div>
       </div>
     );
@@ -661,9 +687,10 @@ export default function EventDetailClient({
                       checkoutTriggerRef.current();
                   }}
                   disabled={isPending}
-                  className="px-8 py-3 rounded-xl bg-gradient-to-r from-accent-purple to-accent-pink hover:from-accent-purple-light hover:to-accent-pink/80 text-white font-black text-sm transition-all hover:scale-105 active:scale-95 shadow-glow disabled:opacity-50"
+                  aria-busy={isPending}
+                  className="px-8 py-3 rounded-xl bg-gradient-to-r from-accent-purple to-accent-pink hover:from-accent-purple-light hover:to-accent-pink/80 text-white font-black text-sm transition-all hover:scale-105 active:scale-95 shadow-glow disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple"
                 >
-                  {isPending ? "Processing..." : "Check out"}
+                  {isPending ? "Processing booking..." : "Check out"}
                 </button>
               </div>
             </div>

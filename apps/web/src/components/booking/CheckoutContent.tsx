@@ -230,9 +230,64 @@ export function CheckoutContent({
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center p-12 bg-transparent">
-        <div className="text-white/40 animate-pulse text-sm">
-          Loading checkout...
+      <div
+        className={
+          isModal
+            ? "relative text-white animate-pulse"
+            : "pt-24 pb-24 min-h-screen bg-[#0d111d] text-white relative flex flex-col items-center justify-center animate-pulse"
+        }
+      >
+        <div
+          className={
+            isModal
+              ? "space-y-4 mt-4 w-full"
+              : "container-mad max-w-4xl space-y-4 px-4 mt-20 w-full"
+          }
+        >
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            {/* Left Column: Event summary card & Billing details */}
+            <div className="lg:col-span-8 space-y-4">
+              {/* Event card skeleton */}
+              <div className="glass rounded-2xl border border-white/5 p-4 flex gap-4 items-center">
+                <div className="w-20 h-20 bg-white/5 rounded-xl border border-white/10 flex-shrink-0" />
+                <div className="space-y-2 flex-1">
+                  <div className="h-4 bg-white/10 rounded w-2/3" />
+                  <div className="h-3 bg-white/5 rounded w-1/3" />
+                  <div className="h-4 bg-white/10 rounded w-1/6" />
+                </div>
+              </div>
+              {/* Billing details form skeleton */}
+              <div className="glass rounded-2xl border border-white/5 p-5 space-y-4">
+                <div className="h-6 bg-white/10 rounded w-1/3" />
+                <div className="space-y-3">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="h-10 bg-white/5 rounded-xl" />
+                    <div className="h-10 bg-white/5 rounded-xl" />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="h-10 bg-white/5 rounded-xl" />
+                    <div className="h-10 bg-white/5 rounded-xl" />
+                  </div>
+                  <div className="h-10 bg-white/5 rounded-xl" />
+                </div>
+              </div>
+            </div>
+            {/* Right Column: Checkout Breakdown, Payment Details, and Actions */}
+            <div className="lg:col-span-4 space-y-4">
+              {/* Pricing details skeleton */}
+              <div className="glass rounded-2xl border border-white/5 p-5 space-y-3">
+                <div className="h-4 bg-white/10 rounded w-1/2" />
+                <div className="h-3 bg-white/5 rounded w-full" />
+                <div className="h-3 bg-white/5 rounded w-full" />
+                <div className="h-4 bg-white/10 rounded w-1/3 pt-2" />
+              </div>
+              {/* Payment selector skeleton */}
+              <div className="glass rounded-2xl border border-white/5 p-5 space-y-3">
+                <div className="h-4 bg-white/10 rounded w-1/3" />
+                <div className="h-12 bg-white/5 rounded-xl" />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -382,6 +437,11 @@ export function CheckoutContent({
             <CheckoutPayment
               selectedGateway={selectedGateway}
               onChangeGateway={setSelectedGateway}
+              isDisabled={
+                isProcessing ||
+                saveDetailsMutation.isPending ||
+                paymentIntentMutation.isPending
+              }
             />
 
             {/* Place Order & Terms (Desktop Only) */}
@@ -395,15 +455,22 @@ export function CheckoutContent({
                   paymentIntentMutation.isPending ||
                   isProcessing
                 }
+                aria-busy={
+                  saveDetailsMutation.isPending ||
+                  paymentIntentMutation.isPending ||
+                  isProcessing
+                }
                 className="w-full px-8 py-3 rounded-xl bg-gradient-to-r from-accent-purple to-accent-pink hover:from-accent-purple-light hover:to-accent-pink/80 text-white font-black text-sm transition-all hover:scale-[1.02] active:scale-95 shadow-glow disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:border-transparent"
               >
-                {saveDetailsMutation.isPending ||
-                paymentIntentMutation.isPending ||
-                isProcessing
-                  ? "Processing..."
-                  : isExpired
-                    ? "Session Expired"
-                    : "Place Order"}
+                {saveDetailsMutation.isPending
+                  ? "Processing booking..."
+                  : paymentIntentMutation.isPending
+                    ? "Preparing payment..."
+                    : isProcessing
+                      ? "Verifying payment..."
+                      : isExpired
+                        ? "Session Expired"
+                        : "Place Order"}
               </button>
 
               <p className="text-[10px] text-text-muted leading-relaxed pt-2 border-t border-white/5">
@@ -441,15 +508,22 @@ export function CheckoutContent({
               paymentIntentMutation.isPending ||
               isProcessing
             }
+            aria-busy={
+              saveDetailsMutation.isPending ||
+              paymentIntentMutation.isPending ||
+              isProcessing
+            }
             className="flex-shrink-0 px-8 py-3.5 rounded-xl bg-gradient-to-r from-accent-purple to-accent-pink hover:from-accent-purple-light hover:to-accent-pink/80 text-white font-black text-sm transition-all hover:scale-[1.02] active:scale-95 shadow-glow disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:border-transparent"
           >
-            {saveDetailsMutation.isPending ||
-            paymentIntentMutation.isPending ||
-            isProcessing
-              ? "Processing..."
-              : isExpired
-                ? "Session Expired"
-                : "Place Order"}
+            {saveDetailsMutation.isPending
+              ? "Processing booking..."
+              : paymentIntentMutation.isPending
+                ? "Preparing payment..."
+                : isProcessing
+                  ? "Verifying payment..."
+                  : isExpired
+                    ? "Session Expired"
+                    : "Place Order"}
           </button>
         </div>
       </div>
