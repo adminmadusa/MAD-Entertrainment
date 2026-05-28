@@ -29,8 +29,8 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center px-4">
         <div className="min-h-[120px] flex flex-col items-center justify-center gap-3">
-          <div className="w-8 h-8 border-2 border-accent-purple border-t-transparent rounded-full animate-spin" />
-          <p className="text-xs text-text-muted animate-pulse">
+          <div className="w-8 h-8 border-2 border-accent-purple border-t-transparent rounded-full animate-spin motion-reduce:animate-none" />
+          <p className="text-xs text-text-muted animate-pulse motion-reduce:animate-none">
             Loading admin workspace...
           </p>
         </div>
@@ -76,7 +76,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
             <button
               id="admin-topbar-logout"
               onClick={handleLogout}
-              className="px-3 py-1.5 text-xs font-medium text-text-secondary hover:text-white glass border border-border-subtle rounded-lg transition-all hover:border-error/40 hover:text-red-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple"
+              className="px-3 py-1.5 text-xs font-medium text-text-secondary hover:text-white glass border border-border-subtle rounded-lg transition-all motion-reduce:transition-none hover:border-error/40 hover:text-red-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple"
             >
               Sign out
             </button>

@@ -84,7 +84,7 @@ export default function AdminTicketProfilesPage() {
         <Link
           href="/ticket-profiles/new"
           id="admin-create-ticket-profile"
-          className="w-full sm:w-auto px-4 py-2.5 btn-gradient text-white font-semibold text-sm rounded-xl shadow-glow-sm hover:scale-105 transition-transform flex items-center justify-center gap-2"
+          className="w-full sm:w-auto px-4 py-2.5 btn-gradient text-white font-semibold text-sm rounded-xl shadow-glow-sm motion-safe:hover:scale-105 transition-transform motion-reduce:transition-none flex items-center justify-center gap-2"
         >
           <span>+</span> Create Profile
         </Link>
@@ -114,7 +114,7 @@ export default function AdminTicketProfilesPage() {
                 Array.from({ length: 3 }).map((_, i) => (
                   <tr
                     key={i}
-                    className="border-b border-border-subtle/50 animate-pulse"
+                    className="border-b border-border-subtle/50 animate-pulse motion-reduce:animate-none"
                   >
                     <td className="py-4 px-5">
                       <div className="h-4 bg-white/5 rounded w-48" />
@@ -194,7 +194,7 @@ export default function AdminTicketProfilesPage() {
                             isActive: !profile.isActive,
                           })
                         }
-                        className={`text-xs px-2.5 py-1 rounded-full border font-medium transition-all ${
+                        className={`text-xs px-2.5 py-1 rounded-full border font-medium transition-all motion-reduce:transition-none ${
                           profile.isActive
                             ? "bg-green-500/10 text-green-400 border-green-500/30"
                             : "bg-red-500/10 text-red-400 border-red-500/30"
@@ -207,13 +207,13 @@ export default function AdminTicketProfilesPage() {
                       <div className="flex flex-wrap items-center justify-end gap-2">
                         <Link
                           href={`/ticket-profiles/${profile._id}/edit`}
-                          className="px-3 py-1.5 text-xs font-medium glass border border-border-subtle rounded-lg text-text-secondary hover:text-white hover:border-accent-purple/40 transition-all"
+                          className="px-3 py-1.5 text-xs font-medium glass border border-border-subtle rounded-lg text-text-secondary hover:text-white hover:border-accent-purple/40 transition-all motion-reduce:transition-none"
                         >
                           Edit
                         </Link>
                         <button
                           onClick={() => setDeleteTarget(profile)}
-                          className="px-3 py-1.5 text-xs font-medium glass border border-border-subtle rounded-lg text-text-muted hover:text-red-400 hover:border-red-500/40 transition-all"
+                          className="px-3 py-1.5 text-xs font-medium glass border border-border-subtle rounded-lg text-text-muted hover:text-red-400 hover:border-red-500/40 transition-all motion-reduce:transition-none"
                         >
                           Delete
                         </button>
