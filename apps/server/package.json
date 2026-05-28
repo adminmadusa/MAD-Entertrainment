@@ -11,7 +11,7 @@
     "type-check": "tsc -p tsconfig.json --noEmit",
     "lint": "echo 'No linting configured'",
     "clean": "rm -rf dist .turbo tsconfig.tsbuildinfo",
-    "email:dev": "react-email dev --dir src/lib/email/templates"
+    "email:dev": "pnpm dlx react-email dev --dir src/lib/email/templates"
   },
   "dependencies": {
     "@asteasolutions/zod-to-openapi": "^7.3.4",
