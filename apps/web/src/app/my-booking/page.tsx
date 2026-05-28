@@ -422,79 +422,81 @@ function MyBookingContent() {
                   </button>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 print:flex print:flex-col print:gap-8 print:w-full">
-                  {tickets.map((ticket, index) => (
-                    <motion.div
-                      key={ticket._id}
-                      initial={{ opacity: 0, scale: 0.96, y: 8 }}
-                      animate={{ opacity: 1, scale: 1, y: 0 }}
-                      transition={{
-                        delay: index * 0.07,
-                        duration: 0.28,
-                        ease: "easeOut",
-                      }}
-                      className="glass rounded-2xl border border-border-subtle overflow-hidden flex flex-col items-center text-center print:bg-white print:text-black print:border-slate-300 print:shadow-none print:break-inside-avoid print:page-break-inside-avoid print:w-full print:max-w-md print:mx-auto print:my-4"
-                    >
-                      {/* Ticket header strip */}
-                      <div className="w-full bg-white/[0.03] border-b border-border-subtle/50 px-5 py-3 space-y-1 print:bg-slate-100 print:border-slate-200 print:text-black">
-                        {/* Tier pill */}
-                        <div className="flex items-center justify-center gap-2">
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold tracking-wider bg-accent-purple/15 text-accent-purple-light border border-accent-purple/25">
-                            {ticket.tierName}
-                          </span>
-                        </div>
-                        {/* Ticket number */}
-                        <div className="text-[10px] text-text-muted font-medium print:text-slate-700">
-                          Ticket {index + 1} of {tickets.length}
-                        </div>
-                        {/* Seat info (optional) */}
-                        {ticket.seatId && (
-                          <div className="text-white font-semibold text-xs print:text-slate-950">
-                            Row {ticket.row} · Seat {ticket.seatNumber}
-                            {ticket.section && ` · ${ticket.section}`}
-                          </div>
-                        )}
-                        <div className="text-text-muted text-[10px] font-mono print:text-slate-700">
-                          #{ticket.ticketId}
-                        </div>
-                      </div>
-
-                      {/* QR section */}
-                      <div className="flex flex-col items-center gap-3 px-5 py-5">
-                        {/* "Scan at entry" label */}
-                        <div className="flex items-center gap-1.5 text-[10px] font-bold tracking-widest text-text-muted uppercase print:text-slate-700">
-                          <span className="w-8 h-px bg-border-subtle/60 inline-block" />
-                          Scan at Entry
-                          <span className="w-8 h-px bg-border-subtle/60 inline-block" />
-                        </div>
-
-                        {/* QR code */}
-                        {ticket.qrCodeImage ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
-                            src={ticket.qrCodeImage}
-                            alt={`QR code for ticket ${index + 1} of ${tickets.length} — ${ticket.tierName}`}
-                            className="w-52 h-52 sm:w-56 sm:h-56 bg-white p-2.5 rounded-xl print:border print:border-slate-200"
-                          />
-                        ) : (
-                          <div className="w-52 h-52 sm:w-56 sm:h-56 bg-white/5 rounded-xl flex flex-col items-center justify-center gap-2 border border-border-subtle/40">
-                            <span className="text-text-muted text-xs">
-                              QR Unavailable
-                            </span>
-                            <span className="text-text-muted text-[10px] leading-relaxed text-center px-4">
-                              Refresh the page or contact support if this
-                              persists.
+                <div id="print-ticket-area">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 print:flex print:flex-col print:gap-8 print:w-full">
+                    {tickets.map((ticket, index) => (
+                      <motion.div
+                        key={ticket._id}
+                        initial={{ opacity: 0, scale: 0.96, y: 8 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        transition={{
+                          delay: index * 0.07,
+                          duration: 0.28,
+                          ease: "easeOut",
+                        }}
+                        className="glass rounded-2xl border border-border-subtle overflow-hidden flex flex-col items-center text-center print:bg-white print:text-black print:border-slate-300 print:shadow-none print:break-inside-avoid print:page-break-inside-avoid print:w-full print:max-w-md print:mx-auto print:my-4"
+                      >
+                        {/* Ticket header strip */}
+                        <div className="w-full bg-white/[0.03] border-b border-border-subtle/50 px-5 py-3 space-y-1 print:bg-slate-100 print:border-slate-200 print:text-black">
+                          {/* Tier pill */}
+                          <div className="flex items-center justify-center gap-2">
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold tracking-wider bg-accent-purple/15 text-accent-purple-light border border-accent-purple/25">
+                              {ticket.tierName}
                             </span>
                           </div>
-                        )}
+                          {/* Ticket number */}
+                          <div className="text-[10px] text-text-muted font-medium print:text-slate-700">
+                            Ticket {index + 1} of {tickets.length}
+                          </div>
+                          {/* Seat info (optional) */}
+                          {ticket.seatId && (
+                            <div className="text-white font-semibold text-xs print:text-slate-950">
+                              Row {ticket.row} · Seat {ticket.seatNumber}
+                              {ticket.section && ` · ${ticket.section}`}
+                            </div>
+                          )}
+                          <div className="text-text-muted text-[10px] font-mono print:text-slate-700">
+                            #{ticket.ticketId}
+                          </div>
+                        </div>
 
-                        {/* Scan hint */}
-                        <p className="text-[10px] text-text-muted max-w-[210px] leading-relaxed print:text-slate-700">
-                          One ticket per guest. Do not share this QR code.
-                        </p>
-                      </div>
-                    </motion.div>
-                  ))}
+                        {/* QR section */}
+                        <div className="flex flex-col items-center gap-3 px-5 py-5">
+                          {/* "Scan at entry" label */}
+                          <div className="flex items-center gap-1.5 text-[10px] font-bold tracking-widest text-text-muted uppercase print:text-slate-700">
+                            <span className="w-8 h-px bg-border-subtle/60 inline-block" />
+                            Scan at Entry
+                            <span className="w-8 h-px bg-border-subtle/60 inline-block" />
+                          </div>
+
+                          {/* QR code */}
+                          {ticket.qrCodeImage ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              src={ticket.qrCodeImage}
+                              alt={`QR code for ticket ${index + 1} of ${tickets.length} — ${ticket.tierName}`}
+                              className="w-52 h-52 sm:w-56 sm:h-56 bg-white p-2.5 rounded-xl print:border print:border-slate-200"
+                            />
+                          ) : (
+                            <div className="w-52 h-52 sm:w-56 sm:h-56 bg-white/5 rounded-xl flex flex-col items-center justify-center gap-2 border border-border-subtle/40">
+                              <span className="text-text-muted text-xs">
+                                QR Unavailable
+                              </span>
+                              <span className="text-text-muted text-[10px] leading-relaxed text-center px-4">
+                                Refresh the page or contact support if this
+                                persists.
+                              </span>
+                            </div>
+                          )}
+
+                          {/* Scan hint */}
+                          <p className="text-[10px] text-text-muted max-w-[210px] leading-relaxed print:text-slate-700">
+                            One ticket per guest. Do not share this QR code.
+                          </p>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
                 </div>
 
                 {/* Post-confirmation "What to bring" guidance */}
