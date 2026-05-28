@@ -94,7 +94,7 @@ export const EventResponseSchema = z.object({
   startDate: z.string().datetime(),
   endDate: z.string().datetime().optional(),
   showTime: z.string().optional(),
-  venue: z.string().min(1),
+  venue: z.string().nullish().transform((val) => val ?? ""),
   isFeatured: z.boolean(),
   isSoldOut: z.boolean(),
   isAgeRestricted: z.boolean().optional(),

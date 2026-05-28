@@ -56,10 +56,16 @@ export const createEvent = async (data: Partial<IEvent>): Promise<IEvent> => {
 export const getEvents = async (
   page: number = 1,
   limit: number = 10,
+  status?: string,
 ): Promise<{ events: IEvent[]; total: number; pages: number }> => {
   const skip = (page - 1) * limit;
-  const total = await Event.countDocuments({ isDeleted: { $ne: true } });
-  const events = await Event.find({ isDeleted: { $ne: true } })
+  const query: any = { isDeleted: { $ne: true } };
+  // Defensive guard – only apply a status filter when the value is a non‑empty string
+  if (typeof status === "string" && status.trim().length > 0) {
+    query.status = status.trim();
+  }
+  const total = await Event.countDocuments(query);
+  const events = await Event.find(query)
     .populate("artistIds", "name")
     .populate("djOperatorIds", "name")
     .sort({ createdAt: -1 })

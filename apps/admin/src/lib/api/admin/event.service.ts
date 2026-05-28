@@ -63,21 +63,37 @@ export async function adminGetEvents(
 ): Promise<{ items: AdminEvent[]; pagination: EventsResponse["pagination"] }> {
   const params = new URLSearchParams();
   Object.entries(filters).forEach(([k, v]) => {
-    if (v !== undefined) params.set(k, String(v));
+    if (v === undefined || v === "") return; // skip undefined or empty strings
+    params.set(k, String(v));
   });
   const page = filters.page || 1;
   const limit = filters.limit || 10;
   const { data } = await adminApiClient.get<any>(`/admin/events?${params}`);
-  const parsed = EventListResponseSchema.parse(data?.data);
-  return {
-    items: parsed.events as AdminEvent[],
-    pagination: {
-      page,
-      limit,
-      total: parsed.total,
-      totalPages: parsed.pages ?? Math.ceil(parsed.total / limit),
-    },
-  };
+  try {
+    console.warn("RAW ADMIN EVENTS", data?.data);
+    const parsed = EventListResponseSchema.parse(data?.data);
+    console.warn("PARSED ADMIN EVENTS", parsed);
+    return {
+      items: parsed.events as AdminEvent[],
+      pagination: {
+        page,
+        limit,
+        total: parsed.total,
+        totalPages: parsed.pages ?? Math.ceil(parsed.total / limit),
+      },
+    };
+  } catch (error) {
+    console.error("EVENT PARSE ERROR", error);
+    return {
+      items: [],
+      pagination: {
+        page,
+        limit,
+        total: 0,
+        totalPages: 0,
+      },
+    };
+  }
 }
 
 export async function adminGetEvent(id: string): Promise<AdminEvent> {
