@@ -42,6 +42,7 @@ export interface IBooking extends Document {
   reservationIds?: string[];
   bookingVersion: number;
   expiresAt?: Date;
+  logicalExpiresAt?: Date;
   cancellationReason?: string;
   cancelledAt?: Date;
   createdAt: Date;
@@ -107,6 +108,7 @@ const bookingSchema = new Schema<IBooking>(
     reservationIds: [{ type: String }],
     bookingVersion: { type: Number, default: 1, min: 1 },
     expiresAt: { type: Date, index: { expireAfterSeconds: 0 } }, // TTL for pending bookings
+    logicalExpiresAt: { type: Date, index: true },
     cancellationReason: String,
     cancelledAt: Date,
   },
