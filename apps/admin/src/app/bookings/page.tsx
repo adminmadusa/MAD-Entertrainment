@@ -2,9 +2,16 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
-import { adminGetBookings, adminCancelBooking, type AdminBooking } from '@/lib/api/admin/booking.service';
+import {
+  adminGetBookings,
+  adminCancelBooking,
+  adminCorrectBookingEmail,
+  adminResendBookingTickets,
+  type AdminBooking,
+} from '@/lib/api/admin/booking.service';
+import { extractApiError } from '@/lib/api/client';
 import ErrorState from '@/components/states/ErrorState';
 
 const STATUS_COLORS: Record<string, string> = {
@@ -34,6 +41,57 @@ export default function AdminBookingsPage() {
       qc.invalidateQueries({ queryKey: ['admin-bookings'] });
       setCancelTarget(null);
       setCancelReason('');
+    },
+  });
+
+  // Email correction and ticket resending states
+  const [isEditEmailOpen, setIsEditEmailOpen] = useState(false);
+  const [editEmailValue, setEditEmailValue] = useState('');
+  const [editReasonValue, setEditReasonValue] = useState('');
+  const [editEmailError, setEditEmailError] = useState('');
+  const [successToast, setSuccessToast] = useState<string | null>(null);
+  const [errorToast, setErrorToast] = useState<string | null>(null);
+
+  // Auto-dismiss feedback messages
+  useEffect(() => {
+    if (successToast) {
+      const timer = setTimeout(() => setSuccessToast(null), 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [successToast]);
+
+  useEffect(() => {
+    if (errorToast) {
+      const timer = setTimeout(() => setErrorToast(null), 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [errorToast]);
+
+  const correctEmailMutation = useMutation({
+    mutationFn: ({ id, newEmail, reason }: { id: string; newEmail: string; reason: string }) =>
+      adminCorrectBookingEmail(id, newEmail, reason),
+    onSuccess: (updatedBooking) => {
+      qc.invalidateQueries({ queryKey: ['admin-bookings'] });
+      // Update local state instantly so the details modal shows the corrected email
+      setSelectedBooking(updatedBooking);
+      setIsEditEmailOpen(false);
+      setEditEmailValue('');
+      setEditReasonValue('');
+      setEditEmailError('');
+      setSuccessToast('Booking email corrected successfully');
+    },
+    onError: (err) => {
+      setEditEmailError(extractApiError(err).message || 'Failed to correct email');
+    },
+  });
+
+  const resendTicketsMutation = useMutation({
+    mutationFn: (id: string) => adminResendBookingTickets(id),
+    onSuccess: () => {
+      setSuccessToast('Tickets enqueued for resend successfully');
+    },
+    onError: (err) => {
+      setErrorToast(extractApiError(err).message || 'Failed to resend tickets');
     },
   });
 
@@ -313,6 +371,65 @@ export default function AdminBookingsPage() {
                   </div>
                 </div>
 
+                {/* Success / Error Feedback Alert inside Modal */}
+                {successToast && (
+                  <div className="px-4 py-2.5 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-xs text-emerald-400">
+                    {successToast}
+                  </div>
+                )}
+                {errorToast && (
+                  <div className="px-4 py-2.5 bg-error/10 border border-error/30 rounded-xl text-xs text-red-400">
+                    {errorToast}
+                  </div>
+                )}
+
+                <div className="border-t border-white/5 pt-4 space-y-3">
+                  <h4 className="text-text-muted font-medium text-xs uppercase tracking-wider">Customer Contact</h4>
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white/5 rounded-xl p-4">
+                    <div className="space-y-0.5">
+                      <span className="text-text-muted text-[10px] uppercase tracking-wider block">Current Email</span>
+                      <span className="text-white font-semibold font-mono text-sm">{email}</span>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEditEmailValue(email === '—' ? '' : email);
+                          setEditReasonValue('');
+                          setEditEmailError('');
+                          setIsEditEmailOpen(true);
+                        }}
+                        disabled={!!selectedBooking.userId}
+                        className={`px-3.5 py-2 text-xs font-semibold rounded-lg border transition-all ${
+                          selectedBooking.userId
+                            ? 'bg-white/5 border-white/10 text-text-muted cursor-not-allowed opacity-50'
+                            : 'glass border-border-subtle text-text-secondary hover:text-white hover:border-accent-purple/50'
+                        }`}
+                      >
+                        Edit Email
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => resendTicketsMutation.mutate(selectedBooking._id)}
+                        disabled={selectedBooking.status !== 'confirmed' || resendTicketsMutation.isPending}
+                        className="px-3.5 py-2 text-xs font-semibold bg-accent-purple/25 hover:bg-accent-purple/40 border border-accent-purple/40 rounded-lg text-accent-purple hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                      >
+                        {resendTicketsMutation.isPending ? 'Resending...' : 'Resend Tickets'}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Authenticated booking protection warning */}
+                  {selectedBooking.userId && (
+                    <div className="px-4 py-3 bg-yellow-500/10 border border-yellow-500/30 rounded-xl text-xs text-yellow-400 flex items-start gap-2.5">
+                      <svg className="w-4 h-4 mt-0.5 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                      <span className="leading-relaxed">
+                        Email changes are not permitted for authenticated bookings.
+                      </span>
+                    </div>
+                  )}
+                </div>
+
                 <div className="border-t border-white/5 pt-4">
                   <h4 className="text-text-muted font-medium text-xs uppercase tracking-wider mb-3">Ticket Details</h4>
                   <div className="space-y-2">
@@ -362,6 +479,113 @@ export default function AdminBookingsPage() {
             </div>
           );
         })()}
+      </AnimatePresence>
+
+      {/* Correct Email Modal */}
+      <AnimatePresence>
+        {isEditEmailOpen && selectedBooking && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="glass-strong rounded-2xl border border-border-subtle p-6 max-w-md w-full space-y-4"
+            >
+              <div>
+                <h3 className="text-white font-bold text-lg">Correct Booking Email</h3>
+                <p className="text-text-muted text-xs">Update recipient email for guest booking</p>
+              </div>
+
+              {editEmailError && (
+                <div className="px-4 py-2.5 bg-error/10 border border-error/30 rounded-xl text-xs text-red-400">
+                  {editEmailError}
+                </div>
+              )}
+
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  setEditEmailError('');
+
+                  // Basic client-side email format validation
+                  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                  if (!emailRegex.test(editEmailValue.trim())) {
+                    setEditEmailError('Please enter a valid email address.');
+                    return;
+                  }
+
+                  // Reason length checks
+                  const reason = editReasonValue.trim();
+                  if (reason.length < 5 || reason.length > 500) {
+                    setEditEmailError('Reason must be between 5 and 500 characters.');
+                    return;
+                  }
+
+                  correctEmailMutation.mutate({
+                    id: selectedBooking._id,
+                    newEmail: editEmailValue.trim(),
+                    reason,
+                  });
+                }}
+                className="space-y-4"
+              >
+                <div className="space-y-1.5">
+                  <label className="text-text-secondary text-xs font-medium block">Current Email</label>
+                  <div className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/5 text-sm text-text-muted font-mono select-all">
+                    {(selectedBooking.userId ?? selectedBooking.guestInfo)?.email ?? '—'}
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-text-secondary text-xs font-medium block">New Email Address</label>
+                  <input
+                    type="email"
+                    value={editEmailValue}
+                    onChange={(e) => setEditEmailValue(e.target.value)}
+                    placeholder="e.g. customer.fixed@gmail.com"
+                    required
+                    className="w-full px-4 py-2.5 rounded-xl bg-background border border-border-subtle text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-purple transition-colors"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-text-secondary text-xs font-medium block">Reason for Correction</label>
+                  <textarea
+                    value={editReasonValue}
+                    onChange={(e) => setEditReasonValue(e.target.value)}
+                    placeholder="e.g. Customer typo in domain extension (gmial.com to gmail.com)"
+                    required
+                    rows={3}
+                    className="w-full px-4 py-2.5 rounded-xl bg-background border border-border-subtle text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-purple transition-colors resize-none"
+                  />
+                  <p className="text-[10px] text-text-muted">
+                    Administrative audit trails require 5 to 500 characters.
+                  </p>
+                </div>
+
+                <div className="flex gap-3 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsEditEmailOpen(false);
+                      setEditEmailError('');
+                    }}
+                    className="flex-1 py-2.5 glass border border-border-subtle rounded-xl text-sm font-medium text-text-secondary hover:text-white transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={correctEmailMutation.isPending}
+                    className="flex-1 py-2.5 btn-gradient text-white font-bold rounded-xl shadow-glow-sm disabled:opacity-60 transition-all text-sm"
+                  >
+                    {correctEmailMutation.isPending ? 'Saving...' : 'Save Changes'}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
       </AnimatePresence>
     </div>
   );

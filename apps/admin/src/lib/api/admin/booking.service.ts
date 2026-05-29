@@ -255,3 +255,15 @@ export async function adminCreateRefund(payload: { bookingId: string; paymentId:
   const { data } = await adminApiClient.post<{ data: AdminRefund }>('/admin/refunds', payload);
   return data.data;
 }
+
+export async function adminCorrectBookingEmail(id: string, newEmail: string, reason: string): Promise<AdminBooking> {
+  const { data } = await adminApiClient.patch<{ data: AdminBooking }>(`/admin/bookings/${id}/correct-email`, {
+    newEmail,
+    reason,
+  });
+  return data.data;
+}
+
+export async function adminResendBookingTickets(id: string): Promise<void> {
+  await adminApiClient.post(`/admin/bookings/${id}/resend`);
+}
