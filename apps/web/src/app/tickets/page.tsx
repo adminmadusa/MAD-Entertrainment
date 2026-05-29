@@ -1,39 +1,29 @@
 'use client';
 
-import { Button } from '@mad/ui';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { useRouter } from 'next/navigation';
-import { useState, useEffect, useCallback, useRef, Suspense } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 
 import { extractApiError } from '@/lib/api/client';
 import {
-  publicRequestMagicLink,
-  publicVerifyMagicLinkOrOTP,
   publicGetMyBookings,
   publicDownloadTicketPDF,
   publicResendTicketEmail,
 } from '@/lib/api/public.service';
 import { useAuth } from '@/providers/AuthProvider';
+import { AuthForm } from '@/components/auth/AuthForm';
 
 function TicketRetrievalContent() {
-  const router = useRouter();
-  const { login, logout, isAuthenticated, isLoading: isAuthLoading, user } = useAuth();
+  const { logout, isAuthenticated, isLoading: isAuthLoading, user } = useAuth();
 
   // Core Retrieval States
-  const [email, setEmail] = useState('');
-  const [otp, setOtp] = useState('');
-  const [step, setStep] = useState<'email' | 'otp' | 'portal'>('email');
+  const [step, setStep] = useState<'email' | 'portal'>('email');
   const [errorMsg, setErrorMsg] = useState('');
   const [infoMsg, setInfoMsg] = useState('');
 
   // Resend / Download States
   const [resendingId, setResendingId] = useState<string | null>(null);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
-
-  // Resend code countdown timer
-  const [resendTimer, setResendTimer] = useState(0);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Transition directly to portal if already authenticated on mount
   useEffect(() => {
@@ -42,66 +32,8 @@ function TicketRetrievalContent() {
     }
   }, [isAuthenticated, isAuthLoading]);
 
-  // Start timer for resending passcode
-  const startTimer = useCallback(() => {
-    setResendTimer(60);
-    if (timerRef.current) clearInterval(timerRef.current);
-    timerRef.current = setInterval(() => {
-      setResendTimer((prev) => {
-        if (prev <= 1) {
-          if (timerRef.current) clearInterval(timerRef.current);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-  }, []);
-
-  useEffect(() => {
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-    };
-  }, []);
-
-  // ─── Queries & Mutations ────────────────────────────────────
-
-  // Request Passcode Email
-  const requestMagicLinkMutation = useMutation({
-    mutationFn: () => publicRequestMagicLink(email),
-    onSuccess: (res) => {
-      setStep('otp');
-      setInfoMsg(res.message || 'Verification passcode dispatched. Please check your inbox.');
-      setErrorMsg('');
-      startTimer();
-    },
-    onError: (err) => {
-      const apiErr = extractApiError(err);
-      setErrorMsg(apiErr.message || 'Failed to send verification code. Please try again.');
-    },
-  });
-
-  // Verify OTP Passcode
-  const verifyMutation = useMutation({
-    mutationFn: (cleanOtp: string) =>
-      publicVerifyMagicLinkOrOTP({
-        otp: cleanOtp,
-        email: email,
-      }),
-    onSuccess: (data) => {
-      login(data.token, data.user);
-      setStep('portal');
-      setErrorMsg('');
-      setOtp('');
-      setInfoMsg('');
-    },
-    onError: (err) => {
-      const apiErr = extractApiError(err);
-      setErrorMsg(apiErr.message || 'Invalid or expired passcode. Please request a new code.');
-    },
-  });
-
   // Query Bookings (only enabled when authenticated)
-  const { data: bookingsData, isLoading: isBookingsLoading, refetch } = useQuery({
+  const { data: bookingsData, isLoading: isBookingsLoading } = useQuery({
     queryKey: ['user-bookings'],
     queryFn: publicGetMyBookings,
     enabled: isAuthenticated,
@@ -151,47 +83,9 @@ function TicketRetrievalContent() {
     }
   };
 
-  const handleSubmitEmail = (e: React.FormEvent) => {
-    e.preventDefault();
-    setErrorMsg('');
-    setInfoMsg('');
-    if (!email.trim()) {
-      setErrorMsg('Email address is required.');
-      return;
-    }
-    requestMagicLinkMutation.mutate();
-  };
-
-  const handleSubmitOtp = (e: React.FormEvent) => {
-    e.preventDefault();
-    setErrorMsg('');
-    const cleanOtp = otp.trim().replace(/\s/g, '');
-    if (cleanOtp.length !== 6) {
-      setErrorMsg('Please enter a valid 6-digit passcode.');
-      return;
-    }
-    verifyMutation.mutate(cleanOtp);
-  };
-
-  const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
-    e.preventDefault();
-    const pastedText = e.clipboardData.getData('text');
-    const sanitized = pastedText.replace(/\D/g, '').slice(0, 6);
-    setOtp(sanitized);
-  };
-
-  const handleBackToEmail = () => {
-    setStep('email');
-    setErrorMsg('');
-    setInfoMsg('');
-    setOtp('');
-  };
-
   const handleExitPortal = () => {
     logout();
     setStep('email');
-    setEmail('');
-    setOtp('');
     setErrorMsg('');
     setInfoMsg('');
   };
@@ -241,99 +135,10 @@ function TicketRetrievalContent() {
           </div>
         )}
 
-        {/* SCREEN 1: Request OTP / Email Form */}
-        {step === 'email' && (
+        {/* SCREEN 1 & 2: Reusable Shared AuthForm Gate */}
+        {step !== 'portal' && (
           <div className="max-w-md mx-auto glass-strong rounded-3xl border border-border-subtle p-8 shadow-2xl">
-            <form onSubmit={handleSubmitEmail} className="space-y-6">
-              <div className="space-y-2">
-                <label htmlFor="email" className="text-xs font-semibold text-text-secondary uppercase tracking-wider ml-1">
-                  Email Address
-                </label>
-                <input
-                  id="email"
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@example.com"
-                  className="w-full bg-white/5 border border-border-subtle rounded-xl px-4 py-3.5 text-white placeholder:text-text-muted/30 focus:outline-none focus:border-accent-purple/50 focus:ring-1 focus:ring-accent-purple/50 transition-all duration-300"
-                />
-              </div>
-
-              <Button
-                type="submit"
-                variant="primary"
-                fullWidth
-                className="py-3.5 rounded-xl font-bold tracking-wide shadow-lg shadow-accent-purple/20 hover:shadow-accent-purple/40 active:scale-95 transition-all duration-200"
-                isLoading={requestMagicLinkMutation.isPending}
-              >
-                Continue with Email
-              </Button>
-            </form>
-          </div>
-        )}
-
-        {/* SCREEN 2: Verify OTP Passcode Form */}
-        {step === 'otp' && (
-          <div className="max-w-md mx-auto glass-strong rounded-3xl border border-border-subtle p-8 shadow-2xl">
-            <form onSubmit={handleSubmitOtp} className="space-y-6">
-              <div className="space-y-3">
-                <label htmlFor="otp" className="text-xs font-semibold text-text-secondary uppercase tracking-wider ml-1 block text-center">
-                  6-Digit Passcode
-                </label>
-                
-                <input
-                  id="otp"
-                  type="text"
-                  required
-                  maxLength={6}
-                  pattern="[0-9]*"
-                  inputMode="numeric"
-                  value={otp}
-                  onChange={(e) => setOtp(e.target.value.replace(/[^0-9]/g, ''))}
-                  onPaste={handlePaste}
-                  placeholder="000000"
-                  className="w-full text-center text-3xl font-black bg-white/5 border border-border-subtle rounded-2xl py-4 text-white placeholder:text-text-muted/15 focus:outline-none focus:border-accent-purple/60 focus:ring-1 focus:ring-accent-purple/60 transition-all duration-300 tracking-[0.6em] pl-[0.6em] font-mono"
-                />
-              </div>
-
-              <div className="space-y-4">
-                <Button
-                  type="submit"
-                  variant="primary"
-                  fullWidth
-                  className="py-3.5 rounded-xl font-bold tracking-wide shadow-lg shadow-accent-purple/20 hover:shadow-accent-purple/40 active:scale-95 transition-all duration-200"
-                  isLoading={verifyMutation.isPending}
-                >
-                  Verify Passcode
-                </Button>
-
-                <div className="flex justify-between items-center text-xs px-1 pt-1">
-                  <button
-                    type="button"
-                    onClick={handleBackToEmail}
-                    className="text-text-muted hover:text-white transition-colors duration-200"
-                  >
-                    ← Back to Email
-                  </button>
-
-                  {resendTimer > 0 ? (
-                    <span className="text-text-muted/60">
-                      Resend code in <span className="font-semibold text-purple-300">{resendTimer}s</span>
-                    </span>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => requestMagicLinkMutation.mutate()}
-                      disabled={requestMagicLinkMutation.isPending}
-                      className="text-accent-purple hover:text-accent-purple-light font-semibold transition-colors duration-200 disabled:opacity-50"
-                    >
-                      Resend Code
-                    </button>
-                  )}
-                </div>
-              </div>
-            </form>
+            <AuthForm mode="wallet" onSuccess={() => setStep('portal')} />
           </div>
         )}
 
