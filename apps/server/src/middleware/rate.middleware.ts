@@ -104,6 +104,7 @@ let _authLimiter: RateLimiter | undefined;
 let _paymentLimiter: RateLimiter | undefined;
 let _webhookLimiter: RateLimiter | undefined;
 let _adminLimiter: RateLimiter | undefined;
+let _resendLimiter: RateLimiter | undefined;
 
 function makeLimiter(prefix: 'general' | 'auth' | 'payment' | 'webhook' | 'admin'): RateLimiter {
   const e = getEnv();
@@ -142,6 +143,24 @@ export function initRateLimiters(): void {
   _paymentLimiter = makeLimiter('payment');
   _webhookLimiter = makeLimiter('webhook');
   _adminLimiter = makeLimiter('admin');
+
+  _resendLimiter = rateLimit({
+    windowMs: 60 * 60 * 1000, // 1 hour window
+    limit: 3, // limit each booking reference/IP combination to 3 requests per windowMs
+    standardHeaders: true,
+    legacyHeaders: false,
+    passOnStoreError: true,
+    store: new ResilientRedisStore('resend'),
+    keyGenerator: (req: any) => {
+      return req.params.bookingId || req.ip || '';
+    },
+    handler: (req: any, res: any) => {
+      res.status(429).json({
+        success: false,
+        message: 'Too many resend attempts. Please try again after an hour.',
+      });
+    },
+  });
 }
 
 export const generalLimiter = (req: any, res: any, next: any) => {
@@ -182,4 +201,12 @@ export const adminLimiter = (req: any, res: any, next: any) => {
     return next();
   }
   return _adminLimiter(req, res, next);
+};
+
+export const resendLimiter = (req: any, res: any, next: any) => {
+  if (!_resendLimiter) {
+    logger.error('resendLimiter called before initRateLimiters() — rate limiting inactive');
+    return next();
+  }
+  return _resendLimiter(req, res, next);
 };

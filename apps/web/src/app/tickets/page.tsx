@@ -11,6 +11,8 @@ import {
   publicRequestMagicLink,
   publicVerifyMagicLinkOrOTP,
   publicGetMyBookings,
+  publicDownloadTicketPDF,
+  publicResendTicketEmail,
 } from '@/lib/api/public.service';
 import { useAuth } from '@/providers/AuthProvider';
 
@@ -24,6 +26,10 @@ function TicketRetrievalContent() {
   const [step, setStep] = useState<'email' | 'otp' | 'portal'>('email');
   const [errorMsg, setErrorMsg] = useState('');
   const [infoMsg, setInfoMsg] = useState('');
+
+  // Resend / Download States
+  const [resendingId, setResendingId] = useState<string | null>(null);
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
   // Resend code countdown timer
   const [resendTimer, setResendTimer] = useState(0);
@@ -103,6 +109,47 @@ function TicketRetrievalContent() {
   });
 
   // ─── Actions ────────────────────────────────────────────────
+
+  const handleDownloadPDF = async (bookingId: string) => {
+    try {
+      setErrorMsg('');
+      setInfoMsg('');
+      setDownloadingId(bookingId);
+
+      const blob = await publicDownloadTicketPDF(bookingId);
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `MAD_Ticket_${bookingId}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+      
+      setInfoMsg('Ticket PDF downloaded successfully.');
+    } catch (err) {
+      const apiErr = extractApiError(err);
+      setErrorMsg(apiErr.message || 'Failed to download ticket PDF. Please try again.');
+    } finally {
+      setDownloadingId(null);
+    }
+  };
+
+  const handleResendTickets = async (bookingId: string) => {
+    try {
+      setErrorMsg('');
+      setInfoMsg('');
+      setResendingId(bookingId);
+
+      const res = await publicResendTicketEmail(bookingId);
+      setInfoMsg(res.message || 'Tickets resent successfully to your email.');
+    } catch (err) {
+      const apiErr = extractApiError(err);
+      setErrorMsg(apiErr.message || 'Failed to resend tickets. Please try again.');
+    } finally {
+      setResendingId(null);
+    }
+  };
 
   const handleSubmitEmail = (e: React.FormEvent) => {
     e.preventDefault();
@@ -377,7 +424,29 @@ function TicketRetrievalContent() {
                       {/* Tickets list for confirmed bookings */}
                       {booking.status === 'confirmed' ? (
                         <div className="space-y-4 pt-4 border-t border-border-subtle/30">
-                          <h3 className="text-white font-bold text-sm">Entry Passes</h3>
+                          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-2">
+                            <h3 className="text-white font-bold text-sm">Entry Passes</h3>
+                            <div className="flex flex-wrap gap-2">
+                              <button
+                                type="button"
+                                onClick={() => handleDownloadPDF(booking.bookingId)}
+                                disabled={downloadingId === booking.bookingId}
+                                className="px-4 py-2 bg-white/5 hover:bg-white/10 border border-border-subtle text-white text-xs font-semibold rounded-xl transition-all flex items-center gap-1.5 disabled:opacity-50"
+                              >
+                                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                                {downloadingId === booking.bookingId ? 'Downloading...' : 'Download PDF'}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleResendTickets(booking.bookingId)}
+                                disabled={resendingId === booking.bookingId}
+                                className="px-4 py-2 btn-gradient text-white text-xs font-semibold rounded-xl transition-all shadow-glow-sm flex items-center gap-1.5 disabled:opacity-50"
+                              >
+                                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                                {resendingId === booking.bookingId ? 'Sending...' : 'Resend Tickets'}
+                              </button>
+                            </div>
+                          </div>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             {bookingTickets.map((ticket, tIndex) => (
                               <motion.div
