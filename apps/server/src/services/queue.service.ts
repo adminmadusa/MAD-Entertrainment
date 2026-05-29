@@ -1,7 +1,7 @@
 import { Queue, QueueOptions } from 'bullmq';
 import { EventEmitter } from 'events';
 
-import { getQueueConnection } from '../config/queue.config';
+import { getQueueConnection, getQueuePrefix } from '../config/queue.config';
 import { isRedisConnected } from '../config/redis';
 import { logger } from '../utils/logger';
 
@@ -27,6 +27,7 @@ export class QueueService {
       const connection = getQueueConnection();
       const options: QueueOptions = {
         connection,
+        prefix: getQueuePrefix(),
         defaultJobOptions: {
           attempts: 3,
           backoff: {
@@ -39,7 +40,7 @@ export class QueueService {
       };
 
       this.queues[queueName] = new Queue(queueName, options);
-      logger.info({ queueName }, 'BullMQ Queue initialized successfully');
+      logger.info({ queueName, prefix: options.prefix }, 'BullMQ Queue initialized successfully');
       return this.queues[queueName];
     } catch (err) {
       logger.error({ err, queueName }, 'Failed to initialize BullMQ Queue. Operating in degraded mode.');

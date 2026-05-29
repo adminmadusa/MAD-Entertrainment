@@ -59,6 +59,10 @@ export function CheckoutAuthCard() {
   const [resendTimer, setResendTimer] = useState(0);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Google GSI refs to prevent double initialization & render loops
+  const googleCallbackRef = useRef<(response: GoogleCredentialResponse) => void>(() => {});
+  const isInitializedRef = useRef(false);
+
   const startTimer = useCallback(() => {
     setResendTimer(60);
     if (timerRef.current) clearInterval(timerRef.current);
@@ -130,35 +134,47 @@ export function CheckoutAuthCard() {
     },
   });
 
+  // Update Google callback ref when mutation reference changes
+  useEffect(() => {
+    googleCallbackRef.current = (response: GoogleCredentialResponse) => {
+      if (response?.credential) {
+        googleLoginMutation.mutate(response.credential);
+      }
+    };
+  }, [googleLoginMutation]);
+
   // ─── Google OAuth Identity Services Integration ────────────
 
   const handleGoogleCredentialResponse = useCallback((response: GoogleCredentialResponse) => {
-    if (response?.credential) {
-      googleLoginMutation.mutate(response.credential);
-    }
-  }, [googleLoginMutation]);
+    googleCallbackRef.current(response);
+  }, []);
 
   const initializeGoogleSignIn = useCallback(() => {
     const googleObj = (window as unknown as { google?: GoogleIdentity }).google;
     const btnElement = document.getElementById('checkout-google-signin-btn');
-    if (typeof window !== 'undefined' && googleObj && btnElement) {
+    if (typeof window !== 'undefined' && googleObj) {
       try {
-        googleObj.accounts.id.initialize({
-          client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || 'google_client_id_placeholder',
-          callback: handleGoogleCredentialResponse,
-          auto_select: false,
-        });
+        if (!isInitializedRef.current) {
+          googleObj.accounts.id.initialize({
+            client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || 'google_client_id_placeholder',
+            callback: handleGoogleCredentialResponse,
+            auto_select: false,
+          });
+          isInitializedRef.current = true;
+        }
 
-        googleObj.accounts.id.renderButton(
-          btnElement,
-          {
-            theme: 'filled_dark',
-            size: 'large',
-            width: '100%',
-            shape: 'pill',
-            text: 'continue_with',
-          }
-        );
+        if (btnElement && btnElement.innerHTML === '') {
+          googleObj.accounts.id.renderButton(
+            btnElement,
+            {
+              theme: 'filled_dark',
+              size: 'large',
+              width: '100%',
+              shape: 'pill',
+              text: 'continue_with',
+            }
+          );
+        }
       } catch (err) {
         console.error('Failed to initialize Google login button inside checkout:', err);
       }
@@ -205,6 +221,13 @@ export function CheckoutAuthCard() {
       return;
     }
     verifyMutation.mutate(cleanOtp);
+  };
+
+  const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    const pastedText = e.clipboardData.getData('text');
+    const sanitized = pastedText.replace(/\D/g, '').slice(0, 6);
+    setOtp(sanitized);
   };
 
   const handleBackToOptions = () => {
@@ -364,6 +387,7 @@ export function CheckoutAuthCard() {
               inputMode="numeric"
               value={otp}
               onChange={(e) => setOtp(e.target.value.replace(/[^0-9]/g, ''))}
+              onPaste={handlePaste}
               placeholder="000000"
               className="w-full text-center text-2xl font-black bg-white/5 border border-white/10 rounded-xl py-2.5 text-white placeholder:text-text-muted/15 focus:outline-none focus:border-accent-purple focus:ring-1 focus:ring-accent-purple transition-all tracking-[0.4em] pl-[0.4em] font-mono"
             />

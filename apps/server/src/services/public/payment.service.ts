@@ -5,6 +5,7 @@ import { BookingStatus, PaymentStatus, ReservationStatus, SeatStatus, Notificati
 
 import { emitToAdmin, emitToBooking, emitToEvent } from '../../config/socket';
 import { getEnv } from '../../config/env';
+import { getQueueName } from '../../config/queue.config';
 import { getRazorpay, isRazorpayEnabled } from '../../config/razorpay';
 import { getStripe, isStripeEnabled } from '../../config/stripe';
 import { AppError } from '../../middleware/error.middleware';
@@ -947,7 +948,7 @@ export class PaymentService {
     // Feature Flag Rollout: if asynchronous checkout is enabled, offload ticket & PDF generation
     if (getEnv().ENABLE_ASYNC_CHECKOUT) {
       await QueueService.enqueue(
-        'booking-queue',
+        getQueueName('booking-queue'),
         'booking:confirm',
         { bookingId: booking._id.toString() },
         `booking:confirm:${booking._id}`

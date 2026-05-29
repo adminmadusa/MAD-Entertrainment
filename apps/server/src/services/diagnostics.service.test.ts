@@ -15,6 +15,7 @@ vi.mock('../config/redis', () => ({
 
 vi.mock('../config/queue.config', () => ({
   getQueueConnection: () => ({}),
+  getQueueName: (name: string) => name,
 }));
 
 vi.mock('bullmq', () => {

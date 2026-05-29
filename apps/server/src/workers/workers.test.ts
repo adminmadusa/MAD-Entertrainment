@@ -38,6 +38,11 @@ vi.mock('../models/notification.schema', () => ({
   },
 }));
 
+vi.mock('../config/queue.config', () => ({
+  getQueueConnection: () => ({}),
+  getQueueName: (name: string) => name,
+}));
+
 vi.mock('../services/queue.service', () => ({
   QueueService: {
     enqueue: vi.fn(),
