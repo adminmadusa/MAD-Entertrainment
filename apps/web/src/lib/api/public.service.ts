@@ -239,8 +239,16 @@ export async function publicGoogleLogin(idToken: string): Promise<AuthResponse> 
   return data.data;
 }
 
-export async function publicRequestMagicLink(email: string): Promise<MagicLinkRequestResponse> {
-  const { data } = await apiClient.post<MagicLinkRequestResponse>('/auth/magic-link', { email });
+export async function publicCheckEmail(email: string): Promise<{ exists: boolean }> {
+  const { data } = await apiClient.post<{ data: { exists: boolean } }>('/auth/check-email', { email });
+  return data.data;
+}
+
+export async function publicRequestMagicLink(
+  email: string,
+  registrationData?: { firstName: string; lastName: string; mobileNumber?: string }
+): Promise<MagicLinkRequestResponse> {
+  const { data } = await apiClient.post<MagicLinkRequestResponse>('/auth/magic-link', { email, ...registrationData });
   return data;
 }
 

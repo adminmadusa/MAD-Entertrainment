@@ -4,6 +4,9 @@ export interface IMagicToken extends Document {
   email: string;
   token: string;
   otp: string;
+  firstName?: string;
+  lastName?: string;
+  mobileNumber?: string;
   expiresAt: Date;
   createdAt: Date;
   updatedAt: Date;
@@ -28,6 +31,18 @@ const magicTokenSchema = new Schema<IMagicToken>(
       type: String,
       required: true,
       index: true,
+    },
+    firstName: {
+      type: String,
+      trim: true,
+    },
+    lastName: {
+      type: String,
+      trim: true,
+    },
+    mobileNumber: {
+      type: String,
+      trim: true,
     },
     expiresAt: {
       type: Date,
