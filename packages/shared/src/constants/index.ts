@@ -43,6 +43,7 @@ export enum BookingStatus {
   REFUNDED = 'refunded',
   FAILED = 'failed',
   AWAITING_PAYMENT = 'awaiting_payment',
+  EXPIRED = 'expired',
 }
 
 // ─── Payment Status ──────────────────────────────────────────

@@ -33,6 +33,7 @@ export interface ConsistencyReport {
     phantomRedisLocks: number;
     staleSeatReservations: number;
     eventInventoryMismatchesRepaired?: number;
+    logicallyExpiredBookings?: number;
   };
 }
 
@@ -201,15 +202,73 @@ async function repairEventInventoryMismatches(): Promise<number> {
 }
 
 export class ConsistencyService {
+  static async expireStaleBookings(): Promise<number> {
+    const now = new Date();
+    const staleBookings = await Booking.find({
+      status: BookingStatus.AWAITING_PAYMENT,
+      logicalExpiresAt: { $lte: now }
+    }).limit(100);
+
+    let expiredCount = 0;
+    for (const booking of staleBookings) {
+      booking.status = BookingStatus.EXPIRED;
+      booking.bookingVersion += 1;
+      await booking.save();
+
+      const failedReservations = await ReservationService.transitionForBooking(booking._id, ReservationStatus.FAILED, {
+        reason: 'booking-logical-checkout-timeout',
+        correlationId: booking.bookingId,
+      });
+      await ReservationService.releaseCapacityForTerminalReservations(failedReservations);
+
+      const event = await Event.findById(booking.eventId);
+      if (event && event.bookingMode === 'seat_based') {
+        const allSeatIds = booking.tickets.flatMap((ticket) => ticket.seats || []).map((seat) => seat.seatId);
+        if (allSeatIds.length > 0) {
+          await SeatLayout.updateOne(
+            { eventId: event._id },
+            {
+              $set: {
+                'seats.$[seat].status': SeatStatus.AVAILABLE,
+              },
+              $unset: {
+                'seats.$[seat].lockedBy': '',
+                'seats.$[seat].lockedAt': '',
+                'seats.$[seat].bookedByBookingId': '',
+                'seats.$[seat].reservationId': '',
+              },
+              $inc: {
+                'seats.$[seat].seatVersion': 1,
+              },
+            },
+            {
+              arrayFilters: [
+                {
+                  'seat.seatId': { $in: allSeatIds },
+                  'seat.status': SeatStatus.LOCKED,
+                  'seat.bookedByBookingId': booking._id.toString(),
+                },
+              ],
+            }
+          );
+        }
+      }
+      expiredCount++;
+      logger.info({ bookingId: booking._id, bookingReference: booking.bookingId }, 'Consistency: Logically expired booking and released held inventory');
+    }
+    return expiredCount;
+  }
+
   static async runRepairCycle(): Promise<ConsistencyReport> {
     const correlationId = `repair-cycle-${crypto.randomUUID().slice(0, 8)}`;
     return runWithContext({ correlationId }, async () => {
       const startTime = Date.now();
-      const [expiredReservations, phantomRedisLocks, staleSeatReservations, eventInventoryMismatchesRepaired] = await Promise.all([
+      const [expiredReservations, phantomRedisLocks, staleSeatReservations, eventInventoryMismatchesRepaired, logicallyExpiredBookings] = await Promise.all([
         ReservationService.expireReservations(),
         cleanupPhantomRedisLocks(),
         repairStaleSeatReservations(),
         repairEventInventoryMismatches(),
+        ConsistencyService.expireStaleBookings(),
       ]);
 
       const report = await this.generateReport();
@@ -218,6 +277,7 @@ export class ConsistencyService {
         phantomRedisLocks,
         staleSeatReservations,
         eventInventoryMismatchesRepaired,
+        logicallyExpiredBookings,
       };
 
       const durationMs = Date.now() - startTime;
@@ -225,7 +285,8 @@ export class ConsistencyService {
       const hasRepairs = expiredReservations.length > 0 ||
         phantomRedisLocks > 0 ||
         staleSeatReservations > 0 ||
-        eventInventoryMismatchesRepaired > 0;
+        eventInventoryMismatchesRepaired > 0 ||
+        logicallyExpiredBookings > 0;
 
       const context = getTraceContext();
       const isManual = !!(context?.userId || context?.sessionId);

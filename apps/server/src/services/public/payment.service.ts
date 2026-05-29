@@ -829,8 +829,8 @@ export class PaymentService {
     // 1. Confirm booking status exactly once. Concurrent payment callbacks must
     // not double-increment event inventory or create duplicate tickets.
     const confirmedBooking = await Booking.findOneAndUpdate(
-      { _id: booking._id, status: BookingStatus.AWAITING_PAYMENT },
-      { $set: { status: BookingStatus.CONFIRMED }, $unset: { expiresAt: 1 }, $inc: { bookingVersion: 1 } },
+      { _id: booking._id, status: { $in: [BookingStatus.AWAITING_PAYMENT, BookingStatus.EXPIRED] } },
+      { $set: { status: BookingStatus.CONFIRMED }, $unset: { expiresAt: 1, logicalExpiresAt: 1 }, $inc: { bookingVersion: 1 } },
       { new: true }
     );
 
@@ -907,7 +907,10 @@ export class PaymentService {
           arrayFilters: [
             {
               'seat.seatId': { $in: allSeatIds },
-              'seat.bookedByBookingId': booking._id.toString(), // Hardens against seat hijacking
+              $or: [
+                { 'seat.bookedByBookingId': booking._id.toString() },
+                { 'seat.status': SeatStatus.AVAILABLE }
+              ]
             },
           ],
         }

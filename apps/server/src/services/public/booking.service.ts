@@ -199,8 +199,10 @@ export class PublicBookingService {
 
     const totalAmount = Math.max(0, subtotal + convenienceFee + gst - discount);
 
-    // Expiry in 10 minutes (matching the TTL index on expiresAt)
-    const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+    // Expiry in 10 minutes (logical reservation window)
+    const logicalExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
+    // Deferred physical TTL cleanup (30 days) to allow webhook recoveries
+    const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
 
     // Create pending booking
     const booking = new Booking({
@@ -224,6 +226,7 @@ export class PublicBookingService {
       couponId,
       status: BookingStatus.AWAITING_PAYMENT,
       expiresAt,
+      logicalExpiresAt,
     });
 
     await booking.save();
@@ -242,7 +245,7 @@ export class PublicBookingService {
           bookingId: booking._id as Types.ObjectId,
           bookingReference: booking.bookingId,
           correlationId: booking.bookingId,
-          expiresAt,
+          expiresAt: logicalExpiresAt,
         });
         reservations.push(...allocated);
       }

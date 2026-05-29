@@ -135,4 +135,38 @@ describe('Payment Service', () => {
       expect(mockPayment.status).toBe(PaymentStatus.PAID);
     });
   });
+
+  describe('confirmFromWebhook and recovery', () => {
+    it('should skip confirmation if payment is already paid (idempotency check)', async () => {
+      const mockPayment = { _id: 'p-123', bookingId: 'b-123', gateway: 'razorpay', status: PaymentStatus.PAID, save: vi.fn() };
+      const mockBooking = { _id: 'b-123', eventId: 'e-123', status: BookingStatus.CONFIRMED };
+
+      vi.mocked(Payment.findOne).mockResolvedValue(mockPayment as any);
+      vi.mocked(Booking.findById).mockResolvedValue(mockBooking as any);
+
+      const result = await PaymentService.confirmFromWebhook('order_123', 'pay_123', 'payment.captured', 'evt_123');
+      expect(result.status).toBe('skipped');
+      expect(result.bookingId).toBe('b-123');
+    });
+
+    it('should confirm booking successfully if booking status is EXPIRED (late webhook recovery)', async () => {
+      const mockPayment = { _id: 'p-123', bookingId: 'b-123', gateway: 'razorpay', status: PaymentStatus.PENDING, save: vi.fn() };
+      const mockBooking = { _id: 'b-123', eventId: 'e-123', status: BookingStatus.EXPIRED, tickets: [], save: vi.fn() };
+
+      vi.mocked(Payment.findOne).mockResolvedValue(mockPayment as any);
+      vi.mocked(Booking.findById).mockResolvedValue(mockBooking as any);
+      
+      // confirmBooking uses findOneAndUpdate. Mock it to return confirmed booking!
+      vi.mocked(Booking.findOneAndUpdate).mockResolvedValue({ ...mockBooking, status: BookingStatus.CONFIRMED } as any);
+
+      const result = await PaymentService.confirmFromWebhook('order_123', 'pay_123', 'payment.captured', 'evt_123');
+      expect(result.status).toBe('confirmed');
+      expect(mockPayment.status).toBe(PaymentStatus.PAID);
+      expect(vi.mocked(Booking.findOneAndUpdate)).toHaveBeenCalledWith(
+        expect.objectContaining({ status: expect.objectContaining({ $in: [BookingStatus.AWAITING_PAYMENT, BookingStatus.EXPIRED] }) }),
+        expect.any(Object),
+        expect.any(Object)
+      );
+    });
+  });
 });
