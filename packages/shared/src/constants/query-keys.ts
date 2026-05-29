@@ -65,11 +65,6 @@ export const QUERY_KEYS = {
       list: (page?: number) => compact(['admin-popups', page]) as readonly QueryKeyPart[],
       detail: (id?: string) => compact(['admin-popup', id]) as readonly QueryKeyPart[],
     },
-    venues: {
-      all: ['admin-venues'] as const,
-      list: (filters: Record<string, unknown> = {}) => ['admin-venues', filters] as const,
-      detail: (id?: string) => compact(['admin-venue', id]) as readonly QueryKeyPart[],
-    },
     djs: {
       all: ['admin-djs'] as const,
       list: (filters: Record<string, unknown> = {}) => ['admin-djs', filters] as const,

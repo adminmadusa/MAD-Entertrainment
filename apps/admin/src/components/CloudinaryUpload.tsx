@@ -11,7 +11,7 @@ interface CloudinaryAsset {
 }
 
 interface CloudinaryUploadProps {
-  folder?: 'events' | 'venues' | 'dj-operators' | 'popups';
+  folder?: 'events' | 'dj-operators' | 'popups';
   value?: CloudinaryAsset | null;
   onChange: (asset: CloudinaryAsset | null) => void;
   label?: string;
