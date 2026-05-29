@@ -22,7 +22,6 @@ const navGroups: NavGroup[] = [
     title: 'Overview',
     items: [
       { label: 'Dashboard', href: '/dashboard', icon: <GridIcon /> },
-      { label: 'Analytics', href: '/analytics', icon: <ChartIcon /> },
     ],
   },
   {
