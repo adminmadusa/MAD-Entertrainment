@@ -7,6 +7,7 @@ import { Booking } from '../../models/booking.schema';
 import { Event } from '../../models/event.schema';
 import { SeatLayout } from '../../models/seat-layout.schema';
 import { UserModel } from '../../models/user.schema';
+import { Ticket } from '../../models/ticket.schema';
 import { logger } from '../../utils/logger';
 import { auditLog } from '../../utils/audit';
 import { ReservationService } from '../reservation.service';
@@ -54,9 +55,27 @@ export async function runInTransaction<T>(
 /**
  * Maps a Mongoose Booking document onto a safe Normalized AdminBooking DTO representation.
  */
-const mapBookingToAdminDTO = (booking: any) => {
+/**
+ * Maps a Mongoose Booking document onto a safe Normalized AdminBooking DTO representation with dynamic attendance.
+ */
+const mapBookingToAdminDTO = async (booking: any) => {
   const isSeatBased = booking.tickets?.[0]?.seats?.length > 0;
   const mode = booking.eventId?.bookingMode || (isSeatBased ? 'seat_based' : 'general_admission');
+
+  // Query actual individual ticket barcodes checked in
+  const ticketsList = await Ticket.find({ bookingId: booking._id }).lean();
+  const totalTickets = ticketsList.reduce((sum: number, t: any) => sum + (t.admits || 1), 0);
+  const ticketsScanned = ticketsList
+    .filter((t: any) => t.scannedAt !== undefined && t.scannedAt !== null)
+    .reduce((sum: number, t: any) => sum + (t.admits || 1), 0);
+  const ticketsRemaining = Math.max(0, totalTickets - ticketsScanned);
+
+  let attendanceStatus = 'NOT_ATTENDED';
+  if (ticketsScanned === totalTickets && totalTickets > 0) {
+    attendanceStatus = 'FULLY_ATTENDED';
+  } else if (ticketsScanned > 0) {
+    attendanceStatus = 'PARTIALLY_ATTENDED';
+  }
 
   const customerObj = {
     _id: booking.userId ? booking.userId.toString() : undefined,
@@ -93,6 +112,12 @@ const mapBookingToAdminDTO = (booking: any) => {
     createdAt: booking.createdAt ? booking.createdAt.toISOString() : new Date().toISOString(),
     cancellationReason: booking.cancellationReason,
     cancelledAt: booking.cancelledAt ? booking.cancelledAt.toISOString() : undefined,
+    
+    // Attendance details
+    totalTickets,
+    ticketsScanned,
+    ticketsRemaining,
+    attendanceStatus,
   };
 };
 
@@ -128,7 +153,7 @@ export const getBookings = async (
     .skip(skip)
     .limit(limit);
 
-  const mappedBookings = bookings.map(mapBookingToAdminDTO);
+  const mappedBookings = await Promise.all(bookings.map(mapBookingToAdminDTO));
 
   return {
     data: mappedBookings,
@@ -150,7 +175,7 @@ export const getBookingById = async (id: string) => {
   if (!booking) {
     return null;
   }
-  return mapBookingToAdminDTO(booking);
+  return await mapBookingToAdminDTO(booking);
 };
 
 /**

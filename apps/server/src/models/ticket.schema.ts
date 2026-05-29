@@ -36,4 +36,6 @@ const ticketSchema = new Schema<ITicket>(
   { timestamps: true }
 );
 
+ticketSchema.index({ bookingId: 1, scannedAt: 1 });
+
 export const Ticket = model<ITicket>('Ticket', ticketSchema);
