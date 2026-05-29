@@ -8,17 +8,34 @@ import { logger } from '../../utils/logger';
 
 export class AuthController {
   /**
+   * Checks if an email exists in the system.
+   */
+  static async checkEmail(req: Request, res: Response): Promise<void> {
+    const { email } = req.body;
+    if (!email) {
+      throw AppError.badRequest('Email is required');
+    }
+
+    const exists = await AuthService.checkEmailExists(email);
+
+    res.status(200).json({
+      success: true,
+      data: { exists },
+    });
+  }
+
+  /**
    * Triggers the magic link & OTP generation flow.
    */
   static async requestMagicLink(req: Request, res: Response): Promise<void> {
-    const { email } = req.body;
+    const { email, firstName, lastName, mobileNumber } = req.body;
     logger.info({ email }, "Magic link requested");
     // Derive client origin, fallback to configured ALLOWED_ORIGINS if unavailable
     const env = getEnv();
     const primaryOrigin = env.ALLOWED_ORIGINS.split(',')[0].trim();
     const origin = req.headers.origin || req.headers.referer || primaryOrigin;
 
-    await AuthService.requestMagicLink(email, origin);
+    await AuthService.requestMagicLink(email, origin, { firstName, lastName, mobileNumber });
 
     res.status(200).json({
       success: true,

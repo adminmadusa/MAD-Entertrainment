@@ -16,9 +16,21 @@ import { logger } from '../../utils/logger';
 
 export class AuthService {
   /**
+   * Checks if an email exists in the database.
+   */
+  static async checkEmailExists(email: string): Promise<boolean> {
+    const user = await UserModel.exists({ email: email.trim().toLowerCase() });
+    return !!user;
+  }
+
+  /**
    * Generates a Magic Link and OTP fallback, hashes the OTP, saves them, and enqueues the email.
    */
-  static async requestMagicLink(email: string, origin: string): Promise<void> {
+  static async requestMagicLink(
+    email: string,
+    origin: string,
+    registrationData?: { firstName?: string; lastName?: string; mobileNumber?: string }
+  ): Promise<void> {
     if (!email) {
       throw AppError.badRequest('Email is required');
     }
@@ -40,6 +52,9 @@ export class AuthService {
       email: trimmedEmail,
       token,
       otp: otpHash, // Plaintext OTP is NEVER stored in the database!
+      firstName: registrationData?.firstName,
+      lastName: registrationData?.lastName,
+      mobileNumber: registrationData?.mobileNumber,
       expiresAt,
     });
     logger.info({ email: trimmedEmail, tokenId: token }, "Magic token created");
@@ -107,6 +122,12 @@ export class AuthService {
     if (!user) {
       user = await UserModel.create({
         email: userEmail,
+        firstName: magicRecord.firstName,
+        lastName: magicRecord.lastName,
+        name: (magicRecord.firstName || magicRecord.lastName) 
+          ? `${magicRecord.firstName || ''} ${magicRecord.lastName || ''}`.trim() 
+          : undefined,
+        mobileNumber: magicRecord.mobileNumber,
         isActive: true,
       });
       logger.info({ userId: user._id, email: userEmail }, 'New passwordless user registered.');
@@ -148,6 +169,8 @@ export class AuthService {
       payload = {
         email: idToken.split('_')[1] || 'mock@example.com',
         name: 'Mock User',
+        given_name: 'Mock',
+        family_name: 'User',
         sub: 'mock_google_id_' + idToken.split('_')[1],
         picture: 'https://lh3.googleusercontent.com/a/mock',
         email_verified: true,
@@ -172,7 +195,7 @@ export class AuthService {
       }
     }
 
-    const { email, name, sub: googleId, picture } = payload;
+    const { email, name, sub: googleId, picture, given_name, family_name } = payload;
     const userEmail = email.trim().toLowerCase();
 
     // Find or create User
@@ -185,6 +208,8 @@ export class AuthService {
         email: userEmail,
         googleId,
         name,
+        firstName: given_name,
+        lastName: family_name,
         picture,
         isActive: true,
       });
@@ -198,6 +223,8 @@ export class AuthService {
       if (!user.googleId) { user.googleId = googleId; modified = true; }
       if (!user.picture) { user.picture = picture; modified = true; }
       if (!user.name && name) { user.name = name; modified = true; }
+      if (given_name && user.firstName !== given_name) { user.firstName = given_name; modified = true; }
+      if (family_name && user.lastName !== family_name) { user.lastName = family_name; modified = true; }
       if (modified) {
         await user.save();
       }

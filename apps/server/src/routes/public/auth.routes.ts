@@ -8,6 +8,9 @@ const router: Router = Router();
 // Google OAuth Login (protected by auth-specific rate limiter)
 router.post('/google', authLimiter, AuthController.loginWithGoogle);
 
+// Check if email exists
+router.post('/check-email', authLimiter, AuthController.checkEmail);
+
 // Request Magic Link / OTP Email (protected by auth-specific rate limiter to prevent email queue spam)
 router.post('/magic-link', authLimiter, AuthController.requestMagicLink);
 

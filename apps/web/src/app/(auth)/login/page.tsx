@@ -12,6 +12,7 @@ import {
   publicRequestMagicLink,
   publicVerifyMagicLinkOrOTP,
   publicGoogleLogin,
+  publicCheckEmail,
 } from '@/lib/api/public.service';
 import { useAuth } from '@/providers/AuthProvider';
 import { AuthResponse, MagicLinkRequestResponse } from '@/types/auth';
@@ -56,8 +57,11 @@ function LoginPageContent() {
 
   // Core Login State
   const [email, setEmail] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [mobileNumber, setMobileNumber] = useState('');
   const [otp, setOtp] = useState('');
-  const [step, setStep] = useState<'request' | 'verify'>('request'); // request email vs verify OTP
+  const [step, setStep] = useState<'request' | 'register' | 'verify'>('request');
   const [error, setError] = useState('');
   const [infoMessage, setInfoMessage] = useState('');
   
@@ -99,12 +103,32 @@ function LoginPageContent() {
 
   // ─── Mutations ─────────────────────────────────────────────
 
+  // Check Email
+  const checkEmailMutation = useMutation<{exists: boolean}, Error, string>({
+    mutationFn: (email: string) => publicCheckEmail(email),
+    onSuccess: (data) => {
+      if (data.exists) {
+        requestMagicLinkMutation.mutate();
+      } else {
+        setStep('register');
+        setInfoMessage('');
+      }
+    },
+    onError: (err) => {
+      const apiErr = extractApiError(err);
+      setError(apiErr.message || 'Failed to verify email. Please try again.');
+    },
+  });
+
   // Request Magic Link / OTP Email
   const requestMagicLinkMutation = useMutation<MagicLinkRequestResponse, Error, void>({
-    mutationFn: () => publicRequestMagicLink(email),
+    mutationFn: () => publicRequestMagicLink(
+      email,
+      step === 'register' ? { firstName, lastName, mobileNumber } : undefined
+    ),
     onSuccess: (res) => {
       setStep('verify');
-      setInfoMessage(res.message || 'Verification code sent to your email.');
+      setInfoMessage('');
       setError('');
       startTimer();
     },
@@ -218,6 +242,17 @@ function LoginPageContent() {
       setError('Email address is required');
       return;
     }
+    checkEmailMutation.mutate(email);
+  };
+
+  const handleSubmitRegister = (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setInfoMessage('');
+    if (!firstName.trim() || !lastName.trim()) {
+      setError('First and Last names are required');
+      return;
+    }
     requestMagicLinkMutation.mutate();
   };
 
@@ -263,12 +298,14 @@ function LoginPageContent() {
         <div className="glass-strong rounded-3xl border border-border-subtle p-8 shadow-2xl transition-all duration-500 hover:border-white/10">
           <div className="text-center mb-8">
             <h1 className="text-3xl font-black text-white mb-2 tracking-tight">
-              {step === 'request' ? 'Welcome Back' : 'Verify Passcode'}
+              {step === 'request' && 'Welcome Back'}
+              {step === 'register' && 'Create Account'}
+              {step === 'verify' && 'Verify Passcode'}
             </h1>
             <p className="text-text-muted text-sm leading-relaxed">
-              {step === 'request'
-                ? "Enter your email address and we'll send a verification code to securely access your bookings."
-                : "We've sent a 6-digit code to your email."}
+              {step === 'request' && "Enter your email address and we'll send a verification code to securely access your bookings."}
+              {step === 'register' && "Please provide your details to complete registration."}
+              {step === 'verify' && "We've sent a 6-digit code to your email."}
             </p>
           </div>
 
@@ -309,7 +346,7 @@ function LoginPageContent() {
                   variant="primary"
                   fullWidth
                   className="py-3.5 rounded-xl font-bold tracking-wide shadow-lg shadow-accent-purple/20 hover:shadow-accent-purple/40 active:scale-95 transition-all duration-200"
-                  isLoading={requestMagicLinkMutation.isPending}
+                  isLoading={checkEmailMutation.isPending || (checkEmailMutation.isSuccess && requestMagicLinkMutation.isPending)}
                 >
                   Continue with Email
                 </Button>
@@ -337,14 +374,89 @@ function LoginPageContent() {
             </div>
           )}
 
+          {/* SCREEN 1.5: Register Form */}
+          {step === 'register' && (
+            <form onSubmit={handleSubmitRegister} className="space-y-6">
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <label htmlFor="firstName" className="text-xs font-semibold text-text-secondary uppercase tracking-wider ml-1">
+                    First Name
+                  </label>
+                  <input
+                    id="firstName"
+                    type="text"
+                    required
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    placeholder="John"
+                    className="w-full bg-white/5 border border-border-subtle rounded-xl px-4 py-3.5 text-white placeholder:text-text-muted/30 focus:outline-none focus:border-accent-purple/50 focus:ring-1 focus:ring-accent-purple/50 transition-all duration-300"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label htmlFor="lastName" className="text-xs font-semibold text-text-secondary uppercase tracking-wider ml-1">
+                    Last Name
+                  </label>
+                  <input
+                    id="lastName"
+                    type="text"
+                    required
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    placeholder="Doe"
+                    className="w-full bg-white/5 border border-border-subtle rounded-xl px-4 py-3.5 text-white placeholder:text-text-muted/30 focus:outline-none focus:border-accent-purple/50 focus:ring-1 focus:ring-accent-purple/50 transition-all duration-300"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label htmlFor="mobileNumber" className="text-xs font-semibold text-text-secondary uppercase tracking-wider ml-1">
+                    Mobile Number (Optional)
+                  </label>
+                  <input
+                    id="mobileNumber"
+                    type="tel"
+                    value={mobileNumber}
+                    onChange={(e) => setMobileNumber(e.target.value)}
+                    placeholder="+1 234 567 8900"
+                    className="w-full bg-white/5 border border-border-subtle rounded-xl px-4 py-3.5 text-white placeholder:text-text-muted/30 focus:outline-none focus:border-accent-purple/50 focus:ring-1 focus:ring-accent-purple/50 transition-all duration-300"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <Button
+                  type="submit"
+                  variant="primary"
+                  fullWidth
+                  className="py-3.5 rounded-xl font-bold tracking-wide shadow-lg shadow-accent-purple/20 hover:shadow-accent-purple/40 active:scale-95 transition-all duration-200"
+                  isLoading={requestMagicLinkMutation.isPending}
+                >
+                  Create Account
+                </Button>
+                <button
+                  type="button"
+                  onClick={handleBackToLogin}
+                  className="w-full text-center text-xs text-text-muted hover:text-white transition-colors duration-200 py-2"
+                >
+                  ← Use a different email
+                </button>
+              </div>
+            </form>
+          )}
+
           {/* SCREEN 2: OTP Passcode Input Form */}
           {step === 'verify' && (
             <form onSubmit={handleSubmitOtp} className="space-y-6">
-              <div className="text-center text-sm text-text-muted">
-                Code sent to:{' '}
-                <a href={`mailto:${email}`} className="text-white font-medium hover:underline">
-                  {email}
-                </a>
+              <div className="text-center text-sm text-text-muted flex flex-col items-center justify-center gap-1">
+                <div className="flex items-center gap-2">
+                  <span className="text-white font-medium">{email}</span>
+                  <button
+                    type="button"
+                    onClick={handleBackToLogin}
+                    className="text-text-muted hover:text-white transition-colors duration-200 hover:scale-110 active:scale-95"
+                    title="Edit Email"
+                  >
+                    ✏️
+                  </button>
+                </div>
               </div>
               <div className="space-y-3">
                 <label htmlFor="otp" className="text-xs font-semibold text-text-secondary uppercase tracking-wider ml-1 block text-center">
@@ -378,14 +490,7 @@ function LoginPageContent() {
                   Verify Code
                 </Button>
 
-                <div className="flex justify-between items-center text-xs px-1 pt-1">
-                  <button
-                    type="button"
-                    onClick={handleBackToLogin}
-                    className="text-text-muted hover:text-white transition-colors duration-200"
-                  >
-                    ← Edit email
-                  </button>
+                <div className="flex justify-end items-center text-xs px-1 pt-1">
 
                   {resendTimer > 0 ? (
                     <span className="text-text-muted/60">
