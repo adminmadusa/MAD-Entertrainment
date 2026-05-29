@@ -42,7 +42,6 @@ export class PublicEventService {
 
   static async getEventBySlug(slug: string) {
     const event = await Event.findOne({ slug, status: EventStatus.PUBLISHED, isDeleted: { $ne: true } })
-      .populate('artistIds')
       .populate('djOperatorIds')
       .lean();
 

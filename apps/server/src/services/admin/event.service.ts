@@ -48,7 +48,6 @@ export const getEvents = async (page: number = 1, limit: number = 10): Promise<{
   const skip = (page - 1) * limit;
   const total = await Event.countDocuments({ isDeleted: { $ne: true } });
   const events = await Event.find({ isDeleted: { $ne: true } })
-    .populate('artistIds', 'name')
     .populate('djOperatorIds', 'name')
     .sort({ createdAt: -1 })
     .skip(skip)
@@ -63,7 +62,6 @@ export const getEvents = async (page: number = 1, limit: number = 10): Promise<{
 
 export const getEventById = async (id: string): Promise<IEvent | null> => {
   return await Event.findById(id)
-    .populate('artistIds', 'name')
     .populate('djOperatorIds', 'name');
 };
 

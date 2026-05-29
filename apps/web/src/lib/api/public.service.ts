@@ -1,4 +1,4 @@
-import { Event, SeatLayout, Booking, Ticket, DJOperator, Artist, Venue, PopupCampaign } from '@mad/types';
+import { Event, SeatLayout, Booking, Ticket, DJOperator, Venue, PopupCampaign } from '@mad/types';
 import { AuthUser, AuthResponse, MagicLinkRequestResponse, VerifyMagicLinkOrOTPPayload } from '../../types/auth';
 import { ReserveTicketsInput, CheckoutDetailsInput } from '@mad/validations';
 
@@ -43,13 +43,6 @@ export interface PublicDJsApiResponse {
       total?: number;
       totalPages?: number;
     };
-  };
-}
-
-export interface PublicArtistsApiResponse {
-  data: {
-    artists: Artist[];
-    total: number;
   };
 }
 
@@ -224,48 +217,6 @@ export async function publicVerifyPayment(bookingId: string, gatewayPayload: Ver
     bookingId,
     ...gatewayPayload,
   });
-  return data.data;
-}
-
-// ─── Artists ─────────────────────────────────────────────────
-
-export interface PublicArtistsResponse {
-  data: Artist[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
-}
-
-export async function publicGetArtists(
-  filters: { search?: string; genre?: string; page?: number; limit?: number } = {}
-): Promise<PublicArtistsResponse> {
-  const params = new URLSearchParams();
-  if (filters.search) params.set('search', filters.search);
-  if (filters.genre) params.set('genre', filters.genre);
-  if (filters.page) params.set('page', String(filters.page));
-  if (filters.limit) params.set('limit', String(filters.limit));
-
-  const page = filters.page || 1;
-  const limit = filters.limit || 12;
-  const { data } = await apiClient.get<PublicArtistsApiResponse>(`/artists?${params}`);
-  const payload = data?.data || { artists: [], total: 0 };
-  const items = Array.isArray(payload.artists) ? payload.artists : [];
-  return {
-    data: items,
-    pagination: {
-      page,
-      limit,
-      total: payload.total || 0,
-      totalPages: Math.ceil((payload.total || 0) / limit)
-    }
-  };
-}
-
-export async function publicGetArtistBySlug(slug: string): Promise<Artist> {
-  const { data } = await apiClient.get<{ data: Artist }>(`/artists/${slug}`);
   return data.data;
 }
 

@@ -29,7 +29,6 @@ const navGroups: NavGroup[] = [
     items: [
       { label: 'Events', href: '/events', icon: <CalendarIcon /> },
       { label: 'Ticket Profiles', href: '/ticket-profiles', icon: <TicketIcon /> },
-      { label: 'Artists', href: '/artists', icon: <MicIcon /> },
       { label: 'DJ Operators', href: '/dj-operators', icon: <HeadphonesIcon /> },
     ],
   },

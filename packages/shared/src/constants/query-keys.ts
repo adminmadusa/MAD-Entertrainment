@@ -70,11 +70,6 @@ export const QUERY_KEYS = {
       list: (filters: Record<string, unknown> = {}) => ['admin-venues', filters] as const,
       detail: (id?: string) => compact(['admin-venue', id]) as readonly QueryKeyPart[],
     },
-    artists: {
-      all: ['admin-artists'] as const,
-      list: (filters: Record<string, unknown> = {}) => ['admin-artists', filters] as const,
-      detail: (id?: string) => compact(['admin-artist', id]) as readonly QueryKeyPart[],
-    },
     djs: {
       all: ['admin-djs'] as const,
       list: (filters: Record<string, unknown> = {}) => ['admin-djs', filters] as const,

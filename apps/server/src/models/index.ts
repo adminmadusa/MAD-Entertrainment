@@ -1,6 +1,5 @@
 import './venue.schema';
 import './event.schema';
-import './artist.schema';
 import './dj-operator.schema';
 import './seat-layout.schema';
 import './booking.schema';

@@ -23,31 +23,6 @@ export const updateVenueSchema = z.object({
   body: createVenueSchema.shape.body.partial(),
 });
 
-// -- Artist Validation --
-export const createArtistSchema = z.object({
-  body: z.object({
-    name: z.string().min(1, 'Name is required'),
-    slug: z.string().min(1, 'Slug is required'),
-    bio: z.string().max(3000).optional(),
-    genre: z.array(z.string()).optional(),
-    profileImage: cloudinaryImageSchema.optional(),
-    socialLinks: z
-      .array(
-        z.object({
-          platform: z.string(),
-          url: z.string().url(),
-        })
-      )
-      .optional(),
-    isActive: z.boolean().optional(),
-  }),
-});
-
-export const updateArtistSchema = z.object({
-  params: z.object({ id: z.string() }),
-  body: createArtistSchema.shape.body.partial(),
-});
-
 // -- DJ Operator Validation --
 export const createDJOperatorSchema = z.object({
   body: z.object({
@@ -92,7 +67,6 @@ export const createEventSchema = z.object({
     venue: z.string().min(1),
     onlineStreamUrl: z.string().url().optional(),
     isOnline: z.boolean().optional(),
-    artistIds: z.array(z.string()).optional(),
     djOperatorIds: z.array(z.string()).optional(),
     ticketTiers: z
       .array(

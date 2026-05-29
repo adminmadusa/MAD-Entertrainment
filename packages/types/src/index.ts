@@ -138,7 +138,6 @@ export type DJOperator = {
   specialties?: string[];
   [key: string]: any;
 };
-export type Artist = { _id: string; name: string; [key: string]: any };
 export type Venue = { _id: string; name: string; [key: string]: any };
 export type Coupon = { _id: string; code: string; [key: string]: any };
 export type PopupCampaign = {
