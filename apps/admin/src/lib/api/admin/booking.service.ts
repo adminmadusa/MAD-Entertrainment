@@ -44,6 +44,10 @@ export interface AdminBooking {
   createdAt: string;
   cancellationReason?: string;
   cancelledAt?: string;
+  totalTickets?: number;
+  ticketsScanned?: number;
+  ticketsRemaining?: number;
+  attendanceStatus?: 'NOT_ATTENDED' | 'PARTIALLY_ATTENDED' | 'FULLY_ATTENDED';
 }
 
 export interface AdminRefund {

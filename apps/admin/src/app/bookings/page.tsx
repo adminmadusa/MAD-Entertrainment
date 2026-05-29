@@ -21,6 +21,12 @@ const STATUS_COLORS: Record<string, string> = {
   failed: 'bg-gray-500/10 text-gray-400 border-gray-500/30',
 };
 
+const ATTENDANCE_COLORS: Record<string, string> = {
+  NOT_ATTENDED: 'bg-red-500/10 text-red-400 border-red-500/30',
+  PARTIALLY_ATTENDED: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/30',
+  FULLY_ATTENDED: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30',
+};
+
 export default function AdminBookingsPage() {
   const qc = useQueryClient();
   const [search, setSearch] = useState('');
@@ -352,6 +358,29 @@ export default function AdminBookingsPage() {
                   <div>
                     <h4 className="text-text-muted font-medium text-xs uppercase tracking-wider mb-1">Booking Mode</h4>
                     <p className="text-white font-medium capitalize">{selectedBooking.mode?.replace('_', ' ')}</p>
+                  </div>
+                </div>
+
+                <div className="border-t border-white/5 pt-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-text-muted font-medium text-xs uppercase tracking-wider">Attendance Status</h4>
+                    <span className={`text-[10px] px-2.5 py-0.5 rounded-full font-bold border ${ATTENDANCE_COLORS[selectedBooking.attendanceStatus ?? 'NOT_ATTENDED']}`}>
+                      {selectedBooking.attendanceStatus?.replace('_', ' ') ?? 'NOT ATTENDED'}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-3 text-center bg-white/5 rounded-xl p-3 text-xs">
+                    <div className="space-y-0.5">
+                      <span className="text-text-muted text-[9px] uppercase tracking-wider block">Purchased</span>
+                      <span className="text-white font-black text-sm">{selectedBooking.totalTickets ?? 0}</span>
+                    </div>
+                    <div className="space-y-0.5 border-x border-white/5">
+                      <span className="text-text-muted text-[9px] uppercase tracking-wider block">Checked In</span>
+                      <span className="text-emerald-400 font-black text-sm">{selectedBooking.ticketsScanned ?? 0}</span>
+                    </div>
+                    <div className="space-y-0.5">
+                      <span className="text-text-muted text-[9px] uppercase tracking-wider block">Remaining</span>
+                      <span className="text-white font-black text-sm">{selectedBooking.ticketsRemaining ?? 0}</span>
+                    </div>
                   </div>
                 </div>
 
