@@ -73,7 +73,6 @@ export interface IEvent extends Document {
   venue: string;
   onlineStreamUrl?: string;
   isOnline?: boolean;
-  artistIds?: Types.ObjectId[];
   djOperatorIds?: Types.ObjectId[];
   ticketTiers: {
     tier: TicketTier;
@@ -164,7 +163,6 @@ const eventSchema = new Schema<IEvent>(
     onlineStreamUrl: String,
     isOnline: { type: Boolean, default: false },
 
-    artistIds: [{ type: Schema.Types.ObjectId, ref: 'Artist' }],
     djOperatorIds: [{ type: Schema.Types.ObjectId, ref: 'DJOperator' }],
 
     ticketTiers: { type: [ticketTierConfigSchema], default: [] },
