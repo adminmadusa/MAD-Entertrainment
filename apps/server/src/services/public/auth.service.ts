@@ -232,8 +232,37 @@ export class AuthService {
       throw AppError.unauthorized('Invalid session');
     }
 
-    // Replay Attack Detection: If a revoked token is reused, revoke the entire active token family!
+    // Replay Attack Detection: If a revoked token is reused, check if it's a legitimate race condition
     if (tokenRecord.isRevoked) {
+      const GRACE_PERIOD_MS = 10000; // 10-second grace period for network retries / race conditions
+      const isWithinGracePeriod =
+        tokenRecord.replacedByToken &&
+        tokenRecord.updatedAt &&
+        Date.now() - tokenRecord.updatedAt.getTime() < GRACE_PERIOD_MS;
+
+      if (isWithinGracePeriod) {
+        // Find successor token to return the already issued valid credentials
+        const successorRecord = await RefreshTokenModel.findOne({ token: tokenRecord.replacedByToken });
+        if (successorRecord && !successorRecord.isRevoked && successorRecord.expiresAt > new Date()) {
+          if (successorRecord.userId) {
+            const user = await UserModel.findById(successorRecord.userId);
+            if (user && user.isActive) {
+              const accessToken = signUserToken({
+                sub: user._id.toString(),
+                email: user.email,
+                role: 'user',
+              });
+              logger.info({ userId: user._id }, 'Legitimate concurrent refresh handled gracefully within grace period.');
+              return {
+                accessToken,
+                refreshToken: successorRecord.token,
+              };
+            }
+          }
+        }
+      }
+
+      // Actual Replay Attack detected (outside grace period or invalid successor)
       if (tokenRecord.userId) {
         await RefreshTokenModel.updateMany({ userId: tokenRecord.userId }, { isRevoked: true });
         logger.warn({ userId: tokenRecord.userId }, 'Replay attack detected! Revoked all active user refresh tokens.');
@@ -248,11 +277,41 @@ export class AuthService {
       throw AppError.unauthorized('Session has expired. Please log in again.');
     }
 
-    // Mark current token as revoked and log the rotation chain
+    // Generate rotated token string
     const newRefreshTokenString = crypto.randomBytes(32).toString('hex');
-    tokenRecord.isRevoked = true;
-    tokenRecord.replacedByToken = newRefreshTokenString;
-    await tokenRecord.save();
+
+    // Option A: Atomic single-rotation check
+    const updatedRecord = await RefreshTokenModel.findOneAndUpdate(
+      { _id: tokenRecord._id, isRevoked: false },
+      { $set: { isRevoked: true, replacedByToken: newRefreshTokenString } },
+      { new: true }
+    );
+
+    // If another request beat this one to the rotation, recover and return the successor record
+    if (!updatedRecord) {
+      const reFetchedRecord = await RefreshTokenModel.findById(tokenRecord._id);
+      if (reFetchedRecord && reFetchedRecord.isRevoked && reFetchedRecord.replacedByToken) {
+        const successorRecord = await RefreshTokenModel.findOne({ token: reFetchedRecord.replacedByToken });
+        if (successorRecord && !successorRecord.isRevoked && successorRecord.expiresAt > new Date()) {
+          if (successorRecord.userId) {
+            const user = await UserModel.findById(successorRecord.userId);
+            if (user && user.isActive) {
+              const accessToken = signUserToken({
+                sub: user._id.toString(),
+                email: user.email,
+                role: 'user',
+              });
+              logger.info({ userId: user._id }, 'Concurrent refresh race resolved atomically.');
+              return {
+                accessToken,
+                refreshToken: successorRecord.token,
+              };
+            }
+          }
+        }
+      }
+      throw AppError.unauthorized('Session compromised. Please log in again.');
+    }
 
     let accessToken = '';
     let newRecord = null;
