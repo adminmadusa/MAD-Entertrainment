@@ -39,3 +39,58 @@ export async function adminGetRevenueChart(days = 30): Promise<RevenuePoint[]> {
     return [];
   }
 }
+
+export interface AttendanceSummary {
+  totalEvents: number;
+  totalTicketsSold: number;
+  totalCheckIns: number;
+  attendanceRate: number;
+  noShowRate: number;
+}
+
+export interface EventAttendanceRank {
+  eventId: string;
+  eventName: string;
+  startDate: string;
+  ticketsSold: number;
+  ticketsCheckedIn: number;
+  attendancePercentage: number;
+  noShowCount: number;
+  noShowPercentage: number;
+}
+
+export interface AttendanceRankings {
+  topAttended: EventAttendanceRank[];
+  lowestAttendance: EventAttendanceRank[];
+}
+
+export async function adminGetAttendanceSummary(): Promise<AttendanceSummary> {
+  try {
+    const { data } = await adminApiClient.get<{ data: AttendanceSummary }>('/admin/analytics/attendance/summary');
+    const summary = data?.data;
+    return {
+      totalEvents: summary?.totalEvents ?? 0,
+      totalTicketsSold: summary?.totalTicketsSold ?? 0,
+      totalCheckIns: summary?.totalCheckIns ?? 0,
+      attendanceRate: summary?.attendanceRate ?? 0,
+      noShowRate: summary?.noShowRate ?? 0,
+    };
+  } catch (error) {
+    console.error('[Analytics Service] Failed to fetch attendance summary, returning default DTO:', error);
+    return { totalEvents: 0, totalTicketsSold: 0, totalCheckIns: 0, attendanceRate: 0, noShowRate: 0 };
+  }
+}
+
+export async function adminGetAttendanceRankings(): Promise<AttendanceRankings> {
+  try {
+    const { data } = await adminApiClient.get<{ data: AttendanceRankings }>('/admin/analytics/attendance/rankings');
+    return {
+      topAttended: Array.isArray(data?.data?.topAttended) ? data.data.topAttended : [],
+      lowestAttendance: Array.isArray(data?.data?.lowestAttendance) ? data.data.lowestAttendance : [],
+    };
+  } catch (error) {
+    console.error('[Analytics Service] Failed to fetch attendance rankings, returning empty lists:', error);
+    return { topAttended: [], lowestAttendance: [] };
+  }
+}
+
