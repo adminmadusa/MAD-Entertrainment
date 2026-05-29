@@ -36,12 +36,6 @@ const STATIC_ROUTES: MetadataRoute.Sitemap = [
     changeFrequency: 'monthly',
     priority: 0.3,
   },
-  {
-    url: `${SITE_URL}/register`,
-    lastModified: new Date(),
-    changeFrequency: 'monthly',
-    priority: 0.3,
-  },
 ];
 
 /** Fetch all published event slugs for dynamic sitemap entries */

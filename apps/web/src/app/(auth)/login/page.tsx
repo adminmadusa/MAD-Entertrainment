@@ -110,7 +110,7 @@ function LoginPageContent() {
     },
     onError: (err) => {
       const apiErr = extractApiError(err);
-      setError(apiErr.message || 'Failed to request login link. Please try again.');
+      setError(apiErr.message || 'Failed to send verification code. Please try again.');
     },
   });
 
@@ -128,7 +128,7 @@ function LoginPageContent() {
     },
     onError: (err) => {
       const apiErr = extractApiError(err);
-      setError(apiErr.message || 'Invalid or expired credentials. Please request a new link.');
+      setError(apiErr.message || 'Invalid or expired credentials. Please request a new verification code.');
     },
   });
 
@@ -158,7 +158,7 @@ function LoginPageContent() {
 
   useEffect(() => {
     if (queryToken) {
-      setInfoMessage('Verifying magic login link...');
+      setInfoMessage('Verifying sign-in...');
       verifyMutation.mutate(queryToken);
     }
   }, [queryToken, verifyMutation]);
@@ -267,8 +267,8 @@ function LoginPageContent() {
             </h1>
             <p className="text-text-muted text-sm leading-relaxed">
               {step === 'request'
-                ? 'Sign in passwordlessly using Google or an Email Magic Link.'
-                : `We've sent a verification link and passcode to your email.`}
+                ? "Enter your email address and we'll send a verification code to securely access your bookings."
+                : "We've sent a 6-digit verification passcode to your email."}
             </p>
           </div>
 
@@ -311,7 +311,7 @@ function LoginPageContent() {
                   className="py-3.5 rounded-xl font-bold tracking-wide shadow-lg shadow-accent-purple/20 hover:shadow-accent-purple/40 active:scale-95 transition-all duration-200"
                   isLoading={requestMagicLinkMutation.isPending}
                 >
-                  Send Login Link
+                  Continue with Email
                 </Button>
               </form>
 
@@ -383,7 +383,7 @@ function LoginPageContent() {
 
                   {resendTimer > 0 ? (
                     <span className="text-text-muted/60">
-                      Resend link in <span className="font-semibold text-purple-300">{resendTimer}s</span>
+                      Resend code in <span className="font-semibold text-purple-300">{resendTimer}s</span>
                     </span>
                   ) : (
                     <button
@@ -392,7 +392,7 @@ function LoginPageContent() {
                       disabled={requestMagicLinkMutation.isPending}
                       className="text-accent-purple hover:text-accent-purple-light font-semibold transition-colors duration-200 disabled:opacity-50"
                     >
-                      Resend Link
+                      Resend Code
                     </button>
                   )}
                 </div>
