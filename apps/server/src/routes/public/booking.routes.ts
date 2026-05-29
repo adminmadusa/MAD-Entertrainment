@@ -6,13 +6,15 @@ import {
     getMyBookings,
     getSessionToken,
     saveCheckoutDetails,
+    downloadBookingPDF,
+    resendBookingTickets,
 } from '../../controllers/public/booking.controller';
 
 import {
     requireAuth,
     optionalAuth,
 } from '../../middleware/auth.middleware';
-import { authLimiter } from '../../middleware/rate.middleware';
+import { authLimiter, resendLimiter } from '../../middleware/rate.middleware';
 
 import { validateBody, validateParams } from '../../middleware/validation.middleware';
 import { reserveTicketsSchema, checkoutDetailsSchema, bookingReferenceParamSchema } from '../../validations/payment.validation';
@@ -70,6 +72,21 @@ router.get(
     optionalAuth,
     validateParams(bookingReferenceParamSchema),
     getBooking
+);
+
+router.get(
+    '/:bookingId/download',
+    optionalAuth,
+    validateParams(bookingReferenceParamSchema),
+    downloadBookingPDF
+);
+
+router.post(
+    '/:bookingId/resend',
+    optionalAuth,
+    resendLimiter,
+    validateParams(bookingReferenceParamSchema),
+    resendBookingTickets
 );
 
 export default router;

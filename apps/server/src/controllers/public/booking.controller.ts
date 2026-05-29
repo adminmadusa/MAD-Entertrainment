@@ -5,6 +5,9 @@ import { sendSuccess } from '../../utils/response';
 import { AppError } from '../../middleware/error.middleware';
 import { signSessionToken } from '../../utils/jwt';
 import { PublicBookingService } from '../../services/public/booking.service';
+import { generateTicketPDF } from '../../utils/pdf';
+import { QueueService } from '../../services/queue.service';
+import { getQueueName } from '../../config/queue.config';
 
 // ─────────────────────────────────────────────
 // Issue Guest Session Token
@@ -176,6 +179,115 @@ export async function saveCheckoutDetails(
       res,
       booking,
       'Checkout details saved successfully'
+    );
+  } catch (err) {
+    next(err);
+  }
+}
+
+// ─────────────────────────────────────────────
+// Download Booking PDF
+// ─────────────────────────────────────────────
+
+export async function downloadBookingPDF(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    const { bookingId } = req.params;
+    const reqUserId = req.user?.sub;
+    const reqSessionId = req.header('x-session-id') || undefined;
+
+    const result = await PublicBookingService.getBookingByReference(bookingId);
+    if (!result) {
+      throw AppError.notFound('Booking not found');
+    }
+
+    const booking = result.booking;
+
+    // Logged-in ownership
+    const isUserOwner =
+      !!booking.userId &&
+      !!reqUserId &&
+      booking.userId.toString() === reqUserId;
+
+    // Guest ownership
+    const isGuestOwner =
+      !!booking.sessionId &&
+      !!reqSessionId &&
+      booking.sessionId === reqSessionId;
+
+    if (!isUserOwner && !isGuestOwner) {
+      throw AppError.forbidden('You do not have access to this booking');
+    }
+
+    const pdfBuffer = await generateTicketPDF(booking, booking.eventId);
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="MAD_Ticket_${booking.bookingId}.pdf"`);
+    res.send(pdfBuffer);
+  } catch (err) {
+    next(err);
+  }
+}
+
+// ─────────────────────────────────────────────
+// Resend Booking Tickets
+// ─────────────────────────────────────────────
+
+export async function resendBookingTickets(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    const { bookingId } = req.params;
+    const reqUserId = req.user?.sub;
+    const reqSessionId = req.header('x-session-id') || undefined;
+
+    const result = await PublicBookingService.getBookingByReference(bookingId);
+    if (!result) {
+      throw AppError.notFound('Booking not found');
+    }
+
+    const booking = result.booking;
+
+    // Logged-in ownership
+    const isUserOwner =
+      !!booking.userId &&
+      !!reqUserId &&
+      booking.userId.toString() === reqUserId;
+
+    // Guest ownership
+    const isGuestOwner =
+      !!booking.sessionId &&
+      !!reqSessionId &&
+      booking.sessionId === reqSessionId;
+
+    if (!isUserOwner && !isGuestOwner) {
+      throw AppError.forbidden('You do not have access to this booking');
+    }
+
+    const eventIdStr = (booking.eventId as any)._id?.toString() || booking.eventId.toString();
+
+    // Reuse existing PDF / email infrastructure by enqueuing a pdf:generate job
+    await QueueService.enqueue(
+      getQueueName('pdf-queue'),
+      'pdf:generate',
+      {
+        bookingId: booking._id.toString(),
+        eventId: eventIdStr,
+        recipientEmail: booking.guestEmail,
+        guestName: booking.guestName,
+      },
+      `pdf:generate:${booking._id}:resend:${Date.now()}` // Bypass BullMQ deduplication
+    );
+
+    sendSuccess(
+      res,
+      null,
+      'Tickets resent successfully'
     );
   } catch (err) {
     next(err);

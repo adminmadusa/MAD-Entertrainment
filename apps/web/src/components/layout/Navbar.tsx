@@ -86,10 +86,10 @@ export function Navbar() {
         <div className="hidden md:flex items-center gap-3">
           {/* H-08 FIX: replaced Link>button nesting (invalid HTML) with styled Link */}
           <Link
-            href="/my-booking"
+            href="/tickets"
             className="px-4 py-2 text-sm font-medium text-text-secondary hover:text-text-primary transition-colors"
           >
-            My Booking
+            My Tickets
           </Link>
           <Link
             href="/events"
@@ -165,11 +165,11 @@ export function Navbar() {
               <div className="mt-3 pt-3 border-t border-border-subtle flex flex-col gap-2">
                 {/* H-08 FIX: replaced Link>button nesting with styled Link */}
                 <Link
-                  href="/my-booking"
+                  href="/tickets"
                   onClick={() => setMobileOpen(false)}
                   className="w-full py-3 px-4 text-text-secondary hover:text-text-primary hover:bg-white/5 rounded-xl transition-colors font-medium text-left block"
                 >
-                  My Booking
+                  My Tickets
                 </Link>
                 <Link
                   href="/events"
