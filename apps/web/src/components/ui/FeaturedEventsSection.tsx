@@ -64,7 +64,10 @@ export function FeaturedEventsSection({ initialEvents = [] }: { initialEvents: E
   const formatDate = (dateStr: Date | string) => {
     try {
       if (!dateStr) return 'Date TBA';
-      const d = new Date(dateStr);
+      const safeDateStr = typeof dateStr === 'string'
+        ? dateStr.replace(/-/g, '/').replace('T', ' ')
+        : dateStr;
+      const d = new Date(safeDateStr);
       if (isNaN(d.getTime())) {
         return 'Date TBA';
       }
