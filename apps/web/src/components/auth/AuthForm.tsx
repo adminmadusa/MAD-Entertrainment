@@ -52,10 +52,7 @@ export interface AuthFormProps {
   onSuccess?: (data: AuthResponse) => void;
   onGuestContinue?: () => void;
   className?: string;
-  initialToken?: string | null;
-}
 
-export function AuthForm({ mode, onSuccess, onGuestContinue, className = '', initialToken }: AuthFormProps) {
   const { login } = useAuth();
 
   // Core Authentication States
@@ -235,14 +232,6 @@ export function AuthForm({ mode, onSuccess, onGuestContinue, className = '', ini
       active = false;
     };
   }, [step, initializeGoogleSignIn]);
-
-  useEffect(() => {
-    if (initialToken) {
-      setStep('verify');
-      setInfoMessage('Verifying sign-in...');
-      verifyMutation.mutate(initialToken);
-    }
-  }, [initialToken, verifyMutation]);
 
   // Form Submissions
   const handleSubmitEmail = (e: React.FormEvent) => {
