@@ -1014,14 +1014,7 @@ export class PaymentService {
       if (event && event.bookingMode === 'seat_based' && bookedTicket.seats) {
         for (const seat of bookedTicket.seats) {
           const ticketId = `TKT-${booking.bookingId}-${String(ticketIndex).padStart(3, '0')}`;
-          const qrCodeText = JSON.stringify({
-            ticketId,
-            bookingId: booking._id.toString(),
-            eventId: event._id.toString(),
-            tier: bookedTicket.tier,
-            seatId: seat.seatId,
-            admits: 1,
-          });
+          const qrCodeText = ticketId;
 
           await Ticket.create({
             ticketId,
@@ -1046,13 +1039,7 @@ export class PaymentService {
 
         for (let i = 0; i < bookedTicket.quantity; i++) {
           const ticketId = `TKT-${booking.bookingId}-${String(ticketIndex).padStart(3, '0')}`;
-          const qrCodeText = JSON.stringify({
-            ticketId,
-            bookingId: booking._id.toString(),
-            eventId: booking.eventId.toString(),
-            tier: bookedTicket.tier,
-            admits,
-          });
+          const qrCodeText = ticketId;
 
           await Ticket.create({
             ticketId,
