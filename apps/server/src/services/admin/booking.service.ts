@@ -6,10 +6,13 @@ import { AppError } from '../../middleware/error.middleware';
 import { Booking } from '../../models/booking.schema';
 import { Event } from '../../models/event.schema';
 import { SeatLayout } from '../../models/seat-layout.schema';
+import { UserModel } from '../../models/user.schema';
 import { logger } from '../../utils/logger';
 import { auditLog } from '../../utils/audit';
 import { ReservationService } from '../reservation.service';
 import { CacheService } from '../cache.service';
+import { QueueService } from '../queue.service';
+import { getQueueName } from '../../config/queue.config';
 
 /**
  * Resilient transaction execution helper. Runs the callback inside a session
@@ -302,4 +305,127 @@ export const cancelBooking = async (id: string, reason?: string) => {
 
     return booking;
   });
+};
+
+/**
+ * Administrative method to correct a guest booking's email address and proactively link
+ * to a user account if a matching email exists.
+ */
+export const correctBookingEmail = async (
+  id: string,
+  newEmail: string,
+  reason: string,
+  adminId: string
+) => {
+  return runInTransaction(async (session) => {
+    const booking = await Booking.findById(id).session(session || null);
+    if (!booking) {
+      throw AppError.notFound('Booking not found');
+    }
+
+    if (booking.userId) {
+      throw AppError.forbidden('Authenticated bookings cannot have their email corrected');
+    }
+
+    const oldEmail = booking.guestEmail;
+    const normalizedEmail = newEmail.trim().toLowerCase();
+
+    // Check if user already exists
+    const user = await UserModel.findOne({ email: normalizedEmail }).session(session || null);
+    let proactivelyLinked = false;
+    if (user) {
+      booking.userId = user._id as Types.ObjectId;
+      proactivelyLinked = true;
+    }
+
+    booking.guestEmail = normalizedEmail;
+    booking.guestEmailConfirm = normalizedEmail;
+    booking.bookingVersion += 1;
+
+    await booking.save({ session });
+
+    // Emit real-time updates via WebSockets
+    try {
+      emitToBooking(
+        booking._id.toString(),
+        'booking:updated',
+        { bookingId: booking._id.toString(), status: booking.status, bookingVersion: booking.bookingVersion },
+        booking.bookingId
+      );
+    } catch (err) {
+      logger.debug({ err, bookingId: booking._id }, 'Booking update emit skipped');
+    }
+
+    try {
+      emitToAdmin(
+        'bookings',
+        'booking:updated',
+        { bookingId: booking._id.toString(), status: booking.status, bookingVersion: booking.bookingVersion },
+        booking.bookingId
+      );
+    } catch (err) {
+      logger.debug({ err, bookingId: booking._id }, 'Admin booking update emit skipped');
+    }
+
+    auditLog({
+      action: 'BOOKING_EMAIL_CORRECTED',
+      actor: { type: 'admin', id: adminId },
+      status: 'success',
+      metadata: {
+        bookingId: booking._id.toString(),
+        bookingReference: booking.bookingId,
+        oldEmail,
+        newEmail: normalizedEmail,
+        reason,
+        proactivelyLinked,
+      },
+      description: `Corrected booking ${booking.bookingId} email from ${oldEmail} to ${normalizedEmail}${
+        proactivelyLinked ? ' (proactively linked user account)' : ''
+      }`,
+    });
+
+    return booking;
+  });
+};
+
+/**
+ * Administrative method to resend tickets for a confirmed booking.
+ */
+export const resendBookingTickets = async (id: string, adminId: string) => {
+  const booking = await Booking.findById(id).populate('eventId');
+  if (!booking) {
+    throw AppError.notFound('Booking not found');
+  }
+
+  if (booking.status !== BookingStatus.CONFIRMED) {
+    throw AppError.badRequest(`Cannot resend tickets for a booking in status: ${booking.status}`);
+  }
+
+  const eventIdStr = (booking.eventId as any)._id?.toString() || booking.eventId.toString();
+
+  await QueueService.enqueue(
+    getQueueName('pdf-queue'),
+    'pdf:generate',
+    {
+      bookingId: booking._id.toString(),
+      eventId: eventIdStr,
+      recipientEmail: booking.guestEmail,
+      guestName: booking.guestName,
+    },
+    `pdf:generate:${booking._id}:admin-resend:${Date.now()}`
+  );
+
+  auditLog({
+    action: 'BOOKING_TICKETS_RESENT',
+    actor: { type: 'admin', id: adminId },
+    status: 'success',
+    metadata: {
+      bookingId: booking._id.toString(),
+      bookingReference: booking.bookingId,
+      recipientEmail: booking.guestEmail,
+    },
+    description: `Resent tickets for booking ${booking.bookingId} to ${booking.guestEmail}`,
+  });
+
+  return booking;
 };

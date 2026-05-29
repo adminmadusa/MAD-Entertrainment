@@ -61,3 +61,47 @@ export const cancelBooking = async (req: Request, res: Response, next: NextFunct
     next(error);
   }
 };
+
+/**
+ * Administrative method to correct a guest booking's email address.
+ */
+export const correctBookingEmail = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { newEmail, reason } = req.body;
+    const adminId = req.admin?.sub || 'system';
+
+    const booking = await bookingService.correctBookingEmail(
+      req.params.id,
+      newEmail,
+      reason,
+      adminId
+    );
+
+    res.status(200).json({
+      success: true,
+      data: booking,
+      message: 'Booking email corrected successfully',
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Administrative method to resend tickets for a confirmed booking.
+ */
+export const resendBookingTickets = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const adminId = req.admin?.sub || 'system';
+
+    const booking = await bookingService.resendBookingTickets(req.params.id, adminId);
+
+    res.status(200).json({
+      success: true,
+      data: booking,
+      message: 'Tickets resent successfully',
+    });
+  } catch (error) {
+    next(error);
+  }
+};

@@ -20,8 +20,31 @@ const cancelBookingSchema = z.object({
   }),
 });
 
+// Validation schema for email correction request
+const correctBookingEmailSchema = z.object({
+  body: z.object({
+    newEmail: z.string().email('Invalid email address'),
+    reason: z
+      .string()
+      .min(5, 'Reason must be at least 5 characters')
+      .max(500, 'Reason must be under 500 characters'),
+  }),
+  params: z.object({
+    id: z.string(),
+  }),
+});
+
+// Validation schema for ticket resend request
+const resendBookingTicketsSchema = z.object({
+  params: z.object({
+    id: z.string(),
+  }),
+});
+
 router.get('/', bookingController.getBookings);
 router.get('/:id', bookingController.getBookingById);
 router.patch('/:id/cancel', validate(cancelBookingSchema), bookingController.cancelBooking);
+router.patch('/:id/correct-email', validate(correctBookingEmailSchema), bookingController.correctBookingEmail);
+router.post('/:id/resend', validate(resendBookingTicketsSchema), bookingController.resendBookingTickets);
 
 export default router;
