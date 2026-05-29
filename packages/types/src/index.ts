@@ -110,6 +110,12 @@ export type Event = {
   ticketOverrides?: TicketOverride[];
   totalCapacity?: number;
   soldCount?: number;
+  ticketsSold?: number;
+  ticketsCheckedIn?: number;
+  ticketsRemaining?: number;
+  attendancePercentage?: number;
+  noShowCount?: number;
+  noShowPercentage?: number;
 };
 
 export type Seat = {

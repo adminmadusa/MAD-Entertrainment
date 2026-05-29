@@ -58,6 +58,12 @@ export interface AdminEvent {
   refundPolicy?: string;
   highlights?: string[];
   bannerImage?: CloudinaryImage;
+  ticketsSold?: number;
+  ticketsCheckedIn?: number;
+  ticketsRemaining?: number;
+  attendancePercentage?: number;
+  noShowCount?: number;
+  noShowPercentage?: number;
 }
 
 export interface EventsResponse {
