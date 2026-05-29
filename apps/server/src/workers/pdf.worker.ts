@@ -1,7 +1,7 @@
 import { Worker, WorkerOptions, Job } from 'bullmq';
 import * as Sentry from '@sentry/node';
 
-import { getQueueConnection, getQueueName } from '../config/queue.config';
+import { getQueueConnection, getQueueName, getQueuePrefix } from '../config/queue.config';
 import { getEnv } from '../config/env';
 import { isRedisConnected } from '../config/redis';
 import { Booking } from '../models/booking.schema';
@@ -104,6 +104,7 @@ export function startPDFWorker(): void {
     const connection = getQueueConnection();
     const options: WorkerOptions = {
       connection,
+      prefix: getQueuePrefix(),
       concurrency: 5, // Strict low concurrency bounds to prevent CPU pool starvation
     };
 

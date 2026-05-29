@@ -33,3 +33,13 @@ export function getQueueConnection(): ConnectionOptions {
     throw new Error('Invalid REDIS_URL configuration for queue integration');
   }
 }
+
+export function getQueuePrefix(): string {
+  const env = getEnv();
+  if (env.NODE_ENV === 'development') {
+    const devIdentifier = process.env.USER || 'local';
+    return `bull:dev:${devIdentifier}`;
+  }
+  return `bull:${env.NODE_ENV}`;
+}
+

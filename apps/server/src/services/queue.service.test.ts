@@ -18,6 +18,7 @@ vi.mock('../config/queue.config', () => ({
     port: 6379,
     maxRetriesPerRequest: null,
   }),
+  getQueuePrefix: () => 'bull:test',
 }));
 
 vi.mock('bullmq', () => {

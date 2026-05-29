@@ -2,7 +2,7 @@ import { Worker, WorkerOptions, Job } from 'bullmq';
 import * as Sentry from '@sentry/node';
 import { Types } from 'mongoose';
 
-import { getQueueConnection, getQueueName } from '../config/queue.config';
+import { getQueueConnection, getQueueName, getQueuePrefix } from '../config/queue.config';
 import { getEnv } from '../config/env';
 import { isRedisConnected } from '../config/redis';
 import { DeadLetterJob } from '../models/dead-letter-job.schema';
@@ -98,6 +98,7 @@ export function startEmailWorker(): void {
     const connection = getQueueConnection();
     const options: WorkerOptions = {
       connection,
+      prefix: getQueuePrefix(),
       concurrency: 20, // Standard concurrency limits
     };
 
