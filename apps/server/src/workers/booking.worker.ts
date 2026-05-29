@@ -1,7 +1,8 @@
 import { Worker, WorkerOptions, Job } from 'bullmq';
 import * as Sentry from '@sentry/node';
 
-import { getQueueConnection } from '../config/queue.config';
+import { getQueueConnection, getQueueName } from '../config/queue.config';
+import { getEnv } from '../config/env';
 import { isRedisConnected } from '../config/redis';
 import { Booking } from '../models/booking.schema';
 import { Event } from '../models/event.schema';
@@ -10,7 +11,7 @@ import { DeadLetterJob } from '../models/dead-letter-job.schema';
 import { QueueService, localFallbackEmitter } from '../services/queue.service';
 import { logger } from '../utils/logger';
 
-const QUEUE_NAME = 'booking-queue';
+const QUEUE_NAME = getQueueName('booking-queue');
 
 export async function processBookingConfirm(bookingId: string): Promise<void> {
   const booking = await Booking.findById(bookingId);
@@ -93,7 +94,7 @@ export async function processBookingConfirm(bookingId: string): Promise<void> {
 
   // 3. Enqueue the next step: PDF generation
   await QueueService.enqueue(
-    'pdf-queue',
+    getQueueName('pdf-queue'),
     'pdf:generate',
     {
       bookingId: booking._id.toString(),
@@ -178,6 +179,12 @@ export function startBookingWorker(): void {
         }
       }
     });
+
+    const env = getEnv();
+    logger.info({
+      appEnv: env.APP_ENV,
+      queueName: QUEUE_NAME,
+    }, "BullMQ queue initialized");
 
     logger.info('Booking Worker initialized successfully');
   } catch (err) {

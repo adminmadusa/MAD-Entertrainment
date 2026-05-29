@@ -2,6 +2,7 @@ import crypto from 'crypto';
 import { Types } from 'mongoose';
 import { OAuth2Client } from 'google-auth-library';
 import { getEnv } from '../../config/env';
+import { getQueueName } from '../../config/queue.config';
 import { AppError } from '../../middleware/error.middleware';
 import { UserModel, IUser } from '../../models/user.schema';
 import { MagicTokenModel } from '../../models/magic-token.schema';
@@ -23,6 +24,7 @@ export class AuthService {
     }
 
     const trimmedEmail = email.trim().toLowerCase();
+    logger.info({ email: trimmedEmail }, "Magic link requested");
 
     // 1. Generate unique 6-digit OTP and secure random token
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
@@ -40,6 +42,7 @@ export class AuthService {
       otp: otpHash, // Plaintext OTP is NEVER stored in the database!
       expiresAt,
     });
+    logger.info({ email: trimmedEmail, tokenId: token }, "Magic token created");
 
     // 4. Construct Verification Link
     const magicLinkUrl = `${origin}/login?token=${token}`;
@@ -51,13 +54,16 @@ export class AuthService {
       otpCode: otp, // Plaintext OTP is sent securely ONLY in the email!
     });
 
+    const jobId = `magic-${trimmedEmail}-${Date.now()}`;
+    logger.info({ email: trimmedEmail, jobId }, "Email job queued");
+
     // 6. Enqueue Email Dispatch Job with exponential BullMQ retries
-    await QueueService.enqueue('notification-queue', 'email-dispatch', {
+    await QueueService.enqueue(getQueueName('notification-queue'), 'email-dispatch', {
       to: trimmedEmail,
       subject: 'Sign In to MAD Entertainment',
       html,
       notificationType: NotificationType.OTP,
-    });
+    }, jobId);
 
     logger.info({ email: trimmedEmail }, 'Magic Link & OTP email queued successfully.');
   }

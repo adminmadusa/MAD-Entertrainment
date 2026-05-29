@@ -1,7 +1,8 @@
 import { Worker, WorkerOptions, Job } from 'bullmq';
 import * as Sentry from '@sentry/node';
 
-import { getQueueConnection } from '../config/queue.config';
+import { getQueueConnection, getQueueName } from '../config/queue.config';
+import { getEnv } from '../config/env';
 import { isRedisConnected } from '../config/redis';
 import { Booking } from '../models/booking.schema';
 import { Event } from '../models/event.schema';
@@ -10,7 +11,7 @@ import { QueueService, localFallbackEmitter } from '../services/queue.service';
 import { generateTicketPDF } from '../utils/pdf';
 import { logger } from '../utils/logger';
 
-const QUEUE_NAME = 'pdf-queue';
+const QUEUE_NAME = getQueueName('pdf-queue');
 
 export async function processPDFGenerate(
   bookingId: string,
@@ -41,7 +42,7 @@ export async function processPDFGenerate(
 
   // 2. Enqueue the final notification task with the base64-encoded attachment
   await QueueService.enqueue(
-    'notification-queue',
+    getQueueName('notification-queue'),
     'email:dispatch',
     {
       to: recipientEmail,
@@ -134,6 +135,12 @@ export function startPDFWorker(): void {
         }
       }
     });
+
+    const env = getEnv();
+    logger.info({
+      appEnv: env.APP_ENV,
+      queueName: QUEUE_NAME,
+    }, "BullMQ queue initialized");
 
     logger.info('PDF Worker initialized successfully');
   } catch (err) {

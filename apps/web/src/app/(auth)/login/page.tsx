@@ -65,6 +65,10 @@ function LoginPageContent() {
   const [resendTimer, setResendTimer] = useState(0);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Google GSI refs to prevent double initialization & render loops
+  const googleCallbackRef = useRef<(response: GoogleCredentialResponse) => void>(() => {});
+  const isInitializedRef = useRef(false);
+
   // Redirect authenticated users to dashboard automatically
   useEffect(() => {
     if (isAuthenticated) {
@@ -141,6 +145,15 @@ function LoginPageContent() {
     },
   });
 
+  // Update Google callback ref when mutation reference changes
+  useEffect(() => {
+    googleCallbackRef.current = (response: GoogleCredentialResponse) => {
+      if (response?.credential) {
+        googleLoginMutation.mutate(response.credential);
+      }
+    };
+  }, [googleLoginMutation]);
+
   // ─── Automatic Magic Link Click Handlers ──────────────────
 
   useEffect(() => {
@@ -153,31 +166,35 @@ function LoginPageContent() {
   // ─── Google OAuth Identity Services Integration ────────────
 
   const handleGoogleCredentialResponse = useCallback((response: GoogleCredentialResponse) => {
-    if (response?.credential) {
-      googleLoginMutation.mutate(response.credential);
-    }
-  }, [googleLoginMutation]);
+    googleCallbackRef.current(response);
+  }, []);
 
   const initializeGoogleSignIn = useCallback(() => {
     const googleObj = (window as unknown as { google?: GoogleIdentity }).google;
+    const btnElement = document.getElementById('google-signin-btn');
     if (typeof window !== 'undefined' && googleObj) {
       try {
-        googleObj.accounts.id.initialize({
-          client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || 'google_client_id_placeholder',
-          callback: handleGoogleCredentialResponse,
-          auto_select: false,
-        });
+        if (!isInitializedRef.current) {
+          googleObj.accounts.id.initialize({
+            client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || 'google_client_id_placeholder',
+            callback: handleGoogleCredentialResponse,
+            auto_select: false,
+          });
+          isInitializedRef.current = true;
+        }
 
-        googleObj.accounts.id.renderButton(
-          document.getElementById('google-signin-btn'),
-          {
-            theme: 'filled_dark',
-            size: 'large',
-            width: '100%',
-            shape: 'pill',
-            text: 'signin_with',
-          }
-        );
+        if (btnElement && btnElement.innerHTML === '') {
+          googleObj.accounts.id.renderButton(
+            btnElement,
+            {
+              theme: 'filled_dark',
+              size: 'large',
+              width: '100%',
+              shape: 'pill',
+              text: 'signin_with',
+            }
+          );
+        }
       } catch (err) {
         console.error('Failed to initialize Google login button:', err);
       }
@@ -213,6 +230,13 @@ function LoginPageContent() {
       return;
     }
     verifyMutation.mutate(cleanOtp);
+  };
+
+  const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    const pastedText = e.clipboardData.getData('text');
+    const sanitized = pastedText.replace(/\D/g, '').slice(0, 6);
+    setOtp(sanitized);
   };
 
   const handleBackToLogin = () => {
@@ -331,6 +355,7 @@ function LoginPageContent() {
                   inputMode="numeric"
                   value={otp}
                   onChange={(e) => setOtp(e.target.value.replace(/[^0-9]/g, ''))}
+                  onPaste={handlePaste}
                   placeholder="000000"
                   className="w-full text-center text-3xl font-black bg-white/5 border border-border-subtle rounded-2xl py-4 text-white placeholder:text-text-muted/15 focus:outline-none focus:border-accent-purple/60 focus:ring-1 focus:ring-accent-purple/60 transition-all duration-300 tracking-[0.6em] pl-[0.6em] font-mono"
                 />

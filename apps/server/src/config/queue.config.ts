@@ -2,6 +2,11 @@ import { ConnectionOptions } from 'bullmq';
 import { getEnv } from './env';
 import { logger } from '../utils/logger';
 
+export function getQueueName(baseName: string): string {
+  const appEnv = process.env.APP_ENV || process.env.NODE_ENV || 'local';
+  return `${baseName}-${appEnv}`;
+}
+
 export function getQueueConnection(): ConnectionOptions {
   const url = getEnv().REDIS_URL;
   if (!url) {

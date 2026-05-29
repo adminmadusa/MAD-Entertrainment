@@ -4,6 +4,7 @@ import { UserModel } from '../../models/user.schema';
 import { Booking } from '../../models/booking.schema';
 import { getEnv } from '../../config/env';
 import { AppError } from '../../middleware/error.middleware';
+import { logger } from '../../utils/logger';
 
 export class AuthController {
   /**
@@ -11,6 +12,7 @@ export class AuthController {
    */
   static async requestMagicLink(req: Request, res: Response): Promise<void> {
     const { email } = req.body;
+    logger.info({ email }, "Magic link requested");
     // Derive client origin, fallback to configured ALLOWED_ORIGINS if unavailable
     const env = getEnv();
     const primaryOrigin = env.ALLOWED_ORIGINS.split(',')[0].trim();

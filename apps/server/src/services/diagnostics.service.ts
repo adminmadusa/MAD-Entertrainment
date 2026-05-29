@@ -1,7 +1,7 @@
 import { Queue, Job } from 'bullmq';
 import mongoose from 'mongoose';
 
-import { getQueueConnection } from '../config/queue.config';
+import { getQueueConnection, getQueueName } from '../config/queue.config';
 import { isRedisConnected } from '../config/redis';
 import { getSocketTelemetry } from '../config/socket';
 import { DeadLetterJob } from '../models/dead-letter-job.schema';
@@ -54,7 +54,7 @@ export class DiagnosticsService {
 
     if (redisActive) {
       const connection = getQueueConnection();
-      for (const name of this.QUEUE_NAMES) {
+      for (const name of this.QUEUE_NAMES.map(getQueueName)) {
         try {
           const queue = new Queue(name, { connection, skipVersionCheck: true });
           const [counts, waitingJobs] = await Promise.all([

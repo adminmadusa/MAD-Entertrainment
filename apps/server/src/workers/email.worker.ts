@@ -2,7 +2,8 @@ import { Worker, WorkerOptions, Job } from 'bullmq';
 import * as Sentry from '@sentry/node';
 import { Types } from 'mongoose';
 
-import { getQueueConnection } from '../config/queue.config';
+import { getQueueConnection, getQueueName } from '../config/queue.config';
+import { getEnv } from '../config/env';
 import { isRedisConnected } from '../config/redis';
 import { DeadLetterJob } from '../models/dead-letter-job.schema';
 import { Notification } from '../models/notification.schema';
@@ -11,7 +12,7 @@ import { sendEmail } from '../utils/email';
 import { logger } from '../utils/logger';
 import { NotificationType } from '@mad/shared';
 
-const QUEUE_NAME = 'notification-queue';
+const QUEUE_NAME = getQueueName('notification-queue');
 
 export async function processEmailDispatch(
   to: string,
@@ -56,6 +57,8 @@ export async function processEmailDispatch(
 }
 
 async function handleJobExecution(jobId: string, data: any): Promise<void> {
+  const { to: email } = data;
+  logger.info({ jobId, email }, "Email worker started");
   await Sentry.startSpan(
     {
       op: 'queue.process',
@@ -126,6 +129,12 @@ export function startEmailWorker(): void {
         }
       }
     });
+
+    const env = getEnv();
+    logger.info({
+      appEnv: env.APP_ENV,
+      queueName: QUEUE_NAME,
+    }, "BullMQ queue initialized");
 
     logger.info('Email Worker initialized successfully');
   } catch (err) {
