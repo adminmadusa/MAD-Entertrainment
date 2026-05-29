@@ -11,7 +11,7 @@ import { Ticket } from "../models/ticket.schema";
 import { Notification } from "../models/notification.schema";
 import { QueueService } from "../services/queue.service";
 import { generateTicketPDF } from "../utils/pdf";
-import { sendEmail } from "../utils/email";
+import { sendEmail } from "../lib/email/send-email";
 
 vi.mock("../models/booking.schema", () => ({
   Booking: {
@@ -35,6 +35,7 @@ vi.mock("../models/ticket.schema", () => ({
 vi.mock("../models/notification.schema", () => ({
   Notification: {
     create: vi.fn(),
+    findOne: vi.fn(() => Promise.resolve(null)),
   },
 }));
 
@@ -51,8 +52,10 @@ vi.mock("../utils/pdf", () => ({
   generateTicketPDF: vi.fn(),
 }));
 
-vi.mock("../utils/email", () => ({
-  sendEmail: vi.fn(),
+vi.mock("../lib/email/send-email", () => ({
+  sendEmail: vi.fn(() =>
+    Promise.resolve({ ok: true, messageId: "mock-message-id" }),
+  ),
 }));
 
 vi.mock("../utils/logger", () => ({
@@ -187,6 +190,8 @@ describe("Asynchronous Workers", () => {
           ],
         }),
         `email:dispatch:${mockBookingId}`,
+        3,
+        5000,
       );
     });
   });

@@ -54,6 +54,8 @@ export async function processPDFGenerate(
     currency: booking.currency || "INR",
   });
 
+  console.log("[BOOKING] Adding email job:", booking.bookingId);
+
   // 2. Enqueue the final notification task with the base64-encoded attachment
   await QueueService.enqueue(
     "notification-queue",
@@ -73,6 +75,8 @@ export async function processPDFGenerate(
       eventId: event._id.toString(),
     },
     `email:dispatch:${booking._id}`,
+    3, // attempts: 3
+    5000, // backoffDelay: 5000ms
   );
 
   logger.info(

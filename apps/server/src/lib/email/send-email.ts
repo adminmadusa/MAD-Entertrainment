@@ -1,4 +1,4 @@
-import { getResendClient } from "./resend";
+import nodemailer from "nodemailer";
 import { getEnv } from "../../config/env";
 import { logger } from "../../utils/logger";
 
@@ -20,23 +20,56 @@ export type SendEmailResult =
   | { ok: true; messageId: string }
   | { ok: false; error: string };
 
+let _transporter: nodemailer.Transporter | undefined;
+
 /**
- * Send a transactional email via Resend.
+ * Returns the Nodemailer SMTP transporter singleton.
+ * Initialized lazily to prevent top-level module load crashes in test environments.
+ */
+export function getTransporter(): nodemailer.Transporter {
+  if (_transporter) return _transporter;
+
+  const env = getEnv();
+  _transporter = nodemailer.createTransport({
+    host: env.SMTP_HOST || "smtp.zeptomail.in",
+    port: Number(env.SMTP_PORT || 587),
+    secure: env.SMTP_SECURE === "true",
+    auth: {
+      user: env.SMTP_USER || "emailapikey",
+      pass: env.SMTP_PASS,
+    },
+  });
+
+  return _transporter;
+}
+
+/**
+ * Send a transactional email via Zoho ZeptoMail SMTP using Nodemailer.
  *
  * - Never throws. Returns a structured result so callers can handle
  *   failures without crashing the booking flow.
- * - Logs success/failure without exposing PII beyond the recipient domain.
+ * - Logs SMTP connection readiness and delivery results.
  */
 export async function sendEmail(
   payload: EmailPayload,
 ): Promise<SendEmailResult> {
-  const env = getEnv();
-  const from = env.EMAIL_FROM ?? "MAD Entertainment <onboarding@resend.dev>";
-  const replyTo = payload.replyTo ?? env.EMAIL_REPLY_TO;
+  const currentEnv = getEnv();
+  const from =
+    currentEnv.EMAIL_FROM ?? "MAD Entertainment <noreply@mad.esparex.in>";
+  const replyTo = payload.replyTo ?? currentEnv.EMAIL_REPLY_TO;
 
   try {
-    const resend = getResendClient();
-    const { data, error } = await resend.emails.send({
+    const transporter = getTransporter();
+
+    // 1. Warmup / Verify SMTP connection before sending
+    console.log("[SMTP VERIFYING] Checking connection...");
+    await transporter.verify();
+    console.log("[SMTP READY] Connection verified successfully");
+
+    // 2. Dispatch email
+    console.log("[EMAIL] Sending:", payload.to);
+
+    const info = await transporter.sendMail({
       from,
       to: payload.to,
       subject: payload.subject,
@@ -47,31 +80,29 @@ export async function sendEmail(
             attachments: payload.attachments.map((att) => ({
               filename: att.filename,
               content: att.content,
+              contentType: att.contentType,
             })),
           }
         : {}),
     });
 
-    if (error) {
-      logger.error(
-        { subject: payload.subject, err: error.message },
-        "[email] Resend rejected the message",
-      );
-      return { ok: false, error: error.message };
-    }
+    console.log("[EMAIL SUCCESS]", info.messageId);
 
     logger.info(
-      { messageId: data?.id, subject: payload.subject },
-      "[email] Sent successfully via Resend",
+      { messageId: info.messageId, subject: payload.subject },
+      "[email] Sent successfully via SMTP",
     );
 
-    return { ok: true, messageId: data?.id ?? "" };
+    return { ok: true, messageId: info.messageId };
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : String(err);
+    const errorMsg = err instanceof Error ? err.message : String(err);
+    console.error("[EMAIL FAILED]", errorMsg);
+
     logger.error(
-      { subject: payload.subject, err: message },
-      "[email] Resend delivery failed",
+      { subject: payload.subject, err: errorMsg },
+      "[email] SMTP delivery failed",
     );
-    return { ok: false, error: message };
+
+    return { ok: false, error: errorMsg };
   }
 }

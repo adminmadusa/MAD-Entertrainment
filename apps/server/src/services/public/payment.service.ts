@@ -1313,6 +1313,8 @@ export class PaymentService {
       // Generate the PDF buffer
       const pdfBuffer = await generateTicketPDF(booking, event);
 
+      console.log("[BOOKING] Adding email job:", booking.bookingId);
+
       // Send the email with the PDF attachment
       if (booking.guestEmail) {
         await sendEmail({

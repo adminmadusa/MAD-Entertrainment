@@ -14,7 +14,7 @@ export interface SendEmailInput {
 }
 
 /**
- * Reusable wrapper that maps the legacy email helper function to the Resend-based sendEmail.
+ * Reusable wrapper that maps the legacy email helper function to the SMTP-based sendEmail.
  * Preserves the exact signature so existing workers/services do not require refactoring.
  */
 export async function sendEmail(input: SendEmailInput): Promise<void> {

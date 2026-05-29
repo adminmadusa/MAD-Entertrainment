@@ -68,7 +68,7 @@ const envSchema = z.object({
 
   EMAIL_REPLY_TO: z.string().optional(),
 
-  RESEND_API_KEY: z.string().optional(),
+  SMTP_SECURE: z.string().optional(),
 
   // ─────────────────────────────────────────
   // Razorpay
