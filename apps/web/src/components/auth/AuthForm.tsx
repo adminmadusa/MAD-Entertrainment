@@ -120,7 +120,7 @@ export function AuthForm({ mode, onSuccess, onGuestContinue, className = '', ini
     mutationFn: () =>
       publicRequestMagicLink(
         email,
-        mode === 'login' && step === 'register' ? { firstName, lastName, mobileNumber } : undefined
+        step === 'register' ? { firstName, lastName, mobileNumber } : undefined
       ),
     onSuccess: (res) => {
       setStep('verify');
@@ -252,11 +252,7 @@ export function AuthForm({ mode, onSuccess, onGuestContinue, className = '', ini
       setError('Email address is required');
       return;
     }
-    if (mode === 'login') {
-      checkEmailMutation.mutate(email);
-    } else {
-      requestMagicLinkMutation.mutate();
-    }
+    checkEmailMutation.mutate(email);
   };
 
   const handleSubmitRegister = (e: React.FormEvent) => {
