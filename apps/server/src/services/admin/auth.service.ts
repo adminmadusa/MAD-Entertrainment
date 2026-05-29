@@ -1,9 +1,7 @@
-import jwt from 'jsonwebtoken';
 import { AdminModel } from '../../models/admin.schema';
-import { getEnv } from '../../config/env';
 import { AppError } from '../../middleware/error.middleware';
-
-const env = getEnv();
+import { signAdminToken } from '../../utils/jwt';
+import { AdminRole } from '@mad/shared';
 
 export const adminAuthService = {
   async login(email: string, password: string) {
@@ -24,13 +22,10 @@ export const adminAuthService = {
     admin.lastLogin = new Date();
     await admin.save();
 
-    const payload = {
-      id: admin._id,
-      role: admin.role,
-    };
-
-    const token = jwt.sign(payload, env.JWT_ADMIN_SECRET || env.JWT_SECRET, {
-      expiresIn: (env.JWT_ADMIN_EXPIRES_IN || '1d') as any,
+    const token = signAdminToken({
+      sub: admin._id.toString(),
+      email: admin.email,
+      role: admin.role as AdminRole,
     });
 
     return {

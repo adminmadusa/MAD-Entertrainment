@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { adminAuthService } from '../../services/admin/auth.service';
+import { AppError } from '../../middleware/error.middleware';
 
 export const adminAuthController = {
   async login(req: Request, res: Response) {
@@ -13,8 +14,10 @@ export const adminAuthController = {
   },
 
   async getMe(req: Request, res: Response) {
-    // We assume an authentication middleware attaches `admin` to `req`
-    const adminId = (req as any).admin.id;
+    const adminId = req.admin?.sub;
+    if (!adminId) {
+      throw AppError.unauthorized('Admin authentication required');
+    }
     const result = await adminAuthService.getMe(adminId);
 
     res.json({
