@@ -6,22 +6,19 @@ import {
   Container,
   Section,
   Text,
-  Button,
   Heading,
-  Hr,
   Preview,
 } from "@react-email/components";
 import { renderTemplate } from "../render-template";
 
 export interface MagicLinkEmailData {
   email: string;
-  magicLinkUrl: string;
+  magicLinkUrl?: string;
   otpCode: string;
 }
 
 const previewData: MagicLinkEmailData = {
   email: "user@example.com",
-  magicLinkUrl: "http://localhost:3000/auth/verify?token=preview_token",
   otpCode: "123456",
 };
 
@@ -30,7 +27,7 @@ interface MagicLinkEmailProps {
 }
 
 export default function MagicLinkEmail({ data = previewData }: MagicLinkEmailProps) {
-  const { magicLinkUrl, otpCode } = data;
+  const { otpCode } = data;
 
   // Format OTP as XXX XXX for readability
   const formattedOtp =
@@ -51,35 +48,16 @@ export default function MagicLinkEmail({ data = previewData }: MagicLinkEmailPro
           <Section style={cardStyle}>
             <Heading style={titleStyle}>Verify Your Login</Heading>
             <Text style={textStyle}>
-              You requested a secure login to MAD Entertainment. Click the button below to sign in
-              instantly.
-            </Text>
-
-            <Section style={buttonContainer}>
-              <Button href={magicLinkUrl} style={buttonStyle}>
-                Sign In Instantly
-              </Button>
-            </Section>
-
-            <Text style={subtextStyle}>
-              This link will expire in 15 minutes. If the button doesn&apos;t work, copy and paste
-              the URL below into your browser:
-              <br />
-              <a href={magicLinkUrl} style={linkStyle}>
-                {magicLinkUrl}
-              </a>
-            </Text>
-
-            <Hr style={dividerStyle} />
-
-            <Heading style={otpTitleStyle}>One-Time Passcode</Heading>
-            <Text style={textStyle}>
-              If you are on a different device or need an OTP, enter the 6-digit passcode below:
+              You requested a secure login to MAD Entertainment. Please enter the 6-digit passcode below to sign in:
             </Text>
 
             <Section style={otpCardStyle}>
               <Text style={otpValueStyle}>{formattedOtp}</Text>
             </Section>
+
+            <Text style={subtextStyle}>
+              This passcode is temporary and will expire in 15 minutes.
+            </Text>
 
             <Text style={footerWarningStyle}>
               If you didn&apos;t request this login, you can safely ignore this email. Your account
