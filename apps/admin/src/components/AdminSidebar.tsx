@@ -62,9 +62,11 @@ const navGroups: NavGroup[] = [
 interface AdminSidebarProps {
   collapsed: boolean;
   onToggle: () => void;
+  mobileOpen?: boolean;
+  onMobileClose?: () => void;
 }
 
-export function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps) {
+export function AdminSidebar({ collapsed, onToggle, mobileOpen = false, onMobileClose }: AdminSidebarProps) {
   const pathname = usePathname();
 
   const isActive = (href: string) =>
@@ -74,10 +76,14 @@ export function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps) {
     <motion.aside
       animate={{ width: collapsed ? 64 : 240 }}
       transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
-      className="flex flex-col h-full bg-background-card border-r border-border-subtle overflow-hidden flex-shrink-0"
+      className={[
+        'flex flex-col h-full bg-background-card border-r border-border-subtle overflow-hidden flex-shrink-0',
+        'fixed md:static inset-y-0 left-0 z-50 md:z-auto transition-transform duration-300 md:transition-none',
+        mobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0',
+      ].join(' ')}
     >
       {/* Logo */}
-      <div className="h-16 flex items-center px-4 border-b border-border-subtle flex-shrink-0">
+      <div className="h-16 flex items-center justify-between px-4 border-b border-border-subtle flex-shrink-0">
         <Link href="/dashboard" className="flex items-center gap-3 min-w-0">
           <div className="w-8 h-8 rounded-lg bg-gradient-brand flex-shrink-0 flex items-center justify-center shadow-glow-sm">
             <span className="text-white font-black text-sm">M</span>
@@ -96,6 +102,20 @@ export function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps) {
             )}
           </AnimatePresence>
         </Link>
+
+        {/* Close Toggle for Mobile (Touch target at least 44x44px) */}
+        {mobileOpen && (
+          <button
+            onClick={onMobileClose}
+            className="md:hidden w-11 h-11 flex items-center justify-center rounded-xl text-text-muted hover:text-white hover:bg-white/5 transition-all -mr-2"
+            aria-label="Close navigation menu"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        )}
       </div>
 
       {/* Nav */}
@@ -191,7 +211,7 @@ export function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps) {
       </nav>
 
       {/* Collapse Toggle */}
-      <div className="p-2 border-t border-border-subtle">
+      <div className="hidden md:block p-2 border-t border-border-subtle">
         <button
           onClick={onToggle}
           className="w-full flex items-center justify-center p-2 rounded-xl text-text-muted hover:text-text-primary hover:bg-white/5 transition-colors"
