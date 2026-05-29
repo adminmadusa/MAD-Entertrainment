@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useRef, useEffect, useCallback } from 'react';
 
 import { adminGetEvents } from '@/lib/api/admin/event.service';
-import { adminScanTicket, ScanResponse } from '@/lib/api/admin/scanner.service';
+import { adminScanTicket, adminLookupTickets, ScanResponse, LookupResponse } from '@/lib/api/admin/scanner.service';
 import { extractApiError } from '@/lib/api/client';
 
 export default function ScannerPage() {
@@ -13,6 +13,8 @@ export default function ScannerPage() {
   const [ticketId, setTicketId] = useState('');
   const [lastScanResult, setLastScanResult] = useState<ScanResponse | { ticketId: string; admits: string | number; tierName: string } | null>(null);
   const [lastScanError, setLastScanError] = useState<string | null>(null);
+  const [lookupResult, setLookupResult] = useState<LookupResponse | null>(null);
+  const [lookupError, setLookupError] = useState<string | null>(null);
 
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -29,19 +31,68 @@ export default function ScannerPage() {
     if (selectedEventId && inputRef.current) {
       inputRef.current.focus();
     }
-  }, [selectedEventId, lastScanResult, lastScanError]);
+  }, [selectedEventId, lastScanResult, lastScanError, lookupResult, lookupError]);
 
   const scanMutation = useMutation({
     mutationFn: (tid: string) => adminScanTicket(tid, selectedEventId),
     onSuccess: (data) => {
       setLastScanResult(data);
       setLastScanError(null);
+      // Immediately patch the lookup result so the Check-In button disables
+      setLookupResult((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          tickets: prev.tickets.map((t) =>
+            t.ticketId === data.ticketId
+              ? { ...t, scannedAt: data.scannedAt }
+              : t
+          ),
+        };
+      });
+      setTicketId('');
+    },
+    onError: (err, scannedTicketId) => {
+      const apiErr = extractApiError(err);
+      setLastScanError(apiErr.message);
+      setLastScanResult(null);
+      // Removed setTicketId('') to preserve failed inputs
+
+      // Immediately patch the lookup result if the ticket has already been checked in
+      if (apiErr.message && apiErr.message.includes('Ticket already used')) {
+        const details = apiErr.details as { scannedAt?: string } | undefined;
+        const scannedAt = details?.scannedAt || new Date().toISOString();
+
+        setLookupResult((prev) => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            tickets: prev.tickets.map((t) =>
+              t.ticketId === scannedTicketId
+                ? { ...t, scannedAt }
+                : t
+            ),
+          };
+        });
+      }
+    },
+  });
+
+  const lookupMutation = useMutation({
+    mutationFn: (ref: string) => adminLookupTickets(ref, selectedEventId),
+    onSuccess: (data) => {
+      setLookupResult(data);
+      setLookupError(null);
+      setLastScanResult(null);
+      setLastScanError(null);
       setTicketId('');
     },
     onError: (err) => {
-      setLastScanError(extractApiError(err).message);
+      setLookupError(extractApiError(err).message);
+      setLookupResult(null);
       setLastScanResult(null);
-      setTicketId('');
+      setLastScanError(null);
+      // Keep input visible on error
     },
   });
 
@@ -94,15 +145,36 @@ export default function ScannerPage() {
     e.preventDefault();
     if (!ticketId.trim() || !selectedEventId) return;
 
+    let inputToProcess = ticketId.trim();
+
+    // Attempt to parse JSON (backward compatibility for legacy QR payloads)
+    try {
+      const payload = JSON.parse(inputToProcess);
+      if (payload && payload.ticketId) {
+        inputToProcess = payload.ticketId;
+      }
+    } catch {
+      // Not JSON, continue with normal string
+    }
+
     if (isOffline) {
       const { saveOfflineScan } = await import('@/lib/offline-scanner.service');
-      await saveOfflineScan(ticketId.trim(), selectedEventId);
+      await saveOfflineScan(inputToProcess, selectedEventId);
       setOfflineCount(prev => prev + 1);
-      setLastScanResult({ ticketId: ticketId.trim(), admits: 'OFFLINE MODE', tierName: 'SAVED LOCALLY' });
+      setLastScanResult({ ticketId: inputToProcess, admits: 'OFFLINE MODE', tierName: 'SAVED LOCALLY' });
       setLastScanError(null);
       setTicketId('');
     } else {
-      scanMutation.mutate(ticketId.trim());
+      if (inputToProcess.startsWith('TKT-') || inputToProcess.match(/^[a-zA-Z0-9\-_]+$/)) {
+        // Assume ticket ID if it starts with TKT- or is just a normal string that doesn't start with MAD-
+        if (inputToProcess.startsWith('MAD-')) {
+          lookupMutation.mutate(inputToProcess);
+        } else {
+          scanMutation.mutate(inputToProcess);
+        }
+      } else {
+        scanMutation.mutate(inputToProcess);
+      }
     }
   };
 
@@ -221,6 +293,83 @@ export default function ScannerPage() {
             <div>
               <h2 className="text-3xl font-black text-red-400">INVALID SCANNED</h2>
               <p className="text-text-secondary mt-2 text-sm">{lastScanError}</p>
+            </div>
+          </motion.div>
+        )}
+
+        {lookupMutation.isPending && (
+          <motion.div
+            key="loading-lookup"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            className="glass rounded-2xl border border-accent-purple/50 p-12 flex flex-col items-center justify-center space-y-4"
+          >
+            <div className="w-10 h-10 border-4 border-accent-purple border-t-transparent rounded-full animate-spin" />
+            <p className="text-white font-medium animate-pulse">Looking up reference...</p>
+          </motion.div>
+        )}
+
+        {lookupError && !lookupMutation.isPending && (
+          <motion.div
+            key="error-lookup"
+            initial={{ opacity: 0, y: 10, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0 }}
+            className="glass rounded-2xl border border-red-500/50 p-8 flex flex-col items-center justify-center text-center space-y-4 bg-red-500/5"
+          >
+            <div className="w-16 h-16 rounded-full bg-red-500/20 flex items-center justify-center text-red-400">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </div>
+            <div>
+              <h2 className="text-3xl font-black text-red-400">LOOKUP FAILED</h2>
+              <p className="text-text-secondary mt-2 text-sm">{lookupError}</p>
+            </div>
+          </motion.div>
+        )}
+
+        {lookupResult && !lookupMutation.isPending && (
+          <motion.div
+            key="success-lookup"
+            initial={{ opacity: 0, y: 10, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0 }}
+            className="glass rounded-2xl border border-border-subtle p-6 space-y-4 text-left w-full"
+          >
+            {lookupResult.booking && (
+              <div className="mb-4">
+                <h3 className="text-lg font-bold text-white">Booking: {lookupResult.booking.bookingId}</h3>
+                <p className="text-sm text-text-secondary">Guest: {lookupResult.booking.guestName || 'N/A'}</p>
+                <div className="mt-1 flex items-center gap-2">
+                  <span className={`text-xs px-2 py-0.5 rounded border ${
+                    lookupResult.booking.status === 'confirmed' ? 'border-green-500/50 text-green-400 bg-green-500/10' : 'border-amber-500/50 text-amber-400 bg-amber-500/10'
+                  }`}>
+                    {lookupResult.booking.status.toUpperCase()}
+                  </span>
+                </div>
+              </div>
+            )}
+            
+            <h4 className="text-sm font-semibold text-text-muted uppercase tracking-wider mb-2">Tickets ({lookupResult.tickets.length})</h4>
+            <div className="space-y-3">
+              {lookupResult.tickets.map((t) => (
+                <div key={t.ticketId} className="bg-background border border-border-subtle rounded-xl p-4 flex items-center justify-between">
+                  <div>
+                    <p className="font-mono text-sm text-white">{t.ticketId}</p>
+                    <p className="text-xs text-text-secondary mt-1">{t.tierName} • Admits: {t.admits}</p>
+                    {t.scannedAt && (
+                      <p className="text-xs text-amber-400 mt-1">Already scanned at {new Date(t.scannedAt).toLocaleTimeString()}</p>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => scanMutation.mutate(t.ticketId)}
+                    disabled={!!t.scannedAt || scanMutation.isPending}
+                    className="btn-primary text-xs px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Check In
+                  </button>
+                </div>
+              ))}
             </div>
           </motion.div>
         )}

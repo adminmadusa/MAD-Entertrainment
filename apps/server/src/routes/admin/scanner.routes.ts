@@ -7,6 +7,7 @@ const router: Router = Router();
 // All routes require admin
 router.use(requireAdmin);
 
+router.get('/lookup/:reference', scannerController.lookupTickets);
 router.post('/scan', scannerController.scanTicket);
 
 export default router;
