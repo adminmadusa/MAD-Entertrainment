@@ -6,14 +6,11 @@ import { usePathname } from 'next/navigation';
 const footerLinks = {
   Platform: [
     { label: 'Browse Events', href: '/events' },
-    { label: 'Artists', href: '/artists' },
     { label: 'DJ Operators', href: '/dj-operators' },
   ],
   Support: [
+    { label: 'My Tickets', href: '/tickets' },
     { label: 'My Booking', href: '/my-booking' },
-    { label: 'Contact Us', href: '/contact' },
-    { label: 'FAQ', href: '/faq' },
-    { label: 'Refunds', href: '/refunds' },
   ],
   Legal: [
     { label: 'Privacy Policy', href: '/privacy' },
