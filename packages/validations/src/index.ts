@@ -50,7 +50,7 @@ export const checkoutDetailsSchema = z.object({
   lastName: z.string().min(1, 'Last name is required').max(100, 'Last name is too long'),
   guestEmail: z.string().email('Invalid email address format').max(200, 'Email address is too long'),
   guestEmailConfirm: z.string().email('Invalid email confirmation format').max(200, 'Confirmation email is too long'),
-  guestPhone: z.string().min(8, 'Invalid phone number format').max(50, 'Phone number is too long'),
+  guestPhone: z.string().max(50, 'Phone number is too long').optional().or(z.literal('')),
   birthdate: z.string().refine((val) => !isNaN(Date.parse(val)), { message: 'Invalid birthdate format' }),
   keepUpdated: z.boolean().default(false),
   sendBestEvents: z.boolean().default(false),

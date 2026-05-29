@@ -24,7 +24,6 @@ import { LeaveCheckoutModal } from './checkout/LeaveCheckoutModal';
 import { CheckoutForm } from './checkout/CheckoutForm';
 import { CheckoutPricing } from './checkout/CheckoutPricing';
 import { CheckoutPayment } from './checkout/CheckoutPayment';
-import { CheckoutAuthCard } from './CheckoutAuthCard';
 
 interface RazorpayInstance {
   open(): void;
@@ -121,7 +120,13 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
   // Payment Intent Mutation
   const paymentIntentMutation = useMutation({
     mutationFn: (gateway: 'stripe' | 'razorpay') => publicCreatePaymentIntent(bookingId, gateway),
-    onSuccess: async (res) => {
+    onSuccess: async (res: any) => {
+      if (res.isFree) {
+        allowNavigation();
+        router.push(`/my-booking?ref=${booking?.bookingId}`);
+        return;
+      }
+
       if (res.gateway === 'razorpay') {
         if (res.isMock) {
           setIsProcessing(true);
@@ -299,9 +304,6 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
                 </div>
               </div>
             )}
-
-            {/* Optional Eventbrite-Style Authentication Card */}
-            <CheckoutAuthCard />
 
             {/* Billing Information Form */}
             <CheckoutForm

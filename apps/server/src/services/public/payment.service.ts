@@ -16,6 +16,7 @@ import { Notification } from '../../models/notification.schema';
 import { Payment, IPayment } from '../../models/payment.schema';
 import { SeatLayout } from '../../models/seat-layout.schema';
 import { Ticket } from '../../models/ticket.schema';
+import { UserModel } from '../../models/user.schema';
 import { logger } from '../../utils/logger';
 import { auditLog } from '../../utils/audit';
 import { sendEmail } from '../../utils/email';
@@ -34,6 +35,26 @@ export class PaymentService {
 
     if (booking.status !== BookingStatus.AWAITING_PAYMENT) {
       throw AppError.badRequest(`Booking is in state "${booking.status}" and cannot accept payment`);
+    }
+
+    if (booking.totalAmount === 0) {
+      const payment = await Payment.create({
+        bookingId: booking._id,
+        gateway: 'free',
+        status: PaymentStatus.PAID,
+        amount: 0,
+        currency: booking.currency || 'INR',
+        gatewayOrderId: `free_${crypto.randomBytes(8).toString('hex')}`,
+      });
+      const confirmedBooking = await this.confirmBooking(booking, payment);
+      if (!confirmedBooking) {
+        throw new AppError('Failed to confirm free booking', 500);
+      }
+      return {
+        isFree: true,
+        gateway: 'free',
+        bookingId: confirmedBooking._id,
+      };
     }
 
     const env = getEnv();
@@ -850,6 +871,33 @@ export class PaymentService {
     }
 
     booking = confirmedBooking;
+
+    // 1b. Post-Checkout Account Creation: Ensure User exists for this booking safely before finalizing
+    if (!booking.userId && booking.guestEmail) {
+      try {
+        const emailLower = booking.guestEmail.toLowerCase().trim();
+        let user = await UserModel.findOne({ email: emailLower });
+        if (!user) {
+          user = await UserModel.create({
+            email: emailLower,
+            firstName: booking.guestName?.split(' ')[0] || 'Guest',
+            lastName: booking.guestName?.split(' ').slice(1).join(' ') || '',
+            name: booking.guestName,
+            mobileNumber: booking.guestPhone,
+            isActive: true,
+          });
+          logger.info({ userId: user._id, email: emailLower }, 'New user automatically created upon successful checkout');
+        } else {
+          logger.info({ userId: user._id, email: emailLower }, 'Existing user matched upon successful checkout');
+        }
+        
+        booking.userId = user._id as any;
+        await Booking.updateOne({ _id: booking._id }, { $set: { userId: user._id } });
+      } catch (err) {
+        logger.error({ err, bookingId: booking._id }, 'Failed to auto-create or match user during checkout confirmation');
+      }
+    }
+
     const confirmedReservations = await ReservationService.transitionForBooking(booking._id, ReservationStatus.CONFIRMED, {
       paymentReference: _payment.gatewayPaymentId ?? _payment.gatewayOrderId,
       paymentId: _payment._id as any,
