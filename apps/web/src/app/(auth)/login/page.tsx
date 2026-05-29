@@ -104,7 +104,7 @@ function LoginPageContent() {
     mutationFn: () => publicRequestMagicLink(email),
     onSuccess: (res) => {
       setStep('verify');
-      setInfoMessage(res.message || 'Verification email dispatched. Please check your inbox.');
+      setInfoMessage(res.message || 'Verification code sent to your email.');
       setError('');
       startTimer();
     },
@@ -128,7 +128,7 @@ function LoginPageContent() {
     },
     onError: (err) => {
       const apiErr = extractApiError(err);
-      setError(apiErr.message || 'Invalid or expired credentials. Please request a new verification code.');
+      setError('Invalid verification code. Please request a new code.');
     },
   });
 
@@ -268,7 +268,7 @@ function LoginPageContent() {
             <p className="text-text-muted text-sm leading-relaxed">
               {step === 'request'
                 ? "Enter your email address and we'll send a verification code to securely access your bookings."
-                : "We've sent a 6-digit verification passcode to your email."}
+                : "We've sent a 6-digit code to your email."}
             </p>
           </div>
 
@@ -340,6 +340,12 @@ function LoginPageContent() {
           {/* SCREEN 2: OTP Passcode Input Form */}
           {step === 'verify' && (
             <form onSubmit={handleSubmitOtp} className="space-y-6">
+              <div className="text-center text-sm text-text-muted">
+                Code sent to:{' '}
+                <a href={`mailto:${email}`} className="text-white font-medium hover:underline">
+                  {email}
+                </a>
+              </div>
               <div className="space-y-3">
                 <label htmlFor="otp" className="text-xs font-semibold text-text-secondary uppercase tracking-wider ml-1 block text-center">
                   6-Digit Passcode
@@ -378,7 +384,7 @@ function LoginPageContent() {
                     onClick={handleBackToLogin}
                     className="text-text-muted hover:text-white transition-colors duration-200"
                   >
-                    ← Back to Sign In
+                    ← Edit email
                   </button>
 
                   {resendTimer > 0 ? (
