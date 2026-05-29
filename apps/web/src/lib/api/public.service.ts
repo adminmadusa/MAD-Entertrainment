@@ -1,4 +1,4 @@
-import { Event, SeatLayout, Booking, Ticket, DJOperator, Venue, PopupCampaign } from '@mad/types';
+import { Event, SeatLayout, Booking, Ticket, DJOperator, PopupCampaign } from '@mad/types';
 import { AuthUser, AuthResponse, MagicLinkRequestResponse, VerifyMagicLinkOrOTPPayload } from '../../types/auth';
 import { ReserveTicketsInput, CheckoutDetailsInput } from '@mad/validations';
 
@@ -43,13 +43,6 @@ export interface PublicDJsApiResponse {
       total?: number;
       totalPages?: number;
     };
-  };
-}
-
-export interface PublicVenuesApiResponse {
-  data: {
-    venues: Venue[];
-    total: number;
   };
 }
 
@@ -217,48 +210,6 @@ export async function publicVerifyPayment(bookingId: string, gatewayPayload: Ver
     bookingId,
     ...gatewayPayload,
   });
-  return data.data;
-}
-
-// ─── Venues ──────────────────────────────────────────────────
-
-export interface PublicVenuesResponse {
-  data: Venue[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
-}
-
-export async function publicGetVenues(
-  filters: { search?: string; city?: string; page?: number; limit?: number } = {}
-): Promise<PublicVenuesResponse> {
-  const params = new URLSearchParams();
-  if (filters.search) params.set('search', filters.search);
-  if (filters.city) params.set('city', filters.city);
-  if (filters.page) params.set('page', String(filters.page));
-  if (filters.limit) params.set('limit', String(filters.limit));
-
-  const page = filters.page || 1;
-  const limit = filters.limit || 12;
-  const { data } = await apiClient.get<PublicVenuesApiResponse>(`/venues?${params}`);
-  const payload = data?.data || { venues: [], total: 0 };
-  const items = Array.isArray(payload.venues) ? payload.venues : [];
-  return {
-    data: items,
-    pagination: {
-      page,
-      limit,
-      total: payload.total || 0,
-      totalPages: Math.ceil((payload.total || 0) / limit)
-    }
-  };
-}
-
-export async function publicGetVenueBySlug(slug: string): Promise<Venue> {
-  const { data } = await apiClient.get<{ data: Venue }>(`/venues/${slug}`);
   return data.data;
 }
 

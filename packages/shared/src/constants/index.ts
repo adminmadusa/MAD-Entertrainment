@@ -200,7 +200,6 @@ export const API_ROUTES = {
   USERS: '/api/users',
   AUTH: '/api/auth',
   ADMIN: '/api/admin',
-  VENUES: '/api/venues',
   DJ_OPERATORS: '/api/dj-operators',
   COUPONS: '/api/coupons',
   POPUP_CAMPAIGNS: '/api/popup-campaigns',

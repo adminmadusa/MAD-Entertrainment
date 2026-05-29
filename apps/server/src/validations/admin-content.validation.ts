@@ -7,21 +7,6 @@ const cloudinaryImageSchema = z.object({
   publicId: z.string(),
 });
 
-// -- Venue Validation --
-export const createVenueSchema = z.object({
-  body: z.object({
-    name: z.string().min(1, 'Name is required'),
-    city: z.string().optional(),
-    state: z.string().optional(),
-    address: z.string().optional(),
-    capacity: z.number().int().min(0).optional(),
-  }),
-});
-
-export const updateVenueSchema = z.object({
-  params: z.object({ id: z.string() }),
-  body: createVenueSchema.shape.body.partial(),
-});
 
 // -- DJ Operator Validation --
 export const createDJOperatorSchema = z.object({

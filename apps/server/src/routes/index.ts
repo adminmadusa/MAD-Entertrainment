@@ -20,7 +20,6 @@ unreconstructed.use((_req, res) => {
 });
 
 import publicAuthRoutes from './public/auth.routes';
-import publicVenueRoutes from './public/venue.routes';
 import publicCategoryRoutes from './public/category.routes';
 import { AuthController } from '../controllers/public/auth.controller';
 import { requireAuth } from '../middleware/auth.middleware';
@@ -40,7 +39,6 @@ router.use('/events', publicEventRoutes);
 router.use('/bookings', publicBookingRoutes);
 router.use('/payments', publicPaymentRoutes);
 router.use('/dj-operators', publicDJOperatorRoutes);
-router.use('/venues', publicVenueRoutes);
 router.use('/categories', publicCategoryRoutes);
 router.use('/popups', publicPopupRoutes);
 
@@ -58,11 +56,9 @@ router.use('/admin/uploads', adminUploadRoutes);
 
 // ─── Admin: Phase 3 — Content CRUD ───────────────────────────
 import adminEventRoutes from './admin/event.routes';
-import adminVenueRoutes from './admin/venue.routes';
 import adminDjOperatorRoutes from './admin/dj-operator.routes';
 
 router.use('/admin/events', adminEventRoutes);
-router.use('/admin/venues', adminVenueRoutes);
 router.use('/admin/dj-operators', adminDjOperatorRoutes);
 
 // ─── Admin: Phase 4 — Bookings & Refunds ─────────────────────
