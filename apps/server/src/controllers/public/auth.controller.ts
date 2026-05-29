@@ -22,7 +22,7 @@ export class AuthController {
 
     res.status(200).json({
       success: true,
-      message: 'Magic login link and passcode sent to your email.',
+      message: 'Verification code sent to your email.',
     });
   }
 

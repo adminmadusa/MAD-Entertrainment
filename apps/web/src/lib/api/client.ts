@@ -62,15 +62,23 @@ apiClient.interceptors.response.use(
 
     // Detect 401 unauthorized errors and trigger silent token refresh
     if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
-      // Prevent infinite loops if refresh or logout itself fails
+      // Prevent infinite loops if refresh or logout itself fails,
+      // and do not intercept expected 401s for login/auth routes.
       if (
         originalRequest.url?.includes('/auth/refresh') ||
-        originalRequest.url?.includes('/auth/logout')
+        originalRequest.url?.includes('/auth/logout') ||
+        originalRequest.url?.includes('/auth/verify') ||
+        originalRequest.url?.includes('/auth/magic-link')
       ) {
-        if (typeof window !== 'undefined') {
-          localStorage.removeItem(STORAGE_KEYS.USER_TOKEN);
-          localStorage.removeItem(STORAGE_KEYS.USER_DATA);
-          window.dispatchEvent(new CustomEvent('auth:expired'));
+        if (
+          originalRequest.url?.includes('/auth/refresh') ||
+          originalRequest.url?.includes('/auth/logout')
+        ) {
+          if (typeof window !== 'undefined') {
+            localStorage.removeItem(STORAGE_KEYS.USER_TOKEN);
+            localStorage.removeItem(STORAGE_KEYS.USER_DATA);
+            window.dispatchEvent(new CustomEvent('auth:expired'));
+          }
         }
         return Promise.reject(error);
       }

@@ -89,7 +89,7 @@ export function CheckoutAuthCard() {
     mutationFn: () => publicRequestMagicLink(email),
     onSuccess: (res) => {
       setStep('verify');
-      setInfoMessage(res.message || 'Passcode dispatched. Please check your inbox.');
+      setInfoMessage(res.message || 'Verification code sent to your email.');
       setError('');
       startTimer();
     },
@@ -115,7 +115,7 @@ export function CheckoutAuthCard() {
     },
     onError: (err) => {
       const apiErr = extractApiError(err);
-      setError(apiErr.message || 'Invalid or expired passcode.');
+      setError('Invalid verification code. Please request a new code.');
     },
   });
 
@@ -374,6 +374,12 @@ export function CheckoutAuthCard() {
       ) : (
         /* OTP Verification input */
         <form onSubmit={handleSubmitOtp} className="space-y-4 animate-in fade-in duration-300">
+          <div className="text-center text-[11px] text-text-muted">
+            Code sent to:{' '}
+            <a href={`mailto:${email}`} className="text-white font-medium hover:underline">
+              {email}
+            </a>
+          </div>
           <div className="space-y-2 text-center">
             <label htmlFor="checkout-otp" className="text-[10px] font-bold text-text-secondary uppercase tracking-wider block">
               Enter 6-Digit Passcode
@@ -410,7 +416,7 @@ export function CheckoutAuthCard() {
                 onClick={handleBackToOptions}
                 className="text-text-muted hover:text-white transition-colors"
               >
-                ← Back
+                ← Edit email
               </button>
 
               {resendTimer > 0 ? (
