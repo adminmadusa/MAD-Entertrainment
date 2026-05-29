@@ -52,9 +52,7 @@ export interface AuthFormProps {
   onSuccess?: (data: AuthResponse) => void;
   onGuestContinue?: () => void;
   className?: string;
-}
 
-export function AuthForm({ mode, onSuccess, onGuestContinue, className = '' }: AuthFormProps) {
   const { login } = useAuth();
 
   // Core Authentication States
