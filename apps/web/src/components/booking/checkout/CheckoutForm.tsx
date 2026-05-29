@@ -85,8 +85,12 @@ export function CheckoutForm({ isExpired, isDisabled, onSubmit, onErrorSet }: Ch
     if (!guestEmail.trim()) errors.guestEmail = 'Email is required';
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(guestEmail)) errors.guestEmail = 'Invalid email format';
     
+    if (!guestEmailConfirm.trim()) errors.guestEmailConfirm = 'Please confirm your email';
     if (guestEmailConfirm !== guestEmail) errors.guestEmailConfirm = 'Emails do not match';
-    if (!guestPhone.trim()) errors.guestPhone = 'Phone number is required';
+    
+    // Optional mobile number
+    // if (!guestPhone.trim()) errors.guestPhone = 'Phone number is required';
+
     if (!birthMonth) errors.birthMonth = 'Month is required';
     if (!birthDay) errors.birthDay = 'Day is required';
     if (!birthYear) errors.birthYear = 'Year is required';
@@ -182,7 +186,7 @@ export function CheckoutForm({ isExpired, isDisabled, onSubmit, onErrorSet }: Ch
 
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-1">
-            <label className="text-xs text-text-secondary font-medium">Cell phone *</label>
+            <label className="text-xs text-text-secondary font-medium">Mobile Number <span className="text-[10px] text-text-muted/60 lowercase">(Optional – used for event updates only)</span></label>
             <input
               type="tel"
               value={guestPhone}
