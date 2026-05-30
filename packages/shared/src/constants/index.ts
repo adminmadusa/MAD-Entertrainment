@@ -44,6 +44,7 @@ export enum BookingStatus {
   FAILED = 'failed',
   AWAITING_PAYMENT = 'awaiting_payment',
   EXPIRED = 'expired',
+  EXPIRING = 'expiring',
 }
 
 // ─── Payment Status ──────────────────────────────────────────

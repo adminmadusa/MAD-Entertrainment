@@ -216,10 +216,14 @@ export class ReservationService {
   static async transitionForBooking(
     bookingId: Types.ObjectId | string,
     toStatus: ReservationStatus,
-    details: { paymentReference?: string; paymentId?: Types.ObjectId; correlationId?: string; reason?: string } = {},
+    details: { paymentReference?: string; paymentId?: Types.ObjectId; correlationId?: string; reason?: string; includeTerminal?: boolean } = {},
     session?: ClientSession
   ): Promise<IReservation[]> {
-    const reservations = await Reservation.find({ bookingId, status: { $in: ACTIVE_RESERVATION_STATUSES } }).session(session || null);
+    const statusQuery = details.includeTerminal
+      ? { $in: [...ACTIVE_RESERVATION_STATUSES, ReservationStatus.EXPIRED, ReservationStatus.FAILED] }
+      : { $in: ACTIVE_RESERVATION_STATUSES };
+
+    const reservations = await Reservation.find({ bookingId, status: statusQuery }).session(session || null);
     const transitioned: IReservation[] = [];
 
     for (const reservation of reservations) {
@@ -229,21 +233,35 @@ export class ReservationService {
       });
 
       const previousStatus = reservation.status;
-      reservation.status = toStatus;
-      reservation.inventoryState = reservationToInventoryState(toStatus);
-      reservation.paymentReference = details.paymentReference ?? reservation.paymentReference;
-      reservation.paymentId = details.paymentId ?? reservation.paymentId;
-      reservation.correlationId = details.correlationId ?? reservation.correlationId;
-      reservation.reservationVersion += 1;
-      reservation.transitionLog.push({
-        from: previousStatus,
-        to: toStatus,
-        reason: details.reason,
-        correlationId: details.correlationId,
-        createdAt: new Date(),
-      });
-      await reservation.save({ session });
-      transitioned.push(reservation);
+      
+      // Perform database-level atomic update to prevent double transition and double capacity releases
+      const updatedReservation = await Reservation.findOneAndUpdate(
+        { _id: reservation._id, status: previousStatus },
+        {
+          $set: {
+            status: toStatus,
+            inventoryState: reservationToInventoryState(toStatus),
+            paymentReference: details.paymentReference ?? reservation.paymentReference,
+            paymentId: details.paymentId ?? reservation.paymentId,
+            correlationId: details.correlationId ?? reservation.correlationId,
+          },
+          $inc: { reservationVersion: 1 },
+          $push: {
+            transitionLog: {
+              from: previousStatus,
+              to: toStatus,
+              reason: details.reason,
+              correlationId: details.correlationId,
+              createdAt: new Date(),
+            }
+          }
+        },
+        { new: true, session }
+      );
+
+      if (updatedReservation) {
+        transitioned.push(updatedReservation);
+      }
     }
 
     if (transitioned.length > 0) {
