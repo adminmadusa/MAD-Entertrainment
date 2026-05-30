@@ -76,4 +76,38 @@ describe('PDF Generation Utility', () => {
     expect(pdfBuffer).toBeInstanceOf(Buffer);
     expect(pdfBuffer.length).toBeGreaterThan(0);
   });
+
+  it('should generate a 10-page PDF for a booking with 10 tickets', async () => {
+    const mockBooking = {
+      _id: 'booking123',
+      bookingId: 'MAD-2026-ABCDE',
+      guestName: 'John Doe',
+    };
+    const mockEvent = {
+      title: 'Neon Music Festival',
+      startDate: new Date('2026-12-31T16:00:00.000Z'),
+      showTime: '18:00',
+      venue: 'Phoenix Marketcity Outdoors, Bangalore',
+    };
+    const mockTickets = Array.from({ length: 10 }).map((_, i) => ({
+      ticketId: `TKT-${i + 1}`,
+      qrCode: `QR-${i + 1}`,
+      tierName: 'VIP',
+    }));
+
+    const mockSort = vi.fn().mockResolvedValue(mockTickets);
+    vi.mocked(Ticket.find).mockReturnValue({
+      sort: mockSort,
+    } as any);
+
+    const qrcodeSpy = vi.spyOn(qrcode, 'toBuffer');
+
+    const pdfBuffer = await generateTicketPDF(mockBooking, mockEvent);
+
+    expect(Ticket.find).toHaveBeenCalledWith({ bookingId: mockBooking._id });
+    expect(mockSort).toHaveBeenCalledWith({ createdAt: 1 });
+    expect(qrcodeSpy).toHaveBeenCalledTimes(10);
+    expect(pdfBuffer).toBeInstanceOf(Buffer);
+    expect(pdfBuffer.length).toBeGreaterThan(0);
+  });
 });
