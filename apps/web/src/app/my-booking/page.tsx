@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { Suspense, useState, useEffect } from 'react';
+import { Suspense, useState, useEffect, useRef } from 'react';
 
 import { useCountdown } from '@/hooks/use-countdown.hook';
 
@@ -47,6 +47,7 @@ function PaymentRecoveryBanner({ booking }: { booking: { logicalExpiresAt?: stri
 function MyBookingContent() {
   const searchParams = useSearchParams();
   const initialRef = searchParams.get('ref') || '';
+  const pollCountRef = useRef(0);
 
   const [bookingRefInput, setBookingRefInput] = useState(initialRef);
   const [queryRef, setQueryRef] = useState(initialRef);
@@ -249,7 +250,7 @@ function MyBookingContent() {
     );
   };
 
-  const { data: result, isLoading, error } = useQuery({
+  const { data: result, isLoading, isFetching, error } = useQuery({
     queryKey: ['public-booking-details', queryRef],
     queryFn: () => {
       let sess: string | undefined;
@@ -261,7 +262,24 @@ function MyBookingContent() {
     },
     enabled: !!queryRef,
     retry: false,
+    refetchInterval: (query) => {
+      const status = query.state.data?.booking?.status;
+      if (pollCountRef.current >= 5) return false;
+      if (status === 'awaiting_payment' || status === 'expiring') {
+        return 3000;
+      }
+      return false;
+    }
   });
+
+  useEffect(() => {
+    if (!isFetching && result?.booking) {
+      const status = result.booking.status;
+      if (status === 'awaiting_payment' || status === 'expiring') {
+        pollCountRef.current += 1;
+      }
+    }
+  }, [isFetching, result?.booking]);
 
   useEffect(() => {
     if (error) {
@@ -274,6 +292,7 @@ function MyBookingContent() {
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
+    pollCountRef.current = 0;
     if (!bookingRefInput.trim()) {
       setErrorMsg('Please enter a booking reference ID.');
       return;
@@ -357,11 +376,16 @@ function MyBookingContent() {
                     </span>
                   )}
                 </div>
-                <div className="text-right">
-                  <span className="text-[10px] text-text-muted font-medium tracking-wider uppercase">Status</span>
-                  <div className={`text-xs px-2.5 py-1 rounded-full border font-bold mt-1 ${getBookingStatusStyles(booking.status)}`}>
-                    {booking.status.toUpperCase()}
+                <div className="text-right flex items-center justify-end gap-2">
+                  <div>
+                    <span className="text-[10px] text-text-muted font-medium tracking-wider uppercase">Status</span>
+                    <div className={`text-xs px-2.5 py-1 rounded-full border font-bold mt-1 ${getBookingStatusStyles(booking.status)}`}>
+                      {booking.status.toUpperCase()}
+                    </div>
                   </div>
+                  {isFetching && !isLoading && pollCountRef.current < 5 && (
+                    <div className="w-3 h-3 border-2 border-amber-500/30 border-t-amber-500 rounded-full animate-spin mt-4"></div>
+                  )}
                 </div>
               </div>
 
