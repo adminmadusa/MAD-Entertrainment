@@ -58,12 +58,12 @@ export async function runInTransaction<T>(
 /**
  * Maps a Mongoose Booking document onto a safe Normalized AdminBooking DTO representation with dynamic attendance.
  */
-const mapBookingToAdminDTO = async (booking: any) => {
+const mapBookingToAdminDTO = async (booking: any, preloadedTickets?: any[]) => {
   const isSeatBased = booking.tickets?.[0]?.seats?.length > 0;
   const mode = booking.eventId?.bookingMode || (isSeatBased ? 'seat_based' : 'general_admission');
 
   // Query actual individual ticket barcodes checked in
-  const ticketsList = await Ticket.find({ bookingId: booking._id }).lean();
+  const ticketsList = preloadedTickets || await Ticket.find({ bookingId: booking._id }).lean();
   const totalTickets = ticketsList.reduce((sum: number, t: any) => sum + (t.admits || 1), 0);
   const ticketsScanned = ticketsList
     .filter((t: any) => t.scannedAt !== undefined && t.scannedAt !== null)
@@ -158,7 +158,18 @@ export const getBookings = async (
     .skip(skip)
     .limit(limit);
 
-  const mappedBookings = await Promise.all(bookings.map(mapBookingToAdminDTO));
+  const bookingIds = bookings.map((b) => b._id);
+  const allTickets = await Ticket.find({ bookingId: { $in: bookingIds } }).lean();
+  const ticketsByBookingId = allTickets.reduce((acc: Record<string, any[]>, ticket: any) => {
+    const bId = ticket.bookingId.toString();
+    if (!acc[bId]) acc[bId] = [];
+    acc[bId].push(ticket);
+    return acc;
+  }, {});
+
+  const mappedBookings = await Promise.all(
+    bookings.map((b) => mapBookingToAdminDTO(b, ticketsByBookingId[b._id.toString()] || []))
+  );
 
   return {
     data: mappedBookings,
