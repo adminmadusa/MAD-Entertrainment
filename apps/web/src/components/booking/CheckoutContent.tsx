@@ -93,7 +93,7 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
     }
   }, [booking, router, allowNavigation]);
 
-  const countdown = useCountdown(booking?.expiresAt);
+  const countdown = useCountdown(booking?.logicalExpiresAt || booking?.expiresAt);
   const isExpired = countdown.isExpired;
   const timeLeft = isExpired
     ? 'Expired'
