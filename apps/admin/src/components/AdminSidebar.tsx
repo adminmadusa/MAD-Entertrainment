@@ -52,6 +52,7 @@ const navGroups: NavGroup[] = [
     title: 'System',
     items: [
       { label: 'Team', href: '/team', icon: <UsersIcon /> },
+      { label: 'Diagnostics', href: '/diagnostics', icon: <ChartIcon /> },
       { label: 'Settings', href: '/settings', icon: <SettingsIcon /> },
     ],
   },
