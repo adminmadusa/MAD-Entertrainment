@@ -87,10 +87,18 @@ export interface EventFilters {
 export async function adminGetEvents(filters: EventFilters = {}): Promise<{ items: AdminEvent[]; pagination: EventsResponse['data']['pagination'] }> {
   const params = new URLSearchParams();
   Object.entries(filters).forEach(([k, v]) => { if (v !== undefined) params.set(k, String(v)); });
-  const { data } = await adminApiClient.get<EventsResponse>(`/admin/events?${params}`);
+  const { data } = await adminApiClient.get<any>(`/admin/events?${params}`);
   const payload = data?.data;
   const items = Array.isArray(payload?.events) ? payload.events : [];
-  const pagination = payload?.pagination || { page: 1, limit: 10, total: 0, totalPages: 0 };
+  
+  const paginationSource = payload?.pagination || data?.pagination || payload;
+  const pagination = {
+    page: paginationSource?.page ?? Number(filters.page) ?? 1,
+    limit: paginationSource?.limit ?? Number(filters.limit) ?? 15,
+    total: paginationSource?.total ?? 0,
+    totalPages: paginationSource?.totalPages ?? paginationSource?.pages ?? 1,
+  };
+  
   return { items, pagination };
 }
 
