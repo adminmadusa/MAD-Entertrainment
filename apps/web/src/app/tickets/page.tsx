@@ -1,5 +1,6 @@
 'use client';
 
+import { QUERY_KEYS } from '@mad/shared';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { useState, useEffect, Suspense } from 'react';
@@ -42,11 +43,12 @@ function TicketRetrievalContent() {
 
   // Query Bookings (only enabled when authenticated)
   const { data: bookingsData, isLoading: isBookingsLoading } = useQuery({
-    queryKey: ['user-bookings'],
+    queryKey: QUERY_KEYS.public.bookings.mine(),
     queryFn: publicGetMyBookings,
     enabled: isAuthenticated,
     retry: false,
   });
+
 
   // ─── Actions ────────────────────────────────────────────────
 

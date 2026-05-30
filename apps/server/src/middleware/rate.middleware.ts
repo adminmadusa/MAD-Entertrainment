@@ -129,6 +129,25 @@ function makeLimiter(prefix: 'general' | 'auth' | 'payment' | 'webhook' | 'admin
     legacyHeaders: false,
     passOnStoreError: true,
     store: new ResilientRedisStore(prefix),
+    handler: (req: any, res: any) => {
+      if (prefix === 'auth') {
+        const resetTime = req.rateLimit?.resetTime;
+        const retryAfter = resetTime
+          ? Math.ceil((new Date(resetTime).getTime() - Date.now()) / 1000)
+          : Math.ceil(windows[prefix] / 1000);
+
+        return res.status(429).json({
+          success: false,
+          code: 'RATE_LIMIT_EXCEEDED',
+          message: 'Too many verification requests',
+          retryAfter: Math.max(0, retryAfter),
+        });
+      }
+      res.status(429).json({
+        success: false,
+        message: 'Too many requests, please try again later.',
+      });
+    },
   });
 }
 

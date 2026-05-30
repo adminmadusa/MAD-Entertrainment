@@ -10,10 +10,11 @@ import { useCountdown } from '@/hooks/use-countdown.hook';
 
 import { extractApiError } from '@/lib/api/client';
 import { publicGetBookingDetails, publicDownloadTicketPDF, publicResendTicketEmail } from '@/lib/api/public.service';
-import { STORAGE_VERSION } from '@mad/shared';
+import { STORAGE_VERSION, QUERY_KEYS } from '@mad/shared';
 import { BookingHeaderCard } from '@/components/booking/shared/BookingHeaderCard';
 import { TicketActions } from '@/components/booking/shared/TicketActions';
 import { EntryPassGrid } from '@/components/booking/shared/EntryPassGrid';
+
 
 function PaymentRecoveryBanner({ booking }: { booking: { logicalExpiresAt?: string | Date; expiresAt?: string | Date; bookingId: string } }) {
   const countdown = useCountdown(booking?.logicalExpiresAt || booking?.expiresAt);
@@ -125,7 +126,7 @@ function MyBookingContent() {
 
 
   const { data: result, isLoading, isFetching, error } = useQuery({
-    queryKey: ['public-booking-details', queryRef],
+    queryKey: QUERY_KEYS.public.bookings.detail(queryRef),
     queryFn: () => {
       let sess: string | undefined;
       if (typeof window !== 'undefined') {
