@@ -11,7 +11,9 @@ import { useCountdown } from '@/hooks/use-countdown.hook';
 import { extractApiError } from '@/lib/api/client';
 import { publicGetBookingDetails, publicDownloadTicketPDF, publicResendTicketEmail } from '@/lib/api/public.service';
 import { STORAGE_VERSION } from '@mad/shared';
-
+import { BookingHeaderCard } from '@/components/booking/shared/BookingHeaderCard';
+import { TicketActions } from '@/components/booking/shared/TicketActions';
+import { EntryPassGrid } from '@/components/booking/shared/EntryPassGrid';
 
 function PaymentRecoveryBanner({ booking }: { booking: { logicalExpiresAt?: string | Date; expiresAt?: string | Date; bookingId: string } }) {
   const countdown = useCountdown(booking?.logicalExpiresAt || booking?.expiresAt);
@@ -121,134 +123,6 @@ function MyBookingContent() {
     return () => clearInterval(timer);
   }, [cooldownSeconds, resendState]);
 
-  const getResendButtonStyles = () => {
-    if (resendState === 'loading') {
-      return 'bg-white/5 border border-white/10 text-white/60 cursor-not-allowed';
-    }
-    if (resendState === 'success') {
-      return 'bg-green-500/20 text-green-400 border border-green-500/40 shadow-glow-green-sm';
-    }
-    if (resendState === 'cooldown') {
-      return 'bg-white/5 border border-white/5 text-white/40 cursor-not-allowed';
-    }
-    if (resendState === 'error') {
-      return 'bg-red-500/20 text-red-400 border border-red-500/40';
-    }
-    return 'bg-white/5 border border-white/10 text-white hover:bg-white/10 hover:scale-[1.02] active:scale-[0.98]';
-  };
-
-  const renderResendButtonContent = () => {
-    if (resendState === 'loading') {
-      return (
-        <>
-          <svg className="animate-spin h-4.5 w-4.5 text-white/80" fill="none" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-          </svg>
-          Resending...
-        </>
-      );
-    }
-    if (resendState === 'success') {
-      return (
-        <>
-          <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-          </svg>
-          Tickets Resent!
-        </>
-      );
-    }
-    if (resendState === 'cooldown') {
-      return (
-        <>
-          <svg className="h-4.5 w-4.5 text-white/40" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          Resend in {cooldownSeconds}s
-        </>
-      );
-    }
-    if (resendState === 'error') {
-      return (
-        <>
-          <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-          </svg>
-          Resend Failed
-        </>
-      );
-    }
-    return (
-      <>
-        <svg className="h-4.5 w-4.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-        </svg>
-        Resend Ticket Email
-      </>
-    );
-  };
-
-  const getBookingStatusStyles = (status: string) => {
-    if (status === 'confirmed') return 'bg-green-500/10 text-green-400 border-green-500/30';
-    if (status === 'pending' || status === 'awaiting_payment') return 'bg-amber-500/10 text-amber-400 border-amber-500/30';
-    return 'bg-red-500/10 text-red-400 border-red-500/30';
-  };
-
-  const getButtonStyles = () => {
-    if (downloadState === 'loading') {
-      return 'bg-accent-purple/40 text-white/60 cursor-not-allowed border border-accent-purple/20';
-    }
-    if (downloadState === 'success') {
-      return 'bg-green-500/20 text-green-400 border border-green-500/40 shadow-glow-green-sm';
-    }
-    if (downloadState === 'error') {
-      return 'bg-red-500/20 text-red-400 border border-red-500/40';
-    }
-    return 'btn-gradient text-white shadow-glow-sm hover:scale-[1.02] active:scale-[0.98]';
-  };
-
-  const renderButtonContent = () => {
-    if (downloadState === 'loading') {
-      return (
-        <>
-          <svg className="animate-spin h-4.5 w-4.5 text-white/80" fill="none" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-          </svg>
-          Downloading...
-        </>
-      );
-    }
-    if (downloadState === 'success') {
-      return (
-        <>
-          <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-          </svg>
-          Downloaded PDF!
-        </>
-      );
-    }
-    if (downloadState === 'error') {
-      return (
-        <>
-          <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-          </svg>
-          Download Failed
-        </>
-      );
-    }
-    return (
-      <>
-        <svg className="h-4.5 w-4.5" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-        </svg>
-        Download Ticket PDF
-      </>
-    );
-  };
 
   const { data: result, isLoading, isFetching, error } = useQuery({
     queryKey: ['public-booking-details', queryRef],
@@ -281,17 +155,28 @@ function MyBookingContent() {
     }
   }, [isFetching, result?.booking]);
 
+  const [isAuthRequired, setIsAuthRequired] = useState(false);
+
   useEffect(() => {
     if (error) {
-      setErrorMsg(extractApiError(error).message);
+      const apiErr = extractApiError(error);
+      if (apiErr.code === 'BOOKING_VERIFICATION_REQUIRED') {
+        setIsAuthRequired(true);
+        setErrorMsg('');
+      } else {
+        setIsAuthRequired(false);
+        setErrorMsg(apiErr.message);
+      }
     } else {
       setErrorMsg('');
+      setIsAuthRequired(false);
     }
   }, [error]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
+    setIsAuthRequired(false);
     pollCountRef.current = 0;
     if (!bookingRefInput.trim()) {
       setErrorMsg('Please enter a booking reference ID.');
@@ -302,15 +187,6 @@ function MyBookingContent() {
 
   const booking = result?.booking;
   const tickets = result?.tickets || [];
-
-  const formatDate = (dateStr: Date | string) => {
-    return new Date(dateStr).toLocaleDateString('en-US', {
-      weekday: 'short',
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    });
-  };
 
   return (
     <div className="pt-28 pb-16 min-h-screen bg-background">
@@ -350,6 +226,22 @@ function MyBookingContent() {
           </div>
         )}
 
+        {isAuthRequired && (
+          <div className="glass rounded-2xl border border-accent-purple/30 p-8 text-center space-y-4 shadow-glow-sm">
+            <div className="text-3xl">🔒</div>
+            <h3 className="text-white font-bold text-lg">Verification Required</h3>
+            <p className="text-text-secondary text-sm max-w-sm mx-auto">
+              For security, viewing the booking <span className="font-mono text-white font-bold select-all">{queryRef}</span> on a new device requires a quick email verification.
+            </p>
+            <Link
+              href={`/tickets?ref=${queryRef}`}
+              className="inline-flex mt-4 px-6 py-3 btn-gradient text-white font-bold rounded-xl shadow-glow-sm transition-all hover:scale-[1.02] active:scale-[0.98]"
+            >
+              Verify Email to View Ticket
+            </Link>
+          </div>
+        )}
+
         {/* Booking Details Display */}
         {isLoading && (
           <div className="text-center py-16 text-text-muted text-xs animate-pulse">
@@ -361,68 +253,17 @@ function MyBookingContent() {
           <div className="space-y-6">
             {/* Summary Details */}
             <div className="glass rounded-3xl border border-border-subtle p-6 space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <span className="text-[10px] text-text-muted font-medium tracking-wider uppercase">Event Info</span>
-                  <h2 className="text-white font-bold text-lg">{booking.eventId ? (booking.eventId as unknown as {title: string}).title : 'Event Booking'}</h2>
-                  {booking.eventId && (
-                    <p className="text-text-muted text-xs mt-1">
-                      📅 {formatDate((booking.eventId as unknown as {startDate: string}).startDate)} · ⏰ {(booking.eventId as unknown as {showTime: string}).showTime}
-                    </p>
-                  )}
-                  {booking.eventId && (booking.eventId as unknown as {venue?: string}).venue && (
-                    <span className="text-sm opacity-80 mt-1 block">
-                      📍 {(booking.eventId as unknown as {venue: string}).venue}
-                    </span>
-                  )}
-                </div>
-                <div className="text-right flex items-center justify-end gap-2">
-                  <div>
-                    <span className="text-[10px] text-text-muted font-medium tracking-wider uppercase">Status</span>
-                    <div className={`text-xs px-2.5 py-1 rounded-full border font-bold mt-1 ${getBookingStatusStyles(booking.status)}`}>
-                      {booking.status.toUpperCase()}
-                    </div>
-                  </div>
-                  {isFetching && !isLoading && pollCountRef.current < 5 && (
-                    <div className="w-3 h-3 border-2 border-amber-500/30 border-t-amber-500 rounded-full animate-spin mt-4"></div>
-                  )}
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 pt-4 border-t border-border-subtle/40 text-xs text-text-secondary">
-                <div>
-                  <span className="text-[10px] text-text-muted uppercase block">Guest Name</span>
-                  <span className="text-white font-semibold">{booking.guestName}</span>
-                </div>
-                <div>
-                  <span className="text-[10px] text-text-muted uppercase block">Total Tickets</span>
-                  <span className="text-white font-semibold">{booking.totalTickets} Ticket(s)</span>
-                </div>
-                <div className="col-span-2 sm:col-span-1">
-                  <span className="text-[10px] text-text-muted uppercase block">Reference ID</span>
-                  <span className="text-white font-mono font-bold select-all">{booking.bookingId}</span>
-                </div>
-              </div>
+              <BookingHeaderCard booking={booking} isFetching={isFetching && !isLoading} pollCount={pollCountRef.current} />
 
               {booking.status === 'confirmed' && (
                 <div className="pt-4 border-t border-border-subtle/40 flex flex-col sm:flex-row gap-3">
-                  <button
-                    type="button"
-                    onClick={handleDownloadPDF}
-                    disabled={downloadState === 'loading'}
-                    className={`w-full sm:w-auto h-10 px-5 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all select-none ${getButtonStyles()}`}
-                  >
-                    {renderButtonContent()}
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={handleResendEmail}
-                    disabled={resendState === 'loading' || resendState === 'cooldown'}
-                    className={`w-full sm:w-auto h-10 px-5 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all select-none ${getResendButtonStyles()}`}
-                  >
-                    {renderResendButtonContent()}
-                  </button>
+                  <TicketActions
+                    downloading={downloadState === 'loading'}
+                    resending={resendState === 'loading'}
+                    cooldown={resendState === 'cooldown' ? cooldownSeconds : undefined}
+                    onDownload={handleDownloadPDF}
+                    onResend={handleResendEmail}
+                  />
                 </div>
               )}
             </div>
@@ -436,48 +277,7 @@ function MyBookingContent() {
             {booking.status === 'confirmed' ? (
               <div className="space-y-6">
                 <h3 className="text-white font-bold text-base">Your Tickets</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {tickets.map((ticket, index) => (
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: index * 0.1 }}
-                      key={ticket._id}
-                      className="glass rounded-2xl border border-border-subtle overflow-hidden flex flex-col items-center p-6 text-center space-y-4"
-                    >
-                      <div className="w-full pb-2 border-b border-border-subtle/40">
-                        <div className="text-accent-purple-light text-xs font-bold uppercase tracking-wider">
-                          {ticket.tierName} Entry
-                        </div>
-                        {ticket.seatId && (
-                          <div className="text-white font-bold text-sm mt-1">
-                            Seat: <span className="font-mono">{ticket.seatId}</span> (Row {ticket.row}, Seat {ticket.seatNumber})
-                          </div>
-                        )}
-                        <div className="text-text-muted text-[10px] mt-0.5 font-mono">
-                          ID: {ticket.ticketId}
-                        </div>
-                      </div>
-
-                      {ticket.qrCodeImage ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                          src={ticket.qrCodeImage}
-                          alt="QR Ticket Code"
-                          className="w-48 h-48 bg-white p-2 rounded-xl"
-                        />
-                      ) : (
-                        <div className="w-48 h-48 bg-white/5 rounded-xl flex items-center justify-center text-text-muted text-xs">
-                          No QR Available
-                        </div>
-                      )}
-
-                      <div className="text-[10px] text-text-muted max-w-[200px] leading-relaxed">
-                        Present this QR code at the venue entry scanner for digital validation. Do not share this code.
-                      </div>
-                    </motion.div>
-                  ))}
-                </div>
+                <EntryPassGrid tickets={tickets} />
               </div>
             ) : (
               <div className="glass rounded-2xl border border-border-subtle p-8 text-center text-text-secondary text-sm">
