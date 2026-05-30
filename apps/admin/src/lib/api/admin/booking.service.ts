@@ -126,14 +126,15 @@ export interface NormalizedBookingDetail {
 export async function adminGetBookings(params: Record<string, string | number> = {}): Promise<NormalizedBookingsResponse> {
   try {
     const qs = new URLSearchParams(Object.entries(params).map(([k, v]) => [k, String(v)]));
-    const { data } = await adminApiClient.get<{ data: AdminBooking[]; pagination: { page: number; limit: number; total: number; totalPages: number } }>(`/admin/bookings?${qs}`);
+    const { data } = await adminApiClient.get<any>(`/admin/bookings?${qs}`);
+    const paginationSource = data?.data?.pagination || data?.pagination;
     return {
-      items: Array.isArray(data?.data) ? data.data : (data?.data && Object.values(data.data).find(v => Array.isArray(v)) || []),
+      items: Array.isArray(data?.data) ? data.data : (data?.data && Object.values(data.data).find((v: any) => Array.isArray(v)) || []),
       pagination: {
-        page: data?.pagination?.page ?? 1,
-        limit: data?.pagination?.limit ?? 15,
-        total: data?.pagination?.total ?? 0,
-        totalPages: data?.pagination?.totalPages ?? 1,
+        page: paginationSource?.page ?? 1,
+        limit: paginationSource?.limit ?? 15,
+        total: paginationSource?.total ?? 0,
+        totalPages: paginationSource?.totalPages ?? 1,
       },
     };
   } catch (error) {
@@ -227,14 +228,15 @@ export interface NormalizedRefundsResponse {
 export async function adminGetRefunds(params: Record<string, string> = {}): Promise<NormalizedRefundsResponse> {
   try {
     const qs = new URLSearchParams(params);
-    const { data } = await adminApiClient.get<{ data: AdminRefund[]; pagination: { page: number; limit: number; total: number; totalPages: number } }>(`/admin/refunds?${qs}`);
+    const { data } = await adminApiClient.get<any>(`/admin/refunds?${qs}`);
+    const paginationSource = data?.data?.pagination || data?.pagination;
     return {
-      items: Array.isArray(data?.data) ? data.data : (data?.data && Object.values(data.data).find(v => Array.isArray(v)) || []),
+      items: Array.isArray(data?.data) ? data.data : (data?.data && Object.values(data.data).find((v: any) => Array.isArray(v)) || []),
       pagination: {
-        page: data?.pagination?.page ?? 1,
-        limit: data?.pagination?.limit ?? 15,
-        total: data?.pagination?.total ?? 0,
-        totalPages: data?.pagination?.totalPages ?? 1,
+        page: paginationSource?.page ?? 1,
+        limit: paginationSource?.limit ?? 15,
+        total: paginationSource?.total ?? 0,
+        totalPages: paginationSource?.totalPages ?? 1,
       },
     };
   } catch (error) {
