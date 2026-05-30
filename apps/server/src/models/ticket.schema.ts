@@ -38,5 +38,6 @@ const ticketSchema = new Schema<ITicket>(
 
 ticketSchema.index({ bookingId: 1, scannedAt: 1 });
 ticketSchema.index({ eventId: 1, scannedAt: 1 });
+ticketSchema.index({ scannedAt: 1 });
 
 export const Ticket = model<ITicket>('Ticket', ticketSchema);

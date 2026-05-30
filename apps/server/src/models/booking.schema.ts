@@ -128,6 +128,7 @@ bookingSchema.index({ guestEmail: 1, createdAt: -1 });
 bookingSchema.index({ guestPhone: 1, createdAt: -1 });
 bookingSchema.index({ eventId: 1, status: 1, totalTickets: 1 });
 bookingSchema.index({ userId: 1, createdAt: -1 });
+bookingSchema.index({ status: 1, createdAt: -1 });
 
 bookingSchema.pre('validate', function (next) {
   if (!this.bookingId) {
