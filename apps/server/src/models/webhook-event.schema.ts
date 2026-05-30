@@ -38,4 +38,7 @@ const webhookEventSchema = new Schema<IWebhookEvent>(
   { timestamps: false }
 );
 
+webhookEventSchema.index({ status: 1, receivedAt: -1 });
+webhookEventSchema.index({ provider: 1, receivedAt: -1 });
+
 export const WebhookEvent = model<IWebhookEvent>('WebhookEvent', webhookEventSchema);

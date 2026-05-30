@@ -73,9 +73,12 @@ import adminAnalyticsRoutes from './admin/analytics.routes';
 import adminCategoryRoutes from './admin/category.routes';
 import adminTierRoutes from './admin/tier.routes';
 import adminTicketProfileRoutes from './admin/ticket-profile.routes';
+import adminWebhookRoutes from './admin/webhook.routes';
+
 router.use('/admin/coupons', adminCouponRoutes);
 router.use('/admin/analytics', adminAnalyticsRoutes);
 router.use('/admin/diagnostics', adminDiagnosticsRoutes);
+router.use('/admin/webhooks', adminWebhookRoutes);
 router.use('/admin/categories', adminCategoryRoutes);
 router.use('/admin/tiers', adminTierRoutes);
 router.use('/admin/ticket-profiles', adminTicketProfileRoutes);
