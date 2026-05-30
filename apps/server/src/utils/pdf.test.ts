@@ -10,12 +10,20 @@ vi.mock('../models/ticket.schema', () => ({
   },
 }));
 
+vi.mock('../utils/logger', () => ({
+  logger: {
+    error: vi.fn(),
+    info: vi.fn(),
+    warn: vi.fn(),
+  },
+}));
+
 describe('PDF Generation Utility', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it('should generate a fallback PDF if booking has no tickets', async () => {
+  it('should throw an error and log if booking has no tickets', async () => {
     const mockBooking = {
       _id: 'booking123',
       bookingId: 'MAD-2026-ABCDE',
@@ -25,15 +33,17 @@ describe('PDF Generation Utility', () => {
       title: 'Neon Music Festival',
     };
 
-    vi.mocked(Ticket.find).mockResolvedValue([]);
-    const qrcodeSpy = vi.spyOn(qrcode, 'toBuffer');
+    const mockSort = vi.fn().mockResolvedValue([]);
+    vi.mocked(Ticket.find).mockReturnValue({
+      sort: mockSort,
+    } as any);
 
-    const pdfBuffer = await generateTicketPDF(mockBooking, mockEvent);
+    await expect(generateTicketPDF(mockBooking, mockEvent)).rejects.toThrow(
+      'No tickets found for booking: MAD-2026-ABCDE'
+    );
 
     expect(Ticket.find).toHaveBeenCalledWith({ bookingId: mockBooking._id });
-    expect(pdfBuffer).toBeInstanceOf(Buffer);
-    expect(pdfBuffer.length).toBeGreaterThan(0);
-    expect(qrcodeSpy).not.toHaveBeenCalled();
+    expect(mockSort).toHaveBeenCalledWith({ createdAt: 1 });
   });
 
   it('should generate multi-page PDF with unique QR codes for each ticket', async () => {
@@ -50,12 +60,17 @@ describe('PDF Generation Utility', () => {
       { ticketId: 'TKT-2', qrCode: undefined, tierName: 'General' }, // fallback check
     ];
 
-    vi.mocked(Ticket.find).mockResolvedValue(mockTickets as any);
+    const mockSort = vi.fn().mockResolvedValue(mockTickets);
+    vi.mocked(Ticket.find).mockReturnValue({
+      sort: mockSort,
+    } as any);
+
     const qrcodeSpy = vi.spyOn(qrcode, 'toBuffer');
 
     const pdfBuffer = await generateTicketPDF(mockBooking, mockEvent);
 
     expect(Ticket.find).toHaveBeenCalledWith({ bookingId: mockBooking._id });
+    expect(mockSort).toHaveBeenCalledWith({ createdAt: 1 });
     expect(qrcodeSpy).toHaveBeenNthCalledWith(1, 'QR-1', expect.any(Object));
     expect(qrcodeSpy).toHaveBeenNthCalledWith(2, 'TKT-2', expect.any(Object)); // verifies fallback
     expect(pdfBuffer).toBeInstanceOf(Buffer);

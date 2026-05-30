@@ -1,10 +1,16 @@
 import PDFDocument from 'pdfkit';
 import qrcode from 'qrcode';
 import { Ticket } from '../models/ticket.schema';
+import { logger } from './logger';
 
 export async function generateTicketPDF(booking: any, event: any): Promise<Buffer> {
-  // 1. Fetch tickets associated with this booking
-  const tickets = await Ticket.find({ bookingId: booking._id });
+  // 1. Fetch tickets associated with this booking, ordered deterministically
+  const tickets = await Ticket.find({ bookingId: booking._id }).sort({ createdAt: 1 });
+
+  if (tickets.length === 0) {
+    logger.error({ bookingId: booking._id }, 'No tickets found for booking during PDF generation');
+    throw new Error(`No tickets found for booking: ${booking.bookingId}`);
+  }
 
   // 2. Generate QR PNG buffers in parallel
   const qrPromises = tickets.map((t) =>
@@ -20,17 +26,6 @@ export async function generateTicketPDF(booking: any, event: any): Promise<Buffe
     doc.on('end', () => resolve(Buffer.concat(chunks)));
     doc.on('error', reject);
 
-    if (tickets.length === 0) {
-      // Fallback for bookings with no tickets
-      doc.fontSize(20).text('MAD Entertrainment Ticket');
-      doc.moveDown();
-      doc.fontSize(12).text(`Booking: ${booking.bookingId}`);
-      doc.text(`Event: ${event?.title ?? 'MAD Event'}`);
-      doc.text(`Guest: ${booking.guestName ?? 'Guest'}`);
-      doc.text('No tickets associated with this booking.');
-      doc.end();
-      return;
-    }
 
     // 3. Render one page per ticket
     tickets.forEach((ticket, idx) => {
