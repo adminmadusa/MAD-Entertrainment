@@ -36,11 +36,10 @@ export class AuthService {
     }
 
     const trimmedEmail = email.trim().toLowerCase();
-    logger.info({ email: trimmedEmail }, "Magic link requested");
+    logger.info({ email: trimmedEmail }, "OTP passcode requested");
 
-    // 1. Generate unique 6-digit OTP and secure random token
+    // 1. Generate unique 6-digit OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const token = crypto.randomBytes(32).toString('hex');
     const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes TTL
 
     // 2. Hash the OTP for secure database storage
@@ -50,29 +49,24 @@ export class AuthService {
     await MagicTokenModel.findOneAndDelete({ email: trimmedEmail });
     await MagicTokenModel.create({
       email: trimmedEmail,
-      token,
       otp: otpHash, // Plaintext OTP is NEVER stored in the database!
       firstName: registrationData?.firstName,
       lastName: registrationData?.lastName,
       mobileNumber: registrationData?.mobileNumber,
       expiresAt,
     });
-    logger.info({ email: trimmedEmail, tokenId: token }, "Magic token created");
+    logger.info({ email: trimmedEmail }, "OTP login session created");
 
-    // 4. Construct Verification Link
-    const magicLinkUrl = `${origin}/login?token=${token}`;
-
-    // 5. Compile HTML Template
+    // 4. Compile HTML Template
     const html = await magicLinkHtml({
       email: trimmedEmail,
-      magicLinkUrl,
       otpCode: otp, // Plaintext OTP is sent securely ONLY in the email!
     });
 
     const jobId = `magic-${trimmedEmail}-${Date.now()}`;
     logger.info({ email: trimmedEmail, jobId }, "Email job queued");
 
-    // 6. Enqueue Email Dispatch Job with exponential BullMQ retries
+    // 5. Enqueue Email Dispatch Job with exponential BullMQ retries
     await QueueService.enqueue(getQueueName('notification-queue'), 'email-dispatch', {
       to: trimmedEmail,
       subject: 'Sign In to MAD Entertainment',
@@ -80,39 +74,32 @@ export class AuthService {
       notificationType: NotificationType.OTP,
     }, jobId);
 
-    logger.info({ email: trimmedEmail }, 'Magic Link & OTP email queued successfully.');
+    logger.info({ email: trimmedEmail }, 'OTP verification email queued successfully.');
   }
 
   /**
-   * Verifies the Magic Link token or OTP code, logs the user in, and sets up session.
+   * Verifies the OTP code, logs the user in, and sets up session.
    */
   static async verifyMagicLinkOrOTP(
-    tokenOrOtp: string,
-    email?: string
+    otp: string,
+    email: string
   ): Promise<{ user: IUser; accessToken: string; refreshToken: string }> {
-    if (!tokenOrOtp) {
-      throw AppError.badRequest('Verification code or link token is required');
+    if (!otp || !email) {
+      throw AppError.badRequest('Verification code and email are required');
     }
 
-    let magicRecord = null;
+    // OTP Verification Mode
+    const trimmedEmail = email.trim().toLowerCase();
+    const cleanOtp = otp.trim().replace(/\s/g, '');
+    const otpHash = crypto.createHash('sha256').update(cleanOtp).digest('hex');
 
-    if (email) {
-      // OTP Verification Mode
-      const trimmedEmail = email.trim().toLowerCase();
-      const cleanOtp = tokenOrOtp.trim().replace(/\s/g, '');
-      const otpHash = crypto.createHash('sha256').update(cleanOtp).digest('hex');
-
-      magicRecord = await MagicTokenModel.findOne({
-        email: trimmedEmail,
-        otp: otpHash, // Match using the secure SHA-256 hash
-      });
-    } else {
-      // Magic Link Verification Mode
-      magicRecord = await MagicTokenModel.findOne({ token: tokenOrOtp });
-    }
+    const magicRecord = await MagicTokenModel.findOne({
+      email: trimmedEmail,
+      otp: otpHash, // Match using the secure SHA-256 hash
+    });
 
     if (!magicRecord || magicRecord.expiresAt < new Date()) {
-      throw AppError.unauthorized('Invalid or expired login link/passcode');
+      throw AppError.unauthorized('Invalid or expired login passcode');
     }
 
     const userEmail = magicRecord.email;

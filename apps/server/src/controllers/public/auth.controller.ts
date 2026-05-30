@@ -44,33 +44,16 @@ export class AuthController {
   }
 
   /**
-   * Handles GET /auth/verify by redirecting client clicks to the frontend verification flow.
-   */
-  static async redirectMagicLink(req: Request, res: Response): Promise<void> {
-    const { token } = req.query;
-    if (!token || typeof token !== 'string') {
-      throw AppError.badRequest('Verification token is required');
-    }
-
-    const env = getEnv();
-    const frontendUrl = env.ALLOWED_ORIGINS.split(',')[0].trim();
-
-    // Redirect user directly to the frontend's verification landing page
-    res.redirect(`${frontendUrl}/login?token=${token}`);
-  }
-
-  /**
-   * Handles POST /auth/verify for verifying magic link tokens or OTP codes.
+   * Handles POST /auth/verify for verifying OTP codes.
    */
   static async verifyMagicLinkOrOTP(req: Request, res: Response): Promise<void> {
-    const { token, otp, email } = req.body;
+    const { otp, email } = req.body;
 
-    const tokenOrOtp = token || otp;
-    if (!tokenOrOtp) {
-      throw AppError.badRequest('Verification token or passcode is required');
+    if (!otp || !email) {
+      throw AppError.badRequest('Email and passcode are required');
     }
 
-    const result = await AuthService.verifyMagicLinkOrOTP(tokenOrOtp, email);
+    const result = await AuthService.verifyMagicLinkOrOTP(otp, email);
 
     // Set secure HTTP-only refresh token cookie (SameSite None for cross-site in production)
     const isProd = getEnv().NODE_ENV === 'production';

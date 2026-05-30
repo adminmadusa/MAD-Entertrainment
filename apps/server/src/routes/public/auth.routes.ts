@@ -14,9 +14,6 @@ router.post('/check-email', authLimiter, AuthController.checkEmail);
 // Request Magic Link / OTP Email (protected by auth-specific rate limiter to prevent email queue spam)
 router.post('/magic-link', authLimiter, AuthController.requestMagicLink);
 
-// Verify Magic Link Click (GET redirect to web frontend)
-router.get('/verify', AuthController.redirectMagicLink);
-
 // Verify Magic Link token or OTP input (protected by auth-specific rate limiter to block brute-force codes)
 router.post('/verify', authLimiter, AuthController.verifyMagicLinkOrOTP);
 
