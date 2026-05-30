@@ -279,3 +279,20 @@ export async function adminCorrectBookingEmail(id: string, newEmail: string, rea
 export async function adminResendBookingTickets(id: string): Promise<void> {
   await adminApiClient.post(`/admin/bookings/${id}/resend`);
 }
+
+export interface AdminBookingsSummary {
+  totalBookings: number;
+  totalTickets: number;
+  revenue: number;
+  confirmed: number;
+  pending: number;
+  cancelled: number;
+  checkedIn: number;
+}
+
+export async function adminGetBookingsSummary(eventId?: string): Promise<AdminBookingsSummary> {
+  const qs = new URLSearchParams(eventId ? { eventId } : {});
+  const { data } = await adminApiClient.get<{ data: AdminBookingsSummary }>(`/admin/bookings/summary?${qs}`);
+  return data.data;
+}
+
