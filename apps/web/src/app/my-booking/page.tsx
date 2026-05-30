@@ -6,7 +6,7 @@ import { useSearchParams } from 'next/navigation';
 import { Suspense, useState, useEffect } from 'react';
 
 import { extractApiError } from '@/lib/api/client';
-import { publicGetBookingDetails } from '@/lib/api/public.service';
+import { publicGetBookingDetails, publicDownloadTicketPDF } from '@/lib/api/public.service';
 import { STORAGE_VERSION } from '@mad/shared';
 
 
@@ -17,6 +17,87 @@ function MyBookingContent() {
   const [bookingRefInput, setBookingRefInput] = useState(initialRef);
   const [queryRef, setQueryRef] = useState(initialRef);
   const [errorMsg, setErrorMsg] = useState('');
+  const [downloadState, setDownloadState] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+
+  const handleDownloadPDF = async () => {
+    if (!booking) return;
+    if (downloadState === 'loading') return;
+    setDownloadState('loading');
+    setErrorMsg('');
+
+    try {
+      const blob = await publicDownloadTicketPDF(booking.bookingId);
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `MAD_Ticket_${booking.bookingId}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+      setDownloadState('success');
+      setTimeout(() => setDownloadState('idle'), 2500);
+    } catch (err) {
+      setDownloadState('error');
+      setErrorMsg('Failed to download PDF ticket. Please try again.');
+      setTimeout(() => setDownloadState('idle'), 5000);
+    }
+  };
+
+  const getButtonStyles = () => {
+    if (downloadState === 'loading') {
+      return 'bg-accent-purple/40 text-white/60 cursor-not-allowed border border-accent-purple/20';
+    }
+    if (downloadState === 'success') {
+      return 'bg-green-500/20 text-green-400 border border-green-500/40 shadow-glow-green-sm';
+    }
+    if (downloadState === 'error') {
+      return 'bg-red-500/20 text-red-400 border border-red-500/40';
+    }
+    return 'btn-gradient text-white shadow-glow-sm hover:scale-[1.02] active:scale-[0.98]';
+  };
+
+  const renderButtonContent = () => {
+    if (downloadState === 'loading') {
+      return (
+        <>
+          <svg className="animate-spin h-4.5 w-4.5 text-white/80" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+          </svg>
+          Downloading...
+        </>
+      );
+    }
+    if (downloadState === 'success') {
+      return (
+        <>
+          <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+          </svg>
+          Downloaded PDF!
+        </>
+      );
+    }
+    if (downloadState === 'error') {
+      return (
+        <>
+          <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+          Download Failed
+        </>
+      );
+    }
+    return (
+      <>
+        <svg className="h-4.5 w-4.5" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+        </svg>
+        Download Ticket PDF
+      </>
+    );
+  };
 
   const { data: result, isLoading, error } = useQuery({
     queryKey: ['public-booking-details', queryRef],
@@ -152,6 +233,19 @@ function MyBookingContent() {
                   <span className="text-white font-mono font-bold select-all">{booking.bookingId}</span>
                 </div>
               </div>
+
+              {booking.status === 'confirmed' && (
+                <div className="pt-4 border-t border-border-subtle/40 flex flex-col sm:flex-row gap-3">
+                  <button
+                    type="button"
+                    onClick={handleDownloadPDF}
+                    disabled={downloadState === 'loading'}
+                    className={`w-full sm:w-auto h-10 px-5 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all select-none ${getButtonStyles()}`}
+                  >
+                    {renderButtonContent()}
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* Tickets / QR List */}
