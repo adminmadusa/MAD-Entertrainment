@@ -1,13 +1,9 @@
 'use client';
 
-import { useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
 import { AuthForm } from '@/components/auth/AuthForm';
 
 function LoginPageContent() {
-  const searchParams = useSearchParams();
-  const queryToken = searchParams.get('token');
-
   return (
     <div className="min-h-screen pt-28 pb-16 flex items-center justify-center relative overflow-hidden bg-background">
       {/* Decorative Glow Elements */}
@@ -25,7 +21,7 @@ function LoginPageContent() {
             </p>
           </div>
 
-          <AuthForm mode="login" initialToken={queryToken} />
+          <AuthForm mode="login" />
         </div>
       </div>
     </div>

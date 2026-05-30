@@ -52,10 +52,9 @@ export interface AuthFormProps {
   onSuccess?: (data: AuthResponse) => void;
   onGuestContinue?: () => void;
   className?: string;
-  initialToken?: string | null;
 }
 
-export function AuthForm({ mode, onSuccess, onGuestContinue, className = '', initialToken }: AuthFormProps) {
+export function AuthForm({ mode, onSuccess, onGuestContinue, className = '' }: AuthFormProps) {
   const { login } = useAuth();
 
   // Core Authentication States
@@ -134,13 +133,12 @@ export function AuthForm({ mode, onSuccess, onGuestContinue, className = '', ini
     },
   });
 
-  // Verify OTP / Clicked URL Link Token
+  // Verify OTP Code
   const verifyMutation = useMutation<AuthResponse, Error, string>({
-    mutationFn: (tokenOrOtp: string) =>
+    mutationFn: (otpCode: string) =>
       publicVerifyMagicLinkOrOTP({
-        token: tokenOrOtp.length > 6 ? tokenOrOtp : undefined,
-        otp: tokenOrOtp.length === 6 ? tokenOrOtp : undefined,
-        email: tokenOrOtp.length === 6 ? email : undefined,
+        otp: otpCode,
+        email,
       }),
     onSuccess: (data) => {
       login(data.token, data.user);
@@ -236,12 +234,7 @@ export function AuthForm({ mode, onSuccess, onGuestContinue, className = '', ini
     };
   }, [step, initializeGoogleSignIn]);
 
-  useEffect(() => {
-    if (initialToken) {
-      setInfoMessage('Verifying sign-in...');
-      verifyMutation.mutate(initialToken);
-    }
-  }, [initialToken, verifyMutation]);
+
 
   // Form Submissions
   const handleSubmitEmail = (e: React.FormEvent) => {
