@@ -55,3 +55,35 @@ export async function adminGetReservations(status?: string): Promise<Reservation
   const { data } = await adminApiClient.get<{ data: ReservationDiagnosticsRow[] }>(`/admin/diagnostics/reservations?${qs}`);
   return data.data;
 }
+
+export interface WebhookDiagnosticsRow {
+  _id: string;
+  eventId: string;
+  provider: string;
+  eventType?: string;
+  status: string;
+  errorMessage?: string;
+  receivedAt: string;
+  bookingId?: string | { bookingId: string };
+}
+
+export interface WebhookPaginatedResponse {
+  data: WebhookDiagnosticsRow[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+}
+
+export async function adminGetWebhooks(params: { page?: number; limit?: number; provider?: string; status?: string }): Promise<WebhookPaginatedResponse> {
+  const qs = new URLSearchParams();
+  if (params.page) qs.set('page', String(params.page));
+  if (params.limit) qs.set('limit', String(params.limit));
+  if (params.provider) qs.set('provider', params.provider);
+  if (params.status) qs.set('status', params.status);
+  
+  const { data } = await adminApiClient.get<WebhookPaginatedResponse>(`/admin/webhooks?${qs}`);
+  return data;
+}
