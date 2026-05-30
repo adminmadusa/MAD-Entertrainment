@@ -155,17 +155,28 @@ function MyBookingContent() {
     }
   }, [isFetching, result?.booking]);
 
+  const [isAuthRequired, setIsAuthRequired] = useState(false);
+
   useEffect(() => {
     if (error) {
-      setErrorMsg(extractApiError(error).message);
+      const apiErr = extractApiError(error);
+      if (apiErr.code === 'BOOKING_VERIFICATION_REQUIRED') {
+        setIsAuthRequired(true);
+        setErrorMsg('');
+      } else {
+        setIsAuthRequired(false);
+        setErrorMsg(apiErr.message);
+      }
     } else {
       setErrorMsg('');
+      setIsAuthRequired(false);
     }
   }, [error]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
+    setIsAuthRequired(false);
     pollCountRef.current = 0;
     if (!bookingRefInput.trim()) {
       setErrorMsg('Please enter a booking reference ID.');
@@ -212,6 +223,22 @@ function MyBookingContent() {
         {errorMsg && (
           <div className="p-4 bg-error/10 border border-error/30 rounded-xl text-sm text-red-400 text-center">
             {errorMsg}
+          </div>
+        )}
+
+        {isAuthRequired && (
+          <div className="glass rounded-2xl border border-accent-purple/30 p-8 text-center space-y-4 shadow-glow-sm">
+            <div className="text-3xl">🔒</div>
+            <h3 className="text-white font-bold text-lg">Verification Required</h3>
+            <p className="text-text-secondary text-sm max-w-sm mx-auto">
+              For security, viewing the booking <span className="font-mono text-white font-bold select-all">{queryRef}</span> on a new device requires a quick email verification.
+            </p>
+            <Link
+              href={`/tickets?ref=${queryRef}`}
+              className="inline-flex mt-4 px-6 py-3 btn-gradient text-white font-bold rounded-xl shadow-glow-sm transition-all hover:scale-[1.02] active:scale-[0.98]"
+            >
+              Verify Email to View Ticket
+            </Link>
           </div>
         )}
 

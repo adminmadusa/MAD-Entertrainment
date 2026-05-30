@@ -141,7 +141,9 @@ export async function getBooking(
 
     // Access denied
     if (!isUserOwner && !isGuestOwner) {
-      throw AppError.forbidden('You do not have access to this booking');
+      const err = AppError.forbidden('Email verification required');
+      err.code = 'BOOKING_VERIFICATION_REQUIRED';
+      throw err;
     }
 
     sendSuccess(
