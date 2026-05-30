@@ -3,10 +3,14 @@
 import { QUERY_KEYS } from '@mad/shared';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+
 
 import { adminGetConsistencyReport, adminGetReservations, adminRepairConsistency } from '@/lib/api/admin/diagnostics.service';
 
 export default function DiagnosticsPage() {
+  const pathname = usePathname();
   const queryClient = useQueryClient();
   const [status, setStatus] = useState('');
 
@@ -55,6 +59,40 @@ export default function DiagnosticsPage() {
         >
           {repairMutation.isPending ? 'Repairing...' : 'Run Repair'}
         </button>
+      </div>
+
+      {/* Tabs */}
+      <div className="flex border-b border-border-subtle">
+        <Link
+          href="/diagnostics"
+          className={`px-6 py-3 font-semibold text-sm transition-all border-b-2 -mb-[2px] ${
+            pathname === '/diagnostics'
+              ? 'border-accent-purple text-accent-purple-light'
+              : 'border-transparent text-text-secondary hover:text-text-primary'
+          }`}
+        >
+          Consistency
+        </Link>
+        <Link
+          href="/diagnostics/webhooks"
+          className={`px-6 py-3 font-semibold text-sm transition-all border-b-2 -mb-[2px] ${
+            pathname.startsWith('/diagnostics/webhooks')
+              ? 'border-accent-purple text-accent-purple-light'
+              : 'border-transparent text-text-secondary hover:text-text-primary'
+          }`}
+        >
+          Webhooks
+        </Link>
+        <Link
+          href="/diagnostics/emails"
+          className={`px-6 py-3 font-semibold text-sm transition-all border-b-2 -mb-[2px] ${
+            pathname.startsWith('/diagnostics/emails')
+              ? 'border-accent-purple text-accent-purple-light'
+              : 'border-transparent text-text-secondary hover:text-text-primary'
+          }`}
+        >
+          Email Logs
+        </Link>
       </div>
 
       <div className={`rounded-2xl border p-4 ${hasDrift ? 'border-yellow-500/30 bg-yellow-500/10' : 'border-green-500/30 bg-green-500/10'}`}>

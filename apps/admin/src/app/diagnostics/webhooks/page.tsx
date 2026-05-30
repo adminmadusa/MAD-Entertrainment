@@ -2,12 +2,14 @@
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 import { adminGetWebhooks } from '@/lib/api/admin/diagnostics.service';
 import ErrorState from '@/components/states/ErrorState';
 import { QUERY_KEYS } from '@mad/shared';
 
 export default function WebhookDiagnosticsPage() {
+  const pathname = usePathname();
   const [providerFilter, setProviderFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [page, setPage] = useState(1);
@@ -137,6 +139,40 @@ export default function WebhookDiagnosticsPage() {
             <option value="ignored">Ignored</option>
           </select>
         </div>
+      </div>
+
+      {/* Tabs */}
+      <div className="flex border-b border-border-subtle mb-6">
+        <Link
+          href="/diagnostics"
+          className={`px-6 py-3 font-semibold text-sm transition-all border-b-2 -mb-[2px] ${
+            pathname === '/diagnostics'
+              ? 'border-accent-purple text-accent-purple-light'
+              : 'border-transparent text-text-secondary hover:text-text-primary'
+          }`}
+        >
+          Consistency
+        </Link>
+        <Link
+          href="/diagnostics/webhooks"
+          className={`px-6 py-3 font-semibold text-sm transition-all border-b-2 -mb-[2px] ${
+            pathname.startsWith('/diagnostics/webhooks')
+              ? 'border-accent-purple text-accent-purple-light'
+              : 'border-transparent text-text-secondary hover:text-text-primary'
+          }`}
+        >
+          Webhooks
+        </Link>
+        <Link
+          href="/diagnostics/emails"
+          className={`px-6 py-3 font-semibold text-sm transition-all border-b-2 -mb-[2px] ${
+            pathname.startsWith('/diagnostics/emails')
+              ? 'border-accent-purple text-accent-purple-light'
+              : 'border-transparent text-text-secondary hover:text-text-primary'
+          }`}
+        >
+          Email Logs
+        </Link>
       </div>
 
       {/* Table */}

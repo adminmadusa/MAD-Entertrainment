@@ -55,6 +55,7 @@ export const QUERY_KEYS = {
       consistency: () => ['admin-diagnostics-consistency'] as const,
       reservations: (status?: string) => compact(['admin-diagnostics-reservations', status]) as readonly QueryKeyPart[],
       webhooks: (filters: Record<string, unknown> = {}) => ['admin-diagnostics-webhooks', filters] as const,
+      emails: (filters: Record<string, unknown> = {}) => ['admin-diagnostics-emails', filters] as const,
     },
     coupons: {
       all: ['admin-coupons'] as const,
