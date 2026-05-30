@@ -2,7 +2,6 @@ import { Schema, model, Document } from 'mongoose';
 
 export interface IMagicToken extends Document {
   email: string;
-  token: string;
   otp: string;
   firstName?: string;
   lastName?: string;
@@ -19,12 +18,6 @@ const magicTokenSchema = new Schema<IMagicToken>(
       required: true,
       trim: true,
       lowercase: true,
-      index: true,
-    },
-    token: {
-      type: String,
-      required: true,
-      unique: true,
       index: true,
     },
     otp: {
