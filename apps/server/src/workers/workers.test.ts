@@ -179,7 +179,7 @@ describe('Asynchronous Workers', () => {
   });
 
   describe('Email Worker (processEmailDispatch)', () => {
-    it('should decode base64 attachments, send SMTP email, and log notification in DB', async () => {
+    it('should decode base64 attachments and send SMTP email', async () => {
       const mockBookingId = new Types.ObjectId().toString();
       const mockEventId = new Types.ObjectId().toString();
 
@@ -212,14 +212,6 @@ describe('Asynchronous Workers', () => {
           },
         ],
       });
-
-      expect(Notification.create).toHaveBeenCalledWith(
-        expect.objectContaining({
-          channel: 'email',
-          recipient: 'recipient@example.com',
-          isSent: true,
-        })
-      );
     });
   });
 });

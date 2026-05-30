@@ -38,41 +38,46 @@ export async function processEmailDispatch(
     attachments: parsedAttachments,
   });
 
-  // 3. Save Notification confirmation document to MongoDB
-  await Notification.create({
-    type: notificationType ?? NotificationType.BOOKING_CONFIRMED,
-    bookingId: bookingId ? new Types.ObjectId(bookingId) : undefined,
-    eventId: eventId ? new Types.ObjectId(eventId) : undefined,
-    channel: 'email',
-    recipient: to,
-    subject: subject,
-    body: notificationType === NotificationType.OTP 
-      ? 'Magic Link login email with OTP fallback dispatched asynchronously.'
-      : 'Email dispatched asynchronously with PDF ticket attached.',
-    isSent: true,
-    retryCount: 0,
-  });
-
-  logger.info({ to, bookingId, type: notificationType }, 'Email successfully dispatched and logged in database.');
+  // Notification DB log is handled at the handleJobExecution wrapper level.
+  logger.info({ to, bookingId, type: notificationType }, 'Email successfully dispatched.');
 }
 
-async function handleJobExecution(jobId: string, data: any): Promise<void> {
+async function handleJobExecution(jobId: string, data: any, attemptsMade: number): Promise<void> {
   const { to: email } = data;
-  logger.info({ jobId, email }, "Email worker started");
-  await Sentry.startSpan(
-    {
-      op: 'queue.process',
-      name: `worker:${QUEUE_NAME}`,
-    },
-    async () => {
-      const { to, subject, html, attachments, bookingId, eventId, notificationType } = data;
-      if (!to || !subject || !html) {
-        throw new Error('Missing parameters in email dispatch payload');
-      }
+  logger.info({ jobId, email, attemptsMade }, "Email worker started");
 
-      await processEmailDispatch(to, subject, html, attachments, bookingId, eventId, notificationType);
-    }
-  );
+  await Notification.updateOne({ jobId }, { $set: { status: 'processing' } });
+
+  try {
+    await Sentry.startSpan(
+      {
+        op: 'queue.process',
+        name: `worker:${QUEUE_NAME}`,
+      },
+      async () => {
+        const { to, subject, html, attachments, bookingId, eventId, notificationType } = data;
+        if (!to || !subject || !html) {
+          throw new Error('Missing parameters in email dispatch payload');
+        }
+
+        await processEmailDispatch(to, subject, html, attachments, bookingId, eventId, notificationType);
+      }
+    );
+    
+    await Notification.updateOne({ jobId }, { 
+      $set: { status: 'sent', processedAt: new Date(), isSent: true } 
+    });
+  } catch (err: any) {
+    await Notification.updateOne({ jobId }, { 
+      $set: { 
+        status: 'failed', 
+        errorMessage: err.message, 
+        processedAt: new Date(),
+        retryCount: attemptsMade
+      }
+    });
+    throw err;
+  }
 }
 
 // ─── BullMQ Worker Setup ─────────────────────────────────────
@@ -83,7 +88,7 @@ export function startEmailWorker(): void {
   localFallbackEmitter.on(QUEUE_NAME, async (job) => {
     logger.info({ jobId: job.id }, 'Processing email dispatch job via local EventEmitter fallback');
     try {
-      await handleJobExecution(job.id, job.data);
+      await handleJobExecution(job.id, job.data, 0);
     } catch (err) {
       logger.error({ err, jobId: job.id }, 'Local email dispatch job fallback execution failed');
     }
@@ -105,8 +110,8 @@ export function startEmailWorker(): void {
     worker = new Worker(
       QUEUE_NAME,
       async (job: Job) => {
-        logger.info({ jobId: job.id }, 'Processing email dispatch job via BullMQ');
-        await handleJobExecution(job.id || 'unknown', job.data);
+        logger.info({ jobId: job.id, attemptsMade: job.attemptsMade }, 'Processing email dispatch job via BullMQ');
+        await handleJobExecution(job.id || 'unknown', job.data, job.attemptsMade);
       },
       options
     );

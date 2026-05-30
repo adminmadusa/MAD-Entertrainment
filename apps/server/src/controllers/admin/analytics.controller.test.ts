@@ -30,6 +30,14 @@ vi.mock('../../models/ticket.schema', () => ({
   },
 }));
 
+vi.mock('../../services/cache.service', () => ({
+  CacheService: {
+    get: vi.fn(),
+    set: vi.fn(),
+    del: vi.fn(),
+  },
+}));
+
 const mockRequest = (query = {}, params = {}) => {
   return {
     query,

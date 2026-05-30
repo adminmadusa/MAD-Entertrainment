@@ -1083,33 +1083,53 @@ export class PaymentService {
       // Generate the PDF buffer
       const pdfBuffer = await generateTicketPDF(booking, event);
 
-      // Send the email with the PDF attachment
-      if (booking.guestEmail) {
-        await sendEmail({
-          to: booking.guestEmail,
-          subject: `Your Ticket for ${event?.title || 'MAD Event'} [${booking.bookingId}]`,
-          html: emailBody,
-          attachments: [
-            {
-              filename: `MAD_Ticket_${booking.bookingId}.pdf`,
-              content: pdfBuffer,
-              contentType: 'application/pdf',
-            },
-          ],
-        });
-      }
+      const jobId = `email:dispatch:${booking._id}`;
 
-      await Notification.create({
+      // Intent to send synchronously
+      const notification = await Notification.create({
+        jobId,
+        status: 'processing',
+        queuedAt: new Date(),
+        processedAt: new Date(),
         type: NotificationType.BOOKING_CONFIRMED,
         bookingId: booking._id,
         eventId: booking.eventId,
         channel: 'email',
         recipient: booking.guestEmail,
-        subject: `Booking Confirmed: ${booking.bookingId}`,
-        body: 'Email dispatched with PDF ticket attached.',
-        isSent: true,
+        subject: `Your Ticket for ${event?.title || 'MAD Event'} [${booking.bookingId}]`,
+        isSent: false,
         retryCount: 0,
       });
+
+      if (booking.guestEmail) {
+        try {
+          // Send the email synchronously with the PDF attachment
+          await sendEmail({
+            to: booking.guestEmail,
+            subject: `Your Ticket for ${event?.title || 'MAD Event'} [${booking.bookingId}]`,
+            html: emailBody,
+            attachments: [
+              {
+                filename: `MAD_Ticket_${booking.bookingId}.pdf`,
+                content: pdfBuffer,
+                contentType: 'application/pdf',
+              },
+            ],
+          });
+          
+          notification.status = 'sent';
+          notification.isSent = true;
+          notification.processedAt = new Date();
+          await notification.save();
+        } catch (emailErr: any) {
+          notification.status = 'failed';
+          notification.errorMessage = emailErr.message;
+          notification.processedAt = new Date();
+          await notification.save();
+          // We swallow the error to not crash checkout if SMTP fails, matching legacy behavior
+          logger.error({ err: emailErr }, 'Failed to send synchronous confirmation email');
+        }
+      }
 
       logger.info({ bookingId: booking._id }, 'Notification log created for confirmed booking and email dispatched');
     } catch (err) {
