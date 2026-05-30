@@ -12,6 +12,9 @@ import {
 } from '@/lib/api/public.service';
 import { useAuth } from '@/providers/AuthProvider';
 import { AuthForm } from '@/components/auth/AuthForm';
+import { BookingHeaderCard } from '@/components/booking/shared/BookingHeaderCard';
+import { TicketActions } from '@/components/booking/shared/TicketActions';
+import { EntryPassGrid } from '@/components/booking/shared/EntryPassGrid';
 
 function TicketRetrievalContent() {
   const { logout, isAuthenticated, isLoading: isAuthLoading, user } = useAuth();
@@ -90,14 +93,7 @@ function TicketRetrievalContent() {
     setInfoMsg('');
   };
 
-  const formatDate = (dateStr: Date | string) => {
-    return new Date(dateStr).toLocaleDateString('en-US', {
-      weekday: 'short',
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    });
-  };
+
 
   const bookings = bookingsData?.bookings || [];
   const tickets = bookingsData?.tickets || [];
@@ -177,123 +173,21 @@ function TicketRetrievalContent() {
                       key={booking._id}
                       className="glass rounded-3xl border border-border-subtle p-6 sm:p-8 space-y-6 shadow-xl transition-all duration-300 hover:border-white/10"
                     >
-                      {/* Booking Card Header */}
-                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-6 border-b border-border-subtle/30">
-                        <div>
-                          <span className="text-[10px] text-text-muted font-medium tracking-wider uppercase">Event Info</span>
-                          <h2 className="text-white font-bold text-xl mt-0.5">
-                            {booking.eventId ? (booking.eventId as any).title : 'Event Booking'}
-                          </h2>
-                          {booking.eventId && (
-                            <p className="text-text-muted text-xs mt-1.5 flex flex-wrap gap-x-3 gap-y-1">
-                              <span>📅 {formatDate((booking.eventId as any).startDate)}</span>
-                              <span>⏰ {(booking.eventId as any).showTime}</span>
-                            </p>
-                          )}
-                          {booking.eventId && (booking.eventId as any).venue && (
-                            <span className="text-sm opacity-80 mt-1 block">
-                              📍 {(booking.eventId as any).venue}
-                            </span>
-                          )}
-                        </div>
-                        <div className="sm:text-right self-start sm:self-center">
-                          <span className="text-[10px] text-text-muted font-medium tracking-wider uppercase block sm:mb-1">Status</span>
-                          <div className={`text-xs px-3 py-1 rounded-full border font-black inline-block ${
-                            booking.status === 'confirmed'
-                              ? 'bg-green-500/10 text-green-400 border-green-500/30'
-                              : booking.status === 'pending' || booking.status === 'awaiting_payment'
-                              ? 'bg-amber-500/10 text-amber-400 border-amber-500/30'
-                              : 'bg-red-500/10 text-red-400 border-red-500/30'
-                          }`}>
-                            {booking.status.toUpperCase()}
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Guest info metrics */}
-                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-xs text-text-secondary">
-                        <div>
-                          <span className="text-[10px] text-text-muted uppercase block">Guest Name</span>
-                          <span className="text-white font-semibold">{booking.guestName}</span>
-                        </div>
-                        <div>
-                          <span className="text-[10px] text-text-muted uppercase block">Total Tickets</span>
-                          <span className="text-white font-semibold">{booking.totalTickets} Ticket(s)</span>
-                        </div>
-                        <div className="col-span-2 sm:col-span-1">
-                          <span className="text-[10px] text-text-muted uppercase block">Reference ID</span>
-                          <span className="text-white font-mono font-bold select-all">{booking.bookingId}</span>
-                        </div>
-                      </div>
+                      <BookingHeaderCard booking={booking} />
 
                       {/* Tickets list for confirmed bookings */}
                       {booking.status === 'confirmed' ? (
                         <div className="space-y-4 pt-4 border-t border-border-subtle/30">
                           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-2">
                             <h3 className="text-white font-bold text-sm">Entry Passes</h3>
-                            <div className="flex flex-wrap gap-2">
-                              <button
-                                type="button"
-                                onClick={() => handleDownloadPDF(booking.bookingId)}
-                                disabled={downloadingId === booking.bookingId}
-                                className="px-4 py-2 bg-white/5 hover:bg-white/10 border border-border-subtle text-white text-xs font-semibold rounded-xl transition-all flex items-center gap-1.5 disabled:opacity-50"
-                              >
-                                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-                                {downloadingId === booking.bookingId ? 'Downloading...' : 'Download PDF'}
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => handleResendTickets(booking.bookingId)}
-                                disabled={resendingId === booking.bookingId}
-                                className="px-4 py-2 btn-gradient text-white text-xs font-semibold rounded-xl transition-all shadow-glow-sm flex items-center gap-1.5 disabled:opacity-50"
-                              >
-                                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-                                {resendingId === booking.bookingId ? 'Sending...' : 'Resend Tickets'}
-                              </button>
-                            </div>
+                            <TicketActions
+                              downloading={downloadingId === booking.bookingId}
+                              resending={resendingId === booking.bookingId}
+                              onDownload={() => handleDownloadPDF(booking.bookingId)}
+                              onResend={() => handleResendTickets(booking.bookingId)}
+                            />
                           </div>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {bookingTickets.map((ticket, tIndex) => (
-                              <motion.div
-                                initial={{ opacity: 0, scale: 0.95 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                transition={{ delay: tIndex * 0.05 }}
-                                key={ticket._id}
-                                className="glass-strong rounded-2xl border border-border-subtle/60 overflow-hidden flex flex-col items-center p-6 text-center space-y-4 shadow-sm"
-                              >
-                                <div className="w-full pb-2 border-b border-border-subtle/40">
-                                  <div className="text-accent-purple-light text-xs font-bold uppercase tracking-wider">
-                                    {ticket.tierName} Entry
-                                  </div>
-                                  {ticket.seatId && (
-                                    <div className="text-white font-bold text-sm mt-1">
-                                      Seat: <span className="font-mono">{ticket.seatId}</span> (Row {ticket.row}, Seat {ticket.seatNumber})
-                                    </div>
-                                  )}
-                                  <div className="text-text-muted text-[9px] mt-1 font-mono">
-                                    ID: {ticket.ticketId}
-                                  </div>
-                                </div>
-
-                                {ticket.qrCodeImage ? (
-                                  // eslint-disable-next-line @next/next/no-img-element
-                                  <img
-                                    src={ticket.qrCodeImage}
-                                    alt="QR Ticket Code"
-                                    className="w-44 h-44 bg-white p-2 rounded-xl"
-                                  />
-                                ) : (
-                                  <div className="w-44 h-44 bg-white/5 rounded-xl flex items-center justify-center text-text-muted text-xs">
-                                    No QR Available
-                                  </div>
-                                )}
-
-                                <div className="text-[9px] text-text-muted max-w-[200px] leading-relaxed">
-                                  Present this QR code at the venue entry scanner for digital validation. Do not share this code.
-                                </div>
-                              </motion.div>
-                            ))}
-                          </div>
+                          <EntryPassGrid tickets={bookingTickets} />
                         </div>
                       ) : (
                         <div className="glass-strong rounded-2xl border border-border-subtle p-6 text-center text-text-secondary text-sm">
