@@ -212,6 +212,7 @@ export type Booking = {
   reservationIds?: string[];
   bookingVersion: number;
   expiresAt?: string | Date;
+  logicalExpiresAt?: string | Date;
   cancellationReason?: string;
   cancelledAt?: string | Date;
   createdAt?: string | Date;

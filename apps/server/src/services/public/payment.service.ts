@@ -849,13 +849,13 @@ export class PaymentService {
   private static async confirmBooking(booking: IBooking, _payment: IPayment): Promise<IBooking | null> {
     // 1. Confirm booking status exactly once. Concurrent payment callbacks must
     // not double-increment event inventory or create duplicate tickets.
-    const confirmedBooking = await Booking.findOneAndUpdate(
-      { _id: booking._id, status: { $in: [BookingStatus.AWAITING_PAYMENT, BookingStatus.EXPIRED] } },
+    const previousBookingDoc = await Booking.findOneAndUpdate(
+      { _id: booking._id, status: { $in: [BookingStatus.AWAITING_PAYMENT, BookingStatus.EXPIRED, BookingStatus.EXPIRING] } },
       { $set: { status: BookingStatus.CONFIRMED }, $unset: { expiresAt: 1, logicalExpiresAt: 1 }, $inc: { bookingVersion: 1 } },
-      { new: true }
+      { new: false }
     );
 
-    if (!confirmedBooking) {
+    if (!previousBookingDoc) {
       const currentBooking = await Booking.findById(booking._id).select('status bookingId').lean();
       logger.info(
         {
@@ -869,6 +869,11 @@ export class PaymentService {
       );
       return null;
     }
+
+    const previousStatus = previousBookingDoc.status;
+    const confirmedBooking = previousBookingDoc;
+    confirmedBooking.status = BookingStatus.CONFIRMED;
+    confirmedBooking.bookingVersion += 1;
 
     booking = confirmedBooking;
 
@@ -898,13 +903,19 @@ export class PaymentService {
       }
     }
 
+    const isLateRecovery = previousStatus === BookingStatus.EXPIRED || previousStatus === BookingStatus.EXPIRING;
+
     const confirmedReservations = await ReservationService.transitionForBooking(booking._id, ReservationStatus.CONFIRMED, {
       paymentReference: _payment.gatewayPaymentId ?? _payment.gatewayOrderId,
       paymentId: _payment._id as any,
       reason: 'payment-confirmed',
       correlationId: booking.bookingId,
+      includeTerminal: isLateRecovery,
     });
-    await ReservationService.confirmCapacity(confirmedReservations);
+
+    if (!isLateRecovery) {
+      await ReservationService.confirmCapacity(confirmedReservations);
+    }
 
     // 2. Update Event statistics
     const event = await Event.findById(booking.eventId);

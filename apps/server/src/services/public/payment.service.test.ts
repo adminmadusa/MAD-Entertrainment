@@ -29,6 +29,7 @@ vi.mock('../../models/booking.schema', () => ({
     findById: vi.fn(),
     findOne: vi.fn(),
     findOneAndUpdate: vi.fn(),
+    updateOne: vi.fn(),
   },
 }));
 
@@ -113,7 +114,7 @@ describe('Payment Service', () => {
 
       vi.mocked(Booking.findOne).mockResolvedValue(mockBooking as any);
       vi.mocked(Payment.findOne).mockReturnValue({ sort: vi.fn().mockResolvedValue(mockPayment) } as any);
-      vi.mocked(Booking.findOneAndUpdate).mockResolvedValue({ ...mockBooking, status: BookingStatus.CONFIRMED } as any);
+      vi.mocked(Booking.findOneAndUpdate).mockResolvedValue(mockBooking as any);
 
       const orderId = 'order_123';
       const paymentId = 'pay_123';
@@ -155,17 +156,33 @@ describe('Payment Service', () => {
 
       vi.mocked(Payment.findOne).mockResolvedValue(mockPayment as any);
       vi.mocked(Booking.findById).mockResolvedValue(mockBooking as any);
-      
-      // confirmBooking uses findOneAndUpdate. Mock it to return confirmed booking!
-      vi.mocked(Booking.findOneAndUpdate).mockResolvedValue({ ...mockBooking, status: BookingStatus.CONFIRMED } as any);
+      vi.mocked(Booking.findOneAndUpdate).mockResolvedValue(mockBooking as any);
 
       const result = await PaymentService.confirmFromWebhook('order_123', 'pay_123', 'payment.captured', 'evt_123');
       expect(result.status).toBe('confirmed');
       expect(mockPayment.status).toBe(PaymentStatus.PAID);
       expect(vi.mocked(Booking.findOneAndUpdate)).toHaveBeenCalledWith(
-        expect.objectContaining({ status: expect.objectContaining({ $in: [BookingStatus.AWAITING_PAYMENT, BookingStatus.EXPIRED] }) }),
+        expect.objectContaining({ status: expect.objectContaining({ $in: [BookingStatus.AWAITING_PAYMENT, BookingStatus.EXPIRED, BookingStatus.EXPIRING] }) }),
         expect.any(Object),
-        expect.any(Object)
+        expect.objectContaining({ new: false })
+      );
+    });
+
+    it('should confirm booking successfully if booking status is EXPIRING (concurrent webhook recovery)', async () => {
+      const mockPayment = { _id: 'p-123', bookingId: 'b-123', gateway: 'razorpay', status: PaymentStatus.PENDING, save: vi.fn() };
+      const mockBooking = { _id: 'b-123', eventId: 'e-123', status: BookingStatus.EXPIRING, tickets: [], save: vi.fn() };
+
+      vi.mocked(Payment.findOne).mockResolvedValue(mockPayment as any);
+      vi.mocked(Booking.findById).mockResolvedValue(mockBooking as any);
+      vi.mocked(Booking.findOneAndUpdate).mockResolvedValue(mockBooking as any);
+
+      const result = await PaymentService.confirmFromWebhook('order_123', 'pay_123', 'payment.captured', 'evt_123');
+      expect(result.status).toBe('confirmed');
+      expect(mockPayment.status).toBe(PaymentStatus.PAID);
+      expect(vi.mocked(Booking.findOneAndUpdate)).toHaveBeenCalledWith(
+        expect.objectContaining({ status: expect.objectContaining({ $in: [BookingStatus.AWAITING_PAYMENT, BookingStatus.EXPIRED, BookingStatus.EXPIRING] }) }),
+        expect.any(Object),
+        expect.objectContaining({ new: false })
       );
     });
   });

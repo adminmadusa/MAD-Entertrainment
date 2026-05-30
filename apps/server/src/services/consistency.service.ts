@@ -204,17 +204,38 @@ async function repairEventInventoryMismatches(): Promise<number> {
 export class ConsistencyService {
   static async expireStaleBookings(): Promise<number> {
     const now = new Date();
-    const staleBookings = await Booking.find({
+
+    // 1. Stuck-booking sweep (recovery for any crash/timeouts while in EXPIRING state)
+    const stuckThreshold = new Date(Date.now() - 5 * 60 * 1000);
+    const recoveredStuck = await Booking.updateMany(
+      { status: BookingStatus.EXPIRING, updatedAt: { $lte: stuckThreshold } },
+      { $set: { status: BookingStatus.AWAITING_PAYMENT } }
+    );
+    if (recoveredStuck.modifiedCount > 0) {
+      logger.warn({ count: recoveredStuck.modifiedCount }, 'Consistency: Recovered stuck EXPIRING bookings back to AWAITING_PAYMENT');
+    }
+
+    // 2. Fetch stale candidates
+    const staleCandidates = await Booking.find({
       status: BookingStatus.AWAITING_PAYMENT,
       logicalExpiresAt: { $lte: now }
-    }).limit(100);
+    }).select('_id').limit(100);
 
     let expiredCount = 0;
-    for (const booking of staleBookings) {
-      booking.status = BookingStatus.EXPIRED;
-      booking.bookingVersion += 1;
-      await booking.save();
+    for (const candidate of staleCandidates) {
+      // 3. Atomically claim the booking by transitioning status to EXPIRING
+      const booking = await Booking.findOneAndUpdate(
+        { _id: candidate._id, status: BookingStatus.AWAITING_PAYMENT },
+        { $set: { status: BookingStatus.EXPIRING }, $inc: { bookingVersion: 1 } },
+        { new: true }
+      );
 
+      if (!booking) {
+        // Already claimed by another worker/thread, skip
+        continue;
+      }
+
+      // 4. Process logical expiration and release inventory
       const failedReservations = await ReservationService.transitionForBooking(booking._id, ReservationStatus.FAILED, {
         reason: 'booking-logical-checkout-timeout',
         correlationId: booking.bookingId,
@@ -253,8 +274,17 @@ export class ConsistencyService {
           );
         }
       }
-      expiredCount++;
-      logger.info({ bookingId: booking._id, bookingReference: booking.bookingId }, 'Consistency: Logically expired booking and released held inventory');
+
+      // 5. Transition from EXPIRING to EXPIRED atomically
+      const finalized = await Booking.updateOne(
+        { _id: booking._id, status: BookingStatus.EXPIRING },
+        { $set: { status: BookingStatus.EXPIRED } }
+      );
+
+      if (finalized.modifiedCount > 0) {
+        expiredCount++;
+        logger.info({ bookingId: booking._id, bookingReference: booking.bookingId }, 'Consistency: Logically expired booking and released held inventory');
+      }
     }
     return expiredCount;
   }

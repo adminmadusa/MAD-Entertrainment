@@ -18,9 +18,9 @@ const RESERVATION_TRANSITIONS: Record<ReservationStatus, ReservationStatus[]> = 
   [ReservationStatus.RESERVED]: [ReservationStatus.PENDING_PAYMENT, ReservationStatus.EXPIRED, ReservationStatus.CANCELLED],
   [ReservationStatus.PENDING_PAYMENT]: [ReservationStatus.CONFIRMED, ReservationStatus.FAILED, ReservationStatus.CANCELLED],
   [ReservationStatus.CONFIRMED]: [ReservationStatus.REFUNDED, ReservationStatus.CANCELLED],
-  [ReservationStatus.EXPIRED]: [],
+  [ReservationStatus.EXPIRED]: [ReservationStatus.CONFIRMED],
   [ReservationStatus.CANCELLED]: [],
-  [ReservationStatus.FAILED]: [],
+  [ReservationStatus.FAILED]: [ReservationStatus.CONFIRMED],
   [ReservationStatus.REFUNDED]: [],
 };
 
