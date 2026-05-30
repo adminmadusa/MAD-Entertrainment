@@ -6,7 +6,7 @@ import { useSearchParams } from 'next/navigation';
 import { Suspense, useState, useEffect } from 'react';
 
 import { extractApiError } from '@/lib/api/client';
-import { publicGetBookingDetails, publicDownloadTicketPDF } from '@/lib/api/public.service';
+import { publicGetBookingDetails, publicDownloadTicketPDF, publicResendTicketEmail } from '@/lib/api/public.service';
 import { STORAGE_VERSION } from '@mad/shared';
 
 
@@ -18,6 +18,8 @@ function MyBookingContent() {
   const [queryRef, setQueryRef] = useState(initialRef);
   const [errorMsg, setErrorMsg] = useState('');
   const [downloadState, setDownloadState] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [resendState, setResendState] = useState<'idle' | 'loading' | 'success' | 'cooldown' | 'error'>('idle');
+  const [cooldownSeconds, setCooldownSeconds] = useState(0);
 
   const handleDownloadPDF = async () => {
     if (!booking) return;
@@ -42,6 +44,120 @@ function MyBookingContent() {
       setErrorMsg('Failed to download PDF ticket. Please try again.');
       setTimeout(() => setDownloadState('idle'), 5000);
     }
+  };
+
+  const handleResendEmail = async () => {
+    if (!booking) return;
+    if (resendState === 'loading' || resendState === 'cooldown') return;
+    setResendState('loading');
+    setErrorMsg('');
+
+    try {
+      const response = await publicResendTicketEmail(booking.bookingId);
+      if (response.success) {
+        setResendState('success');
+        setTimeout(() => {
+          setResendState('cooldown');
+          setCooldownSeconds(60);
+        }, 3000);
+      } else {
+        throw new Error(response.message || 'Failed to resend email');
+      }
+    } catch (err: unknown) {
+      setResendState('error');
+      const apiErr = extractApiError(err);
+      setErrorMsg(apiErr.message || 'Failed to resend ticket email. Please try again.');
+      setTimeout(() => setResendState('idle'), 5000);
+    }
+  };
+
+  useEffect(() => {
+    if (cooldownSeconds <= 0) {
+      if (resendState === 'cooldown') {
+        setResendState('idle');
+      }
+      return;
+    }
+
+    const timer = setInterval(() => {
+      setCooldownSeconds((prev) => prev - 1);
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [cooldownSeconds, resendState]);
+
+  const getResendButtonStyles = () => {
+    if (resendState === 'loading') {
+      return 'bg-white/5 border border-white/10 text-white/60 cursor-not-allowed';
+    }
+    if (resendState === 'success') {
+      return 'bg-green-500/20 text-green-400 border border-green-500/40 shadow-glow-green-sm';
+    }
+    if (resendState === 'cooldown') {
+      return 'bg-white/5 border border-white/5 text-white/40 cursor-not-allowed';
+    }
+    if (resendState === 'error') {
+      return 'bg-red-500/20 text-red-400 border border-red-500/40';
+    }
+    return 'bg-white/5 border border-white/10 text-white hover:bg-white/10 hover:scale-[1.02] active:scale-[0.98]';
+  };
+
+  const renderResendButtonContent = () => {
+    if (resendState === 'loading') {
+      return (
+        <>
+          <svg className="animate-spin h-4.5 w-4.5 text-white/80" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+          </svg>
+          Resending...
+        </>
+      );
+    }
+    if (resendState === 'success') {
+      return (
+        <>
+          <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+          </svg>
+          Tickets Resent!
+        </>
+      );
+    }
+    if (resendState === 'cooldown') {
+      return (
+        <>
+          <svg className="h-4.5 w-4.5 text-white/40" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          Resend in {cooldownSeconds}s
+        </>
+      );
+    }
+    if (resendState === 'error') {
+      return (
+        <>
+          <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+          Resend Failed
+        </>
+      );
+    }
+    return (
+      <>
+        <svg className="h-4.5 w-4.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+        </svg>
+        Resend Ticket Email
+      </>
+    );
+  };
+
+  const getBookingStatusStyles = (status: string) => {
+    if (status === 'confirmed') return 'bg-green-500/10 text-green-400 border-green-500/30';
+    if (status === 'pending' || status === 'awaiting_payment') return 'bg-amber-500/10 text-amber-400 border-amber-500/30';
+    return 'bg-red-500/10 text-red-400 border-red-500/30';
   };
 
   const getButtonStyles = () => {
@@ -182,38 +298,34 @@ function MyBookingContent() {
         )}
 
         {/* Booking Details Display */}
-        {isLoading ? (
+        {isLoading && (
           <div className="text-center py-16 text-text-muted text-xs animate-pulse">
             Fetching booking details and tickets...
           </div>
-        ) : booking ? (
+        )}
+        
+        {!isLoading && booking && (
           <div className="space-y-6">
             {/* Summary Details */}
             <div className="glass rounded-3xl border border-border-subtle p-6 space-y-4">
               <div className="flex items-center justify-between">
                 <div>
                   <span className="text-[10px] text-text-muted font-medium tracking-wider uppercase">Event Info</span>
-                  <h2 className="text-white font-bold text-lg">{booking.eventId ? (booking.eventId as any).title : 'Event Booking'}</h2>
+                  <h2 className="text-white font-bold text-lg">{booking.eventId ? (booking.eventId as unknown as {title: string}).title : 'Event Booking'}</h2>
                   {booking.eventId && (
                     <p className="text-text-muted text-xs mt-1">
-                      📅 {formatDate((booking.eventId as any).startDate)} · ⏰ {(booking.eventId as any).showTime}
+                      📅 {formatDate((booking.eventId as unknown as {startDate: string}).startDate)} · ⏰ {(booking.eventId as unknown as {showTime: string}).showTime}
                     </p>
                   )}
-                  {booking.eventId && (booking.eventId as any).venue && (
+                  {booking.eventId && (booking.eventId as unknown as {venue?: string}).venue && (
                     <span className="text-sm opacity-80 mt-1 block">
-                      📍 {(booking.eventId as any).venue}
+                      📍 {(booking.eventId as unknown as {venue: string}).venue}
                     </span>
                   )}
                 </div>
                 <div className="text-right">
                   <span className="text-[10px] text-text-muted font-medium tracking-wider uppercase">Status</span>
-                  <div className={`text-xs px-2.5 py-1 rounded-full border font-bold mt-1 ${
-                    booking.status === 'confirmed'
-                      ? 'bg-green-500/10 text-green-400 border-green-500/30'
-                      : booking.status === 'pending' || booking.status === 'awaiting_payment'
-                      ? 'bg-amber-500/10 text-amber-400 border-amber-500/30'
-                      : 'bg-red-500/10 text-red-400 border-red-500/30'
-                  }`}>
+                  <div className={`text-xs px-2.5 py-1 rounded-full border font-bold mt-1 ${getBookingStatusStyles(booking.status)}`}>
                     {booking.status.toUpperCase()}
                   </div>
                 </div>
@@ -243,6 +355,15 @@ function MyBookingContent() {
                     className={`w-full sm:w-auto h-10 px-5 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all select-none ${getButtonStyles()}`}
                   >
                     {renderButtonContent()}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleResendEmail}
+                    disabled={resendState === 'loading' || resendState === 'cooldown'}
+                    className={`w-full sm:w-auto h-10 px-5 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all select-none ${getResendButtonStyles()}`}
+                  >
+                    {renderResendButtonContent()}
                   </button>
                 </div>
               )}
@@ -301,12 +422,11 @@ function MyBookingContent() {
               </div>
             )}
           </div>
-        ) : (
-          queryRef && (
-            <div className="text-center py-12 text-text-muted text-xs">
-              No booking details resolved for reference &quot;{queryRef}&quot;.
-            </div>
-          )
+        )}
+        {!isLoading && !booking && queryRef && (
+          <div className="text-center py-12 text-text-muted text-xs">
+            No booking details resolved for reference &quot;{queryRef}&quot;.
+          </div>
         )}
       </div>
     </div>
