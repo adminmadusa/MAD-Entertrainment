@@ -13,6 +13,7 @@ import {
 } from '@/lib/api/admin/booking.service';
 import { extractApiError } from '@/lib/api/client';
 import ErrorState from '@/components/states/ErrorState';
+import { adminGetEvents } from '@/lib/api/admin/event.service';
 
 const STATUS_COLORS: Record<string, string> = {
   confirmed: 'bg-green-500/10 text-green-400 border-green-500/30',
@@ -31,14 +32,21 @@ export default function AdminBookingsPage() {
   const qc = useQueryClient();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
+  const [eventFilter, setEventFilter] = useState('');
   const [page, setPage] = useState(1);
   const [cancelTarget, setCancelTarget] = useState<AdminBooking | null>(null);
   const [cancelReason, setCancelReason] = useState('');
   const [selectedBooking, setSelectedBooking] = useState<AdminBooking | null>(null);
 
+  const { data: eventsData } = useQuery({
+    queryKey: ['admin-events', { status: 'published' }],
+    queryFn: () => adminGetEvents({ limit: 100 }),
+  });
+  const events = eventsData?.items || [];
+
   const { data, isLoading, error } = useQuery({
-    queryKey: ['admin-bookings', { page, search, status: statusFilter }],
-    queryFn: () => adminGetBookings({ page, limit: 15, ...(search && { search }), ...(statusFilter && { status: statusFilter }) }),
+    queryKey: ['admin-bookings', { page, search, status: statusFilter, eventId: eventFilter }],
+    queryFn: () => adminGetBookings({ page, limit: 15, ...(search && { search }), ...(statusFilter && { status: statusFilter }), ...(eventFilter && { eventId: eventFilter }) }),
   });
 
   const cancelMutation = useMutation({
@@ -140,6 +148,13 @@ export default function AdminBookingsPage() {
             <span className={`text-xs px-2.5 py-1 rounded-full border font-medium ${STATUS_COLORS[booking.status] ?? 'text-text-muted border-border-subtle'}`}>
               {booking.status}
             </span>
+            {booking.status === 'confirmed' && booking.totalTickets > 0 && (
+              <div className="mt-2">
+                <span className={`text-[10px] px-2 py-0.5 rounded-md border ${booking.ticketsScanned === booking.totalTickets ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400' : 'bg-white/5 border-border-subtle text-text-secondary'}`}>
+                  {booking.ticketsScanned === booking.totalTickets ? 'Fully Checked In' : `${booking.ticketsScanned ?? 0} / ${booking.totalTickets} Checked In`}
+                </span>
+              </div>
+            )}
           </td>
           <td className="py-4 px-4 text-text-muted text-xs">
             {new Date(booking.createdAt).toLocaleDateString('en-IN')}
@@ -215,19 +230,21 @@ export default function AdminBookingsPage() {
           <h1 className="text-2xl font-black text-white">Bookings</h1>
           <p className="text-text-muted text-sm mt-0.5">{pagination?.total ?? 0} total bookings</p>
         </div>
-        <button
-          onClick={handleExportCSV}
-          disabled={bookings.length === 0}
-          className="px-4 py-2 bg-white/5 hover:bg-white/10 border border-border-subtle rounded-xl text-sm font-semibold text-white transition-colors disabled:opacity-50"
-        >
-          Export CSV
-        </button>
       </div>
 
       <div className="flex flex-wrap gap-3">
         <input type="search" placeholder="Search by reference or email..." value={search}
           onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-          className="flex-1 min-w-48 px-4 py-2.5 rounded-xl bg-background-card border border-border-subtle text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-purple" />
+          className="w-full md:w-auto min-w-[20rem] px-4 py-2.5 rounded-xl bg-background-card border border-border-subtle text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-purple" />
+        
+        <select value={eventFilter} onChange={(e) => { setEventFilter(e.target.value); setPage(1); }}
+          className="flex-1 min-w-[12rem] px-4 py-2.5 rounded-xl bg-background-card border border-border-subtle text-sm text-text-primary focus:outline-none focus:border-accent-purple">
+          <option value="">All Events</option>
+          {events.map((ev) => (
+            <option key={ev._id} value={ev._id}>{ev.title}</option>
+          ))}
+        </select>
+
         <select value={statusFilter} onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
           className="px-4 py-2.5 rounded-xl bg-background-card border border-border-subtle text-sm text-text-primary focus:outline-none focus:border-accent-purple">
           <option value="">All Statuses</option>
@@ -236,6 +253,14 @@ export default function AdminBookingsPage() {
           <option value="cancelled">Cancelled</option>
           <option value="failed">Failed</option>
         </select>
+
+        <button
+          onClick={handleExportCSV}
+          disabled={bookings.length === 0}
+          className="px-4 py-2.5 bg-white/5 hover:bg-white/10 border border-border-subtle rounded-xl text-sm font-semibold text-white transition-colors disabled:opacity-50"
+        >
+          Export CSV
+        </button>
       </div>
 
       <div className="glass rounded-2xl border border-border-subtle overflow-hidden">
