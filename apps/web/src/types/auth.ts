@@ -17,9 +17,8 @@ export interface MagicLinkPayload {
 }
 
 export interface VerifyMagicLinkOrOTPPayload {
-  token?: string;
-  otp?: string;
-  email?: string;
+  otp: string;
+  email: string;
 }
 
 export interface MagicLinkRequestResponse {
