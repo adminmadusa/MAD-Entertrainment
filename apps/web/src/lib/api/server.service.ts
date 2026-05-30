@@ -10,6 +10,8 @@ const CACHE_OPTIONS = {
   },
 };
 
+const isRealProduction = Boolean(process.env.VERCEL) && process.env.VERCEL_ENV === 'production';
+
 export async function serverGetFeaturedEvents(): Promise<Event[]> {
   try {
     const res = await fetch(`${API_URL}/events?page=1&limit=6`, CACHE_OPTIONS);
@@ -20,6 +22,7 @@ export async function serverGetFeaturedEvents(): Promise<Event[]> {
     return Array.isArray(payload.events) ? payload.events : [];
   } catch (error) {
     console.error('[server-fetch] Failed to fetch featured events:', error);
+    if (isRealProduction) throw error;
     return [];
   }
 }
@@ -54,6 +57,7 @@ export async function serverGetCategories(): Promise<PublicCategory[]> {
     return Array.isArray(body?.data) ? body.data : [];
   } catch (error) {
     console.error('[server-fetch] Failed to fetch categories:', error);
+    if (isRealProduction) throw error;
     return [];
   }
 }

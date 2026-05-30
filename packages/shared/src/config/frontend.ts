@@ -1,5 +1,12 @@
 // Safety guard – prevent accidental localhost usage in production builds
-if (process.env.NODE_ENV === 'production' && process.env.NEXT_PUBLIC_API_URL?.includes('localhost')) {
+const isRealProduction = Boolean(process.env.VERCEL) && process.env.VERCEL_ENV === 'production';
+
+if (
+  isRealProduction &&
+  (process.env.NEXT_PUBLIC_API_URL?.includes('localhost') ||
+    process.env.NEXT_PUBLIC_API_URL?.includes('127.0.0.1') ||
+    process.env.NEXT_PUBLIC_API_URL?.includes('0.0.0.0'))
+) {
   throw new Error('Production build cannot use localhost API URL');
 }
 
