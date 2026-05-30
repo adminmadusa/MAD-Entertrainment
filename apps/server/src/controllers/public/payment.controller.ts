@@ -75,7 +75,7 @@ export async function stripeWebhook(req: Request, res: Response): Promise<void> 
     description: `Received Stripe webhook event ${event.type} (ID: ${event.id})`
   });
 
-  const existingEvent = await WebhookEvent.findOne({ eventId: event.id });
+  let existingEvent = await WebhookEvent.findOne({ eventId: event.id });
   if (existingEvent) {
     auditLog({
       action: 'WEBHOOK_DUPLICATE_IGNORED',
@@ -83,9 +83,45 @@ export async function stripeWebhook(req: Request, res: Response): Promise<void> 
       metadata: { gateway: 'stripe', eventId: event.id, eventType: event.type },
       description: `Ignored duplicate Stripe webhook event ${event.id}`
     });
+    
+    existingEvent.status = 'ignored';
+    await existingEvent.save();
+    
     res.status(200).send('Event already processed');
     return;
   }
+
+  const rawPayloadStr = rawBody.toString('utf8');
+  const payloadSize = Buffer.byteLength(rawPayloadStr, 'utf8');
+
+  let webhookEvent;
+  try {
+    webhookEvent = await WebhookEvent.create({
+      eventId: event.id,
+      provider: 'stripe',
+      eventType: event.type,
+      status: 'received',
+      receivedAt: new Date(),
+      providerEventTimestamp: event.created ? new Date(event.created * 1000) : undefined,
+      rawPayload: event.data.object,
+      payloadSize,
+    });
+  } catch (err: any) {
+    if (err.code === 11000) {
+      auditLog({
+        action: 'WEBHOOK_DUPLICATE_IGNORED',
+        status: 'success',
+        metadata: { gateway: 'stripe', eventId: event.id, eventType: event.type, reason: 'concurrent_request' },
+        description: `Ignored concurrent duplicate Stripe webhook event ${event.id}`
+      });
+      res.status(200).send('Event already processed concurrently');
+      return;
+    }
+    throw err;
+  }
+
+  webhookEvent.status = 'processing';
+  await webhookEvent.save();
 
   try {
     if (event.type === 'payment_intent.succeeded') {
@@ -93,10 +129,14 @@ export async function stripeWebhook(req: Request, res: Response): Promise<void> 
       const bookingId = intent.metadata?.bookingId;
       if (bookingId) {
         await PaymentService.verifyPayment(bookingId, { paymentIntentId: intent.id });
+        webhookEvent.bookingId = bookingId;
       }
     }
     
-    await WebhookEvent.create({ eventId: event.id, provider: 'stripe' });
+    webhookEvent.status = 'success';
+    webhookEvent.processedAt = new Date();
+    await webhookEvent.save();
+
     auditLog({
       action: 'WEBHOOK_PROCESS_SUCCESS',
       status: 'success',
@@ -105,6 +145,11 @@ export async function stripeWebhook(req: Request, res: Response): Promise<void> 
     });
     res.status(200).json({ received: true });
   } catch (err: any) {
+    webhookEvent.status = 'failed';
+    webhookEvent.errorMessage = err.message;
+    webhookEvent.processedAt = new Date();
+    await webhookEvent.save();
+
     logger.error({ err, eventId: event.id }, 'Stripe webhook handler failed');
     auditLog({
       action: 'WEBHOOK_PROCESS_FAILED',
@@ -152,7 +197,7 @@ export async function razorpayWebhook(req: Request, res: Response): Promise<void
     return;
   }
 
-  const existingEvent = await WebhookEvent.findOne({ eventId });
+  let existingEvent = await WebhookEvent.findOne({ eventId });
   if (existingEvent) {
     auditLog({
       action: 'WEBHOOK_DUPLICATE_IGNORED',
@@ -160,6 +205,10 @@ export async function razorpayWebhook(req: Request, res: Response): Promise<void
       metadata: { gateway: 'razorpay', eventId },
       description: `Ignored duplicate Razorpay webhook event ${eventId}`
     });
+    
+    existingEvent.status = 'ignored';
+    await existingEvent.save();
+    
     res.status(200).json({ received: true, status: 'already_processed' });
     return;
   }
@@ -168,9 +217,10 @@ export async function razorpayWebhook(req: Request, res: Response): Promise<void
   let eventType: string;
   let razorpayPaymentId: string | undefined;
   let razorpayOrderId: string | undefined;
+  let body: any;
 
   try {
-    const body = JSON.parse(rawBody);
+    body = JSON.parse(rawBody);
     eventType = body.event;
     razorpayPaymentId = body.payload?.payment?.entity?.id;
     razorpayOrderId = body.payload?.payment?.entity?.order_id;
@@ -186,6 +236,38 @@ export async function razorpayWebhook(req: Request, res: Response): Promise<void
     description: `Received Razorpay webhook event ${eventType} (ID: ${eventId})`
   });
 
+  const rawPayloadStr = rawBody.toString('utf8');
+  const payloadSize = Buffer.byteLength(rawPayloadStr, 'utf8');
+
+  let webhookEvent;
+  try {
+    webhookEvent = await WebhookEvent.create({
+      eventId,
+      provider: 'razorpay',
+      eventType,
+      status: 'received',
+      receivedAt: new Date(),
+      providerEventTimestamp: body.created_at ? new Date(body.created_at * 1000) : undefined,
+      rawPayload: body,
+      payloadSize,
+    });
+  } catch (err: any) {
+    if (err.code === 11000) {
+      auditLog({
+        action: 'WEBHOOK_DUPLICATE_IGNORED',
+        status: 'success',
+        metadata: { gateway: 'razorpay', eventId, eventType, reason: 'concurrent_request' },
+        description: `Ignored concurrent duplicate Razorpay webhook event ${eventId}`
+      });
+      res.status(200).json({ received: true, status: 'already_processed_concurrently' });
+      return;
+    }
+    throw err;
+  }
+
+  webhookEvent.status = 'processing';
+  await webhookEvent.save();
+
   // 4. Process actionable payment events.
   let result: { status: 'confirmed' | 'failed' | 'skipped'; bookingId?: string } = { status: 'skipped' };
 
@@ -197,7 +279,25 @@ export async function razorpayWebhook(req: Request, res: Response): Promise<void
         eventType,
         eventId
       );
+      
+      webhookEvent.status = 'success';
+      webhookEvent.bookingId = result.bookingId ? (result.bookingId as any) : undefined;
+      webhookEvent.processedAt = new Date();
+      await webhookEvent.save();
+
+      auditLog({
+        action: 'WEBHOOK_PROCESS_SUCCESS',
+        status: 'success',
+        metadata: { gateway: 'razorpay', eventId, eventType, status: result.status },
+        description: `Successfully processed Razorpay webhook event ${eventId} with outcome ${result.status}`
+      });
+
     } catch (err: any) {
+      webhookEvent.status = 'failed';
+      webhookEvent.errorMessage = err.message;
+      webhookEvent.processedAt = new Date();
+      await webhookEvent.save();
+
       logger.error(
         { err, eventId, eventType, razorpayOrderId, razorpayPaymentId },
         'PR-03: Unexpected error in Razorpay webhook confirmation — requires manual review'
@@ -209,34 +309,12 @@ export async function razorpayWebhook(req: Request, res: Response): Promise<void
         description: `Failed to process Razorpay webhook ${eventId}: ${err.message}`
       });
     }
-  }
-
-  // 5. Record the processed event (with booking/payment links if resolved).
-  try {
-    await WebhookEvent.create({
-      eventId,
-      provider: 'razorpay',
-      bookingId: result.bookingId ? result.bookingId : undefined,
-    });
-    auditLog({
-      action: 'WEBHOOK_PROCESS_SUCCESS',
-      status: 'success',
-      metadata: { gateway: 'razorpay', eventId, eventType, status: result.status },
-      description: `Successfully processed Razorpay webhook event ${eventId} with outcome ${result.status}`
-    });
-  } catch (err: any) {
-    if (err.code !== 11000) {
-      logger.error({ err, eventId }, 'PR-03: Failed to record WebhookEvent');
-      auditLog({
-        action: 'WEBHOOK_PROCESS_FAILED',
-        status: 'failure',
-        metadata: { gateway: 'razorpay', eventId, eventType, error: err.message },
-        description: `Failed to record processed Razorpay webhook event ${eventId}`
-      });
-    }
+  } else {
+    // If it's an event without an order ID / payment ID that we process
+    webhookEvent.status = 'success';
+    webhookEvent.processedAt = new Date();
+    await webhookEvent.save();
   }
 
   res.status(200).json({ received: true, status: result.status });
 }
-
-
