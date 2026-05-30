@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Suspense } from 'react';
-import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
+import dynamic from 'next/dynamic';
 
 import { useAdminAuth } from '@/hooks/use-admin-auth.hook';
 import {
@@ -14,6 +14,21 @@ import {
   adminGetAttendanceSummary,
   adminGetAttendanceRankings,
 } from '@/lib/api/admin/analytics.service';
+
+const RevenueChartWidget = dynamic(
+  () => import('@/components/dashboard/RevenueChartWidget'),
+  { ssr: false, loading: () => <div className="h-64 flex items-center justify-center animate-pulse bg-white/5 rounded-xl border border-border-subtle text-text-muted text-sm">Loading chart...</div> }
+);
+
+const AttendanceMetricsWidget = dynamic(
+  () => import('@/components/dashboard/AttendanceMetricsWidget'),
+  { loading: () => <div className="h-24 animate-pulse bg-white/5 rounded-xl border border-border-subtle"></div> }
+);
+
+const AttendanceRankingsWidget = dynamic(
+  () => import('@/components/dashboard/AttendanceRankingsWidget'),
+  { loading: () => <div className="h-64 animate-pulse bg-white/5 rounded-xl border border-border-subtle"></div> }
+);
 
 function DashboardContent() {
   const { admin } = useAdminAuth();
@@ -62,77 +77,13 @@ function DashboardContent() {
     { label: 'Analytics', href: '/dashboard?tab=analytics', icon: '📊', color: 'border-border-subtle hover:border-white/20' },
   ];
 
-  const chartData = revenue?.map((point) => ({
-    date: point._id.slice(5),
-    revenue: point.revenue,
-    bookings: point.count,
-  })) || [];
+
 
   const handleTabChange = (tabName: string) => {
     router.push(`/dashboard?tab=${tabName}`);
   };
 
-  const topAttendedContent = (() => {
-    if (isRankingsLoading) {
-      return <div className="h-24 flex items-center justify-center text-text-muted text-sm animate-pulse">Loading...</div>;
-    }
-    if (!attendanceRankings?.topAttended.length) {
-      return <div className="h-24 flex items-center justify-center text-text-muted text-sm">No attendance data available yet.</div>;
-    }
-    return (
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-border-subtle">
-              <th className="text-left text-text-muted font-medium py-3 px-6">Event</th>
-              <th className="text-right text-text-muted font-medium py-3 px-4">Checked In</th>
-              <th className="text-right text-text-muted font-medium py-3 px-6">Attendance</th>
-            </tr>
-          </thead>
-          <tbody>
-            {attendanceRankings.topAttended.slice(0, 5).map((ev) => (
-              <tr key={ev.eventId} className="border-b border-border-subtle/40 hover:bg-white/2">
-                <td className="py-3.5 px-6 text-text-primary truncate max-w-[160px]">{ev.eventName}</td>
-                <td className="py-3.5 px-4 text-right text-text-secondary">{ev.ticketsCheckedIn}</td>
-                <td className="py-3.5 px-6 text-right text-emerald-400 font-semibold">{Math.round(ev.attendancePercentage)}%</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    );
-  })();
 
-  const noShowContent = (() => {
-    if (isRankingsLoading) {
-      return <div className="h-24 flex items-center justify-center text-text-muted text-sm animate-pulse">Loading...</div>;
-    }
-    if (!attendanceRankings?.lowestAttendance.length) {
-      return <div className="h-24 flex items-center justify-center text-text-muted text-sm">No attendance data available yet.</div>;
-    }
-    return (
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-border-subtle">
-              <th className="text-left text-text-muted font-medium py-3 px-6">Event</th>
-              <th className="text-right text-text-muted font-medium py-3 px-4">No Shows</th>
-              <th className="text-right text-text-muted font-medium py-3 px-6">No-Show %</th>
-            </tr>
-          </thead>
-          <tbody>
-            {attendanceRankings.lowestAttendance.slice(0, 5).map((ev) => (
-              <tr key={ev.eventId} className="border-b border-border-subtle/40 hover:bg-white/2">
-                <td className="py-3.5 px-6 text-text-primary truncate max-w-[160px]">{ev.eventName}</td>
-                <td className="py-3.5 px-4 text-right text-text-secondary">{ev.noShowCount}</td>
-                <td className="py-3.5 px-6 text-right text-red-400 font-semibold">{Math.round(ev.noShowPercentage)}%</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    );
-  })();
 
   return (
     <div className="space-y-8">
@@ -238,76 +189,16 @@ function DashboardContent() {
           {/* Revenue Chart */}
           <div className="glass rounded-2xl border border-border-subtle p-6 space-y-4">
             <h2 className="text-white font-semibold">Revenue — Last 30 Days</h2>
-            {!revenue || revenue.length === 0 ? (
-              <div className="h-64 flex items-center justify-center text-text-muted text-sm">
-                No revenue data yet. Bookings will appear here.
-              </div>
-            ) : (
-              <div className="h-64 w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                    <defs>
-                      <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#a855f7" stopOpacity={0.8} />
-                        <stop offset="95%" stopColor="#a855f7" stopOpacity={0} />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" vertical={false} />
-                    <XAxis dataKey="date" stroke="#ffffff50" fontSize={12} tickLine={false} axisLine={false} />
-                    <YAxis stroke="#ffffff50" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `₹${value.toLocaleString('en-IN')}`} />
-                    <Tooltip
-                      contentStyle={{ backgroundColor: '#1a1a1a', border: '1px solid #333', borderRadius: '8px' }}
-                      itemStyle={{ color: '#fff' }}
-                    />
-                    <Area type="monotone" dataKey="revenue" stroke="#a855f7" strokeWidth={3} fillOpacity={1} fill="url(#colorRevenue)" />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
-            )}
+            <RevenueChartWidget revenue={revenue} />
           </div>
 
           {/* Attendance Metric Cards */}
           <div className="glass rounded-2xl border border-border-subtle p-6 space-y-4">
             <h2 className="text-white font-semibold">Attendance Overview</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="bg-white/3 rounded-xl p-4 space-y-1 border border-border-subtle">
-                <p className="text-text-muted text-xs uppercase tracking-wider font-semibold">Total Check-Ins</p>
-                <p className={`text-2xl font-black mt-1 ${isAttendanceLoading ? 'text-text-muted animate-pulse' : 'text-emerald-400'}`}>
-                  {isAttendanceLoading ? '...' : (attendanceSummary?.totalCheckIns ?? 0).toLocaleString()}
-                </p>
-              </div>
-              <div className="bg-white/3 rounded-xl p-4 space-y-1 border border-border-subtle">
-                <p className="text-text-muted text-xs uppercase tracking-wider font-semibold">Attendance Rate</p>
-                <p className={`text-2xl font-black mt-1 ${isAttendanceLoading ? 'text-text-muted animate-pulse' : 'text-emerald-400'}`}>
-                  {isAttendanceLoading ? '...' : `${Math.round(attendanceSummary?.attendanceRate ?? 0)}%`}
-                </p>
-              </div>
-              <div className="bg-white/3 rounded-xl p-4 space-y-1 border border-border-subtle">
-                <p className="text-text-muted text-xs uppercase tracking-wider font-semibold">No-Show Rate</p>
-                <p className={`text-2xl font-black mt-1 ${isAttendanceLoading ? 'text-text-muted animate-pulse' : 'text-red-400'}`}>
-                  {isAttendanceLoading ? '...' : `${Math.round(attendanceSummary?.noShowRate ?? 0)}%`}
-                </p>
-              </div>
-            </div>
+            <AttendanceMetricsWidget attendanceSummary={attendanceSummary} isLoading={isAttendanceLoading} />
           </div>
 
-          {/* Attendance Rankings */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-            <div className="glass rounded-2xl border border-border-subtle overflow-hidden">
-              <div className="px-6 py-4 border-b border-border-subtle">
-                <h2 className="text-white font-semibold">Top Attended Events</h2>
-              </div>
-              {topAttendedContent}
-            </div>
-
-            {/* Highest No-Shows */}
-            <div className="glass rounded-2xl border border-border-subtle overflow-hidden">
-              <div className="px-6 py-4 border-b border-border-subtle">
-                <h2 className="text-white font-semibold">Highest No-Shows</h2>
-              </div>
-              {noShowContent}
-            </div>
-          </div>
+          <AttendanceRankingsWidget attendanceRankings={attendanceRankings} isLoading={isRankingsLoading} />
 
           {/* Top Events Table */}
           {Array.isArray(summary?.topEvents) && summary.topEvents.length > 0 && (
