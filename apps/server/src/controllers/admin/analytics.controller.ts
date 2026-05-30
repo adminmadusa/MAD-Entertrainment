@@ -3,9 +3,16 @@ import { Booking } from '../../models/booking.schema';
 import { Event } from '../../models/event.schema';
 import { Ticket } from '../../models/ticket.schema';
 import { BookingStatus } from '@mad/shared';
+import { CacheService } from '../../services/cache.service';
 
 export const getSummary = async (req: Request, res: Response, next: NextFunction) => {
   try {
+    const CACHE_KEY = 'analytics:summary';
+    const cachedData = await CacheService.get(CACHE_KEY);
+    if (cachedData) {
+      return res.status(200).json({ success: true, data: cachedData });
+    }
+
     const totalBookings = await Booking.countDocuments({ status: BookingStatus.CONFIRMED });
     
     const thirtyDaysAgo = new Date();
@@ -42,14 +49,18 @@ export const getSummary = async (req: Request, res: Response, next: NextFunction
       })
     );
 
+    const responseData = {
+      totalBookings,
+      recentBookings,
+      totalRevenue,
+      topEvents
+    };
+
+    await CacheService.set(CACHE_KEY, responseData, 60);
+
     res.status(200).json({
       success: true,
-      data: {
-        totalBookings,
-        recentBookings,
-        totalRevenue,
-        topEvents
-      }
+      data: responseData
     });
   } catch (error) {
     next(error);
@@ -59,6 +70,12 @@ export const getSummary = async (req: Request, res: Response, next: NextFunction
 export const getRevenue = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const days = parseInt(req.query.days as string) || 30;
+    const CACHE_KEY = `analytics:revenue:${days}`;
+    const cachedData = await CacheService.get(CACHE_KEY);
+    if (cachedData) {
+      return res.status(200).json({ success: true, data: cachedData });
+    }
+
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
 
@@ -80,6 +97,8 @@ export const getRevenue = async (req: Request, res: Response, next: NextFunction
       { $sort: { _id: 1 } }
     ]);
 
+    await CacheService.set(CACHE_KEY, revenueData, 60);
+
     res.status(200).json({
       success: true,
       data: revenueData
@@ -91,6 +110,12 @@ export const getRevenue = async (req: Request, res: Response, next: NextFunction
 
 export const getAttendanceSummary = async (req: Request, res: Response, next: NextFunction) => {
   try {
+    const CACHE_KEY = 'analytics:attendance:summary';
+    const cachedData = await CacheService.get(CACHE_KEY);
+    if (cachedData) {
+      return res.status(200).json({ success: true, data: cachedData });
+    }
+
     const totalEvents = await Event.countDocuments({ isDeleted: { $ne: true } });
 
     const soldResult = await Event.aggregate([
@@ -108,15 +133,19 @@ export const getAttendanceSummary = async (req: Request, res: Response, next: Ne
     const attendanceRate = totalTicketsSold > 0 ? Number(((totalCheckIns / totalTicketsSold) * 100).toFixed(2)) : 0;
     const noShowRate = totalTicketsSold > 0 ? Number((((totalTicketsSold - totalCheckIns) / totalTicketsSold) * 100).toFixed(2)) : 0;
 
+    const responseData = {
+      totalEvents,
+      totalTicketsSold,
+      totalCheckIns,
+      attendanceRate,
+      noShowRate
+    };
+
+    await CacheService.set(CACHE_KEY, responseData, 60);
+
     res.status(200).json({
       success: true,
-      data: {
-        totalEvents,
-        totalTicketsSold,
-        totalCheckIns,
-        attendanceRate,
-        noShowRate
-      }
+      data: responseData
     });
   } catch (error) {
     next(error);
@@ -125,6 +154,12 @@ export const getAttendanceSummary = async (req: Request, res: Response, next: Ne
 
 export const getAttendanceRankings = async (req: Request, res: Response, next: NextFunction) => {
   try {
+    const CACHE_KEY = 'analytics:attendance:rankings';
+    const cachedData = await CacheService.get(CACHE_KEY);
+    if (cachedData) {
+      return res.status(200).json({ success: true, data: cachedData });
+    }
+
     const eventsData = await Event.aggregate([
       { $match: { isDeleted: { $ne: true } } },
       {
@@ -212,12 +247,16 @@ export const getAttendanceRankings = async (req: Request, res: Response, next: N
       .sort((a, b) => b.noShowPercentage - a.noShowPercentage || b.noShowCount - a.noShowCount)
       .slice(0, 10);
 
+    const responseData = {
+      topAttended,
+      lowestAttendance
+    };
+
+    await CacheService.set(CACHE_KEY, responseData, 60);
+
     res.status(200).json({
       success: true,
-      data: {
-        topAttended,
-        lowestAttendance
-      }
+      data: responseData
     });
   } catch (error) {
     next(error);
