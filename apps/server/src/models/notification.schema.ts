@@ -9,6 +9,11 @@ export interface INotification extends Document {
   recipient?: string;
   subject?: string;
   body?: string;
+  status?: 'queued' | 'processing' | 'sent' | 'failed';
+  jobId?: string;
+  errorMessage?: string;
+  queuedAt?: Date;
+  processedAt?: Date;
   isSent: boolean;
   retryCount: number;
 }
@@ -22,6 +27,11 @@ const notificationSchema = new Schema<INotification>(
     recipient: String,
     subject: String,
     body: String,
+    status: { type: String, enum: ['queued', 'processing', 'sent', 'failed'] },
+    jobId: { type: String, index: true },
+    errorMessage: String,
+    queuedAt: { type: Date, index: true },
+    processedAt: Date,
     isSent: { type: Boolean, default: false },
     retryCount: { type: Number, default: 0, min: 0 },
   },

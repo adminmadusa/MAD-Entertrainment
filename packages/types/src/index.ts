@@ -267,7 +267,11 @@ export type Notification = {
   title?: string;
   body?: string;
   data?: Record<string, any>;
-  status?: string;
+  status?: 'queued' | 'processing' | 'sent' | 'failed';
+  jobId?: string;
+  errorMessage?: string;
+  queuedAt?: string | Date;
+  processedAt?: string | Date;
   sentAt?: string | Date;
   channel: string;
   recipient?: string;

@@ -7,8 +7,10 @@ import { isRedisConnected } from '../config/redis';
 import { Booking } from '../models/booking.schema';
 import { Event } from '../models/event.schema';
 import { DeadLetterJob } from '../models/dead-letter-job.schema';
+import { Notification } from '../models/notification.schema';
 import { QueueService, localFallbackEmitter } from '../services/queue.service';
 import { generateTicketPDF } from '../utils/pdf';
+import { NotificationType } from '@mad/shared';
 import { logger } from '../utils/logger';
 
 const QUEUE_NAME = getQueueName('pdf-queue');
@@ -40,6 +42,22 @@ export async function processPDFGenerate(
     </div>
   `;
 
+  const jobId = `email:dispatch:${booking._id}`;
+
+  await Notification.create({
+    jobId,
+    status: 'queued',
+    queuedAt: new Date(),
+    type: NotificationType.BOOKING_CONFIRMED,
+    bookingId: booking._id,
+    eventId: event._id,
+    channel: 'email',
+    recipient: recipientEmail,
+    subject: `Your Ticket for ${event.title || 'MAD Event'} [${booking.bookingId}]`,
+    isSent: false,
+    retryCount: 0,
+  });
+
   // 2. Enqueue the final notification task with the base64-encoded attachment
   await QueueService.enqueue(
     getQueueName('notification-queue'),
@@ -57,8 +75,9 @@ export async function processPDFGenerate(
       ],
       bookingId: booking._id.toString(),
       eventId: event._id.toString(),
+      notificationType: NotificationType.BOOKING_CONFIRMED,
     },
-    `email:dispatch:${booking._id}`
+    jobId
   );
 
   logger.info({ bookingId }, 'PDF Ticket compiled successfully and enqueued SMTP dispatch.');
