@@ -6,23 +6,37 @@ import { verifyTransporter } from '../utils/email';
 
 const router: Router = Router();
 
-// Cache SMTP verification to prevent rate-limiting and minimize health-check latency
 let cachedEmailStatus = false;
 let lastEmailCheckTime = 0;
 const EMAIL_CHECK_TTL = 60 * 1000; // 1 minute
 
+let emailVerificationPromise: Promise<boolean> | null = null;
+
+async function checkEmailHealth(): Promise<boolean> {
+  const now = Date.now();
+  
+  if (now - lastEmailCheckTime > EMAIL_CHECK_TTL) {
+    if (!emailVerificationPromise) {
+      emailVerificationPromise = verifyTransporter()
+        .then((status) => {
+          cachedEmailStatus = status;
+          lastEmailCheckTime = Date.now();
+          return status;
+        })
+        .finally(() => {
+          emailVerificationPromise = null;
+        });
+    }
+    return emailVerificationPromise;
+  }
+  
+  return cachedEmailStatus;
+}
+
 router.get('/', async (_req, res) => {
   const isMongoUp = mongoose.connection.readyState === 1;
   const isRedisUp = isRedisConnected();
-  
-  const now = Date.now();
-  if (now - lastEmailCheckTime > EMAIL_CHECK_TTL || lastEmailCheckTime === 0) {
-    // Only perform the expensive TCP/TLS handshake once per minute
-    cachedEmailStatus = await verifyTransporter();
-    lastEmailCheckTime = now;
-  }
-
-  const isEmailUp = cachedEmailStatus;
+  const isEmailUp = await checkEmailHealth();
 
   const isUnhealthy = !isMongoUp || !isRedisUp;
   const isDegraded = !isUnhealthy && !isEmailUp;
