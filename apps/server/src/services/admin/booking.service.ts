@@ -14,6 +14,7 @@ import { ReservationService } from '../reservation.service';
 import { CacheService } from '../cache.service';
 import { QueueService } from '../queue.service';
 import { getQueueName } from '../../config/queue.config';
+import { BookingsSummaryResponse } from '../../types/admin/booking.types';
 
 /**
  * Resilient transaction execution helper. Runs the callback inside a session
@@ -470,3 +471,109 @@ export const resendBookingTickets = async (id: string, adminId: string) => {
 
   return booking;
 };
+
+/**
+ * Fetch booking summary stats, optionally filtered by event ID.
+ */
+export const getBookingsSummary = async (eventId?: string): Promise<BookingsSummaryResponse> => {
+  const cacheKey = eventId ? `bookings:summary:event:${eventId}` : 'bookings:summary:global';
+  const cached = await CacheService.get(cacheKey);
+  if (cached) {
+    return cached as BookingsSummaryResponse;
+  }
+
+  const matchStage: any = {};
+  if (eventId) {
+    matchStage.eventId = new mongoose.Types.ObjectId(eventId);
+  }
+
+  const bookingAgg = await Booking.aggregate([
+    { $match: matchStage },
+    {
+      $group: {
+        _id: null,
+        totalBookings: { $sum: 1 },
+        totalTickets: { $sum: '$totalTickets' },
+        revenue: {
+          $sum: {
+            $cond: [{ $eq: ['$status', BookingStatus.CONFIRMED] }, '$totalAmount', 0]
+          }
+        },
+        confirmed: {
+          $sum: {
+            $cond: [{ $eq: ['$status', BookingStatus.CONFIRMED] }, 1, 0]
+          }
+        },
+        pending: {
+          $sum: {
+            $cond: [
+              {
+                $in: [
+                  '$status',
+                  [BookingStatus.PENDING, BookingStatus.AWAITING_PAYMENT, BookingStatus.EXPIRING]
+                ]
+              },
+              1,
+              0
+            ]
+          }
+        },
+        cancelled: {
+          $sum: {
+            $cond: [
+              {
+                $in: [
+                  '$status',
+                  [BookingStatus.CANCELLED, BookingStatus.REFUNDED, BookingStatus.FAILED, BookingStatus.EXPIRED]
+                ]
+              },
+              1,
+              0
+            ]
+          }
+        }
+      }
+    }
+  ]);
+
+  const bookingStats = bookingAgg[0] || {
+    totalBookings: 0,
+    totalTickets: 0,
+    revenue: 0,
+    confirmed: 0,
+    pending: 0,
+    cancelled: 0
+  };
+
+  const ticketMatchStage: any = { scannedAt: { $ne: null } };
+  if (eventId) {
+    ticketMatchStage.eventId = new mongoose.Types.ObjectId(eventId);
+  }
+
+  const ticketAgg = await Ticket.aggregate([
+    { $match: ticketMatchStage },
+    {
+      $group: {
+        _id: null,
+        checkedIn: { $sum: '$admits' }
+      }
+    }
+  ]);
+
+  const checkedIn = ticketAgg[0]?.checkedIn || 0;
+
+  const result: BookingsSummaryResponse = {
+    totalBookings: bookingStats.totalBookings,
+    totalTickets: bookingStats.totalTickets,
+    revenue: bookingStats.revenue,
+    confirmed: bookingStats.confirmed,
+    pending: bookingStats.pending,
+    cancelled: bookingStats.cancelled,
+    checkedIn
+  };
+
+  await CacheService.set(cacheKey, result, 60);
+
+  return result;
+};
+

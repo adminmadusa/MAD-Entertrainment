@@ -41,7 +41,15 @@ const resendBookingTicketsSchema = z.object({
   }),
 });
 
+// Validation schema for bookings summary request
+const bookingsSummarySchema = z.object({
+  query: z.object({
+    eventId: z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid event ID format').optional(),
+  }),
+});
+
 router.get('/', bookingController.getBookings);
+router.get('/summary', validate(bookingsSummarySchema), bookingController.getBookingsSummary);
 router.get('/:id', bookingController.getBookingById);
 router.patch('/:id/cancel', validate(cancelBookingSchema), bookingController.cancelBooking);
 router.patch('/:id/correct-email', validate(correctBookingEmailSchema), bookingController.correctBookingEmail);

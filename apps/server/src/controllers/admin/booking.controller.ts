@@ -106,3 +106,22 @@ export const resendBookingTickets = async (req: Request, res: Response, next: Ne
     next(error);
   }
 };
+
+/**
+ * Retrieve booking summary statistics, optionally filtered by event.
+ */
+export const getBookingsSummary = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const eventId = req.query.eventId as string | undefined;
+
+    const summary = await bookingService.getBookingsSummary(eventId);
+    res.status(200).json({
+      success: true,
+      data: summary,
+      message: 'Bookings summary fetched successfully',
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
