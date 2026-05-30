@@ -1,8 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { BookingStatus } from '@mad/shared';
-import { correctBookingEmail, resendBookingTickets } from './booking.service';
+import { correctBookingEmail, resendBookingTickets, getBookingsSummary } from './booking.service';
 import { Booking } from '../../models/booking.schema';
 import { UserModel } from '../../models/user.schema';
+import { Ticket } from '../../models/ticket.schema';
+import { CacheService } from '../cache.service';
 import { QueueService } from '../queue.service';
 import { auditLog } from '../../utils/audit';
 
@@ -21,6 +23,21 @@ vi.mock('mongoose', async (importOriginal) => {
 vi.mock('../../models/booking.schema', () => ({
   Booking: {
     findById: vi.fn(),
+    aggregate: vi.fn(),
+  },
+}));
+
+vi.mock('../../models/ticket.schema', () => ({
+  Ticket: {
+    aggregate: vi.fn(),
+  },
+}));
+
+vi.mock('../cache.service', () => ({
+  CacheService: {
+    get: vi.fn(),
+    set: vi.fn(),
+    delPattern: vi.fn(),
   },
 }));
 
@@ -251,6 +268,112 @@ describe('Admin Booking Service Backend Tests', () => {
           }),
         })
       );
+    });
+  });
+
+  describe('getBookingsSummary', () => {
+    it('should return cached summary if available', async () => {
+      const mockCachedData = {
+        totalBookings: 10,
+        totalTickets: 20,
+        revenue: 5000,
+        confirmed: 8,
+        pending: 1,
+        cancelled: 1,
+        checkedIn: 5,
+      };
+
+      vi.mocked(CacheService.get).mockResolvedValue(mockCachedData);
+
+      const result = await getBookingsSummary();
+
+      expect(CacheService.get).toHaveBeenCalledWith('bookings:summary:global');
+      expect(result).toEqual(mockCachedData);
+      expect(Booking.aggregate).not.toHaveBeenCalled();
+    });
+
+    it('should run aggregation and calculate stats globally when no eventId is provided', async () => {
+      vi.mocked(CacheService.get).mockResolvedValue(null);
+      vi.mocked(Booking.aggregate).mockResolvedValue([
+        {
+          totalBookings: 15,
+          totalTickets: 30,
+          revenue: 15000,
+          confirmed: 10,
+          pending: 3,
+          cancelled: 2,
+        },
+      ]);
+      vi.mocked(Ticket.aggregate).mockResolvedValue([
+        {
+          checkedIn: 12,
+        },
+      ]);
+
+      const result = await getBookingsSummary();
+
+      expect(CacheService.get).toHaveBeenCalledWith('bookings:summary:global');
+      expect(Booking.aggregate).toHaveBeenCalled();
+      expect(Ticket.aggregate).toHaveBeenCalledWith([
+        { $match: { scannedAt: { $ne: null } } },
+        { $group: { _id: null, checkedIn: { $sum: '$admits' } } },
+      ]);
+      expect(CacheService.set).toHaveBeenCalledWith('bookings:summary:global', result, 60);
+      expect(result).toEqual({
+        totalBookings: 15,
+        totalTickets: 30,
+        revenue: 15000,
+        confirmed: 10,
+        pending: 3,
+        cancelled: 2,
+        checkedIn: 12,
+      });
+    });
+
+    it('should run aggregation filtered by eventId when provided', async () => {
+      const eventId = '507f1f77bcf86cd799439011';
+      vi.mocked(CacheService.get).mockResolvedValue(null);
+      vi.mocked(Booking.aggregate).mockResolvedValue([
+        {
+          totalBookings: 5,
+          totalTickets: 10,
+          revenue: 5000,
+          confirmed: 4,
+          pending: 1,
+          cancelled: 0,
+        },
+      ]);
+      vi.mocked(Ticket.aggregate).mockResolvedValue([
+        {
+          checkedIn: 6,
+        },
+      ]);
+
+      const result = await getBookingsSummary(eventId);
+
+      expect(CacheService.get).toHaveBeenCalledWith(`bookings:summary:event:${eventId}`);
+      expect(Booking.aggregate).toHaveBeenCalled();
+      expect(Ticket.aggregate).toHaveBeenCalled();
+      expect(CacheService.set).toHaveBeenCalledWith(`bookings:summary:event:${eventId}`, result, 60);
+      expect(result.checkedIn).toBe(6);
+    });
+
+    it('should fall back to 0 values if aggregation returns empty results', async () => {
+      vi.mocked(CacheService.get).mockResolvedValue(null);
+      vi.mocked(Booking.aggregate).mockResolvedValue([]);
+      vi.mocked(Ticket.aggregate).mockResolvedValue([]);
+
+      const result = await getBookingsSummary();
+
+      expect(result).toEqual({
+        totalBookings: 0,
+        totalTickets: 0,
+        revenue: 0,
+        confirmed: 0,
+        pending: 0,
+        cancelled: 0,
+        checkedIn: 0,
+      });
     });
   });
 });
