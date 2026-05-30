@@ -14,7 +14,7 @@ import {
     requireAuth,
     optionalAuth,
 } from '../../middleware/auth.middleware';
-import { authLimiter, resendLimiter } from '../../middleware/rate.middleware';
+import { authLimiter, resendLimiter, generalLimiter } from '../../middleware/rate.middleware';
 
 import { validateBody, validateParams } from '../../middleware/validation.middleware';
 import { reserveTicketsSchema, checkoutDetailsSchema, bookingReferenceParamSchema } from '../../validations/payment.validation';
@@ -25,7 +25,7 @@ const router: Router = Router();
 // Guest Session Token
 // ─────────────────────────────────────────────
 
-router.get('/session', authLimiter as any, getSessionToken);
+router.get('/session', generalLimiter as any, getSessionToken);
 
 // ─────────────────────────────────────────────
 // Create Booking

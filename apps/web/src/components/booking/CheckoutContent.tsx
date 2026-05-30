@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 
-import { STORAGE_VERSION } from '@mad/shared';
+import { STORAGE_VERSION, QUERY_KEYS } from '@mad/shared';
 import { Event, Booking } from '@mad/types';
 import { useCountdown } from '@/hooks/use-countdown.hook';
 import { extractApiError } from '@/lib/api/client';
@@ -64,7 +64,8 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
   } = useCheckoutNavGuard({ isModal, onBack, onClose });
 
   const { data: details, isLoading } = useQuery({
-    queryKey: ['booking-checkout-details', bookingId],
+    queryKey: QUERY_KEYS.public.bookings.checkout(bookingId),
+
     queryFn: () => {
       let sess: string | undefined;
       if (typeof window !== 'undefined') {

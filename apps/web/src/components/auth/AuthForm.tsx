@@ -57,6 +57,85 @@ export interface AuthFormProps {
 export function AuthForm({ mode, onSuccess, onGuestContinue, className = '' }: AuthFormProps) {
   const { login } = useAuth();
 
+  const [cooldownRemaining, setCooldownRemaining] = useState<number>(0);
+  const [cooldownExpiry, setCooldownExpiry] = useState<number | null>(null);
+
+  const formatTime = useCallback((seconds: number): string => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+  }, []);
+
+  const triggerCooldown = useCallback((retryAfterSeconds: number) => {
+    const proposedExpiry = Date.now() + retryAfterSeconds * 1000;
+    const storedExpiry = localStorage.getItem('mad_otp_cooldown_expiry');
+    const existingExpiry = storedExpiry ? Number(storedExpiry) : 0;
+    const finalExpiry = Math.max(existingExpiry, proposedExpiry);
+
+    localStorage.setItem('mad_otp_cooldown_expiry', String(finalExpiry));
+    setCooldownExpiry(finalExpiry);
+    setCooldownRemaining(Math.ceil((finalExpiry - Date.now()) / 1000));
+  }, []);
+
+  // Hydrate on mount
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const storedExpiry = localStorage.getItem('mad_otp_cooldown_expiry');
+      if (storedExpiry) {
+        const expiry = Number(storedExpiry);
+        if (expiry > Date.now()) {
+          setCooldownExpiry(expiry);
+          setCooldownRemaining(Math.ceil((expiry - Date.now()) / 1000));
+        }
+      }
+    }
+  }, []);
+
+  // Set interval timer
+  useEffect(() => {
+    if (!cooldownExpiry) {
+      setCooldownRemaining(0);
+      return;
+    }
+
+    const interval = setInterval(() => {
+      const remaining = Math.ceil((cooldownExpiry - Date.now()) / 1000);
+      if (remaining <= 0) {
+        setCooldownRemaining(0);
+        setCooldownExpiry(null);
+        localStorage.removeItem('mad_otp_cooldown_expiry');
+      } else {
+        setCooldownRemaining(remaining);
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [cooldownExpiry]);
+
+  // Sync across tabs
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'mad_otp_cooldown_expiry') {
+        if (e.newValue) {
+          const expiry = Number(e.newValue);
+          if (expiry > Date.now()) {
+            setCooldownExpiry(expiry);
+            setCooldownRemaining(Math.ceil((expiry - Date.now()) / 1000));
+          } else {
+            setCooldownExpiry(null);
+            setCooldownRemaining(0);
+          }
+        } else {
+          setCooldownExpiry(null);
+          setCooldownRemaining(0);
+        }
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
+
   // Core Authentication States
   const [email, setEmail] = useState('');
   const [firstName, setFirstName] = useState('');
@@ -110,7 +189,12 @@ export function AuthForm({ mode, onSuccess, onGuestContinue, className = '' }: A
     },
     onError: (err) => {
       const apiErr = extractApiError(err);
-      setError(apiErr.message || 'Failed to verify email. Please try again.');
+      if (apiErr.code === 'RATE_LIMIT_EXCEEDED') {
+        triggerCooldown(apiErr.retryAfter ?? 60);
+        setError('');
+      } else {
+        setError(apiErr.message || 'Failed to verify email. Please try again.');
+      }
     },
   });
 
@@ -129,7 +213,12 @@ export function AuthForm({ mode, onSuccess, onGuestContinue, className = '' }: A
     },
     onError: (err) => {
       const apiErr = extractApiError(err);
-      setError(apiErr.message || 'Failed to send verification code. Please try again.');
+      if (apiErr.code === 'RATE_LIMIT_EXCEEDED') {
+        triggerCooldown(apiErr.retryAfter ?? 60);
+        setError('');
+      } else {
+        setError(apiErr.message || 'Failed to send verification code. Please try again.');
+      }
     },
   });
 
@@ -151,7 +240,12 @@ export function AuthForm({ mode, onSuccess, onGuestContinue, className = '' }: A
     },
     onError: (err) => {
       const apiErr = extractApiError(err);
-      setError(apiErr.message || 'Invalid verification code. Please request a new code.');
+      if (apiErr.code === 'RATE_LIMIT_EXCEEDED') {
+        triggerCooldown(apiErr.retryAfter ?? 60);
+        setError('');
+      } else {
+        setError(apiErr.message || 'Invalid verification code. Please request a new code.');
+      }
     },
   });
 
@@ -289,11 +383,19 @@ export function AuthForm({ mode, onSuccess, onGuestContinue, className = '' }: A
   return (
     <div className={`space-y-6 ${className}`}>
       {/* Alert Banners */}
-      {error && (
+      {cooldownRemaining > 0 ? (
+        <div className="p-4 bg-error/10 border border-error/30 rounded-2xl text-xs text-red-400 text-center animate-in fade-in duration-300 space-y-1">
+          <p className="font-bold">For your security, we've temporarily paused verification requests.</p>
+          <p>You can request a new code in:</p>
+          <p className="font-mono text-lg font-black tracking-wider text-amber-400">
+            {formatTime(cooldownRemaining)}
+          </p>
+        </div>
+      ) : error ? (
         <div className="p-4 bg-error/10 border border-error/30 rounded-2xl text-xs text-red-400 text-center animate-in fade-in duration-300">
           {error}
         </div>
-      )}
+      ) : null}
 
       {infoMessage && (
         <div className="p-4 bg-accent-purple/10 border border-accent-purple/30 rounded-2xl text-xs text-purple-300 text-center animate-in fade-in duration-300">
@@ -315,13 +417,14 @@ export function AuthForm({ mode, onSuccess, onGuestContinue, className = '' }: A
                   placeholder="Enter your email address"
                   className="flex-grow bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white placeholder:text-text-muted/30 focus:outline-none focus:border-accent-purple focus:ring-1 focus:ring-accent-purple transition-all"
                 />
-                <Button
+                 <Button
                   type="submit"
                   variant="primary"
                   className="px-4 py-2 text-xs font-bold rounded-xl whitespace-nowrap"
+                  disabled={cooldownRemaining > 0}
                   isLoading={checkEmailMutation.isPending || requestMagicLinkMutation.isPending}
                 >
-                  Email Login Link
+                  {cooldownRemaining > 0 ? `Request Code (${formatTime(cooldownRemaining)})` : 'Email Login Link'}
                 </Button>
               </>
             ) : (
@@ -346,9 +449,10 @@ export function AuthForm({ mode, onSuccess, onGuestContinue, className = '' }: A
                   variant="primary"
                   fullWidth
                   className="py-3.5 rounded-xl font-bold tracking-wide shadow-lg shadow-accent-purple/20 hover:shadow-accent-purple/40 active:scale-95 transition-all duration-200"
+                  disabled={cooldownRemaining > 0}
                   isLoading={checkEmailMutation.isPending || requestMagicLinkMutation.isPending}
                 >
-                  Continue with Email
+                  {cooldownRemaining > 0 ? `Request Code (${formatTime(cooldownRemaining)})` : 'Continue with Email'}
                 </Button>
               </div>
             )}
@@ -363,9 +467,20 @@ export function AuthForm({ mode, onSuccess, onGuestContinue, className = '' }: A
 
           {/* Google SSO button */}
           <div className="space-y-3">
+            {cooldownRemaining > 0 ? (
+              <Button
+                variant="secondary"
+                disabled
+                fullWidth
+                className="py-3.5 rounded-xl font-bold tracking-wide transition-all duration-200"
+              >
+                Google Login ({formatTime(cooldownRemaining)})
+              </Button>
+            ) : null}
             <div
               id="google-signin-btn-shared"
               className="w-full min-h-[44px] flex justify-center items-center overflow-hidden hover:opacity-90 active:scale-98 transition-all duration-200"
+              style={{ display: cooldownRemaining > 0 ? 'none' : 'flex' }}
             />
             {googleLoginMutation.isPending && (
               <p className="text-center text-xs text-purple-300/80 animate-pulse mt-2">
@@ -442,9 +557,10 @@ export function AuthForm({ mode, onSuccess, onGuestContinue, className = '' }: A
               variant="primary"
               fullWidth
               className="py-3.5 rounded-xl font-bold tracking-wide shadow-lg shadow-accent-purple/20 hover:shadow-accent-purple/40 active:scale-95 transition-all duration-200"
+              disabled={cooldownRemaining > 0}
               isLoading={requestMagicLinkMutation.isPending}
             >
-              Create Account
+              {cooldownRemaining > 0 ? `Request Code (${formatTime(cooldownRemaining)})` : 'Create Account'}
             </Button>
             <button
               type="button"
@@ -501,9 +617,10 @@ export function AuthForm({ mode, onSuccess, onGuestContinue, className = '' }: A
               variant="primary"
               fullWidth
               className={isCheckout ? 'py-2.5 text-xs font-bold rounded-xl' : 'py-3.5 rounded-xl font-bold tracking-wide shadow-lg shadow-accent-purple/20 hover:shadow-accent-purple/40 active:scale-95 transition-all duration-200'}
+              disabled={cooldownRemaining > 0}
               isLoading={verifyMutation.isPending}
             >
-              Verify Code
+              {cooldownRemaining > 0 ? `Request Code (${formatTime(cooldownRemaining)})` : 'Verify Code'}
             </Button>
 
             <div className="flex justify-between items-center text-xs px-1 pt-1">
@@ -515,7 +632,11 @@ export function AuthForm({ mode, onSuccess, onGuestContinue, className = '' }: A
                 ← Edit email
               </button>
 
-              {resendTimer > 0 ? (
+              {cooldownRemaining > 0 ? (
+                <span className="text-text-muted/60">
+                  Resend code in <span className="font-semibold text-purple-300">{formatTime(cooldownRemaining)}</span>
+                </span>
+              ) : resendTimer > 0 ? (
                 <span className="text-text-muted/60">
                   Resend code in <span className="font-semibold text-purple-300">{resendTimer}s</span>
                 </span>
@@ -523,7 +644,7 @@ export function AuthForm({ mode, onSuccess, onGuestContinue, className = '' }: A
                 <button
                   type="button"
                   onClick={() => requestMagicLinkMutation.mutate()}
-                  disabled={requestMagicLinkMutation.isPending}
+                  disabled={requestMagicLinkMutation.isPending || cooldownRemaining > 0}
                   className="text-accent-purple hover:text-accent-purple-light font-semibold transition-colors duration-200 disabled:opacity-50"
                 >
                   Resend Code

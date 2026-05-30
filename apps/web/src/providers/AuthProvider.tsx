@@ -2,6 +2,7 @@
 
 import { publicGetMe, publicLogout } from '@/lib/api/public.service';
 import { STORAGE_KEYS } from '@mad/shared';
+import { useQueryClient } from '@tanstack/react-query';
 import { AuthUser } from '../types/auth';
 import { createContext, useContext, useEffect, useState, useCallback } from 'react';
 
@@ -50,6 +51,7 @@ function isTokenExpired(token: string): boolean {
 }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const queryClient = useQueryClient();
   const [user, setUser] = useState<AuthUser | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -102,6 +104,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // Listen for global auth expired events from Axios interceptor
     const handleAuthExpired = () => {
+      queryClient.clear();
       setToken(null);
       setUser(null);
       localStorage.removeItem(STORAGE_KEYS.USER_TOKEN);
@@ -112,7 +115,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => {
       window.removeEventListener('auth:expired', handleAuthExpired);
     };
-  }, []);
+  }, [queryClient]);
 
   const login = useCallback((newToken: string, newUser: AuthUser) => {
     setToken(newToken);
@@ -127,12 +130,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch {
       // Ignore API failures during logout
     } finally {
+      queryClient.clear();
       setToken(null);
       setUser(null);
       localStorage.removeItem(STORAGE_KEYS.USER_TOKEN);
       localStorage.removeItem(STORAGE_KEYS.USER_DATA);
     }
-  }, []);
+  }, [queryClient]);
+
 
   return (
     <AuthContext.Provider
