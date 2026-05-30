@@ -4,6 +4,8 @@ import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { useState, useEffect, Suspense } from 'react';
 
+import { useSearchParams } from 'next/navigation';
+
 import { extractApiError } from '@/lib/api/client';
 import {
   publicGetMyBookings,
@@ -17,6 +19,9 @@ import { TicketActions } from '@/components/booking/shared/TicketActions';
 import { EntryPassGrid } from '@/components/booking/shared/EntryPassGrid';
 
 function TicketRetrievalContent() {
+  const searchParams = useSearchParams();
+  const targetRef = searchParams.get('ref');
+
   const { logout, isAuthenticated, isLoading: isAuthLoading, user } = useAuth();
 
   // Core Retrieval States
@@ -98,6 +103,12 @@ function TicketRetrievalContent() {
   const bookings = bookingsData?.bookings || [];
   const tickets = bookingsData?.tickets || [];
 
+  const sortedBookings = [...bookings].sort((a, b) => {
+    if (targetRef && a.bookingId === targetRef) return -1;
+    if (targetRef && b.bookingId === targetRef) return 1;
+    return 0;
+  });
+
   return (
     <div className="pt-28 pb-16 min-h-screen bg-background relative overflow-hidden">
       {/* Decorative Glow Elements */}
@@ -114,7 +125,9 @@ function TicketRetrievalContent() {
           <p className="text-text-secondary text-sm max-w-md mx-auto leading-relaxed">
             {step === 'portal'
               ? `Manage and view entry passes associated with ${user?.email || 'your email'}.`
-              : 'Enter your email address to verify your identity and instantly track your active event bookings.'}
+              : targetRef 
+                ? `Verify the email address used to book ${targetRef} to view your tickets.`
+                : 'Enter your email address to verify your identity and instantly track your active event bookings.'}
           </p>
         </div>
 
@@ -161,17 +174,22 @@ function TicketRetrievalContent() {
               <div className="text-center py-20 text-text-muted text-xs animate-pulse">
                 Loading secure ticket resources...
               </div>
-            ) : bookings.length > 0 ? (
+            ) : sortedBookings.length > 0 ? (
               <div className="space-y-8">
-                {bookings.map((booking) => {
+                {sortedBookings.map((booking) => {
                   const bookingTickets = tickets.filter(
                     (t) => t.bookingId === booking._id || t.bookingId?.toString() === booking._id?.toString()
                   );
 
+                  const isTarget = targetRef && booking.bookingId === targetRef;
+                  const containerClasses = isTarget
+                    ? "glass rounded-3xl p-6 sm:p-8 space-y-6 shadow-glow-purple transition-all duration-300 border-accent-purple ring-2 ring-accent-purple/50"
+                    : "glass rounded-3xl border border-border-subtle p-6 sm:p-8 space-y-6 shadow-xl transition-all duration-300 hover:border-white/10";
+
                   return (
                     <div
                       key={booking._id}
-                      className="glass rounded-3xl border border-border-subtle p-6 sm:p-8 space-y-6 shadow-xl transition-all duration-300 hover:border-white/10"
+                      className={containerClasses}
                     >
                       <BookingHeaderCard booking={booking} />
 
@@ -203,15 +221,31 @@ function TicketRetrievalContent() {
                 <div className="text-4xl">🎫</div>
                 <h3 className="text-white font-bold text-base">No Tickets Found</h3>
                 <p className="text-text-secondary text-sm max-w-sm mx-auto leading-relaxed">
-                  We couldn't find any confirmed event bookings associated with the email <span className="text-white font-semibold">{user?.email}</span>.
+                  {targetRef ? (
+                    <>
+                      We couldn't find the booking <span className="text-white font-semibold">{targetRef}</span> associated with <span className="text-white font-semibold">{user?.email}</span>. Did you use a different email address at checkout?
+                    </>
+                  ) : (
+                    <>
+                      We couldn't find any confirmed event bookings associated with the email <span className="text-white font-semibold">{user?.email}</span>.
+                    </>
+                  )}
                 </p>
-                <button
-                  type="button"
-                  onClick={handleExitPortal}
-                  className="px-5 py-2.5 bg-accent-purple hover:bg-accent-purple-light text-white text-xs font-bold rounded-xl transition-all shadow-md"
-                >
-                  Try Another Email
-                </button>
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-4">
+                  <button
+                    type="button"
+                    onClick={handleExitPortal}
+                    className="px-5 py-2.5 bg-accent-purple hover:bg-accent-purple-light text-white text-xs font-bold rounded-xl transition-all shadow-md"
+                  >
+                    Try Another Email
+                  </button>
+                  <a
+                    href="mailto:support@mad-entertainment.com"
+                    className="px-5 py-2.5 bg-white/5 hover:bg-white/10 text-white text-xs font-bold rounded-xl transition-all border border-border-subtle"
+                  >
+                    Contact Support
+                  </a>
+                </div>
               </div>
             )}
           </div>
