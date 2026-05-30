@@ -39,7 +39,7 @@ export class AuthService {
     logger.info({ email: trimmedEmail }, "OTP passcode requested");
 
     // 1. Generate unique 6-digit OTP
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otp = crypto.randomInt(100000, 1000000).toString();
     const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes TTL
 
     // 2. Hash the OTP for secure database storage

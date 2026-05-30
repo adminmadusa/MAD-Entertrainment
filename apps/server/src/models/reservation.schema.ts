@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import { InventoryState, ReservationStatus, TicketTier } from '@mad/shared';
 import { Schema, model, Document, Types } from 'mongoose';
 
@@ -97,7 +98,7 @@ reservationSchema.index({ bookingId: 1, status: 1 });
 
 reservationSchema.pre('validate', function (next) {
   if (!this.reservationId) {
-    this.reservationId = `RSV-${Date.now()}-${Math.random().toString(36).slice(2, 10).toUpperCase()}`;
+    this.reservationId = `RSV-${Date.now()}-${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
   }
   next();
 });

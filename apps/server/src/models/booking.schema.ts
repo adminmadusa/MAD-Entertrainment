@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import { BookingStatus, TicketTier } from '@mad/shared';
 import { Schema, model, Document, Types } from 'mongoose';
 
@@ -134,7 +135,7 @@ bookingSchema.pre('validate', function (next) {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     let randomPart = '';
     for (let i = 0; i < 5; i++) {
-      randomPart += chars.charAt(Math.floor(Math.random() * chars.length));
+      randomPart += chars.charAt(crypto.randomInt(0, chars.length));
     }
     this.bookingId = `MAD-${year}-${randomPart}`;
   }
