@@ -128,13 +128,18 @@ export const getBookings = async (
   page: number = 1,
   limit: number = 10,
   search?: string,
-  status?: string
+  status?: string,
+  eventId?: string
 ) => {
   const skip = (page - 1) * limit;
   const filter: any = {};
 
   if (status) {
     filter.status = status;
+  }
+
+  if (eventId) {
+    filter.eventId = eventId;
   }
 
   if (search) {
