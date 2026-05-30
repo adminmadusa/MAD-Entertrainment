@@ -148,6 +148,13 @@ export default function AdminBookingsPage() {
             <span className={`text-xs px-2.5 py-1 rounded-full border font-medium ${STATUS_COLORS[booking.status] ?? 'text-text-muted border-border-subtle'}`}>
               {booking.status}
             </span>
+            {booking.status === 'confirmed' && booking.totalTickets > 0 && (
+              <div className="mt-2">
+                <span className={`text-[10px] px-2 py-0.5 rounded-md border ${booking.ticketsScanned === booking.totalTickets ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400' : 'bg-white/5 border-border-subtle text-text-secondary'}`}>
+                  {booking.ticketsScanned === booking.totalTickets ? 'Fully Checked In' : `${booking.ticketsScanned ?? 0} / ${booking.totalTickets} Checked In`}
+                </span>
+              </div>
+            )}
           </td>
           <td className="py-4 px-4 text-text-muted text-xs">
             {new Date(booking.createdAt).toLocaleDateString('en-IN')}

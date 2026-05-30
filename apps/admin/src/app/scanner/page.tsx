@@ -358,7 +358,7 @@ export default function ScannerPage() {
                     <p className="font-mono text-sm text-white">{t.ticketId}</p>
                     <p className="text-xs text-text-secondary mt-1">{t.tierName} • Admits: {t.admits}</p>
                     {t.scannedAt && (
-                      <p className="text-xs text-amber-400 mt-1">Already scanned at {new Date(t.scannedAt).toLocaleTimeString()}</p>
+                      <p className="text-xs text-amber-400 mt-1">Checked In at {new Date(t.scannedAt).toLocaleTimeString()}</p>
                     )}
                   </div>
                   <button
