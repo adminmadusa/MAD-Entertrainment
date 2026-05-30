@@ -9,11 +9,13 @@ import {
   adminCancelBooking,
   adminCorrectBookingEmail,
   adminResendBookingTickets,
+  adminGetBookingsSummary,
   type AdminBooking,
 } from '@/lib/api/admin/booking.service';
 import { extractApiError } from '@/lib/api/client';
 import ErrorState from '@/components/states/ErrorState';
 import { adminGetEvents } from '@/lib/api/admin/event.service';
+import BookingsSummaryWidget from '@/components/bookings/BookingsSummaryWidget';
 
 const STATUS_COLORS: Record<string, string> = {
   confirmed: 'bg-green-500/10 text-green-400 border-green-500/30',
@@ -48,6 +50,22 @@ export default function AdminBookingsPage() {
     queryKey: ['admin-bookings', { page, search, status: statusFilter, eventId: eventFilter }],
     queryFn: () => adminGetBookings({ page, limit: 15, ...(search && { search }), ...(statusFilter && { status: statusFilter }), ...(eventFilter && { eventId: eventFilter }) }),
   });
+
+  const { data: summary, isLoading: isSummaryLoading, isError: isSummaryError } = useQuery({
+    queryKey: ['admin-bookings-summary', eventFilter],
+    queryFn: () => adminGetBookingsSummary(eventFilter),
+    staleTime: 60000,
+  });
+
+  const fallbackSummary = {
+    totalBookings: 0,
+    totalTickets: 0,
+    revenue: 0,
+    confirmed: 0,
+    pending: 0,
+    cancelled: 0,
+    checkedIn: 0,
+  };
 
   const cancelMutation = useMutation({
     mutationFn: ({ id, reason }: { id: string; reason: string }) => adminCancelBooking(id, reason),
@@ -262,6 +280,18 @@ export default function AdminBookingsPage() {
           Export CSV
         </button>
       </div>
+
+      {isSummaryError && (
+        <div className="text-red-400 text-xs font-semibold flex items-center gap-1.5 px-1 animate-pulse">
+          <span>⚠️</span>
+          <span>Failed to refresh summary metrics</span>
+        </div>
+      )}
+
+      <BookingsSummaryWidget
+        {...(summary ?? fallbackSummary)}
+        isLoading={isSummaryLoading}
+      />
 
       <div className="glass rounded-2xl border border-border-subtle overflow-hidden">
         <div className="overflow-x-auto">
