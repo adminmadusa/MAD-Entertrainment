@@ -36,14 +36,16 @@ export async function adminGetDJs(filters: DJFilters = {}): Promise<NormalizedDJ
         params.set(k, String(v));
       }
     });
-    const { data } = await adminApiClient.get<DJsResponse>(`/admin/dj-operators?${params}`);
+    const { data } = await adminApiClient.get<any>(`/admin/dj-operators?${params}`);
+    const payload = data?.data;
+    const paginationSource = data?.pagination || payload?.pagination || payload;
     return {
-      items: Array.isArray(data?.data) ? data.data : (data?.data && Object.values(data.data).find(v => Array.isArray(v)) || []),
+      items: Array.isArray(payload) ? payload : (payload && Object.values(payload).find(v => Array.isArray(v)) || []),
       pagination: {
-        page: data?.pagination?.page ?? 1,
-        limit: data?.pagination?.limit ?? 15,
-        total: data?.pagination?.total ?? 0,
-        totalPages: data?.pagination?.totalPages ?? 1,
+        page: paginationSource?.page ?? Number(filters.page) ?? 1,
+        limit: paginationSource?.limit ?? Number(filters.limit) ?? 15,
+        total: paginationSource?.total ?? 0,
+        totalPages: paginationSource?.totalPages ?? paginationSource?.pages ?? 1,
       },
     };
   } catch (error) {
