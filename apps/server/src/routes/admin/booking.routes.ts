@@ -1,8 +1,9 @@
 import { Router } from 'express';
 import { z } from 'zod';
+import { AdminRole } from '@mad/shared';
 
 import * as bookingController from '../../controllers/admin/booking.controller';
-import { requireAdmin } from '../../middleware/auth.middleware';
+import { requireAdmin, requireRole } from '../../middleware/auth.middleware';
 import { validate } from '../../middleware/validation.middleware';
 
 const router: Router = Router();
@@ -51,8 +52,8 @@ const bookingsSummarySchema = z.object({
 router.get('/', bookingController.getBookings);
 router.get('/summary', validate(bookingsSummarySchema), bookingController.getBookingsSummary);
 router.get('/:id', bookingController.getBookingById);
-router.patch('/:id/cancel', validate(cancelBookingSchema), bookingController.cancelBooking);
-router.patch('/:id/correct-email', validate(correctBookingEmailSchema), bookingController.correctBookingEmail);
-router.post('/:id/resend', validate(resendBookingTicketsSchema), bookingController.resendBookingTickets);
+router.patch('/:id/cancel', requireRole(AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.SUPPORT), validate(cancelBookingSchema), bookingController.cancelBooking);
+router.patch('/:id/correct-email', requireRole(AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.SUPPORT), validate(correctBookingEmailSchema), bookingController.correctBookingEmail);
+router.post('/:id/resend', requireRole(AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.SUPPORT), validate(resendBookingTicketsSchema), bookingController.resendBookingTickets);
 
 export default router;
