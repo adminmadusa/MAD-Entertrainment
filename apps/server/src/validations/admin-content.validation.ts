@@ -24,6 +24,17 @@ export const adminIdParamSchema = z.object({
   }).strict(),
 });
 
+const bookingReferenceSchema = z
+  .string()
+  .regex(/^MAD-\d{4}-[A-Z0-9]{5}$/, 'Invalid booking reference format (expected MAD-YYYY-XXXXX)')
+  .max(20);
+
+export const adminBookingIdentifierParamSchema = z.object({
+  params: z.object({
+    id: z.union([objectIdSchema, bookingReferenceSchema]),
+  }).strict(),
+});
+
 const adminPaginationLimitSchema = z.coerce.number().int().positive().max(100);
 
 export const adminBookingsQuerySchema = z.object({
@@ -149,9 +160,25 @@ export const processRefundSchema = z.object({
 });
 
 // -- Scanner Validation --
+const scannerReferenceSchema = z
+  .string()
+  .trim()
+  .min(1, 'Reference is required')
+  .max(100, 'Reference is too long')
+  .regex(/^[A-Za-z0-9][A-Za-z0-9_-]*$/, 'Invalid scanner reference format');
+
 export const scannerScanSchema = z.object({
   body: z.object({
     ticketId: z.string().trim().min(1, 'Ticket ID is required').max(100),
+    eventId: objectIdSchema,
+  }).strict(),
+});
+
+export const scannerLookupSchema = z.object({
+  params: z.object({
+    reference: scannerReferenceSchema,
+  }).strict(),
+  query: z.object({
     eventId: objectIdSchema,
   }).strict(),
 });
@@ -210,7 +237,7 @@ export const createDJOperatorSchema = z.object({
 });
 
 export const updateDJOperatorSchema = z.object({
-  params: z.object({ id: z.string() }),
+  params: adminIdParamSchema.shape.params,
   body: createDJOperatorSchema.shape.body.partial(),
 });
 
@@ -286,7 +313,7 @@ export const createEventSchema = z.object({
 });
 
 export const updateEventSchema = z.object({
-  params: z.object({ id: z.string() }),
+  params: adminIdParamSchema.shape.params,
   body: createEventSchema.shape.body.partial(),
 });
 
@@ -334,6 +361,6 @@ export const createTicketProfileSchema = z.object({
 });
 
 export const updateTicketProfileSchema = z.object({
-  params: z.object({ id: z.string() }),
+  params: adminIdParamSchema.shape.params,
   body: createTicketProfileSchema.shape.body.partial(),
 });
