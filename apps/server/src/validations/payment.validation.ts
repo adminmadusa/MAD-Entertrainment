@@ -20,6 +20,7 @@ export const listEventsQuerySchema = z.object({
   search: z.string().max(200).optional(),
   page: z.coerce.number().int().positive().default(1),
   limit: z.coerce.number().int().positive().default(12),
+  includeTotal: z.enum(['true', 'false']).optional(),
 }).strict();
 
 export const getEventSeatLayoutParamSchema = z.object({

@@ -10,8 +10,6 @@ const CACHE_OPTIONS = {
   },
 };
 
-const isRealProduction = Boolean(process.env.VERCEL) && process.env.VERCEL_ENV === 'production';
-
 /**
  * Fetch with timeout protection to prevent Safari streaming stalls.
  * Uses AbortController to enforce 8-second timeout on all server-side data fetches.
@@ -36,8 +34,12 @@ async function fetchWithTimeout(
 
 export async function serverGetFeaturedEvents(): Promise<Event[]> {
   try {
-    const res = await fetchWithTimeout(`${API_URL}/events?page=1&limit=6&includeTotal=false`, CACHE_OPTIONS, 8000);
-    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+    const url = `${API_URL}/events?page=1&limit=6&includeTotal=false`;
+    const res = await fetchWithTimeout(url, CACHE_OPTIONS, 8000);
+    if (!res.ok) {
+      const responseText = await res.text();
+      throw new Error(`HTTP error! status: ${res.status}; response: ${responseText}`);
+    }
 
     const body = await res.json();
     const payload = body?.data || {};
@@ -45,15 +47,18 @@ export async function serverGetFeaturedEvents(): Promise<Event[]> {
   } catch (error) {
     const errorMsg = error instanceof Error ? error.message : String(error);
     console.error('[server-fetch] Featured events error:', errorMsg);
-    if (isRealProduction && !(error instanceof Error && error.name === 'AbortError')) throw error;
     return [];
   }
 }
 
 export async function serverGetDJs(): Promise<DJOperator[]> {
   try {
-    const res = await fetchWithTimeout(`${API_URL}/dj-operators?limit=6&includeTotal=false`, CACHE_OPTIONS, 8000);
-    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+    const url = `${API_URL}/dj-operators?limit=6&includeTotal=false`;
+    const res = await fetchWithTimeout(url, CACHE_OPTIONS, 8000);
+    if (!res.ok) {
+      const responseText = await res.text();
+      throw new Error(`HTTP error! status: ${res.status}; response: ${responseText}`);
+    }
 
     const body = await res.json();
     const payload = body?.data || {};
@@ -71,7 +76,6 @@ export async function serverGetDJs(): Promise<DJOperator[]> {
   } catch (error) {
     const errorMsg = error instanceof Error ? error.message : String(error);
     console.error('[server-fetch] DJ Operators error:', errorMsg);
-    if (isRealProduction && !(error instanceof Error && error.name === 'AbortError')) throw error;
     return [];
   }
 }
@@ -85,7 +89,6 @@ export async function serverGetCategories(): Promise<PublicCategory[]> {
     return Array.isArray(body?.data) ? body.data : [];
   } catch (error) {
     console.error('[server-fetch] Failed to fetch categories:', error);
-    if (isRealProduction) throw error;
     return [];
   }
 }
