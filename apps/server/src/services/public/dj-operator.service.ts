@@ -22,7 +22,7 @@ export class PublicDJOperatorService {
         .sort({ name: 1 })
         .skip(skip)
         .limit(limit)
-        .select('-__v')
+        .select('name slug bio specialties profileImage isActive')
         .lean(),
       DJOperator.countDocuments(query),
     ]);

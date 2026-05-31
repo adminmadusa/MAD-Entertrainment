@@ -33,6 +33,7 @@ export class PublicEventService {
         .sort({ startDate: 1 })
         .skip(skip)
         .limit(limit)
+        .select('title slug description category bannerImage startDate ticketTiers.price isSoldOut venue')
         .lean(),
       Event.countDocuments(query),
     ]);
