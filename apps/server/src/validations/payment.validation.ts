@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { EventCategory } from '@mad/shared';
 import { objectIdSchema, checkoutSchema as createBookingSchema, reserveTicketsSchema, checkoutDetailsSchema } from '@mad/validations';
 export { createBookingSchema, reserveTicketsSchema, checkoutDetailsSchema };
 
@@ -9,6 +10,12 @@ export const bookingReferenceSchema = z
   .regex(/^MAD-\d{4}-[A-Z0-9]{5}$/, 'Invalid booking reference format (expected MAD-YYYY-XXXXX)')
   .max(20);
 
+const booleanQuerySchema = z
+  .union([z.boolean(), z.enum(['true', 'false'])])
+  .transform((value) => String(value));
+
+const paginationLimitSchema = z.coerce.number().int().positive().max(100);
+
 // ─── REST Endpoint Payloads ─────────────────────────────────────
 
 export const bookingReferenceParamSchema = z.object({
@@ -16,11 +23,18 @@ export const bookingReferenceParamSchema = z.object({
 }).strict();
 
 export const listEventsQuerySchema = z.object({
-  category: z.string().max(100).optional(),
+  category: z.nativeEnum(EventCategory).optional(),
   search: z.string().max(200).optional(),
   page: z.coerce.number().int().positive().default(1),
-  limit: z.coerce.number().int().positive().default(12),
-  includeTotal: z.enum(['true', 'false']).optional(),
+  limit: paginationLimitSchema.default(12),
+  includeTotal: booleanQuerySchema.optional(),
+}).strict();
+
+export const listDJOperatorsQuerySchema = z.object({
+  search: z.string().max(200).optional(),
+  page: z.coerce.number().int().positive().default(1),
+  limit: paginationLimitSchema.default(12),
+  includeTotal: booleanQuerySchema.optional(),
 }).strict();
 
 export const getEventSeatLayoutParamSchema = z.object({

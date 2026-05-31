@@ -4,7 +4,8 @@ import { AdminRole } from '@mad/shared';
 
 import * as bookingController from '../../controllers/admin/booking.controller';
 import { requireAdmin, requireRole } from '../../middleware/auth.middleware';
-import { validate } from '../../middleware/validation.middleware';
+import { validate, validateQuery } from '../../middleware/validation.middleware';
+import { adminBookingsQuerySchema } from '../../validations/admin-content.validation';
 
 const router: Router = Router();
 
@@ -49,7 +50,7 @@ const bookingsSummarySchema = z.object({
   }),
 });
 
-router.get('/', bookingController.getBookings);
+router.get('/', validateQuery(adminBookingsQuerySchema), bookingController.getBookings);
 router.get('/summary', validate(bookingsSummarySchema), bookingController.getBookingsSummary);
 router.get('/:id', bookingController.getBookingById);
 router.patch('/:id/cancel', requireRole(AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.SUPPORT), validate(cancelBookingSchema), bookingController.cancelBooking);
