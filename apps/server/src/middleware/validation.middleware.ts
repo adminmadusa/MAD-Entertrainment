@@ -4,11 +4,22 @@ import { AppError } from './error.middleware';
 
 export const validate = (schema: AnyZodObject) => async (req: Request, res: Response, next: NextFunction) => {
   try {
-    await schema.parseAsync({
+    const parsed = await schema.parseAsync({
       body: req.body,
       query: req.query,
       params: req.params,
     });
+
+    if (Object.prototype.hasOwnProperty.call(parsed, 'body')) {
+      req.body = parsed.body;
+    }
+    if (Object.prototype.hasOwnProperty.call(parsed, 'query')) {
+      req.query = parsed.query;
+    }
+    if (Object.prototype.hasOwnProperty.call(parsed, 'params')) {
+      req.params = parsed.params;
+    }
+
     return next();
   } catch (error) {
     if (error instanceof ZodError) {
