@@ -41,6 +41,8 @@ const djOperatorSchema = new Schema<IDJOperator>(
   { timestamps: true }
 );
 
+djOperatorSchema.index({ isActive: 1, name: 1 });
+
 export const DJOperator =
   (mongoose.models.DJOperator as mongoose.Model<IDJOperator>) ||
   mongoose.model<IDJOperator>('DJOperator', djOperatorSchema);
