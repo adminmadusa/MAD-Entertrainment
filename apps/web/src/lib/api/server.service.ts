@@ -34,7 +34,7 @@ async function fetchWithTimeout(
 
 export async function serverGetFeaturedEvents(): Promise<Event[]> {
   try {
-    const url = `${API_URL}/events?page=1&limit=6&includeTotal=false`;
+    const url = `${API_URL}/events?page=1&limit=6`;
     const res = await fetchWithTimeout(url, CACHE_OPTIONS, 8000);
     if (!res.ok) {
       const responseText = await res.text();
