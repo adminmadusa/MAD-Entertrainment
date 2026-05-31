@@ -3,10 +3,12 @@
 import { QUERY_KEYS } from '@mad/shared';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { useState, useEffect, Suspense } from 'react';
+import Link from 'next/link';
+import { useState, useEffect, Suspense, useRef } from 'react';
 
 import { useSearchParams } from 'next/navigation';
 
+import { useCountdown } from '@/hooks/use-countdown.hook';
 import { extractApiError } from '@/lib/api/client';
 import {
   getStoredGuestBookingSession,
@@ -21,14 +23,49 @@ import { BookingHeaderCard } from '@/components/booking/shared/BookingHeaderCard
 import { TicketActions } from '@/components/booking/shared/TicketActions';
 import { EntryPassGrid } from '@/components/booking/shared/EntryPassGrid';
 
+function PaymentRecoveryBanner({ booking }: { booking: { logicalExpiresAt?: string | Date; expiresAt?: string | Date; bookingId: string } }) {
+  const countdown = useCountdown(booking?.logicalExpiresAt || booking?.expiresAt);
+  const isExpired = countdown.isExpired;
+
+  if (isExpired) return null;
+
+  return (
+    <div className="glass rounded-3xl border border-amber-500/30 bg-amber-500/10 p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div className="space-y-1 text-center sm:text-left">
+        <h3 className="text-amber-400 font-bold text-base flex items-center gap-2 justify-center sm:justify-start">
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+          Complete Your Payment
+        </h3>
+        <p className="text-text-secondary text-xs max-w-md">
+          Your seats are temporarily reserved. Complete your payment to confirm this booking. Reservation expires in <span className="font-mono font-bold text-amber-300">{countdown.minutes}:{String(countdown.seconds).padStart(2, '0')}</span>.
+        </p>
+      </div>
+      <div className="flex flex-col w-full sm:w-auto gap-3 shrink-0">
+        <Link href={`/checkout/${booking.bookingId}`} className="px-6 py-2.5 rounded-xl btn-gradient text-white font-bold text-sm shadow-glow-sm hover:scale-[1.02] active:scale-[0.98] transition-all text-center">
+          Complete Payment
+        </Link>
+        <a href="mailto:support@mad-entertainment.com" className="px-6 py-2.5 rounded-xl border border-white/10 text-white/80 hover:bg-white/5 font-bold text-sm hover:scale-[1.02] active:scale-[0.98] transition-all text-center">
+          Contact Support
+        </a>
+      </div>
+    </div>
+  );
+}
+
 function TicketRetrievalContent() {
   const searchParams = useSearchParams();
   const targetRef = searchParams.get('ref');
+  const pollCountRef = useRef(0);
 
   const { logout, isAuthenticated, isLoading: isAuthLoading, user } = useAuth();
   const guestSession = getStoredGuestBookingSession();
+  const singleBookingSessionToken = isAuthenticated ? undefined : guestSession?.token;
 
   // Core Retrieval States
+  const [bookingRefInput, setBookingRefInput] = useState(targetRef || '');
+  const [queryRef, setQueryRef] = useState(targetRef || '');
   const [step, setStep] = useState<'email' | 'portal'>('email');
   const [errorMsg, setErrorMsg] = useState('');
   const [infoMsg, setInfoMsg] = useState('');
@@ -36,6 +73,25 @@ function TicketRetrievalContent() {
   // Resend / Download States
   const [resendingId, setResendingId] = useState<string | null>(null);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
+  const [singleResendCooldownSeconds, setSingleResendCooldownSeconds] = useState(0);
+
+  useEffect(() => {
+    if (targetRef) {
+      setBookingRefInput(targetRef);
+      setQueryRef(targetRef);
+      pollCountRef.current = 0;
+    }
+  }, [targetRef]);
+
+  useEffect(() => {
+    if (singleResendCooldownSeconds <= 0) return;
+
+    const timer = setInterval(() => {
+      setSingleResendCooldownSeconds((prev) => Math.max(0, prev - 1));
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [singleResendCooldownSeconds]);
 
   // Transition directly to portal if already authenticated on mount
   useEffect(() => {
@@ -52,17 +108,35 @@ function TicketRetrievalContent() {
     retry: false,
   });
 
-  // Query a single booking by reference for same-device guest recovery.
+  // Query a single booking by reference for guest or authenticated recovery.
   const {
-    data: guestBookingData,
-    error: guestLookupError,
-    isLoading: isGuestLookupLoading,
+    data: singleBookingData,
+    error: singleLookupError,
+    isLoading: isSingleLookupLoading,
+    isFetching: isSingleLookupFetching,
   } = useQuery({
-    queryKey: QUERY_KEYS.public.bookings.detail(targetRef || ''),
-    queryFn: () => publicGetBookingDetails(targetRef || '', guestSession?.token),
-    enabled: !!targetRef && !isAuthenticated && !!guestSession?.token,
+    queryKey: QUERY_KEYS.public.bookings.detail(queryRef),
+    queryFn: () => publicGetBookingDetails(queryRef, singleBookingSessionToken),
+    enabled: !!queryRef && (isAuthenticated || !!singleBookingSessionToken),
     retry: false,
+    refetchInterval: (query) => {
+      const status = query.state.data?.booking?.status;
+      if (pollCountRef.current >= 5) return false;
+      if (status === 'awaiting_payment' || status === 'expiring') {
+        return 3000;
+      }
+      return false;
+    },
   });
+
+  useEffect(() => {
+    if (!isSingleLookupFetching && singleBookingData?.booking) {
+      const status = singleBookingData.booking.status;
+      if (status === 'awaiting_payment' || status === 'expiring') {
+        pollCountRef.current += 1;
+      }
+    }
+  }, [isSingleLookupFetching, singleBookingData?.booking]);
 
 
   // ─── Actions ────────────────────────────────────────────────
@@ -92,7 +166,7 @@ function TicketRetrievalContent() {
     }
   };
 
-  const handleResendTickets = async (bookingId: string, sessionToken?: string) => {
+  const handleResendTickets = async (bookingId: string, sessionToken?: string, withCooldown = false) => {
     try {
       setErrorMsg('');
       setInfoMsg('');
@@ -100,12 +174,31 @@ function TicketRetrievalContent() {
 
       const res = await publicResendTicketEmail(bookingId, sessionToken);
       setInfoMsg(res.message || 'Tickets resent successfully to your email.');
+      if (withCooldown) {
+        setSingleResendCooldownSeconds(60);
+      }
     } catch (err) {
       const apiErr = extractApiError(err);
       setErrorMsg(apiErr.message || 'Failed to resend tickets. Please try again.');
     } finally {
       setResendingId(null);
     }
+  };
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMsg('');
+    setInfoMsg('');
+    pollCountRef.current = 0;
+
+    const normalizedRef = bookingRefInput.trim().toUpperCase();
+    if (!normalizedRef) {
+      setErrorMsg('Please enter a booking reference ID.');
+      return;
+    }
+
+    setBookingRefInput(normalizedRef);
+    setQueryRef(normalizedRef);
   };
 
   const handleExitPortal = () => {
@@ -119,16 +212,17 @@ function TicketRetrievalContent() {
 
   const bookings = bookingsData?.bookings || [];
   const tickets = bookingsData?.tickets || [];
-  const guestBooking = guestBookingData?.booking;
-  const guestTickets = guestBookingData?.tickets || [];
-  const guestLookupApiError = guestLookupError ? extractApiError(guestLookupError) : null;
-  const isGuestOwnershipVerificationRequired = guestLookupApiError?.code === 'BOOKING_VERIFICATION_REQUIRED';
-  const shouldShowPortal = step === 'portal' || !!guestBooking;
-  const shouldShowAuthForm = !shouldShowPortal && !isGuestLookupLoading;
+  const singleBooking = singleBookingData?.booking;
+  const singleTickets = singleBookingData?.tickets || [];
+  const singleLookupApiError = singleLookupError ? extractApiError(singleLookupError) : null;
+  const isOwnershipVerificationRequired = singleLookupApiError?.code === 'BOOKING_VERIFICATION_REQUIRED';
+  const shouldShowPortal = step === 'portal' || !!singleBooking;
+  const shouldShowAuthForm = !shouldShowPortal && !isSingleLookupLoading;
+  const shouldShowReferenceForm = !singleBooking;
 
   const sortedBookings = [...bookings].sort((a, b) => {
-    if (targetRef && a.bookingId === targetRef) return -1;
-    if (targetRef && b.bookingId === targetRef) return 1;
+    if (queryRef && a.bookingId === queryRef) return -1;
+    if (queryRef && b.bookingId === queryRef) return 1;
     return 0;
   });
 
@@ -148,13 +242,13 @@ function TicketRetrievalContent() {
           <p className="text-text-secondary text-sm max-w-md mx-auto leading-relaxed">
             {(() => {
               if (shouldShowPortal) {
-                if (guestBooking) {
-                  return `Booking ${guestBooking.bookingId} is available from this browser session.`;
+                if (singleBooking) {
+                  return `Booking ${singleBooking.bookingId} is available for this session.`;
                 }
                 return `Manage and view entry passes associated with ${user?.email || 'your email'}.`;
               }
-              if (targetRef) {
-                return `Verify the email address used to book ${targetRef} to view your tickets.`;
+              if (queryRef) {
+                return `Verify the email address used to book ${queryRef} to view your tickets.`;
               }
               return 'Enter your email address to verify your identity and instantly track your active event bookings.';
             })()}
@@ -174,15 +268,38 @@ function TicketRetrievalContent() {
           </div>
         )}
 
-        {targetRef && guestLookupApiError && !isGuestOwnershipVerificationRequired && !guestBooking && (
+        {shouldShowReferenceForm && (
+          <form onSubmit={handleSearchSubmit} className="glass rounded-2xl border border-border-subtle p-6 flex flex-col sm:flex-row gap-3">
+            <div className="flex-grow space-y-1">
+              <label htmlFor="booking-ref-input" className="text-[10px] text-text-secondary font-medium tracking-wider uppercase">Booking Reference ID</label>
+              <input
+                id="booking-ref-input"
+                type="text"
+                value={bookingRefInput}
+                onChange={(e) => setBookingRefInput(e.target.value)}
+                placeholder="e.g. MAD-2026-ABCDE"
+                className="w-full px-4 py-2.5 rounded-xl bg-background border border-border-subtle text-base lg:text-sm text-text-primary focus:outline-none focus:border-accent-purple font-mono uppercase tracking-wider transition-colors"
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={isSingleLookupLoading}
+              className="sm:self-end h-11 px-6 btn-gradient text-white text-sm font-bold rounded-xl shadow-glow-sm disabled:opacity-60 transition-transform"
+            >
+              {isSingleLookupLoading ? 'Searching...' : 'Open Wallet'}
+            </button>
+          </form>
+        )}
+
+        {queryRef && singleLookupApiError && !isOwnershipVerificationRequired && !singleBooking && (
           <div className="p-4 bg-error/10 border border-error/30 rounded-2xl text-xs text-red-400 text-center animate-in fade-in zoom-in duration-300">
-            {guestLookupApiError.message || `We couldn't retrieve booking ${targetRef}.`}
+            {singleLookupApiError.message || `We couldn't retrieve booking ${queryRef}.`}
           </div>
         )}
 
-        {targetRef && isGuestLookupLoading && (
+        {queryRef && isSingleLookupLoading && (
           <div className="max-w-md mx-auto glass-strong rounded-3xl border border-border-subtle p-8 shadow-2xl text-center text-text-muted text-xs animate-pulse">
-            Checking secure access for {targetRef}...
+            Checking secure access for {queryRef}...
           </div>
         )}
 
@@ -201,9 +318,9 @@ function TicketRetrievalContent() {
             <div className="flex justify-between items-center bg-white/5 border border-border-subtle/50 px-6 py-4 rounded-2xl">
               <div className="text-left">
                 <span className="text-[10px] text-text-muted font-bold tracking-wider uppercase">Active Session</span>
-                <p className="text-white text-xs font-semibold">{guestBooking ? 'Guest booking session' : user?.email}</p>
+                <p className="text-white text-xs font-semibold">{singleBooking && !isAuthenticated ? 'Guest booking session' : user?.email}</p>
               </div>
-              {!guestBooking && (
+              {(!singleBooking || isAuthenticated) && (
                 <button
                   type="button"
                   onClick={handleExitPortal}
@@ -215,7 +332,7 @@ function TicketRetrievalContent() {
             </div>
 
             {(() => {
-              if (guestBooking) {
+              if (singleBooking) {
                 const containerClasses = "glass rounded-3xl p-6 sm:p-8 space-y-6 shadow-glow-purple transition-all duration-300 border-accent-purple ring-2 ring-accent-purple/50";
 
                 return (
@@ -224,23 +341,28 @@ function TicketRetrievalContent() {
                       <span className="text-[10px] text-accent-purple-light font-bold uppercase tracking-wider">
                         Retrieved Booking
                       </span>
-                      <span className="text-[10px] text-text-muted font-mono">{guestBooking.bookingId}</span>
+                      <span className="text-[10px] text-text-muted font-mono">{singleBooking.bookingId}</span>
                     </div>
 
-                    <BookingHeaderCard booking={guestBooking} />
+                    <BookingHeaderCard booking={singleBooking} isFetching={isSingleLookupFetching && !isSingleLookupLoading} pollCount={pollCountRef.current} />
 
-                    {guestBooking.status === 'confirmed' ? (
+                    {singleBooking.status === 'awaiting_payment' && (
+                      <PaymentRecoveryBanner booking={singleBooking} />
+                    )}
+
+                    {singleBooking.status === 'confirmed' ? (
                       <div className="space-y-4 pt-4 border-t border-border-subtle/30">
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-2">
                           <h3 className="text-white font-bold text-sm">Entry Passes</h3>
                           <TicketActions
-                            downloading={downloadingId === guestBooking.bookingId}
-                            resending={resendingId === guestBooking.bookingId}
-                            onDownload={() => handleDownloadPDF(guestBooking.bookingId, guestSession?.token)}
-                            onResend={() => handleResendTickets(guestBooking.bookingId, guestSession?.token)}
+                            downloading={downloadingId === singleBooking.bookingId}
+                            resending={resendingId === singleBooking.bookingId}
+                            cooldown={singleResendCooldownSeconds}
+                            onDownload={() => handleDownloadPDF(singleBooking.bookingId, singleBookingSessionToken)}
+                            onResend={() => handleResendTickets(singleBooking.bookingId, singleBookingSessionToken, true)}
                           />
                         </div>
-                        <EntryPassGrid tickets={guestTickets} />
+                        <EntryPassGrid tickets={singleTickets} />
                       </div>
                     ) : (
                       <div className="glass-strong rounded-2xl border border-border-subtle p-6 text-center text-text-secondary text-sm">
@@ -267,7 +389,7 @@ function TicketRetrievalContent() {
                         (t) => t.bookingId === booking._id || t.bookingId?.toString() === booking._id?.toString()
                       );
 
-                      const isTarget = targetRef && booking.bookingId === targetRef;
+                      const isTarget = queryRef && booking.bookingId === queryRef;
                       const containerClasses = isTarget
                         ? "glass rounded-3xl p-6 sm:p-8 space-y-6 shadow-glow-purple transition-all duration-300 border-accent-purple ring-2 ring-accent-purple/50"
                         : "glass rounded-3xl border border-border-subtle p-6 sm:p-8 space-y-6 shadow-xl transition-all duration-300 hover:border-white/10";
@@ -310,9 +432,9 @@ function TicketRetrievalContent() {
                   <div className="text-4xl">🎫</div>
                   <h3 className="text-white font-bold text-base">No Tickets Found</h3>
                   <p className="text-text-secondary text-sm max-w-sm mx-auto leading-relaxed">
-                    {targetRef ? (
+                    {queryRef ? (
                       <>
-                        We couldn't find the booking <span className="text-white font-semibold">{targetRef}</span> associated with <span className="text-white font-semibold">{user?.email}</span>. Did you use a different email address at checkout?
+                        We couldn't find the booking <span className="text-white font-semibold">{queryRef}</span> associated with <span className="text-white font-semibold">{user?.email}</span>. Did you use a different email address at checkout?
                       </>
                     ) : (
                       <>
