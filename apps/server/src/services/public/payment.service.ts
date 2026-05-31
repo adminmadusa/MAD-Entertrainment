@@ -25,12 +25,30 @@ import { ReservationService } from '../reservation.service';
 import { QueueService } from '../queue.service';
 import { CacheService } from '../cache.service';
 
+type PaymentOwnershipContext = {
+  userId?: string;
+  sessionId?: string;
+};
+
 export class PaymentService {
-  static async createPaymentIntent(bookingId: string, gateway: 'stripe' | 'razorpay') {
+  static async createPaymentIntent(bookingId: string, gateway: 'stripe' | 'razorpay', ownershipContext: PaymentOwnershipContext = {}) {
     const query = Types.ObjectId.isValid(bookingId) ? { _id: bookingId } : { bookingId };
     const booking = await Booking.findOne(query);
     if (!booking) {
       throw AppError.notFound('Booking not found');
+    }
+
+    const isUserOwner =
+      !!booking.userId &&
+      !!ownershipContext.userId &&
+      booking.userId.toString() === ownershipContext.userId;
+    const isGuestOwner =
+      !!booking.sessionId &&
+      !!ownershipContext.sessionId &&
+      booking.sessionId === ownershipContext.sessionId;
+
+    if (!isUserOwner && !isGuestOwner) {
+      throw AppError.forbidden('You do not have access to this booking');
     }
 
     if (booking.status !== BookingStatus.AWAITING_PAYMENT) {
