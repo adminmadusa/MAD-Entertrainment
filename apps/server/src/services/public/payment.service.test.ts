@@ -228,6 +228,143 @@ describe('Payment Service', () => {
   });
 
   describe('verifyPayment', () => {
+    it('should allow an authenticated booking owner to verify an already-paid payment idempotently', async () => {
+      const mockBooking = {
+        _id: 'b-123',
+        bookingId: 'MAD-2026-ABCDE',
+        userId: { toString: () => 'user-owner' },
+        status: BookingStatus.CONFIRMED,
+      };
+      const mockPayment = { _id: 'p-123', gateway: 'razorpay', status: PaymentStatus.PAID, save: vi.fn() };
+
+      vi.mocked(Booking.findOne).mockResolvedValue(mockBooking as any);
+      vi.mocked(Payment.findOne).mockReturnValueOnce({ sort: vi.fn().mockResolvedValue(mockPayment) } as any);
+
+      const result = await PaymentService.verifyPayment(
+        'MAD-2026-ABCDE',
+        { razorpay_order_id: 'order_123', razorpay_payment_id: 'pay_123', razorpay_signature: 'sig' },
+        { userId: 'user-owner' }
+      );
+
+      expect(result).toBe(mockBooking);
+      expect(mockPayment.save).not.toHaveBeenCalled();
+    });
+
+    it('should allow a guest session owner to verify an already-paid payment idempotently', async () => {
+      const mockBooking = {
+        _id: 'b-123',
+        bookingId: 'MAD-2026-ABCDE',
+        sessionId: 'session-owner',
+        status: BookingStatus.CONFIRMED,
+      };
+      const mockPayment = { _id: 'p-123', gateway: 'razorpay', status: PaymentStatus.PAID, save: vi.fn() };
+
+      vi.mocked(Booking.findOne).mockResolvedValue(mockBooking as any);
+      vi.mocked(Payment.findOne).mockReturnValueOnce({ sort: vi.fn().mockResolvedValue(mockPayment) } as any);
+
+      const result = await PaymentService.verifyPayment(
+        'MAD-2026-ABCDE',
+        { razorpay_order_id: 'order_123', razorpay_payment_id: 'pay_123', razorpay_signature: 'sig' },
+        { sessionId: 'session-owner' }
+      );
+
+      expect(result).toBe(mockBooking);
+      expect(mockPayment.save).not.toHaveBeenCalled();
+    });
+
+    it('should reject a different authenticated user before reading payment state', async () => {
+      vi.mocked(Booking.findOne).mockResolvedValue({
+        _id: 'b-123',
+        bookingId: 'MAD-2026-ABCDE',
+        userId: { toString: () => 'user-owner' },
+        status: BookingStatus.CONFIRMED,
+      } as any);
+
+      await expect(
+        PaymentService.verifyPayment(
+          'MAD-2026-ABCDE',
+          { razorpay_order_id: 'order_123', razorpay_payment_id: 'pay_123', razorpay_signature: 'sig' },
+          { userId: 'user-attacker' }
+        )
+      ).rejects.toThrow('You do not have access to this booking');
+      expect(Payment.findOne).not.toHaveBeenCalled();
+    });
+
+    it('should reject a different guest session before reading payment state', async () => {
+      vi.mocked(Booking.findOne).mockResolvedValue({
+        _id: 'b-123',
+        bookingId: 'MAD-2026-ABCDE',
+        sessionId: 'session-owner',
+        status: BookingStatus.CONFIRMED,
+      } as any);
+
+      await expect(
+        PaymentService.verifyPayment(
+          'MAD-2026-ABCDE',
+          { razorpay_order_id: 'order_123', razorpay_payment_id: 'pay_123', razorpay_signature: 'sig' },
+          { sessionId: 'session-attacker' }
+        )
+      ).rejects.toThrow('You do not have access to this booking');
+      expect(Payment.findOne).not.toHaveBeenCalled();
+    });
+
+    it('should require ownership before returning the already-paid idempotent path', async () => {
+      vi.mocked(Booking.findOne).mockResolvedValue({
+        _id: 'b-123',
+        bookingId: 'MAD-2026-ABCDE',
+        userId: { toString: () => 'user-owner' },
+        status: BookingStatus.CONFIRMED,
+      } as any);
+
+      await expect(
+        PaymentService.verifyPayment(
+          'MAD-2026-ABCDE',
+          { razorpay_order_id: 'order_123', razorpay_payment_id: 'pay_123', razorpay_signature: 'sig' }
+        )
+      ).rejects.toThrow('You do not have access to this booking');
+      expect(Payment.findOne).not.toHaveBeenCalled();
+    });
+
+    it('should verify a valid payment when the authenticated user owns the booking', async () => {
+      vi.mocked(getEnv).mockReturnValue({
+        RAZORPAY_KEY_ID: 'test_rzp_key',
+        RAZORPAY_KEY_SECRET: 'test_rzp_secret',
+        STRIPE_PUBLISHABLE_KEY: 'test_stripe_key',
+        STRIPE_SECRET_KEY: 'test_stripe_secret',
+        ENABLE_ASYNC_CHECKOUT: true,
+        MOCK_PAYMENTS: true,
+      } as any);
+
+      const mockBooking = {
+        _id: 'b-123',
+        bookingId: 'MAD-2026-ABCDE',
+        userId: { toString: () => 'user-owner' },
+        eventId: 'e-123',
+        status: BookingStatus.AWAITING_PAYMENT,
+        tickets: [],
+      };
+      const mockPayment = { _id: 'p-123', gateway: 'razorpay', status: PaymentStatus.PENDING, gatewayOrderId: 'order_mock_123', save: vi.fn() };
+
+      vi.mocked(Booking.findOne).mockResolvedValue(mockBooking as any);
+      vi.mocked(Payment.findOne)
+        .mockReturnValueOnce({ sort: vi.fn().mockResolvedValue(mockPayment) } as any)
+        .mockResolvedValueOnce(null as any);
+      vi.mocked(Booking.findOneAndUpdate).mockResolvedValue(mockBooking as any);
+
+      const result = await PaymentService.verifyPayment(
+        'MAD-2026-ABCDE',
+        {
+          razorpay_order_id: 'order_mock_123',
+          razorpay_payment_id: 'pay_mock_123',
+          razorpay_signature: 'mock_signature',
+        },
+        { userId: 'user-owner' }
+      );
+
+      expect(result).toBeDefined();
+      expect(mockPayment.status).toBe(PaymentStatus.PAID);
+    });
+
     it('should throw error if razorpay signature verification fails', async () => {
       vi.mocked(Booking.findOne).mockResolvedValue({ _id: 'b-123', status: BookingStatus.AWAITING_PAYMENT, save: vi.fn() } as any);
       vi.mocked(Payment.findOne).mockReturnValue({
@@ -240,7 +377,7 @@ describe('Payment Service', () => {
         razorpay_signature: 'invalid_sig'
       };
 
-      await expect(PaymentService.verifyPayment('b-123', payload)).rejects.toThrow('Razorpay signature verification failed');
+      await expect(PaymentService.verifyPayment('b-123', payload, { trustedInternal: true })).rejects.toThrow('Razorpay signature verification failed');
     });
 
     it('should verify razorpay payment successfully with valid signature', async () => {
@@ -262,7 +399,7 @@ describe('Payment Service', () => {
         razorpay_signature: razorpaySignature(orderId, paymentId)
       };
 
-      const result = await PaymentService.verifyPayment('b-123', payload);
+      const result = await PaymentService.verifyPayment('b-123', payload, { trustedInternal: true });
       expect(result).toBeDefined();
       expect(mockPayment.status).toBe(PaymentStatus.PAID);
     });
@@ -280,7 +417,7 @@ describe('Payment Service', () => {
         razorpay_signature: razorpaySignature(attackerOrderId, 'pay_attacker'),
       };
 
-      await expect(PaymentService.verifyPayment('MAD-2026-ABCDE', payload)).rejects.toThrow('Razorpay order does not belong to this booking');
+      await expect(PaymentService.verifyPayment('MAD-2026-ABCDE', payload, { trustedInternal: true })).rejects.toThrow('Razorpay order does not belong to this booking');
       expect(mockPayment.save).not.toHaveBeenCalled();
       expect(Booking.findOneAndUpdate).not.toHaveBeenCalled();
     });
@@ -301,7 +438,7 @@ describe('Payment Service', () => {
         razorpay_signature: razorpaySignature('order_123', 'pay_123'),
       };
 
-      await expect(PaymentService.verifyPayment('MAD-2026-ABCDE', payload)).rejects.toThrow('Razorpay payment has already been used');
+      await expect(PaymentService.verifyPayment('MAD-2026-ABCDE', payload, { trustedInternal: true })).rejects.toThrow('Razorpay payment has already been used');
       expect(mockPayment.save).not.toHaveBeenCalled();
       expect(Booking.findOneAndUpdate).not.toHaveBeenCalled();
     });
@@ -329,7 +466,7 @@ describe('Payment Service', () => {
         razorpay_order_id: 'order_mock_123',
         razorpay_payment_id: 'pay_mock_123',
         razorpay_signature: 'mock_signature',
-      });
+      }, { trustedInternal: true });
 
       expect(result).toBeDefined();
       expect(mockPayment.status).toBe(PaymentStatus.PAID);
@@ -347,7 +484,7 @@ describe('Payment Service', () => {
         razorpay_order_id: 'order_123',
         razorpay_payment_id: 'pay_123',
         razorpay_signature: razorpaySignature('order_123', 'pay_123'),
-      });
+      }, { trustedInternal: true });
 
       expect(result).toBe(mockBooking);
       expect(mockPayment.save).not.toHaveBeenCalled();
@@ -375,7 +512,7 @@ describe('Payment Service', () => {
         razorpay_order_id: 'order_123',
         razorpay_payment_id: 'pay_123',
         razorpay_signature: razorpaySignature('order_123', 'pay_123'),
-      });
+      }, { trustedInternal: true });
 
       expect(result).toBeDefined();
       expect(mockPayment.status).toBe(PaymentStatus.PAID);
@@ -404,7 +541,7 @@ describe('Payment Service', () => {
         razorpay_order_id: 'order_123',
         razorpay_payment_id: 'pay_123',
         razorpay_signature: razorpaySignature('order_123', 'pay_123'),
-      });
+      }, { trustedInternal: true });
 
       expect(result).toBeDefined();
       expect(Coupon.updateOne).toHaveBeenCalledWith(
@@ -439,7 +576,7 @@ describe('Payment Service', () => {
         razorpay_order_id: 'order_123',
         razorpay_payment_id: 'pay_123',
         razorpay_signature: razorpaySignature('order_123', 'pay_123'),
-      });
+      }, { trustedInternal: true });
 
       expect(result).toBeDefined();
       expect(Coupon.updateOne).toHaveBeenCalledTimes(1);
@@ -474,7 +611,7 @@ describe('Payment Service', () => {
         razorpay_order_id: 'order_123',
         razorpay_payment_id: 'pay_123',
         razorpay_signature: razorpaySignature('order_123', 'pay_123'),
-      })).rejects.toThrow('Coupon usage limit reached');
+      }, { trustedInternal: true })).rejects.toThrow('Coupon usage limit reached');
 
       expect(Coupon.updateOne).toHaveBeenCalledTimes(1);
       expect(Coupon.findByIdAndUpdate).not.toHaveBeenCalled();
@@ -524,12 +661,12 @@ describe('Payment Service', () => {
           razorpay_order_id: 'order_1',
           razorpay_payment_id: 'pay_1',
           razorpay_signature: razorpaySignature('order_1', 'pay_1'),
-        }),
+        }, { trustedInternal: true }),
         PaymentService.verifyPayment(bookingB.bookingId, {
           razorpay_order_id: 'order_2',
           razorpay_payment_id: 'pay_2',
           razorpay_signature: razorpaySignature('order_2', 'pay_2'),
-        }),
+        }, { trustedInternal: true }),
       ]);
 
       const outcomes = [first, second];
@@ -568,7 +705,7 @@ describe('Payment Service', () => {
         razorpay_order_id: 'order_123',
         razorpay_payment_id: 'pay_123',
         razorpay_signature: razorpaySignature('order_123', 'pay_123'),
-      });
+      }, { trustedInternal: true });
 
       expect(result).toBe(currentBooking);
       expect(Coupon.updateOne).not.toHaveBeenCalled();

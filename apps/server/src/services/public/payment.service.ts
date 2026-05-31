@@ -28,14 +28,13 @@ import { CacheService } from '../cache.service';
 type PaymentOwnershipContext = {
   userId?: string;
   sessionId?: string;
+  trustedInternal?: boolean;
 };
 
 export class PaymentService {
-  static async createPaymentIntent(bookingId: string, gateway: 'stripe' | 'razorpay', ownershipContext: PaymentOwnershipContext = {}) {
-    const query = Types.ObjectId.isValid(bookingId) ? { _id: bookingId } : { bookingId };
-    const booking = await Booking.findOne(query);
-    if (!booking) {
-      throw AppError.notFound('Booking not found');
+  private static assertBookingOwnership(booking: IBooking, ownershipContext: PaymentOwnershipContext): void {
+    if (ownershipContext.trustedInternal) {
+      return;
     }
 
     const isUserOwner =
@@ -50,6 +49,16 @@ export class PaymentService {
     if (!isUserOwner && !isGuestOwner) {
       throw AppError.forbidden('You do not have access to this booking');
     }
+  }
+
+  static async createPaymentIntent(bookingId: string, gateway: 'stripe' | 'razorpay', ownershipContext: PaymentOwnershipContext = {}) {
+    const query = Types.ObjectId.isValid(bookingId) ? { _id: bookingId } : { bookingId };
+    const booking = await Booking.findOne(query);
+    if (!booking) {
+      throw AppError.notFound('Booking not found');
+    }
+
+    this.assertBookingOwnership(booking, ownershipContext);
 
     if (booking.status !== BookingStatus.AWAITING_PAYMENT) {
       throw AppError.badRequest(`Booking is in state "${booking.status}" and cannot accept payment`);
@@ -479,13 +488,19 @@ export class PaymentService {
     return { status: 'skipped' };
   }
 
-  static async verifyPayment(bookingId: string, gatewayPayload: any) {
+  static async verifyPayment(
+    bookingId: string,
+    gatewayPayload: any,
+    ownershipContext: PaymentOwnershipContext = {}
+  ) {
 
     const query = Types.ObjectId.isValid(bookingId) ? { _id: bookingId } : { bookingId };
     const booking = await Booking.findOne(query);
     if (!booking) {
       throw AppError.notFound('Booking not found');
     }
+
+    this.assertBookingOwnership(booking, ownershipContext);
 
     const payment = await Payment.findOne({ bookingId: booking._id }).sort({ createdAt: -1 });
     if (!payment) {
@@ -843,10 +858,14 @@ export class PaymentService {
     }
 
     if (confirmedBooking) {
+      this.assertBookingOwnership(confirmedBooking, ownershipContext);
       return confirmedBooking;
     }
 
     const latestBooking = await Booking.findById(booking._id);
+    if (latestBooking) {
+      this.assertBookingOwnership(latestBooking, ownershipContext);
+    }
     return latestBooking || booking;
   }
 

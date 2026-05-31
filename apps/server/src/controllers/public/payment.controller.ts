@@ -28,7 +28,10 @@ export async function verifyPayment(req: Request, res: Response, next: NextFunct
   try {
     const { bookingId, ...gatewayPayload } = req.body;
     if (!bookingId) throw AppError.badRequest('bookingId is required');
-    const booking = await PaymentService.verifyPayment(bookingId, gatewayPayload);
+    const booking = await PaymentService.verifyPayment(bookingId, gatewayPayload, {
+      userId: req.user?.sub,
+      sessionId: req.session?.sessionId || req.header('x-session-id') || undefined,
+    });
     sendSuccess(res, booking, 'Payment verified');
   } catch (err) {
     next(err);
@@ -131,7 +134,7 @@ export async function stripeWebhook(req: Request, res: Response): Promise<void> 
       const intent = event.data.object as any;
       const bookingId = intent.metadata?.bookingId;
       if (bookingId) {
-        await PaymentService.verifyPayment(bookingId, { paymentIntentId: intent.id });
+        await PaymentService.verifyPayment(bookingId, { paymentIntentId: intent.id }, { trustedInternal: true });
         webhookEvent.bookingId = bookingId;
       }
     }

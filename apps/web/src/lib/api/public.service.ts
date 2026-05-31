@@ -255,10 +255,16 @@ export async function publicCreatePaymentIntent(bookingId: string, gateway: 'str
   return data.data;
 }
 
-export async function publicVerifyPayment(bookingId: string, gatewayPayload: VerifyPaymentPayload): Promise<Booking> {
+export async function publicVerifyPayment(
+  bookingId: string,
+  gatewayPayload: VerifyPaymentPayload,
+  sessionToken: string = getStoredGuestBookingSession()?.token || ''
+): Promise<Booking> {
   const { data } = await apiClient.post<{ data: Booking }>('/payments/verify', {
     bookingId,
     ...gatewayPayload,
+  }, {
+    headers: getGuestSessionHeaders(sessionToken),
   });
   return data.data;
 }
