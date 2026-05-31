@@ -86,18 +86,18 @@ export default function BookingsSummaryWidget({
       >
         <p className="text-text-muted text-xs uppercase tracking-wider font-semibold">Total Bookings</p>
         <p className="text-2xl font-black mt-2 text-white">{totalBookings.toLocaleString('en-IN')}</p>
-        <div className="flex items-center gap-2.5 mt-3 text-[10px]">
+        <div className="flex flex-wrap items-center gap-2.5 mt-3 text-[10px]">
           <span className="flex items-center gap-1 text-green-400">
             <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
             {confirmed} Confirmed
           </span>
           <span className="flex items-center gap-1 text-yellow-400">
             <span className="w-1.5 h-1.5 rounded-full bg-yellow-500" />
-            {pending} Pending
+            {pending} In Progress
           </span>
           <span className="flex items-center gap-1 text-red-400">
             <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
-            {cancelled} Cancelled
+            {cancelled} Closed Outcomes
           </span>
         </div>
       </motion.div>
