@@ -12,16 +12,16 @@ export interface AuthResponse {
   user: AuthUser;
 }
 
-export interface MagicLinkPayload {
+export interface VerificationCodePayload {
   email: string;
 }
 
-export interface VerifyMagicLinkOrOTPPayload {
+export interface VerifyVerificationCodeOrOTPPayload {
   otp: string;
   email: string;
 }
 
-export interface MagicLinkRequestResponse {
+export interface VerificationCodeRequestResponse {
   success: boolean;
   message: string;
 }
