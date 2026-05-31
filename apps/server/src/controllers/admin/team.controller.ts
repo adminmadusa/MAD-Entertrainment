@@ -38,7 +38,7 @@ export const createAdmin = async (req: Request, res: Response, next: NextFunctio
 
 export const toggleAdminActive = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const requestingAdminId = (req as any).admin?.id;
+    const requestingAdminId = (req as any).admin?.sub || (req as any).admin?.id;
     if (!requestingAdminId) {
       return res.status(401).json({ success: false, message: 'Admin authentication required' });
     }
