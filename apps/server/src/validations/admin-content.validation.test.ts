@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 
 import {
+  adminBookingIdentifierParamSchema,
   adminBookingsQuerySchema,
   adminIdParamSchema,
   createCategorySchema,
@@ -11,10 +12,14 @@ import {
   createRefundSchema,
   createTierSchema,
   processRefundSchema,
+  scannerLookupSchema,
   scannerScanSchema,
+  updateDJOperatorSchema,
+  updateEventSchema,
   updateCategorySchema,
   updateCouponSchema,
   updatePopupSchema,
+  updateTicketProfileSchema,
   updateTierSchema,
 } from './admin-content.validation';
 
@@ -84,6 +89,11 @@ describe('admin mutation validation schemas', () => {
     ['update category', updateCategorySchema, { params: { id: objectId }, body: { name: 'Comedy' } }],
     ['create tier', createTierSchema, { body: { name: 'VIP' } }],
     ['update tier', updateTierSchema, { params: { id: objectId }, body: { name: 'Gold' } }],
+    ['update event', updateEventSchema, { params: { id: objectId }, body: { title: 'Updated event' } }],
+    ['update DJ operator', updateDJOperatorSchema, { params: { id: objectId }, body: { name: 'Updated DJ' } }],
+    ['update ticket profile', updateTicketProfileSchema, { params: { id: objectId }, body: { name: 'Updated profile' } }],
+    ['scanner lookup booking reference', scannerLookupSchema, { params: { reference: 'MAD-2026-ABCDE' }, query: { eventId: objectId } }],
+    ['scanner lookup ticket reference', scannerLookupSchema, { params: { reference: 'TKT-MAD-2026-ABCDE-001' }, query: { eventId: objectId } }],
   ])('accepts valid payload for %s', (_name, schema, payload) => {
     expectAccepted(schema, payload);
   });
@@ -100,6 +110,8 @@ describe('admin mutation validation schemas', () => {
     ['update category', updateCategorySchema, { params: { id: objectId }, body: {} }],
     ['create tier', createTierSchema, { body: { name: 'VIP', color: 'gold' } }],
     ['update tier', updateTierSchema, { params: { id: objectId }, body: { name: '' } }],
+    ['scanner lookup bad reference pattern', scannerLookupSchema, { params: { reference: '../bad' }, query: { eventId: objectId } }],
+    ['scanner lookup long reference', scannerLookupSchema, { params: { reference: 'A'.repeat(101) }, query: { eventId: objectId } }],
   ])('rejects invalid payload for %s', (_name, schema, payload) => {
     expectRejected(schema, payload);
   });
@@ -111,8 +123,12 @@ describe('admin mutation validation schemas', () => {
     ['process refund param', processRefundSchema, { params: { id: 'not-an-object-id' }, body: { action: 'approve' } }],
     ['update category param', updateCategorySchema, { params: { id: 'not-an-object-id' }, body: { name: 'Concerts' } }],
     ['update tier param', updateTierSchema, { params: { id: 'not-an-object-id' }, body: { name: 'VIP' } }],
+    ['update event param', updateEventSchema, { params: { id: 'not-an-object-id' }, body: { title: 'Updated' } }],
+    ['update DJ operator param', updateDJOperatorSchema, { params: { id: 'not-an-object-id' }, body: { name: 'Updated' } }],
+    ['update ticket profile param', updateTicketProfileSchema, { params: { id: 'not-an-object-id' }, body: { name: 'Updated' } }],
     ['refund booking id', createRefundSchema, { body: { bookingId: 'bad', paymentId: otherObjectId, amount: 100 } }],
     ['scanner event id', scannerScanSchema, { body: { ticketId: 'TKT-001', eventId: 'bad' } }],
+    ['scanner lookup event id', scannerLookupSchema, { params: { reference: 'TKT-001' }, query: { eventId: 'bad' } }],
   ])('rejects invalid ObjectId for %s', (_name, schema, payload) => {
     expectRejected(schema, payload);
   });
@@ -151,6 +167,22 @@ describe('admin mutation validation schemas', () => {
     ['refund process action', processRefundSchema, { params: { id: objectId }, body: { action: 'delete' } }],
   ])('enforces enum validation for %s', (_name, schema, payload) => {
     expectRejected(schema, payload);
+  });
+});
+
+describe('admin booking identifier param validation schema', () => {
+  it.each([
+    ['ObjectId', objectId],
+    ['booking reference', 'MAD-2026-ABCDE'],
+  ])('accepts %s booking identifiers', (_name, id) => {
+    expectAccepted(adminBookingIdentifierParamSchema, { params: { id } });
+  });
+
+  it.each([
+    ['malformed ObjectId', 'not-an-object-id'],
+    ['malformed booking reference', 'MAD-26-ABCDE'],
+  ])('rejects %s', (_name, id) => {
+    expectRejected(adminBookingIdentifierParamSchema, { params: { id } });
   });
 });
 

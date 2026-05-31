@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import * as djOperatorController from '../../controllers/admin/dj-operator.controller';
 import { validate } from '../../middleware/validation.middleware';
-import { createDJOperatorSchema, updateDJOperatorSchema } from '../../validations/admin-content.validation';
+import { adminIdParamSchema, createDJOperatorSchema, updateDJOperatorSchema } from '../../validations/admin-content.validation';
 import { requireAdmin } from '../../middleware/auth.middleware';
 
 const router: Router = Router();
@@ -11,8 +11,8 @@ router.use(requireAdmin);
 
 router.post('/', validate(createDJOperatorSchema), djOperatorController.createDJOperator);
 router.get('/', djOperatorController.getDJOperators);
-router.get('/:id', djOperatorController.getDJOperatorById);
+router.get('/:id', validate(adminIdParamSchema), djOperatorController.getDJOperatorById);
 router.put('/:id', validate(updateDJOperatorSchema), djOperatorController.updateDJOperator);
-router.delete('/:id', djOperatorController.deleteDJOperator);
+router.delete('/:id', validate(adminIdParamSchema), djOperatorController.deleteDJOperator);
 
 export default router;

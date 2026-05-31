@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import * as eventController from '../../controllers/admin/event.controller';
 import { validate } from '../../middleware/validation.middleware';
-import { createEventSchema, updateEventSchema } from '../../validations/admin-content.validation';
+import { adminIdParamSchema, createEventSchema, updateEventSchema } from '../../validations/admin-content.validation';
 import { requireAdmin } from '../../middleware/auth.middleware';
 
 const router: Router = Router();
@@ -11,8 +11,8 @@ router.use(requireAdmin);
 
 router.post('/', validate(createEventSchema), eventController.createEvent);
 router.get('/', eventController.getEvents);
-router.get('/:id', eventController.getEventById);
+router.get('/:id', validate(adminIdParamSchema), eventController.getEventById);
 router.put('/:id', validate(updateEventSchema), eventController.updateEvent);
-router.delete('/:id', eventController.deleteEvent);
+router.delete('/:id', validate(adminIdParamSchema), eventController.deleteEvent);
 
 export default router;
