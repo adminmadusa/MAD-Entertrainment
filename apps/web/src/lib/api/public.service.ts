@@ -283,14 +283,23 @@ export async function publicGetCategories(): Promise<PublicCategory[]> {
   return Array.isArray(data?.data) ? data.data : [];
 }
 
-export async function publicResendTicketEmail(bookingId: string): Promise<{ success: boolean; message: string }> {
-  const { data } = await apiClient.post<{ success: boolean; message: string }>(`/bookings/${bookingId}/resend`);
+export async function publicResendTicketEmail(bookingId: string, sessionId?: string): Promise<{ success: boolean; message: string }> {
+  const headers: Record<string, string> = {};
+  if (sessionId) {
+    headers['x-session-id'] = sessionId;
+  }
+  const { data } = await apiClient.post<{ success: boolean; message: string }>(`/bookings/${bookingId}/resend`, {}, { headers });
   return data;
 }
 
-export async function publicDownloadTicketPDF(bookingId: string): Promise<Blob> {
+export async function publicDownloadTicketPDF(bookingId: string, sessionId?: string): Promise<Blob> {
+  const headers: Record<string, string> = {};
+  if (sessionId) {
+    headers['x-session-id'] = sessionId;
+  }
   const { data } = await apiClient.get<Blob>(`/bookings/${bookingId}/download`, {
     responseType: 'blob',
+    headers,
   });
   return data;
 }

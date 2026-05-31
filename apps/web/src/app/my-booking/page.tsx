@@ -66,7 +66,12 @@ function MyBookingContent() {
     setErrorMsg('');
 
     try {
-      const blob = await publicDownloadTicketPDF(booking.bookingId);
+      let sess: string | undefined;
+      if (typeof window !== 'undefined') {
+        const sessionKey = `mad_checkout_session_${STORAGE_VERSION}`;
+        sess = sessionStorage.getItem(sessionKey) || undefined;
+      }
+      const blob = await publicDownloadTicketPDF(booking.bookingId, sess);
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -91,7 +96,12 @@ function MyBookingContent() {
     setErrorMsg('');
 
     try {
-      const response = await publicResendTicketEmail(booking.bookingId);
+      let sess: string | undefined;
+      if (typeof window !== 'undefined') {
+        const sessionKey = `mad_checkout_session_${STORAGE_VERSION}`;
+        sess = sessionStorage.getItem(sessionKey) || undefined;
+      }
+      const response = await publicResendTicketEmail(booking.bookingId, sess);
       if (response.success) {
         setResendState('success');
         setTimeout(() => {
@@ -189,14 +199,24 @@ function MyBookingContent() {
   const booking = result?.booking;
   const tickets = result?.tickets || [];
 
+  const isAuthError =
+    errorMsg.toLowerCase().includes('access') ||
+    errorMsg.toLowerCase().includes('auth') ||
+    errorMsg.toLowerCase().includes('permission') ||
+    errorMsg.toLowerCase().includes('verification') ||
+    errorMsg.toLowerCase().includes('token') ||
+    errorMsg.toLowerCase().includes('unauthorized') ||
+    errorMsg.toLowerCase().includes('forbidden');
+  const shouldShowError = errorMsg && (!booking || !isAuthError);
+
   return (
     <div className="pt-28 pb-16 min-h-screen bg-background">
       <div className="container-mad max-w-3xl space-y-8">
         {/* Header */}
         <div className="text-center space-y-3">
-          <h1 className="text-display-sm font-black text-white">Track Booking</h1>
+          <h1 className="text-display-sm font-black text-white">Ticket Wallet</h1>
           <p className="text-text-secondary text-sm">
-            Retrieve your tickets and view active booking status reports.
+            Access your tickets, passes, and booking confirmation details.
           </p>
         </div>
 
@@ -217,11 +237,11 @@ function MyBookingContent() {
             disabled={isLoading}
             className="sm:self-end h-11 px-6 btn-gradient text-white text-sm font-bold rounded-xl shadow-glow-sm disabled:opacity-60 transition-transform"
           >
-            {isLoading ? 'Searching...' : 'Retrieve Tickets'}
+            {isLoading ? 'Searching...' : 'Open Wallet'}
           </button>
         </form>
 
-        {errorMsg && (
+        {shouldShowError && (
           <div className="p-4 bg-error/10 border border-error/30 rounded-xl text-sm text-red-400 text-center">
             {errorMsg}
           </div>
