@@ -16,10 +16,22 @@ import { getOptimizedImageUrl } from '@/utils/image';
 export function FeaturedEventsSection({ initialEvents = [] }: { initialEvents: Event[] }) {
   const events = initialEvents;
   const [activeIndex, setActiveIndex] = useState(0);
+  const [activeCategory, setActiveCategory] = useState('all');
   const [isMounted, setIsMounted] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   
   const prefersReducedMotion = useReducedMotion();
+
+  const categoriesList = [
+    { label: 'All', value: 'all' },
+    { label: 'DJ Night', value: EventCategory.DJ_NIGHT },
+    { label: 'Concert', value: EventCategory.CONCERT },
+    { label: 'Festival', value: EventCategory.FESTIVAL },
+    { label: 'Comedy', value: EventCategory.COMEDY },
+    { label: 'Theatre', value: EventCategory.THEATRE },
+    { label: 'Live Show', value: EventCategory.LIVE_SHOW },
+    { label: 'Cinema', value: EventCategory.CINEMA },
+  ];
 
   // Set mounted on client to prevent SSR hydration mismatch and layout shift
   useEffect(() => {
@@ -89,6 +101,33 @@ export function FeaturedEventsSection({ initialEvents = [] }: { initialEvents: E
       role="region"
     >
       <div className="container-mad">
+        {/* Category Filter Pills */}
+        <Reveal>
+          <div className="w-full flex justify-center mb-10" role="tablist" aria-label="Event Categories">
+            <div className="flex gap-3 overflow-x-auto scrollbar-hide py-2 px-4 max-w-full -mx-4 sm:mx-0 -webkit-overflow-scrolling-touch md:flex-wrap md:justify-center">
+              {categoriesList.map((cat) => {
+                const isActive = activeCategory === cat.value;
+                return (
+                  <button
+                    key={cat.value}
+                    onClick={() => setActiveCategory(cat.value)}
+                    className={`flex-shrink-0 min-h-[44px] min-w-[44px] px-5 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
+                      isActive
+                        ? 'bg-gradient-to-r from-primary to-accent text-white shadow-glow'
+                        : 'bg-bg-card/60 backdrop-blur-md text-text-secondary hover:text-white border border-white/5 hover:border-primary/40 hover:bg-bg-card/90'
+                    }`}
+                    role="tab"
+                    aria-selected={isActive}
+                    tabIndex={0}
+                  >
+                    {cat.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </Reveal>
+
         <Reveal>
           <div className="flex items-end justify-between mb-10">
             <div>
