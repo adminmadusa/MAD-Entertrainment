@@ -5,6 +5,7 @@ import { Booking } from '../../models/booking.schema';
 import { Payment } from '../../models/payment.schema';
 import { Coupon } from '../../models/coupon.schema';
 import { getEnv } from '../../config/env';
+import { getStripe } from '../../config/stripe';
 import crypto from 'crypto';
 
 vi.mock('../../config/env', () => ({
@@ -760,6 +761,151 @@ describe('Payment Service', () => {
         expect.any(Object),
         expect.objectContaining({ new: false })
       );
+    });
+  });
+
+  describe('Phase 1 Webhook & Intent Isolation', () => {
+    it('should fail loudly in verifyPayment if no payment identifier is supplied', async () => {
+      vi.mocked(Booking.findOne).mockResolvedValue({
+        _id: 'b-123',
+        bookingId: 'MAD-2026-ABCDE',
+        userId: { toString: () => 'user-owner' },
+        status: BookingStatus.AWAITING_PAYMENT,
+      } as any);
+
+      await expect(
+        PaymentService.verifyPayment('MAD-2026-ABCDE', {}, { userId: 'user-owner' })
+      ).rejects.toThrow('Payment verification requires a payment identifier');
+    });
+
+    it('should query exact payment record using paymentIntentId for Stripe', async () => {
+      const mockBooking = {
+        _id: 'b-123',
+        bookingId: 'MAD-2026-ABCDE',
+        userId: { toString: () => 'user-owner' },
+        eventId: 'e-123',
+        status: BookingStatus.AWAITING_PAYMENT,
+        tickets: [],
+        totalAmount: 100,
+        currency: 'INR',
+      };
+      const mockPayment = { _id: 'p-stripe-123', gateway: 'stripe', status: PaymentStatus.PENDING, gatewayOrderId: 'pi_123', save: vi.fn() };
+
+      const mockStripe = {
+        paymentIntents: {
+          retrieve: vi.fn().mockResolvedValue({
+            id: 'pi_123',
+            status: 'succeeded',
+            amount_received: 10000,
+            currency: 'inr',
+            metadata: {
+              bookingId: 'b-123',
+              bookingReference: 'MAD-2026-ABCDE',
+            },
+          }),
+        },
+      };
+      vi.mocked(getStripe).mockReturnValue(mockStripe as any);
+
+      vi.mocked(Booking.findOne).mockResolvedValue(mockBooking as any);
+      vi.mocked(Payment.findOne).mockImplementation((query: any) => {
+        if (query.gatewayOrderId === 'pi_123' && query.gateway === 'stripe') {
+          return { sort: vi.fn().mockResolvedValue(mockPayment) } as any;
+        }
+        return { sort: vi.fn().mockResolvedValue(null) } as any;
+      });
+      vi.mocked(Booking.findOneAndUpdate).mockResolvedValue(mockBooking as any);
+
+      const result = await PaymentService.verifyPayment(
+        'MAD-2026-ABCDE',
+        { paymentIntentId: 'pi_123' },
+        { userId: 'user-owner' }
+      );
+
+      expect(result).toBeDefined();
+      expect(mockPayment.status).toBe(PaymentStatus.PAID);
+      expect(Payment.findOne).toHaveBeenCalledWith(
+        expect.objectContaining({
+          bookingId: 'b-123',
+          gatewayOrderId: 'pi_123',
+          gateway: 'stripe',
+        })
+      );
+    });
+
+    it('should not mutate booking or release inventory in failPaymentAndReleaseInventory if status is not AWAITING_PAYMENT', async () => {
+      const mockPayment = { _id: 'p-123', bookingId: 'b-123', gateway: 'razorpay', status: PaymentStatus.PENDING, save: vi.fn() };
+      const mockBooking = { _id: 'b-123', eventId: 'e-123', status: BookingStatus.CONFIRMED, tickets: [], save: vi.fn() };
+
+      vi.mocked(Payment.findOne).mockResolvedValue(mockPayment as any);
+      vi.mocked(Booking.findById).mockResolvedValue(mockBooking as any);
+
+      const result = await PaymentService.confirmFromWebhook('order_123', 'pay_123', 'payment.failed', 'evt_123');
+      expect(result.status).toBe('failed');
+      expect(mockPayment.status).toBe(PaymentStatus.FAILED);
+      expect(mockPayment.save).toHaveBeenCalled();
+      expect(mockBooking.save).not.toHaveBeenCalled();
+    });
+
+    it('should bind successful payment to booking.paymentId when confirmation succeeds (Multiple Payment Regression Test)', async () => {
+      const mockBooking = {
+        _id: 'b-123',
+        bookingId: 'MAD-2026-ABCDE',
+        userId: { toString: () => 'user-owner' },
+        eventId: 'e-123',
+        status: BookingStatus.AWAITING_PAYMENT,
+        tickets: [],
+        paymentId: 'p-A',
+        totalAmount: 100,
+        currency: 'INR',
+      };
+
+      const paymentB = {
+        _id: 'p-B',
+        gateway: 'stripe',
+        status: PaymentStatus.PENDING,
+        gatewayOrderId: 'pi_B',
+        save: vi.fn(),
+      };
+
+      const mockStripe = {
+        paymentIntents: {
+          retrieve: vi.fn().mockResolvedValue({
+            id: 'pi_B',
+            status: 'succeeded',
+            amount_received: 10000,
+            currency: 'inr',
+            metadata: {
+              bookingId: 'b-123',
+              bookingReference: 'MAD-2026-ABCDE',
+            },
+          }),
+        },
+      };
+      vi.mocked(getStripe).mockReturnValue(mockStripe as any);
+
+      vi.mocked(Booking.findOne).mockResolvedValue(mockBooking as any);
+      vi.mocked(Payment.findOne).mockReturnValue({
+        sort: vi.fn().mockResolvedValue(paymentB),
+      } as any);
+      vi.mocked(Booking.findOneAndUpdate).mockImplementation((query: any, update: any) => {
+        if (update.$set) {
+          mockBooking.status = update.$set.status;
+          mockBooking.paymentId = update.$set.paymentId;
+        }
+        return mockBooking as any;
+      });
+
+      const result = await PaymentService.verifyPayment(
+        'MAD-2026-ABCDE',
+        { paymentIntentId: 'pi_B' },
+        { userId: 'user-owner' }
+      );
+
+      expect(result).toBeDefined();
+      expect(paymentB.status).toBe(PaymentStatus.PAID);
+      expect(mockBooking.status).toBe(BookingStatus.CONFIRMED);
+      expect(mockBooking.paymentId).toBe('p-B');
     });
   });
 });

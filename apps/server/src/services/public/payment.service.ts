@@ -502,7 +502,31 @@ export class PaymentService {
 
     this.assertBookingOwnership(booking, ownershipContext);
 
-    const payment = await Payment.findOne({ bookingId: booking._id }).sort({ createdAt: -1 });
+    const { paymentIntentId, razorpay_order_id, razorpay_payment_id } = gatewayPayload || {};
+
+    let payment;
+    if (paymentIntentId) {
+      payment = await Payment.findOne({
+        bookingId: booking._id,
+        gatewayOrderId: paymentIntentId,
+        gateway: 'stripe',
+      }).sort({ createdAt: -1 });
+    } else if (razorpay_order_id) {
+      payment = await Payment.findOne({
+        bookingId: booking._id,
+        gatewayOrderId: razorpay_order_id,
+        gateway: 'razorpay',
+      }).sort({ createdAt: -1 });
+    } else if (razorpay_payment_id) {
+      payment = await Payment.findOne({
+        bookingId: booking._id,
+        gatewayPaymentId: razorpay_payment_id,
+        gateway: 'razorpay',
+      }).sort({ createdAt: -1 });
+    } else {
+      throw AppError.badRequest('Payment verification requires a payment identifier');
+    }
+
     if (!payment) {
       throw AppError.notFound('Payment record not found for booking');
     }
@@ -913,6 +937,18 @@ export class PaymentService {
     payment.failureReason = reason;
     await payment.save();
 
+    if (booking.status !== BookingStatus.AWAITING_PAYMENT) {
+      logger.info(
+        {
+          bookingId: booking._id,
+          bookingStatus: booking.status,
+          paymentId: payment._id,
+        },
+        'Skipping booking failure transition and inventory release for already-processed booking'
+      );
+      return;
+    }
+
     booking.status = BookingStatus.FAILED;
     booking.bookingVersion += 1;
     await booking.save();
@@ -987,7 +1023,7 @@ export class PaymentService {
     // not double-increment event inventory or create duplicate tickets.
     const previousBookingDoc = await Booking.findOneAndUpdate(
       { _id: booking._id, status: { $in: [BookingStatus.AWAITING_PAYMENT, BookingStatus.EXPIRED, BookingStatus.EXPIRING] } },
-      { $set: { status: BookingStatus.CONFIRMED }, $unset: { expiresAt: 1, logicalExpiresAt: 1 }, $inc: { bookingVersion: 1 } },
+      { $set: { status: BookingStatus.CONFIRMED, paymentId: _payment._id }, $unset: { expiresAt: 1, logicalExpiresAt: 1 }, $inc: { bookingVersion: 1 } },
       { new: false }
     );
 
@@ -1009,6 +1045,7 @@ export class PaymentService {
     const previousStatus = previousBookingDoc.status;
     const confirmedBooking = previousBookingDoc;
     confirmedBooking.status = BookingStatus.CONFIRMED;
+    confirmedBooking.paymentId = _payment._id as any;
     confirmedBooking.bookingVersion += 1;
 
     booking = confirmedBooking;
