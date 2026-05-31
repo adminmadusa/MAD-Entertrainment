@@ -402,3 +402,42 @@ video {
 .animate-ambient-shift-3 {
   animation: ambient-shift-3 20s infinite alternate ease-in-out;
 }
+
+/* ─── Safari Viewport Height & Momentum Scrolling Overrides ─── */
+@supports (height: 100dvh) {
+  .min-h-screen {
+    min-height: 100dvh;
+  }
+  .h-screen {
+    height: 100dvh;
+  }
+}
+
+.overflow-x-auto,
+.overflow-y-auto,
+.overflow-auto,
+.scrollbar-hide {
+  -webkit-overflow-scrolling: touch;
+}
+
+@keyframes scroll-dot {
+  0% {
+    transform: translateY(0);
+    opacity: 0;
+  }
+  30% {
+    opacity: 1;
+  }
+  80% {
+    transform: translateY(6px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 0;
+  }
+}
+
+.animate-scroll-dot {
+  animation: scroll-dot 1.8s infinite ease-in-out;
+}

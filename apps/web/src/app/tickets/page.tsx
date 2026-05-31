@@ -125,11 +125,15 @@ function TicketRetrievalContent() {
             {step === 'portal' ? 'My Ticket Wallet' : 'Retrieve Tickets'}
           </h1>
           <p className="text-text-secondary text-sm max-w-md mx-auto leading-relaxed">
-            {step === 'portal'
-              ? `Manage and view entry passes associated with ${user?.email || 'your email'}.`
-              : targetRef 
-                ? `Verify the email address used to book ${targetRef} to view your tickets.`
-                : 'Enter your email address to verify your identity and instantly track your active event bookings.'}
+            {(() => {
+              if (step === 'portal') {
+                return `Manage and view entry passes associated with ${user?.email || 'your email'}.`;
+              }
+              if (targetRef) {
+                return `Verify the email address used to book ${targetRef} to view your tickets.`;
+              }
+              return 'Enter your email address to verify your identity and instantly track your active event bookings.';
+            })()}
           </p>
         </div>
 
@@ -172,84 +176,94 @@ function TicketRetrievalContent() {
               </button>
             </div>
 
-            {isBookingsLoading ? (
-              <div className="text-center py-20 text-text-muted text-xs animate-pulse">
-                Loading secure ticket resources...
-              </div>
-            ) : sortedBookings.length > 0 ? (
-              <div className="space-y-8">
-                {sortedBookings.map((booking) => {
-                  const bookingTickets = tickets.filter(
-                    (t) => t.bookingId === booking._id || t.bookingId?.toString() === booking._id?.toString()
-                  );
+            {(() => {
+              if (isBookingsLoading) {
+                return (
+                  <div className="text-center py-20 text-text-muted text-xs animate-pulse">
+                    Loading secure ticket resources...
+                  </div>
+                );
+              }
 
-                  const isTarget = targetRef && booking.bookingId === targetRef;
-                  const containerClasses = isTarget
-                    ? "glass rounded-3xl p-6 sm:p-8 space-y-6 shadow-glow-purple transition-all duration-300 border-accent-purple ring-2 ring-accent-purple/50"
-                    : "glass rounded-3xl border border-border-subtle p-6 sm:p-8 space-y-6 shadow-xl transition-all duration-300 hover:border-white/10";
+              if (sortedBookings.length > 0) {
+                return (
+                  <div className="space-y-8">
+                    {sortedBookings.map((booking) => {
+                      const bookingTickets = tickets.filter(
+                        (t) => t.bookingId === booking._id || t.bookingId?.toString() === booking._id?.toString()
+                      );
 
-                  return (
-                    <div
-                      key={booking._id}
-                      className={containerClasses}
+                      const isTarget = targetRef && booking.bookingId === targetRef;
+                      const containerClasses = isTarget
+                        ? "glass rounded-3xl p-6 sm:p-8 space-y-6 shadow-glow-purple transition-all duration-300 border-accent-purple ring-2 ring-accent-purple/50"
+                        : "glass rounded-3xl border border-border-subtle p-6 sm:p-8 space-y-6 shadow-xl transition-all duration-300 hover:border-white/10";
+
+                      return (
+                        <div
+                          key={booking._id}
+                          className={containerClasses}
+                        >
+                          <BookingHeaderCard booking={booking} />
+
+                          {/* Tickets list for confirmed bookings */}
+                          {booking.status === 'confirmed' ? (
+                            <div className="space-y-4 pt-4 border-t border-border-subtle/30">
+                              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-2">
+                                <h3 className="text-white font-bold text-sm">Entry Passes</h3>
+                                <TicketActions
+                                  downloading={downloadingId === booking.bookingId}
+                                  resending={resendingId === booking.bookingId}
+                                  onDownload={() => handleDownloadPDF(booking.bookingId)}
+                                  onResend={() => handleResendTickets(booking.bookingId)}
+                                />
+                              </div>
+                              <EntryPassGrid tickets={bookingTickets} />
+                            </div>
+                          ) : (
+                            <div className="glass-strong rounded-2xl border border-border-subtle p-6 text-center text-text-secondary text-sm">
+                              🎁 Entry tickets and QR scanner codes will be generated automatically once your payment is successfully completed.
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              }
+
+              return (
+                <div className="glass rounded-3xl border border-border-subtle p-16 text-center space-y-4">
+                  <div className="text-4xl">🎫</div>
+                  <h3 className="text-white font-bold text-base">No Tickets Found</h3>
+                  <p className="text-text-secondary text-sm max-w-sm mx-auto leading-relaxed">
+                    {targetRef ? (
+                      <>
+                        We couldn't find the booking <span className="text-white font-semibold">{targetRef}</span> associated with <span className="text-white font-semibold">{user?.email}</span>. Did you use a different email address at checkout?
+                      </>
+                    ) : (
+                      <>
+                        We couldn't find any confirmed event bookings associated with the email <span className="text-white font-semibold">{user?.email}</span>.
+                      </>
+                    )}
+                  </p>
+                  <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-4">
+                    <button
+                      type="button"
+                      onClick={handleExitPortal}
+                      className="px-5 py-2.5 bg-accent-purple hover:bg-accent-purple-light text-white text-xs font-bold rounded-xl transition-all shadow-md"
                     >
-                      <BookingHeaderCard booking={booking} />
-
-                      {/* Tickets list for confirmed bookings */}
-                      {booking.status === 'confirmed' ? (
-                        <div className="space-y-4 pt-4 border-t border-border-subtle/30">
-                          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-2">
-                            <h3 className="text-white font-bold text-sm">Entry Passes</h3>
-                            <TicketActions
-                              downloading={downloadingId === booking.bookingId}
-                              resending={resendingId === booking.bookingId}
-                              onDownload={() => handleDownloadPDF(booking.bookingId)}
-                              onResend={() => handleResendTickets(booking.bookingId)}
-                            />
-                          </div>
-                          <EntryPassGrid tickets={bookingTickets} />
-                        </div>
-                      ) : (
-                        <div className="glass-strong rounded-2xl border border-border-subtle p-6 text-center text-text-secondary text-sm">
-                          🎁 Entry tickets and QR scanner codes will be generated automatically once your payment is successfully completed.
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            ) : (
-              <div className="glass rounded-3xl border border-border-subtle p-16 text-center space-y-4">
-                <div className="text-4xl">🎫</div>
-                <h3 className="text-white font-bold text-base">No Tickets Found</h3>
-                <p className="text-text-secondary text-sm max-w-sm mx-auto leading-relaxed">
-                  {targetRef ? (
-                    <>
-                      We couldn't find the booking <span className="text-white font-semibold">{targetRef}</span> associated with <span className="text-white font-semibold">{user?.email}</span>. Did you use a different email address at checkout?
-                    </>
-                  ) : (
-                    <>
-                      We couldn't find any confirmed event bookings associated with the email <span className="text-white font-semibold">{user?.email}</span>.
-                    </>
-                  )}
-                </p>
-                <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-4">
-                  <button
-                    type="button"
-                    onClick={handleExitPortal}
-                    className="px-5 py-2.5 bg-accent-purple hover:bg-accent-purple-light text-white text-xs font-bold rounded-xl transition-all shadow-md"
-                  >
-                    Try Another Email
-                  </button>
-                  <a
-                    href="mailto:support@mad-entertainment.com"
-                    className="px-5 py-2.5 bg-white/5 hover:bg-white/10 text-white text-xs font-bold rounded-xl transition-all border border-border-subtle"
-                  >
-                    Contact Support
-                  </a>
+                      Try Another Email
+                    </button>
+                    <a
+                      href="mailto:support@mad-entertainment.com"
+                      className="px-5 py-2.5 bg-white/5 hover:bg-white/10 text-white text-xs font-bold rounded-xl transition-all border border-border-subtle"
+                    >
+                      Contact Support
+                    </a>
+                  </div>
                 </div>
-              </div>
-            )}
+              );
+            })()}
           </div>
         )}
 

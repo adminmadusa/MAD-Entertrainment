@@ -35,13 +35,16 @@ export async function serverGetDJs(): Promise<DJOperator[]> {
     const body = await res.json();
     const payload = body?.data || {};
     
-    return Array.isArray(payload.data)
-      ? payload.data
-      : Array.isArray(payload.djOperators)
-      ? payload.djOperators
-      : Array.isArray(payload.djs)
-      ? payload.djs
-      : [];
+    if (Array.isArray(payload.data)) {
+      return payload.data;
+    }
+    if (Array.isArray(payload.djOperators)) {
+      return payload.djOperators;
+    }
+    if (Array.isArray(payload.djs)) {
+      return payload.djs;
+    }
+    return [];
   } catch (error) {
     console.error('[server-fetch] Failed to fetch DJs:', error);
     return [];

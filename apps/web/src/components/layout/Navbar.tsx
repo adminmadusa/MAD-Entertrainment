@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect, useRef } from 'react';
+import { ArrowRight, useFocusTrap } from '@mad/ui';
 
 const navLinks = [
   { label: 'Events', href: '/events' },
@@ -17,19 +18,32 @@ export function Navbar() {
 
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const lastScrollY = useRef(0);
-  const [visible, setVisible] = useState(true);
+  
+  const mobileMenuRef = useFocusTrap<HTMLDivElement>({
+    isActive: mobileOpen,
+    onClose: () => setMobileOpen(false),
+  });
+
+  // Body scroll locking when mobile menu is open
+  useEffect(() => {
+    if (mobileOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [mobileOpen]);
 
   useEffect(() => {
     if (isCheckoutOrBook) return;
 
     const handleScroll = () => {
-      const currentY = window.scrollY;
-      setScrolled(currentY > 20);
-      // Hide navbar on scroll down, show on scroll up
-      setVisible(currentY < lastScrollY.current || currentY < 100);
-      lastScrollY.current = currentY;
+      setScrolled(window.scrollY > 20);
     };
+
+    handleScroll(); // Check scroll on mount
 
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
@@ -42,16 +56,54 @@ export function Navbar() {
     setMobileOpen(false);
   }, [pathname]);
 
+  const [footerIntersecting, setFooterIntersecting] = useState(false);
+
+  useEffect(() => {
+    if (pathname !== '/') {
+      setFooterIntersecting(false);
+      return;
+    }
+
+    const handleObserver = () => {
+      const footer = document.querySelector('footer');
+      if (!footer) return;
+
+      const observer = new IntersectionObserver(
+        ([entry]) => {
+          setFooterIntersecting(entry.isIntersecting);
+        },
+        {
+          rootMargin: '0px 0px 100px 0px',
+          threshold: 0,
+        }
+      );
+
+      observer.observe(footer);
+      return observer;
+    };
+
+    let observerInstance: IntersectionObserver | undefined;
+    const timer = setTimeout(() => {
+      const obs = handleObserver();
+      if (obs) observerInstance = obs;
+    }, 100);
+
+    return () => {
+      clearTimeout(timer);
+      if (observerInstance) {
+        observerInstance.disconnect();
+      }
+    };
+  }, [pathname]);
+
   if (isCheckoutOrBook) return null;
 
   return (
-    <motion.header
-      animate={{ y: visible ? 0 : -100 }}
-      transition={{ duration: 0.3, ease: 'easeInOut' }}
+    <header
       className={[
         'fixed top-0 left-0 right-0 z-50 transition-all duration-300 border-b',
         scrolled
-          ? 'bg-background/80 backdrop-blur-lg border-border-subtle py-3'
+          ? 'bg-background/75 backdrop-blur-md border-white/5 py-3 shadow-lg shadow-black/20'
           : 'bg-transparent border-transparent py-5',
       ].join(' ')}
     >
@@ -139,11 +191,13 @@ export function Navbar() {
       <AnimatePresence>
         {mobileOpen && (
           <motion.div
+            ref={mobileMenuRef}
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.25, ease: 'easeInOut' }}
-            className="md:hidden glass-strong border-t border-border-subtle overflow-hidden"
+            className="md:hidden glass-strong border-t border-border-subtle overflow-hidden focus:outline-none"
+            tabIndex={-1}
           >
             <div className="container-mad py-4 flex flex-col gap-1">
               {navLinks.map((link, i) => (
@@ -183,7 +237,34 @@ export function Navbar() {
           </motion.div>
         )}
       </AnimatePresence>
-    </motion.header>
+
+      {/* Mobile Floating Sticky CTA on Homepage */}
+      {pathname === '/' && (
+        <div
+          className={[
+            'fixed bottom-[calc(1.5rem+env(safe-area-inset-bottom))] left-1/2 -translate-x-1/2 z-40 md:hidden flex justify-center w-auto pointer-events-none transition-all duration-300 ease-in-out',
+            (!mobileOpen && !footerIntersecting)
+              ? 'opacity-100 scale-100'
+              : 'opacity-0 scale-95',
+          ].join(' ')}
+        >
+          <Link
+            href="/events"
+            tabIndex={(!mobileOpen && !footerIntersecting) ? 0 : -1}
+            aria-hidden={!(!mobileOpen && !footerIntersecting)}
+            className={[
+              'py-3 px-6 btn-gradient text-white rounded-full font-bold shadow-glow text-sm inline-flex items-center gap-2 active:scale-95 transition-transform border border-white/10',
+              (!mobileOpen && !footerIntersecting)
+                ? 'pointer-events-auto'
+                : 'pointer-events-none',
+            ].join(' ')}
+          >
+            Book Now
+            <ArrowRight size={14} />
+          </Link>
+        </div>
+      )}
+    </header>
   );
 }
 

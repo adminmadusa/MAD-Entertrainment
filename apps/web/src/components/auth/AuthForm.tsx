@@ -383,19 +383,27 @@ export function AuthForm({ mode, onSuccess, onGuestContinue, className = '' }: A
   return (
     <div className={`space-y-6 ${className}`}>
       {/* Alert Banners */}
-      {cooldownRemaining > 0 ? (
-        <div className="p-4 bg-error/10 border border-error/30 rounded-2xl text-xs text-red-400 text-center animate-in fade-in duration-300 space-y-1">
-          <p className="font-bold">For your security, we've temporarily paused verification requests.</p>
-          <p>You can request a new code in:</p>
-          <p className="font-mono text-lg font-black tracking-wider text-amber-400">
-            {formatTime(cooldownRemaining)}
-          </p>
-        </div>
-      ) : error ? (
-        <div className="p-4 bg-error/10 border border-error/30 rounded-2xl text-xs text-red-400 text-center animate-in fade-in duration-300">
-          {error}
-        </div>
-      ) : null}
+      {(() => {
+        if (cooldownRemaining > 0) {
+          return (
+            <div className="p-4 bg-error/10 border border-error/30 rounded-2xl text-xs text-red-400 text-center animate-in fade-in duration-300 space-y-1">
+              <p className="font-bold">For your security, we've temporarily paused verification requests.</p>
+              <p>You can request a new code in:</p>
+              <p className="font-mono text-lg font-black tracking-wider text-amber-400">
+                {formatTime(cooldownRemaining)}
+              </p>
+            </div>
+          );
+        }
+        if (error) {
+          return (
+            <div className="p-4 bg-error/10 border border-error/30 rounded-2xl text-xs text-red-400 text-center animate-in fade-in duration-300">
+              {error}
+            </div>
+          );
+        }
+        return null;
+      })()}
 
       {infoMessage && (
         <div className="p-4 bg-accent-purple/10 border border-accent-purple/30 rounded-2xl text-xs text-purple-300 text-center animate-in fade-in duration-300">
@@ -410,12 +418,15 @@ export function AuthForm({ mode, onSuccess, onGuestContinue, className = '' }: A
             {isCheckout ? (
               <>
                 <input
+                  id="checkout-login-email"
                   type="email"
                   required
+                  autoComplete="email"
+                  aria-label="Email address"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="Enter your email address"
-                  className="flex-grow bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white placeholder:text-text-muted/30 focus:outline-none focus:border-accent-purple focus:ring-1 focus:ring-accent-purple transition-all"
+                  className="flex-grow bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-base lg:text-sm text-white placeholder:text-text-muted/30 focus:outline-none focus:border-accent-purple focus:ring-1 focus:ring-accent-purple transition-all"
                 />
                  <Button
                   type="submit"
@@ -437,10 +448,11 @@ export function AuthForm({ mode, onSuccess, onGuestContinue, className = '' }: A
                     id="email"
                     type="email"
                     required
+                    autoComplete="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="you@example.com"
-                    className="w-full bg-white/5 border border-border-subtle rounded-xl px-4 py-3.5 text-white placeholder:text-text-muted/30 focus:outline-none focus:border-accent-purple/50 focus:ring-1 focus:ring-accent-purple/50 transition-all duration-300"
+                    className="w-full bg-white/5 border border-border-subtle rounded-xl px-4 py-3.5 text-base lg:text-sm text-white placeholder:text-text-muted/30 focus:outline-none focus:border-accent-purple/50 focus:ring-1 focus:ring-accent-purple/50 transition-all duration-300"
                   />
                 </div>
 
@@ -516,10 +528,11 @@ export function AuthForm({ mode, onSuccess, onGuestContinue, className = '' }: A
                 id="firstName"
                 type="text"
                 required
+                autoComplete="given-name"
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
                 placeholder="John"
-                className="w-full bg-white/5 border border-border-subtle rounded-xl px-4 py-3.5 text-white placeholder:text-text-muted/30 focus:outline-none focus:border-accent-purple/50 focus:ring-1 focus:ring-accent-purple/50 transition-all duration-300"
+                className="w-full bg-white/5 border border-border-subtle rounded-xl px-4 py-3.5 text-base lg:text-sm text-white placeholder:text-text-muted/30 focus:outline-none focus:border-accent-purple/50 focus:ring-1 focus:ring-accent-purple/50 transition-all duration-300"
               />
             </div>
             <div className="space-y-2">
@@ -530,10 +543,11 @@ export function AuthForm({ mode, onSuccess, onGuestContinue, className = '' }: A
                 id="lastName"
                 type="text"
                 required
+                autoComplete="family-name"
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
                 placeholder="Doe"
-                className="w-full bg-white/5 border border-border-subtle rounded-xl px-4 py-3.5 text-white placeholder:text-text-muted/30 focus:outline-none focus:border-accent-purple/50 focus:ring-1 focus:ring-accent-purple/50 transition-all duration-300"
+                className="w-full bg-white/5 border border-border-subtle rounded-xl px-4 py-3.5 text-base lg:text-sm text-white placeholder:text-text-muted/30 focus:outline-none focus:border-accent-purple/50 focus:ring-1 focus:ring-accent-purple/50 transition-all duration-300"
               />
             </div>
             <div className="space-y-2">
@@ -543,10 +557,11 @@ export function AuthForm({ mode, onSuccess, onGuestContinue, className = '' }: A
               <input
                 id="mobileNumber"
                 type="tel"
+                autoComplete="tel"
                 value={mobileNumber}
                 onChange={(e) => setMobileNumber(e.target.value)}
                 placeholder="+1 234 567 8900"
-                className="w-full bg-white/5 border border-border-subtle rounded-xl px-4 py-3.5 text-white placeholder:text-text-muted/30 focus:outline-none focus:border-accent-purple/50 focus:ring-1 focus:ring-accent-purple/50 transition-all duration-300"
+                className="w-full bg-white/5 border border-border-subtle rounded-xl px-4 py-3.5 text-base lg:text-sm text-white placeholder:text-text-muted/30 focus:outline-none focus:border-accent-purple/50 focus:ring-1 focus:ring-accent-purple/50 transition-all duration-300"
               />
             </div>
           </div>
@@ -601,6 +616,8 @@ export function AuthForm({ mode, onSuccess, onGuestContinue, className = '' }: A
               maxLength={6}
               pattern="[0-9]*"
               inputMode="numeric"
+              autoComplete="one-time-code"
+              enterKeyHint="done"
               value={otp}
               onChange={(e) => setOtp(e.target.value.replace(/[^0-9]/g, ''))}
               onPaste={handlePaste}
@@ -632,24 +649,32 @@ export function AuthForm({ mode, onSuccess, onGuestContinue, className = '' }: A
                 ← Edit email
               </button>
 
-              {cooldownRemaining > 0 ? (
-                <span className="text-text-muted/60">
-                  Resend code in <span className="font-semibold text-purple-300">{formatTime(cooldownRemaining)}</span>
-                </span>
-              ) : resendTimer > 0 ? (
-                <span className="text-text-muted/60">
-                  Resend code in <span className="font-semibold text-purple-300">{resendTimer}s</span>
-                </span>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => requestMagicLinkMutation.mutate()}
-                  disabled={requestMagicLinkMutation.isPending || cooldownRemaining > 0}
-                  className="text-accent-purple hover:text-accent-purple-light font-semibold transition-colors duration-200 disabled:opacity-50"
-                >
-                  Resend Code
-                </button>
-              )}
+              {(() => {
+                if (cooldownRemaining > 0) {
+                  return (
+                    <span className="text-text-muted/60">
+                      Resend code in <span className="font-semibold text-purple-300">{formatTime(cooldownRemaining)}</span>
+                    </span>
+                  );
+                }
+                if (resendTimer > 0) {
+                  return (
+                    <span className="text-text-muted/60">
+                      Resend code in <span className="font-semibold text-purple-300">{resendTimer}s</span>
+                    </span>
+                  );
+                }
+                return (
+                  <button
+                    type="button"
+                    onClick={() => requestMagicLinkMutation.mutate()}
+                    disabled={requestMagicLinkMutation.isPending || cooldownRemaining > 0}
+                    className="text-accent-purple hover:text-accent-purple-light font-semibold transition-colors duration-200 disabled:opacity-50"
+                  >
+                    Resend Code
+                  </button>
+                );
+              })()}
             </div>
           </div>
         </form>

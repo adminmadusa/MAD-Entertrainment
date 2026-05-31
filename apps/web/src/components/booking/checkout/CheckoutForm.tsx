@@ -122,10 +122,11 @@ export function CheckoutForm({ isExpired, isDisabled, onSubmit, onErrorSet }: Ch
           <span className="text-[10px] text-text-muted uppercase">* Required</span>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-1">
-            <label className="text-xs text-text-secondary font-medium">First name *</label>
+            <label htmlFor="checkout-first-name" className="text-xs text-text-secondary font-medium">First name *</label>
             <input
+              id="checkout-first-name"
               type="text"
               value={firstName}
               disabled={isDisabled}
@@ -138,8 +139,9 @@ export function CheckoutForm({ isExpired, isDisabled, onSubmit, onErrorSet }: Ch
             {fieldErrors.firstName && <p className="text-red-400 text-[10px]">{fieldErrors.firstName}</p>}
           </div>
           <div className="space-y-1">
-            <label className="text-xs text-text-secondary font-medium">Last name *</label>
+            <label htmlFor="checkout-last-name" className="text-xs text-text-secondary font-medium">Last name *</label>
             <input
+              id="checkout-last-name"
               type="text"
               value={lastName}
               disabled={isDisabled}
@@ -153,10 +155,11 @@ export function CheckoutForm({ isExpired, isDisabled, onSubmit, onErrorSet }: Ch
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-1">
-            <label className="text-xs text-text-secondary font-medium">Email address *</label>
+            <label htmlFor="checkout-email" className="text-xs text-text-secondary font-medium">Email address *</label>
             <input
+              id="checkout-email"
               type="email"
               value={guestEmail}
               disabled={isDisabled}
@@ -169,8 +172,9 @@ export function CheckoutForm({ isExpired, isDisabled, onSubmit, onErrorSet }: Ch
             {fieldErrors.guestEmail && <p className="text-red-400 text-[10px]">{fieldErrors.guestEmail}</p>}
           </div>
           <div className="space-y-1">
-            <label className="text-xs text-text-secondary font-medium">Confirm email *</label>
+            <label htmlFor="checkout-email-confirm" className="text-xs text-text-secondary font-medium">Confirm email *</label>
             <input
+              id="checkout-email-confirm"
               type="email"
               value={guestEmailConfirm}
               disabled={isDisabled}
@@ -184,10 +188,11 @@ export function CheckoutForm({ isExpired, isDisabled, onSubmit, onErrorSet }: Ch
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-1">
-            <label className="text-xs text-text-secondary font-medium">Mobile Number <span className="text-[10px] text-text-muted/60 lowercase">(Optional – used for event updates only)</span></label>
+            <label htmlFor="checkout-phone" className="text-xs text-text-secondary font-medium">Mobile Number <span className="text-[10px] text-text-muted/60 lowercase">(Optional – used for event updates only)</span></label>
             <input
+              id="checkout-phone"
               type="tel"
               value={guestPhone}
               disabled={isDisabled}
@@ -201,9 +206,11 @@ export function CheckoutForm({ isExpired, isDisabled, onSubmit, onErrorSet }: Ch
           </div>
 
           <div className="space-y-1 flex flex-col justify-between">
-            <label className="text-xs text-text-secondary font-medium">Birthdate *</label>
+            <span className="text-xs text-text-secondary font-medium">Birthdate *</span>
             <div className="grid grid-cols-3 gap-2">
               <select
+                id="checkout-birth-month"
+                aria-label="Birth Month"
                 value={birthMonth}
                 disabled={isDisabled}
                 onChange={(e) => setBirthMonth(e.target.value)}
@@ -218,6 +225,8 @@ export function CheckoutForm({ isExpired, isDisabled, onSubmit, onErrorSet }: Ch
               </select>
 
               <select
+                id="checkout-birth-day"
+                aria-label="Birth Day"
                 value={birthDay}
                 disabled={isDisabled}
                 onChange={(e) => setBirthDay(e.target.value)}
@@ -232,6 +241,8 @@ export function CheckoutForm({ isExpired, isDisabled, onSubmit, onErrorSet }: Ch
               </select>
 
               <select
+                id="checkout-birth-year"
+                aria-label="Birth Year"
                 value={birthYear}
                 disabled={isDisabled}
                 onChange={(e) => setBirthYear(e.target.value)}

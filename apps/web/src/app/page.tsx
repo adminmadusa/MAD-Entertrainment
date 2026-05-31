@@ -6,13 +6,11 @@ import { Suspense } from 'react';
 import { Reveal, StaggerContainer, StaggerItem } from '@/components/common/PageTransition';
 import { DJOperatorsSection } from '@/components/ui/DjOperatorsSection';
 import { FeaturedEventsSection } from '@/components/ui/FeaturedEventsSection';
-import { MarqueeBanner } from '@/components/ui/MarqueeBanner';
 import {
   FeaturedEventsSkeleton,
   DJOperatorsSkeleton,
-  MarqueeBannerSkeleton,
 } from '@/components/ui/HomeSkeletons';
-import { serverGetFeaturedEvents, serverGetDJs, serverGetCategories } from '@/lib/api/server.service';
+import { serverGetFeaturedEvents, serverGetDJs } from '@/lib/api/server.service';
 
 export const metadata: Metadata = {
   title: 'MAD Entertrainment — Book Shows, Events & DJ Nights',
@@ -49,10 +47,7 @@ async function DJOperatorsServerSection() {
   return <DJOperatorsSection initialDJs={djs} />;
 }
 
-async function MarqueeBannerServerSection() {
-  const categories = await serverGetCategories();
-  return <MarqueeBanner initialCategories={categories} />;
-}
+
 
 // ─── Main HomePage Component (Instant TTFB / Streaming) ───────────
 
@@ -72,10 +67,7 @@ export default function HomePage() {
         <DJOperatorsServerSection />
       </Suspense>
 
-      {/* ─── Marquee Banner (Streamed) ─────────────────────── */}
-      <Suspense fallback={<MarqueeBannerSkeleton />}>
-        <MarqueeBannerServerSection />
-      </Suspense>
+
 
       {/* ─── How It Works ─────────────────────────────────── */}
       <HowItWorksSection />
@@ -92,7 +84,7 @@ function HeroSection() {
   return (
     <section
       id="hero"
-      className="relative min-h-[85vh] md:min-h-screen flex items-center justify-center overflow-hidden"
+      className="relative min-h-[75vh] min-h-[75svh] md:min-h-[78vh] md:min-h-[78dvh] lg:min-h-[80vh] lg:min-h-[80dvh] flex items-center justify-center overflow-hidden"
       aria-label="Hero section"
     >
       {/* Animated Background */}
@@ -114,7 +106,7 @@ function HeroSection() {
       />
 
       {/* Content */}
-      <div className="container-mad relative z-10 text-center pt-24 pb-16">
+      <div className="container-mad relative z-10 text-center pt-20 pb-12">
 
         {/* Headline */}
         <Reveal delay={0.2} trigger="mount">
@@ -154,7 +146,7 @@ function HeroSection() {
 
         {/* Stats */}
         <Reveal delay={0.5} trigger="mount">
-          <div className="mt-16 grid grid-cols-3 gap-6 max-w-xl mx-auto">
+          <div className="mt-10 grid grid-cols-3 gap-6 max-w-xl mx-auto">
             {[
               { value: '500+', label: 'Events' },
               { value: '50K+', label: 'Tickets Sold' },
@@ -247,7 +239,7 @@ function HowItWorksSection() {
 
 function CTASection() {
   return (
-    <section className="py-24" aria-label="Call to action">
+    <section className="pt-24 pb-32 md:pb-24" aria-label="Call to action">
       <div className="container-mad">
         <Reveal>
           <div className="relative glass rounded-3xl border border-accent-purple/20 p-12 md:p-20 text-center overflow-hidden">
