@@ -56,6 +56,7 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
   const [isProcessing, setIsProcessing] = useState(false);
   const [redirectCountdown, setRedirectCountdown] = useState(5);
   const [isRedirectPaused, setIsRedirectPaused] = useState(false);
+  const [isInputFocused, setIsInputFocused] = useState(false);
 
   const {
     isLeaveModalOpen,
@@ -398,12 +399,21 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
             )}
 
             {/* Billing Information Form */}
-            <CheckoutForm
-              isExpired={isExpired}
-              isDisabled={isProcessing || saveDetailsMutation.isPending || paymentIntentMutation.isPending}
-              onSubmit={handleFormSubmit}
-              onErrorSet={setError}
-            />
+            <div
+              onFocusCapture={() => setIsInputFocused(true)}
+              onBlurCapture={(e) => {
+                if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+                  setIsInputFocused(false);
+                }
+              }}
+            >
+              <CheckoutForm
+                isExpired={isExpired}
+                isDisabled={isProcessing || saveDetailsMutation.isPending || paymentIntentMutation.isPending}
+                onSubmit={handleFormSubmit}
+                onErrorSet={setError}
+              />
+            </div>
           </div>
 
           {/* Right Column: Checkout Breakdown, Payment Details, and Actions */}
@@ -439,26 +449,28 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
       </div>
 
       {/* Sticky Place Order Footer (Mobile Only) */}
-      <div className={isModal ? "sticky bottom-0 z-40 bg-[#0d111d]/95 border-t border-white/10 py-3 mt-8 shadow-2xl lg:hidden" : "fixed bottom-0 left-0 right-0 z-40 bg-[#0d111d]/95 backdrop-blur-lg border-t border-white/10 shadow-2xl lg:hidden"}>
-        <div className="container-mad max-w-4xl px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] flex items-center gap-4">
-          <div className="flex-1">
-            <div className="text-[10px] text-text-muted font-semibold uppercase tracking-wider">Total Amount</div>
-            <div className="text-white font-black text-lg">₹{booking.totalAmount}</div>
+      {!isInputFocused && (
+        <div className={isModal ? "sticky bottom-0 z-40 bg-[#0d111d]/95 border-t border-white/10 py-3 mt-8 shadow-2xl lg:hidden" : "fixed bottom-0 left-0 right-0 z-40 bg-[#0d111d]/95 backdrop-blur-lg border-t border-white/10 shadow-2xl lg:hidden"}>
+          <div className="container-mad max-w-4xl px-4 py-3 pb-[calc(1rem+env(safe-area-inset-bottom))] flex items-center gap-4">
+            <div className="flex-1">
+              <div className="text-[10px] text-text-muted font-semibold uppercase tracking-wider">Total Amount</div>
+              <div className="text-white font-black text-lg">₹{booking.totalAmount}</div>
+            </div>
+            <button
+              type="submit"
+              form="checkout-form"
+              disabled={isExpired || saveDetailsMutation.isPending || paymentIntentMutation.isPending || isProcessing}
+              className="flex-shrink-0 px-8 py-3.5 rounded-xl bg-gradient-to-r from-accent-purple to-accent-pink hover:from-accent-purple-light hover:to-accent-pink/80 text-white font-black text-sm transition-all hover:scale-[1.02] active:scale-95 shadow-glow disabled:opacity-50"
+            >
+              {saveDetailsMutation.isPending || paymentIntentMutation.isPending || isProcessing
+                ? 'Processing...'
+                : isExpired
+                ? 'Session Expired'
+                : 'Place Order'}
+            </button>
           </div>
-          <button
-            type="submit"
-            form="checkout-form"
-            disabled={isExpired || saveDetailsMutation.isPending || paymentIntentMutation.isPending || isProcessing}
-            className="flex-shrink-0 px-8 py-3.5 rounded-xl bg-gradient-to-r from-accent-purple to-accent-pink hover:from-accent-purple-light hover:to-accent-pink/80 text-white font-black text-sm transition-all hover:scale-[1.02] active:scale-95 shadow-glow disabled:opacity-50"
-          >
-            {saveDetailsMutation.isPending || paymentIntentMutation.isPending || isProcessing
-              ? 'Processing...'
-              : isExpired
-              ? 'Session Expired'
-              : 'Place Order'}
-          </button>
         </div>
-      </div>
+      )}
 
       {/* Payment Processing Loader Backdrop */}
       <AnimatePresence>

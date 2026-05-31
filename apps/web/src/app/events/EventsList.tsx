@@ -10,6 +10,8 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { useState, useRef, useEffect } from 'react';
 
 import { publicGetEvents } from '@/lib/api/public.service';
+import { formatEventDate } from '@/utils/date';
+
 
 const CATEGORIES = [
   { label: 'All', value: '' },
@@ -23,14 +25,6 @@ const CATEGORIES = [
   { label: 'Cinema', value: EventCategory.CINEMA },
 ];
 
-function formatDate(dateStr: Date | string): string {
-  return new Date(dateStr).toLocaleDateString('en-US', {
-    weekday: 'short',
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  });
-}
 
 export function EventsList() {
   const searchParams = useSearchParams();
@@ -144,7 +138,7 @@ export function EventsList() {
               setSearch(e.target.value);
             }}
             placeholder="Search events..."
-            className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-background border border-border-subtle text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-purple focus-visible:ring-2 focus-visible:ring-accent-purple transition-colors"
+            className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-background border border-border-subtle text-base lg:text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-purple focus-visible:ring-2 focus-visible:ring-accent-purple transition-colors"
           />
           <div className="absolute left-3.5 top-3.5 text-text-muted pointer-events-none" aria-hidden="true">
             <SearchIcon className="w-4 h-4" />
@@ -213,7 +207,7 @@ export function EventsList() {
                 <div className="p-5 flex flex-col flex-grow">
                   <div className="text-text-muted text-[11px] font-semibold uppercase tracking-wider mb-2 flex items-center gap-1.5">
                     <CalendarIcon className="w-3.5 h-3.5 text-accent-purple-light" />
-                    {formatDate(event.startDate)}
+                    {formatEventDate(event.startDate)}
                   </div>
                   <h2 className="text-white font-bold text-base line-clamp-1 mb-2 group-hover:text-accent-purple-light transition-colors">
                     {event.title}

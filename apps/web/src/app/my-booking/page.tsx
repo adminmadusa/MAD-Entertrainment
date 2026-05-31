@@ -223,13 +223,14 @@ function MyBookingContent() {
         {/* Search Reference Form */}
         <form onSubmit={handleSearchSubmit} className="glass rounded-2xl border border-border-subtle p-6 flex flex-col sm:flex-row gap-3">
           <div className="flex-grow space-y-1">
-            <label className="text-[10px] text-text-secondary font-medium tracking-wider uppercase">Booking Reference ID</label>
+            <label htmlFor="booking-ref-input" className="text-[10px] text-text-secondary font-medium tracking-wider uppercase">Booking Reference ID</label>
             <input
+              id="booking-ref-input"
               type="text"
               value={bookingRefInput}
               onChange={(e) => setBookingRefInput(e.target.value)}
               placeholder="e.g. MAD-2026-ABCDE"
-              className="w-full px-4 py-2.5 rounded-xl bg-background border border-border-subtle text-sm text-text-primary focus:outline-none focus:border-accent-purple font-mono uppercase tracking-wider transition-colors"
+              className="w-full px-4 py-2.5 rounded-xl bg-background border border-border-subtle text-base lg:text-sm text-text-primary focus:outline-none focus:border-accent-purple font-mono uppercase tracking-wider transition-colors"
             />
           </div>
           <button

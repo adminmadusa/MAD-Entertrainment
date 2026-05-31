@@ -1,4 +1,5 @@
 import { Booking, Event } from '@mad/types';
+import { formatEventDate } from '@/utils/date';
 
 interface BookingHeaderCardProps {
   booking: Booking;
@@ -7,14 +8,6 @@ interface BookingHeaderCardProps {
 }
 
 export function BookingHeaderCard({ booking, isFetching, pollCount }: BookingHeaderCardProps) {
-  const formatDate = (dateStr: Date | string) => {
-    return new Date(dateStr).toLocaleDateString('en-US', {
-      weekday: 'short',
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    });
-  };
 
   const getBookingStatusStyles = (status: string) => {
     if (status === 'confirmed') return 'bg-green-500/10 text-green-400 border-green-500/30';
@@ -35,7 +28,7 @@ export function BookingHeaderCard({ booking, isFetching, pollCount }: BookingHea
           </h2>
           {eventInfo && (
             <p className="text-text-muted text-xs mt-1.5 flex flex-wrap gap-x-3 gap-y-1">
-              {eventInfo.startDate && <span>📅 {formatDate(eventInfo.startDate)}</span>}
+              {eventInfo.startDate && <span>📅 {formatEventDate(eventInfo.startDate)}</span>}
               {eventInfo.showTime && <span>⏰ {eventInfo.showTime}</span>}
             </p>
           )}

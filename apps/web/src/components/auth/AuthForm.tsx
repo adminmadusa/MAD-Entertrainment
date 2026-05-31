@@ -410,12 +410,15 @@ export function AuthForm({ mode, onSuccess, onGuestContinue, className = '' }: A
             {isCheckout ? (
               <>
                 <input
+                  id="checkout-login-email"
                   type="email"
                   required
+                  autoComplete="email"
+                  aria-label="Email address"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="Enter your email address"
-                  className="flex-grow bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white placeholder:text-text-muted/30 focus:outline-none focus:border-accent-purple focus:ring-1 focus:ring-accent-purple transition-all"
+                  className="flex-grow bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-base lg:text-sm text-white placeholder:text-text-muted/30 focus:outline-none focus:border-accent-purple focus:ring-1 focus:ring-accent-purple transition-all"
                 />
                  <Button
                   type="submit"
@@ -437,10 +440,11 @@ export function AuthForm({ mode, onSuccess, onGuestContinue, className = '' }: A
                     id="email"
                     type="email"
                     required
+                    autoComplete="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="you@example.com"
-                    className="w-full bg-white/5 border border-border-subtle rounded-xl px-4 py-3.5 text-white placeholder:text-text-muted/30 focus:outline-none focus:border-accent-purple/50 focus:ring-1 focus:ring-accent-purple/50 transition-all duration-300"
+                    className="w-full bg-white/5 border border-border-subtle rounded-xl px-4 py-3.5 text-base lg:text-sm text-white placeholder:text-text-muted/30 focus:outline-none focus:border-accent-purple/50 focus:ring-1 focus:ring-accent-purple/50 transition-all duration-300"
                   />
                 </div>
 
@@ -516,10 +520,11 @@ export function AuthForm({ mode, onSuccess, onGuestContinue, className = '' }: A
                 id="firstName"
                 type="text"
                 required
+                autoComplete="given-name"
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
                 placeholder="John"
-                className="w-full bg-white/5 border border-border-subtle rounded-xl px-4 py-3.5 text-white placeholder:text-text-muted/30 focus:outline-none focus:border-accent-purple/50 focus:ring-1 focus:ring-accent-purple/50 transition-all duration-300"
+                className="w-full bg-white/5 border border-border-subtle rounded-xl px-4 py-3.5 text-base lg:text-sm text-white placeholder:text-text-muted/30 focus:outline-none focus:border-accent-purple/50 focus:ring-1 focus:ring-accent-purple/50 transition-all duration-300"
               />
             </div>
             <div className="space-y-2">
@@ -530,10 +535,11 @@ export function AuthForm({ mode, onSuccess, onGuestContinue, className = '' }: A
                 id="lastName"
                 type="text"
                 required
+                autoComplete="family-name"
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
                 placeholder="Doe"
-                className="w-full bg-white/5 border border-border-subtle rounded-xl px-4 py-3.5 text-white placeholder:text-text-muted/30 focus:outline-none focus:border-accent-purple/50 focus:ring-1 focus:ring-accent-purple/50 transition-all duration-300"
+                className="w-full bg-white/5 border border-border-subtle rounded-xl px-4 py-3.5 text-base lg:text-sm text-white placeholder:text-text-muted/30 focus:outline-none focus:border-accent-purple/50 focus:ring-1 focus:ring-accent-purple/50 transition-all duration-300"
               />
             </div>
             <div className="space-y-2">
@@ -543,10 +549,11 @@ export function AuthForm({ mode, onSuccess, onGuestContinue, className = '' }: A
               <input
                 id="mobileNumber"
                 type="tel"
+                autoComplete="tel"
                 value={mobileNumber}
                 onChange={(e) => setMobileNumber(e.target.value)}
                 placeholder="+1 234 567 8900"
-                className="w-full bg-white/5 border border-border-subtle rounded-xl px-4 py-3.5 text-white placeholder:text-text-muted/30 focus:outline-none focus:border-accent-purple/50 focus:ring-1 focus:ring-accent-purple/50 transition-all duration-300"
+                className="w-full bg-white/5 border border-border-subtle rounded-xl px-4 py-3.5 text-base lg:text-sm text-white placeholder:text-text-muted/30 focus:outline-none focus:border-accent-purple/50 focus:ring-1 focus:ring-accent-purple/50 transition-all duration-300"
               />
             </div>
           </div>
@@ -601,6 +608,8 @@ export function AuthForm({ mode, onSuccess, onGuestContinue, className = '' }: A
               maxLength={6}
               pattern="[0-9]*"
               inputMode="numeric"
+              autoComplete="one-time-code"
+              enterKeyHint="done"
               value={otp}
               onChange={(e) => setOtp(e.target.value.replace(/[^0-9]/g, ''))}
               onPaste={handlePaste}

@@ -580,7 +580,7 @@ export default function EventDetailClient({ slug, initialEvent }: EventDetailCli
               </div>
 
               {/* Modal Sticky Bottom Action Footer */}
-              <div className="border-t border-white/10 pt-4 mt-4 flex items-center justify-between bg-[#0d111d] shrink-0">
+              <div className="border-t border-white/10 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] mt-4 flex items-center justify-between bg-[#0d111d] shrink-0">
                 <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 bg-amber-500/10 border border-amber-500/20 text-amber-400 rounded-md animate-pulse">
                   🔥 Few tickets left
                 </span>

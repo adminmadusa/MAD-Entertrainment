@@ -9,8 +9,9 @@ import Link from 'next/link';
 import { ArrowRight, ArrowLeft, CalendarIcon } from '@mad/ui';
 
 import { Reveal } from '@/components/common/PageTransition';
-import { useWindowWidth } from '@/hooks/use-window.hook';
+import { useWindowWidth, useMounted } from '@/hooks/use-window.hook';
 import { getOptimizedImageUrl } from '@/utils/image';
+import { formatEventDate } from '@/utils/date';
 
 
 export function FeaturedEventsSection({ initialEvents = [] }: { initialEvents: Event[] }) {
@@ -21,6 +22,7 @@ export function FeaturedEventsSection({ initialEvents = [] }: { initialEvents: E
   const containerRef = useRef<HTMLDivElement>(null);
   
   const prefersReducedMotion = useReducedMotion();
+  const mounted = useMounted();
 
   const categoriesList = [
     { label: 'All', value: 'all' },
@@ -41,6 +43,11 @@ export function FeaturedEventsSection({ initialEvents = [] }: { initialEvents: E
   // SSR-safe responsive value — defaults to 1024 (desktop) on server,
   // updates to real viewport on mount. Never reads window during render.
   const windowWidth = useWindowWidth();
+  const isMobile = windowWidth < 640;
+
+  // SSR Bottleneck Fix: Only calculate 3D transforms after client hydration
+  // on desktop devices, when we have more than 1 event.
+  const enable3D = mounted && !isMobile && !prefersReducedMotion && events.length > 1;
 
   const nextSlide = () => {
     if (events.length === 0) return;
@@ -73,26 +80,6 @@ export function FeaturedEventsSection({ initialEvents = [] }: { initialEvents: E
     }
   };
 
-  const formatDate = (dateStr: Date | string) => {
-    try {
-      if (!dateStr) return 'Date TBA';
-      const safeDateStr = typeof dateStr === 'string'
-        ? dateStr.replace(/-/g, '/').replace('T', ' ')
-        : dateStr;
-      const d = new Date(safeDateStr);
-      if (isNaN(d.getTime())) {
-        return 'Date TBA';
-      }
-      return d.toLocaleDateString('en-US', {
-        weekday: 'short',
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-      });
-    } catch {
-      return 'Date TBA';
-    }
-  };
 
   return (
     <section 
@@ -209,8 +196,8 @@ export function FeaturedEventsSection({ initialEvents = [] }: { initialEvents: E
                       initial={false}
                       animate={{
                         x,
-                        z: prefersReducedMotion ? 0 : z,
-                        rotateY: prefersReducedMotion ? 0 : rotateY,
+                        z: enable3D ? z : 0,
+                        rotateY: enable3D ? rotateY : 0,
                         opacity,
                         scale: isActive ? 1 : 0.85,
                       }}
@@ -227,7 +214,7 @@ export function FeaturedEventsSection({ initialEvents = [] }: { initialEvents: E
                       style={{
                         zIndex,
                         position: "absolute",
-                        transformStyle: isMobile ? "flat" : "preserve-3d"
+                        transformStyle: enable3D ? "preserve-3d" : "flat"
                       }}
                       className={`pointer-events-auto w-[260px] sm:w-[320px] h-[380px] sm:h-[450px] group glass rounded-2xl border ${isActive ? 'border-accent-purple/50 shadow-glow' : 'border-border-subtle cursor-pointer'} overflow-hidden flex flex-col focus-within:ring-2 focus-within:ring-accent-purple focus-within:border-accent-purple/40`}
                       onClick={() => !isActive && setActiveIndex(index)}
@@ -279,7 +266,7 @@ export function FeaturedEventsSection({ initialEvents = [] }: { initialEvents: E
                         <div className="p-4 flex flex-col flex-grow bg-black/20 backdrop-blur-sm">
                           <div className="text-text-muted text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider mb-2 flex items-center gap-1.5">
                             <CalendarIcon className="w-3.5 h-3.5 text-accent-purple-light" />
-                            {formatDate(event.startDate)}
+                            {formatEventDate(event.startDate)}
                           </div>
                           <h3 className="text-white font-bold text-sm sm:text-base line-clamp-1 mb-2 group-hover:text-accent-purple-light transition-colors">
                             {event.title}
@@ -301,15 +288,12 @@ export function FeaturedEventsSection({ initialEvents = [] }: { initialEvents: E
                           href={`/events/${event.slug}`} 
                           id={`event-card-book-${event.slug}`} 
                           tabIndex={isActive ? 0 : -1} 
-                          className={!isActive ? 'pointer-events-none' : ''}
+                          aria-label={event.isSoldOut ? `View details for ${event.title}` : `Book tickets for ${event.title}`}
+                          className={`px-2.5 py-1.5 sm:px-3.5 sm:py-2 text-[10px] sm:text-xs font-bold text-white btn-gradient rounded-xl shadow-glow-sm group-hover:scale-105 transition-all text-center inline-block ${
+                            !isActive ? 'pointer-events-none opacity-50 cursor-not-allowed' : ''
+                          }`}
                         >
-                          <button
-                            tabIndex={isActive ? 0 : -1}
-                            disabled={!isActive}
-                            className="px-2.5 py-1.5 sm:px-3.5 sm:py-2 text-[10px] sm:text-xs font-bold text-white btn-gradient rounded-xl shadow-glow-sm group-hover:scale-105 transition-transform disabled:opacity-50 disabled:cursor-not-allowed"
-                          >
-                            {event.isSoldOut ? 'Details' : 'Book Now'}
-                          </button>
+                          {event.isSoldOut ? 'Details' : 'Book Now'}
                         </Link>
                       </div>
                     </motion.div>

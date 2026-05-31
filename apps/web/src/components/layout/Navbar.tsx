@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect, useRef } from 'react';
-import { ArrowRight } from '@mad/ui';
+import { ArrowRight, useFocusTrap } from '@mad/ui';
 
 const navLinks = [
   { label: 'Events', href: '/events' },
@@ -18,6 +18,23 @@ export function Navbar() {
 
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  
+  const mobileMenuRef = useFocusTrap<HTMLDivElement>({
+    isActive: mobileOpen,
+    onClose: () => setMobileOpen(false),
+  });
+
+  // Body scroll locking when mobile menu is open
+  useEffect(() => {
+    if (mobileOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [mobileOpen]);
 
   useEffect(() => {
     if (isCheckoutOrBook) return;
@@ -174,11 +191,13 @@ export function Navbar() {
       <AnimatePresence>
         {mobileOpen && (
           <motion.div
+            ref={mobileMenuRef}
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.25, ease: 'easeInOut' }}
-            className="md:hidden glass-strong border-t border-border-subtle overflow-hidden"
+            className="md:hidden glass-strong border-t border-border-subtle overflow-hidden focus:outline-none"
+            tabIndex={-1}
           >
             <div className="container-mad py-4 flex flex-col gap-1">
               {navLinks.map((link, i) => (
