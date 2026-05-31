@@ -8,7 +8,6 @@ import {
   publicRequestVerificationCode,
   publicVerifyVerificationCodeOrOTP,
   publicGoogleLogin,
-  publicCheckEmail,
 } from '@/lib/api/public.service';
 import { useAuth } from '@/providers/AuthProvider';
 import { loadScriptOnce } from '@/lib/utils/load-script-once';
@@ -138,11 +137,8 @@ export function AuthForm({ mode, onSuccess, onGuestContinue, className = '' }: A
 
   // Core Authentication States
   const [email, setEmail] = useState('');
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [mobileNumber, setMobileNumber] = useState('');
   const [otp, setOtp] = useState('');
-  const [step, setStep] = useState<'request' | 'register' | 'verify'>('request');
+  const [step, setStep] = useState<'request' | 'verify'>('request');
   const [error, setError] = useState('');
   const [infoMessage, setInfoMessage] = useState('');
 
@@ -176,35 +172,9 @@ export function AuthForm({ mode, onSuccess, onGuestContinue, className = '' }: A
 
   // ─── React Query Mutations ───────────────────────────────────
 
-  // Check if Email exists (strictly login mode registration discovery)
-  const checkEmailMutation = useMutation<{ exists: boolean }, Error, string>({
-    mutationFn: (emailStr: string) => publicCheckEmail(emailStr),
-    onSuccess: (data) => {
-      if (data.exists) {
-        requestVerificationCodeMutation.mutate();
-      } else {
-        setStep('register');
-        setInfoMessage('');
-      }
-    },
-    onError: (err) => {
-      const apiErr = extractApiError(err);
-      if (apiErr.code === 'RATE_LIMIT_EXCEEDED') {
-        triggerCooldown(apiErr.retryAfter ?? 60);
-        setError('');
-      } else {
-        setError(apiErr.message || 'Failed to verify email. Please try again.');
-      }
-    },
-  });
-
   // Request verification code / OTP passcode dispatch
   const requestVerificationCodeMutation = useMutation<VerificationCodeRequestResponse, Error, void>({
-    mutationFn: () =>
-      publicRequestVerificationCode(
-        email,
-        step === 'register' ? { firstName, lastName, mobileNumber } : undefined
-      ),
+    mutationFn: () => publicRequestVerificationCode(email),
     onSuccess: (res) => {
       setStep('verify');
       setInfoMessage(res.message || 'Verification passcode dispatched. Please check your inbox.');
@@ -339,17 +309,6 @@ export function AuthForm({ mode, onSuccess, onGuestContinue, className = '' }: A
       setError('Email address is required');
       return;
     }
-    checkEmailMutation.mutate(email);
-  };
-
-  const handleSubmitRegister = (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setInfoMessage('');
-    if (!firstName.trim() || !lastName.trim()) {
-      setError('First and Last names are required');
-      return;
-    }
     requestVerificationCodeMutation.mutate();
   };
 
@@ -433,7 +392,7 @@ export function AuthForm({ mode, onSuccess, onGuestContinue, className = '' }: A
                   variant="primary"
                   className="px-4 py-2 text-xs font-bold rounded-xl whitespace-nowrap"
                   disabled={cooldownRemaining > 0}
-                  isLoading={checkEmailMutation.isPending || requestVerificationCodeMutation.isPending}
+                  isLoading={requestVerificationCodeMutation.isPending}
                 >
                   {cooldownRemaining > 0 ? `Request Code (${formatTime(cooldownRemaining)})` : 'Send Code'}
                 </Button>
@@ -462,7 +421,7 @@ export function AuthForm({ mode, onSuccess, onGuestContinue, className = '' }: A
                   fullWidth
                   className="py-3.5 rounded-xl font-bold tracking-wide shadow-lg shadow-accent-purple/20 hover:shadow-accent-purple/40 active:scale-95 transition-all duration-200"
                   disabled={cooldownRemaining > 0}
-                  isLoading={checkEmailMutation.isPending || requestVerificationCodeMutation.isPending}
+                  isLoading={requestVerificationCodeMutation.isPending}
                 >
                   {cooldownRemaining > 0 ? `Request Code (${formatTime(cooldownRemaining)})` : 'Continue with Email'}
                 </Button>
@@ -514,78 +473,6 @@ export function AuthForm({ mode, onSuccess, onGuestContinue, className = '' }: A
             </div>
           )}
         </div>
-      )}
-
-      {/* SCREEN 1.5: Register Profile Overlay */}
-      {step === 'register' && (
-        <form onSubmit={handleSubmitRegister} className="space-y-6">
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <label htmlFor="firstName" className="text-xs font-semibold text-text-secondary uppercase tracking-wider ml-1">
-                First Name
-              </label>
-              <input
-                id="firstName"
-                type="text"
-                required
-                autoComplete="given-name"
-                value={firstName}
-                onChange={(e) => setFirstName(e.target.value)}
-                placeholder="John"
-                className="w-full bg-white/5 border border-border-subtle rounded-xl px-4 py-3.5 text-base lg:text-sm text-white placeholder:text-text-muted/30 focus:outline-none focus:border-accent-purple/50 focus:ring-1 focus:ring-accent-purple/50 transition-all duration-300"
-              />
-            </div>
-            <div className="space-y-2">
-              <label htmlFor="lastName" className="text-xs font-semibold text-text-secondary uppercase tracking-wider ml-1">
-                Last Name
-              </label>
-              <input
-                id="lastName"
-                type="text"
-                required
-                autoComplete="family-name"
-                value={lastName}
-                onChange={(e) => setLastName(e.target.value)}
-                placeholder="Doe"
-                className="w-full bg-white/5 border border-border-subtle rounded-xl px-4 py-3.5 text-base lg:text-sm text-white placeholder:text-text-muted/30 focus:outline-none focus:border-accent-purple/50 focus:ring-1 focus:ring-accent-purple/50 transition-all duration-300"
-              />
-            </div>
-            <div className="space-y-2">
-              <label htmlFor="mobileNumber" className="text-xs font-semibold text-text-secondary uppercase tracking-wider ml-1">
-                Mobile Number (Optional)
-              </label>
-              <input
-                id="mobileNumber"
-                type="tel"
-                autoComplete="tel"
-                value={mobileNumber}
-                onChange={(e) => setMobileNumber(e.target.value)}
-                placeholder="+1 234 567 8900"
-                className="w-full bg-white/5 border border-border-subtle rounded-xl px-4 py-3.5 text-base lg:text-sm text-white placeholder:text-text-muted/30 focus:outline-none focus:border-accent-purple/50 focus:ring-1 focus:ring-accent-purple/50 transition-all duration-300"
-              />
-            </div>
-          </div>
-
-          <div className="space-y-3">
-            <Button
-              type="submit"
-              variant="primary"
-              fullWidth
-              className="py-3.5 rounded-xl font-bold tracking-wide shadow-lg shadow-accent-purple/20 hover:shadow-accent-purple/40 active:scale-95 transition-all duration-200"
-              disabled={cooldownRemaining > 0}
-              isLoading={requestVerificationCodeMutation.isPending}
-            >
-              {cooldownRemaining > 0 ? `Request Code (${formatTime(cooldownRemaining)})` : 'Create Account'}
-            </Button>
-            <button
-              type="button"
-              onClick={handleBackToOptions}
-              className="w-full text-center text-xs text-text-muted hover:text-white transition-colors duration-200 py-2"
-            >
-              ← Use a different email
-            </button>
-          </div>
-        </form>
       )}
 
       {/* SCREEN 2: Verification Input Form */}
