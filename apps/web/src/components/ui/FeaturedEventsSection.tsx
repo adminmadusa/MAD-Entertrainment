@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { EventCategory, EVENT_CATEGORY_LABELS } from '@mad/shared';
 import { Event } from '@mad/types';
-import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion, PanInfo } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRight, ArrowLeft, CalendarIcon } from '@mad/ui';
@@ -71,7 +71,7 @@ export function FeaturedEventsSection({ initialEvents = [] }: { initialEvents: E
   };
 
   // Mobile Drag / Swipe handling using Framer Motion gesture metadata
-  const handleDragEnd = (event: any, info: any) => {
+  const handleDragEnd = (event: unknown, info: PanInfo) => {
     const threshold = 50; // swipe threshold in pixels
     if (info.offset.x < -threshold) {
       nextSlide();
@@ -183,7 +183,10 @@ export function FeaturedEventsSection({ initialEvents = [] }: { initialEvents: E
                   // Cover flow 3D math
                   const x = absoluteOffset * spread;
                   const z = isActive || isMobile ? 0 : -150 - Math.abs(absoluteOffset) * 60;
-                  const rotateY = isActive || isMobile ? 0 : absoluteOffset > 0 ? -25 : 25;
+                  let rotateY = 0;
+                  if (!isActive && !isMobile) {
+                    rotateY = absoluteOffset > 0 ? -25 : 25;
+                  }
                   const opacity = isActive ? 1 : Math.max(0, 1 - Math.abs(absoluteOffset) * 0.4);
                   const zIndex = 20 - Math.abs(absoluteOffset);
 

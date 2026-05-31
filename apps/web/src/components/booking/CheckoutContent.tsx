@@ -15,7 +15,8 @@ import {
   publicGetBookingDetails, 
   publicCreatePaymentIntent, 
   publicVerifyPayment, 
-  publicSaveCheckoutDetails 
+  publicSaveCheckoutDetails,
+  PaymentIntentResponse
 } from '@/lib/api/public.service';
 import { CheckoutDetailsInput } from '@mad/validations';
 
@@ -147,7 +148,7 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
   // Payment Intent Mutation
   const paymentIntentMutation = useMutation({
     mutationFn: (gateway: 'stripe' | 'razorpay') => publicCreatePaymentIntent(bookingId, gateway),
-    onSuccess: async (res: any) => {
+    onSuccess: async (res: PaymentIntentResponse) => {
       if (res.isFree) {
         queryClient.invalidateQueries({
           queryKey: QUERY_KEYS.public.bookings.checkout(bookingId)
@@ -158,9 +159,11 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
       if (res.gateway === 'razorpay') {
         if (res.isMock) {
           setIsProcessing(true);
+          // eslint-disable-next-line no-restricted-syntax
+          const mockPaymentId = 'pay_mock_' + Math.random().toString(36).substring(2, 10);
           verifyPaymentMutation.mutate({
             razorpay_order_id: res.orderId,
-            razorpay_payment_id: 'pay_mock_' + Math.random().toString(36).substring(2, 10),
+            razorpay_payment_id: mockPaymentId,
             razorpay_signature: 'mock_signature',
           });
           return;
@@ -178,19 +181,26 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
           amount: res.amount,
           currency: res.currency,
           name: 'MAD Entertainment',
-          description: `Booking ${res.bookingId}`,
+          description: `Booking ID: ${bookingId}`,
           order_id: res.orderId,
-          handler: function (response: {
+          handler: (response: {
             razorpay_order_id: string;
             razorpay_payment_id: string;
             razorpay_signature: string;
-          }) {
+          }) => {
             setIsProcessing(true);
             verifyPaymentMutation.mutate({
               razorpay_order_id: response.razorpay_order_id,
               razorpay_payment_id: response.razorpay_payment_id,
               razorpay_signature: response.razorpay_signature,
             });
+          },
+          prefill: {
+            name: `${booking.firstName} ${booking.lastName}`,
+            email: booking.guestEmail,
+          },
+          theme: {
+            color: '#8b5cf6',
           },
           modal: {
             ondismiss: function () {
@@ -240,6 +250,13 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
       setIsProcessing(false);
     },
   });
+
+  let buttonText = 'Place Order';
+  if (saveDetailsMutation.isPending || paymentIntentMutation.isPending || isProcessing) {
+    buttonText = 'Processing...';
+  } else if (isExpired) {
+    buttonText = 'Session Expired';
+  }
 
   const handleFormSubmit = (detailsPayload: CheckoutDetailsInput) => {
     saveDetailsMutation.mutate(detailsPayload);
@@ -433,11 +450,7 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
                 disabled={isExpired || saveDetailsMutation.isPending || paymentIntentMutation.isPending || isProcessing}
                 className="w-full px-8 py-3 rounded-xl bg-gradient-to-r from-accent-purple to-accent-pink hover:from-accent-purple-light hover:to-accent-pink/80 text-white font-black text-sm transition-all hover:scale-[1.02] active:scale-95 shadow-glow disabled:opacity-50"
               >
-                {saveDetailsMutation.isPending || paymentIntentMutation.isPending || isProcessing
-                  ? 'Processing...'
-                  : isExpired
-                  ? 'Session Expired'
-                  : 'Place Order'}
+                {buttonText}
               </button>
 
               <p className="text-[10px] text-text-muted leading-relaxed pt-2 border-t border-white/5">
@@ -462,11 +475,7 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
               disabled={isExpired || saveDetailsMutation.isPending || paymentIntentMutation.isPending || isProcessing}
               className="flex-shrink-0 px-8 py-3.5 rounded-xl bg-gradient-to-r from-accent-purple to-accent-pink hover:from-accent-purple-light hover:to-accent-pink/80 text-white font-black text-sm transition-all hover:scale-[1.02] active:scale-95 shadow-glow disabled:opacity-50"
             >
-              {saveDetailsMutation.isPending || paymentIntentMutation.isPending || isProcessing
-                ? 'Processing...'
-                : isExpired
-                ? 'Session Expired'
-                : 'Place Order'}
+              {buttonText}
             </button>
           </div>
         </div>

@@ -2,11 +2,12 @@
 
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion, PanInfo } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { ArrowRight, ArrowLeft } from '@mad/ui';
+import { ImageAsset } from '@mad/types';
 
 import { publicGetDJBySlug } from '@/lib/api/public.service';
 import { useWindowWidth } from '@/hooks/use-window.hook';
@@ -58,19 +59,22 @@ function SoundCloudIcon() {
 
 // ─── Helpers ──────────────────────────────────────────────────
 
-function normalizeSocialLinks(socialLinks: any): { platform: string; url: string }[] {
+function normalizeSocialLinks(socialLinks: unknown): { platform: string; url: string }[] {
   if (!socialLinks) return [];
   if (Array.isArray(socialLinks)) {
-    return socialLinks.map((link: any) => ({
-      platform: link?.platform || '',
-      url: link?.url || '',
-    })).filter(link => link.platform && link.url);
+    return socialLinks.map((link: unknown) => {
+      const l = link as Record<string, string | undefined> | null | undefined;
+      return {
+        platform: l?.platform || '',
+        url: l?.url || '',
+      };
+    }).filter(link => link.platform && link.url);
   }
-  if (typeof socialLinks === 'object') {
-    return Object.entries(socialLinks)
+  if (typeof socialLinks === 'object' && socialLinks !== null) {
+    return Object.entries(socialLinks as Record<string, unknown>)
       .map(([platform, url]) => ({
         platform,
-        url: url as string,
+        url: typeof url === 'string' ? url : '',
       }))
       .filter(link => link.platform && link.url);
   }
@@ -104,7 +108,7 @@ function getSocialIcon(platform: string) {
 
 // ─── Gallery Carousel Component ───────────────────────────────
 
-function GalleryCarousel({ galleryImages }: { galleryImages?: any[] }) {
+function GalleryCarousel({ galleryImages }: { galleryImages?: ImageAsset[] }) {
   const images = galleryImages && galleryImages.length > 0
     ? galleryImages
     : [
@@ -140,7 +144,7 @@ function GalleryCarousel({ galleryImages }: { galleryImages?: any[] }) {
     }
   };
 
-  const handleDragEnd = (event: any, info: any) => {
+  const handleDragEnd = (event: unknown, info: PanInfo) => {
     const threshold = 50;
     if (info.offset.x < -threshold) {
       nextSlide();
@@ -183,7 +187,12 @@ function GalleryCarousel({ galleryImages }: { galleryImages?: any[] }) {
             
             const x = absoluteOffset * spread;
             const z = isActive ? 0 : -150 - Math.abs(absoluteOffset) * 60;
-            const rotateY = isActive ? 0 : absoluteOffset > 0 ? -25 : 25;
+            
+            let rotateY = 0;
+            if (!isActive) {
+              rotateY = absoluteOffset > 0 ? -25 : 25;
+            }
+
             const opacity = isActive ? 1 : Math.max(0, 1 - Math.abs(absoluteOffset) * 0.4);
             const zIndex = 20 - Math.abs(absoluteOffset);
 

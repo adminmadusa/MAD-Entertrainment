@@ -195,6 +195,8 @@ export interface PaymentIntentResponse {
   currency: string;
   bookingId: string;
   isMock?: boolean;     // Sandbox mock indicator
+  isFree?: boolean;     // Free booking indicator
+  url?: string;         // Optional checkout URL
 }
 
 export async function publicCreatePaymentIntent(bookingId: string, gateway: 'stripe' | 'razorpay'): Promise<PaymentIntentResponse> {

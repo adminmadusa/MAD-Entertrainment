@@ -383,19 +383,27 @@ export function AuthForm({ mode, onSuccess, onGuestContinue, className = '' }: A
   return (
     <div className={`space-y-6 ${className}`}>
       {/* Alert Banners */}
-      {cooldownRemaining > 0 ? (
-        <div className="p-4 bg-error/10 border border-error/30 rounded-2xl text-xs text-red-400 text-center animate-in fade-in duration-300 space-y-1">
-          <p className="font-bold">For your security, we've temporarily paused verification requests.</p>
-          <p>You can request a new code in:</p>
-          <p className="font-mono text-lg font-black tracking-wider text-amber-400">
-            {formatTime(cooldownRemaining)}
-          </p>
-        </div>
-      ) : error ? (
-        <div className="p-4 bg-error/10 border border-error/30 rounded-2xl text-xs text-red-400 text-center animate-in fade-in duration-300">
-          {error}
-        </div>
-      ) : null}
+      {(() => {
+        if (cooldownRemaining > 0) {
+          return (
+            <div className="p-4 bg-error/10 border border-error/30 rounded-2xl text-xs text-red-400 text-center animate-in fade-in duration-300 space-y-1">
+              <p className="font-bold">For your security, we've temporarily paused verification requests.</p>
+              <p>You can request a new code in:</p>
+              <p className="font-mono text-lg font-black tracking-wider text-amber-400">
+                {formatTime(cooldownRemaining)}
+              </p>
+            </div>
+          );
+        }
+        if (error) {
+          return (
+            <div className="p-4 bg-error/10 border border-error/30 rounded-2xl text-xs text-red-400 text-center animate-in fade-in duration-300">
+              {error}
+            </div>
+          );
+        }
+        return null;
+      })()}
 
       {infoMessage && (
         <div className="p-4 bg-accent-purple/10 border border-accent-purple/30 rounded-2xl text-xs text-purple-300 text-center animate-in fade-in duration-300">
@@ -641,24 +649,32 @@ export function AuthForm({ mode, onSuccess, onGuestContinue, className = '' }: A
                 ← Edit email
               </button>
 
-              {cooldownRemaining > 0 ? (
-                <span className="text-text-muted/60">
-                  Resend code in <span className="font-semibold text-purple-300">{formatTime(cooldownRemaining)}</span>
-                </span>
-              ) : resendTimer > 0 ? (
-                <span className="text-text-muted/60">
-                  Resend code in <span className="font-semibold text-purple-300">{resendTimer}s</span>
-                </span>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => requestMagicLinkMutation.mutate()}
-                  disabled={requestMagicLinkMutation.isPending || cooldownRemaining > 0}
-                  className="text-accent-purple hover:text-accent-purple-light font-semibold transition-colors duration-200 disabled:opacity-50"
-                >
-                  Resend Code
-                </button>
-              )}
+              {(() => {
+                if (cooldownRemaining > 0) {
+                  return (
+                    <span className="text-text-muted/60">
+                      Resend code in <span className="font-semibold text-purple-300">{formatTime(cooldownRemaining)}</span>
+                    </span>
+                  );
+                }
+                if (resendTimer > 0) {
+                  return (
+                    <span className="text-text-muted/60">
+                      Resend code in <span className="font-semibold text-purple-300">{resendTimer}s</span>
+                    </span>
+                  );
+                }
+                return (
+                  <button
+                    type="button"
+                    onClick={() => requestMagicLinkMutation.mutate()}
+                    disabled={requestMagicLinkMutation.isPending || cooldownRemaining > 0}
+                    className="text-accent-purple hover:text-accent-purple-light font-semibold transition-colors duration-200 disabled:opacity-50"
+                  >
+                    Resend Code
+                  </button>
+                );
+              })()}
             </div>
           </div>
         </form>

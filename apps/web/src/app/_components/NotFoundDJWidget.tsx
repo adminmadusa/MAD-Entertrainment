@@ -23,8 +23,10 @@ export function NotFoundDJWidget() {
       return;
     }
     const interval = setInterval(() => {
+      // eslint-disable-next-line no-restricted-syntax
       setEqHeights(Array.from({ length: 10 }, () => Math.floor(Math.random() * 80) + 10));
       setBpm((prev) => {
+        // eslint-disable-next-line no-restricted-syntax
         const shift = Math.random() > 0.5 ? 1 : -1;
         const next = prev + shift;
         return next >= 126 && next <= 130 ? next : prev;
