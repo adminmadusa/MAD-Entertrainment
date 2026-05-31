@@ -490,6 +490,37 @@ export class PaymentService {
 
       const isMock = env.MOCK_PAYMENTS && razorpay_payment_id.startsWith('pay_mock_') && razorpay_signature === 'mock_signature';
 
+      if (!payment.gatewayOrderId || payment.gatewayOrderId !== razorpay_order_id) {
+        logger.error(
+          {
+            bookingId: booking._id,
+            bookingReference: booking.bookingId,
+            paymentId: payment._id,
+            expectedOrderId: payment.gatewayOrderId,
+            receivedOrderId: razorpay_order_id,
+            razorpayPaymentId: razorpay_payment_id,
+          },
+          'SECURITY: Razorpay order ID mismatch — possible payment replay attack'
+        );
+        auditLog({
+          action: 'PAYMENT_SECURITY_VIOLATION',
+          status: 'failure',
+          metadata: {
+            bookingId: booking._id.toString(),
+            bookingReference: booking.bookingId,
+            gateway: 'razorpay',
+            expectedOrderId: payment.gatewayOrderId,
+            receivedOrderId: razorpay_order_id,
+            razorpayPaymentId: razorpay_payment_id,
+            violationType: 'razorpay_order_mismatch',
+            isMock,
+          },
+          description: `SECURITY VIOLATION: Razorpay order mismatch for booking ${booking.bookingId}`
+        });
+
+        throw AppError.badRequest('Razorpay order does not belong to this booking');
+      }
+
       if (!isMock) {
         const text = razorpay_order_id + '|' + razorpay_payment_id;
         const expectedSignature = crypto
@@ -513,6 +544,44 @@ export class PaymentService {
 
           throw AppError.badRequest('Razorpay signature verification failed');
         }
+      }
+
+      const duplicateGatewayPayment = await Payment.findOne({
+        gateway: 'razorpay',
+        gatewayPaymentId: razorpay_payment_id,
+        _id: { $ne: payment._id },
+      });
+
+      if (duplicateGatewayPayment) {
+        logger.error(
+          {
+            bookingId: booking._id,
+            bookingReference: booking.bookingId,
+            paymentId: payment._id,
+            duplicatePaymentId: duplicateGatewayPayment._id,
+            razorpayOrderId: razorpay_order_id,
+            razorpayPaymentId: razorpay_payment_id,
+          },
+          'SECURITY: Razorpay payment ID already attached to another payment'
+        );
+        auditLog({
+          action: 'PAYMENT_SECURITY_VIOLATION',
+          status: 'failure',
+          metadata: {
+            bookingId: booking._id.toString(),
+            bookingReference: booking.bookingId,
+            gateway: 'razorpay',
+            paymentId: payment._id?.toString(),
+            duplicatePaymentId: duplicateGatewayPayment._id?.toString(),
+            razorpayOrderId: razorpay_order_id,
+            razorpayPaymentId: razorpay_payment_id,
+            violationType: 'razorpay_payment_id_duplicate',
+            isMock,
+          },
+          description: `SECURITY VIOLATION: Razorpay payment ID replay for booking ${booking.bookingId}`
+        });
+
+        throw AppError.badRequest('Razorpay payment has already been used');
       }
 
       payment.status = PaymentStatus.PAID;

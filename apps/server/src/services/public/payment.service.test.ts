@@ -3,6 +3,7 @@ import { PaymentService } from './payment.service';
 import { BookingStatus, PaymentStatus } from '@mad/shared';
 import { Booking } from '../../models/booking.schema';
 import { Payment } from '../../models/payment.schema';
+import { getEnv } from '../../config/env';
 import crypto from 'crypto';
 
 vi.mock('../../config/env', () => ({
@@ -11,6 +12,8 @@ vi.mock('../../config/env', () => ({
     RAZORPAY_KEY_SECRET: 'test_rzp_secret',
     STRIPE_PUBLISHABLE_KEY: 'test_stripe_key',
     STRIPE_SECRET_KEY: 'test_stripe_secret',
+    ENABLE_ASYNC_CHECKOUT: true,
+    MOCK_PAYMENTS: false,
   })),
 }));
 
@@ -78,7 +81,21 @@ vi.mock('../reservation.service', () => ({
 describe('Payment Service', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(getEnv).mockReturnValue({
+      RAZORPAY_KEY_ID: 'test_rzp_key',
+      RAZORPAY_KEY_SECRET: 'test_rzp_secret',
+      STRIPE_PUBLISHABLE_KEY: 'test_stripe_key',
+      STRIPE_SECRET_KEY: 'test_stripe_secret',
+      ENABLE_ASYNC_CHECKOUT: true,
+      MOCK_PAYMENTS: false,
+    } as any);
   });
+
+  const razorpaySignature = (orderId: string, paymentId: string) =>
+    crypto
+      .createHmac('sha256', 'test_rzp_secret')
+      .update(orderId + '|' + paymentId)
+      .digest('hex');
 
   describe('createPaymentIntent', () => {
     it('should throw error if booking not found', async () => {
@@ -96,7 +113,7 @@ describe('Payment Service', () => {
     it('should throw error if razorpay signature verification fails', async () => {
       vi.mocked(Booking.findOne).mockResolvedValue({ _id: 'b-123', status: BookingStatus.AWAITING_PAYMENT, save: vi.fn() } as any);
       vi.mocked(Payment.findOne).mockReturnValue({
-        sort: vi.fn().mockResolvedValue({ _id: 'p-123', gateway: 'razorpay', status: PaymentStatus.PENDING, save: vi.fn() }),
+        sort: vi.fn().mockResolvedValue({ _id: 'p-123', gateway: 'razorpay', status: PaymentStatus.PENDING, gatewayOrderId: 'order_123', save: vi.fn() }),
       } as any);
       
       const payload = {
@@ -110,30 +127,141 @@ describe('Payment Service', () => {
 
     it('should verify razorpay payment successfully with valid signature', async () => {
       const mockBooking = { _id: 'b-123', eventId: 'e-123', status: BookingStatus.AWAITING_PAYMENT, tickets: [], save: vi.fn() };
-      const mockPayment = { _id: 'p-123', gateway: 'razorpay', status: PaymentStatus.PENDING, save: vi.fn() };
+      const mockPayment = { _id: 'p-123', gateway: 'razorpay', status: PaymentStatus.PENDING, gatewayOrderId: 'order_123', save: vi.fn() };
 
       vi.mocked(Booking.findOne).mockResolvedValue(mockBooking as any);
-      vi.mocked(Payment.findOne).mockReturnValue({ sort: vi.fn().mockResolvedValue(mockPayment) } as any);
+      vi.mocked(Payment.findOne)
+        .mockReturnValueOnce({ sort: vi.fn().mockResolvedValue(mockPayment) } as any)
+        .mockResolvedValueOnce(null as any);
       vi.mocked(Booking.findOneAndUpdate).mockResolvedValue(mockBooking as any);
 
       const orderId = 'order_123';
       const paymentId = 'pay_123';
-      const secret = 'test_rzp_secret';
-      
-      const expectedSignature = crypto
-        .createHmac('sha256', secret)
-        .update(orderId + '|' + paymentId)
-        .digest('hex');
 
       const payload = {
         razorpay_order_id: orderId,
         razorpay_payment_id: paymentId,
-        razorpay_signature: expectedSignature
+        razorpay_signature: razorpaySignature(orderId, paymentId)
       };
 
       const result = await PaymentService.verifyPayment('b-123', payload);
       expect(result).toBeDefined();
       expect(mockPayment.status).toBe(PaymentStatus.PAID);
+    });
+
+    it('should reject razorpay payment when submitted order does not match stored gateway order', async () => {
+      const mockPayment = { _id: 'p-123', gateway: 'razorpay', status: PaymentStatus.PENDING, gatewayOrderId: 'order_victim', save: vi.fn() };
+
+      vi.mocked(Booking.findOne).mockResolvedValue({ _id: 'b-123', bookingId: 'MAD-2026-ABCDE', status: BookingStatus.AWAITING_PAYMENT } as any);
+      vi.mocked(Payment.findOne).mockReturnValueOnce({ sort: vi.fn().mockResolvedValue(mockPayment) } as any);
+
+      const attackerOrderId = 'order_attacker';
+      const payload = {
+        razorpay_order_id: attackerOrderId,
+        razorpay_payment_id: 'pay_attacker',
+        razorpay_signature: razorpaySignature(attackerOrderId, 'pay_attacker'),
+      };
+
+      await expect(PaymentService.verifyPayment('MAD-2026-ABCDE', payload)).rejects.toThrow('Razorpay order does not belong to this booking');
+      expect(mockPayment.save).not.toHaveBeenCalled();
+      expect(Booking.findOneAndUpdate).not.toHaveBeenCalled();
+    });
+
+    it('should reject razorpay payment ID already attached to a different payment record', async () => {
+      const mockBooking = { _id: 'b-123', bookingId: 'MAD-2026-ABCDE', eventId: 'e-123', status: BookingStatus.AWAITING_PAYMENT, tickets: [] };
+      const mockPayment = { _id: 'p-123', gateway: 'razorpay', status: PaymentStatus.PENDING, gatewayOrderId: 'order_123', save: vi.fn() };
+      const duplicatePayment = { _id: 'p-999', gateway: 'razorpay', gatewayPaymentId: 'pay_123' };
+
+      vi.mocked(Booking.findOne).mockResolvedValue(mockBooking as any);
+      vi.mocked(Payment.findOne)
+        .mockReturnValueOnce({ sort: vi.fn().mockResolvedValue(mockPayment) } as any)
+        .mockResolvedValueOnce(duplicatePayment as any);
+
+      const payload = {
+        razorpay_order_id: 'order_123',
+        razorpay_payment_id: 'pay_123',
+        razorpay_signature: razorpaySignature('order_123', 'pay_123'),
+      };
+
+      await expect(PaymentService.verifyPayment('MAD-2026-ABCDE', payload)).rejects.toThrow('Razorpay payment has already been used');
+      expect(mockPayment.save).not.toHaveBeenCalled();
+      expect(Booking.findOneAndUpdate).not.toHaveBeenCalled();
+    });
+
+    it('should verify mock razorpay payment when mock order matches stored gateway order', async () => {
+      vi.mocked(getEnv).mockReturnValue({
+        RAZORPAY_KEY_ID: 'test_rzp_key',
+        RAZORPAY_KEY_SECRET: 'test_rzp_secret',
+        STRIPE_PUBLISHABLE_KEY: 'test_stripe_key',
+        STRIPE_SECRET_KEY: 'test_stripe_secret',
+        ENABLE_ASYNC_CHECKOUT: true,
+        MOCK_PAYMENTS: true,
+      } as any);
+
+      const mockBooking = { _id: 'b-123', bookingId: 'MAD-2026-ABCDE', eventId: 'e-123', status: BookingStatus.AWAITING_PAYMENT, tickets: [] };
+      const mockPayment = { _id: 'p-123', gateway: 'razorpay', status: PaymentStatus.PENDING, gatewayOrderId: 'order_mock_123', save: vi.fn() };
+
+      vi.mocked(Booking.findOne).mockResolvedValue(mockBooking as any);
+      vi.mocked(Payment.findOne)
+        .mockReturnValueOnce({ sort: vi.fn().mockResolvedValue(mockPayment) } as any)
+        .mockResolvedValueOnce(null as any);
+      vi.mocked(Booking.findOneAndUpdate).mockResolvedValue(mockBooking as any);
+
+      const result = await PaymentService.verifyPayment('MAD-2026-ABCDE', {
+        razorpay_order_id: 'order_mock_123',
+        razorpay_payment_id: 'pay_mock_123',
+        razorpay_signature: 'mock_signature',
+      });
+
+      expect(result).toBeDefined();
+      expect(mockPayment.status).toBe(PaymentStatus.PAID);
+      expect(mockPayment.gatewayPaymentId).toBe('pay_mock_123');
+    });
+
+    it('should return booking successfully when payment is already paid', async () => {
+      const mockBooking = { _id: 'b-123', bookingId: 'MAD-2026-ABCDE', status: BookingStatus.CONFIRMED };
+      const mockPayment = { _id: 'p-123', gateway: 'razorpay', status: PaymentStatus.PAID, gatewayOrderId: 'order_123', gatewayPaymentId: 'pay_123', save: vi.fn() };
+
+      vi.mocked(Booking.findOne).mockResolvedValue(mockBooking as any);
+      vi.mocked(Payment.findOne).mockReturnValueOnce({ sort: vi.fn().mockResolvedValue(mockPayment) } as any);
+
+      const result = await PaymentService.verifyPayment('MAD-2026-ABCDE', {
+        razorpay_order_id: 'order_123',
+        razorpay_payment_id: 'pay_123',
+        razorpay_signature: razorpaySignature('order_123', 'pay_123'),
+      });
+
+      expect(result).toBe(mockBooking);
+      expect(mockPayment.save).not.toHaveBeenCalled();
+      expect(Payment.findOne).toHaveBeenCalledTimes(1);
+    });
+
+    it('should allow retry verification for the same payment record', async () => {
+      const mockBooking = { _id: 'b-123', bookingId: 'MAD-2026-ABCDE', eventId: 'e-123', status: BookingStatus.AWAITING_PAYMENT, tickets: [] };
+      const mockPayment = {
+        _id: 'p-123',
+        gateway: 'razorpay',
+        status: PaymentStatus.PENDING,
+        gatewayOrderId: 'order_123',
+        gatewayPaymentId: 'pay_123',
+        save: vi.fn(),
+      };
+
+      vi.mocked(Booking.findOne).mockResolvedValue(mockBooking as any);
+      vi.mocked(Payment.findOne)
+        .mockReturnValueOnce({ sort: vi.fn().mockResolvedValue(mockPayment) } as any)
+        .mockResolvedValueOnce(null as any);
+      vi.mocked(Booking.findOneAndUpdate).mockResolvedValue(mockBooking as any);
+
+      const result = await PaymentService.verifyPayment('MAD-2026-ABCDE', {
+        razorpay_order_id: 'order_123',
+        razorpay_payment_id: 'pay_123',
+        razorpay_signature: razorpaySignature('order_123', 'pay_123'),
+      });
+
+      expect(result).toBeDefined();
+      expect(mockPayment.status).toBe(PaymentStatus.PAID);
+      expect(mockPayment.save).toHaveBeenCalled();
     });
   });
 
