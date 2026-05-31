@@ -3,7 +3,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { ArrowRight, useFocusTrap } from '@mad/ui';
 import { useAuth } from '@/hooks/use-auth.hook';
 
@@ -39,21 +39,55 @@ export function Navbar() {
     setMobileOpen(false);
     setDropdownOpen(false);
   };
-  
+
+  const navigatingRef = useRef(false);
+
+  // Reset navigating flag when mobile menu is opened
+  useEffect(() => {
+    if (mobileOpen) {
+      navigatingRef.current = false;
+    }
+  }, [mobileOpen]);
+
   const mobileMenuRef = useFocusTrap<HTMLDivElement>({
     isActive: mobileOpen,
     onClose: () => setMobileOpen(false),
+    shouldRestoreFocus: !navigatingRef.current,
   });
 
-  // Body scroll locking when mobile menu is open
+  // Body scroll locking when mobile menu is open (Safari-friendly & layout-shift free)
   useEffect(() => {
-    if (mobileOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
+    if (!mobileOpen) return;
+
+    const scrollY = window.pageYOffset || document.documentElement.scrollTop;
+    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+
+    const originalStyle = {
+      position: document.body.style.position,
+      top: document.body.style.top,
+      width: document.body.style.width,
+      overflow: document.body.style.overflow,
+      paddingRight: document.body.style.paddingRight,
+    };
+
+    document.body.style.position = 'fixed';
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.width = '100%';
+    document.body.style.overflow = 'hidden';
+    if (scrollbarWidth > 0) {
+      document.body.style.paddingRight = `${scrollbarWidth}px`;
     }
+
     return () => {
-      document.body.style.overflow = '';
+      document.body.style.position = originalStyle.position;
+      document.body.style.top = originalStyle.top;
+      document.body.style.width = originalStyle.width;
+      document.body.style.overflow = originalStyle.overflow;
+      document.body.style.paddingRight = originalStyle.paddingRight;
+
+      if (!navigatingRef.current) {
+        window.scrollTo(0, scrollY);
+      }
     };
   }, [mobileOpen]);
 
@@ -225,10 +259,12 @@ export function Navbar() {
 
         {/* Mobile Hamburger */}
         <button
+          id="mobile-menu-trigger"
           className="md:hidden p-2 rounded-xl hover:bg-white/10 transition-colors text-text-primary"
           onClick={() => setMobileOpen((v) => !v)}
-          aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
+          aria-label={mobileOpen ? 'Close navigation menu' : 'Open navigation menu'}
           aria-expanded={mobileOpen}
+          aria-controls="mobile-navigation"
         >
           <motion.div
             animate={mobileOpen ? 'open' : 'closed'}
@@ -263,12 +299,29 @@ export function Navbar() {
       <AnimatePresence>
         {mobileOpen && (
           <motion.div
+            key="mobile-backdrop"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            onClick={() => setMobileOpen(false)}
+            className="fixed inset-0 z-[-1] bg-black/40 backdrop-blur-sm md:hidden"
+            aria-hidden="true"
+          />
+        )}
+        {mobileOpen && (
+          <motion.div
+            key="mobile-menu"
             ref={mobileMenuRef}
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.25, ease: 'easeInOut' }}
-            className="md:hidden glass-strong border-t border-border-subtle overflow-hidden focus:outline-none"
+            id="mobile-navigation"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Navigation Menu"
+            className="md:hidden glass-strong border-t border-border-subtle max-h-[calc(100svh-4.5rem)] overflow-y-auto focus:outline-none"
             tabIndex={-1}
           >
             <div className="container-mad py-4 flex flex-col gap-1">
@@ -281,7 +334,10 @@ export function Navbar() {
                 >
                   <Link
                     href={link.href}
-                    onClick={() => setMobileOpen(false)}
+                    onClick={() => {
+                      navigatingRef.current = true;
+                      setMobileOpen(false);
+                    }}
                     className="block py-3 px-4 text-text-secondary hover:text-text-primary hover:bg-white/5 rounded-xl transition-colors font-medium"
                   >
                     {link.label}
@@ -296,14 +352,20 @@ export function Navbar() {
                     </div>
                     <Link
                       href="/tickets"
-                      onClick={() => setMobileOpen(false)}
+                      onClick={() => {
+                        navigatingRef.current = true;
+                        setMobileOpen(false);
+                      }}
                       className="block py-3 px-4 text-text-secondary hover:text-text-primary hover:bg-white/5 rounded-xl transition-colors font-medium"
                     >
                       My Tickets
                     </Link>
                     <Link
                       href="/dashboard?tab=account"
-                      onClick={() => setMobileOpen(false)}
+                      onClick={() => {
+                        navigatingRef.current = true;
+                        setMobileOpen(false);
+                      }}
                       className="block py-3 px-4 text-text-secondary hover:text-text-primary hover:bg-white/5 rounded-xl transition-colors font-medium"
                     >
                       Account
@@ -319,7 +381,10 @@ export function Navbar() {
                 ) : (
                   <Link
                     href="/login"
-                    onClick={() => setMobileOpen(false)}
+                    onClick={() => {
+                      navigatingRef.current = true;
+                      setMobileOpen(false);
+                    }}
                     className="w-full py-3 px-4 text-text-secondary hover:text-text-primary hover:bg-white/5 rounded-xl transition-colors font-medium text-left block"
                   >
                     Login
@@ -327,7 +392,10 @@ export function Navbar() {
                 )}
                 <Link
                   href="/events"
-                  onClick={() => setMobileOpen(false)}
+                  onClick={() => {
+                    navigatingRef.current = true;
+                    setMobileOpen(false);
+                  }}
                   className="w-full py-3 px-4 btn-gradient text-white rounded-xl font-semibold text-center block"
                 >
                   Book Now

@@ -48,9 +48,14 @@ export function EventGridSkeleton({ count = 4, className = '' }: { count?: numbe
 export interface UseFocusTrapOptions {
   isActive: boolean;
   onClose?: () => void;
+  shouldRestoreFocus?: boolean;
 }
 
-export function useFocusTrap<T extends HTMLElement>({ isActive, onClose }: UseFocusTrapOptions) {
+export function useFocusTrap<T extends HTMLElement>({
+  isActive,
+  onClose,
+  shouldRestoreFocus = true,
+}: UseFocusTrapOptions) {
   const containerRef = useRef<T>(null);
   const previousActiveElementRef = useRef<HTMLElement | null>(null);
 
@@ -98,16 +103,27 @@ export function useFocusTrap<T extends HTMLElement>({ isActive, onClose }: UseFo
 
         const first = elements[0];
         const last = elements[elements.length - 1];
+        const activeEl = document.activeElement;
 
-        if (e.shiftKey) {
-          if (document.activeElement === first) {
+        // Prevent focus from escaping the container
+        if (!container.contains(activeEl)) {
+          if (e.shiftKey) {
             last.focus();
-            e.preventDefault();
-          }
-        } else {
-          if (document.activeElement === last) {
+          } else {
             first.focus();
-            e.preventDefault();
+          }
+          e.preventDefault();
+        } else {
+          if (e.shiftKey) {
+            if (activeEl === first) {
+              last.focus();
+              e.preventDefault();
+            }
+          } else {
+            if (activeEl === last) {
+              first.focus();
+              e.preventDefault();
+            }
           }
         }
       }
@@ -122,11 +138,14 @@ export function useFocusTrap<T extends HTMLElement>({ isActive, onClose }: UseFo
 
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
-      if (previousActiveElementRef.current) {
-        previousActiveElementRef.current.focus();
+      if (shouldRestoreFocus && previousActiveElementRef.current) {
+        const elementToFocus = previousActiveElementRef.current;
+        setTimeout(() => {
+          elementToFocus.focus();
+        }, 0);
       }
     };
-  }, [isActive, onClose]);
+  }, [isActive, onClose, shouldRestoreFocus]);
 
   return containerRef;
 }
