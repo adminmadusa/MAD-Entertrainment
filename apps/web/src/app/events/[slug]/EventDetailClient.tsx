@@ -114,6 +114,7 @@ export default function EventDetailClient({ slug, initialEvent }: EventDetailCli
     month: 'long',
     day: 'numeric',
     year: 'numeric',
+    timeZone: 'UTC',
   });
 
   // Calculate price range

@@ -47,6 +47,7 @@ export default function TicketSelectionClient({ initialEvent }: TicketSelectionC
     month: 'long',
     day: 'numeric',
     year: 'numeric',
+    timeZone: 'UTC',
   });
 
   return (

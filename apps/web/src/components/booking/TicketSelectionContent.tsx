@@ -398,7 +398,9 @@ export function TicketSelectionContent({
 
                         {tier.availabilityWindow?.endDate && (
                           <div className="text-[10px] text-accent-cyan">
-                            Sales end on {new Date(tier.availabilityWindow.endDate).toLocaleDateString()}
+                            Sales end on {new Date(tier.availabilityWindow.endDate).toLocaleDateString('en-US', {
+                              timeZone: 'UTC',
+                            })}
                           </div>
                         )}
                       </div>

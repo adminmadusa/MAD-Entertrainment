@@ -138,7 +138,14 @@ export function PopupManager() {
   });
 
   useEffect(() => {
-    if (!popups || popups.length === 0 || dismissed) return;
+    if (
+      !popups ||
+      popups.length === 0 ||
+      dismissed ||
+      activePopup
+    ) {
+      return;
+    }
 
     // Pick the first cooled-down popup (already sorted by priority from server)
     const candidate = popups.find(
@@ -185,7 +192,7 @@ export function PopupManager() {
       document.addEventListener('mouseleave', handleMouseLeave);
       return () => document.removeEventListener('mouseleave', handleMouseLeave);
     }
-  }, [popups, dismissed]);
+  }, [popups, dismissed, activePopup]);
 
   const handleClose = () => {
     if (activePopup) markShown(activePopup);
