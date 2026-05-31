@@ -7,7 +7,7 @@ import { SeatLayout, ISeatLayout } from '../../models/seat-layout.schema';
 
 
 export class PublicEventService {
-  static async listEvents(filters: { category?: string; search?: string; page?: number; limit?: number }) {
+  static async listEvents(filters: { category?: string; search?: string; page?: number; limit?: number; includeTotal?: boolean }) {
     const page = filters.page || 1;
     const limit = filters.limit || 12;
     const skip = (page - 1) * limit;
@@ -28,21 +28,41 @@ export class PublicEventService {
       ];
     }
 
-    const [events, total] = await Promise.all([
-      Event.find(query)
+    const skipCount = filters.includeTotal === false;
+    let events: any[];
+    let total = 0;
+
+    // 5-second query timeout to prevent Safari streaming stalls
+    const queryOptions = { maxTimeMS: 5000 };
+
+    if (skipCount) {
+      events = await Event.find(query, null, queryOptions)
         .sort({ startDate: 1 })
         .skip(skip)
         .limit(limit)
         .select('title slug description category bannerImage startDate ticketTiers.price isSoldOut venue')
-        .lean(),
-      Event.countDocuments(query),
-    ]);
+        .lean();
+      total = events.length;
+    } else {
+      [events, total] = await Promise.all([
+        Event.find(query, null, queryOptions)
+          .sort({ startDate: 1 })
+          .skip(skip)
+          .limit(limit)
+          .select('title slug description category bannerImage startDate ticketTiers.price isSoldOut venue')
+          .lean(),
+        Event.countDocuments(query, queryOptions),
+      ]);
+    }
 
     return { events, total };
   }
 
   static async getEventBySlug(slug: string) {
-    const event = await Event.findOne({ slug, status: EventStatus.PUBLISHED, isDeleted: { $ne: true } })
+    // 5-second query timeout to prevent Safari streaming stalls
+    const queryOptions = { maxTimeMS: 5000 };
+
+    const event = await Event.findOne({ slug, status: EventStatus.PUBLISHED, isDeleted: { $ne: true } }, null, queryOptions)
       .populate('djOperatorIds')
       .lean();
 

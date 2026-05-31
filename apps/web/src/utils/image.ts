@@ -20,7 +20,7 @@ export function getOptimizedCloudinaryUrl(url: string, width: number = 800): str
       return url;
     }
 
-    return url.replace('/upload/', `/upload/c_scale,w_${width},q_auto,f_auto/`);
+    return url.replace('/upload/', `/upload/c_scale,w_${width},q_auto,f_webp/`);
   }
 
   return url;

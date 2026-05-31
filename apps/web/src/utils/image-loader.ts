@@ -16,7 +16,7 @@ export default function universalLoader({ src, width, quality }: ImageLoaderProp
       const nextSegment = segments[0];
 
       const q = quality || 75;
-      const transformation = `c_scale,w_${width},q_${q},f_auto`;
+      const transformation = `c_scale,w_${width},q_${q},f_webp`;
 
       // If URL already contains a transformation segment (e.g. from getOptimizedImageUrl)
       if (nextSegment.includes('_') || nextSegment.includes(',')) {

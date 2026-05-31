@@ -80,13 +80,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(userData));
           }
         } else {
-          // No short-lived access token, check if HttpOnly refresh token cookie exists
-          const userData = await publicGetMe();
-          const newToken = localStorage.getItem(STORAGE_KEYS.USER_TOKEN);
-          if (newToken) {
-            setToken(newToken);
-            setUser(userData);
-            localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(userData));
+          // No short-lived access token, check if we had a session before calling auth/me.
+          // This avoids sending a wasteful GET /auth/me -> 401 for anonymous guests.
+          const hasSession = localStorage.getItem(STORAGE_KEYS.USER_DATA);
+          if (hasSession) {
+            const userData = await publicGetMe();
+            const newToken = localStorage.getItem(STORAGE_KEYS.USER_TOKEN);
+            if (newToken) {
+              setToken(newToken);
+              setUser(userData);
+              localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(userData));
+            }
           }
         }
       } catch (err) {
