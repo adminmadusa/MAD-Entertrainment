@@ -1,6 +1,7 @@
 import { Event, SeatLayout, Booking, Ticket, DJOperator, PopupCampaign } from '@mad/types';
 import { AuthUser, AuthResponse, MagicLinkRequestResponse, VerifyMagicLinkOrOTPPayload } from '../../types/auth';
 import { ReserveTicketsInput, CheckoutDetailsInput } from '@mad/validations';
+import { STORAGE_VERSION } from '@mad/shared';
 
 import { apiClient } from './client';
 
@@ -24,6 +25,50 @@ export interface VerifyPaymentPayload {
   razorpay_signature?: string;
   paymentIntentId?: string;
   [key: string]: unknown;
+}
+
+export interface GuestBookingSession {
+  sessionId: string;
+  token: string;
+}
+
+const guestSessionIdKey = `mad_checkout_session_${STORAGE_VERSION}`;
+const guestSessionTokenKey = `mad_checkout_session_token_${STORAGE_VERSION}`;
+
+function getGuestSessionHeaders(sessionToken?: string): Record<string, string> {
+  if (!sessionToken) return {};
+  return {
+    Authorization: `Bearer ${sessionToken}`,
+  };
+}
+
+export function getStoredGuestBookingSession(): GuestBookingSession | null {
+  if (typeof window === 'undefined') return null;
+
+  const sessionId = sessionStorage.getItem(guestSessionIdKey);
+  const token = sessionStorage.getItem(guestSessionTokenKey);
+
+  if (!sessionId || !token) return null;
+  return { sessionId, token };
+}
+
+export async function publicGetBookingSession(): Promise<GuestBookingSession> {
+  const { data } = await apiClient.get<{ data: GuestBookingSession }>('/bookings/session');
+  return data.data;
+}
+
+export async function ensureGuestBookingSession(): Promise<GuestBookingSession> {
+  const existing = getStoredGuestBookingSession();
+  if (existing) return existing;
+
+  const session = await publicGetBookingSession();
+  if (typeof window !== 'undefined') {
+    sessionStorage.removeItem('mad_checkout_session');
+    sessionStorage.setItem(guestSessionIdKey, session.sessionId);
+    sessionStorage.setItem(guestSessionTokenKey, session.token);
+  }
+
+  return session;
 }
 
 export interface PublicEventsApiResponse {
@@ -152,12 +197,10 @@ export async function publicGetEventSeatLayout(eventId: string): Promise<SeatLay
 
 export async function publicCreateBooking(
   payload: ReserveTicketsInput,
-  sessionId: string
+  sessionToken: string
 ): Promise<Booking> {
   const { data } = await apiClient.post<{ data: Booking }>('/bookings', payload, {
-    headers: {
-      'x-session-id': sessionId,
-    },
+    headers: getGuestSessionHeaders(sessionToken),
   });
   return data.data;
 }
@@ -165,26 +208,20 @@ export async function publicCreateBooking(
 export async function publicSaveCheckoutDetails(
   bookingId: string,
   payload: CheckoutDetailsInput,
-  sessionId: string
+  sessionToken: string
 ): Promise<Booking> {
   const { data } = await apiClient.put<{ data: Booking }>(`/bookings/${bookingId}/checkout-details`, payload, {
-    headers: {
-      'x-session-id': sessionId,
-    },
+    headers: getGuestSessionHeaders(sessionToken),
   });
   return data.data;
 }
 
 export async function publicGetBookingDetails(
   bookingId: string,
-  sessionId?: string
+  sessionToken?: string
 ): Promise<{ booking: Booking; tickets: Ticket[] }> {
-  const headers: Record<string, string> = {};
-  if (sessionId) {
-    headers['x-session-id'] = sessionId;
-  }
   const { data } = await apiClient.get<{ data: { booking: Booking; tickets: Ticket[] } }>(`/bookings/${bookingId}`, {
-    headers,
+    headers: getGuestSessionHeaders(sessionToken),
   });
   return data.data;
 }
@@ -208,10 +245,12 @@ export interface PaymentIntentResponse {
   url?: string;         // Optional checkout URL
 }
 
-export async function publicCreatePaymentIntent(bookingId: string, gateway: 'stripe' | 'razorpay'): Promise<PaymentIntentResponse> {
+export async function publicCreatePaymentIntent(bookingId: string, gateway: 'stripe' | 'razorpay', sessionToken?: string): Promise<PaymentIntentResponse> {
   const { data } = await apiClient.post<{ data: PaymentIntentResponse }>('/payments/create-intent', {
     bookingId,
     gateway,
+  }, {
+    headers: getGuestSessionHeaders(sessionToken),
   });
   return data.data;
 }
@@ -294,23 +333,17 @@ export async function publicGetCategories(): Promise<PublicCategory[]> {
   return Array.isArray(data?.data) ? data.data : [];
 }
 
-export async function publicResendTicketEmail(bookingId: string, sessionId?: string): Promise<{ success: boolean; message: string }> {
-  const headers: Record<string, string> = {};
-  if (sessionId) {
-    headers['x-session-id'] = sessionId;
-  }
-  const { data } = await apiClient.post<{ success: boolean; message: string }>(`/bookings/${bookingId}/resend`, {}, { headers });
+export async function publicResendTicketEmail(bookingId: string, sessionToken?: string): Promise<{ success: boolean; message: string }> {
+  const { data } = await apiClient.post<{ success: boolean; message: string }>(`/bookings/${bookingId}/resend`, {}, {
+    headers: getGuestSessionHeaders(sessionToken),
+  });
   return data;
 }
 
-export async function publicDownloadTicketPDF(bookingId: string, sessionId?: string): Promise<Blob> {
-  const headers: Record<string, string> = {};
-  if (sessionId) {
-    headers['x-session-id'] = sessionId;
-  }
+export async function publicDownloadTicketPDF(bookingId: string, sessionToken?: string): Promise<Blob> {
   const { data } = await apiClient.get<Blob>(`/bookings/${bookingId}/download`, {
     responseType: 'blob',
-    headers,
+    headers: getGuestSessionHeaders(sessionToken),
   });
   return data;
 }

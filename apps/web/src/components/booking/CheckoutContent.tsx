@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 
-import { STORAGE_VERSION, QUERY_KEYS } from '@mad/shared';
+import { QUERY_KEYS } from '@mad/shared';
 import { Event, Booking } from '@mad/types';
 import { useCountdown } from '@/hooks/use-countdown.hook';
 import { extractApiError } from '@/lib/api/client';
@@ -16,6 +16,7 @@ import {
   publicCreatePaymentIntent, 
   publicVerifyPayment, 
   publicSaveCheckoutDetails,
+  getStoredGuestBookingSession,
   PaymentIntentResponse
 } from '@/lib/api/public.service';
 import { CheckoutDetailsInput } from '@mad/validations';
@@ -72,12 +73,8 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
     queryKey: QUERY_KEYS.public.bookings.checkout(bookingId),
 
     queryFn: () => {
-      let sess: string | undefined;
-      if (typeof window !== 'undefined') {
-        const sessionKey = `mad_checkout_session_${STORAGE_VERSION}`;
-        sess = sessionStorage.getItem(sessionKey) || undefined;
-      }
-      return publicGetBookingDetails(bookingId, sess);
+      const sessionToken = getStoredGuestBookingSession()?.token;
+      return publicGetBookingDetails(bookingId, sessionToken);
     },
     enabled: !!bookingId,
     retry: (failureCount, error: unknown) => {
@@ -130,12 +127,8 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
   // Save checkout details mutation
   const saveDetailsMutation = useMutation({
     mutationFn: (payload: CheckoutDetailsInput) => {
-      let sess = '';
-      if (typeof window !== 'undefined') {
-        const sessionKey = `mad_checkout_session_${STORAGE_VERSION}`;
-        sess = sessionStorage.getItem(sessionKey) || '';
-      }
-      return publicSaveCheckoutDetails(bookingId, payload, sess);
+      const sessionToken = getStoredGuestBookingSession()?.token || '';
+      return publicSaveCheckoutDetails(bookingId, payload, sessionToken);
     },
     onSuccess: () => {
       paymentIntentMutation.mutate(selectedGateway);
@@ -147,7 +140,10 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
 
   // Payment Intent Mutation
   const paymentIntentMutation = useMutation({
-    mutationFn: (gateway: 'stripe' | 'razorpay') => publicCreatePaymentIntent(bookingId, gateway),
+    mutationFn: (gateway: 'stripe' | 'razorpay') => {
+      const sessionToken = getStoredGuestBookingSession()?.token;
+      return publicCreatePaymentIntent(bookingId, gateway, sessionToken);
+    },
     onSuccess: async (res: PaymentIntentResponse) => {
       if (res.isFree) {
         queryClient.invalidateQueries({

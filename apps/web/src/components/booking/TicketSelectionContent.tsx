@@ -1,6 +1,5 @@
 'use client';
 
-import { QUERY_KEYS, STORAGE_VERSION } from '@mad/shared';
 import { Event as EventData } from '@mad/types';
 import { Button } from '@mad/ui';
 import { useMutation } from '@tanstack/react-query';
@@ -8,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { useState, useEffect, useCallback } from 'react';
 
 import { extractApiError } from '@/lib/api/client';
-import { publicCreateBooking } from '@/lib/api/public.service';
+import { ensureGuestBookingSession, publicCreateBooking } from '@/lib/api/public.service';
 import { ReserveTicketsInput } from '@mad/validations';
 
 interface TicketSelectionContentProps {
@@ -45,33 +44,36 @@ export function TicketSelectionContent({
   const router = useRouter();
   const eventId = event._id;
 
-  const [sessionId, setSessionId] = useState('');
+  const [sessionToken, setSessionToken] = useState('');
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [couponCode, setCouponCode] = useState('');
   const [couponApplied, setCouponApplied] = useState(false);
   const [error, setError] = useState('');
 
-  // Setup unique Session ID
+  // Setup signed guest session token
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const sessionKey = `mad_checkout_session_${STORAGE_VERSION}`;
-      let sess = sessionStorage.getItem(sessionKey);
-      if (!sess) {
-        if (typeof window.crypto === 'undefined' || !window.crypto.randomUUID) {
-          setError('Secure session initialization failed. Please refresh and try again.');
-          return;
+    let cancelled = false;
+
+    ensureGuestBookingSession()
+      .then((session) => {
+        if (!cancelled) {
+          setSessionToken(session.token);
         }
-        sess = window.crypto.randomUUID();
-        sessionStorage.removeItem('mad_checkout_session');
-        sessionStorage.setItem(sessionKey, sess);
-      }
-      setSessionId(sess);
-    }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setError('Secure session initialization failed. Please refresh and try again.');
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   // Booking Mutation (creates temporary hold/reservation)
   const createBookingMutation = useMutation({
-    mutationFn: (payload: ReserveTicketsInput) => publicCreateBooking(payload, sessionId),
+    mutationFn: (payload: ReserveTicketsInput) => publicCreateBooking(payload, sessionToken),
     onSuccess: (booking) => {
       // Close modal before redirecting
       if (onClose) onClose();
@@ -138,13 +140,18 @@ export function TicketSelectionContent({
       return;
     }
 
+    if (!sessionToken) {
+      setError('Secure session initialization failed. Please refresh and try again.');
+      return;
+    }
+
     if (setIsPendingChange) setIsPendingChange(true);
     createBookingMutation.mutate({
       eventId,
       tickets: ticketsPayload,
       couponCode: couponCode.trim() || undefined,
     });
-  }, [eventId, quantities, couponCode, setIsPendingChange, createBookingMutation]);
+  }, [eventId, quantities, couponCode, sessionToken, setIsPendingChange, createBookingMutation]);
 
   // Expose the checkout submit method externally (for modal button clicks)
   useEffect(() => {
