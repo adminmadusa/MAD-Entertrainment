@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { EventCategory, BookingMode, EventStatus, PopupTrigger, TicketTier } from '@mad/shared';
+import { EventCategory, BookingMode, BookingStatus, EventStatus, PopupTrigger, TicketTier } from '@mad/shared';
 import { objectIdSchema } from '@mad/validations';
 
 // -- Common schemas --
@@ -23,6 +23,16 @@ export const adminIdParamSchema = z.object({
     id: objectIdSchema,
   }).strict(),
 });
+
+const adminPaginationLimitSchema = z.coerce.number().int().positive().max(100);
+
+export const adminBookingsQuerySchema = z.object({
+  page: z.coerce.number().int().positive().default(1),
+  limit: adminPaginationLimitSchema.default(15),
+  search: z.string().max(200).optional(),
+  status: z.nativeEnum(BookingStatus).optional(),
+  eventId: objectIdSchema.optional(),
+}).strict();
 
 // -- Coupon Validation --
 const couponFieldsSchema = z.object({

@@ -1,8 +1,9 @@
-import { EventCategory, PopupTrigger } from '@mad/shared';
+import { BookingStatus, EventCategory, PopupTrigger } from '@mad/shared';
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 
 import {
+  adminBookingsQuerySchema,
   adminIdParamSchema,
   createCategorySchema,
   createCouponSchema,
@@ -150,5 +151,50 @@ describe('admin mutation validation schemas', () => {
     ['refund process action', processRefundSchema, { params: { id: objectId }, body: { action: 'delete' } }],
   ])('enforces enum validation for %s', (_name, schema, payload) => {
     expectRejected(schema, payload);
+  });
+});
+
+describe('admin bookings query validation schema', () => {
+  it('accepts valid pagination and filters', () => {
+    const result = adminBookingsQuerySchema.safeParse({
+      page: '2',
+      limit: '25',
+      search: 'MAD-2026',
+      status: BookingStatus.CONFIRMED,
+      eventId: objectId,
+    });
+
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.page).toBe(2);
+      expect(result.data.limit).toBe(25);
+      expect(result.data.status).toBe(BookingStatus.CONFIRMED);
+      expect(result.data.eventId).toBe(objectId);
+    }
+  });
+
+  it.each([
+    ['negative page', { page: '-1' }],
+    ['NaN page', { page: 'abc' }],
+    ['negative limit', { limit: '-15' }],
+    ['NaN limit', { limit: 'abc' }],
+  ])('rejects invalid pagination for %s', (_name, payload) => {
+    expectRejected(adminBookingsQuerySchema, payload);
+  });
+
+  it('rejects excessive limit', () => {
+    expectRejected(adminBookingsQuerySchema, { limit: '101' });
+  });
+
+  it('rejects invalid ObjectId eventId', () => {
+    expectRejected(adminBookingsQuerySchema, { eventId: 'not-an-object-id' });
+  });
+
+  it('rejects invalid booking status', () => {
+    expectRejected(adminBookingsQuerySchema, { status: 'bogus' });
+  });
+
+  it('bounds search', () => {
+    expectRejected(adminBookingsQuerySchema, { search: 'a'.repeat(201) });
   });
 });
