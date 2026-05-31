@@ -5,14 +5,14 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 
 import { extractApiError } from '@/lib/api/client';
 import {
-  publicRequestMagicLink,
-  publicVerifyMagicLinkOrOTP,
+  publicRequestVerificationCode,
+  publicVerifyVerificationCodeOrOTP,
   publicGoogleLogin,
   publicCheckEmail,
 } from '@/lib/api/public.service';
 import { useAuth } from '@/providers/AuthProvider';
 import { loadScriptOnce } from '@/lib/utils/load-script-once';
-import { AuthResponse, MagicLinkRequestResponse } from '@/types/auth';
+import { AuthResponse, VerificationCodeRequestResponse } from '@/types/auth';
 import { Button } from '@mad/ui';
 
 // ─── Google SSO Type Definitions ─────────────────────────────
@@ -181,7 +181,7 @@ export function AuthForm({ mode, onSuccess, onGuestContinue, className = '' }: A
     mutationFn: (emailStr: string) => publicCheckEmail(emailStr),
     onSuccess: (data) => {
       if (data.exists) {
-        requestMagicLinkMutation.mutate();
+        requestVerificationCodeMutation.mutate();
       } else {
         setStep('register');
         setInfoMessage('');
@@ -198,10 +198,10 @@ export function AuthForm({ mode, onSuccess, onGuestContinue, className = '' }: A
     },
   });
 
-  // Request Magic Link / OTP Passcode Dispatch
-  const requestMagicLinkMutation = useMutation<MagicLinkRequestResponse, Error, void>({
+  // Request verification code / OTP passcode dispatch
+  const requestVerificationCodeMutation = useMutation<VerificationCodeRequestResponse, Error, void>({
     mutationFn: () =>
-      publicRequestMagicLink(
+      publicRequestVerificationCode(
         email,
         step === 'register' ? { firstName, lastName, mobileNumber } : undefined
       ),
@@ -225,7 +225,7 @@ export function AuthForm({ mode, onSuccess, onGuestContinue, className = '' }: A
   // Verify OTP Code
   const verifyMutation = useMutation<AuthResponse, Error, string>({
     mutationFn: (otpCode: string) =>
-      publicVerifyMagicLinkOrOTP({
+      publicVerifyVerificationCodeOrOTP({
         otp: otpCode,
         email,
       }),
@@ -350,7 +350,7 @@ export function AuthForm({ mode, onSuccess, onGuestContinue, className = '' }: A
       setError('First and Last names are required');
       return;
     }
-    requestMagicLinkMutation.mutate();
+    requestVerificationCodeMutation.mutate();
   };
 
   const handleSubmitOtp = (e: React.FormEvent) => {
@@ -433,9 +433,9 @@ export function AuthForm({ mode, onSuccess, onGuestContinue, className = '' }: A
                   variant="primary"
                   className="px-4 py-2 text-xs font-bold rounded-xl whitespace-nowrap"
                   disabled={cooldownRemaining > 0}
-                  isLoading={checkEmailMutation.isPending || requestMagicLinkMutation.isPending}
+                  isLoading={checkEmailMutation.isPending || requestVerificationCodeMutation.isPending}
                 >
-                  {cooldownRemaining > 0 ? `Request Code (${formatTime(cooldownRemaining)})` : 'Email Login Link'}
+                  {cooldownRemaining > 0 ? `Request Code (${formatTime(cooldownRemaining)})` : 'Send Code'}
                 </Button>
               </>
             ) : (
@@ -462,7 +462,7 @@ export function AuthForm({ mode, onSuccess, onGuestContinue, className = '' }: A
                   fullWidth
                   className="py-3.5 rounded-xl font-bold tracking-wide shadow-lg shadow-accent-purple/20 hover:shadow-accent-purple/40 active:scale-95 transition-all duration-200"
                   disabled={cooldownRemaining > 0}
-                  isLoading={checkEmailMutation.isPending || requestMagicLinkMutation.isPending}
+                  isLoading={checkEmailMutation.isPending || requestVerificationCodeMutation.isPending}
                 >
                   {cooldownRemaining > 0 ? `Request Code (${formatTime(cooldownRemaining)})` : 'Continue with Email'}
                 </Button>
@@ -496,7 +496,7 @@ export function AuthForm({ mode, onSuccess, onGuestContinue, className = '' }: A
             />
             {googleLoginMutation.isPending && (
               <p className="text-center text-xs text-purple-300/80 animate-pulse mt-2">
-                Securing secure Google session...
+                Signing in with Google...
               </p>
             )}
           </div>
@@ -573,7 +573,7 @@ export function AuthForm({ mode, onSuccess, onGuestContinue, className = '' }: A
               fullWidth
               className="py-3.5 rounded-xl font-bold tracking-wide shadow-lg shadow-accent-purple/20 hover:shadow-accent-purple/40 active:scale-95 transition-all duration-200"
               disabled={cooldownRemaining > 0}
-              isLoading={requestMagicLinkMutation.isPending}
+              isLoading={requestVerificationCodeMutation.isPending}
             >
               {cooldownRemaining > 0 ? `Request Code (${formatTime(cooldownRemaining)})` : 'Create Account'}
             </Button>
@@ -667,8 +667,8 @@ export function AuthForm({ mode, onSuccess, onGuestContinue, className = '' }: A
                 return (
                   <button
                     type="button"
-                    onClick={() => requestMagicLinkMutation.mutate()}
-                    disabled={requestMagicLinkMutation.isPending || cooldownRemaining > 0}
+                    onClick={() => requestVerificationCodeMutation.mutate()}
+                    disabled={requestVerificationCodeMutation.isPending || cooldownRemaining > 0}
                     className="text-accent-purple hover:text-accent-purple-light font-semibold transition-colors duration-200 disabled:opacity-50"
                   >
                     Resend Code

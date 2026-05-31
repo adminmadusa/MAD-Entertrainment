@@ -1,5 +1,5 @@
 import { Event, SeatLayout, Booking, Ticket, DJOperator, PopupCampaign } from '@mad/types';
-import { AuthUser, AuthResponse, MagicLinkRequestResponse, VerifyMagicLinkOrOTPPayload } from '../../types/auth';
+import { AuthUser, AuthResponse, VerificationCodeRequestResponse, VerifyVerificationCodeOrOTPPayload } from '../../types/auth';
 import { ReserveTicketsInput, CheckoutDetailsInput } from '@mad/validations';
 import { STORAGE_VERSION } from '@mad/shared';
 
@@ -279,13 +279,13 @@ export async function publicGetActivePopups(): Promise<PopupCampaign[]> {
 // ─── Auth ────────────────────────────────────────────────────
 
 export async function publicLogin(payload: LoginPayload): Promise<AuthResponse> {
-  // Gracefully adapt legacy publicLogin to trigger Magic Link sending
+  // Gracefully adapt legacy publicLogin to trigger verification code sending
   const { data } = await apiClient.post<{ data: AuthResponse }>('/auth/magic-link', payload);
   return data.data;
 }
 
 export async function publicRegister(payload: RegisterPayload): Promise<AuthResponse> {
-  // Gracefully adapt legacy publicRegister to trigger Magic Link sending
+  // Gracefully adapt legacy publicRegister to trigger verification code sending
   const { data } = await apiClient.post<{ data: AuthResponse }>('/auth/magic-link', payload);
   return data.data;
 }
@@ -300,15 +300,15 @@ export async function publicCheckEmail(email: string): Promise<{ exists: boolean
   return data.data;
 }
 
-export async function publicRequestMagicLink(
+export async function publicRequestVerificationCode(
   email: string,
   registrationData?: { firstName: string; lastName: string; mobileNumber?: string }
-): Promise<MagicLinkRequestResponse> {
-  const { data } = await apiClient.post<MagicLinkRequestResponse>('/auth/magic-link', { email, ...registrationData });
+): Promise<VerificationCodeRequestResponse> {
+  const { data } = await apiClient.post<VerificationCodeRequestResponse>('/auth/magic-link', { email, ...registrationData });
   return data;
 }
 
-export async function publicVerifyMagicLinkOrOTP(payload: VerifyMagicLinkOrOTPPayload): Promise<AuthResponse> {
+export async function publicVerifyVerificationCodeOrOTP(payload: VerifyVerificationCodeOrOTPPayload): Promise<AuthResponse> {
   const { data } = await apiClient.post<{ data: AuthResponse }>('/auth/verify', payload);
   return data.data;
 }
