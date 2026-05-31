@@ -26,7 +26,4 @@ router.post('/logout', AuthController.logout);
 // Retrieve currently logged-in user profile details
 router.get('/me', requireAuth, AuthController.getMe);
 
-// Retrieve historical bookings linked to the user account
-router.get('/my-bookings', requireAuth, AuthController.getMyBookings);
-
 export default router;

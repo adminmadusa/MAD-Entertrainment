@@ -1,6 +1,5 @@
 import { AdminRole } from '@mad/shared';
 import { Request, Response, NextFunction } from 'express';
-import { Types } from 'mongoose';
 
 import {
   verifyUserToken,
@@ -17,25 +16,6 @@ import {
   sendUnauthorized,
   sendForbidden,
 } from '../utils/response';
-
-// ─────────────────────────────────────────────
-// Booking Ownership Helper
-// ─────────────────────────────────────────────
-
-export function ensureBookingOwner(
-  reqUserId: string | undefined,
-  bookingUserId: Types.ObjectId | undefined
-): void {
-  if (bookingUserId) {
-    if (!reqUserId) {
-      throw new Error('User not authenticated');
-    }
-
-    if (bookingUserId.toString() !== reqUserId) {
-      throw new Error('User does not own the booking');
-    }
-  }
-}
 
 // ─────────────────────────────────────────────
 // Extend Express Request
