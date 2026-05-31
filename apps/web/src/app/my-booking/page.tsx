@@ -9,8 +9,8 @@ import { Suspense, useState, useEffect, useRef } from 'react';
 import { useCountdown } from '@/hooks/use-countdown.hook';
 
 import { extractApiError } from '@/lib/api/client';
-import { publicGetBookingDetails, publicDownloadTicketPDF, publicResendTicketEmail } from '@/lib/api/public.service';
-import { STORAGE_VERSION, QUERY_KEYS } from '@mad/shared';
+import { publicGetBookingDetails, publicDownloadTicketPDF, publicResendTicketEmail, getStoredGuestBookingSession } from '@/lib/api/public.service';
+import { QUERY_KEYS } from '@mad/shared';
 import { BookingHeaderCard } from '@/components/booking/shared/BookingHeaderCard';
 import { TicketActions } from '@/components/booking/shared/TicketActions';
 import { EntryPassGrid } from '@/components/booking/shared/EntryPassGrid';
@@ -66,12 +66,8 @@ function MyBookingContent() {
     setErrorMsg('');
 
     try {
-      let sess: string | undefined;
-      if (typeof window !== 'undefined') {
-        const sessionKey = `mad_checkout_session_${STORAGE_VERSION}`;
-        sess = sessionStorage.getItem(sessionKey) || undefined;
-      }
-      const blob = await publicDownloadTicketPDF(booking.bookingId, sess);
+      const sessionToken = getStoredGuestBookingSession()?.token;
+      const blob = await publicDownloadTicketPDF(booking.bookingId, sessionToken);
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -96,12 +92,8 @@ function MyBookingContent() {
     setErrorMsg('');
 
     try {
-      let sess: string | undefined;
-      if (typeof window !== 'undefined') {
-        const sessionKey = `mad_checkout_session_${STORAGE_VERSION}`;
-        sess = sessionStorage.getItem(sessionKey) || undefined;
-      }
-      const response = await publicResendTicketEmail(booking.bookingId, sess);
+      const sessionToken = getStoredGuestBookingSession()?.token;
+      const response = await publicResendTicketEmail(booking.bookingId, sessionToken);
       if (response.success) {
         setResendState('success');
         setTimeout(() => {
@@ -138,12 +130,8 @@ function MyBookingContent() {
   const { data: result, isLoading, isFetching, error } = useQuery({
     queryKey: QUERY_KEYS.public.bookings.detail(queryRef),
     queryFn: () => {
-      let sess: string | undefined;
-      if (typeof window !== 'undefined') {
-        const sessionKey = `mad_checkout_session_${STORAGE_VERSION}`;
-        sess = sessionStorage.getItem(sessionKey) || undefined;
-      }
-      return publicGetBookingDetails(queryRef, sess);
+      const sessionToken = getStoredGuestBookingSession()?.token;
+      return publicGetBookingDetails(queryRef, sessionToken);
     },
     enabled: !!queryRef,
     retry: false,

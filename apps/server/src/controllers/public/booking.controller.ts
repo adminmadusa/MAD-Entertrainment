@@ -49,7 +49,7 @@ export async function createBooking(
     const userId = req.user?.sub;
 
     // Guest session UUID
-    const sessionId = req.header('x-session-id') || undefined;
+    const sessionId = req.session?.sessionId || req.header('x-session-id') || undefined;
 
     // Require either:
     // - authenticated user
@@ -125,7 +125,7 @@ export async function getBooking(
 
     const booking = result.booking;
     const reqUserId = req.user?.sub;
-    const reqSessionId = req.header('x-session-id') || undefined;
+    const reqSessionId = req.session?.sessionId || req.header('x-session-id') || undefined;
 
     // Logged-in ownership
     const isUserOwner =
@@ -167,7 +167,7 @@ export async function saveCheckoutDetails(
 ): Promise<void> {
   try {
     const { bookingId } = req.params;
-    const sessionId = req.header('x-session-id') || undefined;
+    const sessionId = req.session?.sessionId || req.header('x-session-id') || undefined;
     const userId = req.user?.sub;
 
     const booking = await PublicBookingService.saveCheckoutDetails(
@@ -199,7 +199,7 @@ export async function downloadBookingPDF(
   try {
     const { bookingId } = req.params;
     const reqUserId = req.user?.sub;
-    const reqSessionId = req.header('x-session-id') || undefined;
+    const reqSessionId = req.session?.sessionId || req.header('x-session-id') || undefined;
 
     const result = await PublicBookingService.getBookingByReference(bookingId);
     if (!result) {
@@ -246,7 +246,7 @@ export async function resendBookingTickets(
   try {
     const { bookingId } = req.params;
     const reqUserId = req.user?.sub;
-    const reqSessionId = req.header('x-session-id') || undefined;
+    const reqSessionId = req.session?.sessionId || req.header('x-session-id') || undefined;
 
     const result = await PublicBookingService.getBookingByReference(bookingId);
     if (!result) {
