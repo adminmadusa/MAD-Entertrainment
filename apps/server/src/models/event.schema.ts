@@ -219,6 +219,7 @@ eventSchema.virtual('coverImage').get(function (this: any) {
 eventSchema.index({ startDate: 1, status: 1 });
 eventSchema.index({ category: 1, status: 1, startDate: 1 });
 eventSchema.index({ isFeatured: 1, status: 1 });
+eventSchema.index({ isDeleted: 1, status: 1, startDate: 1 });
 eventSchema.index({ title: 'text', description: 'text', tags: 'text' });
 
 export const Event = model<IEvent>('Event', eventSchema);
