@@ -1,6 +1,6 @@
 'use client';
 
-import { QUERY_KEYS } from '@mad/shared';
+import { BookingStatus, QUERY_KEYS } from '@mad/shared';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
@@ -50,6 +50,24 @@ function PaymentRecoveryBanner({ booking }: { booking: { logicalExpiresAt?: stri
           Contact Support
         </a>
       </div>
+    </div>
+  );
+}
+
+function TicketStatusMessage({ status }: { status: string }) {
+  const messages: Record<string, string> = {
+    [BookingStatus.AWAITING_PAYMENT]: 'Complete payment to receive tickets.',
+    [BookingStatus.FAILED]: 'Payment was unsuccessful. Create a new booking to try again.',
+    [BookingStatus.EXPIRED]: 'Reservation expired before payment completed.',
+    [BookingStatus.CANCELLED]: 'This booking was cancelled.',
+    [BookingStatus.REFUNDED]: 'Payment has been refunded.',
+    [BookingStatus.EXPIRING]: 'We are processing this booking. Please check back shortly.',
+    [BookingStatus.PENDING]: 'This booking is pending. Please check back shortly.',
+  };
+
+  return (
+    <div className="glass-strong rounded-2xl border border-border-subtle p-6 text-center text-text-secondary text-sm">
+      {messages[status] || 'This booking is not ready for ticket access yet.'}
     </div>
   );
 }
@@ -122,7 +140,7 @@ function TicketRetrievalContent() {
     refetchInterval: (query) => {
       const status = query.state.data?.booking?.status;
       if (pollCountRef.current >= 5) return false;
-      if (status === 'awaiting_payment' || status === 'expiring') {
+      if (status === BookingStatus.AWAITING_PAYMENT || status === BookingStatus.EXPIRING) {
         return 3000;
       }
       return false;
@@ -132,7 +150,7 @@ function TicketRetrievalContent() {
   useEffect(() => {
     if (!isSingleLookupFetching && singleBookingData?.booking) {
       const status = singleBookingData.booking.status;
-      if (status === 'awaiting_payment' || status === 'expiring') {
+      if (status === BookingStatus.AWAITING_PAYMENT || status === BookingStatus.EXPIRING) {
         pollCountRef.current += 1;
       }
     }
@@ -346,11 +364,11 @@ function TicketRetrievalContent() {
 
                     <BookingHeaderCard booking={singleBooking} isFetching={isSingleLookupFetching && !isSingleLookupLoading} pollCount={pollCountRef.current} />
 
-                    {singleBooking.status === 'awaiting_payment' && (
+                    {singleBooking.status === BookingStatus.AWAITING_PAYMENT && (
                       <PaymentRecoveryBanner booking={singleBooking} />
                     )}
 
-                    {singleBooking.status === 'confirmed' ? (
+                    {singleBooking.status === BookingStatus.CONFIRMED ? (
                       <div className="space-y-4 pt-4 border-t border-border-subtle/30">
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-2">
                           <h3 className="text-white font-bold text-sm">Entry Passes</h3>
@@ -365,9 +383,7 @@ function TicketRetrievalContent() {
                         <EntryPassGrid tickets={singleTickets} />
                       </div>
                     ) : (
-                      <div className="glass-strong rounded-2xl border border-border-subtle p-6 text-center text-text-secondary text-sm">
-                        🎁 Entry tickets and QR scanner codes will be generated automatically once your payment is successfully completed.
-                      </div>
+                      <TicketStatusMessage status={singleBooking.status} />
                     )}
                   </div>
                 );
@@ -402,7 +418,7 @@ function TicketRetrievalContent() {
                           <BookingHeaderCard booking={booking} />
 
                           {/* Tickets list for confirmed bookings */}
-                          {booking.status === 'confirmed' ? (
+                          {booking.status === BookingStatus.CONFIRMED ? (
                             <div className="space-y-4 pt-4 border-t border-border-subtle/30">
                               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-2">
                                 <h3 className="text-white font-bold text-sm">Entry Passes</h3>
@@ -416,9 +432,7 @@ function TicketRetrievalContent() {
                               <EntryPassGrid tickets={bookingTickets} />
                             </div>
                           ) : (
-                            <div className="glass-strong rounded-2xl border border-border-subtle p-6 text-center text-text-secondary text-sm">
-                              🎁 Entry tickets and QR scanner codes will be generated automatically once your payment is successfully completed.
-                            </div>
+                            <TicketStatusMessage status={booking.status} />
                           )}
                         </div>
                       );

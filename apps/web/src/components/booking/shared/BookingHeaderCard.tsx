@@ -1,4 +1,5 @@
 import { Booking, Event } from '@mad/types';
+import { getBookingStatusMeta, type BookingStatusTone } from '@mad/shared';
 import { formatEventDate } from '@/utils/date';
 
 interface BookingHeaderCardProps {
@@ -9,11 +10,19 @@ interface BookingHeaderCardProps {
 
 export function BookingHeaderCard({ booking, isFetching, pollCount }: BookingHeaderCardProps) {
 
-  const getBookingStatusStyles = (status: string) => {
-    if (status === 'confirmed') return 'bg-green-500/10 text-green-400 border-green-500/30';
-    if (status === 'pending' || status === 'awaiting_payment') return 'bg-amber-500/10 text-amber-400 border-amber-500/30';
-    return 'bg-red-500/10 text-red-400 border-red-500/30';
+  const getBookingStatusStyles = (tone: BookingStatusTone) => {
+    const styles: Record<BookingStatusTone, string> = {
+      success: 'bg-green-500/10 text-green-400 border-green-500/30',
+      warning: 'bg-amber-500/10 text-amber-400 border-amber-500/30',
+      processing: 'bg-blue-500/10 text-blue-400 border-blue-500/30',
+      danger: 'bg-red-500/10 text-red-400 border-red-500/30',
+      neutral: 'bg-slate-500/10 text-slate-300 border-slate-500/30',
+      refund: 'bg-purple-500/10 text-purple-300 border-purple-500/30',
+    };
+    return styles[tone];
   };
+
+  const statusMeta = getBookingStatusMeta(booking.status);
 
   // Safe cast for populated event info
   const eventInfo = booking.eventId as unknown as Partial<Event>;
@@ -41,8 +50,8 @@ export function BookingHeaderCard({ booking, isFetching, pollCount }: BookingHea
         <div className="sm:text-right self-start sm:self-center flex items-center gap-2 justify-end">
           <div>
             <span className="text-[10px] text-text-muted font-medium tracking-wider uppercase block sm:mb-1">Status</span>
-            <div className={`text-xs px-3 py-1 rounded-full border font-black inline-block ${getBookingStatusStyles(booking.status)}`}>
-              {booking.status.toUpperCase()}
+            <div className={`text-xs px-3 py-1 rounded-full border font-black inline-block ${getBookingStatusStyles(statusMeta.tone)}`}>
+              {statusMeta.label}
             </div>
           </div>
           {isFetching && (pollCount === undefined || pollCount < 5) && (

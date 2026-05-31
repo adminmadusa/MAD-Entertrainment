@@ -1,6 +1,7 @@
 'use client';
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { BookingStatus, getBookingStatusLabel } from '@mad/shared';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
 
@@ -19,10 +20,24 @@ import BookingsSummaryWidget from '@/components/bookings/BookingsSummaryWidget';
 
 const STATUS_COLORS: Record<string, string> = {
   confirmed: 'bg-green-500/10 text-green-400 border-green-500/30',
-  pending: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/30',
+  pending: 'bg-amber-500/10 text-amber-400 border-amber-500/30',
+  awaiting_payment: 'bg-amber-500/10 text-amber-400 border-amber-500/30',
+  expiring: 'bg-blue-500/10 text-blue-400 border-blue-500/30',
   cancelled: 'bg-red-500/10 text-red-400 border-red-500/30',
-  failed: 'bg-gray-500/10 text-gray-400 border-gray-500/30',
+  failed: 'bg-red-500/10 text-red-400 border-red-500/30',
+  refunded: 'bg-purple-500/10 text-purple-300 border-purple-500/30',
+  expired: 'bg-slate-500/10 text-slate-300 border-slate-500/30',
 };
+
+const BOOKING_STATUS_FILTERS = [
+  BookingStatus.AWAITING_PAYMENT,
+  BookingStatus.CONFIRMED,
+  BookingStatus.FAILED,
+  BookingStatus.CANCELLED,
+  BookingStatus.REFUNDED,
+  BookingStatus.EXPIRED,
+  BookingStatus.EXPIRING,
+];
 
 const ATTENDANCE_COLORS: Record<string, string> = {
   NOT_ATTENDED: 'bg-red-500/10 text-red-400 border-red-500/30',
@@ -164,7 +179,7 @@ export default function AdminBookingsPage() {
           <td className="py-4 px-4 text-text-primary font-medium">₹{booking.totalAmount.toLocaleString('en-IN')}</td>
           <td className="py-4 px-4">
             <span className={`text-xs px-2.5 py-1 rounded-full border font-medium ${STATUS_COLORS[booking.status] ?? 'text-text-muted border-border-subtle'}`}>
-              {booking.status}
+              {getBookingStatusLabel(booking.status)}
             </span>
             {booking.status === 'confirmed' && booking.totalTickets > 0 && (
               <div className="mt-2">
@@ -227,7 +242,7 @@ export default function AdminBookingsPage() {
         const keepUpdated = customer?.keepUpdated ? 'Yes' : 'No';
         const sendBestEvents = customer?.sendBestEvents ? 'Yes' : 'No';
         const eventTitle = (b.eventId as { title?: string })?.title?.replace(/,/g, '') ?? '—';
-        return `${b.bookingId},${firstName},${lastName},${email},${phone},${birthdate},${keepUpdated},${sendBestEvents},${eventTitle},${b.totalAmount},${b.status},${new Date(b.createdAt).toLocaleDateString('en-IN')}`;
+        return `${b.bookingId},${firstName},${lastName},${email},${phone},${birthdate},${keepUpdated},${sendBestEvents},${eventTitle},${b.totalAmount},${getBookingStatusLabel(b.status)},${new Date(b.createdAt).toLocaleDateString('en-IN')}`;
       })
     ].join('\n');
 
@@ -266,10 +281,9 @@ export default function AdminBookingsPage() {
         <select value={statusFilter} onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
           className="px-4 py-2.5 rounded-xl bg-background-card border border-border-subtle text-sm text-text-primary focus:outline-none focus:border-accent-purple">
           <option value="">All Statuses</option>
-          <option value="confirmed">Confirmed</option>
-          <option value="pending">Pending</option>
-          <option value="cancelled">Cancelled</option>
-          <option value="failed">Failed</option>
+          {BOOKING_STATUS_FILTERS.map((status) => (
+            <option key={status} value={status}>{getBookingStatusLabel(status)}</option>
+          ))}
         </select>
 
         <button
@@ -378,7 +392,7 @@ export default function AdminBookingsPage() {
                     <h3 className="text-white text-lg font-black font-mono mt-0.5">{selectedBooking.bookingId}</h3>
                   </div>
                   <span className={`text-xs px-3 py-1 rounded-full border font-semibold ${STATUS_COLORS[selectedBooking.status] ?? 'text-text-muted border-border-subtle'}`}>
-                    {selectedBooking.status}
+                    {getBookingStatusLabel(selectedBooking.status)}
                   </span>
                 </div>
 

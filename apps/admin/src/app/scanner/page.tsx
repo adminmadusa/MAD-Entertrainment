@@ -1,12 +1,24 @@
 'use client';
 
 import { useQuery, useMutation } from '@tanstack/react-query';
+import { BookingStatus, getBookingStatusLabel } from '@mad/shared';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useRef, useEffect, useCallback } from 'react';
 
 import { adminGetEvents } from '@/lib/api/admin/event.service';
 import { adminScanTicket, adminLookupTickets, ScanResponse, LookupResponse } from '@/lib/api/admin/scanner.service';
 import { extractApiError } from '@/lib/api/client';
+
+const BOOKING_STATUS_COLORS: Record<string, string> = {
+  [BookingStatus.CONFIRMED]: 'border-green-500/50 text-green-400 bg-green-500/10',
+  [BookingStatus.PENDING]: 'border-amber-500/50 text-amber-400 bg-amber-500/10',
+  [BookingStatus.AWAITING_PAYMENT]: 'border-amber-500/50 text-amber-400 bg-amber-500/10',
+  [BookingStatus.EXPIRING]: 'border-blue-500/50 text-blue-400 bg-blue-500/10',
+  [BookingStatus.FAILED]: 'border-red-500/50 text-red-400 bg-red-500/10',
+  [BookingStatus.CANCELLED]: 'border-red-500/50 text-red-400 bg-red-500/10',
+  [BookingStatus.REFUNDED]: 'border-purple-500/50 text-purple-300 bg-purple-500/10',
+  [BookingStatus.EXPIRED]: 'border-slate-500/50 text-slate-300 bg-slate-500/10',
+};
 
 export default function ScannerPage() {
   const [selectedEventId, setSelectedEventId] = useState<string>('');
@@ -342,9 +354,9 @@ export default function ScannerPage() {
                 <p className="text-sm text-text-secondary">Guest: {lookupResult.booking.guestName || 'N/A'}</p>
                 <div className="mt-1 flex items-center gap-2">
                   <span className={`text-xs px-2 py-0.5 rounded border ${
-                    lookupResult.booking.status === 'confirmed' ? 'border-green-500/50 text-green-400 bg-green-500/10' : 'border-amber-500/50 text-amber-400 bg-amber-500/10'
+                    BOOKING_STATUS_COLORS[lookupResult.booking.status] ?? 'border-slate-500/50 text-slate-300 bg-slate-500/10'
                   }`}>
-                    {lookupResult.booking.status.toUpperCase()}
+                    {getBookingStatusLabel(lookupResult.booking.status)}
                   </span>
                 </div>
               </div>
