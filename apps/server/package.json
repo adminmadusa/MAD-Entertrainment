@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@asteasolutions/zod-to-openapi": "^7.3.4",
+    "@sentry/node": "^10.53.1",
     "@mad/shared": "workspace:*",
     "@mad/validations": "workspace:*",
     "@react-email/components": "^1.0.12",
