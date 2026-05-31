@@ -8,7 +8,11 @@ import { useParams, useRouter } from 'next/navigation';
 import { publicGetEventBySlug } from '@/lib/api/public.service';
 import { TicketSelectionContent } from '@/components/booking/TicketSelectionContent';
 
-export default function TicketSelectionClient() {
+interface TicketSelectionClientProps {
+  initialEvent?: EventData;
+}
+
+export default function TicketSelectionClient({ initialEvent }: TicketSelectionClientProps) {
   const params = useParams();
   const router = useRouter();
   const slug = params.slug as string;
@@ -18,6 +22,8 @@ export default function TicketSelectionClient() {
     queryKey: QUERY_KEYS.public.events.detail(slug),
     queryFn: () => publicGetEventBySlug(slug),
     enabled: !!slug,
+    initialData: initialEvent,
+    initialDataUpdatedAt: initialEvent ? Date.now() : undefined,
   });
 
   if (isLoadingEvent) {
