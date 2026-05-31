@@ -858,6 +858,36 @@ export class PaymentService {
     }
   }
 
+  private static async redeemCouponForConfirmedBooking(booking: IBooking, payment: IPayment): Promise<void> {
+    if (!booking.couponId) {
+      return;
+    }
+
+    const result = await Coupon.updateOne(
+      {
+        _id: booking.couponId,
+        $expr: { $lt: ['$usedCount', '$usageLimit'] },
+      },
+      { $inc: { usedCount: 1 } }
+    );
+
+    if (result.modifiedCount !== 1) {
+      logger.warn(
+        {
+          bookingId: booking._id,
+          bookingReference: booking.bookingId,
+          paymentId: payment._id,
+          couponId: booking.couponId,
+        },
+        'Coupon redemption rejected because usage limit has been reached'
+      );
+
+      const err = AppError.conflict('Coupon usage limit reached');
+      err.code = 'COUPON_USAGE_LIMIT_REACHED';
+      throw err;
+    }
+  }
+
   private static async failPaymentAndReleaseInventory(booking: IBooking, payment: IPayment, reason: string) {
     payment.status = PaymentStatus.FAILED;
     payment.failedAt = new Date();
@@ -963,6 +993,8 @@ export class PaymentService {
     confirmedBooking.bookingVersion += 1;
 
     booking = confirmedBooking;
+
+    await this.redeemCouponForConfirmedBooking(booking, _payment);
 
     // 1b. Post-Checkout Account Creation: Ensure User exists for this booking safely before finalizing
     if (!booking.userId && booking.guestEmail) {
@@ -1088,11 +1120,6 @@ export class PaymentService {
       () => emitToAdmin('analytics', 'analytics:changed', { bookingId: booking._id.toString(), eventId: booking.eventId.toString() }, booking.bookingId),
       { bookingId: booking._id.toString(), eventId: booking.eventId.toString() }
     );
-
-    // 4. Update Coupon used count if applied
-    if (booking.couponId) {
-      await Coupon.findByIdAndUpdate(booking.couponId, { $inc: { usedCount: 1 } });
-    }
 
     // Feature Flag Rollout: if asynchronous checkout is enabled, offload ticket & PDF generation
     if (getEnv().ENABLE_ASYNC_CHECKOUT) {

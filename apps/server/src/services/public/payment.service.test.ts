@@ -3,6 +3,7 @@ import { PaymentService } from './payment.service';
 import { BookingStatus, PaymentStatus } from '@mad/shared';
 import { Booking } from '../../models/booking.schema';
 import { Payment } from '../../models/payment.schema';
+import { Coupon } from '../../models/coupon.schema';
 import { getEnv } from '../../config/env';
 import crypto from 'crypto';
 
@@ -40,6 +41,13 @@ vi.mock('../../models/payment.schema', () => ({
   Payment: {
     create: vi.fn(),
     findOne: vi.fn(),
+  },
+}));
+
+vi.mock('../../models/coupon.schema', () => ({
+  Coupon: {
+    updateOne: vi.fn(),
+    findByIdAndUpdate: vi.fn(),
   },
 }));
 
@@ -372,6 +380,199 @@ describe('Payment Service', () => {
       expect(result).toBeDefined();
       expect(mockPayment.status).toBe(PaymentStatus.PAID);
       expect(mockPayment.save).toHaveBeenCalled();
+    });
+
+    it('should redeem a coupon with an atomic conditional update during normal confirmation', async () => {
+      const mockBooking = {
+        _id: 'b-123',
+        bookingId: 'MAD-2026-ABCDE',
+        eventId: 'e-123',
+        status: BookingStatus.AWAITING_PAYMENT,
+        tickets: [],
+        couponId: 'coupon-123',
+      };
+      const mockPayment = { _id: 'p-123', gateway: 'razorpay', status: PaymentStatus.PENDING, gatewayOrderId: 'order_123', save: vi.fn() };
+
+      vi.mocked(Booking.findOne).mockResolvedValue(mockBooking as any);
+      vi.mocked(Payment.findOne)
+        .mockReturnValueOnce({ sort: vi.fn().mockResolvedValue(mockPayment) } as any)
+        .mockResolvedValueOnce(null as any);
+      vi.mocked(Booking.findOneAndUpdate).mockResolvedValue(mockBooking as any);
+      vi.mocked(Coupon.updateOne).mockResolvedValue({ modifiedCount: 1 } as any);
+
+      const result = await PaymentService.verifyPayment('MAD-2026-ABCDE', {
+        razorpay_order_id: 'order_123',
+        razorpay_payment_id: 'pay_123',
+        razorpay_signature: razorpaySignature('order_123', 'pay_123'),
+      });
+
+      expect(result).toBeDefined();
+      expect(Coupon.updateOne).toHaveBeenCalledWith(
+        {
+          _id: 'coupon-123',
+          $expr: { $lt: ['$usedCount', '$usageLimit'] },
+        },
+        { $inc: { usedCount: 1 } }
+      );
+      expect(Coupon.findByIdAndUpdate).not.toHaveBeenCalled();
+    });
+
+    it('should allow redemption of the last available coupon use', async () => {
+      const mockBooking = {
+        _id: 'b-123',
+        bookingId: 'MAD-2026-ABCDE',
+        eventId: 'e-123',
+        status: BookingStatus.AWAITING_PAYMENT,
+        tickets: [],
+        couponId: 'coupon-last',
+      };
+      const mockPayment = { _id: 'p-123', gateway: 'razorpay', status: PaymentStatus.PENDING, gatewayOrderId: 'order_123', save: vi.fn() };
+
+      vi.mocked(Booking.findOne).mockResolvedValue(mockBooking as any);
+      vi.mocked(Payment.findOne)
+        .mockReturnValueOnce({ sort: vi.fn().mockResolvedValue(mockPayment) } as any)
+        .mockResolvedValueOnce(null as any);
+      vi.mocked(Booking.findOneAndUpdate).mockResolvedValue(mockBooking as any);
+      vi.mocked(Coupon.updateOne).mockResolvedValue({ matchedCount: 1, modifiedCount: 1 } as any);
+
+      const result = await PaymentService.verifyPayment('MAD-2026-ABCDE', {
+        razorpay_order_id: 'order_123',
+        razorpay_payment_id: 'pay_123',
+        razorpay_signature: razorpaySignature('order_123', 'pay_123'),
+      });
+
+      expect(result).toBeDefined();
+      expect(Coupon.updateOne).toHaveBeenCalledTimes(1);
+      expect(Coupon.updateOne).toHaveBeenCalledWith(
+        expect.objectContaining({
+          _id: 'coupon-last',
+          $expr: { $lt: ['$usedCount', '$usageLimit'] },
+        }),
+        { $inc: { usedCount: 1 } }
+      );
+    });
+
+    it('should reject confirmation when the coupon usage limit is exhausted', async () => {
+      const mockBooking = {
+        _id: 'b-123',
+        bookingId: 'MAD-2026-ABCDE',
+        eventId: 'e-123',
+        status: BookingStatus.AWAITING_PAYMENT,
+        tickets: [],
+        couponId: 'coupon-exhausted',
+      };
+      const mockPayment = { _id: 'p-123', gateway: 'razorpay', status: PaymentStatus.PENDING, gatewayOrderId: 'order_123', save: vi.fn() };
+
+      vi.mocked(Booking.findOne).mockResolvedValue(mockBooking as any);
+      vi.mocked(Payment.findOne)
+        .mockReturnValueOnce({ sort: vi.fn().mockResolvedValue(mockPayment) } as any)
+        .mockResolvedValueOnce(null as any);
+      vi.mocked(Booking.findOneAndUpdate).mockResolvedValue(mockBooking as any);
+      vi.mocked(Coupon.updateOne).mockResolvedValue({ matchedCount: 0, modifiedCount: 0 } as any);
+
+      await expect(PaymentService.verifyPayment('MAD-2026-ABCDE', {
+        razorpay_order_id: 'order_123',
+        razorpay_payment_id: 'pay_123',
+        razorpay_signature: razorpaySignature('order_123', 'pay_123'),
+      })).rejects.toThrow('Coupon usage limit reached');
+
+      expect(Coupon.updateOne).toHaveBeenCalledTimes(1);
+      expect(Coupon.findByIdAndUpdate).not.toHaveBeenCalled();
+    });
+
+    it('should allow only one concurrent redemption when two bookings race for one remaining coupon use', async () => {
+      const bookingA = {
+        _id: 'b-1',
+        bookingId: 'MAD-2026-AAA11',
+        eventId: 'e-123',
+        status: BookingStatus.AWAITING_PAYMENT,
+        tickets: [],
+        couponId: 'coupon-race',
+      };
+      const bookingB = {
+        _id: 'b-2',
+        bookingId: 'MAD-2026-BBB22',
+        eventId: 'e-123',
+        status: BookingStatus.AWAITING_PAYMENT,
+        tickets: [],
+        couponId: 'coupon-race',
+      };
+      const paymentA = { _id: 'p-1', gateway: 'razorpay', status: PaymentStatus.PENDING, gatewayOrderId: 'order_1', save: vi.fn() };
+      const paymentB = { _id: 'p-2', gateway: 'razorpay', status: PaymentStatus.PENDING, gatewayOrderId: 'order_2', save: vi.fn() };
+
+      vi.mocked(Booking.findOne).mockImplementation((query: any) => {
+        if (query.bookingId === bookingA.bookingId) return Promise.resolve(bookingA as any);
+        if (query.bookingId === bookingB.bookingId) return Promise.resolve(bookingB as any);
+        return Promise.resolve(null);
+      });
+      vi.mocked(Payment.findOne).mockImplementation((query: any) => {
+        if (query.bookingId === bookingA._id) return { sort: vi.fn().mockResolvedValue(paymentA) } as any;
+        if (query.bookingId === bookingB._id) return { sort: vi.fn().mockResolvedValue(paymentB) } as any;
+        return Promise.resolve(null) as any;
+      });
+      vi.mocked(Booking.findOneAndUpdate).mockImplementation((query: any) => {
+        if (query._id === bookingA._id) return Promise.resolve(bookingA as any);
+        if (query._id === bookingB._id) return Promise.resolve(bookingB as any);
+        return Promise.resolve(null);
+      });
+      vi.mocked(Coupon.updateOne)
+        .mockResolvedValueOnce({ modifiedCount: 1 } as any)
+        .mockResolvedValueOnce({ modifiedCount: 0 } as any);
+
+      const [first, second] = await Promise.allSettled([
+        PaymentService.verifyPayment(bookingA.bookingId, {
+          razorpay_order_id: 'order_1',
+          razorpay_payment_id: 'pay_1',
+          razorpay_signature: razorpaySignature('order_1', 'pay_1'),
+        }),
+        PaymentService.verifyPayment(bookingB.bookingId, {
+          razorpay_order_id: 'order_2',
+          razorpay_payment_id: 'pay_2',
+          razorpay_signature: razorpaySignature('order_2', 'pay_2'),
+        }),
+      ]);
+
+      const outcomes = [first, second];
+      expect(outcomes.filter((outcome) => outcome.status === 'fulfilled')).toHaveLength(1);
+      expect(outcomes.filter((outcome) => outcome.status === 'rejected')).toHaveLength(1);
+      expect(Coupon.updateOne).toHaveBeenCalledTimes(2);
+      expect(Coupon.findByIdAndUpdate).not.toHaveBeenCalled();
+    });
+
+    it('should not redeem a coupon when duplicate confirmation is skipped by booking status guard', async () => {
+      const mockBooking = {
+        _id: 'b-123',
+        bookingId: 'MAD-2026-ABCDE',
+        eventId: 'e-123',
+        status: BookingStatus.AWAITING_PAYMENT,
+        tickets: [],
+        couponId: 'coupon-123',
+      };
+      const mockPayment = { _id: 'p-123', gateway: 'razorpay', status: PaymentStatus.PENDING, gatewayOrderId: 'order_123', save: vi.fn() };
+      const currentBooking = { ...mockBooking, status: BookingStatus.CONFIRMED };
+
+      vi.mocked(Booking.findOne).mockResolvedValue(mockBooking as any);
+      vi.mocked(Payment.findOne)
+        .mockReturnValueOnce({ sort: vi.fn().mockResolvedValue(mockPayment) } as any)
+        .mockResolvedValueOnce(null as any);
+      vi.mocked(Booking.findOneAndUpdate).mockResolvedValue(null);
+      vi.mocked(Booking.findById)
+        .mockReturnValueOnce({
+          select: vi.fn().mockReturnValue({
+            lean: vi.fn().mockResolvedValue({ status: BookingStatus.CONFIRMED, bookingId: mockBooking.bookingId }),
+          }),
+        } as any)
+        .mockResolvedValueOnce(currentBooking as any);
+
+      const result = await PaymentService.verifyPayment('MAD-2026-ABCDE', {
+        razorpay_order_id: 'order_123',
+        razorpay_payment_id: 'pay_123',
+        razorpay_signature: razorpaySignature('order_123', 'pay_123'),
+      });
+
+      expect(result).toBe(currentBooking);
+      expect(Coupon.updateOne).not.toHaveBeenCalled();
+      expect(Coupon.findByIdAndUpdate).not.toHaveBeenCalled();
     });
   });
 
