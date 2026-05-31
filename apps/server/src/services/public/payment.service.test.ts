@@ -104,8 +104,118 @@ describe('Payment Service', () => {
     });
 
     it('should throw error if booking is not awaiting payment', async () => {
-      vi.mocked(Booking.findOne).mockResolvedValue({ status: BookingStatus.CONFIRMED } as any);
-      await expect(PaymentService.createPaymentIntent('fake-id', 'stripe')).rejects.toThrow('cannot accept payment');
+      vi.mocked(Booking.findOne).mockResolvedValue({ userId: 'user-123', status: BookingStatus.CONFIRMED } as any);
+      await expect(PaymentService.createPaymentIntent('fake-id', 'stripe', { userId: 'user-123' })).rejects.toThrow('cannot accept payment');
+    });
+
+    it('should create payment intent when authenticated user owns booking', async () => {
+      vi.mocked(getEnv).mockReturnValue({
+        RAZORPAY_KEY_ID: 'test_rzp_key',
+        RAZORPAY_KEY_SECRET: 'test_rzp_secret',
+        STRIPE_PUBLISHABLE_KEY: 'test_stripe_key',
+        STRIPE_SECRET_KEY: 'test_stripe_secret',
+        ENABLE_ASYNC_CHECKOUT: true,
+        MOCK_PAYMENTS: true,
+      } as any);
+
+      const mockBooking = {
+        _id: 'b-123',
+        bookingId: 'MAD-2026-ABCDE',
+        userId: { toString: () => 'user-123' },
+        status: BookingStatus.AWAITING_PAYMENT,
+        totalAmount: 100,
+        save: vi.fn(),
+      };
+      vi.mocked(Booking.findOne).mockResolvedValue(mockBooking as any);
+      vi.mocked(Payment.create).mockResolvedValue({ _id: 'p-123' } as any);
+
+      const result = await PaymentService.createPaymentIntent('MAD-2026-ABCDE', 'razorpay', { userId: 'user-123' });
+
+      expect(result.gateway).toBe('razorpay');
+      expect(mockBooking.save).toHaveBeenCalled();
+      expect(Payment.create).toHaveBeenCalled();
+    });
+
+    it('should reject payment intent when authenticated user does not own booking', async () => {
+      vi.mocked(Booking.findOne).mockResolvedValue({
+        _id: 'b-123',
+        bookingId: 'MAD-2026-ABCDE',
+        userId: { toString: () => 'user-owner' },
+        status: BookingStatus.AWAITING_PAYMENT,
+        totalAmount: 100,
+      } as any);
+
+      await expect(PaymentService.createPaymentIntent('MAD-2026-ABCDE', 'razorpay', { userId: 'user-attacker' })).rejects.toThrow('You do not have access to this booking');
+      expect(Payment.create).not.toHaveBeenCalled();
+    });
+
+    it('should create payment intent when guest session owns booking', async () => {
+      vi.mocked(getEnv).mockReturnValue({
+        RAZORPAY_KEY_ID: 'test_rzp_key',
+        RAZORPAY_KEY_SECRET: 'test_rzp_secret',
+        STRIPE_PUBLISHABLE_KEY: 'test_stripe_key',
+        STRIPE_SECRET_KEY: 'test_stripe_secret',
+        ENABLE_ASYNC_CHECKOUT: true,
+        MOCK_PAYMENTS: true,
+      } as any);
+
+      const mockBooking = {
+        _id: 'b-123',
+        bookingId: 'MAD-2026-ABCDE',
+        sessionId: 'session-123',
+        status: BookingStatus.AWAITING_PAYMENT,
+        totalAmount: 100,
+        save: vi.fn(),
+      };
+      vi.mocked(Booking.findOne).mockResolvedValue(mockBooking as any);
+      vi.mocked(Payment.create).mockResolvedValue({ _id: 'p-123' } as any);
+
+      const result = await PaymentService.createPaymentIntent('MAD-2026-ABCDE', 'razorpay', { sessionId: 'session-123' });
+
+      expect(result.gateway).toBe('razorpay');
+      expect(mockBooking.save).toHaveBeenCalled();
+      expect(Payment.create).toHaveBeenCalled();
+    });
+
+    it('should reject payment intent when guest session does not own booking', async () => {
+      vi.mocked(Booking.findOne).mockResolvedValue({
+        _id: 'b-123',
+        bookingId: 'MAD-2026-ABCDE',
+        sessionId: 'session-owner',
+        status: BookingStatus.AWAITING_PAYMENT,
+        totalAmount: 100,
+      } as any);
+
+      await expect(PaymentService.createPaymentIntent('MAD-2026-ABCDE', 'razorpay', { sessionId: 'session-attacker' })).rejects.toThrow('You do not have access to this booking');
+      expect(Payment.create).not.toHaveBeenCalled();
+    });
+
+    it('should reject payment intent when ownership context is missing', async () => {
+      vi.mocked(Booking.findOne).mockResolvedValue({
+        _id: 'b-123',
+        bookingId: 'MAD-2026-ABCDE',
+        userId: { toString: () => 'user-owner' },
+        sessionId: 'session-owner',
+        status: BookingStatus.AWAITING_PAYMENT,
+        totalAmount: 100,
+      } as any);
+
+      await expect(PaymentService.createPaymentIntent('MAD-2026-ABCDE', 'razorpay')).rejects.toThrow('You do not have access to this booking');
+      expect(Payment.create).not.toHaveBeenCalled();
+    });
+
+    it('should enforce ownership before confirming free booking', async () => {
+      vi.mocked(Booking.findOne).mockResolvedValue({
+        _id: 'b-123',
+        bookingId: 'MAD-2026-ABCDE',
+        sessionId: 'session-owner',
+        status: BookingStatus.AWAITING_PAYMENT,
+        totalAmount: 0,
+      } as any);
+
+      await expect(PaymentService.createPaymentIntent('MAD-2026-ABCDE', 'razorpay', { sessionId: 'session-attacker' })).rejects.toThrow('You do not have access to this booking');
+      expect(Payment.create).not.toHaveBeenCalled();
+      expect(Booking.findOneAndUpdate).not.toHaveBeenCalled();
     });
   });
 

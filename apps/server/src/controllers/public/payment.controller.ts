@@ -14,7 +14,10 @@ export async function createPaymentIntent(req: Request, res: Response, next: Nex
     if (!bookingId || !['stripe', 'razorpay'].includes(gateway)) {
       throw AppError.badRequest('bookingId and gateway are required');
     }
-    const result = await PaymentService.createPaymentIntent(bookingId, gateway);
+    const result = await PaymentService.createPaymentIntent(bookingId, gateway, {
+      userId: req.user?.sub,
+      sessionId: req.session?.sessionId || req.header('x-session-id') || undefined,
+    });
     sendSuccess(res, result, 'Payment intent created');
   } catch (err) {
     next(err);
