@@ -1,6 +1,6 @@
 'use client';
 
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -49,10 +49,13 @@ interface CheckoutContentProps {
 
 export function CheckoutContent({ bookingId, isModal, onBack, onClose }: CheckoutContentProps) {
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   const [selectedGateway, setSelectedGateway] = useState<'stripe' | 'razorpay'>('razorpay');
   const [error, setError] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [redirectCountdown, setRedirectCountdown] = useState(5);
+  const [isRedirectPaused, setIsRedirectPaused] = useState(false);
 
   const {
     isLeaveModalOpen,
@@ -86,13 +89,35 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
   const booking = details?.booking;
   const event = asEvent((booking as Booking | undefined)?.eventId);
 
-  // Redirect if already confirmed
+  // Redirect with countdown if confirmed
   useEffect(() => {
-    if (booking && booking.status === 'confirmed') {
-      allowNavigation();
-      router.push(`/my-booking?ref=${booking.bookingId}`);
+    if (booking && booking.status === 'confirmed' && !isRedirectPaused) {
+      if (redirectCountdown <= 0) {
+        allowNavigation();
+        router.push(`/my-booking?ref=${booking.bookingId}`);
+        if (isModal) onClose();
+        return;
+      }
+      const timer = setTimeout(() => {
+        setRedirectCountdown((prev) => prev - 1);
+      }, 1000);
+      return () => clearTimeout(timer);
     }
-  }, [booking, router, allowNavigation]);
+  }, [booking, redirectCountdown, isRedirectPaused, router, allowNavigation, isModal, onClose]);
+
+  const handleViewTickets = () => {
+    setIsRedirectPaused(true);
+    allowNavigation();
+    router.push(`/my-booking?ref=${booking?.bookingId}`);
+    if (isModal) onClose();
+  };
+
+  const handleContinueBrowsing = () => {
+    setIsRedirectPaused(true);
+    allowNavigation();
+    router.push('/');
+    if (isModal) onClose();
+  };
 
   const countdown = useCountdown(booking?.logicalExpiresAt || booking?.expiresAt);
   const isExpired = countdown.isExpired;
@@ -123,8 +148,9 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
     mutationFn: (gateway: 'stripe' | 'razorpay') => publicCreatePaymentIntent(bookingId, gateway),
     onSuccess: async (res: any) => {
       if (res.isFree) {
-        allowNavigation();
-        router.push(`/my-booking?ref=${booking?.bookingId}`);
+        queryClient.invalidateQueries({
+          queryKey: QUERY_KEYS.public.bookings.checkout(bookingId)
+        });
         return;
       }
 
@@ -203,8 +229,10 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
   const verifyPaymentMutation = useMutation({
     mutationFn: (payload: Record<string, unknown>) => publicVerifyPayment(bookingId, payload),
     onSuccess: () => {
-      allowNavigation();
-      router.push(`/my-booking?ref=${booking?.bookingId}`);
+      queryClient.invalidateQueries({
+        queryKey: QUERY_KEYS.public.bookings.checkout(bookingId)
+      });
+      setIsProcessing(false);
     },
     onError: (err) => {
       setError(extractApiError(err).message);
@@ -215,6 +243,69 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
   const handleFormSubmit = (detailsPayload: CheckoutDetailsInput) => {
     saveDetailsMutation.mutate(detailsPayload);
   };
+
+  if (booking && booking.status === 'confirmed') {
+    return (
+      <div className={isModal ? "relative text-white p-6 text-center space-y-6" : "pt-24 pb-24 min-h-screen bg-[#0d111d] text-white relative overflow-x-hidden flex flex-col items-center justify-center w-full px-4"}>
+        {!isModal && (
+          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-accent-purple/5 rounded-full blur-[150px] pointer-events-none" />
+        )}
+        
+        <div className="max-w-md w-full glass rounded-3xl border border-white/10 p-8 text-center space-y-6 shadow-glow relative z-10">
+          {/* Glowing Checkmark */}
+          <div className="flex justify-center">
+            <div className="w-16 h-16 rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 text-3xl shadow-[0_0_20px_rgba(16,185,129,0.2)] animate-pulse">
+              ✓
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <h2 className="text-2xl font-black text-white tracking-wide">Booking Confirmed!</h2>
+            {event?.title && (
+              <p className="text-accent-cyan font-bold text-sm">{event.title}</p>
+            )}
+            <p className="text-text-secondary text-xs">
+              Thank you for your purchase. Your order has been processed successfully.
+            </p>
+          </div>
+
+          {/* Reference Card */}
+          <div className="bg-background/50 border border-white/5 rounded-2xl p-4 space-y-1.5 font-mono">
+            <div className="text-[10px] text-text-secondary font-medium tracking-wider uppercase font-sans">Booking Reference ID</div>
+            <div className="text-lg font-black text-white tracking-wider select-all">{booking.bookingId}</div>
+          </div>
+
+          {/* Emailed Confirmation */}
+          <p className="text-xs text-text-muted leading-relaxed">
+            We have sent your confirmation email and tickets to <span className="text-white font-semibold">{booking.guestEmail || 'your email'}</span>.
+          </p>
+
+          {/* Auto Redirect Banner */}
+          {!isRedirectPaused && (
+            <p className="text-[11px] text-accent-purple-light font-medium animate-pulse">
+              Auto-redirecting to your Ticket Wallet in <span className="font-mono font-bold text-white">{redirectCountdown}s</span>...
+            </p>
+          )}
+
+          {/* Action Buttons */}
+          <div className="pt-2 flex flex-col gap-3">
+            <button
+              onClick={handleViewTickets}
+              className="w-full py-3 btn-gradient text-white font-black text-sm rounded-xl shadow-glow transition-transform active:scale-[0.98] hover:scale-[1.01]"
+            >
+              View Tickets
+            </button>
+            <button
+              onClick={handleContinueBrowsing}
+              className="w-full py-3 border border-white/10 hover:bg-white/5 text-white/95 font-bold text-sm rounded-xl transition-all active:scale-[0.98]"
+            >
+              Continue Browsing
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (
