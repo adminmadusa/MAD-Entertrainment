@@ -28,6 +28,35 @@ vi.mock('../../models/refresh-token.schema', () => ({
 vi.mock('../../models/user.schema', () => ({
   UserModel: {
     findById: vi.fn(),
+    findOne: vi.fn(),
+    create: vi.fn(),
+    exists: vi.fn(),
+  },
+}));
+
+vi.mock('../../models/booking.schema', () => ({
+  Booking: {
+    updateMany: vi.fn(() => Promise.resolve({ modifiedCount: 0 })),
+  },
+}));
+
+const mockVerifyIdToken = vi.fn().mockResolvedValue({
+  getPayload: () => ({
+    email: 'google-user@example.com',
+    name: 'Google User',
+    sub: 'google-id-12345',
+    picture: 'https://lh3.googleusercontent.com/a/photo',
+    given_name: 'Google',
+    family_name: 'User',
+    email_verified: true,
+  }),
+});
+
+vi.mock('google-auth-library', () => ({
+  OAuth2Client: class {
+    verifyIdToken() {
+      return mockVerifyIdToken();
+    }
   },
 }));
 
@@ -190,5 +219,142 @@ describe('AuthService - refreshSession', () => {
     await expect(AuthService.refreshSession('stale-revoked-token')).rejects.toThrow('Session compromised');
 
     expect(RefreshTokenModel.updateMany).toHaveBeenCalledWith({ userId: 'user-id-999' }, { isRevoked: true });
+  });
+});
+
+describe('AuthService - verifyGoogleToken', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('should match user by googleId directly and log in successfully', async () => {
+    const mockUser = {
+      _id: '507f1f77bcf86cd799439011',
+      email: 'google-user@example.com',
+      googleId: 'google-id-12345',
+      isActive: true,
+      save: vi.fn(),
+    };
+
+    vi.mocked(UserModel.findOne).mockResolvedValueOnce(mockUser as any); // Match by googleId first
+
+    const result = await AuthService.verifyGoogleToken('mock-google-token');
+
+    expect(result).toBeDefined();
+    expect(result.user._id).toBe('507f1f77bcf86cd799439011');
+    expect(UserModel.findOne).toHaveBeenCalledWith({ googleId: 'google-id-12345' });
+    expect(UserModel.findOne).toHaveBeenCalledTimes(1); // Should not fall back to email query
+  });
+
+  it('should match user by googleId and update email if it changed with no collision', async () => {
+    const mockUser = {
+      _id: '507f1f77bcf86cd799439011',
+      email: 'old-email@example.com', // changed from google-user@example.com
+      googleId: 'google-id-12345',
+      isActive: true,
+      save: vi.fn(),
+    };
+
+    vi.mocked(UserModel.findOne)
+      .mockResolvedValueOnce(mockUser as any) // Match by googleId first
+      .mockResolvedValueOnce(null); // No collision on new email query
+
+    const result = await AuthService.verifyGoogleToken('mock-google-token');
+
+    expect(result).toBeDefined();
+    expect(mockUser.email).toBe('google-user@example.com'); // Assert updated email
+    expect(UserModel.findOne).toHaveBeenCalledWith({ googleId: 'google-id-12345' });
+    expect(UserModel.findOne).toHaveBeenCalledWith({ email: 'google-user@example.com' });
+    expect(mockUser.save).toHaveBeenCalled();
+  });
+
+  it('should match user by googleId but skip email update if there is a collision with another user', async () => {
+    const mockUser = {
+      _id: '507f1f77bcf86cd799439011',
+      email: 'old-email@example.com',
+      googleId: 'google-id-12345',
+      isActive: true,
+      save: vi.fn(),
+    };
+
+    const collisionUser = {
+      _id: '507f1f77bcf86cd799439012',
+      email: 'google-user@example.com',
+    };
+
+    vi.mocked(UserModel.findOne)
+      .mockResolvedValueOnce(mockUser as any) // Match by googleId first
+      .mockResolvedValueOnce(collisionUser as any); // Email occupied by another account
+
+    const result = await AuthService.verifyGoogleToken('mock-google-token');
+
+    expect(result).toBeDefined();
+    expect(mockUser.email).toBe('old-email@example.com'); // Bypassed update, kept old email
+    expect(UserModel.findOne).toHaveBeenCalledWith({ googleId: 'google-id-12345' });
+    expect(UserModel.findOne).toHaveBeenCalledWith({ email: 'google-user@example.com' });
+  });
+
+  it('should match user by email and link googleId securely if not matched by googleId', async () => {
+    const mockUser = {
+      _id: '507f1f77bcf86cd799439013',
+      email: 'google-user@example.com',
+      isActive: true,
+      save: vi.fn(),
+    };
+
+    vi.mocked(UserModel.findOne)
+      .mockResolvedValueOnce(null) // googleId lookup fails
+      .mockResolvedValueOnce(mockUser as any); // email lookup succeeds
+
+    const result = await AuthService.verifyGoogleToken('mock-google-token');
+
+    expect(result).toBeDefined();
+    expect(result.user.googleId).toBe('google-id-12345'); // Securely linked
+    expect(UserModel.findOne).toHaveBeenCalledWith({ googleId: 'google-id-12345' });
+    expect(UserModel.findOne).toHaveBeenCalledWith({ email: 'google-user@example.com' });
+    expect(mockUser.save).toHaveBeenCalled();
+  });
+
+  it('should register a completely new user if neither googleId nor email matches', async () => {
+    const mockCreatedUser = {
+      _id: '507f1f77bcf86cd799439014',
+      email: 'google-user@example.com',
+      googleId: 'google-id-12345',
+      isActive: true,
+      save: vi.fn(),
+    };
+
+    vi.mocked(UserModel.findOne)
+      .mockResolvedValueOnce(null) // googleId fails
+      .mockResolvedValueOnce(null); // email fails
+
+    vi.mocked(UserModel.create).mockResolvedValueOnce(mockCreatedUser as any);
+
+    const result = await AuthService.verifyGoogleToken('mock-google-token');
+
+    expect(result).toBeDefined();
+    expect(result.user._id).toBe('507f1f77bcf86cd799439014');
+    expect(UserModel.create).toHaveBeenCalledWith({
+      email: 'google-user@example.com',
+      googleId: 'google-id-12345',
+      name: 'Google User',
+      firstName: 'Google',
+      lastName: 'User',
+      picture: 'https://lh3.googleusercontent.com/a/photo',
+      isActive: true,
+    });
+  });
+
+  it('should throw error if matched account has been deactivated', async () => {
+    const mockUser = {
+      _id: '507f1f77bcf86cd799439015',
+      email: 'google-user@example.com',
+      googleId: 'google-id-12345',
+      isActive: false,
+    };
+
+    vi.mocked(UserModel.findOne).mockResolvedValueOnce(mockUser as any);
+
+    await expect(AuthService.verifyGoogleToken('mock-google-token')).rejects.toThrow('Your account has been deactivated');
   });
 });

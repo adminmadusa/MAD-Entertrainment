@@ -1,7 +1,8 @@
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import { AuthService } from '../../services/public/auth.service';
 import { UserModel } from '../../models/user.schema';
 import { Booking } from '../../models/booking.schema';
+import { PublicBookingService } from '../../services/public/booking.service';
 import { getEnv } from '../../config/env';
 import { AppError } from '../../middleware/error.middleware';
 import { logger } from '../../utils/logger';
@@ -189,20 +190,28 @@ export class AuthController {
   }
 
   /**
-   * Fetches historical bookings associated with the logged-in user.
+   * Fetches historical bookings associated with the logged-in user (Deprecated in favor of /bookings/me).
    */
-  static async getMyBookings(req: Request, res: Response): Promise<void> {
-    const userId = req.user?.sub;
-    if (!userId) {
-      throw AppError.unauthorized('Authentication required');
+  static async getMyBookings(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const userId = req.user?.sub;
+      if (!userId) {
+        throw AppError.unauthorized('Authentication required');
+      }
+
+      const { bookings } = await PublicBookingService.getMyBookings(userId);
+
+      // Add standard deprecation headers
+      res.setHeader('Deprecation', 'true');
+      res.setHeader('Warning', '199 - "This endpoint is deprecated. Use /bookings/me instead."');
+
+      res.status(200).json({
+        success: true,
+        data: bookings,
+      });
+    } catch (err) {
+      next(err);
     }
-
-    const bookings = await Booking.find({ userId: new Types.ObjectId(userId) }).sort({ createdAt: -1 });
-
-    res.status(200).json({
-      success: true,
-      data: bookings,
-    });
   }
 }
 

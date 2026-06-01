@@ -198,36 +198,59 @@ export class AuthService {
     const { email, name, sub: googleId, picture, given_name, family_name } = payload;
     const userEmail = email.trim().toLowerCase();
 
-    // Find or create User
-    let user = await UserModel.findOne({
-      $or: [{ googleId }, { email: userEmail }],
-    });
+    // Find or create User sequentially to prevent collision and E11000 errors
+    let user = await UserModel.findOne({ googleId });
 
-    if (!user) {
-      user = await UserModel.create({
-        email: userEmail,
-        googleId,
-        name,
-        firstName: given_name,
-        lastName: family_name,
-        picture,
-        isActive: true,
-      });
-      logger.info({ userId: user._id, email: userEmail }, 'New Google OAuth user registered.');
-    } else {
+    if (user) {
       if (!user.isActive) {
         throw AppError.forbidden('Your account has been deactivated.');
       }
-      // Keep profile info updated from Google login
-      let modified = false;
-      if (!user.googleId) { user.googleId = googleId; modified = true; }
-      if (!user.picture) { user.picture = picture; modified = true; }
-      if (!user.name && name) { user.name = name; modified = true; }
-      if (given_name && user.firstName !== given_name) { user.firstName = given_name; modified = true; }
-      if (family_name && user.lastName !== family_name) { user.lastName = family_name; modified = true; }
-      if (modified) {
-        await user.save();
+      // If email has changed, check if the new email is already occupied by a different account
+      if (user.email !== userEmail) {
+        const emailCollision = await UserModel.findOne({ email: userEmail });
+        if (emailCollision) {
+          logger.warn(
+            { userId: user._id, currentEmail: user.email, googleEmail: userEmail, collisionUserId: emailCollision._id },
+            'Google email update skipped due to collision with another existing account.'
+          );
+        } else {
+          user.email = userEmail;
+          logger.info({ userId: user._id, oldEmail: user.email, newEmail: userEmail }, 'User email updated to Google verified email.');
+        }
       }
+    } else {
+      // Find exclusively by verified email second
+      user = await UserModel.findOne({ email: userEmail });
+      if (user) {
+        if (!user.isActive) {
+          throw AppError.forbidden('Your account has been deactivated.');
+        }
+        // Link Google ID to existing account securely
+        user.googleId = googleId;
+        logger.info({ userId: user._id, email: userEmail }, 'Linked Google login to existing email account.');
+      } else {
+        // Create a completely new user
+        user = await UserModel.create({
+          email: userEmail,
+          googleId,
+          name,
+          firstName: given_name,
+          lastName: family_name,
+          picture,
+          isActive: true,
+        });
+        logger.info({ userId: user._id, email: userEmail }, 'New Google OAuth user registered.');
+      }
+    }
+
+    // Keep profile info updated from Google login
+    let profileModified = false;
+    if (!user.picture && picture) { user.picture = picture; profileModified = true; }
+    if (!user.name && name) { user.name = name; profileModified = true; }
+    if (given_name && user.firstName !== given_name) { user.firstName = given_name; profileModified = true; }
+    if (family_name && user.lastName !== family_name) { user.lastName = family_name; profileModified = true; }
+    if (profileModified) {
+      await user.save();
     }
 
     user.lastLogin = new Date();

@@ -1317,31 +1317,7 @@ export class PaymentService {
 
     await this.redeemCouponForConfirmedBooking(booking, _payment);
 
-    // 4b. Post-Checkout Account Creation
-    if (!booking.userId && booking.guestEmail) {
-      try {
-        const emailLower = booking.guestEmail.toLowerCase().trim();
-        let user = await UserModel.findOne({ email: emailLower });
-        if (!user) {
-          user = await UserModel.create({
-            email: emailLower,
-            firstName: booking.guestName?.split(' ')[0] || 'Guest',
-            lastName: booking.guestName?.split(' ').slice(1).join(' ') || '',
-            name: booking.guestName,
-            mobileNumber: booking.guestPhone,
-            isActive: true,
-          });
-          logger.info({ userId: user._id, email: emailLower }, 'New user automatically created upon successful checkout');
-        } else {
-          logger.info({ userId: user._id, email: emailLower }, 'Existing user matched upon successful checkout');
-        }
-        
-        booking.userId = user._id as any;
-        await Booking.updateOne({ _id: booking._id }, { $set: { userId: user._id } });
-      } catch (err) {
-        logger.error({ err, bookingId: booking._id }, 'Failed to auto-create or match user during checkout confirmation');
-      }
-    }
+
 
     // 5. Update Reservation status to CONFIRMED
     await ReservationService.transitionForBooking(booking._id, ReservationStatus.CONFIRMED, {
