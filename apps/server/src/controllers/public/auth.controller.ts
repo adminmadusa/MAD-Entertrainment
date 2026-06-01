@@ -62,6 +62,7 @@ export class AuthController {
       httpOnly: true,
       secure: isProd,
       sameSite: isProd ? 'none' : 'lax', // Allows cross-domain cookies between Vercel and Render in production
+      domain: isProd ? '.esparex.in' : undefined,
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days TTL
     });
 
@@ -96,6 +97,7 @@ export class AuthController {
       httpOnly: true,
       secure: isProd,
       sameSite: isProd ? 'none' : 'lax',
+      domain: isProd ? '.esparex.in' : undefined,
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days TTL
     });
 
@@ -130,6 +132,7 @@ export class AuthController {
       httpOnly: true,
       secure: isProd,
       sameSite: isProd ? 'none' : 'lax',
+      domain: isProd ? '.esparex.in' : undefined,
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days TTL
     });
 
@@ -155,6 +158,7 @@ export class AuthController {
       httpOnly: true,
       secure: isProd,
       sameSite: isProd ? 'none' : 'lax',
+      domain: isProd ? '.esparex.in' : undefined,
     });
 
     res.status(200).json({
