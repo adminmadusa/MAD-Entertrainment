@@ -30,10 +30,14 @@ export function EntryPassGrid({ tickets }: EntryPassGridProps) {
             </div>
           </div>
 
-          {ticket.qrCodeImage ? (
+          {ticket.ticketId ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
-              src={ticket.qrCodeImage}
+              src={
+                ticket.qrCodeImage && !ticket.qrCodeImage.includes('api.qrserver.com')
+                  ? ticket.qrCodeImage
+                  : `/api/public/tickets/${ticket.ticketId}/qr`
+              }
               alt="QR Ticket Code"
               className="w-44 h-44 bg-white p-2 rounded-xl"
             />
