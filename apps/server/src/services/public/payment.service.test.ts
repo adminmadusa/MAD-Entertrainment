@@ -1109,4 +1109,55 @@ describe('Payment Service', () => {
       }));
     });
   });
+
+  describe('Guest Booking Ownership Protection', () => {
+    beforeEach(() => {
+      vi.clearAllMocks();
+    });
+
+    it('should confirm guest booking successfully while keeping userId as undefined (no silent auto-creation)', async () => {
+      const mockBooking = {
+        _id: 'guest-booking-123',
+        bookingId: 'MAD-2026-GUEST',
+        eventId: 'e-123',
+        status: BookingStatus.AWAITING_PAYMENT,
+        tickets: [{ tier: 'general', quantity: 2 }],
+        guestEmail: 'guest-user@example.com',
+        guestName: 'Guest User',
+        guestPhone: '9876543210',
+        sessionId: 'guest-session-uuid-123',
+        userId: undefined, // Pure Guest Booking
+        bookingVersion: 1,
+        save: vi.fn(),
+      };
+
+      const mockPayment = {
+        _id: 'p-guest-123',
+        gatewayOrderId: 'order_guest_123',
+        gatewayPaymentId: 'pay_guest_123',
+        status: PaymentStatus.COMPLETED,
+        amount: 300,
+        currency: 'INR',
+        save: vi.fn(),
+      };
+
+      vi.mocked(Payment.findOne).mockResolvedValue(mockPayment as any);
+      vi.mocked(Booking.findById).mockResolvedValue(mockBooking as any);
+      vi.mocked(Booking.findOneAndUpdate).mockResolvedValue(mockBooking as any);
+      vi.mocked(Event.findOneAndUpdate).mockResolvedValue({} as any);
+      vi.mocked(Event.findById).mockResolvedValue({
+        _id: 'e-123',
+        title: 'MAD Event',
+        ticketTiers: [{ tier: 'general', soldCount: 10, totalCapacity: 100, name: 'General' }],
+      } as any);
+
+      // Confirm guest booking
+      const result = await PaymentService.confirmFromWebhook('order_guest_123', 'pay_guest_123', 'payment.captured', 'evt_guest_123');
+
+      expect(result.status).toBe('confirmed');
+      expect(mockBooking.status).toBe(BookingStatus.CONFIRMED);
+      expect(mockBooking.userId).toBeUndefined(); // Assert userId remains undefined (guest-owned, sessionId-based)
+      expect(Booking.updateOne).not.toHaveBeenCalled(); // No silent updates or user assignments
+    });
+  });
 });
