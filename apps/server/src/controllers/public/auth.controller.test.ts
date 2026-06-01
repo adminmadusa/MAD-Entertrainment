@@ -1,12 +1,28 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AuthController } from './auth.controller';
 import { UserModel } from '../../models/user.schema';
+import { AuthService } from '../../services/public/auth.service';
 import { AppError } from '../../middleware/error.middleware';
 
 vi.mock('../../models/user.schema', () => ({
   UserModel: {
     findById: vi.fn(),
   },
+}));
+
+vi.mock('../../services/public/auth.service', () => ({
+  AuthService: {
+    verifyMagicLinkOrOTP: vi.fn(),
+    verifyGoogleToken: vi.fn(),
+  },
+}));
+
+vi.mock('../../config/env', () => ({
+  getEnv: vi.fn(() => ({
+    NODE_ENV: 'test',
+    JWT_SECRET: 'test_jwt_secret_with_32_characters_long_minimum',
+    ALLOWED_ORIGINS: 'http://localhost:3000',
+  })),
 }));
 
 vi.mock('../../utils/logger', () => ({
@@ -28,6 +44,7 @@ const mockResponse = () => {
   const res: any = {};
   res.status = vi.fn().mockReturnValue(res);
   res.json = vi.fn().mockReturnValue(res);
+  res.cookie = vi.fn().mockReturnValue(res);
   return res;
 };
 
@@ -70,6 +87,7 @@ describe('Public Auth Controller - Profile Management Tests', () => {
           phone: '+919876543210', // Response alias only
           picture: 'https://lh3.googleusercontent.com/a/photo',
           isGuest: false,
+          onboardingRequired: false,
         },
       });
     });
@@ -101,6 +119,7 @@ describe('Public Auth Controller - Profile Management Tests', () => {
           phone: '',
           picture: undefined,
           isGuest: false,
+          onboardingRequired: true,
         },
       });
     });
@@ -223,4 +242,152 @@ describe('Public Auth Controller - Profile Management Tests', () => {
       );
     });
   });
+
+  describe('verifyMagicLinkOrOTP and loginWithGoogle - onboardingRequired Cases', () => {
+    it('returns onboardingRequired: true when firstName is empty (Case 1)', async () => {
+      const mockResult = {
+        user: {
+          _id: 'user-123',
+          email: 'buyer@gmail.com',
+          firstName: '',
+          lastName: 'Doe',
+        },
+        accessToken: 'mock-access-token',
+        refreshToken: 'mock-refresh-token',
+      };
+
+      vi.mocked(AuthService.verifyMagicLinkOrOTP).mockResolvedValue(mockResult as any);
+
+      const req = mockRequest({ body: { otp: '123456', email: 'buyer@gmail.com' } });
+      const res = mockResponse();
+
+      await AuthController.verifyMagicLinkOrOTP(req, res);
+
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: true,
+          data: expect.objectContaining({
+            onboardingRequired: true,
+          }),
+        })
+      );
+    });
+
+    it('returns onboardingRequired: true when firstName is whitespace-only (Case 2)', async () => {
+      const mockResult = {
+        user: {
+          _id: 'user-123',
+          email: 'buyer@gmail.com',
+          firstName: '   ',
+          lastName: 'Doe',
+        },
+        accessToken: 'mock-access-token',
+        refreshToken: 'mock-refresh-token',
+      };
+
+      vi.mocked(AuthService.verifyMagicLinkOrOTP).mockResolvedValue(mockResult as any);
+
+      const req = mockRequest({ body: { otp: '123456', email: 'buyer@gmail.com' } });
+      const res = mockResponse();
+
+      await AuthController.verifyMagicLinkOrOTP(req, res);
+
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: true,
+          data: expect.objectContaining({
+            onboardingRequired: true,
+          }),
+        })
+      );
+    });
+
+    it('returns onboardingRequired: true when firstName is null/undefined (Case 3)', async () => {
+      const mockResult = {
+        user: {
+          _id: 'user-123',
+          email: 'buyer@gmail.com',
+          firstName: null,
+          lastName: 'Doe',
+        },
+        accessToken: 'mock-access-token',
+        refreshToken: 'mock-refresh-token',
+      };
+
+      vi.mocked(AuthService.verifyMagicLinkOrOTP).mockResolvedValue(mockResult as any);
+
+      const req = mockRequest({ body: { otp: '123456', email: 'buyer@gmail.com' } });
+      const res = mockResponse();
+
+      await AuthController.verifyMagicLinkOrOTP(req, res);
+
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: true,
+          data: expect.objectContaining({
+            onboardingRequired: true,
+          }),
+        })
+      );
+    });
+
+    it('returns onboardingRequired: false when firstName and lastName are present (Case 4)', async () => {
+      const mockResult = {
+        user: {
+          _id: 'user-123',
+          email: 'buyer@gmail.com',
+          firstName: 'John',
+          lastName: 'Doe',
+        },
+        accessToken: 'mock-access-token',
+        refreshToken: 'mock-refresh-token',
+      };
+
+      vi.mocked(AuthService.verifyMagicLinkOrOTP).mockResolvedValue(mockResult as any);
+
+      const req = mockRequest({ body: { otp: '123456', email: 'buyer@gmail.com' } });
+      const res = mockResponse();
+
+      await AuthController.verifyMagicLinkOrOTP(req, res);
+
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: true,
+          data: expect.objectContaining({
+            onboardingRequired: false,
+          }),
+        })
+      );
+    });
+
+    it('returns onboardingRequired: false for Google users when profile is complete', async () => {
+      const mockResult = {
+        user: {
+          _id: 'user-123',
+          email: 'google-user@gmail.com',
+          firstName: 'Google',
+          lastName: 'User',
+        },
+        accessToken: 'mock-access-token',
+        refreshToken: 'mock-refresh-token',
+      };
+
+      vi.mocked(AuthService.verifyGoogleToken).mockResolvedValue(mockResult as any);
+
+      const req = mockRequest({ body: { idToken: 'google-token-123' } });
+      const res = mockResponse();
+
+      await AuthController.loginWithGoogle(req, res);
+
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: true,
+          data: expect.objectContaining({
+            onboardingRequired: false,
+          }),
+        })
+      );
+    });
+  });
 });
+
