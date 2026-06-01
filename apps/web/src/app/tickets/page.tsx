@@ -85,8 +85,33 @@ function TicketRetrievalContent() {
   const [bookingRefInput, setBookingRefInput] = useState(targetRef || '');
   const [queryRef, setQueryRef] = useState(targetRef || '');
   const [step, setStep] = useState<'email' | 'portal'>('email');
+  const [showLoginForGuest, setShowLoginForGuest] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [infoMsg, setInfoMsg] = useState('');
+
+  // Query Bookings (only enabled when authenticated)
+  const { data: bookingsData, isLoading: isBookingsLoading } = useQuery({
+    queryKey: QUERY_KEYS.public.bookings.mine(),
+    queryFn: publicGetMyBookings,
+    enabled: isAuthenticated,
+    retry: false,
+  });
+
+  const bookings = bookingsData?.bookings || [];
+
+  useEffect(() => {
+    if (isAuthenticated && !isBookingsLoading) {
+      const justLoggedIn = sessionStorage.getItem('just_logged_in');
+      if (justLoggedIn) {
+        sessionStorage.removeItem('just_logged_in');
+        if (bookings.length > 0) {
+          setInfoMsg(`We found ${bookings.length} booking${bookings.length === 1 ? '' : 's'} linked to your email and added them to your wallet!`);
+          // Clear message after 6 seconds
+          setTimeout(() => setInfoMsg(''), 6000);
+        }
+      }
+    }
+  }, [isAuthenticated, isBookingsLoading, bookings.length]);
 
   // Resend / Download States
   const [resendingId, setResendingId] = useState<string | null>(null);
@@ -117,14 +142,6 @@ function TicketRetrievalContent() {
       setStep('portal');
     }
   }, [isAuthenticated, isAuthLoading]);
-
-  // Query Bookings (only enabled when authenticated)
-  const { data: bookingsData, isLoading: isBookingsLoading } = useQuery({
-    queryKey: QUERY_KEYS.public.bookings.mine(),
-    queryFn: publicGetMyBookings,
-    enabled: isAuthenticated,
-    retry: false,
-  });
 
   // Query a single booking by reference for guest or authenticated recovery.
   const {
@@ -228,14 +245,13 @@ function TicketRetrievalContent() {
 
 
 
-  const bookings = bookingsData?.bookings || [];
   const tickets = bookingsData?.tickets || [];
   const singleBooking = singleBookingData?.booking;
   const singleTickets = singleBookingData?.tickets || [];
   const singleLookupApiError = singleLookupError ? extractApiError(singleLookupError) : null;
   const isOwnershipVerificationRequired = singleLookupApiError?.code === 'BOOKING_VERIFICATION_REQUIRED';
-  const shouldShowPortal = step === 'portal' || !!singleBooking;
-  const shouldShowAuthForm = !shouldShowPortal && !isSingleLookupLoading;
+  const shouldShowPortal = (step === 'portal' || !!singleBooking) && !showLoginForGuest;
+  const shouldShowAuthForm = (!shouldShowPortal && !isSingleLookupLoading) || showLoginForGuest;
   const shouldShowReferenceForm = !singleBooking;
 
   const sortedBookings = [...bookings].sort((a, b) => {
@@ -323,8 +339,20 @@ function TicketRetrievalContent() {
 
         {/* SCREEN 1 & 2: Reusable Shared AuthForm Gate */}
         {shouldShowAuthForm && (
-          <div className="max-w-md mx-auto glass-strong rounded-3xl border border-border-subtle p-8 shadow-2xl">
-            <AuthForm mode="wallet" onSuccess={() => setStep('portal')} />
+          <div className="max-w-md mx-auto glass-strong rounded-3xl border border-border-subtle p-8 shadow-2xl animate-in fade-in zoom-in-95 duration-300">
+            <AuthForm mode="wallet" onSuccess={() => { 
+              sessionStorage.setItem('just_logged_in', 'true');
+              setStep('portal'); 
+              setShowLoginForGuest(false); 
+            }} />
+            {showLoginForGuest && (
+              <button 
+                onClick={() => setShowLoginForGuest(false)} 
+                className="mt-6 w-full text-xs text-text-muted hover:text-white transition-colors flex items-center justify-center gap-2"
+              >
+                <span>←</span> Cancel and return to ticket
+              </button>
+            )}
           </div>
         )}
 
@@ -366,6 +394,26 @@ function TicketRetrievalContent() {
 
                     {singleBooking.status === BookingStatus.AWAITING_PAYMENT && (
                       <PaymentRecoveryBanner booking={singleBooking} />
+                    )}
+
+                    {!isAuthenticated && singleBooking.status === BookingStatus.CONFIRMED && (
+                      <div className="bg-accent-purple/10 border border-accent-purple/30 rounded-2xl p-5 flex flex-col sm:flex-row items-center justify-between gap-4 mt-2 mb-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
+                        <div className="flex items-start gap-4">
+                          <div className="p-2.5 bg-accent-purple/20 rounded-xl shrink-0">
+                            <span className="text-xl" role="img" aria-label="alert">🔒</span>
+                          </div>
+                          <div>
+                            <h4 className="text-white font-bold text-sm tracking-wide">Don't lose your ticket!</h4>
+                            <p className="text-text-secondary text-xs mt-1 leading-relaxed max-w-[280px]">Log in with the same email address to save this booking permanently in your wallet.</p>
+                          </div>
+                        </div>
+                        <button 
+                          onClick={() => setShowLoginForGuest(true)} 
+                          className="px-5 py-2.5 btn-gradient text-white text-xs font-bold rounded-xl shrink-0 w-full sm:w-auto shadow-glow-sm hover:shadow-glow transition-all"
+                        >
+                          Log In Now
+                        </button>
+                      </div>
                     )}
 
                     {singleBooking.status === BookingStatus.CONFIRMED ? (
@@ -451,9 +499,13 @@ function TicketRetrievalContent() {
                         We couldn't find the booking <span className="text-white font-semibold">{queryRef}</span> associated with <span className="text-white font-semibold">{user?.email}</span>. Did you use a different email address at checkout?
                       </>
                     ) : (
-                      <>
-                        We couldn't find any confirmed event bookings associated with the email <span className="text-white font-semibold">{user?.email}</span>.
-                      </>
+                      <span className="flex flex-col gap-2">
+                        <span>We couldn't find any confirmed event bookings associated with the email <span className="text-white font-semibold">{user?.email}</span>.</span>
+                        <span className="text-accent-purple-light text-xs bg-accent-purple/10 border border-accent-purple/20 px-4 py-3 rounded-lg mt-2 block">
+                          <strong className="text-white">Did you checkout as a guest?</strong><br/>
+                          Log in using the exact same email address you used at checkout to automatically recover your tickets.
+                        </span>
+                      </span>
                     )}
                   </p>
                   <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-4">
