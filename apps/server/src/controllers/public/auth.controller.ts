@@ -66,6 +66,10 @@ export class AuthController {
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days TTL
     });
 
+    const hasFirstName = !!result.user.firstName?.trim();
+    const hasLastName = !!result.user.lastName?.trim();
+    const onboardingRequired = !hasFirstName || !hasLastName;
+
     res.status(200).json({
       success: true,
       data: {
@@ -76,6 +80,7 @@ export class AuthController {
           picture: result.user.picture,
         },
         token: result.accessToken,
+        onboardingRequired,
       },
     });
   }
@@ -101,6 +106,10 @@ export class AuthController {
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days TTL
     });
 
+    const hasFirstName = !!result.user.firstName?.trim();
+    const hasLastName = !!result.user.lastName?.trim();
+    const onboardingRequired = !hasFirstName || !hasLastName;
+
     res.status(200).json({
       success: true,
       data: {
@@ -111,6 +120,7 @@ export class AuthController {
           picture: result.user.picture,
         },
         token: result.accessToken,
+        onboardingRequired,
       },
     });
   }
@@ -181,6 +191,10 @@ export class AuthController {
       throw AppError.unauthorized('User is deactivated or does not exist');
     }
 
+    const hasFirstName = !!user.firstName?.trim();
+    const hasLastName = !!user.lastName?.trim();
+    const onboardingRequired = !hasFirstName || !hasLastName;
+
     res.status(200).json({
       success: true,
       data: {
@@ -193,6 +207,7 @@ export class AuthController {
         phone: user.mobileNumber ?? '', // Alias response-only
         picture: user.picture,
         isGuest: false,
+        onboardingRequired,
       },
     });
   }
