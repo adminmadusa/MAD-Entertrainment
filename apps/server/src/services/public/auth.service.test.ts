@@ -357,4 +357,34 @@ describe('AuthService - verifyGoogleToken', () => {
 
     await expect(AuthService.verifyGoogleToken('mock-google-token')).rejects.toThrow('Your account has been deactivated');
   });
+
+  it('should recover gracefully and return existing user if a concurrent Google registration race causes E11000', async () => {
+    const mockUser = {
+      _id: '507f1f77bcf86cd799439014',
+      email: 'google-user@example.com',
+      googleId: 'google-id-12345',
+      isActive: true,
+      save: vi.fn(),
+    };
+
+    // Neither googleId nor email matches initially
+    vi.mocked(UserModel.findOne)
+      .mockResolvedValueOnce(null) // googleId lookup
+      .mockResolvedValueOnce(null); // email lookup
+
+    // UserModel.create throws E11000 duplicate key error
+    const duplicateError = new Error('E11000 duplicate key error');
+    (duplicateError as any).code = 11000;
+    vi.mocked(UserModel.create).mockRejectedValueOnce(duplicateError);
+
+    // Fallback findOne query successfully resolves the concurrently created user
+    vi.mocked(UserModel.findOne).mockResolvedValueOnce(mockUser as any);
+
+    const result = await AuthService.verifyGoogleToken('mock-google-token');
+
+    expect(result).toBeDefined();
+    expect(result.user._id).toBe('507f1f77bcf86cd799439014');
+    expect(UserModel.create).toHaveBeenCalled();
+    expect(UserModel.findOne).toHaveBeenCalledTimes(3); // googleId lookup, email lookup, and fallback lookup
+  });
 });
