@@ -155,6 +155,7 @@ export class AuthService {
 
     // 3. Link past guest bookings automatically
     await this.linkBookingsToUser(userEmail, user._id.toString());
+    await this.hydrateUserProfile(user._id.toString(), userEmail);
 
     // 4. Issue session tokens
     const { accessToken, refreshToken } = await this.issueTokens(user._id.toString(), user.email, 'user');
@@ -282,6 +283,7 @@ export class AuthService {
 
     // Link past bookings
     await this.linkBookingsToUser(userEmail, user._id.toString());
+    await this.hydrateUserProfile(user._id.toString(), userEmail);
 
     // Issue tokens
     const { accessToken, refreshToken } = await this.issueTokens(user._id.toString(), user.email, 'user');
@@ -476,6 +478,84 @@ export class AuthService {
       }
     } catch (err) {
       logger.error({ err, email, userId }, 'Failed to link historical guest bookings.');
+    }
+  }
+
+  /**
+   * Safe profile hydration from historical guest bookings.
+   * Enforces "Never Overwrite" safeguards, smart data-quality booking selection heuristics,
+   * and strict normalized email matching rules.
+   */
+  public static async hydrateUserProfile(userId: string, email: string): Promise<void> {
+    try {
+      const user = await UserModel.findById(userId);
+      if (!user || !user.isActive) return;
+
+      // 1. Guard check: only proceed if at least one field is currently blank
+      const needsFirstName = !user.firstName || user.firstName.trim() === '';
+      const needsLastName = !user.lastName || user.lastName.trim() === '';
+      const needsMobile = !user.mobileNumber || user.mobileNumber.trim() === '';
+
+      if (!needsFirstName && !needsLastName && !needsMobile) {
+        return; // Profile is already complete; skip database operations
+      }
+
+      const normalizedEmail = email.trim().toLowerCase();
+
+      // 2. Query Priority 1: Confirmed completed bookings containing usable data
+      let sourceBooking = await Booking.findOne({
+        guestEmail: normalizedEmail,
+        status: 'confirmed',
+        $or: [
+          { firstName: { $ne: null, $gt: "" } },
+          { lastName: { $ne: null, $gt: "" } },
+          { guestPhone: { $ne: null, $gt: "" } }
+        ]
+      }).sort({ createdAt: -1 });
+
+      // 3. Query Priority 2 (Fallback): Any booking containing usable data
+      if (!sourceBooking) {
+        sourceBooking = await Booking.findOne({
+          guestEmail: normalizedEmail,
+          $or: [
+            { firstName: { $ne: null, $gt: "" } },
+            { lastName: { $ne: null, $gt: "" } },
+            { guestPhone: { $ne: null, $gt: "" } }
+          ]
+        }).sort({ createdAt: -1 });
+      }
+
+      if (!sourceBooking) return; // Priority 3: No valid data found
+
+      // 4. Safe sync application (Never Overwrite)
+      let isModified = false;
+
+      if (needsFirstName && sourceBooking.firstName && sourceBooking.firstName.trim() !== '') {
+        user.firstName = sourceBooking.firstName.trim();
+        isModified = true;
+      }
+
+      if (needsLastName && sourceBooking.lastName && sourceBooking.lastName.trim() !== '') {
+        user.lastName = sourceBooking.lastName.trim();
+        isModified = true;
+      }
+
+      if (needsMobile && sourceBooking.guestPhone && sourceBooking.guestPhone.trim() !== '') {
+        user.mobileNumber = sourceBooking.guestPhone.trim();
+        isModified = true;
+      }
+
+      // 5. Re-compile display name if fields were updated and display name is currently blank
+      if (isModified && (!user.name || user.name.trim() === '')) {
+        user.name = `${user.firstName || ''} ${user.lastName || ''}`.trim();
+      }
+
+      if (isModified) {
+        await user.save();
+        logger.info({ userId, email: normalizedEmail }, "User profile safely hydrated from historical booking details.");
+      }
+    } catch (err) {
+      logger.error({ err, userId, email }, "Failed to hydrate user profile from guest bookings.");
     }
   }
 }
