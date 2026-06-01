@@ -14,6 +14,7 @@ import { Coupon } from '../../models/coupon.schema';
 import { Event } from '../../models/event.schema';
 import { Notification } from '../../models/notification.schema';
 import { Payment, IPayment } from '../../models/payment.schema';
+import { Reservation } from '../../models/reservation.schema';
 import { SeatLayout } from '../../models/seat-layout.schema';
 import { Ticket } from '../../models/ticket.schema';
 import { UserModel } from '../../models/user.schema';
@@ -1019,40 +1020,277 @@ export class PaymentService {
   }
 
   private static async confirmBooking(booking: IBooking, _payment: IPayment): Promise<IBooking | null> {
-    // 1. Confirm booking status exactly once. Concurrent payment callbacks must
-    // not double-increment event inventory or create duplicate tickets.
+    const previousStatus = booking.status;
+    if (![BookingStatus.AWAITING_PAYMENT, BookingStatus.EXPIRED, BookingStatus.EXPIRING].includes(previousStatus)) {
+      return booking;
+    }
+
+    const isLateRecovery = previousStatus === BookingStatus.EXPIRED || previousStatus === BookingStatus.EXPIRING;
+    const event = await Event.findById(booking.eventId);
+    if (!event) {
+      return null;
+    }
+
+    const allSeatIds = booking.tickets.flatMap((t) => t.seats || []).map((s) => s.seatId);
+
+    // 1. Pre-validation for Late Recovery
+    if (isLateRecovery) {
+      // Validate general capacity
+      if (event.soldCount + event.reservedCount + booking.totalTickets > event.totalCapacity) {
+        _payment.failureReason = 'LATE_PAYMENT_RECOVERY_REJECTED_CAPACITY_EXHAUSTED';
+        await _payment.save();
+        return null;
+      }
+
+      // Validate tier capacity
+      for (const bookedTicket of booking.tickets) {
+        const tierConfig = event.ticketTiers.find((t) => t.tier === bookedTicket.tier);
+        if (!tierConfig) {
+          _payment.failureReason = 'LATE_PAYMENT_RECOVERY_REJECTED_INVALID_TIER';
+          await _payment.save();
+          return null;
+        }
+
+        // Fetch active reservations count for this specific tier
+        const activeTierAgg = await Reservation.aggregate([
+          {
+            $match: {
+              eventId: event._id,
+              tier: bookedTicket.tier,
+              status: { $in: [ReservationStatus.RESERVED, ReservationStatus.PENDING_PAYMENT] }
+            }
+          },
+          { $group: { _id: null, total: { $sum: '$quantity' } } }
+        ]);
+        const tierReserved = activeTierAgg[0]?.total ?? 0;
+
+        if (tierConfig.soldCount + tierReserved + bookedTicket.quantity > tierConfig.totalCapacity) {
+          _payment.failureReason = 'LATE_PAYMENT_RECOVERY_REJECTED_CAPACITY_EXHAUSTED';
+          await _payment.save();
+          return null;
+        }
+      }
+
+      // Validate seats status
+      if (event.bookingMode === 'seat_based' && allSeatIds.length > 0) {
+        const layoutQuery = SeatLayout.findOne({
+          eventId: event._id,
+          seats: {
+            $elemMatch: {
+              seatId: { $in: allSeatIds },
+              status: { $ne: SeatStatus.AVAILABLE }
+            }
+          }
+        });
+        const layout = await (layoutQuery && typeof layoutQuery.lean === 'function' ? layoutQuery.lean() : layoutQuery);
+        if (layout) {
+          _payment.failureReason = 'LATE_PAYMENT_RECOVERY_REJECTED_SEATS_TAKEN';
+          await _payment.save();
+          return null;
+        }
+      }
+    }
+
+    // 2. Allocate Seats (SeatLayout update)
+    if (event.bookingMode === 'seat_based' && allSeatIds.length > 0) {
+      const seatUpdateResult = await SeatLayout.updateOne(
+        { eventId: event._id },
+        {
+          $set: {
+            'seats.$[seat].status': SeatStatus.BOOKED,
+            'seats.$[seat].bookedByBookingId': booking._id.toString()
+          },
+          $unset: {
+            'seats.$[seat].lockedBy': '',
+            'seats.$[seat].lockedAt': '',
+          },
+          $inc: {
+            'seats.$[seat].seatVersion': 1,
+          },
+        },
+        {
+          arrayFilters: [
+            {
+              'seat.seatId': { $in: allSeatIds },
+              $or: [
+                { 'seat.bookedByBookingId': booking._id.toString() },
+                { 'seat.status': SeatStatus.AVAILABLE }
+              ]
+            },
+          ],
+        }
+      );
+
+      if (seatUpdateResult.modifiedCount !== allSeatIds.length) {
+        // Rollback any partially allocated seats (safe filter targeting this booking)
+        await SeatLayout.updateOne(
+          { eventId: event._id },
+          {
+            $set: { 'seats.$[seat].status': SeatStatus.AVAILABLE },
+            $unset: { 'seats.$[seat].bookedByBookingId': '', 'seats.$[seat].lockedBy': '', 'seats.$[seat].lockedAt': '' }
+          },
+          {
+            arrayFilters: [
+              {
+                'seat.seatId': { $in: allSeatIds },
+                'seat.bookedByBookingId': booking._id.toString()
+              }
+            ]
+          }
+        );
+        _payment.failureReason = 'LATE_PAYMENT_RECOVERY_REJECTED_SEATS_TAKEN';
+        await _payment.save();
+        return null;
+      }
+    }
+
+    // 3. Allocate Event Capacity
+    const incUpdate: Record<string, number> = {
+      soldCount: booking.totalTickets,
+      eventVersion: 1,
+    };
+
+    for (const bookedTicket of booking.tickets) {
+      const tierIndex = event.ticketTiers.findIndex((t) => t.tier === bookedTicket.tier);
+      if (tierIndex !== -1) {
+        incUpdate[`ticketTiers.${tierIndex}.soldCount`] = bookedTicket.quantity;
+      }
+    }
+
+    const eventQuery: any = { _id: event._id };
+    
+    if (isLateRecovery) {
+      eventQuery.$expr = {
+        $lte: [
+          { $add: ['$soldCount', '$reservedCount', booking.totalTickets] },
+          '$totalCapacity'
+        ]
+      };
+      
+      for (const bookedTicket of booking.tickets) {
+        const tierIndex = event.ticketTiers.findIndex((t) => t.tier === bookedTicket.tier);
+        if (tierIndex !== -1) {
+          const activeTierAgg = await Reservation.aggregate([
+            {
+              $match: {
+                eventId: event._id,
+                tier: bookedTicket.tier,
+                status: { $in: [ReservationStatus.RESERVED, ReservationStatus.PENDING_PAYMENT] }
+              }
+            },
+            { $group: { _id: null, total: { $sum: '$quantity' } } }
+          ]);
+          const tierReserved = activeTierAgg[0]?.total ?? 0;
+          
+          eventQuery[`ticketTiers.${tierIndex}.soldCount`] = {
+            $lte: event.ticketTiers[tierIndex].totalCapacity - tierReserved - bookedTicket.quantity
+          };
+        }
+      }
+    } else {
+      incUpdate.reservedCount = -booking.totalTickets;
+    }
+
+    const updatedEvent = await Event.findOneAndUpdate(
+      eventQuery,
+      { $inc: incUpdate },
+      { new: true }
+    );
+
+    if (!updatedEvent) {
+      // Revert seat allocation if seat-based
+      if (event.bookingMode === 'seat_based' && allSeatIds.length > 0) {
+        await SeatLayout.updateOne(
+          { eventId: event._id },
+          {
+            $set: { 'seats.$[seat].status': SeatStatus.AVAILABLE },
+            $unset: { 'seats.$[seat].bookedByBookingId': '', 'seats.$[seat].lockedBy': '', 'seats.$[seat].lockedAt': '' }
+          },
+          {
+            arrayFilters: [
+              {
+                'seat.seatId': { $in: allSeatIds },
+                'seat.bookedByBookingId': booking._id.toString()
+              }
+            ]
+          }
+        );
+      }
+      _payment.failureReason = 'LATE_PAYMENT_RECOVERY_REJECTED_CAPACITY_EXHAUSTED';
+      await _payment.save();
+      return null;
+    }
+
+    // 4. Booking Confirmation Status Transition
     const previousBookingDoc = await Booking.findOneAndUpdate(
       { _id: booking._id, status: { $in: [BookingStatus.AWAITING_PAYMENT, BookingStatus.EXPIRED, BookingStatus.EXPIRING] } },
       { $set: { status: BookingStatus.CONFIRMED, paymentId: _payment._id }, $unset: { expiresAt: 1, logicalExpiresAt: 1 }, $inc: { bookingVersion: 1 } },
       { new: false }
     );
-
     if (!previousBookingDoc) {
-      const currentBooking = await Booking.findById(booking._id).select('status bookingId').lean();
+      let currentBookingDoc;
+      const docQuery = Booking.findById(booking._id);
+      if (docQuery && typeof docQuery.select === 'function') {
+        const sel = docQuery.select('status bookingId');
+        currentBookingDoc = await (sel && typeof sel.lean === 'function' ? sel.lean() : sel);
+      } else {
+        currentBookingDoc = await docQuery;
+      }
+      
+      // Revert Event capacity increment
+      const rollbackInc: Record<string, number> = {
+        soldCount: -booking.totalTickets,
+        eventVersion: 1
+      };
+      if (!isLateRecovery) {
+        rollbackInc.reservedCount = booking.totalTickets;
+      }
+      await Event.updateOne({ _id: event._id }, { $inc: rollbackInc });
+
+      // Rollback seats ONLY if the booking is not confirmed by a winning concurrent process
+      if (currentBookingDoc?.status !== BookingStatus.CONFIRMED && event.bookingMode === 'seat_based' && allSeatIds.length > 0) {
+        await SeatLayout.updateOne(
+          { eventId: event._id },
+          {
+            $set: { 'seats.$[seat].status': isLateRecovery ? SeatStatus.AVAILABLE : SeatStatus.LOCKED },
+            $unset: { 'seats.$[seat].bookedByBookingId': '', 'seats.$[seat].lockedBy': '', 'seats.$[seat].lockedAt': '' }
+          },
+          {
+            arrayFilters: [
+              {
+                'seat.seatId': { $in: allSeatIds },
+                'seat.bookedByBookingId': booking._id.toString()
+              }
+            ]
+          }
+        );
+      }
+
+      _payment.failureReason = 'LATE_PAYMENT_RECOVERY_REJECTED_CONCURRENT_CONFIRM';
+      await _payment.save();
+
       logger.info(
         {
           bookingId: booking._id,
           paymentId: _payment._id,
           gateway: _payment.gateway,
           correlationId: booking.bookingId,
-          existingStatus: currentBooking?.status,
+          existingStatus: currentBookingDoc?.status,
         },
         'payment_confirmation_skipped'
       );
       return null;
     }
 
-    const previousStatus = previousBookingDoc.status;
     const confirmedBooking = previousBookingDoc;
     confirmedBooking.status = BookingStatus.CONFIRMED;
     confirmedBooking.paymentId = _payment._id as any;
     confirmedBooking.bookingVersion += 1;
-
     booking = confirmedBooking;
 
     await this.redeemCouponForConfirmedBooking(booking, _payment);
 
-    // 1b. Post-Checkout Account Creation: Ensure User exists for this booking safely before finalizing
+    // 4b. Post-Checkout Account Creation
     if (!booking.userId && booking.guestEmail) {
       try {
         const emailLower = booking.guestEmail.toLowerCase().trim();
@@ -1078,9 +1316,8 @@ export class PaymentService {
       }
     }
 
-    const isLateRecovery = previousStatus === BookingStatus.EXPIRED || previousStatus === BookingStatus.EXPIRING;
-
-    const confirmedReservations = await ReservationService.transitionForBooking(booking._id, ReservationStatus.CONFIRMED, {
+    // 5. Update Reservation status to CONFIRMED
+    await ReservationService.transitionForBooking(booking._id, ReservationStatus.CONFIRMED, {
       paymentReference: _payment.gatewayPaymentId ?? _payment.gatewayOrderId,
       paymentId: _payment._id as any,
       reason: 'payment-confirmed',
@@ -1088,68 +1325,13 @@ export class PaymentService {
       includeTerminal: isLateRecovery,
     });
 
-    if (!isLateRecovery) {
-      await ReservationService.confirmCapacity(confirmedReservations);
+    if (updatedEvent && updatedEvent.soldCount >= updatedEvent.totalCapacity && !updatedEvent.isSoldOut) {
+      await Event.updateOne({ _id: booking.eventId }, { $set: { isSoldOut: true } });
     }
 
-    // 2. Update Event statistics
-    const event = await Event.findById(booking.eventId);
-    if (event) {
-      const incUpdate: Record<string, number> = {
-        soldCount: booking.totalTickets,
-        eventVersion: 1,
-      };
+    await CacheService.delPattern('events:*');
 
-      for (const bookedTicket of booking.tickets) {
-        const tierIndex = event.ticketTiers.findIndex((t) => t.tier === bookedTicket.tier);
-        if (tierIndex !== -1) {
-          incUpdate[`ticketTiers.${tierIndex}.soldCount`] = bookedTicket.quantity;
-        }
-      }
-
-      const updatedEvent = await Event.findOneAndUpdate(
-        { _id: booking.eventId },
-        { $inc: incUpdate },
-        { new: true }
-      );
-
-      if (updatedEvent && updatedEvent.soldCount >= updatedEvent.totalCapacity && !updatedEvent.isSoldOut) {
-        await Event.updateOne({ _id: booking.eventId }, { $set: { isSoldOut: true } });
-      }
-
-      await CacheService.delPattern('events:*');
-    }
-
-    // 3. Update Seat Layout statuses from LOCKED to BOOKED
-    if (event && event.bookingMode === 'seat_based') {
-      const allSeatIds = booking.tickets.flatMap((t) => t.seats || []).map((s) => s.seatId);
-      await SeatLayout.updateOne(
-        { eventId: event._id },
-        {
-          $set: {
-            'seats.$[seat].status': SeatStatus.BOOKED,
-          },
-          $unset: {
-            'seats.$[seat].lockedBy': '',
-            'seats.$[seat].lockedAt': '',
-          },
-          $inc: {
-            'seats.$[seat].seatVersion': 1,
-          },
-        },
-        {
-          arrayFilters: [
-            {
-              'seat.seatId': { $in: allSeatIds },
-              $or: [
-                { 'seat.bookedByBookingId': booking._id.toString() },
-                { 'seat.status': SeatStatus.AVAILABLE }
-              ]
-            },
-          ],
-        }
-      );
-
+    if (event.bookingMode === 'seat_based') {
       this.safeEmit(
         'seat:booked',
         () => emitToEvent(event._id.toString(), 'seat:booked', {

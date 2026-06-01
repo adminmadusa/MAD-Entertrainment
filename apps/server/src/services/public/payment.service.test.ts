@@ -4,6 +4,9 @@ import { BookingStatus, PaymentStatus } from '@mad/shared';
 import { Booking } from '../../models/booking.schema';
 import { Payment } from '../../models/payment.schema';
 import { Coupon } from '../../models/coupon.schema';
+import { Event } from '../../models/event.schema';
+import { Reservation } from '../../models/reservation.schema';
+import { SeatLayout } from '../../models/seat-layout.schema';
 import { getEnv } from '../../config/env';
 import { getStripe } from '../../config/stripe';
 import crypto from 'crypto';
@@ -55,12 +58,21 @@ vi.mock('../../models/coupon.schema', () => ({
 vi.mock('../../models/event.schema', () => ({
   Event: {
     findById: vi.fn(),
+    findOneAndUpdate: vi.fn(),
+    updateOne: vi.fn(),
+  },
+}));
+
+vi.mock('../../models/reservation.schema', () => ({
+  Reservation: {
+    aggregate: vi.fn(),
   },
 }));
 
 vi.mock('../../models/seat-layout.schema', () => ({
   SeatLayout: {
     updateOne: vi.fn(),
+    findOne: vi.fn(),
   },
 }));
 
@@ -90,6 +102,14 @@ vi.mock('../reservation.service', () => ({
 describe('Payment Service', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(Booking.findById).mockReset();
+    vi.mocked(Booking.findOne).mockReset();
+    vi.mocked(Booking.findOneAndUpdate).mockReset();
+    vi.mocked(Event.findById).mockReset();
+    vi.mocked(Event.findOneAndUpdate).mockReset();
+    vi.mocked(Reservation.aggregate).mockReset();
+    vi.mocked(SeatLayout.updateOne).mockReset();
+
     vi.mocked(getEnv).mockReturnValue({
       RAZORPAY_KEY_ID: 'test_rzp_key',
       RAZORPAY_KEY_SECRET: 'test_rzp_secret',
@@ -98,6 +118,21 @@ describe('Payment Service', () => {
       ENABLE_ASYNC_CHECKOUT: true,
       MOCK_PAYMENTS: false,
     } as any);
+
+    vi.mocked(Event.findById).mockResolvedValue({
+      _id: 'e-123',
+      title: 'MAD Event',
+      soldCount: 0,
+      reservedCount: 0,
+      totalCapacity: 100,
+      bookingMode: 'general_admission',
+      ticketTiers: [
+        { tier: 'general', name: 'General Admission', price: 100, totalCapacity: 100, soldCount: 0 }
+      ]
+    } as any);
+
+    vi.mocked(Reservation.aggregate).mockResolvedValue([{ total: 0 }]);
+    vi.mocked(Event.findOneAndUpdate).mockResolvedValue({} as any);
   });
 
   const razorpaySignature = (orderId: string, paymentId: string) =>
@@ -761,6 +796,72 @@ describe('Payment Service', () => {
         expect.any(Object),
         expect.objectContaining({ new: false })
       );
+    });
+
+    it('should reject late recovery if event capacity is exhausted', async () => {
+      const mockPayment = { _id: 'p-123', bookingId: 'b-123', gateway: 'razorpay', status: PaymentStatus.PENDING, failureReason: undefined, save: vi.fn() };
+      const mockBooking = {
+        _id: 'b-123',
+        eventId: 'e-123',
+        status: BookingStatus.EXPIRED,
+        tickets: [{ tier: 'general', quantity: 2, subtotal: 200, pricePerTicket: 100, tierName: 'General' }],
+        totalTickets: 2,
+        save: vi.fn(),
+      };
+
+      vi.mocked(Payment.findOne).mockResolvedValue(mockPayment as any);
+      vi.mocked(Booking.findById).mockResolvedValue(mockBooking as any);
+
+      vi.mocked(Event.findById).mockResolvedValue({
+        _id: 'e-123',
+        soldCount: 99,
+        reservedCount: 0,
+        totalCapacity: 100,
+        ticketTiers: [{ tier: 'general', soldCount: 99, totalCapacity: 100, name: 'General' }],
+      } as any);
+
+      const result = await PaymentService.confirmFromWebhook('order_123', 'pay_123', 'payment.captured', 'evt_123');
+      
+      expect(result.status).toBe('skipped');
+      expect(mockPayment.failureReason).toBe('LATE_PAYMENT_RECOVERY_REJECTED_CAPACITY_EXHAUSTED');
+      expect(mockPayment.save).toHaveBeenCalled();
+      expect(vi.mocked(Booking.findOneAndUpdate)).not.toHaveBeenCalled();
+    });
+
+    it('should reject late recovery if seats are already booked', async () => {
+      const mockPayment = { _id: 'p-123', bookingId: 'b-123', gateway: 'razorpay', status: PaymentStatus.PENDING, failureReason: undefined, save: vi.fn() };
+      const mockBooking = {
+        _id: 'b-123',
+        eventId: 'e-123',
+        status: BookingStatus.EXPIRED,
+        tickets: [{ tier: 'vip', quantity: 1, subtotal: 500, pricePerTicket: 500, tierName: 'VIP', seats: [{ seatId: 'seat-101', row: 'A', number: 1 }] }],
+        totalTickets: 1,
+        save: vi.fn(),
+      };
+
+      vi.mocked(Payment.findOne).mockResolvedValue(mockPayment as any);
+      vi.mocked(Booking.findById).mockResolvedValue(mockBooking as any);
+
+      vi.mocked(Event.findById).mockResolvedValue({
+        _id: 'e-123',
+        soldCount: 0,
+        reservedCount: 0,
+        totalCapacity: 100,
+        bookingMode: 'seat_based',
+        ticketTiers: [{ tier: 'vip', soldCount: 0, totalCapacity: 10, name: 'VIP' }],
+      } as any);
+
+      vi.mocked(SeatLayout.findOne).mockResolvedValue({
+        eventId: 'e-123',
+        seats: [{ seatId: 'seat-101', status: 'booked' }]
+      } as any);
+
+      const result = await PaymentService.confirmFromWebhook('order_123', 'pay_123', 'payment.captured', 'evt_123');
+      
+      expect(result.status).toBe('skipped');
+      expect(mockPayment.failureReason).toBe('LATE_PAYMENT_RECOVERY_REJECTED_SEATS_TAKEN');
+      expect(mockPayment.save).toHaveBeenCalled();
+      expect(vi.mocked(Booking.findOneAndUpdate)).not.toHaveBeenCalled();
     });
   });
 
