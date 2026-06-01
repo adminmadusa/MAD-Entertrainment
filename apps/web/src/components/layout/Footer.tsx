@@ -13,10 +13,7 @@ const footerLinks = {
     { label: 'My Booking', href: '/my-booking' },
   ],
   Legal: [
-    { label: 'Privacy Policy', href: '/privacy' },
-    { label: 'Terms of Service', href: '/terms' },
-    { label: 'Cookie Policy', href: '/cookies' },
-    { label: 'Cancellation Policy', href: '/cancellation' },
+    { label: 'Legal Center', href: '/legal' },
   ],
 };
 
