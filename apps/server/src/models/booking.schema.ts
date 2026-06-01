@@ -10,7 +10,6 @@ export interface IBooking extends Document {
   firstName?: string;
   lastName?: string;
   guestEmail?: string;
-  guestEmailConfirm?: string;
   guestPhone?: string;
   birthdate?: Date;
   keepUpdated?: boolean;
@@ -65,7 +64,6 @@ const bookingSchema = new Schema<IBooking>(
     firstName: String,
     lastName: String,
     guestEmail: { type: String, lowercase: true, trim: true },
-    guestEmailConfirm: { type: String, lowercase: true, trim: true },
     guestPhone: String,
     birthdate: Date,
     keepUpdated: { type: Boolean, default: false },

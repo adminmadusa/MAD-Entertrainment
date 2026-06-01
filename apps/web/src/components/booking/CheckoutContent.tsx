@@ -438,8 +438,8 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
               onChangeGateway={setSelectedGateway}
             />
 
-            {/* Place Order & Terms (Desktop Only) */}
-            <div className="hidden lg:block glass rounded-2xl border border-white/5 p-5 space-y-3">
+            {/* Place Order & Terms (Always Visible) */}
+            <div className="glass rounded-2xl border border-white/5 p-5 space-y-3">
               <button
                 type="submit"
                 form="checkout-form"
@@ -449,9 +449,15 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
                 {buttonText}
               </button>
 
-              <p className="text-[10px] text-text-muted leading-relaxed pt-2 border-t border-white/5">
-                By selecting Place Order, I agree to the MAD Entertainment Terms of Service and Privacy Policy.
-              </p>
+              <div className="pt-3 border-t border-white/5 space-y-3">
+                <div className="flex items-center justify-center gap-1.5 text-[11px] text-text-secondary font-medium bg-white/5 py-2 rounded-lg border border-white/5">
+                  <span role="img" aria-label="lock">🔒</span>
+                  <span>Secure checkout · No hidden fees</span>
+                </div>
+                <p className="text-[10px] text-text-muted leading-relaxed text-center">
+                  By selecting Place Order, I agree to the MAD Entertainment Terms of Service and Privacy Policy.
+                </p>
+              </div>
             </div>
           </div>
         </div>

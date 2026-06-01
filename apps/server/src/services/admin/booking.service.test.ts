@@ -104,12 +104,11 @@ describe('Admin Booking Service Backend Tests', () => {
       ).rejects.toThrow('Authenticated bookings cannot have their email corrected');
     });
 
-    it('should successfully update guestEmail and guestEmailConfirm for a guest booking', async () => {
+    it('should successfully update guestEmail for a guest booking', async () => {
       const mockBooking = {
         _id: 'booking-123',
         bookingId: 'MAD-2026-ABCDE',
         guestEmail: 'old@example.com',
-        guestEmailConfirm: 'old@example.com',
         bookingVersion: 1,
         save: vi.fn().mockResolvedValue(true),
       };
@@ -130,7 +129,6 @@ describe('Admin Booking Service Backend Tests', () => {
       );
 
       expect(result.guestEmail).toBe('new@example.com');
-      expect(result.guestEmailConfirm).toBe('new@example.com');
       expect(result.bookingVersion).toBe(2);
       expect(mockBooking.save).toHaveBeenCalled();
 
@@ -155,7 +153,6 @@ describe('Admin Booking Service Backend Tests', () => {
         _id: 'booking-123',
         bookingId: 'MAD-2026-ABCDE',
         guestEmail: 'old@example.com',
-        guestEmailConfirm: 'old@example.com',
         bookingVersion: 1,
         userId: undefined,
         save: vi.fn().mockResolvedValue(true),

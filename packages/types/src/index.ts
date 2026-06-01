@@ -179,7 +179,6 @@ export type Booking = {
   firstName?: string;
   lastName?: string;
   guestEmail?: string;
-  guestEmailConfirm?: string;
   guestPhone?: string;
   birthdate?: string | Date;
   keepUpdated?: boolean;
