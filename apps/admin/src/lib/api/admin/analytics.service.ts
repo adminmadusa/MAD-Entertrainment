@@ -5,6 +5,7 @@ export interface DashboardSummary {
   recentBookings: number;
   totalRevenue: number;
   topEvents: { _id: string; count: number; revenue: number; event: { title: string; startDate: string } }[];
+  pendingRefundsCount: number;
 }
 
 export interface RevenuePoint { _id: string; revenue: number; count: number; }
@@ -18,6 +19,7 @@ export async function adminGetDashboardSummary(): Promise<DashboardSummary> {
       recentBookings: summary?.recentBookings ?? 0,
       totalRevenue: summary?.totalRevenue ?? 0,
       topEvents: Array.isArray(summary?.topEvents) ? summary.topEvents : [],
+      pendingRefundsCount: summary?.pendingRefundsCount ?? 0,
     };
   } catch (error) {
     console.error('[Analytics Service] Failed to fetch dashboard summary, returning default DTO:', error);
@@ -26,6 +28,7 @@ export async function adminGetDashboardSummary(): Promise<DashboardSummary> {
       recentBookings: 0,
       totalRevenue: 0,
       topEvents: [],
+      pendingRefundsCount: 0,
     };
   }
 }
