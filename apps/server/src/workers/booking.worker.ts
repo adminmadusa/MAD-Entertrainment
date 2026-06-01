@@ -51,7 +51,7 @@ export async function processBookingConfirm(bookingId: string): Promise<void> {
           seatNumber: seat.number,
           section: seat.section,
           qrCode: qrCodeText,
-          qrCodeImage: `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(qrCodeText)}`,
+          qrCodeImage: `/api/public/tickets/${ticketId}/qr`,
         });
         ticketIndex++;
       }
@@ -72,7 +72,7 @@ export async function processBookingConfirm(bookingId: string): Promise<void> {
           tier: bookedTicket.tier,
           admits,
           qrCode: qrCodeText,
-          qrCodeImage: `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(qrCodeText)}`,
+          qrCodeImage: `/api/public/tickets/${ticketId}/qr`,
         });
         ticketIndex++;
       }
