@@ -33,7 +33,6 @@ export function CheckoutForm({ isExpired, isDisabled, onSubmit, onErrorSet }: Ch
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [guestEmail, setGuestEmail] = useState('');
-  const [guestEmailConfirm, setGuestEmailConfirm] = useState('');
   const [guestPhone, setGuestPhone] = useState('');
   const [birthMonth, setBirthMonth] = useState('');
   const [birthDay, setBirthDay] = useState('');
@@ -57,14 +56,12 @@ export function CheckoutForm({ isExpired, isDisabled, onSubmit, onErrorSet }: Ch
       setFirstName(fName);
       setLastName(lName);
       setGuestEmail(user.email || '');
-      setGuestEmailConfirm(user.email || '');
       setGuestPhone(user.phone || '');
       setHasPrefilled(true);
     } else if (!user && hasPrefilled) {
       setFirstName('');
       setLastName('');
       setGuestEmail('');
-      setGuestEmailConfirm('');
       setGuestPhone('');
       setHasPrefilled(false);
     }
@@ -85,9 +82,6 @@ export function CheckoutForm({ isExpired, isDisabled, onSubmit, onErrorSet }: Ch
     if (!guestEmail.trim()) errors.guestEmail = 'Email is required';
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(guestEmail)) errors.guestEmail = 'Invalid email format';
     
-    if (!guestEmailConfirm.trim()) errors.guestEmailConfirm = 'Please confirm your email';
-    if (guestEmailConfirm !== guestEmail) errors.guestEmailConfirm = 'Emails do not match';
-    
     // Optional mobile number
     // if (!guestPhone.trim()) errors.guestPhone = 'Phone number is required';
 
@@ -106,7 +100,6 @@ export function CheckoutForm({ isExpired, isDisabled, onSubmit, onErrorSet }: Ch
       firstName: firstName.trim(),
       lastName: lastName.trim(),
       guestEmail: guestEmail.trim().toLowerCase(),
-      guestEmailConfirm: guestEmailConfirm.trim().toLowerCase(),
       guestPhone: guestPhone.trim(),
       birthdate: birthdateStr,
       keepUpdated,
@@ -170,21 +163,6 @@ export function CheckoutForm({ isExpired, isDisabled, onSubmit, onErrorSet }: Ch
               }`}
             />
             {fieldErrors.guestEmail && <p className="text-red-400 text-[10px]">{fieldErrors.guestEmail}</p>}
-          </div>
-          <div className="space-y-1">
-            <label htmlFor="checkout-email-confirm" className="text-xs text-text-secondary font-medium">Confirm email *</label>
-            <input
-              id="checkout-email-confirm"
-              type="email"
-              value={guestEmailConfirm}
-              disabled={isDisabled}
-              onChange={(e) => setGuestEmailConfirm(e.target.value)}
-              placeholder="Confirm email address"
-              className={`w-full px-4 py-2 rounded-xl bg-background border text-base lg:text-sm text-white focus:outline-none transition-colors ${
-                fieldErrors.guestEmailConfirm ? 'border-red-500' : 'border-white/10 focus:border-accent-purple'
-              }`}
-            />
-            {fieldErrors.guestEmailConfirm && <p className="text-red-400 text-[10px]">{fieldErrors.guestEmailConfirm}</p>}
           </div>
         </div>
 

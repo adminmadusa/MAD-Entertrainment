@@ -386,7 +386,6 @@ export const correctBookingEmail = async (
     }
 
     booking.guestEmail = normalizedEmail;
-    booking.guestEmailConfirm = normalizedEmail;
     booking.bookingVersion += 1;
 
     await booking.save({ session });
