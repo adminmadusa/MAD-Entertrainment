@@ -274,21 +274,13 @@ function TicketRetrievalContent() {
           <h1 className="text-display-sm font-black text-white tracking-tight">
             {shouldShowPortal ? 'My Ticket Wallet' : 'Retrieve Tickets'}
           </h1>
-          <p className="text-text-secondary text-sm max-w-md mx-auto leading-relaxed">
-            {(() => {
-              if (shouldShowPortal) {
-                if (singleBooking) {
-                  return `Booking ${singleBooking.bookingId} is available for this session.`;
-                }
-                const count = sortedBookings.length;
-                return `Manage and view ${count > 0 ? count : 'your'} entry passes associated with ${user?.email || 'your email'}.`;
-              }
-              if (queryRef) {
-                return `Verify the email address used to book ${queryRef} to view your tickets.`;
-              }
-              return 'Enter your email address to verify your identity and instantly track your active event bookings.';
-            })()}
-          </p>
+          {!shouldShowPortal && (
+            <p className="text-text-secondary text-sm max-w-md mx-auto leading-relaxed">
+              {queryRef
+                ? `Verify the email address used to book ${queryRef} to view your tickets.`
+                : 'Enter your email address to verify your identity and instantly track your active event bookings.'}
+            </p>
+          )}
         </div>
 
         {/* Feedback Messages */}
@@ -344,14 +336,8 @@ function TicketRetrievalContent() {
         {/* SCREEN 3: Consolidated Bookings Portal Dashboard */}
         {shouldShowPortal && (
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom-5 duration-500">
-            
-            {/* Compressed Header Control */}
-            <div className="flex justify-between items-center bg-white/5 border border-border-subtle/50 px-4 py-3 rounded-xl mb-4">
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] text-text-muted font-bold tracking-wider uppercase">Session:</span>
-                <span className="text-white text-xs font-semibold">{singleBooking && !isAuthenticated ? 'Guest Checkout' : user?.email}</span>
-              </div>
-              {(!singleBooking || isAuthenticated) && (
+            {(!singleBooking || isAuthenticated) && (
+              <div className="flex justify-end mb-4">
                 <button
                   type="button"
                   onClick={handleExitPortal}
@@ -359,8 +345,8 @@ function TicketRetrievalContent() {
                 >
                   Log Out
                 </button>
-              )}
-            </div>
+              </div>
+            )}
 
             {(() => {
               if (singleBooking) {
@@ -381,26 +367,6 @@ function TicketRetrievalContent() {
                       <PaymentRecoveryBanner booking={singleBooking} />
                     )}
 
-                    {!isAuthenticated && singleBooking.status === BookingStatus.CONFIRMED && (
-                      <div className="bg-accent-purple/10 border border-accent-purple/30 rounded-2xl p-5 flex flex-col sm:flex-row items-center justify-between gap-4 mt-2 mb-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
-                        <div className="flex items-start gap-4">
-                          <div className="p-2.5 bg-accent-purple/20 rounded-xl shrink-0">
-                            <span className="text-xl" role="img" aria-label="alert">🔒</span>
-                          </div>
-                          <div>
-                            <h4 className="text-white font-bold text-sm tracking-wide">Don't lose your ticket!</h4>
-                            <p className="text-text-secondary text-xs mt-1 leading-relaxed max-w-[280px]">Log in with the same email address to save this booking permanently in your wallet.</p>
-                          </div>
-                        </div>
-                        <button 
-                          onClick={() => setShowLoginForGuest(true)} 
-                          className="px-5 py-2.5 btn-gradient text-white text-xs font-bold rounded-xl shrink-0 w-full sm:w-auto shadow-glow-sm hover:shadow-glow transition-all"
-                        >
-                          Log In Now
-                        </button>
-                      </div>
-                    )}
-
                     {singleBooking.status === BookingStatus.CONFIRMED ? (
                       <div className="space-y-4 pt-4 border-t border-border-subtle/30">
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-2">
@@ -414,6 +380,12 @@ function TicketRetrievalContent() {
                           />
                         </div>
                         <EntryPassGrid tickets={singleTickets} />
+                        
+                        {!isAuthenticated && (
+                          <p className="text-text-muted text-xs leading-relaxed text-center mt-6">
+                            Your ticket has been sent to <span className="text-white font-semibold">{singleBooking.guestEmail}</span>. You can view it anytime by signing in with the same email address.
+                          </p>
+                        )}
                       </div>
                     ) : (
                       <TicketStatusMessage status={singleBooking.status} />
@@ -477,36 +449,14 @@ function TicketRetrievalContent() {
               return (
                 <div className="glass rounded-3xl border border-border-subtle p-16 text-center space-y-4">
                   <div className="text-4xl">🎫</div>
-                  <h3 className="text-white font-bold text-base">No Tickets Found</h3>
+                  <h3 className="text-white font-bold text-base">No tickets found</h3>
                   <p className="text-text-secondary text-sm max-w-sm mx-auto leading-relaxed">
-                    {queryRef ? (
-                      <>
-                        We couldn't find the booking <span className="text-white font-semibold">{queryRef}</span> associated with <span className="text-white font-semibold">{user?.email}</span>. Did you use a different email address at checkout?
-                      </>
-                    ) : (
-                      <span className="flex flex-col gap-2">
-                        <span>We couldn't find any confirmed event bookings associated with the email <span className="text-white font-semibold">{user?.email}</span>.</span>
-                        <span className="text-accent-purple-light text-xs bg-accent-purple/10 border border-accent-purple/20 px-4 py-3 rounded-lg mt-2 block">
-                          <strong className="text-white">Did you checkout as a guest?</strong><br/>
-                          Log in using the exact same email address you used at checkout to automatically recover your tickets.
-                        </span>
-                      </span>
-                    )}
+                    Tickets purchased using this email address will appear here automatically.
                   </p>
-                  <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-4">
-                    <button
-                      type="button"
-                      onClick={handleExitPortal}
-                      className="px-5 py-2.5 bg-accent-purple hover:bg-accent-purple-light text-white text-xs font-bold rounded-xl transition-all shadow-md"
-                    >
-                      Try Another Email
-                    </button>
-                    <a
-                      href="mailto:support@mad-entertainment.com"
-                      className="px-5 py-2.5 bg-white/5 hover:bg-white/10 text-white text-xs font-bold rounded-xl transition-all border border-border-subtle"
-                    >
-                      Contact Support
-                    </a>
+                  <div className="flex justify-center pt-4">
+                    <Link href="/events" className="px-5 py-2.5 bg-accent-purple hover:bg-accent-purple-light text-white text-xs font-bold rounded-xl transition-all shadow-md">
+                      Browse Events
+                    </Link>
                   </div>
                 </div>
               );

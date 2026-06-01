@@ -2,43 +2,30 @@ import { useState, useEffect } from 'react';
 import { CheckoutDetailsInput } from '@mad/validations';
 import { useAuth } from '@/providers/AuthProvider';
 
-const MONTHS = [
-  { name: 'January', value: '01' },
-  { name: 'February', value: '02' },
-  { name: 'March', value: '03' },
-  { name: 'April', value: '04' },
-  { name: 'May', value: '05' },
-  { name: 'June', value: '06' },
-  { name: 'July', value: '07' },
-  { name: 'August', value: '08' },
-  { name: 'September', value: '09' },
-  { name: 'October', value: '10' },
-  { name: 'November', value: '11' },
-  { name: 'December', value: '12' },
-];
 
-const DAYS = Array.from({ length: 31 }, (_, i) => String(i + 1).padStart(2, '0'));
-const YEARS = Array.from({ length: 80 }, (_, i) => String(new Date().getFullYear() - 18 - i));
+
+import { Event } from '@mad/types';
 
 interface CheckoutFormProps {
+  event?: Event | null;
   isExpired: boolean;
   isDisabled: boolean;
   onSubmit: (details: CheckoutDetailsInput) => void;
   onErrorSet: (err: string) => void;
 }
 
-export function CheckoutForm({ isExpired, isDisabled, onSubmit, onErrorSet }: CheckoutFormProps) {
+export function CheckoutForm({ event, isExpired, isDisabled, onSubmit, onErrorSet }: CheckoutFormProps) {
   const { user } = useAuth();
 
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [guestEmail, setGuestEmail] = useState('');
+  const [guestEmailConfirm, setGuestEmailConfirm] = useState('');
   const [guestPhone, setGuestPhone] = useState('');
-  const [birthMonth, setBirthMonth] = useState('');
-  const [birthDay, setBirthDay] = useState('');
-  const [birthYear, setBirthYear] = useState('');
   const [keepUpdated, setKeepUpdated] = useState(true);
   const [sendBestEvents, setSendBestEvents] = useState(false);
+  
+  const [ageConfirmed, setAgeConfirmed] = useState(false);
 
   const [hasPrefilled, setHasPrefilled] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
@@ -62,6 +49,7 @@ export function CheckoutForm({ isExpired, isDisabled, onSubmit, onErrorSet }: Ch
       setFirstName('');
       setLastName('');
       setGuestEmail('');
+      setGuestEmailConfirm('');
       setGuestPhone('');
       setHasPrefilled(false);
     }
@@ -81,29 +69,35 @@ export function CheckoutForm({ isExpired, isDisabled, onSubmit, onErrorSet }: Ch
     if (!lastName.trim()) errors.lastName = 'Last name is required';
     if (!guestEmail.trim()) errors.guestEmail = 'Email is required';
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(guestEmail)) errors.guestEmail = 'Invalid email format';
+
+    if (!user) {
+      if (!guestEmailConfirm.trim()) errors.guestEmailConfirm = 'Please confirm your email';
+      else if (guestEmailConfirm !== guestEmail) errors.guestEmailConfirm = 'Emails do not match';
+    }
     
     // Optional mobile number
     // if (!guestPhone.trim()) errors.guestPhone = 'Phone number is required';
 
-    if (!birthMonth) errors.birthMonth = 'Month is required';
-    if (!birthDay) errors.birthDay = 'Day is required';
-    if (!birthYear) errors.birthYear = 'Year is required';
+
+
+    if (event?.requireAgeConfirmation && !ageConfirmed) {
+      errors.ageConfirmed = 'You must confirm your age to continue';
+    }
 
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors);
       return;
     }
 
-    const birthdateStr = `${birthYear}-${birthMonth}-${birthDay}T00:00:00.000Z`;
-
     onSubmit({
       firstName: firstName.trim(),
       lastName: lastName.trim(),
       guestEmail: guestEmail.trim().toLowerCase(),
+      guestEmailConfirm: !user ? guestEmailConfirm.trim().toLowerCase() : undefined,
       guestPhone: guestPhone.trim(),
-      birthdate: birthdateStr,
       keepUpdated,
       sendBestEvents,
+      ageConfirmed: event?.requireAgeConfirmation ? ageConfirmed : undefined,
     });
   };
 
@@ -148,22 +142,42 @@ export function CheckoutForm({ isExpired, isDisabled, onSubmit, onErrorSet }: Ch
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className={`grid grid-cols-1 ${!user ? 'md:grid-cols-2' : ''} gap-4`}>
           <div className="space-y-1">
             <label htmlFor="checkout-email" className="text-xs text-text-secondary font-medium">Email address *</label>
             <input
               id="checkout-email"
               type="email"
               value={guestEmail}
-              disabled={isDisabled}
+              disabled={isDisabled || !!user}
+              readOnly={!!user}
               onChange={(e) => setGuestEmail(e.target.value)}
               placeholder="email@example.com"
-              className={`w-full px-4 py-2 rounded-xl bg-background border text-base lg:text-sm text-white focus:outline-none transition-colors ${
-                fieldErrors.guestEmail ? 'border-red-500' : 'border-white/10 focus:border-accent-purple'
+              className={`w-full px-4 py-2 rounded-xl bg-background border text-base lg:text-sm focus:outline-none transition-colors ${
+                user ? 'text-text-muted/60 bg-white/5 cursor-not-allowed border-white/5' : 'text-white bg-background ' + (fieldErrors.guestEmail ? 'border-red-500' : 'border-white/10 focus:border-accent-purple')
               }`}
             />
             {fieldErrors.guestEmail && <p className="text-red-400 text-[10px]">{fieldErrors.guestEmail}</p>}
+            {user && <p className="text-[10px] text-text-muted/60 mt-1">Verified via your connected account.</p>}
           </div>
+
+          {!user && (
+            <div className="space-y-1">
+              <label htmlFor="checkout-email-confirm" className="text-xs text-text-secondary font-medium">Confirm email *</label>
+              <input
+                id="checkout-email-confirm"
+                type="email"
+                value={guestEmailConfirm}
+                disabled={isDisabled}
+                onChange={(e) => setGuestEmailConfirm(e.target.value)}
+                placeholder="Confirm email address"
+                className={`w-full px-4 py-2 rounded-xl bg-background border text-base lg:text-sm text-white focus:outline-none transition-colors ${
+                  fieldErrors.guestEmailConfirm ? 'border-red-500' : 'border-white/10 focus:border-accent-purple'
+                }`}
+              />
+              {fieldErrors.guestEmailConfirm && <p className="text-red-400 text-[10px]">{fieldErrors.guestEmailConfirm}</p>}
+            </div>
+          )}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -183,61 +197,6 @@ export function CheckoutForm({ isExpired, isDisabled, onSubmit, onErrorSet }: Ch
             {fieldErrors.guestPhone && <p className="text-red-400 text-[10px]">{fieldErrors.guestPhone}</p>}
           </div>
 
-          <div className="space-y-1 flex flex-col justify-between">
-            <span className="text-xs text-text-secondary font-medium">Birthdate *</span>
-            <div className="grid grid-cols-3 gap-2">
-              <select
-                id="checkout-birth-month"
-                aria-label="Birth Month"
-                value={birthMonth}
-                disabled={isDisabled}
-                onChange={(e) => setBirthMonth(e.target.value)}
-                className={`px-3 py-2 rounded-xl bg-background border text-base lg:text-xs text-white focus:outline-none ${
-                  fieldErrors.birthMonth ? 'border-red-500' : 'border-white/10 focus:border-accent-purple'
-                }`}
-              >
-                <option value="">Month</option>
-                {MONTHS.map((m) => (
-                  <option key={m.value} value={m.value}>{m.name}</option>
-                ))}
-              </select>
-
-              <select
-                id="checkout-birth-day"
-                aria-label="Birth Day"
-                value={birthDay}
-                disabled={isDisabled}
-                onChange={(e) => setBirthDay(e.target.value)}
-                className={`px-3 py-2 rounded-xl bg-background border text-base lg:text-xs text-white focus:outline-none ${
-                  fieldErrors.birthDay ? 'border-red-500' : 'border-white/10 focus:border-accent-purple'
-                }`}
-              >
-                <option value="">Day</option>
-                {DAYS.map((d) => (
-                  <option key={d} value={d}>{d}</option>
-                ))}
-              </select>
-
-              <select
-                id="checkout-birth-year"
-                aria-label="Birth Year"
-                value={birthYear}
-                disabled={isDisabled}
-                onChange={(e) => setBirthYear(e.target.value)}
-                className={`px-3 py-2 rounded-xl bg-background border text-base lg:text-xs text-white focus:outline-none ${
-                  fieldErrors.birthYear ? 'border-red-500' : 'border-white/10 focus:border-accent-purple'
-                }`}
-              >
-                <option value="">Year</option>
-                {YEARS.map((y) => (
-                  <option key={y} value={y}>{y}</option>
-                ))}
-              </select>
-            </div>
-            {(fieldErrors.birthMonth || fieldErrors.birthDay || fieldErrors.birthYear) && (
-              <p className="text-red-400 text-[10px] mt-1">Valid birthdate is required (Age 18+)</p>
-            )}
-          </div>
         </div>
 
         {/* Subscriptions */}
@@ -263,6 +222,30 @@ export function CheckoutForm({ isExpired, isDisabled, onSubmit, onErrorSet }: Ch
             <span>Send me emails about the best events happening nearby or online.</span>
           </label>
         </div>
+
+        {/* Age Confirmation Requirement */}
+        {event?.requireAgeConfirmation && (
+          <div className="space-y-1 pt-3 border-t border-white/5">
+            <label className="flex items-start gap-2.5 cursor-pointer text-sm text-white font-medium leading-normal">
+              <input
+                type="checkbox"
+                checked={ageConfirmed}
+                disabled={isDisabled}
+                onChange={(e) => {
+                  setAgeConfirmed(e.target.checked);
+                  if (e.target.checked) {
+                    setFieldErrors((prev) => ({ ...prev, ageConfirmed: '' }));
+                  }
+                }}
+                className={`mt-0.5 w-4 h-4 rounded bg-background accent-accent-purple ${
+                  fieldErrors.ageConfirmed ? 'border border-red-500' : 'border-white/20'
+                }`}
+              />
+              <span>I confirm that I am {event?.ageRestriction || 18} years of age or older and legally eligible to attend this event.</span>
+            </label>
+            {fieldErrors.ageConfirmed && <p className="text-red-400 text-[10px] pl-6.5">{fieldErrors.ageConfirmed}</p>}
+          </div>
+        )}
       </div>
     </form>
   );

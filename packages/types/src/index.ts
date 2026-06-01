@@ -104,6 +104,8 @@ export type Event = {
   refundPolicy?: string;
   organizerName?: string;
   ageRestriction?: number;
+  requireTerms?: boolean;
+  requireAgeConfirmation?: boolean;
   dresscode?: string;
   additionalInfo?: string;
   ticketProfileId?: string;

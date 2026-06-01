@@ -85,7 +85,6 @@ const mapBookingToAdminDTO = async (booking: any, preloadedTickets?: any[]) => {
     lastName: booking.lastName || (booking.guestName ? booking.guestName.split(' ').slice(1).join(' ') : undefined) || '—',
     email: booking.guestEmail || '—',
     phone: booking.guestPhone,
-    birthdate: booking.birthdate ? booking.birthdate.toISOString() : undefined,
     keepUpdated: booking.keepUpdated ?? false,
     sendBestEvents: booking.sendBestEvents ?? false,
   };
