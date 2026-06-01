@@ -3,6 +3,7 @@ import { PaymentService } from './payment.service';
 import { BookingStatus, PaymentStatus } from '@mad/shared';
 import { Booking } from '../../models/booking.schema';
 import { Payment } from '../../models/payment.schema';
+import { Refund } from '../../models/refund.schema';
 import { Coupon } from '../../models/coupon.schema';
 import { Event } from '../../models/event.schema';
 import { Reservation } from '../../models/reservation.schema';
@@ -43,6 +44,13 @@ vi.mock('../../models/booking.schema', () => ({
 
 vi.mock('../../models/payment.schema', () => ({
   Payment: {
+    create: vi.fn(),
+    findOne: vi.fn(),
+  },
+}));
+
+vi.mock('../../models/refund.schema', () => ({
+  Refund: {
     create: vi.fn(),
     findOne: vi.fn(),
   },
@@ -109,6 +117,8 @@ describe('Payment Service', () => {
     vi.mocked(Event.findOneAndUpdate).mockReset();
     vi.mocked(Reservation.aggregate).mockReset();
     vi.mocked(SeatLayout.updateOne).mockReset();
+    vi.mocked(Refund.create).mockReset();
+    vi.mocked(Refund.findOne).mockReset();
 
     vi.mocked(getEnv).mockReturnValue({
       RAZORPAY_KEY_ID: 'test_rzp_key',
@@ -1007,6 +1017,96 @@ describe('Payment Service', () => {
       expect(paymentB.status).toBe(PaymentStatus.PAID);
       expect(mockBooking.status).toBe(BookingStatus.CONFIRMED);
       expect(mockBooking.paymentId).toBe('p-B');
+    });
+
+    it('should skip capacity rollback if booking status is already CONFIRMED (concurrency verify race)', async () => {
+      const mockPayment = { _id: 'p-123', bookingId: 'b-123', gateway: 'stripe', status: PaymentStatus.PENDING, save: vi.fn() };
+      const mockBooking = {
+        _id: 'b-123',
+        eventId: 'e-123',
+        status: BookingStatus.EXPIRED,
+        tickets: [{ tier: 'general', quantity: 2, subtotal: 200, pricePerTicket: 100, tierName: 'General' }],
+        totalTickets: 2,
+        save: vi.fn(),
+      };
+
+      vi.mocked(Payment.findOne).mockResolvedValue(mockPayment as any);
+      vi.mocked(Booking.findById).mockResolvedValue(mockBooking as any);
+      vi.mocked(Event.findById).mockResolvedValue({
+        _id: 'e-123',
+        soldCount: 0,
+        reservedCount: 0,
+        totalCapacity: 100,
+        ticketTiers: [{ tier: 'general', soldCount: 0, totalCapacity: 100, name: 'General' }],
+      } as any);
+
+      // Simulate Thread 2 losing the confirmation race because Booking is already CONFIRMED
+      vi.mocked(Booking.findOneAndUpdate).mockResolvedValue(null);
+      const docQueryMock = {
+        select: vi.fn().mockReturnThis(),
+        lean: vi.fn().mockReturnThis(),
+        then: vi.fn().mockImplementation((resolve) => {
+          if (docQueryMock.select.mock.calls.length > 0) {
+            resolve({ status: BookingStatus.CONFIRMED, bookingId: 'b-123' });
+          } else {
+            resolve(mockBooking);
+          }
+        })
+      };
+      vi.mocked(Booking.findById).mockImplementation((id: any) => {
+        if (id === 'b-123') return docQueryMock as any;
+        return null as any;
+      });
+
+      // Event update is mocked to succeed
+      vi.mocked(Event.findOneAndUpdate).mockResolvedValue({} as any);
+
+      const result = await PaymentService.confirmFromWebhook('order_123', 'pay_123', 'payment.captured', 'evt_123');
+
+      expect(result.status).toBe('skipped');
+      expect(mockPayment.failureReason).toBe('LATE_PAYMENT_RECOVERY_REJECTED_CONCURRENT_CONFIRM');
+      // Capacity rollback (Event.updateOne) must NOT have been called since winner is CONFIRMED
+      expect(Event.updateOne).not.toHaveBeenCalled();
+    });
+
+    it('should automatically create a requested Refund record when late payment recovery is rejected', async () => {
+      const mockPayment = { _id: 'p-123', bookingId: 'b-123', gateway: 'razorpay', status: PaymentStatus.PENDING, failureReason: undefined, save: vi.fn() };
+      const mockBooking = {
+        _id: 'b-123',
+        eventId: 'e-123',
+        status: BookingStatus.EXPIRED,
+        tickets: [{ tier: 'general', quantity: 2, subtotal: 200, pricePerTicket: 100, tierName: 'General' }],
+        totalTickets: 2,
+        totalAmount: 200,
+        currency: 'INR',
+        save: vi.fn(),
+      };
+
+      vi.mocked(Payment.findOne).mockResolvedValue(mockPayment as any);
+      vi.mocked(Booking.findById).mockResolvedValue(mockBooking as any);
+      vi.mocked(Refund.findOne).mockResolvedValue(null); // No existing refund request
+
+      vi.mocked(Event.findById).mockResolvedValue({
+        _id: 'e-123',
+        soldCount: 99,
+        reservedCount: 0,
+        totalCapacity: 100,
+        ticketTiers: [{ tier: 'general', soldCount: 99, totalCapacity: 100, name: 'General' }],
+      } as any);
+
+      const result = await PaymentService.confirmFromWebhook('order_123', 'pay_123', 'payment.captured', 'evt_123');
+
+      expect(result.status).toBe('skipped');
+      expect(mockPayment.failureReason).toBe('LATE_PAYMENT_RECOVERY_REJECTED_CAPACITY_EXHAUSTED');
+      // Assert Refund record was created
+      expect(Refund.create).toHaveBeenCalledWith(expect.objectContaining({
+        bookingId: 'b-123',
+        paymentId: 'p-123',
+        amount: 200,
+        currency: 'INR',
+        reason: 'LATE_PAYMENT_RECOVERY_REJECTED_CAPACITY_EXHAUSTED',
+        status: 'requested',
+      }));
     });
   });
 });

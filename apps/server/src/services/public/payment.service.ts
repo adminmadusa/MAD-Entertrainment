@@ -14,6 +14,7 @@ import { Coupon } from '../../models/coupon.schema';
 import { Event } from '../../models/event.schema';
 import { Notification } from '../../models/notification.schema';
 import { Payment, IPayment } from '../../models/payment.schema';
+import { Refund } from '../../models/refund.schema';
 import { Reservation } from '../../models/reservation.schema';
 import { SeatLayout } from '../../models/seat-layout.schema';
 import { Ticket } from '../../models/ticket.schema';
@@ -932,6 +933,24 @@ export class PaymentService {
     }
   }
 
+  private static async triggerRefundRequest(booking: IBooking, payment: IPayment, reason: string): Promise<void> {
+    const existingRefund = await Refund.findOne({ paymentId: payment._id });
+    if (!existingRefund) {
+      await Refund.create({
+        bookingId: booking._id,
+        paymentId: payment._id,
+        amount: booking.totalAmount,
+        currency: booking.currency || 'INR',
+        reason: reason || 'LATE_PAYMENT_RECOVERY_REJECTED',
+        status: 'requested',
+      });
+      logger.info(
+        { bookingId: booking._id, paymentId: payment._id, amount: booking.totalAmount, reason },
+        'Created automatic Refund request record due to late payment recovery rejection'
+      );
+    }
+  }
+
   private static async failPaymentAndReleaseInventory(booking: IBooking, payment: IPayment, reason: string) {
     payment.status = PaymentStatus.FAILED;
     payment.failedAt = new Date();
@@ -1039,6 +1058,7 @@ export class PaymentService {
       if (event.soldCount + event.reservedCount + booking.totalTickets > event.totalCapacity) {
         _payment.failureReason = 'LATE_PAYMENT_RECOVERY_REJECTED_CAPACITY_EXHAUSTED';
         await _payment.save();
+        await this.triggerRefundRequest(booking, _payment, _payment.failureReason);
         return null;
       }
 
@@ -1048,6 +1068,7 @@ export class PaymentService {
         if (!tierConfig) {
           _payment.failureReason = 'LATE_PAYMENT_RECOVERY_REJECTED_INVALID_TIER';
           await _payment.save();
+          await this.triggerRefundRequest(booking, _payment, _payment.failureReason);
           return null;
         }
 
@@ -1067,6 +1088,7 @@ export class PaymentService {
         if (tierConfig.soldCount + tierReserved + bookedTicket.quantity > tierConfig.totalCapacity) {
           _payment.failureReason = 'LATE_PAYMENT_RECOVERY_REJECTED_CAPACITY_EXHAUSTED';
           await _payment.save();
+          await this.triggerRefundRequest(booking, _payment, _payment.failureReason);
           return null;
         }
       }
@@ -1086,6 +1108,7 @@ export class PaymentService {
         if (layout) {
           _payment.failureReason = 'LATE_PAYMENT_RECOVERY_REJECTED_SEATS_TAKEN';
           await _payment.save();
+          await this.triggerRefundRequest(booking, _payment, _payment.failureReason);
           return null;
         }
       }
@@ -1140,6 +1163,7 @@ export class PaymentService {
         );
         _payment.failureReason = 'LATE_PAYMENT_RECOVERY_REJECTED_SEATS_TAKEN';
         await _payment.save();
+        await this.triggerRefundRequest(booking, _payment, _payment.failureReason);
         return null;
       }
     }
@@ -1218,6 +1242,7 @@ export class PaymentService {
       }
       _payment.failureReason = 'LATE_PAYMENT_RECOVERY_REJECTED_CAPACITY_EXHAUSTED';
       await _payment.save();
+      await this.triggerRefundRequest(booking, _payment, _payment.failureReason);
       return null;
     }
 
@@ -1237,15 +1262,17 @@ export class PaymentService {
         currentBookingDoc = await docQuery;
       }
       
-      // Revert Event capacity increment
-      const rollbackInc: Record<string, number> = {
-        soldCount: -booking.totalTickets,
-        eventVersion: 1
-      };
-      if (!isLateRecovery) {
-        rollbackInc.reservedCount = booking.totalTickets;
+      // Revert Event capacity increment ONLY if the booking was not confirmed by the winning process
+      if (currentBookingDoc?.status !== BookingStatus.CONFIRMED) {
+        const rollbackInc: Record<string, number> = {
+          soldCount: -booking.totalTickets,
+          eventVersion: 1
+        };
+        if (!isLateRecovery) {
+          rollbackInc.reservedCount = booking.totalTickets;
+        }
+        await Event.updateOne({ _id: event._id }, { $inc: rollbackInc });
       }
-      await Event.updateOne({ _id: event._id }, { $inc: rollbackInc });
 
       // Rollback seats ONLY if the booking is not confirmed by a winning concurrent process
       if (currentBookingDoc?.status !== BookingStatus.CONFIRMED && event.bookingMode === 'seat_based' && allSeatIds.length > 0) {
