@@ -47,6 +47,8 @@ const envSchema = z.object({
     .string()
     .default('http://localhost:3000'),
 
+  FRONTEND_URL: z.string().url().optional(),
+
   // ─────────────────────────────────────────
   // Cloudinary
   // ─────────────────────────────────────────

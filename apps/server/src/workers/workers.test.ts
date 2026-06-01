@@ -13,6 +13,13 @@ import { QueueService } from '../services/queue.service';
 import { generateTicketPDF } from '../utils/pdf';
 import { sendEmail } from '../utils/email';
 
+vi.mock('../config/env', () => ({
+  getEnv: vi.fn(() => ({
+    FRONTEND_URL: 'https://example.com',
+    ALLOWED_ORIGINS: 'https://example.com',
+  })),
+}));
+
 vi.mock('../models/booking.schema', () => ({
   Booking: {
     findById: vi.fn(),
