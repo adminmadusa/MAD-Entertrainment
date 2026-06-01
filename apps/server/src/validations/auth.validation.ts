@@ -59,3 +59,23 @@ export const logoutAuthSchema = z.preprocess(
     refreshToken: refreshTokenSchema.optional(),
   }).strict()
 );
+
+export const updateProfileSchema = z.object({
+  firstName: z
+    .string()
+    .trim()
+    .min(1, 'First name is required')
+    .max(100, 'First name is too long'),
+  lastName: z
+    .string()
+    .trim()
+    .min(1, 'Last name is required')
+    .max(100, 'Last name is too long'),
+  mobileNumber: z
+    .string()
+    .trim()
+    .regex(/^\+[1-9]\d{1,14}$/, 'Mobile number must be in valid E.164 international format (e.g. +14155552671 or +919876543210)')
+    .optional()
+    .or(z.literal('')), // Allows clearing the mobile number by sending an empty string
+}).strict();
+

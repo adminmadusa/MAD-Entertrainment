@@ -8,7 +8,9 @@ import {
   magicLinkSchema,
   refreshAuthSchema,
   verifyAuthSchema,
+  updateProfileSchema,
 } from './auth.validation';
+
 
 function expectAccepted(schema: z.ZodTypeAny, payload: unknown) {
   const result = schema.safeParse(payload);
@@ -117,4 +119,80 @@ describe('public auth validation schemas', () => {
       expect(result.data).toEqual({});
     }
   });
+
+  describe('updateProfileSchema', () => {
+    it('accepts valid profile update payload', () => {
+      expectAccepted(updateProfileSchema, {
+        firstName: 'John',
+        lastName: 'Doe',
+        mobileNumber: '+919876543210',
+      });
+    });
+
+    it('accepts empty mobileNumber or missing mobileNumber', () => {
+      expectAccepted(updateProfileSchema, {
+        firstName: 'John',
+        lastName: 'Doe',
+        mobileNumber: '',
+      });
+      expectAccepted(updateProfileSchema, {
+        firstName: 'John',
+        lastName: 'Doe',
+      });
+    });
+
+    it('trims firstName and lastName and mobileNumber', () => {
+      const result = expectAccepted(updateProfileSchema, {
+        firstName: '  John  ',
+        lastName: '  Doe  ',
+        mobileNumber: '  +14155552671  ',
+      });
+      if (result.success) {
+        expect(result.data.firstName).toBe('John');
+        expect(result.data.lastName).toBe('Doe');
+        expect(result.data.mobileNumber).toBe('+14155552671');
+      }
+    });
+
+    it('rejects invalid E.164 phone formats', () => {
+      expectRejected(updateProfileSchema, {
+        firstName: 'John',
+        lastName: 'Doe',
+        mobileNumber: '1234567890', // missing +
+      });
+      expectRejected(updateProfileSchema, {
+        firstName: 'John',
+        lastName: 'Doe',
+        mobileNumber: '+0123456789', // starts with +0 (invalid E.164 country code)
+      });
+      expectRejected(updateProfileSchema, {
+        firstName: 'John',
+        lastName: 'Doe',
+        mobileNumber: '+1234567890123456', // too long (> 15 digits)
+      });
+    });
+
+    it('rejects empty or missing names', () => {
+      expectRejected(updateProfileSchema, {
+        firstName: '',
+        lastName: 'Doe',
+      });
+      expectRejected(updateProfileSchema, {
+        firstName: 'John',
+        lastName: '   ',
+      });
+      expectRejected(updateProfileSchema, {
+        lastName: 'Doe',
+      });
+    });
+
+    it('rejects extra fields', () => {
+      expectRejected(updateProfileSchema, {
+        firstName: 'John',
+        lastName: 'Doe',
+        email: 'other@gmail.com', // extra
+      });
+    });
+  });
 });
+
