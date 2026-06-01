@@ -198,8 +198,8 @@ export const getBookingById = async (id: string) => {
 /**
  * Atomically cancel a booking, log reasons, transition reservations, and release inventory/seats.
  */
-export const cancelBooking = async (id: string, reason?: string) => {
-  return runInTransaction(async (session) => {
+export const cancelBooking = async (id: string, reason?: string, externalSession?: ClientSession) => {
+  const execute = async (session: ClientSession | undefined) => {
     const booking = await Booking.findById(id).session(session || null);
     if (!booking) {
       throw AppError.notFound('Booking not found');
@@ -346,7 +346,12 @@ export const cancelBooking = async (id: string, reason?: string) => {
     });
 
     return booking;
-  });
+  };
+
+  if (externalSession) {
+    return execute(externalSession);
+  }
+  return runInTransaction(execute);
 };
 
 /**

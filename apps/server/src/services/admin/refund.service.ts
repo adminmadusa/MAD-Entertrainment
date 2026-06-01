@@ -1,6 +1,8 @@
 import { Refund, IRefund } from '../../models/refund.schema';
 import { Booking } from '../../models/booking.schema';
 import { Payment } from '../../models/payment.schema';
+import { runInTransaction, cancelBooking } from './booking.service';
+import { AppError } from '../../middleware/error.middleware';
 
 export const createRefund = async (data: {
   bookingId: string;
@@ -50,29 +52,36 @@ export const processRefund = async (
   adminNotes?: string,
   gatewayRefundId?: string
 ): Promise<IRefund | null> => {
-  const status = action === 'approve' ? 'completed' : 'failed';
-  const updated = await Refund.findByIdAndUpdate(
-    id,
-    {
-      status,
-      adminNotes,
-      gatewayRefundId,
-      processedAt: new Date(),
-    },
-    { new: true }
-  );
+  return runInTransaction(async (session) => {
+    const status = action === 'approve' ? 'completed' : 'failed';
 
-  if (updated && status === 'completed') {
-    // If the refund is successfully completed, update the booking status to cancelled/refunded
-    await Booking.findByIdAndUpdate(updated.bookingId, {
-      status: 'cancelled',
-      cancellationReason: adminNotes || 'Admin Refund Processed',
-      cancelledAt: new Date(),
-    });
-    await Payment.findByIdAndUpdate(updated.paymentId, {
-      status: 'refunded',
-    });
-  }
+    const updated = await Refund.findOneAndUpdate(
+      { _id: id, status: 'requested' },
+      {
+        status,
+        adminNotes,
+        gatewayRefundId,
+        processedAt: new Date(),
+      },
+      { new: true, session }
+    );
 
-  return updated;
+    if (!updated) {
+      throw AppError.badRequest('Refund request not found or has already been processed');
+    }
+
+    if (status === 'completed') {
+      // Trigger core booking, seat, and inventory cancellation cleanup
+      await cancelBooking(updated.bookingId.toString(), adminNotes || 'Admin Refund Processed', session);
+
+      // Update payment status to refunded
+      await Payment.findByIdAndUpdate(
+        updated.paymentId,
+        { status: 'refunded' },
+        { session }
+      );
+    }
+
+    return updated;
+  });
 };
