@@ -27,6 +27,34 @@ export default function ScannerPage() {
   const [lastScanError, setLastScanError] = useState<string | null>(null);
   const [lookupResult, setLookupResult] = useState<LookupResponse | null>(null);
   const [lookupError, setLookupError] = useState<string | null>(null);
+  const [isBulkCheckingIn, setIsBulkCheckingIn] = useState(false);
+  const [bulkSummary, setBulkSummary] = useState<string | null>(null);
+
+  const handleCheckInAll = async (unscannedTickets: any[]) => {
+    setIsBulkCheckingIn(true);
+    setBulkSummary(null);
+    let successCount = 0;
+    const failures: string[] = [];
+
+    for (const ticket of unscannedTickets) {
+      try {
+        await scanMutation.mutateAsync(ticket.ticketId);
+        successCount++;
+      } catch (err: any) {
+        const apiErr = extractApiError(err);
+        failures.push(`${ticket.ticketId} (${apiErr.message || 'Verification failed'})`);
+      }
+    }
+
+    setIsBulkCheckingIn(false);
+    if (failures.length === 0) {
+      setBulkSummary(`Successfully checked in all ${successCount} tickets!`);
+    } else {
+      setBulkSummary(
+        `Bulk check-in completed. ${successCount} checked in successfully. ${failures.length} failed: ${failures.join(', ')}`
+      );
+    }
+  };
 
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -362,7 +390,29 @@ export default function ScannerPage() {
               </div>
             )}
             
-            <h4 className="text-sm font-semibold text-text-muted uppercase tracking-wider mb-2">Tickets ({lookupResult.tickets.length})</h4>
+            <div className="flex items-center justify-between border-b border-white/5 pb-2 mb-2">
+              <h4 className="text-sm font-semibold text-text-muted uppercase tracking-wider">Tickets ({lookupResult.tickets.length})</h4>
+              {(() => {
+                const unscannedTickets = lookupResult.tickets.filter((t) => !t.scannedAt);
+                return unscannedTickets.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => handleCheckInAll(unscannedTickets)}
+                    disabled={isBulkCheckingIn || scanMutation.isPending}
+                    className="px-3.5 py-1.5 text-xs font-semibold bg-accent-purple/20 border border-accent-purple/40 hover:bg-accent-purple/35 rounded-lg text-accent-purple-light disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                  >
+                    {isBulkCheckingIn ? 'Checking In...' : 'Check In All Remaining'}
+                  </button>
+                );
+              })()}
+            </div>
+
+            {bulkSummary && (
+              <div className={`p-4 rounded-xl text-sm border font-medium ${bulkSummary.includes('failed') ? 'bg-red-500/10 border-red-500/30 text-red-400' : 'bg-green-500/10 border-green-500/30 text-green-400'}`}>
+                {bulkSummary}
+              </div>
+            )}
+            
             <div className="space-y-3">
               {lookupResult.tickets.map((t) => (
                 <div key={t.ticketId} className="bg-background border border-border-subtle rounded-xl p-4 flex items-center justify-between">
@@ -375,7 +425,7 @@ export default function ScannerPage() {
                   </div>
                   <button
                     onClick={() => scanMutation.mutate(t.ticketId)}
-                    disabled={!!t.scannedAt || scanMutation.isPending}
+                    disabled={!!t.scannedAt || scanMutation.isPending || isBulkCheckingIn}
                     className="btn-primary text-xs px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Check In

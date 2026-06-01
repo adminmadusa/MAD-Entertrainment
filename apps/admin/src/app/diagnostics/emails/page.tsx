@@ -71,7 +71,7 @@ export default function EmailDiagnosticsPage() {
       const bookingIdStr = email.bookingId?.bookingId ?? '-';
       const bookingIdLink = email.bookingId?._id ? (
         <Link
-          href={`/bookings/${email.bookingId._id}`}
+          href={`/bookings?search=${bookingIdStr}`}
           className="text-accent-purple hover:underline"
         >
           {bookingIdStr}
