@@ -9,8 +9,9 @@ const footerLinks = {
     { label: 'DJ Operators', href: '/dj-operators' },
   ],
   Support: [
+    { label: 'Help Center', href: '/support' },
+    { label: 'Contact Us', href: '/contact' },
     { label: 'My Tickets', href: '/tickets' },
-    { label: 'My Booking', href: '/my-booking' },
   ],
   Legal: [
     { label: 'Legal Center', href: '/legal' },

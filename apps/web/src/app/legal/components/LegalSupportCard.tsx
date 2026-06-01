@@ -7,13 +7,13 @@ export function LegalSupportCard() {
       <p className="text-text-secondary text-xs mb-4">
         Can't find what you're looking for? Reach out to our support team.
       </p>
-      <a 
-        href="mailto:support@mad-entertainment.com"
+      <Link 
+        href="/contact"
         className="text-accent-purple hover:text-accent-purple-light font-semibold text-xs flex items-center gap-1 group transition-colors"
       >
         Contact Support
         <span className="group-hover:translate-x-0.5 transition-transform">→</span>
-      </a>
+      </Link>
     </div>
   );
 }
