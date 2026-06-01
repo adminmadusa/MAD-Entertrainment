@@ -235,55 +235,62 @@ export class ConsistencyService {
         continue;
       }
 
-      // 4. Process logical expiration and release inventory
-      const failedReservations = await ReservationService.transitionForBooking(booking._id, ReservationStatus.FAILED, {
-        reason: 'booking-logical-checkout-timeout',
-        correlationId: booking.bookingId,
-      });
-      await ReservationService.releaseCapacityForTerminalReservations(failedReservations);
+      try {
+        // 4. Process logical expiration and release inventory
+        const failedReservations = await ReservationService.transitionForBooking(booking._id, ReservationStatus.FAILED, {
+          reason: 'booking-logical-checkout-timeout',
+          correlationId: booking.bookingId,
+        });
+        await ReservationService.releaseCapacityForTerminalReservations(failedReservations);
 
-      const event = await Event.findById(booking.eventId);
-      if (event && event.bookingMode === 'seat_based') {
-        const allSeatIds = booking.tickets.flatMap((ticket) => ticket.seats || []).map((seat) => seat.seatId);
-        if (allSeatIds.length > 0) {
-          await SeatLayout.updateOne(
-            { eventId: event._id },
-            {
-              $set: {
-                'seats.$[seat].status': SeatStatus.AVAILABLE,
-              },
-              $unset: {
-                'seats.$[seat].lockedBy': '',
-                'seats.$[seat].lockedAt': '',
-                'seats.$[seat].bookedByBookingId': '',
-                'seats.$[seat].reservationId': '',
-              },
-              $inc: {
-                'seats.$[seat].seatVersion': 1,
-              },
-            },
-            {
-              arrayFilters: [
-                {
-                  'seat.seatId': { $in: allSeatIds },
-                  'seat.status': SeatStatus.LOCKED,
-                  'seat.bookedByBookingId': booking._id.toString(),
+        const event = await Event.findById(booking.eventId);
+        if (event && event.bookingMode === 'seat_based') {
+          const allSeatIds = booking.tickets.flatMap((ticket) => ticket.seats || []).map((seat) => seat.seatId);
+          if (allSeatIds.length > 0) {
+            await SeatLayout.updateOne(
+              { eventId: event._id },
+              {
+                $set: {
+                  'seats.$[seat].status': SeatStatus.AVAILABLE,
                 },
-              ],
-            }
-          );
+                $unset: {
+                  'seats.$[seat].lockedBy': '',
+                  'seats.$[seat].lockedAt': '',
+                  'seats.$[seat].bookedByBookingId': '',
+                  'seats.$[seat].reservationId': '',
+                },
+                $inc: {
+                  'seats.$[seat].seatVersion': 1,
+                },
+              },
+              {
+                arrayFilters: [
+                  {
+                    'seat.seatId': { $in: allSeatIds },
+                    'seat.status': SeatStatus.LOCKED,
+                    'seat.bookedByBookingId': booking._id.toString(),
+                  },
+                ],
+              }
+            );
+          }
         }
-      }
 
-      // 5. Transition from EXPIRING to EXPIRED atomically
-      const finalized = await Booking.updateOne(
-        { _id: booking._id, status: BookingStatus.EXPIRING },
-        { $set: { status: BookingStatus.EXPIRED } }
-      );
+        // 5. Transition from EXPIRING to EXPIRED atomically
+        const finalized = await Booking.updateOne(
+          { _id: booking._id, status: BookingStatus.EXPIRING },
+          { $set: { status: BookingStatus.EXPIRED } }
+        );
 
-      if (finalized.modifiedCount > 0) {
-        expiredCount++;
-        logger.info({ bookingId: booking._id, bookingReference: booking.bookingId }, 'Consistency: Logically expired booking and released held inventory');
+        if (finalized.modifiedCount > 0) {
+          expiredCount++;
+          logger.info({ bookingId: booking._id, bookingReference: booking.bookingId }, 'Consistency: Logically expired booking and released held inventory');
+        }
+      } catch (err) {
+        logger.error(
+          { err, bookingId: booking._id, bookingReference: booking.bookingId },
+          'Consistency: Failed to process logical expiration for candidate'
+        );
       }
     }
     return expiredCount;
