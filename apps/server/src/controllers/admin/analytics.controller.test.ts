@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Booking } from '../../models/booking.schema';
 import { Event } from '../../models/event.schema';
 import { Ticket } from '../../models/ticket.schema';
+import { Refund } from '../../models/refund.schema';
 import {
   getSummary,
   getRevenue,
@@ -27,6 +28,12 @@ vi.mock('../../models/event.schema', () => ({
 vi.mock('../../models/ticket.schema', () => ({
   Ticket: {
     aggregate: vi.fn(),
+  },
+}));
+
+vi.mock('../../models/refund.schema', () => ({
+  Refund: {
+    countDocuments: vi.fn(),
   },
 }));
 
@@ -58,18 +65,21 @@ describe('Analytics Controller Tests', () => {
   });
 
   describe('getSummary', () => {
-    it('should calculate bookings, revenue, and manual top event populating correctly', async () => {
+    it('should calculate bookings, revenue, and top events by lookup correctly', async () => {
       vi.mocked(Booking.countDocuments).mockResolvedValueOnce(50).mockResolvedValueOnce(15);
       vi.mocked(Booking.aggregate).mockResolvedValueOnce([{ _id: null, total: 15000 }]);
       vi.mocked(Booking.aggregate).mockResolvedValueOnce([
-        { _id: 'event-1', count: 10, revenue: 3000 }
+        {
+          _id: 'event-1',
+          count: 10,
+          revenue: 3000,
+          event: {
+            title: 'Sunburn Event',
+            startDate: new Date('2026-06-01T20:00:00.000Z'),
+          }
+        }
       ]);
-      vi.mocked(Event.findById).mockReturnValueOnce({
-        select: vi.fn().mockResolvedValue({
-          title: 'Sunburn Event',
-          startDate: new Date('2026-06-01T20:00:00.000Z'),
-        }),
-      } as any);
+      vi.mocked(Refund.countDocuments).mockResolvedValueOnce(3);
 
       const req = mockRequest();
       const res = mockResponse();
@@ -91,7 +101,8 @@ describe('Analytics Controller Tests', () => {
               revenue: 3000,
               event: { title: 'Sunburn Event', startDate: '2026-06-01T20:00:00.000Z' }
             }
-          ]
+          ],
+          pendingRefundsCount: 3
         }
       });
     });
@@ -122,8 +133,7 @@ describe('Analytics Controller Tests', () => {
   describe('getAttendanceSummary', () => {
     it('should handle "no sales" safely and return 0% rates', async () => {
       vi.mocked(Event.countDocuments).mockResolvedValueOnce(3);
-      vi.mocked(Event.aggregate).mockResolvedValueOnce([{ _id: null, total: 0 }]);
-      vi.mocked(Ticket.aggregate).mockResolvedValueOnce([{ _id: null, total: 0 }]);
+      vi.mocked(Ticket.aggregate).mockResolvedValueOnce([]);
 
       const req = mockRequest();
       const res = mockResponse();
@@ -146,8 +156,7 @@ describe('Analytics Controller Tests', () => {
 
     it('should calculate correct metrics when there are sales but "no scans" (100% no-shows)', async () => {
       vi.mocked(Event.countDocuments).mockResolvedValueOnce(5);
-      vi.mocked(Event.aggregate).mockResolvedValueOnce([{ _id: null, total: 200 }]);
-      vi.mocked(Ticket.aggregate).mockResolvedValueOnce([]);
+      vi.mocked(Ticket.aggregate).mockResolvedValueOnce([{ _id: null, totalSold: 200, totalCheckedIn: 0 }]);
 
       const req = mockRequest();
       const res = mockResponse();
@@ -170,8 +179,7 @@ describe('Analytics Controller Tests', () => {
 
     it('should compute partial attendance metrics perfectly', async () => {
       vi.mocked(Event.countDocuments).mockResolvedValueOnce(5);
-      vi.mocked(Event.aggregate).mockResolvedValueOnce([{ _id: null, total: 200 }]);
-      vi.mocked(Ticket.aggregate).mockResolvedValueOnce([{ _id: null, total: 80 }]);
+      vi.mocked(Ticket.aggregate).mockResolvedValueOnce([{ _id: null, totalSold: 200, totalCheckedIn: 80 }]);
 
       const req = mockRequest();
       const res = mockResponse();
@@ -194,8 +202,7 @@ describe('Analytics Controller Tests', () => {
 
     it('should compute full attendance metrics perfectly', async () => {
       vi.mocked(Event.countDocuments).mockResolvedValueOnce(5);
-      vi.mocked(Event.aggregate).mockResolvedValueOnce([{ _id: null, total: 250 }]);
-      vi.mocked(Ticket.aggregate).mockResolvedValueOnce([{ _id: null, total: 250 }]);
+      vi.mocked(Ticket.aggregate).mockResolvedValueOnce([{ _id: null, totalSold: 250, totalCheckedIn: 250 }]);
 
       const req = mockRequest();
       const res = mockResponse();

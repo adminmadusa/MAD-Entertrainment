@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { Booking } from '../../models/booking.schema';
 import { Event } from '../../models/event.schema';
 import { Ticket } from '../../models/ticket.schema';
+import { Refund } from '../../models/refund.schema';
 import { BookingStatus } from '@mad/shared';
 import { CacheService } from '../../services/cache.service';
 
@@ -28,32 +29,67 @@ export const getSummary = async (req: Request, res: Response, next: NextFunction
     ]);
     const totalRevenue = revenueResult[0]?.total || 0;
 
-    // Get top events by booking count
+    // Get top events by booking count using aggregation to avoid N+1 query
     const topEventsGroup = await Booking.aggregate([
       { $match: { status: BookingStatus.CONFIRMED } },
       { $group: { _id: '$eventId', count: { $sum: 1 }, revenue: { $sum: '$totalAmount' } } },
       { $sort: { count: -1 } },
-      { $limit: 5 }
+      { $limit: 5 },
+      {
+        $lookup: {
+          from: 'events',
+          localField: '_id',
+          foreignField: '_id',
+          as: 'eventDetails'
+        }
+      },
+      {
+        $project: {
+          _id: 1,
+          count: 1,
+          revenue: 1,
+          event: {
+            $let: {
+              vars: { ev: { $arrayElemAt: ['$eventDetails', 0] } },
+              in: {
+                $cond: [
+                  { $not: ['$$ev'] },
+                  null,
+                  {
+                    title: '$$ev.title',
+                    startDate: '$$ev.startDate'
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
     ]);
 
-    // Populate event details manually
-    const topEvents = await Promise.all(
-      topEventsGroup.map(async (item) => {
-        const event = await Event.findById(item._id).select('title startDate');
-        return {
-          _id: item._id,
-          count: item.count,
-          revenue: item.revenue,
-          event: event ? { title: event.title, startDate: event.startDate.toISOString() } : null
-        };
-      })
-    );
+    // Format topEvents properly, ensuring dates are ISO strings
+    const topEvents = topEventsGroup.map((item) => ({
+      _id: item._id,
+      count: item.count,
+      revenue: item.revenue,
+      event: item.event
+        ? {
+            title: item.event.title,
+            startDate: item.event.startDate instanceof Date
+              ? item.event.startDate.toISOString()
+              : new Date(item.event.startDate).toISOString()
+          }
+        : null
+    }));
+
+    const pendingRefundsCount = await Refund.countDocuments({ status: 'requested' });
 
     const responseData = {
       totalBookings,
       recentBookings,
       totalRevenue,
-      topEvents
+      topEvents,
+      pendingRefundsCount
     };
 
     await CacheService.set(CACHE_KEY, responseData, 60);
@@ -118,20 +154,49 @@ export const getAttendanceSummary = async (req: Request, res: Response, next: Ne
 
     const totalEvents = await Event.countDocuments({ isDeleted: { $ne: true } });
 
-    const soldResult = await Event.aggregate([
-      { $match: { isDeleted: { $ne: true } } },
-      { $group: { _id: null, total: { $sum: '$soldCount' } } }
+    const ticketStats = await Ticket.aggregate([
+      {
+        $lookup: {
+          from: 'events',
+          localField: 'eventId',
+          foreignField: '_id',
+          as: 'event'
+        }
+      },
+      { $unwind: '$event' },
+      { $match: { 'event.isDeleted': { $ne: true } } },
+      {
+        $lookup: {
+          from: 'bookings',
+          localField: 'bookingId',
+          foreignField: '_id',
+          as: 'booking'
+        }
+      },
+      { $unwind: '$booking' },
+      { $match: { 'booking.status': BookingStatus.CONFIRMED } },
+      {
+        $group: {
+          _id: null,
+          totalSold: { $sum: '$admits' },
+          totalCheckedIn: {
+            $sum: {
+              $cond: [{ $ne: ['$scannedAt', null] }, '$admits', 0]
+            }
+          }
+        }
+      }
     ]);
-    const totalTicketsSold = soldResult[0]?.total || 0;
 
-    const checkedInResult = await Ticket.aggregate([
-      { $match: { scannedAt: { $ne: null } } },
-      { $group: { _id: null, total: { $sum: '$admits' } } }
-    ]);
-    const totalCheckIns = checkedInResult[0]?.total || 0;
+    const totalTicketsSold = ticketStats[0]?.totalSold || 0;
+    const totalCheckIns = ticketStats[0]?.totalCheckedIn || 0;
 
-    const attendanceRate = totalTicketsSold > 0 ? Number(((totalCheckIns / totalTicketsSold) * 100).toFixed(2)) : 0;
-    const noShowRate = totalTicketsSold > 0 ? Number((((totalTicketsSold - totalCheckIns) / totalTicketsSold) * 100).toFixed(2)) : 0;
+    const attendanceRate = totalTicketsSold > 0
+      ? Math.min(100, Number(((totalCheckIns / totalTicketsSold) * 100).toFixed(2)))
+      : 0;
+    const noShowRate = totalTicketsSold > 0
+      ? Math.max(0, Number((((totalTicketsSold - totalCheckIns) / totalTicketsSold) * 100).toFixed(2)))
+      : 0;
 
     const responseData = {
       totalEvents,
@@ -167,24 +232,30 @@ export const getAttendanceRankings = async (req: Request, res: Response, next: N
           from: 'tickets',
           let: { eventId: '$_id' },
           pipeline: [
+            { $match: { $expr: { $eq: ['$eventId', '$$eventId'] } } },
             {
-              $match: {
-                $expr: {
-                  $and: [
-                    { $eq: ['$eventId', '$$eventId'] },
-                    { $ne: ['$scannedAt', null] }
-                  ]
-                }
+              $lookup: {
+                from: 'bookings',
+                localField: 'bookingId',
+                foreignField: '_id',
+                as: 'booking'
               }
             },
+            { $unwind: '$booking' },
+            { $match: { 'booking.status': BookingStatus.CONFIRMED } },
             {
               $group: {
                 _id: null,
-                scannedCount: { $sum: '$admits' }
+                totalSold: { $sum: '$admits' },
+                totalCheckedIn: {
+                  $sum: {
+                    $cond: [{ $ne: ['$scannedAt', null] }, '$admits', 0]
+                  }
+                }
               }
             }
           ],
-          as: 'scannedData'
+          as: 'ticketStats'
         }
       },
       {
@@ -192,13 +263,8 @@ export const getAttendanceRankings = async (req: Request, res: Response, next: N
           eventId: '$_id',
           eventName: '$title',
           startDate: 1,
-          ticketsSold: { $ifNull: ['$soldCount', 0] },
-          ticketsCheckedIn: {
-            $ifNull: [
-              { $arrayElemAt: ['$scannedData.scannedCount', 0] },
-              0
-            ]
-          }
+          ticketsSold: { $ifNull: [{ $arrayElemAt: ['$ticketStats.totalSold', 0] }, 0] },
+          ticketsCheckedIn: { $ifNull: [{ $arrayElemAt: ['$ticketStats.totalCheckedIn', 0] }, 0] }
         }
       },
       {
@@ -215,7 +281,12 @@ export const getAttendanceRankings = async (req: Request, res: Response, next: N
           attendancePercentage: {
             $cond: [
               { $gt: ['$ticketsSold', 0] },
-              { $multiply: [{ $divide: ['$ticketsCheckedIn', '$ticketsSold'] }, 100] },
+              {
+                $min: [
+                  100,
+                  { $multiply: [{ $divide: ['$ticketsCheckedIn', '$ticketsSold'] }, 100] }
+                ]
+              },
               0
             ]
           },
@@ -226,9 +297,14 @@ export const getAttendanceRankings = async (req: Request, res: Response, next: N
             $cond: [
               { $gt: ['$ticketsSold', 0] },
               {
-                $multiply: [
-                  { $divide: [{ $max: [0, { $subtract: ['$ticketsSold', '$ticketsCheckedIn'] }] }, '$ticketsSold'] },
-                  100
+                $min: [
+                  100,
+                  {
+                    $multiply: [
+                      { $divide: [{ $max: [0, { $subtract: ['$ticketsSold', '$ticketsCheckedIn'] }] }, '$ticketsSold'] },
+                      100
+                    ]
+                  }
                 ]
               },
               0

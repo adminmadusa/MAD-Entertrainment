@@ -139,6 +139,25 @@ function DashboardContent() {
       {/* Tab Content A: Overview */}
       {tab === 'overview' && (
         <div className="space-y-8">
+          {summary?.pendingRefundsCount && summary.pendingRefundsCount > 0 ? (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <Link
+                href="/refunds"
+                className="flex items-center justify-between p-4 bg-amber-500/10 border border-amber-500/30 text-amber-400 rounded-xl text-sm font-semibold hover:bg-amber-500/15 transition-all"
+              >
+                <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 bg-amber-500 rounded-full animate-pulse" />
+                  <span>Pending Actions Required: You have {summary.pendingRefundsCount} refund request{summary.pendingRefundsCount > 1 ? 's' : ''} awaiting review.</span>
+                </div>
+                <span className="text-xs font-bold underline bg-amber-500/20 px-2.5 py-1.5 rounded">Process →</span>
+              </Link>
+            </motion.div>
+          ) : null}
+
           {/* Quick Links */}
           <div>
             <h2 className="text-white font-semibold mb-4">Quick Actions</h2>
