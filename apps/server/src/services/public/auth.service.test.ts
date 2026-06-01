@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { AuthService } from './auth.service';
 import { RefreshTokenModel } from '../../models/refresh-token.schema';
 import { UserModel } from '../../models/user.schema';
+import { Booking } from '../../models/booking.schema';
 import { AppError } from '../../middleware/error.middleware';
 
 vi.mock('../../config/env', () => ({
@@ -37,6 +38,7 @@ vi.mock('../../models/user.schema', () => ({
 vi.mock('../../models/booking.schema', () => ({
   Booking: {
     updateMany: vi.fn(() => Promise.resolve({ modifiedCount: 0 })),
+    findOne: vi.fn(),
   },
 }));
 
@@ -388,3 +390,234 @@ describe('AuthService - verifyGoogleToken', () => {
     expect(UserModel.findOne).toHaveBeenCalledTimes(3); // googleId lookup, email lookup, and fallback lookup
   });
 });
+
+describe('AuthService - hydrateUserProfile', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('should hydrate empty profile fields successfully from a normalized email matching booking (Case 1)', async () => {
+    const mockUser = {
+      _id: 'user-123',
+      email: 'john@gmail.com',
+      isActive: true,
+      firstName: '',
+      lastName: '',
+      mobileNumber: '',
+      name: '',
+      save: vi.fn(),
+    };
+
+    const mockBooking = {
+      guestEmail: 'JOHN@GMAIL.COM',
+      firstName: 'John',
+      lastName: 'Doe',
+      guestPhone: '+919876543210',
+    };
+
+    vi.mocked(UserModel.findById).mockResolvedValue(mockUser as any);
+    // Priority 1 query finds the matching booking
+    vi.mocked(Booking.findOne).mockReturnValue({
+      sort: vi.fn().mockResolvedValue(mockBooking),
+    } as any);
+
+    await AuthService.hydrateUserProfile('user-123', 'john@gmail.com');
+
+    expect(mockUser.firstName).toBe('John');
+    expect(mockUser.lastName).toBe('Doe');
+    expect(mockUser.mobileNumber).toBe('+919876543210');
+    expect(mockUser.name).toBe('John Doe');
+    expect(mockUser.save).toHaveBeenCalled();
+  });
+
+  it('should skip hydration if booking email does not match user email exactly (Case 2)', async () => {
+    const mockUser = {
+      _id: 'user-123',
+      email: 'john.smith@gmail.com',
+      isActive: true,
+      firstName: '',
+      lastName: '',
+      mobileNumber: '',
+      name: '',
+      save: vi.fn(),
+    };
+
+    vi.mocked(UserModel.findById).mockResolvedValue(mockUser as any);
+    // Booking has a different email
+    vi.mocked(Booking.findOne).mockReturnValue({
+      sort: vi.fn().mockResolvedValue(null),
+    } as any);
+
+    await AuthService.hydrateUserProfile('user-123', 'john.smith@gmail.com');
+
+    expect(mockUser.firstName).toBe('');
+    expect(mockUser.lastName).toBe('');
+    expect(mockUser.save).not.toHaveBeenCalled();
+  });
+
+  it('should skip hydration if booking name matches but email does not match (Case 3)', async () => {
+    const mockUser = {
+      _id: 'user-123',
+      email: 'john@gmail.com',
+      isActive: true,
+      firstName: '',
+      lastName: '',
+      mobileNumber: '',
+      name: 'John Doe',
+      save: vi.fn(),
+    };
+
+    vi.mocked(UserModel.findById).mockResolvedValue(mockUser as any);
+    // Lookup by guestEmail john@gmail.com returns no bookings (meaning email mismatch occurred)
+    vi.mocked(Booking.findOne).mockReturnValue({
+      sort: vi.fn().mockResolvedValue(null),
+    } as any);
+
+    await AuthService.hydrateUserProfile('user-123', 'john@gmail.com');
+
+    expect(mockUser.firstName).toBe('');
+    expect(mockUser.lastName).toBe('');
+    expect(mockUser.save).not.toHaveBeenCalled();
+  });
+
+  it('should select older booking if newest booking is empty but older booking contains valid data (Case 4)', async () => {
+    const mockUser = {
+      _id: 'user-123',
+      email: 'john@gmail.com',
+      isActive: true,
+      firstName: '',
+      lastName: '',
+      mobileNumber: '',
+      name: '',
+      save: vi.fn(),
+    };
+
+    const olderValidBooking = {
+      guestEmail: 'john@gmail.com',
+      firstName: 'John',
+      lastName: 'Doe',
+      guestPhone: '+919876543210',
+    };
+
+    vi.mocked(UserModel.findById).mockResolvedValue(mockUser as any);
+    // Mongoose query finds the older booking containing usable data
+    vi.mocked(Booking.findOne).mockReturnValue({
+      sort: vi.fn().mockResolvedValue(olderValidBooking),
+    } as any);
+
+    await AuthService.hydrateUserProfile('user-123', 'john@gmail.com');
+
+    expect(mockUser.firstName).toBe('John');
+    expect(mockUser.lastName).toBe('Doe');
+    expect(mockUser.mobileNumber).toBe('+919876543210');
+    expect(mockUser.save).toHaveBeenCalled();
+  });
+
+  it('should skip hydration if all bookings under the email are empty (Case 5)', async () => {
+    const mockUser = {
+      _id: 'user-123',
+      email: 'john@gmail.com',
+      isActive: true,
+      firstName: '',
+      lastName: '',
+      mobileNumber: '',
+      name: '',
+      save: vi.fn(),
+    };
+
+    vi.mocked(UserModel.findById).mockResolvedValue(mockUser as any);
+    // All queries return null because no bookings have usable data
+    vi.mocked(Booking.findOne).mockReturnValue({
+      sort: vi.fn().mockResolvedValue(null),
+    } as any);
+
+    await AuthService.hydrateUserProfile('user-123', 'john@gmail.com');
+
+    expect(mockUser.firstName).toBe('');
+    expect(mockUser.lastName).toBe('');
+    expect(mockUser.save).not.toHaveBeenCalled();
+  });
+
+  it('should never overwrite pre-existing user profile data or Google details (Case 6)', async () => {
+    const mockUser = {
+      _id: 'user-123',
+      email: 'john@gmail.com',
+      isActive: true,
+      firstName: 'Kalyan',
+      lastName: 'Dev',
+      mobileNumber: '+918888888888',
+      name: 'Kalyan Dev',
+      save: vi.fn(),
+    };
+
+    const mockBooking = {
+      guestEmail: 'john@gmail.com',
+      firstName: 'John',
+      lastName: 'Doe',
+      guestPhone: '+919876543210',
+    };
+
+    vi.mocked(UserModel.findById).mockResolvedValue(mockUser as any);
+    vi.mocked(Booking.findOne).mockReturnValue({
+      sort: vi.fn().mockResolvedValue(mockBooking),
+    } as any);
+
+    await AuthService.hydrateUserProfile('user-123', 'john@gmail.com');
+
+    // Values remain unchanged (safeguards protect existing data)
+    expect(mockUser.firstName).toBe('Kalyan');
+    expect(mockUser.lastName).toBe('Dev');
+    expect(mockUser.mobileNumber).toBe('+918888888888');
+    expect(mockUser.save).not.toHaveBeenCalled();
+  });
+
+  it('should allow shared phone numbers across multiple users without unique constraint issues during hydration (Case 7)', async () => {
+    const mockUser1 = {
+      _id: 'user-1',
+      email: 'user1@gmail.com',
+      isActive: true,
+      firstName: '',
+      lastName: '',
+      mobileNumber: '',
+      save: vi.fn(),
+    };
+
+    const mockUser2 = {
+      _id: 'user-2',
+      email: 'user2@gmail.com',
+      isActive: true,
+      firstName: '',
+      lastName: '',
+      mobileNumber: '',
+      save: vi.fn(),
+    };
+
+    const mockBooking = {
+      guestEmail: 'shared@gmail.com',
+      firstName: 'Shared',
+      lastName: 'User',
+      guestPhone: '+919876543210',
+    };
+
+    // User 1 hydration
+    vi.mocked(UserModel.findById).mockResolvedValueOnce(mockUser1 as any);
+    vi.mocked(Booking.findOne).mockReturnValueOnce({
+      sort: vi.fn().mockResolvedValue({ ...mockBooking, guestEmail: 'user1@gmail.com' }),
+    } as any);
+
+    await AuthService.hydrateUserProfile('user-1', 'user1@gmail.com');
+    expect(mockUser1.mobileNumber).toBe('+919876543210');
+    expect(mockUser1.save).toHaveBeenCalled();
+
+    // User 2 hydration with same phone
+    vi.mocked(UserModel.findById).mockResolvedValueOnce(mockUser2 as any);
+    vi.mocked(Booking.findOne).mockReturnValueOnce({
+      sort: vi.fn().mockResolvedValue({ ...mockBooking, guestEmail: 'user2@gmail.com' }),
+    } as any);
+
+    await AuthService.hydrateUserProfile('user-2', 'user2@gmail.com');
+    expect(mockUser2.mobileNumber).toBe('+919876543210');
+    expect(mockUser2.save).toHaveBeenCalled();
+  });
+});
+
