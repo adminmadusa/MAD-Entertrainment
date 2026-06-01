@@ -104,6 +104,7 @@ function TicketRetrievalContent() {
       const justLoggedIn = sessionStorage.getItem('just_logged_in');
       if (justLoggedIn) {
         sessionStorage.removeItem('just_logged_in');
+        setErrorMsg(''); // Clear any stale validation errors from pre-login state
         if (bookings.length > 0) {
           setInfoMsg(`We found ${bookings.length} booking${bookings.length === 1 ? '' : 's'} linked to your email and added them to your wallet!`);
           // Clear message after 6 seconds
@@ -279,7 +280,8 @@ function TicketRetrievalContent() {
                 if (singleBooking) {
                   return `Booking ${singleBooking.bookingId} is available for this session.`;
                 }
-                return `Manage and view entry passes associated with ${user?.email || 'your email'}.`;
+                const count = sortedBookings.length;
+                return `Manage and view ${count > 0 ? count : 'your'} entry passes associated with ${user?.email || 'your email'}.`;
               }
               if (queryRef) {
                 return `Verify the email address used to book ${queryRef} to view your tickets.`;
@@ -302,57 +304,40 @@ function TicketRetrievalContent() {
           </div>
         )}
 
-        {shouldShowReferenceForm && (
-          <form onSubmit={handleSearchSubmit} className="glass rounded-2xl border border-border-subtle p-6 flex flex-col sm:flex-row gap-3">
-            <div className="flex-grow space-y-1">
-              <label htmlFor="booking-ref-input" className="text-[10px] text-text-secondary font-medium tracking-wider uppercase">Booking Reference ID</label>
-              <input
-                id="booking-ref-input"
-                type="text"
-                value={bookingRefInput}
-                onChange={(e) => setBookingRefInput(e.target.value)}
-                placeholder="e.g. MAD-2026-ABCDE"
-                className="w-full px-4 py-2.5 rounded-xl bg-background border border-border-subtle text-base lg:text-sm text-text-primary focus:outline-none focus:border-accent-purple font-mono uppercase tracking-wider transition-colors"
-              />
-            </div>
-            <button
-              type="submit"
-              disabled={isSingleLookupLoading}
-              className="sm:self-end h-11 px-6 btn-gradient text-white text-sm font-bold rounded-xl shadow-glow-sm disabled:opacity-60 transition-transform"
-            >
-              {isSingleLookupLoading ? 'Searching...' : 'Open Wallet'}
-            </button>
-          </form>
-        )}
 
-        {queryRef && singleLookupApiError && !isOwnershipVerificationRequired && !singleBooking && (
-          <div className="p-4 bg-error/10 border border-error/30 rounded-2xl text-xs text-red-400 text-center animate-in fade-in zoom-in duration-300">
-            {singleLookupApiError.message || `We couldn't retrieve booking ${queryRef}.`}
-          </div>
-        )}
-
-        {queryRef && isSingleLookupLoading && (
-          <div className="max-w-md mx-auto glass-strong rounded-3xl border border-border-subtle p-8 shadow-2xl text-center text-text-muted text-xs animate-pulse">
-            Checking secure access for {queryRef}...
-          </div>
-        )}
 
         {/* SCREEN 1 & 2: Reusable Shared AuthForm Gate */}
         {shouldShowAuthForm && (
-          <div className="max-w-md mx-auto glass-strong rounded-3xl border border-border-subtle p-8 shadow-2xl animate-in fade-in zoom-in-95 duration-300">
-            <AuthForm mode="wallet" onSuccess={() => { 
-              sessionStorage.setItem('just_logged_in', 'true');
-              setStep('portal'); 
-              setShowLoginForGuest(false); 
-            }} />
-            {showLoginForGuest && (
-              <button 
-                onClick={() => setShowLoginForGuest(false)} 
-                className="mt-6 w-full text-xs text-text-muted hover:text-white transition-colors flex items-center justify-center gap-2"
-              >
-                <span>←</span> Cancel and return to ticket
-              </button>
+          <div className="max-w-md mx-auto space-y-6 animate-in fade-in zoom-in-95 duration-300">
+            {!showLoginForGuest && !queryRef && (
+              <div className="bg-accent-purple/10 border border-accent-purple/30 rounded-2xl p-5 text-center shadow-glow-sm">
+                <h4 className="text-white font-bold text-sm tracking-wide flex items-center justify-center gap-2">
+                  <span className="text-lg" role="img" aria-label="ticket">🎫</span> Booked as a guest?
+                </h4>
+                <p className="text-text-secondary text-xs mt-2 leading-relaxed">
+                  Sign in with the exact same email address used during checkout, and we'll automatically find your tickets and link them to your wallet.
+                </p>
+              </div>
             )}
+            
+            <div className="glass-strong rounded-3xl border border-border-subtle p-8 shadow-2xl">
+              <AuthForm mode="wallet" onSuccess={() => { 
+                sessionStorage.setItem('just_logged_in', 'true');
+                setStep('portal'); 
+                setShowLoginForGuest(false); 
+                setErrorMsg('');
+                setQueryRef('');
+                setBookingRefInput('');
+              }} />
+              {showLoginForGuest && (
+                <button 
+                  onClick={() => setShowLoginForGuest(false)} 
+                  className="mt-6 w-full text-xs text-text-muted hover:text-white transition-colors flex items-center justify-center gap-2"
+                >
+                  <span>←</span> Cancel and return to ticket
+                </button>
+              )}
+            </div>
           </div>
         )}
 
@@ -360,17 +345,17 @@ function TicketRetrievalContent() {
         {shouldShowPortal && (
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom-5 duration-500">
             
-            {/* Header Control */}
-            <div className="flex justify-between items-center bg-white/5 border border-border-subtle/50 px-6 py-4 rounded-2xl">
-              <div className="text-left">
-                <span className="text-[10px] text-text-muted font-bold tracking-wider uppercase">Active Session</span>
-                <p className="text-white text-xs font-semibold">{singleBooking && !isAuthenticated ? 'Guest booking session' : user?.email}</p>
+            {/* Compressed Header Control */}
+            <div className="flex justify-between items-center bg-white/5 border border-border-subtle/50 px-4 py-3 rounded-xl mb-4">
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] text-text-muted font-bold tracking-wider uppercase">Session:</span>
+                <span className="text-white text-xs font-semibold">{singleBooking && !isAuthenticated ? 'Guest Checkout' : user?.email}</span>
               </div>
               {(!singleBooking || isAuthenticated) && (
                 <button
                   type="button"
                   onClick={handleExitPortal}
-                  className="text-xs px-4 py-2 bg-white/10 hover:bg-white/15 border border-border-subtle rounded-xl text-text-primary font-semibold transition-all"
+                  className="text-xs px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-border-subtle rounded-lg text-text-primary transition-all"
                 >
                   Log Out
                 </button>
@@ -526,6 +511,44 @@ function TicketRetrievalContent() {
                 </div>
               );
             })()}
+          </div>
+        )}
+
+        {shouldShowReferenceForm && (
+          <div className="space-y-4 pt-4 mt-8 max-w-md mx-auto">
+            <h3 className="text-white font-bold text-sm px-2 text-center">Find a missing booking</h3>
+            <form onSubmit={handleSearchSubmit} className="glass rounded-2xl border border-border-subtle p-6 flex flex-col gap-3">
+              <div className="flex-grow space-y-1">
+                <label htmlFor="booking-ref-input" className="text-[10px] text-text-secondary font-medium tracking-wider uppercase">Booking Reference ID</label>
+                <input
+                  id="booking-ref-input"
+                  type="text"
+                  value={bookingRefInput}
+                  onChange={(e) => setBookingRefInput(e.target.value)}
+                  placeholder="e.g. MAD-2026-ABCDE"
+                  className="w-full px-4 py-2.5 rounded-xl bg-background border border-border-subtle text-base lg:text-sm text-text-primary focus:outline-none focus:border-accent-purple font-mono uppercase tracking-wider transition-colors"
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={isSingleLookupLoading}
+                className="w-full h-11 px-6 btn-gradient text-white text-sm font-bold rounded-xl shadow-glow-sm disabled:opacity-60 transition-transform"
+              >
+                {isSingleLookupLoading ? 'Searching...' : 'Lookup'}
+              </button>
+            </form>
+
+            {queryRef && singleLookupApiError && !isOwnershipVerificationRequired && !singleBooking && (
+              <div className="p-4 bg-error/10 border border-error/30 rounded-2xl text-xs text-red-400 text-center animate-in fade-in zoom-in duration-300">
+                {singleLookupApiError.message || `We couldn't retrieve booking ${queryRef}.`}
+              </div>
+            )}
+
+            {queryRef && isSingleLookupLoading && (
+              <div className="glass-strong rounded-3xl border border-border-subtle p-8 shadow-2xl text-center text-text-muted text-xs animate-pulse">
+                Checking secure access for {queryRef}...
+              </div>
+            )}
           </div>
         )}
 
