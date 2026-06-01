@@ -10,6 +10,7 @@ const navLinks = [
   { label: 'Events', href: '/events' },
   { label: 'My Tickets', href: '/tickets' },
   { label: 'DJs', href: '/dj-operators' },
+  { label: 'Help Center', href: '/support' },
 ];
 
 export function Navbar() {
