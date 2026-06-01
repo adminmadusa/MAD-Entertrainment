@@ -120,17 +120,29 @@ export class AuthService {
     // 1. Find or create the user in MongoDB
     let user = await UserModel.findOne({ email: userEmail });
     if (!user) {
-      user = await UserModel.create({
-        email: userEmail,
-        firstName: magicRecord.firstName,
-        lastName: magicRecord.lastName,
-        name: (magicRecord.firstName || magicRecord.lastName) 
-          ? `${magicRecord.firstName || ''} ${magicRecord.lastName || ''}`.trim() 
-          : undefined,
-        mobileNumber: magicRecord.mobileNumber,
-        isActive: true,
-      });
-      logger.info({ userId: user._id, email: userEmail }, 'New passwordless user registered.');
+      try {
+        user = await UserModel.create({
+          email: userEmail,
+          firstName: magicRecord.firstName,
+          lastName: magicRecord.lastName,
+          name: (magicRecord.firstName || magicRecord.lastName) 
+            ? `${magicRecord.firstName || ''} ${magicRecord.lastName || ''}`.trim() 
+            : undefined,
+          mobileNumber: magicRecord.mobileNumber,
+          isActive: true,
+        });
+        logger.info({ userId: user._id, email: userEmail }, 'New passwordless user registered.');
+      } catch (err: any) {
+        if (err && err.code === 11000) {
+          logger.info({ email: userEmail }, 'Concurrent email registration race collision caught, fetching existing user.');
+          user = await UserModel.findOne({ email: userEmail });
+          if (!user) {
+            throw err;
+          }
+        } else {
+          throw err;
+        }
+      }
     } else if (!user.isActive) {
       throw AppError.forbidden('Your account has been deactivated.');
     }
@@ -230,16 +242,28 @@ export class AuthService {
         logger.info({ userId: user._id, email: userEmail }, 'Linked Google login to existing email account.');
       } else {
         // Create a completely new user
-        user = await UserModel.create({
-          email: userEmail,
-          googleId,
-          name,
-          firstName: given_name,
-          lastName: family_name,
-          picture,
-          isActive: true,
-        });
-        logger.info({ userId: user._id, email: userEmail }, 'New Google OAuth user registered.');
+        try {
+          user = await UserModel.create({
+            email: userEmail,
+            googleId,
+            name,
+            firstName: given_name,
+            lastName: family_name,
+            picture,
+            isActive: true,
+          });
+          logger.info({ userId: user._id, email: userEmail }, 'New Google OAuth user registered.');
+        } catch (err: any) {
+          if (err && err.code === 11000) {
+            logger.info({ email: userEmail, googleId }, 'Concurrent Google registration race collision caught, fetching existing user.');
+            user = await UserModel.findOne({ $or: [{ googleId }, { email: userEmail }] });
+            if (!user) {
+              throw err;
+            }
+          } else {
+            throw err;
+          }
+        }
       }
     }
 
