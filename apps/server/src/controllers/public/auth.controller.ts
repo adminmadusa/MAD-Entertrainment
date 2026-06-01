@@ -187,6 +187,52 @@ export class AuthController {
         userId: user._id,
         email: user.email,
         name: user.name,
+        firstName: user.firstName ?? '',
+        lastName: user.lastName ?? '',
+        mobileNumber: user.mobileNumber ?? '',
+        phone: user.mobileNumber ?? '', // Alias response-only
+        picture: user.picture,
+        isGuest: false,
+      },
+    });
+  }
+
+  /**
+   * Updates the authenticated user's profile details safely.
+   */
+  static async updateProfile(req: Request, res: Response): Promise<void> {
+    const userId = req.user?.sub;
+    if (!userId) {
+      throw AppError.unauthorized('Authentication required');
+    }
+
+    const user = await UserModel.findById(userId);
+    if (!user || !user.isActive) {
+      throw AppError.unauthorized('User is deactivated or does not exist');
+    }
+
+    // Adjustment 2: Immutable Field Handling. Only process allowed fields.
+    const { firstName, lastName, mobileNumber } = req.body;
+
+    user.firstName = firstName.trim();
+    user.lastName = lastName.trim();
+    user.mobileNumber = (mobileNumber && mobileNumber.trim() !== '') ? mobileNumber.trim() : undefined;
+
+    // Recalculate dynamic concatenated name from profile fields programmatically
+    user.name = `${user.firstName} ${user.lastName}`.trim();
+
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      data: {
+        userId: user._id,
+        email: user.email,
+        name: user.name,
+        firstName: user.firstName ?? '',
+        lastName: user.lastName ?? '',
+        mobileNumber: user.mobileNumber ?? '',
+        phone: user.mobileNumber ?? '', // Alias response-only
         picture: user.picture,
         isGuest: false,
       },

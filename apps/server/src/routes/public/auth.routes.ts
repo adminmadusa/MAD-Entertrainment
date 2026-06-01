@@ -10,6 +10,7 @@ import {
   magicLinkSchema,
   refreshAuthSchema,
   verifyAuthSchema,
+  updateProfileSchema,
 } from '../../validations/auth.validation';
 
 const router: Router = Router();
@@ -34,5 +35,8 @@ router.post('/logout', validateBody(logoutAuthSchema), AuthController.logout);
 
 // Retrieve currently logged-in user profile details
 router.get('/me', requireAuth, AuthController.getMe);
+
+// Update currently logged-in user profile details safely
+router.patch('/profile', requireAuth, validateBody(updateProfileSchema), AuthController.updateProfile);
 
 export default router;
