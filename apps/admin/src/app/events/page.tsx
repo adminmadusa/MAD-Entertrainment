@@ -22,6 +22,18 @@ export default function AdminEventsPage() {
   const [statusFilter, setStatusFilter] = useState('');
   const [page, setPage] = useState(1);
   const [deleteTarget, setDeleteTarget] = useState<AdminEvent | null>(null);
+  const [confirmStatusTarget, setConfirmStatusTarget] = useState<{ id: string; title: string; previous: string; next: string } | null>(null);
+  const [sortField, setSortField] = useState<'title' | 'category' | 'startDate' | 'status' | null>(null);
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+
+  const handleSort = (field: 'title' | 'category' | 'startDate' | 'status') => {
+    if (sortField === field) {
+      setSortOrder((prev) => (prev === 'asc' ? 'desc' : 'asc'));
+    } else {
+      setSortField(field);
+      setSortOrder('asc');
+    }
+  };
 
   const { data, isLoading } = useQuery({
     queryKey: ['admin-events', { page, search, status: statusFilter }],
@@ -49,6 +61,22 @@ export default function AdminEventsPage() {
   const events = Array.isArray(data?.items) ? data?.items : [];
   const pagination = data?.pagination;
 
+  const sortedEvents = [...events].sort((a, b) => {
+    if (!sortField) return 0;
+    const aVal = a[sortField];
+    const bVal = b[sortField];
+    if (typeof aVal === 'string' && typeof bVal === 'string') {
+      const aStr = aVal.toLowerCase();
+      const bStr = bVal.toLowerCase();
+      if (aStr < bStr) return sortOrder === 'asc' ? -1 : 1;
+      if (aStr > bStr) return sortOrder === 'asc' ? 1 : -1;
+      return 0;
+    }
+    if (aVal < bVal) return sortOrder === 'asc' ? -1 : 1;
+    if (aVal > bVal) return sortOrder === 'asc' ? 1 : -1;
+    return 0;
+  });
+
   const renderTableBody = () => {
     if (isLoading) {
       return Array.from({ length: 5 }).map((_, i) => (
@@ -63,7 +91,7 @@ export default function AdminEventsPage() {
       ));
     }
 
-    if (events.length === 0) {
+    if (sortedEvents.length === 0) {
       return (
         <tr>
           <td colSpan={6} className="py-16 text-center text-text-muted">
@@ -76,7 +104,7 @@ export default function AdminEventsPage() {
       );
     }
 
-    return events.map((event) => (
+    return sortedEvents.map((event) => (
       <tr key={event._id} className="border-b border-border-subtle/40 hover:bg-white/2 transition-colors">
         <td className="py-4 px-5">
           <div className="flex items-center gap-3">
@@ -101,7 +129,19 @@ export default function AdminEventsPage() {
         <td className="py-4 px-4">
           <select
             value={event.status}
-            onChange={(e) => statusMutation.mutate({ id: event._id, status: e.target.value })}
+            onChange={(e) => {
+              const nextStatus = e.target.value;
+              if (event.status === 'published' && (nextStatus === 'cancelled' || nextStatus === 'draft' || nextStatus === 'completed')) {
+                setConfirmStatusTarget({
+                  id: event._id,
+                  title: event.title,
+                  previous: event.status,
+                  next: nextStatus,
+                });
+              } else {
+                statusMutation.mutate({ id: event._id, status: nextStatus });
+              }
+            }}
             className={`text-xs px-2.5 py-1 rounded-full border font-medium bg-transparent cursor-pointer ${STATUS_COLORS[event.status] ?? ''}`}
           >
             {['draft', 'published', 'cancelled', 'sold_out', 'completed'].map((s) => (
@@ -186,10 +226,18 @@ export default function AdminEventsPage() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border-subtle">
-                <th className="text-left text-text-muted font-medium py-3.5 px-5">Event</th>
-                <th className="text-left text-text-muted font-medium py-3.5 px-4">Category</th>
-                <th className="text-left text-text-muted font-medium py-3.5 px-4">Date</th>
-                <th className="text-left text-text-muted font-medium py-3.5 px-4">Status</th>
+                <th onClick={() => handleSort('title')} className="text-left text-text-muted font-medium py-3.5 px-5 cursor-pointer hover:text-white transition-colors select-none">
+                  Event {sortField === 'title' ? (sortOrder === 'asc' ? '▲' : '▼') : ''}
+                </th>
+                <th onClick={() => handleSort('category')} className="text-left text-text-muted font-medium py-3.5 px-4 cursor-pointer hover:text-white transition-colors select-none">
+                  Category {sortField === 'category' ? (sortOrder === 'asc' ? '▲' : '▼') : ''}
+                </th>
+                <th onClick={() => handleSort('startDate')} className="text-left text-text-muted font-medium py-3.5 px-4 cursor-pointer hover:text-white transition-colors select-none">
+                  Date {sortField === 'startDate' ? (sortOrder === 'asc' ? '▲' : '▼') : ''}
+                </th>
+                <th onClick={() => handleSort('status')} className="text-left text-text-muted font-medium py-3.5 px-4 cursor-pointer hover:text-white transition-colors select-none">
+                  Status {sortField === 'status' ? (sortOrder === 'asc' ? '▲' : '▼') : ''}
+                </th>
                 <th className="text-left text-text-muted font-medium py-3.5 px-4">Featured</th>
                 <th className="text-right text-text-muted font-medium py-3.5 px-5">Actions</th>
               </tr>
@@ -258,6 +306,48 @@ export default function AdminEventsPage() {
                   className="flex-1 py-2.5 bg-error/80 hover:bg-error rounded-xl text-white text-sm font-medium transition-colors disabled:opacity-60"
                 >
                   {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Status Confirm Modal */}
+      <AnimatePresence>
+        {confirmStatusTarget && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="glass-strong rounded-2xl border border-border-subtle p-6 max-w-sm w-full space-y-4"
+            >
+              <h3 className="text-white font-bold text-lg">Change Event Status?</h3>
+              <p className="text-text-secondary text-sm">
+                Are you sure you want to transition <strong className="text-white">{confirmStatusTarget.title}</strong> from <span className="capitalize font-semibold text-accent-purple">{confirmStatusTarget.previous}</span> to <span className="capitalize font-semibold text-accent-purple">{confirmStatusTarget.next}</span>?
+              </p>
+              {confirmStatusTarget.next === 'cancelled' && (
+                <p className="text-error text-xs">Warning: Cancelling this event will prevent customers from booking tickets.</p>
+              )}
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setConfirmStatusTarget(null)}
+                  className="flex-1 py-2.5 glass border border-border-subtle rounded-xl text-sm font-medium text-text-secondary hover:text-white transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    statusMutation.mutate({ id: confirmStatusTarget.id, status: confirmStatusTarget.next });
+                    setConfirmStatusTarget(null);
+                  }}
+                  disabled={statusMutation.isPending}
+                  className="flex-1 py-2.5 bg-accent-purple hover:bg-accent-purple-light rounded-xl text-white text-sm font-semibold transition-colors disabled:opacity-60"
+                >
+                  {statusMutation.isPending ? 'Saving...' : 'Confirm'}
                 </button>
               </div>
             </motion.div>

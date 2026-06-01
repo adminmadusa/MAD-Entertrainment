@@ -33,7 +33,11 @@ export const getRefunds = async (
 
   const total = await Refund.countDocuments(filter);
   const refunds = await Refund.find(filter)
-    .populate('bookingId', 'bookingId totalAmount status')
+    .populate({
+      path: 'bookingId',
+      select: 'bookingId totalAmount status eventId guestInfo userId createdAt totalTickets ticketsScanned',
+      populate: { path: 'eventId', select: 'title startDate venue' }
+    })
     .populate('paymentId', 'gatewayPaymentId amount status gateway')
     .sort({ createdAt: -1 })
     .skip(skip)

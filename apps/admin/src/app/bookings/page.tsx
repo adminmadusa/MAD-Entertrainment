@@ -3,7 +3,8 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { BookingStatus, getBookingStatusLabel } from '@mad/shared';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 
 import {
   adminGetBookings,
@@ -45,8 +46,9 @@ const ATTENDANCE_COLORS: Record<string, string> = {
   FULLY_ATTENDED: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30',
 };
 
-export default function AdminBookingsPage() {
+function BookingsContent() {
   const qc = useQueryClient();
+  const searchParams = useSearchParams();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [eventFilter, setEventFilter] = useState('');
@@ -54,6 +56,24 @@ export default function AdminBookingsPage() {
   const [cancelTarget, setCancelTarget] = useState<AdminBooking | null>(null);
   const [cancelReason, setCancelReason] = useState('');
   const [selectedBooking, setSelectedBooking] = useState<AdminBooking | null>(null);
+  const [sortField, setSortField] = useState<'bookingId' | 'totalAmount' | 'createdAt' | null>(null);
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+
+  const handleSort = (field: 'bookingId' | 'totalAmount' | 'createdAt') => {
+    if (sortField === field) {
+      setSortOrder((prev) => (prev === 'asc' ? 'desc' : 'asc'));
+    } else {
+      setSortField(field);
+      setSortOrder('asc');
+    }
+  };
+
+  useEffect(() => {
+    const querySearch = searchParams.get('search') || searchParams.get('ref');
+    if (querySearch) {
+      setSearch(querySearch);
+    }
+  }, [searchParams]);
 
   const { data: eventsData } = useQuery({
     queryKey: ['admin-events', { status: 'published' }],
@@ -145,6 +165,28 @@ export default function AdminBookingsPage() {
   const bookings = data?.items ?? [];
   const pagination = data?.pagination;
 
+  useEffect(() => {
+    if (search && bookings.length === 1 && !selectedBooking) {
+      setSelectedBooking(bookings[0]);
+    }
+  }, [bookings, search, selectedBooking]);
+
+  const sortedBookings = [...bookings].sort((a, b) => {
+    if (!sortField) return 0;
+    const aVal = a[sortField];
+    const bVal = b[sortField];
+    if (typeof aVal === 'string' && typeof bVal === 'string') {
+      const aStr = aVal.toLowerCase();
+      const bStr = bVal.toLowerCase();
+      if (aStr < bStr) return sortOrder === 'asc' ? -1 : 1;
+      if (aStr > bStr) return sortOrder === 'asc' ? 1 : -1;
+      return 0;
+    }
+    if (aVal < bVal) return sortOrder === 'asc' ? -1 : 1;
+    if (aVal > bVal) return sortOrder === 'asc' ? 1 : -1;
+    return 0;
+  });
+
   const renderTableBody = () => {
     if (isLoading) {
       return Array.from({ length: 6 }).map((_, i) => (
@@ -156,13 +198,13 @@ export default function AdminBookingsPage() {
       ));
     }
 
-    if (bookings.length === 0) {
+    if (sortedBookings.length === 0) {
       return (
         <tr><td colSpan={7} className="py-16 text-center text-text-muted">No bookings found.</td></tr>
       );
     }
 
-    return bookings.map((booking) => {
+    return sortedBookings.map((booking) => {
       const customer = booking.userId ?? booking.guestInfo;
       const customerName = (customer as { name?: string })?.name ?? '—';
       const customerEmail = (customer as { email?: string })?.email ?? '—';
@@ -312,12 +354,18 @@ export default function AdminBookingsPage() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border-subtle">
-                <th className="text-left text-text-muted font-medium py-3.5 px-5">Reference</th>
+                <th onClick={() => handleSort('bookingId')} className="text-left text-text-muted font-medium py-3.5 px-5 cursor-pointer hover:text-white transition-colors select-none">
+                  Reference {sortField === 'bookingId' ? (sortOrder === 'asc' ? '▲' : '▼') : ''}
+                </th>
                 <th className="text-left text-text-muted font-medium py-3.5 px-4">Customer</th>
                 <th className="text-left text-text-muted font-medium py-3.5 px-4">Event</th>
-                <th className="text-left text-text-muted font-medium py-3.5 px-4">Amount</th>
+                <th onClick={() => handleSort('totalAmount')} className="text-left text-text-muted font-medium py-3.5 px-4 cursor-pointer hover:text-white transition-colors select-none">
+                  Amount {sortField === 'totalAmount' ? (sortOrder === 'asc' ? '▲' : '▼') : ''}
+                </th>
                 <th className="text-left text-text-muted font-medium py-3.5 px-4">Status</th>
-                <th className="text-left text-text-muted font-medium py-3.5 px-4">Date</th>
+                <th onClick={() => handleSort('createdAt')} className="text-left text-text-muted font-medium py-3.5 px-4 cursor-pointer hover:text-white transition-colors select-none">
+                  Date {sortField === 'createdAt' ? (sortOrder === 'asc' ? '▲' : '▼') : ''}
+                </th>
                 <th className="text-right text-text-muted font-medium py-3.5 px-5">Action</th>
               </tr>
             </thead>
@@ -686,5 +734,13 @@ export default function AdminBookingsPage() {
         )}
       </AnimatePresence>
     </div>
+  );
+}
+
+export default function AdminBookingsPage() {
+  return (
+    <Suspense fallback={<div className="py-12 text-center text-text-muted">Loading bookings...</div>}>
+      <BookingsContent />
+    </Suspense>
   );
 }
