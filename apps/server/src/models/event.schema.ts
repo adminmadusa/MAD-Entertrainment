@@ -131,6 +131,8 @@ export interface IEvent extends Document {
   showCountdown?: boolean;
   isEarlyBird?: boolean;
   earlyBirdDeadline?: Date;
+  requireTerms: boolean;
+  requireAgeConfirmation: boolean;
   createdAt: Date;
   updatedAt: Date;
   isDeleted: boolean;
@@ -197,6 +199,8 @@ const eventSchema = new Schema<IEvent>(
     showCountdown: { type: Boolean, default: false },
     isEarlyBird: { type: Boolean, default: false },
     earlyBirdDeadline: Date,
+    requireTerms: { type: Boolean, default: true },
+    requireAgeConfirmation: { type: Boolean, default: false },
     isDeleted: { type: Boolean, default: false, index: true },
     deletedAt: Date,
     deletedBy: { type: Schema.Types.ObjectId, ref: 'AdminUser' },

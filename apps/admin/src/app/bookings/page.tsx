@@ -264,7 +264,6 @@ function BookingsContent() {
       'Last Name',
       'Customer Email',
       'Customer Phone',
-      'Birthdate',
       'Marketing: Keep Updated',
       'Marketing: Best Events',
       'Event',
@@ -279,12 +278,11 @@ function BookingsContent() {
         const firstName = customer?.firstName?.replace(/,/g, '') ?? '—';
         const lastName = customer?.lastName?.replace(/,/g, '') ?? '—';
         const email = customer?.email?.replace(/,/g, '') ?? '—';
-        const phone = customer?.phone?.replace(/,/g, '') ?? '—';
-        const birthdate = customer?.birthdate ? new Date(customer.birthdate).toLocaleDateString('en-IN') : '—';
+        const phone = customer?.phone || '—';
         const keepUpdated = customer?.keepUpdated ? 'Yes' : 'No';
         const sendBestEvents = customer?.sendBestEvents ? 'Yes' : 'No';
         const eventTitle = (b.eventId as { title?: string })?.title?.replace(/,/g, '') ?? '—';
-        return `${b.bookingId},${firstName},${lastName},${email},${phone},${birthdate},${keepUpdated},${sendBestEvents},${eventTitle},${b.totalAmount},${getBookingStatusLabel(b.status)},${new Date(b.createdAt).toLocaleDateString('en-IN')}`;
+        return `${b.bookingId},${firstName},${lastName},${email},${phone},${keepUpdated},${sendBestEvents},${eventTitle},${b.totalAmount},${getBookingStatusLabel(b.status)},${new Date(b.createdAt).toLocaleDateString('en-IN')}`;
       })
     ].join('\n');
 
@@ -419,10 +417,7 @@ function BookingsContent() {
         {selectedBooking && (() => {
           const customer = selectedBooking.userId ?? selectedBooking.guestInfo;
           const email = customer?.email ?? '—';
-          const phone = customer?.phone ?? '—';
-          const birthdate = customer?.birthdate
-            ? new Date(customer.birthdate).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })
-            : '—';
+          const phone = customer?.phone || '—';
           const keepUpdated = customer?.keepUpdated ? 'Yes' : 'No';
           const sendBestEvents = customer?.sendBestEvents ? 'Yes' : 'No';
           
@@ -468,10 +463,6 @@ function BookingsContent() {
                 </div>
 
                 <div className="grid grid-cols-2 gap-4 text-sm border-t border-white/5 pt-4">
-                  <div>
-                    <h4 className="text-text-muted font-medium text-xs uppercase tracking-wider mb-1">Date of Birth</h4>
-                    <p className="text-white font-medium">{birthdate}</p>
-                  </div>
                   <div>
                     <h4 className="text-text-muted font-medium text-xs uppercase tracking-wider mb-1">Booking Mode</h4>
                     <p className="text-white font-medium capitalize">{selectedBooking.mode?.replace('_', ' ')}</p>

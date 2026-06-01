@@ -400,7 +400,6 @@ export class PublicBookingService {
       lastName: string;
       guestEmail: string;
       guestPhone: string;
-      birthdate: string | Date;
       keepUpdated?: boolean;
       sendBestEvents?: boolean;
     },
@@ -430,7 +429,6 @@ export class PublicBookingService {
     booking.guestName = `${data.firstName} ${data.lastName}`.trim();
     booking.guestEmail = data.guestEmail.toLowerCase().trim();
     booking.guestPhone = data.guestPhone.trim();
-    booking.birthdate = new Date(data.birthdate);
     booking.keepUpdated = !!data.keepUpdated;
     booking.sendBestEvents = !!data.sendBestEvents;
 

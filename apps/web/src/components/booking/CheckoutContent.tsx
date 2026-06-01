@@ -421,6 +421,7 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
               }}
             >
               <CheckoutForm
+                event={event}
                 isExpired={isExpired}
                 isDisabled={isProcessing || saveDetailsMutation.isPending || paymentIntentMutation.isPending}
                 onSubmit={handleFormSubmit}
