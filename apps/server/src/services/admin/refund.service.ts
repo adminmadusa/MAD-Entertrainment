@@ -3,6 +3,7 @@ import { Booking } from '../../models/booking.schema';
 import { Payment } from '../../models/payment.schema';
 import { runInTransaction, cancelBooking } from './booking.service';
 import { AppError } from '../../middleware/error.middleware';
+import { BookingStatus } from '@mad/shared';
 
 export const createRefund = async (data: {
   bookingId: string;
@@ -76,7 +77,7 @@ export const processRefund = async (
 
     if (status === 'completed') {
       // Trigger core booking, seat, and inventory cancellation cleanup
-      await cancelBooking(updated.bookingId.toString(), adminNotes || 'Admin Refund Processed', session);
+      await cancelBooking(updated.bookingId.toString(), adminNotes || 'Admin Refund Processed', session, BookingStatus.REFUNDED);
 
       // Update payment status to refunded
       await Payment.findByIdAndUpdate(

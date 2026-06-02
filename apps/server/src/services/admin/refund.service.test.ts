@@ -63,7 +63,7 @@ describe('Admin Refund Service Tests', () => {
         }),
         { new: true, session: 'mock-session' }
       );
-      expect(cancelBooking).toHaveBeenCalledWith('booking-456', 'Approve notes', 'mock-session');
+      expect(cancelBooking).toHaveBeenCalledWith('booking-456', 'Approve notes', 'mock-session', 'refunded');
       expect(Payment.findByIdAndUpdate).toHaveBeenCalledWith(
         'payment-789',
         { status: 'refunded' },

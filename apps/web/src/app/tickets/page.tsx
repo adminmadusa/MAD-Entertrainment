@@ -233,6 +233,11 @@ function TicketRetrievalContent() {
       return;
     }
 
+    if (!isAuthenticated && !singleBookingSessionToken) {
+      setErrorMsg('Sign in is required to search and retrieve booking details.');
+      return;
+    }
+
     setBookingRefInput(normalizedRef);
     setQueryRef(normalizedRef);
   };
