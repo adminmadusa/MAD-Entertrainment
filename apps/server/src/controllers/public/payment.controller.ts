@@ -198,6 +198,8 @@ export async function razorpayWebhook(req: Request, res: Response): Promise<void
   let eventType: string;
   let razorpayPaymentId: string | undefined;
   let razorpayOrderId: string | undefined;
+  let amount: number | undefined;
+  let currency: string | undefined;
   let body: any;
 
   try {
@@ -205,6 +207,8 @@ export async function razorpayWebhook(req: Request, res: Response): Promise<void
     eventType = body.event;
     razorpayPaymentId = body.payload?.payment?.entity?.id;
     razorpayOrderId = body.payload?.payment?.entity?.order_id;
+    amount = body.payload?.payment?.entity?.amount;
+    currency = body.payload?.payment?.entity?.currency;
   } catch (err: any) {
     res.status(400).send('Malformed JSON payload');
     return;
@@ -291,7 +295,9 @@ export async function razorpayWebhook(req: Request, res: Response): Promise<void
         razorpayOrderId,
         razorpayPaymentId,
         eventType,
-        eventId
+        eventId,
+        amount,
+        currency
       );
       
       webhookEvent.status = 'success';
