@@ -23,6 +23,7 @@ import { logger } from '../../utils/logger';
 import { auditLog } from '../../utils/audit';
 import { sendEmail } from '../../utils/email';
 import { generateTicketPDF } from '../../utils/pdf';
+import { paymentFailureHtml } from '../../lib/email';
 import { ReservationService } from '../reservation.service';
 import { QueueService } from '../queue.service';
 import { CacheService } from '../cache.service';
@@ -979,6 +980,76 @@ export class PaymentService {
       correlationId: booking.bookingId,
     });
     await ReservationService.releaseCapacityForTerminalReservations(failedReservations);
+
+    // Asynchronous, exception-safe Payment Failure Email Trigger
+    if (booking.guestEmail) {
+      try {
+        const existingNotification = await Notification.findOne({
+          jobId: `payfail-${payment._id}`
+        });
+
+        if (!existingNotification) {
+          const event = await Event.findById(booking.eventId);
+          const emailBody = await paymentFailureHtml({
+            customerName: booking.guestName,
+            eventTitle: event?.title || 'MAD Event',
+            bookingReference: booking.bookingId,
+            retryUrl: `${getEnv().FRONTEND_URL || 'http://localhost:3000'}/checkout/${booking.bookingId}`,
+          });
+
+          const jobId = `payfail-${payment._id}`;
+
+          await Notification.create({
+            jobId,
+            status: 'queued',
+            queuedAt: new Date(),
+            type: NotificationType.PAYMENT_FAILED,
+            channel: 'email',
+            recipient: booking.guestEmail,
+            subject: `Payment Failed for ${event?.title || 'MAD Event'}`,
+            isSent: false,
+            retryCount: 0,
+            bookingId: booking._id,
+            eventId: event?._id
+          });
+
+          await QueueService.enqueue(
+            getQueueName('notification-queue'),
+            'email-dispatch',
+            {
+              to: booking.guestEmail,
+              subject: `Payment Failed for ${event?.title || 'MAD Event'}`,
+              html: emailBody,
+              notificationType: NotificationType.PAYMENT_FAILED,
+              bookingId: booking._id.toString(),
+              eventId: booking.eventId.toString(),
+            },
+            jobId
+          );
+
+          logger.info({
+            emailType: 'PAYMENT_FAILED',
+            recipient: booking.guestEmail,
+            bookingId: booking._id.toString(),
+            eventId: booking.eventId.toString(),
+            timestamp: new Date().toISOString(),
+            success: true
+          }, 'Payment failure email queued successfully.');
+        } else {
+          logger.info({ bookingId: booking._id, paymentId: payment._id }, 'Payment failure email already queued or sent; skipping duplicate.');
+        }
+      } catch (err) {
+        logger.error({
+          err,
+          emailType: 'PAYMENT_FAILED',
+          recipient: booking.guestEmail,
+          bookingId: booking._id.toString(),
+          eventId: booking.eventId.toString(),
+          timestamp: new Date().toISOString(),
+          success: false
+        }, 'Failed to queue payment failure email gracefully.');
+      }
+    }
 
     const event = await Event.findById(booking.eventId);
     const releasedSeatIds: string[] = [];

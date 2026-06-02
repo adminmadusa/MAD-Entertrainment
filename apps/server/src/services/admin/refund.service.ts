@@ -3,7 +3,12 @@ import { Booking } from '../../models/booking.schema';
 import { Payment } from '../../models/payment.schema';
 import { runInTransaction, cancelBooking } from './booking.service';
 import { AppError } from '../../middleware/error.middleware';
-import { BookingStatus } from '@mad/shared';
+import { BookingStatus, NotificationType } from '@mad/shared';
+import { Notification } from '../../models/notification.schema';
+import { QueueService } from '../queue.service';
+import { getQueueName } from '../../config/queue.config';
+import { logger } from '../../utils/logger';
+import { fullRefundHtml, partialRefundHtml } from '../../lib/email';
 
 export const createRefund = async (data: {
   bookingId: string;
@@ -85,6 +90,120 @@ export const processRefund = async (
         { status: 'refunded' },
         { session }
       );
+
+      // Asynchronous, exception-safe Full & Partial Refund Email Trigger
+      try {
+        const booking = await Booking.findById(updated.bookingId).populate('eventId').session(session || null);
+        if (booking && booking.guestEmail) {
+          const event = booking.eventId as any;
+          const refundAmount = updated.amount;
+          const totalAmount = booking.totalAmount;
+
+          let emailHtml = '';
+          let subject = '';
+          let notificationType: NotificationType | undefined;
+
+          if (refundAmount === totalAmount) {
+            // Task 2: Full Refund
+            const existingNotification = await Notification.findOne({
+              jobId: { $regex: `^refund-${updated._id}` }
+            }).session(session || null);
+
+            if (!existingNotification) {
+              const formattedRefundDate = new Date(updated.processedAt || new Date()).toLocaleDateString('en-IN', {
+                weekday: 'long',
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric',
+              });
+
+              emailHtml = await fullRefundHtml({
+                customerName: booking.guestName,
+                bookingReference: booking.bookingId,
+                eventTitle: event?.title || 'MAD Event',
+                refundAmount: refundAmount,
+                refundDate: formattedRefundDate,
+                settlementTimeline: '5-7 business days',
+                currency: booking.currency || 'INR',
+              });
+
+              subject = `Refund Processed for ${booking.bookingId}`;
+              notificationType = NotificationType.FULL_REFUND;
+            }
+          } else if (refundAmount < totalAmount) {
+            // Task 3: Partial Refund
+            const existingNotification = await Notification.findOne({
+              jobId: { $regex: `^refund-${updated._id}` }
+            }).session(session || null);
+
+            if (!existingNotification) {
+              emailHtml = await partialRefundHtml({
+                customerName: booking.guestName,
+                bookingReference: booking.bookingId,
+                originalAmount: totalAmount,
+                refundAmount: refundAmount,
+                remainingAmount: totalAmount - refundAmount,
+                reason: updated.reason || 'Tier adjustment refund',
+                currency: booking.currency || 'INR',
+              });
+
+              subject = `Partial Refund Processed for ${booking.bookingId}`;
+              notificationType = NotificationType.PARTIAL_REFUND;
+            }
+          }
+
+          if (emailHtml && notificationType) {
+            const jobId = `refund-${updated._id}-${Date.now()}`;
+            
+            await Notification.create([{
+              jobId,
+              status: 'queued',
+              queuedAt: new Date(),
+              type: notificationType,
+              channel: 'email',
+              recipient: booking.guestEmail,
+              subject,
+              isSent: false,
+              retryCount: 0,
+              bookingId: booking._id,
+              eventId: event?._id
+            }], { session });
+
+            await QueueService.enqueue(
+              getQueueName('notification-queue'),
+              'email-dispatch',
+              {
+                to: booking.guestEmail,
+                subject,
+                html: emailHtml,
+                notificationType,
+                bookingId: booking._id.toString(),
+                eventId: event?._id?.toString() || booking.eventId.toString(),
+              },
+              jobId
+            );
+
+            logger.info({
+              emailType: refundAmount === totalAmount ? 'FULL_REFUND' : 'PARTIAL_REFUND',
+              recipient: booking.guestEmail,
+              bookingId: booking._id.toString(),
+              eventId: event?._id?.toString() || booking.eventId.toString(),
+              timestamp: new Date().toISOString(),
+              success: true
+            }, 'Refund email queued successfully.');
+          } else {
+            logger.info({ bookingId: booking._id }, 'Refund email already queued or sent; skipping duplicate.');
+          }
+        }
+      } catch (err) {
+        logger.error({
+          err,
+          emailType: 'REFUND_PROCESSED',
+          bookingId: updated.bookingId.toString(),
+          timestamp: new Date().toISOString(),
+          success: false
+        }, 'Failed to queue refund email gracefully.');
+      }
     }
 
     return updated;
