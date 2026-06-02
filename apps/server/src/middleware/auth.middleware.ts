@@ -131,8 +131,20 @@ export function requireAdmin(
   }
 
   try {
-    req.admin = verifyAdminToken(token);
+    const adminPayload = verifyAdminToken(token);
 
+    // Strict Role Enum Validation
+    const isValidRole = Object.values(AdminRole).includes(adminPayload.role as AdminRole);
+    if (!isValidRole) {
+      logger.error(
+        { role: adminPayload.role, email: adminPayload.email },
+        'Security Alert: Malformed or invalid role detected in JWT payload'
+      );
+      sendForbidden(res, 'Invalid role assignment');
+      return;
+    }
+
+    req.admin = adminPayload;
     next();
   } catch (err) {
     logger.debug({ err }, 'Invalid admin token');
@@ -153,6 +165,17 @@ export function requireRole(...roles: AdminRole[]) {
   ): void => {
     if (!req.admin) {
       sendUnauthorized(res, 'Admin authentication required');
+      return;
+    }
+
+    // Strict Role Enum Validation
+    const isValidRole = Object.values(AdminRole).includes(req.admin.role as AdminRole);
+    if (!isValidRole) {
+      logger.error(
+        { role: req.admin.role, email: req.admin.email },
+        'Security Alert: Malformed or invalid role detected in requireRole'
+      );
+      sendForbidden(res, 'Invalid role assignment');
       return;
     }
 
@@ -181,6 +204,17 @@ export function requireSuperAdmin(
   if (!req.admin) {
     sendUnauthorized(res, 'Admin authentication required');
 
+    return;
+  }
+
+  // Strict Role Enum Validation
+  const isValidRole = Object.values(AdminRole).includes(req.admin.role as AdminRole);
+  if (!isValidRole) {
+    logger.error(
+      { role: req.admin.role, email: req.admin.email },
+      'Security Alert: Malformed or invalid role detected in requireSuperAdmin'
+    );
+    sendForbidden(res, 'Invalid role assignment');
     return;
   }
 

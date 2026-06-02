@@ -1,10 +1,20 @@
 import { AdminRole } from '@mad/shared';
 import { describe, expect, it, vi } from 'vitest';
+import { verifyAdminToken } from '../../utils/jwt';
+import { requireAdmin, requireSuperAdmin, requireRole } from '../../middleware/auth.middleware';
 
 vi.mock('../../utils/logger', () => ({
   logger: {
     debug: vi.fn(),
+    error: vi.fn(),
+    info: vi.fn(),
+    warn: vi.fn(),
   },
+}));
+
+vi.mock('../../utils/jwt', () => ({
+  verifyAdminToken: vi.fn(),
+  extractBearerToken: vi.fn((header?: string) => header?.replace('Bearer ', '')),
 }));
 
 vi.mock('../../controllers/admin/diagnostics.controller', () => ({
@@ -454,5 +464,96 @@ describe('admin operational RBAC routes', () => {
     for (const role of [AdminRole.MANAGER, AdminRole.SUPPORT, AdminRole.SCANNER]) {
       expectDenied(middleware, role, 'Access denied. Required role: super_admin or admin');
     }
+  });
+
+  describe('Strict Middleware Validation & Fail-Fast Regression Tests', () => {
+    it.each([
+      ['SUPERADMIN'],
+      ['SUPER_ADMINISTRATOR'],
+      ['foo'],
+      [''],
+      [null],
+      [undefined],
+    ])('should immediately reject and log if requireAdmin receives malformed/invalid role: %s', (invalidRole) => {
+      const req = {
+        headers: { authorization: 'Bearer valid-token' },
+        admin: undefined,
+      } as any;
+      const res = mockResponse();
+      const next = vi.fn();
+
+      // Mock verifyAdminToken to return the invalid role
+      vi.mocked(verifyAdminToken).mockReturnValueOnce({
+        sub: 'admin-id',
+        email: 'admin@example.com',
+        role: invalidRole as any,
+      });
+
+      requireAdmin(req, res, next);
+
+      expect(next).not.toHaveBeenCalled();
+      expect(res.status).toHaveBeenCalledWith(403);
+      expect(res.json).toHaveBeenCalledWith({
+        success: false,
+        message: 'Invalid role assignment',
+      });
+      // Verification that no silent repair occurred
+      expect(req.admin).toBeUndefined();
+    });
+
+    it.each([
+      ['SUPERADMIN'],
+      ['foo'],
+      [''],
+      [null],
+      [undefined],
+    ])('should immediately reject if requireSuperAdmin receives malformed/invalid role: %s', (invalidRole) => {
+      const req = {
+        admin: {
+          sub: 'admin-id',
+          email: 'admin@example.com',
+          role: invalidRole as any,
+        },
+      } as any;
+      const res = mockResponse();
+      const next = vi.fn();
+
+      requireSuperAdmin(req, res, next);
+
+      expect(next).not.toHaveBeenCalled();
+      expect(res.status).toHaveBeenCalledWith(403);
+      expect(res.json).toHaveBeenCalledWith({
+        success: false,
+        message: 'Invalid role assignment',
+      });
+    });
+
+    it.each([
+      ['SUPERADMIN'],
+      ['foo'],
+      [''],
+      [null],
+      [undefined],
+    ])('should immediately reject if requireRole receives malformed/invalid role: %s', (invalidRole) => {
+      const req = {
+        admin: {
+          sub: 'admin-id',
+          email: 'admin@example.com',
+          role: invalidRole as any,
+        },
+      } as any;
+      const res = mockResponse();
+      const next = vi.fn();
+
+      const middleware = requireRole(AdminRole.SUPER_ADMIN, AdminRole.ADMIN);
+      middleware(req, res, next);
+
+      expect(next).not.toHaveBeenCalled();
+      expect(res.status).toHaveBeenCalledWith(403);
+      expect(res.json).toHaveBeenCalledWith({
+        success: false,
+        message: 'Invalid role assignment',
+      });
+    });
   });
 });
