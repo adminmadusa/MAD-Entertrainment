@@ -102,6 +102,10 @@ export async function stripeWebhook(req: Request, res: Response): Promise<void> 
   try {
     webhookEvent = await WebhookEvent.create({
       eventId: event.id,
+      // event.id is both the deduplication key and the canonical provider event
+      // identifier for Stripe — store it explicitly as providerEventId for
+      // symmetry with Razorpay and dashboard cross-referencing.
+      providerEventId: event.id,
       provider: 'stripe',
       eventType: event.type,
       status: 'received',
@@ -250,7 +254,7 @@ export async function razorpayWebhook(req: Request, res: Response): Promise<void
   auditLog({
     action: 'WEBHOOK_RECEIVED',
     status: 'success',
-    metadata: { gateway: 'razorpay', eventId, eventType, orderId: razorpayOrderId, paymentId: razorpayPaymentId },
+    metadata: { gateway: 'razorpay', eventId, providerEventId, eventType, orderId: razorpayOrderId, paymentId: razorpayPaymentId },
     description: `Received Razorpay webhook event ${eventType} (ID: ${eventId})`
   });
 
@@ -261,6 +265,7 @@ export async function razorpayWebhook(req: Request, res: Response): Promise<void
   try {
     webhookEvent = await WebhookEvent.create({
       eventId,
+      providerEventId,
       provider: 'razorpay',
       eventType,
       status: 'received',

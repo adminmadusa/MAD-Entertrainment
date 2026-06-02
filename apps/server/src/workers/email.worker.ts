@@ -42,12 +42,87 @@ export async function processEmailDispatch(
   logger.info({ to, bookingId, type: notificationType }, 'Email successfully dispatched.');
 }
 
-async function handleJobExecution(jobId: string, data: any, attemptsMade: number): Promise<void> {
-  const { to: email } = data;
-  logger.info({ jobId, email, attemptsMade }, "Email worker started");
+export async function handleJobExecution(jobId: string, data: any, attemptsMade: number): Promise<void> {
+  const { to, subject, html, attachments, bookingId, eventId, notificationType } = data;
+  logger.info({ jobId, recipient: to, attemptsMade }, "Email worker started");
 
-  await Notification.updateOne({ jobId }, { $set: { status: 'processing' } });
+  if (!to || !subject || !html) {
+    throw new Error('Missing parameters in email dispatch payload');
+  }
 
+  // 1. Retrieve or atomically initialize the notification document by jobId
+  let notification = await Notification.findOne({ jobId });
+  let isNew = false;
+
+  if (!notification) {
+    notification = await Notification.findOneAndUpdate(
+      { jobId },
+      {
+        $setOnInsert: {
+          type: notificationType || NotificationType.BOOKING_CONFIRMED,
+          bookingId,
+          eventId,
+          channel: 'email',
+          recipient: to,
+          subject,
+          status: 'processing',
+          isSent: false,
+          retryCount: attemptsMade,
+          queuedAt: new Date(),
+        },
+      },
+      { upsert: true, new: true }
+    );
+    isNew = true;
+  }
+
+  if (!isNew) {
+    // Check if already sent
+    if (notification.status === 'sent' || notification.isSent) {
+      logger.warn(
+        { jobId },
+        'Idempotency guard triggered: Email already sent. Skipping execution.'
+      );
+      return;
+    }
+
+    // Check if concurrent processing is happening on first attempt
+    if (notification.status === 'processing' && attemptsMade === 0) {
+      logger.warn(
+        { jobId },
+        'Idempotency guard triggered: Email is already being processed. Skipping execution.'
+      );
+      return;
+    }
+
+    // Atomically transition status to processing
+    const updatedNotification = await Notification.findOneAndUpdate(
+      {
+        _id: notification._id,
+        $or: [
+          { status: { $in: ['queued', 'failed'] } },
+          { status: 'processing', retryCount: { $lt: attemptsMade } }
+        ]
+      },
+      {
+        $set: {
+          status: 'processing',
+          retryCount: attemptsMade,
+        },
+      },
+      { new: true }
+    );
+
+    if (!updatedNotification) {
+      logger.warn(
+        { jobId },
+        'Idempotency guard triggered: Notification status changed concurrently. Skipping execution.'
+      );
+      return;
+    }
+  }
+
+  // 2. Dispatch SMTP email inside Sentry span
   try {
     await Sentry.startSpan(
       {
@@ -55,11 +130,6 @@ async function handleJobExecution(jobId: string, data: any, attemptsMade: number
         name: `worker:${QUEUE_NAME}`,
       },
       async () => {
-        const { to, subject, html, attachments, bookingId, eventId, notificationType } = data;
-        if (!to || !subject || !html) {
-          throw new Error('Missing parameters in email dispatch payload');
-        }
-
         await processEmailDispatch(to, subject, html, attachments, bookingId, eventId, notificationType);
       }
     );
