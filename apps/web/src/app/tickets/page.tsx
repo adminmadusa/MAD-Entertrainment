@@ -77,7 +77,7 @@ function TicketRetrievalContent() {
   const targetRef = searchParams.get('ref');
   const pollCountRef = useRef(0);
 
-  const { logout, isAuthenticated, isLoading: isAuthLoading, user } = useAuth();
+  const { logout, isAuthenticated, isLoading: isAuthLoading, user, onboardingRequired } = useAuth();
   const guestSession = getStoredGuestBookingSession();
   const singleBookingSessionToken = isAuthenticated ? undefined : guestSession?.token;
 
@@ -139,10 +139,10 @@ function TicketRetrievalContent() {
 
   // Transition directly to portal if already authenticated on mount
   useEffect(() => {
-    if (isAuthenticated && !isAuthLoading) {
+    if (isAuthenticated && !isAuthLoading && !onboardingRequired) {
       setStep('portal');
     }
-  }, [isAuthenticated, isAuthLoading]);
+  }, [isAuthenticated, isAuthLoading, onboardingRequired]);
 
   // Query a single booking by reference for guest or authenticated recovery.
   const {

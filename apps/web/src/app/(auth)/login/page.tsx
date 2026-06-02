@@ -2,8 +2,11 @@
 
 import { Suspense } from 'react';
 import { AuthForm } from '@/components/auth/AuthForm';
+import { useRouter } from 'next/navigation';
 
 function LoginPageContent() {
+  const router = useRouter();
+
   return (
     <div className="min-h-screen pt-28 pb-16 flex items-center justify-center relative overflow-hidden bg-background">
       {/* Decorative Glow Elements */}
@@ -21,7 +24,7 @@ function LoginPageContent() {
             </p>
           </div>
 
-          <AuthForm mode="login" />
+          <AuthForm mode="login" onSuccess={() => router.push('/tickets')} />
         </div>
       </div>
     </div>
