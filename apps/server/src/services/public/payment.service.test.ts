@@ -1160,4 +1160,245 @@ describe('Payment Service', () => {
       expect(Booking.updateOne).not.toHaveBeenCalled(); // No silent updates or user assignments
     });
   });
+
+  describe('Razorpay Payment Amount and Currency Validation', () => {
+    describe('confirmFromWebhook validations', () => {
+      it('should confirm booking if webhook amount and currency match', async () => {
+        const mockPayment = { _id: 'p-123', bookingId: 'b-123', gateway: 'razorpay', status: PaymentStatus.PENDING, save: vi.fn() };
+        const mockBooking = { _id: 'b-123', eventId: 'e-123', status: BookingStatus.AWAITING_PAYMENT, totalAmount: 150.5, currency: 'INR', tickets: [], save: vi.fn() };
+
+        vi.mocked(Payment.findOne).mockResolvedValue(mockPayment as any);
+        vi.mocked(Booking.findById).mockResolvedValue(mockBooking as any);
+        vi.mocked(Booking.findOneAndUpdate).mockResolvedValue(mockBooking as any);
+
+        const result = await PaymentService.confirmFromWebhook(
+          'order_123',
+          'pay_123',
+          'payment.captured',
+          'evt_123',
+          15050, // 150.5 * 100
+          'INR'
+        );
+
+        expect(result.status).toBe('confirmed');
+        expect(mockPayment.status).toBe(PaymentStatus.PAID);
+        expect(vi.mocked(Booking.findOneAndUpdate)).toHaveBeenCalled();
+      });
+
+      it('should confirm booking if webhook amount and currency are not provided (legacy compatibility)', async () => {
+        const mockPayment = { _id: 'p-123', bookingId: 'b-123', gateway: 'razorpay', status: PaymentStatus.PENDING, save: vi.fn() };
+        const mockBooking = { _id: 'b-123', eventId: 'e-123', status: BookingStatus.AWAITING_PAYMENT, totalAmount: 150.5, currency: 'INR', tickets: [], save: vi.fn() };
+
+        vi.mocked(Payment.findOne).mockResolvedValue(mockPayment as any);
+        vi.mocked(Booking.findById).mockResolvedValue(mockBooking as any);
+        vi.mocked(Booking.findOneAndUpdate).mockResolvedValue(mockBooking as any);
+
+        const result = await PaymentService.confirmFromWebhook(
+          'order_123',
+          'pay_123',
+          'payment.captured',
+          'evt_123'
+        );
+
+        expect(result.status).toBe('confirmed');
+        expect(mockPayment.status).toBe(PaymentStatus.PAID);
+        expect(vi.mocked(Booking.findOneAndUpdate)).toHaveBeenCalled();
+      });
+
+      it('should fail, release inventory, and skip confirmation if webhook amount is mismatched', async () => {
+        const mockPayment = { _id: 'p-123', bookingId: 'b-123', gateway: 'razorpay', status: PaymentStatus.PENDING, save: vi.fn() };
+        const mockBooking = { _id: 'b-123', eventId: 'e-123', status: BookingStatus.AWAITING_PAYMENT, totalAmount: 150.5, currency: 'INR', tickets: [], save: vi.fn() };
+
+        vi.mocked(Payment.findOne).mockResolvedValue(mockPayment as any);
+        vi.mocked(Booking.findById).mockResolvedValue(mockBooking as any);
+        vi.mocked(Booking.findOneAndUpdate).mockResolvedValue(mockBooking as any);
+
+        const result = await PaymentService.confirmFromWebhook(
+          'order_123',
+          'pay_123',
+          'payment.captured',
+          'evt_123',
+          10000, // Expected 15050
+          'INR'
+        );
+
+        expect(result.status).toBe('skipped');
+        expect(mockPayment.status).toBe(PaymentStatus.FAILED);
+        expect(mockPayment.failureReason).toContain('Amount mismatch in webhook');
+        expect(vi.mocked(Booking.findOneAndUpdate)).not.toHaveBeenCalled();
+      });
+
+      it('should fail, release inventory, and skip confirmation if webhook currency is mismatched', async () => {
+        const mockPayment = { _id: 'p-123', bookingId: 'b-123', gateway: 'razorpay', status: PaymentStatus.PENDING, save: vi.fn() };
+        const mockBooking = { _id: 'b-123', eventId: 'e-123', status: BookingStatus.AWAITING_PAYMENT, totalAmount: 150.5, currency: 'INR', tickets: [], save: vi.fn() };
+
+        vi.mocked(Payment.findOne).mockResolvedValue(mockPayment as any);
+        vi.mocked(Booking.findById).mockResolvedValue(mockBooking as any);
+        vi.mocked(Booking.findOneAndUpdate).mockResolvedValue(mockBooking as any);
+
+        const result = await PaymentService.confirmFromWebhook(
+          'order_123',
+          'pay_123',
+          'payment.captured',
+          'evt_123',
+          15050,
+          'USD' // Expected INR
+        );
+
+        expect(result.status).toBe('skipped');
+        expect(mockPayment.status).toBe(PaymentStatus.FAILED);
+        expect(mockPayment.failureReason).toContain('Currency mismatch in webhook');
+        expect(vi.mocked(Booking.findOneAndUpdate)).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('verifyPayment validations', () => {
+      const createMockQuery = (val: any) => {
+        const obj = {
+          then: (resolve: any) => resolve(val),
+          sort: () => obj,
+        };
+        return obj as any;
+      };
+
+      it('should verify payment successfully if local record amount and currency match', async () => {
+        const mockBooking = {
+          _id: 'b-123',
+          bookingId: 'MAD-2026-ABCDE',
+          userId: { toString: () => 'user-owner' },
+          eventId: 'e-123',
+          status: BookingStatus.AWAITING_PAYMENT,
+          tickets: [],
+          totalAmount: 100,
+          currency: 'INR',
+          save: vi.fn(),
+        };
+        const mockPayment = {
+          _id: 'p-123',
+          gateway: 'razorpay',
+          status: PaymentStatus.PENDING,
+          amount: 100,
+          currency: 'INR',
+          gatewayOrderId: 'order_123',
+          save: vi.fn(),
+        };
+
+        vi.mocked(Booking.findOne).mockResolvedValue(mockBooking as any);
+        vi.mocked(Payment.findOne).mockImplementation((query: any) => {
+          if (query.gatewayOrderId === 'order_123' && query.gateway === 'razorpay') {
+            return createMockQuery(mockPayment);
+          }
+          return createMockQuery(null);
+        });
+        vi.mocked(Booking.findOneAndUpdate).mockResolvedValue(mockBooking as any);
+
+        const result = await PaymentService.verifyPayment(
+          'MAD-2026-ABCDE',
+          {
+            razorpay_order_id: 'order_123',
+            razorpay_payment_id: 'pay_123',
+            razorpay_signature: razorpaySignature('order_123', 'pay_123'),
+          },
+          { userId: 'user-owner' }
+        );
+
+        expect(result).toBeDefined();
+        expect(mockPayment.status).toBe(PaymentStatus.PAID);
+      });
+
+      it('should fail and release inventory if local record amount is mismatched', async () => {
+        const mockBooking = {
+          _id: 'b-123',
+          bookingId: 'MAD-2026-ABCDE',
+          userId: { toString: () => 'user-owner' },
+          eventId: 'e-123',
+          status: BookingStatus.AWAITING_PAYMENT,
+          tickets: [],
+          totalAmount: 100,
+          currency: 'INR',
+          save: vi.fn(),
+        };
+        const mockPayment = {
+          _id: 'p-123',
+          gateway: 'razorpay',
+          status: PaymentStatus.PENDING,
+          amount: 50, // Mismatched! Expected 100
+          currency: 'INR',
+          gatewayOrderId: 'order_123',
+          save: vi.fn(),
+        };
+
+        vi.mocked(Booking.findOne).mockResolvedValue(mockBooking as any);
+        vi.mocked(Payment.findOne).mockImplementation((query: any) => {
+          if (query.gatewayOrderId === 'order_123' && query.gateway === 'razorpay') {
+            return createMockQuery(mockPayment);
+          }
+          return createMockQuery(null);
+        });
+        vi.mocked(Booking.findOneAndUpdate).mockResolvedValue(mockBooking as any);
+
+        await expect(
+          PaymentService.verifyPayment(
+            'MAD-2026-ABCDE',
+            {
+              razorpay_order_id: 'order_123',
+              razorpay_payment_id: 'pay_123',
+              razorpay_signature: razorpaySignature('order_123', 'pay_123'),
+            },
+            { userId: 'user-owner' }
+          )
+        ).rejects.toThrow('Payment amount does not match booking total');
+
+        expect(mockPayment.status).toBe(PaymentStatus.FAILED);
+        expect(mockPayment.failureReason).toContain('Amount mismatch');
+      });
+
+      it('should fail and release inventory if local record currency is mismatched', async () => {
+        const mockBooking = {
+          _id: 'b-123',
+          bookingId: 'MAD-2026-ABCDE',
+          userId: { toString: () => 'user-owner' },
+          eventId: 'e-123',
+          status: BookingStatus.AWAITING_PAYMENT,
+          tickets: [],
+          totalAmount: 100,
+          currency: 'INR',
+          save: vi.fn(),
+        };
+        const mockPayment = {
+          _id: 'p-123',
+          gateway: 'razorpay',
+          status: PaymentStatus.PENDING,
+          amount: 100,
+          currency: 'USD', // Mismatched! Expected INR
+          gatewayOrderId: 'order_123',
+          save: vi.fn(),
+        };
+
+        vi.mocked(Booking.findOne).mockResolvedValue(mockBooking as any);
+        vi.mocked(Payment.findOne).mockImplementation((query: any) => {
+          if (query.gatewayOrderId === 'order_123' && query.gateway === 'razorpay') {
+            return createMockQuery(mockPayment);
+          }
+          return createMockQuery(null);
+        });
+        vi.mocked(Booking.findOneAndUpdate).mockResolvedValue(mockBooking as any);
+
+        await expect(
+          PaymentService.verifyPayment(
+            'MAD-2026-ABCDE',
+            {
+              razorpay_order_id: 'order_123',
+              razorpay_payment_id: 'pay_123',
+              razorpay_signature: razorpaySignature('order_123', 'pay_123'),
+            },
+            { userId: 'user-owner' }
+          )
+        ).rejects.toThrow('Payment currency does not match booking currency');
+
+        expect(mockPayment.status).toBe(PaymentStatus.FAILED);
+        expect(mockPayment.failureReason).toContain('Currency mismatch');
+      });
+    });
+  });
 });
