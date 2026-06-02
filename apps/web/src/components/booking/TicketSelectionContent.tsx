@@ -45,6 +45,7 @@ export function TicketSelectionContent({
   const eventId = event._id;
 
   const [sessionToken, setSessionToken] = useState('');
+  const [sessionError, setSessionError] = useState(false);
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [couponCode, setCouponCode] = useState('');
   const [couponApplied, setCouponApplied] = useState(false);
@@ -52,26 +53,24 @@ export function TicketSelectionContent({
   const [showCelebration, setShowCelebration] = useState(false);
   const [error, setError] = useState('');
 
-  // Setup signed guest session token
-  useEffect(() => {
-    let cancelled = false;
+  // Setup signed guest session token — extracted for retry support
+  const initGuestSession = useCallback(() => {
+    setSessionError(false);
+    setError('');
 
     ensureGuestBookingSession()
       .then((session) => {
-        if (!cancelled) {
-          setSessionToken(session.token);
-        }
+        setSessionToken(session.token);
       })
       .catch(() => {
-        if (!cancelled) {
-          setError('Secure session initialization failed. Please refresh and try again.');
-        }
+        setSessionError(true);
+        setError('Secure session initialization failed. Please refresh and try again.');
       });
-
-    return () => {
-      cancelled = true;
-    };
   }, []);
+
+  useEffect(() => {
+    initGuestSession();
+  }, [initGuestSession]);
 
   // Booking Mutation (creates temporary hold/reservation)
   const createBookingMutation = useMutation({
@@ -210,6 +209,15 @@ export function TicketSelectionContent({
       {error && (
         <div className="p-3.5 bg-error/10 border border-error/30 rounded-xl text-xs text-red-400 text-center" role="alert" aria-live="assertive">
           {error}
+          {sessionError && (
+            <button
+              type="button"
+              onClick={initGuestSession}
+              className="block mx-auto mt-2 px-4 py-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-300 font-semibold text-xs transition-all"
+            >
+              Try Again
+            </button>
+          )}
         </div>
       )}
 
@@ -295,9 +303,10 @@ export function TicketSelectionContent({
                 </svg>
               </div>
             </div>
-            <h3 className="text-white font-black text-xl mb-2">Coupon Applied!</h3>
+            <h3 className="text-white font-black text-xl mb-2">Promo Code Saved</h3>
             <div className="text-text-secondary text-sm mb-6 space-y-1">
               <p>Code: <span className="text-white font-mono font-bold">{couponCode}</span></p>
+              <p className="text-[11px] text-text-muted italic">Discount eligibility will be confirmed during checkout.</p>
             </div>
             <button 
               type="button"
