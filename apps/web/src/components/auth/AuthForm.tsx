@@ -150,11 +150,15 @@ export function AuthForm({ mode, onSuccess, onGuestContinue, className = '' }: A
   const [onboardError, setOnboardError] = useState('');
 
   // Auto transition to onboard step if authenticated but profile is incomplete
+  // NOTE (code-review watch item): step is intentionally excluded from deps to avoid
+  // re-triggering when the user navigates between verify/request. The effect should
+  // only fire when auth state (token/onboardingRequired) changes.
   useEffect(() => {
-    if (token && onboardingRequired && step === 'request') {
+    if (token && onboardingRequired && step !== 'onboard') {
       setStep('onboard');
     }
-  }, [token, onboardingRequired, step]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token, onboardingRequired]);
 
   // Countdown timer state for code resending
   const [resendTimer, setResendTimer] = useState(0);

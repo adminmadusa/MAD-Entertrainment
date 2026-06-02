@@ -153,7 +153,7 @@ function TicketRetrievalContent() {
   } = useQuery({
     queryKey: QUERY_KEYS.public.bookings.detail(queryRef),
     queryFn: () => publicGetBookingDetails(queryRef, singleBookingSessionToken),
-    enabled: !!queryRef && (isAuthenticated || !!singleBookingSessionToken),
+    enabled: !!queryRef,
     retry: false,
     refetchInterval: (query) => {
       const status = query.state.data?.booking?.status;
@@ -232,12 +232,6 @@ function TicketRetrievalContent() {
       setErrorMsg('Please enter a booking reference ID.');
       return;
     }
-
-    if (!isAuthenticated && !singleBookingSessionToken) {
-      setErrorMsg('Sign in is required to search and retrieve booking details.');
-      return;
-    }
-
     setBookingRefInput(normalizedRef);
     setQueryRef(normalizedRef);
   };
@@ -247,6 +241,8 @@ function TicketRetrievalContent() {
     setStep('email');
     setErrorMsg('');
     setInfoMsg('');
+    setQueryRef('');
+    setBookingRefInput('');
   };
 
 
@@ -277,13 +273,13 @@ function TicketRetrievalContent() {
         {/* Header */}
         <div className="text-center space-y-3">
           <h1 className="text-display-sm font-black text-white tracking-tight">
-            {shouldShowPortal ? 'My Ticket Wallet' : 'Retrieve Tickets'}
+            {shouldShowPortal ? 'My Ticket Wallet' : 'My Tickets'}
           </h1>
           {!shouldShowPortal && (
             <p className="text-text-secondary text-sm max-w-md mx-auto leading-relaxed">
               {queryRef
                 ? `Verify the email address used to book ${queryRef} to view your tickets.`
-                : 'Enter your email address to verify your identity and instantly track your active event bookings.'}
+                : 'View, download, or resend your tickets.'}
             </p>
           )}
         </div>
@@ -308,11 +304,11 @@ function TicketRetrievalContent() {
           <div className="max-w-md mx-auto space-y-6 animate-in fade-in zoom-in-95 duration-300">
             {!showLoginForGuest && !queryRef && (
               <div className="bg-accent-purple/10 border border-accent-purple/30 rounded-2xl p-5 text-center shadow-glow-sm">
-                <h4 className="text-white font-bold text-sm tracking-wide flex items-center justify-center gap-2">
-                  <span className="text-lg" role="img" aria-label="ticket">🎫</span> Booked as a guest?
-                </h4>
-                <p className="text-text-secondary text-xs mt-2 leading-relaxed">
-                  Sign in with the exact same email address used during checkout, and we'll automatically find your tickets and link them to your wallet.
+                <p className="text-text-secondary text-xs leading-relaxed">
+                  Sign in using the email used during booking.
+                </p>
+                <p className="text-text-muted text-[10px] mt-2 leading-relaxed">
+                  A 6-digit OTP will be sent to your email.
                 </p>
               </div>
             )}
@@ -323,8 +319,6 @@ function TicketRetrievalContent() {
                 setStep('portal'); 
                 setShowLoginForGuest(false); 
                 setErrorMsg('');
-                setQueryRef('');
-                setBookingRefInput('');
               }} />
               {showLoginForGuest && (
                 <button 
@@ -471,10 +465,10 @@ function TicketRetrievalContent() {
 
         {shouldShowReferenceForm && (
           <div className="space-y-4 pt-4 mt-8 max-w-md mx-auto">
-            <h3 className="text-white font-bold text-sm px-2 text-center">Find a missing booking</h3>
+            <h3 className="text-white font-bold text-sm px-2 text-center">Need help finding your ticket?</h3>
             <form onSubmit={handleSearchSubmit} className="glass rounded-2xl border border-border-subtle p-6 flex flex-col gap-3">
               <div className="flex-grow space-y-1">
-                <label htmlFor="booking-ref-input" className="text-[10px] text-text-secondary font-medium tracking-wider uppercase">Booking Reference ID</label>
+                <label htmlFor="booking-ref-input" className="text-[10px] text-text-secondary font-medium tracking-wider uppercase">Search using your Booking Reference ID</label>
                 <input
                   id="booking-ref-input"
                   type="text"
