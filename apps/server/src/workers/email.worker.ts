@@ -7,7 +7,6 @@ import { getEnv } from '../config/env';
 import { isRedisConnected } from '../config/redis';
 import { DeadLetterJob } from '../models/dead-letter-job.schema';
 import { Notification } from '../models/notification.schema';
-import { localFallbackEmitter } from '../services/queue.service';
 import { sendEmail } from '../utils/email';
 import { logger } from '../utils/logger';
 import { NotificationType } from '@mad/shared';
@@ -154,18 +153,8 @@ export async function handleJobExecution(jobId: string, data: any, attemptsMade:
 let worker: Worker | null = null;
 
 export function startEmailWorker(): void {
-  // Bind local fallback event listener immediately
-  localFallbackEmitter.on(QUEUE_NAME, async (job) => {
-    logger.info({ jobId: job.id }, 'Processing email dispatch job via local EventEmitter fallback');
-    try {
-      await handleJobExecution(job.id, job.data, 0);
-    } catch (err) {
-      logger.error({ err, jobId: job.id }, 'Local email dispatch job fallback execution failed');
-    }
-  });
-
   if (!isRedisConnected()) {
-    logger.warn('Redis offline. Operating email worker in in-memory degraded fallback mode.');
+    logger.warn('Redis offline. Email worker startup aborted.');
     return;
   }
 
@@ -219,7 +208,6 @@ export function startEmailWorker(): void {
 }
 
 export async function stopEmailWorker(): Promise<void> {
-  localFallbackEmitter.removeAllListeners(QUEUE_NAME);
   if (worker) {
     await worker.close();
     worker = null;

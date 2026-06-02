@@ -8,7 +8,7 @@ import { Booking } from '../models/booking.schema';
 import { Event } from '../models/event.schema';
 import { Ticket } from '../models/ticket.schema';
 import { DeadLetterJob } from '../models/dead-letter-job.schema';
-import { QueueService, localFallbackEmitter } from '../services/queue.service';
+import { QueueService } from '../services/queue.service';
 import { logger } from '../utils/logger';
 
 const QUEUE_NAME = getQueueName('booking-queue');
@@ -118,18 +118,8 @@ async function handleJobExecution(jobId: string, data: any): Promise<void> {
 let worker: Worker | null = null;
 
 export function startBookingWorker(): void {
-  // Bind local fallback event listener immediately
-  localFallbackEmitter.on(QUEUE_NAME, async (job) => {
-    logger.info({ jobId: job.id }, 'Processing booking confirm job via local EventEmitter fallback');
-    try {
-      await handleJobExecution(job.id, job.data);
-    } catch (err) {
-      logger.error({ err, jobId: job.id }, 'Local booking confirm job fallback execution failed');
-    }
-  });
-
   if (!isRedisConnected()) {
-    logger.warn('Redis offline. Operating booking worker in in-memory degraded fallback mode.');
+    logger.warn('Redis offline. Booking worker startup aborted.');
     return;
   }
 
@@ -184,7 +174,6 @@ export function startBookingWorker(): void {
 }
 
 export async function stopBookingWorker(): Promise<void> {
-  localFallbackEmitter.removeAllListeners(QUEUE_NAME);
   if (worker) {
     await worker.close();
     worker = null;

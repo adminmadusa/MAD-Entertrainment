@@ -1,15 +1,8 @@
 import { Queue, QueueOptions } from 'bullmq';
-import { EventEmitter } from 'events';
 
 import { getQueueConnection, getQueuePrefix } from '../config/queue.config';
 import { isRedisConnected } from '../config/redis';
 import { logger } from '../utils/logger';
-
-// Local Event Emitter to serve as the local in-memory fallback queue when Redis is offline.
-export const localFallbackEmitter = new EventEmitter();
-
-// Limit EventEmitter listener warnings
-localFallbackEmitter.setMaxListeners(100);
 
 export class QueueService {
   private static queues: Record<string, Queue> = {};
@@ -69,21 +62,8 @@ export class QueueService {
       }
     }
 
-    // Local Degraded Fallback Execution
-    logger.warn(
-      { queueName, jobName, jobId },
-      'Redis offline or queue failed. Processing job via local in-memory degraded fallback.'
-    );
-
-    // Run in-memory execution in the next tick of the event loop to ensure non-blocking dispatch
-    process.nextTick(() => {
-      localFallbackEmitter.emit(queueName, {
-        name: jobName,
-        data,
-        id: jobId || `local-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
-        isFallback: true,
-      });
-    });
+    // Fail-Fast Strategy: Throw an error immediately when Redis is offline to delegate persistence to payment webhooks
+    throw new Error(`Queue connection error: Redis is offline. Failed to enqueue job ${jobName} for queue ${queueName}`);
   }
 
   /**
