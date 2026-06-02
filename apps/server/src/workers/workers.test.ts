@@ -3,7 +3,7 @@ import { Types } from 'mongoose';
 
 import { processBookingConfirm } from './booking.worker';
 import { processPDFGenerate } from './pdf.worker';
-import { processEmailDispatch } from './email.worker';
+import { processEmailDispatch, handleJobExecution } from './email.worker';
 
 import { Booking } from '../models/booking.schema';
 import { Event } from '../models/event.schema';
@@ -42,6 +42,9 @@ vi.mock('../models/ticket.schema', () => ({
 vi.mock('../models/notification.schema', () => ({
   Notification: {
     create: vi.fn(),
+    findOne: vi.fn(),
+    findOneAndUpdate: vi.fn(),
+    updateOne: vi.fn(),
   },
 }));
 
@@ -162,10 +165,16 @@ describe('Asynchronous Workers', () => {
       
       const fakePdfBuffer = Buffer.from('fake-pdf-content');
       vi.mocked(generateTicketPDF).mockResolvedValue(fakePdfBuffer);
+      vi.mocked(Notification.findOne).mockResolvedValue(null);
+      vi.mocked(Notification.findOneAndUpdate).mockResolvedValue({
+        status: 'queued',
+        isSent: false,
+      } as any);
 
       await processPDFGenerate(mockBookingId, mockEventId, 'guest@example.com', 'Jane Guest');
 
       expect(generateTicketPDF).toHaveBeenCalledWith(mockBooking, mockEvent);
+      expect(Notification.findOneAndUpdate).toHaveBeenCalled();
       expect(QueueService.enqueue).toHaveBeenCalledWith(
         'notification-queue',
         'email:dispatch',
@@ -182,6 +191,76 @@ describe('Asynchronous Workers', () => {
         }),
         `email:dispatch:${mockBookingId}`
       );
+    });
+
+    it('should skip PDF generation if Notification status is sent (idempotency)', async () => {
+      const mockBookingId = new Types.ObjectId().toString();
+      const mockEventId = new Types.ObjectId().toString();
+
+      const mockBooking = {
+        _id: mockBookingId,
+        bookingId: 'MAD-2026-X7Y8Z',
+        guestName: 'Jane Guest',
+        guestEmail: 'guest@example.com',
+      };
+
+      const mockEvent = {
+        _id: mockEventId,
+        title: 'Sunset Beach Concert',
+      };
+
+      vi.mocked(Booking.findById).mockResolvedValue(mockBooking as any);
+      vi.mocked(Event.findById).mockResolvedValue(mockEvent as any);
+      
+      vi.mocked(Notification.findOne).mockResolvedValue({
+        status: 'sent',
+        isSent: true,
+      } as any);
+      vi.mocked(Notification.findOneAndUpdate).mockResolvedValue({
+        status: 'sent',
+        isSent: true,
+      } as any);
+
+      await processPDFGenerate(mockBookingId, mockEventId, 'guest@example.com', 'Jane Guest');
+
+      expect(generateTicketPDF).not.toHaveBeenCalled();
+      expect(QueueService.enqueue).not.toHaveBeenCalled();
+    });
+
+    it('should allow PDF generation on retry if Notification status is queued', async () => {
+      const mockBookingId = new Types.ObjectId().toString();
+      const mockEventId = new Types.ObjectId().toString();
+
+      const mockBooking = {
+        _id: mockBookingId,
+        bookingId: 'MAD-2026-X7Y8Z',
+        guestName: 'Jane Guest',
+        guestEmail: 'guest@example.com',
+      };
+
+      const mockEvent = {
+        _id: mockEventId,
+        title: 'Sunset Beach Concert',
+      };
+
+      vi.mocked(Booking.findById).mockResolvedValue(mockBooking as any);
+      vi.mocked(Event.findById).mockResolvedValue(mockEvent as any);
+      
+      const fakePdfBuffer = Buffer.from('fake-pdf-content');
+      vi.mocked(generateTicketPDF).mockResolvedValue(fakePdfBuffer);
+      vi.mocked(Notification.findOne).mockResolvedValue({
+        status: 'queued',
+        isSent: false,
+      } as any);
+      vi.mocked(Notification.findOneAndUpdate).mockResolvedValue({
+        status: 'queued',
+        isSent: false,
+      } as any);
+
+      await processPDFGenerate(mockBookingId, mockEventId, 'guest@example.com', 'Jane Guest');
+
+      expect(generateTicketPDF).toHaveBeenCalled();
+      expect(QueueService.enqueue).toHaveBeenCalled();
     });
   });
 
@@ -219,6 +298,183 @@ describe('Asynchronous Workers', () => {
           },
         ],
       });
+    });
+  });
+
+  describe('Email Worker (handleJobExecution)', () => {
+    it('should create and process new notification atomically', async () => {
+      const mockBookingId = new Types.ObjectId().toString();
+      const mockEventId = new Types.ObjectId().toString();
+      const jobId = `email:dispatch:${mockBookingId}`;
+      const data = {
+        to: 'recipient@example.com',
+        subject: 'Booking Confirmed',
+        html: '<h1>Success</h1>',
+        bookingId: mockBookingId,
+        eventId: mockEventId,
+      };
+
+      vi.mocked(Notification.findOne).mockResolvedValue(null);
+      vi.mocked(Notification.findOneAndUpdate).mockResolvedValue({
+        _id: 'mock-id',
+        status: 'processing',
+        isSent: false,
+      } as any);
+
+      await handleJobExecution(jobId, data, 0);
+
+      expect(Notification.findOne).toHaveBeenCalledWith({ jobId });
+      expect(Notification.findOneAndUpdate).toHaveBeenCalledWith(
+        { jobId },
+        expect.any(Object),
+        { upsert: true, new: true }
+      );
+      expect(sendEmail).toHaveBeenCalled();
+      expect(Notification.updateOne).toHaveBeenCalledWith(
+        { jobId },
+        expect.objectContaining({
+          $set: expect.objectContaining({ status: 'sent', isSent: true }),
+        })
+      );
+    });
+
+    it('should skip duplicate concurrent execution on first attempt if status is processing', async () => {
+      const mockBookingId = new Types.ObjectId().toString();
+      const mockEventId = new Types.ObjectId().toString();
+      const jobId = `email:dispatch:${mockBookingId}`;
+      const data = {
+        to: 'recipient@example.com',
+        subject: 'Booking Confirmed',
+        html: '<h1>Success</h1>',
+        bookingId: mockBookingId,
+        eventId: mockEventId,
+      };
+
+      vi.mocked(Notification.findOne).mockResolvedValue({
+        _id: 'mock-id',
+        status: 'processing',
+        isSent: false,
+      } as any);
+
+      await handleJobExecution(jobId, data, 0);
+
+      expect(sendEmail).not.toHaveBeenCalled();
+    });
+
+    it('should skip execution if notification is already sent (idempotency)', async () => {
+      const mockBookingId = new Types.ObjectId().toString();
+      const mockEventId = new Types.ObjectId().toString();
+      const jobId = `email:dispatch:${mockBookingId}`;
+      const data = {
+        to: 'recipient@example.com',
+        subject: 'Booking Confirmed',
+        html: '<h1>Success</h1>',
+        bookingId: mockBookingId,
+        eventId: mockEventId,
+      };
+
+      vi.mocked(Notification.findOne).mockResolvedValue({
+        _id: 'mock-id',
+        status: 'sent',
+        isSent: true,
+      } as any);
+
+      await handleJobExecution(jobId, data, 0);
+
+      expect(sendEmail).not.toHaveBeenCalled();
+    });
+
+    it('should allow execution on retry even if status is processing (retry safety)', async () => {
+      const mockBookingId = new Types.ObjectId().toString();
+      const mockEventId = new Types.ObjectId().toString();
+      const jobId = `email:dispatch:${mockBookingId}`;
+      const data = {
+        to: 'recipient@example.com',
+        subject: 'Booking Confirmed',
+        html: '<h1>Success</h1>',
+        bookingId: mockBookingId,
+        eventId: mockEventId,
+      };
+
+      vi.mocked(Notification.findOne).mockResolvedValue({
+        _id: 'mock-id',
+        status: 'processing',
+        isSent: false,
+      } as any);
+      vi.mocked(Notification.findOneAndUpdate).mockResolvedValue({
+        _id: 'mock-id',
+        status: 'processing',
+        isSent: false,
+      } as any);
+
+      await handleJobExecution(jobId, data, 1); // retry count = 1
+
+      expect(sendEmail).toHaveBeenCalled();
+      expect(Notification.updateOne).toHaveBeenCalledWith(
+        { jobId },
+        expect.objectContaining({
+          $set: expect.objectContaining({ status: 'sent', isSent: true }),
+        })
+      );
+    });
+
+    it('should skip duplicate concurrent execution on retry (attemptsMade > 0) if another worker already started that retry', async () => {
+      const mockBookingId = new Types.ObjectId().toString();
+      const mockEventId = new Types.ObjectId().toString();
+      const jobId = `email:dispatch:${mockBookingId}`;
+      const data = {
+        to: 'recipient@example.com',
+        subject: 'Booking Confirmed',
+        html: '<h1>Success</h1>',
+        bookingId: mockBookingId,
+        eventId: mockEventId,
+      };
+
+      vi.mocked(Notification.findOne).mockResolvedValue({
+        _id: 'mock-id',
+        status: 'processing',
+        isSent: false,
+        retryCount: 1,
+      } as any);
+      vi.mocked(Notification.findOneAndUpdate).mockResolvedValue(null);
+
+      await handleJobExecution(jobId, data, 1);
+
+      expect(sendEmail).not.toHaveBeenCalled();
+    });
+
+    it('should transition to failed if email dispatch fails', async () => {
+      const mockBookingId = new Types.ObjectId().toString();
+      const mockEventId = new Types.ObjectId().toString();
+      const jobId = `email:dispatch:${mockBookingId}`;
+      const data = {
+        to: 'recipient@example.com',
+        subject: 'Booking Confirmed',
+        html: '<h1>Success</h1>',
+        bookingId: mockBookingId,
+        eventId: mockEventId,
+      };
+
+      vi.mocked(Notification.findOne).mockResolvedValue({
+        _id: 'mock-id',
+        status: 'queued',
+        isSent: false,
+      } as any);
+      vi.mocked(Notification.findOneAndUpdate).mockResolvedValue({
+        _id: 'mock-id',
+        status: 'processing',
+        isSent: false,
+      } as any);
+      vi.mocked(sendEmail).mockRejectedValue(new Error('SMTP timeout') as any);
+
+      await expect(handleJobExecution(jobId, data, 0)).rejects.toThrow('SMTP timeout');
+
+      expect(Notification.updateOne).toHaveBeenCalledWith(
+        { jobId },
+        expect.objectContaining({
+          $set: expect.objectContaining({ status: 'failed', errorMessage: 'SMTP timeout' }),
+        })
+      );
     });
   });
 });

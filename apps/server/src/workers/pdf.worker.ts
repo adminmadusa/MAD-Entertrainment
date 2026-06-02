@@ -28,6 +28,18 @@ export async function processPDFGenerate(
     throw new Error(`Booking ${bookingId} or Event ${eventId} not found for PDF generation`);
   }
 
+  const jobId = `email:dispatch:${booking._id}`;
+
+  // Read-only early exit to prevent generating PDF if already successfully sent
+  const existingNotification = await Notification.findOne({ jobId });
+  if (existingNotification && (existingNotification.status === 'sent' || existingNotification.isSent)) {
+    logger.warn(
+      { bookingId: booking._id, jobId },
+      'Idempotency guard triggered: PDF Ticket already generated and email successfully sent. Skipping duplicate execution.'
+    );
+    return;
+  }
+
   // 1. Generate PDF buffer in memory
   const pdfBuffer = await generateTicketPDF(booking, event);
 
@@ -62,21 +74,36 @@ export async function processPDFGenerate(
     </div>
   `;
 
-  const jobId = `email:dispatch:${booking._id}`;
 
-  await Notification.create({
-    jobId,
-    status: 'queued',
-    queuedAt: new Date(),
-    type: NotificationType.BOOKING_CONFIRMED,
-    bookingId: booking._id,
-    eventId: event._id,
-    channel: 'email',
-    recipient: recipientEmail,
-    subject: `Your Ticket for ${event.title || 'MAD Event'} [${booking.bookingId}]`,
-    isSent: false,
-    retryCount: 0,
-  });
+
+  // Atomic MongoDB upsert to prevent duplicate Notification creation and handle retries gracefully
+  const notification = await Notification.findOneAndUpdate(
+    { jobId },
+    {
+      $setOnInsert: {
+        type: NotificationType.BOOKING_CONFIRMED,
+        bookingId: booking._id,
+        eventId: event._id,
+        channel: 'email',
+        recipient: recipientEmail,
+        subject: `Your Ticket for ${event.title || 'MAD Event'} [${booking.bookingId}]`,
+        status: 'queued',
+        isSent: false,
+        retryCount: 0,
+        queuedAt: new Date(),
+      },
+    },
+    { upsert: true, new: true, setDefaultsOnInsert: true }
+  );
+
+  // If the notification was already processed successfully, exit early
+  if (notification.status === 'sent' || notification.isSent) {
+    logger.warn(
+      { bookingId: booking._id, jobId },
+      'Idempotency guard triggered: PDF Ticket already generated and email successfully sent. Skipping duplicate execution.'
+    );
+    return;
+  }
 
   // 2. Enqueue the final notification task with the base64-encoded attachment
   await QueueService.enqueue(
