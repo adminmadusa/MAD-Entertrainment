@@ -143,7 +143,9 @@ export function startBookingWorker(): void {
     worker.on('failed', async (job, err) => {
       logger.error({ err, jobId: job?.id }, 'Booking confirm job failed in BullMQ');
       if (job && job.attemptsMade >= (job.opts.attempts || 3)) {
-        // Send to Dead-Letter Queue (persistent DB storage)
+        let dlqPersisted = false;
+        
+        // 1. DLQ Persistence
         try {
           await DeadLetterJob.create({
             queueName: QUEUE_NAME,
@@ -154,9 +156,39 @@ export function startBookingWorker(): void {
             stacktrace: job.stacktrace,
             attemptsMade: job.attemptsMade,
           });
-          logger.warn({ jobId: job.id }, 'Job moved to Dead-Letter Queue database collection.');
+          dlqPersisted = true;
         } catch (dlqErr) {
-          logger.error({ err: dlqErr, jobId: job.id }, 'Failed to persist Dead-Letter Queue document.');
+          logger.error({ err: dlqErr, jobId: job.id, dlqStatus: 'failed_to_persist' }, 'Failed to persist Dead-Letter Queue document.');
+        }
+
+        // 2. Structured Logging
+        if (dlqPersisted) {
+          logger.error({
+            jobId: job.id,
+            bookingId: job.data?.bookingId,
+            queueName: QUEUE_NAME,
+            attemptsMade: job.attemptsMade,
+            dlqStatus: 'exhausted',
+          }, 'Booking confirm job exhausted retries and moved to DLQ');
+        }
+
+        // 3. Sentry Notification
+        try {
+          Sentry.captureException(err, {
+            tags: {
+              queue: QUEUE_NAME,
+              jobId: job.id || 'unknown',
+              jobName: job.name || 'unknown',
+              severity: 'error',
+            },
+            extra: {
+              attemptsMade: job.attemptsMade,
+              bookingId: job.data?.bookingId,
+            },
+            fingerprint: ['dlq-failure', QUEUE_NAME, err.message],
+          });
+        } catch (sentryError) {
+          logger.error({ err: sentryError, originalErr: err.message, jobId: job.id }, 'Failed to emit exception to Sentry');
         }
       }
     });
