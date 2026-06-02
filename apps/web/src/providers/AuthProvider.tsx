@@ -12,6 +12,8 @@ interface AuthContextValue {
   token: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  onboardingRequired: boolean;
+  setOnboardingRequired: (v: boolean) => void;
   login: (token: string, user: AuthUser) => void;
   logout: () => void;
 }
@@ -21,6 +23,8 @@ const AuthContext = createContext<AuthContextValue>({
   token: null,
   isAuthenticated: false,
   isLoading: true,
+  onboardingRequired: false,
+  setOnboardingRequired: () => {},
   login: () => {},
   logout: () => {},
 });
@@ -55,6 +59,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [onboardingRequired, setOnboardingRequired] = useState(false);
 
   // Hydrate session and execute silent background refresh validation on mount
   useEffect(() => {
@@ -64,32 +69,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (storedToken) {
           if (isTokenExpired(storedToken)) {
             // Attempt to trigger silent refresh via axios interceptor
-            const userData = await publicGetMe();
+            const { onboardingRequired: obReq, ...userProfile } = await publicGetMe();
             const newToken = localStorage.getItem(STORAGE_KEYS.USER_TOKEN);
             setToken(newToken);
-            setUser(userData);
-            localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(userData));
+            setUser(userProfile);
+            setOnboardingRequired(!!obReq);
+            localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(userProfile));
           } else {
             setToken(storedToken);
             const storedUser = localStorage.getItem(STORAGE_KEYS.USER_DATA);
             if (storedUser) setUser(JSON.parse(storedUser));
             
             // Re-validate profile in background
-            const userData = await publicGetMe();
-            setUser(userData);
-            localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(userData));
+            const { onboardingRequired: obReq, ...userProfile } = await publicGetMe();
+            setUser(userProfile);
+            setOnboardingRequired(!!obReq);
+            localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(userProfile));
           }
         } else {
           // No short-lived access token, check if we had a session before calling auth/me.
           // This avoids sending a wasteful GET /auth/me -> 401 for anonymous guests.
           const hasSession = localStorage.getItem(STORAGE_KEYS.USER_DATA);
           if (hasSession) {
-            const userData = await publicGetMe();
+            const { onboardingRequired: obReq, ...userProfile } = await publicGetMe();
             const newToken = localStorage.getItem(STORAGE_KEYS.USER_TOKEN);
             if (newToken) {
               setToken(newToken);
-              setUser(userData);
-              localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(userData));
+              setUser(userProfile);
+              setOnboardingRequired(!!obReq);
+              localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(userProfile));
             }
           }
         }
@@ -97,6 +105,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // Clear stale local sessions if unauthenticated
         setToken(null);
         setUser(null);
+        setOnboardingRequired(false);
         localStorage.removeItem(STORAGE_KEYS.USER_TOKEN);
         localStorage.removeItem(STORAGE_KEYS.USER_DATA);
       } finally {
@@ -111,6 +120,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       queryClient.clear();
       setToken(null);
       setUser(null);
+      setOnboardingRequired(false);
       localStorage.removeItem(STORAGE_KEYS.USER_TOKEN);
       localStorage.removeItem(STORAGE_KEYS.USER_DATA);
     };
@@ -137,6 +147,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       queryClient.clear();
       setToken(null);
       setUser(null);
+      setOnboardingRequired(false);
       localStorage.removeItem(STORAGE_KEYS.USER_TOKEN);
       localStorage.removeItem(STORAGE_KEYS.USER_DATA);
     }
@@ -150,6 +161,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         token,
         isAuthenticated: !!token && !!user,
         isLoading,
+        onboardingRequired,
+        setOnboardingRequired,
         login,
         logout,
       }}

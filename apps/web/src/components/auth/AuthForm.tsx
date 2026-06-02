@@ -8,10 +8,11 @@ import {
   publicRequestVerificationCode,
   publicVerifyVerificationCodeOrOTP,
   publicGoogleLogin,
+  publicUpdateProfile,
 } from '@/lib/api/public.service';
 import { useAuth } from '@/providers/AuthProvider';
 import { loadScriptOnce } from '@/lib/utils/load-script-once';
-import { AuthResponse, VerificationCodeRequestResponse } from '@/types/auth';
+import { AuthResponse, VerificationCodeRequestResponse, AuthUser } from '@/types/auth';
 import { Button } from '@mad/ui';
 
 // ─── Google SSO Type Definitions ─────────────────────────────
@@ -54,7 +55,7 @@ export interface AuthFormProps {
 }
 
 export function AuthForm({ mode, onSuccess, onGuestContinue, className = '' }: AuthFormProps) {
-  const { login } = useAuth();
+  const { login, logout, token, setOnboardingRequired } = useAuth();
 
   const [cooldownRemaining, setCooldownRemaining] = useState<number>(0);
   const [cooldownExpiry, setCooldownExpiry] = useState<number | null>(null);
@@ -138,9 +139,15 @@ export function AuthForm({ mode, onSuccess, onGuestContinue, className = '' }: A
   // Core Authentication States
   const [email, setEmail] = useState('');
   const [otp, setOtp] = useState('');
-  const [step, setStep] = useState<'request' | 'verify'>('request');
+  const [step, setStep] = useState<'request' | 'verify' | 'onboard'>('request');
   const [error, setError] = useState('');
   const [infoMessage, setInfoMessage] = useState('');
+
+  // Onboarding Profile Form States
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [mobileNumber, setMobileNumber] = useState('');
+  const [onboardError, setOnboardError] = useState('');
 
   // Countdown timer state for code resending
   const [resendTimer, setResendTimer] = useState(0);
@@ -201,11 +208,16 @@ export function AuthForm({ mode, onSuccess, onGuestContinue, className = '' }: A
       }),
     onSuccess: (data) => {
       login(data.token, data.user);
+      setOnboardingRequired(!!data.onboardingRequired);
       setError('');
       setOtp('');
       setInfoMessage('');
-      if (onSuccess) {
-        onSuccess(data);
+      if (data.onboardingRequired) {
+        setStep('onboard');
+      } else {
+        if (onSuccess) {
+          onSuccess(data);
+        }
       }
     },
     onError: (err) => {
@@ -224,15 +236,36 @@ export function AuthForm({ mode, onSuccess, onGuestContinue, className = '' }: A
     mutationFn: (idToken: string) => publicGoogleLogin(idToken),
     onSuccess: (data) => {
       login(data.token, data.user);
+      setOnboardingRequired(!!data.onboardingRequired);
       setError('');
       setInfoMessage('Successfully authenticated with Google!');
-      if (onSuccess) {
-        onSuccess(data);
+      if (data.onboardingRequired) {
+        setStep('onboard');
+      } else {
+        if (onSuccess) {
+          onSuccess(data);
+        }
       }
     },
     onError: (err) => {
       const apiErr = extractApiError(err);
       setError(apiErr.message || 'Google authentication failed. Please try again.');
+    },
+  });
+
+  // Update Profile Onboarding Mutation
+  const updateProfileMutation = useMutation<AuthUser, Error, { firstName: string; lastName: string; mobileNumber?: string }>({
+    mutationFn: (payload) => publicUpdateProfile(payload),
+    onSuccess: (updatedUser) => {
+      login(token!, updatedUser);
+      setOnboardingRequired(false);
+      if (onSuccess) {
+        onSuccess({ token: token!, user: updatedUser });
+      }
+    },
+    onError: (err) => {
+      const apiErr = extractApiError(err);
+      setOnboardError(apiErr.message || 'Profile completion failed. Please try again.');
     },
   });
 
@@ -335,6 +368,46 @@ export function AuthForm({ mode, onSuccess, onGuestContinue, className = '' }: A
     setError('');
     setInfoMessage('');
     setOtp('');
+  };
+
+  const handleOnboardingSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setOnboardError('');
+
+    if (updateProfileMutation.isPending) return;
+
+    const trimmedFirstName = firstName.trim();
+    const trimmedLastName = lastName.trim();
+
+    if (!trimmedFirstName) {
+      setOnboardError('First name is required');
+      return;
+    }
+    if (!trimmedLastName) {
+      setOnboardError('Last name is required');
+      return;
+    }
+
+    const trimmedMobile = mobileNumber.trim();
+    if (trimmedMobile && !/^\+[1-9]\d{1,14}$/.test(trimmedMobile)) {
+      setOnboardError('Mobile number must be in E.164 format (e.g. +919876543210)');
+      return;
+    }
+
+    updateProfileMutation.mutate({
+      firstName: trimmedFirstName,
+      lastName: trimmedLastName,
+      mobileNumber: trimmedMobile || undefined,
+    });
+  };
+
+  const handleOnboardingCancel = () => {
+    logout();
+    setStep('request');
+    setFirstName('');
+    setLastName('');
+    setMobileNumber('');
+    setOnboardError('');
   };
 
   const isCheckout = mode === 'checkout';
@@ -562,6 +635,99 @@ export function AuthForm({ mode, onSuccess, onGuestContinue, className = '' }: A
                   </button>
                 );
               })()}
+            </div>
+          </div>
+        </form>
+      )}
+
+      {/* SCREEN 3: Profile Onboarding Form */}
+      {step === 'onboard' && (
+        <form onSubmit={handleOnboardingSubmit} className="space-y-6">
+          <div className="text-center">
+            <h2 className="text-xl font-bold text-white">Complete Your Profile</h2>
+            <p className="text-xs text-text-muted mt-1">Tell us your name before accessing your tickets.</p>
+          </div>
+
+          {onboardError && (
+            <div className="p-4 bg-error/10 border border-error/30 rounded-2xl text-xs text-red-400 text-center animate-in fade-in duration-300">
+              {onboardError}
+            </div>
+          )}
+
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <label htmlFor="firstName" className="text-xs font-semibold text-text-secondary uppercase tracking-wider ml-1">
+                First Name <span className="text-red-400">*</span>
+              </label>
+              <input
+                id="firstName"
+                type="text"
+                required
+                disabled={updateProfileMutation.isPending}
+                enterKeyHint="next"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                placeholder="John"
+                className="w-full bg-white/5 border border-border-subtle rounded-xl px-4 py-3 text-base lg:text-sm text-white placeholder:text-text-muted/30 focus:outline-none focus:border-accent-purple/50 focus:ring-1 focus:ring-accent-purple/50 transition-all duration-300"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label htmlFor="lastName" className="text-xs font-semibold text-text-secondary uppercase tracking-wider ml-1">
+                Last Name <span className="text-red-400">*</span>
+              </label>
+              <input
+                id="lastName"
+                type="text"
+                required
+                disabled={updateProfileMutation.isPending}
+                enterKeyHint="next"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                placeholder="Doe"
+                className="w-full bg-white/5 border border-border-subtle rounded-xl px-4 py-3 text-base lg:text-sm text-white placeholder:text-text-muted/30 focus:outline-none focus:border-accent-purple/50 focus:ring-1 focus:ring-accent-purple/50 transition-all duration-300"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label htmlFor="mobileNumber" className="text-xs font-semibold text-text-secondary uppercase tracking-wider ml-1">
+                Mobile Number
+              </label>
+              <input
+                id="mobileNumber"
+                type="tel"
+                disabled={updateProfileMutation.isPending}
+                enterKeyHint="done"
+                value={mobileNumber}
+                onChange={(e) => setMobileNumber(e.target.value)}
+                placeholder="+919876543210"
+                className="w-full bg-white/5 border border-border-subtle rounded-xl px-4 py-3 text-base lg:text-sm text-white placeholder:text-text-muted/30 focus:outline-none focus:border-accent-purple/50 focus:ring-1 focus:ring-accent-purple/50 transition-all duration-300"
+              />
+              <p className="text-[10px] text-text-muted/65 ml-1">Include country code (e.g. +91)</p>
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <Button
+              type="submit"
+              variant="primary"
+              fullWidth
+              className={isCheckout ? 'py-2.5 text-xs font-bold rounded-xl' : 'py-3.5 rounded-xl font-bold tracking-wide shadow-lg shadow-accent-purple/20 hover:shadow-accent-purple/40 active:scale-95 transition-all duration-200'}
+              disabled={updateProfileMutation.isPending}
+              isLoading={updateProfileMutation.isPending}
+            >
+              Continue
+            </Button>
+
+            <div className="text-center pt-1">
+              <button
+                type="button"
+                onClick={handleOnboardingCancel}
+                disabled={updateProfileMutation.isPending}
+                className="text-xs text-text-muted hover:text-white transition-colors duration-200 py-2"
+              >
+                Cancel and Log Out
+              </button>
             </div>
           </div>
         </form>

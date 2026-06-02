@@ -317,9 +317,21 @@ export async function publicGetMyAuthBookings(): Promise<Booking[]> {
   const { data } = await apiClient.get<{ data: Booking[] }>('/my-bookings');
   return data.data;
 }
+export interface UpdateProfilePayload {
+  firstName: string;
+  lastName: string;
+  mobileNumber?: string;
+}
 
-export async function publicGetMe(): Promise<AuthUser> {
-  const { data } = await apiClient.get<{ data: AuthUser }>('/auth/me');
+export async function publicUpdateProfile(
+  payload: UpdateProfilePayload
+): Promise<AuthUser> {
+  const { data } = await apiClient.patch<{ data: AuthUser }>('/auth/profile', payload);
+  return data.data;
+}
+
+export async function publicGetMe(): Promise<AuthUser & { onboardingRequired?: boolean }> {
+  const { data } = await apiClient.get<{ data: AuthUser & { onboardingRequired?: boolean } }>('/auth/me');
   return data.data;
 }
 
