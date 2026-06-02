@@ -19,19 +19,12 @@ export async function processBookingConfirm(bookingId: string): Promise<void> {
     throw new Error(`Booking ${bookingId} not found`);
   }
 
-  // 1. Idempotency Check: if tickets exist, skip creation
-  const existingTicketsCount = await Ticket.countDocuments({ bookingId: booking._id });
-  if (existingTicketsCount > 0) {
-    logger.warn({ bookingId }, 'Idempotency guard triggered: tickets already exist for booking. Skipping.');
-    return;
-  }
-
   const event = await Event.findById(booking.eventId);
   if (!event) {
     throw new Error(`Event ${booking.eventId} not found for booking ${bookingId}`);
   }
 
-  // 2. Generate scan-ready QR Tickets
+  // 1. Generate scan-ready QR Tickets with idempotent upserts
   let ticketIndex = 1;
   for (const bookedTicket of booking.tickets) {
     if (event.bookingMode === 'seat_based' && bookedTicket.seats) {
@@ -39,20 +32,25 @@ export async function processBookingConfirm(bookingId: string): Promise<void> {
         const ticketId = `TKT-${booking.bookingId}-${String(ticketIndex).padStart(3, '0')}`;
         const qrCodeText = ticketId;
 
-        await Ticket.create({
-          ticketId,
-          bookingId: booking._id,
-          eventId: booking.eventId,
-          tierName: bookedTicket.tierName,
-          tier: bookedTicket.tier,
-          admits: 1,
-          seatId: seat.seatId,
-          row: seat.row,
-          seatNumber: seat.number,
-          section: seat.section,
-          qrCode: qrCodeText,
-          qrCodeImage: `/api/public/tickets/${ticketId}/qr`,
-        });
+        await Ticket.findOneAndUpdate(
+          { ticketId },
+          {
+            $setOnInsert: {
+              bookingId: booking._id,
+              eventId: booking.eventId,
+              tierName: bookedTicket.tierName,
+              tier: bookedTicket.tier,
+              admits: 1,
+              seatId: seat.seatId,
+              row: seat.row,
+              seatNumber: seat.number,
+              section: seat.section,
+              qrCode: qrCodeText,
+              qrCodeImage: `/api/public/tickets/${ticketId}/qr`,
+            },
+          },
+          { upsert: true, new: true, setDefaultsOnInsert: true }
+        );
         ticketIndex++;
       }
     } else {
@@ -64,16 +62,21 @@ export async function processBookingConfirm(bookingId: string): Promise<void> {
         const ticketId = `TKT-${booking.bookingId}-${String(ticketIndex).padStart(3, '0')}`;
         const qrCodeText = ticketId;
 
-        await Ticket.create({
-          ticketId,
-          bookingId: booking._id,
-          eventId: booking.eventId,
-          tierName: bookedTicket.tierName,
-          tier: bookedTicket.tier,
-          admits,
-          qrCode: qrCodeText,
-          qrCodeImage: `/api/public/tickets/${ticketId}/qr`,
-        });
+        await Ticket.findOneAndUpdate(
+          { ticketId },
+          {
+            $setOnInsert: {
+              bookingId: booking._id,
+              eventId: booking.eventId,
+              tierName: bookedTicket.tierName,
+              tier: bookedTicket.tier,
+              admits,
+              qrCode: qrCodeText,
+              qrCodeImage: `/api/public/tickets/${ticketId}/qr`,
+            },
+          },
+          { upsert: true, new: true, setDefaultsOnInsert: true }
+        );
         ticketIndex++;
       }
     }

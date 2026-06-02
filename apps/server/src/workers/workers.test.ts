@@ -36,6 +36,8 @@ vi.mock('../models/ticket.schema', () => ({
   Ticket: {
     countDocuments: vi.fn(),
     create: vi.fn(),
+    findOneAndUpdate: vi.fn(),
+    findById: vi.fn(),
   },
 }));
 
@@ -85,21 +87,35 @@ describe('Asynchronous Workers', () => {
   });
 
   describe('Booking Worker (processBookingConfirm)', () => {
-    it('should skip ticket generation if tickets already exist (idempotence)', async () => {
-      const mockBookingId = new Types.ObjectId().toString();
-      vi.mocked(Booking.findById).mockResolvedValue({ _id: mockBookingId } as any);
-      vi.mocked(Ticket.countDocuments).mockResolvedValue(2); // Tickets already exist
+    let ticketsStore: any[] = [];
 
-      await processBookingConfirm(mockBookingId);
+    beforeEach(() => {
+      ticketsStore = [];
+      vi.mocked(Ticket.findOneAndUpdate).mockImplementation(async (query: any, update: any, options: any) => {
+        const ticketId = query.ticketId;
+        const existing = ticketsStore.find(t => t.ticketId === ticketId);
+        if (existing) {
+          return existing;
+        }
+        const newTicket = {
+          ticketId,
+          ...update.$setOnInsert,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        };
+        ticketsStore.push(newTicket);
+        return newTicket;
+      });
 
-      expect(Ticket.create).not.toHaveBeenCalled();
-      expect(QueueService.enqueue).not.toHaveBeenCalled();
+      vi.mocked(Ticket.findById).mockImplementation(async (id: any) => {
+        return ticketsStore.find(t => String(t._id) === String(id)) || null;
+      });
     });
 
-    it('should generate tickets and enqueue PDF generation if tickets do not exist', async () => {
+    it('should generate tickets and enqueue PDF generation when no tickets exist (Full Generation)', async () => {
       const mockBookingId = new Types.ObjectId().toString();
       const mockEventId = new Types.ObjectId().toString();
-      
+
       const mockBooking = {
         _id: mockBookingId,
         eventId: mockEventId,
@@ -122,13 +138,16 @@ describe('Asynchronous Workers', () => {
       };
 
       vi.mocked(Booking.findById).mockResolvedValue(mockBooking as any);
-      vi.mocked(Ticket.countDocuments).mockResolvedValue(0);
       vi.mocked(Event.findById).mockResolvedValue(mockEvent as any);
 
       await processBookingConfirm(mockBookingId);
 
-      // Should generate 2 ticket records for quantity 2
-      expect(Ticket.create).toHaveBeenCalledTimes(2);
+      // Verify that exactly 2 tickets were created in our in-memory store
+      expect(ticketsStore.length).toBe(2);
+      expect(ticketsStore[0].ticketId).toBe('TKT-MAD-2026-X7Y8Z-001');
+      expect(ticketsStore[1].ticketId).toBe('TKT-MAD-2026-X7Y8Z-002');
+      expect(Ticket.findOneAndUpdate).toHaveBeenCalledTimes(2);
+
       expect(QueueService.enqueue).toHaveBeenCalledWith(
         'pdf-queue',
         'pdf:generate',
@@ -140,6 +159,189 @@ describe('Asynchronous Workers', () => {
         },
         `pdf:generate:${mockBookingId}`
       );
+    });
+
+    it('should recover and generate only missing tickets if partially generated previously (Partial Recovery)', async () => {
+      const mockBookingId = new Types.ObjectId().toString();
+      const mockEventId = new Types.ObjectId().toString();
+
+      const mockBooking = {
+        _id: mockBookingId,
+        eventId: mockEventId,
+        bookingId: 'MAD-2026-X7Y8Z',
+        guestEmail: 'guest@example.com',
+        guestName: 'Jane Guest',
+        tickets: [
+          {
+            tier: 'gold',
+            tierName: 'Gold Package',
+            quantity: 3,
+          },
+        ],
+      };
+
+      const mockEvent = {
+        _id: mockEventId,
+        bookingMode: 'general_admission',
+        ticketTiers: [{ tier: 'gold', groupSize: 1 }],
+      };
+
+      vi.mocked(Booking.findById).mockResolvedValue(mockBooking as any);
+      vi.mocked(Event.findById).mockResolvedValue(mockEvent as any);
+
+      // Pre-populate our store with the first ticket (simulating crash after first write)
+      const existingTicket = {
+        ticketId: 'TKT-MAD-2026-X7Y8Z-001',
+        bookingId: mockBookingId,
+        eventId: mockEventId,
+        tierName: 'Gold Package',
+        tier: 'gold',
+        admits: 1,
+        qrCode: 'TKT-MAD-2026-X7Y8Z-001',
+        createdAt: new Date(2026, 1, 1),
+      };
+      ticketsStore.push(existingTicket);
+
+      await processBookingConfirm(mockBookingId);
+
+      // Total tickets should be 3 (1 pre-existing + 2 missing ones created)
+      expect(ticketsStore.length).toBe(3);
+      expect(ticketsStore.find(t => t.ticketId === 'TKT-MAD-2026-X7Y8Z-001')).toBe(existingTicket);
+      expect(ticketsStore.find(t => t.ticketId === 'TKT-MAD-2026-X7Y8Z-002')).toBeDefined();
+      expect(ticketsStore.find(t => t.ticketId === 'TKT-MAD-2026-X7Y8Z-003')).toBeDefined();
+      expect(Ticket.findOneAndUpdate).toHaveBeenCalledTimes(3);
+    });
+
+    it('should preserve existing scannedAt status of previously generated tickets (Scan State Preservation)', async () => {
+      const mockBookingId = new Types.ObjectId().toString();
+      const mockEventId = new Types.ObjectId().toString();
+
+      const mockBooking = {
+        _id: mockBookingId,
+        eventId: mockEventId,
+        bookingId: 'MAD-2026-X7Y8Z',
+        guestEmail: 'guest@example.com',
+        guestName: 'Jane Guest',
+        tickets: [
+          {
+            tier: 'gold',
+            tierName: 'Gold Package',
+            quantity: 2,
+          },
+        ],
+      };
+
+      const mockEvent = {
+        _id: mockEventId,
+        bookingMode: 'general_admission',
+        ticketTiers: [{ tier: 'gold', groupSize: 1 }],
+      };
+
+      vi.mocked(Booking.findById).mockResolvedValue(mockBooking as any);
+      vi.mocked(Event.findById).mockResolvedValue(mockEvent as any);
+
+      const scanTime = new Date();
+      const preScannedTicket = {
+        ticketId: 'TKT-MAD-2026-X7Y8Z-001',
+        bookingId: mockBookingId,
+        eventId: mockEventId,
+        tierName: 'Gold Package',
+        tier: 'gold',
+        admits: 1,
+        qrCode: 'TKT-MAD-2026-X7Y8Z-001',
+        scannedAt: scanTime,
+      };
+      ticketsStore.push(preScannedTicket);
+
+      await processBookingConfirm(mockBookingId);
+
+      // Verify the pre-scanned ticket's scan state is preserved exactly
+      const recoveredTicket = ticketsStore.find(t => t.ticketId === 'TKT-MAD-2026-X7Y8Z-001');
+      expect(recoveredTicket?.scannedAt).toBe(scanTime);
+      expect(ticketsStore.length).toBe(2);
+    });
+
+    it('should be safe on consecutive worker retry attempts (Retry Safety)', async () => {
+      const mockBookingId = new Types.ObjectId().toString();
+      const mockEventId = new Types.ObjectId().toString();
+
+      const mockBooking = {
+        _id: mockBookingId,
+        eventId: mockEventId,
+        bookingId: 'MAD-2026-X7Y8Z',
+        guestEmail: 'guest@example.com',
+        guestName: 'Jane Guest',
+        tickets: [
+          {
+            tier: 'gold',
+            tierName: 'Gold Package',
+            quantity: 3,
+          },
+        ],
+      };
+
+      const mockEvent = {
+        _id: mockEventId,
+        bookingMode: 'general_admission',
+        ticketTiers: [{ tier: 'gold', groupSize: 1 }],
+      };
+
+      vi.mocked(Booking.findById).mockResolvedValue(mockBooking as any);
+      vi.mocked(Event.findById).mockResolvedValue(mockEvent as any);
+
+      // Run it the first time
+      await processBookingConfirm(mockBookingId);
+      expect(ticketsStore.length).toBe(3);
+
+      // Run it a second time (Simulate retry)
+      await processBookingConfirm(mockBookingId);
+
+      // Should remain exactly 3 tickets with no duplicates
+      expect(ticketsStore.length).toBe(3);
+    });
+
+    it('should prevent duplicate ticket creation under concurrent executions (Concurrent Worker Test)', async () => {
+      const mockBookingId = new Types.ObjectId().toString();
+      const mockEventId = new Types.ObjectId().toString();
+
+      const mockBooking = {
+        _id: mockBookingId,
+        eventId: mockEventId,
+        bookingId: 'MAD-2026-X7Y8Z',
+        guestEmail: 'guest@example.com',
+        guestName: 'Jane Guest',
+        tickets: [
+          {
+            tier: 'gold',
+            tierName: 'Gold Package',
+            quantity: 4,
+          },
+        ],
+      };
+
+      const mockEvent = {
+        _id: mockEventId,
+        bookingMode: 'general_admission',
+        ticketTiers: [{ tier: 'gold', groupSize: 1 }],
+      };
+
+      vi.mocked(Booking.findById).mockResolvedValue(mockBooking as any);
+      vi.mocked(Event.findById).mockResolvedValue(mockEvent as any);
+
+      // Trigger simultaneous execution of processBookingConfirm from two workers
+      await Promise.all([
+        processBookingConfirm(mockBookingId),
+        processBookingConfirm(mockBookingId),
+      ]);
+
+      // Assert that exactly 4 tickets were created and no duplication occurred
+      expect(ticketsStore.length).toBe(4);
+      expect(ticketsStore.map(t => t.ticketId).sort()).toEqual([
+        'TKT-MAD-2026-X7Y8Z-001',
+        'TKT-MAD-2026-X7Y8Z-002',
+        'TKT-MAD-2026-X7Y8Z-003',
+        'TKT-MAD-2026-X7Y8Z-004',
+      ]);
     });
   });
 
