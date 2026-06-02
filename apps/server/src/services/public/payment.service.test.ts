@@ -90,6 +90,12 @@ vi.mock('../../config/socket', () => ({
   emitToEvent: vi.fn(),
 }));
 
+vi.mock('../queue.service', () => ({
+  QueueService: {
+    enqueue: vi.fn().mockResolvedValue(undefined),
+  },
+}));
+
 vi.mock('../../utils/logger', () => ({
   logger: {
     info: vi.fn(),

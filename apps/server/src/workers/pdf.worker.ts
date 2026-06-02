@@ -8,7 +8,7 @@ import { Booking } from '../models/booking.schema';
 import { Event } from '../models/event.schema';
 import { DeadLetterJob } from '../models/dead-letter-job.schema';
 import { Notification } from '../models/notification.schema';
-import { QueueService, localFallbackEmitter } from '../services/queue.service';
+import { QueueService } from '../services/queue.service';
 import { generateTicketPDF } from '../utils/pdf';
 import { NotificationType } from '@mad/shared';
 import { logger } from '../utils/logger';
@@ -151,18 +151,8 @@ async function handleJobExecution(jobId: string, data: any): Promise<void> {
 let worker: Worker | null = null;
 
 export function startPDFWorker(): void {
-  // Bind local fallback event listener immediately
-  localFallbackEmitter.on(QUEUE_NAME, async (job) => {
-    logger.info({ jobId: job.id }, 'Processing PDF generation job via local EventEmitter fallback');
-    try {
-      await handleJobExecution(job.id, job.data);
-    } catch (err) {
-      logger.error({ err, jobId: job.id }, 'Local PDF generation job fallback execution failed');
-    }
-  });
-
   if (!isRedisConnected()) {
-    logger.warn('Redis offline. Operating PDF worker in in-memory degraded fallback mode.');
+    logger.warn('Redis offline. PDF worker startup aborted.');
     return;
   }
 
@@ -216,7 +206,6 @@ export function startPDFWorker(): void {
 }
 
 export async function stopPDFWorker(): Promise<void> {
-  localFallbackEmitter.removeAllListeners(QUEUE_NAME);
   if (worker) {
     await worker.close();
     worker = null;

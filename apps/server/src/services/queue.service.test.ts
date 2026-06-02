@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { QueueService, localFallbackEmitter } from './queue.service';
+import { QueueService } from './queue.service';
 import { isRedisConnected } from '../config/redis';
 
 // Local state toggles to control mock behavior dynamically across tests
@@ -62,11 +62,9 @@ describe('Queue Service', () => {
     lastQueueInstance = null;
     // Reset private queues state in QueueService
     (QueueService as any).queues = {};
-    localFallbackEmitter.removeAllListeners();
   });
 
   afterEach(async () => {
-    localFallbackEmitter.removeAllListeners();
     await QueueService.closeAll();
   });
 
@@ -82,48 +80,27 @@ describe('Queue Service', () => {
       expect(lastQueueInstance.add).toHaveBeenCalledWith('booking:confirm', payload, { jobId: 'custom-id' });
     });
 
-    it('should fall back to local in-memory emitter if Redis is disconnected', async () => {
+    it('should throw an error immediately if Redis is disconnected (Fail-Fast)', async () => {
       redisConnectedState = false;
 
       const payload = { bookingId: 'b-111' };
       
-      const fallbackPromise = new Promise<any>((resolve) => {
-        localFallbackEmitter.once('booking-queue', (job) => {
-          resolve(job);
-        });
-      });
+      await expect(
+        QueueService.enqueue('booking-queue', 'booking:confirm', payload, 'lock-id')
+      ).rejects.toThrow('Queue connection error: Redis is offline');
 
-      await QueueService.enqueue('booking-queue', 'booking:confirm', payload, 'lock-id');
-
-      const job = await fallbackPromise;
-      expect(job).toBeDefined();
-      expect(job.name).toBe('booking:confirm');
-      expect(job.data).toEqual(payload);
-      expect(job.id).toBe('lock-id');
-      expect(job.isFallback).toBe(true);
       expect(lastQueueInstance).toBeNull();
     });
 
-    it('should fall back to local emitter if BullMQ enqueue fails with exception', async () => {
+    it('should throw an error immediately if BullMQ enqueue fails with exception (Fail-Fast)', async () => {
       redisConnectedState = true;
       queueShouldThrow = true;
 
       const payload = { email: 'test@example.com' };
       
-      const fallbackPromise = new Promise<any>((resolve) => {
-        localFallbackEmitter.once('notification-queue', (job) => {
-          resolve(job);
-        });
-      });
-
-      await QueueService.enqueue('notification-queue', 'email:send', payload, 'email-id');
-
-      const job = await fallbackPromise;
-      expect(job).toBeDefined();
-      expect(job.name).toBe('email:send');
-      expect(job.data).toEqual(payload);
-      expect(job.id).toBe('email-id');
-      expect(job.isFallback).toBe(true);
+      await expect(
+        QueueService.enqueue('notification-queue', 'email:send', payload, 'email-id')
+      ).rejects.toThrow('Queue connection error: Redis is offline');
     });
   });
 
