@@ -1,4 +1,4 @@
-import { BookingStatus, ReservationStatus, SeatStatus, InventoryState } from '@mad/shared';
+import { BookingStatus, ReservationStatus, SeatStatus, InventoryState, PaymentStatus } from '@mad/shared';
 import mongoose, { Types, ClientSession } from 'mongoose';
 
 import { emitToAdmin, emitToEvent, emitToBooking } from '../../config/socket';
@@ -8,6 +8,7 @@ import { Event } from '../../models/event.schema';
 import { SeatLayout } from '../../models/seat-layout.schema';
 import { UserModel } from '../../models/user.schema';
 import { Ticket } from '../../models/ticket.schema';
+import { Payment } from '../../models/payment.schema';
 import { logger } from '../../utils/logger';
 import { auditLog } from '../../utils/audit';
 import { ReservationService } from '../reservation.service';
@@ -228,6 +229,15 @@ export const cancelBooking = async (
       booking.expiresAt = undefined;
     }
     await booking.save({ session });
+
+    // 1.5 Sync Payment Status if cancelled
+    if (booking.paymentId && targetStatus === BookingStatus.CANCELLED) {
+      await Payment.findByIdAndUpdate(
+        booking.paymentId,
+        { status: PaymentStatus.CANCELLED },
+        { session }
+      );
+    }
 
     // 2. Transition corresponding reservations
     const targetReservationStatus = targetStatus === BookingStatus.REFUNDED
