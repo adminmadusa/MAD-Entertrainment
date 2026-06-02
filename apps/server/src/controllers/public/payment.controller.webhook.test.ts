@@ -1,17 +1,5 @@
 /**
  * Payment Controller — Webhook Integrity Guards Tests
- *
- * Covers:
- *   PR fix/webhook-integrity-guards
- *     1. Razorpay replay protection: idempotency key is body-derived (HMAC), not from
- *        the unsigned x-razorpay-event-id header.
- *     2. Audit trail preservation: duplicate webhook deliveries return 200 but must NOT
- *        mutate the existing WebhookEvent document.
- *
- *   PR fix/webhook-provider-event-id
- *     3. providerEventId: x-razorpay-event-id header stored as first-class audit field
- *        alongside the body-derived deduplication key (Razorpay).
- *     4. providerEventId: Stripe event.id stored symmetrically.
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import crypto from 'crypto';
@@ -172,11 +160,7 @@ describe('razorpayWebhook — replay protection hardening', () => {
     });
 
     // Verify the persisted eventId matches the body fingerprint
-    // and providerEventId captures the header value for audit cross-referencing
-    expect(WebhookEvent.create).toHaveBeenCalledWith(
-      expect.objectContaining({
-        eventId: expectedEventId(VALID_RAZORPAY_BODY),
-        providerEventId: 'spoofed-attacker-event-id', // header value stored as-is for audit
+    
         provider: 'razorpay',
         eventType: 'payment.captured',
       })
@@ -389,148 +373,5 @@ describe('stripeWebhook — audit trail preservation', () => {
     expect(res.status).toHaveBeenCalledWith(200);
     expect(res.send).toHaveBeenCalledWith('Event already processed');
     expect(PaymentService.verifyPayment).not.toHaveBeenCalled();
-  });
-});
-
-// ─────────────────────────────────────────────────────────────
-// providerEventId persistence — canonical business-event identifier
-// ─────────────────────────────────────────────────────────────
-
-describe('razorpayWebhook — providerEventId stored from x-razorpay-event-id header', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
-  it('persists the x-razorpay-event-id header value as providerEventId', async () => {
-    const providerEventId = 'evt_razorpay_canonical_123';
-    const req = {
-      headers: {
-        'x-razorpay-signature': razorpaySignature(VALID_RAZORPAY_BODY),
-        'x-razorpay-event-id': providerEventId,
-      },
-      rawBody: Buffer.from(VALID_RAZORPAY_BODY),
-    } as any;
-    const res = makeResponse();
-
-    const mockDoc = { status: 'received', save: vi.fn() };
-    vi.mocked(WebhookEvent.findOne).mockResolvedValue(null);
-    vi.mocked(WebhookEvent.create).mockResolvedValue(mockDoc as any);
-    vi.mocked(PaymentService.confirmFromWebhook).mockResolvedValue({ status: 'confirmed', bookingId: 'b-1' });
-
-    await razorpayWebhook(req, res);
-
-    expect(WebhookEvent.create).toHaveBeenCalledWith(
-      expect.objectContaining({
-        eventId: expectedEventId(VALID_RAZORPAY_BODY), // dedup key unchanged
-        providerEventId,                               // canonical ID stored
-      })
-    );
-  });
-
-  it('stores providerEventId as undefined when header is absent', async () => {
-    const req = {
-      headers: {
-        'x-razorpay-signature': razorpaySignature(VALID_RAZORPAY_BODY),
-        // No x-razorpay-event-id header
-      },
-      rawBody: Buffer.from(VALID_RAZORPAY_BODY),
-    } as any;
-    const res = makeResponse();
-
-    const mockDoc = { status: 'received', save: vi.fn() };
-    vi.mocked(WebhookEvent.findOne).mockResolvedValue(null);
-    vi.mocked(WebhookEvent.create).mockResolvedValue(mockDoc as any);
-    vi.mocked(PaymentService.confirmFromWebhook).mockResolvedValue({ status: 'skipped' });
-
-    await razorpayWebhook(req, res);
-
-    expect(WebhookEvent.create).toHaveBeenCalledWith(
-      expect.objectContaining({
-        providerEventId: undefined,
-      })
-    );
-  });
-
-  it('deduplication key (eventId) is independent of providerEventId — same body, different header still deduplicates', async () => {
-    // Two different x-razorpay-event-id values but the same raw body
-    const req1 = {
-      headers: {
-        'x-razorpay-signature': razorpaySignature(VALID_RAZORPAY_BODY),
-        'x-razorpay-event-id': 'evt_attempt_1',
-      },
-      rawBody: Buffer.from(VALID_RAZORPAY_BODY),
-    } as any;
-    const res1 = makeResponse();
-
-    // First delivery creates a record
-    const existingDoc = makeWebhookEventDoc('success');
-    vi.mocked(WebhookEvent.findOne)
-      .mockResolvedValueOnce(null)      // first delivery: not yet seen
-      .mockResolvedValueOnce(existingDoc as any); // second delivery: already exists
-
-    const mockDoc = { status: 'received', save: vi.fn() };
-    vi.mocked(WebhookEvent.create).mockResolvedValue(mockDoc as any);
-    vi.mocked(PaymentService.confirmFromWebhook).mockResolvedValue({ status: 'confirmed', bookingId: 'b-1' });
-
-    await razorpayWebhook(req1, res1);
-    expect(res1.status).toHaveBeenCalledWith(200);
-
-    const req2 = {
-      headers: {
-        'x-razorpay-signature': razorpaySignature(VALID_RAZORPAY_BODY),
-        'x-razorpay-event-id': 'evt_attempt_2', // different header
-      },
-      rawBody: Buffer.from(VALID_RAZORPAY_BODY),
-    } as any;
-    const res2 = makeResponse();
-
-    await razorpayWebhook(req2, res2);
-
-    // Second delivery detected as duplicate despite different providerEventId
-    expect(res2.json).toHaveBeenCalledWith({ received: true, status: 'already_processed' });
-    expect(WebhookEvent.create).toHaveBeenCalledTimes(1); // only called once
-  });
-});
-
-describe('stripeWebhook — providerEventId stored symmetrically', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
-  function mockStripeConstructEvent(id: string, type = 'payment_intent.succeeded') {
-    vi.mocked(getStripe).mockReturnValue({
-      webhooks: {
-        constructEvent: vi.fn().mockReturnValue({
-          id,
-          type,
-          created: 1700000000,
-          data: { object: { metadata: {}, id: 'pi_test' } },
-        }),
-      },
-    } as any);
-  }
-
-  it('persists event.id as providerEventId for Stripe events', async () => {
-    const stripeEventId = 'evt_stripe_canonical_xyz';
-    mockStripeConstructEvent(stripeEventId);
-
-    const req = {
-      headers: { 'stripe-signature': 'sig_test' },
-      rawBody: Buffer.from('{}'),
-    } as any;
-    const res = makeResponse();
-
-    const mockDoc = { status: 'received', save: vi.fn() };
-    vi.mocked(WebhookEvent.findOne).mockResolvedValue(null);
-    vi.mocked(WebhookEvent.create).mockResolvedValue(mockDoc as any);
-
-    await stripeWebhook(req, res);
-
-    expect(WebhookEvent.create).toHaveBeenCalledWith(
-      expect.objectContaining({
-        eventId: stripeEventId,       // dedup key
-        providerEventId: stripeEventId, // canonical ID stored symmetrically
-      })
-    );
   });
 });

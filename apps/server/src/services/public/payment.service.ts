@@ -348,7 +348,9 @@ export class PaymentService {
     razorpayOrderId: string,
     razorpayPaymentId: string,
     eventType: string,
-    webhookEventId: string
+    webhookEventId: string,
+    amountPaise?: number,
+    currency?: string
   ): Promise<{ status: 'confirmed' | 'failed' | 'skipped'; bookingId?: string }> {
     // 1. Resolve Payment record from orderId — this is the only link between the
     //    webhook payload and the internal booking.
@@ -405,6 +407,80 @@ export class PaymentService {
 
     // 4. Route by event type.
     if (eventType === 'payment.captured' || eventType === 'payment.authorized') {
+      // Amount & currency verification (defense-in-depth)
+      if (amountPaise !== undefined) {
+        const expectedAmountPaise = Math.round(booking.totalAmount * 100);
+        if (amountPaise !== expectedAmountPaise) {
+          logger.error(
+            {
+              bookingId: booking._id,
+              bookingReference: booking.bookingId,
+              razorpayOrderId,
+              razorpayPaymentId,
+              expectedAmountPaise,
+              receivedAmountPaise: amountPaise,
+            },
+            'SECURITY: Razorpay payment amount mismatch in webhook'
+          );
+          await this.failPaymentAndReleaseInventory(
+            booking,
+            payment,
+            `Amount mismatch in webhook: expected ${expectedAmountPaise} paise, received ${amountPaise}`
+          );
+          auditLog({
+            action: 'PAYMENT_SECURITY_VIOLATION',
+            status: 'failure',
+            metadata: {
+              bookingId: booking._id.toString(),
+              bookingReference: booking.bookingId,
+              gateway: 'razorpay',
+              expectedAmountPaise,
+              receivedAmountPaise: amountPaise,
+              violationType: 'amount_mismatch',
+            },
+            description: `SECURITY VIOLATION: Razorpay payment amount mismatch in webhook for booking ${booking.bookingId}`
+          });
+          return { status: 'skipped', bookingId: booking._id.toString() };
+        }
+      }
+
+      if (currency !== undefined) {
+        const expectedCurrency = (booking.currency || 'INR').toLowerCase();
+        const receivedCurrency = currency.toLowerCase();
+        if (receivedCurrency !== expectedCurrency) {
+          logger.error(
+            {
+              bookingId: booking._id,
+              bookingReference: booking.bookingId,
+              razorpayOrderId,
+              razorpayPaymentId,
+              expectedCurrency,
+              receivedCurrency,
+            },
+            'SECURITY: Razorpay payment currency mismatch in webhook'
+          );
+          await this.failPaymentAndReleaseInventory(
+            booking,
+            payment,
+            `Currency mismatch in webhook: expected ${expectedCurrency}, received ${receivedCurrency}`
+          );
+          auditLog({
+            action: 'PAYMENT_SECURITY_VIOLATION',
+            status: 'failure',
+            metadata: {
+              bookingId: booking._id.toString(),
+              bookingReference: booking.bookingId,
+              gateway: 'razorpay',
+              expectedCurrency,
+              receivedCurrency,
+              violationType: 'currency_mismatch',
+            },
+            description: `SECURITY VIOLATION: Razorpay payment currency mismatch in webhook for booking ${booking.bookingId}`
+          });
+          return { status: 'skipped', bookingId: booking._id.toString() };
+        }
+      }
+
       // Mark payment as PAID — no payment signature re-check here because:
       // (a) the webhook body is already authenticated via HMAC at the controller.
       // (b) RAZORPAY_KEY_SECRET signatures are only available in the checkout redirect,
@@ -642,6 +718,80 @@ export class PaymentService {
         });
 
         throw AppError.badRequest('Razorpay payment has already been used');
+      }
+
+      // Amount & currency verification (defense-in-depth sanity checks)
+      if (payment.amount !== undefined && booking.totalAmount !== undefined) {
+        const expectedAmountPaise = Math.round(booking.totalAmount * 100);
+        const paymentAmountPaise = Math.round(payment.amount * 100);
+
+        if (paymentAmountPaise !== expectedAmountPaise) {
+          logger.error(
+            {
+              bookingId: booking._id,
+              bookingReference: booking.bookingId,
+              paymentId: payment._id,
+              expectedAmountPaise,
+              paymentAmountPaise,
+            },
+            'SECURITY: Razorpay payment amount mismatch'
+          );
+          await this.failPaymentAndReleaseInventory(
+            booking,
+            payment,
+            `Amount mismatch: expected ${expectedAmountPaise} paise, got payment record with ${paymentAmountPaise} paise`
+          );
+          auditLog({
+            action: 'PAYMENT_SECURITY_VIOLATION',
+            status: 'failure',
+            metadata: {
+              bookingId: booking._id.toString(),
+              bookingReference: booking.bookingId,
+              gateway: 'razorpay',
+              expectedAmountPaise,
+              receivedAmountPaise: paymentAmountPaise,
+              violationType: 'amount_mismatch',
+            },
+            description: `SECURITY VIOLATION: Razorpay payment amount mismatch for booking ${booking.bookingId}`
+          });
+          throw AppError.badRequest('Payment amount does not match booking total');
+        }
+      }
+
+      if (payment.currency !== undefined && booking.currency !== undefined) {
+        const expectedCurrency = (booking.currency || 'INR').toLowerCase();
+        const paymentCurrency = (payment.currency || 'INR').toLowerCase();
+        if (paymentCurrency !== expectedCurrency) {
+          logger.error(
+            {
+              bookingId: booking._id,
+              bookingReference: booking.bookingId,
+              paymentId: payment._id,
+              expectedCurrency,
+              paymentCurrency,
+            },
+            'SECURITY: Razorpay payment currency mismatch'
+          );
+          await this.failPaymentAndReleaseInventory(
+            booking,
+            payment,
+            `Currency mismatch: expected ${expectedCurrency}, got payment record with ${paymentCurrency}`
+          );
+          auditLog({
+            action: 'PAYMENT_SECURITY_VIOLATION',
+            status: 'failure',
+            metadata: {
+              bookingId: booking._id.toString(),
+              bookingReference: booking.bookingId,
+              gateway: 'razorpay',
+              expectedCurrency,
+              receivedCurrency: paymentCurrency,
+              violationType: 'currency_mismatch',
+            },
+            description: `SECURITY VIOLATION: Razorpay payment currency mismatch for booking ${booking.bookingId}`
+          });
+          throw AppError.badRequest('Payment currency does not match booking currency');
+        }
       }
 
       payment.status = PaymentStatus.PAID;

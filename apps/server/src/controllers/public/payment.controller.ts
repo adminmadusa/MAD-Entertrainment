@@ -202,6 +202,8 @@ export async function razorpayWebhook(req: Request, res: Response): Promise<void
   let eventType: string;
   let razorpayPaymentId: string | undefined;
   let razorpayOrderId: string | undefined;
+  let amount: number | undefined;
+  let currency: string | undefined;
   let body: any;
 
   try {
@@ -209,6 +211,8 @@ export async function razorpayWebhook(req: Request, res: Response): Promise<void
     eventType = body.event;
     razorpayPaymentId = body.payload?.payment?.entity?.id;
     razorpayOrderId = body.payload?.payment?.entity?.order_id;
+    amount = body.payload?.payment?.entity?.amount;
+    currency = body.payload?.payment?.entity?.currency;
   } catch (err: any) {
     res.status(400).send('Malformed JSON payload');
     return;
@@ -232,13 +236,6 @@ export async function razorpayWebhook(req: Request, res: Response): Promise<void
     .createHmac('sha256', env.RAZORPAY_WEBHOOK_SECRET)
     .update(rawBody)
     .digest('hex');
-
-  // 4. Capture the provider's canonical event identifier for audit trail storage.
-  //    This is Razorpay's x-razorpay-event-id header value — stable across retries,
-  //    human-readable, and cross-referenceable with the Razorpay dashboard.  It is
-  //    NOT used as the deduplication key (that is eventId above); it is stored as
-  //    providerEventId purely for operational visibility.
-  const providerEventId = req.headers['x-razorpay-event-id'] as string | undefined;
 
   let existingEvent = await WebhookEvent.findOne({ eventId });
   if (existingEvent) {
@@ -303,7 +300,9 @@ export async function razorpayWebhook(req: Request, res: Response): Promise<void
         razorpayOrderId,
         razorpayPaymentId,
         eventType,
-        eventId
+        eventId,
+        amount,
+        currency
       );
       
       webhookEvent.status = 'success';
