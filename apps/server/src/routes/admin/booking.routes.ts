@@ -44,9 +44,9 @@ const bookingsSummarySchema = z.object({
   }),
 });
 
-router.get('/', validateQuery(adminBookingsQuerySchema), bookingController.getBookings);
-router.get('/summary', validate(bookingsSummarySchema), bookingController.getBookingsSummary);
-router.get('/:id', validate(adminBookingIdentifierParamSchema), bookingController.getBookingById);
+router.get('/', requireRole(AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.MANAGER, AdminRole.SUPPORT), validateQuery(adminBookingsQuerySchema), bookingController.getBookings);
+router.get('/summary', requireRole(AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.MANAGER, AdminRole.SUPPORT), validate(bookingsSummarySchema), bookingController.getBookingsSummary);
+router.get('/:id', requireRole(AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.MANAGER, AdminRole.SUPPORT), validate(adminBookingIdentifierParamSchema), bookingController.getBookingById);
 router.patch('/:id/cancel', requireRole(AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.SUPPORT), validate(cancelBookingSchema), bookingController.cancelBooking);
 router.patch('/:id/correct-email', requireRole(AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.SUPPORT), validate(correctBookingEmailSchema), bookingController.correctBookingEmail);
 router.post('/:id/resend', requireRole(AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.SUPPORT), validate(resendBookingTicketsSchema), bookingController.resendBookingTickets);

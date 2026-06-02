@@ -44,7 +44,7 @@ describe('Admin Authentication Tests', () => {
         _id: 'admin-id-999',
         email: 'admin@example.com',
         name: 'Super Admin',
-        role: 'SUPER_ADMIN',
+        role: 'super_admin',
         isActive: true,
         comparePassword: vi.fn().mockResolvedValue(true),
         save: vi.fn(),
@@ -76,7 +76,7 @@ describe('Admin Authentication Tests', () => {
         _id: 'admin-id-999',
         email: 'admin@example.com',
         name: 'Super Admin',
-        role: 'SUPER_ADMIN',
+        role: 'super_admin',
       };
 
       vi.mocked(AdminModel.findById).mockReturnValueOnce({
@@ -84,7 +84,7 @@ describe('Admin Authentication Tests', () => {
       } as any);
 
       // Mock request with req.admin populated (e.g. from requireAdmin middleware)
-      const req = mockRequest({}, { sub: 'admin-id-999', email: 'admin@example.com', role: 'SUPER_ADMIN' });
+      const req = mockRequest({}, { sub: 'admin-id-999', email: 'admin@example.com', role: 'super_admin' });
       const res = mockResponse();
 
       await adminAuthController.getMe(req, res);
@@ -96,7 +96,7 @@ describe('Admin Authentication Tests', () => {
           id: 'admin-id-999',
           name: 'Super Admin',
           email: 'admin@example.com',
-          role: 'SUPER_ADMIN',
+          role: 'super_admin',
         },
       });
     });

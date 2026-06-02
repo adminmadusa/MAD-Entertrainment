@@ -30,8 +30,9 @@ const adminSchema = new Schema<IAdmin>(
     },
     role: {
       type: String,
-      enum: ['SUPER_ADMIN', 'ADMIN', 'MODERATOR'],
-      default: 'ADMIN',
+      enum: ['super_admin', 'admin', 'manager', 'support', 'scanner'],
+      default: 'admin',
+      lowercase: true,
     },
     isActive: {
       type: Boolean,

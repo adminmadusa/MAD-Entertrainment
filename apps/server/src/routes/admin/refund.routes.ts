@@ -11,7 +11,7 @@ const router: Router = Router();
 router.use(requireAdmin);
 
 router.post('/', requireRole(AdminRole.SUPER_ADMIN, AdminRole.ADMIN), validate(createRefundSchema), refundController.createRefund);
-router.get('/', refundController.getRefunds);
+router.get('/', requireRole(AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.SUPPORT), refundController.getRefunds);
 router.patch('/:id/process', requireRole(AdminRole.SUPER_ADMIN, AdminRole.ADMIN), validate(processRefundSchema), refundController.processRefund);
 
 export default router;

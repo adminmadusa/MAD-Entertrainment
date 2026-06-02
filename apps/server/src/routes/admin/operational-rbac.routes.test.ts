@@ -31,11 +31,75 @@ vi.mock('../../controllers/admin/booking.controller', () => ({
   resendBookingTickets: vi.fn(),
 }));
 
+vi.mock('../../controllers/admin/coupon.controller', () => ({
+  createCoupon: vi.fn(),
+  getCoupons: vi.fn(),
+  getCouponById: vi.fn(),
+  updateCoupon: vi.fn(),
+  deleteCoupon: vi.fn(),
+  toggleCoupon: vi.fn(),
+}));
+
+vi.mock('../../controllers/admin/category.controller', () => ({
+  createCategory: vi.fn(),
+  getCategories: vi.fn(),
+  updateCategory: vi.fn(),
+  deleteCategory: vi.fn(),
+}));
+
+vi.mock('../../controllers/admin/tier.controller', () => ({
+  createTier: vi.fn(),
+  getTiers: vi.fn(),
+  updateTier: vi.fn(),
+  deleteTier: vi.fn(),
+}));
+
+vi.mock('../../controllers/admin/popup.controller', () => ({
+  createPopup: vi.fn(),
+  getPopups: vi.fn(),
+  getPopupById: vi.fn(),
+  updatePopup: vi.fn(),
+  deletePopup: vi.fn(),
+  togglePopup: vi.fn(),
+}));
+
+vi.mock('../../controllers/admin/dj-operator.controller', () => ({
+  createDJOperator: vi.fn(),
+  getDJOperators: vi.fn(),
+  getDJOperatorById: vi.fn(),
+  updateDJOperator: vi.fn(),
+  deleteDJOperator: vi.fn(),
+}));
+
+vi.mock('../../controllers/admin/analytics.controller', () => ({
+  getSummary: vi.fn(),
+  getRevenue: vi.fn(),
+  getAttendanceSummary: vi.fn(),
+  getAttendanceRankings: vi.fn(),
+}));
+
+vi.mock('../../controllers/admin/notification.controller', () => ({
+  getNotifications: vi.fn(),
+  retryNotification: vi.fn(),
+}));
+
+vi.mock('../../controllers/admin/webhook.controller', () => ({
+  getWebhooks: vi.fn(),
+}));
+
 import bookingRoutes from './booking.routes';
 import diagnosticsRoutes from './diagnostics.routes';
 import refundRoutes from './refund.routes';
+import couponRoutes from './coupon.routes';
+import categoryRoutes from './category.routes';
+import tierRoutes from './tier.routes';
+import popupRoutes from './popup.routes';
+import djOperatorRoutes from './dj-operator.routes';
+import analyticsRoutes from './analytics.routes';
+import notificationRoutes from './notification.routes';
+import webhookRoutes from './webhook.routes';
 
-type Method = 'get' | 'post' | 'patch';
+type Method = 'get' | 'post' | 'patch' | 'put' | 'delete';
 
 function mockResponse() {
   const res: any = {};
@@ -57,7 +121,23 @@ function getRouteMiddleware(router: any, path: string, method: Method) {
     throw new Error(`Route ${method.toUpperCase()} ${path} not found`);
   }
 
-  return layer.route.stack[0].handle;
+  // Filter out Zod validations if present in route stack to test authorization guard directly
+  const handlers = layer.route.stack.map((s: any) => s.handle);
+  // Find requireRole or requireSuperAdmin
+  const guard = handlers.find(
+    (h: any) =>
+      h.name === 'requireSuperAdmin' ||
+      h.name === 'requireAdmin' ||
+      (h.toString().includes('roles') && h.toString().includes('req.admin')) ||
+      // Anonymous function returned by requireRole
+      (h.length === 3 && !h.toString().includes('validate'))
+  );
+
+  if (!guard) {
+    throw new Error(`Authorization guard not found on ${method.toUpperCase()} ${path}`);
+  }
+
+  return guard;
 }
 
 function expectAllowed(middleware: any, role: AdminRole) {
@@ -92,6 +172,14 @@ describe('admin operational RBAC routes', () => {
     ['diagnostics', diagnosticsRoutes],
     ['refunds', refundRoutes],
     ['bookings', bookingRoutes],
+    ['coupons', couponRoutes],
+    ['categories', categoryRoutes],
+    ['tiers', tierRoutes],
+    ['popups', popupRoutes],
+    ['dj-operators', djOperatorRoutes],
+    ['analytics', analyticsRoutes],
+    ['notifications', notificationRoutes],
+    ['webhooks', webhookRoutes],
   ])('requires admin authentication for %s router', (_name, router) => {
     const middleware = getRouterAuthMiddleware(router);
     const req = { headers: {} };
@@ -122,6 +210,21 @@ describe('admin operational RBAC routes', () => {
   });
 
   it.each([
+    ['/consistency', 'get'],
+    ['/reservations', 'get'],
+    ['/system', 'get'],
+  ] as Array<[string, Method]>)('allows SUPER_ADMIN and ADMIN for diagnostics %s %s', (path, method) => {
+    const middleware = getRouteMiddleware(diagnosticsRoutes, path, method);
+
+    for (const role of [AdminRole.SUPER_ADMIN, AdminRole.ADMIN]) {
+      expectAllowed(middleware, role);
+    }
+    for (const role of [AdminRole.SUPPORT, AdminRole.MANAGER, AdminRole.SCANNER]) {
+      expectDenied(middleware, role, 'Access denied. Required role: super_admin or admin');
+    }
+  });
+
+  it.each([
     ['/', 'post'],
     ['/:id/process', 'patch'],
   ] as Array<[string, Method]>)('allows SUPER_ADMIN and ADMIN for refunds %s %s', (path, method) => {
@@ -133,6 +236,20 @@ describe('admin operational RBAC routes', () => {
 
     for (const role of [AdminRole.SUPPORT, AdminRole.MANAGER, AdminRole.SCANNER]) {
       expectDenied(middleware, role, 'Access denied. Required role: super_admin or admin');
+    }
+  });
+
+  it.each([
+    ['/', 'get'],
+  ] as Array<[string, Method]>)('allows SUPER_ADMIN, ADMIN and SUPPORT for refunds read %s %s', (path, method) => {
+    const middleware = getRouteMiddleware(refundRoutes, path, method);
+
+    for (const role of [AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.SUPPORT]) {
+      expectAllowed(middleware, role);
+    }
+
+    for (const role of [AdminRole.MANAGER, AdminRole.SCANNER]) {
+      expectDenied(middleware, role, 'Access denied. Required role: super_admin or admin or support');
     }
   });
 
@@ -149,6 +266,193 @@ describe('admin operational RBAC routes', () => {
 
     for (const role of [AdminRole.MANAGER, AdminRole.SCANNER]) {
       expectDenied(middleware, role, 'Access denied. Required role: super_admin or admin or support');
+    }
+  });
+
+  it.each([
+    ['/', 'get'],
+    ['/summary', 'get'],
+    ['/:id', 'get'],
+  ] as Array<[string, Method]>)('allows support-level booking reads for %s %s', (path, method) => {
+    const middleware = getRouteMiddleware(bookingRoutes, path, method);
+
+    for (const role of [AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.MANAGER, AdminRole.SUPPORT]) {
+      expectAllowed(middleware, role);
+    }
+
+    for (const role of [AdminRole.SCANNER]) {
+      expectDenied(middleware, role, 'Access denied. Required role: super_admin or admin or manager or support');
+    }
+  });
+
+  it.each([
+    ['/', 'post'],
+    ['/:id', 'put'],
+    ['/:id', 'delete'],
+    ['/:id/toggle', 'patch'],
+  ] as Array<[string, Method]>)('allows only content managers/admins to write coupons %s %s', (path, method) => {
+    const middleware = getRouteMiddleware(couponRoutes, path, method);
+
+    for (const role of [AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.MANAGER]) {
+      expectAllowed(middleware, role);
+    }
+
+    for (const role of [AdminRole.SUPPORT, AdminRole.SCANNER]) {
+      expectDenied(middleware, role, 'Access denied. Required role: super_admin or admin or manager');
+    }
+  });
+
+  it.each([
+    ['/', 'get'],
+    ['/:id', 'get'],
+  ] as Array<[string, Method]>)('allows support/managers/admins to read coupons %s %s', (path, method) => {
+    const middleware = getRouteMiddleware(couponRoutes, path, method);
+
+    for (const role of [AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.MANAGER, AdminRole.SUPPORT]) {
+      expectAllowed(middleware, role);
+    }
+
+    for (const role of [AdminRole.SCANNER]) {
+      expectDenied(middleware, role, 'Access denied. Required role: super_admin or admin or manager or support');
+    }
+  });
+
+  it.each([
+    ['/', 'post'],
+    ['/:id', 'put'],
+    ['/:id', 'delete'],
+  ] as Array<[string, Method]>)('allows only content managers/admins to write categories %s %s', (path, method) => {
+    const middleware = getRouteMiddleware(categoryRoutes, path, method);
+
+    for (const role of [AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.MANAGER]) {
+      expectAllowed(middleware, role);
+    }
+
+    for (const role of [AdminRole.SUPPORT, AdminRole.SCANNER]) {
+      expectDenied(middleware, role, 'Access denied. Required role: super_admin or admin or manager');
+    }
+  });
+
+  it.each([
+    ['/', 'post'],
+    ['/:id', 'patch'],
+    ['/:id', 'delete'],
+  ] as Array<[string, Method]>)('allows only content managers/admins to write tiers %s %s', (path, method) => {
+    const middleware = getRouteMiddleware(tierRoutes, path, method);
+
+    for (const role of [AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.MANAGER]) {
+      expectAllowed(middleware, role);
+    }
+
+    for (const role of [AdminRole.SUPPORT, AdminRole.SCANNER]) {
+      expectDenied(middleware, role, 'Access denied. Required role: super_admin or admin or manager');
+    }
+  });
+
+  it.each([
+    ['/', 'post'],
+    ['/:id', 'put'],
+    ['/:id', 'delete'],
+    ['/:id/toggle', 'patch'],
+  ] as Array<[string, Method]>)('allows only content managers/admins to write popups %s %s', (path, method) => {
+    const middleware = getRouteMiddleware(popupRoutes, path, method);
+
+    for (const role of [AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.MANAGER]) {
+      expectAllowed(middleware, role);
+    }
+
+    for (const role of [AdminRole.SUPPORT, AdminRole.SCANNER]) {
+      expectDenied(middleware, role, 'Access denied. Required role: super_admin or admin or manager');
+    }
+  });
+
+  it.each([
+    ['/', 'get'],
+    ['/:id', 'get'],
+  ] as Array<[string, Method]>)('allows support/managers/admins to read popups %s %s', (path, method) => {
+    const middleware = getRouteMiddleware(popupRoutes, path, method);
+
+    for (const role of [AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.MANAGER, AdminRole.SUPPORT]) {
+      expectAllowed(middleware, role);
+    }
+
+    for (const role of [AdminRole.SCANNER]) {
+      expectDenied(middleware, role, 'Access denied. Required role: super_admin or admin or manager or support');
+    }
+  });
+
+  it.each([
+    ['/', 'post'],
+    ['/:id', 'put'],
+    ['/:id', 'delete'],
+  ] as Array<[string, Method]>)('allows only managers/admins to write DJ operators %s %s', (path, method) => {
+    const middleware = getRouteMiddleware(djOperatorRoutes, path, method);
+
+    for (const role of [AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.MANAGER]) {
+      expectAllowed(middleware, role);
+    }
+
+    for (const role of [AdminRole.SUPPORT, AdminRole.SCANNER]) {
+      expectDenied(middleware, role, 'Access denied. Required role: super_admin or admin or manager');
+    }
+  });
+
+  it.each([
+    ['/summary', 'get'],
+    ['/revenue', 'get'],
+    ['/attendance/summary', 'get'],
+    ['/attendance/rankings', 'get'],
+  ] as Array<[string, Method]>)('allows only managers/admins to read analytics %s %s', (path, method) => {
+    const middleware = getRouteMiddleware(analyticsRoutes, path, method);
+
+    for (const role of [AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.MANAGER]) {
+      expectAllowed(middleware, role);
+    }
+
+    for (const role of [AdminRole.SUPPORT, AdminRole.SCANNER]) {
+      expectDenied(middleware, role, 'Access denied. Required role: super_admin or admin or manager');
+    }
+  });
+
+  it.each([
+    ['/', 'get'],
+  ] as Array<[string, Method]>)('allows support/managers/admins to read notifications %s %s', (path, method) => {
+    const middleware = getRouteMiddleware(notificationRoutes, path, method);
+
+    for (const role of [AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.MANAGER, AdminRole.SUPPORT]) {
+      expectAllowed(middleware, role);
+    }
+
+    for (const role of [AdminRole.SCANNER]) {
+      expectDenied(middleware, role, 'Access denied. Required role: super_admin or admin or manager or support');
+    }
+  });
+
+  it.each([
+    ['/:id/retry', 'post'],
+  ] as Array<[string, Method]>)('allows support/admins to retry notifications %s %s', (path, method) => {
+    const middleware = getRouteMiddleware(notificationRoutes, path, method);
+
+    for (const role of [AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.SUPPORT]) {
+      expectAllowed(middleware, role);
+    }
+
+    for (const role of [AdminRole.MANAGER, AdminRole.SCANNER]) {
+      expectDenied(middleware, role, 'Access denied. Required role: super_admin or admin or support');
+    }
+  });
+
+  it.each([
+    ['/', 'get'],
+  ] as Array<[string, Method]>)('allows only SUPER_ADMIN and ADMIN for webhooks read %s %s', (path, method) => {
+    const middleware = getRouteMiddleware(webhookRoutes, path, method);
+
+    for (const role of [AdminRole.SUPER_ADMIN, AdminRole.ADMIN]) {
+      expectAllowed(middleware, role);
+    }
+
+    for (const role of [AdminRole.MANAGER, AdminRole.SUPPORT, AdminRole.SCANNER]) {
+      expectDenied(middleware, role, 'Access denied. Required role: super_admin or admin');
     }
   });
 });

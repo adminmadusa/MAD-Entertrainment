@@ -20,7 +20,7 @@ export const seedAdmin = async () => {
         email,
         passwordHash,
         name: 'Super Admin',
-        role: 'SUPER_ADMIN',
+        role: 'super_admin',
       });
       logger.info(`Seeded initial admin user with email: ${email}`);
     } else {
