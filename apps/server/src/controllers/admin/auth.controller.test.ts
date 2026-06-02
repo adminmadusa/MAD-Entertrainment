@@ -107,5 +107,50 @@ describe('Admin Authentication Tests', () => {
 
       await expect(adminAuthController.getMe(req, res)).rejects.toThrow('Admin authentication required');
     });
+
+    it('should normalize uppercase database role (e.g. SUPER_ADMIN) to lowercase in JWT and returned login payload', async () => {
+      const mockAdmin = {
+        _id: 'admin-id-999',
+        email: 'admin@example.com',
+        name: 'Super Admin',
+        role: 'SUPER_ADMIN', // uppercase in DB
+        isActive: true,
+        comparePassword: vi.fn().mockResolvedValue(true),
+        save: vi.fn(),
+      };
+
+      vi.mocked(AdminModel.findOne).mockResolvedValue(mockAdmin as any);
+
+      const result = await adminAuthService.login('admin@example.com', 'password');
+
+      expect(result.admin.role).toBe('super_admin');
+      const decoded = verifyAdminToken(result.token);
+      expect(decoded.role).toBe('super_admin');
+    });
+
+    it('should normalize uppercase database role (e.g. SUPER_ADMIN) to lowercase in getMe payload', async () => {
+      const mockAdmin = {
+        _id: 'admin-id-999',
+        email: 'admin@example.com',
+        name: 'Super Admin',
+        role: 'SUPER_ADMIN', // uppercase in DB
+      };
+
+      vi.mocked(AdminModel.findById).mockReturnValueOnce({
+        select: vi.fn().mockResolvedValue(mockAdmin),
+      } as any);
+
+      const req = mockRequest({}, { sub: 'admin-id-999', email: 'admin@example.com', role: 'SUPER_ADMIN' });
+      const res = mockResponse();
+
+      await adminAuthController.getMe(req, res);
+
+      expect(res.json).toHaveBeenCalledWith({
+        success: true,
+        data: expect.objectContaining({
+          role: 'super_admin',
+        }),
+      });
+    });
   });
 });
