@@ -156,9 +156,16 @@ function TicketRetrievalContent() {
     enabled: !!queryRef,
     retry: false,
     refetchInterval: (query) => {
-      const status = query.state.data?.booking?.status;
+      const data = query.state.data;
+      const status = data?.booking?.status;
+      const ticketsReady = data?.ticketsReady;
       if (pollCountRef.current >= 5) return false;
+      // Poll while payment is processing
       if (status === BookingStatus.AWAITING_PAYMENT || status === BookingStatus.EXPIRING) {
+        return 3000;
+      }
+      // Poll while booking is confirmed but tickets are still being generated
+      if (status === BookingStatus.CONFIRMED && !ticketsReady) {
         return 3000;
       }
       return false;
@@ -168,11 +175,16 @@ function TicketRetrievalContent() {
   useEffect(() => {
     if (!isSingleLookupFetching && singleBookingData?.booking) {
       const status = singleBookingData.booking.status;
-      if (status === BookingStatus.AWAITING_PAYMENT || status === BookingStatus.EXPIRING) {
+      const ticketsReady = singleBookingData.ticketsReady;
+      if (
+        status === BookingStatus.AWAITING_PAYMENT ||
+        status === BookingStatus.EXPIRING ||
+        (status === BookingStatus.CONFIRMED && !ticketsReady)
+      ) {
         pollCountRef.current += 1;
       }
     }
-  }, [isSingleLookupFetching, singleBookingData?.booking]);
+  }, [isSingleLookupFetching, singleBookingData?.booking, singleBookingData?.ticketsReady]);
 
 
   // ─── Actions ────────────────────────────────────────────────
@@ -367,25 +379,56 @@ function TicketRetrievalContent() {
                     )}
 
                     {singleBooking.status === BookingStatus.CONFIRMED ? (
-                      <div className="space-y-4 pt-4 border-t border-border-subtle/30">
-                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-2">
-                          <h3 className="text-white font-bold text-sm">Entry Passes</h3>
-                          <TicketActions
-                            downloading={downloadingId === singleBooking.bookingId}
-                            resending={resendingId === singleBooking.bookingId}
-                            cooldown={singleResendCooldownSeconds}
-                            onDownload={() => handleDownloadPDF(singleBooking.bookingId, singleBookingSessionToken)}
-                            onResend={() => handleResendTickets(singleBooking.bookingId, singleBookingSessionToken, true)}
-                          />
-                        </div>
-                        <EntryPassGrid tickets={singleTickets} />
-                        
-                        {!isAuthenticated && (
-                          <p className="text-text-muted text-xs leading-relaxed text-center mt-6">
-                            Your ticket has been sent to <span className="text-white font-semibold">{singleBooking.guestEmail}</span>. You can view it anytime by signing in with the same email address.
-                          </p>
-                        )}
-                      </div>
+                      (() => {
+                        const ticketsReady = singleBookingData?.ticketsReady;
+                        const pollsExhausted = pollCountRef.current >= 5;
+
+                        if (!ticketsReady) {
+                          return (
+                            <div className="space-y-3 pt-4 border-t border-border-subtle/30">
+                              <h3 className="text-white font-bold text-sm">Entry Passes</h3>
+                              {pollsExhausted ? (
+                                <div className="glass-strong rounded-2xl border border-border-subtle p-6 text-center text-text-secondary text-sm">
+                                  Your tickets are being processed and will appear in your email shortly.
+                                </div>
+                              ) : (
+                                <div className="glass-strong rounded-2xl border border-border-subtle p-6 text-center space-y-3">
+                                  <div className="flex items-center justify-center gap-2 text-accent-purple-light text-sm font-semibold">
+                                    <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                                    </svg>
+                                    Generating your tickets...
+                                  </div>
+                                  <p className="text-text-muted text-xs">This usually takes a few seconds. Your entry passes will appear here automatically.</p>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        }
+
+                        return (
+                          <div className="space-y-4 pt-4 border-t border-border-subtle/30">
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-2">
+                              <h3 className="text-white font-bold text-sm">Entry Passes</h3>
+                              <TicketActions
+                                downloading={downloadingId === singleBooking.bookingId}
+                                resending={resendingId === singleBooking.bookingId}
+                                cooldown={singleResendCooldownSeconds}
+                                onDownload={() => handleDownloadPDF(singleBooking.bookingId, singleBookingSessionToken)}
+                                onResend={() => handleResendTickets(singleBooking.bookingId, singleBookingSessionToken, true)}
+                              />
+                            </div>
+                            <EntryPassGrid tickets={singleTickets} />
+
+                            {!isAuthenticated && (
+                              <p className="text-text-muted text-xs leading-relaxed text-center mt-6">
+                                Your ticket has been sent to <span className="text-white font-semibold">{singleBooking.guestEmail}</span>. You can view it anytime by signing in with the same email address.
+                              </p>
+                            )}
+                          </div>
+                        );
+                      })()
                     ) : (
                       <TicketStatusMessage status={singleBooking.status} />
                     )}
@@ -423,18 +466,43 @@ function TicketRetrievalContent() {
 
                           {/* Tickets list for confirmed bookings */}
                           {booking.status === BookingStatus.CONFIRMED ? (
-                            <div className="space-y-4 pt-4 border-t border-border-subtle/30">
-                              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-2">
-                                <h3 className="text-white font-bold text-sm">Entry Passes</h3>
-                                <TicketActions
-                                  downloading={downloadingId === booking.bookingId}
-                                  resending={resendingId === booking.bookingId}
-                                  onDownload={() => handleDownloadPDF(booking.bookingId)}
-                                  onResend={() => handleResendTickets(booking.bookingId)}
-                                />
-                              </div>
-                              <EntryPassGrid tickets={bookingTickets} />
-                            </div>
+                            (() => {
+                              const bookingTicketsReady =
+                                bookingsData?.ticketsReadyMap?.[booking._id?.toString() ?? ''] ?? false;
+
+                              if (!bookingTicketsReady) {
+                                return (
+                                  <div className="space-y-3 pt-4 border-t border-border-subtle/30">
+                                    <h3 className="text-white font-bold text-sm">Entry Passes</h3>
+                                    <div className="glass-strong rounded-2xl border border-border-subtle p-6 text-center space-y-3">
+                                      <div className="flex items-center justify-center gap-2 text-accent-purple-light text-sm font-semibold">
+                                        <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                                        </svg>
+                                        Generating your tickets...
+                                      </div>
+                                      <p className="text-text-muted text-xs">Your entry passes will appear here shortly.</p>
+                                    </div>
+                                  </div>
+                                );
+                              }
+
+                              return (
+                                <div className="space-y-4 pt-4 border-t border-border-subtle/30">
+                                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-2">
+                                    <h3 className="text-white font-bold text-sm">Entry Passes</h3>
+                                    <TicketActions
+                                      downloading={downloadingId === booking.bookingId}
+                                      resending={resendingId === booking.bookingId}
+                                      onDownload={() => handleDownloadPDF(booking.bookingId)}
+                                      onResend={() => handleResendTickets(booking.bookingId)}
+                                    />
+                                  </div>
+                                  <EntryPassGrid tickets={bookingTickets} />
+                                </div>
+                              );
+                            })()
                           ) : (
                             <TicketStatusMessage status={booking.status} />
                           )}

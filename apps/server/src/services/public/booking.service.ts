@@ -379,7 +379,9 @@ export class PublicBookingService {
 
     const tickets = await Ticket.find({ bookingId: booking._id });
 
-    return { booking, tickets };
+    const ticketsReady = tickets.length > 0 && tickets.length === booking.totalTickets;
+
+    return { booking, tickets, ticketsReady };
   }
 
   static async getMyBookings(userId: string) {
@@ -390,7 +392,19 @@ export class PublicBookingService {
     const bookingIds = bookings.map((b) => b._id);
     const tickets = await Ticket.find({ bookingId: { $in: bookingIds } });
 
-    return { bookings, tickets };
+    // Compute per-booking readiness for the caller
+    const ticketsReadyMap = new Map<string, boolean>();
+    for (const booking of bookings) {
+      const bookingTickets = tickets.filter(
+        (t) => t.bookingId?.toString() === booking._id.toString()
+      );
+      ticketsReadyMap.set(
+        booking._id.toString(),
+        bookingTickets.length > 0 && bookingTickets.length === booking.totalTickets
+      );
+    }
+
+    return { bookings, tickets, ticketsReadyMap };
   }
 
   static async saveCheckoutDetails(
