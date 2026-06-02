@@ -219,15 +219,15 @@ export async function publicSaveCheckoutDetails(
 export async function publicGetBookingDetails(
   bookingId: string,
   sessionToken?: string
-): Promise<{ booking: Booking; tickets: Ticket[] }> {
-  const { data } = await apiClient.get<{ data: { booking: Booking; tickets: Ticket[] } }>(`/bookings/${bookingId}`, {
+): Promise<{ booking: Booking; tickets: Ticket[]; ticketsReady: boolean }> {
+  const { data } = await apiClient.get<{ data: { booking: Booking; tickets: Ticket[]; ticketsReady: boolean } }>(`/bookings/${bookingId}`, {
     headers: getGuestSessionHeaders(sessionToken),
   });
   return data.data;
 }
 
-export async function publicGetMyBookings(): Promise<{ bookings: Booking[]; tickets: Ticket[] }> {
-  const { data } = await apiClient.get<{ data: { bookings: Booking[]; tickets: Ticket[] } }>('/bookings/me');
+export async function publicGetMyBookings(): Promise<{ bookings: Booking[]; tickets: Ticket[]; ticketsReadyMap: Record<string, boolean> }> {
+  const { data } = await apiClient.get<{ data: { bookings: Booking[]; tickets: Ticket[]; ticketsReadyMap: Record<string, boolean> } }>('/bookings/me');
   return data.data;
 }
 

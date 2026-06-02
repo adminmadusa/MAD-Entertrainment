@@ -112,6 +112,15 @@ export const lookupTickets = async (req: Request, res: Response, next: NextFunct
 
       const tickets = await Ticket.find({ bookingId: booking._id, eventId });
       if (!tickets.length) {
+        // If booking is confirmed but no tickets exist yet, the background worker
+        // is still generating them. Return 202 so the caller can retry gracefully.
+        if (booking.status === 'confirmed') {
+          return res.status(202).json({
+            success: false,
+            status: 'generating',
+            message: 'Tickets are being generated. Please try again in a moment.',
+          });
+        }
         return res.status(404).json({
           success: false,
           message: 'No tickets found for this booking for the selected event.',
