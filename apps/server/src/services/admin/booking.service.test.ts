@@ -1,9 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { BookingStatus } from '@mad/shared';
-import { correctBookingEmail, resendBookingTickets, getBookingsSummary } from './booking.service';
+import { correctBookingEmail, resendBookingTickets, getBookingsSummary, cancelBooking } from './booking.service';
 import { Booking } from '../../models/booking.schema';
 import { UserModel } from '../../models/user.schema';
 import { Ticket } from '../../models/ticket.schema';
+import { Payment } from '../../models/payment.schema';
+import { Event } from '../../models/event.schema';
+import { ReservationService } from '../reservation.service';
 import { CacheService } from '../cache.service';
 import { QueueService } from '../queue.service';
 import { auditLog } from '../../utils/audit';
@@ -69,6 +72,32 @@ vi.mock('../../utils/logger', () => ({
     warn: vi.fn(),
     error: vi.fn(),
     debug: vi.fn(),
+  },
+}));
+
+vi.mock('../../models/payment.schema', () => ({
+  Payment: {
+    findByIdAndUpdate: vi.fn(),
+  },
+}));
+
+vi.mock('../../models/event.schema', () => ({
+  Event: {
+    findById: vi.fn(),
+    findOneAndUpdate: vi.fn(),
+  },
+}));
+
+vi.mock('../../models/seat-layout.schema', () => ({
+  SeatLayout: {
+    updateOne: vi.fn(),
+  },
+}));
+
+vi.mock('../reservation.service', () => ({
+  ReservationService: {
+    transitionForBooking: vi.fn(),
+    releaseCapacityForTerminalReservations: vi.fn(),
   },
 }));
 
@@ -371,6 +400,91 @@ describe('Admin Booking Service Backend Tests', () => {
         cancelled: 0,
         checkedIn: 0,
       });
+    });
+  });
+
+  describe('cancelBooking', () => {
+    it('should cancel booking and update payment status to cancelled when targetStatus is CANCELLED', async () => {
+      const mockBooking = {
+        _id: 'booking-123',
+        bookingId: 'MAD-2026-ABCDE',
+        eventId: 'event-555',
+        totalTickets: 2,
+        tickets: [{ tier: 'general', quantity: 2 }],
+        status: BookingStatus.CONFIRMED,
+        paymentId: 'payment-999',
+        bookingVersion: 1,
+        save: vi.fn().mockResolvedValue(true),
+      };
+
+      vi.mocked(Booking.findById).mockReturnValue({
+        session: vi.fn().mockResolvedValue(mockBooking),
+      } as any);
+
+      vi.mocked(ReservationService.transitionForBooking).mockResolvedValue([] as any);
+
+      const mockEvent = {
+        _id: 'event-555',
+        bookingMode: 'general_admission',
+        ticketTiers: [],
+      };
+      vi.mocked(Event.findById).mockReturnValue({
+        session: vi.fn().mockResolvedValue(mockEvent),
+      } as any);
+      vi.mocked(Event.findOneAndUpdate).mockResolvedValue({} as any);
+
+      vi.mocked(Payment.findByIdAndUpdate).mockResolvedValue({} as any);
+
+      const result = await cancelBooking('booking-123', 'Customer request');
+
+      expect(result.status).toBe(BookingStatus.CANCELLED);
+      expect(mockBooking.save).toHaveBeenCalled();
+      expect(ReservationService.transitionForBooking).toHaveBeenCalledWith(
+        'booking-123',
+        'cancelled',
+        expect.any(Object),
+        undefined
+      );
+      expect(Payment.findByIdAndUpdate).toHaveBeenCalledWith(
+        'payment-999',
+        { status: 'cancelled' },
+        { session: undefined }
+      );
+    });
+
+    it('should NOT update payment status if targetStatus is not CANCELLED (e.g. REFUNDED)', async () => {
+      const mockBooking = {
+        _id: 'booking-123',
+        bookingId: 'MAD-2026-ABCDE',
+        eventId: 'event-555',
+        totalTickets: 2,
+        tickets: [{ tier: 'general', quantity: 2 }],
+        status: BookingStatus.CONFIRMED,
+        paymentId: 'payment-999',
+        bookingVersion: 1,
+        save: vi.fn().mockResolvedValue(true),
+      };
+
+      vi.mocked(Booking.findById).mockReturnValue({
+        session: vi.fn().mockResolvedValue(mockBooking),
+      } as any);
+
+      vi.mocked(ReservationService.transitionForBooking).mockResolvedValue([] as any);
+
+      const mockEvent = {
+        _id: 'event-555',
+        bookingMode: 'general_admission',
+        ticketTiers: [],
+      };
+      vi.mocked(Event.findById).mockReturnValue({
+        session: vi.fn().mockResolvedValue(mockEvent),
+      } as any);
+      vi.mocked(Event.findOneAndUpdate).mockResolvedValue({} as any);
+
+      const result = await cancelBooking('booking-123', 'Refund processed', undefined, BookingStatus.REFUNDED);
+
+      expect(result.status).toBe(BookingStatus.REFUNDED);
+      expect(Payment.findByIdAndUpdate).not.toHaveBeenCalled();
     });
   });
 });

@@ -117,7 +117,7 @@ function DashboardContent() {
   const failedPaymentRecoveryCount = (consistencyReport?.counts?.orphanPayments ?? 0) + (consistencyReport?.counts?.awaitingPaymentBookings ?? 0);
 
   const stats = [
-    { label: 'Total Bookings', value: summary?.totalBookings, icon: '🎟️', href: '/bookings' },
+    { label: 'Confirmed Bookings', value: summary?.totalBookings, icon: '🎟️', href: '/bookings' },
     { label: 'Last 30 Days', value: summary?.recentBookings, icon: '📅', href: '/bookings' },
     {
       label: 'Total Revenue',
