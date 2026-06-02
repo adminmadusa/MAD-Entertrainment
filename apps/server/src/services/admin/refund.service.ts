@@ -3,7 +3,7 @@ import { Booking } from '../../models/booking.schema';
 import { Payment } from '../../models/payment.schema';
 import { runInTransaction, cancelBooking } from './booking.service';
 import { AppError } from '../../middleware/error.middleware';
-import { BookingStatus, NotificationType } from '@mad/shared';
+import { BookingStatus, NotificationType, PaymentStatus } from '@mad/shared';
 import { Notification } from '../../models/notification.schema';
 import { QueueService } from '../queue.service';
 import { getQueueName } from '../../config/queue.config';
@@ -16,6 +16,52 @@ export const createRefund = async (data: {
   amount: number;
   reason?: string;
 }): Promise<IRefund> => {
+  // 1. Service-Level positive amount check (Defense in depth)
+  if (data.amount <= 0) {
+    throw AppError.badRequest('Refund amount must be greater than zero');
+  }
+
+  // 2. Fetch and verify Payment record exists
+  const payment = await Payment.findById(data.paymentId);
+  if (!payment) {
+    throw AppError.notFound('Payment record not found');
+  }
+
+  // 3. Payment ↔ Booking Relationship Verification
+  if (payment.bookingId.toString() !== data.bookingId) {
+    throw AppError.badRequest('Payment does not belong to booking');
+  }
+
+  // 4. Payment status validation (Must be PAID or PARTIALLY_REFUNDED)
+  if (payment.status !== PaymentStatus.PAID && payment.status !== PaymentStatus.PARTIALLY_REFUNDED) {
+    throw AppError.badRequest('Only successful paid or partially refunded payments can be refunded');
+  }
+
+  // 5. Fetch and verify Booking record exists and is CONFIRMED
+  const booking = await Booking.findById(data.bookingId);
+  if (!booking) {
+    throw AppError.notFound('Booking record not found');
+  }
+  if (booking.status !== BookingStatus.CONFIRMED) {
+    throw AppError.badRequest('Only confirmed bookings can be refunded');
+  }
+
+  // 6. Individual Amount Cap Check
+  if (data.amount > payment.amount) {
+    throw AppError.badRequest('Refund amount cannot exceed original payment amount');
+  }
+
+  // 7. Cumulative Refund Check (Summing requested and completed)
+  const existingRefunds = await Refund.find({
+    paymentId: payment._id,
+    status: { $in: ['requested', 'completed'] },
+  });
+  const existingSum = existingRefunds.reduce((sum, r) => sum + r.amount, 0);
+  if (existingSum + data.amount > payment.amount) {
+    const remaining = payment.amount - existingSum;
+    throw AppError.badRequest(`Cumulative refund amount exceeds original payment amount (Paid: ₹${payment.amount}, Refunded/Requested: ₹${existingSum}, Max Remaining: ₹${remaining})`);
+  }
+
   const refund = new Refund({
     bookingId: data.bookingId,
     paymentId: data.paymentId,
@@ -65,29 +111,74 @@ export const processRefund = async (
   return runInTransaction(async (session) => {
     const status = action === 'approve' ? 'completed' : 'failed';
 
-    const updated = await Refund.findOneAndUpdate(
-      { _id: id, status: 'requested' },
-      {
-        status,
-        adminNotes,
-        gatewayRefundId,
-        processedAt: new Date(),
-      },
-      { new: true, session }
-    );
-
-    if (!updated) {
+    // 1. Transaction-safe atomic load of the requested Refund document
+    const refund = await Refund.findOne({ _id: id, status: 'requested' }).session(session);
+    if (!refund) {
       throw AppError.badRequest('Refund request not found or has already been processed');
     }
 
+    let totalRefundedSoFar = 0;
+    let payment = null;
+
     if (status === 'completed') {
+      // 2. Transaction-safe verification of the Payment record
+      payment = await Payment.findById(refund.paymentId).session(session);
+      if (!payment) {
+        throw AppError.notFound('Payment record not found');
+      }
+
+      // 3. Validation: Payment status must not be fully refunded already
+      if (payment.status === PaymentStatus.REFUNDED) {
+        throw AppError.badRequest('Payment has already been fully refunded');
+      }
+      if (payment.status !== PaymentStatus.PAID && payment.status !== PaymentStatus.PARTIALLY_REFUNDED) {
+        throw AppError.badRequest('Only successful paid or partially refunded payments can be refunded');
+      }
+
+      // 4. Validation: Booking status must be CONFIRMED
+      const booking = await Booking.findById(refund.bookingId).session(session);
+      if (!booking) {
+        throw AppError.notFound('Booking record not found');
+      }
+      if (booking.status !== BookingStatus.CONFIRMED) {
+        throw AppError.badRequest('Only confirmed bookings can be refunded');
+      }
+
+      // 5. Validation: Cumulative processed refunds cap check inside the session transaction
+      const completedRefunds = await Refund.find({
+        paymentId: payment._id,
+        status: 'completed',
+        _id: { $ne: refund._id }
+      }).session(session);
+      totalRefundedSoFar = completedRefunds.reduce((sum, r) => sum + r.amount, 0);
+
+      if (totalRefundedSoFar + refund.amount > payment.amount) {
+        throw AppError.badRequest(`Refund amount exceeds remaining captured balance (Paid: ₹${payment.amount}, Refunded: ₹${totalRefundedSoFar}, Attempted: ₹${refund.amount})`);
+      }
+    }
+
+    // 6. Update the Refund request status atomically
+    refund.status = status;
+    refund.adminNotes = adminNotes;
+    if (gatewayRefundId) {
+      refund.gatewayRefundId = gatewayRefundId;
+    }
+    refund.processedAt = new Date();
+    await refund.save({ session });
+
+    const updated = refund;
+
+    if (status === 'completed' && payment) {
       // Trigger core booking, seat, and inventory cancellation cleanup
       await cancelBooking(updated.bookingId.toString(), adminNotes || 'Admin Refund Processed', session, BookingStatus.REFUNDED);
 
-      // Update payment status to refunded
+      // 7. Enforce Payment Status Synchronization (Full vs. Partial)
+      const isFullRefund = (totalRefundedSoFar + updated.amount) === payment.amount;
+      const newPaymentStatus = isFullRefund ? PaymentStatus.REFUNDED : PaymentStatus.PARTIALLY_REFUNDED;
+
       await Payment.findByIdAndUpdate(
         updated.paymentId,
-        { status: 'refunded' },
+        { status: newPaymentStatus },
         { session }
       );
 
