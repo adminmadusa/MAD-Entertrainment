@@ -229,7 +229,7 @@ export function EventsList() {
                   <div>
                     <div className="text-[10px] text-text-muted font-medium">Tickets from</div>
                     <div className="text-white font-black text-sm">
-                      ₹{Math.min(...event.ticketTiers.map((t) => t.price))}
+                      ₹{event.ticketTiers?.length > 0 ? Math.min(...event.ticketTiers.map((t) => t.price)) : 0}
                     </div>
                   </div>
                   {/* Single anchor — no Link>button nesting */}
