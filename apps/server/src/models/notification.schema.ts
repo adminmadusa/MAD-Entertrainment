@@ -30,7 +30,8 @@ const notificationSchema = new Schema<INotification>(
     status: { type: String, enum: ['queued', 'processing', 'sent', 'failed'] },
     jobId: { type: String, index: true },
     errorMessage: String,
-    queuedAt: { type: Date, index: true },
+    // Data Retention Policy: Auto-expire and clean up operational notification/email logs after 30 days
+    queuedAt: { type: Date, index: { expires: '30d' } },
     processedAt: Date,
     isSent: { type: Boolean, default: false },
     retryCount: { type: Number, default: 0, min: 0 },

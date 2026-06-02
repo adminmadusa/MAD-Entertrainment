@@ -135,23 +135,3 @@ export function DJOperatorsSkeleton() {
     </section>
   );
 }
-
-/**
- * MarqueeBannerSkeleton
- * Mimics the category marquee strip layout.
- */
-export function MarqueeBannerSkeleton() {
-  return (
-    <section className="py-8 border-y border-border-subtle bg-background-secondary/50 overflow-hidden" aria-hidden="true">
-      <div className="flex items-center justify-around whitespace-nowrap opacity-40">
-        {Array.from({ length: 5 }).map((_, i) => (
-          <span key={i} className="mx-8 flex items-center gap-2 animate-pulse">
-            <div className="w-4 h-4 bg-white/10 rounded-full" />
-            <div className="w-28 h-4 bg-white/10 rounded" />
-            <span className="text-accent-purple/20 mx-2">•</span>
-          </span>
-        ))}
-      </div>
-    </section>
-  );
-}
