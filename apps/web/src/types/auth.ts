@@ -1,15 +1,21 @@
 export interface AuthUser {
   userId: string;
   email?: string;
-  phone?: string;
   name?: string;
-  isGuest: boolean;
   picture?: string;
+
+  firstName?: string;
+  lastName?: string;
+  phone?: string;
+  mobileNumber?: string;
+
+  isGuest: boolean;
 }
 
 export interface AuthResponse {
   token: string;
   user: AuthUser;
+  onboardingRequired?: boolean;
 }
 
 export interface VerificationCodePayload {
