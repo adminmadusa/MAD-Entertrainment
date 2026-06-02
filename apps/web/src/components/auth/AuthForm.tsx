@@ -55,7 +55,7 @@ export interface AuthFormProps {
 }
 
 export function AuthForm({ mode, onSuccess, onGuestContinue, className = '' }: AuthFormProps) {
-  const { login, logout, token, setOnboardingRequired } = useAuth();
+  const { login, logout, token, setOnboardingRequired, onboardingRequired } = useAuth();
 
   const [cooldownRemaining, setCooldownRemaining] = useState<number>(0);
   const [cooldownExpiry, setCooldownExpiry] = useState<number | null>(null);
@@ -148,6 +148,13 @@ export function AuthForm({ mode, onSuccess, onGuestContinue, className = '' }: A
   const [lastName, setLastName] = useState('');
   const [mobileNumber, setMobileNumber] = useState('');
   const [onboardError, setOnboardError] = useState('');
+
+  // Auto transition to onboard step if authenticated but profile is incomplete
+  useEffect(() => {
+    if (token && onboardingRequired && step === 'request') {
+      setStep('onboard');
+    }
+  }, [token, onboardingRequired, step]);
 
   // Countdown timer state for code resending
   const [resendTimer, setResendTimer] = useState(0);

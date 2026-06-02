@@ -197,22 +197,31 @@ export const getBookingById = async (id: string) => {
 /**
  * Atomically cancel a booking, log reasons, transition reservations, and release inventory/seats.
  */
-export const cancelBooking = async (id: string, reason?: string, externalSession?: ClientSession) => {
+export const cancelBooking = async (
+  id: string,
+  reason?: string,
+  externalSession?: ClientSession,
+  targetStatus: BookingStatus = BookingStatus.CANCELLED
+) => {
   const execute = async (session: ClientSession | undefined) => {
     const booking = await Booking.findById(id).session(session || null);
     if (!booking) {
       throw AppError.notFound('Booking not found');
     }
 
-    if (booking.status === BookingStatus.CANCELLED || booking.status === BookingStatus.FAILED) {
+    if (
+      booking.status === BookingStatus.CANCELLED ||
+      booking.status === BookingStatus.FAILED ||
+      booking.status === BookingStatus.REFUNDED
+    ) {
       throw AppError.badRequest(`Booking is already in a terminal state: ${booking.status}`);
     }
 
     const previousStatus = booking.status;
 
     // 1. Update Booking Status
-    booking.status = BookingStatus.CANCELLED;
-    booking.cancellationReason = reason || 'Admin cancelled';
+    booking.status = targetStatus;
+    booking.cancellationReason = reason || (targetStatus === BookingStatus.REFUNDED ? 'Admin Refund Processed' : 'Admin cancelled');
     booking.cancelledAt = new Date();
     booking.bookingVersion += 1;
     if (booking.expiresAt) {
@@ -221,11 +230,15 @@ export const cancelBooking = async (id: string, reason?: string, externalSession
     await booking.save({ session });
 
     // 2. Transition corresponding reservations
+    const targetReservationStatus = targetStatus === BookingStatus.REFUNDED
+      ? ReservationStatus.REFUNDED
+      : ReservationStatus.CANCELLED;
+
     const transitioned = await ReservationService.transitionForBooking(
       booking._id,
-      ReservationStatus.CANCELLED,
+      targetReservationStatus,
       {
-        reason: reason || 'Admin cancelled',
+        reason: reason || (targetStatus === BookingStatus.REFUNDED ? 'Admin Refund Processed' : 'Admin cancelled'),
         correlationId: booking.bookingId,
       },
       session
@@ -331,17 +344,19 @@ export const cancelBooking = async (id: string, reason?: string, externalSession
     }
 
     auditLog({
-      action: 'BOOKING_CANCELLED',
+      action: targetStatus === BookingStatus.REFUNDED ? 'BOOKING_REFUNDED' : 'BOOKING_CANCELLED',
       actor: { type: 'admin', id: 'system' },
       status: 'success',
       metadata: {
         bookingId: booking._id.toString(),
         bookingReference: booking.bookingId,
         eventId: event?._id.toString(),
-        reason: reason || 'Admin cancelled',
+        reason: reason || (targetStatus === BookingStatus.REFUNDED ? 'Admin Refund Processed' : 'Admin cancelled'),
         releasedSeatIds,
       },
-      description: `Cancelled booking ${booking.bookingId} and released associated capacity/seats`,
+      description: targetStatus === BookingStatus.REFUNDED
+        ? `Refunded booking ${booking.bookingId} and released associated capacity/seats`
+        : `Cancelled booking ${booking.bookingId} and released associated capacity/seats`,
     });
 
     return booking;
