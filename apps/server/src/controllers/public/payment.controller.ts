@@ -237,6 +237,13 @@ export async function razorpayWebhook(req: Request, res: Response): Promise<void
     .update(rawBody)
     .digest('hex');
 
+  // 4. Capture the provider's canonical event identifier for audit trail storage.
+  //    This is Razorpay's x-razorpay-event-id header value — stable across retries,
+  //    human-readable, and cross-referenceable with the Razorpay dashboard.  It is
+  //    NOT used as the deduplication key (that is eventId above); it is stored as
+  //    providerEventId purely for operational visibility.
+  const providerEventId = req.headers['x-razorpay-event-id'] as string | undefined;
+
   let existingEvent = await WebhookEvent.findOne({ eventId });
   if (existingEvent) {
     auditLog({
