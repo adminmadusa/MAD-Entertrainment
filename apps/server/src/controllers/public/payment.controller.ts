@@ -89,10 +89,8 @@ export async function stripeWebhook(req: Request, res: Response): Promise<void> 
       metadata: { gateway: 'stripe', eventId: event.id, eventType: event.type },
       description: `Ignored duplicate Stripe webhook event ${event.id}`
     });
-    
-    existingEvent.status = 'ignored';
-    await existingEvent.save();
-    
+    // Do NOT mutate the existing record — preserving the original status, timestamps,
+    // and metadata is required for audit trail integrity.
     res.status(200).send('Event already processed');
     return;
   }
@@ -196,30 +194,7 @@ export async function razorpayWebhook(req: Request, res: Response): Promise<void
     return;
   }
 
-  // 2. Idempotency — reject already-processed webhook events.
-  const eventId = req.headers['x-razorpay-event-id'] as string;
-  if (!eventId) {
-    res.status(400).send('Missing x-razorpay-event-id header');
-    return;
-  }
-
-  let existingEvent = await WebhookEvent.findOne({ eventId });
-  if (existingEvent) {
-    auditLog({
-      action: 'WEBHOOK_DUPLICATE_IGNORED',
-      status: 'success',
-      metadata: { gateway: 'razorpay', eventId },
-      description: `Ignored duplicate Razorpay webhook event ${eventId}`
-    });
-    
-    existingEvent.status = 'ignored';
-    await existingEvent.save();
-    
-    res.status(200).json({ received: true, status: 'already_processed' });
-    return;
-  }
-
-  // 3. Parse event type and payment entity.
+  // 2. Parse event type and payment entity first — body is already signature-verified.
   let eventType: string;
   let razorpayPaymentId: string | undefined;
   let razorpayOrderId: string | undefined;
@@ -232,6 +207,39 @@ export async function razorpayWebhook(req: Request, res: Response): Promise<void
     razorpayOrderId = body.payload?.payment?.entity?.order_id;
   } catch (err: any) {
     res.status(400).send('Malformed JSON payload');
+    return;
+  }
+
+  // 3. Derive a body-bound idempotency key.
+  //
+  //    Razorpay does not embed a unique event identifier inside the signed webhook
+  //    body — the only event ID they provide is the `x-razorpay-event-id` header,
+  //    which is NOT covered by the HMAC signature.  An attacker who intercepts a
+  //    valid webhook can therefore replay it with a different header value, bypassing
+  //    deduplication checks that rely on that header.
+  //
+  //    Instead we compute a deterministic fingerprint over the raw body using the
+  //    same HMAC-SHA256 that was already verified above.  The resulting value is:
+  //      • Deterministic  — identical bodies always produce the same key.
+  //      • Cryptographically bound — requires knowledge of RAZORPAY_WEBHOOK_SECRET.
+  //      • Replay-proof   — any body modification invalidates the earlier signature
+  //                         check, so the fingerprint step is never reached.
+  const eventId = 'razorpay:' + crypto
+    .createHmac('sha256', env.RAZORPAY_WEBHOOK_SECRET)
+    .update(rawBody)
+    .digest('hex');
+
+  let existingEvent = await WebhookEvent.findOne({ eventId });
+  if (existingEvent) {
+    auditLog({
+      action: 'WEBHOOK_DUPLICATE_IGNORED',
+      status: 'success',
+      metadata: { gateway: 'razorpay', eventId },
+      description: `Ignored duplicate Razorpay webhook event ${eventId}`
+    });
+    // Do NOT mutate the existing record — preserving the original status, timestamps,
+    // and metadata is required for audit trail integrity.
+    res.status(200).json({ received: true, status: 'already_processed' });
     return;
   }
 
