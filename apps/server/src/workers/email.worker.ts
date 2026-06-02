@@ -20,7 +20,8 @@ export async function processEmailDispatch(
   attachments?: { filename: string; content: string; contentType?: string }[],
   bookingId?: string,
   eventId?: string,
-  notificationType?: NotificationType
+  notificationType?: NotificationType,
+  messageId?: string
 ): Promise<void> {
   // 1. Decode base64 attachments back into Buffer instances
   const parsedAttachments = attachments?.map((att) => ({
@@ -35,6 +36,7 @@ export async function processEmailDispatch(
     subject,
     html,
     attachments: parsedAttachments,
+    messageId,
   });
 
   // Notification DB log is handled at the handleJobExecution wrapper level.
@@ -100,7 +102,11 @@ export async function handleJobExecution(jobId: string, data: any, attemptsMade:
         _id: notification._id,
         $or: [
           { status: { $in: ['queued', 'failed'] } },
-          { status: 'processing', retryCount: { $lt: attemptsMade } }
+          {
+            status: 'processing',
+            retryCount: { $lt: attemptsMade },
+            updatedAt: { $lt: new Date(Date.now() - 5 * 60 * 1000) } // 5-minute lease
+          }
         ]
       },
       {
@@ -122,6 +128,8 @@ export async function handleJobExecution(jobId: string, data: any, attemptsMade:
   }
 
   // 2. Dispatch SMTP email inside Sentry span
+  const messageId = `<${jobId}@mad-entertainment.com>`;
+
   try {
     await Sentry.startSpan(
       {
@@ -129,7 +137,7 @@ export async function handleJobExecution(jobId: string, data: any, attemptsMade:
         name: `worker:${QUEUE_NAME}`,
       },
       async () => {
-        await processEmailDispatch(to, subject, html, attachments, bookingId, eventId, notificationType);
+        await processEmailDispatch(to, subject, html, attachments, bookingId, eventId, notificationType, messageId);
       }
     );
     

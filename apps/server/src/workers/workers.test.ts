@@ -504,6 +504,11 @@ describe('Asynchronous Workers', () => {
   });
 
   describe('Email Worker (handleJobExecution)', () => {
+    beforeEach(() => {
+      vi.mocked(sendEmail).mockReset();
+      vi.mocked(sendEmail).mockResolvedValue(undefined);
+    });
+
     it('should create and process new notification atomically', async () => {
       const mockBookingId = new Types.ObjectId().toString();
       const mockEventId = new Types.ObjectId().toString();
@@ -675,6 +680,114 @@ describe('Asynchronous Workers', () => {
         { jobId },
         expect.objectContaining({
           $set: expect.objectContaining({ status: 'failed', errorMessage: 'SMTP timeout' }),
+        })
+      );
+    });
+
+    it('should call sendEmail with deterministic Message-ID derived from jobId', async () => {
+      const mockBookingId = new Types.ObjectId().toString();
+      const mockEventId = new Types.ObjectId().toString();
+      const jobId = `email:dispatch:${mockBookingId}`;
+      const data = {
+        to: 'recipient@example.com',
+        subject: 'Booking Confirmed',
+        html: '<h1>Success</h1>',
+        bookingId: mockBookingId,
+        eventId: mockEventId,
+      };
+
+      vi.mocked(Notification.findOne).mockResolvedValue(null);
+      vi.mocked(Notification.findOneAndUpdate).mockResolvedValue({
+        _id: 'mock-id',
+        status: 'processing',
+        isSent: false,
+      } as any);
+
+      await handleJobExecution(jobId, data, 0);
+
+      expect(sendEmail).toHaveBeenCalledWith(
+        expect.objectContaining({
+          messageId: `<${jobId}@mad-entertainment.com>`,
+        })
+      );
+    });
+
+    it('should enforce 5-minute lease concurrency lock and skip execution if another worker started within the lease', async () => {
+      const mockBookingId = new Types.ObjectId().toString();
+      const mockEventId = new Types.ObjectId().toString();
+      const jobId = `email:dispatch:${mockBookingId}`;
+      const data = {
+        to: 'recipient@example.com',
+        subject: 'Booking Confirmed',
+        html: '<h1>Success</h1>',
+        bookingId: mockBookingId,
+        eventId: mockEventId,
+      };
+
+      vi.mocked(Notification.findOne).mockResolvedValue({
+        _id: 'mock-id',
+        status: 'processing',
+        isSent: false,
+        retryCount: 0,
+        updatedAt: new Date(Date.now() - 2 * 60 * 1000), // 2 minutes ago (within 5-min lease)
+      } as any);
+
+      // findOneAndUpdate returns null because the query condition (updatedAt < 5 mins ago) is not satisfied
+      vi.mocked(Notification.findOneAndUpdate).mockResolvedValue(null);
+
+      await handleJobExecution(jobId, data, 1); // retry count = 1
+
+      expect(sendEmail).not.toHaveBeenCalled();
+      expect(Notification.findOneAndUpdate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          _id: 'mock-id',
+          $or: expect.arrayContaining([
+            expect.objectContaining({ status: { $in: ['queued', 'failed'] } }),
+            expect.objectContaining({
+              status: 'processing',
+              retryCount: { $lt: 1 },
+              updatedAt: expect.any(Object),
+            })
+          ])
+        }),
+        expect.any(Object),
+        expect.any(Object)
+      );
+    });
+
+    it('should allow worker retry execution if the 5-minute lease concurrency lock has expired', async () => {
+      const mockBookingId = new Types.ObjectId().toString();
+      const mockEventId = new Types.ObjectId().toString();
+      const jobId = `email:dispatch:${mockBookingId}`;
+      const data = {
+        to: 'recipient@example.com',
+        subject: 'Booking Confirmed',
+        html: '<h1>Success</h1>',
+        bookingId: mockBookingId,
+        eventId: mockEventId,
+      };
+
+      vi.mocked(Notification.findOne).mockResolvedValue({
+        _id: 'mock-id',
+        status: 'processing',
+        isSent: false,
+        retryCount: 0,
+        updatedAt: new Date(Date.now() - 6 * 60 * 1000), // 6 minutes ago (expired lease)
+      } as any);
+
+      vi.mocked(Notification.findOneAndUpdate).mockResolvedValue({
+        _id: 'mock-id',
+        status: 'processing',
+        isSent: false,
+      } as any);
+
+      await handleJobExecution(jobId, data, 1); // retry count = 1
+
+      expect(sendEmail).toHaveBeenCalled();
+      expect(Notification.updateOne).toHaveBeenCalledWith(
+        { jobId },
+        expect.objectContaining({
+          $set: expect.objectContaining({ status: 'sent', isSent: true }),
         })
       );
     });
