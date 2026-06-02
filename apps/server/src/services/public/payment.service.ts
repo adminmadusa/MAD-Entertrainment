@@ -1595,7 +1595,7 @@ export class PaymentService {
       return booking;
     }
 
-    // 5. Generate scan-ready QR Tickets
+    // 5. Generate scan-ready QR Tickets with idempotent upserts
     let ticketIndex = 1;
     for (const bookedTicket of booking.tickets) {
       if (event && event.bookingMode === 'seat_based' && bookedTicket.seats) {
@@ -1603,20 +1603,25 @@ export class PaymentService {
           const ticketId = `TKT-${booking.bookingId}-${String(ticketIndex).padStart(3, '0')}`;
           const qrCodeText = ticketId;
 
-          await Ticket.create({
-            ticketId,
-            bookingId: booking._id,
-            eventId: booking.eventId,
-            tierName: bookedTicket.tierName,
-            tier: bookedTicket.tier,
-            admits: 1,
-            seatId: seat.seatId,
-            row: seat.row,
-            seatNumber: seat.number,
-            section: seat.section,
-            qrCode: qrCodeText,
-            qrCodeImage: `/api/public/tickets/${ticketId}/qr`,
-          });
+          await Ticket.findOneAndUpdate(
+            { ticketId },
+            {
+              $setOnInsert: {
+                bookingId: booking._id,
+                eventId: booking.eventId,
+                tierName: bookedTicket.tierName,
+                tier: bookedTicket.tier,
+                admits: 1,
+                seatId: seat.seatId,
+                row: seat.row,
+                seatNumber: seat.number,
+                section: seat.section,
+                qrCode: qrCodeText,
+                qrCodeImage: `/api/public/tickets/${ticketId}/qr`,
+              },
+            },
+            { upsert: true, new: true, setDefaultsOnInsert: true }
+          );
           ticketIndex++;
         }
       } else {
@@ -1628,16 +1633,21 @@ export class PaymentService {
           const ticketId = `TKT-${booking.bookingId}-${String(ticketIndex).padStart(3, '0')}`;
           const qrCodeText = ticketId;
 
-          await Ticket.create({
-            ticketId,
-            bookingId: booking._id,
-            eventId: booking.eventId,
-            tierName: bookedTicket.tierName,
-            tier: bookedTicket.tier,
-            admits,
-            qrCode: qrCodeText,
-            qrCodeImage: `/api/public/tickets/${ticketId}/qr`,
-          });
+          await Ticket.findOneAndUpdate(
+            { ticketId },
+            {
+              $setOnInsert: {
+                bookingId: booking._id,
+                eventId: booking.eventId,
+                tierName: bookedTicket.tierName,
+                tier: bookedTicket.tier,
+                admits,
+                qrCode: qrCodeText,
+                qrCodeImage: `/api/public/tickets/${ticketId}/qr`,
+              },
+            },
+            { upsert: true, new: true, setDefaultsOnInsert: true }
+          );
           ticketIndex++;
         }
       }
