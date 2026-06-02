@@ -233,6 +233,8 @@ export enum NotificationType {
   BOOKING_CONFIRMED = 'booking_confirmed',
   PAYMENT_FAILED = 'payment_failed',
   REFUND_PROCESSED = 'refund_processed',
+  FULL_REFUND = 'full_refund',
+  PARTIAL_REFUND = 'partial_refund',
   EVENT_REMINDER = 'event_reminder',
   EVENT_CANCELLED = 'event_cancelled',
   EVENT_UPDATED = 'event_updated',

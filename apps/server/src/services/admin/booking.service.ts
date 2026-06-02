@@ -16,6 +16,9 @@ import { CacheService } from '../cache.service';
 import { QueueService } from '../queue.service';
 import { getQueueName } from '../../config/queue.config';
 import { BookingsSummaryResponse } from '../../types/admin/booking.types';
+import { Notification } from '../../models/notification.schema';
+import { NotificationType } from '@mad/shared';
+import { eventCancellationHtml } from '../../lib/email';
 
 /**
  * Resilient transaction execution helper. Runs the callback inside a session
@@ -368,6 +371,86 @@ export const cancelBooking = async (
         ? `Refunded booking ${booking.bookingId} and released associated capacity/seats`
         : `Cancelled booking ${booking.bookingId} and released associated capacity/seats`,
     });
+
+    // Asynchronous, exception-safe Event Cancellation Email Trigger
+    if (targetStatus === BookingStatus.CANCELLED && booking.guestEmail) {
+      try {
+        const existingNotification = await Notification.findOne({
+          type: NotificationType.EVENT_CANCELLED,
+          bookingId: booking._id
+        }).session(session || null);
+
+        if (!existingNotification) {
+          const formattedDate = new Date(
+            event?.startDate || booking.createdAt
+          ).toLocaleDateString('en-IN', {
+            weekday: 'long',
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric',
+          });
+
+          const emailBody = await eventCancellationHtml({
+            customerName: booking.guestName,
+            eventTitle: event?.title || 'MAD Event',
+            eventDate: formattedDate,
+            venueName: event?.venue || 'MAD Venue',
+            bookingReference: booking.bookingId,
+          });
+
+          const jobId = `cancellation-${booking.bookingId}-${Date.now()}`;
+          
+          await Notification.create([{
+            jobId,
+            status: 'queued',
+            queuedAt: new Date(),
+            type: NotificationType.EVENT_CANCELLED,
+            channel: 'email',
+            recipient: booking.guestEmail,
+            subject: `Event Cancelled: ${event?.title || 'MAD Event'}`,
+            isSent: false,
+            retryCount: 0,
+            bookingId: booking._id,
+            eventId: event?._id
+          }], { session });
+
+          await QueueService.enqueue(
+            getQueueName('notification-queue'),
+            'email-dispatch',
+            {
+              to: booking.guestEmail,
+              subject: `Event Cancelled: ${event?.title || 'MAD Event'}`,
+              html: emailBody,
+              notificationType: NotificationType.EVENT_CANCELLED,
+              bookingId: booking._id.toString(),
+              eventId: booking.eventId.toString(),
+            },
+            jobId
+          );
+
+          logger.info({
+            emailType: 'EVENT_CANCELLED',
+            recipient: booking.guestEmail,
+            bookingId: booking._id.toString(),
+            eventId: booking.eventId.toString(),
+            timestamp: new Date().toISOString(),
+            success: true
+          }, 'Event cancellation email queued successfully.');
+        } else {
+          logger.info({ bookingId: booking._id }, 'Event cancellation email already queued or sent; skipping duplicate.');
+        }
+      } catch (err) {
+        logger.error({
+          err,
+          emailType: 'EVENT_CANCELLED',
+          recipient: booking.guestEmail,
+          bookingId: booking._id.toString(),
+          eventId: booking.eventId.toString(),
+          timestamp: new Date().toISOString(),
+          success: false
+        }, 'Failed to queue event cancellation email gracefully.');
+      }
+    }
 
     return booking;
   };
