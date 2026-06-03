@@ -1,4 +1,4 @@
-import { BookingStatus, PaymentStatus, ReservationStatus, SeatStatus } from '@mad/shared';
+import { BookingStatus, PaymentStatus, ReservationStatus, SeatStatus, NotificationType } from '@mad/shared';
 
 import { getRedis, isRedisConnected } from '../config/redis';
 import { emitToAdmin, emitToEvent } from '../config/socket';
@@ -7,6 +7,7 @@ import { Event } from '../models/event.schema';
 import { Payment } from '../models/payment.schema';
 import { Reservation } from '../models/reservation.schema';
 import { SeatLayout } from '../models/seat-layout.schema';
+import { Notification } from '../models/notification.schema';
 import { logger } from '../utils/logger';
 import { runWithContext, getTraceContext } from '../utils/context';
 import { auditLog } from '../utils/audit';
@@ -19,6 +20,8 @@ import { getQueueName } from '../config/queue.config';
 
 const UNTICKETED_BOOKING_WINDOW_MS = 48 * 60 * 60 * 1000;
 const UNTICKETED_PAGE_SIZE = 25;
+const STUCK_NOTIFICATION_THRESHOLD_MS = 15 * 60 * 1000;
+const ORPHANED_DELIVERY_THRESHOLD_MS = 10 * 60 * 1000;
 
 export interface ConsistencyReport {
   generatedAt: string;
@@ -34,6 +37,8 @@ export interface ConsistencyReport {
     phantomRedisLocks: number;
     eventInventoryMismatches: number;
     unticketedConfirmedBookings: number;
+    stuckNotifications: number;
+    orphanedConfirmedDeliveries: number;
   };
   repairs?: {
     expiredReservations: number;
@@ -42,6 +47,8 @@ export interface ConsistencyReport {
     eventInventoryMismatchesRepaired?: number;
     logicallyExpiredBookings?: number;
     reEnqueuedUnticketedBookings?: number;
+    resetStuckNotifications?: number;
+    reEnqueuedOrphanedDeliveries?: number;
   };
 }
 
@@ -277,6 +284,174 @@ export class ConsistencyService {
     return count;
   }
 
+  private static async repairStuckNotifications(): Promise<number> {
+    const windowStart = new Date(Date.now() - UNTICKETED_BOOKING_WINDOW_MS);
+    const stuckThreshold = new Date(Date.now() - STUCK_NOTIFICATION_THRESHOLD_MS);
+
+    const candidates = await Notification.find({
+      status: { $in: ['queued', 'processing'] },
+      updatedAt: { $gte: windowStart, $lte: stuckThreshold },
+    }).lean();
+
+    let successCount = 0;
+    for (const notification of candidates) {
+      try {
+        if (!notification.bookingId) {
+          continue;
+        }
+
+        const booking = await Booking.findById(notification.bookingId).lean();
+        if (!booking || booking.status !== BookingStatus.CONFIRMED) {
+          continue;
+        }
+
+        // 1. Attempt recovery enqueue FIRST
+        await QueueService.enqueue(
+          getQueueName('pdf-queue'),
+          'pdf:generate',
+          {
+            bookingId: booking._id.toString(),
+            eventId: booking.eventId.toString(),
+            recipientEmail: booking.guestEmail,
+            guestName: booking.guestName,
+          },
+          `pdf:generate:${booking._id}`
+        );
+
+        // 2. Only transition state if enqueue succeeds. Transition must be conditional.
+        const updateResult = await Notification.updateOne(
+          {
+            _id: notification._id,
+            status: { $in: ['queued', 'processing'] },
+          },
+          {
+            $set: {
+              status: 'failed',
+              errorMessage: 'WATCHDOG_RESET_STUCK_LEASE',
+            },
+          }
+        );
+
+        if (updateResult.modifiedCount > 0) {
+          successCount++;
+          logger.info({ notificationId: notification._id, bookingId: booking._id }, 'Watchdog successfully reset stuck notification lease and re-enqueued PDF task.');
+        } else {
+          logger.warn({ notificationId: notification._id }, 'Watchdog: Stuck notification was updated concurrently, skipping lease reset.');
+        }
+      } catch (error) {
+        logger.warn({ notificationId: notification._id, error }, 'watchdog: failed to repair stuck notification');
+      }
+    }
+
+    return successCount;
+  }
+
+  private static async countStuckNotifications(): Promise<number> {
+    const windowStart = new Date(Date.now() - UNTICKETED_BOOKING_WINDOW_MS);
+    const stuckThreshold = new Date(Date.now() - STUCK_NOTIFICATION_THRESHOLD_MS);
+
+    return await Notification.countDocuments({
+      status: { $in: ['queued', 'processing'] },
+      updatedAt: { $gte: windowStart, $lte: stuckThreshold },
+    });
+  }
+
+  private static async repairOrphanedConfirmedDeliveries(): Promise<number> {
+    const windowStart = new Date(Date.now() - UNTICKETED_BOOKING_WINDOW_MS);
+    const orphanedThreshold = new Date(Date.now() - ORPHANED_DELIVERY_THRESHOLD_MS);
+
+    const candidates = await Booking.find({
+      status: BookingStatus.CONFIRMED,
+      updatedAt: { $gte: windowStart, $lte: orphanedThreshold },
+    })
+      .sort({ updatedAt: 1 })
+      .select('_id eventId guestEmail guestName')
+      .lean();
+
+    let successCount = 0;
+    for (const candidate of candidates) {
+      try {
+        const ticketCount = await Ticket.countDocuments({ bookingId: candidate._id });
+        if (ticketCount === 0) {
+          // Handled by repairUnticketedConfirmedBookings
+          continue;
+        }
+
+        const hasSentNotification = await Notification.exists({
+          bookingId: candidate._id,
+          status: 'sent',
+        });
+        if (hasSentNotification) {
+          continue;
+        }
+
+        // Final Sent-Notification Verification immediately before repair execution (race-condition check)
+        const hasSentNotificationFinal = await Notification.exists({
+          bookingId: candidate._id,
+          status: 'sent',
+        });
+        if (hasSentNotificationFinal) {
+          logger.info({ bookingId: candidate._id }, 'Watchdog: Sent notification completed concurrently. Skipping repair.');
+          continue;
+        }
+
+        await QueueService.enqueue(
+          getQueueName('pdf-queue'),
+          'pdf:generate',
+          {
+            bookingId: candidate._id.toString(),
+            eventId: candidate.eventId.toString(),
+            recipientEmail: candidate.guestEmail,
+            guestName: candidate.guestName,
+          },
+          `pdf:generate:${candidate._id}`
+        );
+
+        successCount++;
+        logger.info({ bookingId: candidate._id }, 'Watchdog successfully re-enqueued PDF generation for orphaned confirmed delivery.');
+      } catch (error) {
+        logger.warn({ bookingId: candidate._id, error }, 'watchdog: failed to repair orphaned confirmed delivery');
+      }
+    }
+
+    return successCount;
+  }
+
+  private static async countOrphanedConfirmedDeliveries(): Promise<number> {
+    const windowStart = new Date(Date.now() - UNTICKETED_BOOKING_WINDOW_MS);
+    const orphanedThreshold = new Date(Date.now() - ORPHANED_DELIVERY_THRESHOLD_MS);
+
+    const candidates = await Booking.find({
+      status: BookingStatus.CONFIRMED,
+      updatedAt: { $gte: windowStart, $lte: orphanedThreshold },
+    })
+      .select('_id')
+      .lean();
+
+    let count = 0;
+    for (const candidate of candidates) {
+      try {
+        const ticketCount = await Ticket.countDocuments({ bookingId: candidate._id });
+        if (ticketCount === 0) {
+          continue;
+        }
+
+        const hasSentNotification = await Notification.exists({
+          bookingId: candidate._id,
+          status: 'sent',
+        });
+
+        if (!hasSentNotification) {
+          count++;
+        }
+      } catch (error) {
+        logger.warn({ bookingId: candidate._id, error }, 'watchdog: failed to count orphaned delivery candidate');
+      }
+    }
+    return count;
+  }
+
+
   static async expireStaleBookings(): Promise<number> {
     const now = new Date();
 
@@ -382,6 +557,8 @@ export class ConsistencyService {
         eventInventoryMismatchesRepaired,
         logicallyExpiredBookings,
         reEnqueuedUnticketedBookings,
+        resetStuckNotifications,
+        reEnqueuedOrphanedDeliveries,
       ] = await Promise.all([
         ReservationService.expireReservations(),
         cleanupPhantomRedisLocks(),
@@ -389,6 +566,8 @@ export class ConsistencyService {
         repairEventInventoryMismatches(),
         ConsistencyService.expireStaleBookings(),
         ConsistencyService.repairUnticketedConfirmedBookings(),
+        ConsistencyService.repairStuckNotifications(),
+        ConsistencyService.repairOrphanedConfirmedDeliveries(),
       ]);
 
       const report = await this.generateReport();
@@ -399,6 +578,8 @@ export class ConsistencyService {
         eventInventoryMismatchesRepaired,
         logicallyExpiredBookings,
         reEnqueuedUnticketedBookings,
+        resetStuckNotifications,
+        reEnqueuedOrphanedDeliveries,
       };
 
       const durationMs = Date.now() - startTime;
@@ -408,7 +589,9 @@ export class ConsistencyService {
         staleSeatReservations > 0 ||
         eventInventoryMismatchesRepaired > 0 ||
         logicallyExpiredBookings > 0 ||
-        reEnqueuedUnticketedBookings > 0;
+        reEnqueuedUnticketedBookings > 0 ||
+        resetStuckNotifications > 0 ||
+        reEnqueuedOrphanedDeliveries > 0;
 
       const context = getTraceContext();
       const isManual = !!(context?.userId || context?.sessionId);
@@ -423,7 +606,7 @@ export class ConsistencyService {
             drift: report.drift,
             counts: report.counts,
           },
-          description: `Consistency repair cycle finished in ${durationMs}ms with ${expiredReservations.length} expired reservations, ${phantomRedisLocks} phantom locks, ${staleSeatReservations} stale seats, and ${eventInventoryMismatchesRepaired} inventory mismatches repaired.`,
+          description: `Consistency repair cycle finished in ${durationMs}ms with ${expiredReservations.length} expired reservations, ${phantomRedisLocks} phantom locks, ${staleSeatReservations} stale seats, ${eventInventoryMismatchesRepaired} inventory mismatches, ${resetStuckNotifications} stuck notifications, and ${reEnqueuedOrphanedDeliveries} orphaned deliveries repaired.`,
         });
       }
 
@@ -452,6 +635,8 @@ export class ConsistencyService {
       orphanPayments,
       eventInventoryMismatches,
       unticketedConfirmedBookings,
+      stuckNotifications,
+      orphanedConfirmedDeliveries,
     ] = await Promise.all([
       Reservation.countDocuments({ status: { $in: [ReservationStatus.RESERVED, ReservationStatus.PENDING_PAYMENT] } }),
       Reservation.countDocuments({ status: { $in: [ReservationStatus.RESERVED, ReservationStatus.PENDING_PAYMENT] }, expiresAt: { $lte: now } }),
@@ -460,6 +645,8 @@ export class ConsistencyService {
       Payment.countDocuments({ status: PaymentStatus.PENDING, bookingId: { $exists: false } }),
       countEventInventoryMismatches(),
       ConsistencyService.countUnticketedConfirmedBookings(),
+      ConsistencyService.countStuckNotifications(),
+      ConsistencyService.countOrphanedConfirmedDeliveries(),
     ]);
 
     const staleSeatReservations = await Reservation.countDocuments({
@@ -481,6 +668,8 @@ export class ConsistencyService {
         phantomRedisLocks: 0,
         eventInventoryMismatches,
         unticketedConfirmedBookings,
+        stuckNotifications,
+        orphanedConfirmedDeliveries,
       },
     };
   }
