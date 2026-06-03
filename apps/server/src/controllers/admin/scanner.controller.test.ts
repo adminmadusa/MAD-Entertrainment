@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Request, Response, NextFunction } from 'express';
 import { Types } from 'mongoose';
 
-import { lookupTickets } from './scanner.controller';
+import { lookupTickets, scanTicket } from './scanner.controller';
 import { Ticket } from '../../models/ticket.schema';
 import { Booking } from '../../models/booking.schema';
 
@@ -10,12 +10,15 @@ vi.mock('../../models/ticket.schema', () => ({
   Ticket: {
     findOne: vi.fn(),
     find: vi.fn(),
+    findOneAndUpdate: vi.fn(),
+    findById: vi.fn(),
   },
 }));
 
 vi.mock('../../models/booking.schema', () => ({
   Booking: {
     findOne: vi.fn(),
+    findById: vi.fn(),
   },
 }));
 
@@ -140,6 +143,239 @@ describe('lookupTickets — queue lag scenarios', () => {
             expect.objectContaining({ ticketId: 'TKT-MAD-2026-ABCDE-001' }),
           ]),
         }),
+      })
+    );
+  });
+});
+
+describe('scanTicket', () => {
+  const mockScannerId = new Types.ObjectId().toString();
+  const mockEventId = new Types.ObjectId().toString();
+  const mockBookingId = new Types.ObjectId();
+  const mockTicketId = 'TKT-MAD-2026-00001';
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('returns 400 if ticketId or eventId is missing', async () => {
+    const req = {
+      body: { ticketId: '', eventId: '' },
+      admin: { sub: mockScannerId, email: 'scanner@mad.com', role: 'scanner' },
+    } as unknown as Request;
+    const res = makeRes();
+
+    await scanTicket(req, res, next);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith(
+      expect.objectContaining({ success: false, message: expect.stringContaining('required') })
+    );
+  });
+
+  it('returns 401 if admin context or sub is missing', async () => {
+    const req = {
+      body: { ticketId: mockTicketId, eventId: mockEventId },
+    } as unknown as Request;
+    const res = makeRes();
+
+    await scanTicket(req, res, next);
+
+    expect(res.status).toHaveBeenCalledWith(401);
+    expect(res.json).toHaveBeenCalledWith(
+      expect.objectContaining({ success: false, message: expect.stringContaining('identity is missing') })
+    );
+  });
+
+  it('returns 404 if ticket does not exist', async () => {
+    vi.mocked(Ticket.findOne).mockResolvedValue(null);
+
+    const req = {
+      body: { ticketId: mockTicketId, eventId: mockEventId },
+      admin: { sub: mockScannerId, email: 'scanner@mad.com', role: 'scanner' },
+    } as unknown as Request;
+    const res = makeRes();
+
+    await scanTicket(req, res, next);
+
+    expect(res.status).toHaveBeenCalledWith(404);
+    expect(res.json).toHaveBeenCalledWith(
+      expect.objectContaining({ success: false, message: 'Invalid ticket reference: Ticket not found.' })
+    );
+  });
+
+  it('returns 400 if ticket eventId does not match requested eventId', async () => {
+    vi.mocked(Ticket.findOne).mockResolvedValue({
+      ticketId: mockTicketId,
+      eventId: new Types.ObjectId().toString(),
+    } as any);
+
+    const req = {
+      body: { ticketId: mockTicketId, eventId: mockEventId },
+      admin: { sub: mockScannerId, email: 'scanner@mad.com', role: 'scanner' },
+    } as unknown as Request;
+    const res = makeRes();
+
+    await scanTicket(req, res, next);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith(
+      expect.objectContaining({ success: false, message: expect.stringContaining('different event') })
+    );
+  });
+
+  it('returns 400 if ticket has already been scanned', async () => {
+    vi.mocked(Ticket.findOne).mockResolvedValue({
+      ticketId: mockTicketId,
+      eventId: mockEventId,
+      scannedAt: new Date(),
+    } as any);
+
+    const req = {
+      body: { ticketId: mockTicketId, eventId: mockEventId },
+      admin: { sub: mockScannerId, email: 'scanner@mad.com', role: 'scanner' },
+    } as unknown as Request;
+    const res = makeRes();
+
+    await scanTicket(req, res, next);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith(
+      expect.objectContaining({ success: false, message: expect.stringContaining('already used') })
+    );
+  });
+
+  it('returns 404 if associated booking is not found', async () => {
+    vi.mocked(Ticket.findOne).mockResolvedValue({
+      ticketId: mockTicketId,
+      eventId: mockEventId,
+      bookingId: mockBookingId,
+    } as any);
+    vi.mocked(Booking.findById).mockResolvedValue(null);
+
+    const req = {
+      body: { ticketId: mockTicketId, eventId: mockEventId },
+      admin: { sub: mockScannerId, email: 'scanner@mad.com', role: 'scanner' },
+    } as unknown as Request;
+    const res = makeRes();
+
+    await scanTicket(req, res, next);
+
+    expect(res.status).toHaveBeenCalledWith(404);
+    expect(res.json).toHaveBeenCalledWith(
+      expect.objectContaining({ success: false, message: expect.stringContaining('Associated booking not found') })
+    );
+  });
+
+  it('returns 400 if booking is not in confirmed status', async () => {
+    vi.mocked(Ticket.findOne).mockResolvedValue({
+      ticketId: mockTicketId,
+      eventId: mockEventId,
+      bookingId: mockBookingId,
+    } as any);
+    vi.mocked(Booking.findById).mockResolvedValue({
+      _id: mockBookingId,
+      status: 'pending',
+    } as any);
+
+    const req = {
+      body: { ticketId: mockTicketId, eventId: mockEventId },
+      admin: { sub: mockScannerId, email: 'scanner@mad.com', role: 'scanner' },
+    } as unknown as Request;
+    const res = makeRes();
+
+    await scanTicket(req, res, next);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith(
+      expect.objectContaining({ success: false, message: expect.stringContaining('Only confirmed bookings') })
+    );
+  });
+
+  it('successfully scans and attributes ticket to the scanner on success', async () => {
+    const mockTicket = {
+      _id: new Types.ObjectId(),
+      ticketId: mockTicketId,
+      eventId: mockEventId,
+      bookingId: mockBookingId,
+    };
+    vi.mocked(Ticket.findOne).mockResolvedValue(mockTicket as any);
+    vi.mocked(Booking.findById).mockResolvedValue({
+      _id: mockBookingId,
+      status: 'confirmed',
+    } as any);
+
+    const scannedDate = new Date();
+    vi.mocked(Ticket.findOneAndUpdate).mockResolvedValue({
+      ...mockTicket,
+      scannedAt: scannedDate,
+      scannedById: new Types.ObjectId(mockScannerId),
+      tierName: 'VIP',
+      admits: 2,
+    } as any);
+
+    const req = {
+      body: { ticketId: mockTicketId, eventId: mockEventId },
+      admin: { sub: mockScannerId, email: 'scanner@mad.com', role: 'scanner' },
+    } as unknown as Request;
+    const res = makeRes();
+
+    await scanTicket(req, res, next);
+
+    expect(Ticket.findOneAndUpdate).toHaveBeenCalledWith(
+      { _id: mockTicket._id, $or: [{ scannedAt: { $exists: false } }, { scannedAt: null }] },
+      { $set: { scannedAt: expect.any(Date), scannedById: new Types.ObjectId(mockScannerId) } },
+      { new: true }
+    );
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith({
+      status: 'success',
+      message: 'Ticket scanned and verified successfully.',
+      data: {
+        ticketId: mockTicketId,
+        tierName: 'VIP',
+        admits: 2,
+        scannedAt: scannedDate.toISOString(),
+      },
+    });
+  });
+
+  it('handles concurrent scans and reports ticket already scanned', async () => {
+    const mockTicket = {
+      _id: new Types.ObjectId(),
+      ticketId: mockTicketId,
+      eventId: mockEventId,
+      bookingId: mockBookingId,
+    };
+    vi.mocked(Ticket.findOne).mockResolvedValue(mockTicket as any);
+    vi.mocked(Booking.findById).mockResolvedValue({
+      _id: mockBookingId,
+      status: 'confirmed',
+    } as any);
+
+    vi.mocked(Ticket.findOneAndUpdate).mockResolvedValue(null);
+
+    const scannedDate = new Date();
+    vi.mocked(Ticket.findById).mockResolvedValue({
+      ...mockTicket,
+      scannedAt: scannedDate,
+      scannedById: new Types.ObjectId(mockScannerId),
+    } as any);
+
+    const req = {
+      body: { ticketId: mockTicketId, eventId: mockEventId },
+      admin: { sub: mockScannerId, email: 'scanner@mad.com', role: 'scanner' },
+    } as unknown as Request;
+    const res = makeRes();
+
+    await scanTicket(req, res, next);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        success: false,
+        message: expect.stringContaining('already used'),
+        details: { scannedAt: scannedDate.toISOString() },
       })
     );
   });

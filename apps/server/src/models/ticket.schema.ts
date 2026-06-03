@@ -15,6 +15,7 @@ export interface ITicket extends Document {
   qrCode: string;
   qrCodeImage?: string;
   scannedAt?: Date;
+  scannedById?: Types.ObjectId;
 }
 
 const ticketSchema = new Schema<ITicket>(
@@ -32,6 +33,7 @@ const ticketSchema = new Schema<ITicket>(
     qrCode: { type: String, required: true },
     qrCodeImage: String,
     scannedAt: Date,
+    scannedById: { type: Schema.Types.ObjectId, ref: 'Admin', index: true },
   },
   { timestamps: true }
 );
