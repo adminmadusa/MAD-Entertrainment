@@ -4,6 +4,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 
 import { useAdminAuth } from '@/hooks/use-admin-auth.hook';
+import { canAccessRoute, DEFAULT_ROUTE_BY_ROLE } from '@/lib/rbac/navigation-permissions';
 
 import { AdminSidebar } from './AdminSidebar';
 
@@ -21,10 +22,20 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
 
   // Auth guard for protected admin pages
   useEffect(() => {
-    if (!isLoading && !isAuthenticated && !isPublicPage) {
-      router.replace('/login');
+    if (isLoading) return;
+
+    if (!isAuthenticated) {
+      if (!isPublicPage) {
+        router.replace('/login');
+      }
+    } else {
+      // Authenticated — enforce RBAC route authorization
+      if (admin?.role && !isPublicPage && !canAccessRoute(pathname, admin.role)) {
+        const redirectHome = DEFAULT_ROUTE_BY_ROLE[admin.role] || '/dashboard';
+        router.replace(redirectHome);
+      }
     }
-  }, [isAuthenticated, isLoading, isPublicPage, router]);
+  }, [isAuthenticated, isLoading, isPublicPage, pathname, admin, router]);
 
   // Loading state
   if (isLoading) {
@@ -40,6 +51,15 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
 
   // Not authenticated — return null (redirect happens in useEffect)
   if (!isAuthenticated) return null;
+
+  // Authenticated, but not authorized for this specific route — redirect is enqueued
+  if (admin?.role && !isPublicPage && !canAccessRoute(pathname, admin.role)) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-accent-purple border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   const handleLogout = async () => {
     await logout();

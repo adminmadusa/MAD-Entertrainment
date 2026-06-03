@@ -5,12 +5,12 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 import { useAdminAuth } from '@/hooks/use-admin-auth.hook';
+import { canAccessRoute } from '@/lib/rbac/navigation-permissions';
 
 interface NavItem {
   label: string;
   href: string;
   icon: React.ReactNode;
-  badge?: string;
   disabled?: boolean;
 }
 
@@ -118,33 +118,78 @@ export function AdminSidebar({ collapsed, onToggle, mobileOpen = false, onMobile
 
       {/* Nav */}
       <nav className="flex-1 overflow-y-auto py-4 px-2 space-y-6 scrollbar-hide">
-        {navGroups.map((group) => (
-          <div key={group.title}>
-            <AnimatePresence>
-              {!collapsed && (
-                <motion.p
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="text-text-muted text-[10px] font-semibold uppercase tracking-widest px-2 mb-2"
-                >
-                  {group.title}
-                </motion.p>
-              )}
-            </AnimatePresence>
-            <ul className="space-y-0.5">
-              {group.items.map((item) => {
-                if (item.href === '/team' && admin?.role !== 'super_admin') {
-                  return null;
-                }
-                const active = isActive(item.href);
-                if (item.disabled) {
+        {navGroups.map((group) => {
+          const visibleItems = group.items.filter(
+            (item) => !admin?.role || canAccessRoute(item.href, admin.role)
+          );
+          if (visibleItems.length === 0) return null;
+
+          return (
+            <div key={group.title}>
+              <AnimatePresence>
+                {!collapsed && (
+                  <motion.p
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="text-text-muted text-[10px] font-semibold uppercase tracking-widest px-2 mb-2"
+                  >
+                    {group.title}
+                  </motion.p>
+                )}
+              </AnimatePresence>
+              <ul className="space-y-0.5">
+                {visibleItems.map((item) => {
+                  const active = isActive(item.href);
+                  if (item.disabled) {
+                    return (
+                      <li key={item.href}>
+                        <div
+                          title={collapsed ? `${item.label} (Coming Soon)` : undefined}
+                          className="flex items-center gap-3 px-2 py-2.5 rounded-xl opacity-40 cursor-not-allowed select-none text-text-secondary group relative"
+                        >
+                          <span className="flex-shrink-0 w-5 h-5 flex items-center justify-center">
+                            {item.icon}
+                          </span>
+                          <AnimatePresence>
+                            {!collapsed && (
+                              <motion.span
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                className="text-sm font-medium whitespace-nowrap overflow-hidden flex items-center gap-2"
+                              >
+                                {item.label}
+                                <span className="text-[9px] font-bold tracking-wider uppercase px-1 py-0.5 rounded bg-white/10 text-text-muted">
+                                  Soon
+                                </span>
+                              </motion.span>
+                            )}
+                          </AnimatePresence>
+                        </div>
+                      </li>
+                    );
+                  }
+
                   return (
                     <li key={item.href}>
-                      <div
-                        title={collapsed ? `${item.label} (Coming Soon)` : undefined}
-                        className="flex items-center gap-3 px-2 py-2.5 rounded-xl opacity-40 cursor-not-allowed select-none text-text-secondary group relative"
+                      <Link
+                        href={item.href}
+                        title={collapsed ? item.label : undefined}
+                        className={[
+                          'flex items-center gap-3 px-2 py-2.5 rounded-xl transition-all duration-150 group relative',
+                          active
+                            ? 'bg-accent-purple/15 text-accent-purple-light'
+                            : 'text-text-secondary hover:text-text-primary hover:bg-white/5',
+                        ].join(' ')}
                       >
+                        {/* Active indicator */}
+                        {active && (
+                          <motion.div
+                            layoutId="activeNav"
+                            className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-accent-purple rounded-r"
+                          />
+                        )}
                         <span className="flex-shrink-0 w-5 h-5 flex items-center justify-center">
                           {item.icon}
                         </span>
@@ -154,61 +199,20 @@ export function AdminSidebar({ collapsed, onToggle, mobileOpen = false, onMobile
                               initial={{ opacity: 0 }}
                               animate={{ opacity: 1 }}
                               exit={{ opacity: 0 }}
-                              className="text-sm font-medium whitespace-nowrap overflow-hidden flex items-center gap-2"
+                              className="text-sm font-medium whitespace-nowrap overflow-hidden"
                             >
                               {item.label}
-                              <span className="text-[9px] font-bold tracking-wider uppercase px-1 py-0.5 rounded bg-white/10 text-text-muted">
-                                Soon
-                              </span>
                             </motion.span>
                           )}
                         </AnimatePresence>
-                      </div>
+                      </Link>
                     </li>
                   );
-                }
-
-                return (
-                  <li key={item.href}>
-                    <Link
-                      href={item.href}
-                      title={collapsed ? item.label : undefined}
-                      className={[
-                        'flex items-center gap-3 px-2 py-2.5 rounded-xl transition-all duration-150 group relative',
-                        active
-                          ? 'bg-accent-purple/15 text-accent-purple-light'
-                          : 'text-text-secondary hover:text-text-primary hover:bg-white/5',
-                      ].join(' ')}
-                    >
-                      {/* Active indicator */}
-                      {active && (
-                        <motion.div
-                          layoutId="activeNav"
-                          className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-accent-purple rounded-r"
-                        />
-                      )}
-                      <span className="flex-shrink-0 w-5 h-5 flex items-center justify-center">
-                        {item.icon}
-                      </span>
-                      <AnimatePresence>
-                        {!collapsed && (
-                          <motion.span
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            className="text-sm font-medium whitespace-nowrap overflow-hidden"
-                          >
-                            {item.label}
-                          </motion.span>
-                        )}
-                      </AnimatePresence>
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-        ))}
+                })}
+              </ul>
+            </div>
+          );
+        })}
       </nav>
 
       {/* Collapse Toggle */}
@@ -237,9 +241,7 @@ function ChartIcon() {
 function CalendarIcon() {
   return <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>;
 }
-function MicIcon() {
-  return <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>;
-}
+
 function HeadphonesIcon() {
   return <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3z"/><path d="M3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg>;
 }

@@ -43,12 +43,14 @@ function DashboardContent() {
   const { data: summary, isLoading } = useQuery({
     queryKey: ['admin-analytics-summary'],
     queryFn: adminGetDashboardSummary,
+    enabled: !!admin?.role && ['super_admin', 'admin', 'manager'].includes(admin.role),
   });
 
   const { data: consistencyReport } = useQuery({
     queryKey: ['admin-diagnostics-consistency'],
     queryFn: adminGetConsistencyReport,
     refetchInterval: 30000,
+    enabled: !!admin?.role && ['super_admin', 'admin'].includes(admin.role),
   });
 
   const { data: eventsData, isLoading: isEventsLoading } = useQuery({
@@ -66,11 +68,13 @@ function DashboardContent() {
   const { data: failedWebhooksData, isLoading: isWebhooksLoading } = useQuery({
     queryKey: ['admin-diagnostics-webhooks-failed'],
     queryFn: () => adminGetWebhooks({ page: 1, limit: 5, status: 'failed' }),
+    enabled: !!admin?.role && ['super_admin', 'admin'].includes(admin.role),
   });
 
   const { data: emailLogsData, isLoading: isEmailsLoading } = useQuery({
     queryKey: ['admin-diagnostics-emails'],
     queryFn: () => adminGetEmailLogs({ page: 1, limit: 10 }),
+    enabled: !!admin?.role && ['super_admin', 'admin', 'manager', 'support'].includes(admin.role),
   });
 
   const failedEmails = (emailLogsData?.data || []).filter(email => email.status === 'failed');
@@ -79,16 +83,19 @@ function DashboardContent() {
   const { data: revenue } = useQuery({
     queryKey: ['admin-revenue-chart', 30],
     queryFn: () => adminGetRevenueChart(30),
+    enabled: !!admin?.role && ['super_admin', 'admin', 'manager'].includes(admin.role),
   });
 
   const { data: attendanceSummary, isLoading: isAttendanceLoading } = useQuery({
     queryKey: ['admin-attendance-summary'],
     queryFn: adminGetAttendanceSummary,
+    enabled: !!admin?.role && ['super_admin', 'admin', 'manager'].includes(admin.role),
   });
 
   const { data: attendanceRankings, isLoading: isRankingsLoading } = useQuery({
     queryKey: ['admin-attendance-rankings'],
     queryFn: adminGetAttendanceRankings,
+    enabled: !!admin?.role && ['super_admin', 'admin', 'manager'].includes(admin.role),
   });
 
   const handleGlobalSearch = (e: React.FormEvent) => {
@@ -113,6 +120,10 @@ function DashboardContent() {
   const failedPaymentRecoveryCount = (consistencyReport?.counts?.orphanPayments ?? 0) + (consistencyReport?.counts?.awaitingPaymentBookings ?? 0);
   const totalDeliveryIssues = failedEmails.length + failedWebhooks.length;
 
+  const showAnalytics = !!admin?.role && [AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.MANAGER].includes(admin.role as AdminRole);
+  const showDiagnosticsAlerts = !!admin?.role && [AdminRole.SUPER_ADMIN, AdminRole.ADMIN].includes(admin.role as AdminRole);
+  const showBookingsSearch = !!admin?.role && [AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.MANAGER, AdminRole.SUPPORT].includes(admin.role as AdminRole);
+
   const stats = [
     { label: 'Confirmed Bookings', value: summary?.totalBookings, icon: '🎟️', href: '/bookings' },
     { label: 'Bookings (Last 30 Days)', value: summary?.recentBookings, icon: '📅', href: '/bookings' },
@@ -126,17 +137,39 @@ function DashboardContent() {
 
   const allQuickLinks = [
     { label: 'Create Event', href: '/events/new', icon: '🎪', color: 'border-accent-purple/30 hover:border-accent-purple/60', roles: [AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.MANAGER] },
-    { label: 'View Bookings', href: '/bookings', icon: '🎟️', color: 'border-border-subtle hover:border-white/20', roles: [AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.MANAGER, AdminRole.SUPPORT, AdminRole.SCANNER] },
+    { label: 'View Bookings', href: '/bookings', icon: '🎟️', color: 'border-border-subtle hover:border-white/20', roles: [AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.MANAGER, AdminRole.SUPPORT] },
     { label: 'Process Refunds', href: '/refunds', icon: '💸', color: 'border-border-subtle hover:border-white/20', roles: [AdminRole.SUPER_ADMIN, AdminRole.ADMIN] },
-    { label: 'Analytics', href: '/dashboard', icon: '📊', color: 'border-border-subtle hover:border-white/20', roles: [AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.MANAGER, AdminRole.SUPPORT] },
+    { label: 'Analytics', href: '/dashboard', icon: '📊', color: 'border-border-subtle hover:border-white/20', roles: [AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.MANAGER] },
     { label: 'Scanner Console', href: '/scanner', icon: '📷', color: 'border-border-subtle hover:border-white/20', roles: [AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.MANAGER, AdminRole.SUPPORT, AdminRole.SCANNER] },
-    { label: 'Diagnostics', href: '/diagnostics', icon: '🔧', color: 'border-border-subtle hover:border-white/20', roles: [AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.MANAGER, AdminRole.SUPPORT] },
+    { label: 'Diagnostics', href: '/diagnostics', icon: '🔧', color: 'border-border-subtle hover:border-white/20', roles: [AdminRole.SUPER_ADMIN, AdminRole.ADMIN] },
   ];
 
   const quickLinks = allQuickLinks.filter(link => {
     if (!admin?.role) return false;
     return link.roles.includes(admin.role as AdminRole);
   });
+
+  if (admin?.role === AdminRole.SCANNER) {
+    return (
+      <div className="max-w-md mx-auto py-16 text-center space-y-6">
+        <div className="w-20 h-20 rounded-full bg-accent-purple/20 flex items-center justify-center text-accent-purple text-4xl mx-auto shadow-glow-sm">
+          📷
+        </div>
+        <div className="space-y-2">
+          <h1 className="text-2xl font-black text-white">Welcome Scanner Console</h1>
+          <p className="text-text-muted text-sm leading-relaxed">
+            Ready to scan tickets and manage gate volumes. Use the link below to open the scanner console.
+          </p>
+        </div>
+        <Link
+          href="/scanner"
+          className="inline-block px-6 py-3 bg-accent-purple hover:bg-accent-purple-light text-white text-sm font-semibold rounded-xl shadow-glow-sm hover:scale-[1.02] active:scale-[0.98] transition-all"
+        >
+          Open Scanner Console
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">
@@ -149,57 +182,63 @@ function DashboardContent() {
       </motion.div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-        {stats.map((stat, i) => (
-          <motion.div key={stat.label} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.07 }}>
-            <Link href={stat.href} className="block glass rounded-2xl border border-border-subtle p-6 hover:border-accent-purple/30 transition-colors group">
-              <div className="text-3xl mb-3">{stat.icon}</div>
-              <p className="text-text-muted text-sm">{stat.label}</p>
-              <p className={`text-2xl font-black mt-1 group-hover:text-gradient transition-all ${isLoading ? 'text-text-muted animate-pulse' : 'text-white'}`}>
-                {isLoading ? '...' : (stat.value?.toLocaleString?.() ?? stat.value ?? '0')}
-              </p>
-            </Link>
-          </motion.div>
-        ))}
-      </div>
+      {showAnalytics && (
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+          {stats.map((stat, i) => (
+            <motion.div key={stat.label} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.07 }}>
+              <Link href={stat.href} className="block glass rounded-2xl border border-border-subtle p-6 hover:border-accent-purple/30 transition-colors group">
+                <div className="text-3xl mb-3">{stat.icon}</div>
+                <p className="text-text-muted text-sm">{stat.label}</p>
+                <p className={`text-2xl font-black mt-1 group-hover:text-gradient transition-all ${isLoading ? 'text-text-muted animate-pulse' : 'text-white'}`}>
+                  {isLoading ? '...' : (stat.value?.toLocaleString?.() ?? stat.value ?? '0')}
+                </p>
+              </Link>
+            </motion.div>
+          ))}
+        </div>
+      )}
 
       {/* Revenue Trend Area Chart */}
-      <div className="glass rounded-2xl border border-border-subtle p-6 space-y-4">
-        <h2 className="text-white font-semibold">Revenue — Last 30 Days</h2>
-        <RevenueChartWidget revenue={revenue} />
-      </div>
+      {showAnalytics && (
+        <div className="glass rounded-2xl border border-border-subtle p-6 space-y-4">
+          <h2 className="text-white font-semibold">Revenue — Last 30 Days</h2>
+          <RevenueChartWidget revenue={revenue} />
+        </div>
+      )}
 
       {/* Global Search Bar */}
-      <div className="glass rounded-2xl border border-border-subtle p-6 space-y-4">
-        <div>
-          <h2 className="text-white font-semibold">Global Operational Search</h2>
-          <p className="text-text-muted text-xs mt-0.5">Locate customer bookings instantly by email or reference number</p>
-        </div>
-        
-        <form onSubmit={handleGlobalSearch} className="space-y-2">
-          <div className="flex flex-col sm:flex-row gap-3">
-            <input
-              type="text"
-              value={globalSearchQuery}
-              onChange={(e) => {
-                setGlobalSearchQuery(e.target.value);
-                if (globalSearchError) setGlobalSearchError('');
-              }}
-              placeholder="e.g. MAD-2026-XXXXX or customer@gmail.com"
-              className="flex-1 px-4 py-3 rounded-xl bg-background border border-border-subtle text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-purple transition-colors"
-            />
-            <button
-              type="submit"
-              className="px-6 py-3 bg-accent-purple hover:bg-accent-purple-light text-white text-sm font-semibold rounded-xl shadow-glow-sm hover:scale-[1.02] active:scale-[0.98] transition-all shrink-0"
-            >
-              Search Booking
-            </button>
+      {showBookingsSearch && (
+        <div className="glass rounded-2xl border border-border-subtle p-6 space-y-4">
+          <div>
+            <h2 className="text-white font-semibold">Global Operational Search</h2>
+            <p className="text-text-muted text-xs mt-0.5">Locate customer bookings instantly by email or reference number</p>
           </div>
-          {globalSearchError && (
-            <p className="text-red-400 text-xs mt-1 animate-pulse">{globalSearchError}</p>
-          )}
-        </form>
-      </div>
+          
+          <form onSubmit={handleGlobalSearch} className="space-y-2">
+            <div className="flex flex-col sm:flex-row gap-3">
+              <input
+                type="text"
+                value={globalSearchQuery}
+                onChange={(e) => {
+                  setGlobalSearchQuery(e.target.value);
+                  if (globalSearchError) setGlobalSearchError('');
+                }}
+                placeholder="e.g. MAD-2026-XXXXX or customer@gmail.com"
+                className="flex-1 px-4 py-3 rounded-xl bg-background border border-border-subtle text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-purple transition-colors"
+              />
+              <button
+                type="submit"
+                className="px-6 py-3 bg-accent-purple hover:bg-accent-purple-light text-white text-sm font-semibold rounded-xl shadow-glow-sm hover:scale-[1.02] active:scale-[0.98] transition-all shrink-0"
+              >
+                Search Booking
+              </button>
+            </div>
+            {globalSearchError && (
+              <p className="text-red-400 text-xs mt-1 animate-pulse">{globalSearchError}</p>
+            )}
+          </form>
+        </div>
+      )}
 
       {/* Operational Alerts & System Health */}
       <div className="space-y-4">
@@ -222,51 +261,55 @@ function DashboardContent() {
           </motion.div>
         ) : null}
 
-        {failedPaymentRecoveryCount > 0 ? (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-          >
-            <Link
-              href="/diagnostics"
-              className="flex items-center justify-between p-4 bg-red-500/10 border border-red-500/30 text-red-400 rounded-xl text-sm font-semibold hover:bg-red-500/15 transition-all"
-            >
-              <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse" />
-                <span>Action Required: You have {failedPaymentRecoveryCount} payment recovery drift{failedPaymentRecoveryCount > 1 ? 's' : ''} requiring investigation.</span>
-              </div>
-              <span className="text-xs font-bold underline bg-red-500/20 px-2.5 py-1.5 rounded">Investigate →</span>
-            </Link>
-          </motion.div>
-        ) : null}
-
-        {isWebhooksLoading || isEmailsLoading ? (
-          <div className="text-text-muted text-xs animate-pulse p-4 bg-white/5 rounded-xl border border-border-subtle">Checking system delivery logs...</div>
-        ) : (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-          >
-            {totalDeliveryIssues === 0 ? (
-              <div className="flex items-center gap-2 bg-emerald-500/5 border border-emerald-500/10 text-emerald-400 rounded-xl p-4 text-sm font-semibold">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                <span>System deliverability is operating normally. 0 active transmission issues detected.</span>
-              </div>
-            ) : (
-              <Link
-                href="/diagnostics"
-                className="flex items-center justify-between p-4 bg-red-500/10 border border-red-500/30 text-red-400 rounded-xl text-sm font-semibold hover:bg-red-500/15 transition-all"
+        {showDiagnosticsAlerts && (
+          <>
+            {failedPaymentRecoveryCount > 0 ? (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
               >
-                <div className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse" />
-                  <span>Action Recommended: {totalDeliveryIssues} system delivery issue{totalDeliveryIssues > 1 ? 's' : ''} require{totalDeliveryIssues === 1 ? 's' : ''} attention.</span>
-                </div>
-                <span className="text-xs font-bold underline bg-red-500/20 px-2.5 py-1.5 rounded">Resolve in Diagnostics →</span>
-              </Link>
+                <Link
+                  href="/diagnostics"
+                  className="flex items-center justify-between p-4 bg-red-500/10 border border-red-500/30 text-red-400 rounded-xl text-sm font-semibold hover:bg-red-500/15 transition-all"
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse" />
+                    <span>Action Required: You have {failedPaymentRecoveryCount} payment recovery drift{failedPaymentRecoveryCount > 1 ? 's' : ''} requiring investigation.</span>
+                  </div>
+                  <span className="text-xs font-bold underline bg-red-500/20 px-2.5 py-1.5 rounded">Investigate →</span>
+                </Link>
+              </motion.div>
+            ) : null}
+
+            {isWebhooksLoading || isEmailsLoading ? (
+              <div className="text-text-muted text-xs animate-pulse p-4 bg-white/5 rounded-xl border border-border-subtle">Checking system delivery logs...</div>
+            ) : (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                {totalDeliveryIssues === 0 ? (
+                  <div className="flex items-center gap-2 bg-emerald-500/5 border border-emerald-500/10 text-emerald-400 rounded-xl p-4 text-sm font-semibold">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                    <span>System deliverability is operating normally. 0 active transmission issues detected.</span>
+                  </div>
+                ) : (
+                  <Link
+                    href="/diagnostics"
+                    className="flex items-center justify-between p-4 bg-red-500/10 border border-red-500/30 text-red-400 rounded-xl text-sm font-semibold hover:bg-red-500/15 transition-all"
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse" />
+                      <span>Action Recommended: {totalDeliveryIssues} system delivery issue{totalDeliveryIssues > 1 ? 's' : ''} require{totalDeliveryIssues === 1 ? 's' : ''} attention.</span>
+                    </div>
+                    <span className="text-xs font-bold underline bg-red-500/20 px-2.5 py-1.5 rounded">Resolve in Diagnostics →</span>
+                  </Link>
+                )}
+              </motion.div>
             )}
-          </motion.div>
+          </>
         )}
       </div>
 
@@ -285,7 +328,7 @@ function DashboardContent() {
       </div>
 
       {/* Split Row: Happening Today & Live Attendance Overview */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+      <div className={`grid grid-cols-1 ${showAnalytics ? 'lg:grid-cols-2' : ''} gap-5`}>
         {/* Happening Today Feed */}
         <div className="glass rounded-2xl border border-border-subtle overflow-hidden flex flex-col justify-between">
           <div className="px-6 py-4 border-b border-border-subtle flex items-center justify-between">
@@ -347,22 +390,26 @@ function DashboardContent() {
         </div>
 
         {/* Live Attendance Overview */}
-        <div className="glass rounded-2xl border border-border-subtle p-6 space-y-6 flex flex-col justify-between">
-          <div>
-            <h2 className="text-white font-semibold">Live Attendance Overview</h2>
-            <p className="text-text-muted text-xs mt-0.5">Real-time guest scans and check-in efficiency</p>
+        {showAnalytics && (
+          <div className="glass rounded-2xl border border-border-subtle p-6 space-y-6 flex flex-col justify-between">
+            <div>
+              <h2 className="text-white font-semibold">Live Attendance Overview</h2>
+              <p className="text-text-muted text-xs mt-0.5">Real-time guest scans and check-in efficiency</p>
+            </div>
+            <div className="flex-1 flex items-center">
+              <AttendanceMetricsWidget attendanceSummary={attendanceSummary} isLoading={isAttendanceLoading} />
+            </div>
           </div>
-          <div className="flex-1 flex items-center">
-            <AttendanceMetricsWidget attendanceSummary={attendanceSummary} isLoading={isAttendanceLoading} />
-          </div>
-        </div>
+        )}
       </div>
 
       {/* Attendance Rankings */}
-      <AttendanceRankingsWidget attendanceRankings={attendanceRankings} isLoading={isRankingsLoading} />
+      {showAnalytics && (
+        <AttendanceRankingsWidget attendanceRankings={attendanceRankings} isLoading={isRankingsLoading} />
+      )}
 
       {/* Top Events Table */}
-      {Array.isArray(summary?.topEvents) && summary.topEvents.length > 0 && (
+      {showAnalytics && Array.isArray(summary?.topEvents) && summary.topEvents.length > 0 && (
         <div className="glass rounded-2xl border border-border-subtle overflow-hidden">
           <div className="px-6 py-4 border-b border-border-subtle">
             <h2 className="text-white font-semibold">Top Events by Revenue</h2>

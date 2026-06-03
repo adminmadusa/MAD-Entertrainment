@@ -5,6 +5,7 @@ import { BookingStatus, getBookingStatusLabel } from '@mad/shared';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { useAdminAuth } from '@/hooks/use-admin-auth.hook';
 
 import {
   adminGetBookings,
@@ -47,9 +48,11 @@ const ATTENDANCE_COLORS: Record<string, string> = {
 };
 
 function BookingsContent() {
+  const { admin } = useAdminAuth();
   const qc = useQueryClient();
   const searchParams = useSearchParams();
   const [search, setSearch] = useState('');
+  const canMutateBookings = !!admin?.role && ['super_admin', 'admin', 'support'].includes(admin.role);
   const [statusFilter, setStatusFilter] = useState('');
   const [eventFilter, setEventFilter] = useState('');
   const [page, setPage] = useState(1);
@@ -235,7 +238,7 @@ function BookingsContent() {
             {new Date(booking.createdAt).toLocaleDateString('en-IN')}
           </td>
           <td className="py-4 px-5 text-right">
-            {booking.status === 'confirmed' && (
+            {canMutateBookings && booking.status === 'confirmed' && (
               <button onClick={(e) => { e.stopPropagation(); setCancelTarget(booking); }}
                 className="px-3 py-1.5 text-xs glass border border-border-subtle rounded-lg text-text-muted hover:text-red-400 hover:border-red-500/40 transition-all">
                 Cancel
@@ -527,33 +530,35 @@ function BookingsContent() {
                       <span className="text-text-muted text-[10px] uppercase tracking-wider block">Current Email</span>
                       <span className="text-white font-semibold font-mono text-sm">{email}</span>
                     </div>
-                    <div className="flex gap-2">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setEditEmailValue(email === '—' ? '' : email);
-                          setEditReasonValue('');
-                          setEditEmailError('');
-                          setIsEditEmailOpen(true);
-                        }}
-                        disabled={!!selectedBooking.userId}
-                        className={`px-3.5 py-2 text-xs font-semibold rounded-lg border transition-all ${
-                          selectedBooking.userId
-                            ? 'bg-white/5 border-white/10 text-text-muted cursor-not-allowed opacity-50'
-                            : 'glass border-border-subtle text-text-secondary hover:text-white hover:border-accent-purple/50'
-                        }`}
-                      >
-                        Edit Email
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => resendTicketsMutation.mutate(selectedBooking._id)}
-                        disabled={selectedBooking.status !== 'confirmed' || resendTicketsMutation.isPending}
-                        className="px-3.5 py-2 text-xs font-semibold bg-accent-purple/25 hover:bg-accent-purple/40 border border-accent-purple/40 rounded-lg text-accent-purple hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                      >
-                        {resendTicketsMutation.isPending ? 'Resending...' : 'Resend Tickets'}
-                      </button>
-                    </div>
+                    {canMutateBookings && (
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditEmailValue(email === '—' ? '' : email);
+                            setEditReasonValue('');
+                            setEditEmailError('');
+                            setIsEditEmailOpen(true);
+                          }}
+                          disabled={!!selectedBooking.userId}
+                          className={`px-3.5 py-2 text-xs font-semibold rounded-lg border transition-all ${
+                            selectedBooking.userId
+                              ? 'bg-white/5 border-white/10 text-text-muted cursor-not-allowed opacity-50'
+                              : 'glass border-border-subtle text-text-secondary hover:text-white hover:border-accent-purple/50'
+                          }`}
+                        >
+                          Edit Email
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => resendTicketsMutation.mutate(selectedBooking._id)}
+                          disabled={selectedBooking.status !== 'confirmed' || resendTicketsMutation.isPending}
+                          className="px-3.5 py-2 text-xs font-semibold bg-accent-purple/25 hover:bg-accent-purple/40 border border-accent-purple/40 rounded-lg text-accent-purple hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                        >
+                          {resendTicketsMutation.isPending ? 'Resending...' : 'Resend Tickets'}
+                        </button>
+                      </div>
+                    )}
                   </div>
 
                   {/* Authenticated booking protection warning */}
@@ -661,7 +666,7 @@ function BookingsContent() {
                   >
                     Close
                   </button>
-                  {selectedBooking.status === 'confirmed' && (
+                  {canMutateBookings && selectedBooking.status === 'confirmed' && (
                     <button
                       onClick={() => {
                         setCancelTarget(selectedBooking);

@@ -5,6 +5,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { useState } from 'react';
+import { useAdminAuth } from '@/hooks/use-admin-auth.hook';
 
 import { adminGetCoupons, adminDeleteCoupon, adminToggleCoupon } from '@/lib/api/admin/coupon.service';
 import { extractApiError } from '@/lib/api/client';
@@ -12,8 +13,10 @@ import ErrorState from '@/components/states/ErrorState';
 
 
 export default function AdminCouponsPage() {
+  const { admin } = useAdminAuth();
   const qc = useQueryClient();
   const [page, setPage] = useState(1);
+  const canMutateCoupons = !!admin?.role && ['super_admin', 'admin', 'manager'].includes(admin.role);
   const [activeFilter, setActiveFilter] = useState<string>('');
   const [deleteTarget, setDeleteTarget] = useState<Coupon | null>(null);
 
@@ -92,32 +95,46 @@ export default function AdminCouponsPage() {
           <div className="text-text-muted mt-0.5">to {formatDate(coupon.validUntil)}</div>
         </td>
         <td className="py-4 px-4">
-          <button
-            onClick={() => toggleMutation.mutate(coupon._id)}
-            className={`text-xs px-2.5 py-1 rounded-full border font-medium transition-all ${
+          {canMutateCoupons ? (
+            <button
+              onClick={() => toggleMutation.mutate(coupon._id)}
+              className={`text-xs px-2.5 py-1 rounded-full border font-medium transition-all ${
+                coupon.isActive
+                  ? 'bg-green-500/10 text-green-400 border-green-500/30'
+                  : 'bg-red-500/10 text-red-400 border-red-500/30'
+              }`}
+            >
+              {coupon.isActive ? 'Active' : 'Inactive'}
+            </button>
+          ) : (
+            <span className={`text-xs px-2.5 py-1 rounded-full border font-medium ${
               coupon.isActive
                 ? 'bg-green-500/10 text-green-400 border-green-500/30'
                 : 'bg-red-500/10 text-red-400 border-red-500/30'
-            }`}
-          >
-            {coupon.isActive ? 'Active' : 'Inactive'}
-          </button>
+            }`}>
+              {coupon.isActive ? 'Active' : 'Inactive'}
+            </span>
+          )}
         </td>
         <td className="py-4 px-5">
-          <div className="flex items-center justify-end gap-2">
-            <Link
-              href={`/coupons/${coupon._id}/edit`}
-              className="px-3 py-1.5 text-xs font-medium glass border border-border-subtle rounded-lg text-text-secondary hover:text-white hover:border-accent-purple/40 transition-all"
-            >
-              Edit
-            </Link>
-            <button
-              onClick={() => setDeleteTarget(coupon)}
-              className="px-3 py-1.5 text-xs font-medium glass border border-border-subtle rounded-lg text-text-muted hover:text-red-400 hover:border-red-500/40 transition-all"
-            >
-              Delete
-            </button>
-          </div>
+          {canMutateCoupons ? (
+            <div className="flex items-center justify-end gap-2">
+              <Link
+                href={`/coupons/${coupon._id}/edit`}
+                className="px-3 py-1.5 text-xs font-medium glass border border-border-subtle rounded-lg text-text-secondary hover:text-white hover:border-accent-purple/40 transition-all"
+              >
+                Edit
+              </Link>
+              <button
+                onClick={() => setDeleteTarget(coupon)}
+                className="px-3 py-1.5 text-xs font-medium glass border border-border-subtle rounded-lg text-text-muted hover:text-red-400 hover:border-red-500/40 transition-all"
+              >
+                Delete
+              </button>
+            </div>
+          ) : (
+            <div className="text-right text-text-muted">—</div>
+          )}
         </td>
       </tr>
     ));
@@ -162,13 +179,15 @@ export default function AdminCouponsPage() {
             <option value="true" className="bg-black">Active Only</option>
             <option value="false" className="bg-black">Inactive Only</option>
           </select>
-          <Link
-            href="/coupons/new"
-            id="admin-create-coupon"
-            className="px-4 py-2.5 btn-gradient text-white font-semibold text-sm rounded-xl shadow-glow-sm hover:scale-105 transition-transform flex items-center gap-2"
-          >
-            <span>+</span> Create Coupon
-          </Link>
+          {canMutateCoupons && (
+            <Link
+              href="/coupons/new"
+              id="admin-create-coupon"
+              className="px-4 py-2.5 btn-gradient text-white font-semibold text-sm rounded-xl shadow-glow-sm hover:scale-105 transition-transform flex items-center gap-2"
+            >
+              <span>+</span> Create Coupon
+            </Link>
+          )}
         </div>
       </div>
 
