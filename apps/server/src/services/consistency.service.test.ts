@@ -9,6 +9,7 @@ import { Ticket } from '../models/ticket.schema';
 import { QueueService } from './queue.service';
 import { Reservation } from '../models/reservation.schema';
 import { Payment } from '../models/payment.schema';
+import { Notification } from '../models/notification.schema';
 
 const mockCreateMockQuery = (resolvedValue: any = []) => {
   const query: any = {
@@ -24,9 +25,20 @@ const mockCreateMockQuery = (resolvedValue: any = []) => {
 vi.mock('../models/booking.schema', () => ({
   Booking: {
     find: vi.fn(() => mockCreateMockQuery([])),
+    findById: vi.fn(),
     findOneAndUpdate: vi.fn(),
     updateOne: vi.fn(),
     updateMany: vi.fn(),
+    exists: vi.fn(),
+    countDocuments: vi.fn(),
+  },
+}));
+
+vi.mock('../models/notification.schema', () => ({
+  Notification: {
+    find: vi.fn(() => mockCreateMockQuery([])),
+    findOne: vi.fn(),
+    updateOne: vi.fn(),
     exists: vi.fn(),
     countDocuments: vi.fn(),
   },
@@ -424,9 +436,210 @@ describe('ConsistencyService - Confirmed Booking Ticket Watchdog', () => {
     vi.mocked(Booking.exists).mockResolvedValue(null as any);
 
     const reEnqueued = await (ConsistencyService as any).repairUnticketedConfirmedBookings();
-
+ 
     expect(reEnqueued).toBe(0);
     expect(Booking.exists).toHaveBeenCalledWith({ _id: 'b-confirmed-deleted' });
     expect(QueueService.enqueue).not.toHaveBeenCalled();
   });
 });
+
+describe('ConsistencyService - Pipeline Watchdog (PR-T4A)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(Notification.updateOne).mockResolvedValue({ modifiedCount: 1 } as any);
+    vi.mocked(Notification.exists).mockResolvedValue(false as any);
+  });
+
+  // Test 1: Stuck Notification Repair - Safety Ordering (no update if enqueue fails)
+  it('should not update notification status in DB if QueueService.enqueue fails', async () => {
+    const mockNotification = {
+      _id: 'n-stuck-1',
+      bookingId: 'b-confirmed-stuck-1',
+      status: 'queued',
+      updatedAt: new Date(Date.now() - 20 * 60 * 1000),
+    };
+    vi.mocked(Notification.find).mockReturnValue(mockCreateMockQuery([mockNotification]) as any);
+    vi.mocked(Booking.findById).mockReturnValue(mockCreateMockQuery({
+      _id: 'b-confirmed-stuck-1',
+      eventId: 'e-123',
+      guestEmail: 'guest@example.com',
+      guestName: 'Guest User',
+      status: BookingStatus.CONFIRMED,
+    }) as any);
+
+    vi.mocked(QueueService.enqueue).mockRejectedValue(new Error('Queue offline'));
+
+    const count = await (ConsistencyService as any).repairStuckNotifications();
+
+    expect(count).toBe(0);
+    expect(QueueService.enqueue).toHaveBeenCalled();
+    expect(Notification.updateOne).not.toHaveBeenCalled();
+  });
+
+  // Test 2: Stuck Notification Repair - Successful Enqueue transitions status conditionally
+  it('should conditionally update notification status in DB to failed if enqueue succeeds', async () => {
+    const mockNotification = {
+      _id: 'n-stuck-2',
+      bookingId: 'b-confirmed-stuck-2',
+      status: 'processing',
+      updatedAt: new Date(Date.now() - 20 * 60 * 1000),
+    };
+    vi.mocked(Notification.find).mockReturnValue(mockCreateMockQuery([mockNotification]) as any);
+    vi.mocked(Booking.findById).mockReturnValue(mockCreateMockQuery({
+      _id: 'b-confirmed-stuck-2',
+      eventId: 'e-123',
+      guestEmail: 'guest@example.com',
+      guestName: 'Guest User',
+      status: BookingStatus.CONFIRMED,
+    }) as any);
+    vi.mocked(QueueService.enqueue).mockResolvedValue(undefined);
+    vi.mocked(Notification.updateOne).mockResolvedValue({ modifiedCount: 1 } as any);
+
+    const count = await (ConsistencyService as any).repairStuckNotifications();
+
+    expect(count).toBe(1);
+    expect(QueueService.enqueue).toHaveBeenCalledWith(
+      'pdf-queue-test',
+      'pdf:generate',
+      {
+        bookingId: 'b-confirmed-stuck-2',
+        eventId: 'e-123',
+        recipientEmail: 'guest@example.com',
+        guestName: 'Guest User',
+      },
+      'pdf:generate:b-confirmed-stuck-2'
+    );
+    expect(Notification.updateOne).toHaveBeenCalledWith(
+      {
+        _id: 'n-stuck-2',
+        status: { $in: ['queued', 'processing'] },
+      },
+      {
+        $set: {
+          status: 'failed',
+          errorMessage: 'WATCHDOG_RESET_STUCK_LEASE',
+        },
+      }
+    );
+  });
+
+  // Test 3: Stuck Notification - Conditional transition avoids overwriting sent state
+  it('should handle update failure if status was modified concurrently to sent', async () => {
+    const mockNotification = {
+      _id: 'n-stuck-3',
+      bookingId: 'b-confirmed-stuck-3',
+      status: 'processing',
+      updatedAt: new Date(Date.now() - 20 * 60 * 1000),
+    };
+    vi.mocked(Notification.find).mockReturnValue(mockCreateMockQuery([mockNotification]) as any);
+    vi.mocked(Booking.findById).mockReturnValue(mockCreateMockQuery({
+      _id: 'b-confirmed-stuck-3',
+      eventId: 'e-123',
+      guestEmail: 'guest@example.com',
+      guestName: 'Guest User',
+      status: BookingStatus.CONFIRMED,
+    }) as any);
+    vi.mocked(QueueService.enqueue).mockResolvedValue(undefined);
+    vi.mocked(Notification.updateOne).mockResolvedValue({ modifiedCount: 0 } as any);
+
+    const count = await (ConsistencyService as any).repairStuckNotifications();
+
+    expect(count).toBe(0);
+  });
+
+  // Test 4: Orphaned Confirmed Deliveries - Successful repair & final sent verification
+  it('should repair orphaned confirmed deliveries only if tickets exist and no sent notification exists', async () => {
+    const mockBooking = {
+      _id: 'b-orphaned-1',
+      eventId: 'e-123',
+      guestEmail: 'guest@example.com',
+      guestName: 'Guest User',
+      status: BookingStatus.CONFIRMED,
+    };
+    vi.mocked(Booking.find).mockReturnValue(mockCreateMockQuery([mockBooking]) as any);
+    vi.mocked(Ticket.countDocuments).mockResolvedValue(2);
+    
+    vi.mocked(Notification.exists)
+      .mockResolvedValueOnce(false as any) // first call in loop
+      .mockResolvedValueOnce(false as any); // final verification check
+
+    const count = await (ConsistencyService as any).repairOrphanedConfirmedDeliveries();
+
+    expect(count).toBe(1);
+    expect(QueueService.enqueue).toHaveBeenCalledWith(
+      'pdf-queue-test',
+      'pdf:generate',
+      {
+        bookingId: 'b-orphaned-1',
+        eventId: 'e-123',
+        recipientEmail: 'guest@example.com',
+        guestName: 'Guest User',
+      },
+      'pdf:generate:b-orphaned-1'
+    );
+  });
+
+  // Test 5: Orphaned Confirmed Deliveries - Race condition check
+  it('should skip repair if final sent check verification finds notification was completed concurrently', async () => {
+    const mockBooking = {
+      _id: 'b-orphaned-2',
+      eventId: 'e-123',
+      guestEmail: 'guest@example.com',
+      guestName: 'Guest User',
+      status: BookingStatus.CONFIRMED,
+    };
+    vi.mocked(Booking.find).mockReturnValue(mockCreateMockQuery([mockBooking]) as any);
+    vi.mocked(Ticket.countDocuments).mockResolvedValue(2);
+
+    vi.mocked(Notification.exists)
+      .mockResolvedValueOnce(false as any) // first check
+      .mockResolvedValueOnce(true as any); // final check
+
+    const count = await (ConsistencyService as any).repairOrphanedConfirmedDeliveries();
+
+    expect(count).toBe(0);
+    expect(QueueService.enqueue).not.toHaveBeenCalled();
+  });
+
+  // Test 6: Report metrics
+  it('should fetch correct report drift metrics for pipeline faults', async () => {
+    vi.mocked(Notification.countDocuments).mockResolvedValue(4);
+    const mockBooking = { _id: 'b-orph-3' };
+    vi.mocked(Booking.find).mockReturnValue(mockCreateMockQuery([mockBooking]) as any);
+    vi.mocked(Ticket.countDocuments).mockResolvedValue(1);
+    vi.mocked(Notification.exists).mockResolvedValue(false as any);
+
+    vi.mocked(Reservation.countDocuments).mockResolvedValue(0);
+    vi.mocked(Booking.countDocuments).mockResolvedValue(0);
+    vi.mocked(Payment.countDocuments).mockResolvedValue(0);
+    vi.mocked(Event.find).mockReturnValue(mockCreateMockQuery([]));
+
+    const report = await ConsistencyService.generateReport();
+
+    expect(report.drift.stuckNotifications).toBe(4);
+    expect(report.drift.orphanedConfirmedDeliveries).toBe(1);
+  });
+
+  // Test 7: Integration in runRepairCycle
+  it('should execute pipeline watchdog repair methods in runRepairCycle', async () => {
+    const stuckSpy = vi.spyOn(ConsistencyService as any, 'repairStuckNotifications').mockResolvedValue(5);
+    const orphanedSpy = vi.spyOn(ConsistencyService as any, 'repairOrphanedConfirmedDeliveries').mockResolvedValue(7);
+
+    vi.mocked(Reservation.countDocuments).mockResolvedValue(0);
+    vi.mocked(Booking.countDocuments).mockResolvedValue(0);
+    vi.mocked(Payment.countDocuments).mockResolvedValue(0);
+    vi.mocked(Event.find).mockReturnValue(mockCreateMockQuery([]));
+    vi.mocked(Notification.countDocuments).mockResolvedValue(0);
+
+    const report = await ConsistencyService.runRepairCycle();
+
+    expect(stuckSpy).toHaveBeenCalled();
+    expect(orphanedSpy).toHaveBeenCalled();
+    expect(report.repairs?.resetStuckNotifications).toBe(5);
+    expect(report.repairs?.reEnqueuedOrphanedDeliveries).toBe(7);
+
+    stuckSpy.mockRestore();
+    orphanedSpy.mockRestore();
+  });
+});
+
