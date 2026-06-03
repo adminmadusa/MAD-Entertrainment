@@ -17,6 +17,12 @@ vi.mock('../../utils/jwt', () => ({
   extractBearerToken: vi.fn((header?: string) => header?.replace('Bearer ', '')),
 }));
 
+vi.mock('../../models/admin.schema', () => ({
+  AdminModel: {
+    findById: vi.fn(),
+  },
+}));
+
 vi.mock('../../controllers/admin/diagnostics.controller', () => ({
   getConsistencyDiagnostics: vi.fn(),
   listReservations: vi.fn(),

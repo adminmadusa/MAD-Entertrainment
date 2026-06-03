@@ -85,7 +85,28 @@ describe('team.service unit tests', () => {
 
   describe('createAdmin', () => {
     it('throws badRequest if fields are missing', async () => {
-      await expect(createAdmin({})).rejects.toThrow(AppError);
+      await expect(createAdmin({}, 'creator-id', 'super_admin')).rejects.toThrow('All fields (email, password, name, role) are required');
+    });
+
+    it('throws AppError.forbidden if requester is not super_admin', async () => {
+      await expect(
+        createAdmin(
+          { email: 'new@example.com', password: 'password123', name: 'New Admin', role: 'admin' },
+          'creator-id',
+          'admin'
+        )
+      ).rejects.toThrow('Only Super Admins can manage administrative accounts');
+
+      expect(auditLog).toHaveBeenCalledWith(
+        expect.objectContaining({
+          action: 'ADMIN_MUTATION_DENIED',
+          status: 'failure',
+          metadata: expect.objectContaining({
+            reason: 'insufficient_privileges',
+            actionAttempted: 'create_admin',
+          }),
+        })
+      );
     });
 
     it('creates account and logs ADMIN_CREATED audit event', async () => {

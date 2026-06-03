@@ -17,6 +17,10 @@ import {
   sendForbidden,
 } from '../utils/response';
 
+import { AdminModel } from '../models/admin.schema';
+import { auditLog } from '../utils/audit';
+
+
 // ─────────────────────────────────────────────
 // Extend Express Request
 // ─────────────────────────────────────────────
@@ -118,11 +122,11 @@ export function optionalAuth(
 // Require Admin
 // ─────────────────────────────────────────────
 
-export function requireAdmin(
+export async function requireAdmin(
   req: Request,
   res: Response,
   next: NextFunction
-): void {
+): Promise<void> {
   const token = extractBearerToken(req.headers.authorization);
 
   if (!token) {
@@ -140,11 +144,53 @@ export function requireAdmin(
         { role: adminPayload.role, email: adminPayload.email },
         'Security Alert: Malformed or invalid role detected in JWT payload'
       );
+      auditLog({
+        action: 'ADMIN_ACCESS_DENIED',
+        actor: { type: 'admin', id: adminPayload.sub },
+        status: 'failure',
+        metadata: {
+          email: adminPayload.email,
+          role: adminPayload.role,
+          reason: 'invalid_role_assignment',
+        },
+        description: `Access denied: Malformed or invalid role detected in JWT payload for ${adminPayload.email}`,
+      });
       sendForbidden(res, 'Invalid role assignment');
       return;
     }
 
-    req.admin = adminPayload;
+    // Active Account Verification: Load Admin from Database
+    const dbAdmin = await AdminModel.findById(adminPayload.sub);
+    if (!dbAdmin) {
+      auditLog({
+        action: 'ADMIN_ACCESS_DENIED',
+        actor: { type: 'admin', id: adminPayload.sub },
+        status: 'failure',
+        metadata: { email: adminPayload.email, reason: 'admin_not_found' },
+        description: `Access denied: administrative account not found for ${adminPayload.email}`,
+      });
+      sendUnauthorized(res, 'Admin account not found');
+      return;
+    }
+
+    if (!dbAdmin.isActive) {
+      auditLog({
+        action: 'INACTIVE_ADMIN_ACCESS_ATTEMPT',
+        actor: { type: 'admin', id: adminPayload.sub },
+        status: 'failure',
+        metadata: { email: adminPayload.email, reason: 'account_deactivated' },
+        description: `Blocked access attempt by deactivated admin ${adminPayload.email}`,
+      });
+      sendUnauthorized(res, 'Account has been deactivated');
+      return;
+    }
+
+    // Hydrate req.admin with database-verified details (avoid stale JWT token data)
+    req.admin = {
+      sub: dbAdmin._id.toString(),
+      email: dbAdmin.email,
+      role: dbAdmin.role as AdminRole,
+    };
     next();
   } catch (err) {
     logger.debug({ err }, 'Invalid admin token');
@@ -175,11 +221,34 @@ export function requireRole(...roles: AdminRole[]) {
         { role: req.admin.role, email: req.admin.email },
         'Security Alert: Malformed or invalid role detected in requireRole'
       );
+      auditLog({
+        action: 'ADMIN_ACCESS_DENIED',
+        actor: { type: 'admin', id: req.admin.sub },
+        status: 'failure',
+        metadata: {
+          email: req.admin.email,
+          role: req.admin.role,
+          reason: 'invalid_role_assignment',
+        },
+        description: `Access denied: Malformed or invalid role in requireRole for ${req.admin.email}`,
+      });
       sendForbidden(res, 'Invalid role assignment');
       return;
     }
 
     if (!roles.includes(req.admin.role as AdminRole)) {
+      auditLog({
+        action: 'UNAUTHORIZED_ADMIN_OPERATION',
+        actor: { type: 'admin', id: req.admin.sub },
+        status: 'failure',
+        metadata: {
+          email: req.admin.email,
+          role: req.admin.role,
+          requiredRoles: roles,
+          path: req.originalUrl,
+        },
+        description: `Access denied: Required role ${roles.join(' or ')} not possessed by ${req.admin.email}`,
+      });
       sendForbidden(
         res,
         `Access denied. Required role: ${roles.join(' or ')}`
@@ -214,11 +283,34 @@ export function requireSuperAdmin(
       { role: req.admin.role, email: req.admin.email },
       'Security Alert: Malformed or invalid role detected in requireSuperAdmin'
     );
+    auditLog({
+      action: 'ADMIN_ACCESS_DENIED',
+      actor: { type: 'admin', id: req.admin.sub },
+      status: 'failure',
+      metadata: {
+        email: req.admin.email,
+        role: req.admin.role,
+        reason: 'invalid_role_assignment',
+      },
+      description: `Access denied: Malformed or invalid role in requireSuperAdmin for ${req.admin.email}`,
+    });
     sendForbidden(res, 'Invalid role assignment');
     return;
   }
 
   if (req.admin.role !== AdminRole.SUPER_ADMIN) {
+    auditLog({
+      action: 'UNAUTHORIZED_ADMIN_OPERATION',
+      actor: { type: 'admin', id: req.admin.sub },
+      status: 'failure',
+      metadata: {
+        email: req.admin.email,
+        role: req.admin.role,
+        reason: 'super_admin_role_required',
+        path: req.originalUrl,
+      },
+      description: `Access denied: Super Admin privilege required for ${req.admin.email}`,
+    });
     sendForbidden(res, 'Super admin access required');
 
     return;

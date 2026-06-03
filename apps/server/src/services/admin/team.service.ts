@@ -29,6 +29,22 @@ export const createAdmin = async (
   requestingAdminId?: string,
   requestingAdminRole?: string
 ): Promise<IAdmin> => {
+  // Service-level role hierarchy check (defense-in-depth safeguard)
+  if (requestingAdminRole !== 'super_admin') {
+    auditLog({
+      action: 'ADMIN_MUTATION_DENIED',
+      actor: { type: 'admin', id: requestingAdminId || 'system' },
+      status: 'failure',
+      metadata: {
+        actorRole: requestingAdminRole,
+        reason: 'insufficient_privileges',
+        actionAttempted: 'create_admin',
+      },
+      description: `Blocked attempt by non-super_admin ${requestingAdminId || 'system'} to create administrative account`,
+    });
+    throw AppError.forbidden('Only Super Admins can manage administrative accounts');
+  }
+
   const { email, password, name, role } = payload;
 
   if (!email || !password || !name || !role) {
