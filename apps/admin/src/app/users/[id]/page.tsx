@@ -160,7 +160,7 @@ export default function RegisteredUserDetailPage() {
       {/* Back Link */}
       <div>
         <Link href="/users" className="text-xs text-accent-purple hover:underline flex items-center gap-1">
-          ← Back to Users Directory
+          ← Back to Users
         </Link>
       </div>
 

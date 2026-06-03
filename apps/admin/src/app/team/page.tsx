@@ -76,7 +76,7 @@ export default function AdminTeamPage() {
       return (
         <tr>
           <td colSpan={5} className="py-16 text-center text-text-muted">
-            No team members registered.
+            No admin users registered.
           </td>
         </tr>
       );
@@ -162,9 +162,9 @@ export default function AdminTeamPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-black text-white">Team Management</h1>
+          <h1 className="text-2xl font-black text-white">Admin Users</h1>
           <p className="text-text-muted text-sm mt-0.5">
-            Manage administrative personnel
+            Manage administrative and back-office personnel
           </p>
         </div>
         <button
@@ -231,7 +231,7 @@ export default function AdminTeamPage() {
               className="glass-strong rounded-2xl border border-border-subtle p-6 max-w-md w-full space-y-4"
             >
               <div>
-                <h3 className="text-white font-bold text-lg">Invite Team Member</h3>
+                <h3 className="text-white font-bold text-lg">Invite Admin User</h3>
                 <p className="text-text-muted text-xs">Assign access credentials and roles</p>
               </div>
 

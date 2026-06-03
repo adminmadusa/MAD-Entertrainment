@@ -25,20 +25,16 @@ const navGroups: NavGroup[] = [
     ],
   },
   {
-    title: 'Content',
+    title: 'Operations',
     items: [
-      { label: 'Events', href: '/events', icon: <CalendarIcon /> },
-      { label: 'Ticket Profiles', href: '/ticket-profiles', icon: <TicketIcon /> },
-      { label: 'DJ Operators', href: '/dj-operators', icon: <HeadphonesIcon /> },
-    ],
-  },
-  {
-    title: 'Commerce',
-    items: [
+      { label: 'Users', href: '/users', icon: <UsersIcon /> },
       { label: 'Bookings', href: '/bookings', icon: <TicketIcon /> },
-      { label: 'Scanner', href: '/scanner', icon: <ScanIcon /> },
+      { label: 'Tickets', href: '/ticket-profiles', icon: <TicketIcon /> },
+      { label: 'Events', href: '/events', icon: <CalendarIcon /> },
       { label: 'Refunds', href: '/refunds', icon: <RefundIcon /> },
+      { label: 'Scanner', href: '/scanner', icon: <ScanIcon /> },
       { label: 'Coupons', href: '/coupons', icon: <TagIcon /> },
+      { label: 'DJ Operators', href: '/dj-operators', icon: <HeadphonesIcon /> },
     ],
   },
   {
@@ -49,10 +45,9 @@ const navGroups: NavGroup[] = [
     ],
   },
   {
-    title: 'System',
+    title: 'Administration',
     items: [
-      { label: 'Users', href: '/users', icon: <UsersIcon /> },
-      { label: 'Team', href: '/team', icon: <UsersIcon /> },
+      { label: 'Admin Users', href: '/team', icon: <UsersIcon /> },
       { label: 'Diagnostics', href: '/diagnostics', icon: <ChartIcon /> },
       { label: 'Settings', href: '/settings', icon: <SettingsIcon /> },
     ],

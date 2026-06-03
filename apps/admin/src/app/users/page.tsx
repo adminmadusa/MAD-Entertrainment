@@ -301,7 +301,7 @@ export default function UsersDirectoryPage() {
                 : 'text-text-secondary hover:text-white'
             }`}
           >
-            Guest Purchasers
+            Guest Customers
           </button>
         </div>
 
