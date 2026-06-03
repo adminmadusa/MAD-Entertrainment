@@ -368,7 +368,7 @@ describe('Asynchronous Workers', () => {
       const fakePdfBuffer = Buffer.from('fake-pdf-content');
       vi.mocked(generateTicketPDF).mockResolvedValue(fakePdfBuffer);
       vi.mocked(Notification.findOne).mockResolvedValue(null);
-      vi.mocked(Notification.findOneAndUpdate).mockResolvedValue({
+      vi.mocked(Notification.create).mockResolvedValue({
         status: 'queued',
         isSent: false,
       } as any);
@@ -376,7 +376,7 @@ describe('Asynchronous Workers', () => {
       await processPDFGenerate(mockBookingId, mockEventId, 'guest@example.com', 'Jane Guest');
 
       expect(generateTicketPDF).toHaveBeenCalledWith(mockBooking, mockEvent);
-      expect(Notification.findOneAndUpdate).toHaveBeenCalled();
+      expect(Notification.create).toHaveBeenCalled();
       expect(QueueService.enqueue).toHaveBeenCalledWith(
         'notification-queue',
         'email:dispatch',
@@ -454,7 +454,7 @@ describe('Asynchronous Workers', () => {
         status: 'queued',
         isSent: false,
       } as any);
-      vi.mocked(Notification.findOneAndUpdate).mockResolvedValue({
+      vi.mocked(Notification.create).mockResolvedValue({
         status: 'queued',
         isSent: false,
       } as any);
@@ -522,7 +522,7 @@ describe('Asynchronous Workers', () => {
       };
 
       vi.mocked(Notification.findOne).mockResolvedValue(null);
-      vi.mocked(Notification.findOneAndUpdate).mockResolvedValue({
+      vi.mocked(Notification.create).mockResolvedValue({
         _id: 'mock-id',
         status: 'processing',
         isSent: false,
@@ -531,11 +531,7 @@ describe('Asynchronous Workers', () => {
       await handleJobExecution(jobId, data, 0);
 
       expect(Notification.findOne).toHaveBeenCalledWith({ jobId });
-      expect(Notification.findOneAndUpdate).toHaveBeenCalledWith(
-        { jobId },
-        expect.any(Object),
-        { upsert: true, new: true }
-      );
+      expect(Notification.create).toHaveBeenCalled();
       expect(sendEmail).toHaveBeenCalled();
       expect(Notification.updateOne).toHaveBeenCalledWith(
         { jobId },

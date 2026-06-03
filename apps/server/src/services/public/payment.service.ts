@@ -27,6 +27,7 @@ import { paymentFailureHtml } from '../../lib/email';
 import { ReservationService } from '../reservation.service';
 import { QueueService } from '../queue.service';
 import { CacheService } from '../cache.service';
+import { createNotificationSafe } from '../notification.service';
 
 type PaymentOwnershipContext = {
   userId?: string;
@@ -1149,7 +1150,7 @@ export class PaymentService {
 
           const jobId = `payfail-${payment._id}`;
 
-          await Notification.create({
+          await createNotificationSafe({
             jobId,
             status: 'queued',
             queuedAt: new Date(),
@@ -1672,7 +1673,7 @@ export class PaymentService {
       const jobId = `email:dispatch:${booking._id}`;
 
       // Intent to send synchronously
-      const notification = await Notification.create({
+      const notification = await createNotificationSafe({
         jobId,
         status: 'processing',
         queuedAt: new Date(),

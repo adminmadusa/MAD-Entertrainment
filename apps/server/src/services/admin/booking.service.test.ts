@@ -313,6 +313,7 @@ describe('Admin Booking Service Backend Tests', () => {
           recipientEmail: 'guest@example.com',
           guestName: 'John Doe',
           isResend: true,
+          resendId: expect.any(String),
         },
         expect.stringContaining('pdf:generate:booking-123:admin-resend:')
       );

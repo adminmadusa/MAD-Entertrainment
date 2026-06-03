@@ -9,6 +9,7 @@ import { MagicTokenModel } from '../../models/magic-token.schema';
 import { RefreshTokenModel } from '../../models/refresh-token.schema';
 import { Booking } from '../../models/booking.schema';
 import { Notification } from '../../models/notification.schema';
+import { createNotificationSafe } from '../notification.service';
 import { QueueService } from '../queue.service';
 import { magicLinkHtml } from '../../lib/email';
 import { NotificationType } from '@mad/shared';
@@ -67,7 +68,7 @@ export class AuthService {
     const jobId = `magic-${trimmedEmail}-${Date.now()}`;
     logger.info({ email: trimmedEmail, jobId }, "Email job queued");
 
-    await Notification.create({
+    await createNotificationSafe({
       jobId,
       status: 'queued',
       queuedAt: new Date(),
