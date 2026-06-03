@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import mongoose from 'mongoose';
 import { PaymentService } from './payment.service';
 import { BookingStatus, PaymentStatus } from '@mad/shared';
 import { Booking } from '../../models/booking.schema';
@@ -10,7 +11,47 @@ import { Reservation } from '../../models/reservation.schema';
 import { SeatLayout } from '../../models/seat-layout.schema';
 import { getEnv } from '../../config/env';
 import { getStripe } from '../../config/stripe';
+import { ReservationService } from '../reservation.service';
+import { QueueService } from '../queue.service';
 import crypto from 'crypto';
+
+const { mockSession } = vi.hoisted(() => {
+  const session = {
+    startTransaction: vi.fn(),
+    commitTransaction: vi.fn(),
+    abortTransaction: vi.fn(),
+    withTransaction: vi.fn().mockImplementation(async (callback) => {
+      try {
+        await callback();
+      } catch (err) {
+        throw err;
+      }
+    }),
+    endSession: vi.fn().mockResolvedValue(undefined),
+  };
+  return { mockSession: session };
+});
+
+vi.mock('mongoose', async (importOriginal) => {
+  const original = await importOriginal<typeof import('mongoose')>();
+  return {
+    ...original,
+    default: {
+      ...original.default,
+      startSession: vi.fn().mockResolvedValue(mockSession),
+    },
+    startSession: vi.fn().mockResolvedValue(mockSession),
+  };
+});
+
+const createMockQuery = (val: any) => {
+  const query = Promise.resolve(val);
+  (query as any).session = vi.fn().mockReturnValue(query);
+  (query as any).lean = vi.fn().mockReturnValue(query);
+  (query as any).sort = vi.fn().mockReturnValue(query);
+  return query as any;
+};
+
 
 vi.mock('../../config/env', () => ({
   getEnv: vi.fn(() => ({
@@ -116,6 +157,7 @@ vi.mock('../reservation.service', () => ({
 describe('Payment Service', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+
     vi.mocked(Booking.findById).mockReset();
     vi.mocked(Booking.findOne).mockReset();
     vi.mocked(Booking.findOneAndUpdate).mockReset();
@@ -123,8 +165,17 @@ describe('Payment Service', () => {
     vi.mocked(Event.findOneAndUpdate).mockReset();
     vi.mocked(Reservation.aggregate).mockReset();
     vi.mocked(SeatLayout.updateOne).mockReset();
+    vi.mocked(SeatLayout.findOne).mockReset();
     vi.mocked(Refund.create).mockReset();
     vi.mocked(Refund.findOne).mockReset();
+    vi.mocked(ReservationService.transitionForBooking).mockReset();
+    vi.mocked(QueueService.enqueue).mockReset();
+
+    vi.mocked(Reservation.aggregate).mockImplementation(() => createMockQuery([{ total: 0 }]) as any);
+    vi.mocked(Refund.findOne).mockImplementation(() => createMockQuery(null) as any);
+    vi.mocked(SeatLayout.findOne).mockImplementation(() => createMockQuery(null) as any);
+    vi.mocked(ReservationService.transitionForBooking).mockResolvedValue([]);
+    vi.mocked(QueueService.enqueue).mockResolvedValue(undefined as any);
 
     vi.mocked(getEnv).mockReturnValue({
       RAZORPAY_KEY_ID: 'test_rzp_key',
@@ -147,7 +198,7 @@ describe('Payment Service', () => {
       ]
     } as any);
 
-    vi.mocked(Reservation.aggregate).mockResolvedValue([{ total: 0 }]);
+    vi.mocked(Reservation.aggregate).mockImplementation(() => createMockQuery([{ total: 0 }]) as any);
     vi.mocked(Event.findOneAndUpdate).mockResolvedValue({} as any);
   });
 
@@ -601,7 +652,8 @@ describe('Payment Service', () => {
           _id: 'coupon-123',
           $expr: { $lt: ['$usedCount', '$usageLimit'] },
         },
-        { $inc: { usedCount: 1 } }
+        { $inc: { usedCount: 1 } },
+        expect.objectContaining({ session: mockSession })
       );
       expect(Coupon.findByIdAndUpdate).not.toHaveBeenCalled();
     });
@@ -637,7 +689,8 @@ describe('Payment Service', () => {
           _id: 'coupon-last',
           $expr: { $lt: ['$usedCount', '$usageLimit'] },
         }),
-        { $inc: { usedCount: 1 } }
+        { $inc: { usedCount: 1 } },
+        expect.objectContaining({ session: mockSession })
       );
     });
 
@@ -867,10 +920,10 @@ describe('Payment Service', () => {
         ticketTiers: [{ tier: 'vip', soldCount: 0, totalCapacity: 10, name: 'VIP' }],
       } as any);
 
-      vi.mocked(SeatLayout.findOne).mockResolvedValue({
+      vi.mocked(SeatLayout.findOne).mockImplementation(() => createMockQuery({
         eventId: 'e-123',
         seats: [{ seatId: 'seat-101', status: 'booked' }]
-      } as any);
+      }) as any);
 
       const result = await PaymentService.confirmFromWebhook('order_123', 'pay_123', 'payment.captured', 'evt_123');
       
@@ -1051,6 +1104,7 @@ describe('Payment Service', () => {
       const docQueryMock = {
         select: vi.fn().mockReturnThis(),
         lean: vi.fn().mockReturnThis(),
+        catch: vi.fn().mockReturnThis(),
         then: vi.fn().mockImplementation((resolve) => {
           if (docQueryMock.select.mock.calls.length > 0) {
             resolve({ status: BookingStatus.CONFIRMED, bookingId: 'b-123' });
@@ -1090,7 +1144,7 @@ describe('Payment Service', () => {
 
       vi.mocked(Payment.findOne).mockResolvedValue(mockPayment as any);
       vi.mocked(Booking.findById).mockResolvedValue(mockBooking as any);
-      vi.mocked(Refund.findOne).mockResolvedValue(null); // No existing refund request
+      vi.mocked(Refund.findOne).mockImplementation(() => createMockQuery(null) as any); // No existing refund request
 
       vi.mocked(Event.findById).mockResolvedValue({
         _id: 'e-123',
@@ -1105,14 +1159,19 @@ describe('Payment Service', () => {
       expect(result.status).toBe('skipped');
       expect(mockPayment.failureReason).toBe('LATE_PAYMENT_RECOVERY_REJECTED_CAPACITY_EXHAUSTED');
       // Assert Refund record was created
-      expect(Refund.create).toHaveBeenCalledWith(expect.objectContaining({
-        bookingId: 'b-123',
-        paymentId: 'p-123',
-        amount: 200,
-        currency: 'INR',
-        reason: 'LATE_PAYMENT_RECOVERY_REJECTED_CAPACITY_EXHAUSTED',
-        status: 'requested',
-      }));
+      expect(Refund.create).toHaveBeenCalledWith(
+        [
+          expect.objectContaining({
+            bookingId: 'b-123',
+            paymentId: 'p-123',
+            amount: 200,
+            currency: 'INR',
+            reason: 'LATE_PAYMENT_RECOVERY_REJECTED_CAPACITY_EXHAUSTED',
+            status: 'requested',
+          }),
+        ],
+        expect.any(Object)
+      );
     });
   });
 
@@ -1259,13 +1318,7 @@ describe('Payment Service', () => {
     });
 
     describe('verifyPayment validations', () => {
-      const createMockQuery = (val: any) => {
-        const obj = {
-          then: (resolve: any) => resolve(val),
-          sort: () => obj,
-        };
-        return obj as any;
-      };
+
 
       it('should verify payment successfully if local record amount and currency match', async () => {
         const mockBooking = {
@@ -1405,6 +1458,228 @@ describe('Payment Service', () => {
         expect(mockPayment.status).toBe(PaymentStatus.FAILED);
         expect(mockPayment.failureReason).toContain('Currency mismatch');
       });
+    });
+  });
+
+  describe('PR-T3: Payment Confirmation Transaction Hardening - Failure Injection', () => {
+    it('F1: should roll back transaction on seat allocation failure', async () => {
+      const mockPayment = { _id: 'p-123', gateway: 'razorpay', status: PaymentStatus.PENDING, gatewayOrderId: 'order_123', save: vi.fn() };
+      const mockBooking = {
+        _id: 'b-123',
+        bookingId: 'MAD-2026-ABCDE',
+        eventId: 'e-123',
+        status: BookingStatus.AWAITING_PAYMENT,
+        tickets: [{ tier: 'general', quantity: 2, seats: [{ seatId: 'seat-1', row: 'A', number: 1 }] }],
+        totalTickets: 2,
+      };
+
+      vi.mocked(Booking.findOne).mockResolvedValue(mockBooking as any);
+      vi.mocked(Payment.findOne)
+        .mockReturnValueOnce({ sort: vi.fn().mockResolvedValue(mockPayment) } as any)
+        .mockResolvedValueOnce(null as any);
+      vi.mocked(Event.findById).mockResolvedValue({
+        _id: 'e-123',
+        title: 'MAD Event',
+        soldCount: 0,
+        reservedCount: 2,
+        totalCapacity: 100,
+        bookingMode: 'seat_based',
+        ticketTiers: [{ tier: 'general', soldCount: 0, totalCapacity: 100, name: 'General' }]
+      } as any);
+
+      // F1: Mock SeatLayout.updateOne to return modifiedCount: 0 (fewer than requested)
+      vi.mocked(SeatLayout.updateOne).mockResolvedValue({ modifiedCount: 0 } as any);
+
+      const result = await PaymentService.verifyPayment('MAD-2026-ABCDE', {
+        razorpay_order_id: 'order_123',
+        razorpay_payment_id: 'pay_123',
+        razorpay_signature: razorpaySignature('order_123', 'pay_123'),
+      }, { trustedInternal: true });
+
+      // Expect confirmation to return null (skipped / rolled back)
+      expect(result.status).toBe(BookingStatus.AWAITING_PAYMENT); // Booking stays awaiting payment
+      expect(mockPayment.status).toBe(PaymentStatus.PAID);
+      expect(mockPayment.failureReason).toBe('LATE_PAYMENT_RECOVERY_REJECTED_SEATS_TAKEN');
+    });
+
+    it('F2: should roll back transaction on event capacity allocation failure', async () => {
+      const mockPayment = { _id: 'p-123', gateway: 'razorpay', status: PaymentStatus.PENDING, gatewayOrderId: 'order_123', save: vi.fn() };
+      const mockBooking = {
+        _id: 'b-123',
+        bookingId: 'MAD-2026-ABCDE',
+        eventId: 'e-123',
+        status: BookingStatus.AWAITING_PAYMENT,
+        tickets: [{ tier: 'general', quantity: 2 }],
+        totalTickets: 2,
+      };
+
+      vi.mocked(Booking.findOne).mockResolvedValue(mockBooking as any);
+      vi.mocked(Payment.findOne)
+        .mockReturnValueOnce({ sort: vi.fn().mockResolvedValue(mockPayment) } as any)
+        .mockResolvedValueOnce(null as any);
+      vi.mocked(Event.findById).mockResolvedValue({
+        _id: 'e-123',
+        title: 'MAD Event',
+        soldCount: 0,
+        reservedCount: 2,
+        totalCapacity: 100,
+        bookingMode: 'general_admission',
+        ticketTiers: [{ tier: 'general', soldCount: 0, totalCapacity: 100, name: 'General' }]
+      } as any);
+
+      // F2: Mock Event.findOneAndUpdate to return null (allocation failure)
+      vi.mocked(Event.findOneAndUpdate).mockResolvedValue(null);
+
+      const result = await PaymentService.verifyPayment('MAD-2026-ABCDE', {
+        razorpay_order_id: 'order_123',
+        razorpay_payment_id: 'pay_123',
+        razorpay_signature: razorpaySignature('order_123', 'pay_123'),
+      }, { trustedInternal: true });
+
+      expect(result.status).toBe(BookingStatus.AWAITING_PAYMENT);
+      expect(mockPayment.status).toBe(PaymentStatus.PAID);
+      expect(mockPayment.failureReason).toBe('LATE_PAYMENT_RECOVERY_REJECTED_SEATS_TAKEN');
+    });
+
+    it('F3: should roll back transaction on booking status update failure', async () => {
+      const mockPayment = { _id: 'p-123', gateway: 'razorpay', status: PaymentStatus.PENDING, gatewayOrderId: 'order_123', save: vi.fn() };
+      const mockBooking = {
+        _id: 'b-123',
+        bookingId: 'MAD-2026-ABCDE',
+        eventId: 'e-123',
+        status: BookingStatus.AWAITING_PAYMENT,
+        tickets: [{ tier: 'general', quantity: 2 }],
+        totalTickets: 2,
+      };
+
+      vi.mocked(Booking.findOne).mockResolvedValue(mockBooking as any);
+      vi.mocked(Payment.findOne)
+        .mockReturnValueOnce({ sort: vi.fn().mockResolvedValue(mockPayment) } as any)
+        .mockResolvedValueOnce(null as any);
+      vi.mocked(Event.findById).mockResolvedValue({
+        _id: 'e-123',
+        title: 'MAD Event',
+        soldCount: 0,
+        reservedCount: 2,
+        totalCapacity: 100,
+        bookingMode: 'general_admission',
+        ticketTiers: [{ tier: 'general', soldCount: 0, totalCapacity: 100, name: 'General' }]
+      } as any);
+      vi.mocked(Event.findOneAndUpdate).mockResolvedValue({} as any);
+
+      // F3: Mock Booking.findOneAndUpdate to return null (concurrency conflict or not found)
+      vi.mocked(Booking.findOneAndUpdate).mockResolvedValue(null);
+
+      // Mock Booking.findById to return a non-confirmed booking for the fallback status check
+      const docQueryMock = {
+        select: vi.fn().mockReturnThis(),
+        lean: vi.fn().mockReturnThis(),
+        catch: vi.fn().mockReturnThis(),
+        then: vi.fn().mockImplementation((resolve) => {
+          resolve({ status: BookingStatus.AWAITING_PAYMENT, bookingId: 'b-123' });
+        })
+      };
+      vi.mocked(Booking.findById).mockImplementation((id: any) => {
+        if (id === 'b-123') return docQueryMock as any;
+        return null as any;
+      });
+
+      const result = await PaymentService.verifyPayment('MAD-2026-ABCDE', {
+        razorpay_order_id: 'order_123',
+        razorpay_payment_id: 'pay_123',
+        razorpay_signature: razorpaySignature('order_123', 'pay_123'),
+      }, { trustedInternal: true });
+
+      expect(result.status).toBe(BookingStatus.AWAITING_PAYMENT);
+      expect(mockPayment.status).toBe(PaymentStatus.PAID);
+      expect(mockPayment.failureReason).toBe('LATE_PAYMENT_RECOVERY_REJECTED_CONCURRENT_CONFIRM');
+    });
+
+    it('F4: should roll back transaction on reservation transition failure', async () => {
+      const mockPayment = { _id: 'p-123', gateway: 'razorpay', status: PaymentStatus.PENDING, gatewayOrderId: 'order_123', save: vi.fn() };
+      const mockBooking = {
+        _id: 'b-123',
+        bookingId: 'MAD-2026-ABCDE',
+        eventId: 'e-123',
+        status: BookingStatus.AWAITING_PAYMENT,
+        tickets: [{ tier: 'general', quantity: 2 }],
+        totalTickets: 2,
+      };
+
+      vi.mocked(Booking.findOne).mockResolvedValue(mockBooking as any);
+      vi.mocked(Payment.findOne)
+        .mockReturnValueOnce({ sort: vi.fn().mockResolvedValue(mockPayment) } as any)
+        .mockResolvedValueOnce(null as any);
+      vi.mocked(Event.findById).mockResolvedValue({
+        _id: 'e-123',
+        title: 'MAD Event',
+        soldCount: 0,
+        reservedCount: 2,
+        totalCapacity: 100,
+        bookingMode: 'general_admission',
+        ticketTiers: [{ tier: 'general', soldCount: 0, totalCapacity: 100, name: 'General' }]
+      } as any);
+      vi.mocked(Event.findOneAndUpdate).mockResolvedValue({} as any);
+      vi.mocked(Booking.findOneAndUpdate).mockResolvedValue(mockBooking as any);
+
+      // F4: Mock ReservationService.transitionForBooking to throw an error
+      const err = new Error('RESERVATION_TRANSITION_FAILED');
+      vi.mocked(ReservationService.transitionForBooking).mockRejectedValue(err);
+
+      await expect(
+        PaymentService.verifyPayment('MAD-2026-ABCDE', {
+          razorpay_order_id: 'order_123',
+          razorpay_payment_id: 'pay_123',
+          razorpay_signature: razorpaySignature('order_123', 'pay_123'),
+        }, { trustedInternal: true })
+      ).rejects.toThrow('RESERVATION_TRANSITION_FAILED');
+
+      expect(mockPayment.save).toHaveBeenCalled();
+    });
+
+    it('F5: should commit database transaction even if queue enqueue fails', async () => {
+      const mockPayment = { _id: 'p-123', gateway: 'razorpay', status: PaymentStatus.PENDING, gatewayOrderId: 'order_123', save: vi.fn() };
+      const mockBooking = {
+        _id: 'b-123',
+        bookingId: 'MAD-2026-ABCDE',
+        eventId: 'e-123',
+        status: BookingStatus.AWAITING_PAYMENT,
+        tickets: [{ tier: 'general', quantity: 2 }],
+        totalTickets: 2,
+      };
+
+      vi.mocked(Booking.findOne).mockResolvedValue(mockBooking as any);
+      vi.mocked(Payment.findOne)
+        .mockReturnValueOnce({ sort: vi.fn().mockResolvedValue(mockPayment) } as any)
+        .mockResolvedValueOnce(null as any);
+      vi.mocked(Event.findById).mockResolvedValue({
+        _id: 'e-123',
+        title: 'MAD Event',
+        soldCount: 0,
+        reservedCount: 2,
+        totalCapacity: 100,
+        bookingMode: 'general_admission',
+        ticketTiers: [{ tier: 'general', soldCount: 0, totalCapacity: 100, name: 'General' }]
+      } as any);
+      vi.mocked(Event.findOneAndUpdate).mockResolvedValue({} as any);
+      vi.mocked(Booking.findOneAndUpdate).mockResolvedValue(mockBooking as any);
+
+      // F5: Mock QueueService.enqueue to throw (simulates Redis issue post-commit)
+      vi.mocked(QueueService.enqueue).mockRejectedValue(new Error('Redis is down'));
+
+      await expect(
+        PaymentService.verifyPayment('MAD-2026-ABCDE', {
+          razorpay_order_id: 'order_123',
+          razorpay_payment_id: 'pay_123',
+          razorpay_signature: razorpaySignature('order_123', 'pay_123'),
+        }, { trustedInternal: true })
+      ).rejects.toThrow('Redis is down');
+
+      expect(Booking.findOneAndUpdate).toHaveBeenCalledWith(
+        expect.any(Object),
+        expect.any(Object),
+        expect.objectContaining({ session: mockSession })
+      );
     });
   });
 });

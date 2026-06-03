@@ -1,5 +1,5 @@
 import crypto from 'crypto';
-import { Types } from 'mongoose';
+import { Types, ClientSession } from 'mongoose';
 
 import { BookingStatus, PaymentStatus, ReservationStatus, SeatStatus, NotificationType } from '@mad/shared';
 
@@ -28,6 +28,7 @@ import { ReservationService } from '../reservation.service';
 import { QueueService } from '../queue.service';
 import { CacheService } from '../cache.service';
 import { createNotificationSafe } from '../notification.service';
+import { runInTransaction } from '../../utils/transaction';
 
 type PaymentOwnershipContext = {
   userId?: string;
@@ -1055,7 +1056,7 @@ export class PaymentService {
     }
   }
 
-  private static async redeemCouponForConfirmedBooking(booking: IBooking, payment: IPayment): Promise<void> {
+  private static async redeemCouponForConfirmedBooking(booking: IBooking, payment: IPayment, session?: ClientSession): Promise<void> {
     if (!booking.couponId) {
       return;
     }
@@ -1065,7 +1066,8 @@ export class PaymentService {
         _id: booking.couponId,
         $expr: { $lt: ['$usedCount', '$usageLimit'] },
       },
-      { $inc: { usedCount: 1 } }
+      { $inc: { usedCount: 1 } },
+      { session }
     );
 
     if (result.modifiedCount !== 1) {
@@ -1085,17 +1087,17 @@ export class PaymentService {
     }
   }
 
-  private static async triggerRefundRequest(booking: IBooking, payment: IPayment, reason: string): Promise<void> {
-    const existingRefund = await Refund.findOne({ paymentId: payment._id });
+  private static async triggerRefundRequest(booking: IBooking, payment: IPayment, reason: string, session?: ClientSession): Promise<void> {
+    const existingRefund = await Refund.findOne({ paymentId: payment._id }).session(session || null);
     if (!existingRefund) {
-      await Refund.create({
+      await Refund.create([{
         bookingId: booking._id,
         paymentId: payment._id,
         amount: booking.totalAmount,
         currency: booking.currency || 'INR',
         reason: reason || 'LATE_PAYMENT_RECOVERY_REJECTED',
         status: 'requested',
-      });
+      }], { session });
       logger.info(
         { bookingId: booking._id, paymentId: payment._id, amount: booking.totalAmount, reason },
         'Created automatic Refund request record due to late payment recovery rejection'
@@ -1274,288 +1276,328 @@ export class PaymentService {
 
     const allSeatIds = booking.tickets.flatMap((t) => t.seats || []).map((s) => s.seatId);
 
-    // 1. Pre-validation for Late Recovery
-    if (isLateRecovery) {
-      // Validate general capacity
-      if (event.soldCount + event.reservedCount + booking.totalTickets > event.totalCapacity) {
-        _payment.failureReason = 'LATE_PAYMENT_RECOVERY_REJECTED_CAPACITY_EXHAUSTED';
-        await _payment.save();
-        await this.triggerRefundRequest(booking, _payment, _payment.failureReason);
-        return null;
-      }
+    let transactionResult;
+    try {
+      transactionResult = await runInTransaction(async (session) => {
+        // 1. Pre-validation for Late Recovery
+        if (isLateRecovery) {
+          // Validate general capacity
+          if (event.soldCount + event.reservedCount + booking.totalTickets > event.totalCapacity) {
+            _payment.failureReason = 'LATE_PAYMENT_RECOVERY_REJECTED_CAPACITY_EXHAUSTED';
+            await _payment.save({ session });
+            await this.triggerRefundRequest(booking, _payment, _payment.failureReason, session);
+            return { success: false, booking: null };
+          }
 
-      // Validate tier capacity
-      for (const bookedTicket of booking.tickets) {
-        const tierConfig = event.ticketTiers.find((t) => t.tier === bookedTicket.tier);
-        if (!tierConfig) {
-          _payment.failureReason = 'LATE_PAYMENT_RECOVERY_REJECTED_INVALID_TIER';
-          await _payment.save();
-          await this.triggerRefundRequest(booking, _payment, _payment.failureReason);
-          return null;
-        }
+          // Validate tier capacity
+          for (const bookedTicket of booking.tickets) {
+            const tierConfig = event.ticketTiers.find((t) => t.tier === bookedTicket.tier);
+            if (!tierConfig) {
+              _payment.failureReason = 'LATE_PAYMENT_RECOVERY_REJECTED_INVALID_TIER';
+              await _payment.save({ session });
+              await this.triggerRefundRequest(booking, _payment, _payment.failureReason, session);
+              return { success: false, booking: null };
+            }
 
-        // Fetch active reservations count for this specific tier
-        const activeTierAgg = await Reservation.aggregate([
-          {
-            $match: {
+            // Fetch active reservations count for this specific tier
+            const activeTierAgg = await Reservation.aggregate([
+              {
+                $match: {
+                  eventId: event._id,
+                  tier: bookedTicket.tier,
+                  status: { $in: [ReservationStatus.RESERVED, ReservationStatus.PENDING_PAYMENT] }
+                }
+              },
+              { $group: { _id: null, total: { $sum: '$quantity' } } }
+            ]).session(session);
+            const tierReserved = activeTierAgg[0]?.total ?? 0;
+
+            if (tierConfig.soldCount + tierReserved + bookedTicket.quantity > tierConfig.totalCapacity) {
+              _payment.failureReason = 'LATE_PAYMENT_RECOVERY_REJECTED_CAPACITY_EXHAUSTED';
+              await _payment.save({ session });
+              await this.triggerRefundRequest(booking, _payment, _payment.failureReason, session);
+              return { success: false, booking: null };
+            }
+          }
+
+          // Validate seats status
+          if (event.bookingMode === 'seat_based' && allSeatIds.length > 0) {
+            const layoutQuery = SeatLayout.findOne({
               eventId: event._id,
-              tier: bookedTicket.tier,
-              status: { $in: [ReservationStatus.RESERVED, ReservationStatus.PENDING_PAYMENT] }
-            }
-          },
-          { $group: { _id: null, total: { $sum: '$quantity' } } }
-        ]);
-        const tierReserved = activeTierAgg[0]?.total ?? 0;
-
-        if (tierConfig.soldCount + tierReserved + bookedTicket.quantity > tierConfig.totalCapacity) {
-          _payment.failureReason = 'LATE_PAYMENT_RECOVERY_REJECTED_CAPACITY_EXHAUSTED';
-          await _payment.save();
-          await this.triggerRefundRequest(booking, _payment, _payment.failureReason);
-          return null;
-        }
-      }
-
-      // Validate seats status
-      if (event.bookingMode === 'seat_based' && allSeatIds.length > 0) {
-        const layoutQuery = SeatLayout.findOne({
-          eventId: event._id,
-          seats: {
-            $elemMatch: {
-              seatId: { $in: allSeatIds },
-              status: { $ne: SeatStatus.AVAILABLE }
-            }
-          }
-        });
-        const layout = await (layoutQuery && typeof layoutQuery.lean === 'function' ? layoutQuery.lean() : layoutQuery);
-        if (layout) {
-          _payment.failureReason = 'LATE_PAYMENT_RECOVERY_REJECTED_SEATS_TAKEN';
-          await _payment.save();
-          await this.triggerRefundRequest(booking, _payment, _payment.failureReason);
-          return null;
-        }
-      }
-    }
-
-    // 2. Allocate Seats (SeatLayout update)
-    if (event.bookingMode === 'seat_based' && allSeatIds.length > 0) {
-      const seatUpdateResult = await SeatLayout.updateOne(
-        { eventId: event._id },
-        {
-          $set: {
-            'seats.$[seat].status': SeatStatus.BOOKED,
-            'seats.$[seat].bookedByBookingId': booking._id.toString()
-          },
-          $unset: {
-            'seats.$[seat].lockedBy': '',
-            'seats.$[seat].lockedAt': '',
-          },
-          $inc: {
-            'seats.$[seat].seatVersion': 1,
-          },
-        },
-        {
-          arrayFilters: [
-            {
-              'seat.seatId': { $in: allSeatIds },
-              $or: [
-                { 'seat.bookedByBookingId': booking._id.toString() },
-                { 'seat.status': SeatStatus.AVAILABLE }
-              ]
-            },
-          ],
-        }
-      );
-
-      if (seatUpdateResult.modifiedCount !== allSeatIds.length) {
-        // Rollback any partially allocated seats (safe filter targeting this booking)
-        await SeatLayout.updateOne(
-          { eventId: event._id },
-          {
-            $set: { 'seats.$[seat].status': SeatStatus.AVAILABLE },
-            $unset: { 'seats.$[seat].bookedByBookingId': '', 'seats.$[seat].lockedBy': '', 'seats.$[seat].lockedAt': '' }
-          },
-          {
-            arrayFilters: [
-              {
-                'seat.seatId': { $in: allSeatIds },
-                'seat.bookedByBookingId': booking._id.toString()
+              seats: {
+                $elemMatch: {
+                  seatId: { $in: allSeatIds },
+                  status: { $ne: SeatStatus.AVAILABLE }
+                }
               }
-            ]
+            }).session(session);
+            const layout = await (layoutQuery && typeof layoutQuery.lean === 'function' ? layoutQuery.lean() : layoutQuery);
+            if (layout) {
+              _payment.failureReason = 'LATE_PAYMENT_RECOVERY_REJECTED_SEATS_TAKEN';
+              await _payment.save({ session });
+              await this.triggerRefundRequest(booking, _payment, _payment.failureReason, session);
+              return { success: false, booking: null };
+            }
           }
+        }
+
+        // 2. Allocate Seats (SeatLayout update)
+        if (event.bookingMode === 'seat_based' && allSeatIds.length > 0) {
+          const seatUpdateResult = await SeatLayout.updateOne(
+            { eventId: event._id },
+            {
+              $set: {
+                'seats.$[seat].status': SeatStatus.BOOKED,
+                'seats.$[seat].bookedByBookingId': booking._id.toString()
+              },
+              $unset: {
+                'seats.$[seat].lockedBy': '',
+                'seats.$[seat].lockedAt': '',
+              },
+              $inc: {
+                'seats.$[seat].seatVersion': 1,
+              },
+            },
+            {
+              arrayFilters: [
+                {
+                  'seat.seatId': { $in: allSeatIds },
+                  $or: [
+                    { 'seat.bookedByBookingId': booking._id.toString() },
+                    { 'seat.status': SeatStatus.AVAILABLE }
+                  ]
+                },
+              ],
+              session,
+            }
+          );
+
+          if (seatUpdateResult.modifiedCount !== allSeatIds.length) {
+            throw new Error('SEAT_ALLOCATION_FAILED');
+          }
+        }
+
+        // 3. Allocate Event Capacity
+        const incUpdate: Record<string, number> = {
+          soldCount: booking.totalTickets,
+          eventVersion: 1,
+        };
+
+        for (const bookedTicket of booking.tickets) {
+          const tierIndex = event.ticketTiers.findIndex((t) => t.tier === bookedTicket.tier);
+          if (tierIndex !== -1) {
+            incUpdate[`ticketTiers.${tierIndex}.soldCount`] = bookedTicket.quantity;
+          }
+        }
+
+        const eventQuery: any = { _id: event._id };
+        
+        if (isLateRecovery) {
+          eventQuery.$expr = {
+            $lte: [
+              { $add: ['$soldCount', '$reservedCount', booking.totalTickets] },
+              '$totalCapacity'
+            ]
+          };
+          
+          for (const bookedTicket of booking.tickets) {
+            const tierIndex = event.ticketTiers.findIndex((t) => t.tier === bookedTicket.tier);
+            if (tierIndex !== -1) {
+              const activeTierAgg = await Reservation.aggregate([
+                {
+                  $match: {
+                    eventId: event._id,
+                    tier: bookedTicket.tier,
+                    status: { $in: [ReservationStatus.RESERVED, ReservationStatus.PENDING_PAYMENT] }
+                  }
+                },
+                { $group: { _id: null, total: { $sum: '$quantity' } } }
+              ]).session(session);
+              const tierReserved = activeTierAgg[0]?.total ?? 0;
+              
+              eventQuery[`ticketTiers.${tierIndex}.soldCount`] = {
+                $lte: event.ticketTiers[tierIndex].totalCapacity - tierReserved - bookedTicket.quantity
+              };
+            }
+          }
+        } else {
+          incUpdate.reservedCount = -booking.totalTickets;
+        }
+
+        const updatedEvent = await Event.findOneAndUpdate(
+          eventQuery,
+          { $inc: incUpdate },
+          { new: true, session }
         );
-        _payment.failureReason = 'LATE_PAYMENT_RECOVERY_REJECTED_SEATS_TAKEN';
+
+        if (!updatedEvent) {
+          throw new Error('EVENT_CAPACITY_ALLOCATION_FAILED');
+        }
+
+        // 4. Booking Confirmation Status Transition
+        const previousBookingDoc = await Booking.findOneAndUpdate(
+          { _id: booking._id, status: { $in: [BookingStatus.AWAITING_PAYMENT, BookingStatus.EXPIRED, BookingStatus.EXPIRING] } },
+          { $set: { status: BookingStatus.CONFIRMED, paymentId: _payment._id }, $unset: { expiresAt: 1, logicalExpiresAt: 1 }, $inc: { bookingVersion: 1 } },
+          { new: false, session }
+        );
+        if (!previousBookingDoc) {
+          throw new Error('CONCURRENT_CONFIRMATION_OR_NOT_FOUND');
+        }
+
+        await this.redeemCouponForConfirmedBooking(previousBookingDoc, _payment, session);
+
+        // 5. Update Reservation status to CONFIRMED
+        await ReservationService.transitionForBooking(previousBookingDoc._id, ReservationStatus.CONFIRMED, {
+          paymentReference: _payment.gatewayPaymentId ?? _payment.gatewayOrderId,
+          paymentId: _payment._id as any,
+          reason: 'payment-confirmed',
+          correlationId: previousBookingDoc.bookingId,
+          includeTerminal: isLateRecovery,
+        }, session);
+
+        const confirmedBooking = previousBookingDoc;
+        confirmedBooking.status = BookingStatus.CONFIRMED;
+        confirmedBooking.paymentId = _payment._id as any;
+        confirmedBooking.bookingVersion += 1;
+        booking = confirmedBooking;
+
+        if (updatedEvent && updatedEvent.soldCount >= updatedEvent.totalCapacity && !updatedEvent.isSoldOut) {
+          await Event.updateOne({ _id: booking.eventId }, { $set: { isSoldOut: true } }, { session });
+        }
+
+        // 6. Generate Tickets & Notification (sync path only)
+        let generatedTickets = [];
+        let syncNotification = null;
+        if (!getEnv().ENABLE_ASYNC_CHECKOUT) {
+          let ticketIndex = 1;
+          for (const bookedTicket of booking.tickets) {
+            if (event && event.bookingMode === 'seat_based' && bookedTicket.seats) {
+              for (const seat of bookedTicket.seats) {
+                const ticketId = `TKT-${booking.bookingId}-${String(ticketIndex).padStart(3, '0')}`;
+                const qrCodeText = ticketId;
+
+                const ticket = await Ticket.findOneAndUpdate(
+                  { ticketId },
+                  {
+                    $setOnInsert: {
+                      bookingId: booking._id,
+                      eventId: booking.eventId,
+                      tierName: bookedTicket.tierName,
+                      tier: bookedTicket.tier,
+                      admits: 1,
+                      seatId: seat.seatId,
+                      row: seat.row,
+                      seatNumber: seat.number,
+                      section: seat.section,
+                      qrCode: qrCodeText,
+                      qrCodeImage: `/api/public/tickets/${ticketId}/qr`,
+                    },
+                  },
+                  { upsert: true, new: true, setDefaultsOnInsert: true, session }
+                );
+                generatedTickets.push(ticket);
+                ticketIndex++;
+              }
+            } else {
+              const tierConfig = event?.ticketTiers?.find(t => t.tier === bookedTicket.tier);
+              const admits = tierConfig?.groupSize || 1;
+
+              for (let i = 0; i < bookedTicket.quantity; i++) {
+                const ticketId = `TKT-${booking.bookingId}-${String(ticketIndex).padStart(3, '0')}`;
+                const qrCodeText = ticketId;
+
+                const ticket = await Ticket.findOneAndUpdate(
+                  { ticketId },
+                  {
+                    $setOnInsert: {
+                      bookingId: booking._id,
+                      eventId: booking.eventId,
+                      tierName: bookedTicket.tierName,
+                      tier: bookedTicket.tier,
+                      admits,
+                      qrCode: qrCodeText,
+                      qrCodeImage: `/api/public/tickets/${ticketId}/qr`,
+                    },
+                  },
+                  { upsert: true, new: true, setDefaultsOnInsert: true, session }
+                );
+                generatedTickets.push(ticket);
+                ticketIndex++;
+              }
+            }
+          }
+
+          const jobId = `email:dispatch:${booking._id}`;
+          syncNotification = await createNotificationSafe({
+            jobId,
+            status: 'processing',
+            queuedAt: new Date(),
+            processedAt: new Date(),
+            type: NotificationType.BOOKING_CONFIRMED,
+            bookingId: booking._id,
+            eventId: booking.eventId,
+            channel: 'email',
+            recipient: booking.guestEmail,
+            subject: `Your Ticket for ${event?.title || 'MAD Event'} [${booking.bookingId}]`,
+            isSent: false,
+            retryCount: 0,
+          }, { session });
+        }
+
+        return {
+          success: true,
+          booking,
+          updatedEvent,
+          generatedTickets,
+          syncNotification,
+        };
+      });
+    } catch (err: any) {
+      logger.error({ err, bookingId: booking._id }, 'Confirmation transaction aborted and rolled back');
+      
+      let reason = 'CONFIRMATION_TRANSACTION_FAILED';
+      let isConcurrentConfirm = false;
+      const isKnownAbort = ['SEAT_ALLOCATION_FAILED', 'EVENT_CAPACITY_ALLOCATION_FAILED', 'CONCURRENT_CONFIRMATION_OR_NOT_FOUND'].includes(err.message);
+
+      if (err.message === 'SEAT_ALLOCATION_FAILED' || err.message === 'EVENT_CAPACITY_ALLOCATION_FAILED') {
+        reason = 'LATE_PAYMENT_RECOVERY_REJECTED_SEATS_TAKEN';
+      } else if (err.message === 'CONCURRENT_CONFIRMATION_OR_NOT_FOUND') {
+        reason = 'LATE_PAYMENT_RECOVERY_REJECTED_CONCURRENT_CONFIRM';
+        const currentBooking = await Booking.findById(booking._id).select('status').lean().catch(() => null);
+        if (currentBooking?.status === BookingStatus.CONFIRMED) {
+          isConcurrentConfirm = true;
+        }
+      }
+      
+      _payment.failureReason = reason;
+      try {
         await _payment.save();
-        await this.triggerRefundRequest(booking, _payment, _payment.failureReason);
+      } catch (saveErr) {
+        // ignore
+      }
+      if (!isConcurrentConfirm) {
+        await this.triggerRefundRequest(booking, _payment, _payment.failureReason).catch(() => {});
+      }
+
+      if (isKnownAbort) {
         return null;
       }
+      throw err;
     }
 
-    // 3. Allocate Event Capacity
-    const incUpdate: Record<string, number> = {
-      soldCount: booking.totalTickets,
-      eventVersion: 1,
-    };
-
-    for (const bookedTicket of booking.tickets) {
-      const tierIndex = event.ticketTiers.findIndex((t) => t.tier === bookedTicket.tier);
-      if (tierIndex !== -1) {
-        incUpdate[`ticketTiers.${tierIndex}.soldCount`] = bookedTicket.quantity;
-      }
-    }
-
-    const eventQuery: any = { _id: event._id };
-    
-    if (isLateRecovery) {
-      eventQuery.$expr = {
-        $lte: [
-          { $add: ['$soldCount', '$reservedCount', booking.totalTickets] },
-          '$totalCapacity'
-        ]
-      };
-      
-      for (const bookedTicket of booking.tickets) {
-        const tierIndex = event.ticketTiers.findIndex((t) => t.tier === bookedTicket.tier);
-        if (tierIndex !== -1) {
-          const activeTierAgg = await Reservation.aggregate([
-            {
-              $match: {
-                eventId: event._id,
-                tier: bookedTicket.tier,
-                status: { $in: [ReservationStatus.RESERVED, ReservationStatus.PENDING_PAYMENT] }
-              }
-            },
-            { $group: { _id: null, total: { $sum: '$quantity' } } }
-          ]);
-          const tierReserved = activeTierAgg[0]?.total ?? 0;
-          
-          eventQuery[`ticketTiers.${tierIndex}.soldCount`] = {
-            $lte: event.ticketTiers[tierIndex].totalCapacity - tierReserved - bookedTicket.quantity
-          };
-        }
-      }
-    } else {
-      incUpdate.reservedCount = -booking.totalTickets;
-    }
-
-    const updatedEvent = await Event.findOneAndUpdate(
-      eventQuery,
-      { $inc: incUpdate },
-      { new: true }
-    );
-
-    if (!updatedEvent) {
-      // Revert seat allocation if seat-based
-      if (event.bookingMode === 'seat_based' && allSeatIds.length > 0) {
-        await SeatLayout.updateOne(
-          { eventId: event._id },
-          {
-            $set: { 'seats.$[seat].status': SeatStatus.AVAILABLE },
-            $unset: { 'seats.$[seat].bookedByBookingId': '', 'seats.$[seat].lockedBy': '', 'seats.$[seat].lockedAt': '' }
-          },
-          {
-            arrayFilters: [
-              {
-                'seat.seatId': { $in: allSeatIds },
-                'seat.bookedByBookingId': booking._id.toString()
-              }
-            ]
-          }
-        );
-      }
-      _payment.failureReason = 'LATE_PAYMENT_RECOVERY_REJECTED_CAPACITY_EXHAUSTED';
-      await _payment.save();
-      await this.triggerRefundRequest(booking, _payment, _payment.failureReason);
+    if (!transactionResult || !transactionResult.success) {
       return null;
     }
 
-    // 4. Booking Confirmation Status Transition
-    const previousBookingDoc = await Booking.findOneAndUpdate(
-      { _id: booking._id, status: { $in: [BookingStatus.AWAITING_PAYMENT, BookingStatus.EXPIRED, BookingStatus.EXPIRING] } },
-      { $set: { status: BookingStatus.CONFIRMED, paymentId: _payment._id }, $unset: { expiresAt: 1, logicalExpiresAt: 1 }, $inc: { bookingVersion: 1 } },
-      { new: false }
-    );
-    if (!previousBookingDoc) {
-      let currentBookingDoc;
-      const docQuery = Booking.findById(booking._id);
-      if (docQuery && typeof docQuery.select === 'function') {
-        const sel = docQuery.select('status bookingId');
-        currentBookingDoc = await (sel && typeof sel.lean === 'function' ? sel.lean() : sel);
-      } else {
-        currentBookingDoc = await docQuery;
-      }
-      
-      // Revert Event capacity increment ONLY if the booking was not confirmed by the winning process
-      if (currentBookingDoc?.status !== BookingStatus.CONFIRMED) {
-        const rollbackInc: Record<string, number> = {
-          soldCount: -booking.totalTickets,
-          eventVersion: 1
-        };
-        if (!isLateRecovery) {
-          rollbackInc.reservedCount = booking.totalTickets;
-        }
-        await Event.updateOne({ _id: event._id }, { $inc: rollbackInc });
-      }
+    const { syncNotification } = transactionResult;
+    booking = transactionResult.booking;
 
-      // Rollback seats ONLY if the booking is not confirmed by a winning concurrent process
-      if (currentBookingDoc?.status !== BookingStatus.CONFIRMED && event.bookingMode === 'seat_based' && allSeatIds.length > 0) {
-        await SeatLayout.updateOne(
-          { eventId: event._id },
-          {
-            $set: { 'seats.$[seat].status': isLateRecovery ? SeatStatus.AVAILABLE : SeatStatus.LOCKED },
-            $unset: { 'seats.$[seat].bookedByBookingId': '', 'seats.$[seat].lockedBy': '', 'seats.$[seat].lockedAt': '' }
-          },
-          {
-            arrayFilters: [
-              {
-                'seat.seatId': { $in: allSeatIds },
-                'seat.bookedByBookingId': booking._id.toString()
-              }
-            ]
-          }
-        );
-      }
-
-      _payment.failureReason = 'LATE_PAYMENT_RECOVERY_REJECTED_CONCURRENT_CONFIRM';
-      await _payment.save();
-
-      logger.info(
-        {
-          bookingId: booking._id,
-          paymentId: _payment._id,
-          gateway: _payment.gateway,
-          correlationId: booking.bookingId,
-          existingStatus: currentBookingDoc?.status,
-        },
-        'payment_confirmation_skipped'
-      );
-      return null;
-    }
-
-    const confirmedBooking = previousBookingDoc;
-    confirmedBooking.status = BookingStatus.CONFIRMED;
-    confirmedBooking.paymentId = _payment._id as any;
-    confirmedBooking.bookingVersion += 1;
-    booking = confirmedBooking;
-
-    await this.redeemCouponForConfirmedBooking(booking, _payment);
-
-
-
-    // 5. Update Reservation status to CONFIRMED
-    await ReservationService.transitionForBooking(booking._id, ReservationStatus.CONFIRMED, {
-      paymentReference: _payment.gatewayPaymentId ?? _payment.gatewayOrderId,
-      paymentId: _payment._id as any,
-      reason: 'payment-confirmed',
-      correlationId: booking.bookingId,
-      includeTerminal: isLateRecovery,
+    // 5. Post-Commit Cache Invalidation
+    await CacheService.delPattern('events:*').catch((err) => {
+      logger.error({ err }, 'Failed to clear events cache post-commit');
     });
 
-    if (updatedEvent && updatedEvent.soldCount >= updatedEvent.totalCapacity && !updatedEvent.isSoldOut) {
-      await Event.updateOne({ _id: booking.eventId }, { $set: { isSoldOut: true } });
-    }
-
-    await CacheService.delPattern('events:*');
-
+    // 6. Post-Commit Sockets
     if (event.bookingMode === 'seat_based') {
       this.safeEmit(
         'seat:booked',
@@ -1584,7 +1626,7 @@ export class PaymentService {
       { bookingId: booking._id.toString(), eventId: booking.eventId.toString() }
     );
 
-    // Feature Flag Rollout: if asynchronous checkout is enabled, offload ticket & PDF generation
+    // 7. Post-Commit Queue Enqueue (async path)
     if (getEnv().ENABLE_ASYNC_CHECKOUT) {
       await QueueService.enqueue(
         getQueueName('booking-queue'),
@@ -1596,132 +1638,51 @@ export class PaymentService {
       return booking;
     }
 
-    // 5. Generate scan-ready QR Tickets with idempotent upserts
-    let ticketIndex = 1;
-    for (const bookedTicket of booking.tickets) {
-      if (event && event.bookingMode === 'seat_based' && bookedTicket.seats) {
-        for (const seat of bookedTicket.seats) {
-          const ticketId = `TKT-${booking.bookingId}-${String(ticketIndex).padStart(3, '0')}`;
-          const qrCodeText = ticketId;
+    // 8. Post-Commit Sync Email Dispatch (sync path only)
+    if (syncNotification && booking.guestEmail) {
+      try {
+        const emailBody = `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto;">
+            <h2>Hi ${booking.guestName},</h2>
+            <p>Your booking <strong>${booking.bookingId}</strong> for the event <strong>"${event?.title || 'MAD Event'}"</strong> has been successfully confirmed!</p>
+            <p>Please find your ticket attached as a PDF document. You can present the QR code at the gate for entry.</p>
+            <br/>
+            <p>MAD Entertainment Team</p>
+          </div>
+        `;
 
-          await Ticket.findOneAndUpdate(
-            { ticketId },
+        const pdfBuffer = await generateTicketPDF(booking, event);
+
+        await sendEmail({
+          to: booking.guestEmail,
+          subject: `Your Ticket for ${event?.title || 'MAD Event'} [${booking.bookingId}]`,
+          html: emailBody,
+          attachments: [
             {
-              $setOnInsert: {
-                bookingId: booking._id,
-                eventId: booking.eventId,
-                tierName: bookedTicket.tierName,
-                tier: bookedTicket.tier,
-                admits: 1,
-                seatId: seat.seatId,
-                row: seat.row,
-                seatNumber: seat.number,
-                section: seat.section,
-                qrCode: qrCodeText,
-                qrCodeImage: `/api/public/tickets/${ticketId}/qr`,
-              },
+              filename: `MAD_Ticket_${booking.bookingId}.pdf`,
+              content: pdfBuffer,
+              contentType: 'application/pdf',
             },
-            { upsert: true, new: true, setDefaultsOnInsert: true }
-          );
-          ticketIndex++;
-        }
-      } else {
-        // General admission - generate QRs matching count
-        const tierConfig = event?.ticketTiers?.find(t => t.tier === bookedTicket.tier);
-        const admits = tierConfig?.groupSize || 1;
+          ],
+        });
 
-        for (let i = 0; i < bookedTicket.quantity; i++) {
-          const ticketId = `TKT-${booking.bookingId}-${String(ticketIndex).padStart(3, '0')}`;
-          const qrCodeText = ticketId;
-
-          await Ticket.findOneAndUpdate(
-            { ticketId },
-            {
-              $setOnInsert: {
-                bookingId: booking._id,
-                eventId: booking.eventId,
-                tierName: bookedTicket.tierName,
-                tier: bookedTicket.tier,
-                admits,
-                qrCode: qrCodeText,
-                qrCodeImage: `/api/public/tickets/${ticketId}/qr`,
-              },
-            },
-            { upsert: true, new: true, setDefaultsOnInsert: true }
-          );
-          ticketIndex++;
-        }
+        await Notification.updateOne(
+          { _id: syncNotification._id },
+          { $set: { status: 'sent', isSent: true, processedAt: new Date() } }
+        ).catch((err) => {
+          logger.error({ err, notificationId: syncNotification._id }, 'Failed to update notification status to sent');
+        });
+      } catch (emailErr: any) {
+        await Notification.updateOne(
+          { _id: syncNotification._id },
+          { $set: { status: 'failed', errorMessage: emailErr.message, processedAt: new Date() } }
+        ).catch((err) => {
+          logger.error({ err, notificationId: syncNotification._id }, 'Failed to update notification status to failed');
+        });
+        logger.error({ err: emailErr }, 'Failed to send synchronous confirmation email');
       }
     }
 
-    // 6. Generate PDF and Send Email asynchronously
-    try {
-      const emailBody = `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto;">
-          <h2>Hi ${booking.guestName},</h2>
-          <p>Your booking <strong>${booking.bookingId}</strong> for the event <strong>"${event?.title || 'MAD Event'}"</strong> has been successfully confirmed!</p>
-          <p>Please find your ticket attached as a PDF document. You can present the QR code at the gate for entry.</p>
-          <p>Enjoy the show!</p>
-          <br/>
-          <p>MAD Entertainment Team</p>
-        </div>
-      `;
-
-      // Generate the PDF buffer
-      const pdfBuffer = await generateTicketPDF(booking, event);
-
-      const jobId = `email:dispatch:${booking._id}`;
-
-      // Intent to send synchronously
-      const notification = await createNotificationSafe({
-        jobId,
-        status: 'processing',
-        queuedAt: new Date(),
-        processedAt: new Date(),
-        type: NotificationType.BOOKING_CONFIRMED,
-        bookingId: booking._id,
-        eventId: booking.eventId,
-        channel: 'email',
-        recipient: booking.guestEmail,
-        subject: `Your Ticket for ${event?.title || 'MAD Event'} [${booking.bookingId}]`,
-        isSent: false,
-        retryCount: 0,
-      });
-
-      if (booking.guestEmail) {
-        try {
-          // Send the email synchronously with the PDF attachment
-          await sendEmail({
-            to: booking.guestEmail,
-            subject: `Your Ticket for ${event?.title || 'MAD Event'} [${booking.bookingId}]`,
-            html: emailBody,
-            attachments: [
-              {
-                filename: `MAD_Ticket_${booking.bookingId}.pdf`,
-                content: pdfBuffer,
-                contentType: 'application/pdf',
-              },
-            ],
-          });
-          
-          notification.status = 'sent';
-          notification.isSent = true;
-          notification.processedAt = new Date();
-          await notification.save();
-        } catch (emailErr: any) {
-          notification.status = 'failed';
-          notification.errorMessage = emailErr.message;
-          notification.processedAt = new Date();
-          await notification.save();
-          // We swallow the error to not crash checkout if SMTP fails, matching legacy behavior
-          logger.error({ err: emailErr }, 'Failed to send synchronous confirmation email');
-        }
-      }
-
-      logger.info({ bookingId: booking._id }, 'Notification log created for confirmed booking and email dispatched');
-    } catch (err) {
-      logger.error({ err }, 'Failed to record notification confirmation log or send email');
-    }
     return booking;
   }
 }
