@@ -5,6 +5,7 @@ import { runInTransaction, cancelBooking } from './booking.service';
 import { AppError } from '../../middleware/error.middleware';
 import { BookingStatus, NotificationType, PaymentStatus } from '@mad/shared';
 import { Notification } from '../../models/notification.schema';
+import { createNotificationSafe } from '../notification.service';
 import { QueueService } from '../queue.service';
 import { getQueueName } from '../../config/queue.config';
 import { logger } from '../../utils/logger';
@@ -246,7 +247,7 @@ export const processRefund = async (
           if (emailHtml && notificationType) {
             const jobId = `refund-${updated._id}-${Date.now()}`;
             
-            await Notification.create([{
+            await createNotificationSafe([{
               jobId,
               status: 'queued',
               queuedAt: new Date(),

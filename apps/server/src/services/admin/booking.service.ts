@@ -1,5 +1,7 @@
+import crypto from 'crypto';
 import { BookingStatus, ReservationStatus, SeatStatus, InventoryState, PaymentStatus } from '@mad/shared';
 import mongoose, { Types, ClientSession } from 'mongoose';
+import { createNotificationSafe } from '../notification.service';
 
 import { emitToAdmin, emitToEvent, emitToBooking } from '../../config/socket';
 import { AppError } from '../../middleware/error.middleware';
@@ -429,7 +431,7 @@ export const cancelBooking = async (
 
           const jobId = `cancellation-${booking.bookingId}-${Date.now()}`;
           
-          await Notification.create([{
+          await createNotificationSafe([{
             jobId,
             status: 'queued',
             queuedAt: new Date(),
@@ -634,6 +636,8 @@ export const resendBookingTickets = async (id: string, adminId: string) => {
 
   const eventIdStr = (booking.eventId as any)._id?.toString() || booking.eventId.toString();
 
+  const resendId = crypto.randomUUID();
+
   await QueueService.enqueue(
     getQueueName('pdf-queue'),
     'pdf:generate',
@@ -643,8 +647,9 @@ export const resendBookingTickets = async (id: string, adminId: string) => {
       recipientEmail: booking.guestEmail,
       guestName: booking.guestName,
       isResend: true,
+      resendId,
     },
-    `pdf:generate:${booking._id}:admin-resend:${Date.now()}`
+    `pdf:generate:${booking._id}:admin-resend:${resendId}`
   );
 
   auditLog({

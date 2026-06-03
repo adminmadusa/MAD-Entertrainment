@@ -9,6 +9,7 @@ import { Event } from '../models/event.schema';
 import { DeadLetterJob } from '../models/dead-letter-job.schema';
 import { Notification } from '../models/notification.schema';
 import { QueueService } from '../services/queue.service';
+import { createNotificationSafe } from '../services/notification.service';
 import { generateTicketPDF } from '../utils/pdf';
 import { NotificationType } from '@mad/shared';
 import { logger } from '../utils/logger';
@@ -20,7 +21,8 @@ export async function processPDFGenerate(
   eventId: string,
   recipientEmail: string,
   guestName: string,
-  isResend?: boolean
+  isResend?: boolean,
+  resendId?: string
 ): Promise<void> {
   const booking = await Booking.findById(bookingId);
   const event = await Event.findById(eventId);
@@ -29,8 +31,8 @@ export async function processPDFGenerate(
     throw new Error(`Booking ${bookingId} or Event ${eventId} not found for PDF generation`);
   }
 
-  const jobId = isResend
-    ? `email:dispatch:${booking._id}:resend:${Date.now()}`
+  const jobId = isResend && resendId
+    ? `email:dispatch:${booking._id}:resend:${resendId}`
     : `email:dispatch:${booking._id}`;
 
   // Read-only early exit to prevent generating PDF if already successfully sent
@@ -79,25 +81,20 @@ export async function processPDFGenerate(
 
 
 
-  // Atomic MongoDB upsert to prevent duplicate Notification creation and handle retries gracefully
-  const notification = await Notification.findOneAndUpdate(
-    { jobId },
-    {
-      $setOnInsert: {
-        type: NotificationType.BOOKING_CONFIRMED,
-        bookingId: booking._id,
-        eventId: event._id,
-        channel: 'email',
-        recipient: recipientEmail,
-        subject: `Your Ticket for ${event.title || 'MAD Event'} [${booking.bookingId}]`,
-        status: 'queued',
-        isSent: false,
-        retryCount: 0,
-        queuedAt: new Date(),
-      },
-    },
-    { upsert: true, new: true, setDefaultsOnInsert: true }
-  );
+  // Unify notification creation under createNotificationSafe
+  const notification = await createNotificationSafe({
+    jobId,
+    type: NotificationType.BOOKING_CONFIRMED,
+    bookingId: booking._id,
+    eventId: event._id,
+    channel: 'email',
+    recipient: recipientEmail,
+    subject: `Your Ticket for ${event.title || 'MAD Event'} [${booking.bookingId}]`,
+    status: 'queued',
+    isSent: false,
+    retryCount: 0,
+    queuedAt: new Date(),
+  });
 
   // If the notification was already processed successfully, exit early
   if (notification.status === 'sent' || notification.isSent) {
@@ -140,12 +137,12 @@ async function handleJobExecution(jobId: string, data: any): Promise<void> {
       name: `worker:${QUEUE_NAME}`,
     },
     async () => {
-      const { bookingId, eventId, recipientEmail, guestName, isResend } = data;
+      const { bookingId, eventId, recipientEmail, guestName, isResend, resendId } = data;
       if (!bookingId || !eventId || !recipientEmail || !guestName) {
         throw new Error('Missing parameters in PDF generation payload');
       }
 
-      await processPDFGenerate(bookingId, eventId, recipientEmail, guestName, isResend);
+      await processPDFGenerate(bookingId, eventId, recipientEmail, guestName, isResend, resendId);
     }
   );
 }

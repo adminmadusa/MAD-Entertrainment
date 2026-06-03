@@ -7,6 +7,7 @@ import { getEnv } from '../config/env';
 import { isRedisConnected } from '../config/redis';
 import { DeadLetterJob } from '../models/dead-letter-job.schema';
 import { Notification } from '../models/notification.schema';
+import { createNotificationSafe } from '../services/notification.service';
 import { sendEmail } from '../utils/email';
 import { logger } from '../utils/logger';
 import { NotificationType } from '@mad/shared';
@@ -56,24 +57,19 @@ export async function handleJobExecution(jobId: string, data: any, attemptsMade:
   let isNew = false;
 
   if (!notification) {
-    notification = await Notification.findOneAndUpdate(
-      { jobId },
-      {
-        $setOnInsert: {
-          type: notificationType || NotificationType.BOOKING_CONFIRMED,
-          bookingId,
-          eventId,
-          channel: 'email',
-          recipient: to,
-          subject,
-          status: 'processing',
-          isSent: false,
-          retryCount: attemptsMade,
-          queuedAt: new Date(),
-        },
-      },
-      { upsert: true, new: true }
-    );
+    notification = await createNotificationSafe({
+      jobId,
+      type: notificationType || NotificationType.BOOKING_CONFIRMED,
+      bookingId,
+      eventId,
+      channel: 'email',
+      recipient: to,
+      subject,
+      status: 'processing',
+      isSent: false,
+      retryCount: attemptsMade,
+      queuedAt: new Date(),
+    });
     isNew = true;
   }
 
