@@ -5,6 +5,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { useState } from 'react';
+import { useAdminAuth } from '@/hooks/use-admin-auth.hook';
 
 import { adminGetDJs, adminDeleteDJ, adminUpdateDJ } from '@/lib/api/admin/dj.service';
 import { extractApiError } from '@/lib/api/client';
@@ -12,8 +13,10 @@ import ErrorState from '@/components/states/ErrorState';
 
 
 export default function AdminDJsPage() {
+  const { admin } = useAdminAuth();
   const qc = useQueryClient();
   const [search, setSearch] = useState('');
+  const canMutateDJs = !!admin?.role && ['super_admin', 'admin', 'manager'].includes(admin.role);
   const [page, setPage] = useState(1);
   const [deleteTarget, setDeleteTarget] = useState<DJOperator | null>(null);
 
@@ -100,32 +103,46 @@ export default function AdminDJsPage() {
           </div>
         </td>
         <td className="py-4 px-4">
-          <button
-            onClick={() => statusMutation.mutate({ id: dj._id, isActive: !dj.isActive })}
-            className={`text-xs px-2.5 py-1 rounded-full border font-medium transition-all ${
+          {canMutateDJs ? (
+            <button
+              onClick={() => statusMutation.mutate({ id: dj._id, isActive: !dj.isActive })}
+              className={`text-xs px-2.5 py-1 rounded-full border font-medium transition-all ${
+                dj.isActive
+                  ? 'bg-green-500/10 text-green-400 border-green-500/30'
+                  : 'bg-red-500/10 text-red-400 border-red-500/30'
+              }`}
+            >
+              {dj.isActive ? 'Active' : 'Inactive'}
+            </button>
+          ) : (
+            <span className={`text-xs px-2.5 py-1 rounded-full border font-medium ${
               dj.isActive
                 ? 'bg-green-500/10 text-green-400 border-green-500/30'
                 : 'bg-red-500/10 text-red-400 border-red-500/30'
-            }`}
-          >
-            {dj.isActive ? 'Active' : 'Inactive'}
-          </button>
+            }`}>
+              {dj.isActive ? 'Active' : 'Inactive'}
+            </span>
+          )}
         </td>
         <td className="py-4 px-5">
-          <div className="flex items-center justify-end gap-2">
-            <Link
-              href={`/dj-operators/${dj._id}/edit`}
-              className="px-3 py-1.5 text-xs font-medium glass border border-border-subtle rounded-lg text-text-secondary hover:text-white hover:border-accent-purple/40 transition-all"
-            >
-              Edit
-            </Link>
-            <button
-              onClick={() => setDeleteTarget(dj)}
-              className="px-3 py-1.5 text-xs font-medium glass border border-border-subtle rounded-lg text-text-muted hover:text-red-400 hover:border-red-500/40 transition-all"
-            >
-              Delete
-            </button>
-          </div>
+          {canMutateDJs ? (
+            <div className="flex items-center justify-end gap-2">
+              <Link
+                href={`/dj-operators/${dj._id}/edit`}
+                className="px-3 py-1.5 text-xs font-medium glass border border-border-subtle rounded-lg text-text-secondary hover:text-white hover:border-accent-purple/40 transition-all"
+              >
+                Edit
+              </Link>
+              <button
+                onClick={() => setDeleteTarget(dj)}
+                className="px-3 py-1.5 text-xs font-medium glass border border-border-subtle rounded-lg text-text-muted hover:text-red-400 hover:border-red-500/40 transition-all"
+              >
+                Delete
+              </button>
+            </div>
+          ) : (
+            <div className="text-right text-text-muted">—</div>
+          )}
         </td>
       </tr>
     ));
@@ -149,13 +166,15 @@ export default function AdminDJsPage() {
             {pagination?.total ?? 0} operators total
           </p>
         </div>
-        <Link
-          href="/dj-operators/new"
-          id="admin-create-dj"
-          className="px-4 py-2.5 btn-gradient text-white font-semibold text-sm rounded-xl shadow-glow-sm hover:scale-105 transition-transform flex items-center gap-2"
-        >
-          <span>+</span> Add DJ Operator
-        </Link>
+        {canMutateDJs && (
+          <Link
+            href="/dj-operators/new"
+            id="admin-create-dj"
+            className="px-4 py-2.5 btn-gradient text-white font-semibold text-sm rounded-xl shadow-glow-sm hover:scale-105 transition-transform flex items-center gap-2"
+          >
+            <span>+</span> Add DJ Operator
+          </Link>
+        )}
       </div>
 
       {/* Filters */}

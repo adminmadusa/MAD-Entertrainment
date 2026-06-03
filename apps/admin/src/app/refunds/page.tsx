@@ -2,16 +2,19 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useState } from 'react';
+import { useAdminAuth } from '@/hooks/use-admin-auth.hook';
 
 import { adminGetRefunds, adminProcessRefund, type AdminRefund } from '@/lib/api/admin/booking.service';
 import ErrorState from '@/components/states/ErrorState';
 
 
 export default function AdminRefundsPage() {
+  const { admin } = useAdminAuth();
   const qc = useQueryClient();
   const [statusFilter, setStatusFilter] = useState('');
   const [page, setPage] = useState(1);
   const [processTarget, setProcessTarget] = useState<AdminRefund | null>(null);
+  const canProcessRefund = !!admin?.role && ['super_admin', 'admin'].includes(admin.role);
   const [action, setAction] = useState<'approve' | 'reject'>('approve');
   const [adminNotes, setAdminNotes] = useState('');
   const [gatewayId, setGatewayId] = useState('');
@@ -94,7 +97,7 @@ export default function AdminRefundsPage() {
         </td>
         <td className="py-3.5 px-4 text-text-muted text-xs">{new Date(refund.createdAt).toLocaleDateString('en-IN')}</td>
         <td className="py-3.5 px-4">
-          {refund.status === 'requested' && (
+          {canProcessRefund && refund.status === 'requested' && (
             <button onClick={() => setProcessTarget(refund)}
               className="px-3 py-1.5 text-xs glass border border-accent-purple/30 rounded-lg text-accent-purple hover:bg-accent-purple/10 transition-all">
               Process

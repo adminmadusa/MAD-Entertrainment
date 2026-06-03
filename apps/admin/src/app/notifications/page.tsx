@@ -2,13 +2,16 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
+import { useAdminAuth } from '@/hooks/use-admin-auth.hook';
 
 import { adminGetNotifications, adminRetryNotification } from '@/lib/api/admin/notification.service';
 import ErrorState from '@/components/states/ErrorState';
 
 export default function AdminNotificationsPage() {
+  const { admin } = useAdminAuth();
   const qc = useQueryClient();
   const [page, setPage] = useState(1);
+  const canRetryNotification = !!admin?.role && ['super_admin', 'admin', 'support'].includes(admin.role);
   const [channelFilter, setChannelFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
 
@@ -86,7 +89,7 @@ export default function AdminNotificationsPage() {
           </span>
         </td>
         <td className="py-4 px-5 text-right">
-          {!notif.isSent ? (
+          {canRetryNotification && !notif.isSent ? (
             <button
               onClick={() => retryMutation.mutate(notif._id)}
               disabled={retryMutation.isPending}

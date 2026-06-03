@@ -3,14 +3,17 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
+import { useAdminAuth } from '@/hooks/use-admin-auth.hook';
 
 import { adminGetCategories, adminCreateCategory, adminUpdateCategory, adminDeleteCategory, type AdminCategory } from '@/lib/api/admin/category.service';
 import { adminGetTiers, adminCreateTier, adminUpdateTier, adminDeleteTier, type AdminTier } from '@/lib/api/admin/tier.service';
 import { extractApiError } from '@/lib/api/client';
 
 export default function SettingsPage() {
+  const { admin } = useAdminAuth();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<'categories' | 'tiers'>('categories');
+  const canMutateSettings = !!admin?.role && ['super_admin', 'admin', 'manager'].includes(admin.role);
   const [nameInput, setNameInput] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState('');
@@ -169,7 +172,7 @@ export default function SettingsPage() {
                 </div>
               )}
 
-              {editingId !== item._id && (
+              {canMutateSettings && editingId !== item._id && (
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => { setEditingId(item._id); setEditingName(item.name); }}
@@ -233,31 +236,33 @@ export default function SettingsPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
         {/* Quick Add Form */}
-        <div className="glass rounded-2xl border border-border-subtle p-6 space-y-4">
-          <h2 className="text-white font-semibold capitalize">Add Custom {activeTab === 'categories' ? 'Category' : 'Tier'}</h2>
-          <form onSubmit={handleAdd} className="space-y-4">
-            <div>
-              <label className="text-text-secondary text-xs font-semibold block mb-1.5 capitalize">{activeTab === 'categories' ? 'Category' : 'Tier'} Name</label>
-              <input
-                value={nameInput}
-                onChange={(e) => setNameInput(e.target.value)}
-                placeholder={activeTab === 'categories' ? 'e.g. Pool Party' : 'e.g. VIP Backstage'}
-                required
-                className="w-full px-4 py-2.5 rounded-xl bg-background border border-border-subtle text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-purple transition-colors"
-              />
-            </div>
-            <button
-              type="submit"
-              disabled={createCategoryMutation.isPending || createTierMutation.isPending}
-              className="w-full py-2.5 btn-gradient text-white text-sm font-bold rounded-xl shadow-glow-sm disabled:opacity-60 transition-all"
-            >
-              Add Entry
-            </button>
-          </form>
-        </div>
+        {canMutateSettings && (
+          <div className="glass rounded-2xl border border-border-subtle p-6 space-y-4">
+            <h2 className="text-white font-semibold capitalize">Add Custom {activeTab === 'categories' ? 'Category' : 'Tier'}</h2>
+            <form onSubmit={handleAdd} className="space-y-4">
+              <div>
+                <label className="text-text-secondary text-xs font-semibold block mb-1.5 capitalize">{activeTab === 'categories' ? 'Category' : 'Tier'} Name</label>
+                <input
+                  value={nameInput}
+                  onChange={(e) => setNameInput(e.target.value)}
+                  placeholder={activeTab === 'categories' ? 'e.g. Pool Party' : 'e.g. VIP Backstage'}
+                  required
+                  className="w-full px-4 py-2.5 rounded-xl bg-background border border-border-subtle text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-purple transition-colors"
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={createCategoryMutation.isPending || createTierMutation.isPending}
+                className="w-full py-2.5 btn-gradient text-white text-sm font-bold rounded-xl shadow-glow-sm disabled:opacity-60 transition-all"
+              >
+                Add Entry
+              </button>
+            </form>
+          </div>
+        )}
 
         {/* Categories/Tiers List */}
-        <div className="md:col-span-2 glass rounded-2xl border border-border-subtle overflow-hidden">
+        <div className={`${canMutateSettings ? 'md:col-span-2' : 'md:col-span-3'} glass rounded-2xl border border-border-subtle overflow-hidden`}>
           <div className="px-6 py-4 border-b border-border-subtle flex justify-between items-center">
             <h2 className="text-white font-semibold capitalize">Active {activeTab}</h2>
             <span className="text-xs bg-accent-purple/10 text-accent-purple-light font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">

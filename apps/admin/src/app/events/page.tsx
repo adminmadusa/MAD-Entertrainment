@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { useState } from 'react';
+import { useAdminAuth } from '@/hooks/use-admin-auth.hook';
 
 import { adminGetEvents, adminDeleteEvent, adminToggleFeatured, adminUpdateEventStatus, type AdminEvent } from '@/lib/api/admin/event.service';
 import { extractApiError } from '@/lib/api/client';
@@ -17,8 +18,10 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 export default function AdminEventsPage() {
+  const { admin } = useAdminAuth();
   const qc = useQueryClient();
   const [search, setSearch] = useState('');
+  const canMutateEvents = !!admin?.role && ['super_admin', 'admin', 'manager'].includes(admin.role);
   const [statusFilter, setStatusFilter] = useState('');
   const [page, setPage] = useState(1);
   const [deleteTarget, setDeleteTarget] = useState<AdminEvent | null>(null);
@@ -127,52 +130,63 @@ export default function AdminEventsPage() {
           {new Date(event.startDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
         </td>
         <td className="py-4 px-4">
-          <select
-            value={event.status}
-            onChange={(e) => {
-              const nextStatus = e.target.value;
-              if (event.status === 'published' && (nextStatus === 'cancelled' || nextStatus === 'draft' || nextStatus === 'completed')) {
-                setConfirmStatusTarget({
-                  id: event._id,
-                  title: event.title,
-                  previous: event.status,
-                  next: nextStatus,
-                });
-              } else {
-                statusMutation.mutate({ id: event._id, status: nextStatus });
-              }
-            }}
-            className={`text-xs px-2.5 py-1 rounded-full border font-medium bg-transparent cursor-pointer ${STATUS_COLORS[event.status] ?? ''}`}
-          >
-            {['draft', 'published', 'cancelled', 'sold_out', 'completed'].map((s) => (
-              <option key={s} value={s} className="bg-background-card text-text-primary">{s.replace('_', ' ')}</option>
-            ))}
-          </select>
+          {canMutateEvents ? (
+            <select
+              value={event.status}
+              onChange={(e) => {
+                const nextStatus = e.target.value;
+                if (event.status === 'published' && (nextStatus === 'cancelled' || nextStatus === 'draft' || nextStatus === 'completed')) {
+                  setConfirmStatusTarget({
+                    id: event._id,
+                    title: event.title,
+                    previous: event.status,
+                    next: nextStatus,
+                  });
+                } else {
+                  statusMutation.mutate({ id: event._id, status: nextStatus });
+                }
+              }}
+              className={`text-xs px-2.5 py-1 rounded-full border font-medium bg-transparent cursor-pointer ${STATUS_COLORS[event.status] ?? ''}`}
+            >
+              {['draft', 'published', 'cancelled', 'sold_out', 'completed'].map((s) => (
+                <option key={s} value={s} className="bg-background-card text-text-primary">{s.replace('_', ' ')}</option>
+              ))}
+            </select>
+          ) : (
+            <span className={`text-xs px-2.5 py-1 rounded-full border font-medium ${STATUS_COLORS[event.status] ?? ''}`}>
+              {event.status.replace('_', ' ')}
+            </span>
+          )}
         </td>
         <td className="py-4 px-4">
           <button
-            onClick={() => featureMutation.mutate(event._id)}
-            className={`text-lg transition-transform hover:scale-110 ${event.isFeatured ? 'text-yellow-400' : 'text-text-muted'}`}
-            title={event.isFeatured ? 'Remove from featured' : 'Add to featured'}
+            onClick={() => canMutateEvents && featureMutation.mutate(event._id)}
+            disabled={!canMutateEvents}
+            className={`text-lg transition-transform ${canMutateEvents ? 'hover:scale-110 cursor-pointer' : 'cursor-default'} ${event.isFeatured ? 'text-yellow-400' : 'text-text-muted'}`}
+            title={canMutateEvents ? (event.isFeatured ? 'Remove from featured' : 'Add to featured') : undefined}
           >
             ★
           </button>
         </td>
         <td className="py-4 px-5">
-          <div className="flex items-center justify-end gap-2">
-            <Link
-              href={`/events/${event._id}/edit`}
-              className="px-3 py-1.5 text-xs font-medium glass border border-border-subtle rounded-lg text-text-secondary hover:text-white hover:border-accent-purple/40 transition-all"
-            >
-              Edit
-            </Link>
-            <button
-              onClick={() => setDeleteTarget(event)}
-              className="px-3 py-1.5 text-xs font-medium glass border border-border-subtle rounded-lg text-text-muted hover:text-red-400 hover:border-red-500/40 transition-all"
-            >
-              Delete
-            </button>
-          </div>
+          {canMutateEvents ? (
+            <div className="flex items-center justify-end gap-2">
+              <Link
+                href={`/events/${event._id}/edit`}
+                className="px-3 py-1.5 text-xs font-medium glass border border-border-subtle rounded-lg text-text-secondary hover:text-white hover:border-accent-purple/40 transition-all"
+              >
+                Edit
+              </Link>
+              <button
+                onClick={() => setDeleteTarget(event)}
+                className="px-3 py-1.5 text-xs font-medium glass border border-border-subtle rounded-lg text-text-muted hover:text-red-400 hover:border-red-500/40 transition-all"
+              >
+                Delete
+              </button>
+            </div>
+          ) : (
+            <div className="text-right text-text-muted">—</div>
+          )}
         </td>
       </tr>
     ));
@@ -188,13 +202,15 @@ export default function AdminEventsPage() {
             {pagination?.total ?? 0} events total
           </p>
         </div>
-        <Link
-          href="/events/new"
-          id="admin-create-event"
-          className="px-4 py-2.5 btn-gradient text-white font-semibold text-sm rounded-xl shadow-glow-sm hover:scale-105 transition-transform flex items-center gap-2"
-        >
-          <span>+</span> Create Event
-        </Link>
+        {canMutateEvents && (
+          <Link
+            href="/events/new"
+            id="admin-create-event"
+            className="px-4 py-2.5 btn-gradient text-white font-semibold text-sm rounded-xl shadow-glow-sm hover:scale-105 transition-transform flex items-center gap-2"
+          >
+            <span>+</span> Create Event
+          </Link>
+        )}
       </div>
 
       {/* Filters */}

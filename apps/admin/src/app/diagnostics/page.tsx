@@ -5,13 +5,16 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useAdminAuth } from '@/hooks/use-admin-auth.hook';
 
 
 import { adminGetConsistencyReport, adminGetReservations, adminRepairConsistency } from '@/lib/api/admin/diagnostics.service';
 
 export default function DiagnosticsPage() {
+  const { admin } = useAdminAuth();
   const pathname = usePathname();
   const queryClient = useQueryClient();
+  const isSuperAdmin = admin?.role === 'super_admin';
   const [status, setStatus] = useState('');
 
   const { data: report, isLoading } = useQuery({
@@ -51,14 +54,16 @@ export default function DiagnosticsPage() {
             Reservation, Redis lock, payment, and inventory drift monitoring.
           </p>
         </div>
-        <button
-          type="button"
-          onClick={() => repairMutation.mutate()}
-          disabled={repairMutation.isPending}
-          className="px-4 py-2.5 btn-gradient text-white font-semibold text-sm rounded-xl disabled:opacity-60"
-        >
-          {repairMutation.isPending ? 'Repairing...' : 'Run Repair'}
-        </button>
+        {isSuperAdmin && (
+          <button
+            type="button"
+            onClick={() => repairMutation.mutate()}
+            disabled={repairMutation.isPending}
+            className="px-4 py-2.5 btn-gradient text-white font-semibold text-sm rounded-xl disabled:opacity-60"
+          >
+            {repairMutation.isPending ? 'Repairing...' : 'Run Repair'}
+          </button>
+        )}
       </div>
 
       {/* Tabs */}
