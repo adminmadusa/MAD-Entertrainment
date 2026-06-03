@@ -30,9 +30,42 @@ vi.mock('../../models/booking.schema', () => ({
   },
 }));
 
+const mockTicketFindQuery = {
+  session: vi.fn().mockResolvedValue([]),
+};
+const mockTicketCountQuery = {
+  session: vi.fn().mockResolvedValue(1),
+};
+const mockTicketExistsQuery = {
+  session: vi.fn().mockResolvedValue(null),
+};
 vi.mock('../../models/ticket.schema', () => ({
   Ticket: {
+    find: vi.fn().mockImplementation(() => mockTicketFindQuery),
+    countDocuments: vi.fn().mockImplementation(() => mockTicketCountQuery),
+    exists: vi.fn().mockImplementation(() => mockTicketExistsQuery),
     aggregate: vi.fn(),
+  },
+}));
+
+const mockAdminQuery = {
+  session: vi.fn().mockResolvedValue({ name: 'Admin', email: 'admin@example.com' }),
+  then: (resolve) => resolve({ name: 'Admin', email: 'admin@example.com' }),
+};
+vi.mock('../../models/admin.schema', () => ({
+  AdminModel: {
+    findById: vi.fn().mockImplementation(() => mockAdminQuery),
+  },
+}));
+
+const mockAuditLogQuery = {
+  sort: vi.fn().mockImplementation(() => ({
+    lean: vi.fn().mockResolvedValue([]),
+  })),
+};
+vi.mock('../../models/audit-log.schema', () => ({
+  AuditLogModel: {
+    find: vi.fn().mockImplementation(() => mockAuditLogQuery),
   },
 }));
 
@@ -279,6 +312,7 @@ describe('Admin Booking Service Backend Tests', () => {
           eventId: 'event-555',
           recipientEmail: 'guest@example.com',
           guestName: 'John Doe',
+          isResend: true,
         },
         expect.stringContaining('pdf:generate:booking-123:admin-resend:')
       );

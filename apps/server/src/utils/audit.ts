@@ -1,5 +1,6 @@
 import { logger } from './logger';
 import { getTraceContext } from './context';
+import { AuditLogModel } from '../models/audit-log.schema';
 
 export interface AuditLogPayload {
   action: string;
@@ -14,13 +15,22 @@ export interface AuditLogPayload {
 
 export function auditLog(payload: AuditLogPayload) {
   const context = getTraceContext();
-  logger.info({
-    audit: true,
-    correlationId: context?.correlationId,
+  const logData = {
+    action: payload.action,
     actor: payload.actor || (context ? {
       type: context.userId ? 'user' : context.sessionId ? 'guest' : 'system',
       id: context.userId || context.sessionId,
     } : { type: 'system' }),
-    ...payload,
-  }, `[AUDIT] ${payload.action}: ${payload.description || ''}`);
+    status: payload.status,
+    metadata: payload.metadata,
+    description: payload.description,
+    correlationId: context?.correlationId,
+  };
+
+  logger.info({ audit: true, ...logData }, `[AUDIT] ${payload.action}: ${payload.description || ''}`);
+
+  // Asynchronously save to MongoDB AuditLog collection
+  AuditLogModel.create(logData).catch((err) => {
+    logger.error({ err }, 'Failed to persist audit log to MongoDB');
+  });
 }

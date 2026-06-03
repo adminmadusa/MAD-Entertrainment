@@ -48,6 +48,22 @@ export interface AdminBooking {
   ticketsScanned?: number;
   ticketsRemaining?: number;
   attendanceStatus?: 'NOT_ATTENDED' | 'PARTIALLY_ATTENDED' | 'FULLY_ATTENDED';
+  auditHistory?: {
+    action: string;
+    actor: string;
+    status: string;
+    timestamp: string;
+    metadata: Record<string, any>;
+    description: string;
+  }[];
+  individualTickets?: {
+    ticketId: string;
+    status: string;
+    createdAt: string;
+    replacedAt?: string | null;
+    replacedByTicketId?: string | null;
+    replacementReason?: string | null;
+  }[];
 }
 
 export interface AdminRefund {

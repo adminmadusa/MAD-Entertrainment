@@ -8,6 +8,8 @@ import { Event } from '../../models/event.schema';
 import { SeatLayout } from '../../models/seat-layout.schema';
 import { UserModel } from '../../models/user.schema';
 import { Ticket } from '../../models/ticket.schema';
+import { AdminModel } from '../../models/admin.schema';
+import { AuditLogModel } from '../../models/audit-log.schema';
 import { Payment } from '../../models/payment.schema';
 import { logger } from '../../utils/logger';
 import { auditLog } from '../../utils/audit';
@@ -93,6 +95,15 @@ const mapBookingToAdminDTO = async (booking: any, preloadedTickets?: any[]) => {
     sendBestEvents: booking.sendBestEvents ?? false,
   };
 
+  // Fetch associated AuditLog documents matching the booking
+  const auditLogs = await AuditLogModel.find({
+    $or: [
+      { 'metadata.bookingId': booking._id.toString() },
+      { 'metadata.bookingReference': booking.bookingId }
+    ],
+    action: { $in: ['BOOKING_EMAIL_CORRECTED', 'BOOKING_TICKETS_RESENT'] }
+  }).sort({ createdAt: -1 }).lean();
+
   return {
     _id: booking._id.toString(),
     bookingId: booking.bookingId,
@@ -122,6 +133,24 @@ const mapBookingToAdminDTO = async (booking: any, preloadedTickets?: any[]) => {
     ticketsScanned,
     ticketsRemaining,
     attendanceStatus,
+
+    // Audit logs & individual tickets without raw QR payloads
+    auditHistory: auditLogs.map((log: any) => ({
+      action: log.action,
+      actor: log.actor?.id || 'system',
+      status: log.status,
+      timestamp: log.createdAt.toISOString(),
+      metadata: log.metadata || {},
+      description: log.description,
+    })),
+    individualTickets: ticketsList.map((t: any) => ({
+      ticketId: t.ticketId,
+      status: t.status || 'active',
+      createdAt: t.createdAt.toISOString(),
+      replacedAt: t.replacedAt ? t.replacedAt.toISOString() : null,
+      replacedByTicketId: t.replacedByTicketId || null,
+      replacementReason: t.replacementReason || null,
+    })),
   };
 };
 
@@ -497,6 +526,50 @@ export const correctBookingEmail = async (
 
     await booking.save({ session });
 
+    // Void and replace active tickets
+    const activeTickets = await Ticket.find({ bookingId: booking._id, status: 'active' }).session(session || null);
+
+    for (const oldTicket of activeTickets) {
+      const baseMatch = oldTicket.ticketId.match(/^(TKT-[A-Z0-9]+-\d+)(?:-R\d+)?$/);
+      const baseTicketId = baseMatch ? baseMatch[1] : oldTicket.ticketId;
+
+      const count = await Ticket.countDocuments({
+        ticketId: { $regex: new RegExp(`^${baseTicketId}(?:-R\\d+)?$`) }
+      }).session(session || null);
+
+      let rev = count;
+      let newTicketId = `${baseTicketId}-R${rev}`;
+      while (await Ticket.exists({ ticketId: newTicketId }).session(session || null)) {
+        rev++;
+        newTicketId = `${baseTicketId}-R${rev}`;
+      }
+
+      // Mark old ticket as replaced
+      oldTicket.status = 'replaced';
+      oldTicket.replacedByTicketId = newTicketId;
+      oldTicket.replacedAt = new Date();
+      oldTicket.replacementReason = 'EMAIL_CORRECTION';
+      await oldTicket.save({ session: session || undefined });
+
+      // Create new active ticket
+      const newTicket = new Ticket({
+        ticketId: newTicketId,
+        bookingId: booking._id,
+        eventId: booking.eventId,
+        tierName: oldTicket.tierName,
+        tier: oldTicket.tier,
+        admits: oldTicket.admits,
+        seatId: oldTicket.seatId,
+        row: oldTicket.row,
+        seatNumber: oldTicket.seatNumber,
+        section: oldTicket.section,
+        qrCode: newTicketId,
+        qrCodeImage: `/api/public/tickets/${newTicketId}/qr`,
+        status: 'active',
+      });
+      await newTicket.save({ session: session || undefined });
+    }
+
     // Emit real-time updates via WebSockets
     try {
       emitToBooking(
@@ -520,6 +593,10 @@ export const correctBookingEmail = async (
       logger.debug({ err, bookingId: booking._id }, 'Admin booking update emit skipped');
     }
 
+    // Fetch executing admin's email and name for descriptive log representation
+    const admin = await AdminModel.findById(adminId).session(session || null);
+    const adminDetails = admin ? `${admin.name} (${admin.email})` : adminId;
+
     auditLog({
       action: 'BOOKING_EMAIL_CORRECTED',
       actor: { type: 'admin', id: adminId },
@@ -531,8 +608,9 @@ export const correctBookingEmail = async (
         newEmail: normalizedEmail,
         reason,
         proactivelyLinked,
+        adminDetails,
       },
-      description: `Corrected booking ${booking.bookingId} email from ${oldEmail} to ${normalizedEmail}${
+      description: `Corrected booking ${booking.bookingId} email from ${oldEmail} to ${normalizedEmail} by ${adminDetails}${
         proactivelyLinked ? ' (proactively linked user account)' : ''
       }`,
     });
@@ -564,6 +642,7 @@ export const resendBookingTickets = async (id: string, adminId: string) => {
       eventId: eventIdStr,
       recipientEmail: booking.guestEmail,
       guestName: booking.guestName,
+      isResend: true,
     },
     `pdf:generate:${booking._id}:admin-resend:${Date.now()}`
   );
