@@ -60,3 +60,72 @@ export const toggleAdminActive = async (req: Request, res: Response, next: NextF
     next(error);
   }
 };
+
+export const updateAdmin = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const requestingAdminId = (req as any).admin?.sub || (req as any).admin?.id;
+    const requestingAdminRole = (req as any).admin?.role;
+    if (!requestingAdminId || !requestingAdminRole) {
+      return res.status(401).json({ success: false, message: 'Admin authentication required' });
+    }
+
+    const admin = await teamService.updateAdmin(req.params.id, req.body, requestingAdminId, requestingAdminRole);
+    if (!admin) {
+      return res.status(404).json({ success: false, message: 'Team member not found' });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: admin,
+      message: 'Team member updated successfully',
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updateAdminRole = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const requestingAdminId = (req as any).admin?.sub || (req as any).admin?.id;
+    const requestingAdminRole = (req as any).admin?.role;
+    if (!requestingAdminId || !requestingAdminRole) {
+      return res.status(401).json({ success: false, message: 'Admin authentication required' });
+    }
+
+    const admin = await teamService.updateAdminRole(req.params.id, req.body.role, requestingAdminId, requestingAdminRole);
+    if (!admin) {
+      return res.status(404).json({ success: false, message: 'Team member not found' });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: admin,
+      message: 'Team member role updated successfully',
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const resetAdminPassword = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const requestingAdminId = (req as any).admin?.sub || (req as any).admin?.id;
+    const requestingAdminRole = (req as any).admin?.role;
+    if (!requestingAdminId || !requestingAdminRole) {
+      return res.status(401).json({ success: false, message: 'Admin authentication required' });
+    }
+
+    const admin = await teamService.resetAdminPassword(req.params.id, req.body, requestingAdminId, requestingAdminRole);
+    if (!admin) {
+      return res.status(404).json({ success: false, message: 'Team member not found' });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: admin,
+      message: 'Team member password reset successfully',
+    });
+  } catch (error) {
+    next(error);
+  }
+};

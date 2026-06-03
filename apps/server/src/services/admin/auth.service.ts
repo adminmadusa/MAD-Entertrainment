@@ -26,6 +26,7 @@ export const adminAuthService = {
       sub: admin._id.toString(),
       email: admin.email,
       role: (admin.role as string).toLowerCase() as AdminRole,
+      version: admin.passwordVersion ?? 0,
     });
 
     return {

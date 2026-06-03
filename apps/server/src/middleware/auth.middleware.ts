@@ -185,11 +185,28 @@ export async function requireAdmin(
       return;
     }
 
+    // Revoke access if password version has been updated (e.g. password reset)
+    if (adminPayload.version !== undefined && dbAdmin.passwordVersion !== undefined && dbAdmin.passwordVersion !== adminPayload.version) {
+      auditLog({
+        action: 'ADMIN_ACCESS_DENIED',
+        actor: { type: 'admin', id: adminPayload.sub },
+        status: 'failure',
+        metadata: {
+          email: adminPayload.email,
+          reason: 'session_revoked_by_credential_change',
+        },
+        description: `Access denied: Session expired due to password/role credential update for ${adminPayload.email}`,
+      });
+      sendUnauthorized(res, 'Session expired due to credential update');
+      return;
+    }
+
     // Hydrate req.admin with database-verified details (avoid stale JWT token data)
     req.admin = {
       sub: dbAdmin._id.toString(),
       email: dbAdmin.email,
       role: dbAdmin.role as AdminRole,
+      version: dbAdmin.passwordVersion ?? 0,
     };
     next();
   } catch (err) {
