@@ -3,6 +3,7 @@ import * as teamController from '../../controllers/admin/team.controller';
 import { requireAdmin, requireSuperAdmin } from '../../middleware/auth.middleware';
 import { validate } from '../../middleware/validation.middleware';
 import { adminIdParamSchema } from '../../validations/admin-content.validation';
+import { createAdminSchema } from '../../validations/admin.validation';
 
 const router: Router = Router();
 
@@ -10,7 +11,8 @@ const router: Router = Router();
 router.use(requireAdmin);
 
 router.get('/', requireSuperAdmin, teamController.getAdmins);
-router.post('/', requireSuperAdmin, teamController.createAdmin);
+router.post('/', requireSuperAdmin, validate(createAdminSchema), teamController.createAdmin);
 router.patch('/:id/toggle', requireSuperAdmin, validate(adminIdParamSchema), teamController.toggleAdminActive);
+
 
 export default router;
