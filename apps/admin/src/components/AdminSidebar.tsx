@@ -4,6 +4,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
+import { useAdminAuth } from '@/hooks/use-admin-auth.hook';
+
 interface NavItem {
   label: string;
   href: string;
@@ -63,6 +65,7 @@ interface AdminSidebarProps {
 
 export function AdminSidebar({ collapsed, onToggle, mobileOpen = false, onMobileClose }: AdminSidebarProps) {
   const pathname = usePathname();
+  const { admin } = useAdminAuth();
 
   const isActive = (href: string) =>
     href === '/dashboard' ? pathname === href : pathname.startsWith(href);
@@ -131,6 +134,9 @@ export function AdminSidebar({ collapsed, onToggle, mobileOpen = false, onMobile
             </AnimatePresence>
             <ul className="space-y-0.5">
               {group.items.map((item) => {
+                if (item.href === '/team' && admin?.role !== 'super_admin') {
+                  return null;
+                }
                 const active = isActive(item.href);
                 if (item.disabled) {
                   return (

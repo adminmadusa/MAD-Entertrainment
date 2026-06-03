@@ -9,10 +9,13 @@ import { useState } from 'react';
 import { adminGetAdmins, adminCreateAdmin, adminToggleAdminActive } from '@/lib/api/admin/team.service';
 import { adminApiClient, extractApiError } from '@/lib/api/client';
 import ErrorState from '@/components/states/ErrorState';
+import LoadingState from '@/components/states/LoadingState';
+import { useAdminAuth } from '@/hooks/use-admin-auth.hook';
 
 
 export default function AdminTeamPage() {
   const qc = useQueryClient();
+  const { admin: currentAdmin, isLoading: isAuthLoading } = useAdminAuth();
   const [page, setPage] = useState(1);
   const [isInviteOpen, setIsInviteOpen] = useState(false);
 
@@ -55,6 +58,19 @@ export default function AdminTeamPage() {
     },
     onError: (err) => setInviteError(extractApiError(err).message),
   });
+
+  // ─── Route Protection Guard ──────────────────────────────────
+  if (isAuthLoading) {
+    return <LoadingState />;
+  }
+
+  if (!currentAdmin || currentAdmin.role !== 'super_admin') {
+    return (
+      <div className="py-12">
+        <ErrorState message="Access Denied: Only Super Admins are permitted to manage administrative accounts." />
+      </div>
+    );
+  }
 
   const admins = data?.items ?? [];
   const pagination = data?.pagination;
@@ -114,7 +130,7 @@ export default function AdminTeamPage() {
           </span>
         </td>
         <td className="py-4 px-5 text-right">
-          {meProfile && meProfile._id !== admin._id ? (
+          {currentAdmin?.role === 'super_admin' && meProfile && meProfile._id !== admin._id ? (
             <button
               onClick={() => toggleMutation.mutate(admin._id)}
               disabled={toggleMutation.isPending}
@@ -124,8 +140,10 @@ export default function AdminTeamPage() {
             >
               {admin.isActive ? 'Deactivate' : 'Activate'}
             </button>
-          ) : (
+          ) : meProfile && meProfile._id === admin._id ? (
             <span className="text-text-muted text-xs italic">Logged in</span>
+          ) : (
+            <span className="text-text-muted text-xs">—</span>
           )}
         </td>
       </tr>
@@ -167,12 +185,14 @@ export default function AdminTeamPage() {
             Manage administrative and back-office personnel
           </p>
         </div>
-        <button
-          onClick={() => setIsInviteOpen(true)}
-          className="px-4 py-2.5 btn-gradient text-white font-semibold text-sm rounded-xl shadow-glow-sm hover:scale-105 transition-transform flex items-center gap-2"
-        >
-          <span>+</span> Invite Member
-        </button>
+        {currentAdmin?.role === 'super_admin' && (
+          <button
+            onClick={() => setIsInviteOpen(true)}
+            className="px-4 py-2.5 btn-gradient text-white font-semibold text-sm rounded-xl shadow-glow-sm hover:scale-105 transition-transform flex items-center gap-2"
+          >
+            <span>+</span> Invite Member
+          </button>
+        )}
       </div>
 
       {/* Table */}
