@@ -13,6 +13,7 @@ import { Ticket } from '../../models/ticket.schema';
 import { logger } from '../../utils/logger';
 import { auditLog } from '../../utils/audit';
 import { ReservationService } from '../reservation.service';
+import { runInTransaction } from '../../utils/transaction';
 
 export class PublicBookingService {
   static async createBooking(
@@ -229,91 +230,118 @@ export class PublicBookingService {
       logicalExpiresAt,
     });
 
-    await booking.save();
+    const txResult = await runInTransaction(async (session) => {
+      await booking.save({ session });
 
-    let reservations: IReservation[] = [];
-    try {
-      for (const ticketReq of data.tickets) {
-        const allocated = await ReservationService.reserveForBooking({
-          eventId: event._id as Types.ObjectId,
-          bookingMode: event.bookingMode,
-          tier: ticketReq.tier as any,
-          quantity: ticketReq.quantity,
-          seats: ticketReq.seats?.map((seat) => ({ seatId: seat.seatId, section: seat.section })),
-          sessionId: sessionId ?? booking._id.toString(),
-          userId,
-          bookingId: booking._id as Types.ObjectId,
-          bookingReference: booking.bookingId,
-          correlationId: booking.bookingId,
-          expiresAt: logicalExpiresAt,
-        });
-        reservations.push(...allocated);
-      }
-    } catch (err) {
-      booking.status = BookingStatus.FAILED;
-      booking.bookingVersion += 1;
-      await booking.save();
-      if (reservations.length > 0) {
-        const failedReservations = await ReservationService.transitionForBooking(booking._id, ReservationStatus.FAILED, {
-          reason: 'booking-reservation-allocation-failed',
-          correlationId: booking.bookingId,
-        });
-        await ReservationService.releaseCapacityForTerminalReservations(failedReservations);
-      }
-      logger.warn({ err, bookingId: booking._id, eventId: event._id }, 'Booking failed during reservation allocation');
-      throw err;
-    }
-
-    booking.reservationIds = reservations.map((reservation) => reservation.reservationId);
-    booking.bookingVersion += 1;
-    await booking.save();
-
-    // Update Seat statuses to LOCKED in MongoDB for the booking (to prevent other checkout threads booking it)
-    if (event.bookingMode === BookingMode.SEAT_BASED) {
-      const allSeatIds = data.tickets.flatMap((t) => t.seats || []).map((s) => s.seatId);
-      const reservationBySeat = new Map(
-        reservations.filter((reservation) => reservation.seatId).map((reservation) => [reservation.seatId, reservation.reservationId])
-      );
-      const result = await SeatLayout.updateOne(
-        { eventId: event._id },
-        {
-          $set: {
-            'seats.$[seat].status': SeatStatus.LOCKED,
-            'seats.$[seat].lockedBy': sessionId,
-            'seats.$[seat].lockedAt': new Date(),
-            'seats.$[seat].bookedByBookingId': booking._id.toString(),
-          },
-          $inc: {
-            'seats.$[seat].seatVersion': 1,
-          },
-        },
-        {
-          arrayFilters: [
-            {
-              'seat.seatId': { $in: allSeatIds },
-              'seat.status': SeatStatus.AVAILABLE,
-            },
-          ],
+      const reservations: IReservation[] = [];
+      const postCommitCallbacks: Array<() => Promise<void>> = [];
+      try {
+        for (const ticketReq of data.tickets) {
+          const { reservations: allocated, postCommit } = await ReservationService.reserveForBooking({
+            eventId: event._id as Types.ObjectId,
+            bookingMode: event.bookingMode,
+            tier: ticketReq.tier as any,
+            quantity: ticketReq.quantity,
+            seats: ticketReq.seats?.map((seat) => ({ seatId: seat.seatId, section: seat.section })),
+            sessionId: sessionId ?? booking._id.toString(),
+            userId,
+            bookingId: booking._id as Types.ObjectId,
+            bookingReference: booking.bookingId,
+            correlationId: booking.bookingId,
+            expiresAt: logicalExpiresAt,
+          }, session);
+          reservations.push(...allocated);
+          postCommitCallbacks.push(postCommit);
         }
-      );
-
-      if (result.modifiedCount !== allSeatIds.length) {
-        throw AppError.conflict('Some of the selected seats were locked by another user. Please choose different seats.');
+      } catch (err) {
+        if (!session) {
+          booking.status = BookingStatus.FAILED;
+          booking.bookingVersion += 1;
+          await booking.save().catch(() => {});
+          if (reservations.length > 0) {
+            const failedReservations = await ReservationService.transitionForBooking(booking._id, ReservationStatus.FAILED, {
+              reason: 'booking-reservation-allocation-failed',
+              correlationId: booking.bookingId,
+            });
+            await ReservationService.releaseCapacityForTerminalReservations(failedReservations);
+          }
+        }
+        logger.warn({ err, bookingId: booking._id, eventId: event._id }, 'Booking failed during reservation allocation');
+        throw err;
       }
 
-      for (const [seatId, reservationId] of reservationBySeat.entries()) {
-        await SeatLayout.updateOne(
-          { eventId: event._id, 'seats.seatId': seatId },
-          { $set: { 'seats.$.reservationId': reservationId } }
+      booking.reservationIds = reservations.map((reservation) => reservation.reservationId);
+      booking.bookingVersion += 1;
+      await booking.save({ session });
+
+      let allSeatIds: string[] = [];
+      let reservationBySeat = new Map<string, string>();
+
+      // Update Seat statuses to LOCKED in MongoDB for the booking (to prevent other checkout threads booking it)
+      if (event.bookingMode === BookingMode.SEAT_BASED) {
+        allSeatIds = data.tickets.flatMap((t) => t.seats || []).map((s) => s.seatId);
+        reservationBySeat = new Map(
+          reservations.filter((reservation) => reservation.seatId).map((reservation) => [reservation.seatId, reservation.reservationId])
         );
+        const result = await SeatLayout.updateOne(
+          { eventId: event._id },
+          {
+            $set: {
+              'seats.$[seat].status': SeatStatus.LOCKED,
+              'seats.$[seat].lockedBy': sessionId,
+              'seats.$[seat].lockedAt': new Date(),
+              'seats.$[seat].bookedByBookingId': booking._id.toString(),
+            },
+            $inc: {
+              'seats.$[seat].seatVersion': 1,
+            },
+          },
+          {
+            arrayFilters: [
+              {
+                'seat.seatId': { $in: allSeatIds },
+                'seat.status': SeatStatus.AVAILABLE,
+              },
+            ],
+            session,
+          }
+        );
+
+        if (result.modifiedCount !== allSeatIds.length) {
+          throw AppError.conflict('Some of the selected seats were locked by another user. Please choose different seats.');
+        }
+
+        for (const [seatId, reservationId] of reservationBySeat.entries()) {
+          await SeatLayout.updateOne(
+            { eventId: event._id, 'seats.seatId': seatId },
+            { $set: { 'seats.$.reservationId': reservationId } },
+            { session }
+          );
+        }
       }
 
+      return {
+        reservations,
+        allSeatIds,
+        reservationBySeat,
+        postCommitCallbacks,
+      };
+    });
+
+    const { reservations, allSeatIds, reservationBySeat, postCommitCallbacks } = txResult;
+
+    // Side effects (Redis lock release, WebSocket emissions, Cache invalidation, and Audit logging) run strictly outside the transaction boundary.
+    if (event.bookingMode === BookingMode.SEAT_BASED) {
       const redis = getRedis();
       for (const seatId of allSeatIds) {
         const lockKey = `mad:lock:event:${event._id}:seat:${seatId}`;
-        const lockOwner = await redis.get(lockKey);
-        if (lockOwner === sessionId) {
-          await redis.del(lockKey);
+        try {
+          const lockOwner = await redis.get(lockKey);
+          if (lockOwner === sessionId) {
+            await redis.del(lockKey);
+          }
+        } catch (err) {
+          logger.warn({ err, seatId, bookingId: booking._id }, 'Redis connection error during lock release');
         }
       }
 
@@ -327,6 +355,15 @@ export class PublicBookingService {
         logger.debug({ err, eventId: event._id, bookingId: booking._id }, 'Socket emit skipped for seat reservation');
       }
       logger.info({ eventId: event._id, bookingId: booking._id, seatIds: allSeatIds }, 'Seat inventory reserved for checkout');
+    }
+
+    // Invoke reservation post-commit callbacks (emit socket + invalidate cache), owned by ReservationService.
+    for (const postCommit of postCommitCallbacks) {
+      try {
+        await postCommit();
+      } catch (err) {
+        logger.debug({ err, bookingId: booking._id }, 'Reservation post-commit callback failed (non-fatal)');
+      }
     }
 
     try {
