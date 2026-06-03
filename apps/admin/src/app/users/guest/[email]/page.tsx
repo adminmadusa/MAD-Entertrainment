@@ -111,7 +111,7 @@ export default function GuestUserDetailPage() {
       {/* Back Link */}
       <div>
         <Link href="/users?type=guest" className="text-xs text-accent-purple hover:underline flex items-center gap-1">
-          ← Back to Users Directory
+          ← Back to Users
         </Link>
       </div>
 
