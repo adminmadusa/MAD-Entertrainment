@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+import { Types } from 'mongoose';
 import { Ticket } from '../../models/ticket.schema';
 import { Booking } from '../../models/booking.schema';
 
@@ -10,6 +11,14 @@ export const scanTicket = async (req: Request, res: Response, next: NextFunction
       return res.status(400).json({
         success: false,
         message: 'Both ticketId and eventId are required parameters.',
+      });
+    }
+
+    const scannerId = req.admin?.sub;
+    if (!scannerId) {
+      return res.status(401).json({
+        success: false,
+        message: 'Unauthorized: Admin scanner identity is missing.',
       });
     }
 
@@ -57,7 +66,7 @@ export const scanTicket = async (req: Request, res: Response, next: NextFunction
     // Atomically check-in the ticket
     const updatedTicket = await Ticket.findOneAndUpdate(
       { _id: ticket._id, $or: [{ scannedAt: { $exists: false } }, { scannedAt: null }] },
-      { $set: { scannedAt: new Date() } },
+      { $set: { scannedAt: new Date(), scannedById: new Types.ObjectId(scannerId) } },
       { new: true }
     );
 
