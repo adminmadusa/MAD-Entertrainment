@@ -13,6 +13,12 @@ import { auditLog } from '../utils/audit';
 import crypto from 'crypto';
 
 import { ReservationService } from './reservation.service';
+import { Ticket } from '../models/ticket.schema';
+import { QueueService } from './queue.service';
+import { getQueueName } from '../config/queue.config';
+
+const UNTICKETED_BOOKING_WINDOW_MS = 48 * 60 * 60 * 1000;
+const UNTICKETED_PAGE_SIZE = 25;
 
 export interface ConsistencyReport {
   generatedAt: string;
@@ -27,6 +33,7 @@ export interface ConsistencyReport {
     staleSeatReservations: number;
     phantomRedisLocks: number;
     eventInventoryMismatches: number;
+    unticketedConfirmedBookings: number;
   };
   repairs?: {
     expiredReservations: number;
@@ -34,6 +41,7 @@ export interface ConsistencyReport {
     staleSeatReservations: number;
     eventInventoryMismatchesRepaired?: number;
     logicallyExpiredBookings?: number;
+    reEnqueuedUnticketedBookings?: number;
   };
 }
 
@@ -202,6 +210,73 @@ async function repairEventInventoryMismatches(): Promise<number> {
 }
 
 export class ConsistencyService {
+  private static async repairUnticketedConfirmedBookings(): Promise<number> {
+    const windowStart = new Date(Date.now() - UNTICKETED_BOOKING_WINDOW_MS);
+    const candidates = await Booking.find({
+      status: BookingStatus.CONFIRMED,
+      updatedAt: { $gte: windowStart },
+    })
+      .sort({ updatedAt: 1 })
+      .limit(UNTICKETED_PAGE_SIZE)
+      .select('_id')
+      .lean();
+
+    if (candidates.length === UNTICKETED_PAGE_SIZE) {
+      logger.warn({ count: candidates.length }, 'Watchdog: UNTICKETED_PAGE_SIZE limit reached during confirmed bookings check');
+    }
+
+    let successCount = 0;
+    for (const candidate of candidates) {
+      try {
+        const ticketCount = await Ticket.countDocuments({ bookingId: candidate._id });
+        if (ticketCount > 0) {
+          continue;
+        }
+
+        const bookingStillExists = await Booking.exists({ _id: candidate._id });
+        if (!bookingStillExists) {
+          logger.warn({ bookingId: candidate._id }, 'watchdog: booking no longer exists, skipping enqueue');
+          continue;
+        }
+
+        await QueueService.enqueue(
+          getQueueName('booking-queue'),
+          'booking:confirm',
+          { bookingId: candidate._id.toString() },
+          `booking:confirm:${candidate._id}`
+        );
+        successCount++;
+      } catch (error) {
+        logger.warn({ bookingId: candidate._id, error }, 'watchdog: failed to repair unticketed booking');
+      }
+    }
+
+    return successCount;
+  }
+
+  private static async countUnticketedConfirmedBookings(): Promise<number> {
+    const windowStart = new Date(Date.now() - UNTICKETED_BOOKING_WINDOW_MS);
+    const candidates = await Booking.find({
+      status: BookingStatus.CONFIRMED,
+      updatedAt: { $gte: windowStart },
+    })
+      .select('_id')
+      .lean();
+
+    let count = 0;
+    for (const candidate of candidates) {
+      try {
+        const ticketCount = await Ticket.countDocuments({ bookingId: candidate._id });
+        if (ticketCount === 0) {
+          count++;
+        }
+      } catch (error) {
+        logger.warn({ bookingId: candidate._id, error }, 'watchdog: failed to count tickets for booking');
+      }
+    }
+    return count;
+  }
+
   static async expireStaleBookings(): Promise<number> {
     const now = new Date();
 
@@ -300,12 +375,20 @@ export class ConsistencyService {
     const correlationId = `repair-cycle-${crypto.randomUUID().slice(0, 8)}`;
     return runWithContext({ correlationId }, async () => {
       const startTime = Date.now();
-      const [expiredReservations, phantomRedisLocks, staleSeatReservations, eventInventoryMismatchesRepaired, logicallyExpiredBookings] = await Promise.all([
+      const [
+        expiredReservations,
+        phantomRedisLocks,
+        staleSeatReservations,
+        eventInventoryMismatchesRepaired,
+        logicallyExpiredBookings,
+        reEnqueuedUnticketedBookings,
+      ] = await Promise.all([
         ReservationService.expireReservations(),
         cleanupPhantomRedisLocks(),
         repairStaleSeatReservations(),
         repairEventInventoryMismatches(),
         ConsistencyService.expireStaleBookings(),
+        ConsistencyService.repairUnticketedConfirmedBookings(),
       ]);
 
       const report = await this.generateReport();
@@ -315,6 +398,7 @@ export class ConsistencyService {
         staleSeatReservations,
         eventInventoryMismatchesRepaired,
         logicallyExpiredBookings,
+        reEnqueuedUnticketedBookings,
       };
 
       const durationMs = Date.now() - startTime;
@@ -323,7 +407,8 @@ export class ConsistencyService {
         phantomRedisLocks > 0 ||
         staleSeatReservations > 0 ||
         eventInventoryMismatchesRepaired > 0 ||
-        logicallyExpiredBookings > 0;
+        logicallyExpiredBookings > 0 ||
+        reEnqueuedUnticketedBookings > 0;
 
       const context = getTraceContext();
       const isManual = !!(context?.userId || context?.sessionId);
@@ -366,6 +451,7 @@ export class ConsistencyService {
       awaitingPaymentBookings,
       orphanPayments,
       eventInventoryMismatches,
+      unticketedConfirmedBookings,
     ] = await Promise.all([
       Reservation.countDocuments({ status: { $in: [ReservationStatus.RESERVED, ReservationStatus.PENDING_PAYMENT] } }),
       Reservation.countDocuments({ status: { $in: [ReservationStatus.RESERVED, ReservationStatus.PENDING_PAYMENT] }, expiresAt: { $lte: now } }),
@@ -373,6 +459,7 @@ export class ConsistencyService {
       Booking.countDocuments({ status: BookingStatus.AWAITING_PAYMENT }),
       Payment.countDocuments({ status: PaymentStatus.PENDING, bookingId: { $exists: false } }),
       countEventInventoryMismatches(),
+      ConsistencyService.countUnticketedConfirmedBookings(),
     ]);
 
     const staleSeatReservations = await Reservation.countDocuments({
@@ -393,6 +480,7 @@ export class ConsistencyService {
         staleSeatReservations,
         phantomRedisLocks: 0,
         eventInventoryMismatches,
+        unticketedConfirmedBookings,
       },
     };
   }
