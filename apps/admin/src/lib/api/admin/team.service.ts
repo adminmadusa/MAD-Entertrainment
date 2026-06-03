@@ -67,3 +67,33 @@ export async function adminToggleAdminActive(id: string): Promise<{ isActive: bo
     throw error;
   }
 }
+
+export async function adminUpdateAdmin(id: string, payload: { name: string; email: string }): Promise<Admin | null> {
+  try {
+    const { data } = await adminApiClient.patch<{ data: Admin }>(`/admin/team/${id}`, payload);
+    return data.data;
+  } catch (error) {
+    console.error(`[Team Service] Failed to update administrative details for ${id}:`, error);
+    throw error;
+  }
+}
+
+export async function adminUpdateAdminRole(id: string, role: string): Promise<Admin | null> {
+  try {
+    const { data } = await adminApiClient.patch<{ data: Admin }>(`/admin/team/${id}/role`, { role });
+    return data.data;
+  } catch (error) {
+    console.error(`[Team Service] Failed to update role for administrative account ${id}:`, error);
+    throw error;
+  }
+}
+
+export async function adminResetAdminPassword(id: string, payload: Record<string, unknown>): Promise<Admin | null> {
+  try {
+    const { data } = await adminApiClient.post<{ data: Admin }>(`/admin/team/${id}/reset-password`, payload);
+    return data.data;
+  } catch (error) {
+    console.error(`[Team Service] Failed to reset password for administrative account ${id}:`, error);
+    throw error;
+  }
+}
