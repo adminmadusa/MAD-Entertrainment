@@ -13,6 +13,22 @@ import LoadingState from '@/components/states/LoadingState';
 import { useAdminAuth } from '@/hooks/use-admin-auth.hook';
 
 
+const ROLE_LABELS: Record<AdminRole, string> = {
+  [AdminRole.SUPER_ADMIN]: 'Super Admin',
+  [AdminRole.ADMIN]: 'Admin',
+  [AdminRole.MANAGER]: 'Manager',
+  [AdminRole.SUPPORT]: 'Support',
+  [AdminRole.SCANNER]: 'Scanner',
+};
+
+const ROLE_BADGE_STYLES: Record<AdminRole, string> = {
+  [AdminRole.SUPER_ADMIN]: 'bg-accent-purple/10 border-accent-purple/30 text-accent-purple',
+  [AdminRole.ADMIN]: 'bg-blue-500/10 border-blue-500/30 text-blue-400',
+  [AdminRole.MANAGER]: 'bg-yellow-500/10 border-yellow-500/30 text-yellow-400',
+  [AdminRole.SUPPORT]: 'bg-green-500/10 border-green-500/30 text-green-400',
+  [AdminRole.SCANNER]: 'bg-white/5 border-white/10 text-text-secondary',
+};
+
 export default function AdminTeamPage() {
   const qc = useQueryClient();
   const { admin: currentAdmin, isLoading: isAuthLoading } = useAdminAuth();
@@ -82,6 +98,7 @@ export default function AdminTeamPage() {
           <td className="py-4 px-5"><div className="h-4 bg-white/5 rounded w-48" /></td>
           <td className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-20" /></td>
           <td className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-24" /></td>
+          <td className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-24" /></td>
           <td className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-16" /></td>
           <td className="py-4 px-5"><div className="h-4 bg-white/5 rounded w-12 ml-auto" /></td>
         </tr>
@@ -91,7 +108,7 @@ export default function AdminTeamPage() {
     if (admins.length === 0) {
       return (
         <tr>
-          <td colSpan={5} className="py-16 text-center text-text-muted">
+          <td colSpan={6} className="py-16 text-center text-text-muted">
             No admin users registered.
           </td>
         </tr>
@@ -107,18 +124,19 @@ export default function AdminTeamPage() {
           </div>
         </td>
         <td className="py-4 px-4">
-          <span className={`text-xs px-2 py-0.5 rounded font-medium capitalize border ${
-            admin.role === AdminRole.SUPER_ADMIN
-              ? 'bg-accent-purple/10 border-accent-purple/30 text-accent-purple'
-              : 'bg-white/5 border-white/10 text-text-secondary'
-          }`}>
-            {admin.role.replace('_', ' ')}
+          <span className={`text-xs px-2 py-0.5 rounded font-medium border ${ROLE_BADGE_STYLES[admin.role as AdminRole] || ROLE_BADGE_STYLES[AdminRole.ADMIN]}`}>
+            {ROLE_LABELS[admin.role as AdminRole] || admin.role}
           </span>
         </td>
-        <td className="py-4 px-4 text-text-secondary">
+        <td className="py-4 px-4 text-text-secondary whitespace-nowrap">
+          {admin.createdAt
+            ? new Date(admin.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+            : '—'}
+        </td>
+        <td className="py-4 px-4 text-text-secondary whitespace-nowrap">
           {admin.lastLogin
             ? new Date(admin.lastLogin).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
-            : 'Never logged in'}
+            : 'Invited • Awaiting First Login'}
         </td>
         <td className="py-4 px-4">
           <span className={`text-xs px-2.5 py-1 rounded-full border font-medium ${
@@ -203,6 +221,7 @@ export default function AdminTeamPage() {
               <tr className="border-b border-border-subtle">
                 <th className="text-left text-text-muted font-medium py-3.5 px-5">Member</th>
                 <th className="text-left text-text-muted font-medium py-3.5 px-4">Role</th>
+                <th className="text-left text-text-muted font-medium py-3.5 px-4">Created</th>
                 <th className="text-left text-text-muted font-medium py-3.5 px-4">Last Active</th>
                 <th className="text-left text-text-muted font-medium py-3.5 px-4">Status</th>
                 <th className="text-right text-text-muted font-medium py-3.5 px-5">Actions</th>
@@ -307,8 +326,11 @@ export default function AdminTeamPage() {
                     onChange={(e) => setRole(e.target.value as AdminRole)}
                     className={inputCls}
                   >
-                    <option value={AdminRole.ADMIN} className="bg-background-card">Standard Admin</option>
-                    <option value={AdminRole.SUPER_ADMIN} className="bg-background-card">Super Admin (full controls)</option>
+                    <option value={AdminRole.SUPER_ADMIN} className="bg-background-card">Super Admin</option>
+                    <option value={AdminRole.ADMIN} className="bg-background-card">Admin</option>
+                    <option value={AdminRole.MANAGER} className="bg-background-card">Manager</option>
+                    <option value={AdminRole.SUPPORT} className="bg-background-card">Support</option>
+                    <option value={AdminRole.SCANNER} className="bg-background-card">Scanner</option>
                   </select>
                 </div>
 
