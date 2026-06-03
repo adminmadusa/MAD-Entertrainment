@@ -38,6 +38,20 @@ export const scanTicket = async (req: Request, res: Response, next: NextFunction
       });
     }
 
+    if (ticket.status === 'replaced') {
+      return res.status(400).json({
+        success: false,
+        message: 'Ticket Replaced: Please use the latest ticket.',
+      });
+    }
+
+    if (ticket.status === 'voided') {
+      return res.status(400).json({
+        success: false,
+        message: 'Ticket Voided: This ticket is no longer valid.',
+      });
+    }
+
     if (ticket.scannedAt) {
       return res.status(400).json({
         success: false,
@@ -119,7 +133,7 @@ export const lookupTickets = async (req: Request, res: Response, next: NextFunct
         });
       }
 
-      const tickets = await Ticket.find({ bookingId: booking._id, eventId });
+      const tickets = await Ticket.find({ bookingId: booking._id, eventId, status: 'active' });
       if (!tickets.length) {
         // If booking is confirmed but no tickets exist yet, the background worker
         // is still generating them. Return 202 so the caller can retry gracefully.

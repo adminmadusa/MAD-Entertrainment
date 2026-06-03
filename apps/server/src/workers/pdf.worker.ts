@@ -19,7 +19,8 @@ export async function processPDFGenerate(
   bookingId: string,
   eventId: string,
   recipientEmail: string,
-  guestName: string
+  guestName: string,
+  isResend?: boolean
 ): Promise<void> {
   const booking = await Booking.findById(bookingId);
   const event = await Event.findById(eventId);
@@ -28,7 +29,9 @@ export async function processPDFGenerate(
     throw new Error(`Booking ${bookingId} or Event ${eventId} not found for PDF generation`);
   }
 
-  const jobId = `email:dispatch:${booking._id}`;
+  const jobId = isResend
+    ? `email:dispatch:${booking._id}:resend:${Date.now()}`
+    : `email:dispatch:${booking._id}`;
 
   // Read-only early exit to prevent generating PDF if already successfully sent
   const existingNotification = await Notification.findOne({ jobId });
@@ -137,12 +140,12 @@ async function handleJobExecution(jobId: string, data: any): Promise<void> {
       name: `worker:${QUEUE_NAME}`,
     },
     async () => {
-      const { bookingId, eventId, recipientEmail, guestName } = data;
+      const { bookingId, eventId, recipientEmail, guestName, isResend } = data;
       if (!bookingId || !eventId || !recipientEmail || !guestName) {
         throw new Error('Missing parameters in PDF generation payload');
       }
 
-      await processPDFGenerate(bookingId, eventId, recipientEmail, guestName);
+      await processPDFGenerate(bookingId, eventId, recipientEmail, guestName, isResend);
     }
   );
 }

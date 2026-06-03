@@ -5,7 +5,7 @@ import { logger } from './logger';
 
 export async function generateTicketPDF(booking: any, event: any): Promise<Buffer> {
   // 1. Fetch tickets associated with this booking, ordered deterministically
-  const tickets = await Ticket.find({ bookingId: booking._id }).sort({ createdAt: 1 });
+  const tickets = await Ticket.find({ bookingId: booking._id, status: 'active' }).sort({ createdAt: 1 });
 
   if (tickets.length === 0) {
     logger.error({ bookingId: booking._id }, 'No tickets found for booking during PDF generation');

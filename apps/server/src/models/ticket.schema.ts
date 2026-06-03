@@ -16,6 +16,10 @@ export interface ITicket extends Document {
   qrCodeImage?: string;
   scannedAt?: Date;
   scannedById?: Types.ObjectId;
+  status: 'active' | 'voided' | 'replaced';
+  replacedByTicketId?: string;
+  replacedAt?: Date;
+  replacementReason?: 'EMAIL_CORRECTION' | 'ADMIN_REISSUE' | 'FRAUD_PREVENTION';
 }
 
 const ticketSchema = new Schema<ITicket>(
@@ -34,6 +38,10 @@ const ticketSchema = new Schema<ITicket>(
     qrCodeImage: String,
     scannedAt: Date,
     scannedById: { type: Schema.Types.ObjectId, ref: 'Admin', index: true },
+    status: { type: String, enum: ['active', 'voided', 'replaced'], default: 'active', required: true },
+    replacedByTicketId: String,
+    replacedAt: Date,
+    replacementReason: { type: String, enum: ['EMAIL_CORRECTION', 'ADMIN_REISSUE', 'FRAUD_PREVENTION'] },
   },
   { timestamps: true }
 );

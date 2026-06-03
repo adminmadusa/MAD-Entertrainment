@@ -42,7 +42,7 @@ describe('PDF Generation Utility', () => {
       'No tickets found for booking: MAD-2026-ABCDE'
     );
 
-    expect(Ticket.find).toHaveBeenCalledWith({ bookingId: mockBooking._id });
+    expect(Ticket.find).toHaveBeenCalledWith({ bookingId: mockBooking._id, status: 'active' });
     expect(mockSort).toHaveBeenCalledWith({ createdAt: 1 });
   });
 
@@ -69,7 +69,7 @@ describe('PDF Generation Utility', () => {
 
     const pdfBuffer = await generateTicketPDF(mockBooking, mockEvent);
 
-    expect(Ticket.find).toHaveBeenCalledWith({ bookingId: mockBooking._id });
+    expect(Ticket.find).toHaveBeenCalledWith({ bookingId: mockBooking._id, status: 'active' });
     expect(mockSort).toHaveBeenCalledWith({ createdAt: 1 });
     expect(qrcodeSpy).toHaveBeenNthCalledWith(1, 'QR-1', expect.any(Object));
     expect(qrcodeSpy).toHaveBeenNthCalledWith(2, 'TKT-2', expect.any(Object)); // verifies fallback
@@ -104,7 +104,7 @@ describe('PDF Generation Utility', () => {
 
     const pdfBuffer = await generateTicketPDF(mockBooking, mockEvent);
 
-    expect(Ticket.find).toHaveBeenCalledWith({ bookingId: mockBooking._id });
+    expect(Ticket.find).toHaveBeenCalledWith({ bookingId: mockBooking._id, status: 'active' });
     expect(mockSort).toHaveBeenCalledWith({ createdAt: 1 });
     expect(qrcodeSpy).toHaveBeenCalledTimes(10);
     expect(pdfBuffer).toBeInstanceOf(Buffer);

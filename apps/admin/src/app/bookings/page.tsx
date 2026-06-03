@@ -593,6 +593,67 @@ function BookingsContent() {
                   </div>
                 )}
 
+                {/* Audit & Operations History */}
+                {selectedBooking.auditHistory && selectedBooking.auditHistory.length > 0 && (
+                  <div className="border-t border-white/5 pt-4 space-y-3">
+                    <h4 className="text-text-muted font-medium text-xs uppercase tracking-wider">Audit & Operations History</h4>
+                    <div className="space-y-2">
+                      {selectedBooking.auditHistory.map((log, idx) => (
+                        <div key={idx} className="bg-white/5 rounded-xl p-3 text-xs space-y-1.5 border border-white/5">
+                          <div className="flex justify-between items-center">
+                            <span className="text-accent-purple font-semibold">
+                              {log.action === 'BOOKING_EMAIL_CORRECTED' ? 'Email Corrected' : 'Tickets Resent'}
+                            </span>
+                            <span className="text-text-muted">{new Date(log.timestamp).toLocaleString('en-IN')}</span>
+                          </div>
+                          <p className="text-text-secondary">{log.description}</p>
+                          {log.metadata?.reason && (
+                            <p className="text-text-muted italic bg-black/20 p-1.5 rounded">
+                              Reason: &ldquo;{log.metadata.reason}&rdquo;
+                            </p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Individual Tickets & Status */}
+                {selectedBooking.individualTickets && selectedBooking.individualTickets.length > 0 && (
+                  <div className="border-t border-white/5 pt-4 space-y-3">
+                    <h4 className="text-text-muted font-medium text-xs uppercase tracking-wider">Individual Tickets & QR Status</h4>
+                    <div className="space-y-2">
+                      {selectedBooking.individualTickets.map((t, idx) => (
+                        <div key={idx} className="bg-white/5 rounded-xl p-3 text-xs space-y-2 border border-white/5">
+                          <div className="flex justify-between items-center">
+                            <span className="text-white font-mono font-semibold">{t.ticketId}</span>
+                            <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase ${
+                              t.status === 'active' ? 'bg-green-500/10 text-green-400 border border-green-500/20' :
+                              t.status === 'replaced' ? 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20' :
+                              'bg-red-500/10 text-red-400 border border-red-500/20'
+                            }`}>
+                              {t.status}
+                            </span>
+                          </div>
+                          
+                          <div className="text-[10px] text-text-muted space-y-1">
+                            <p>Created: {new Date(t.createdAt).toLocaleString('en-IN')}</p>
+                            {t.replacedAt && (
+                              <p>Replaced: {new Date(t.replacedAt).toLocaleString('en-IN')}</p>
+                            )}
+                            {t.replacedByTicketId && (
+                              <p className="font-mono text-accent-purple">Replaced by: {t.replacedByTicketId}</p>
+                            )}
+                            {t.replacementReason && (
+                              <p className="italic">Reason: {t.replacementReason}</p>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 <div className="flex gap-3 border-t border-white/10 pt-4">
                   <button
                     onClick={() => setSelectedBooking(null)}
