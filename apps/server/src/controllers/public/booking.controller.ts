@@ -65,11 +65,23 @@ export async function createBooking(
       userId
     );
 
-    sendSuccess(
-      res,
-      booking,
-      'Booking created successfully'
-    );
+    if ((booking as any).isReused) {
+      res.setHeader('X-Booking-Idempotency', 'Reused');
+      sendSuccess(
+        res,
+        booking,
+        'Booking retrieved successfully',
+        200
+      );
+    } else {
+      res.setHeader('X-Booking-Idempotency', 'New');
+      sendSuccess(
+        res,
+        booking,
+        'Booking created successfully',
+        201
+      );
+    }
   } catch (err) {
     next(err);
   }

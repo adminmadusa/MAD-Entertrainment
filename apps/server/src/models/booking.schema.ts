@@ -45,6 +45,7 @@ export interface IBooking extends Document {
   logicalExpiresAt?: Date;
   cancellationReason?: string;
   cancelledAt?: Date;
+  selectionFingerprint?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -110,6 +111,7 @@ const bookingSchema = new Schema<IBooking>(
     logicalExpiresAt: { type: Date, index: true },
     cancellationReason: String,
     cancelledAt: Date,
+    selectionFingerprint: { type: String, index: true },
   },
   { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
 );
@@ -127,6 +129,30 @@ bookingSchema.index({ guestPhone: 1, createdAt: -1 });
 bookingSchema.index({ eventId: 1, status: 1, totalTickets: 1 });
 bookingSchema.index({ userId: 1, createdAt: -1 });
 bookingSchema.index({ status: 1, createdAt: -1 });
+
+bookingSchema.index(
+  { sessionId: 1, eventId: 1 },
+  { 
+    unique: true, 
+    partialFilterExpression: { 
+      status: BookingStatus.AWAITING_PAYMENT,
+      sessionId: { $type: 'string' } 
+    },
+    name: 'idx_session_event_awaiting_payment'
+  }
+);
+
+bookingSchema.index(
+  { userId: 1, eventId: 1 },
+  { 
+    unique: true, 
+    partialFilterExpression: { 
+      status: BookingStatus.AWAITING_PAYMENT,
+      userId: { $exists: true }
+    },
+    name: 'idx_user_event_awaiting_payment'
+  }
+);
 
 bookingSchema.pre('validate', function (next) {
   if (!this.bookingId) {
