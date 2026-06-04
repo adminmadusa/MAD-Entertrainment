@@ -9,6 +9,7 @@ import publicEventRoutes from './public/event.routes';
 import publicPaymentRoutes from './public/payment.routes';
 import publicPopupRoutes from './public/popup.routes';
 import publicTicketRoutes from './public/ticket.routes';
+import publicMarketingRoutes from './public/marketing.routes';
 
 const router: Router = Router();
 const unreconstructed: Router = Router();
@@ -43,6 +44,7 @@ router.use('/dj-operators', publicDJOperatorRoutes);
 router.use('/categories', publicCategoryRoutes);
 router.use('/popups', publicPopupRoutes);
 router.use('/public/tickets', publicTicketRoutes);
+router.use('/marketing', publicMarketingRoutes);
 
 // ─── Direct Auth Accessors ──────────────────────────────────
 router.get('/me', requireAuth, AuthController.getMe);
