@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import { BookingStatus, BookingMode, ReservationStatus, SeatStatus } from '@mad/shared';
 import { Types } from 'mongoose';
 
@@ -16,6 +17,37 @@ import { ReservationService } from '../reservation.service';
 import { runInTransaction } from '../../utils/transaction';
 
 export class PublicBookingService {
+  static generateSelectionFingerprint(data: {
+    eventId: string;
+    tickets: {
+      tier: string;
+      quantity: number;
+      seats?: { seatId: string }[];
+    }[];
+    couponCode?: string;
+  }): string {
+    const normalizedCoupon = data.couponCode ? data.couponCode.toUpperCase().trim() : '';
+    const normalizedTickets = data.tickets.map((t) => {
+      const sortedSeats = t.seats
+        ? t.seats.map((s) => s.seatId).filter(Boolean).sort()
+        : [];
+      return {
+        tier: t.tier,
+        quantity: t.quantity,
+        seats: sortedSeats,
+      };
+    }).sort((a, b) => a.tier.localeCompare(b.tier));
+
+    const rawSelection = {
+      eventId: data.eventId,
+      tickets: normalizedTickets,
+      couponCode: normalizedCoupon,
+    };
+
+    const jsonStr = JSON.stringify(rawSelection);
+    return crypto.createHash('sha256').update(jsonStr).digest('hex');
+  }
+
   static async createBooking(
     data: {
       eventId: string;
@@ -44,6 +76,109 @@ export class PublicBookingService {
 
     if (event.isSoldOut) {
       throw AppError.badRequest('Event is sold out');
+    }
+
+    // Generate the fingerprint for the current request selection
+    const requestFingerprint = PublicBookingService.generateSelectionFingerprint(data);
+
+    // Look for an existing AWAITING_PAYMENT booking for this event and session/user
+    const query: any = {
+      eventId: event._id,
+      status: BookingStatus.AWAITING_PAYMENT,
+    };
+    if (userId) {
+      query.userId = new Types.ObjectId(userId);
+    } else if (sessionId) {
+      query.sessionId = sessionId;
+    } else {
+      throw AppError.unauthorized('Authentication required');
+    }
+
+    const existingBooking = await Booking.findOne(query);
+
+    if (existingBooking) {
+      // Compute fingerprint if missing (for legacy bookings)
+      const existingFingerprint = existingBooking.selectionFingerprint || 
+        PublicBookingService.generateSelectionFingerprint({
+          eventId: existingBooking.eventId.toString(),
+          tickets: existingBooking.tickets.map((t: any) => ({
+            tier: t.tier,
+            quantity: t.quantity,
+            seats: t.seats || [],
+          })),
+          couponCode: existingBooking.couponCode,
+        });
+
+      if (existingFingerprint === requestFingerprint) {
+        logger.info({ bookingId: existingBooking._id, eventId: data.eventId, userId, sessionId }, 'Identical retry detected, reusing existing booking.');
+        if (!existingBooking.selectionFingerprint) {
+          existingBooking.selectionFingerprint = existingFingerprint;
+          await existingBooking.save().catch(() => {});
+        }
+        (existingBooking as any).isReused = true;
+        return existingBooking;
+      } else {
+        logger.info({ bookingId: existingBooking._id, eventId: data.eventId, userId, sessionId }, 'Sequential selection change detected. Expiring old booking.');
+        existingBooking.status = BookingStatus.EXPIRED;
+        existingBooking.cancellationReason = 'booking-modified-during-checkout';
+        existingBooking.cancelledAt = new Date();
+        existingBooking.bookingVersion += 1;
+        await existingBooking.save();
+
+        const failedReservations = await ReservationService.transitionForBooking(
+          existingBooking._id,
+          ReservationStatus.FAILED,
+          {
+            reason: 'booking-modified-during-checkout',
+            correlationId: existingBooking.bookingId,
+          }
+        );
+        await ReservationService.releaseCapacityForTerminalReservations(failedReservations);
+
+        if (event.bookingMode === BookingMode.SEAT_BASED) {
+          const oldSeatIds = existingBooking.tickets
+            .flatMap((t: any) => t.seats || [])
+            .map((s: any) => s.seatId);
+          if (oldSeatIds.length > 0) {
+            await SeatLayout.updateOne(
+              { eventId: event._id },
+              {
+                $set: {
+                  'seats.$[seat].status': SeatStatus.AVAILABLE,
+                },
+                $unset: {
+                  'seats.$[seat].lockedBy': '',
+                  'seats.$[seat].lockedAt': '',
+                  'seats.$[seat].bookedByBookingId': '',
+                  'seats.$[seat].reservationId': '',
+                },
+                $inc: {
+                  'seats.$[seat].seatVersion': 1,
+                },
+              },
+              {
+                arrayFilters: [
+                  {
+                    'seat.seatId': { $in: oldSeatIds },
+                    'seat.bookedByBookingId': existingBooking._id.toString(),
+                  },
+                ],
+              }
+            );
+          }
+        }
+
+        try {
+          emitToAdmin('bookings', 'booking:updated', {
+            bookingId: existingBooking._id.toString(),
+            eventId: event._id.toString(),
+            status: existingBooking.status,
+            bookingVersion: existingBooking.bookingVersion,
+          }, existingBooking.bookingId);
+        } catch (err) {
+          logger.debug({ err, bookingId: existingBooking._id }, 'Admin socket emit skipped for booking modification expiration');
+        }
+      }
     }
 
     let subtotal = 0;
@@ -228,105 +363,146 @@ export class PublicBookingService {
       status: BookingStatus.AWAITING_PAYMENT,
       expiresAt,
       logicalExpiresAt,
+      selectionFingerprint: requestFingerprint,
     });
 
-    const txResult = await runInTransaction(async (session) => {
-      await booking.save({ session });
+    let txResult;
+    try {
+      txResult = await runInTransaction(async (session) => {
+        await booking.save({ session });
 
-      const reservations: IReservation[] = [];
-      const postCommitCallbacks: Array<() => Promise<void>> = [];
-      try {
-        for (const ticketReq of data.tickets) {
-          const { reservations: allocated, postCommit } = await ReservationService.reserveForBooking({
-            eventId: event._id as Types.ObjectId,
-            bookingMode: event.bookingMode,
-            tier: ticketReq.tier as any,
-            quantity: ticketReq.quantity,
-            seats: ticketReq.seats?.map((seat) => ({ seatId: seat.seatId, section: seat.section })),
-            sessionId: sessionId ?? booking._id.toString(),
-            userId,
-            bookingId: booking._id as Types.ObjectId,
-            bookingReference: booking.bookingId,
-            correlationId: booking.bookingId,
-            expiresAt: logicalExpiresAt,
-          }, session);
-          reservations.push(...allocated);
-          postCommitCallbacks.push(postCommit);
-        }
-      } catch (err) {
-        if (!session) {
-          booking.status = BookingStatus.FAILED;
-          booking.bookingVersion += 1;
-          await booking.save().catch(() => {});
-          if (reservations.length > 0) {
-            const failedReservations = await ReservationService.transitionForBooking(booking._id, ReservationStatus.FAILED, {
-              reason: 'booking-reservation-allocation-failed',
+        const reservations: IReservation[] = [];
+        const postCommitCallbacks: Array<() => Promise<void>> = [];
+        try {
+          for (const ticketReq of data.tickets) {
+            const { reservations: allocated, postCommit } = await ReservationService.reserveForBooking({
+              eventId: event._id as Types.ObjectId,
+              bookingMode: event.bookingMode,
+              tier: ticketReq.tier as any,
+              quantity: ticketReq.quantity,
+              seats: ticketReq.seats?.map((seat) => ({ seatId: seat.seatId, section: seat.section })),
+              sessionId: sessionId ?? booking._id.toString(),
+              userId,
+              bookingId: booking._id as Types.ObjectId,
+              bookingReference: booking.bookingId,
               correlationId: booking.bookingId,
-            });
-            await ReservationService.releaseCapacityForTerminalReservations(failedReservations);
+              expiresAt: logicalExpiresAt,
+            }, session);
+            reservations.push(...allocated);
+            postCommitCallbacks.push(postCommit);
           }
-        }
-        logger.warn({ err, bookingId: booking._id, eventId: event._id }, 'Booking failed during reservation allocation');
-        throw err;
-      }
-
-      booking.reservationIds = reservations.map((reservation) => reservation.reservationId);
-      booking.bookingVersion += 1;
-      await booking.save({ session });
-
-      let allSeatIds: string[] = [];
-      let reservationBySeat = new Map<string, string>();
-
-      // Update Seat statuses to LOCKED in MongoDB for the booking (to prevent other checkout threads booking it)
-      if (event.bookingMode === BookingMode.SEAT_BASED) {
-        allSeatIds = data.tickets.flatMap((t) => t.seats || []).map((s) => s.seatId);
-        reservationBySeat = new Map(
-          reservations.filter((reservation) => reservation.seatId).map((reservation) => [reservation.seatId, reservation.reservationId])
-        );
-        const result = await SeatLayout.updateOne(
-          { eventId: event._id },
-          {
-            $set: {
-              'seats.$[seat].status': SeatStatus.LOCKED,
-              'seats.$[seat].lockedBy': sessionId,
-              'seats.$[seat].lockedAt': new Date(),
-              'seats.$[seat].bookedByBookingId': booking._id.toString(),
-            },
-            $inc: {
-              'seats.$[seat].seatVersion': 1,
-            },
-          },
-          {
-            arrayFilters: [
-              {
-                'seat.seatId': { $in: allSeatIds },
-                'seat.status': SeatStatus.AVAILABLE,
-              },
-            ],
-            session,
+        } catch (err) {
+          if (!session) {
+            booking.status = BookingStatus.FAILED;
+            booking.bookingVersion += 1;
+            await booking.save().catch(() => {});
+            if (reservations.length > 0) {
+              const failedReservations = await ReservationService.transitionForBooking(booking._id, ReservationStatus.FAILED, {
+                reason: 'booking-reservation-allocation-failed',
+                correlationId: booking.bookingId,
+              });
+              await ReservationService.releaseCapacityForTerminalReservations(failedReservations);
+            }
           }
-        );
-
-        if (result.modifiedCount !== allSeatIds.length) {
-          throw AppError.conflict('Some of the selected seats were locked by another user. Please choose different seats.');
+          logger.warn({ err, bookingId: booking._id, eventId: event._id }, 'Booking failed during reservation allocation');
+          throw err;
         }
 
-        for (const [seatId, reservationId] of reservationBySeat.entries()) {
-          await SeatLayout.updateOne(
-            { eventId: event._id, 'seats.seatId': seatId },
-            { $set: { 'seats.$.reservationId': reservationId } },
-            { session }
+        booking.reservationIds = reservations.map((reservation) => reservation.reservationId);
+        booking.bookingVersion += 1;
+        await booking.save({ session });
+
+        let allSeatIds: string[] = [];
+        let reservationBySeat = new Map<string, string>();
+
+        // Update Seat statuses to LOCKED in MongoDB for the booking (to prevent other checkout threads booking it)
+        if (event.bookingMode === BookingMode.SEAT_BASED) {
+          allSeatIds = data.tickets.flatMap((t) => t.seats || []).map((s) => s.seatId);
+          reservationBySeat = new Map(
+            reservations.filter((reservation) => reservation.seatId).map((reservation) => [reservation.seatId, reservation.reservationId])
           );
-        }
-      }
+          const result = await SeatLayout.updateOne(
+            { eventId: event._id },
+            {
+              $set: {
+                'seats.$[seat].status': SeatStatus.LOCKED,
+                'seats.$[seat].lockedBy': sessionId,
+                'seats.$[seat].lockedAt': new Date(),
+                'seats.$[seat].bookedByBookingId': booking._id.toString(),
+              },
+              $inc: {
+                'seats.$[seat].seatVersion': 1,
+              },
+            },
+            {
+              arrayFilters: [
+                {
+                  'seat.seatId': { $in: allSeatIds },
+                  'seat.status': SeatStatus.AVAILABLE,
+                },
+              ],
+              session,
+            }
+          );
 
-      return {
-        reservations,
-        allSeatIds,
-        reservationBySeat,
-        postCommitCallbacks,
-      };
-    });
+          if (result.modifiedCount !== allSeatIds.length) {
+            throw AppError.conflict('Some of the selected seats were locked by another user. Please choose different seats.');
+          }
+
+          for (const [seatId, reservationId] of reservationBySeat.entries()) {
+            await SeatLayout.updateOne(
+              { eventId: event._id, 'seats.seatId': seatId },
+              { $set: { 'seats.$.reservationId': reservationId } },
+              { session }
+            );
+          }
+        }
+
+        return {
+          reservations,
+          allSeatIds,
+          reservationBySeat,
+          postCommitCallbacks,
+        };
+      });
+    } catch (err: any) {
+      if (
+        err.code === 11000 &&
+        (err.message.includes('idx_session_event_awaiting_payment') ||
+          err.message.includes('idx_user_event_awaiting_payment'))
+      ) {
+        logger.info(
+          { sessionId, userId, eventId: event._id },
+          'Concurrent booking checkout collision detected, resolving winner.'
+        );
+        const winningBooking = await Booking.findOne(query);
+        if (winningBooking) {
+          const winningFingerprint =
+            winningBooking.selectionFingerprint ||
+            PublicBookingService.generateSelectionFingerprint({
+              eventId: winningBooking.eventId?.toString() || event._id.toString(),
+              tickets: winningBooking.tickets.map((t: any) => ({
+                tier: t.tier,
+                quantity: t.quantity,
+                seats: t.seats || [],
+              })),
+              couponCode: winningBooking.couponCode,
+            });
+
+          if (winningFingerprint === requestFingerprint) {
+            (winningBooking as any).isReused = true;
+            return winningBooking;
+          }
+        }
+
+        const conflictErr = AppError.conflict(
+          'A concurrent booking checkout is already in progress with a different selection. Please refresh your cart and try again.'
+        );
+        conflictErr.code = 'CONCURRENT_BOOKING_ATTEMPT';
+        throw conflictErr;
+      }
+      throw err;
+    }
 
     const { reservations, allSeatIds, reservationBySeat, postCommitCallbacks } = txResult;
 
