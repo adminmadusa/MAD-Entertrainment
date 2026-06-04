@@ -84,14 +84,6 @@ reservationSchema.index(
 );
 reservationSchema.index({ eventId: 1, tier: 1, status: 1, quantity: 1 });
 reservationSchema.index({ eventId: 1, status: 1, quantity: 1 });
-reservationSchema.index(
-  { status: 1, updatedAt: -1 },
-  {
-    partialFilterExpression: {
-      seatId: { $exists: true },
-    },
-  }
-);
 reservationSchema.index({ status: 1, updatedAt: -1 });
 reservationSchema.index({ status: 1, expiresAt: 1 });
 reservationSchema.index({ bookingId: 1, status: 1 });

@@ -51,6 +51,7 @@ export function FAQAccordion({ faqs }: FAQAccordionProps) {
             </summary>
             
             <div className="px-5 pb-5 pt-1 text-text-secondary text-sm leading-relaxed border-t border-border-subtle/30 mt-2">
+              {/* eslint-disable-next-line react/no-danger */}
               <p dangerouslySetInnerHTML={{ __html: faq.answer }} />
             </div>
           </details>

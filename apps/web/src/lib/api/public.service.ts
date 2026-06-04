@@ -125,17 +125,8 @@ export async function publicGetEvents(filters: { category?: string; search?: str
 }
 
 export async function publicGetEventBySlug(slug: string): Promise<Event> {
-  // eslint-disable-next-line no-console
-  console.log(`[EVENT_FETCH] publicGetEventBySlug API call started for slug: ${slug}`);
-  try {
-    const { data } = await apiClient.get<{ data: Event }>(`/events/${slug}`);
-    // eslint-disable-next-line no-console
-    console.log(`[EVENT_FETCH] publicGetEventBySlug API call completed successfully for slug: ${slug}`);
-    return data.data;
-  } catch (error) {
-    console.error(`[EVENT_FETCH] publicGetEventBySlug API call failed for slug: ${slug}`, error);
-    throw error;
-  }
+  const { data } = await apiClient.get<{ data: Event }>(`/events/${slug}`);
+  return data.data;
 }
 
 // ─── DJ Operators ─────────────────────────────────────────────

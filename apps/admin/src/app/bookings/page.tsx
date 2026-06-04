@@ -3,7 +3,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { BookingStatus, getBookingStatusLabel } from '@mad/shared';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, Suspense, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useAdminAuth } from '@/hooks/use-admin-auth.hook';
 
@@ -165,7 +165,7 @@ function BookingsContent() {
     },
   });
 
-  const bookings = data?.items ?? [];
+  const bookings = useMemo(() => data?.items ?? [], [data?.items]);
   const pagination = data?.pagination;
 
   useEffect(() => {
