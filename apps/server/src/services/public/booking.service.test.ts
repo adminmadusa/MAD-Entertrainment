@@ -458,4 +458,42 @@ describe('PublicBookingService.createBooking — transactions & rollback', () =>
     expect(emitToEvent).not.toHaveBeenCalledWith(expect.any(String), 'seat:reserved', expect.any(Object), expect.any(String));
     expect(mockRedis.del).not.toHaveBeenCalled();
   });
+
+  it('cannot create booking for deleted event', async () => {
+    const mockEvent = {
+      _id: new Types.ObjectId('60c72b2f9b1d8e25b8d29b04'),
+      status: 'published',
+      isDeleted: true,
+      isSoldOut: false,
+      bookingMode: 'general_admission',
+      title: 'Deleted Event',
+      category: 'music',
+      ticketTiers: [
+        {
+          tier: 'GA_EARLY',
+          name: 'Early GA',
+          isActive: true,
+          price: 500,
+          soldCount: 0,
+          totalCapacity: 100,
+          taxPercent: 18,
+        },
+      ],
+    };
+
+    vi.mocked(Event.findById).mockResolvedValue(mockEvent as any);
+
+    await expect(
+      PublicBookingService.createBooking(
+        {
+          eventId: mockEvent._id.toString(),
+          guestName: 'John Doe',
+          guestEmail: 'john@example.com',
+          guestPhone: '9876543210',
+          tickets: [{ tier: 'GA_EARLY', quantity: 2 }],
+        },
+        'session-123'
+      )
+    ).rejects.toThrow('Event not found or not published');
+  });
 });

@@ -3,6 +3,8 @@ import { TicketProfile } from '../../models/ticket-profile.schema';
 import { Ticket } from '../../models/ticket.schema';
 import { resolveEventTickets } from './ticket-profile.service';
 import { CacheService } from '../cache.service';
+import { Booking } from '../../models/booking.schema';
+import { AppError } from '../../middleware/error.middleware';
 
 export const createEvent = async (data: Partial<IEvent>): Promise<IEvent> => {
   if (data.title && !data.slug) {
@@ -108,6 +110,20 @@ export const updateEvent = async (id: string, data: Partial<IEvent>): Promise<an
     }
   }
 
+  // Capacity Floor Protection check
+  const finalTiers = data.ticketTiers !== undefined ? data.ticketTiers : existing.ticketTiers;
+  if (finalTiers) {
+    for (const tier of finalTiers) {
+      const existingTier = existing.ticketTiers.find((t) => t.tier === tier.tier);
+      const soldCount = existingTier ? existingTier.soldCount : 0;
+      if (tier.totalCapacity < soldCount) {
+        throw AppError.badRequest(
+          `Cannot reduce capacity for tier "${tier.name}" below its sold count. Sold: ${soldCount}, Requested: ${tier.totalCapacity}`
+        );
+      }
+    }
+  }
+
   const updated = await Event.findByIdAndUpdate(id, { ...data, eventVersion: existing.eventVersion + 1 }, { new: true });
   if (!updated) return null;
   await CacheService.delPattern('events:*');
@@ -135,6 +151,10 @@ export const updateEvent = async (id: string, data: Partial<IEvent>): Promise<an
 };
 
 export const deleteEvent = async (id: string): Promise<IEvent | null> => {
+  const bookingExists = await Booking.exists({ eventId: id });
+  if (bookingExists) {
+    throw AppError.badRequest('Cannot delete event with existing bookings');
+  }
   const deleted = await Event.findByIdAndUpdate(id, { isDeleted: true, deletedAt: new Date() }, { new: true });
   await CacheService.delPattern('events:*');
   return deleted;
