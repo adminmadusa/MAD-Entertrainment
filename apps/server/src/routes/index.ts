@@ -94,11 +94,13 @@ import adminNotificationRoutes from './admin/notification.routes';
 import adminTeamRoutes from './admin/team.routes';
 import adminPopupRoutes from './admin/popup.routes';
 import adminUserRoutes from './admin/user.routes';
+import adminMarketingRoutes from './admin/marketing.routes';
 
 router.use('/admin/popups', adminPopupRoutes);
 router.use('/admin/notifications', adminNotificationRoutes);
 router.use('/admin/team', adminTeamRoutes);
 router.use('/admin/scanner', adminScannerRoutes);
 router.use('/admin/users', adminUserRoutes);
+router.use('/admin/marketing', adminMarketingRoutes);
 
 export default router;
