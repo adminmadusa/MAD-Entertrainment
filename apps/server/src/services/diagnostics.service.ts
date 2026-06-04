@@ -43,7 +43,7 @@ export interface SystemDiagnosticsReport {
 }
 
 export class DiagnosticsService {
-  private static readonly QUEUE_NAMES = ['booking-queue', 'pdf-queue', 'notification-queue'];
+  private static readonly QUEUE_NAMES = ['booking-queue', 'pdf-queue', 'notification-queue', 'marketing-queue'];
 
   /**
    * Generates a complete system operational metrics and diagnostics report.

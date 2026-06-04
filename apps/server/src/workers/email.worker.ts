@@ -44,7 +44,7 @@ export async function processEmailDispatch(
   logger.info({ to, bookingId, type: notificationType }, 'Email successfully dispatched.');
 }
 
-export async function handleJobExecution(jobId: string, data: any, attemptsMade: number): Promise<void> {
+export async function handleJobExecution(jobId: string, data: any, attemptsMade: number, queueName: string = QUEUE_NAME): Promise<void> {
   const { to, subject, html, attachments, bookingId, eventId, notificationType } = data;
   logger.info({ jobId, recipient: to, attemptsMade }, "Email worker started");
 
@@ -130,7 +130,7 @@ export async function handleJobExecution(jobId: string, data: any, attemptsMade:
     await Sentry.startSpan(
       {
         op: 'queue.process',
-        name: `worker:${QUEUE_NAME}`,
+        name: `worker:${queueName}`,
       },
       async () => {
         await processEmailDispatch(to, subject, html, attachments, bookingId, eventId, notificationType, messageId);
@@ -155,11 +155,14 @@ export async function handleJobExecution(jobId: string, data: any, attemptsMade:
 
 // ─── BullMQ Worker Setup ─────────────────────────────────────
 let worker: Worker | null = null;
+let marketingWorker: Worker | null = null;
 
-export function startEmailWorker(): void {
+const MARKETING_QUEUE_NAME = getQueueName('marketing-queue');
+
+export function initEmailWorker(queueName: string, concurrency: number): Worker | null {
   if (!isRedisConnected()) {
-    logger.warn('Redis offline. Email worker startup aborted.');
-    return;
+    logger.warn(`Redis offline. Email worker startup for queue ${queueName} aborted.`);
+    return null;
   }
 
   try {
@@ -167,27 +170,27 @@ export function startEmailWorker(): void {
     const options: WorkerOptions = {
       connection,
       prefix: getQueuePrefix(),
-      concurrency: 20, // Standard concurrency limits
+      concurrency,
     };
 
-    worker = new Worker(
-      QUEUE_NAME,
+    const newWorker = new Worker(
+      queueName,
       async (job: Job) => {
-        logger.info({ jobId: job.id, attemptsMade: job.attemptsMade }, 'Processing email dispatch job via BullMQ');
-        await handleJobExecution(job.id || 'unknown', job.data, job.attemptsMade);
+        logger.info({ jobId: job.id, attemptsMade: job.attemptsMade, queue: queueName }, 'Processing email dispatch job via BullMQ');
+        await handleJobExecution(job.id || 'unknown', job.data, job.attemptsMade, queueName);
       },
       options
     );
 
-    worker.on('failed', async (job, err) => {
-      logger.error({ err, jobId: job?.id }, 'Email dispatch job failed in BullMQ');
+    newWorker.on('failed', async (job, err) => {
+      logger.error({ err, jobId: job?.id, queue: queueName }, 'Email dispatch job failed in BullMQ');
       if (job && job.attemptsMade >= (job.opts.attempts || 5)) {
         let dlqPersisted = false;
 
         // 1. DLQ Persistence
         try {
           await DeadLetterJob.create({
-            queueName: QUEUE_NAME,
+            queueName,
             jobId: job.id || 'unknown',
             jobName: job.name,
             data: job.data,
@@ -206,7 +209,7 @@ export function startEmailWorker(): void {
             jobId: job.id,
             bookingId: job.data?.bookingId,
             eventId: job.data?.eventId,
-            queueName: QUEUE_NAME,
+            queueName,
             attemptsMade: job.attemptsMade,
             dlqStatus: 'exhausted',
           }, 'Email dispatch job exhausted retries and moved to DLQ');
@@ -216,7 +219,7 @@ export function startEmailWorker(): void {
         try {
           Sentry.captureException(err, {
             tags: {
-              queue: QUEUE_NAME,
+              queue: queueName,
               jobId: job.id || 'unknown',
               jobName: job.name || 'unknown',
               severity: 'warning',
@@ -226,7 +229,7 @@ export function startEmailWorker(): void {
               bookingId: job.data?.bookingId,
               eventId: job.data?.eventId,
             },
-            fingerprint: ['dlq-failure', QUEUE_NAME, err.message],
+            fingerprint: ['dlq-failure', queueName, err.message],
           });
         } catch (sentryError) {
           logger.error({ err: sentryError, originalErr: err.message, jobId: job.id }, 'Failed to emit exception to Sentry');
@@ -237,18 +240,32 @@ export function startEmailWorker(): void {
     const env = getEnv();
     logger.info({
       appEnv: env.APP_ENV,
-      queueName: QUEUE_NAME,
+      queueName,
     }, "BullMQ queue initialized");
 
-    logger.info('Email Worker initialized successfully');
+    logger.info(`Email Worker for queue ${queueName} initialized successfully`);
+    return newWorker;
   } catch (err) {
-    logger.error({ err }, 'Failed to start BullMQ Email Worker. Degraded mode active.');
+    logger.error({ err, queueName }, `Failed to start BullMQ Email Worker for queue ${queueName}. Degraded mode active.`);
+    return null;
   }
+}
+
+export function startEmailWorker(): void {
+  // Start the transactional worker (notification-queue, concurrency 20)
+  worker = initEmailWorker(QUEUE_NAME, 20);
+
+  // Start the marketing worker (marketing-queue, concurrency 2)
+  marketingWorker = initEmailWorker(MARKETING_QUEUE_NAME, 2);
 }
 
 export async function stopEmailWorker(): Promise<void> {
   if (worker) {
     await worker.close();
     worker = null;
+  }
+  if (marketingWorker) {
+    await marketingWorker.close();
+    marketingWorker = null;
   }
 }
