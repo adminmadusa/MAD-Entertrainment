@@ -5,6 +5,9 @@ import { Payment } from '../../models/payment.schema';
 import { Booking } from '../../models/booking.schema';
 import { cancelBooking, runInTransaction } from './booking.service';
 import { BookingStatus, PaymentStatus } from '@mad/shared';
+import { createNotificationSafe } from '../notification.service';
+import { Notification } from '../../models/notification.schema';
+import { QueueService } from '../queue.service';
 
 vi.mock('../../config/env', () => ({
   getEnv: vi.fn(() => ({
@@ -18,6 +21,23 @@ vi.mock('../../config/env', () => ({
 vi.mock('./booking.service', () => ({
   runInTransaction: vi.fn(async (fn) => fn('mock-session')),
   cancelBooking: vi.fn(),
+  executeCancelBookingSideEffects: vi.fn(),
+}));
+
+vi.mock('../notification.service', () => ({
+  createNotificationSafe: vi.fn(),
+}));
+
+vi.mock('../../models/notification.schema', () => ({
+  Notification: {
+    findOne: vi.fn(),
+  },
+}));
+
+vi.mock('../queue.service', () => ({
+  QueueService: {
+    enqueue: vi.fn(),
+  },
 }));
 
 // Mock Mongoose models to completely avoid database dependency and allow easy static/instance mocking
@@ -166,7 +186,12 @@ describe('Admin Refund Service Tests', () => {
 
       vi.mocked(Refund.findOne).mockReturnValue({ session: vi.fn().mockResolvedValue(mockRefund) } as any);
       vi.mocked(Payment.findById).mockReturnValue({ session: vi.fn().mockResolvedValue(mockPayment) } as any);
-      vi.mocked(Booking.findById).mockReturnValue({ session: vi.fn().mockResolvedValue(mockBooking) } as any);
+      const mockBookingFindChain = {
+        session: vi.fn().mockReturnThis(),
+        populate: vi.fn().mockResolvedValue(mockBooking),
+        then: vi.fn().mockImplementation((resolve) => resolve(mockBooking)),
+      };
+      vi.mocked(Booking.findById).mockReturnValue(mockBookingFindChain as any);
       vi.mocked(Refund.find).mockReturnValue({ session: vi.fn().mockResolvedValue([]) } as any);
       vi.mocked(cancelBooking).mockResolvedValue({} as any);
       vi.mocked(Payment.findByIdAndUpdate).mockResolvedValue({} as any);
@@ -200,7 +225,12 @@ describe('Admin Refund Service Tests', () => {
 
       vi.mocked(Refund.findOne).mockReturnValue({ session: vi.fn().mockResolvedValue(mockRefund) } as any);
       vi.mocked(Payment.findById).mockReturnValue({ session: vi.fn().mockResolvedValue(mockPayment) } as any);
-      vi.mocked(Booking.findById).mockReturnValue({ session: vi.fn().mockResolvedValue(mockBooking) } as any);
+      const mockBookingFindChain = {
+        session: vi.fn().mockReturnThis(),
+        populate: vi.fn().mockResolvedValue(mockBooking),
+        then: vi.fn().mockImplementation((resolve) => resolve(mockBooking)),
+      };
+      vi.mocked(Booking.findById).mockReturnValue(mockBookingFindChain as any);
       vi.mocked(Refund.find).mockReturnValue({ session: vi.fn().mockResolvedValue([]) } as any);
       vi.mocked(cancelBooking).mockResolvedValue({} as any);
       vi.mocked(Payment.findByIdAndUpdate).mockResolvedValue({} as any);
@@ -280,6 +310,102 @@ describe('Admin Refund Service Tests', () => {
       ).rejects.toThrow('Refund amount exceeds remaining captured balance');
 
       expect(cancelBooking).not.toHaveBeenCalled();
+    });
+
+    it('should not execute post-commit side effects if refund transaction fails', async () => {
+      const mockRefund = { _id: 'refund-123', bookingId: 'booking-456', paymentId: 'payment-789', amount: 100, status: 'requested' };
+      vi.mocked(Refund.findOne).mockReturnValue({ session: vi.fn().mockResolvedValue(mockRefund) } as any);
+
+      // Mock runInTransaction to simulate a transaction failure
+      vi.mocked(runInTransaction).mockRejectedValueOnce(new Error('Transaction aborted'));
+
+      await expect(
+        processRefund('refund-123', 'approve', 'Approve notes')
+      ).rejects.toThrow('Transaction aborted');
+
+      expect(createNotificationSafe).not.toHaveBeenCalled();
+      expect(QueueService.enqueue).not.toHaveBeenCalled();
+    });
+
+    it('should not roll back refund approval if queue enqueue fails after commit', async () => {
+      const mockRefundSave = vi.fn();
+      const mockRefund = {
+        _id: 'refund-123',
+        bookingId: 'booking-456',
+        paymentId: 'payment-789',
+        amount: 500,
+        status: 'requested',
+        processedAt: new Date(),
+        save: mockRefundSave,
+      };
+
+      const mockPayment = { _id: 'payment-789', amount: 500, status: PaymentStatus.PAID };
+      const mockBooking = { _id: 'booking-456', status: BookingStatus.CONFIRMED, totalAmount: 500, guestEmail: 'guest@example.com', guestName: 'Guest', eventId: 'event-555' };
+
+      vi.mocked(Refund.findOne).mockReturnValue({ session: vi.fn().mockResolvedValue(mockRefund) } as any);
+      vi.mocked(Payment.findById).mockReturnValue({ session: vi.fn().mockResolvedValue(mockPayment) } as any);
+
+      const mockBookingFindChain = {
+        session: vi.fn().mockReturnThis(),
+        populate: vi.fn().mockResolvedValue(mockBooking),
+        then: vi.fn().mockImplementation((resolve) => resolve(mockBooking)),
+      };
+      vi.mocked(Booking.findById).mockReturnValue(mockBookingFindChain as any);
+
+      vi.mocked(Refund.find).mockReturnValue({ session: vi.fn().mockResolvedValue([]) } as any);
+      vi.mocked(cancelBooking).mockResolvedValue({ booking: mockBooking, postCommitPayload: null } as any);
+      vi.mocked(Payment.findByIdAndUpdate).mockResolvedValue({} as any);
+
+      vi.mocked(Notification.findOne).mockResolvedValue(null);
+      vi.mocked(createNotificationSafe).mockResolvedValue({ _id: 'notification-123' });
+      vi.mocked(QueueService.enqueue).mockRejectedValue(new Error('Queue failure'));
+
+      const result = await processRefund('refund-123', 'approve', 'Approve notes');
+
+      expect(result?.status).toBe('completed');
+      expect(mockRefundSave).toHaveBeenCalled();
+      expect(createNotificationSafe).toHaveBeenCalled();
+      expect(QueueService.enqueue).toHaveBeenCalled();
+    });
+
+    it('should not roll back refund approval if notification creation fails after commit, and skip enqueue', async () => {
+      const mockRefundSave = vi.fn();
+      const mockRefund = {
+        _id: 'refund-123',
+        bookingId: 'booking-456',
+        paymentId: 'payment-789',
+        amount: 500,
+        status: 'requested',
+        processedAt: new Date(),
+        save: mockRefundSave,
+      };
+
+      const mockPayment = { _id: 'payment-789', amount: 500, status: PaymentStatus.PAID };
+      const mockBooking = { _id: 'booking-456', status: BookingStatus.CONFIRMED, totalAmount: 500, guestEmail: 'guest@example.com', guestName: 'Guest', eventId: 'event-555' };
+
+      vi.mocked(Refund.findOne).mockReturnValue({ session: vi.fn().mockResolvedValue(mockRefund) } as any);
+      vi.mocked(Payment.findById).mockReturnValue({ session: vi.fn().mockResolvedValue(mockPayment) } as any);
+
+      const mockBookingFindChain = {
+        session: vi.fn().mockReturnThis(),
+        populate: vi.fn().mockResolvedValue(mockBooking),
+        then: vi.fn().mockImplementation((resolve) => resolve(mockBooking)),
+      };
+      vi.mocked(Booking.findById).mockReturnValue(mockBookingFindChain as any);
+
+      vi.mocked(Refund.find).mockReturnValue({ session: vi.fn().mockResolvedValue([]) } as any);
+      vi.mocked(cancelBooking).mockResolvedValue({ booking: mockBooking, postCommitPayload: null } as any);
+      vi.mocked(Payment.findByIdAndUpdate).mockResolvedValue({} as any);
+
+      vi.mocked(Notification.findOne).mockResolvedValue(null);
+      vi.mocked(createNotificationSafe).mockRejectedValue(new Error('Notification DB write failed'));
+
+      const result = await processRefund('refund-123', 'approve', 'Approve notes');
+
+      expect(result?.status).toBe('completed');
+      expect(mockRefundSave).toHaveBeenCalled();
+      expect(createNotificationSafe).toHaveBeenCalled();
+      expect(QueueService.enqueue).not.toHaveBeenCalled();
     });
   });
 });

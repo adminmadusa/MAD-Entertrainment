@@ -1,7 +1,7 @@
 import { Refund, IRefund } from '../../models/refund.schema';
 import { Booking } from '../../models/booking.schema';
 import { Payment } from '../../models/payment.schema';
-import { runInTransaction, cancelBooking } from './booking.service';
+import { runInTransaction, cancelBooking, executeCancelBookingSideEffects } from './booking.service';
 import { AppError } from '../../middleware/error.middleware';
 import { BookingStatus, NotificationType, PaymentStatus } from '@mad/shared';
 import { Notification } from '../../models/notification.schema';
@@ -109,7 +109,7 @@ export const processRefund = async (
   adminNotes?: string,
   gatewayRefundId?: string
 ): Promise<IRefund | null> => {
-  return runInTransaction(async (session) => {
+  const result = await runInTransaction(async (session) => {
     const status = action === 'approve' ? 'completed' : 'failed';
 
     // 1. Transaction-safe atomic load of the requested Refund document
@@ -120,6 +120,7 @@ export const processRefund = async (
 
     let totalRefundedSoFar = 0;
     let payment = null;
+    let cancelPostCommitPayload = null;
 
     if (status === 'completed') {
       // 2. Transaction-safe verification of the Payment record
@@ -171,7 +172,10 @@ export const processRefund = async (
 
     if (status === 'completed' && payment) {
       // Trigger core booking, seat, and inventory cancellation cleanup
-      await cancelBooking(updated.bookingId.toString(), adminNotes || 'Admin Refund Processed', session, BookingStatus.REFUNDED);
+      const cancelResult = await cancelBooking(updated.bookingId.toString(), adminNotes || 'Admin Refund Processed', session, BookingStatus.REFUNDED);
+      if (cancelResult && cancelResult.postCommitPayload) {
+        cancelPostCommitPayload = cancelResult.postCommitPayload;
+      }
 
       // 7. Enforce Payment Status Synchronization (Full vs. Partial)
       const isFullRefund = (totalRefundedSoFar + updated.amount) === payment.amount;
@@ -182,10 +186,27 @@ export const processRefund = async (
         { status: newPaymentStatus },
         { session }
       );
+    }
 
-      // Asynchronous, exception-safe Full & Partial Refund Email Trigger
+    return { updated, cancelPostCommitPayload };
+  });
+
+  if (result) {
+    const { updated, cancelPostCommitPayload } = result;
+
+    // Execute cancelBooking post-commit side effects sequentially with error isolation
+    if (cancelPostCommitPayload) {
       try {
-        const booking = await Booking.findById(updated.bookingId).populate('eventId').session(session || null);
+        await executeCancelBookingSideEffects(cancelPostCommitPayload);
+      } catch (err) {
+        logger.error({ err }, 'Error executing booking cancel side effects post-commit in processRefund');
+      }
+    }
+
+    // Asynchronous, exception-safe Full & Partial Refund Email Trigger
+    if (updated.status === 'completed') {
+      try {
+        const booking = await Booking.findById(updated.bookingId).populate('eventId');
         if (booking && booking.guestEmail) {
           const event = booking.eventId as any;
           const refundAmount = updated.amount;
@@ -199,7 +220,7 @@ export const processRefund = async (
             // Task 2: Full Refund
             const existingNotification = await Notification.findOne({
               jobId: { $regex: `^refund-${updated._id}` }
-            }).session(session || null);
+            });
 
             if (!existingNotification) {
               const formattedRefundDate = new Date(updated.processedAt || new Date()).toLocaleDateString('en-IN', {
@@ -226,7 +247,7 @@ export const processRefund = async (
             // Task 3: Partial Refund
             const existingNotification = await Notification.findOne({
               jobId: { $regex: `^refund-${updated._id}` }
-            }).session(session || null);
+            });
 
             if (!existingNotification) {
               emailHtml = await partialRefundHtml({
@@ -247,57 +268,72 @@ export const processRefund = async (
           if (emailHtml && notificationType) {
             const jobId = `refund-${updated._id}-${Date.now()}`;
             
-            await createNotificationSafe([{
-              jobId,
-              status: 'queued',
-              queuedAt: new Date(),
-              type: notificationType,
-              channel: 'email',
-              recipient: booking.guestEmail,
-              subject,
-              isSent: false,
-              retryCount: 0,
-              bookingId: booking._id,
-              eventId: event?._id
-            }], { session });
-
-            await QueueService.enqueue(
-              getQueueName('notification-queue'),
-              'email-dispatch',
-              {
-                to: booking.guestEmail,
+            // Post-commit failure isolation: Notification creation and Email Enqueue
+            try {
+              // Post-commit ordering constraint: createNotificationSafe must succeed before QueueService.enqueue
+              await createNotificationSafe([{
+                jobId,
+                status: 'queued',
+                queuedAt: new Date(),
+                type: notificationType,
+                channel: 'email',
+                recipient: booking.guestEmail,
                 subject,
-                html: emailHtml,
-                notificationType,
+                isSent: false,
+                retryCount: 0,
+                bookingId: booking._id,
+                eventId: event?._id
+              }]);
+
+              // If createNotificationSafe throws, this statement is skipped
+              await QueueService.enqueue(
+                getQueueName('notification-queue'),
+                'email-dispatch',
+                {
+                  to: booking.guestEmail,
+                  subject,
+                  html: emailHtml,
+                  notificationType,
+                  bookingId: booking._id.toString(),
+                  eventId: event?._id?.toString() || booking.eventId?.toString() || '',
+                },
+                jobId
+              );
+
+              logger.info({
+                emailType: refundAmount === totalAmount ? 'FULL_REFUND' : 'PARTIAL_REFUND',
+                recipient: booking.guestEmail,
                 bookingId: booking._id.toString(),
                 eventId: event?._id?.toString() || booking.eventId.toString(),
-              },
-              jobId
-            );
-
-            logger.info({
-              emailType: refundAmount === totalAmount ? 'FULL_REFUND' : 'PARTIAL_REFUND',
-              recipient: booking.guestEmail,
-              bookingId: booking._id.toString(),
-              eventId: event?._id?.toString() || booking.eventId.toString(),
-              timestamp: new Date().toISOString(),
-              success: true
-            }, 'Refund email queued successfully.');
+                timestamp: new Date().toISOString(),
+                success: true
+              }, 'Refund email queued successfully.');
+            } catch (err: any) {
+              logger.error({
+                err,
+                emailType: refundAmount === totalAmount ? 'FULL_REFUND' : 'PARTIAL_REFUND',
+                bookingId: updated.bookingId.toString(),
+                timestamp: new Date().toISOString(),
+                success: false
+              }, 'Failed to queue refund email post-commit.');
+            }
           } else {
             logger.info({ bookingId: booking._id }, 'Refund email already queued or sent; skipping duplicate.');
           }
         }
-      } catch (err) {
+      } catch (err: any) {
         logger.error({
           err,
-          emailType: 'REFUND_PROCESSED',
+          emailType: 'REFUND_PROCESSED_PRE_PREPARATION',
           bookingId: updated.bookingId.toString(),
           timestamp: new Date().toISOString(),
           success: false
-        }, 'Failed to queue refund email gracefully.');
+        }, 'Failed to prepare refund email post-commit.');
       }
     }
 
     return updated;
-  });
+  }
+
+  return null;
 };
