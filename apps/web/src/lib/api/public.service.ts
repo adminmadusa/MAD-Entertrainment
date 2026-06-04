@@ -304,10 +304,7 @@ export async function publicVerifyVerificationCodeOrOTP(payload: VerifyVerificat
   return data.data;
 }
 
-export async function publicGetMyAuthBookings(): Promise<Booking[]> {
-  const { data } = await apiClient.get<{ data: Booking[] }>('/my-bookings');
-  return data.data;
-}
+
 export interface UpdateProfilePayload {
   firstName: string;
   lastName: string;
