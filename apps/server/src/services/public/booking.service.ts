@@ -38,7 +38,7 @@ export class PublicBookingService {
     userId?: string
   ): Promise<IBooking> {
     const event = await Event.findById(data.eventId);
-    if (!event || event.status !== 'published') {
+    if (!event || event.status !== 'published' || event.isDeleted === true) {
       throw AppError.notFound('Event not found or not published');
     }
 

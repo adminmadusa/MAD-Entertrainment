@@ -2,6 +2,10 @@ import { TicketProfile, ITicketProfile } from '../../models/ticket-profile.schem
 import { Event } from '../../models/event.schema';
 import { CacheService } from '../cache.service';
 import { Types } from 'mongoose';
+import { Reservation } from '../../models/reservation.schema';
+import { Booking } from '../../models/booking.schema';
+import { Ticket } from '../../models/ticket.schema';
+import { AppError } from '../../middleware/error.middleware';
 
 /**
  * Resolves event ticket tiers dynamically by merging profile tickets with event-specific overrides.
@@ -81,6 +85,44 @@ export const syncProfileEvents = async (profileId: string) => {
     isDeleted: { $ne: true },
   });
 
+  // Step 1: Validate all events first (Atomicity)
+  for (const event of events) {
+    const resolvedTiers = resolveEventTickets(
+      event.title,
+      profile,
+      event.ticketOverrides || [],
+      event.ticketTiers || []
+    );
+
+    const currentTiers = (event.ticketTiers || []).map((t) => t.tier);
+    const newTiers = resolvedTiers.map((t) => t.tier);
+    const removedTiers = currentTiers.filter((t) => !newTiers.includes(t));
+
+    for (const tier of removedTiers) {
+      const eventTier = event.ticketTiers.find((t) => t.tier === tier);
+      const soldCount = eventTier?.soldCount ?? 0;
+      if (soldCount > 0) {
+        throw AppError.badRequest(`Cannot remove active ticket tier "${tier}" with sold tickets.`);
+      }
+
+      const reservationExists = await Reservation.exists({ eventId: event._id, tier });
+      if (reservationExists) {
+        throw AppError.badRequest(`Cannot remove active ticket tier "${tier}" with active reservations.`);
+      }
+
+      const bookingExists = await Booking.exists({ eventId: event._id, 'tickets.tier': tier });
+      if (bookingExists) {
+        throw AppError.badRequest(`Cannot remove active ticket tier "${tier}" with active bookings.`);
+      }
+
+      const ticketExists = await Ticket.exists({ eventId: event._id, tier });
+      if (ticketExists) {
+        throw AppError.badRequest(`Cannot remove active ticket tier "${tier}" with generated tickets.`);
+      }
+    }
+  }
+
+  // Step 2: Apply updates only if all validations passed
   for (const event of events) {
     const resolvedTiers = resolveEventTickets(
       event.title,
@@ -117,12 +159,51 @@ export const updateTicketProfile = async (
   id: string,
   data: Partial<ITicketProfile>
 ): Promise<ITicketProfile | null> => {
+  const existingProfile = await TicketProfile.findById(id);
+  if (!existingProfile) return null;
+
+  if (data.groups) {
+    const existingTiers = existingProfile.groups.flatMap((g) => g.tickets.map((t) => t.tier));
+    const newTiers = data.groups.flatMap((g) => g.tickets.map((t) => t.tier));
+    const removedTiers = existingTiers.filter((t) => !newTiers.includes(t));
+
+    if (removedTiers.length > 0) {
+      const events = await Event.find({
+        ticketProfileId: id,
+        status: { $in: ['draft', 'published', 'sold_out'] },
+        isDeleted: { $ne: true },
+      });
+
+      for (const event of events) {
+        for (const tier of removedTiers) {
+          const eventTier = event.ticketTiers.find((t) => t.tier === tier);
+          const soldCount = eventTier?.soldCount ?? 0;
+          if (soldCount > 0) {
+            throw AppError.badRequest(`Cannot remove active ticket tier "${tier}" with sold tickets.`);
+          }
+
+          const reservationExists = await Reservation.exists({ eventId: event._id, tier });
+          if (reservationExists) {
+            throw AppError.badRequest(`Cannot remove active ticket tier "${tier}" with active reservations.`);
+          }
+
+          const bookingExists = await Booking.exists({ eventId: event._id, 'tickets.tier': tier });
+          if (bookingExists) {
+            throw AppError.badRequest(`Cannot remove active ticket tier "${tier}" with active bookings.`);
+          }
+
+          const ticketExists = await Ticket.exists({ eventId: event._id, tier });
+          if (ticketExists) {
+            throw AppError.badRequest(`Cannot remove active ticket tier "${tier}" with generated tickets.`);
+          }
+        }
+      }
+    }
+  }
+
   const updated = await TicketProfile.findByIdAndUpdate(id, data, { new: true });
   if (updated) {
-    // Sync to all linked events in background
-    syncProfileEvents(updated._id.toString()).catch((err) => {
-      console.error(`Failed to sync profile ${id} with events:`, err);
-    });
+    await syncProfileEvents(updated._id.toString());
   }
   return updated;
 };

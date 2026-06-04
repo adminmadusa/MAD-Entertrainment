@@ -344,12 +344,31 @@ export class ReservationService {
     const expired: IReservation[] = [];
     for (const reservation of stale) {
       const previousStatus = reservation.status;
-      reservation.status = ReservationStatus.EXPIRED;
-      reservation.inventoryState = InventoryState.EXPIRED;
-      reservation.reservationVersion += 1;
-      reservation.transitionLog.push({ from: previousStatus, to: ReservationStatus.EXPIRED, reason: 'reservation-expired', createdAt: new Date() });
-      await reservation.save();
-      expired.push(reservation);
+      const updated = await Reservation.findOneAndUpdate(
+        {
+          _id: reservation._id,
+          status: previousStatus,
+        },
+        {
+          $set: {
+            status: ReservationStatus.EXPIRED,
+            inventoryState: InventoryState.EXPIRED,
+          },
+          $inc: { reservationVersion: 1 },
+          $push: {
+            transitionLog: {
+              from: previousStatus,
+              to: ReservationStatus.EXPIRED,
+              reason: 'reservation-expired',
+              createdAt: new Date(),
+            }
+          }
+        },
+        { new: true }
+      );
+      if (updated) {
+        expired.push(updated);
+      }
     }
 
     if (expired.length > 0) {
