@@ -70,6 +70,7 @@ vi.mock('../../models/refund.schema', () => {
   };
 
   (MockRefund as any).findOne = vi.fn().mockImplementation(() => localCreateMockQuery(null));
+  (MockRefund as any).findOneAndUpdate = vi.fn().mockImplementation(() => localCreateMockQuery(null));
   (MockRefund as any).find = vi.fn().mockImplementation(() => localCreateMockQuery([]));
   (MockRefund as any).countDocuments = vi.fn().mockImplementation(() => localCreateMockQuery(0));
   return { Refund: MockRefund };
@@ -222,7 +223,7 @@ describe('Admin Refund Service Tests', () => {
       const mockPayment = { _id: 'payment-789', amount: 500, status: PaymentStatus.PAID };
       const mockBooking = { _id: 'booking-456', status: BookingStatus.CONFIRMED };
 
-      vi.mocked(Refund.findOne).mockReturnValue({ session: vi.fn().mockResolvedValue(mockRefund) } as any);
+      vi.mocked(Refund.findOneAndUpdate).mockReturnValue(createMockQuery(mockRefund));
       vi.mocked(Payment.findById).mockReturnValue({ session: vi.fn().mockResolvedValue(mockPayment) } as any);
       const mockBookingFindChain = {
         session: vi.fn().mockReturnThis(),
@@ -230,7 +231,7 @@ describe('Admin Refund Service Tests', () => {
         then: vi.fn().mockImplementation((resolve) => resolve(mockBooking)),
       };
       vi.mocked(Booking.findById).mockReturnValue(mockBookingFindChain as any);
-      vi.mocked(Refund.find).mockReturnValue({ session: vi.fn().mockResolvedValue([]) } as any);
+      vi.mocked(Refund.find).mockReturnValue(createMockQuery([]));
       vi.mocked(cancelBooking).mockResolvedValue({} as any);
       vi.mocked(Payment.findByIdAndUpdate).mockResolvedValue({} as any);
 
@@ -247,7 +248,7 @@ describe('Admin Refund Service Tests', () => {
       );
     });
 
-    it('should successfully approve a partial refund, trigger booking cancellation, and mark payment status as PARTIALLY_REFUNDED', async () => {
+    it('should successfully approve a partial refund, keep booking active, and mark payment status as PARTIALLY_REFUNDED', async () => {
       const mockRefundSave = vi.fn();
       const mockRefund = {
         _id: 'refund-123',
@@ -255,13 +256,14 @@ describe('Admin Refund Service Tests', () => {
         paymentId: 'payment-789',
         amount: 200,
         status: 'requested',
+        cancelTickets: false,
         save: mockRefundSave,
       };
 
       const mockPayment = { _id: 'payment-789', amount: 500, status: PaymentStatus.PAID };
       const mockBooking = { _id: 'booking-456', status: BookingStatus.CONFIRMED };
 
-      vi.mocked(Refund.findOne).mockReturnValue({ session: vi.fn().mockResolvedValue(mockRefund) } as any);
+      vi.mocked(Refund.findOneAndUpdate).mockReturnValue(createMockQuery(mockRefund));
       vi.mocked(Payment.findById).mockReturnValue({ session: vi.fn().mockResolvedValue(mockPayment) } as any);
       const mockBookingFindChain = {
         session: vi.fn().mockReturnThis(),
@@ -269,7 +271,7 @@ describe('Admin Refund Service Tests', () => {
         then: vi.fn().mockImplementation((resolve) => resolve(mockBooking)),
       };
       vi.mocked(Booking.findById).mockReturnValue(mockBookingFindChain as any);
-      vi.mocked(Refund.find).mockReturnValue({ session: vi.fn().mockResolvedValue([]) } as any);
+      vi.mocked(Refund.find).mockReturnValue(createMockQuery([]));
       vi.mocked(cancelBooking).mockResolvedValue({} as any);
       vi.mocked(Payment.findByIdAndUpdate).mockResolvedValue({} as any);
 
@@ -277,7 +279,7 @@ describe('Admin Refund Service Tests', () => {
 
       expect(result?.status).toBe('completed');
       expect(mockRefundSave).toHaveBeenCalled();
-      expect(cancelBooking).toHaveBeenCalledWith('booking-456', 'Partial refund notes', 'mock-session', BookingStatus.REFUNDED);
+      expect(cancelBooking).not.toHaveBeenCalled();
       expect(Payment.findByIdAndUpdate).toHaveBeenCalledWith(
         'payment-789',
         { status: PaymentStatus.PARTIALLY_REFUNDED },
@@ -296,7 +298,7 @@ describe('Admin Refund Service Tests', () => {
         save: mockRefundSave,
       };
 
-      vi.mocked(Refund.findOne).mockReturnValue({ session: vi.fn().mockResolvedValue(mockRefund) } as any);
+      vi.mocked(Refund.findOneAndUpdate).mockReturnValue(createMockQuery(mockRefund));
 
       const result = await processRefund('refund-123', 'reject', 'Reject notes');
 
@@ -307,7 +309,7 @@ describe('Admin Refund Service Tests', () => {
     });
 
     it('should throw an error if the requested refund is not found or already processed', async () => {
-      vi.mocked(Refund.findOne).mockReturnValue({ session: vi.fn().mockResolvedValue(null) } as any);
+      vi.mocked(Refund.findOneAndUpdate).mockReturnValue(createMockQuery(null));
 
       await expect(
         processRefund('refund-123', 'approve', 'Approve notes')
@@ -321,7 +323,7 @@ describe('Admin Refund Service Tests', () => {
       const mockRefund = { _id: 'refund-123', bookingId: 'booking-456', paymentId: 'payment-789', amount: 100, status: 'requested' };
       const mockPayment = { _id: 'payment-789', amount: 500, status: PaymentStatus.REFUNDED };
 
-      vi.mocked(Refund.findOne).mockReturnValue({ session: vi.fn().mockResolvedValue(mockRefund) } as any);
+      vi.mocked(Refund.findOneAndUpdate).mockReturnValue(createMockQuery(mockRefund));
       vi.mocked(Payment.findById).mockReturnValue({ session: vi.fn().mockResolvedValue(mockPayment) } as any);
 
       await expect(
@@ -336,12 +338,10 @@ describe('Admin Refund Service Tests', () => {
       const mockPayment = { _id: 'payment-789', amount: 500, status: PaymentStatus.PAID };
       const mockBooking = { _id: 'booking-456', status: BookingStatus.CONFIRMED };
 
-      vi.mocked(Refund.findOne).mockReturnValue({ session: vi.fn().mockResolvedValue(mockRefund) } as any);
+      vi.mocked(Refund.findOneAndUpdate).mockReturnValue(createMockQuery(mockRefund));
       vi.mocked(Payment.findById).mockReturnValue({ session: vi.fn().mockResolvedValue(mockPayment) } as any);
       vi.mocked(Booking.findById).mockReturnValue({ session: vi.fn().mockResolvedValue(mockBooking) } as any);
-      vi.mocked(Refund.find).mockReturnValue({
-        session: vi.fn().mockResolvedValue([{ amount: 300 }]) // 300 + 300 > 500
-      } as any);
+      vi.mocked(Refund.find).mockReturnValue(createMockQuery([{ amount: 300 }]));
 
       await expect(
         processRefund('refund-123', 'approve', 'Approve notes')
@@ -352,7 +352,7 @@ describe('Admin Refund Service Tests', () => {
 
     it('should not execute post-commit side effects if refund transaction fails', async () => {
       const mockRefund = { _id: 'refund-123', bookingId: 'booking-456', paymentId: 'payment-789', amount: 100, status: 'requested' };
-      vi.mocked(Refund.findOne).mockReturnValue({ session: vi.fn().mockResolvedValue(mockRefund) } as any);
+      vi.mocked(Refund.findOneAndUpdate).mockReturnValue(createMockQuery(mockRefund));
 
       // Mock runInTransaction to simulate a transaction failure
       vi.mocked(runInTransaction).mockRejectedValueOnce(new Error('Transaction aborted'));
@@ -380,7 +380,7 @@ describe('Admin Refund Service Tests', () => {
       const mockPayment = { _id: 'payment-789', amount: 500, status: PaymentStatus.PAID };
       const mockBooking = { _id: 'booking-456', status: BookingStatus.CONFIRMED, totalAmount: 500, guestEmail: 'guest@example.com', guestName: 'Guest', eventId: 'event-555' };
 
-      vi.mocked(Refund.findOne).mockReturnValue({ session: vi.fn().mockResolvedValue(mockRefund) } as any);
+      vi.mocked(Refund.findOneAndUpdate).mockReturnValue(createMockQuery(mockRefund));
       vi.mocked(Payment.findById).mockReturnValue({ session: vi.fn().mockResolvedValue(mockPayment) } as any);
 
       const mockBookingFindChain = {
@@ -390,7 +390,7 @@ describe('Admin Refund Service Tests', () => {
       };
       vi.mocked(Booking.findById).mockReturnValue(mockBookingFindChain as any);
 
-      vi.mocked(Refund.find).mockReturnValue({ session: vi.fn().mockResolvedValue([]) } as any);
+      vi.mocked(Refund.find).mockReturnValue(createMockQuery([]));
       vi.mocked(cancelBooking).mockResolvedValue({ booking: mockBooking, postCommitPayload: null } as any);
       vi.mocked(Payment.findByIdAndUpdate).mockResolvedValue({} as any);
 
@@ -421,7 +421,7 @@ describe('Admin Refund Service Tests', () => {
       const mockPayment = { _id: 'payment-789', amount: 500, status: PaymentStatus.PAID };
       const mockBooking = { _id: 'booking-456', status: BookingStatus.CONFIRMED, totalAmount: 500, guestEmail: 'guest@example.com', guestName: 'Guest', eventId: 'event-555' };
 
-      vi.mocked(Refund.findOne).mockReturnValue({ session: vi.fn().mockResolvedValue(mockRefund) } as any);
+      vi.mocked(Refund.findOneAndUpdate).mockReturnValue(createMockQuery(mockRefund));
       vi.mocked(Payment.findById).mockReturnValue({ session: vi.fn().mockResolvedValue(mockPayment) } as any);
 
       const mockBookingFindChain = {
@@ -431,7 +431,7 @@ describe('Admin Refund Service Tests', () => {
       };
       vi.mocked(Booking.findById).mockReturnValue(mockBookingFindChain as any);
 
-      vi.mocked(Refund.find).mockReturnValue({ session: vi.fn().mockResolvedValue([]) } as any);
+      vi.mocked(Refund.find).mockReturnValue(createMockQuery([]));
       vi.mocked(cancelBooking).mockResolvedValue({ booking: mockBooking, postCommitPayload: null } as any);
       vi.mocked(Payment.findByIdAndUpdate).mockResolvedValue({} as any);
 
@@ -506,6 +506,105 @@ describe('Admin Refund Service Tests', () => {
       } finally {
         MockRefundClass.prototype.save = originalMockSave;
       }
+    });
+  });
+
+  describe('Refund Integrity Guards Additional Tests', () => {
+    it('should successfully approve a partial refund with cancelTickets = true, trigger booking cancellation, and mark payment status as PARTIALLY_REFUNDED', async () => {
+      const mockRefundSave = vi.fn();
+      const mockRefund = {
+        _id: 'refund-123',
+        bookingId: 'booking-456',
+        paymentId: 'payment-789',
+        amount: 200,
+        status: 'requested',
+        cancelTickets: true,
+        save: mockRefundSave,
+      };
+
+      const mockPayment = { _id: 'payment-789', amount: 500, status: PaymentStatus.PAID };
+      const mockBooking = { _id: 'booking-456', status: BookingStatus.CONFIRMED };
+
+      vi.mocked(Refund.findOneAndUpdate).mockReturnValue(createMockQuery(mockRefund));
+      vi.mocked(Payment.findById).mockReturnValue({ session: vi.fn().mockResolvedValue(mockPayment) } as any);
+      const mockBookingFindChain = {
+        session: vi.fn().mockReturnThis(),
+        populate: vi.fn().mockResolvedValue(mockBooking),
+        then: vi.fn().mockImplementation((resolve) => resolve(mockBooking)),
+      };
+      vi.mocked(Booking.findById).mockReturnValue(mockBookingFindChain as any);
+      vi.mocked(Refund.find).mockReturnValue(createMockQuery([]));
+      vi.mocked(cancelBooking).mockResolvedValue({} as any);
+      vi.mocked(Payment.findByIdAndUpdate).mockResolvedValue({} as any);
+
+      const result = await processRefund('refund-123', 'approve', 'Partial refund notes', 'gateway-ref-123');
+
+      expect(result?.status).toBe('completed');
+      expect(mockRefundSave).toHaveBeenCalled();
+      expect(cancelBooking).toHaveBeenCalledWith('booking-456', 'Partial refund notes', 'mock-session', BookingStatus.CANCELLED);
+      expect(Payment.findByIdAndUpdate).toHaveBeenCalledWith(
+        'payment-789',
+        { status: PaymentStatus.PARTIALLY_REFUNDED },
+        { session: 'mock-session' }
+      );
+    });
+
+    it('should allow multiple identical amount partial refunds with different idempotency keys', async () => {
+      const mockPayment = { _id: 'p-123', bookingId: 'b-123', status: PaymentStatus.PAID, amount: 500 };
+      const mockBooking = { _id: 'b-123', status: BookingStatus.CONFIRMED };
+      
+      vi.mocked(Payment.findById).mockImplementation(() => createMockQuery(mockPayment));
+      vi.mocked(Booking.findById).mockImplementation(() => createMockQuery(mockBooking));
+      vi.mocked(Refund.findOne).mockImplementation(() => createMockQuery(null));
+      vi.mocked(Refund.find).mockImplementation(() => createMockQuery([]));
+
+      const res1 = await createRefund({
+        bookingId: 'b-123',
+        paymentId: 'p-123',
+        amount: 100,
+        idempotencyKey: 'key-1',
+      });
+      expect(res1.amount).toBe(100);
+
+      const res2 = await createRefund({
+        bookingId: 'b-123',
+        paymentId: 'p-123',
+        amount: 100,
+        idempotencyKey: 'key-2',
+      });
+      expect(res2.amount).toBe(100);
+    });
+
+    it('should enforce atomic lease in processRefund to avoid concurrent approval race', async () => {
+      vi.mocked(Refund.findOneAndUpdate).mockReturnValue(createMockQuery(null));
+
+      await expect(
+        processRefund('refund-123', 'approve', 'Approve notes')
+      ).rejects.toThrow('Refund request not found or has already been processed');
+
+      expect(cancelBooking).not.toHaveBeenCalled();
+    });
+
+    it('should successfully create auto-recovery refund with correct origin and reason', async () => {
+      const mockPayment = { _id: 'p-123', bookingId: 'b-123', status: PaymentStatus.PAID, amount: 500 };
+      const mockBooking = { _id: 'b-123', status: BookingStatus.CONFIRMED };
+      
+      vi.mocked(Payment.findById).mockImplementation(() => createMockQuery(mockPayment));
+      vi.mocked(Booking.findById).mockImplementation(() => createMockQuery(mockBooking));
+      vi.mocked(Refund.findOne).mockImplementation(() => createMockQuery(null));
+      vi.mocked(Refund.find).mockImplementation(() => createMockQuery([]));
+
+      const result = await createRefund({
+        bookingId: 'b-123',
+        paymentId: 'p-123',
+        amount: 500,
+        idempotencyKey: 'auto-refund-p-123',
+        origin: 'auto_recovery',
+        recoveryReason: 'AMOUNT_MISMATCH',
+      });
+
+      expect(result.origin).toBe('auto_recovery');
+      expect(result.recoveryReason).toBe('AMOUNT_MISMATCH');
     });
   });
 });

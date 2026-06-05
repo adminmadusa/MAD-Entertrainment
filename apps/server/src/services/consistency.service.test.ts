@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { ConsistencyService } from './consistency.service';
-import { BookingStatus, PaymentStatus, ReservationStatus, SeatStatus } from '@mad/shared';
+import { BookingStatus, PaymentStatus, ReservationStatus, SeatStatus, NotificationType } from '@mad/shared';
 import { Booking } from '../models/booking.schema';
 import { Event } from '../models/event.schema';
 import { SeatLayout } from '../models/seat-layout.schema';
@@ -11,12 +11,17 @@ import { Reservation } from '../models/reservation.schema';
 import { Payment } from '../models/payment.schema';
 import { Notification } from '../models/notification.schema';
 import { PaymentService } from './public/payment.service';
+import { Refund } from '../models/refund.schema';
 
 vi.mock('./public/payment.service', () => ({
   PaymentService: {
     confirmBooking: vi.fn(),
     triggerRefundRequest: vi.fn(),
   },
+}));
+
+vi.mock('./notification.service', () => ({
+  createNotificationSafe: vi.fn().mockResolvedValue([]),
 }));
 
 const mockCreateMockQuery = (resolvedValue: any = []) => {
@@ -118,6 +123,8 @@ vi.mock('../models/refund.schema', () => ({
   Refund: {
     findOne: vi.fn(),
     create: vi.fn(),
+    findById: vi.fn(),
+    find: vi.fn(() => mockCreateMockQuery([])),
   },
 }));
 
@@ -567,6 +574,119 @@ describe('ConsistencyService - Pipeline Watchdog (PR-T4A)', () => {
     const count = await (ConsistencyService as any).repairStuckNotifications();
 
     expect(count).toBe(0);
+  });
+
+  // Test 3B: Stuck Refund Notification Repair
+  it('should recover stuck refund notifications independently of booking confirmed status', async () => {
+    const mockNotification = {
+      _id: 'n-stuck-refund-1',
+      bookingId: 'b-refund-stuck',
+      status: 'queued',
+      type: NotificationType.FULL_REFUND,
+      jobId: 'refund-ref-123-timestamp',
+      updatedAt: new Date(Date.now() - 20 * 60 * 1000),
+    };
+    vi.mocked(Notification.find).mockReturnValue(mockCreateMockQuery([mockNotification]) as any);
+    
+    const mockRefund = {
+      _id: 'ref-123',
+      paymentId: 'p-123',
+      amount: 500,
+      status: 'completed',
+      processedAt: new Date(),
+    };
+    vi.mocked(Refund.findById).mockResolvedValue(mockRefund as any);
+    vi.mocked(Refund.find).mockReturnValue(mockCreateMockQuery([mockRefund]) as any);
+
+    vi.mocked(Booking.findById).mockReturnValue(mockCreateMockQuery({
+      _id: 'b-refund-stuck',
+      bookingId: 'MAD-2026-REF',
+      eventId: 'e-123',
+      guestEmail: 'guest@example.com',
+      guestName: 'Guest User',
+      status: BookingStatus.REFUNDED,
+      totalAmount: 500,
+    }) as any);
+
+    vi.mocked(Event.findById).mockReturnValue(mockCreateMockQuery({
+      _id: 'e-123',
+      title: 'Event Title',
+    }) as any);
+
+    vi.mocked(QueueService.enqueue).mockResolvedValue(undefined);
+    vi.mocked(Notification.updateOne).mockResolvedValue({ modifiedCount: 1 } as any);
+
+    const count = await (ConsistencyService as any).repairStuckNotifications();
+
+    expect(count).toBe(1);
+    expect(QueueService.enqueue).toHaveBeenCalledWith(
+      'notification-queue-test',
+      'email-dispatch',
+      expect.objectContaining({
+        to: 'guest@example.com',
+        notificationType: NotificationType.FULL_REFUND,
+        bookingId: 'b-refund-stuck',
+      }),
+      expect.stringContaining('refund-ref-123-')
+    );
+    expect(Notification.updateOne).toHaveBeenCalledWith(
+      {
+        _id: 'n-stuck-refund-1',
+        status: { $in: ['queued', 'processing'] },
+      },
+      {
+        $set: {
+          status: 'failed',
+          errorMessage: 'WATCHDOG_RESET_STUCK_LEASE',
+        },
+      }
+    );
+  });
+
+  // Test 3C: Stuck Event Cancellation Notification Repair
+  it('should recover stuck event cancellation notifications independently of booking confirmed status', async () => {
+    const mockNotification = {
+      _id: 'n-stuck-cancel-1',
+      bookingId: 'b-cancel-stuck',
+      status: 'queued',
+      type: NotificationType.EVENT_CANCELLED,
+      jobId: 'cancellation-MAD-2026-timestamp',
+      updatedAt: new Date(Date.now() - 20 * 60 * 1000),
+    };
+    vi.mocked(Notification.find).mockReturnValue(mockCreateMockQuery([mockNotification]) as any);
+
+    vi.mocked(Booking.findById).mockReturnValue(mockCreateMockQuery({
+      _id: 'b-cancel-stuck',
+      bookingId: 'MAD-2026-CANCEL',
+      eventId: 'e-123',
+      guestEmail: 'guest@example.com',
+      guestName: 'Guest User',
+      status: BookingStatus.CANCELLED,
+    }) as any);
+
+    vi.mocked(Event.findById).mockReturnValue(mockCreateMockQuery({
+      _id: 'e-123',
+      title: 'Event Title',
+      venue: 'Event Venue',
+      startDate: new Date(),
+    }) as any);
+
+    vi.mocked(QueueService.enqueue).mockResolvedValue(undefined);
+    vi.mocked(Notification.updateOne).mockResolvedValue({ modifiedCount: 1 } as any);
+
+    const count = await (ConsistencyService as any).repairStuckNotifications();
+
+    expect(count).toBe(1);
+    expect(QueueService.enqueue).toHaveBeenCalledWith(
+      'notification-queue-test',
+      'email-dispatch',
+      expect.objectContaining({
+        to: 'guest@example.com',
+        notificationType: NotificationType.EVENT_CANCELLED,
+        bookingId: 'b-cancel-stuck',
+      }),
+      expect.stringContaining('cancellation-MAD-2026-CANCEL-')
+    );
   });
 
   // Test 4: Orphaned Confirmed Deliveries - Successful repair & final sent verification

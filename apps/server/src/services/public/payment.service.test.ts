@@ -14,7 +14,6 @@ import { getStripe } from '../../config/stripe';
 import { ReservationService } from '../reservation.service';
 import { QueueService } from '../queue.service';
 import crypto from 'crypto';
-import { ReservationService } from '../reservation.service';
 
 const { mockSession } = vi.hoisted(() => {
   const session = {
@@ -1234,8 +1233,6 @@ describe('Payment Service', () => {
       expect(mockBooking.status).toBe(BookingStatus.CONFIRMED);
       expect(mockBooking.userId).toBeUndefined(); // Assert userId remains undefined (guest-owned, sessionId-based)
       expect(Booking.updateOne).not.toHaveBeenCalled(); // No silent updates or user assignments
-    });
-  });
     });
   });
 });

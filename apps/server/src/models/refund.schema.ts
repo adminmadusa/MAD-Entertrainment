@@ -10,6 +10,9 @@ export interface IRefund extends Document {
   adminNotes?: string;
   gatewayRefundId?: string;
   idempotencyKey?: string;
+  origin: 'manual' | 'auto_recovery';
+  recoveryReason?: 'AMOUNT_MISMATCH' | 'BOOKING_REFERENCE_MISMATCH' | 'BOOKING_ID_MISMATCH' | 'CURRENCY_MISMATCH' | 'PAYMENT_VALIDATION_FAILURE';
+  cancelTickets: boolean;
   processedAt?: Date;
   createdAt: Date;
   updatedAt: Date;
@@ -32,6 +35,26 @@ const refundSchema = new Schema<IRefund>(
     gatewayRefundId: String,
     idempotencyKey: { type: String, index: true },
     processedAt: Date,
+    origin: {
+      type: String,
+      enum: ['manual', 'auto_recovery'],
+      default: 'manual',
+      required: true,
+    },
+    recoveryReason: {
+      type: String,
+      enum: [
+        'AMOUNT_MISMATCH',
+        'BOOKING_REFERENCE_MISMATCH',
+        'BOOKING_ID_MISMATCH',
+        'CURRENCY_MISMATCH',
+        'PAYMENT_VALIDATION_FAILURE',
+      ],
+    },
+    cancelTickets: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );

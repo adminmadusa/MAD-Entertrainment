@@ -147,6 +147,8 @@ export const createRefundSchema = z.object({
     paymentId: objectIdSchema,
     amount: z.number().positive('Refund amount must be greater than zero'),
     reason: z.string().trim().max(1000).optional(),
+    idempotencyKey: z.string().trim().max(100).optional(),
+    cancelTickets: z.boolean().optional(),
   }).strict(),
 });
 

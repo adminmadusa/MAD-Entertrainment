@@ -469,6 +469,25 @@ export class PaymentService {
     }
 
     if (eventType === 'payment.captured' || eventType === 'payment.authorized') {
+      const claimedPayment = await Payment.findOneAndUpdate(
+        { _id: payment._id, status: PaymentStatus.PENDING },
+        {
+          $set: {
+            status: PaymentStatus.PAID,
+            gatewayPaymentId: razorpayPaymentId,
+            paidAt: new Date(),
+          }
+        },
+        { new: true }
+      );
+
+      if (!claimedPayment) {
+        logger.info(
+          { paymentId: payment._id, bookingId: booking._id },
+          'Payment already claimed by concurrent caller — skipping'
+        );
+        return { status: 'skipped', bookingId: booking._id.toString() };
+      }
 
       // confirmBooking() uses findOneAndUpdate with { status: AWAITING_PAYMENT } guard.
       // If the booking expired or was already confirmed by the frontend, this is a no-op.
@@ -624,7 +643,7 @@ export class PaymentService {
             },
             'SECURITY: Stripe webhook bookingId metadata mismatch — possible replay attack'
           );
-          await this.failPaymentAndReleaseInventory(booking, payment, `Stripe webhook metadata mismatch: bookingId`);
+          await this.failPaymentAndReleaseInventory(booking, payment, `Stripe webhook metadata mismatch: bookingId`, 'auto_recovery', 'BOOKING_ID_MISMATCH');
           auditLog({
             action: 'PAYMENT_SECURITY_VIOLATION',
             status: 'failure',
@@ -652,7 +671,7 @@ export class PaymentService {
             },
             'SECURITY: Stripe webhook bookingReference metadata mismatch'
           );
-          await this.failPaymentAndReleaseInventory(booking, payment, `Stripe webhook metadata mismatch: bookingReference`);
+          await this.failPaymentAndReleaseInventory(booking, payment, `Stripe webhook metadata mismatch: bookingReference`, 'auto_recovery', 'BOOKING_REFERENCE_MISMATCH');
           auditLog({
             action: 'PAYMENT_SECURITY_VIOLATION',
             status: 'failure',
@@ -682,7 +701,7 @@ export class PaymentService {
             },
             'SECURITY: Stripe webhook payment amount mismatch'
           );
-          await this.failPaymentAndReleaseInventory(booking, payment, `Amount mismatch: expected ${expectedAmountPaise} paise, received ${receivedAmountPaise}`);
+          await this.failPaymentAndReleaseInventory(booking, payment, `Amount mismatch: expected ${expectedAmountPaise} paise, received ${receivedAmountPaise}`, 'auto_recovery', 'AMOUNT_MISMATCH');
           auditLog({
             action: 'PAYMENT_SECURITY_VIOLATION',
             status: 'failure',
@@ -714,7 +733,7 @@ export class PaymentService {
               },
               'SECURITY: Stripe webhook payment currency mismatch'
             );
-            await this.failPaymentAndReleaseInventory(booking, payment, `Currency mismatch: expected ${expectedCurrency}, received ${receivedCurrency}`);
+            await this.failPaymentAndReleaseInventory(booking, payment, `Currency mismatch: expected ${expectedCurrency}, received ${receivedCurrency}`, 'auto_recovery', 'CURRENCY_MISMATCH');
             auditLog({
               action: 'PAYMENT_SECURITY_VIOLATION',
               status: 'failure',
@@ -1179,7 +1198,7 @@ export class PaymentService {
             },
             'SECURITY: Stripe payment amount mismatch'
           );
-          await this.failPaymentAndReleaseInventory(booking, payment, `Amount mismatch: expected ${expectedAmountPaise} paise, received ${receivedAmountPaise}`);
+          await this.failPaymentAndReleaseInventory(booking, payment, `Amount mismatch: expected ${expectedAmountPaise} paise, received ${receivedAmountPaise}`, 'auto_recovery', 'AMOUNT_MISMATCH');
           auditLog({
             action: 'PAYMENT_SECURITY_VIOLATION',
             status: 'failure',
@@ -1212,7 +1231,7 @@ export class PaymentService {
             },
             'SECURITY: Stripe payment currency mismatch'
           );
-          await this.failPaymentAndReleaseInventory(booking, payment, `Currency mismatch: expected ${expectedCurrency}, received ${receivedCurrency}`);
+          await this.failPaymentAndReleaseInventory(booking, payment, `Currency mismatch: expected ${expectedCurrency}, received ${receivedCurrency}`, 'auto_recovery', 'CURRENCY_MISMATCH');
           auditLog({
             action: 'PAYMENT_SECURITY_VIOLATION',
             status: 'failure',
@@ -1314,7 +1333,14 @@ export class PaymentService {
     }
   }
 
-  private static async triggerRefundRequest(booking: IBooking, payment: IPayment, reason: string, session?: ClientSession): Promise<void> {
+  private static async triggerRefundRequest(
+    booking: IBooking,
+    payment: IPayment,
+    reason: string,
+    session?: ClientSession,
+    origin: 'manual' | 'auto_recovery' = 'manual',
+    recoveryReason?: 'AMOUNT_MISMATCH' | 'BOOKING_REFERENCE_MISMATCH' | 'BOOKING_ID_MISMATCH' | 'CURRENCY_MISMATCH' | 'PAYMENT_VALIDATION_FAILURE'
+  ): Promise<void> {
     const idempotencyKey = `auto-refund-${payment._id}`;
 
     const existingRefund = await Refund.findOne({
@@ -1332,10 +1358,12 @@ export class PaymentService {
           reason: reason || 'LATE_PAYMENT_RECOVERY_REJECTED',
           status: 'requested',
           idempotencyKey,
+          origin,
+          recoveryReason,
         }], { session });
         logger.info(
-          { bookingId: booking._id, paymentId: payment._id, amount: booking.totalAmount, reason, idempotencyKey },
-          'Created automatic Refund request record due to late payment recovery rejection'
+          { bookingId: booking._id, paymentId: payment._id, amount: booking.totalAmount, reason, idempotencyKey, origin, recoveryReason },
+          'Created automatic Refund request record due to validation mismatch / recovery'
         );
       } catch (err: any) {
         const isDuplicateKey = err.code === 11000 || err.code === '11000' || err.message?.includes('E11000');
@@ -1351,11 +1379,21 @@ export class PaymentService {
     }
   }
 
-  private static async failPaymentAndReleaseInventory(booking: IBooking, payment: IPayment, reason: string) {
+  private static async failPaymentAndReleaseInventory(
+    booking: IBooking,
+    payment: IPayment,
+    reason: string,
+    origin?: 'manual' | 'auto_recovery',
+    recoveryReason?: 'AMOUNT_MISMATCH' | 'BOOKING_REFERENCE_MISMATCH' | 'BOOKING_ID_MISMATCH' | 'CURRENCY_MISMATCH' | 'PAYMENT_VALIDATION_FAILURE'
+  ) {
     payment.status = PaymentStatus.FAILED;
     payment.failedAt = new Date();
     payment.failureReason = reason;
     await payment.save();
+
+    if (origin === 'auto_recovery') {
+      await this.triggerRefundRequest(booking, payment, reason, undefined, origin, recoveryReason).catch(() => {});
+    }
 
     if (booking.status !== BookingStatus.AWAITING_PAYMENT) {
       logger.info(

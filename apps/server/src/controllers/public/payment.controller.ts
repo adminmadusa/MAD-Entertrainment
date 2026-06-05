@@ -101,7 +101,14 @@ export async function stripeWebhook(req: Request, res: Response): Promise<void> 
   }
 
   let webhookEvent;
-    });
+  const existingFailedEvent = await WebhookEvent.findOneAndUpdate(
+    { eventId: event.id, status: 'failed' },
+    { $set: { status: 'processing', processedAt: undefined, errorMessage: undefined } },
+    { new: true }
+  );
+
+  if (existingFailedEvent) {
+    webhookEvent = existingFailedEvent;
   } else {
     // Step C: First delivery - create new record.
     // Note: If a concurrent retry lost the atomic reset race in Step B (meaning existingFailedEvent was null
@@ -182,6 +189,7 @@ export async function razorpayWebhook(req: Request, res: Response): Promise<void
   const env = getEnv();
   const rawBody = (req as any).rawBody;
   const signature = req.headers['x-razorpay-signature'] as string;
+  const providerEventId = req.headers['x-razorpay-event-id'] as string | undefined;
 
   if (!env.RAZORPAY_WEBHOOK_SECRET || !signature || !rawBody) {
     logger.warn('Razorpay webhook received but missing configuration or signatures');
