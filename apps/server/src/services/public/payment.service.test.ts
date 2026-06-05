@@ -1498,7 +1498,7 @@ describe('Payment Service', () => {
 
       // Expect confirmation to return null (skipped / rolled back)
       expect(result.status).toBe(BookingStatus.AWAITING_PAYMENT); // Booking stays awaiting payment
-      expect(mockPayment.status).toBe(PaymentStatus.PAID);
+      expect(mockPayment.status).toBe(PaymentStatus.FAILED);
       expect(mockPayment.failureReason).toBe('LATE_PAYMENT_RECOVERY_REJECTED_SEATS_TAKEN');
     });
 
@@ -1537,7 +1537,7 @@ describe('Payment Service', () => {
       }, { trustedInternal: true });
 
       expect(result.status).toBe(BookingStatus.AWAITING_PAYMENT);
-      expect(mockPayment.status).toBe(PaymentStatus.PAID);
+      expect(mockPayment.status).toBe(PaymentStatus.FAILED);
       expect(mockPayment.failureReason).toBe('LATE_PAYMENT_RECOVERY_REJECTED_SEATS_TAKEN');
     });
 
@@ -1591,7 +1591,7 @@ describe('Payment Service', () => {
       }, { trustedInternal: true });
 
       expect(result.status).toBe(BookingStatus.AWAITING_PAYMENT);
-      expect(mockPayment.status).toBe(PaymentStatus.PAID);
+      expect(mockPayment.status).toBe(PaymentStatus.FAILED);
       expect(mockPayment.failureReason).toBe('LATE_PAYMENT_RECOVERY_REJECTED_CONCURRENT_CONFIRM');
     });
 
@@ -1680,6 +1680,322 @@ describe('Payment Service', () => {
         expect.any(Object),
         expect.objectContaining({ session: mockSession })
       );
+    });
+  });
+
+  describe('Payment Integrity & Payment Deduplication', () => {
+    beforeEach(() => {
+      vi.clearAllMocks();
+      vi.mocked(getEnv).mockReturnValue({
+        RAZORPAY_KEY_ID: 'test_rzp_key',
+        RAZORPAY_KEY_SECRET: 'test_rzp_secret',
+        STRIPE_PUBLISHABLE_KEY: 'test_stripe_key',
+        STRIPE_SECRET_KEY: 'test_stripe_secret',
+        MOCK_PAYMENTS: true,
+      } as any);
+    });
+
+    it('should reuse active matching pending payment intent on checkout refresh', async () => {
+      const mockBooking = {
+        _id: 'b-123',
+        eventId: 'e-123',
+        status: BookingStatus.AWAITING_PAYMENT,
+        totalAmount: 100,
+        currency: 'INR',
+        couponId: undefined,
+        tickets: [],
+        save: vi.fn(),
+      };
+
+      const mockPayment = {
+        _id: 'p-123',
+        bookingId: 'b-123',
+        gateway: 'stripe',
+        status: PaymentStatus.PENDING,
+        amount: 100,
+        currency: 'INR',
+        couponId: undefined,
+        gatewayOrderId: 'pi_123',
+        createdAt: new Date(),
+        save: vi.fn(),
+      };
+
+      vi.mocked(Booking.findOne).mockResolvedValue(mockBooking as any);
+      vi.mocked(Booking.findById).mockResolvedValue(mockBooking as any);
+      vi.mocked(Payment.findOne).mockResolvedValue(mockPayment as any);
+
+      const result = await PaymentService.createPaymentIntent('b-123', 'stripe', { trustedInternal: true });
+
+      expect(result).toBeDefined();
+      expect(result.gateway).toBe('stripe');
+      expect(result.clientSecret).toBe('pi_123_secret_mock');
+      expect(Payment.create).not.toHaveBeenCalled();
+    });
+
+    it('should fail existing pending payment and create a new one if coupon changes', async () => {
+      const mockBooking = {
+        _id: 'b-123',
+        eventId: 'e-123',
+        status: BookingStatus.AWAITING_PAYMENT,
+        totalAmount: 90,
+        currency: 'INR',
+        couponId: 'coupon-456',
+        tickets: [],
+        bookingVersion: 1,
+        save: vi.fn(),
+      };
+
+      const mockPayment = {
+        _id: 'p-123',
+        bookingId: 'b-123',
+        gateway: 'stripe',
+        status: PaymentStatus.PENDING,
+        amount: 100, // old amount before coupon
+        currency: 'INR',
+        couponId: undefined, // old coupon was undefined
+        gatewayOrderId: 'pi_123',
+        createdAt: new Date(),
+        save: vi.fn(),
+      };
+
+      const newPayment = {
+        _id: 'p-456',
+        bookingId: 'b-123',
+        gateway: 'stripe',
+        status: PaymentStatus.PENDING,
+        amount: 90,
+        currency: 'INR',
+        couponId: 'coupon-456',
+        gatewayOrderId: 'pi_mock_456',
+        save: vi.fn(),
+      };
+
+      vi.mocked(Booking.findOne).mockResolvedValue(mockBooking as any);
+      vi.mocked(Booking.findById).mockResolvedValue(mockBooking as any);
+      vi.mocked(Payment.findOne).mockResolvedValue(mockPayment as any);
+      vi.mocked(Payment.create).mockResolvedValue(newPayment as any);
+
+      const result = await PaymentService.createPaymentIntent('b-123', 'stripe', { trustedInternal: true });
+
+      expect(result).toBeDefined();
+      expect(result.clientSecret).toContain('_secret_');
+      expect(mockPayment.status).toBe(PaymentStatus.FAILED);
+      expect(mockPayment.failureReason).toBe('PENDING_INTENT_SUPERSEDED');
+      expect(mockPayment.save).toHaveBeenCalled();
+      expect(Payment.create).toHaveBeenCalled();
+    });
+
+    it('should recover existing pending payment if concurrent createPaymentIntent causes E11000 duplicate key error', async () => {
+      const mockBooking = {
+        _id: 'b-123',
+        eventId: 'e-123',
+        status: BookingStatus.AWAITING_PAYMENT,
+        totalAmount: 100,
+        currency: 'INR',
+        couponId: undefined,
+        tickets: [],
+        bookingVersion: 1,
+        save: vi.fn(),
+      };
+
+      const mockPayment = {
+        _id: 'p-123',
+        bookingId: 'b-123',
+        gateway: 'stripe',
+        status: PaymentStatus.PENDING,
+        amount: 100,
+        currency: 'INR',
+        couponId: undefined,
+        gatewayOrderId: 'pi_123',
+        save: vi.fn(),
+      };
+
+      vi.mocked(Booking.findOne).mockResolvedValue(mockBooking as any);
+      vi.mocked(Booking.findById).mockResolvedValue(mockBooking as any);
+      // First findOne returns null (no payment exists yet)
+      vi.mocked(Payment.findOne)
+        .mockResolvedValueOnce(null) // first check inside createPaymentIntent
+        .mockResolvedValueOnce(mockPayment as any); // fallback inside createPendingPayment's catch
+
+      // Make Payment.create throw duplicate key error
+      vi.mocked(Payment.create).mockRejectedValueOnce({
+        code: 11000,
+        message: 'E11000 duplicate key error collection: test.payments index: idx_booking_gateway_pending_unique',
+      });
+
+      const result = await PaymentService.createPaymentIntent('b-123', 'stripe', { trustedInternal: true });
+
+      expect(result).toBeDefined();
+      expect(result.clientSecret).toContain('_secret_');
+      expect(Payment.findOne).toHaveBeenCalledTimes(2);
+    });
+
+    it('should trigger auto-refund unconditionally when double capture occurs and confirmation fails', async () => {
+      const mockPayment = {
+        _id: 'p-123',
+        bookingId: 'b-123',
+        gateway: 'razorpay',
+        status: PaymentStatus.PENDING,
+        amount: 100,
+        currency: 'INR',
+        gatewayOrderId: 'order_123',
+        save: vi.fn(),
+      };
+
+      const mockBooking = {
+        _id: 'b-123',
+        eventId: 'e-123',
+        status: BookingStatus.AWAITING_PAYMENT,
+        tickets: [{ tier: 'general', quantity: 2 }],
+        totalTickets: 2,
+        totalAmount: 100,
+        currency: 'INR',
+        bookingId: 'MAD-2026-ABCDE',
+        save: vi.fn(),
+      };
+
+      vi.mocked(Booking.findOne).mockResolvedValue(mockBooking as any);
+      vi.mocked(Payment.findOne).mockResolvedValue(mockPayment as any);
+      vi.mocked(Event.findById).mockResolvedValue({
+        _id: 'e-123',
+        title: 'MAD Event',
+        soldCount: 0,
+        reservedCount: 2,
+        totalCapacity: 100,
+        bookingMode: 'general_admission',
+        ticketTiers: [{ tier: 'general', soldCount: 0, totalCapacity: 100, name: 'General' }]
+      } as any);
+
+      // Simulate a concurrent confirm or booking status mismatch that aborts confirmation
+      vi.mocked(Booking.findOneAndUpdate).mockResolvedValue(null);
+      
+      let findByIdCount = 0;
+      const docQueryMock = {
+        select: vi.fn().mockReturnThis(),
+        lean: vi.fn().mockReturnThis(),
+        catch: vi.fn().mockReturnThis(),
+        then: vi.fn().mockImplementation((resolve) => {
+          findByIdCount++;
+          if (findByIdCount === 1) {
+            resolve({
+              _id: 'b-123',
+              status: BookingStatus.AWAITING_PAYMENT,
+              bookingId: 'MAD-2026-ABCDE',
+              totalAmount: 100,
+              currency: 'INR',
+              tickets: [{ tier: 'general', quantity: 2 }]
+            });
+          } else {
+            resolve({ _id: 'b-123', status: BookingStatus.CONFIRMED, bookingId: 'MAD-2026-ABCDE' });
+          }
+        })
+      };
+      vi.mocked(Booking.findById).mockImplementation((id: any) => {
+        if (id === 'b-123') return docQueryMock as any;
+        return createMockQuery(mockBooking) as any;
+      });
+
+      vi.mocked(Refund.findOne).mockImplementation(() => createMockQuery(null) as any);
+
+      const result = await PaymentService.confirmFromWebhook('order_123', 'pay_123', 'payment.captured', 'evt_123');
+
+      expect(result.status).toBe('skipped');
+      expect(mockPayment.status).toBe(PaymentStatus.FAILED);
+      expect(mockPayment.failureReason).toBe('LATE_PAYMENT_RECOVERY_REJECTED_CONCURRENT_CONFIRM');
+      
+      // Verify Refund.create is called unconditionally
+      expect(Refund.create).toHaveBeenCalledWith(
+        [
+          expect.objectContaining({
+            bookingId: 'b-123',
+            paymentId: 'p-123',
+            amount: 100,
+            idempotencyKey: 'auto-refund-p-123',
+            status: 'requested',
+          }),
+        ],
+        expect.any(Object)
+      );
+    });
+
+    it('should handle concurrent auto-refund trigger E11000 duplicate key safely and idempotently', async () => {
+      const mockPayment = {
+        _id: 'p-123',
+        bookingId: 'b-123',
+        gateway: 'razorpay',
+        status: PaymentStatus.PENDING,
+        amount: 100,
+        currency: 'INR',
+        gatewayOrderId: 'order_123',
+        save: vi.fn(),
+      };
+
+      const mockBooking = {
+        _id: 'b-123',
+        eventId: 'e-123',
+        status: BookingStatus.AWAITING_PAYMENT,
+        tickets: [{ tier: 'general', quantity: 2 }],
+        totalTickets: 2,
+        totalAmount: 100,
+        currency: 'INR',
+        bookingId: 'MAD-2026-ABCDE',
+        save: vi.fn(),
+      };
+
+      vi.mocked(Booking.findOne).mockResolvedValue(mockBooking as any);
+      vi.mocked(Payment.findOne).mockResolvedValue(mockPayment as any);
+      vi.mocked(Event.findById).mockResolvedValue({
+        _id: 'e-123',
+        title: 'MAD Event',
+        soldCount: 0,
+        reservedCount: 2,
+        totalCapacity: 100,
+        bookingMode: 'general_admission',
+        ticketTiers: [{ tier: 'general', soldCount: 0, totalCapacity: 100, name: 'General' }]
+      } as any);
+
+      vi.mocked(Booking.findOneAndUpdate).mockResolvedValue(null);
+      
+      let findByIdCount = 0;
+      const docQueryMock = {
+        select: vi.fn().mockReturnThis(),
+        lean: vi.fn().mockReturnThis(),
+        catch: vi.fn().mockReturnThis(),
+        then: vi.fn().mockImplementation((resolve) => {
+          findByIdCount++;
+          if (findByIdCount === 1) {
+            resolve({
+              _id: 'b-123',
+              status: BookingStatus.AWAITING_PAYMENT,
+              bookingId: 'MAD-2026-ABCDE',
+              totalAmount: 100,
+              currency: 'INR',
+              tickets: [{ tier: 'general', quantity: 2 }]
+            });
+          } else {
+            resolve({ _id: 'b-123', status: BookingStatus.CONFIRMED, bookingId: 'MAD-2026-ABCDE' });
+          }
+        })
+      };
+      vi.mocked(Booking.findById).mockImplementation((id: any) => {
+        if (id === 'b-123') return docQueryMock as any;
+        return createMockQuery(mockBooking) as any;
+      });
+
+      // Refund.findOne returns null (simulating a race where both threads read null at the same time)
+      vi.mocked(Refund.findOne).mockImplementation(() => createMockQuery(null) as any);
+
+      // Refund.create throws E11000 duplicate key error due to idx_refund_idempotency_key_unique
+      vi.mocked(Refund.create).mockRejectedValueOnce({
+        code: 11000,
+        message: 'E11000 duplicate key error collection: test.refunds index: idx_refund_idempotency_key_unique',
+      });
+
+      const result = await PaymentService.confirmFromWebhook('order_123', 'pay_123', 'payment.captured', 'evt_123');
+
+      expect(result.status).toBe('skipped');
+      expect(mockPayment.status).toBe(PaymentStatus.FAILED);
+      expect(Refund.create).toHaveBeenCalled();
     });
   });
 });

@@ -40,32 +40,70 @@ vi.mock('../queue.service', () => ({
   },
 }));
 
+const createMockQuery = (val: any) => {
+  const query = Promise.resolve(val);
+  (query as any).session = vi.fn().mockReturnValue(query);
+  (query as any).populate = vi.fn().mockReturnValue(query);
+  (query as any).sort = vi.fn().mockReturnValue(query);
+  (query as any).limit = vi.fn().mockReturnValue(query);
+  (query as any).skip = vi.fn().mockReturnValue(query);
+  return query as any;
+};
+
 // Mock Mongoose models to completely avoid database dependency and allow easy static/instance mocking
 vi.mock('../../models/refund.schema', () => {
-  const mockSave = vi.fn().mockImplementation(function (this: any) {
-    return Promise.resolve(this);
-  });
   const MockRefund = vi.fn().mockImplementation(function (this: any, data: any) {
     Object.assign(this, data);
-    this.save = mockSave;
   });
-  (MockRefund as any).findOne = vi.fn();
-  (MockRefund as any).find = vi.fn();
-  (MockRefund as any).countDocuments = vi.fn();
+  MockRefund.prototype.save = vi.fn().mockImplementation(function (this: any) {
+    return Promise.resolve(this);
+  });
+  
+  const localCreateMockQuery = (val: any) => {
+    const query = Promise.resolve(val);
+    (query as any).session = () => query;
+    (query as any).populate = () => query;
+    (query as any).sort = () => query;
+    (query as any).limit = () => query;
+    (query as any).skip = () => query;
+    return query;
+  };
+
+  (MockRefund as any).findOne = vi.fn().mockImplementation(() => localCreateMockQuery(null));
+  (MockRefund as any).find = vi.fn().mockImplementation(() => localCreateMockQuery([]));
+  (MockRefund as any).countDocuments = vi.fn().mockImplementation(() => localCreateMockQuery(0));
   return { Refund: MockRefund };
 });
 
 vi.mock('../../models/payment.schema', () => {
+  const localCreateMockQuery = (val: any) => {
+    const query = Promise.resolve(val);
+    (query as any).session = () => query;
+    (query as any).populate = () => query;
+    (query as any).sort = () => query;
+    (query as any).limit = () => query;
+    (query as any).skip = () => query;
+    return query;
+  };
   const MockPayment = {
-    findByIdAndUpdate: vi.fn(),
-    findById: vi.fn(),
+    findByIdAndUpdate: vi.fn().mockImplementation(() => localCreateMockQuery(null)),
+    findById: vi.fn().mockImplementation(() => localCreateMockQuery(null)),
   };
   return { Payment: MockPayment };
 });
 
 vi.mock('../../models/booking.schema', () => {
+  const localCreateMockQuery = (val: any) => {
+    const query = Promise.resolve(val);
+    (query as any).session = () => query;
+    (query as any).populate = () => query;
+    (query as any).sort = () => query;
+    (query as any).limit = () => query;
+    (query as any).skip = () => query;
+    return query;
+  };
   const MockBooking = {
-    findById: vi.fn(),
+    findById: vi.fn().mockImplementation(() => localCreateMockQuery(null)),
   };
   return { Booking: MockBooking };
 });
@@ -83,7 +121,7 @@ describe('Admin Refund Service Tests', () => {
     });
 
     it('should reject if payment record is not found', async () => {
-      vi.mocked(Payment.findById).mockResolvedValue(null);
+      vi.mocked(Payment.findById).mockImplementation(() => createMockQuery(null));
 
       await expect(
         createRefund({ bookingId: 'b-123', paymentId: 'p-123', amount: 100, reason: 'Test' })
@@ -92,7 +130,7 @@ describe('Admin Refund Service Tests', () => {
 
     it('should reject if payment does not belong to booking (Cross-Linking Verification)', async () => {
       const mockPayment = { _id: 'p-123', bookingId: 'b-different', status: PaymentStatus.PAID, amount: 500 };
-      vi.mocked(Payment.findById).mockResolvedValue(mockPayment as any);
+      vi.mocked(Payment.findById).mockImplementation(() => createMockQuery(mockPayment));
 
       await expect(
         createRefund({ bookingId: 'b-123', paymentId: 'p-123', amount: 100, reason: 'Test' })
@@ -101,7 +139,7 @@ describe('Admin Refund Service Tests', () => {
 
     it('should reject if payment status is not paid or partially refunded', async () => {
       const mockPayment = { _id: 'p-123', bookingId: 'b-123', status: PaymentStatus.FAILED, amount: 500 };
-      vi.mocked(Payment.findById).mockResolvedValue(mockPayment as any);
+      vi.mocked(Payment.findById).mockImplementation(() => createMockQuery(mockPayment));
 
       await expect(
         createRefund({ bookingId: 'b-123', paymentId: 'p-123', amount: 100, reason: 'Test' })
@@ -110,8 +148,8 @@ describe('Admin Refund Service Tests', () => {
 
     it('should reject if booking record is not found', async () => {
       const mockPayment = { _id: 'p-123', bookingId: 'b-123', status: PaymentStatus.PAID, amount: 500 };
-      vi.mocked(Payment.findById).mockResolvedValue(mockPayment as any);
-      vi.mocked(Booking.findById).mockResolvedValue(null);
+      vi.mocked(Payment.findById).mockImplementation(() => createMockQuery(mockPayment));
+      vi.mocked(Booking.findById).mockImplementation(() => createMockQuery(null));
 
       await expect(
         createRefund({ bookingId: 'b-123', paymentId: 'p-123', amount: 100, reason: 'Test' })
@@ -121,8 +159,8 @@ describe('Admin Refund Service Tests', () => {
     it('should reject if booking status is not confirmed', async () => {
       const mockPayment = { _id: 'p-123', bookingId: 'b-123', status: PaymentStatus.PAID, amount: 500 };
       const mockBooking = { _id: 'b-123', status: BookingStatus.CANCELLED };
-      vi.mocked(Payment.findById).mockResolvedValue(mockPayment as any);
-      vi.mocked(Booking.findById).mockResolvedValue(mockBooking as any);
+      vi.mocked(Payment.findById).mockImplementation(() => createMockQuery(mockPayment));
+      vi.mocked(Booking.findById).mockImplementation(() => createMockQuery(mockBooking));
 
       await expect(
         createRefund({ bookingId: 'b-123', paymentId: 'p-123', amount: 100, reason: 'Test' })
@@ -132,8 +170,8 @@ describe('Admin Refund Service Tests', () => {
     it('should reject if individual refund amount exceeds original payment amount', async () => {
       const mockPayment = { _id: 'p-123', bookingId: 'b-123', status: PaymentStatus.PAID, amount: 500 };
       const mockBooking = { _id: 'b-123', status: BookingStatus.CONFIRMED };
-      vi.mocked(Payment.findById).mockResolvedValue(mockPayment as any);
-      vi.mocked(Booking.findById).mockResolvedValue(mockBooking as any);
+      vi.mocked(Payment.findById).mockImplementation(() => createMockQuery(mockPayment));
+      vi.mocked(Booking.findById).mockImplementation(() => createMockQuery(mockBooking));
 
       await expect(
         createRefund({ bookingId: 'b-123', paymentId: 'p-123', amount: 600, reason: 'Test' })
@@ -143,12 +181,12 @@ describe('Admin Refund Service Tests', () => {
     it('should reject if cumulative refund sum exceeds payment cap', async () => {
       const mockPayment = { _id: 'p-123', bookingId: 'b-123', status: PaymentStatus.PAID, amount: 500 };
       const mockBooking = { _id: 'b-123', status: BookingStatus.CONFIRMED };
-      vi.mocked(Payment.findById).mockResolvedValue(mockPayment as any);
-      vi.mocked(Booking.findById).mockResolvedValue(mockBooking as any);
-      vi.mocked(Refund.find).mockResolvedValue([
+      vi.mocked(Payment.findById).mockImplementation(() => createMockQuery(mockPayment));
+      vi.mocked(Booking.findById).mockImplementation(() => createMockQuery(mockBooking));
+      vi.mocked(Refund.find).mockImplementation(() => createMockQuery([
         { amount: 300, status: 'completed' },
         { amount: 150, status: 'requested' }
-      ] as any);
+      ]));
 
       await expect(
         createRefund({ bookingId: 'b-123', paymentId: 'p-123', amount: 100, reason: 'Test' })
@@ -158,9 +196,9 @@ describe('Admin Refund Service Tests', () => {
     it('should successfully create refund request when all constraints pass', async () => {
       const mockPayment = { _id: 'p-123', bookingId: 'b-123', status: PaymentStatus.PAID, amount: 500 };
       const mockBooking = { _id: 'b-123', status: BookingStatus.CONFIRMED };
-      vi.mocked(Payment.findById).mockResolvedValue(mockPayment as any);
-      vi.mocked(Booking.findById).mockResolvedValue(mockBooking as any);
-      vi.mocked(Refund.find).mockResolvedValue([] as any);
+      vi.mocked(Payment.findById).mockImplementation(() => createMockQuery(mockPayment));
+      vi.mocked(Booking.findById).mockImplementation(() => createMockQuery(mockBooking));
+      vi.mocked(Refund.find).mockImplementation(() => createMockQuery([]));
 
       const result = await createRefund({ bookingId: 'b-123', paymentId: 'p-123', amount: 200, reason: 'Tier adjustment' });
       expect(result.amount).toBe(200);
@@ -406,6 +444,68 @@ describe('Admin Refund Service Tests', () => {
       expect(mockRefundSave).toHaveBeenCalled();
       expect(createNotificationSafe).toHaveBeenCalled();
       expect(QueueService.enqueue).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('Refund Idempotency and Transaction Protection', () => {
+    it('should return existing refund if idempotencyKey already matches an active refund (requested/completed)', async () => {
+      const mockPayment = { _id: 'p-123', bookingId: 'b-123', status: PaymentStatus.PAID, amount: 500 };
+      const mockBooking = { _id: 'b-123', status: BookingStatus.CONFIRMED };
+      const mockRefund = { _id: 'refund-123', idempotencyKey: 'key-123', status: 'requested', amount: 200 };
+
+      vi.mocked(Payment.findById).mockImplementation(() => createMockQuery(mockPayment));
+      vi.mocked(Booking.findById).mockImplementation(() => createMockQuery(mockBooking));
+      // First findOne check in createRefund will find mockRefund
+      vi.mocked(Refund.findOne).mockImplementation(() => createMockQuery(mockRefund));
+
+      const result = await createRefund({
+        bookingId: 'b-123',
+        paymentId: 'p-123',
+        amount: 200,
+        idempotencyKey: 'key-123',
+      });
+
+      expect(result).toEqual(mockRefund);
+      expect(Refund.findOne).toHaveBeenCalledWith(
+        expect.objectContaining({ idempotencyKey: 'key-123' })
+      );
+    });
+
+    it('should handle database unique index duplicate key error (E11000) by returning the existing refund', async () => {
+      const mockPayment = { _id: 'p-123', bookingId: 'b-123', status: PaymentStatus.PAID, amount: 500 };
+      const mockBooking = { _id: 'b-123', status: BookingStatus.CONFIRMED };
+      const mockRefund = { _id: 'refund-123', idempotencyKey: 'key-123', status: 'requested', amount: 200 };
+
+      vi.mocked(Payment.findById).mockImplementation(() => createMockQuery(mockPayment));
+      vi.mocked(Booking.findById).mockImplementation(() => createMockQuery(mockBooking));
+      vi.mocked(Refund.find).mockImplementation(() => createMockQuery([]));
+      
+      // First findOne returns null (race condition)
+      vi.mocked(Refund.findOne)
+        .mockImplementationOnce(() => createMockQuery(null)) // check inside transaction
+        .mockImplementationOnce(() => createMockQuery(mockRefund)); // check inside catch block
+
+      // Mock save to throw E11000 duplicate key error
+      const mockSave = vi.fn().mockRejectedValue({
+        code: 11000,
+        message: 'E11000 duplicate key error collection: test.refunds index: idx_refund_idempotency_key_unique',
+      });
+      const MockRefundClass = Refund as any;
+      const originalMockSave = MockRefundClass.prototype.save;
+      MockRefundClass.prototype.save = mockSave;
+
+      try {
+        const result = await createRefund({
+          bookingId: 'b-123',
+          paymentId: 'p-123',
+          amount: 200,
+          idempotencyKey: 'key-123',
+        });
+
+        expect(result).toEqual(mockRefund);
+      } finally {
+        MockRefundClass.prototype.save = originalMockSave;
+      }
     });
   });
 });

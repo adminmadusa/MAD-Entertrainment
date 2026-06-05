@@ -91,6 +91,70 @@ export class PaymentService {
 
     const env = getEnv();
 
+    // ─── Payment Intent Reuse / Fingerprint check ───────────────────
+    const existingPayment = await Payment.findOne({
+      bookingId: booking._id,
+      gateway,
+      status: PaymentStatus.PENDING,
+    });
+
+    if (existingPayment) {
+      const matchesFingerprint =
+        existingPayment.amount === booking.totalAmount &&
+        existingPayment.currency === (booking.currency || 'INR') &&
+        existingPayment.couponId?.toString() === booking.couponId?.toString();
+
+      const ageMs = Date.now() - existingPayment.createdAt.getTime();
+      const isExpired = ageMs > 24 * 60 * 60 * 1000;
+
+      if (matchesFingerprint && !isExpired) {
+        logger.info(
+          { bookingId: booking._id, gateway, paymentId: existingPayment._id },
+          'Reusing active matching pending payment intent.'
+        );
+
+        if (gateway === 'razorpay') {
+          return {
+            gateway: 'razorpay',
+            keyId: env.RAZORPAY_KEY_ID || 'mock_key_id',
+            orderId: existingPayment.gatewayOrderId,
+            amount: Math.round(existingPayment.amount * 100),
+            currency: existingPayment.currency,
+            bookingId: booking._id,
+            ...(env.MOCK_PAYMENTS ? { isMock: true } : {}),
+          };
+        } else {
+          let clientSecret = '';
+          if (env.MOCK_PAYMENTS) {
+            clientSecret = existingPayment.gatewayOrderId + '_secret_mock';
+          } else {
+            const stripe = getStripe();
+            const intent = await stripe.paymentIntents.retrieve(existingPayment.gatewayOrderId!);
+            clientSecret = intent.client_secret!;
+          }
+
+          return {
+            gateway: 'stripe',
+            publishableKey: env.STRIPE_PUBLISHABLE_KEY,
+            clientSecret,
+            amount: existingPayment.amount,
+            currency: existingPayment.currency,
+            bookingId: booking._id,
+            ...(env.MOCK_PAYMENTS ? { isMock: true } : {}),
+          };
+        }
+      } else {
+        existingPayment.status = PaymentStatus.FAILED;
+        existingPayment.failedAt = new Date();
+        existingPayment.failureReason = isExpired ? 'PENDING_INTENT_EXPIRED' : 'PENDING_INTENT_SUPERSEDED';
+        await existingPayment.save();
+        logger.info(
+          { bookingId: booking._id, paymentId: existingPayment._id, reason: existingPayment.failureReason },
+          'Stale or mismatched pending payment expired/superseded.'
+        );
+      }
+    }
+
     if (gateway === 'razorpay') {
       return this.handleRazorpayIntent(booking, env);
     }
@@ -101,14 +165,14 @@ export class PaymentService {
   private static async handleRazorpayIntent(booking: IBooking, env: ReturnType<typeof getEnv>) {
     if (env.MOCK_PAYMENTS) {
       const mockOrderId = 'order_mock_' + Math.random().toString(36).substring(2, 10);
-      const payment = await Payment.create({
-        bookingId: booking._id,
-        gateway: 'razorpay',
-        status: PaymentStatus.PENDING,
-        amount: booking.totalAmount,
-        currency: 'INR',
-        gatewayOrderId: mockOrderId,
-      });
+      const payment = await this.createPendingPayment(
+        booking._id,
+        'razorpay',
+        booking.totalAmount,
+        'INR',
+        booking.couponId,
+        mockOrderId
+      );
 
       booking.paymentId = payment._id as any;
       booking.bookingVersion += 1;
@@ -162,14 +226,14 @@ export class PaymentService {
         receipt: booking.bookingId,
       });
 
-      const payment = await Payment.create({
-        bookingId: booking._id,
-        gateway: 'razorpay',
-        status: PaymentStatus.PENDING,
-        amount: booking.totalAmount,
-        currency: 'INR',
-        gatewayOrderId: order.id,
-      });
+      const payment = await this.createPendingPayment(
+        booking._id,
+        'razorpay',
+        booking.totalAmount,
+        'INR',
+        booking.couponId,
+        order.id
+      );
 
       booking.paymentId = payment._id as any;
       booking.bookingVersion += 1;
@@ -213,14 +277,14 @@ export class PaymentService {
   private static async handleStripeIntent(booking: IBooking, env: ReturnType<typeof getEnv>) {
     if (env.MOCK_PAYMENTS) {
       const mockIntentId = 'pi_mock_' + Math.random().toString(36).substring(2, 10);
-      const payment = await Payment.create({
-        bookingId: booking._id,
-        gateway: 'stripe',
-        status: PaymentStatus.PENDING,
-        amount: booking.totalAmount,
-        currency: booking.currency || 'INR',
-        gatewayOrderId: mockIntentId,
-      });
+      const payment = await this.createPendingPayment(
+        booking._id,
+        'stripe',
+        booking.totalAmount,
+        booking.currency || 'INR',
+        booking.couponId,
+        mockIntentId
+      );
 
       booking.paymentId = payment._id as any;
       booking.bookingVersion += 1;
@@ -261,15 +325,12 @@ export class PaymentService {
       throw AppError.badRequest('Stripe is not enabled / credentials missing');
     }
 
+    const amountPaise = Math.round(booking.totalAmount * 100);
     try {
       const stripe = getStripe();
       const paymentIntent = await stripe.paymentIntents.create({
-        amount: Math.round(booking.totalAmount * 100),
+        amount: amountPaise,
         currency: booking.currency?.toLowerCase() || 'inr',
-        // PR-02: Standardised metadata keys.
-        // bookingId  — MongoId, used for exact binding check during verification.
-        // bookingReference — human-readable MAD-YYYY-XXXXX, secondary binding check.
-        // environment — disambiguates test vs production events in Stripe dashboard.
         metadata: {
           bookingId: booking._id.toString(),
           bookingReference: booking.bookingId,
@@ -277,14 +338,14 @@ export class PaymentService {
         },
       });
 
-      const payment = await Payment.create({
-        bookingId: booking._id,
-        gateway: 'stripe',
-        status: PaymentStatus.PENDING,
-        amount: booking.totalAmount,
-        currency: booking.currency || 'INR',
-        gatewayOrderId: paymentIntent.id,
-      });
+      const payment = await this.createPendingPayment(
+        booking._id,
+        'stripe',
+        booking.totalAmount,
+        booking.currency || 'INR',
+        booking.couponId,
+        paymentIntent.id
+      );
 
       booking.paymentId = payment._id as any;
       booking.bookingVersion += 1;
@@ -1088,20 +1149,39 @@ export class PaymentService {
   }
 
   private static async triggerRefundRequest(booking: IBooking, payment: IPayment, reason: string, session?: ClientSession): Promise<void> {
-    const existingRefund = await Refund.findOne({ paymentId: payment._id }).session(session || null);
+    const idempotencyKey = `auto-refund-${payment._id}`;
+
+    const existingRefund = await Refund.findOne({
+      paymentId: payment._id,
+      status: { $in: ['requested', 'processing', 'completed'] }
+    }).session(session || null);
+
     if (!existingRefund) {
-      await Refund.create([{
-        bookingId: booking._id,
-        paymentId: payment._id,
-        amount: booking.totalAmount,
-        currency: booking.currency || 'INR',
-        reason: reason || 'LATE_PAYMENT_RECOVERY_REJECTED',
-        status: 'requested',
-      }], { session });
-      logger.info(
-        { bookingId: booking._id, paymentId: payment._id, amount: booking.totalAmount, reason },
-        'Created automatic Refund request record due to late payment recovery rejection'
-      );
+      try {
+        await Refund.create([{
+          bookingId: booking._id,
+          paymentId: payment._id,
+          amount: booking.totalAmount,
+          currency: booking.currency || 'INR',
+          reason: reason || 'LATE_PAYMENT_RECOVERY_REJECTED',
+          status: 'requested',
+          idempotencyKey,
+        }], { session });
+        logger.info(
+          { bookingId: booking._id, paymentId: payment._id, amount: booking.totalAmount, reason, idempotencyKey },
+          'Created automatic Refund request record due to late payment recovery rejection'
+        );
+      } catch (err: any) {
+        const isDuplicateKey = err.code === 11000 || err.code === '11000' || err.message?.includes('E11000');
+        if (isDuplicateKey) {
+          logger.warn(
+            { paymentId: payment._id, idempotencyKey },
+            'Duplicate refund request creation race detected. Handled idempotently.'
+          );
+        } else {
+          throw err;
+        }
+      }
     }
   }
 
@@ -1569,15 +1649,14 @@ export class PaymentService {
         }
       }
       
+      _payment.status = PaymentStatus.FAILED;
       _payment.failureReason = reason;
       try {
         await _payment.save();
       } catch (saveErr) {
         // ignore
       }
-      if (!isConcurrentConfirm) {
-        await this.triggerRefundRequest(booking, _payment, _payment.failureReason).catch(() => {});
-      }
+      await this.triggerRefundRequest(booking, _payment, _payment.failureReason).catch(() => {});
 
       if (isKnownAbort) {
         return null;
@@ -1684,5 +1763,43 @@ export class PaymentService {
     }
 
     return booking;
+  }
+
+  private static async createPendingPayment(
+    bookingId: Types.ObjectId,
+    gateway: 'stripe' | 'razorpay',
+    amount: number,
+    currency: string,
+    couponId: Types.ObjectId | undefined,
+    gatewayOrderId: string
+  ): Promise<IPayment> {
+    try {
+      return await Payment.create({
+        bookingId,
+        gateway,
+        status: PaymentStatus.PENDING,
+        amount,
+        currency,
+        couponId,
+        gatewayOrderId,
+      });
+    } catch (err: any) {
+      const isDuplicateKey = err.code === 11000 || err.code === '11000' || err.message?.includes('E11000');
+      if (isDuplicateKey) {
+        logger.warn(
+          { bookingId, gateway, gatewayOrderId },
+          'Concurrent pending payment creation race detected. Recovering existing pending payment.'
+        );
+        const existing = await Payment.findOne({
+          bookingId,
+          gateway,
+          status: PaymentStatus.PENDING,
+        });
+        if (existing) {
+          return existing;
+        }
+      }
+      throw err;
+    }
   }
 }
