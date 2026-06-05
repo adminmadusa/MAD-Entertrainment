@@ -403,20 +403,30 @@ export class PaymentService {
       return { status: 'skipped', bookingId: booking._id.toString() };
     }
 
-    // 4. Route by event type.
     if (eventType === 'payment.captured' || eventType === 'payment.authorized') {
-      // Mark payment as PAID — no payment signature re-check here because:
-      // (a) the webhook body is already authenticated via HMAC at the controller.
-      // (b) RAZORPAY_KEY_SECRET signatures are only available in the checkout redirect,
-      //     not in the webhook payload.
-      payment.status = PaymentStatus.PAID;
-      payment.gatewayPaymentId = razorpayPaymentId;
-      payment.paidAt = new Date();
-      await payment.save();
+      const claimedPayment = await Payment.findOneAndUpdate(
+        { _id: payment._id, status: PaymentStatus.PENDING },
+        {
+          $set: {
+            status: PaymentStatus.PAID,
+            gatewayPaymentId: razorpayPaymentId,
+            paidAt: new Date(),
+          }
+        },
+        { new: true }
+      );
+
+      if (!claimedPayment) {
+        logger.info(
+          { paymentId: payment._id, bookingId: booking._id },
+          'Payment already claimed by concurrent caller — skipping'
+        );
+        return { status: 'skipped', bookingId: booking._id.toString() };
+      }
 
       // confirmBooking() uses findOneAndUpdate with { status: AWAITING_PAYMENT } guard.
       // If the booking expired or was already confirmed by the frontend, this is a no-op.
-      const confirmedBooking = await this.confirmBooking(booking, payment);
+      const confirmedBooking = await this.confirmBooking(booking, claimedPayment);
 
       if (!confirmedBooking) {
         return { status: 'skipped', bookingId: booking._id.toString() };
@@ -489,6 +499,255 @@ export class PaymentService {
       'PR-03: Razorpay webhook event type not actionable — acknowledging without processing'
     );
     return { status: 'skipped' };
+  }
+
+  static async confirmFromWebhookStripe(
+    intent: {
+      id: string;
+      metadata?: { bookingId?: string; bookingReference?: string };
+      amount?: number;
+      amount_received?: number;
+      currency?: string;
+    },
+    webhookEventId: string
+  ): Promise<{ status: 'confirmed' | 'skipped' | 'failed'; bookingId?: string }> {
+    try {
+      const intentBookingId = intent.metadata?.bookingId;
+      if (!intentBookingId) {
+        logger.warn(
+          { paymentIntentId: intent.id, webhookEventId },
+          'Stripe webhook received but missing bookingId metadata'
+        );
+        return { status: 'skipped' };
+      }
+
+      // 2. Resolve Payment record
+      const payment = await Payment.findOne({ gatewayOrderId: intent.id, gateway: 'stripe' });
+      if (!payment) {
+        logger.warn(
+          { paymentIntentId: intent.id, webhookEventId },
+          'Stripe webhook received but no matching Payment record found'
+        );
+        return { status: 'skipped' };
+      }
+
+      // 3. Resolve Booking from payment.bookingId
+      const booking = await Booking.findById(payment.bookingId);
+      if (!booking) {
+        logger.error(
+          { paymentIntentId: intent.id, paymentId: payment._id, webhookEventId },
+          'Payment record exists but associated Booking is missing'
+        );
+        return { status: 'skipped' };
+      }
+
+      logger.info(
+        {
+          paymentIntentId: intent.id,
+          webhookEventId,
+          bookingId: booking._id,
+          bookingReference: booking.bookingId,
+          paymentId: payment._id,
+          bookingStatus: booking.status,
+          paymentStatus: payment.status,
+        },
+        'Stripe webhook processing payment confirmation'
+      );
+
+      // 5. Optimistic idempotency read
+      if (payment.status === PaymentStatus.PAID) {
+        logger.info(
+          { paymentIntentId: intent.id, bookingId: booking._id, webhookEventId },
+          'Payment already confirmed — webhook idempotency skip'
+        );
+        return { status: 'skipped', bookingId: booking._id.toString() };
+      }
+
+      const env = getEnv();
+      const isMock = env.MOCK_PAYMENTS && intent.id.startsWith('pi_mock_');
+
+      if (!isMock) {
+        // Validation check 1: bookingId metadata must match
+        if (intentBookingId !== booking._id.toString()) {
+          logger.error(
+            {
+              bookingId: booking._id,
+              bookingReference: booking.bookingId,
+              paymentIntentId: intent.id,
+              intentBookingId,
+            },
+            'SECURITY: Stripe webhook bookingId metadata mismatch — possible replay attack'
+          );
+          await this.failPaymentAndReleaseInventory(booking, payment, `Stripe webhook metadata mismatch: bookingId`);
+          auditLog({
+            action: 'PAYMENT_SECURITY_VIOLATION',
+            status: 'failure',
+            metadata: {
+              bookingId: booking._id.toString(),
+              bookingReference: booking.bookingId,
+              gateway: 'stripe',
+              intentBookingId,
+              violationType: 'booking_id_mismatch',
+            },
+            description: `SECURITY VIOLATION: Stripe webhook bookingId mismatch for booking ${booking.bookingId}`
+          });
+          return { status: 'skipped', bookingId: booking._id.toString() };
+        }
+
+        // Validation check 2: bookingReference metadata must match
+        const intentBookingReference = intent.metadata?.bookingReference;
+        if (intentBookingReference && intentBookingReference !== booking.bookingId) {
+          logger.error(
+            {
+              bookingId: booking._id,
+              bookingReference: booking.bookingId,
+              paymentIntentId: intent.id,
+              intentBookingReference,
+            },
+            'SECURITY: Stripe webhook bookingReference metadata mismatch'
+          );
+          await this.failPaymentAndReleaseInventory(booking, payment, `Stripe webhook metadata mismatch: bookingReference`);
+          auditLog({
+            action: 'PAYMENT_SECURITY_VIOLATION',
+            status: 'failure',
+            metadata: {
+              bookingId: booking._id.toString(),
+              bookingReference: booking.bookingId,
+              gateway: 'stripe',
+              intentBookingReference,
+              violationType: 'booking_reference_mismatch',
+            },
+            description: `SECURITY VIOLATION: Stripe webhook bookingReference mismatch for booking ${booking.bookingId}`
+          });
+          return { status: 'skipped', bookingId: booking._id.toString() };
+        }
+
+        // 6. Amount validation (defense-in-depth)
+        const expectedAmountPaise = Math.round(booking.totalAmount * 100);
+        const receivedAmountPaise = intent.amount_received ?? intent.amount;
+        if (receivedAmountPaise !== undefined && receivedAmountPaise !== expectedAmountPaise) {
+          logger.error(
+            {
+              bookingId: booking._id,
+              bookingReference: booking.bookingId,
+              paymentIntentId: intent.id,
+              expectedAmountPaise,
+              receivedAmountPaise,
+            },
+            'SECURITY: Stripe webhook payment amount mismatch'
+          );
+          await this.failPaymentAndReleaseInventory(booking, payment, `Amount mismatch: expected ${expectedAmountPaise} paise, received ${receivedAmountPaise}`);
+          auditLog({
+            action: 'PAYMENT_SECURITY_VIOLATION',
+            status: 'failure',
+            metadata: {
+              bookingId: booking._id.toString(),
+              bookingReference: booking.bookingId,
+              gateway: 'stripe',
+              expectedAmountPaise,
+              receivedAmountPaise,
+              violationType: 'amount_mismatch',
+            },
+            description: `SECURITY VIOLATION: Stripe webhook payment amount mismatch for booking ${booking.bookingId}`
+          });
+          return { status: 'skipped', bookingId: booking._id.toString() };
+        }
+
+        // 7. Currency validation (defense-in-depth)
+        if (intent.currency !== undefined) {
+          const expectedCurrency = (booking.currency || 'USD').toLowerCase();
+          const receivedCurrency = intent.currency.toLowerCase();
+          if (receivedCurrency !== expectedCurrency) {
+            logger.error(
+              {
+                bookingId: booking._id,
+                bookingReference: booking.bookingId,
+                paymentIntentId: intent.id,
+                expectedCurrency,
+                receivedCurrency,
+              },
+              'SECURITY: Stripe webhook payment currency mismatch'
+            );
+            await this.failPaymentAndReleaseInventory(booking, payment, `Currency mismatch: expected ${expectedCurrency}, received ${receivedCurrency}`);
+            auditLog({
+              action: 'PAYMENT_SECURITY_VIOLATION',
+              status: 'failure',
+              metadata: {
+                bookingId: booking._id.toString(),
+                bookingReference: booking.bookingId,
+                gateway: 'stripe',
+                expectedCurrency,
+                receivedCurrency,
+                violationType: 'currency_mismatch',
+              },
+              description: `SECURITY VIOLATION: Stripe webhook payment currency mismatch for booking ${booking.bookingId}`
+            });
+            return { status: 'skipped', bookingId: booking._id.toString() };
+          }
+        }
+      }
+
+      // 8. Atomic payment status transition (B2)
+      const claimedPayment = await Payment.findOneAndUpdate(
+        { _id: payment._id, status: PaymentStatus.PENDING },
+        {
+          $set: {
+            status: PaymentStatus.PAID,
+            gatewayPaymentId: intent.id,
+            paidAt: new Date(),
+          }
+        },
+        { new: true }
+      );
+
+      if (!claimedPayment) {
+        logger.info(
+          { paymentId: payment._id, bookingId: booking._id },
+          'Payment already claimed by concurrent caller — skipping'
+        );
+        return { status: 'skipped', bookingId: booking._id.toString() };
+      }
+
+      // 9. confirmBooking(booking, claimedPayment)
+      const confirmedBooking = await this.confirmBooking(booking, claimedPayment);
+      if (!confirmedBooking) {
+        return { status: 'skipped', bookingId: booking._id.toString() };
+      }
+
+      logger.info(
+        {
+          paymentIntentId: intent.id,
+          webhookEventId,
+          bookingId: booking._id,
+          bookingReference: booking.bookingId,
+        },
+        'Stripe webhook payment confirmation complete'
+      );
+
+      // 10. Log and auditLog PAYMENT_WEBHOOK_CONFIRMED
+      auditLog({
+        action: 'PAYMENT_WEBHOOK_CONFIRMED',
+        status: 'success',
+        metadata: {
+          bookingId: booking._id.toString(),
+          bookingReference: booking.bookingId,
+          gateway: 'stripe',
+          paymentIntentId: intent.id,
+          webhookEventId,
+          isMock,
+        },
+        description: `Confirmed Stripe payment ${intent.id} via webhook for booking ${booking.bookingId}`
+      });
+
+      return { status: 'confirmed', bookingId: booking._id.toString() };
+
+    } catch (err: any) {
+      logger.error(
+        { err, paymentIntentId: intent.id, webhookEventId },
+        'Unexpected error in Stripe webhook confirmation'
+      );
+      return { status: 'failed', bookingId: intent.metadata?.bookingId };
+    }
   }
 
   static async verifyPayment(

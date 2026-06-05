@@ -81,8 +81,13 @@ export async function stripeWebhook(req: Request, res: Response): Promise<void> 
     description: `Received Stripe webhook event ${event.type} (ID: ${event.id})`
   });
 
-  let existingEvent = await WebhookEvent.findOne({ eventId: event.id });
-  if (existingEvent) {
+  // Step A: Check for terminal success or active processing to prevent double confirmation
+  const existingSuccessOrProcessing = await WebhookEvent.findOne({
+    eventId: event.id,
+    status: { $in: ['success', 'processing'] }
+  });
+
+  if (existingSuccessOrProcessing) {
     auditLog({
       action: 'WEBHOOK_DUPLICATE_IGNORED',
       status: 'success',
@@ -95,45 +100,77 @@ export async function stripeWebhook(req: Request, res: Response): Promise<void> 
     return;
   }
 
-  const rawPayloadStr = rawBody.toString('utf8');
-  const payloadSize = Buffer.byteLength(rawPayloadStr, 'utf8');
-
   let webhookEvent;
-  try {
-    webhookEvent = await WebhookEvent.create({
-      eventId: event.id,
-      provider: 'stripe',
-      eventType: event.type,
-      status: 'received',
-      receivedAt: new Date(),
-      providerEventTimestamp: event.created ? new Date(event.created * 1000) : undefined,
-      rawPayload: event.data.object,
-      payloadSize,
-    });
-  } catch (err: any) {
-    if (err.code === 11000) {
-      auditLog({
-        action: 'WEBHOOK_DUPLICATE_IGNORED',
-        status: 'success',
-        metadata: { gateway: 'stripe', eventId: event.id, eventType: event.type, reason: 'concurrent_request' },
-        description: `Ignored concurrent duplicate Stripe webhook event ${event.id}`
-      });
-      res.status(200).send('Event already processed concurrently');
-      return;
-    }
-    throw err;
-  }
 
-  webhookEvent.status = 'processing';
-  await webhookEvent.save();
+  // Step B: Check for recoverable failure and reset atomically to 'processing'.
+  // Using new: false returns the old document, allowing us to read the original errorMessage for the audit log.
+  const existingFailedEvent = await WebhookEvent.findOneAndUpdate(
+    { eventId: event.id, status: 'failed' },
+    { $set: { status: 'processing', errorMessage: null, processedAt: null } },
+    { new: false }
+  );
+
+  if (existingFailedEvent) {
+    // Retrieve the active updated Mongoose document to use for processing
+    webhookEvent = await WebhookEvent.findOne({ eventId: event.id });
+
+    // Condition 2: Audit log action on retry path (A2)
+    auditLog({
+      action: 'WEBHOOK_RETRY_PROCESSING',
+      status: 'success',
+      metadata: {
+        gateway: 'stripe',
+        eventId: event.id,
+        eventType: event.type,
+        originalErrorMessage: existingFailedEvent.errorMessage || null,
+      },
+      description: `Stripe webhook retry initiated: event ${event.id} reset from failed to processing`
+    });
+  } else {
+    // Step C: First delivery - create new record.
+    // Note: If a concurrent retry lost the atomic reset race in Step B (meaning existingFailedEvent was null
+    // because a concurrent winning thread already won the race and transitioned the status to 'processing'),
+    // this caller falls through here to Step C. The subsequent WebhookEvent.create() call will fail with
+    // a Mongo E11000 duplicate key error on eventId (since the winning thread already has the record).
+    // This is the expected concurrent-loser path, which is not an error and is handled gracefully as a 200 response.
+    const rawPayloadStr = rawBody.toString('utf8');
+    const payloadSize = Buffer.byteLength(rawPayloadStr, 'utf8');
+
+    try {
+      webhookEvent = await WebhookEvent.create({
+        eventId: event.id,
+        provider: 'stripe',
+        eventType: event.type,
+        status: 'received',
+        receivedAt: new Date(),
+        providerEventTimestamp: event.created ? new Date(event.created * 1000) : undefined,
+        rawPayload: event.data.object,
+        payloadSize,
+      });
+
+      webhookEvent.status = 'processing';
+      await webhookEvent.save();
+    } catch (err: any) {
+      if (err.code === 11000) {
+        auditLog({
+          action: 'WEBHOOK_DUPLICATE_IGNORED',
+          status: 'success',
+          metadata: { gateway: 'stripe', eventId: event.id, eventType: event.type, reason: 'concurrent_request' },
+          description: `Ignored concurrent duplicate Stripe webhook event ${event.id}`
+        });
+        res.status(200).send('Event already processed concurrently');
+        return;
+      }
+      throw err;
+    }
+  }
 
   try {
     if (event.type === 'payment_intent.succeeded') {
       const intent = event.data.object as any;
-      const bookingId = intent.metadata?.bookingId;
-      if (bookingId) {
-        await PaymentService.verifyPayment(bookingId, { paymentIntentId: intent.id }, { trustedInternal: true });
-        webhookEvent.bookingId = bookingId;
+      const result = await PaymentService.confirmFromWebhookStripe(intent, event.id);
+      if (result.bookingId) {
+        webhookEvent.bookingId = result.bookingId;
       }
     }
     

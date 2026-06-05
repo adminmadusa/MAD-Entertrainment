@@ -11,6 +11,7 @@ import { SeatLayout } from '../../models/seat-layout.schema';
 import { getEnv } from '../../config/env';
 import { getStripe } from '../../config/stripe';
 import crypto from 'crypto';
+import { ReservationService } from '../reservation.service';
 
 vi.mock('../../config/env', () => ({
   getEnv: vi.fn(() => ({
@@ -46,6 +47,16 @@ vi.mock('../../models/payment.schema', () => ({
   Payment: {
     create: vi.fn(),
     findOne: vi.fn(),
+    findOneAndUpdate: vi.fn().mockImplementation(async (query, update) => {
+      const payment = await Payment.findOne(query);
+      if (payment) {
+        if (update && update.$set) {
+          Object.assign(payment, update.$set);
+        }
+        return payment;
+      }
+      return null;
+    }),
   },
 }));
 
@@ -1158,6 +1169,391 @@ describe('Payment Service', () => {
       expect(mockBooking.status).toBe(BookingStatus.CONFIRMED);
       expect(mockBooking.userId).toBeUndefined(); // Assert userId remains undefined (guest-owned, sessionId-based)
       expect(Booking.updateOne).not.toHaveBeenCalled(); // No silent updates or user assignments
+    });
+  });
+
+  describe('confirmFromWebhook (Razorpay) — atomic payment guard (B2)', () => {
+    beforeEach(() => {
+      vi.clearAllMocks();
+    });
+
+    it('winner: proceeds to confirmBooking when payment is PENDING', async () => {
+      const mockPayment = {
+        _id: 'p-123',
+        bookingId: 'b-123',
+        gateway: 'razorpay',
+        status: PaymentStatus.PENDING,
+        save: vi.fn(),
+      };
+      const mockBooking = {
+        _id: 'b-123',
+        eventId: 'e-123',
+        status: BookingStatus.AWAITING_PAYMENT,
+        tickets: [],
+        bookingVersion: 1,
+        save: vi.fn(),
+      };
+
+      vi.mocked(Payment.findOne).mockResolvedValue(mockPayment as any);
+      vi.mocked(Booking.findById).mockResolvedValue(mockBooking as any);
+      vi.mocked(Booking.findOneAndUpdate).mockResolvedValue(mockBooking as any);
+      vi.mocked(Event.findOneAndUpdate).mockResolvedValue({} as any);
+      vi.mocked(Event.findById).mockResolvedValue({
+        _id: 'e-123',
+        ticketTiers: [],
+      } as any);
+
+      // Mock update to return the updated payment doc
+      const updatedPayment = { ...mockPayment, status: PaymentStatus.PAID, gatewayPaymentId: 'pay_123' };
+      vi.mocked(Payment.findOneAndUpdate).mockResolvedValue(updatedPayment as any);
+
+      const result = await PaymentService.confirmFromWebhook('order_123', 'pay_123', 'payment.captured', 'evt_123');
+
+      expect(Payment.findOneAndUpdate).toHaveBeenCalledWith(
+        { _id: 'p-123', status: PaymentStatus.PENDING },
+        expect.objectContaining({
+          $set: expect.objectContaining({ status: PaymentStatus.PAID, gatewayPaymentId: 'pay_123' })
+        }),
+        { new: true }
+      );
+      expect(result.status).toBe('confirmed');
+      expect(Booking.findOneAndUpdate).toHaveBeenCalled();
+      // Verify updated claimedPayment was passed (non-blocking recommendation 2)
+      expect(vi.mocked(ReservationService.transitionForBooking)).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.any(String),
+        expect.objectContaining({
+          paymentReference: 'pay_123',
+        })
+      );
+    });
+
+    it('loser: returns skipped when payment already claimed', async () => {
+      const mockPayment = {
+        _id: 'p-123',
+        bookingId: 'b-123',
+        gateway: 'razorpay',
+        status: PaymentStatus.PENDING,
+        save: vi.fn(),
+      };
+      const mockBooking = {
+        _id: 'b-123',
+        eventId: 'e-123',
+        status: BookingStatus.AWAITING_PAYMENT,
+        tickets: [],
+        bookingVersion: 1,
+        save: vi.fn(),
+      };
+
+      vi.mocked(Payment.findOne).mockResolvedValue(mockPayment as any);
+      vi.mocked(Booking.findById).mockResolvedValue(mockBooking as any);
+
+      // Mock update to return null (loser path)
+      vi.mocked(Payment.findOneAndUpdate).mockResolvedValue(null);
+
+      const result = await PaymentService.confirmFromWebhook('order_123', 'pay_123', 'payment.captured', 'evt_123');
+
+      expect(result.status).toBe('skipped');
+      expect(Booking.findOneAndUpdate).not.toHaveBeenCalled();
+      expect(Refund.create).not.toHaveBeenCalled();
+    });
+
+    it('optimistic PAID skip still works before atomic write', async () => {
+      const mockPayment = {
+        _id: 'p-123',
+        bookingId: 'b-123',
+        gateway: 'razorpay',
+        status: PaymentStatus.PAID,
+        save: vi.fn(),
+      };
+      const mockBooking = {
+        _id: 'b-123',
+        eventId: 'e-123',
+        status: BookingStatus.CONFIRMED,
+        tickets: [],
+        bookingVersion: 1,
+        save: vi.fn(),
+      };
+
+      vi.mocked(Payment.findOne).mockResolvedValue(mockPayment as any);
+      vi.mocked(Booking.findById).mockResolvedValue(mockBooking as any);
+
+      const result = await PaymentService.confirmFromWebhook('order_123', 'pay_123', 'payment.captured', 'evt_123');
+
+      expect(result.status).toBe('skipped');
+      expect(Payment.findOneAndUpdate).not.toHaveBeenCalled();
+      expect(Booking.findOneAndUpdate).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('confirmFromWebhookStripe — dedicated path (C2)', () => {
+    beforeEach(() => {
+      vi.clearAllMocks();
+    });
+
+    it('returns skipped when bookingId missing from metadata', async () => {
+      const result = await PaymentService.confirmFromWebhookStripe({ id: 'pi_123', metadata: {} }, 'evt_123');
+      expect(result.status).toBe('skipped');
+      expect(Payment.findOne).not.toHaveBeenCalled();
+    });
+
+    it('returns skipped when Payment record not found', async () => {
+      vi.mocked(Payment.findOne).mockResolvedValue(null);
+      const result = await PaymentService.confirmFromWebhookStripe({ id: 'pi_123', metadata: { bookingId: 'b-123' } }, 'evt_123');
+      expect(result.status).toBe('skipped');
+      expect(Booking.findById).not.toHaveBeenCalled();
+    });
+
+    it('returns skipped when Booking record not found', async () => {
+      vi.mocked(Payment.findOne).mockResolvedValue({ _id: 'p-123', bookingId: 'b-123' } as any);
+      vi.mocked(Booking.findById).mockResolvedValue(null);
+
+      const result = await PaymentService.confirmFromWebhookStripe({ id: 'pi_123', metadata: { bookingId: 'b-123' } }, 'evt_123');
+      expect(result.status).toBe('skipped');
+    });
+
+    it('returns skipped idempotently when payment already PAID', async () => {
+      vi.mocked(Payment.findOne).mockResolvedValue({ _id: 'p-123', bookingId: 'b-123', status: PaymentStatus.PAID } as any);
+      vi.mocked(Booking.findById).mockResolvedValue({ _id: 'b-123' } as any);
+
+      const result = await PaymentService.confirmFromWebhookStripe({ id: 'pi_123', metadata: { bookingId: 'b-123' } }, 'evt_123');
+      expect(result.status).toBe('skipped');
+      expect(Payment.findOneAndUpdate).not.toHaveBeenCalled();
+    });
+
+    it('amount mismatch: calls failPaymentAndReleaseInventory, returns skipped', async () => {
+      const mockPayment = { _id: 'p-123', bookingId: 'b-123', gateway: 'stripe', status: PaymentStatus.PENDING, save: vi.fn() };
+      const mockBooking = {
+        _id: 'b-123',
+        bookingId: 'MAD-REF',
+        eventId: 'e-123',
+        status: BookingStatus.AWAITING_PAYMENT,
+        tickets: [],
+        totalAmount: 150, // 150.00
+        currency: 'USD',
+        save: vi.fn(),
+      };
+
+      vi.mocked(Payment.findOne).mockResolvedValue(mockPayment as any);
+      vi.mocked(Booking.findById).mockResolvedValue(mockBooking as any);
+
+      const result = await PaymentService.confirmFromWebhookStripe({
+        id: 'pi_123',
+        metadata: { bookingId: 'b-123' },
+        amount: 10000, // 100.00
+        currency: 'usd',
+      }, 'evt_123');
+
+      expect(result.status).toBe('skipped');
+      expect(mockPayment.status).toBe(PaymentStatus.FAILED);
+      expect(mockPayment.save).toHaveBeenCalled();
+      expect(mockBooking.status).toBe(BookingStatus.FAILED);
+      expect(mockBooking.save).toHaveBeenCalled();
+    });
+
+    it('currency mismatch: calls failPaymentAndReleaseInventory, returns skipped', async () => {
+      const mockPayment = { _id: 'p-123', bookingId: 'b-123', gateway: 'stripe', status: PaymentStatus.PENDING, save: vi.fn() };
+      const mockBooking = {
+        _id: 'b-123',
+        bookingId: 'MAD-REF',
+        eventId: 'e-123',
+        status: BookingStatus.AWAITING_PAYMENT,
+        tickets: [],
+        totalAmount: 100,
+        currency: 'USD',
+        save: vi.fn(),
+      };
+
+      vi.mocked(Payment.findOne).mockResolvedValue(mockPayment as any);
+      vi.mocked(Booking.findById).mockResolvedValue(mockBooking as any);
+
+      const result = await PaymentService.confirmFromWebhookStripe({
+        id: 'pi_123',
+        metadata: { bookingId: 'b-123' },
+        amount: 10000,
+        currency: 'inr',
+      }, 'evt_123');
+
+      expect(result.status).toBe('skipped');
+      expect(mockPayment.status).toBe(PaymentStatus.FAILED);
+    });
+
+    it('valid payment: returns confirmed', async () => {
+      const mockPayment = { _id: 'p-123', bookingId: 'b-123', gateway: 'stripe', status: PaymentStatus.PENDING, save: vi.fn() };
+      const mockBooking = {
+        _id: 'b-123',
+        bookingId: 'MAD-REF',
+        eventId: 'e-123',
+        status: BookingStatus.AWAITING_PAYMENT,
+        tickets: [],
+        totalAmount: 100,
+        currency: 'USD',
+        save: vi.fn(),
+      };
+
+      vi.mocked(Payment.findOne).mockResolvedValue(mockPayment as any);
+      vi.mocked(Booking.findById).mockResolvedValue(mockBooking as any);
+      vi.mocked(Booking.findOneAndUpdate).mockResolvedValue(mockBooking as any);
+      vi.mocked(Event.findOneAndUpdate).mockResolvedValue({} as any);
+      vi.mocked(Event.findById).mockResolvedValue({
+        _id: 'e-123',
+        ticketTiers: [],
+      } as any);
+
+      const updatedPayment = { ...mockPayment, status: PaymentStatus.PAID, gatewayPaymentId: 'pi_123' };
+      vi.mocked(Payment.findOneAndUpdate).mockResolvedValue(updatedPayment as any);
+
+      const result = await PaymentService.confirmFromWebhookStripe({
+        id: 'pi_123',
+        metadata: { bookingId: 'b-123' },
+        amount: 10000,
+        currency: 'usd',
+      }, 'evt_123');
+
+      expect(result.status).toBe('confirmed');
+      expect(result.bookingId).toBe('b-123');
+      expect(Booking.findOneAndUpdate).toHaveBeenCalled();
+    });
+
+    it('mock payment: supported via MOCK_PAYMENTS=true + pi_mock_ prefix', async () => {
+      const mockPayment = { _id: 'p-123', bookingId: 'b-123', gateway: 'stripe', status: PaymentStatus.PENDING, save: vi.fn() };
+      const mockBooking = {
+        _id: 'b-123',
+        bookingId: 'MAD-REF',
+        eventId: 'e-123',
+        status: BookingStatus.AWAITING_PAYMENT,
+        tickets: [],
+        totalAmount: 100,
+        currency: 'USD',
+        save: vi.fn(),
+      };
+
+      vi.mocked(getEnv).mockReturnValue({
+        RAZORPAY_KEY_ID: 'test_rzp_key',
+        RAZORPAY_KEY_SECRET: 'test_rzp_secret',
+        STRIPE_PUBLISHABLE_KEY: 'test_stripe_key',
+        STRIPE_SECRET_KEY: 'test_stripe_secret',
+        ENABLE_ASYNC_CHECKOUT: true,
+        MOCK_PAYMENTS: true,
+      } as any);
+
+      vi.mocked(Payment.findOne).mockResolvedValue(mockPayment as any);
+      vi.mocked(Booking.findById).mockResolvedValue(mockBooking as any);
+      vi.mocked(Booking.findOneAndUpdate).mockResolvedValue(mockBooking as any);
+      vi.mocked(Event.findOneAndUpdate).mockResolvedValue({} as any);
+      vi.mocked(Event.findById).mockResolvedValue({
+        _id: 'e-123',
+        ticketTiers: [],
+      } as any);
+
+      const updatedPayment = { ...mockPayment, status: PaymentStatus.PAID, gatewayPaymentId: 'pi_mock_123' };
+      vi.mocked(Payment.findOneAndUpdate).mockResolvedValue(updatedPayment as any);
+
+      const result = await PaymentService.confirmFromWebhookStripe({
+        id: 'pi_mock_123',
+        metadata: { bookingId: 'b-123' },
+        amount: 99999,
+        currency: 'wrong_currency',
+      }, 'evt_123');
+
+      expect(result.status).toBe('confirmed');
+    });
+
+    it('never throws on internal error — returns failed', async () => {
+      vi.mocked(Payment.findOne).mockRejectedValue(new Error('DB connection failure'));
+      const result = await PaymentService.confirmFromWebhookStripe({
+        id: 'pi_123',
+        metadata: { bookingId: 'b-123' }
+      }, 'evt_123');
+
+      expect(result.status).toBe('failed');
+    });
+  });
+
+  describe('confirmFromWebhookStripe — atomic payment guard (B2)', () => {
+    beforeEach(() => {
+      vi.clearAllMocks();
+    });
+
+    it('winner: findOneAndUpdate returns claimed payment — proceeds to confirmBooking', async () => {
+      const mockPayment = { _id: 'p-123', bookingId: 'b-123', gateway: 'stripe', status: PaymentStatus.PENDING, save: vi.fn() };
+      const mockBooking = {
+        _id: 'b-123',
+        bookingId: 'MAD-REF',
+        eventId: 'e-123',
+        status: BookingStatus.AWAITING_PAYMENT,
+        tickets: [],
+        totalAmount: 100,
+        currency: 'USD',
+        save: vi.fn(),
+      };
+
+      vi.mocked(Payment.findOne).mockResolvedValue(mockPayment as any);
+      vi.mocked(Booking.findById).mockResolvedValue(mockBooking as any);
+      vi.mocked(Booking.findOneAndUpdate).mockResolvedValue(mockBooking as any);
+      vi.mocked(Event.findOneAndUpdate).mockResolvedValue({} as any);
+      vi.mocked(Event.findById).mockResolvedValue({
+        _id: 'e-123',
+        ticketTiers: [],
+      } as any);
+
+      const updatedPayment = { ...mockPayment, status: PaymentStatus.PAID, gatewayPaymentId: 'pi_123' };
+      vi.mocked(Payment.findOneAndUpdate).mockResolvedValue(updatedPayment as any);
+
+      const result = await PaymentService.confirmFromWebhookStripe({
+        id: 'pi_123',
+        metadata: { bookingId: 'b-123' },
+        amount: 10000,
+        currency: 'usd',
+      }, 'evt_123');
+
+      expect(result.status).toBe('confirmed');
+      expect(Payment.findOneAndUpdate).toHaveBeenCalledWith(
+        { _id: 'p-123', status: PaymentStatus.PENDING },
+        expect.objectContaining({
+          $set: expect.objectContaining({ status: PaymentStatus.PAID, gatewayPaymentId: 'pi_123' })
+        }),
+        { new: true }
+      );
+      expect(Booking.findOneAndUpdate).toHaveBeenCalled();
+      // Verify updated claimedPayment was passed (non-blocking recommendation 2)
+      expect(vi.mocked(ReservationService.transitionForBooking)).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.any(String),
+        expect.objectContaining({
+          paymentReference: 'pi_123',
+        })
+      );
+    });
+
+    it('loser: findOneAndUpdate returns null — returns skipped without entering confirmBooking', async () => {
+      const mockPayment = { _id: 'p-123', bookingId: 'b-123', gateway: 'stripe', status: PaymentStatus.PENDING, save: vi.fn() };
+      const mockBooking = {
+        _id: 'b-123',
+        bookingId: 'MAD-REF',
+        eventId: 'e-123',
+        status: BookingStatus.AWAITING_PAYMENT,
+        tickets: [],
+        totalAmount: 100,
+        currency: 'USD',
+        save: vi.fn(),
+      };
+
+      vi.mocked(Payment.findOne).mockResolvedValue(mockPayment as any);
+      vi.mocked(Booking.findById).mockResolvedValue(mockBooking as any);
+
+      vi.mocked(Payment.findOneAndUpdate).mockResolvedValue(null);
+
+      const result = await PaymentService.confirmFromWebhookStripe({
+        id: 'pi_123',
+        metadata: { bookingId: 'b-123' },
+        amount: 10000,
+        currency: 'usd',
+      }, 'evt_123');
+
+      expect(result.status).toBe('skipped');
+      expect(Booking.findOneAndUpdate).not.toHaveBeenCalled();
+      expect(Refund.create).not.toHaveBeenCalled();
     });
   });
 });
