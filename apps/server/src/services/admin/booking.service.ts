@@ -555,6 +555,181 @@ export const cancelBooking = async (
   return null;
 };
 
+/**
+ * Atomically expire a pending booking, log reason, transition reservations, and release inventory/seats.
+ * Does not trigger any customer notifications or cancel/refund-specific logic.
+ */
+export const expireBooking = async (
+  id: string,
+  reason?: string,
+  externalSession?: ClientSession
+): Promise<any> => {
+  const execute = async (session: ClientSession | undefined) => {
+    const booking = await Booking.findById(id).session(session || null);
+    if (!booking) {
+      throw AppError.notFound('Booking not found');
+    }
+
+    if (booking.status === BookingStatus.EXPIRED) {
+      return { booking, releasedSeatIds: [], wasAlreadyExpired: true };
+    }
+
+    if (
+      booking.status !== BookingStatus.AWAITING_PAYMENT &&
+      booking.status !== BookingStatus.EXPIRING &&
+      booking.status !== BookingStatus.PENDING
+    ) {
+      throw AppError.badRequest(`Cannot expire booking in status: ${booking.status}`);
+    }
+
+    const previousStatus = booking.status;
+
+    // 1. Update Booking Status
+    booking.status = BookingStatus.EXPIRED;
+    booking.cancellationReason = reason || 'Reservation expired';
+    booking.cancelledAt = new Date();
+    booking.bookingVersion += 1;
+    if (booking.expiresAt) {
+      booking.expiresAt = undefined;
+    }
+    await booking.save({ session });
+
+    // Decrement Coupon usedCount (F1)
+    if (booking.couponId) {
+      try {
+        await Coupon.updateOne(
+          { _id: booking.couponId, usedCount: { $gt: 0 } },
+          { $inc: { usedCount: -1 } },
+          { session }
+        );
+      } catch (err) {
+        logger.warn(
+          { err, bookingId: booking._id, couponId: booking.couponId },
+          'expireBooking: Failed to decrement coupon usedCount (possibly coupon was deleted)'
+        );
+      }
+    }
+
+    // 2. Transition corresponding reservations to EXPIRED
+    const transitioned = await ReservationService.transitionForBooking(
+      booking._id,
+      ReservationStatus.EXPIRED,
+      {
+        reason: reason || 'Reservation expired',
+        correlationId: booking.bookingId,
+      },
+      session
+    );
+
+    // 3. Update Event Statistics (Decrement reservedCount since it was never confirmed)
+    const event = await Event.findById(booking.eventId).session(session || null);
+    if (event) {
+      if (
+        previousStatus === BookingStatus.AWAITING_PAYMENT ||
+        previousStatus === BookingStatus.EXPIRING ||
+        previousStatus === BookingStatus.PENDING
+      ) {
+        await ReservationService.releaseCapacityForTerminalReservations(transitioned, session);
+      }
+    }
+
+    // 4. Release Seat Layout if seat-based event
+    const releasedSeatIds: string[] = [];
+    if (event && event.bookingMode === 'seat_based') {
+      const allSeatIds = booking.tickets.flatMap((ticket) => ticket.seats || []).map((seat) => seat.seatId);
+      if (allSeatIds.length > 0) {
+        await SeatLayout.updateOne(
+          { eventId: event._id },
+          {
+            $set: {
+              'seats.$[seat].status': SeatStatus.AVAILABLE,
+            },
+            $unset: {
+              'seats.$[seat].lockedBy': '',
+              'seats.$[seat].lockedAt': '',
+              'seats.$[seat].bookedByBookingId': '',
+              'seats.$[seat].reservationId': '',
+            },
+            $inc: {
+              'seats.$[seat].seatVersion': 1,
+            },
+          },
+          {
+            arrayFilters: [
+              {
+                'seat.seatId': { $in: allSeatIds },
+                $or: [
+                  { 'seat.bookedByBookingId': booking._id.toString() },
+                  { 'seat.reservationId': { $in: booking.reservationIds || [] } }
+                ]
+              },
+            ],
+            session,
+          }
+        );
+        releasedSeatIds.push(...allSeatIds);
+      }
+    }
+
+    return { booking, releasedSeatIds };
+  };
+
+  const executePostCommitEffects = async (booking: any, releasedSeatIds: string[], wasAlreadyExpired?: boolean) => {
+    if (wasAlreadyExpired) return;
+    try {
+      // Real-time updates via WebSockets (Seat unlocked)
+      if (releasedSeatIds && releasedSeatIds.length > 0) {
+        emitToEvent(booking.eventId.toString(), 'seat:unlocked', { seatIds: releasedSeatIds }, booking.bookingId);
+      }
+
+      // Emit update to Booking socket
+      emitToBooking(
+        booking._id.toString(),
+        'booking:updated',
+        { bookingId: booking._id.toString(), status: booking.status, bookingVersion: booking.bookingVersion },
+        booking.bookingId
+      );
+
+      // Emit update to Admin socket
+      emitToAdmin(
+        'bookings',
+        'booking:updated',
+        { bookingId: booking._id.toString(), status: booking.status, bookingVersion: booking.bookingVersion },
+        booking.bookingId
+      );
+
+      // Audit Logging
+      auditLog({
+        action: 'BOOKING_EXPIRED',
+        actor: { type: 'system', id: 'system' },
+        status: 'success',
+        metadata: {
+          bookingId: booking._id.toString(),
+          bookingReference: booking.bookingId,
+          eventId: booking.eventId.toString(),
+          releasedSeatIds,
+        },
+        description: `Expired booking ${booking.bookingId} due to payment timeout and released associated capacity/seats`,
+      });
+    } catch (err: any) {
+      logger.error({ err }, 'Error executing booking expire post-commit side effects');
+    }
+  };
+
+  if (externalSession) {
+    const res = await execute(externalSession);
+    return res.wasAlreadyExpired ? null : res.booking;
+  }
+
+  const result = await runInTransaction(execute);
+  if (result) {
+    await executePostCommitEffects(result.booking, result.releasedSeatIds, result.wasAlreadyExpired);
+    return result.wasAlreadyExpired ? null : result.booking;
+  }
+  return null;
+};
+
+
 export const executeCorrectEmailSideEffects = async (payload: any) => {
   const actions = [
     async () => {

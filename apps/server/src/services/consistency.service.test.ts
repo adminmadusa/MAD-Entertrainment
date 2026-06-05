@@ -12,6 +12,19 @@ import { Payment } from '../models/payment.schema';
 import { Notification } from '../models/notification.schema';
 import { PaymentService } from './public/payment.service';
 import { Refund } from '../models/refund.schema';
+import mongoose from 'mongoose';
+
+vi.mock('mongoose', async (importOriginal) => {
+  const original = await importOriginal<typeof import('mongoose')>();
+  return {
+    ...original,
+    default: {
+      ...original.default,
+      startSession: vi.fn().mockRejectedValue(new Error('No transaction in test')),
+    },
+    startSession: vi.fn().mockRejectedValue(new Error('No transaction in test')),
+  };
+});
 
 vi.mock('./public/payment.service', () => ({
   PaymentService: {
@@ -157,9 +170,10 @@ describe('ConsistencyService - expireStaleBookings and Concurrency Protection', 
       _id: 'b-expired',
       bookingId: 'MAD-2026-STALE',
       eventId: 'e-123',
-      status: BookingStatus.EXPIRING,
+      status: BookingStatus.AWAITING_PAYMENT,
       tickets: [{ seats: [{ seatId: 'seat-A1' }] }],
       bookingVersion: 2,
+      save: vi.fn().mockResolvedValue(true),
     };
 
     vi.mocked(Booking.find).mockReturnValue({
@@ -168,29 +182,31 @@ describe('ConsistencyService - expireStaleBookings and Concurrency Protection', 
       }),
     } as any);
 
-    vi.mocked(Booking.findOneAndUpdate).mockResolvedValue(mockBooking as any);
-    vi.mocked(Event.findById).mockResolvedValue({ _id: 'e-123', bookingMode: 'seat_based' } as any);
+    const mockFindByIdQuery = {
+      session: vi.fn().mockResolvedValue(mockBooking),
+    };
+    vi.mocked(Booking.findById).mockReturnValue(mockFindByIdQuery as any);
+
+    const mockEventQuery = {
+      session: vi.fn().mockResolvedValue({ _id: 'e-123', bookingMode: 'seat_based' }),
+    };
+    vi.mocked(Event.findById).mockReturnValue(mockEventQuery as any);
+
     vi.mocked(ReservationService.transitionForBooking).mockResolvedValue([{ reservationId: 'r-123', quantity: 2 }] as any);
 
     const expiredCount = await ConsistencyService.expireStaleBookings();
 
     expect(expiredCount).toBe(1);
-    expect(Booking.findOneAndUpdate).toHaveBeenCalledWith(
-      { _id: 'b-expired', status: BookingStatus.AWAITING_PAYMENT },
-      { $set: { status: BookingStatus.EXPIRING }, $inc: { bookingVersion: 1 } },
-      { new: true }
-    );
-    expect(Booking.updateOne).toHaveBeenCalledWith(
-      { _id: 'b-expired', status: BookingStatus.EXPIRING },
-      { $set: { status: BookingStatus.EXPIRED } }
-    );
+    expect(mockBooking.save).toHaveBeenCalled();
+    expect(mockBooking.status).toBe(BookingStatus.EXPIRED);
 
     expect(ReservationService.transitionForBooking).toHaveBeenCalledWith(
       'b-expired',
-      ReservationStatus.FAILED,
-      expect.objectContaining({ reason: 'booking-logical-checkout-timeout' })
+      ReservationStatus.EXPIRED,
+      expect.objectContaining({ reason: 'booking-logical-checkout-timeout' }),
+      undefined
     );
-    expect(ReservationService.releaseCapacityForTerminalReservations).toHaveBeenCalledWith([{ reservationId: 'r-123', quantity: 2 }]);
+    expect(ReservationService.releaseCapacityForTerminalReservations).toHaveBeenCalledWith([{ reservationId: 'r-123', quantity: 2 }], undefined);
     expect(SeatLayout.updateOne).toHaveBeenCalledWith(
       { eventId: 'e-123' },
       expect.objectContaining({
@@ -199,22 +215,35 @@ describe('ConsistencyService - expireStaleBookings and Concurrency Protection', 
       expect.objectContaining({
         arrayFilters: [{
           'seat.seatId': { $in: ['seat-A1'] },
-          'seat.status': SeatStatus.LOCKED,
-          'seat.bookedByBookingId': 'b-expired',
+          $or: [
+            { 'seat.bookedByBookingId': 'b-expired' },
+            { 'seat.reservationId': { $in: expect.any(Array) } }
+          ]
         }],
+        session: undefined
       })
     );
   });
 
   it('should prevent multiple concurrent workers from double-expiring the same booking (Atomic Claim Scenario)', async () => {
     const mockCandidate = { _id: 'b-concurrent' };
-    const mockBooking = {
+    const mockBookingA = {
       _id: 'b-concurrent',
       bookingId: 'MAD-2026-CONC',
       eventId: 'e-123',
-      status: BookingStatus.EXPIRING,
+      status: BookingStatus.AWAITING_PAYMENT,
       tickets: [{ seats: [] }],
       bookingVersion: 2,
+      save: vi.fn().mockResolvedValue(true),
+    };
+    const mockBookingB = {
+      _id: 'b-concurrent',
+      bookingId: 'MAD-2026-CONC',
+      eventId: 'e-123',
+      status: BookingStatus.EXPIRED,
+      tickets: [{ seats: [] }],
+      bookingVersion: 3,
+      save: vi.fn().mockResolvedValue(true),
     };
 
     // Both workers find the same candidate ID
@@ -224,12 +253,18 @@ describe('ConsistencyService - expireStaleBookings and Concurrency Protection', 
       }),
     } as any);
 
-    // Worker A succeeds in claiming the booking
-    vi.mocked(Booking.findOneAndUpdate)
-      .mockResolvedValueOnce(mockBooking as any) // Worker A gets the booking
-      .mockResolvedValueOnce(null);              // Worker B gets null (already claimed)
+    // Worker A claims AWAITING_PAYMENT, Worker B gets EXPIRED
+    const queryA = { session: vi.fn().mockResolvedValue(mockBookingA) };
+    const queryB = { session: vi.fn().mockResolvedValue(mockBookingB) };
+    vi.mocked(Booking.findById)
+      .mockReturnValueOnce(queryA as any)
+      .mockReturnValueOnce(queryB as any);
 
-    vi.mocked(Event.findById).mockResolvedValue({ _id: 'e-123', bookingMode: 'general_admission' } as any);
+    const mockEventQuery = {
+      session: vi.fn().mockResolvedValue({ _id: 'e-123', bookingMode: 'general_admission' }),
+    };
+    vi.mocked(Event.findById).mockReturnValue(mockEventQuery as any);
+
     vi.mocked(ReservationService.transitionForBooking).mockResolvedValue([{ reservationId: 'r-abc', quantity: 1 }] as any);
 
     // Simulate two concurrent worker executions running in parallel
@@ -243,7 +278,10 @@ describe('ConsistencyService - expireStaleBookings and Concurrency Protection', 
     // Worker B skipped the booking and processed exactly 0
     expect(workerBResult).toBe(0);
 
-    // Assert that the database update transitions were only executed ONCE by Worker A
+    // Assert that the database updates were only executed ONCE by Worker A
+    expect(mockBookingA.save).toHaveBeenCalledTimes(1);
+    expect(mockBookingB.save).not.toHaveBeenCalled();
+
     expect(ReservationService.transitionForBooking).toHaveBeenCalledTimes(1);
     expect(ReservationService.releaseCapacityForTerminalReservations).toHaveBeenCalledTimes(1);
   });

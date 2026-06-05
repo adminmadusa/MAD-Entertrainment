@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { BookingStatus } from '@mad/shared';
-import { correctBookingEmail, resendBookingTickets, getBookingsSummary, cancelBooking } from './booking.service';
+import { BookingStatus, ReservationStatus } from '@mad/shared';
+import { correctBookingEmail, resendBookingTickets, getBookingsSummary, cancelBooking, expireBooking } from './booking.service';
 import { Booking } from '../../models/booking.schema';
 import { UserModel } from '../../models/user.schema';
 import { Ticket } from '../../models/ticket.schema';
@@ -775,6 +775,145 @@ describe('Admin Booking Service Backend Tests', () => {
 
       await expect(cancelBooking('booking-coupon-3', 'Customer request')).rejects.toThrow('Fatal database write error');
       expect(Coupon.updateOne).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('expireBooking', () => {
+    it('should expire booking, transition reservations, release capacity, and not send customer notifications', async () => {
+      const mockBooking = {
+        _id: 'booking-456',
+        bookingId: 'MAD-2026-EXPIRE',
+        eventId: 'event-555',
+        totalTickets: 2,
+        tickets: [{ tier: 'general', quantity: 2 }],
+        status: BookingStatus.AWAITING_PAYMENT,
+        bookingVersion: 1,
+        save: vi.fn().mockResolvedValue(true),
+      };
+
+      vi.mocked(Booking.findById).mockReturnValue({
+        session: vi.fn().mockResolvedValue(mockBooking),
+      } as any);
+
+      const mockEvent = {
+        _id: 'event-555',
+        bookingMode: 'general_admission',
+        ticketTiers: [],
+      };
+      vi.mocked(Event.findById).mockReturnValue({
+        session: vi.fn().mockResolvedValue(mockEvent),
+      } as any);
+
+      vi.mocked(ReservationService.transitionForBooking).mockResolvedValue([{ reservationId: 'r-123', quantity: 2 }] as any);
+
+      const result = await expireBooking('booking-456', 'Reservation timeout');
+
+      expect(result.status).toBe(BookingStatus.EXPIRED);
+      expect(mockBooking.save).toHaveBeenCalled();
+      expect(ReservationService.transitionForBooking).toHaveBeenCalledWith(
+        'booking-456',
+        ReservationStatus.EXPIRED,
+        expect.objectContaining({ reason: 'Reservation timeout' }),
+        undefined
+      );
+      expect(ReservationService.releaseCapacityForTerminalReservations).toHaveBeenCalledWith(
+        [{ reservationId: 'r-123', quantity: 2 }],
+        undefined
+      );
+
+      // Verify no customer notification is queued
+      expect(QueueService.enqueue).not.toHaveBeenCalled();
+
+      // Verify socket emissions and audit log
+      expect(emitToBooking).toHaveBeenCalled();
+      expect(emitToAdmin).toHaveBeenCalled();
+      expect(auditLog).toHaveBeenCalledWith(
+        expect.objectContaining({
+          action: 'BOOKING_EXPIRED',
+          actor: { type: 'system', id: 'system' },
+          status: 'success',
+          metadata: expect.objectContaining({
+            bookingId: 'booking-456',
+            eventId: 'event-555',
+          }),
+        })
+      );
+    });
+
+    it('should decrement coupon usedCount with gt 0 guard if coupon is present', async () => {
+      const mockBooking = {
+        _id: 'booking-coupon-expire',
+        bookingId: 'MAD-2026-COUPEXP',
+        eventId: 'event-555',
+        totalTickets: 1,
+        tickets: [{ tier: 'general', quantity: 1 }],
+        status: BookingStatus.AWAITING_PAYMENT,
+        couponId: 'coupon-expire-123',
+        bookingVersion: 1,
+        save: vi.fn().mockResolvedValue(true),
+      };
+
+      vi.mocked(Booking.findById).mockReturnValue({
+        session: vi.fn().mockResolvedValue(mockBooking),
+      } as any);
+
+      const mockEvent = {
+        _id: 'event-555',
+        bookingMode: 'general_admission',
+        ticketTiers: [],
+      };
+      vi.mocked(Event.findById).mockReturnValue({
+        session: vi.fn().mockResolvedValue(mockEvent),
+      } as any);
+
+      vi.mocked(Coupon.updateOne).mockResolvedValue({ modifiedCount: 1 } as any);
+
+      await expireBooking('booking-coupon-expire', 'Timeout');
+
+      expect(Coupon.updateOne).toHaveBeenCalledWith(
+        { _id: 'coupon-expire-123', usedCount: { $gt: 0 } },
+        { $inc: { usedCount: -1 } },
+        { session: undefined }
+      );
+    });
+
+    it('should return null if booking is already EXPIRED', async () => {
+      const mockBooking = {
+        _id: 'booking-already-expired',
+        bookingId: 'MAD-2026-ALREADY',
+        eventId: 'event-555',
+        status: BookingStatus.EXPIRED,
+        tickets: [],
+        bookingVersion: 3,
+        save: vi.fn(),
+      };
+
+      vi.mocked(Booking.findById).mockReturnValue({
+        session: vi.fn().mockResolvedValue(mockBooking),
+      } as any);
+
+      const result = await expireBooking('booking-already-expired');
+
+      expect(result).toBeNull();
+      expect(mockBooking.save).not.toHaveBeenCalled();
+      expect(ReservationService.transitionForBooking).not.toHaveBeenCalled();
+    });
+
+    it('should throw badRequest if booking status cannot be expired (e.g. CONFIRMED)', async () => {
+      const mockBooking = {
+        _id: 'booking-confirmed',
+        bookingId: 'MAD-2026-CONF',
+        eventId: 'event-555',
+        status: BookingStatus.CONFIRMED,
+        tickets: [],
+        bookingVersion: 2,
+      };
+
+      vi.mocked(Booking.findById).mockReturnValue({
+        session: vi.fn().mockResolvedValue(mockBooking),
+      } as any);
+
+      await expect(expireBooking('booking-confirmed')).rejects.toThrow('Cannot expire booking in status: confirmed');
     });
   });
 });
