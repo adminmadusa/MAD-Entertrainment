@@ -115,3 +115,8 @@ export async function sendEmail(input: SendEmailInput): Promise<void> {
     throw error; // Bubble up error so BullMQ workers can retry correctly
   }
 }
+
+export function normalizeEmail(email: string): string {
+  return email.trim().toLowerCase();
+}
+

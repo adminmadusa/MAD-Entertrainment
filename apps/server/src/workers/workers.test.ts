@@ -9,6 +9,7 @@ import { Booking } from '../models/booking.schema';
 import { Event } from '../models/event.schema';
 import { Ticket } from '../models/ticket.schema';
 import { Notification } from '../models/notification.schema';
+import { MagicTokenModel } from '../models/magic-token.schema';
 import { QueueService } from '../services/queue.service';
 import { generateTicketPDF } from '../utils/pdf';
 import { sendEmail } from '../utils/email';
@@ -50,6 +51,12 @@ vi.mock('../models/notification.schema', () => ({
   },
 }));
 
+vi.mock('../models/magic-token.schema', () => ({
+  MagicTokenModel: {
+    findOne: vi.fn(),
+  },
+}));
+
 vi.mock('../config/queue.config', () => ({
   getQueueConnection: () => ({}),
   getQueueName: (name: string) => name,
@@ -70,6 +77,7 @@ vi.mock('../utils/pdf', () => ({
 
 vi.mock('../utils/email', () => ({
   sendEmail: vi.fn(),
+  normalizeEmail: (email: string) => email.trim().toLowerCase(),
 }));
 
 vi.mock('../utils/logger', () => ({
@@ -786,6 +794,104 @@ describe('Asynchronous Workers', () => {
           $set: expect.objectContaining({ status: 'sent', isSent: true }),
         })
       );
+    });
+  });
+
+  describe('Email Worker (handleJobExecution) - Stale OTP Job Verification', () => {
+    beforeEach(() => {
+      vi.mocked(sendEmail).mockReset();
+      vi.mocked(sendEmail).mockResolvedValue(undefined);
+    });
+
+    it('should skip email dispatch if enqueued job OTP token is stale', async () => {
+      const activeTokenId = new Types.ObjectId().toString();
+      const jobTokenId = new Types.ObjectId().toString(); // different ID
+      const jobId = `magic-user@example.com-${jobTokenId}`;
+      const data = {
+        to: 'user@example.com',
+        subject: 'Sign In',
+        html: '<h1>Sign In</h1>',
+        notificationType: 'otp',
+      };
+
+      // Mock MongoDB to return MagicToken B (activeTokenId)
+      vi.mocked(MagicTokenModel.findOne).mockResolvedValue({
+        _id: new Types.ObjectId(activeTokenId),
+        email: 'user@example.com',
+      } as any);
+
+      await handleJobExecution(jobId, data, 0);
+
+      // Verify SMTP send was skipped
+      expect(sendEmail).not.toHaveBeenCalled();
+      
+      // Verify Notification log is updated to sent/complete to avoid dangling states
+      expect(Notification.updateOne).toHaveBeenCalledWith(
+        { jobId },
+        expect.objectContaining({
+          $set: expect.objectContaining({ status: 'sent', isSent: true }),
+        })
+      );
+    });
+
+    it('should dispatch email if enqueued job OTP token is active', async () => {
+      const activeTokenId = new Types.ObjectId().toString();
+      const jobId = `magic-user@example.com-${activeTokenId}`;
+      const data = {
+        to: 'user@example.com',
+        subject: 'Sign In',
+        html: '<h1>Sign In</h1>',
+        notificationType: 'otp',
+      };
+
+      // Mock MongoDB to return MagicToken B (matching job ID)
+      vi.mocked(MagicTokenModel.findOne).mockResolvedValue({
+        _id: new Types.ObjectId(activeTokenId),
+        email: 'user@example.com',
+      } as any);
+
+      vi.mocked(Notification.findOne).mockResolvedValue({
+        _id: 'notification-id',
+        status: 'queued',
+        isSent: false,
+      } as any);
+      vi.mocked(Notification.findOneAndUpdate).mockResolvedValue({
+        _id: 'notification-id',
+        status: 'processing',
+        isSent: false,
+      } as any);
+
+      await handleJobExecution(jobId, data, 0);
+
+      // Verify SMTP send was executed
+      expect(sendEmail).toHaveBeenCalled();
+      expect(Notification.updateOne).toHaveBeenCalledWith(
+        { jobId },
+        expect.objectContaining({
+          $set: expect.objectContaining({ status: 'sent', isSent: true }),
+        })
+      );
+    });
+
+    it('should complete job and not retry if the job is stale (retry safety)', async () => {
+      const activeTokenId = new Types.ObjectId().toString();
+      const jobTokenId = new Types.ObjectId().toString();
+      const jobId = `magic-user@example.com-${jobTokenId}`;
+      const data = {
+        to: 'user@example.com',
+        subject: 'Sign In',
+        html: '<h1>Sign In</h1>',
+        notificationType: 'otp',
+      };
+
+      vi.mocked(MagicTokenModel.findOne).mockResolvedValue({
+        _id: new Types.ObjectId(activeTokenId),
+        email: 'user@example.com',
+      } as any);
+
+      // We execute worker, it must resolve cleanly (no thrown error) so BullMQ marks it completed
+      await expect(handleJobExecution(jobId, data, 0)).resolves.toBeUndefined();
+      expect(sendEmail).not.toHaveBeenCalled();
     });
   });
 });

@@ -7,8 +7,9 @@ import { getEnv } from '../config/env';
 import { isRedisConnected } from '../config/redis';
 import { DeadLetterJob } from '../models/dead-letter-job.schema';
 import { Notification } from '../models/notification.schema';
+import { MagicTokenModel } from '../models/magic-token.schema';
 import { createNotificationSafe } from '../services/notification.service';
-import { sendEmail } from '../utils/email';
+import { sendEmail, normalizeEmail } from '../utils/email';
 import { logger } from '../utils/logger';
 import { NotificationType } from '@mad/shared';
 
@@ -50,6 +51,22 @@ export async function handleJobExecution(jobId: string, data: any, attemptsMade:
 
   if (!to || !subject || !html) {
     throw new Error('Missing parameters in email dispatch payload');
+  }
+
+  // Stale OTP Job Verification Guard
+  if (notificationType === NotificationType.OTP) {
+    const jobTokenId = jobId.split('-').pop();
+    const normalizedTo = normalizeEmail(to);
+    const activeToken = await MagicTokenModel.findOne({ email: normalizedTo });
+
+    if (!activeToken || activeToken._id.toString() !== jobTokenId) {
+      logger.warn(
+        { jobId, recipient: normalizedTo, jobTokenId, activeTokenId: activeToken?._id?.toString() },
+        'OTP_STALE_JOB_SKIPPED: Superseded OTP token skipped from delivery'
+      );
+      await Notification.updateOne({ jobId }, { $set: { status: 'sent', processedAt: new Date(), isSent: true } });
+      return; // Skip email dispatch cleanly without failing
+    }
   }
 
   // 1. Retrieve or atomically initialize the notification document by jobId
