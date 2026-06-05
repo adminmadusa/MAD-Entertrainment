@@ -48,6 +48,22 @@ export interface AdminBooking {
   ticketsScanned?: number;
   ticketsRemaining?: number;
   attendanceStatus?: 'NOT_ATTENDED' | 'PARTIALLY_ATTENDED' | 'FULLY_ATTENDED';
+  auditHistory?: {
+    action: string;
+    actor: string;
+    status: string;
+    timestamp: string;
+    metadata: Record<string, any>;
+    description: string;
+  }[];
+  individualTickets?: {
+    ticketId: string;
+    status: string;
+    createdAt: string;
+    replacedAt?: string | null;
+    replacedByTicketId?: string | null;
+    replacementReason?: string | null;
+  }[];
 }
 
 export interface AdminRefund {
@@ -126,12 +142,10 @@ export interface NormalizedBookingDetail {
 export async function adminGetBookings(params: Record<string, string | number> = {}): Promise<NormalizedBookingsResponse> {
   try {
     const qs = new URLSearchParams(Object.entries(params).map(([k, v]) => [k, String(v)]));
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data } = await adminApiClient.get<any>(`/admin/bookings?${qs}`);
      
     const paginationSource = data?.data?.pagination || data?.pagination;
     return {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       items: Array.isArray(data?.data) ? data.data : (data?.data && Object.values(data.data).find((v: any) => Array.isArray(v)) || []),
       pagination: {
         page: paginationSource?.page ?? 1,
@@ -231,12 +245,10 @@ export interface NormalizedRefundsResponse {
 export async function adminGetRefunds(params: Record<string, string> = {}): Promise<NormalizedRefundsResponse> {
   try {
     const qs = new URLSearchParams(params);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data } = await adminApiClient.get<any>(`/admin/refunds?${qs}`);
      
     const paginationSource = data?.data?.pagination || data?.pagination;
     return {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       items: Array.isArray(data?.data) ? data.data : (data?.data && Object.values(data.data).find((v: any) => Array.isArray(v)) || []),
       pagination: {
         page: paginationSource?.page ?? 1,

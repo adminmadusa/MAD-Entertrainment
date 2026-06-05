@@ -125,17 +125,8 @@ export async function publicGetEvents(filters: { category?: string; search?: str
 }
 
 export async function publicGetEventBySlug(slug: string): Promise<Event> {
-  // eslint-disable-next-line no-console
-  console.log(`[EVENT_FETCH] publicGetEventBySlug API call started for slug: ${slug}`);
-  try {
-    const { data } = await apiClient.get<{ data: Event }>(`/events/${slug}`);
-    // eslint-disable-next-line no-console
-    console.log(`[EVENT_FETCH] publicGetEventBySlug API call completed successfully for slug: ${slug}`);
-    return data.data;
-  } catch (error) {
-    console.error(`[EVENT_FETCH] publicGetEventBySlug API call failed for slug: ${slug}`, error);
-    throw error;
-  }
+  const { data } = await apiClient.get<{ data: Event }>(`/events/${slug}`);
+  return data.data;
 }
 
 // ─── DJ Operators ─────────────────────────────────────────────
@@ -219,15 +210,15 @@ export async function publicSaveCheckoutDetails(
 export async function publicGetBookingDetails(
   bookingId: string,
   sessionToken?: string
-): Promise<{ booking: Booking; tickets: Ticket[] }> {
-  const { data } = await apiClient.get<{ data: { booking: Booking; tickets: Ticket[] } }>(`/bookings/${bookingId}`, {
+): Promise<{ booking: Booking; tickets: Ticket[]; ticketsReady: boolean }> {
+  const { data } = await apiClient.get<{ data: { booking: Booking; tickets: Ticket[]; ticketsReady: boolean } }>(`/bookings/${bookingId}`, {
     headers: getGuestSessionHeaders(sessionToken),
   });
   return data.data;
 }
 
-export async function publicGetMyBookings(): Promise<{ bookings: Booking[]; tickets: Ticket[] }> {
-  const { data } = await apiClient.get<{ data: { bookings: Booking[]; tickets: Ticket[] } }>('/bookings/me');
+export async function publicGetMyBookings(): Promise<{ bookings: Booking[]; tickets: Ticket[]; ticketsReadyMap: Record<string, boolean> }> {
+  const { data } = await apiClient.get<{ data: { bookings: Booking[]; tickets: Ticket[]; ticketsReadyMap: Record<string, boolean> } }>('/bookings/me');
   return data.data;
 }
 
@@ -313,10 +304,7 @@ export async function publicVerifyVerificationCodeOrOTP(payload: VerifyVerificat
   return data.data;
 }
 
-export async function publicGetMyAuthBookings(): Promise<Booking[]> {
-  const { data } = await apiClient.get<{ data: Booking[] }>('/my-bookings');
-  return data.data;
-}
+
 export interface UpdateProfilePayload {
   firstName: string;
   lastName: string;

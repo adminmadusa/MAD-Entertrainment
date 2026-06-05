@@ -8,7 +8,8 @@ import { Booking } from '../models/booking.schema';
 import { Event } from '../models/event.schema';
 import { DeadLetterJob } from '../models/dead-letter-job.schema';
 import { Notification } from '../models/notification.schema';
-import { QueueService, localFallbackEmitter } from '../services/queue.service';
+import { QueueService } from '../services/queue.service';
+import { createNotificationSafe } from '../services/notification.service';
 import { generateTicketPDF } from '../utils/pdf';
 import { NotificationType } from '@mad/shared';
 import { logger } from '../utils/logger';
@@ -19,13 +20,29 @@ export async function processPDFGenerate(
   bookingId: string,
   eventId: string,
   recipientEmail: string,
-  guestName: string
+  guestName: string,
+  isResend?: boolean,
+  resendId?: string
 ): Promise<void> {
   const booking = await Booking.findById(bookingId);
   const event = await Event.findById(eventId);
 
   if (!booking || !event) {
     throw new Error(`Booking ${bookingId} or Event ${eventId} not found for PDF generation`);
+  }
+
+  const jobId = isResend && resendId
+    ? `email:dispatch:${booking._id}:resend:${resendId}`
+    : `email:dispatch:${booking._id}`;
+
+  // Read-only early exit to prevent generating PDF if already successfully sent
+  const existingNotification = await Notification.findOne({ jobId });
+  if (existingNotification && (existingNotification.status === 'sent' || existingNotification.isSent)) {
+    logger.warn(
+      { bookingId: booking._id, jobId },
+      'Idempotency guard triggered: PDF Ticket already generated and email successfully sent. Skipping duplicate execution.'
+    );
+    return;
   }
 
   // 1. Generate PDF buffer in memory
@@ -62,21 +79,31 @@ export async function processPDFGenerate(
     </div>
   `;
 
-  const jobId = `email:dispatch:${booking._id}`;
 
-  await Notification.create({
+
+  // Unify notification creation under createNotificationSafe
+  const notification = await createNotificationSafe({
     jobId,
-    status: 'queued',
-    queuedAt: new Date(),
     type: NotificationType.BOOKING_CONFIRMED,
     bookingId: booking._id,
     eventId: event._id,
     channel: 'email',
     recipient: recipientEmail,
     subject: `Your Ticket for ${event.title || 'MAD Event'} [${booking.bookingId}]`,
+    status: 'queued',
     isSent: false,
     retryCount: 0,
+    queuedAt: new Date(),
   });
+
+  // If the notification was already processed successfully, exit early
+  if (notification.status === 'sent' || notification.isSent) {
+    logger.warn(
+      { bookingId: booking._id, jobId },
+      'Idempotency guard triggered: PDF Ticket already generated and email successfully sent. Skipping duplicate execution.'
+    );
+    return;
+  }
 
   // 2. Enqueue the final notification task with the base64-encoded attachment
   await QueueService.enqueue(
@@ -110,12 +137,12 @@ async function handleJobExecution(jobId: string, data: any): Promise<void> {
       name: `worker:${QUEUE_NAME}`,
     },
     async () => {
-      const { bookingId, eventId, recipientEmail, guestName } = data;
+      const { bookingId, eventId, recipientEmail, guestName, isResend, resendId } = data;
       if (!bookingId || !eventId || !recipientEmail || !guestName) {
         throw new Error('Missing parameters in PDF generation payload');
       }
 
-      await processPDFGenerate(bookingId, eventId, recipientEmail, guestName);
+      await processPDFGenerate(bookingId, eventId, recipientEmail, guestName, isResend, resendId);
     }
   );
 }
@@ -124,18 +151,8 @@ async function handleJobExecution(jobId: string, data: any): Promise<void> {
 let worker: Worker | null = null;
 
 export function startPDFWorker(): void {
-  // Bind local fallback event listener immediately
-  localFallbackEmitter.on(QUEUE_NAME, async (job) => {
-    logger.info({ jobId: job.id }, 'Processing PDF generation job via local EventEmitter fallback');
-    try {
-      await handleJobExecution(job.id, job.data);
-    } catch (err) {
-      logger.error({ err, jobId: job.id }, 'Local PDF generation job fallback execution failed');
-    }
-  });
-
   if (!isRedisConnected()) {
-    logger.warn('Redis offline. Operating PDF worker in in-memory degraded fallback mode.');
+    logger.warn('Redis offline. PDF worker startup aborted.');
     return;
   }
 
@@ -159,6 +176,9 @@ export function startPDFWorker(): void {
     worker.on('failed', async (job, err) => {
       logger.error({ err, jobId: job?.id }, 'PDF generation job failed in BullMQ');
       if (job && job.attemptsMade >= (job.opts.attempts || 3)) {
+        let dlqPersisted = false;
+
+        // 1. DLQ Persistence
         try {
           await DeadLetterJob.create({
             queueName: QUEUE_NAME,
@@ -169,9 +189,41 @@ export function startPDFWorker(): void {
             stacktrace: job.stacktrace,
             attemptsMade: job.attemptsMade,
           });
-          logger.warn({ jobId: job.id }, 'PDF Job moved to Dead-Letter Queue database collection.');
+          dlqPersisted = true;
         } catch (dlqErr) {
-          logger.error({ err: dlqErr, jobId: job.id }, 'Failed to persist Dead-Letter Queue document.');
+          logger.error({ err: dlqErr, jobId: job.id, dlqStatus: 'failed_to_persist' }, 'Failed to persist Dead-Letter Queue document.');
+        }
+
+        // 2. Structured Logging
+        if (dlqPersisted) {
+          logger.error({
+            jobId: job.id,
+            bookingId: job.data?.bookingId,
+            eventId: job.data?.eventId,
+            queueName: QUEUE_NAME,
+            attemptsMade: job.attemptsMade,
+            dlqStatus: 'exhausted',
+          }, 'PDF generation job exhausted retries and moved to DLQ');
+        }
+
+        // 3. Sentry Notification
+        try {
+          Sentry.captureException(err, {
+            tags: {
+              queue: QUEUE_NAME,
+              jobId: job.id || 'unknown',
+              jobName: job.name || 'unknown',
+              severity: 'warning',
+            },
+            extra: {
+              attemptsMade: job.attemptsMade,
+              bookingId: job.data?.bookingId,
+              eventId: job.data?.eventId,
+            },
+            fingerprint: ['dlq-failure', QUEUE_NAME, err.message],
+          });
+        } catch (sentryError) {
+          logger.error({ err: sentryError, originalErr: err.message, jobId: job.id }, 'Failed to emit exception to Sentry');
         }
       }
     });
@@ -189,7 +241,6 @@ export function startPDFWorker(): void {
 }
 
 export async function stopPDFWorker(): Promise<void> {
-  localFallbackEmitter.removeAllListeners(QUEUE_NAME);
   if (worker) {
     await worker.close();
     worker = null;

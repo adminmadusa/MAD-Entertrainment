@@ -8,7 +8,5 @@ import { Event } from '@mad/types';
  * (e.g. between generateMetadata, JSON-LD schema generation, and Page render).
  */
 export const getCachedEvent = cache(async (slug: string): Promise<Event> => {
-  // eslint-disable-next-line no-console
-  console.log(`[EVENT_FETCH] getCachedEvent cache evaluation for slug: ${slug}`);
   return publicGetEventBySlug(slug);
 });

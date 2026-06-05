@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { PublicDJOperatorService } from '../../services/public/dj-operator.service';
 import { CacheService } from '../../services/cache.service';
 import { sendSuccess } from '../../utils/response';
+import { logger } from '../../utils/logger';
 
 export async function listDJOperators(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
@@ -16,7 +17,7 @@ export async function listDJOperators(req: Request, res: Response, next: NextFun
     const cached = await CacheService.get<any>(cacheKey);
     if (cached) {
       const duration = performance.now() - startTime;
-      console.log(`[dj-operators:cache-hit] ${duration.toFixed(0)}ms`);
+      logger.info({ durationMs: duration.toFixed(0) }, '[dj-operators:cache-hit]');
       sendSuccess(res, cached, 'DJ Operators retrieved (cached)');
       return;
     }
@@ -28,7 +29,7 @@ export async function listDJOperators(req: Request, res: Response, next: NextFun
     await CacheService.set(cacheKey, result, 120);
 
     const totalDuration = performance.now() - startTime;
-    console.log(`[dj-operators:query] ${queryDuration.toFixed(0)}ms | total: ${totalDuration.toFixed(0)}ms`);
+    logger.info({ queryDurationMs: queryDuration.toFixed(0), totalDurationMs: totalDuration.toFixed(0) }, '[dj-operators:query]');
 
     sendSuccess(res, result, 'DJ Operators retrieved');
   } catch (err) {
@@ -45,7 +46,7 @@ export async function getDJOperatorBySlug(req: Request, res: Response, next: Nex
     const cached = await CacheService.get<any>(cacheKey);
     if (cached) {
       const duration = performance.now() - startTime;
-      console.log(`[dj-operators:detail:cache-hit] ${duration.toFixed(0)}ms`);
+      logger.info({ durationMs: duration.toFixed(0) }, '[dj-operators:detail:cache-hit]');
       sendSuccess(res, cached, 'DJ Operator retrieved (cached)');
       return;
     }
@@ -57,7 +58,7 @@ export async function getDJOperatorBySlug(req: Request, res: Response, next: Nex
     await CacheService.set(cacheKey, djOperator, 300);
 
     const totalDuration = performance.now() - startTime;
-    console.log(`[dj-operators:detail:query] ${queryDuration.toFixed(0)}ms | total: ${totalDuration.toFixed(0)}ms`);
+    logger.info({ queryDurationMs: queryDuration.toFixed(0), totalDurationMs: totalDuration.toFixed(0) }, '[dj-operators:detail:query]');
 
     sendSuccess(res, djOperator, 'DJ Operator retrieved');
   } catch (err) {

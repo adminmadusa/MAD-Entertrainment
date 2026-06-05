@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { PublicEventService } from '../../services/public/event.service';
 import { CacheService } from '../../services/cache.service';
 import { sendSuccess } from '../../utils/response';
+import { logger } from '../../utils/logger';
 
 export async function listEvents(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
@@ -17,7 +18,7 @@ export async function listEvents(req: Request, res: Response, next: NextFunction
     const cached = await CacheService.get<any>(cacheKey);
     if (cached) {
       const duration = performance.now() - startTime;
-      console.log(`[events:cache-hit] ${duration.toFixed(0)}ms`);
+      logger.info({ durationMs: duration.toFixed(0) }, '[events:cache-hit]');
       sendSuccess(res, cached, 'Events list retrieved (cached)');
       return;
     }
@@ -30,7 +31,7 @@ export async function listEvents(req: Request, res: Response, next: NextFunction
     await CacheService.set(cacheKey, result, 60);
 
     const totalDuration = performance.now() - startTime;
-    console.log(`[events:query] ${queryDuration.toFixed(0)}ms | total: ${totalDuration.toFixed(0)}ms`);
+    logger.info({ queryDurationMs: queryDuration.toFixed(0), totalDurationMs: totalDuration.toFixed(0) }, '[events:query]');
 
     sendSuccess(res, result, 'Events list retrieved');
   } catch (err) {
@@ -47,7 +48,7 @@ export async function getEventBySlug(req: Request, res: Response, next: NextFunc
     const cached = await CacheService.get<any>(cacheKey);
     if (cached) {
       const duration = performance.now() - startTime;
-      console.log(`[events:detail:cache-hit] ${duration.toFixed(0)}ms`);
+      logger.info({ durationMs: duration.toFixed(0) }, '[events:detail:cache-hit]');
       sendSuccess(res, cached, 'Event details retrieved (cached)');
       return;
     }
@@ -60,7 +61,7 @@ export async function getEventBySlug(req: Request, res: Response, next: NextFunc
     await CacheService.set(cacheKey, event, 300);
 
     const totalDuration = performance.now() - startTime;
-    console.log(`[events:detail:query] ${queryDuration.toFixed(0)}ms | total: ${totalDuration.toFixed(0)}ms`);
+    logger.info({ queryDurationMs: queryDuration.toFixed(0), totalDurationMs: totalDuration.toFixed(0) }, '[events:detail:query]');
 
     sendSuccess(res, event, 'Event details retrieved');
   } catch (err) {

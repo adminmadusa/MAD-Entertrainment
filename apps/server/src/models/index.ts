@@ -1,4 +1,5 @@
 import './event.schema';
+import './audit-log.schema';
 import './dj-operator.schema';
 import './seat-layout.schema';
 import './booking.schema';

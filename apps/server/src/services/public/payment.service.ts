@@ -1,5 +1,5 @@
 import crypto from 'crypto';
-import { Types } from 'mongoose';
+import { Types, ClientSession } from 'mongoose';
 
 import { BookingStatus, PaymentStatus, ReservationStatus, SeatStatus, NotificationType } from '@mad/shared';
 
@@ -27,6 +27,8 @@ import { paymentFailureHtml } from '../../lib/email';
 import { ReservationService } from '../reservation.service';
 import { QueueService } from '../queue.service';
 import { CacheService } from '../cache.service';
+import { createNotificationSafe } from '../notification.service';
+import { runInTransaction } from '../../utils/transaction';
 
 type PaymentOwnershipContext = {
   userId?: string;
@@ -89,6 +91,70 @@ export class PaymentService {
 
     const env = getEnv();
 
+    // ─── Payment Intent Reuse / Fingerprint check ───────────────────
+    const existingPayment = await Payment.findOne({
+      bookingId: booking._id,
+      gateway,
+      status: PaymentStatus.PENDING,
+    });
+
+    if (existingPayment) {
+      const matchesFingerprint =
+        existingPayment.amount === booking.totalAmount &&
+        existingPayment.currency === (booking.currency || 'INR') &&
+        existingPayment.couponId?.toString() === booking.couponId?.toString();
+
+      const ageMs = Date.now() - existingPayment.createdAt.getTime();
+      const isExpired = ageMs > 24 * 60 * 60 * 1000;
+
+      if (matchesFingerprint && !isExpired) {
+        logger.info(
+          { bookingId: booking._id, gateway, paymentId: existingPayment._id },
+          'Reusing active matching pending payment intent.'
+        );
+
+        if (gateway === 'razorpay') {
+          return {
+            gateway: 'razorpay',
+            keyId: env.RAZORPAY_KEY_ID || 'mock_key_id',
+            orderId: existingPayment.gatewayOrderId,
+            amount: Math.round(existingPayment.amount * 100),
+            currency: existingPayment.currency,
+            bookingId: booking._id,
+            ...(env.MOCK_PAYMENTS ? { isMock: true } : {}),
+          };
+        } else {
+          let clientSecret = '';
+          if (env.MOCK_PAYMENTS) {
+            clientSecret = existingPayment.gatewayOrderId + '_secret_mock';
+          } else {
+            const stripe = getStripe();
+            const intent = await stripe.paymentIntents.retrieve(existingPayment.gatewayOrderId!);
+            clientSecret = intent.client_secret!;
+          }
+
+          return {
+            gateway: 'stripe',
+            publishableKey: env.STRIPE_PUBLISHABLE_KEY,
+            clientSecret,
+            amount: existingPayment.amount,
+            currency: existingPayment.currency,
+            bookingId: booking._id,
+            ...(env.MOCK_PAYMENTS ? { isMock: true } : {}),
+          };
+        }
+      } else {
+        existingPayment.status = PaymentStatus.FAILED;
+        existingPayment.failedAt = new Date();
+        existingPayment.failureReason = isExpired ? 'PENDING_INTENT_EXPIRED' : 'PENDING_INTENT_SUPERSEDED';
+        await existingPayment.save();
+        logger.info(
+          { bookingId: booking._id, paymentId: existingPayment._id, reason: existingPayment.failureReason },
+          'Stale or mismatched pending payment expired/superseded.'
+        );
+      }
+    }
+
     if (gateway === 'razorpay') {
       return this.handleRazorpayIntent(booking, env);
     }
@@ -99,14 +165,14 @@ export class PaymentService {
   private static async handleRazorpayIntent(booking: IBooking, env: ReturnType<typeof getEnv>) {
     if (env.MOCK_PAYMENTS) {
       const mockOrderId = 'order_mock_' + Math.random().toString(36).substring(2, 10);
-      const payment = await Payment.create({
-        bookingId: booking._id,
-        gateway: 'razorpay',
-        status: PaymentStatus.PENDING,
-        amount: booking.totalAmount,
-        currency: 'INR',
-        gatewayOrderId: mockOrderId,
-      });
+      const payment = await this.createPendingPayment(
+        booking._id,
+        'razorpay',
+        booking.totalAmount,
+        'INR',
+        booking.couponId,
+        mockOrderId
+      );
 
       booking.paymentId = payment._id as any;
       booking.bookingVersion += 1;
@@ -160,14 +226,14 @@ export class PaymentService {
         receipt: booking.bookingId,
       });
 
-      const payment = await Payment.create({
-        bookingId: booking._id,
-        gateway: 'razorpay',
-        status: PaymentStatus.PENDING,
-        amount: booking.totalAmount,
-        currency: 'INR',
-        gatewayOrderId: order.id,
-      });
+      const payment = await this.createPendingPayment(
+        booking._id,
+        'razorpay',
+        booking.totalAmount,
+        'INR',
+        booking.couponId,
+        order.id
+      );
 
       booking.paymentId = payment._id as any;
       booking.bookingVersion += 1;
@@ -211,14 +277,14 @@ export class PaymentService {
   private static async handleStripeIntent(booking: IBooking, env: ReturnType<typeof getEnv>) {
     if (env.MOCK_PAYMENTS) {
       const mockIntentId = 'pi_mock_' + Math.random().toString(36).substring(2, 10);
-      const payment = await Payment.create({
-        bookingId: booking._id,
-        gateway: 'stripe',
-        status: PaymentStatus.PENDING,
-        amount: booking.totalAmount,
-        currency: booking.currency || 'INR',
-        gatewayOrderId: mockIntentId,
-      });
+      const payment = await this.createPendingPayment(
+        booking._id,
+        'stripe',
+        booking.totalAmount,
+        booking.currency || 'INR',
+        booking.couponId,
+        mockIntentId
+      );
 
       booking.paymentId = payment._id as any;
       booking.bookingVersion += 1;
@@ -259,15 +325,12 @@ export class PaymentService {
       throw AppError.badRequest('Stripe is not enabled / credentials missing');
     }
 
+    const amountPaise = Math.round(booking.totalAmount * 100);
     try {
       const stripe = getStripe();
       const paymentIntent = await stripe.paymentIntents.create({
-        amount: Math.round(booking.totalAmount * 100),
+        amount: amountPaise,
         currency: booking.currency?.toLowerCase() || 'inr',
-        // PR-02: Standardised metadata keys.
-        // bookingId  — MongoId, used for exact binding check during verification.
-        // bookingReference — human-readable MAD-YYYY-XXXXX, secondary binding check.
-        // environment — disambiguates test vs production events in Stripe dashboard.
         metadata: {
           bookingId: booking._id.toString(),
           bookingReference: booking.bookingId,
@@ -275,14 +338,14 @@ export class PaymentService {
         },
       });
 
-      const payment = await Payment.create({
-        bookingId: booking._id,
-        gateway: 'stripe',
-        status: PaymentStatus.PENDING,
-        amount: booking.totalAmount,
-        currency: booking.currency || 'INR',
-        gatewayOrderId: paymentIntent.id,
-      });
+      const payment = await this.createPendingPayment(
+        booking._id,
+        'stripe',
+        booking.totalAmount,
+        booking.currency || 'INR',
+        booking.couponId,
+        paymentIntent.id
+      );
 
       booking.paymentId = payment._id as any;
       booking.bookingVersion += 1;
@@ -348,7 +411,9 @@ export class PaymentService {
     razorpayOrderId: string,
     razorpayPaymentId: string,
     eventType: string,
-    webhookEventId: string
+    webhookEventId: string,
+    amountPaise?: number,
+    currency?: string
   ): Promise<{ status: 'confirmed' | 'failed' | 'skipped'; bookingId?: string }> {
     // 1. Resolve Payment record from orderId — this is the only link between the
     //    webhook payload and the internal booking.
@@ -404,25 +469,6 @@ export class PaymentService {
     }
 
     if (eventType === 'payment.captured' || eventType === 'payment.authorized') {
-      const claimedPayment = await Payment.findOneAndUpdate(
-        { _id: payment._id, status: PaymentStatus.PENDING },
-        {
-          $set: {
-            status: PaymentStatus.PAID,
-            gatewayPaymentId: razorpayPaymentId,
-            paidAt: new Date(),
-          }
-        },
-        { new: true }
-      );
-
-      if (!claimedPayment) {
-        logger.info(
-          { paymentId: payment._id, bookingId: booking._id },
-          'Payment already claimed by concurrent caller — skipping'
-        );
-        return { status: 'skipped', bookingId: booking._id.toString() };
-      }
 
       // confirmBooking() uses findOneAndUpdate with { status: AWAITING_PAYMENT } guard.
       // If the booking expired or was already confirmed by the frontend, this is a no-op.
@@ -903,6 +949,80 @@ export class PaymentService {
         throw AppError.badRequest('Razorpay payment has already been used');
       }
 
+      // Amount & currency verification (defense-in-depth sanity checks)
+      if (payment.amount !== undefined && booking.totalAmount !== undefined) {
+        const expectedAmountPaise = Math.round(booking.totalAmount * 100);
+        const paymentAmountPaise = Math.round(payment.amount * 100);
+
+        if (paymentAmountPaise !== expectedAmountPaise) {
+          logger.error(
+            {
+              bookingId: booking._id,
+              bookingReference: booking.bookingId,
+              paymentId: payment._id,
+              expectedAmountPaise,
+              paymentAmountPaise,
+            },
+            'SECURITY: Razorpay payment amount mismatch'
+          );
+          await this.failPaymentAndReleaseInventory(
+            booking,
+            payment,
+            `Amount mismatch: expected ${expectedAmountPaise} paise, got payment record with ${paymentAmountPaise} paise`
+          );
+          auditLog({
+            action: 'PAYMENT_SECURITY_VIOLATION',
+            status: 'failure',
+            metadata: {
+              bookingId: booking._id.toString(),
+              bookingReference: booking.bookingId,
+              gateway: 'razorpay',
+              expectedAmountPaise,
+              receivedAmountPaise: paymentAmountPaise,
+              violationType: 'amount_mismatch',
+            },
+            description: `SECURITY VIOLATION: Razorpay payment amount mismatch for booking ${booking.bookingId}`
+          });
+          throw AppError.badRequest('Payment amount does not match booking total');
+        }
+      }
+
+      if (payment.currency !== undefined && booking.currency !== undefined) {
+        const expectedCurrency = (booking.currency || 'INR').toLowerCase();
+        const paymentCurrency = (payment.currency || 'INR').toLowerCase();
+        if (paymentCurrency !== expectedCurrency) {
+          logger.error(
+            {
+              bookingId: booking._id,
+              bookingReference: booking.bookingId,
+              paymentId: payment._id,
+              expectedCurrency,
+              paymentCurrency,
+            },
+            'SECURITY: Razorpay payment currency mismatch'
+          );
+          await this.failPaymentAndReleaseInventory(
+            booking,
+            payment,
+            `Currency mismatch: expected ${expectedCurrency}, got payment record with ${paymentCurrency}`
+          );
+          auditLog({
+            action: 'PAYMENT_SECURITY_VIOLATION',
+            status: 'failure',
+            metadata: {
+              bookingId: booking._id.toString(),
+              bookingReference: booking.bookingId,
+              gateway: 'razorpay',
+              expectedCurrency,
+              receivedCurrency: paymentCurrency,
+              violationType: 'currency_mismatch',
+            },
+            description: `SECURITY VIOLATION: Razorpay payment currency mismatch for booking ${booking.bookingId}`
+          });
+          throw AppError.badRequest('Payment currency does not match booking currency');
+        }
+      }
+
       payment.status = PaymentStatus.PAID;
       payment.gatewayPaymentId = razorpay_payment_id;
       payment.gatewaySignature = razorpay_signature;
@@ -1163,7 +1283,7 @@ export class PaymentService {
     }
   }
 
-  private static async redeemCouponForConfirmedBooking(booking: IBooking, payment: IPayment): Promise<void> {
+  private static async redeemCouponForConfirmedBooking(booking: IBooking, payment: IPayment, session?: ClientSession): Promise<void> {
     if (!booking.couponId) {
       return;
     }
@@ -1173,7 +1293,8 @@ export class PaymentService {
         _id: booking.couponId,
         $expr: { $lt: ['$usedCount', '$usageLimit'] },
       },
-      { $inc: { usedCount: 1 } }
+      { $inc: { usedCount: 1 } },
+      { session }
     );
 
     if (result.modifiedCount !== 1) {
@@ -1193,21 +1314,40 @@ export class PaymentService {
     }
   }
 
-  private static async triggerRefundRequest(booking: IBooking, payment: IPayment, reason: string): Promise<void> {
-    const existingRefund = await Refund.findOne({ paymentId: payment._id });
+  private static async triggerRefundRequest(booking: IBooking, payment: IPayment, reason: string, session?: ClientSession): Promise<void> {
+    const idempotencyKey = `auto-refund-${payment._id}`;
+
+    const existingRefund = await Refund.findOne({
+      paymentId: payment._id,
+      status: { $in: ['requested', 'processing', 'completed'] }
+    }).session(session || null);
+
     if (!existingRefund) {
-      await Refund.create({
-        bookingId: booking._id,
-        paymentId: payment._id,
-        amount: booking.totalAmount,
-        currency: booking.currency || 'INR',
-        reason: reason || 'LATE_PAYMENT_RECOVERY_REJECTED',
-        status: 'requested',
-      });
-      logger.info(
-        { bookingId: booking._id, paymentId: payment._id, amount: booking.totalAmount, reason },
-        'Created automatic Refund request record due to late payment recovery rejection'
-      );
+      try {
+        await Refund.create([{
+          bookingId: booking._id,
+          paymentId: payment._id,
+          amount: booking.totalAmount,
+          currency: booking.currency || 'INR',
+          reason: reason || 'LATE_PAYMENT_RECOVERY_REJECTED',
+          status: 'requested',
+          idempotencyKey,
+        }], { session });
+        logger.info(
+          { bookingId: booking._id, paymentId: payment._id, amount: booking.totalAmount, reason, idempotencyKey },
+          'Created automatic Refund request record due to late payment recovery rejection'
+        );
+      } catch (err: any) {
+        const isDuplicateKey = err.code === 11000 || err.code === '11000' || err.message?.includes('E11000');
+        if (isDuplicateKey) {
+          logger.warn(
+            { paymentId: payment._id, idempotencyKey },
+            'Duplicate refund request creation race detected. Handled idempotently.'
+          );
+        } else {
+          throw err;
+        }
+      }
     }
   }
 
@@ -1258,7 +1398,7 @@ export class PaymentService {
 
           const jobId = `payfail-${payment._id}`;
 
-          await Notification.create({
+          await createNotificationSafe({
             jobId,
             status: 'queued',
             queuedAt: new Date(),
@@ -1371,6 +1511,17 @@ export class PaymentService {
   private static async confirmBooking(booking: IBooking, _payment: IPayment): Promise<IBooking | null> {
     const previousStatus = booking.status;
     if (![BookingStatus.AWAITING_PAYMENT, BookingStatus.EXPIRED, BookingStatus.EXPIRING].includes(previousStatus)) {
+      if (previousStatus === BookingStatus.CONFIRMED && booking.paymentId && booking.paymentId.toString() !== _payment._id.toString()) {
+        logger.warn(
+          { bookingId: booking._id, incomingPaymentId: _payment._id, winningPaymentId: booking.paymentId },
+          'Duplicate payment detected on already confirmed booking. Marking payment as FAILED and triggering refund.'
+        );
+        _payment.status = PaymentStatus.FAILED;
+        _payment.failureReason = 'DUPLICATE_PAYMENT_ON_CONFIRMED_BOOKING';
+        _payment.failedAt = new Date();
+        await _payment.save();
+        await this.triggerRefundRequest(booking, _payment, _payment.failureReason).catch(() => {});
+      }
       return booking;
     }
 
@@ -1382,288 +1533,353 @@ export class PaymentService {
 
     const allSeatIds = booking.tickets.flatMap((t) => t.seats || []).map((s) => s.seatId);
 
-    // 1. Pre-validation for Late Recovery
-    if (isLateRecovery) {
-      // Validate general capacity
-      if (event.soldCount + event.reservedCount + booking.totalTickets > event.totalCapacity) {
-        _payment.failureReason = 'LATE_PAYMENT_RECOVERY_REJECTED_CAPACITY_EXHAUSTED';
-        await _payment.save();
-        await this.triggerRefundRequest(booking, _payment, _payment.failureReason);
-        return null;
-      }
+    let transactionResult;
+    try {
+      transactionResult = await runInTransaction(async (session) => {
+        // 1. Pre-validation for Late Recovery
+        if (isLateRecovery) {
+          // Validate general capacity
+          if (event.soldCount + event.reservedCount + booking.totalTickets > event.totalCapacity) {
+            _payment.failureReason = 'LATE_PAYMENT_RECOVERY_REJECTED_CAPACITY_EXHAUSTED';
+            await _payment.save({ session });
+            await this.triggerRefundRequest(booking, _payment, _payment.failureReason, session);
+            return { success: false, booking: null };
+          }
 
-      // Validate tier capacity
-      for (const bookedTicket of booking.tickets) {
-        const tierConfig = event.ticketTiers.find((t) => t.tier === bookedTicket.tier);
-        if (!tierConfig) {
-          _payment.failureReason = 'LATE_PAYMENT_RECOVERY_REJECTED_INVALID_TIER';
-          await _payment.save();
-          await this.triggerRefundRequest(booking, _payment, _payment.failureReason);
-          return null;
-        }
+          // Validate tier capacity
+          for (const bookedTicket of booking.tickets) {
+            const tierConfig = event.ticketTiers.find((t) => t.tier === bookedTicket.tier);
+            if (!tierConfig) {
+              _payment.failureReason = 'LATE_PAYMENT_RECOVERY_REJECTED_INVALID_TIER';
+              await _payment.save({ session });
+              await this.triggerRefundRequest(booking, _payment, _payment.failureReason, session);
+              return { success: false, booking: null };
+            }
 
-        // Fetch active reservations count for this specific tier
-        const activeTierAgg = await Reservation.aggregate([
-          {
-            $match: {
+            // Fetch active reservations count for this specific tier
+            const activeTierAgg = await Reservation.aggregate([
+              {
+                $match: {
+                  eventId: event._id,
+                  tier: bookedTicket.tier,
+                  status: { $in: [ReservationStatus.RESERVED, ReservationStatus.PENDING_PAYMENT] }
+                }
+              },
+              { $group: { _id: null, total: { $sum: '$quantity' } } }
+            ]).session(session);
+            const tierReserved = activeTierAgg[0]?.total ?? 0;
+
+            if (tierConfig.soldCount + tierReserved + bookedTicket.quantity > tierConfig.totalCapacity) {
+              _payment.failureReason = 'LATE_PAYMENT_RECOVERY_REJECTED_CAPACITY_EXHAUSTED';
+              await _payment.save({ session });
+              await this.triggerRefundRequest(booking, _payment, _payment.failureReason, session);
+              return { success: false, booking: null };
+            }
+          }
+
+          // Validate seats status
+          if (event.bookingMode === 'seat_based' && allSeatIds.length > 0) {
+            const layoutQuery = SeatLayout.findOne({
               eventId: event._id,
-              tier: bookedTicket.tier,
-              status: { $in: [ReservationStatus.RESERVED, ReservationStatus.PENDING_PAYMENT] }
-            }
-          },
-          { $group: { _id: null, total: { $sum: '$quantity' } } }
-        ]);
-        const tierReserved = activeTierAgg[0]?.total ?? 0;
-
-        if (tierConfig.soldCount + tierReserved + bookedTicket.quantity > tierConfig.totalCapacity) {
-          _payment.failureReason = 'LATE_PAYMENT_RECOVERY_REJECTED_CAPACITY_EXHAUSTED';
-          await _payment.save();
-          await this.triggerRefundRequest(booking, _payment, _payment.failureReason);
-          return null;
-        }
-      }
-
-      // Validate seats status
-      if (event.bookingMode === 'seat_based' && allSeatIds.length > 0) {
-        const layoutQuery = SeatLayout.findOne({
-          eventId: event._id,
-          seats: {
-            $elemMatch: {
-              seatId: { $in: allSeatIds },
-              status: { $ne: SeatStatus.AVAILABLE }
-            }
-          }
-        });
-        const layout = await (layoutQuery && typeof layoutQuery.lean === 'function' ? layoutQuery.lean() : layoutQuery);
-        if (layout) {
-          _payment.failureReason = 'LATE_PAYMENT_RECOVERY_REJECTED_SEATS_TAKEN';
-          await _payment.save();
-          await this.triggerRefundRequest(booking, _payment, _payment.failureReason);
-          return null;
-        }
-      }
-    }
-
-    // 2. Allocate Seats (SeatLayout update)
-    if (event.bookingMode === 'seat_based' && allSeatIds.length > 0) {
-      const seatUpdateResult = await SeatLayout.updateOne(
-        { eventId: event._id },
-        {
-          $set: {
-            'seats.$[seat].status': SeatStatus.BOOKED,
-            'seats.$[seat].bookedByBookingId': booking._id.toString()
-          },
-          $unset: {
-            'seats.$[seat].lockedBy': '',
-            'seats.$[seat].lockedAt': '',
-          },
-          $inc: {
-            'seats.$[seat].seatVersion': 1,
-          },
-        },
-        {
-          arrayFilters: [
-            {
-              'seat.seatId': { $in: allSeatIds },
-              $or: [
-                { 'seat.bookedByBookingId': booking._id.toString() },
-                { 'seat.status': SeatStatus.AVAILABLE }
-              ]
-            },
-          ],
-        }
-      );
-
-      if (seatUpdateResult.modifiedCount !== allSeatIds.length) {
-        // Rollback any partially allocated seats (safe filter targeting this booking)
-        await SeatLayout.updateOne(
-          { eventId: event._id },
-          {
-            $set: { 'seats.$[seat].status': SeatStatus.AVAILABLE },
-            $unset: { 'seats.$[seat].bookedByBookingId': '', 'seats.$[seat].lockedBy': '', 'seats.$[seat].lockedAt': '' }
-          },
-          {
-            arrayFilters: [
-              {
-                'seat.seatId': { $in: allSeatIds },
-                'seat.bookedByBookingId': booking._id.toString()
+              seats: {
+                $elemMatch: {
+                  seatId: { $in: allSeatIds },
+                  status: { $ne: SeatStatus.AVAILABLE }
+                }
               }
-            ]
+            }).session(session);
+            const layout = await (layoutQuery && typeof layoutQuery.lean === 'function' ? layoutQuery.lean() : layoutQuery);
+            if (layout) {
+              _payment.failureReason = 'LATE_PAYMENT_RECOVERY_REJECTED_SEATS_TAKEN';
+              await _payment.save({ session });
+              await this.triggerRefundRequest(booking, _payment, _payment.failureReason, session);
+              return { success: false, booking: null };
+            }
           }
+        }
+
+        // 2. Allocate Seats (SeatLayout update)
+        if (event.bookingMode === 'seat_based' && allSeatIds.length > 0) {
+          const seatUpdateResult = await SeatLayout.updateOne(
+            { eventId: event._id },
+            {
+              $set: {
+                'seats.$[seat].status': SeatStatus.BOOKED,
+                'seats.$[seat].bookedByBookingId': booking._id.toString()
+              },
+              $unset: {
+                'seats.$[seat].lockedBy': '',
+                'seats.$[seat].lockedAt': '',
+              },
+              $inc: {
+                'seats.$[seat].seatVersion': 1,
+              },
+            },
+            {
+              arrayFilters: [
+                {
+                  'seat.seatId': { $in: allSeatIds },
+                  $or: [
+                    { 'seat.bookedByBookingId': booking._id.toString() },
+                    { 'seat.status': SeatStatus.AVAILABLE }
+                  ]
+                },
+              ],
+              session,
+            }
+          );
+
+          if (seatUpdateResult.modifiedCount !== allSeatIds.length) {
+            throw new Error('SEAT_ALLOCATION_FAILED');
+          }
+        }
+
+        // 3. Allocate Event Capacity
+        const incUpdate: Record<string, number> = {
+          soldCount: booking.totalTickets,
+          eventVersion: 1,
+        };
+
+        for (const bookedTicket of booking.tickets) {
+          const tierIndex = event.ticketTiers.findIndex((t) => t.tier === bookedTicket.tier);
+          if (tierIndex !== -1) {
+            incUpdate[`ticketTiers.${tierIndex}.soldCount`] = bookedTicket.quantity;
+          }
+        }
+
+        const eventQuery: any = { _id: event._id };
+        
+        if (isLateRecovery) {
+          eventQuery.$expr = {
+            $lte: [
+              { $add: ['$soldCount', '$reservedCount', booking.totalTickets] },
+              '$totalCapacity'
+            ]
+          };
+          
+          for (const bookedTicket of booking.tickets) {
+            const tierIndex = event.ticketTiers.findIndex((t) => t.tier === bookedTicket.tier);
+            if (tierIndex !== -1) {
+              const activeTierAgg = await Reservation.aggregate([
+                {
+                  $match: {
+                    eventId: event._id,
+                    tier: bookedTicket.tier,
+                    status: { $in: [ReservationStatus.RESERVED, ReservationStatus.PENDING_PAYMENT] }
+                  }
+                },
+                { $group: { _id: null, total: { $sum: '$quantity' } } }
+              ]).session(session);
+              const tierReserved = activeTierAgg[0]?.total ?? 0;
+              
+              eventQuery[`ticketTiers.${tierIndex}.soldCount`] = {
+                $lte: event.ticketTiers[tierIndex].totalCapacity - tierReserved - bookedTicket.quantity
+              };
+            }
+          }
+        } else {
+          incUpdate.reservedCount = -booking.totalTickets;
+        }
+
+        const updatedEvent = await Event.findOneAndUpdate(
+          eventQuery,
+          { $inc: incUpdate },
+          { new: true, session }
         );
-        _payment.failureReason = 'LATE_PAYMENT_RECOVERY_REJECTED_SEATS_TAKEN';
+
+        if (!updatedEvent) {
+          throw new Error('EVENT_CAPACITY_ALLOCATION_FAILED');
+        }
+
+        // 4. Booking Confirmation Status Transition
+        const previousBookingDoc = await Booking.findOneAndUpdate(
+          { _id: booking._id, status: { $in: [BookingStatus.AWAITING_PAYMENT, BookingStatus.EXPIRED, BookingStatus.EXPIRING] } },
+          { $set: { status: BookingStatus.CONFIRMED, paymentId: _payment._id }, $unset: { expiresAt: 1, logicalExpiresAt: 1 }, $inc: { bookingVersion: 1 } },
+          { new: false, session }
+        );
+        if (!previousBookingDoc) {
+          throw new Error('CONCURRENT_CONFIRMATION_OR_NOT_FOUND');
+        }
+
+        await this.redeemCouponForConfirmedBooking(previousBookingDoc, _payment, session);
+
+        // 5. Update Reservation status to CONFIRMED
+        await ReservationService.transitionForBooking(previousBookingDoc._id, ReservationStatus.CONFIRMED, {
+          paymentReference: _payment.gatewayPaymentId ?? _payment.gatewayOrderId,
+          paymentId: _payment._id as any,
+          reason: 'payment-confirmed',
+          correlationId: previousBookingDoc.bookingId,
+          includeTerminal: isLateRecovery,
+        }, session);
+
+        const confirmedBooking = previousBookingDoc;
+        confirmedBooking.status = BookingStatus.CONFIRMED;
+        confirmedBooking.paymentId = _payment._id as any;
+        confirmedBooking.bookingVersion += 1;
+        booking = confirmedBooking;
+
+        if (updatedEvent && updatedEvent.soldCount >= updatedEvent.totalCapacity && !updatedEvent.isSoldOut) {
+          await Event.updateOne({ _id: booking.eventId }, { $set: { isSoldOut: true } }, { session });
+        }
+
+        // 6. Generate Tickets & Notification (sync path only)
+        let generatedTickets = [];
+        let syncNotification = null;
+        if (!getEnv().ENABLE_ASYNC_CHECKOUT) {
+          let ticketIndex = 1;
+          for (const bookedTicket of booking.tickets) {
+            if (event && event.bookingMode === 'seat_based' && bookedTicket.seats) {
+              for (const seat of bookedTicket.seats) {
+                const ticketId = `TKT-${booking.bookingId}-${String(ticketIndex).padStart(3, '0')}`;
+                const qrCodeText = ticketId;
+
+                const ticket = await Ticket.findOneAndUpdate(
+                  { ticketId },
+                  {
+                    $setOnInsert: {
+                      bookingId: booking._id,
+                      eventId: booking.eventId,
+                      tierName: bookedTicket.tierName,
+                      tier: bookedTicket.tier,
+                      admits: 1,
+                      seatId: seat.seatId,
+                      row: seat.row,
+                      seatNumber: seat.number,
+                      section: seat.section,
+                      qrCode: qrCodeText,
+                      qrCodeImage: `/api/public/tickets/${ticketId}/qr`,
+                    },
+                  },
+                  { upsert: true, new: true, setDefaultsOnInsert: true, session }
+                );
+                generatedTickets.push(ticket);
+                ticketIndex++;
+              }
+            } else {
+              const tierConfig = event?.ticketTiers?.find(t => t.tier === bookedTicket.tier);
+              const admits = tierConfig?.groupSize || 1;
+
+              for (let i = 0; i < bookedTicket.quantity; i++) {
+                const ticketId = `TKT-${booking.bookingId}-${String(ticketIndex).padStart(3, '0')}`;
+                const qrCodeText = ticketId;
+
+                const ticket = await Ticket.findOneAndUpdate(
+                  { ticketId },
+                  {
+                    $setOnInsert: {
+                      bookingId: booking._id,
+                      eventId: booking.eventId,
+                      tierName: bookedTicket.tierName,
+                      tier: bookedTicket.tier,
+                      admits,
+                      qrCode: qrCodeText,
+                      qrCodeImage: `/api/public/tickets/${ticketId}/qr`,
+                    },
+                  },
+                  { upsert: true, new: true, setDefaultsOnInsert: true, session }
+                );
+                generatedTickets.push(ticket);
+                ticketIndex++;
+              }
+            }
+          }
+
+          const jobId = `email:dispatch:${booking._id}`;
+          syncNotification = await createNotificationSafe({
+            jobId,
+            status: 'processing',
+            queuedAt: new Date(),
+            processedAt: new Date(),
+            type: NotificationType.BOOKING_CONFIRMED,
+            bookingId: booking._id,
+            eventId: booking.eventId,
+            channel: 'email',
+            recipient: booking.guestEmail,
+            subject: `Your Ticket for ${event?.title || 'MAD Event'} [${booking.bookingId}]`,
+            isSent: false,
+            retryCount: 0,
+          }, { session });
+        }
+
+        return {
+          success: true,
+          booking,
+          updatedEvent,
+          generatedTickets,
+          syncNotification,
+        };
+      });
+    } catch (err: any) {
+      logger.error({ err, bookingId: booking._id }, 'Confirmation transaction aborted and rolled back');
+      
+      let reason = 'CONFIRMATION_TRANSACTION_FAILED';
+      let isConcurrentConfirm = false;
+      const isKnownAbort = ['SEAT_ALLOCATION_FAILED', 'EVENT_CAPACITY_ALLOCATION_FAILED', 'CONCURRENT_CONFIRMATION_OR_NOT_FOUND'].includes(err.message);
+
+      if (err.message === 'SEAT_ALLOCATION_FAILED' || err.message === 'EVENT_CAPACITY_ALLOCATION_FAILED') {
+        reason = 'LATE_PAYMENT_RECOVERY_REJECTED_SEATS_TAKEN';
+      } else if (err.message === 'CONCURRENT_CONFIRMATION_OR_NOT_FOUND') {
+        reason = 'LATE_PAYMENT_RECOVERY_REJECTED_CONCURRENT_CONFIRM';
+        const currentBooking = await Booking.findById(booking._id).select('status paymentId').lean().catch(() => null);
+        if (currentBooking?.status === BookingStatus.CONFIRMED) {
+          isConcurrentConfirm = true;
+          const isSamePayment = currentBooking.paymentId && currentBooking.paymentId.toString() === _payment._id.toString();
+          
+          if (isSamePayment) {
+            logger.info(
+              { bookingId: booking._id, paymentId: _payment._id },
+              'Concurrent confirmation (Same Payment): Booking is already CONFIRMED by concurrent thread of this payment. Exiting safely.'
+            );
+            const resolvedBooking = await Booking.findById(booking._id);
+            return resolvedBooking || booking;
+          } else {
+            logger.warn(
+              { bookingId: booking._id, incomingPaymentId: _payment._id, winningPaymentId: currentBooking.paymentId },
+              'Concurrent confirmation (Different Payment): Booking is already CONFIRMED. Refunding duplicate incoming payment.'
+            );
+            _payment.status = PaymentStatus.FAILED;
+            _payment.failureReason = 'DUPLICATE_PAYMENT_ON_CONFIRMED_BOOKING';
+            _payment.failedAt = new Date();
+            try {
+              await _payment.save();
+            } catch (saveErr) {
+              // ignore
+            }
+            await this.triggerRefundRequest(booking, _payment, _payment.failureReason).catch(() => {});
+            const resolvedBooking = await Booking.findById(booking._id);
+            return resolvedBooking || booking;
+          }
+        }
+      }
+      
+      _payment.status = PaymentStatus.FAILED;
+      _payment.failureReason = reason;
+      try {
         await _payment.save();
-        await this.triggerRefundRequest(booking, _payment, _payment.failureReason);
+      } catch (saveErr) {
+        // ignore
+      }
+      await this.triggerRefundRequest(booking, _payment, _payment.failureReason).catch(() => {});
+
+      if (isKnownAbort) {
         return null;
       }
+      throw err;
     }
 
-    // 3. Allocate Event Capacity
-    const incUpdate: Record<string, number> = {
-      soldCount: booking.totalTickets,
-      eventVersion: 1,
-    };
-
-    for (const bookedTicket of booking.tickets) {
-      const tierIndex = event.ticketTiers.findIndex((t) => t.tier === bookedTicket.tier);
-      if (tierIndex !== -1) {
-        incUpdate[`ticketTiers.${tierIndex}.soldCount`] = bookedTicket.quantity;
-      }
-    }
-
-    const eventQuery: any = { _id: event._id };
-    
-    if (isLateRecovery) {
-      eventQuery.$expr = {
-        $lte: [
-          { $add: ['$soldCount', '$reservedCount', booking.totalTickets] },
-          '$totalCapacity'
-        ]
-      };
-      
-      for (const bookedTicket of booking.tickets) {
-        const tierIndex = event.ticketTiers.findIndex((t) => t.tier === bookedTicket.tier);
-        if (tierIndex !== -1) {
-          const activeTierAgg = await Reservation.aggregate([
-            {
-              $match: {
-                eventId: event._id,
-                tier: bookedTicket.tier,
-                status: { $in: [ReservationStatus.RESERVED, ReservationStatus.PENDING_PAYMENT] }
-              }
-            },
-            { $group: { _id: null, total: { $sum: '$quantity' } } }
-          ]);
-          const tierReserved = activeTierAgg[0]?.total ?? 0;
-          
-          eventQuery[`ticketTiers.${tierIndex}.soldCount`] = {
-            $lte: event.ticketTiers[tierIndex].totalCapacity - tierReserved - bookedTicket.quantity
-          };
-        }
-      }
-    } else {
-      incUpdate.reservedCount = -booking.totalTickets;
-    }
-
-    const updatedEvent = await Event.findOneAndUpdate(
-      eventQuery,
-      { $inc: incUpdate },
-      { new: true }
-    );
-
-    if (!updatedEvent) {
-      // Revert seat allocation if seat-based
-      if (event.bookingMode === 'seat_based' && allSeatIds.length > 0) {
-        await SeatLayout.updateOne(
-          { eventId: event._id },
-          {
-            $set: { 'seats.$[seat].status': SeatStatus.AVAILABLE },
-            $unset: { 'seats.$[seat].bookedByBookingId': '', 'seats.$[seat].lockedBy': '', 'seats.$[seat].lockedAt': '' }
-          },
-          {
-            arrayFilters: [
-              {
-                'seat.seatId': { $in: allSeatIds },
-                'seat.bookedByBookingId': booking._id.toString()
-              }
-            ]
-          }
-        );
-      }
-      _payment.failureReason = 'LATE_PAYMENT_RECOVERY_REJECTED_CAPACITY_EXHAUSTED';
-      await _payment.save();
-      await this.triggerRefundRequest(booking, _payment, _payment.failureReason);
+    if (!transactionResult || !transactionResult.success) {
       return null;
     }
 
-    // 4. Booking Confirmation Status Transition
-    const previousBookingDoc = await Booking.findOneAndUpdate(
-      { _id: booking._id, status: { $in: [BookingStatus.AWAITING_PAYMENT, BookingStatus.EXPIRED, BookingStatus.EXPIRING] } },
-      { $set: { status: BookingStatus.CONFIRMED, paymentId: _payment._id }, $unset: { expiresAt: 1, logicalExpiresAt: 1 }, $inc: { bookingVersion: 1 } },
-      { new: false }
-    );
-    if (!previousBookingDoc) {
-      let currentBookingDoc;
-      const docQuery = Booking.findById(booking._id);
-      if (docQuery && typeof docQuery.select === 'function') {
-        const sel = docQuery.select('status bookingId');
-        currentBookingDoc = await (sel && typeof sel.lean === 'function' ? sel.lean() : sel);
-      } else {
-        currentBookingDoc = await docQuery;
-      }
-      
-      // Revert Event capacity increment ONLY if the booking was not confirmed by the winning process
-      if (currentBookingDoc?.status !== BookingStatus.CONFIRMED) {
-        const rollbackInc: Record<string, number> = {
-          soldCount: -booking.totalTickets,
-          eventVersion: 1
-        };
-        if (!isLateRecovery) {
-          rollbackInc.reservedCount = booking.totalTickets;
-        }
-        await Event.updateOne({ _id: event._id }, { $inc: rollbackInc });
-      }
+    const { syncNotification } = transactionResult;
+    booking = transactionResult.booking;
 
-      // Rollback seats ONLY if the booking is not confirmed by a winning concurrent process
-      if (currentBookingDoc?.status !== BookingStatus.CONFIRMED && event.bookingMode === 'seat_based' && allSeatIds.length > 0) {
-        await SeatLayout.updateOne(
-          { eventId: event._id },
-          {
-            $set: { 'seats.$[seat].status': isLateRecovery ? SeatStatus.AVAILABLE : SeatStatus.LOCKED },
-            $unset: { 'seats.$[seat].bookedByBookingId': '', 'seats.$[seat].lockedBy': '', 'seats.$[seat].lockedAt': '' }
-          },
-          {
-            arrayFilters: [
-              {
-                'seat.seatId': { $in: allSeatIds },
-                'seat.bookedByBookingId': booking._id.toString()
-              }
-            ]
-          }
-        );
-      }
-
-      _payment.failureReason = 'LATE_PAYMENT_RECOVERY_REJECTED_CONCURRENT_CONFIRM';
-      await _payment.save();
-
-      logger.info(
-        {
-          bookingId: booking._id,
-          paymentId: _payment._id,
-          gateway: _payment.gateway,
-          correlationId: booking.bookingId,
-          existingStatus: currentBookingDoc?.status,
-        },
-        'payment_confirmation_skipped'
-      );
-      return null;
-    }
-
-    const confirmedBooking = previousBookingDoc;
-    confirmedBooking.status = BookingStatus.CONFIRMED;
-    confirmedBooking.paymentId = _payment._id as any;
-    confirmedBooking.bookingVersion += 1;
-    booking = confirmedBooking;
-
-    await this.redeemCouponForConfirmedBooking(booking, _payment);
-
-
-
-    // 5. Update Reservation status to CONFIRMED
-    await ReservationService.transitionForBooking(booking._id, ReservationStatus.CONFIRMED, {
-      paymentReference: _payment.gatewayPaymentId ?? _payment.gatewayOrderId,
-      paymentId: _payment._id as any,
-      reason: 'payment-confirmed',
-      correlationId: booking.bookingId,
-      includeTerminal: isLateRecovery,
+    // 5. Post-Commit Cache Invalidation
+    await CacheService.delPattern('events:*').catch((err) => {
+      logger.error({ err }, 'Failed to clear events cache post-commit');
     });
 
-    if (updatedEvent && updatedEvent.soldCount >= updatedEvent.totalCapacity && !updatedEvent.isSoldOut) {
-      await Event.updateOne({ _id: booking.eventId }, { $set: { isSoldOut: true } });
-    }
-
-    await CacheService.delPattern('events:*');
-
+    // 6. Post-Commit Sockets
     if (event.bookingMode === 'seat_based') {
       this.safeEmit(
         'seat:booked',
@@ -1692,7 +1908,7 @@ export class PaymentService {
       { bookingId: booking._id.toString(), eventId: booking.eventId.toString() }
     );
 
-    // Feature Flag Rollout: if asynchronous checkout is enabled, offload ticket & PDF generation
+    // 7. Post-Commit Queue Enqueue (async path)
     if (getEnv().ENABLE_ASYNC_CHECKOUT) {
       await QueueService.enqueue(
         getQueueName('booking-queue'),
@@ -1704,122 +1920,89 @@ export class PaymentService {
       return booking;
     }
 
-    // 5. Generate scan-ready QR Tickets
-    let ticketIndex = 1;
-    for (const bookedTicket of booking.tickets) {
-      if (event && event.bookingMode === 'seat_based' && bookedTicket.seats) {
-        for (const seat of bookedTicket.seats) {
-          const ticketId = `TKT-${booking.bookingId}-${String(ticketIndex).padStart(3, '0')}`;
-          const qrCodeText = ticketId;
+    // 8. Post-Commit Sync Email Dispatch (sync path only)
+    if (syncNotification && booking.guestEmail) {
+      try {
+        const emailBody = `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto;">
+            <h2>Hi ${booking.guestName},</h2>
+            <p>Your booking <strong>${booking.bookingId}</strong> for the event <strong>"${event?.title || 'MAD Event'}"</strong> has been successfully confirmed!</p>
+            <p>Please find your ticket attached as a PDF document. You can present the QR code at the gate for entry.</p>
+            <br/>
+            <p>MAD Entertainment Team</p>
+          </div>
+        `;
 
-          await Ticket.create({
-            ticketId,
-            bookingId: booking._id,
-            eventId: booking.eventId,
-            tierName: bookedTicket.tierName,
-            tier: bookedTicket.tier,
-            admits: 1,
-            seatId: seat.seatId,
-            row: seat.row,
-            seatNumber: seat.number,
-            section: seat.section,
-            qrCode: qrCodeText,
-            qrCodeImage: `/api/public/tickets/${ticketId}/qr`,
-          });
-          ticketIndex++;
-        }
-      } else {
-        // General admission - generate QRs matching count
-        const tierConfig = event?.ticketTiers?.find(t => t.tier === bookedTicket.tier);
-        const admits = tierConfig?.groupSize || 1;
+        const pdfBuffer = await generateTicketPDF(booking, event);
 
-        for (let i = 0; i < bookedTicket.quantity; i++) {
-          const ticketId = `TKT-${booking.bookingId}-${String(ticketIndex).padStart(3, '0')}`;
-          const qrCodeText = ticketId;
+        await sendEmail({
+          to: booking.guestEmail,
+          subject: `Your Ticket for ${event?.title || 'MAD Event'} [${booking.bookingId}]`,
+          html: emailBody,
+          attachments: [
+            {
+              filename: `MAD_Ticket_${booking.bookingId}.pdf`,
+              content: pdfBuffer,
+              contentType: 'application/pdf',
+            },
+          ],
+        });
 
-          await Ticket.create({
-            ticketId,
-            bookingId: booking._id,
-            eventId: booking.eventId,
-            tierName: bookedTicket.tierName,
-            tier: bookedTicket.tier,
-            admits,
-            qrCode: qrCodeText,
-            qrCodeImage: `/api/public/tickets/${ticketId}/qr`,
-          });
-          ticketIndex++;
-        }
+        await Notification.updateOne(
+          { _id: syncNotification._id },
+          { $set: { status: 'sent', isSent: true, processedAt: new Date() } }
+        ).catch((err) => {
+          logger.error({ err, notificationId: syncNotification._id }, 'Failed to update notification status to sent');
+        });
+      } catch (emailErr: any) {
+        await Notification.updateOne(
+          { _id: syncNotification._id },
+          { $set: { status: 'failed', errorMessage: emailErr.message, processedAt: new Date() } }
+        ).catch((err) => {
+          logger.error({ err, notificationId: syncNotification._id }, 'Failed to update notification status to failed');
+        });
+        logger.error({ err: emailErr }, 'Failed to send synchronous confirmation email');
       }
     }
 
-    // 6. Generate PDF and Send Email asynchronously
-    try {
-      const emailBody = `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto;">
-          <h2>Hi ${booking.guestName},</h2>
-          <p>Your booking <strong>${booking.bookingId}</strong> for the event <strong>"${event?.title || 'MAD Event'}"</strong> has been successfully confirmed!</p>
-          <p>Please find your ticket attached as a PDF document. You can present the QR code at the gate for entry.</p>
-          <p>Enjoy the show!</p>
-          <br/>
-          <p>MAD Entertainment Team</p>
-        </div>
-      `;
-
-      // Generate the PDF buffer
-      const pdfBuffer = await generateTicketPDF(booking, event);
-
-      const jobId = `email:dispatch:${booking._id}`;
-
-      // Intent to send synchronously
-      const notification = await Notification.create({
-        jobId,
-        status: 'processing',
-        queuedAt: new Date(),
-        processedAt: new Date(),
-        type: NotificationType.BOOKING_CONFIRMED,
-        bookingId: booking._id,
-        eventId: booking.eventId,
-        channel: 'email',
-        recipient: booking.guestEmail,
-        subject: `Your Ticket for ${event?.title || 'MAD Event'} [${booking.bookingId}]`,
-        isSent: false,
-        retryCount: 0,
-      });
-
-      if (booking.guestEmail) {
-        try {
-          // Send the email synchronously with the PDF attachment
-          await sendEmail({
-            to: booking.guestEmail,
-            subject: `Your Ticket for ${event?.title || 'MAD Event'} [${booking.bookingId}]`,
-            html: emailBody,
-            attachments: [
-              {
-                filename: `MAD_Ticket_${booking.bookingId}.pdf`,
-                content: pdfBuffer,
-                contentType: 'application/pdf',
-              },
-            ],
-          });
-          
-          notification.status = 'sent';
-          notification.isSent = true;
-          notification.processedAt = new Date();
-          await notification.save();
-        } catch (emailErr: any) {
-          notification.status = 'failed';
-          notification.errorMessage = emailErr.message;
-          notification.processedAt = new Date();
-          await notification.save();
-          // We swallow the error to not crash checkout if SMTP fails, matching legacy behavior
-          logger.error({ err: emailErr }, 'Failed to send synchronous confirmation email');
-        }
-      }
-
-      logger.info({ bookingId: booking._id }, 'Notification log created for confirmed booking and email dispatched');
-    } catch (err) {
-      logger.error({ err }, 'Failed to record notification confirmation log or send email');
-    }
     return booking;
+  }
+
+  private static async createPendingPayment(
+    bookingId: Types.ObjectId,
+    gateway: 'stripe' | 'razorpay',
+    amount: number,
+    currency: string,
+    couponId: Types.ObjectId | undefined,
+    gatewayOrderId: string
+  ): Promise<IPayment> {
+    try {
+      return await Payment.create({
+        bookingId,
+        gateway,
+        status: PaymentStatus.PENDING,
+        amount,
+        currency,
+        couponId,
+        gatewayOrderId,
+      });
+    } catch (err: any) {
+      const isDuplicateKey = err.code === 11000 || err.code === '11000' || err.message?.includes('E11000');
+      if (isDuplicateKey) {
+        logger.warn(
+          { bookingId, gateway, gatewayOrderId },
+          'Concurrent pending payment creation race detected. Recovering existing pending payment.'
+        );
+        const existing = await Payment.findOne({
+          bookingId,
+          gateway,
+          status: PaymentStatus.PENDING,
+        });
+        if (existing) {
+          return existing;
+        }
+      }
+      throw err;
+    }
   }
 }

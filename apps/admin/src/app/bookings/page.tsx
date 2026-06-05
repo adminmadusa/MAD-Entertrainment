@@ -3,8 +3,9 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { BookingStatus, getBookingStatusLabel } from '@mad/shared';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, Suspense, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { useAdminAuth } from '@/hooks/use-admin-auth.hook';
 
 import {
   adminGetBookings,
@@ -47,9 +48,11 @@ const ATTENDANCE_COLORS: Record<string, string> = {
 };
 
 function BookingsContent() {
+  const { admin } = useAdminAuth();
   const qc = useQueryClient();
   const searchParams = useSearchParams();
   const [search, setSearch] = useState('');
+  const canMutateBookings = !!admin?.role && ['super_admin', 'admin', 'support'].includes(admin.role);
   const [statusFilter, setStatusFilter] = useState('');
   const [eventFilter, setEventFilter] = useState('');
   const [page, setPage] = useState(1);
@@ -162,7 +165,7 @@ function BookingsContent() {
     },
   });
 
-  const bookings = data?.items ?? [];
+  const bookings = useMemo(() => data?.items ?? [], [data?.items]);
   const pagination = data?.pagination;
 
   useEffect(() => {
@@ -235,7 +238,7 @@ function BookingsContent() {
             {new Date(booking.createdAt).toLocaleDateString('en-IN')}
           </td>
           <td className="py-4 px-5 text-right">
-            {booking.status === 'confirmed' && (
+            {canMutateBookings && booking.status === 'confirmed' && (
               <button onClick={(e) => { e.stopPropagation(); setCancelTarget(booking); }}
                 className="px-3 py-1.5 text-xs glass border border-border-subtle rounded-lg text-text-muted hover:text-red-400 hover:border-red-500/40 transition-all">
                 Cancel
@@ -527,33 +530,35 @@ function BookingsContent() {
                       <span className="text-text-muted text-[10px] uppercase tracking-wider block">Current Email</span>
                       <span className="text-white font-semibold font-mono text-sm">{email}</span>
                     </div>
-                    <div className="flex gap-2">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setEditEmailValue(email === '—' ? '' : email);
-                          setEditReasonValue('');
-                          setEditEmailError('');
-                          setIsEditEmailOpen(true);
-                        }}
-                        disabled={!!selectedBooking.userId}
-                        className={`px-3.5 py-2 text-xs font-semibold rounded-lg border transition-all ${
-                          selectedBooking.userId
-                            ? 'bg-white/5 border-white/10 text-text-muted cursor-not-allowed opacity-50'
-                            : 'glass border-border-subtle text-text-secondary hover:text-white hover:border-accent-purple/50'
-                        }`}
-                      >
-                        Edit Email
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => resendTicketsMutation.mutate(selectedBooking._id)}
-                        disabled={selectedBooking.status !== 'confirmed' || resendTicketsMutation.isPending}
-                        className="px-3.5 py-2 text-xs font-semibold bg-accent-purple/25 hover:bg-accent-purple/40 border border-accent-purple/40 rounded-lg text-accent-purple hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                      >
-                        {resendTicketsMutation.isPending ? 'Resending...' : 'Resend Tickets'}
-                      </button>
-                    </div>
+                    {canMutateBookings && (
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditEmailValue(email === '—' ? '' : email);
+                            setEditReasonValue('');
+                            setEditEmailError('');
+                            setIsEditEmailOpen(true);
+                          }}
+                          disabled={!!selectedBooking.userId}
+                          className={`px-3.5 py-2 text-xs font-semibold rounded-lg border transition-all ${
+                            selectedBooking.userId
+                              ? 'bg-white/5 border-white/10 text-text-muted cursor-not-allowed opacity-50'
+                              : 'glass border-border-subtle text-text-secondary hover:text-white hover:border-accent-purple/50'
+                          }`}
+                        >
+                          Edit Email
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => resendTicketsMutation.mutate(selectedBooking._id)}
+                          disabled={selectedBooking.status !== 'confirmed' || resendTicketsMutation.isPending}
+                          className="px-3.5 py-2 text-xs font-semibold bg-accent-purple/25 hover:bg-accent-purple/40 border border-accent-purple/40 rounded-lg text-accent-purple hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                        >
+                          {resendTicketsMutation.isPending ? 'Resending...' : 'Resend Tickets'}
+                        </button>
+                      </div>
+                    )}
                   </div>
 
                   {/* Authenticated booking protection warning */}
@@ -593,6 +598,67 @@ function BookingsContent() {
                   </div>
                 )}
 
+                {/* Audit & Operations History */}
+                {selectedBooking.auditHistory && selectedBooking.auditHistory.length > 0 && (
+                  <div className="border-t border-white/5 pt-4 space-y-3">
+                    <h4 className="text-text-muted font-medium text-xs uppercase tracking-wider">Audit & Operations History</h4>
+                    <div className="space-y-2">
+                      {selectedBooking.auditHistory.map((log, idx) => (
+                        <div key={idx} className="bg-white/5 rounded-xl p-3 text-xs space-y-1.5 border border-white/5">
+                          <div className="flex justify-between items-center">
+                            <span className="text-accent-purple font-semibold">
+                              {log.action === 'BOOKING_EMAIL_CORRECTED' ? 'Email Corrected' : 'Tickets Resent'}
+                            </span>
+                            <span className="text-text-muted">{new Date(log.timestamp).toLocaleString('en-IN')}</span>
+                          </div>
+                          <p className="text-text-secondary">{log.description}</p>
+                          {log.metadata?.reason && (
+                            <p className="text-text-muted italic bg-black/20 p-1.5 rounded">
+                              Reason: &ldquo;{log.metadata.reason}&rdquo;
+                            </p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Individual Tickets & Status */}
+                {selectedBooking.individualTickets && selectedBooking.individualTickets.length > 0 && (
+                  <div className="border-t border-white/5 pt-4 space-y-3">
+                    <h4 className="text-text-muted font-medium text-xs uppercase tracking-wider">Individual Tickets & QR Status</h4>
+                    <div className="space-y-2">
+                      {selectedBooking.individualTickets.map((t, idx) => (
+                        <div key={idx} className="bg-white/5 rounded-xl p-3 text-xs space-y-2 border border-white/5">
+                          <div className="flex justify-between items-center">
+                            <span className="text-white font-mono font-semibold">{t.ticketId}</span>
+                            <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase ${
+                              t.status === 'active' ? 'bg-green-500/10 text-green-400 border border-green-500/20' :
+                              t.status === 'replaced' ? 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20' :
+                              'bg-red-500/10 text-red-400 border border-red-500/20'
+                            }`}>
+                              {t.status}
+                            </span>
+                          </div>
+                          
+                          <div className="text-[10px] text-text-muted space-y-1">
+                            <p>Created: {new Date(t.createdAt).toLocaleString('en-IN')}</p>
+                            {t.replacedAt && (
+                              <p>Replaced: {new Date(t.replacedAt).toLocaleString('en-IN')}</p>
+                            )}
+                            {t.replacedByTicketId && (
+                              <p className="font-mono text-accent-purple">Replaced by: {t.replacedByTicketId}</p>
+                            )}
+                            {t.replacementReason && (
+                              <p className="italic">Reason: {t.replacementReason}</p>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 <div className="flex gap-3 border-t border-white/10 pt-4">
                   <button
                     onClick={() => setSelectedBooking(null)}
@@ -600,7 +666,7 @@ function BookingsContent() {
                   >
                     Close
                   </button>
-                  {selectedBooking.status === 'confirmed' && (
+                  {canMutateBookings && selectedBooking.status === 'confirmed' && (
                     <button
                       onClick={() => {
                         setCancelTarget(selectedBooking);

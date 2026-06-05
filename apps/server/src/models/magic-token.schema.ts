@@ -18,7 +18,7 @@ const magicTokenSchema = new Schema<IMagicToken>(
       required: true,
       trim: true,
       lowercase: true,
-      index: true,
+      unique: true,
     },
     otp: {
       type: String,

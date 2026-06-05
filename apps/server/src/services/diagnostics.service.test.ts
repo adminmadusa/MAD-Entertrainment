@@ -85,7 +85,7 @@ describe('Diagnostics Service', () => {
       expect(report).toBeDefined();
       expect(report.redis.connected).toBe(true);
       expect(report.dlq.totalFailedCount).toBe(4);
-      expect(report.queues.length).toBe(3); // Handles 3 standard queues
+      expect(report.queues.length).toBe(4); // Handles 4 standard queues
       expect(report.queues[0].waiting).toBe(2);
       expect(report.queues[0].oldestWaitingJobAgeMs).toBeGreaterThan(0);
       expect(report.sockets).toBeDefined();

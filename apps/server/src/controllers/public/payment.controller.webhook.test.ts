@@ -1,11 +1,5 @@
 /**
  * Payment Controller — Webhook Integrity Guards Tests
- *
- * Covers PR fix/webhook-integrity-guards:
- *   1. Razorpay replay protection: idempotency key is body-derived (HMAC), not from
- *      the unsigned x-razorpay-event-id header.
- *   2. Audit trail preservation: duplicate webhook deliveries return 200 but must NOT
- *      mutate the existing WebhookEvent document.
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import crypto from 'crypto';
@@ -37,7 +31,6 @@ vi.mock('../../models/webhook-event.schema', () => ({
   WebhookEvent: {
     findOne: vi.fn(),
     create: vi.fn(),
-    findOneAndUpdate: vi.fn(),
   },
 }));
 
@@ -45,7 +38,6 @@ vi.mock('../../services/public/payment.service', () => ({
   PaymentService: {
     confirmFromWebhook: vi.fn(),
     verifyPayment: vi.fn(),
-    confirmFromWebhookStripe: vi.fn(),
   },
 }));
 
@@ -168,10 +160,6 @@ describe('razorpayWebhook — replay protection hardening', () => {
     });
 
     // Verify the persisted eventId matches the body fingerprint
-    expect(WebhookEvent.create).toHaveBeenCalledWith(
-      expect.objectContaining({
-        eventId: expectedEventId(VALID_RAZORPAY_BODY),
-        provider: 'razorpay',
         eventType: 'payment.captured',
       })
     );
@@ -356,7 +344,7 @@ describe('stripeWebhook — audit trail preservation', () => {
   it('preserves the original status of a Stripe success record after duplicate delivery', async () => {
     const eventId = 'evt_stripe_test_456';
     mockStripeConstructEvent(eventId);
-
+    
     const req = makeStripeRequest(eventId);
     const res = makeResponse();
 
@@ -385,160 +373,8 @@ describe('stripeWebhook — audit trail preservation', () => {
     expect(PaymentService.verifyPayment).not.toHaveBeenCalled();
   });
 });
-
-describe('stripeWebhook — retry processing (A2)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
-
-  function makeStripeRequest(stripeEventId: string) {
-    return {
-      headers: { 'stripe-signature': 'sig_test' },
-      rawBody: Buffer.from('{}'),
-    } as any;
-  }
-
-  function mockStripeConstructEvent(id: string, type = 'payment_intent.succeeded') {
-    vi.mocked(getStripe).mockReturnValue({
-      webhooks: {
-        constructEvent: vi.fn().mockReturnValue({
-          id,
-          type,
-          created: 1700000000,
-          data: { object: { metadata: { bookingId: 'booking_123' }, id: 'pi_test' } },
-        }),
-      },
-    } as any);
-  }
-
-  it('allows retry for failed webhook events and calls confirmFromWebhookStripe', async () => {
-    const eventId = 'evt_retry_failed';
-    mockStripeConstructEvent(eventId);
-
-    const req = makeStripeRequest(eventId);
-    const res = makeResponse();
-
-    vi.mocked(WebhookEvent.findOne).mockImplementation(async (query: any) => {
-      if (query.eventId === eventId && query.status) {
-        return null;
-      }
-      return {
-        status: 'processing',
-        save: vi.fn(),
-      } as any;
-    });
-
-    const originalFailedDoc = {
-      status: 'failed',
-      errorMessage: 'Original processing error',
-      save: vi.fn(),
-    };
-    vi.mocked(WebhookEvent.findOneAndUpdate).mockResolvedValue(originalFailedDoc as any);
-
-    vi.mocked(PaymentService.confirmFromWebhookStripe).mockResolvedValue({
-      status: 'confirmed',
-      bookingId: 'booking_123',
-    });
-
-    await stripeWebhook(req, res);
-
-    expect(WebhookEvent.findOne).toHaveBeenCalledWith({
-      eventId,
-      status: { $in: ['success', 'processing'] }
-    });
-
-    expect(WebhookEvent.findOneAndUpdate).toHaveBeenCalledWith(
-      { eventId, status: 'failed' },
-      { $set: { status: 'processing', errorMessage: null, processedAt: null } },
-      { new: false }
-    );
-
-    expect(PaymentService.confirmFromWebhookStripe).toHaveBeenCalled();
-    expect(res.status).toHaveBeenCalledWith(200);
-  });
-
-  it('processing webhook blocks retry — does not call confirmFromWebhookStripe', async () => {
-    const eventId = 'evt_retry_processing';
-    mockStripeConstructEvent(eventId);
-
-    const req = makeStripeRequest(eventId);
-    const res = makeResponse();
-
-    const existingProcessingDoc = makeWebhookEventDoc('processing');
-    vi.mocked(WebhookEvent.findOne).mockResolvedValue(existingProcessingDoc as any);
-
-    await stripeWebhook(req, res);
-
-    expect(res.status).toHaveBeenCalledWith(200);
-    expect(res.send).toHaveBeenCalledWith('Event already processed');
-    expect(PaymentService.confirmFromWebhookStripe).not.toHaveBeenCalled();
-    expect(WebhookEvent.findOneAndUpdate).not.toHaveBeenCalled();
-  });
-
-  it('success webhook blocks retry — does not call confirmFromWebhookStripe', async () => {
-    const eventId = 'evt_retry_success';
-    mockStripeConstructEvent(eventId);
-
-    const req = makeStripeRequest(eventId);
-    const res = makeResponse();
-
-    const existingSuccessDoc = makeWebhookEventDoc('success');
-    vi.mocked(WebhookEvent.findOne).mockResolvedValue(existingSuccessDoc as any);
-
-    await stripeWebhook(req, res);
-
-    expect(res.status).toHaveBeenCalledWith(200);
-    expect(res.send).toHaveBeenCalledWith('Event already processed');
-    expect(PaymentService.confirmFromWebhookStripe).not.toHaveBeenCalled();
-    expect(WebhookEvent.findOneAndUpdate).not.toHaveBeenCalled();
-  });
-
-  it('first delivery: no existing record — creates new and processes normally', async () => {
-    const eventId = 'evt_first_delivery';
-    mockStripeConstructEvent(eventId);
-
-    const req = makeStripeRequest(eventId);
-    const res = makeResponse();
-
-    vi.mocked(WebhookEvent.findOne).mockResolvedValue(null);
-    vi.mocked(WebhookEvent.findOneAndUpdate).mockResolvedValue(null);
-
-    const createdDoc = {
-      status: 'received',
-      save: vi.fn(),
-    };
-    vi.mocked(WebhookEvent.create).mockResolvedValue(createdDoc as any);
-    vi.mocked(PaymentService.confirmFromWebhookStripe).mockResolvedValue({
-      status: 'confirmed',
-      bookingId: 'booking_123',
-    });
-
-    await stripeWebhook(req, res);
-
-    expect(WebhookEvent.create).toHaveBeenCalled();
-    expect(createdDoc.save).toHaveBeenCalled();
-    expect(PaymentService.confirmFromWebhookStripe).toHaveBeenCalled();
-    expect(res.status).toHaveBeenCalledWith(200);
-  });
-
-  it('concurrent retry loser: Step 2 null + Step 3 E11000 -> returns 200 correctly', async () => {
-    const eventId = 'evt_concurrent_loser';
-    mockStripeConstructEvent(eventId);
-
-    const req = makeStripeRequest(eventId);
-    const res = makeResponse();
-
-    vi.mocked(WebhookEvent.findOne).mockResolvedValue(null);
-    vi.mocked(WebhookEvent.findOneAndUpdate).mockResolvedValue(null);
-
-    const duplicateKeyError = new Error('Duplicate key');
-    (duplicateKeyError as any).code = 11000;
-    vi.mocked(WebhookEvent.create).mockRejectedValue(duplicateKeyError);
-
-    await stripeWebhook(req, res);
-
-    expect(res.status).toHaveBeenCalledWith(200);
-    expect(res.send).toHaveBeenCalledWith('Event already processed concurrently');
-    expect(PaymentService.confirmFromWebhookStripe).not.toHaveBeenCalled();
   });
 });

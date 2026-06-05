@@ -9,6 +9,7 @@ export interface IRefund extends Document {
   status: 'requested' | 'processing' | 'completed' | 'failed';
   adminNotes?: string;
   gatewayRefundId?: string;
+  idempotencyKey?: string;
   processedAt?: Date;
   createdAt: Date;
   updatedAt: Date;
@@ -29,9 +30,22 @@ const refundSchema = new Schema<IRefund>(
     },
     adminNotes: String,
     gatewayRefundId: String,
+    idempotencyKey: { type: String, index: true },
     processedAt: Date,
   },
   { timestamps: true }
+);
+
+refundSchema.index(
+  { idempotencyKey: 1 },
+  {
+    unique: true,
+    partialFilterExpression: {
+      status: { $in: ['requested', 'processing', 'completed'] },
+      idempotencyKey: { $exists: true }
+    },
+    name: 'idx_refund_idempotency_key_unique'
+  }
 );
 
 export const Refund = model<IRefund>('Refund', refundSchema);

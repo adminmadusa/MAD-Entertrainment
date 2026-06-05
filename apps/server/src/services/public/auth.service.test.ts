@@ -4,6 +4,9 @@ import { RefreshTokenModel } from '../../models/refresh-token.schema';
 import { UserModel } from '../../models/user.schema';
 import { Booking } from '../../models/booking.schema';
 import { AppError } from '../../middleware/error.middleware';
+import { MagicTokenModel } from '../../models/magic-token.schema';
+import { isRedisConnected, getRedis } from '../../config/redis';
+import { QueueService } from '../queue.service';
 
 vi.mock('../../config/env', () => ({
   getEnv: vi.fn(() => ({
@@ -40,6 +43,38 @@ vi.mock('../../models/booking.schema', () => ({
     updateMany: vi.fn(() => Promise.resolve({ modifiedCount: 0 })),
     findOne: vi.fn(),
   },
+}));
+
+vi.mock('../../models/magic-token.schema', () => ({
+  MagicTokenModel: {
+    findOne: vi.fn(),
+    findOneAndUpdate: vi.fn(),
+    findOneAndDelete: vi.fn(),
+    deleteOne: vi.fn(),
+  },
+}));
+
+vi.mock('../../config/redis', () => ({
+  getRedis: vi.fn(),
+  isRedisConnected: vi.fn(),
+}));
+
+vi.mock('../queue.service', () => ({
+  QueueService: {
+    enqueue: vi.fn(),
+  },
+}));
+
+vi.mock('../notification.service', () => ({
+  createNotificationSafe: vi.fn(),
+}));
+
+vi.mock('../../lib/email', () => ({
+  magicLinkHtml: vi.fn(() => Promise.resolve('mock-html')),
+}));
+
+vi.mock('../../utils/email', () => ({
+  normalizeEmail: (email: string) => email.trim().toLowerCase(),
 }));
 
 const mockVerifyIdToken = vi.fn().mockResolvedValue({
@@ -618,6 +653,173 @@ describe('AuthService - hydrateUserProfile', () => {
     await AuthService.hydrateUserProfile('user-2', 'user2@gmail.com');
     expect(mockUser2.mobileNumber).toBe('+919876543210');
     expect(mockUser2.save).toHaveBeenCalled();
+  });
+});
+
+describe('AuthService - requestMagicLink', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(QueueService.enqueue).mockReset();
+    vi.mocked(QueueService.enqueue).mockResolvedValue({} as any);
+  });
+
+  it('should successfully request magic link (T=0) when Redis is connected and no lock exists', async () => {
+    const mockToken = { _id: 'mock-token-id-123', email: 'user@example.com', createdAt: new Date() };
+    vi.mocked(isRedisConnected).mockReturnValue(true);
+    const mockRedis = {
+      set: vi.fn().mockResolvedValue('OK'),
+      ttl: vi.fn(),
+      del: vi.fn(),
+    };
+    vi.mocked(getRedis).mockReturnValue(mockRedis as any);
+    vi.mocked(MagicTokenModel.findOneAndUpdate).mockResolvedValue(mockToken as any);
+
+    await AuthService.requestMagicLink('user@example.com', 'http://localhost:3000');
+
+    expect(mockRedis.set).toHaveBeenCalledWith('mad:otp:cooldown:user@example.com', '1', 'EX', 60, 'NX');
+    expect(MagicTokenModel.findOneAndUpdate).toHaveBeenCalledWith(
+      { email: 'user@example.com' },
+      expect.any(Object),
+      { upsert: true, new: true, runValidators: true }
+    );
+    expect(QueueService.enqueue).toHaveBeenCalledWith(
+      expect.any(String),
+      'email-dispatch',
+      expect.any(Object),
+      'magic-user@example.com-mock-token-id-123'
+    );
+  });
+
+  it('should reject request with HTTP 429 if Redis cooldown lock is active', async () => {
+    vi.mocked(isRedisConnected).mockReturnValue(true);
+    const mockRedis = {
+      set: vi.fn().mockResolvedValue(null), // locked
+      ttl: vi.fn().mockResolvedValue(45),
+      del: vi.fn(),
+    };
+    vi.mocked(getRedis).mockReturnValue(mockRedis as any);
+
+    await expect(
+      AuthService.requestMagicLink('user@example.com', 'http://localhost:3000')
+    ).rejects.toThrowError(
+      expect.objectContaining({
+        statusCode: 429,
+        code: 'OTP_COOLDOWN_ACTIVE',
+        retryAfter: 45,
+      })
+    );
+
+    expect(MagicTokenModel.findOneAndUpdate).not.toHaveBeenCalled();
+    expect(QueueService.enqueue).not.toHaveBeenCalled();
+  });
+
+  it('should fall back to MongoDB check when Redis is unavailable', async () => {
+    // Redis is offline
+    vi.mocked(isRedisConnected).mockReturnValue(false);
+
+    // Recent token exists in MongoDB (created 10s ago)
+    const existingToken = {
+      createdAt: new Date(Date.now() - 10 * 1000),
+    };
+    vi.mocked(MagicTokenModel.findOne).mockResolvedValue(existingToken as any);
+
+    await expect(
+      AuthService.requestMagicLink('user@example.com', 'http://localhost:3000')
+    ).rejects.toThrowError(
+      expect.objectContaining({
+        statusCode: 429,
+        code: 'OTP_COOLDOWN_ACTIVE',
+        retryAfter: 50, // 60 - 10
+      })
+    );
+
+    expect(MagicTokenModel.findOneAndUpdate).not.toHaveBeenCalled();
+  });
+
+  it('should allow request when Redis is offline and no active token exists or is older than 60s', async () => {
+    vi.mocked(isRedisConnected).mockReturnValue(false);
+    // Token is older than 60s
+    const existingToken = {
+      _id: 'old-token-id',
+      createdAt: new Date(Date.now() - 70 * 1000),
+    };
+    vi.mocked(MagicTokenModel.findOne).mockResolvedValue(existingToken as any);
+    const mockToken = { _id: 'mock-token-id-456', email: 'user@example.com', createdAt: new Date() };
+    vi.mocked(MagicTokenModel.findOneAndUpdate).mockResolvedValue(mockToken as any);
+
+    await AuthService.requestMagicLink('user@example.com', 'http://localhost:3000');
+
+    expect(MagicTokenModel.findOneAndUpdate).toHaveBeenCalled();
+    expect(QueueService.enqueue).toHaveBeenCalled();
+  });
+
+  it('should release Redis lock if enqueuing in BullMQ fails (Rollback Safety)', async () => {
+    vi.mocked(isRedisConnected).mockReturnValue(true);
+    const mockRedis = {
+      set: vi.fn().mockResolvedValue('OK'),
+      ttl: vi.fn(),
+      del: vi.fn().mockResolvedValue(1),
+    };
+    vi.mocked(getRedis).mockReturnValue(mockRedis as any);
+    const mockToken = { _id: 'mock-token-id-123', email: 'user@example.com', createdAt: new Date() };
+    vi.mocked(MagicTokenModel.findOneAndUpdate).mockResolvedValue(mockToken as any);
+    // QueueService throws error
+    vi.mocked(QueueService.enqueue).mockRejectedValue(new Error('Queue connection timeout'));
+
+    await expect(
+      AuthService.requestMagicLink('user@example.com', 'http://localhost:3000')
+    ).rejects.toThrow('Queue connection timeout');
+
+    // Verify lock is deleted
+    expect(mockRedis.del).toHaveBeenCalledWith('mad:otp:cooldown:user@example.com');
+  });
+
+  it('should normalize email to trim and lowercase, ensuring identity consistency', async () => {
+    const mockToken = { _id: 'mock-token-id-123', email: 'user@example.com', createdAt: new Date() };
+    vi.mocked(isRedisConnected).mockReturnValue(true);
+    const mockRedis = {
+      set: vi.fn().mockResolvedValue('OK'),
+      ttl: vi.fn(),
+      del: vi.fn(),
+    };
+    vi.mocked(getRedis).mockReturnValue(mockRedis as any);
+    vi.mocked(MagicTokenModel.findOneAndUpdate).mockResolvedValue(mockToken as any);
+
+    await AuthService.requestMagicLink('  USER@Example.Com  ', 'http://localhost:3000');
+
+    expect(mockRedis.set).toHaveBeenCalledWith('mad:otp:cooldown:user@example.com', '1', 'EX', 60, 'NX');
+    expect(MagicTokenModel.findOneAndUpdate).toHaveBeenCalledWith(
+      { email: 'user@example.com' },
+      expect.any(Object),
+      expect.any(Object)
+    );
+  });
+
+  it('should catch MongoDB duplicate key error (E11000) and throw normalized HTTP 429', async () => {
+    vi.mocked(isRedisConnected).mockReturnValue(true);
+    const mockRedis = {
+      set: vi.fn().mockResolvedValue('OK'),
+      ttl: vi.fn(),
+      del: vi.fn(),
+    };
+    vi.mocked(getRedis).mockReturnValue(mockRedis as any);
+    
+    const duplicateError = new Error('E11000 duplicate key error collection: magictokens');
+    (duplicateError as any).code = 11000;
+    vi.mocked(MagicTokenModel.findOneAndUpdate).mockRejectedValue(duplicateError);
+
+    await expect(
+      AuthService.requestMagicLink('user@example.com', 'http://localhost:3000')
+    ).rejects.toThrowError(
+      expect.objectContaining({
+        statusCode: 429,
+        code: 'OTP_COOLDOWN_ACTIVE',
+        retryAfter: 60,
+      })
+    );
+
+    // Redis lock is NOT deleted because another request won the race and successfully wrote/locked it
+    expect(mockRedis.del).not.toHaveBeenCalled();
   });
 });
 

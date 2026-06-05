@@ -239,6 +239,7 @@ export enum NotificationType {
   EVENT_CANCELLED = 'event_cancelled',
   EVENT_UPDATED = 'event_updated',
   OTP = 'otp',
+  MARKETING = 'marketing',
 }
 
 // ─── HTTP Status Codes ───────────────────────────────────────

@@ -9,6 +9,7 @@ import publicEventRoutes from './public/event.routes';
 import publicPaymentRoutes from './public/payment.routes';
 import publicPopupRoutes from './public/popup.routes';
 import publicTicketRoutes from './public/ticket.routes';
+import publicMarketingRoutes from './public/marketing.routes';
 
 const router: Router = Router();
 const unreconstructed: Router = Router();
@@ -43,6 +44,7 @@ router.use('/dj-operators', publicDJOperatorRoutes);
 router.use('/categories', publicCategoryRoutes);
 router.use('/popups', publicPopupRoutes);
 router.use('/public/tickets', publicTicketRoutes);
+router.use('/marketing', publicMarketingRoutes);
 
 // ─── Direct Auth Accessors ──────────────────────────────────
 router.get('/me', requireAuth, AuthController.getMe);
@@ -91,9 +93,14 @@ import adminScannerRoutes from './admin/scanner.routes';
 import adminNotificationRoutes from './admin/notification.routes';
 import adminTeamRoutes from './admin/team.routes';
 import adminPopupRoutes from './admin/popup.routes';
+import adminUserRoutes from './admin/user.routes';
+import adminMarketingRoutes from './admin/marketing.routes';
+
 router.use('/admin/popups', adminPopupRoutes);
 router.use('/admin/notifications', adminNotificationRoutes);
 router.use('/admin/team', adminTeamRoutes);
 router.use('/admin/scanner', adminScannerRoutes);
+router.use('/admin/users', adminUserRoutes);
+router.use('/admin/marketing', adminMarketingRoutes);
 
 export default router;

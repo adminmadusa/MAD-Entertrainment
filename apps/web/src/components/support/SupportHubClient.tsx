@@ -29,6 +29,12 @@ export function SupportHubClient() {
     });
   }, [searchQuery, activeCategory]);
 
+  const sectionTitle = useMemo(() => {
+    if (searchQuery) return 'Search Results';
+    if (activeCategory === 'all') return 'Popular Questions';
+    return CATEGORIES.find((c) => c.id === activeCategory)?.label || '';
+  }, [searchQuery, activeCategory]);
+
   return (
     <div className="w-full max-w-4xl mx-auto space-y-12">
       
@@ -79,7 +85,7 @@ export function SupportHubClient() {
       {/* FAQ List */}
       <section>
         <h2 className="text-white font-bold text-xl mb-6">
-          {searchQuery ? 'Search Results' : activeCategory === 'all' ? 'Popular Questions' : CATEGORIES.find(c => c.id === activeCategory)?.label}
+          {sectionTitle}
         </h2>
         <FAQAccordion faqs={filteredFaqs} />
       </section>

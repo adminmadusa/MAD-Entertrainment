@@ -102,16 +102,18 @@ type RateLimiter = ReturnType<typeof rateLimit>;
 let _generalLimiter: RateLimiter | undefined;
 let _authLimiter: RateLimiter | undefined;
 let _paymentLimiter: RateLimiter | undefined;
+let _bookingLimiter: RateLimiter | undefined;
 let _webhookLimiter: RateLimiter | undefined;
 let _adminLimiter: RateLimiter | undefined;
 let _resendLimiter: RateLimiter | undefined;
 
-function makeLimiter(prefix: 'general' | 'auth' | 'payment' | 'webhook' | 'admin'): RateLimiter {
+function makeLimiter(prefix: 'general' | 'auth' | 'payment' | 'booking' | 'webhook' | 'admin'): RateLimiter {
   const e = getEnv();
   const limits: Record<typeof prefix, number> = {
     general: e.RATE_LIMIT_MAX_REQUESTS,
     auth: e.RATE_LIMIT_AUTH_MAX,
     payment: e.RATE_LIMIT_PAYMENT_MAX,
+    booking: 10,
     webhook: 60,
     admin: 30,
   };
@@ -119,6 +121,7 @@ function makeLimiter(prefix: 'general' | 'auth' | 'payment' | 'webhook' | 'admin
     general: e.RATE_LIMIT_WINDOW_MS,
     auth: e.RATE_LIMIT_WINDOW_MS,
     payment: e.RATE_LIMIT_WINDOW_MS,
+    booking: 15 * 60 * 1000, // 15 minutes
     webhook: 10 * 60 * 1000, // 10 minutes
     admin: 15 * 60 * 1000, // 15 minutes
   };
@@ -160,6 +163,7 @@ export function initRateLimiters(): void {
   _generalLimiter = makeLimiter('general');
   _authLimiter = makeLimiter('auth');
   _paymentLimiter = makeLimiter('payment');
+  _bookingLimiter = makeLimiter('booking');
   _webhookLimiter = makeLimiter('webhook');
   _adminLimiter = makeLimiter('admin');
 
@@ -204,6 +208,14 @@ export const paymentLimiter = (req: any, res: any, next: any) => {
     return next();
   }
   return _paymentLimiter(req, res, next);
+};
+
+export const bookingLimiter = (req: any, res: any, next: any) => {
+  if (!_bookingLimiter) {
+    logger.error('bookingLimiter called before initRateLimiters() — rate limiting inactive');
+    return next();
+  }
+  return _bookingLimiter(req, res, next);
 };
 
 export const webhookLimiter = (req: any, res: any, next: any) => {

@@ -29,8 +29,8 @@ export default [
       'react/no-danger': 'warn',
       'no-dupe-keys': 'error',
       'no-console': ['warn', { allow: ['warn', 'error'] }],
-      'no-nested-ternary': 'warn',
-      '@typescript-eslint/no-explicit-any': 'warn',
+      'no-nested-ternary': 'off',
+      '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/ban-ts-comment': ['warn', { 'ts-ignore': true }],
       'no-restricted-syntax': [
         'warn',

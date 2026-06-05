@@ -37,6 +37,15 @@ export class AppError extends Error {
   static conflict(message: string) {
     return new AppError(message, HTTP_STATUS.CONFLICT);
   }
+
+  static tooManyRequests(message: string, code?: string, retryAfter?: number) {
+    const error = new AppError(message, HTTP_STATUS.TOO_MANY_REQUESTS);
+    error.code = code;
+    if (retryAfter !== undefined) {
+      (error as any).retryAfter = retryAfter;
+    }
+    return error;
+  }
 }
 
 export const notFoundHandler: RequestHandler = (req, res) => {
@@ -57,6 +66,7 @@ export const errorHandler: ErrorRequestHandler = (err, req, res, _next) => {
       ...(err.code ? { error: err.code } : {}),
       ...(err.retryable !== undefined ? { retryable: err.retryable } : {}),
       ...(err.errors ? { errors: err.errors } : {}),
+      ...((err as any).retryAfter !== undefined ? { retryAfter: (err as any).retryAfter } : {}),
     });
     return;
   }

@@ -14,6 +14,7 @@ export interface SendEmailInput {
   subject: string;
   html: string;
   attachments?: EmailAttachment[];
+  messageId?: string;
 }
 
 let transporter: nodemailer.Transporter | null = null;
@@ -100,6 +101,7 @@ export async function sendEmail(input: SendEmailInput): Promise<void> {
       subject: input.subject,
       html: input.html,
       attachments: input.attachments,
+      messageId: input.messageId,
     });
     logger.info({ messageId: info.messageId }, "Email sent");
     logger.info({ messageId: info.messageId, to: input.to }, "Transactional email delivered successfully");
@@ -113,3 +115,8 @@ export async function sendEmail(input: SendEmailInput): Promise<void> {
     throw error; // Bubble up error so BullMQ workers can retry correctly
   }
 }
+
+export function normalizeEmail(email: string): string {
+  return email.trim().toLowerCase();
+}
+

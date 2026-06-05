@@ -28,7 +28,7 @@ const notificationSchema = new Schema<INotification>(
     subject: String,
     body: String,
     status: { type: String, enum: ['queued', 'processing', 'sent', 'failed'] },
-    jobId: { type: String, index: true },
+    jobId: { type: String },
     errorMessage: String,
     // Data Retention Policy: Auto-expire and clean up operational notification/email logs after 30 days
     queuedAt: { type: Date, index: { expires: '30d' } },
@@ -37,6 +37,15 @@ const notificationSchema = new Schema<INotification>(
     retryCount: { type: Number, default: 0, min: 0 },
   },
   { timestamps: true }
+);
+
+notificationSchema.index(
+  { jobId: 1 },
+  {
+    unique: true,
+    partialFilterExpression: { jobId: { $type: 'string' } },
+    background: true,
+  }
 );
 
 export const Notification = model<INotification>('Notification', notificationSchema);

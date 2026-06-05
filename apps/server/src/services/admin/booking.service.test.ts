@@ -10,6 +10,10 @@ import { ReservationService } from '../reservation.service';
 import { CacheService } from '../cache.service';
 import { QueueService } from '../queue.service';
 import { auditLog } from '../../utils/audit';
+import mongoose from 'mongoose';
+import { createNotificationSafe } from '../notification.service';
+import { Notification } from '../../models/notification.schema';
+import { emitToAdmin, emitToEvent, emitToBooking } from '../../config/socket';
 
 vi.mock('mongoose', async (importOriginal) => {
   const original = await importOriginal<typeof import('mongoose')>();
@@ -23,6 +27,16 @@ vi.mock('mongoose', async (importOriginal) => {
   };
 });
 
+vi.mock('../notification.service', () => ({
+  createNotificationSafe: vi.fn(),
+}));
+
+vi.mock('../../models/notification.schema', () => ({
+  Notification: {
+    findOne: vi.fn(),
+  },
+}));
+
 vi.mock('../../models/booking.schema', () => ({
   Booking: {
     findById: vi.fn(),
@@ -30,9 +44,42 @@ vi.mock('../../models/booking.schema', () => ({
   },
 }));
 
+const mockTicketFindQuery = {
+  session: vi.fn().mockResolvedValue([]),
+};
+const mockTicketCountQuery = {
+  session: vi.fn().mockResolvedValue(1),
+};
+const mockTicketExistsQuery = {
+  session: vi.fn().mockResolvedValue(null),
+};
 vi.mock('../../models/ticket.schema', () => ({
   Ticket: {
+    find: vi.fn().mockImplementation(() => mockTicketFindQuery),
+    countDocuments: vi.fn().mockImplementation(() => mockTicketCountQuery),
+    exists: vi.fn().mockImplementation(() => mockTicketExistsQuery),
     aggregate: vi.fn(),
+  },
+}));
+
+const mockAdminQuery = {
+  session: vi.fn().mockResolvedValue({ name: 'Admin', email: 'admin@example.com' }),
+  then: (resolve) => resolve({ name: 'Admin', email: 'admin@example.com' }),
+};
+vi.mock('../../models/admin.schema', () => ({
+  AdminModel: {
+    findById: vi.fn().mockImplementation(() => mockAdminQuery),
+  },
+}));
+
+const mockAuditLogQuery = {
+  sort: vi.fn().mockImplementation(() => ({
+    lean: vi.fn().mockResolvedValue([]),
+  })),
+};
+vi.mock('../../models/audit-log.schema', () => ({
+  AuditLogModel: {
+    find: vi.fn().mockImplementation(() => mockAuditLogQuery),
   },
 }));
 
@@ -279,6 +326,8 @@ describe('Admin Booking Service Backend Tests', () => {
           eventId: 'event-555',
           recipientEmail: 'guest@example.com',
           guestName: 'John Doe',
+          isResend: true,
+          resendId: expect.any(String),
         },
         expect.stringContaining('pdf:generate:booking-123:admin-resend:')
       );
@@ -485,6 +534,129 @@ describe('Admin Booking Service Backend Tests', () => {
 
       expect(result.status).toBe(BookingStatus.REFUNDED);
       expect(Payment.findByIdAndUpdate).not.toHaveBeenCalled();
+    });
+
+    it('should not execute side effects if transaction fails', async () => {
+      const mockBooking = {
+        _id: 'booking-123',
+        bookingId: 'MAD-2026-ABCDE',
+        eventId: 'event-555',
+        totalTickets: 2,
+        tickets: [{ tier: 'general', quantity: 2 }],
+        status: BookingStatus.CONFIRMED,
+        paymentId: 'payment-999',
+        bookingVersion: 1,
+        save: vi.fn().mockResolvedValue(true),
+      };
+
+      vi.mocked(Booking.findById).mockReturnValue({
+        session: vi.fn().mockResolvedValue(mockBooking),
+      } as any);
+
+      // Simulate a startSession succeeding but withTransaction throwing (transaction failure)
+      const mockSession = {
+        withTransaction: vi.fn().mockRejectedValue(new Error('Database transaction abort')),
+        endSession: vi.fn().mockResolvedValue(undefined),
+      };
+      
+      vi.mocked(mongoose.startSession).mockResolvedValueOnce(mockSession as any);
+
+      await expect(cancelBooking('booking-123', 'Customer request')).rejects.toThrow('Database transaction abort');
+
+      expect(CacheService.delPattern).not.toHaveBeenCalled();
+      expect(emitToEvent).not.toHaveBeenCalled();
+      expect(emitToBooking).not.toHaveBeenCalled();
+      expect(emitToAdmin).not.toHaveBeenCalled();
+      expect(auditLog).not.toHaveBeenCalled();
+    });
+
+    it('should execute socket emissions and audit logging even if cache invalidation fails', async () => {
+      const mockBooking = {
+        _id: 'booking-123',
+        bookingId: 'MAD-2026-ABCDE',
+        eventId: 'event-555',
+        totalTickets: 2,
+        tickets: [{ tier: 'general', quantity: 2 }],
+        status: BookingStatus.CONFIRMED,
+        paymentId: 'payment-999',
+        bookingVersion: 1,
+        save: vi.fn().mockResolvedValue(true),
+      };
+
+      vi.mocked(Booking.findById).mockReturnValue({
+        session: vi.fn().mockResolvedValue(mockBooking),
+      } as any);
+
+      vi.mocked(ReservationService.transitionForBooking).mockResolvedValue([] as any);
+
+      const mockEvent = {
+        _id: 'event-555',
+        bookingMode: 'general_admission',
+        ticketTiers: [],
+      };
+      vi.mocked(Event.findById).mockReturnValue({
+        session: vi.fn().mockResolvedValue(mockEvent),
+      } as any);
+
+      // CacheService.delPattern fails
+      vi.mocked(CacheService.delPattern).mockRejectedValue(new Error('Cache error'));
+
+      const result = await cancelBooking('booking-123', 'Customer request');
+
+      expect(result.status).toBe(BookingStatus.CANCELLED);
+      // Verify other side-effects still ran
+      expect(emitToBooking).toHaveBeenCalled();
+      expect(emitToAdmin).toHaveBeenCalled();
+      expect(auditLog).toHaveBeenCalled();
+    });
+
+    it('should skip email enqueueing if notification creation fails, but booking remains cancelled and logs are written', async () => {
+      const mockBooking = {
+        _id: 'booking-123',
+        bookingId: 'MAD-2026-ABCDE',
+        eventId: 'event-555',
+        totalTickets: 2,
+        tickets: [{ tier: 'general', quantity: 2 }],
+        status: BookingStatus.CONFIRMED,
+        paymentId: 'payment-999',
+        bookingVersion: 1,
+        guestEmail: 'customer@example.com',
+        save: vi.fn().mockResolvedValue(true),
+      };
+
+      vi.mocked(Booking.findById).mockReturnValue({
+        session: vi.fn().mockResolvedValue(mockBooking),
+      } as any);
+
+      vi.mocked(ReservationService.transitionForBooking).mockResolvedValue([] as any);
+
+      const mockEvent = {
+        _id: 'event-555',
+        bookingMode: 'general_admission',
+        ticketTiers: [],
+      };
+      vi.mocked(Event.findById).mockReturnValue({
+        session: vi.fn().mockResolvedValue(mockEvent),
+      } as any);
+
+      // Notification.findOne returns null
+      vi.mocked(Notification.findOne).mockReturnValue({
+        session: vi.fn().mockResolvedValue(null),
+      } as any);
+
+      // createNotificationSafe throws error
+      vi.mocked(createNotificationSafe).mockRejectedValue(new Error('Notification DB write error'));
+
+      const result = await cancelBooking('booking-123', 'Customer request');
+
+      // Booking cancellation should still succeed
+      expect(result.status).toBe(BookingStatus.CANCELLED);
+
+      // QueueService should NOT be called to enqueue email dispatch job
+      expect(QueueService.enqueue).not.toHaveBeenCalled();
+
+      // Ensure other side effects like auditLog still executed
+      expect(auditLog).toHaveBeenCalled();
     });
   });
 });

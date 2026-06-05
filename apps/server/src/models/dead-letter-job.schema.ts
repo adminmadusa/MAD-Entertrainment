@@ -19,8 +19,8 @@ const deadLetterJobSchema = new Schema<IDeadLetterJob>({
   failedReason: String,
   stacktrace: [String],
   attemptsMade: { type: Number, required: true },
-  // Data Retention Policy: Auto-expire and clean up legacy dead-letter queue logs after 30 days
-  processedAt: { type: Date, default: Date.now, index: { expires: '30d' } },
+  // Data Retention Policy: Auto-expire and clean up legacy dead-letter queue logs after 90 days
+  processedAt: { type: Date, default: Date.now, index: { expires: '90d' } },
 });
 
 deadLetterJobSchema.index({ queueName: 1, processedAt: -1 });

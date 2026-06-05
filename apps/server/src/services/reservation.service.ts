@@ -43,15 +43,21 @@ function safeEmit(label: string, emit: () => void, details: Record<string, unkno
 }
 
 export class ReservationService {
-  static async reserveForBooking(request: ReservationRequest): Promise<IReservation[]> {
+  static async reserveForBooking(
+    request: ReservationRequest,
+    session?: ClientSession
+  ): Promise<{ reservations: IReservation[]; postCommit: () => Promise<void> }> {
     if (request.bookingMode === BookingMode.SEAT_BASED) {
-      return this.reserveSeats(request);
+      return this.reserveSeats(request, session);
     }
 
-    return this.reserveGeneralAdmission(request);
+    return this.reserveGeneralAdmission(request, session);
   }
 
-  private static async reserveGeneralAdmission(request: ReservationRequest): Promise<IReservation[]> {
+  private static async reserveGeneralAdmission(
+    request: ReservationRequest,
+    session?: ClientSession
+  ): Promise<{ reservations: IReservation[]; postCommit: () => Promise<void> }> {
     const redis = getRedis();
     const lockKey = `mad:lock:reserve:event:${request.eventId}:tier:${request.tier}`;
     const lockVal = request.sessionId;
@@ -84,7 +90,7 @@ export class ReservationService {
     }
 
     try {
-      const event = await Event.findById(request.eventId);
+      const event = await Event.findById(request.eventId).session(session || null);
       if (!event) throw AppError.notFound('Event not found');
 
       const tierConfig = event.ticketTiers.find((t) => t.tier === request.tier);
@@ -102,7 +108,7 @@ export class ReservationService {
           }
         },
         { $group: { _id: null, total: { $sum: '$quantity' } } }
-      ]);
+      ]).session(session || null);
       const tierReserved = activeTierAgg[0]?.total ?? 0;
 
       // 2. Validate tier capacity
@@ -119,14 +125,14 @@ export class ReservationService {
       const updatedEvent = await Event.findByIdAndUpdate(
         request.eventId,
         { $inc: { reservedCount: request.quantity, eventVersion: 1 } },
-        { new: true }
+        { new: true, session }
       );
 
       if (!updatedEvent) {
         throw AppError.badRequest('Failed to reserve capacity');
       }
 
-      const reservation = await Reservation.create({
+      const reservationDocs = await Reservation.create([{
         eventId: request.eventId,
         tier: request.tier,
         section: request.tier,
@@ -142,10 +148,9 @@ export class ReservationService {
         correlationId: request.correlationId,
         eventVersion: updatedEvent.eventVersion,
         transitionLog: [{ from: InventoryState.AVAILABLE, to: InventoryState.RESERVED, reason: 'booking-created', correlationId: request.correlationId }],
-      });
+      }], { session });
 
-      this.emitReservationChange(updatedEvent._id.toString(), [reservation], 'reservation:reserved');
-      await CacheService.delPattern('events:*');
+      const reservation = reservationDocs[0];
 
       auditLog({
         action: 'RESERVATION_ACQUIRED',
@@ -161,7 +166,14 @@ export class ReservationService {
         description: `Reserved ${request.quantity} General Admission ticket(s) in tier "${request.tier}" for session ${request.sessionId}`
       });
 
-      return [reservation];
+      const eventIdStr = updatedEvent._id.toString();
+      return {
+        reservations: [reservation],
+        postCommit: async () => {
+          this.emitReservationChange(eventIdStr, [reservation], 'reservation:reserved');
+          await CacheService.delPattern('events:*');
+        },
+      };
     } finally {
       // Safely release the lock
       try {
@@ -175,7 +187,10 @@ export class ReservationService {
     }
   }
 
-  private static async reserveSeats(request: ReservationRequest): Promise<IReservation[]> {
+  private static async reserveSeats(
+    request: ReservationRequest,
+    session?: ClientSession
+  ): Promise<{ reservations: IReservation[]; postCommit: () => Promise<void> }> {
     const seats = request.seats ?? [];
     if (seats.length !== request.quantity) {
       throw AppError.badRequest('Seat reservation quantity must match selected seats');
@@ -200,18 +215,25 @@ export class ReservationService {
         correlationId: request.correlationId,
         transitionLog: [{ from: InventoryState.AVAILABLE, to: InventoryState.RESERVED, reason: 'booking-created', correlationId: request.correlationId }],
       });
-      await reservation.save();
+      await reservation.save({ session });
       reservations.push(reservation);
     }
 
     await Event.findByIdAndUpdate(request.eventId, {
       $inc: { reservedCount: request.quantity, eventVersion: 1 },
-    });
+    }, { session });
 
-    this.emitReservationChange(request.eventId.toString(), reservations, 'reservation:reserved');
-    await CacheService.delPattern('events:*');
-    return reservations;
+    const eventIdStr = request.eventId.toString();
+    const capturedReservations = reservations.slice();
+    return {
+      reservations,
+      postCommit: async () => {
+        this.emitReservationChange(eventIdStr, capturedReservations, 'reservation:reserved');
+        await CacheService.delPattern('events:*');
+      },
+    };
   }
+
 
   static async transitionForBooking(
     bookingId: Types.ObjectId | string,
@@ -322,12 +344,31 @@ export class ReservationService {
     const expired: IReservation[] = [];
     for (const reservation of stale) {
       const previousStatus = reservation.status;
-      reservation.status = ReservationStatus.EXPIRED;
-      reservation.inventoryState = InventoryState.EXPIRED;
-      reservation.reservationVersion += 1;
-      reservation.transitionLog.push({ from: previousStatus, to: ReservationStatus.EXPIRED, reason: 'reservation-expired', createdAt: new Date() });
-      await reservation.save();
-      expired.push(reservation);
+      const updated = await Reservation.findOneAndUpdate(
+        {
+          _id: reservation._id,
+          status: previousStatus,
+        },
+        {
+          $set: {
+            status: ReservationStatus.EXPIRED,
+            inventoryState: InventoryState.EXPIRED,
+          },
+          $inc: { reservationVersion: 1 },
+          $push: {
+            transitionLog: {
+              from: previousStatus,
+              to: ReservationStatus.EXPIRED,
+              reason: 'reservation-expired',
+              createdAt: new Date(),
+            }
+          }
+        },
+        { new: true }
+      );
+      if (updated) {
+        expired.push(updated);
+      }
     }
 
     if (expired.length > 0) {

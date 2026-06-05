@@ -101,30 +101,6 @@ export async function stripeWebhook(req: Request, res: Response): Promise<void> 
   }
 
   let webhookEvent;
-
-  // Step B: Check for recoverable failure and reset atomically to 'processing'.
-  // Using new: false returns the old document, allowing us to read the original errorMessage for the audit log.
-  const existingFailedEvent = await WebhookEvent.findOneAndUpdate(
-    { eventId: event.id, status: 'failed' },
-    { $set: { status: 'processing', errorMessage: null, processedAt: null } },
-    { new: false }
-  );
-
-  if (existingFailedEvent) {
-    // Retrieve the active updated Mongoose document to use for processing
-    webhookEvent = await WebhookEvent.findOne({ eventId: event.id });
-
-    // Condition 2: Audit log action on retry path (A2)
-    auditLog({
-      action: 'WEBHOOK_RETRY_PROCESSING',
-      status: 'success',
-      metadata: {
-        gateway: 'stripe',
-        eventId: event.id,
-        eventType: event.type,
-        originalErrorMessage: existingFailedEvent.errorMessage || null,
-      },
-      description: `Stripe webhook retry initiated: event ${event.id} reset from failed to processing`
     });
   } else {
     // Step C: First delivery - create new record.
@@ -235,6 +211,8 @@ export async function razorpayWebhook(req: Request, res: Response): Promise<void
   let eventType: string;
   let razorpayPaymentId: string | undefined;
   let razorpayOrderId: string | undefined;
+  let amount: number | undefined;
+  let currency: string | undefined;
   let body: any;
 
   try {
@@ -242,6 +220,8 @@ export async function razorpayWebhook(req: Request, res: Response): Promise<void
     eventType = body.event;
     razorpayPaymentId = body.payload?.payment?.entity?.id;
     razorpayOrderId = body.payload?.payment?.entity?.order_id;
+    amount = body.payload?.payment?.entity?.amount;
+    currency = body.payload?.payment?.entity?.currency;
   } catch (err: any) {
     res.status(400).send('Malformed JSON payload');
     return;
@@ -265,7 +245,6 @@ export async function razorpayWebhook(req: Request, res: Response): Promise<void
     .createHmac('sha256', env.RAZORPAY_WEBHOOK_SECRET)
     .update(rawBody)
     .digest('hex');
-
   let existingEvent = await WebhookEvent.findOne({ eventId });
   if (existingEvent) {
     auditLog({
@@ -283,7 +262,7 @@ export async function razorpayWebhook(req: Request, res: Response): Promise<void
   auditLog({
     action: 'WEBHOOK_RECEIVED',
     status: 'success',
-    metadata: { gateway: 'razorpay', eventId, eventType, orderId: razorpayOrderId, paymentId: razorpayPaymentId },
+    metadata: { gateway: 'razorpay', eventId, providerEventId, eventType, orderId: razorpayOrderId, paymentId: razorpayPaymentId },
     description: `Received Razorpay webhook event ${eventType} (ID: ${eventId})`
   });
 
@@ -294,6 +273,7 @@ export async function razorpayWebhook(req: Request, res: Response): Promise<void
   try {
     webhookEvent = await WebhookEvent.create({
       eventId,
+      providerEventId,
       provider: 'razorpay',
       eventType,
       status: 'received',
@@ -328,7 +308,9 @@ export async function razorpayWebhook(req: Request, res: Response): Promise<void
         razorpayOrderId,
         razorpayPaymentId,
         eventType,
-        eventId
+        eventId,
+        amount,
+        currency
       );
       
       webhookEvent.status = 'success';

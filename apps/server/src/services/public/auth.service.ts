@@ -9,8 +9,11 @@ import { MagicTokenModel } from '../../models/magic-token.schema';
 import { RefreshTokenModel } from '../../models/refresh-token.schema';
 import { Booking } from '../../models/booking.schema';
 import { Notification } from '../../models/notification.schema';
+import { createNotificationSafe } from '../notification.service';
 import { QueueService } from '../queue.service';
 import { magicLinkHtml } from '../../lib/email';
+import { normalizeEmail } from '../../utils/email';
+import { getRedis, isRedisConnected } from '../../config/redis';
 import { NotificationType } from '@mad/shared';
 import { signUserToken } from '../../utils/jwt';
 import { logger } from '../../utils/logger';
@@ -36,58 +39,124 @@ export class AuthService {
       throw AppError.badRequest('Email is required');
     }
 
-    const trimmedEmail = email.trim().toLowerCase();
-    logger.info({ email: trimmedEmail }, "OTP passcode requested");
+    const normalizedEmail = normalizeEmail(email);
+    logger.info({ email: normalizedEmail }, "OTP passcode requested");
 
-    // 1. Generate unique 6-digit OTP
-    const otp = crypto.randomInt(100000, 1000000).toString();
-    const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes TTL
+    // Cooldown verification (Redis-first with DB fallback)
+    const cooldownKey = `mad:otp:cooldown:${normalizedEmail}`;
+    const isRedisActive = isRedisConnected();
+    let isLocked = false;
+    let retryAfter = 60;
 
-    // 2. Hash the OTP for secure database storage
-    const otpHash = crypto.createHash('sha256').update(otp).digest('hex');
+    if (isRedisActive) {
+      try {
+        const redis = getRedis();
+        // Atomic EX NX acquisition
+        const lockResult = await redis.set(cooldownKey, '1', 'EX', 60, 'NX');
+        isLocked = lockResult !== 'OK';
+        if (isLocked) {
+          const ttl = await redis.ttl(cooldownKey);
+          retryAfter = ttl > 0 ? ttl : 60;
+        }
+      } catch (err) {
+        logger.error({ err, email: normalizedEmail }, 'Redis cooldown lock set failed. Falling back to MongoDB.');
+      }
+    }
 
-    // 3. Save MagicToken (upsert for the email to prevent spamming records)
-    await MagicTokenModel.findOneAndDelete({ email: trimmedEmail });
-    await MagicTokenModel.create({
-      email: trimmedEmail,
-      otp: otpHash, // Plaintext OTP is NEVER stored in the database!
-      firstName: registrationData?.firstName,
-      lastName: registrationData?.lastName,
-      mobileNumber: registrationData?.mobileNumber,
-      expiresAt,
-    });
-    logger.info({ email: trimmedEmail }, "OTP login session created");
+    // Fallback: If Redis is offline, check MongoDB.
+    // Or if Redis is active and we failed to acquire the lock.
+    if (!isRedisActive || isLocked) {
+      if (!isRedisActive) {
+        const existing = await MagicTokenModel.findOne({ email: normalizedEmail });
+        if (existing) {
+          const elapsed = Math.floor((Date.now() - existing.createdAt.getTime()) / 1000);
+          if (elapsed < 60) {
+            retryAfter = Math.max(0, 60 - elapsed);
+            throw AppError.tooManyRequests('Please wait before requesting another code.', 'OTP_COOLDOWN_ACTIVE', retryAfter);
+          }
+        }
+      } else {
+        // Redis is active, but we are locked out
+        throw AppError.tooManyRequests('Please wait before requesting another code.', 'OTP_COOLDOWN_ACTIVE', retryAfter);
+      }
+    }
 
-    // 4. Compile HTML Template
-    const html = await magicLinkHtml({
-      email: trimmedEmail,
-      otpCode: otp, // Plaintext OTP is sent securely ONLY in the email!
-    });
+    let token;
+    try {
+      // 1. Generate unique 6-digit OTP
+      const otp = crypto.randomInt(100000, 1000000).toString();
+      const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes TTL
 
-    const jobId = `magic-${trimmedEmail}-${Date.now()}`;
-    logger.info({ email: trimmedEmail, jobId }, "Email job queued");
+      // 2. Hash the OTP for secure database storage
+      const otpHash = crypto.createHash('sha256').update(otp).digest('hex');
 
-    await Notification.create({
-      jobId,
-      status: 'queued',
-      queuedAt: new Date(),
-      type: NotificationType.OTP,
-      channel: 'email',
-      recipient: trimmedEmail,
-      subject: 'Sign In to MAD Entertainment',
-      isSent: false,
-      retryCount: 0,
-    });
+      // 3. Save MagicToken (atomic upsert)
+      token = await MagicTokenModel.findOneAndUpdate(
+        { email: normalizedEmail },
+        {
+          $set: {
+            otp: otpHash,
+            firstName: registrationData?.firstName,
+            lastName: registrationData?.lastName,
+            mobileNumber: registrationData?.mobileNumber,
+            expiresAt,
+          },
+        },
+        { upsert: true, new: true, runValidators: true }
+      );
+      logger.info({ email: normalizedEmail, tokenId: token._id }, "OTP login session upserted");
 
-    // 5. Enqueue Email Dispatch Job with exponential BullMQ retries
-    await QueueService.enqueue(getQueueName('notification-queue'), 'email-dispatch', {
-      to: trimmedEmail,
-      subject: 'Sign In to MAD Entertainment',
-      html,
-      notificationType: NotificationType.OTP,
-    }, jobId);
+      // 4. Compile HTML Template
+      const html = await magicLinkHtml({
+        email: normalizedEmail,
+        otpCode: otp, // Plaintext OTP is sent securely ONLY in the email!
+      });
 
-    logger.info({ email: trimmedEmail }, 'OTP verification email queued successfully.');
+      const jobId = `magic-${normalizedEmail}-${token._id.toString()}`;
+      logger.info({ email: normalizedEmail, jobId }, "Email job queued");
+
+      await createNotificationSafe({
+        jobId,
+        status: 'queued',
+        queuedAt: new Date(),
+        type: NotificationType.OTP,
+        channel: 'email',
+        recipient: normalizedEmail,
+        subject: 'Sign In to MAD Entertainment',
+        isSent: false,
+        retryCount: 0,
+      });
+
+      // 5. Enqueue Email Dispatch Job with exponential BullMQ retries
+      await QueueService.enqueue(getQueueName('notification-queue'), 'email-dispatch', {
+        to: normalizedEmail,
+        subject: 'Sign In to MAD Entertainment',
+        html,
+        notificationType: NotificationType.OTP,
+      }, jobId);
+
+      logger.info({ email: normalizedEmail }, 'OTP verification email queued successfully.');
+    } catch (err: any) {
+      // Check for MongoDB unique index violation (E11000)
+      const isDuplicateKey = err.code === 11000 || err.code === '11000' || err.message?.includes('E11000');
+
+      // Failure Handling / Rollback: Release Redis lock if lock was successfully acquired
+      if (isRedisActive && !isLocked && !isDuplicateKey) {
+        try {
+          const redis = getRedis();
+          await redis.del(cooldownKey);
+          logger.info({ email: normalizedEmail }, 'Redis cooldown lock rolled back due to write/enqueue failure.');
+        } catch (delErr) {
+          logger.error({ delErr, email: normalizedEmail }, 'Failed to delete Redis cooldown lock during rollback.');
+        }
+      }
+
+      if (isDuplicateKey) {
+        throw AppError.tooManyRequests('Please wait before requesting another code.', 'OTP_COOLDOWN_ACTIVE', 60);
+      }
+
+      throw err;
+    }
   }
 
   /**
@@ -102,12 +171,12 @@ export class AuthService {
     }
 
     // OTP Verification Mode
-    const trimmedEmail = email.trim().toLowerCase();
+    const normalizedEmail = normalizeEmail(email);
     const cleanOtp = otp.trim().replace(/\s/g, '');
     const otpHash = crypto.createHash('sha256').update(cleanOtp).digest('hex');
 
     const magicRecord = await MagicTokenModel.findOne({
-      email: trimmedEmail,
+      email: normalizedEmail,
       otp: otpHash, // Match using the secure SHA-256 hash
     });
 

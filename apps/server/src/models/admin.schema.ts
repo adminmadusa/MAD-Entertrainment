@@ -7,6 +7,7 @@ export interface IAdmin extends Document {
   name: string;
   role: string;
   isActive: boolean;
+  passwordVersion: number;
   lastLogin?: Date;
   comparePassword(password: string): Promise<boolean>;
 }
@@ -38,6 +39,11 @@ const adminSchema = new Schema<IAdmin>(
       type: Boolean,
       default: true,
       index: true,
+    },
+    passwordVersion: {
+      type: Number,
+      default: 0,
+      required: true,
     },
     lastLogin: {
       type: Date,

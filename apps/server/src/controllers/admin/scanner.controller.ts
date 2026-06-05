@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+import { Types } from 'mongoose';
 import { Ticket } from '../../models/ticket.schema';
 import { Booking } from '../../models/booking.schema';
 
@@ -10,6 +11,14 @@ export const scanTicket = async (req: Request, res: Response, next: NextFunction
       return res.status(400).json({
         success: false,
         message: 'Both ticketId and eventId are required parameters.',
+      });
+    }
+
+    const scannerId = req.admin?.sub;
+    if (!scannerId) {
+      return res.status(401).json({
+        success: false,
+        message: 'Unauthorized: Admin scanner identity is missing.',
       });
     }
 
@@ -26,6 +35,20 @@ export const scanTicket = async (req: Request, res: Response, next: NextFunction
       return res.status(400).json({
         success: false,
         message: 'Validation failed: This ticket is registered for a different event.',
+      });
+    }
+
+    if (ticket.status === 'replaced') {
+      return res.status(400).json({
+        success: false,
+        message: 'Ticket Replaced: Please use the latest ticket.',
+      });
+    }
+
+    if (ticket.status === 'voided') {
+      return res.status(400).json({
+        success: false,
+        message: 'Ticket Voided: This ticket is no longer valid.',
       });
     }
 
@@ -57,7 +80,7 @@ export const scanTicket = async (req: Request, res: Response, next: NextFunction
     // Atomically check-in the ticket
     const updatedTicket = await Ticket.findOneAndUpdate(
       { _id: ticket._id, $or: [{ scannedAt: { $exists: false } }, { scannedAt: null }] },
-      { $set: { scannedAt: new Date() } },
+      { $set: { scannedAt: new Date(), scannedById: new Types.ObjectId(scannerId) } },
       { new: true }
     );
 
@@ -110,8 +133,17 @@ export const lookupTickets = async (req: Request, res: Response, next: NextFunct
         });
       }
 
-      const tickets = await Ticket.find({ bookingId: booking._id, eventId });
+      const tickets = await Ticket.find({ bookingId: booking._id, eventId, status: 'active' });
       if (!tickets.length) {
+        // If booking is confirmed but no tickets exist yet, the background worker
+        // is still generating them. Return 202 so the caller can retry gracefully.
+        if (booking.status === 'confirmed') {
+          return res.status(202).json({
+            success: false,
+            status: 'generating',
+            message: 'Tickets are being generated. Please try again in a moment.',
+          });
+        }
         return res.status(404).json({
           success: false,
           message: 'No tickets found for this booking for the selected event.',

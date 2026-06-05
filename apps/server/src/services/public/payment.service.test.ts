@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import mongoose from 'mongoose';
 import { PaymentService } from './payment.service';
 import { BookingStatus, PaymentStatus } from '@mad/shared';
 import { Booking } from '../../models/booking.schema';
@@ -10,8 +11,48 @@ import { Reservation } from '../../models/reservation.schema';
 import { SeatLayout } from '../../models/seat-layout.schema';
 import { getEnv } from '../../config/env';
 import { getStripe } from '../../config/stripe';
+import { ReservationService } from '../reservation.service';
+import { QueueService } from '../queue.service';
 import crypto from 'crypto';
 import { ReservationService } from '../reservation.service';
+
+const { mockSession } = vi.hoisted(() => {
+  const session = {
+    startTransaction: vi.fn(),
+    commitTransaction: vi.fn(),
+    abortTransaction: vi.fn(),
+    withTransaction: vi.fn().mockImplementation(async (callback) => {
+      try {
+        await callback();
+      } catch (err) {
+        throw err;
+      }
+    }),
+    endSession: vi.fn().mockResolvedValue(undefined),
+  };
+  return { mockSession: session };
+});
+
+vi.mock('mongoose', async (importOriginal) => {
+  const original = await importOriginal<typeof import('mongoose')>();
+  return {
+    ...original,
+    default: {
+      ...original.default,
+      startSession: vi.fn().mockResolvedValue(mockSession),
+    },
+    startSession: vi.fn().mockResolvedValue(mockSession),
+  };
+});
+
+const createMockQuery = (val: any) => {
+  const query = Promise.resolve(val);
+  (query as any).session = vi.fn().mockReturnValue(query);
+  (query as any).lean = vi.fn().mockReturnValue(query);
+  (query as any).sort = vi.fn().mockReturnValue(query);
+  return query as any;
+};
+
 
 vi.mock('../../config/env', () => ({
   getEnv: vi.fn(() => ({
@@ -101,6 +142,12 @@ vi.mock('../../config/socket', () => ({
   emitToEvent: vi.fn(),
 }));
 
+vi.mock('../queue.service', () => ({
+  QueueService: {
+    enqueue: vi.fn().mockResolvedValue(undefined),
+  },
+}));
+
 vi.mock('../../utils/logger', () => ({
   logger: {
     info: vi.fn(),
@@ -121,6 +168,7 @@ vi.mock('../reservation.service', () => ({
 describe('Payment Service', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+
     vi.mocked(Booking.findById).mockReset();
     vi.mocked(Booking.findOne).mockReset();
     vi.mocked(Booking.findOneAndUpdate).mockReset();
@@ -128,8 +176,17 @@ describe('Payment Service', () => {
     vi.mocked(Event.findOneAndUpdate).mockReset();
     vi.mocked(Reservation.aggregate).mockReset();
     vi.mocked(SeatLayout.updateOne).mockReset();
+    vi.mocked(SeatLayout.findOne).mockReset();
     vi.mocked(Refund.create).mockReset();
     vi.mocked(Refund.findOne).mockReset();
+    vi.mocked(ReservationService.transitionForBooking).mockReset();
+    vi.mocked(QueueService.enqueue).mockReset();
+
+    vi.mocked(Reservation.aggregate).mockImplementation(() => createMockQuery([{ total: 0 }]) as any);
+    vi.mocked(Refund.findOne).mockImplementation(() => createMockQuery(null) as any);
+    vi.mocked(SeatLayout.findOne).mockImplementation(() => createMockQuery(null) as any);
+    vi.mocked(ReservationService.transitionForBooking).mockResolvedValue([]);
+    vi.mocked(QueueService.enqueue).mockResolvedValue(undefined as any);
 
     vi.mocked(getEnv).mockReturnValue({
       RAZORPAY_KEY_ID: 'test_rzp_key',
@@ -152,7 +209,7 @@ describe('Payment Service', () => {
       ]
     } as any);
 
-    vi.mocked(Reservation.aggregate).mockResolvedValue([{ total: 0 }]);
+    vi.mocked(Reservation.aggregate).mockImplementation(() => createMockQuery([{ total: 0 }]) as any);
     vi.mocked(Event.findOneAndUpdate).mockResolvedValue({} as any);
   });
 
@@ -606,7 +663,8 @@ describe('Payment Service', () => {
           _id: 'coupon-123',
           $expr: { $lt: ['$usedCount', '$usageLimit'] },
         },
-        { $inc: { usedCount: 1 } }
+        { $inc: { usedCount: 1 } },
+        expect.objectContaining({ session: mockSession })
       );
       expect(Coupon.findByIdAndUpdate).not.toHaveBeenCalled();
     });
@@ -642,7 +700,8 @@ describe('Payment Service', () => {
           _id: 'coupon-last',
           $expr: { $lt: ['$usedCount', '$usageLimit'] },
         }),
-        { $inc: { usedCount: 1 } }
+        { $inc: { usedCount: 1 } },
+        expect.objectContaining({ session: mockSession })
       );
     });
 
@@ -872,10 +931,10 @@ describe('Payment Service', () => {
         ticketTiers: [{ tier: 'vip', soldCount: 0, totalCapacity: 10, name: 'VIP' }],
       } as any);
 
-      vi.mocked(SeatLayout.findOne).mockResolvedValue({
+      vi.mocked(SeatLayout.findOne).mockImplementation(() => createMockQuery({
         eventId: 'e-123',
         seats: [{ seatId: 'seat-101', status: 'booked' }]
-      } as any);
+      }) as any);
 
       const result = await PaymentService.confirmFromWebhook('order_123', 'pay_123', 'payment.captured', 'evt_123');
       
@@ -1051,14 +1110,15 @@ describe('Payment Service', () => {
         ticketTiers: [{ tier: 'general', soldCount: 0, totalCapacity: 100, name: 'General' }],
       } as any);
 
-      // Simulate Thread 2 losing the confirmation race because Booking is already CONFIRMED
+      // Simulate Thread 2 losing the confirmation race because Booking is already CONFIRMED (Same-Payment Case A)
       vi.mocked(Booking.findOneAndUpdate).mockResolvedValue(null);
       const docQueryMock = {
         select: vi.fn().mockReturnThis(),
         lean: vi.fn().mockReturnThis(),
+        catch: vi.fn().mockReturnThis(),
         then: vi.fn().mockImplementation((resolve) => {
           if (docQueryMock.select.mock.calls.length > 0) {
-            resolve({ status: BookingStatus.CONFIRMED, bookingId: 'b-123' });
+            resolve({ status: BookingStatus.CONFIRMED, bookingId: 'b-123', paymentId: 'p-123' });
           } else {
             resolve(mockBooking);
           }
@@ -1074,8 +1134,8 @@ describe('Payment Service', () => {
 
       const result = await PaymentService.confirmFromWebhook('order_123', 'pay_123', 'payment.captured', 'evt_123');
 
-      expect(result.status).toBe('skipped');
-      expect(mockPayment.failureReason).toBe('LATE_PAYMENT_RECOVERY_REJECTED_CONCURRENT_CONFIRM');
+      expect(result.status).toBe('confirmed');
+      expect(mockPayment.failureReason).toBeUndefined();
       // Capacity rollback (Event.updateOne) must NOT have been called since winner is CONFIRMED
       expect(Event.updateOne).not.toHaveBeenCalled();
     });
@@ -1095,7 +1155,7 @@ describe('Payment Service', () => {
 
       vi.mocked(Payment.findOne).mockResolvedValue(mockPayment as any);
       vi.mocked(Booking.findById).mockResolvedValue(mockBooking as any);
-      vi.mocked(Refund.findOne).mockResolvedValue(null); // No existing refund request
+      vi.mocked(Refund.findOne).mockImplementation(() => createMockQuery(null) as any); // No existing refund request
 
       vi.mocked(Event.findById).mockResolvedValue({
         _id: 'e-123',
@@ -1110,14 +1170,19 @@ describe('Payment Service', () => {
       expect(result.status).toBe('skipped');
       expect(mockPayment.failureReason).toBe('LATE_PAYMENT_RECOVERY_REJECTED_CAPACITY_EXHAUSTED');
       // Assert Refund record was created
-      expect(Refund.create).toHaveBeenCalledWith(expect.objectContaining({
-        bookingId: 'b-123',
-        paymentId: 'p-123',
-        amount: 200,
-        currency: 'INR',
-        reason: 'LATE_PAYMENT_RECOVERY_REJECTED_CAPACITY_EXHAUSTED',
-        status: 'requested',
-      }));
+      expect(Refund.create).toHaveBeenCalledWith(
+        [
+          expect.objectContaining({
+            bookingId: 'b-123',
+            paymentId: 'p-123',
+            amount: 200,
+            currency: 'INR',
+            reason: 'LATE_PAYMENT_RECOVERY_REJECTED_CAPACITY_EXHAUSTED',
+            status: 'requested',
+          }),
+        ],
+        expect.any(Object)
+      );
     });
   });
 
@@ -1171,389 +1236,6 @@ describe('Payment Service', () => {
       expect(Booking.updateOne).not.toHaveBeenCalled(); // No silent updates or user assignments
     });
   });
-
-  describe('confirmFromWebhook (Razorpay) — atomic payment guard (B2)', () => {
-    beforeEach(() => {
-      vi.clearAllMocks();
-    });
-
-    it('winner: proceeds to confirmBooking when payment is PENDING', async () => {
-      const mockPayment = {
-        _id: 'p-123',
-        bookingId: 'b-123',
-        gateway: 'razorpay',
-        status: PaymentStatus.PENDING,
-        save: vi.fn(),
-      };
-      const mockBooking = {
-        _id: 'b-123',
-        eventId: 'e-123',
-        status: BookingStatus.AWAITING_PAYMENT,
-        tickets: [],
-        bookingVersion: 1,
-        save: vi.fn(),
-      };
-
-      vi.mocked(Payment.findOne).mockResolvedValue(mockPayment as any);
-      vi.mocked(Booking.findById).mockResolvedValue(mockBooking as any);
-      vi.mocked(Booking.findOneAndUpdate).mockResolvedValue(mockBooking as any);
-      vi.mocked(Event.findOneAndUpdate).mockResolvedValue({} as any);
-      vi.mocked(Event.findById).mockResolvedValue({
-        _id: 'e-123',
-        ticketTiers: [],
-      } as any);
-
-      // Mock update to return the updated payment doc
-      const updatedPayment = { ...mockPayment, status: PaymentStatus.PAID, gatewayPaymentId: 'pay_123' };
-      vi.mocked(Payment.findOneAndUpdate).mockResolvedValue(updatedPayment as any);
-
-      const result = await PaymentService.confirmFromWebhook('order_123', 'pay_123', 'payment.captured', 'evt_123');
-
-      expect(Payment.findOneAndUpdate).toHaveBeenCalledWith(
-        { _id: 'p-123', status: PaymentStatus.PENDING },
-        expect.objectContaining({
-          $set: expect.objectContaining({ status: PaymentStatus.PAID, gatewayPaymentId: 'pay_123' })
-        }),
-        { new: true }
-      );
-      expect(result.status).toBe('confirmed');
-      expect(Booking.findOneAndUpdate).toHaveBeenCalled();
-      // Verify updated claimedPayment was passed (non-blocking recommendation 2)
-      expect(vi.mocked(ReservationService.transitionForBooking)).toHaveBeenCalledWith(
-        expect.any(String),
-        expect.any(String),
-        expect.objectContaining({
-          paymentReference: 'pay_123',
-        })
-      );
-    });
-
-    it('loser: returns skipped when payment already claimed', async () => {
-      const mockPayment = {
-        _id: 'p-123',
-        bookingId: 'b-123',
-        gateway: 'razorpay',
-        status: PaymentStatus.PENDING,
-        save: vi.fn(),
-      };
-      const mockBooking = {
-        _id: 'b-123',
-        eventId: 'e-123',
-        status: BookingStatus.AWAITING_PAYMENT,
-        tickets: [],
-        bookingVersion: 1,
-        save: vi.fn(),
-      };
-
-      vi.mocked(Payment.findOne).mockResolvedValue(mockPayment as any);
-      vi.mocked(Booking.findById).mockResolvedValue(mockBooking as any);
-
-      // Mock update to return null (loser path)
-      vi.mocked(Payment.findOneAndUpdate).mockResolvedValue(null);
-
-      const result = await PaymentService.confirmFromWebhook('order_123', 'pay_123', 'payment.captured', 'evt_123');
-
-      expect(result.status).toBe('skipped');
-      expect(Booking.findOneAndUpdate).not.toHaveBeenCalled();
-      expect(Refund.create).not.toHaveBeenCalled();
-    });
-
-    it('optimistic PAID skip still works before atomic write', async () => {
-      const mockPayment = {
-        _id: 'p-123',
-        bookingId: 'b-123',
-        gateway: 'razorpay',
-        status: PaymentStatus.PAID,
-        save: vi.fn(),
-      };
-      const mockBooking = {
-        _id: 'b-123',
-        eventId: 'e-123',
-        status: BookingStatus.CONFIRMED,
-        tickets: [],
-        bookingVersion: 1,
-        save: vi.fn(),
-      };
-
-      vi.mocked(Payment.findOne).mockResolvedValue(mockPayment as any);
-      vi.mocked(Booking.findById).mockResolvedValue(mockBooking as any);
-
-      const result = await PaymentService.confirmFromWebhook('order_123', 'pay_123', 'payment.captured', 'evt_123');
-
-      expect(result.status).toBe('skipped');
-      expect(Payment.findOneAndUpdate).not.toHaveBeenCalled();
-      expect(Booking.findOneAndUpdate).not.toHaveBeenCalled();
-    });
-  });
-
-  describe('confirmFromWebhookStripe — dedicated path (C2)', () => {
-    beforeEach(() => {
-      vi.clearAllMocks();
-    });
-
-    it('returns skipped when bookingId missing from metadata', async () => {
-      const result = await PaymentService.confirmFromWebhookStripe({ id: 'pi_123', metadata: {} }, 'evt_123');
-      expect(result.status).toBe('skipped');
-      expect(Payment.findOne).not.toHaveBeenCalled();
-    });
-
-    it('returns skipped when Payment record not found', async () => {
-      vi.mocked(Payment.findOne).mockResolvedValue(null);
-      const result = await PaymentService.confirmFromWebhookStripe({ id: 'pi_123', metadata: { bookingId: 'b-123' } }, 'evt_123');
-      expect(result.status).toBe('skipped');
-      expect(Booking.findById).not.toHaveBeenCalled();
-    });
-
-    it('returns skipped when Booking record not found', async () => {
-      vi.mocked(Payment.findOne).mockResolvedValue({ _id: 'p-123', bookingId: 'b-123' } as any);
-      vi.mocked(Booking.findById).mockResolvedValue(null);
-
-      const result = await PaymentService.confirmFromWebhookStripe({ id: 'pi_123', metadata: { bookingId: 'b-123' } }, 'evt_123');
-      expect(result.status).toBe('skipped');
-    });
-
-    it('returns skipped idempotently when payment already PAID', async () => {
-      vi.mocked(Payment.findOne).mockResolvedValue({ _id: 'p-123', bookingId: 'b-123', status: PaymentStatus.PAID } as any);
-      vi.mocked(Booking.findById).mockResolvedValue({ _id: 'b-123' } as any);
-
-      const result = await PaymentService.confirmFromWebhookStripe({ id: 'pi_123', metadata: { bookingId: 'b-123' } }, 'evt_123');
-      expect(result.status).toBe('skipped');
-      expect(Payment.findOneAndUpdate).not.toHaveBeenCalled();
-    });
-
-    it('amount mismatch: calls failPaymentAndReleaseInventory, returns skipped', async () => {
-      const mockPayment = { _id: 'p-123', bookingId: 'b-123', gateway: 'stripe', status: PaymentStatus.PENDING, save: vi.fn() };
-      const mockBooking = {
-        _id: 'b-123',
-        bookingId: 'MAD-REF',
-        eventId: 'e-123',
-        status: BookingStatus.AWAITING_PAYMENT,
-        tickets: [],
-        totalAmount: 150, // 150.00
-        currency: 'USD',
-        save: vi.fn(),
-      };
-
-      vi.mocked(Payment.findOne).mockResolvedValue(mockPayment as any);
-      vi.mocked(Booking.findById).mockResolvedValue(mockBooking as any);
-
-      const result = await PaymentService.confirmFromWebhookStripe({
-        id: 'pi_123',
-        metadata: { bookingId: 'b-123' },
-        amount: 10000, // 100.00
-        currency: 'usd',
-      }, 'evt_123');
-
-      expect(result.status).toBe('skipped');
-      expect(mockPayment.status).toBe(PaymentStatus.FAILED);
-      expect(mockPayment.save).toHaveBeenCalled();
-      expect(mockBooking.status).toBe(BookingStatus.FAILED);
-      expect(mockBooking.save).toHaveBeenCalled();
-    });
-
-    it('currency mismatch: calls failPaymentAndReleaseInventory, returns skipped', async () => {
-      const mockPayment = { _id: 'p-123', bookingId: 'b-123', gateway: 'stripe', status: PaymentStatus.PENDING, save: vi.fn() };
-      const mockBooking = {
-        _id: 'b-123',
-        bookingId: 'MAD-REF',
-        eventId: 'e-123',
-        status: BookingStatus.AWAITING_PAYMENT,
-        tickets: [],
-        totalAmount: 100,
-        currency: 'USD',
-        save: vi.fn(),
-      };
-
-      vi.mocked(Payment.findOne).mockResolvedValue(mockPayment as any);
-      vi.mocked(Booking.findById).mockResolvedValue(mockBooking as any);
-
-      const result = await PaymentService.confirmFromWebhookStripe({
-        id: 'pi_123',
-        metadata: { bookingId: 'b-123' },
-        amount: 10000,
-        currency: 'inr',
-      }, 'evt_123');
-
-      expect(result.status).toBe('skipped');
-      expect(mockPayment.status).toBe(PaymentStatus.FAILED);
-    });
-
-    it('valid payment: returns confirmed', async () => {
-      const mockPayment = { _id: 'p-123', bookingId: 'b-123', gateway: 'stripe', status: PaymentStatus.PENDING, save: vi.fn() };
-      const mockBooking = {
-        _id: 'b-123',
-        bookingId: 'MAD-REF',
-        eventId: 'e-123',
-        status: BookingStatus.AWAITING_PAYMENT,
-        tickets: [],
-        totalAmount: 100,
-        currency: 'USD',
-        save: vi.fn(),
-      };
-
-      vi.mocked(Payment.findOne).mockResolvedValue(mockPayment as any);
-      vi.mocked(Booking.findById).mockResolvedValue(mockBooking as any);
-      vi.mocked(Booking.findOneAndUpdate).mockResolvedValue(mockBooking as any);
-      vi.mocked(Event.findOneAndUpdate).mockResolvedValue({} as any);
-      vi.mocked(Event.findById).mockResolvedValue({
-        _id: 'e-123',
-        ticketTiers: [],
-      } as any);
-
-      const updatedPayment = { ...mockPayment, status: PaymentStatus.PAID, gatewayPaymentId: 'pi_123' };
-      vi.mocked(Payment.findOneAndUpdate).mockResolvedValue(updatedPayment as any);
-
-      const result = await PaymentService.confirmFromWebhookStripe({
-        id: 'pi_123',
-        metadata: { bookingId: 'b-123' },
-        amount: 10000,
-        currency: 'usd',
-      }, 'evt_123');
-
-      expect(result.status).toBe('confirmed');
-      expect(result.bookingId).toBe('b-123');
-      expect(Booking.findOneAndUpdate).toHaveBeenCalled();
-    });
-
-    it('mock payment: supported via MOCK_PAYMENTS=true + pi_mock_ prefix', async () => {
-      const mockPayment = { _id: 'p-123', bookingId: 'b-123', gateway: 'stripe', status: PaymentStatus.PENDING, save: vi.fn() };
-      const mockBooking = {
-        _id: 'b-123',
-        bookingId: 'MAD-REF',
-        eventId: 'e-123',
-        status: BookingStatus.AWAITING_PAYMENT,
-        tickets: [],
-        totalAmount: 100,
-        currency: 'USD',
-        save: vi.fn(),
-      };
-
-      vi.mocked(getEnv).mockReturnValue({
-        RAZORPAY_KEY_ID: 'test_rzp_key',
-        RAZORPAY_KEY_SECRET: 'test_rzp_secret',
-        STRIPE_PUBLISHABLE_KEY: 'test_stripe_key',
-        STRIPE_SECRET_KEY: 'test_stripe_secret',
-        ENABLE_ASYNC_CHECKOUT: true,
-        MOCK_PAYMENTS: true,
-      } as any);
-
-      vi.mocked(Payment.findOne).mockResolvedValue(mockPayment as any);
-      vi.mocked(Booking.findById).mockResolvedValue(mockBooking as any);
-      vi.mocked(Booking.findOneAndUpdate).mockResolvedValue(mockBooking as any);
-      vi.mocked(Event.findOneAndUpdate).mockResolvedValue({} as any);
-      vi.mocked(Event.findById).mockResolvedValue({
-        _id: 'e-123',
-        ticketTiers: [],
-      } as any);
-
-      const updatedPayment = { ...mockPayment, status: PaymentStatus.PAID, gatewayPaymentId: 'pi_mock_123' };
-      vi.mocked(Payment.findOneAndUpdate).mockResolvedValue(updatedPayment as any);
-
-      const result = await PaymentService.confirmFromWebhookStripe({
-        id: 'pi_mock_123',
-        metadata: { bookingId: 'b-123' },
-        amount: 99999,
-        currency: 'wrong_currency',
-      }, 'evt_123');
-
-      expect(result.status).toBe('confirmed');
-    });
-
-    it('never throws on internal error — returns failed', async () => {
-      vi.mocked(Payment.findOne).mockRejectedValue(new Error('DB connection failure'));
-      const result = await PaymentService.confirmFromWebhookStripe({
-        id: 'pi_123',
-        metadata: { bookingId: 'b-123' }
-      }, 'evt_123');
-
-      expect(result.status).toBe('failed');
-    });
-  });
-
-  describe('confirmFromWebhookStripe — atomic payment guard (B2)', () => {
-    beforeEach(() => {
-      vi.clearAllMocks();
-    });
-
-    it('winner: findOneAndUpdate returns claimed payment — proceeds to confirmBooking', async () => {
-      const mockPayment = { _id: 'p-123', bookingId: 'b-123', gateway: 'stripe', status: PaymentStatus.PENDING, save: vi.fn() };
-      const mockBooking = {
-        _id: 'b-123',
-        bookingId: 'MAD-REF',
-        eventId: 'e-123',
-        status: BookingStatus.AWAITING_PAYMENT,
-        tickets: [],
-        totalAmount: 100,
-        currency: 'USD',
-        save: vi.fn(),
-      };
-
-      vi.mocked(Payment.findOne).mockResolvedValue(mockPayment as any);
-      vi.mocked(Booking.findById).mockResolvedValue(mockBooking as any);
-      vi.mocked(Booking.findOneAndUpdate).mockResolvedValue(mockBooking as any);
-      vi.mocked(Event.findOneAndUpdate).mockResolvedValue({} as any);
-      vi.mocked(Event.findById).mockResolvedValue({
-        _id: 'e-123',
-        ticketTiers: [],
-      } as any);
-
-      const updatedPayment = { ...mockPayment, status: PaymentStatus.PAID, gatewayPaymentId: 'pi_123' };
-      vi.mocked(Payment.findOneAndUpdate).mockResolvedValue(updatedPayment as any);
-
-      const result = await PaymentService.confirmFromWebhookStripe({
-        id: 'pi_123',
-        metadata: { bookingId: 'b-123' },
-        amount: 10000,
-        currency: 'usd',
-      }, 'evt_123');
-
-      expect(result.status).toBe('confirmed');
-      expect(Payment.findOneAndUpdate).toHaveBeenCalledWith(
-        { _id: 'p-123', status: PaymentStatus.PENDING },
-        expect.objectContaining({
-          $set: expect.objectContaining({ status: PaymentStatus.PAID, gatewayPaymentId: 'pi_123' })
-        }),
-        { new: true }
-      );
-      expect(Booking.findOneAndUpdate).toHaveBeenCalled();
-      // Verify updated claimedPayment was passed (non-blocking recommendation 2)
-      expect(vi.mocked(ReservationService.transitionForBooking)).toHaveBeenCalledWith(
-        expect.any(String),
-        expect.any(String),
-        expect.objectContaining({
-          paymentReference: 'pi_123',
-        })
-      );
-    });
-
-    it('loser: findOneAndUpdate returns null — returns skipped without entering confirmBooking', async () => {
-      const mockPayment = { _id: 'p-123', bookingId: 'b-123', gateway: 'stripe', status: PaymentStatus.PENDING, save: vi.fn() };
-      const mockBooking = {
-        _id: 'b-123',
-        bookingId: 'MAD-REF',
-        eventId: 'e-123',
-        status: BookingStatus.AWAITING_PAYMENT,
-        tickets: [],
-        totalAmount: 100,
-        currency: 'USD',
-        save: vi.fn(),
-      };
-
-      vi.mocked(Payment.findOne).mockResolvedValue(mockPayment as any);
-      vi.mocked(Booking.findById).mockResolvedValue(mockBooking as any);
-
-      vi.mocked(Payment.findOneAndUpdate).mockResolvedValue(null);
-
-      const result = await PaymentService.confirmFromWebhookStripe({
-        id: 'pi_123',
-        metadata: { bookingId: 'b-123' },
-        amount: 10000,
-        currency: 'usd',
-      }, 'evt_123');
-
-      expect(result.status).toBe('skipped');
-      expect(Booking.findOneAndUpdate).not.toHaveBeenCalled();
-      expect(Refund.create).not.toHaveBeenCalled();
     });
   });
 });

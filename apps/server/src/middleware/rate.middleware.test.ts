@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import rateLimit from 'express-rate-limit';
-import { initRateLimiters, authLimiter } from './rate.middleware';
+import { initRateLimiters, authLimiter, bookingLimiter } from './rate.middleware';
+import { isRedisConnected, getRedis } from '../config/redis';
 
 // We mock express-rate-limit so we can capture the options and call handler directly
 vi.mock('express-rate-limit', async () => {
@@ -116,6 +117,92 @@ describe('rateLimiter middleware tests', () => {
       code: 'RATE_LIMIT_EXCEEDED',
       message: 'Too many verification requests',
       retryAfter: 60, // 60000ms windowMs fallback
+    });
+  });
+
+  describe('bookingLimiter specifics', () => {
+    it('should initialize bookingLimiter with a limit of 10 and window of 15 minutes', () => {
+      const bookingCall = vi.mocked(rateLimit).mock.calls.find(call => call[0]?.windowMs === 15 * 60 * 1000);
+      expect(bookingCall).toBeDefined();
+      expect(bookingCall?.[0]).toEqual(
+        expect.objectContaining({
+          limit: 10,
+          windowMs: 15 * 60 * 1000,
+          standardHeaders: true,
+          legacyHeaders: false,
+          passOnStoreError: true,
+        })
+      );
+    });
+
+    it('should call next when booking rate limit is not exceeded', () => {
+      const req = { simulateLimitExceeded: false };
+      const res = {};
+      const next = vi.fn();
+
+      bookingLimiter(req, res, next);
+      expect(next).toHaveBeenCalled();
+    });
+
+    it('should return 429 when booking rate limit is exceeded', () => {
+      const req = { simulateLimitExceeded: true };
+      const res: any = {};
+      res.status = vi.fn().mockReturnValue(res);
+      res.json = vi.fn().mockReturnValue(res);
+      const next = vi.fn();
+
+      bookingLimiter(req, res, next);
+
+      expect(next).not.toHaveBeenCalled();
+      expect(res.status).toHaveBeenCalledWith(429);
+      expect(res.json).toHaveBeenCalledWith({
+        success: false,
+        message: 'Too many requests, please try again later.',
+      });
+    });
+
+    it('should attempt to use RedisStore when Redis is connected', async () => {
+      const mockCall = vi.fn().mockResolvedValue([1, 1716400000]);
+      vi.mocked(isRedisConnected).mockReturnValue(true);
+      vi.mocked(getRedis).mockReturnValue({
+        call: mockCall,
+      } as any);
+
+      const bookingCall = vi.mocked(rateLimit).mock.calls.find(call => call[0]?.windowMs === 15 * 60 * 1000);
+      const store = bookingCall?.[0]?.store;
+      expect(store).toBeDefined();
+
+      await store.increment('test-key-redis');
+      expect(mockCall).toHaveBeenCalled();
+    });
+
+    it('should fall back to MemoryStore when Redis is connected but command fails', async () => {
+      vi.mocked(isRedisConnected).mockReturnValue(true);
+      vi.mocked(getRedis).mockReturnValue({
+        call: vi.fn().mockRejectedValue(new Error('Redis connection lost')),
+      } as any);
+
+      const bookingCall = vi.mocked(rateLimit).mock.calls.find(call => call[0]?.windowMs === 15 * 60 * 1000);
+      const store = bookingCall?.[0]?.store;
+      expect(store).toBeDefined();
+
+      const spyMemoryIncrement = vi.spyOn((store as any).memoryStore, 'increment');
+
+      await store.increment('test-key-fail');
+      expect(spyMemoryIncrement).toHaveBeenCalledWith('test-key-fail');
+    });
+
+    it('should fall back directly to MemoryStore when Redis is not connected', async () => {
+      vi.mocked(isRedisConnected).mockReturnValue(false);
+
+      const bookingCall = vi.mocked(rateLimit).mock.calls.find(call => call[0]?.windowMs === 15 * 60 * 1000);
+      const store = bookingCall?.[0]?.store;
+      expect(store).toBeDefined();
+
+      const spyMemoryIncrement = vi.spyOn((store as any).memoryStore, 'increment');
+
+      await store.increment('test-key-fallback');
+      expect(spyMemoryIncrement).toHaveBeenCalledWith('test-key-fallback');
     });
   });
 });

@@ -2,6 +2,7 @@ import { Schema, model, Document, Types } from 'mongoose';
 
 export interface IWebhookEvent extends Document {
   eventId: string;
+  providerEventId?: string;
   provider: 'stripe' | 'razorpay';
   eventType?: string;
   status: 'received' | 'processing' | 'success' | 'failed' | 'ignored';
@@ -18,6 +19,11 @@ export interface IWebhookEvent extends Document {
 const webhookEventSchema = new Schema<IWebhookEvent>(
   {
     eventId: { type: String, required: true, unique: true, index: true },
+    // The canonical event identifier supplied by the provider in the request
+    // headers (x-razorpay-event-id for Razorpay; event.id for Stripe).
+    // Stored for human-readable audit trail and dashboard cross-referencing.
+    // Not used as the deduplication key — that role belongs to eventId.
+    providerEventId: { type: String, index: true, sparse: true },
     provider: { type: String, enum: ['stripe', 'razorpay'], required: true },
     eventType: { type: String },
     status: {

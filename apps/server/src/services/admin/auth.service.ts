@@ -25,7 +25,8 @@ export const adminAuthService = {
     const token = signAdminToken({
       sub: admin._id.toString(),
       email: admin.email,
-      role: admin.role as AdminRole,
+      role: (admin.role as string).toLowerCase() as AdminRole,
+      version: admin.passwordVersion ?? 0,
     });
 
     return {
@@ -34,7 +35,7 @@ export const adminAuthService = {
         id: admin._id,
         name: admin.name,
         email: admin.email,
-        role: admin.role,
+        role: (admin.role as string).toLowerCase() as AdminRole,
       },
     };
   },
@@ -48,7 +49,7 @@ export const adminAuthService = {
       id: admin._id,
       name: admin.name,
       email: admin.email,
-      role: admin.role,
+      role: (admin.role as string).toLowerCase() as AdminRole,
     };
   },
 };

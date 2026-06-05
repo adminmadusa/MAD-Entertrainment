@@ -14,7 +14,7 @@ import {
     requireAuth,
     optionalAuth,
 } from '../../middleware/auth.middleware';
-import { authLimiter, resendLimiter, generalLimiter } from '../../middleware/rate.middleware';
+import { authLimiter, resendLimiter, generalLimiter, bookingLimiter } from '../../middleware/rate.middleware';
 
 import { validateBody, validateParams } from '../../middleware/validation.middleware';
 import { reserveTicketsSchema, checkoutDetailsSchema, bookingReferenceParamSchema } from '../../validations/payment.validation';
@@ -37,6 +37,7 @@ router.get('/session', generalLimiter as any, getSessionToken);
 router.post(
     '/',
     optionalAuth,
+    bookingLimiter,
     validateBody(reserveTicketsSchema),
     createBooking
 );

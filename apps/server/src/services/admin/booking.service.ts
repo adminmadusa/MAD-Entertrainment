@@ -1,5 +1,7 @@
+import crypto from 'crypto';
 import { BookingStatus, ReservationStatus, SeatStatus, InventoryState, PaymentStatus } from '@mad/shared';
 import mongoose, { Types, ClientSession } from 'mongoose';
+import { createNotificationSafe } from '../notification.service';
 
 import { emitToAdmin, emitToEvent, emitToBooking } from '../../config/socket';
 import { AppError } from '../../middleware/error.middleware';
@@ -8,6 +10,8 @@ import { Event } from '../../models/event.schema';
 import { SeatLayout } from '../../models/seat-layout.schema';
 import { UserModel } from '../../models/user.schema';
 import { Ticket } from '../../models/ticket.schema';
+import { AdminModel } from '../../models/admin.schema';
+import { AuditLogModel } from '../../models/audit-log.schema';
 import { Payment } from '../../models/payment.schema';
 import { logger } from '../../utils/logger';
 import { auditLog } from '../../utils/audit';
@@ -93,6 +97,15 @@ const mapBookingToAdminDTO = async (booking: any, preloadedTickets?: any[]) => {
     sendBestEvents: booking.sendBestEvents ?? false,
   };
 
+  // Fetch associated AuditLog documents matching the booking
+  const auditLogs = await AuditLogModel.find({
+    $or: [
+      { 'metadata.bookingId': booking._id.toString() },
+      { 'metadata.bookingReference': booking.bookingId }
+    ],
+    action: { $in: ['BOOKING_EMAIL_CORRECTED', 'BOOKING_TICKETS_RESENT'] }
+  }).sort({ createdAt: -1 }).lean();
+
   return {
     _id: booking._id.toString(),
     bookingId: booking.bookingId,
@@ -122,6 +135,24 @@ const mapBookingToAdminDTO = async (booking: any, preloadedTickets?: any[]) => {
     ticketsScanned,
     ticketsRemaining,
     attendanceStatus,
+
+    // Audit logs & individual tickets without raw QR payloads
+    auditHistory: auditLogs.map((log: any) => ({
+      action: log.action,
+      actor: log.actor?.id || 'system',
+      status: log.status,
+      timestamp: log.createdAt.toISOString(),
+      metadata: log.metadata || {},
+      description: log.description,
+    })),
+    individualTickets: ticketsList.map((t: any) => ({
+      ticketId: t.ticketId,
+      status: t.status || 'active',
+      createdAt: t.createdAt.toISOString(),
+      replacedAt: t.replacedAt ? t.replacedAt.toISOString() : null,
+      replacedByTicketId: t.replacedByTicketId || null,
+      replacementReason: t.replacementReason || null,
+    })),
   };
 };
 
@@ -201,12 +232,164 @@ export const getBookingById = async (id: string) => {
 /**
  * Atomically cancel a booking, log reasons, transition reservations, and release inventory/seats.
  */
+export interface CancelBookingPostCommitPayload {
+  bookingId: string;
+  bookingRef: string;
+  bookingStatus: string;
+  bookingVersion: number;
+  eventId: string;
+  eventTitle: string;
+  eventVenue: string;
+  eventStartDate: Date | string | undefined;
+  guestEmail: string;
+  guestName: string;
+  bookingCreatedAt: Date | string;
+  reason: string;
+  releasedSeatIds: string[];
+  shouldSendCancellationEmail: boolean;
+}
+
+export const executeCancelBookingSideEffects = async (
+  payload: CancelBookingPostCommitPayload
+) => {
+  const actions = [
+    // 1. Cache Service Deletion
+    async () => {
+      await CacheService.delPattern('events:*');
+    },
+    // 2. Real-time updates via WebSockets (Seat unlocked)
+    async () => {
+      if (payload.releasedSeatIds && payload.releasedSeatIds.length > 0) {
+        emitToEvent(payload.eventId, 'seat:unlocked', { seatIds: payload.releasedSeatIds }, payload.bookingRef);
+      }
+    },
+    // 3. Emit update to Booking socket
+    async () => {
+      emitToBooking(
+        payload.bookingId,
+        'booking:updated',
+        { bookingId: payload.bookingId, status: payload.bookingStatus, bookingVersion: payload.bookingVersion },
+        payload.bookingRef
+      );
+    },
+    // 4. Emit update to Admin socket
+    async () => {
+      emitToAdmin(
+        'bookings',
+        'booking:updated',
+        { bookingId: payload.bookingId, status: payload.bookingStatus, bookingVersion: payload.bookingVersion },
+        payload.bookingRef
+      );
+    },
+    // 5. Audit Logging
+    async () => {
+      auditLog({
+        action: payload.bookingStatus === BookingStatus.REFUNDED ? 'BOOKING_REFUNDED' : 'BOOKING_CANCELLED',
+        actor: { type: 'admin', id: 'system' },
+        status: 'success',
+        metadata: {
+          bookingId: payload.bookingId,
+          bookingReference: payload.bookingRef,
+          eventId: payload.eventId,
+          reason: payload.reason,
+          releasedSeatIds: payload.releasedSeatIds,
+        },
+        description: payload.bookingStatus === BookingStatus.REFUNDED
+          ? `Refunded booking ${payload.bookingRef} and released associated capacity/seats`
+          : `Cancelled booking ${payload.bookingRef} and released associated capacity/seats`,
+      });
+    },
+    // 6. Asynchronous, exception-safe Event Cancellation Email Trigger
+    async () => {
+      if (payload.shouldSendCancellationEmail) {
+        const existingNotification = await Notification.findOne({
+          type: NotificationType.EVENT_CANCELLED,
+          bookingId: payload.bookingId
+        });
+
+        if (!existingNotification) {
+          const formattedDate = new Date(
+            payload.eventStartDate || payload.bookingCreatedAt
+          ).toLocaleDateString('en-IN', {
+            weekday: 'long',
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric',
+          });
+
+          const emailBody = await eventCancellationHtml({
+            customerName: payload.guestName,
+            eventTitle: payload.eventTitle || 'MAD Event',
+            eventDate: formattedDate,
+            venueName: payload.eventVenue || 'MAD Venue',
+            bookingReference: payload.bookingRef,
+          });
+
+          const jobId = `cancellation-${payload.bookingRef}-${Date.now()}`;
+
+          // Post-commit ordering constraint: createNotificationSafe must succeed before enqueuing email job.
+          // If it fails, the error is thrown, caught by the wrapper, and QueueService.enqueue is skipped.
+          await createNotificationSafe([{
+            jobId,
+            status: 'queued',
+            queuedAt: new Date(),
+            type: NotificationType.EVENT_CANCELLED,
+            channel: 'email',
+            recipient: payload.guestEmail,
+            subject: `Event Cancelled: ${payload.eventTitle || 'MAD Event'}`,
+            isSent: false,
+            retryCount: 0,
+            bookingId: payload.bookingId,
+            eventId: payload.eventId
+          }]);
+
+          await QueueService.enqueue(
+            getQueueName('notification-queue'),
+            'email-dispatch',
+            {
+              to: payload.guestEmail,
+              subject: `Event Cancelled: ${payload.eventTitle || 'MAD Event'}`,
+              html: emailBody,
+              notificationType: NotificationType.EVENT_CANCELLED,
+              bookingId: payload.bookingId,
+              eventId: payload.eventId,
+            },
+            jobId
+          );
+
+          logger.info({
+            emailType: 'EVENT_CANCELLED',
+            recipient: payload.guestEmail,
+            bookingId: payload.bookingId,
+            eventId: payload.eventId,
+            timestamp: new Date().toISOString(),
+            success: true
+          }, 'Event cancellation email queued successfully.');
+        } else {
+          logger.info({ bookingId: payload.bookingId }, 'Event cancellation email already queued or sent; skipping duplicate.');
+        }
+      }
+    }
+  ];
+
+  for (const action of actions) {
+    try {
+      await action();
+    } catch (err: any) {
+      logger.error({ err }, 'Error executing booking cancel post-commit side effect');
+    }
+  }
+};
+
+/**
+ * Atomically cancel a booking, log reasons, transition reservations, and release inventory/seats.
+ */
 export const cancelBooking = async (
   id: string,
   reason?: string,
   externalSession?: ClientSession,
   targetStatus: BookingStatus = BookingStatus.CANCELLED
-) => {
+): Promise<any> => {
   const execute = async (session: ClientSession | undefined) => {
     const booking = await Booking.findById(id).session(session || null);
     if (!booking) {
@@ -323,142 +506,84 @@ export const cancelBooking = async (
       }
     }
 
-    await CacheService.delPattern('events:*');
+    const postCommitPayload: CancelBookingPostCommitPayload = {
+      bookingId: booking._id.toString(),
+      bookingRef: booking.bookingId,
+      bookingStatus: booking.status,
+      bookingVersion: booking.bookingVersion,
+      eventId: event?._id?.toString() || booking.eventId.toString(),
+      eventTitle: event?.title || 'MAD Event',
+      eventVenue: event?.venue || 'MAD Venue',
+      eventStartDate: event?.startDate,
+      guestEmail: booking.guestEmail,
+      guestName: booking.guestName,
+      bookingCreatedAt: booking.createdAt,
+      reason: booking.cancellationReason || '',
+      releasedSeatIds,
+      shouldSendCancellationEmail: targetStatus === BookingStatus.CANCELLED && !!booking.guestEmail,
+    };
 
-    // 5. Emit real-time updates via WebSockets
-    if (event && releasedSeatIds.length > 0) {
-      try {
-        emitToEvent(event._id.toString(), 'seat:unlocked', { seatIds: releasedSeatIds }, booking.bookingId);
-      } catch (err) {
-        logger.debug({ err, eventId: event._id }, 'Seat unlock emit skipped');
-      }
-    }
-
-    try {
-      emitToBooking(
-        booking._id.toString(),
-        'booking:updated',
-        { bookingId: booking._id.toString(), status: booking.status, bookingVersion: booking.bookingVersion },
-        booking.bookingId
-      );
-    } catch (err) {
-      logger.debug({ err, bookingId: booking._id }, 'Booking update emit skipped');
-    }
-
-    try {
-      emitToAdmin(
-        'bookings',
-        'booking:updated',
-        { bookingId: booking._id.toString(), status: booking.status, bookingVersion: booking.bookingVersion },
-        booking.bookingId
-      );
-    } catch (err) {
-      logger.debug({ err, bookingId: booking._id }, 'Admin booking update emit skipped');
-    }
-
-    auditLog({
-      action: targetStatus === BookingStatus.REFUNDED ? 'BOOKING_REFUNDED' : 'BOOKING_CANCELLED',
-      actor: { type: 'admin', id: 'system' },
-      status: 'success',
-      metadata: {
-        bookingId: booking._id.toString(),
-        bookingReference: booking.bookingId,
-        eventId: event?._id.toString(),
-        reason: reason || (targetStatus === BookingStatus.REFUNDED ? 'Admin Refund Processed' : 'Admin cancelled'),
-        releasedSeatIds,
-      },
-      description: targetStatus === BookingStatus.REFUNDED
-        ? `Refunded booking ${booking.bookingId} and released associated capacity/seats`
-        : `Cancelled booking ${booking.bookingId} and released associated capacity/seats`,
-    });
-
-    // Asynchronous, exception-safe Event Cancellation Email Trigger
-    if (targetStatus === BookingStatus.CANCELLED && booking.guestEmail) {
-      try {
-        const existingNotification = await Notification.findOne({
-          type: NotificationType.EVENT_CANCELLED,
-          bookingId: booking._id
-        }).session(session || null);
-
-        if (!existingNotification) {
-          const formattedDate = new Date(
-            event?.startDate || booking.createdAt
-          ).toLocaleDateString('en-IN', {
-            weekday: 'long',
-            day: 'numeric',
-            month: 'long',
-            year: 'numeric',
-          });
-
-          const emailBody = await eventCancellationHtml({
-            customerName: booking.guestName,
-            eventTitle: event?.title || 'MAD Event',
-            eventDate: formattedDate,
-            venueName: event?.venue || 'MAD Venue',
-            bookingReference: booking.bookingId,
-          });
-
-          const jobId = `cancellation-${booking.bookingId}-${Date.now()}`;
-          
-          await Notification.create([{
-            jobId,
-            status: 'queued',
-            queuedAt: new Date(),
-            type: NotificationType.EVENT_CANCELLED,
-            channel: 'email',
-            recipient: booking.guestEmail,
-            subject: `Event Cancelled: ${event?.title || 'MAD Event'}`,
-            isSent: false,
-            retryCount: 0,
-            bookingId: booking._id,
-            eventId: event?._id
-          }], { session });
-
-          await QueueService.enqueue(
-            getQueueName('notification-queue'),
-            'email-dispatch',
-            {
-              to: booking.guestEmail,
-              subject: `Event Cancelled: ${event?.title || 'MAD Event'}`,
-              html: emailBody,
-              notificationType: NotificationType.EVENT_CANCELLED,
-              bookingId: booking._id.toString(),
-              eventId: booking.eventId.toString(),
-            },
-            jobId
-          );
-
-          logger.info({
-            emailType: 'EVENT_CANCELLED',
-            recipient: booking.guestEmail,
-            bookingId: booking._id.toString(),
-            eventId: booking.eventId.toString(),
-            timestamp: new Date().toISOString(),
-            success: true
-          }, 'Event cancellation email queued successfully.');
-        } else {
-          logger.info({ bookingId: booking._id }, 'Event cancellation email already queued or sent; skipping duplicate.');
-        }
-      } catch (err) {
-        logger.error({
-          err,
-          emailType: 'EVENT_CANCELLED',
-          recipient: booking.guestEmail,
-          bookingId: booking._id.toString(),
-          eventId: booking.eventId.toString(),
-          timestamp: new Date().toISOString(),
-          success: false
-        }, 'Failed to queue event cancellation email gracefully.');
-      }
-    }
-
-    return booking;
+    return { booking, postCommitPayload };
   };
 
   if (externalSession) {
     return execute(externalSession);
   }
-  return runInTransaction(execute);
+
+  const result = await runInTransaction(execute);
+  if (result) {
+    await executeCancelBookingSideEffects(result.postCommitPayload);
+    return result.booking;
+  }
+  return null;
+};
+
+export const executeCorrectEmailSideEffects = async (payload: any) => {
+  const actions = [
+    async () => {
+      emitToBooking(
+        payload.bookingId,
+        'booking:updated',
+        { bookingId: payload.bookingId, status: payload.bookingStatus, bookingVersion: payload.bookingVersion },
+        payload.bookingRef
+      );
+    },
+    async () => {
+      emitToAdmin(
+        'bookings',
+        'booking:updated',
+        { bookingId: payload.bookingId, status: payload.bookingStatus, bookingVersion: payload.bookingVersion },
+        payload.bookingRef
+      );
+    },
+    async () => {
+      auditLog({
+        action: 'BOOKING_EMAIL_CORRECTED',
+        actor: { type: 'admin', id: payload.adminId },
+        status: 'success',
+        metadata: {
+          bookingId: payload.bookingId,
+          bookingReference: payload.bookingRef,
+          oldEmail: payload.oldEmail,
+          newEmail: payload.newEmail,
+          reason: payload.reason,
+          proactivelyLinked: payload.proactivelyLinked,
+          adminDetails: payload.adminDetails,
+        },
+        description: `Corrected booking ${payload.bookingRef} email from ${payload.oldEmail} to ${payload.newEmail} by ${payload.adminDetails}${
+          payload.proactivelyLinked ? ' (proactively linked user account)' : ''
+        }`,
+      });
+    }
+  ];
+
+  for (const action of actions) {
+    try {
+      await action();
+    } catch (err: any) {
+      logger.error({ err }, 'Error executing booking email correction post-commit side effect');
+    }
+  }
 };
 
 /**
@@ -470,8 +595,8 @@ export const correctBookingEmail = async (
   newEmail: string,
   reason: string,
   adminId: string
-) => {
-  return runInTransaction(async (session) => {
+): Promise<any> => {
+  const result = await runInTransaction(async (session) => {
     const booking = await Booking.findById(id).session(session || null);
     if (!booking) {
       throw AppError.notFound('Booking not found');
@@ -497,48 +622,75 @@ export const correctBookingEmail = async (
 
     await booking.save({ session });
 
-    // Emit real-time updates via WebSockets
-    try {
-      emitToBooking(
-        booking._id.toString(),
-        'booking:updated',
-        { bookingId: booking._id.toString(), status: booking.status, bookingVersion: booking.bookingVersion },
-        booking.bookingId
-      );
-    } catch (err) {
-      logger.debug({ err, bookingId: booking._id }, 'Booking update emit skipped');
+    // Void and replace active tickets
+    const activeTickets = await Ticket.find({ bookingId: booking._id, status: 'active' }).session(session || null);
+
+    for (const oldTicket of activeTickets) {
+      const baseMatch = oldTicket.ticketId.match(/^(TKT-[A-Z0-9]+-\d+)(?:-R\d+)?$/);
+      const baseTicketId = baseMatch ? baseMatch[1] : oldTicket.ticketId;
+
+      const count = await Ticket.countDocuments({
+        ticketId: { $regex: new RegExp(`^${baseTicketId}(?:-R\\d+)?$`) }
+      }).session(session || null);
+
+      let rev = count;
+      let newTicketId = `${baseTicketId}-R${rev}`;
+      while (await Ticket.exists({ ticketId: newTicketId }).session(session || null)) {
+        rev++;
+        newTicketId = `${baseTicketId}-R${rev}`;
+      }
+
+      // Mark old ticket as replaced
+      oldTicket.status = 'replaced';
+      oldTicket.replacedByTicketId = newTicketId;
+      oldTicket.replacedAt = new Date();
+      oldTicket.replacementReason = 'EMAIL_CORRECTION';
+      await oldTicket.save({ session: session || undefined });
+
+      // Create new active ticket
+      const newTicket = new Ticket({
+        ticketId: newTicketId,
+        bookingId: booking._id,
+        eventId: booking.eventId,
+        tierName: oldTicket.tierName,
+        tier: oldTicket.tier,
+        admits: oldTicket.admits,
+        seatId: oldTicket.seatId,
+        row: oldTicket.row,
+        seatNumber: oldTicket.seatNumber,
+        section: oldTicket.section,
+        qrCode: newTicketId,
+        qrCodeImage: `/api/public/tickets/${newTicketId}/qr`,
+        status: 'active',
+      });
+      await newTicket.save({ session: session || undefined });
     }
 
-    try {
-      emitToAdmin(
-        'bookings',
-        'booking:updated',
-        { bookingId: booking._id.toString(), status: booking.status, bookingVersion: booking.bookingVersion },
-        booking.bookingId
-      );
-    } catch (err) {
-      logger.debug({ err, bookingId: booking._id }, 'Admin booking update emit skipped');
-    }
+    // Fetch executing admin's email and name for descriptive log representation
+    const admin = await AdminModel.findById(adminId).session(session || null);
+    const adminDetails = admin ? `${admin.name} (${admin.email})` : adminId;
 
-    auditLog({
-      action: 'BOOKING_EMAIL_CORRECTED',
-      actor: { type: 'admin', id: adminId },
-      status: 'success',
-      metadata: {
-        bookingId: booking._id.toString(),
-        bookingReference: booking.bookingId,
-        oldEmail,
-        newEmail: normalizedEmail,
-        reason,
-        proactivelyLinked,
-      },
-      description: `Corrected booking ${booking.bookingId} email from ${oldEmail} to ${normalizedEmail}${
-        proactivelyLinked ? ' (proactively linked user account)' : ''
-      }`,
-    });
+    const postCommitPayload = {
+      bookingId: booking._id.toString(),
+      bookingRef: booking.bookingId,
+      bookingStatus: booking.status,
+      bookingVersion: booking.bookingVersion,
+      adminId,
+      oldEmail,
+      newEmail: normalizedEmail,
+      reason,
+      proactivelyLinked,
+      adminDetails,
+    };
 
-    return booking;
+    return { booking, postCommitPayload };
   });
+
+  if (result) {
+    await executeCorrectEmailSideEffects(result.postCommitPayload);
+    return result.booking;
+  }
+  return null;
 };
 
 /**
@@ -556,6 +708,8 @@ export const resendBookingTickets = async (id: string, adminId: string) => {
 
   const eventIdStr = (booking.eventId as any)._id?.toString() || booking.eventId.toString();
 
+  const resendId = crypto.randomUUID();
+
   await QueueService.enqueue(
     getQueueName('pdf-queue'),
     'pdf:generate',
@@ -564,8 +718,10 @@ export const resendBookingTickets = async (id: string, adminId: string) => {
       eventId: eventIdStr,
       recipientEmail: booking.guestEmail,
       guestName: booking.guestName,
+      isResend: true,
+      resendId,
     },
-    `pdf:generate:${booking._id}:admin-resend:${Date.now()}`
+    `pdf:generate:${booking._id}:admin-resend:${resendId}`
   );
 
   auditLog({
