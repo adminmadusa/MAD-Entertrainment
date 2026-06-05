@@ -10,7 +10,8 @@
     "start": "node dist/apps/server/src/server.js",
     "type-check": "tsc -p tsconfig.json --noEmit",
     "lint": "echo 'No linting configured'",
-    "clean": "rm -rf dist .turbo tsconfig.tsbuildinfo"
+    "clean": "rm -rf dist .turbo tsconfig.tsbuildinfo",
+    "test": "vitest run --root ../.. --config vitest.config.ts"
   },
   "dependencies": {
     "@asteasolutions/zod-to-openapi": "^7.3.4",
