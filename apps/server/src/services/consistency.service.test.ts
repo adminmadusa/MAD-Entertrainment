@@ -125,6 +125,8 @@ vi.mock('../models/refund.schema', () => ({
     create: vi.fn(),
     findById: vi.fn(),
     find: vi.fn(() => mockCreateMockQuery([])),
+    countDocuments: vi.fn(() => mockCreateMockQuery(0)),
+    updateOne: vi.fn(() => mockCreateMockQuery({ modifiedCount: 1 })),
   },
 }));
 
@@ -883,6 +885,233 @@ describe('ConsistencyService - Paid Payment Recovery Watchdog', () => {
     expect(mockPayment.failureReason).toBe('BOOKING_UNRECOVERABLE');
     expect(mockPayment.save).toHaveBeenCalled();
     expect(PaymentService.triggerRefundRequest).toHaveBeenCalledWith(mockBooking, mockPayment, 'BOOKING_UNRECOVERABLE');
+  });
+});
+
+describe('ConsistencyService - Stuck Processing, Notifications, Optimistic Locking, and Stale Seats', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('should reset stuck processing refunds back to requested status', async () => {
+    const mockRefund = {
+      _id: 'ref-stuck-1',
+      paymentId: 'pay-1',
+      bookingId: 'book-1',
+      amount: 100,
+    };
+
+    vi.mocked(Refund.find).mockReturnValue(mockCreateMockQuery([mockRefund]) as any);
+    vi.mocked(Refund.updateOne).mockResolvedValue({ modifiedCount: 1 } as any);
+
+    const resetCount = await (ConsistencyService as any).repairStuckProcessingRefunds();
+    expect(resetCount).toBe(1);
+    expect(Refund.find).toHaveBeenCalledWith(
+      expect.objectContaining({
+        status: 'processing',
+        updatedAt: { $lte: expect.any(Date) }
+      })
+    );
+    expect(Refund.updateOne).toHaveBeenCalledWith(
+      { _id: 'ref-stuck-1', status: 'processing' },
+      { $set: { status: 'requested' } }
+    );
+  });
+
+  it('should recover orphaned completed refund notifications', async () => {
+    const mockRefund = {
+      _id: 'ref-orph-1',
+      bookingId: 'book-orph-1',
+      paymentId: 'pay-orph-1',
+      amount: 150,
+      processedAt: new Date(),
+    };
+
+    vi.mocked(Refund.find).mockImplementation((filter: any) => {
+      if (filter.status === 'completed') {
+        return mockCreateMockQuery([mockRefund]);
+      }
+      return mockCreateMockQuery([]);
+    });
+
+    vi.mocked(Notification.exists).mockResolvedValue(false as any);
+    
+    const mockBooking = {
+      _id: 'book-orph-1',
+      bookingId: 'MAD-REF-1',
+      guestEmail: 'guest@example.com',
+      guestName: 'Guest User',
+      totalAmount: 300,
+      eventId: 'event-1',
+      currency: 'INR',
+    };
+    vi.mocked(Booking.findById).mockReturnValue({
+      populate: vi.fn().mockResolvedValue(mockBooking)
+    } as any);
+
+    const mockPayment = {
+      _id: 'pay-orph-1',
+      amount: 300,
+    };
+    (Payment as any).findById = vi.fn().mockResolvedValue(mockPayment);
+
+    const mockEvent = {
+      _id: 'event-1',
+      title: 'MAD Concert',
+    };
+    vi.mocked(Event.findById).mockResolvedValue(mockEvent as any);
+
+    const count = await (ConsistencyService as any).repairOrphanedRefundNotifications();
+    expect(count).toBe(1);
+    expect(Notification.exists).toHaveBeenCalledWith({
+      bookingId: 'book-orph-1',
+      jobId: { $regex: '^refund-ref-orph-1' }
+    });
+    expect(QueueService.enqueue).toHaveBeenCalledWith(
+      'notification-queue-test',
+      'email-dispatch',
+      expect.objectContaining({
+        to: 'guest@example.com',
+        notificationType: NotificationType.PARTIAL_REFUND,
+      }),
+      'refund-ref-orph-1-retry'
+    );
+  });
+
+  it('should recover orphaned cancellation notifications', async () => {
+    const mockBooking = {
+      _id: 'book-cancel-1',
+      bookingId: 'MAD-CANCEL-1',
+      guestEmail: 'guest@example.com',
+      guestName: 'Guest User',
+      eventId: 'event-1',
+      status: BookingStatus.CANCELLED,
+      cancelledAt: new Date(),
+    };
+
+    vi.mocked(Booking.find).mockReturnValue(mockCreateMockQuery([mockBooking]) as any);
+    vi.mocked(Notification.exists).mockResolvedValue(false as any);
+
+    const mockEvent = {
+      _id: 'event-1',
+      title: 'MAD Concert',
+      startDate: new Date(),
+      venue: 'Arena 1',
+    };
+    vi.mocked(Event.findById).mockResolvedValue(mockEvent as any);
+
+    const count = await (ConsistencyService as any).repairOrphanedCancellationNotifications();
+    expect(count).toBe(1);
+    expect(Notification.exists).toHaveBeenCalledWith({
+      bookingId: 'book-cancel-1',
+      type: NotificationType.EVENT_CANCELLED,
+    });
+    expect(QueueService.enqueue).toHaveBeenCalledWith(
+      'notification-queue-test',
+      'email-dispatch',
+      expect.objectContaining({
+        to: 'guest@example.com',
+        notificationType: NotificationType.EVENT_CANCELLED,
+      }),
+      'cancellation-MAD-CANCEL-1-retry'
+    );
+  });
+
+  it('should execute event inventory repair and handle optimistic lock conflicts', async () => {
+    // 1. Setup mock Event that needs repair
+    const mockEvent = {
+      _id: 'event-inv-1',
+      soldCount: 5,
+      reservedCount: 2,
+      ticketTiers: [{ tier: 'general', soldCount: 3 }],
+      eventVersion: 1,
+    };
+
+    // Aggregate calls inside repairEventInventoryMismatches: confirmedBookings & activeReservations
+    vi.mocked(Event.find).mockReturnValue(mockCreateMockQuery([mockEvent]) as any);
+    (Booking as any).aggregate = vi.fn().mockResolvedValue([{ total: 10 }]);
+    (Reservation as any).aggregate = vi.fn().mockResolvedValue([{ total: 5 }]);
+    vi.mocked(Booking.find).mockReturnValue(mockCreateMockQuery([{ tickets: [{ tier: 'general', quantity: 10 }] }]) as any);
+
+    // Mock other watchdog queries to return empty arrays to avoid running other checks
+    vi.mocked(Reservation.find).mockReturnValue(mockCreateMockQuery([]));
+    vi.mocked(Refund.find).mockReturnValue(mockCreateMockQuery([]));
+    vi.mocked(Booking.find).mockImplementation((filter: any) => {
+      // For general bookings query inside other watchdogs
+      if (filter && filter.status && filter.status.$in) {
+        return mockCreateMockQuery([]);
+      }
+      return mockCreateMockQuery([{ tickets: [{ tier: 'general', quantity: 10 }] }]);
+    });
+
+    // Mock count / stats queries for generateReport
+    vi.mocked(Reservation.countDocuments).mockResolvedValue(0);
+    vi.mocked(Booking.countDocuments).mockResolvedValue(0);
+    vi.mocked(Payment.countDocuments).mockResolvedValue(0);
+    vi.mocked(Notification.countDocuments).mockResolvedValue(0);
+
+    // Dynamic mock for Event.updateOne
+    const mockEventUpdateOne = vi.fn()
+      .mockResolvedValueOnce({ modifiedCount: 0 }) // Conflict first
+      .mockResolvedValueOnce({ modifiedCount: 1 }); // Success second
+
+    (Event as any).updateOne = mockEventUpdateOne;
+
+    // First cycle run: conflict scenario
+    const report1 = await ConsistencyService.runRepairCycle();
+    expect(report1.repairs?.eventInventoryMismatchesRepaired).toBe(0);
+    expect(mockEventUpdateOne).toHaveBeenCalledWith(
+      { _id: 'event-inv-1', eventVersion: 1 },
+      expect.objectContaining({
+        $set: expect.objectContaining({ soldCount: 10, reservedCount: 5 }),
+        $inc: { eventVersion: 1 }
+      })
+    );
+
+    // Second cycle run: success scenario
+    const report2 = await ConsistencyService.runRepairCycle();
+    expect(report2.repairs?.eventInventoryMismatchesRepaired).toBe(1);
+  });
+
+  it('should reclaim stale seat locks without the 24-hour window constraint', async () => {
+    const mockReservation = {
+      _id: 'res-stale-1',
+      eventId: 'event-1',
+      seatId: 'seat-A1',
+      reservationId: 'res-abc',
+    };
+
+    vi.mocked(Reservation.find).mockReturnValue(mockCreateMockQuery([mockReservation]) as any);
+    vi.mocked(SeatLayout.updateOne).mockResolvedValue({ modifiedCount: 1 } as any);
+
+    // Mock other watchdog queries to return empty/0
+    vi.mocked(Event.find).mockReturnValue(mockCreateMockQuery([]));
+    vi.mocked(Refund.find).mockReturnValue(mockCreateMockQuery([]));
+    vi.mocked(Booking.find).mockReturnValue(mockCreateMockQuery([]));
+    vi.mocked(Reservation.countDocuments).mockResolvedValue(0);
+    vi.mocked(Booking.countDocuments).mockResolvedValue(0);
+    vi.mocked(Payment.countDocuments).mockResolvedValue(0);
+    vi.mocked(Notification.countDocuments).mockResolvedValue(0);
+
+    const report = await ConsistencyService.runRepairCycle();
+    expect(report.repairs?.staleSeatReservations).toBe(1);
+    expect(Reservation.find).toHaveBeenCalledWith({
+      status: { $in: [ReservationStatus.EXPIRED, ReservationStatus.FAILED, ReservationStatus.CANCELLED] },
+      seatId: { $exists: true },
+    });
+    expect(SeatLayout.updateOne).toHaveBeenCalledWith(
+      { eventId: 'event-1' },
+      expect.objectContaining({
+        $set: { 'seats.$[seat].status': SeatStatus.AVAILABLE },
+      }),
+      expect.objectContaining({
+        arrayFilters: [{
+          'seat.seatId': 'seat-A1',
+          'seat.status': SeatStatus.LOCKED,
+          'seat.reservationId': 'res-abc',
+        }]
+      })
+    );
   });
 });
 

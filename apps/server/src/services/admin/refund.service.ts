@@ -10,6 +10,9 @@ import { QueueService } from '../queue.service';
 import { getQueueName } from '../../config/queue.config';
 import { logger } from '../../utils/logger';
 import { fullRefundHtml, partialRefundHtml } from '../../lib/email';
+import { getStripe } from '../../config/stripe';
+import { getRazorpay } from '../../config/razorpay';
+import { auditLog } from '../../utils/audit';
 
 import crypto from 'crypto';
 
@@ -146,114 +149,214 @@ export const processRefund = async (
   id: string,
   action: 'approve' | 'reject',
   adminNotes?: string,
-  gatewayRefundId?: string
+  gatewayRefundId?: string,
+  manualOverride?: boolean,
+  overrideReason?: string
 ): Promise<IRefund | null> => {
-  const result = await runInTransaction(async (session) => {
-    // 1. Transaction-safe atomic load and claim of the requested Refund document
-    const refund = await Refund.findOneAndUpdate(
-      { _id: id, status: 'requested' },
-      { $set: { status: 'processing' } },
-      { new: true, session }
-    );
-    if (!refund) {
-      throw AppError.badRequest('Refund request not found or has already been processed');
-    }
+  // 1. Transaction-safe atomic load and claim of the requested Refund document
+  const refund = await Refund.findOneAndUpdate(
+    { _id: id, status: 'requested' },
+    { $set: { status: 'processing' } },
+    { new: true }
+  );
+  if (!refund) {
+    throw AppError.badRequest('Refund request not found or has already been processed');
+  }
 
-    if (action === 'reject') {
-      refund.status = 'failed';
-      refund.adminNotes = adminNotes;
-      refund.processedAt = new Date();
-      await refund.save({ session });
-      return { updated: refund, cancelPostCommitPayload: null };
-    }
+  let result = null;
 
-    let totalRefundedSoFar = 0;
-    let payment = null;
-    let cancelPostCommitPayload = null;
-
-    // 2. Transaction-safe verification of the Payment record
-    payment = await Payment.findById(refund.paymentId).session(session);
+  try {
+    // 2. Fetch Payment and Booking records (outside transaction to avoid long locks during gateway API call)
+    const payment = await Payment.findById(refund.paymentId).session(undefined as any);
     if (!payment) {
       throw AppError.notFound('Payment record not found');
     }
-
-    // 3. Validation: Payment status must not be fully refunded already
-    if (payment.status === PaymentStatus.REFUNDED) {
-      throw AppError.badRequest('Payment has already been fully refunded');
-    }
-    if (payment.status !== PaymentStatus.PAID && payment.status !== PaymentStatus.PARTIALLY_REFUNDED) {
-      throw AppError.badRequest('Only successful paid or partially refunded payments can be refunded');
-    }
-
-    // 4. Validation: Booking status must be CONFIRMED or CANCELLED
-    const booking = await Booking.findById(refund.bookingId).session(session);
+    const booking = await Booking.findById(refund.bookingId).session(undefined as any);
     if (!booking) {
       throw AppError.notFound('Booking record not found');
     }
-    if (booking.status !== BookingStatus.CONFIRMED && booking.status !== BookingStatus.CANCELLED) {
-      throw AppError.badRequest('Only confirmed or cancelled bookings can be refunded');
+
+    const isAutoRecovery = refund.origin === 'auto_recovery';
+
+    // 3. Validation path differentiation (B2)
+    if (isAutoRecovery) {
+      if (!refund.recoveryReason) {
+        throw AppError.badRequest('Auto-recovery refund requires a recovery reason');
+      }
+      if (
+        payment.status !== PaymentStatus.PAID &&
+        payment.status !== PaymentStatus.PARTIALLY_REFUNDED &&
+        payment.status !== PaymentStatus.FAILED
+      ) {
+        throw AppError.badRequest('Invalid payment status for auto-recovery refund');
+      }
+      if (
+        booking.status !== BookingStatus.CONFIRMED &&
+        booking.status !== BookingStatus.CANCELLED &&
+        booking.status !== BookingStatus.FAILED &&
+        booking.status !== BookingStatus.EXPIRED
+      ) {
+        throw AppError.badRequest('Invalid booking status for auto-recovery refund');
+      }
+    } else {
+      if (payment.status === PaymentStatus.REFUNDED) {
+        throw AppError.badRequest('Payment has already been fully refunded');
+      }
+      if (payment.status !== PaymentStatus.PAID && payment.status !== PaymentStatus.PARTIALLY_REFUNDED) {
+        throw AppError.badRequest('Only successful paid or partially refunded payments can be refunded');
+      }
+      if (booking.status !== BookingStatus.CONFIRMED && booking.status !== BookingStatus.CANCELLED) {
+        throw AppError.badRequest('Only confirmed or cancelled bookings can be refunded');
+      }
     }
 
-    // 5. Validation: Cumulative processed refunds cap check inside the session transaction
+    // 4. Cumulative processed refunds cap check
     const completedRefunds = await Refund.find({
       paymentId: payment._id,
       status: 'completed',
       _id: { $ne: refund._id }
-    }).session(session);
-    totalRefundedSoFar = completedRefunds.reduce((sum, r) => sum + r.amount, 0);
+    }).session(undefined as any);
+    const totalRefundedSoFar = completedRefunds.reduce((sum, r) => sum + r.amount, 0);
 
     if (totalRefundedSoFar + refund.amount > payment.amount) {
       throw AppError.badRequest(`Refund amount exceeds remaining captured balance (Paid: ₹${payment.amount}, Refunded: ₹${totalRefundedSoFar}, Attempted: ₹${refund.amount})`);
     }
 
-    // 6. Update the Refund request status atomically to completed
-    refund.status = 'completed';
-    refund.adminNotes = adminNotes;
-    if (gatewayRefundId) {
-      refund.gatewayRefundId = gatewayRefundId;
-    }
-    refund.processedAt = new Date();
-    await refund.save({ session });
+    // 5. Action Reject Path
+    if (action === 'reject') {
+      const rejectResult = await runInTransaction(async (session) => {
+        refund.status = 'failed';
+        refund.adminNotes = adminNotes;
+        refund.processedAt = new Date();
+        await refund.save({ session });
+        return { updated: refund, cancelPostCommitPayload: null };
+      });
+      result = rejectResult;
+    } else {
+      // 6. Action Approve Path
+      let finalGatewayRefundId = gatewayRefundId;
 
-    const updated = refund;
-
-    // Trigger booking status changes and inventory release depending on full/partial refund options
-    const isFullRefund = (totalRefundedSoFar + updated.amount) === payment.amount;
-    const newPaymentStatus = isFullRefund ? PaymentStatus.REFUNDED : PaymentStatus.PARTIALLY_REFUNDED;
-
-    // Call cancelBooking conditionally first
-    if (isFullRefund) {
-      // Full refund cancels booking with REFUNDED status
-      if (booking.status === BookingStatus.CONFIRMED) {
-        const cancelResult = await cancelBooking(updated.bookingId.toString(), adminNotes || 'Admin Refund Processed', session, BookingStatus.REFUNDED);
-        if (cancelResult && cancelResult.postCommitPayload) {
-          cancelPostCommitPayload = cancelResult.postCommitPayload;
+      if (manualOverride) {
+        if (!overrideReason || overrideReason.trim() === '') {
+          throw AppError.badRequest('Manual override requires an override reason');
         }
-      } else if (booking.status === BookingStatus.CANCELLED) {
-        // If it was already cancelled, we transition the booking to REFUNDED status
-        booking.status = BookingStatus.REFUNDED;
-        booking.bookingVersion += 1;
-        await booking.save({ session });
-      }
-    } else if (updated.cancelTickets) {
-      // Partial refund with cancelTickets = true cancels booking with CANCELLED status
-      if (booking.status === BookingStatus.CONFIRMED) {
-        const cancelResult = await cancelBooking(updated.bookingId.toString(), adminNotes || 'Admin Refund Processed', session, BookingStatus.CANCELLED);
-        if (cancelResult && cancelResult.postCommitPayload) {
-          cancelPostCommitPayload = cancelResult.postCommitPayload;
+        if (!gatewayRefundId || gatewayRefundId.trim() === '') {
+          throw AppError.badRequest('Manual override requires a gateway refund ID');
+        }
+        // Emit manual override audit event
+        auditLog({
+          action: 'REFUND_MANUAL_OVERRIDE',
+          actor: { type: 'admin', id: 'system' },
+          status: 'success',
+          metadata: {
+            refundId: refund._id.toString(),
+            paymentId: payment._id.toString(),
+            bookingId: booking._id.toString(),
+            amount: refund.amount,
+            gatewayRefundId,
+            overrideReason,
+          },
+          description: `Manual override executed for refund ${refund._id}. Reason: ${overrideReason}`,
+        });
+      } else {
+        // Execute gateway refund API call (A3)
+        if (payment.gateway === 'stripe') {
+          const stripe = getStripe();
+          if (!payment.gatewayOrderId) {
+            throw AppError.badRequest('Missing gatewayOrderId for Stripe payment');
+          }
+          try {
+            const stripeRefund = await stripe.refunds.create({
+              payment_intent: payment.gatewayOrderId,
+              amount: Math.round(refund.amount * 100),
+            });
+            finalGatewayRefundId = stripeRefund.id;
+          } catch (err: any) {
+            throw AppError.badRequest(`Stripe refund failed: ${err.message}`);
+          }
+        } else if (payment.gateway === 'razorpay') {
+          const rzp = getRazorpay();
+          if (!payment.gatewayPaymentId) {
+            throw AppError.badRequest('Missing gatewayPaymentId for Razorpay payment');
+          }
+          try {
+            const rzpRefund = await rzp.payments.refund(payment.gatewayPaymentId, {
+              amount: Math.round(refund.amount * 100),
+            });
+            finalGatewayRefundId = rzpRefund.id;
+          } catch (err: any) {
+            throw AppError.badRequest(`Razorpay refund failed: ${err.message}`);
+          }
+        } else if (payment.gateway === 'mock' || !payment.gateway) {
+          finalGatewayRefundId = finalGatewayRefundId || `mock-ref-${crypto.randomUUID().slice(0, 8)}`;
+        } else {
+          throw AppError.badRequest(`Unsupported payment gateway: ${payment.gateway}`);
         }
       }
+
+      // 7. Gateway refund succeeded (or override active). Run DB transaction (A3, B2)
+      const approveResult = await runInTransaction(async (session) => {
+        refund.status = 'completed';
+        refund.adminNotes = adminNotes;
+        if (finalGatewayRefundId) {
+          refund.gatewayRefundId = finalGatewayRefundId;
+        }
+        refund.processedAt = new Date();
+        await refund.save({ session });
+
+        const isFullRefund = (totalRefundedSoFar + refund.amount) === payment.amount;
+        const newPaymentStatus = isFullRefund ? PaymentStatus.REFUNDED : PaymentStatus.PARTIALLY_REFUNDED;
+
+        let cancelPostCommitPayload = null;
+
+        // Call cancelBooking conditionally first
+        if (isFullRefund) {
+          // Full refund cancels booking with REFUNDED status
+          if (booking.status === BookingStatus.CONFIRMED) {
+            const cancelResult = await cancelBooking(refund.bookingId.toString(), adminNotes || 'Admin Refund Processed', session, BookingStatus.REFUNDED);
+            if (cancelResult && cancelResult.postCommitPayload) {
+              cancelPostCommitPayload = cancelResult.postCommitPayload;
+            }
+          } else if (booking.status === BookingStatus.CANCELLED) {
+            // If it was already cancelled, transition booking to REFUNDED
+            const b = await Booking.findById(booking._id).session(session);
+            if (b) {
+              b.status = BookingStatus.REFUNDED;
+              b.bookingVersion += 1;
+              await b.save({ session });
+            }
+          }
+        } else if (refund.cancelTickets) {
+          // Partial refund with cancelTickets = true cancels booking with CANCELLED status
+          if (booking.status === BookingStatus.CONFIRMED) {
+            const cancelResult = await cancelBooking(refund.bookingId.toString(), adminNotes || 'Admin Refund Processed', session, BookingStatus.CANCELLED);
+            if (cancelResult && cancelResult.postCommitPayload) {
+              cancelPostCommitPayload = cancelResult.postCommitPayload;
+            }
+          }
+        }
+
+        // Update payment status after cancelBooking so it overrides it
+        await Payment.findByIdAndUpdate(
+          refund.paymentId,
+          { status: newPaymentStatus },
+          { session }
+        );
+
+        return { updated: refund, cancelPostCommitPayload };
+      });
+      result = approveResult;
     }
-
-    // Update payment status after cancelBooking so that it overrides the cancelBooking payment status change
-    await Payment.findByIdAndUpdate(
-      updated.paymentId,
-      { status: newPaymentStatus },
-      { session }
-    );
-
-    return { updated, cancelPostCommitPayload };
-  });
+  } catch (err: any) {
+    logger.error({ err, refundId: id }, 'Error processing refund. Reverting status to requested.');
+    await Refund.updateOne(
+      { _id: id, status: 'processing' },
+      { $set: { status: 'requested' } }
+    ).catch((revertErr) => {
+      logger.error({ revertErr, refundId: id }, 'Failed to revert refund status to requested.');
+    });
+    throw err;
+  }
 
   if (result) {
     const { updated, cancelPostCommitPayload } = result;
