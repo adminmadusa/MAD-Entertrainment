@@ -13,8 +13,122 @@ import { fullRefundHtml, partialRefundHtml } from '../../lib/email';
 import { getStripe } from '../../config/stripe';
 import { getRazorpay } from '../../config/razorpay';
 import { auditLog } from '../../utils/audit';
+import * as Sentry from '@sentry/node';
+import { getEnv } from '../../config/env';
 
 import crypto from 'crypto';
+
+const assertProductionRefundIntegrity = (
+  identifiers: (string | undefined)[],
+  context: {
+    bookingId?: string;
+    paymentId?: string;
+    gateway?: string;
+    requestSource?: string;
+  } = {}
+): void => {
+  const env = getEnv();
+  const isProd = env.NODE_ENV === 'production' || env.APP_ENV === 'production';
+  if (!isProd) return;
+
+  const metadata = {
+    bookingId: context.bookingId,
+    paymentId: context.paymentId,
+    environment: env.NODE_ENV || env.APP_ENV,
+    requestSource: context.requestSource,
+    gateway: context.gateway,
+  };
+
+  // Rule 1: Reject env.MOCK_PAYMENTS === true
+  if (env.MOCK_PAYMENTS) {
+    const errorMsg = 'MOCK_PAYMENTS_PRODUCTION_BLOCKED: Mock payments cannot be enabled in production environments.';
+    logger.error(metadata, errorMsg);
+    auditLog({
+      action: 'MOCK_PAYMENTS_PRODUCTION_BLOCKED',
+      status: 'failure',
+      description: errorMsg,
+      metadata,
+    });
+    try {
+      Sentry.captureException(new Error(errorMsg), {
+        tags: { type: 'MOCK_PAYMENTS_PRODUCTION_BLOCKED', environment: metadata.environment, gateway: metadata.gateway },
+        extra: metadata,
+      });
+    } catch (err) {
+      logger.error(err, 'Failed to log MOCK_PAYMENTS_PRODUCTION_BLOCKED to Sentry');
+    }
+    throw new Error(errorMsg);
+  }
+
+  if (context.gateway === 'mock') {
+    assertProductionMockRefundRuntimeBlocked(context);
+  }
+
+  // Rule 2: Reject mock identifiers
+  const mockPatterns = ['pi_mock_', 'pay_mock_', 'order_mock_', '_secret_mock', 'mock-ref-'];
+  for (const id of identifiers) {
+    if (!id) continue;
+    if (mockPatterns.some((pattern) => id.includes(pattern))) {
+      const errorMsg = `MOCK_PAYMENT_IDENTIFIER_DETECTED: Mock identifier "${id}" submitted in production.`;
+      const localMetadata = { ...metadata, paymentId: id };
+      logger.error(localMetadata, errorMsg);
+      auditLog({
+        action: 'MOCK_PAYMENT_IDENTIFIER_DETECTED',
+        status: 'failure',
+        description: errorMsg,
+        metadata: localMetadata,
+      });
+      try {
+        Sentry.captureException(new Error(errorMsg), {
+          tags: { type: 'MOCK_PAYMENT_IDENTIFIER_DETECTED', environment: localMetadata.environment, gateway: localMetadata.gateway },
+          extra: localMetadata,
+        });
+      } catch (err) {
+        logger.error(err, 'Failed to log MOCK_PAYMENT_IDENTIFIER_DETECTED to Sentry');
+      }
+      throw new Error(errorMsg);
+    }
+  }
+};
+
+const assertProductionMockRefundRuntimeBlocked = (
+  context: {
+    bookingId?: string;
+    paymentId?: string;
+    gateway?: string;
+    requestSource?: string;
+  } = {}
+): void => {
+  const env = getEnv();
+  const isProd = env.NODE_ENV === 'production' || env.APP_ENV === 'production';
+  if (!isProd) return;
+
+  const metadata = {
+    bookingId: context.bookingId,
+    paymentId: context.paymentId,
+    environment: env.NODE_ENV || env.APP_ENV,
+    requestSource: context.requestSource,
+    gateway: context.gateway,
+  };
+
+  const errorMsg = 'MOCK_PAYMENT_RUNTIME_BLOCKED: Mock payment execution path reached in production.';
+  logger.error(metadata, errorMsg);
+  auditLog({
+    action: 'MOCK_PAYMENT_RUNTIME_BLOCKED',
+    status: 'failure',
+    description: errorMsg,
+    metadata,
+  });
+  try {
+    Sentry.captureException(new Error(errorMsg), {
+      tags: { type: 'MOCK_PAYMENT_RUNTIME_BLOCKED', environment: metadata.environment, gateway: metadata.gateway },
+      extra: metadata,
+    });
+  } catch (err) {
+    logger.error(err, 'Failed to log MOCK_PAYMENT_RUNTIME_BLOCKED to Sentry');
+  }
+  throw new Error(errorMsg);
+};
 
 export const createRefund = async (data: {
   bookingId: string;
@@ -40,6 +154,16 @@ export const createRefund = async (data: {
       if (!payment) {
         throw AppError.notFound('Payment record not found');
       }
+
+      assertProductionRefundIntegrity(
+        [data.paymentId, payment.gatewayPaymentId, payment.gatewayOrderId],
+        {
+          bookingId: data.bookingId,
+          paymentId: data.paymentId,
+          gateway: payment.gateway,
+          requestSource: 'create_refund',
+        }
+      );
 
       // 3. Payment ↔ Booking Relationship Verification
       if (payment.bookingId.toString() !== data.bookingId) {
@@ -176,6 +300,16 @@ export const processRefund = async (
       throw AppError.notFound('Booking record not found');
     }
 
+    assertProductionRefundIntegrity(
+      [id, refund.paymentId.toString(), payment.gatewayPaymentId, payment.gatewayOrderId, gatewayRefundId],
+      {
+        bookingId: refund.bookingId.toString(),
+        paymentId: refund.paymentId.toString(),
+        gateway: payment.gateway,
+        requestSource: 'process_refund',
+      }
+    );
+
     const isAutoRecovery = refund.origin === 'auto_recovery';
 
     // 3. Validation path differentiation (B2)
@@ -288,6 +422,12 @@ export const processRefund = async (
             throw AppError.badRequest(`Razorpay refund failed: ${err.message}`);
           }
         } else if (payment.gateway === 'mock' || !payment.gateway) {
+          assertProductionMockRefundRuntimeBlocked({
+            bookingId: refund.bookingId.toString(),
+            paymentId: refund.paymentId.toString(),
+            gateway: payment.gateway,
+            requestSource: 'process_refund',
+          });
           finalGatewayRefundId = finalGatewayRefundId || `mock-ref-${crypto.randomUUID().slice(0, 8)}`;
         } else {
           throw AppError.badRequest(`Unsupported payment gateway: ${payment.gateway}`);
