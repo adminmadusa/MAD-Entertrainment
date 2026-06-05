@@ -158,6 +158,8 @@ export const processRefundSchema = z.object({
     action: z.enum(['approve', 'reject']),
     adminNotes: z.string().trim().max(2000).optional(),
     gatewayRefundId: z.string().trim().max(100).optional(),
+    manualOverride: z.boolean().optional(),
+    overrideReason: z.string().trim().max(1000).optional(),
   }).strict(),
 });
 

@@ -13,6 +13,7 @@ import { Ticket } from '../../models/ticket.schema';
 import { AdminModel } from '../../models/admin.schema';
 import { AuditLogModel } from '../../models/audit-log.schema';
 import { Payment } from '../../models/payment.schema';
+import { Coupon } from '../../models/coupon.schema';
 import { logger } from '../../utils/logger';
 import { auditLog } from '../../utils/audit';
 import { ReservationService } from '../reservation.service';
@@ -415,6 +416,22 @@ export const cancelBooking = async (
       booking.expiresAt = undefined;
     }
     await booking.save({ session });
+
+    // Decrement Coupon usedCount (F1)
+    if (booking.couponId) {
+      try {
+        await Coupon.updateOne(
+          { _id: booking.couponId, usedCount: { $gt: 0 } },
+          { $inc: { usedCount: -1 } },
+          { session }
+        );
+      } catch (err) {
+        logger.warn(
+          { err, bookingId: booking._id, couponId: booking.couponId },
+          'cancelBooking: Failed to decrement coupon usedCount (possibly coupon was deleted)'
+        );
+      }
+    }
 
     // 1.5 Sync Payment Status if cancelled
     if (booking.paymentId && targetStatus === BookingStatus.CANCELLED) {

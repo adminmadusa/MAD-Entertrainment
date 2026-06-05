@@ -8,6 +8,29 @@ import { BookingStatus, PaymentStatus } from '@mad/shared';
 import { createNotificationSafe } from '../notification.service';
 import { Notification } from '../../models/notification.schema';
 import { QueueService } from '../queue.service';
+import { auditLog } from '../../utils/audit';
+
+const mockStripeRefundsCreate = vi.fn();
+vi.mock('../../config/stripe', () => ({
+  getStripe: () => ({
+    refunds: {
+      create: mockStripeRefundsCreate,
+    },
+  }),
+}));
+
+const mockRazorpayPaymentsRefund = vi.fn();
+vi.mock('../../config/razorpay', () => ({
+  getRazorpay: () => ({
+    payments: {
+      refund: mockRazorpayPaymentsRefund,
+    },
+  }),
+}));
+
+vi.mock('../../utils/audit', () => ({
+  auditLog: vi.fn(),
+}));
 
 vi.mock('../../config/env', () => ({
   getEnv: vi.fn(() => ({
@@ -73,6 +96,7 @@ vi.mock('../../models/refund.schema', () => {
   (MockRefund as any).findOneAndUpdate = vi.fn().mockImplementation(() => localCreateMockQuery(null));
   (MockRefund as any).find = vi.fn().mockImplementation(() => localCreateMockQuery([]));
   (MockRefund as any).countDocuments = vi.fn().mockImplementation(() => localCreateMockQuery(0));
+  (MockRefund as any).updateOne = vi.fn().mockImplementation(() => localCreateMockQuery({ modifiedCount: 1 }));
   return { Refund: MockRefund };
 });
 
@@ -112,6 +136,8 @@ vi.mock('../../models/booking.schema', () => {
 describe('Admin Refund Service Tests', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockStripeRefundsCreate.mockReset();
+    mockRazorpayPaymentsRefund.mockReset();
   });
 
   describe('createRefund', () => {
@@ -605,6 +631,208 @@ describe('Admin Refund Service Tests', () => {
 
       expect(result.origin).toBe('auto_recovery');
       expect(result.recoveryReason).toBe('AMOUNT_MISMATCH');
+    });
+
+    it('should execute automated Stripe refund on approve and handle gateway success', async () => {
+      const mockRefundSave = vi.fn();
+      const mockRefund = {
+        _id: 'ref-stripe',
+        bookingId: 'booking-456',
+        paymentId: 'payment-stripe',
+        amount: 200,
+        status: 'requested',
+        save: mockRefundSave,
+      };
+
+      const mockPayment = {
+        _id: 'payment-stripe',
+        amount: 500,
+        status: PaymentStatus.PAID,
+        gateway: 'stripe',
+        gatewayOrderId: 'pi_stripe_123',
+      };
+      const mockBooking = { _id: 'booking-456', status: BookingStatus.CONFIRMED };
+
+      vi.mocked(Refund.findOneAndUpdate).mockReturnValue(createMockQuery(mockRefund));
+      vi.mocked(Payment.findById).mockReturnValue({ session: vi.fn().mockResolvedValue(mockPayment) } as any);
+      vi.mocked(Booking.findById).mockReturnValue({ session: vi.fn().mockResolvedValue(mockBooking) } as any);
+      vi.mocked(Refund.find).mockReturnValue(createMockQuery([]));
+      vi.mocked(Payment.findByIdAndUpdate).mockResolvedValue({} as any);
+
+      mockStripeRefundsCreate.mockResolvedValue({ id: 're_stripe_999' });
+
+      const result = await processRefund('ref-stripe', 'approve', 'Approve stripe refund');
+
+      expect(mockStripeRefundsCreate).toHaveBeenCalledWith({
+        payment_intent: 'pi_stripe_123',
+        amount: 20000,
+      });
+      expect(result?.status).toBe('completed');
+      expect(result?.gatewayRefundId).toBe('re_stripe_999');
+      expect(mockRefundSave).toHaveBeenCalled();
+    });
+
+    it('should throw error and revert status if Stripe refund API call fails', async () => {
+      const mockRefundSave = vi.fn();
+      const mockRefund = {
+        _id: 'ref-stripe-fail',
+        bookingId: 'booking-456',
+        paymentId: 'payment-stripe-fail',
+        amount: 200,
+        status: 'requested',
+        save: mockRefundSave,
+      };
+
+      const mockPayment = {
+        _id: 'payment-stripe-fail',
+        amount: 500,
+        status: PaymentStatus.PAID,
+        gateway: 'stripe',
+        gatewayOrderId: 'pi_stripe_fail',
+      };
+      const mockBooking = { _id: 'booking-456', status: BookingStatus.CONFIRMED };
+
+      vi.mocked(Refund.findOneAndUpdate).mockReturnValue(createMockQuery(mockRefund));
+      vi.mocked(Payment.findById).mockReturnValue({ session: vi.fn().mockResolvedValue(mockPayment) } as any);
+      vi.mocked(Booking.findById).mockReturnValue({ session: vi.fn().mockResolvedValue(mockBooking) } as any);
+      vi.mocked(Refund.find).mockReturnValue(createMockQuery([]));
+
+      mockStripeRefundsCreate.mockRejectedValue(new Error('Stripe API error'));
+
+      await expect(
+        processRefund('ref-stripe-fail', 'approve', 'Approve stripe refund')
+      ).rejects.toThrow('Stripe refund failed: Stripe API error');
+
+      expect(Refund.updateOne).toHaveBeenCalledWith(
+        { _id: 'ref-stripe-fail', status: 'processing' },
+        { $set: { status: 'requested' } }
+      );
+    });
+
+    it('should execute automated Razorpay refund on approve and handle gateway success', async () => {
+      const mockRefundSave = vi.fn();
+      const mockRefund = {
+        _id: 'ref-rzp',
+        bookingId: 'booking-456',
+        paymentId: 'payment-rzp',
+        amount: 300,
+        status: 'requested',
+        save: mockRefundSave,
+      };
+
+      const mockPayment = {
+        _id: 'payment-rzp',
+        amount: 500,
+        status: PaymentStatus.PAID,
+        gateway: 'razorpay',
+        gatewayPaymentId: 'pay_rzp_123',
+      };
+      const mockBooking = { _id: 'booking-456', status: BookingStatus.CONFIRMED };
+
+      vi.mocked(Refund.findOneAndUpdate).mockReturnValue(createMockQuery(mockRefund));
+      vi.mocked(Payment.findById).mockReturnValue({ session: vi.fn().mockResolvedValue(mockPayment) } as any);
+      vi.mocked(Booking.findById).mockReturnValue({ session: vi.fn().mockResolvedValue(mockBooking) } as any);
+      vi.mocked(Refund.find).mockReturnValue(createMockQuery([]));
+      vi.mocked(Payment.findByIdAndUpdate).mockResolvedValue({} as any);
+
+      mockRazorpayPaymentsRefund.mockResolvedValue({ id: 'rfnd_rzp_999' });
+
+      const result = await processRefund('ref-rzp', 'approve', 'Approve razorpay refund');
+
+      expect(mockRazorpayPaymentsRefund).toHaveBeenCalledWith('pay_rzp_123', {
+        amount: 30000,
+      });
+      expect(result?.status).toBe('completed');
+      expect(result?.gatewayRefundId).toBe('rfnd_rzp_999');
+      expect(mockRefundSave).toHaveBeenCalled();
+    });
+
+    it('should validate manual override parameters and emit an audit log on success', async () => {
+      const mockRefundSave = vi.fn();
+      const mockRefund = {
+        _id: 'ref-override',
+        bookingId: 'booking-456',
+        paymentId: 'payment-override',
+        amount: 200,
+        status: 'requested',
+        save: mockRefundSave,
+      };
+
+      const mockPayment = {
+        _id: 'payment-override',
+        amount: 500,
+        status: PaymentStatus.PAID,
+        gateway: 'stripe',
+        gatewayOrderId: 'pi_stripe_123',
+      };
+      const mockBooking = { _id: 'booking-456', status: BookingStatus.CONFIRMED };
+
+      vi.mocked(Refund.findOneAndUpdate).mockReturnValue(createMockQuery(mockRefund));
+      vi.mocked(Payment.findById).mockReturnValue({ session: vi.fn().mockResolvedValue(mockPayment) } as any);
+      vi.mocked(Booking.findById).mockReturnValue({ session: vi.fn().mockResolvedValue(mockBooking) } as any);
+      vi.mocked(Refund.find).mockReturnValue(createMockQuery([]));
+      vi.mocked(Payment.findByIdAndUpdate).mockResolvedValue({} as any);
+
+      // 1. Missing override reason
+      await expect(
+        processRefund('ref-override', 'approve', 'Approve notes', 'gate_123', true, '')
+      ).rejects.toThrow('Manual override requires an override reason');
+
+      // 2. Missing gateway refund ID
+      await expect(
+        processRefund('ref-override', 'approve', 'Approve notes', '', true, 'Customer resolved via phone')
+      ).rejects.toThrow('Manual override requires a gateway refund ID');
+
+      // 3. Successful manual override path
+      const result = await processRefund('ref-override', 'approve', 'Approve notes', 'gate_123', true, 'Customer resolved via phone');
+
+      expect(mockStripeRefundsCreate).not.toHaveBeenCalled();
+      expect(result?.status).toBe('completed');
+      expect(result?.gatewayRefundId).toBe('gate_123');
+      expect(auditLog).toHaveBeenCalledWith(expect.objectContaining({
+        action: 'REFUND_MANUAL_OVERRIDE',
+        metadata: expect.objectContaining({
+          overrideReason: 'Customer resolved via phone',
+          gatewayRefundId: 'gate_123',
+        })
+      }));
+    });
+
+    it('should allow auto-recovery refunds on FAILED payments and FAILED/EXPIRED bookings', async () => {
+      const mockRefundSave = vi.fn();
+      const mockRefund = {
+        _id: 'ref-auto-rec',
+        bookingId: 'booking-failed',
+        paymentId: 'payment-failed',
+        amount: 500,
+        status: 'requested',
+        origin: 'auto_recovery',
+        recoveryReason: 'AMOUNT_MISMATCH',
+        save: mockRefundSave,
+      };
+
+      const mockPayment = {
+        _id: 'payment-failed',
+        amount: 500,
+        status: PaymentStatus.FAILED,
+        gateway: 'stripe',
+        gatewayOrderId: 'pi_failed_123',
+      };
+      const mockBooking = { _id: 'booking-failed', status: BookingStatus.FAILED };
+
+      vi.mocked(Refund.findOneAndUpdate).mockReturnValue(createMockQuery(mockRefund));
+      vi.mocked(Payment.findById).mockReturnValue({ session: vi.fn().mockResolvedValue(mockPayment) } as any);
+      vi.mocked(Booking.findById).mockReturnValue({ session: vi.fn().mockResolvedValue(mockBooking) } as any);
+      vi.mocked(Refund.find).mockReturnValue(createMockQuery([]));
+      vi.mocked(Payment.findByIdAndUpdate).mockResolvedValue({} as any);
+
+      mockStripeRefundsCreate.mockResolvedValue({ id: 're_stripe_auto' });
+
+      const result = await processRefund('ref-auto-rec', 'approve', 'Approve auto recovery refund');
+
+      expect(result?.status).toBe('completed');
+      expect(result?.gatewayRefundId).toBe('re_stripe_auto');
+      expect(mockRefundSave).toHaveBeenCalled();
     });
   });
 });

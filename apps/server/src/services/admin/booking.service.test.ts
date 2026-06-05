@@ -6,6 +6,13 @@ import { UserModel } from '../../models/user.schema';
 import { Ticket } from '../../models/ticket.schema';
 import { Payment } from '../../models/payment.schema';
 import { Event } from '../../models/event.schema';
+import { Coupon } from '../../models/coupon.schema';
+
+vi.mock('../../models/coupon.schema', () => ({
+  Coupon: {
+    updateOne: vi.fn(),
+  },
+}));
 import { ReservationService } from '../reservation.service';
 import { CacheService } from '../cache.service';
 import { QueueService } from '../queue.service';
@@ -657,6 +664,117 @@ describe('Admin Booking Service Backend Tests', () => {
 
       // Ensure other side effects like auditLog still executed
       expect(auditLog).toHaveBeenCalled();
+    });
+
+    it('should successfully decrement coupon usedCount when usedCount > 0 during cancelBooking', async () => {
+      const mockBooking = {
+        _id: 'booking-coupon-1',
+        bookingId: 'MAD-2026-COUP1',
+        eventId: 'event-555',
+        totalTickets: 2,
+        tickets: [{ tier: 'general', quantity: 2 }],
+        status: BookingStatus.CONFIRMED,
+        couponId: 'coupon-123',
+        bookingVersion: 1,
+        save: vi.fn().mockResolvedValue(true),
+      };
+
+      vi.mocked(Booking.findById).mockReturnValue({
+        session: vi.fn().mockResolvedValue(mockBooking),
+      } as any);
+
+      vi.mocked(ReservationService.transitionForBooking).mockResolvedValue([] as any);
+
+      const mockEvent = {
+        _id: 'event-555',
+        bookingMode: 'general_admission',
+        ticketTiers: [],
+      };
+      vi.mocked(Event.findById).mockReturnValue({
+        session: vi.fn().mockResolvedValue(mockEvent),
+      } as any);
+
+      vi.mocked(Coupon.updateOne).mockResolvedValue({ modifiedCount: 1 } as any);
+
+      const result = await cancelBooking('booking-coupon-1', 'Customer request');
+
+      expect(result.status).toBe(BookingStatus.CANCELLED);
+      expect(Coupon.updateOne).toHaveBeenCalledWith(
+        { _id: 'coupon-123', usedCount: { $gt: 0 } },
+        { $inc: { usedCount: -1 } },
+        { session: undefined }
+      );
+    });
+
+    it('should not decrement coupon usedCount if usedCount is already 0, and booking cancellation still succeeds', async () => {
+      const mockBooking = {
+        _id: 'booking-coupon-2',
+        bookingId: 'MAD-2026-COUP2',
+        eventId: 'event-555',
+        totalTickets: 2,
+        tickets: [{ tier: 'general', quantity: 2 }],
+        status: BookingStatus.CONFIRMED,
+        couponId: 'coupon-456',
+        bookingVersion: 1,
+        save: vi.fn().mockResolvedValue(true),
+      };
+
+      vi.mocked(Booking.findById).mockReturnValue({
+        session: vi.fn().mockResolvedValue(mockBooking),
+      } as any);
+
+      vi.mocked(ReservationService.transitionForBooking).mockResolvedValue([] as any);
+
+      const mockEvent = {
+        _id: 'event-555',
+        bookingMode: 'general_admission',
+        ticketTiers: [],
+      };
+      vi.mocked(Event.findById).mockReturnValue({
+        session: vi.fn().mockResolvedValue(mockEvent),
+      } as any);
+
+      // Mongoose updateOne returns modifiedCount: 0 when query doesn't match usedCount > 0
+      vi.mocked(Coupon.updateOne).mockResolvedValue({ modifiedCount: 0 } as any);
+
+      const result = await cancelBooking('booking-coupon-2', 'Customer request');
+
+      expect(result.status).toBe(BookingStatus.CANCELLED);
+      expect(Coupon.updateOne).toHaveBeenCalledWith(
+        { _id: 'coupon-456', usedCount: { $gt: 0 } },
+        { $inc: { usedCount: -1 } },
+        { session: undefined }
+      );
+    });
+
+    it('should preserve standard transaction rollback behavior on critical database failures', async () => {
+      const mockBooking = {
+        _id: 'booking-coupon-3',
+        bookingId: 'MAD-2026-COUP3',
+        eventId: 'event-555',
+        totalTickets: 2,
+        tickets: [{ tier: 'general', quantity: 2 }],
+        status: BookingStatus.CONFIRMED,
+        couponId: 'coupon-789',
+        bookingVersion: 1,
+        save: vi.fn().mockRejectedValue(new Error('Fatal database write error')),
+      };
+
+      vi.mocked(Booking.findById).mockReturnValue({
+        session: vi.fn().mockResolvedValue(mockBooking),
+      } as any);
+
+      const mockEvent = {
+        _id: 'event-555',
+        bookingMode: 'general_admission',
+        ticketTiers: [],
+      };
+      vi.mocked(Event.findById).mockReturnValue({
+        session: vi.fn().mockResolvedValue(mockEvent),
+      } as any);
+
+      await expect(cancelBooking('booking-coupon-3', 'Customer request')).rejects.toThrow('Fatal database write error');
+      expect(Coupon.updateOne).not.toHaveBeenCalled();
     });
   });
 });
