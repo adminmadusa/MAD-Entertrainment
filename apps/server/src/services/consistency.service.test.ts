@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { ConsistencyService } from './consistency.service';
-import { BookingStatus, ReservationStatus, SeatStatus } from '@mad/shared';
+import { BookingStatus, PaymentStatus, ReservationStatus, SeatStatus } from '@mad/shared';
 import { Booking } from '../models/booking.schema';
 import { Event } from '../models/event.schema';
 import { SeatLayout } from '../models/seat-layout.schema';
@@ -10,6 +10,14 @@ import { QueueService } from './queue.service';
 import { Reservation } from '../models/reservation.schema';
 import { Payment } from '../models/payment.schema';
 import { Notification } from '../models/notification.schema';
+import { PaymentService } from './public/payment.service';
+
+vi.mock('./public/payment.service', () => ({
+  PaymentService: {
+    confirmBooking: vi.fn(),
+    triggerRefundRequest: vi.fn(),
+  },
+}));
 
 const mockCreateMockQuery = (resolvedValue: any = []) => {
   const query: any = {
@@ -102,6 +110,14 @@ vi.mock('../models/reservation.schema', () => ({
 vi.mock('../models/payment.schema', () => ({
   Payment: {
     countDocuments: vi.fn(),
+    find: vi.fn(() => mockCreateMockQuery([])),
+  },
+}));
+
+vi.mock('../models/refund.schema', () => ({
+  Refund: {
+    findOne: vi.fn(),
+    create: vi.fn(),
   },
 }));
 
@@ -251,7 +267,7 @@ describe('ConsistencyService - Confirmed Booking Ticket Watchdog', () => {
 
   // Test 1 — Detect CONFIRMED booking with zero tickets
   it('should detect CONFIRMED booking with zero tickets and enqueue it', async () => {
-    const mockCandidate = { _id: 'b-confirmed-1' };
+    const mockCandidate = { _id: 'b-confirmed-1', totalTickets: 1 };
     const mockQuery = {
       sort: vi.fn().mockReturnThis(),
       limit: vi.fn().mockReturnThis(),
@@ -277,7 +293,7 @@ describe('ConsistencyService - Confirmed Booking Ticket Watchdog', () => {
 
   // Test 2 — Skip booking that already has tickets
   it('should skip booking that already has tickets', async () => {
-    const mockCandidate = { _id: 'b-confirmed-2' };
+    const mockCandidate = { _id: 'b-confirmed-2', totalTickets: 1 };
     const mockQuery = {
       sort: vi.fn().mockReturnThis(),
       limit: vi.fn().mockReturnThis(),
@@ -296,8 +312,8 @@ describe('ConsistencyService - Confirmed Booking Ticket Watchdog', () => {
 
   // Test 3 — Re-enqueue uses exact queue name, job name, and jobId
   it('should use exact queue name, job name, and jobId patterns', async () => {
-    const mockCandidate1 = { _id: 'b-confirmed-3' };
-    const mockCandidate2 = { _id: 'b-confirmed-4' };
+    const mockCandidate1 = { _id: 'b-confirmed-3', totalTickets: 1 };
+    const mockCandidate2 = { _id: 'b-confirmed-4', totalTickets: 1 };
     const mockQuery = {
       sort: vi.fn().mockReturnThis(),
       limit: vi.fn().mockReturnThis(),
@@ -323,7 +339,7 @@ describe('ConsistencyService - Confirmed Booking Ticket Watchdog', () => {
 
   // Test 4 — BullMQ deduplication: queue failure does not crash cycle
   it('should catch queue connection failures per candidate without crashing the cycle', async () => {
-    const mockCandidate = { _id: 'b-confirmed-5' };
+    const mockCandidate = { _id: 'b-confirmed-5', totalTickets: 1 };
     const mockQuery = {
       sort: vi.fn().mockReturnThis(),
       limit: vi.fn().mockReturnThis(),
@@ -343,9 +359,9 @@ describe('ConsistencyService - Confirmed Booking Ticket Watchdog', () => {
   // Test 5 — Report metric: countUnticketedConfirmedBookings returns correct count
   it('should count unticketed confirmed bookings correctly', async () => {
     const mockCandidates = [
-      { _id: 'b-1' },
-      { _id: 'b-2' },
-      { _id: 'b-3' },
+      { _id: 'b-1', totalTickets: 1 },
+      { _id: 'b-2', totalTickets: 2 },
+      { _id: 'b-3', totalTickets: 1 },
     ];
     const mockQuery = {
       select: vi.fn().mockReturnThis(),
@@ -424,7 +440,7 @@ describe('ConsistencyService - Confirmed Booking Ticket Watchdog', () => {
 
   // Test 9 — Booking deleted after scan but before enqueue
   it('should skip enqueue and log warn if booking is deleted after scan but before enqueue', async () => {
-    const mockCandidate = { _id: 'b-confirmed-deleted' };
+    const mockCandidate = { _id: 'b-confirmed-deleted', totalTickets: 1 };
     const mockQuery = {
       sort: vi.fn().mockReturnThis(),
       limit: vi.fn().mockReturnThis(),
@@ -459,12 +475,14 @@ describe('ConsistencyService - Pipeline Watchdog (PR-T4A)', () => {
       updatedAt: new Date(Date.now() - 20 * 60 * 1000),
     };
     vi.mocked(Notification.find).mockReturnValue(mockCreateMockQuery([mockNotification]) as any);
+    vi.mocked(Ticket.countDocuments).mockResolvedValue(2);
     vi.mocked(Booking.findById).mockReturnValue(mockCreateMockQuery({
       _id: 'b-confirmed-stuck-1',
       eventId: 'e-123',
       guestEmail: 'guest@example.com',
       guestName: 'Guest User',
       status: BookingStatus.CONFIRMED,
+      totalTickets: 2,
     }) as any);
 
     vi.mocked(QueueService.enqueue).mockRejectedValue(new Error('Queue offline'));
@@ -485,12 +503,14 @@ describe('ConsistencyService - Pipeline Watchdog (PR-T4A)', () => {
       updatedAt: new Date(Date.now() - 20 * 60 * 1000),
     };
     vi.mocked(Notification.find).mockReturnValue(mockCreateMockQuery([mockNotification]) as any);
+    vi.mocked(Ticket.countDocuments).mockResolvedValue(2);
     vi.mocked(Booking.findById).mockReturnValue(mockCreateMockQuery({
       _id: 'b-confirmed-stuck-2',
       eventId: 'e-123',
       guestEmail: 'guest@example.com',
       guestName: 'Guest User',
       status: BookingStatus.CONFIRMED,
+      totalTickets: 2,
     }) as any);
     vi.mocked(QueueService.enqueue).mockResolvedValue(undefined);
     vi.mocked(Notification.updateOne).mockResolvedValue({ modifiedCount: 1 } as any);
@@ -532,12 +552,14 @@ describe('ConsistencyService - Pipeline Watchdog (PR-T4A)', () => {
       updatedAt: new Date(Date.now() - 20 * 60 * 1000),
     };
     vi.mocked(Notification.find).mockReturnValue(mockCreateMockQuery([mockNotification]) as any);
+    vi.mocked(Ticket.countDocuments).mockResolvedValue(2);
     vi.mocked(Booking.findById).mockReturnValue(mockCreateMockQuery({
       _id: 'b-confirmed-stuck-3',
       eventId: 'e-123',
       guestEmail: 'guest@example.com',
       guestName: 'Guest User',
       status: BookingStatus.CONFIRMED,
+      totalTickets: 2,
     }) as any);
     vi.mocked(QueueService.enqueue).mockResolvedValue(undefined);
     vi.mocked(Notification.updateOne).mockResolvedValue({ modifiedCount: 0 } as any);
@@ -555,6 +577,7 @@ describe('ConsistencyService - Pipeline Watchdog (PR-T4A)', () => {
       guestEmail: 'guest@example.com',
       guestName: 'Guest User',
       status: BookingStatus.CONFIRMED,
+      totalTickets: 2,
     };
     vi.mocked(Booking.find).mockReturnValue(mockCreateMockQuery([mockBooking]) as any);
     vi.mocked(Ticket.countDocuments).mockResolvedValue(2);
@@ -587,6 +610,7 @@ describe('ConsistencyService - Pipeline Watchdog (PR-T4A)', () => {
       guestEmail: 'guest@example.com',
       guestName: 'Guest User',
       status: BookingStatus.CONFIRMED,
+      totalTickets: 2,
     };
     vi.mocked(Booking.find).mockReturnValue(mockCreateMockQuery([mockBooking]) as any);
     vi.mocked(Ticket.countDocuments).mockResolvedValue(2);
@@ -604,7 +628,7 @@ describe('ConsistencyService - Pipeline Watchdog (PR-T4A)', () => {
   // Test 6: Report metrics
   it('should fetch correct report drift metrics for pipeline faults', async () => {
     vi.mocked(Notification.countDocuments).mockResolvedValue(4);
-    const mockBooking = { _id: 'b-orph-3' };
+    const mockBooking = { _id: 'b-orph-3', totalTickets: 1 };
     vi.mocked(Booking.find).mockReturnValue(mockCreateMockQuery([mockBooking]) as any);
     vi.mocked(Ticket.countDocuments).mockResolvedValue(1);
     vi.mocked(Notification.exists).mockResolvedValue(false as any);
@@ -640,6 +664,105 @@ describe('ConsistencyService - Pipeline Watchdog (PR-T4A)', () => {
 
     stuckSpy.mockRestore();
     orphanedSpy.mockRestore();
+  });
+});
+
+describe('ConsistencyService - Paid Payment Recovery Watchdog', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('should count paid payment mismatches correctly', async () => {
+    const mockPayments = [
+      { _id: 'pay-1', bookingId: 'b-1' },
+      { _id: 'pay-2', bookingId: 'b-2' },
+    ];
+    vi.mocked(Payment.find).mockReturnValue(mockCreateMockQuery(mockPayments) as any);
+    vi.mocked(Booking.findById)
+      .mockReturnValueOnce(mockCreateMockQuery({ status: BookingStatus.AWAITING_PAYMENT }) as any) // pay-1
+      .mockReturnValueOnce(mockCreateMockQuery({ status: BookingStatus.CONFIRMED }) as any); // pay-2
+
+    const count = await (ConsistencyService as any).countPaidPaymentMismatches();
+    expect(count).toBe(1);
+    expect(Payment.find).toHaveBeenCalled();
+  });
+
+  it('should attempt recovery (confirmBooking) for Case A and succeed', async () => {
+    const mockPayment = {
+      _id: 'pay-1',
+      bookingId: 'b-1',
+      status: PaymentStatus.PAID,
+      amount: 100,
+      save: vi.fn(),
+    };
+    const mockBooking = {
+      _id: 'b-1',
+      status: BookingStatus.AWAITING_PAYMENT,
+    };
+    vi.mocked(Payment.find).mockReturnValue(mockCreateMockQuery([mockPayment]) as any);
+    vi.mocked(Booking.findById)
+      .mockReturnValueOnce(mockCreateMockQuery(mockBooking) as any) // first find in loop
+      .mockReturnValueOnce(mockCreateMockQuery({ status: BookingStatus.CONFIRMED }) as any); // check after confirmation
+
+    vi.mocked(PaymentService.confirmBooking).mockResolvedValue({ status: BookingStatus.CONFIRMED } as any);
+
+    const repaired = await (ConsistencyService as any).repairPaidPaymentMismatches();
+    expect(repaired).toBe(1);
+    expect(PaymentService.confirmBooking).toHaveBeenCalledWith(mockBooking, mockPayment);
+    expect(PaymentService.triggerRefundRequest).not.toHaveBeenCalled();
+    expect(mockPayment.save).not.toHaveBeenCalled();
+  });
+
+  it('should handle Case B (recovery fails/capacity exhausted) by failing payment and requesting refund', async () => {
+    const mockPayment = {
+      _id: 'pay-1',
+      bookingId: 'b-1',
+      status: PaymentStatus.PAID,
+      amount: 100,
+      save: vi.fn().mockResolvedValue(undefined),
+    };
+    const mockBooking = {
+      _id: 'b-1',
+      status: BookingStatus.AWAITING_PAYMENT,
+    };
+    vi.mocked(Payment.find).mockReturnValue(mockCreateMockQuery([mockPayment]) as any);
+    vi.mocked(Booking.findById)
+      .mockReturnValueOnce(mockCreateMockQuery(mockBooking) as any) // first find in loop
+      .mockReturnValueOnce(mockCreateMockQuery({ status: BookingStatus.AWAITING_PAYMENT }) as any); // check after confirmation (still awaiting payment)
+
+    vi.mocked(PaymentService.confirmBooking).mockResolvedValue(null as any); // confirmBooking returns null/falsy
+
+    const repaired = await (ConsistencyService as any).repairPaidPaymentMismatches();
+    expect(repaired).toBe(1);
+    expect(PaymentService.confirmBooking).toHaveBeenCalledWith(mockBooking, mockPayment);
+    expect(mockPayment.status).toBe(PaymentStatus.FAILED);
+    expect(mockPayment.failureReason).toBe('LATE_PAYMENT_RECOVERY_REJECTED');
+    expect(mockPayment.save).toHaveBeenCalled();
+    expect(PaymentService.triggerRefundRequest).toHaveBeenCalledWith(mockBooking, mockPayment, 'LATE_PAYMENT_RECOVERY_REJECTED');
+  });
+
+  it('should handle Case C (booking already unrecoverable cancelled/failed) by failing payment and requesting refund', async () => {
+    const mockPayment = {
+      _id: 'pay-1',
+      bookingId: 'b-1',
+      status: PaymentStatus.PAID,
+      amount: 100,
+      save: vi.fn().mockResolvedValue(undefined),
+    };
+    const mockBooking = {
+      _id: 'b-1',
+      status: BookingStatus.CANCELLED,
+    };
+    vi.mocked(Payment.find).mockReturnValue(mockCreateMockQuery([mockPayment]) as any);
+    vi.mocked(Booking.findById).mockReturnValue(mockCreateMockQuery(mockBooking) as any);
+
+    const repaired = await (ConsistencyService as any).repairPaidPaymentMismatches();
+    expect(repaired).toBe(1);
+    expect(PaymentService.confirmBooking).not.toHaveBeenCalled();
+    expect(mockPayment.status).toBe(PaymentStatus.FAILED);
+    expect(mockPayment.failureReason).toBe('BOOKING_UNRECOVERABLE');
+    expect(mockPayment.save).toHaveBeenCalled();
+    expect(PaymentService.triggerRefundRequest).toHaveBeenCalledWith(mockBooking, mockPayment, 'BOOKING_UNRECOVERABLE');
   });
 });
 

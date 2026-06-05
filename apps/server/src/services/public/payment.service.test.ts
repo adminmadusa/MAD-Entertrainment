@@ -1099,7 +1099,7 @@ describe('Payment Service', () => {
         ticketTiers: [{ tier: 'general', soldCount: 0, totalCapacity: 100, name: 'General' }],
       } as any);
 
-      // Simulate Thread 2 losing the confirmation race because Booking is already CONFIRMED
+      // Simulate Thread 2 losing the confirmation race because Booking is already CONFIRMED (Same-Payment Case A)
       vi.mocked(Booking.findOneAndUpdate).mockResolvedValue(null);
       const docQueryMock = {
         select: vi.fn().mockReturnThis(),
@@ -1107,7 +1107,7 @@ describe('Payment Service', () => {
         catch: vi.fn().mockReturnThis(),
         then: vi.fn().mockImplementation((resolve) => {
           if (docQueryMock.select.mock.calls.length > 0) {
-            resolve({ status: BookingStatus.CONFIRMED, bookingId: 'b-123' });
+            resolve({ status: BookingStatus.CONFIRMED, bookingId: 'b-123', paymentId: 'p-123' });
           } else {
             resolve(mockBooking);
           }
@@ -1123,8 +1123,8 @@ describe('Payment Service', () => {
 
       const result = await PaymentService.confirmFromWebhook('order_123', 'pay_123', 'payment.captured', 'evt_123');
 
-      expect(result.status).toBe('skipped');
-      expect(mockPayment.failureReason).toBe('LATE_PAYMENT_RECOVERY_REJECTED_CONCURRENT_CONFIRM');
+      expect(result.status).toBe('confirmed');
+      expect(mockPayment.failureReason).toBeUndefined();
       // Capacity rollback (Event.updateOne) must NOT have been called since winner is CONFIRMED
       expect(Event.updateOne).not.toHaveBeenCalled();
     });
@@ -1886,7 +1886,7 @@ describe('Payment Service', () => {
               tickets: [{ tier: 'general', quantity: 2 }]
             });
           } else {
-            resolve({ _id: 'b-123', status: BookingStatus.CONFIRMED, bookingId: 'MAD-2026-ABCDE' });
+            resolve({ _id: 'b-123', status: BookingStatus.CONFIRMED, bookingId: 'MAD-2026-ABCDE', paymentId: 'p-other' });
           }
         })
       };
@@ -1899,9 +1899,9 @@ describe('Payment Service', () => {
 
       const result = await PaymentService.confirmFromWebhook('order_123', 'pay_123', 'payment.captured', 'evt_123');
 
-      expect(result.status).toBe('skipped');
+      expect(result.status).toBe('confirmed');
       expect(mockPayment.status).toBe(PaymentStatus.FAILED);
-      expect(mockPayment.failureReason).toBe('LATE_PAYMENT_RECOVERY_REJECTED_CONCURRENT_CONFIRM');
+      expect(mockPayment.failureReason).toBe('DUPLICATE_PAYMENT_ON_CONFIRMED_BOOKING');
       
       // Verify Refund.create is called unconditionally
       expect(Refund.create).toHaveBeenCalledWith(
@@ -1973,7 +1973,7 @@ describe('Payment Service', () => {
               tickets: [{ tier: 'general', quantity: 2 }]
             });
           } else {
-            resolve({ _id: 'b-123', status: BookingStatus.CONFIRMED, bookingId: 'MAD-2026-ABCDE' });
+            resolve({ _id: 'b-123', status: BookingStatus.CONFIRMED, bookingId: 'MAD-2026-ABCDE', paymentId: 'p-other' });
           }
         })
       };
@@ -1993,9 +1993,61 @@ describe('Payment Service', () => {
 
       const result = await PaymentService.confirmFromWebhook('order_123', 'pay_123', 'payment.captured', 'evt_123');
 
-      expect(result.status).toBe('skipped');
+      expect(result.status).toBe('confirmed');
       expect(mockPayment.status).toBe(PaymentStatus.FAILED);
       expect(Refund.create).toHaveBeenCalled();
+    });
+
+    it('should trigger refund for duplicate payment completed after booking is confirmed (Duplicate Payment Protection)', async () => {
+      const mockPayment = {
+        _id: 'p-duplicate',
+        bookingId: 'b-123',
+        gateway: 'stripe',
+        status: PaymentStatus.PENDING,
+        amount: 100,
+        currency: 'INR',
+        gatewayOrderId: 'pi_duplicate',
+        save: vi.fn(),
+      };
+
+      const mockBooking = {
+        _id: 'b-123',
+        eventId: 'e-123',
+        status: BookingStatus.CONFIRMED, // Booking already CONFIRMED
+        paymentId: 'p-winning', // Winner was p-winning
+        tickets: [{ tier: 'general', quantity: 2 }],
+        totalTickets: 2,
+        totalAmount: 100,
+        currency: 'INR',
+        bookingId: 'MAD-2026-ABCDE',
+      };
+
+      vi.mocked(Booking.findOne).mockResolvedValue(mockBooking as any);
+      vi.mocked(Payment.findOne).mockReturnValue({ sort: vi.fn().mockResolvedValue(mockPayment) } as any);
+      vi.mocked(Refund.findOne).mockImplementation(() => createMockQuery(null) as any);
+
+      const result = await PaymentService.verifyPayment('MAD-2026-ABCDE', { paymentIntentId: 'pi_duplicate' }, { trustedInternal: true });
+
+      // Booking returned successfully
+      expect(result).toBeDefined();
+      expect(result.status).toBe(BookingStatus.CONFIRMED);
+
+      // Duplicate payment is failed and refunded
+      expect(mockPayment.status).toBe(PaymentStatus.FAILED);
+      expect(mockPayment.failureReason).toBe('DUPLICATE_PAYMENT_ON_CONFIRMED_BOOKING');
+      expect(mockPayment.save).toHaveBeenCalled();
+      expect(Refund.create).toHaveBeenCalledWith(
+        [
+          expect.objectContaining({
+            bookingId: 'b-123',
+            paymentId: 'p-duplicate',
+            amount: 100,
+            idempotencyKey: 'auto-refund-p-duplicate',
+            status: 'requested',
+          }),
+        ],
+        expect.any(Object)
+      );
     });
   });
 });

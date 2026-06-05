@@ -1345,6 +1345,17 @@ export class PaymentService {
   private static async confirmBooking(booking: IBooking, _payment: IPayment): Promise<IBooking | null> {
     const previousStatus = booking.status;
     if (![BookingStatus.AWAITING_PAYMENT, BookingStatus.EXPIRED, BookingStatus.EXPIRING].includes(previousStatus)) {
+      if (previousStatus === BookingStatus.CONFIRMED && booking.paymentId && booking.paymentId.toString() !== _payment._id.toString()) {
+        logger.warn(
+          { bookingId: booking._id, incomingPaymentId: _payment._id, winningPaymentId: booking.paymentId },
+          'Duplicate payment detected on already confirmed booking. Marking payment as FAILED and triggering refund.'
+        );
+        _payment.status = PaymentStatus.FAILED;
+        _payment.failureReason = 'DUPLICATE_PAYMENT_ON_CONFIRMED_BOOKING';
+        _payment.failedAt = new Date();
+        await _payment.save();
+        await this.triggerRefundRequest(booking, _payment, _payment.failureReason).catch(() => {});
+      }
       return booking;
     }
 
@@ -1643,9 +1654,35 @@ export class PaymentService {
         reason = 'LATE_PAYMENT_RECOVERY_REJECTED_SEATS_TAKEN';
       } else if (err.message === 'CONCURRENT_CONFIRMATION_OR_NOT_FOUND') {
         reason = 'LATE_PAYMENT_RECOVERY_REJECTED_CONCURRENT_CONFIRM';
-        const currentBooking = await Booking.findById(booking._id).select('status').lean().catch(() => null);
+        const currentBooking = await Booking.findById(booking._id).select('status paymentId').lean().catch(() => null);
         if (currentBooking?.status === BookingStatus.CONFIRMED) {
           isConcurrentConfirm = true;
+          const isSamePayment = currentBooking.paymentId && currentBooking.paymentId.toString() === _payment._id.toString();
+          
+          if (isSamePayment) {
+            logger.info(
+              { bookingId: booking._id, paymentId: _payment._id },
+              'Concurrent confirmation (Same Payment): Booking is already CONFIRMED by concurrent thread of this payment. Exiting safely.'
+            );
+            const resolvedBooking = await Booking.findById(booking._id);
+            return resolvedBooking || booking;
+          } else {
+            logger.warn(
+              { bookingId: booking._id, incomingPaymentId: _payment._id, winningPaymentId: currentBooking.paymentId },
+              'Concurrent confirmation (Different Payment): Booking is already CONFIRMED. Refunding duplicate incoming payment.'
+            );
+            _payment.status = PaymentStatus.FAILED;
+            _payment.failureReason = 'DUPLICATE_PAYMENT_ON_CONFIRMED_BOOKING';
+            _payment.failedAt = new Date();
+            try {
+              await _payment.save();
+            } catch (saveErr) {
+              // ignore
+            }
+            await this.triggerRefundRequest(booking, _payment, _payment.failureReason).catch(() => {});
+            const resolvedBooking = await Booking.findById(booking._id);
+            return resolvedBooking || booking;
+          }
         }
       }
       
