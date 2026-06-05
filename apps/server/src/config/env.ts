@@ -174,6 +174,37 @@ export function validateEnv(): Readonly<Env> {
     throw new Error(`Invalid environment variables: ${details}`);
   }
 
+  // Dual Protection: Startup Protection
+  const isProd = result.data.NODE_ENV === 'production' || result.data.APP_ENV === 'production';
+  if (isProd && result.data.MOCK_PAYMENTS) {
+    const errorMsg = 'MOCK_PAYMENTS_PRODUCTION_BLOCKED: Mock payments cannot be enabled in production environments.';
+    console.error(`❌ ${errorMsg}`);
+
+    // Capture Sentry exception
+    try {
+      const Sentry = require('@sentry/node');
+      Sentry.captureException(new Error(errorMsg), {
+        tags: { type: 'MOCK_PAYMENTS_PRODUCTION_BLOCKED' },
+      });
+    } catch (err) {
+      // Ignore
+    }
+
+    // Create audit event
+    try {
+      const { auditLog } = require('../utils/audit');
+      auditLog({
+        action: 'MOCK_PAYMENTS_PRODUCTION_BLOCKED',
+        status: 'failure',
+        description: errorMsg,
+      });
+    } catch (err) {
+      // Ignore
+    }
+
+    throw new Error(errorMsg);
+  }
+
   env = Object.freeze(result.data);
   return env;
 }

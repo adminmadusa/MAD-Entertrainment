@@ -1,5 +1,6 @@
 import crypto from 'crypto';
 import { Types, ClientSession } from 'mongoose';
+import * as Sentry from '@sentry/node';
 
 import { BookingStatus, PaymentStatus, ReservationStatus, SeatStatus, NotificationType } from '@mad/shared';
 
@@ -56,7 +57,121 @@ export class PaymentService {
     }
   }
 
+  private static assertProductionPaymentIntegrity(
+    identifiers: (string | undefined)[],
+    context: {
+      bookingId?: string;
+      paymentId?: string;
+      gateway?: string;
+      requestSource?: string;
+    } = {}
+  ): void {
+    const env = getEnv();
+    const isProd = env.NODE_ENV === 'production' || env.APP_ENV === 'production';
+    if (!isProd) return;
+
+    const metadata = {
+      bookingId: context.bookingId,
+      paymentId: context.paymentId,
+      environment: env.NODE_ENV || env.APP_ENV,
+      requestSource: context.requestSource,
+      gateway: context.gateway,
+    };
+
+    // Rule 1: Reject env.MOCK_PAYMENTS === true
+    if (env.MOCK_PAYMENTS) {
+      const errorMsg = 'MOCK_PAYMENTS_PRODUCTION_BLOCKED: Mock payments cannot be enabled in production environments.';
+      logger.error(metadata, errorMsg);
+      auditLog({
+        action: 'MOCK_PAYMENTS_PRODUCTION_BLOCKED',
+        status: 'failure',
+        description: errorMsg,
+        metadata,
+      });
+      try {
+        Sentry.captureException(new Error(errorMsg), {
+          tags: { type: 'MOCK_PAYMENTS_PRODUCTION_BLOCKED', environment: metadata.environment, gateway: metadata.gateway },
+          extra: metadata,
+        });
+      } catch (err) {
+        logger.error(err, 'Failed to log MOCK_PAYMENTS_PRODUCTION_BLOCKED to Sentry');
+      }
+      throw new Error(errorMsg);
+    }
+
+    if (context.gateway === 'mock') {
+      this.assertProductionMockRuntimeBlocked(context);
+    }
+
+    // Rule 2: Reject mock identifiers
+    const mockPatterns = ['pi_mock_', 'pay_mock_', 'order_mock_', '_secret_mock'];
+    for (const id of identifiers) {
+      if (!id) continue;
+      if (mockPatterns.some((pattern) => id.includes(pattern))) {
+        const errorMsg = `MOCK_PAYMENT_IDENTIFIER_DETECTED: Mock payment identifier "${id}" submitted in production.`;
+        const localMetadata = { ...metadata, paymentId: id };
+        logger.error(localMetadata, errorMsg);
+        auditLog({
+          action: 'MOCK_PAYMENT_IDENTIFIER_DETECTED',
+          status: 'failure',
+          description: errorMsg,
+          metadata: localMetadata,
+        });
+        try {
+          Sentry.captureException(new Error(errorMsg), {
+            tags: { type: 'MOCK_PAYMENT_IDENTIFIER_DETECTED', environment: localMetadata.environment, gateway: localMetadata.gateway },
+            extra: localMetadata,
+          });
+        } catch (err) {
+          logger.error(err, 'Failed to log MOCK_PAYMENT_IDENTIFIER_DETECTED to Sentry');
+        }
+        throw new Error(errorMsg);
+      }
+    }
+  }
+
+  private static assertProductionMockRuntimeBlocked(
+    context: {
+      bookingId?: string;
+      paymentId?: string;
+      gateway?: string;
+      requestSource?: string;
+    } = {}
+  ): void {
+    const env = getEnv();
+    const isProd = env.NODE_ENV === 'production' || env.APP_ENV === 'production';
+    if (!isProd) return;
+
+    const metadata = {
+      bookingId: context.bookingId,
+      paymentId: context.paymentId,
+      environment: env.NODE_ENV || env.APP_ENV,
+      requestSource: context.requestSource,
+      gateway: context.gateway,
+    };
+
+    const errorMsg = 'MOCK_PAYMENT_RUNTIME_BLOCKED: Mock payment execution path reached in production.';
+    logger.error(metadata, errorMsg);
+    auditLog({
+      action: 'MOCK_PAYMENT_RUNTIME_BLOCKED',
+      status: 'failure',
+      description: errorMsg,
+      metadata,
+    });
+    try {
+      Sentry.captureException(new Error(errorMsg), {
+        tags: { type: 'MOCK_PAYMENT_RUNTIME_BLOCKED', environment: metadata.environment, gateway: metadata.gateway },
+        extra: metadata,
+      });
+    } catch (err) {
+      logger.error(err, 'Failed to log MOCK_PAYMENT_RUNTIME_BLOCKED to Sentry');
+    }
+    throw new Error(errorMsg);
+  }
+
   static async createPaymentIntent(bookingId: string, gateway: 'stripe' | 'razorpay', ownershipContext: PaymentOwnershipContext = {}) {
+    this.assertProductionPaymentIntegrity([bookingId], { bookingId, gateway });
+
     const query = Types.ObjectId.isValid(bookingId) ? { _id: bookingId } : { bookingId };
     const booking = await Booking.findOne(query);
     if (!booking) {
@@ -164,6 +279,7 @@ export class PaymentService {
 
   private static async handleRazorpayIntent(booking: IBooking, env: ReturnType<typeof getEnv>) {
     if (env.MOCK_PAYMENTS) {
+      this.assertProductionMockRuntimeBlocked({ bookingId: booking._id.toString(), gateway: 'razorpay' });
       const mockOrderId = 'order_mock_' + Math.random().toString(36).substring(2, 10);
       const payment = await this.createPendingPayment(
         booking._id,
@@ -276,6 +392,7 @@ export class PaymentService {
 
   private static async handleStripeIntent(booking: IBooking, env: ReturnType<typeof getEnv>) {
     if (env.MOCK_PAYMENTS) {
+      this.assertProductionMockRuntimeBlocked({ bookingId: booking._id.toString(), gateway: 'stripe' });
       const mockIntentId = 'pi_mock_' + Math.random().toString(36).substring(2, 10);
       const payment = await this.createPendingPayment(
         booking._id,
@@ -415,6 +532,15 @@ export class PaymentService {
     amountPaise?: number,
     currency?: string
   ): Promise<{ status: 'confirmed' | 'failed' | 'skipped'; bookingId?: string }> {
+    this.assertProductionPaymentIntegrity(
+      [razorpayOrderId, razorpayPaymentId],
+      {
+        paymentId: razorpayPaymentId,
+        gateway: 'razorpay',
+        requestSource: 'webhook',
+      }
+    );
+
     // 1. Resolve Payment record from orderId — this is the only link between the
     //    webhook payload and the internal booking.
     const payment = await Payment.findOne({ gatewayOrderId: razorpayOrderId, gateway: 'razorpay' });
@@ -576,6 +702,16 @@ export class PaymentService {
     },
     webhookEventId: string
   ): Promise<{ status: 'confirmed' | 'skipped' | 'failed'; bookingId?: string }> {
+    this.assertProductionPaymentIntegrity(
+      [intent.id],
+      {
+        bookingId: intent.metadata?.bookingId,
+        paymentId: intent.id,
+        gateway: 'stripe',
+        requestSource: 'webhook',
+      }
+    );
+
     try {
       const intentBookingId = intent.metadata?.bookingId;
       if (!intentBookingId) {
@@ -630,6 +766,15 @@ export class PaymentService {
 
       const env = getEnv();
       const isMock = env.MOCK_PAYMENTS && intent.id.startsWith('pi_mock_');
+
+      if (isMock) {
+        this.assertProductionMockRuntimeBlocked({
+          bookingId: booking._id.toString(),
+          paymentId: intent.id,
+          gateway: 'stripe',
+          requestSource: 'webhook',
+        });
+      }
 
       if (!isMock) {
         // Validation check 1: bookingId metadata must match
@@ -831,6 +976,15 @@ export class PaymentService {
 
     const { paymentIntentId, razorpay_order_id, razorpay_payment_id } = gatewayPayload || {};
 
+    this.assertProductionPaymentIntegrity(
+      [paymentIntentId, razorpay_order_id, razorpay_payment_id],
+      {
+        bookingId: booking._id.toString(),
+        gateway: paymentIntentId ? 'stripe' : 'razorpay',
+        requestSource: 'frontend_verify',
+      }
+    );
+
     let payment;
     if (paymentIntentId) {
       payment = await Payment.findOne({
@@ -873,6 +1027,15 @@ export class PaymentService {
       }
 
       const isMock = env.MOCK_PAYMENTS && razorpay_payment_id.startsWith('pay_mock_') && razorpay_signature === 'mock_signature';
+
+      if (isMock) {
+        this.assertProductionMockRuntimeBlocked({
+          bookingId: booking._id.toString(),
+          paymentId: razorpay_payment_id,
+          gateway: 'razorpay',
+          requestSource: 'frontend_verify',
+        });
+      }
 
       if (!payment.gatewayOrderId || payment.gatewayOrderId !== razorpay_order_id) {
         logger.error(
@@ -1072,6 +1235,15 @@ export class PaymentService {
       }
 
       const isMock = env.MOCK_PAYMENTS && paymentIntentId.startsWith('pi_mock_');
+
+      if (isMock) {
+        this.assertProductionMockRuntimeBlocked({
+          bookingId: booking._id.toString(),
+          paymentId: paymentIntentId,
+          gateway: 'stripe',
+          requestSource: 'frontend_verify',
+        });
+      }
 
       if (isMock) {
         payment.status = PaymentStatus.PAID;
