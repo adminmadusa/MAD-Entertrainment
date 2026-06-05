@@ -878,6 +878,7 @@ describe('Payment Service', () => {
     });
 
     it('should reject late recovery if event capacity is exhausted', async () => {
+      const refundSpy = vi.spyOn(PaymentService as any, 'triggerRefundRequest').mockResolvedValue(undefined);
       const mockPayment = { _id: 'p-123', bookingId: 'b-123', gateway: 'razorpay', status: PaymentStatus.PENDING, failureReason: undefined, save: vi.fn() };
       const mockBooking = {
         _id: 'b-123',
@@ -905,9 +906,19 @@ describe('Payment Service', () => {
       expect(mockPayment.failureReason).toBe('LATE_PAYMENT_RECOVERY_REJECTED_CAPACITY_EXHAUSTED');
       expect(mockPayment.save).toHaveBeenCalled();
       expect(vi.mocked(Booking.findOneAndUpdate)).not.toHaveBeenCalled();
+      expect(refundSpy).toHaveBeenCalledWith(
+        mockBooking,
+        mockPayment,
+        'LATE_PAYMENT_RECOVERY_REJECTED_CAPACITY_EXHAUSTED',
+        expect.any(Object),
+        'auto_recovery',
+        'EXPIRED_BOOKING_CAPACITY_UNAVAILABLE'
+      );
+      refundSpy.mockRestore();
     });
 
     it('should reject late recovery if seats are already booked', async () => {
+      const refundSpy = vi.spyOn(PaymentService as any, 'triggerRefundRequest').mockResolvedValue(undefined);
       const mockPayment = { _id: 'p-123', bookingId: 'b-123', gateway: 'razorpay', status: PaymentStatus.PENDING, failureReason: undefined, save: vi.fn() };
       const mockBooking = {
         _id: 'b-123',
@@ -941,6 +952,15 @@ describe('Payment Service', () => {
       expect(mockPayment.failureReason).toBe('LATE_PAYMENT_RECOVERY_REJECTED_SEATS_TAKEN');
       expect(mockPayment.save).toHaveBeenCalled();
       expect(vi.mocked(Booking.findOneAndUpdate)).not.toHaveBeenCalled();
+      expect(refundSpy).toHaveBeenCalledWith(
+        mockBooking,
+        mockPayment,
+        'LATE_PAYMENT_RECOVERY_REJECTED_SEATS_TAKEN',
+        expect.any(Object),
+        'auto_recovery',
+        'EXPIRED_BOOKING_CAPACITY_UNAVAILABLE'
+      );
+      refundSpy.mockRestore();
     });
   });
 

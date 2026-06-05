@@ -1339,7 +1339,7 @@ export class PaymentService {
     reason: string,
     session?: ClientSession,
     origin: 'manual' | 'auto_recovery' = 'manual',
-    recoveryReason?: 'AMOUNT_MISMATCH' | 'BOOKING_REFERENCE_MISMATCH' | 'BOOKING_ID_MISMATCH' | 'CURRENCY_MISMATCH' | 'PAYMENT_VALIDATION_FAILURE'
+    recoveryReason?: 'AMOUNT_MISMATCH' | 'BOOKING_REFERENCE_MISMATCH' | 'BOOKING_ID_MISMATCH' | 'CURRENCY_MISMATCH' | 'PAYMENT_VALIDATION_FAILURE' | 'EXPIRED_BOOKING_CAPACITY_UNAVAILABLE'
   ): Promise<void> {
     const idempotencyKey = `auto-refund-${payment._id}`;
 
@@ -1384,7 +1384,7 @@ export class PaymentService {
     payment: IPayment,
     reason: string,
     origin?: 'manual' | 'auto_recovery',
-    recoveryReason?: 'AMOUNT_MISMATCH' | 'BOOKING_REFERENCE_MISMATCH' | 'BOOKING_ID_MISMATCH' | 'CURRENCY_MISMATCH' | 'PAYMENT_VALIDATION_FAILURE'
+    recoveryReason?: 'AMOUNT_MISMATCH' | 'BOOKING_REFERENCE_MISMATCH' | 'BOOKING_ID_MISMATCH' | 'CURRENCY_MISMATCH' | 'PAYMENT_VALIDATION_FAILURE' | 'EXPIRED_BOOKING_CAPACITY_UNAVAILABLE'
   ) {
     payment.status = PaymentStatus.FAILED;
     payment.failedAt = new Date();
@@ -1580,7 +1580,7 @@ export class PaymentService {
           if (event.soldCount + event.reservedCount + booking.totalTickets > event.totalCapacity) {
             _payment.failureReason = 'LATE_PAYMENT_RECOVERY_REJECTED_CAPACITY_EXHAUSTED';
             await _payment.save({ session });
-            await this.triggerRefundRequest(booking, _payment, _payment.failureReason, session);
+            await this.triggerRefundRequest(booking, _payment, _payment.failureReason, session, 'auto_recovery', 'EXPIRED_BOOKING_CAPACITY_UNAVAILABLE');
             return { success: false, booking: null };
           }
 
@@ -1590,7 +1590,7 @@ export class PaymentService {
             if (!tierConfig) {
               _payment.failureReason = 'LATE_PAYMENT_RECOVERY_REJECTED_INVALID_TIER';
               await _payment.save({ session });
-              await this.triggerRefundRequest(booking, _payment, _payment.failureReason, session);
+              await this.triggerRefundRequest(booking, _payment, _payment.failureReason, session, 'auto_recovery', 'EXPIRED_BOOKING_CAPACITY_UNAVAILABLE');
               return { success: false, booking: null };
             }
 
@@ -1610,7 +1610,7 @@ export class PaymentService {
             if (tierConfig.soldCount + tierReserved + bookedTicket.quantity > tierConfig.totalCapacity) {
               _payment.failureReason = 'LATE_PAYMENT_RECOVERY_REJECTED_CAPACITY_EXHAUSTED';
               await _payment.save({ session });
-              await this.triggerRefundRequest(booking, _payment, _payment.failureReason, session);
+              await this.triggerRefundRequest(booking, _payment, _payment.failureReason, session, 'auto_recovery', 'EXPIRED_BOOKING_CAPACITY_UNAVAILABLE');
               return { success: false, booking: null };
             }
           }
@@ -1630,7 +1630,7 @@ export class PaymentService {
             if (layout) {
               _payment.failureReason = 'LATE_PAYMENT_RECOVERY_REJECTED_SEATS_TAKEN';
               await _payment.save({ session });
-              await this.triggerRefundRequest(booking, _payment, _payment.failureReason, session);
+              await this.triggerRefundRequest(booking, _payment, _payment.failureReason, session, 'auto_recovery', 'EXPIRED_BOOKING_CAPACITY_UNAVAILABLE');
               return { success: false, booking: null };
             }
           }
@@ -1897,7 +1897,14 @@ export class PaymentService {
       } catch (saveErr) {
         // ignore
       }
-      await this.triggerRefundRequest(booking, _payment, _payment.failureReason).catch(() => {});
+      await this.triggerRefundRequest(
+        booking,
+        _payment,
+        _payment.failureReason,
+        undefined,
+        isLateRecovery ? 'auto_recovery' : 'manual',
+        isLateRecovery ? 'EXPIRED_BOOKING_CAPACITY_UNAVAILABLE' : undefined
+      ).catch(() => {});
 
       if (isKnownAbort) {
         return null;

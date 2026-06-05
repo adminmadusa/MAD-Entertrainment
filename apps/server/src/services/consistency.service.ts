@@ -22,6 +22,7 @@ import { PaymentService } from './public/payment.service';
 import { fullRefundHtml, partialRefundHtml, eventCancellationHtml, paymentFailureHtml } from '../lib/email';
 import { getEnv } from '../config/env';
 import { createNotificationSafe } from './notification.service';
+import { expireBooking } from './admin/booking.service';
 
 const UNTICKETED_BOOKING_WINDOW_MS = 48 * 60 * 60 * 1000;
 const UNTICKETED_PAGE_SIZE = 25;
@@ -821,72 +822,14 @@ export class ConsistencyService {
 
     let expiredCount = 0;
     for (const candidate of staleCandidates) {
-      // 3. Atomically claim the booking by transitioning status to EXPIRING
-      const booking = await Booking.findOneAndUpdate(
-        { _id: candidate._id, status: BookingStatus.AWAITING_PAYMENT },
-        { $set: { status: BookingStatus.EXPIRING }, $inc: { bookingVersion: 1 } },
-        { new: true }
-      );
-
-      if (!booking) {
-        // Already claimed by another worker/thread, skip
-        continue;
-      }
-
       try {
-        // 4. Process logical expiration and release inventory
-        const failedReservations = await ReservationService.transitionForBooking(booking._id, ReservationStatus.FAILED, {
-          reason: 'booking-logical-checkout-timeout',
-          correlationId: booking.bookingId,
-        });
-        await ReservationService.releaseCapacityForTerminalReservations(failedReservations);
-
-        const event = await Event.findById(booking.eventId);
-        if (event && event.bookingMode === 'seat_based') {
-          const allSeatIds = booking.tickets.flatMap((ticket) => ticket.seats || []).map((seat) => seat.seatId);
-          if (allSeatIds.length > 0) {
-            await SeatLayout.updateOne(
-              { eventId: event._id },
-              {
-                $set: {
-                  'seats.$[seat].status': SeatStatus.AVAILABLE,
-                },
-                $unset: {
-                  'seats.$[seat].lockedBy': '',
-                  'seats.$[seat].lockedAt': '',
-                  'seats.$[seat].bookedByBookingId': '',
-                  'seats.$[seat].reservationId': '',
-                },
-                $inc: {
-                  'seats.$[seat].seatVersion': 1,
-                },
-              },
-              {
-                arrayFilters: [
-                  {
-                    'seat.seatId': { $in: allSeatIds },
-                    'seat.status': SeatStatus.LOCKED,
-                    'seat.bookedByBookingId': booking._id.toString(),
-                  },
-                ],
-              }
-            );
-          }
-        }
-
-        // 5. Transition from EXPIRING to EXPIRED atomically
-        const finalized = await Booking.updateOne(
-          { _id: booking._id, status: BookingStatus.EXPIRING },
-          { $set: { status: BookingStatus.EXPIRED } }
-        );
-
-        if (finalized.modifiedCount > 0) {
+        const expired = await expireBooking(candidate._id.toString(), 'booking-logical-checkout-timeout');
+        if (expired) {
           expiredCount++;
-          logger.info({ bookingId: booking._id, bookingReference: booking.bookingId }, 'Consistency: Logically expired booking and released held inventory');
         }
       } catch (err) {
         logger.error(
-          { err, bookingId: booking._id, bookingReference: booking.bookingId },
+          { err, bookingId: candidate._id },
           'Consistency: Failed to process logical expiration for candidate'
         );
       }

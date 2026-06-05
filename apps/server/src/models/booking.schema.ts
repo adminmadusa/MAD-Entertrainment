@@ -107,7 +107,7 @@ const bookingSchema = new Schema<IBooking>(
     paymentId: { type: Schema.Types.ObjectId, ref: 'Payment' },
     reservationIds: [{ type: String }],
     bookingVersion: { type: Number, default: 1, min: 1 },
-    expiresAt: { type: Date, index: { expireAfterSeconds: 0 } }, // TTL for pending bookings
+    expiresAt: { type: Date, index: true }, // Expiration timestamp for pending bookings
     logicalExpiresAt: { type: Date, index: true },
     cancellationReason: String,
     cancelledAt: Date,
