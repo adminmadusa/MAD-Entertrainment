@@ -160,6 +160,10 @@ describe('razorpayWebhook — replay protection hardening', () => {
     });
 
     // Verify the persisted eventId matches the body fingerprint
+    expect(WebhookEvent.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        eventId: expectedEventId(VALID_RAZORPAY_BODY),
+        provider: 'razorpay',
         eventType: 'payment.captured',
       })
     );
@@ -373,8 +377,4 @@ describe('stripeWebhook — audit trail preservation', () => {
     expect(PaymentService.verifyPayment).not.toHaveBeenCalled();
   });
 });
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-  });
-});
+

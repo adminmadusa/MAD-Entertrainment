@@ -19,6 +19,9 @@ import { QueueService } from './queue.service';
 import { getQueueName } from '../config/queue.config';
 import { Refund } from '../models/refund.schema';
 import { PaymentService } from './public/payment.service';
+import { fullRefundHtml, partialRefundHtml, eventCancellationHtml, paymentFailureHtml } from '../lib/email';
+import { getEnv } from '../config/env';
+import { createNotificationSafe } from './notification.service';
 
 const UNTICKETED_BOOKING_WINDOW_MS = 48 * 60 * 60 * 1000;
 const UNTICKETED_PAGE_SIZE = 25;
@@ -304,49 +307,246 @@ export class ConsistencyService {
           continue;
         }
 
-        const booking = await Booking.findById(notification.bookingId).lean();
-        if (!booking || booking.status !== BookingStatus.CONFIRMED) {
-          continue;
-        }
-
-        // Delivery Protection: Only process if tickets are fully generated
-        const ticketCount = await Ticket.countDocuments({ bookingId: booking._id });
-        if (ticketCount !== booking.totalTickets) {
-          continue;
-        }
-
-        // 1. Attempt recovery enqueue FIRST
-        await QueueService.enqueue(
-          getQueueName('pdf-queue'),
-          'pdf:generate',
-          {
-            bookingId: booking._id.toString(),
-            eventId: booking.eventId.toString(),
-            recipientEmail: booking.guestEmail,
-            guestName: booking.guestName,
-          },
-          `pdf:generate:${booking._id}`
-        );
-
-        // 2. Only transition state if enqueue succeeds. Transition must be conditional.
-        const updateResult = await Notification.updateOne(
-          {
-            _id: notification._id,
-            status: { $in: ['queued', 'processing'] },
-          },
-          {
-            $set: {
-              status: 'failed',
-              errorMessage: 'WATCHDOG_RESET_STUCK_LEASE',
-            },
+        if (
+          notification.type === NotificationType.FULL_REFUND ||
+          notification.type === NotificationType.PARTIAL_REFUND
+        ) {
+          // ─── Refund Notifications ───
+          // Recover independently of booking confirmation state.
+          // Parse refund ID from jobId, e.g. refund-{refundId}-{timestamp}
+          if (!notification.jobId || !notification.jobId.startsWith('refund-')) {
+            continue;
           }
-        );
+          const parts = notification.jobId.split('-');
+          const refundId = parts[1];
+          if (!refundId) {
+            continue;
+          }
 
-        if (updateResult.modifiedCount > 0) {
-          successCount++;
-          logger.info({ notificationId: notification._id, bookingId: booking._id }, 'Watchdog successfully reset stuck notification lease and re-enqueued PDF task.');
+          const refund = await Refund.findById(refundId);
+          if (!refund || refund.status !== 'completed') {
+            continue;
+          }
+
+          const booking = await Booking.findById(notification.bookingId).lean();
+          if (!booking) {
+            continue;
+          }
+
+          const event = await Event.findById(booking.eventId).lean();
+          const totalAmount = booking.totalAmount;
+
+          const completedRefunds = await Refund.find({
+            paymentId: refund.paymentId,
+            status: 'completed',
+          }).lean();
+          const totalRefunded = completedRefunds.reduce((sum, r) => sum + r.amount, 0);
+
+          let emailHtml = '';
+          let subject = '';
+
+          if (notification.type === NotificationType.FULL_REFUND) {
+            const formattedRefundDate = new Date(refund.processedAt || refund.updatedAt).toLocaleDateString('en-IN', {
+              weekday: 'long',
+              day: 'numeric',
+              month: 'long',
+              year: 'numeric',
+            });
+            emailHtml = await fullRefundHtml({
+              customerName: booking.guestName,
+              bookingReference: booking.bookingId,
+              eventTitle: event?.title || 'MAD Event',
+              refundAmount: refund.amount,
+              refundDate: formattedRefundDate,
+              settlementTimeline: '5-7 business days',
+              currency: booking.currency || 'INR',
+            });
+            subject = `Refund Processed for ${booking.bookingId}`;
+          } else {
+            emailHtml = await partialRefundHtml({
+              customerName: booking.guestName,
+              bookingReference: booking.bookingId,
+              originalAmount: totalAmount,
+              refundAmount: refund.amount,
+              remainingAmount: Math.max(0, totalAmount - totalRefunded),
+              reason: refund.reason || 'Tier adjustment refund',
+              currency: booking.currency || 'INR',
+            });
+            subject = `Partial Refund Processed for ${booking.bookingId}`;
+          }
+
+          // Transition state first to ensure single winner lease acquisition
+          const updateResult = await Notification.updateOne(
+            {
+              _id: notification._id,
+              status: { $in: ['queued', 'processing'] },
+            },
+            {
+              $set: {
+                status: 'failed',
+                errorMessage: 'WATCHDOG_RESET_STUCK_LEASE',
+              },
+            }
+          );
+
+          if (updateResult.modifiedCount > 0) {
+            const newJobId = `refund-${refund._id}-${Date.now()}`;
+            await createNotificationSafe([{
+              jobId: newJobId,
+              status: 'queued',
+              queuedAt: new Date(),
+              type: notification.type,
+              channel: 'email',
+              recipient: booking.guestEmail,
+              subject,
+              isSent: false,
+              retryCount: 0,
+              bookingId: booking._id,
+              eventId: event?._id,
+            }]);
+
+            await QueueService.enqueue(
+              getQueueName('notification-queue'),
+              'email-dispatch',
+              {
+                to: booking.guestEmail,
+                subject,
+                html: emailHtml,
+                notificationType: notification.type,
+                bookingId: booking._id.toString(),
+                eventId: event?._id?.toString() || booking.eventId.toString(),
+              },
+              newJobId
+            );
+            successCount++;
+            logger.info({ notificationId: notification._id, bookingId: booking._id }, 'Watchdog successfully reset stuck refund notification and enqueued email job.');
+          }
+        } else if (notification.type === NotificationType.EVENT_CANCELLED) {
+          // ─── Cancellation Notifications ───
+          // Recover independently of booking confirmation state.
+          const booking = await Booking.findById(notification.bookingId).lean();
+          if (!booking) {
+            continue;
+          }
+
+          const event = await Event.findById(booking.eventId).lean();
+          if (!event) {
+            continue;
+          }
+
+          const formattedDate = new Date(
+            event.startDate || booking.createdAt
+          ).toLocaleDateString('en-IN', {
+            weekday: 'long',
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric',
+          });
+
+          const emailBody = await eventCancellationHtml({
+            customerName: booking.guestName,
+            eventTitle: event.title || 'MAD Event',
+            eventDate: formattedDate,
+            venueName: event.venue || 'MAD Venue',
+            bookingReference: booking.bookingId,
+          });
+
+          const updateResult = await Notification.updateOne(
+            {
+              _id: notification._id,
+              status: { $in: ['queued', 'processing'] },
+            },
+            {
+              $set: {
+                status: 'failed',
+                errorMessage: 'WATCHDOG_RESET_STUCK_LEASE',
+              },
+            }
+          );
+
+          if (updateResult.modifiedCount > 0) {
+            const newJobId = `cancellation-${booking.bookingId}-${Date.now()}`;
+            await createNotificationSafe([{
+              jobId: newJobId,
+              status: 'queued',
+              queuedAt: new Date(),
+              type: NotificationType.EVENT_CANCELLED,
+              channel: 'email',
+              recipient: booking.guestEmail,
+              subject: `Event Cancelled: ${event.title || 'MAD Event'}`,
+              isSent: false,
+              retryCount: 0,
+              bookingId: booking._id,
+              eventId: event._id,
+            }]);
+
+            await QueueService.enqueue(
+              getQueueName('notification-queue'),
+              'email-dispatch',
+              {
+                to: booking.guestEmail,
+                subject: `Event Cancelled: ${event.title || 'MAD Event'}`,
+                html: emailBody,
+                notificationType: NotificationType.EVENT_CANCELLED,
+                bookingId: booking._id.toString(),
+                eventId: event._id.toString(),
+              },
+              newJobId
+            );
+            successCount++;
+            logger.info({ notificationId: notification._id, bookingId: booking._id }, 'Watchdog successfully reset stuck event cancellation notification.');
+          }
         } else {
-          logger.warn({ notificationId: notification._id }, 'Watchdog: Stuck notification was updated concurrently, skipping lease reset.');
+          // ─── Ticket / Other Notifications (Keep existing behavior) ───
+          // Only recover if BOOKING_CONFIRMED (which is the default or explicit BOOKING_CONFIRMED type)
+          if (notification.type && notification.type !== NotificationType.BOOKING_CONFIRMED) {
+            continue;
+          }
+
+          const booking = await Booking.findById(notification.bookingId).lean();
+          if (!booking || booking.status !== BookingStatus.CONFIRMED) {
+            continue;
+          }
+
+          // Delivery Protection: Only process if tickets are fully generated
+          const ticketCount = await Ticket.countDocuments({ bookingId: booking._id });
+          if (ticketCount !== booking.totalTickets) {
+            continue;
+          }
+
+          // 1. Attempt recovery enqueue FIRST
+          await QueueService.enqueue(
+            getQueueName('pdf-queue'),
+            'pdf:generate',
+            {
+              bookingId: booking._id.toString(),
+              eventId: booking.eventId.toString(),
+              recipientEmail: booking.guestEmail,
+              guestName: booking.guestName,
+            },
+            `pdf:generate:${booking._id}`
+          );
+
+          // 2. Only transition state if enqueue succeeds. Transition must be conditional.
+          const updateResult = await Notification.updateOne(
+            {
+              _id: notification._id,
+              status: { $in: ['queued', 'processing'] },
+            },
+            {
+              $set: {
+                status: 'failed',
+                errorMessage: 'WATCHDOG_RESET_STUCK_LEASE',
+              },
+            }
+          );
+
+          if (updateResult.modifiedCount > 0) {
+            successCount++;
+            logger.info({ notificationId: notification._id, bookingId: booking._id }, 'Watchdog successfully reset stuck notification lease and re-enqueued PDF task.');
+          } else {
+            logger.warn({ notificationId: notification._id }, 'Watchdog: Stuck notification was updated concurrently, skipping lease reset.');
+          }
         }
       } catch (error) {
         logger.warn({ notificationId: notification._id, error }, 'watchdog: failed to repair stuck notification');
