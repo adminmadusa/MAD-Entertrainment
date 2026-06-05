@@ -125,9 +125,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       localStorage.removeItem(STORAGE_KEYS.USER_DATA);
     };
 
+    // Listen for successful silent refreshes on the same tab (fired by Axios interceptor)
+    // to keep React context in sync with the new access token.
+    const handleAuthRefreshed = () => {
+      const newToken = localStorage.getItem(STORAGE_KEYS.USER_TOKEN);
+      const storedUser = localStorage.getItem(STORAGE_KEYS.USER_DATA);
+      if (newToken) {
+        setToken(newToken);
+      }
+      if (storedUser) {
+        try {
+          setUser(JSON.parse(storedUser));
+        } catch {
+          // Ignore malformed stored user data
+        }
+      }
+    };
+
     window.addEventListener('auth:expired', handleAuthExpired);
+    window.addEventListener('auth:refreshed', handleAuthRefreshed);
     return () => {
       window.removeEventListener('auth:expired', handleAuthExpired);
+      window.removeEventListener('auth:refreshed', handleAuthRefreshed);
     };
   }, [queryClient]);
 
