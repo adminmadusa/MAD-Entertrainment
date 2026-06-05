@@ -16,61 +16,92 @@ export const createRefund = async (data: {
   paymentId: string;
   amount: number;
   reason?: string;
+  idempotencyKey?: string;
 }): Promise<IRefund> => {
   // 1. Service-Level positive amount check (Defense in depth)
   if (data.amount <= 0) {
     throw AppError.badRequest('Refund amount must be greater than zero');
   }
 
-  // 2. Fetch and verify Payment record exists
-  const payment = await Payment.findById(data.paymentId);
-  if (!payment) {
-    throw AppError.notFound('Payment record not found');
-  }
+  try {
+    const result = await runInTransaction(async (session) => {
+      // 2. Fetch and verify Payment record exists
+      const payment = await Payment.findById(data.paymentId).session(session);
+      if (!payment) {
+        throw AppError.notFound('Payment record not found');
+      }
 
-  // 3. Payment ↔ Booking Relationship Verification
-  if (payment.bookingId.toString() !== data.bookingId) {
-    throw AppError.badRequest('Payment does not belong to booking');
-  }
+      // 3. Payment ↔ Booking Relationship Verification
+      if (payment.bookingId.toString() !== data.bookingId) {
+        throw AppError.badRequest('Payment does not belong to booking');
+      }
 
-  // 4. Payment status validation (Must be PAID or PARTIALLY_REFUNDED)
-  if (payment.status !== PaymentStatus.PAID && payment.status !== PaymentStatus.PARTIALLY_REFUNDED) {
-    throw AppError.badRequest('Only successful paid or partially refunded payments can be refunded');
-  }
+      // 4. Payment status validation (Must be PAID or PARTIALLY_REFUNDED)
+      if (payment.status !== PaymentStatus.PAID && payment.status !== PaymentStatus.PARTIALLY_REFUNDED) {
+        throw AppError.badRequest('Only successful paid or partially refunded payments can be refunded');
+      }
 
-  // 5. Fetch and verify Booking record exists and is CONFIRMED
-  const booking = await Booking.findById(data.bookingId);
-  if (!booking) {
-    throw AppError.notFound('Booking record not found');
-  }
-  if (booking.status !== BookingStatus.CONFIRMED) {
-    throw AppError.badRequest('Only confirmed bookings can be refunded');
-  }
+      // 5. Fetch and verify Booking record exists and is CONFIRMED
+      const booking = await Booking.findById(data.bookingId).session(session);
+      if (!booking) {
+        throw AppError.notFound('Booking record not found');
+      }
+      if (booking.status !== BookingStatus.CONFIRMED) {
+        throw AppError.badRequest('Only confirmed bookings can be refunded');
+      }
 
-  // 6. Individual Amount Cap Check
-  if (data.amount > payment.amount) {
-    throw AppError.badRequest('Refund amount cannot exceed original payment amount');
-  }
+      // 6. Individual Amount Cap Check
+      if (data.amount > payment.amount) {
+        throw AppError.badRequest('Refund amount cannot exceed original payment amount');
+      }
 
-  // 7. Cumulative Refund Check (Summing requested and completed)
-  const existingRefunds = await Refund.find({
-    paymentId: payment._id,
-    status: { $in: ['requested', 'completed'] },
-  });
-  const existingSum = existingRefunds.reduce((sum, r) => sum + r.amount, 0);
-  if (existingSum + data.amount > payment.amount) {
-    const remaining = payment.amount - existingSum;
-    throw AppError.badRequest(`Cumulative refund amount exceeds original payment amount (Paid: ₹${payment.amount}, Refunded/Requested: ₹${existingSum}, Max Remaining: ₹${remaining})`);
-  }
+      // Check for existing refund request with same idempotency key if provided
+      if (data.idempotencyKey) {
+        const existingRefund = await Refund.findOne({
+          idempotencyKey: data.idempotencyKey,
+          status: { $in: ['requested', 'processing', 'completed'] },
+        }).session(session);
+        if (existingRefund) {
+          logger.info({ idempotencyKey: data.idempotencyKey }, 'Refund request already exists. Skipping duplicate.');
+          return existingRefund;
+        }
+      }
 
-  const refund = new Refund({
-    bookingId: data.bookingId,
-    paymentId: data.paymentId,
-    amount: data.amount,
-    reason: data.reason,
-    status: 'requested',
-  });
-  return await refund.save();
+      // 7. Cumulative Refund Check (Summing requested and completed)
+      const existingRefunds = await Refund.find({
+        paymentId: payment._id,
+        status: { $in: ['requested', 'completed'] },
+      }).session(session);
+      const existingSum = existingRefunds.reduce((sum, r) => sum + r.amount, 0);
+      if (existingSum + data.amount > payment.amount) {
+        const remaining = payment.amount - existingSum;
+        throw AppError.badRequest(`Cumulative refund amount exceeds original payment amount (Paid: ₹${payment.amount}, Refunded/Requested: ₹${existingSum}, Max Remaining: ₹${remaining})`);
+      }
+
+      const refund = new Refund({
+        bookingId: data.bookingId,
+        paymentId: data.paymentId,
+        amount: data.amount,
+        reason: data.reason,
+        status: 'requested',
+        idempotencyKey: data.idempotencyKey,
+      });
+      return await refund.save({ session });
+    });
+    return result;
+  } catch (err: any) {
+    const isDuplicateKey = err.code === 11000 || err.code === '11000' || err.message?.includes('E11000');
+    if (isDuplicateKey && data.idempotencyKey) {
+      logger.warn({ idempotencyKey: data.idempotencyKey }, 'Duplicate refund request creation race detected. Recovering existing refund.');
+      const existing = await Refund.findOne({
+        idempotencyKey: data.idempotencyKey,
+      });
+      if (existing) {
+        return existing;
+      }
+    }
+    throw err;
+  }
 };
 
 export const getRefunds = async (
