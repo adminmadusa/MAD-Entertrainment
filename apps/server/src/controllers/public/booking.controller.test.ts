@@ -8,13 +8,26 @@ vi.hoisted(() => {
 });
 
 import { describe, it, expect, beforeEach } from 'vitest';
-import { createBooking } from './booking.controller';
+import { createBooking, recoverBooking } from './booking.controller';
 import { PublicBookingService } from '../../services/public/booking.service';
+import { BookingRecoveryService } from '../../services/public/booking-recovery.service';
+import { auditLog } from '../../utils/audit';
+import { AppError } from '../../middleware/error.middleware';
 
 vi.mock('../../services/public/booking.service', () => ({
   PublicBookingService: {
     createBooking: vi.fn(),
   },
+}));
+
+vi.mock('../../services/public/booking-recovery.service', () => ({
+  BookingRecoveryService: {
+    recoverBookingByTransactionId: vi.fn(),
+  },
+}));
+
+vi.mock('../../utils/audit', () => ({
+  auditLog: vi.fn(),
 }));
 
 vi.mock('../../utils/response', () => ({
@@ -80,3 +93,117 @@ describe('Booking Controller — createBooking Idempotency Response', () => {
     expect(res.status).toHaveBeenCalledWith(200);
   });
 });
+
+describe('Booking Controller — recoverBooking', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('should return 200 and guest email on success, logging attempt and success', async () => {
+    vi.mocked(BookingRecoveryService.recoverBookingByTransactionId).mockResolvedValue({
+      guestEmail: 'kalyan@gmail.com',
+      bookingId: 'MAD-2026-ABCDE',
+    });
+
+    const req: any = {
+      body: { transactionId: 'pay_mock_123456789' },
+      ip: '127.0.0.1',
+      headers: { 'user-agent': 'Mozilla/5.0' },
+      socket: {},
+    };
+
+    const res: any = {
+      status: vi.fn().mockReturnThis(),
+      json: vi.fn().mockReturnThis(),
+    };
+    const next = vi.fn();
+
+    await recoverBooking(req, res, next);
+
+    expect(BookingRecoveryService.recoverBookingByTransactionId).toHaveBeenCalledWith('pay_mock_123456789');
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith({
+      success: true,
+      email: 'kalyan@gmail.com',
+    });
+
+    // Check that TRANSACTION_RECOVERY_LOOKUP and TRANSACTION_RECOVERY_SUCCESS were logged with masked ID
+    expect(auditLog).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: 'TRANSACTION_RECOVERY_LOOKUP',
+        metadata: expect.objectContaining({
+          transactionId: 'pay_...6789',
+        }),
+      })
+    );
+    expect(auditLog).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: 'TRANSACTION_RECOVERY_SUCCESS',
+        metadata: expect.objectContaining({
+          transactionId: 'pay_...6789',
+          bookingId: 'MAD-2026-ABCDE',
+        }),
+      })
+    );
+  });
+
+  it('should return 404 on recovery info not found, logging lookup and failure', async () => {
+    vi.mocked(BookingRecoveryService.recoverBookingByTransactionId).mockRejectedValue(
+      new AppError('Recovery information not found', 404)
+    );
+
+    const req: any = {
+      body: { transactionId: 'pay_mock_123456789' },
+      ip: '127.0.0.1',
+      headers: { 'user-agent': 'Mozilla/5.0' },
+      socket: {},
+    };
+
+    const res: any = {
+      status: vi.fn().mockReturnThis(),
+      json: vi.fn().mockReturnThis(),
+    };
+    const next = vi.fn();
+
+    await recoverBooking(req, res, next);
+
+    expect(res.status).toHaveBeenCalledWith(404);
+    expect(res.json).toHaveBeenCalledWith({
+      success: false,
+      message: 'Recovery information not found.',
+    });
+
+    expect(auditLog).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: 'TRANSACTION_RECOVERY_NOT_FOUND',
+        metadata: expect.objectContaining({
+          transactionId: 'pay_...6789',
+          reason: 'Recovery information not found',
+        }),
+      })
+    );
+  });
+
+  it('should pass unexpected errors to next middleware', async () => {
+    const error = new Error('Database connection failed');
+    vi.mocked(BookingRecoveryService.recoverBookingByTransactionId).mockRejectedValue(error);
+
+    const req: any = {
+      body: { transactionId: 'pay_mock_123456789' },
+      ip: '127.0.0.1',
+      headers: { 'user-agent': 'Mozilla/5.0' },
+      socket: {},
+    };
+
+    const res: any = {
+      status: vi.fn().mockReturnThis(),
+      json: vi.fn().mockReturnThis(),
+    };
+    const next = vi.fn();
+
+    await recoverBooking(req, res, next);
+
+    expect(next).toHaveBeenCalledWith(error);
+  });
+});
+

@@ -2,7 +2,8 @@ import { describe, expect, it, vi, beforeEach } from 'vitest';
 import router from './booking.routes';
 import { bookingLimiter } from '../../middleware/rate.middleware';
 import { optionalAuth } from '../../middleware/auth.middleware';
-import { createBooking } from '../../controllers/public/booking.controller';
+import { createBooking, recoverBooking } from '../../controllers/public/booking.controller';
+import { authLimiter } from '../../middleware/rate.middleware';
 
 vi.mock('../../controllers/public/booking.controller', () => ({
   createBooking: vi.fn((req: any, res: any) => res.status(201).json({ success: true })),
@@ -12,6 +13,7 @@ vi.mock('../../controllers/public/booking.controller', () => ({
   saveCheckoutDetails: vi.fn(),
   downloadBookingPDF: vi.fn(),
   resendBookingTickets: vi.fn(),
+  recoverBooking: vi.fn((req: any, res: any) => res.status(200).json({ success: true, email: 'test@example.com' })),
 }));
 
 vi.mock('../../middleware/auth.middleware', () => ({
@@ -31,10 +33,16 @@ vi.mock('../../middleware/rate.middleware', () => {
     }
     return next();
   });
+  const mockAuthLimiter = vi.fn((req: any, res: any, next: any) => {
+    if (req.simulateAuthLimitExceeded) {
+      return res.status(429).json({ success: false, message: 'Too many requests, please try again later.' });
+    }
+    return next();
+  });
   return {
     bookingLimiter: mockBookingLimiter,
     generalLimiter: vi.fn((req, res, next) => next()),
-    authLimiter: vi.fn((req, res, next) => next()),
+    authLimiter: mockAuthLimiter,
     paymentLimiter: vi.fn((req, res, next) => next()),
     resendLimiter: vi.fn((req, res, next) => next()),
   };
@@ -49,6 +57,10 @@ vi.mock('../../validations/payment.validation', () => ({
   reserveTicketsSchema: {},
   checkoutDetailsSchema: {},
   bookingReferenceParamSchema: {},
+}));
+
+vi.mock('../../validations/booking-recovery.validation', () => ({
+  recoverBookingSchema: {},
 }));
 
 vi.mock('../../utils/logger', () => ({
@@ -163,5 +175,76 @@ describe('Booking Routes - Rate Limiting Behavior', () => {
     );
     // Verify that the createBooking controller was NEVER called
     expect(createBooking).not.toHaveBeenCalled();
+  });
+});
+
+describe('Booking Routes - Recovery Route Stack', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  // Helper to extract the middleware chain handlers for POST /recover
+  function getRecoverBookingHandlers() {
+    const layer = router.stack.find(
+      (item: any) => item.route?.path === '/recover' && item.route?.methods?.post
+    );
+    if (!layer) {
+      throw new Error('POST /booking/recover route not found');
+    }
+    return layer.route.stack.map((s: any) => s.handle);
+  }
+
+  // Helper to run the middleware/controller chain sequentially
+  async function runMiddlewareChain(handlers: any[], req: any, res: any) {
+    let index = 0;
+    const next = async (err?: any) => {
+      if (err) throw err;
+      if (index < handlers.length) {
+        const currentHandler = handlers[index++];
+        await currentHandler(req, res, next);
+      }
+    };
+    await next();
+  }
+
+  it('should have authLimiter applied on POST /bookings/recover', () => {
+    const handlers = getRecoverBookingHandlers();
+    expect(handlers).toContain(authLimiter);
+  });
+
+  it('should allow recovery when rate limit is not exceeded', async () => {
+    const handlers = getRecoverBookingHandlers();
+    const req: any = {
+      body: { transactionId: 'pay_mock_123456789' },
+      simulateAuthLimitExceeded: false,
+    };
+    const res: any = {
+      status: vi.fn().mockReturnThis(),
+      json: vi.fn().mockReturnThis(),
+    };
+
+    await runMiddlewareChain(handlers, req, res);
+
+    expect(authLimiter).toHaveBeenCalled();
+    expect(recoverBooking).toHaveBeenCalled();
+    expect(res.status).toHaveBeenCalledWith(200);
+  });
+
+  it('should return 429 and NOT execute recoverBooking when rate limit is exceeded', async () => {
+    const handlers = getRecoverBookingHandlers();
+    const req: any = {
+      body: { transactionId: 'pay_mock_123456789' },
+      simulateAuthLimitExceeded: true,
+    };
+    const res: any = {
+      status: vi.fn().mockReturnThis(),
+      json: vi.fn().mockReturnThis(),
+    };
+
+    await runMiddlewareChain(handlers, req, res);
+
+    expect(authLimiter).toHaveBeenCalled();
+    expect(res.status).toHaveBeenCalledWith(429);
+    expect(recoverBooking).not.toHaveBeenCalled();
   });
 });

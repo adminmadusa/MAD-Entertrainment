@@ -5,6 +5,8 @@ import { sendSuccess } from '../../utils/response';
 import { AppError } from '../../middleware/error.middleware';
 import { signSessionToken } from '../../utils/jwt';
 import { PublicBookingService } from '../../services/public/booking.service';
+import { BookingRecoveryService } from '../../services/public/booking-recovery.service';
+import { auditLog } from '../../utils/audit';
 import { generateTicketPDF } from '../../utils/pdf';
 import { QueueService } from '../../services/queue.service';
 import { getQueueName } from '../../config/queue.config';
@@ -307,3 +309,77 @@ export async function resendBookingTickets(
     next(err);
   }
 }
+
+// ─────────────────────────────────────────────
+// Recover Booking Email
+// ─────────────────────────────────────────────
+
+export async function recoverBooking(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  const { transactionId } = req.body;
+  const ip = req.ip || req.socket.remoteAddress || '';
+  const userAgent = req.headers['user-agent'] || '';
+
+  const maskTransactionId = (id: string): string => {
+    if (!id || id.length <= 8) return '****';
+    return `${id.substring(0, 4)}...${id.substring(id.length - 4)}`;
+  };
+
+  const maskedTxId = maskTransactionId(transactionId);
+
+  try {
+    auditLog({
+      action: 'TRANSACTION_RECOVERY_LOOKUP',
+      status: 'pending',
+      metadata: {
+        transactionId: maskedTxId,
+        ip,
+        userAgent,
+      },
+      description: `Attempting booking email recovery with transaction ID ${maskedTxId}`,
+    });
+
+    const result = await BookingRecoveryService.recoverBookingByTransactionId(transactionId);
+
+    auditLog({
+      action: 'TRANSACTION_RECOVERY_SUCCESS',
+      status: 'success',
+      metadata: {
+        transactionId: maskedTxId,
+        bookingId: result.bookingId,
+        timestamp: new Date().toISOString(),
+      },
+      description: `Successfully recovered email for booking ${result.bookingId}`,
+    });
+
+    res.status(200).json({
+      success: true,
+      email: result.guestEmail,
+    });
+  } catch (err: any) {
+    const reason = err instanceof AppError ? err.message : (err?.message || 'Unknown error');
+    auditLog({
+      action: 'TRANSACTION_RECOVERY_NOT_FOUND',
+      status: 'failure',
+      metadata: {
+        transactionId: maskedTxId,
+        reason,
+      },
+      description: `Failed booking email recovery with transaction ID ${maskedTxId}: ${reason}`,
+    });
+
+    if (err instanceof AppError && err.statusCode === 404) {
+      res.status(404).json({
+        success: false,
+        message: 'Recovery information not found.',
+      });
+      return;
+    }
+
+    next(err);
+  }
+}
+
