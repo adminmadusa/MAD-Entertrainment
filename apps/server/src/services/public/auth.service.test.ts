@@ -823,3 +823,24 @@ describe('AuthService - requestMagicLink', () => {
   });
 });
 
+describe('AuthService - linkBookingsToUser', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('should remove guest ownership credentials (sessionId) using MongoDB $unset when linking bookings to a user account', async () => {
+    vi.mocked(Booking.updateMany).mockResolvedValue({ modifiedCount: 2 } as any);
+
+    // Call private static method using bracket notation
+    await (AuthService as any).linkBookingsToUser('john@example.com', '507f1f77bcf86cd799439011');
+
+    expect(Booking.updateMany).toHaveBeenCalledWith(
+      { guestEmail: 'john@example.com', userId: { $exists: false } },
+      {
+        $set: { userId: expect.any(Object) },
+        $unset: { sessionId: 1 },
+      }
+    );
+  });
+});
+

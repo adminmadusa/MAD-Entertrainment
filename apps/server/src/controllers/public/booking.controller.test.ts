@@ -8,7 +8,7 @@ vi.hoisted(() => {
 });
 
 import { describe, it, expect, beforeEach } from 'vitest';
-import { createBooking, recoverBooking } from './booking.controller';
+import { createBooking, recoverBooking, getBooking, downloadBookingPDF, resendBookingTickets } from './booking.controller';
 import { PublicBookingService } from '../../services/public/booking.service';
 import { BookingRecoveryService } from '../../services/public/booking-recovery.service';
 import { auditLog } from '../../utils/audit';
@@ -17,6 +17,7 @@ import { AppError } from '../../middleware/error.middleware';
 vi.mock('../../services/public/booking.service', () => ({
   PublicBookingService: {
     createBooking: vi.fn(),
+    getBookingByReference: vi.fn(),
   },
 }));
 
@@ -204,6 +205,117 @@ describe('Booking Controller — recoverBooking', () => {
     await recoverBooking(req, res, next);
 
     expect(next).toHaveBeenCalledWith(error);
+  });
+});
+
+describe('Booking Controller — Guest Ownership Validation Hardening', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('should deny ownership (Test 1) if raw x-session-id header is provided without a signed session JWT', async () => {
+    const mockBooking = {
+      _id: 'b-123',
+      bookingId: 'MAD-2026-ABCDE',
+      sessionId: 'session-123',
+    };
+    vi.mocked(PublicBookingService.getBookingByReference).mockResolvedValue({
+      booking: mockBooking as any,
+      tickets: [],
+      ticketsReady: true,
+    });
+
+    const req: any = {
+      params: { bookingId: 'MAD-2026-ABCDE' },
+      header: vi.fn((name) => (name === 'x-session-id' ? 'session-123' : undefined)),
+      session: undefined,
+    };
+    const res: any = {
+      status: vi.fn().mockReturnThis(),
+      json: vi.fn().mockReturnThis(),
+    };
+    const next = vi.fn();
+
+    await getBooking(req, res, next);
+
+    expect(next).toHaveBeenCalledWith(
+      expect.objectContaining({
+        statusCode: 403,
+        code: 'BOOKING_VERIFICATION_REQUIRED',
+        message: 'Email verification required',
+      })
+    );
+  });
+
+  it('should grant access (Test 2) if a valid signed session JWT matching the booking sessionId is provided', async () => {
+    const mockBooking = {
+      _id: 'b-123',
+      bookingId: 'MAD-2026-ABCDE',
+      sessionId: 'session-123',
+    };
+    const mockResult = {
+      booking: mockBooking as any,
+      tickets: [],
+      ticketsReady: true,
+    };
+    vi.mocked(PublicBookingService.getBookingByReference).mockResolvedValue(mockResult);
+
+    const req: any = {
+      params: { bookingId: 'MAD-2026-ABCDE' },
+      header: vi.fn(),
+      session: { sessionId: 'session-123' },
+    };
+    const res: any = {
+      status: vi.fn().mockReturnThis(),
+      json: vi.fn().mockReturnThis(),
+    };
+    const next = vi.fn();
+
+    await getBooking(req, res, next);
+
+    expect(next).not.toHaveBeenCalled();
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        success: true,
+        data: mockResult,
+      })
+    );
+  });
+
+  it('should deny access (Test 3) for a guest session even with matching sessionId if the booking is already claimed by a userId', async () => {
+    const mockBooking = {
+      _id: 'b-123',
+      bookingId: 'MAD-2026-ABCDE',
+      sessionId: 'session-123',
+      userId: 'user-789', // Claimed by user
+    };
+    vi.mocked(PublicBookingService.getBookingByReference).mockResolvedValue({
+      booking: mockBooking as any,
+      tickets: [],
+      ticketsReady: true,
+    });
+
+    const req: any = {
+      params: { bookingId: 'MAD-2026-ABCDE' },
+      header: vi.fn(),
+      session: { sessionId: 'session-123' }, // Matching guest session
+    };
+    const res: any = {
+      status: vi.fn().mockReturnThis(),
+      json: vi.fn().mockReturnThis(),
+    };
+    const next = vi.fn();
+
+    await getBooking(req, res, next);
+
+    expect(next).toHaveBeenCalledWith(
+      expect.objectContaining({
+        statusCode: 403,
+        code: 'BOOKING_VERIFICATION_REQUIRED',
+        message: 'Email verification required',
+      })
+    );
   });
 });
 

@@ -537,7 +537,10 @@ export class AuthService {
       // Strictly prevent multiple parallel processes or race conditions from linking the same booking twice
       const result = await Booking.updateMany(
         { guestEmail: email, userId: { $exists: false } },
-        { $set: { userId: new Types.ObjectId(userId) } }
+        { 
+          $set: { userId: new Types.ObjectId(userId) },
+          $unset: { sessionId: 1 }
+        }
       );
       if (result.modifiedCount > 0) {
         logger.info(
