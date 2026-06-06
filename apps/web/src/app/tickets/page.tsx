@@ -628,7 +628,18 @@ function TicketRetrievalContent() {
         {shouldShowPortal && (
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom-5 duration-500">
             {(!singleBooking || isAuthenticated) && (
-              <div className="flex justify-end mb-4">
+              <div className="flex justify-between items-center mb-4">
+                {singleBooking && isAuthenticated ? (
+                  <button
+                    type="button"
+                    onClick={handleSearchAnother}
+                    className="text-xs px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-border-subtle rounded-lg text-text-primary hover:text-white transition-all flex items-center gap-1.5"
+                  >
+                    <span>←</span> Back to Wallet
+                  </button>
+                ) : (
+                  <div />
+                )}
                 <button
                   type="button"
                   onClick={handleExitPortal}
@@ -701,7 +712,19 @@ function TicketRetrievalContent() {
                             </div>
                             <EntryPassGrid tickets={singleTickets} />
 
-                            {!isAuthenticated && (
+                            {isAuthenticated ? (
+                              <div className="space-y-4 mt-8 pt-6 border-t border-border-subtle/30">
+                                <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
+                                  <button
+                                    type="button"
+                                    onClick={handleSearchAnother}
+                                    className="px-5 py-2.5 bg-white/5 hover:bg-white/10 text-text-secondary hover:text-white text-xs font-bold rounded-xl transition-all border border-white/10"
+                                  >
+                                    Search Another Booking
+                                  </button>
+                                </div>
+                              </div>
+                            ) : (
                               <div className="space-y-4 mt-8 pt-6 border-t border-border-subtle/30">
                                 <p className="text-text-muted text-xs leading-relaxed text-center">
                                   Your ticket has been sent to <span className="text-white font-semibold">{singleBooking.guestEmail}</span>. You can view it anytime by signing in with the same email address.
