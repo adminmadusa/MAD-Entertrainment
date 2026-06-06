@@ -264,6 +264,14 @@ function TicketRetrievalContent() {
     setInfoMsg('');
   };
 
+  const handleSearchAnother = () => {
+    setQueryRef('');
+    setBookingRefInput('');
+    setErrorMsg('');
+    setInfoMsg('');
+    setShowLoginForGuest(false);
+  };
+
 
 
   const tickets = bookingsData?.tickets || [];
@@ -462,9 +470,27 @@ function TicketRetrievalContent() {
                             <EntryPassGrid tickets={singleTickets} />
 
                             {!isAuthenticated && (
-                              <p className="text-text-muted text-xs leading-relaxed text-center mt-6">
-                                Your ticket has been sent to <span className="text-white font-semibold">{singleBooking.guestEmail}</span>. You can view it anytime by signing in with the same email address.
-                              </p>
+                              <div className="space-y-4 mt-8 pt-6 border-t border-border-subtle/30">
+                                <p className="text-text-muted text-xs leading-relaxed text-center">
+                                  Your ticket has been sent to <span className="text-white font-semibold">{singleBooking.guestEmail}</span>. You can view it anytime by signing in with the same email address.
+                                </p>
+                                <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
+                                  <button
+                                    type="button"
+                                    onClick={() => setShowLoginForGuest(true)}
+                                    className="px-5 py-2.5 bg-accent-purple hover:bg-accent-purple-light text-white text-xs font-bold rounded-xl transition-all shadow-md"
+                                  >
+                                    Sign In to Wallet
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={handleSearchAnother}
+                                    className="px-5 py-2.5 bg-white/5 hover:bg-white/10 text-text-secondary hover:text-white text-xs font-bold rounded-xl transition-all border border-white/10"
+                                  >
+                                    Search Another Booking
+                                  </button>
+                                </div>
+                              </div>
                             )}
                           </div>
                         );
