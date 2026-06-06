@@ -96,8 +96,9 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
   };
 
   const handleOfflineRetry = () => {
-    if (typeof navigator !== 'undefined' && !navigator.onLine) {
-      alert('You still appear to be offline. Please reconnect and try again.');
+    const online = typeof navigator !== 'undefined' ? navigator.onLine : true;
+    if (!online) {
+      setIsOffline(true);
       return;
     }
     handleForceReload();
@@ -132,9 +133,9 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
 
   if (isChunk) {
     if (isOffline) {
-      icon = '📡';
-      title = 'Connection Lost';
-      description = 'You are currently offline. Please check your connection and try again.';
+      icon = '🎧';
+      title = 'DJ Booth Lost Connection';
+      description = "Looks like the sound system can't reach the venue right now. Some live features are temporarily unavailable until your internet connection returns.";
       primaryAction = (
         <button
           onClick={handleOfflineRetry}
@@ -149,7 +150,7 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
             fontSize: '0.875rem',
           }}
         >
-          Check Connection & Retry
+          Retry Connection
         </button>
       );
     } else if (isAutoReloading) {

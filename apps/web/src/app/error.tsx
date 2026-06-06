@@ -100,8 +100,9 @@ export default function ErrorPage({ error, reset }: ErrorPageProps) {
   };
 
   const handleOfflineRetry = () => {
-    if (typeof navigator !== 'undefined' && !navigator.onLine) {
-      alert('You still appear to be offline. Please reconnect and try again.');
+    const online = typeof navigator !== 'undefined' ? navigator.onLine : true;
+    if (!online) {
+      setIsOffline(true);
       return;
     }
     handleForceReload();
@@ -132,19 +133,19 @@ export default function ErrorPage({ error, reset }: ErrorPageProps) {
 
   if (isChunk) {
     if (isOffline) {
-      icon = '📡';
+      icon = '🎧';
       title = (
         <>
-          Connection <span className="text-gradient">Lost</span>
+          🎧 DJ Booth <span className="text-gradient">Lost Connection</span>
         </>
       );
-      description = 'You are currently offline. Please check your connection and try again.';
+      description = "Looks like the sound system can't reach the venue right now. Some live features are temporarily unavailable until your internet connection returns.";
       primaryAction = (
         <button
           onClick={handleOfflineRetry}
           className="px-6 py-3 btn-gradient text-white font-bold rounded-xl shadow-glow text-sm"
         >
-          Check Connection & Retry
+          Retry Connection
         </button>
       );
     } else if (isAutoReloading) {
