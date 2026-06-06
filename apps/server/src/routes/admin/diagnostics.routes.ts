@@ -17,10 +17,10 @@ import { listReservationsQuerySchema, retryFailedJobParamSchema } from '../../va
 const router: Router = Router();
 
 router.use(requireAdmin);
-router.get('/consistency', requireRole(AdminRole.SUPER_ADMIN, AdminRole.ADMIN), getConsistencyDiagnostics);
+router.get('/consistency', requireSuperAdmin, getConsistencyDiagnostics);
 router.post('/consistency/repair', requireSuperAdmin, repairConsistency);
-router.get('/reservations', requireRole(AdminRole.SUPER_ADMIN, AdminRole.ADMIN), validateQuery(listReservationsQuerySchema), listReservations);
-router.get('/system', requireRole(AdminRole.SUPER_ADMIN, AdminRole.ADMIN), getSystemDiagnostics);
+router.get('/reservations', requireSuperAdmin, validateQuery(listReservationsQuerySchema), listReservations);
+router.get('/system', requireSuperAdmin, getSystemDiagnostics);
 router.post('/dlq/:id/retry', requireSuperAdmin, validateParams(retryFailedJobParamSchema), retryFailedJob);
 router.post('/dlq/retry-all', requireSuperAdmin, retryAllFailedJobs);
 

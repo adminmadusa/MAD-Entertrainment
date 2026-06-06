@@ -213,6 +213,9 @@ describe('admin operational RBAC routes', () => {
   });
 
   it.each([
+    ['/consistency', 'get'],
+    ['/reservations', 'get'],
+    ['/system', 'get'],
     ['/consistency/repair', 'post'],
     ['/dlq/:id/retry', 'post'],
     ['/dlq/retry-all', 'post'],
@@ -222,21 +225,6 @@ describe('admin operational RBAC routes', () => {
     expectAllowed(middleware, AdminRole.SUPER_ADMIN);
     for (const role of [AdminRole.ADMIN, AdminRole.SUPPORT, AdminRole.MANAGER, AdminRole.SCANNER]) {
       expectDenied(middleware, role, 'Super admin access required');
-    }
-  });
-
-  it.each([
-    ['/consistency', 'get'],
-    ['/reservations', 'get'],
-    ['/system', 'get'],
-  ] as Array<[string, Method]>)('allows SUPER_ADMIN and ADMIN for diagnostics %s %s', (path, method) => {
-    const middleware = getRouteMiddleware(diagnosticsRoutes, path, method);
-
-    for (const role of [AdminRole.SUPER_ADMIN, AdminRole.ADMIN]) {
-      expectAllowed(middleware, role);
-    }
-    for (const role of [AdminRole.SUPPORT, AdminRole.MANAGER, AdminRole.SCANNER]) {
-      expectDenied(middleware, role, 'Access denied. Required role: super_admin or admin');
     }
   });
 

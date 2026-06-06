@@ -50,7 +50,7 @@ function DashboardContent() {
     queryKey: ['admin-diagnostics-consistency'],
     queryFn: adminGetConsistencyReport,
     refetchInterval: 30000,
-    enabled: !!admin?.role && ['super_admin', 'admin'].includes(admin.role),
+    enabled: !!admin?.role && ['super_admin'].includes(admin.role),
   });
 
   const { data: eventsData, isLoading: isEventsLoading } = useQuery({
@@ -68,7 +68,7 @@ function DashboardContent() {
   const { data: failedWebhooksData, isLoading: isWebhooksLoading } = useQuery({
     queryKey: ['admin-diagnostics-webhooks-failed'],
     queryFn: () => adminGetWebhooks({ page: 1, limit: 5, status: 'failed' }),
-    enabled: !!admin?.role && ['super_admin', 'admin'].includes(admin.role),
+    enabled: !!admin?.role && ['super_admin'].includes(admin.role),
   });
 
   const { data: emailLogsData, isLoading: isEmailsLoading } = useQuery({
@@ -121,7 +121,7 @@ function DashboardContent() {
   const totalDeliveryIssues = failedEmails.length + failedWebhooks.length;
 
   const showAnalytics = !!admin?.role && [AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.MANAGER].includes(admin.role as AdminRole);
-  const showDiagnosticsAlerts = !!admin?.role && [AdminRole.SUPER_ADMIN, AdminRole.ADMIN].includes(admin.role as AdminRole);
+  const showDiagnosticsAlerts = !!admin?.role && [AdminRole.SUPER_ADMIN].includes(admin.role as AdminRole);
   const showBookingsSearch = !!admin?.role && [AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.MANAGER, AdminRole.SUPPORT].includes(admin.role as AdminRole);
 
   const stats = [
@@ -141,7 +141,7 @@ function DashboardContent() {
     { label: 'Process Refunds', href: '/refunds', icon: '💸', color: 'border-border-subtle hover:border-white/20', roles: [AdminRole.SUPER_ADMIN, AdminRole.ADMIN] },
     { label: 'Analytics', href: '/dashboard', icon: '📊', color: 'border-border-subtle hover:border-white/20', roles: [AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.MANAGER] },
     { label: 'Scanner Console', href: '/scanner', icon: '📷', color: 'border-border-subtle hover:border-white/20', roles: [AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.MANAGER, AdminRole.SUPPORT, AdminRole.SCANNER] },
-    { label: 'Diagnostics', href: '/diagnostics', icon: '🔧', color: 'border-border-subtle hover:border-white/20', roles: [AdminRole.SUPER_ADMIN, AdminRole.ADMIN] },
+    { label: 'Diagnostics', href: '/diagnostics', icon: '🔧', color: 'border-border-subtle hover:border-white/20', roles: [AdminRole.SUPER_ADMIN] },
   ];
 
   const quickLinks = allQuickLinks.filter(link => {

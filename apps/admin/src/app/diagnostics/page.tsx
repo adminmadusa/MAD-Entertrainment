@@ -21,12 +21,14 @@ export default function DiagnosticsPage() {
     queryKey: QUERY_KEYS.admin.diagnostics.consistency(),
     queryFn: adminGetConsistencyReport,
     refetchInterval: 30_000,
+    enabled: isSuperAdmin,
   });
 
   const { data: reservations } = useQuery({
     queryKey: QUERY_KEYS.admin.diagnostics.reservations(status),
     queryFn: () => adminGetReservations(status || undefined),
     refetchInterval: 30_000,
+    enabled: isSuperAdmin,
   });
 
   const repairMutation = useMutation({
@@ -36,6 +38,28 @@ export default function DiagnosticsPage() {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.admin.diagnostics.reservations(status) });
     },
   });
+
+  if (admin && !isSuperAdmin) {
+    return (
+      <div className="py-12 text-center max-w-md mx-auto space-y-4">
+        <div className="w-16 h-16 rounded-full bg-red-500/10 border border-red-500/20 text-red-500 flex items-center justify-center text-2xl mx-auto">
+          ⚠️
+        </div>
+        <div className="space-y-2">
+          <h1 className="text-xl font-bold text-white">Access Denied</h1>
+          <p className="text-text-muted text-sm leading-relaxed">
+            You do not have the required permissions to access diagnostics. Consistency reports and ledger logs are restricted to Super Admins only.
+          </p>
+        </div>
+        <Link
+          href="/dashboard"
+          className="inline-block px-4 py-2 bg-white/5 hover:bg-white/10 text-white text-xs font-semibold rounded-xl border border-border-subtle transition-colors"
+        >
+          Return to Dashboard
+        </Link>
+      </div>
+    );
+  }
 
   const hasDrift = !!report && Object.values(report.drift).some((value) => value > 0);
 
