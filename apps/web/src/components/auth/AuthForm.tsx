@@ -52,9 +52,18 @@ export interface AuthFormProps {
   onSuccess?: (data: AuthResponse) => void;
   onGuestContinue?: () => void;
   className?: string;
+  isVerificationRequired?: boolean;
+  bookingReference?: string;
 }
 
-export function AuthForm({ mode, onSuccess, onGuestContinue, className = '' }: AuthFormProps) {
+export function AuthForm({
+  mode,
+  onSuccess,
+  onGuestContinue,
+  className = '',
+  isVerificationRequired,
+  bookingReference,
+}: AuthFormProps) {
   const { login, logout, token, setOnboardingRequired, onboardingRequired } = useAuth();
 
   const [cooldownRemaining, setCooldownRemaining] = useState<number>(0);
@@ -457,6 +466,24 @@ export function AuthForm({ mode, onSuccess, onGuestContinue, className = '' }: A
       {/* SCREEN 1: Request OTP Form */}
       {step === 'request' && (
         <div className="space-y-6">
+          {isVerificationRequired && (
+            <div 
+              role="alert"
+              aria-live="polite"
+              className="p-5 bg-accent-purple/10 border border-accent-purple/30 rounded-2xl text-center space-y-2 shadow-glow-sm animate-in fade-in duration-300"
+            >
+              <h3 className="text-accent-purple-light font-extrabold text-sm tracking-wide">
+                Booking Found
+              </h3>
+              <p className="text-text-secondary text-xs leading-relaxed">
+                Enter the email address used during purchase.
+              </p>
+              <p className="text-text-muted text-[10px] leading-relaxed">
+                We'll send you a verification code.
+              </p>
+            </div>
+          )}
+
           <form onSubmit={handleSubmitEmail} className={isCheckout ? 'flex gap-2' : 'space-y-5'}>
             {isCheckout ? (
               <>

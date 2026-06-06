@@ -18,7 +18,7 @@ export function extractApiError(error: unknown): ApiError {
       return {
         message: maybeError.response.data.message ?? maybeError.message ?? 'Request failed',
         statusCode: maybeError.response.data.statusCode ?? maybeError.response.status,
-        code: maybeError.response.data.code,
+        code: maybeError.response.data.code ?? (maybeError.response.data as any).error,
         details: maybeError.response.data.details,
         errors: maybeError.response.data.errors,
         retryAfter: maybeError.response.data.retryAfter,

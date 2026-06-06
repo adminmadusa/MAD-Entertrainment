@@ -257,6 +257,13 @@ function TicketRetrievalContent() {
     setBookingRefInput('');
   };
 
+  const handleSignOutAndVerifyEmail = () => {
+    logout();
+    setStep('email');
+    setErrorMsg('');
+    setInfoMsg('');
+  };
+
 
 
   const tickets = bookingsData?.tickets || [];
@@ -264,6 +271,7 @@ function TicketRetrievalContent() {
   const singleTickets = singleBookingData?.tickets || [];
   const singleLookupApiError = singleLookupError ? extractApiError(singleLookupError) : null;
   const isOwnershipVerificationRequired = singleLookupApiError?.code === 'BOOKING_VERIFICATION_REQUIRED';
+  const isOwnershipMismatch = isAuthenticated && isOwnershipVerificationRequired;
   const shouldShowPortal = (step === 'portal' || !!singleBooking) && !showLoginForGuest;
   const shouldShowAuthForm = (!shouldShowPortal && !isSingleLookupLoading) || showLoginForGuest;
   const shouldShowReferenceForm = !singleBooking;
@@ -309,6 +317,33 @@ function TicketRetrievalContent() {
           </div>
         )}
 
+        {isOwnershipMismatch && user && (
+          <div 
+            role="alert"
+            aria-live="polite"
+            className="glass rounded-3xl border border-error/30 bg-error/5 p-6 space-y-4 text-center animate-in fade-in zoom-in duration-300"
+          >
+            <h3 className="text-red-400 font-bold text-base">
+              We found this booking, but it belongs to a different account.
+            </h3>
+            <p className="text-text-secondary text-xs">
+              You are currently signed in as: <span className="text-white font-semibold">{user.email}</span>
+            </p>
+            <p className="text-text-muted text-xs">
+              To access these tickets, sign out and verify using the email address used during purchase.
+            </p>
+            <div className="flex justify-center pt-2">
+              <button
+                type="button"
+                onClick={handleSignOutAndVerifyEmail}
+                className="px-6 py-2.5 bg-error hover:bg-red-500 text-white text-xs font-bold rounded-xl transition-all shadow-md"
+              >
+                Sign Out & Verify Email
+              </button>
+            </div>
+          </div>
+        )}
+
 
 
         {/* SCREEN 1 & 2: Reusable Shared AuthForm Gate */}
@@ -326,12 +361,17 @@ function TicketRetrievalContent() {
             )}
             
             <div className="glass-strong rounded-3xl border border-border-subtle p-8 shadow-2xl">
-              <AuthForm mode="wallet" onSuccess={() => { 
-                sessionStorage.setItem('just_logged_in', 'true');
-                setStep('portal'); 
-                setShowLoginForGuest(false); 
-                setErrorMsg('');
-              }} />
+              <AuthForm 
+                mode="wallet" 
+                isVerificationRequired={isOwnershipVerificationRequired}
+                bookingReference={queryRef}
+                onSuccess={() => { 
+                  sessionStorage.setItem('just_logged_in', 'true');
+                  setStep('portal'); 
+                  setShowLoginForGuest(false); 
+                  setErrorMsg('');
+                }} 
+              />
               {showLoginForGuest && (
                 <button 
                   onClick={() => setShowLoginForGuest(false)} 
