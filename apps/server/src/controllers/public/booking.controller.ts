@@ -139,7 +139,7 @@ export async function getBooking(
 
     const booking = result.booking;
     const reqUserId = req.user?.sub;
-    const reqSessionId = req.session?.sessionId || req.header('x-session-id') || undefined;
+    const reqSessionId = req.session?.sessionId || undefined;
 
     // Logged-in ownership
     const isUserOwner =
@@ -149,6 +149,7 @@ export async function getBooking(
 
     // Guest ownership
     const isGuestOwner =
+      !booking.userId &&
       !!booking.sessionId &&
       !!reqSessionId &&
       booking.sessionId === reqSessionId;
@@ -213,7 +214,7 @@ export async function downloadBookingPDF(
   try {
     const { bookingId } = req.params;
     const reqUserId = req.user?.sub;
-    const reqSessionId = req.session?.sessionId || req.header('x-session-id') || undefined;
+    const reqSessionId = req.session?.sessionId || undefined;
 
     const result = await PublicBookingService.getBookingByReference(bookingId);
     if (!result) {
@@ -230,6 +231,7 @@ export async function downloadBookingPDF(
 
     // Guest ownership
     const isGuestOwner =
+      !booking.userId &&
       !!booking.sessionId &&
       !!reqSessionId &&
       booking.sessionId === reqSessionId;
@@ -260,7 +262,7 @@ export async function resendBookingTickets(
   try {
     const { bookingId } = req.params;
     const reqUserId = req.user?.sub;
-    const reqSessionId = req.session?.sessionId || req.header('x-session-id') || undefined;
+    const reqSessionId = req.session?.sessionId || undefined;
 
     const result = await PublicBookingService.getBookingByReference(bookingId);
     if (!result) {
@@ -277,6 +279,7 @@ export async function resendBookingTickets(
 
     // Guest ownership
     const isGuestOwner =
+      !booking.userId &&
       !!booking.sessionId &&
       !!reqSessionId &&
       booking.sessionId === reqSessionId;
