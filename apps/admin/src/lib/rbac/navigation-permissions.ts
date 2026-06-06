@@ -14,7 +14,7 @@ export const ROUTE_PERMISSIONS: Record<string, string[]> = {
   '/popups': [AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.MANAGER, AdminRole.SUPPORT],
   '/notifications': [AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.MANAGER, AdminRole.SUPPORT],
   '/team': [AdminRole.SUPER_ADMIN],
-  '/diagnostics': [AdminRole.SUPER_ADMIN, AdminRole.ADMIN],
+  '/diagnostics': [AdminRole.SUPER_ADMIN],
   '/settings': [AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.MANAGER]
 };
 

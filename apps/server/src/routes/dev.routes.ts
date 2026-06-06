@@ -2,8 +2,11 @@ import { Router } from 'express';
 
 import { getEnv } from '../config/env';
 import { verifyTransporter } from '../utils/email.js';
+import { requireAdmin } from '../middleware/auth.middleware';
 
 const router: Router = Router();
+
+router.use(requireAdmin);
 
 router.get('/email-health', async (_req, res) => {
   const env = getEnv();
