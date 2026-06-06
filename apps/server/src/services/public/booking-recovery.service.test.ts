@@ -10,7 +10,7 @@ vi.hoisted(() => {
 import { Types } from 'mongoose';
 import { PaymentStatus, BookingStatus } from '@mad/shared';
 
-import { BookingRecoveryService } from './booking-recovery.service';
+import { BookingRecoveryService, maskEmail } from './booking-recovery.service';
 import { Payment } from '../../models/payment.schema';
 import { Booking } from '../../models/booking.schema';
 import { AppError } from '../../middleware/error.middleware';
@@ -65,7 +65,10 @@ describe('BookingRecoveryService', () => {
       status: PaymentStatus.PAID,
     });
     expect(Booking.findById).toHaveBeenCalledWith(bookingObjectId);
-    expect(result).toEqual({ guestEmail, bookingId });
+    // Email must be masked — not the raw address
+    expect(result.guestEmail).not.toBe(guestEmail);
+    expect(result.guestEmail).toMatch(/^t\*+t@example\.com$/);
+    expect(result.bookingId).toBe(bookingId);
   });
 
   it('should throw 404 AppError if payment is not found', async () => {
@@ -136,5 +139,31 @@ describe('BookingRecoveryService', () => {
     await expect(
       BookingRecoveryService.recoverBookingByTransactionId(transactionId)
     ).rejects.toThrowError(new AppError('Recovery information not found', 404));
+  });
+});
+
+describe('maskEmail', () => {
+  it('should mask a standard email, preserving first and last local chars', () => {
+    expect(maskEmail('customer@example.com')).toBe('c******r@example.com');
+  });
+
+  it('should mask a short 3-char local part', () => {
+    expect(maskEmail('abc@example.com')).toBe('a*c@example.com');
+  });
+
+  it('should mask a 2-char local part', () => {
+    expect(maskEmail('ab@example.com')).toBe('a*@example.com');
+  });
+
+  it('should mask a 1-char local part', () => {
+    expect(maskEmail('a@example.com')).toBe('a****@example.com');
+  });
+
+  it('should return **** for an invalid email with no @ symbol', () => {
+    expect(maskEmail('invalid')).toBe('****');
+  });
+
+  it('should preserve the full domain including subdomain', () => {
+    expect(maskEmail('test@mail.example.co.in')).toBe('t**t@mail.example.co.in');
   });
 });

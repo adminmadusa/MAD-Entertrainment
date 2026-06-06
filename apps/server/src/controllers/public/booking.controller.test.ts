@@ -123,6 +123,9 @@ describe('Booking Controller — recoverBooking', () => {
 
     expect(BookingRecoveryService.recoverBookingByTransactionId).toHaveBeenCalledWith('pay_mock_123456789');
     expect(res.status).toHaveBeenCalledWith(200);
+    // The controller forwards whatever the service returns.
+    // The service is responsible for masking — the controller test verifies
+    // it passes the service result through unchanged.
     expect(res.json).toHaveBeenCalledWith({
       success: true,
       email: 'kalyan@gmail.com',
