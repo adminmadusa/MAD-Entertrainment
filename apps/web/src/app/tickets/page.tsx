@@ -603,7 +603,6 @@ function TicketRetrievalContent() {
                 mode="wallet" 
                 isVerificationRequired={isOwnershipVerificationRequired}
                 bookingReference={queryRef}
-                initialEmail={recoveredEmail || undefined}
                 onSuccess={() => { 
                   sessionStorage.setItem('just_logged_in', 'true');
                   setStep('portal'); 

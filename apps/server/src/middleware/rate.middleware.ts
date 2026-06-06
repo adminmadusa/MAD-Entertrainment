@@ -106,6 +106,7 @@ let _bookingLimiter: RateLimiter | undefined;
 let _webhookLimiter: RateLimiter | undefined;
 let _adminLimiter: RateLimiter | undefined;
 let _resendLimiter: RateLimiter | undefined;
+let _recoveryLimiter: RateLimiter | undefined;
 
 function makeLimiter(prefix: 'general' | 'auth' | 'payment' | 'booking' | 'webhook' | 'admin'): RateLimiter {
   const e = getEnv();
@@ -184,6 +185,23 @@ export function initRateLimiters(): void {
       });
     },
   });
+
+  // Dedicated booking recovery limiter
+  // Isolated from the auth limiter to prevent shared-bucket abuse.
+  _recoveryLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    limit: 3,                 // 3 requests per IP per window
+    standardHeaders: true,
+    legacyHeaders: false,
+    passOnStoreError: true,
+    store: new ResilientRedisStore('recovery'),
+    handler: (_req: any, res: any) => {
+      res.status(429).json({
+        success: false,
+        message: 'Too many recovery attempts. Please wait before trying again.',
+      });
+    },
+  });
 }
 
 export const generalLimiter = (req: any, res: any, next: any) => {
@@ -240,4 +258,12 @@ export const resendLimiter = (req: any, res: any, next: any) => {
     return next();
   }
   return _resendLimiter(req, res, next);
+};
+
+export const recoveryLimiter = (req: any, res: any, next: any) => {
+  if (!_recoveryLimiter) {
+    logger.error('recoveryLimiter called before initRateLimiters() — rate limiting inactive');
+    return next();
+  }
+  return _recoveryLimiter(req, res, next);
 };

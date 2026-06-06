@@ -16,7 +16,7 @@ import {
     requireAuth,
     optionalAuth,
 } from '../../middleware/auth.middleware';
-import { authLimiter, resendLimiter, generalLimiter, bookingLimiter } from '../../middleware/rate.middleware';
+import { authLimiter, resendLimiter, generalLimiter, bookingLimiter, recoveryLimiter } from '../../middleware/rate.middleware';
 
 import { validateBody, validateParams } from '../../middleware/validation.middleware';
 import { reserveTicketsSchema, checkoutDetailsSchema, bookingReferenceParamSchema } from '../../validations/payment.validation';
@@ -98,7 +98,7 @@ router.post(
 
 router.post(
     '/recover',
-    authLimiter as any,
+    recoveryLimiter as any,
     validateBody(recoverBookingSchema),
     recoverBooking
 );

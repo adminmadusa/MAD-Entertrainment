@@ -1,9 +1,8 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import router from './booking.routes';
-import { bookingLimiter } from '../../middleware/rate.middleware';
+import { bookingLimiter, recoveryLimiter } from '../../middleware/rate.middleware';
 import { optionalAuth } from '../../middleware/auth.middleware';
 import { createBooking, recoverBooking } from '../../controllers/public/booking.controller';
-import { authLimiter } from '../../middleware/rate.middleware';
 
 vi.mock('../../controllers/public/booking.controller', () => ({
   createBooking: vi.fn((req: any, res: any) => res.status(201).json({ success: true })),
@@ -33,18 +32,19 @@ vi.mock('../../middleware/rate.middleware', () => {
     }
     return next();
   });
-  const mockAuthLimiter = vi.fn((req: any, res: any, next: any) => {
-    if (req.simulateAuthLimitExceeded) {
-      return res.status(429).json({ success: false, message: 'Too many requests, please try again later.' });
+  const mockRecoveryLimiter = vi.fn((req: any, res: any, next: any) => {
+    if (req.simulateRecoveryLimitExceeded) {
+      return res.status(429).json({ success: false, message: 'Too many recovery attempts. Please wait before trying again.' });
     }
     return next();
   });
   return {
     bookingLimiter: mockBookingLimiter,
     generalLimiter: vi.fn((req, res, next) => next()),
-    authLimiter: mockAuthLimiter,
+    authLimiter: vi.fn((req, res, next) => next()),
     paymentLimiter: vi.fn((req, res, next) => next()),
     resendLimiter: vi.fn((req, res, next) => next()),
+    recoveryLimiter: mockRecoveryLimiter,
   };
 });
 
@@ -207,16 +207,16 @@ describe('Booking Routes - Recovery Route Stack', () => {
     await next();
   }
 
-  it('should have authLimiter applied on POST /bookings/recover', () => {
+  it('should have recoveryLimiter applied on POST /bookings/recover', () => {
     const handlers = getRecoverBookingHandlers();
-    expect(handlers).toContain(authLimiter);
+    expect(handlers).toContain(recoveryLimiter);
   });
 
   it('should allow recovery when rate limit is not exceeded', async () => {
     const handlers = getRecoverBookingHandlers();
     const req: any = {
       body: { transactionId: 'pay_mock_123456789' },
-      simulateAuthLimitExceeded: false,
+      simulateRecoveryLimitExceeded: false,
     };
     const res: any = {
       status: vi.fn().mockReturnThis(),
@@ -225,7 +225,7 @@ describe('Booking Routes - Recovery Route Stack', () => {
 
     await runMiddlewareChain(handlers, req, res);
 
-    expect(authLimiter).toHaveBeenCalled();
+    expect(recoveryLimiter).toHaveBeenCalled();
     expect(recoverBooking).toHaveBeenCalled();
     expect(res.status).toHaveBeenCalledWith(200);
   });
@@ -234,7 +234,7 @@ describe('Booking Routes - Recovery Route Stack', () => {
     const handlers = getRecoverBookingHandlers();
     const req: any = {
       body: { transactionId: 'pay_mock_123456789' },
-      simulateAuthLimitExceeded: true,
+      simulateRecoveryLimitExceeded: true,
     };
     const res: any = {
       status: vi.fn().mockReturnThis(),
@@ -243,7 +243,7 @@ describe('Booking Routes - Recovery Route Stack', () => {
 
     await runMiddlewareChain(handlers, req, res);
 
-    expect(authLimiter).toHaveBeenCalled();
+    expect(recoveryLimiter).toHaveBeenCalled();
     expect(res.status).toHaveBeenCalledWith(429);
     expect(recoverBooking).not.toHaveBeenCalled();
   });

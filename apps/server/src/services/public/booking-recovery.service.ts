@@ -3,6 +3,31 @@ import { Payment } from '../../models/payment.schema';
 import { Booking } from '../../models/booking.schema';
 import { AppError } from '../../middleware/error.middleware';
 
+// ─────────────────────────────────────────────
+// Email Masking
+// Masks the local part of an email address to
+// prevent PII disclosure while preserving the
+// hint value for display purposes.
+// Example: customer@example.com → c*****r@example.com
+// ─────────────────────────────────────────────
+export function maskEmail(email: string): string {
+  const atIndex = email.indexOf('@');
+  if (atIndex <= 0) return '****';
+
+  const local = email.substring(0, atIndex);
+  const domain = email.substring(atIndex); // includes '@'
+
+  if (local.length === 1) {
+    return `${local}****${domain}`;
+  }
+  if (local.length === 2) {
+    return `${local[0]}*${domain}`;
+  }
+
+  const masked = local[0] + '*'.repeat(local.length - 2) + local[local.length - 1];
+  return `${masked}${domain}`;
+}
+
 export class BookingRecoveryService {
   /**
    * Recovers a booking's registered email using a paid payment transaction ID.
@@ -48,7 +73,7 @@ export class BookingRecoveryService {
     }
 
     return {
-      guestEmail: booking.guestEmail,
+      guestEmail: maskEmail(booking.guestEmail),
       bookingId: booking.bookingId,
     };
   }
