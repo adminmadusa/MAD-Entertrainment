@@ -8,7 +8,9 @@ import {
     saveCheckoutDetails,
     downloadBookingPDF,
     resendBookingTickets,
+    recoverBooking,
 } from '../../controllers/public/booking.controller';
+import { recoverBookingSchema } from '../../validations/booking-recovery.validation';
 
 import {
     requireAuth,
@@ -88,6 +90,17 @@ router.post(
     resendLimiter,
     validateParams(bookingReferenceParamSchema),
     resendBookingTickets
+);
+
+// ─────────────────────────────────────────────
+// Transaction Recovery Backend API
+// ─────────────────────────────────────────────
+
+router.post(
+    '/recover',
+    authLimiter as any,
+    validateBody(recoverBookingSchema),
+    recoverBooking
 );
 
 export default router;
