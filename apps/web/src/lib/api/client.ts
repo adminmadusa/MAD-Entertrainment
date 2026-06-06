@@ -36,7 +36,11 @@ apiClient.interceptors.request.use(
   (error: unknown) => Promise.reject(error)
 );
 
-// ─── Response Interceptor — Silent Refresh Queue & Intercept ───
+// ─── Auth-Excluded Routes ─────────────────────────────────────
+
+const AUTH_EXCLUDED_ROUTES = ['/auth/refresh', '/auth/logout', '/auth/verify', '/auth/magic-link'];
+
+// ─── Queue State ──────────────────────────────────────────────
 
 let isRefreshing = false;
 let failedQueue: Array<{
@@ -55,89 +59,236 @@ const processQueue = (error: unknown, token: string | null = null) => {
   failedQueue = [];
 };
 
+// ─── Token Validity Helper ────────────────────────────────────
+
+function isTokenExpiredOrMissing(token: string | null): boolean {
+  if (!token) return true;
+  try {
+    const parts = token.split('.');
+    if (parts.length !== 3) return true;
+    const base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+    const padded = base64.padEnd(base64.length + (4 - (base64.length % 4)) % 4, '=');
+    const decoded = JSON.parse(atob(padded));
+    if (typeof decoded.exp !== 'number') return false;
+    return decoded.exp * 1000 < Date.now();
+  } catch {
+    return true;
+  }
+}
+
+// ─── Core Refresh Executor ────────────────────────────────────
+
+async function executeTokenRefresh(originalExpiredToken: string): Promise<string> {
+  // Double-Checked Lock: Re-read the token immediately after acquiring the lock.
+  // Another tab may have already rotated it while we were queued.
+  const currentToken = typeof window !== 'undefined'
+    ? localStorage.getItem(STORAGE_KEYS.USER_TOKEN)
+    : null;
+
+  if (
+    currentToken &&
+    !isTokenExpiredOrMissing(currentToken) &&
+    currentToken !== originalExpiredToken
+  ) {
+    // Another tab already completed the refresh. Use the propagated token.
+    apiClient.defaults.headers.common.Authorization = `Bearer ${currentToken}`;
+    return currentToken;
+  }
+
+  // We are the owner — execute the refresh.
+  const refreshResponse = await axios.post<{ data: { token: string } }>(
+    `${BASE_URL}/auth/refresh`,
+    {},
+    { withCredentials: true }
+  );
+
+  const newToken = refreshResponse.data?.data?.token;
+  if (!newToken) {
+    throw new Error('Refresh failed: No token returned');
+  }
+
+  if (typeof window !== 'undefined') {
+    localStorage.setItem(STORAGE_KEYS.USER_TOKEN, newToken);
+    // Notify AuthProvider on the same tab to sync React state.
+    window.dispatchEvent(new CustomEvent('auth:refreshed', { detail: { token: newToken } }));
+  }
+
+  apiClient.defaults.headers.common.Authorization = `Bearer ${newToken}`;
+  return newToken;
+}
+
+// ─── Safari <15.4 Cooperative Fallback Lock ───────────────────
+//
+// navigator.locks is unavailable in Safari before 15.4.
+// We use a localStorage timestamp key with a 10-second TTL as a
+// cooperative advisory lock so concurrent tabs can avoid duplicate refresh calls.
+
+const FALLBACK_LOCK_KEY = 'mad_auth_refresh_lock_ts';
+const FALLBACK_LOCK_TTL_MS = 10_000;
+
+async function executeWithFallbackLock(originalExpiredToken: string): Promise<string> {
+  const now = Date.now();
+  const existing = localStorage.getItem(FALLBACK_LOCK_KEY);
+
+  if (existing) {
+    const lockTs = parseInt(existing, 10);
+    if (!isNaN(lockTs) && now - lockTs < FALLBACK_LOCK_TTL_MS) {
+      // Another tab is refreshing. Poll localStorage for the new token.
+      return new Promise<string>((resolve, reject) => {
+        const start = Date.now();
+        const poll = setInterval(() => {
+          const t = localStorage.getItem(STORAGE_KEYS.USER_TOKEN);
+          if (t && !isTokenExpiredOrMissing(t) && t !== originalExpiredToken) {
+            clearInterval(poll);
+            apiClient.defaults.headers.common.Authorization = `Bearer ${t}`;
+            resolve(t);
+          } else if (Date.now() - start > FALLBACK_LOCK_TTL_MS) {
+            clearInterval(poll);
+            reject(new Error('Fallback lock timed out waiting for token refresh'));
+          }
+        }, 200);
+      });
+    }
+  }
+
+  // Acquire the fallback lock.
+  localStorage.setItem(FALLBACK_LOCK_KEY, String(now));
+  try {
+    const token = await executeTokenRefresh(originalExpiredToken);
+    return token;
+  } finally {
+    localStorage.removeItem(FALLBACK_LOCK_KEY);
+  }
+}
+
+// ─── Cross-Tab Storage Event Listener ────────────────────────
+//
+// When another tab writes a new token or clears the session, this listener
+// synchronizes the current tab's queue and Axios default headers.
+
+if (typeof window !== 'undefined') {
+  window.addEventListener('storage', (event) => {
+    if (event.key !== STORAGE_KEYS.USER_TOKEN) return;
+
+    if (event.newValue === null) {
+      // Another tab logged out or session expired — propagate eviction.
+      processQueue(new Error('Session expired in another tab'), null);
+      isRefreshing = false;
+      localStorage.removeItem(STORAGE_KEYS.USER_DATA);
+      window.dispatchEvent(new CustomEvent('auth:expired'));
+      return;
+    }
+
+    if (event.newValue && !isTokenExpiredOrMissing(event.newValue)) {
+      // Another tab successfully refreshed the token — adopt it and flush the queue.
+      apiClient.defaults.headers.common.Authorization = `Bearer ${event.newValue}`;
+      processQueue(null, event.newValue);
+      isRefreshing = false;
+    }
+  });
+}
+
+// ─── Response Interceptor — Hybrid Web Locks + Storage Events ─
+
 apiClient.interceptors.response.use(
   (response) => response,
   async (error: AxiosError<{ message?: string; errors?: Record<string, string[]> }>) => {
     const originalRequest = error.config as CustomAxiosRequestConfig | undefined;
 
-    // Detect 401 unauthorized errors and trigger silent token refresh
-    if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
-      // Prevent infinite loops if refresh or logout itself fails,
-      // and do not intercept expected 401s for login/auth routes.
-      if (
-        originalRequest.url?.includes('/auth/refresh') ||
-        originalRequest.url?.includes('/auth/logout') ||
-        originalRequest.url?.includes('/auth/verify') ||
-        originalRequest.url?.includes('/auth/magic-link')
-      ) {
-        if (
-          originalRequest.url?.includes('/auth/refresh') ||
-          originalRequest.url?.includes('/auth/logout')
-        ) {
-          if (typeof window !== 'undefined') {
-            localStorage.removeItem(STORAGE_KEYS.USER_TOKEN);
-            localStorage.removeItem(STORAGE_KEYS.USER_DATA);
-            window.dispatchEvent(new CustomEvent('auth:expired'));
-          }
-        }
-        return Promise.reject(error);
-      }
+    if (error.response?.status !== 401 || !originalRequest || originalRequest._retry) {
+      return Promise.reject(error);
+    }
 
-      // If a refresh is already in progress, enqueue this request to resolve once refreshed
-      if (isRefreshing) {
-        return new Promise<string>((resolve, reject) => {
-          failedQueue.push({ resolve, reject });
-        })
-          .then((token) => {
-            if (originalRequest.headers) {
-              originalRequest.headers.Authorization = `Bearer ${token}`;
-            }
-            return apiClient(originalRequest);
-          })
-          .catch((err: unknown) => Promise.reject(err));
-      }
+    // ── Origin Guard: Only intercept requests to our own API ──
+    const requestUrl = originalRequest.url ?? '';
+    const isOwnApi = requestUrl.startsWith('/') || requestUrl.startsWith(BASE_URL);
+    if (!isOwnApi) {
+      return Promise.reject(error);
+    }
 
-      originalRequest._retry = true;
-      isRefreshing = true;
-
-      try {
-        // Execute token refresh, secure cookie will be sent automatically
-        const refreshResponse = await axios.post<{ data: { token: string } }>(
-          `${BASE_URL}/auth/refresh`,
-          {},
-          { withCredentials: true }
-        );
-
-        const newToken = refreshResponse.data?.data?.token;
-        if (!newToken) {
-          throw new Error('Refresh failed: No token returned');
-        }
-
-        if (typeof window !== 'undefined') {
-          localStorage.setItem(STORAGE_KEYS.USER_TOKEN, newToken);
-        }
-
-        apiClient.defaults.headers.common.Authorization = `Bearer ${newToken}`;
-        if (originalRequest.headers) {
-          originalRequest.headers.Authorization = `Bearer ${newToken}`;
-        }
-
-        processQueue(null, newToken);
-        return apiClient(originalRequest);
-      } catch (refreshError: unknown) {
-        processQueue(refreshError, null);
+    // ── Auth Route Guard: Never intercept auth-plumbing routes ──
+    const isExcluded = AUTH_EXCLUDED_ROUTES.some((r) => requestUrl.includes(r));
+    if (isExcluded) {
+      // Refresh or logout itself failed — evict the session entirely.
+      if (requestUrl.includes('/auth/refresh') || requestUrl.includes('/auth/logout')) {
         if (typeof window !== 'undefined') {
           localStorage.removeItem(STORAGE_KEYS.USER_TOKEN);
           localStorage.removeItem(STORAGE_KEYS.USER_DATA);
           window.dispatchEvent(new CustomEvent('auth:expired'));
         }
-        return Promise.reject(refreshError);
-      } finally {
-        isRefreshing = false;
       }
+      return Promise.reject(error);
     }
 
-    return Promise.reject(error);
+    // Capture the expired token before any async work.
+    const originalExpiredToken =
+      typeof window !== 'undefined'
+        ? (localStorage.getItem(STORAGE_KEYS.USER_TOKEN) ?? '')
+        : '';
+
+    // ── Queue waiting requests while a refresh is in progress ──
+    if (isRefreshing) {
+      return new Promise<string>((resolve, reject) => {
+        failedQueue.push({ resolve, reject });
+      })
+        .then((token) => {
+          originalRequest._retry = true; // Prevent re-queuing on second failure.
+          if (originalRequest.headers) {
+            originalRequest.headers.Authorization = `Bearer ${token}`;
+          }
+          return apiClient(originalRequest);
+        })
+        .catch((err: unknown) => Promise.reject(err));
+    }
+
+    originalRequest._retry = true;
+    isRefreshing = true;
+
+    const performRefresh = async (): Promise<string> => {
+      const hasWebLocks = typeof navigator !== 'undefined' && typeof navigator.locks !== 'undefined';
+
+      if (hasWebLocks) {
+        // ── Web Locks path (Chrome, Edge, Firefox, Safari ≥15.4) ──
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 15_000);
+
+        try {
+          let newToken = '';
+          await navigator.locks.request(
+            'mad_auth_refresh_lock',
+            { signal: controller.signal },
+            async () => {
+              newToken = await executeTokenRefresh(originalExpiredToken);
+            }
+          );
+          return newToken;
+        } finally {
+          clearTimeout(timeoutId);
+        }
+      } else {
+        // ── Cooperative fallback path (Safari <15.4) ──
+        return executeWithFallbackLock(originalExpiredToken);
+      }
+    };
+
+    try {
+      const newToken = await performRefresh();
+      if (originalRequest.headers) {
+        originalRequest.headers.Authorization = `Bearer ${newToken}`;
+      }
+      processQueue(null, newToken);
+      return apiClient(originalRequest);
+    } catch (refreshError: unknown) {
+      processQueue(refreshError, null);
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem(STORAGE_KEYS.USER_TOKEN);
+        localStorage.removeItem(STORAGE_KEYS.USER_DATA);
+        window.dispatchEvent(new CustomEvent('auth:expired'));
+      }
+      return Promise.reject(refreshError);
+    } finally {
+      isRefreshing = false;
+    }
   }
 );
 
