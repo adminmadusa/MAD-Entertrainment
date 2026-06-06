@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { Outfit } from 'next/font/google';
 
 import { PopupManager } from '@/components/common/PopupManager';
+import { ChunkRecoveryClear } from '@/components/common/ChunkRecoveryClear';
 import { Footer } from '@/components/layout/Footer';
 import { Navbar } from '@/components/layout/Navbar';
 import { Providers } from '@/providers';
@@ -109,6 +110,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="en" className={`${outfit.variable} dark`} suppressHydrationWarning>
       <body className="bg-background text-text-primary antialiased relative min-h-screen">
+        <ChunkRecoveryClear />
         {/* Ambient Entertainment Backdrop (Phase 4) */}
         <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden" aria-hidden="true">
           <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] rounded-full bg-accent-purple/8 blur-[160px] animate-ambient-shift-1" />
