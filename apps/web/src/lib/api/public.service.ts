@@ -353,3 +353,13 @@ export async function publicDownloadTicketPDF(bookingId: string, sessionToken?: 
   });
   return data;
 }
+
+export async function publicRecoverBookingEmail(
+  transactionId: string
+): Promise<{ success: boolean; email: string }> {
+  const { data } = await apiClient.post<{ success: boolean; email: string }>(
+    '/bookings/recover',
+    { transactionId }
+  );
+  return data;
+}

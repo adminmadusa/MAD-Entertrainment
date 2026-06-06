@@ -16,6 +16,7 @@ import {
   publicGetMyBookings,
   publicDownloadTicketPDF,
   publicResendTicketEmail,
+  publicRecoverBookingEmail,
 } from '@/lib/api/public.service';
 import { useAuth } from '@/providers/AuthProvider';
 import { AuthForm } from '@/components/auth/AuthForm';
@@ -88,6 +89,15 @@ function TicketRetrievalContent() {
   const [showLoginForGuest, setShowLoginForGuest] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [infoMsg, setInfoMsg] = useState('');
+
+  // Recovery States
+  type LookupMode = 'reference' | 'transaction';
+  const [lookupMode, setLookupMode] = useState<LookupMode>('reference');
+  const [transactionIdInput, setTransactionIdInput] = useState('');
+  const [recoveredEmail, setRecoveredEmail] = useState('');
+  const [isRecovering, setIsRecovering] = useState(false);
+  const [showRecoveryResult, setShowRecoveryResult] = useState(false);
+  const [showSupportGuidance, setShowSupportGuidance] = useState(false);
 
   // Query Bookings (only enabled when authenticated)
   const { data: bookingsData, isLoading: isBookingsLoading } = useQuery({
@@ -270,6 +280,80 @@ function TicketRetrievalContent() {
     setErrorMsg('');
     setInfoMsg('');
     setShowLoginForGuest(false);
+    setLookupMode('reference');
+    setTransactionIdInput('');
+    setRecoveredEmail('');
+    setShowRecoveryResult(false);
+    setShowSupportGuidance(false);
+  };
+
+  const handleSwitchToRecovery = () => {
+    setErrorMsg('');
+    setInfoMsg('');
+    setLookupMode('transaction');
+    setTransactionIdInput('');
+    setRecoveredEmail('');
+    setShowRecoveryResult(false);
+    setShowSupportGuidance(false);
+  };
+
+  const handleSwitchToReference = () => {
+    setErrorMsg('');
+    setInfoMsg('');
+    setLookupMode('reference');
+    setTransactionIdInput('');
+    setRecoveredEmail('');
+    setShowRecoveryResult(false);
+    setShowSupportGuidance(false);
+  };
+
+  const handleRecoverySubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMsg('');
+    setInfoMsg('');
+
+    const txId = transactionIdInput.trim();
+    if (!txId) {
+      setErrorMsg('Transaction ID is required.');
+      return;
+    }
+
+    if (txId.length < 4) {
+      setErrorMsg('Transaction ID must be at least 4 characters.');
+      return;
+    }
+
+    setIsRecovering(true);
+    try {
+      const result = await publicRecoverBookingEmail(txId);
+      setRecoveredEmail(result.email);
+      setShowRecoveryResult(true);
+    } catch (err) {
+      const apiErr = extractApiError(err);
+      const isAxiosError = err && typeof err === 'object' && 'response' in err;
+      const status = isAxiosError ? (err as { response?: { status?: number } }).response?.status : undefined;
+      if (status === 429) {
+        setErrorMsg('Too many recovery attempts. Please wait before trying again.');
+      } else if (status === 404) {
+        setErrorMsg('Recovery information not found. Verify the transaction ID and try again.');
+      } else {
+        setErrorMsg(apiErr.message || 'Unable to complete recovery right now. Please try again later.');
+      }
+    } finally {
+      setIsRecovering(false);
+    }
+  };
+
+  const handleContinueToSignIn = () => {
+    if (isAuthenticated) {
+      logout();
+    }
+    setQueryRef('');
+    setBookingRefInput('');
+    setShowLoginForGuest(true);
+    setLookupMode('reference');
+    setShowRecoveryResult(false);
+    setTransactionIdInput('');
   };
 
 
@@ -283,6 +367,152 @@ function TicketRetrievalContent() {
   const shouldShowPortal = (step === 'portal' || !!singleBooking) && !showLoginForGuest;
   const shouldShowAuthForm = (!shouldShowPortal && !isSingleLookupLoading) || showLoginForGuest;
   const shouldShowReferenceForm = !singleBooking;
+
+  const renderReferenceFormContent = () => {
+    if (showSupportGuidance) {
+      return (
+        <div className="glass rounded-3xl border border-border-subtle p-8 space-y-6 text-center animate-in fade-in duration-300">
+          <div className="w-12 h-12 bg-white/5 text-text-secondary text-2xl flex items-center justify-center rounded-full mx-auto">
+            ✉️
+          </div>
+          <div className="space-y-3">
+            <h3 className="text-white font-bold text-lg">Contact Support</h3>
+            <p className="text-text-secondary text-xs leading-relaxed max-w-sm mx-auto">
+              Please reach out to our support team to verify ownership and update your account email. When contacting us, please provide:
+            </p>
+            <ul className="text-left text-xs text-text-muted space-y-2 bg-white/5 border border-white/5 rounded-2xl p-4 max-w-xs mx-auto list-disc pl-8">
+              <li>Payment Transaction ID</li>
+              <li>Event name</li>
+              <li>Approximate purchase date</li>
+            </ul>
+          </div>
+          <div className="flex flex-col gap-3 pt-2">
+            <Link
+              href="/contact"
+              className="w-full py-3 px-5 bg-accent-purple hover:bg-accent-purple-light text-white text-xs font-bold rounded-xl transition-all shadow-md text-center"
+            >
+              Go to Support Contact Form
+            </Link>
+            <button
+              type="button"
+              onClick={() => setShowSupportGuidance(false)}
+              className="text-xs text-text-muted hover:text-white transition-colors"
+            >
+              ← Go Back
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    if (showRecoveryResult) {
+      return (
+        <div className="glass rounded-3xl border border-border-subtle p-8 space-y-6 shadow-glow-purple text-center animate-in fade-in duration-300">
+          <div className="w-12 h-12 bg-accent-purple/10 text-accent-purple-light text-2xl flex items-center justify-center rounded-full mx-auto">
+            🔍
+          </div>
+          <div className="space-y-2">
+            <h3 className="text-white font-bold text-lg">Booking Found</h3>
+            <p className="text-text-secondary text-xs">
+              We found the booking registered to the following email address:
+            </p>
+            <p className="text-white font-mono font-bold text-sm bg-white/5 border border-white/10 rounded-xl py-3 px-4 break-all select-all select-text selection:bg-accent-purple/50">
+              {recoveredEmail}
+            </p>
+          </div>
+          
+          <div className="flex flex-col sm:flex-row gap-3 pt-2">
+            <button
+              type="button"
+              onClick={handleContinueToSignIn}
+              className="flex-grow py-3 px-5 bg-accent-purple hover:bg-accent-purple-light text-white text-xs font-bold rounded-xl transition-all shadow-md"
+            >
+              Continue to Sign In
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowSupportGuidance(true)}
+              className="flex-grow py-3 px-5 bg-white/5 hover:bg-white/10 border border-white/10 text-text-secondary hover:text-white text-xs font-bold rounded-xl transition-all text-center"
+            >
+              I no longer have access to this email
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    if (lookupMode === 'reference') {
+      return (
+        <>
+          <h3 className="text-white font-bold text-sm px-2 text-center">Need help finding your ticket?</h3>
+          <form onSubmit={handleSearchSubmit} className="glass rounded-2xl border border-border-subtle p-6 flex flex-col gap-3">
+            <div className="flex-grow space-y-1">
+              <label htmlFor="booking-ref-input" className="text-[10px] text-text-secondary font-medium tracking-wider uppercase">Search using your Booking Reference ID</label>
+              <input
+                id="booking-ref-input"
+                type="text"
+                value={bookingRefInput}
+                onChange={(e) => setBookingRefInput(e.target.value)}
+                placeholder="e.g. MAD-2026-ABCDE"
+                className="w-full px-4 py-2.5 rounded-xl bg-background border border-border-subtle text-base lg:text-sm text-text-primary focus:outline-none focus:border-accent-purple font-mono uppercase tracking-wider transition-colors"
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={isSingleLookupLoading}
+              className="w-full h-11 px-6 btn-gradient text-white text-sm font-bold rounded-xl shadow-glow-sm disabled:opacity-60 transition-transform"
+            >
+              {isSingleLookupLoading ? 'Searching...' : 'Lookup'}
+            </button>
+          </form>
+          <div className="text-center pt-2">
+            <button
+              type="button"
+              onClick={handleSwitchToRecovery}
+              className="text-xs text-text-muted hover:text-white transition-colors"
+            >
+              Forgot your booking reference? Recover using your Payment Transaction ID
+            </button>
+          </div>
+        </>
+      );
+    }
+
+    return (
+      <>
+        <h3 className="text-white font-bold text-sm px-2 text-center">Recover Booking Registered Email</h3>
+        <form onSubmit={handleRecoverySubmit} className="glass rounded-2xl border border-border-subtle p-6 flex flex-col gap-3 animate-in fade-in duration-300">
+          <div className="flex-grow space-y-1">
+            <label htmlFor="transaction-id-input" className="text-[10px] text-text-secondary font-medium tracking-wider uppercase">Payment Transaction ID</label>
+            <input
+              id="transaction-id-input"
+              type="text"
+              value={transactionIdInput}
+              onChange={(e) => setTransactionIdInput(e.target.value)}
+              placeholder="e.g. pay_xxxxxxxxxx or pi_xxxxxxxxx"
+              className="w-full px-4 py-2.5 rounded-xl bg-background border border-border-subtle text-base lg:text-sm text-text-primary focus:outline-none focus:border-accent-purple font-mono tracking-wider transition-colors"
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={isRecovering}
+            className="w-full h-11 px-6 btn-gradient text-white text-sm font-bold rounded-xl shadow-glow-sm disabled:opacity-60 transition-transform"
+          >
+            {isRecovering ? 'Finding...' : 'Find Booking Email'}
+          </button>
+        </form>
+        <div className="text-center pt-2">
+          <button
+            type="button"
+            onClick={handleSwitchToReference}
+            className="text-xs text-text-muted hover:text-white transition-colors"
+          >
+            ← Back to Booking Reference Search
+          </button>
+        </div>
+      </>
+    );
+  };
 
   const sortedBookings = [...bookings].sort((a, b) => {
     if (queryRef && a.bookingId === queryRef) return -1;
@@ -373,11 +603,13 @@ function TicketRetrievalContent() {
                 mode="wallet" 
                 isVerificationRequired={isOwnershipVerificationRequired}
                 bookingReference={queryRef}
+                initialEmail={recoveredEmail || undefined}
                 onSuccess={() => { 
                   sessionStorage.setItem('just_logged_in', 'true');
                   setStep('portal'); 
                   setShowLoginForGuest(false); 
                   setErrorMsg('');
+                  setRecoveredEmail('');
                 }} 
               />
               {showLoginForGuest && (
@@ -599,27 +831,7 @@ function TicketRetrievalContent() {
 
         {shouldShowReferenceForm && (
           <div className="space-y-4 pt-4 mt-8 max-w-md mx-auto">
-            <h3 className="text-white font-bold text-sm px-2 text-center">Need help finding your ticket?</h3>
-            <form onSubmit={handleSearchSubmit} className="glass rounded-2xl border border-border-subtle p-6 flex flex-col gap-3">
-              <div className="flex-grow space-y-1">
-                <label htmlFor="booking-ref-input" className="text-[10px] text-text-secondary font-medium tracking-wider uppercase">Search using your Booking Reference ID</label>
-                <input
-                  id="booking-ref-input"
-                  type="text"
-                  value={bookingRefInput}
-                  onChange={(e) => setBookingRefInput(e.target.value)}
-                  placeholder="e.g. MAD-2026-ABCDE"
-                  className="w-full px-4 py-2.5 rounded-xl bg-background border border-border-subtle text-base lg:text-sm text-text-primary focus:outline-none focus:border-accent-purple font-mono uppercase tracking-wider transition-colors"
-                />
-              </div>
-              <button
-                type="submit"
-                disabled={isSingleLookupLoading}
-                className="w-full h-11 px-6 btn-gradient text-white text-sm font-bold rounded-xl shadow-glow-sm disabled:opacity-60 transition-transform"
-              >
-                {isSingleLookupLoading ? 'Searching...' : 'Lookup'}
-              </button>
-            </form>
+            {renderReferenceFormContent()}
 
             {queryRef && singleLookupApiError && !isOwnershipVerificationRequired && !singleBooking && (
               <div className="p-4 bg-error/10 border border-error/30 rounded-2xl text-xs text-red-400 text-center animate-in fade-in zoom-in duration-300">
