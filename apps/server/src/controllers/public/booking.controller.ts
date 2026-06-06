@@ -128,18 +128,23 @@ export async function getBooking(
 ): Promise<void> {
   try {
     const { bookingId } = req.params;
+    const reqUserId = req.user?.sub;
+    const reqSessionId = req.session?.sessionId || undefined;
 
     const result = await PublicBookingService.getBookingByReference(
       bookingId
     );
 
     if (!result) {
+      if (!reqUserId) {
+        const err = AppError.forbidden('Email verification required');
+        err.code = 'BOOKING_VERIFICATION_REQUIRED';
+        throw err;
+      }
       throw AppError.notFound('Booking');
     }
 
     const booking = result.booking;
-    const reqUserId = req.user?.sub;
-    const reqSessionId = req.session?.sessionId || undefined;
 
     // Logged-in ownership
     const isUserOwner =
@@ -156,8 +161,12 @@ export async function getBooking(
 
     // Access denied
     if (!isUserOwner && !isGuestOwner) {
-      const err = AppError.forbidden('Email verification required');
-      err.code = 'BOOKING_VERIFICATION_REQUIRED';
+      const err = AppError.forbidden(
+        !reqUserId ? 'Email verification required' : 'You do not have access to this booking'
+      );
+      if (!reqUserId) {
+        err.code = 'BOOKING_VERIFICATION_REQUIRED';
+      }
       throw err;
     }
 
@@ -218,6 +227,11 @@ export async function downloadBookingPDF(
 
     const result = await PublicBookingService.getBookingByReference(bookingId);
     if (!result) {
+      if (!reqUserId) {
+        const err = AppError.forbidden('Email verification required');
+        err.code = 'BOOKING_VERIFICATION_REQUIRED';
+        throw err;
+      }
       throw AppError.notFound('Booking not found');
     }
 
@@ -237,7 +251,13 @@ export async function downloadBookingPDF(
       booking.sessionId === reqSessionId;
 
     if (!isUserOwner && !isGuestOwner) {
-      throw AppError.forbidden('You do not have access to this booking');
+      const err = AppError.forbidden(
+        !reqUserId ? 'Email verification required' : 'You do not have access to this booking'
+      );
+      if (!reqUserId) {
+        err.code = 'BOOKING_VERIFICATION_REQUIRED';
+      }
+      throw err;
     }
 
     const pdfBuffer = await generateTicketPDF(booking, booking.eventId);
@@ -266,6 +286,11 @@ export async function resendBookingTickets(
 
     const result = await PublicBookingService.getBookingByReference(bookingId);
     if (!result) {
+      if (!reqUserId) {
+        const err = AppError.forbidden('Email verification required');
+        err.code = 'BOOKING_VERIFICATION_REQUIRED';
+        throw err;
+      }
       throw AppError.notFound('Booking not found');
     }
 
@@ -285,7 +310,13 @@ export async function resendBookingTickets(
       booking.sessionId === reqSessionId;
 
     if (!isUserOwner && !isGuestOwner) {
-      throw AppError.forbidden('You do not have access to this booking');
+      const err = AppError.forbidden(
+        !reqUserId ? 'Email verification required' : 'You do not have access to this booking'
+      );
+      if (!reqUserId) {
+        err.code = 'BOOKING_VERIFICATION_REQUIRED';
+      }
+      throw err;
     }
 
     const eventIdStr = (booking.eventId as any)._id?.toString() || booking.eventId.toString();
