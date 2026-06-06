@@ -7,6 +7,7 @@ export interface IAdmin extends Document {
   name: string;
   role: string;
   isActive: boolean;
+  passwordVersion: number;
   lastLogin?: Date;
   comparePassword(password: string): Promise<boolean>;
 }
@@ -30,13 +31,19 @@ const adminSchema = new Schema<IAdmin>(
     },
     role: {
       type: String,
-      enum: ['SUPER_ADMIN', 'ADMIN', 'MODERATOR'],
-      default: 'ADMIN',
+      enum: ['super_admin', 'admin', 'manager', 'support', 'scanner'],
+      default: 'admin',
+      lowercase: true,
     },
     isActive: {
       type: Boolean,
       default: true,
       index: true,
+    },
+    passwordVersion: {
+      type: Number,
+      default: 0,
+      required: true,
     },
     lastLogin: {
       type: Date,

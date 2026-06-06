@@ -7,6 +7,8 @@ import { getSocketTelemetry } from '../config/socket';
 import { DeadLetterJob } from '../models/dead-letter-job.schema';
 import { QueueService } from './queue.service';
 import { logger } from '../utils/logger';
+import { decryptPayload, isEncrypted } from '../utils/encryption';
+
 
 export interface QueueHealthStats {
   name: string;
@@ -43,7 +45,7 @@ export interface SystemDiagnosticsReport {
 }
 
 export class DiagnosticsService {
-  private static readonly QUEUE_NAMES = ['booking-queue', 'pdf-queue', 'notification-queue'];
+  private static readonly QUEUE_NAMES = ['booking-queue', 'pdf-queue', 'notification-queue', 'marketing-queue'];
 
   /**
    * Generates a complete system operational metrics and diagnostics report.
@@ -126,10 +128,16 @@ export class DiagnosticsService {
     }
 
     try {
+      let payload = dlqJob.data;
+      if (isEncrypted(payload)) {
+        const decrypted = decryptPayload(payload);
+        payload = JSON.parse(decrypted);
+      }
+
       await QueueService.enqueue(
         dlqJob.queueName,
         dlqJob.jobName,
-        dlqJob.data,
+        payload,
         dlqJob.jobId
       );
 

@@ -44,6 +44,26 @@ export interface AdminBooking {
   createdAt: string;
   cancellationReason?: string;
   cancelledAt?: string;
+  totalTickets?: number;
+  ticketsScanned?: number;
+  ticketsRemaining?: number;
+  attendanceStatus?: 'NOT_ATTENDED' | 'PARTIALLY_ATTENDED' | 'FULLY_ATTENDED';
+  auditHistory?: {
+    action: string;
+    actor: string;
+    status: string;
+    timestamp: string;
+    metadata: Record<string, any>;
+    description: string;
+  }[];
+  individualTickets?: {
+    ticketId: string;
+    status: string;
+    createdAt: string;
+    replacedAt?: string | null;
+    replacedByTicketId?: string | null;
+    replacementReason?: string | null;
+  }[];
 }
 
 export interface AdminRefund {
@@ -122,14 +142,16 @@ export interface NormalizedBookingDetail {
 export async function adminGetBookings(params: Record<string, string | number> = {}): Promise<NormalizedBookingsResponse> {
   try {
     const qs = new URLSearchParams(Object.entries(params).map(([k, v]) => [k, String(v)]));
-    const { data } = await adminApiClient.get<{ data: AdminBooking[]; pagination: { page: number; limit: number; total: number; totalPages: number } }>(`/admin/bookings?${qs}`);
+    const { data } = await adminApiClient.get<any>(`/admin/bookings?${qs}`);
+     
+    const paginationSource = data?.data?.pagination || data?.pagination;
     return {
-      items: Array.isArray(data?.data) ? data.data : (data?.data && Object.values(data.data).find(v => Array.isArray(v)) || []),
+      items: Array.isArray(data?.data) ? data.data : (data?.data && Object.values(data.data).find((v: any) => Array.isArray(v)) || []),
       pagination: {
-        page: data?.pagination?.page ?? 1,
-        limit: data?.pagination?.limit ?? 15,
-        total: data?.pagination?.total ?? 0,
-        totalPages: data?.pagination?.totalPages ?? 1,
+        page: paginationSource?.page ?? 1,
+        limit: paginationSource?.limit ?? 15,
+        total: paginationSource?.total ?? 0,
+        totalPages: paginationSource?.totalPages ?? 1,
       },
     };
   } catch (error) {
@@ -223,14 +245,16 @@ export interface NormalizedRefundsResponse {
 export async function adminGetRefunds(params: Record<string, string> = {}): Promise<NormalizedRefundsResponse> {
   try {
     const qs = new URLSearchParams(params);
-    const { data } = await adminApiClient.get<{ data: AdminRefund[]; pagination: { page: number; limit: number; total: number; totalPages: number } }>(`/admin/refunds?${qs}`);
+    const { data } = await adminApiClient.get<any>(`/admin/refunds?${qs}`);
+     
+    const paginationSource = data?.data?.pagination || data?.pagination;
     return {
-      items: Array.isArray(data?.data) ? data.data : (data?.data && Object.values(data.data).find(v => Array.isArray(v)) || []),
+      items: Array.isArray(data?.data) ? data.data : (data?.data && Object.values(data.data).find((v: any) => Array.isArray(v)) || []),
       pagination: {
-        page: data?.pagination?.page ?? 1,
-        limit: data?.pagination?.limit ?? 15,
-        total: data?.pagination?.total ?? 0,
-        totalPages: data?.pagination?.totalPages ?? 1,
+        page: paginationSource?.page ?? 1,
+        limit: paginationSource?.limit ?? 15,
+        total: paginationSource?.total ?? 0,
+        totalPages: paginationSource?.totalPages ?? 1,
       },
     };
   } catch (error) {
@@ -255,3 +279,32 @@ export async function adminCreateRefund(payload: { bookingId: string; paymentId:
   const { data } = await adminApiClient.post<{ data: AdminRefund }>('/admin/refunds', payload);
   return data.data;
 }
+
+export async function adminCorrectBookingEmail(id: string, newEmail: string, reason: string): Promise<AdminBooking> {
+  const { data } = await adminApiClient.patch<{ data: AdminBooking }>(`/admin/bookings/${id}/correct-email`, {
+    newEmail,
+    reason,
+  });
+  return data.data;
+}
+
+export async function adminResendBookingTickets(id: string): Promise<void> {
+  await adminApiClient.post(`/admin/bookings/${id}/resend`);
+}
+
+export interface AdminBookingsSummary {
+  totalBookings: number;
+  totalTickets: number;
+  revenue: number;
+  confirmed: number;
+  pending: number;
+  cancelled: number;
+  checkedIn: number;
+}
+
+export async function adminGetBookingsSummary(eventId?: string): Promise<AdminBookingsSummary> {
+  const qs = new URLSearchParams(eventId ? { eventId } : {});
+  const { data } = await adminApiClient.get<{ data: AdminBookingsSummary }>(`/admin/bookings/summary?${qs}`);
+  return data.data;
+}
+

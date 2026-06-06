@@ -9,6 +9,10 @@ export interface IRefund extends Document {
   status: 'requested' | 'processing' | 'completed' | 'failed';
   adminNotes?: string;
   gatewayRefundId?: string;
+  idempotencyKey?: string;
+  origin: 'manual' | 'auto_recovery';
+  recoveryReason?: 'AMOUNT_MISMATCH' | 'BOOKING_REFERENCE_MISMATCH' | 'BOOKING_ID_MISMATCH' | 'CURRENCY_MISMATCH' | 'PAYMENT_VALIDATION_FAILURE' | 'EXPIRED_BOOKING_CAPACITY_UNAVAILABLE';
+  cancelTickets: boolean;
   processedAt?: Date;
   createdAt: Date;
   updatedAt: Date;
@@ -29,9 +33,43 @@ const refundSchema = new Schema<IRefund>(
     },
     adminNotes: String,
     gatewayRefundId: String,
+    idempotencyKey: { type: String, index: true },
     processedAt: Date,
+    origin: {
+      type: String,
+      enum: ['manual', 'auto_recovery'],
+      default: 'manual',
+      required: true,
+    },
+    recoveryReason: {
+      type: String,
+      enum: [
+        'AMOUNT_MISMATCH',
+        'BOOKING_REFERENCE_MISMATCH',
+        'BOOKING_ID_MISMATCH',
+        'CURRENCY_MISMATCH',
+        'PAYMENT_VALIDATION_FAILURE',
+        'EXPIRED_BOOKING_CAPACITY_UNAVAILABLE',
+      ],
+    },
+    cancelTickets: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
+);
+
+refundSchema.index(
+  { idempotencyKey: 1 },
+  {
+    unique: true,
+    partialFilterExpression: {
+      status: { $in: ['requested', 'processing', 'completed'] },
+      idempotencyKey: { $exists: true }
+    },
+    name: 'idx_refund_idempotency_key_unique'
+  }
 );
 
 export const Refund = model<IRefund>('Refund', refundSchema);

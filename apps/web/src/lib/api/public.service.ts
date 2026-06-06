@@ -1,6 +1,7 @@
-import { Event, SeatLayout, Booking, Ticket, DJOperator, Artist, Venue, PopupCampaign } from '@mad/types';
-import { AuthUser, AuthResponse, MagicLinkRequestResponse, VerifyMagicLinkOrOTPPayload } from '../../types/auth';
+import { Event, SeatLayout, Booking, Ticket, DJOperator, PopupCampaign } from '@mad/types';
+import { AuthUser, AuthResponse, VerificationCodeRequestResponse, VerifyVerificationCodeOrOTPPayload } from '../../types/auth';
 import { ReserveTicketsInput, CheckoutDetailsInput } from '@mad/validations';
+import { STORAGE_VERSION } from '@mad/shared';
 
 import { apiClient } from './client';
 
@@ -26,6 +27,50 @@ export interface VerifyPaymentPayload {
   [key: string]: unknown;
 }
 
+export interface GuestBookingSession {
+  sessionId: string;
+  token: string;
+}
+
+const guestSessionIdKey = `mad_checkout_session_${STORAGE_VERSION}`;
+const guestSessionTokenKey = `mad_checkout_session_token_${STORAGE_VERSION}`;
+
+function getGuestSessionHeaders(sessionToken?: string): Record<string, string> {
+  if (!sessionToken) return {};
+  return {
+    Authorization: `Bearer ${sessionToken}`,
+  };
+}
+
+export function getStoredGuestBookingSession(): GuestBookingSession | null {
+  if (typeof window === 'undefined') return null;
+
+  const sessionId = sessionStorage.getItem(guestSessionIdKey);
+  const token = sessionStorage.getItem(guestSessionTokenKey);
+
+  if (!sessionId || !token) return null;
+  return { sessionId, token };
+}
+
+export async function publicGetBookingSession(): Promise<GuestBookingSession> {
+  const { data } = await apiClient.get<{ data: GuestBookingSession }>('/bookings/session');
+  return data.data;
+}
+
+export async function ensureGuestBookingSession(): Promise<GuestBookingSession> {
+  const existing = getStoredGuestBookingSession();
+  if (existing) return existing;
+
+  const session = await publicGetBookingSession();
+  if (typeof window !== 'undefined') {
+    sessionStorage.removeItem('mad_checkout_session');
+    sessionStorage.setItem(guestSessionIdKey, session.sessionId);
+    sessionStorage.setItem(guestSessionTokenKey, session.token);
+  }
+
+  return session;
+}
+
 export interface PublicEventsApiResponse {
   data: {
     events: Event[];
@@ -43,20 +88,6 @@ export interface PublicDJsApiResponse {
       total?: number;
       totalPages?: number;
     };
-  };
-}
-
-export interface PublicArtistsApiResponse {
-  data: {
-    artists: Artist[];
-    total: number;
-  };
-}
-
-export interface PublicVenuesApiResponse {
-  data: {
-    venues: Venue[];
-    total: number;
   };
 }
 
@@ -157,12 +188,10 @@ export async function publicGetEventSeatLayout(eventId: string): Promise<SeatLay
 
 export async function publicCreateBooking(
   payload: ReserveTicketsInput,
-  sessionId: string
+  sessionToken: string
 ): Promise<Booking> {
   const { data } = await apiClient.post<{ data: Booking }>('/bookings', payload, {
-    headers: {
-      'x-session-id': sessionId,
-    },
+    headers: getGuestSessionHeaders(sessionToken),
   });
   return data.data;
 }
@@ -170,32 +199,26 @@ export async function publicCreateBooking(
 export async function publicSaveCheckoutDetails(
   bookingId: string,
   payload: CheckoutDetailsInput,
-  sessionId: string
+  sessionToken: string
 ): Promise<Booking> {
   const { data } = await apiClient.put<{ data: Booking }>(`/bookings/${bookingId}/checkout-details`, payload, {
-    headers: {
-      'x-session-id': sessionId,
-    },
+    headers: getGuestSessionHeaders(sessionToken),
   });
   return data.data;
 }
 
 export async function publicGetBookingDetails(
   bookingId: string,
-  sessionId?: string
-): Promise<{ booking: Booking; tickets: Ticket[] }> {
-  const headers: Record<string, string> = {};
-  if (sessionId) {
-    headers['x-session-id'] = sessionId;
-  }
-  const { data } = await apiClient.get<{ data: { booking: Booking; tickets: Ticket[] } }>(`/bookings/${bookingId}`, {
-    headers,
+  sessionToken?: string
+): Promise<{ booking: Booking; tickets: Ticket[]; ticketsReady: boolean }> {
+  const { data } = await apiClient.get<{ data: { booking: Booking; tickets: Ticket[]; ticketsReady: boolean } }>(`/bookings/${bookingId}`, {
+    headers: getGuestSessionHeaders(sessionToken),
   });
   return data.data;
 }
 
-export async function publicGetMyBookings(): Promise<{ bookings: Booking[]; tickets: Ticket[] }> {
-  const { data } = await apiClient.get<{ data: { bookings: Booking[]; tickets: Ticket[] } }>('/bookings/me');
+export async function publicGetMyBookings(): Promise<{ bookings: Booking[]; tickets: Ticket[]; ticketsReadyMap: Record<string, boolean> }> {
+  const { data } = await apiClient.get<{ data: { bookings: Booking[]; tickets: Ticket[]; ticketsReadyMap: Record<string, boolean> } }>('/bookings/me');
   return data.data;
 }
 
@@ -209,105 +232,31 @@ export interface PaymentIntentResponse {
   currency: string;
   bookingId: string;
   isMock?: boolean;     // Sandbox mock indicator
+  isFree?: boolean;     // Free booking indicator
+  url?: string;         // Optional checkout URL
 }
 
-export async function publicCreatePaymentIntent(bookingId: string, gateway: 'stripe' | 'razorpay'): Promise<PaymentIntentResponse> {
+export async function publicCreatePaymentIntent(bookingId: string, gateway: 'stripe' | 'razorpay', sessionToken?: string): Promise<PaymentIntentResponse> {
   const { data } = await apiClient.post<{ data: PaymentIntentResponse }>('/payments/create-intent', {
     bookingId,
     gateway,
+  }, {
+    headers: getGuestSessionHeaders(sessionToken),
   });
   return data.data;
 }
 
-export async function publicVerifyPayment(bookingId: string, gatewayPayload: VerifyPaymentPayload): Promise<Booking> {
+export async function publicVerifyPayment(
+  bookingId: string,
+  gatewayPayload: VerifyPaymentPayload,
+  sessionToken: string = getStoredGuestBookingSession()?.token || ''
+): Promise<Booking> {
   const { data } = await apiClient.post<{ data: Booking }>('/payments/verify', {
     bookingId,
     ...gatewayPayload,
+  }, {
+    headers: getGuestSessionHeaders(sessionToken),
   });
-  return data.data;
-}
-
-// ─── Artists ─────────────────────────────────────────────────
-
-export interface PublicArtistsResponse {
-  data: Artist[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
-}
-
-export async function publicGetArtists(
-  filters: { search?: string; genre?: string; page?: number; limit?: number } = {}
-): Promise<PublicArtistsResponse> {
-  const params = new URLSearchParams();
-  if (filters.search) params.set('search', filters.search);
-  if (filters.genre) params.set('genre', filters.genre);
-  if (filters.page) params.set('page', String(filters.page));
-  if (filters.limit) params.set('limit', String(filters.limit));
-
-  const page = filters.page || 1;
-  const limit = filters.limit || 12;
-  const { data } = await apiClient.get<PublicArtistsApiResponse>(`/artists?${params}`);
-  const payload = data?.data || { artists: [], total: 0 };
-  const items = Array.isArray(payload.artists) ? payload.artists : [];
-  return {
-    data: items,
-    pagination: {
-      page,
-      limit,
-      total: payload.total || 0,
-      totalPages: Math.ceil((payload.total || 0) / limit)
-    }
-  };
-}
-
-export async function publicGetArtistBySlug(slug: string): Promise<Artist> {
-  const { data } = await apiClient.get<{ data: Artist }>(`/artists/${slug}`);
-  return data.data;
-}
-
-// ─── Venues ──────────────────────────────────────────────────
-
-export interface PublicVenuesResponse {
-  data: Venue[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
-}
-
-export async function publicGetVenues(
-  filters: { search?: string; city?: string; page?: number; limit?: number } = {}
-): Promise<PublicVenuesResponse> {
-  const params = new URLSearchParams();
-  if (filters.search) params.set('search', filters.search);
-  if (filters.city) params.set('city', filters.city);
-  if (filters.page) params.set('page', String(filters.page));
-  if (filters.limit) params.set('limit', String(filters.limit));
-
-  const page = filters.page || 1;
-  const limit = filters.limit || 12;
-  const { data } = await apiClient.get<PublicVenuesApiResponse>(`/venues?${params}`);
-  const payload = data?.data || { venues: [], total: 0 };
-  const items = Array.isArray(payload.venues) ? payload.venues : [];
-  return {
-    data: items,
-    pagination: {
-      page,
-      limit,
-      total: payload.total || 0,
-      totalPages: Math.ceil((payload.total || 0) / limit)
-    }
-  };
-}
-
-export async function publicGetVenueBySlug(slug: string): Promise<Venue> {
-  const { data } = await apiClient.get<{ data: Venue }>(`/venues/${slug}`);
   return data.data;
 }
 
@@ -321,13 +270,13 @@ export async function publicGetActivePopups(): Promise<PopupCampaign[]> {
 // ─── Auth ────────────────────────────────────────────────────
 
 export async function publicLogin(payload: LoginPayload): Promise<AuthResponse> {
-  // Gracefully adapt legacy publicLogin to trigger Magic Link sending
+  // Gracefully adapt legacy publicLogin to trigger verification code sending
   const { data } = await apiClient.post<{ data: AuthResponse }>('/auth/magic-link', payload);
   return data.data;
 }
 
 export async function publicRegister(payload: RegisterPayload): Promise<AuthResponse> {
-  // Gracefully adapt legacy publicRegister to trigger Magic Link sending
+  // Gracefully adapt legacy publicRegister to trigger verification code sending
   const { data } = await apiClient.post<{ data: AuthResponse }>('/auth/magic-link', payload);
   return data.data;
 }
@@ -337,23 +286,40 @@ export async function publicGoogleLogin(idToken: string): Promise<AuthResponse> 
   return data.data;
 }
 
-export async function publicRequestMagicLink(email: string): Promise<MagicLinkRequestResponse> {
-  const { data } = await apiClient.post<MagicLinkRequestResponse>('/auth/magic-link', { email });
+export async function publicCheckEmail(email: string): Promise<{ exists: boolean }> {
+  const { data } = await apiClient.post<{ data: { exists: boolean } }>('/auth/check-email', { email });
+  return data.data;
+}
+
+export async function publicRequestVerificationCode(
+  email: string,
+  registrationData?: { firstName: string; lastName: string; mobileNumber?: string }
+): Promise<VerificationCodeRequestResponse> {
+  const { data } = await apiClient.post<VerificationCodeRequestResponse>('/auth/magic-link', { email, ...registrationData });
   return data;
 }
 
-export async function publicVerifyMagicLinkOrOTP(payload: VerifyMagicLinkOrOTPPayload): Promise<AuthResponse> {
+export async function publicVerifyVerificationCodeOrOTP(payload: VerifyVerificationCodeOrOTPPayload): Promise<AuthResponse> {
   const { data } = await apiClient.post<{ data: AuthResponse }>('/auth/verify', payload);
   return data.data;
 }
 
-export async function publicGetMyAuthBookings(): Promise<Booking[]> {
-  const { data } = await apiClient.get<{ data: Booking[] }>('/my-bookings');
+
+export interface UpdateProfilePayload {
+  firstName: string;
+  lastName: string;
+  mobileNumber?: string;
+}
+
+export async function publicUpdateProfile(
+  payload: UpdateProfilePayload
+): Promise<AuthUser> {
+  const { data } = await apiClient.patch<{ data: AuthUser }>('/auth/profile', payload);
   return data.data;
 }
 
-export async function publicGetMe(): Promise<AuthUser> {
-  const { data } = await apiClient.get<{ data: AuthUser }>('/auth/me');
+export async function publicGetMe(): Promise<AuthUser & { onboardingRequired?: boolean }> {
+  const { data } = await apiClient.get<{ data: AuthUser & { onboardingRequired?: boolean } }>('/auth/me');
   return data.data;
 }
 
@@ -371,4 +337,29 @@ export interface PublicCategory {
 export async function publicGetCategories(): Promise<PublicCategory[]> {
   const { data } = await apiClient.get<{ data: PublicCategory[] }>('/categories');
   return Array.isArray(data?.data) ? data.data : [];
+}
+
+export async function publicResendTicketEmail(bookingId: string, sessionToken?: string): Promise<{ success: boolean; message: string }> {
+  const { data } = await apiClient.post<{ success: boolean; message: string }>(`/bookings/${bookingId}/resend`, {}, {
+    headers: getGuestSessionHeaders(sessionToken),
+  });
+  return data;
+}
+
+export async function publicDownloadTicketPDF(bookingId: string, sessionToken?: string): Promise<Blob> {
+  const { data } = await apiClient.get<Blob>(`/bookings/${bookingId}/download`, {
+    responseType: 'blob',
+    headers: getGuestSessionHeaders(sessionToken),
+  });
+  return data;
+}
+
+export async function publicRecoverBookingEmail(
+  transactionId: string
+): Promise<{ success: boolean; email: string }> {
+  const { data } = await apiClient.post<{ success: boolean; email: string }>(
+    '/bookings/recover',
+    { transactionId }
+  );
+  return data;
 }

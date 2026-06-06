@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import { InventoryState, ReservationStatus, TicketTier } from '@mad/shared';
 import { Schema, model, Document, Types } from 'mongoose';
 
@@ -83,21 +84,13 @@ reservationSchema.index(
 );
 reservationSchema.index({ eventId: 1, tier: 1, status: 1, quantity: 1 });
 reservationSchema.index({ eventId: 1, status: 1, quantity: 1 });
-reservationSchema.index(
-  { status: 1, updatedAt: -1 },
-  {
-    partialFilterExpression: {
-      seatId: { $exists: true },
-    },
-  }
-);
 reservationSchema.index({ status: 1, updatedAt: -1 });
 reservationSchema.index({ status: 1, expiresAt: 1 });
 reservationSchema.index({ bookingId: 1, status: 1 });
 
 reservationSchema.pre('validate', function (next) {
   if (!this.reservationId) {
-    this.reservationId = `RSV-${Date.now()}-${Math.random().toString(36).slice(2, 10).toUpperCase()}`;
+    this.reservationId = `RSV-${Date.now()}-${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
   }
   next();
 });

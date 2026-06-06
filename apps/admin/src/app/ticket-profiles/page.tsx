@@ -4,14 +4,17 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { useState } from 'react';
+import { useAdminAuth } from '@/hooks/use-admin-auth.hook';
 import { adminGetTicketProfiles, adminDeleteTicketProfile, adminUpdateTicketProfile } from '@/lib/api/admin/ticket-profile.service';
 import { extractApiError } from '@/lib/api/client';
 import ErrorState from '@/components/states/ErrorState';
 import { TicketProfile } from '@mad/types';
 
 export default function AdminTicketProfilesPage() {
+  const { admin } = useAdminAuth();
   const qc = useQueryClient();
   const [deleteTarget, setDeleteTarget] = useState<TicketProfile | null>(null);
+  const canMutateProfiles = !!admin?.role && ['super_admin', 'admin', 'manager'].includes(admin.role);
 
   const { data: profiles = [], isLoading, error } = useQuery({
     queryKey: ['admin-ticket-profiles'],
@@ -95,32 +98,46 @@ export default function AdminTicketProfilesPage() {
           {formatDate(profile.createdAt)}
         </td>
         <td className="py-4 px-4">
-          <button
-            onClick={() => toggleStatusMutation.mutate({ id: profile._id, isActive: !profile.isActive })}
-            className={`text-xs px-2.5 py-1 rounded-full border font-medium transition-all ${
+          {canMutateProfiles ? (
+            <button
+              onClick={() => toggleStatusMutation.mutate({ id: profile._id, isActive: !profile.isActive })}
+              className={`text-xs px-2.5 py-1 rounded-full border font-medium transition-all ${
+                profile.isActive
+                  ? 'bg-green-500/10 text-green-400 border-green-500/30'
+                  : 'bg-red-500/10 text-red-400 border-red-500/30'
+              }`}
+            >
+              {profile.isActive ? 'Active' : 'Inactive'}
+            </button>
+          ) : (
+            <span className={`text-xs px-2.5 py-1 rounded-full border font-medium ${
               profile.isActive
                 ? 'bg-green-500/10 text-green-400 border-green-500/30'
                 : 'bg-red-500/10 text-red-400 border-red-500/30'
-            }`}
-          >
-            {profile.isActive ? 'Active' : 'Inactive'}
-          </button>
+            }`}>
+              {profile.isActive ? 'Active' : 'Inactive'}
+            </span>
+          )}
         </td>
         <td className="py-4 px-5">
-          <div className="flex items-center justify-end gap-2">
-            <Link
-              href={`/ticket-profiles/${profile._id}/edit`}
-              className="px-3 py-1.5 text-xs font-medium glass border border-border-subtle rounded-lg text-text-secondary hover:text-white hover:border-accent-purple/40 transition-all"
-            >
-              Edit
-            </Link>
-            <button
-              onClick={() => setDeleteTarget(profile)}
-              className="px-3 py-1.5 text-xs font-medium glass border border-border-subtle rounded-lg text-text-muted hover:text-red-400 hover:border-red-500/40 transition-all"
-            >
-              Delete
-            </button>
-          </div>
+          {canMutateProfiles ? (
+            <div className="flex items-center justify-end gap-2">
+              <Link
+                href={`/ticket-profiles/${profile._id}/edit`}
+                className="px-3 py-1.5 text-xs font-medium glass border border-border-subtle rounded-lg text-text-secondary hover:text-white hover:border-accent-purple/40 transition-all"
+              >
+                Edit
+              </Link>
+              <button
+                onClick={() => setDeleteTarget(profile)}
+                className="px-3 py-1.5 text-xs font-medium glass border border-border-subtle rounded-lg text-text-muted hover:text-red-400 hover:border-red-500/40 transition-all"
+              >
+                Delete
+              </button>
+            </div>
+          ) : (
+            <div className="text-right text-text-muted">—</div>
+          )}
         </td>
       </tr>
     ));
@@ -148,13 +165,15 @@ export default function AdminTicketProfilesPage() {
             {profiles.length} reusable ticketing profiles total
           </p>
         </div>
-        <Link
-          href="/ticket-profiles/new"
-          id="admin-create-ticket-profile"
-          className="px-4 py-2.5 btn-gradient text-white font-semibold text-sm rounded-xl shadow-glow-sm hover:scale-105 transition-transform flex items-center gap-2"
-        >
-          <span>+</span> Create Profile
-        </Link>
+        {canMutateProfiles && (
+          <Link
+            href="/ticket-profiles/new"
+            id="admin-create-ticket-profile"
+            className="px-4 py-2.5 btn-gradient text-white font-semibold text-sm rounded-xl shadow-glow-sm hover:scale-105 transition-transform flex items-center gap-2"
+          >
+            <span>+</span> Create Profile
+          </Link>
+        )}
       </div>
 
       {/* Table */}

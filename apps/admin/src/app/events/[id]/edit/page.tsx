@@ -47,8 +47,9 @@ export default function EditEventPage() {
   const [endDate, setEndDate] = useState('');
   const [tags, setTags] = useState('');
   const [isFeatured, setIsFeatured] = useState(false);
-  const [isAgeRestricted, setIsAgeRestricted] = useState(false);
-  const [minimumAge, setMinimumAge] = useState(18);
+  const [requireTerms, setRequireTerms] = useState(true);
+  const [requireAgeConfirmation, setRequireAgeConfirmation] = useState(false);
+  const [ageRestriction, setAgeRestriction] = useState<number | ''>(18);
   const [coverImage, setCoverImage] = useState<CloudinaryImage | null>(null);
   const [tiers, setTiers] = useState<TicketTierInput[]>([defaultTier()]);
   const [error, setError] = useState('');
@@ -102,8 +103,9 @@ export default function EditEventPage() {
       setHighlightsInput(event.highlights?.join(', ') || '');
       setTags(event.tags?.join(', ') || '');
       setIsFeatured(!!event.isFeatured);
-      setIsAgeRestricted(!!event.isAgeRestricted);
-      setMinimumAge(event.minimumAge || 18);
+      setRequireTerms(event.requireTerms ?? true);
+      setRequireAgeConfirmation(!!event.requireAgeConfirmation);
+      setAgeRestriction(event.ageRestriction ?? 18);
       setCoverImage(event.coverImage || event.bannerImage || null);
 
       if (event.ticketProfileId) {
@@ -203,10 +205,11 @@ export default function EditEventPage() {
         showTime: '00:00',
         venue: venueName.trim(),
         startDate: new Date(startDate).toISOString() as never,
-        endDate: endDate ? new Date(endDate).toISOString() as never : undefined,
+        endDate: endDate ? new Date(endDate).toISOString() : undefined,
         isFeatured,
-        isAgeRestricted,
-        minimumAge: isAgeRestricted ? minimumAge : undefined,
+        requireTerms,
+        requireAgeConfirmation,
+        ageRestriction: requireAgeConfirmation && ageRestriction ? Number(ageRestriction) : undefined,
         tags: tags.split(',').map((t) => t.trim()).filter(Boolean),
         highlights: highlightsInput.split(',').map(h => h.trim()).filter(Boolean),
         refundPolicy: refundPolicy.trim() || undefined,
@@ -271,6 +274,22 @@ export default function EditEventPage() {
     );
   }
 
+  const ticketsCheckedIn = event?.ticketsCheckedIn ?? 0;
+  const ticketsSold = event?.ticketsSold ?? 0;
+
+  let attendanceStatus = 'NO ATTENDANCE';
+  let attendanceColorClass = 'bg-red-500/10 text-red-400 border-red-500/30';
+
+  if (ticketsCheckedIn > 0) {
+    if (ticketsCheckedIn === ticketsSold) {
+      attendanceStatus = 'FULLY ATTENDED';
+      attendanceColorClass = 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30';
+    } else {
+      attendanceStatus = 'PARTIALLY ATTENDED';
+      attendanceColorClass = 'bg-yellow-500/10 text-yellow-400 border-yellow-500/30';
+    }
+  }
+
   return (
     <div className="max-w-3xl mx-auto space-y-6 text-white">
       <div className="flex items-center justify-between">
@@ -285,6 +304,62 @@ export default function EditEventPage() {
           ← Back
         </button>
       </div>
+
+      {/* Event Attendance Section */}
+      {event && (
+        <div className="glass rounded-2xl border border-border-subtle p-6 space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-white font-semibold text-base">Event Attendance</h2>
+              <p className="text-text-muted text-xs mt-0.5">Real-time gate check-in telemetry</p>
+            </div>
+            <span className={`text-[10px] px-2.5 py-0.5 rounded-full font-bold border ${attendanceColorClass}`}>
+              {attendanceStatus}
+            </span>
+          </div>
+
+          <div className="grid grid-cols-3 gap-4 text-center bg-white/3 rounded-xl p-4 text-sm">
+            <div className="space-y-1">
+              <span className="text-text-muted text-[10px] uppercase tracking-wider block font-semibold">Tickets Sold</span>
+              <span className="text-white font-black text-xl">{event.ticketsSold ?? 0}</span>
+            </div>
+            <div className="space-y-1 border-x border-white/5">
+              <span className="text-text-muted text-[10px] uppercase tracking-wider block font-semibold">Checked In</span>
+              <span className="text-emerald-400 font-black text-xl">{event.ticketsCheckedIn ?? 0}</span>
+            </div>
+            <div className="space-y-1">
+              <span className="text-text-muted text-[10px] uppercase tracking-wider block font-semibold">Remaining</span>
+              <span className="text-white font-black text-xl">{event.ticketsRemaining ?? 0}</span>
+            </div>
+          </div>
+
+          {/* Progress Bar */}
+          <div className="space-y-2">
+            <div className="flex justify-between text-xs text-text-secondary font-medium">
+              <span>Check-in Progress</span>
+              <span>{Math.round(event.attendancePercentage ?? 0)}%</span>
+            </div>
+            <div className="w-full h-2.5 bg-white/5 rounded-full overflow-hidden border border-white/5">
+              <div
+                className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full transition-all duration-500 ease-out"
+                style={{ width: `${Math.min(100, Math.max(0, event.attendancePercentage ?? 0))}%` }}
+              />
+            </div>
+          </div>
+
+          {/* Secondary Metrics */}
+          <div className="grid grid-cols-2 gap-4 pt-2 text-xs border-t border-white/5">
+            <div className="flex items-center justify-between px-3 py-2 bg-white/3 rounded-lg">
+              <span className="text-text-muted font-medium">Attendance Rate</span>
+              <span className="text-emerald-400 font-bold">{Math.round(event.attendancePercentage ?? 0)}%</span>
+            </div>
+            <div className="flex items-center justify-between px-3 py-2 bg-white/3 rounded-lg">
+              <span className="text-text-muted font-medium">No Show Rate</span>
+              <span className="text-red-400 font-bold">{Math.round(event.noShowPercentage ?? 0)}%</span>
+            </div>
+          </div>
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {error && (
@@ -567,27 +642,70 @@ export default function EditEventPage() {
         {/* Options */}
         <div className="glass rounded-2xl border border-border-subtle p-6 space-y-5">
           <h2 className="text-white font-semibold">Options</h2>
-          <Field label="Tags (comma-separated)">
+          <Field label="Tags (comma separated)">
             <input value={tags} onChange={(e) => setTags(e.target.value)}
               placeholder="EDM, outdoor, live" className={inputCls} />
           </Field>
+          
           <div className="flex flex-wrap gap-6">
             <label className="flex items-center gap-3 cursor-pointer select-none">
               <input type="checkbox" checked={isFeatured} onChange={(e) => setIsFeatured(e.target.checked)}
                 className="w-4 h-4 accent-accent-purple rounded" />
               <span className="text-text-secondary text-sm">Feature on homepage</span>
             </label>
-            <label className="flex items-center gap-3 cursor-pointer select-none">
-              <input type="checkbox" checked={isAgeRestricted} onChange={(e) => setIsAgeRestricted(e.target.checked)}
-                className="w-4 h-4 accent-accent-purple rounded" />
-              <span className="text-text-secondary text-sm">Age restricted</span>
-            </label>
           </div>
-          {isAgeRestricted && (
-            <Field label="Minimum Age">
-              <input type="number" min={0} max={21} value={minimumAge} onChange={(e) => setMinimumAge(Number(e.target.value))} className={`${inputCls} max-w-24`} />
-            </Field>
-          )}
+        </div>
+
+        {/* Registration Requirements */}
+        <div className="glass p-6 rounded-2xl border border-white/5 space-y-4">
+          <h3 className="text-white font-bold text-lg mb-2">Registration Requirements</h3>
+          <div className="space-y-4 text-sm">
+            <label className="flex items-center gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={requireTerms}
+                onChange={(e) => setRequireTerms(e.target.checked)}
+                className="w-4 h-4 rounded bg-background border-white/20 text-accent-purple focus:ring-accent-purple"
+              />
+              <span className="text-text-secondary">Require Terms & Conditions</span>
+            </label>
+            <label className="flex items-center gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={requireAgeConfirmation}
+                onChange={(e) => setRequireAgeConfirmation(e.target.checked)}
+                className="w-4 h-4 rounded bg-background border-white/20 text-accent-purple focus:ring-accent-purple"
+              />
+              <span className="text-text-secondary">Require Age Confirmation</span>
+            </label>
+            {requireAgeConfirmation && (
+              <div className="pl-7">
+                <label className="block text-text-secondary mb-2">Age Requirement</label>
+                <select
+                  value={ageRestriction}
+                  onChange={(e) => setAgeRestriction(e.target.value === '' ? '' : Number(e.target.value))}
+                  className="px-4 py-2 bg-background border border-white/10 rounded-xl text-white focus:outline-none focus:border-accent-purple"
+                >
+                  <option value={18}>18</option>
+                  <option value={21}>21</option>
+                  <option value={25}>25</option>
+                  <option value={30}>30</option>
+                  <option value="">Custom</option>
+                </select>
+                {ageRestriction === '' && (
+                  <input
+                    type="number"
+                    min="1"
+                    placeholder="Enter age"
+                    onBlur={(e) => {
+                      if (e.target.value) setAgeRestriction(Number(e.target.value));
+                    }}
+                    className="w-full px-4 py-2 mt-2 bg-background border border-white/10 rounded-xl text-white focus:outline-none focus:border-accent-purple"
+                  />
+                )}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Submit */}

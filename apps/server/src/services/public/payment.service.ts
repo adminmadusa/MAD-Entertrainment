@@ -1,5 +1,6 @@
 import crypto from 'crypto';
-import { Types } from 'mongoose';
+import { Types, ClientSession } from 'mongoose';
+import * as Sentry from '@sentry/node';
 
 import { BookingStatus, PaymentStatus, ReservationStatus, SeatStatus, NotificationType } from '@mad/shared';
 
@@ -14,29 +15,260 @@ import { Coupon } from '../../models/coupon.schema';
 import { Event } from '../../models/event.schema';
 import { Notification } from '../../models/notification.schema';
 import { Payment, IPayment } from '../../models/payment.schema';
+import { Refund } from '../../models/refund.schema';
+import { Reservation } from '../../models/reservation.schema';
 import { SeatLayout } from '../../models/seat-layout.schema';
 import { Ticket } from '../../models/ticket.schema';
+import { UserModel } from '../../models/user.schema';
 import { logger } from '../../utils/logger';
 import { auditLog } from '../../utils/audit';
 import { sendEmail } from '../../utils/email';
 import { generateTicketPDF } from '../../utils/pdf';
+import { paymentFailureHtml } from '../../lib/email';
 import { ReservationService } from '../reservation.service';
 import { QueueService } from '../queue.service';
 import { CacheService } from '../cache.service';
+import { createNotificationSafe } from '../notification.service';
+import { runInTransaction } from '../../utils/transaction';
+
+type PaymentOwnershipContext = {
+  userId?: string;
+  sessionId?: string;
+  trustedInternal?: boolean;
+};
 
 export class PaymentService {
-  static async createPaymentIntent(bookingId: string, gateway: 'stripe' | 'razorpay') {
+  private static assertBookingOwnership(booking: IBooking, ownershipContext: PaymentOwnershipContext): void {
+    if (ownershipContext.trustedInternal) {
+      return;
+    }
+
+    const isUserOwner =
+      !!booking.userId &&
+      !!ownershipContext.userId &&
+      booking.userId.toString() === ownershipContext.userId;
+    const isGuestOwner =
+      !!booking.sessionId &&
+      !!ownershipContext.sessionId &&
+      booking.sessionId === ownershipContext.sessionId;
+
+    if (!isUserOwner && !isGuestOwner) {
+      throw AppError.forbidden('You do not have access to this booking');
+    }
+  }
+
+  private static assertProductionPaymentIntegrity(
+    identifiers: (string | undefined)[],
+    context: {
+      bookingId?: string;
+      paymentId?: string;
+      gateway?: string;
+      requestSource?: string;
+    } = {}
+  ): void {
+    const env = getEnv();
+    const isProd = env.NODE_ENV === 'production' || env.APP_ENV === 'production';
+    if (!isProd) return;
+
+    const metadata = {
+      bookingId: context.bookingId,
+      paymentId: context.paymentId,
+      environment: env.NODE_ENV || env.APP_ENV,
+      requestSource: context.requestSource,
+      gateway: context.gateway,
+    };
+
+    // Rule 1: Reject env.MOCK_PAYMENTS === true
+    if (env.MOCK_PAYMENTS) {
+      const errorMsg = 'MOCK_PAYMENTS_PRODUCTION_BLOCKED: Mock payments cannot be enabled in production environments.';
+      logger.error(metadata, errorMsg);
+      auditLog({
+        action: 'MOCK_PAYMENTS_PRODUCTION_BLOCKED',
+        status: 'failure',
+        description: errorMsg,
+        metadata,
+      });
+      try {
+        Sentry.captureException(new Error(errorMsg), {
+          tags: { type: 'MOCK_PAYMENTS_PRODUCTION_BLOCKED', environment: metadata.environment, gateway: metadata.gateway },
+          extra: metadata,
+        });
+      } catch (err) {
+        logger.error(err, 'Failed to log MOCK_PAYMENTS_PRODUCTION_BLOCKED to Sentry');
+      }
+      throw new Error(errorMsg);
+    }
+
+    if (context.gateway === 'mock') {
+      this.assertProductionMockRuntimeBlocked(context);
+    }
+
+    // Rule 2: Reject mock identifiers
+    const mockPatterns = ['pi_mock_', 'pay_mock_', 'order_mock_', '_secret_mock'];
+    for (const id of identifiers) {
+      if (!id) continue;
+      if (mockPatterns.some((pattern) => id.includes(pattern))) {
+        const errorMsg = `MOCK_PAYMENT_IDENTIFIER_DETECTED: Mock payment identifier "${id}" submitted in production.`;
+        const localMetadata = { ...metadata, paymentId: id };
+        logger.error(localMetadata, errorMsg);
+        auditLog({
+          action: 'MOCK_PAYMENT_IDENTIFIER_DETECTED',
+          status: 'failure',
+          description: errorMsg,
+          metadata: localMetadata,
+        });
+        try {
+          Sentry.captureException(new Error(errorMsg), {
+            tags: { type: 'MOCK_PAYMENT_IDENTIFIER_DETECTED', environment: localMetadata.environment, gateway: localMetadata.gateway },
+            extra: localMetadata,
+          });
+        } catch (err) {
+          logger.error(err, 'Failed to log MOCK_PAYMENT_IDENTIFIER_DETECTED to Sentry');
+        }
+        throw new Error(errorMsg);
+      }
+    }
+  }
+
+  private static assertProductionMockRuntimeBlocked(
+    context: {
+      bookingId?: string;
+      paymentId?: string;
+      gateway?: string;
+      requestSource?: string;
+    } = {}
+  ): void {
+    const env = getEnv();
+    const isProd = env.NODE_ENV === 'production' || env.APP_ENV === 'production';
+    if (!isProd) return;
+
+    const metadata = {
+      bookingId: context.bookingId,
+      paymentId: context.paymentId,
+      environment: env.NODE_ENV || env.APP_ENV,
+      requestSource: context.requestSource,
+      gateway: context.gateway,
+    };
+
+    const errorMsg = 'MOCK_PAYMENT_RUNTIME_BLOCKED: Mock payment execution path reached in production.';
+    logger.error(metadata, errorMsg);
+    auditLog({
+      action: 'MOCK_PAYMENT_RUNTIME_BLOCKED',
+      status: 'failure',
+      description: errorMsg,
+      metadata,
+    });
+    try {
+      Sentry.captureException(new Error(errorMsg), {
+        tags: { type: 'MOCK_PAYMENT_RUNTIME_BLOCKED', environment: metadata.environment, gateway: metadata.gateway },
+        extra: metadata,
+      });
+    } catch (err) {
+      logger.error(err, 'Failed to log MOCK_PAYMENT_RUNTIME_BLOCKED to Sentry');
+    }
+    throw new Error(errorMsg);
+  }
+
+  static async createPaymentIntent(bookingId: string, gateway: 'stripe' | 'razorpay', ownershipContext: PaymentOwnershipContext = {}) {
+    this.assertProductionPaymentIntegrity([bookingId], { bookingId, gateway });
+
     const query = Types.ObjectId.isValid(bookingId) ? { _id: bookingId } : { bookingId };
     const booking = await Booking.findOne(query);
     if (!booking) {
       throw AppError.notFound('Booking not found');
     }
 
+    this.assertBookingOwnership(booking, ownershipContext);
+
     if (booking.status !== BookingStatus.AWAITING_PAYMENT) {
       throw AppError.badRequest(`Booking is in state "${booking.status}" and cannot accept payment`);
     }
 
+    if (booking.totalAmount === 0) {
+      const payment = await Payment.create({
+        bookingId: booking._id,
+        gateway: 'free',
+        status: PaymentStatus.PAID,
+        amount: 0,
+        currency: booking.currency || 'INR',
+        gatewayOrderId: `free_${crypto.randomBytes(8).toString('hex')}`,
+      });
+      const confirmedBooking = await this.confirmBooking(booking, payment);
+      if (!confirmedBooking) {
+        throw new AppError('Failed to confirm free booking', 500);
+      }
+      return {
+        isFree: true,
+        gateway: 'free',
+        bookingId: confirmedBooking._id,
+      };
+    }
+
     const env = getEnv();
+
+    // ─── Payment Intent Reuse / Fingerprint check ───────────────────
+    const existingPayment = await Payment.findOne({
+      bookingId: booking._id,
+      gateway,
+      status: PaymentStatus.PENDING,
+    });
+
+    if (existingPayment) {
+      const matchesFingerprint =
+        existingPayment.amount === booking.totalAmount &&
+        existingPayment.currency === (booking.currency || 'INR') &&
+        existingPayment.couponId?.toString() === booking.couponId?.toString();
+
+      const ageMs = Date.now() - existingPayment.createdAt.getTime();
+      const isExpired = ageMs > 24 * 60 * 60 * 1000;
+
+      if (matchesFingerprint && !isExpired) {
+        logger.info(
+          { bookingId: booking._id, gateway, paymentId: existingPayment._id },
+          'Reusing active matching pending payment intent.'
+        );
+
+        if (gateway === 'razorpay') {
+          return {
+            gateway: 'razorpay',
+            keyId: env.RAZORPAY_KEY_ID || 'mock_key_id',
+            orderId: existingPayment.gatewayOrderId,
+            amount: Math.round(existingPayment.amount * 100),
+            currency: existingPayment.currency,
+            bookingId: booking._id,
+            ...(env.MOCK_PAYMENTS ? { isMock: true } : {}),
+          };
+        } else {
+          let clientSecret = '';
+          if (env.MOCK_PAYMENTS) {
+            clientSecret = existingPayment.gatewayOrderId + '_secret_mock';
+          } else {
+            const stripe = getStripe();
+            const intent = await stripe.paymentIntents.retrieve(existingPayment.gatewayOrderId!);
+            clientSecret = intent.client_secret!;
+          }
+
+          return {
+            gateway: 'stripe',
+            publishableKey: env.STRIPE_PUBLISHABLE_KEY,
+            clientSecret,
+            amount: existingPayment.amount,
+            currency: existingPayment.currency,
+            bookingId: booking._id,
+            ...(env.MOCK_PAYMENTS ? { isMock: true } : {}),
+          };
+        }
+      } else {
+        existingPayment.status = PaymentStatus.FAILED;
+        existingPayment.failedAt = new Date();
+        existingPayment.failureReason = isExpired ? 'PENDING_INTENT_EXPIRED' : 'PENDING_INTENT_SUPERSEDED';
+        await existingPayment.save();
+        logger.info(
+          { bookingId: booking._id, paymentId: existingPayment._id, reason: existingPayment.failureReason },
+          'Stale or mismatched pending payment expired/superseded.'
+        );
+      }
+    }
 
     if (gateway === 'razorpay') {
       return this.handleRazorpayIntent(booking, env);
@@ -47,15 +279,16 @@ export class PaymentService {
 
   private static async handleRazorpayIntent(booking: IBooking, env: ReturnType<typeof getEnv>) {
     if (env.MOCK_PAYMENTS) {
+      this.assertProductionMockRuntimeBlocked({ bookingId: booking._id.toString(), gateway: 'razorpay' });
       const mockOrderId = 'order_mock_' + Math.random().toString(36).substring(2, 10);
-      const payment = await Payment.create({
-        bookingId: booking._id,
-        gateway: 'razorpay',
-        status: PaymentStatus.PENDING,
-        amount: booking.totalAmount,
-        currency: 'INR',
-        gatewayOrderId: mockOrderId,
-      });
+      const payment = await this.createPendingPayment(
+        booking._id,
+        'razorpay',
+        booking.totalAmount,
+        'INR',
+        booking.couponId,
+        mockOrderId
+      );
 
       booking.paymentId = payment._id as any;
       booking.bookingVersion += 1;
@@ -109,14 +342,14 @@ export class PaymentService {
         receipt: booking.bookingId,
       });
 
-      const payment = await Payment.create({
-        bookingId: booking._id,
-        gateway: 'razorpay',
-        status: PaymentStatus.PENDING,
-        amount: booking.totalAmount,
-        currency: 'INR',
-        gatewayOrderId: order.id,
-      });
+      const payment = await this.createPendingPayment(
+        booking._id,
+        'razorpay',
+        booking.totalAmount,
+        'INR',
+        booking.couponId,
+        order.id
+      );
 
       booking.paymentId = payment._id as any;
       booking.bookingVersion += 1;
@@ -159,15 +392,16 @@ export class PaymentService {
 
   private static async handleStripeIntent(booking: IBooking, env: ReturnType<typeof getEnv>) {
     if (env.MOCK_PAYMENTS) {
+      this.assertProductionMockRuntimeBlocked({ bookingId: booking._id.toString(), gateway: 'stripe' });
       const mockIntentId = 'pi_mock_' + Math.random().toString(36).substring(2, 10);
-      const payment = await Payment.create({
-        bookingId: booking._id,
-        gateway: 'stripe',
-        status: PaymentStatus.PENDING,
-        amount: booking.totalAmount,
-        currency: booking.currency || 'INR',
-        gatewayOrderId: mockIntentId,
-      });
+      const payment = await this.createPendingPayment(
+        booking._id,
+        'stripe',
+        booking.totalAmount,
+        booking.currency || 'INR',
+        booking.couponId,
+        mockIntentId
+      );
 
       booking.paymentId = payment._id as any;
       booking.bookingVersion += 1;
@@ -208,15 +442,12 @@ export class PaymentService {
       throw AppError.badRequest('Stripe is not enabled / credentials missing');
     }
 
+    const amountPaise = Math.round(booking.totalAmount * 100);
     try {
       const stripe = getStripe();
       const paymentIntent = await stripe.paymentIntents.create({
-        amount: Math.round(booking.totalAmount * 100),
+        amount: amountPaise,
         currency: booking.currency?.toLowerCase() || 'inr',
-        // PR-02: Standardised metadata keys.
-        // bookingId  — MongoId, used for exact binding check during verification.
-        // bookingReference — human-readable MAD-YYYY-XXXXX, secondary binding check.
-        // environment — disambiguates test vs production events in Stripe dashboard.
         metadata: {
           bookingId: booking._id.toString(),
           bookingReference: booking.bookingId,
@@ -224,14 +455,14 @@ export class PaymentService {
         },
       });
 
-      const payment = await Payment.create({
-        bookingId: booking._id,
-        gateway: 'stripe',
-        status: PaymentStatus.PENDING,
-        amount: booking.totalAmount,
-        currency: booking.currency || 'INR',
-        gatewayOrderId: paymentIntent.id,
-      });
+      const payment = await this.createPendingPayment(
+        booking._id,
+        'stripe',
+        booking.totalAmount,
+        booking.currency || 'INR',
+        booking.couponId,
+        paymentIntent.id
+      );
 
       booking.paymentId = payment._id as any;
       booking.bookingVersion += 1;
@@ -297,8 +528,19 @@ export class PaymentService {
     razorpayOrderId: string,
     razorpayPaymentId: string,
     eventType: string,
-    webhookEventId: string
+    webhookEventId: string,
+    amountPaise?: number,
+    currency?: string
   ): Promise<{ status: 'confirmed' | 'failed' | 'skipped'; bookingId?: string }> {
+    this.assertProductionPaymentIntegrity(
+      [razorpayOrderId, razorpayPaymentId],
+      {
+        paymentId: razorpayPaymentId,
+        gateway: 'razorpay',
+        requestSource: 'webhook',
+      }
+    );
+
     // 1. Resolve Payment record from orderId — this is the only link between the
     //    webhook payload and the internal booking.
     const payment = await Payment.findOne({ gatewayOrderId: razorpayOrderId, gateway: 'razorpay' });
@@ -352,20 +594,30 @@ export class PaymentService {
       return { status: 'skipped', bookingId: booking._id.toString() };
     }
 
-    // 4. Route by event type.
     if (eventType === 'payment.captured' || eventType === 'payment.authorized') {
-      // Mark payment as PAID — no payment signature re-check here because:
-      // (a) the webhook body is already authenticated via HMAC at the controller.
-      // (b) RAZORPAY_KEY_SECRET signatures are only available in the checkout redirect,
-      //     not in the webhook payload.
-      payment.status = PaymentStatus.PAID;
-      payment.gatewayPaymentId = razorpayPaymentId;
-      payment.paidAt = new Date();
-      await payment.save();
+      const claimedPayment = await Payment.findOneAndUpdate(
+        { _id: payment._id, status: PaymentStatus.PENDING },
+        {
+          $set: {
+            status: PaymentStatus.PAID,
+            gatewayPaymentId: razorpayPaymentId,
+            paidAt: new Date(),
+          }
+        },
+        { new: true }
+      );
+
+      if (!claimedPayment) {
+        logger.info(
+          { paymentId: payment._id, bookingId: booking._id },
+          'Payment already claimed by concurrent caller — skipping'
+        );
+        return { status: 'skipped', bookingId: booking._id.toString() };
+      }
 
       // confirmBooking() uses findOneAndUpdate with { status: AWAITING_PAYMENT } guard.
       // If the booking expired or was already confirmed by the frontend, this is a no-op.
-      const confirmedBooking = await this.confirmBooking(booking, payment);
+      const confirmedBooking = await this.confirmBooking(booking, claimedPayment);
 
       if (!confirmedBooking) {
         return { status: 'skipped', bookingId: booking._id.toString() };
@@ -440,7 +692,279 @@ export class PaymentService {
     return { status: 'skipped' };
   }
 
-  static async verifyPayment(bookingId: string, gatewayPayload: any) {
+  static async confirmFromWebhookStripe(
+    intent: {
+      id: string;
+      metadata?: { bookingId?: string; bookingReference?: string };
+      amount?: number;
+      amount_received?: number;
+      currency?: string;
+    },
+    webhookEventId: string
+  ): Promise<{ status: 'confirmed' | 'skipped' | 'failed'; bookingId?: string }> {
+    this.assertProductionPaymentIntegrity(
+      [intent.id],
+      {
+        bookingId: intent.metadata?.bookingId,
+        paymentId: intent.id,
+        gateway: 'stripe',
+        requestSource: 'webhook',
+      }
+    );
+
+    try {
+      const intentBookingId = intent.metadata?.bookingId;
+      if (!intentBookingId) {
+        logger.warn(
+          { paymentIntentId: intent.id, webhookEventId },
+          'Stripe webhook received but missing bookingId metadata'
+        );
+        return { status: 'skipped' };
+      }
+
+      // 2. Resolve Payment record
+      const payment = await Payment.findOne({ gatewayOrderId: intent.id, gateway: 'stripe' });
+      if (!payment) {
+        logger.warn(
+          { paymentIntentId: intent.id, webhookEventId },
+          'Stripe webhook received but no matching Payment record found'
+        );
+        return { status: 'skipped' };
+      }
+
+      // 3. Resolve Booking from payment.bookingId
+      const booking = await Booking.findById(payment.bookingId);
+      if (!booking) {
+        logger.error(
+          { paymentIntentId: intent.id, paymentId: payment._id, webhookEventId },
+          'Payment record exists but associated Booking is missing'
+        );
+        return { status: 'skipped' };
+      }
+
+      logger.info(
+        {
+          paymentIntentId: intent.id,
+          webhookEventId,
+          bookingId: booking._id,
+          bookingReference: booking.bookingId,
+          paymentId: payment._id,
+          bookingStatus: booking.status,
+          paymentStatus: payment.status,
+        },
+        'Stripe webhook processing payment confirmation'
+      );
+
+      // 5. Optimistic idempotency read
+      if (payment.status === PaymentStatus.PAID) {
+        logger.info(
+          { paymentIntentId: intent.id, bookingId: booking._id, webhookEventId },
+          'Payment already confirmed — webhook idempotency skip'
+        );
+        return { status: 'skipped', bookingId: booking._id.toString() };
+      }
+
+      const env = getEnv();
+      const isMock = env.MOCK_PAYMENTS && intent.id.startsWith('pi_mock_');
+
+      if (isMock) {
+        this.assertProductionMockRuntimeBlocked({
+          bookingId: booking._id.toString(),
+          paymentId: intent.id,
+          gateway: 'stripe',
+          requestSource: 'webhook',
+        });
+      }
+
+      if (!isMock) {
+        // Validation check 1: bookingId metadata must match
+        if (intentBookingId !== booking._id.toString()) {
+          logger.error(
+            {
+              bookingId: booking._id,
+              bookingReference: booking.bookingId,
+              paymentIntentId: intent.id,
+              intentBookingId,
+            },
+            'SECURITY: Stripe webhook bookingId metadata mismatch — possible replay attack'
+          );
+          await this.failPaymentAndReleaseInventory(booking, payment, `Stripe webhook metadata mismatch: bookingId`, 'auto_recovery', 'BOOKING_ID_MISMATCH');
+          auditLog({
+            action: 'PAYMENT_SECURITY_VIOLATION',
+            status: 'failure',
+            metadata: {
+              bookingId: booking._id.toString(),
+              bookingReference: booking.bookingId,
+              gateway: 'stripe',
+              intentBookingId,
+              violationType: 'booking_id_mismatch',
+            },
+            description: `SECURITY VIOLATION: Stripe webhook bookingId mismatch for booking ${booking.bookingId}`
+          });
+          return { status: 'skipped', bookingId: booking._id.toString() };
+        }
+
+        // Validation check 2: bookingReference metadata must match
+        const intentBookingReference = intent.metadata?.bookingReference;
+        if (intentBookingReference && intentBookingReference !== booking.bookingId) {
+          logger.error(
+            {
+              bookingId: booking._id,
+              bookingReference: booking.bookingId,
+              paymentIntentId: intent.id,
+              intentBookingReference,
+            },
+            'SECURITY: Stripe webhook bookingReference metadata mismatch'
+          );
+          await this.failPaymentAndReleaseInventory(booking, payment, `Stripe webhook metadata mismatch: bookingReference`, 'auto_recovery', 'BOOKING_REFERENCE_MISMATCH');
+          auditLog({
+            action: 'PAYMENT_SECURITY_VIOLATION',
+            status: 'failure',
+            metadata: {
+              bookingId: booking._id.toString(),
+              bookingReference: booking.bookingId,
+              gateway: 'stripe',
+              intentBookingReference,
+              violationType: 'booking_reference_mismatch',
+            },
+            description: `SECURITY VIOLATION: Stripe webhook bookingReference mismatch for booking ${booking.bookingId}`
+          });
+          return { status: 'skipped', bookingId: booking._id.toString() };
+        }
+
+        // 6. Amount validation (defense-in-depth)
+        const expectedAmountPaise = Math.round(booking.totalAmount * 100);
+        const receivedAmountPaise = intent.amount_received ?? intent.amount;
+        if (receivedAmountPaise !== undefined && receivedAmountPaise !== expectedAmountPaise) {
+          logger.error(
+            {
+              bookingId: booking._id,
+              bookingReference: booking.bookingId,
+              paymentIntentId: intent.id,
+              expectedAmountPaise,
+              receivedAmountPaise,
+            },
+            'SECURITY: Stripe webhook payment amount mismatch'
+          );
+          await this.failPaymentAndReleaseInventory(booking, payment, `Amount mismatch: expected ${expectedAmountPaise} paise, received ${receivedAmountPaise}`, 'auto_recovery', 'AMOUNT_MISMATCH');
+          auditLog({
+            action: 'PAYMENT_SECURITY_VIOLATION',
+            status: 'failure',
+            metadata: {
+              bookingId: booking._id.toString(),
+              bookingReference: booking.bookingId,
+              gateway: 'stripe',
+              expectedAmountPaise,
+              receivedAmountPaise,
+              violationType: 'amount_mismatch',
+            },
+            description: `SECURITY VIOLATION: Stripe webhook payment amount mismatch for booking ${booking.bookingId}`
+          });
+          return { status: 'skipped', bookingId: booking._id.toString() };
+        }
+
+        // 7. Currency validation (defense-in-depth)
+        if (intent.currency !== undefined) {
+          const expectedCurrency = (booking.currency || 'USD').toLowerCase();
+          const receivedCurrency = intent.currency.toLowerCase();
+          if (receivedCurrency !== expectedCurrency) {
+            logger.error(
+              {
+                bookingId: booking._id,
+                bookingReference: booking.bookingId,
+                paymentIntentId: intent.id,
+                expectedCurrency,
+                receivedCurrency,
+              },
+              'SECURITY: Stripe webhook payment currency mismatch'
+            );
+            await this.failPaymentAndReleaseInventory(booking, payment, `Currency mismatch: expected ${expectedCurrency}, received ${receivedCurrency}`, 'auto_recovery', 'CURRENCY_MISMATCH');
+            auditLog({
+              action: 'PAYMENT_SECURITY_VIOLATION',
+              status: 'failure',
+              metadata: {
+                bookingId: booking._id.toString(),
+                bookingReference: booking.bookingId,
+                gateway: 'stripe',
+                expectedCurrency,
+                receivedCurrency,
+                violationType: 'currency_mismatch',
+              },
+              description: `SECURITY VIOLATION: Stripe webhook payment currency mismatch for booking ${booking.bookingId}`
+            });
+            return { status: 'skipped', bookingId: booking._id.toString() };
+          }
+        }
+      }
+
+      // 8. Atomic payment status transition (B2)
+      const claimedPayment = await Payment.findOneAndUpdate(
+        { _id: payment._id, status: PaymentStatus.PENDING },
+        {
+          $set: {
+            status: PaymentStatus.PAID,
+            gatewayPaymentId: intent.id,
+            paidAt: new Date(),
+          }
+        },
+        { new: true }
+      );
+
+      if (!claimedPayment) {
+        logger.info(
+          { paymentId: payment._id, bookingId: booking._id },
+          'Payment already claimed by concurrent caller — skipping'
+        );
+        return { status: 'skipped', bookingId: booking._id.toString() };
+      }
+
+      // 9. confirmBooking(booking, claimedPayment)
+      const confirmedBooking = await this.confirmBooking(booking, claimedPayment);
+      if (!confirmedBooking) {
+        return { status: 'skipped', bookingId: booking._id.toString() };
+      }
+
+      logger.info(
+        {
+          paymentIntentId: intent.id,
+          webhookEventId,
+          bookingId: booking._id,
+          bookingReference: booking.bookingId,
+        },
+        'Stripe webhook payment confirmation complete'
+      );
+
+      // 10. Log and auditLog PAYMENT_WEBHOOK_CONFIRMED
+      auditLog({
+        action: 'PAYMENT_WEBHOOK_CONFIRMED',
+        status: 'success',
+        metadata: {
+          bookingId: booking._id.toString(),
+          bookingReference: booking.bookingId,
+          gateway: 'stripe',
+          paymentIntentId: intent.id,
+          webhookEventId,
+          isMock,
+        },
+        description: `Confirmed Stripe payment ${intent.id} via webhook for booking ${booking.bookingId}`
+      });
+
+      return { status: 'confirmed', bookingId: booking._id.toString() };
+
+    } catch (err: any) {
+      logger.error(
+        { err, paymentIntentId: intent.id, webhookEventId },
+        'Unexpected error in Stripe webhook confirmation'
+      );
+      return { status: 'failed', bookingId: intent.metadata?.bookingId };
+    }
+  }
+
+  static async verifyPayment(
+    bookingId: string,
+    gatewayPayload: any,
+    ownershipContext: PaymentOwnershipContext = {}
+  ) {
 
     const query = Types.ObjectId.isValid(bookingId) ? { _id: bookingId } : { bookingId };
     const booking = await Booking.findOne(query);
@@ -448,7 +972,42 @@ export class PaymentService {
       throw AppError.notFound('Booking not found');
     }
 
-    const payment = await Payment.findOne({ bookingId: booking._id }).sort({ createdAt: -1 });
+    this.assertBookingOwnership(booking, ownershipContext);
+
+    const { paymentIntentId, razorpay_order_id, razorpay_payment_id } = gatewayPayload || {};
+
+    this.assertProductionPaymentIntegrity(
+      [paymentIntentId, razorpay_order_id, razorpay_payment_id],
+      {
+        bookingId: booking._id.toString(),
+        gateway: paymentIntentId ? 'stripe' : 'razorpay',
+        requestSource: 'frontend_verify',
+      }
+    );
+
+    let payment;
+    if (paymentIntentId) {
+      payment = await Payment.findOne({
+        bookingId: booking._id,
+        gatewayOrderId: paymentIntentId,
+        gateway: 'stripe',
+      }).sort({ createdAt: -1 });
+    } else if (razorpay_order_id) {
+      payment = await Payment.findOne({
+        bookingId: booking._id,
+        gatewayOrderId: razorpay_order_id,
+        gateway: 'razorpay',
+      }).sort({ createdAt: -1 });
+    } else if (razorpay_payment_id) {
+      payment = await Payment.findOne({
+        bookingId: booking._id,
+        gatewayPaymentId: razorpay_payment_id,
+        gateway: 'razorpay',
+      }).sort({ createdAt: -1 });
+    } else {
+      throw AppError.badRequest('Payment verification requires a payment identifier');
+    }
+
     if (!payment) {
       throw AppError.notFound('Payment record not found for booking');
     }
@@ -468,6 +1027,46 @@ export class PaymentService {
       }
 
       const isMock = env.MOCK_PAYMENTS && razorpay_payment_id.startsWith('pay_mock_') && razorpay_signature === 'mock_signature';
+
+      if (isMock) {
+        this.assertProductionMockRuntimeBlocked({
+          bookingId: booking._id.toString(),
+          paymentId: razorpay_payment_id,
+          gateway: 'razorpay',
+          requestSource: 'frontend_verify',
+        });
+      }
+
+      if (!payment.gatewayOrderId || payment.gatewayOrderId !== razorpay_order_id) {
+        logger.error(
+          {
+            bookingId: booking._id,
+            bookingReference: booking.bookingId,
+            paymentId: payment._id,
+            expectedOrderId: payment.gatewayOrderId,
+            receivedOrderId: razorpay_order_id,
+            razorpayPaymentId: razorpay_payment_id,
+          },
+          'SECURITY: Razorpay order ID mismatch — possible payment replay attack'
+        );
+        auditLog({
+          action: 'PAYMENT_SECURITY_VIOLATION',
+          status: 'failure',
+          metadata: {
+            bookingId: booking._id.toString(),
+            bookingReference: booking.bookingId,
+            gateway: 'razorpay',
+            expectedOrderId: payment.gatewayOrderId,
+            receivedOrderId: razorpay_order_id,
+            razorpayPaymentId: razorpay_payment_id,
+            violationType: 'razorpay_order_mismatch',
+            isMock,
+          },
+          description: `SECURITY VIOLATION: Razorpay order mismatch for booking ${booking.bookingId}`
+        });
+
+        throw AppError.badRequest('Razorpay order does not belong to this booking');
+      }
 
       if (!isMock) {
         const text = razorpay_order_id + '|' + razorpay_payment_id;
@@ -491,6 +1090,118 @@ export class PaymentService {
           });
 
           throw AppError.badRequest('Razorpay signature verification failed');
+        }
+      }
+
+      const duplicateGatewayPayment = await Payment.findOne({
+        gateway: 'razorpay',
+        gatewayPaymentId: razorpay_payment_id,
+        _id: { $ne: payment._id },
+      });
+
+      if (duplicateGatewayPayment) {
+        logger.error(
+          {
+            bookingId: booking._id,
+            bookingReference: booking.bookingId,
+            paymentId: payment._id,
+            duplicatePaymentId: duplicateGatewayPayment._id,
+            razorpayOrderId: razorpay_order_id,
+            razorpayPaymentId: razorpay_payment_id,
+          },
+          'SECURITY: Razorpay payment ID already attached to another payment'
+        );
+        auditLog({
+          action: 'PAYMENT_SECURITY_VIOLATION',
+          status: 'failure',
+          metadata: {
+            bookingId: booking._id.toString(),
+            bookingReference: booking.bookingId,
+            gateway: 'razorpay',
+            paymentId: payment._id?.toString(),
+            duplicatePaymentId: duplicateGatewayPayment._id?.toString(),
+            razorpayOrderId: razorpay_order_id,
+            razorpayPaymentId: razorpay_payment_id,
+            violationType: 'razorpay_payment_id_duplicate',
+            isMock,
+          },
+          description: `SECURITY VIOLATION: Razorpay payment ID replay for booking ${booking.bookingId}`
+        });
+
+        throw AppError.badRequest('Razorpay payment has already been used');
+      }
+
+      // Amount & currency verification (defense-in-depth sanity checks)
+      if (payment.amount !== undefined && booking.totalAmount !== undefined) {
+        const expectedAmountPaise = Math.round(booking.totalAmount * 100);
+        const paymentAmountPaise = Math.round(payment.amount * 100);
+
+        if (paymentAmountPaise !== expectedAmountPaise) {
+          logger.error(
+            {
+              bookingId: booking._id,
+              bookingReference: booking.bookingId,
+              paymentId: payment._id,
+              expectedAmountPaise,
+              paymentAmountPaise,
+            },
+            'SECURITY: Razorpay payment amount mismatch'
+          );
+          await this.failPaymentAndReleaseInventory(
+            booking,
+            payment,
+            `Amount mismatch: expected ${expectedAmountPaise} paise, got payment record with ${paymentAmountPaise} paise`
+          );
+          auditLog({
+            action: 'PAYMENT_SECURITY_VIOLATION',
+            status: 'failure',
+            metadata: {
+              bookingId: booking._id.toString(),
+              bookingReference: booking.bookingId,
+              gateway: 'razorpay',
+              expectedAmountPaise,
+              receivedAmountPaise: paymentAmountPaise,
+              violationType: 'amount_mismatch',
+            },
+            description: `SECURITY VIOLATION: Razorpay payment amount mismatch for booking ${booking.bookingId}`
+          });
+          throw AppError.badRequest('Payment amount does not match booking total');
+        }
+      }
+
+      if (payment.currency !== undefined && booking.currency !== undefined) {
+        const expectedCurrency = (booking.currency || 'INR').toLowerCase();
+        const paymentCurrency = (payment.currency || 'INR').toLowerCase();
+        if (paymentCurrency !== expectedCurrency) {
+          logger.error(
+            {
+              bookingId: booking._id,
+              bookingReference: booking.bookingId,
+              paymentId: payment._id,
+              expectedCurrency,
+              paymentCurrency,
+            },
+            'SECURITY: Razorpay payment currency mismatch'
+          );
+          await this.failPaymentAndReleaseInventory(
+            booking,
+            payment,
+            `Currency mismatch: expected ${expectedCurrency}, got payment record with ${paymentCurrency}`
+          );
+          auditLog({
+            action: 'PAYMENT_SECURITY_VIOLATION',
+            status: 'failure',
+            metadata: {
+              bookingId: booking._id.toString(),
+              bookingReference: booking.bookingId,
+              gateway: 'razorpay',
+              expectedCurrency,
+              receivedCurrency: paymentCurrency,
+              violationType: 'currency_mismatch',
+            },
+            description: `SECURITY VIOLATION: Razorpay payment currency mismatch for booking ${booking.bookingId}`
+          });
+          throw AppError.badRequest('Payment currency does not match booking currency');
         }
       }
 
@@ -524,6 +1235,15 @@ export class PaymentService {
       }
 
       const isMock = env.MOCK_PAYMENTS && paymentIntentId.startsWith('pi_mock_');
+
+      if (isMock) {
+        this.assertProductionMockRuntimeBlocked({
+          bookingId: booking._id.toString(),
+          paymentId: paymentIntentId,
+          gateway: 'stripe',
+          requestSource: 'frontend_verify',
+        });
+      }
 
       if (isMock) {
         payment.status = PaymentStatus.PAID;
@@ -650,7 +1370,7 @@ export class PaymentService {
             },
             'SECURITY: Stripe payment amount mismatch'
           );
-          await this.failPaymentAndReleaseInventory(booking, payment, `Amount mismatch: expected ${expectedAmountPaise} paise, received ${receivedAmountPaise}`);
+          await this.failPaymentAndReleaseInventory(booking, payment, `Amount mismatch: expected ${expectedAmountPaise} paise, received ${receivedAmountPaise}`, 'auto_recovery', 'AMOUNT_MISMATCH');
           auditLog({
             action: 'PAYMENT_SECURITY_VIOLATION',
             status: 'failure',
@@ -683,7 +1403,7 @@ export class PaymentService {
             },
             'SECURITY: Stripe payment currency mismatch'
           );
-          await this.failPaymentAndReleaseInventory(booking, payment, `Currency mismatch: expected ${expectedCurrency}, received ${receivedCurrency}`);
+          await this.failPaymentAndReleaseInventory(booking, payment, `Currency mismatch: expected ${expectedCurrency}, received ${receivedCurrency}`, 'auto_recovery', 'CURRENCY_MISMATCH');
           auditLog({
             action: 'PAYMENT_SECURITY_VIOLATION',
             status: 'failure',
@@ -735,10 +1455,14 @@ export class PaymentService {
     }
 
     if (confirmedBooking) {
+      this.assertBookingOwnership(confirmedBooking, ownershipContext);
       return confirmedBooking;
     }
 
     const latestBooking = await Booking.findById(booking._id);
+    if (latestBooking) {
+      this.assertBookingOwnership(latestBooking, ownershipContext);
+    }
     return latestBooking || booking;
   }
 
@@ -750,11 +1474,110 @@ export class PaymentService {
     }
   }
 
-  private static async failPaymentAndReleaseInventory(booking: IBooking, payment: IPayment, reason: string) {
+  private static async redeemCouponForConfirmedBooking(booking: IBooking, payment: IPayment, session?: ClientSession): Promise<void> {
+    if (!booking.couponId) {
+      return;
+    }
+
+    const result = await Coupon.updateOne(
+      {
+        _id: booking.couponId,
+        $expr: { $lt: ['$usedCount', '$usageLimit'] },
+      },
+      { $inc: { usedCount: 1 } },
+      { session }
+    );
+
+    if (result.modifiedCount !== 1) {
+      logger.warn(
+        {
+          bookingId: booking._id,
+          bookingReference: booking.bookingId,
+          paymentId: payment._id,
+          couponId: booking.couponId,
+        },
+        'Coupon redemption rejected because usage limit has been reached'
+      );
+
+      const err = AppError.conflict('Coupon usage limit reached');
+      err.code = 'COUPON_USAGE_LIMIT_REACHED';
+      throw err;
+    }
+  }
+
+  private static async triggerRefundRequest(
+    booking: IBooking,
+    payment: IPayment,
+    reason: string,
+    session?: ClientSession,
+    origin: 'manual' | 'auto_recovery' = 'manual',
+    recoveryReason?: 'AMOUNT_MISMATCH' | 'BOOKING_REFERENCE_MISMATCH' | 'BOOKING_ID_MISMATCH' | 'CURRENCY_MISMATCH' | 'PAYMENT_VALIDATION_FAILURE' | 'EXPIRED_BOOKING_CAPACITY_UNAVAILABLE'
+  ): Promise<void> {
+    const idempotencyKey = `auto-refund-${payment._id}`;
+
+    const existingRefund = await Refund.findOne({
+      paymentId: payment._id,
+      status: { $in: ['requested', 'processing', 'completed'] }
+    }).session(session || null);
+
+    if (!existingRefund) {
+      try {
+        await Refund.create([{
+          bookingId: booking._id,
+          paymentId: payment._id,
+          amount: booking.totalAmount,
+          currency: booking.currency || 'INR',
+          reason: reason || 'LATE_PAYMENT_RECOVERY_REJECTED',
+          status: 'requested',
+          idempotencyKey,
+          origin,
+          recoveryReason,
+        }], { session });
+        logger.info(
+          { bookingId: booking._id, paymentId: payment._id, amount: booking.totalAmount, reason, idempotencyKey, origin, recoveryReason },
+          'Created automatic Refund request record due to validation mismatch / recovery'
+        );
+      } catch (err: any) {
+        const isDuplicateKey = err.code === 11000 || err.code === '11000' || err.message?.includes('E11000');
+        if (isDuplicateKey) {
+          logger.warn(
+            { paymentId: payment._id, idempotencyKey },
+            'Duplicate refund request creation race detected. Handled idempotently.'
+          );
+        } else {
+          throw err;
+        }
+      }
+    }
+  }
+
+  private static async failPaymentAndReleaseInventory(
+    booking: IBooking,
+    payment: IPayment,
+    reason: string,
+    origin?: 'manual' | 'auto_recovery',
+    recoveryReason?: 'AMOUNT_MISMATCH' | 'BOOKING_REFERENCE_MISMATCH' | 'BOOKING_ID_MISMATCH' | 'CURRENCY_MISMATCH' | 'PAYMENT_VALIDATION_FAILURE' | 'EXPIRED_BOOKING_CAPACITY_UNAVAILABLE'
+  ) {
     payment.status = PaymentStatus.FAILED;
     payment.failedAt = new Date();
     payment.failureReason = reason;
     await payment.save();
+
+    if (origin === 'auto_recovery') {
+      await this.triggerRefundRequest(booking, payment, reason, undefined, origin, recoveryReason).catch(() => {});
+    }
+
+    if (booking.status !== BookingStatus.AWAITING_PAYMENT) {
+      logger.info(
+        {
+          bookingId: booking._id,
+          bookingStatus: booking.status,
+          paymentId: payment._id,
+        },
+        'Skipping booking failure transition and inventory release for already-processed booking'
+      );
+      return;
+    }
 
     booking.status = BookingStatus.FAILED;
     booking.bookingVersion += 1;
@@ -766,6 +1589,76 @@ export class PaymentService {
       correlationId: booking.bookingId,
     });
     await ReservationService.releaseCapacityForTerminalReservations(failedReservations);
+
+    // Asynchronous, exception-safe Payment Failure Email Trigger
+    if (booking.guestEmail) {
+      try {
+        const existingNotification = await Notification.findOne({
+          jobId: `payfail-${payment._id}`
+        });
+
+        if (!existingNotification) {
+          const event = await Event.findById(booking.eventId);
+          const emailBody = await paymentFailureHtml({
+            customerName: booking.guestName,
+            eventTitle: event?.title || 'MAD Event',
+            bookingReference: booking.bookingId,
+            retryUrl: `${getEnv().FRONTEND_URL || 'http://localhost:3000'}/checkout/${booking.bookingId}`,
+          });
+
+          const jobId = `payfail-${payment._id}`;
+
+          await createNotificationSafe({
+            jobId,
+            status: 'queued',
+            queuedAt: new Date(),
+            type: NotificationType.PAYMENT_FAILED,
+            channel: 'email',
+            recipient: booking.guestEmail,
+            subject: `Payment Failed for ${event?.title || 'MAD Event'}`,
+            isSent: false,
+            retryCount: 0,
+            bookingId: booking._id,
+            eventId: event?._id
+          });
+
+          await QueueService.enqueue(
+            getQueueName('notification-queue'),
+            'email-dispatch',
+            {
+              to: booking.guestEmail,
+              subject: `Payment Failed for ${event?.title || 'MAD Event'}`,
+              html: emailBody,
+              notificationType: NotificationType.PAYMENT_FAILED,
+              bookingId: booking._id.toString(),
+              eventId: booking.eventId.toString(),
+            },
+            jobId
+          );
+
+          logger.info({
+            emailType: 'PAYMENT_FAILED',
+            recipient: booking.guestEmail,
+            bookingId: booking._id.toString(),
+            eventId: booking.eventId.toString(),
+            timestamp: new Date().toISOString(),
+            success: true
+          }, 'Payment failure email queued successfully.');
+        } else {
+          logger.info({ bookingId: booking._id, paymentId: payment._id }, 'Payment failure email already queued or sent; skipping duplicate.');
+        }
+      } catch (err) {
+        logger.error({
+          err,
+          emailType: 'PAYMENT_FAILED',
+          recipient: booking.guestEmail,
+          bookingId: booking._id.toString(),
+          eventId: booking.eventId.toString(),
+          timestamp: new Date().toISOString(),
+          success: false
+        }, 'Failed to queue payment failure email gracefully.');
+      }
+    }
 
     const event = await Event.findById(booking.eventId);
     const releasedSeatIds: string[] = [];
@@ -826,93 +1719,385 @@ export class PaymentService {
   }
 
   private static async confirmBooking(booking: IBooking, _payment: IPayment): Promise<IBooking | null> {
-    // 1. Confirm booking status exactly once. Concurrent payment callbacks must
-    // not double-increment event inventory or create duplicate tickets.
-    const confirmedBooking = await Booking.findOneAndUpdate(
-      { _id: booking._id, status: BookingStatus.AWAITING_PAYMENT },
-      { $set: { status: BookingStatus.CONFIRMED }, $unset: { expiresAt: 1 }, $inc: { bookingVersion: 1 } },
-      { new: true }
-    );
+    const previousStatus = booking.status;
+    if (![BookingStatus.AWAITING_PAYMENT, BookingStatus.EXPIRED, BookingStatus.EXPIRING].includes(previousStatus)) {
+      if (previousStatus === BookingStatus.CONFIRMED && booking.paymentId && booking.paymentId.toString() !== _payment._id.toString()) {
+        logger.warn(
+          { bookingId: booking._id, incomingPaymentId: _payment._id, winningPaymentId: booking.paymentId },
+          'Duplicate payment detected on already confirmed booking. Marking payment as FAILED and triggering refund.'
+        );
+        _payment.status = PaymentStatus.FAILED;
+        _payment.failureReason = 'DUPLICATE_PAYMENT_ON_CONFIRMED_BOOKING';
+        _payment.failedAt = new Date();
+        await _payment.save();
+        await this.triggerRefundRequest(booking, _payment, _payment.failureReason).catch(() => {});
+      }
+      return booking;
+    }
 
-    if (!confirmedBooking) {
-      const currentBooking = await Booking.findById(booking._id).select('status bookingId').lean();
-      logger.info(
-        {
-          bookingId: booking._id,
-          paymentId: _payment._id,
-          gateway: _payment.gateway,
-          correlationId: booking.bookingId,
-          existingStatus: currentBooking?.status,
-        },
-        'payment_confirmation_skipped'
-      );
+    const isLateRecovery = previousStatus === BookingStatus.EXPIRED || previousStatus === BookingStatus.EXPIRING;
+    const event = await Event.findById(booking.eventId);
+    if (!event) {
       return null;
     }
 
-    booking = confirmedBooking;
-    const confirmedReservations = await ReservationService.transitionForBooking(booking._id, ReservationStatus.CONFIRMED, {
-      paymentReference: _payment.gatewayPaymentId ?? _payment.gatewayOrderId,
-      paymentId: _payment._id as any,
-      reason: 'payment-confirmed',
-      correlationId: booking.bookingId,
-    });
-    await ReservationService.confirmCapacity(confirmedReservations);
+    const allSeatIds = booking.tickets.flatMap((t) => t.seats || []).map((s) => s.seatId);
 
-    // 2. Update Event statistics
-    const event = await Event.findById(booking.eventId);
-    if (event) {
-      const incUpdate: Record<string, number> = {
-        soldCount: booking.totalTickets,
-        eventVersion: 1,
-      };
+    let transactionResult;
+    try {
+      transactionResult = await runInTransaction(async (session) => {
+        // 1. Pre-validation for Late Recovery
+        if (isLateRecovery) {
+          // Validate general capacity
+          if (event.soldCount + event.reservedCount + booking.totalTickets > event.totalCapacity) {
+            _payment.failureReason = 'LATE_PAYMENT_RECOVERY_REJECTED_CAPACITY_EXHAUSTED';
+            await _payment.save({ session });
+            await this.triggerRefundRequest(booking, _payment, _payment.failureReason, session, 'auto_recovery', 'EXPIRED_BOOKING_CAPACITY_UNAVAILABLE');
+            return { success: false, booking: null };
+          }
 
-      for (const bookedTicket of booking.tickets) {
-        const tierIndex = event.ticketTiers.findIndex((t) => t.tier === bookedTicket.tier);
-        if (tierIndex !== -1) {
-          incUpdate[`ticketTiers.${tierIndex}.soldCount`] = bookedTicket.quantity;
+          // Validate tier capacity
+          for (const bookedTicket of booking.tickets) {
+            const tierConfig = event.ticketTiers.find((t) => t.tier === bookedTicket.tier);
+            if (!tierConfig) {
+              _payment.failureReason = 'LATE_PAYMENT_RECOVERY_REJECTED_INVALID_TIER';
+              await _payment.save({ session });
+              await this.triggerRefundRequest(booking, _payment, _payment.failureReason, session, 'auto_recovery', 'EXPIRED_BOOKING_CAPACITY_UNAVAILABLE');
+              return { success: false, booking: null };
+            }
+
+            // Fetch active reservations count for this specific tier
+            const activeTierAgg = await Reservation.aggregate([
+              {
+                $match: {
+                  eventId: event._id,
+                  tier: bookedTicket.tier,
+                  status: { $in: [ReservationStatus.RESERVED, ReservationStatus.PENDING_PAYMENT] }
+                }
+              },
+              { $group: { _id: null, total: { $sum: '$quantity' } } }
+            ]).session(session);
+            const tierReserved = activeTierAgg[0]?.total ?? 0;
+
+            if (tierConfig.soldCount + tierReserved + bookedTicket.quantity > tierConfig.totalCapacity) {
+              _payment.failureReason = 'LATE_PAYMENT_RECOVERY_REJECTED_CAPACITY_EXHAUSTED';
+              await _payment.save({ session });
+              await this.triggerRefundRequest(booking, _payment, _payment.failureReason, session, 'auto_recovery', 'EXPIRED_BOOKING_CAPACITY_UNAVAILABLE');
+              return { success: false, booking: null };
+            }
+          }
+
+          // Validate seats status
+          if (event.bookingMode === 'seat_based' && allSeatIds.length > 0) {
+            const layoutQuery = SeatLayout.findOne({
+              eventId: event._id,
+              seats: {
+                $elemMatch: {
+                  seatId: { $in: allSeatIds },
+                  status: { $ne: SeatStatus.AVAILABLE }
+                }
+              }
+            }).session(session);
+            const layout = await (layoutQuery && typeof layoutQuery.lean === 'function' ? layoutQuery.lean() : layoutQuery);
+            if (layout) {
+              _payment.failureReason = 'LATE_PAYMENT_RECOVERY_REJECTED_SEATS_TAKEN';
+              await _payment.save({ session });
+              await this.triggerRefundRequest(booking, _payment, _payment.failureReason, session, 'auto_recovery', 'EXPIRED_BOOKING_CAPACITY_UNAVAILABLE');
+              return { success: false, booking: null };
+            }
+          }
+        }
+
+        // 2. Allocate Seats (SeatLayout update)
+        if (event.bookingMode === 'seat_based' && allSeatIds.length > 0) {
+          const seatUpdateResult = await SeatLayout.updateOne(
+            { eventId: event._id },
+            {
+              $set: {
+                'seats.$[seat].status': SeatStatus.BOOKED,
+                'seats.$[seat].bookedByBookingId': booking._id.toString()
+              },
+              $unset: {
+                'seats.$[seat].lockedBy': '',
+                'seats.$[seat].lockedAt': '',
+              },
+              $inc: {
+                'seats.$[seat].seatVersion': 1,
+              },
+            },
+            {
+              arrayFilters: [
+                {
+                  'seat.seatId': { $in: allSeatIds },
+                  $or: [
+                    { 'seat.bookedByBookingId': booking._id.toString() },
+                    { 'seat.status': SeatStatus.AVAILABLE }
+                  ]
+                },
+              ],
+              session,
+            }
+          );
+
+          if (seatUpdateResult.modifiedCount !== allSeatIds.length) {
+            throw new Error('SEAT_ALLOCATION_FAILED');
+          }
+        }
+
+        // 3. Allocate Event Capacity
+        const incUpdate: Record<string, number> = {
+          soldCount: booking.totalTickets,
+          eventVersion: 1,
+        };
+
+        for (const bookedTicket of booking.tickets) {
+          const tierIndex = event.ticketTiers.findIndex((t) => t.tier === bookedTicket.tier);
+          if (tierIndex !== -1) {
+            incUpdate[`ticketTiers.${tierIndex}.soldCount`] = bookedTicket.quantity;
+          }
+        }
+
+        const eventQuery: any = { _id: event._id };
+        
+        if (isLateRecovery) {
+          eventQuery.$expr = {
+            $lte: [
+              { $add: ['$soldCount', '$reservedCount', booking.totalTickets] },
+              '$totalCapacity'
+            ]
+          };
+          
+          for (const bookedTicket of booking.tickets) {
+            const tierIndex = event.ticketTiers.findIndex((t) => t.tier === bookedTicket.tier);
+            if (tierIndex !== -1) {
+              const activeTierAgg = await Reservation.aggregate([
+                {
+                  $match: {
+                    eventId: event._id,
+                    tier: bookedTicket.tier,
+                    status: { $in: [ReservationStatus.RESERVED, ReservationStatus.PENDING_PAYMENT] }
+                  }
+                },
+                { $group: { _id: null, total: { $sum: '$quantity' } } }
+              ]).session(session);
+              const tierReserved = activeTierAgg[0]?.total ?? 0;
+              
+              eventQuery[`ticketTiers.${tierIndex}.soldCount`] = {
+                $lte: event.ticketTiers[tierIndex].totalCapacity - tierReserved - bookedTicket.quantity
+              };
+            }
+          }
+        } else {
+          incUpdate.reservedCount = -booking.totalTickets;
+        }
+
+        const updatedEvent = await Event.findOneAndUpdate(
+          eventQuery,
+          { $inc: incUpdate },
+          { new: true, session }
+        );
+
+        if (!updatedEvent) {
+          throw new Error('EVENT_CAPACITY_ALLOCATION_FAILED');
+        }
+
+        // 4. Booking Confirmation Status Transition
+        const previousBookingDoc = await Booking.findOneAndUpdate(
+          { _id: booking._id, status: { $in: [BookingStatus.AWAITING_PAYMENT, BookingStatus.EXPIRED, BookingStatus.EXPIRING] } },
+          { $set: { status: BookingStatus.CONFIRMED, paymentId: _payment._id }, $unset: { expiresAt: 1, logicalExpiresAt: 1 }, $inc: { bookingVersion: 1 } },
+          { new: false, session }
+        );
+        if (!previousBookingDoc) {
+          throw new Error('CONCURRENT_CONFIRMATION_OR_NOT_FOUND');
+        }
+
+        await this.redeemCouponForConfirmedBooking(previousBookingDoc, _payment, session);
+
+        // 5. Update Reservation status to CONFIRMED
+        await ReservationService.transitionForBooking(previousBookingDoc._id, ReservationStatus.CONFIRMED, {
+          paymentReference: _payment.gatewayPaymentId ?? _payment.gatewayOrderId,
+          paymentId: _payment._id as any,
+          reason: 'payment-confirmed',
+          correlationId: previousBookingDoc.bookingId,
+          includeTerminal: isLateRecovery,
+        }, session);
+
+        const confirmedBooking = previousBookingDoc;
+        confirmedBooking.status = BookingStatus.CONFIRMED;
+        confirmedBooking.paymentId = _payment._id as any;
+        confirmedBooking.bookingVersion += 1;
+        booking = confirmedBooking;
+
+        if (updatedEvent && updatedEvent.soldCount >= updatedEvent.totalCapacity && !updatedEvent.isSoldOut) {
+          await Event.updateOne({ _id: booking.eventId }, { $set: { isSoldOut: true } }, { session });
+        }
+
+        // 6. Generate Tickets & Notification (sync path only)
+        let generatedTickets = [];
+        let syncNotification = null;
+        if (!getEnv().ENABLE_ASYNC_CHECKOUT) {
+          let ticketIndex = 1;
+          for (const bookedTicket of booking.tickets) {
+            if (event && event.bookingMode === 'seat_based' && bookedTicket.seats) {
+              for (const seat of bookedTicket.seats) {
+                const ticketId = `TKT-${booking.bookingId}-${String(ticketIndex).padStart(3, '0')}`;
+                const qrCodeText = ticketId;
+
+                const ticket = await Ticket.findOneAndUpdate(
+                  { ticketId },
+                  {
+                    $setOnInsert: {
+                      bookingId: booking._id,
+                      eventId: booking.eventId,
+                      tierName: bookedTicket.tierName,
+                      tier: bookedTicket.tier,
+                      admits: 1,
+                      seatId: seat.seatId,
+                      row: seat.row,
+                      seatNumber: seat.number,
+                      section: seat.section,
+                      qrCode: qrCodeText,
+                      qrCodeImage: `/api/public/tickets/${ticketId}/qr`,
+                    },
+                  },
+                  { upsert: true, new: true, setDefaultsOnInsert: true, session }
+                );
+                generatedTickets.push(ticket);
+                ticketIndex++;
+              }
+            } else {
+              const tierConfig = event?.ticketTiers?.find(t => t.tier === bookedTicket.tier);
+              const admits = tierConfig?.groupSize || 1;
+
+              for (let i = 0; i < bookedTicket.quantity; i++) {
+                const ticketId = `TKT-${booking.bookingId}-${String(ticketIndex).padStart(3, '0')}`;
+                const qrCodeText = ticketId;
+
+                const ticket = await Ticket.findOneAndUpdate(
+                  { ticketId },
+                  {
+                    $setOnInsert: {
+                      bookingId: booking._id,
+                      eventId: booking.eventId,
+                      tierName: bookedTicket.tierName,
+                      tier: bookedTicket.tier,
+                      admits,
+                      qrCode: qrCodeText,
+                      qrCodeImage: `/api/public/tickets/${ticketId}/qr`,
+                    },
+                  },
+                  { upsert: true, new: true, setDefaultsOnInsert: true, session }
+                );
+                generatedTickets.push(ticket);
+                ticketIndex++;
+              }
+            }
+          }
+
+          const jobId = `email:dispatch:${booking._id}`;
+          syncNotification = await createNotificationSafe({
+            jobId,
+            status: 'processing',
+            queuedAt: new Date(),
+            processedAt: new Date(),
+            type: NotificationType.BOOKING_CONFIRMED,
+            bookingId: booking._id,
+            eventId: booking.eventId,
+            channel: 'email',
+            recipient: booking.guestEmail,
+            subject: `Your Ticket for ${event?.title || 'MAD Event'} [${booking.bookingId}]`,
+            isSent: false,
+            retryCount: 0,
+          }, { session });
+        }
+
+        return {
+          success: true,
+          booking,
+          updatedEvent,
+          generatedTickets,
+          syncNotification,
+        };
+      });
+    } catch (err: any) {
+      logger.error({ err, bookingId: booking._id }, 'Confirmation transaction aborted and rolled back');
+      
+      let reason = 'CONFIRMATION_TRANSACTION_FAILED';
+      let isConcurrentConfirm = false;
+      const isKnownAbort = ['SEAT_ALLOCATION_FAILED', 'EVENT_CAPACITY_ALLOCATION_FAILED', 'CONCURRENT_CONFIRMATION_OR_NOT_FOUND'].includes(err.message);
+
+      if (err.message === 'SEAT_ALLOCATION_FAILED' || err.message === 'EVENT_CAPACITY_ALLOCATION_FAILED') {
+        reason = 'LATE_PAYMENT_RECOVERY_REJECTED_SEATS_TAKEN';
+      } else if (err.message === 'CONCURRENT_CONFIRMATION_OR_NOT_FOUND') {
+        reason = 'LATE_PAYMENT_RECOVERY_REJECTED_CONCURRENT_CONFIRM';
+        const currentBooking = await Booking.findById(booking._id).select('status paymentId').lean().catch(() => null);
+        if (currentBooking?.status === BookingStatus.CONFIRMED) {
+          isConcurrentConfirm = true;
+          const isSamePayment = currentBooking.paymentId && currentBooking.paymentId.toString() === _payment._id.toString();
+          
+          if (isSamePayment) {
+            logger.info(
+              { bookingId: booking._id, paymentId: _payment._id },
+              'Concurrent confirmation (Same Payment): Booking is already CONFIRMED by concurrent thread of this payment. Exiting safely.'
+            );
+            const resolvedBooking = await Booking.findById(booking._id);
+            return resolvedBooking || booking;
+          } else {
+            logger.warn(
+              { bookingId: booking._id, incomingPaymentId: _payment._id, winningPaymentId: currentBooking.paymentId },
+              'Concurrent confirmation (Different Payment): Booking is already CONFIRMED. Refunding duplicate incoming payment.'
+            );
+            _payment.status = PaymentStatus.FAILED;
+            _payment.failureReason = 'DUPLICATE_PAYMENT_ON_CONFIRMED_BOOKING';
+            _payment.failedAt = new Date();
+            try {
+              await _payment.save();
+            } catch (saveErr) {
+              // ignore
+            }
+            await this.triggerRefundRequest(booking, _payment, _payment.failureReason).catch(() => {});
+            const resolvedBooking = await Booking.findById(booking._id);
+            return resolvedBooking || booking;
+          }
         }
       }
-
-      const updatedEvent = await Event.findOneAndUpdate(
-        { _id: booking.eventId },
-        { $inc: incUpdate },
-        { new: true }
-      );
-
-      if (updatedEvent && updatedEvent.soldCount >= updatedEvent.totalCapacity && !updatedEvent.isSoldOut) {
-        await Event.updateOne({ _id: booking.eventId }, { $set: { isSoldOut: true } });
+      
+      _payment.status = PaymentStatus.FAILED;
+      _payment.failureReason = reason;
+      try {
+        await _payment.save();
+      } catch (saveErr) {
+        // ignore
       }
+      await this.triggerRefundRequest(
+        booking,
+        _payment,
+        _payment.failureReason,
+        undefined,
+        isLateRecovery ? 'auto_recovery' : 'manual',
+        isLateRecovery ? 'EXPIRED_BOOKING_CAPACITY_UNAVAILABLE' : undefined
+      ).catch(() => {});
 
-      await CacheService.delPattern('events:*');
+      if (isKnownAbort) {
+        return null;
+      }
+      throw err;
     }
 
-    // 3. Update Seat Layout statuses from LOCKED to BOOKED
-    if (event && event.bookingMode === 'seat_based') {
-      const allSeatIds = booking.tickets.flatMap((t) => t.seats || []).map((s) => s.seatId);
-      await SeatLayout.updateOne(
-        { eventId: event._id },
-        {
-          $set: {
-            'seats.$[seat].status': SeatStatus.BOOKED,
-          },
-          $unset: {
-            'seats.$[seat].lockedBy': '',
-            'seats.$[seat].lockedAt': '',
-          },
-          $inc: {
-            'seats.$[seat].seatVersion': 1,
-          },
-        },
-        {
-          arrayFilters: [
-            {
-              'seat.seatId': { $in: allSeatIds },
-              'seat.bookedByBookingId': booking._id.toString(), // Hardens against seat hijacking
-            },
-          ],
-        }
-      );
+    if (!transactionResult || !transactionResult.success) {
+      return null;
+    }
 
+    const { syncNotification } = transactionResult;
+    booking = transactionResult.booking;
+
+    // 5. Post-Commit Cache Invalidation
+    await CacheService.delPattern('events:*').catch((err) => {
+      logger.error({ err }, 'Failed to clear events cache post-commit');
+    });
+
+    // 6. Post-Commit Sockets
+    if (event.bookingMode === 'seat_based') {
       this.safeEmit(
         'seat:booked',
         () => emitToEvent(event._id.toString(), 'seat:booked', {
@@ -940,12 +2125,7 @@ export class PaymentService {
       { bookingId: booking._id.toString(), eventId: booking.eventId.toString() }
     );
 
-    // 4. Update Coupon used count if applied
-    if (booking.couponId) {
-      await Coupon.findByIdAndUpdate(booking.couponId, { $inc: { usedCount: 1 } });
-    }
-
-    // Feature Flag Rollout: if asynchronous checkout is enabled, offload ticket & PDF generation
+    // 7. Post-Commit Queue Enqueue (async path)
     if (getEnv().ENABLE_ASYNC_CHECKOUT) {
       await QueueService.enqueue(
         getQueueName('booking-queue'),
@@ -957,85 +2137,21 @@ export class PaymentService {
       return booking;
     }
 
-    // 5. Generate scan-ready QR Tickets
-    let ticketIndex = 1;
-    for (const bookedTicket of booking.tickets) {
-      if (event && event.bookingMode === 'seat_based' && bookedTicket.seats) {
-        for (const seat of bookedTicket.seats) {
-          const ticketId = `TKT-${booking.bookingId}-${String(ticketIndex).padStart(3, '0')}`;
-          const qrCodeText = JSON.stringify({
-            ticketId,
-            bookingId: booking._id.toString(),
-            eventId: event._id.toString(),
-            tier: bookedTicket.tier,
-            seatId: seat.seatId,
-            admits: 1,
-          });
+    // 8. Post-Commit Sync Email Dispatch (sync path only)
+    if (syncNotification && booking.guestEmail) {
+      try {
+        const emailBody = `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto;">
+            <h2>Hi ${booking.guestName},</h2>
+            <p>Your booking <strong>${booking.bookingId}</strong> for the event <strong>"${event?.title || 'MAD Event'}"</strong> has been successfully confirmed!</p>
+            <p>Please find your ticket attached as a PDF document. You can present the QR code at the gate for entry.</p>
+            <br/>
+            <p>MAD Entertainment Team</p>
+          </div>
+        `;
 
-          await Ticket.create({
-            ticketId,
-            bookingId: booking._id,
-            eventId: booking.eventId,
-            tierName: bookedTicket.tierName,
-            tier: bookedTicket.tier,
-            admits: 1,
-            seatId: seat.seatId,
-            row: seat.row,
-            seatNumber: seat.number,
-            section: seat.section,
-            qrCode: qrCodeText,
-            qrCodeImage: `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(qrCodeText)}`,
-          });
-          ticketIndex++;
-        }
-      } else {
-        // General admission - generate QRs matching count
-        const tierConfig = event?.ticketTiers?.find(t => t.tier === bookedTicket.tier);
-        const admits = tierConfig?.groupSize || 1;
+        const pdfBuffer = await generateTicketPDF(booking, event);
 
-        for (let i = 0; i < bookedTicket.quantity; i++) {
-          const ticketId = `TKT-${booking.bookingId}-${String(ticketIndex).padStart(3, '0')}`;
-          const qrCodeText = JSON.stringify({
-            ticketId,
-            bookingId: booking._id.toString(),
-            eventId: booking.eventId.toString(),
-            tier: bookedTicket.tier,
-            admits,
-          });
-
-          await Ticket.create({
-            ticketId,
-            bookingId: booking._id,
-            eventId: booking.eventId,
-            tierName: bookedTicket.tierName,
-            tier: bookedTicket.tier,
-            admits,
-            qrCode: qrCodeText,
-            qrCodeImage: `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(qrCodeText)}`,
-          });
-          ticketIndex++;
-        }
-      }
-    }
-
-    // 6. Generate PDF and Send Email asynchronously
-    try {
-      const emailBody = `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto;">
-          <h2>Hi ${booking.guestName},</h2>
-          <p>Your booking <strong>${booking.bookingId}</strong> for the event <strong>"${event?.title || 'MAD Event'}"</strong> has been successfully confirmed!</p>
-          <p>Please find your ticket attached as a PDF document. You can present the QR code at the gate for entry.</p>
-          <p>Enjoy the show!</p>
-          <br/>
-          <p>MAD Entertainment Team</p>
-        </div>
-      `;
-
-      // Generate the PDF buffer
-      const pdfBuffer = await generateTicketPDF(booking, event);
-
-      // Send the email with the PDF attachment
-      if (booking.guestEmail) {
         await sendEmail({
           to: booking.guestEmail,
           subject: `Your Ticket for ${event?.title || 'MAD Event'} [${booking.bookingId}]`,
@@ -1048,24 +2164,62 @@ export class PaymentService {
             },
           ],
         });
+
+        await Notification.updateOne(
+          { _id: syncNotification._id },
+          { $set: { status: 'sent', isSent: true, processedAt: new Date() } }
+        ).catch((err) => {
+          logger.error({ err, notificationId: syncNotification._id }, 'Failed to update notification status to sent');
+        });
+      } catch (emailErr: any) {
+        await Notification.updateOne(
+          { _id: syncNotification._id },
+          { $set: { status: 'failed', errorMessage: emailErr.message, processedAt: new Date() } }
+        ).catch((err) => {
+          logger.error({ err, notificationId: syncNotification._id }, 'Failed to update notification status to failed');
+        });
+        logger.error({ err: emailErr }, 'Failed to send synchronous confirmation email');
       }
-
-      await Notification.create({
-        type: NotificationType.BOOKING_CONFIRMED,
-        bookingId: booking._id,
-        eventId: booking.eventId,
-        channel: 'email',
-        recipient: booking.guestEmail,
-        subject: `Booking Confirmed: ${booking.bookingId}`,
-        body: 'Email dispatched with PDF ticket attached.',
-        isSent: true,
-        retryCount: 0,
-      });
-
-      logger.info({ bookingId: booking._id }, 'Notification log created for confirmed booking and email dispatched');
-    } catch (err) {
-      logger.error({ err }, 'Failed to record notification confirmation log or send email');
     }
+
     return booking;
+  }
+
+  private static async createPendingPayment(
+    bookingId: Types.ObjectId,
+    gateway: 'stripe' | 'razorpay',
+    amount: number,
+    currency: string,
+    couponId: Types.ObjectId | undefined,
+    gatewayOrderId: string
+  ): Promise<IPayment> {
+    try {
+      return await Payment.create({
+        bookingId,
+        gateway,
+        status: PaymentStatus.PENDING,
+        amount,
+        currency,
+        couponId,
+        gatewayOrderId,
+      });
+    } catch (err: any) {
+      const isDuplicateKey = err.code === 11000 || err.code === '11000' || err.message?.includes('E11000');
+      if (isDuplicateKey) {
+        logger.warn(
+          { bookingId, gateway, gatewayOrderId },
+          'Concurrent pending payment creation race detected. Recovering existing pending payment.'
+        );
+        const existing = await Payment.findOne({
+          bookingId,
+          gateway,
+          status: PaymentStatus.PENDING,
+        });
+        if (existing) {
+          return existing;
+        }
+      }
+      throw err;
+    }
   }
 }

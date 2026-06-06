@@ -1,6 +1,5 @@
 import { AdminRole } from '@mad/shared';
 import { Request, Response, NextFunction } from 'express';
-import { Types } from 'mongoose';
 
 import {
   verifyUserToken,
@@ -18,24 +17,9 @@ import {
   sendForbidden,
 } from '../utils/response';
 
-// ─────────────────────────────────────────────
-// Booking Ownership Helper
-// ─────────────────────────────────────────────
+import { AdminModel } from '../models/admin.schema';
+import { auditLog } from '../utils/audit';
 
-export function ensureBookingOwner(
-  reqUserId: string | undefined,
-  bookingUserId: Types.ObjectId | undefined
-): void {
-  if (bookingUserId) {
-    if (!reqUserId) {
-      throw new Error('User not authenticated');
-    }
-
-    if (bookingUserId.toString() !== reqUserId) {
-      throw new Error('User does not own the booking');
-    }
-  }
-}
 
 // ─────────────────────────────────────────────
 // Extend Express Request
@@ -138,11 +122,11 @@ export function optionalAuth(
 // Require Admin
 // ─────────────────────────────────────────────
 
-export function requireAdmin(
+export async function requireAdmin(
   req: Request,
   res: Response,
   next: NextFunction
-): void {
+): Promise<void> {
   const token = extractBearerToken(req.headers.authorization);
 
   if (!token) {
@@ -151,8 +135,79 @@ export function requireAdmin(
   }
 
   try {
-    req.admin = verifyAdminToken(token);
+    const adminPayload = verifyAdminToken(token);
 
+    // Strict Role Enum Validation
+    const isValidRole = Object.values(AdminRole).includes(adminPayload.role as AdminRole);
+    if (!isValidRole) {
+      logger.error(
+        { role: adminPayload.role, email: adminPayload.email },
+        'Security Alert: Malformed or invalid role detected in JWT payload'
+      );
+      auditLog({
+        action: 'ADMIN_ACCESS_DENIED',
+        actor: { type: 'admin', id: adminPayload.sub },
+        status: 'failure',
+        metadata: {
+          email: adminPayload.email,
+          role: adminPayload.role,
+          reason: 'invalid_role_assignment',
+        },
+        description: `Access denied: Malformed or invalid role detected in JWT payload for ${adminPayload.email}`,
+      });
+      sendForbidden(res, 'Invalid role assignment');
+      return;
+    }
+
+    // Active Account Verification: Load Admin from Database
+    const dbAdmin = await AdminModel.findById(adminPayload.sub);
+    if (!dbAdmin) {
+      auditLog({
+        action: 'ADMIN_ACCESS_DENIED',
+        actor: { type: 'admin', id: adminPayload.sub },
+        status: 'failure',
+        metadata: { email: adminPayload.email, reason: 'admin_not_found' },
+        description: `Access denied: administrative account not found for ${adminPayload.email}`,
+      });
+      sendUnauthorized(res, 'Admin account not found');
+      return;
+    }
+
+    if (!dbAdmin.isActive) {
+      auditLog({
+        action: 'INACTIVE_ADMIN_ACCESS_ATTEMPT',
+        actor: { type: 'admin', id: adminPayload.sub },
+        status: 'failure',
+        metadata: { email: adminPayload.email, reason: 'account_deactivated' },
+        description: `Blocked access attempt by deactivated admin ${adminPayload.email}`,
+      });
+      sendUnauthorized(res, 'Account has been deactivated');
+      return;
+    }
+
+    // Revoke access if password version has been updated (e.g. password reset)
+    if (adminPayload.version !== undefined && dbAdmin.passwordVersion !== undefined && dbAdmin.passwordVersion !== adminPayload.version) {
+      auditLog({
+        action: 'ADMIN_ACCESS_DENIED',
+        actor: { type: 'admin', id: adminPayload.sub },
+        status: 'failure',
+        metadata: {
+          email: adminPayload.email,
+          reason: 'session_revoked_by_credential_change',
+        },
+        description: `Access denied: Session expired due to password/role credential update for ${adminPayload.email}`,
+      });
+      sendUnauthorized(res, 'Session expired due to credential update');
+      return;
+    }
+
+    // Hydrate req.admin with database-verified details (avoid stale JWT token data)
+    req.admin = {
+      sub: dbAdmin._id.toString(),
+      email: dbAdmin.email,
+      role: dbAdmin.role as AdminRole,
+      version: dbAdmin.passwordVersion ?? 0,
+    };
     next();
   } catch (err) {
     logger.debug({ err }, 'Invalid admin token');
@@ -176,7 +231,41 @@ export function requireRole(...roles: AdminRole[]) {
       return;
     }
 
+    // Strict Role Enum Validation
+    const isValidRole = Object.values(AdminRole).includes(req.admin.role as AdminRole);
+    if (!isValidRole) {
+      logger.error(
+        { role: req.admin.role, email: req.admin.email },
+        'Security Alert: Malformed or invalid role detected in requireRole'
+      );
+      auditLog({
+        action: 'ADMIN_ACCESS_DENIED',
+        actor: { type: 'admin', id: req.admin.sub },
+        status: 'failure',
+        metadata: {
+          email: req.admin.email,
+          role: req.admin.role,
+          reason: 'invalid_role_assignment',
+        },
+        description: `Access denied: Malformed or invalid role in requireRole for ${req.admin.email}`,
+      });
+      sendForbidden(res, 'Invalid role assignment');
+      return;
+    }
+
     if (!roles.includes(req.admin.role as AdminRole)) {
+      auditLog({
+        action: 'UNAUTHORIZED_ADMIN_OPERATION',
+        actor: { type: 'admin', id: req.admin.sub },
+        status: 'failure',
+        metadata: {
+          email: req.admin.email,
+          role: req.admin.role,
+          requiredRoles: roles,
+          path: req.originalUrl,
+        },
+        description: `Access denied: Required role ${roles.join(' or ')} not possessed by ${req.admin.email}`,
+      });
       sendForbidden(
         res,
         `Access denied. Required role: ${roles.join(' or ')}`
@@ -204,7 +293,41 @@ export function requireSuperAdmin(
     return;
   }
 
+  // Strict Role Enum Validation
+  const isValidRole = Object.values(AdminRole).includes(req.admin.role as AdminRole);
+  if (!isValidRole) {
+    logger.error(
+      { role: req.admin.role, email: req.admin.email },
+      'Security Alert: Malformed or invalid role detected in requireSuperAdmin'
+    );
+    auditLog({
+      action: 'ADMIN_ACCESS_DENIED',
+      actor: { type: 'admin', id: req.admin.sub },
+      status: 'failure',
+      metadata: {
+        email: req.admin.email,
+        role: req.admin.role,
+        reason: 'invalid_role_assignment',
+      },
+      description: `Access denied: Malformed or invalid role in requireSuperAdmin for ${req.admin.email}`,
+    });
+    sendForbidden(res, 'Invalid role assignment');
+    return;
+  }
+
   if (req.admin.role !== AdminRole.SUPER_ADMIN) {
+    auditLog({
+      action: 'UNAUTHORIZED_ADMIN_OPERATION',
+      actor: { type: 'admin', id: req.admin.sub },
+      status: 'failure',
+      metadata: {
+        email: req.admin.email,
+        role: req.admin.role,
+        reason: 'super_admin_role_required',
+        path: req.originalUrl,
+      },
+      description: `Access denied: Super Admin privilege required for ${req.admin.email}`,
+    });
     sendForbidden(res, 'Super admin access required');
 
     return;

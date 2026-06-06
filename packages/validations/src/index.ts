@@ -49,13 +49,14 @@ export const checkoutDetailsSchema = z.object({
   firstName: z.string().min(1, 'First name is required').max(100, 'First name is too long'),
   lastName: z.string().min(1, 'Last name is required').max(100, 'Last name is too long'),
   guestEmail: z.string().email('Invalid email address format').max(200, 'Email address is too long'),
-  guestEmailConfirm: z.string().email('Invalid email confirmation format').max(200, 'Confirmation email is too long'),
-  guestPhone: z.string().min(8, 'Invalid phone number format').max(50, 'Phone number is too long'),
-  birthdate: z.string().refine((val) => !isNaN(Date.parse(val)), { message: 'Invalid birthdate format' }),
+  guestEmailConfirm: z.string().email('Invalid email confirmation format').max(200, 'Confirmation email is too long').optional(),
+  guestPhone: z.string().max(50, 'Phone number is too long').optional().or(z.literal('')),
   keepUpdated: z.boolean().default(false),
   sendBestEvents: z.boolean().default(false),
-}).strict().refine((data) => data.guestEmail === data.guestEmailConfirm, {
-  message: 'Emails must match',
+  ageConfirmed: z.boolean().optional(),
+  termsAccepted: z.boolean().optional(),
+}).strict().refine((data) => !data.guestEmailConfirm || data.guestEmail === data.guestEmailConfirm, {
+  message: "Emails do not match",
   path: ['guestEmailConfirm'],
 });
 

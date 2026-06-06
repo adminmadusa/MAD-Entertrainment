@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import { BookingStatus, TicketTier } from '@mad/shared';
 import { Schema, model, Document, Types } from 'mongoose';
 
@@ -9,7 +10,6 @@ export interface IBooking extends Document {
   firstName?: string;
   lastName?: string;
   guestEmail?: string;
-  guestEmailConfirm?: string;
   guestPhone?: string;
   birthdate?: Date;
   keepUpdated?: boolean;
@@ -42,8 +42,10 @@ export interface IBooking extends Document {
   reservationIds?: string[];
   bookingVersion: number;
   expiresAt?: Date;
+  logicalExpiresAt?: Date;
   cancellationReason?: string;
   cancelledAt?: Date;
+  selectionFingerprint?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -63,7 +65,6 @@ const bookingSchema = new Schema<IBooking>(
     firstName: String,
     lastName: String,
     guestEmail: { type: String, lowercase: true, trim: true },
-    guestEmailConfirm: { type: String, lowercase: true, trim: true },
     guestPhone: String,
     birthdate: Date,
     keepUpdated: { type: Boolean, default: false },
@@ -106,9 +107,11 @@ const bookingSchema = new Schema<IBooking>(
     paymentId: { type: Schema.Types.ObjectId, ref: 'Payment' },
     reservationIds: [{ type: String }],
     bookingVersion: { type: Number, default: 1, min: 1 },
-    expiresAt: { type: Date, index: { expireAfterSeconds: 0 } }, // TTL for pending bookings
+    expiresAt: { type: Date, index: true }, // Expiration timestamp for pending bookings
+    logicalExpiresAt: { type: Date, index: true },
     cancellationReason: String,
     cancelledAt: Date,
+    selectionFingerprint: { type: String, index: true },
   },
   { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
 );
@@ -125,6 +128,31 @@ bookingSchema.index({ guestEmail: 1, createdAt: -1 });
 bookingSchema.index({ guestPhone: 1, createdAt: -1 });
 bookingSchema.index({ eventId: 1, status: 1, totalTickets: 1 });
 bookingSchema.index({ userId: 1, createdAt: -1 });
+bookingSchema.index({ status: 1, createdAt: -1 });
+
+bookingSchema.index(
+  { sessionId: 1, eventId: 1 },
+  { 
+    unique: true, 
+    partialFilterExpression: { 
+      status: BookingStatus.AWAITING_PAYMENT,
+      sessionId: { $type: 'string' } 
+    },
+    name: 'idx_session_event_awaiting_payment'
+  }
+);
+
+bookingSchema.index(
+  { userId: 1, eventId: 1 },
+  { 
+    unique: true, 
+    partialFilterExpression: { 
+      status: BookingStatus.AWAITING_PAYMENT,
+      userId: { $exists: true }
+    },
+    name: 'idx_user_event_awaiting_payment'
+  }
+);
 
 bookingSchema.pre('validate', function (next) {
   if (!this.bookingId) {
@@ -132,7 +160,7 @@ bookingSchema.pre('validate', function (next) {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     let randomPart = '';
     for (let i = 0; i < 5; i++) {
-      randomPart += chars.charAt(Math.floor(Math.random() * chars.length));
+      randomPart += chars.charAt(crypto.randomInt(0, chars.length));
     }
     this.bookingId = `MAD-${year}-${randomPart}`;
   }

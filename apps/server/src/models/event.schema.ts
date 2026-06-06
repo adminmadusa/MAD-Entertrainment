@@ -73,7 +73,6 @@ export interface IEvent extends Document {
   venue: string;
   onlineStreamUrl?: string;
   isOnline?: boolean;
-  artistIds?: Types.ObjectId[];
   djOperatorIds?: Types.ObjectId[];
   ticketTiers: {
     tier: TicketTier;
@@ -132,6 +131,8 @@ export interface IEvent extends Document {
   showCountdown?: boolean;
   isEarlyBird?: boolean;
   earlyBirdDeadline?: Date;
+  requireTerms: boolean;
+  requireAgeConfirmation: boolean;
   createdAt: Date;
   updatedAt: Date;
   isDeleted: boolean;
@@ -164,7 +165,6 @@ const eventSchema = new Schema<IEvent>(
     onlineStreamUrl: String,
     isOnline: { type: Boolean, default: false },
 
-    artistIds: [{ type: Schema.Types.ObjectId, ref: 'Artist' }],
     djOperatorIds: [{ type: Schema.Types.ObjectId, ref: 'DJOperator' }],
 
     ticketTiers: { type: [ticketTierConfigSchema], default: [] },
@@ -199,6 +199,8 @@ const eventSchema = new Schema<IEvent>(
     showCountdown: { type: Boolean, default: false },
     isEarlyBird: { type: Boolean, default: false },
     earlyBirdDeadline: Date,
+    requireTerms: { type: Boolean, default: true },
+    requireAgeConfirmation: { type: Boolean, default: false },
     isDeleted: { type: Boolean, default: false, index: true },
     deletedAt: Date,
     deletedBy: { type: Schema.Types.ObjectId, ref: 'AdminUser' },
@@ -221,6 +223,7 @@ eventSchema.virtual('coverImage').get(function (this: any) {
 eventSchema.index({ startDate: 1, status: 1 });
 eventSchema.index({ category: 1, status: 1, startDate: 1 });
 eventSchema.index({ isFeatured: 1, status: 1 });
+eventSchema.index({ isDeleted: 1, status: 1, startDate: 1 });
 eventSchema.index({ title: 'text', description: 'text', tags: 'text' });
 
 export const Event = model<IEvent>('Event', eventSchema);

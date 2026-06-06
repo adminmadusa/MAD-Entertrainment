@@ -15,6 +15,11 @@ export interface ITicket extends Document {
   qrCode: string;
   qrCodeImage?: string;
   scannedAt?: Date;
+  scannedById?: Types.ObjectId;
+  status: 'active' | 'voided' | 'replaced';
+  replacedByTicketId?: string;
+  replacedAt?: Date;
+  replacementReason?: 'EMAIL_CORRECTION' | 'ADMIN_REISSUE' | 'FRAUD_PREVENTION';
 }
 
 const ticketSchema = new Schema<ITicket>(
@@ -32,8 +37,17 @@ const ticketSchema = new Schema<ITicket>(
     qrCode: { type: String, required: true },
     qrCodeImage: String,
     scannedAt: Date,
+    scannedById: { type: Schema.Types.ObjectId, ref: 'Admin', index: true },
+    status: { type: String, enum: ['active', 'voided', 'replaced'], default: 'active', required: true },
+    replacedByTicketId: String,
+    replacedAt: Date,
+    replacementReason: { type: String, enum: ['EMAIL_CORRECTION', 'ADMIN_REISSUE', 'FRAUD_PREVENTION'] },
   },
   { timestamps: true }
 );
+
+ticketSchema.index({ bookingId: 1, scannedAt: 1 });
+ticketSchema.index({ eventId: 1, scannedAt: 1 });
+ticketSchema.index({ scannedAt: 1 });
 
 export const Ticket = model<ITicket>('Ticket', ticketSchema);

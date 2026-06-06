@@ -1,7 +1,9 @@
 import nodemailer from 'nodemailer';
+import * as Sentry from '@sentry/node';
 
 import { getEnv } from '../config/env';
 import { logger } from './logger';
+import { auditLog } from './audit';
 
 export interface EmailAttachment {
   filename: string;
@@ -14,9 +16,50 @@ export interface SendEmailInput {
   subject: string;
   html: string;
   attachments?: EmailAttachment[];
+  messageId?: string;
 }
 
 let transporter: nodemailer.Transporter | null = null;
+
+export function resetTransporter(): void {
+  transporter = null;
+}
+
+export function validateSmtpConfig(): void {
+  const env = getEnv();
+  if (env.SMTP_HOST) {
+    const missingFields: string[] = [];
+    if (!env.SMTP_PORT) missingFields.push('SMTP_PORT');
+    if (!env.SMTP_USER) missingFields.push('SMTP_USER');
+    if (!env.SMTP_PASS) missingFields.push('SMTP_PASS');
+    if (!env.MAIL_FROM) missingFields.push('MAIL_FROM');
+
+    if (missingFields.length > 0) {
+      const errorMsg = `SMTP_CONFIGURATION_INVALID: SMTP configuration is incomplete. Missing fields: ${missingFields.join(', ')}`;
+      logger.error(errorMsg);
+
+      // Sentry log
+      try {
+        Sentry.captureMessage(errorMsg, {
+          level: 'fatal',
+          tags: { type: 'SMTP_CONFIGURATION_INVALID' },
+        });
+      } catch (err) {
+        logger.error(err, 'Failed to log SMTP config error to Sentry');
+      }
+
+      // Durable Audit Log
+      auditLog({
+        action: 'SMTP_CONFIGURATION_INVALID',
+        status: 'failure',
+        description: `SMTP configuration validation failed. Missing fields: ${missingFields.join(', ')}`,
+        metadata: { missingFields },
+      });
+
+      throw new Error(errorMsg);
+    }
+  }
+}
 
 export function getTransporter(): nodemailer.Transporter | null {
   if (transporter) return transporter;
@@ -72,10 +115,36 @@ export async function verifyTransporter(): Promise<boolean> {
     await tx.verify();
     logger.info("SMTP verify success");
     logger.info("SMTP transporter ready and verified successfully");
+
+    // Durable Audit Log
+    auditLog({
+      action: 'SMTP_TRANSPORT_VERIFIED',
+      status: 'success',
+      description: 'SMTP transporter ready and verified successfully',
+    });
+
     return true;
-  } catch (error) {
-    logger.error(error, "SMTP verify failed");
-    logger.error(error, "SMTP transporter failed verification");
+  } catch (error: any) {
+    logger.error(error, "SMTP_TRANSPORT_UNAVAILABLE: SMTP verify failed");
+    logger.error(error, "SMTP_TRANSPORT_UNAVAILABLE: SMTP transporter failed verification");
+
+    // Sentry log
+    try {
+      Sentry.captureException(error, {
+        tags: { type: 'SMTP_TRANSPORT_UNAVAILABLE' },
+      });
+    } catch (err) {
+      logger.error(err, 'Failed to log SMTP verify failure to Sentry');
+    }
+
+    // Durable Audit Log
+    auditLog({
+      action: 'SMTP_TRANSPORT_UNAVAILABLE',
+      status: 'failure',
+      description: `SMTP transporter failed verification: ${error.message}`,
+      metadata: { error: error.message },
+    });
+
     return false;
   }
 }
@@ -84,8 +153,29 @@ export async function sendEmail(input: SendEmailInput): Promise<void> {
   const env = getEnv();
   const tx = getTransporter();
   if (!tx) {
-    logger.warn({ to: input.to, subject: input.subject }, 'SMTP not configured; email skipped');
-    return;
+    const errorMsg = 'SMTP_TRANSPORT_UNAVAILABLE: SMTP transporter unavailable';
+    logger.error({ to: input.to, subject: input.subject }, errorMsg);
+
+    // Sentry log
+    try {
+      Sentry.captureMessage(errorMsg, {
+        level: 'error',
+        tags: { type: 'SMTP_TRANSPORT_UNAVAILABLE' },
+        extra: { to: input.to, subject: input.subject },
+      });
+    } catch (err) {
+      logger.error(err, 'Failed to log SMTP transport unavailable to Sentry');
+    }
+
+    // Durable Audit Log
+    auditLog({
+      action: 'SMTP_TRANSPORT_UNAVAILABLE',
+      status: 'failure',
+      description: `SMTP transporter unavailable when trying to send email to ${input.to}`,
+      metadata: { to: input.to, subject: input.subject },
+    });
+
+    throw new Error('SMTP transporter unavailable');
   }
 
   const { to, subject } = input;
@@ -100,16 +190,31 @@ export async function sendEmail(input: SendEmailInput): Promise<void> {
       subject: input.subject,
       html: input.html,
       attachments: input.attachments,
+      messageId: input.messageId,
     });
     logger.info({ messageId: info.messageId }, "Email sent");
     logger.info({ messageId: info.messageId, to: input.to }, "Transactional email delivered successfully");
-  } catch (error) {
+  } catch (error: any) {
     logger.error(error, "Email send failed");
     logger.error({
       error,
       to: input.to,
       subject: input.subject,
     }, "Transactional email failed to send");
+
+    // Durable Audit Log
+    auditLog({
+      action: 'SMTP_DELIVERY_FAILURE',
+      status: 'failure',
+      description: `SMTP delivery failed for recipient ${input.to}: ${error.message}`,
+      metadata: { to: input.to, subject: input.subject, error: error.message },
+    });
+
     throw error; // Bubble up error so BullMQ workers can retry correctly
   }
 }
+
+export function normalizeEmail(email: string): string {
+  return email.trim().toLowerCase();
+}
+

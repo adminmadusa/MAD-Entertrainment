@@ -1,8 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { AuthService } from './auth.service';
 import { RefreshTokenModel } from '../../models/refresh-token.schema';
-import { UserModel } from '../../models/user.schema';
-import { AppError } from '../../middleware/error.middleware';
+import { UserModel } from '../../models/user.schema'
 
 vi.mock('../../config/env', () => ({
   getEnv: vi.fn(() => ({

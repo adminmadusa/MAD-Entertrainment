@@ -5,6 +5,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { useState } from 'react';
+import { useAdminAuth } from '@/hooks/use-admin-auth.hook';
 
 import { adminGetPopups, adminDeletePopup, adminTogglePopup } from '@/lib/api/admin/popup.service';
 import { extractApiError } from '@/lib/api/client';
@@ -12,8 +13,10 @@ import ErrorState from '@/components/states/ErrorState';
 
 
 export default function AdminPopupsPage() {
+  const { admin } = useAdminAuth();
   const qc = useQueryClient();
   const [page, setPage] = useState(1);
+  const canMutatePopups = !!admin?.role && ['super_admin', 'admin', 'manager'].includes(admin.role);
   const [deleteTarget, setDeleteTarget] = useState<PopupCampaign | null>(null);
 
   const { data, isLoading, error } = useQuery({
@@ -93,32 +96,46 @@ export default function AdminPopupsPage() {
           {popup.priority}
         </td>
         <td className="py-4 px-4">
-          <button
-            onClick={() => toggleMutation.mutate(popup._id)}
-            className={`text-xs px-2.5 py-1 rounded-full border font-medium transition-all ${
+          {canMutatePopups ? (
+            <button
+              onClick={() => toggleMutation.mutate(popup._id)}
+              className={`text-xs px-2.5 py-1 rounded-full border font-medium transition-all ${
+                popup.isActive
+                  ? 'bg-green-500/10 text-green-400 border-green-500/30'
+                  : 'bg-red-500/10 text-red-400 border-red-500/30'
+              }`}
+            >
+              {popup.isActive ? 'Active' : 'Inactive'}
+            </button>
+          ) : (
+            <span className={`text-xs px-2.5 py-1 rounded-full border font-medium ${
               popup.isActive
                 ? 'bg-green-500/10 text-green-400 border-green-500/30'
                 : 'bg-red-500/10 text-red-400 border-red-500/30'
-            }`}
-          >
-            {popup.isActive ? 'Active' : 'Inactive'}
-          </button>
+            }`}>
+              {popup.isActive ? 'Active' : 'Inactive'}
+            </span>
+          )}
         </td>
         <td className="py-4 px-5">
-          <div className="flex items-center justify-end gap-2">
-            <Link
-              href={`/popups/${popup._id}/edit`}
-              className="px-3 py-1.5 text-xs font-medium glass border border-border-subtle rounded-lg text-text-secondary hover:text-white hover:border-accent-purple/40 transition-all"
-            >
-              Edit
-            </Link>
-            <button
-              onClick={() => setDeleteTarget(popup)}
-              className="px-3 py-1.5 text-xs font-medium glass border border-border-subtle rounded-lg text-text-muted hover:text-red-400 hover:border-red-500/40 transition-all"
-            >
-              Delete
-            </button>
-          </div>
+          {canMutatePopups ? (
+            <div className="flex items-center justify-end gap-2">
+              <Link
+                href={`/popups/${popup._id}/edit`}
+                className="px-3 py-1.5 text-xs font-medium glass border border-border-subtle rounded-lg text-text-secondary hover:text-white hover:border-accent-purple/40 transition-all"
+              >
+                Edit
+              </Link>
+              <button
+                onClick={() => setDeleteTarget(popup)}
+                className="px-3 py-1.5 text-xs font-medium glass border border-border-subtle rounded-lg text-text-muted hover:text-red-400 hover:border-red-500/40 transition-all"
+              >
+                Delete
+              </button>
+            </div>
+          ) : (
+            <div className="text-right text-text-muted">—</div>
+          )}
         </td>
       </tr>
     ));
@@ -142,13 +159,15 @@ export default function AdminPopupsPage() {
             {pagination?.total ?? 0} campaigns total
           </p>
         </div>
-        <Link
-          href="/popups/new"
-          id="admin-create-popup"
-          className="px-4 py-2.5 btn-gradient text-white font-semibold text-sm rounded-xl shadow-glow-sm hover:scale-105 transition-transform flex items-center gap-2"
-        >
-          <span>+</span> Create Campaign
-        </Link>
+        {canMutatePopups && (
+          <Link
+            href="/popups/new"
+            id="admin-create-popup"
+            className="px-4 py-2.5 btn-gradient text-white font-semibold text-sm rounded-xl shadow-glow-sm hover:scale-105 transition-transform flex items-center gap-2"
+          >
+            <span>+</span> Create Campaign
+          </Link>
+        )}
       </div>
 
       {/* Table */}

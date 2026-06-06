@@ -104,12 +104,20 @@ export type Event = {
   refundPolicy?: string;
   organizerName?: string;
   ageRestriction?: number;
+  requireTerms?: boolean;
+  requireAgeConfirmation?: boolean;
   dresscode?: string;
   additionalInfo?: string;
   ticketProfileId?: string;
   ticketOverrides?: TicketOverride[];
   totalCapacity?: number;
   soldCount?: number;
+  ticketsSold?: number;
+  ticketsCheckedIn?: number;
+  ticketsRemaining?: number;
+  attendancePercentage?: number;
+  noShowCount?: number;
+  noShowPercentage?: number;
 };
 
 export type Seat = {
@@ -138,8 +146,6 @@ export type DJOperator = {
   specialties?: string[];
   [key: string]: any;
 };
-export type Artist = { _id: string; name: string; [key: string]: any };
-export type Venue = { _id: string; name: string; [key: string]: any };
 export type Coupon = { _id: string; code: string; [key: string]: any };
 export type PopupCampaign = {
   _id: string;
@@ -175,7 +181,6 @@ export type Booking = {
   firstName?: string;
   lastName?: string;
   guestEmail?: string;
-  guestEmailConfirm?: string;
   guestPhone?: string;
   birthdate?: string | Date;
   keepUpdated?: boolean;
@@ -208,6 +213,7 @@ export type Booking = {
   reservationIds?: string[];
   bookingVersion: number;
   expiresAt?: string | Date;
+  logicalExpiresAt?: string | Date;
   cancellationReason?: string;
   cancelledAt?: string | Date;
   createdAt?: string | Date;
@@ -262,7 +268,11 @@ export type Notification = {
   title?: string;
   body?: string;
   data?: Record<string, any>;
-  status?: string;
+  status?: 'queued' | 'processing' | 'sent' | 'failed';
+  jobId?: string;
+  errorMessage?: string;
+  queuedAt?: string | Date;
+  processedAt?: string | Date;
   sentAt?: string | Date;
   channel: string;
   recipient?: string;

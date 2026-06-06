@@ -102,15 +102,19 @@ type RateLimiter = ReturnType<typeof rateLimit>;
 let _generalLimiter: RateLimiter | undefined;
 let _authLimiter: RateLimiter | undefined;
 let _paymentLimiter: RateLimiter | undefined;
+let _bookingLimiter: RateLimiter | undefined;
 let _webhookLimiter: RateLimiter | undefined;
 let _adminLimiter: RateLimiter | undefined;
+let _resendLimiter: RateLimiter | undefined;
+let _recoveryLimiter: RateLimiter | undefined;
 
-function makeLimiter(prefix: 'general' | 'auth' | 'payment' | 'webhook' | 'admin'): RateLimiter {
+function makeLimiter(prefix: 'general' | 'auth' | 'payment' | 'booking' | 'webhook' | 'admin'): RateLimiter {
   const e = getEnv();
   const limits: Record<typeof prefix, number> = {
     general: e.RATE_LIMIT_MAX_REQUESTS,
     auth: e.RATE_LIMIT_AUTH_MAX,
     payment: e.RATE_LIMIT_PAYMENT_MAX,
+    booking: 10,
     webhook: 60,
     admin: 30,
   };
@@ -118,6 +122,7 @@ function makeLimiter(prefix: 'general' | 'auth' | 'payment' | 'webhook' | 'admin
     general: e.RATE_LIMIT_WINDOW_MS,
     auth: e.RATE_LIMIT_WINDOW_MS,
     payment: e.RATE_LIMIT_WINDOW_MS,
+    booking: 15 * 60 * 1000, // 15 minutes
     webhook: 10 * 60 * 1000, // 10 minutes
     admin: 15 * 60 * 1000, // 15 minutes
   };
@@ -128,6 +133,25 @@ function makeLimiter(prefix: 'general' | 'auth' | 'payment' | 'webhook' | 'admin
     legacyHeaders: false,
     passOnStoreError: true,
     store: new ResilientRedisStore(prefix),
+    handler: (req: any, res: any) => {
+      if (prefix === 'auth') {
+        const resetTime = req.rateLimit?.resetTime;
+        const retryAfter = resetTime
+          ? Math.ceil((new Date(resetTime).getTime() - Date.now()) / 1000)
+          : Math.ceil(windows[prefix] / 1000);
+
+        return res.status(429).json({
+          success: false,
+          code: 'RATE_LIMIT_EXCEEDED',
+          message: 'Too many verification requests',
+          retryAfter: Math.max(0, retryAfter),
+        });
+      }
+      res.status(429).json({
+        success: false,
+        message: 'Too many requests, please try again later.',
+      });
+    },
   });
 }
 
@@ -140,8 +164,44 @@ export function initRateLimiters(): void {
   _generalLimiter = makeLimiter('general');
   _authLimiter = makeLimiter('auth');
   _paymentLimiter = makeLimiter('payment');
+  _bookingLimiter = makeLimiter('booking');
   _webhookLimiter = makeLimiter('webhook');
   _adminLimiter = makeLimiter('admin');
+
+  _resendLimiter = rateLimit({
+    windowMs: 60 * 60 * 1000, // 1 hour window
+    limit: 3, // limit each booking reference/IP combination to 3 requests per windowMs
+    standardHeaders: true,
+    legacyHeaders: false,
+    passOnStoreError: true,
+    store: new ResilientRedisStore('resend'),
+    keyGenerator: (req: any) => {
+      return req.params.bookingId || req.ip || '';
+    },
+    handler: (req: any, res: any) => {
+      res.status(429).json({
+        success: false,
+        message: 'Too many resend attempts. Please try again after an hour.',
+      });
+    },
+  });
+
+  // Dedicated booking recovery limiter
+  // Isolated from the auth limiter to prevent shared-bucket abuse.
+  _recoveryLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    limit: 3,                 // 3 requests per IP per window
+    standardHeaders: true,
+    legacyHeaders: false,
+    passOnStoreError: true,
+    store: new ResilientRedisStore('recovery'),
+    handler: (_req: any, res: any) => {
+      res.status(429).json({
+        success: false,
+        message: 'Too many recovery attempts. Please wait before trying again.',
+      });
+    },
+  });
 }
 
 export const generalLimiter = (req: any, res: any, next: any) => {
@@ -168,6 +228,14 @@ export const paymentLimiter = (req: any, res: any, next: any) => {
   return _paymentLimiter(req, res, next);
 };
 
+export const bookingLimiter = (req: any, res: any, next: any) => {
+  if (!_bookingLimiter) {
+    logger.error('bookingLimiter called before initRateLimiters() — rate limiting inactive');
+    return next();
+  }
+  return _bookingLimiter(req, res, next);
+};
+
 export const webhookLimiter = (req: any, res: any, next: any) => {
   if (!_webhookLimiter) {
     logger.error('webhookLimiter called before initRateLimiters() — rate limiting inactive');
@@ -182,4 +250,20 @@ export const adminLimiter = (req: any, res: any, next: any) => {
     return next();
   }
   return _adminLimiter(req, res, next);
+};
+
+export const resendLimiter = (req: any, res: any, next: any) => {
+  if (!_resendLimiter) {
+    logger.error('resendLimiter called before initRateLimiters() — rate limiting inactive');
+    return next();
+  }
+  return _resendLimiter(req, res, next);
+};
+
+export const recoveryLimiter = (req: any, res: any, next: any) => {
+  if (!_recoveryLimiter) {
+    logger.error('recoveryLimiter called before initRateLimiters() — rate limiting inactive');
+    return next();
+  }
+  return _recoveryLimiter(req, res, next);
 };

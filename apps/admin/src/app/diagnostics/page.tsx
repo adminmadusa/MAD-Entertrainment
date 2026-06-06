@@ -3,23 +3,32 @@
 import { QUERY_KEYS } from '@mad/shared';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { useAdminAuth } from '@/hooks/use-admin-auth.hook';
+
 
 import { adminGetConsistencyReport, adminGetReservations, adminRepairConsistency } from '@/lib/api/admin/diagnostics.service';
 
 export default function DiagnosticsPage() {
+  const { admin } = useAdminAuth();
+  const pathname = usePathname();
   const queryClient = useQueryClient();
+  const isSuperAdmin = admin?.role === 'super_admin';
   const [status, setStatus] = useState('');
 
   const { data: report, isLoading } = useQuery({
     queryKey: QUERY_KEYS.admin.diagnostics.consistency(),
     queryFn: adminGetConsistencyReport,
     refetchInterval: 30_000,
+    enabled: isSuperAdmin,
   });
 
   const { data: reservations } = useQuery({
     queryKey: QUERY_KEYS.admin.diagnostics.reservations(status),
     queryFn: () => adminGetReservations(status || undefined),
     refetchInterval: 30_000,
+    enabled: isSuperAdmin,
   });
 
   const repairMutation = useMutation({
@@ -29,6 +38,28 @@ export default function DiagnosticsPage() {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.admin.diagnostics.reservations(status) });
     },
   });
+
+  if (admin && !isSuperAdmin) {
+    return (
+      <div className="py-12 text-center max-w-md mx-auto space-y-4">
+        <div className="w-16 h-16 rounded-full bg-red-500/10 border border-red-500/20 text-red-500 flex items-center justify-center text-2xl mx-auto">
+          ⚠️
+        </div>
+        <div className="space-y-2">
+          <h1 className="text-xl font-bold text-white">Access Denied</h1>
+          <p className="text-text-muted text-sm leading-relaxed">
+            You do not have the required permissions to access diagnostics. Consistency reports and ledger logs are restricted to Super Admins only.
+          </p>
+        </div>
+        <Link
+          href="/dashboard"
+          className="inline-block px-4 py-2 bg-white/5 hover:bg-white/10 text-white text-xs font-semibold rounded-xl border border-border-subtle transition-colors"
+        >
+          Return to Dashboard
+        </Link>
+      </div>
+    );
+  }
 
   const hasDrift = !!report && Object.values(report.drift).some((value) => value > 0);
 
@@ -47,14 +78,50 @@ export default function DiagnosticsPage() {
             Reservation, Redis lock, payment, and inventory drift monitoring.
           </p>
         </div>
-        <button
-          type="button"
-          onClick={() => repairMutation.mutate()}
-          disabled={repairMutation.isPending}
-          className="px-4 py-2.5 btn-gradient text-white font-semibold text-sm rounded-xl disabled:opacity-60"
+        {isSuperAdmin && (
+          <button
+            type="button"
+            onClick={() => repairMutation.mutate()}
+            disabled={repairMutation.isPending}
+            className="px-4 py-2.5 btn-gradient text-white font-semibold text-sm rounded-xl disabled:opacity-60"
+          >
+            {repairMutation.isPending ? 'Repairing...' : 'Run Repair'}
+          </button>
+        )}
+      </div>
+
+      {/* Tabs */}
+      <div className="flex border-b border-border-subtle">
+        <Link
+          href="/diagnostics"
+          className={`px-6 py-3 font-semibold text-sm transition-all border-b-2 -mb-[2px] ${
+            pathname === '/diagnostics'
+              ? 'border-accent-purple text-accent-purple-light'
+              : 'border-transparent text-text-secondary hover:text-text-primary'
+          }`}
         >
-          {repairMutation.isPending ? 'Repairing...' : 'Run Repair'}
-        </button>
+          Consistency
+        </Link>
+        <Link
+          href="/diagnostics/webhooks"
+          className={`px-6 py-3 font-semibold text-sm transition-all border-b-2 -mb-[2px] ${
+            pathname.startsWith('/diagnostics/webhooks')
+              ? 'border-accent-purple text-accent-purple-light'
+              : 'border-transparent text-text-secondary hover:text-text-primary'
+          }`}
+        >
+          Webhooks
+        </Link>
+        <Link
+          href="/diagnostics/emails"
+          className={`px-6 py-3 font-semibold text-sm transition-all border-b-2 -mb-[2px] ${
+            pathname.startsWith('/diagnostics/emails')
+              ? 'border-accent-purple text-accent-purple-light'
+              : 'border-transparent text-text-secondary hover:text-text-primary'
+          }`}
+        >
+          Email Logs
+        </Link>
       </div>
 
       <div className={`rounded-2xl border p-4 ${hasDrift ? 'border-yellow-500/30 bg-yellow-500/10' : 'border-green-500/30 bg-green-500/10'}`}>

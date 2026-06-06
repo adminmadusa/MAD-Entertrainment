@@ -8,96 +8,180 @@ import { UserModel, IUser } from '../../models/user.schema';
 import { MagicTokenModel } from '../../models/magic-token.schema';
 import { RefreshTokenModel } from '../../models/refresh-token.schema';
 import { Booking } from '../../models/booking.schema';
+import { Notification } from '../../models/notification.schema';
+import { createNotificationSafe } from '../notification.service';
 import { QueueService } from '../queue.service';
 import { magicLinkHtml } from '../../lib/email';
+import { normalizeEmail } from '../../utils/email';
+import { getRedis, isRedisConnected } from '../../config/redis';
 import { NotificationType } from '@mad/shared';
 import { signUserToken } from '../../utils/jwt';
 import { logger } from '../../utils/logger';
 
 export class AuthService {
   /**
+   * Checks if an email exists in the database.
+   */
+  static async checkEmailExists(email: string): Promise<boolean> {
+    const user = await UserModel.exists({ email: email.trim().toLowerCase() });
+    return !!user;
+  }
+
+  /**
    * Generates a Magic Link and OTP fallback, hashes the OTP, saves them, and enqueues the email.
    */
-  static async requestMagicLink(email: string, origin: string): Promise<void> {
+  static async requestMagicLink(
+    email: string,
+    origin: string,
+    registrationData?: { firstName?: string; lastName?: string; mobileNumber?: string }
+  ): Promise<void> {
     if (!email) {
       throw AppError.badRequest('Email is required');
     }
 
-    const trimmedEmail = email.trim().toLowerCase();
-    logger.info({ email: trimmedEmail }, "Magic link requested");
+    const normalizedEmail = normalizeEmail(email);
+    logger.info({ email: normalizedEmail }, "OTP passcode requested");
 
-    // 1. Generate unique 6-digit OTP and secure random token
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const token = crypto.randomBytes(32).toString('hex');
-    const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes TTL
+    // Cooldown verification (Redis-first with DB fallback)
+    const cooldownKey = `mad:otp:cooldown:${normalizedEmail}`;
+    const isRedisActive = isRedisConnected();
+    let isLocked = false;
+    let retryAfter = 60;
 
-    // 2. Hash the OTP for secure database storage
-    const otpHash = crypto.createHash('sha256').update(otp).digest('hex');
+    if (isRedisActive) {
+      try {
+        const redis = getRedis();
+        // Atomic EX NX acquisition
+        const lockResult = await redis.set(cooldownKey, '1', 'EX', 60, 'NX');
+        isLocked = lockResult !== 'OK';
+        if (isLocked) {
+          const ttl = await redis.ttl(cooldownKey);
+          retryAfter = ttl > 0 ? ttl : 60;
+        }
+      } catch (err) {
+        logger.error({ err, email: normalizedEmail }, 'Redis cooldown lock set failed. Falling back to MongoDB.');
+      }
+    }
 
-    // 3. Save MagicToken (upsert for the email to prevent spamming records)
-    await MagicTokenModel.findOneAndDelete({ email: trimmedEmail });
-    await MagicTokenModel.create({
-      email: trimmedEmail,
-      token,
-      otp: otpHash, // Plaintext OTP is NEVER stored in the database!
-      expiresAt,
-    });
-    logger.info({ email: trimmedEmail, tokenId: token }, "Magic token created");
+    // Fallback: If Redis is offline, check MongoDB.
+    // Or if Redis is active and we failed to acquire the lock.
+    if (!isRedisActive || isLocked) {
+      if (!isRedisActive) {
+        const existing = await MagicTokenModel.findOne({ email: normalizedEmail });
+        if (existing) {
+          const elapsed = Math.floor((Date.now() - existing.createdAt.getTime()) / 1000);
+          if (elapsed < 60) {
+            retryAfter = Math.max(0, 60 - elapsed);
+            throw AppError.tooManyRequests('Please wait before requesting another code.', 'OTP_COOLDOWN_ACTIVE', retryAfter);
+          }
+        }
+      } else {
+        // Redis is active, but we are locked out
+        throw AppError.tooManyRequests('Please wait before requesting another code.', 'OTP_COOLDOWN_ACTIVE', retryAfter);
+      }
+    }
 
-    // 4. Construct Verification Link
-    const magicLinkUrl = `${origin}/login?token=${token}`;
+    let token;
+    try {
+      // 1. Generate unique 6-digit OTP
+      const otp = crypto.randomInt(100000, 1000000).toString();
+      const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes TTL
 
-    // 5. Compile HTML Template
-    const html = await magicLinkHtml({
-      email: trimmedEmail,
-      magicLinkUrl,
-      otpCode: otp, // Plaintext OTP is sent securely ONLY in the email!
-    });
+      // 2. Hash the OTP for secure database storage
+      const otpHash = crypto.createHash('sha256').update(otp).digest('hex');
 
-    const jobId = `magic-${trimmedEmail}-${Date.now()}`;
-    logger.info({ email: trimmedEmail, jobId }, "Email job queued");
+      // 3. Save MagicToken (atomic upsert)
+      token = await MagicTokenModel.findOneAndUpdate(
+        { email: normalizedEmail },
+        {
+          $set: {
+            otp: otpHash,
+            firstName: registrationData?.firstName,
+            lastName: registrationData?.lastName,
+            mobileNumber: registrationData?.mobileNumber,
+            expiresAt,
+          },
+        },
+        { upsert: true, new: true, runValidators: true }
+      );
+      logger.info({ email: normalizedEmail, tokenId: token._id }, "OTP login session upserted");
 
-    // 6. Enqueue Email Dispatch Job with exponential BullMQ retries
-    await QueueService.enqueue(getQueueName('notification-queue'), 'email-dispatch', {
-      to: trimmedEmail,
-      subject: 'Sign In to MAD Entertainment',
-      html,
-      notificationType: NotificationType.OTP,
-    }, jobId);
+      // 4. Compile HTML Template
+      const html = await magicLinkHtml({
+        email: normalizedEmail,
+        otpCode: otp, // Plaintext OTP is sent securely ONLY in the email!
+      });
 
-    logger.info({ email: trimmedEmail }, 'Magic Link & OTP email queued successfully.');
+      const jobId = `magic-${normalizedEmail}-${token._id.toString()}`;
+      logger.info({ email: normalizedEmail, jobId }, "Email job queued");
+
+      await createNotificationSafe({
+        jobId,
+        status: 'queued',
+        queuedAt: new Date(),
+        type: NotificationType.OTP,
+        channel: 'email',
+        recipient: normalizedEmail,
+        subject: 'Sign In to MAD Entertainment',
+        isSent: false,
+        retryCount: 0,
+      });
+
+      // 5. Enqueue Email Dispatch Job with exponential BullMQ retries
+      await QueueService.enqueue(getQueueName('notification-queue'), 'email-dispatch', {
+        to: normalizedEmail,
+        subject: 'Sign In to MAD Entertainment',
+        html,
+        notificationType: NotificationType.OTP,
+      }, jobId);
+
+      logger.info({ email: normalizedEmail }, 'OTP verification email queued successfully.');
+    } catch (err: any) {
+      // Check for MongoDB unique index violation (E11000)
+      const isDuplicateKey = err.code === 11000 || err.code === '11000' || err.message?.includes('E11000');
+
+      // Failure Handling / Rollback: Release Redis lock if lock was successfully acquired
+      if (isRedisActive && !isLocked && !isDuplicateKey) {
+        try {
+          const redis = getRedis();
+          await redis.del(cooldownKey);
+          logger.info({ email: normalizedEmail }, 'Redis cooldown lock rolled back due to write/enqueue failure.');
+        } catch (delErr) {
+          logger.error({ delErr, email: normalizedEmail }, 'Failed to delete Redis cooldown lock during rollback.');
+        }
+      }
+
+      if (isDuplicateKey) {
+        throw AppError.tooManyRequests('Please wait before requesting another code.', 'OTP_COOLDOWN_ACTIVE', 60);
+      }
+
+      throw err;
+    }
   }
 
   /**
-   * Verifies the Magic Link token or OTP code, logs the user in, and sets up session.
+   * Verifies the OTP code, logs the user in, and sets up session.
    */
   static async verifyMagicLinkOrOTP(
-    tokenOrOtp: string,
-    email?: string
+    otp: string,
+    email: string
   ): Promise<{ user: IUser; accessToken: string; refreshToken: string }> {
-    if (!tokenOrOtp) {
-      throw AppError.badRequest('Verification code or link token is required');
+    if (!otp || !email) {
+      throw AppError.badRequest('Verification code and email are required');
     }
 
-    let magicRecord = null;
+    // OTP Verification Mode
+    const normalizedEmail = normalizeEmail(email);
+    const cleanOtp = otp.trim().replace(/\s/g, '');
+    const otpHash = crypto.createHash('sha256').update(cleanOtp).digest('hex');
 
-    if (email) {
-      // OTP Verification Mode
-      const trimmedEmail = email.trim().toLowerCase();
-      const cleanOtp = tokenOrOtp.trim().replace(/\s/g, '');
-      const otpHash = crypto.createHash('sha256').update(cleanOtp).digest('hex');
-
-      magicRecord = await MagicTokenModel.findOne({
-        email: trimmedEmail,
-        otp: otpHash, // Match using the secure SHA-256 hash
-      });
-    } else {
-      // Magic Link Verification Mode
-      magicRecord = await MagicTokenModel.findOne({ token: tokenOrOtp });
-    }
+    const magicRecord = await MagicTokenModel.findOne({
+      email: normalizedEmail,
+      otp: otpHash, // Match using the secure SHA-256 hash
+    });
 
     if (!magicRecord || magicRecord.expiresAt < new Date()) {
-      throw AppError.unauthorized('Invalid or expired login link/passcode');
+      throw AppError.unauthorized('Invalid or expired login passcode');
     }
 
     const userEmail = magicRecord.email;
@@ -105,11 +189,29 @@ export class AuthService {
     // 1. Find or create the user in MongoDB
     let user = await UserModel.findOne({ email: userEmail });
     if (!user) {
-      user = await UserModel.create({
-        email: userEmail,
-        isActive: true,
-      });
-      logger.info({ userId: user._id, email: userEmail }, 'New passwordless user registered.');
+      try {
+        user = await UserModel.create({
+          email: userEmail,
+          firstName: magicRecord.firstName,
+          lastName: magicRecord.lastName,
+          name: (magicRecord.firstName || magicRecord.lastName) 
+            ? `${magicRecord.firstName || ''} ${magicRecord.lastName || ''}`.trim() 
+            : undefined,
+          mobileNumber: magicRecord.mobileNumber,
+          isActive: true,
+        });
+        logger.info({ userId: user._id, email: userEmail }, 'New passwordless user registered.');
+      } catch (err: any) {
+        if (err && err.code === 11000) {
+          logger.info({ email: userEmail }, 'Concurrent email registration race collision caught, fetching existing user.');
+          user = await UserModel.findOne({ email: userEmail });
+          if (!user) {
+            throw err;
+          }
+        } else {
+          throw err;
+        }
+      }
     } else if (!user.isActive) {
       throw AppError.forbidden('Your account has been deactivated.');
     }
@@ -122,6 +224,7 @@ export class AuthService {
 
     // 3. Link past guest bookings automatically
     await this.linkBookingsToUser(userEmail, user._id.toString());
+    await this.hydrateUserProfile(user._id.toString(), userEmail);
 
     // 4. Issue session tokens
     const { accessToken, refreshToken } = await this.issueTokens(user._id.toString(), user.email, 'user');
@@ -148,6 +251,8 @@ export class AuthService {
       payload = {
         email: idToken.split('_')[1] || 'mock@example.com',
         name: 'Mock User',
+        given_name: 'Mock',
+        family_name: 'User',
         sub: 'mock_google_id_' + idToken.split('_')[1],
         picture: 'https://lh3.googleusercontent.com/a/mock',
         email_verified: true,
@@ -172,35 +277,74 @@ export class AuthService {
       }
     }
 
-    const { email, name, sub: googleId, picture } = payload;
+    const { email, name, sub: googleId, picture, given_name, family_name } = payload;
     const userEmail = email.trim().toLowerCase();
 
-    // Find or create User
-    let user = await UserModel.findOne({
-      $or: [{ googleId }, { email: userEmail }],
-    });
+    // Find or create User sequentially to prevent collision and E11000 errors
+    let user = await UserModel.findOne({ googleId });
 
-    if (!user) {
-      user = await UserModel.create({
-        email: userEmail,
-        googleId,
-        name,
-        picture,
-        isActive: true,
-      });
-      logger.info({ userId: user._id, email: userEmail }, 'New Google OAuth user registered.');
-    } else {
+    if (user) {
       if (!user.isActive) {
         throw AppError.forbidden('Your account has been deactivated.');
       }
-      // Keep profile info updated from Google login
-      let modified = false;
-      if (!user.googleId) { user.googleId = googleId; modified = true; }
-      if (!user.picture) { user.picture = picture; modified = true; }
-      if (!user.name && name) { user.name = name; modified = true; }
-      if (modified) {
-        await user.save();
+      // If email has changed, check if the new email is already occupied by a different account
+      if (user.email !== userEmail) {
+        const emailCollision = await UserModel.findOne({ email: userEmail });
+        if (emailCollision) {
+          logger.warn(
+            { userId: user._id, currentEmail: user.email, googleEmail: userEmail, collisionUserId: emailCollision._id },
+            'Google email update skipped due to collision with another existing account.'
+          );
+        } else {
+          user.email = userEmail;
+          logger.info({ userId: user._id, oldEmail: user.email, newEmail: userEmail }, 'User email updated to Google verified email.');
+        }
       }
+    } else {
+      // Find exclusively by verified email second
+      user = await UserModel.findOne({ email: userEmail });
+      if (user) {
+        if (!user.isActive) {
+          throw AppError.forbidden('Your account has been deactivated.');
+        }
+        // Link Google ID to existing account securely
+        user.googleId = googleId;
+        logger.info({ userId: user._id, email: userEmail }, 'Linked Google login to existing email account.');
+      } else {
+        // Create a completely new user
+        try {
+          user = await UserModel.create({
+            email: userEmail,
+            googleId,
+            name,
+            firstName: given_name,
+            lastName: family_name,
+            picture,
+            isActive: true,
+          });
+          logger.info({ userId: user._id, email: userEmail }, 'New Google OAuth user registered.');
+        } catch (err: any) {
+          if (err && err.code === 11000) {
+            logger.info({ email: userEmail, googleId }, 'Concurrent Google registration race collision caught, fetching existing user.');
+            user = await UserModel.findOne({ $or: [{ googleId }, { email: userEmail }] });
+            if (!user) {
+              throw err;
+            }
+          } else {
+            throw err;
+          }
+        }
+      }
+    }
+
+    // Keep profile info updated from Google login
+    let profileModified = false;
+    if (!user.picture && picture) { user.picture = picture; profileModified = true; }
+    if (!user.name && name) { user.name = name; profileModified = true; }
+    if (given_name && user.firstName !== given_name) { user.firstName = given_name; profileModified = true; }
+    if (family_name && user.lastName !== family_name) { user.lastName = family_name; profileModified = true; }
+    if (profileModified) {
+      await user.save();
     }
 
     user.lastLogin = new Date();
@@ -208,6 +352,7 @@ export class AuthService {
 
     // Link past bookings
     await this.linkBookingsToUser(userEmail, user._id.toString());
+    await this.hydrateUserProfile(user._id.toString(), userEmail);
 
     // Issue tokens
     const { accessToken, refreshToken } = await this.issueTokens(user._id.toString(), user.email, 'user');
@@ -392,7 +537,10 @@ export class AuthService {
       // Strictly prevent multiple parallel processes or race conditions from linking the same booking twice
       const result = await Booking.updateMany(
         { guestEmail: email, userId: { $exists: false } },
-        { $set: { userId: new Types.ObjectId(userId) } }
+        { 
+          $set: { userId: new Types.ObjectId(userId) },
+          $unset: { sessionId: 1 }
+        }
       );
       if (result.modifiedCount > 0) {
         logger.info(
@@ -402,6 +550,84 @@ export class AuthService {
       }
     } catch (err) {
       logger.error({ err, email, userId }, 'Failed to link historical guest bookings.');
+    }
+  }
+
+  /**
+   * Safe profile hydration from historical guest bookings.
+   * Enforces "Never Overwrite" safeguards, smart data-quality booking selection heuristics,
+   * and strict normalized email matching rules.
+   */
+  public static async hydrateUserProfile(userId: string, email: string): Promise<void> {
+    try {
+      const user = await UserModel.findById(userId);
+      if (!user || !user.isActive) return;
+
+      // 1. Guard check: only proceed if at least one field is currently blank
+      const needsFirstName = !user.firstName || user.firstName.trim() === '';
+      const needsLastName = !user.lastName || user.lastName.trim() === '';
+      const needsMobile = !user.mobileNumber || user.mobileNumber.trim() === '';
+
+      if (!needsFirstName && !needsLastName && !needsMobile) {
+        return; // Profile is already complete; skip database operations
+      }
+
+      const normalizedEmail = email.trim().toLowerCase();
+
+      // 2. Query Priority 1: Confirmed completed bookings containing usable data
+      let sourceBooking = await Booking.findOne({
+        guestEmail: normalizedEmail,
+        status: 'confirmed',
+        $or: [
+          { firstName: { $ne: null, $gt: "" } },
+          { lastName: { $ne: null, $gt: "" } },
+          { guestPhone: { $ne: null, $gt: "" } }
+        ]
+      }).sort({ createdAt: -1 });
+
+      // 3. Query Priority 2 (Fallback): Any booking containing usable data
+      if (!sourceBooking) {
+        sourceBooking = await Booking.findOne({
+          guestEmail: normalizedEmail,
+          $or: [
+            { firstName: { $ne: null, $gt: "" } },
+            { lastName: { $ne: null, $gt: "" } },
+            { guestPhone: { $ne: null, $gt: "" } }
+          ]
+        }).sort({ createdAt: -1 });
+      }
+
+      if (!sourceBooking) return; // Priority 3: No valid data found
+
+      // 4. Safe sync application (Never Overwrite)
+      let isModified = false;
+
+      if (needsFirstName && sourceBooking.firstName && sourceBooking.firstName.trim() !== '') {
+        user.firstName = sourceBooking.firstName.trim();
+        isModified = true;
+      }
+
+      if (needsLastName && sourceBooking.lastName && sourceBooking.lastName.trim() !== '') {
+        user.lastName = sourceBooking.lastName.trim();
+        isModified = true;
+      }
+
+      if (needsMobile && sourceBooking.guestPhone && sourceBooking.guestPhone.trim() !== '') {
+        user.mobileNumber = sourceBooking.guestPhone.trim();
+        isModified = true;
+      }
+
+      // 5. Re-compile display name if fields were updated and display name is currently blank
+      if (isModified && (!user.name || user.name.trim() === '')) {
+        user.name = `${user.firstName || ''} ${user.lastName || ''}`.trim();
+      }
+
+      if (isModified) {
+        await user.save();
+        logger.info({ userId, email: normalizedEmail }, "User profile safely hydrated from historical booking details.");
+      }
+    } catch (err) {
+      logger.error({ err, userId, email }, "Failed to hydrate user profile from guest bookings.");
     }
   }
 }

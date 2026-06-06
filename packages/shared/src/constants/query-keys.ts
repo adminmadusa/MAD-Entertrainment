@@ -54,6 +54,8 @@ export const QUERY_KEYS = {
     diagnostics: {
       consistency: () => ['admin-diagnostics-consistency'] as const,
       reservations: (status?: string) => compact(['admin-diagnostics-reservations', status]) as readonly QueryKeyPart[],
+      webhooks: (filters: Record<string, unknown> = {}) => ['admin-diagnostics-webhooks', filters] as const,
+      emails: (filters: Record<string, unknown> = {}) => ['admin-diagnostics-emails', filters] as const,
     },
     coupons: {
       all: ['admin-coupons'] as const,
@@ -64,16 +66,6 @@ export const QUERY_KEYS = {
       all: ['admin-popups'] as const,
       list: (page?: number) => compact(['admin-popups', page]) as readonly QueryKeyPart[],
       detail: (id?: string) => compact(['admin-popup', id]) as readonly QueryKeyPart[],
-    },
-    venues: {
-      all: ['admin-venues'] as const,
-      list: (filters: Record<string, unknown> = {}) => ['admin-venues', filters] as const,
-      detail: (id?: string) => compact(['admin-venue', id]) as readonly QueryKeyPart[],
-    },
-    artists: {
-      all: ['admin-artists'] as const,
-      list: (filters: Record<string, unknown> = {}) => ['admin-artists', filters] as const,
-      detail: (id?: string) => compact(['admin-artist', id]) as readonly QueryKeyPart[],
     },
     djs: {
       all: ['admin-djs'] as const,

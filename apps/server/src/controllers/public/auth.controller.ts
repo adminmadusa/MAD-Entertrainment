@@ -1,59 +1,60 @@
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import { AuthService } from '../../services/public/auth.service';
 import { UserModel } from '../../models/user.schema';
 import { Booking } from '../../models/booking.schema';
+import { PublicBookingService } from '../../services/public/booking.service';
 import { getEnv } from '../../config/env';
 import { AppError } from '../../middleware/error.middleware';
 import { logger } from '../../utils/logger';
 
 export class AuthController {
   /**
+   * Checks if an email exists in the system.
+   */
+  static async checkEmail(req: Request, res: Response): Promise<void> {
+    const { email } = req.body;
+    if (!email) {
+      throw AppError.badRequest('Email is required');
+    }
+
+    const exists = await AuthService.checkEmailExists(email);
+
+    res.status(200).json({
+      success: true,
+      data: { exists },
+    });
+  }
+
+  /**
    * Triggers the magic link & OTP generation flow.
    */
   static async requestMagicLink(req: Request, res: Response): Promise<void> {
-    const { email } = req.body;
+    const { email, firstName, lastName, mobileNumber } = req.body;
     logger.info({ email }, "Magic link requested");
     // Derive client origin, fallback to configured ALLOWED_ORIGINS if unavailable
     const env = getEnv();
     const primaryOrigin = env.ALLOWED_ORIGINS.split(',')[0].trim();
     const origin = req.headers.origin || req.headers.referer || primaryOrigin;
 
-    await AuthService.requestMagicLink(email, origin);
+    await AuthService.requestMagicLink(email, origin, { firstName, lastName, mobileNumber });
 
     res.status(200).json({
       success: true,
-      message: 'Magic login link and passcode sent to your email.',
+      message: 'Verification code sent to your email.',
     });
   }
 
   /**
-   * Handles GET /auth/verify by redirecting client clicks to the frontend verification flow.
-   */
-  static async redirectMagicLink(req: Request, res: Response): Promise<void> {
-    const { token } = req.query;
-    if (!token || typeof token !== 'string') {
-      throw AppError.badRequest('Verification token is required');
-    }
-
-    const env = getEnv();
-    const frontendUrl = env.ALLOWED_ORIGINS.split(',')[0].trim();
-
-    // Redirect user directly to the frontend's verification landing page
-    res.redirect(`${frontendUrl}/login?token=${token}`);
-  }
-
-  /**
-   * Handles POST /auth/verify for verifying magic link tokens or OTP codes.
+   * Handles POST /auth/verify for verifying OTP codes.
    */
   static async verifyMagicLinkOrOTP(req: Request, res: Response): Promise<void> {
-    const { token, otp, email } = req.body;
+    const { otp, email } = req.body;
 
-    const tokenOrOtp = token || otp;
-    if (!tokenOrOtp) {
-      throw AppError.badRequest('Verification token or passcode is required');
+    if (!otp || !email) {
+      throw AppError.badRequest('Email and passcode are required');
     }
 
-    const result = await AuthService.verifyMagicLinkOrOTP(tokenOrOtp, email);
+    const result = await AuthService.verifyMagicLinkOrOTP(otp, email);
 
     // Set secure HTTP-only refresh token cookie (SameSite None for cross-site in production)
     const isProd = getEnv().NODE_ENV === 'production';
@@ -61,8 +62,13 @@ export class AuthController {
       httpOnly: true,
       secure: isProd,
       sameSite: isProd ? 'none' : 'lax', // Allows cross-domain cookies between Vercel and Render in production
+      domain: isProd ? '.esparex.in' : undefined,
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days TTL
     });
+
+    const hasFirstName = !!result.user.firstName?.trim();
+    const hasLastName = !!result.user.lastName?.trim();
+    const onboardingRequired = !hasFirstName || !hasLastName;
 
     res.status(200).json({
       success: true,
@@ -74,6 +80,7 @@ export class AuthController {
           picture: result.user.picture,
         },
         token: result.accessToken,
+        onboardingRequired,
       },
     });
   }
@@ -95,8 +102,13 @@ export class AuthController {
       httpOnly: true,
       secure: isProd,
       sameSite: isProd ? 'none' : 'lax',
+      domain: isProd ? '.esparex.in' : undefined,
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days TTL
     });
+
+    const hasFirstName = !!result.user.firstName?.trim();
+    const hasLastName = !!result.user.lastName?.trim();
+    const onboardingRequired = !hasFirstName || !hasLastName;
 
     res.status(200).json({
       success: true,
@@ -108,6 +120,7 @@ export class AuthController {
           picture: result.user.picture,
         },
         token: result.accessToken,
+        onboardingRequired,
       },
     });
   }
@@ -129,6 +142,7 @@ export class AuthController {
       httpOnly: true,
       secure: isProd,
       sameSite: isProd ? 'none' : 'lax',
+      domain: isProd ? '.esparex.in' : undefined,
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days TTL
     });
 
@@ -154,6 +168,7 @@ export class AuthController {
       httpOnly: true,
       secure: isProd,
       sameSite: isProd ? 'none' : 'lax',
+      domain: isProd ? '.esparex.in' : undefined,
     });
 
     res.status(200).json({
@@ -176,12 +191,63 @@ export class AuthController {
       throw AppError.unauthorized('User is deactivated or does not exist');
     }
 
+    const hasFirstName = !!user.firstName?.trim();
+    const hasLastName = !!user.lastName?.trim();
+    const onboardingRequired = !hasFirstName || !hasLastName;
+
     res.status(200).json({
       success: true,
       data: {
         userId: user._id,
         email: user.email,
         name: user.name,
+        firstName: user.firstName ?? '',
+        lastName: user.lastName ?? '',
+        mobileNumber: user.mobileNumber ?? '',
+        phone: user.mobileNumber ?? '', // Alias response-only
+        picture: user.picture,
+        isGuest: false,
+        onboardingRequired,
+      },
+    });
+  }
+
+  /**
+   * Updates the authenticated user's profile details safely.
+   */
+  static async updateProfile(req: Request, res: Response): Promise<void> {
+    const userId = req.user?.sub;
+    if (!userId) {
+      throw AppError.unauthorized('Authentication required');
+    }
+
+    const user = await UserModel.findById(userId);
+    if (!user || !user.isActive) {
+      throw AppError.unauthorized('User is deactivated or does not exist');
+    }
+
+    // Adjustment 2: Immutable Field Handling. Only process allowed fields.
+    const { firstName, lastName, mobileNumber } = req.body;
+
+    user.firstName = firstName.trim();
+    user.lastName = lastName.trim();
+    user.mobileNumber = (mobileNumber && mobileNumber.trim() !== '') ? mobileNumber.trim() : undefined;
+
+    // Recalculate dynamic concatenated name from profile fields programmatically
+    user.name = `${user.firstName} ${user.lastName}`.trim();
+
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      data: {
+        userId: user._id,
+        email: user.email,
+        name: user.name,
+        firstName: user.firstName ?? '',
+        lastName: user.lastName ?? '',
+        mobileNumber: user.mobileNumber ?? '',
+        phone: user.mobileNumber ?? '', // Alias response-only
         picture: user.picture,
         isGuest: false,
       },
@@ -189,20 +255,28 @@ export class AuthController {
   }
 
   /**
-   * Fetches historical bookings associated with the logged-in user.
+   * Fetches historical bookings associated with the logged-in user (Deprecated in favor of /bookings/me).
    */
-  static async getMyBookings(req: Request, res: Response): Promise<void> {
-    const userId = req.user?.sub;
-    if (!userId) {
-      throw AppError.unauthorized('Authentication required');
+  static async getMyBookings(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const userId = req.user?.sub;
+      if (!userId) {
+        throw AppError.unauthorized('Authentication required');
+      }
+
+      const { bookings } = await PublicBookingService.getMyBookings(userId);
+
+      // Add standard deprecation headers
+      res.setHeader('Deprecation', 'true');
+      res.setHeader('Warning', '199 - "This endpoint is deprecated. Use /bookings/me instead."');
+
+      res.status(200).json({
+        success: true,
+        data: bookings,
+      });
+    } catch (err) {
+      next(err);
     }
-
-    const bookings = await Booking.find({ userId: new Types.ObjectId(userId) }).sort({ createdAt: -1 });
-
-    res.status(200).json({
-      success: true,
-      data: bookings,
-    });
   }
 }
 

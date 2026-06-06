@@ -2,31 +2,41 @@ import { Router } from 'express';
 import { AuthController } from '../../controllers/public/auth.controller';
 import { requireAuth } from '../../middleware/auth.middleware';
 import { authLimiter } from '../../middleware/rate.middleware';
+import { validateBody } from '../../middleware/validation.middleware';
+import {
+  checkEmailSchema,
+  googleAuthSchema,
+  logoutAuthSchema,
+  magicLinkSchema,
+  refreshAuthSchema,
+  verifyAuthSchema,
+  updateProfileSchema,
+} from '../../validations/auth.validation';
 
 const router: Router = Router();
 
 // Google OAuth Login (protected by auth-specific rate limiter)
-router.post('/google', authLimiter, AuthController.loginWithGoogle);
+router.post('/google', authLimiter, validateBody(googleAuthSchema), AuthController.loginWithGoogle);
+
+// Check if email exists
+router.post('/check-email', authLimiter, validateBody(checkEmailSchema), AuthController.checkEmail);
 
 // Request Magic Link / OTP Email (protected by auth-specific rate limiter to prevent email queue spam)
-router.post('/magic-link', authLimiter, AuthController.requestMagicLink);
-
-// Verify Magic Link Click (GET redirect to web frontend)
-router.get('/verify', AuthController.redirectMagicLink);
+router.post('/magic-link', authLimiter, validateBody(magicLinkSchema), AuthController.requestMagicLink);
 
 // Verify Magic Link token or OTP input (protected by auth-specific rate limiter to block brute-force codes)
-router.post('/verify', authLimiter, AuthController.verifyMagicLinkOrOTP);
+router.post('/verify', authLimiter, validateBody(verifyAuthSchema), AuthController.verifyMagicLinkOrOTP);
 
 // Refresh Session Token (protected by auth-specific rate limiter)
-router.post('/refresh', authLimiter, AuthController.refresh);
+router.post('/refresh', authLimiter, validateBody(refreshAuthSchema), AuthController.refresh);
 
 // User Logout
-router.post('/logout', AuthController.logout);
+router.post('/logout', validateBody(logoutAuthSchema), AuthController.logout);
 
 // Retrieve currently logged-in user profile details
 router.get('/me', requireAuth, AuthController.getMe);
 
-// Retrieve historical bookings linked to the user account
-router.get('/my-bookings', requireAuth, AuthController.getMyBookings);
+// Update currently logged-in user profile details safely
+router.patch('/profile', requireAuth, validateBody(updateProfileSchema), AuthController.updateProfile);
 
 export default router;

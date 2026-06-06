@@ -57,7 +57,8 @@ async function bootstrap(): Promise<void> {
   initStripe();
 
   // Verify SMTP Transporter pool connection
-  const { verifyTransporter } = await import('./utils/email.js');
+  const { verifyTransporter, validateSmtpConfig } = await import('./utils/email.js');
+  validateSmtpConfig();
   await verifyTransporter();
 
   // ─── Create HTTP Server ────────────────────────────────────

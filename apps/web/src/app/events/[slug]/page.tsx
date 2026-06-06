@@ -1,6 +1,7 @@
 import type { Metadata, ResolvingMetadata } from 'next';
 
 import { publicGetEventBySlug } from '@/lib/api/public.service';
+import { getCachedEvent } from '@/utils/cached-event';
 
 import EventDetailClient from './EventDetailClient';
 
@@ -17,7 +18,7 @@ type Props = {
  *   3. EventDetailClient — passed as initialData to useQuery (no second fetch)
  *
  * Next.js deduplicates fetch calls with the same URL within a single render,
- * so even though we call publicGetEventBySlug in both generateMetadata and
+ * so even though we call getCachedEvent in both generateMetadata and
  * EventPage, only one HTTP request is made via the React cache() layer.
  */
 export async function generateMetadata(
@@ -27,7 +28,7 @@ export async function generateMetadata(
   const { slug } = await params;
 
   try {
-    const event = await publicGetEventBySlug(slug);
+    const event = await getCachedEvent(slug);
 
     if (!event) {
       return { title: 'Event Not Found | MAD Entertrainment' };
@@ -132,9 +133,9 @@ export default async function EventPage({ params }: Props) {
   // Server-side fetch: hydrates the client component without a second round-trip.
   // On fetch failure (e.g. during static build), initialEvent is undefined and
   // EventDetailClient falls back to its own useQuery fetch.
-  let initialEvent: Awaited<ReturnType<typeof publicGetEventBySlug>> | undefined;
+  let initialEvent: Awaited<ReturnType<typeof getCachedEvent>> | undefined;
   try {
-    initialEvent = await publicGetEventBySlug(slug);
+    initialEvent = await getCachedEvent(slug);
   } catch {
     // Swallow — client will re-fetch
   }

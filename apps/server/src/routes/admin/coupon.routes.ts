@@ -1,17 +1,20 @@
 import { Router } from 'express';
+import { AdminRole } from '@mad/shared';
 import * as couponController from '../../controllers/admin/coupon.controller';
-import { requireAdmin } from '../../middleware/auth.middleware';
+import { requireAdmin, requireRole } from '../../middleware/auth.middleware';
+import { validate } from '../../middleware/validation.middleware';
+import { adminIdParamSchema, createCouponSchema, updateCouponSchema } from '../../validations/admin-content.validation';
 
 const router: Router = Router();
 
 // All routes require admin
 router.use(requireAdmin);
 
-router.post('/', couponController.createCoupon);
-router.get('/', couponController.getCoupons);
-router.get('/:id', couponController.getCouponById);
-router.put('/:id', couponController.updateCoupon);
-router.delete('/:id', couponController.deleteCoupon);
-router.patch('/:id/toggle', couponController.toggleCoupon);
+router.post('/', requireRole(AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.MANAGER), validate(createCouponSchema), couponController.createCoupon);
+router.get('/', requireRole(AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.MANAGER, AdminRole.SUPPORT), couponController.getCoupons);
+router.get('/:id', requireRole(AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.MANAGER, AdminRole.SUPPORT), validate(adminIdParamSchema), couponController.getCouponById);
+router.put('/:id', requireRole(AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.MANAGER), validate(updateCouponSchema), couponController.updateCoupon);
+router.delete('/:id', requireRole(AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.MANAGER), validate(adminIdParamSchema), couponController.deleteCoupon);
+router.patch('/:id/toggle', requireRole(AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.MANAGER), validate(adminIdParamSchema), couponController.toggleCoupon);
 
 export default router;

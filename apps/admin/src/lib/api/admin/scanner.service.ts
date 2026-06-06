@@ -14,3 +14,24 @@ export async function adminScanTicket(ticketId: string, eventId: string): Promis
   });
   return data.data;
 }
+
+export interface LookupResponse {
+  booking?: {
+    bookingId: string;
+    status: string;
+    guestName?: string;
+  };
+  tickets: {
+    ticketId: string;
+    tierName: string;
+    admits: number;
+    scannedAt: string | null;
+  }[];
+}
+
+export async function adminLookupTickets(reference: string, eventId: string): Promise<LookupResponse> {
+  const { data } = await adminApiClient.get<{ status: string; data: LookupResponse }>(`/admin/scanner/lookup/${reference}`, {
+    params: { eventId },
+  });
+  return data.data;
+}

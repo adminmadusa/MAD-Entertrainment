@@ -18,6 +18,7 @@ export interface JwtAdminPayload {
   sub: string;
   email: string;
   role: AdminRole;
+  version: number;
 }
 
 export interface JwtSessionPayload {

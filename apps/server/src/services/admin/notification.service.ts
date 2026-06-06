@@ -1,4 +1,5 @@
 import { Notification, INotification } from '../../models/notification.schema';
+import mongoose from 'mongoose';
 import { sendEmail } from '../../utils/email';
 
 export const getNotifications = async (
@@ -14,7 +15,17 @@ export const getNotifications = async (
     filter.channel = channel;
   }
   if (sent !== undefined && sent !== '') {
-    filter.isSent = sent === 'true';
+    if (sent === 'true') {
+      filter.$or = [
+        { status: 'sent' },
+        { status: { $exists: false }, isSent: true }
+      ];
+    } else {
+      filter.$or = [
+        { status: 'failed' },
+        { status: { $exists: false }, isSent: false }
+      ];
+    }
   }
 
   const total = await Notification.countDocuments(filter);
@@ -36,12 +47,15 @@ export const retryNotification = async (id: string): Promise<INotification | nul
     return null;
   }
 
-  if (notification.isSent) {
+  if (notification.isSent || notification.status === 'sent') {
     return notification;
   }
 
   try {
     if (notification.channel === 'email' && notification.recipient) {
+      notification.status = 'processing';
+      await notification.save();
+
       await sendEmail({
         to: notification.recipient,
         subject: notification.subject || 'MAD Notification Retry',
@@ -50,10 +64,13 @@ export const retryNotification = async (id: string): Promise<INotification | nul
     }
 
     notification.isSent = true;
-    notification.retryCount += 1;
+    notification.status = 'sent';
+    notification.processedAt = new Date();
     await notification.save();
   } catch (err: any) {
-    notification.retryCount += 1;
+    notification.status = 'failed';
+    notification.errorMessage = err.message;
+    notification.processedAt = new Date();
     await notification.save();
     console.error(`[Notification Service] Retry failed for notification ${id}:`, err);
     throw err;

@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { AdminRole } from '@mad/shared';
 
 import {
   getConsistencyDiagnostics,
@@ -8,7 +9,7 @@ import {
   retryFailedJob,
   retryAllFailedJobs,
 } from '../../controllers/admin/diagnostics.controller';
-import { requireAdmin } from '../../middleware/auth.middleware';
+import { requireAdmin, requireSuperAdmin, requireRole } from '../../middleware/auth.middleware';
 
 import { validateQuery, validateParams } from '../../middleware/validation.middleware';
 import { listReservationsQuerySchema, retryFailedJobParamSchema } from '../../validations/payment.validation';
@@ -16,11 +17,11 @@ import { listReservationsQuerySchema, retryFailedJobParamSchema } from '../../va
 const router: Router = Router();
 
 router.use(requireAdmin);
-router.get('/consistency', getConsistencyDiagnostics);
-router.post('/consistency/repair', repairConsistency);
-router.get('/reservations', validateQuery(listReservationsQuerySchema), listReservations);
-router.get('/system', getSystemDiagnostics);
-router.post('/dlq/:id/retry', validateParams(retryFailedJobParamSchema), retryFailedJob);
-router.post('/dlq/retry-all', retryAllFailedJobs);
+router.get('/consistency', requireSuperAdmin, getConsistencyDiagnostics);
+router.post('/consistency/repair', requireSuperAdmin, repairConsistency);
+router.get('/reservations', requireSuperAdmin, validateQuery(listReservationsQuerySchema), listReservations);
+router.get('/system', requireSuperAdmin, getSystemDiagnostics);
+router.post('/dlq/:id/retry', requireSuperAdmin, validateParams(retryFailedJobParamSchema), retryFailedJob);
+router.post('/dlq/retry-all', requireSuperAdmin, retryAllFailedJobs);
 
 export default router;

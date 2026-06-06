@@ -1,7 +1,10 @@
 import { Event, IEvent } from '../../models/event.schema';
 import { TicketProfile } from '../../models/ticket-profile.schema';
+import { Ticket } from '../../models/ticket.schema';
 import { resolveEventTickets } from './ticket-profile.service';
 import { CacheService } from '../cache.service';
+import { Booking } from '../../models/booking.schema';
+import { AppError } from '../../middleware/error.middleware';
 
 export const createEvent = async (data: Partial<IEvent>): Promise<IEvent> => {
   if (data.title && !data.slug) {
@@ -48,7 +51,6 @@ export const getEvents = async (page: number = 1, limit: number = 10): Promise<{
   const skip = (page - 1) * limit;
   const total = await Event.countDocuments({ isDeleted: { $ne: true } });
   const events = await Event.find({ isDeleted: { $ne: true } })
-    .populate('artistIds', 'name')
     .populate('djOperatorIds', 'name')
     .sort({ createdAt: -1 })
     .skip(skip)
@@ -61,13 +63,34 @@ export const getEvents = async (page: number = 1, limit: number = 10): Promise<{
   };
 };
 
-export const getEventById = async (id: string): Promise<IEvent | null> => {
-  return await Event.findById(id)
-    .populate('artistIds', 'name')
+export const getEventById = async (id: string): Promise<any | null> => {
+  const event = await Event.findById(id)
     .populate('djOperatorIds', 'name');
+  if (!event) return null;
+
+  const ticketsList = await Ticket.find({ eventId: event._id }).lean();
+  const ticketsSold = event.soldCount || 0;
+  const ticketsCheckedIn = ticketsList
+    .filter((t: any) => t.scannedAt !== undefined && t.scannedAt !== null)
+    .reduce((sum: number, t: any) => sum + (t.admits || 1), 0);
+  const ticketsRemaining = Math.max(0, ticketsSold - ticketsCheckedIn);
+
+  const attendancePercentage = ticketsSold > 0 ? Number(((ticketsCheckedIn / ticketsSold) * 100).toFixed(2)) : 0;
+  const noShowCount = ticketsRemaining;
+  const noShowPercentage = ticketsSold > 0 ? Number(((noShowCount / ticketsSold) * 100).toFixed(2)) : 0;
+
+  return {
+    ...event.toObject(),
+    ticketsSold,
+    ticketsCheckedIn,
+    ticketsRemaining,
+    attendancePercentage,
+    noShowCount,
+    noShowPercentage
+  };
 };
 
-export const updateEvent = async (id: string, data: Partial<IEvent>): Promise<IEvent | null> => {
+export const updateEvent = async (id: string, data: Partial<IEvent>): Promise<any | null> => {
   const existing = await Event.findById(id);
   if (!existing) return null;
 
@@ -87,12 +110,51 @@ export const updateEvent = async (id: string, data: Partial<IEvent>): Promise<IE
     }
   }
 
+  // Capacity Floor Protection check
+  const finalTiers = data.ticketTiers !== undefined ? data.ticketTiers : existing.ticketTiers;
+  if (finalTiers) {
+    for (const tier of finalTiers) {
+      const existingTier = existing.ticketTiers.find((t) => t.tier === tier.tier);
+      const soldCount = existingTier ? existingTier.soldCount : 0;
+      if (tier.totalCapacity < soldCount) {
+        throw AppError.badRequest(
+          `Cannot reduce capacity for tier "${tier.name}" below its sold count. Sold: ${soldCount}, Requested: ${tier.totalCapacity}`
+        );
+      }
+    }
+  }
+
   const updated = await Event.findByIdAndUpdate(id, { ...data, eventVersion: existing.eventVersion + 1 }, { new: true });
+  if (!updated) return null;
   await CacheService.delPattern('events:*');
-  return updated;
+
+  const ticketsList = await Ticket.find({ eventId: updated._id }).lean();
+  const ticketsSold = updated.soldCount || 0;
+  const ticketsCheckedIn = ticketsList
+    .filter((t: any) => t.scannedAt !== undefined && t.scannedAt !== null)
+    .reduce((sum: number, t: any) => sum + (t.admits || 1), 0);
+  const ticketsRemaining = Math.max(0, ticketsSold - ticketsCheckedIn);
+
+  const attendancePercentage = ticketsSold > 0 ? Number(((ticketsCheckedIn / ticketsSold) * 100).toFixed(2)) : 0;
+  const noShowCount = ticketsRemaining;
+  const noShowPercentage = ticketsSold > 0 ? Number(((noShowCount / ticketsSold) * 100).toFixed(2)) : 0;
+
+  return {
+    ...updated.toObject(),
+    ticketsSold,
+    ticketsCheckedIn,
+    ticketsRemaining,
+    attendancePercentage,
+    noShowCount,
+    noShowPercentage
+  };
 };
 
 export const deleteEvent = async (id: string): Promise<IEvent | null> => {
+  const bookingExists = await Booking.exists({ eventId: id });
+  if (bookingExists) {
+    throw AppError.badRequest('Cannot delete event with existing bookings');
+  }
   const deleted = await Event.findByIdAndUpdate(id, { isDeleted: true, deletedAt: new Date() }, { new: true });
   await CacheService.delPattern('events:*');
   return deleted;

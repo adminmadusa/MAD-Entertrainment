@@ -43,6 +43,82 @@ export enum BookingStatus {
   REFUNDED = 'refunded',
   FAILED = 'failed',
   AWAITING_PAYMENT = 'awaiting_payment',
+  EXPIRED = 'expired',
+  EXPIRING = 'expiring',
+}
+
+export type BookingStatusTone =
+  | 'success'
+  | 'warning'
+  | 'processing'
+  | 'danger'
+  | 'neutral'
+  | 'refund';
+
+export type BookingStatusMeta = {
+  label: string;
+  tone: BookingStatusTone;
+};
+
+export const BOOKING_STATUS_META: Record<BookingStatus, BookingStatusMeta> = {
+  [BookingStatus.AWAITING_PAYMENT]: {
+    label: 'Awaiting Payment',
+    tone: 'warning',
+  },
+  [BookingStatus.EXPIRING]: {
+    label: 'Processing',
+    tone: 'processing',
+  },
+  [BookingStatus.FAILED]: {
+    label: 'Payment Failed',
+    tone: 'danger',
+  },
+  [BookingStatus.CANCELLED]: {
+    label: 'Cancelled',
+    tone: 'danger',
+  },
+  [BookingStatus.REFUNDED]: {
+    label: 'Refunded',
+    tone: 'refund',
+  },
+  [BookingStatus.EXPIRED]: {
+    label: 'Expired',
+    tone: 'neutral',
+  },
+  [BookingStatus.CONFIRMED]: {
+    label: 'Confirmed',
+    tone: 'success',
+  },
+  [BookingStatus.PENDING]: {
+    label: 'Pending',
+    tone: 'warning',
+  },
+};
+
+function toDisplayLabel(status: string): string {
+  return status
+    .replace(/[_-]+/g, ' ')
+    .trim()
+    .replace(/\w\S*/g, (word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase());
+}
+
+export function getBookingStatusMeta(status: string | null | undefined): BookingStatusMeta {
+  if (status && Object.prototype.hasOwnProperty.call(BOOKING_STATUS_META, status)) {
+    return BOOKING_STATUS_META[status as BookingStatus];
+  }
+
+  return {
+    label: status ? toDisplayLabel(status) : 'Unknown',
+    tone: 'neutral',
+  };
+}
+
+export function getBookingStatusLabel(status: string | null | undefined): string {
+  return getBookingStatusMeta(status).label;
+}
+
+export function getBookingStatusTone(status: string | null | undefined): BookingStatusTone {
+  return getBookingStatusMeta(status).tone;
 }
 
 // ─── Payment Status ──────────────────────────────────────────
@@ -157,10 +233,13 @@ export enum NotificationType {
   BOOKING_CONFIRMED = 'booking_confirmed',
   PAYMENT_FAILED = 'payment_failed',
   REFUND_PROCESSED = 'refund_processed',
+  FULL_REFUND = 'full_refund',
+  PARTIAL_REFUND = 'partial_refund',
   EVENT_REMINDER = 'event_reminder',
   EVENT_CANCELLED = 'event_cancelled',
   EVENT_UPDATED = 'event_updated',
   OTP = 'otp',
+  MARKETING = 'marketing',
 }
 
 // ─── HTTP Status Codes ───────────────────────────────────────
@@ -199,8 +278,6 @@ export const API_ROUTES = {
   USERS: '/api/users',
   AUTH: '/api/auth',
   ADMIN: '/api/admin',
-  VENUES: '/api/venues',
-  ARTISTS: '/api/artists',
   DJ_OPERATORS: '/api/dj-operators',
   COUPONS: '/api/coupons',
   POPUP_CAMPAIGNS: '/api/popup-campaigns',

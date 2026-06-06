@@ -10,37 +10,72 @@ const CACHE_OPTIONS = {
   },
 };
 
+/**
+ * Fetch with timeout protection to prevent Safari streaming stalls.
+ * Uses AbortController to enforce 8-second timeout on all server-side data fetches.
+ */
+async function fetchWithTimeout(
+  url: string,
+  options: RequestInit & { next?: { revalidate?: number } } = {},
+  timeoutMs: number = 8000
+) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    return await fetch(url, {
+      ...options,
+      signal: controller.signal,
+    });
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
 export async function serverGetFeaturedEvents(): Promise<Event[]> {
   try {
-    const res = await fetch(`${API_URL}/events?page=1&limit=6`, CACHE_OPTIONS);
-    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-    
+    const url = `${API_URL}/events?page=1&limit=6`;
+    const res = await fetchWithTimeout(url, CACHE_OPTIONS, 8000);
+    if (!res.ok) {
+      const responseText = await res.text();
+      throw new Error(`HTTP error! status: ${res.status}; response: ${responseText}`);
+    }
+
     const body = await res.json();
     const payload = body?.data || {};
     return Array.isArray(payload.events) ? payload.events : [];
   } catch (error) {
-    console.error('[server-fetch] Failed to fetch featured events:', error);
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    console.error('[server-fetch] Featured events error:', errorMsg);
     return [];
   }
 }
 
 export async function serverGetDJs(): Promise<DJOperator[]> {
   try {
-    const res = await fetch(`${API_URL}/dj-operators?limit=6`, CACHE_OPTIONS);
-    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-    
+    const url = `${API_URL}/dj-operators?limit=6&includeTotal=false`;
+    const res = await fetchWithTimeout(url, CACHE_OPTIONS, 8000);
+    if (!res.ok) {
+      const responseText = await res.text();
+      throw new Error(`HTTP error! status: ${res.status}; response: ${responseText}`);
+    }
+
     const body = await res.json();
     const payload = body?.data || {};
     
-    return Array.isArray(payload.data)
-      ? payload.data
-      : Array.isArray(payload.djOperators)
-      ? payload.djOperators
-      : Array.isArray(payload.djs)
-      ? payload.djs
-      : [];
+    if (Array.isArray(payload.data)) {
+      return payload.data;
+    }
+    if (Array.isArray(payload.djOperators)) {
+      return payload.djOperators;
+    }
+    if (Array.isArray(payload.djs)) {
+      return payload.djs;
+    }
+    return [];
   } catch (error) {
-    console.error('[server-fetch] Failed to fetch DJs:', error);
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    console.error('[server-fetch] DJ Operators error:', errorMsg);
     return [];
   }
 }

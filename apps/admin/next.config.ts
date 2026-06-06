@@ -251,7 +251,13 @@ const nextConfig: NextConfig = {
 
   // ─── Redirects ─────────────────────────────────────────────
   async redirects() {
-    return [];
+    return [
+      {
+        source: '/analytics',
+        destination: '/dashboard?tab=analytics',
+        permanent: true,
+      },
+    ];
   },
 
   // ─── Rewrites (API Proxy) ──────────────────────────────────

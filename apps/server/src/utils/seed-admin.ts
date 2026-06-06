@@ -1,4 +1,5 @@
 import bcrypt from 'bcryptjs';
+import { AdminRole } from '@mad/shared';
 import { AdminModel } from '../models/admin.schema';
 import { logger } from '../utils/logger';
 
@@ -20,7 +21,7 @@ export const seedAdmin = async () => {
         email,
         passwordHash,
         name: 'Super Admin',
-        role: 'SUPER_ADMIN',
+        role: AdminRole.SUPER_ADMIN,
       });
       logger.info(`Seeded initial admin user with email: ${email}`);
     } else {

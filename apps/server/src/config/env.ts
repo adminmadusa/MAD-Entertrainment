@@ -47,6 +47,8 @@ const envSchema = z.object({
     .string()
     .default('http://localhost:3000'),
 
+  FRONTEND_URL: z.string().url().optional(),
+
   // ─────────────────────────────────────────
   // Cloudinary
   // ─────────────────────────────────────────
@@ -150,7 +152,12 @@ const envSchema = z.object({
 
   GOOGLE_CLIENT_ID: z.string().optional(),
 
-  GOOGLE_CLIENT_SECRET: z.string().optional(),
+  MARKETING_UNSUBSCRIBE_SECRET: z.string().optional(),
+
+  DLQ_ENCRYPTION_KEY: z
+    .string()
+    .min(32)
+    .default('a_secret_key_of_32_characters_long_for_dev'),
 });
 
 export type Env = z.infer<typeof envSchema>;
@@ -170,6 +177,46 @@ export function validateEnv(): Readonly<Env> {
       .map((issue) => `${issue.path.join('.')}: ${issue.message}`)
       .join('; ');
     throw new Error(`Invalid environment variables: ${details}`);
+  }
+
+  // Dual Protection: Startup Protection
+  const isProd = result.data.NODE_ENV === 'production' || result.data.APP_ENV === 'production';
+  if (isProd) {
+    if (!process.env.DLQ_ENCRYPTION_KEY) {
+      throw new Error('DLQ_ENCRYPTION_KEY is mandatory in production environment.');
+    }
+    if (process.env.DLQ_ENCRYPTION_KEY === 'a_secret_key_of_32_characters_long_for_dev') {
+      throw new Error('Cannot use the default development DLQ_ENCRYPTION_KEY in production.');
+    }
+  }
+
+  if (isProd && result.data.MOCK_PAYMENTS) {
+    const errorMsg = 'MOCK_PAYMENTS_PRODUCTION_BLOCKED: Mock payments cannot be enabled in production environments.';
+    console.error(`❌ ${errorMsg}`);
+
+    // Capture Sentry exception
+    try {
+      const Sentry = require('@sentry/node');
+      Sentry.captureException(new Error(errorMsg), {
+        tags: { type: 'MOCK_PAYMENTS_PRODUCTION_BLOCKED' },
+      });
+    } catch (err) {
+      // Ignore
+    }
+
+    // Create audit event
+    try {
+      const { auditLog } = require('../utils/audit');
+      auditLog({
+        action: 'MOCK_PAYMENTS_PRODUCTION_BLOCKED',
+        status: 'failure',
+        description: errorMsg,
+      });
+    } catch (err) {
+      // Ignore
+    }
+
+    throw new Error(errorMsg);
   }
 
   env = Object.freeze(result.data);

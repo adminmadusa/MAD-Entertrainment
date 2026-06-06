@@ -12,8 +12,9 @@ let retryCount = 0;
 const connectOptions: mongoose.ConnectOptions = {
   serverSelectionTimeoutMS: 10000,
   socketTimeoutMS: 45000,
-  maxPoolSize: 100,
+  maxPoolSize: 20,
   minPoolSize: 2,
+  maxIdleTimeMS: 30000,
   bufferCommands: false,
   autoIndex: process.env.NODE_ENV !== 'production',
 };

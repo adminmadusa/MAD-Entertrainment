@@ -6,20 +6,15 @@ import { usePathname } from 'next/navigation';
 const footerLinks = {
   Platform: [
     { label: 'Browse Events', href: '/events' },
-    { label: 'Artists', href: '/artists' },
     { label: 'DJ Operators', href: '/dj-operators' },
   ],
   Support: [
-    { label: 'My Booking', href: '/my-booking' },
+    { label: 'Help Center', href: '/support' },
     { label: 'Contact Us', href: '/contact' },
-    { label: 'FAQ', href: '/faq' },
-    { label: 'Refunds', href: '/refunds' },
+    { label: 'My Tickets', href: '/tickets' },
   ],
   Legal: [
-    { label: 'Privacy Policy', href: '/privacy' },
-    { label: 'Terms of Service', href: '/terms' },
-    { label: 'Cookie Policy', href: '/cookies' },
-    { label: 'Cancellation Policy', href: '/cancellation' },
+    { label: 'Legal Center', href: '/legal' },
   ],
 };
 
@@ -38,10 +33,10 @@ export function Footer() {
 
 
   return (
-    <footer className="bg-background-secondary border-t border-border-subtle mt-20">
+    <footer className="bg-background-secondary border-t border-border-subtle mt-12 md:mt-20">
       {/* Main Footer */}
-      <div className="container-mad py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10">
+      <div className="container-mad py-10 md:py-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 md:gap-10">
           {/* Brand */}
           <div className="lg:col-span-2">
             <Link href="/" className="flex items-center gap-2 mb-4">
@@ -72,14 +67,34 @@ export function Footer() {
             </div>
           </div>
 
-          {/* Links */}
-          {Object.entries(footerLinks).map(([category, links]) => (
-            <div key={category}>
+          {/* Platform Links (Desktop/Tablet only) */}
+          <div className="hidden md:block">
+            <h3 className="text-text-primary font-semibold text-sm uppercase tracking-wider mb-4">
+              Platform
+            </h3>
+            <ul className="space-y-3">
+              {footerLinks.Platform.map((link) => (
+                <li key={link.href}>
+                  <Link
+                    href={link.href}
+                    className="text-text-secondary text-sm hover:text-text-primary transition-colors"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Support and Legal Links (Side-by-side on mobile, separate on desktop) */}
+          <div className="grid grid-cols-2 gap-8 md:grid-cols-2 lg:col-span-2 lg:contents">
+            {/* Support */}
+            <div>
               <h3 className="text-text-primary font-semibold text-sm uppercase tracking-wider mb-4">
-                {category}
+                Support
               </h3>
               <ul className="space-y-3">
-                {links.map((link) => (
+                {footerLinks.Support.map((link) => (
                   <li key={link.href}>
                     <Link
                       href={link.href}
@@ -91,7 +106,26 @@ export function Footer() {
                 ))}
               </ul>
             </div>
-          ))}
+
+            {/* Legal */}
+            <div>
+              <h3 className="text-text-primary font-semibold text-sm uppercase tracking-wider mb-4">
+                Legal
+              </h3>
+              <ul className="space-y-3">
+                {footerLinks.Legal.map((link) => (
+                  <li key={link.href}>
+                    <Link
+                      href={link.href}
+                      className="text-text-secondary text-sm hover:text-text-primary transition-colors"
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
         </div>
       </div>
 

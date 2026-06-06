@@ -2,7 +2,7 @@ import { DJOperator } from '../../models/dj-operator.schema';
 import { AppError } from '../../middleware/error.middleware';
 
 export class PublicDJOperatorService {
-  static async listDJOperators(filters: { search?: string; page?: number; limit?: number }) {
+  static async listDJOperators(filters: { search?: string; page?: number; limit?: number; includeTotal?: boolean }) {
     const page = filters.page || 1;
     const limit = filters.limit || 12;
     const skip = (page - 1) * limit;
@@ -17,15 +17,32 @@ export class PublicDJOperatorService {
       ];
     }
 
-    const [djOperators, total] = await Promise.all([
-      DJOperator.find(query)
+    const skipCount = filters.includeTotal === false;
+    let djOperators: any[];
+    let total = 0;
+
+    // 5-second query timeout to prevent Safari streaming stalls
+    const queryOptions = { maxTimeMS: 5000 };
+
+    if (skipCount) {
+      djOperators = await DJOperator.find(query, null, queryOptions)
         .sort({ name: 1 })
         .skip(skip)
         .limit(limit)
-        .select('-__v')
-        .lean(),
-      DJOperator.countDocuments(query),
-    ]);
+        .select('name slug bio specialties profileImage isActive')
+        .lean();
+      total = djOperators.length;
+    } else {
+      [djOperators, total] = await Promise.all([
+        DJOperator.find(query, null, queryOptions)
+          .sort({ name: 1 })
+          .skip(skip)
+          .limit(limit)
+          .select('name slug bio specialties profileImage isActive')
+          .lean(),
+        DJOperator.countDocuments(query, queryOptions),
+      ]);
+    }
 
     return {
       data: djOperators,
@@ -39,7 +56,10 @@ export class PublicDJOperatorService {
   }
 
   static async getDJOperatorBySlug(slug: string) {
-    const djOperator = await DJOperator.findOne({ slug, isActive: true })
+    // 5-second query timeout to prevent Safari streaming stalls
+    const queryOptions = { maxTimeMS: 5000 };
+
+    const djOperator = await DJOperator.findOne({ slug, isActive: true }, null, queryOptions)
       .select('-__v')
       .lean();
 

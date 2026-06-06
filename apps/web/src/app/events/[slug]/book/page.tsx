@@ -1,5 +1,5 @@
 import { Metadata, ResolvingMetadata } from 'next';
-import { publicGetEventBySlug } from '@/lib/api/public.service';
+import { getCachedEvent } from '@/utils/cached-event';
 import TicketSelectionClient from './TicketSelectionClient';
 
 type Props = {
@@ -12,7 +12,7 @@ export async function generateMetadata(
 ): Promise<Metadata> {
   const { slug } = await params;
   try {
-    const event = await publicGetEventBySlug(slug);
+    const event = await getCachedEvent(slug);
     if (!event) return { title: 'Book Tickets | MAD Entertainment' };
     return {
       title: `Book Tickets for ${event.title} | MAD Entertainment`,
@@ -23,6 +23,13 @@ export async function generateMetadata(
   }
 }
 
-export default function TicketBookPage() {
-  return <TicketSelectionClient />;
+export default async function TicketBookPage({ params }: Props) {
+  const { slug } = await params;
+  let initialEvent: Awaited<ReturnType<typeof getCachedEvent>> | undefined;
+  try {
+    initialEvent = await getCachedEvent(slug);
+  } catch {
+    // Swallow — client will re-fetch
+  }
+  return <TicketSelectionClient initialEvent={initialEvent} />;
 }

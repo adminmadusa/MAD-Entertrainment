@@ -1,5 +1,6 @@
 import { z } from 'zod';
-import { EventCategory, BookingMode, EventStatus, TicketTier } from '@mad/shared';
+import { EventCategory, BookingMode, BookingStatus, EventStatus, PopupTrigger, TicketTier } from '@mad/shared';
+import { objectIdSchema } from '@mad/validations';
 
 // -- Common schemas --
 const cloudinaryImageSchema = z.object({
@@ -7,46 +8,217 @@ const cloudinaryImageSchema = z.object({
   publicId: z.string(),
 });
 
-// -- Venue Validation --
-export const createVenueSchema = z.object({
+const strictCloudinaryImageSchema = z.object({
+  url: z.string().url(),
+  publicId: z.string().min(1),
+  alt: z.string().max(200).optional(),
+}).strict();
+
+const isoDateTimeSchema = z.string().datetime();
+
+const hasAtLeastOneField = (data: Record<string, unknown>) => Object.keys(data).length > 0;
+
+export const adminIdParamSchema = z.object({
+  params: z.object({
+    id: objectIdSchema,
+  }).strict(),
+});
+
+const bookingReferenceSchema = z
+  .string()
+  .regex(/^MAD-\d{4}-[A-Z0-9]{5}$/, 'Invalid booking reference format (expected MAD-YYYY-XXXXX)')
+  .max(20);
+
+export const adminBookingIdentifierParamSchema = z.object({
+  params: z.object({
+    id: z.union([objectIdSchema, bookingReferenceSchema]),
+  }).strict(),
+});
+
+const adminPaginationLimitSchema = z.coerce.number().int().positive().max(100);
+
+export const adminBookingsQuerySchema = z.object({
+  page: z.coerce.number().int().positive().default(1),
+  limit: adminPaginationLimitSchema.default(15),
+  search: z.string().max(200).optional(),
+  status: z.nativeEnum(BookingStatus).optional(),
+  eventId: objectIdSchema.optional(),
+}).strict();
+
+// -- Coupon Validation --
+const couponFieldsSchema = z.object({
+  code: z.string().trim().min(1, 'Coupon code is required').max(50).transform((value) => value.toUpperCase()),
+  discountType: z.enum(['percentage', 'fixed']),
+  discountValue: z.number().min(0),
+  maxDiscount: z.number().min(0).optional(),
+  minOrderAmount: z.number().min(0).optional(),
+  validFrom: isoDateTimeSchema,
+  validUntil: isoDateTimeSchema,
+  usageLimit: z.number().int().min(1),
+  isActive: z.boolean().optional(),
+  applicableEventIds: z.array(objectIdSchema).optional(),
+  applicableCategories: z.array(z.nativeEnum(EventCategory)).optional(),
+}).strict();
+
+const validateCouponRules = (data: Partial<z.infer<typeof couponFieldsSchema>>, ctx: z.RefinementCtx) => {
+  if (data.discountType === 'percentage' && typeof data.discountValue === 'number' && data.discountValue > 100) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['discountValue'],
+      message: 'Percentage discount cannot exceed 100',
+    });
+  }
+
+  if (data.validFrom && data.validUntil && new Date(data.validUntil).getTime() < new Date(data.validFrom).getTime()) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['validUntil'],
+      message: 'validUntil must be after validFrom',
+    });
+  }
+};
+
+export const createCouponSchema = z.object({
+  body: couponFieldsSchema.superRefine(validateCouponRules),
+});
+
+export const updateCouponSchema = z.object({
+  params: adminIdParamSchema.shape.params,
+  body: couponFieldsSchema
+    .partial()
+    .refine(hasAtLeastOneField, 'At least one field is required')
+    .superRefine(validateCouponRules),
+});
+
+// -- Popup Validation --
+const optionalUrlSchema = z.union([z.string().trim().max(2048).url(), z.literal('')]).optional();
+
+const popupLinkedEventSchema = z.object({
+  eventId: objectIdSchema.optional(),
+  showCountdown: z.boolean().optional(),
+  earlyBirdDeadline: isoDateTimeSchema.optional(),
+}).strict();
+
+const popupFieldsSchema = z.object({
+  name: z.string().trim().min(1, 'Popup name is required').max(150),
+  title: z.string().trim().min(1, 'Popup title is required').max(200),
+  description: z.string().trim().max(1000).optional(),
+  image: strictCloudinaryImageSchema.optional(),
+  ctaUrl: optionalUrlSchema,
+  ctaText: z.string().trim().max(100).optional(),
+  trigger: z.nativeEnum(PopupTrigger).default(PopupTrigger.ON_LOAD),
+  triggerDelay: z.number().int().min(0).optional(),
+  cooldownHours: z.number().int().min(0).optional(),
+  priority: z.number().int().min(0).optional(),
+  showOnPages: z.array(z.string().trim().min(1).max(200)).max(100).optional(),
+  isActive: z.boolean().optional(),
+  startDate: isoDateTimeSchema.optional(),
+  endDate: isoDateTimeSchema.optional(),
+  linkedEventId: objectIdSchema.optional(),
+  linkedEvent: popupLinkedEventSchema.optional(),
+}).strict();
+
+const validatePopupDateRange = (data: Partial<z.infer<typeof popupFieldsSchema>>, ctx: z.RefinementCtx) => {
+  if (data.startDate && data.endDate && new Date(data.endDate).getTime() < new Date(data.startDate).getTime()) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['endDate'],
+      message: 'endDate must be after startDate',
+    });
+  }
+};
+
+export const createPopupSchema = z.object({
+  body: popupFieldsSchema.superRefine(validatePopupDateRange),
+});
+
+export const updatePopupSchema = z.object({
+  params: adminIdParamSchema.shape.params,
+  body: popupFieldsSchema
+    .partial()
+    .refine(hasAtLeastOneField, 'At least one field is required')
+    .superRefine(validatePopupDateRange),
+});
+
+// -- Refund Validation --
+export const createRefundSchema = z.object({
   body: z.object({
-    name: z.string().min(1, 'Name is required'),
-    city: z.string().optional(),
-    state: z.string().optional(),
-    address: z.string().optional(),
-    capacity: z.number().int().min(0).optional(),
-  }),
+    bookingId: objectIdSchema,
+    paymentId: objectIdSchema,
+    amount: z.number().positive('Refund amount must be greater than zero'),
+    reason: z.string().trim().max(1000).optional(),
+    idempotencyKey: z.string().trim().max(100).optional(),
+    cancelTickets: z.boolean().optional(),
+  }).strict(),
 });
 
-export const updateVenueSchema = z.object({
-  params: z.object({ id: z.string() }),
-  body: createVenueSchema.shape.body.partial(),
-});
-
-// -- Artist Validation --
-export const createArtistSchema = z.object({
+export const processRefundSchema = z.object({
+  params: adminIdParamSchema.shape.params,
   body: z.object({
-    name: z.string().min(1, 'Name is required'),
-    slug: z.string().min(1, 'Slug is required'),
-    bio: z.string().max(3000).optional(),
-    genre: z.array(z.string()).optional(),
-    profileImage: cloudinaryImageSchema.optional(),
-    socialLinks: z
-      .array(
-        z.object({
-          platform: z.string(),
-          url: z.string().url(),
-        })
-      )
-      .optional(),
-    isActive: z.boolean().optional(),
-  }),
+    action: z.enum(['approve', 'reject']),
+    adminNotes: z.string().trim().max(2000).optional(),
+    gatewayRefundId: z.string().trim().max(100).optional(),
+    manualOverride: z.boolean().optional(),
+    overrideReason: z.string().trim().max(1000).optional(),
+  }).strict(),
 });
 
-export const updateArtistSchema = z.object({
-  params: z.object({ id: z.string() }),
-  body: createArtistSchema.shape.body.partial(),
+// -- Scanner Validation --
+const scannerReferenceSchema = z
+  .string()
+  .trim()
+  .min(1, 'Reference is required')
+  .max(100, 'Reference is too long')
+  .regex(/^[A-Za-z0-9][A-Za-z0-9_-]*$/, 'Invalid scanner reference format');
+
+export const scannerScanSchema = z.object({
+  body: z.object({
+    ticketId: z.string().trim().min(1, 'Ticket ID is required').max(100),
+    eventId: objectIdSchema,
+  }).strict(),
 });
+
+export const scannerLookupSchema = z.object({
+  params: z.object({
+    reference: scannerReferenceSchema,
+  }).strict(),
+  query: z.object({
+    eventId: objectIdSchema,
+  }).strict(),
+});
+
+// -- Category Validation --
+const categoryBodySchema = z.object({
+  name: z.string().trim().min(1, 'Category name is required').max(100),
+}).strict();
+
+export const createCategorySchema = z.object({
+  body: categoryBodySchema,
+});
+
+export const updateCategorySchema = z.object({
+  params: adminIdParamSchema.shape.params,
+  body: categoryBodySchema
+    .partial()
+    .refine(hasAtLeastOneField, 'At least one field is required'),
+});
+
+// -- Tier Validation --
+const tierBodySchema = z.object({
+  name: z.string().trim().min(1, 'Tier name is required').max(100),
+}).strict();
+
+export const createTierSchema = z.object({
+  body: tierBodySchema,
+});
+
+export const updateTierSchema = z.object({
+  params: adminIdParamSchema.shape.params,
+  body: tierBodySchema
+    .partial()
+    .refine(hasAtLeastOneField, 'At least one field is required'),
+});
+
 
 // -- DJ Operator Validation --
 export const createDJOperatorSchema = z.object({
@@ -69,7 +241,7 @@ export const createDJOperatorSchema = z.object({
 });
 
 export const updateDJOperatorSchema = z.object({
-  params: z.object({ id: z.string() }),
+  params: adminIdParamSchema.shape.params,
   body: createDJOperatorSchema.shape.body.partial(),
 });
 
@@ -92,7 +264,6 @@ export const createEventSchema = z.object({
     venue: z.string().min(1),
     onlineStreamUrl: z.string().url().optional(),
     isOnline: z.boolean().optional(),
-    artistIds: z.array(z.string()).optional(),
     djOperatorIds: z.array(z.string()).optional(),
     ticketTiers: z
       .array(
@@ -146,7 +317,7 @@ export const createEventSchema = z.object({
 });
 
 export const updateEventSchema = z.object({
-  params: z.object({ id: z.string() }),
+  params: adminIdParamSchema.shape.params,
   body: createEventSchema.shape.body.partial(),
 });
 
@@ -194,6 +365,6 @@ export const createTicketProfileSchema = z.object({
 });
 
 export const updateTicketProfileSchema = z.object({
-  params: z.object({ id: z.string() }),
+  params: adminIdParamSchema.shape.params,
   body: createTicketProfileSchema.shape.body.partial(),
 });

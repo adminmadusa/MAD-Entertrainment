@@ -39,8 +39,15 @@ export const getRefunds = async (req: Request, res: Response, next: NextFunction
 
 export const processRefund = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { action, adminNotes, gatewayRefundId } = req.body;
-    const refund = await refundService.processRefund(req.params.id, action, adminNotes, gatewayRefundId);
+    const { action, adminNotes, gatewayRefundId, manualOverride, overrideReason } = req.body;
+    const refund = await refundService.processRefund(
+      req.params.id,
+      action,
+      adminNotes,
+      gatewayRefundId,
+      manualOverride,
+      overrideReason
+    );
     if (!refund) {
       return res.status(404).json({ success: false, message: 'Refund request not found' });
     }

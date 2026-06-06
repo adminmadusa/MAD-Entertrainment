@@ -49,8 +49,9 @@ export default function CreateEventPage() {
   const [endDate, setEndDate] = useState('');
   const [tags, setTags] = useState('');
   const [isFeatured, setIsFeatured] = useState(false);
-  const [isAgeRestricted, setIsAgeRestricted] = useState(false);
-  const [minimumAge, setMinimumAge] = useState(18);
+  const [requireTerms, setRequireTerms] = useState(true);
+  const [requireAgeConfirmation, setRequireAgeConfirmation] = useState(false);
+  const [ageRestriction, setAgeRestriction] = useState<number | ''>(18);
   const [coverImage, setCoverImage] = useState<CloudinaryImage | null>(null);
   const [tiers, setTiers] = useState<TicketTierInput[]>([defaultTier()]);
   
@@ -143,8 +144,9 @@ export default function CreateEventPage() {
         startDate: new Date(startDate).toISOString(),
         endDate: endDate ? new Date(endDate).toISOString() : undefined,
         isFeatured,
-        isAgeRestricted,
-        minimumAge: isAgeRestricted ? minimumAge : undefined,
+        requireTerms,
+        requireAgeConfirmation,
+        ageRestriction: requireAgeConfirmation && ageRestriction ? Number(ageRestriction) : undefined,
         tags: tags.split(',').map((t) => t.trim()).filter(Boolean),
         highlights: highlightsInput.split(',').map(h => h.trim()).filter(Boolean),
         refundPolicy: refundPolicy.trim() || undefined,
@@ -498,23 +500,66 @@ export default function CreateEventPage() {
             <input value={tags} onChange={(e) => setTags(e.target.value)}
               placeholder="EDM, outdoor, live" className={inputCls} />
           </Field>
+          
           <div className="flex flex-wrap gap-6">
             <label className="flex items-center gap-3 cursor-pointer select-none">
               <input type="checkbox" checked={isFeatured} onChange={(e) => setIsFeatured(e.target.checked)}
                 className="w-4 h-4 accent-accent-purple rounded" />
               <span className="text-text-secondary text-sm">Feature on homepage</span>
             </label>
-            <label className="flex items-center gap-3 cursor-pointer select-none">
-              <input type="checkbox" checked={isAgeRestricted} onChange={(e) => setIsAgeRestricted(e.target.checked)}
-                className="w-4 h-4 accent-accent-purple rounded" />
-              <span className="text-text-secondary text-sm">Age restricted</span>
-            </label>
           </div>
-          {isAgeRestricted && (
-            <Field label="Minimum Age">
-              <input type="number" min={0} max={21} value={minimumAge} onChange={(e) => setMinimumAge(Number(e.target.value))} className={`${inputCls} max-w-24`} />
-            </Field>
-          )}
+        </div>
+
+        {/* Registration Requirements */}
+        <div className="glass p-6 rounded-2xl border border-white/5 space-y-4">
+          <h3 className="text-white font-bold text-lg mb-2">Registration Requirements</h3>
+          <div className="space-y-4 text-sm">
+            <label className="flex items-center gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={requireTerms}
+                onChange={(e) => setRequireTerms(e.target.checked)}
+                className="w-4 h-4 rounded bg-background border-white/20 text-accent-purple focus:ring-accent-purple"
+              />
+              <span className="text-text-secondary">Require Terms & Conditions</span>
+            </label>
+            <label className="flex items-center gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={requireAgeConfirmation}
+                onChange={(e) => setRequireAgeConfirmation(e.target.checked)}
+                className="w-4 h-4 rounded bg-background border-white/20 text-accent-purple focus:ring-accent-purple"
+              />
+              <span className="text-text-secondary">Require Age Confirmation</span>
+            </label>
+            {requireAgeConfirmation && (
+              <div className="pl-7">
+                <label className="block text-text-secondary mb-2">Age Requirement</label>
+                <select
+                  value={ageRestriction}
+                  onChange={(e) => setAgeRestriction(e.target.value === '' ? '' : Number(e.target.value))}
+                  className="px-4 py-2 bg-background border border-white/10 rounded-xl text-white focus:outline-none focus:border-accent-purple"
+                >
+                  <option value={18}>18</option>
+                  <option value={21}>21</option>
+                  <option value={25}>25</option>
+                  <option value={30}>30</option>
+                  <option value="">Custom</option>
+                </select>
+                {ageRestriction === '' && (
+                  <input
+                    type="number"
+                    min="1"
+                    placeholder="Enter age"
+                    onBlur={(e) => {
+                      if (e.target.value) setAgeRestriction(Number(e.target.value));
+                    }}
+                    className="w-full px-4 py-2 mt-2 bg-background border border-white/10 rounded-xl text-white focus:outline-none focus:border-accent-purple"
+                  />
+                )}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Submit */}

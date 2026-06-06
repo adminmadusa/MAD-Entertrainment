@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { PublicEventService } from '../../services/public/event.service';
 import { CacheService } from '../../services/cache.service';
 import { sendSuccess } from '../../utils/response';
+import { logger } from '../../utils/logger';
 
 export async function listEvents(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
@@ -9,18 +10,28 @@ export async function listEvents(req: Request, res: Response, next: NextFunction
     const search = typeof req.query.search === 'string' ? req.query.search : undefined;
     const page = Number(req.query.page || 1);
     const limit = Number(req.query.limit || 12);
+    const includeTotal = req.query.includeTotal !== 'false';
 
-    const cacheKey = `events:list:${category || 'all'}:${search || 'none'}:${page}:${limit}`;
+    const cacheKey = `events:list:${category || 'all'}:${search || 'none'}:${page}:${limit}:${includeTotal}`;
+    const startTime = performance.now();
+
     const cached = await CacheService.get<any>(cacheKey);
     if (cached) {
+      const duration = performance.now() - startTime;
+      logger.info({ durationMs: duration.toFixed(0) }, '[events:cache-hit]');
       sendSuccess(res, cached, 'Events list retrieved (cached)');
       return;
     }
 
-    const result = await PublicEventService.listEvents({ category, search, page, limit });
-    
+    const queryStartTime = performance.now();
+    const result = await PublicEventService.listEvents({ category, search, page, limit, includeTotal });
+    const queryDuration = performance.now() - queryStartTime;
+
     // Cache for 60 seconds (1 minute)
     await CacheService.set(cacheKey, result, 60);
+
+    const totalDuration = performance.now() - startTime;
+    logger.info({ queryDurationMs: queryDuration.toFixed(0), totalDurationMs: totalDuration.toFixed(0) }, '[events:query]');
 
     sendSuccess(res, result, 'Events list retrieved');
   } catch (err) {
@@ -32,16 +43,25 @@ export async function getEventBySlug(req: Request, res: Response, next: NextFunc
   try {
     const slug = req.params.slug;
     const cacheKey = `events:detail:slug:${slug}`;
+    const startTime = performance.now();
+
     const cached = await CacheService.get<any>(cacheKey);
     if (cached) {
+      const duration = performance.now() - startTime;
+      logger.info({ durationMs: duration.toFixed(0) }, '[events:detail:cache-hit]');
       sendSuccess(res, cached, 'Event details retrieved (cached)');
       return;
     }
 
+    const queryStartTime = performance.now();
     const event = await PublicEventService.getEventBySlug(slug);
+    const queryDuration = performance.now() - queryStartTime;
 
     // Cache for 300 seconds (5 minutes)
     await CacheService.set(cacheKey, event, 300);
+
+    const totalDuration = performance.now() - startTime;
+    logger.info({ queryDurationMs: queryDuration.toFixed(0), totalDurationMs: totalDuration.toFixed(0) }, '[events:detail:query]');
 
     sendSuccess(res, event, 'Event details retrieved');
   } catch (err) {

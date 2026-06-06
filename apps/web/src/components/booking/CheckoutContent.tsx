@@ -1,12 +1,12 @@
 'use client';
 
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 
-import { STORAGE_VERSION } from '@mad/shared';
+import { QUERY_KEYS } from '@mad/shared';
 import { Event, Booking } from '@mad/types';
 import { useCountdown } from '@/hooks/use-countdown.hook';
 import { extractApiError } from '@/lib/api/client';
@@ -15,7 +15,9 @@ import {
   publicGetBookingDetails, 
   publicCreatePaymentIntent, 
   publicVerifyPayment, 
-  publicSaveCheckoutDetails 
+  publicSaveCheckoutDetails,
+  getStoredGuestBookingSession,
+  PaymentIntentResponse
 } from '@/lib/api/public.service';
 import { CheckoutDetailsInput } from '@mad/validations';
 
@@ -24,7 +26,6 @@ import { LeaveCheckoutModal } from './checkout/LeaveCheckoutModal';
 import { CheckoutForm } from './checkout/CheckoutForm';
 import { CheckoutPricing } from './checkout/CheckoutPricing';
 import { CheckoutPayment } from './checkout/CheckoutPayment';
-import { CheckoutAuthCard } from './CheckoutAuthCard';
 
 interface RazorpayInstance {
   open(): void;
@@ -50,10 +51,14 @@ interface CheckoutContentProps {
 
 export function CheckoutContent({ bookingId, isModal, onBack, onClose }: CheckoutContentProps) {
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   const [selectedGateway, setSelectedGateway] = useState<'stripe' | 'razorpay'>('razorpay');
   const [error, setError] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [redirectCountdown, setRedirectCountdown] = useState(5);
+  const [isRedirectPaused, setIsRedirectPaused] = useState(false);
+  const [isInputFocused, setIsInputFocused] = useState(false);
 
   const {
     isLeaveModalOpen,
@@ -65,14 +70,11 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
   } = useCheckoutNavGuard({ isModal, onBack, onClose });
 
   const { data: details, isLoading } = useQuery({
-    queryKey: ['booking-checkout-details', bookingId],
+    queryKey: QUERY_KEYS.public.bookings.checkout(bookingId),
+
     queryFn: () => {
-      let sess: string | undefined;
-      if (typeof window !== 'undefined') {
-        const sessionKey = `mad_checkout_session_${STORAGE_VERSION}`;
-        sess = sessionStorage.getItem(sessionKey) || undefined;
-      }
-      return publicGetBookingDetails(bookingId, sess);
+      const sessionToken = getStoredGuestBookingSession()?.token;
+      return publicGetBookingDetails(bookingId, sessionToken);
     },
     enabled: !!bookingId,
     retry: (failureCount, error: unknown) => {
@@ -86,15 +88,37 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
   const booking = details?.booking;
   const event = asEvent((booking as Booking | undefined)?.eventId);
 
-  // Redirect if already confirmed
+  // Redirect with countdown if confirmed
   useEffect(() => {
-    if (booking && booking.status === 'confirmed') {
-      allowNavigation();
-      router.push(`/my-booking?ref=${booking.bookingId}`);
+    if (booking && booking.status === 'confirmed' && !isRedirectPaused) {
+      if (redirectCountdown <= 0) {
+        allowNavigation();
+        router.push(`/tickets?ref=${booking.bookingId}`);
+        if (isModal) onClose();
+        return;
+      }
+      const timer = setTimeout(() => {
+        setRedirectCountdown((prev) => prev - 1);
+      }, 1000);
+      return () => clearTimeout(timer);
     }
-  }, [booking, router, allowNavigation]);
+  }, [booking, redirectCountdown, isRedirectPaused, router, allowNavigation, isModal, onClose]);
 
-  const countdown = useCountdown(booking?.expiresAt);
+  const handleViewTickets = () => {
+    setIsRedirectPaused(true);
+    allowNavigation();
+    router.push(`/tickets?ref=${booking?.bookingId}`);
+    if (isModal) onClose();
+  };
+
+  const handleContinueBrowsing = () => {
+    setIsRedirectPaused(true);
+    allowNavigation();
+    router.push('/');
+    if (isModal) onClose();
+  };
+
+  const countdown = useCountdown(booking?.logicalExpiresAt || booking?.expiresAt);
   const isExpired = countdown.isExpired;
   const timeLeft = isExpired
     ? 'Expired'
@@ -103,12 +127,8 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
   // Save checkout details mutation
   const saveDetailsMutation = useMutation({
     mutationFn: (payload: CheckoutDetailsInput) => {
-      let sess = '';
-      if (typeof window !== 'undefined') {
-        const sessionKey = `mad_checkout_session_${STORAGE_VERSION}`;
-        sess = sessionStorage.getItem(sessionKey) || '';
-      }
-      return publicSaveCheckoutDetails(bookingId, payload, sess);
+      const sessionToken = getStoredGuestBookingSession()?.token || '';
+      return publicSaveCheckoutDetails(bookingId, payload, sessionToken);
     },
     onSuccess: () => {
       paymentIntentMutation.mutate(selectedGateway);
@@ -120,14 +140,26 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
 
   // Payment Intent Mutation
   const paymentIntentMutation = useMutation({
-    mutationFn: (gateway: 'stripe' | 'razorpay') => publicCreatePaymentIntent(bookingId, gateway),
-    onSuccess: async (res) => {
+    mutationFn: (gateway: 'stripe' | 'razorpay') => {
+      const sessionToken = getStoredGuestBookingSession()?.token;
+      return publicCreatePaymentIntent(bookingId, gateway, sessionToken);
+    },
+    onSuccess: async (res: PaymentIntentResponse) => {
+      if (res.isFree) {
+        queryClient.invalidateQueries({
+          queryKey: QUERY_KEYS.public.bookings.checkout(bookingId)
+        });
+        return;
+      }
+
       if (res.gateway === 'razorpay') {
         if (res.isMock) {
           setIsProcessing(true);
+          // eslint-disable-next-line no-restricted-syntax
+          const mockPaymentId = 'pay_mock_' + Math.random().toString(36).substring(2, 10);
           verifyPaymentMutation.mutate({
             razorpay_order_id: res.orderId,
-            razorpay_payment_id: 'pay_mock_' + Math.random().toString(36).substring(2, 10),
+            razorpay_payment_id: mockPaymentId,
             razorpay_signature: 'mock_signature',
           });
           return;
@@ -145,19 +177,26 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
           amount: res.amount,
           currency: res.currency,
           name: 'MAD Entertainment',
-          description: `Booking ${res.bookingId}`,
+          description: `Booking ID: ${bookingId}`,
           order_id: res.orderId,
-          handler: function (response: {
+          handler: (response: {
             razorpay_order_id: string;
             razorpay_payment_id: string;
             razorpay_signature: string;
-          }) {
+          }) => {
             setIsProcessing(true);
             verifyPaymentMutation.mutate({
               razorpay_order_id: response.razorpay_order_id,
               razorpay_payment_id: response.razorpay_payment_id,
               razorpay_signature: response.razorpay_signature,
             });
+          },
+          prefill: {
+            name: `${booking.firstName} ${booking.lastName}`,
+            email: booking.guestEmail,
+          },
+          theme: {
+            color: '#8b5cf6',
           },
           modal: {
             ondismiss: function () {
@@ -197,8 +236,10 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
   const verifyPaymentMutation = useMutation({
     mutationFn: (payload: Record<string, unknown>) => publicVerifyPayment(bookingId, payload),
     onSuccess: () => {
-      allowNavigation();
-      router.push(`/my-booking?ref=${booking?.bookingId}`);
+      queryClient.invalidateQueries({
+        queryKey: QUERY_KEYS.public.bookings.checkout(bookingId)
+      });
+      setIsProcessing(false);
     },
     onError: (err) => {
       setError(extractApiError(err).message);
@@ -206,9 +247,79 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
     },
   });
 
+  let buttonText = 'Place Order';
+  if (saveDetailsMutation.isPending || paymentIntentMutation.isPending || isProcessing) {
+    buttonText = 'Processing...';
+  } else if (isExpired) {
+    buttonText = 'Session Expired';
+  }
+
   const handleFormSubmit = (detailsPayload: CheckoutDetailsInput) => {
     saveDetailsMutation.mutate(detailsPayload);
   };
+
+  if (booking && booking.status === 'confirmed') {
+    return (
+      <div className={isModal ? "relative text-white p-6 text-center space-y-6" : "pt-24 pb-24 min-h-screen bg-[#0d111d] text-white relative overflow-x-hidden flex flex-col items-center justify-center w-full px-4"}>
+        {!isModal && (
+          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-accent-purple/5 rounded-full blur-[150px] pointer-events-none" />
+        )}
+        
+        <div className="max-w-md w-full glass rounded-3xl border border-white/10 p-8 text-center space-y-6 shadow-glow relative z-10">
+          {/* Glowing Checkmark */}
+          <div className="flex justify-center">
+            <div className="w-16 h-16 rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 text-3xl shadow-[0_0_20px_rgba(16,185,129,0.2)] animate-pulse">
+              ✓
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <h2 className="text-2xl font-black text-white tracking-wide">Booking Confirmed!</h2>
+            {event?.title && (
+              <p className="text-accent-cyan font-bold text-sm">{event.title}</p>
+            )}
+            <p className="text-text-secondary text-xs">
+              Thank you for your purchase. Your order has been processed successfully.
+            </p>
+          </div>
+
+          {/* Reference Card */}
+          <div className="bg-background/50 border border-white/5 rounded-2xl p-4 space-y-1.5 font-mono">
+            <div className="text-[10px] text-text-secondary font-medium tracking-wider uppercase font-sans">Booking Reference ID</div>
+            <div className="text-lg font-black text-white tracking-wider select-all">{booking.bookingId}</div>
+          </div>
+
+          {/* Emailed Confirmation */}
+          <p className="text-xs text-text-muted leading-relaxed">
+            We have sent your confirmation email and tickets to <span className="text-white font-semibold">{booking.guestEmail || 'your email'}</span>.
+          </p>
+
+          {/* Auto Redirect Banner */}
+          {!isRedirectPaused && (
+            <p className="text-[11px] text-accent-purple-light font-medium animate-pulse">
+              Auto-redirecting to your Ticket Wallet in <span className="font-mono font-bold text-white">{redirectCountdown}s</span>...
+            </p>
+          )}
+
+          {/* Action Buttons */}
+          <div className="pt-2 flex flex-col gap-3">
+            <button
+              onClick={handleViewTickets}
+              className="w-full py-3 btn-gradient text-white font-black text-sm rounded-xl shadow-glow transition-transform active:scale-[0.98] hover:scale-[1.01]"
+            >
+              View Tickets
+            </button>
+            <button
+              onClick={handleContinueBrowsing}
+              className="w-full py-3 border border-white/10 hover:bg-white/5 text-white/95 font-bold text-sm rounded-xl transition-all active:scale-[0.98]"
+            >
+              Continue Browsing
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (
@@ -300,16 +411,23 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
               </div>
             )}
 
-            {/* Optional Eventbrite-Style Authentication Card */}
-            <CheckoutAuthCard />
-
             {/* Billing Information Form */}
-            <CheckoutForm
-              isExpired={isExpired}
-              isDisabled={isProcessing || saveDetailsMutation.isPending || paymentIntentMutation.isPending}
-              onSubmit={handleFormSubmit}
-              onErrorSet={setError}
-            />
+            <div
+              onFocusCapture={() => setIsInputFocused(true)}
+              onBlurCapture={(e) => {
+                if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+                  setIsInputFocused(false);
+                }
+              }}
+            >
+              <CheckoutForm
+                event={event}
+                isExpired={isExpired}
+                isDisabled={isProcessing || saveDetailsMutation.isPending || paymentIntentMutation.isPending}
+                onSubmit={handleFormSubmit}
+                onErrorSet={setError}
+              />
+            </div>
           </div>
 
           {/* Right Column: Checkout Breakdown, Payment Details, and Actions */}
@@ -321,50 +439,50 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
               onChangeGateway={setSelectedGateway}
             />
 
-            {/* Place Order & Terms (Desktop Only) */}
-            <div className="hidden lg:block glass rounded-2xl border border-white/5 p-5 space-y-3">
+            {/* Place Order & Terms (Always Visible) */}
+            <div className="glass rounded-2xl border border-white/5 p-5 space-y-3">
               <button
                 type="submit"
                 form="checkout-form"
                 disabled={isExpired || saveDetailsMutation.isPending || paymentIntentMutation.isPending || isProcessing}
                 className="w-full px-8 py-3 rounded-xl bg-gradient-to-r from-accent-purple to-accent-pink hover:from-accent-purple-light hover:to-accent-pink/80 text-white font-black text-sm transition-all hover:scale-[1.02] active:scale-95 shadow-glow disabled:opacity-50"
               >
-                {saveDetailsMutation.isPending || paymentIntentMutation.isPending || isProcessing
-                  ? 'Processing...'
-                  : isExpired
-                  ? 'Session Expired'
-                  : 'Place Order'}
+                {buttonText}
               </button>
 
-              <p className="text-[10px] text-text-muted leading-relaxed pt-2 border-t border-white/5">
-                By selecting Place Order, I agree to the MAD Entertainment Terms of Service and Privacy Policy.
-              </p>
+              <div className="pt-3 border-t border-white/5 space-y-3">
+                <div className="flex items-center justify-center gap-1.5 text-[11px] text-text-secondary font-medium bg-white/5 py-2 rounded-lg border border-white/5">
+                  <span role="img" aria-label="lock">🔒</span>
+                  <span>Secure checkout · No hidden fees</span>
+                </div>
+                <p className="text-[10px] text-text-muted leading-relaxed text-center">
+                  By selecting Place Order, I agree to the MAD Entertainment Terms of Service and Privacy Policy.
+                </p>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
       {/* Sticky Place Order Footer (Mobile Only) */}
-      <div className={isModal ? "sticky bottom-0 z-40 bg-[#0d111d]/95 border-t border-white/10 py-3 mt-8 shadow-2xl lg:hidden" : "fixed bottom-0 left-0 right-0 z-40 bg-[#0d111d]/95 backdrop-blur-lg border-t border-white/10 shadow-2xl lg:hidden"}>
-        <div className="container-mad max-w-4xl px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] flex items-center gap-4">
-          <div className="flex-1">
-            <div className="text-[10px] text-text-muted font-semibold uppercase tracking-wider">Total Amount</div>
-            <div className="text-white font-black text-lg">₹{booking.totalAmount}</div>
+      {!isInputFocused && (
+        <div className={isModal ? "sticky bottom-0 z-40 bg-[#0d111d]/95 border-t border-white/10 py-3 mt-8 shadow-2xl lg:hidden" : "fixed bottom-0 left-0 right-0 z-40 bg-[#0d111d]/95 backdrop-blur-lg border-t border-white/10 shadow-2xl lg:hidden"}>
+          <div className="container-mad max-w-4xl px-4 py-3 pb-[calc(1rem+env(safe-area-inset-bottom))] flex items-center gap-4">
+            <div className="flex-1">
+              <div className="text-[10px] text-text-muted font-semibold uppercase tracking-wider">Total Amount</div>
+              <div className="text-white font-black text-lg">₹{booking.totalAmount}</div>
+            </div>
+            <button
+              type="submit"
+              form="checkout-form"
+              disabled={isExpired || saveDetailsMutation.isPending || paymentIntentMutation.isPending || isProcessing}
+              className="flex-shrink-0 px-8 py-3.5 rounded-xl bg-gradient-to-r from-accent-purple to-accent-pink hover:from-accent-purple-light hover:to-accent-pink/80 text-white font-black text-sm transition-all hover:scale-[1.02] active:scale-95 shadow-glow disabled:opacity-50"
+            >
+              {buttonText}
+            </button>
           </div>
-          <button
-            type="submit"
-            form="checkout-form"
-            disabled={isExpired || saveDetailsMutation.isPending || paymentIntentMutation.isPending || isProcessing}
-            className="flex-shrink-0 px-8 py-3.5 rounded-xl bg-gradient-to-r from-accent-purple to-accent-pink hover:from-accent-purple-light hover:to-accent-pink/80 text-white font-black text-sm transition-all hover:scale-[1.02] active:scale-95 shadow-glow disabled:opacity-50"
-          >
-            {saveDetailsMutation.isPending || paymentIntentMutation.isPending || isProcessing
-              ? 'Processing...'
-              : isExpired
-              ? 'Session Expired'
-              : 'Place Order'}
-          </button>
         </div>
-      </div>
+      )}
 
       {/* Payment Processing Loader Backdrop */}
       <AnimatePresence>

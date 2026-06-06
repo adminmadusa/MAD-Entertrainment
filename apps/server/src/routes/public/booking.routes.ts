@@ -6,13 +6,17 @@ import {
     getMyBookings,
     getSessionToken,
     saveCheckoutDetails,
+    downloadBookingPDF,
+    resendBookingTickets,
+    recoverBooking,
 } from '../../controllers/public/booking.controller';
+import { recoverBookingSchema } from '../../validations/booking-recovery.validation';
 
 import {
     requireAuth,
     optionalAuth,
 } from '../../middleware/auth.middleware';
-import { authLimiter } from '../../middleware/rate.middleware';
+import { authLimiter, resendLimiter, generalLimiter, bookingLimiter, recoveryLimiter } from '../../middleware/rate.middleware';
 
 import { validateBody, validateParams } from '../../middleware/validation.middleware';
 import { reserveTicketsSchema, checkoutDetailsSchema, bookingReferenceParamSchema } from '../../validations/payment.validation';
@@ -23,7 +27,7 @@ const router: Router = Router();
 // Guest Session Token
 // ─────────────────────────────────────────────
 
-router.get('/session', authLimiter as any, getSessionToken);
+router.get('/session', generalLimiter as any, getSessionToken);
 
 // ─────────────────────────────────────────────
 // Create Booking
@@ -35,6 +39,7 @@ router.get('/session', authLimiter as any, getSessionToken);
 router.post(
     '/',
     optionalAuth,
+    bookingLimiter,
     validateBody(reserveTicketsSchema),
     createBooking
 );
@@ -70,6 +75,32 @@ router.get(
     optionalAuth,
     validateParams(bookingReferenceParamSchema),
     getBooking
+);
+
+router.get(
+    '/:bookingId/download',
+    optionalAuth,
+    validateParams(bookingReferenceParamSchema),
+    downloadBookingPDF
+);
+
+router.post(
+    '/:bookingId/resend',
+    optionalAuth,
+    resendLimiter,
+    validateParams(bookingReferenceParamSchema),
+    resendBookingTickets
+);
+
+// ─────────────────────────────────────────────
+// Transaction Recovery Backend API
+// ─────────────────────────────────────────────
+
+router.post(
+    '/recover',
+    recoveryLimiter as any,
+    validateBody(recoverBookingSchema),
+    recoverBooking
 );
 
 export default router;

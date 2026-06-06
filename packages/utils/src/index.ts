@@ -4,12 +4,13 @@ export type ApiError = {
   code?: string;
   details?: unknown;
   errors?: Record<string, string[]>;
+  retryAfter?: number;
 };
 
 export function extractApiError(error: unknown): ApiError {
   if (typeof error === 'object' && error !== null) {
     const maybeError = error as {
-      response?: { data?: Partial<ApiError>; status?: number };
+      response?: { data?: Partial<ApiError & { retryAfter?: number }>; status?: number };
       message?: string;
     };
 
@@ -17,9 +18,10 @@ export function extractApiError(error: unknown): ApiError {
       return {
         message: maybeError.response.data.message ?? maybeError.message ?? 'Request failed',
         statusCode: maybeError.response.data.statusCode ?? maybeError.response.status,
-        code: maybeError.response.data.code,
+        code: maybeError.response.data.code ?? (maybeError.response.data as any).error,
         details: maybeError.response.data.details,
         errors: maybeError.response.data.errors,
+        retryAfter: maybeError.response.data.retryAfter,
       };
     }
 

@@ -3,23 +3,37 @@
 import { useState, useEffect, useRef } from 'react';
 import { EventCategory, EVENT_CATEGORY_LABELS } from '@mad/shared';
 import { Event } from '@mad/types';
-import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion, PanInfo } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRight, ArrowLeft, CalendarIcon } from '@mad/ui';
 
 import { Reveal } from '@/components/common/PageTransition';
-import { useWindowWidth } from '@/hooks/use-window.hook';
+import { useWindowWidth, useMounted } from '@/hooks/use-window.hook';
 import { getOptimizedImageUrl } from '@/utils/image';
+import { formatEventDate } from '@/utils/date';
 
 
 export function FeaturedEventsSection({ initialEvents = [] }: { initialEvents: Event[] }) {
   const events = initialEvents;
   const [activeIndex, setActiveIndex] = useState(0);
+  const [activeCategory, setActiveCategory] = useState('all');
   const [isMounted, setIsMounted] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   
   const prefersReducedMotion = useReducedMotion();
+  const mounted = useMounted();
+
+  const categoriesList = [
+    { label: 'All', value: 'all' },
+    { label: 'DJ Night', value: EventCategory.DJ_NIGHT },
+    { label: 'Concert', value: EventCategory.CONCERT },
+    { label: 'Festival', value: EventCategory.FESTIVAL },
+    { label: 'Comedy', value: EventCategory.COMEDY },
+    { label: 'Theatre', value: EventCategory.THEATRE },
+    { label: 'Live Show', value: EventCategory.LIVE_SHOW },
+    { label: 'Cinema', value: EventCategory.CINEMA },
+  ];
 
   // Set mounted on client to prevent SSR hydration mismatch and layout shift
   useEffect(() => {
@@ -29,6 +43,11 @@ export function FeaturedEventsSection({ initialEvents = [] }: { initialEvents: E
   // SSR-safe responsive value — defaults to 1024 (desktop) on server,
   // updates to real viewport on mount. Never reads window during render.
   const windowWidth = useWindowWidth();
+  const isMobile = windowWidth < 640;
+
+  // SSR Bottleneck Fix: Only calculate 3D transforms after client hydration
+  // on desktop devices, when we have more than 1 event.
+  const enable3D = mounted && !isMobile && !prefersReducedMotion && events.length > 1;
 
   const nextSlide = () => {
     if (events.length === 0) return;
@@ -52,7 +71,7 @@ export function FeaturedEventsSection({ initialEvents = [] }: { initialEvents: E
   };
 
   // Mobile Drag / Swipe handling using Framer Motion gesture metadata
-  const handleDragEnd = (event: any, info: any) => {
+  const handleDragEnd = (event: unknown, info: PanInfo) => {
     const threshold = 50; // swipe threshold in pixels
     if (info.offset.x < -threshold) {
       nextSlide();
@@ -61,23 +80,6 @@ export function FeaturedEventsSection({ initialEvents = [] }: { initialEvents: E
     }
   };
 
-  const formatDate = (dateStr: Date | string) => {
-    try {
-      if (!dateStr) return 'Date TBA';
-      const d = new Date(dateStr);
-      if (isNaN(d.getTime())) {
-        return 'Date TBA';
-      }
-      return d.toLocaleDateString('en-US', {
-        weekday: 'short',
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-      });
-    } catch {
-      return 'Date TBA';
-    }
-  };
 
   return (
     <section 
@@ -86,6 +88,33 @@ export function FeaturedEventsSection({ initialEvents = [] }: { initialEvents: E
       role="region"
     >
       <div className="container-mad">
+        {/* Category Filter Pills */}
+        <Reveal>
+          <div className="w-full flex justify-center mb-10" role="tablist" aria-label="Event Categories">
+            <div className="flex gap-3 overflow-x-auto scrollbar-hide py-2 px-4 max-w-full -mx-4 sm:mx-0 -webkit-overflow-scrolling-touch md:flex-wrap md:justify-center">
+              {categoriesList.map((cat) => {
+                const isActive = activeCategory === cat.value;
+                return (
+                  <button
+                    key={cat.value}
+                    onClick={() => setActiveCategory(cat.value)}
+                    className={`flex-shrink-0 min-h-[44px] min-w-[44px] px-5 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
+                      isActive
+                        ? 'bg-gradient-to-r from-primary to-accent text-white shadow-glow'
+                        : 'bg-bg-card/60 backdrop-blur-md text-text-secondary hover:text-white border border-white/5 hover:border-primary/40 hover:bg-bg-card/90'
+                    }`}
+                    role="tab"
+                    aria-selected={isActive}
+                    tabIndex={0}
+                  >
+                    {cat.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </Reveal>
+
         <Reveal>
           <div className="flex items-end justify-between mb-10">
             <div>
@@ -154,7 +183,10 @@ export function FeaturedEventsSection({ initialEvents = [] }: { initialEvents: E
                   // Cover flow 3D math
                   const x = absoluteOffset * spread;
                   const z = isActive || isMobile ? 0 : -150 - Math.abs(absoluteOffset) * 60;
-                  const rotateY = isActive || isMobile ? 0 : absoluteOffset > 0 ? -25 : 25;
+                  let rotateY = 0;
+                  if (!isActive && !isMobile) {
+                    rotateY = absoluteOffset > 0 ? -25 : 25;
+                  }
                   const opacity = isActive ? 1 : Math.max(0, 1 - Math.abs(absoluteOffset) * 0.4);
                   const zIndex = 20 - Math.abs(absoluteOffset);
 
@@ -167,8 +199,8 @@ export function FeaturedEventsSection({ initialEvents = [] }: { initialEvents: E
                       initial={false}
                       animate={{
                         x,
-                        z: prefersReducedMotion ? 0 : z,
-                        rotateY: prefersReducedMotion ? 0 : rotateY,
+                        z: enable3D ? z : 0,
+                        rotateY: enable3D ? rotateY : 0,
                         opacity,
                         scale: isActive ? 1 : 0.85,
                       }}
@@ -185,7 +217,7 @@ export function FeaturedEventsSection({ initialEvents = [] }: { initialEvents: E
                       style={{
                         zIndex,
                         position: "absolute",
-                        transformStyle: isMobile ? "flat" : "preserve-3d"
+                        transformStyle: enable3D ? "preserve-3d" : "flat"
                       }}
                       className={`pointer-events-auto w-[260px] sm:w-[320px] h-[380px] sm:h-[450px] group glass rounded-2xl border ${isActive ? 'border-accent-purple/50 shadow-glow' : 'border-border-subtle cursor-pointer'} overflow-hidden flex flex-col focus-within:ring-2 focus-within:ring-accent-purple focus-within:border-accent-purple/40`}
                       onClick={() => !isActive && setActiveIndex(index)}
@@ -237,7 +269,7 @@ export function FeaturedEventsSection({ initialEvents = [] }: { initialEvents: E
                         <div className="p-4 flex flex-col flex-grow bg-black/20 backdrop-blur-sm">
                           <div className="text-text-muted text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider mb-2 flex items-center gap-1.5">
                             <CalendarIcon className="w-3.5 h-3.5 text-accent-purple-light" />
-                            {formatDate(event.startDate)}
+                            {formatEventDate(event.startDate)}
                           </div>
                           <h3 className="text-white font-bold text-sm sm:text-base line-clamp-1 mb-2 group-hover:text-accent-purple-light transition-colors">
                             {event.title}
@@ -259,15 +291,12 @@ export function FeaturedEventsSection({ initialEvents = [] }: { initialEvents: E
                           href={`/events/${event.slug}`} 
                           id={`event-card-book-${event.slug}`} 
                           tabIndex={isActive ? 0 : -1} 
-                          className={!isActive ? 'pointer-events-none' : ''}
+                          aria-label={event.isSoldOut ? `View details for ${event.title}` : `Book tickets for ${event.title}`}
+                          className={`px-2.5 py-1.5 sm:px-3.5 sm:py-2 text-[10px] sm:text-xs font-bold text-white btn-gradient rounded-xl shadow-glow-sm group-hover:scale-105 transition-all text-center inline-block ${
+                            !isActive ? 'pointer-events-none opacity-50 cursor-not-allowed' : ''
+                          }`}
                         >
-                          <button
-                            tabIndex={isActive ? 0 : -1}
-                            disabled={!isActive}
-                            className="px-2.5 py-1.5 sm:px-3.5 sm:py-2 text-[10px] sm:text-xs font-bold text-white btn-gradient rounded-xl shadow-glow-sm group-hover:scale-105 transition-transform disabled:opacity-50 disabled:cursor-not-allowed"
-                          >
-                            {event.isSoldOut ? 'Details' : 'Book Now'}
-                          </button>
+                          {event.isSoldOut ? 'Details' : 'Book Now'}
                         </Link>
                       </div>
                     </motion.div>

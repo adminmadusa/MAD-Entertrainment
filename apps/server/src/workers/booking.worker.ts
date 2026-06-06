@@ -8,7 +8,7 @@ import { Booking } from '../models/booking.schema';
 import { Event } from '../models/event.schema';
 import { Ticket } from '../models/ticket.schema';
 import { DeadLetterJob } from '../models/dead-letter-job.schema';
-import { QueueService, localFallbackEmitter } from '../services/queue.service';
+import { QueueService } from '../services/queue.service';
 import { logger } from '../utils/logger';
 
 const QUEUE_NAME = getQueueName('booking-queue');
@@ -19,47 +19,38 @@ export async function processBookingConfirm(bookingId: string): Promise<void> {
     throw new Error(`Booking ${bookingId} not found`);
   }
 
-  // 1. Idempotency Check: if tickets exist, skip creation
-  const existingTicketsCount = await Ticket.countDocuments({ bookingId: booking._id });
-  if (existingTicketsCount > 0) {
-    logger.warn({ bookingId }, 'Idempotency guard triggered: tickets already exist for booking. Skipping.');
-    return;
-  }
-
   const event = await Event.findById(booking.eventId);
   if (!event) {
     throw new Error(`Event ${booking.eventId} not found for booking ${bookingId}`);
   }
 
-  // 2. Generate scan-ready QR Tickets
+  // 1. Generate scan-ready QR Tickets with idempotent upserts
   let ticketIndex = 1;
   for (const bookedTicket of booking.tickets) {
     if (event.bookingMode === 'seat_based' && bookedTicket.seats) {
       for (const seat of bookedTicket.seats) {
         const ticketId = `TKT-${booking.bookingId}-${String(ticketIndex).padStart(3, '0')}`;
-        const qrCodeText = JSON.stringify({
-          ticketId,
-          bookingId: booking._id.toString(),
-          eventId: event._id.toString(),
-          tier: bookedTicket.tier,
-          seatId: seat.seatId,
-          admits: 1,
-        });
+        const qrCodeText = ticketId;
 
-        await Ticket.create({
-          ticketId,
-          bookingId: booking._id,
-          eventId: booking.eventId,
-          tierName: bookedTicket.tierName,
-          tier: bookedTicket.tier,
-          admits: 1,
-          seatId: seat.seatId,
-          row: seat.row,
-          seatNumber: seat.number,
-          section: seat.section,
-          qrCode: qrCodeText,
-          qrCodeImage: `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(qrCodeText)}`,
-        });
+        await Ticket.findOneAndUpdate(
+          { ticketId },
+          {
+            $setOnInsert: {
+              bookingId: booking._id,
+              eventId: booking.eventId,
+              tierName: bookedTicket.tierName,
+              tier: bookedTicket.tier,
+              admits: 1,
+              seatId: seat.seatId,
+              row: seat.row,
+              seatNumber: seat.number,
+              section: seat.section,
+              qrCode: qrCodeText,
+              qrCodeImage: `/api/public/tickets/${ticketId}/qr`,
+            },
+          },
+          { upsert: true, new: true, setDefaultsOnInsert: true }
+        );
         ticketIndex++;
       }
     } else {
@@ -69,24 +60,23 @@ export async function processBookingConfirm(bookingId: string): Promise<void> {
 
       for (let i = 0; i < bookedTicket.quantity; i++) {
         const ticketId = `TKT-${booking.bookingId}-${String(ticketIndex).padStart(3, '0')}`;
-        const qrCodeText = JSON.stringify({
-          ticketId,
-          bookingId: booking._id.toString(),
-          eventId: booking.eventId.toString(),
-          tier: bookedTicket.tier,
-          admits,
-        });
+        const qrCodeText = ticketId;
 
-        await Ticket.create({
-          ticketId,
-          bookingId: booking._id,
-          eventId: booking.eventId,
-          tierName: bookedTicket.tierName,
-          tier: bookedTicket.tier,
-          admits,
-          qrCode: qrCodeText,
-          qrCodeImage: `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(qrCodeText)}`,
-        });
+        await Ticket.findOneAndUpdate(
+          { ticketId },
+          {
+            $setOnInsert: {
+              bookingId: booking._id,
+              eventId: booking.eventId,
+              tierName: bookedTicket.tierName,
+              tier: bookedTicket.tier,
+              admits,
+              qrCode: qrCodeText,
+              qrCodeImage: `/api/public/tickets/${ticketId}/qr`,
+            },
+          },
+          { upsert: true, new: true, setDefaultsOnInsert: true }
+        );
         ticketIndex++;
       }
     }
@@ -128,18 +118,8 @@ async function handleJobExecution(jobId: string, data: any): Promise<void> {
 let worker: Worker | null = null;
 
 export function startBookingWorker(): void {
-  // Bind local fallback event listener immediately
-  localFallbackEmitter.on(QUEUE_NAME, async (job) => {
-    logger.info({ jobId: job.id }, 'Processing booking confirm job via local EventEmitter fallback');
-    try {
-      await handleJobExecution(job.id, job.data);
-    } catch (err) {
-      logger.error({ err, jobId: job.id }, 'Local booking confirm job fallback execution failed');
-    }
-  });
-
   if (!isRedisConnected()) {
-    logger.warn('Redis offline. Operating booking worker in in-memory degraded fallback mode.');
+    logger.warn('Redis offline. Booking worker startup aborted.');
     return;
   }
 
@@ -163,7 +143,9 @@ export function startBookingWorker(): void {
     worker.on('failed', async (job, err) => {
       logger.error({ err, jobId: job?.id }, 'Booking confirm job failed in BullMQ');
       if (job && job.attemptsMade >= (job.opts.attempts || 3)) {
-        // Send to Dead-Letter Queue (persistent DB storage)
+        let dlqPersisted = false;
+        
+        // 1. DLQ Persistence
         try {
           await DeadLetterJob.create({
             queueName: QUEUE_NAME,
@@ -174,9 +156,39 @@ export function startBookingWorker(): void {
             stacktrace: job.stacktrace,
             attemptsMade: job.attemptsMade,
           });
-          logger.warn({ jobId: job.id }, 'Job moved to Dead-Letter Queue database collection.');
+          dlqPersisted = true;
         } catch (dlqErr) {
-          logger.error({ err: dlqErr, jobId: job.id }, 'Failed to persist Dead-Letter Queue document.');
+          logger.error({ err: dlqErr, jobId: job.id, dlqStatus: 'failed_to_persist' }, 'Failed to persist Dead-Letter Queue document.');
+        }
+
+        // 2. Structured Logging
+        if (dlqPersisted) {
+          logger.error({
+            jobId: job.id,
+            bookingId: job.data?.bookingId,
+            queueName: QUEUE_NAME,
+            attemptsMade: job.attemptsMade,
+            dlqStatus: 'exhausted',
+          }, 'Booking confirm job exhausted retries and moved to DLQ');
+        }
+
+        // 3. Sentry Notification
+        try {
+          Sentry.captureException(err, {
+            tags: {
+              queue: QUEUE_NAME,
+              jobId: job.id || 'unknown',
+              jobName: job.name || 'unknown',
+              severity: 'error',
+            },
+            extra: {
+              attemptsMade: job.attemptsMade,
+              bookingId: job.data?.bookingId,
+            },
+            fingerprint: ['dlq-failure', QUEUE_NAME, err.message],
+          });
+        } catch (sentryError) {
+          logger.error({ err: sentryError, originalErr: err.message, jobId: job.id }, 'Failed to emit exception to Sentry');
         }
       }
     });
@@ -194,7 +206,6 @@ export function startBookingWorker(): void {
 }
 
 export async function stopBookingWorker(): Promise<void> {
-  localFallbackEmitter.removeAllListeners(QUEUE_NAME);
   if (worker) {
     await worker.close();
     worker = null;

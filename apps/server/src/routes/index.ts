@@ -8,6 +8,8 @@ import publicDJOperatorRoutes from './public/dj-operator.routes';
 import publicEventRoutes from './public/event.routes';
 import publicPaymentRoutes from './public/payment.routes';
 import publicPopupRoutes from './public/popup.routes';
+import publicTicketRoutes from './public/ticket.routes';
+import publicMarketingRoutes from './public/marketing.routes';
 
 const router: Router = Router();
 const unreconstructed: Router = Router();
@@ -20,8 +22,6 @@ unreconstructed.use((_req, res) => {
 });
 
 import publicAuthRoutes from './public/auth.routes';
-import publicArtistRoutes from './public/artist.routes';
-import publicVenueRoutes from './public/venue.routes';
 import publicCategoryRoutes from './public/category.routes';
 import { AuthController } from '../controllers/public/auth.controller';
 import { requireAuth } from '../middleware/auth.middleware';
@@ -41,10 +41,10 @@ router.use('/events', publicEventRoutes);
 router.use('/bookings', publicBookingRoutes);
 router.use('/payments', publicPaymentRoutes);
 router.use('/dj-operators', publicDJOperatorRoutes);
-router.use('/artists', publicArtistRoutes);
-router.use('/venues', publicVenueRoutes);
 router.use('/categories', publicCategoryRoutes);
 router.use('/popups', publicPopupRoutes);
+router.use('/public/tickets', publicTicketRoutes);
+router.use('/marketing', publicMarketingRoutes);
 
 // ─── Direct Auth Accessors ──────────────────────────────────
 router.get('/me', requireAuth, AuthController.getMe);
@@ -60,13 +60,9 @@ router.use('/admin/uploads', adminUploadRoutes);
 
 // ─── Admin: Phase 3 — Content CRUD ───────────────────────────
 import adminEventRoutes from './admin/event.routes';
-import adminVenueRoutes from './admin/venue.routes';
-import adminArtistRoutes from './admin/artist.routes';
 import adminDjOperatorRoutes from './admin/dj-operator.routes';
 
 router.use('/admin/events', adminEventRoutes);
-router.use('/admin/venues', adminVenueRoutes);
-router.use('/admin/artists', adminArtistRoutes);
 router.use('/admin/dj-operators', adminDjOperatorRoutes);
 
 // ─── Admin: Phase 4 — Bookings & Refunds ─────────────────────
@@ -81,9 +77,12 @@ import adminAnalyticsRoutes from './admin/analytics.routes';
 import adminCategoryRoutes from './admin/category.routes';
 import adminTierRoutes from './admin/tier.routes';
 import adminTicketProfileRoutes from './admin/ticket-profile.routes';
+import adminWebhookRoutes from './admin/webhook.routes';
+
 router.use('/admin/coupons', adminCouponRoutes);
 router.use('/admin/analytics', adminAnalyticsRoutes);
 router.use('/admin/diagnostics', adminDiagnosticsRoutes);
+router.use('/admin/webhooks', adminWebhookRoutes);
 router.use('/admin/categories', adminCategoryRoutes);
 router.use('/admin/tiers', adminTierRoutes);
 router.use('/admin/ticket-profiles', adminTicketProfileRoutes);
@@ -94,9 +93,14 @@ import adminScannerRoutes from './admin/scanner.routes';
 import adminNotificationRoutes from './admin/notification.routes';
 import adminTeamRoutes from './admin/team.routes';
 import adminPopupRoutes from './admin/popup.routes';
+import adminUserRoutes from './admin/user.routes';
+import adminMarketingRoutes from './admin/marketing.routes';
+
 router.use('/admin/popups', adminPopupRoutes);
 router.use('/admin/notifications', adminNotificationRoutes);
 router.use('/admin/team', adminTeamRoutes);
 router.use('/admin/scanner', adminScannerRoutes);
+router.use('/admin/users', adminUserRoutes);
+router.use('/admin/marketing', adminMarketingRoutes);
 
 export default router;
