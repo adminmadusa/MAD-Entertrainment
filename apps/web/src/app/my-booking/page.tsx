@@ -1,22 +1,16 @@
-'use client';
+import { redirect } from 'next/navigation';
 
-import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
-
-function MyBookingRedirect() {
-  const router = useRouter();
-
-  useEffect(() => {
-    router.replace(`/tickets${window.location.search}`);
-  }, [router]);
-
-  return (
-    <div className="pt-28 pb-16 min-h-screen bg-background flex items-center justify-center">
-      <div className="text-white/40 animate-pulse text-sm">Redirecting to tickets...</div>
-    </div>
-  );
+interface Props {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
-export default function MyBookingPage() {
-  return <MyBookingRedirect />;
+export default async function MyBookingPage({ searchParams }: Props) {
+  const params = await searchParams;
+  const ref = params.ref;
+
+  if (typeof ref === 'string' && ref.trim()) {
+    redirect(`/tickets?ref=${encodeURIComponent(ref.trim())}`);
+  }
+
+  redirect('/tickets');
 }

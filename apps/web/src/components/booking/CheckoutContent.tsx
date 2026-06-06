@@ -93,7 +93,7 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
     if (booking && booking.status === 'confirmed' && !isRedirectPaused) {
       if (redirectCountdown <= 0) {
         allowNavigation();
-        router.push(`/my-booking?ref=${booking.bookingId}`);
+        router.push(`/tickets?ref=${booking.bookingId}`);
         if (isModal) onClose();
         return;
       }
@@ -107,7 +107,7 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
   const handleViewTickets = () => {
     setIsRedirectPaused(true);
     allowNavigation();
-    router.push(`/my-booking?ref=${booking?.bookingId}`);
+    router.push(`/tickets?ref=${booking?.bookingId}`);
     if (isModal) onClose();
   };
 
