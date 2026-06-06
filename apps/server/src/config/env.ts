@@ -153,6 +153,11 @@ const envSchema = z.object({
   GOOGLE_CLIENT_ID: z.string().optional(),
 
   MARKETING_UNSUBSCRIBE_SECRET: z.string().optional(),
+
+  DLQ_ENCRYPTION_KEY: z
+    .string()
+    .min(32)
+    .default('a_secret_key_of_32_characters_long_for_dev'),
 });
 
 export type Env = z.infer<typeof envSchema>;
@@ -176,6 +181,15 @@ export function validateEnv(): Readonly<Env> {
 
   // Dual Protection: Startup Protection
   const isProd = result.data.NODE_ENV === 'production' || result.data.APP_ENV === 'production';
+  if (isProd) {
+    if (!process.env.DLQ_ENCRYPTION_KEY) {
+      throw new Error('DLQ_ENCRYPTION_KEY is mandatory in production environment.');
+    }
+    if (process.env.DLQ_ENCRYPTION_KEY === 'a_secret_key_of_32_characters_long_for_dev') {
+      throw new Error('Cannot use the default development DLQ_ENCRYPTION_KEY in production.');
+    }
+  }
+
   if (isProd && result.data.MOCK_PAYMENTS) {
     const errorMsg = 'MOCK_PAYMENTS_PRODUCTION_BLOCKED: Mock payments cannot be enabled in production environments.';
     console.error(`❌ ${errorMsg}`);

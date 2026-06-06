@@ -159,10 +159,41 @@ describe('Payment Production Integrity Tests', () => {
       process.env.JWT_SECRET = 'a'.repeat(32);
       process.env.JWT_ADMIN_SECRET = 'b'.repeat(32);
       process.env.JWT_SESSION_SECRET = 'c'.repeat(32);
+      process.env.DLQ_ENCRYPTION_KEY = 'a_secret_key_of_32_characters_long_for_test';
 
       const { validateEnv } = await vi.importActual<typeof import('../../config/env')>('../../config/env');
 
       expect(() => validateEnv()).toThrow(/MOCK_PAYMENTS_PRODUCTION_BLOCKED/);
+    });
+
+    it('should FAIL environment validation and throw with Production if DLQ_ENCRYPTION_KEY is missing', async () => {
+      process.env.NODE_ENV = 'production';
+      process.env.APP_ENV = 'production';
+      process.env.MOCK_PAYMENTS = 'false';
+      process.env.MONGODB_URI = 'mongodb://localhost:27017/test';
+      process.env.JWT_SECRET = 'a'.repeat(32);
+      process.env.JWT_ADMIN_SECRET = 'b'.repeat(32);
+      process.env.JWT_SESSION_SECRET = 'c'.repeat(32);
+      delete process.env.DLQ_ENCRYPTION_KEY;
+
+      const { validateEnv } = await vi.importActual<typeof import('../../config/env')>('../../config/env');
+
+      expect(() => validateEnv()).toThrow(/DLQ_ENCRYPTION_KEY is mandatory/);
+    });
+
+    it('should FAIL environment validation and throw with Production if DLQ_ENCRYPTION_KEY is the default dev key', async () => {
+      process.env.NODE_ENV = 'production';
+      process.env.APP_ENV = 'production';
+      process.env.MOCK_PAYMENTS = 'false';
+      process.env.MONGODB_URI = 'mongodb://localhost:27017/test';
+      process.env.JWT_SECRET = 'a'.repeat(32);
+      process.env.JWT_ADMIN_SECRET = 'b'.repeat(32);
+      process.env.JWT_SESSION_SECRET = 'c'.repeat(32);
+      process.env.DLQ_ENCRYPTION_KEY = 'a_secret_key_of_32_characters_long_for_dev';
+
+      const { validateEnv } = await vi.importActual<typeof import('../../config/env')>('../../config/env');
+
+      expect(() => validateEnv()).toThrow(/Cannot use the default development/);
     });
   });
 
