@@ -5,6 +5,7 @@ import { STORAGE_KEYS } from '@mad/shared';
 import { useQueryClient } from '@tanstack/react-query';
 import { AuthUser } from '../types/auth';
 import { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import axios from 'axios';
 
 
 interface AuthContextValue {
@@ -102,12 +103,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           }
         }
       } catch (err) {
-        // Clear stale local sessions if unauthenticated
-        setToken(null);
-        setUser(null);
-        setOnboardingRequired(false);
-        localStorage.removeItem(STORAGE_KEYS.USER_TOKEN);
-        localStorage.removeItem(STORAGE_KEYS.USER_DATA);
+        let shouldEvict = false;
+        if (axios.isAxiosError(err)) {
+          const status = err.response?.status;
+          if (status === 401 || status === 403) {
+            shouldEvict = true;
+          }
+        }
+        if (shouldEvict) {
+          // Clear stale local sessions if unauthenticated
+          setToken(null);
+          setUser(null);
+          setOnboardingRequired(false);
+          localStorage.removeItem(STORAGE_KEYS.USER_TOKEN);
+          localStorage.removeItem(STORAGE_KEYS.USER_DATA);
+        } else {
+          console.warn('Session hydration warning: Transient error encountered. Session preserved.', err);
+        }
       } finally {
         setIsLoading(false);
       }
