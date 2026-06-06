@@ -54,6 +54,7 @@ export interface AuthFormProps {
   className?: string;
   isVerificationRequired?: boolean;
   bookingReference?: string;
+  initialEmail?: string;
 }
 
 export function AuthForm({
@@ -63,6 +64,7 @@ export function AuthForm({
   className = '',
   isVerificationRequired,
   bookingReference,
+  initialEmail,
 }: AuthFormProps) {
   const { login, logout, token, setOnboardingRequired, onboardingRequired } = useAuth();
 
@@ -151,6 +153,12 @@ export function AuthForm({
   const [step, setStep] = useState<'request' | 'verify' | 'onboard'>('request');
   const [error, setError] = useState('');
   const [infoMessage, setInfoMessage] = useState('');
+
+  useEffect(() => {
+    if (initialEmail && !email) {
+      setEmail(initialEmail);
+    }
+  }, [initialEmail, email]);
 
   // Onboarding Profile Form States
   const [firstName, setFirstName] = useState('');
