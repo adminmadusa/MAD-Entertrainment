@@ -208,27 +208,21 @@ describe('Booking Controller — recoverBooking', () => {
   });
 });
 
-describe('Booking Controller — Guest Ownership Validation Hardening', () => {
+describe('Booking Controller — Guest Ownership & Booking Enumeration Hardening', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it('should deny ownership (Test 1) if raw x-session-id header is provided without a signed session JWT', async () => {
-    const mockBooking = {
-      _id: 'b-123',
-      bookingId: 'MAD-2026-ABCDE',
-      sessionId: 'session-123',
-    };
-    vi.mocked(PublicBookingService.getBookingByReference).mockResolvedValue({
-      booking: mockBooking as any,
-      tickets: [],
-      ticketsReady: true,
-    });
+  // ─── Anonymous / Guest Requests ─────────────────────────────────
+
+  it('should return 403 BOOKING_VERIFICATION_REQUIRED for an anonymous request on a missing booking', async () => {
+    vi.mocked(PublicBookingService.getBookingByReference).mockResolvedValue(null);
 
     const req: any = {
-      params: { bookingId: 'MAD-2026-ABCDE' },
-      header: vi.fn((name) => (name === 'x-session-id' ? 'session-123' : undefined)),
+      params: { bookingId: 'MAD-2026-MISSING' },
+      header: vi.fn(),
       session: undefined,
+      user: undefined,
     };
     const res: any = {
       status: vi.fn().mockReturnThis(),
@@ -247,11 +241,111 @@ describe('Booking Controller — Guest Ownership Validation Hardening', () => {
     );
   });
 
-  it('should grant access (Test 2) if a valid signed session JWT matching the booking sessionId is provided', async () => {
+  it('should return 403 BOOKING_VERIFICATION_REQUIRED for an anonymous request on an existing unowned booking', async () => {
     const mockBooking = {
       _id: 'b-123',
-      bookingId: 'MAD-2026-ABCDE',
-      sessionId: 'session-123',
+      bookingId: 'MAD-2026-UNOWNED',
+      sessionId: 'session-other',
+      userId: 'user-other',
+    };
+    vi.mocked(PublicBookingService.getBookingByReference).mockResolvedValue({
+      booking: mockBooking as any,
+      tickets: [],
+      ticketsReady: true,
+    });
+
+    const req: any = {
+      params: { bookingId: 'MAD-2026-UNOWNED' },
+      header: vi.fn(),
+      session: undefined,
+      user: undefined,
+    };
+    const res: any = {
+      status: vi.fn().mockReturnThis(),
+      json: vi.fn().mockReturnThis(),
+    };
+    const next = vi.fn();
+
+    await getBooking(req, res, next);
+
+    expect(next).toHaveBeenCalledWith(
+      expect.objectContaining({
+        statusCode: 403,
+        code: 'BOOKING_VERIFICATION_REQUIRED',
+        message: 'Email verification required',
+      })
+    );
+  });
+
+  // ─── Authenticated Requests ─────────────────────────────────────
+
+  it('should return 404 for an authenticated request on a missing booking', async () => {
+    vi.mocked(PublicBookingService.getBookingByReference).mockResolvedValue(null);
+
+    const req: any = {
+      params: { bookingId: 'MAD-2026-MISSING' },
+      header: vi.fn(),
+      session: undefined,
+      user: { sub: 'user-123' },
+    };
+    const res: any = {
+      status: vi.fn().mockReturnThis(),
+      json: vi.fn().mockReturnThis(),
+    };
+    const next = vi.fn();
+
+    await getBooking(req, res, next);
+
+    expect(next).toHaveBeenCalledWith(
+      expect.objectContaining({
+        statusCode: 404,
+        message: 'Booking not found',
+      })
+    );
+  });
+
+  it('should return 403 Forbidden without BOOKING_VERIFICATION_REQUIRED when an authenticated user requests another user\'s booking', async () => {
+    const mockBooking = {
+      _id: 'b-123',
+      bookingId: 'MAD-2026-UNOWNED',
+      userId: 'user-other', // Owned by someone else
+    };
+    vi.mocked(PublicBookingService.getBookingByReference).mockResolvedValue({
+      booking: mockBooking as any,
+      tickets: [],
+      ticketsReady: true,
+    });
+
+    const req: any = {
+      params: { bookingId: 'MAD-2026-UNOWNED' },
+      header: vi.fn(),
+      session: undefined,
+      user: { sub: 'user-123' }, // Authenticated request
+    };
+    const res: any = {
+      status: vi.fn().mockReturnThis(),
+      json: vi.fn().mockReturnThis(),
+    };
+    const next = vi.fn();
+
+    await getBooking(req, res, next);
+
+    expect(next).toHaveBeenCalledWith(
+      expect.objectContaining({
+        statusCode: 403,
+        message: 'You do not have access to this booking',
+      })
+    );
+    // Explicitly verify BOOKING_VERIFICATION_REQUIRED is NOT set on the error
+    const thrownError = next.mock.calls[0][0];
+    expect(thrownError.code).toBeUndefined();
+  });
+
+  it('should return 200 and data when an authenticated owner queries their own booking', async () => {
+    const mockBooking = {
+      _id: 'b-123',
+      bookingId: 'MAD-2026-OWNED',
+      userId: 'user-123',
     };
     const mockResult = {
       booking: mockBooking as any,
@@ -261,9 +355,10 @@ describe('Booking Controller — Guest Ownership Validation Hardening', () => {
     vi.mocked(PublicBookingService.getBookingByReference).mockResolvedValue(mockResult);
 
     const req: any = {
-      params: { bookingId: 'MAD-2026-ABCDE' },
+      params: { bookingId: 'MAD-2026-OWNED' },
       header: vi.fn(),
-      session: { sessionId: 'session-123' },
+      session: undefined,
+      user: { sub: 'user-123' },
     };
     const res: any = {
       status: vi.fn().mockReturnThis(),
@@ -283,12 +378,35 @@ describe('Booking Controller — Guest Ownership Validation Hardening', () => {
     );
   });
 
-  it('should deny access (Test 3) for a guest session even with matching sessionId if the booking is already claimed by a userId', async () => {
+  // ─── Download Endpoint ──────────────────────────────────────────
+
+  it('should return 403 BOOKING_VERIFICATION_REQUIRED on PDF download for anonymous missing booking', async () => {
+    vi.mocked(PublicBookingService.getBookingByReference).mockResolvedValue(null);
+
+    const req: any = {
+      params: { bookingId: 'MAD-2026-MISSING' },
+      header: vi.fn(),
+      session: undefined,
+      user: undefined,
+    };
+    const res: any = {};
+    const next = vi.fn();
+
+    await downloadBookingPDF(req, res, next);
+
+    expect(next).toHaveBeenCalledWith(
+      expect.objectContaining({
+        statusCode: 403,
+        code: 'BOOKING_VERIFICATION_REQUIRED',
+      })
+    );
+  });
+
+  it('should return 403 BOOKING_VERIFICATION_REQUIRED on PDF download for anonymous unowned booking', async () => {
     const mockBooking = {
       _id: 'b-123',
-      bookingId: 'MAD-2026-ABCDE',
-      sessionId: 'session-123',
-      userId: 'user-789', // Claimed by user
+      bookingId: 'MAD-2026-UNOWNED',
+      sessionId: 'session-other',
     };
     vi.mocked(PublicBookingService.getBookingByReference).mockResolvedValue({
       booking: mockBooking as any,
@@ -297,23 +415,187 @@ describe('Booking Controller — Guest Ownership Validation Hardening', () => {
     });
 
     const req: any = {
-      params: { bookingId: 'MAD-2026-ABCDE' },
+      params: { bookingId: 'MAD-2026-UNOWNED' },
       header: vi.fn(),
-      session: { sessionId: 'session-123' }, // Matching guest session
+      session: undefined,
+      user: undefined,
     };
-    const res: any = {
-      status: vi.fn().mockReturnThis(),
-      json: vi.fn().mockReturnThis(),
-    };
+    const res: any = {};
     const next = vi.fn();
 
-    await getBooking(req, res, next);
+    await downloadBookingPDF(req, res, next);
 
     expect(next).toHaveBeenCalledWith(
       expect.objectContaining({
         statusCode: 403,
         code: 'BOOKING_VERIFICATION_REQUIRED',
-        message: 'Email verification required',
+      })
+    );
+  });
+
+  // ─── Resend Endpoint ───────────────────────────────────────────
+
+  it('should return 403 BOOKING_VERIFICATION_REQUIRED on resend for anonymous missing booking', async () => {
+    vi.mocked(PublicBookingService.getBookingByReference).mockResolvedValue(null);
+
+    const req: any = {
+      params: { bookingId: 'MAD-2026-MISSING' },
+      header: vi.fn(),
+      session: undefined,
+      user: undefined,
+    };
+    const res: any = {};
+    const next = vi.fn();
+
+    await resendBookingTickets(req, res, next);
+
+    expect(next).toHaveBeenCalledWith(
+      expect.objectContaining({
+        statusCode: 403,
+        code: 'BOOKING_VERIFICATION_REQUIRED',
+      })
+    );
+  });
+
+  it('should return 403 BOOKING_VERIFICATION_REQUIRED on resend for anonymous unowned booking', async () => {
+    const mockBooking = {
+      _id: 'b-123',
+      bookingId: 'MAD-2026-UNOWNED',
+      sessionId: 'session-other',
+    };
+    vi.mocked(PublicBookingService.getBookingByReference).mockResolvedValue({
+      booking: mockBooking as any,
+      tickets: [],
+      ticketsReady: true,
+    });
+
+    const req: any = {
+      params: { bookingId: 'MAD-2026-UNOWNED' },
+      header: vi.fn(),
+      session: undefined,
+      user: undefined,
+    };
+    const res: any = {};
+    const next = vi.fn();
+
+    await resendBookingTickets(req, res, next);
+
+    expect(next).toHaveBeenCalledWith(
+      expect.objectContaining({
+        statusCode: 403,
+        code: 'BOOKING_VERIFICATION_REQUIRED',
+      })
+    );
+  });
+
+  // ─── Authenticated User - Download & Resend Endpoints ───────────
+
+  it('should return 403 Forbidden without BOOKING_VERIFICATION_REQUIRED on PDF download for authenticated user on unowned booking', async () => {
+    const mockBooking = {
+      _id: 'b-123',
+      bookingId: 'MAD-2026-UNOWNED',
+      userId: 'user-other',
+    };
+    vi.mocked(PublicBookingService.getBookingByReference).mockResolvedValue({
+      booking: mockBooking as any,
+      tickets: [],
+      ticketsReady: true,
+    });
+
+    const req: any = {
+      params: { bookingId: 'MAD-2026-UNOWNED' },
+      header: vi.fn(),
+      session: undefined,
+      user: { sub: 'user-123' },
+    };
+    const res: any = {};
+    const next = vi.fn();
+
+    await downloadBookingPDF(req, res, next);
+
+    expect(next).toHaveBeenCalledWith(
+      expect.objectContaining({
+        statusCode: 403,
+        message: 'You do not have access to this booking',
+      })
+    );
+    const thrownError = next.mock.calls[0][0];
+    expect(thrownError.code).toBeUndefined();
+  });
+
+  it('should return 404 on PDF download for authenticated user on missing booking', async () => {
+    vi.mocked(PublicBookingService.getBookingByReference).mockResolvedValue(null);
+
+    const req: any = {
+      params: { bookingId: 'MAD-2026-MISSING' },
+      header: vi.fn(),
+      session: undefined,
+      user: { sub: 'user-123' },
+    };
+    const res: any = {};
+    const next = vi.fn();
+
+    await downloadBookingPDF(req, res, next);
+
+    expect(next).toHaveBeenCalledWith(
+      expect.objectContaining({
+        statusCode: 404,
+        message: 'Booking not found',
+      })
+    );
+  });
+
+  it('should return 403 Forbidden without BOOKING_VERIFICATION_REQUIRED on resend for authenticated user on unowned booking', async () => {
+    const mockBooking = {
+      _id: 'b-123',
+      bookingId: 'MAD-2026-UNOWNED',
+      userId: 'user-other',
+    };
+    vi.mocked(PublicBookingService.getBookingByReference).mockResolvedValue({
+      booking: mockBooking as any,
+      tickets: [],
+      ticketsReady: true,
+    });
+
+    const req: any = {
+      params: { bookingId: 'MAD-2026-UNOWNED' },
+      header: vi.fn(),
+      session: undefined,
+      user: { sub: 'user-123' },
+    };
+    const res: any = {};
+    const next = vi.fn();
+
+    await resendBookingTickets(req, res, next);
+
+    expect(next).toHaveBeenCalledWith(
+      expect.objectContaining({
+        statusCode: 403,
+        message: 'You do not have access to this booking',
+      })
+    );
+    const thrownError = next.mock.calls[0][0];
+    expect(thrownError.code).toBeUndefined();
+  });
+
+  it('should return 404 on resend for authenticated user on missing booking', async () => {
+    vi.mocked(PublicBookingService.getBookingByReference).mockResolvedValue(null);
+
+    const req: any = {
+      params: { bookingId: 'MAD-2026-MISSING' },
+      header: vi.fn(),
+      session: undefined,
+      user: { sub: 'user-123' },
+    };
+    const res: any = {};
+    const next = vi.fn();
+
+    await resendBookingTickets(req, res, next);
+
+    expect(next).toHaveBeenCalledWith(
+      expect.objectContaining({
+        statusCode: 404,
+        message: 'Booking not found',
       })
     );
   });
