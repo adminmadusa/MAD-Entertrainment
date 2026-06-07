@@ -37,7 +37,7 @@ Establish a global browser-level initialization guard on the window object (e.g.
 
 ### Files Changed
 * [apps/web/src/app/(auth)/login/page.tsx](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/app/(auth)/login/page.tsx) (Incorporate initialization guard)
-* [apps/web/src/components/booking/CheckoutAuthCard.tsx](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/components/booking/CheckoutAuthCard.tsx) (Incorporate initialization guard)
+* [apps/web/src/components/auth/AuthForm.tsx](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/components/auth/AuthForm.tsx) (Incorporate initialization guard)
 
 ### Risk Level
 **LOW**

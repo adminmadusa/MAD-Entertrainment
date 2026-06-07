@@ -2,7 +2,7 @@
 
 ## 1. Google SDK Initialization
 * **Duplicate Location A**: [apps/web/src/app/(auth)/login/page.tsx:L161-185](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/app/(auth)/login/page.tsx#L161-L185)
-* **Duplicate Location B**: [apps/web/src/components/booking/CheckoutAuthCard.tsx:L141-166](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/components/booking/CheckoutAuthCard.tsx#L141-L166)
+* **Duplicate Location B**: [apps/web/src/components/auth/AuthForm.tsx](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/components/auth/AuthForm.tsx) (Consolidated target)
 * **Reason**: Both pages load the Google Sign-in Identity script separately (using distinct loading mechanism: next/script vs loadScriptOnce) and initialize `google.accounts.id` from scratch. This leads to duplicate initialization logs and double-loading of buttons which triggers the `google.accounts.id.initialize() called multiple times` SDK runtime crash.
 * **Consolidation Recommendation**: Extract the Google Identity initialization, client configuration, and button render logic into a single React Hook `useGoogleSignIn` or utility inside `apps/web/src/lib/hooks/use-google-signin.ts`. Share a global window ref `window.__googleSdkInitialized` to prevent double-initialization of the Google library.
 
@@ -10,7 +10,7 @@
 
 ## 2. Duplicate Login & Verification Flows
 * **Duplicate Location A**: [apps/web/src/app/(auth)/login/page.tsx:L98-143](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/app/(auth)/login/page.tsx#L98-L143)
-* **Duplicate Location B**: [apps/web/src/components/booking/CheckoutAuthCard.tsx:L84-131](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/components/booking/CheckoutAuthCard.tsx#L84-L131)
+* **Duplicate Location B**: [apps/web/src/components/auth/AuthForm.tsx](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/components/auth/AuthForm.tsx) (Consolidated target)
 * **Reason**: Both files duplicate identical TanStack Query mutation setups:
   * `requestMagicLinkMutation`
   * `verifyMutation`
@@ -22,7 +22,7 @@
 
 ## 3. Duplicate Session Token Handlers
 * **Duplicate Location A**: [apps/web/src/app/(auth)/login/page.tsx:L121-124](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/app/(auth)/login/page.tsx#L121-L124)
-* **Duplicate Location B**: [apps/web/src/components/booking/CheckoutAuthCard.tsx:L105-111](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/components/booking/CheckoutAuthCard.tsx#L105-L111)
+* **Duplicate Location B**: [apps/web/src/components/auth/AuthForm.tsx](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/components/auth/AuthForm.tsx) (Consolidated target)
 * **Reason**: Success callbacks inside both pages manually invoke `login(data.token, data.user)` and handle local navigation/redirection.
 * **Consolidation Recommendation**: Centralize this logic inside the `login` function of the global `AuthProvider`.
 

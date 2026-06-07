@@ -28,7 +28,7 @@ Purpose:
 
 ## Temporary Branches
 
-### feature/*
+### feat/*
 
 Used for:
 
@@ -41,6 +41,30 @@ Used for:
 * Bug fixes
 * Security fixes
 * Hotfixes
+
+### refactor/*
+
+Used for:
+
+* Refactoring code
+
+### test/*
+
+Used for:
+
+* Adding or updating tests
+
+### docs/*
+
+Used for:
+
+* Documentation updates
+
+### seo/*
+
+Used for:
+
+* SEO enhancements
 
 ### chore/*
 
