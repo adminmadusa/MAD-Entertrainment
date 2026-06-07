@@ -371,7 +371,7 @@ function TicketRetrievalContent() {
   const renderReferenceFormContent = () => {
     if (showSupportGuidance) {
       return (
-        <div className="glass rounded-3xl border border-border-subtle p-8 space-y-6 text-center animate-in fade-in duration-300">
+        <div className="glass rounded-3xl border border-border-subtle p-4 sm:p-8 space-y-4 sm:space-y-6 text-center animate-in fade-in duration-300">
           <div className="w-12 h-12 bg-white/5 text-text-secondary text-2xl flex items-center justify-center rounded-full mx-auto">
             ✉️
           </div>
@@ -407,7 +407,7 @@ function TicketRetrievalContent() {
 
     if (showRecoveryResult) {
       return (
-        <div className="glass rounded-3xl border border-border-subtle p-8 space-y-6 shadow-glow-purple text-center animate-in fade-in duration-300">
+        <div className="glass rounded-3xl border border-border-subtle p-4 sm:p-8 space-y-4 sm:space-y-6 shadow-glow-purple text-center animate-in fade-in duration-300">
           <div className="w-12 h-12 bg-accent-purple/10 text-accent-purple-light text-2xl flex items-center justify-center rounded-full mx-auto">
             🔍
           </div>
@@ -445,7 +445,7 @@ function TicketRetrievalContent() {
       return (
         <>
           <h3 className="text-white font-bold text-sm px-2 text-center">Need help finding your ticket?</h3>
-          <form onSubmit={handleSearchSubmit} className="glass rounded-2xl border border-border-subtle p-6 flex flex-col gap-3">
+          <form onSubmit={handleSearchSubmit} className="glass rounded-2xl border border-border-subtle p-4 sm:p-6 flex flex-col gap-3">
             <div className="flex-grow space-y-1">
               <label htmlFor="booking-ref-input" className="text-[10px] text-text-secondary font-medium tracking-wider uppercase">Search using your Booking Reference ID</label>
               <input
@@ -481,7 +481,7 @@ function TicketRetrievalContent() {
     return (
       <>
         <h3 className="text-white font-bold text-sm px-2 text-center">Recover Booking Registered Email</h3>
-        <form onSubmit={handleRecoverySubmit} className="glass rounded-2xl border border-border-subtle p-6 flex flex-col gap-3 animate-in fade-in duration-300">
+        <form onSubmit={handleRecoverySubmit} className="glass rounded-2xl border border-border-subtle p-4 sm:p-6 flex flex-col gap-3 animate-in fade-in duration-300">
           <div className="flex-grow space-y-1">
             <label htmlFor="transaction-id-input" className="text-[10px] text-text-secondary font-medium tracking-wider uppercase">Payment Transaction ID</label>
             <input
@@ -521,12 +521,12 @@ function TicketRetrievalContent() {
   });
 
   return (
-    <div className="pt-28 pb-16 min-h-screen bg-background relative overflow-hidden">
+    <div className="pt-20 sm:pt-28 pb-8 sm:pb-16 min-h-screen bg-background relative overflow-hidden">
       {/* Decorative Glow Elements */}
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-accent-purple/10 rounded-full blur-[130px] pointer-events-none" />
       <div className="absolute -bottom-10 -right-10 w-[300px] h-[300px] bg-purple-500/5 rounded-full blur-[100px] pointer-events-none" />
 
-      <div className="container-mad max-w-3xl relative z-10 px-4 space-y-8">
+      <div className="container-mad max-w-3xl relative z-10 px-4 space-y-4 sm:space-y-8">
         
         {/* Header */}
         <div className="text-center space-y-3">
@@ -559,7 +559,7 @@ function TicketRetrievalContent() {
           <div 
             role="alert"
             aria-live="polite"
-            className="glass rounded-3xl border border-error/30 bg-error/5 p-6 space-y-4 text-center animate-in fade-in zoom-in duration-300"
+            className="glass rounded-3xl border border-error/30 bg-error/5 p-4 sm:p-6 space-y-3 sm:space-y-4 text-center animate-in fade-in zoom-in duration-300"
           >
             <h3 className="text-red-400 font-bold text-base">
               We found this booking, but it belongs to a different account.
@@ -598,7 +598,7 @@ function TicketRetrievalContent() {
               </div>
             )}
             
-            <div className="glass-strong rounded-3xl border border-border-subtle p-8 shadow-2xl">
+            <div className="glass-strong rounded-3xl border border-border-subtle p-4 sm:p-8 shadow-2xl">
               <AuthForm 
                 mode="wallet" 
                 isVerificationRequired={isOwnershipVerificationRequired}
@@ -625,7 +625,7 @@ function TicketRetrievalContent() {
 
         {/* SCREEN 3: Consolidated Bookings Portal Dashboard */}
         {shouldShowPortal && (
-          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-5 duration-500">
+          <div className="space-y-4 sm:space-y-8 animate-in fade-in slide-in-from-bottom-5 duration-500">
             {(!singleBooking || isAuthenticated) && (
               <div className="flex justify-between items-center mb-4">
                 {singleBooking && isAuthenticated ? (
@@ -651,7 +651,7 @@ function TicketRetrievalContent() {
 
             {(() => {
               if (singleBooking) {
-                const containerClasses = "glass rounded-3xl p-6 sm:p-8 space-y-6 shadow-glow-purple transition-all duration-300 border-accent-purple ring-2 ring-accent-purple/50";
+                const containerClasses = "glass rounded-3xl p-4 sm:p-6 md:p-8 space-y-4 sm:space-y-6 shadow-glow-purple transition-all duration-300 border-accent-purple ring-2 ring-accent-purple/50";
 
                 return (
                   <div className={containerClasses}>
@@ -712,34 +712,34 @@ function TicketRetrievalContent() {
                             <EntryPassGrid tickets={singleTickets} />
 
                             {isAuthenticated ? (
-                              <div className="space-y-4 mt-8 pt-6 border-t border-border-subtle/30">
-                                <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
+                              <div className="space-y-3 mt-4 sm:mt-8 pt-4 sm:pt-6 border-t border-border-subtle/30">
+                                <div className="flex flex-col sm:flex-row gap-3 justify-center items-center w-full">
                                   <button
                                     type="button"
                                     onClick={handleSearchAnother}
-                                    className="px-5 py-2.5 bg-white/5 hover:bg-white/10 text-text-secondary hover:text-white text-xs font-bold rounded-xl transition-all border border-white/10"
+                                    className="w-full sm:w-auto px-4 py-2 sm:px-5 sm:py-2.5 bg-white/5 hover:bg-white/10 text-text-secondary hover:text-white text-xs font-bold rounded-xl transition-all border border-white/10"
                                   >
                                     Search Another Booking
                                   </button>
                                 </div>
                               </div>
                             ) : (
-                              <div className="space-y-4 mt-8 pt-6 border-t border-border-subtle/30">
+                              <div className="space-y-3 mt-4 sm:mt-8 pt-4 sm:pt-6 border-t border-border-subtle/30">
                                 <p className="text-text-muted text-xs leading-relaxed text-center">
                                   Your ticket has been sent to <span className="text-white font-semibold">{singleBooking.guestEmail}</span>. You can view it anytime by signing in with the same email address.
                                 </p>
-                                <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
+                                <div className="flex flex-col sm:flex-row gap-3 justify-center items-center w-full">
                                   <button
                                     type="button"
                                     onClick={() => setShowLoginForGuest(true)}
-                                    className="px-5 py-2.5 bg-accent-purple hover:bg-accent-purple-light text-white text-xs font-bold rounded-xl transition-all shadow-md"
+                                    className="w-full sm:w-auto px-4 py-2 sm:px-5 sm:py-2.5 bg-accent-purple hover:bg-accent-purple-light text-white text-xs font-bold rounded-xl transition-all shadow-md"
                                   >
                                     Sign In to Wallet
                                   </button>
                                   <button
                                     type="button"
                                     onClick={handleSearchAnother}
-                                    className="px-5 py-2.5 bg-white/5 hover:bg-white/10 text-text-secondary hover:text-white text-xs font-bold rounded-xl transition-all border border-white/10"
+                                    className="w-full sm:w-auto px-4 py-2 sm:px-5 sm:py-2.5 bg-white/5 hover:bg-white/10 text-text-secondary hover:text-white text-xs font-bold rounded-xl transition-all border border-white/10"
                                   >
                                     Search Another Booking
                                   </button>
@@ -766,7 +766,7 @@ function TicketRetrievalContent() {
 
               if (sortedBookings.length > 0) {
                 return (
-                  <div className="space-y-8">
+                  <div className="space-y-4 sm:space-y-8">
                     {sortedBookings.map((booking) => {
                       const bookingTickets = tickets.filter(
                         (t) => t.bookingId === booking._id || t.bookingId?.toString() === booking._id?.toString()
@@ -774,8 +774,8 @@ function TicketRetrievalContent() {
 
                       const isTarget = queryRef && booking.bookingId === queryRef;
                       const containerClasses = isTarget
-                        ? "glass rounded-3xl p-6 sm:p-8 space-y-6 shadow-glow-purple transition-all duration-300 border-accent-purple ring-2 ring-accent-purple/50"
-                        : "glass rounded-3xl border border-border-subtle p-6 sm:p-8 space-y-6 shadow-xl transition-all duration-300 hover:border-white/10";
+                        ? "glass rounded-3xl p-4 sm:p-6 md:p-8 space-y-4 sm:space-y-6 shadow-glow-purple transition-all duration-300 border-accent-purple ring-2 ring-accent-purple/50"
+                        : "glass rounded-3xl border border-border-subtle p-4 sm:p-6 md:p-8 space-y-4 sm:space-y-6 shadow-xl transition-all duration-300 hover:border-white/10";
 
                       return (
                         <div
@@ -834,14 +834,14 @@ function TicketRetrievalContent() {
               }
 
               return (
-                <div className="glass rounded-3xl border border-border-subtle p-16 text-center space-y-4">
+                <div className="glass rounded-3xl border border-border-subtle p-6 sm:p-16 text-center space-y-4">
                   <div className="text-4xl">🎫</div>
                   <h3 className="text-white font-bold text-base">No tickets found</h3>
                   <p className="text-text-secondary text-sm max-w-sm mx-auto leading-relaxed">
                     Tickets purchased using this email address will appear here automatically.
                   </p>
                   <div className="flex justify-center pt-4">
-                    <Link href="/events" className="px-5 py-2.5 bg-accent-purple hover:bg-accent-purple-light text-white text-xs font-bold rounded-xl transition-all shadow-md">
+                    <Link href="/events" className="w-full sm:w-auto px-4 py-2 sm:px-5 sm:py-2.5 bg-accent-purple hover:bg-accent-purple-light text-white text-xs font-bold rounded-xl transition-all shadow-md text-center">
                       Browse Events
                     </Link>
                   </div>
@@ -852,7 +852,7 @@ function TicketRetrievalContent() {
         )}
 
         {shouldShowReferenceForm && (
-          <div className="space-y-4 pt-4 mt-8 max-w-md mx-auto">
+          <div className="space-y-4 pt-4 mt-4 sm:mt-8 max-w-md mx-auto">
             {renderReferenceFormContent()}
 
             {queryRef && singleLookupApiError && !isOwnershipVerificationRequired && !singleBooking && (
@@ -862,7 +862,7 @@ function TicketRetrievalContent() {
             )}
 
             {queryRef && isSingleLookupLoading && (
-              <div className="glass-strong rounded-3xl border border-border-subtle p-8 shadow-2xl text-center text-text-muted text-xs animate-pulse">
+              <div className="glass-strong rounded-3xl border border-border-subtle p-4 sm:p-8 shadow-2xl text-center text-text-muted text-xs animate-pulse">
                 Checking secure access for {queryRef}...
               </div>
             )}
