@@ -22,9 +22,9 @@ export function CheckoutForm({ event, isExpired, isDisabled, onSubmit, onErrorSe
   const [guestEmail, setGuestEmail] = useState('');
   const [guestEmailConfirm, setGuestEmailConfirm] = useState('');
   const [guestPhone, setGuestPhone] = useState('');
-  const [keepUpdated, setKeepUpdated] = useState(true);
+  const [keepUpdated, setKeepUpdated] = useState(false);
   const [sendBestEvents, setSendBestEvents] = useState(false);
-  
+
   const [ageConfirmed, setAgeConfirmed] = useState(false);
 
   const [hasPrefilled, setHasPrefilled] = useState(false);
@@ -74,7 +74,7 @@ export function CheckoutForm({ event, isExpired, isDisabled, onSubmit, onErrorSe
       if (!guestEmailConfirm.trim()) errors.guestEmailConfirm = 'Please confirm your email';
       else if (guestEmailConfirm !== guestEmail) errors.guestEmailConfirm = 'Emails do not match';
     }
-    
+
     // Optional mobile number
     // if (!guestPhone.trim()) errors.guestPhone = 'Phone number is required';
 
@@ -119,9 +119,8 @@ export function CheckoutForm({ event, isExpired, isDisabled, onSubmit, onErrorSe
               disabled={isDisabled}
               onChange={(e) => setFirstName(e.target.value)}
               placeholder="First name"
-              className={`w-full px-4 py-2 rounded-xl bg-background border text-base lg:text-sm text-white focus:outline-none transition-colors ${
-                fieldErrors.firstName ? 'border-red-500' : 'border-white/10 focus:border-accent-purple'
-              }`}
+              className={`w-full px-4 py-2 rounded-xl bg-background border text-base lg:text-sm text-white focus:outline-none transition-colors ${fieldErrors.firstName ? 'border-red-500' : 'border-white/10 focus:border-accent-purple'
+                }`}
             />
             {fieldErrors.firstName && <p className="text-red-400 text-[10px]">{fieldErrors.firstName}</p>}
           </div>
@@ -134,9 +133,8 @@ export function CheckoutForm({ event, isExpired, isDisabled, onSubmit, onErrorSe
               disabled={isDisabled}
               onChange={(e) => setLastName(e.target.value)}
               placeholder="Last name"
-              className={`w-full px-4 py-2 rounded-xl bg-background border text-base lg:text-sm text-white focus:outline-none transition-colors ${
-                fieldErrors.lastName ? 'border-red-500' : 'border-white/10 focus:border-accent-purple'
-              }`}
+              className={`w-full px-4 py-2 rounded-xl bg-background border text-base lg:text-sm text-white focus:outline-none transition-colors ${fieldErrors.lastName ? 'border-red-500' : 'border-white/10 focus:border-accent-purple'
+                }`}
             />
             {fieldErrors.lastName && <p className="text-red-400 text-[10px]">{fieldErrors.lastName}</p>}
           </div>
@@ -153,9 +151,8 @@ export function CheckoutForm({ event, isExpired, isDisabled, onSubmit, onErrorSe
               readOnly={!!user}
               onChange={(e) => setGuestEmail(e.target.value)}
               placeholder="email@example.com"
-              className={`w-full px-4 py-2 rounded-xl bg-background border text-base lg:text-sm focus:outline-none transition-colors ${
-                user ? 'text-text-muted/60 bg-white/5 cursor-not-allowed border-white/5' : 'text-white bg-background ' + (fieldErrors.guestEmail ? 'border-red-500' : 'border-white/10 focus:border-accent-purple')
-              }`}
+              className={`w-full px-4 py-2 rounded-xl bg-background border text-base lg:text-sm focus:outline-none transition-colors ${user ? 'text-text-muted/60 bg-white/5 cursor-not-allowed border-white/5' : 'text-white bg-background ' + (fieldErrors.guestEmail ? 'border-red-500' : 'border-white/10 focus:border-accent-purple')
+                }`}
             />
             {fieldErrors.guestEmail && <p className="text-red-400 text-[10px]">{fieldErrors.guestEmail}</p>}
             {user && <p className="text-[10px] text-text-muted/60 mt-1">Verified via your connected account.</p>}
@@ -171,9 +168,8 @@ export function CheckoutForm({ event, isExpired, isDisabled, onSubmit, onErrorSe
                 disabled={isDisabled}
                 onChange={(e) => setGuestEmailConfirm(e.target.value)}
                 placeholder="Confirm email address"
-                className={`w-full px-4 py-2 rounded-xl bg-background border text-base lg:text-sm text-white focus:outline-none transition-colors ${
-                  fieldErrors.guestEmailConfirm ? 'border-red-500' : 'border-white/10 focus:border-accent-purple'
-                }`}
+                className={`w-full px-4 py-2 rounded-xl bg-background border text-base lg:text-sm text-white focus:outline-none transition-colors ${fieldErrors.guestEmailConfirm ? 'border-red-500' : 'border-white/10 focus:border-accent-purple'
+                  }`}
               />
               {fieldErrors.guestEmailConfirm && <p className="text-red-400 text-[10px]">{fieldErrors.guestEmailConfirm}</p>}
             </div>
@@ -190,9 +186,8 @@ export function CheckoutForm({ event, isExpired, isDisabled, onSubmit, onErrorSe
               disabled={isDisabled}
               onChange={(e) => setGuestPhone(e.target.value)}
               placeholder="+91 98765 43210"
-              className={`w-full px-4 py-2 rounded-xl bg-background border text-base lg:text-sm text-white focus:outline-none transition-colors ${
-                fieldErrors.guestPhone ? 'border-red-500' : 'border-white/10 focus:border-accent-purple'
-              }`}
+              className={`w-full px-4 py-2 rounded-xl bg-background border text-base lg:text-sm text-white focus:outline-none transition-colors ${fieldErrors.guestPhone ? 'border-red-500' : 'border-white/10 focus:border-accent-purple'
+                }`}
             />
             {fieldErrors.guestPhone && <p className="text-red-400 text-[10px]">{fieldErrors.guestPhone}</p>}
           </div>
@@ -237,9 +232,8 @@ export function CheckoutForm({ event, isExpired, isDisabled, onSubmit, onErrorSe
                     setFieldErrors((prev) => ({ ...prev, ageConfirmed: '' }));
                   }
                 }}
-                className={`mt-0.5 w-4 h-4 rounded bg-background accent-accent-purple ${
-                  fieldErrors.ageConfirmed ? 'border border-red-500' : 'border-white/20'
-                }`}
+                className={`mt-0.5 w-4 h-4 rounded bg-background accent-accent-purple ${fieldErrors.ageConfirmed ? 'border border-red-500' : 'border-white/20'
+                  }`}
               />
               <span>I confirm that I am {event?.ageRestriction || 18} years of age or older and legally eligible to attend this event.</span>
             </label>
