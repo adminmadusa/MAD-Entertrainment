@@ -52,8 +52,22 @@ async function DJOperatorsServerSection() {
 // ─── Main HomePage Component (Instant TTFB / Streaming) ───────────
 
 export default function HomePage() {
+  const homepageJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'WebPage',
+    name: 'MAD Entertrainment — Book Shows, Events & DJ Nights',
+    description:
+      'Book tickets for the hottest shows, events, DJ nights, concerts, comedy shows, and live performances.',
+    url: 'https://madentertainment.in',
+  };
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        // eslint-disable-next-line react/no-danger
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(homepageJsonLd) }}
+      />
       {/* ─── Hero Section ─────────────────────────────────── */}
       <HeroSection />
 
