@@ -3,15 +3,9 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { ArrowRight, useFocusTrap } from '@mad/ui';
-
-const navLinks = [
-  { label: 'Events', href: '/events' },
-  { label: 'My Tickets', href: '/tickets' },
-  { label: 'DJs', href: '/dj-operators' },
-  { label: 'Help Center', href: '/support' },
-];
+import { useAuth } from '@/hooks/use-auth.hook';
 
 export function Navbar() {
   const pathname = usePathname();
@@ -19,6 +13,24 @@ export function Navbar() {
 
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  const { isAuthenticated, user, logout } = useAuth();
+
+  const firstName = user?.firstName || user?.name?.split(' ')[0] || 'Member';
+
+  const dynamicLinks = [
+    { label: 'Events', href: '/events' },
+    { label: 'My Tickets', href: '/tickets' },
+    { label: 'DJs', href: '/dj-operators' },
+    ...(isAuthenticated ? [{ label: 'Dashboard', href: '/dashboard' }] : []),
+    { label: 'Help Center', href: '/support' },
+    ...(!isAuthenticated ? [{ label: 'Login', href: '/login' }] : []),
+  ];
+
+  const handleLogout = async () => {
+    await logout();
+    setMobileOpen(false);
+  };
   
   const mobileMenuRef = useFocusTrap<HTMLDivElement>({
     isActive: mobileOpen,
@@ -128,7 +140,7 @@ export function Navbar() {
 
         {/* Desktop Nav */}
         <div className="hidden md:flex items-center gap-1">
-          {navLinks.map((link) => (
+          {dynamicLinks.map((link) => (
             <NavLink key={link.href} href={link.href}>
               {link.label}
             </NavLink>
@@ -137,13 +149,27 @@ export function Navbar() {
 
         {/* Desktop CTA */}
         <div className="hidden md:flex items-center gap-3">
-          {/* H-08 FIX: replaced Link>button nesting (invalid HTML) with styled Link */}
-          <Link
-            href="/tickets"
-            className="px-4 py-2 text-sm font-medium text-text-secondary hover:text-text-primary transition-colors"
-          >
-            My Tickets
-          </Link>
+          {isAuthenticated ? (
+            <div className="flex items-center gap-4">
+              <span className="text-sm text-text-secondary">
+                Hi, <span className="text-white font-semibold">{firstName}</span>
+              </span>
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="px-4 py-2 text-sm font-semibold text-text-secondary hover:text-white transition-colors"
+              >
+                Logout
+              </button>
+            </div>
+          ) : (
+            <Link
+              href="/login"
+              className="px-4 py-2 text-sm font-medium text-text-secondary hover:text-text-primary transition-colors"
+            >
+              Login
+            </Link>
+          )}
           <Link
             href="/events"
             className="px-5 py-2.5 text-sm font-semibold btn-gradient text-white rounded-xl shadow-glow-sm hover:scale-[1.03] active:scale-95 transition-transform"
@@ -201,7 +227,7 @@ export function Navbar() {
             tabIndex={-1}
           >
             <div className="container-mad py-4 flex flex-col gap-1">
-              {navLinks.map((link, i) => (
+              {dynamicLinks.map((link, i) => (
                 <motion.div
                   key={link.href}
                   initial={{ opacity: 0, x: -20 }}
@@ -218,14 +244,28 @@ export function Navbar() {
                 </motion.div>
               ))}
               <div className="mt-3 pt-3 border-t border-border-subtle flex flex-col gap-2">
-                {/* H-08 FIX: replaced Link>button nesting with styled Link */}
-                <Link
-                  href="/tickets"
-                  onClick={() => setMobileOpen(false)}
-                  className="w-full py-3 px-4 text-text-secondary hover:text-text-primary hover:bg-white/5 rounded-xl transition-colors font-medium text-left block"
-                >
-                  My Tickets
-                </Link>
+                {isAuthenticated ? (
+                  <>
+                    <div className="px-4 py-2 text-xs font-semibold text-text-muted uppercase tracking-wider">
+                      Hi, {firstName}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleLogout}
+                      className="w-full py-3 px-4 text-text-secondary hover:text-text-primary hover:bg-white/5 rounded-xl transition-colors font-medium text-left block"
+                    >
+                      Logout
+                    </button>
+                  </>
+                ) : (
+                  <Link
+                    href="/login"
+                    onClick={() => setMobileOpen(false)}
+                    className="w-full py-3 px-4 text-text-secondary hover:text-text-primary hover:bg-white/5 rounded-xl transition-colors font-medium text-left block"
+                  >
+                    Login
+                  </Link>
+                )}
                 <Link
                   href="/events"
                   onClick={() => setMobileOpen(false)}
