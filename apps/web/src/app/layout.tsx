@@ -107,9 +107,42 @@ interface RootLayoutProps {
 }
 
 export default function RootLayout({ children }: RootLayoutProps) {
+  const websiteJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: 'MAD Entertrainment',
+    url: 'https://madentertainment.in',
+    potentialAction: {
+      '@type': 'SearchAction',
+      target: {
+        '@type': 'EntryPoint',
+        urlTemplate: 'https://madentertainment.in/events?search={search_term_string}',
+      },
+      'query-input': 'required name=search_term_string',
+    },
+  };
+
+  const organizationJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: 'MAD Entertrainment',
+    url: 'https://madentertainment.in',
+    logo: 'https://madentertainment.in/og-image.png',
+  };
+
   return (
     <html lang="en" className={`${outfit.variable} dark`} suppressHydrationWarning>
       <body className="bg-background text-text-primary antialiased relative min-h-screen">
+        <script
+          type="application/ld+json"
+          // eslint-disable-next-line react/no-danger
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
+        />
+        <script
+          type="application/ld+json"
+          // eslint-disable-next-line react/no-danger
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
+        />
         <ChunkRecoveryClear />
         {/* Ambient Entertainment Backdrop (Phase 4) */}
         <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden" aria-hidden="true">
