@@ -19,7 +19,7 @@ No third-party slider packages (e.g., Swiper, Slick, Embla) are imported; all in
 
 | Component / File Path | System Type | Core Issues Detected | Max Severity | WCAG Violation |
 | :--- | :--- | :--- | :---: | :---: |
-| [featured-events-section.tsx](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/components/ui/featured-events-section.tsx) | 3D Deck Cover Flow Slider | Broken Touch Swipe, Hardcoded Focus Trap, Keyboard Blocks on Booking buttons, Missing Alt Text, Missing ARIA Roles & Landmarks, Hydration Layout Shift (CLS) | **CRITICAL** | 2.1.1 (Keyboard)<br>2.5.1 (Pointer Gestures)<br>1.1.1 (Non-text) |
+| [FeaturedEventsSection.tsx](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/components/ui/FeaturedEventsSection.tsx) | 3D Deck Cover Flow Slider | Broken Touch Swipe, Hardcoded Focus Trap, Keyboard Blocks on Booking buttons, Missing Alt Text, Missing ARIA Roles & Landmarks, Hydration Layout Shift (CLS) | **CRITICAL** | 2.1.1 (Keyboard)<br>2.5.1 (Pointer Gestures)<br>1.1.1 (Non-text) |
 | [events/page.tsx](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/app/events/page.tsx) | Category Navigation Tablist | Redundant Tabbing Sequence, Missing Arrow Key Navigation, hidden scroll cues | **MEDIUM** | 2.4.3 (Focus Order) |
 | [not-found.tsx](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/app/not-found.tsx) | Volume Fader Slider (404 DJ Deck) | Missing Label Association, Unlabeled Control | **LOW** | 1.3.1 (Info & Relationships) |
 
@@ -30,7 +30,7 @@ No third-party slider packages (e.g., Swiper, Slick, Embla) are imported; all in
 ---
 
 ### Audit Item #1: 3D Deck Cover Flow Carousel
-* **File Path:** [`apps/web/src/components/ui/featured-events-section.tsx`](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/components/ui/featured-events-section.tsx)
+* **File Path:** [FeaturedEventsSection.tsx](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/components/ui/FeaturedEventsSection.tsx)
 * **Impacted Route:** Home Page (`/`) Featured Events Section
 * **System Severity:** 🚨 **CRITICAL / HIGH**
 
@@ -572,7 +572,7 @@ Programmatically links the label to the volume range `<input>` element.
 
 To securely patch the active codebase with these reviewable changes while strictly adhering to `user_global` rules, follow this sequence:
 
-1. **Pull Request 1 (Slider Accessibility & Gestures):** Apply drop-in replacement code for `FeaturedEventsSection` in [`featured-events-section.tsx`](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/components/ui/featured-events-section.tsx).
+1. **Pull Request 1 (Slider Accessibility & Gestures):** Apply drop-in replacement code for `FeaturedEventsSection` in [FeaturedEventsSection.tsx](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/components/ui/FeaturedEventsSection.tsx).
 2. **Pull Request 2 (Tablist Accessibility & Keys):** Apply tablist patterns to Category buttons in [`events/page.tsx`](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/app/events/page.tsx).
 3. **Pull Request 3 (Volume Slider A11y Label):** Apply associated labels to the range input in [`not-found.tsx`](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/app/not-found.tsx).
 
