@@ -1,6 +1,7 @@
 'use client';
 
 import { useMutation } from '@tanstack/react-query';
+import Link from 'next/link';
 import { useState, useEffect, useCallback, useRef } from 'react';
 
 import { extractApiError } from '@/lib/api/client';
@@ -547,6 +548,18 @@ export function AuthForm({
               </div>
             )}
           </form>
+
+          <p className="text-[11px] text-text-muted text-center leading-normal">
+            By continuing, you agree to our{' '}
+            <Link href="/legal/terms" className="text-accent-purple hover:underline font-semibold">
+              Terms of Service
+            </Link>{' '}
+            and{' '}
+            <Link href="/legal/privacy" className="text-accent-purple hover:underline font-semibold">
+              Privacy Policy
+            </Link>
+            .
+          </p>
 
           {/* Stacked Divider */}
           <div className="flex items-center my-6">

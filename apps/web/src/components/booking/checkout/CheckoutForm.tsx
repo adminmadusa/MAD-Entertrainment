@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { CheckoutDetailsInput } from '@mad/validations';
 import { useAuth } from '@/providers/AuthProvider';
 
@@ -217,6 +218,18 @@ export function CheckoutForm({ event, isExpired, isDisabled, onSubmit, onErrorSe
             <span>Send me emails about the best events happening nearby or online.</span>
           </label>
         </div>
+
+        <p className="text-[11px] text-text-muted leading-relaxed pt-3 border-t border-white/5">
+          By completing your booking, you agree to our{' '}
+          <Link href="/legal/terms" className="text-accent-purple hover:underline font-semibold">
+            Terms of Service
+          </Link>{' '}
+          and{' '}
+          <Link href="/legal/privacy" className="text-accent-purple hover:underline font-semibold">
+            Privacy Policy
+          </Link>
+          .
+        </p>
 
         {/* Age Confirmation Requirement */}
         {event?.requireAgeConfirmation && (
