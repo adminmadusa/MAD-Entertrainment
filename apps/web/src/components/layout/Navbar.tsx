@@ -13,23 +13,27 @@ export function Navbar() {
 
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
 
   const { isAuthenticated, user, logout } = useAuth();
 
   const firstName = user?.firstName || user?.name?.split(' ')[0] || 'Member';
 
-  const dynamicLinks = [
-    { label: 'Events', href: '/events' },
-    { label: 'My Tickets', href: '/tickets' },
-    { label: 'DJs', href: '/dj-operators' },
-    ...(isAuthenticated ? [{ label: 'Dashboard', href: '/dashboard' }] : []),
-    { label: 'Help Center', href: '/support' },
-    ...(!isAuthenticated ? [{ label: 'Login', href: '/login' }] : []),
-  ];
+  const dynamicLinks = isAuthenticated
+    ? [
+        { label: 'Dashboard', href: '/dashboard' },
+        { label: 'My Tickets', href: '/tickets' },
+      ]
+    : [
+        { label: 'Events', href: '/events' },
+        { label: 'DJs', href: '/dj-operators' },
+        { label: 'Help Center', href: '/support' },
+      ];
 
   const handleLogout = async () => {
     await logout();
     setMobileOpen(false);
+    setDropdownOpen(false);
   };
   
   const mobileMenuRef = useFocusTrap<HTMLDivElement>({
@@ -67,6 +71,7 @@ export function Navbar() {
   // the menu open on the new page.
   useEffect(() => {
     setMobileOpen(false);
+    setDropdownOpen(false);
   }, [pathname]);
 
   const [footerIntersecting, setFooterIntersecting] = useState(false);
@@ -150,17 +155,46 @@ export function Navbar() {
         {/* Desktop CTA */}
         <div className="hidden md:flex items-center gap-3">
           {isAuthenticated ? (
-            <div className="flex items-center gap-4">
-              <span className="text-sm text-text-secondary">
-                Hi, <span className="text-white font-semibold">{firstName}</span>
-              </span>
+            <div className="relative">
               <button
                 type="button"
-                onClick={handleLogout}
-                className="px-4 py-2 text-sm font-semibold text-text-secondary hover:text-white transition-colors"
+                onClick={() => setDropdownOpen(!dropdownOpen)}
+                className="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-text-secondary hover:text-white transition-colors focus:outline-none"
+                aria-expanded={dropdownOpen}
+                aria-haspopup="true"
               >
-                Logout
+                Hi, <span className="text-white font-bold">{firstName}</span>
+                <span className="text-[10px] transition-transform duration-200" style={{ display: 'inline-block', transform: dropdownOpen ? 'rotate(180deg)' : 'rotate(0)' }}>▼</span>
               </button>
+              {dropdownOpen && (
+                <>
+                  {/* Backdrop overlay to close the dropdown on click outside */}
+                  <div className="fixed inset-0 z-40" onClick={() => setDropdownOpen(false)} />
+                  <div className="absolute right-0 mt-2 w-48 bg-background-secondary border border-border-subtle rounded-xl shadow-xl py-2 z-50">
+                    <div className="px-4 py-2 border-b border-border-subtle/50 mb-1">
+                      <p className="text-[10px] text-text-muted uppercase tracking-wider">Signed in as</p>
+                      <p className="text-sm font-semibold text-white truncate">{user?.email}</p>
+                    </div>
+                    <Link
+                      href="/dashboard"
+                      onClick={() => setDropdownOpen(false)}
+                      className="block px-4 py-2 text-sm text-text-secondary hover:text-white hover:bg-white/5 transition-colors"
+                    >
+                      Profile
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setDropdownOpen(false);
+                        handleLogout();
+                      }}
+                      className="w-full text-left block px-4 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/5 transition-colors"
+                    >
+                      Logout
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           ) : (
             <Link
@@ -246,13 +280,20 @@ export function Navbar() {
               <div className="mt-3 pt-3 border-t border-border-subtle flex flex-col gap-2">
                 {isAuthenticated ? (
                   <>
-                    <div className="px-4 py-2 text-xs font-semibold text-text-muted uppercase tracking-wider">
+                    <div className="px-4 py-1.5 text-[10px] font-semibold text-text-muted uppercase tracking-wider">
                       Hi, {firstName}
                     </div>
+                    <Link
+                      href="/dashboard"
+                      onClick={() => setMobileOpen(false)}
+                      className="block py-3 px-4 text-text-secondary hover:text-text-primary hover:bg-white/5 rounded-xl transition-colors font-medium"
+                    >
+                      Profile
+                    </Link>
                     <button
                       type="button"
                       onClick={handleLogout}
-                      className="w-full py-3 px-4 text-text-secondary hover:text-text-primary hover:bg-white/5 rounded-xl transition-colors font-medium text-left block"
+                      className="w-full py-3 px-4 text-red-400 hover:text-red-350 hover:bg-white/5 rounded-xl transition-colors font-medium text-left block"
                     >
                       Logout
                     </button>

@@ -4,7 +4,7 @@ import { QUERY_KEYS } from '@mad/shared';
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 import { BookingHeaderCard } from '@/components/booking/shared/BookingHeaderCard';
 import { publicGetMyBookings } from '@/lib/api/public.service';
@@ -74,12 +74,17 @@ function BookingCardSkeleton() {
 export default function UserDashboardPage() {
   const { user, isAuthenticated, isLoading: isAuthLoading, logout } = useAuth();
   const router = useRouter();
+  const bookingsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!isAuthLoading && !isAuthenticated) {
       router.replace('/login');
     }
   }, [isAuthenticated, isAuthLoading, router]);
+
+  const scrollToBookings = () => {
+    bookingsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
 
   const {
     data: bookingsData,
@@ -93,13 +98,7 @@ export default function UserDashboardPage() {
     retry: false,
   });
 
-  const handleLogout = async () => {
-    try {
-      await logout();
-    } catch (err) {
-      console.error('Logout error:', err);
-    }
-  };
+
 
   const showSkeleton = isAuthLoading || !isAuthenticated;
   const userName = user?.name || [user?.firstName, user?.lastName].filter(Boolean).join(' ') || 'Account User';
@@ -189,16 +188,8 @@ export default function UserDashboardPage() {
         {/* Page Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <h1 className="text-display-sm font-black text-white tracking-tight">
-            Account Dashboard
+            Welcome, {userName}
           </h1>
-          {isAuthenticated && (
-            <button
-              onClick={handleLogout}
-              className="px-5 py-2.5 bg-white/5 hover:bg-white/10 border border-border-subtle rounded-xl text-text-primary hover:text-white text-xs font-bold transition-all self-start sm:self-center"
-            >
-              Log Out
-            </button>
-          )}
         </div>
 
         {showSkeleton ? (
@@ -212,7 +203,43 @@ export default function UserDashboardPage() {
           </div>
         ) : (
           <div className="space-y-8">
-            {/* Profile Card */}
+            {/* Quick Access Grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <Link 
+                href="/tickets" 
+                className="glass p-5 rounded-2xl text-center hover:bg-white/5 border border-white/5 hover:border-accent-purple/30 hover:shadow-glow-sm/10 transition-all group"
+              >
+                <div className="text-2xl mb-2 group-hover:scale-110 transition-transform">🎫</div>
+                <div className="font-bold text-white text-sm">My Tickets</div>
+                <div className="text-text-muted text-[10px] mt-1">View active passes</div>
+              </Link>
+              <button 
+                onClick={scrollToBookings} 
+                className="glass p-5 rounded-2xl text-center hover:bg-white/5 border border-white/5 hover:border-accent-purple/30 hover:shadow-glow-sm/10 transition-all group"
+              >
+                <div className="text-2xl mb-2 group-hover:scale-110 transition-transform">📅</div>
+                <div className="font-bold text-white text-sm">My Bookings</div>
+                <div className="text-text-muted text-[10px] mt-1">Manage reservations</div>
+              </button>
+              <Link 
+                href="/events" 
+                className="glass p-5 rounded-2xl text-center hover:bg-white/5 border border-white/5 hover:border-accent-purple/30 hover:shadow-glow-sm/10 transition-all group"
+              >
+                <div className="text-2xl mb-2 group-hover:scale-110 transition-transform">⚡</div>
+                <div className="font-bold text-white text-sm">Book Event</div>
+                <div className="text-text-muted text-[10px] mt-1">Find live events</div>
+              </Link>
+              <Link 
+                href="/support" 
+                className="glass p-5 rounded-2xl text-center hover:bg-white/5 border border-white/5 hover:border-accent-purple/30 hover:shadow-glow-sm/10 transition-all group"
+              >
+                <div className="text-2xl mb-2 group-hover:scale-110 transition-transform">❓</div>
+                <div className="font-bold text-white text-sm">Help Center</div>
+                <div className="text-text-muted text-[10px] mt-1">FAQ and support</div>
+              </Link>
+            </div>
+
+            {/* Profile Card / Account Details */}
             <div className="glass rounded-3xl border border-border-subtle p-6 sm:p-8 space-y-6 shadow-xl">
               <div className="flex items-center gap-4">
                 {user?.picture ? (
@@ -228,8 +255,8 @@ export default function UserDashboardPage() {
                   </div>
                 )}
                 <div>
-                  <h2 className="text-white font-bold text-xl">{userName}</h2>
-                  <p className="text-text-secondary text-xs mt-1">Manage your profile and show bookings</p>
+                  <h2 className="text-white font-bold text-xl">Account Details</h2>
+                  <p className="text-text-secondary text-xs mt-1">Manage your profile and linked contact details</p>
                 </div>
               </div>
 
@@ -248,13 +275,13 @@ export default function UserDashboardPage() {
                 </div>
                 <div>
                   <span className="text-[10px] text-text-muted uppercase tracking-wider block">Account Type</span>
-                  <span className="text-white font-semibold capitalize">{user?.isGuest ? 'Guest Wallet' : 'Registered Member'}</span>
+                  <span className="text-white font-semibold capitalize">{user?.isGuest ? 'Guest Account' : 'Registered Member'}</span>
                 </div>
               </div>
             </div>
 
             {/* Bookings Section */}
-            <div className="space-y-4">
+            <div ref={bookingsRef} className="space-y-4">
               <h3 className="text-white font-bold text-lg">My Bookings</h3>
               {renderBookingsContent()}
             </div>

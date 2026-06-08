@@ -1,11 +1,19 @@
 'use client';
 
-import { Suspense } from 'react';
+import { Suspense, useEffect } from 'react';
 import { AuthForm } from '@/components/auth/AuthForm';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/providers/AuthProvider';
 
 function LoginPageContent() {
   const router = useRouter();
+  const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
+
+  useEffect(() => {
+    if (!isAuthLoading && isAuthenticated) {
+      router.replace('/dashboard');
+    }
+  }, [isAuthenticated, isAuthLoading, router]);
 
   return (
     <div className="min-h-screen pt-28 pb-16 flex items-center justify-center relative overflow-hidden bg-background">
@@ -24,7 +32,7 @@ function LoginPageContent() {
             </p>
           </div>
 
-          <AuthForm mode="login" onSuccess={() => router.push('/tickets')} />
+          <AuthForm mode="login" onSuccess={() => router.push('/dashboard')} />
         </div>
       </div>
     </div>

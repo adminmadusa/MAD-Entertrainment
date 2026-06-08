@@ -1,13 +1,14 @@
 'use client';
 
 import { BookingStatus, QUERY_KEYS } from '@mad/shared';
+import type { Booking, Event } from '@mad/types';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { useState, useEffect, Suspense, useRef } from 'react';
 import { Modal } from '@mad/ui';
 
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 
 import { useCountdown } from '@/hooks/use-countdown.hook';
 import { extractApiError } from '@/lib/api/client';
@@ -76,6 +77,7 @@ function TicketStatusMessage({ status }: { status: string }) {
 
 function TicketRetrievalContent() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const targetRef = searchParams.get('ref');
   const pollCountRef = useRef(0);
 
@@ -88,6 +90,7 @@ function TicketRetrievalContent() {
   const [queryRef, setQueryRef] = useState(targetRef || '');
   const [step, setStep] = useState<'email' | 'portal'>('email');
   const [showLoginForGuest, setShowLoginForGuest] = useState(false);
+  const [isAuthModalDismissed, setIsAuthModalDismissed] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [infoMsg, setInfoMsg] = useState('');
 
@@ -117,13 +120,19 @@ function TicketRetrievalContent() {
         sessionStorage.removeItem('just_logged_in');
         setErrorMsg(''); // Clear any stale validation errors from pre-login state
         if (bookings.length > 0) {
-          setInfoMsg(`We found ${bookings.length} booking${bookings.length === 1 ? '' : 's'} linked to your email and added them to your wallet!`);
+          setInfoMsg(`We found ${bookings.length} booking${bookings.length === 1 ? '' : 's'} linked to your email and added them to your account!`);
           // Clear message after 6 seconds
           setTimeout(() => setInfoMsg(''), 6000);
         }
       }
     }
   }, [isAuthenticated, isBookingsLoading, bookings.length]);
+
+  useEffect(() => {
+    if (showLoginForGuest) {
+      setIsAuthModalDismissed(false);
+    }
+  }, [showLoginForGuest]);
 
   // Resend / Download States
   const [resendingId, setResendingId] = useState<string | null>(null);
@@ -249,6 +258,7 @@ function TicketRetrievalContent() {
     setErrorMsg('');
     setInfoMsg('');
     pollCountRef.current = 0;
+    setIsAuthModalDismissed(false);
 
     const normalizedRef = bookingRefInput.trim().toUpperCase();
     if (!normalizedRef) {
@@ -266,6 +276,7 @@ function TicketRetrievalContent() {
     setInfoMsg('');
     setQueryRef('');
     setBookingRefInput('');
+    setIsAuthModalDismissed(false);
   };
 
   const handleSignOutAndVerifyEmail = () => {
@@ -273,6 +284,7 @@ function TicketRetrievalContent() {
     setStep('email');
     setErrorMsg('');
     setInfoMsg('');
+    setIsAuthModalDismissed(false);
   };
 
   const handleSearchAnother = () => {
@@ -286,6 +298,7 @@ function TicketRetrievalContent() {
     setRecoveredEmail('');
     setShowRecoveryResult(false);
     setShowSupportGuidance(false);
+    setIsAuthModalDismissed(false);
   };
 
   const handleSwitchToRecovery = () => {
@@ -355,6 +368,7 @@ function TicketRetrievalContent() {
     setLookupMode('reference');
     setShowRecoveryResult(false);
     setTransactionIdInput('');
+    setIsAuthModalDismissed(false);
   };
 
 
@@ -366,8 +380,10 @@ function TicketRetrievalContent() {
   const isOwnershipVerificationRequired = singleLookupApiError?.code === 'BOOKING_VERIFICATION_REQUIRED';
   const isOwnershipMismatch = isAuthenticated && isOwnershipVerificationRequired;
   const shouldShowPortal = (step === 'portal' || !!singleBooking) && !showLoginForGuest;
-  const shouldShowAuthForm = (!shouldShowPortal && !isSingleLookupLoading) || showLoginForGuest;
-  const shouldShowReferenceForm = !singleBooking;
+  const shouldShowAuthForm =
+    ((!shouldShowPortal && !isSingleLookupLoading) && !isAuthModalDismissed) ||
+    showLoginForGuest;
+  const shouldShowReferenceForm = !singleBooking && !isAuthenticated;
 
   const renderReferenceFormContent = () => {
     if (showSupportGuidance) {
@@ -532,7 +548,7 @@ function TicketRetrievalContent() {
         {/* Header */}
         <div className="text-center space-y-3">
           <h1 className="text-display-sm font-black text-white tracking-tight">
-            {shouldShowPortal ? 'My Ticket Wallet' : 'My Tickets'}
+            {shouldShowPortal ? 'My Tickets' : 'Get Your Tickets'}
           </h1>
           {!shouldShowPortal && (
             <p className="text-text-secondary text-sm max-w-md mx-auto leading-relaxed">
@@ -585,14 +601,17 @@ function TicketRetrievalContent() {
 
 
 
-        {/* SCREEN 1 & 2: Reusable Shared AuthForm Gate */}
         {shouldShowAuthForm && (
           <Modal
             isOpen={shouldShowAuthForm}
             onClose={() => {
-              if (showLoginForGuest) setShowLoginForGuest(false);
+              if (showLoginForGuest) {
+                setShowLoginForGuest(false);
+              } else {
+                setIsAuthModalDismissed(true);
+              }
             }}
-            showCloseButton={showLoginForGuest}
+            showCloseButton={false}
           >
             <div className="space-y-6">
               {!showLoginForGuest && !queryRef && (
@@ -612,11 +631,15 @@ function TicketRetrievalContent() {
                 bookingReference={queryRef}
                 onSuccess={() => { 
                   sessionStorage.setItem('just_logged_in', 'true');
-                  setStep('portal'); 
-                  setShowLoginForGuest(false); 
-                  setErrorMsg('');
-                  setRecoveredEmail('');
+                  router.push('/dashboard');
                 }} 
+                onClose={() => {
+                  if (showLoginForGuest) {
+                    setShowLoginForGuest(false);
+                  } else {
+                    setIsAuthModalDismissed(true);
+                  }
+                }}
               />
               {showLoginForGuest && (
                 <button 
@@ -633,25 +656,14 @@ function TicketRetrievalContent() {
         {/* SCREEN 3: Consolidated Bookings Portal Dashboard */}
         {shouldShowPortal && (
           <div className="space-y-4 sm:space-y-8 animate-in fade-in slide-in-from-bottom-5 duration-500">
-            {(!singleBooking || isAuthenticated) && (
+            {singleBooking && isAuthenticated && (
               <div className="flex justify-between items-center mb-4">
-                {singleBooking && isAuthenticated ? (
-                  <button
-                    type="button"
-                    onClick={handleSearchAnother}
-                    className="text-xs px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-border-subtle rounded-lg text-text-primary hover:text-white transition-all flex items-center gap-1.5"
-                  >
-                    <span>←</span> Back to Wallet
-                  </button>
-                ) : (
-                  <div />
-                )}
                 <button
                   type="button"
-                  onClick={handleExitPortal}
-                  className="text-xs px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-border-subtle rounded-lg text-text-primary transition-all"
+                  onClick={handleSearchAnother}
+                  className="text-xs px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-border-subtle rounded-lg text-text-primary hover:text-white transition-all flex items-center gap-1.5"
                 >
-                  Log Out
+                  <span>←</span> Back to My Tickets
                 </button>
               </div>
             )}
@@ -741,7 +753,7 @@ function TicketRetrievalContent() {
                                     onClick={() => setShowLoginForGuest(true)}
                                     className="w-full sm:w-auto px-4 py-2 sm:px-5 sm:py-2.5 bg-accent-purple hover:bg-accent-purple-light text-white text-xs font-bold rounded-xl transition-all shadow-md"
                                   >
-                                    Sign In to Wallet
+                                    Sign In to Account
                                   </button>
                                   <button
                                     type="button"
@@ -771,71 +783,118 @@ function TicketRetrievalContent() {
                 );
               }
 
-              if (sortedBookings.length > 0) {
+              const renderBookingCard = (booking: Booking, isPast = false) => {
+                const bookingTickets = tickets.filter(
+                  (t) => t.bookingId === booking._id || t.bookingId?.toString() === booking._id?.toString()
+                );
+
+                const isTarget = queryRef && booking.bookingId === queryRef;
+                const containerClasses = `glass rounded-3xl border border-border-subtle p-4 sm:p-6 md:p-8 space-y-4 sm:space-y-6 shadow-xl transition-all duration-300 hover:border-white/10 ${
+                  isTarget ? "ring-2 ring-accent-purple/50 border-accent-purple shadow-glow-purple" : ""
+                } ${isPast ? "opacity-85" : ""}`;
+
                 return (
-                  <div className="space-y-4 sm:space-y-8">
-                    {sortedBookings.map((booking) => {
-                      const bookingTickets = tickets.filter(
-                        (t) => t.bookingId === booking._id || t.bookingId?.toString() === booking._id?.toString()
-                      );
+                  <div
+                    key={booking._id}
+                    className={containerClasses}
+                  >
+                    <BookingHeaderCard booking={booking} />
 
-                      const isTarget = queryRef && booking.bookingId === queryRef;
-                      const containerClasses = isTarget
-                        ? "glass rounded-3xl p-4 sm:p-6 md:p-8 space-y-4 sm:space-y-6 shadow-glow-purple transition-all duration-300 border-accent-purple ring-2 ring-accent-purple/50"
-                        : "glass rounded-3xl border border-border-subtle p-4 sm:p-6 md:p-8 space-y-4 sm:space-y-6 shadow-xl transition-all duration-300 hover:border-white/10";
+                    {/* Tickets list for confirmed bookings */}
+                    {booking.status === BookingStatus.CONFIRMED ? (
+                      (() => {
+                        const bookingTicketsReady =
+                          bookingsData?.ticketsReadyMap?.[booking._id?.toString() ?? ''] ?? false;
 
-                      return (
-                        <div
-                          key={booking._id}
-                          className={containerClasses}
-                        >
-                          <BookingHeaderCard booking={booking} />
-
-                          {/* Tickets list for confirmed bookings */}
-                          {booking.status === BookingStatus.CONFIRMED ? (
-                            (() => {
-                              const bookingTicketsReady =
-                                bookingsData?.ticketsReadyMap?.[booking._id?.toString() ?? ''] ?? false;
-
-                              if (!bookingTicketsReady) {
-                                return (
-                                  <div className="space-y-3 pt-4 border-t border-border-subtle/30">
-                                    <h3 className="text-white font-bold text-sm">Entry Passes</h3>
-                                    <div className="glass-strong rounded-2xl border border-border-subtle p-6 text-center space-y-3">
-                                      <div className="flex items-center justify-center gap-2 text-accent-purple-light text-sm font-semibold">
-                                        <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
-                                        </svg>
-                                        Generating your tickets...
-                                      </div>
-                                      <p className="text-text-muted text-xs">Your entry passes will appear here shortly.</p>
-                                    </div>
-                                  </div>
-                                );
-                              }
-
-                              return (
-                                <div className="space-y-4 pt-4 border-t border-border-subtle/30">
-                                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-2">
-                                    <h3 className="text-white font-bold text-sm">Entry Passes</h3>
-                                    <TicketActions
-                                      downloading={downloadingId === booking.bookingId}
-                                      resending={resendingId === booking.bookingId}
-                                      onDownload={() => handleDownloadPDF(booking.bookingId)}
-                                      onResend={() => handleResendTickets(booking.bookingId)}
-                                    />
-                                  </div>
-                                  <EntryPassGrid tickets={bookingTickets} />
+                        if (!bookingTicketsReady) {
+                          return (
+                            <div className="space-y-3 pt-4 border-t border-border-subtle/30">
+                              <h3 className="text-white font-bold text-sm">Entry Passes</h3>
+                              <div className="glass-strong rounded-2xl border border-border-subtle p-6 text-center space-y-3">
+                                <div className="flex items-center justify-center gap-2 text-accent-purple-light text-sm font-semibold">
+                                  <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                                  </svg>
+                                  Generating your tickets...
                                 </div>
-                              );
-                            })()
-                          ) : (
-                            <TicketStatusMessage status={booking.status} />
-                          )}
+                                <p className="text-text-muted text-xs">Your entry passes will appear here shortly.</p>
+                              </div>
+                            </div>
+                          );
+                        }
+
+                        return (
+                          <div className="space-y-4 pt-4 border-t border-border-subtle/30">
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-2">
+                              <h3 className="text-white font-bold text-sm">Entry Passes</h3>
+                              <TicketActions
+                                downloading={downloadingId === booking.bookingId}
+                                resending={resendingId === booking.bookingId}
+                                onDownload={() => handleDownloadPDF(booking.bookingId)}
+                                onResend={() => handleResendTickets(booking.bookingId)}
+                              />
+                            </div>
+                            <EntryPassGrid tickets={bookingTickets} />
+                          </div>
+                        );
+                      })()
+                    ) : (
+                      <TicketStatusMessage status={booking.status} />
+                    )}
+
+                    {/* View Booking Details Link */}
+                    <div className="pt-4 border-t border-border-subtle/30 flex justify-between items-center text-xs">
+                      <Link
+                        href={`/bookings/${booking.bookingId}`}
+                        className="text-accent-purple-light font-bold hover:underline"
+                      >
+                        View Booking Details →
+                      </Link>
+                    </div>
+                  </div>
+                );
+              };
+
+              if (sortedBookings.length > 0) {
+                const now = new Date();
+                const upcomingBookings = sortedBookings.filter((booking) => {
+                  const eventInfo = booking.eventId as unknown as Partial<Event>;
+                  const startDate = eventInfo?.startDate ? new Date(eventInfo.startDate) : null;
+                  const isConfirmed = booking.status === BookingStatus.CONFIRMED;
+                  if (!isConfirmed) return false;
+                  if (!startDate) return true;
+                  return startDate >= now;
+                });
+
+                const pastBookings = sortedBookings.filter((booking) => {
+                  const eventInfo = booking.eventId as unknown as Partial<Event>;
+                  const startDate = eventInfo?.startDate ? new Date(eventInfo.startDate) : null;
+                  const isConfirmed = booking.status === BookingStatus.CONFIRMED;
+                  if (!isConfirmed) return true;
+                  if (!startDate) return false;
+                  return startDate < now;
+                });
+
+                return (
+                  <div className="space-y-8">
+                    {upcomingBookings.length > 0 && (
+                      <div className="space-y-4">
+                        <h2 className="text-white font-bold text-lg border-b border-border-subtle/30 pb-2">Upcoming Tickets</h2>
+                        <div className="space-y-4 sm:space-y-6">
+                          {upcomingBookings.map((b) => renderBookingCard(b, false))}
                         </div>
-                      );
-                    })}
+                      </div>
+                    )}
+
+                    {pastBookings.length > 0 && (
+                      <div className="space-y-4">
+                        <h2 className="text-white font-bold text-lg border-b border-border-subtle/30 pb-2">Past Tickets</h2>
+                        <div className="space-y-4 sm:space-y-6">
+                          {pastBookings.map((b) => renderBookingCard(b, true))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 );
               }
@@ -885,7 +944,7 @@ export default function TicketRetrievalPage() {
   return (
     <Suspense fallback={
       <div className="pt-28 pb-16 min-h-screen bg-background flex items-center justify-center">
-        <div className="text-purple-300 animate-pulse text-sm">Loading Ticket Wallet...</div>
+        <div className="text-purple-300 animate-pulse text-sm">Loading My Tickets...</div>
       </div>
     }>
       <TicketRetrievalContent />
