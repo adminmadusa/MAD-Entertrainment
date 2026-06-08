@@ -14,7 +14,7 @@ function LoginPageContent() {
       <div className="absolute -bottom-10 -right-10 w-[300px] h-[300px] bg-purple-500/5 rounded-full blur-[100px] pointer-events-none" />
 
       <div className="container-mad max-w-md relative z-10 w-full px-4">
-        <div className="glass-strong rounded-3xl border border-border-subtle p-8 shadow-2xl transition-all duration-500 hover:border-white/10">
+        <div className="glass-strong rounded-3xl border border-border-subtle p-5 sm:p-8 shadow-2xl transition-all duration-500 hover:border-white/10">
           <div className="text-center mb-8">
             <h1 className="text-3xl font-black text-white mb-2 tracking-tight">
               Welcome Back
