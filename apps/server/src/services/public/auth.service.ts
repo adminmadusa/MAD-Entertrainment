@@ -90,21 +90,19 @@ export class AuthService {
       // 2. Hash the OTP for secure database storage
       const otpHash = crypto.createHash('sha256').update(otp).digest('hex');
 
-      // 3. Save MagicToken (atomic upsert)
-      token = await MagicTokenModel.findOneAndUpdate(
-        { email: normalizedEmail },
-        {
-          $set: {
-            otp: otpHash,
-            firstName: registrationData?.firstName,
-            lastName: registrationData?.lastName,
-            mobileNumber: registrationData?.mobileNumber,
-            expiresAt,
-          },
-        },
-        { upsert: true, new: true, runValidators: true }
-      );
+      // 3. Delete existing and save MagicToken (atomic recreation)
+      await MagicTokenModel.deleteOne({ email: normalizedEmail });
+
+      token = await MagicTokenModel.create({
+        email: normalizedEmail,
+        otp: otpHash,
+        firstName: registrationData?.firstName,
+        lastName: registrationData?.lastName,
+        mobileNumber: registrationData?.mobileNumber,
+        expiresAt,
+      });
       logger.info({ email: normalizedEmail, tokenId: token._id }, "OTP login session upserted");
+
 
       // 4. Compile HTML Template
       const html = await magicLinkHtml({

@@ -69,8 +69,11 @@ export function AuthForm({
 }: AuthFormProps) {
   const { login, logout, token, setOnboardingRequired, onboardingRequired } = useAuth();
 
-  const [cooldownRemaining, setCooldownRemaining] = useState<number>(0);
-  const [cooldownExpiry, setCooldownExpiry] = useState<number | null>(null);
+  const [requestCooldownRemaining, setRequestCooldownRemaining] = useState<number>(0);
+  const [requestCooldownExpiry, setRequestCooldownExpiry] = useState<number | null>(null);
+
+  const [verifyCooldownRemaining, setVerifyCooldownRemaining] = useState<number>(0);
+  const [verifyCooldownExpiry, setVerifyCooldownExpiry] = useState<number | null>(null);
 
   const formatTime = useCallback((seconds: number): string => {
     const mins = Math.floor(seconds / 60);
@@ -78,68 +81,123 @@ export function AuthForm({
     return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
   }, []);
 
-  const triggerCooldown = useCallback((retryAfterSeconds: number) => {
+  const triggerRequestCooldown = useCallback((retryAfterSeconds: number) => {
     const proposedExpiry = Date.now() + retryAfterSeconds * 1000;
-    const storedExpiry = localStorage.getItem('mad_otp_cooldown_expiry');
+    const storedExpiry = localStorage.getItem('mad_otp_request_cooldown_expiry');
     const existingExpiry = storedExpiry ? Number(storedExpiry) : 0;
     const finalExpiry = Math.max(existingExpiry, proposedExpiry);
 
-    localStorage.setItem('mad_otp_cooldown_expiry', String(finalExpiry));
-    setCooldownExpiry(finalExpiry);
-    setCooldownRemaining(Math.ceil((finalExpiry - Date.now()) / 1000));
+    localStorage.setItem('mad_otp_request_cooldown_expiry', String(finalExpiry));
+    setRequestCooldownExpiry(finalExpiry);
+    setRequestCooldownRemaining(Math.ceil((finalExpiry - Date.now()) / 1000));
+  }, []);
+
+  const triggerVerifyCooldown = useCallback((retryAfterSeconds: number) => {
+    const proposedExpiry = Date.now() + retryAfterSeconds * 1000;
+    const storedExpiry = localStorage.getItem('mad_otp_verify_cooldown_expiry');
+    const existingExpiry = storedExpiry ? Number(storedExpiry) : 0;
+    const finalExpiry = Math.max(existingExpiry, proposedExpiry);
+
+    localStorage.setItem('mad_otp_verify_cooldown_expiry', String(finalExpiry));
+    setVerifyCooldownExpiry(finalExpiry);
+    setVerifyCooldownRemaining(Math.ceil((finalExpiry - Date.now()) / 1000));
   }, []);
 
   // Hydrate on mount
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const storedExpiry = localStorage.getItem('mad_otp_cooldown_expiry');
-      if (storedExpiry) {
-        const expiry = Number(storedExpiry);
+      const storedReqExpiry = localStorage.getItem('mad_otp_request_cooldown_expiry');
+      if (storedReqExpiry) {
+        const expiry = Number(storedReqExpiry);
         if (expiry > Date.now()) {
-          setCooldownExpiry(expiry);
-          setCooldownRemaining(Math.ceil((expiry - Date.now()) / 1000));
+          setRequestCooldownExpiry(expiry);
+          setRequestCooldownRemaining(Math.ceil((expiry - Date.now()) / 1000));
+        }
+      }
+      const storedVerExpiry = localStorage.getItem('mad_otp_verify_cooldown_expiry');
+      if (storedVerExpiry) {
+        const expiry = Number(storedVerExpiry);
+        if (expiry > Date.now()) {
+          setVerifyCooldownExpiry(expiry);
+          setVerifyCooldownRemaining(Math.ceil((expiry - Date.now()) / 1000));
         }
       }
     }
   }, []);
 
-  // Set interval timer
+  // Set interval timer for request cooldown
   useEffect(() => {
-    if (!cooldownExpiry) {
-      setCooldownRemaining(0);
+    if (!requestCooldownExpiry) {
+      setRequestCooldownRemaining(0);
       return;
     }
 
     const interval = setInterval(() => {
-      const remaining = Math.ceil((cooldownExpiry - Date.now()) / 1000);
+      const remaining = Math.ceil((requestCooldownExpiry - Date.now()) / 1000);
       if (remaining <= 0) {
-        setCooldownRemaining(0);
-        setCooldownExpiry(null);
-        localStorage.removeItem('mad_otp_cooldown_expiry');
+        setRequestCooldownRemaining(0);
+        setRequestCooldownExpiry(null);
+        localStorage.removeItem('mad_otp_request_cooldown_expiry');
       } else {
-        setCooldownRemaining(remaining);
+        setRequestCooldownRemaining(remaining);
       }
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [cooldownExpiry]);
+  }, [requestCooldownExpiry]);
+
+  // Set interval timer for verify cooldown
+  useEffect(() => {
+    if (!verifyCooldownExpiry) {
+      setVerifyCooldownRemaining(0);
+      return;
+    }
+
+    const interval = setInterval(() => {
+      const remaining = Math.ceil((verifyCooldownExpiry - Date.now()) / 1000);
+      if (remaining <= 0) {
+        setVerifyCooldownRemaining(0);
+        setVerifyCooldownExpiry(null);
+        localStorage.removeItem('mad_otp_verify_cooldown_expiry');
+      } else {
+        setVerifyCooldownRemaining(remaining);
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [verifyCooldownExpiry]);
 
   // Sync across tabs
   useEffect(() => {
     const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'mad_otp_cooldown_expiry') {
+      if (e.key === 'mad_otp_request_cooldown_expiry') {
         if (e.newValue) {
           const expiry = Number(e.newValue);
           if (expiry > Date.now()) {
-            setCooldownExpiry(expiry);
-            setCooldownRemaining(Math.ceil((expiry - Date.now()) / 1000));
+            setRequestCooldownExpiry(expiry);
+            setRequestCooldownRemaining(Math.ceil((expiry - Date.now()) / 1000));
           } else {
-            setCooldownExpiry(null);
-            setCooldownRemaining(0);
+            setRequestCooldownExpiry(null);
+            setRequestCooldownRemaining(0);
           }
         } else {
-          setCooldownExpiry(null);
-          setCooldownRemaining(0);
+          setRequestCooldownExpiry(null);
+          setRequestCooldownRemaining(0);
+        }
+      }
+      if (e.key === 'mad_otp_verify_cooldown_expiry') {
+        if (e.newValue) {
+          const expiry = Number(e.newValue);
+          if (expiry > Date.now()) {
+            setVerifyCooldownExpiry(expiry);
+            setVerifyCooldownRemaining(Math.ceil((expiry - Date.now()) / 1000));
+          } else {
+            setVerifyCooldownExpiry(null);
+            setVerifyCooldownRemaining(0);
+          }
+        } else {
+          setVerifyCooldownExpiry(null);
+          setVerifyCooldownRemaining(0);
         }
       }
     };
@@ -177,6 +235,27 @@ export function AuthForm({
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token, onboardingRequired]);
+
+  useEffect(() => {
+    if (step === 'request') {
+      setTimeout(() => {
+        const checkoutEmailEl = document.getElementById('checkout-login-email');
+        const emailEl = document.getElementById('email');
+        if (checkoutEmailEl) checkoutEmailEl.focus();
+        else if (emailEl) emailEl.focus();
+      }, 50);
+    } else if (step === 'verify') {
+      setTimeout(() => {
+        const otpEl = document.getElementById('otp');
+        if (otpEl) otpEl.focus();
+      }, 50);
+    } else if (step === 'onboard') {
+      setTimeout(() => {
+        const firstNameEl = document.getElementById('firstName');
+        if (firstNameEl) firstNameEl.focus();
+      }, 50);
+    }
+  }, [step]);
 
   // Countdown timer state for code resending
   const [resendTimer, setResendTimer] = useState(0);
@@ -219,8 +298,8 @@ export function AuthForm({
     },
     onError: (err) => {
       const apiErr = extractApiError(err);
-      if (apiErr.code === 'RATE_LIMIT_EXCEEDED') {
-        triggerCooldown(apiErr.retryAfter ?? 60);
+      if (apiErr.code === 'RATE_LIMIT_EXCEEDED' || apiErr.code === 'OTP_COOLDOWN_ACTIVE') {
+        triggerRequestCooldown(apiErr.retryAfter ?? 60);
         setError('');
       } else {
         setError(apiErr.message || 'Failed to send verification code. Please try again.');
@@ -252,7 +331,7 @@ export function AuthForm({
     onError: (err) => {
       const apiErr = extractApiError(err);
       if (apiErr.code === 'RATE_LIMIT_EXCEEDED') {
-        triggerCooldown(apiErr.retryAfter ?? 60);
+        triggerVerifyCooldown(apiErr.retryAfter ?? 60);
         setError('');
       } else {
         setError(apiErr.message || 'Invalid verification code. Please request a new code.');
@@ -442,23 +521,42 @@ export function AuthForm({
   const isCheckout = mode === 'checkout';
 
   return (
-    <div className={`space-y-6 ${className}`}>
+    <div className={`space-y-4 sm:space-y-6 ${className}`}>
       {/* Alert Banners */}
       {(() => {
-        if (cooldownRemaining > 0) {
+        if (requestCooldownRemaining > 0) {
           return (
-            <div className="p-4 bg-error/10 border border-error/30 rounded-2xl text-xs text-red-400 text-center animate-in fade-in duration-300 space-y-1">
-              <p className="font-bold">For your security, we've temporarily paused verification requests.</p>
-              <p>You can request a new code in:</p>
+            <div 
+              role="status"
+              aria-live="polite"
+              className="p-4 bg-accent-purple/10 border border-accent-purple/30 rounded-2xl text-xs text-purple-300 text-center animate-in fade-in duration-300"
+            >
+              Verification code sent. New code available in {formatTime(requestCooldownRemaining)}.
+            </div>
+          );
+        }
+        if (verifyCooldownRemaining > 0) {
+          return (
+            <div 
+              role="alert"
+              aria-live="assertive"
+              className="p-4 bg-error/10 border border-error/30 rounded-2xl text-xs text-red-400 text-center animate-in fade-in duration-300 space-y-1"
+            >
+              <p className="font-bold">For your security, verification attempts are temporarily paused.</p>
+              <p>Please try again in:</p>
               <p className="font-mono text-lg font-black tracking-wider text-amber-400">
-                {formatTime(cooldownRemaining)}
+                {formatTime(verifyCooldownRemaining)}
               </p>
             </div>
           );
         }
         if (error) {
           return (
-            <div className="p-4 bg-error/10 border border-error/30 rounded-2xl text-xs text-red-400 text-center animate-in fade-in duration-300">
+            <div 
+              role="alert"
+              aria-live="assertive"
+              className="p-4 bg-error/10 border border-error/30 rounded-2xl text-xs text-red-400 text-center animate-in fade-in duration-300"
+            >
               {error}
             </div>
           );
@@ -467,14 +565,18 @@ export function AuthForm({
       })()}
 
       {infoMessage && (
-        <div className="p-4 bg-accent-purple/10 border border-accent-purple/30 rounded-2xl text-xs text-purple-300 text-center animate-in fade-in duration-300">
+        <div 
+          role="status"
+          aria-live="polite"
+          className="p-4 bg-accent-purple/10 border border-accent-purple/30 rounded-2xl text-xs text-purple-300 text-center animate-in fade-in duration-300"
+        >
           {infoMessage}
         </div>
       )}
 
       {/* SCREEN 1: Request OTP Form */}
       {step === 'request' && (
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
           {isVerificationRequired && (
             <div 
               role="alert"
@@ -493,7 +595,7 @@ export function AuthForm({
             </div>
           )}
 
-          <form onSubmit={handleSubmitEmail} className={isCheckout ? 'flex gap-2' : 'space-y-5'}>
+          <form onSubmit={handleSubmitEmail} className={isCheckout ? 'flex gap-2' : 'space-y-4 sm:space-y-5'}>
             {isCheckout ? (
               <>
                 <input
@@ -505,20 +607,20 @@ export function AuthForm({
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="Enter your email address"
-                  className="flex-grow bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-base lg:text-sm text-white placeholder:text-text-muted/30 focus:outline-none focus:border-accent-purple focus:ring-1 focus:ring-accent-purple transition-all"
+                  className="flex-grow bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-base lg:text-sm text-white placeholder:text-text-secondary focus:outline-none focus:border-accent-purple focus:ring-1 focus:ring-accent-purple transition-all"
                 />
                  <Button
                   type="submit"
                   variant="primary"
-                  className="px-4 py-2 text-xs font-bold rounded-xl whitespace-nowrap"
-                  disabled={cooldownRemaining > 0}
+                  className="px-4 py-2 text-xs font-bold rounded-xl whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                  disabled={requestCooldownRemaining > 0}
                   isLoading={requestVerificationCodeMutation.isPending}
                 >
-                  {cooldownRemaining > 0 ? `Request Code (${formatTime(cooldownRemaining)})` : 'Send Code'}
+                  {requestCooldownRemaining > 0 ? `Request Code (${formatTime(requestCooldownRemaining)})` : 'Send Code'}
                 </Button>
               </>
             ) : (
-              <div className="space-y-5">
+              <div className="space-y-4 sm:space-y-5">
                 <div className="space-y-2">
                   <label htmlFor="email" className="text-xs font-semibold text-text-secondary uppercase tracking-wider ml-1">
                     Email Address
@@ -531,7 +633,7 @@ export function AuthForm({
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="you@example.com"
-                    className="w-full bg-white/5 border border-border-subtle rounded-xl px-4 py-3.5 text-base lg:text-sm text-white placeholder:text-text-muted/30 focus:outline-none focus:border-accent-purple/50 focus:ring-1 focus:ring-accent-purple/50 transition-all duration-300"
+                    className="w-full bg-white/5 border border-border-subtle rounded-xl px-4 py-3.5 text-base lg:text-sm text-white placeholder:text-text-secondary focus:outline-none focus:border-accent-purple focus:ring-1 focus:ring-accent-purple transition-all duration-300"
                   />
                 </div>
 
@@ -539,11 +641,11 @@ export function AuthForm({
                   type="submit"
                   variant="primary"
                   fullWidth
-                  className="py-3.5 rounded-xl font-bold tracking-wide shadow-lg shadow-accent-purple/20 hover:shadow-accent-purple/40 active:scale-95 transition-all duration-200"
-                  disabled={cooldownRemaining > 0}
+                  className="py-3.5 rounded-xl font-bold tracking-wide shadow-lg shadow-accent-purple/20 hover:shadow-accent-purple/40 active:scale-95 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                  disabled={requestCooldownRemaining > 0}
                   isLoading={requestVerificationCodeMutation.isPending}
                 >
-                  {cooldownRemaining > 0 ? `Request Code (${formatTime(cooldownRemaining)})` : 'Continue with Email'}
+                  {requestCooldownRemaining > 0 ? `Request Code (${formatTime(requestCooldownRemaining)})` : 'Continue with Email'}
                 </Button>
               </div>
             )}
@@ -562,7 +664,7 @@ export function AuthForm({
           </p>
 
           {/* Stacked Divider */}
-          <div className="flex items-center my-6">
+          <div className="flex items-center my-4 sm:my-6">
             <div className="flex-grow border-t border-border-subtle/40" />
             <span className="mx-4 text-xs font-bold text-text-muted/50 uppercase tracking-widest">or</span>
             <div className="flex-grow border-t border-border-subtle/40" />
@@ -570,20 +672,20 @@ export function AuthForm({
 
           {/* Google SSO button */}
           <div className="space-y-3">
-            {cooldownRemaining > 0 ? (
+            {requestCooldownRemaining > 0 ? (
               <Button
                 variant="secondary"
                 disabled
                 fullWidth
-                className="py-3.5 rounded-xl font-bold tracking-wide transition-all duration-200"
+                className="py-3.5 rounded-xl font-bold tracking-wide transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-2 focus-visible:ring-offset-background"
               >
-                Google Login ({formatTime(cooldownRemaining)})
+                Google Login ({formatTime(requestCooldownRemaining)})
               </Button>
             ) : null}
             <div
               id="google-signin-btn-shared"
               className="w-full min-h-[44px] flex justify-center items-center overflow-hidden hover:opacity-90 active:scale-98 transition-all duration-200"
-              style={{ display: cooldownRemaining > 0 ? 'none' : 'flex' }}
+              style={{ display: requestCooldownRemaining > 0 ? 'none' : 'flex' }}
             />
             {googleLoginMutation.isPending && (
               <p className="text-center text-xs text-purple-300/80 animate-pulse mt-2">
@@ -609,15 +711,16 @@ export function AuthForm({
 
       {/* SCREEN 2: Verification Input Form */}
       {step === 'verify' && (
-        <form onSubmit={handleSubmitOtp} className="space-y-6">
+        <form onSubmit={handleSubmitOtp} className="space-y-4 sm:space-y-6">
           <div className="text-center text-sm text-text-muted flex flex-col items-center justify-center gap-1">
             <div className="flex items-center gap-2">
               <span className="text-white font-medium">{email}</span>
               <button
                 type="button"
                 onClick={handleBackToOptions}
-                className="text-text-muted hover:text-white transition-colors duration-200 hover:scale-110 active:scale-95"
+                className="text-text-muted hover:text-white transition-colors duration-200 hover:scale-110 active:scale-95 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent-purple rounded-md p-0.5"
                 title="Edit Email"
+                aria-label="Edit email address"
               >
                 ✏️
               </button>
@@ -641,8 +744,8 @@ export function AuthForm({
               onChange={(e) => setOtp(e.target.value.replace(/[^0-9]/g, ''))}
               onPaste={handlePaste}
               placeholder="000000"
-              className={`w-full text-center font-black bg-white/5 border border-border-subtle rounded-2xl text-white placeholder:text-text-muted/15 focus:outline-none focus:border-accent-purple/60 focus:ring-1 focus:ring-accent-purple/60 transition-all duration-300 font-mono ${
-                isCheckout ? 'text-2xl py-2.5 tracking-[0.4em] pl-[0.4em]' : 'text-3xl py-4 tracking-[0.6em] pl-[0.6em]'
+              className={`w-full text-center font-black bg-white/5 border border-border-subtle rounded-2xl text-white placeholder:text-text-secondary focus:outline-none focus:border-accent-purple focus:ring-1 focus:ring-accent-purple transition-all duration-300 font-mono ${
+                isCheckout ? 'text-xl sm:text-2xl py-2 sm:py-2.5 tracking-[0.3em] sm:tracking-[0.4em] pl-[0.3em] sm:pl-[0.4em]' : 'text-xl sm:text-3xl py-2.5 sm:py-4 tracking-[0.3em] sm:tracking-[0.6em] pl-[0.3em] sm:pl-[0.6em]'
               }`}
             />
           </div>
@@ -652,43 +755,54 @@ export function AuthForm({
               type="submit"
               variant="primary"
               fullWidth
-              className={isCheckout ? 'py-2.5 text-xs font-bold rounded-xl' : 'py-3.5 rounded-xl font-bold tracking-wide shadow-lg shadow-accent-purple/20 hover:shadow-accent-purple/40 active:scale-95 transition-all duration-200'}
-              disabled={cooldownRemaining > 0}
+              className={isCheckout ? 'py-2.5 text-xs font-bold rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-2 focus-visible:ring-offset-background' : 'py-3.5 rounded-xl font-bold tracking-wide shadow-lg shadow-accent-purple/20 hover:shadow-accent-purple/40 active:scale-95 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-2 focus-visible:ring-offset-background'}
+              disabled={otp.length !== 6 || verifyCooldownRemaining > 0}
               isLoading={verifyMutation.isPending}
             >
-              {cooldownRemaining > 0 ? `Request Code (${formatTime(cooldownRemaining)})` : 'Verify Code'}
+              {verifyCooldownRemaining > 0 ? `Verify Code (${formatTime(verifyCooldownRemaining)})` : 'Verify Code'}
             </Button>
 
             <div className="flex justify-between items-center text-xs px-1 pt-1">
               <button
                 type="button"
                 onClick={handleBackToOptions}
-                className="text-text-muted hover:text-white transition-colors duration-200"
+                className="text-text-muted hover:text-white transition-colors duration-200 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent-purple rounded-md px-1"
               >
                 ← Edit email
               </button>
 
               {(() => {
-                if (cooldownRemaining > 0) {
+                if (requestCooldownRemaining > 0) {
                   return (
-                    <span className="text-text-muted/60">
-                      Resend code in <span className="font-semibold text-purple-300">{formatTime(cooldownRemaining)}</span>
-                    </span>
+                    <button
+                      type="button"
+                      disabled
+                      className="text-xs text-text-muted/65 font-semibold cursor-not-allowed outline-none"
+                    >
+                      Resend code in <span className="text-purple-300">{formatTime(requestCooldownRemaining)}</span>
+                    </button>
                   );
                 }
                 if (resendTimer > 0) {
                   return (
-                    <span className="text-text-muted/60">
-                      Resend code in <span className="font-semibold text-purple-300">{resendTimer}s</span>
-                    </span>
+                    <button
+                      type="button"
+                      disabled
+                      className="text-xs text-text-muted/65 font-semibold cursor-not-allowed outline-none"
+                    >
+                      Resend code in <span className="text-purple-300">{resendTimer}s</span>
+                    </button>
                   );
                 }
                 return (
                   <button
                     type="button"
-                    onClick={() => requestVerificationCodeMutation.mutate()}
-                    disabled={requestVerificationCodeMutation.isPending || cooldownRemaining > 0}
-                    className="text-accent-purple hover:text-accent-purple-light font-semibold transition-colors duration-200 disabled:opacity-50"
+                    onClick={() => {
+                      setOtp('');
+                      requestVerificationCodeMutation.mutate();
+                    }}
+                    disabled={requestVerificationCodeMutation.isPending || requestCooldownRemaining > 0}
+                    className="text-accent-purple hover:text-accent-purple-light font-semibold transition-colors duration-200 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent-purple rounded-md px-1"
                   >
                     Resend Code
                   </button>
@@ -701,19 +815,23 @@ export function AuthForm({
 
       {/* SCREEN 3: Profile Onboarding Form */}
       {step === 'onboard' && (
-        <form onSubmit={handleOnboardingSubmit} className="space-y-6">
+        <form onSubmit={handleOnboardingSubmit} className="space-y-4 sm:space-y-6">
           <div className="text-center">
             <h2 className="text-xl font-bold text-white">Complete Your Profile</h2>
             <p className="text-xs text-text-muted mt-1">Tell us your name before accessing your tickets.</p>
           </div>
 
           {onboardError && (
-            <div className="p-4 bg-error/10 border border-error/30 rounded-2xl text-xs text-red-400 text-center animate-in fade-in duration-300">
+            <div 
+              role="alert"
+              aria-live="assertive"
+              className="p-4 bg-error/10 border border-error/30 rounded-2xl text-xs text-red-400 text-center animate-in fade-in duration-300"
+            >
               {onboardError}
             </div>
           )}
 
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             <div className="space-y-2">
               <label htmlFor="firstName" className="text-xs font-semibold text-text-secondary uppercase tracking-wider ml-1">
                 First Name <span className="text-red-400">*</span>
@@ -727,7 +845,7 @@ export function AuthForm({
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
                 placeholder="John"
-                className="w-full bg-white/5 border border-border-subtle rounded-xl px-4 py-3 text-base lg:text-sm text-white placeholder:text-text-muted/30 focus:outline-none focus:border-accent-purple/50 focus:ring-1 focus:ring-accent-purple/50 transition-all duration-300"
+                className="w-full bg-white/5 border border-border-subtle rounded-xl px-4 py-3 text-base lg:text-sm text-white placeholder:text-text-secondary focus:outline-none focus:border-accent-purple focus:ring-1 focus:ring-accent-purple transition-all duration-300"
               />
             </div>
 
@@ -744,7 +862,7 @@ export function AuthForm({
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
                 placeholder="Doe"
-                className="w-full bg-white/5 border border-border-subtle rounded-xl px-4 py-3 text-base lg:text-sm text-white placeholder:text-text-muted/30 focus:outline-none focus:border-accent-purple/50 focus:ring-1 focus:ring-accent-purple/50 transition-all duration-300"
+                className="w-full bg-white/5 border border-border-subtle rounded-xl px-4 py-3 text-base lg:text-sm text-white placeholder:text-text-secondary focus:outline-none focus:border-accent-purple focus:ring-1 focus:ring-accent-purple transition-all duration-300"
               />
             </div>
 
@@ -760,9 +878,9 @@ export function AuthForm({
                 value={mobileNumber}
                 onChange={(e) => setMobileNumber(e.target.value)}
                 placeholder="+919876543210"
-                className="w-full bg-white/5 border border-border-subtle rounded-xl px-4 py-3 text-base lg:text-sm text-white placeholder:text-text-muted/30 focus:outline-none focus:border-accent-purple/50 focus:ring-1 focus:ring-accent-purple/50 transition-all duration-300"
+                className="w-full bg-white/5 border border-border-subtle rounded-xl px-4 py-3 text-base lg:text-sm text-white placeholder:text-text-secondary focus:outline-none focus:border-accent-purple focus:ring-1 focus:ring-accent-purple transition-all duration-300"
               />
-              <p className="text-[10px] text-text-muted/65 ml-1">Include country code (e.g. +91)</p>
+              <p className="text-[10px] text-text-secondary ml-1">Include country code (e.g. +91)</p>
             </div>
           </div>
 
@@ -771,7 +889,7 @@ export function AuthForm({
               type="submit"
               variant="primary"
               fullWidth
-              className={isCheckout ? 'py-2.5 text-xs font-bold rounded-xl' : 'py-3.5 rounded-xl font-bold tracking-wide shadow-lg shadow-accent-purple/20 hover:shadow-accent-purple/40 active:scale-95 transition-all duration-200'}
+              className={isCheckout ? 'py-2.5 text-xs font-bold rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-2 focus-visible:ring-offset-background' : 'py-3.5 rounded-xl font-bold tracking-wide shadow-lg shadow-accent-purple/20 hover:shadow-accent-purple/40 active:scale-95 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-2 focus-visible:ring-offset-background'}
               disabled={updateProfileMutation.isPending}
               isLoading={updateProfileMutation.isPending}
             >
@@ -783,7 +901,7 @@ export function AuthForm({
                 type="button"
                 onClick={handleOnboardingCancel}
                 disabled={updateProfileMutation.isPending}
-                className="text-xs text-text-muted hover:text-white transition-colors duration-200 py-2"
+                className="text-xs text-text-muted hover:text-white transition-colors duration-200 py-2 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent-purple rounded-md px-1"
               >
                 Cancel and Log Out
               </button>

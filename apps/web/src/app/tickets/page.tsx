@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { useState, useEffect, Suspense, useRef } from 'react';
+import { Modal } from '@mad/ui';
 
 import { useSearchParams } from 'next/navigation';
 
@@ -586,19 +587,25 @@ function TicketRetrievalContent() {
 
         {/* SCREEN 1 & 2: Reusable Shared AuthForm Gate */}
         {shouldShowAuthForm && (
-          <div className="max-w-md mx-auto space-y-6 animate-in fade-in zoom-in-95 duration-300">
-            {!showLoginForGuest && !queryRef && (
-              <div className="bg-accent-purple/10 border border-accent-purple/30 rounded-2xl p-5 text-center shadow-glow-sm">
-                <p className="text-text-secondary text-xs leading-relaxed">
-                  Sign in using the email used during booking.
-                </p>
-                <p className="text-text-muted text-[10px] mt-2 leading-relaxed">
-                  A 6-digit OTP will be sent to your email.
-                </p>
-              </div>
-            )}
-            
-            <div className="glass-strong rounded-3xl border border-border-subtle p-4 sm:p-8 shadow-2xl">
+          <Modal
+            isOpen={shouldShowAuthForm}
+            onClose={() => {
+              if (showLoginForGuest) setShowLoginForGuest(false);
+            }}
+            showCloseButton={showLoginForGuest}
+          >
+            <div className="space-y-6">
+              {!showLoginForGuest && !queryRef && (
+                <div className="bg-accent-purple/10 border border-accent-purple/30 rounded-2xl p-5 text-center shadow-glow-sm">
+                  <p className="text-text-secondary text-xs leading-relaxed">
+                    Sign in using the email used during booking.
+                  </p>
+                  <p className="text-text-muted text-[10px] mt-2 leading-relaxed">
+                    A 6-digit OTP will be sent to your email.
+                  </p>
+                </div>
+              )}
+              
               <AuthForm 
                 mode="wallet" 
                 isVerificationRequired={isOwnershipVerificationRequired}
@@ -614,13 +621,13 @@ function TicketRetrievalContent() {
               {showLoginForGuest && (
                 <button 
                   onClick={() => setShowLoginForGuest(false)} 
-                  className="mt-6 w-full text-xs text-text-muted hover:text-white transition-colors flex items-center justify-center gap-2"
+                  className="mt-4 w-full text-xs text-text-muted hover:text-white transition-colors flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent-purple rounded-md py-1"
                 >
                   <span>←</span> Cancel and return to ticket
                 </button>
               )}
             </div>
-          </div>
+          </Modal>
         )}
 
         {/* SCREEN 3: Consolidated Bookings Portal Dashboard */}
