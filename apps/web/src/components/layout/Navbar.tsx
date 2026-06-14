@@ -21,13 +21,17 @@ export function Navbar() {
 
   const dynamicLinks = isAuthenticated
     ? [
-        { label: 'Dashboard', href: '/dashboard' },
-        { label: 'My Tickets', href: '/tickets' },
+        { label: 'Home', href: '/' },
+        { label: 'Events', href: '/events' },
+        { label: 'DJs', href: '/dj-operators' },
+        { label: 'Help Center', href: '/support' },
+        { label: 'My Tickets', href: '/dashboard?tab=tickets' },
       ]
     : [
         { label: 'Events', href: '/events' },
         { label: 'DJs', href: '/dj-operators' },
         { label: 'Help Center', href: '/support' },
+        { label: 'My Tickets', href: '/tickets' },
       ];
 
   const handleLogout = async () => {
@@ -176,11 +180,18 @@ export function Navbar() {
                       <p className="text-sm font-semibold text-white truncate">{user?.email}</p>
                     </div>
                     <Link
-                      href="/dashboard"
+                      href="/dashboard?tab=tickets"
                       onClick={() => setDropdownOpen(false)}
                       className="block px-4 py-2 text-sm text-text-secondary hover:text-white hover:bg-white/5 transition-colors"
                     >
-                      Profile
+                      My Tickets
+                    </Link>
+                    <Link
+                      href="/dashboard?tab=account"
+                      onClick={() => setDropdownOpen(false)}
+                      className="block px-4 py-2 text-sm text-text-secondary hover:text-white hover:bg-white/5 transition-colors"
+                    >
+                      Account
                     </Link>
                     <button
                       type="button"
@@ -284,11 +295,18 @@ export function Navbar() {
                       Hi, {firstName}
                     </div>
                     <Link
-                      href="/dashboard"
+                      href="/dashboard?tab=tickets"
                       onClick={() => setMobileOpen(false)}
                       className="block py-3 px-4 text-text-secondary hover:text-text-primary hover:bg-white/5 rounded-xl transition-colors font-medium"
                     >
-                      Profile
+                      My Tickets
+                    </Link>
+                    <Link
+                      href="/dashboard?tab=account"
+                      onClick={() => setMobileOpen(false)}
+                      className="block py-3 px-4 text-text-secondary hover:text-text-primary hover:bg-white/5 rounded-xl transition-colors font-medium"
+                    >
+                      Account
                     </Link>
                     <button
                       type="button"

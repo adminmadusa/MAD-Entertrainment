@@ -11,7 +11,7 @@ const footerLinks = {
   Support: [
     { label: 'Help Center', href: '/support' },
     { label: 'Contact Us', href: '/contact' },
-    { label: 'My Tickets', href: '/tickets' },
+    { label: 'My Tickets', href: '/dashboard' },
   ],
   Legal: [
     { label: 'Legal Center', href: '/legal' },
