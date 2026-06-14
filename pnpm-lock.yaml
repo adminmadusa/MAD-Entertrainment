@@ -81,9 +81,6 @@ importers:
       recharts:
         specifier: ^3.8.1
         version: 3.8.1(@types/react@19.2.15)(react-dom@19.2.6(react@19.2.6))(react-is@19.2.6)(react@19.2.6)(redux@5.0.1)
-      socket.io-client:
-        specifier: ^4.8.1
-        version: 4.8.3
     devDependencies:
       '@types/node':
         specifier: ^22.10.6
@@ -311,9 +308,6 @@ importers:
       react-markdown:
         specifier: ^10.1.0
         version: 10.1.0(@types/react@19.2.15)(react@19.2.6)
-      socket.io-client:
-        specifier: ^4.8.1
-        version: 4.8.3
     devDependencies:
       '@tailwindcss/typography':
         specifier: ^0.5.19

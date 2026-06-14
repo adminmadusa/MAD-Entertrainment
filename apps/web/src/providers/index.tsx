@@ -5,8 +5,6 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { useState, useEffect } from 'react';
 
 import { AuthProvider } from './AuthProvider';
-import { SocketProvider } from './SocketProvider';
-
 interface ProvidersProps {
   children: React.ReactNode;
 }
@@ -77,9 +75,7 @@ export function Providers({ children }: ProvidersProps) {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <SocketProvider>
-          {children}
-        </SocketProvider>
+        {children}
       </AuthProvider>
       {process.env.NODE_ENV === 'development' && (
         <ReactQueryDevtools initialIsOpen={false} />
