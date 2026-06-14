@@ -40,32 +40,67 @@ const STATIC_ROUTES: MetadataRoute.Sitemap = [
 
 /** Fetch all published event slugs for dynamic sitemap entries */
 async function getEventSlugs(): Promise<string[]> {
+  if (!API_URL || !API_URL.startsWith('http')) {
+    console.warn(
+      'Sitemap: NEXT_PUBLIC_API_URL missing or invalid. Skipping dynamic sitemap entries.'
+    );
+    return [];
+  }
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 5000);
+
   try {
-    // Fetch up to 500 events to generate all slug URLs
-    const res = await fetch(`${API_URL}/events?page=1&limit=500`, {
+    // Fetch up to 100 events to generate slug URLs (matches backend maximum allowed limit)
+    const res = await fetch(`${API_URL}/events?page=1&limit=100`, {
       next: { revalidate: 3600 }, // Sitemap is rebuilt hourly
+      signal: controller.signal,
     });
+    clearTimeout(timeoutId);
     if (!res.ok) return [];
     const body = await res.json();
     const events: { slug?: string }[] = body?.data?.events ?? [];
     return events.map((e) => e.slug).filter((s): s is string => Boolean(s));
-  } catch {
+  } catch (error) {
+    clearTimeout(timeoutId);
+    console.error(
+      'Sitemap: Failed to fetch dynamic event sitemap entries:',
+      error
+    );
     return [];
   }
 }
 
 /** Fetch all published DJ operator slugs for dynamic sitemap entries */
 async function getDJSlugs(): Promise<string[]> {
+  if (!API_URL || !API_URL.startsWith('http')) {
+    console.warn(
+      'Sitemap: NEXT_PUBLIC_API_URL missing or invalid. Skipping dynamic sitemap entries.'
+    );
+    return [];
+  }
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 5000);
+
   try {
-    const res = await fetch(`${API_URL}/dj-operators?limit=500`, {
+    // Fetch up to 100 DJ operators to generate slug URLs (matches backend maximum allowed limit)
+    const res = await fetch(`${API_URL}/dj-operators?limit=100`, {
       next: { revalidate: 3600 },
+      signal: controller.signal,
     });
+    clearTimeout(timeoutId);
     if (!res.ok) return [];
     const body = await res.json();
     const payload = body?.data ?? {};
     const djs: { slug?: string }[] = payload.data ?? payload.djOperators ?? payload.djs ?? [];
     return djs.map((d) => d.slug).filter((s): s is string => Boolean(s));
-  } catch {
+  } catch (error) {
+    clearTimeout(timeoutId);
+    console.error(
+      'Sitemap: Failed to fetch dynamic DJ sitemap entries:',
+      error
+    );
     return [];
   }
 }
