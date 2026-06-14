@@ -2,9 +2,17 @@ name: CI Workflow
 
 on:
   push:
-    branches: [main, master]
+    branches:
+      - main
+      - master
+      - develop
+      - live
   pull_request:
-    branches: [main, master]
+    branches:
+      - main
+      - master
+      - develop
+      - live
 
 jobs:
   build-lint-test:
