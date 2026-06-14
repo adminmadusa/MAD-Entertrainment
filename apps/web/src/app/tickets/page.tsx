@@ -157,12 +157,15 @@ function TicketRetrievalContent() {
     return () => clearInterval(timer);
   }, [singleResendCooldownSeconds]);
 
-  // Transition directly to portal if already authenticated on mount
+  // Redirect to dashboard if already authenticated on mount
   useEffect(() => {
     if (isAuthenticated && !isAuthLoading && !onboardingRequired) {
-      setStep('portal');
+      const dest = targetRef 
+        ? `/dashboard?tab=tickets&ref=${encodeURIComponent(targetRef.trim())}`
+        : '/dashboard?tab=tickets';
+      router.replace(dest);
     }
-  }, [isAuthenticated, isAuthLoading, onboardingRequired]);
+  }, [isAuthenticated, isAuthLoading, onboardingRequired, targetRef, router]);
 
   // Query a single booking by reference for guest or authenticated recovery.
   const {
@@ -631,7 +634,10 @@ function TicketRetrievalContent() {
                 bookingReference={queryRef}
                 onSuccess={() => { 
                   sessionStorage.setItem('just_logged_in', 'true');
-                  router.push('/dashboard');
+                  const dest = queryRef
+                    ? `/dashboard?tab=tickets&ref=${encodeURIComponent(queryRef.trim())}`
+                    : '/dashboard?tab=tickets';
+                  router.push(dest);
                 }} 
                 onClose={() => {
                   if (showLoginForGuest) {
