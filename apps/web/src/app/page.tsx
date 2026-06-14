@@ -150,7 +150,7 @@ function HeroSection() {
             </Link>
             <Link
               id="hero-my-booking"
-              href="/my-booking"
+              href="/tickets"
               className="px-8 py-4 glass border border-border-subtle hover:border-accent-purple/50 text-text-primary hover:text-white hover:bg-accent-purple/10 font-semibold text-lg rounded-2xl transition-all duration-300 hover:shadow-glow-sm"
             >
               My Booking
@@ -281,7 +281,7 @@ function CTASection() {
                 </Link>
                 <Link
                   id="cta-my-booking"
-                  href="/my-booking"
+                  href="/tickets"
                   className="px-10 py-4 glass border border-border-subtle hover:border-accent-purple/50 text-text-primary hover:text-white hover:bg-accent-purple/10 font-semibold text-lg rounded-2xl transition-all duration-300 hover:shadow-glow-sm"
                 >
                   Track My Booking

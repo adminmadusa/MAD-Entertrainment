@@ -25,10 +25,10 @@ const STATIC_ROUTES: MetadataRoute.Sitemap = [
     priority: 0.8,
   },
   {
-    url: `${SITE_URL}/my-booking`,
+    url: `${SITE_URL}/tickets`,
     lastModified: new Date(),
     changeFrequency: 'monthly',
-    priority: 0.4,
+    priority: 0.7,
   },
   {
     url: `${SITE_URL}/login`,
