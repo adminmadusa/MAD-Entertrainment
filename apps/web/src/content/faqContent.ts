@@ -25,7 +25,7 @@ export const faqContent: FAQ[] = [
     id: 't3',
     category: 'tickets',
     question: "How do I download my ticket as a PDF?",
-    answer: "Log into the <a href='/tickets' class='text-accent-purple hover:underline'>My Tickets</a> wallet, select your booking, and click the 'Download PDF' button next to your entry passes."
+    answer: "Log into the <a href='/tickets' class='text-accent-purple hover:underline'>My Tickets</a> page, select your booking, and click the 'Download PDF' button next to your entry passes."
   },
   {
     id: 't4',
@@ -69,7 +69,7 @@ export const faqContent: FAQ[] = [
     id: 'p5',
     category: 'payments',
     question: "Where can I find my invoice or receipt?",
-    answer: "A digital receipt is included in your booking confirmation email. You can also download a formal invoice directly from your <a href='/tickets' class='text-accent-purple hover:underline'>Ticket Wallet</a>."
+    answer: "A digital receipt is included in your booking confirmation email. You can also download a formal invoice directly from your <a href='/tickets' class='text-accent-purple hover:underline'>Ticket Dashboard</a>."
   },
 
   // REFUNDS & CANCELLATIONS

@@ -297,7 +297,7 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
           {/* Auto Redirect Banner */}
           {!isRedirectPaused && (
             <p className="text-[11px] text-accent-purple-light font-medium animate-pulse">
-              Auto-redirecting to your Ticket Wallet in <span className="font-mono font-bold text-white">{redirectCountdown}s</span>...
+              Auto-redirecting to My Tickets in <span className="font-mono font-bold text-white">{redirectCountdown}s</span>...
             </p>
           )}
 
