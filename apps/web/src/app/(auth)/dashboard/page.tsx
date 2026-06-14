@@ -7,7 +7,6 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useRef, useState, Suspense } from 'react';
 
-import { BookingHeaderCard } from '@/components/booking/shared/BookingHeaderCard';
 import { EntryPassGrid } from '@/components/booking/shared/EntryPassGrid';
 import { TicketActions } from '@/components/booking/shared/TicketActions';
 import { extractApiError } from '@/lib/api/client';
@@ -104,6 +103,19 @@ function DashboardContent() {
       setActiveTab('tickets');
     }
   }, [searchParams]);
+
+  // Auto-scroll expanded accordion into view
+  useEffect(() => {
+    if (activeTab === 'tickets' && expandedBookingId) {
+      const timer = setTimeout(() => {
+        const el = document.getElementById(`booking-accordion-${expandedBookingId}`);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [expandedBookingId, activeTab]);
 
   // Update tab in URL
   const handleTabChange = (tab: TabType) => {
@@ -260,6 +272,7 @@ function DashboardContent() {
         return (
           <div
             key={booking._id}
+            id={`booking-accordion-${booking.bookingId}`}
             className={`glass rounded-2xl border transition-all duration-300 overflow-hidden ${
               isExpanded
                 ? 'border-accent-purple shadow-glow-purple/10 bg-white/[0.02]'
@@ -304,7 +317,25 @@ function DashboardContent() {
             {/* Accordion Content */}
             {isExpanded && (
               <div className="px-5 pb-6 pt-2 border-t border-white/5 space-y-5 animate-in fade-in duration-200">
-                <BookingHeaderCard booking={booking} />
+                {/* Compact Metadata Strip */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 pb-4 border-b border-white/5 text-xs text-text-secondary">
+                  <div>
+                    <span className="text-[10px] text-text-muted uppercase tracking-wider block">Guest</span>
+                    <span className="text-white font-semibold">{booking.guestName}</span>
+                  </div>
+                  {eventInfo?.venue && (
+                    <div>
+                      <span className="text-[10px] text-text-muted uppercase tracking-wider block">Venue</span>
+                      <span className="text-white font-semibold">{eventInfo.venue}</span>
+                    </div>
+                  )}
+                  {eventInfo?.showTime && (
+                    <div>
+                      <span className="text-[10px] text-text-muted uppercase tracking-wider block">Time</span>
+                      <span className="text-white font-semibold">{eventInfo.showTime}</span>
+                    </div>
+                  )}
+                </div>
 
                 {booking.status === BookingStatus.CONFIRMED ? (
                   <div className="space-y-4 pt-2 border-t border-border-subtle/30">
@@ -341,14 +372,7 @@ function DashboardContent() {
                         <p className="text-text-muted text-xs">Your entry passes will appear here shortly.</p>
                       </div>
                     ) : (
-                      /* Mobile snap horizontal scroll layout with snap points, desktop normal grid */
-                      <div className="flex overflow-x-auto sm:grid sm:grid-cols-2 md:grid-cols-2 gap-4 pb-2 snap-x snap-mandatory scrollbar-none">
-                        {bookingTickets.map((t, idx) => (
-                          <div key={t._id} className="min-w-[85%] sm:min-w-0 snap-center">
-                            <EntryPassGrid tickets={[t]} />
-                          </div>
-                        ))}
-                      </div>
+                      <EntryPassGrid tickets={bookingTickets} />
                     )}
                   </div>
                 ) : (
