@@ -90,7 +90,8 @@ function checkFile(filePath: string) {
     // Rule 3: Nested html/body tags (allowed only in the root layouts)
     const isRootLayout =
       filePath.endsWith('apps/web/src/app/layout.tsx') ||
-      filePath.endsWith('apps/admin/src/app/layout.tsx');
+      filePath.endsWith('apps/admin/src/app/layout.tsx') ||
+      filePath.endsWith('/app/global-error.tsx');
 
     if (
       (filePath.includes('apps/web/src/app/') ||
