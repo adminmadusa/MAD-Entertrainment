@@ -24,10 +24,5 @@
   },
   "dependencies": {
     "socket.io-client": "^4.8.1"
-  },
-  "pnpm": {
-    "overrides": {
-      "esbuild": "^0.28.1"
-    }
   }
 }
