@@ -377,7 +377,7 @@ export function AuthForm({
     },
     onError: (err) => {
       const apiErr = extractApiError(err);
-      setOnboardError(apiErr.message || 'Profile completion failed. Please try again.');
+      setOnboardError(apiErr.message || 'Account details completion failed. Please try again.');
     },
   });
 
