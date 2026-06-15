@@ -798,7 +798,7 @@ function TicketRetrievalContent() {
                   <div className={containerClasses}>
                     <div className="flex items-center justify-between gap-3">
                       <span className="text-[10px] text-accent-purple-light font-bold uppercase tracking-wider">
-                        Retrieved Booking
+                        Booking Details
                       </span>
                       <span className="text-[10px] text-text-muted font-mono">{singleBooking.bookingId}</span>
                     </div>

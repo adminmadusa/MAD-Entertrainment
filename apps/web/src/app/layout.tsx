@@ -34,7 +34,7 @@ export const metadata: Metadata = {
     'Book tickets for the hottest shows, events, DJ nights, concerts, comedy shows, and live performances. Premium entertainment booking platform.',
   keywords: [
     'MAD Entertrainment',
-    'event booking',
+    'ticket booking',
     'DJ nights',
     'concerts',
     'live shows',
@@ -74,7 +74,7 @@ export const metadata: Metadata = {
         url: '/og-image.png',
         width: 1200,
         height: 630,
-        alt: 'MAD Entertrainment — Premium Event Booking',
+        alt: 'MAD Entertrainment — Premium Ticket Booking',
       },
     ],
   },

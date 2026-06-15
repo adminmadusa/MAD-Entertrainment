@@ -26,7 +26,7 @@ export const metadata: Metadata = {
         url: '/og-image.png',
         width: 1200,
         height: 630,
-        alt: 'MAD Entertrainment — Premium Event Booking',
+        alt: 'MAD Entertrainment — Premium Ticket Booking',
       },
     ],
   },
@@ -153,7 +153,7 @@ function HeroSection() {
               href="/tickets"
               className="px-8 py-4 glass border border-border-subtle hover:border-accent-purple/50 text-text-primary hover:text-white hover:bg-accent-purple/10 font-semibold text-lg rounded-2xl transition-all duration-300 hover:shadow-glow-sm"
             >
-              My Booking
+              My Tickets
             </Link>
           </div>
         </Reveal>
@@ -284,7 +284,7 @@ function CTASection() {
                   href="/tickets"
                   className="px-10 py-4 glass border border-border-subtle hover:border-accent-purple/50 text-text-primary hover:text-white hover:bg-accent-purple/10 font-semibold text-lg rounded-2xl transition-all duration-300 hover:shadow-glow-sm"
                 >
-                  Track My Booking
+                  My Tickets
                 </Link>
               </div>
             </div>

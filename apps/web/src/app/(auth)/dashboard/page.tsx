@@ -270,7 +270,7 @@ function DashboardContent() {
               <div className="space-y-1 flex-grow">
                 <div className="flex items-center gap-2 flex-wrap">
                   <h3 className="text-white font-bold text-base sm:text-lg leading-snug">
-                    {eventInfo?.title || 'Event Booking'}
+                    {eventInfo?.title || 'Booking Details'}
                   </h3>
                   {booking.status !== BookingStatus.CONFIRMED && (
                     <span className="text-[10px] px-2 py-0.5 rounded-full border border-amber-500/30 text-amber-400 bg-amber-500/10 font-bold uppercase tracking-wider">

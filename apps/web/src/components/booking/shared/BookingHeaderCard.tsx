@@ -33,7 +33,7 @@ export function BookingHeaderCard({ booking, isFetching, pollCount }: BookingHea
         <div>
           <span className="text-[10px] text-text-muted font-medium tracking-wider uppercase">Event Info</span>
           <h2 className="text-white font-bold text-xl mt-0.5">
-            {eventInfo?.title || 'Event Booking'}
+            {eventInfo?.title || 'Booking Details'}
           </h2>
           {eventInfo && (
             <p className="text-text-muted text-xs mt-1.5 flex flex-wrap gap-x-3 gap-y-1">
