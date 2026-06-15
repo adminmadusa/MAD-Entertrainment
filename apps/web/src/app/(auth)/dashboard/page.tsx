@@ -443,7 +443,7 @@ function DashboardContent() {
           )}
           <div>
             <h2 className="text-white font-bold text-xl">Account Details</h2>
-            <p className="text-text-secondary text-xs mt-1">Manage your profile and linked contact details</p>
+            <p className="text-text-secondary text-xs mt-1">Manage your account details and linked contact information</p>
           </div>
         </div>
 
@@ -603,7 +603,7 @@ export default function UserDashboardPage() {
   return (
     <Suspense fallback={
       <div className="pt-28 pb-16 min-h-screen bg-background flex items-center justify-center">
-        <div className="text-purple-300 animate-pulse text-sm">Loading Dashboard...</div>
+        <div className="text-purple-300 animate-pulse text-sm">Loading Account...</div>
       </div>
     }>
       <DashboardContent />
