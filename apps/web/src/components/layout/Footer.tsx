@@ -15,7 +15,7 @@ const footerLinks = {
     { label: 'My Tickets', href: '/tickets' },
   ],
   Legal: [
-    { label: 'Legal Center', href: '/legal' },
+    { label: 'Legal Center', href: '/legal/privacy' },
   ],
 };
 

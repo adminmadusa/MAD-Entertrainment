@@ -1,23 +1,11 @@
-import { Event, SeatLayout, Booking, Ticket, DJOperator, PopupCampaign } from '@mad/types';
+import { Event, Booking, Ticket, DJOperator, PopupCampaign } from '@mad/types';
 import { AuthUser, AuthResponse, VerificationCodeRequestResponse, VerifyVerificationCodeOrOTPPayload } from '../../types/auth';
 import { ReserveTicketsInput, CheckoutDetailsInput } from '@mad/validations';
 import { STORAGE_VERSION } from '@mad/shared';
 
 import { apiClient } from './client';
 
-export interface LoginPayload {
-  email: string;
-  password?: string;
-  [key: string]: unknown;
-}
 
-export interface RegisterPayload {
-  name: string;
-  email: string;
-  phone: string;
-  password?: string;
-  [key: string]: unknown;
-}
 
 export interface VerifyPaymentPayload {
   razorpay_order_id?: string;
@@ -181,10 +169,7 @@ export async function publicGetDJBySlug(slug: string): Promise<DJOperator> {
   return data.data;
 }
 
-export async function publicGetEventSeatLayout(eventId: string): Promise<SeatLayout> {
-  const { data } = await apiClient.get<{ data: SeatLayout }>(`/events/${eventId}/seats`);
-  return data.data;
-}
+
 
 export async function publicCreateBooking(
   payload: ReserveTicketsInput,
@@ -269,27 +254,14 @@ export async function publicGetActivePopups(): Promise<PopupCampaign[]> {
 
 // ─── Auth ────────────────────────────────────────────────────
 
-export async function publicLogin(payload: LoginPayload): Promise<AuthResponse> {
-  // Gracefully adapt legacy publicLogin to trigger verification code sending
-  const { data } = await apiClient.post<{ data: AuthResponse }>('/auth/magic-link', payload);
-  return data.data;
-}
 
-export async function publicRegister(payload: RegisterPayload): Promise<AuthResponse> {
-  // Gracefully adapt legacy publicRegister to trigger verification code sending
-  const { data } = await apiClient.post<{ data: AuthResponse }>('/auth/magic-link', payload);
-  return data.data;
-}
 
 export async function publicGoogleLogin(idToken: string): Promise<AuthResponse> {
   const { data } = await apiClient.post<{ data: AuthResponse }>('/auth/google', { idToken });
   return data.data;
 }
 
-export async function publicCheckEmail(email: string): Promise<{ exists: boolean }> {
-  const { data } = await apiClient.post<{ data: { exists: boolean } }>('/auth/check-email', { email });
-  return data.data;
-}
+
 
 export async function publicRequestVerificationCode(
   email: string,
@@ -328,16 +300,7 @@ export async function publicLogout(): Promise<{ success: boolean }> {
   return data.data;
 }
 
-export interface PublicCategory {
-  _id: string;
-  name: string;
-  slug: string;
-}
 
-export async function publicGetCategories(): Promise<PublicCategory[]> {
-  const { data } = await apiClient.get<{ data: PublicCategory[] }>('/categories');
-  return Array.isArray(data?.data) ? data.data : [];
-}
 
 export async function publicResendTicketEmail(bookingId: string, sessionToken?: string): Promise<{ success: boolean; message: string }> {
   const { data } = await apiClient.post<{ success: boolean; message: string }>(`/bookings/${bookingId}/resend`, {}, {

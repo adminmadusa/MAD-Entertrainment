@@ -92,7 +92,13 @@ const nextConfig: NextConfig = {
 
   // ─── Redirects ─────────────────────────────────────────────
   async redirects() {
-    return [];
+    return [
+      {
+        source: '/legal',
+        destination: '/legal/privacy',
+        permanent: true,
+      },
+    ];
   },
 
   // ─── Rewrites (API Proxy) ──────────────────────────────────

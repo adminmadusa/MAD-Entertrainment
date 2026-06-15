@@ -1,6 +1,5 @@
 import 'server-only';
 import { Event, DJOperator } from '@mad/types';
-import { PublicCategory } from './public.service';
 import { API_URL } from '@mad/shared/config/frontend';
 
 // Cache configuration
@@ -76,19 +75,6 @@ export async function serverGetDJs(): Promise<DJOperator[]> {
   } catch (error) {
     const errorMsg = error instanceof Error ? error.message : String(error);
     console.error('[server-fetch] DJ Operators error:', errorMsg);
-    return [];
-  }
-}
-
-export async function serverGetCategories(): Promise<PublicCategory[]> {
-  try {
-    const res = await fetch(`${API_URL}/categories`, CACHE_OPTIONS);
-    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-    
-    const body = await res.json();
-    return Array.isArray(body?.data) ? body.data : [];
-  } catch (error) {
-    console.error('[server-fetch] Failed to fetch categories:', error);
     return [];
   }
 }
