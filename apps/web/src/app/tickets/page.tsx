@@ -849,15 +849,6 @@ function TicketRetrievalContent() {
                       <TicketStatusMessage status={booking.status} />
                     )}
 
-                    {/* View Booking Details Link */}
-                    <div className="pt-4 border-t border-border-subtle/30 flex justify-between items-center text-xs">
-                      <Link
-                        href={`/bookings/${booking.bookingId}`}
-                        className="text-accent-purple-light font-bold hover:underline"
-                      >
-                        View Booking Details →
-                      </Link>
-                    </div>
                   </div>
                 );
               };
