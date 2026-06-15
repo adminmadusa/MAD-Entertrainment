@@ -69,7 +69,7 @@ export const faqContent: FAQ[] = [
     id: 'p5',
     category: 'payments',
     question: "Where can I find my invoice or receipt?",
-    answer: "A digital receipt is included in your booking confirmation email. You can also download a formal invoice directly from your <a href='/tickets' class='text-accent-purple hover:underline'>Ticket Dashboard</a>."
+    answer: "A digital receipt is included in your booking confirmation email. You can also download a formal invoice directly from your <a href='/tickets' class='text-accent-purple hover:underline'>My Tickets</a> page."
   },
 
   // REFUNDS & CANCELLATIONS

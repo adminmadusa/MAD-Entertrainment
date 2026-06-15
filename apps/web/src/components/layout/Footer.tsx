@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useAuth } from '@/hooks/use-auth.hook';
 
 const footerLinks = {
   Platform: [
@@ -28,6 +29,9 @@ export function Footer() {
   const currentYear = new Date().getFullYear();
   const pathname = usePathname();
   const isCheckoutOrBook = pathname?.endsWith('/book') || pathname?.startsWith('/checkout/');
+  const { isAuthenticated } = useAuth();
+
+  const myTicketsHref = isAuthenticated ? '/dashboard?tab=tickets' : '/tickets';
 
   if (isCheckoutOrBook) return null;
 
@@ -94,16 +98,19 @@ export function Footer() {
                 Support
               </h3>
               <ul className="space-y-3">
-                {footerLinks.Support.map((link) => (
-                  <li key={link.href}>
-                    <Link
-                      href={link.href}
-                      className="text-text-secondary text-sm hover:text-text-primary transition-colors"
-                    >
-                      {link.label}
-                    </Link>
-                  </li>
-                ))}
+                {footerLinks.Support.map((link) => {
+                  const href = link.label === 'My Tickets' ? myTicketsHref : link.href;
+                  return (
+                    <li key={link.href}>
+                      <Link
+                        href={href}
+                        className="text-text-secondary text-sm hover:text-text-primary transition-colors"
+                      >
+                        {link.label}
+                      </Link>
+                    </li>
+                  );
+                })}
               </ul>
             </div>
 

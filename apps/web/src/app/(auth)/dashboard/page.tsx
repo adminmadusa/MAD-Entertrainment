@@ -571,7 +571,7 @@ function DashboardContent() {
                     : 'text-text-secondary hover:text-white hover:bg-white/5'
                 }`}
               >
-                👤 Account details
+                👤 Account Details
               </button>
               <button
                 type="button"

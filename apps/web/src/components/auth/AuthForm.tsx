@@ -868,8 +868,8 @@ export function AuthForm({
       {step === 'onboard' && (
         <form onSubmit={handleOnboardingSubmit} className="space-y-4 sm:space-y-6">
           <div className="text-center">
-            <h2 className="text-xl font-bold text-white">Complete Your Profile</h2>
-            <p className="text-xs text-text-muted mt-1">Tell us your name before accessing your tickets.</p>
+            <h2 className="text-xl font-bold text-white">Complete Your Account Details</h2>
+            <p className="text-xs text-text-muted mt-1">Please provide your name to complete your account registration.</p>
           </div>
 
           {onboardError && (
