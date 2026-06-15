@@ -8,7 +8,7 @@ import { usePathname } from 'next/navigation';
 import { adminGetEmailLogs } from '@/lib/api/admin/diagnostics.service';
 import ErrorState from '@/components/states/ErrorState';
 import { QUERY_KEYS } from '@mad/shared';
-import { useAdminAuth } from '@/hooks/use-admin-auth.hook';
+import { useAdminAuth } from '@/providers/AdminAuthProvider';
 
 export default function EmailDiagnosticsPage() {
   const { admin } = useAdminAuth();
