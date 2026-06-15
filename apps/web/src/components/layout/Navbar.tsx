@@ -25,7 +25,7 @@ export function Navbar() {
         { label: 'Events', href: '/events' },
         { label: 'DJs', href: '/dj-operators' },
         { label: 'Help Center', href: '/support' },
-        { label: 'My Tickets', href: '/tickets' },
+        { label: 'My Tickets', href: '/dashboard?tab=tickets' },
       ]
     : [
         { label: 'Events', href: '/events' },
@@ -214,7 +214,7 @@ export function Navbar() {
                       <p className="text-sm font-semibold text-white truncate">{user?.email}</p>
                     </div>
                     <Link
-                      href="/tickets"
+                      href="/dashboard?tab=tickets"
                       onClick={() => setDropdownOpen(false)}
                       className="block px-4 py-2 text-sm text-text-secondary hover:text-white hover:bg-white/5 transition-colors"
                     >
@@ -351,7 +351,7 @@ export function Navbar() {
                       Hi, {firstName}
                     </div>
                     <Link
-                      href="/tickets"
+                      href="/dashboard?tab=tickets"
                       onClick={() => {
                         navigatingRef.current = true;
                         setMobileOpen(false);
