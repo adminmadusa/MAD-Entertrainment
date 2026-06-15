@@ -1,6 +1,6 @@
 import { PaymentStatus, BookingStatus } from '@mad/shared';
 import { Payment } from '../../models/payment.schema';
-import { Booking } from '../../models/booking.schema';
+import { Booking, IBooking } from '../../models/booking.schema';
 import { AppError } from '../../middleware/error.middleware';
 
 // ─────────────────────────────────────────────
@@ -30,19 +30,16 @@ export function maskEmail(email: string): string {
 
 export class BookingRecoveryService {
   /**
-   * Recovers a booking's registered email using a paid payment transaction ID.
+   * Locates and validates a booking by PAID payment transaction ID.
    * Enforces strict eligibility guards:
    * 1. Payment must exist and have status 'PAID'
    * 2. Associated booking must exist
-   * 3. Booking must not be cancelled
-   * 4. Booking must have a registered email
-   *
-   * @param transactionId Razorpay or Stripe transaction/order identifier
-   * @returns The guestEmail and bookingId reference
+   * 3. Booking status must not be CANCELLED, REFUNDED, EXPIRED, or FAILED
+   * 4. Booking must have a registered guestEmail
    */
-  static async recoverBookingByTransactionId(
+  static async getBookingByTransactionId(
     transactionId: string
-  ): Promise<{ guestEmail: string; bookingId: string }> {
+  ): Promise<IBooking> {
     // 1. Locate PAID payment record
     const payment = await Payment.findOne({
       $or: [
@@ -62,8 +59,14 @@ export class BookingRecoveryService {
       throw AppError.notFound('Recovery information not found');
     }
 
-    // 3. Eligibility guard: Booking must not be cancelled
-    if (booking.status === BookingStatus.CANCELLED) {
+    // 3. Eligibility guards: Booking status checks
+    const ineligibleStatuses = [
+      BookingStatus.CANCELLED,
+      BookingStatus.REFUNDED,
+      BookingStatus.EXPIRED,
+      BookingStatus.FAILED,
+    ];
+    if (ineligibleStatuses.includes(booking.status)) {
       throw AppError.notFound('Recovery information not found');
     }
 
@@ -72,8 +75,22 @@ export class BookingRecoveryService {
       throw AppError.notFound('Recovery information not found');
     }
 
+    return booking;
+  }
+
+  /**
+   * Recovers a booking's registered email using a paid payment transaction ID.
+   *
+   * @param transactionId Razorpay or Stripe transaction/order identifier
+   * @returns The guestEmail, maskedEmail, and bookingId reference
+   */
+  static async recoverBookingByTransactionId(
+    transactionId: string
+  ): Promise<{ guestEmail: string; maskedEmail: string; bookingId: string }> {
+    const booking = await this.getBookingByTransactionId(transactionId);
     return {
-      guestEmail: maskEmail(booking.guestEmail),
+      guestEmail: booking.guestEmail!,
+      maskedEmail: maskEmail(booking.guestEmail!),
       bookingId: booking.bookingId,
     };
   }

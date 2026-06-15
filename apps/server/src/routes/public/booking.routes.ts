@@ -9,8 +9,9 @@ import {
     downloadBookingPDF,
     resendBookingTickets,
     recoverBooking,
+    verifyRecoveredBookingOTP,
 } from '../../controllers/public/booking.controller';
-import { recoverBookingSchema } from '../../validations/booking-recovery.validation';
+import { recoverBookingSchema, verifyRecoveredBookingOTPSchema } from '../../validations/booking-recovery.validation';
 
 import {
     requireAuth,
@@ -102,5 +103,13 @@ router.post(
     validateBody(recoverBookingSchema),
     recoverBooking
 );
+
+router.post(
+    '/recover/verify',
+    recoveryLimiter as any,
+    validateBody(verifyRecoveredBookingOTPSchema),
+    verifyRecoveredBookingOTP
+);
+
 
 export default router;

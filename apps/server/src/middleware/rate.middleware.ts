@@ -190,7 +190,7 @@ export function initRateLimiters(): void {
   // Isolated from the auth limiter to prevent shared-bucket abuse.
   _recoveryLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    limit: 3,                 // 3 requests per IP per window
+    limit: 5,                 // 5 requests per IP per window
     standardHeaders: true,
     legacyHeaders: false,
     passOnStoreError: true,

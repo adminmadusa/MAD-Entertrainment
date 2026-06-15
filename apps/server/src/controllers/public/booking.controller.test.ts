@@ -8,9 +8,10 @@ vi.hoisted(() => {
 });
 
 import { describe, it, expect, beforeEach } from 'vitest';
-import { createBooking, recoverBooking, getBooking, downloadBookingPDF, resendBookingTickets } from './booking.controller';
+import { createBooking, recoverBooking, verifyRecoveredBookingOTP, getBooking, downloadBookingPDF, resendBookingTickets } from './booking.controller';
 import { PublicBookingService } from '../../services/public/booking.service';
 import { BookingRecoveryService } from '../../services/public/booking-recovery.service';
+import { AuthService } from '../../services/public/auth.service';
 import { auditLog } from '../../utils/audit';
 import { AppError } from '../../middleware/error.middleware';
 
@@ -24,6 +25,14 @@ vi.mock('../../services/public/booking.service', () => ({
 vi.mock('../../services/public/booking-recovery.service', () => ({
   BookingRecoveryService: {
     recoverBookingByTransactionId: vi.fn(),
+    getBookingByTransactionId: vi.fn(),
+  },
+}));
+
+vi.mock('../../services/public/auth.service', () => ({
+  AuthService: {
+    requestMagicLink: vi.fn(),
+    verifyMagicLinkOrOTP: vi.fn(),
   },
 }));
 
@@ -100,16 +109,19 @@ describe('Booking Controller — recoverBooking', () => {
     vi.clearAllMocks();
   });
 
-  it('should return 200 and guest email on success, logging attempt and success', async () => {
+  it('should return 200, masked email, and otpDispatched true on success, logging attempt, dispatch, and success', async () => {
     vi.mocked(BookingRecoveryService.recoverBookingByTransactionId).mockResolvedValue({
       guestEmail: 'kalyan@gmail.com',
+      maskedEmail: 'k*****n@gmail.com',
       bookingId: 'MAD-2026-ABCDE',
     });
+
+    vi.mocked(AuthService.requestMagicLink).mockResolvedValue(undefined as any);
 
     const req: any = {
       body: { transactionId: 'pay_mock_123456789' },
       ip: '127.0.0.1',
-      headers: { 'user-agent': 'Mozilla/5.0' },
+      headers: { 'user-agent': 'Mozilla/5.0', origin: 'http://localhost:3000' },
       socket: {},
     };
 
@@ -122,16 +134,16 @@ describe('Booking Controller — recoverBooking', () => {
     await recoverBooking(req, res, next);
 
     expect(BookingRecoveryService.recoverBookingByTransactionId).toHaveBeenCalledWith('pay_mock_123456789');
+    expect(AuthService.requestMagicLink).toHaveBeenCalledWith('kalyan@gmail.com', 'http://localhost:3000');
     expect(res.status).toHaveBeenCalledWith(200);
-    // The controller forwards whatever the service returns.
-    // The service is responsible for masking — the controller test verifies
-    // it passes the service result through unchanged.
     expect(res.json).toHaveBeenCalledWith({
       success: true,
-      email: 'kalyan@gmail.com',
+      maskedEmail: 'k*****n@gmail.com',
+      otpDispatched: true,
+      cooldownSeconds: 60,
     });
 
-    // Check that TRANSACTION_RECOVERY_LOOKUP and TRANSACTION_RECOVERY_SUCCESS were logged with masked ID
+    // Check that TRANSACTION_RECOVERY_LOOKUP, TRANSACTION_RECOVERY_SUCCESS, and TRANSACTION_RECOVERY_OTP_DISPATCH were logged
     expect(auditLog).toHaveBeenCalledWith(
       expect.objectContaining({
         action: 'TRANSACTION_RECOVERY_LOOKUP',
@@ -146,6 +158,61 @@ describe('Booking Controller — recoverBooking', () => {
         metadata: expect.objectContaining({
           transactionId: 'pay_...6789',
           bookingId: 'MAD-2026-ABCDE',
+        }),
+      })
+    );
+    expect(auditLog).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: 'TRANSACTION_RECOVERY_OTP_DISPATCH',
+        metadata: expect.objectContaining({
+          transactionId: 'pay_...6789',
+          bookingId: 'MAD-2026-ABCDE',
+          email: 'k*****n@gmail.com',
+        }),
+      })
+    );
+  });
+
+  it('should return 200 with otpDispatched false and cooldownSeconds when OTP cooldown is active', async () => {
+    vi.mocked(BookingRecoveryService.recoverBookingByTransactionId).mockResolvedValue({
+      guestEmail: 'kalyan@gmail.com',
+      maskedEmail: 'k*****n@gmail.com',
+      bookingId: 'MAD-2026-ABCDE',
+    });
+
+    vi.mocked(AuthService.requestMagicLink).mockRejectedValue(
+      AppError.tooManyRequests('Please wait before requesting another code.', 'OTP_COOLDOWN_ACTIVE', 45)
+    );
+
+    const req: any = {
+      body: { transactionId: 'pay_mock_123456789' },
+      ip: '127.0.0.1',
+      headers: { 'user-agent': 'Mozilla/5.0', origin: 'http://localhost:3000' },
+      socket: {},
+    };
+
+    const res: any = {
+      status: vi.fn().mockReturnThis(),
+      json: vi.fn().mockReturnThis(),
+    };
+    const next = vi.fn();
+
+    await recoverBooking(req, res, next);
+
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith({
+      success: true,
+      maskedEmail: 'k*****n@gmail.com',
+      otpDispatched: false,
+      cooldownSeconds: 45,
+    });
+
+    expect(auditLog).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: 'TRANSACTION_RECOVERY_OTP_COOLDOWN',
+        metadata: expect.objectContaining({
+          transactionId: 'pay_...6789',
+          retryAfter: 45,
         }),
       })
     );
@@ -208,6 +275,117 @@ describe('Booking Controller — recoverBooking', () => {
     await recoverBooking(req, res, next);
 
     expect(next).toHaveBeenCalledWith(error);
+  });
+});
+
+describe('Booking Controller — verifyRecoveredBookingOTP', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('should return 200, user profile, and set cookie on successful OTP verification', async () => {
+    const mockBooking = {
+      bookingId: 'MAD-2026-ABCDE',
+      guestEmail: 'kalyan@gmail.com',
+    };
+
+    vi.mocked(BookingRecoveryService.getBookingByTransactionId).mockResolvedValue(mockBooking as any);
+
+    vi.mocked(AuthService.verifyMagicLinkOrOTP).mockResolvedValue({
+      user: {
+        _id: 'user_123',
+        email: 'kalyan@gmail.com',
+        name: 'Kalyan',
+        firstName: 'Kalyan',
+        lastName: 'Dev',
+      },
+      accessToken: 'access_token_mock',
+      refreshToken: 'refresh_token_mock',
+    });
+
+    const req: any = {
+      body: { transactionId: 'pay_mock_123456789', otp: '123456' },
+      ip: '127.0.0.1',
+      headers: { 'user-agent': 'Mozilla/5.0' },
+      socket: {},
+    };
+
+    const res: any = {
+      status: vi.fn().mockReturnThis(),
+      json: vi.fn().mockReturnThis(),
+      cookie: vi.fn(),
+    };
+    const next = vi.fn();
+
+    await verifyRecoveredBookingOTP(req, res, next);
+
+    expect(BookingRecoveryService.getBookingByTransactionId).toHaveBeenCalledWith('pay_mock_123456789');
+    expect(AuthService.verifyMagicLinkOrOTP).toHaveBeenCalledWith('123456', 'kalyan@gmail.com');
+    expect(res.cookie).toHaveBeenCalledWith('refreshToken', 'refresh_token_mock', expect.any(Object));
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith({
+      success: true,
+      data: {
+        user: {
+          id: 'user_123',
+          email: 'kalyan@gmail.com',
+          name: 'Kalyan',
+          picture: undefined,
+        },
+        token: 'access_token_mock',
+        onboardingRequired: false,
+      },
+    });
+
+    expect(auditLog).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: 'TRANSACTION_RECOVERY_VERIFY_SUCCESS',
+        metadata: expect.objectContaining({
+          transactionId: 'pay_...6789',
+          bookingId: 'MAD-2026-ABCDE',
+        }),
+      })
+    );
+  });
+
+  it('should return 400 or other AppError if verifyMagicLinkOrOTP fails', async () => {
+    const mockBooking = {
+      bookingId: 'MAD-2026-ABCDE',
+      guestEmail: 'kalyan@gmail.com',
+    };
+
+    vi.mocked(BookingRecoveryService.getBookingByTransactionId).mockResolvedValue(mockBooking as any);
+
+    vi.mocked(AuthService.verifyMagicLinkOrOTP).mockRejectedValue(
+      new AppError('Invalid verification code.', 400)
+    );
+
+    const req: any = {
+      body: { transactionId: 'pay_mock_123456789', otp: '111111' },
+      ip: '127.0.0.1',
+      headers: { 'user-agent': 'Mozilla/5.0' },
+      socket: {},
+    };
+
+    const res: any = {
+      status: vi.fn().mockReturnThis(),
+      json: vi.fn().mockReturnThis(),
+      cookie: vi.fn(),
+    };
+    const next = vi.fn();
+
+    await verifyRecoveredBookingOTP(req, res, next);
+
+    expect(next).toHaveBeenCalledWith(expect.any(AppError));
+    expect(auditLog).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: 'TRANSACTION_RECOVERY_VERIFY_FAILURE',
+        metadata: expect.objectContaining({
+          transactionId: 'pay_...6789',
+          reason: 'Invalid verification code.',
+        }),
+      })
+    );
   });
 });
 

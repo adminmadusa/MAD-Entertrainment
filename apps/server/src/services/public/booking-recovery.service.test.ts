@@ -65,9 +65,9 @@ describe('BookingRecoveryService', () => {
       status: PaymentStatus.PAID,
     });
     expect(Booking.findById).toHaveBeenCalledWith(bookingObjectId);
-    // Email must be masked — not the raw address
-    expect(result.guestEmail).not.toBe(guestEmail);
-    expect(result.guestEmail).toMatch(/^t\*+t@example\.com$/);
+    // Email must be raw and maskedEmail must be masked
+    expect(result.guestEmail).toBe(guestEmail);
+    expect(result.maskedEmail).toMatch(/^t\*+t@example\.com$/);
     expect(result.bookingId).toBe(bookingId);
   });
 
@@ -107,6 +107,75 @@ describe('BookingRecoveryService', () => {
       _id: bookingObjectId,
       bookingId,
       status: BookingStatus.CANCELLED,
+      guestEmail,
+    };
+
+    vi.mocked(Payment.findOne).mockResolvedValue(mockPayment as any);
+    vi.mocked(Booking.findById).mockResolvedValue(mockBooking as any);
+
+    await expect(
+      BookingRecoveryService.recoverBookingByTransactionId(transactionId)
+    ).rejects.toThrowError(new AppError('Recovery information not found', 404));
+  });
+
+  it('should throw 404 AppError if booking is refunded', async () => {
+    const mockPayment = {
+      _id: new Types.ObjectId(),
+      bookingId: bookingObjectId,
+      status: PaymentStatus.PAID,
+      gatewayPaymentId: transactionId,
+    };
+
+    const mockBooking = {
+      _id: bookingObjectId,
+      bookingId,
+      status: BookingStatus.REFUNDED,
+      guestEmail,
+    };
+
+    vi.mocked(Payment.findOne).mockResolvedValue(mockPayment as any);
+    vi.mocked(Booking.findById).mockResolvedValue(mockBooking as any);
+
+    await expect(
+      BookingRecoveryService.recoverBookingByTransactionId(transactionId)
+    ).rejects.toThrowError(new AppError('Recovery information not found', 404));
+  });
+
+  it('should throw 404 AppError if booking is expired', async () => {
+    const mockPayment = {
+      _id: new Types.ObjectId(),
+      bookingId: bookingObjectId,
+      status: PaymentStatus.PAID,
+      gatewayPaymentId: transactionId,
+    };
+
+    const mockBooking = {
+      _id: bookingObjectId,
+      bookingId,
+      status: BookingStatus.EXPIRED,
+      guestEmail,
+    };
+
+    vi.mocked(Payment.findOne).mockResolvedValue(mockPayment as any);
+    vi.mocked(Booking.findById).mockResolvedValue(mockBooking as any);
+
+    await expect(
+      BookingRecoveryService.recoverBookingByTransactionId(transactionId)
+    ).rejects.toThrowError(new AppError('Recovery information not found', 404));
+  });
+
+  it('should throw 404 AppError if booking is failed', async () => {
+    const mockPayment = {
+      _id: new Types.ObjectId(),
+      bookingId: bookingObjectId,
+      status: PaymentStatus.PAID,
+      gatewayPaymentId: transactionId,
+    };
+
+    const mockBooking = {
+      _id: bookingObjectId,
+      bookingId,
+      status: BookingStatus.FAILED,
       guestEmail,
     };
 

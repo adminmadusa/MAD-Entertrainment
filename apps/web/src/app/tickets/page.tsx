@@ -19,6 +19,7 @@ import {
   publicDownloadTicketPDF,
   publicResendTicketEmail,
   publicRecoverBookingEmail,
+  publicVerifyRecoveredBookingOTP,
 } from '@/lib/api/public.service';
 import { useAuth } from '@/providers/AuthProvider';
 import { AuthForm } from '@/components/auth/AuthForm';
@@ -81,7 +82,7 @@ function TicketRetrievalContent() {
   const targetRef = searchParams.get('ref');
   const pollCountRef = useRef(0);
 
-  const { logout, isAuthenticated, isLoading: isAuthLoading, user, onboardingRequired } = useAuth();
+  const { login, setOnboardingRequired, logout, isAuthenticated, isLoading: isAuthLoading, user, onboardingRequired } = useAuth();
   const guestSession = getStoredGuestBookingSession();
   const singleBookingSessionToken = isAuthenticated ? undefined : guestSession?.token;
 
@@ -102,6 +103,19 @@ function TicketRetrievalContent() {
   const [isRecovering, setIsRecovering] = useState(false);
   const [showRecoveryResult, setShowRecoveryResult] = useState(false);
   const [showSupportGuidance, setShowSupportGuidance] = useState(false);
+
+  // OTP Verification States
+  const [otpInput, setOtpInput] = useState('');
+  const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
+  const [recoveryCooldown, setRecoveryCooldown] = useState(0);
+
+  useEffect(() => {
+    if (recoveryCooldown <= 0) return;
+    const timer = setInterval(() => {
+      setRecoveryCooldown((prev) => Math.max(0, prev - 1));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [recoveryCooldown]);
 
   // Query Bookings (only enabled when authenticated)
   const { data: bookingsData, isLoading: isBookingsLoading } = useQuery({
@@ -343,8 +357,15 @@ function TicketRetrievalContent() {
     setIsRecovering(true);
     try {
       const result = await publicRecoverBookingEmail(txId);
-      setRecoveredEmail(result.email);
+      setRecoveredEmail(result.maskedEmail);
+      setRecoveryCooldown(result.cooldownSeconds || 60);
+      setOtpInput('');
       setShowRecoveryResult(true);
+      if (result.otpDispatched) {
+        setInfoMsg('Verification code sent to your email.');
+      } else {
+        setInfoMsg('A verification code was recently sent. Please wait before resending.');
+      }
     } catch (err) {
       const apiErr = extractApiError(err);
       const isAxiosError = err && typeof err === 'object' && 'response' in err;
@@ -359,6 +380,65 @@ function TicketRetrievalContent() {
     } finally {
       setIsRecovering(false);
     }
+  };
+
+  const handleVerifyOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMsg('');
+    setInfoMsg('');
+
+    const otp = otpInput.trim().replace(/\s/g, '');
+    if (!otp) {
+      setErrorMsg('Verification code is required.');
+      return;
+    }
+    if (otp.length !== 6) {
+      setErrorMsg('Verification code must be 6 digits.');
+      return;
+    }
+
+    setIsVerifyingOtp(true);
+    try {
+      const result = await publicVerifyRecoveredBookingOTP(transactionIdInput.trim(), otp);
+      login(result.token, result.user);
+      setOnboardingRequired(!!result.onboardingRequired);
+      setInfoMsg('Successfully authenticated! Loading your tickets...');
+    } catch (err) {
+      const apiErr = extractApiError(err);
+      setErrorMsg(apiErr.message || 'Invalid verification code. Please try again.');
+    } finally {
+      setIsVerifyingOtp(false);
+    }
+  };
+
+  const handleResendRecoveryOtp = async () => {
+    if (recoveryCooldown > 0) return;
+    setErrorMsg('');
+    setInfoMsg('');
+    setIsRecovering(true);
+    try {
+      const result = await publicRecoverBookingEmail(transactionIdInput.trim());
+      setRecoveryCooldown(result.cooldownSeconds || 60);
+      setOtpInput('');
+      if (result.otpDispatched) {
+        setInfoMsg('A new verification code has been sent to your email.');
+      } else {
+        setInfoMsg('A verification code was recently sent. Please wait.');
+      }
+    } catch (err) {
+      const apiErr = extractApiError(err);
+      setErrorMsg(apiErr.message || 'Failed to resend verification code.');
+    } finally {
+      setIsRecovering(false);
+    }
+  };
+
+  const handleChangeTransactionId = () => {
+    setErrorMsg('');
+    setInfoMsg('');
+    setShowRecoveryResult(false);
+    setOtpInput('');
+    setRecoveryCooldown(0);
   };
 
   const handleContinueToSignIn = () => {
@@ -429,34 +509,70 @@ function TicketRetrievalContent() {
       return (
         <div className="glass rounded-3xl border border-border-subtle p-4 sm:p-8 space-y-4 sm:space-y-6 shadow-glow-purple text-center animate-in fade-in duration-300">
           <div className="w-12 h-12 bg-accent-purple/10 text-accent-purple-light text-2xl flex items-center justify-center rounded-full mx-auto">
-            🔍
+            ✉️
           </div>
-          <div className="space-y-2">
-            <h3 className="text-white font-bold text-lg">Booking Found</h3>
-            <p className="text-text-secondary text-xs">
-              We found the booking registered to the following email address:
-            </p>
-            <p className="text-white font-mono font-bold text-sm bg-white/5 border border-white/10 rounded-xl py-3 px-4 break-all select-all select-text selection:bg-accent-purple/50">
-              {recoveredEmail}
-            </p>
-          </div>
-          
-          <div className="flex flex-col sm:flex-row gap-3 pt-2">
-            <button
-              type="button"
-              onClick={handleContinueToSignIn}
-              className="flex-grow py-3 px-5 bg-accent-purple hover:bg-accent-purple-light text-white text-xs font-bold rounded-xl transition-all shadow-md"
-            >
-              Continue to Sign In
-            </button>
-            <button
-              type="button"
-              onClick={() => setShowSupportGuidance(true)}
-              className="flex-grow py-3 px-5 bg-white/5 hover:bg-white/10 border border-white/10 text-text-secondary hover:text-white text-xs font-bold rounded-xl transition-all text-center"
-            >
-              I no longer have access to this email
-            </button>
-          </div>
+          <form onSubmit={handleVerifyOtp} className="space-y-4 text-center">
+            <div className="space-y-2">
+              <h3 className="text-white font-bold text-lg">Verification Required</h3>
+              <p className="text-text-secondary text-xs">
+                Verification code sent to:
+              </p>
+              <p className="text-white font-mono font-bold text-sm bg-white/5 border border-white/10 rounded-xl py-3 px-4 break-all select-all select-text selection:bg-accent-purple/50">
+                {recoveredEmail}
+              </p>
+              <p className="text-text-secondary text-xs mt-2">
+                Enter the 6-digit verification code to access your tickets.
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              <label htmlFor="recovery-otp" className="text-xs font-semibold text-text-secondary uppercase tracking-wider ml-1 block text-center">
+                6-Digit Passcode
+              </label>
+              <input
+                id="recovery-otp"
+                type="text"
+                required
+                maxLength={6}
+                pattern="[0-9]*"
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                enterKeyHint="done"
+                value={otpInput}
+                onChange={(e) => setOtpInput(e.target.value.replace(/[^0-9]/g, ''))}
+                placeholder="000000"
+                className="w-full text-center font-black bg-white/5 border border-border-subtle rounded-2xl text-white placeholder:text-text-secondary focus:outline-none focus:border-accent-purple focus:ring-1 focus:ring-accent-purple transition-all duration-300 font-mono text-xl sm:text-3xl py-2.5 sm:py-4 tracking-[0.3em] sm:tracking-[0.6em] pl-[0.3em] sm:pl-[0.6em]"
+              />
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-3 pt-2">
+              <button
+                type="submit"
+                disabled={isVerifyingOtp}
+                className="flex-grow py-3 px-5 bg-accent-purple hover:bg-accent-purple-light text-white text-xs font-bold rounded-xl transition-all shadow-md disabled:opacity-60"
+              >
+                {isVerifyingOtp ? 'Verifying...' : 'Verify Code'}
+              </button>
+              <button
+                type="button"
+                onClick={handleResendRecoveryOtp}
+                disabled={recoveryCooldown > 0 || isRecovering}
+                className="flex-grow py-3 px-5 bg-white/5 hover:bg-white/10 border border-white/10 text-text-secondary hover:text-white text-xs font-bold rounded-xl transition-all disabled:opacity-60"
+              >
+                {recoveryCooldown > 0 ? `Resend (${recoveryCooldown}s)` : 'Resend Code'}
+              </button>
+            </div>
+            
+            <div className="pt-2">
+              <button
+                type="button"
+                onClick={handleChangeTransactionId}
+                className="text-xs text-text-muted hover:text-white transition-colors"
+              >
+                ← Change Transaction ID
+              </button>
+            </div>
+          </form>
         </div>
       );
     }

@@ -356,10 +356,22 @@ export async function publicDownloadTicketPDF(bookingId: string, sessionToken?: 
 
 export async function publicRecoverBookingEmail(
   transactionId: string
-): Promise<{ success: boolean; email: string }> {
-  const { data } = await apiClient.post<{ success: boolean; email: string }>(
+): Promise<{ success: boolean; maskedEmail: string; otpDispatched: boolean; cooldownSeconds: number }> {
+  const { data } = await apiClient.post<{ success: boolean; maskedEmail: string; otpDispatched: boolean; cooldownSeconds: number }>(
     '/bookings/recover',
     { transactionId }
   );
   return data;
 }
+
+export async function publicVerifyRecoveredBookingOTP(
+  transactionId: string,
+  otp: string
+): Promise<AuthResponse> {
+  const { data } = await apiClient.post<{ data: AuthResponse }>(
+    '/bookings/recover/verify',
+    { transactionId, otp }
+  );
+  return data.data;
+}
+
