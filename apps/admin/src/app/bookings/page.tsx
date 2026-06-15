@@ -5,7 +5,7 @@ import { BookingStatus, getBookingStatusLabel } from '@mad/shared';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useState, useEffect, Suspense, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { useAdminAuth } from '@/hooks/use-admin-auth.hook';
+import { useAdminAuth } from '@/providers/AdminAuthProvider';
 
 import {
   adminGetBookings,

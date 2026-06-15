@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 
-import { useAdminAuth } from '@/hooks/use-admin-auth.hook';
+import { useAdminAuth } from '@/providers/AdminAuthProvider';
 import { adminLogin } from '@/lib/api/admin/auth.service';
 import { extractApiError } from '@/lib/api/client';
 

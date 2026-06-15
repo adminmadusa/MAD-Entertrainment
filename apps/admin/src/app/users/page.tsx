@@ -8,7 +8,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 
 import ErrorState from '@/components/states/ErrorState';
 import LoadingState from '@/components/states/LoadingState';
-import { useAdminAuth } from '@/hooks/use-admin-auth.hook';
+import { useAdminAuth } from '@/providers/AdminAuthProvider';
 import { adminGetUsers, UserListItem } from '@/lib/api/admin/user.service';
 
 export default function UsersDirectoryPage() {

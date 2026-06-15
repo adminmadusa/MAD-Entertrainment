@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect, useRef } from 'react';
 import { ArrowRight, useFocusTrap } from '@mad/ui';
-import { useAuth } from '@/hooks/use-auth.hook';
+import { useAuth } from '@/providers/AuthProvider';
 
 export function Navbar() {
   const pathname = usePathname();

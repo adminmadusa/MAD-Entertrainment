@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useAuth } from '@/hooks/use-auth.hook';
+import { useAuth } from '@/providers/AuthProvider';
 
 const footerLinks = {
   Platform: [

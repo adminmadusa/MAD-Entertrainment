@@ -7,7 +7,7 @@ import React, { useState, useEffect } from 'react';
 
 import ErrorState from '@/components/states/ErrorState';
 import LoadingState from '@/components/states/LoadingState';
-import { useAdminAuth } from '@/hooks/use-admin-auth.hook';
+import { useAdminAuth } from '@/providers/AdminAuthProvider';
 
 import { useUserDetail } from './_hooks/use-user-detail.hook';
 import UserProfileCard from './_components/UserProfileCard';

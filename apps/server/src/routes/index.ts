@@ -46,10 +46,6 @@ router.use('/popups', publicPopupRoutes);
 router.use('/public/tickets', publicTicketRoutes);
 router.use('/marketing', publicMarketingRoutes);
 
-// ─── Direct Auth Accessors ──────────────────────────────────
-router.get('/me', requireAuth, AuthController.getMe);
-router.get('/my-bookings', requireAuth, AuthController.getMyBookings);
-
 // ─── Admin: Auth ──────────────────────────────────────────────
 import adminAuthRoutes from './admin/auth.routes';
 router.use('/admin/auth', adminAuthRoutes);

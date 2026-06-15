@@ -3,7 +3,7 @@
 import { usePathname, useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 
-import { useAdminAuth } from '@/hooks/use-admin-auth.hook';
+import { useAdminAuth } from '@/providers/AdminAuthProvider';
 import { canAccessRoute, DEFAULT_ROUTE_BY_ROLE } from '@/lib/rbac/navigation-permissions';
 
 import { AdminSidebar } from './AdminSidebar';

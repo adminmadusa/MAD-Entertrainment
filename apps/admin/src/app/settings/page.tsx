@@ -3,7 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
-import { useAdminAuth } from '@/hooks/use-admin-auth.hook';
+import { useAdminAuth } from '@/providers/AdminAuthProvider';
 
 import { adminGetCategories, adminCreateCategory, adminUpdateCategory, adminDeleteCategory, type AdminCategory } from '@/lib/api/admin/category.service';
 import { adminGetTiers, adminCreateTier, adminUpdateTier, adminDeleteTier, type AdminTier } from '@/lib/api/admin/tier.service';

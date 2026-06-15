@@ -10,7 +10,7 @@ import { adminGetAdmins, adminCreateAdmin, adminToggleAdminActive, adminUpdateAd
 import { adminApiClient, extractApiError } from '@/lib/api/client';
 import ErrorState from '@/components/states/ErrorState';
 import LoadingState from '@/components/states/LoadingState';
-import { useAdminAuth } from '@/hooks/use-admin-auth.hook';
+import { useAdminAuth } from '@/providers/AdminAuthProvider';
 
 
 const ROLE_LABELS: Record<AdminRole, string> = {
