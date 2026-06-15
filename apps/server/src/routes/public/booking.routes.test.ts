@@ -13,6 +13,7 @@ vi.mock('../../controllers/public/booking.controller', () => ({
   downloadBookingPDF: vi.fn(),
   resendBookingTickets: vi.fn(),
   recoverBooking: vi.fn((req: any, res: any) => res.status(200).json({ success: true, email: 'test@example.com' })),
+  verifyRecoveredBookingOTP: vi.fn(),
 }));
 
 vi.mock('../../middleware/auth.middleware', () => ({
@@ -61,6 +62,7 @@ vi.mock('../../validations/payment.validation', () => ({
 
 vi.mock('../../validations/booking-recovery.validation', () => ({
   recoverBookingSchema: {},
+  verifyRecoveredBookingOTPSchema: {},
 }));
 
 vi.mock('../../utils/logger', () => ({

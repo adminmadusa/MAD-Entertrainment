@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { recoverBookingSchema } from './booking-recovery.validation';
+import { recoverBookingSchema, verifyRecoveredBookingOTPSchema } from './booking-recovery.validation';
 
 describe('Booking Recovery Validation Schema', () => {
   it('should accept a valid transaction ID', () => {
@@ -43,3 +43,45 @@ describe('Booking Recovery Validation Schema', () => {
     expect(result.success).toBe(false);
   });
 });
+
+describe('Verify Recovered Booking OTP Validation Schema', () => {
+  it('should accept valid transactionId and 6-digit numeric OTP', () => {
+    const result = verifyRecoveredBookingOTPSchema.safeParse({
+      transactionId: 'pay_123456789',
+      otp: '123456',
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it('should reject non-numeric OTP', () => {
+    const result = verifyRecoveredBookingOTPSchema.safeParse({
+      transactionId: 'pay_123456789',
+      otp: '123a56',
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it('should reject short OTP', () => {
+    const result = verifyRecoveredBookingOTPSchema.safeParse({
+      transactionId: 'pay_123456789',
+      otp: '12345',
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it('should reject long OTP', () => {
+    const result = verifyRecoveredBookingOTPSchema.safeParse({
+      transactionId: 'pay_123456789',
+      otp: '1234567',
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it('should reject missing fields', () => {
+    const result = verifyRecoveredBookingOTPSchema.safeParse({
+      transactionId: 'pay_123456789',
+    });
+    expect(result.success).toBe(false);
+  });
+});
+
