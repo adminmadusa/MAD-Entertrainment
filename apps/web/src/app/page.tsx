@@ -104,8 +104,8 @@ function HeroSection() {
       {/* Animated Background */}
       <div className="absolute inset-0 bg-gradient-hero" />
       <div className="absolute inset-0">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-accent-purple/10 rounded-full blur-[60px] md:blur-[120px] animate-float" />
-        <div className="absolute bottom-1/3 right-1/4 w-80 h-80 bg-accent-pink/10 rounded-full blur-[50px] md:blur-[100px] animate-float-delayed" />
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-accent-purple/10 rounded-full blur-[60px] md:blur-[120px]" />
+        <div className="absolute bottom-1/3 right-1/4 w-80 h-80 bg-accent-pink/10 rounded-full blur-[50px] md:blur-[100px]" />
         <div className="absolute top-1/2 right-1/3 w-64 h-64 bg-accent-cyan/8 rounded-full blur-[40px] md:blur-[80px]" />
       </div>
 
