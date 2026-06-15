@@ -193,7 +193,7 @@ test.describe('Checkout Flow Smoke Tests', () => {
     await expect(page.locator('text=john.doe@example.com').first()).toBeVisible();
 
     // 7. Redirect Handling (Wait for Auto-redirect countdown text to be visible)
-    await expect(page.locator('text=Auto-redirecting to your Ticket Wallet in')).toBeVisible();
+    await expect(page.locator('text=Auto-redirecting to My Tickets in')).toBeVisible();
   });
 
   test('Failed checkout payment handling', async ({ page }) => {
