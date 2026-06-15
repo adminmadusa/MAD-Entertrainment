@@ -46,16 +46,6 @@ export function useWindowWidth(defaultWidth = 1024): number {
   return width;
 }
 
-/**
- * Returns true if the screen is narrower than the given breakpoint.
- * Tailwind breakpoints: sm=640, md=768, lg=1024, xl=1280, 2xl=1536
- *
- * ⚠️ Prefer CSS/Tailwind responsive classes when possible — this hook
- *    triggers a re-render on every resize event.
- */
-export function useIsMobile(breakpoint = 640): boolean {
-  return useWindowWidth() < breakpoint;
-}
 
 /**
  * Returns true only after the component has hydrated on the client.
