@@ -28,7 +28,7 @@ const socialLinks = [
 export function Footer() {
   const currentYear = new Date().getFullYear();
   const pathname = usePathname();
-  const isCheckoutOrBook = pathname?.endsWith('/book') || pathname?.startsWith('/checkout/');
+  const isCheckoutOrBook = pathname?.startsWith('/checkout/');
   const { isAuthenticated } = useAuth();
 
   const myTicketsHref = isAuthenticated ? '/dashboard?tab=tickets' : '/tickets';

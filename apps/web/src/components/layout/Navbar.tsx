@@ -9,7 +9,7 @@ import { useAuth } from '@/hooks/use-auth.hook';
 
 export function Navbar() {
   const pathname = usePathname();
-  const isCheckoutOrBook = pathname?.endsWith('/book') || pathname?.startsWith('/checkout/');
+  const isCheckoutOrBook = pathname?.startsWith('/checkout/');
 
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
