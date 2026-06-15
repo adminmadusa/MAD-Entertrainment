@@ -404,7 +404,7 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
                 <div className="space-y-1">
                   <h2 className="text-sm font-bold text-white line-clamp-1">{event.title}</h2>
                   <p className="text-xs text-text-muted">
-                    {new Date(event.startDate).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })} · {event.showTime}
+                    {new Date(event.startDate).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'UTC' })} · {event.showTime}
                   </p>
                   <p className="text-xs text-accent-purple-light font-bold">₹{booking.totalAmount}</p>
                 </div>
