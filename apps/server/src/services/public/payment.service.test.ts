@@ -180,12 +180,23 @@ describe('Payment Service', () => {
     vi.mocked(Refund.findOne).mockReset();
     vi.mocked(ReservationService.transitionForBooking).mockReset();
     vi.mocked(QueueService.enqueue).mockReset();
+    vi.mocked(Payment.findOneAndUpdate).mockReset();
 
     vi.mocked(Reservation.aggregate).mockImplementation(() => createMockQuery([{ total: 0 }]) as any);
     vi.mocked(Refund.findOne).mockImplementation(() => createMockQuery(null) as any);
     vi.mocked(SeatLayout.findOne).mockImplementation(() => createMockQuery(null) as any);
     vi.mocked(ReservationService.transitionForBooking).mockResolvedValue([]);
     vi.mocked(QueueService.enqueue).mockResolvedValue(undefined as any);
+    vi.mocked(Payment.findOneAndUpdate).mockImplementation((query: any, update: any) => {
+      return Promise.resolve({
+        _id: query._id || 'p-123',
+        status: PaymentStatus.PAID,
+        gatewayPaymentId: update?.$set?.gatewayPaymentId || 'pay_123',
+        gatewaySignature: update?.$set?.gatewaySignature,
+        paidAt: update?.$set?.paidAt || new Date(),
+        save: vi.fn(),
+      } as any);
+    });
 
     vi.mocked(getEnv).mockReturnValue({
       RAZORPAY_KEY_ID: 'test_rzp_key',
@@ -629,7 +640,7 @@ describe('Payment Service', () => {
 
       expect(result).toBeDefined();
       expect(mockPayment.status).toBe(PaymentStatus.PAID);
-      expect(mockPayment.save).toHaveBeenCalled();
+      expect(Payment.findOneAndUpdate).toHaveBeenCalled();
     });
 
     it('should redeem a coupon with an atomic conditional update during normal confirmation', async () => {
@@ -1253,6 +1264,46 @@ describe('Payment Service', () => {
       expect(mockBooking.status).toBe(BookingStatus.CONFIRMED);
       expect(mockBooking.userId).toBeUndefined(); // Assert userId remains undefined (guest-owned, sessionId-based)
       expect(Booking.updateOne).not.toHaveBeenCalled(); // No silent updates or user assignments
+    });
+  });
+
+  describe('Transactional Payment Status Transition', () => {
+    it('should update payment status to PAID atomically inside the transaction session', async () => {
+      const mockBooking = {
+        _id: 'b-123',
+        eventId: 'e-123',
+        status: BookingStatus.AWAITING_PAYMENT,
+        tickets: [],
+        totalTickets: 0,
+        bookingVersion: 1,
+        save: vi.fn(),
+      };
+      
+      const mockPayment = {
+        _id: 'p-123',
+        gatewayOrderId: 'order_123',
+        gatewayPaymentId: 'pay_123',
+        status: PaymentStatus.PENDING,
+        save: vi.fn(),
+      };
+
+      vi.mocked(Payment.findOne).mockResolvedValue(mockPayment as any);
+      vi.mocked(Booking.findById).mockResolvedValue(mockBooking as any);
+      vi.mocked(Booking.findOneAndUpdate).mockResolvedValue(mockBooking as any);
+      vi.mocked(Payment.findOneAndUpdate).mockResolvedValue(mockPayment as any);
+
+      await PaymentService.confirmFromWebhook('order_123', 'pay_123', 'payment.captured', 'evt_123');
+
+      expect(Payment.findOneAndUpdate).toHaveBeenCalledWith(
+        { _id: 'p-123', status: PaymentStatus.PENDING },
+        expect.objectContaining({
+          $set: expect.objectContaining({
+            status: PaymentStatus.PAID,
+            gatewayPaymentId: 'pay_123',
+          })
+        }),
+        expect.objectContaining({ session: mockSession })
+      );
     });
   });
 });
