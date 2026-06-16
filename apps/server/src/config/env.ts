@@ -197,6 +197,27 @@ export function validateEnv(): Readonly<Env> {
     }
   }
 
+  // Webhook secret production assertions (F-16)
+  // Each secret is only required when the corresponding gateway key is configured.
+  // This preserves local dev flexibility while preventing silent webhook validation
+  // failure in production caused by a missing secret.
+  if (isProd) {
+    if (result.data.RAZORPAY_KEY_ID && !result.data.RAZORPAY_WEBHOOK_SECRET) {
+      throw new Error(
+        'RAZORPAY_WEBHOOK_SECRET is required in production when RAZORPAY_KEY_ID is configured. ' +
+        'Set this value in the Render environment variables dashboard. ' +
+        'Without it, Razorpay webhook signature validation will fail and payments will not confirm via webhook.'
+      );
+    }
+    if (result.data.STRIPE_SECRET_KEY && !result.data.STRIPE_WEBHOOK_SECRET) {
+      throw new Error(
+        'STRIPE_WEBHOOK_SECRET is required in production when STRIPE_SECRET_KEY is configured. ' +
+        'Set this value in the Render environment variables dashboard. ' +
+        'Without it, Stripe webhook signature validation will fail and payments will not confirm via webhook.'
+      );
+    }
+  }
+
   if (isProd && result.data.MOCK_PAYMENTS) {
     const errorMsg = 'MOCK_PAYMENTS_PRODUCTION_BLOCKED: Mock payments cannot be enabled in production environments.';
     console.error(`❌ ${errorMsg}`);
