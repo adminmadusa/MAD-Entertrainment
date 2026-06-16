@@ -1,4 +1,5 @@
 import { vi } from 'vitest';
+import { Types } from 'mongoose';
 
 vi.hoisted(() => {
   process.env.MONGODB_URI = 'mongodb://localhost:27017/test';
@@ -284,6 +285,7 @@ describe('Booking Controller — verifyRecoveredBookingOTP', () => {
   });
 
   it('should return 200, user profile, and set cookie on successful OTP verification', async () => {
+    const mockUserId = new Types.ObjectId();
     const mockBooking = {
       bookingId: 'MAD-2026-ABCDE',
       guestEmail: 'kalyan@gmail.com',
@@ -293,7 +295,7 @@ describe('Booking Controller — verifyRecoveredBookingOTP', () => {
 
     vi.mocked(AuthService.verifyMagicLinkOrOTP).mockResolvedValue({
       user: {
-        _id: 'user_123',
+        _id: mockUserId,
         email: 'kalyan@gmail.com',
         name: 'Kalyan',
         firstName: 'Kalyan',
@@ -301,7 +303,7 @@ describe('Booking Controller — verifyRecoveredBookingOTP', () => {
       },
       accessToken: 'access_token_mock',
       refreshToken: 'refresh_token_mock',
-    });
+    } as any);
 
     const req: any = {
       body: { transactionId: 'pay_mock_123456789', otp: '123456' },
@@ -327,7 +329,7 @@ describe('Booking Controller — verifyRecoveredBookingOTP', () => {
       success: true,
       data: {
         user: {
-          id: 'user_123',
+          id: mockUserId,
           email: 'kalyan@gmail.com',
           name: 'Kalyan',
           picture: undefined,
@@ -397,7 +399,7 @@ describe('Booking Controller — Guest Ownership & Booking Enumeration Hardening
   // ─── Anonymous / Guest Requests ─────────────────────────────────
 
   it('should return 403 BOOKING_VERIFICATION_REQUIRED for an anonymous request on a missing booking', async () => {
-    vi.mocked(PublicBookingService.getBookingByReference).mockResolvedValue(null);
+    vi.mocked(PublicBookingService.getBookingByReference).mockResolvedValue(null as any);
 
     const req: any = {
       params: { bookingId: 'MAD-2026-MISSING' },
@@ -461,7 +463,7 @@ describe('Booking Controller — Guest Ownership & Booking Enumeration Hardening
   // ─── Authenticated Requests ─────────────────────────────────────
 
   it('should return 404 for an authenticated request on a missing booking', async () => {
-    vi.mocked(PublicBookingService.getBookingByReference).mockResolvedValue(null);
+    vi.mocked(PublicBookingService.getBookingByReference).mockRejectedValue(AppError.notFound('Booking not found'));
 
     const req: any = {
       params: { bookingId: 'MAD-2026-MISSING' },
@@ -562,7 +564,7 @@ describe('Booking Controller — Guest Ownership & Booking Enumeration Hardening
   // ─── Download Endpoint ──────────────────────────────────────────
 
   it('should return 403 BOOKING_VERIFICATION_REQUIRED on PDF download for anonymous missing booking', async () => {
-    vi.mocked(PublicBookingService.getBookingByReference).mockResolvedValue(null);
+    vi.mocked(PublicBookingService.getBookingByReference).mockResolvedValue(null as any);
 
     const req: any = {
       params: { bookingId: 'MAD-2026-MISSING' },
@@ -617,7 +619,7 @@ describe('Booking Controller — Guest Ownership & Booking Enumeration Hardening
   // ─── Resend Endpoint ───────────────────────────────────────────
 
   it('should return 403 BOOKING_VERIFICATION_REQUIRED on resend for anonymous missing booking', async () => {
-    vi.mocked(PublicBookingService.getBookingByReference).mockResolvedValue(null);
+    vi.mocked(PublicBookingService.getBookingByReference).mockResolvedValue(null as any);
 
     const req: any = {
       params: { bookingId: 'MAD-2026-MISSING' },
@@ -705,7 +707,7 @@ describe('Booking Controller — Guest Ownership & Booking Enumeration Hardening
   });
 
   it('should return 404 on PDF download for authenticated user on missing booking', async () => {
-    vi.mocked(PublicBookingService.getBookingByReference).mockResolvedValue(null);
+    vi.mocked(PublicBookingService.getBookingByReference).mockRejectedValue(AppError.notFound('Booking not found'));
 
     const req: any = {
       params: { bookingId: 'MAD-2026-MISSING' },
@@ -760,7 +762,7 @@ describe('Booking Controller — Guest Ownership & Booking Enumeration Hardening
   });
 
   it('should return 404 on resend for authenticated user on missing booking', async () => {
-    vi.mocked(PublicBookingService.getBookingByReference).mockResolvedValue(null);
+    vi.mocked(PublicBookingService.getBookingByReference).mockRejectedValue(AppError.notFound('Booking not found'));
 
     const req: any = {
       params: { bookingId: 'MAD-2026-MISSING' },
