@@ -146,6 +146,13 @@ const envSchema = z.object({
     )
     .default(false),
 
+  ENABLE_MODULAR_PDF: z
+    .preprocess(
+      (val) => val === 'true' || val === true,
+      z.boolean()
+    )
+    .default(false),
+
   // ─────────────────────────────────────────
   // Google OAuth
   // ─────────────────────────────────────────
