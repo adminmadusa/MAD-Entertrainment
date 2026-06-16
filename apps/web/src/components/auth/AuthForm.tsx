@@ -287,8 +287,6 @@ export function AuthForm({
   useEffect(() => {
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
-      localStorage.removeItem('mad_otp_request_cooldown_expiry');
-      localStorage.removeItem('mad_otp_verify_cooldown_expiry');
     };
   }, []);
 
@@ -296,7 +294,7 @@ export function AuthForm({
 
   // Request verification code / OTP passcode dispatch
   const requestVerificationCodeMutation = useMutation<VerificationCodeRequestResponse, Error, void>({
-    mutationFn: () => publicRequestVerificationCode(email),
+    mutationFn: () => publicRequestVerificationCode(email.trim().toLowerCase()),
     onSuccess: (res) => {
       setStep('verify');
       setInfoMessage(res.message || 'Verification passcode dispatched. Please check your inbox.');
@@ -319,7 +317,7 @@ export function AuthForm({
     mutationFn: (otpCode: string) =>
       publicVerifyVerificationCodeOrOTP({
         otp: otpCode,
-        email,
+        email: email.trim().toLowerCase(),
       }),
     onSuccess: (data) => {
       login(data.token, data.user);
@@ -515,7 +513,8 @@ export function AuthForm({
     }
 
     const trimmedMobile = mobileNumber.trim();
-    if (trimmedMobile && !/^\+[1-9]\d{1,14}$/.test(trimmedMobile)) {
+    const sanitizedMobile = trimmedMobile.replace(/[\s\-\(\)]/g, '');
+    if (sanitizedMobile && !/^\+[1-9]\d{1,14}$/.test(sanitizedMobile)) {
       setOnboardError('Mobile number must be in E.164 format (e.g. +919876543210)');
       return;
     }
@@ -523,7 +522,7 @@ export function AuthForm({
     updateProfileMutation.mutate({
       firstName: trimmedFirstName,
       lastName: trimmedLastName,
-      mobileNumber: trimmedMobile || undefined,
+      mobileNumber: sanitizedMobile || undefined,
     });
   };
 
@@ -540,14 +539,16 @@ export function AuthForm({
 
   return (
     <div className={`space-y-4 sm:space-y-6 relative ${className}`}>
-      {onClose && (step === 'verify' || step === 'onboard') && (
+      {onClose && (
         <button
           type="button"
           onClick={handleClose}
-          className="absolute -top-2 -right-2 text-white hover:text-white/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple rounded-md p-1.5 z-50 text-xl font-bold transition-all"
+          className="absolute -top-2 -right-2 text-white hover:text-white/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple rounded-md p-1.5 z-50 transition-all flex items-center justify-center"
           aria-label="Close"
         >
-          ✕
+          <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
+            <path d="M18 6L6 18M6 6l12 12" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
         </button>
       )}
 
@@ -610,7 +611,7 @@ export function AuthForm({
         return null;
       })()}
 
-      {infoMessage && step !== 'verify' && (
+      {infoMessage && (
         <div 
           role="status"
           aria-live="polite"
@@ -718,20 +719,9 @@ export function AuthForm({
 
           {/* Google SSO button */}
           <div className="space-y-3">
-            {requestCooldownRemaining > 0 ? (
-              <Button
-                variant="secondary"
-                disabled
-                fullWidth
-                className="py-3.5 rounded-xl font-bold tracking-wide transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-              >
-                Google Login ({formatTime(requestCooldownRemaining)})
-              </Button>
-            ) : null}
             <div
               id="google-signin-btn-shared"
               className="w-full min-h-[44px] flex justify-center items-center overflow-hidden hover:opacity-90 active:scale-98 transition-all duration-200"
-              style={{ display: requestCooldownRemaining > 0 ? 'none' : 'flex' }}
             />
             {googleLoginMutation.isPending && (
               <p className="text-center text-xs text-purple-300/80 animate-pulse mt-2">
@@ -759,7 +749,7 @@ export function AuthForm({
       {step === 'verify' && (
         <form onSubmit={handleSubmitOtp} className="flex flex-col sm:space-y-6">
           {/* Scrollable Content Area */}
-          <div className="flex-grow max-sm:max-h-[260px] max-sm:overflow-y-auto max-sm:pr-1">
+          <div className="flex-grow">
             <div className="text-center mb-6 space-y-2">
               <h2 className="text-2xl font-black text-white tracking-tight">Secure Login</h2>
               <p className="text-text-secondary text-xs leading-relaxed">
