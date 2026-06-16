@@ -28,12 +28,12 @@ describe('Notification Service Safe Wrapper', () => {
     };
     const mockCreatedDoc = { ...mockData, _id: 'notif-123' };
 
-    vi.mocked(Notification.create).mockResolvedValue(mockCreatedDoc as any);
+    vi.mocked(Notification.create).mockResolvedValue([mockCreatedDoc] as any);
 
     const result = await createNotificationSafe(mockData);
 
     expect(result).toEqual(mockCreatedDoc);
-    expect(Notification.create).toHaveBeenCalledWith(mockData, undefined);
+    expect(Notification.create).toHaveBeenCalledWith([mockData], undefined);
     expect(Notification.findOne).not.toHaveBeenCalled();
     expect(auditLog).not.toHaveBeenCalled();
   });
@@ -67,7 +67,7 @@ describe('Notification Service Safe Wrapper', () => {
     const result = await createNotificationSafe(mockData);
 
     expect(result).toEqual(mockExistingDoc);
-    expect(Notification.create).toHaveBeenCalledWith(mockData, undefined);
+    expect(Notification.create).toHaveBeenCalledWith([mockData], undefined);
     expect(Notification.findOne).toHaveBeenCalledWith({ jobId: 'job-dup' });
     expect(auditLog).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -139,5 +139,59 @@ describe('Notification Service Safe Wrapper', () => {
     await expect(createNotificationSafe(mockData)).rejects.toThrow('Database connection failed');
     expect(Notification.findOne).not.toHaveBeenCalled();
     expect(auditLog).not.toHaveBeenCalled();
+  });
+
+  // REGRESSION TESTS APPROVED IN PHASE 5
+  describe('Regression Tests - Options and Array Wrapping', () => {
+    it('should wrap single document and forward session option correctly', async () => {
+      const mockData = { jobId: 'job-single-session', type: 'otp', channel: 'email' };
+      const mockCreatedDoc = { ...mockData, _id: 'notif-single-session' };
+      const mockOptions = { session: 'dummy-session-123' };
+
+      vi.mocked(Notification.create).mockResolvedValue([mockCreatedDoc] as any);
+
+      const result = await createNotificationSafe(mockData, mockOptions);
+
+      // Verify Notification.create receives array-wrapped documents [mockData]
+      expect(Notification.create).toHaveBeenCalledWith([mockData], mockOptions);
+      // Verify return value compatibility: returns single doc and not an array
+      expect(result).toEqual(mockCreatedDoc);
+      expect(Array.isArray(result)).toBe(false);
+    });
+
+    it('should not alter double document arrays and forward session option correctly', async () => {
+      const mockData = [
+        { jobId: 'job-arr-1', type: 'otp', channel: 'email' },
+        { jobId: 'job-arr-2', type: 'otp', channel: 'email' },
+      ];
+      const mockCreatedDocs = [
+        { ...mockData[0], _id: 'notif-arr-1' },
+        { ...mockData[1], _id: 'notif-arr-2' },
+      ];
+      const mockOptions = { session: 'dummy-session-456' };
+
+      vi.mocked(Notification.create).mockResolvedValue(mockCreatedDocs as any);
+
+      const result = await createNotificationSafe(mockData, mockOptions);
+
+      // Verify Notification.create receives original array unchanged
+      expect(Notification.create).toHaveBeenCalledWith(mockData, mockOptions);
+      // Verify returns the created documents array
+      expect(result).toEqual(mockCreatedDocs);
+      expect(Array.isArray(result)).toBe(true);
+    });
+
+    it('should verify return value compatibility of createNotificationSafe(singleDoc)', async () => {
+      const mockData = { jobId: 'job-single-compatibility', type: 'otp', channel: 'email' };
+      const mockCreatedDoc = { ...mockData, _id: 'notif-compatibility' };
+
+      vi.mocked(Notification.create).mockResolvedValue([mockCreatedDoc] as any);
+
+      const result = await createNotificationSafe(mockData);
+
+      // Verify that return value is singleDoc (created[0]) and not an array
+      expect(result).toEqual(mockCreatedDoc);
+      expect(Array.isArray(result)).toBe(false);
+    });
   });
 });

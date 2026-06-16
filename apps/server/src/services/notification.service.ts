@@ -15,7 +15,13 @@ export const createNotificationSafe = async (data: any | any[], options?: any): 
   const jobId = dataObj?.jobId;
 
   try {
-    return await Notification.create(data, options);
+    const docs = isArray ? data : [data];
+    const created = await Notification.create(docs, options);
+    if (isArray) {
+      return Array.isArray(created) ? created : [created];
+    } else {
+      return Array.isArray(created) ? created[0] : created;
+    }
   } catch (err: any) {
     // MongoDB duplicate key error code is 11000
     if (err.code === 11000 && jobId) {
