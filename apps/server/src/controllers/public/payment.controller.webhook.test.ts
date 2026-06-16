@@ -31,12 +31,14 @@ vi.mock('../../models/webhook-event.schema', () => ({
   WebhookEvent: {
     findOne: vi.fn(),
     create: vi.fn(),
+    findOneAndUpdate: vi.fn(),
   },
 }));
 
 vi.mock('../../services/public/payment.service', () => ({
   PaymentService: {
     confirmFromWebhook: vi.fn(),
+    confirmFromWebhookStripe: vi.fn(),
     verifyPayment: vi.fn(),
   },
 }));
@@ -238,6 +240,86 @@ describe('razorpayWebhook — replay protection hardening', () => {
     expect(res.send).toHaveBeenCalledWith('Invalid signature');
     expect(WebhookEvent.findOne).not.toHaveBeenCalled();
   });
+
+  it('allows retry for failed Razorpay webhook event and succeeds', async () => {
+    const req = makeRazorpayRequest(VALID_RAZORPAY_BODY);
+    const res = makeResponse();
+
+    const existingDoc = {
+      eventId: expectedEventId(VALID_RAZORPAY_BODY),
+      status: 'failed',
+      receivedAt: new Date(),
+      save: vi.fn(),
+    };
+
+    vi.mocked(WebhookEvent.findOne).mockResolvedValue(existingDoc as any);
+    vi.mocked(WebhookEvent.findOneAndUpdate).mockResolvedValue(existingDoc as any);
+    vi.mocked(PaymentService.confirmFromWebhook).mockResolvedValue({
+      status: 'confirmed',
+      bookingId: 'booking-abc',
+    });
+
+    await razorpayWebhook(req, res);
+
+    expect(WebhookEvent.findOneAndUpdate).toHaveBeenCalledWith(
+      { eventId: expectedEventId(VALID_RAZORPAY_BODY), status: { $in: ['failed', 'processing'] } },
+      expect.any(Object),
+      { new: true }
+    );
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(existingDoc.status).toBe('success');
+  });
+
+  it('allows retry for stale processing Razorpay webhook event and succeeds', async () => {
+    const req = makeRazorpayRequest(VALID_RAZORPAY_BODY);
+    const res = makeResponse();
+
+    const staleDate = new Date(Date.now() - 10 * 60 * 1000); // 10 minutes ago
+    const existingDoc = {
+      eventId: expectedEventId(VALID_RAZORPAY_BODY),
+      status: 'processing',
+      receivedAt: staleDate,
+      save: vi.fn(),
+    };
+
+    vi.mocked(WebhookEvent.findOne).mockResolvedValue(existingDoc as any);
+    vi.mocked(WebhookEvent.findOneAndUpdate).mockResolvedValue(existingDoc as any);
+    vi.mocked(PaymentService.confirmFromWebhook).mockResolvedValue({
+      status: 'confirmed',
+      bookingId: 'booking-abc',
+    });
+
+    await razorpayWebhook(req, res);
+
+    expect(WebhookEvent.findOneAndUpdate).toHaveBeenCalledWith(
+      { eventId: expectedEventId(VALID_RAZORPAY_BODY), status: { $in: ['failed', 'processing'] } },
+      expect.any(Object),
+      { new: true }
+    );
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(existingDoc.status).toBe('success');
+  });
+
+  it('returns HTTP 500 when Razorpay payment confirmation fails due to transient error', async () => {
+    const req = makeRazorpayRequest(VALID_RAZORPAY_BODY);
+    const res = makeResponse();
+
+    const existingDoc = {
+      eventId: expectedEventId(VALID_RAZORPAY_BODY),
+      status: 'failed',
+      receivedAt: new Date(),
+      save: vi.fn(),
+    };
+
+    vi.mocked(WebhookEvent.findOne).mockResolvedValue(existingDoc as any);
+    vi.mocked(WebhookEvent.findOneAndUpdate).mockResolvedValue(existingDoc as any);
+    vi.mocked(PaymentService.confirmFromWebhook).mockRejectedValue(new Error('DB Timeout'));
+
+    await razorpayWebhook(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(existingDoc.status).toBe('failed');
+  });
 });
 
 // ─────────────────────────────────────────────────────────────
@@ -275,30 +357,6 @@ describe('razorpayWebhook — audit trail preservation', () => {
     expect(existingDoc.status).toBe('success');
   });
 
-  it('preserves the original status of a failed record after duplicate delivery', async () => {
-    const req = makeRazorpayRequest(VALID_RAZORPAY_BODY);
-    const res = makeResponse();
-
-    const existingDoc = makeWebhookEventDoc('failed');
-    vi.mocked(WebhookEvent.findOne).mockResolvedValue(existingDoc as any);
-
-    await razorpayWebhook(req, res);
-
-    expect(existingDoc.status).toBe('failed');
-    expect(existingDoc.save).not.toHaveBeenCalled();
-  });
-
-  it('still returns HTTP 200 for duplicate even when original was a failed record', async () => {
-    const req = makeRazorpayRequest(VALID_RAZORPAY_BODY);
-    const res = makeResponse();
-
-    vi.mocked(WebhookEvent.findOne).mockResolvedValue(makeWebhookEventDoc('failed') as any);
-
-    await razorpayWebhook(req, res);
-
-    expect(res.status).toHaveBeenCalledWith(200);
-    expect(res.json).toHaveBeenCalledWith({ received: true, status: 'already_processed' });
-  });
 });
 
 // ─────────────────────────────────────────────────────────────
@@ -375,6 +433,95 @@ describe('stripeWebhook — audit trail preservation', () => {
     expect(res.status).toHaveBeenCalledWith(200);
     expect(res.send).toHaveBeenCalledWith('Event already processed');
     expect(PaymentService.verifyPayment).not.toHaveBeenCalled();
+  });
+
+  it('allows retry for failed Stripe webhook event and succeeds', async () => {
+    const eventId = 'evt_stripe_test_failed_retry';
+    mockStripeConstructEvent(eventId);
+
+    const req = makeStripeRequest(eventId);
+    const res = makeResponse();
+
+    const existingDoc = {
+      eventId,
+      status: 'failed',
+      receivedAt: new Date(),
+      save: vi.fn(),
+    };
+
+    vi.mocked(WebhookEvent.findOne).mockResolvedValue(existingDoc as any);
+    vi.mocked(WebhookEvent.findOneAndUpdate).mockResolvedValue(existingDoc as any);
+    vi.mocked(PaymentService.confirmFromWebhookStripe).mockResolvedValue({
+      status: 'confirmed',
+      bookingId: 'booking-abc',
+    });
+
+    await stripeWebhook(req, res);
+
+    expect(WebhookEvent.findOneAndUpdate).toHaveBeenCalledWith(
+      { eventId, status: { $in: ['failed', 'processing'] } },
+      expect.any(Object),
+      { new: true }
+    );
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(existingDoc.status).toBe('success');
+  });
+
+  it('allows retry for stale processing Stripe webhook event and succeeds', async () => {
+    const eventId = 'evt_stripe_test_stale_retry';
+    mockStripeConstructEvent(eventId);
+
+    const req = makeStripeRequest(eventId);
+    const res = makeResponse();
+
+    const staleDate = new Date(Date.now() - 10 * 60 * 1000); // 10 minutes ago
+    const existingDoc = {
+      eventId,
+      status: 'processing',
+      receivedAt: staleDate,
+      save: vi.fn(),
+    };
+
+    vi.mocked(WebhookEvent.findOne).mockResolvedValue(existingDoc as any);
+    vi.mocked(WebhookEvent.findOneAndUpdate).mockResolvedValue(existingDoc as any);
+    vi.mocked(PaymentService.confirmFromWebhookStripe).mockResolvedValue({
+      status: 'confirmed',
+      bookingId: 'booking-abc',
+    });
+
+    await stripeWebhook(req, res);
+
+    expect(WebhookEvent.findOneAndUpdate).toHaveBeenCalledWith(
+      { eventId, status: { $in: ['failed', 'processing'] } },
+      expect.any(Object),
+      { new: true }
+    );
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(existingDoc.status).toBe('success');
+  });
+
+  it('returns HTTP 500 when Stripe payment confirmation fails due to transient error', async () => {
+    const eventId = 'evt_stripe_test_transient_error';
+    mockStripeConstructEvent(eventId);
+
+    const req = makeStripeRequest(eventId);
+    const res = makeResponse();
+
+    const existingDoc = {
+      eventId,
+      status: 'failed',
+      receivedAt: new Date(),
+      save: vi.fn(),
+    };
+
+    vi.mocked(WebhookEvent.findOne).mockResolvedValue(existingDoc as any);
+    vi.mocked(WebhookEvent.findOneAndUpdate).mockResolvedValue(existingDoc as any);
+    vi.mocked(PaymentService.confirmFromWebhookStripe).mockRejectedValue(new Error('DB Timeout'));
+
+    await stripeWebhook(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(existingDoc.status).toBe('failed');
   });
 });
 

@@ -595,29 +595,12 @@ export class PaymentService {
     }
 
     if (eventType === 'payment.captured' || eventType === 'payment.authorized') {
-      const claimedPayment = await Payment.findOneAndUpdate(
-        { _id: payment._id, status: PaymentStatus.PENDING },
-        {
-          $set: {
-            status: PaymentStatus.PAID,
-            gatewayPaymentId: razorpayPaymentId,
-            paidAt: new Date(),
-          }
-        },
-        { new: true }
-      );
-
-      if (!claimedPayment) {
-        logger.info(
-          { paymentId: payment._id, bookingId: booking._id },
-          'Payment already claimed by concurrent caller — skipping'
-        );
-        return { status: 'skipped', bookingId: booking._id.toString() };
-      }
+      payment.gatewayPaymentId = razorpayPaymentId;
+      payment.paidAt = new Date();
 
       // confirmBooking() uses findOneAndUpdate with { status: AWAITING_PAYMENT } guard.
       // If the booking expired or was already confirmed by the frontend, this is a no-op.
-      const confirmedBooking = await this.confirmBooking(booking, claimedPayment);
+      const confirmedBooking = await this.confirmBooking(booking, payment);
 
       if (!confirmedBooking) {
         return { status: 'skipped', bookingId: booking._id.toString() };
@@ -897,29 +880,11 @@ export class PaymentService {
         }
       }
 
-      // 8. Atomic payment status transition (B2)
-      const claimedPayment = await Payment.findOneAndUpdate(
-        { _id: payment._id, status: PaymentStatus.PENDING },
-        {
-          $set: {
-            status: PaymentStatus.PAID,
-            gatewayPaymentId: intent.id,
-            paidAt: new Date(),
-          }
-        },
-        { new: true }
-      );
+      payment.gatewayPaymentId = intent.id;
+      payment.paidAt = new Date();
 
-      if (!claimedPayment) {
-        logger.info(
-          { paymentId: payment._id, bookingId: booking._id },
-          'Payment already claimed by concurrent caller — skipping'
-        );
-        return { status: 'skipped', bookingId: booking._id.toString() };
-      }
-
-      // 9. confirmBooking(booking, claimedPayment)
-      const confirmedBooking = await this.confirmBooking(booking, claimedPayment);
+      // 9. confirmBooking(booking, payment)
+      const confirmedBooking = await this.confirmBooking(booking, payment);
       if (!confirmedBooking) {
         return { status: 'skipped', bookingId: booking._id.toString() };
       }
@@ -956,7 +921,7 @@ export class PaymentService {
         { err, paymentIntentId: intent.id, webhookEventId },
         'Unexpected error in Stripe webhook confirmation'
       );
-      return { status: 'failed', bookingId: intent.metadata?.bookingId };
+      throw err;
     }
   }
 
@@ -1205,11 +1170,9 @@ export class PaymentService {
         }
       }
 
-      payment.status = PaymentStatus.PAID;
       payment.gatewayPaymentId = razorpay_payment_id;
       payment.gatewaySignature = razorpay_signature;
       payment.paidAt = new Date();
-      await payment.save();
 
       auditLog({
         action: 'PAYMENT_VERIFIED',
@@ -1246,10 +1209,8 @@ export class PaymentService {
       }
 
       if (isMock) {
-        payment.status = PaymentStatus.PAID;
         payment.gatewayPaymentId = paymentIntentId;
         payment.paidAt = new Date();
-        await payment.save();
 
         auditLog({
           action: 'PAYMENT_VERIFIED',
@@ -1433,10 +1394,8 @@ export class PaymentService {
           'Stripe payment verification passed all binding checks'
         );
 
-        payment.status = PaymentStatus.PAID;
-        payment.gatewayPaymentId = intent.id;
+        payment.gatewayPaymentId = paymentIntentId;
         payment.paidAt = new Date();
-        await payment.save();
 
         auditLog({
           action: 'PAYMENT_VERIFIED',
@@ -1746,10 +1705,39 @@ export class PaymentService {
     let transactionResult;
     try {
       transactionResult = await runInTransaction(async (session) => {
+        // 0. Atomic payment status transition inside transaction
+        let claimedPayment = _payment;
+        if (_payment.status === PaymentStatus.PENDING) {
+          claimedPayment = await Payment.findOneAndUpdate(
+            { _id: _payment._id, status: PaymentStatus.PENDING },
+            {
+              $set: {
+                status: PaymentStatus.PAID,
+                gatewayPaymentId: _payment.gatewayPaymentId,
+                gatewaySignature: _payment.gatewaySignature,
+                paidAt: _payment.paidAt || new Date(),
+              }
+            },
+            { new: true, session }
+          );
+
+          if (!claimedPayment) {
+            throw new Error('PAYMENT_ALREADY_CLAIMED_OR_NOT_PENDING');
+          }
+
+          // Sync back memory object status
+          _payment.status = PaymentStatus.PAID;
+          _payment.gatewayPaymentId = claimedPayment.gatewayPaymentId;
+          _payment.gatewaySignature = claimedPayment.gatewaySignature;
+          _payment.paidAt = claimedPayment.paidAt;
+        }
+
         // 1. Pre-validation for Late Recovery
         if (isLateRecovery) {
           // Validate general capacity
           if (event.soldCount + event.reservedCount + booking.totalTickets > event.totalCapacity) {
+            _payment.status = PaymentStatus.FAILED;
+            _payment.failedAt = new Date();
             _payment.failureReason = 'LATE_PAYMENT_RECOVERY_REJECTED_CAPACITY_EXHAUSTED';
             await _payment.save({ session });
             await this.triggerRefundRequest(booking, _payment, _payment.failureReason, session, 'auto_recovery', 'EXPIRED_BOOKING_CAPACITY_UNAVAILABLE');
@@ -1760,6 +1748,8 @@ export class PaymentService {
           for (const bookedTicket of booking.tickets) {
             const tierConfig = event.ticketTiers.find((t) => t.tier === bookedTicket.tier);
             if (!tierConfig) {
+              _payment.status = PaymentStatus.FAILED;
+              _payment.failedAt = new Date();
               _payment.failureReason = 'LATE_PAYMENT_RECOVERY_REJECTED_INVALID_TIER';
               await _payment.save({ session });
               await this.triggerRefundRequest(booking, _payment, _payment.failureReason, session, 'auto_recovery', 'EXPIRED_BOOKING_CAPACITY_UNAVAILABLE');
@@ -1780,6 +1770,8 @@ export class PaymentService {
             const tierReserved = activeTierAgg[0]?.total ?? 0;
 
             if (tierConfig.soldCount + tierReserved + bookedTicket.quantity > tierConfig.totalCapacity) {
+              _payment.status = PaymentStatus.FAILED;
+              _payment.failedAt = new Date();
               _payment.failureReason = 'LATE_PAYMENT_RECOVERY_REJECTED_CAPACITY_EXHAUSTED';
               await _payment.save({ session });
               await this.triggerRefundRequest(booking, _payment, _payment.failureReason, session, 'auto_recovery', 'EXPIRED_BOOKING_CAPACITY_UNAVAILABLE');
@@ -1800,6 +1792,8 @@ export class PaymentService {
             }).session(session);
             const layout = await (layoutQuery && typeof layoutQuery.lean === 'function' ? layoutQuery.lean() : layoutQuery);
             if (layout) {
+              _payment.status = PaymentStatus.FAILED;
+              _payment.failedAt = new Date();
               _payment.failureReason = 'LATE_PAYMENT_RECOVERY_REJECTED_SEATS_TAKEN';
               await _payment.save({ session });
               await this.triggerRefundRequest(booking, _payment, _payment.failureReason, session, 'auto_recovery', 'EXPIRED_BOOKING_CAPACITY_UNAVAILABLE');
@@ -2022,6 +2016,15 @@ export class PaymentService {
     } catch (err: any) {
       logger.error({ err, bookingId: booking._id }, 'Confirmation transaction aborted and rolled back');
       
+      if (err.message === 'PAYMENT_ALREADY_CLAIMED_OR_NOT_PENDING') {
+        logger.info(
+          { bookingId: booking._id, paymentId: _payment._id },
+          'Payment already claimed by concurrent caller — skipping'
+        );
+        const resolvedBooking = await Booking.findById(booking._id);
+        return resolvedBooking || booking;
+      }
+
       let reason = 'CONFIRMATION_TRANSACTION_FAILED';
       let isConcurrentConfirm = false;
       const isKnownAbort = ['SEAT_ALLOCATION_FAILED', 'EVENT_CAPACITY_ALLOCATION_FAILED', 'CONCURRENT_CONFIRMATION_OR_NOT_FOUND'].includes(err.message);
