@@ -43,7 +43,10 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 md:gap-10">
           {/* Brand */}
           <div className="lg:col-span-2">
-            <Link href="/" className="flex items-center gap-2 mb-4">
+            <Link
+              href="/"
+              className="flex items-center gap-2 mb-4 rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-2 focus-visible:ring-offset-background w-fit"
+            >
               <div className="w-8 h-8 rounded-lg bg-gradient-brand flex items-center justify-center">
                 <span className="text-white font-black text-sm">M</span>
               </div>
@@ -63,7 +66,7 @@ export function Footer() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={social.label}
-                  className="p-2.5 glass rounded-xl border border-border-subtle hover:border-accent-purple hover:text-accent-purple-light transition-all duration-200 text-text-secondary"
+                  className="p-2.5 glass rounded-xl border border-border-subtle hover:border-accent-purple hover:text-accent-purple-light transition-all duration-200 text-text-secondary focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                 >
                   {social.icon}
                 </a>
@@ -81,7 +84,7 @@ export function Footer() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-text-secondary text-sm hover:text-text-primary transition-colors"
+                    className="text-text-secondary text-sm hover:text-text-primary transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple rounded-md"
                   >
                     {link.label}
                   </Link>
@@ -104,7 +107,7 @@ export function Footer() {
                     <li key={link.href}>
                       <Link
                         href={href}
-                        className="text-text-secondary text-sm hover:text-text-primary transition-colors"
+                        className="text-text-secondary text-sm hover:text-text-primary transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple rounded-md"
                       >
                         {link.label}
                       </Link>
@@ -124,7 +127,7 @@ export function Footer() {
                   <li key={link.href}>
                     <Link
                       href={link.href}
-                      className="text-text-secondary text-sm hover:text-text-primary transition-colors"
+                      className="text-text-secondary text-sm hover:text-text-primary transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple rounded-md"
                     >
                       {link.label}
                     </Link>

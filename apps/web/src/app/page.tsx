@@ -98,7 +98,7 @@ function HeroSection() {
   return (
     <section
       id="hero"
-      className="relative min-h-[75vh] min-h-[75svh] md:min-h-[78vh] md:min-h-[78dvh] lg:min-h-[80vh] lg:min-h-[80dvh] flex items-center justify-center overflow-hidden"
+      className="relative min-h-[85vh] min-h-[85svh] md:min-h-[88vh] md:min-h-[88dvh] lg:min-h-[90vh] lg:min-h-[90dvh] flex items-center justify-center overflow-hidden"
       aria-label="Hero section"
     >
       {/* Animated Background */}
@@ -120,7 +120,7 @@ function HeroSection() {
       />
 
       {/* Content */}
-      <div className="container-mad relative z-10 text-center pt-20 pb-12">
+      <div className="container-mad relative z-10 text-center pt-24 pb-12">
 
         {/* Headline */}
         <Reveal delay={0.2} trigger="mount">
@@ -137,13 +137,58 @@ function HeroSection() {
           </p>
         </Reveal>
 
+        {/* Hero Search Block */}
+        <Reveal delay={0.35} trigger="mount">
+          <div className="max-w-2xl mx-auto mb-10 px-4">
+            <form action="/events" method="GET" className="relative flex items-center w-full">
+              <input
+                type="text"
+                name="search"
+                aria-label="Search events"
+                placeholder="Search events, DJ nights, concerts..."
+                className="w-full pl-12 pr-28 py-4 rounded-2xl bg-white/5 backdrop-blur-md border border-white/10 text-white placeholder:text-text-muted focus:outline-none focus:border-accent-purple focus:ring-2 focus:ring-accent-purple transition-all duration-300 shadow-2xl text-base md:text-lg"
+              />
+              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none" aria-hidden="true">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
+              <button
+                type="submit"
+                className="absolute right-2 top-1/2 -translate-y-1/2 px-5 py-2.5 btn-gradient text-white text-sm font-bold rounded-xl shadow-glow-sm hover:scale-105 active:scale-95 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple"
+              >
+                Search
+              </button>
+            </form>
+
+            {/* Quick Link Category Pills */}
+            <div className="flex flex-wrap gap-2 justify-center mt-4" role="navigation" aria-label="Quick category filters">
+              {[
+                { label: 'DJ Nights', value: 'dj-night' },
+                { label: 'Concerts', value: 'concert' },
+                { label: 'Festivals', value: 'festival' },
+                { label: 'Comedy', value: 'comedy' },
+                { label: 'VIP Events', value: 'vip-event' },
+              ].map((cat) => (
+                <Link
+                  key={cat.value}
+                  href={`/events?category=${cat.value}`}
+                  className="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-white/5 border border-white/5 text-text-muted hover:border-accent-purple/40 hover:text-white transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple"
+                >
+                  {cat.label}
+                </Link>
+              ))}
+            </div>
+          </div>
+        </Reveal>
+
         {/* CTAs */}
         <Reveal delay={0.4} trigger="mount">
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
               id="hero-book-now"
               href="/events"
-              className="px-8 py-4 btn-gradient text-white font-bold text-lg rounded-2xl shadow-glow inline-flex items-center gap-2 group"
+              className="px-8 py-4 btn-gradient text-white font-bold text-lg rounded-2xl shadow-glow inline-flex items-center gap-2 group focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
               Browse Events
               <ArrowRight className="group-hover:translate-x-1 transition-transform" />
@@ -151,7 +196,7 @@ function HeroSection() {
             <Link
               id="hero-my-booking"
               href="/tickets"
-              className="px-8 py-4 glass border border-border-subtle hover:border-accent-purple/50 text-text-primary hover:text-white hover:bg-accent-purple/10 font-semibold text-lg rounded-2xl transition-all duration-300 hover:shadow-glow-sm"
+              className="px-8 py-4 glass border border-border-subtle hover:border-accent-purple/50 text-text-primary hover:text-white hover:bg-accent-purple/10 font-semibold text-lg rounded-2xl transition-all duration-300 hover:shadow-glow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
               My Tickets
             </Link>
@@ -184,6 +229,69 @@ function HeroSection() {
   );
 }
 
+// ─── Trust Grid Section ───────────────────────────────────────
+
+function TrustGridSection() {
+  const trustItems = [
+    {
+      title: 'Verified Events',
+      description: '100% official tickets sourced directly from event organizers and venue partners.',
+      icon: (
+        <svg className="w-6 h-6 text-accent-purple-light" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+        </svg>
+      ),
+    },
+    {
+      title: 'Secure Payments',
+      description: 'Encrypted Stripe and Razorpay checkouts with full fraud prevention safeguards.',
+      icon: (
+        <svg className="w-6 h-6 text-accent-cyan" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 00-2 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+        </svg>
+      ),
+    },
+    {
+      title: 'Instant Ticket Delivery',
+      description: 'Your secure QR-coded entry pass is dispatched instantly to your email and phone.',
+      icon: (
+        <svg className="w-6 h-6 text-accent-pink" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+        </svg>
+      ),
+    },
+    {
+      title: 'Refund Support Available',
+      description: 'Dedicated assistance to process administrative cancellation requests per event policies.',
+      icon: (
+        <svg className="w-6 h-6 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+        </svg>
+      ),
+    },
+  ];
+
+  return (
+    <section className="py-8 bg-background relative z-20" aria-label="Trust and security guarantees">
+      <div className="container-mad">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 p-8 rounded-3xl glass border border-border-subtle shadow-glow-sm">
+          {trustItems.map((item) => (
+            <div key={item.title} className="flex gap-4 items-start">
+              <div className="flex-shrink-0 p-3 rounded-xl bg-white/5 border border-white/10" aria-hidden="true">
+                {item.icon}
+              </div>
+              <div>
+                <h3 className="text-white font-bold text-sm mb-1">{item.title}</h3>
+                <p className="text-text-secondary text-xs leading-relaxed">{item.description}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 // ─── How It Works ─────────────────────────────────────────────
 
 const steps = [
@@ -191,25 +299,41 @@ const steps = [
     step: '01',
     title: 'Browse Events',
     description: 'Discover upcoming events, DJ nights, concerts, and shows near you.',
-    icon: '🔍',
+    icon: (
+      <svg className="w-8 h-8 text-accent-purple-light" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+      </svg>
+    ),
   },
   {
     step: '02',
     title: 'Select Tickets',
     description: 'Choose your seats or ticket tier — General, Gold, VIP, or Platinum.',
-    icon: '🎟️',
+    icon: (
+      <svg className="w-8 h-8 text-accent-cyan" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 110 4V7a2 2 0 00-2-2H5z" />
+      </svg>
+    ),
   },
   {
     step: '03',
     title: 'Secure Payment',
     description: 'Pay securely via UPI, cards, or wallets with Razorpay or Stripe.',
-    icon: '💳',
+    icon: (
+      <svg className="w-8 h-8 text-accent-pink" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+      </svg>
+    ),
   },
   {
     step: '04',
     title: 'Get QR Ticket',
     description: 'Receive your encrypted QR ticket instantly via email and SMS.',
-    icon: '📱',
+    icon: (
+      <svg className="w-8 h-8 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+      </svg>
+    ),
   },
 ];
 
@@ -236,7 +360,9 @@ function HowItWorksSection() {
                   <div className="absolute -top-2 -right-2 sm:-top-3 sm:-right-3 w-6 h-6 sm:w-10 sm:h-10 bg-gradient-brand rounded-lg sm:rounded-xl flex items-center justify-center text-white text-[9px] sm:text-xs font-black shadow-glow-sm">
                     {String(i + 1).padStart(2, '0')}
                   </div>
-                  <div className="text-2xl sm:text-4xl mb-2 sm:mb-4 animate-float" aria-hidden="true">{step.icon}</div>
+                  <div className="text-2xl sm:text-4xl mb-2 sm:mb-4 animate-float text-text-primary" aria-hidden="true">
+                    {step.icon}
+                  </div>
                   <h3 className="text-white font-bold text-xs sm:text-lg mb-1 sm:mb-2">{step.title}</h3>
                   <p className="hidden sm:block text-text-secondary sm:text-sm leading-snug sm:leading-relaxed">{step.description}</p>
                 </div>
@@ -274,7 +400,7 @@ function CTASection() {
                 <Link
                   id="cta-browse-events"
                   href="/events"
-                  className="px-10 py-4 btn-gradient text-white font-bold text-lg rounded-2xl shadow-glow inline-flex items-center gap-2 group"
+                  className="px-10 py-4 btn-gradient text-white font-bold text-lg rounded-2xl shadow-glow inline-flex items-center gap-2 group focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                 >
                   Browse All Events
                   <ArrowRight className="group-hover:translate-x-1 transition-transform" />
@@ -282,7 +408,7 @@ function CTASection() {
                 <Link
                   id="cta-my-booking"
                   href="/tickets"
-                  className="px-10 py-4 glass border border-border-subtle hover:border-accent-purple/50 text-text-primary hover:text-white hover:bg-accent-purple/10 font-semibold text-lg rounded-2xl transition-all duration-300 hover:shadow-glow-sm"
+                  className="px-10 py-4 glass border border-border-subtle hover:border-accent-purple/50 text-text-primary hover:text-white hover:bg-accent-purple/10 font-semibold text-lg rounded-2xl transition-all duration-300 hover:shadow-glow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                 >
                   My Tickets
                 </Link>
