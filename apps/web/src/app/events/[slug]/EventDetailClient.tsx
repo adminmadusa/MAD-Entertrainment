@@ -136,6 +136,60 @@ export default function EventDetailClient({ slug, initialEvent }: EventDetailCli
   const ticketsLeft = Math.max(0, totalCapacity - soldCount);
   const percentSold = totalCapacity > 0 ? Math.round((soldCount / totalCapacity) * 100) : 0;
 
+  let ticketsText = '';
+  if (event.isSoldOut || ticketsLeft <= 0) {
+    ticketsText = 'Sold Out';
+  } else if (ticketsLeft <= 50) {
+    ticketsText = `${ticketsLeft} tickets left`;
+  } else {
+    ticketsText = 'Available';
+  }
+
+  let scarcityStatus: React.ReactNode = null;
+  if (event.isSoldOut || ticketsLeft <= 0) {
+    scarcityStatus = <span className="text-red-400 font-semibold">Sold Out</span>;
+  } else if (ticketsLeft <= 50) {
+    scarcityStatus = (
+      <span className="inline-flex items-center gap-1 text-amber-400 font-semibold animate-pulse">
+        <svg className="w-3.5 h-3.5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z" />
+          <path strokeLinecap="round" strokeLinejoin="round" d="M9.879 16.121A3 3 0 1012.015 11L11 14H9.879z" />
+        </svg>
+        Only {ticketsLeft} left
+      </span>
+    );
+  } else {
+    scarcityStatus = <span className="text-amber-400 font-semibold">Available</span>;
+  }
+
+  let modalFooterBadge: React.ReactNode = null;
+  if (selectedCount > 0) {
+    modalFooterBadge = (
+      <div className="flex flex-col">
+        <span className="text-xs text-text-muted font-medium">
+          {selectedCount} {selectedCount === 1 ? 'ticket' : 'tickets'}
+        </span>
+        <span className="text-base font-black text-accent-purple-light">₹{subtotal}</span>
+      </div>
+    );
+  } else if (ticketsLeft <= 50) {
+    modalFooterBadge = (
+      <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 bg-amber-500/10 border border-amber-500/20 text-amber-400 rounded-md animate-pulse">
+        <svg className="w-3.5 h-3.5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z" />
+          <path strokeLinecap="round" strokeLinejoin="round" d="M9.879 16.121A3 3 0 1012.015 11L11 14H9.879z" />
+        </svg>
+        Few tickets left
+      </span>
+    );
+  } else {
+    modalFooterBadge = (
+      <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-md">
+        Available
+      </span>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background text-white relative overflow-x-hidden">
 
@@ -186,7 +240,9 @@ export default function EventDetailClient({ slug, initialEvent }: EventDetailCli
               title="Share Event"
               aria-label="Share event"
             >
-              🔗
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M8.684 10.742l5.128-2.564m0 5.644l-5.128-2.564M19 12a3 3 0 11-6 0 3 3 0 016 0zm-10 6a3 3 0 11-6 0 3 3 0 016 0zm0-12a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
             </button>
             <button
               type="button"
@@ -199,19 +255,33 @@ export default function EventDetailClient({ slug, initialEvent }: EventDetailCli
               title="Save Event"
               aria-label={isFavorited ? "Remove event from wishlist" : "Add event to wishlist"}
             >
-              ❤️
+              {isFavorited ? (
+                <svg className="w-4 h-4 fill-current text-accent-pink" viewBox="0 0 24 24">
+                  <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                </svg>
+              ) : (
+                <svg className="w-4 h-4 text-text-secondary hover:text-accent-pink" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                </svg>
+              )}
             </button>
           </div>
         </div>
 
         {/* Badges anchored to hero bottom */}
         <div className="absolute bottom-6 left-4 md:left-8 flex items-center gap-2 z-20">
-          <span className="text-[10px] uppercase font-bold tracking-widest px-3 py-1.5 bg-amber-500/10 border border-amber-500/20 text-amber-400 rounded-full animate-pulse">
-            ⏳ Sales end soon
+          <span className="inline-flex items-center gap-1.5 text-[10px] uppercase font-bold tracking-widest px-3 py-1.5 bg-amber-500/10 border border-amber-500/20 text-amber-400 rounded-full animate-pulse">
+            <svg className="w-3 h-3 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            Sales end soon
           </span>
           {event.category && (
-            <span className="text-[10px] uppercase font-bold tracking-widest px-3 py-1.5 glass border border-white/10 text-text-secondary rounded-full">
-              🎵 {event.category}
+            <span className="inline-flex items-center gap-1.5 text-[10px] uppercase font-bold tracking-widest px-3 py-1.5 glass border border-white/10 text-text-secondary rounded-full">
+              <svg className="w-3 h-3 text-text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
+              </svg>
+              {event.category}
             </span>
           )}
         </div>
@@ -224,11 +294,27 @@ export default function EventDetailClient({ slug, initialEvent }: EventDetailCli
         <div className="py-6 space-y-3 border-b border-white/5">
           <h1 className="text-display-md font-black text-white leading-tight">{event.title}</h1>
           <div className="flex flex-wrap items-center gap-x-6 gap-y-1.5 text-sm text-text-secondary">
-            <span className="flex items-center gap-1.5">📅 {showDateTime}</span>
+            <span className="flex items-center gap-1.5">
+              <svg className="w-4 h-4 text-text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              {showDateTime}
+            </span>
             {event.showTime && (
-              <span className="flex items-center gap-1.5">⏱️ {event.showTime}</span>
+              <span className="flex items-center gap-1.5">
+                <svg className="w-4 h-4 text-text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {event.showTime}
+              </span>
             )}
-            <span className="flex items-center gap-1.5">📍 {event.venue}</span>
+            <span className="flex items-center gap-1.5">
+              <svg className="w-4 h-4 text-text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              {event.venue}
+            </span>
           </div>
         </div>
 
@@ -255,7 +341,7 @@ export default function EventDetailClient({ slug, initialEvent }: EventDetailCli
               <span className="text-sm text-text-secondary">
                 <span className="font-bold text-white">{soldCount} people</span> are going ·{' '}
                 <span className="text-amber-400 font-semibold">
-                  {event.isSoldOut || ticketsLeft <= 0 ? 'Sold Out' : `${ticketsLeft} tickets left`}
+                  {ticketsText}
                 </span>
               </span>
             </div>
@@ -310,19 +396,28 @@ export default function EventDetailClient({ slug, initialEvent }: EventDetailCli
                 <h3 className="text-base font-bold text-white">Good to know</h3>
                 <div className="space-y-3 text-xs text-text-secondary">
                   <div className="flex items-start gap-3">
-                    <span className="text-base mt-0.5 flex-shrink-0">⏱️</span>
+                    <svg className="w-4 h-4 mt-0.5 flex-shrink-0 text-text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
                     <span>Doors open: {event.doorsOpenTime || 'TBA'} · Show: {event.showTime}</span>
                   </div>
                   <div className="flex items-start gap-3">
-                    <span className="text-base mt-0.5 flex-shrink-0">🔞</span>
+                    <svg className="w-4 h-4 mt-0.5 flex-shrink-0 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <circle cx="12" cy="12" r="9" stroke="currentColor" />
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M18.364 5.636l-12.728 12.728" />
+                    </svg>
                     <span>Age limit: {event.ageRestriction ? `${event.ageRestriction}+` : 'All ages'}</span>
                   </div>
                   <div className="flex items-start gap-3">
-                    <span className="text-base mt-0.5 flex-shrink-0">🕺</span>
+                    <svg className="w-4 h-4 mt-0.5 flex-shrink-0 text-text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
                     <span>Dresscode: {event.dresscode || 'Casual / Smart casual'}</span>
                   </div>
                   <div className="flex items-start gap-3">
-                    <span className="text-base mt-0.5 flex-shrink-0">ℹ️</span>
+                    <svg className="w-4 h-4 mt-0.5 flex-shrink-0 text-text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
                     <span>{event.additionalInfo || 'Free parking available around the venue'}</span>
                   </div>
                 </div>
@@ -367,7 +462,9 @@ export default function EventDetailClient({ slug, initialEvent }: EventDetailCli
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-text-muted text-xs">
                     <div className="text-center space-y-1">
-                      <span className="text-2xl block">🗺️</span>
+                      <svg className="w-6 h-6 mx-auto text-text-muted animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                      </svg>
                       <span>Venue location coming soon</span>
                     </div>
                   </div>
@@ -404,15 +501,22 @@ export default function EventDetailClient({ slug, initialEvent }: EventDetailCli
               {/* Quick facts */}
               <div className="space-y-2.5 text-sm text-text-secondary border-y border-white/5 py-4">
                 <div className="flex items-center gap-2.5">
-                  <span className="text-base">📅</span>
+                  <svg className="w-4 h-4 text-text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
                   <span>{showDateTime}</span>
                 </div>
                 <div className="flex items-center gap-2.5">
-                  <span className="text-base">⏱️</span>
+                  <svg className="w-4 h-4 text-text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
                   <span>Doors open {event.doorsOpenTime || event.showTime || 'TBA'}</span>
                 </div>
                 <div className="flex items-center gap-2.5">
-                  <span className="text-base">📍</span>
+                  <svg className="w-4 h-4 text-text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
                   <span>{event.venue}</span>
                 </div>
               </div>
@@ -421,11 +525,7 @@ export default function EventDetailClient({ slug, initialEvent }: EventDetailCli
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-text-muted">Availability</span>
-                  {event.isSoldOut || ticketsLeft <= 0 ? (
-                    <span className="text-red-400 font-semibold">Sold Out</span>
-                  ) : (
-                    <span className="text-amber-400 font-semibold animate-pulse">🔥 Only {ticketsLeft} left</span>
-                  )}
+                  {scarcityStatus}
                 </div>
                 <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
                   <div
@@ -440,9 +540,12 @@ export default function EventDetailClient({ slug, initialEvent }: EventDetailCli
               <button
                 type="button"
                 onClick={() => setIsBookingModalOpen(true)}
-                className="w-full py-4 bg-gradient-to-r from-accent-purple to-accent-pink hover:from-accent-purple-light hover:to-accent-pink/80 text-white font-black text-sm rounded-xl shadow-glow transition-all duration-300 hover:scale-[1.02] active:scale-95"
+                className="w-full py-4 bg-gradient-to-r from-accent-purple to-accent-pink hover:from-accent-purple-light hover:to-accent-pink/80 text-white font-black text-sm rounded-xl shadow-glow transition-all duration-300 hover:scale-[1.02] active:scale-95 inline-flex items-center justify-center gap-2"
               >
-                🎟 Get tickets
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
+                </svg>
+                Get tickets
               </button>
 
               {/* Secondary CTA */}
@@ -458,9 +561,10 @@ export default function EventDetailClient({ slug, initialEvent }: EventDetailCli
                 {isFavorited ? '❤️ Saved to wishlist' : '♡ Add to wishlist'}
               </button>
 
-              {/* Trust badge */}
               <div className="flex items-center justify-center gap-1.5 text-[10px] text-text-muted pt-1 border-t border-white/5">
-                <span>🔒</span>
+                <svg className="w-3.5 h-3.5 text-text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
                 <span>Secure checkout · No hidden fees</span>
               </div>
             </div>
@@ -582,9 +686,7 @@ export default function EventDetailClient({ slug, initialEvent }: EventDetailCli
 
               {/* Modal Sticky Bottom Action Footer */}
               <div className="border-t border-white/10 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] mt-4 flex items-center justify-between bg-[#0d111d] shrink-0">
-                <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 bg-amber-500/10 border border-amber-500/20 text-amber-400 rounded-md animate-pulse">
-                  🔥 Few tickets left
-                </span>
+                {modalFooterBadge}
                 <button
                   type="button"
                   onClick={() => {
@@ -619,7 +721,9 @@ export default function EventDetailClient({ slug, initialEvent }: EventDetailCli
                   <h3 className="text-xs font-bold uppercase tracking-wider text-text-secondary">Order Summary</h3>
                   {selectedCount === 0 ? (
                     <div className="flex flex-col items-center justify-center py-20 text-text-muted space-y-2">
-                      <span className="text-4xl">🛒</span>
+                      <svg className="w-8 h-8 text-text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                      </svg>
                       <span className="text-xs font-medium">Select tickets to see summary</span>
                     </div>
                   ) : (

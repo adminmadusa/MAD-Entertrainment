@@ -44,6 +44,10 @@ export function TicketSelectionContent({
   const router = useRouter();
   const eventId = event._id;
 
+  const totalCapacity = event.totalCapacity || event.ticketTiers?.reduce((acc, t) => acc + (t.quantity || 0), 0) || 0;
+  const soldCount = event.soldCount || event.ticketTiers?.reduce((acc, t) => acc + (t.soldCount || 0), 0) || 0;
+  const ticketsLeft = Math.max(0, totalCapacity - soldCount);
+
   const [sessionToken, setSessionToken] = useState('');
   const [sessionError, setSessionError] = useState(false);
   const [quantities, setQuantities] = useState<Record<string, number>>({});
@@ -258,7 +262,11 @@ export function TicketSelectionContent({
         {/* Coupon Applied Details Block */}
         {couponApplied && (
           <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-3 mt-3 flex items-start gap-3">
-             <span className="text-emerald-400 text-lg">🏷️</span>
+             <span className="text-emerald-400 text-lg">
+               <svg className="w-5 h-5 text-emerald-400 inline-block align-text-top" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                 <path strokeLinecap="round" strokeLinejoin="round" d="M7 7h.01M6 20a1 1 0 001-1v-2.586a1 1 0 01.293-.707l7.586-7.586a1 1 0 000-1.414l-4-4a1 1 0 00-1.414 0L2.293 11.293A1 1 0 012 12v6a2 2 0 002 2h2z" />
+               </svg>
+             </span>
              <div>
                <div className="text-emerald-400 font-bold text-sm">Coupon Applied</div>
                <div className="text-text-secondary text-xs mt-0.5">Code: <span className="font-mono text-white font-bold">{couponCode}</span></div>
@@ -441,9 +449,19 @@ export function TicketSelectionContent({
         <div className="fixed bottom-0 left-0 right-0 bg-[#0d111d]/95 backdrop-blur-lg border-t border-white/10 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] z-50 shadow-2xl">
           <div className="container-mad max-w-2xl px-4 space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 bg-amber-500/10 border border-amber-500/20 text-amber-400 rounded-md animate-pulse">
-                🔥 Few tickets left
-              </span>
+              {ticketsLeft <= 50 ? (
+                <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 bg-amber-500/10 border border-amber-500/20 text-amber-400 rounded-md animate-pulse">
+                  <svg className="w-3.5 h-3.5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9.879 16.121A3 3 0 1012.015 11L11 14H9.879z" />
+                  </svg>
+                  Few tickets left
+                </span>
+              ) : (
+                <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-md">
+                  Available
+                </span>
+              )}
               <div className="text-right">
                 <span className="text-lg font-black text-white">₹{subtotal}</span>
               </div>

@@ -72,14 +72,14 @@ export function CheckoutForm({ event, isExpired, isDisabled, onSubmit, onErrorSe
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(guestEmail)) errors.guestEmail = 'Invalid email format';
 
     if (!user) {
-      if (!guestEmailConfirm.trim()) errors.guestEmailConfirm = 'Please confirm your email';
-      else if (guestEmailConfirm !== guestEmail) errors.guestEmailConfirm = 'Emails do not match';
+      const normalizedEmail = guestEmail.trim().toLowerCase();
+      const normalizedConfirm = guestEmailConfirm.trim().toLowerCase();
+      if (!guestEmailConfirm.trim()) {
+        errors.guestEmailConfirm = 'Please confirm your email';
+      } else if (normalizedEmail !== normalizedConfirm) {
+        errors.guestEmailConfirm = 'Emails do not match';
+      }
     }
-
-    // Optional mobile number
-    // if (!guestPhone.trim()) errors.guestPhone = 'Phone number is required';
-
-
 
     if (event?.requireAgeConfirmation && !ageConfirmed) {
       errors.ageConfirmed = 'You must confirm your age to continue';
@@ -87,9 +87,25 @@ export function CheckoutForm({ event, isExpired, isDisabled, onSubmit, onErrorSe
 
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors);
+      
+      const firstErrorKey = Object.keys(errors)[0];
+      let elementId = '';
+      if (firstErrorKey === 'firstName') elementId = 'checkout-first-name';
+      else if (firstErrorKey === 'lastName') elementId = 'checkout-last-name';
+      else if (firstErrorKey === 'guestEmail') elementId = 'checkout-email';
+      else if (firstErrorKey === 'guestEmailConfirm') elementId = 'checkout-email-confirm';
+      else if (firstErrorKey === 'ageConfirmed') elementId = 'checkout-age-confirm';
+
+      if (elementId) {
+        const element = document.getElementById(elementId);
+        if (element) {
+          element.focus();
+        }
+      }
       return;
     }
 
+    // Normalize emails to lowercase before submission and persistence to prevent duplicate customer records caused by casing differences.
     onSubmit({
       firstName: firstName.trim(),
       lastName: lastName.trim(),
@@ -118,12 +134,15 @@ export function CheckoutForm({ event, isExpired, isDisabled, onSubmit, onErrorSe
               type="text"
               value={firstName}
               disabled={isDisabled}
-              onChange={(e) => setFirstName(e.target.value)}
+              onChange={(e) => {
+                setFirstName(e.target.value);
+                setFieldErrors((prev) => ({ ...prev, firstName: '' }));
+              }}
               placeholder="First name"
               className={`w-full px-4 py-2 rounded-xl bg-background border text-base lg:text-sm text-white focus:outline-none transition-colors ${fieldErrors.firstName ? 'border-red-500' : 'border-white/10 focus:border-accent-purple'
                 }`}
             />
-            {fieldErrors.firstName && <p className="text-red-400 text-[10px]">{fieldErrors.firstName}</p>}
+            {fieldErrors.firstName && <p className="text-red-400 text-[10px]" role="status" aria-live="polite">{fieldErrors.firstName}</p>}
           </div>
           <div className="space-y-1">
             <label htmlFor="checkout-last-name" className="text-xs text-text-secondary font-medium">Last name *</label>
@@ -132,12 +151,15 @@ export function CheckoutForm({ event, isExpired, isDisabled, onSubmit, onErrorSe
               type="text"
               value={lastName}
               disabled={isDisabled}
-              onChange={(e) => setLastName(e.target.value)}
+              onChange={(e) => {
+                setLastName(e.target.value);
+                setFieldErrors((prev) => ({ ...prev, lastName: '' }));
+              }}
               placeholder="Last name"
               className={`w-full px-4 py-2 rounded-xl bg-background border text-base lg:text-sm text-white focus:outline-none transition-colors ${fieldErrors.lastName ? 'border-red-500' : 'border-white/10 focus:border-accent-purple'
                 }`}
             />
-            {fieldErrors.lastName && <p className="text-red-400 text-[10px]">{fieldErrors.lastName}</p>}
+            {fieldErrors.lastName && <p className="text-red-400 text-[10px]" role="status" aria-live="polite">{fieldErrors.lastName}</p>}
           </div>
         </div>
 
@@ -150,31 +172,49 @@ export function CheckoutForm({ event, isExpired, isDisabled, onSubmit, onErrorSe
               value={guestEmail}
               disabled={isDisabled || !!user}
               readOnly={!!user}
-              onChange={(e) => setGuestEmail(e.target.value)}
+              onChange={(e) => {
+                setGuestEmail(e.target.value);
+                setFieldErrors((prev) => ({ ...prev, guestEmail: '', guestEmailConfirm: '' }));
+              }}
               placeholder="email@example.com"
               className={`w-full px-4 py-2 rounded-xl bg-background border text-base lg:text-sm focus:outline-none transition-colors ${user ? 'text-text-muted/60 bg-white/5 cursor-not-allowed border-white/5' : 'text-white bg-background ' + (fieldErrors.guestEmail ? 'border-red-500' : 'border-white/10 focus:border-accent-purple')
                 }`}
             />
-            {fieldErrors.guestEmail && <p className="text-red-400 text-[10px]">{fieldErrors.guestEmail}</p>}
+            {fieldErrors.guestEmail && <p className="text-red-400 text-[10px]" role="status" aria-live="polite">{fieldErrors.guestEmail}</p>}
             {user && <p className="text-[10px] text-text-muted/60 mt-1">Verified via your connected account.</p>}
           </div>
 
-          {!user && (
-            <div className="space-y-1">
-              <label htmlFor="checkout-email-confirm" className="text-xs text-text-secondary font-medium">Confirm email *</label>
-              <input
-                id="checkout-email-confirm"
-                type="email"
-                value={guestEmailConfirm}
-                disabled={isDisabled}
-                onChange={(e) => setGuestEmailConfirm(e.target.value)}
-                placeholder="Confirm email address"
-                className={`w-full px-4 py-2 rounded-xl bg-background border text-base lg:text-sm text-white focus:outline-none transition-colors ${fieldErrors.guestEmailConfirm ? 'border-red-500' : 'border-white/10 focus:border-accent-purple'
-                  }`}
-              />
-              {fieldErrors.guestEmailConfirm && <p className="text-red-400 text-[10px]">{fieldErrors.guestEmailConfirm}</p>}
-            </div>
-          )}
+          {!user && (() => {
+            const normalizedEmail = guestEmail.trim().toLowerCase();
+            const normalizedConfirm = guestEmailConfirm.trim().toLowerCase();
+            const emailsMatch = 
+              normalizedEmail.length > 0 && 
+              normalizedConfirm.length > 0 && 
+              normalizedEmail === normalizedConfirm;
+
+            return (
+              <div className="space-y-1">
+                <label htmlFor="checkout-email-confirm" className="text-xs text-text-secondary font-medium">Confirm email *</label>
+                <input
+                  id="checkout-email-confirm"
+                  type="email"
+                  value={guestEmailConfirm}
+                  disabled={isDisabled}
+                  onChange={(e) => {
+                    setGuestEmailConfirm(e.target.value);
+                    setFieldErrors((prev) => ({ ...prev, guestEmailConfirm: '' }));
+                  }}
+                  placeholder="Confirm email address"
+                  className={`w-full px-4 py-2 rounded-xl bg-background border text-base lg:text-sm text-white focus:outline-none transition-colors ${fieldErrors.guestEmailConfirm ? 'border-red-500' : 'border-white/10 focus:border-accent-purple'
+                    }`}
+                />
+                {fieldErrors.guestEmailConfirm && <p className="text-red-400 text-[10px]" role="status" aria-live="polite">{fieldErrors.guestEmailConfirm}</p>}
+                {!fieldErrors.guestEmailConfirm && emailsMatch && (
+                  <p className="text-emerald-400 text-[10px] mt-1 font-semibold" role="status" aria-live="polite">✓ Emails match</p>
+                )}
+              </div>
+            );
+          })()}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -236,6 +276,7 @@ export function CheckoutForm({ event, isExpired, isDisabled, onSubmit, onErrorSe
           <div className="space-y-1 pt-3 border-t border-white/5">
             <label className="flex items-start gap-2.5 cursor-pointer text-sm text-white font-medium leading-normal">
               <input
+                id="checkout-age-confirm"
                 type="checkbox"
                 checked={ageConfirmed}
                 disabled={isDisabled}
@@ -250,7 +291,7 @@ export function CheckoutForm({ event, isExpired, isDisabled, onSubmit, onErrorSe
               />
               <span>I confirm that I am {event?.ageRestriction || 18} years of age or older and legally eligible to attend this event.</span>
             </label>
-            {fieldErrors.ageConfirmed && <p className="text-red-400 text-[10px] pl-6.5">{fieldErrors.ageConfirmed}</p>}
+            {fieldErrors.ageConfirmed && <p className="text-red-400 text-[10px] pl-6.5" role="status" aria-live="polite">{fieldErrors.ageConfirmed}</p>}
           </div>
         )}
       </div>

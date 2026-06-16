@@ -56,8 +56,6 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
   const [selectedGateway, setSelectedGateway] = useState<'stripe' | 'razorpay'>('razorpay');
   const [error, setError] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
-  const [redirectCountdown, setRedirectCountdown] = useState(5);
-  const [isRedirectPaused, setIsRedirectPaused] = useState(false);
   const [isInputFocused, setIsInputFocused] = useState(false);
 
   const {
@@ -88,31 +86,15 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
   const booking = details?.booking;
   const event = asEvent((booking as Booking | undefined)?.eventId);
 
-  // Redirect with countdown if confirmed
-  useEffect(() => {
-    if (booking && booking.status === 'confirmed' && !isRedirectPaused) {
-      if (redirectCountdown <= 0) {
-        allowNavigation();
-        router.push(`/tickets?ref=${booking.bookingId}`);
-        if (isModal) onClose();
-        return;
-      }
-      const timer = setTimeout(() => {
-        setRedirectCountdown((prev) => prev - 1);
-      }, 1000);
-      return () => clearTimeout(timer);
-    }
-  }, [booking, redirectCountdown, isRedirectPaused, router, allowNavigation, isModal, onClose]);
+
 
   const handleViewTickets = () => {
-    setIsRedirectPaused(true);
     allowNavigation();
     router.push(`/tickets?ref=${booking?.bookingId}`);
     if (isModal) onClose();
   };
 
   const handleContinueBrowsing = () => {
-    setIsRedirectPaused(true);
     allowNavigation();
     router.push('/');
     if (isModal) onClose();
@@ -294,12 +276,7 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
             We have sent your confirmation email and tickets to <span className="text-white font-semibold">{booking.guestEmail || 'your email'}</span>.
           </p>
 
-          {/* Auto Redirect Banner */}
-          {!isRedirectPaused && (
-            <p className="text-[11px] text-accent-purple-light font-medium animate-pulse">
-              Auto-redirecting to My Tickets in <span className="font-mono font-bold text-white">{redirectCountdown}s</span>...
-            </p>
-          )}
+
 
           {/* Action Buttons */}
           <div className="pt-2 flex flex-col gap-3">
@@ -384,7 +361,7 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
 
       <div className={isModal ? "space-y-4 relative z-10 mt-4" : "container-mad max-w-4xl space-y-4 relative z-10 px-4 mt-20 w-full"}>
         {error && (
-          <div className="p-3 bg-error/10 border border-error/30 rounded-xl text-xs text-red-400 text-center">
+          <div className="p-3 bg-error/10 border border-error/30 rounded-xl text-xs text-red-400 text-center" role="alert" aria-live="assertive">
             {error}
           </div>
         )}
@@ -452,7 +429,9 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
 
               <div className="pt-3 border-t border-white/5 space-y-3">
                 <div className="flex items-center justify-center gap-1.5 text-[11px] text-text-secondary font-medium bg-white/5 py-2 rounded-lg border border-white/5">
-                  <span role="img" aria-label="lock">🔒</span>
+                  <svg className="w-3.5 h-3.5 text-text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
                   <span>Secure checkout · No hidden fees</span>
                 </div>
                 <p className="text-[10px] text-text-muted leading-relaxed text-center">
