@@ -69,6 +69,14 @@ pnpm build
 
 ---
 
+## Deployment & Operations
+
+Operations runbooks, deployment procedures, disaster recovery instructions, environment configuration guides, and production validation workflows are documented in:
+
+- `RUNBOOK.md`
+
+---
+
 ## Governance
 
 Before adding tooling, automation, repository-wide rules, or cleanup processes, review existing governance tooling:
