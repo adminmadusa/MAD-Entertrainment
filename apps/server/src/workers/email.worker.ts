@@ -13,6 +13,25 @@ import { sendEmail, normalizeEmail } from '../utils/email';
 import { logger } from '../utils/logger';
 import { NotificationType } from '@mad/shared';
 
+/**
+ * Helper to classify SMTP error messages into permanent vs transient categories.
+ */
+function isPermanentSMTPError(errorMsg: string): boolean {
+  const msg = errorMsg.toLowerCase();
+
+  return (
+    msg.includes("invalid email") ||
+    msg.includes("malformed") ||
+    msg.includes("syntax error") ||
+    msg.includes("blocked") ||
+    msg.includes("domain rejection") ||
+    msg.includes("hard bounce") ||
+    msg.includes("550") ||
+    msg.includes("553") ||
+    msg.includes("501")
+  );
+}
+
 const QUEUE_NAME = getQueueName('notification-queue');
 
 export async function processEmailDispatch(
@@ -166,6 +185,20 @@ export async function handleJobExecution(jobId: string, data: any, attemptsMade:
         retryCount: attemptsMade
       }
     });
+    
+    if (isPermanentSMTPError(err.message)) {
+      logger.warn(
+        {
+          jobId,
+          recipient: to,
+          error: err.message,
+        },
+        "SMTP_PERMANENT_FAILURE: Bypassing retries due to permanent error classification."
+      );
+
+      return;
+    }
+
     throw err;
   }
 }
