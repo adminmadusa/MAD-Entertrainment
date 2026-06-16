@@ -15,7 +15,6 @@ import { formatEventDate } from '@/utils/date';
 
 
 export function FeaturedEventsSection({ initialEvents = [] }: { initialEvents: Event[] }) {
-  const events = initialEvents;
   const [activeIndex, setActiveIndex] = useState(0);
   const [activeCategory, setActiveCategory] = useState('all');
   const [isMounted, setIsMounted] = useState(false);
@@ -35,10 +34,20 @@ export function FeaturedEventsSection({ initialEvents = [] }: { initialEvents: E
     { label: 'Cinema', value: EventCategory.CINEMA },
   ];
 
+  // Filter events based on selected category
+  const events = activeCategory === 'all'
+    ? initialEvents
+    : initialEvents.filter((e) => e.category === activeCategory);
+
   // Set mounted on client to prevent SSR hydration mismatch and layout shift
   useEffect(() => {
     setIsMounted(true);
   }, []);
+
+  // Reset active index when category changes
+  useEffect(() => {
+    setActiveIndex(0);
+  }, [activeCategory]);
 
   // SSR-safe responsive value — defaults to 1024 (desktop) on server,
   // updates to real viewport on mount. Never reads window during render.
@@ -90,18 +99,22 @@ export function FeaturedEventsSection({ initialEvents = [] }: { initialEvents: E
       <div className="container-mad">
         {/* Category Filter Pills */}
         <Reveal>
-          <div className="w-full flex justify-center mb-10" role="tablist" aria-label="Event Categories">
-            <div className="flex gap-3 overflow-x-auto scrollbar-hide py-2 px-4 max-w-full -mx-4 sm:mx-0 -webkit-overflow-scrolling-touch md:flex-wrap md:justify-center">
+          <div className="w-full flex justify-center mb-10 relative" role="tablist" aria-label="Event Categories">
+            {/* Left and Right gradient edge masks to indicate scrollability on mobile */}
+            <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-background to-transparent pointer-events-none z-10 md:hidden" />
+            <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-background to-transparent pointer-events-none z-10 md:hidden" />
+            
+            <div className="flex gap-3 overflow-x-auto scrollbar-hide py-2 px-4 max-w-full -mx-4 sm:mx-0 -webkit-overflow-scrolling-touch md:flex-wrap md:justify-center relative">
               {categoriesList.map((cat) => {
                 const isActive = activeCategory === cat.value;
                 return (
                   <button
                     key={cat.value}
                     onClick={() => setActiveCategory(cat.value)}
-                    className={`flex-shrink-0 min-h-[44px] min-w-[44px] px-5 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
+                    className={`flex-shrink-0 min-h-[44px] min-w-[44px] px-5 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
                       isActive
                         ? 'bg-gradient-to-r from-primary to-accent text-white shadow-glow'
-                        : 'bg-bg-card/60 backdrop-blur-md text-text-secondary hover:text-white border border-white/5 hover:border-primary/40 hover:bg-bg-card/90'
+                        : 'bg-bg-card/60 backdrop-blur-md text-text-secondary hover:text-white border border-white/5 hover:border-accent-purple/40 hover:bg-bg-card/90'
                     }`}
                     role="tab"
                     aria-selected={isActive}
@@ -283,7 +296,7 @@ export function FeaturedEventsSection({ initialEvents = [] }: { initialEvents: E
                       <div className={`px-4 pb-4 pt-3 border-t border-border-subtle/40 flex items-center justify-between mt-auto bg-black/40 backdrop-blur-md transition-opacity ${!isActive ? 'opacity-50' : ''}`}>
                         <div>
                           <div className="text-[9px] sm:text-[10px] text-text-muted font-medium">Tickets from</div>
-                          <div className="text-white font-black text-xs sm:text-sm">
+                           <div className="text-white font-black text-xs sm:text-sm">
                             ₹{event.ticketTiers && event.ticketTiers.length > 0 ? Math.min(...event.ticketTiers.map((t) => t.price)) : 0}
                           </div>
                         </div>
@@ -292,7 +305,7 @@ export function FeaturedEventsSection({ initialEvents = [] }: { initialEvents: E
                           id={`event-card-book-${event.slug}`} 
                           tabIndex={isActive ? 0 : -1} 
                           aria-label={event.isSoldOut ? `View details for ${event.title}` : `Book tickets for ${event.title}`}
-                          className={`px-2.5 py-1.5 sm:px-3.5 sm:py-2 text-[10px] sm:text-xs font-bold text-white btn-gradient rounded-xl shadow-glow-sm group-hover:scale-105 transition-all text-center inline-block ${
+                          className={`px-2.5 py-1.5 sm:px-3.5 sm:py-2 text-[10px] sm:text-xs font-bold text-white btn-gradient rounded-xl shadow-glow-sm group-hover:scale-105 transition-all text-center inline-block focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
                             !isActive ? 'pointer-events-none opacity-50 cursor-not-allowed' : ''
                           }`}
                         >
@@ -310,19 +323,19 @@ export function FeaturedEventsSection({ initialEvents = [] }: { initialEvents: E
               <>
                 <button 
                   onClick={prevSlide}
-                  className="absolute left-0 sm:left-4 top-1/2 -translate-y-1/2 z-30 p-3 sm:p-4 rounded-full glass border border-border-subtle text-white hover:text-accent-purple hover:border-accent-purple/50 transition-all focus:outline-none focus:ring-2 focus:ring-accent-purple shadow-lg"
+                  className="absolute left-0 sm:left-4 top-1/2 -translate-y-1/2 z-30 p-3 sm:p-4 rounded-full glass border border-border-subtle text-white hover:text-accent-purple hover:border-accent-purple/50 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-2 focus-visible:ring-offset-background shadow-lg"
                   aria-label="Previous event"
                 >
                   <ArrowLeft size={20} />
                 </button>
                 <button 
                   onClick={nextSlide}
-                  className="absolute right-0 sm:right-4 top-1/2 -translate-y-1/2 z-30 p-3 sm:p-4 rounded-full glass border border-border-subtle text-white hover:text-accent-purple hover:border-accent-purple/50 transition-all focus:outline-none focus:ring-2 focus:ring-accent-purple shadow-lg"
+                  className="absolute right-0 sm:right-4 top-1/2 -translate-y-1/2 z-30 p-3 sm:p-4 rounded-full glass border border-border-subtle text-white hover:text-accent-purple hover:border-accent-purple/50 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-2 focus-visible:ring-offset-background shadow-lg"
                   aria-label="Next event"
                 >
                   <ArrowRight size={20} />
                 </button>
-
+ 
                 {/* Dots indicator */}
                 <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 flex gap-2 z-30" role="tablist" aria-label="Carousel slide triggers">
                   {events.map((_, idx) => (
@@ -331,7 +344,7 @@ export function FeaturedEventsSection({ initialEvents = [] }: { initialEvents: E
                       onClick={() => setActiveIndex(idx)}
                       role="tab"
                       aria-selected={idx === activeIndex}
-                      className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                      className={`w-2 h-2 rounded-full transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
                         idx === activeIndex 
                           ? 'bg-accent-purple w-6 shadow-glow-sm' 
                           : 'bg-border-subtle hover:bg-accent-purple/50'

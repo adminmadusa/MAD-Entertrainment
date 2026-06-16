@@ -152,9 +152,7 @@ export function Navbar() {
     };
   }, [pathname]);
 
-  if (isCheckoutOrBook) return null;
-
-  return (
+  if (isCheckoutOrBook) return null;  return (
     <header
       className={[
         'fixed top-0 left-0 right-0 z-50 transition-all duration-300 border-b',
@@ -165,7 +163,11 @@ export function Navbar() {
     >
       <nav className="container-mad flex items-center justify-between">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2 group" aria-label="MAD Entertrainment Home">
+        <Link
+          href="/"
+          className="flex items-center gap-2 group rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+          aria-label="MAD Entertrainment Home"
+        >
           <motion.div
             whileHover={{ scale: 1.05 }}
             transition={{ duration: 0.2 }}
@@ -197,7 +199,7 @@ export function Navbar() {
               <button
                 type="button"
                 onClick={() => setDropdownOpen(!dropdownOpen)}
-                className="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-text-secondary hover:text-white transition-colors focus:outline-none"
+                className="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-text-secondary hover:text-white transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded-xl"
                 aria-expanded={dropdownOpen}
                 aria-haspopup="true"
               >
@@ -216,14 +218,14 @@ export function Navbar() {
                     <Link
                       href="/dashboard?tab=tickets"
                       onClick={() => setDropdownOpen(false)}
-                      className="block px-4 py-2 text-sm text-text-secondary hover:text-white hover:bg-white/5 transition-colors"
+                      className="block px-4 py-2 text-sm text-text-secondary hover:text-white hover:bg-white/5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple"
                     >
                       My Tickets
                     </Link>
                     <Link
                       href="/dashboard?tab=account"
                       onClick={() => setDropdownOpen(false)}
-                      className="block px-4 py-2 text-sm text-text-secondary hover:text-white hover:bg-white/5 transition-colors"
+                      className="block px-4 py-2 text-sm text-text-secondary hover:text-white hover:bg-white/5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple"
                     >
                       Account
                     </Link>
@@ -233,7 +235,7 @@ export function Navbar() {
                         setDropdownOpen(false);
                         handleLogout();
                       }}
-                      className="w-full text-left block px-4 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/5 transition-colors"
+                      className="w-full text-left block px-4 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-red-450"
                     >
                       Logout
                     </button>
@@ -244,14 +246,14 @@ export function Navbar() {
           ) : (
             <Link
               href="/login"
-              className="px-4 py-2 text-sm font-medium text-text-secondary hover:text-text-primary transition-colors"
+              className="px-4 py-2 text-sm font-medium text-text-secondary hover:text-text-primary transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded-xl"
             >
               Login
             </Link>
           )}
           <Link
             href="/events"
-            className="px-5 py-2.5 text-sm font-semibold btn-gradient text-white rounded-xl shadow-glow-sm hover:scale-[1.03] active:scale-95 transition-transform"
+            className="px-5 py-2.5 text-sm font-semibold btn-gradient text-white rounded-xl shadow-glow-sm hover:scale-[1.03] active:scale-95 transition-transform focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           >
             Book Now
           </Link>
@@ -260,7 +262,7 @@ export function Navbar() {
         {/* Mobile Hamburger */}
         <button
           id="mobile-menu-trigger"
-          className="md:hidden p-2 rounded-xl hover:bg-white/10 transition-colors text-text-primary"
+          className="md:hidden p-2 rounded-xl hover:bg-white/10 transition-colors text-text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple"
           onClick={() => setMobileOpen((v) => !v)}
           aria-label={mobileOpen ? 'Close navigation menu' : 'Open navigation menu'}
           aria-expanded={mobileOpen}
@@ -338,7 +340,7 @@ export function Navbar() {
                       navigatingRef.current = true;
                       setMobileOpen(false);
                     }}
-                    className="block py-3 px-4 text-text-secondary hover:text-text-primary hover:bg-white/5 rounded-xl transition-colors font-medium"
+                    className="block py-3 px-4 text-text-secondary hover:text-text-primary hover:bg-white/5 rounded-xl transition-colors font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple"
                   >
                     {link.label}
                   </Link>
@@ -356,7 +358,7 @@ export function Navbar() {
                         navigatingRef.current = true;
                         setMobileOpen(false);
                       }}
-                      className="block py-3 px-4 text-text-secondary hover:text-text-primary hover:bg-white/5 rounded-xl transition-colors font-medium"
+                      className="block py-3 px-4 text-text-secondary hover:text-text-primary hover:bg-white/5 rounded-xl transition-colors font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple"
                     >
                       My Tickets
                     </Link>
@@ -366,14 +368,14 @@ export function Navbar() {
                         navigatingRef.current = true;
                         setMobileOpen(false);
                       }}
-                      className="block py-3 px-4 text-text-secondary hover:text-text-primary hover:bg-white/5 rounded-xl transition-colors font-medium"
+                      className="block py-3 px-4 text-text-secondary hover:text-text-primary hover:bg-white/5 rounded-xl transition-colors font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple"
                     >
                       Account
                     </Link>
                     <button
                       type="button"
                       onClick={handleLogout}
-                      className="w-full py-3 px-4 text-red-400 hover:text-red-350 hover:bg-white/5 rounded-xl transition-colors font-medium text-left block"
+                      className="w-full py-3 px-4 text-red-400 hover:text-red-350 hover:bg-white/5 rounded-xl transition-colors font-medium text-left block focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
                     >
                       Logout
                     </button>
@@ -385,7 +387,7 @@ export function Navbar() {
                       navigatingRef.current = true;
                       setMobileOpen(false);
                     }}
-                    className="w-full py-3 px-4 text-text-secondary hover:text-text-primary hover:bg-white/5 rounded-xl transition-colors font-medium text-left block"
+                    className="w-full py-3 px-4 text-text-secondary hover:text-text-primary hover:bg-white/5 rounded-xl transition-colors font-medium text-left block focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple"
                   >
                     Login
                   </Link>
@@ -396,7 +398,7 @@ export function Navbar() {
                     navigatingRef.current = true;
                     setMobileOpen(false);
                   }}
-                  className="w-full py-3 px-4 btn-gradient text-white rounded-xl font-semibold text-center block"
+                  className="w-full py-3 px-4 btn-gradient text-white rounded-xl font-semibold text-center block focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                 >
                   Book Now
                 </Link>
@@ -421,7 +423,7 @@ export function Navbar() {
             tabIndex={(!mobileOpen && !footerIntersecting) ? 0 : -1}
             aria-hidden={!(!mobileOpen && !footerIntersecting)}
             className={[
-              'py-3 px-6 btn-gradient text-white rounded-full font-bold shadow-glow text-sm inline-flex items-center gap-2 active:scale-95 transition-transform border border-white/10',
+              'py-3 px-6 btn-gradient text-white rounded-full font-bold shadow-glow text-sm inline-flex items-center gap-2 active:scale-95 transition-transform border border-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-2 focus-visible:ring-offset-background',
               (!mobileOpen && !footerIntersecting)
                 ? 'pointer-events-auto'
                 : 'pointer-events-none',
@@ -438,7 +440,10 @@ export function Navbar() {
 
 function NavLink({ href, children }: { href: string; children: React.ReactNode }) {
   return (
-    <Link href={href}>
+    <Link
+      href={href}
+      className="rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+    >
       <motion.span
         whileHover={{ color: '#FFFFFF' }}
         className="px-4 py-2 rounded-xl text-sm font-medium text-text-secondary hover:text-text-primary hover:bg-white/5 transition-colors inline-block cursor-pointer"
