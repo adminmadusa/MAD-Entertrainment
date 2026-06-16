@@ -5,19 +5,27 @@ import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
 
 import { AuthForm } from './AuthForm';
 
-// ─── Mock Auth Provider ───────────────────────────────────────
-const mockLogin = vi.fn();
-const mockLogout = vi.fn();
-const mockSetOnboardingRequired = vi.fn();
+const { mockUseAuth, mockLogin, mockLogout, mockSetOnboardingRequired } = vi.hoisted(() => {
+  const login = vi.fn();
+  const logout = vi.fn();
+  const setOnboardingRequired = vi.fn();
+  return {
+    mockLogin: login,
+    mockLogout: logout,
+    mockSetOnboardingRequired: setOnboardingRequired,
+    mockUseAuth: vi.fn(() => ({
+      login,
+      logout,
+      token: null as string | null,
+      onboardingRequired: false,
+      setOnboardingRequired,
+    })),
+  };
+});
 
+// ─── Mock Auth Provider ───────────────────────────────────────
 vi.mock('@/providers/AuthProvider', () => ({
-  useAuth: () => ({
-    login: mockLogin,
-    logout: mockLogout,
-    token: null,
-    onboardingRequired: false,
-    setOnboardingRequired: mockSetOnboardingRequired,
-  }),
+  useAuth: () => mockUseAuth(),
 }));
 
 // ─── Mock public service endpoints ─────────────────────────────
@@ -43,10 +51,43 @@ vi.mock('@/lib/utils/load-script-once', () => ({
   loadScriptOnce: () => Promise.resolve(),
 }));
 
+// Mock google-identity utility to bypass module-level initialization cache
+vi.mock('@/utils/google-identity', () => ({
+  initializeGoogleIdentity: vi.fn((clientId: string) => {
+    const win = window as unknown as {
+      google?: {
+        accounts: {
+          id: {
+            initialize: (config: {
+              client_id: string;
+              callback: (response: unknown) => void;
+              auto_select: boolean;
+            }) => void;
+          };
+        };
+      };
+    };
+    win.google?.accounts.id.initialize({
+      client_id: clientId,
+      callback: () => {},
+      auto_select: false,
+    });
+  }),
+  setGoogleIdentityCallback: vi.fn(),
+}));
+
 describe('AuthForm Component Smoke Tests', () => {
   let queryClient: QueryClient;
 
   beforeEach(() => {
+    mockUseAuth.mockReset();
+    mockUseAuth.mockReturnValue({
+      login: mockLogin,
+      logout: mockLogout,
+      token: null,
+      onboardingRequired: false,
+      setOnboardingRequired: mockSetOnboardingRequired,
+    });
     queryClient = new QueryClient({
       defaultOptions: {
         queries: { retry: false },
@@ -102,6 +143,24 @@ describe('AuthForm Component Smoke Tests', () => {
       });
 
       expect(screen.getByRole('alert')).toHaveTextContent(/email address is required/i);
+    });
+
+    it('should normalize email before calling requestVerificationCode mutation', async () => {
+      mockRequestVerificationCode.mockResolvedValueOnce({ message: 'Passcode sent' });
+      renderComponent({ mode: 'login' });
+
+      const emailInput = screen.getByLabelText(/email address/i);
+      const submitBtn = screen.getByRole('button', { name: /continue with email/i });
+
+      await act(async () => {
+        fireEvent.change(emailInput, { target: { value: '  User@Example.COM  ' } });
+      });
+
+      await act(async () => {
+        fireEvent.click(submitBtn);
+      });
+
+      expect(mockRequestVerificationCode).toHaveBeenCalledWith('user@example.com');
     });
   });
 
@@ -272,6 +331,127 @@ describe('AuthForm Component Smoke Tests', () => {
         })
       );
       expect(globalMock.mockGoogleRenderButton).toHaveBeenCalled();
+    });
+  });
+
+  describe('OTP Verification Flow Email Normalization', () => {
+    it('should normalize email before calling verifyMutation', async () => {
+      mockRequestVerificationCode.mockResolvedValueOnce({ message: 'Passcode sent' });
+      renderComponent({ mode: 'login' });
+      const emailInput = screen.getByLabelText(/email address/i);
+      const submitBtn = screen.getByRole('button', { name: /continue with email/i });
+
+      await act(async () => {
+        fireEvent.change(emailInput, { target: { value: '  User@Example.COM  ' } });
+        fireEvent.click(submitBtn);
+      });
+
+      mockVerifyVerificationCodeOrOTP.mockResolvedValueOnce({ token: 'jwt_token', user: { email: 'user@example.com' } });
+      const otpInput = screen.getByLabelText(/6-digit passcode/i);
+      const verifyBtn = screen.getByRole('button', { name: /verify code/i });
+
+      await act(async () => {
+        fireEvent.change(otpInput, { target: { value: '123456' } });
+        fireEvent.click(verifyBtn);
+      });
+
+      expect(mockVerifyVerificationCodeOrOTP).toHaveBeenCalledWith({
+        otp: '123456',
+        email: 'user@example.com',
+      });
+    });
+  });
+
+  describe('Onboarding Flow Mobile Sanitization', () => {
+    it('should sanitize mobile number and call updateProfile with E.164 formatted value', async () => {
+      mockUseAuth.mockReturnValue({
+        login: mockLogin,
+        logout: mockLogout,
+        token: 'jwt_token',
+        onboardingRequired: true,
+        setOnboardingRequired: mockSetOnboardingRequired,
+      });
+
+      renderComponent({ mode: 'login' });
+
+      expect(await screen.findByRole('heading', { name: /complete your account details/i })).toBeInTheDocument();
+
+      const firstNameInput = screen.getByLabelText(/first name/i);
+      const lastNameInput = screen.getByLabelText(/last name/i);
+      const mobileInput = screen.getByLabelText(/mobile number/i);
+      const submitBtn = screen.getByRole('button', { name: /continue/i });
+
+      await act(async () => {
+        fireEvent.change(firstNameInput, { target: { value: 'John' } });
+        fireEvent.change(lastNameInput, { target: { value: 'Doe' } });
+        fireEvent.change(mobileInput, { target: { value: '+1 (555) 555-5555' } });
+      });
+
+      mockUpdateProfile.mockResolvedValueOnce({ firstName: 'John', lastName: 'Doe', mobileNumber: '+15555555555' });
+
+      await act(async () => {
+        fireEvent.click(submitBtn);
+      });
+
+      expect(mockUpdateProfile).toHaveBeenCalledWith({
+        firstName: 'John',
+        lastName: 'Doe',
+        mobileNumber: '+15555555555',
+      });
+    });
+  });
+
+  describe('Close Button Visibility', () => {
+    it('should show close button on all screens when onClose is passed', async () => {
+      const mockClose = vi.fn();
+      
+      mockUseAuth.mockReturnValue({
+        login: mockLogin,
+        logout: mockLogout,
+        token: null,
+        onboardingRequired: false,
+        setOnboardingRequired: mockSetOnboardingRequired,
+      });
+
+      // Step 1: Request screen
+      const { unmount } = renderComponent({ mode: 'login', onClose: mockClose });
+      let closeBtn = screen.getByRole('button', { name: /close/i });
+      expect(closeBtn).toBeInTheDocument();
+      
+      await act(async () => {
+        fireEvent.click(closeBtn);
+      });
+      expect(mockClose).toHaveBeenCalledTimes(1);
+      unmount();
+
+      // Step 2: Verify screen
+      mockRequestVerificationCode.mockResolvedValueOnce({ message: 'Passcode sent' });
+      const { unmount: unmount2 } = renderComponent({ mode: 'login', onClose: mockClose });
+      const emailInput = screen.getByLabelText(/email address/i);
+      const submitBtn = screen.getByRole('button', { name: /continue with email/i });
+
+      await act(async () => {
+        fireEvent.change(emailInput, { target: { value: 'user@example.com' } });
+        fireEvent.click(submitBtn);
+      });
+
+      expect(await screen.findByRole('heading', { name: /secure login/i })).toBeInTheDocument();
+      closeBtn = screen.getByRole('button', { name: /close/i });
+      expect(closeBtn).toBeInTheDocument();
+      unmount2();
+
+      // Step 3: Onboard screen
+      mockUseAuth.mockReturnValue({
+        login: mockLogin,
+        logout: mockLogout,
+        token: 'jwt_token',
+        onboardingRequired: true,
+        setOnboardingRequired: mockSetOnboardingRequired,
+      });
+      renderComponent({ mode: 'login', onClose: mockClose });
+      expect(await screen.findByRole('heading', { name: /complete your account details/i })).toBeInTheDocument();
+      closeBtn = screen.getByRole('button', { name: /close/i });
+      expect(closeBtn).toBeInTheDocument();
     });
   });
 });
