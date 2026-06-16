@@ -215,9 +215,11 @@ export enum AdminRole {
 export enum RefundStatus {
   REQUESTED = 'requested',
   PROCESSING = 'processing',
+  GATEWAY_CONFIRMED = 'gateway_confirmed',
   COMPLETED = 'completed',
   REJECTED = 'rejected',
   FAILED = 'failed',
+  INVESTIGATE = 'investigate',
 }
 
 // ─── Popup Trigger ───────────────────────────────────────────

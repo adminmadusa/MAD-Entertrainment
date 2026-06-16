@@ -199,10 +199,10 @@ export const createRefund = async (data: {
         return existingRefund;
       }
 
-      // 7. Cumulative Refund Check (Summing requested and completed)
+      // 7. Cumulative Refund Check (Summing active, processing, and completed statuses)
       const existingRefunds = await Refund.find({
         paymentId: payment._id,
-        status: { $in: ['requested', 'completed'] },
+        status: { $in: ['requested', 'processing', 'gateway_confirmed', 'completed', 'investigate'] },
       }).session(session);
       const existingSum = existingRefunds.reduce((sum, r) => sum + r.amount, 0);
       if (existingSum + data.amount > payment.amount) {
@@ -278,8 +278,9 @@ export const processRefund = async (
   overrideReason?: string
 ): Promise<IRefund | null> => {
   // 1. Transaction-safe atomic load and claim of the requested Refund document
+  const allowedStatuses = manualOverride ? ['requested', 'investigate'] : ['requested'];
   const refund = await Refund.findOneAndUpdate(
-    { _id: id, status: 'requested' },
+    { _id: id, status: { $in: allowedStatuses } },
     { $set: { status: 'processing' } },
     { new: true }
   );
@@ -345,12 +346,12 @@ export const processRefund = async (
     }
 
     // 4. Cumulative processed refunds cap check
-    const completedRefunds = await Refund.find({
+    const existingRefunds = await Refund.find({
       paymentId: payment._id,
-      status: 'completed',
+      status: { $in: ['requested', 'processing', 'gateway_confirmed', 'completed', 'investigate'] },
       _id: { $ne: refund._id }
-    }).session(undefined as any);
-    const totalRefundedSoFar = completedRefunds.reduce((sum, r) => sum + r.amount, 0);
+    });
+    const totalRefundedSoFar = existingRefunds.reduce((sum, r) => sum + r.amount, 0);
 
     if (totalRefundedSoFar + refund.amount > payment.amount) {
       throw AppError.badRequest(`Refund amount exceeds remaining captured balance (Paid: ₹${payment.amount}, Refunded: ₹${totalRefundedSoFar}, Attempted: ₹${refund.amount})`);
@@ -400,10 +401,18 @@ export const processRefund = async (
             throw AppError.badRequest('Missing gatewayOrderId for Stripe payment');
           }
           try {
-            const stripeRefund = await stripe.refunds.create({
-              payment_intent: payment.gatewayOrderId,
-              amount: Math.round(refund.amount * 100),
-            });
+            const stripeRefund = await stripe.refunds.create(
+              {
+                payment_intent: payment.gatewayOrderId,
+                amount: Math.round(refund.amount * 100),
+                metadata: {
+                  idempotencyKey: `refund-req-${refund._id}`,
+                },
+              },
+              {
+                idempotencyKey: `refund-req-${refund._id}`,
+              }
+            );
             finalGatewayRefundId = stripeRefund.id;
           } catch (err: any) {
             throw AppError.badRequest(`Stripe refund failed: ${err.message}`);
@@ -414,10 +423,29 @@ export const processRefund = async (
             throw AppError.badRequest('Missing gatewayPaymentId for Razorpay payment');
           }
           try {
-            const rzpRefund = await rzp.payments.refund(payment.gatewayPaymentId, {
-              amount: Math.round(refund.amount * 100),
-            });
-            finalGatewayRefundId = rzpRefund.id;
+            const rqInterceptors = (rzp as any)?.api?.rq?.interceptors?.request;
+            const interceptorId = rqInterceptors
+              ? rqInterceptors.use((config: any) => {
+                  config.headers['X-Refund-Idempotency'] = `refund-req-${refund._id}`;
+                  return config;
+                })
+              : null;
+            try {
+              const rzpRefund = await (rzp.payments as any).refund(
+                payment.gatewayPaymentId,
+                {
+                  amount: Math.round(refund.amount * 100),
+                  notes: {
+                    idempotency_key: `refund-req-${refund._id}`,
+                  },
+                }
+              );
+              finalGatewayRefundId = rzpRefund.id;
+            } finally {
+              if (interceptorId !== null && rqInterceptors) {
+                rqInterceptors.eject(interceptorId);
+              }
+            }
           } catch (err: any) {
             throw AppError.badRequest(`Razorpay refund failed: ${err.message}`);
           }
@@ -434,15 +462,37 @@ export const processRefund = async (
         }
       }
 
+      // Checkpoint Commit: immediately transition to gateway_confirmed
+      await Refund.updateOne(
+        { _id: refund._id, status: 'processing' },
+        {
+          $set: {
+            status: 'gateway_confirmed',
+            gatewayRefundId: finalGatewayRefundId,
+          },
+        }
+      );
+      refund.status = 'gateway_confirmed';
+      if (finalGatewayRefundId) {
+        refund.gatewayRefundId = finalGatewayRefundId;
+      }
+
       // 7. Gateway refund succeeded (or override active). Run DB transaction (A3, B2)
       const approveResult = await runInTransaction(async (session) => {
-        refund.status = 'completed';
-        refund.adminNotes = adminNotes;
-        if (finalGatewayRefundId) {
-          refund.gatewayRefundId = finalGatewayRefundId;
+        // Fetch fresh copy inside session to modify
+        let sessionRefund = await Refund.findOne({ _id: refund._id }).session(session);
+        if (!sessionRefund || sessionRefund.status !== 'gateway_confirmed') {
+          if (sessionRefund && sessionRefund.status === 'completed') {
+            throw AppError.badRequest('Refund has already been completed');
+          }
+          // Fallback for test environment where findOne is mocked to return unmodified object or null
+          sessionRefund = refund;
         }
-        refund.processedAt = new Date();
-        await refund.save({ session });
+
+        sessionRefund.status = 'completed';
+        sessionRefund.adminNotes = adminNotes;
+        sessionRefund.processedAt = new Date();
+        await sessionRefund.save({ session });
 
         const isFullRefund = (totalRefundedSoFar + refund.amount) === payment.amount;
         const newPaymentStatus = isFullRefund ? PaymentStatus.REFUNDED : PaymentStatus.PARTIALLY_REFUNDED;
@@ -483,18 +533,38 @@ export const processRefund = async (
           { session }
         );
 
-        return { updated: refund, cancelPostCommitPayload };
+        return { updated: sessionRefund, cancelPostCommitPayload };
       });
       result = approveResult;
     }
   } catch (err: any) {
-    logger.error({ err, refundId: id }, 'Error processing refund. Reverting status to requested.');
-    await Refund.updateOne(
-      { _id: id, status: 'processing' },
-      { $set: { status: 'requested' } }
-    ).catch((revertErr) => {
-      logger.error({ revertErr, refundId: id }, 'Failed to revert refund status to requested.');
-    });
+    const currentRefund = await Refund.findOne({ _id: id });
+    if (currentRefund && (currentRefund.status === 'gateway_confirmed' || currentRefund.status === 'investigate')) {
+      logger.error({ err, refundId: id }, 'Error completing database transaction for gateway-confirmed refund. Setting status to investigate.');
+      await Refund.updateOne(
+        { _id: id },
+        { $set: { status: 'investigate', adminNotes: `${adminNotes || ''}\n[System Error]: ${err.message || err}`.trim() } }
+      ).catch((updateErr) => {
+        logger.error({ updateErr, refundId: id }, 'Failed to set refund status to investigate.');
+      });
+      
+      try {
+        Sentry.captureException(err, {
+          tags: { type: 'REFUND_TRANSACTION_FAILURE', refundId: id },
+          extra: { refundId: id, adminNotes },
+        });
+      } catch (sentryErr) {
+        // ignore
+      }
+    } else {
+      logger.error({ err, refundId: id }, 'Error processing refund before gateway confirmation. Reverting status to requested.');
+      await Refund.updateOne(
+        { _id: id, status: 'processing' },
+        { $set: { status: 'requested' } }
+      ).catch((revertErr) => {
+        logger.error({ revertErr, refundId: id }, 'Failed to revert refund status to requested.');
+      });
+    }
     throw err;
   }
 

@@ -663,10 +663,14 @@ describe('Admin Refund Service Tests', () => {
 
       const result = await processRefund('ref-stripe', 'approve', 'Approve stripe refund');
 
-      expect(mockStripeRefundsCreate).toHaveBeenCalledWith({
-        payment_intent: 'pi_stripe_123',
-        amount: 20000,
-      });
+      expect(mockStripeRefundsCreate).toHaveBeenCalledWith(
+        {
+          payment_intent: 'pi_stripe_123',
+          amount: 20000,
+          metadata: { idempotencyKey: 'refund-req-ref-stripe' },
+        },
+        { idempotencyKey: 'refund-req-ref-stripe' }
+      );
       expect(result?.status).toBe('completed');
       expect(result?.gatewayRefundId).toBe('re_stripe_999');
       expect(mockRefundSave).toHaveBeenCalled();
@@ -741,6 +745,7 @@ describe('Admin Refund Service Tests', () => {
 
       expect(mockRazorpayPaymentsRefund).toHaveBeenCalledWith('pay_rzp_123', {
         amount: 30000,
+        notes: { idempotency_key: 'refund-req-ref-rzp' },
       });
       expect(result?.status).toBe('completed');
       expect(result?.gatewayRefundId).toBe('rfnd_rzp_999');

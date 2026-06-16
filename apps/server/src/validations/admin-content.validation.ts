@@ -163,6 +163,12 @@ export const processRefundSchema = z.object({
   }).strict(),
 });
 
+export const adminRefundsQuerySchema = z.object({
+  page: z.coerce.number().int().positive().max(100).default(1),
+  limit: z.coerce.number().int().positive().max(100).default(15),
+  status: z.enum(['requested', 'processing', 'gateway_confirmed', 'completed', 'failed', 'rejected', 'investigate']).optional(),
+}).strict();
+
 // -- Scanner Validation --
 const scannerReferenceSchema = z
   .string()

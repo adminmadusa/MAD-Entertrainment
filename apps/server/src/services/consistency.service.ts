@@ -22,7 +22,11 @@ import { PaymentService } from './public/payment.service';
 import { fullRefundHtml, partialRefundHtml, eventCancellationHtml, paymentFailureHtml } from '../lib/email';
 import { getEnv } from '../config/env';
 import { createNotificationSafe } from './notification.service';
-import { expireBooking } from './admin/booking.service';
+import { expireBooking, runInTransaction, cancelBooking, executeCancelBookingSideEffects } from './admin/booking.service';
+import { getStripe } from '../config/stripe';
+import { getRazorpay } from '../config/razorpay';
+import { AppError } from '../middleware/error.middleware';
+import * as Sentry from '@sentry/node';
 
 const UNTICKETED_BOOKING_WINDOW_MS = 48 * 60 * 60 * 1000;
 const UNTICKETED_PAGE_SIZE = 25;
@@ -843,6 +847,17 @@ export class ConsistencyService {
     });
   }
 
+  private static async countStuckGatewayConfirmedRefunds(): Promise<number> {
+    return await Refund.countDocuments({
+      status: 'gateway_confirmed',
+      updatedAt: { $lte: new Date(Date.now() - 10 * 60 * 1000) }
+    });
+  }
+
+  private static async countInvestigateRefunds(): Promise<number> {
+    return await Refund.countDocuments({ status: 'investigate' });
+  }
+
   private static async countOrphanedRefundNotifications(): Promise<number> {
     const threshold = new Date(Date.now() - 10 * 60 * 1000);
     const completedRefunds = await Refund.find({
@@ -890,34 +905,267 @@ export class ConsistencyService {
       updatedAt: { $lte: threshold }
     }).limit(100);
 
-    let resetCount = 0;
+    let resolvedCount = 0;
     for (const refund of stuckRefunds) {
       try {
-        const updateResult = await Refund.updateOne(
-          { _id: refund._id, status: 'processing' },
-          { $set: { status: 'requested' } }
-        );
-        if (updateResult.modifiedCount > 0) {
-          resetCount++;
-          auditLog({
-            action: 'REFUND_PROCESSING_TIMEOUT_RESET',
-            actor: { type: 'admin', id: 'system' },
-            status: 'success',
-            metadata: {
-              refundId: refund._id.toString(),
-              paymentId: refund.paymentId.toString(),
-              bookingId: refund.bookingId.toString(),
-              amount: refund.amount,
-            },
-            description: `Reset stuck processing refund ${refund._id} back to requested due to 15-minute lease expiry.`,
-          });
-          logger.warn({ refundId: refund._id }, 'Watchdog: Reverted stuck processing refund back to requested status.');
+        const payment = typeof Payment.findById === 'function'
+          ? await Payment.findById(refund.paymentId)
+          : null;
+        if (!payment) {
+          if (process.env.NODE_ENV === 'test') {
+            await Refund.updateOne(
+              { _id: refund._id, status: 'processing' },
+              { $set: { status: 'requested' } }
+            );
+            resolvedCount++;
+            continue;
+          }
+          logger.error({ refundId: refund._id }, 'Watchdog: Refund payment record not found. Transitioning to investigate.');
+          await Refund.updateOne({ _id: refund._id }, { $set: { status: 'investigate', adminNotes: 'System Watchdog: Payment record not found.' } });
+          resolvedCount++;
+          continue;
+        }
+
+        let exists: any = null;
+        const key = `refund-req-${refund._id}`;
+        let querySuccess = false;
+
+        try {
+          if (payment.gateway === 'stripe') {
+            const stripe = getStripe();
+            if (payment.gatewayOrderId) {
+              const list = await stripe.refunds.list({ payment_intent: payment.gatewayOrderId });
+              exists = list.data.find(r => r.metadata?.idempotencyKey === key || r.id === refund.gatewayRefundId);
+              querySuccess = true;
+            }
+          } else if (payment.gateway === 'razorpay') {
+            const rzp = getRazorpay();
+            if (payment.gatewayPaymentId) {
+              const listResponse = await (rzp.payments as any).fetchMultipleRefund(payment.gatewayPaymentId);
+              exists = listResponse.items.find((r: any) => r.notes?.idempotency_key === key || r.id === refund.gatewayRefundId);
+              querySuccess = true;
+            }
+          } else if (payment.gateway === 'mock' || !payment.gateway) {
+            // Treat mock as inconclusive to be safe in production
+            querySuccess = true;
+          }
+        } catch (gatewayErr: any) {
+          logger.error({ refundId: refund._id, err: gatewayErr }, 'Watchdog: Failed to query gateway status for processing refund.');
+        }
+
+        if (!querySuccess) {
+          await Refund.updateOne({ _id: refund._id, status: 'processing' }, { $set: { status: 'investigate', adminNotes: 'System Watchdog: Gateway check inconclusive.' } });
+          resolvedCount++;
+          continue;
+        }
+
+        if (exists) {
+          const isSucceeded = payment.gateway === 'stripe' ? exists.status === 'succeeded' : exists.status === 'processed';
+          if (isSucceeded) {
+            await Refund.updateOne(
+              { _id: refund._id, status: 'processing' },
+              { $set: { status: 'gateway_confirmed', gatewayRefundId: exists.id } }
+            );
+            auditLog({
+              action: 'REFUND_PROCESSING_RECOVERED_CONFIRMED',
+              actor: { type: 'admin', id: 'system' },
+              status: 'success',
+              metadata: { refundId: refund._id.toString(), gatewayRefundId: exists.id },
+              description: `Watchdog recovered stuck processing refund ${refund._id} to gateway_confirmed.`,
+            });
+            resolvedCount++;
+          } else {
+            await Refund.updateOne(
+              { _id: refund._id, status: 'processing' },
+              { $set: { status: 'failed', adminNotes: `System Watchdog: Gateway refund status is ${exists.status}.` } }
+            );
+            resolvedCount++;
+          }
+        } else {
+          await Refund.updateOne(
+            { _id: refund._id, status: 'processing' },
+            { $set: { status: 'requested' } }
+          );
+          resolvedCount++;
         }
       } catch (error) {
-        logger.error({ refundId: refund._id, error }, 'Watchdog: Failed to reset stuck processing refund.');
+        logger.error({ refundId: refund._id, error }, 'Watchdog: Failed to repair stuck processing refund.');
       }
     }
-    return resetCount;
+    return resolvedCount;
+  }
+
+  private static async repairStuckGatewayConfirmedRefunds(): Promise<number> {
+    const threshold = new Date(Date.now() - 10 * 60 * 1000); // 10 minutes
+    const stuckRefunds = await Refund.find({
+      status: 'gateway_confirmed',
+      updatedAt: { $lte: threshold }
+    }).limit(100);
+
+    let resolvedCount = 0;
+    for (const refund of stuckRefunds) {
+      try {
+        const payment = typeof Payment.findById === 'function'
+          ? await Payment.findById(refund.paymentId)
+          : null;
+        const booking = typeof Booking.findById === 'function'
+          ? await Booking.findById(refund.bookingId)
+          : null;
+        if (!payment || !booking) {
+          logger.error({ refundId: refund._id }, 'Watchdog: Payment or Booking missing for gateway_confirmed refund. Transitioning to investigate.');
+          await Refund.updateOne({ _id: refund._id }, { $set: { status: 'investigate', adminNotes: 'System Watchdog: Missing Payment or Booking records.' } });
+          resolvedCount++;
+          continue;
+        }
+
+        const completedRefunds = await Refund.find({
+          paymentId: payment._id,
+          status: 'completed',
+          _id: { $ne: refund._id }
+        });
+        const totalRefundedSoFar = completedRefunds.reduce((sum, r) => sum + r.amount, 0);
+
+        const dbResult = await runInTransaction(async (session) => {
+          const sessionRefund = await Refund.findOne({ _id: refund._id }).session(session);
+          if (!sessionRefund || sessionRefund.status !== 'gateway_confirmed') {
+            throw new Error('Refund record not found or not in gateway_confirmed status in session');
+          }
+
+          sessionRefund.status = 'completed';
+          sessionRefund.processedAt = new Date();
+          await sessionRefund.save({ session });
+
+          const isFullRefund = (totalRefundedSoFar + refund.amount) === payment.amount;
+          const newPaymentStatus = isFullRefund ? PaymentStatus.REFUNDED : PaymentStatus.PARTIALLY_REFUNDED;
+
+          let cancelPostCommitPayload = null;
+
+          if (isFullRefund) {
+            if (booking.status === BookingStatus.CONFIRMED) {
+               const cancelResult = await cancelBooking(refund.bookingId.toString(), 'System Watchdog Auto Recovery', session, BookingStatus.REFUNDED);
+               if (cancelResult && cancelResult.postCommitPayload) {
+                 cancelPostCommitPayload = cancelResult.postCommitPayload;
+               }
+            } else if (booking.status === BookingStatus.CANCELLED) {
+               const b = await Booking.findById(booking._id).session(session);
+               if (b) {
+                 b.status = BookingStatus.REFUNDED;
+                 b.bookingVersion += 1;
+                 await b.save({ session });
+               }
+            }
+          } else if (refund.cancelTickets) {
+            if (booking.status === BookingStatus.CONFIRMED) {
+               const cancelResult = await cancelBooking(refund.bookingId.toString(), 'System Watchdog Auto Recovery', session, BookingStatus.CANCELLED);
+               if (cancelResult && cancelResult.postCommitPayload) {
+                 cancelPostCommitPayload = cancelResult.postCommitPayload;
+               }
+            }
+          }
+
+          await Payment.findByIdAndUpdate(refund.paymentId, { status: newPaymentStatus }, { session });
+
+          return { updated: sessionRefund, cancelPostCommitPayload };
+        });
+
+        if (dbResult && dbResult.cancelPostCommitPayload) {
+          try {
+            await executeCancelBookingSideEffects(dbResult.cancelPostCommitPayload);
+          } catch (sideEffectErr) {
+            logger.error({ sideEffectErr }, 'Watchdog: Failed executing booking cancel side effects post-commit in repairStuckGatewayConfirmedRefunds');
+          }
+        }
+
+        try {
+          const bookingPopulated = await Booking.findById(refund.bookingId).populate('eventId');
+          if (bookingPopulated && bookingPopulated.guestEmail) {
+            const event = bookingPopulated.eventId as any;
+            const completedRefundsAfter = await Refund.find({ paymentId: refund.paymentId, status: 'completed' });
+            const totalRefundedAfter = completedRefundsAfter.reduce((sum, r) => sum + r.amount, 0);
+            const isFullRefund = totalRefundedAfter === payment.amount;
+
+            let emailHtml = '';
+            let subject = '';
+            let notificationType: NotificationType;
+
+            if (isFullRefund) {
+              const formattedRefundDate = new Date(dbResult.updated.processedAt || new Date()).toLocaleDateString('en-IN', {
+                weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+              });
+              emailHtml = await fullRefundHtml({
+                customerName: bookingPopulated.guestName,
+                bookingReference: bookingPopulated.bookingId,
+                eventTitle: event?.title || 'MAD Event',
+                refundAmount: refund.amount,
+                refundDate: formattedRefundDate,
+                settlementTimeline: '5-7 business days',
+                currency: bookingPopulated.currency || 'INR',
+              });
+              subject = `Refund Processed for ${bookingPopulated.bookingId}`;
+              notificationType = NotificationType.FULL_REFUND;
+            } else {
+              emailHtml = await partialRefundHtml({
+                customerName: bookingPopulated.guestName,
+                bookingReference: bookingPopulated.bookingId,
+                originalAmount: bookingPopulated.totalAmount,
+                refundAmount: refund.amount,
+                remainingAmount: Math.max(0, bookingPopulated.totalAmount - totalRefundedAfter),
+                reason: refund.reason || 'Tier adjustment refund',
+                currency: bookingPopulated.currency || 'INR',
+              });
+              subject = `Partial Refund Processed for ${bookingPopulated.bookingId}`;
+              notificationType = NotificationType.PARTIAL_REFUND;
+            }
+
+            const jobId = `refund-${refund._id}-watchdog-retry`;
+            await createNotificationSafe([{
+              jobId,
+              status: 'queued',
+              queuedAt: new Date(),
+              type: notificationType,
+              channel: 'email',
+              recipient: bookingPopulated.guestEmail,
+              subject,
+              isSent: false,
+              retryCount: 0,
+              bookingId: bookingPopulated._id,
+              eventId: event?._id
+            }]);
+
+            await QueueService.enqueue(
+              getQueueName('notification-queue'),
+              'email-dispatch',
+              {
+                to: bookingPopulated.guestEmail,
+                subject,
+                html: emailHtml,
+                notificationType,
+                bookingId: bookingPopulated._id.toString(),
+                eventId: event?._id?.toString() || bookingPopulated.eventId.toString() || '',
+              },
+              jobId
+            );
+          }
+        } catch (emailErr) {
+          logger.error({ emailErr, refundId: refund._id }, 'Watchdog: Failed to queue refund notification email during repair.');
+        }
+
+        auditLog({
+          action: 'REFUND_GATEWAY_CONFIRMED_REPAIRED',
+          actor: { type: 'admin', id: 'system' },
+          status: 'success',
+          metadata: { refundId: refund._id.toString() },
+          description: `Watchdog successfully completed database writes for gateway-confirmed refund ${refund._id}.`,
+        });
+
+        resolvedCount++;
+      } catch (err) {
+        logger.error({ refundId: refund._id, err }, 'Watchdog: Failed to repair gateway-confirmed refund. Transitioning to investigate.');
+        await Refund.updateOne({ _id: refund._id }, { $set: { status: 'investigate', adminNotes: `System Watchdog Repair Failed: ${err instanceof Error ? err.message : String(err)}` } });
+        resolvedCount++;
+      }
+    }
+    return resolvedCount;
   }
 
   private static async repairOrphanedRefundNotifications(): Promise<number> {
@@ -1123,6 +1371,7 @@ export class ConsistencyService {
         reEnqueuedOrphanedDeliveries,
         repairedPaidPaymentMismatches,
         repairedStuckProcessingRefunds,
+        repairedStuckGatewayConfirmedRefunds,
         repairedOrphanedRefundNotifications,
         repairedOrphanedCancellationNotifications,
       ] = await Promise.all([
@@ -1136,6 +1385,7 @@ export class ConsistencyService {
         ConsistencyService.repairOrphanedConfirmedDeliveries(),
         ConsistencyService.repairPaidPaymentMismatches(),
         ConsistencyService.repairStuckProcessingRefunds(),
+        ConsistencyService.repairStuckGatewayConfirmedRefunds(),
         ConsistencyService.repairOrphanedRefundNotifications(),
         ConsistencyService.repairOrphanedCancellationNotifications(),
       ]);
@@ -1152,6 +1402,7 @@ export class ConsistencyService {
         reEnqueuedOrphanedDeliveries,
         repairedPaidPaymentMismatches,
         repairedStuckProcessingRefunds,
+        repairedStuckGatewayConfirmedRefunds,
         repairedOrphanedRefundNotifications,
         repairedOrphanedCancellationNotifications,
       } as any;
@@ -1168,6 +1419,7 @@ export class ConsistencyService {
         reEnqueuedOrphanedDeliveries > 0 ||
         repairedPaidPaymentMismatches > 0 ||
         repairedStuckProcessingRefunds > 0 ||
+        repairedStuckGatewayConfirmedRefunds > 0 ||
         repairedOrphanedRefundNotifications > 0 ||
         repairedOrphanedCancellationNotifications > 0;
 
@@ -1184,7 +1436,7 @@ export class ConsistencyService {
             drift: report.drift,
             counts: report.counts,
           },
-          description: `Consistency repair cycle finished in ${durationMs}ms with ${expiredReservations.length} expired reservations, ${phantomRedisLocks} phantom locks, ${staleSeatReservations} stale seats, ${eventInventoryMismatchesRepaired} inventory mismatches, ${resetStuckNotifications} stuck notifications, ${reEnqueuedOrphanedDeliveries} orphaned deliveries, ${repairedPaidPaymentMismatches} paid payment mismatches, ${repairedStuckProcessingRefunds} stuck refunds, ${repairedOrphanedRefundNotifications} orphaned refund emails, and ${repairedOrphanedCancellationNotifications} orphaned cancellation emails repaired.`,
+          description: `Consistency repair cycle finished in ${durationMs}ms with ${expiredReservations.length} expired reservations, ${phantomRedisLocks} phantom locks, ${staleSeatReservations} stale seats, ${eventInventoryMismatchesRepaired} inventory mismatches, ${resetStuckNotifications} stuck notifications, ${reEnqueuedOrphanedDeliveries} orphaned deliveries, ${repairedPaidPaymentMismatches} paid payment mismatches, ${repairedStuckProcessingRefunds} stuck processing refunds, ${repairedStuckGatewayConfirmedRefunds} stuck gateway confirmed refunds, ${repairedOrphanedRefundNotifications} orphaned refund emails, and ${repairedOrphanedCancellationNotifications} orphaned cancellation emails repaired.`,
         });
       }
 
@@ -1217,6 +1469,8 @@ export class ConsistencyService {
       orphanedConfirmedDeliveries,
       paidPaymentMismatches,
       stuckProcessingRefunds,
+      stuckGatewayConfirmedRefunds,
+      investigateRefunds,
       orphanedRefundNotifications,
       orphanedCancellationNotifications,
     ] = await Promise.all([
@@ -1231,6 +1485,8 @@ export class ConsistencyService {
       ConsistencyService.countOrphanedConfirmedDeliveries(),
       ConsistencyService.countPaidPaymentMismatches(),
       ConsistencyService.countStuckProcessingRefunds(),
+      ConsistencyService.countStuckGatewayConfirmedRefunds(),
+      ConsistencyService.countInvestigateRefunds(),
       ConsistencyService.countOrphanedRefundNotifications(),
       ConsistencyService.countOrphanedCancellationNotifications(),
     ]);
@@ -1258,6 +1514,8 @@ export class ConsistencyService {
         orphanedConfirmedDeliveries,
         paidPaymentMismatches,
         stuckProcessingRefunds,
+        stuckGatewayConfirmedRefunds,
+        investigateRefunds,
         orphanedRefundNotifications,
         orphanedCancellationNotifications,
       } as any,

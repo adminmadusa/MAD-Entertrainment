@@ -16,9 +16,7 @@ export const createRefund = async (req: Request, res: Response, next: NextFuncti
 
 export const getRefunds = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const page = parseInt(req.query.page as string) || 1;
-    const limit = parseInt(req.query.limit as string) || 15;
-    const status = req.query.status as string;
+    const { page, limit, status } = req.query as any;
 
     const result = await refundService.getRefunds(page, limit, status);
     res.status(200).json({

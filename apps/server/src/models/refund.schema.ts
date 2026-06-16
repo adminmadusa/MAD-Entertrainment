@@ -6,7 +6,7 @@ export interface IRefund extends Document {
   amount: number;
   currency: string;
   reason?: string;
-  status: 'requested' | 'processing' | 'completed' | 'failed';
+  status: 'requested' | 'processing' | 'gateway_confirmed' | 'completed' | 'failed' | 'rejected' | 'investigate';
   adminNotes?: string;
   gatewayRefundId?: string;
   idempotencyKey?: string;
@@ -27,13 +27,13 @@ const refundSchema = new Schema<IRefund>(
     reason: String,
     status: {
       type: String,
-      enum: ['requested', 'processing', 'completed', 'failed'],
+      enum: ['requested', 'processing', 'gateway_confirmed', 'completed', 'failed', 'rejected', 'investigate'],
       default: 'requested',
       index: true,
     },
     adminNotes: String,
     gatewayRefundId: String,
-    idempotencyKey: { type: String, index: true },
+    idempotencyKey: { type: String },
     processedAt: Date,
     origin: {
       type: String,

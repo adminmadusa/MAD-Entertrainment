@@ -2,8 +2,8 @@ import { Router } from 'express';
 import { AdminRole } from '@mad/shared';
 import * as refundController from '../../controllers/admin/refund.controller';
 import { requireAdmin, requireRole } from '../../middleware/auth.middleware';
-import { validate } from '../../middleware/validation.middleware';
-import { createRefundSchema, processRefundSchema } from '../../validations/admin-content.validation';
+import { validate, validateQuery } from '../../middleware/validation.middleware';
+import { createRefundSchema, processRefundSchema, adminRefundsQuerySchema } from '../../validations/admin-content.validation';
 
 const router: Router = Router();
 
@@ -11,7 +11,7 @@ const router: Router = Router();
 router.use(requireAdmin);
 
 router.post('/', requireRole(AdminRole.SUPER_ADMIN, AdminRole.ADMIN), validate(createRefundSchema), refundController.createRefund);
-router.get('/', requireRole(AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.SUPPORT), refundController.getRefunds);
+router.get('/', requireRole(AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.SUPPORT), validateQuery(adminRefundsQuerySchema), refundController.getRefunds);
 router.patch('/:id/process', requireRole(AdminRole.SUPER_ADMIN, AdminRole.ADMIN), validate(processRefundSchema), refundController.processRefund);
 
 export default router;
