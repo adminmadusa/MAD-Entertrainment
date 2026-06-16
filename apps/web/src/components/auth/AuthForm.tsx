@@ -13,6 +13,10 @@ import {
 } from '@/lib/api/public.service';
 import { useAuth } from '@/providers/AuthProvider';
 import { loadScriptOnce } from '@/lib/utils/load-script-once';
+import {
+  initializeGoogleIdentity,
+  setGoogleIdentityCallback,
+} from '@/utils/google-identity';
 import { AuthResponse, VerificationCodeRequestResponse, AuthUser } from '@/types/auth';
 import { Button } from '@mad/ui';
 
@@ -265,7 +269,6 @@ export function AuthForm({
 
   // Google GSI reference markers to prevent concurrent initializations
   const googleCallbackRef = useRef<(response: GoogleCredentialResponse) => void>(() => {});
-  const isInitializedRef = useRef(false);
 
   const startTimer = useCallback(() => {
     setResendTimer(60);
@@ -394,19 +397,22 @@ export function AuthForm({
     googleCallbackRef.current(response);
   }, []);
 
+  // Sync the local callback with the global Google Identity singleton router
+  useEffect(() => {
+    setGoogleIdentityCallback(handleGoogleCredentialResponse);
+    return () => {
+      setGoogleIdentityCallback(null);
+    };
+  }, [handleGoogleCredentialResponse]);
+
   const initializeGoogleSignIn = useCallback(() => {
     const googleObj = (window as unknown as { google?: GoogleIdentity }).google;
     const btnElement = document.getElementById('google-signin-btn-shared');
     if (typeof window !== 'undefined' && googleObj) {
       try {
-        if (!isInitializedRef.current) {
-          googleObj.accounts.id.initialize({
-            client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || 'google_client_id_placeholder',
-            callback: handleGoogleCredentialResponse,
-            auto_select: false,
-          });
-          isInitializedRef.current = true;
-        }
+        initializeGoogleIdentity(
+          process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || 'google_client_id_placeholder'
+        );
 
         if (btnElement && btnElement.innerHTML === '') {
           googleObj.accounts.id.renderButton(btnElement, {
@@ -421,7 +427,7 @@ export function AuthForm({
         console.error('Failed to initialize Google login button:', err);
       }
     }
-  }, [handleGoogleCredentialResponse, mode]);
+  }, [mode]);
 
   useEffect(() => {
     let active = true;
