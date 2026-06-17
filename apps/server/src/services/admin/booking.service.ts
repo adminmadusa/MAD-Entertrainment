@@ -913,7 +913,7 @@ export const resendBookingTickets = async (id: string, adminId: string) => {
       isResend: true,
       resendId,
     },
-    `pdf:generate:${booking._id}:admin-resend:${resendId}`
+    `pdf-generate-${booking._id}-admin-resend-${resendId}`
   );
 
   auditLog({

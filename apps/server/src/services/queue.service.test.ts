@@ -92,9 +92,30 @@ describe('Queue Service', () => {
       expect(lastQueueInstance).toBeNull();
     });
 
-    it('should throw an error immediately if BullMQ enqueue fails with exception (Fail-Fast)', async () => {
+    it('should throw the original error if BullMQ enqueue fails while Redis is active', async () => {
       redisConnectedState = true;
       queueShouldThrow = true;
+
+      const payload = { email: 'test@example.com' };
+      
+      await expect(
+        QueueService.enqueue('notification-queue', 'email:send', payload, 'email-id')
+      ).rejects.toThrow('Redis connection lost');
+    });
+
+    it('should throw Redis offline error if BullMQ enqueue fails and Redis goes offline mid-flight', async () => {
+      // Enqueue a dummy job to initialize lastQueueInstance
+      redisConnectedState = true;
+      queueShouldThrow = false;
+      await QueueService.enqueue('notification-queue', 'email:send', {});
+
+      queueShouldThrow = true;
+
+      // Simulate Redis going offline during add()
+      vi.spyOn(lastQueueInstance, 'add').mockImplementationOnce(async () => {
+        redisConnectedState = false; // Redis goes offline mid-flight
+        throw new Error('Redis connection lost');
+      });
 
       const payload = { email: 'test@example.com' };
       

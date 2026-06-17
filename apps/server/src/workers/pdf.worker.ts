@@ -32,8 +32,8 @@ export async function processPDFGenerate(
   }
 
   const jobId = isResend && resendId
-    ? `email:dispatch:${booking._id}:resend:${resendId}`
-    : `email:dispatch:${booking._id}`;
+    ? `email-dispatch-${booking._id}-resend-${resendId}`
+    : `email-dispatch-${booking._id}`;
 
   // Read-only early exit to prevent generating PDF if already successfully sent
   const existingNotification = await Notification.findOne({ jobId });
