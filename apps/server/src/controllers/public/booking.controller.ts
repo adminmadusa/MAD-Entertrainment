@@ -10,6 +10,7 @@ import { auditLog } from '../../utils/audit';
 import { generateTicketPDF } from '../../utils/pdf';
 import { QueueService } from '../../services/queue.service';
 import { getQueueName } from '../../config/queue.config';
+import { CacheService } from '../../services/cache.service';
 
 // ─────────────────────────────────────────────
 // Issue Guest Session Token
@@ -222,16 +223,99 @@ export async function downloadBookingPDF(
 ): Promise<void> {
   try {
     const { bookingId } = req.params;
+    const token = req.query?.token as string;
+
+    let booking: any;
+
+    if (token) {
+      const cacheKey = `otd:${token}`;
+      const tokenData = await CacheService.get<{ bookingId: string }>(cacheKey);
+      if (!tokenData) {
+        throw AppError.unauthorized('Invalid or expired download token');
+      }
+
+      // Immediately invalidate the token (single-use)
+      await CacheService.del(cacheKey);
+
+      const result = await PublicBookingService.getBookingByReference(tokenData.bookingId);
+      if (!result) {
+        throw AppError.notFound('Booking not found');
+      }
+
+      booking = result.booking;
+
+      // Safety check: ensure requested bookingId matches token payload
+      const actualBookingId = booking.bookingId;
+      const actualIdStr = booking._id.toString();
+      if (bookingId !== actualBookingId && bookingId !== actualIdStr) {
+        throw AppError.forbidden('Invalid download request parameters');
+      }
+    } else {
+      const reqUserId = req.user?.sub;
+      const reqSessionId = req.session?.sessionId || undefined;
+
+      const result = await PublicBookingService.getBookingByReference(bookingId);
+      if (!result) {
+        if (!reqUserId) {
+          const err = AppError.forbidden('Email verification required');
+          err.code = 'BOOKING_VERIFICATION_REQUIRED';
+          throw err;
+        }
+        throw AppError.notFound('Booking not found');
+      }
+
+      booking = result.booking;
+
+      // Logged-in ownership
+      const isUserOwner =
+        !!booking.userId &&
+        !!reqUserId &&
+        booking.userId.toString() === reqUserId;
+
+      // Guest ownership
+      const isGuestOwner =
+        !booking.userId &&
+        !!booking.sessionId &&
+        !!reqSessionId &&
+        booking.sessionId === reqSessionId;
+
+      if (!isUserOwner && !isGuestOwner) {
+        const err = AppError.forbidden(
+          !reqUserId ? 'Email verification required' : 'You do not have access to this booking'
+        );
+        if (!reqUserId) {
+          err.code = 'BOOKING_VERIFICATION_REQUIRED';
+        }
+        throw err;
+      }
+    }
+
+    const pdfBuffer = await generateTicketPDF(booking, booking.eventId);
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="MAD_Ticket_${booking.bookingId}.pdf"`);
+    res.send(pdfBuffer);
+  } catch (err) {
+    next(err);
+  }
+}
+
+// ─────────────────────────────────────────────
+// Generate Download Token (OTD)
+// ─────────────────────────────────────────────
+
+export async function generateDownloadToken(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    const { bookingId } = req.params;
     const reqUserId = req.user?.sub;
     const reqSessionId = req.session?.sessionId || undefined;
 
     const result = await PublicBookingService.getBookingByReference(bookingId);
     if (!result) {
-      if (!reqUserId) {
-        const err = AppError.forbidden('Email verification required');
-        err.code = 'BOOKING_VERIFICATION_REQUIRED';
-        throw err;
-      }
       throw AppError.notFound('Booking not found');
     }
 
@@ -260,11 +344,15 @@ export async function downloadBookingPDF(
       throw err;
     }
 
-    const pdfBuffer = await generateTicketPDF(booking, booking.eventId);
+    const token = crypto.randomUUID();
+    const cacheKey = `otd:${token}`;
+    await CacheService.set(cacheKey, { bookingId: booking._id.toString() }, 60);
 
-    res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `attachment; filename="MAD_Ticket_${booking.bookingId}.pdf"`);
-    res.send(pdfBuffer);
+    sendSuccess(
+      res,
+      { downloadToken: token },
+      'Download token generated successfully'
+    );
   } catch (err) {
     next(err);
   }
