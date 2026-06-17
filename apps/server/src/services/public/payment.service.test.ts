@@ -9,6 +9,7 @@ import { Coupon } from '../../models/coupon.schema';
 import { Event } from '../../models/event.schema';
 import { Reservation } from '../../models/reservation.schema';
 import { SeatLayout } from '../../models/seat-layout.schema';
+import { UserModel } from '../../models/user.schema';
 import { getEnv } from '../../config/env';
 import { getStripe } from '../../config/stripe';
 import { ReservationService } from '../reservation.service';
@@ -107,6 +108,12 @@ vi.mock('../../models/refund.schema', () => ({
   },
 }));
 
+vi.mock('../../models/user.schema', () => ({
+  UserModel: {
+    findOne: vi.fn(),
+  },
+}));
+
 vi.mock('../../models/coupon.schema', () => ({
   Coupon: {
     updateOne: vi.fn(),
@@ -181,10 +188,12 @@ describe('Payment Service', () => {
     vi.mocked(ReservationService.transitionForBooking).mockReset();
     vi.mocked(QueueService.enqueue).mockReset();
     vi.mocked(Payment.findOneAndUpdate).mockReset();
+    vi.mocked(UserModel.findOne).mockReset();
 
     vi.mocked(Reservation.aggregate).mockImplementation(() => createMockQuery([{ total: 0 }]) as any);
     vi.mocked(Refund.findOne).mockImplementation(() => createMockQuery(null) as any);
     vi.mocked(SeatLayout.findOne).mockImplementation(() => createMockQuery(null) as any);
+    vi.mocked(UserModel.findOne).mockImplementation(() => createMockQuery(null) as any);
     vi.mocked(ReservationService.transitionForBooking).mockResolvedValue([]);
     vi.mocked(QueueService.enqueue).mockResolvedValue(undefined as any);
     vi.mocked(Payment.findOneAndUpdate).mockImplementation((query: any, update: any) => {
@@ -1264,6 +1273,70 @@ describe('Payment Service', () => {
       expect(mockBooking.status).toBe(BookingStatus.CONFIRMED);
       expect(mockBooking.userId).toBeUndefined(); // Assert userId remains undefined (guest-owned, sessionId-based)
       expect(Booking.updateOne).not.toHaveBeenCalled(); // No silent updates or user assignments
+    });
+
+    it('should link ownership to registered user if one exists during payment confirmation', async () => {
+      const mockBooking = {
+        _id: 'guest-booking-456',
+        bookingId: 'MAD-2026-LINKOWNER',
+        eventId: 'e-123',
+        status: BookingStatus.AWAITING_PAYMENT,
+        tickets: [{ tier: 'general', quantity: 2 }],
+        guestEmail: 'registered-user@example.com',
+        guestName: 'Registered User',
+        guestPhone: '9876543210',
+        sessionId: 'guest-session-uuid-456',
+        userId: undefined,
+        bookingVersion: 1,
+        save: vi.fn(),
+      };
+
+      const mockPayment = {
+        _id: 'p-guest-456',
+        gatewayOrderId: 'order_guest_456',
+        gatewayPaymentId: 'pay_guest_456',
+        status: PaymentStatus.COMPLETED,
+        amount: 300,
+        currency: 'INR',
+        save: vi.fn(),
+      };
+
+      const mockRegisteredUser = {
+        _id: new mongoose.Types.ObjectId(),
+        email: 'registered-user@example.com',
+      };
+
+      vi.mocked(Payment.findOne).mockResolvedValue(mockPayment as any);
+      vi.mocked(Booking.findById).mockResolvedValue(mockBooking as any);
+      
+      // Mock UserModel.findOne to return the registered user
+      vi.mocked(UserModel.findOne).mockImplementation(() => createMockQuery(mockRegisteredUser) as any);
+      vi.mocked(Booking.findOneAndUpdate).mockResolvedValue(mockBooking as any);
+      vi.mocked(Event.findOneAndUpdate).mockResolvedValue({} as any);
+      vi.mocked(Event.findById).mockResolvedValue({
+        _id: 'e-123',
+        title: 'MAD Event',
+        ticketTiers: [{ tier: 'general', soldCount: 10, totalCapacity: 100, name: 'General' }],
+      } as any);
+
+      const result = await PaymentService.confirmFromWebhook('order_guest_456', 'pay_guest_456', 'payment.captured', 'evt_guest_456');
+
+      expect(result.status).toBe('confirmed');
+      
+      // Assert findOneAndUpdate was called with userId in $set and sessionId in $unset
+      expect(Booking.findOneAndUpdate).toHaveBeenCalledWith(
+        expect.objectContaining({ _id: 'guest-booking-456' }),
+        expect.objectContaining({
+          $set: expect.objectContaining({
+            status: BookingStatus.CONFIRMED,
+            userId: mockRegisteredUser._id,
+          }),
+          $unset: expect.objectContaining({
+            sessionId: 1,
+          }),
+        }),
+        expect.any(Object)
+      );
     });
   });
 

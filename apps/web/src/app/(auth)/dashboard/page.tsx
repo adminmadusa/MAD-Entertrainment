@@ -5,14 +5,13 @@ import type { Booking, Event } from '@mad/types';
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useRef, useState, Suspense } from 'react';
+import { useEffect, useRef, useState, Suspense, useMemo } from 'react';
 
 import { EntryPassGrid } from '@/components/booking/shared/EntryPassGrid';
 import { TicketActions } from '@/components/booking/shared/TicketActions';
-import { extractApiError } from '@/lib/api/client';
+import { apiClient, extractApiError } from '@/lib/api/client';
 import {
   publicGetMyBookings,
-  publicDownloadTicketPDF,
   publicResendTicketEmail,
 } from '@/lib/api/public.service';
 import { useAuth } from '@/providers/AuthProvider';
@@ -47,6 +46,32 @@ const TOP_FAQS = [
   },
 ];
 
+const getEventCategoryStyles = (category?: string) => {
+  const cat = (category || '').toLowerCase();
+  if (cat.includes('music') || cat.includes('concert') || cat.includes('club')) {
+    return {
+      emoji: '🎵',
+      gradient: 'from-purple-900 to-indigo-950 border-purple-500/20'
+    };
+  }
+  if (cat.includes('sport') || cat.includes('game') || cat.includes('match')) {
+    return {
+      emoji: '⚽',
+      gradient: 'from-emerald-900 to-teal-950 border-emerald-500/20'
+    };
+  }
+  if (cat.includes('theater') || cat.includes('comedy') || cat.includes('show') || cat.includes('play')) {
+    return {
+      emoji: '🎭',
+      gradient: 'from-rose-900 to-red-950 border-rose-500/20'
+    };
+  }
+  return {
+    emoji: '🎟️',
+    gradient: 'from-slate-800 to-slate-950 border-slate-700/20'
+  };
+};
+
 type TabType = 'tickets' | 'account' | 'support';
 
 function DashboardContent() {
@@ -57,6 +82,7 @@ function DashboardContent() {
   // Tab and Expand states
   const [activeTab, setActiveTab] = useState<TabType>('tickets');
   const [expandedBookingId, setExpandedBookingId] = useState<string | null>(null);
+  const [activeTicketSubTab, setActiveTicketSubTab] = useState<'upcoming' | 'past' | 'cancelled'>('upcoming');
 
   // Action states
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
@@ -64,6 +90,7 @@ function DashboardContent() {
   const [resendCooldowns, setResendCooldowns] = useState<Record<string, number>>({});
   const [errorMsg, setErrorMsg] = useState('');
   const [infoMsg, setInfoMsg] = useState('');
+  const [refetchIntervalTime, setRefetchIntervalTime] = useState<number | false>(false);
 
   // Auth Redirect check
   useEffect(() => {
@@ -143,10 +170,22 @@ function DashboardContent() {
     queryFn: publicGetMyBookings,
     enabled: isAuthenticated,
     retry: false,
+    refetchInterval: refetchIntervalTime,
   });
 
-  const bookings = bookingsData?.bookings || [];
+  const bookings = useMemo(
+    () => bookingsData?.bookings || [],
+    [bookingsData?.bookings]
+  );
   const tickets = bookingsData?.tickets || [];
+
+  useEffect(() => {
+    const ticketsReadyMap = bookingsData?.ticketsReadyMap || {};
+    const hasPending = bookings.some(
+      (b) => b.status === BookingStatus.CONFIRMED && !ticketsReadyMap[b._id?.toString() ?? '']
+    );
+    setRefetchIntervalTime(hasPending ? 3000 : false);
+  }, [bookings, bookingsData?.ticketsReadyMap]);
 
   const handleDownloadPDF = async (bookingId: string) => {
     try {
@@ -154,17 +193,16 @@ function DashboardContent() {
       setInfoMsg('');
       setDownloadingId(bookingId);
 
-      const blob = await publicDownloadTicketPDF(bookingId);
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `MAD_Ticket_${bookingId}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      window.URL.revokeObjectURL(url);
+      const { data } = await apiClient.post<{ data: { downloadToken: string } }>(
+        `/bookings/${bookingId}/download-token`
+      );
+      const token = data?.data?.downloadToken;
+      if (!token) {
+        throw new Error('Failed to generate download token');
+      }
 
-      setInfoMsg('Ticket PDF downloaded successfully.');
+      const downloadUrl = `${apiClient.defaults.baseURL || ''}/bookings/${bookingId}/download?token=${token}`;
+      window.open(downloadUrl, '_blank');
     } catch (err) {
       const apiErr = extractApiError(err);
       setErrorMsg(apiErr.message || 'Failed to download ticket PDF. Please try again.');
@@ -223,23 +261,103 @@ function DashboardContent() {
       );
     }
 
-    if (bookings.length > 0) {
+    const filteredBookings = bookings.filter((b) => {
+      return b.status !== BookingStatus.FAILED && b.status !== BookingStatus.EXPIRED;
+    });
+
+    if (filteredBookings.length > 0) {
       const now = new Date();
-      const upcomingBookings = bookings.filter((b) => {
+      const upcomingBookings = filteredBookings.filter((b) => {
         const eventInfo = b.eventId as unknown as Partial<Event>;
         const startDate = eventInfo?.startDate ? new Date(eventInfo.startDate) : null;
-        if (b.status !== BookingStatus.CONFIRMED) return false;
+        const isUpcomingStatus = [BookingStatus.CONFIRMED, BookingStatus.PENDING, BookingStatus.AWAITING_PAYMENT].includes(b.status as BookingStatus);
+        if (!isUpcomingStatus) return false;
         if (!startDate) return true;
         return startDate >= now;
       });
 
-      const pastBookings = bookings.filter((b) => {
+      const pastBookings = filteredBookings.filter((b) => {
         const eventInfo = b.eventId as unknown as Partial<Event>;
         const startDate = eventInfo?.startDate ? new Date(eventInfo.startDate) : null;
-        if (b.status !== BookingStatus.CONFIRMED) return true;
+        const isPastStatus = b.status === BookingStatus.CONFIRMED;
+        if (!isPastStatus) return false;
         if (!startDate) return false;
         return startDate < now;
       });
+
+      const cancelledBookings = filteredBookings.filter((b) => {
+        return [BookingStatus.CANCELLED, BookingStatus.REFUNDED].includes(b.status as BookingStatus);
+      });
+
+      let subTabBookings = upcomingBookings;
+      if (activeTicketSubTab === 'past') {
+        subTabBookings = pastBookings;
+      } else if (activeTicketSubTab === 'cancelled') {
+        subTabBookings = cancelledBookings;
+      }
+
+      let emptyMessage = "You don't have any cancelled or refunded bookings.";
+      if (activeTicketSubTab === 'upcoming') {
+        emptyMessage = "You don't have any upcoming event bookings.";
+      } else if (activeTicketSubTab === 'past') {
+        emptyMessage = "You don't have any past event history.";
+      }
+
+      const renderSubTabs = () => {
+        return (
+          <div
+            className="glass p-1.5 rounded-2xl border border-white/5 flex gap-1 overflow-x-auto whitespace-nowrap scrollbar-none w-full mb-6"
+            role="tablist"
+            aria-label="Ticket categories"
+          >
+            <button
+              type="button"
+              role="tab"
+              id="subtab-upcoming"
+              aria-selected={activeTicketSubTab === 'upcoming'}
+              aria-controls="subtab-panel-upcoming"
+              onClick={() => setActiveTicketSubTab('upcoming')}
+              className={`flex-shrink-0 px-5 py-2.5 text-xs font-extrabold rounded-xl transition-all duration-300 min-h-[44px] flex items-center justify-center whitespace-nowrap ${
+                activeTicketSubTab === 'upcoming'
+                  ? 'bg-accent-purple text-white shadow-md'
+                  : 'text-text-secondary hover:text-white hover:bg-white/5'
+              }`}
+            >
+              Upcoming ({upcomingBookings.length})
+            </button>
+            <button
+              type="button"
+              role="tab"
+              id="subtab-past"
+              aria-selected={activeTicketSubTab === 'past'}
+              aria-controls="subtab-panel-past"
+              onClick={() => setActiveTicketSubTab('past')}
+              className={`flex-shrink-0 px-5 py-2.5 text-xs font-extrabold rounded-xl transition-all duration-300 min-h-[44px] flex items-center justify-center whitespace-nowrap ${
+                activeTicketSubTab === 'past'
+                  ? 'bg-accent-purple text-white shadow-md'
+                  : 'text-text-secondary hover:text-white hover:bg-white/5'
+              }`}
+            >
+              Past Events ({pastBookings.length})
+            </button>
+            <button
+              type="button"
+              role="tab"
+              id="subtab-cancelled"
+              aria-selected={activeTicketSubTab === 'cancelled'}
+              aria-controls="subtab-panel-cancelled"
+              onClick={() => setActiveTicketSubTab('cancelled')}
+              className={`flex-shrink-0 px-5 py-2.5 text-xs font-extrabold rounded-xl transition-all duration-300 min-h-[44px] flex items-center justify-center whitespace-nowrap ${
+                activeTicketSubTab === 'cancelled'
+                  ? 'bg-accent-purple text-white shadow-md'
+                  : 'text-text-secondary hover:text-white hover:bg-white/5'
+              }`}
+            >
+              Cancelled & Refunded ({cancelledBookings.length})
+            </button>
+          </div>
+        );
+      };
 
       const renderBookingAccordion = (booking: Booking, isPast = false) => {
         const isExpanded = expandedBookingId === booking.bookingId;
@@ -250,6 +368,8 @@ function DashboardContent() {
           bookingsData?.ticketsReadyMap?.[booking._id?.toString() ?? ''] ?? false;
 
         const eventInfo = booking.eventId as unknown as Partial<Event>;
+        const imageUrl = eventInfo?.bannerImage?.url || eventInfo?.coverImage?.url;
+        const catStyles = getEventCategoryStyles(eventInfo?.category);
 
         return (
           <div
@@ -264,31 +384,62 @@ function DashboardContent() {
             {/* Accordion Header */}
             <button
               type="button"
+              id={`booking-header-${booking.bookingId}`}
               onClick={() => setExpandedBookingId(isExpanded ? null : booking.bookingId)}
-              className="w-full text-left p-5 flex items-center justify-between gap-4 focus:outline-none"
+              aria-expanded={isExpanded}
+              aria-controls={`booking-content-${booking.bookingId}`}
+              className="w-full text-left p-4 sm:p-5 flex items-center justify-between gap-3 sm:gap-4 focus:outline-none min-h-[44px]"
             >
-              <div className="space-y-1 flex-grow">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <h3 className="text-white font-bold text-base sm:text-lg leading-snug">
-                    {eventInfo?.title || 'Booking Details'}
-                  </h3>
-                  {booking.status !== BookingStatus.CONFIRMED && (
-                    <span className="text-[10px] px-2 py-0.5 rounded-full border border-amber-500/30 text-amber-400 bg-amber-500/10 font-bold uppercase tracking-wider">
-                      {booking.status}
-                    </span>
-                  )}
+              <div className="flex items-center gap-3 sm:gap-4 flex-grow min-w-0">
+                {/* Event Thumbnail */}
+                {imageUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={imageUrl}
+                    alt=""
+                    className="w-12 h-12 sm:w-14 sm:h-14 object-cover rounded-xl border border-white/10 flex-shrink-0"
+                  />
+                ) : (
+                  <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-gradient-to-br ${catStyles.gradient} border flex items-center justify-center text-lg sm:text-xl flex-shrink-0 select-none`}>
+                    {catStyles.emoji}
+                  </div>
+                )}
+
+                {/* Left/Center Text */}
+                <div className="space-y-1 min-w-0 flex-grow">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h3 className="text-white font-bold text-sm sm:text-base leading-snug truncate">
+                      {eventInfo?.title || 'Booking Details'}
+                    </h3>
+                    {/* Status Badge */}
+                    {booking.status !== BookingStatus.CONFIRMED && (
+                      <span className={`text-[9px] sm:text-[10px] px-2 py-0.5 rounded-full border font-bold uppercase tracking-wider ${
+                        [BookingStatus.CANCELLED, BookingStatus.REFUNDED].includes(booking.status as BookingStatus)
+                          ? 'border-red-500/30 text-red-400 bg-red-500/10'
+                          : 'border-amber-500/30 text-amber-400 bg-amber-500/10'
+                      }`}>
+                        {booking.status.replace('_', ' ')}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-text-muted text-[11px] sm:text-xs flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                    {eventInfo?.startDate && (
+                      <span>Event Date: {new Date(eventInfo.startDate).toLocaleDateString(undefined, { dateStyle: 'medium' })}</span>
+                    )}
+                    {eventInfo?.venue && (
+                      <span className="truncate max-w-[150px] sm:max-w-none">| {eventInfo.venue}</span>
+                    )}
+                  </p>
                 </div>
-                <p className="text-text-muted text-xs flex flex-wrap gap-x-3 gap-y-1">
-                  {eventInfo?.startDate && (
-                    <span>📅 {new Date(eventInfo.startDate).toLocaleDateString(undefined, { dateStyle: 'medium' })}</span>
-                  )}
-                  <span>🎟️ {booking.totalTickets} Ticket(s)</span>
-                  <span className="font-mono text-[10px] text-text-muted/70">Ref: {booking.bookingId}</span>
-                </p>
               </div>
-              <div className="flex items-center gap-2 shrink-0">
+
+              {/* Right Side: Ticket Count & Chevron */}
+              <div className="flex items-center gap-2 sm:gap-3 shrink-0 ml-2">
+                <span className="text-text-secondary text-xs font-semibold whitespace-nowrap bg-white/5 px-2.5 py-1 rounded-lg">
+                  {booking.totalTickets} {booking.totalTickets === 1 ? 'Pass' : 'Passes'}
+                </span>
                 <span
-                  className="text-text-secondary text-sm transition-transform duration-300"
+                  className="text-text-secondary text-xs transition-transform duration-300 w-6 h-6 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10"
                   style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0)' }}
                 >
                   ▼
@@ -298,89 +449,119 @@ function DashboardContent() {
 
             {/* Accordion Content */}
             {isExpanded && (
-              <div className="px-5 pb-6 pt-2 border-t border-white/5 space-y-5 animate-in fade-in duration-200">
-                {/* Compact Metadata Strip */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 pb-4 border-b border-white/5 text-xs text-text-secondary">
-                  <div>
-                    <span className="text-[10px] text-text-muted uppercase tracking-wider block">Guest</span>
-                    <span className="text-white font-semibold">{booking.guestName}</span>
-                  </div>
-                  {eventInfo?.venue && (
-                    <div>
-                      <span className="text-[10px] text-text-muted uppercase tracking-wider block">Venue</span>
-                      <span className="text-white font-semibold">{eventInfo.venue}</span>
-                    </div>
-                  )}
-                  {eventInfo?.showTime && (
-                    <div>
-                      <span className="text-[10px] text-text-muted uppercase tracking-wider block">Time</span>
-                      <span className="text-white font-semibold">{eventInfo.showTime}</span>
-                    </div>
-                  )}
-                </div>
-
+              <div
+                id={`booking-content-${booking.bookingId}`}
+                role="region"
+                aria-labelledby={`booking-header-${booking.bookingId}`}
+                className="px-4 pb-6 pt-2 sm:px-5 border-t border-white/5 space-y-5 animate-in fade-in duration-200"
+              >
+                {/* 1. Entry Passes — First visible element after expand */}
                 {booking.status === BookingStatus.CONFIRMED ? (
-                  <div className="space-y-4 pt-2 border-t border-border-subtle/30">
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-2">
-                      <h4 className="text-white font-bold text-sm">Entry Passes</h4>
-                      <div className="flex flex-wrap gap-2">
-                        {bookingTicketsReady && (
-                          <TicketActions
-                            downloading={downloadingId === booking.bookingId}
-                            resending={resendingId === booking.bookingId}
-                            cooldown={resendCooldowns[booking.bookingId] || 0}
-                            onDownload={() => handleDownloadPDF(booking.bookingId)}
-                            onResend={() => handleResendTickets(booking.bookingId)}
-                          />
-                        )}
-                      </div>
-                    </div>
-
-                    {!bookingTicketsReady ? (
-                      <div className="glass-strong rounded-2xl border border-border-subtle p-6 text-center space-y-3">
-                        <div className="flex items-center justify-center gap-2 text-accent-purple-light text-sm font-semibold">
-                          <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
-                          </svg>
-                          Generating your tickets...
+                  <div className="space-y-4 pt-2">
+                    <div aria-live="polite">
+                      {!bookingTicketsReady ? (
+                        <div className="glass-strong rounded-2xl border border-border-subtle p-6 text-center space-y-3">
+                          <div className="flex items-center justify-center gap-2 text-accent-purple-light text-sm font-semibold">
+                            <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                            </svg>
+                            Generating your tickets...
+                          </div>
+                          <p className="text-text-muted text-xs">Your entry passes will appear here shortly.</p>
                         </div>
-                        <p className="text-text-muted text-xs">Your entry passes will appear here shortly.</p>
-                      </div>
-                    ) : (
-                      <EntryPassGrid tickets={bookingTickets} />
-                    )}
+                      ) : (
+                        <EntryPassGrid tickets={bookingTickets} />
+                      )}
+                    </div>
                   </div>
                 ) : (
-                  <div className="glass-strong rounded-2xl border border-border-subtle p-6 text-center text-text-secondary text-sm">
-                    Tickets are unavailable as the booking is not confirmed.
+                  <div className="glass-strong rounded-2xl border border-border-subtle p-6 text-center text-text-muted text-xs">
+                    Tickets are unavailable for this booking.
                   </div>
                 )}
+
+                {/* 2. Action Buttons — Second, immediately after QR */}
+                {booking.status === BookingStatus.CONFIRMED && bookingTicketsReady && (
+                  <div className="flex flex-wrap justify-end gap-2 pt-2 border-t border-white/5">
+                    <TicketActions
+                      downloading={downloadingId === booking.bookingId}
+                      resending={resendingId === booking.bookingId}
+                      cooldown={resendCooldowns[booking.bookingId] || 0}
+                      onDownload={() => handleDownloadPDF(booking.bookingId)}
+                      onResend={() => handleResendTickets(booking.bookingId)}
+                    />
+                  </div>
+                )}
+
+                {/* 3. Metadata Grid — Last, supporting context only */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 pt-4 border-t border-white/5 text-xs text-text-secondary">
+                  <div>
+                    <span className="text-[10px] text-text-muted uppercase tracking-wider block">Guest Name</span>
+                    <span className="text-white font-semibold">{booking.guestName || 'N/A'}</span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-text-muted uppercase tracking-wider block">Venue</span>
+                    <span className="text-white font-semibold">{eventInfo?.venue || 'N/A'}</span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-text-muted uppercase tracking-wider block">Show Time</span>
+                    <span className="text-white font-semibold">{eventInfo?.showTime || 'N/A'}</span>
+                  </div>
+                  {booking.createdAt && (
+                    <div>
+                      <span className="text-[10px] text-text-muted uppercase tracking-wider block">Purchased On</span>
+                      <span className="text-white font-semibold font-sans">
+                        {new Date(booking.createdAt).toLocaleDateString(undefined, { dateStyle: 'medium' })} {new Date(booking.createdAt).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                    </div>
+                  )}
+                  <div>
+                    <span className="text-[10px] text-text-muted uppercase tracking-wider block">Reference ID</span>
+                    <span className="text-white font-semibold font-mono">{booking.bookingId}</span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-text-muted uppercase tracking-wider block">Total Tickets</span>
+                    <span className="text-white font-semibold">{booking.totalTickets} Passes</span>
+                  </div>
+                </div>
               </div>
             )}
           </div>
         );
       };
 
+      if (subTabBookings.length === 0) {
+        return (
+          <div className="space-y-6">
+            {renderSubTabs()}
+            <div className="glass rounded-3xl border border-border-subtle p-12 text-center space-y-4">
+              <div className="text-4xl">🎟️</div>
+              <h4 className="text-white font-bold text-base capitalize">No {activeTicketSubTab} bookings</h4>
+              <p className="text-text-secondary text-xs max-w-sm mx-auto leading-relaxed">
+                {emptyMessage}
+              </p>
+              {activeTicketSubTab === 'upcoming' && (
+                <div className="pt-2">
+                  <Link
+                    href="/events"
+                    className="px-6 py-2.5 bg-accent-purple hover:bg-accent-purple-light text-white text-xs font-bold rounded-xl transition-all shadow-md inline-block"
+                  >
+                    Browse Events
+                  </Link>
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      }
+
       return (
         <div className="space-y-6">
-          {upcomingBookings.length > 0 && (
-            <div className="space-y-3">
-              <h2 className="text-white font-bold text-sm uppercase tracking-wider opacity-60 pl-1">Upcoming Tickets</h2>
-              <div className="space-y-4">
-                {upcomingBookings.map((b) => renderBookingAccordion(b, false))}
-              </div>
-            </div>
-          )}
-
-          {pastBookings.length > 0 && (
-            <div className="space-y-3 pt-4">
-              <h2 className="text-white font-bold text-sm uppercase tracking-wider opacity-60 pl-1">Past Tickets</h2>
-              <div className="space-y-4">
-                {pastBookings.map((b) => renderBookingAccordion(b, true))}
-              </div>
-            </div>
-          )}
+          {renderSubTabs()}
+          <div className="space-y-4">
+            {subTabBookings.map((b) => renderBookingAccordion(b, activeTicketSubTab === 'past'))}
+          </div>
         </div>
       );
     }
@@ -531,12 +712,20 @@ function DashboardContent() {
           </div>
         ) : (
           <div className="space-y-8">
-            {/* Stateful Glassmorphic Segmented Control Tab Bar */}
-            <div className="glass p-1.5 rounded-2xl border border-white/5 flex gap-1 w-full sm:w-max">
+            {/* Stateful Glassmorphic Segmented Control Tab Bar — WCAG role="tablist" */}
+            <div
+              className="glass p-1.5 rounded-2xl border border-white/5 flex flex-row gap-1 overflow-x-auto scrollbar-none w-full"
+              role="tablist"
+              aria-label="Dashboard sections"
+            >
               <button
                 type="button"
+                role="tab"
+                id="tab-tickets"
+                aria-selected={activeTab === 'tickets'}
+                aria-controls="tabpanel-tickets"
                 onClick={() => handleTabChange('tickets')}
-                className={`flex-grow sm:flex-grow-0 px-6 py-2.5 text-xs font-extrabold rounded-xl transition-all duration-300 ${
+                className={`flex-shrink-0 px-6 py-2.5 text-xs font-extrabold rounded-xl transition-all duration-300 min-h-[44px] flex items-center justify-center whitespace-nowrap ${
                   activeTab === 'tickets'
                     ? 'bg-accent-purple text-white shadow-md'
                     : 'text-text-secondary hover:text-white hover:bg-white/5'
@@ -546,8 +735,12 @@ function DashboardContent() {
               </button>
               <button
                 type="button"
+                role="tab"
+                id="tab-account"
+                aria-selected={activeTab === 'account'}
+                aria-controls="tabpanel-account"
                 onClick={() => handleTabChange('account')}
-                className={`flex-grow sm:flex-grow-0 px-6 py-2.5 text-xs font-extrabold rounded-xl transition-all duration-300 ${
+                className={`flex-shrink-0 px-6 py-2.5 text-xs font-extrabold rounded-xl transition-all duration-300 min-h-[44px] flex items-center justify-center whitespace-nowrap ${
                   activeTab === 'account'
                     ? 'bg-accent-purple text-white shadow-md'
                     : 'text-text-secondary hover:text-white hover:bg-white/5'
@@ -557,8 +750,12 @@ function DashboardContent() {
               </button>
               <button
                 type="button"
+                role="tab"
+                id="tab-support"
+                aria-selected={activeTab === 'support'}
+                aria-controls="tabpanel-support"
                 onClick={() => handleTabChange('support')}
-                className={`flex-grow sm:flex-grow-0 px-6 py-2.5 text-xs font-extrabold rounded-xl transition-all duration-300 ${
+                className={`flex-shrink-0 px-6 py-2.5 text-xs font-extrabold rounded-xl transition-all duration-300 min-h-[44px] flex items-center justify-center whitespace-nowrap ${
                   activeTab === 'support'
                     ? 'bg-accent-purple text-white shadow-md'
                     : 'text-text-secondary hover:text-white hover:bg-white/5'
@@ -569,10 +766,32 @@ function DashboardContent() {
             </div>
 
             {/* Active Tab View */}
-            <div className="space-y-6">
-              {activeTab === 'tickets' && renderTicketsTab()}
-              {activeTab === 'account' && renderAccountTab()}
-              {activeTab === 'support' && renderSupportTab()}
+            <div
+              id="tabpanel-tickets"
+              role="tabpanel"
+              aria-labelledby="tab-tickets"
+              hidden={activeTab !== 'tickets'}
+              className="space-y-6"
+            >
+              {renderTicketsTab()}
+            </div>
+            <div
+              id="tabpanel-account"
+              role="tabpanel"
+              aria-labelledby="tab-account"
+              hidden={activeTab !== 'account'}
+              className="space-y-6"
+            >
+              {renderAccountTab()}
+            </div>
+            <div
+              id="tabpanel-support"
+              role="tabpanel"
+              aria-labelledby="tab-support"
+              hidden={activeTab !== 'support'}
+              className="space-y-6"
+            >
+              {renderSupportTab()}
             </div>
           </div>
         )}

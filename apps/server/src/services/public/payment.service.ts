@@ -1895,10 +1895,33 @@ export class PaymentService {
           throw new Error('EVENT_CAPACITY_ALLOCATION_FAILED');
         }
 
+        // Check if user already exists matching the guestEmail
+        const user = await UserModel.findOne({
+          email: booking.guestEmail?.trim().toLowerCase()
+        }).session(session || null);
+
+        const setFields: any = {
+          status: BookingStatus.CONFIRMED,
+          paymentId: _payment._id,
+        };
+        const unsetFields: any = {
+          expiresAt: 1,
+          logicalExpiresAt: 1,
+        };
+
+        if (user) {
+          setFields.userId = user._id;
+          unsetFields.sessionId = 1;
+        }
+
         // 4. Booking Confirmation Status Transition
         const previousBookingDoc = await Booking.findOneAndUpdate(
           { _id: booking._id, status: { $in: [BookingStatus.AWAITING_PAYMENT, BookingStatus.EXPIRED, BookingStatus.EXPIRING] } },
-          { $set: { status: BookingStatus.CONFIRMED, paymentId: _payment._id }, $unset: { expiresAt: 1, logicalExpiresAt: 1 }, $inc: { bookingVersion: 1 } },
+          {
+            $set: setFields,
+            $unset: unsetFields,
+            $inc: { bookingVersion: 1 }
+          },
           { new: false, session }
         );
         if (!previousBookingDoc) {

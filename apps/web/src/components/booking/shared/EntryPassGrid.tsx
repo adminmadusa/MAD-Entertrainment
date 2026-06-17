@@ -38,19 +38,43 @@ export function EntryPassGrid({ tickets }: EntryPassGridProps) {
     return () => container.removeEventListener('scroll', onScroll);
   }, [tickets.length]);
 
-  // Handle Escape key to close the zoom modal
+  const lastActiveElementRef = useRef<HTMLElement | null>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+
+  // Handle Escape key and focus trapping/restoration
   useEffect(() => {
-    if (!zoomedTicket) return;
+    if (zoomedTicket) {
+      lastActiveElementRef.current = document.activeElement as HTMLElement;
 
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        setZoomedTicket(null);
-      }
-    };
+      const timer = setTimeout(() => {
+        closeButtonRef.current?.focus();
+      }, 50);
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+      const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.key === 'Escape') {
+          setZoomedTicket(null);
+        }
+      };
+
+      window.addEventListener('keydown', handleKeyDown);
+
+      return () => {
+        clearTimeout(timer);
+        window.removeEventListener('keydown', handleKeyDown);
+        if (lastActiveElementRef.current) {
+          lastActiveElementRef.current.focus();
+          lastActiveElementRef.current = null;
+        }
+      };
+    }
   }, [zoomedTicket]);
+
+  const handleModalKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      closeButtonRef.current?.focus();
+    }
+  };
 
   const scrollToTicket = (index: number) => {
     if (scrollContainerRef.current) {
@@ -136,13 +160,13 @@ export function EntryPassGrid({ tickets }: EntryPassGridProps) {
           <span className="text-[10px] text-text-muted font-bold uppercase tracking-wider">
             Ticket {activeIndex + 1} of {tickets.length}
           </span>
-          <div className="flex justify-center gap-1.5">
+          <div className="flex justify-center gap-1.5 py-1">
             {tickets.map((_, idx) => (
               <button
                 key={idx}
                 type="button"
                 onClick={() => scrollToTicket(idx)}
-                className={`w-1.5 h-1.5 rounded-full transition-all duration-300 focus:outline-none ${
+                className={`relative w-1.5 h-1.5 rounded-full transition-all duration-300 focus:outline-none before:content-[''] before:absolute before:top-1/2 before:left-1/2 before:-translate-x-1/2 before:-translate-y-1/2 before:w-11 before:h-11 ${
                   idx === activeIndex ? 'bg-accent-purple w-3' : 'bg-white/20'
                 }`}
                 aria-label={`Go to ticket ${idx + 1}`}
@@ -157,6 +181,7 @@ export function EntryPassGrid({ tickets }: EntryPassGridProps) {
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200"
           onClick={() => setZoomedTicket(null)}
+          onKeyDown={handleModalKeyDown}
           role="dialog"
           aria-modal="true"
           aria-labelledby="qr-modal-title"
@@ -168,11 +193,12 @@ export function EntryPassGrid({ tickets }: EntryPassGridProps) {
             {/* Close Button */}
             <button
               type="button"
+              ref={closeButtonRef}
               onClick={() => setZoomedTicket(null)}
-              className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 text-slate-800 transition-colors focus:outline-none focus:ring-2 focus:ring-accent-purple"
+              className="absolute top-4 right-4 w-11 h-11 flex items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 text-slate-800 transition-colors focus:outline-none focus:ring-2 focus:ring-accent-purple"
               aria-label="Close QR Code"
             >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
