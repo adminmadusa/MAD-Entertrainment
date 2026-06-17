@@ -195,6 +195,18 @@ async function repairEventInventoryMismatches(): Promise<number> {
       const tierSoldCounts = new Map<string, number>();
       const confirmedBookingsDocs = await Booking.find({ eventId: event._id, status: BookingStatus.CONFIRMED }).lean();
       for (const bookingDoc of confirmedBookingsDocs) {
+        if (!Array.isArray(bookingDoc.tickets)) {
+          logger.warn(
+            {
+              bookingId: bookingDoc._id,
+              bookingRef: bookingDoc.bookingId,
+              ticketsType: typeof bookingDoc.tickets,
+              ticketsValue: bookingDoc.tickets === null ? 'null' : 'non-array',
+            },
+            'Consistency: Booking has invalid tickets structure — skipping tier count. Document may be corrupted.'
+          );
+          continue;
+        }
         for (const t of bookingDoc.tickets) {
           tierSoldCounts.set(t.tier, (tierSoldCounts.get(t.tier) ?? 0) + t.quantity);
         }
