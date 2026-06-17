@@ -15,11 +15,12 @@
   },
   "dependencies": {
     "@asteasolutions/zod-to-openapi": "^7.3.4",
-    "@sentry/node": "^10.53.1",
     "@mad/shared": "workspace:*",
     "@mad/validations": "workspace:*",
     "@react-email/components": "^1.0.12",
     "@react-email/render": "^2.0.8",
+    "@sentry/node": "^10.53.1",
+    "axios": "^1.7.9",
     "bcryptjs": "^2.4.3",
     "bullmq": "^5.41.3",
     "cloudinary": "^2.10.0",

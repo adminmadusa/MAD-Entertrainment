@@ -151,6 +151,12 @@ export async function verifyTransporter(): Promise<boolean> {
 
 export async function sendEmail(input: SendEmailInput): Promise<void> {
   const env = getEnv();
+
+  if (env.EMAIL_PROVIDER === 'zeptomail') {
+    const { sendViaZeptoMail } = await import('./zeptomail.js');
+    return sendViaZeptoMail(input);
+  }
+
   const tx = getTransporter();
   if (!tx) {
     const errorMsg = 'SMTP_TRANSPORT_UNAVAILABLE: SMTP transporter unavailable';
