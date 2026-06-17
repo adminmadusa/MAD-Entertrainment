@@ -11,12 +11,11 @@ import { Modal } from '@mad/ui';
 import { useSearchParams, useRouter } from 'next/navigation';
 
 import { useCountdown } from '@/hooks/use-countdown.hook';
-import { extractApiError } from '@/lib/api/client';
+import { apiClient, extractApiError } from '@/lib/api/client';
 import {
   getStoredGuestBookingSession,
   publicGetBookingDetails,
   publicGetMyBookings,
-  publicDownloadTicketPDF,
   publicResendTicketEmail,
   publicRecoverBookingEmail,
   publicVerifyRecoveredBookingOTP,
@@ -232,17 +231,23 @@ function TicketRetrievalContent() {
       setInfoMsg('');
       setDownloadingId(bookingId);
 
-      const blob = await publicDownloadTicketPDF(bookingId, sessionToken);
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `MAD_Ticket_${bookingId}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      window.URL.revokeObjectURL(url);
-      
-      setInfoMsg('Ticket PDF downloaded successfully.');
+      const headers: Record<string, string> = {};
+      if (sessionToken) {
+        headers.Authorization = `Bearer ${sessionToken}`;
+      }
+
+      const { data } = await apiClient.post<{ data: { downloadToken: string } }>(
+        `/bookings/${bookingId}/download-token`,
+        {},
+        { headers }
+      );
+      const token = data?.data?.downloadToken;
+      if (!token) {
+        throw new Error('Failed to generate download token');
+      }
+
+      const downloadUrl = `${apiClient.defaults.baseURL || ''}/bookings/${bookingId}/download?token=${token}`;
+      window.open(downloadUrl, '_blank');
     } catch (err) {
       const apiErr = extractApiError(err);
       setErrorMsg(apiErr.message || 'Failed to download ticket PDF. Please try again.');
@@ -577,10 +582,34 @@ function TicketRetrievalContent() {
       );
     }
 
-    if (lookupMode === 'reference') {
-      return (
-        <>
-          <h3 className="text-white font-bold text-sm px-2 text-center">Need help finding your ticket?</h3>
+    return (
+      <div className="space-y-4">
+        <div className="glass p-1 rounded-xl border border-white/5 flex gap-1 w-full">
+          <button
+            type="button"
+            onClick={handleSwitchToReference}
+            className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all duration-300 ${
+              lookupMode === 'reference'
+                ? 'bg-accent-purple text-white shadow-md'
+                : 'text-text-secondary hover:text-white hover:bg-white/5'
+            }`}
+          >
+            Booking Reference
+          </button>
+          <button
+            type="button"
+            onClick={handleSwitchToRecovery}
+            className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all duration-300 ${
+              lookupMode === 'transaction'
+                ? 'bg-accent-purple text-white shadow-md'
+                : 'text-text-secondary hover:text-white hover:bg-white/5'
+            }`}
+          >
+            Payment ID Recovery
+          </button>
+        </div>
+
+        {lookupMode === 'reference' ? (
           <form onSubmit={handleSearchSubmit} className="glass rounded-2xl border border-border-subtle p-4 sm:p-6 flex flex-col gap-3">
             <div className="flex-grow space-y-1">
               <label htmlFor="booking-ref-input" className="text-[10px] text-text-secondary font-medium tracking-wider uppercase">Search using your Booking Reference ID</label>
@@ -601,52 +630,29 @@ function TicketRetrievalContent() {
               {isSingleLookupLoading ? 'Searching...' : 'Lookup'}
             </button>
           </form>
-          <div className="text-center pt-2">
+        ) : (
+          <form onSubmit={handleRecoverySubmit} className="glass rounded-2xl border border-border-subtle p-4 sm:p-6 flex flex-col gap-3 animate-in fade-in duration-300">
+            <div className="flex-grow space-y-1">
+              <label htmlFor="transaction-id-input" className="text-[10px] text-text-secondary font-medium tracking-wider uppercase">Payment Transaction ID</label>
+              <input
+                id="transaction-id-input"
+                type="text"
+                value={transactionIdInput}
+                onChange={(e) => setTransactionIdInput(e.target.value)}
+                placeholder="e.g. pay_xxxxxxxxxx or pi_xxxxxxxxx"
+                className="w-full px-4 py-2.5 rounded-xl bg-background border border-border-subtle text-base lg:text-sm text-text-primary focus:outline-none focus:border-accent-purple font-mono tracking-wider transition-colors"
+              />
+            </div>
             <button
-              type="button"
-              onClick={handleSwitchToRecovery}
-              className="text-xs text-text-muted hover:text-white transition-colors"
+              type="submit"
+              disabled={isRecovering}
+              className="w-full h-11 px-6 btn-gradient text-white text-sm font-bold rounded-xl shadow-glow-sm disabled:opacity-60 transition-transform"
             >
-              Forgot your booking reference? Recover using your Payment Transaction ID
+              {isRecovering ? 'Finding...' : 'Find Booking Email'}
             </button>
-          </div>
-        </>
-      );
-    }
-
-    return (
-      <>
-        <h3 className="text-white font-bold text-sm px-2 text-center">Recover Booking Registered Email</h3>
-        <form onSubmit={handleRecoverySubmit} className="glass rounded-2xl border border-border-subtle p-4 sm:p-6 flex flex-col gap-3 animate-in fade-in duration-300">
-          <div className="flex-grow space-y-1">
-            <label htmlFor="transaction-id-input" className="text-[10px] text-text-secondary font-medium tracking-wider uppercase">Payment Transaction ID</label>
-            <input
-              id="transaction-id-input"
-              type="text"
-              value={transactionIdInput}
-              onChange={(e) => setTransactionIdInput(e.target.value)}
-              placeholder="e.g. pay_xxxxxxxxxx or pi_xxxxxxxxx"
-              className="w-full px-4 py-2.5 rounded-xl bg-background border border-border-subtle text-base lg:text-sm text-text-primary focus:outline-none focus:border-accent-purple font-mono tracking-wider transition-colors"
-            />
-          </div>
-          <button
-            type="submit"
-            disabled={isRecovering}
-            className="w-full h-11 px-6 btn-gradient text-white text-sm font-bold rounded-xl shadow-glow-sm disabled:opacity-60 transition-transform"
-          >
-            {isRecovering ? 'Finding...' : 'Find Booking Email'}
-          </button>
-        </form>
-        <div className="text-center pt-2">
-          <button
-            type="button"
-            onClick={handleSwitchToReference}
-            className="text-xs text-text-muted hover:text-white transition-colors"
-          >
-            ← Back to Booking Reference Search
-          </button>
-        </div>
-      </>
+          </form>
+        )}
+      </div>
     );
   };
 

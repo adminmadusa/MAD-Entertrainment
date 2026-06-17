@@ -26,6 +26,13 @@ export async function processBookingConfirm(bookingId: string): Promise<void> {
 
   // 1. Generate scan-ready QR Tickets with idempotent upserts
   let ticketIndex = 1;
+  if (!booking.tickets || !Array.isArray(booking.tickets)) {
+    const fullBooking = await Booking.findById(booking._id).select('tickets');
+    if (!fullBooking || !Array.isArray(fullBooking.tickets)) {
+      throw new Error(`Booking ${bookingId} has no tickets array`);
+    }
+    booking.tickets = fullBooking.tickets;
+  }
   for (const bookedTicket of booking.tickets) {
     if (event.bookingMode === 'seat_based' && bookedTicket.seats) {
       for (const seat of bookedTicket.seats) {

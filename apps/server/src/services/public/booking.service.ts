@@ -11,6 +11,7 @@ import { Event } from '../../models/event.schema';
 import { IReservation } from '../../models/reservation.schema';
 import { SeatLayout } from '../../models/seat-layout.schema';
 import { Ticket } from '../../models/ticket.schema';
+import { UserModel } from '../../models/user.schema';
 import { logger } from '../../utils/logger';
 import { auditLog } from '../../utils/audit';
 import { ReservationService } from '../reservation.service';
@@ -598,7 +599,17 @@ export class PublicBookingService {
   }
 
   static async getMyBookings(userId: string) {
-    const bookings = await Booking.find({ userId: new Types.ObjectId(userId) })
+    const user = await UserModel.findById(userId);
+    if (!user) {
+      throw AppError.notFound('User not found');
+    }
+
+    const bookings = await Booking.find({
+      $or: [
+        { userId: user._id },
+        { guestEmail: user.email.trim().toLowerCase(), status: BookingStatus.CONFIRMED }
+      ]
+    })
       .populate('eventId')
       .sort({ createdAt: -1 });
 
@@ -606,16 +617,23 @@ export class PublicBookingService {
     const tickets = await Ticket.find({ bookingId: { $in: bookingIds } });
 
     // Compute per-booking readiness for the caller
-    const ticketsReadyMap = new Map<string, boolean>();
+    const ticketsReadyMap: Record<string, boolean> = {};
     for (const booking of bookings) {
       const bookingTickets = tickets.filter(
         (t) => t.bookingId?.toString() === booking._id.toString()
       );
-      ticketsReadyMap.set(
-        booking._id.toString(),
-        bookingTickets.length > 0 && bookingTickets.length === booking.totalTickets
-      );
+      ticketsReadyMap[booking._id.toString()] =
+        bookingTickets.length > 0 && bookingTickets.length === booking.totalTickets;
     }
+
+    Object.defineProperty(ticketsReadyMap, 'get', {
+      value: function (key: string) {
+        return (this as any)[key];
+      },
+      enumerable: false,
+      writable: true,
+      configurable: true,
+    });
 
     return { bookings, tickets, ticketsReadyMap };
   }
