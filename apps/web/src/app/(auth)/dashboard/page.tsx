@@ -228,10 +228,55 @@ function DashboardContent() {
     }
   };
 
+  // Change 5 — Share handler: navigator.share primary, clipboard fallback, AbortError silenced
+  const handleShare = async (bookingId: string) => {
+    const shareUrl = `${window.location.origin}/dashboard?ref=${bookingId}`;
+    try {
+      setErrorMsg('');
+      setInfoMsg('');
+      if (typeof navigator !== 'undefined' && navigator.share) {
+        await navigator.share({
+          title: 'MAD Entertrainment — My Ticket',
+          url: shareUrl,
+        });
+      } else {
+        await navigator.clipboard.writeText(shareUrl);
+        setInfoMsg('Link copied to clipboard.');
+      }
+    } catch (err: unknown) {
+      if (err instanceof Error && err.name === 'AbortError') return;
+      try {
+        await navigator.clipboard.writeText(shareUrl);
+        setInfoMsg('Link copied to clipboard.');
+      } catch {
+        // clipboard unavailable — fail silently
+      }
+    }
+  };
+
   const showSkeleton = isAuthLoading || !isAuthenticated;
   const userName = user?.name || [user?.firstName, user?.lastName].filter(Boolean).join(' ') || 'Account User';
   const userPhone = user?.mobileNumber || user?.phone || 'Not Provided';
   const userEmail = user?.email || 'N/A';
+
+  // Change 3 — Quick stats: derived from existing bookings data, no extra API calls
+  const quickStatsNow = new Date();
+  const upcomingCount = bookings.filter((b) => {
+    const eventInfo = b.eventId as unknown as Partial<Event>;
+    const startDate = eventInfo?.startDate ? new Date(eventInfo.startDate) : null;
+    if (b.status !== BookingStatus.CONFIRMED) return false;
+    if (!startDate) return true;
+    return startDate >= quickStatsNow;
+  }).length;
+
+  // Change 1 — Sticky bar guard: only when confirmed booking expanded AND tickets ready
+  const expandedBooking = expandedBookingId
+    ? bookings.find((b) => b.bookingId === expandedBookingId) ?? null
+    : null;
+  const stickyBarVisible =
+    expandedBooking !== null &&
+    expandedBooking.status === BookingStatus.CONFIRMED &&
+    (bookingsData?.ticketsReadyMap?.[expandedBooking._id?.toString() ?? ''] ?? false);
 
   const renderTicketsTab = () => {
     if (isBookingsLoading) {
@@ -517,10 +562,6 @@ function DashboardContent() {
                     </div>
                   )}
                   <div>
-                    <span className="text-[10px] text-text-muted uppercase tracking-wider block">Reference ID</span>
-                    <span className="text-white font-semibold font-mono">{booking.bookingId}</span>
-                  </div>
-                  <div>
                     <span className="text-[10px] text-text-muted uppercase tracking-wider block">Total Tickets</span>
                     <span className="text-white font-semibold">{booking.totalTickets} Passes</span>
                   </div>
@@ -677,12 +718,12 @@ function DashboardContent() {
   };
 
   return (
-    <div className="pt-28 pb-16 min-h-screen bg-background relative overflow-hidden">
+    <div className="pt-20 sm:pt-28 pb-16 min-h-screen bg-background relative overflow-hidden">
       {/* Decorative Ambient Glow */}
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-accent-purple/10 rounded-full blur-[130px] pointer-events-none" />
       <div className="absolute -bottom-10 -right-10 w-[300px] h-[300px] bg-purple-500/5 rounded-full blur-[100px] pointer-events-none" />
 
-      <div className="container-mad max-w-3xl relative z-10 px-4 space-y-8">
+      <div className={`container-mad max-w-3xl relative z-10 px-4 space-y-8${stickyBarVisible ? ' pb-28 sm:pb-0' : ''}`}>
         {/* Page Header */}
         <div className="space-y-2">
           <h1 className="text-display-sm font-black text-white tracking-tight">
@@ -691,6 +732,13 @@ function DashboardContent() {
           <p className="text-text-secondary text-sm">
             Access your secure entry tickets, manage your details, and get support.
           </p>
+          {/* Change 3 — Quick stats badge: computed from existing data, no extra API calls */}
+          {!isBookingsLoading && upcomingCount > 0 && (
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-accent-purple/15 border border-accent-purple/25 text-accent-purple-light text-xs font-semibold">
+              <span>🎟️</span>
+              {upcomingCount} Upcoming Event{upcomingCount !== 1 ? 's' : ''}
+            </div>
+          )}
         </div>
 
         {errorMsg && (
@@ -712,18 +760,18 @@ function DashboardContent() {
           </div>
         ) : (
           <div className="space-y-8">
-            {/* Stateful Glassmorphic Segmented Control Tab Bar — WCAG role="tablist" */}
+            {/* Tab Bar */}
             <div
-              className="glass p-1.5 rounded-2xl border border-white/5 flex flex-row gap-1 overflow-x-auto scrollbar-none w-full"
               role="tablist"
-              aria-label="Dashboard sections"
+              aria-label="Dashboard navigation"
+              className="glass p-1.5 rounded-2xl border border-white/5 flex gap-1 w-full sm:w-max overflow-x-auto"
             >
               <button
                 type="button"
                 role="tab"
-                id="tab-tickets"
+                id="subtab-tickets"
+                aria-controls="subtab-panel-tickets"
                 aria-selected={activeTab === 'tickets'}
-                aria-controls="tabpanel-tickets"
                 onClick={() => handleTabChange('tickets')}
                 className={`flex-shrink-0 px-6 py-2.5 text-xs font-extrabold rounded-xl transition-all duration-300 min-h-[44px] flex items-center justify-center whitespace-nowrap ${
                   activeTab === 'tickets'
@@ -736,9 +784,9 @@ function DashboardContent() {
               <button
                 type="button"
                 role="tab"
-                id="tab-account"
+                id="subtab-account"
+                aria-controls="subtab-panel-account"
                 aria-selected={activeTab === 'account'}
-                aria-controls="tabpanel-account"
                 onClick={() => handleTabChange('account')}
                 className={`flex-shrink-0 px-6 py-2.5 text-xs font-extrabold rounded-xl transition-all duration-300 min-h-[44px] flex items-center justify-center whitespace-nowrap ${
                   activeTab === 'account'
@@ -751,9 +799,9 @@ function DashboardContent() {
               <button
                 type="button"
                 role="tab"
-                id="tab-support"
+                id="subtab-support"
+                aria-controls="subtab-panel-support"
                 aria-selected={activeTab === 'support'}
-                aria-controls="tabpanel-support"
                 onClick={() => handleTabChange('support')}
                 className={`flex-shrink-0 px-6 py-2.5 text-xs font-extrabold rounded-xl transition-all duration-300 min-h-[44px] flex items-center justify-center whitespace-nowrap ${
                   activeTab === 'support'
@@ -761,41 +809,107 @@ function DashboardContent() {
                     : 'text-text-secondary hover:text-white hover:bg-white/5'
                 }`}
               >
-                ❓ Help & Support
+                ❓ Help &amp; Support
               </button>
             </div>
 
             {/* Active Tab View */}
-            <div
-              id="tabpanel-tickets"
-              role="tabpanel"
-              aria-labelledby="tab-tickets"
-              hidden={activeTab !== 'tickets'}
-              className="space-y-6"
-            >
-              {renderTicketsTab()}
-            </div>
-            <div
-              id="tabpanel-account"
-              role="tabpanel"
-              aria-labelledby="tab-account"
-              hidden={activeTab !== 'account'}
-              className="space-y-6"
-            >
-              {renderAccountTab()}
-            </div>
-            <div
-              id="tabpanel-support"
-              role="tabpanel"
-              aria-labelledby="tab-support"
-              hidden={activeTab !== 'support'}
-              className="space-y-6"
-            >
-              {renderSupportTab()}
+            <div className="space-y-6">
+              {activeTab === 'tickets' && (
+                <div role="tabpanel" id="subtab-panel-tickets" aria-labelledby="subtab-tickets">
+                  {renderTicketsTab()}
+                </div>
+              )}
+              {activeTab === 'account' && (
+                <div role="tabpanel" id="subtab-panel-account" aria-labelledby="subtab-account">
+                  {renderAccountTab()}
+                </div>
+              )}
+              {activeTab === 'support' && (
+                <div role="tabpanel" id="subtab-panel-support" aria-labelledby="subtab-support">
+                  {renderSupportTab()}
+                </div>
+              )}
             </div>
           </div>
         )}
       </div>
+
+      {/*
+        Change 1 — Sticky Mobile Action Bar
+        - Mobile only (sm:hidden)
+        - z-40: below QR modal (z-50) and mobile menu (z-50+)
+        - Safe area inset support
+        - Only shown when: booking expanded AND confirmed AND tickets ready
+        - Reuses existing handlers — no business logic duplication
+      */}
+      {stickyBarVisible && expandedBooking && (
+        <div
+          className="fixed bottom-0 left-0 right-0 z-40 sm:hidden"
+          style={{ paddingBottom: 'calc(1rem + env(safe-area-inset-bottom))' }}
+          role="toolbar"
+          aria-label="Ticket quick actions"
+        >
+          <div className="mx-4 mb-2 glass border border-white/10 rounded-2xl shadow-2xl backdrop-blur-xl px-4 pt-4 pb-3 flex items-center gap-2">
+            {/* Download */}
+            <button
+              type="button"
+              aria-label="Download PDF"
+              disabled={downloadingId === expandedBooking.bookingId}
+              onClick={() => handleDownloadPDF(expandedBooking.bookingId)}
+              className="min-h-[44px] flex-1 flex flex-col items-center justify-center gap-1 px-2 py-1 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white text-[11px] font-semibold transition-all disabled:opacity-50"
+            >
+              {downloadingId === expandedBooking.bookingId ? (
+                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              ) : (
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+              )}
+              {downloadingId === expandedBooking.bookingId ? 'Saving...' : 'Download'}
+            </button>
+
+            {/* Resend Email */}
+            <button
+              type="button"
+              aria-label="Resend ticket email"
+              disabled={
+                resendingId === expandedBooking.bookingId ||
+                (resendCooldowns[expandedBooking.bookingId] || 0) > 0
+              }
+              onClick={() => handleResendTickets(expandedBooking.bookingId)}
+              className="min-h-[44px] flex-1 flex flex-col items-center justify-center gap-1 px-2 py-1 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white text-[11px] font-semibold transition-all disabled:opacity-50"
+            >
+              {resendingId === expandedBooking.bookingId ? (
+                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              ) : (
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+              )}
+              {(() => {
+                if ((resendCooldowns[expandedBooking.bookingId] || 0) > 0)
+                  return `${resendCooldowns[expandedBooking.bookingId]}s`;
+                if (resendingId === expandedBooking.bookingId) return 'Sending...';
+                return 'Email';
+              })()}
+            </button>
+
+            {/* Share */}
+            <button
+              type="button"
+              aria-label="Share ticket"
+              onClick={() => handleShare(expandedBooking.bookingId)}
+              className="min-h-[44px] flex-1 flex flex-col items-center justify-center gap-1 px-2 py-1 rounded-xl btn-gradient text-white text-[11px] font-semibold shadow-glow-sm transition-all hover:scale-[1.02] active:scale-[0.98]"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+              </svg>
+              Share
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -803,7 +917,7 @@ function DashboardContent() {
 export default function UserDashboardPage() {
   return (
     <Suspense fallback={
-      <div className="pt-28 pb-16 min-h-screen bg-background flex items-center justify-center">
+      <div className="pt-20 sm:pt-28 pb-16 min-h-screen bg-background flex items-center justify-center">
         <div className="text-purple-300 animate-pulse text-sm">Loading Account...</div>
       </div>
     }>
