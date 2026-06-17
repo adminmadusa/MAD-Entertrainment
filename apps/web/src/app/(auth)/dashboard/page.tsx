@@ -561,7 +561,6 @@ function DashboardContent() {
                       </span>
                     </div>
                   )}
-                  </div>
                   <div>
                     <span className="text-[10px] text-text-muted uppercase tracking-wider block">Total Tickets</span>
                     <span className="text-white font-semibold">{booking.totalTickets} Passes</span>
@@ -761,11 +760,18 @@ function DashboardContent() {
           </div>
         ) : (
           <div className="space-y-8">
+            {/* Tab Bar */}
+            <div
+              role="tablist"
+              aria-label="Dashboard navigation"
+              className="glass p-1.5 rounded-2xl border border-white/5 flex gap-1 w-full sm:w-max overflow-x-auto"
             >
               <button
                 type="button"
                 role="tab"
-
+                id="subtab-tickets"
+                aria-controls="subtab-panel-tickets"
+                aria-selected={activeTab === 'tickets'}
                 onClick={() => handleTabChange('tickets')}
                 className={`flex-shrink-0 px-6 py-2.5 text-xs font-extrabold rounded-xl transition-all duration-300 min-h-[44px] flex items-center justify-center whitespace-nowrap ${
                   activeTab === 'tickets'
@@ -778,7 +784,9 @@ function DashboardContent() {
               <button
                 type="button"
                 role="tab"
-
+                id="subtab-account"
+                aria-controls="subtab-panel-account"
+                aria-selected={activeTab === 'account'}
                 onClick={() => handleTabChange('account')}
                 className={`flex-shrink-0 px-6 py-2.5 text-xs font-extrabold rounded-xl transition-all duration-300 min-h-[44px] flex items-center justify-center whitespace-nowrap ${
                   activeTab === 'account'
@@ -791,7 +799,9 @@ function DashboardContent() {
               <button
                 type="button"
                 role="tab"
-
+                id="subtab-support"
+                aria-controls="subtab-panel-support"
+                aria-selected={activeTab === 'support'}
                 onClick={() => handleTabChange('support')}
                 className={`flex-shrink-0 px-6 py-2.5 text-xs font-extrabold rounded-xl transition-all duration-300 min-h-[44px] flex items-center justify-center whitespace-nowrap ${
                   activeTab === 'support'
@@ -799,9 +809,27 @@ function DashboardContent() {
                     : 'text-text-secondary hover:text-white hover:bg-white/5'
                 }`}
               >
-                ❓ Help & Support
+                ❓ Help &amp; Support
               </button>
             </div>
+
+            {/* Active Tab View */}
+            <div className="space-y-6">
+              {activeTab === 'tickets' && (
+                <div role="tabpanel" id="subtab-panel-tickets" aria-labelledby="subtab-tickets">
+                  {renderTicketsTab()}
+                </div>
+              )}
+              {activeTab === 'account' && (
+                <div role="tabpanel" id="subtab-panel-account" aria-labelledby="subtab-account">
+                  {renderAccountTab()}
+                </div>
+              )}
+              {activeTab === 'support' && (
+                <div role="tabpanel" id="subtab-panel-support" aria-labelledby="subtab-support">
+                  {renderSupportTab()}
+                </div>
+              )}
             </div>
           </div>
         )}
