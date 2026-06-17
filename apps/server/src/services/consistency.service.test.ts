@@ -1111,6 +1111,56 @@ describe('ConsistencyService - Stuck Processing, Notifications, Optimistic Locki
     expect(report2.repairs?.eventInventoryMismatchesRepaired).toBe(1);
   });
 
+  it('should not throw and should emit logger.warn when a booking has tickets: undefined (malformed document)', async () => {
+    const { logger } = await import('../utils/logger');
+
+    const mockEvent = {
+      _id: 'event-corrupt-1',
+      soldCount: 5,
+      reservedCount: 0,
+      ticketTiers: [{ tier: 'general', soldCount: 5 }],
+      eventVersion: 1,
+    };
+
+    vi.mocked(Event.find).mockReturnValue(mockCreateMockQuery([mockEvent]) as any);
+    (Booking as any).aggregate = vi.fn().mockResolvedValue([{ total: 10 }]);
+    (Reservation as any).aggregate = vi.fn().mockResolvedValue([{ total: 0 }]);
+
+    // Simulate a malformed document from .lean() — tickets field is missing/undefined
+    const malformedBookingDoc = {
+      _id: 'b-corrupt-1',
+      bookingId: 'MAD-2026-CORRUPT',
+      tickets: undefined,
+    };
+    vi.mocked(Booking.find).mockImplementation((filter: any) => {
+      if (filter && filter.status && filter.status.$in) {
+        return mockCreateMockQuery([]);
+      }
+      return mockCreateMockQuery([malformedBookingDoc]);
+    });
+
+    vi.mocked(Reservation.find).mockReturnValue(mockCreateMockQuery([]) as any);
+    vi.mocked(Refund.find).mockReturnValue(mockCreateMockQuery([]) as any);
+    vi.mocked(Reservation.countDocuments).mockResolvedValue(0);
+    vi.mocked(Booking.countDocuments).mockResolvedValue(0);
+    vi.mocked(Payment.countDocuments).mockResolvedValue(0);
+    vi.mocked(Notification.countDocuments).mockResolvedValue(0);
+    (Event as any).updateOne = vi.fn().mockResolvedValue({ modifiedCount: 1 });
+
+    // Should not throw despite the malformed document
+    const report = await expect(ConsistencyService.runRepairCycle()).resolves.toBeDefined();
+
+    // Warning must have been emitted with booking identifiers
+    expect(logger.warn).toHaveBeenCalledWith(
+      expect.objectContaining({
+        bookingId: 'b-corrupt-1',
+        bookingRef: 'MAD-2026-CORRUPT',
+        ticketsType: 'undefined',
+      }),
+      expect.stringContaining('invalid tickets structure')
+    );
+  });
+
   it('should reclaim stale seat locks without the 24-hour window constraint', async () => {
     const mockReservation = {
       _id: 'res-stale-1',
