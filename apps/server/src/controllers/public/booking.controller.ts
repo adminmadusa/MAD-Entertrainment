@@ -1,5 +1,6 @@
 import crypto from 'crypto';
 import { Request, Response, NextFunction } from 'express';
+import { requiresOnboarding } from '../../utils/user';
 
 import { sendSuccess } from '../../utils/response';
 import { AppError } from '../../middleware/error.middleware';
@@ -610,9 +611,7 @@ export async function verifyRecoveredBookingOTP(
       description: `Successfully verified OTP for booking recovery with transaction ID ${maskedTxId}`,
     });
 
-    const hasFirstName = !!result.user.firstName?.trim();
-    const hasLastName = !!result.user.lastName?.trim();
-    const onboardingRequired = !hasFirstName || !hasLastName;
+    const onboardingRequired = requiresOnboarding(result.user);
 
     res.status(200).json({
       success: true,

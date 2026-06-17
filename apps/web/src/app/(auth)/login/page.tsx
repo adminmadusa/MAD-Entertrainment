@@ -7,13 +7,13 @@ import { useAuth } from '@/providers/AuthProvider';
 
 function LoginPageContent() {
   const router = useRouter();
-  const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
+  const { isAuthenticated, isLoading: isAuthLoading, onboardingRequired } = useAuth();
 
   useEffect(() => {
-    if (!isAuthLoading && isAuthenticated) {
+    if (!isAuthLoading && isAuthenticated && !onboardingRequired) {
       router.replace('/dashboard');
     }
-  }, [isAuthenticated, isAuthLoading, router]);
+  }, [isAuthenticated, isAuthLoading, onboardingRequired, router]);
 
   return (
     <div className="min-h-screen pt-28 pb-16 flex items-center justify-center relative overflow-hidden bg-background">

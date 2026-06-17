@@ -6,6 +6,7 @@ import { PublicBookingService } from '../../services/public/booking.service';
 import { getEnv } from '../../config/env';
 import { AppError } from '../../middleware/error.middleware';
 import { logger } from '../../utils/logger';
+import { requiresOnboarding } from '../../utils/user';
 
 export class AuthController {
   /**
@@ -66,9 +67,7 @@ export class AuthController {
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days TTL
     });
 
-    const hasFirstName = !!result.user.firstName?.trim();
-    const hasLastName = !!result.user.lastName?.trim();
-    const onboardingRequired = !hasFirstName || !hasLastName;
+    const onboardingRequired = requiresOnboarding(result.user);
 
     res.status(200).json({
       success: true,
@@ -106,9 +105,7 @@ export class AuthController {
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days TTL
     });
 
-    const hasFirstName = !!result.user.firstName?.trim();
-    const hasLastName = !!result.user.lastName?.trim();
-    const onboardingRequired = !hasFirstName || !hasLastName;
+    const onboardingRequired = requiresOnboarding(result.user);
 
     res.status(200).json({
       success: true,
@@ -191,9 +188,7 @@ export class AuthController {
       throw AppError.unauthorized('User is deactivated or does not exist');
     }
 
-    const hasFirstName = !!user.firstName?.trim();
-    const hasLastName = !!user.lastName?.trim();
-    const onboardingRequired = !hasFirstName || !hasLastName;
+    const onboardingRequired = requiresOnboarding(user);
 
     res.status(200).json({
       success: true,
