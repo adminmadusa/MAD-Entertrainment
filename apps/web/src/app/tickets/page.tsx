@@ -172,11 +172,18 @@ function TicketRetrievalContent() {
 
   // Redirect to dashboard if already authenticated on mount
   useEffect(() => {
-    if (isAuthenticated && !isAuthLoading && !onboardingRequired) {
-      const dest = targetRef 
-        ? `/dashboard?tab=tickets&ref=${encodeURIComponent(targetRef.trim())}`
-        : '/dashboard?tab=tickets';
-      router.replace(dest);
+    if (isAuthenticated && !isAuthLoading) {
+      if (onboardingRequired) {
+        const dest = targetRef 
+          ? `/dashboard?ref=${encodeURIComponent(targetRef.trim())}`
+          : '/dashboard';
+        router.replace(dest);
+      } else {
+        const dest = targetRef 
+          ? `/dashboard?tab=tickets&ref=${encodeURIComponent(targetRef.trim())}`
+          : '/dashboard?tab=tickets';
+        router.replace(dest);
+      }
     }
   }, [isAuthenticated, isAuthLoading, onboardingRequired, targetRef, router]);
 
