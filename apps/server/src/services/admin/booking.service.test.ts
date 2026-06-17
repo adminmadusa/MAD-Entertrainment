@@ -336,7 +336,7 @@ describe('Admin Booking Service Backend Tests', () => {
           isResend: true,
           resendId: expect.any(String),
         },
-        expect.stringContaining('pdf:generate:booking-123:admin-resend:')
+        expect.stringContaining('pdf-generate-booking-123-admin-resend-')
       );
 
       expect(auditLog).toHaveBeenCalledWith(

@@ -399,7 +399,7 @@ describe('Asynchronous Workers', () => {
             },
           ],
         }),
-        `email:dispatch:${mockBookingId}`
+        `email-dispatch-${mockBookingId}`
       );
     });
 
@@ -520,7 +520,7 @@ describe('Asynchronous Workers', () => {
     it('should create and process new notification atomically', async () => {
       const mockBookingId = new Types.ObjectId().toString();
       const mockEventId = new Types.ObjectId().toString();
-      const jobId = `email:dispatch:${mockBookingId}`;
+      const jobId = `email-dispatch-${mockBookingId}`;
       const data = {
         to: 'recipient@example.com',
         subject: 'Booking Confirmed',
@@ -552,7 +552,7 @@ describe('Asynchronous Workers', () => {
     it('should skip duplicate concurrent execution on first attempt if status is processing', async () => {
       const mockBookingId = new Types.ObjectId().toString();
       const mockEventId = new Types.ObjectId().toString();
-      const jobId = `email:dispatch:${mockBookingId}`;
+      const jobId = `email-dispatch-${mockBookingId}`;
       const data = {
         to: 'recipient@example.com',
         subject: 'Booking Confirmed',
@@ -575,7 +575,7 @@ describe('Asynchronous Workers', () => {
     it('should skip execution if notification is already sent (idempotency)', async () => {
       const mockBookingId = new Types.ObjectId().toString();
       const mockEventId = new Types.ObjectId().toString();
-      const jobId = `email:dispatch:${mockBookingId}`;
+      const jobId = `email-dispatch-${mockBookingId}`;
       const data = {
         to: 'recipient@example.com',
         subject: 'Booking Confirmed',
@@ -598,7 +598,7 @@ describe('Asynchronous Workers', () => {
     it('should allow execution on retry even if status is processing (retry safety)', async () => {
       const mockBookingId = new Types.ObjectId().toString();
       const mockEventId = new Types.ObjectId().toString();
-      const jobId = `email:dispatch:${mockBookingId}`;
+      const jobId = `email-dispatch-${mockBookingId}`;
       const data = {
         to: 'recipient@example.com',
         subject: 'Booking Confirmed',
@@ -632,7 +632,7 @@ describe('Asynchronous Workers', () => {
     it('should skip duplicate concurrent execution on retry (attemptsMade > 0) if another worker already started that retry', async () => {
       const mockBookingId = new Types.ObjectId().toString();
       const mockEventId = new Types.ObjectId().toString();
-      const jobId = `email:dispatch:${mockBookingId}`;
+      const jobId = `email-dispatch-${mockBookingId}`;
       const data = {
         to: 'recipient@example.com',
         subject: 'Booking Confirmed',
@@ -657,7 +657,7 @@ describe('Asynchronous Workers', () => {
     it('should transition to failed if email dispatch fails', async () => {
       const mockBookingId = new Types.ObjectId().toString();
       const mockEventId = new Types.ObjectId().toString();
-      const jobId = `email:dispatch:${mockBookingId}`;
+      const jobId = `email-dispatch-${mockBookingId}`;
       const data = {
         to: 'recipient@example.com',
         subject: 'Booking Confirmed',
@@ -691,7 +691,7 @@ describe('Asynchronous Workers', () => {
     it('should call sendEmail with deterministic Message-ID derived from jobId', async () => {
       const mockBookingId = new Types.ObjectId().toString();
       const mockEventId = new Types.ObjectId().toString();
-      const jobId = `email:dispatch:${mockBookingId}`;
+      const jobId = `email-dispatch-${mockBookingId}`;
       const data = {
         to: 'recipient@example.com',
         subject: 'Booking Confirmed',
@@ -719,7 +719,7 @@ describe('Asynchronous Workers', () => {
     it('should enforce 5-minute lease concurrency lock and skip execution if another worker started within the lease', async () => {
       const mockBookingId = new Types.ObjectId().toString();
       const mockEventId = new Types.ObjectId().toString();
-      const jobId = `email:dispatch:${mockBookingId}`;
+      const jobId = `email-dispatch-${mockBookingId}`;
       const data = {
         to: 'recipient@example.com',
         subject: 'Booking Confirmed',
@@ -762,7 +762,7 @@ describe('Asynchronous Workers', () => {
     it('should allow worker retry execution if the 5-minute lease concurrency lock has expired', async () => {
       const mockBookingId = new Types.ObjectId().toString();
       const mockEventId = new Types.ObjectId().toString();
-      const jobId = `email:dispatch:${mockBookingId}`;
+      const jobId = `email-dispatch-${mockBookingId}`;
       const data = {
         to: 'recipient@example.com',
         subject: 'Booking Confirmed',

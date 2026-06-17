@@ -419,7 +419,7 @@ export async function resendBookingTickets(
         recipientEmail: booking.guestEmail,
         guestName: booking.guestName,
       },
-      `pdf:generate:${booking._id}:resend:${Date.now()}` // Bypass BullMQ deduplication
+      `pdf-generate-${booking._id}-resend-${Date.now()}` // Bypass BullMQ deduplication
     );
 
     sendSuccess(

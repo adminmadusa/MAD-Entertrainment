@@ -52,18 +52,30 @@ export class QueueService {
   ): Promise<void> {
     const queue = this.getQueue(queueName);
 
-    if (queue) {
-      try {
-        await queue.add(jobName, data, { jobId });
-        logger.debug({ queueName, jobName, jobId }, 'Job enqueued in BullMQ');
-        return;
-      } catch (err) {
-        logger.error({ err, queueName, jobName }, 'Failed to enqueue job in BullMQ. Attempting local fallback.');
-      }
+    if (!queue) {
+      throw new Error(
+        `Queue connection error: Redis is offline. Failed to enqueue job ${jobName} for queue ${queueName}`
+      );
     }
 
-    // Fail-Fast Strategy: Throw an error immediately when Redis is offline to delegate persistence to payment webhooks
-    throw new Error(`Queue connection error: Redis is offline. Failed to enqueue job ${jobName} for queue ${queueName}`);
+    try {
+      await queue.add(jobName, data, { jobId });
+      logger.debug({ queueName, jobName, jobId }, 'Job enqueued in BullMQ');
+      return;
+    } catch (err) {
+      logger.error(
+        { err, queueName, jobName },
+        'Failed to enqueue job in BullMQ.'
+      );
+
+      if (!isRedisConnected()) {
+        throw new Error(
+          `Queue connection error: Redis is offline. Failed to enqueue job ${jobName} for queue ${queueName}`
+        );
+      }
+
+      throw err;
+    }
   }
 
   /**
