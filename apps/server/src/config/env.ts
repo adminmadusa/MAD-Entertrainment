@@ -82,6 +82,16 @@ const envSchema = z.object({
 
   EMAIL_REPLY_TO: z.string().optional(),
 
+  EMAIL_PROVIDER: z
+    .enum(['smtp', 'zeptomail'])
+    .default('smtp'),
+
+  ZEPTOMAIL_API_TOKEN: z.string().optional(),
+
+  ZEPTOMAIL_API_URL: z
+    .string()
+    .default('https://api.zeptomail.in/v1.1/email'),
+
   // ─────────────────────────────────────────
   // Razorpay
   // ─────────────────────────────────────────
