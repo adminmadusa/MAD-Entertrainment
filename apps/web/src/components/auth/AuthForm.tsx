@@ -19,6 +19,8 @@ import {
 import { AuthResponse, VerificationCodeRequestResponse, AuthUser } from '@/types/auth';
 import { Button } from '@mad/ui';
 import { ProfileCompletionForm } from './ProfileCompletionForm';
+import { checkEmailSchema, verifyAuthSchema, normalizeOtp } from '@mad/validations';
+import { mapZodErrorToFields } from '@/lib/validation/mapZodError';
 
 // ─── Google SSO Type Definitions ─────────────────────────────
 
@@ -436,22 +438,54 @@ export function AuthForm({
     e.preventDefault();
     setError('');
     setInfoMessage('');
-    if (!email.trim()) {
+
+    // 1. Normalize
+    const cleanedData = {
+      email: email.trim().toLowerCase(),
+    };
+
+    // 2. Validate empty check to preserve existing error UX
+    if (!cleanedData.email) {
       setError('Email address is required');
       return;
     }
+
+    // 3. Validate format and max length via checkEmailSchema
+    const result = checkEmailSchema.safeParse(cleanedData);
+    if (!result.success) {
+      const errors = mapZodErrorToFields(result.error);
+      setError(errors.email || 'Invalid email format');
+      return;
+    }
+
     requestVerificationCodeMutation.mutate();
   };
 
   const handleSubmitOtp = (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    const cleanOtp = otp.trim().replace(/\s/g, '');
-    if (cleanOtp.length !== 6) {
+
+    // 1. Normalize
+    const cleanedData = {
+      email: email.trim().toLowerCase(),
+      otp: normalizeOtp(otp),
+    };
+
+    // 2. Validate length to preserve exact user-facing error message wording
+    if (cleanedData.otp.length !== 6) {
       setError('Please enter a valid 6-digit passcode');
       return;
     }
-    verifyMutation.mutate(cleanOtp);
+
+    // 3. Validate using verifyAuthSchema
+    const result = verifyAuthSchema.safeParse(cleanedData);
+    if (!result.success) {
+      const errors = mapZodErrorToFields(result.error);
+      setError(errors.otp || errors.email || 'Please enter a valid 6-digit passcode');
+      return;
+    }
+
+    verifyMutation.mutate(cleanedData.otp);
   };
 
   const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
