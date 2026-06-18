@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 
 // ─── Section Reveal Animation ─────────────────────────────────
@@ -21,6 +22,19 @@ const directionVariants = {
 
 export function Reveal({ children, delay = 0, direction = 'up', className = '', trigger = 'scroll' }: RevealProps) {
   const isScroll = trigger === 'scroll';
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return (
+      <div className={className}>
+        {children}
+      </div>
+    );
+  }
 
   return (
     <motion.div
