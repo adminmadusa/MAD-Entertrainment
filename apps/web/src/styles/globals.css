@@ -393,14 +393,31 @@ video {
 
 .animate-ambient-shift-1 {
   animation: ambient-shift-1 25s infinite alternate ease-in-out;
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
+  -webkit-transform: translate3d(0, 0, 0);
 }
 
 .animate-ambient-shift-2 {
   animation: ambient-shift-2 30s infinite alternate ease-in-out;
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
+  -webkit-transform: translate3d(0, 0, 0);
 }
 
 .animate-ambient-shift-3 {
   animation: ambient-shift-3 20s infinite alternate ease-in-out;
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
+  -webkit-transform: translate3d(0, 0, 0);
+}
+
+@media (max-width: 768px) {
+  .animate-ambient-shift-1,
+  .animate-ambient-shift-2,
+  .animate-ambient-shift-3 {
+    animation: none !important;
+  }
 }
 
 /* ─── Safari Viewport Height & Momentum Scrolling Overrides ─── */
