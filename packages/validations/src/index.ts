@@ -49,16 +49,12 @@ export const checkoutDetailsSchema = z.object({
   firstName: z.string().min(1, 'First name is required').max(100, 'First name is too long'),
   lastName: z.string().min(1, 'Last name is required').max(100, 'Last name is too long'),
   guestEmail: z.string().email('Invalid email address format').max(200, 'Email address is too long'),
-  guestEmailConfirm: z.string().email('Invalid email confirmation format').max(200, 'Confirmation email is too long').optional(),
   guestPhone: z.string().max(50, 'Phone number is too long').optional().or(z.literal('')),
   keepUpdated: z.boolean().default(false),
   sendBestEvents: z.boolean().default(false),
   ageConfirmed: z.boolean().optional(),
   termsAccepted: z.boolean().optional(),
-}).strict().refine((data) => !data.guestEmailConfirm || data.guestEmail === data.guestEmailConfirm, {
-  message: "Emails do not match",
-  path: ['guestEmailConfirm'],
-});
+}).strict();
 
 export const paymentVerificationSchema = z.object({
   razorpay_order_id: z.string().min(1, 'Razorpay order ID is required').max(100),
@@ -74,6 +70,49 @@ export const adminDlqRetrySchema = z.object({
   dlqId: objectIdSchema,
 }).strict();
 
+// Migrated auth validation schemas
+export const emailSchema = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .email('Invalid email format')
+  .max(254, 'Email is too long');
+
+export const otpSchema = z
+  .string()
+  .trim()
+  .min(6, 'Passcode must be 6 digits')
+  .max(6, 'Passcode must be 6 digits')
+  .regex(/^\d{6}$/, 'Passcode must be 6 digits');
+
+export const checkEmailSchema = z.object({
+  email: emailSchema,
+}).strict();
+
+export const verifyAuthSchema = z.object({
+  email: emailSchema,
+  otp: otpSchema,
+}).strict();
+
+export const updateProfileSchema = z.object({
+  firstName: z
+    .string()
+    .trim()
+    .min(1, 'First name is required')
+    .max(100, 'First name is too long'),
+  lastName: z
+    .string()
+    .trim()
+    .min(1, 'Last name is required')
+    .max(100, 'Last name is too long'),
+  mobileNumber: z
+    .string()
+    .trim()
+    .regex(/^\+[1-9]\d{1,14}$/, 'Mobile number must be in valid E.164 international format (e.g. +14155552671 or +919876543210)')
+    .optional()
+    .or(z.literal('')),
+}).strict();
+
 export type CheckoutInput = z.infer<typeof checkoutSchema>;
 export type ReserveTicketsInput = z.infer<typeof reserveTicketsSchema>;
 export type CheckoutDetailsInput = z.infer<typeof checkoutDetailsSchema>;
@@ -81,3 +120,5 @@ export type PaymentVerificationInput = z.infer<typeof paymentVerificationSchema>
 export type StripePaymentIntentInput = z.infer<typeof stripePaymentIntentSchema>;
 export type AdminDlqRetryInput = z.infer<typeof adminDlqRetrySchema>;
 export * from './upload.validator';
+export * from './normalizers';
+

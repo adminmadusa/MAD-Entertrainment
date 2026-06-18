@@ -1,10 +1,8 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { CheckoutDetailsInput } from '@mad/validations';
+import { CheckoutDetailsInput, checkoutDetailsSchema } from '@mad/validations';
 import { useAuth } from '@/providers/AuthProvider';
-
-
-
+import { mapZodErrorToFields } from '@/lib/validation/mapZodError';
 import { Event } from '@mad/types';
 
 interface CheckoutFormProps {
@@ -65,24 +63,32 @@ export function CheckoutForm({ event, isExpired, isDisabled, onSubmit, onErrorSe
     onErrorSet('');
     setFieldErrors({});
 
-    const errors: Record<string, string> = {};
-    if (!firstName.trim()) errors.firstName = 'First name is required';
-    if (!lastName.trim()) errors.lastName = 'Last name is required';
-    if (!guestEmail.trim()) errors.guestEmail = 'Email is required';
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(guestEmail)) errors.guestEmail = 'Invalid email format';
+    // 1. Normalize data
+    const cleanedData: CheckoutDetailsInput = {
+      firstName: firstName.trim(),
+      lastName: lastName.trim(),
+      guestEmail: guestEmail.trim().toLowerCase(),
+      guestPhone: guestPhone.trim(),
+      keepUpdated,
+      sendBestEvents,
+      ageConfirmed: event?.requireAgeConfirmation ? ageConfirmed : undefined,
+    };
 
+    // 2. Validate using Zod schema
+    const errors: Record<string, string> = {};
+    const result = checkoutDetailsSchema.safeParse(cleanedData);
+    if (!result.success) {
+      Object.assign(errors, mapZodErrorToFields(result.error));
+    }
+
+    // 3. Keep guestEmail and guestEmailConfirm local matching checks (UX validation)
     if (!user) {
-      const normalizedEmail = guestEmail.trim().toLowerCase();
       const normalizedConfirm = guestEmailConfirm.trim().toLowerCase();
       if (!guestEmailConfirm.trim()) {
         errors.guestEmailConfirm = 'Please confirm your email';
-      } else if (normalizedEmail !== normalizedConfirm) {
+      } else if (cleanedData.guestEmail !== normalizedConfirm) {
         errors.guestEmailConfirm = 'Emails do not match';
       }
-    }
-
-    if (event?.requireAgeConfirmation && !ageConfirmed) {
-      errors.ageConfirmed = 'You must confirm your age to continue';
     }
 
     if (Object.keys(errors).length > 0) {
@@ -105,18 +111,10 @@ export function CheckoutForm({ event, isExpired, isDisabled, onSubmit, onErrorSe
       return;
     }
 
-    // Normalize emails to lowercase before submission and persistence to prevent duplicate customer records caused by casing differences.
-    onSubmit({
-      firstName: firstName.trim(),
-      lastName: lastName.trim(),
-      guestEmail: guestEmail.trim().toLowerCase(),
-      guestEmailConfirm: !user ? guestEmailConfirm.trim().toLowerCase() : undefined,
-      guestPhone: guestPhone.trim(),
-      keepUpdated,
-      sendBestEvents,
-      ageConfirmed: event?.requireAgeConfirmation ? ageConfirmed : undefined,
-    });
+    // 4. Submit clean data
+    onSubmit(cleanedData);
   };
+
 
   return (
     <form id="checkout-form" onSubmit={handlePlaceOrderSubmit} className="space-y-4">
