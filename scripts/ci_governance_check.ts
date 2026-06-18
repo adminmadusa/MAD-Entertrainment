@@ -113,6 +113,36 @@ function checkFile(filePath: string) {
         });
       }
     }
+
+    // Rule 4: Validation Drift Detection (checks form components for manual business validations)
+    const isClientForm = filePath.includes('apps/web/src/components/') && filePath.endsWith('Form.tsx');
+    if (isClientForm) {
+      const forbiddenPatterns = [
+        { term: '.email(', required: 'Use emailSchema or checkEmailSchema from @mad/validations' },
+        { term: '.regex(', required: 'Use updateProfileSchema or checkoutDetailsSchema from @mad/validations' },
+        { term: '.test(', required: 'Use zod validations from @mad/validations' },
+        { term: 'new RegExp(', required: 'Use zod validations from @mad/validations' },
+      ];
+
+      forbiddenPatterns.forEach(({ term, required }) => {
+        if (line.includes(term) && !line.includes('//')) {
+          violations.push({
+            file: filePath,
+            rule: 'Validation Drift Detection',
+            line: lineNum,
+            snippet: line.trim(),
+          });
+
+          // Print Rule 4C Governance Violation Report
+          console.error('\nValidation Drift Violation\n');
+          console.error(`File:\n${filePath}\n`);
+          console.error(`Line:\n${lineNum}\n`);
+          console.error(`Rule:\nValidation Drift Detection\n`);
+          console.error(`Detected:\n${term}\n`);
+          console.error(`Required:\n${required}\n`);
+        }
+      });
+    }
   });
 }
 

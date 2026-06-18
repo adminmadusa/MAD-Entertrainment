@@ -7,6 +7,8 @@ import { useAuth } from '@/providers/AuthProvider';
 import { publicUpdateProfile } from '@/lib/api/public.service';
 import { extractApiError } from '@/lib/api/client';
 import { AuthUser } from '@/types/auth';
+import { updateProfileSchema, normalizePhone } from '@mad/validations';
+import { mapZodErrorToFields } from '@/lib/validation/mapZodError';
 
 interface ProfileCompletionFormProps {
   mode?: 'onboarding' | 'edit';
@@ -59,29 +61,27 @@ export function ProfileCompletionForm({
     setValidationError('');
     setOnboardError('');
 
-    const trimmedFirstName = firstName.trim();
-    const trimmedLastName = lastName.trim();
+    // 1. Normalize
+    const cleanedData = {
+      firstName: firstName.trim(),
+      lastName: lastName.trim(),
+      mobileNumber: normalizePhone(mobileNumber),
+    };
 
-    if (!trimmedFirstName) {
-      setValidationError('First name is required');
-      return;
-    }
-    if (!trimmedLastName) {
-      setValidationError('Last name is required');
-      return;
-    }
-
-    const trimmedMobile = mobileNumber.trim();
-    const sanitizedMobile = trimmedMobile.replace(/[\s\-\(\)]/g, '');
-    if (sanitizedMobile && !/^\+[1-9]\d{1,14}$/.test(sanitizedMobile)) {
-      setValidationError('Mobile number must be in E.164 format (e.g. +919876543210)');
+    // 2. Validate using Zod schema
+    const result = updateProfileSchema.safeParse(cleanedData);
+    if (!result.success) {
+      const errors = mapZodErrorToFields(result.error);
+      const firstError = Object.values(errors)[0];
+      setValidationError(firstError || 'Invalid profile information');
       return;
     }
 
+    // 3. Submit
     updateProfileMutation.mutate({
-      firstName: trimmedFirstName,
-      lastName: trimmedLastName,
-      mobileNumber: sanitizedMobile || undefined,
+      firstName: cleanedData.firstName,
+      lastName: cleanedData.lastName,
+      mobileNumber: cleanedData.mobileNumber || undefined,
     });
   };
 
