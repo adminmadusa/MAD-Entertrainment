@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 
 import { QUERY_KEYS } from '@mad/shared';
-import { Event, Booking } from '@mad/types';
+import { Event, Booking, Ticket } from '@mad/types';
 import { useCountdown } from '@/hooks/use-countdown.hook';
 import { extractApiError } from '@/lib/api/client';
 import { loadScriptOnce } from '@/lib/utils/load-script-once';
@@ -217,10 +217,26 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
 
   const verifyPaymentMutation = useMutation({
     mutationFn: (payload: Record<string, unknown>) => publicVerifyPayment(bookingId, payload),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: QUERY_KEYS.public.bookings.checkout(bookingId)
-      });
+    onSuccess: (confirmedBooking) => {
+      queryClient.setQueryData(
+        QUERY_KEYS.public.bookings.checkout(bookingId),
+        (oldData: { booking: Booking; tickets: Ticket[]; ticketsReady: boolean } | undefined) => {
+          if (!oldData) {
+            return {
+              booking: confirmedBooking,
+              tickets: [],
+              ticketsReady: false,
+            };
+          }
+          return {
+            ...oldData,
+            booking: {
+              ...confirmedBooking,
+              eventId: oldData.booking?.eventId || confirmedBooking.eventId,
+            },
+          };
+        }
+      );
       setIsProcessing(false);
     },
     onError: (err) => {
