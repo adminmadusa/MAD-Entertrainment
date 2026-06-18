@@ -1414,14 +1414,10 @@ export class PaymentService {
     }
 
     if (confirmedBooking) {
-      this.assertBookingOwnership(confirmedBooking, ownershipContext);
       return confirmedBooking;
     }
 
     const latestBooking = await Booking.findById(booking._id);
-    if (latestBooking) {
-      this.assertBookingOwnership(latestBooking, ownershipContext);
-    }
     return latestBooking || booking;
   }
 
