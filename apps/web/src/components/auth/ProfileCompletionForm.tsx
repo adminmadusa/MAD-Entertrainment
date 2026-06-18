@@ -9,6 +9,7 @@ import { extractApiError } from '@/lib/api/client';
 import { AuthUser } from '@/types/auth';
 
 interface ProfileCompletionFormProps {
+  mode?: 'onboarding' | 'edit';
   initialFirstName?: string;
   initialLastName?: string;
   initialMobileNumber?: string;
@@ -18,6 +19,7 @@ interface ProfileCompletionFormProps {
 }
 
 export function ProfileCompletionForm({
+  mode = 'onboarding',
   initialFirstName = '',
   initialLastName = '',
   initialMobileNumber = '',
@@ -36,7 +38,9 @@ export function ProfileCompletionForm({
     mutationFn: (payload) => publicUpdateProfile(payload),
     onSuccess: (updatedUser) => {
       login(token!, updatedUser);
-      setOnboardingRequired(false);
+      if (mode === 'onboarding') {
+        setOnboardingRequired(false);
+      }
       setOnboardError('');
       if (onSuccess) {
         onSuccess();
@@ -86,8 +90,14 @@ export function ProfileCompletionForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
       <div className="text-center">
-        <h2 className="text-xl font-bold text-white">Complete Your Account Details</h2>
-        <p className="text-xs text-text-muted mt-1">Please provide your name to complete your account registration.</p>
+        <h2 className="text-xl font-bold text-white">
+          {mode === 'edit' ? 'Update Profile' : 'Complete Your Account Details'}
+        </h2>
+        <p className="text-xs text-text-muted mt-1">
+          {mode === 'edit'
+            ? 'Update your personal and contact details below.'
+            : 'Please provide your name to complete your account registration.'}
+        </p>
       </div>
 
       {displayError && (
@@ -166,7 +176,7 @@ export function ProfileCompletionForm({
           disabled={isPending}
           isLoading={isPending}
         >
-          Continue
+          {mode === 'edit' ? 'Save Changes' : 'Continue'}
         </Button>
 
         {onCancel && (
@@ -177,7 +187,7 @@ export function ProfileCompletionForm({
               disabled={isPending}
               className="text-xs text-text-muted hover:text-white transition-colors duration-200 py-2 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent-purple rounded-md px-1"
             >
-              Cancel and Log Out
+              {mode === 'edit' ? 'Cancel' : 'Cancel and Log Out'}
             </button>
           </div>
         )}

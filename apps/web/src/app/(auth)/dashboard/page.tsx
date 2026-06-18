@@ -16,6 +16,7 @@ import {
 } from '@/lib/api/public.service';
 import { useAuth } from '@/providers/AuthProvider';
 import { ProfileCompletionForm } from '@/components/auth/ProfileCompletionForm';
+import { ProfileEditor } from '@/components/account/ProfileEditor';
 
 function BookingCardSkeleton() {
   return (
@@ -632,46 +633,7 @@ function DashboardContent() {
       <div className="glass rounded-3xl border border-border-subtle p-6 sm:p-8 space-y-6 shadow-xl relative overflow-hidden">
         {/* Decorative Ambient Glow */}
         <div className="absolute top-0 right-0 w-64 h-64 bg-accent-purple/5 blur-[100px] pointer-events-none" />
-
-        <div className="flex items-center gap-4">
-          {user?.picture ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={user.picture}
-              alt={userName}
-              className="w-16 h-16 rounded-full border border-white/10 object-cover"
-            />
-          ) : (
-            <div className="w-16 h-16 rounded-full bg-gradient-brand flex items-center justify-center text-white text-2xl font-black shadow-glow-sm">
-              {userName.charAt(0).toUpperCase()}
-            </div>
-          )}
-          <div>
-            <h2 className="text-white font-bold text-xl">Account Details</h2>
-            <p className="text-text-secondary text-xs mt-1">Manage your account details and linked contact information</p>
-          </div>
-        </div>
-
-        <div className="border-t border-border-subtle/30 pt-6 grid grid-cols-1 sm:grid-cols-2 gap-6 text-sm">
-          <div>
-            <span className="text-[10px] text-text-muted uppercase tracking-wider block">Email Address</span>
-            <span className="text-white font-semibold">{userEmail}</span>
-          </div>
-          <div>
-            <span className="text-[10px] text-text-muted uppercase tracking-wider block">Phone Number</span>
-            <span className="text-white font-semibold">{userPhone}</span>
-          </div>
-          <div>
-            <span className="text-[10px] text-text-muted uppercase tracking-wider block">Member Since</span>
-            <span className="text-text-muted font-semibold italic">Coming Soon</span>
-          </div>
-          <div>
-            <span className="text-[10px] text-text-muted uppercase tracking-wider block">Account Type</span>
-            <span className="text-white font-semibold capitalize">
-              {user?.isGuest ? 'Guest Account' : 'Registered Member'}
-            </span>
-          </div>
-        </div>
+        <ProfileEditor />
       </div>
     );
   };
