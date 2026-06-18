@@ -120,7 +120,7 @@ export function CheckoutForm({ event, isExpired, isDisabled, onSubmit, onErrorSe
 
   return (
     <form id="checkout-form" onSubmit={handlePlaceOrderSubmit} className="space-y-4">
-      <div className="glass rounded-2xl border border-white/5 p-5 space-y-4">
+      <div className="glass rounded-2xl border border-white/5 p-4 sm:p-5 space-y-4">
         <div className="flex justify-between items-center border-b border-white/10 pb-2.5">
           <h2 className="text-white font-bold text-base">Billing information</h2>
           <span className="text-[10px] text-text-muted uppercase">* Required</span>
@@ -139,10 +139,10 @@ export function CheckoutForm({ event, isExpired, isDisabled, onSubmit, onErrorSe
                 setFieldErrors((prev) => ({ ...prev, firstName: '' }));
               }}
               placeholder="First name"
-              className={`w-full px-4 py-2 rounded-xl bg-background border text-base lg:text-sm text-white focus:outline-none transition-colors ${fieldErrors.firstName ? 'border-red-500' : 'border-white/10 focus:border-accent-purple'
+              className={`w-full px-4 py-2.5 min-h-[44px] rounded-xl bg-background border text-base lg:text-sm text-white focus:outline-none transition-colors ${fieldErrors.firstName ? 'border-red-500' : 'border-white/10 focus:border-accent-purple'
                 }`}
             />
-            {fieldErrors.firstName && <p className="text-red-400 text-[10px]" role="status" aria-live="polite">{fieldErrors.firstName}</p>}
+            {fieldErrors.firstName && <p className="text-red-400 text-xs" role="status" aria-live="polite">{fieldErrors.firstName}</p>}
           </div>
           <div className="space-y-1">
             <label htmlFor="checkout-last-name" className="text-xs text-text-secondary font-medium">Last name *</label>
@@ -156,10 +156,10 @@ export function CheckoutForm({ event, isExpired, isDisabled, onSubmit, onErrorSe
                 setFieldErrors((prev) => ({ ...prev, lastName: '' }));
               }}
               placeholder="Last name"
-              className={`w-full px-4 py-2 rounded-xl bg-background border text-base lg:text-sm text-white focus:outline-none transition-colors ${fieldErrors.lastName ? 'border-red-500' : 'border-white/10 focus:border-accent-purple'
+              className={`w-full px-4 py-2.5 min-h-[44px] rounded-xl bg-background border text-base lg:text-sm text-white focus:outline-none transition-colors ${fieldErrors.lastName ? 'border-red-500' : 'border-white/10 focus:border-accent-purple'
                 }`}
             />
-            {fieldErrors.lastName && <p className="text-red-400 text-[10px]" role="status" aria-live="polite">{fieldErrors.lastName}</p>}
+            {fieldErrors.lastName && <p className="text-red-400 text-xs" role="status" aria-live="polite">{fieldErrors.lastName}</p>}
           </div>
         </div>
 
@@ -177,10 +177,10 @@ export function CheckoutForm({ event, isExpired, isDisabled, onSubmit, onErrorSe
                 setFieldErrors((prev) => ({ ...prev, guestEmail: '', guestEmailConfirm: '' }));
               }}
               placeholder="email@example.com"
-              className={`w-full px-4 py-2 rounded-xl bg-background border text-base lg:text-sm focus:outline-none transition-colors ${user ? 'text-text-muted/60 bg-white/5 cursor-not-allowed border-white/5' : 'text-white bg-background ' + (fieldErrors.guestEmail ? 'border-red-500' : 'border-white/10 focus:border-accent-purple')
+              className={`w-full px-4 py-2.5 min-h-[44px] rounded-xl bg-background border text-base lg:text-sm focus:outline-none transition-colors ${user ? 'text-text-muted/60 bg-white/5 cursor-not-allowed border-white/5' : 'text-white bg-background ' + (fieldErrors.guestEmail ? 'border-red-500' : 'border-white/10 focus:border-accent-purple')
                 }`}
             />
-            {fieldErrors.guestEmail && <p className="text-red-400 text-[10px]" role="status" aria-live="polite">{fieldErrors.guestEmail}</p>}
+            {fieldErrors.guestEmail && <p className="text-red-400 text-xs" role="status" aria-live="polite">{fieldErrors.guestEmail}</p>}
             {user && <p className="text-[10px] text-text-muted/60 mt-1">Verified via your connected account.</p>}
           </div>
 
@@ -205,12 +205,12 @@ export function CheckoutForm({ event, isExpired, isDisabled, onSubmit, onErrorSe
                     setFieldErrors((prev) => ({ ...prev, guestEmailConfirm: '' }));
                   }}
                   placeholder="Confirm email address"
-                  className={`w-full px-4 py-2 rounded-xl bg-background border text-base lg:text-sm text-white focus:outline-none transition-colors ${fieldErrors.guestEmailConfirm ? 'border-red-500' : 'border-white/10 focus:border-accent-purple'
+                  className={`w-full px-4 py-2.5 min-h-[44px] rounded-xl bg-background border text-base lg:text-sm text-white focus:outline-none transition-colors ${fieldErrors.guestEmailConfirm ? 'border-red-500' : 'border-white/10 focus:border-accent-purple'
                     }`}
                 />
-                {fieldErrors.guestEmailConfirm && <p className="text-red-400 text-[10px]" role="status" aria-live="polite">{fieldErrors.guestEmailConfirm}</p>}
+                {fieldErrors.guestEmailConfirm && <p className="text-red-400 text-xs" role="status" aria-live="polite">{fieldErrors.guestEmailConfirm}</p>}
                 {!fieldErrors.guestEmailConfirm && emailsMatch && (
-                  <p className="text-emerald-400 text-[10px] mt-1 font-semibold" role="status" aria-live="polite">✓ Emails match</p>
+                  <p className="text-emerald-400 text-xs mt-1 font-semibold" role="status" aria-live="polite">✓ Emails match</p>
                 )}
               </div>
             );
@@ -227,33 +227,33 @@ export function CheckoutForm({ event, isExpired, isDisabled, onSubmit, onErrorSe
               disabled={isDisabled}
               onChange={(e) => setGuestPhone(e.target.value)}
               placeholder="+91 98765 43210"
-              className={`w-full px-4 py-2 rounded-xl bg-background border text-base lg:text-sm text-white focus:outline-none transition-colors ${fieldErrors.guestPhone ? 'border-red-500' : 'border-white/10 focus:border-accent-purple'
+              className={`w-full px-4 py-2.5 min-h-[44px] rounded-xl bg-background border text-base lg:text-sm text-white focus:outline-none transition-colors ${fieldErrors.guestPhone ? 'border-red-500' : 'border-white/10 focus:border-accent-purple'
                 }`}
             />
-            {fieldErrors.guestPhone && <p className="text-red-400 text-[10px]">{fieldErrors.guestPhone}</p>}
+            {fieldErrors.guestPhone && <p className="text-red-400 text-xs">{fieldErrors.guestPhone}</p>}
           </div>
 
         </div>
 
         {/* Subscriptions */}
         <div className="space-y-2 pt-3 border-t border-white/5">
-          <label className="flex items-start gap-2.5 cursor-pointer text-[11px] text-text-secondary leading-normal">
+          <label className="flex items-center gap-3 min-h-[44px] cursor-pointer text-[11px] text-text-secondary leading-normal">
             <input
               type="checkbox"
               checked={keepUpdated}
               disabled={isDisabled}
               onChange={(e) => setKeepUpdated(e.target.checked)}
-              className="mt-0.5 rounded border-white/10 bg-background accent-accent-purple"
+              className="rounded border-white/10 bg-background accent-accent-purple shrink-0"
             />
             <span>Keep me updated on more events and news from this event organizer.</span>
           </label>
-          <label className="flex items-start gap-2.5 cursor-pointer text-[11px] text-text-secondary leading-normal">
+          <label className="flex items-center gap-3 min-h-[44px] cursor-pointer text-[11px] text-text-secondary leading-normal">
             <input
               type="checkbox"
               checked={sendBestEvents}
               disabled={isDisabled}
               onChange={(e) => setSendBestEvents(e.target.checked)}
-              className="mt-0.5 rounded border-white/10 bg-background accent-accent-purple"
+              className="rounded border-white/10 bg-background accent-accent-purple shrink-0"
             />
             <span>Send me emails about the best events happening nearby or online.</span>
           </label>
@@ -274,7 +274,7 @@ export function CheckoutForm({ event, isExpired, isDisabled, onSubmit, onErrorSe
         {/* Age Confirmation Requirement */}
         {event?.requireAgeConfirmation && (
           <div className="space-y-1 pt-3 border-t border-white/5">
-            <label className="flex items-start gap-2.5 cursor-pointer text-sm text-white font-medium leading-normal">
+            <label className="flex items-center gap-3 min-h-[44px] cursor-pointer text-sm text-white font-medium leading-normal">
               <input
                 id="checkout-age-confirm"
                 type="checkbox"
@@ -286,12 +286,12 @@ export function CheckoutForm({ event, isExpired, isDisabled, onSubmit, onErrorSe
                     setFieldErrors((prev) => ({ ...prev, ageConfirmed: '' }));
                   }
                 }}
-                className={`mt-0.5 w-4 h-4 rounded bg-background accent-accent-purple ${fieldErrors.ageConfirmed ? 'border border-red-500' : 'border-white/20'
+                className={`w-4 h-4 rounded bg-background accent-accent-purple shrink-0 ${fieldErrors.ageConfirmed ? 'border border-red-500' : 'border-white/20'
                   }`}
               />
               <span>I confirm that I am {event?.ageRestriction || 18} years of age or older and legally eligible to attend this event.</span>
             </label>
-            {fieldErrors.ageConfirmed && <p className="text-red-400 text-[10px] pl-6.5" role="status" aria-live="polite">{fieldErrors.ageConfirmed}</p>}
+            {fieldErrors.ageConfirmed && <p className="text-red-400 text-xs pl-[28px]" role="status" aria-live="polite">{fieldErrors.ageConfirmed}</p>}
           </div>
         )}
       </div>
