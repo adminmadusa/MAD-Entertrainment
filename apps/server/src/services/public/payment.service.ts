@@ -184,6 +184,16 @@ export class PaymentService {
       throw AppError.badRequest(`Booking is in state "${booking.status}" and cannot accept payment`);
     }
 
+    const event = await Event.findById(booking.eventId);
+    if (!event || event.status !== 'published' || event.isDeleted === true) {
+      throw AppError.notFound('Event not found or not published');
+    }
+
+    const now = new Date();
+    if (now >= new Date(event.startDate) || (event.endDate && now > new Date(event.endDate))) {
+      throw AppError.badRequest('This event is no longer available for booking.');
+    }
+
     if (booking.totalAmount === 0) {
       const payment = await Payment.create({
         bookingId: booking._id,
@@ -981,6 +991,23 @@ export class PaymentService {
       return booking; // Already verified & confirmed
     }
 
+    const event = await Event.findById(booking.eventId);
+    if (!event || event.status !== 'published' || event.isDeleted === true) {
+      throw AppError.notFound('Event not found or not published');
+    }
+
+    const now = new Date();
+    if (now >= new Date(event.startDate) || (event.endDate && now > new Date(event.endDate))) {
+      await this.failPaymentAndReleaseInventory(
+        booking,
+        payment,
+        'Event has already started or ended.',
+        'auto_recovery',
+        'PAYMENT_VALIDATION_FAILURE'
+      );
+      throw AppError.badRequest('This event is no longer available for booking.');
+    }
+
     const env = getEnv();
     let confirmedBooking: IBooking | null = null;
 
@@ -1728,6 +1755,12 @@ export class PaymentService {
           _payment.paidAt = claimedPayment.paidAt;
         }
 
+        // Check event start/end date constraints
+        const now = new Date();
+        if (now >= new Date(event.startDate) || (event.endDate && now > new Date(event.endDate))) {
+          throw new Error('EVENT_EXPIRED_DURING_CONFIRMATION');
+        }
+
         // 1. Pre-validation for Late Recovery
         if (isLateRecovery) {
           // Validate general capacity
@@ -2062,10 +2095,12 @@ export class PaymentService {
 
       let reason = 'CONFIRMATION_TRANSACTION_FAILED';
       let isConcurrentConfirm = false;
-      const isKnownAbort = ['SEAT_ALLOCATION_FAILED', 'EVENT_CAPACITY_ALLOCATION_FAILED', 'CONCURRENT_CONFIRMATION_OR_NOT_FOUND'].includes(err.message);
+      const isKnownAbort = ['SEAT_ALLOCATION_FAILED', 'EVENT_CAPACITY_ALLOCATION_FAILED', 'CONCURRENT_CONFIRMATION_OR_NOT_FOUND', 'EVENT_EXPIRED_DURING_CONFIRMATION'].includes(err.message);
 
       if (err.message === 'SEAT_ALLOCATION_FAILED' || err.message === 'EVENT_CAPACITY_ALLOCATION_FAILED') {
         reason = 'LATE_PAYMENT_RECOVERY_REJECTED_SEATS_TAKEN';
+      } else if (err.message === 'EVENT_EXPIRED_DURING_CONFIRMATION') {
+        reason = 'EVENT_EXPIRED_DURING_CONFIRMATION';
       } else if (err.message === 'CONCURRENT_CONFIRMATION_OR_NOT_FOUND') {
         reason = 'LATE_PAYMENT_RECOVERY_REJECTED_CONCURRENT_CONFIRM';
         const currentBooking = await Booking.findById(booking._id).select('status paymentId').lean().catch(() => null);
@@ -2112,8 +2147,8 @@ export class PaymentService {
         _payment,
         _payment.failureReason,
         undefined,
-        isLateRecovery ? 'auto_recovery' : 'manual',
-        isLateRecovery ? 'EXPIRED_BOOKING_CAPACITY_UNAVAILABLE' : undefined
+        isLateRecovery || err.message === 'EVENT_EXPIRED_DURING_CONFIRMATION' ? 'auto_recovery' : 'manual',
+        isLateRecovery || err.message === 'EVENT_EXPIRED_DURING_CONFIRMATION' ? 'EXPIRED_BOOKING_CAPACITY_UNAVAILABLE' : undefined
       ).catch(() => {});
 
       if (isKnownAbort) {
