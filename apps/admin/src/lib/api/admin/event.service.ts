@@ -32,9 +32,9 @@ export interface AdminEvent {
   slug: string;
   description: string;
   shortDescription?: string;
-  category: string;
-  mode: string;
-  status: string;
+  category?: string;
+  mode?: string;
+  status?: string;
   coverImage?: CloudinaryImage;
   gallery?: CloudinaryImage[];
   venue: string;

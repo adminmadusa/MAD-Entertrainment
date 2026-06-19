@@ -321,6 +321,16 @@ export const updateEventSchema = z.object({
   body: createEventSchema.shape.body.partial(),
 });
 
+export const adminEventsQuerySchema = z.object({
+  query: z.object({
+    page: z.coerce.number().int().positive().default(1),
+    limit: z.coerce.number().int().positive().max(100).default(15),
+    search: z.string().max(200).optional(),
+    status: z.nativeEnum(EventStatus).optional(),
+  }).strict(),
+});
+
+
 // -- Ticket Profile Validation --
 const ticketOfferRulesSchema = z.object({
   discountType: z.enum(['percentage', 'flat', 'none']),

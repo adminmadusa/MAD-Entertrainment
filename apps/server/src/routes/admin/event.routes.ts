@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { AdminRole } from '@mad/shared';
 import * as eventController from '../../controllers/admin/event.controller';
 import { validate } from '../../middleware/validation.middleware';
-import { adminIdParamSchema, createEventSchema, updateEventSchema } from '../../validations/admin-content.validation';
+import { adminEventsQuerySchema, adminIdParamSchema, createEventSchema, updateEventSchema } from '../../validations/admin-content.validation';
 import { requireAdmin, requireRole } from '../../middleware/auth.middleware';
 
 const router: Router = Router();
@@ -11,7 +11,7 @@ const router: Router = Router();
 router.use(requireAdmin);
 
 router.post('/', requireRole(AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.MANAGER), validate(createEventSchema), eventController.createEvent);
-router.get('/', eventController.getEvents);
+router.get('/', validate(adminEventsQuerySchema), eventController.getEvents);
 router.get('/:id', validate(adminIdParamSchema), eventController.getEventById);
 router.put('/:id', requireRole(AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.MANAGER), validate(updateEventSchema), eventController.updateEvent);
 router.delete('/:id', requireRole(AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.MANAGER), validate(adminIdParamSchema), eventController.deleteEvent);
