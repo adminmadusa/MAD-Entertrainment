@@ -66,8 +66,8 @@ export default function AdminEventsPage() {
 
   const sortedEvents = [...events].sort((a, b) => {
     if (!sortField) return 0;
-    const aVal = a[sortField];
-    const bVal = b[sortField];
+    const aVal = a[sortField] ?? '';
+    const bVal = b[sortField] ?? '';
     if (typeof aVal === 'string' && typeof bVal === 'string') {
       const aStr = aVal.toLowerCase();
       const bStr = bVal.toLowerCase();
@@ -116,45 +116,63 @@ export default function AdminEventsPage() {
               <img src={event.coverImage.url} alt={event.title} className="w-10 h-10 rounded-lg object-cover flex-shrink-0" />
             ) : (
               <div className="w-10 h-10 rounded-lg bg-accent-purple/10 flex-shrink-0 flex items-center justify-center text-accent-purple text-xs font-bold">
-                {event.title[0]}
+                {(event.title || '?')[0]}
               </div>
             )}
             <div className="min-w-0">
-              <p className="text-text-primary font-medium truncate max-w-52">{event.title}</p>
-              <p className="text-text-muted text-xs truncate">{event.slug}</p>
+              <p className="text-text-primary font-medium truncate max-w-52">{event.title || 'Untitled Event'}</p>
+              <p className="text-text-muted text-xs truncate">{event.slug || 'no-slug'}</p>
             </div>
           </div>
         </td>
-        <td className="py-4 px-4 capitalize text-text-secondary">{event.category.replace('_', ' ')}</td>
+        <td className="py-4 px-4 capitalize text-text-secondary">
+          {event.category ? (
+            event.category.replace('_', ' ')
+          ) : (
+            <span className="text-xs px-2.5 py-1 rounded-full border border-yellow-500/30 bg-yellow-500/10 text-yellow-400 font-semibold animate-pulse inline-flex items-center gap-1">
+              ⚠️ Missing Category
+            </span>
+          )}
+        </td>
         <td className="py-4 px-4 text-text-secondary">
-          {new Date(event.startDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+          {event.startDate ? (
+            new Date(event.startDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
+          ) : (
+            <span className="text-text-muted">N/A</span>
+          )}
         </td>
         <td className="py-4 px-4">
-          {canMutateEvents ? (
-            <select
-              value={event.status}
-              onChange={(e) => {
-                const nextStatus = e.target.value;
-                if (event.status === 'published' && (nextStatus === 'cancelled' || nextStatus === 'draft' || nextStatus === 'completed')) {
-                  setConfirmStatusTarget({
-                    id: event._id,
-                    title: event.title,
-                    previous: event.status,
-                    next: nextStatus,
-                  });
-                } else {
-                  statusMutation.mutate({ id: event._id, status: nextStatus });
-                }
-              }}
-              className={`text-xs px-2.5 py-1 rounded-full border font-medium bg-transparent cursor-pointer ${STATUS_COLORS[event.status] ?? ''}`}
-            >
-              {['draft', 'published', 'cancelled', 'sold_out', 'completed'].map((s) => (
-                <option key={s} value={s} className="bg-background-card text-text-primary">{s.replace('_', ' ')}</option>
-              ))}
-            </select>
+          {event.status ? (
+            canMutateEvents ? (
+              <select
+                value={event.status}
+                onChange={(e) => {
+                  const nextStatus = e.target.value;
+                  if (event.status === 'published' && (nextStatus === 'cancelled' || nextStatus === 'draft' || nextStatus === 'completed')) {
+                    setConfirmStatusTarget({
+                      id: event._id,
+                      title: event.title,
+                      previous: event.status || '',
+                      next: nextStatus,
+                    });
+                  } else {
+                    statusMutation.mutate({ id: event._id, status: nextStatus });
+                  }
+                }}
+                className={`text-xs px-2.5 py-1 rounded-full border font-medium bg-transparent cursor-pointer ${STATUS_COLORS[event.status] ?? ''}`}
+              >
+                {['draft', 'published', 'cancelled', 'sold_out', 'completed'].map((s) => (
+                  <option key={s} value={s} className="bg-background-card text-text-primary">{s.replace('_', ' ')}</option>
+                ))}
+              </select>
+            ) : (
+              <span className={`text-xs px-2.5 py-1 rounded-full border font-medium ${STATUS_COLORS[event.status] ?? ''}`}>
+                {event.status.replace('_', ' ')}
+              </span>
+            )
           ) : (
-            <span className={`text-xs px-2.5 py-1 rounded-full border font-medium ${STATUS_COLORS[event.status] ?? ''}`}>
-              {event.status.replace('_', ' ')}
+            <span className="text-xs px-2.5 py-1 rounded-full border border-yellow-500/30 bg-yellow-500/10 text-yellow-400 font-semibold animate-pulse inline-flex items-center gap-1">
+              ⚠️ Missing Status
             </span>
           )}
         </td>

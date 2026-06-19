@@ -47,10 +47,29 @@ export const createEvent = async (data: Partial<IEvent>): Promise<IEvent> => {
   return result;
 };
 
-export const getEvents = async (page: number = 1, limit: number = 10): Promise<{ events: IEvent[]; total: number; pages: number }> => {
+export const getEvents = async (
+  page: number = 1,
+  limit: number = 10,
+  filters: { search?: string; status?: string } = {}
+): Promise<{ events: IEvent[]; total: number; pages: number }> => {
   const skip = (page - 1) * limit;
-  const total = await Event.countDocuments({ isDeleted: { $ne: true } });
-  const events = await Event.find({ isDeleted: { $ne: true } })
+  const query: any = { isDeleted: { $ne: true } };
+
+  if (filters.status) {
+    query.status = filters.status;
+  }
+
+  if (filters.search) {
+    // Escape regex metacharacters to prevent malformed search patterns
+    const escapedSearch = filters.search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    query.$or = [
+      { title: { $regex: escapedSearch, $options: 'i' } },
+      { description: { $regex: escapedSearch, $options: 'i' } },
+    ];
+  }
+
+  const total = await Event.countDocuments(query);
+  const events = await Event.find(query)
     .populate('djOperatorIds', 'name')
     .sort({ createdAt: -1 })
     .skip(skip)
