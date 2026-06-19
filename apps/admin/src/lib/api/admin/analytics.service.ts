@@ -4,11 +4,21 @@ export interface DashboardSummary {
   totalBookings: number;
   recentBookings: number;
   totalRevenue: number;
+  grossRevenue: number;
+  refundAmount: number;
+  netRevenue: number;
   topEvents: { _id: string; count: number; revenue: number; event: { title: string; startDate: string } }[];
   pendingRefundsCount: number;
 }
 
-export interface RevenuePoint { _id: string; revenue: number; count: number; }
+export interface RevenuePoint {
+  _id: string;
+  revenue: number;
+  count: number;
+  dailyGrossRevenue?: number;
+  dailyRefundAmount?: number;
+  dailyNetRevenue?: number;
+}
 
 export async function adminGetDashboardSummary(): Promise<DashboardSummary> {
   try {
@@ -18,6 +28,9 @@ export async function adminGetDashboardSummary(): Promise<DashboardSummary> {
       totalBookings: summary?.totalBookings ?? 0,
       recentBookings: summary?.recentBookings ?? 0,
       totalRevenue: summary?.totalRevenue ?? 0,
+      grossRevenue: summary?.grossRevenue ?? 0,
+      refundAmount: summary?.refundAmount ?? 0,
+      netRevenue: summary?.netRevenue ?? 0,
       topEvents: Array.isArray(summary?.topEvents) ? summary.topEvents : [],
       pendingRefundsCount: summary?.pendingRefundsCount ?? 0,
     };
@@ -27,6 +40,9 @@ export async function adminGetDashboardSummary(): Promise<DashboardSummary> {
       totalBookings: 0,
       recentBookings: 0,
       totalRevenue: 0,
+      grossRevenue: 0,
+      refundAmount: 0,
+      netRevenue: 0,
       topEvents: [],
       pendingRefundsCount: 0,
     };

@@ -115,6 +115,9 @@ export default function RegisteredUserDetailPage() {
           totalBookings={profile.totalBookings}
           totalTickets={profile.totalTickets}
           totalSpend={profile.totalSpend}
+          lifetimeGrossSpend={profile.lifetimeGrossSpend}
+          lifetimeRefunds={profile.lifetimeRefunds}
+          lifetimeNetSpend={profile.lifetimeNetSpend}
         />
       </div>
 
