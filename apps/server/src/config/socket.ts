@@ -6,6 +6,7 @@ import { registerAdminSocketHandlers, registerSocketHandlers } from '../sockets'
 import { verifyAdminToken, verifySessionToken, verifyUserToken, extractBearerToken } from '../utils/jwt';
 import { logger } from '../utils/logger';
 import { getEnv } from './env';
+import { isOriginAllowed } from '../utils/origin-validator';
 
 let io: SocketIOServer | undefined;
 
@@ -47,9 +48,17 @@ export function getSocketTelemetry(): SocketTelemetry {
 export function initSocketIO(httpServer: Server): SocketIOServer {
   if (io) return io;
 
-  const allowedOrigins = getEnv().ALLOWED_ORIGINS.split(',').map((origin) => origin.trim());
   io = new SocketIOServer(httpServer, {
-    cors: { origin: allowedOrigins, credentials: true },
+    cors: {
+      origin: (origin, callback) => {
+        if (isOriginAllowed(origin)) {
+          callback(null, true);
+        } else {
+          callback(new Error(`CORS: Origin ${origin} not allowed`));
+        }
+      },
+      credentials: true,
+    },
     pingTimeout: 60000,
     pingInterval: 25000,
   });
