@@ -229,7 +229,7 @@ export class PublicBookingService {
 
       subtotal += tierSubtotal;
       totalGst += tierGst;
-      totalTicketsCount += ticketReq.quantity;
+      totalTicketsCount += ticketReq.quantity * groupSize;
 
       finalTickets.push({
         tier: ticketReq.tier,
@@ -376,11 +376,13 @@ export class PublicBookingService {
         const postCommitCallbacks: Array<() => Promise<void>> = [];
         try {
           for (const ticketReq of data.tickets) {
+            const tierConfig = event.ticketTiers.find((t) => t.tier === ticketReq.tier);
+            const groupSize = tierConfig?.groupSize || 1;
             const { reservations: allocated, postCommit } = await ReservationService.reserveForBooking({
               eventId: event._id as Types.ObjectId,
               bookingMode: event.bookingMode,
               tier: ticketReq.tier as any,
-              quantity: ticketReq.quantity,
+              quantity: ticketReq.quantity * groupSize,
               seats: ticketReq.seats?.map((seat) => ({ seatId: seat.seatId, section: seat.section })),
               sessionId: sessionId ?? booking._id.toString(),
               userId,

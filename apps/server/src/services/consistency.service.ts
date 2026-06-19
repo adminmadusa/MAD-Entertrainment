@@ -208,7 +208,9 @@ async function repairEventInventoryMismatches(): Promise<number> {
           continue;
         }
         for (const t of bookingDoc.tickets) {
-          tierSoldCounts.set(t.tier, (tierSoldCounts.get(t.tier) ?? 0) + t.quantity);
+          const tierConfig = event.ticketTiers.find((tc) => tc.tier === t.tier);
+          const groupSize = tierConfig?.groupSize || 1;
+          tierSoldCounts.set(t.tier, (tierSoldCounts.get(t.tier) ?? 0) + t.quantity * groupSize);
         }
       }
 
