@@ -129,8 +129,20 @@ function DashboardContent() {
     { label: 'Bookings (Last 30 Days)', value: summary?.recentBookings, icon: '📅', href: '/bookings' },
     {
       label: 'Lifetime Gross Revenue',
-      value: summary ? `₹${summary.totalRevenue.toLocaleString('en-IN')}` : undefined,
+      value: summary ? `₹${summary.grossRevenue.toLocaleString('en-IN')}` : undefined,
       icon: '💰',
+      href: '/dashboard',
+    },
+    {
+      label: 'Refund Amount',
+      value: summary ? `₹${summary.refundAmount.toLocaleString('en-IN')}` : undefined,
+      icon: '💸',
+      href: '/refunds',
+    },
+    {
+      label: 'Lifetime Net Revenue',
+      value: summary ? `₹${summary.netRevenue.toLocaleString('en-IN')}` : undefined,
+      icon: '🛡️',
       href: '/dashboard',
     },
   ];
@@ -183,7 +195,7 @@ function DashboardContent() {
 
       {/* Stats Cards */}
       {showAnalytics && (
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5">
           {stats.map((stat, i) => (
             <motion.div key={stat.label} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.07 }}>
               <Link href={stat.href} className="block glass rounded-2xl border border-border-subtle p-6 hover:border-accent-purple/30 transition-colors group">
@@ -201,7 +213,7 @@ function DashboardContent() {
       {/* Revenue Trend Area Chart */}
       {showAnalytics && (
         <div className="glass rounded-2xl border border-border-subtle p-6 space-y-4">
-          <h2 className="text-white font-semibold">Revenue — Last 30 Days</h2>
+          <h2 className="text-white font-semibold">Net Revenue — Last 30 Days</h2>
           <RevenueChartWidget revenue={revenue} />
         </div>
       )}
@@ -420,7 +432,7 @@ function DashboardContent() {
                 <tr className="border-b border-border-subtle">
                   <th className="text-left text-text-muted font-medium py-3 px-6">Event</th>
                   <th className="text-left text-text-muted font-medium py-3 px-4">Bookings</th>
-                  <th className="text-right text-text-muted font-medium py-3 px-6">Revenue</th>
+                  <th className="text-right text-text-muted font-medium py-3 px-6">Net Revenue</th>
                 </tr>
               </thead>
               <tbody>

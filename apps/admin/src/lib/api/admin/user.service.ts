@@ -42,6 +42,9 @@ export interface UserDetailResponse {
       totalBookings: number;
       totalTickets: number;
       totalSpend: number;
+      lifetimeGrossSpend: number;
+      lifetimeRefunds: number;
+      lifetimeNetSpend: number;
     };
     bookings: Array<{
       _id: string;
