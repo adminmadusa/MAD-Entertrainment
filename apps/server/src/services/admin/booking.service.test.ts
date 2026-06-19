@@ -60,11 +60,17 @@ const mockTicketCountQuery = {
 const mockTicketExistsQuery = {
   session: vi.fn().mockResolvedValue(null),
 };
+const mockTicketUpdateManyQuery = Promise.resolve({ modifiedCount: 1 });
 vi.mock('../../models/ticket.schema', () => ({
   Ticket: {
     find: vi.fn().mockImplementation(() => mockTicketFindQuery),
     countDocuments: vi.fn().mockImplementation(() => mockTicketCountQuery),
     exists: vi.fn().mockImplementation(() => mockTicketExistsQuery),
+    updateMany: vi.fn().mockImplementation(() => {
+      const q = Promise.resolve({ modifiedCount: 1 });
+      (q as any).session = vi.fn().mockReturnValue(q);
+      return q;
+    }),
     aggregate: vi.fn(),
   },
 }));
@@ -775,6 +781,88 @@ describe('Admin Booking Service Backend Tests', () => {
 
       await expect(cancelBooking('booking-coupon-3', 'Customer request')).rejects.toThrow('Fatal database write error');
       expect(Coupon.updateOne).not.toHaveBeenCalled();
+    });
+
+    it('should correctly restore event capacity using quantity * groupSize for couple/group tickets', async () => {
+      const mockBooking = {
+        _id: 'booking-couple-123',
+        bookingId: 'MAD-2026-COUPLE',
+        eventId: 'event-couple-555',
+        totalTickets: 2,
+        tickets: [{ tier: 'couple', quantity: 1 }],
+        status: BookingStatus.CONFIRMED,
+        bookingVersion: 1,
+        save: vi.fn().mockResolvedValue(true),
+      };
+
+      vi.mocked(Booking.findById).mockReturnValue({
+        session: vi.fn().mockResolvedValue(mockBooking),
+      } as any);
+
+      vi.mocked(ReservationService.transitionForBooking).mockResolvedValue([] as any);
+
+      const mockEvent = {
+        _id: 'event-couple-555',
+        bookingMode: 'general_admission',
+        ticketTiers: [
+          { tier: 'couple', groupSize: 2, soldCount: 10, totalCapacity: 100 }
+        ],
+      };
+      vi.mocked(Event.findById).mockReturnValue({
+        session: vi.fn().mockResolvedValue(mockEvent),
+      } as any);
+      vi.mocked(Event.findOneAndUpdate).mockResolvedValue({} as any);
+
+      const result = await cancelBooking('booking-couple-123', 'Customer request');
+
+      expect(result.status).toBe(BookingStatus.CANCELLED);
+      expect(Event.findOneAndUpdate).toHaveBeenCalledWith(
+        { _id: 'event-couple-555' },
+        expect.objectContaining({
+          $inc: expect.objectContaining({
+            'ticketTiers.0.soldCount': -2,
+            soldCount: -2,
+          })
+        }),
+        expect.any(Object)
+      );
+    });
+
+    it('should atomically void all active tickets associated with the booking', async () => {
+      const mockBooking = {
+        _id: 'booking-void-123',
+        bookingId: 'MAD-2026-VOID',
+        eventId: 'event-555',
+        totalTickets: 1,
+        tickets: [{ tier: 'general', quantity: 1 }],
+        status: BookingStatus.CONFIRMED,
+        bookingVersion: 1,
+        save: vi.fn().mockResolvedValue(true),
+      };
+
+      vi.mocked(Booking.findById).mockReturnValue({
+        session: vi.fn().mockResolvedValue(mockBooking),
+      } as any);
+
+      vi.mocked(ReservationService.transitionForBooking).mockResolvedValue([] as any);
+
+      const mockEvent = {
+        _id: 'event-555',
+        bookingMode: 'general_admission',
+        ticketTiers: [{ tier: 'general', groupSize: 1, soldCount: 5 }],
+      };
+      vi.mocked(Event.findById).mockReturnValue({
+        session: vi.fn().mockResolvedValue(mockEvent),
+      } as any);
+      vi.mocked(Event.findOneAndUpdate).mockResolvedValue({} as any);
+
+      await cancelBooking('booking-void-123', 'Cancel request');
+
+      expect(Ticket.updateMany).toHaveBeenCalledWith(
+        { bookingId: mockBooking._id, status: 'active' },
+        { $set: { status: 'voided' } },
+        { session: undefined }
+      );
     });
   });
 
