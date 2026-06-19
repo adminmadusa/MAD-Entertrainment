@@ -470,7 +470,8 @@ export const cancelBooking = async (
         for (const bookedTicket of booking.tickets) {
           const tierIndex = event.ticketTiers.findIndex((t) => t.tier === bookedTicket.tier);
           if (tierIndex !== -1) {
-            decUpdate[`ticketTiers.${tierIndex}.soldCount`] = -bookedTicket.quantity;
+            const groupSize = event.ticketTiers[tierIndex].groupSize || 1;
+            decUpdate[`ticketTiers.${tierIndex}.soldCount`] = -bookedTicket.quantity * groupSize;
           }
         }
 
@@ -522,6 +523,13 @@ export const cancelBooking = async (
         releasedSeatIds.push(...allSeatIds);
       }
     }
+
+    // 5. Void corresponding active tickets
+    await Ticket.updateMany(
+      { bookingId: booking._id, status: 'active' },
+      { $set: { status: 'voided' } },
+      { session }
+    );
 
     const postCommitPayload: CancelBookingPostCommitPayload = {
       bookingId: booking._id.toString(),

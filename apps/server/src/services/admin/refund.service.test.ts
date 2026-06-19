@@ -9,6 +9,9 @@ import { createNotificationSafe } from '../notification.service';
 import { Notification } from '../../models/notification.schema';
 import { QueueService } from '../queue.service';
 import { auditLog } from '../../utils/audit';
+import axios from 'axios';
+
+vi.mock('axios');
 
 const mockStripeRefundsCreate = vi.fn();
 vi.mock('../../config/stripe', () => ({
@@ -38,6 +41,8 @@ vi.mock('../../config/env', () => ({
     JWT_SECRET: 'test_jwt_secret_with_32_characters_long_minimum',
     JWT_ADMIN_SECRET: 'test_jwt_secret_with_32_characters_long_minimum_admin',
     JWT_SESSION_SECRET: 'test_jwt_secret_with_32_characters_long_minimum_session',
+    RAZORPAY_KEY_ID: 'test_key_id',
+    RAZORPAY_KEY_SECRET: 'test_key_secret',
   })),
 }));
 
@@ -663,10 +668,15 @@ describe('Admin Refund Service Tests', () => {
 
       const result = await processRefund('ref-stripe', 'approve', 'Approve stripe refund');
 
-      expect(mockStripeRefundsCreate).toHaveBeenCalledWith({
-        payment_intent: 'pi_stripe_123',
-        amount: 20000,
-      });
+      expect(mockStripeRefundsCreate).toHaveBeenCalledWith(
+        {
+          payment_intent: 'pi_stripe_123',
+          amount: 20000,
+        },
+        {
+          idempotencyKey: 'ref-stripe',
+        }
+      );
       expect(result?.status).toBe('completed');
       expect(result?.gatewayRefundId).toBe('re_stripe_999');
       expect(mockRefundSave).toHaveBeenCalled();
@@ -735,16 +745,74 @@ describe('Admin Refund Service Tests', () => {
       vi.mocked(Refund.find).mockReturnValue(createMockQuery([]));
       vi.mocked(Payment.findByIdAndUpdate).mockResolvedValue({} as any);
 
-      mockRazorpayPaymentsRefund.mockResolvedValue({ id: 'rfnd_rzp_999' });
+      vi.mocked(axios.post).mockResolvedValue({
+        data: { id: 'rfnd_rzp_999' }
+      });
 
       const result = await processRefund('ref-rzp', 'approve', 'Approve razorpay refund');
 
-      expect(mockRazorpayPaymentsRefund).toHaveBeenCalledWith('pay_rzp_123', {
-        amount: 30000,
-      });
+      expect(axios.post).toHaveBeenCalledWith(
+        'https://api.razorpay.com/v1/payments/pay_rzp_123/refund',
+        {
+          amount: 30000,
+        },
+        {
+          headers: {
+            'Authorization': expect.stringContaining('Basic '),
+            'Content-Type': 'application/json',
+            'X-Refund-Idempotency': 'ref-rzp',
+          }
+        }
+      );
       expect(result?.status).toBe('completed');
       expect(result?.gatewayRefundId).toBe('rfnd_rzp_999');
       expect(mockRefundSave).toHaveBeenCalled();
+    });
+
+    it('should throw error and revert status if Razorpay direct axios refund call fails', async () => {
+      const mockRefundSave = vi.fn();
+      const mockRefund = {
+        _id: 'ref-rzp-fail',
+        bookingId: 'booking-456',
+        paymentId: 'payment-rzp-fail',
+        amount: 300,
+        status: 'requested',
+        save: mockRefundSave,
+      };
+
+      const mockPayment = {
+        _id: 'payment-rzp-fail',
+        amount: 500,
+        status: PaymentStatus.PAID,
+        gateway: 'razorpay',
+        gatewayPaymentId: 'pay_rzp_fail',
+      };
+      const mockBooking = { _id: 'booking-456', status: BookingStatus.CONFIRMED };
+
+      vi.mocked(Refund.findOneAndUpdate).mockReturnValue(createMockQuery(mockRefund));
+      vi.mocked(Payment.findById).mockReturnValue({ session: vi.fn().mockResolvedValue(mockPayment) } as any);
+      vi.mocked(Booking.findById).mockReturnValue({ session: vi.fn().mockResolvedValue(mockBooking) } as any);
+      vi.mocked(Refund.find).mockReturnValue(createMockQuery([]));
+
+      const apiError = {
+        response: {
+          data: {
+            error: {
+              description: 'Insufficient balance'
+            }
+          }
+        }
+      };
+      vi.mocked(axios.post).mockRejectedValue(apiError);
+
+      await expect(
+        processRefund('ref-rzp-fail', 'approve', 'Approve razorpay refund')
+      ).rejects.toThrow('Razorpay refund failed: Insufficient balance');
+
+      expect(Refund.updateOne).toHaveBeenCalledWith(
+        { _id: 'ref-rzp-fail', status: 'processing' },
+        { $set: { status: 'requested' } }
+      );
     });
 
     it('should validate manual override parameters and emit an audit log on success', async () => {

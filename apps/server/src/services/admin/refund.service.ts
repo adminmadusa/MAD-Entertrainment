@@ -15,6 +15,7 @@ import { getRazorpay } from '../../config/razorpay';
 import { auditLog } from '../../utils/audit';
 import * as Sentry from '@sentry/node';
 import { getEnv } from '../../config/env';
+import axios from 'axios';
 
 import crypto from 'crypto';
 
@@ -403,23 +404,37 @@ export const processRefund = async (
             const stripeRefund = await stripe.refunds.create({
               payment_intent: payment.gatewayOrderId,
               amount: Math.round(refund.amount * 100),
+            }, {
+              idempotencyKey: refund._id.toString(),
             });
             finalGatewayRefundId = stripeRefund.id;
           } catch (err: any) {
             throw AppError.badRequest(`Stripe refund failed: ${err.message}`);
           }
         } else if (payment.gateway === 'razorpay') {
-          const rzp = getRazorpay();
           if (!payment.gatewayPaymentId) {
             throw AppError.badRequest('Missing gatewayPaymentId for Razorpay payment');
           }
           try {
-            const rzpRefund = await rzp.payments.refund(payment.gatewayPaymentId, {
-              amount: Math.round(refund.amount * 100),
-            });
-            finalGatewayRefundId = rzpRefund.id;
+            const env = getEnv();
+            const credentials = Buffer.from(`${env.RAZORPAY_KEY_ID}:${env.RAZORPAY_KEY_SECRET}`).toString('base64');
+            const response = await axios.post(
+              `https://api.razorpay.com/v1/payments/${payment.gatewayPaymentId}/refund`,
+              {
+                amount: Math.round(refund.amount * 100),
+              },
+              {
+                headers: {
+                  'Authorization': `Basic ${credentials}`,
+                  'Content-Type': 'application/json',
+                  'X-Refund-Idempotency': refund._id.toString(),
+                },
+              }
+            );
+            finalGatewayRefundId = response.data.id;
           } catch (err: any) {
-            throw AppError.badRequest(`Razorpay refund failed: ${err.message}`);
+            const errMsg = err.response?.data?.error?.description || err.message || 'Unknown Razorpay error';
+            throw AppError.badRequest(`Razorpay refund failed: ${errMsg}`);
           }
         } else if (payment.gateway === 'mock' || !payment.gateway) {
           assertProductionMockRefundRuntimeBlocked({
