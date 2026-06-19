@@ -187,6 +187,15 @@ export class PublicBookingService {
     let totalGst = 0;
     const finalTickets: any[] = [];
 
+    // Check event start/end date constraints
+    const now = new Date();
+    if (now >= new Date(event.startDate)) {
+      throw AppError.badRequest('This event is no longer available for booking.');
+    }
+    if (event.endDate && now > new Date(event.endDate)) {
+      throw AppError.badRequest('This event is no longer available for booking.');
+    }
+
     // Validate Tiers and Quantities
     for (const ticketReq of data.tickets) {
       const tierConfig = event.ticketTiers.find((t) => t.tier === ticketReq.tier && t.isActive);

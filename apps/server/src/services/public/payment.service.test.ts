@@ -219,6 +219,9 @@ describe('Payment Service', () => {
     vi.mocked(Event.findById).mockResolvedValue({
       _id: 'e-123',
       title: 'MAD Event',
+      status: 'published',
+      isDeleted: false,
+      startDate: new Date(Date.now() + 24 * 60 * 60 * 1000), // Future event
       soldCount: 0,
       reservedCount: 0,
       totalCapacity: 100,
@@ -1376,6 +1379,93 @@ describe('Payment Service', () => {
           })
         }),
         expect.objectContaining({ session: mockSession })
+      );
+    });
+  });
+
+  describe('Event Expiry Validation during Payment Operations', () => {
+    beforeEach(() => {
+      vi.clearAllMocks();
+      vi.mocked(getEnv).mockReturnValue({
+        MOCK_PAYMENTS: false,
+        RAZORPAY_KEY_ID: 'test_rzp_key',
+        RAZORPAY_KEY_SECRET: 'test_rzp_secret',
+        STRIPE_PUBLISHABLE_KEY: 'test_stripe_key',
+        STRIPE_SECRET_KEY: 'test_stripe_secret',
+        ENABLE_ASYNC_CHECKOUT: false,
+      } as any);
+    });
+
+    it('createPaymentIntent should block payment intent if event has started', async () => {
+      const mockBooking = {
+        _id: 'booking_123',
+        eventId: 'event_123',
+        status: BookingStatus.AWAITING_PAYMENT,
+        totalAmount: 100,
+        currency: 'INR',
+        tickets: [],
+        totalTickets: 1,
+      };
+
+      const mockEvent = {
+        _id: 'event_123',
+        status: 'published',
+        isDeleted: false,
+        startDate: new Date(Date.now() - 3600000), // 1 hour ago
+      };
+
+      vi.mocked(Booking.findOne).mockResolvedValue(mockBooking as any);
+      vi.mocked(Event.findById).mockResolvedValue(mockEvent as any);
+
+      await expect(
+        PaymentService.createPaymentIntent('booking_123', 'stripe', { trustedInternal: true })
+      ).rejects.toThrow('This event is no longer available for booking.');
+    });
+
+    it('verifyPayment should block payment verification and trigger refund if event has started', async () => {
+      const mockBooking = {
+        _id: 'booking_123',
+        eventId: 'event_123',
+        status: BookingStatus.AWAITING_PAYMENT,
+        totalAmount: 100,
+        currency: 'INR',
+        tickets: [],
+        totalTickets: 1,
+        save: vi.fn(),
+      };
+
+      const mockPayment = {
+        _id: 'payment_123',
+        bookingId: 'booking_123',
+        gatewayOrderId: 'pi_123',
+        status: PaymentStatus.PENDING,
+        amount: 100,
+        currency: 'INR',
+        save: vi.fn(),
+      };
+
+      const mockEvent = {
+        _id: 'event_123',
+        status: 'published',
+        isDeleted: false,
+        startDate: new Date(Date.now() - 3600000), // 1 hour ago
+      };
+
+      vi.mocked(Booking.findOne).mockResolvedValue(mockBooking as any);
+      vi.mocked(Payment.findOne).mockReturnValue({ sort: vi.fn().mockResolvedValue(mockPayment) } as any);
+      vi.mocked(Event.findById).mockResolvedValue(mockEvent as any);
+      vi.spyOn(PaymentService as any, 'failPaymentAndReleaseInventory').mockResolvedValue(undefined);
+
+      await expect(
+        PaymentService.verifyPayment('booking_123', { paymentIntentId: 'pi_123' }, { trustedInternal: true })
+      ).rejects.toThrow('This event is no longer available for booking.');
+
+      expect(PaymentService['failPaymentAndReleaseInventory']).toHaveBeenCalledWith(
+        mockBooking,
+        mockPayment,
+        'Event has already started or ended.',
+        'auto_recovery',
+        'PAYMENT_VALIDATION_FAILURE'
       );
     });
   });
