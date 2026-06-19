@@ -33,6 +33,20 @@ export async function processBookingConfirm(bookingId: string): Promise<void> {
     }
     booking.tickets = fullBooking.tickets;
   }
+
+  // Mid-Flight Booking Protection: Verify and repair totalTickets if needed
+  let expectedTotalTickets = 0;
+  for (const t of booking.tickets) {
+    const tierConfig = event.ticketTiers?.find((tc) => tc.tier === t.tier);
+    expectedTotalTickets += t.quantity * (tierConfig?.groupSize || 1);
+  }
+  if (booking.totalTickets !== expectedTotalTickets) {
+    booking.totalTickets = expectedTotalTickets;
+    if (typeof Booking.updateOne === 'function') {
+      await Booking.updateOne({ _id: booking._id }, { $set: { totalTickets: expectedTotalTickets } });
+    }
+  }
+
   for (const bookedTicket of booking.tickets) {
     if (event.bookingMode === 'seat_based' && bookedTicket.seats) {
       for (const seat of bookedTicket.seats) {
@@ -63,9 +77,10 @@ export async function processBookingConfirm(bookingId: string): Promise<void> {
     } else {
       // General admission - generate QRs matching count
       const tierConfig = event.ticketTiers?.find(t => t.tier === bookedTicket.tier);
-      const admits = tierConfig?.groupSize || 1;
+      const groupSize = tierConfig?.groupSize || 1;
+      const totalAdmissions = bookedTicket.quantity * groupSize;
 
-      for (let i = 0; i < bookedTicket.quantity; i++) {
+      for (let i = 0; i < totalAdmissions; i++) {
         const ticketId = `TKT-${booking.bookingId}-${String(ticketIndex).padStart(3, '0')}`;
         const qrCodeText = ticketId;
 
@@ -77,7 +92,7 @@ export async function processBookingConfirm(bookingId: string): Promise<void> {
               eventId: booking.eventId,
               tierName: bookedTicket.tierName,
               tier: bookedTicket.tier,
-              admits,
+              admits: 1,
               qrCode: qrCodeText,
               qrCodeImage: `/api/public/tickets/${ticketId}/qr`,
             },

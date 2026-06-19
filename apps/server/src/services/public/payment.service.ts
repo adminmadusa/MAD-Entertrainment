@@ -1765,7 +1765,7 @@ export class PaymentService {
             ]).session(session);
             const tierReserved = activeTierAgg[0]?.total ?? 0;
 
-            if (tierConfig.soldCount + tierReserved + bookedTicket.quantity > tierConfig.totalCapacity) {
+            if (tierConfig.soldCount + tierReserved + bookedTicket.quantity * (tierConfig.groupSize || 1) > tierConfig.totalCapacity) {
               _payment.status = PaymentStatus.FAILED;
               _payment.failedAt = new Date();
               _payment.failureReason = 'LATE_PAYMENT_RECOVERY_REJECTED_CAPACITY_EXHAUSTED';
@@ -1843,7 +1843,8 @@ export class PaymentService {
         for (const bookedTicket of booking.tickets) {
           const tierIndex = event.ticketTiers.findIndex((t) => t.tier === bookedTicket.tier);
           if (tierIndex !== -1) {
-            incUpdate[`ticketTiers.${tierIndex}.soldCount`] = bookedTicket.quantity;
+            const groupSize = event.ticketTiers[tierIndex].groupSize || 1;
+            incUpdate[`ticketTiers.${tierIndex}.soldCount`] = bookedTicket.quantity * groupSize;
           }
         }
 
@@ -1872,8 +1873,9 @@ export class PaymentService {
               ]).session(session);
               const tierReserved = activeTierAgg[0]?.total ?? 0;
               
+              const groupSize = event.ticketTiers[tierIndex].groupSize || 1;
               eventQuery[`ticketTiers.${tierIndex}.soldCount`] = {
-                $lte: event.ticketTiers[tierIndex].totalCapacity - tierReserved - bookedTicket.quantity
+                $lte: event.ticketTiers[tierIndex].totalCapacity - tierReserved - bookedTicket.quantity * groupSize
               };
             }
           }
@@ -1949,6 +1951,19 @@ export class PaymentService {
         let generatedTickets = [];
         let syncNotification = null;
         if (!getEnv().ENABLE_ASYNC_CHECKOUT) {
+          // Mid-Flight Booking Protection: Verify and repair totalTickets if needed
+          let expectedTotalTickets = 0;
+          for (const t of booking.tickets) {
+            const tierConfig = event?.ticketTiers?.find((tc) => tc.tier === t.tier);
+            expectedTotalTickets += t.quantity * (tierConfig?.groupSize || 1);
+          }
+          if (booking.totalTickets !== expectedTotalTickets) {
+            booking.totalTickets = expectedTotalTickets;
+            if (typeof Booking.updateOne === 'function') {
+              await Booking.updateOne({ _id: booking._id }, { $set: { totalTickets: expectedTotalTickets } }, { session });
+            }
+          }
+
           let ticketIndex = 1;
           for (const bookedTicket of booking.tickets) {
             if (event && event.bookingMode === 'seat_based' && bookedTicket.seats) {
@@ -1980,9 +1995,10 @@ export class PaymentService {
               }
             } else {
               const tierConfig = event?.ticketTiers?.find(t => t.tier === bookedTicket.tier);
-              const admits = tierConfig?.groupSize || 1;
+              const groupSize = tierConfig?.groupSize || 1;
+              const totalAdmissions = bookedTicket.quantity * groupSize;
 
-              for (let i = 0; i < bookedTicket.quantity; i++) {
+              for (let i = 0; i < totalAdmissions; i++) {
                 const ticketId = `TKT-${booking.bookingId}-${String(ticketIndex).padStart(3, '0')}`;
                 const qrCodeText = ticketId;
 
@@ -1994,7 +2010,7 @@ export class PaymentService {
                       eventId: booking.eventId,
                       tierName: bookedTicket.tierName,
                       tier: bookedTicket.tier,
-                      admits,
+                      admits: 1,
                       qrCode: qrCodeText,
                       qrCodeImage: `/api/public/tickets/${ticketId}/qr`,
                     },

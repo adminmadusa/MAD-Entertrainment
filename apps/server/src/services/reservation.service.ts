@@ -23,7 +23,7 @@ interface ReservationRequest {
   eventId: Types.ObjectId;
   bookingMode: BookingMode;
   tier: TicketTier;
-  quantity: number;
+  quantity: number; // Represents Admission Count (not Package Count) as per MAD-COUPLE-004
   seats?: { seatId: string; section?: string }[];
   sessionId: string;
   socketId?: string;
