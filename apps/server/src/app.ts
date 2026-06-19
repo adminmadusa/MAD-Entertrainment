@@ -17,6 +17,7 @@ import './models';
 import routes from './routes';
 import { logger } from './utils/logger';
 import { botMitigation } from './middleware/security.middleware';
+import { isOriginAllowed } from './utils/origin-validator';
 
 export function createApp(): Application {
   const app = express();
@@ -54,12 +55,10 @@ export function createApp(): Application {
   app.use(botMitigation);
 
   // ─── CORS ──────────────────────────────────────────────────
-  const allowedOrigins = env.ALLOWED_ORIGINS.split(',').map((s) => s.trim());
-
   app.use(
     cors({
       origin: (origin, callback) => {
-        if (!origin || allowedOrigins.includes(origin)) {
+        if (isOriginAllowed(origin)) {
           callback(null, true);
         } else {
           callback(new Error(`CORS: Origin ${origin} not allowed`));
