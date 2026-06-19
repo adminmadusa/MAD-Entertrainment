@@ -3,6 +3,8 @@ import { UserModel } from '../../models/user.schema';
 import { Booking } from '../../models/booking.schema';
 import { Ticket } from '../../models/ticket.schema';
 import { Refund } from '../../models/refund.schema';
+import { Payment } from '../../models/payment.schema';
+import { PaymentStatus } from '@mad/shared';
 import { AppError } from '../../middleware/error.middleware';
 import { auditLog } from '../../utils/audit';
 
@@ -247,9 +249,19 @@ export class AdminUserService {
       };
     });
 
-    // Compute aggregated totals across confirmed/completed bookings
+    // Compute aggregated totals using Payments and Refunds
+    const payments = await Payment.find({
+      bookingId: { $in: bookingIds },
+      status: { $in: [PaymentStatus.PAID, PaymentStatus.PARTIALLY_REFUNDED, PaymentStatus.REFUNDED] }
+    }).lean();
+    const lifetimeGrossSpend = payments.reduce((sum, p) => sum + p.amount, 0);
+
+    const completedRefunds = refunds.filter(r => r.status === 'completed');
+    const lifetimeRefunds = completedRefunds.reduce((sum, r) => sum + r.amount, 0);
+
+    const lifetimeNetSpend = lifetimeGrossSpend - lifetimeRefunds;
+
     const confirmedBookings = bookings.filter(b => b.status === 'confirmed');
-    const totalSpend = confirmedBookings.reduce((sum, b) => sum + b.totalAmount, 0);
     const totalTickets = confirmedBookings.reduce((sum, b) => sum + b.totalTickets, 0);
 
     return {
@@ -265,7 +277,10 @@ export class AdminUserService {
         createdAt: user.createdAt,
         totalBookings: bookings.length,
         totalTickets,
-        totalSpend,
+        lifetimeGrossSpend,
+        lifetimeRefunds,
+        lifetimeNetSpend,
+        totalSpend: lifetimeNetSpend, // Compatibility mapping
       },
       bookings: bookingsMapped,
     };
@@ -346,9 +361,19 @@ export class AdminUserService {
       };
     });
 
-    // Compute aggregated totals
+    // Compute aggregated totals using Payments and Refunds
+    const payments = await Payment.find({
+      bookingId: { $in: bookingIds },
+      status: { $in: [PaymentStatus.PAID, PaymentStatus.PARTIALLY_REFUNDED, PaymentStatus.REFUNDED] }
+    }).lean();
+    const lifetimeGrossSpend = payments.reduce((sum, p) => sum + p.amount, 0);
+
+    const completedRefunds = refunds.filter(r => r.status === 'completed');
+    const lifetimeRefunds = completedRefunds.reduce((sum, r) => sum + r.amount, 0);
+
+    const lifetimeNetSpend = lifetimeGrossSpend - lifetimeRefunds;
+
     const confirmedBookings = bookings.filter(b => b.status === 'confirmed');
-    const totalSpend = confirmedBookings.reduce((sum, b) => sum + b.totalAmount, 0);
     const totalTickets = confirmedBookings.reduce((sum, b) => sum + b.totalTickets, 0);
 
     return {
@@ -361,7 +386,10 @@ export class AdminUserService {
         createdAt: bookings[bookings.length - 1].createdAt, // Date of first guest booking
         totalBookings: bookings.length,
         totalTickets,
-        totalSpend,
+        lifetimeGrossSpend,
+        lifetimeRefunds,
+        lifetimeNetSpend,
+        totalSpend: lifetimeNetSpend, // Compatibility mapping
       },
       bookings: bookingsMapped,
     };

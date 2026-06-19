@@ -3,7 +3,8 @@ import { Booking } from '../../models/booking.schema';
 import { Event } from '../../models/event.schema';
 import { Ticket } from '../../models/ticket.schema';
 import { Refund } from '../../models/refund.schema';
-import { BookingStatus } from '@mad/shared';
+import { Payment } from '../../models/payment.schema';
+import { BookingStatus, PaymentStatus } from '@mad/shared';
 import { CacheService } from '../../services/cache.service';
 
 export const getSummary = async (req: Request, res: Response, next: NextFunction) => {
@@ -23,16 +24,76 @@ export const getSummary = async (req: Request, res: Response, next: NextFunction
       createdAt: { $gte: thirtyDaysAgo }
     });
 
-    const revenueResult = await Booking.aggregate([
-      { $match: { status: BookingStatus.CONFIRMED } },
-      { $group: { _id: null, total: { $sum: '$totalAmount' } } }
+    const paymentResult = await Payment.aggregate([
+      { $match: { status: { $in: [PaymentStatus.PAID, PaymentStatus.PARTIALLY_REFUNDED, PaymentStatus.REFUNDED] } } },
+      { $group: { _id: null, total: { $sum: '$amount' } } }
     ]);
-    const totalRevenue = revenueResult[0]?.total || 0;
+    const grossRevenue = paymentResult[0]?.total || 0;
+
+    const refundResult = await Refund.aggregate([
+      { $match: { status: 'completed' } },
+      { $group: { _id: null, total: { $sum: '$amount' } } }
+    ]);
+    const refundAmount = refundResult[0]?.total || 0;
+
+    const netRevenue = grossRevenue - refundAmount;
+    const totalRevenue = netRevenue; // Compatibility mapping
 
     // Get top events by booking count using aggregation to avoid N+1 query
-    const topEventsGroup = await Booking.aggregate([
-      { $match: { status: BookingStatus.CONFIRMED } },
-      { $group: { _id: '$eventId', count: { $sum: 1 }, revenue: { $sum: '$totalAmount' } } },
+    const topEventsGroup = await Payment.aggregate([
+      {
+        $match: {
+          status: { $in: [PaymentStatus.PAID, PaymentStatus.PARTIALLY_REFUNDED, PaymentStatus.REFUNDED] }
+        }
+      },
+      {
+        $lookup: {
+          from: 'bookings',
+          localField: 'bookingId',
+          foreignField: '_id',
+          as: 'booking'
+        }
+      },
+      { $unwind: '$booking' },
+      {
+        $group: {
+          _id: '$booking.eventId',
+          count: { $sum: { $cond: [{ $eq: ['$booking.status', BookingStatus.CONFIRMED] }, 1, 0] } },
+          grossRevenue: { $sum: '$amount' },
+          bookingIds: { $push: '$bookingId' }
+        }
+      },
+      {
+        $lookup: {
+          from: 'refunds',
+          let: { bIds: '$bookingIds' },
+          pipeline: [
+            {
+              $match: {
+                $expr: { $in: ['$bookingId', '$$bIds'] },
+                status: 'completed'
+              }
+            },
+            {
+              $group: {
+                _id: null,
+                totalRefund: { $sum: '$amount' }
+              }
+            }
+          ],
+          as: 'refundInfo'
+        }
+      },
+      {
+        $addFields: {
+          refundAmount: { $ifNull: [{ $arrayElemAt: ['$refundInfo.totalRefund', 0] }, 0] }
+        }
+      },
+      {
+        $addFields: {
+          netRevenue: { $subtract: ['$grossRevenue', '$refundAmount'] }
+        }
+      },
       { $sort: { count: -1 } },
       { $limit: 5 },
       {
@@ -47,7 +108,10 @@ export const getSummary = async (req: Request, res: Response, next: NextFunction
         $project: {
           _id: 1,
           count: 1,
-          revenue: 1,
+          grossRevenue: 1,
+          refundAmount: 1,
+          netRevenue: 1,
+          revenue: '$netRevenue', // Compatibility mapping
           event: {
             $let: {
               vars: { ev: { $arrayElemAt: ['$eventDetails', 0] } },
@@ -71,6 +135,9 @@ export const getSummary = async (req: Request, res: Response, next: NextFunction
     const topEvents = topEventsGroup.map((item) => ({
       _id: item._id,
       count: item.count,
+      grossRevenue: item.grossRevenue,
+      refundAmount: item.refundAmount,
+      netRevenue: item.netRevenue,
       revenue: item.revenue,
       event: item.event
         ? {
@@ -87,7 +154,10 @@ export const getSummary = async (req: Request, res: Response, next: NextFunction
     const responseData = {
       totalBookings,
       recentBookings,
-      totalRevenue,
+      grossRevenue,
+      refundAmount,
+      netRevenue,
+      totalRevenue, // Compatibility mapping
       topEvents,
       pendingRefundsCount
     };
@@ -115,23 +185,92 @@ export const getRevenue = async (req: Request, res: Response, next: NextFunction
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
 
-    // Group bookings by date
-    const revenueData = await Booking.aggregate([
+    // Group successful payments by paidAt date
+    const paymentsData = await Payment.aggregate([
       {
         $match: {
-          status: BookingStatus.CONFIRMED,
-          createdAt: { $gte: startDate }
+          status: { $in: [PaymentStatus.PAID, PaymentStatus.PARTIALLY_REFUNDED, PaymentStatus.REFUNDED] },
+          paidAt: { $gte: startDate }
         }
       },
       {
         $group: {
-          _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
-          revenue: { $sum: '$totalAmount' },
+          _id: {
+            $dateToString: {
+              format: '%Y-%m-%d',
+              date: { $ifNull: ['$paidAt', '$createdAt'] }
+            }
+          },
+          dailyGrossRevenue: { $sum: '$amount' },
           count: { $sum: 1 }
         }
-      },
-      { $sort: { _id: 1 } }
+      }
     ]);
+
+    // Group completed refunds by processedAt date (fallback to createdAt)
+    const refundsData = await Refund.aggregate([
+      {
+        $match: {
+          status: 'completed',
+          processedAt: { $gte: startDate }
+        }
+      },
+      {
+        $group: {
+          _id: {
+            $dateToString: {
+              format: '%Y-%m-%d',
+              date: { $ifNull: ['$processedAt', '$createdAt'] }
+            }
+          },
+          refundAmount: { $sum: '$amount' }
+        }
+      }
+    ]);
+
+    // Merge datasets in memory
+    const trendMap: Record<string, {
+      _id: string;
+      dailyGrossRevenue: number;
+      dailyRefundAmount: number;
+      dailyNetRevenue: number;
+      revenue: number;
+      count: number;
+    }> = {};
+
+    for (const p of paymentsData) {
+      const date = p._id;
+      trendMap[date] = {
+        _id: date,
+        dailyGrossRevenue: p.dailyGrossRevenue || 0,
+        dailyRefundAmount: 0,
+        dailyNetRevenue: p.dailyGrossRevenue || 0,
+        revenue: p.dailyGrossRevenue || 0,
+        count: p.count || 0
+      };
+    }
+
+    for (const r of refundsData) {
+      const date = r._id;
+      if (!trendMap[date]) {
+        trendMap[date] = {
+          _id: date,
+          dailyGrossRevenue: 0,
+          dailyRefundAmount: r.refundAmount || 0,
+          dailyNetRevenue: -(r.refundAmount || 0),
+          revenue: -(r.refundAmount || 0),
+          count: 0
+        };
+      } else {
+        trendMap[date].dailyRefundAmount = r.refundAmount || 0;
+        trendMap[date].dailyNetRevenue = trendMap[date].dailyGrossRevenue - trendMap[date].dailyRefundAmount;
+        trendMap[date].revenue = trendMap[date].dailyNetRevenue;
+      }
+    }
+
+    // Convert map to sorted array
+    const sortedDates = Object.keys(trendMap).sort();
+    const revenueData = sortedDates.map(date => trendMap[date]);
 
     await CacheService.set(CACHE_KEY, revenueData, 60);
 

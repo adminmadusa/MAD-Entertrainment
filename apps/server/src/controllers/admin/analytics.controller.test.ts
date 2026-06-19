@@ -3,6 +3,7 @@ import { Booking } from '../../models/booking.schema';
 import { Event } from '../../models/event.schema';
 import { Ticket } from '../../models/ticket.schema';
 import { Refund } from '../../models/refund.schema';
+import { Payment } from '../../models/payment.schema';
 import {
   getSummary,
   getRevenue,
@@ -34,6 +35,13 @@ vi.mock('../../models/ticket.schema', () => ({
 vi.mock('../../models/refund.schema', () => ({
   Refund: {
     countDocuments: vi.fn(),
+    aggregate: vi.fn(),
+  },
+}));
+
+vi.mock('../../models/payment.schema', () => ({
+  Payment: {
+    aggregate: vi.fn(),
   },
 }));
 
@@ -67,18 +75,23 @@ describe('Analytics Controller Tests', () => {
   describe('getSummary', () => {
     it('should calculate bookings, revenue, and top events by lookup correctly', async () => {
       vi.mocked(Booking.countDocuments).mockResolvedValueOnce(50).mockResolvedValueOnce(15);
-      vi.mocked(Booking.aggregate).mockResolvedValueOnce([{ _id: null, total: 15000 }]);
-      vi.mocked(Booking.aggregate).mockResolvedValueOnce([
-        {
-          _id: 'event-1',
-          count: 10,
-          revenue: 3000,
-          event: {
-            title: 'Sunburn Event',
-            startDate: new Date('2026-06-01T20:00:00.000Z'),
+      vi.mocked(Payment.aggregate)
+        .mockResolvedValueOnce([{ _id: null, total: 15000 }]) // global gross revenue
+        .mockResolvedValueOnce([ // top events list
+          {
+            _id: 'event-1',
+            count: 10,
+            grossRevenue: 3000,
+            refundAmount: 500,
+            netRevenue: 2500,
+            revenue: 2500,
+            event: {
+              title: 'Sunburn Event',
+              startDate: new Date('2026-06-01T20:00:00.000Z'),
+            }
           }
-        }
-      ]);
+        ]);
+      vi.mocked(Refund.aggregate).mockResolvedValueOnce([{ _id: null, total: 2000 }]);
       vi.mocked(Refund.countDocuments).mockResolvedValueOnce(3);
 
       const req = mockRequest();
@@ -93,12 +106,18 @@ describe('Analytics Controller Tests', () => {
         data: {
           totalBookings: 50,
           recentBookings: 15,
-          totalRevenue: 15000,
+          grossRevenue: 15000,
+          refundAmount: 2000,
+          netRevenue: 13000,
+          totalRevenue: 13000,
           topEvents: [
             {
               _id: 'event-1',
               count: 10,
-              revenue: 3000,
+              grossRevenue: 3000,
+              refundAmount: 500,
+              netRevenue: 2500,
+              revenue: 2500,
               event: { title: 'Sunburn Event', startDate: '2026-06-01T20:00:00.000Z' }
             }
           ],
@@ -109,12 +128,14 @@ describe('Analytics Controller Tests', () => {
   });
 
   describe('getRevenue', () => {
-    it('should aggregate booking revenue by date correctly', async () => {
-      const mockRevenueData = [
-        { _id: '2026-05-20', revenue: 5000, count: 2 },
-        { _id: '2026-05-21', revenue: 3000, count: 1 }
-      ];
-      vi.mocked(Booking.aggregate).mockResolvedValueOnce(mockRevenueData);
+    it('should aggregate payment revenue and refunds by date correctly', async () => {
+      vi.mocked(Payment.aggregate).mockResolvedValueOnce([
+        { _id: '2026-05-20', dailyGrossRevenue: 5000, count: 2 },
+        { _id: '2026-05-21', dailyGrossRevenue: 3000, count: 1 }
+      ]);
+      vi.mocked(Refund.aggregate).mockResolvedValueOnce([
+        { _id: '2026-05-20', refundAmount: 500 }
+      ]);
 
       const req = mockRequest({ days: '7' });
       const res = mockResponse();
@@ -125,7 +146,24 @@ describe('Analytics Controller Tests', () => {
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith({
         success: true,
-        data: mockRevenueData
+        data: [
+          {
+            _id: '2026-05-20',
+            dailyGrossRevenue: 5000,
+            dailyRefundAmount: 500,
+            dailyNetRevenue: 4500,
+            revenue: 4500,
+            count: 2
+          },
+          {
+            _id: '2026-05-21',
+            dailyGrossRevenue: 3000,
+            dailyRefundAmount: 0,
+            dailyNetRevenue: 3000,
+            revenue: 3000,
+            count: 1
+          }
+        ]
       });
     });
   });

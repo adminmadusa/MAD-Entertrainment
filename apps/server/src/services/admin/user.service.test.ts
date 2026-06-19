@@ -26,6 +26,7 @@ import { UserModel } from '../../models/user.schema';
 import { Booking } from '../../models/booking.schema';
 import { Ticket } from '../../models/ticket.schema';
 import { Refund } from '../../models/refund.schema';
+import { Payment } from '../../models/payment.schema';
 
 vi.mock('../../models/user.schema', () => ({
   UserModel: {
@@ -50,6 +51,12 @@ vi.mock('../../models/ticket.schema', () => ({
 
 vi.mock('../../models/refund.schema', () => ({
   Refund: {
+    find: vi.fn(),
+  },
+}));
+
+vi.mock('../../models/payment.schema', () => ({
+  Payment: {
     find: vi.fn(),
   },
 }));
@@ -142,7 +149,7 @@ describe('AdminUserService unit tests', () => {
       expect(result).toBeNull();
     });
 
-    it('aggregates user metadata, confirmed totalSpend, tickets scans, and refunds', async () => {
+    it('aggregates user metadata, confirmed spends using payments, and refunds correctly', async () => {
       const userId = new Types.ObjectId('60d5ec482f8fb814c489705a');
       const bookingId = new Types.ObjectId('60d5ec482f8fb814c489705b');
       
@@ -193,10 +200,19 @@ describe('AdminUserService unit tests', () => {
         ]),
       } as any);
 
+      vi.mocked(Payment.find).mockReturnValue({
+        lean: vi.fn().mockResolvedValue([
+          { _id: new Types.ObjectId(), bookingId, amount: 2000, status: 'paid' },
+        ]),
+      } as any);
+
       const result = await AdminUserService.getRegisteredUserDetail(userId.toString());
 
       expect(result).not.toBeNull();
-      expect(result!.profile.totalSpend).toBe(2000);
+      expect(result!.profile.lifetimeGrossSpend).toBe(2000);
+      expect(result!.profile.lifetimeRefunds).toBe(500);
+      expect(result!.profile.lifetimeNetSpend).toBe(1500);
+      expect(result!.profile.totalSpend).toBe(1500);
       expect(result!.profile.totalTickets).toBe(2);
       expect(result!.bookings[0].ticketsScanned).toBe(1);
       expect(result!.bookings[0].ticketsRemaining).toBe(1);
