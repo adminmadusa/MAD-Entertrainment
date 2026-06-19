@@ -7,6 +7,7 @@ import { Ticket } from '../../models/ticket.schema';
 import { Payment } from '../../models/payment.schema';
 import { Event } from '../../models/event.schema';
 import { Coupon } from '../../models/coupon.schema';
+import { Refund } from '../../models/refund.schema';
 
 vi.mock('../../models/coupon.schema', () => ({
   Coupon: {
@@ -138,6 +139,18 @@ vi.mock('../../utils/logger', () => ({
 vi.mock('../../models/payment.schema', () => ({
   Payment: {
     findByIdAndUpdate: vi.fn(),
+    aggregate: vi.fn(),
+  },
+}));
+
+vi.mock('../../models/refund.schema', () => ({
+  Refund: {
+    aggregate: vi.fn(),
+    find: vi.fn().mockImplementation(() => {
+      const q = Promise.resolve([]);
+      (q as any).session = vi.fn().mockReturnValue(q);
+      return q;
+    }),
   },
 }));
 
@@ -364,7 +377,10 @@ describe('Admin Booking Service Backend Tests', () => {
       const mockCachedData = {
         totalBookings: 10,
         totalTickets: 20,
-        revenue: 5000,
+        grossRevenue: 5000,
+        refundAmount: 1000,
+        netRevenue: 4000,
+        revenue: 4000,
         confirmed: 8,
         pending: 1,
         cancelled: 1,
@@ -382,14 +398,23 @@ describe('Admin Booking Service Backend Tests', () => {
 
     it('should run aggregation and calculate stats globally when no eventId is provided', async () => {
       vi.mocked(CacheService.get).mockResolvedValue(null);
-      vi.mocked(Booking.aggregate).mockResolvedValue([
+      vi.mocked(Booking.aggregate).mockResolvedValueOnce([
         {
           totalBookings: 15,
           totalTickets: 30,
-          revenue: 15000,
           confirmed: 10,
           pending: 3,
           cancelled: 2,
+        },
+      ]);
+      vi.mocked(Payment.aggregate).mockResolvedValueOnce([
+        {
+          totalGross: 15000,
+        },
+      ]);
+      vi.mocked(Refund.aggregate).mockResolvedValueOnce([
+        {
+          totalRefunded: 2000,
         },
       ]);
       vi.mocked(Ticket.aggregate).mockResolvedValue([
@@ -410,7 +435,10 @@ describe('Admin Booking Service Backend Tests', () => {
       expect(result).toEqual({
         totalBookings: 15,
         totalTickets: 30,
-        revenue: 15000,
+        grossRevenue: 15000,
+        refundAmount: 2000,
+        netRevenue: 13000,
+        revenue: 13000,
         confirmed: 10,
         pending: 3,
         cancelled: 2,
@@ -421,14 +449,23 @@ describe('Admin Booking Service Backend Tests', () => {
     it('should run aggregation filtered by eventId when provided', async () => {
       const eventId = '507f1f77bcf86cd799439011';
       vi.mocked(CacheService.get).mockResolvedValue(null);
-      vi.mocked(Booking.aggregate).mockResolvedValue([
+      vi.mocked(Booking.aggregate).mockResolvedValueOnce([
         {
           totalBookings: 5,
           totalTickets: 10,
-          revenue: 5000,
           confirmed: 4,
           pending: 1,
           cancelled: 0,
+        },
+      ]);
+      vi.mocked(Payment.aggregate).mockResolvedValueOnce([
+        {
+          totalGross: 5000,
+        },
+      ]);
+      vi.mocked(Refund.aggregate).mockResolvedValueOnce([
+        {
+          totalRefunded: 500,
         },
       ]);
       vi.mocked(Ticket.aggregate).mockResolvedValue([
@@ -444,11 +481,16 @@ describe('Admin Booking Service Backend Tests', () => {
       expect(Ticket.aggregate).toHaveBeenCalled();
       expect(CacheService.set).toHaveBeenCalledWith(`bookings:summary:event:${eventId}`, result, 60);
       expect(result.checkedIn).toBe(6);
+      expect(result.grossRevenue).toBe(5000);
+      expect(result.refundAmount).toBe(500);
+      expect(result.netRevenue).toBe(4500);
     });
 
     it('should fall back to 0 values if aggregation returns empty results', async () => {
       vi.mocked(CacheService.get).mockResolvedValue(null);
       vi.mocked(Booking.aggregate).mockResolvedValue([]);
+      vi.mocked(Payment.aggregate).mockResolvedValue([]);
+      vi.mocked(Refund.aggregate).mockResolvedValue([]);
       vi.mocked(Ticket.aggregate).mockResolvedValue([]);
 
       const result = await getBookingsSummary();
@@ -456,6 +498,9 @@ describe('Admin Booking Service Backend Tests', () => {
       expect(result).toEqual({
         totalBookings: 0,
         totalTickets: 0,
+        grossRevenue: 0,
+        refundAmount: 0,
+        netRevenue: 0,
         revenue: 0,
         confirmed: 0,
         pending: 0,
