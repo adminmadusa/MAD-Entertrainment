@@ -68,6 +68,7 @@ export async function processBookingConfirm(bookingId: string): Promise<void> {
               section: seat.section,
               qrCode: qrCodeText,
               qrCodeImage: `/api/public/tickets/${ticketId}/qr`,
+              assignmentStatus: 'unassigned',
             },
           },
           { upsert: true, new: true, setDefaultsOnInsert: true }
@@ -95,6 +96,7 @@ export async function processBookingConfirm(bookingId: string): Promise<void> {
               admits: 1,
               qrCode: qrCodeText,
               qrCodeImage: `/api/public/tickets/${ticketId}/qr`,
+              assignmentStatus: 'unassigned',
             },
           },
           { upsert: true, new: true, setDefaultsOnInsert: true }

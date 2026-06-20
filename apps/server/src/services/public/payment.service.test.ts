@@ -10,6 +10,7 @@ import { Event } from '../../models/event.schema';
 import { Reservation } from '../../models/reservation.schema';
 import { SeatLayout } from '../../models/seat-layout.schema';
 import { UserModel } from '../../models/user.schema';
+import { Ticket } from '../../models/ticket.schema';
 import { getEnv } from '../../config/env';
 import { getStripe } from '../../config/stripe';
 import { ReservationService } from '../reservation.service';
@@ -169,6 +170,10 @@ vi.mock('../reservation.service', () => ({
     confirmCapacity: vi.fn().mockResolvedValue([]),
     releaseCapacityForTerminalReservations: vi.fn().mockResolvedValue([]),
   },
+}));
+
+vi.mock('../notification.service', () => ({
+  createNotificationSafe: vi.fn().mockResolvedValue({ _id: 'notification_123' } as any),
 }));
 
 describe('Payment Service', () => {
@@ -1568,6 +1573,83 @@ describe('Payment Service', () => {
         'auto_recovery',
         'PAYMENT_VALIDATION_FAILURE'
       );
+    });
+  });
+
+  describe('confirmBooking Ticket Creation assignmentStatus Verification', () => {
+    it('should explicitly pass assignmentStatus: "unassigned" to Ticket.findOneAndUpdate on confirmBooking', async () => {
+      // 1. Mock Ticket.findOneAndUpdate
+      const findOneAndUpdateSpy = vi.spyOn(Ticket, 'findOneAndUpdate').mockResolvedValue({} as any);
+
+      // 2. Mock getEnv to return ENABLE_ASYNC_CHECKOUT: false
+      const originalEnv = vi.mocked(getEnv)();
+      vi.mocked(getEnv).mockReturnValue({
+        ...originalEnv,
+        ENABLE_ASYNC_CHECKOUT: false,
+      } as any);
+
+      // 3. Mock required dependencies for confirmBooking
+      const mockPayment = {
+        _id: new mongoose.Types.ObjectId(),
+        bookingId: 'booking_123',
+        gateway: 'stripe',
+        status: PaymentStatus.PENDING,
+        save: vi.fn().mockResolvedValue(undefined),
+      };
+
+      const mockBooking = {
+        _id: new mongoose.Types.ObjectId(),
+        bookingId: 'booking_123',
+        eventId: new mongoose.Types.ObjectId(),
+        status: BookingStatus.AWAITING_PAYMENT,
+        tickets: [
+          {
+            tier: 'general',
+            tierName: 'General',
+            quantity: 2,
+            subtotal: 200,
+            pricePerTicket: 100,
+          },
+        ],
+        totalTickets: 2,
+        save: vi.fn().mockResolvedValue(undefined),
+      };
+
+      const mockEvent = {
+        _id: mockBooking.eventId,
+        bookingMode: 'general',
+        ticketTiers: [
+          {
+            tier: 'general',
+            name: 'General',
+            soldCount: 10,
+            totalCapacity: 100,
+          },
+        ],
+        save: vi.fn().mockResolvedValue(undefined),
+      };
+
+      // Mock DB calls
+      vi.mocked(Event.findById).mockResolvedValue(mockEvent as any);
+      vi.mocked(Booking.findOneAndUpdate).mockResolvedValue(mockBooking as any);
+      vi.mocked(Event.findOneAndUpdate).mockResolvedValue(mockEvent as any);
+
+      try {
+        // 4. Call confirmBooking
+        await PaymentService['confirmBooking'](mockBooking as any, mockPayment as any);
+
+        // 5. Assert Ticket.findOneAndUpdate was called with assignmentStatus: 'unassigned'
+        expect(findOneAndUpdateSpy).toHaveBeenCalled();
+        for (const call of findOneAndUpdateSpy.mock.calls) {
+          const updateObj = call[1];
+          expect(updateObj).toBeDefined();
+          expect(updateObj.$setOnInsert).toBeDefined();
+          expect(updateObj.$setOnInsert.assignmentStatus).toBe('unassigned');
+        }
+      } finally {
+        findOneAndUpdateSpy.mockRestore();
+        vi.mocked(getEnv).mockReturnValue(originalEnv);
+      }
     });
   });
 });
