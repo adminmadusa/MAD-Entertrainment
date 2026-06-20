@@ -201,15 +201,15 @@ export const createRefund = async (data: {
         return existingRefund;
       }
 
-      // 7. Cumulative Refund Check (Summing requested and completed)
+      // 7. Cumulative Refund Check (Summing processing and completed)
       const existingRefunds = await Refund.find({
         paymentId: payment._id,
-        status: { $in: ['requested', 'completed'] },
+        status: { $in: ['processing', 'completed'] },
       }).session(session);
       const existingSum = existingRefunds.reduce((sum, r) => sum + r.amount, 0);
       if (existingSum + data.amount > payment.amount) {
         const remaining = payment.amount - existingSum;
-        throw AppError.badRequest(`Cumulative refund amount exceeds original payment amount (Paid: ₹${payment.amount}, Refunded/Requested: ₹${existingSum}, Max Remaining: ₹${remaining})`);
+        throw AppError.badRequest(`Cumulative refund amount exceeds original payment amount (Paid: ₹${payment.amount}, Refunded/Processing: ₹${existingSum}, Max Remaining: ₹${remaining})`);
       }
 
       const refund = new Refund({
@@ -279,85 +279,119 @@ export const processRefund = async (
   manualOverride?: boolean,
   overrideReason?: string
 ): Promise<IRefund | null> => {
-  // 1. Transaction-safe atomic load and claim of the requested Refund document
-  const refund = await Refund.findOneAndUpdate(
-    { _id: id, status: 'requested' },
-    { $set: { status: 'processing' } },
-    { new: true }
-  );
-  if (!refund) {
-    throw AppError.badRequest('Refund request not found or has already been processed');
+  let phase1Result: {
+    refund: IRefund;
+    payment: any;
+    booking: any;
+    totalRefundedSoFar: number;
+  } | null = null;
+
+  try {
+    // Phase 1: Claim and Reserve within a transaction session
+    phase1Result = await runInTransaction(async (session) => {
+      // 1. Atomic claim of the refund record
+      const refund = await Refund.findOneAndUpdate(
+        { _id: id, status: 'requested' },
+        { $set: { status: 'processing' } },
+        { session, new: true }
+      );
+      if (!refund) {
+        throw AppError.badRequest('Refund request not found or has already been processed');
+      }
+
+      // 2. Lock the parent Payment document as a serialization aid
+      const payment = await Payment.findOneAndUpdate(
+        { _id: refund.paymentId },
+        { $set: { updatedAt: new Date() } },
+        { new: true }
+      ).session(session);
+      if (!payment) {
+        throw AppError.notFound('Payment record not found');
+      }
+
+      const booking = await Booking.findById(refund.bookingId).session(session);
+      if (!booking) {
+        throw AppError.notFound('Booking record not found');
+      }
+
+      assertProductionRefundIntegrity(
+        [id, refund.paymentId.toString(), payment.gatewayPaymentId, payment.gatewayOrderId, gatewayRefundId],
+        {
+          bookingId: refund.bookingId.toString(),
+          paymentId: refund.paymentId.toString(),
+          gateway: payment.gateway,
+          requestSource: 'process_refund',
+        }
+      );
+
+      // If rejecting, we don't need cumulative balance checks
+      if (action === 'reject') {
+        return { refund, payment, booking, totalRefundedSoFar: 0 };
+      }
+
+      const isAutoRecovery = refund.origin === 'auto_recovery';
+
+      // 3. Validation path differentiation (B2)
+      if (isAutoRecovery) {
+        if (!refund.recoveryReason) {
+          throw AppError.badRequest('Auto-recovery refund requires a recovery reason');
+        }
+        if (
+          payment.status !== PaymentStatus.PAID &&
+          payment.status !== PaymentStatus.PARTIALLY_REFUNDED &&
+          payment.status !== PaymentStatus.FAILED
+        ) {
+          throw AppError.badRequest('Invalid payment status for auto-recovery refund');
+        }
+        if (
+          booking.status !== BookingStatus.CONFIRMED &&
+          booking.status !== BookingStatus.CANCELLED &&
+          booking.status !== BookingStatus.FAILED &&
+          booking.status !== BookingStatus.EXPIRED
+        ) {
+          throw AppError.badRequest('Invalid booking status for auto-recovery refund');
+        }
+      } else {
+        if (payment.status === PaymentStatus.REFUNDED) {
+          throw AppError.badRequest('Payment has already been fully refunded');
+        }
+        if (payment.status !== PaymentStatus.PAID && payment.status !== PaymentStatus.PARTIALLY_REFUNDED) {
+          throw AppError.badRequest('Only successful paid or partially refunded payments can be refunded');
+        }
+        if (booking.status !== BookingStatus.CONFIRMED && booking.status !== BookingStatus.CANCELLED) {
+          throw AppError.badRequest('Only confirmed or cancelled bookings can be refunded');
+        }
+      }
+
+      // 4. Cumulative processed refunds cap check (including processing and completed, excluding current)
+      const existingRefunds = await Refund.find({
+        paymentId: payment._id,
+        status: { $in: ['processing', 'completed'] },
+        _id: { $ne: refund._id }
+      }).session(session);
+      const totalRefundedSoFar = existingRefunds.reduce((sum, r) => sum + r.amount, 0);
+
+      if (totalRefundedSoFar + refund.amount > payment.amount) {
+        throw AppError.badRequest(`Refund amount exceeds remaining captured balance (Paid: ₹${payment.amount}, Refunded/Processing: ₹${totalRefundedSoFar}, Attempted: ₹${refund.amount})`);
+      }
+
+      return { refund, payment, booking, totalRefundedSoFar };
+    });
+  } catch (err: any) {
+    logger.error({ err, refundId: id }, 'Error in Phase 1 of processing refund. Reverting status to requested.');
+    await Refund.updateOne(
+      { _id: id, status: 'processing' },
+      { $set: { status: 'requested' } }
+    ).catch((revertErr) => {
+      logger.error({ revertErr, refundId: id }, 'Failed to revert refund status to requested.');
+    });
+    throw err;
   }
 
+  const { refund, payment, booking, totalRefundedSoFar } = phase1Result;
   let result = null;
 
   try {
-    // 2. Fetch Payment and Booking records (outside transaction to avoid long locks during gateway API call)
-    const payment = await Payment.findById(refund.paymentId).session(undefined as any);
-    if (!payment) {
-      throw AppError.notFound('Payment record not found');
-    }
-    const booking = await Booking.findById(refund.bookingId).session(undefined as any);
-    if (!booking) {
-      throw AppError.notFound('Booking record not found');
-    }
-
-    assertProductionRefundIntegrity(
-      [id, refund.paymentId.toString(), payment.gatewayPaymentId, payment.gatewayOrderId, gatewayRefundId],
-      {
-        bookingId: refund.bookingId.toString(),
-        paymentId: refund.paymentId.toString(),
-        gateway: payment.gateway,
-        requestSource: 'process_refund',
-      }
-    );
-
-    const isAutoRecovery = refund.origin === 'auto_recovery';
-
-    // 3. Validation path differentiation (B2)
-    if (isAutoRecovery) {
-      if (!refund.recoveryReason) {
-        throw AppError.badRequest('Auto-recovery refund requires a recovery reason');
-      }
-      if (
-        payment.status !== PaymentStatus.PAID &&
-        payment.status !== PaymentStatus.PARTIALLY_REFUNDED &&
-        payment.status !== PaymentStatus.FAILED
-      ) {
-        throw AppError.badRequest('Invalid payment status for auto-recovery refund');
-      }
-      if (
-        booking.status !== BookingStatus.CONFIRMED &&
-        booking.status !== BookingStatus.CANCELLED &&
-        booking.status !== BookingStatus.FAILED &&
-        booking.status !== BookingStatus.EXPIRED
-      ) {
-        throw AppError.badRequest('Invalid booking status for auto-recovery refund');
-      }
-    } else {
-      if (payment.status === PaymentStatus.REFUNDED) {
-        throw AppError.badRequest('Payment has already been fully refunded');
-      }
-      if (payment.status !== PaymentStatus.PAID && payment.status !== PaymentStatus.PARTIALLY_REFUNDED) {
-        throw AppError.badRequest('Only successful paid or partially refunded payments can be refunded');
-      }
-      if (booking.status !== BookingStatus.CONFIRMED && booking.status !== BookingStatus.CANCELLED) {
-        throw AppError.badRequest('Only confirmed or cancelled bookings can be refunded');
-      }
-    }
-
-    // 4. Cumulative processed refunds cap check
-    const completedRefunds = await Refund.find({
-      paymentId: payment._id,
-      status: 'completed',
-      _id: { $ne: refund._id }
-    }).session(undefined as any);
-    const totalRefundedSoFar = completedRefunds.reduce((sum, r) => sum + r.amount, 0);
-
-    if (totalRefundedSoFar + refund.amount > payment.amount) {
-      throw AppError.badRequest(`Refund amount exceeds remaining captured balance (Paid: ₹${payment.amount}, Refunded: ₹${totalRefundedSoFar}, Attempted: ₹${refund.amount})`);
-    }
-
     // 5. Action Reject Path
     if (action === 'reject') {
       const rejectResult = await runInTransaction(async (session) => {
@@ -369,7 +403,7 @@ export const processRefund = async (
       });
       result = rejectResult;
     } else {
-      // 6. Action Approve Path
+      // 6. Action Approve Path: Execute gateway refund API call (Phase 2)
       let finalGatewayRefundId = gatewayRefundId;
 
       if (manualOverride) {
@@ -395,7 +429,6 @@ export const processRefund = async (
           description: `Manual override executed for refund ${refund._id}. Reason: ${overrideReason}`,
         });
       } else {
-        // Execute gateway refund API call (A3)
         if (payment.gateway === 'stripe') {
           const stripe = getStripe();
           if (!payment.gatewayOrderId) {
@@ -450,7 +483,7 @@ export const processRefund = async (
         }
       }
 
-      // 7. Gateway refund succeeded (or override active). Run DB transaction (A3, B2)
+      // Phase 3: Finalization (inside second transaction session)
       const approveResult = await runInTransaction(async (session) => {
         refund.status = 'completed';
         refund.adminNotes = adminNotes;
@@ -467,14 +500,12 @@ export const processRefund = async (
 
         // Call cancelBooking conditionally first
         if (isFullRefund) {
-          // Full refund cancels booking with REFUNDED status
           if (booking.status === BookingStatus.CONFIRMED) {
             const cancelResult = await cancelBooking(refund.bookingId.toString(), adminNotes || 'Admin Refund Processed', session, BookingStatus.REFUNDED);
             if (cancelResult && cancelResult.postCommitPayload) {
               cancelPostCommitPayload = cancelResult.postCommitPayload;
             }
           } else if (booking.status === BookingStatus.CANCELLED) {
-            // If it was already cancelled, transition booking to REFUNDED
             const b = await Booking.findById(booking._id).session(session);
             if (b) {
               b.status = BookingStatus.REFUNDED;
@@ -483,7 +514,6 @@ export const processRefund = async (
             }
           }
         } else if (refund.cancelTickets) {
-          // Partial refund with cancelTickets = true cancels booking with CANCELLED status
           if (booking.status === BookingStatus.CONFIRMED) {
             const cancelResult = await cancelBooking(refund.bookingId.toString(), adminNotes || 'Admin Refund Processed', session, BookingStatus.CANCELLED);
             if (cancelResult && cancelResult.postCommitPayload) {
@@ -492,7 +522,7 @@ export const processRefund = async (
           }
         }
 
-        // Update payment status after cancelBooking so it overrides it
+        // Update payment status
         await Payment.findByIdAndUpdate(
           refund.paymentId,
           { status: newPaymentStatus },
@@ -504,6 +534,7 @@ export const processRefund = async (
       result = approveResult;
     }
   } catch (err: any) {
+    // Phase 4: Conditional Failure Recovery
     logger.error({ err, refundId: id }, 'Error processing refund. Reverting status to requested.');
     await Refund.updateOne(
       { _id: id, status: 'processing' },
