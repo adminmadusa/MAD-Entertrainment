@@ -1,7 +1,6 @@
 'use client';
 
 import { useMutation } from '@tanstack/react-query';
-import Link from 'next/link';
 import { useState, useEffect, useCallback, useRef } from 'react';
 
 import { extractApiError } from '@/lib/api/client';
@@ -11,47 +10,20 @@ import {
   publicGoogleLogin,
 } from '@/lib/api/public.service';
 import { useAuth } from '@/providers/AuthProvider';
-import { loadScriptOnce } from '@/lib/utils/load-script-once';
-import {
-  initializeGoogleIdentity,
-  setGoogleIdentityCallback,
-} from '@/utils/google-identity';
-import { AuthResponse, VerificationCodeRequestResponse, AuthUser } from '@/types/auth';
-import { Button } from '@mad/ui';
+import { setGoogleIdentityCallback } from '@/utils/google-identity';
+import { AuthResponse, VerificationCodeRequestResponse } from '@/types/auth';
 import { ProfileCompletionForm } from './ProfileCompletionForm';
 import { checkEmailSchema, verifyAuthSchema, normalizeOtp } from '@mad/validations';
 import { mapZodErrorToFields } from '@/lib/validation/mapZodError';
 
-// ─── Google SSO Type Definitions ─────────────────────────────
+import { useOtpCooldowns } from './hooks/useOtpCooldowns';
+import { LoginForm } from './LoginForm';
+import { OtpVerifyForm } from './OtpVerifyForm';
 
 interface GoogleCredentialResponse {
   credential?: string;
   clientId?: string;
   select_by?: string;
-}
-
-interface GoogleAccountsId {
-  initialize(config: {
-    client_id: string;
-    callback: (response: GoogleCredentialResponse) => void;
-    auto_select?: boolean;
-  }): void;
-  renderButton(
-    parent: HTMLElement | null,
-    options: {
-      theme?: string;
-      size?: string;
-      width?: string;
-      shape?: string;
-      text?: string;
-    }
-  ): void;
-}
-
-interface GoogleIdentity {
-  accounts: {
-    id: GoogleAccountsId;
-  };
 }
 
 export interface AuthFormProps {
@@ -77,142 +49,15 @@ export function AuthForm({
 }: AuthFormProps) {
   const { login, logout, token, setOnboardingRequired, onboardingRequired, user } = useAuth();
 
-  const [requestCooldownRemaining, setRequestCooldownRemaining] = useState<number>(0);
-  const [requestCooldownExpiry, setRequestCooldownExpiry] = useState<number | null>(null);
-
-  const [verifyCooldownRemaining, setVerifyCooldownRemaining] = useState<number>(0);
-  const [verifyCooldownExpiry, setVerifyCooldownExpiry] = useState<number | null>(null);
-
-  const formatTime = useCallback((seconds: number): string => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-  }, []);
-
-  const triggerRequestCooldown = useCallback((retryAfterSeconds: number) => {
-    const proposedExpiry = Date.now() + retryAfterSeconds * 1000;
-    const storedExpiry = localStorage.getItem('mad_otp_request_cooldown_expiry');
-    const existingExpiry = storedExpiry ? Number(storedExpiry) : 0;
-    const finalExpiry = Math.max(existingExpiry, proposedExpiry);
-
-    localStorage.setItem('mad_otp_request_cooldown_expiry', String(finalExpiry));
-    setRequestCooldownExpiry(finalExpiry);
-    setRequestCooldownRemaining(Math.ceil((finalExpiry - Date.now()) / 1000));
-  }, []);
-
-  const triggerVerifyCooldown = useCallback((retryAfterSeconds: number) => {
-    const proposedExpiry = Date.now() + retryAfterSeconds * 1000;
-    const storedExpiry = localStorage.getItem('mad_otp_verify_cooldown_expiry');
-    const existingExpiry = storedExpiry ? Number(storedExpiry) : 0;
-    const finalExpiry = Math.max(existingExpiry, proposedExpiry);
-
-    localStorage.setItem('mad_otp_verify_cooldown_expiry', String(finalExpiry));
-    setVerifyCooldownExpiry(finalExpiry);
-    setVerifyCooldownRemaining(Math.ceil((finalExpiry - Date.now()) / 1000));
-  }, []);
-
-  // Hydrate on mount
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const storedReqExpiry = localStorage.getItem('mad_otp_request_cooldown_expiry');
-      if (storedReqExpiry) {
-        const expiry = Number(storedReqExpiry);
-        if (expiry > Date.now()) {
-          setRequestCooldownExpiry(expiry);
-          setRequestCooldownRemaining(Math.ceil((expiry - Date.now()) / 1000));
-        }
-      }
-      const storedVerExpiry = localStorage.getItem('mad_otp_verify_cooldown_expiry');
-      if (storedVerExpiry) {
-        const expiry = Number(storedVerExpiry);
-        if (expiry > Date.now()) {
-          setVerifyCooldownExpiry(expiry);
-          setVerifyCooldownRemaining(Math.ceil((expiry - Date.now()) / 1000));
-        }
-      }
-    }
-  }, []);
-
-  // Set interval timer for request cooldown
-  useEffect(() => {
-    if (!requestCooldownExpiry) {
-      setRequestCooldownRemaining(0);
-      return;
-    }
-
-    const interval = setInterval(() => {
-      const remaining = Math.ceil((requestCooldownExpiry - Date.now()) / 1000);
-      if (remaining <= 0) {
-        setRequestCooldownRemaining(0);
-        setRequestCooldownExpiry(null);
-        localStorage.removeItem('mad_otp_request_cooldown_expiry');
-      } else {
-        setRequestCooldownRemaining(remaining);
-      }
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [requestCooldownExpiry]);
-
-  // Set interval timer for verify cooldown
-  useEffect(() => {
-    if (!verifyCooldownExpiry) {
-      setVerifyCooldownRemaining(0);
-      return;
-    }
-
-    const interval = setInterval(() => {
-      const remaining = Math.ceil((verifyCooldownExpiry - Date.now()) / 1000);
-      if (remaining <= 0) {
-        setVerifyCooldownRemaining(0);
-        setVerifyCooldownExpiry(null);
-        localStorage.removeItem('mad_otp_verify_cooldown_expiry');
-      } else {
-        setVerifyCooldownRemaining(remaining);
-      }
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [verifyCooldownExpiry]);
-
-  // Sync across tabs
-  useEffect(() => {
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'mad_otp_request_cooldown_expiry') {
-        if (e.newValue) {
-          const expiry = Number(e.newValue);
-          if (expiry > Date.now()) {
-            setRequestCooldownExpiry(expiry);
-            setRequestCooldownRemaining(Math.ceil((expiry - Date.now()) / 1000));
-          } else {
-            setRequestCooldownExpiry(null);
-            setRequestCooldownRemaining(0);
-          }
-        } else {
-          setRequestCooldownExpiry(null);
-          setRequestCooldownRemaining(0);
-        }
-      }
-      if (e.key === 'mad_otp_verify_cooldown_expiry') {
-        if (e.newValue) {
-          const expiry = Number(e.newValue);
-          if (expiry > Date.now()) {
-            setVerifyCooldownExpiry(expiry);
-            setVerifyCooldownRemaining(Math.ceil((expiry - Date.now()) / 1000));
-          } else {
-            setVerifyCooldownExpiry(null);
-            setVerifyCooldownRemaining(0);
-          }
-        } else {
-          setVerifyCooldownExpiry(null);
-          setVerifyCooldownRemaining(0);
-        }
-      }
-    };
-
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
-  }, []);
+  const {
+    requestCooldownRemaining,
+    verifyCooldownRemaining,
+    resendTimer,
+    formatTime,
+    triggerRequestCooldown,
+    triggerVerifyCooldown,
+    startTimer,
+  } = useOtpCooldowns();
 
   // Core Authentication States
   const [email, setEmail] = useState('');
@@ -227,12 +72,7 @@ export function AuthForm({
     }
   }, [initialEmail, email]);
 
-  // Onboarding Profile Form States
-
   // Auto transition to onboard step if authenticated but profile is incomplete
-  // NOTE (code-review watch item): step is intentionally excluded from deps to avoid
-  // re-triggering when the user navigates between verify/request. The effect should
-  // only fire when auth state (token/onboardingRequired) changes.
   useEffect(() => {
     if (token && onboardingRequired && step !== 'onboard') {
       setStep('onboard');
@@ -261,32 +101,8 @@ export function AuthForm({
     }
   }, [step]);
 
-  // Countdown timer state for code resending
-  const [resendTimer, setResendTimer] = useState(0);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
-
   // Google GSI reference markers to prevent concurrent initializations
   const googleCallbackRef = useRef<(response: GoogleCredentialResponse) => void>(() => {});
-
-  const startTimer = useCallback(() => {
-    setResendTimer(60);
-    if (timerRef.current) clearInterval(timerRef.current);
-    timerRef.current = setInterval(() => {
-      setResendTimer((prev) => {
-        if (prev <= 1) {
-          if (timerRef.current) clearInterval(timerRef.current);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-  }, []);
-
-  useEffect(() => {
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-    };
-  }, []);
 
   // ─── React Query Mutations ───────────────────────────────────
 
@@ -364,8 +180,6 @@ export function AuthForm({
     },
   });
 
-
-
   // Synchronize dynamic callback reference
   useEffect(() => {
     googleCallbackRef.current = (response: GoogleCredentialResponse) => {
@@ -386,52 +200,6 @@ export function AuthForm({
       setGoogleIdentityCallback(null);
     };
   }, [handleGoogleCredentialResponse]);
-
-  const initializeGoogleSignIn = useCallback(() => {
-    const googleObj = (window as unknown as { google?: GoogleIdentity }).google;
-    const btnElement = document.getElementById('google-signin-btn-shared');
-    if (typeof window !== 'undefined' && googleObj) {
-      try {
-        initializeGoogleIdentity(
-          process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || 'google_client_id_placeholder'
-        );
-
-        if (btnElement && btnElement.innerHTML === '') {
-          googleObj.accounts.id.renderButton(btnElement, {
-            theme: 'filled_dark',
-            size: 'large',
-            width: '100%',
-            shape: 'pill',
-            text: mode === 'checkout' ? 'continue_with' : 'signin_with',
-          });
-        }
-      } catch (err) {
-        console.error('Failed to initialize Google login button:', err);
-      }
-    }
-  }, [mode]);
-
-  useEffect(() => {
-    let active = true;
-    const loadGsi = async () => {
-      try {
-        await loadScriptOnce('https://accounts.google.com/gsi/client');
-        if (active && step === 'request') {
-          setTimeout(() => {
-            if (active) initializeGoogleSignIn();
-          }, 50);
-        }
-      } catch (err) {
-        console.error('Failed to load Google script in shared auth form:', err);
-      }
-    };
-    loadGsi();
-    return () => {
-      active = false;
-    };
-  }, [step, initializeGoogleSignIn]);
-
-
 
   // Form Submissions
   const handleSubmitEmail = (e: React.FormEvent) => {
@@ -488,13 +256,6 @@ export function AuthForm({
     verifyMutation.mutate(cleanedData.otp);
   };
 
-  const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
-    e.preventDefault();
-    const pastedText = e.clipboardData.getData('text');
-    const sanitized = pastedText.replace(/\D/g, '').slice(0, 6);
-    setOtp(sanitized);
-  };
-
   const handleBackToOptions = () => {
     setStep('request');
     setError('');
@@ -531,65 +292,6 @@ export function AuthForm({
         </button>
       )}
 
-      {step === 'request' && mode !== 'login' && (
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-black text-white mb-2 tracking-tight">
-            {mode === 'wallet' ? 'Get Your Tickets' : 'Welcome Back'}
-          </h1>
-          <p className="text-text-secondary text-sm leading-relaxed">
-            {mode === 'wallet'
-              ? 'Sign in using the email used during booking.'
-              : "Enter your email address and we'll send a verification code to securely access your bookings."}
-          </p>
-          {mode === 'wallet' && (
-            <p className="text-text-muted text-xs mt-2 leading-relaxed">
-              We'll send a secure verification code to retrieve your tickets.
-            </p>
-          )}
-        </div>
-      )}
-      {/* Alert Banners */}
-      {(() => {
-        if (requestCooldownRemaining > 0 && step !== 'verify') {
-          return (
-            <div 
-              role="status"
-              aria-live="polite"
-              className="p-4 bg-accent-purple/10 border border-accent-purple/30 rounded-2xl text-xs text-purple-300 text-center animate-in fade-in duration-300"
-            >
-              Verification code sent. New code available in {formatTime(requestCooldownRemaining)}.
-            </div>
-          );
-        }
-        if (verifyCooldownRemaining > 0 && step !== 'verify') {
-          return (
-            <div 
-              role="alert"
-              aria-live="assertive"
-              className="p-4 bg-error/10 border border-error/30 rounded-2xl text-xs text-red-400 text-center animate-in fade-in duration-300 space-y-1"
-            >
-              <p className="font-bold">For your security, verification attempts are temporarily paused.</p>
-              <p>Please try again in:</p>
-              <p className="font-mono text-lg font-black tracking-wider text-amber-400">
-                {formatTime(verifyCooldownRemaining)}
-              </p>
-            </div>
-          );
-        }
-        if (error && step !== 'verify') {
-          return (
-            <div 
-              role="alert"
-              aria-live="assertive"
-              className="p-4 bg-error/10 border border-error/30 rounded-2xl text-xs text-red-400 text-center animate-in fade-in duration-300"
-            >
-              {error}
-            </div>
-          );
-        }
-        return null;
-      })()}
-
       {infoMessage && (
         <div 
           role="status"
@@ -602,241 +304,40 @@ export function AuthForm({
 
       {/* SCREEN 1: Request OTP Form */}
       {step === 'request' && (
-        <div className="space-y-4 sm:space-y-6">
-          {isVerificationRequired && (
-            <div 
-              role="alert"
-              aria-live="polite"
-              className="p-5 bg-accent-purple/10 border border-accent-purple/30 rounded-2xl text-center space-y-2 shadow-glow-sm animate-in fade-in duration-300"
-            >
-              <h3 className="text-accent-purple-light font-extrabold text-sm tracking-wide">
-                Booking Found
-              </h3>
-              <p className="text-text-secondary text-xs leading-relaxed">
-                Enter the email address used during purchase.
-              </p>
-              <p className="text-text-muted text-[10px] leading-relaxed">
-                We'll send you a verification code.
-              </p>
-            </div>
-          )}
-
-          <form onSubmit={handleSubmitEmail} className={isCheckout ? 'flex gap-2' : 'space-y-4 sm:space-y-5'}>
-            {isCheckout ? (
-              <>
-                <input
-                  id="checkout-login-email"
-                  type="email"
-                  required
-                  autoComplete="email"
-                  aria-label="Email address"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Enter your email address"
-                  className="flex-grow bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-base lg:text-sm text-white placeholder:text-text-secondary focus:outline-none focus:border-accent-purple focus:ring-1 focus:ring-accent-purple transition-all"
-                />
-                 <Button
-                  type="submit"
-                  variant="primary"
-                  className="px-4 py-2 text-xs font-bold rounded-xl whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-                  disabled={requestCooldownRemaining > 0}
-                  isLoading={requestVerificationCodeMutation.isPending}
-                >
-                  {requestCooldownRemaining > 0 ? `Request Code (${formatTime(requestCooldownRemaining)})` : 'Send Code'}
-                </Button>
-              </>
-            ) : (
-              <div className="space-y-4 sm:space-y-5">
-                <div className="space-y-2">
-                  <label htmlFor="email" className="text-xs font-semibold text-text-secondary uppercase tracking-wider ml-1">
-                    Email Address
-                  </label>
-                  <input
-                    id="email"
-                    type="email"
-                    required
-                    autoComplete="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="you@example.com"
-                    className="w-full bg-white/5 border border-border-subtle rounded-xl px-4 py-3.5 text-base lg:text-sm text-white placeholder:text-text-secondary focus:outline-none focus:border-accent-purple focus:ring-1 focus:ring-accent-purple transition-all duration-300"
-                  />
-                </div>
-
-                <Button
-                  type="submit"
-                  variant="primary"
-                  fullWidth
-                  className="py-3.5 rounded-xl font-bold tracking-wide shadow-lg shadow-accent-purple/20 hover:shadow-accent-purple/40 active:scale-95 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-                  disabled={requestCooldownRemaining > 0}
-                  isLoading={requestVerificationCodeMutation.isPending}
-                >
-                  {requestCooldownRemaining > 0 ? `Request Code (${formatTime(requestCooldownRemaining)})` : 'Continue with Email'}
-                </Button>
-              </div>
-            )}
-          </form>
-
-          <p className="text-[11px] text-text-muted text-center leading-normal">
-            By continuing, you agree to our{' '}
-            <Link href="/legal/terms" className="text-accent-purple hover:underline font-semibold">
-              Terms of Service
-            </Link>{' '}
-            and{' '}
-            <Link href="/legal/privacy" className="text-accent-purple hover:underline font-semibold">
-              Privacy Policy
-            </Link>
-            .
-          </p>
-
-          {/* Stacked Divider */}
-          <div className="flex items-center my-4 sm:my-6">
-            <div className="flex-grow border-t border-border-subtle/40" />
-            <span className="mx-4 text-xs font-bold text-text-muted/50 uppercase tracking-widest">or</span>
-            <div className="flex-grow border-t border-border-subtle/40" />
-          </div>
-
-          {/* Google SSO button */}
-          <div className="space-y-3">
-            <div
-              id="google-signin-btn-shared"
-              className="w-full min-h-[44px] flex justify-center items-center overflow-hidden hover:opacity-90 active:scale-98 transition-all duration-200"
-            />
-            {googleLoginMutation.isPending && (
-              <p className="text-center text-xs text-purple-300/80 animate-pulse mt-2">
-                Signing in with Google...
-              </p>
-            )}
-          </div>
-
-          {/* Checkout Guest continue option */}
-          {isCheckout && onGuestContinue && (
-            <div className="pt-2 border-t border-white/5 text-center">
-              <button
-                type="button"
-                onClick={onGuestContinue}
-                className="text-xs font-semibold text-text-muted hover:text-white transition-colors py-1 inline-block"
-              >
-                Continue as Guest →
-              </button>
-            </div>
-          )}
-        </div>
+        <LoginForm
+          mode={mode}
+          email={email}
+          setEmail={setEmail}
+          onSubmit={handleSubmitEmail}
+          isPending={requestVerificationCodeMutation.isPending}
+          requestCooldownRemaining={requestCooldownRemaining}
+          verifyCooldownRemaining={verifyCooldownRemaining}
+          formatTime={formatTime}
+          error={error}
+          isVerificationRequired={isVerificationRequired}
+          onGuestContinue={onGuestContinue}
+          googleLoginIsPending={googleLoginMutation.isPending}
+        />
       )}
 
       {/* SCREEN 2: Verification Input Form */}
       {step === 'verify' && (
-        <form onSubmit={handleSubmitOtp} className="flex flex-col sm:space-y-6">
-          {/* Scrollable Content Area */}
-          <div className="flex-grow">
-            <div className="text-center mb-6 space-y-2">
-              <h2 className="text-2xl font-black text-white tracking-tight">Secure Login</h2>
-              <p className="text-text-secondary text-xs leading-relaxed">
-                Enter the verification code sent to
-              </p>
-              <div className="flex flex-wrap items-center justify-center gap-1.5 text-sm px-2 w-full">
-                <span className="text-white font-semibold break-all max-w-[200px] sm:max-w-xs">{email}</span>
-                <button
-                  type="button"
-                  onClick={handleBackToOptions}
-                  className="text-accent-purple hover:text-accent-purple-light font-bold text-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent-purple rounded px-2 py-1 transition-colors min-h-[32px] min-w-[44px] flex items-center justify-center"
-                  aria-label="Edit email address"
-                >
-                  [Edit]
-                </button>
-              </div>
-              {/* Success helper text */}
-              <p className="text-text-muted text-xs mt-2">
-                Verification code sent to your email.
-              </p>
-            </div>
-
-            <div className="space-y-3">
-              <label htmlFor="otp" className="text-xs font-semibold text-text-secondary uppercase tracking-wider ml-1 block text-center">
-                6-Digit Passcode
-              </label>
-              <input
-                id="otp"
-                type="text"
-                required
-                maxLength={6}
-                pattern="[0-9]*"
-                inputMode="numeric"
-                autoComplete="one-time-code"
-                enterKeyHint="done"
-                value={otp}
-                onChange={(e) => setOtp(e.target.value.replace(/[^0-9]/g, ''))}
-                onPaste={handlePaste}
-                placeholder="000000"
-                className={`w-full text-center font-black bg-white/5 border border-border-subtle rounded-2xl text-white placeholder:text-text-secondary focus:outline-none focus:border-accent-purple focus:ring-1 focus:ring-accent-purple transition-all duration-300 font-mono ${
-                  isCheckout ? 'text-xl sm:text-2xl py-2 sm:py-2.5 tracking-[0.3em] sm:tracking-[0.4em] pl-[0.3em] sm:pl-[0.4em]' : 'text-xl sm:text-3xl py-2.5 sm:py-4 tracking-[0.3em] sm:tracking-[0.6em] pl-[0.3em] sm:pl-[0.6em]'
-                }`}
-              />
-              {/* OTP Validation error rendering */}
-              {verifyCooldownRemaining > 0 && (
-                <div 
-                  role="alert"
-                  aria-live="assertive"
-                  className="text-center text-xs text-red-500 font-medium mt-2 animate-in fade-in duration-200"
-                >
-                  Verification attempts temporarily paused. Try again in {formatTime(verifyCooldownRemaining)}.
-                </div>
-              )}
-              {verifyCooldownRemaining <= 0 && error && (
-                <div 
-                  role="alert"
-                  aria-live="assertive"
-                  className="text-center text-xs text-red-500 font-medium mt-2 animate-in fade-in duration-200"
-                >
-                  {error}
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Sticky Row Actions */}
-          <div className="max-sm:sticky max-sm:-bottom-6 max-sm:-mx-6 max-sm:px-6 max-sm:py-4 max-sm:bg-[#0d111d] max-sm:border-t max-sm:border-white/10 max-sm:pb-[calc(1.5rem+env(safe-area-inset-bottom))] grid grid-cols-2 gap-3 w-full z-10 mt-6 sm:mt-8">
-            <Button
-              type="submit"
-              variant="primary"
-              fullWidth
-              className="py-3.5 rounded-xl font-bold tracking-wide btn-gradient text-white shadow-lg shadow-accent-purple/20 hover:shadow-accent-purple/40 active:scale-95 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none text-sm"
-              disabled={otp.length !== 6 || verifyMutation.isPending}
-              isLoading={verifyMutation.isPending}
-            >
-              Verify Code
-            </Button>
-
-            {(() => {
-              const isCooldownActive = requestCooldownRemaining > 0 || resendTimer > 0;
-              let cooldownText = 'Resend Code';
-              if (requestCooldownRemaining > 0) {
-                cooldownText = `Resend (${formatTime(requestCooldownRemaining)})`;
-              } else if (resendTimer > 0) {
-                cooldownText = `Resend (${resendTimer}s)`;
-              }
-
-              return (
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (isCooldownActive) return;
-                    setOtp('');
-                    requestVerificationCodeMutation.mutate();
-                  }}
-                  disabled={requestVerificationCodeMutation.isPending || isCooldownActive}
-                  className={`w-full text-center font-bold rounded-xl transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple py-3.5 text-sm ${
-                    isCooldownActive
-                      ? 'text-text-muted/50 bg-white/5 border border-white/5 cursor-not-allowed'
-                      : 'text-accent-purple hover:text-accent-purple-light border border-accent-purple/20 hover:border-accent-purple/40 bg-accent-purple/5'
-                  }`}
-                >
-                  {cooldownText}
-                </button>
-              );
-            })()}
-          </div>
-        </form>
+        <OtpVerifyForm
+          email={email}
+          otp={otp}
+          setOtp={setOtp}
+          onSubmit={handleSubmitOtp}
+          isPending={verifyMutation.isPending}
+          verifyCooldownRemaining={verifyCooldownRemaining}
+          formatTime={formatTime}
+          error={error}
+          onBack={handleBackToOptions}
+          resendTimer={resendTimer}
+          requestCooldownRemaining={requestCooldownRemaining}
+          requestVerificationCodeIsPending={requestVerificationCodeMutation.isPending}
+          onResend={() => requestVerificationCodeMutation.mutate()}
+          isCheckout={isCheckout}
+        />
       )}
 
       {/* SCREEN 3: Profile Onboarding Form */}
