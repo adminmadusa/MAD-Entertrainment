@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { Types } from 'mongoose';
 import { Ticket } from '../../models/ticket.schema';
 import { Booking } from '../../models/booking.schema';
+import { BookingStatus } from '@mad/shared';
 
 export const scanTicket = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -70,7 +71,7 @@ export const scanTicket = async (req: Request, res: Response, next: NextFunction
       });
     }
 
-    if (booking.status !== 'confirmed') {
+    if (booking.status !== BookingStatus.CONFIRMED) {
       return res.status(400).json({
         success: false,
         message: `Validation failed: Booking is ${booking.status.toUpperCase()}. Only confirmed bookings can be scanned.`,
@@ -137,7 +138,7 @@ export const lookupTickets = async (req: Request, res: Response, next: NextFunct
       if (!tickets.length) {
         // If booking is confirmed but no tickets exist yet, the background worker
         // is still generating them. Return 202 so the caller can retry gracefully.
-        if (booking.status === 'confirmed') {
+        if (booking.status === BookingStatus.CONFIRMED) {
           return res.status(202).json({
             success: false,
             status: 'generating',

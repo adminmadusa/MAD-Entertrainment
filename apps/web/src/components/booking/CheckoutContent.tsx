@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 
-import { QUERY_KEYS } from '@mad/shared';
+import { QUERY_KEYS, BookingStatus } from '@mad/shared';
 import { Event, Booking, Ticket } from '@mad/types';
 import { useCountdown } from '@/hooks/use-countdown.hook';
 import { extractApiError } from '@/lib/api/client';
@@ -256,7 +256,7 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
     saveDetailsMutation.mutate(detailsPayload);
   };
 
-  if (booking && booking.status === 'confirmed') {
+  if (booking && booking.status === BookingStatus.CONFIRMED) {
     return (
       <div className={isModal ? "relative text-white p-6 text-center space-y-6" : "pt-24 pb-24 min-h-screen bg-[#0d111d] text-white relative overflow-x-hidden flex flex-col items-center justify-center w-full px-4"}>
         {!isModal && (

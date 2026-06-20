@@ -66,7 +66,7 @@ export default function UserBookingsTable({
                         ? 'bg-green-500/10 border-green-500/20 text-green-400'
                         : 'bg-red-500/10 border-red-500/20 text-red-400'
                     }`}>
-                      {BOOKING_STATUS_META[b.status as BookingStatus]?.label || b.status}
+                      {BOOKING_STATUS_META[b.status]?.label || b.status}
                     </span>
                   </td>
                   <td className="py-3.5 px-4 text-text-secondary text-xs">

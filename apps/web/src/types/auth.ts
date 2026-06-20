@@ -1,16 +1,5 @@
-export interface AuthUser {
-  userId: string;
-  email?: string;
-  name?: string;
-  picture?: string;
-
-  firstName?: string;
-  lastName?: string;
-  phone?: string;
-  mobileNumber?: string;
-
-  isGuest: boolean;
-}
+import { AuthUser as SharedAuthUser } from '@mad/types';
+export type AuthUser = SharedAuthUser;
 
 export interface AuthResponse {
   token: string;
