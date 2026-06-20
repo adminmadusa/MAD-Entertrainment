@@ -111,6 +111,11 @@ const createMockQuery = (val: any) => {
 describe('Payment Production Integrity Tests', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // Wire findOneAndUpdate → findById after clearAllMocks resets implementations.
+    // processRefund uses findOneAndUpdate as a serialization aid; tests mock findById.
+    vi.mocked(Payment.findOneAndUpdate).mockImplementation((filter: any) =>
+      Payment.findById(filter?._id ?? filter)
+    );
   });
 
   describe('Environment Validation', () => {

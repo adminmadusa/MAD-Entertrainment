@@ -122,6 +122,9 @@ vi.mock('../../models/payment.schema', () => {
   const MockPayment = {
     findByIdAndUpdate: vi.fn().mockImplementation(() => localCreateMockQuery(null)),
     findById: vi.fn().mockImplementation(() => localCreateMockQuery(null)),
+    findOneAndUpdate: vi.fn().mockImplementation(function (filter: any) {
+      return MockPayment.findById(filter?._id || filter);
+    }),
   };
   return { Payment: MockPayment };
 });
@@ -906,5 +909,139 @@ describe('Admin Refund Service Tests', () => {
       expect(result?.gatewayRefundId).toBe('re_stripe_auto');
       expect(mockRefundSave).toHaveBeenCalled();
     });
+
+    it('should prevent different refunds from overdrawing a payment concurrently (Test 1)', async () => {
+      const mockRefundA = {
+        _id: 'ref-A',
+        bookingId: 'booking-123',
+        paymentId: 'payment-123',
+        amount: 60,
+        status: 'requested',
+        save: vi.fn(),
+      };
+      const mockRefundB = {
+        _id: 'ref-B',
+        bookingId: 'booking-123',
+        paymentId: 'payment-123',
+        amount: 60,
+        status: 'requested',
+        save: vi.fn(),
+      };
+
+      const mockPayment = { _id: 'payment-123', amount: 100, status: PaymentStatus.PAID };
+      const mockBooking = { _id: 'booking-123', status: BookingStatus.CONFIRMED };
+
+      vi.mocked(Payment.findById).mockReturnValue({ session: vi.fn().mockResolvedValue(mockPayment) } as any);
+      vi.mocked(Booking.findById).mockReturnValue({ session: vi.fn().mockResolvedValue(mockBooking) } as any);
+
+      vi.mocked(Refund.findOneAndUpdate)
+        .mockReturnValueOnce(createMockQuery(mockRefundA))
+        .mockReturnValueOnce(createMockQuery(mockRefundB));
+
+      vi.mocked(Refund.find).mockReturnValueOnce(createMockQuery([]));
+
+      const resA = await processRefund('ref-A', 'approve', 'Approve A');
+      expect(resA?.status).toBe('completed');
+
+      vi.mocked(Refund.find).mockReturnValueOnce(createMockQuery([resA]));
+
+      await expect(
+        processRefund('ref-B', 'approve', 'Approve B')
+      ).rejects.toThrow('Refund amount exceeds remaining captured balance');
+    });
+
+    it('should ensure same refund cannot be approved twice (Test 2)', async () => {
+      vi.mocked(Refund.findOneAndUpdate).mockReturnValue(createMockQuery(null));
+
+      await expect(
+        processRefund('refund-123', 'approve', 'Approve again')
+      ).rejects.toThrow('Refund request not found or has already been processed');
+    });
+
+    it('should revert status from processing to requested conditionally on gateway failure (Test 3)', async () => {
+      const mockRefundSave = vi.fn();
+      const mockRefund = {
+        _id: 'ref-fail',
+        bookingId: 'booking-123',
+        paymentId: 'payment-123',
+        amount: 50,
+        status: 'requested',
+        save: mockRefundSave,
+      };
+
+      const mockPayment = { _id: 'payment-123', amount: 100, status: PaymentStatus.PAID, gateway: 'stripe', gatewayOrderId: 'pi_123' };
+      const mockBooking = { _id: 'booking-123', status: BookingStatus.CONFIRMED };
+
+      vi.mocked(Refund.findOneAndUpdate).mockReturnValue(createMockQuery(mockRefund));
+      vi.mocked(Payment.findById).mockReturnValue({ session: vi.fn().mockResolvedValue(mockPayment) } as any);
+      vi.mocked(Booking.findById).mockReturnValue({ session: vi.fn().mockResolvedValue(mockBooking) } as any);
+      vi.mocked(Refund.find).mockReturnValue(createMockQuery([]));
+
+      mockStripeRefundsCreate.mockRejectedValue(new Error('Gateway down'));
+
+      await expect(
+        processRefund('ref-fail', 'approve', 'Approve')
+      ).rejects.toThrow('Stripe refund failed: Gateway down');
+
+      expect(Refund.updateOne).toHaveBeenCalledWith(
+        { _id: 'ref-fail', status: 'processing' },
+        { $set: { status: 'requested' } }
+      );
+    });
+
+    it('should validate partial refund limits (Test 4)', async () => {
+      const mockRefund = {
+        _id: 'ref-partial',
+        bookingId: 'booking-123',
+        paymentId: 'payment-123',
+        amount: 60,
+        status: 'requested',
+        save: vi.fn(),
+      };
+
+      const mockPayment = { _id: 'payment-123', amount: 100, status: PaymentStatus.PAID };
+      const mockBooking = { _id: 'booking-123', status: BookingStatus.CONFIRMED };
+
+      vi.mocked(Refund.findOneAndUpdate).mockReturnValue(createMockQuery(mockRefund));
+      vi.mocked(Payment.findById).mockReturnValue({ session: vi.fn().mockResolvedValue(mockPayment) } as any);
+      vi.mocked(Booking.findById).mockReturnValue({ session: vi.fn().mockResolvedValue(mockBooking) } as any);
+      
+      vi.mocked(Refund.find).mockReturnValue(createMockQuery([{ amount: 50, status: 'completed' }]));
+
+      await expect(
+        processRefund('ref-partial', 'approve', 'Approve')
+      ).rejects.toThrow('Refund amount exceeds remaining captured balance');
+    });
+
+    it('should enforce cumulative reservation capacity and reject exceeding partial refunds (Test 5)', async () => {
+      const mockPayment = { _id: 'payment-123', amount: 100, status: PaymentStatus.PAID };
+      const mockBooking = { _id: 'booking-123', status: BookingStatus.CONFIRMED };
+
+      vi.mocked(Payment.findById).mockReturnValue({ session: vi.fn().mockResolvedValue(mockPayment) } as any);
+      vi.mocked(Booking.findById).mockReturnValue({ session: vi.fn().mockResolvedValue(mockBooking) } as any);
+
+      const mockRefundA = { _id: 'ref-A', bookingId: 'booking-123', paymentId: 'payment-123', amount: 40, status: 'requested', save: vi.fn() };
+      const mockRefundB = { _id: 'ref-B', bookingId: 'booking-123', paymentId: 'payment-123', amount: 40, status: 'requested', save: vi.fn() };
+      const mockRefundC = { _id: 'ref-C', bookingId: 'booking-123', paymentId: 'payment-123', amount: 40, status: 'requested', save: vi.fn() };
+
+      vi.mocked(Refund.findOneAndUpdate)
+        .mockReturnValueOnce(createMockQuery(mockRefundA))
+        .mockReturnValueOnce(createMockQuery(mockRefundB))
+        .mockReturnValueOnce(createMockQuery(mockRefundC));
+
+      vi.mocked(Refund.find).mockReturnValueOnce(createMockQuery([]));
+      const resA = await processRefund('ref-A', 'approve', 'Approve A');
+      expect(resA?.status).toBe('completed');
+
+      vi.mocked(Refund.find).mockReturnValueOnce(createMockQuery([resA]));
+      const resB = await processRefund('ref-B', 'approve', 'Approve B');
+      expect(resB?.status).toBe('completed');
+
+      vi.mocked(Refund.find).mockReturnValueOnce(createMockQuery([resA, resB]));
+      await expect(
+        processRefund('ref-C', 'approve', 'Approve C')
+      ).rejects.toThrow('Refund amount exceeds remaining captured balance');
+    });
   });
 });
+
