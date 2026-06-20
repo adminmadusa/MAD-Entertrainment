@@ -1,26 +1,11 @@
-import { Coupon } from '@mad/types';
+import { Coupon, PaginatedDataResponse, PaginatedItemsResponse } from '@mad/types';
 
 import { adminApiClient } from '@/lib/api/client';
 
-export interface CouponsResponse {
-  data: Coupon[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
-}
+export type CouponsResponse = PaginatedDataResponse<Coupon>;
 
-export interface NormalizedCouponsResponse {
-  items: Coupon[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
-}
+export type NormalizedCouponsResponse = PaginatedItemsResponse<Coupon>;
+
 
 export async function adminGetCoupons(page = 1, limit = 15, active?: string): Promise<NormalizedCouponsResponse> {
   try {

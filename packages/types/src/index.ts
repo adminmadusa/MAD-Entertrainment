@@ -355,3 +355,21 @@ export interface AuthUser {
   mobileNumber?: string;
 }
 
+export interface PaginationMeta {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
+export interface PaginatedDataResponse<T> {
+  data: T[];
+  pagination: PaginationMeta;
+}
+
+export interface PaginatedItemsResponse<T> {
+  items: T[];
+  pagination: PaginationMeta;
+}
+
+
