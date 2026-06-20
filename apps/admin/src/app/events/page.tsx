@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { useState } from 'react';
+import { EventStatus } from '@mad/shared';
 import { useAdminAuth } from '@/providers/AdminAuthProvider';
 
 import { adminGetEvents, adminDeleteEvent, adminToggleFeatured, adminUpdateEventStatus, type AdminEvent } from '@/lib/api/admin/event.service';
@@ -148,7 +149,7 @@ export default function AdminEventsPage() {
                 value={event.status}
                 onChange={(e) => {
                   const nextStatus = e.target.value;
-                  if (event.status === 'published' && (nextStatus === 'cancelled' || nextStatus === 'draft' || nextStatus === 'completed')) {
+                  if (event.status === EventStatus.PUBLISHED && (nextStatus === EventStatus.CANCELLED || nextStatus === EventStatus.DRAFT || nextStatus === EventStatus.COMPLETED)) {
                     setConfirmStatusTarget({
                       id: event._id,
                       title: event.title,
@@ -161,7 +162,7 @@ export default function AdminEventsPage() {
                 }}
                 className={`text-xs px-2.5 py-1 rounded-full border font-medium bg-transparent cursor-pointer ${STATUS_COLORS[event.status] ?? ''}`}
               >
-                {['draft', 'published', 'cancelled', 'sold_out', 'completed'].map((s) => (
+                {Object.values(EventStatus).map((s) => (
                   <option key={s} value={s} className="bg-background-card text-text-primary">{s.replace('_', ' ')}</option>
                 ))}
               </select>

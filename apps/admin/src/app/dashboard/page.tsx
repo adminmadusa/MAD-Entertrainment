@@ -8,7 +8,7 @@ import { Suspense, useState } from 'react';
 import dynamic from 'next/dynamic';
 
 import { useAdminAuth } from '@/providers/AdminAuthProvider';
-import { AdminRole } from '@mad/shared';
+import { AdminRole, EventStatus } from '@mad/shared';
 import {
   adminGetDashboardSummary,
   adminGetRevenueChart,
@@ -373,7 +373,7 @@ function DashboardContent() {
                   <div key={event._id} className="p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-white/2 transition-colors">
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
-                        <span className={`w-2 h-2 rounded-full ${event.status === 'published' ? 'bg-green-400 animate-pulse' : 'bg-yellow-400'}`} />
+                        <span className={`w-2 h-2 rounded-full ${event.status === EventStatus.PUBLISHED ? 'bg-green-400 animate-pulse' : 'bg-yellow-400'}`} />
                         <h3 className="text-white font-bold text-base">{event.title}</h3>
                       </div>
                       <p className="text-text-muted text-xs">{event.venue}</p>

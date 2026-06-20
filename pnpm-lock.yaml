@@ -365,6 +365,10 @@ importers:
         version: 5.9.3
 
   packages/types:
+    dependencies:
+      '@mad/shared':
+        specifier: workspace:*
+        version: link:../shared
     devDependencies:
       typescript:
         specifier: ^5.9.3

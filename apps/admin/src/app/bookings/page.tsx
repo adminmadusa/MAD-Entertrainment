@@ -226,7 +226,7 @@ function BookingsContent() {
             <span className={`text-xs px-2.5 py-1 rounded-full border font-medium ${STATUS_COLORS[booking.status] ?? 'text-text-muted border-border-subtle'}`}>
               {getBookingStatusLabel(booking.status)}
             </span>
-            {booking.status === 'confirmed' && booking.totalTickets > 0 && (
+            {booking.status === BookingStatus.CONFIRMED && booking.totalTickets > 0 && (
               <div className="mt-2">
                 <span className={`text-[10px] px-2 py-0.5 rounded-md border ${booking.ticketsScanned === booking.totalTickets ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400' : 'bg-white/5 border-border-subtle text-text-secondary'}`}>
                   {booking.ticketsScanned === booking.totalTickets ? 'Fully Checked In' : `${booking.ticketsScanned ?? 0} / ${booking.totalTickets} Checked In`}
@@ -238,7 +238,7 @@ function BookingsContent() {
             {new Date(booking.createdAt).toLocaleDateString('en-IN')}
           </td>
           <td className="py-4 px-5 text-right">
-            {canMutateBookings && booking.status === 'confirmed' && (
+            {canMutateBookings && booking.status === BookingStatus.CONFIRMED && (
               <button onClick={(e) => { e.stopPropagation(); setCancelTarget(booking); }}
                 className="px-3 py-1.5 text-xs glass border border-border-subtle rounded-lg text-text-muted hover:text-red-400 hover:border-red-500/40 transition-all">
                 Cancel
@@ -552,7 +552,7 @@ function BookingsContent() {
                         <button
                           type="button"
                           onClick={() => resendTicketsMutation.mutate(selectedBooking._id)}
-                          disabled={selectedBooking.status !== 'confirmed' || resendTicketsMutation.isPending}
+                          disabled={selectedBooking.status !== BookingStatus.CONFIRMED || resendTicketsMutation.isPending}
                           className="px-3.5 py-2 text-xs font-semibold bg-accent-purple/25 hover:bg-accent-purple/40 border border-accent-purple/40 rounded-lg text-accent-purple hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                         >
                           {resendTicketsMutation.isPending ? 'Resending...' : 'Resend Tickets'}
@@ -591,7 +591,7 @@ function BookingsContent() {
                   </div>
                 </div>
 
-                {selectedBooking.status === 'cancelled' && selectedBooking.cancellationReason && (
+                {selectedBooking.status === BookingStatus.CANCELLED && selectedBooking.cancellationReason && (
                   <div className="border-t border-white/5 pt-4">
                     <h4 className="text-red-400 font-medium text-xs uppercase tracking-wider mb-1">Cancellation Detail</h4>
                     <p className="text-text-secondary text-sm italic">&ldquo;{selectedBooking.cancellationReason}&rdquo;</p>
@@ -666,7 +666,7 @@ function BookingsContent() {
                   >
                     Close
                   </button>
-                  {canMutateBookings && selectedBooking.status === 'confirmed' && (
+                  {canMutateBookings && selectedBooking.status === BookingStatus.CONFIRMED && (
                     <button
                       onClick={() => {
                         setCancelTarget(selectedBooking);

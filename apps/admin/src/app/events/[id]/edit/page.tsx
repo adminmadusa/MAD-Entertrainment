@@ -1,6 +1,6 @@
 'use client';
 
-import { EventCategory, EVENT_CATEGORY_LABELS, BookingMode, TicketTier } from '@mad/shared';
+import { EventCategory, EVENT_CATEGORY_LABELS, BookingMode, TicketTier, EventStatus } from '@mad/shared';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { useParams, useRouter } from 'next/navigation';
@@ -42,7 +42,7 @@ export default function EditEventPage() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState<string>('concert');
-  const [status, setStatus] = useState('draft');
+  const [status, setStatus] = useState<EventStatus>(EventStatus.DRAFT);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [tags, setTags] = useState('');
@@ -94,7 +94,7 @@ export default function EditEventPage() {
       setTitle(event.title || '');
       setDescription(event.description || '');
       setCategory(event.category || 'concert');
-      setStatus(event.status || 'draft');
+      setStatus((event.status as EventStatus) || EventStatus.DRAFT);
       setStartDate(event.startDate ? new Date(event.startDate).toISOString().slice(0, 16) : '');
       setEndDate(event.endDate ? new Date(event.endDate).toISOString().slice(0, 16) : '');
       setVenueName(event.venue || '');
@@ -404,12 +404,12 @@ export default function EditEventPage() {
               </select>
             </Field>
             <Field label="Status">
-              <select id="event-status" value={status} onChange={(e) => setStatus(e.target.value)} className={inputCls}>
-                <option value="draft" className="bg-background-card">Draft</option>
-                <option value="published" className="bg-background-card">Published</option>
-                <option value="cancelled" className="bg-background-card">Cancelled</option>
-                <option value="sold_out" className="bg-background-card">Sold Out</option>
-                <option value="completed" className="bg-background-card">Completed</option>
+              <select id="event-status" value={status} onChange={(e) => setStatus(e.target.value as EventStatus)} className={inputCls}>
+                <option value={EventStatus.DRAFT} className="bg-background-card">Draft</option>
+                <option value={EventStatus.PUBLISHED} className="bg-background-card">Published</option>
+                <option value={EventStatus.CANCELLED} className="bg-background-card">Cancelled</option>
+                <option value={EventStatus.SOLD_OUT} className="bg-background-card">Sold Out</option>
+                <option value={EventStatus.COMPLETED} className="bg-background-card">Completed</option>
               </select>
             </Field>
             <Field label="Venue *">
