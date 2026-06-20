@@ -1,14 +1,6 @@
+import { PaginatedItemsResponse, PaginationMeta } from '@mad/types';
 import { adminApiClient } from '@/lib/api/client';
 
-export type PaginatedResponse<T> = {
-  data: T[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
-};
 
 
 export interface AdminBooking {
@@ -80,15 +72,7 @@ export interface AdminRefund {
   processedAt?: string;
 }
 
-export interface NormalizedBookingsResponse {
-  items: AdminBooking[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
-}
+export type NormalizedBookingsResponse = PaginatedItemsResponse<AdminBooking>;
 
 export interface EventSummary {
   _id: string;
@@ -232,15 +216,7 @@ export async function adminCancelBooking(id: string, reason?: string): Promise<v
   await adminApiClient.patch(`/admin/bookings/${id}/cancel`, { reason });
 }
 
-export interface NormalizedRefundsResponse {
-  items: AdminRefund[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
-}
+export type NormalizedRefundsResponse = PaginatedItemsResponse<AdminRefund>;
 
 export async function adminGetRefunds(params: Record<string, string> = {}): Promise<NormalizedRefundsResponse> {
   try {

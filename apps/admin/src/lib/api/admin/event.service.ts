@@ -1,4 +1,6 @@
+import { PaginationMeta } from '@mad/types';
 import { adminApiClient } from '@/lib/api/client';
+
 
 export interface EventTier {
   name: string;
@@ -71,7 +73,7 @@ export interface EventsResponse {
   success: boolean;
   data: {
     events: AdminEvent[];
-    pagination: { page: number; limit: number; total: number; totalPages: number };
+    pagination: PaginationMeta;
   };
   message?: string;
 }
@@ -85,7 +87,7 @@ export interface EventFilters {
   featured?: boolean;
 }
 
-export async function adminGetEvents(filters: EventFilters = {}): Promise<{ items: AdminEvent[]; pagination: EventsResponse['data']['pagination'] }> {
+export async function adminGetEvents(filters: EventFilters = {}): Promise<{ items: AdminEvent[]; pagination: PaginationMeta }> {
   const params = new URLSearchParams();
   Object.entries(filters).forEach(([k, v]) => { if (v !== undefined && v !== '') params.set(k, String(v)); });
   const { data } = await adminApiClient.get<any>(`/admin/events?${params}`);

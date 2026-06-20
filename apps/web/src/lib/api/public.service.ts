@@ -1,4 +1,4 @@
-import { Event, Booking, Ticket, DJOperator, PopupCampaign } from '@mad/types';
+import { Event, Booking, Ticket, DJOperator, PopupCampaign, PaginatedDataResponse } from '@mad/types';
 import { AuthUser, AuthResponse, VerificationCodeRequestResponse, VerifyVerificationCodeOrOTPPayload } from '../../types/auth';
 import { ReserveTicketsInput, CheckoutDetailsInput } from '@mad/validations';
 import { STORAGE_VERSION } from '@mad/shared';
@@ -79,15 +79,7 @@ export interface PublicDJsApiResponse {
   };
 }
 
-export interface PublicEventsResponse {
-  data: Event[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
-}
+export type PublicEventsResponse = PaginatedDataResponse<Event>;
 
 export async function publicGetEvents(filters: { category?: string; search?: string; page?: number; limit?: number } = {}): Promise<PublicEventsResponse> {
   const params = new URLSearchParams();
@@ -119,15 +111,7 @@ export async function publicGetEventBySlug(slug: string): Promise<Event> {
 
 // ─── DJ Operators ─────────────────────────────────────────────
 
-export interface PublicDJsResponse {
-  data: DJOperator[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
-}
+export type PublicDJsResponse = PaginatedDataResponse<DJOperator>;
 
 export async function publicGetDJs(
   filters: { search?: string; page?: number; limit?: number } = {}

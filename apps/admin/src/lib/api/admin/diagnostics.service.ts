@@ -1,5 +1,5 @@
 import { adminApiClient } from '@/lib/api/client';
-import { Notification } from '@mad/types';
+import { Notification, PaginatedDataResponse } from '@mad/types';
 
 export interface ConsistencyReport {
   generatedAt: string;
@@ -68,15 +68,7 @@ export interface WebhookDiagnosticsRow {
   bookingId?: string | { bookingId: string };
 }
 
-export interface WebhookPaginatedResponse {
-  data: WebhookDiagnosticsRow[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
-}
+export type WebhookPaginatedResponse = PaginatedDataResponse<WebhookDiagnosticsRow>;
 
 export async function adminGetWebhooks(params: { page?: number; limit?: number; provider?: string; status?: string }): Promise<WebhookPaginatedResponse> {
   const qs = new URLSearchParams();
@@ -99,15 +91,7 @@ export interface EmailDiagnosticsRow extends Omit<Notification, 'bookingId' | 'e
   eventId?: { _id: string; title: string } | null;
 }
 
-export interface EmailPaginatedResponse {
-  data: EmailDiagnosticsRow[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
-}
+export type EmailPaginatedResponse = PaginatedDataResponse<EmailDiagnosticsRow>;
 
 export async function adminGetEmailLogs(params: { page?: number; limit?: number; sent?: string }): Promise<EmailPaginatedResponse> {
   const qs = new URLSearchParams();

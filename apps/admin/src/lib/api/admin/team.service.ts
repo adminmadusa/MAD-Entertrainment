@@ -1,26 +1,11 @@
-import { Admin } from '@mad/types';
+import { Admin, PaginatedDataResponse, PaginatedItemsResponse } from '@mad/types';
 
 import { adminApiClient } from '@/lib/api/client';
 
-export interface AdminsResponse {
-  data: Admin[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
-}
+export type AdminsResponse = PaginatedDataResponse<Admin>;
 
-export interface NormalizedAdminsResponse {
-  items: Admin[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
-}
+export type NormalizedAdminsResponse = PaginatedItemsResponse<Admin>;
+
 
 export async function adminGetAdmins(page = 1, limit = 15): Promise<NormalizedAdminsResponse> {
   try {
