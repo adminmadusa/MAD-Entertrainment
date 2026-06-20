@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 
 import { getEnv } from '../../config/env';
 import { AppError } from '../../middleware/error.middleware';
-import { PaymentService } from '../../services/public/payment.service';
+import { PaymentService, StripeChargeWebhookPayload, StripeRefundWebhookPayload, RazorpayRefundWebhookPayload } from '../../services/public/payment.service';
 import { sendSuccess } from '../../utils/response';
 import { logger } from '../../utils/logger';
 import { auditLog } from '../../utils/audit';
@@ -162,6 +162,32 @@ export async function stripeWebhook(req: Request, res: Response): Promise<void> 
       if (result.status === 'failed') {
         throw new Error('Stripe payment confirmation failed');
       }
+    } else if (
+      event.type === 'charge.refunded' ||
+      event.type === 'refund.updated' ||
+      event.type === 'refund.failed'
+    ) {
+      const eventData = event.data.object as StripeChargeWebhookPayload | StripeRefundWebhookPayload;
+      const result = await PaymentService.reconcileStripeRefundWebhook(
+        eventData,
+        event.id,
+        event.type
+      );
+      
+      // Update WebhookEvent traceability (RFND-L02)
+      if (result.refundId) {
+        webhookEvent.rawPayload = {
+          ...webhookEvent.rawPayload,
+          _reconciledRefundId: result.refundId
+        };
+      }
+      if (result.paymentId) {
+        webhookEvent.paymentId = result.paymentId as any;
+      }
+      
+      if (result.status === 'anomaly') {
+        logger.warn({ eventId: event.id, result }, 'Stripe refund anomaly occurred.');
+      }
     }
     
     webhookEvent.status = 'success';
@@ -229,14 +255,23 @@ export async function razorpayWebhook(req: Request, res: Response): Promise<void
   let amount: number | undefined;
   let currency: string | undefined;
   let body: any;
+  let razorpayRefundId: string | undefined;
 
   try {
     body = JSON.parse(rawBody);
     eventType = body.event;
-    razorpayPaymentId = body.payload?.payment?.entity?.id;
-    razorpayOrderId = body.payload?.payment?.entity?.order_id;
-    amount = body.payload?.payment?.entity?.amount;
-    currency = body.payload?.payment?.entity?.currency;
+    
+    if (eventType.startsWith('refund.')) {
+      razorpayRefundId = body.payload?.refund?.entity?.id;
+      razorpayPaymentId = body.payload?.refund?.entity?.payment_id;
+      amount = body.payload?.refund?.entity?.amount;
+      currency = body.payload?.refund?.entity?.currency;
+    } else {
+      razorpayPaymentId = body.payload?.payment?.entity?.id;
+      razorpayOrderId = body.payload?.payment?.entity?.order_id;
+      amount = body.payload?.payment?.entity?.amount;
+      currency = body.payload?.payment?.entity?.currency;
+    }
   } catch (err: any) {
     res.status(400).send('Malformed JSON payload');
     return;
@@ -332,11 +367,11 @@ export async function razorpayWebhook(req: Request, res: Response): Promise<void
   }
 
   // 4. Process actionable payment events.
-  let result: { status: 'confirmed' | 'failed' | 'skipped'; bookingId?: string } = { status: 'skipped' };
+  let result: { status: 'confirmed' | 'failed' | 'skipped' | 'completed' | 'anomaly'; bookingId?: string; refundId?: string; paymentId?: string } = { status: 'skipped' };
 
   if (razorpayOrderId && razorpayPaymentId) {
     try {
-      result = await PaymentService.confirmFromWebhook(
+      const confirmResult = await PaymentService.confirmFromWebhook(
         razorpayOrderId,
         razorpayPaymentId,
         eventType,
@@ -344,6 +379,7 @@ export async function razorpayWebhook(req: Request, res: Response): Promise<void
         amount,
         currency
       );
+      result = { status: confirmResult.status, bookingId: confirmResult.bookingId };
       
       webhookEvent.status = 'success';
       webhookEvent.bookingId = result.bookingId ? (result.bookingId as any) : undefined;
@@ -372,6 +408,59 @@ export async function razorpayWebhook(req: Request, res: Response): Promise<void
         status: 'failure',
         metadata: { gateway: 'razorpay', eventId, eventType, orderId: razorpayOrderId, paymentId: razorpayPaymentId, error: err.message },
         description: `Failed to process Razorpay webhook ${eventId}: ${err.message}`
+      });
+
+      res.status(500).send('Webhook handler failed');
+      return;
+    }
+  } else if (razorpayRefundId && (eventType === 'refund.processed' || eventType === 'refund.failed')) {
+    try {
+      const refundEntity = body.payload?.refund?.entity as RazorpayRefundWebhookPayload;
+      const reconcileResult = await PaymentService.reconcileRazorpayRefundWebhook(
+        refundEntity,
+        eventType,
+        eventId
+      );
+      result = reconcileResult;
+
+      webhookEvent.status = 'success';
+      if (result.refundId) {
+        webhookEvent.rawPayload = {
+          ...webhookEvent.rawPayload,
+          _reconciledRefundId: result.refundId
+        };
+      }
+      if (result.paymentId) {
+        webhookEvent.paymentId = result.paymentId as any;
+      }
+      webhookEvent.processedAt = new Date();
+      await webhookEvent.save();
+
+      auditLog({
+        action: 'WEBHOOK_PROCESS_SUCCESS',
+        status: 'success',
+        metadata: { gateway: 'razorpay', eventId, eventType, status: result.status },
+        description: `Successfully processed Razorpay webhook refund event ${eventId} with outcome ${result.status}`
+      });
+
+      if (result.status === 'anomaly') {
+        logger.warn({ eventId, result }, 'Razorpay refund anomaly occurred.');
+      }
+    } catch (err: any) {
+      webhookEvent.status = 'failed';
+      webhookEvent.errorMessage = err.message;
+      webhookEvent.processedAt = new Date();
+      await webhookEvent.save();
+
+      logger.error(
+        { err, eventId, eventType, razorpayRefundId },
+        'Unexpected error in Razorpay refund webhook reconciliation — requires manual review'
+      );
+      auditLog({
+        action: 'WEBHOOK_PROCESS_FAILED',
+        status: 'failure',
+        metadata: { gateway: 'razorpay', eventId, eventType, refundId: razorpayRefundId, error: err.message },
+        description: `Failed to process Razorpay refund webhook ${eventId}: ${err.message}`
       });
 
       res.status(500).send('Webhook handler failed');

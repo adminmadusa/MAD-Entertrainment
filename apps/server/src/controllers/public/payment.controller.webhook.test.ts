@@ -40,6 +40,8 @@ vi.mock('../../services/public/payment.service', () => ({
     confirmFromWebhook: vi.fn(),
     confirmFromWebhookStripe: vi.fn(),
     verifyPayment: vi.fn(),
+    reconcileStripeRefundWebhook: vi.fn(),
+    reconcileRazorpayRefundWebhook: vi.fn(),
   },
 }));
 
@@ -522,6 +524,150 @@ describe('stripeWebhook — audit trail preservation', () => {
 
     expect(res.status).toHaveBeenCalledWith(500);
     expect(existingDoc.status).toBe('failed');
+  });
+});
+
+describe('stripeWebhook — refund reconciliation routing', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  function makeStripeRequest(stripeEventId: string) {
+    return {
+      headers: { 'stripe-signature': 'sig_test' },
+      rawBody: Buffer.from('{}'),
+    } as any;
+  }
+
+  function mockStripeConstructEvent(id: string, type: string, payload: any) {
+    vi.mocked(getStripe).mockReturnValue({
+      webhooks: {
+        constructEvent: vi.fn().mockReturnValue({
+          id,
+          type,
+          created: 1700000000,
+          data: { object: payload },
+        }),
+      },
+    } as any);
+  }
+
+  it('routes charge.refunded to reconcileStripeRefundWebhook and updates WebhookEvent metadata', async () => {
+    const eventId = 'evt_charge_refunded_123';
+    const payload = { id: 'ch_123', refunds: { data: [{ id: 're_123', status: 'succeeded', amount: 5000 }] } };
+    mockStripeConstructEvent(eventId, 'charge.refunded', payload);
+
+    const req = makeStripeRequest(eventId);
+    const res = makeResponse();
+
+    const mockDoc = {
+      eventId,
+      status: 'received',
+      rawPayload: {},
+      paymentId: undefined,
+      processedAt: undefined,
+      save: vi.fn(),
+    };
+
+    vi.mocked(WebhookEvent.findOne).mockResolvedValue(null);
+    vi.mocked(WebhookEvent.create).mockResolvedValue(mockDoc as any);
+    vi.mocked(PaymentService.reconcileStripeRefundWebhook).mockResolvedValue({
+      status: 'completed',
+      refundId: 'refund-id-xyz',
+      paymentId: 'payment-id-abc',
+    });
+
+    await stripeWebhook(req, res);
+
+    expect(PaymentService.reconcileStripeRefundWebhook).toHaveBeenCalledWith(payload, eventId, 'charge.refunded');
+    expect(mockDoc.rawPayload).toEqual({ _reconciledRefundId: 'refund-id-xyz' });
+    expect(mockDoc.paymentId).toBe('payment-id-abc');
+    expect(mockDoc.status).toBe('success');
+    expect(res.status).toHaveBeenCalledWith(200);
+  });
+
+  it('routes refund.updated to reconcileStripeRefundWebhook', async () => {
+    const eventId = 'evt_refund_updated_123';
+    const payload = { id: 're_123', charge: 'ch_123', status: 'succeeded', amount: 5000 };
+    mockStripeConstructEvent(eventId, 'refund.updated', payload);
+
+    const req = makeStripeRequest(eventId);
+    const res = makeResponse();
+
+    const mockDoc = {
+      eventId,
+      status: 'received',
+      rawPayload: {},
+      paymentId: undefined,
+      processedAt: undefined,
+      save: vi.fn(),
+    };
+
+    vi.mocked(WebhookEvent.findOne).mockResolvedValue(null);
+    vi.mocked(WebhookEvent.create).mockResolvedValue(mockDoc as any);
+    vi.mocked(PaymentService.reconcileStripeRefundWebhook).mockResolvedValue({
+      status: 'completed',
+      refundId: 'refund-id-xyz',
+      paymentId: 'payment-id-abc',
+    });
+
+    await stripeWebhook(req, res);
+
+    expect(PaymentService.reconcileStripeRefundWebhook).toHaveBeenCalledWith(payload, eventId, 'refund.updated');
+    expect(res.status).toHaveBeenCalledWith(200);
+  });
+});
+
+describe('razorpayWebhook — refund reconciliation routing', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  const REFUND_PROCESSED_BODY = JSON.stringify({
+    event: 'refund.processed',
+    created_at: 1700000000,
+    payload: {
+      refund: {
+        entity: {
+          id: 'rfnd_123',
+          payment_id: 'pay_123',
+          amount: 50000,
+        },
+      },
+    },
+  });
+
+  it('routes refund.processed to reconcileRazorpayRefundWebhook and updates WebhookEvent metadata', async () => {
+    const req = makeRazorpayRequest(REFUND_PROCESSED_BODY);
+    const res = makeResponse();
+
+    const mockDoc = {
+      eventId: expectedEventId(REFUND_PROCESSED_BODY),
+      status: 'received',
+      rawPayload: {},
+      paymentId: undefined,
+      processedAt: undefined,
+      save: vi.fn(),
+    };
+
+    vi.mocked(WebhookEvent.findOne).mockResolvedValue(null);
+    vi.mocked(WebhookEvent.create).mockResolvedValue(mockDoc as any);
+    vi.mocked(PaymentService.reconcileRazorpayRefundWebhook).mockResolvedValue({
+      status: 'completed',
+      refundId: 'refund-id-xyz',
+      paymentId: 'payment-id-abc',
+    });
+
+    await razorpayWebhook(req, res);
+
+    expect(PaymentService.reconcileRazorpayRefundWebhook).toHaveBeenCalledWith(
+      expect.objectContaining({ id: 'rfnd_123', payment_id: 'pay_123' }),
+      'refund.processed',
+      expectedEventId(REFUND_PROCESSED_BODY)
+    );
+    expect(mockDoc.rawPayload).toEqual({ _reconciledRefundId: 'refund-id-xyz' });
+    expect(mockDoc.paymentId).toBe('payment-id-abc');
+    expect(res.status).toHaveBeenCalledWith(200);
   });
 });
 
