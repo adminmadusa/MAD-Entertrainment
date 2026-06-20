@@ -141,4 +141,49 @@ describe('runInTransaction utility', () => {
     expect(result).toBe('outer-inner');
     expect(callbackOuter).toHaveBeenCalled();
   });
+
+  // Test 5: exactly-once callback guarantee in normal path
+  it('should execute callback exactly once on successful transaction', async () => {
+    const callback = vi.fn().mockResolvedValue('success');
+    await runInTransaction(callback);
+    expect(callback).toHaveBeenCalledTimes(1);
+  });
+
+  // Test 6: exactly-once callback guarantee and error propagation on normal error
+  it('should execute callback exactly once and propagate error on normal transaction error', async () => {
+    const callback = vi.fn().mockRejectedValue(new Error('Normal DB write error'));
+    
+    mockSession.withTransaction.mockImplementationOnce(async (cb) => {
+      await cb();
+    });
+
+    await expect(runInTransaction(callback)).rejects.toThrow('Normal DB write error');
+    expect(callback).toHaveBeenCalledTimes(1);
+  });
+
+  // Test 7: replica failure rethrow and capability cache update behavior
+  it('should re-throw replica set support error, execute callback exactly once, and update capability cache', async () => {
+    process.env.NODE_ENV = 'development';
+    process.env.APP_ENV = 'local';
+
+    const callback = vi.fn().mockResolvedValue('partial-work');
+
+    // Mock withTransaction to call callback then throw replica support error
+    mockSession.withTransaction.mockImplementationOnce(async (cb) => {
+      await cb();
+      throw new Error('CommandNotSupported: This MongoDB deployment does not support replica sets');
+    });
+
+    await expect(runInTransaction(callback)).rejects.toThrow('CommandNotSupported');
+    expect(callback).toHaveBeenCalledTimes(1);
+
+    // Verify capability cache update: subsequent call should bypass startSession and execute fallback fn(undefined)
+    vi.mocked(mongoose.startSession).mockClear();
+    const callback2 = vi.fn().mockResolvedValue('fallback-success');
+    const result2 = await runInTransaction(callback2);
+
+    expect(result2).toBe('fallback-success');
+    expect(mongoose.startSession).not.toHaveBeenCalled();
+    expect(callback2).toHaveBeenCalledWith(undefined);
+  });
 });

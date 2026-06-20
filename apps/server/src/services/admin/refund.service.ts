@@ -1,7 +1,8 @@
 import { Refund, IRefund } from '../../models/refund.schema';
 import { Booking } from '../../models/booking.schema';
 import { Payment } from '../../models/payment.schema';
-import { runInTransaction, cancelBooking, executeCancelBookingSideEffects } from './booking.service';
+import { cancelBooking, executeCancelBookingSideEffects } from './booking.service';
+import { runInTransaction } from '../../utils/transaction';
 import { AppError } from '../../middleware/error.middleware';
 import { BookingStatus, NotificationType, PaymentStatus } from '@mad/shared';
 import { Notification } from '../../models/notification.schema';

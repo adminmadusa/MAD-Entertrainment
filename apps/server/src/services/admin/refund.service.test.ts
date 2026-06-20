@@ -3,7 +3,8 @@ import { createRefund, processRefund, getRefunds } from './refund.service';
 import { Refund } from '../../models/refund.schema';
 import { Payment } from '../../models/payment.schema';
 import { Booking } from '../../models/booking.schema';
-import { cancelBooking, runInTransaction } from './booking.service';
+import { cancelBooking } from './booking.service';
+import { runInTransaction } from '../../utils/transaction';
 import { BookingStatus, PaymentStatus } from '@mad/shared';
 import { createNotificationSafe } from '../notification.service';
 import { Notification } from '../../models/notification.schema';
@@ -47,9 +48,12 @@ vi.mock('../../config/env', () => ({
 }));
 
 vi.mock('./booking.service', () => ({
-  runInTransaction: vi.fn(async (fn) => fn('mock-session')),
   cancelBooking: vi.fn(),
   executeCancelBookingSideEffects: vi.fn(),
+}));
+
+vi.mock('../../utils/transaction', () => ({
+  runInTransaction: vi.fn(async (fn) => fn('mock-session')),
 }));
 
 vi.mock('../notification.service', () => ({

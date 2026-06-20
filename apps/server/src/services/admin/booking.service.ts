@@ -17,6 +17,7 @@ import { Coupon } from '../../models/coupon.schema';
 import { Refund } from '../../models/refund.schema';
 import { logger } from '../../utils/logger';
 import { auditLog } from '../../utils/audit';
+import { runInTransaction } from '../../utils/transaction';
 import { ReservationService } from '../reservation.service';
 import { CacheService } from '../cache.service';
 import { QueueService } from '../queue.service';
@@ -25,43 +26,6 @@ import { BookingsSummaryResponse } from '../../types/admin/booking.types';
 import { Notification } from '../../models/notification.schema';
 import { NotificationType } from '@mad/shared';
 import { eventCancellationHtml } from '../../lib/email';
-
-/**
- * Resilient transaction execution helper. Runs the callback inside a session
- * transaction if replica sets are supported by the deployment, otherwise falls
- * back gracefully to atomic non-transactional operations.
- */
-export async function runInTransaction<T>(
-  fn: (session: ClientSession | undefined) => Promise<T>
-): Promise<T> {
-  const session = await mongoose.startSession().catch(() => null);
-  if (!session) {
-    return fn(undefined);
-  }
-
-  try {
-    let result: T;
-    await session.withTransaction(async () => {
-      result = await fn(session);
-    });
-    return result!;
-  } catch (err: any) {
-    if (
-      err?.message?.includes('replica set') ||
-      err?.message?.includes('Transaction') ||
-      err?.codeName === 'CommandNotSupported'
-    ) {
-      logger.warn(
-        { err },
-        'MongoDB transactions are not supported on this deployment. Falling back to non-transactional execution.'
-      );
-      return fn(undefined);
-    }
-    throw err;
-  } finally {
-    await session.endSession().catch(() => {});
-  }
-}
 
 /**
  * Maps a Mongoose Booking document onto a safe Normalized AdminBooking DTO representation.
