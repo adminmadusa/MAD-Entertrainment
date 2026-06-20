@@ -1042,6 +1042,109 @@ describe('Admin Refund Service Tests', () => {
         processRefund('ref-C', 'approve', 'Approve C')
       ).rejects.toThrow('Refund amount exceeds remaining captured balance');
     });
+
+    it('RFND-B-F01 - refreshes booking status inside Phase 3 transaction to prevent stale status crash', async () => {
+      const mockRefund = {
+        _id: 'ref-stale-test',
+        bookingId: 'booking-123',
+        paymentId: 'payment-123',
+        amount: 100,
+        status: 'requested',
+        save: vi.fn(),
+      };
+
+      const mockPayment = { _id: 'payment-123', amount: 100, status: PaymentStatus.PAID, gateway: 'stripe', gatewayOrderId: 'pi_123' };
+      // In-memory/Phase 1 booking is CONFIRMED
+      const mockBookingPhase1 = { _id: 'booking-123', status: BookingStatus.CONFIRMED };
+      // Database has booking already REFUNDED (from webhook reconciliation)
+      const mockBookingInDB = { _id: 'booking-123', status: BookingStatus.REFUNDED };
+
+      vi.mocked(Refund.findOneAndUpdate).mockReturnValue(createMockQuery(mockRefund));
+      vi.mocked(Payment.findById).mockReturnValue({ session: vi.fn().mockResolvedValue(mockPayment) } as any);
+      
+      // First findById resolves in Phase 1 (CONFIRMED)
+      // Second findById resolves inside transaction (REFUNDED)
+      vi.mocked(Booking.findById)
+        .mockReturnValueOnce({ session: vi.fn().mockResolvedValue(mockBookingPhase1) } as any) // Phase 1
+        .mockReturnValueOnce({ session: vi.fn().mockResolvedValue(mockBookingInDB) } as any); // Phase 3
+
+      vi.mocked(Refund.find).mockReturnValue(createMockQuery([]));
+      mockStripeRefundsCreate.mockResolvedValue({ id: 're_123' });
+
+      // Run approval
+      const result = await processRefund('ref-stale-test', 'approve', 'Approve stale');
+
+      // Assertions
+      expect(result?.status).toBe('completed');
+      // booking.service.cancelBooking should NOT have been called because status was already REFUNDED in DB
+      expect(cancelBooking).not.toHaveBeenCalled();
+    });
+
+    it('persists gatewayRefundId immediately after successful gateway response to minimize crash window', async () => {
+      const mockRefund = {
+        _id: 'ref-write-through',
+        bookingId: 'booking-123',
+        paymentId: 'payment-123',
+        amount: 50,
+        status: 'requested',
+        save: vi.fn(),
+      };
+
+      const mockPayment = { _id: 'payment-123', amount: 100, status: PaymentStatus.PAID, gateway: 'stripe', gatewayOrderId: 'pi_123' };
+      const mockBooking = { _id: 'booking-123', status: BookingStatus.CONFIRMED };
+
+      vi.mocked(Refund.findOneAndUpdate).mockReturnValue(createMockQuery(mockRefund));
+      vi.mocked(Payment.findById).mockReturnValue({ session: vi.fn().mockResolvedValue(mockPayment) } as any);
+      vi.mocked(Booking.findById).mockReturnValue({ session: vi.fn().mockResolvedValue(mockBooking) } as any);
+      vi.mocked(Refund.find).mockReturnValue(createMockQuery([]));
+      mockStripeRefundsCreate.mockResolvedValue({ id: 're_123' });
+
+      // Run approval
+      await processRefund('ref-write-through', 'approve', 'Approve write-through');
+
+      // Assertions
+      expect(Refund.updateOne).toHaveBeenCalledWith(
+        { _id: 'ref-write-through' },
+        { $set: { gatewayRefundId: 're_123' } }
+      );
+    });
+
+    it('RFND-B-F03 - does not trigger email notification if reconciledAt is set on the Refund record', async () => {
+      const mockRefund = {
+        _id: 'ref-email-test',
+        bookingId: 'booking-123',
+        paymentId: 'payment-123',
+        amount: 100,
+        status: 'requested',
+        save: vi.fn(),
+      };
+
+      const mockPayment = { _id: 'payment-123', amount: 100, status: PaymentStatus.PAID, gateway: 'stripe', gatewayOrderId: 'pi_123' };
+      const mockBooking = { _id: 'booking-123', status: BookingStatus.CONFIRMED, guestEmail: 'customer@example.com' };
+
+      vi.mocked(Refund.findOneAndUpdate).mockReturnValue(createMockQuery(mockRefund));
+      vi.mocked(Payment.findById).mockReturnValue({ session: vi.fn().mockResolvedValue(mockPayment) } as any);
+      vi.mocked(Booking.findById).mockReturnValue({ session: vi.fn().mockResolvedValue(mockBooking) } as any);
+      vi.mocked(Refund.find).mockReturnValue(createMockQuery([]));
+      mockStripeRefundsCreate.mockResolvedValue({ id: 're_123' });
+
+      // Inside transaction, the Refund is updated and returned as completed, BUT let's simulate reconciledAt has been set
+      // We spy on the returned 'updated' object from runInTransaction. To do this, let's mock Refund save to return the updated record with reconciledAt.
+      vi.mocked(runInTransaction).mockImplementation(async (callback: any) => {
+        const res = await callback('mock-session');
+        if (res && res.updated) {
+          res.updated.reconciledAt = new Date(); // simulate webhook completed it
+        }
+        return res;
+      });
+
+      // Run approval
+      await processRefund('ref-email-test', 'approve', 'Approve email check');
+
+      // Email notifications should NOT have been enqueued
+      expect(QueueService.enqueue).not.toHaveBeenCalled();
+      expect(createNotificationSafe).not.toHaveBeenCalled();
+    });
   });
 });
 

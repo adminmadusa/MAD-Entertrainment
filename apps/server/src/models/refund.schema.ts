@@ -14,6 +14,9 @@ export interface IRefund extends Document {
   recoveryReason?: 'AMOUNT_MISMATCH' | 'BOOKING_REFERENCE_MISMATCH' | 'BOOKING_ID_MISMATCH' | 'CURRENCY_MISMATCH' | 'PAYMENT_VALIDATION_FAILURE' | 'EXPIRED_BOOKING_CAPACITY_UNAVAILABLE';
   cancelTickets: boolean;
   processedAt?: Date;
+  gatewayRefundStatus?: string;
+  reconciledAt?: Date;
+  webhookEventId?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -33,6 +36,9 @@ const refundSchema = new Schema<IRefund>(
     },
     adminNotes: String,
     gatewayRefundId: String,
+    gatewayRefundStatus: String,
+    reconciledAt: Date,
+    webhookEventId: String,
     idempotencyKey: { type: String, index: true },
     processedAt: Date,
     origin: {
@@ -70,6 +76,11 @@ refundSchema.index(
     },
     name: 'idx_refund_idempotency_key_unique'
   }
+);
+
+refundSchema.index(
+  { gatewayRefundId: 1 },
+  { sparse: true, name: 'idx_refund_gateway_refund_id' }
 );
 
 export const Refund = model<IRefund>('Refund', refundSchema);

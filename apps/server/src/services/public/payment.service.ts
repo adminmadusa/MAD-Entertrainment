@@ -2,7 +2,7 @@ import crypto from 'crypto';
 import { Types, ClientSession } from 'mongoose';
 import * as Sentry from '@sentry/node';
 
-import { BookingStatus, PaymentStatus, ReservationStatus, SeatStatus, NotificationType } from '@mad/shared';
+import { BookingStatus, PaymentStatus, ReservationStatus, SeatStatus, NotificationType, RefundStatus } from '@mad/shared';
 
 import { emitToAdmin, emitToBooking, emitToEvent } from '../../config/socket';
 import { getEnv } from '../../config/env';
@@ -24,12 +24,36 @@ import { logger } from '../../utils/logger';
 import { auditLog } from '../../utils/audit';
 import { sendEmail } from '../../utils/email';
 import { generateTicketPDF } from '../../utils/pdf';
-import { paymentFailureHtml } from '../../lib/email';
+import { paymentFailureHtml, fullRefundHtml, partialRefundHtml } from '../../lib/email';
 import { ReservationService } from '../reservation.service';
 import { QueueService } from '../queue.service';
 import { CacheService } from '../cache.service';
 import { createNotificationSafe } from '../notification.service';
 import { runInTransaction } from '../../utils/transaction';
+import { cancelBooking, executeCancelBookingSideEffects } from '../admin/booking.service';
+
+export interface StripeChargeWebhookPayload {
+  id: string;
+  refunds?: {
+    data?: Array<{
+      id: string;
+      amount: number;
+    }>;
+  };
+}
+
+export interface StripeRefundWebhookPayload {
+  id: string;
+  charge: string;
+  status: string;
+  amount: number;
+}
+
+export interface RazorpayRefundWebhookPayload {
+  id: string;
+  payment_id: string;
+  amount: number;
+}
 
 type PaymentOwnershipContext = {
   userId?: string;
@@ -2094,7 +2118,6 @@ export class PaymentService {
       }
 
       let reason = 'CONFIRMATION_TRANSACTION_FAILED';
-      let isConcurrentConfirm = false;
       const isKnownAbort = ['SEAT_ALLOCATION_FAILED', 'EVENT_CAPACITY_ALLOCATION_FAILED', 'CONCURRENT_CONFIRMATION_OR_NOT_FOUND', 'EVENT_EXPIRED_DURING_CONFIRMATION'].includes(err.message);
 
       if (err.message === 'SEAT_ALLOCATION_FAILED' || err.message === 'EVENT_CAPACITY_ALLOCATION_FAILED') {
@@ -2105,7 +2128,6 @@ export class PaymentService {
         reason = 'LATE_PAYMENT_RECOVERY_REJECTED_CONCURRENT_CONFIRM';
         const currentBooking = await Booking.findById(booking._id).select('status paymentId').lean().catch(() => null);
         if (currentBooking?.status === BookingStatus.CONFIRMED) {
-          isConcurrentConfirm = true;
           const isSamePayment = currentBooking.paymentId && currentBooking.paymentId.toString() === _payment._id.toString();
           
           if (isSamePayment) {
@@ -2293,6 +2315,520 @@ export class PaymentService {
         }
       }
       throw err;
+    }
+  }
+
+  static async reconcileStripeRefundWebhook(
+    chargeOrRefund: StripeChargeWebhookPayload | StripeRefundWebhookPayload,
+    webhookEventId: string,
+    eventType: string
+  ): Promise<{ status: 'completed' | 'failed' | 'anomaly' | 'skipped'; refundId?: string; paymentId?: string }> {
+    let gatewayPaymentId: string;
+    let gatewayRefundId: string | undefined;
+    let gatewayStatus = 'succeeded';
+    let amountInCents = 0;
+
+    if (eventType === 'charge.refunded') {
+      const charge = chargeOrRefund as StripeChargeWebhookPayload;
+      gatewayPaymentId = charge.id;
+      gatewayRefundId = charge.refunds?.data?.[0]?.id;
+      amountInCents = charge.refunds?.data?.[0]?.amount || 0;
+    } else {
+      const refund = chargeOrRefund as StripeRefundWebhookPayload;
+      gatewayPaymentId = refund.charge;
+      gatewayRefundId = refund.id;
+      gatewayStatus = refund.status;
+      amountInCents = refund.amount || 0;
+    }
+
+    if (!gatewayRefundId) {
+      logger.warn({ chargeId: gatewayPaymentId, webhookEventId, eventType }, 'Stripe webhook received but missing gatewayRefundId');
+      return { status: 'skipped' };
+    }
+
+    // Stripe status mappings: only complete if succeeded
+    if (eventType === 'refund.updated' && gatewayStatus !== 'succeeded' && gatewayStatus !== 'failed') {
+      logger.info({ gatewayRefundId, gatewayStatus, webhookEventId }, 'Stripe refund updated with non-terminal status - skipping');
+      return { status: 'skipped' };
+    }
+
+    this.assertProductionPaymentIntegrity(
+      [gatewayPaymentId, gatewayRefundId],
+      {
+        paymentId: gatewayPaymentId,
+        gateway: 'stripe',
+        requestSource: 'webhook',
+      }
+    );
+
+    return this.reconcileRefundWebhook({
+      gateway: 'stripe',
+      gatewayPaymentId,
+      gatewayRefundId,
+      amountMajorUnits: amountInCents / 100,
+      gatewayStatus,
+      webhookEventId
+    });
+  }
+
+  static async reconcileRazorpayRefundWebhook(
+    refundEntity: RazorpayRefundWebhookPayload,
+    eventType: string,
+    webhookEventId: string
+  ): Promise<{ status: 'completed' | 'failed' | 'anomaly' | 'skipped'; refundId?: string; paymentId?: string }> {
+    const gatewayPaymentId = refundEntity.payment_id;
+    const gatewayRefundId = refundEntity.id;
+    const amountInPaise = refundEntity.amount;
+    const gatewayStatus = eventType === 'refund.processed' ? 'processed' : 'failed';
+
+    if (!gatewayRefundId) {
+      logger.warn({ paymentId: gatewayPaymentId, webhookEventId, eventType }, 'Razorpay webhook received but missing gatewayRefundId');
+      return { status: 'skipped' };
+    }
+
+    this.assertProductionPaymentIntegrity(
+      [gatewayPaymentId, gatewayRefundId],
+      {
+        paymentId: gatewayPaymentId,
+        gateway: 'razorpay',
+        requestSource: 'webhook',
+      }
+    );
+
+    return this.reconcileRefundWebhook({
+      gateway: 'razorpay',
+      gatewayPaymentId,
+      gatewayRefundId,
+      amountMajorUnits: amountInPaise / 100,
+      gatewayStatus,
+      webhookEventId
+    });
+  }
+
+  private static async reconcileRefundWebhook(params: {
+    gateway: 'stripe' | 'razorpay';
+    gatewayPaymentId: string;
+    gatewayRefundId: string;
+    amountMajorUnits: number;
+    gatewayStatus: string;
+    webhookEventId: string;
+  }): Promise<{ status: 'completed' | 'failed' | 'anomaly' | 'skipped'; refundId?: string; paymentId?: string }> {
+    const { gateway, gatewayPaymentId, gatewayRefundId, amountMajorUnits, gatewayStatus, webhookEventId } = params;
+    const isSucceeded = gatewayStatus === 'succeeded' || gatewayStatus === 'processed';
+    const isFailed = gatewayStatus === 'failed';
+
+    // Primary Lookup
+    let refund = await Refund.findOne({ gatewayRefundId });
+
+    // Fallback Lookup (RFND-H02)
+    if (!refund && gatewayPaymentId) {
+      const paymentObj = await Payment.findOne({ gatewayPaymentId, gateway });
+      if (paymentObj) {
+        refund = await Refund.findOne({
+          paymentId: paymentObj._id,
+          status: { $in: [RefundStatus.PROCESSING, RefundStatus.REQUESTED] },
+          amount: amountMajorUnits
+        });
+      }
+    }
+
+    // Gateway-Initiated Auto-Creation (RFND-B-F02)
+    if (!refund) {
+      const paymentObj = await Payment.findOne({ gatewayPaymentId, gateway });
+      if (paymentObj) {
+        const isFullRefund = amountMajorUnits === paymentObj.amount;
+        
+        try {
+          const result = await runInTransaction(async (session) => {
+            // Serialization lock on Payment
+            await Payment.findOneAndUpdate(
+              { _id: paymentObj._id },
+              { $set: { updatedAt: new Date() } },
+              { session, new: true }
+            );
+
+            // Double check duplicate gatewayRefundId to prevent race
+            const doubleCheck = await Refund.findOne({ gatewayRefundId }).session(session);
+            if (doubleCheck) {
+              return { status: 'completed' as const, refundId: doubleCheck._id.toString(), paymentId: paymentObj._id.toString() };
+            }
+
+            const createdRefund = await Refund.create([{
+              bookingId: paymentObj.bookingId,
+              paymentId: paymentObj._id,
+              amount: amountMajorUnits,
+              currency: paymentObj.currency,
+              reason: 'Reconciled from gateway-initiated refund webhook',
+              status: RefundStatus.COMPLETED,
+              origin: 'manual',
+              gatewayRefundId,
+              gatewayRefundStatus: gatewayStatus,
+              reconciledAt: new Date(),
+              processedAt: new Date(),
+              webhookEventId,
+              cancelTickets: isFullRefund
+            }], { session });
+
+            const newRefundDoc = createdRefund[0];
+
+            // Calculate new Payment Status
+            const otherCompletedRefunds = await Refund.find({
+              paymentId: paymentObj._id,
+              status: RefundStatus.COMPLETED,
+              _id: { $ne: newRefundDoc._id }
+            }).session(session);
+            const totalCompletedRefunded = otherCompletedRefunds.reduce((sum, r) => sum + r.amount, 0);
+            const isReallyFullRefund = (totalCompletedRefunded + newRefundDoc.amount) === paymentObj.amount;
+            const newPaymentStatus = isReallyFullRefund ? PaymentStatus.REFUNDED : PaymentStatus.PARTIALLY_REFUNDED;
+
+            await Payment.findByIdAndUpdate(paymentObj._id, { status: newPaymentStatus }, { session });
+
+            let cancelPostCommitPayload = null;
+            const booking = await Booking.findById(paymentObj.bookingId).session(session);
+            if (booking) {
+              if (isReallyFullRefund) {
+                if (booking.status === BookingStatus.CONFIRMED) {
+                  const cancelResult = await cancelBooking(
+                    booking._id.toString(),
+                    `${gateway === 'stripe' ? 'Stripe' : 'Razorpay'} Webhook Full Auto-Refund`,
+                    session,
+                    BookingStatus.REFUNDED
+                  );
+                  if (cancelResult && cancelResult.postCommitPayload) {
+                    cancelPostCommitPayload = cancelResult.postCommitPayload;
+                  }
+                } else if (booking.status === BookingStatus.CANCELLED) {
+                  booking.status = BookingStatus.REFUNDED;
+                  booking.bookingVersion += 1;
+                  await booking.save({ session });
+                }
+              } else {
+                // Partial refund
+                logger.info({ paymentId: paymentObj._id, bookingId: booking._id }, 'Partial gateway-initiated refund - flagging for manual review, booking active');
+              }
+            }
+
+            return {
+              status: 'completed' as const,
+              refundId: newRefundDoc._id.toString(),
+              paymentId: paymentObj._id.toString(),
+              cancelPostCommitPayload,
+              isNewRefund: true
+            };
+          });
+
+          // Run post-commit cancellation effects outside session
+          if (result.cancelPostCommitPayload) {
+            try {
+              await executeCancelBookingSideEffects(result.cancelPostCommitPayload);
+            } catch (err) {
+              logger.error({ err }, `Error executing booking cancel side effects post-commit in reconcileRefundWebhook (${gateway})`);
+            }
+          }
+
+          // Trigger email notification for the auto-created refund
+          if (result.isNewRefund) {
+            try {
+              await this.triggerRefundEmailNotification(result.refundId);
+            } catch (err) {
+              logger.error({ err, refundId: result.refundId }, 'Failed to trigger auto-created refund notification email');
+            }
+          }
+
+          return { status: result.status, refundId: result.refundId, paymentId: result.paymentId };
+        } catch (err: any) {
+          logger.error({ err, gatewayRefundId }, `Failed to process auto-created ${gateway} refund webhook`);
+          throw err;
+        }
+      }
+      logger.warn({ gatewayPaymentId, gatewayRefundId }, `${gateway} webhook received but no matching Payment or Refund record found`);
+      return { status: 'skipped' };
+    }
+
+    // Check terminal states (Idempotency)
+    if (refund.status === RefundStatus.COMPLETED) {
+      if (isFailed) {
+        // Anomaly Alert (RFND-M02)
+        const gatewayLabel = gateway === 'stripe' ? 'Stripe' : 'Razorpay';
+        const errMsg = `CRITICAL ANOMALY: Webhook reports ${gatewayLabel} refund ${gatewayRefundId} failed, but DB status is completed!`;
+        logger.error({ refundId: refund._id, gatewayRefundId }, errMsg);
+        
+        // Structured Audit Log for state anomaly
+        auditLog({
+          action: 'REFUND_RECONCILIATION_ANOMALY',
+          actor: { type: 'admin', id: 'system' },
+          status: 'failure',
+          description: errMsg,
+          metadata: {
+            refundId: refund._id.toString(),
+            gatewayRefundId,
+            gatewayStatus,
+            dbStatus: refund.status,
+          }
+        });
+
+        Sentry.captureMessage(errMsg, { level: 'error' as const });
+        return { status: 'anomaly', refundId: refund._id.toString(), paymentId: refund.paymentId.toString() };
+      }
+      return { status: 'completed', refundId: refund._id.toString(), paymentId: refund.paymentId.toString() };
+    }
+
+    if (refund.status === RefundStatus.FAILED) {
+      if (isSucceeded) {
+        // Anomaly Alert (RFND-M02)
+        const gatewayLabel = gateway === 'stripe' ? 'Stripe' : 'Razorpay';
+        const errMsg = `CRITICAL ANOMALY: Webhook reports ${gatewayLabel} refund ${gatewayRefundId} succeeded, but DB status is failed!`;
+        logger.error({ refundId: refund._id, gatewayRefundId }, errMsg);
+
+        // Structured Audit Log for state anomaly
+        auditLog({
+          action: 'REFUND_RECONCILIATION_ANOMALY',
+          actor: { type: 'admin', id: 'system' },
+          status: 'failure',
+          description: errMsg,
+          metadata: {
+            refundId: refund._id.toString(),
+            gatewayRefundId,
+            gatewayStatus,
+            dbStatus: refund.status,
+          }
+        });
+
+        Sentry.captureMessage(errMsg, { level: 'error' as const });
+        return { status: 'anomaly', refundId: refund._id.toString(), paymentId: refund.paymentId.toString() };
+      }
+      return { status: 'failed', refundId: refund._id.toString(), paymentId: refund.paymentId.toString() };
+    }
+
+    // Execute Reconciliation Transaction
+    try {
+      const result = await runInTransaction(async (session) => {
+        // Serialization lock on Payment
+        const payment = await Payment.findOneAndUpdate(
+          { _id: refund.paymentId },
+          { $set: { updatedAt: new Date() } },
+          { session, new: true }
+        );
+
+        if (!payment) throw new Error('Payment not found');
+
+        const booking = await Booking.findById(refund.bookingId).session(session);
+        if (!booking) throw new Error('Booking not found');
+
+        // Atomic Status Transition (RFND-M01)
+        const updatedRefund = await Refund.findOneAndUpdate(
+          { _id: refund._id, status: { $in: [RefundStatus.PROCESSING, RefundStatus.REQUESTED] } },
+          {
+            $set: {
+              status: isFailed ? RefundStatus.FAILED : RefundStatus.COMPLETED,
+              gatewayRefundStatus: gatewayStatus,
+              reconciledAt: new Date(),
+              processedAt: new Date(),
+              webhookEventId
+            }
+          },
+          { session, new: true }
+        );
+
+        if (!updatedRefund) {
+          // Concurrent win
+          const currentRefund = await Refund.findById(refund._id).session(session);
+          if (currentRefund?.status === RefundStatus.COMPLETED) {
+            return { status: 'completed' as const, refundId: refund._id.toString(), paymentId: payment._id.toString() };
+          }
+          return { status: 'failed' as const, refundId: refund._id.toString(), paymentId: payment._id.toString() };
+        }
+
+        if (updatedRefund.status === RefundStatus.COMPLETED) {
+          // Calculate new Payment Status
+          const otherCompletedRefunds = await Refund.find({
+            paymentId: payment._id,
+            status: RefundStatus.COMPLETED,
+            _id: { $ne: updatedRefund._id }
+          }).session(session);
+          const totalCompletedRefunded = otherCompletedRefunds.reduce((sum, r) => sum + r.amount, 0);
+          const isFullRefund = (totalCompletedRefunded + updatedRefund.amount) === payment.amount;
+          const newPaymentStatus = isFullRefund ? PaymentStatus.REFUNDED : PaymentStatus.PARTIALLY_REFUNDED;
+
+          await Payment.findByIdAndUpdate(payment._id, { status: newPaymentStatus }, { session });
+
+          let cancelPostCommitPayload = null;
+          if (isFullRefund) {
+            if (booking.status === BookingStatus.CONFIRMED) {
+              const cancelResult = await cancelBooking(booking._id.toString(), `${gateway === 'stripe' ? 'Stripe' : 'Razorpay'} Webhook Reconciled`, session, BookingStatus.REFUNDED);
+              if (cancelResult && cancelResult.postCommitPayload) {
+                cancelPostCommitPayload = cancelResult.postCommitPayload;
+              }
+            } else if (booking.status === BookingStatus.CANCELLED) {
+              booking.status = BookingStatus.REFUNDED;
+              booking.bookingVersion += 1;
+              await booking.save({ session });
+            }
+          } else if (updatedRefund.cancelTickets && booking.status === BookingStatus.CONFIRMED) {
+            const cancelResult = await cancelBooking(booking._id.toString(), `${gateway === 'stripe' ? 'Stripe' : 'Razorpay'} Webhook Reconciled`, session, BookingStatus.CANCELLED);
+            if (cancelResult && cancelResult.postCommitPayload) {
+              cancelPostCommitPayload = cancelResult.postCommitPayload;
+            }
+          }
+
+          return {
+            status: 'completed' as const,
+            refundId: updatedRefund._id.toString(),
+            paymentId: payment._id.toString(),
+            cancelPostCommitPayload,
+            transitioned: true
+          };
+        } else {
+          // Failed refund
+          return {
+            status: 'failed' as const,
+            refundId: updatedRefund._id.toString(),
+            paymentId: payment._id.toString()
+          };
+        }
+      });
+
+      // Run post-commit cancellation effects outside session
+      if (result.cancelPostCommitPayload) {
+        try {
+          await executeCancelBookingSideEffects(result.cancelPostCommitPayload);
+        } catch (err) {
+          logger.error({ err }, `Error executing booking cancel side effects post-commit in reconcileRefundWebhook (${gateway})`);
+        }
+      }
+
+      // Trigger email notification if webhook was the thread that completed the transition
+      if (result.status === 'completed' && result.transitioned) {
+        try {
+          await this.triggerRefundEmailNotification(result.refundId);
+        } catch (err) {
+          logger.error({ err, refundId: result.refundId }, 'Failed to trigger reconciled refund notification email');
+        }
+      }
+
+      return { status: result.status, refundId: result.refundId, paymentId: result.paymentId };
+    } catch (err: any) {
+      logger.error({ err, refundId: refund._id }, `Error during ${gateway} refund webhook reconciliation`);
+      throw err;
+    }
+  }
+
+  private static async triggerRefundEmailNotification(refundId: string): Promise<void> {
+    try {
+      const refund = await Refund.findById(refundId);
+      if (!refund || refund.status !== RefundStatus.COMPLETED) {
+        return;
+      }
+
+      const booking = await Booking.findById(refund.bookingId).populate('eventId');
+      if (!booking || !booking.guestEmail) {
+        return;
+      }
+
+      const event = booking.eventId as any;
+      const refundAmount = refund.amount;
+      const totalAmount = booking.totalAmount;
+
+      let emailHtml = '';
+      let subject = '';
+      let notificationType: NotificationType | undefined;
+
+      const completedRefunds = await Refund.find({
+        paymentId: refund.paymentId,
+        status: RefundStatus.COMPLETED
+      });
+      const totalRefunded = completedRefunds.reduce((sum, r) => sum + r.amount, 0);
+      const payment = await Payment.findById(refund.paymentId);
+      const isFullRefund = payment ? totalRefunded === payment.amount : false;
+
+      if (isFullRefund) {
+        const existingNotification = await Notification.findOne({
+          jobId: { $regex: `^refund-${refund._id}` }
+        });
+
+        if (!existingNotification) {
+          const formattedRefundDate = new Date(refund.processedAt || new Date()).toLocaleDateString('en-IN', {
+            weekday: 'long',
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric',
+          });
+
+          emailHtml = await fullRefundHtml({
+            customerName: booking.guestName,
+            bookingReference: booking.bookingId,
+            eventTitle: event?.title || 'MAD Event',
+            refundAmount: refundAmount,
+            refundDate: formattedRefundDate,
+            settlementTimeline: '5-7 business days',
+            currency: booking.currency || 'INR',
+          });
+
+          subject = `Refund Processed for ${booking.bookingId}`;
+          notificationType = NotificationType.FULL_REFUND;
+        }
+      } else {
+        const existingNotification = await Notification.findOne({
+          jobId: { $regex: `^refund-${refund._id}` }
+        });
+
+        if (!existingNotification) {
+          emailHtml = await partialRefundHtml({
+            customerName: booking.guestName,
+            bookingReference: booking.bookingId,
+            originalAmount: totalAmount,
+            refundAmount: refundAmount,
+            remainingAmount: Math.max(0, totalAmount - totalRefunded),
+            reason: refund.reason || 'Tier adjustment refund',
+            currency: booking.currency || 'INR',
+          });
+
+          subject = `Partial Refund Processed for ${booking.bookingId}`;
+          notificationType = NotificationType.PARTIAL_REFUND;
+        }
+      }
+
+      if (emailHtml && notificationType) {
+        const jobId = `refund-${refund._id}-${Date.now()}`;
+        // CQ-02 notification array consistency fix
+        await createNotificationSafe({
+          jobId,
+          status: 'queued',
+          queuedAt: new Date(),
+          type: notificationType,
+          channel: 'email',
+          recipient: booking.guestEmail,
+          subject,
+          isSent: false,
+          retryCount: 0,
+          bookingId: booking._id,
+          eventId: event?._id
+        });
+
+        await QueueService.enqueue(
+          getQueueName('notification-queue'),
+          'email-dispatch',
+          {
+            to: booking.guestEmail,
+            subject,
+            html: emailHtml,
+            notificationType,
+            bookingId: booking._id.toString(),
+            eventId: event?._id?.toString() || booking.eventId?.toString() || '',
+          },
+          jobId
+        );
+
+        logger.info({
+          emailType: isFullRefund ? 'FULL_REFUND' : 'PARTIAL_REFUND',
+          recipient: booking.guestEmail,
+          bookingId: booking._id.toString(),
+          refundId: refund._id.toString(),
+          jobId,
+        }, 'Successfully enqueued refund notification email job via webhook reconciliation');
+      }
+    } catch (err) {
+      logger.error({ err, refundId }, 'Error triggering email notification in webhook reconciliation');
     }
   }
 }

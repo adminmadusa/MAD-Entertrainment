@@ -4,7 +4,7 @@ import { Payment } from '../../models/payment.schema';
 import { cancelBooking, executeCancelBookingSideEffects } from './booking.service';
 import { runInTransaction } from '../../utils/transaction';
 import { AppError } from '../../middleware/error.middleware';
-import { BookingStatus, NotificationType, PaymentStatus } from '@mad/shared';
+import { BookingStatus, NotificationType, PaymentStatus, RefundStatus } from '@mad/shared';
 import { Notification } from '../../models/notification.schema';
 import { createNotificationSafe } from '../notification.service';
 import { QueueService } from '../queue.service';
@@ -194,7 +194,7 @@ export const createRefund = async (data: {
       // Check for existing refund request with same idempotency key if provided
       const existingRefund = await Refund.findOne({
         idempotencyKey: idempotencyKey,
-        status: { $in: ['requested', 'processing', 'completed'] },
+        status: { $in: [RefundStatus.REQUESTED, RefundStatus.PROCESSING, RefundStatus.COMPLETED] },
       }).session(session);
       if (existingRefund) {
         logger.info({ idempotencyKey }, 'Refund request already exists. Skipping duplicate.');
@@ -204,7 +204,7 @@ export const createRefund = async (data: {
       // 7. Cumulative Refund Check (Summing processing and completed)
       const existingRefunds = await Refund.find({
         paymentId: payment._id,
-        status: { $in: ['processing', 'completed'] },
+        status: { $in: [RefundStatus.PROCESSING, RefundStatus.COMPLETED] },
       }).session(session);
       const existingSum = existingRefunds.reduce((sum, r) => sum + r.amount, 0);
       if (existingSum + data.amount > payment.amount) {
@@ -217,7 +217,7 @@ export const createRefund = async (data: {
         paymentId: data.paymentId,
         amount: data.amount,
         reason: data.reason,
-        status: 'requested',
+        status: RefundStatus.REQUESTED,
         idempotencyKey,
         origin: data.origin || 'manual',
         recoveryReason: data.recoveryReason,
@@ -291,8 +291,8 @@ export const processRefund = async (
     phase1Result = await runInTransaction(async (session) => {
       // 1. Atomic claim of the refund record
       const refund = await Refund.findOneAndUpdate(
-        { _id: id, status: 'requested' },
-        { $set: { status: 'processing' } },
+        { _id: id, status: RefundStatus.REQUESTED },
+        { $set: { status: RefundStatus.PROCESSING } },
         { session, new: true }
       );
       if (!refund) {
@@ -366,7 +366,7 @@ export const processRefund = async (
       // 4. Cumulative processed refunds cap check (including processing and completed, excluding current)
       const existingRefunds = await Refund.find({
         paymentId: payment._id,
-        status: { $in: ['processing', 'completed'] },
+        status: { $in: [RefundStatus.PROCESSING, RefundStatus.COMPLETED] },
         _id: { $ne: refund._id }
       }).session(session);
       const totalRefundedSoFar = existingRefunds.reduce((sum, r) => sum + r.amount, 0);
@@ -380,8 +380,8 @@ export const processRefund = async (
   } catch (err: any) {
     logger.error({ err, refundId: id }, 'Error in Phase 1 of processing refund. Reverting status to requested.');
     await Refund.updateOne(
-      { _id: id, status: 'processing' },
-      { $set: { status: 'requested' } }
+      { _id: id, status: RefundStatus.PROCESSING },
+      { $set: { status: RefundStatus.REQUESTED } }
     ).catch((revertErr) => {
       logger.error({ revertErr, refundId: id }, 'Failed to revert refund status to requested.');
     });
@@ -395,7 +395,7 @@ export const processRefund = async (
     // 5. Action Reject Path
     if (action === 'reject') {
       const rejectResult = await runInTransaction(async (session) => {
-        refund.status = 'failed';
+        refund.status = RefundStatus.FAILED;
         refund.adminNotes = adminNotes;
         refund.processedAt = new Date();
         await refund.save({ session });
@@ -483,9 +483,19 @@ export const processRefund = async (
         }
       }
 
+      if (finalGatewayRefundId) {
+        await Refund.updateOne(
+          { _id: refund._id },
+          { $set: { gatewayRefundId: finalGatewayRefundId } }
+        ).catch((err) => {
+          logger.error({ err, refundId: refund._id }, 'Failed to persist gatewayRefundId immediately.');
+        });
+        refund.gatewayRefundId = finalGatewayRefundId;
+      }
+
       // Phase 3: Finalization (inside second transaction session)
       const approveResult = await runInTransaction(async (session) => {
-        refund.status = 'completed';
+        refund.status = RefundStatus.COMPLETED;
         refund.adminNotes = adminNotes;
         if (finalGatewayRefundId) {
           refund.gatewayRefundId = finalGatewayRefundId;
@@ -493,6 +503,7 @@ export const processRefund = async (
         refund.processedAt = new Date();
         await refund.save({ session });
 
+        const freshBooking = await Booking.findById(booking._id).session(session) || booking;
         const isFullRefund = (totalRefundedSoFar + refund.amount) === payment.amount;
         const newPaymentStatus = isFullRefund ? PaymentStatus.REFUNDED : PaymentStatus.PARTIALLY_REFUNDED;
 
@@ -500,12 +511,12 @@ export const processRefund = async (
 
         // Call cancelBooking conditionally first
         if (isFullRefund) {
-          if (booking.status === BookingStatus.CONFIRMED) {
+          if (freshBooking.status === BookingStatus.CONFIRMED) {
             const cancelResult = await cancelBooking(refund.bookingId.toString(), adminNotes || 'Admin Refund Processed', session, BookingStatus.REFUNDED);
             if (cancelResult && cancelResult.postCommitPayload) {
               cancelPostCommitPayload = cancelResult.postCommitPayload;
             }
-          } else if (booking.status === BookingStatus.CANCELLED) {
+          } else if (freshBooking.status === BookingStatus.CANCELLED) {
             const b = await Booking.findById(booking._id).session(session);
             if (b) {
               b.status = BookingStatus.REFUNDED;
@@ -514,7 +525,7 @@ export const processRefund = async (
             }
           }
         } else if (refund.cancelTickets) {
-          if (booking.status === BookingStatus.CONFIRMED) {
+          if (freshBooking.status === BookingStatus.CONFIRMED) {
             const cancelResult = await cancelBooking(refund.bookingId.toString(), adminNotes || 'Admin Refund Processed', session, BookingStatus.CANCELLED);
             if (cancelResult && cancelResult.postCommitPayload) {
               cancelPostCommitPayload = cancelResult.postCommitPayload;
@@ -537,8 +548,8 @@ export const processRefund = async (
     // Phase 4: Conditional Failure Recovery
     logger.error({ err, refundId: id }, 'Error processing refund. Reverting status to requested.');
     await Refund.updateOne(
-      { _id: id, status: 'processing' },
-      { $set: { status: 'requested' } }
+      { _id: id, status: RefundStatus.PROCESSING },
+      { $set: { status: RefundStatus.REQUESTED } }
     ).catch((revertErr) => {
       logger.error({ revertErr, refundId: id }, 'Failed to revert refund status to requested.');
     });
@@ -558,7 +569,7 @@ export const processRefund = async (
     }
 
     // Asynchronous, exception-safe Full & Partial Refund Email Trigger
-    if (updated.status === 'completed') {
+    if (updated.status === RefundStatus.COMPLETED && !updated.reconciledAt) {
       try {
         const booking = await Booking.findById(updated.bookingId).populate('eventId');
         if (booking && booking.guestEmail) {
@@ -573,7 +584,7 @@ export const processRefund = async (
           // Check if it's full or partial based on cumulative refund amount vs booking totalAmount
           const completedRefunds = await Refund.find({
             paymentId: updated.paymentId,
-            status: 'completed'
+            status: RefundStatus.COMPLETED
           });
           const totalRefunded = completedRefunds.reduce((sum, r) => sum + r.amount, 0);
           const payment = await Payment.findById(updated.paymentId);
@@ -634,7 +645,7 @@ export const processRefund = async (
             // Post-commit failure isolation: Notification creation and Email Enqueue
             try {
               // Post-commit ordering constraint: createNotificationSafe must succeed before QueueService.enqueue
-              await createNotificationSafe([{
+              await createNotificationSafe({
                 jobId,
                 status: 'queued',
                 queuedAt: new Date(),
@@ -646,7 +657,7 @@ export const processRefund = async (
                 retryCount: 0,
                 bookingId: booking._id,
                 eventId: event?._id
-              }]);
+              });
 
               // If createNotificationSafe throws, this statement is skipped
               await QueueService.enqueue(
