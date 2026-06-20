@@ -1,7 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import qrcode from 'qrcode';
 
+import { BookingStatus } from '@mad/shared';
 import { AppError } from '../../middleware/error.middleware';
+import { Booking } from '../../models/booking.schema';
 import { Ticket } from '../../models/ticket.schema';
 import { getTicketQR } from './ticket.controller';
 
@@ -14,6 +16,12 @@ vi.mock('qrcode', () => ({
 vi.mock('../../models/ticket.schema', () => ({
   Ticket: {
     findOne: vi.fn(),
+  },
+}));
+
+vi.mock('../../models/booking.schema', () => ({
+  Booking: {
+    findById: vi.fn(),
   },
 }));
 
@@ -42,15 +50,25 @@ describe('Public Ticket QR Controller Tests', () => {
     vi.clearAllMocks();
   });
 
-  it('should successfully return PNG buffer with caching headers for a valid ticket', async () => {
+  it('should successfully return PNG buffer with caching headers for a valid ticket and confirmed booking', async () => {
     const mockTicket = {
       ticketId: 'TKT-MAD-2026-ABCDE-001',
       qrCode: 'validation_hash_123',
+      bookingId: 'booking123',
+      status: 'active',
+    };
+
+    const mockBooking = {
+      _id: 'booking123',
+      status: BookingStatus.CONFIRMED,
     };
 
     const mockBuffer = Buffer.from('mocked_png_binary_data');
     vi.mocked(Ticket.findOne).mockReturnValue({
       lean: vi.fn().mockResolvedValue(mockTicket),
+    } as any);
+    vi.mocked(Booking.findById).mockReturnValue({
+      lean: vi.fn().mockResolvedValue(mockBooking),
     } as any);
     vi.mocked(qrcode.toBuffer).mockResolvedValue(mockBuffer as any);
 
@@ -61,6 +79,7 @@ describe('Public Ticket QR Controller Tests', () => {
     await getTicketQR(req, res, next);
 
     expect(Ticket.findOne).toHaveBeenCalledWith({ ticketId: 'TKT-MAD-2026-ABCDE-001' });
+    expect(Booking.findById).toHaveBeenCalledWith('booking123');
     expect(qrcode.toBuffer).toHaveBeenCalledWith('validation_hash_123', {
       type: 'png',
       margin: 1,
@@ -100,5 +119,113 @@ describe('Public Ticket QR Controller Tests', () => {
     const errorArg = next.mock.calls[0][0] as AppError;
     expect(errorArg.statusCode).toBe(404);
     expect(errorArg.message).toContain('Ticket not found');
+  });
+
+  it('should throw forbidden error if the ticket status is voided', async () => {
+    const mockTicket = {
+      ticketId: 'TKT-MAD-2026-VOID',
+      bookingId: 'booking123',
+      status: 'voided',
+    };
+
+    vi.mocked(Ticket.findOne).mockReturnValue({
+      lean: vi.fn().mockResolvedValue(mockTicket),
+    } as any);
+
+    const req = mockRequest({ ticketId: 'TKT-MAD-2026-VOID' });
+    const res = mockResponse();
+    const next = vi.fn();
+
+    await getTicketQR(req, res, next);
+
+    expect(next).toHaveBeenCalledWith(expect.any(AppError));
+    const errorArg = next.mock.calls[0][0] as AppError;
+    expect(errorArg.statusCode).toBe(403);
+    expect(errorArg.message).toContain('Ticket is no longer active');
+  });
+
+  it('should throw forbidden error if the ticket status is replaced', async () => {
+    const mockTicket = {
+      ticketId: 'TKT-MAD-2026-REPLACED',
+      bookingId: 'booking123',
+      status: 'replaced',
+    };
+
+    vi.mocked(Ticket.findOne).mockReturnValue({
+      lean: vi.fn().mockResolvedValue(mockTicket),
+    } as any);
+
+    const req = mockRequest({ ticketId: 'TKT-MAD-2026-REPLACED' });
+    const res = mockResponse();
+    const next = vi.fn();
+
+    await getTicketQR(req, res, next);
+
+    expect(next).toHaveBeenCalledWith(expect.any(AppError));
+    const errorArg = next.mock.calls[0][0] as AppError;
+    expect(errorArg.statusCode).toBe(403);
+    expect(errorArg.message).toContain('Ticket is no longer active');
+  });
+
+  it.each([
+    BookingStatus.AWAITING_PAYMENT,
+    BookingStatus.CANCELLED,
+    BookingStatus.REFUNDED,
+    BookingStatus.EXPIRED,
+  ])('should throw forbidden error if the associated booking status is %s', async (status) => {
+    const mockTicket = {
+      ticketId: 'TKT-MAD-2026-ABCDE-001',
+      bookingId: 'booking123',
+      status: 'active',
+    };
+
+    const mockBooking = {
+      _id: 'booking123',
+      status,
+    };
+
+    vi.mocked(Ticket.findOne).mockReturnValue({
+      lean: vi.fn().mockResolvedValue(mockTicket),
+    } as any);
+    vi.mocked(Booking.findById).mockReturnValue({
+      lean: vi.fn().mockResolvedValue(mockBooking),
+    } as any);
+
+    const req = mockRequest({ ticketId: 'TKT-MAD-2026-ABCDE-001' });
+    const res = mockResponse();
+    const next = vi.fn();
+
+    await getTicketQR(req, res, next);
+
+    expect(next).toHaveBeenCalledWith(expect.any(AppError));
+    const errorArg = next.mock.calls[0][0] as AppError;
+    expect(errorArg.statusCode).toBe(403);
+    expect(errorArg.message).toContain('Associated booking is not confirmed');
+  });
+
+  it('should throw notFound error if the associated booking is missing', async () => {
+    const mockTicket = {
+      ticketId: 'TKT-MAD-2026-ABCDE-001',
+      bookingId: 'booking123',
+      status: 'active',
+    };
+
+    vi.mocked(Ticket.findOne).mockReturnValue({
+      lean: vi.fn().mockResolvedValue(mockTicket),
+    } as any);
+    vi.mocked(Booking.findById).mockReturnValue({
+      lean: vi.fn().mockResolvedValue(null),
+    } as any);
+
+    const req = mockRequest({ ticketId: 'TKT-MAD-2026-ABCDE-001' });
+    const res = mockResponse();
+    const next = vi.fn();
+
+    await getTicketQR(req, res, next);
+
+    expect(next).toHaveBeenCalledWith(expect.any(AppError));
+    const errorArg = next.mock.calls[0][0] as AppError;
+    expect(errorArg.statusCode).toBe(404);
+    expect(errorArg.message).toContain('Associated booking not found');
   });
 });
