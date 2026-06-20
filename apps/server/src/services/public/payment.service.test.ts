@@ -1326,7 +1326,7 @@ describe('Payment Service', () => {
 
       expect(result.status).toBe('confirmed');
       
-      // Assert findOneAndUpdate was called with userId in $set and sessionId in $unset
+      // Assert findOneAndUpdate was called with userId in $set and expiresAt/logicalExpiresAt in $unset
       expect(Booking.findOneAndUpdate).toHaveBeenCalledWith(
         expect.objectContaining({ _id: 'guest-booking-456' }),
         expect.objectContaining({
@@ -1335,11 +1335,112 @@ describe('Payment Service', () => {
             userId: mockRegisteredUser._id,
           }),
           $unset: expect.objectContaining({
-            sessionId: 1,
+            expiresAt: 1,
+            logicalExpiresAt: 1,
           }),
         }),
         expect.any(Object)
       );
+    });
+
+    it('BUG-297: Guest booking confirms and assigns userId while preserving sessionId', async () => {
+      const mockBooking = {
+        _id: 'guest-booking-789',
+        bookingId: 'MAD-2026-TEST1',
+        eventId: 'e-123',
+        status: BookingStatus.AWAITING_PAYMENT,
+        tickets: [],
+        guestEmail: 'test-user-otp@example.com',
+        sessionId: 'session-to-preserve-123',
+        userId: undefined,
+        bookingVersion: 1,
+        save: vi.fn(),
+      };
+
+      const mockPayment = {
+        _id: 'p-guest-789',
+        gatewayOrderId: 'order_test_789',
+        gatewayPaymentId: 'pay_test_789',
+        status: PaymentStatus.COMPLETED,
+        amount: 100,
+        currency: 'INR',
+        save: vi.fn(),
+      };
+
+      const mockRegisteredUser = {
+        _id: new mongoose.Types.ObjectId(),
+        email: 'test-user-otp@example.com',
+      };
+
+      vi.mocked(Payment.findOne).mockResolvedValue(mockPayment as any);
+      vi.mocked(Booking.findById).mockResolvedValue(mockBooking as any);
+      vi.mocked(UserModel.findOne).mockImplementation(() => createMockQuery(mockRegisteredUser) as any);
+      vi.mocked(Booking.findOneAndUpdate).mockResolvedValue(mockBooking as any);
+      vi.mocked(Event.findOneAndUpdate).mockResolvedValue({} as any);
+      vi.mocked(Event.findById).mockResolvedValue({
+        _id: 'e-123',
+        title: 'MAD Event',
+        ticketTiers: [{ tier: 'general', soldCount: 10, totalCapacity: 100, name: 'General' }],
+      } as any);
+
+      await PaymentService.confirmFromWebhook('order_test_789', 'pay_test_789', 'payment.captured', 'evt_test_789');
+
+      expect(Booking.findOneAndUpdate).toHaveBeenCalledWith(
+        expect.objectContaining({ _id: 'guest-booking-789' }),
+        expect.objectContaining({
+          $set: expect.objectContaining({
+            userId: mockRegisteredUser._id,
+          }),
+        }),
+        expect.any(Object)
+      );
+
+      // Verify sessionId is NOT in the $unset block
+      const callArgs = vi.mocked(Booking.findOneAndUpdate).mock.calls[0];
+      const updateObj = callArgs[1] as any;
+      expect(updateObj.$unset).toBeDefined();
+      expect(updateObj.$unset.sessionId).toBeUndefined();
+    });
+
+    it('BUG-297: verifyPayment succeeds using session ownership after webhook confirms and links userId', async () => {
+      const mockRegisteredUserId = new mongoose.Types.ObjectId();
+      const mockBooking = {
+        _id: 'guest-booking-verify-297',
+        bookingId: 'MAD-2026-VERIFY297',
+        eventId: 'e-123',
+        status: BookingStatus.CONFIRMED,
+        tickets: [],
+        guestEmail: 'test-user-verify-297@example.com',
+        sessionId: 'session-preserved-verify-297',
+        userId: mockRegisteredUserId,
+        totalAmount: 100,
+        currency: 'INR',
+      };
+
+      const mockPayment = {
+        _id: 'p-guest-verify-297',
+        gateway: 'stripe',
+        status: PaymentStatus.PAID,
+        gatewayOrderId: 'pi_verify_297',
+        save: vi.fn(),
+      };
+
+      vi.mocked(Booking.findOne).mockResolvedValue(mockBooking as any);
+      vi.mocked(Payment.findOne).mockReturnValue({
+        sort: vi.fn().mockResolvedValue(mockPayment)
+      } as any);
+
+      // Call verifyPayment using ONLY session ownership (userId is undefined in context)
+      const result = await PaymentService.verifyPayment(
+        'MAD-2026-VERIFY297',
+        { paymentIntentId: 'pi_verify_297' },
+        { sessionId: 'session-preserved-verify-297', userId: undefined }
+      );
+
+      expect(result).toBeDefined();
+      expect(result._id).toBe('guest-booking-verify-297');
+      expect(result.userId).toBe(mockRegisteredUserId);
+      expect(result.sessionId).toBe('session-preserved-verify-297');
     });
   });
 

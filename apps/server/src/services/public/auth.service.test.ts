@@ -593,7 +593,6 @@ describe('AuthService - verifyMagicLinkOrOTP', () => {
       { guestEmail: 'user@example.com', userId: { $exists: false } },
       {
         $set: { userId: expect.any(Object) },
-        $unset: { sessionId: 1 },
       }
     );
   });

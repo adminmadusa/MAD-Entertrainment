@@ -536,8 +536,7 @@ export class AuthService {
       const result = await Booking.updateMany(
         { guestEmail: email, userId: { $exists: false } },
         { 
-          $set: { userId: new Types.ObjectId(userId) },
-          $unset: { sessionId: 1 }
+          $set: { userId: new Types.ObjectId(userId) }
         }
       );
       if (result.modifiedCount > 0) {
