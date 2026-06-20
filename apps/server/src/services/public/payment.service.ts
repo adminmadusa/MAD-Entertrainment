@@ -1966,7 +1966,6 @@ export class PaymentService {
 
         if (user) {
           setFields.userId = user._id;
-          unsetFields.sessionId = 1;
         }
 
         // 4. Booking Confirmation Status Transition
