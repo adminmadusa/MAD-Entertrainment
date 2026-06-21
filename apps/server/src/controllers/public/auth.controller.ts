@@ -58,12 +58,13 @@ export class AuthController {
     const result = await AuthService.verifyMagicLinkOrOTP(otp, email);
 
     // Set secure HTTP-only refresh token cookie (SameSite None for cross-site in production)
-    const isProd = getEnv().NODE_ENV === 'production';
+    const env = getEnv();
+    const isProd = env.NODE_ENV === 'production';
     res.cookie('refreshToken', result.refreshToken, {
       httpOnly: true,
       secure: isProd,
       sameSite: isProd ? 'none' : 'lax', // Allows cross-domain cookies between Vercel and Render in production
-      domain: isProd ? '.esparex.in' : undefined,
+      domain: env.COOKIE_DOMAIN || (isProd ? '.esparex.in' : undefined),
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days TTL
     });
 
@@ -96,12 +97,13 @@ export class AuthController {
     const result = await AuthService.verifyGoogleToken(idToken);
 
     // Set secure HTTP-only refresh token cookie (SameSite None for cross-site in production)
-    const isProd = getEnv().NODE_ENV === 'production';
+    const env = getEnv();
+    const isProd = env.NODE_ENV === 'production';
     res.cookie('refreshToken', result.refreshToken, {
       httpOnly: true,
       secure: isProd,
       sameSite: isProd ? 'none' : 'lax',
-      domain: isProd ? '.esparex.in' : undefined,
+      domain: env.COOKIE_DOMAIN || (isProd ? '.esparex.in' : undefined),
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days TTL
     });
 
@@ -134,12 +136,13 @@ export class AuthController {
     const result = await AuthService.refreshSession(refreshToken);
 
     // Set secure rotated HTTP-only refresh token cookie (SameSite None for cross-site in production)
-    const isProd = getEnv().NODE_ENV === 'production';
+    const env = getEnv();
+    const isProd = env.NODE_ENV === 'production';
     res.cookie('refreshToken', result.refreshToken, {
       httpOnly: true,
       secure: isProd,
       sameSite: isProd ? 'none' : 'lax',
-      domain: isProd ? '.esparex.in' : undefined,
+      domain: env.COOKIE_DOMAIN || (isProd ? '.esparex.in' : undefined),
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days TTL
     });
 
@@ -160,12 +163,13 @@ export class AuthController {
       await AuthService.revokeSession(refreshToken);
     }
 
-    const isProd = getEnv().NODE_ENV === 'production';
+    const env = getEnv();
+    const isProd = env.NODE_ENV === 'production';
     res.clearCookie('refreshToken', {
       httpOnly: true,
       secure: isProd,
       sameSite: isProd ? 'none' : 'lax',
-      domain: isProd ? '.esparex.in' : undefined,
+      domain: env.COOKIE_DOMAIN || (isProd ? '.esparex.in' : undefined),
     });
 
     res.status(200).json({

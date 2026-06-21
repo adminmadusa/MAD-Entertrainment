@@ -623,12 +623,13 @@ export async function verifyRecoveredBookingOTP(
 
     const result = await AuthService.verifyMagicLinkOrOTP(otp, booking.guestEmail!);
 
-    const isProd = getEnv().NODE_ENV === 'production';
+    const env = getEnv();
+    const isProd = env.NODE_ENV === 'production';
     res.cookie('refreshToken', result.refreshToken, {
       httpOnly: true,
       secure: isProd,
       sameSite: isProd ? 'none' : 'lax',
-      domain: isProd ? '.esparex.in' : undefined,
+      domain: env.COOKIE_DOMAIN || (isProd ? '.esparex.in' : undefined),
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
