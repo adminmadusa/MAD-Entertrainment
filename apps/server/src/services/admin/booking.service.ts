@@ -827,6 +827,7 @@ export const correctBookingEmail = async (
         qrCode: newTicketId,
         qrCodeImage: `/api/public/tickets/${newTicketId}/qr`,
         status: 'active',
+        assignmentStatus: 'unassigned',
       });
       await newTicket.save({ session: session || undefined });
     }

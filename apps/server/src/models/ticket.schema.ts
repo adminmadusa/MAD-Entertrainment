@@ -20,6 +20,10 @@ export interface ITicket extends Document {
   replacedByTicketId?: string;
   replacedAt?: Date;
   replacementReason?: 'EMAIL_CORRECTION' | 'ADMIN_REISSUE' | 'FRAUD_PREVENTION';
+  attendeeUserId?: Types.ObjectId;
+  attendeeEmail?: string;
+  assignmentStatus: 'unassigned' | 'pending' | 'claimed';
+  claimedAt?: Date;
 }
 
 const ticketSchema = new Schema<ITicket>(
@@ -42,6 +46,22 @@ const ticketSchema = new Schema<ITicket>(
     replacedByTicketId: String,
     replacedAt: Date,
     replacementReason: { type: String, enum: ['EMAIL_CORRECTION', 'ADMIN_REISSUE', 'FRAUD_PREVENTION'] },
+    attendeeUserId: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+    },
+    attendeeEmail: {
+      type: String,
+      lowercase: true,
+      trim: true,
+    },
+    assignmentStatus: {
+      type: String,
+      enum: ['unassigned', 'pending', 'claimed'],
+      default: 'unassigned',
+      required: true,
+    },
+    claimedAt: Date,
   },
   { timestamps: true }
 );
@@ -49,5 +69,8 @@ const ticketSchema = new Schema<ITicket>(
 ticketSchema.index({ bookingId: 1, scannedAt: 1 });
 ticketSchema.index({ eventId: 1, scannedAt: 1 });
 ticketSchema.index({ scannedAt: 1 });
+ticketSchema.index({ attendeeUserId: 1 });
+ticketSchema.index({ attendeeEmail: 1, assignmentStatus: 1 });
 
 export const Ticket = model<ITicket>('Ticket', ticketSchema);
+
