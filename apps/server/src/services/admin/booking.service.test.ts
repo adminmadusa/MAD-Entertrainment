@@ -909,6 +909,101 @@ describe('Admin Booking Service Backend Tests', () => {
         { session: undefined }
       );
     });
+
+    describe('PRICING-003 Scan Protection', () => {
+      it('should block cancellation if any ticket is scanned and actor role is not super_admin', async () => {
+        const mockBooking = {
+          _id: 'booking-scanned-123',
+          bookingId: 'MAD-2026-SCAN1',
+          eventId: 'event-555',
+          totalTickets: 2,
+          tickets: [{ tier: 'general', quantity: 2 }],
+          status: BookingStatus.CONFIRMED,
+          bookingVersion: 1,
+          save: vi.fn().mockResolvedValue(true),
+        };
+
+        vi.mocked(Booking.findById).mockReturnValue({
+          session: vi.fn().mockResolvedValue(mockBooking),
+        } as any);
+
+        // Override Ticket.find once to return a scanned ticket
+        vi.mocked(Ticket.find).mockImplementationOnce(() => ({
+          session: vi.fn().mockResolvedValue([{ _id: 'ticket-scanned-1', scannedAt: new Date() }]),
+        }) as any);
+
+        const adminActor = { id: 'admin-001', role: 'admin' };
+
+        await expect(
+          cancelBooking('booking-scanned-123', 'Customer request', undefined, undefined, adminActor)
+        ).rejects.toThrow('Cancellation blocked: Booking contains checked-in tickets');
+      });
+
+      it('should allow cancellation for super_admin even with scanned tickets, and log real actor id in audit log', async () => {
+        const mockBooking = {
+          _id: 'booking-scanned-456',
+          bookingId: 'MAD-2026-SCAN2',
+          eventId: 'event-555',
+          totalTickets: 2,
+          tickets: [{ tier: 'general', quantity: 2 }],
+          status: BookingStatus.CONFIRMED,
+          bookingVersion: 1,
+          save: vi.fn().mockResolvedValue(true),
+        };
+
+        vi.mocked(Booking.findById).mockReturnValue({
+          session: vi.fn().mockResolvedValue(mockBooking),
+        } as any);
+
+        vi.mocked(ReservationService.transitionForBooking).mockResolvedValue([] as any);
+
+        const mockEvent = { _id: 'event-555', bookingMode: 'general_admission', ticketTiers: [] };
+        vi.mocked(Event.findById).mockReturnValue({
+          session: vi.fn().mockResolvedValue(mockEvent),
+        } as any);
+
+        const superAdminActor = { id: 'super-admin-001', role: 'super_admin' };
+
+        const result = await cancelBooking('booking-scanned-456', 'Forced cancel', undefined, undefined, superAdminActor);
+
+        expect(result.status).toBe(BookingStatus.CANCELLED);
+        expect(auditLog).toHaveBeenCalledWith(
+          expect.objectContaining({
+            action: 'BOOKING_CANCELLED',
+            actor: expect.objectContaining({ id: 'super-admin-001' }),
+          })
+        );
+      });
+
+      it('should allow cancellation when no actor is provided (internal/system calls bypass scan check)', async () => {
+        const mockBooking = {
+          _id: 'booking-scanned-789',
+          bookingId: 'MAD-2026-SCAN3',
+          eventId: 'event-555',
+          totalTickets: 1,
+          tickets: [{ tier: 'general', quantity: 1 }],
+          status: BookingStatus.CONFIRMED,
+          bookingVersion: 1,
+          save: vi.fn().mockResolvedValue(true),
+        };
+
+        vi.mocked(Booking.findById).mockReturnValue({
+          session: vi.fn().mockResolvedValue(mockBooking),
+        } as any);
+
+        vi.mocked(ReservationService.transitionForBooking).mockResolvedValue([] as any);
+
+        const mockEvent = { _id: 'event-555', bookingMode: 'general_admission', ticketTiers: [] };
+        vi.mocked(Event.findById).mockReturnValue({
+          session: vi.fn().mockResolvedValue(mockEvent),
+        } as any);
+
+        // No actor = internal call (e.g., from processRefund after super_admin-validated override)
+        const result = await cancelBooking('booking-scanned-789', 'Internal refund processed');
+
+        expect(result.status).toBe(BookingStatus.CANCELLED);
+      });
+    });
   });
 
   describe('expireBooking', () => {
