@@ -310,6 +310,8 @@ export const createEventSchema = z.object({
     refundPolicy: z.string().max(1000).optional(),
     organizerName: z.string().max(100).optional(),
     ticketProfileId: z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid Mongoose ObjectId identifier').nullable().optional(),
+    requireTerms: z.boolean().optional(),
+    requireAgeConfirmation: z.boolean().optional(),
     ticketOverrides: z.array(z.object({
       tier: z.string(),
       price: z.number().min(0).optional(),
