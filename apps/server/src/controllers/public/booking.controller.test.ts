@@ -16,12 +16,16 @@ import { AuthService } from '../../services/public/auth.service';
 import { auditLog } from '../../utils/audit';
 import { AppError } from '../../middleware/error.middleware';
 
-vi.mock('../../services/public/booking.service', () => ({
-  PublicBookingService: {
-    createBooking: vi.fn(),
-    getBookingByReference: vi.fn(),
-  },
-}));
+vi.mock('../../services/public/booking.service', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../services/public/booking.service')>();
+  return {
+    PublicBookingService: {
+      createBooking: vi.fn(),
+      getBookingByReference: vi.fn(),
+      assertBookingAccess: actual.PublicBookingService.assertBookingAccess,
+    },
+  };
+});
 
 vi.mock('../../services/public/booking-recovery.service', () => ({
   BookingRecoveryService: {

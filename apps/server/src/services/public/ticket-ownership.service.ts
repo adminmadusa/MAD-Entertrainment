@@ -1,6 +1,7 @@
 import { Ticket } from '../../models/ticket.schema';
 import { Booking } from '../../models/booking.schema';
 import { AppError } from '../../middleware/error.middleware';
+import { PublicBookingService } from './booking.service';
 
 /**
  * Asserts that the requester is the purchaser (booking owner) of the given ticket.
@@ -81,9 +82,12 @@ export async function canViewTicketQR(
       return false;
     }
 
-    const isUserOwner = !!booking.userId && !!userId && booking.userId.toString() === userId;
-    const isGuestOwner = !booking.userId && !!booking.sessionId && !!sessionId && booking.sessionId === sessionId;
-    return !!(isUserOwner || isGuestOwner);
+    try {
+      PublicBookingService.assertBookingAccess(booking, { userId, sessionId }, 'Fulfillment');
+      return true;
+    } catch {
+      return false;
+    }
   }
 
   return false;
@@ -98,7 +102,8 @@ export async function canViewTicketQR(
 export async function canDownloadTicketPDF(
   ticket: any,
   role: 'purchaser' | 'attendee',
-  userId?: string
+  userId?: string,
+  sessionId?: string
 ): Promise<boolean> {
   if (ticket.status !== 'active') {
     return false;
@@ -125,7 +130,12 @@ export async function canDownloadTicketPDF(
       return false;
     }
 
-    return !!booking.userId && !!userId && booking.userId.toString() === userId;
+    try {
+      PublicBookingService.assertBookingAccess(booking, { userId, sessionId }, 'Fulfillment');
+      return true;
+    } catch {
+      return false;
+    }
   }
 
   return false;

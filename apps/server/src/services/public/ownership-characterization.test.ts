@@ -33,12 +33,16 @@ vi.mock('../../models/ticket.schema', () => ({
   },
 }));
 
-vi.mock('../../services/public/booking.service', () => ({
-  PublicBookingService: {
-    getBookingByReference: vi.fn(),
-    saveCheckoutDetails: vi.fn(),
-  },
-}));
+vi.mock('../../services/public/booking.service', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../services/public/booking.service')>();
+  return {
+    PublicBookingService: {
+      getBookingByReference: vi.fn(),
+      saveCheckoutDetails: vi.fn(),
+      assertBookingAccess: actual.PublicBookingService.assertBookingAccess,
+    },
+  };
+});
 
 vi.mock('../../services/public/booking-recovery.service', () => ({
   BookingRecoveryService: {
@@ -71,6 +75,9 @@ describe('PR 4a: Booking Ownership Characterization Tests', () => {
     userId: new Types.ObjectId(), // Linked to an authenticated user
     guestEmail: 'guest@example.com',
     totalTickets: 1,
+    // confirmedAt far in the past — outside grace window — so guest session is denied (BOOKING_VERIFICATION_REQUIRED)
+    confirmedAt: new Date(Date.now() - 60 * 60 * 1000), // 60 minutes ago
+    createdAt: new Date(Date.now() - 60 * 60 * 1000),
   };
 
   beforeEach(() => {

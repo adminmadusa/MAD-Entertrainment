@@ -31,6 +31,7 @@ import { CacheService } from '../cache.service';
 import { createNotificationSafe } from '../notification.service';
 import { runInTransaction } from '../../utils/transaction';
 import { cancelBooking, executeCancelBookingSideEffects } from '../admin/booking.service';
+import { PublicBookingService } from './booking.service';
 
 export interface StripeChargeWebhookPayload {
   id: string;
@@ -67,18 +68,11 @@ export class PaymentService {
       return;
     }
 
-    const isUserOwner =
-      !!booking.userId &&
-      !!ownershipContext.userId &&
-      booking.userId.toString() === ownershipContext.userId;
-    const isGuestOwner =
-      !!booking.sessionId &&
-      !!ownershipContext.sessionId &&
-      booking.sessionId === ownershipContext.sessionId;
-
-    if (!isUserOwner && !isGuestOwner) {
-      throw AppError.forbidden('You do not have access to this booking');
-    }
+    PublicBookingService.assertBookingAccess(
+      booking,
+      { userId: ownershipContext.userId, sessionId: ownershipContext.sessionId },
+      'ActiveCheckout'
+    );
   }
 
   private static assertProductionPaymentIntegrity(
@@ -1958,6 +1952,7 @@ export class PaymentService {
         const setFields: any = {
           status: BookingStatus.CONFIRMED,
           paymentId: _payment._id,
+          confirmedAt: new Date(),
         };
         const unsetFields: any = {
           expiresAt: 1,

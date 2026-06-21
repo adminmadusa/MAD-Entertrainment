@@ -46,6 +46,7 @@ export interface IBooking extends Document {
   cancellationReason?: string;
   cancelledAt?: Date;
   selectionFingerprint?: string;
+  confirmedAt?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -112,6 +113,7 @@ const bookingSchema = new Schema<IBooking>(
     cancellationReason: String,
     cancelledAt: Date,
     selectionFingerprint: { type: String, index: true },
+    confirmedAt: { type: Date },
   },
   { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
 );
