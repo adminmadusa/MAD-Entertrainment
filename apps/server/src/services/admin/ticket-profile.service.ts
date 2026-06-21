@@ -208,7 +208,46 @@ export const updateTicketProfile = async (
   return updated;
 };
 
+const ACTIVE_REFERENCE_STATUSES = ['draft', 'published', 'sold_out', 'postponed'];
+const DELETE_BLOCKED_MESSAGE = 'Ticket Profile is referenced by active events and cannot be deleted';
+
+const ensureTicketProfileCanBeDeleted = async (profileId: string) => {
+  const referencedEvents = await Event.find({
+    ticketProfileId: profileId,
+    isDeleted: { $ne: true },
+  });
+
+  if (referencedEvents.length === 0) return;
+
+  const now = new Date();
+  const activeEvents = referencedEvents.filter((event: any) => ACTIVE_REFERENCE_STATUSES.includes(event.status));
+  const futureEvents = referencedEvents.filter((event: any) => event.startDate && new Date(event.startDate) > now);
+  const eventsWithSoldTickets = referencedEvents.filter((event: any) => {
+    const eventSoldCount = event.soldCount ?? 0;
+    const tierSoldCount = Array.isArray(event.ticketTiers)
+      ? event.ticketTiers.reduce((sum: number, tier: any) => sum + (tier.soldCount ?? 0), 0)
+      : 0;
+    return eventSoldCount > 0 || tierSoldCount > 0;
+  });
+
+  if (activeEvents.length > 0 || futureEvents.length > 0 || eventsWithSoldTickets.length > 0) {
+    throw AppError.conflict(DELETE_BLOCKED_MESSAGE);
+  }
+
+  const eventIds = referencedEvents.map((event: any) => event._id);
+  const [bookingExists, reservationExists, ticketExists] = await Promise.all([
+    Booking.exists({ eventId: { $in: eventIds } }),
+    Reservation.exists({ eventId: { $in: eventIds } }),
+    Ticket.exists({ eventId: { $in: eventIds } }),
+  ]);
+
+  if (bookingExists || reservationExists || ticketExists) {
+    throw AppError.conflict(DELETE_BLOCKED_MESSAGE);
+  }
+};
+
 export const deleteTicketProfile = async (id: string): Promise<ITicketProfile | null> => {
+  await ensureTicketProfileCanBeDeleted(id);
   const deleted = await TicketProfile.findByIdAndUpdate(id, { isDeleted: true }, { new: true });
   return deleted;
 };

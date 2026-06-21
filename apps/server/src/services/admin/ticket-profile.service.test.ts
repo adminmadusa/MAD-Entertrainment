@@ -59,9 +59,11 @@ vi.mock('../cache.service', () => ({
 describe('Ticket Profile Service Sync Integrity', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(Event.find).mockResolvedValue([] as any);
     vi.mocked(Reservation.exists).mockResolvedValue(null);
     vi.mocked(Booking.exists).mockResolvedValue(null);
     vi.mocked(Ticket.exists).mockResolvedValue(null);
+    vi.mocked(TicketProfile.findByIdAndUpdate).mockResolvedValue({ _id: 'profile-1', isDeleted: true } as any);
   });
 
   const mockProfile = {
@@ -171,5 +173,151 @@ describe('Ticket Profile Service Sync Integrity', () => {
 
     // Atomicity check: no Event update should be executed at all
     expect(Event.findByIdAndUpdate).not.toHaveBeenCalled();
+  });
+});
+
+describe('Ticket Profile Delete Reference Protection', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(Event.find).mockResolvedValue([] as any);
+    vi.mocked(Reservation.exists).mockResolvedValue(null);
+    vi.mocked(Booking.exists).mockResolvedValue(null);
+    vi.mocked(Ticket.exists).mockResolvedValue(null);
+    vi.mocked(TicketProfile.findByIdAndUpdate).mockResolvedValue({ _id: 'profile-1', isDeleted: true } as any);
+  });
+
+  const historicalEvent = {
+    _id: 'event-1',
+    title: 'Past Event',
+    ticketProfileId: 'profile-1',
+    status: 'completed',
+    startDate: new Date('2025-01-01T00:00:00.000Z'),
+    soldCount: 0,
+    ticketTiers: [{ tier: 'GOLD', soldCount: 0 }],
+  };
+
+  it('deletes an unused profile with the existing soft-delete behavior', async () => {
+    await expect(ticketProfileService.deleteTicketProfile('profile-1')).resolves.toEqual({
+      _id: 'profile-1',
+      isDeleted: true,
+    });
+
+    expect(Event.find).toHaveBeenCalledWith({
+      ticketProfileId: 'profile-1',
+      isDeleted: { $ne: true },
+    });
+    expect(TicketProfile.findByIdAndUpdate).toHaveBeenCalledWith(
+      'profile-1',
+      { isDeleted: true },
+      { new: true }
+    );
+  });
+
+  it.each(['draft', 'published', 'sold_out', 'postponed'])(
+    'blocks delete when profile is referenced by a %s event',
+    async (status) => {
+      vi.mocked(Event.find).mockResolvedValue([
+        {
+          ...historicalEvent,
+          status,
+        },
+      ] as any);
+
+      await expect(ticketProfileService.deleteTicketProfile('profile-1')).rejects.toThrow(
+        'Ticket Profile is referenced by active events and cannot be deleted'
+      );
+      expect(TicketProfile.findByIdAndUpdate).not.toHaveBeenCalled();
+    }
+  );
+
+  it('blocks delete when profile is referenced by a future event', async () => {
+    vi.mocked(Event.find).mockResolvedValue([
+      {
+        ...historicalEvent,
+        status: 'completed',
+        startDate: new Date('2099-01-01T00:00:00.000Z'),
+      },
+    ] as any);
+
+    await expect(ticketProfileService.deleteTicketProfile('profile-1')).rejects.toThrow(
+      'Ticket Profile is referenced by active events and cannot be deleted'
+    );
+    expect(TicketProfile.findByIdAndUpdate).not.toHaveBeenCalled();
+  });
+
+  it('blocks delete when a referenced event has sold tickets', async () => {
+    vi.mocked(Event.find).mockResolvedValue([
+      {
+        ...historicalEvent,
+        soldCount: 1,
+      },
+    ] as any);
+
+    await expect(ticketProfileService.deleteTicketProfile('profile-1')).rejects.toThrow(
+      'Ticket Profile is referenced by active events and cannot be deleted'
+    );
+    expect(TicketProfile.findByIdAndUpdate).not.toHaveBeenCalled();
+  });
+
+  it('blocks delete when a referenced event has tier-level sold tickets', async () => {
+    vi.mocked(Event.find).mockResolvedValue([
+      {
+        ...historicalEvent,
+        ticketTiers: [{ tier: 'GOLD', soldCount: 1 }],
+      },
+    ] as any);
+
+    await expect(ticketProfileService.deleteTicketProfile('profile-1')).rejects.toThrow(
+      'Ticket Profile is referenced by active events and cannot be deleted'
+    );
+    expect(TicketProfile.findByIdAndUpdate).not.toHaveBeenCalled();
+  });
+
+  it('blocks delete when referenced historical events have bookings', async () => {
+    vi.mocked(Event.find).mockResolvedValue([historicalEvent] as any);
+    vi.mocked(Booking.exists).mockResolvedValue({ _id: 'booking-id' } as any);
+
+    await expect(ticketProfileService.deleteTicketProfile('profile-1')).rejects.toThrow(
+      'Ticket Profile is referenced by active events and cannot be deleted'
+    );
+    expect(Booking.exists).toHaveBeenCalledWith({ eventId: { $in: ['event-1'] } });
+    expect(TicketProfile.findByIdAndUpdate).not.toHaveBeenCalled();
+  });
+
+  it('blocks delete when referenced historical events have reservations', async () => {
+    vi.mocked(Event.find).mockResolvedValue([historicalEvent] as any);
+    vi.mocked(Reservation.exists).mockResolvedValue({ _id: 'reservation-id' } as any);
+
+    await expect(ticketProfileService.deleteTicketProfile('profile-1')).rejects.toThrow(
+      'Ticket Profile is referenced by active events and cannot be deleted'
+    );
+    expect(Reservation.exists).toHaveBeenCalledWith({ eventId: { $in: ['event-1'] } });
+    expect(TicketProfile.findByIdAndUpdate).not.toHaveBeenCalled();
+  });
+
+  it('blocks delete when referenced historical events have generated tickets', async () => {
+    vi.mocked(Event.find).mockResolvedValue([historicalEvent] as any);
+    vi.mocked(Ticket.exists).mockResolvedValue({ _id: 'ticket-id' } as any);
+
+    await expect(ticketProfileService.deleteTicketProfile('profile-1')).rejects.toThrow(
+      'Ticket Profile is referenced by active events and cannot be deleted'
+    );
+    expect(Ticket.exists).toHaveBeenCalledWith({ eventId: { $in: ['event-1'] } });
+    expect(TicketProfile.findByIdAndUpdate).not.toHaveBeenCalled();
+  });
+
+  it('allows delete for historical references with no activity', async () => {
+    vi.mocked(Event.find).mockResolvedValue([historicalEvent] as any);
+
+    await ticketProfileService.deleteTicketProfile('profile-1');
+
+    expect(Booking.exists).toHaveBeenCalledWith({ eventId: { $in: ['event-1'] } });
+    expect(Reservation.exists).toHaveBeenCalledWith({ eventId: { $in: ['event-1'] } });
+    expect(Ticket.exists).toHaveBeenCalledWith({ eventId: { $in: ['event-1'] } });
+    expect(TicketProfile.findByIdAndUpdate).toHaveBeenCalledWith(
+      'profile-1',
+      { isDeleted: true },
+      { new: true }
+    );
   });
 });
