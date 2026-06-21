@@ -8,6 +8,7 @@ import {
   adminIdParamSchema,
   createCategorySchema,
   createCouponSchema,
+  createEventSchema,
   createPopupSchema,
   createRefundSchema,
   createTierSchema,
@@ -228,5 +229,61 @@ describe('admin bookings query validation schema', () => {
 
   it('bounds search', () => {
     expectRejected(adminBookingsQuerySchema, { search: 'a'.repeat(201) });
+  });
+});
+
+describe('admin event validation schemas with registration requirements (requireTerms, requireAgeConfirmation)', () => {
+  const validEventBody = {
+    title: 'Solstice Festival 2026',
+    slug: 'solstice-festival-2026',
+    description: 'Summer music celebration.',
+    category: 'festival',
+    bookingMode: 'general_admission',
+    bannerImage: { url: 'https://example.com/image.jpg', publicId: 'events/solstice' },
+    startDate: '2026-07-21T18:00:00.000Z',
+    venue: 'Sun Arena',
+    totalCapacity: 500,
+  };
+
+  it('accepts create event payload with requireTerms and requireAgeConfirmation', () => {
+    expectAccepted(createEventSchema, {
+      body: {
+        ...validEventBody,
+        requireTerms: true,
+        requireAgeConfirmation: false,
+      },
+    });
+  });
+
+  it('accepts create event payload without requireTerms and requireAgeConfirmation (optional check)', () => {
+    expectAccepted(createEventSchema, {
+      body: validEventBody,
+    });
+  });
+
+  it('rejects create event payload with invalid types for registration requirements', () => {
+    expectRejected(createEventSchema, {
+      body: {
+        ...validEventBody,
+        requireTerms: 'yes',
+      },
+    });
+
+    expectRejected(createEventSchema, {
+      body: {
+        ...validEventBody,
+        requireAgeConfirmation: 1,
+      },
+    });
+  });
+
+  it('accepts update event payload with requireTerms and requireAgeConfirmation', () => {
+    expectAccepted(updateEventSchema, {
+      params: { id: objectId },
+      body: {
+        requireTerms: false,
+        requireAgeConfirmation: true,
+      },
+    });
   });
 });
