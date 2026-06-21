@@ -1,8 +1,9 @@
 import { EventStatus, EVENT_STATUS_TRANSITIONS, type EventLifecycleStatus } from '@mad/shared';
+import type { FilterQuery } from 'mongoose';
 
 import { Event, IEvent } from '../../models/event.schema';
 import { TicketProfile } from '../../models/ticket-profile.schema';
-import { Ticket } from '../../models/ticket.schema';
+import { Ticket, ITicket } from '../../models/ticket.schema';
 import { resolveEventTickets } from './ticket-profile.service';
 import { CacheService } from '../cache.service';
 import { Booking } from '../../models/booking.schema';
@@ -65,6 +66,38 @@ export const assertEventStatusTransition = (
 const isEventLifecycleStatus = (status: EventStatus): status is EventLifecycleStatus =>
   Object.prototype.hasOwnProperty.call(EVENT_STATUS_TRANSITIONS, status);
 
+type EventAttendanceMetrics = {
+  ticketsSold: number;
+  ticketsCheckedIn: number;
+  ticketsRemaining: number;
+  attendancePercentage: number;
+  noShowCount: number;
+  noShowPercentage: number;
+};
+
+type EventWithAttendance = ReturnType<IEvent['toObject']> & EventAttendanceMetrics;
+const getEventAttendanceMetrics = async (event: IEvent): Promise<EventAttendanceMetrics> => {
+  const ticketsList = await Ticket.find({ eventId: event._id }).lean<ITicket[]>();
+  const ticketsSold = event.soldCount || 0;
+  const ticketsCheckedIn = ticketsList
+    .filter((ticket) => ticket.scannedAt !== undefined && ticket.scannedAt !== null)
+    .reduce((sum, ticket) => sum + (ticket.admits || 1), 0);
+  const ticketsRemaining = Math.max(0, ticketsSold - ticketsCheckedIn);
+
+  const attendancePercentage = ticketsSold > 0 ? Number(((ticketsCheckedIn / ticketsSold) * 100).toFixed(2)) : 0;
+  const noShowCount = ticketsRemaining;
+  const noShowPercentage = ticketsSold > 0 ? Number(((noShowCount / ticketsSold) * 100).toFixed(2)) : 0;
+
+  return {
+    ticketsSold,
+    ticketsCheckedIn,
+    ticketsRemaining,
+    attendancePercentage,
+    noShowCount,
+    noShowPercentage,
+  };
+};
+
 export const createEvent = async (data: Partial<IEvent>): Promise<IEvent> => {
   validateEventImagesPayload(data.bannerImage, data.posterImage, data.galleryImages);
 
@@ -114,7 +147,7 @@ export const getEvents = async (
   filters: { search?: string; status?: string } = {}
 ): Promise<{ events: IEvent[]; total: number; pages: number }> => {
   const skip = (page - 1) * limit;
-  const query: any = { isDeleted: { $ne: true } };
+  const query: FilterQuery<IEvent> = { isDeleted: { $ne: true } };
 
   if (filters.status) {
     query.status = filters.status;
@@ -143,34 +176,18 @@ export const getEvents = async (
   };
 };
 
-export const getEventById = async (id: string): Promise<any | null> => {
+export const getEventById = async (id: string): Promise<EventWithAttendance | null> => {
   const event = await Event.findById(id)
     .populate('djOperatorIds', 'name');
   if (!event) return null;
 
-  const ticketsList = await Ticket.find({ eventId: event._id }).lean();
-  const ticketsSold = event.soldCount || 0;
-  const ticketsCheckedIn = ticketsList
-    .filter((t: any) => t.scannedAt !== undefined && t.scannedAt !== null)
-    .reduce((sum: number, t: any) => sum + (t.admits || 1), 0);
-  const ticketsRemaining = Math.max(0, ticketsSold - ticketsCheckedIn);
-
-  const attendancePercentage = ticketsSold > 0 ? Number(((ticketsCheckedIn / ticketsSold) * 100).toFixed(2)) : 0;
-  const noShowCount = ticketsRemaining;
-  const noShowPercentage = ticketsSold > 0 ? Number(((noShowCount / ticketsSold) * 100).toFixed(2)) : 0;
-
   return {
     ...event.toObject(),
-    ticketsSold,
-    ticketsCheckedIn,
-    ticketsRemaining,
-    attendancePercentage,
-    noShowCount,
-    noShowPercentage
+    ...(await getEventAttendanceMetrics(event)),
   };
 };
 
-export const updateEvent = async (id: string, data: Partial<IEvent>): Promise<any | null> => {
+export const updateEvent = async (id: string, data: Partial<IEvent>): Promise<EventWithAttendance | null> => {
   const existing = await Event.findById(id);
   if (!existing) return null;
 
@@ -251,25 +268,9 @@ export const updateEvent = async (id: string, data: Partial<IEvent>): Promise<an
     safeDeleteImages(publicIdsToDelete, 'Event', 'update');
   }
 
-  const ticketsList = await Ticket.find({ eventId: updated._id }).lean();
-  const ticketsSold = updated.soldCount || 0;
-  const ticketsCheckedIn = ticketsList
-    .filter((t: any) => t.scannedAt !== undefined && t.scannedAt !== null)
-    .reduce((sum: number, t: any) => sum + (t.admits || 1), 0);
-  const ticketsRemaining = Math.max(0, ticketsSold - ticketsCheckedIn);
-
-  const attendancePercentage = ticketsSold > 0 ? Number(((ticketsCheckedIn / ticketsSold) * 100).toFixed(2)) : 0;
-  const noShowCount = ticketsRemaining;
-  const noShowPercentage = ticketsSold > 0 ? Number(((noShowCount / ticketsSold) * 100).toFixed(2)) : 0;
-
   return {
     ...updated.toObject(),
-    ticketsSold,
-    ticketsCheckedIn,
-    ticketsRemaining,
-    attendancePercentage,
-    noShowCount,
-    noShowPercentage
+    ...(await getEventAttendanceMetrics(updated)),
   };
 };
 
