@@ -14,7 +14,20 @@ vi.mock('./media-cleanup.service', () => ({
   safeDeleteImages: vi.fn(),
 }));
 
+vi.mock('@mad/shared', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@mad/shared')>();
+  const sharedSource = await vi.importActual<typeof import('../../../../../packages/shared/src')>(
+    '../../../../../packages/shared/src'
+  );
+
+  return {
+    ...actual,
+    EVENT_STATUS_TRANSITIONS: sharedSource.EVENT_STATUS_TRANSITIONS,
+  };
+});
+
 import * as eventService from './event.service';
+import { EventStatus, HTTP_STATUS } from '@mad/shared';
 import { Event } from '../../models/event.schema';
 import { Booking } from '../../models/booking.schema';
 import { Ticket } from '../../models/ticket.schema';
@@ -247,7 +260,98 @@ describe('Admin Event Service', () => {
     });
   });
 
+  describe('updateEvent - Event Lifecycle Governance', () => {
+    const mockSuccessfulStatusUpdate = (currentStatus: EventStatus, nextStatus: EventStatus) => {
+      const existingEvent = {
+        _id: 'event-1',
+        status: currentStatus,
+        ticketTiers: [],
+        eventVersion: 1,
+      } as any;
+      const updatedEvent = {
+        ...existingEvent,
+        status: nextStatus,
+      } as any;
+      updatedEvent.toObject = () => updatedEvent;
 
+      vi.mocked(Event.findById).mockResolvedValue(existingEvent);
+      vi.mocked(Event.findOneAndUpdate).mockResolvedValue(updatedEvent);
+      vi.mocked(Ticket.find).mockReturnValue({
+        lean: vi.fn().mockResolvedValue([]),
+      } as any);
+    };
+
+    it.each([
+      [EventStatus.DRAFT, EventStatus.PUBLISHED],
+      [EventStatus.DRAFT, EventStatus.CANCELLED],
+      [EventStatus.PUBLISHED, EventStatus.POSTPONED],
+      [EventStatus.PUBLISHED, EventStatus.COMPLETED],
+      [EventStatus.PUBLISHED, EventStatus.CANCELLED],
+      [EventStatus.POSTPONED, EventStatus.PUBLISHED],
+      [EventStatus.POSTPONED, EventStatus.CANCELLED],
+    ])('allows %s -> %s', async (currentStatus, nextStatus) => {
+      mockSuccessfulStatusUpdate(currentStatus, nextStatus);
+
+      const result = await eventService.updateEvent('event-1', {
+        eventVersion: 1,
+        status: nextStatus,
+      } as any);
+
+      expect(result.status).toBe(nextStatus);
+      expect(Event.findOneAndUpdate).toHaveBeenCalledWith(
+        { _id: 'event-1', eventVersion: 1 },
+        {
+          $set: { status: nextStatus },
+          $inc: { eventVersion: 1 },
+        },
+        { new: true }
+      );
+    });
+
+    it.each([
+      [EventStatus.COMPLETED, EventStatus.DRAFT],
+      [EventStatus.COMPLETED, EventStatus.PUBLISHED],
+      [EventStatus.CANCELLED, EventStatus.PUBLISHED],
+      [EventStatus.CANCELLED, EventStatus.DRAFT],
+      [EventStatus.PUBLISHED, EventStatus.DRAFT],
+    ])('rejects %s -> %s with conflict', async (currentStatus, nextStatus) => {
+      const existingEvent = {
+        _id: 'event-1',
+        status: currentStatus,
+        ticketTiers: [],
+        eventVersion: 1,
+      };
+
+      vi.mocked(Event.findById).mockResolvedValue(existingEvent as any);
+
+      try {
+        await eventService.updateEvent('event-1', {
+          eventVersion: 1,
+          status: nextStatus,
+        } as any);
+        throw new Error('Expected updateEvent to reject');
+      } catch (error) {
+        expect(error).toMatchObject({
+          message: 'Invalid event status transition.',
+          statusCode: HTTP_STATUS.CONFLICT,
+        });
+      }
+
+      expect(Event.findOneAndUpdate).not.toHaveBeenCalled();
+    });
+
+    it('allows no-op status updates', async () => {
+      mockSuccessfulStatusUpdate(EventStatus.PUBLISHED, EventStatus.PUBLISHED);
+
+      const result = await eventService.updateEvent('event-1', {
+        eventVersion: 1,
+        status: EventStatus.PUBLISHED,
+      } as any);
+
+      expect(result.status).toBe(EventStatus.PUBLISHED);
+      expect(Event.findOneAndUpdate).toHaveBeenCalled();
+    });
+  });
 
   describe('updateEvent - Cloudinary media cleanup hooks', () => {
     it('calls safeDeleteImages when bannerImage, posterImage are replaced or gallery images are removed', async () => {
