@@ -35,6 +35,16 @@ export enum EventStatus {
   SOLD_OUT = 'sold_out',
 }
 
+export type EventLifecycleStatus = Exclude<EventStatus, EventStatus.SOLD_OUT>;
+
+export const EVENT_STATUS_TRANSITIONS: Readonly<Record<EventLifecycleStatus, readonly EventLifecycleStatus[]>> = {
+  [EventStatus.DRAFT]: [EventStatus.PUBLISHED, EventStatus.CANCELLED],
+  [EventStatus.PUBLISHED]: [EventStatus.POSTPONED, EventStatus.COMPLETED, EventStatus.CANCELLED],
+  [EventStatus.POSTPONED]: [EventStatus.PUBLISHED, EventStatus.CANCELLED],
+  [EventStatus.COMPLETED]: [],
+  [EventStatus.CANCELLED]: [],
+};
+
 // ─── Booking Status ──────────────────────────────────────────
 export enum BookingStatus {
   PENDING = 'pending',

@@ -1,3 +1,5 @@
+import { EventStatus, EVENT_STATUS_TRANSITIONS, type EventLifecycleStatus } from '@mad/shared';
+
 import { Event, IEvent } from '../../models/event.schema';
 import { TicketProfile } from '../../models/ticket-profile.schema';
 import { Ticket } from '../../models/ticket.schema';
@@ -43,6 +45,25 @@ export const validateEventImagesPayload = (
     }
   }
 };
+
+export const assertEventStatusTransition = (
+  currentStatus: EventStatus,
+  nextStatus: EventStatus
+): void => {
+  if (currentStatus === nextStatus) return;
+
+  if (!isEventLifecycleStatus(currentStatus) || !isEventLifecycleStatus(nextStatus)) {
+    throw AppError.conflict('Invalid event status transition.');
+  }
+
+  const allowedTransitions = EVENT_STATUS_TRANSITIONS[currentStatus];
+  if (!allowedTransitions.includes(nextStatus)) {
+    throw AppError.conflict('Invalid event status transition.');
+  }
+};
+
+const isEventLifecycleStatus = (status: EventStatus): status is EventLifecycleStatus =>
+  Object.prototype.hasOwnProperty.call(EVENT_STATUS_TRANSITIONS, status);
 
 export const createEvent = async (data: Partial<IEvent>): Promise<IEvent> => {
   validateEventImagesPayload(data.bannerImage, data.posterImage, data.galleryImages);
@@ -163,6 +184,10 @@ export const updateEvent = async (id: string, data: Partial<IEvent>): Promise<an
   const mergedGallery = data.galleryImages !== undefined ? data.galleryImages : existing.galleryImages;
 
   validateEventImagesPayload(mergedBanner, mergedPoster, mergedGallery);
+
+  if (data.status !== undefined) {
+    assertEventStatusTransition(existing.status, data.status);
+  }
 
   const profileId = data.ticketProfileId !== undefined ? data.ticketProfileId : existing.ticketProfileId;
   if (profileId) {
