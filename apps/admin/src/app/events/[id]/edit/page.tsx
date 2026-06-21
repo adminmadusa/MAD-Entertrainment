@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
 import { useParams, useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 
-import { CloudinaryUpload } from '@/components/CloudinaryUpload';
+import { EventGalleryUpload } from '@/components/EventGalleryUpload';
 import { adminGetEvent, adminUpdateEvent, AdminEvent } from '@/lib/api/admin/event.service';
 import { adminGetCategories } from '@/lib/api/admin/category.service';
 import { adminGetTiers } from '@/lib/api/admin/tier.service';
@@ -51,6 +51,8 @@ export default function EditEventPage() {
   const [requireAgeConfirmation, setRequireAgeConfirmation] = useState(false);
   const [ageRestriction, setAgeRestriction] = useState<number | ''>(18);
   const [coverImage, setCoverImage] = useState<CloudinaryImage | null>(null);
+  const [posterImage, setPosterImage] = useState<CloudinaryImage | null>(null);
+  const [galleryImages, setGalleryImages] = useState<CloudinaryImage[]>([]);
   const [tiers, setTiers] = useState<TicketTierInput[]>([defaultTier()]);
   const [error, setError] = useState('');
   const [venueName, setVenueName] = useState<string>('');
@@ -107,6 +109,8 @@ export default function EditEventPage() {
       setRequireAgeConfirmation(!!event.requireAgeConfirmation);
       setAgeRestriction(event.ageRestriction ?? 18);
       setCoverImage(event.bannerImage || null);
+      setPosterImage(event.posterImage || null);
+      setGalleryImages(event.galleryImages || []);
 
       if (event.ticketProfileId) {
         setTicketingType('profile');
@@ -202,6 +206,8 @@ export default function EditEventPage() {
         status,
         bookingMode: BookingMode.GENERAL_ADMISSION,
         bannerImage: coverImage ?? undefined,
+        posterImage: posterImage ?? undefined,
+        galleryImages: galleryImages.length > 0 ? galleryImages : undefined,
         venue: venueName.trim(),
         startDate: new Date(startDate).toISOString() as never,
         endDate: endDate ? new Date(endDate).toISOString() : undefined,
@@ -367,15 +373,19 @@ export default function EditEventPage() {
           </motion.div>
         )}
 
-        {/* Cover Image */}
+        {/* Event Media Uploads */}
         <div className="glass rounded-2xl border border-border-subtle p-6">
-          <CloudinaryUpload
-            folder="events"
-            value={coverImage}
-            onChange={setCoverImage}
-            label="Cover Image"
-            aspectRatio="aspect-video"
-            id="event-cover-image"
+          <h2 className="text-white font-semibold mb-4">Event Media (Banner, Poster, & Gallery)</h2>
+          <EventGalleryUpload
+            bannerImage={coverImage}
+            posterImage={posterImage}
+            galleryImages={galleryImages}
+            onChange={(b, p, g) => {
+              setCoverImage(b);
+              setPosterImage(p);
+              setGalleryImages(g);
+            }}
+            maxTotalImages={15}
           />
         </div>
 

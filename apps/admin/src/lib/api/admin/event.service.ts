@@ -59,6 +59,7 @@ export interface AdminEvent {
   refundPolicy?: string;
   highlights?: string[];
   bannerImage?: CloudinaryImage;
+  posterImage?: CloudinaryImage;
   ticketsSold?: number;
   ticketsCheckedIn?: number;
   ticketsRemaining?: number;

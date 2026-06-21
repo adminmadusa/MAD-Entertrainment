@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
-import { CloudinaryUpload } from '@/components/CloudinaryUpload';
+import { EventGalleryUpload } from '@/components/EventGalleryUpload';
 import { adminCreateEvent, AdminEvent } from '@/lib/api/admin/event.service';
 import { TicketProfile, TicketGroup, TicketConfig } from '@mad/types';
 import { adminGetCategories } from '@/lib/api/admin/category.service';
@@ -53,6 +53,8 @@ export default function CreateEventPage() {
   const [requireAgeConfirmation, setRequireAgeConfirmation] = useState(false);
   const [ageRestriction, setAgeRestriction] = useState<number | ''>(18);
   const [coverImage, setCoverImage] = useState<CloudinaryImage | null>(null);
+  const [posterImage, setPosterImage] = useState<CloudinaryImage | null>(null);
+  const [galleryImages, setGalleryImages] = useState<CloudinaryImage[]>([]);
   const [tiers, setTiers] = useState<TicketTierInput[]>([defaultTier()]);
   
   // Ticket Profile and Overrides state
@@ -140,6 +142,8 @@ export default function CreateEventPage() {
         status,
         bookingMode: BookingMode.GENERAL_ADMISSION,
         bannerImage: coverImage ?? undefined,
+        posterImage: posterImage ?? undefined,
+        galleryImages: galleryImages.length > 0 ? galleryImages : undefined,
         venue: venueName.trim(),
         startDate: new Date(startDate).toISOString(),
         endDate: endDate ? new Date(endDate).toISOString() : undefined,
@@ -225,15 +229,19 @@ export default function CreateEventPage() {
           </motion.div>
         )}
 
-        {/* Cover Image */}
+        {/* Event Media Uploads */}
         <div className="glass rounded-2xl border border-border-subtle p-6">
-          <CloudinaryUpload
-            folder="events"
-            value={coverImage}
-            onChange={setCoverImage}
-            label="Cover Image"
-            aspectRatio="aspect-video"
-            id="event-cover-image"
+          <h2 className="text-white font-semibold mb-4">Event Media (Banner, Poster, & Gallery)</h2>
+          <EventGalleryUpload
+            bannerImage={coverImage}
+            posterImage={posterImage}
+            galleryImages={galleryImages}
+            onChange={(b, p, g) => {
+              setCoverImage(b);
+              setPosterImage(p);
+              setGalleryImages(g);
+            }}
+            maxTotalImages={15}
           />
         </div>
 

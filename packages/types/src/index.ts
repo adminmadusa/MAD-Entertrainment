@@ -11,6 +11,8 @@ export type ApiError = {
 export type ImageAsset = {
   url?: string;
   publicId?: string;
+  hash?: string;
+  alt?: string;
 };
 
 export type TicketOfferRules = {

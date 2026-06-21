@@ -7,7 +7,7 @@ validateEnv();
 import http from 'http';
 
 import { createApp } from './app';
-import { initCloudinary } from './config/cloudinary';
+import './config/cloudinary';
 import { connectDatabase, disconnectDatabase } from './config/database';
 import { initRazorpay } from './config/razorpay';
 import { getRedis, waitForRedisReady, disconnectRedis } from './config/redis';
@@ -52,7 +52,6 @@ async function bootstrap(): Promise<void> {
   // Initialize rate limiters (falls back to memory if Redis is unavailable)
   initRateLimiters();
   
-  initCloudinary();
   initRazorpay();
   initStripe();
 
