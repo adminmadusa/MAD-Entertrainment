@@ -71,8 +71,7 @@ export interface IEvent extends Document {
   doorsOpenTime?: string;
   showTime?: string;
   venue: string;
-  onlineStreamUrl?: string;
-  isOnline?: boolean;
+
   djOperatorIds?: Types.ObjectId[];
   ticketTiers: {
     tier: TicketTier;
@@ -162,8 +161,7 @@ const eventSchema = new Schema<IEvent>(
     showTime: String,
 
     venue: { type: String, required: true, index: true },
-    onlineStreamUrl: String,
-    isOnline: { type: Boolean, default: false },
+
 
     djOperatorIds: [{ type: Schema.Types.ObjectId, ref: 'DJOperator' }],
 
@@ -215,9 +213,7 @@ const eventSchema = new Schema<IEvent>(
   }
 );
 
-eventSchema.virtual('coverImage').get(function (this: any) {
-  return this.bannerImage;
-});
+
 
 // ─── Indexes ──────────────────────────────────────────────────
 eventSchema.index({ startDate: 1, status: 1 });

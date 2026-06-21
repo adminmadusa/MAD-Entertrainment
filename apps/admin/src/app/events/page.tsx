@@ -7,7 +7,7 @@ import { useState } from 'react';
 import { EventStatus } from '@mad/shared';
 import { useAdminAuth } from '@/providers/AdminAuthProvider';
 
-import { adminGetEvents, adminDeleteEvent, adminToggleFeatured, adminUpdateEventStatus, type AdminEvent } from '@/lib/api/admin/event.service';
+import { adminGetEvents, adminDeleteEvent, type AdminEvent } from '@/lib/api/admin/event.service';
 import { extractApiError } from '@/lib/api/client';
 
 const STATUS_COLORS: Record<string, string> = {
@@ -26,7 +26,7 @@ export default function AdminEventsPage() {
   const [statusFilter, setStatusFilter] = useState('');
   const [page, setPage] = useState(1);
   const [deleteTarget, setDeleteTarget] = useState<AdminEvent | null>(null);
-  const [confirmStatusTarget, setConfirmStatusTarget] = useState<{ id: string; title: string; previous: string; next: string } | null>(null);
+
   const [sortField, setSortField] = useState<'title' | 'category' | 'startDate' | 'status' | null>(null);
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
@@ -52,15 +52,7 @@ export default function AdminEventsPage() {
     },
   });
 
-  const featureMutation = useMutation({
-    mutationFn: (id: string) => adminToggleFeatured(id),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin-events'] }),
-  });
 
-  const statusMutation = useMutation({
-    mutationFn: ({ id, status }: { id: string; status: string }) => adminUpdateEventStatus(id, status),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin-events'] }),
-  });
 
   const events = Array.isArray(data?.items) ? data?.items : [];
   const pagination = data?.pagination;
@@ -112,9 +104,9 @@ export default function AdminEventsPage() {
       <tr key={event._id} className="border-b border-border-subtle/40 hover:bg-white/2 transition-colors">
         <td className="py-4 px-5">
           <div className="flex items-center gap-3">
-            {event.coverImage?.url ? (
+            {event.bannerImage?.url ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={event.coverImage.url} alt={event.title} className="w-10 h-10 rounded-lg object-cover flex-shrink-0" />
+              <img src={event.bannerImage.url} alt={event.title} className="w-10 h-10 rounded-lg object-cover flex-shrink-0" />
             ) : (
               <div className="w-10 h-10 rounded-lg bg-accent-purple/10 flex-shrink-0 flex items-center justify-center text-accent-purple text-xs font-bold">
                 {(event.title || '?')[0]}
@@ -144,33 +136,9 @@ export default function AdminEventsPage() {
         </td>
         <td className="py-4 px-4">
           {event.status ? (
-            canMutateEvents ? (
-              <select
-                value={event.status}
-                onChange={(e) => {
-                  const nextStatus = e.target.value;
-                  if (event.status === EventStatus.PUBLISHED && (nextStatus === EventStatus.CANCELLED || nextStatus === EventStatus.DRAFT || nextStatus === EventStatus.COMPLETED)) {
-                    setConfirmStatusTarget({
-                      id: event._id,
-                      title: event.title,
-                      previous: event.status || '',
-                      next: nextStatus,
-                    });
-                  } else {
-                    statusMutation.mutate({ id: event._id, status: nextStatus });
-                  }
-                }}
-                className={`text-xs px-2.5 py-1 rounded-full border font-medium bg-transparent cursor-pointer ${STATUS_COLORS[event.status] ?? ''}`}
-              >
-                {Object.values(EventStatus).map((s) => (
-                  <option key={s} value={s} className="bg-background-card text-text-primary">{s.replace('_', ' ')}</option>
-                ))}
-              </select>
-            ) : (
-              <span className={`text-xs px-2.5 py-1 rounded-full border font-medium ${STATUS_COLORS[event.status] ?? ''}`}>
-                {event.status.replace('_', ' ')}
-              </span>
-            )
+            <span className={`text-xs px-2.5 py-1 rounded-full border font-medium ${STATUS_COLORS[event.status] ?? ''}`}>
+              {event.status.replace('_', ' ')}
+            </span>
           ) : (
             <span className="text-xs px-2.5 py-1 rounded-full border border-yellow-500/30 bg-yellow-500/10 text-yellow-400 font-semibold animate-pulse inline-flex items-center gap-1">
               ⚠️ Missing Status
@@ -178,14 +146,12 @@ export default function AdminEventsPage() {
           )}
         </td>
         <td className="py-4 px-4">
-          <button
-            onClick={() => canMutateEvents && featureMutation.mutate(event._id)}
-            disabled={!canMutateEvents}
-            className={`text-lg transition-transform ${canMutateEvents ? 'hover:scale-110 cursor-pointer' : 'cursor-default'} ${event.isFeatured ? 'text-yellow-400' : 'text-text-muted'}`}
-            title={canMutateEvents ? (event.isFeatured ? 'Remove from featured' : 'Add to featured') : undefined}
+          <span
+            className={`text-lg ${event.isFeatured ? 'text-yellow-400' : 'text-text-muted'}`}
+            title={event.isFeatured ? 'Featured Event' : 'Standard Event'}
           >
             ★
-          </button>
+          </span>
         </td>
         <td className="py-4 px-5">
           {canMutateEvents ? (
@@ -348,47 +314,7 @@ export default function AdminEventsPage() {
         )}
       </AnimatePresence>
 
-      {/* Status Confirm Modal */}
-      <AnimatePresence>
-        {confirmStatusTarget && (
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="glass-strong rounded-2xl border border-border-subtle p-6 max-w-sm w-full space-y-4"
-            >
-              <h3 className="text-white font-bold text-lg">Change Event Status?</h3>
-              <p className="text-text-secondary text-sm">
-                Are you sure you want to transition <strong className="text-white">{confirmStatusTarget.title}</strong> from <span className="capitalize font-semibold text-accent-purple">{confirmStatusTarget.previous}</span> to <span className="capitalize font-semibold text-accent-purple">{confirmStatusTarget.next}</span>?
-              </p>
-              {confirmStatusTarget.next === 'cancelled' && (
-                <p className="text-error text-xs">Warning: Cancelling this event will prevent customers from booking tickets.</p>
-              )}
-              <div className="flex gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setConfirmStatusTarget(null)}
-                  className="flex-1 py-2.5 glass border border-border-subtle rounded-xl text-sm font-medium text-text-secondary hover:text-white transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    statusMutation.mutate({ id: confirmStatusTarget.id, status: confirmStatusTarget.next });
-                    setConfirmStatusTarget(null);
-                  }}
-                  disabled={statusMutation.isPending}
-                  className="flex-1 py-2.5 bg-accent-purple hover:bg-accent-purple-light rounded-xl text-white text-sm font-semibold transition-colors disabled:opacity-60"
-                >
-                  {statusMutation.isPending ? 'Saving...' : 'Confirm'}
-                </button>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+
     </div>
   );
 }

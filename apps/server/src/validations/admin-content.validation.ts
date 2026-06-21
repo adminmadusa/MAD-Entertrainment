@@ -245,6 +245,12 @@ export const updateDJOperatorSchema = z.object({
   body: createDJOperatorSchema.shape.body.partial(),
 });
 
+export const deleteUploadSchema = z.object({
+  body: z.object({
+    publicId: z.string().min(1, 'publicId is required'),
+  }).strict(),
+});
+
 // -- Event Validation --
 export const createEventSchema = z.object({
   body: z.object({
@@ -262,8 +268,7 @@ export const createEventSchema = z.object({
     doorsOpenTime: z.string().optional(),
     showTime: z.string().optional(),
     venue: z.string().min(1),
-    onlineStreamUrl: z.string().url().optional(),
-    isOnline: z.boolean().optional(),
+
     djOperatorIds: z.array(z.string()).optional(),
     ticketTiers: z
       .array(

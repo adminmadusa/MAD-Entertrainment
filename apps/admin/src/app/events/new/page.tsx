@@ -151,7 +151,6 @@ export default function CreateEventPage() {
         highlights: highlightsInput.split(',').map(h => h.trim()).filter(Boolean),
         refundPolicy: refundPolicy.trim() || undefined,
         organizerName: organizerName.trim() || undefined,
-        coverImage: coverImage ?? undefined,
       };
 
       if (isProfileType) {

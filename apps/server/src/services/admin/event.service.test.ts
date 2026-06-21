@@ -10,6 +10,10 @@ vi.mock('../../config/env', () => ({
   })),
 }));
 
+vi.mock('./media-cleanup.service', () => ({
+  safeDeleteImages: vi.fn(),
+}));
+
 import * as eventService from './event.service';
 import { Event } from '../../models/event.schema';
 import { Booking } from '../../models/booking.schema';
@@ -82,6 +86,7 @@ describe('Admin Event Service', () => {
 
     it('can delete unused draft event', async () => {
       vi.mocked(Booking.exists).mockResolvedValue(null);
+      vi.mocked(Event.findById).mockResolvedValue({ _id: 'event-1' } as any);
       vi.mocked(Event.findByIdAndUpdate).mockResolvedValue({ _id: 'event-1', isDeleted: true } as any);
 
       const result = await eventService.deleteEvent('event-1');
@@ -178,6 +183,92 @@ describe('Admin Event Service', () => {
 
       expect(result).not.toBeNull();
       expect(Event.findByIdAndUpdate).toHaveBeenCalled();
+    });
+  });
+
+  describe('deduplicateGallery', () => {
+    it('deduplicates gallery images by publicId and preserves original order', () => {
+      const gallery = [
+        { url: 'url1', publicId: 'id1' },
+        { url: 'url2', publicId: 'id2' },
+        { url: 'url3', publicId: 'id1' }, // Duplicate
+      ];
+      const result = eventService.deduplicateGallery(gallery);
+      expect(result).toEqual([
+        { url: 'url1', publicId: 'id1' },
+        { url: 'url2', publicId: 'id2' },
+      ]);
+    });
+
+    it('returns undefined if gallery is not provided', () => {
+      expect(eventService.deduplicateGallery(undefined)).toBeUndefined();
+    });
+  });
+
+  describe('updateEvent - Cloudinary media cleanup hooks', () => {
+    it('calls safeDeleteImages when bannerImage, posterImage are replaced or gallery images are removed', async () => {
+      const existingEvent = {
+        _id: 'event-1',
+        bannerImage: { url: 'old-banner-url', publicId: 'old-banner' },
+        posterImage: { url: 'old-poster-url', publicId: 'old-poster' },
+        galleryImages: [
+          { url: 'url1', publicId: 'id1' },
+          { url: 'url2', publicId: 'id2' },
+        ],
+        eventVersion: 1,
+        toObject: () => ({}),
+      };
+
+      vi.mocked(Event.findById).mockResolvedValue(existingEvent as any);
+      vi.mocked(Event.findByIdAndUpdate).mockResolvedValue(existingEvent as any);
+      vi.mocked(Ticket.find).mockReturnValue({
+        lean: vi.fn().mockResolvedValue([]),
+      } as any);
+
+      const { safeDeleteImages } = await import('./media-cleanup.service');
+
+      await eventService.updateEvent('event-1', {
+        bannerImage: { url: 'new-banner-url', publicId: 'new-banner' },
+        posterImage: { url: 'new-poster-url', publicId: 'new-poster' },
+        galleryImages: [
+          { url: 'url1', publicId: 'id1' }, // kept
+          // id2 removed
+        ],
+      } as any);
+
+      expect(safeDeleteImages).toHaveBeenCalledWith(
+        ['old-banner', 'old-poster', 'id2'],
+        'Event',
+        'update'
+      );
+    });
+  });
+
+  describe('deleteEvent - Cloudinary media cleanup hooks', () => {
+    it('collects and deletes all media assets on soft-deletion', async () => {
+      const existingEvent = {
+        _id: 'event-1',
+        bannerImage: { url: 'banner-url', publicId: 'banner' },
+        posterImage: { url: 'poster-url', publicId: 'poster' },
+        galleryImages: [
+          { url: 'url1', publicId: 'id1' },
+          { url: 'url2', publicId: 'id2' },
+        ],
+      };
+
+      vi.mocked(Booking.exists).mockResolvedValue(null);
+      vi.mocked(Event.findById).mockResolvedValue(existingEvent as any);
+      vi.mocked(Event.findByIdAndUpdate).mockResolvedValue(existingEvent as any);
+
+      const { safeDeleteImages } = await import('./media-cleanup.service');
+
+      await eventService.deleteEvent('event-1');
+
+      expect(safeDeleteImages).toHaveBeenCalledWith(
+        ['banner', 'poster', 'id1', 'id2'],
+        'Event',
+        'delete'
+      );
     });
   });
 });
