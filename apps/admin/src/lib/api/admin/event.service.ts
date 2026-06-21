@@ -89,11 +89,12 @@ interface EventResponse {
 }
 
 type PaginationSource = Partial<PaginationMeta> & { pages?: number };
+type EventStatusFilter = EventStatus | `${EventStatus}` | '';
 
 export interface EventFilters {
   page?: number;
   limit?: number;
-  status?: string;
+  status?: EventStatusFilter;
   search?: string;
 }
 

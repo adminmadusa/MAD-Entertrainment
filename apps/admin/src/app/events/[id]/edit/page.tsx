@@ -114,7 +114,7 @@ export default function EditEventPage() {
       setTitle(event.title || '');
       setDescription(event.description || '');
       setCategory(event.category || 'concert');
-      setStatus((event.status as EventStatus) || EventStatus.DRAFT);
+      setStatus(event.status || EventStatus.DRAFT);
       setStartDate(event.startDate ? new Date(event.startDate).toISOString().slice(0, 16) : '');
       setEndDate(event.endDate ? new Date(event.endDate).toISOString().slice(0, 16) : '');
       setVenueName(event.venue || '');
@@ -228,7 +228,7 @@ export default function EditEventPage() {
         posterImage: posterImage ?? undefined,
         galleryImages: galleryImages.length > 0 ? galleryImages : undefined,
         venue: venueName.trim(),
-        startDate: new Date(startDate).toISOString() as never,
+        startDate: new Date(startDate).toISOString(),
         endDate: endDate ? new Date(endDate).toISOString() : undefined,
         isFeatured,
         requireTerms,

@@ -264,7 +264,18 @@ export const deleteUploadSchema = z.object({
 });
 
 // -- Event Validation --
-export const validateEventImages = (body: any, ctx: z.RefinementCtx) => {
+type EventImageValidationAsset = {
+  publicId?: string;
+  hash?: string;
+};
+
+type EventImageValidationBody = {
+  bannerImage?: EventImageValidationAsset;
+  posterImage?: EventImageValidationAsset;
+  galleryImages?: EventImageValidationAsset[];
+};
+
+export const validateEventImages = (body: EventImageValidationBody, ctx: z.RefinementCtx) => {
   const banner = body.bannerImage;
   const poster = body.posterImage;
   const gallery = body.galleryImages;
@@ -284,7 +295,7 @@ export const validateEventImages = (body: any, ctx: z.RefinementCtx) => {
   const seenPublicIds = new Set<string>();
   const seenHashes = new Set<string>();
 
-  const checkImg = (img: any, path: string | (string | number)[]) => {
+  const checkImg = (img: EventImageValidationAsset | undefined, path: string | (string | number)[]) => {
     if (!img) return;
     if (img.publicId) {
       if (seenPublicIds.has(img.publicId)) {
