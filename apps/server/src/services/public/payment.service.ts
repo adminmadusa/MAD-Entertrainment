@@ -308,7 +308,7 @@ export class PaymentService {
   private static async handleRazorpayIntent(booking: IBooking, env: ReturnType<typeof getEnv>) {
     if (env.MOCK_PAYMENTS) {
       this.assertProductionMockRuntimeBlocked({ bookingId: booking._id.toString(), gateway: 'razorpay' });
-      const mockOrderId = 'order_mock_' + Math.random().toString(36).substring(2, 10);
+      const mockOrderId = 'order_mock_' + crypto.randomBytes(4).toString('hex');
       const payment = await this.createPendingPayment(
         booking._id,
         'razorpay',
@@ -421,7 +421,7 @@ export class PaymentService {
   private static async handleStripeIntent(booking: IBooking, env: ReturnType<typeof getEnv>) {
     if (env.MOCK_PAYMENTS) {
       this.assertProductionMockRuntimeBlocked({ bookingId: booking._id.toString(), gateway: 'stripe' });
-      const mockIntentId = 'pi_mock_' + Math.random().toString(36).substring(2, 10);
+      const mockIntentId = 'pi_mock_' + crypto.randomBytes(4).toString('hex');
       const payment = await this.createPendingPayment(
         booking._id,
         'stripe',
@@ -458,7 +458,7 @@ export class PaymentService {
       return {
         gateway: 'stripe',
         publishableKey: env.STRIPE_PUBLISHABLE_KEY || 'pk_test_dummy',
-        clientSecret: mockIntentId + '_secret_' + Math.random().toString(36).substring(2, 10),
+        clientSecret: mockIntentId + '_secret_' + crypto.randomBytes(4).toString('hex'),
         amount: booking.totalAmount,
         currency: booking.currency || 'INR',
         bookingId: booking._id,

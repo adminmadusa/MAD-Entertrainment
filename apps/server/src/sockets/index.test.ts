@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import { describe, it, expect, vi, beforeEach, afterAll } from 'vitest';
 import Module from 'module';
 import { registerSocketHandlers } from './index';
@@ -95,7 +96,7 @@ describe('Socket Handlers (Public Namespace)', () => {
     mockRedis.isRedisConnected.mockReturnValue(true);
 
     handlers = {};
-    socketId = `socket-${Math.random().toString(36).slice(2)}`;
+    socketId = `socket-${crypto.randomUUID().replace(/-/g, '').slice(0, 8)}`;
 
     mockSocket = {
       id: socketId,

@@ -86,7 +86,7 @@ export function EventGalleryUpload({
       formData.append('image', file);
 
       // Generate a temporary formSessionId for isolation
-      const sessionId = 'session_' + Math.random().toString(36).substring(2, 11);
+      const sessionId = 'session_' + crypto.randomUUID().slice(0, 8);
 
       const { data: uploadRes } = await adminApiClient.post<{ data: { url: string; publicId: string; hash: string } }>(
         `/admin/uploads/image?folder=events&sessionId=${sessionId}`,
