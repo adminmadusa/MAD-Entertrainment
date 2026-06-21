@@ -106,7 +106,7 @@ export default function EditEventPage() {
       setRequireTerms(event.requireTerms ?? true);
       setRequireAgeConfirmation(!!event.requireAgeConfirmation);
       setAgeRestriction(event.ageRestriction ?? 18);
-      setCoverImage(event.coverImage || event.bannerImage || null);
+      setCoverImage(event.bannerImage || null);
 
       if (event.ticketProfileId) {
         setTicketingType('profile');
@@ -213,7 +213,6 @@ export default function EditEventPage() {
         highlights: highlightsInput.split(',').map(h => h.trim()).filter(Boolean),
         refundPolicy: refundPolicy.trim() || undefined,
         organizerName: organizerName.trim() || undefined,
-        coverImage: coverImage ?? undefined,
       };
 
       if (isProfileType) {
