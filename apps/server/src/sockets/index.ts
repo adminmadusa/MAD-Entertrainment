@@ -14,6 +14,8 @@ import {
   socketBookingJoinSchema,
   socketSeatActionSchema,
 } from '../validations/payment.validation';
+import { AppError } from '../middleware/error.middleware';
+import { PublicBookingService } from '../services/public/booking.service';
 
 // Helper to get Redis key for a seat lock
 function getSeatLockKey(eventId: string, seatId: string): string {
@@ -438,10 +440,19 @@ export function registerSocketHandlers(socket: Socket): void {
       const reqUserId = socket.data.user?.sub;
       const reqSessionId = socket.data.sessionId;
 
-      const isUserOwner = !!booking.userId && !!reqUserId && booking.userId.toString() === reqUserId;
-      const isGuestOwner = !!booking.sessionId && !!reqSessionId && booking.sessionId === reqSessionId;
+      let hasAccess = false;
+      try {
+        PublicBookingService.assertBookingAccess(
+          booking,
+          { userId: reqUserId, sessionId: reqSessionId },
+          'ActiveCheckout'
+        );
+        hasAccess = true;
+      } catch (err) {
+        hasAccess = false;
+      }
 
-      if (!isUserOwner && !isGuestOwner) {
+      if (!hasAccess) {
         socket.emit('booking:join:status', { success: false, bookingId, message: 'Forbidden: You do not own this booking' });
         socket.emit('error', {
           code: 'FORBIDDEN',

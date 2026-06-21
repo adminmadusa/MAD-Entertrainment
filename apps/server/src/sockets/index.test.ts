@@ -53,6 +53,12 @@ vi.mock('../models/seat-layout.schema', () => ({
   },
 }));
 
+vi.mock('../services/public/booking.service', () => ({
+  PublicBookingService: {
+    assertBookingAccess: vi.fn(), // Allow by default; individual tests can override to throw
+  },
+}));
+
 vi.mock('../utils/logger', () => ({
   logger: {
     info: vi.fn(),

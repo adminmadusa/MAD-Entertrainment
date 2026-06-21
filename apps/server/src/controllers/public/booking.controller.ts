@@ -13,6 +13,7 @@ import { QueueService } from '../../services/queue.service';
 import { getQueueName } from '../../config/queue.config';
 import { CacheService } from '../../services/cache.service';
 
+
 const maskTransactionId = (id: string): string => {
   if (!id || id.length <= 8) return '****';
   return `${id.substring(0, 4)}...${id.substring(id.length - 4)}`;
@@ -170,29 +171,12 @@ export async function getBooking(
 
     const booking = result.booking;
 
-    // Logged-in ownership
-    const isUserOwner =
-      !!booking.userId &&
-      !!reqUserId &&
-      booking.userId.toString() === reqUserId;
-
-    // Guest ownership
-    const isGuestOwner =
-      !booking.userId &&
-      !!booking.sessionId &&
-      !!reqSessionId &&
-      booking.sessionId === reqSessionId;
-
-    // Access denied
-    if (!isUserOwner && !isGuestOwner) {
-      const err = AppError.forbidden(
-        !reqUserId ? 'Email verification required' : 'You do not have access to this booking'
-      );
-      if (!reqUserId) {
-        err.code = 'BOOKING_VERIFICATION_REQUIRED';
-      }
-      throw err;
-    }
+    // Assert access
+    PublicBookingService.assertBookingAccess(
+      booking,
+      { userId: reqUserId, sessionId: reqSessionId },
+      'Fulfillment'
+    );
 
     // Mask ticket QR codes if assignmentStatus is 'pending' or 'claimed'
     const maskedTickets = result.tickets.map((t: any) => {
@@ -305,28 +289,12 @@ export async function downloadBookingPDF(
 
       booking = result.booking;
 
-      // Logged-in ownership
-      const isUserOwner =
-        !!booking.userId &&
-        !!reqUserId &&
-        booking.userId.toString() === reqUserId;
-
-      // Guest ownership
-      const isGuestOwner =
-        !booking.userId &&
-        !!booking.sessionId &&
-        !!reqSessionId &&
-        booking.sessionId === reqSessionId;
-
-      if (!isUserOwner && !isGuestOwner) {
-        const err = AppError.forbidden(
-          !reqUserId ? 'Email verification required' : 'You do not have access to this booking'
-        );
-        if (!reqUserId) {
-          err.code = 'BOOKING_VERIFICATION_REQUIRED';
-        }
-        throw err;
-      }
+      // Assert access
+      PublicBookingService.assertBookingAccess(
+        booking,
+        { userId: reqUserId, sessionId: reqSessionId },
+        'Fulfillment'
+      );
     }
 
     const pdfBuffer = await generateTicketPDF(booking, booking.eventId, {
@@ -363,28 +331,12 @@ export async function generateDownloadToken(
 
     const booking = result.booking;
 
-    // Logged-in ownership
-    const isUserOwner =
-      !!booking.userId &&
-      !!reqUserId &&
-      booking.userId.toString() === reqUserId;
-
-    // Guest ownership
-    const isGuestOwner =
-      !booking.userId &&
-      !!booking.sessionId &&
-      !!reqSessionId &&
-      booking.sessionId === reqSessionId;
-
-    if (!isUserOwner && !isGuestOwner) {
-      const err = AppError.forbidden(
-        !reqUserId ? 'Email verification required' : 'You do not have access to this booking'
-      );
-      if (!reqUserId) {
-        err.code = 'BOOKING_VERIFICATION_REQUIRED';
-      }
-      throw err;
-    }
+    // Assert access
+    PublicBookingService.assertBookingAccess(
+      booking,
+      { userId: reqUserId, sessionId: reqSessionId },
+      'Fulfillment'
+    );
 
     const token = crypto.randomUUID();
     const cacheKey = `otd:${token}`;
@@ -426,28 +378,12 @@ export async function resendBookingTickets(
 
     const booking = result.booking;
 
-    // Logged-in ownership
-    const isUserOwner =
-      !!booking.userId &&
-      !!reqUserId &&
-      booking.userId.toString() === reqUserId;
-
-    // Guest ownership
-    const isGuestOwner =
-      !booking.userId &&
-      !!booking.sessionId &&
-      !!reqSessionId &&
-      booking.sessionId === reqSessionId;
-
-    if (!isUserOwner && !isGuestOwner) {
-      const err = AppError.forbidden(
-        !reqUserId ? 'Email verification required' : 'You do not have access to this booking'
-      );
-      if (!reqUserId) {
-        err.code = 'BOOKING_VERIFICATION_REQUIRED';
-      }
-      throw err;
-    }
+    // Assert access
+    PublicBookingService.assertBookingAccess(
+      booking,
+      { userId: reqUserId, sessionId: reqSessionId },
+      'Fulfillment'
+    );
 
     const eventIdStr = (booking.eventId as any)._id?.toString() || booking.eventId.toString();
 
