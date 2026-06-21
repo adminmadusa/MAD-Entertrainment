@@ -1,4 +1,12 @@
 'use client';
+import {
+  EVENT_CATEGORY_LABELS,
+  BookingMode,
+  TicketTier,
+  EventStatus,
+  EVENT_STATUS_TRANSITIONS,
+  type EventLifecycleStatus,
+} from '@mad/shared';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { useParams, useRouter } from 'next/navigation';
