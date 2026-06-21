@@ -21,7 +21,7 @@ export interface IPayment extends Document {
 const paymentSchema = new Schema<IPayment>(
   {
     bookingId: { type: Schema.Types.ObjectId, ref: 'Booking', required: true, index: true },
-    gateway: { type: String, enum: ['stripe', 'razorpay'], required: true },
+    gateway: { type: String, enum: ['stripe', 'razorpay', 'free'], required: true },
     status: { type: String, enum: Object.values(PaymentStatus), default: PaymentStatus.PENDING, index: true },
     amount: { type: Number, required: true, min: 0 },
     currency: { type: String, default: 'INR' },

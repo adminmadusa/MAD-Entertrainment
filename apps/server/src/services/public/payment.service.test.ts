@@ -366,6 +366,40 @@ describe('Payment Service', () => {
       expect(Payment.create).not.toHaveBeenCalled();
       expect(Booking.findOneAndUpdate).not.toHaveBeenCalled();
     });
+
+    it('should successfully confirm booking and return free status if booking totalAmount is 0', async () => {
+      const mockBooking = {
+        _id: 'b-123',
+        bookingId: 'MAD-2026-ABCDE',
+        sessionId: 'session-owner',
+        status: BookingStatus.AWAITING_PAYMENT,
+        totalAmount: 0,
+        currency: 'INR',
+        eventId: 'e-123',
+        tickets: [],
+        save: vi.fn(),
+      };
+      vi.mocked(Booking.findOne).mockResolvedValue(mockBooking as any);
+      vi.mocked(Payment.create).mockResolvedValue({ _id: 'p-123', status: PaymentStatus.PAID, gateway: 'free', amount: 0 } as any);
+      vi.mocked(Booking.findOneAndUpdate).mockResolvedValue({
+        ...mockBooking,
+        status: BookingStatus.CONFIRMED,
+      } as any);
+
+      const result = await PaymentService.createPaymentIntent('MAD-2026-ABCDE', 'razorpay', { sessionId: 'session-owner' });
+
+      expect(result).toEqual({
+        isFree: true,
+        gateway: 'free',
+        bookingId: 'b-123',
+      });
+      expect(Payment.create).toHaveBeenCalledWith(expect.objectContaining({
+        bookingId: 'b-123',
+        gateway: 'free',
+        amount: 0,
+        status: PaymentStatus.PAID,
+      }));
+    });
   });
 
   describe('verifyPayment', () => {
