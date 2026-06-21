@@ -22,6 +22,7 @@ const eventFixture: AdminEvent = {
   startDate: '2026-06-01T00:00:00.000Z',
   ticketTiers: [],
   totalCapacity: 100,
+  eventVersion: 1,
   isFeatured: false,
   createdAt: '2026-05-01T00:00:00.000Z',
 };
@@ -153,7 +154,11 @@ describe('admin event contract compatibility', () => {
       },
     });
 
-    await expect(adminUpdateEvent('event-1', { title: 'MAD Night' })).resolves.toEqual(eventFixture);
+    await expect(adminUpdateEvent('event-1', { title: 'MAD Night', eventVersion: 1 })).resolves.toEqual(eventFixture);
+    expect(adminApiClient.put).toHaveBeenCalledWith('/admin/events/event-1', {
+      title: 'MAD Night',
+      eventVersion: 1,
+    });
   });
 
   it('accepts legacy unwrapped update event responses', async () => {
@@ -164,6 +169,6 @@ describe('admin event contract compatibility', () => {
       },
     });
 
-    await expect(adminUpdateEvent('event-1', { title: 'MAD Night' })).resolves.toEqual(eventFixture);
+    await expect(adminUpdateEvent('event-1', { title: 'MAD Night', eventVersion: 1 })).resolves.toEqual(eventFixture);
   });
 });

@@ -25,6 +25,7 @@ vi.mock('../../models/event.schema', () => ({
   Event: {
     findById: vi.fn(),
     findByIdAndUpdate: vi.fn(),
+    findOneAndUpdate: vi.fn(),
   },
 }));
 
@@ -113,6 +114,7 @@ describe('Admin Event Service', () => {
 
       await expect(
         eventService.updateEvent('event-1', {
+          eventVersion: 1,
           ticketTiers: [
             { tier: 'VIP', name: 'VIP Ticket', totalCapacity: 50, soldCount: 80, isActive: true },
           ],
@@ -120,7 +122,7 @@ describe('Admin Event Service', () => {
       ).rejects.toThrow(
         'Cannot reduce capacity for tier "VIP Ticket" below its sold count. Sold: 80, Requested: 50'
       );
-      expect(Event.findByIdAndUpdate).not.toHaveBeenCalled();
+      expect(Event.findOneAndUpdate).not.toHaveBeenCalled();
     });
 
     it('can reduce capacity to exactly sold count', async () => {
@@ -134,7 +136,7 @@ describe('Admin Event Service', () => {
       };
 
       vi.mocked(Event.findById).mockResolvedValue(existingEvent as any);
-      vi.mocked(Event.findByIdAndUpdate).mockResolvedValue({
+      vi.mocked(Event.findOneAndUpdate).mockResolvedValue({
         ...existingEvent,
         ticketTiers: [
           { tier: 'VIP', name: 'VIP Ticket', totalCapacity: 80, soldCount: 80, isActive: true },
@@ -145,13 +147,25 @@ describe('Admin Event Service', () => {
       } as any);
 
       const result = await eventService.updateEvent('event-1', {
+        eventVersion: 1,
         ticketTiers: [
           { tier: 'VIP', name: 'VIP Ticket', totalCapacity: 80, soldCount: 80, isActive: true },
         ],
       } as any);
 
       expect(result).not.toBeNull();
-      expect(Event.findByIdAndUpdate).toHaveBeenCalled();
+      expect(Event.findOneAndUpdate).toHaveBeenCalledWith(
+        { _id: 'event-1', eventVersion: 1 },
+        {
+          $set: {
+            ticketTiers: [
+              { tier: 'VIP', name: 'VIP Ticket', totalCapacity: 80, soldCount: 80, isActive: true },
+            ],
+          },
+          $inc: { eventVersion: 1 },
+        },
+        { new: true }
+      );
     });
 
     it('can increase capacity above sold count', async () => {
@@ -165,7 +179,7 @@ describe('Admin Event Service', () => {
       };
 
       vi.mocked(Event.findById).mockResolvedValue(existingEvent as any);
-      vi.mocked(Event.findByIdAndUpdate).mockResolvedValue({
+      vi.mocked(Event.findOneAndUpdate).mockResolvedValue({
         ...existingEvent,
         ticketTiers: [
           { tier: 'VIP', name: 'VIP Ticket', totalCapacity: 150, soldCount: 80, isActive: true },
@@ -176,13 +190,60 @@ describe('Admin Event Service', () => {
       } as any);
 
       const result = await eventService.updateEvent('event-1', {
+        eventVersion: 1,
         ticketTiers: [
           { tier: 'VIP', name: 'VIP Ticket', totalCapacity: 150, soldCount: 80, isActive: true },
         ],
       } as any);
 
       expect(result).not.toBeNull();
-      expect(Event.findByIdAndUpdate).toHaveBeenCalled();
+      expect(Event.findOneAndUpdate).toHaveBeenCalled();
+    });
+
+    it('rejects stale eventVersion conflicts without applying update side effects', async () => {
+      const existingEvent = {
+        _id: 'event-1',
+        ticketTiers: [],
+        eventVersion: 2,
+      };
+
+      vi.mocked(Event.findById).mockResolvedValue(existingEvent as any);
+      vi.mocked(Event.findOneAndUpdate).mockResolvedValue(null);
+
+      await expect(
+        eventService.updateEvent('event-1', {
+          eventVersion: 1,
+          title: 'Stale Update',
+        } as any)
+      ).rejects.toThrow('Event has been modified by another process. Please refresh and try again.');
+
+      expect(Event.findOneAndUpdate).toHaveBeenCalledWith(
+        { _id: 'event-1', eventVersion: 1 },
+        {
+          $set: { title: 'Stale Update' },
+          $inc: { eventVersion: 1 },
+        },
+        { new: true }
+      );
+      expect(CacheService.delPattern).not.toHaveBeenCalled();
+    });
+
+    it('requires eventVersion for admin updates', async () => {
+      const existingEvent = {
+        _id: 'event-1',
+        ticketTiers: [],
+        eventVersion: 2,
+      };
+
+      vi.mocked(Event.findById).mockResolvedValue(existingEvent as any);
+
+      await expect(
+        eventService.updateEvent('event-1', {
+          title: 'Missing Version',
+        } as any)
+      ).rejects.toThrow('Event version is required for update');
+
+      expect(Event.findOneAndUpdate).not.toHaveBeenCalled();
     });
   });
 
@@ -203,7 +264,7 @@ describe('Admin Event Service', () => {
       };
 
       vi.mocked(Event.findById).mockResolvedValue(existingEvent as any);
-      vi.mocked(Event.findByIdAndUpdate).mockResolvedValue(existingEvent as any);
+      vi.mocked(Event.findOneAndUpdate).mockResolvedValue(existingEvent as any);
       vi.mocked(Ticket.find).mockReturnValue({
         lean: vi.fn().mockResolvedValue([]),
       } as any);
@@ -211,6 +272,7 @@ describe('Admin Event Service', () => {
       const { safeDeleteImages } = await import('./media-cleanup.service');
 
       await eventService.updateEvent('event-1', {
+        eventVersion: 1,
         bannerImage: { url: 'new-banner-url', publicId: 'new-banner' },
         posterImage: { url: 'new-poster-url', publicId: 'new-poster' },
         galleryImages: [
@@ -321,6 +383,7 @@ describe('Admin Event Service', () => {
 
       await expect(
         eventService.updateEvent('event-1', {
+          eventVersion: 1,
           galleryImages: [{ url: 'g-url', publicId: 'g1', hash: 'hash-banner' }], // duplicate of existing banner hash
         } as any)
       ).rejects.toThrow('Duplicate image detected');

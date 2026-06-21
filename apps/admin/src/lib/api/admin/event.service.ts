@@ -42,6 +42,7 @@ export interface AdminEvent {
   endDate?: string;
   ticketTiers: EventTier[];
   totalCapacity: number;
+  eventVersion: number;
   isFeatured: boolean;
   requireTerms?: boolean;
   requireAgeConfirmation?: boolean;
@@ -95,6 +96,8 @@ export interface EventFilters {
   search?: string;
 }
 
+export type AdminEventUpdatePayload = Partial<AdminEvent> & Pick<AdminEvent, 'eventVersion'>;
+
 function isEventEnvelope(payload: EventResponse['data']): payload is { event: AdminEvent } {
   return typeof payload === 'object' && payload !== null && 'event' in payload;
 }
@@ -135,7 +138,7 @@ export async function adminCreateEvent(payload: Partial<AdminEvent>): Promise<Ad
   return unwrapAdminEvent(data);
 }
 
-export async function adminUpdateEvent(id: string, payload: Partial<AdminEvent>): Promise<AdminEvent> {
+export async function adminUpdateEvent(id: string, payload: AdminEventUpdatePayload): Promise<AdminEvent> {
   const { data } = await adminApiClient.put<EventResponse>(`/admin/events/${id}`, payload);
   return unwrapAdminEvent(data);
 }
