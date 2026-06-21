@@ -29,6 +29,7 @@ vi.mock('../../models/event.schema', () => ({
   Event: {
     find: vi.fn(),
     findByIdAndUpdate: vi.fn(),
+    findOneAndUpdate: vi.fn(),
   },
 }));
 
@@ -60,6 +61,7 @@ describe('Ticket Profile Service Sync Integrity', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(Event.find).mockResolvedValue([] as any);
+    vi.mocked(Event.findOneAndUpdate).mockResolvedValue({ _id: 'event-1' } as any);
     vi.mocked(Reservation.exists).mockResolvedValue(null);
     vi.mocked(Booking.exists).mockResolvedValue(null);
     vi.mocked(Ticket.exists).mockResolvedValue(null);
@@ -99,7 +101,7 @@ describe('Ticket Profile Service Sync Integrity', () => {
     await expect(ticketProfileService.syncProfileEvents('profile-1')).rejects.toThrow(
       'Cannot remove active ticket tier "VIP" with active bookings.'
     );
-    expect(Event.findByIdAndUpdate).not.toHaveBeenCalled();
+    expect(Event.findOneAndUpdate).not.toHaveBeenCalled();
   });
 
   it('cannot remove tier with reservations', async () => {
@@ -110,7 +112,7 @@ describe('Ticket Profile Service Sync Integrity', () => {
     await expect(ticketProfileService.syncProfileEvents('profile-1')).rejects.toThrow(
       'Cannot remove active ticket tier "VIP" with active reservations.'
     );
-    expect(Event.findByIdAndUpdate).not.toHaveBeenCalled();
+    expect(Event.findOneAndUpdate).not.toHaveBeenCalled();
   });
 
   it('cannot remove tier with generated tickets', async () => {
@@ -121,7 +123,7 @@ describe('Ticket Profile Service Sync Integrity', () => {
     await expect(ticketProfileService.syncProfileEvents('profile-1')).rejects.toThrow(
       'Cannot remove active ticket tier "VIP" with generated tickets.'
     );
-    expect(Event.findByIdAndUpdate).not.toHaveBeenCalled();
+    expect(Event.findOneAndUpdate).not.toHaveBeenCalled();
   });
 
   it('can remove unused tier', async () => {
@@ -133,14 +135,120 @@ describe('Ticket Profile Service Sync Integrity', () => {
 
     await ticketProfileService.syncProfileEvents('profile-1');
 
-    expect(Event.findByIdAndUpdate).toHaveBeenCalledWith(
-      'event-1',
-      expect.objectContaining({
-        ticketTiers: expect.arrayContaining([
-          expect.objectContaining({ tier: 'GOLD' }),
-        ]),
-      })
+    expect(Event.findOneAndUpdate).toHaveBeenCalledWith(
+      { _id: 'event-1', eventVersion: 1 },
+      {
+        $set: expect.objectContaining({
+          ticketTiers: expect.arrayContaining([
+            expect.objectContaining({ tier: 'GOLD' }),
+          ]),
+          totalCapacity: 100,
+        }),
+        $inc: { eventVersion: 1 },
+      },
+      { new: true }
     );
+  });
+
+  it('increments eventVersion when sync succeeds with matching version', async () => {
+    vi.mocked(TicketProfile.findById).mockResolvedValue(mockProfile as any);
+    vi.mocked(Event.find).mockResolvedValue([mockEvent] as any);
+
+    await ticketProfileService.syncProfileEvents('profile-1');
+
+    expect(Event.findOneAndUpdate).toHaveBeenCalledWith(
+      { _id: 'event-1', eventVersion: 1 },
+      expect.objectContaining({
+        $inc: { eventVersion: 1 },
+      }),
+      { new: true }
+    );
+    expect(CacheService.delPattern).toHaveBeenCalledWith('events:*');
+  });
+
+  it('rejects sync when eventVersion is stale', async () => {
+    vi.mocked(TicketProfile.findById).mockResolvedValue(mockProfile as any);
+    vi.mocked(Event.find).mockResolvedValue([mockEvent] as any);
+    vi.mocked(Event.findOneAndUpdate).mockResolvedValue(null);
+
+    await expect(ticketProfileService.syncProfileEvents('profile-1')).rejects.toMatchObject({
+      statusCode: 409,
+      message: 'Event was modified while synchronizing ticket profiles. Please retry.',
+    });
+
+    expect(Event.findOneAndUpdate).toHaveBeenCalledWith(
+      { _id: 'event-1', eventVersion: 1 },
+      expect.objectContaining({
+        $set: expect.objectContaining({
+          ticketTiers: expect.any(Array),
+          totalCapacity: 100,
+        }),
+        $inc: { eventVersion: 1 },
+      }),
+      { new: true }
+    );
+    expect(CacheService.delPattern).not.toHaveBeenCalled();
+  });
+
+  it('updates all referenced events when versions match', async () => {
+    const mockEvent2 = {
+      ...mockEvent,
+      _id: 'event-2',
+      title: 'Event Two',
+      eventVersion: 4,
+    };
+
+    vi.mocked(TicketProfile.findById).mockResolvedValue(mockProfile as any);
+    vi.mocked(Event.find).mockResolvedValue([mockEvent, mockEvent2] as any);
+    vi.mocked(Event.findOneAndUpdate)
+      .mockResolvedValueOnce({ _id: 'event-1' } as any)
+      .mockResolvedValueOnce({ _id: 'event-2' } as any);
+
+    await ticketProfileService.syncProfileEvents('profile-1');
+
+    expect(Event.findOneAndUpdate).toHaveBeenCalledTimes(2);
+    expect(Event.findOneAndUpdate).toHaveBeenNthCalledWith(
+      1,
+      { _id: 'event-1', eventVersion: 1 },
+      expect.objectContaining({ $inc: { eventVersion: 1 } }),
+      { new: true }
+    );
+    expect(Event.findOneAndUpdate).toHaveBeenNthCalledWith(
+      2,
+      { _id: 'event-2', eventVersion: 4 },
+      expect.objectContaining({ $inc: { eventVersion: 1 } }),
+      { new: true }
+    );
+    expect(CacheService.delPattern).toHaveBeenCalledWith('events:*');
+  });
+
+  it('throws conflict and does not report success when a later event has a stale version', async () => {
+    const mockEvent2 = {
+      ...mockEvent,
+      _id: 'event-2',
+      title: 'Event Two',
+      eventVersion: 4,
+    };
+
+    vi.mocked(TicketProfile.findById).mockResolvedValue(mockProfile as any);
+    vi.mocked(Event.find).mockResolvedValue([mockEvent, mockEvent2] as any);
+    vi.mocked(Event.findOneAndUpdate)
+      .mockResolvedValueOnce({ _id: 'event-1' } as any)
+      .mockResolvedValueOnce(null);
+
+    await expect(ticketProfileService.syncProfileEvents('profile-1')).rejects.toMatchObject({
+      statusCode: 409,
+      message: 'Event was modified while synchronizing ticket profiles. Please retry.',
+    });
+
+    expect(Event.findOneAndUpdate).toHaveBeenCalledTimes(2);
+    expect(Event.findOneAndUpdate).toHaveBeenNthCalledWith(
+      2,
+      { _id: 'event-2', eventVersion: 4 },
+      expect.objectContaining({ $inc: { eventVersion: 1 } }),
+      { new: true }
+    );
+    expect(CacheService.delPattern).not.toHaveBeenCalled();
   });
 
   it('syncProfileEvents remains atomic when validation fails', async () => {
@@ -172,7 +280,7 @@ describe('Ticket Profile Service Sync Integrity', () => {
     );
 
     // Atomicity check: no Event update should be executed at all
-    expect(Event.findByIdAndUpdate).not.toHaveBeenCalled();
+    expect(Event.findOneAndUpdate).not.toHaveBeenCalled();
   });
 });
 
