@@ -13,6 +13,11 @@ import { QueueService } from '../../services/queue.service';
 import { getQueueName } from '../../config/queue.config';
 import { CacheService } from '../../services/cache.service';
 
+const maskTransactionId = (id: string): string => {
+  if (!id || id.length <= 8) return '****';
+  return `${id.substring(0, 4)}...${id.substring(id.length - 4)}`;
+};
+
 // ─────────────────────────────────────────────
 // Issue Guest Session Token
 // ─────────────────────────────────────────────
@@ -489,11 +494,6 @@ export async function recoverBooking(
   const ip = req.ip || req.socket.remoteAddress || '';
   const userAgent = req.headers['user-agent'] || '';
 
-  const maskTransactionId = (id: string): string => {
-    if (!id || id.length <= 8) return '****';
-    return `${id.substring(0, 4)}...${id.substring(id.length - 4)}`;
-  };
-
   const maskedTxId = maskTransactionId(transactionId);
 
   try {
@@ -605,10 +605,6 @@ export async function verifyRecoveredBookingOTP(
   const ip = req.ip || req.socket.remoteAddress || '';
   const userAgent = req.headers['user-agent'] || '';
 
-  const maskTransactionId = (id: string): string => {
-    if (!id || id.length <= 8) return '****';
-    return `${id.substring(0, 4)}...${id.substring(id.length - 4)}`;
-  };
   const maskedTxId = maskTransactionId(transactionId);
 
   try {
