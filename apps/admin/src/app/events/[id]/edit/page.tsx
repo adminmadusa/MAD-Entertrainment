@@ -202,7 +202,6 @@ export default function EditEventPage() {
         status,
         bookingMode: BookingMode.GENERAL_ADMISSION,
         bannerImage: coverImage ?? undefined,
-        showTime: '00:00',
         venue: venueName.trim(),
         startDate: new Date(startDate).toISOString() as never,
         endDate: endDate ? new Date(endDate).toISOString() : undefined,

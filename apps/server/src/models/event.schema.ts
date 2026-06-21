@@ -69,7 +69,7 @@ export interface IEvent extends Document {
   startDate: Date;
   endDate?: Date;
   doorsOpenTime?: string;
-  showTime: string;
+  showTime?: string;
   venue: string;
   onlineStreamUrl?: string;
   isOnline?: boolean;
@@ -159,7 +159,7 @@ const eventSchema = new Schema<IEvent>(
     startDate: { type: Date, required: true, index: true },
     endDate: Date,
     doorsOpenTime: String,
-    showTime: { type: String, required: true },
+    showTime: String,
 
     venue: { type: String, required: true, index: true },
     onlineStreamUrl: String,
