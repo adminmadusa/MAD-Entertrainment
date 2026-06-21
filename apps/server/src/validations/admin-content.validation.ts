@@ -6,6 +6,7 @@ import { objectIdSchema } from '@mad/validations';
 const cloudinaryImageSchema = z.object({
   url: z.string().url(),
   publicId: z.string(),
+  hash: z.string().optional(),
 });
 
 const strictCloudinaryImageSchema = z.object({
@@ -252,8 +253,60 @@ export const deleteUploadSchema = z.object({
 });
 
 // -- Event Validation --
-export const createEventSchema = z.object({
-  body: z.object({
+export const validateEventImages = (body: any, ctx: z.RefinementCtx) => {
+  const banner = body.bannerImage;
+  const poster = body.posterImage;
+  const gallery = body.galleryImages;
+
+  const hasBanner = !!banner;
+  const hasPoster = !!poster;
+  const galleryCount = Array.isArray(gallery) ? gallery.length : 0;
+  const totalCount = (hasBanner ? 1 : 0) + (hasPoster ? 1 : 0) + galleryCount;
+  if (totalCount > 15) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'Total event images cannot exceed 15',
+      path: ['galleryImages'],
+    });
+  }
+
+  const seenPublicIds = new Set<string>();
+  const seenHashes = new Set<string>();
+
+  const checkImg = (img: any, path: string | (string | number)[]) => {
+    if (!img) return;
+    if (img.publicId) {
+      if (seenPublicIds.has(img.publicId)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Duplicate image detected',
+          path: Array.isArray(path) ? path : [path],
+        });
+      }
+      seenPublicIds.add(img.publicId);
+    }
+    if (img.hash) {
+      if (seenHashes.has(img.hash)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Duplicate image detected',
+          path: Array.isArray(path) ? path : [path],
+        });
+      }
+      seenHashes.add(img.hash);
+    }
+  };
+
+  checkImg(banner, 'bannerImage');
+  checkImg(poster, 'posterImage');
+  if (Array.isArray(gallery)) {
+    gallery.forEach((img, idx) => {
+      checkImg(img, ['galleryImages', idx]);
+    });
+  }
+};
+
+const eventBodySchema = z.object({
     title: z.string().min(1).max(200),
     slug: z.string().min(1),
     description: z.string().min(1).max(5000),
@@ -320,12 +373,15 @@ export const createEventSchema = z.object({
       maxPerBooking: z.number().int().min(1).optional(),
       minPerBooking: z.number().int().min(1).optional(),
     })).optional(),
-  }),
+  });
+
+export const createEventSchema = z.object({
+  body: eventBodySchema.superRefine(validateEventImages),
 });
 
 export const updateEventSchema = z.object({
   params: adminIdParamSchema.shape.params,
-  body: createEventSchema.shape.body.partial(),
+  body: eventBodySchema.partial().superRefine(validateEventImages),
 });
 
 export const adminEventsQuerySchema = z.object({

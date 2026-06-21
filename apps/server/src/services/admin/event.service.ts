@@ -7,23 +7,45 @@ import { Booking } from '../../models/booking.schema';
 import { AppError } from '../../middleware/error.middleware';
 import { safeDeleteImages } from './media-cleanup.service';
 
-export const deduplicateGallery = (
-  gallery?: { url: string; publicId: string }[]
-): { url: string; publicId: string }[] | undefined => {
-  if (!gallery) return undefined;
-  const seen = new Set<string>();
-  return gallery.filter((img) => {
-    if (!img.publicId) return false;
-    if (seen.has(img.publicId)) return false;
-    seen.add(img.publicId);
-    return true;
-  });
+export const validateEventImagesPayload = (
+  bannerImage?: { publicId?: string; hash?: string },
+  posterImage?: { publicId?: string; hash?: string },
+  galleryImages?: { publicId?: string; hash?: string }[]
+): void => {
+  const seenPublicIds = new Set<string>();
+  const seenHashes = new Set<string>();
+
+  const check = (img?: { publicId?: string; hash?: string }) => {
+    if (!img) return;
+    if (img.publicId) {
+      if (seenPublicIds.has(img.publicId)) {
+        throw AppError.badRequest('Duplicate image detected');
+      }
+      seenPublicIds.add(img.publicId);
+    }
+    if (img.hash) {
+      if (seenHashes.has(img.hash)) {
+        throw AppError.badRequest('Duplicate image detected');
+      }
+      seenHashes.add(img.hash);
+    }
+  };
+
+  check(bannerImage);
+  check(posterImage);
+  if (galleryImages && Array.isArray(galleryImages)) {
+    const totalCount = (bannerImage ? 1 : 0) + (posterImage ? 1 : 0) + galleryImages.length;
+    if (totalCount > 15) {
+      throw AppError.badRequest('Total event images cannot exceed 15');
+    }
+    for (const img of galleryImages) {
+      check(img);
+    }
+  }
 };
 
 export const createEvent = async (data: Partial<IEvent>): Promise<IEvent> => {
-  if (data.galleryImages) {
-    data.galleryImages = deduplicateGallery(data.galleryImages);
-  }
+  validateEventImagesPayload(data.bannerImage, data.posterImage, data.galleryImages);
 
   if (data.title && !data.slug) {
     data.slug = data.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
@@ -131,9 +153,11 @@ export const updateEvent = async (id: string, data: Partial<IEvent>): Promise<an
   const existing = await Event.findById(id);
   if (!existing) return null;
 
-  if (data.galleryImages) {
-    data.galleryImages = deduplicateGallery(data.galleryImages);
-  }
+  const mergedBanner = data.bannerImage !== undefined ? data.bannerImage : existing.bannerImage;
+  const mergedPoster = data.posterImage !== undefined ? data.posterImage : existing.posterImage;
+  const mergedGallery = data.galleryImages !== undefined ? data.galleryImages : existing.galleryImages;
+
+  validateEventImagesPayload(mergedBanner, mergedPoster, mergedGallery);
 
   const profileId = data.ticketProfileId !== undefined ? data.ticketProfileId : existing.ticketProfileId;
   if (profileId) {

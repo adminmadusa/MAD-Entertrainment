@@ -5,6 +5,7 @@ const cloudinaryImageSchema = new Schema(
   {
     url: { type: String, required: true },
     publicId: { type: String, required: true },
+    hash: { type: String },
     width: Number,
     height: Number,
     format: String,

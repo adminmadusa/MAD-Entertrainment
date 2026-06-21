@@ -186,24 +186,7 @@ describe('Admin Event Service', () => {
     });
   });
 
-  describe('deduplicateGallery', () => {
-    it('deduplicates gallery images by publicId and preserves original order', () => {
-      const gallery = [
-        { url: 'url1', publicId: 'id1' },
-        { url: 'url2', publicId: 'id2' },
-        { url: 'url3', publicId: 'id1' }, // Duplicate
-      ];
-      const result = eventService.deduplicateGallery(gallery);
-      expect(result).toEqual([
-        { url: 'url1', publicId: 'id1' },
-        { url: 'url2', publicId: 'id2' },
-      ]);
-    });
 
-    it('returns undefined if gallery is not provided', () => {
-      expect(eventService.deduplicateGallery(undefined)).toBeUndefined();
-    });
-  });
 
   describe('updateEvent - Cloudinary media cleanup hooks', () => {
     it('calls safeDeleteImages when bannerImage, posterImage are replaced or gallery images are removed', async () => {
@@ -269,6 +252,78 @@ describe('Admin Event Service', () => {
         'Event',
         'delete'
       );
+    });
+  });
+
+  describe('validateEventImagesPayload', () => {
+    it('succeeds for valid payload (banner + poster + gallery count <= 15)', () => {
+      const banner = { publicId: 'banner', hash: 'hash-banner' };
+      const poster = { publicId: 'poster', hash: 'hash-poster' };
+      const gallery = [{ publicId: 'g1', hash: 'hash-g1' }, { publicId: 'g2', hash: 'hash-g2' }];
+
+      expect(() => eventService.validateEventImagesPayload(banner, poster, gallery)).not.toThrow();
+    });
+
+    it('throws bad request when total count > 15', () => {
+      const banner = { publicId: 'banner', hash: 'hash-banner' };
+      const poster = { publicId: 'poster', hash: 'hash-poster' };
+      const gallery = Array.from({ length: 14 }, (_, i) => ({ publicId: `g-${i}`, hash: `hash-${i}` }));
+
+      expect(() => eventService.validateEventImagesPayload(banner, poster, gallery)).toThrow(
+        'Total event images cannot exceed 15'
+      );
+    });
+
+    it('throws bad request when duplicate publicId is present', () => {
+      const banner = { publicId: 'banner', hash: 'hash-banner' };
+      const poster = { publicId: 'banner', hash: 'hash-poster' }; // duplicate publicId
+      const gallery = [{ publicId: 'g1', hash: 'hash-g1' }];
+
+      expect(() => eventService.validateEventImagesPayload(banner, poster, gallery)).toThrow(
+        'Duplicate image detected'
+      );
+    });
+
+    it('throws bad request when duplicate hash is present', () => {
+      const banner = { publicId: 'banner', hash: 'hash-1' };
+      const poster = { publicId: 'poster', hash: 'hash-poster' };
+      const gallery = [{ publicId: 'g1', hash: 'hash-1' }]; // duplicate hash
+
+      expect(() => eventService.validateEventImagesPayload(banner, poster, gallery)).toThrow(
+        'Duplicate image detected'
+      );
+    });
+  });
+
+  describe('createEvent / updateEvent integration with image validations', () => {
+    it('throws bad request during createEvent if images are invalid', async () => {
+      const invalidData = {
+        bannerImage: { publicId: 'banner', hash: 'hash-1' },
+        posterImage: { publicId: 'poster', hash: 'hash-1' }, // duplicate hash
+      };
+
+      await expect(eventService.createEvent(invalidData as any)).rejects.toThrow(
+        'Duplicate image detected'
+      );
+    });
+
+    it('throws bad request during updateEvent if merged images are invalid', async () => {
+      const existingEvent = {
+        _id: 'event-1',
+        bannerImage: { publicId: 'banner', hash: 'hash-banner' },
+        posterImage: { publicId: 'poster', hash: 'hash-poster' },
+        galleryImages: [],
+        eventVersion: 1,
+        toObject: () => ({}),
+      };
+
+      vi.mocked(Event.findById).mockResolvedValue(existingEvent as any);
+
+      await expect(
+        eventService.updateEvent('event-1', {
+          galleryImages: [{ url: 'g-url', publicId: 'g1', hash: 'hash-banner' }], // duplicate of existing banner hash
+        } as any)
+      ).rejects.toThrow('Duplicate image detected');
     });
   });
 });
