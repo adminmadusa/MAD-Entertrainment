@@ -268,8 +268,7 @@ export const createEventSchema = z.object({
     doorsOpenTime: z.string().optional(),
     showTime: z.string().optional(),
     venue: z.string().min(1),
-    onlineStreamUrl: z.string().url().optional(),
-    isOnline: z.boolean().optional(),
+
     djOperatorIds: z.array(z.string()).optional(),
     ticketTiers: z
       .array(

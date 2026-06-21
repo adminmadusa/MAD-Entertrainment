@@ -100,11 +100,8 @@ export type Event = {
   venue: string;
   startDate: string | Date;
   bannerImage?: ImageAsset;
-  coverImage?: ImageAsset;
   posterImage?: ImageAsset;
   galleryImages?: ImageAsset[];
-  onlineStreamUrl?: string;
-  isOnline?: boolean;
   djOperatorIds?: string[];
   ticketTiers: TicketTierConfig[];
   isSoldOut?: boolean;

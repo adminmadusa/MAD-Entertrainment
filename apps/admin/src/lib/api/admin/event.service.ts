@@ -33,12 +33,10 @@ export interface AdminEvent {
   title: string;
   slug: string;
   description: string;
-  shortDescription?: string;
   category?: string;
-  mode?: string;
+  bookingMode?: string;
   status?: string;
-  coverImage?: CloudinaryImage;
-  gallery?: CloudinaryImage[];
+  galleryImages?: CloudinaryImage[];
   venue: string;
   startDate: string;
   endDate?: string;
@@ -129,11 +127,4 @@ export async function adminDeleteEvent(id: string): Promise<void> {
   await adminApiClient.delete(`/admin/events/${id}`);
 }
 
-export async function adminToggleFeatured(id: string): Promise<{ isFeatured: boolean }> {
-  const { data } = await adminApiClient.patch<{ data: { isFeatured: boolean } }>(`/admin/events/${id}/featured`);
-  return data.data;
-}
 
-export async function adminUpdateEventStatus(id: string, status: string): Promise<void> {
-  await adminApiClient.patch(`/admin/events/${id}/status`, { status });
-}

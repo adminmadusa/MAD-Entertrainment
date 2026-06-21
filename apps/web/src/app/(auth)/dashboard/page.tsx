@@ -415,7 +415,7 @@ function DashboardContent() {
           bookingsData?.ticketsReadyMap?.[booking._id?.toString() ?? ''] ?? false;
 
         const eventInfo = booking.eventId as unknown as Partial<Event>;
-        const imageUrl = eventInfo?.bannerImage?.url || eventInfo?.coverImage?.url;
+        const imageUrl = eventInfo?.bannerImage?.url;
         const catStyles = getEventCategoryStyles(eventInfo?.category);
 
         return (
