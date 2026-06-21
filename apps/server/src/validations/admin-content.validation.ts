@@ -245,6 +245,12 @@ export const updateDJOperatorSchema = z.object({
   body: createDJOperatorSchema.shape.body.partial(),
 });
 
+export const deleteUploadSchema = z.object({
+  body: z.object({
+    publicId: z.string().min(1, 'publicId is required'),
+  }).strict(),
+});
+
 // -- Event Validation --
 export const createEventSchema = z.object({
   body: z.object({
