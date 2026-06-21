@@ -1,4 +1,5 @@
 import { PaginationMeta } from '@mad/types';
+import { EventStatus } from '@mad/shared';
 import { adminApiClient } from '@/lib/api/client';
 
 
@@ -35,7 +36,7 @@ export interface AdminEvent {
   description: string;
   category?: string;
   bookingMode?: string;
-  status?: string;
+  status?: EventStatus;
   galleryImages?: CloudinaryImage[];
   venue: string;
   startDate: string;

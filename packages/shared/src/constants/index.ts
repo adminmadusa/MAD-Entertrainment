@@ -35,6 +35,45 @@ export enum EventStatus {
   SOLD_OUT = 'sold_out',
 }
 
+export type EventStatusTone = 'success' | 'warning' | 'danger' | 'info' | 'neutral';
+
+export type EventStatusMeta = {
+  label: string;
+  tone: EventStatusTone;
+  className: string;
+};
+
+export const EVENT_STATUS_METADATA: Record<
+  Exclude<EventStatus, EventStatus.SOLD_OUT>,
+  EventStatusMeta
+> = {
+  [EventStatus.DRAFT]: {
+    label: 'Draft',
+    tone: 'warning',
+    className: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/30',
+  },
+  [EventStatus.PUBLISHED]: {
+    label: 'Published',
+    tone: 'success',
+    className: 'bg-green-500/10 text-green-400 border-green-500/30',
+  },
+  [EventStatus.POSTPONED]: {
+    label: 'Postponed',
+    tone: 'warning',
+    className: 'bg-orange-500/10 text-orange-400 border-orange-500/30',
+  },
+  [EventStatus.COMPLETED]: {
+    label: 'Completed',
+    tone: 'info',
+    className: 'bg-blue-500/10 text-blue-400 border-blue-500/30',
+  },
+  [EventStatus.CANCELLED]: {
+    label: 'Cancelled',
+    tone: 'danger',
+    className: 'bg-red-500/10 text-red-400 border-red-500/30',
+  },
+};
+
 // ─── Booking Status ──────────────────────────────────────────
 export enum BookingStatus {
   PENDING = 'pending',

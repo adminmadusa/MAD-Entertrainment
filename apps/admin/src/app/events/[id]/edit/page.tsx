@@ -1,13 +1,13 @@
 'use client';
 
-import { EventCategory, EVENT_CATEGORY_LABELS, BookingMode, TicketTier, EventStatus } from '@mad/shared';
+import { EVENT_CATEGORY_LABELS, BookingMode, TicketTier, EventStatus } from '@mad/shared';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { useParams, useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 
 import { EventGalleryUpload } from '@/components/EventGalleryUpload';
-import { adminGetEvent, adminUpdateEvent, AdminEvent, type AdminEventUpdatePayload } from '@/lib/api/admin/event.service';
+import { adminGetEvent, adminUpdateEvent, type AdminEventUpdatePayload } from '@/lib/api/admin/event.service';
 import { adminGetCategories } from '@/lib/api/admin/category.service';
 import { adminGetTiers } from '@/lib/api/admin/tier.service';
 import { adminGetTicketProfiles } from '@/lib/api/admin/ticket-profile.service';
