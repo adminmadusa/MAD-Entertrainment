@@ -1,5 +1,6 @@
 import { DJOperator, IDJOperator } from '../../models/dj-operator.schema';
 import { CacheService } from '../cache.service';
+import { safeDeleteImages } from './media-cleanup.service';
 
 export const createDJOperator = async (data: Partial<IDJOperator>): Promise<IDJOperator> => {
   const dj = new DJOperator(data);
@@ -25,14 +26,34 @@ export const getDJOperatorById = async (id: string): Promise<IDJOperator | null>
 };
 
 export const updateDJOperator = async (id: string, data: Partial<IDJOperator>): Promise<IDJOperator | null> => {
+  const existing = await DJOperator.findById(id);
+  if (!existing) return null;
+
+  const oldProfileId = existing.profileImage?.publicId;
+  const newProfileId = data.profileImage?.publicId;
+  const profileReplaced = newProfileId && oldProfileId && oldProfileId !== newProfileId;
+
   const updated = await DJOperator.findByIdAndUpdate(id, data, { new: true });
+  if (updated) {
+    if (profileReplaced && oldProfileId) {
+      safeDeleteImages([oldProfileId], 'DJOperator', 'update');
+    }
+  }
   await CacheService.delPattern('dj-operators:*');
   await CacheService.delPattern('events:*');
   return updated;
 };
 
 export const deleteDJOperator = async (id: string): Promise<IDJOperator | null> => {
+  const existing = await DJOperator.findById(id);
+  if (!existing) return null;
+
   const deleted = await DJOperator.findByIdAndUpdate(id, { isDeleted: true, deletedAt: new Date() }, { new: true });
+  if (deleted) {
+    if (existing.profileImage?.publicId) {
+      safeDeleteImages([existing.profileImage.publicId], 'DJOperator', 'delete');
+    }
+  }
   await CacheService.delPattern('dj-operators:*');
   await CacheService.delPattern('events:*');
   return deleted;

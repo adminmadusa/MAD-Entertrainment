@@ -1,26 +1,11 @@
-import { PopupCampaign } from '@mad/types';
+import { PopupCampaign, PaginatedDataResponse, PaginatedItemsResponse } from '@mad/types';
 
 import { adminApiClient } from '@/lib/api/client';
 
-export interface PopupsResponse {
-  data: PopupCampaign[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
-}
+export type PopupsResponse = PaginatedDataResponse<PopupCampaign>;
 
-export interface NormalizedPopupsResponse {
-  items: PopupCampaign[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
-}
+export type NormalizedPopupsResponse = PaginatedItemsResponse<PopupCampaign>;
+
 
 export async function adminGetPopups(page = 1, limit = 15): Promise<NormalizedPopupsResponse> {
   try {

@@ -1,26 +1,11 @@
-import { Notification } from '@mad/types';
+import { Notification, PaginatedDataResponse, PaginatedItemsResponse } from '@mad/types';
 
 import { adminApiClient } from '@/lib/api/client';
 
-export interface NotificationsResponse {
-  data: Notification[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
-}
+export type NotificationsResponse = PaginatedDataResponse<Notification>;
 
-export interface NormalizedNotificationsResponse {
-  items: Notification[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
-}
+export type NormalizedNotificationsResponse = PaginatedItemsResponse<Notification>;
+
 
 export interface NotificationFilters {
   page?: number;

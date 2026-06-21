@@ -1,6 +1,6 @@
 'use client';
 
-import { EventCategory, EVENT_CATEGORY_LABELS, BookingMode, TicketTier } from '@mad/shared';
+import { EventCategory, EVENT_CATEGORY_LABELS, BookingMode, TicketTier, EventStatus } from '@mad/shared';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
@@ -44,7 +44,7 @@ export default function CreateEventPage() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState<string>('concert');
-  const [status, setStatus] = useState('draft');
+  const [status, setStatus] = useState<EventStatus>(EventStatus.DRAFT);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [tags, setTags] = useState('');
@@ -151,7 +151,6 @@ export default function CreateEventPage() {
         highlights: highlightsInput.split(',').map(h => h.trim()).filter(Boolean),
         refundPolicy: refundPolicy.trim() || undefined,
         organizerName: organizerName.trim() || undefined,
-        coverImage: coverImage ?? undefined,
       };
 
       if (isProfileType) {
@@ -261,9 +260,9 @@ export default function CreateEventPage() {
               </select>
             </Field>
                         <Field label="Status">
-              <select id="event-status" value={status} onChange={(e) => setStatus(e.target.value)} className={inputCls}>
-                <option value="draft" className="bg-background-card">Draft</option>
-                <option value="published" className="bg-background-card">Published</option>
+              <select id="event-status" value={status} onChange={(e) => setStatus(e.target.value as EventStatus)} className={inputCls}>
+                <option value={EventStatus.DRAFT} className="bg-background-card">Draft</option>
+                <option value={EventStatus.PUBLISHED} className="bg-background-card">Published</option>
               </select>
             </Field>
             <Field label="Venue *">

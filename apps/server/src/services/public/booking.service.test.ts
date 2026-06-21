@@ -851,4 +851,83 @@ describe('PublicBookingService.getMyBookings — ownership and reconciliation ma
       expect((result as any).isReused).toBe(true);
     });
   });
+
+  describe('PublicBookingService.createBooking — event expiry and boundaries', () => {
+    beforeEach(() => {
+      vi.clearAllMocks();
+    });
+
+    it('should throw badRequest if event has already started', async () => {
+      const mockEvent = {
+        _id: new Types.ObjectId('60c72b2f9b1d8e25b8d29b02'),
+        status: 'published',
+        isDeleted: false,
+        isSoldOut: false,
+        bookingMode: 'general_admission',
+        title: 'Expired Event',
+        category: 'music',
+        startDate: new Date(Date.now() - 3600000), // 1 hour ago
+        ticketTiers: [
+          {
+            tier: 'GA_EARLY',
+            name: 'Early GA',
+            isActive: true,
+            price: 500,
+            soldCount: 0,
+            totalCapacity: 100,
+            taxPercent: 18,
+          },
+        ],
+      };
+
+      vi.mocked(Event.findById).mockResolvedValue(mockEvent as any);
+
+      await expect(
+        PublicBookingService.createBooking(
+          {
+            eventId: mockEvent._id.toString(),
+            tickets: [{ tier: 'GA_EARLY', quantity: 2 }],
+          },
+          'session-123'
+        )
+      ).rejects.toThrow('This event is no longer available for booking.');
+    });
+
+    it('should throw badRequest if event has already ended', async () => {
+      const mockEvent = {
+        _id: new Types.ObjectId('60c72b2f9b1d8e25b8d29b02'),
+        status: 'published',
+        isDeleted: false,
+        isSoldOut: false,
+        bookingMode: 'general_admission',
+        title: 'Ended Event',
+        category: 'music',
+        startDate: new Date(Date.now() - 7200000), // 2 hours ago
+        endDate: new Date(Date.now() - 3600000), // 1 hour ago
+        ticketTiers: [
+          {
+            tier: 'GA_EARLY',
+            name: 'Early GA',
+            isActive: true,
+            price: 500,
+            soldCount: 0,
+            totalCapacity: 100,
+            taxPercent: 18,
+          },
+        ],
+      };
+
+      vi.mocked(Event.findById).mockResolvedValue(mockEvent as any);
+
+      await expect(
+        PublicBookingService.createBooking(
+          {
+            eventId: mockEvent._id.toString(),
+            tickets: [{ tier: 'GA_EARLY', quantity: 2 }],
+          },
+          'session-123'
+        )
+      ).rejects.toThrow('This event is no longer available for booking.');
+    });
+  });
 });

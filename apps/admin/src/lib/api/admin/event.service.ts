@@ -1,4 +1,6 @@
+import { PaginationMeta } from '@mad/types';
 import { adminApiClient } from '@/lib/api/client';
+
 
 export interface EventTier {
   name: string;
@@ -31,12 +33,10 @@ export interface AdminEvent {
   title: string;
   slug: string;
   description: string;
-  shortDescription?: string;
-  category: string;
-  mode: string;
-  status: string;
-  coverImage?: CloudinaryImage;
-  gallery?: CloudinaryImage[];
+  category?: string;
+  bookingMode?: string;
+  status?: string;
+  galleryImages?: CloudinaryImage[];
   venue: string;
   startDate: string;
   endDate?: string;
@@ -71,7 +71,7 @@ export interface EventsResponse {
   success: boolean;
   data: {
     events: AdminEvent[];
-    pagination: { page: number; limit: number; total: number; totalPages: number };
+    pagination: PaginationMeta;
   };
   message?: string;
 }
@@ -85,9 +85,9 @@ export interface EventFilters {
   featured?: boolean;
 }
 
-export async function adminGetEvents(filters: EventFilters = {}): Promise<{ items: AdminEvent[]; pagination: EventsResponse['data']['pagination'] }> {
+export async function adminGetEvents(filters: EventFilters = {}): Promise<{ items: AdminEvent[]; pagination: PaginationMeta }> {
   const params = new URLSearchParams();
-  Object.entries(filters).forEach(([k, v]) => { if (v !== undefined) params.set(k, String(v)); });
+  Object.entries(filters).forEach(([k, v]) => { if (v !== undefined && v !== '') params.set(k, String(v)); });
   const { data } = await adminApiClient.get<any>(`/admin/events?${params}`);
   const payload = data?.data;
   const items = Array.isArray(payload?.events) ? payload.events : [];
@@ -127,11 +127,4 @@ export async function adminDeleteEvent(id: string): Promise<void> {
   await adminApiClient.delete(`/admin/events/${id}`);
 }
 
-export async function adminToggleFeatured(id: string): Promise<{ isFeatured: boolean }> {
-  const { data } = await adminApiClient.patch<{ data: { isFeatured: boolean } }>(`/admin/events/${id}/featured`);
-  return data.data;
-}
 
-export async function adminUpdateEventStatus(id: string, status: string): Promise<void> {
-  await adminApiClient.patch(`/admin/events/${id}/status`, { status });
-}

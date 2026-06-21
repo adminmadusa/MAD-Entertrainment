@@ -1,3 +1,5 @@
+import { BookingStatus, TicketTier, EventCategory, BookingMode, EventStatus, PaymentStatus } from '@mad/shared';
+
 export type ApiError = {
   message: string;
   statusCode?: number;
@@ -20,7 +22,7 @@ export type TicketOfferRules = {
 };
 
 export type TicketTierConfig = {
-  tier: string;
+  tier: TicketTier;
   tierName?: string;
   name?: string;
   description?: string;
@@ -41,7 +43,7 @@ export type TicketTierConfig = {
 };
 
 export type TicketConfig = {
-  tier: string;
+  tier: TicketTier;
   name: string;
   description?: string;
   price: number;
@@ -77,7 +79,7 @@ export type TicketProfile = {
 };
 
 export type TicketOverride = {
-  tier: string;
+  tier: TicketTier;
   price?: number;
   totalCapacity?: number;
   isActive?: boolean;
@@ -90,14 +92,17 @@ export type Event = {
   title: string;
   slug: string;
   description?: string;
-  category: string;
-  bookingMode?: string;
+  category: EventCategory;
+  bookingMode?: BookingMode;
+  status: EventStatus;
   doorsOpenTime?: string;
   showTime?: string;
   venue: string;
   startDate: string | Date;
   bannerImage?: ImageAsset;
-  coverImage?: ImageAsset;
+  posterImage?: ImageAsset;
+  galleryImages?: ImageAsset[];
+  djOperatorIds?: string[];
   ticketTiers: TicketTierConfig[];
   isSoldOut?: boolean;
   highlights?: string[];
@@ -112,12 +117,17 @@ export type Event = {
   ticketOverrides?: TicketOverride[];
   totalCapacity?: number;
   soldCount?: number;
+  reservedCount?: number;
   ticketsSold?: number;
   ticketsCheckedIn?: number;
   ticketsRemaining?: number;
   attendancePercentage?: number;
   noShowCount?: number;
   noShowPercentage?: number;
+  tags?: string[];
+  showCountdown?: boolean;
+  isEarlyBird?: boolean;
+  earlyBirdDeadline?: string | Date;
 };
 
 export type Seat = {
@@ -126,7 +136,7 @@ export type Seat = {
   number: number;
   section?: string;
   status: string;
-  tier: string;
+  tier: TicketTier;
   price: number;
   lockedBy?: string;
 };
@@ -187,7 +197,7 @@ export type Booking = {
   sendBestEvents?: boolean;
   sessionId?: string;
   tickets: {
-    tier: string;
+    tier: TicketTier;
     tierName: string;
     quantity: number;
     pricePerTicket: number;
@@ -208,7 +218,7 @@ export type Booking = {
   currency: string;
   couponCode?: string;
   couponId?: string;
-  status: string;
+  status: BookingStatus;
   paymentId?: string;
   reservationIds?: string[];
   bookingVersion: number;
@@ -226,7 +236,7 @@ export type Ticket = {
   bookingId: string;
   eventId: string;
   userId?: string;
-  tier: string;
+  tier: TicketTier;
   tierName: string;
   price: number;
   seatId?: string;
@@ -247,9 +257,10 @@ export type Payment = {
   _id?: string;
   bookingId: string;
   gateway: 'stripe' | 'razorpay';
-  status: string;
+  status: PaymentStatus;
   amount: number;
   currency: string;
+  couponId?: string;
   gatewayOrderId?: string;
   gatewayPaymentId?: string;
   gatewaySignature?: string;
@@ -315,11 +326,47 @@ export type DiagnosticsReport = {
   };
 };
 
+export interface User {
+  _id: string;
+  email: string;
+  name?: string;
+  firstName?: string;
+  lastName?: string;
+  mobileNumber?: string;
+  picture?: string;
+  isActive: boolean;
+  lastLogin?: string | Date;
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
+}
+
 export interface AuthUser {
   userId: string;
   email?: string;
   phone?: string;
   name?: string;
   isGuest: boolean;
+  picture?: string;
+  firstName?: string;
+  lastName?: string;
+  mobileNumber?: string;
 }
+
+export interface PaginationMeta {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
+export interface PaginatedDataResponse<T> {
+  data: T[];
+  pagination: PaginationMeta;
+}
+
+export interface PaginatedItemsResponse<T> {
+  items: T[];
+  pagination: PaginationMeta;
+}
+
 

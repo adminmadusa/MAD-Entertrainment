@@ -1,26 +1,11 @@
-import { DJOperator } from '@mad/types';
+import { DJOperator, PaginatedDataResponse, PaginatedItemsResponse } from '@mad/types';
 
 import { adminApiClient } from '@/lib/api/client';
 
-export interface DJsResponse {
-  data: DJOperator[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
-}
+export type DJsResponse = PaginatedDataResponse<DJOperator>;
 
-export interface NormalizedDJsResponse {
-  items: DJOperator[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
-}
+export type NormalizedDJsResponse = PaginatedItemsResponse<DJOperator>;
+
 
 export interface DJFilters {
   page?: number;

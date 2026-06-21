@@ -1,7 +1,15 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { AuthService } from './auth.service';
 import { RefreshTokenModel } from '../../models/refresh-token.schema';
-import { UserModel } from '../../models/user.schema'
+import { UserModel } from '../../models/user.schema';
+import { MagicTokenModel } from '../../models/magic-token.schema';
+import { Booking } from '../../models/booking.schema';
+import { QueueService } from '../queue.service';
+import { createNotificationSafe } from '../notification.service';
+import { magicLinkHtml } from '../../lib/email';
+import { getRedis, isRedisConnected } from '../../config/redis';
+import { Types } from 'mongoose';
+import { NotificationType } from '@mad/shared';
 
 vi.mock('../../config/env', () => ({
   getEnv: vi.fn(() => ({
@@ -27,7 +35,50 @@ vi.mock('../../models/refresh-token.schema', () => ({
 vi.mock('../../models/user.schema', () => ({
   UserModel: {
     findById: vi.fn(),
+    findOne: vi.fn(),
+    create: vi.fn(),
+    exists: vi.fn(),
   },
+}));
+
+vi.mock('../../models/magic-token.schema', () => ({
+  MagicTokenModel: {
+    findOne: vi.fn(),
+    create: vi.fn(),
+    deleteOne: vi.fn(),
+  },
+}));
+
+vi.mock('../../models/booking.schema', () => ({
+  Booking: {
+    findOne: vi.fn(),
+    updateMany: vi.fn(),
+  },
+}));
+
+vi.mock('../queue.service', () => ({
+  QueueService: {
+    enqueue: vi.fn(),
+  },
+}));
+
+vi.mock('../notification.service', () => ({
+  createNotificationSafe: vi.fn(),
+}));
+
+vi.mock('../../lib/email', () => ({
+  magicLinkHtml: vi.fn(),
+}));
+
+const mockRedis = {
+  set: vi.fn(),
+  ttl: vi.fn(),
+  del: vi.fn(),
+};
+
+vi.mock('../../config/redis', () => ({
+  getRedis: vi.fn(() => mockRedis),
+  isRedisConnected: vi.fn(),
 }));
 
 vi.mock('../../utils/logger', () => ({
@@ -189,5 +240,432 @@ describe('AuthService - refreshSession', () => {
     await expect(AuthService.refreshSession('stale-revoked-token')).rejects.toThrow('Session compromised');
 
     expect(RefreshTokenModel.updateMany).toHaveBeenCalledWith({ userId: 'user-id-999' }, { isRevoked: true });
+  });
+});
+
+describe('AuthService - requestMagicLink', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('OTP-001: Successful OTP request (token created, notification created, queue job created, Redis lock created)', async () => {
+    vi.mocked(isRedisConnected).mockReturnValue(true);
+    vi.mocked(mockRedis.set).mockResolvedValue('OK');
+    vi.mocked(magicLinkHtml).mockResolvedValue('<html>magic link</html>');
+    
+    const mockToken = {
+      _id: new Types.ObjectId(),
+      email: 'user@example.com',
+      createdAt: new Date(),
+    };
+    vi.mocked(MagicTokenModel.create).mockResolvedValue(mockToken as any);
+    vi.mocked(createNotificationSafe).mockResolvedValue({} as any);
+    vi.mocked(QueueService.enqueue).mockResolvedValue({} as any);
+
+    await AuthService.requestMagicLink('user@example.com', 'http://localhost:3000', {
+      firstName: 'John',
+      lastName: 'Doe',
+      mobileNumber: '1234567890'
+    });
+
+    expect(isRedisConnected).toHaveBeenCalled();
+    expect(mockRedis.set).toHaveBeenCalledWith(
+      'mad:otp:cooldown:user@example.com',
+      '1',
+      'EX',
+      60,
+      'NX'
+    );
+    expect(MagicTokenModel.deleteOne).toHaveBeenCalledWith({ email: 'user@example.com' });
+    expect(MagicTokenModel.create).toHaveBeenCalledWith({
+      email: 'user@example.com',
+      otp: expect.any(String),
+      firstName: 'John',
+      lastName: 'Doe',
+      mobileNumber: '1234567890',
+      expiresAt: expect.any(Date),
+    });
+    expect(magicLinkHtml).toHaveBeenCalledWith({
+      email: 'user@example.com',
+      otpCode: expect.stringMatching(/^\d{6}$/),
+    });
+    expect(createNotificationSafe).toHaveBeenCalledWith(expect.objectContaining({
+      recipient: 'user@example.com',
+      type: NotificationType.OTP,
+    }));
+    expect(QueueService.enqueue).toHaveBeenCalledWith(
+      expect.any(String),
+      'email-dispatch',
+      expect.objectContaining({
+        to: 'user@example.com',
+        html: '<html>magic link</html>',
+      }),
+      expect.any(String)
+    );
+  });
+
+  it('OTP-002: Redis cooldown active (AppError thrown with OTP_COOLDOWN_ACTIVE and retryAfter)', async () => {
+    vi.mocked(isRedisConnected).mockReturnValue(true);
+    vi.mocked(mockRedis.set).mockResolvedValue(null); // NX lock failed
+    vi.mocked(mockRedis.ttl).mockResolvedValue(45);
+
+    await expect(
+      AuthService.requestMagicLink('user@example.com', 'http://localhost:3000')
+    ).rejects.toThrowError(
+      expect.objectContaining({
+        statusCode: 429,
+        code: 'OTP_COOLDOWN_ACTIVE',
+        retryAfter: 45,
+      })
+    );
+
+    expect(mockRedis.set).toHaveBeenCalled();
+    expect(mockRedis.ttl).toHaveBeenCalledWith('mad:otp:cooldown:user@example.com');
+    expect(MagicTokenModel.create).not.toHaveBeenCalled();
+  });
+
+  it('OTP-003: Queue failure cleanup (Redis lock removed, original error propagated)', async () => {
+    vi.mocked(isRedisConnected).mockReturnValue(true);
+    vi.mocked(mockRedis.set).mockResolvedValue('OK');
+    vi.mocked(magicLinkHtml).mockResolvedValue('<html>magic link</html>');
+    
+    const mockToken = {
+      _id: new Types.ObjectId(),
+      email: 'user@example.com',
+      createdAt: new Date(),
+    };
+    vi.mocked(MagicTokenModel.create).mockResolvedValue(mockToken as any);
+    vi.mocked(createNotificationSafe).mockResolvedValue({} as any);
+    vi.mocked(QueueService.enqueue).mockRejectedValue(new Error('Queue connection lost'));
+
+    await expect(
+      AuthService.requestMagicLink('user@example.com', 'http://localhost:3000')
+    ).rejects.toThrow('Queue connection lost');
+
+    expect(mockRedis.del).toHaveBeenCalledWith('mad:otp:cooldown:user@example.com');
+  });
+
+  it('OTP-004: Redis offline + existing token under cooldown (Mongo fallback returns OTP_COOLDOWN_ACTIVE)', async () => {
+    vi.mocked(isRedisConnected).mockReturnValue(false);
+    
+    const existingToken = {
+      email: 'user@example.com',
+      createdAt: new Date(Date.now() - 30 * 1000), // 30 seconds ago
+    };
+    vi.mocked(MagicTokenModel.findOne).mockResolvedValue(existingToken as any);
+
+    await expect(
+      AuthService.requestMagicLink('user@example.com', 'http://localhost:3000')
+    ).rejects.toThrowError(
+      expect.objectContaining({
+        statusCode: 429,
+        code: 'OTP_COOLDOWN_ACTIVE',
+        retryAfter: expect.any(Number),
+      })
+    );
+
+    expect(MagicTokenModel.findOne).toHaveBeenCalledWith({ email: 'user@example.com' });
+    expect(MagicTokenModel.create).not.toHaveBeenCalled();
+  });
+
+  it('OTP-005: Redis offline + expired cooldown (old token removed, new token issued)', async () => {
+    vi.mocked(isRedisConnected).mockReturnValue(false);
+    
+    const existingToken = {
+      email: 'user@example.com',
+      createdAt: new Date(Date.now() - 70 * 1000), // 70 seconds ago (expired cooldown)
+    };
+    vi.mocked(MagicTokenModel.findOne).mockResolvedValue(existingToken as any);
+    
+    const mockToken = {
+      _id: new Types.ObjectId(),
+      email: 'user@example.com',
+      createdAt: new Date(),
+    };
+    vi.mocked(MagicTokenModel.create).mockResolvedValue(mockToken as any);
+    vi.mocked(createNotificationSafe).mockResolvedValue({} as any);
+    vi.mocked(QueueService.enqueue).mockResolvedValue({} as any);
+
+    await AuthService.requestMagicLink('user@example.com', 'http://localhost:3000');
+
+    expect(MagicTokenModel.findOne).toHaveBeenCalledWith({ email: 'user@example.com' });
+    expect(MagicTokenModel.deleteOne).toHaveBeenCalledWith({ email: 'user@example.com' });
+    expect(MagicTokenModel.create).toHaveBeenCalled();
+  });
+
+  it('OTP-006: Redis offline + no token (request succeeds)', async () => {
+    vi.mocked(isRedisConnected).mockReturnValue(false);
+    vi.mocked(MagicTokenModel.findOne).mockResolvedValue(null);
+    
+    const mockToken = {
+      _id: new Types.ObjectId(),
+      email: 'user@example.com',
+      createdAt: new Date(),
+    };
+    vi.mocked(MagicTokenModel.create).mockResolvedValue(mockToken as any);
+    vi.mocked(createNotificationSafe).mockResolvedValue({} as any);
+    vi.mocked(QueueService.enqueue).mockResolvedValue({} as any);
+
+    await AuthService.requestMagicLink('user@example.com', 'http://localhost:3000');
+
+    expect(MagicTokenModel.findOne).toHaveBeenCalledWith({ email: 'user@example.com' });
+    expect(MagicTokenModel.deleteOne).toHaveBeenCalledWith({ email: 'user@example.com' });
+    expect(MagicTokenModel.create).toHaveBeenCalled();
+  });
+});
+
+describe('AuthService - verifyMagicLinkOrOTP', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('OTP-007: Existing user login (token deleted, lastLogin updated, JWT returned)', async () => {
+    const mockToken = {
+      _id: new Types.ObjectId(),
+      email: 'user@example.com',
+      otp: 'hashed_otp',
+      expiresAt: new Date(Date.now() + 5 * 60 * 1000), // 5 mins in future
+    };
+    const mockUser = {
+      _id: new Types.ObjectId(),
+      email: 'user@example.com',
+      isActive: true,
+      lastLogin: null,
+      save: vi.fn().mockResolvedValue(true),
+    };
+
+    vi.mocked(MagicTokenModel.findOne).mockResolvedValue(mockToken as any);
+    vi.mocked(UserModel.findOne).mockResolvedValue(mockUser as any);
+    vi.mocked(Booking.updateMany).mockResolvedValue({ modifiedCount: 0 } as any);
+    vi.mocked(Booking.findOne).mockReturnValue({
+      sort: vi.fn().mockResolvedValue(null),
+    } as any);
+    vi.mocked(RefreshTokenModel.create).mockResolvedValue({ token: 'mock-refresh-token' } as any);
+
+    const result = await AuthService.verifyMagicLinkOrOTP('123456', 'user@example.com');
+
+    expect(MagicTokenModel.findOne).toHaveBeenCalledWith({
+      email: 'user@example.com',
+      otp: expect.any(String),
+    });
+    expect(UserModel.findOne).toHaveBeenCalledWith({ email: 'user@example.com' });
+    expect(mockUser.save).toHaveBeenCalled();
+    expect(mockUser.lastLogin).toBeInstanceOf(Date);
+    expect(MagicTokenModel.deleteOne).toHaveBeenCalledWith({ _id: mockToken._id });
+    
+    expect(result.user).toBe(mockUser);
+    expect(result.accessToken).toBe('mock-access-token');
+    expect(result.refreshToken).toBeTypeOf('string');
+    expect(result.refreshToken).toHaveLength(64);
+  });
+
+  it('OTP-008: Auto-registration (user created, user activated, JWT returned)', async () => {
+    const mockToken = {
+      _id: new Types.ObjectId(),
+      email: 'newuser@example.com',
+      otp: 'hashed_otp',
+      firstName: 'Alice',
+      lastName: 'Smith',
+      mobileNumber: '9999999999',
+      expiresAt: new Date(Date.now() + 5 * 60 * 1000),
+    };
+    const mockUser = {
+      _id: new Types.ObjectId(),
+      email: 'newuser@example.com',
+      isActive: true,
+      lastLogin: null,
+      save: vi.fn().mockResolvedValue(true),
+    };
+
+    vi.mocked(MagicTokenModel.findOne).mockResolvedValue(mockToken as any);
+    vi.mocked(UserModel.findOne).mockResolvedValue(null); // User does not exist
+    vi.mocked(UserModel.create).mockResolvedValue(mockUser as any);
+    vi.mocked(Booking.updateMany).mockResolvedValue({ modifiedCount: 0 } as any);
+    vi.mocked(Booking.findOne).mockReturnValue({
+      sort: vi.fn().mockResolvedValue(null),
+    } as any);
+    vi.mocked(RefreshTokenModel.create).mockResolvedValue({ token: 'mock-refresh-token' } as any);
+
+    const result = await AuthService.verifyMagicLinkOrOTP('123456', 'newuser@example.com');
+
+    expect(UserModel.create).toHaveBeenCalledWith({
+      email: 'newuser@example.com',
+      firstName: 'Alice',
+      lastName: 'Smith',
+      name: 'Alice Smith',
+      mobileNumber: '9999999999',
+      isActive: true,
+    });
+    expect(result.user).toBe(mockUser);
+    expect(result.accessToken).toBe('mock-access-token');
+  });
+
+  it('OTP-009: Expired OTP rejection (AppError thrown)', async () => {
+    const mockToken = {
+      _id: new Types.ObjectId(),
+      email: 'user@example.com',
+      otp: 'hashed_otp',
+      expiresAt: new Date(Date.now() - 5 * 60 * 1000), // Expired 5 mins ago
+    };
+
+    vi.mocked(MagicTokenModel.findOne).mockResolvedValue(mockToken as any);
+
+    await expect(
+      AuthService.verifyMagicLinkOrOTP('123456', 'user@example.com')
+    ).rejects.toThrowError(
+      expect.objectContaining({
+        statusCode: 401,
+        message: 'Invalid or expired login passcode',
+      })
+    );
+
+    expect(MagicTokenModel.deleteOne).not.toHaveBeenCalled();
+    expect(UserModel.findOne).not.toHaveBeenCalled();
+  });
+
+  it('OTP-010: Invalid OTP rejection (AppError thrown)', async () => {
+    vi.mocked(MagicTokenModel.findOne).mockResolvedValue(null);
+
+    await expect(
+      AuthService.verifyMagicLinkOrOTP('123456', 'user@example.com')
+    ).rejects.toThrowError(
+      expect.objectContaining({
+        statusCode: 401,
+        message: 'Invalid or expired login passcode',
+      })
+    );
+
+    expect(MagicTokenModel.deleteOne).not.toHaveBeenCalled();
+  });
+
+  it('OTP-011: One-time use enforcement (verification deletes token)', async () => {
+    const mockToken = {
+      _id: new Types.ObjectId(),
+      email: 'user@example.com',
+      otp: 'hashed_otp',
+      expiresAt: new Date(Date.now() + 5 * 60 * 1000),
+    };
+    const mockUser = {
+      _id: new Types.ObjectId(),
+      email: 'user@example.com',
+      isActive: true,
+      save: vi.fn().mockResolvedValue(true),
+    };
+
+    vi.mocked(MagicTokenModel.findOne).mockResolvedValue(mockToken as any);
+    vi.mocked(UserModel.findOne).mockResolvedValue(mockUser as any);
+    vi.mocked(Booking.updateMany).mockResolvedValue({ modifiedCount: 0 } as any);
+    vi.mocked(Booking.findOne).mockReturnValue({
+      sort: vi.fn().mockResolvedValue(null),
+    } as any);
+    vi.mocked(RefreshTokenModel.create).mockResolvedValue({ token: 'mock-refresh-token' } as any);
+
+    await AuthService.verifyMagicLinkOrOTP('123456', 'user@example.com');
+
+    expect(MagicTokenModel.deleteOne).toHaveBeenCalledWith({ _id: mockToken._id });
+  });
+
+  it('OTP-012: Guest booking claim (Booking.updateMany called with correct filter)', async () => {
+    const mockToken = {
+      _id: new Types.ObjectId(),
+      email: 'user@example.com',
+      otp: 'hashed_otp',
+      expiresAt: new Date(Date.now() + 5 * 60 * 1000),
+    };
+    const mockUser = {
+      _id: new Types.ObjectId(),
+      email: 'user@example.com',
+      isActive: true,
+      save: vi.fn().mockResolvedValue(true),
+    };
+
+    vi.mocked(MagicTokenModel.findOne).mockResolvedValue(mockToken as any);
+    vi.mocked(UserModel.findOne).mockResolvedValue(mockUser as any);
+    vi.mocked(Booking.updateMany).mockResolvedValue({ modifiedCount: 2 } as any);
+    vi.mocked(Booking.findOne).mockReturnValue({
+      sort: vi.fn().mockResolvedValue(null),
+    } as any);
+    vi.mocked(RefreshTokenModel.create).mockResolvedValue({ token: 'mock-refresh-token' } as any);
+
+    await AuthService.verifyMagicLinkOrOTP('123456', 'user@example.com');
+
+    expect(Booking.updateMany).toHaveBeenCalledWith(
+      { guestEmail: 'user@example.com', userId: { $exists: false } },
+      {
+        $set: { userId: expect.any(Object) },
+      }
+    );
+  });
+
+  it('OTP-013: Profile hydration (Empty profile populated from booking)', async () => {
+    const userId = new Types.ObjectId();
+    const mockUser = {
+      _id: userId,
+      email: 'user@example.com',
+      isActive: true,
+      firstName: '',
+      lastName: '  ',
+      mobileNumber: undefined,
+      name: '',
+      save: vi.fn().mockResolvedValue(true),
+    };
+
+    const mockBooking = {
+      firstName: 'Jane',
+      lastName: 'Smith',
+      guestPhone: '9876543210',
+    };
+
+    vi.mocked(UserModel.findById).mockResolvedValue(mockUser as any);
+    vi.mocked(Booking.findOne).mockReturnValue({
+      sort: vi.fn().mockResolvedValue(mockBooking),
+    } as any);
+
+    await AuthService.hydrateUserProfile(userId.toString(), 'user@example.com');
+
+    expect(UserModel.findById).toHaveBeenCalledWith(userId.toString());
+    expect(Booking.findOne).toHaveBeenCalledWith(expect.objectContaining({
+      guestEmail: 'user@example.com',
+    }));
+    expect(mockUser.firstName).toBe('Jane');
+    expect(mockUser.lastName).toBe('Smith');
+    expect(mockUser.mobileNumber).toBe('9876543210');
+    expect(mockUser.name).toBe('Jane Smith');
+    expect(mockUser.save).toHaveBeenCalled();
+  });
+
+  it('OTP-014: Profile preservation (Existing profile values are NOT overwritten)', async () => {
+    const userId = new Types.ObjectId();
+    const mockUser = {
+      _id: userId,
+      email: 'user@example.com',
+      isActive: true,
+      firstName: 'John',
+      lastName: 'Doe',
+      mobileNumber: '1234567890',
+      name: 'John Doe',
+      save: vi.fn().mockResolvedValue(true),
+    };
+
+    const mockBooking = {
+      firstName: 'Jane',
+      lastName: 'Smith',
+      guestPhone: '9876543210',
+    };
+
+    vi.mocked(UserModel.findById).mockResolvedValue(mockUser as any);
+    vi.mocked(Booking.findOne).mockReturnValue({
+      sort: vi.fn().mockResolvedValue(mockBooking),
+    } as any);
+
+    await AuthService.hydrateUserProfile(userId.toString(), 'user@example.com');
+
+    expect(UserModel.findById).toHaveBeenCalledWith(userId.toString());
+    expect(Booking.findOne).not.toHaveBeenCalled();
+    expect(mockUser.firstName).toBe('John');
+    expect(mockUser.lastName).toBe('Doe');
+    expect(mockUser.mobileNumber).toBe('1234567890');
+    expect(mockUser.name).toBe('John Doe');
+    expect(mockUser.save).not.toHaveBeenCalled();
   });
 });

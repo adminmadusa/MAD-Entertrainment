@@ -70,7 +70,7 @@ vi.mock('../../models/admin.schema', () => {
   };
 });
 
-vi.mock('./booking.service', () => ({
+vi.mock('../../utils/transaction', () => ({
   runInTransaction: vi.fn(async (fn) => fn('mock-session')),
 }));
 

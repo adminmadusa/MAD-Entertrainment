@@ -11,7 +11,7 @@ import { extractApiError } from '@/lib/api/client';
 import { TicketProfile, TicketGroup } from '@mad/types';
 
 interface TicketInput {
-  tier: string;
+  tier: TicketTier;
   name: string;
   description: string;
   price: number | '';
@@ -36,7 +36,7 @@ interface GroupInput {
 }
 
 const defaultTicket = (): TicketInput => ({
-  tier: 'general',
+  tier: TicketTier.GENERAL,
   name: 'General Admission',
   description: '',
   price: '',

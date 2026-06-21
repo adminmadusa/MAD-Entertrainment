@@ -3,12 +3,16 @@ import { createRefund, processRefund, getRefunds } from './refund.service';
 import { Refund } from '../../models/refund.schema';
 import { Payment } from '../../models/payment.schema';
 import { Booking } from '../../models/booking.schema';
-import { cancelBooking, runInTransaction } from './booking.service';
+import { cancelBooking } from './booking.service';
+import { runInTransaction } from '../../utils/transaction';
 import { BookingStatus, PaymentStatus } from '@mad/shared';
 import { createNotificationSafe } from '../notification.service';
 import { Notification } from '../../models/notification.schema';
 import { QueueService } from '../queue.service';
 import { auditLog } from '../../utils/audit';
+import axios from 'axios';
+
+vi.mock('axios');
 
 const mockStripeRefundsCreate = vi.fn();
 vi.mock('../../config/stripe', () => ({
@@ -38,13 +42,18 @@ vi.mock('../../config/env', () => ({
     JWT_SECRET: 'test_jwt_secret_with_32_characters_long_minimum',
     JWT_ADMIN_SECRET: 'test_jwt_secret_with_32_characters_long_minimum_admin',
     JWT_SESSION_SECRET: 'test_jwt_secret_with_32_characters_long_minimum_session',
+    RAZORPAY_KEY_ID: 'test_key_id',
+    RAZORPAY_KEY_SECRET: 'test_key_secret',
   })),
 }));
 
 vi.mock('./booking.service', () => ({
-  runInTransaction: vi.fn(async (fn) => fn('mock-session')),
   cancelBooking: vi.fn(),
   executeCancelBookingSideEffects: vi.fn(),
+}));
+
+vi.mock('../../utils/transaction', () => ({
+  runInTransaction: vi.fn(async (fn) => fn('mock-session')),
 }));
 
 vi.mock('../notification.service', () => ({
@@ -113,6 +122,9 @@ vi.mock('../../models/payment.schema', () => {
   const MockPayment = {
     findByIdAndUpdate: vi.fn().mockImplementation(() => localCreateMockQuery(null)),
     findById: vi.fn().mockImplementation(() => localCreateMockQuery(null)),
+    findOneAndUpdate: vi.fn().mockImplementation(function (filter: any) {
+      return MockPayment.findById(filter?._id || filter);
+    }),
   };
   return { Payment: MockPayment };
 });
@@ -663,10 +675,15 @@ describe('Admin Refund Service Tests', () => {
 
       const result = await processRefund('ref-stripe', 'approve', 'Approve stripe refund');
 
-      expect(mockStripeRefundsCreate).toHaveBeenCalledWith({
-        payment_intent: 'pi_stripe_123',
-        amount: 20000,
-      });
+      expect(mockStripeRefundsCreate).toHaveBeenCalledWith(
+        {
+          payment_intent: 'pi_stripe_123',
+          amount: 20000,
+        },
+        {
+          idempotencyKey: 'ref-stripe',
+        }
+      );
       expect(result?.status).toBe('completed');
       expect(result?.gatewayRefundId).toBe('re_stripe_999');
       expect(mockRefundSave).toHaveBeenCalled();
@@ -735,16 +752,74 @@ describe('Admin Refund Service Tests', () => {
       vi.mocked(Refund.find).mockReturnValue(createMockQuery([]));
       vi.mocked(Payment.findByIdAndUpdate).mockResolvedValue({} as any);
 
-      mockRazorpayPaymentsRefund.mockResolvedValue({ id: 'rfnd_rzp_999' });
+      vi.mocked(axios.post).mockResolvedValue({
+        data: { id: 'rfnd_rzp_999' }
+      });
 
       const result = await processRefund('ref-rzp', 'approve', 'Approve razorpay refund');
 
-      expect(mockRazorpayPaymentsRefund).toHaveBeenCalledWith('pay_rzp_123', {
-        amount: 30000,
-      });
+      expect(axios.post).toHaveBeenCalledWith(
+        'https://api.razorpay.com/v1/payments/pay_rzp_123/refund',
+        {
+          amount: 30000,
+        },
+        {
+          headers: {
+            'Authorization': expect.stringContaining('Basic '),
+            'Content-Type': 'application/json',
+            'X-Refund-Idempotency': 'ref-rzp',
+          }
+        }
+      );
       expect(result?.status).toBe('completed');
       expect(result?.gatewayRefundId).toBe('rfnd_rzp_999');
       expect(mockRefundSave).toHaveBeenCalled();
+    });
+
+    it('should throw error and revert status if Razorpay direct axios refund call fails', async () => {
+      const mockRefundSave = vi.fn();
+      const mockRefund = {
+        _id: 'ref-rzp-fail',
+        bookingId: 'booking-456',
+        paymentId: 'payment-rzp-fail',
+        amount: 300,
+        status: 'requested',
+        save: mockRefundSave,
+      };
+
+      const mockPayment = {
+        _id: 'payment-rzp-fail',
+        amount: 500,
+        status: PaymentStatus.PAID,
+        gateway: 'razorpay',
+        gatewayPaymentId: 'pay_rzp_fail',
+      };
+      const mockBooking = { _id: 'booking-456', status: BookingStatus.CONFIRMED };
+
+      vi.mocked(Refund.findOneAndUpdate).mockReturnValue(createMockQuery(mockRefund));
+      vi.mocked(Payment.findById).mockReturnValue({ session: vi.fn().mockResolvedValue(mockPayment) } as any);
+      vi.mocked(Booking.findById).mockReturnValue({ session: vi.fn().mockResolvedValue(mockBooking) } as any);
+      vi.mocked(Refund.find).mockReturnValue(createMockQuery([]));
+
+      const apiError = {
+        response: {
+          data: {
+            error: {
+              description: 'Insufficient balance'
+            }
+          }
+        }
+      };
+      vi.mocked(axios.post).mockRejectedValue(apiError);
+
+      await expect(
+        processRefund('ref-rzp-fail', 'approve', 'Approve razorpay refund')
+      ).rejects.toThrow('Razorpay refund failed: Insufficient balance');
+
+      expect(Refund.updateOne).toHaveBeenCalledWith(
+        { _id: 'ref-rzp-fail', status: 'processing' },
+        { $set: { status: 'requested' } }
+      );
     });
 
     it('should validate manual override parameters and emit an audit log on success', async () => {
@@ -834,5 +909,242 @@ describe('Admin Refund Service Tests', () => {
       expect(result?.gatewayRefundId).toBe('re_stripe_auto');
       expect(mockRefundSave).toHaveBeenCalled();
     });
+
+    it('should prevent different refunds from overdrawing a payment concurrently (Test 1)', async () => {
+      const mockRefundA = {
+        _id: 'ref-A',
+        bookingId: 'booking-123',
+        paymentId: 'payment-123',
+        amount: 60,
+        status: 'requested',
+        save: vi.fn(),
+      };
+      const mockRefundB = {
+        _id: 'ref-B',
+        bookingId: 'booking-123',
+        paymentId: 'payment-123',
+        amount: 60,
+        status: 'requested',
+        save: vi.fn(),
+      };
+
+      const mockPayment = { _id: 'payment-123', amount: 100, status: PaymentStatus.PAID };
+      const mockBooking = { _id: 'booking-123', status: BookingStatus.CONFIRMED };
+
+      vi.mocked(Payment.findById).mockReturnValue({ session: vi.fn().mockResolvedValue(mockPayment) } as any);
+      vi.mocked(Booking.findById).mockReturnValue({ session: vi.fn().mockResolvedValue(mockBooking) } as any);
+
+      vi.mocked(Refund.findOneAndUpdate)
+        .mockReturnValueOnce(createMockQuery(mockRefundA))
+        .mockReturnValueOnce(createMockQuery(mockRefundB));
+
+      vi.mocked(Refund.find).mockReturnValueOnce(createMockQuery([]));
+
+      const resA = await processRefund('ref-A', 'approve', 'Approve A');
+      expect(resA?.status).toBe('completed');
+
+      vi.mocked(Refund.find).mockReturnValueOnce(createMockQuery([resA]));
+
+      await expect(
+        processRefund('ref-B', 'approve', 'Approve B')
+      ).rejects.toThrow('Refund amount exceeds remaining captured balance');
+    });
+
+    it('should ensure same refund cannot be approved twice (Test 2)', async () => {
+      vi.mocked(Refund.findOneAndUpdate).mockReturnValue(createMockQuery(null));
+
+      await expect(
+        processRefund('refund-123', 'approve', 'Approve again')
+      ).rejects.toThrow('Refund request not found or has already been processed');
+    });
+
+    it('should revert status from processing to requested conditionally on gateway failure (Test 3)', async () => {
+      const mockRefundSave = vi.fn();
+      const mockRefund = {
+        _id: 'ref-fail',
+        bookingId: 'booking-123',
+        paymentId: 'payment-123',
+        amount: 50,
+        status: 'requested',
+        save: mockRefundSave,
+      };
+
+      const mockPayment = { _id: 'payment-123', amount: 100, status: PaymentStatus.PAID, gateway: 'stripe', gatewayOrderId: 'pi_123' };
+      const mockBooking = { _id: 'booking-123', status: BookingStatus.CONFIRMED };
+
+      vi.mocked(Refund.findOneAndUpdate).mockReturnValue(createMockQuery(mockRefund));
+      vi.mocked(Payment.findById).mockReturnValue({ session: vi.fn().mockResolvedValue(mockPayment) } as any);
+      vi.mocked(Booking.findById).mockReturnValue({ session: vi.fn().mockResolvedValue(mockBooking) } as any);
+      vi.mocked(Refund.find).mockReturnValue(createMockQuery([]));
+
+      mockStripeRefundsCreate.mockRejectedValue(new Error('Gateway down'));
+
+      await expect(
+        processRefund('ref-fail', 'approve', 'Approve')
+      ).rejects.toThrow('Stripe refund failed: Gateway down');
+
+      expect(Refund.updateOne).toHaveBeenCalledWith(
+        { _id: 'ref-fail', status: 'processing' },
+        { $set: { status: 'requested' } }
+      );
+    });
+
+    it('should validate partial refund limits (Test 4)', async () => {
+      const mockRefund = {
+        _id: 'ref-partial',
+        bookingId: 'booking-123',
+        paymentId: 'payment-123',
+        amount: 60,
+        status: 'requested',
+        save: vi.fn(),
+      };
+
+      const mockPayment = { _id: 'payment-123', amount: 100, status: PaymentStatus.PAID };
+      const mockBooking = { _id: 'booking-123', status: BookingStatus.CONFIRMED };
+
+      vi.mocked(Refund.findOneAndUpdate).mockReturnValue(createMockQuery(mockRefund));
+      vi.mocked(Payment.findById).mockReturnValue({ session: vi.fn().mockResolvedValue(mockPayment) } as any);
+      vi.mocked(Booking.findById).mockReturnValue({ session: vi.fn().mockResolvedValue(mockBooking) } as any);
+      
+      vi.mocked(Refund.find).mockReturnValue(createMockQuery([{ amount: 50, status: 'completed' }]));
+
+      await expect(
+        processRefund('ref-partial', 'approve', 'Approve')
+      ).rejects.toThrow('Refund amount exceeds remaining captured balance');
+    });
+
+    it('should enforce cumulative reservation capacity and reject exceeding partial refunds (Test 5)', async () => {
+      const mockPayment = { _id: 'payment-123', amount: 100, status: PaymentStatus.PAID };
+      const mockBooking = { _id: 'booking-123', status: BookingStatus.CONFIRMED };
+
+      vi.mocked(Payment.findById).mockReturnValue({ session: vi.fn().mockResolvedValue(mockPayment) } as any);
+      vi.mocked(Booking.findById).mockReturnValue({ session: vi.fn().mockResolvedValue(mockBooking) } as any);
+
+      const mockRefundA = { _id: 'ref-A', bookingId: 'booking-123', paymentId: 'payment-123', amount: 40, status: 'requested', save: vi.fn() };
+      const mockRefundB = { _id: 'ref-B', bookingId: 'booking-123', paymentId: 'payment-123', amount: 40, status: 'requested', save: vi.fn() };
+      const mockRefundC = { _id: 'ref-C', bookingId: 'booking-123', paymentId: 'payment-123', amount: 40, status: 'requested', save: vi.fn() };
+
+      vi.mocked(Refund.findOneAndUpdate)
+        .mockReturnValueOnce(createMockQuery(mockRefundA))
+        .mockReturnValueOnce(createMockQuery(mockRefundB))
+        .mockReturnValueOnce(createMockQuery(mockRefundC));
+
+      vi.mocked(Refund.find).mockReturnValueOnce(createMockQuery([]));
+      const resA = await processRefund('ref-A', 'approve', 'Approve A');
+      expect(resA?.status).toBe('completed');
+
+      vi.mocked(Refund.find).mockReturnValueOnce(createMockQuery([resA]));
+      const resB = await processRefund('ref-B', 'approve', 'Approve B');
+      expect(resB?.status).toBe('completed');
+
+      vi.mocked(Refund.find).mockReturnValueOnce(createMockQuery([resA, resB]));
+      await expect(
+        processRefund('ref-C', 'approve', 'Approve C')
+      ).rejects.toThrow('Refund amount exceeds remaining captured balance');
+    });
+
+    it('RFND-B-F01 - refreshes booking status inside Phase 3 transaction to prevent stale status crash', async () => {
+      const mockRefund = {
+        _id: 'ref-stale-test',
+        bookingId: 'booking-123',
+        paymentId: 'payment-123',
+        amount: 100,
+        status: 'requested',
+        save: vi.fn(),
+      };
+
+      const mockPayment = { _id: 'payment-123', amount: 100, status: PaymentStatus.PAID, gateway: 'stripe', gatewayOrderId: 'pi_123' };
+      // In-memory/Phase 1 booking is CONFIRMED
+      const mockBookingPhase1 = { _id: 'booking-123', status: BookingStatus.CONFIRMED };
+      // Database has booking already REFUNDED (from webhook reconciliation)
+      const mockBookingInDB = { _id: 'booking-123', status: BookingStatus.REFUNDED };
+
+      vi.mocked(Refund.findOneAndUpdate).mockReturnValue(createMockQuery(mockRefund));
+      vi.mocked(Payment.findById).mockReturnValue({ session: vi.fn().mockResolvedValue(mockPayment) } as any);
+      
+      // First findById resolves in Phase 1 (CONFIRMED)
+      // Second findById resolves inside transaction (REFUNDED)
+      vi.mocked(Booking.findById)
+        .mockReturnValueOnce({ session: vi.fn().mockResolvedValue(mockBookingPhase1) } as any) // Phase 1
+        .mockReturnValueOnce({ session: vi.fn().mockResolvedValue(mockBookingInDB) } as any); // Phase 3
+
+      vi.mocked(Refund.find).mockReturnValue(createMockQuery([]));
+      mockStripeRefundsCreate.mockResolvedValue({ id: 're_123' });
+
+      // Run approval
+      const result = await processRefund('ref-stale-test', 'approve', 'Approve stale');
+
+      // Assertions
+      expect(result?.status).toBe('completed');
+      // booking.service.cancelBooking should NOT have been called because status was already REFUNDED in DB
+      expect(cancelBooking).not.toHaveBeenCalled();
+    });
+
+    it('persists gatewayRefundId immediately after successful gateway response to minimize crash window', async () => {
+      const mockRefund = {
+        _id: 'ref-write-through',
+        bookingId: 'booking-123',
+        paymentId: 'payment-123',
+        amount: 50,
+        status: 'requested',
+        save: vi.fn(),
+      };
+
+      const mockPayment = { _id: 'payment-123', amount: 100, status: PaymentStatus.PAID, gateway: 'stripe', gatewayOrderId: 'pi_123' };
+      const mockBooking = { _id: 'booking-123', status: BookingStatus.CONFIRMED };
+
+      vi.mocked(Refund.findOneAndUpdate).mockReturnValue(createMockQuery(mockRefund));
+      vi.mocked(Payment.findById).mockReturnValue({ session: vi.fn().mockResolvedValue(mockPayment) } as any);
+      vi.mocked(Booking.findById).mockReturnValue({ session: vi.fn().mockResolvedValue(mockBooking) } as any);
+      vi.mocked(Refund.find).mockReturnValue(createMockQuery([]));
+      mockStripeRefundsCreate.mockResolvedValue({ id: 're_123' });
+
+      // Run approval
+      await processRefund('ref-write-through', 'approve', 'Approve write-through');
+
+      // Assertions
+      expect(Refund.updateOne).toHaveBeenCalledWith(
+        { _id: 'ref-write-through' },
+        { $set: { gatewayRefundId: 're_123' } }
+      );
+    });
+
+    it('RFND-B-F03 - does not trigger email notification if reconciledAt is set on the Refund record', async () => {
+      const mockRefund = {
+        _id: 'ref-email-test',
+        bookingId: 'booking-123',
+        paymentId: 'payment-123',
+        amount: 100,
+        status: 'requested',
+        save: vi.fn(),
+      };
+
+      const mockPayment = { _id: 'payment-123', amount: 100, status: PaymentStatus.PAID, gateway: 'stripe', gatewayOrderId: 'pi_123' };
+      const mockBooking = { _id: 'booking-123', status: BookingStatus.CONFIRMED, guestEmail: 'customer@example.com' };
+
+      vi.mocked(Refund.findOneAndUpdate).mockReturnValue(createMockQuery(mockRefund));
+      vi.mocked(Payment.findById).mockReturnValue({ session: vi.fn().mockResolvedValue(mockPayment) } as any);
+      vi.mocked(Booking.findById).mockReturnValue({ session: vi.fn().mockResolvedValue(mockBooking) } as any);
+      vi.mocked(Refund.find).mockReturnValue(createMockQuery([]));
+      mockStripeRefundsCreate.mockResolvedValue({ id: 're_123' });
+
+      // Inside transaction, the Refund is updated and returned as completed, BUT let's simulate reconciledAt has been set
+      // We spy on the returned 'updated' object from runInTransaction. To do this, let's mock Refund save to return the updated record with reconciledAt.
+      vi.mocked(runInTransaction).mockImplementation(async (callback: any) => {
+        const res = await callback('mock-session');
+        if (res && res.updated) {
+          res.updated.reconciledAt = new Date(); // simulate webhook completed it
+        }
+        return res;
+      });
+
+      // Run approval
+      await processRefund('ref-email-test', 'approve', 'Approve email check');
+
+      // Email notifications should NOT have been enqueued
+      expect(QueueService.enqueue).not.toHaveBeenCalled();
+      expect(createNotificationSafe).not.toHaveBeenCalled();
+    });
   });
 });
+

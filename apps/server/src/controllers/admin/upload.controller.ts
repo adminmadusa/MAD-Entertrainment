@@ -35,3 +35,9 @@ export const uploadImage = async (req: Request, res: Response) => {
 
   sendSuccess(res, result, 'Image uploaded securely');
 };
+
+export const deleteUpload = async (req: Request, res: Response) => {
+  const { publicId } = req.body;
+  await UploadService.deleteImage(publicId);
+  sendSuccess(res, null, 'Image deleted securely');
+};

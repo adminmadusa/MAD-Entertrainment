@@ -14,8 +14,10 @@ import { AdminModel } from '../../models/admin.schema';
 import { AuditLogModel } from '../../models/audit-log.schema';
 import { Payment } from '../../models/payment.schema';
 import { Coupon } from '../../models/coupon.schema';
+import { Refund } from '../../models/refund.schema';
 import { logger } from '../../utils/logger';
 import { auditLog } from '../../utils/audit';
+import { runInTransaction } from '../../utils/transaction';
 import { ReservationService } from '../reservation.service';
 import { CacheService } from '../cache.service';
 import { QueueService } from '../queue.service';
@@ -24,43 +26,6 @@ import { BookingsSummaryResponse } from '../../types/admin/booking.types';
 import { Notification } from '../../models/notification.schema';
 import { NotificationType } from '@mad/shared';
 import { eventCancellationHtml } from '../../lib/email';
-
-/**
- * Resilient transaction execution helper. Runs the callback inside a session
- * transaction if replica sets are supported by the deployment, otherwise falls
- * back gracefully to atomic non-transactional operations.
- */
-export async function runInTransaction<T>(
-  fn: (session: ClientSession | undefined) => Promise<T>
-): Promise<T> {
-  const session = await mongoose.startSession().catch(() => null);
-  if (!session) {
-    return fn(undefined);
-  }
-
-  try {
-    let result: T;
-    await session.withTransaction(async () => {
-      result = await fn(session);
-    });
-    return result!;
-  } catch (err: any) {
-    if (
-      err?.message?.includes('replica set') ||
-      err?.message?.includes('Transaction') ||
-      err?.codeName === 'CommandNotSupported'
-    ) {
-      logger.warn(
-        { err },
-        'MongoDB transactions are not supported on this deployment. Falling back to non-transactional execution.'
-      );
-      return fn(undefined);
-    }
-    throw err;
-  } finally {
-    await session.endSession().catch(() => {});
-  }
-}
 
 /**
  * Maps a Mongoose Booking document onto a safe Normalized AdminBooking DTO representation.
@@ -470,7 +435,8 @@ export const cancelBooking = async (
         for (const bookedTicket of booking.tickets) {
           const tierIndex = event.ticketTiers.findIndex((t) => t.tier === bookedTicket.tier);
           if (tierIndex !== -1) {
-            decUpdate[`ticketTiers.${tierIndex}.soldCount`] = -bookedTicket.quantity;
+            const groupSize = event.ticketTiers[tierIndex].groupSize || 1;
+            decUpdate[`ticketTiers.${tierIndex}.soldCount`] = -bookedTicket.quantity * groupSize;
           }
         }
 
@@ -522,6 +488,13 @@ export const cancelBooking = async (
         releasedSeatIds.push(...allSeatIds);
       }
     }
+
+    // 5. Void corresponding active tickets
+    await Ticket.updateMany(
+      { bookingId: booking._id, status: 'active' },
+      { $set: { status: 'voided' } },
+      { session }
+    );
 
     const postCommitPayload: CancelBookingPostCommitPayload = {
       bookingId: booking._id.toString(),
@@ -854,6 +827,7 @@ export const correctBookingEmail = async (
         qrCode: newTicketId,
         qrCodeImage: `/api/public/tickets/${newTicketId}/qr`,
         status: 'active',
+        assignmentStatus: 'unassigned',
       });
       await newTicket.save({ session: session || undefined });
     }
@@ -934,11 +908,11 @@ export const resendBookingTickets = async (id: string, adminId: string) => {
 /**
  * Fetch booking summary stats, optionally filtered by event ID.
  */
-export const getBookingsSummary = async (eventId?: string): Promise<BookingsSummaryResponse> => {
+export const getBookingsSummary = async (eventId?: string): Promise<BookingsSummaryResponse & { grossRevenue: number; refundAmount: number; netRevenue: number }> => {
   const cacheKey = eventId ? `bookings:summary:event:${eventId}` : 'bookings:summary:global';
   const cached = await CacheService.get(cacheKey);
   if (cached) {
-    return cached as BookingsSummaryResponse;
+    return cached as any;
   }
 
   const matchStage: any = {};
@@ -953,11 +927,6 @@ export const getBookingsSummary = async (eventId?: string): Promise<BookingsSumm
         _id: null,
         totalBookings: { $sum: 1 },
         totalTickets: { $sum: '$totalTickets' },
-        revenue: {
-          $sum: {
-            $cond: [{ $eq: ['$status', BookingStatus.CONFIRMED] }, '$totalAmount', 0]
-          }
-        },
         confirmed: {
           $sum: {
             $cond: [{ $eq: ['$status', BookingStatus.CONFIRMED] }, 1, 0]
@@ -998,11 +967,83 @@ export const getBookingsSummary = async (eventId?: string): Promise<BookingsSumm
   const bookingStats = bookingAgg[0] || {
     totalBookings: 0,
     totalTickets: 0,
-    revenue: 0,
     confirmed: 0,
     pending: 0,
     cancelled: 0
   };
+
+  // Gross Revenue aggregate using Payment record as source of truth
+  const paymentAggPipeline: any[] = [
+    {
+      $match: {
+        status: { $in: [PaymentStatus.PAID, PaymentStatus.PARTIALLY_REFUNDED, PaymentStatus.REFUNDED] }
+      }
+    },
+    {
+      $lookup: {
+        from: 'bookings',
+        localField: 'bookingId',
+        foreignField: '_id',
+        as: 'booking'
+      }
+    },
+    { $unwind: '$booking' }
+  ];
+
+  if (eventId) {
+    paymentAggPipeline.push({
+      $match: {
+        'booking.eventId': new mongoose.Types.ObjectId(eventId)
+      }
+    });
+  }
+
+  paymentAggPipeline.push({
+    $group: {
+      _id: null,
+      totalGross: { $sum: '$amount' }
+    }
+  });
+
+  const paymentAgg = await Payment.aggregate(paymentAggPipeline);
+  const grossRevenue = paymentAgg[0]?.totalGross || 0;
+
+  // Refund Amount aggregate using Refund record as source of truth
+  const refundAggPipeline: any[] = [];
+  if (eventId) {
+    refundAggPipeline.push(
+      {
+        $lookup: {
+          from: 'bookings',
+          localField: 'bookingId',
+          foreignField: '_id',
+          as: 'booking'
+        }
+      },
+      { $unwind: '$booking' },
+      {
+        $match: {
+          'booking.eventId': new mongoose.Types.ObjectId(eventId),
+          status: 'completed'
+        }
+      }
+    );
+  } else {
+    refundAggPipeline.push({
+      $match: { status: 'completed' }
+    });
+  }
+  refundAggPipeline.push({
+    $group: {
+      _id: null,
+      totalRefunded: { $sum: '$amount' }
+    }
+  });
+
+  const refundAgg = await Refund.aggregate(refundAggPipeline);
+  const refundAmount = refundAgg[0]?.totalRefunded || 0;
+
+  const netRevenue = grossRevenue - refundAmount;
 
   const ticketMatchStage: any = { scannedAt: { $ne: null } };
   if (eventId) {
@@ -1021,10 +1062,13 @@ export const getBookingsSummary = async (eventId?: string): Promise<BookingsSumm
 
   const checkedIn = ticketAgg[0]?.checkedIn || 0;
 
-  const result: BookingsSummaryResponse = {
+  const result = {
     totalBookings: bookingStats.totalBookings,
     totalTickets: bookingStats.totalTickets,
-    revenue: bookingStats.revenue,
+    grossRevenue,
+    refundAmount,
+    netRevenue,
+    revenue: netRevenue, // Compatibility mapping
     confirmed: bookingStats.confirmed,
     pending: bookingStats.pending,
     cancelled: bookingStats.cancelled,

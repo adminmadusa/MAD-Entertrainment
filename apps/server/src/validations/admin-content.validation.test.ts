@@ -8,6 +8,7 @@ import {
   adminIdParamSchema,
   createCategorySchema,
   createCouponSchema,
+  createEventSchema,
   createPopupSchema,
   createRefundSchema,
   createTierSchema,
@@ -21,6 +22,7 @@ import {
   updatePopupSchema,
   updateTicketProfileSchema,
   updateTierSchema,
+  deleteUploadSchema,
 } from './admin-content.validation';
 
 const objectId = '507f1f77bcf86cd799439011';

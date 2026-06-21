@@ -5,8 +5,26 @@ import { resolveEventTickets } from './ticket-profile.service';
 import { CacheService } from '../cache.service';
 import { Booking } from '../../models/booking.schema';
 import { AppError } from '../../middleware/error.middleware';
+import { safeDeleteImages } from './media-cleanup.service';
+
+export const deduplicateGallery = (
+  gallery?: { url: string; publicId: string }[]
+): { url: string; publicId: string }[] | undefined => {
+  if (!gallery) return undefined;
+  const seen = new Set<string>();
+  return gallery.filter((img) => {
+    if (!img.publicId) return false;
+    if (seen.has(img.publicId)) return false;
+    seen.add(img.publicId);
+    return true;
+  });
+};
 
 export const createEvent = async (data: Partial<IEvent>): Promise<IEvent> => {
+  if (data.galleryImages) {
+    data.galleryImages = deduplicateGallery(data.galleryImages);
+  }
+
   if (data.title && !data.slug) {
     data.slug = data.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
   }
@@ -47,10 +65,29 @@ export const createEvent = async (data: Partial<IEvent>): Promise<IEvent> => {
   return result;
 };
 
-export const getEvents = async (page: number = 1, limit: number = 10): Promise<{ events: IEvent[]; total: number; pages: number }> => {
+export const getEvents = async (
+  page: number = 1,
+  limit: number = 10,
+  filters: { search?: string; status?: string } = {}
+): Promise<{ events: IEvent[]; total: number; pages: number }> => {
   const skip = (page - 1) * limit;
-  const total = await Event.countDocuments({ isDeleted: { $ne: true } });
-  const events = await Event.find({ isDeleted: { $ne: true } })
+  const query: any = { isDeleted: { $ne: true } };
+
+  if (filters.status) {
+    query.status = filters.status;
+  }
+
+  if (filters.search) {
+    // Escape regex metacharacters to prevent malformed search patterns
+    const escapedSearch = filters.search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    query.$or = [
+      { title: { $regex: escapedSearch, $options: 'i' } },
+      { description: { $regex: escapedSearch, $options: 'i' } },
+    ];
+  }
+
+  const total = await Event.countDocuments(query);
+  const events = await Event.find(query)
     .populate('djOperatorIds', 'name')
     .sort({ createdAt: -1 })
     .skip(skip)
@@ -94,6 +131,10 @@ export const updateEvent = async (id: string, data: Partial<IEvent>): Promise<an
   const existing = await Event.findById(id);
   if (!existing) return null;
 
+  if (data.galleryImages) {
+    data.galleryImages = deduplicateGallery(data.galleryImages);
+  }
+
   const profileId = data.ticketProfileId !== undefined ? data.ticketProfileId : existing.ticketProfileId;
   if (profileId) {
     const profile = await TicketProfile.findById(profileId);
@@ -124,9 +165,30 @@ export const updateEvent = async (id: string, data: Partial<IEvent>): Promise<an
     }
   }
 
+  const oldBannerId = existing.bannerImage?.publicId;
+  const newBannerId = data.bannerImage?.publicId;
+  const bannerReplaced = newBannerId && oldBannerId && oldBannerId !== newBannerId;
+
+  const oldPosterId = existing.posterImage?.publicId;
+  const newPosterId = data.posterImage?.publicId;
+  const posterReplaced = newPosterId && oldPosterId && oldPosterId !== newPosterId;
+
+  const oldGalleryIds = existing.galleryImages?.map((img) => img.publicId) || [];
+  const newGalleryIds = data.galleryImages?.map((img) => img.publicId) || [];
+  const removedGalleryIds = oldGalleryIds.filter((id) => id && !newGalleryIds.includes(id));
+
   const updated = await Event.findByIdAndUpdate(id, { ...data, eventVersion: existing.eventVersion + 1 }, { new: true });
   if (!updated) return null;
   await CacheService.delPattern('events:*');
+
+  const publicIdsToDelete: string[] = [];
+  if (bannerReplaced && oldBannerId) publicIdsToDelete.push(oldBannerId);
+  if (posterReplaced && oldPosterId) publicIdsToDelete.push(oldPosterId);
+  if (removedGalleryIds.length > 0) publicIdsToDelete.push(...removedGalleryIds);
+
+  if (publicIdsToDelete.length > 0) {
+    safeDeleteImages(publicIdsToDelete, 'Event', 'update');
+  }
 
   const ticketsList = await Ticket.find({ eventId: updated._id }).lean();
   const ticketsSold = updated.soldCount || 0;
@@ -155,7 +217,23 @@ export const deleteEvent = async (id: string): Promise<IEvent | null> => {
   if (bookingExists) {
     throw AppError.badRequest('Cannot delete event with existing bookings');
   }
+  const existing = await Event.findById(id);
+  if (!existing) return null;
+
   const deleted = await Event.findByIdAndUpdate(id, { isDeleted: true, deletedAt: new Date() }, { new: true });
+  if (deleted) {
+    const publicIdsToDelete: string[] = [];
+    if (existing.bannerImage?.publicId) publicIdsToDelete.push(existing.bannerImage.publicId);
+    if (existing.posterImage?.publicId) publicIdsToDelete.push(existing.posterImage.publicId);
+    if (existing.galleryImages) {
+      for (const img of existing.galleryImages) {
+        if (img.publicId) publicIdsToDelete.push(img.publicId);
+      }
+    }
+    if (publicIdsToDelete.length > 0) {
+      safeDeleteImages(publicIdsToDelete, 'Event', 'delete');
+    }
+  }
   await CacheService.delPattern('events:*');
   return deleted;
 };

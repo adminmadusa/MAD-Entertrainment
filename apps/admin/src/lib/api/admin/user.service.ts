@@ -1,3 +1,4 @@
+import { PaginationMeta } from '@mad/types';
 import { adminApiClient } from '@/lib/api/client';
 
 export interface UserListItem {
@@ -16,15 +17,11 @@ export interface UsersResponse {
   success: boolean;
   data: {
     items: UserListItem[];
-    pagination: {
-      page: number;
-      limit: number;
-      total: number;
-      totalPages: number;
-    };
+    pagination: PaginationMeta;
   };
   message?: string;
 }
+
 
 export interface UserDetailResponse {
   success: boolean;
@@ -42,6 +39,9 @@ export interface UserDetailResponse {
       totalBookings: number;
       totalTickets: number;
       totalSpend: number;
+      lifetimeGrossSpend: number;
+      lifetimeRefunds: number;
+      lifetimeNetSpend: number;
     };
     bookings: Array<{
       _id: string;

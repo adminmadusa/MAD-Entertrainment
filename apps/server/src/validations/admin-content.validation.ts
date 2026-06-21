@@ -245,6 +245,12 @@ export const updateDJOperatorSchema = z.object({
   body: createDJOperatorSchema.shape.body.partial(),
 });
 
+export const deleteUploadSchema = z.object({
+  body: z.object({
+    publicId: z.string().min(1, 'publicId is required'),
+  }).strict(),
+});
+
 // -- Event Validation --
 export const createEventSchema = z.object({
   body: z.object({
@@ -260,10 +266,9 @@ export const createEventSchema = z.object({
     startDate: z.string().datetime(),
     endDate: z.string().datetime().optional(),
     doorsOpenTime: z.string().optional(),
-    showTime: z.string(),
+    showTime: z.string().optional(),
     venue: z.string().min(1),
-    onlineStreamUrl: z.string().url().optional(),
-    isOnline: z.boolean().optional(),
+
     djOperatorIds: z.array(z.string()).optional(),
     ticketTiers: z
       .array(
@@ -305,6 +310,8 @@ export const createEventSchema = z.object({
     refundPolicy: z.string().max(1000).optional(),
     organizerName: z.string().max(100).optional(),
     ticketProfileId: z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid Mongoose ObjectId identifier').nullable().optional(),
+    requireTerms: z.boolean().optional(),
+    requireAgeConfirmation: z.boolean().optional(),
     ticketOverrides: z.array(z.object({
       tier: z.string(),
       price: z.number().min(0).optional(),
@@ -320,6 +327,16 @@ export const updateEventSchema = z.object({
   params: adminIdParamSchema.shape.params,
   body: createEventSchema.shape.body.partial(),
 });
+
+export const adminEventsQuerySchema = z.object({
+  query: z.object({
+    page: z.coerce.number().int().positive().default(1),
+    limit: z.coerce.number().int().positive().max(100).default(15),
+    search: z.string().max(200).optional(),
+    status: z.nativeEnum(EventStatus).optional(),
+  }).strict(),
+});
+
 
 // -- Ticket Profile Validation --
 const ticketOfferRulesSchema = z.object({

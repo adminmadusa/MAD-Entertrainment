@@ -169,6 +169,8 @@ const envSchema = z.object({
 
   GOOGLE_CLIENT_ID: z.string().optional(),
 
+  COOKIE_DOMAIN: z.string().optional(),
+
   MARKETING_UNSUBSCRIBE_SECRET: z.string().optional(),
 
   DLQ_ENCRYPTION_KEY: z

@@ -13,6 +13,12 @@ import { QueueService } from '../../services/queue.service';
 import { getQueueName } from '../../config/queue.config';
 import { CacheService } from '../../services/cache.service';
 
+
+const maskTransactionId = (id: string): string => {
+  if (!id || id.length <= 8) return '****';
+  return `${id.substring(0, 4)}...${id.substring(id.length - 4)}`;
+};
+
 // ─────────────────────────────────────────────
 // Issue Guest Session Token
 // ─────────────────────────────────────────────
@@ -105,13 +111,30 @@ export async function getMyBookings(
       throw AppError.unauthorized('Authentication required');
     }
 
-    const bookings = await PublicBookingService.getMyBookings(
+    const bookingsResult = await PublicBookingService.getMyBookings(
       req.user.sub
     );
 
+    // Mask ticket QR codes if assignmentStatus is 'pending' or 'claimed'
+    const maskedTickets = bookingsResult.tickets.map((t: any) => {
+      const ticketObj = typeof t.toObject === 'function' ? t.toObject() : t;
+      if (
+        ticketObj.assignmentStatus === 'pending' ||
+        ticketObj.assignmentStatus === 'claimed'
+      ) {
+        ticketObj.qrCode = undefined;
+        ticketObj.qrCodeImage = undefined;
+      }
+      return ticketObj;
+    });
+
     sendSuccess(
       res,
-      bookings,
+      {
+        bookings: bookingsResult.bookings,
+        tickets: maskedTickets,
+        ticketsReadyMap: bookingsResult.ticketsReadyMap,
+      },
       'Bookings retrieved successfully'
     );
   } catch (err) {
@@ -148,33 +171,33 @@ export async function getBooking(
 
     const booking = result.booking;
 
-    // Logged-in ownership
-    const isUserOwner =
-      !!booking.userId &&
-      !!reqUserId &&
-      booking.userId.toString() === reqUserId;
+    // Assert access
+    PublicBookingService.assertBookingAccess(
+      booking,
+      { userId: reqUserId, sessionId: reqSessionId },
+      'Fulfillment'
+    );
 
-    // Guest ownership
-    const isGuestOwner =
-      !booking.userId &&
-      !!booking.sessionId &&
-      !!reqSessionId &&
-      booking.sessionId === reqSessionId;
-
-    // Access denied
-    if (!isUserOwner && !isGuestOwner) {
-      const err = AppError.forbidden(
-        !reqUserId ? 'Email verification required' : 'You do not have access to this booking'
-      );
-      if (!reqUserId) {
-        err.code = 'BOOKING_VERIFICATION_REQUIRED';
+    // Mask ticket QR codes if assignmentStatus is 'pending' or 'claimed'
+    const maskedTickets = result.tickets.map((t: any) => {
+      const ticketObj = typeof t.toObject === 'function' ? t.toObject() : t;
+      if (
+        ticketObj.assignmentStatus === 'pending' ||
+        ticketObj.assignmentStatus === 'claimed'
+      ) {
+        ticketObj.qrCode = undefined;
+        ticketObj.qrCodeImage = undefined;
       }
-      throw err;
-    }
+      return ticketObj;
+    });
 
     sendSuccess(
       res,
-      result,
+      {
+        booking: result.booking,
+        tickets: maskedTickets,
+        ticketsReady: result.ticketsReady,
+      },
       'Booking retrieved successfully'
     );
   } catch (err) {
@@ -225,6 +248,8 @@ export async function downloadBookingPDF(
   try {
     const { bookingId } = req.params;
     const token = req.query?.token as string;
+    const reqUserId = req.user?.sub;
+    const reqSessionId = req.session?.sessionId || undefined;
 
     let booking: any;
 
@@ -252,9 +277,6 @@ export async function downloadBookingPDF(
         throw AppError.forbidden('Invalid download request parameters');
       }
     } else {
-      const reqUserId = req.user?.sub;
-      const reqSessionId = req.session?.sessionId || undefined;
-
       const result = await PublicBookingService.getBookingByReference(bookingId);
       if (!result) {
         if (!reqUserId) {
@@ -267,31 +289,18 @@ export async function downloadBookingPDF(
 
       booking = result.booking;
 
-      // Logged-in ownership
-      const isUserOwner =
-        !!booking.userId &&
-        !!reqUserId &&
-        booking.userId.toString() === reqUserId;
-
-      // Guest ownership
-      const isGuestOwner =
-        !booking.userId &&
-        !!booking.sessionId &&
-        !!reqSessionId &&
-        booking.sessionId === reqSessionId;
-
-      if (!isUserOwner && !isGuestOwner) {
-        const err = AppError.forbidden(
-          !reqUserId ? 'Email verification required' : 'You do not have access to this booking'
-        );
-        if (!reqUserId) {
-          err.code = 'BOOKING_VERIFICATION_REQUIRED';
-        }
-        throw err;
-      }
+      // Assert access
+      PublicBookingService.assertBookingAccess(
+        booking,
+        { userId: reqUserId, sessionId: reqSessionId },
+        'Fulfillment'
+      );
     }
 
-    const pdfBuffer = await generateTicketPDF(booking, booking.eventId);
+    const pdfBuffer = await generateTicketPDF(booking, booking.eventId, {
+      role: 'purchaser',
+      userId: reqUserId,
+    });
 
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename="MAD_Ticket_${booking.bookingId}.pdf"`);
@@ -322,28 +331,12 @@ export async function generateDownloadToken(
 
     const booking = result.booking;
 
-    // Logged-in ownership
-    const isUserOwner =
-      !!booking.userId &&
-      !!reqUserId &&
-      booking.userId.toString() === reqUserId;
-
-    // Guest ownership
-    const isGuestOwner =
-      !booking.userId &&
-      !!booking.sessionId &&
-      !!reqSessionId &&
-      booking.sessionId === reqSessionId;
-
-    if (!isUserOwner && !isGuestOwner) {
-      const err = AppError.forbidden(
-        !reqUserId ? 'Email verification required' : 'You do not have access to this booking'
-      );
-      if (!reqUserId) {
-        err.code = 'BOOKING_VERIFICATION_REQUIRED';
-      }
-      throw err;
-    }
+    // Assert access
+    PublicBookingService.assertBookingAccess(
+      booking,
+      { userId: reqUserId, sessionId: reqSessionId },
+      'Fulfillment'
+    );
 
     const token = crypto.randomUUID();
     const cacheKey = `otd:${token}`;
@@ -385,28 +378,12 @@ export async function resendBookingTickets(
 
     const booking = result.booking;
 
-    // Logged-in ownership
-    const isUserOwner =
-      !!booking.userId &&
-      !!reqUserId &&
-      booking.userId.toString() === reqUserId;
-
-    // Guest ownership
-    const isGuestOwner =
-      !booking.userId &&
-      !!booking.sessionId &&
-      !!reqSessionId &&
-      booking.sessionId === reqSessionId;
-
-    if (!isUserOwner && !isGuestOwner) {
-      const err = AppError.forbidden(
-        !reqUserId ? 'Email verification required' : 'You do not have access to this booking'
-      );
-      if (!reqUserId) {
-        err.code = 'BOOKING_VERIFICATION_REQUIRED';
-      }
-      throw err;
-    }
+    // Assert access
+    PublicBookingService.assertBookingAccess(
+      booking,
+      { userId: reqUserId, sessionId: reqSessionId },
+      'Fulfillment'
+    );
 
     const eventIdStr = (booking.eventId as any)._id?.toString() || booking.eventId.toString();
 
@@ -452,11 +429,6 @@ export async function recoverBooking(
   const { transactionId } = req.body;
   const ip = req.ip || req.socket.remoteAddress || '';
   const userAgent = req.headers['user-agent'] || '';
-
-  const maskTransactionId = (id: string): string => {
-    if (!id || id.length <= 8) return '****';
-    return `${id.substring(0, 4)}...${id.substring(id.length - 4)}`;
-  };
 
   const maskedTxId = maskTransactionId(transactionId);
 
@@ -569,10 +541,6 @@ export async function verifyRecoveredBookingOTP(
   const ip = req.ip || req.socket.remoteAddress || '';
   const userAgent = req.headers['user-agent'] || '';
 
-  const maskTransactionId = (id: string): string => {
-    if (!id || id.length <= 8) return '****';
-    return `${id.substring(0, 4)}...${id.substring(id.length - 4)}`;
-  };
   const maskedTxId = maskTransactionId(transactionId);
 
   try {
@@ -591,12 +559,13 @@ export async function verifyRecoveredBookingOTP(
 
     const result = await AuthService.verifyMagicLinkOrOTP(otp, booking.guestEmail!);
 
-    const isProd = getEnv().NODE_ENV === 'production';
+    const env = getEnv();
+    const isProd = env.NODE_ENV === 'production';
     res.cookie('refreshToken', result.refreshToken, {
       httpOnly: true,
       secure: isProd,
       sameSite: isProd ? 'none' : 'lax',
-      domain: isProd ? '.esparex.in' : undefined,
+      domain: env.COOKIE_DOMAIN || (isProd ? '.esparex.in' : undefined),
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 

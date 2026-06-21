@@ -229,6 +229,8 @@ describe('scanTicket', () => {
       ticketId: mockTicketId,
       eventId: mockEventId,
       scannedAt: new Date(),
+      status: 'active',
+      assignmentStatus: 'unassigned',
     } as any);
 
     const req = {
@@ -250,6 +252,8 @@ describe('scanTicket', () => {
       ticketId: mockTicketId,
       eventId: mockEventId,
       bookingId: mockBookingId,
+      status: 'active',
+      assignmentStatus: 'unassigned',
     } as any);
     vi.mocked(Booking.findById).mockResolvedValue(null);
 
@@ -272,6 +276,8 @@ describe('scanTicket', () => {
       ticketId: mockTicketId,
       eventId: mockEventId,
       bookingId: mockBookingId,
+      status: 'active',
+      assignmentStatus: 'unassigned',
     } as any);
     vi.mocked(Booking.findById).mockResolvedValue({
       _id: mockBookingId,
@@ -298,6 +304,8 @@ describe('scanTicket', () => {
       ticketId: mockTicketId,
       eventId: mockEventId,
       bookingId: mockBookingId,
+      status: 'active',
+      assignmentStatus: 'unassigned',
     };
     vi.mocked(Ticket.findOne).mockResolvedValue(mockTicket as any);
     vi.mocked(Booking.findById).mockResolvedValue({
@@ -323,7 +331,11 @@ describe('scanTicket', () => {
     await scanTicket(req, res, next);
 
     expect(Ticket.findOneAndUpdate).toHaveBeenCalledWith(
-      { _id: mockTicket._id, $or: [{ scannedAt: { $exists: false } }, { scannedAt: null }] },
+      {
+        _id: mockTicket._id,
+        status: 'active',
+        $or: [{ scannedAt: { $exists: false } }, { scannedAt: null }]
+      },
       { $set: { scannedAt: expect.any(Date), scannedById: new Types.ObjectId(mockScannerId) } },
       { new: true }
     );
@@ -346,6 +358,8 @@ describe('scanTicket', () => {
       ticketId: mockTicketId,
       eventId: mockEventId,
       bookingId: mockBookingId,
+      status: 'active',
+      assignmentStatus: 'unassigned',
     };
     vi.mocked(Ticket.findOne).mockResolvedValue(mockTicket as any);
     vi.mocked(Booking.findById).mockResolvedValue({
@@ -377,6 +391,146 @@ describe('scanTicket', () => {
         message: expect.stringContaining('already used'),
         details: { scannedAt: scannedDate.toISOString() },
       })
+    );
+  });
+
+  it('allows unassigned entry', async () => {
+    const mockTicket = {
+      _id: new Types.ObjectId(),
+      ticketId: mockTicketId,
+      eventId: mockEventId,
+      bookingId: mockBookingId,
+      status: 'active',
+      assignmentStatus: 'unassigned',
+    };
+    vi.mocked(Ticket.findOne).mockResolvedValue(mockTicket as any);
+    vi.mocked(Booking.findById).mockResolvedValue({
+      _id: mockBookingId,
+      status: 'confirmed',
+    } as any);
+
+    const scannedDate = new Date();
+    vi.mocked(Ticket.findOneAndUpdate).mockResolvedValue({
+      ...mockTicket,
+      scannedAt: scannedDate,
+      scannedById: new Types.ObjectId(mockScannerId),
+      tierName: 'VIP',
+      admits: 1,
+    } as any);
+
+    const req = {
+      body: { ticketId: mockTicketId, eventId: mockEventId },
+      admin: { sub: mockScannerId, email: 'scanner@mad.com', role: 'scanner' },
+    } as unknown as Request;
+    const res = makeRes();
+
+    await scanTicket(req, res, next);
+    expect(res.status).toHaveBeenCalledWith(200);
+  });
+
+  it('allows claimed entry', async () => {
+    const mockTicket = {
+      _id: new Types.ObjectId(),
+      ticketId: mockTicketId,
+      eventId: mockEventId,
+      bookingId: mockBookingId,
+      status: 'active',
+      assignmentStatus: 'claimed',
+    };
+    vi.mocked(Ticket.findOne).mockResolvedValue(mockTicket as any);
+    vi.mocked(Booking.findById).mockResolvedValue({
+      _id: mockBookingId,
+      status: 'confirmed',
+    } as any);
+
+    const scannedDate = new Date();
+    vi.mocked(Ticket.findOneAndUpdate).mockResolvedValue({
+      ...mockTicket,
+      scannedAt: scannedDate,
+      scannedById: new Types.ObjectId(mockScannerId),
+      tierName: 'VIP',
+      admits: 1,
+    } as any);
+
+    const req = {
+      body: { ticketId: mockTicketId, eventId: mockEventId },
+      admin: { sub: mockScannerId, email: 'scanner@mad.com', role: 'scanner' },
+    } as unknown as Request;
+    const res = makeRes();
+
+    await scanTicket(req, res, next);
+    expect(res.status).toHaveBeenCalledWith(200);
+  });
+
+  it('rejects pending entry', async () => {
+    const mockTicket = {
+      _id: new Types.ObjectId(),
+      ticketId: mockTicketId,
+      eventId: mockEventId,
+      bookingId: mockBookingId,
+      status: 'active',
+      assignmentStatus: 'pending',
+    };
+    vi.mocked(Ticket.findOne).mockResolvedValue(mockTicket as any);
+
+    const req = {
+      body: { ticketId: mockTicketId, eventId: mockEventId },
+      admin: { sub: mockScannerId, email: 'scanner@mad.com', role: 'scanner' },
+    } as unknown as Request;
+    const res = makeRes();
+
+    await scanTicket(req, res, next);
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith(
+      expect.objectContaining({ success: false, message: 'Ticket is not valid for entry' })
+    );
+  });
+
+  it('rejects voided entry', async () => {
+    const mockTicket = {
+      _id: new Types.ObjectId(),
+      ticketId: mockTicketId,
+      eventId: mockEventId,
+      bookingId: mockBookingId,
+      status: 'voided',
+      assignmentStatus: 'unassigned',
+    };
+    vi.mocked(Ticket.findOne).mockResolvedValue(mockTicket as any);
+
+    const req = {
+      body: { ticketId: mockTicketId, eventId: mockEventId },
+      admin: { sub: mockScannerId, email: 'scanner@mad.com', role: 'scanner' },
+    } as unknown as Request;
+    const res = makeRes();
+
+    await scanTicket(req, res, next);
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith(
+      expect.objectContaining({ success: false, message: 'Ticket is not valid for entry' })
+    );
+  });
+
+  it('rejects replaced entry', async () => {
+    const mockTicket = {
+      _id: new Types.ObjectId(),
+      ticketId: mockTicketId,
+      eventId: mockEventId,
+      bookingId: mockBookingId,
+      status: 'replaced',
+      assignmentStatus: 'unassigned',
+    };
+    vi.mocked(Ticket.findOne).mockResolvedValue(mockTicket as any);
+
+    const req = {
+      body: { ticketId: mockTicketId, eventId: mockEventId },
+      admin: { sub: mockScannerId, email: 'scanner@mad.com', role: 'scanner' },
+    } as unknown as Request;
+    const res = makeRes();
+
+    await scanTicket(req, res, next);
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith(
+      expect.objectContaining({ success: false, message: 'Ticket is not valid for entry' })
     );
   });
 });

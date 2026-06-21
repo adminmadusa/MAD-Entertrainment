@@ -2,7 +2,7 @@ import crypto from 'crypto';
 import { Types, ClientSession } from 'mongoose';
 import * as Sentry from '@sentry/node';
 
-import { BookingStatus, PaymentStatus, ReservationStatus, SeatStatus, NotificationType } from '@mad/shared';
+import { BookingStatus, PaymentStatus, ReservationStatus, SeatStatus, NotificationType, RefundStatus } from '@mad/shared';
 
 import { emitToAdmin, emitToBooking, emitToEvent } from '../../config/socket';
 import { getEnv } from '../../config/env';
@@ -24,12 +24,37 @@ import { logger } from '../../utils/logger';
 import { auditLog } from '../../utils/audit';
 import { sendEmail } from '../../utils/email';
 import { generateTicketPDF } from '../../utils/pdf';
-import { paymentFailureHtml } from '../../lib/email';
+import { paymentFailureHtml, fullRefundHtml, partialRefundHtml } from '../../lib/email';
 import { ReservationService } from '../reservation.service';
 import { QueueService } from '../queue.service';
 import { CacheService } from '../cache.service';
 import { createNotificationSafe } from '../notification.service';
 import { runInTransaction } from '../../utils/transaction';
+import { cancelBooking, executeCancelBookingSideEffects } from '../admin/booking.service';
+import { PublicBookingService } from './booking.service';
+
+export interface StripeChargeWebhookPayload {
+  id: string;
+  refunds?: {
+    data?: Array<{
+      id: string;
+      amount: number;
+    }>;
+  };
+}
+
+export interface StripeRefundWebhookPayload {
+  id: string;
+  charge: string;
+  status: string;
+  amount: number;
+}
+
+export interface RazorpayRefundWebhookPayload {
+  id: string;
+  payment_id: string;
+  amount: number;
+}
 
 type PaymentOwnershipContext = {
   userId?: string;
@@ -43,18 +68,11 @@ export class PaymentService {
       return;
     }
 
-    const isUserOwner =
-      !!booking.userId &&
-      !!ownershipContext.userId &&
-      booking.userId.toString() === ownershipContext.userId;
-    const isGuestOwner =
-      !!booking.sessionId &&
-      !!ownershipContext.sessionId &&
-      booking.sessionId === ownershipContext.sessionId;
-
-    if (!isUserOwner && !isGuestOwner) {
-      throw AppError.forbidden('You do not have access to this booking');
-    }
+    PublicBookingService.assertBookingAccess(
+      booking,
+      { userId: ownershipContext.userId, sessionId: ownershipContext.sessionId },
+      'ActiveCheckout'
+    );
   }
 
   private static assertProductionPaymentIntegrity(
@@ -182,6 +200,16 @@ export class PaymentService {
 
     if (booking.status !== BookingStatus.AWAITING_PAYMENT) {
       throw AppError.badRequest(`Booking is in state "${booking.status}" and cannot accept payment`);
+    }
+
+    const event = await Event.findById(booking.eventId);
+    if (!event || event.status !== 'published' || event.isDeleted === true) {
+      throw AppError.notFound('Event not found or not published');
+    }
+
+    const now = new Date();
+    if (now >= new Date(event.startDate) || (event.endDate && now > new Date(event.endDate))) {
+      throw AppError.badRequest('This event is no longer available for booking.');
     }
 
     if (booking.totalAmount === 0) {
@@ -937,8 +965,6 @@ export class PaymentService {
       throw AppError.notFound('Booking not found');
     }
 
-    this.assertBookingOwnership(booking, ownershipContext);
-
     const { paymentIntentId, razorpay_order_id, razorpay_payment_id } = gatewayPayload || {};
 
     this.assertProductionPaymentIntegrity(
@@ -977,8 +1003,35 @@ export class PaymentService {
       throw AppError.notFound('Payment record not found for booking');
     }
 
+    // BUG-297: If the webhook already confirmed this payment, bypass assertBookingOwnership()
+    // ONLY after the full gateway cryptographic proof has been validated.
+    // This resolves the race condition where the webhook arrives first, links booking.userId
+    // to a registered user, and the frontend request then fails ownership with a rotated session.
+    //
+    // assertBookingOwnership() remains fully enforced for all PENDING (unconfirmed) payments below.
     if (payment.status === PaymentStatus.PAID) {
-      return booking; // Already verified & confirmed
+      await this.validateGatewayProof(booking, payment, gatewayPayload, getEnv());
+      return booking;
+    }
+
+    // Payment is not yet confirmed — enforce standard session / user ownership.
+    this.assertBookingOwnership(booking, ownershipContext);
+
+    const event = await Event.findById(booking.eventId);
+    if (!event || event.status !== 'published' || event.isDeleted === true) {
+      throw AppError.notFound('Event not found or not published');
+    }
+
+    const now = new Date();
+    if (now >= new Date(event.startDate) || (event.endDate && now > new Date(event.endDate))) {
+      await this.failPaymentAndReleaseInventory(
+        booking,
+        payment,
+        'Event has already started or ended.',
+        'auto_recovery',
+        'PAYMENT_VALIDATION_FAILURE'
+      );
+      throw AppError.badRequest('This event is no longer available for booking.');
     }
 
     const env = getEnv();
@@ -1421,6 +1474,356 @@ export class PaymentService {
     return latestBooking || booking;
   }
 
+  /**
+   * BUG-297 — Validates cryptographic gateway proof for an already-PAID payment.
+   *
+   * Called exclusively by verifyPayment() when payment.status === PAID, allowing
+   * assertBookingOwnership() to be bypassed safely. The webhook may have confirmed
+   * the payment first and mutated booking.userId, rendering the caller's session or
+   * userId context stale — but the gateway proof is an unambiguous identity assertion.
+   *
+   * Security contract:
+   *  - No state mutations (no payment saves, no failPaymentAndReleaseInventory).
+   *  - No confirmBooking() calls.
+   *  - Every check that is enforced in the normal PENDING path is enforced here.
+   *  - Throws on any failure; never silently allows access.
+   *
+   * Stripe checks (8): paymentIntentId present, mock guard, retrieve from API,
+   *   status === succeeded, bookingId binding, bookingReference binding, amount, currency.
+   *
+   * Razorpay checks (7): credentials present, mock guard, order ID binding,
+   *   HMAC-SHA256 signature, payment ID replay, amount, currency.
+   */
+  private static async validateGatewayProof(
+    booking: IBooking,
+    payment: IPayment,
+    gatewayPayload: any,
+    env: ReturnType<typeof getEnv>
+  ): Promise<void> {
+    if (payment.gateway === 'razorpay') {
+      const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = gatewayPayload || {};
+
+      if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
+        throw AppError.badRequest('Missing Razorpay credentials in payment payload');
+      }
+
+      const isMock = env.MOCK_PAYMENTS && razorpay_payment_id.startsWith('pay_mock_') && razorpay_signature === 'mock_signature';
+
+      if (isMock) {
+        this.assertProductionMockRuntimeBlocked({
+          bookingId: booking._id.toString(),
+          paymentId: razorpay_payment_id,
+          gateway: 'razorpay',
+          requestSource: 'frontend_verify',
+        });
+      }
+
+      // Order ID binding — the submitted order must match the payment record created for this booking.
+      if (!payment.gatewayOrderId || payment.gatewayOrderId !== razorpay_order_id) {
+        logger.error(
+          {
+            bookingId: booking._id,
+            bookingReference: booking.bookingId,
+            paymentId: payment._id,
+            expectedOrderId: payment.gatewayOrderId,
+            receivedOrderId: razorpay_order_id,
+            razorpayPaymentId: razorpay_payment_id,
+          },
+          'SECURITY: Razorpay order ID mismatch on PAID path — possible payment replay attack'
+        );
+        auditLog({
+          action: 'PAYMENT_SECURITY_VIOLATION',
+          status: 'failure',
+          metadata: {
+            bookingId: booking._id.toString(),
+            bookingReference: booking.bookingId,
+            gateway: 'razorpay',
+            expectedOrderId: payment.gatewayOrderId,
+            receivedOrderId: razorpay_order_id,
+            razorpayPaymentId: razorpay_payment_id,
+            violationType: 'razorpay_order_mismatch',
+            paidPath: true,
+            isMock,
+          },
+          description: `SECURITY VIOLATION: Razorpay order mismatch on PAID path for booking ${booking.bookingId}`
+        });
+        throw AppError.badRequest('Razorpay order does not belong to this booking');
+      }
+
+      // HMAC-SHA256 signature validation — proves the caller possesses the frontend checkout credentials.
+      if (!isMock) {
+        const text = razorpay_order_id + '|' + razorpay_payment_id;
+        const expectedSignature = crypto
+          .createHmac('sha256', env.RAZORPAY_KEY_SECRET || '')
+          .update(text)
+          .digest('hex');
+
+        if (expectedSignature !== razorpay_signature) {
+          auditLog({
+            action: 'PAYMENT_VERIFICATION_FAILED',
+            status: 'failure',
+            metadata: {
+              bookingId: booking._id.toString(),
+              bookingReference: booking.bookingId,
+              gateway: 'razorpay',
+              reason: 'Signature verification failed (PAID path)',
+            },
+            description: `Failed Razorpay payment signature check on PAID path for booking ${booking.bookingId}`
+          });
+          throw AppError.badRequest('Razorpay signature verification failed');
+        }
+      }
+
+      // Replay protection — no other payment record may claim this gatewayPaymentId.
+      const duplicateGatewayPayment = await Payment.findOne({
+        gateway: 'razorpay',
+        gatewayPaymentId: razorpay_payment_id,
+        _id: { $ne: payment._id },
+      });
+
+      if (duplicateGatewayPayment) {
+        logger.error(
+          {
+            bookingId: booking._id,
+            bookingReference: booking.bookingId,
+            paymentId: payment._id,
+            duplicatePaymentId: duplicateGatewayPayment._id,
+            razorpayOrderId: razorpay_order_id,
+            razorpayPaymentId: razorpay_payment_id,
+          },
+          'SECURITY: Razorpay payment ID already attached to another payment (PAID path)'
+        );
+        auditLog({
+          action: 'PAYMENT_SECURITY_VIOLATION',
+          status: 'failure',
+          metadata: {
+            bookingId: booking._id.toString(),
+            bookingReference: booking.bookingId,
+            gateway: 'razorpay',
+            paymentId: payment._id?.toString(),
+            duplicatePaymentId: duplicateGatewayPayment._id?.toString(),
+            razorpayOrderId: razorpay_order_id,
+            razorpayPaymentId: razorpay_payment_id,
+            violationType: 'razorpay_payment_id_duplicate',
+            paidPath: true,
+            isMock,
+          },
+          description: `SECURITY VIOLATION: Razorpay payment ID replay on PAID path for booking ${booking.bookingId}`
+        });
+        throw AppError.badRequest('Razorpay payment has already been used');
+      }
+
+      // Amount validation — defense-in-depth against payment record tampering.
+      if (payment.amount !== undefined && booking.totalAmount !== undefined) {
+        const expectedAmountPaise = Math.round(booking.totalAmount * 100);
+        const paymentAmountPaise = Math.round(payment.amount * 100);
+        if (paymentAmountPaise !== expectedAmountPaise) {
+          logger.error(
+            {
+              bookingId: booking._id,
+              bookingReference: booking.bookingId,
+              paymentId: payment._id,
+              expectedAmountPaise,
+              paymentAmountPaise,
+            },
+            'SECURITY: Razorpay payment amount mismatch (PAID path)'
+          );
+          auditLog({
+            action: 'PAYMENT_SECURITY_VIOLATION',
+            status: 'failure',
+            metadata: {
+              bookingId: booking._id.toString(),
+              bookingReference: booking.bookingId,
+              gateway: 'razorpay',
+              expectedAmountPaise,
+              receivedAmountPaise: paymentAmountPaise,
+              violationType: 'amount_mismatch',
+              paidPath: true,
+            },
+            description: `SECURITY VIOLATION: Razorpay payment amount mismatch on PAID path for booking ${booking.bookingId}`
+          });
+          throw AppError.badRequest('Payment amount does not match booking total');
+        }
+      }
+
+      // Currency validation — defense-in-depth.
+      if (payment.currency !== undefined && booking.currency !== undefined) {
+        const expectedCurrency = (booking.currency || 'INR').toLowerCase();
+        const paymentCurrency = (payment.currency || 'INR').toLowerCase();
+        if (paymentCurrency !== expectedCurrency) {
+          logger.error(
+            {
+              bookingId: booking._id,
+              bookingReference: booking.bookingId,
+              paymentId: payment._id,
+              expectedCurrency,
+              paymentCurrency,
+            },
+            'SECURITY: Razorpay payment currency mismatch (PAID path)'
+          );
+          auditLog({
+            action: 'PAYMENT_SECURITY_VIOLATION',
+            status: 'failure',
+            metadata: {
+              bookingId: booking._id.toString(),
+              bookingReference: booking.bookingId,
+              gateway: 'razorpay',
+              expectedCurrency,
+              receivedCurrency: paymentCurrency,
+              violationType: 'currency_mismatch',
+              paidPath: true,
+            },
+            description: `SECURITY VIOLATION: Razorpay payment currency mismatch on PAID path for booking ${booking.bookingId}`
+          });
+          throw AppError.badRequest('Payment currency does not match booking currency');
+        }
+      }
+
+    } else {
+      // ── Stripe ────────────────────────────────────────────────────────────────
+      const { paymentIntentId } = gatewayPayload || {};
+
+      if (!paymentIntentId) {
+        throw AppError.badRequest('Missing Stripe paymentIntentId in payment payload');
+      }
+
+      const isMock = env.MOCK_PAYMENTS && paymentIntentId.startsWith('pi_mock_');
+
+      if (isMock) {
+        this.assertProductionMockRuntimeBlocked({
+          bookingId: booking._id.toString(),
+          paymentId: paymentIntentId,
+          gateway: 'stripe',
+          requestSource: 'frontend_verify',
+        });
+        // Mock path: no Stripe API call — proof is the pi_mock_ prefix under MOCK_PAYMENTS.
+        return;
+      }
+
+      const stripe = getStripe();
+      const intent = await stripe.paymentIntents.retrieve(paymentIntentId);
+
+      // 1. Status — only 'succeeded' is a valid terminal state.
+      if (intent.status !== 'succeeded') {
+        logger.warn(
+          { bookingId: booking._id, bookingReference: booking.bookingId, paymentIntentId, intentStatus: intent.status },
+          'Stripe verification rejected on PAID path: intent not in succeeded state'
+        );
+        auditLog({
+          action: 'PAYMENT_VERIFICATION_FAILED',
+          status: 'failure',
+          metadata: {
+            bookingId: booking._id.toString(),
+            bookingReference: booking.bookingId,
+            gateway: 'stripe',
+            reason: `Stripe intent status: ${intent.status} (PAID path)`,
+          },
+          description: `Stripe verification failed on PAID path: intent status is ${intent.status} for booking ${booking.bookingId}`
+        });
+        throw AppError.badRequest(`Stripe payment verification failed. Status is "${intent.status}"`);
+      }
+
+      // 2. bookingId binding — the intent must have been created for THIS booking.
+      const intentBookingId = intent.metadata?.bookingId;
+      const intentBookingReference = intent.metadata?.bookingReference;
+
+      if (intentBookingId !== booking._id.toString()) {
+        logger.error(
+          { bookingId: booking._id, bookingReference: booking.bookingId, paymentIntentId, intentBookingId },
+          'SECURITY: Stripe intent bookingId metadata mismatch on PAID path — possible replay attack'
+        );
+        auditLog({
+          action: 'PAYMENT_SECURITY_VIOLATION',
+          status: 'failure',
+          metadata: {
+            bookingId: booking._id.toString(),
+            bookingReference: booking.bookingId,
+            gateway: 'stripe',
+            intentBookingId,
+            violationType: 'booking_id_mismatch',
+            paidPath: true,
+          },
+          description: `SECURITY VIOLATION: Stripe intent bookingId mismatch on PAID path for booking ${booking.bookingId}`
+        });
+        throw AppError.badRequest('Stripe payment intent does not belong to this booking');
+      }
+
+      // 3. bookingReference binding — secondary reference confirms our system created the intent.
+      if (intentBookingReference && intentBookingReference !== booking.bookingId) {
+        logger.error(
+          { bookingId: booking._id, bookingReference: booking.bookingId, paymentIntentId, intentBookingReference },
+          'SECURITY: Stripe intent bookingReference metadata mismatch on PAID path'
+        );
+        auditLog({
+          action: 'PAYMENT_SECURITY_VIOLATION',
+          status: 'failure',
+          metadata: {
+            bookingId: booking._id.toString(),
+            bookingReference: booking.bookingId,
+            gateway: 'stripe',
+            intentBookingReference,
+            violationType: 'booking_reference_mismatch',
+            paidPath: true,
+          },
+          description: `SECURITY VIOLATION: Stripe intent bookingReference mismatch on PAID path for booking ${booking.bookingId}`
+        });
+        throw AppError.badRequest('Stripe payment intent booking reference mismatch');
+      }
+
+      // 4. Amount validation — integer-safe paise comparison.
+      const expectedAmountPaise = Math.round(booking.totalAmount * 100);
+      const receivedAmountPaise = intent.amount_received ?? 0;
+
+      if (receivedAmountPaise !== expectedAmountPaise) {
+        logger.error(
+          { bookingId: booking._id, bookingReference: booking.bookingId, paymentIntentId, expectedAmountPaise, receivedAmountPaise },
+          'SECURITY: Stripe payment amount mismatch on PAID path'
+        );
+        auditLog({
+          action: 'PAYMENT_SECURITY_VIOLATION',
+          status: 'failure',
+          metadata: {
+            bookingId: booking._id.toString(),
+            bookingReference: booking.bookingId,
+            gateway: 'stripe',
+            expectedAmountPaise,
+            receivedAmountPaise,
+            violationType: 'amount_mismatch',
+            paidPath: true,
+          },
+          description: `SECURITY VIOLATION: Stripe payment amount mismatch on PAID path for booking ${booking.bookingId}`
+        });
+        throw AppError.badRequest('Payment amount does not match booking total');
+      }
+
+      // 5. Currency validation — case-insensitive.
+      const expectedCurrency = (booking.currency || 'INR').toLowerCase();
+      const receivedCurrency = (intent.currency || '').toLowerCase();
+
+      if (receivedCurrency !== expectedCurrency) {
+        logger.error(
+          { bookingId: booking._id, bookingReference: booking.bookingId, paymentIntentId, expectedCurrency, receivedCurrency },
+          'SECURITY: Stripe payment currency mismatch on PAID path'
+        );
+        auditLog({
+          action: 'PAYMENT_SECURITY_VIOLATION',
+          status: 'failure',
+          metadata: {
+            bookingId: booking._id.toString(),
+            bookingReference: booking.bookingId,
+            gateway: 'stripe',
+            expectedCurrency,
+            receivedCurrency,
+            violationType: 'currency_mismatch',
+            paidPath: true,
+          },
+          description: `SECURITY VIOLATION: Stripe payment currency mismatch on PAID path for booking ${booking.bookingId}`
+        });
+        throw AppError.badRequest('Payment currency does not match booking currency');
+      }
+    }
+  }
+
   private static safeEmit(label: string, emit: () => void, data: Record<string, unknown>) {
     try {
       emit();
@@ -1728,6 +2131,12 @@ export class PaymentService {
           _payment.paidAt = claimedPayment.paidAt;
         }
 
+        // Check event start/end date constraints
+        const now = new Date();
+        if (now >= new Date(event.startDate) || (event.endDate && now > new Date(event.endDate))) {
+          throw new Error('EVENT_EXPIRED_DURING_CONFIRMATION');
+        }
+
         // 1. Pre-validation for Late Recovery
         if (isLateRecovery) {
           // Validate general capacity
@@ -1765,7 +2174,7 @@ export class PaymentService {
             ]).session(session);
             const tierReserved = activeTierAgg[0]?.total ?? 0;
 
-            if (tierConfig.soldCount + tierReserved + bookedTicket.quantity > tierConfig.totalCapacity) {
+            if (tierConfig.soldCount + tierReserved + bookedTicket.quantity * (tierConfig.groupSize || 1) > tierConfig.totalCapacity) {
               _payment.status = PaymentStatus.FAILED;
               _payment.failedAt = new Date();
               _payment.failureReason = 'LATE_PAYMENT_RECOVERY_REJECTED_CAPACITY_EXHAUSTED';
@@ -1843,7 +2252,8 @@ export class PaymentService {
         for (const bookedTicket of booking.tickets) {
           const tierIndex = event.ticketTiers.findIndex((t) => t.tier === bookedTicket.tier);
           if (tierIndex !== -1) {
-            incUpdate[`ticketTiers.${tierIndex}.soldCount`] = bookedTicket.quantity;
+            const groupSize = event.ticketTiers[tierIndex].groupSize || 1;
+            incUpdate[`ticketTiers.${tierIndex}.soldCount`] = bookedTicket.quantity * groupSize;
           }
         }
 
@@ -1872,8 +2282,9 @@ export class PaymentService {
               ]).session(session);
               const tierReserved = activeTierAgg[0]?.total ?? 0;
               
+              const groupSize = event.ticketTiers[tierIndex].groupSize || 1;
               eventQuery[`ticketTiers.${tierIndex}.soldCount`] = {
-                $lte: event.ticketTiers[tierIndex].totalCapacity - tierReserved - bookedTicket.quantity
+                $lte: event.ticketTiers[tierIndex].totalCapacity - tierReserved - bookedTicket.quantity * groupSize
               };
             }
           }
@@ -1899,6 +2310,7 @@ export class PaymentService {
         const setFields: any = {
           status: BookingStatus.CONFIRMED,
           paymentId: _payment._id,
+          confirmedAt: new Date(),
         };
         const unsetFields: any = {
           expiresAt: 1,
@@ -1907,7 +2319,6 @@ export class PaymentService {
 
         if (user) {
           setFields.userId = user._id;
-          unsetFields.sessionId = 1;
         }
 
         // 4. Booking Confirmation Status Transition
@@ -1949,6 +2360,19 @@ export class PaymentService {
         let generatedTickets = [];
         let syncNotification = null;
         if (!getEnv().ENABLE_ASYNC_CHECKOUT) {
+          // Mid-Flight Booking Protection: Verify and repair totalTickets if needed
+          let expectedTotalTickets = 0;
+          for (const t of booking.tickets) {
+            const tierConfig = event?.ticketTiers?.find((tc) => tc.tier === t.tier);
+            expectedTotalTickets += t.quantity * (tierConfig?.groupSize || 1);
+          }
+          if (booking.totalTickets !== expectedTotalTickets) {
+            booking.totalTickets = expectedTotalTickets;
+            if (typeof Booking.updateOne === 'function') {
+              await Booking.updateOne({ _id: booking._id }, { $set: { totalTickets: expectedTotalTickets } }, { session });
+            }
+          }
+
           let ticketIndex = 1;
           for (const bookedTicket of booking.tickets) {
             if (event && event.bookingMode === 'seat_based' && bookedTicket.seats) {
@@ -1971,6 +2395,7 @@ export class PaymentService {
                       section: seat.section,
                       qrCode: qrCodeText,
                       qrCodeImage: `/api/public/tickets/${ticketId}/qr`,
+                      assignmentStatus: 'unassigned',
                     },
                   },
                   { upsert: true, new: true, setDefaultsOnInsert: true, session }
@@ -1980,9 +2405,10 @@ export class PaymentService {
               }
             } else {
               const tierConfig = event?.ticketTiers?.find(t => t.tier === bookedTicket.tier);
-              const admits = tierConfig?.groupSize || 1;
+              const groupSize = tierConfig?.groupSize || 1;
+              const totalAdmissions = bookedTicket.quantity * groupSize;
 
-              for (let i = 0; i < bookedTicket.quantity; i++) {
+              for (let i = 0; i < totalAdmissions; i++) {
                 const ticketId = `TKT-${booking.bookingId}-${String(ticketIndex).padStart(3, '0')}`;
                 const qrCodeText = ticketId;
 
@@ -1994,9 +2420,10 @@ export class PaymentService {
                       eventId: booking.eventId,
                       tierName: bookedTicket.tierName,
                       tier: bookedTicket.tier,
-                      admits,
+                      admits: 1,
                       qrCode: qrCodeText,
                       qrCodeImage: `/api/public/tickets/${ticketId}/qr`,
+                      assignmentStatus: 'unassigned',
                     },
                   },
                   { upsert: true, new: true, setDefaultsOnInsert: true, session }
@@ -2045,16 +2472,16 @@ export class PaymentService {
       }
 
       let reason = 'CONFIRMATION_TRANSACTION_FAILED';
-      let isConcurrentConfirm = false;
-      const isKnownAbort = ['SEAT_ALLOCATION_FAILED', 'EVENT_CAPACITY_ALLOCATION_FAILED', 'CONCURRENT_CONFIRMATION_OR_NOT_FOUND'].includes(err.message);
+      const isKnownAbort = ['SEAT_ALLOCATION_FAILED', 'EVENT_CAPACITY_ALLOCATION_FAILED', 'CONCURRENT_CONFIRMATION_OR_NOT_FOUND', 'EVENT_EXPIRED_DURING_CONFIRMATION'].includes(err.message);
 
       if (err.message === 'SEAT_ALLOCATION_FAILED' || err.message === 'EVENT_CAPACITY_ALLOCATION_FAILED') {
         reason = 'LATE_PAYMENT_RECOVERY_REJECTED_SEATS_TAKEN';
+      } else if (err.message === 'EVENT_EXPIRED_DURING_CONFIRMATION') {
+        reason = 'EVENT_EXPIRED_DURING_CONFIRMATION';
       } else if (err.message === 'CONCURRENT_CONFIRMATION_OR_NOT_FOUND') {
         reason = 'LATE_PAYMENT_RECOVERY_REJECTED_CONCURRENT_CONFIRM';
         const currentBooking = await Booking.findById(booking._id).select('status paymentId').lean().catch(() => null);
         if (currentBooking?.status === BookingStatus.CONFIRMED) {
-          isConcurrentConfirm = true;
           const isSamePayment = currentBooking.paymentId && currentBooking.paymentId.toString() === _payment._id.toString();
           
           if (isSamePayment) {
@@ -2096,8 +2523,8 @@ export class PaymentService {
         _payment,
         _payment.failureReason,
         undefined,
-        isLateRecovery ? 'auto_recovery' : 'manual',
-        isLateRecovery ? 'EXPIRED_BOOKING_CAPACITY_UNAVAILABLE' : undefined
+        isLateRecovery || err.message === 'EVENT_EXPIRED_DURING_CONFIRMATION' ? 'auto_recovery' : 'manual',
+        isLateRecovery || err.message === 'EVENT_EXPIRED_DURING_CONFIRMATION' ? 'EXPIRED_BOOKING_CAPACITY_UNAVAILABLE' : undefined
       ).catch(() => {});
 
       if (isKnownAbort) {
@@ -2242,6 +2669,520 @@ export class PaymentService {
         }
       }
       throw err;
+    }
+  }
+
+  static async reconcileStripeRefundWebhook(
+    chargeOrRefund: StripeChargeWebhookPayload | StripeRefundWebhookPayload,
+    webhookEventId: string,
+    eventType: string
+  ): Promise<{ status: 'completed' | 'failed' | 'anomaly' | 'skipped'; refundId?: string; paymentId?: string }> {
+    let gatewayPaymentId: string;
+    let gatewayRefundId: string | undefined;
+    let gatewayStatus = 'succeeded';
+    let amountInCents = 0;
+
+    if (eventType === 'charge.refunded') {
+      const charge = chargeOrRefund as StripeChargeWebhookPayload;
+      gatewayPaymentId = charge.id;
+      gatewayRefundId = charge.refunds?.data?.[0]?.id;
+      amountInCents = charge.refunds?.data?.[0]?.amount || 0;
+    } else {
+      const refund = chargeOrRefund as StripeRefundWebhookPayload;
+      gatewayPaymentId = refund.charge;
+      gatewayRefundId = refund.id;
+      gatewayStatus = refund.status;
+      amountInCents = refund.amount || 0;
+    }
+
+    if (!gatewayRefundId) {
+      logger.warn({ chargeId: gatewayPaymentId, webhookEventId, eventType }, 'Stripe webhook received but missing gatewayRefundId');
+      return { status: 'skipped' };
+    }
+
+    // Stripe status mappings: only complete if succeeded
+    if (eventType === 'refund.updated' && gatewayStatus !== 'succeeded' && gatewayStatus !== 'failed') {
+      logger.info({ gatewayRefundId, gatewayStatus, webhookEventId }, 'Stripe refund updated with non-terminal status - skipping');
+      return { status: 'skipped' };
+    }
+
+    this.assertProductionPaymentIntegrity(
+      [gatewayPaymentId, gatewayRefundId],
+      {
+        paymentId: gatewayPaymentId,
+        gateway: 'stripe',
+        requestSource: 'webhook',
+      }
+    );
+
+    return this.reconcileRefundWebhook({
+      gateway: 'stripe',
+      gatewayPaymentId,
+      gatewayRefundId,
+      amountMajorUnits: amountInCents / 100,
+      gatewayStatus,
+      webhookEventId
+    });
+  }
+
+  static async reconcileRazorpayRefundWebhook(
+    refundEntity: RazorpayRefundWebhookPayload,
+    eventType: string,
+    webhookEventId: string
+  ): Promise<{ status: 'completed' | 'failed' | 'anomaly' | 'skipped'; refundId?: string; paymentId?: string }> {
+    const gatewayPaymentId = refundEntity.payment_id;
+    const gatewayRefundId = refundEntity.id;
+    const amountInPaise = refundEntity.amount;
+    const gatewayStatus = eventType === 'refund.processed' ? 'processed' : 'failed';
+
+    if (!gatewayRefundId) {
+      logger.warn({ paymentId: gatewayPaymentId, webhookEventId, eventType }, 'Razorpay webhook received but missing gatewayRefundId');
+      return { status: 'skipped' };
+    }
+
+    this.assertProductionPaymentIntegrity(
+      [gatewayPaymentId, gatewayRefundId],
+      {
+        paymentId: gatewayPaymentId,
+        gateway: 'razorpay',
+        requestSource: 'webhook',
+      }
+    );
+
+    return this.reconcileRefundWebhook({
+      gateway: 'razorpay',
+      gatewayPaymentId,
+      gatewayRefundId,
+      amountMajorUnits: amountInPaise / 100,
+      gatewayStatus,
+      webhookEventId
+    });
+  }
+
+  private static async reconcileRefundWebhook(params: {
+    gateway: 'stripe' | 'razorpay';
+    gatewayPaymentId: string;
+    gatewayRefundId: string;
+    amountMajorUnits: number;
+    gatewayStatus: string;
+    webhookEventId: string;
+  }): Promise<{ status: 'completed' | 'failed' | 'anomaly' | 'skipped'; refundId?: string; paymentId?: string }> {
+    const { gateway, gatewayPaymentId, gatewayRefundId, amountMajorUnits, gatewayStatus, webhookEventId } = params;
+    const isSucceeded = gatewayStatus === 'succeeded' || gatewayStatus === 'processed';
+    const isFailed = gatewayStatus === 'failed';
+
+    // Primary Lookup
+    let refund = await Refund.findOne({ gatewayRefundId });
+
+    // Fallback Lookup (RFND-H02)
+    if (!refund && gatewayPaymentId) {
+      const paymentObj = await Payment.findOne({ gatewayPaymentId, gateway });
+      if (paymentObj) {
+        refund = await Refund.findOne({
+          paymentId: paymentObj._id,
+          status: { $in: [RefundStatus.PROCESSING, RefundStatus.REQUESTED] },
+          amount: amountMajorUnits
+        });
+      }
+    }
+
+    // Gateway-Initiated Auto-Creation (RFND-B-F02)
+    if (!refund) {
+      const paymentObj = await Payment.findOne({ gatewayPaymentId, gateway });
+      if (paymentObj) {
+        const isFullRefund = amountMajorUnits === paymentObj.amount;
+        
+        try {
+          const result = await runInTransaction(async (session) => {
+            // Serialization lock on Payment
+            await Payment.findOneAndUpdate(
+              { _id: paymentObj._id },
+              { $set: { updatedAt: new Date() } },
+              { session, new: true }
+            );
+
+            // Double check duplicate gatewayRefundId to prevent race
+            const doubleCheck = await Refund.findOne({ gatewayRefundId }).session(session);
+            if (doubleCheck) {
+              return { status: 'completed' as const, refundId: doubleCheck._id.toString(), paymentId: paymentObj._id.toString() };
+            }
+
+            const createdRefund = await Refund.create([{
+              bookingId: paymentObj.bookingId,
+              paymentId: paymentObj._id,
+              amount: amountMajorUnits,
+              currency: paymentObj.currency,
+              reason: 'Reconciled from gateway-initiated refund webhook',
+              status: RefundStatus.COMPLETED,
+              origin: 'manual',
+              gatewayRefundId,
+              gatewayRefundStatus: gatewayStatus,
+              reconciledAt: new Date(),
+              processedAt: new Date(),
+              webhookEventId,
+              cancelTickets: isFullRefund
+            }], { session });
+
+            const newRefundDoc = createdRefund[0];
+
+            // Calculate new Payment Status
+            const otherCompletedRefunds = await Refund.find({
+              paymentId: paymentObj._id,
+              status: RefundStatus.COMPLETED,
+              _id: { $ne: newRefundDoc._id }
+            }).session(session);
+            const totalCompletedRefunded = otherCompletedRefunds.reduce((sum, r) => sum + r.amount, 0);
+            const isReallyFullRefund = (totalCompletedRefunded + newRefundDoc.amount) === paymentObj.amount;
+            const newPaymentStatus = isReallyFullRefund ? PaymentStatus.REFUNDED : PaymentStatus.PARTIALLY_REFUNDED;
+
+            await Payment.findByIdAndUpdate(paymentObj._id, { status: newPaymentStatus }, { session });
+
+            let cancelPostCommitPayload = null;
+            const booking = await Booking.findById(paymentObj.bookingId).session(session);
+            if (booking) {
+              if (isReallyFullRefund) {
+                if (booking.status === BookingStatus.CONFIRMED) {
+                  const cancelResult = await cancelBooking(
+                    booking._id.toString(),
+                    `${gateway === 'stripe' ? 'Stripe' : 'Razorpay'} Webhook Full Auto-Refund`,
+                    session,
+                    BookingStatus.REFUNDED
+                  );
+                  if (cancelResult && cancelResult.postCommitPayload) {
+                    cancelPostCommitPayload = cancelResult.postCommitPayload;
+                  }
+                } else if (booking.status === BookingStatus.CANCELLED) {
+                  booking.status = BookingStatus.REFUNDED;
+                  booking.bookingVersion += 1;
+                  await booking.save({ session });
+                }
+              } else {
+                // Partial refund
+                logger.info({ paymentId: paymentObj._id, bookingId: booking._id }, 'Partial gateway-initiated refund - flagging for manual review, booking active');
+              }
+            }
+
+            return {
+              status: 'completed' as const,
+              refundId: newRefundDoc._id.toString(),
+              paymentId: paymentObj._id.toString(),
+              cancelPostCommitPayload,
+              isNewRefund: true
+            };
+          });
+
+          // Run post-commit cancellation effects outside session
+          if (result.cancelPostCommitPayload) {
+            try {
+              await executeCancelBookingSideEffects(result.cancelPostCommitPayload);
+            } catch (err) {
+              logger.error({ err }, `Error executing booking cancel side effects post-commit in reconcileRefundWebhook (${gateway})`);
+            }
+          }
+
+          // Trigger email notification for the auto-created refund
+          if (result.isNewRefund) {
+            try {
+              await this.triggerRefundEmailNotification(result.refundId);
+            } catch (err) {
+              logger.error({ err, refundId: result.refundId }, 'Failed to trigger auto-created refund notification email');
+            }
+          }
+
+          return { status: result.status, refundId: result.refundId, paymentId: result.paymentId };
+        } catch (err: any) {
+          logger.error({ err, gatewayRefundId }, `Failed to process auto-created ${gateway} refund webhook`);
+          throw err;
+        }
+      }
+      logger.warn({ gatewayPaymentId, gatewayRefundId }, `${gateway} webhook received but no matching Payment or Refund record found`);
+      return { status: 'skipped' };
+    }
+
+    // Check terminal states (Idempotency)
+    if (refund.status === RefundStatus.COMPLETED) {
+      if (isFailed) {
+        // Anomaly Alert (RFND-M02)
+        const gatewayLabel = gateway === 'stripe' ? 'Stripe' : 'Razorpay';
+        const errMsg = `CRITICAL ANOMALY: Webhook reports ${gatewayLabel} refund ${gatewayRefundId} failed, but DB status is completed!`;
+        logger.error({ refundId: refund._id, gatewayRefundId }, errMsg);
+        
+        // Structured Audit Log for state anomaly
+        auditLog({
+          action: 'REFUND_RECONCILIATION_ANOMALY',
+          actor: { type: 'admin', id: 'system' },
+          status: 'failure',
+          description: errMsg,
+          metadata: {
+            refundId: refund._id.toString(),
+            gatewayRefundId,
+            gatewayStatus,
+            dbStatus: refund.status,
+          }
+        });
+
+        Sentry.captureMessage(errMsg, { level: 'error' as const });
+        return { status: 'anomaly', refundId: refund._id.toString(), paymentId: refund.paymentId.toString() };
+      }
+      return { status: 'completed', refundId: refund._id.toString(), paymentId: refund.paymentId.toString() };
+    }
+
+    if (refund.status === RefundStatus.FAILED) {
+      if (isSucceeded) {
+        // Anomaly Alert (RFND-M02)
+        const gatewayLabel = gateway === 'stripe' ? 'Stripe' : 'Razorpay';
+        const errMsg = `CRITICAL ANOMALY: Webhook reports ${gatewayLabel} refund ${gatewayRefundId} succeeded, but DB status is failed!`;
+        logger.error({ refundId: refund._id, gatewayRefundId }, errMsg);
+
+        // Structured Audit Log for state anomaly
+        auditLog({
+          action: 'REFUND_RECONCILIATION_ANOMALY',
+          actor: { type: 'admin', id: 'system' },
+          status: 'failure',
+          description: errMsg,
+          metadata: {
+            refundId: refund._id.toString(),
+            gatewayRefundId,
+            gatewayStatus,
+            dbStatus: refund.status,
+          }
+        });
+
+        Sentry.captureMessage(errMsg, { level: 'error' as const });
+        return { status: 'anomaly', refundId: refund._id.toString(), paymentId: refund.paymentId.toString() };
+      }
+      return { status: 'failed', refundId: refund._id.toString(), paymentId: refund.paymentId.toString() };
+    }
+
+    // Execute Reconciliation Transaction
+    try {
+      const result = await runInTransaction(async (session) => {
+        // Serialization lock on Payment
+        const payment = await Payment.findOneAndUpdate(
+          { _id: refund.paymentId },
+          { $set: { updatedAt: new Date() } },
+          { session, new: true }
+        );
+
+        if (!payment) throw new Error('Payment not found');
+
+        const booking = await Booking.findById(refund.bookingId).session(session);
+        if (!booking) throw new Error('Booking not found');
+
+        // Atomic Status Transition (RFND-M01)
+        const updatedRefund = await Refund.findOneAndUpdate(
+          { _id: refund._id, status: { $in: [RefundStatus.PROCESSING, RefundStatus.REQUESTED] } },
+          {
+            $set: {
+              status: isFailed ? RefundStatus.FAILED : RefundStatus.COMPLETED,
+              gatewayRefundStatus: gatewayStatus,
+              reconciledAt: new Date(),
+              processedAt: new Date(),
+              webhookEventId
+            }
+          },
+          { session, new: true }
+        );
+
+        if (!updatedRefund) {
+          // Concurrent win
+          const currentRefund = await Refund.findById(refund._id).session(session);
+          if (currentRefund?.status === RefundStatus.COMPLETED) {
+            return { status: 'completed' as const, refundId: refund._id.toString(), paymentId: payment._id.toString() };
+          }
+          return { status: 'failed' as const, refundId: refund._id.toString(), paymentId: payment._id.toString() };
+        }
+
+        if (updatedRefund.status === RefundStatus.COMPLETED) {
+          // Calculate new Payment Status
+          const otherCompletedRefunds = await Refund.find({
+            paymentId: payment._id,
+            status: RefundStatus.COMPLETED,
+            _id: { $ne: updatedRefund._id }
+          }).session(session);
+          const totalCompletedRefunded = otherCompletedRefunds.reduce((sum, r) => sum + r.amount, 0);
+          const isFullRefund = (totalCompletedRefunded + updatedRefund.amount) === payment.amount;
+          const newPaymentStatus = isFullRefund ? PaymentStatus.REFUNDED : PaymentStatus.PARTIALLY_REFUNDED;
+
+          await Payment.findByIdAndUpdate(payment._id, { status: newPaymentStatus }, { session });
+
+          let cancelPostCommitPayload = null;
+          if (isFullRefund) {
+            if (booking.status === BookingStatus.CONFIRMED) {
+              const cancelResult = await cancelBooking(booking._id.toString(), `${gateway === 'stripe' ? 'Stripe' : 'Razorpay'} Webhook Reconciled`, session, BookingStatus.REFUNDED);
+              if (cancelResult && cancelResult.postCommitPayload) {
+                cancelPostCommitPayload = cancelResult.postCommitPayload;
+              }
+            } else if (booking.status === BookingStatus.CANCELLED) {
+              booking.status = BookingStatus.REFUNDED;
+              booking.bookingVersion += 1;
+              await booking.save({ session });
+            }
+          } else if (updatedRefund.cancelTickets && booking.status === BookingStatus.CONFIRMED) {
+            const cancelResult = await cancelBooking(booking._id.toString(), `${gateway === 'stripe' ? 'Stripe' : 'Razorpay'} Webhook Reconciled`, session, BookingStatus.CANCELLED);
+            if (cancelResult && cancelResult.postCommitPayload) {
+              cancelPostCommitPayload = cancelResult.postCommitPayload;
+            }
+          }
+
+          return {
+            status: 'completed' as const,
+            refundId: updatedRefund._id.toString(),
+            paymentId: payment._id.toString(),
+            cancelPostCommitPayload,
+            transitioned: true
+          };
+        } else {
+          // Failed refund
+          return {
+            status: 'failed' as const,
+            refundId: updatedRefund._id.toString(),
+            paymentId: payment._id.toString()
+          };
+        }
+      });
+
+      // Run post-commit cancellation effects outside session
+      if (result.cancelPostCommitPayload) {
+        try {
+          await executeCancelBookingSideEffects(result.cancelPostCommitPayload);
+        } catch (err) {
+          logger.error({ err }, `Error executing booking cancel side effects post-commit in reconcileRefundWebhook (${gateway})`);
+        }
+      }
+
+      // Trigger email notification if webhook was the thread that completed the transition
+      if (result.status === 'completed' && result.transitioned) {
+        try {
+          await this.triggerRefundEmailNotification(result.refundId);
+        } catch (err) {
+          logger.error({ err, refundId: result.refundId }, 'Failed to trigger reconciled refund notification email');
+        }
+      }
+
+      return { status: result.status, refundId: result.refundId, paymentId: result.paymentId };
+    } catch (err: any) {
+      logger.error({ err, refundId: refund._id }, `Error during ${gateway} refund webhook reconciliation`);
+      throw err;
+    }
+  }
+
+  private static async triggerRefundEmailNotification(refundId: string): Promise<void> {
+    try {
+      const refund = await Refund.findById(refundId);
+      if (!refund || refund.status !== RefundStatus.COMPLETED) {
+        return;
+      }
+
+      const booking = await Booking.findById(refund.bookingId).populate('eventId');
+      if (!booking || !booking.guestEmail) {
+        return;
+      }
+
+      const event = booking.eventId as any;
+      const refundAmount = refund.amount;
+      const totalAmount = booking.totalAmount;
+
+      let emailHtml = '';
+      let subject = '';
+      let notificationType: NotificationType | undefined;
+
+      const completedRefunds = await Refund.find({
+        paymentId: refund.paymentId,
+        status: RefundStatus.COMPLETED
+      });
+      const totalRefunded = completedRefunds.reduce((sum, r) => sum + r.amount, 0);
+      const payment = await Payment.findById(refund.paymentId);
+      const isFullRefund = payment ? totalRefunded === payment.amount : false;
+
+      if (isFullRefund) {
+        const existingNotification = await Notification.findOne({
+          jobId: { $regex: `^refund-${refund._id}` }
+        });
+
+        if (!existingNotification) {
+          const formattedRefundDate = new Date(refund.processedAt || new Date()).toLocaleDateString('en-IN', {
+            weekday: 'long',
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric',
+          });
+
+          emailHtml = await fullRefundHtml({
+            customerName: booking.guestName,
+            bookingReference: booking.bookingId,
+            eventTitle: event?.title || 'MAD Event',
+            refundAmount: refundAmount,
+            refundDate: formattedRefundDate,
+            settlementTimeline: '5-7 business days',
+            currency: booking.currency || 'INR',
+          });
+
+          subject = `Refund Processed for ${booking.bookingId}`;
+          notificationType = NotificationType.FULL_REFUND;
+        }
+      } else {
+        const existingNotification = await Notification.findOne({
+          jobId: { $regex: `^refund-${refund._id}` }
+        });
+
+        if (!existingNotification) {
+          emailHtml = await partialRefundHtml({
+            customerName: booking.guestName,
+            bookingReference: booking.bookingId,
+            originalAmount: totalAmount,
+            refundAmount: refundAmount,
+            remainingAmount: Math.max(0, totalAmount - totalRefunded),
+            reason: refund.reason || 'Tier adjustment refund',
+            currency: booking.currency || 'INR',
+          });
+
+          subject = `Partial Refund Processed for ${booking.bookingId}`;
+          notificationType = NotificationType.PARTIAL_REFUND;
+        }
+      }
+
+      if (emailHtml && notificationType) {
+        const jobId = `refund-${refund._id}-${Date.now()}`;
+        // CQ-02 notification array consistency fix
+        await createNotificationSafe({
+          jobId,
+          status: 'queued',
+          queuedAt: new Date(),
+          type: notificationType,
+          channel: 'email',
+          recipient: booking.guestEmail,
+          subject,
+          isSent: false,
+          retryCount: 0,
+          bookingId: booking._id,
+          eventId: event?._id
+        });
+
+        await QueueService.enqueue(
+          getQueueName('notification-queue'),
+          'email-dispatch',
+          {
+            to: booking.guestEmail,
+            subject,
+            html: emailHtml,
+            notificationType,
+            bookingId: booking._id.toString(),
+            eventId: event?._id?.toString() || booking.eventId?.toString() || '',
+          },
+          jobId
+        );
+
+        logger.info({
+          emailType: isFullRefund ? 'FULL_REFUND' : 'PARTIAL_REFUND',
+          recipient: booking.guestEmail,
+          bookingId: booking._id.toString(),
+          refundId: refund._id.toString(),
+          jobId,
+        }, 'Successfully enqueued refund notification email job via webhook reconciliation');
+      }
+    } catch (err) {
+      logger.error({ err, refundId }, 'Error triggering email notification in webhook reconciliation');
     }
   }
 }
