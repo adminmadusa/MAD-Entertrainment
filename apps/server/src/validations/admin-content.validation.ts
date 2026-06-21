@@ -161,7 +161,18 @@ export const processRefundSchema = z.object({
     gatewayRefundId: z.string().trim().max(100).optional(),
     manualOverride: z.boolean().optional(),
     overrideReason: z.string().trim().max(1000).optional(),
-  }).strict(),
+  }).strict().superRefine((data, ctx) => {
+    // PRICING-003: Schema-level enforcement — overrideReason must be >= 10 chars when manualOverride is true
+    if (data.manualOverride === true) {
+      if (!data.overrideReason || data.overrideReason.trim().length < 10) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['overrideReason'],
+          message: 'Override reason must be at least 10 characters when manualOverride is true',
+        });
+      }
+    }
+  }),
 });
 
 // -- Scanner Validation --
