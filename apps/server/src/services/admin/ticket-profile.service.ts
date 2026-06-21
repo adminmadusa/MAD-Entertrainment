@@ -132,11 +132,23 @@ export const syncProfileEvents = async (profileId: string) => {
     );
     const totalCapacity = resolvedTiers.reduce((acc, tier) => acc + (tier.isActive ? tier.totalCapacity : 0), 0);
 
-    await Event.findByIdAndUpdate(event._id, {
-      ticketTiers: resolvedTiers,
-      totalCapacity,
-      eventVersion: event.eventVersion + 1,
-    });
+    const updated = await Event.findOneAndUpdate(
+      { _id: event._id, eventVersion: event.eventVersion },
+      {
+        $set: {
+          ticketTiers: resolvedTiers,
+          totalCapacity,
+        },
+        $inc: {
+          eventVersion: 1,
+        },
+      },
+      { new: true }
+    );
+
+    if (!updated) {
+      throw AppError.conflict('Event was modified while synchronizing ticket profiles. Please retry.');
+    }
   }
   await CacheService.delPattern('events:*');
 };
