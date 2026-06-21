@@ -930,4 +930,110 @@ describe('PublicBookingService.getMyBookings — ownership and reconciliation ma
       ).rejects.toThrow('This event is no longer available for booking.');
     });
   });
+
+  describe('PublicBookingService.createBooking — duplicate tier consolidation', () => {
+    beforeEach(() => {
+      vi.clearAllMocks();
+      vi.mocked(Booking.findOne).mockResolvedValue(null);
+    });
+
+    it('should consolidate duplicate tiers and reject if the consolidated quantity exceeds maxPerBooking', async () => {
+      const mockEvent = {
+        _id: new Types.ObjectId('60c72b2f9b1d8e25b8d29b02'),
+        status: 'published',
+        isDeleted: false,
+        isSoldOut: false,
+        bookingMode: 'general_admission',
+        title: 'GA Concert',
+        category: 'music',
+        startDate: new Date(Date.now() + 3600000), // in 1 hour
+        ticketTiers: [
+          {
+            tier: 'GA_EARLY',
+            name: 'Early GA',
+            isActive: true,
+            price: 500,
+            soldCount: 0,
+            totalCapacity: 100,
+            taxPercent: 18,
+            maxPerBooking: 2,
+          },
+        ],
+      };
+
+      vi.mocked(Event.findById).mockResolvedValue(mockEvent as any);
+
+      await expect(
+        PublicBookingService.createBooking(
+          {
+            eventId: mockEvent._id.toString(),
+            tickets: [
+              { tier: 'GA_EARLY', quantity: 2 },
+              { tier: 'GA_EARLY', quantity: 1 }
+            ],
+          },
+          'session-123'
+        )
+      ).rejects.toThrow('Maximum 2 tickets allowed for tier "Early GA"');
+    });
+
+    it('should consolidate duplicate tiers and succeed if the consolidated quantity does not exceed maxPerBooking', async () => {
+      const mockEvent = {
+        _id: new Types.ObjectId('60c72b2f9b1d8e25b8d29b02'),
+        status: 'published',
+        isDeleted: false,
+        isSoldOut: false,
+        bookingMode: 'general_admission',
+        title: 'GA Concert',
+        category: 'music',
+        startDate: new Date(Date.now() + 3600000), // in 1 hour
+        ticketTiers: [
+          {
+            tier: 'GA_EARLY',
+            name: 'Early GA',
+            isActive: true,
+            price: 500,
+            soldCount: 0,
+            totalCapacity: 100,
+            taxPercent: 18,
+            maxPerBooking: 2,
+          },
+        ],
+      };
+
+      vi.mocked(Event.findById).mockResolvedValue(mockEvent as any);
+      
+      const mockPostCommit = vi.fn().mockResolvedValue(undefined);
+      const mockReservations = [
+        { reservationId: 'RES-001', tier: 'GA_EARLY', quantity: 2, status: 'reserved' },
+      ];
+      vi.mocked(ReservationService.reserveForBooking).mockResolvedValue({
+        reservations: mockReservations,
+        postCommit: mockPostCommit,
+      } as any);
+
+      const result = await PublicBookingService.createBooking(
+        {
+          eventId: mockEvent._id.toString(),
+          tickets: [
+            { tier: 'GA_EARLY', quantity: 1 },
+            { tier: 'GA_EARLY', quantity: 1 }
+          ],
+        },
+        'session-123'
+      );
+
+      expect(result.tickets).toHaveLength(1);
+      expect(result.tickets[0].tier).toBe('GA_EARLY');
+      expect(result.tickets[0].quantity).toBe(2);
+      expect(ReservationService.reserveForBooking).toHaveBeenCalledTimes(1);
+      expect(ReservationService.reserveForBooking).toHaveBeenCalledWith(
+        expect.objectContaining({
+          tier: 'GA_EARLY',
+          quantity: 2,
+        }),
+        expect.any(Object)
+      );
+    });
+  });
 });

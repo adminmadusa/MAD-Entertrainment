@@ -20,12 +20,30 @@ export const checkoutTicketSchema = z.object({
     .optional(),
 }).strict();
 
+export const ticketsArraySchema = z
+  .array(checkoutTicketSchema)
+  .min(1, 'Must select at least one ticket')
+  .superRefine((tickets, ctx) => {
+    const seen = new Set<string>();
+    for (let i = 0; i < tickets.length; i++) {
+      const tier = tickets[i].tier;
+      if (seen.has(tier)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Duplicate ticket tiers are not allowed',
+          path: [i],
+        });
+      }
+      seen.add(tier);
+    }
+  });
+
 export const checkoutSchema = z.object({
   eventId: objectIdSchema,
   guestName: z.string().min(2, 'Guest name is required').max(200, 'Guest name is too long'),
   guestEmail: z.string().email('Invalid email address format').max(200, 'Email address is too long'),
   guestPhone: z.string().min(8, 'Invalid phone number format').max(50, 'Phone number is too long'),
-  tickets: z.array(checkoutTicketSchema).min(1, 'Must select at least one ticket'),
+  tickets: ticketsArraySchema,
   couponCode: z
     .string()
     .toUpperCase()
@@ -36,7 +54,7 @@ export const checkoutSchema = z.object({
 
 export const reserveTicketsSchema = z.object({
   eventId: objectIdSchema,
-  tickets: z.array(checkoutTicketSchema).min(1, 'Must select at least one ticket'),
+  tickets: ticketsArraySchema,
   couponCode: z
     .string()
     .toUpperCase()
