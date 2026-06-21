@@ -49,4 +49,26 @@ export class UploadService {
       uploadStream.end(buffer);
     });
   }
+
+  /**
+   * Deletes an image from Cloudinary using its public ID.
+   */
+  static async deleteImage(publicId: string): Promise<void> {
+    if (!publicId) return;
+    return new Promise((resolve, reject) => {
+      cloudinary.uploader.destroy(publicId, (error, result) => {
+        if (error) {
+          reject(new AppError(`Cloudinary deletion failed: ${error.message}`, 500));
+        } else if (result) {
+          if (result.result !== 'ok' && result.result !== 'not found') {
+            reject(new AppError(`Cloudinary deletion failed with result: ${result.result}`, 500));
+          } else {
+            resolve();
+          }
+        } else {
+          reject(new AppError('Cloudinary deletion returned null', 500));
+        }
+      });
+    });
+  }
 }

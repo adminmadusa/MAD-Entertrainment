@@ -1,7 +1,9 @@
 import { Router } from 'express';
-import { requireAuth, requireAdmin } from '../../middleware/auth.middleware';
+import { requireAdmin } from '../../middleware/auth.middleware';
 import { uploadMiddleware } from '../../middleware/upload.middleware';
-import { uploadImage } from '../../controllers/admin/upload.controller';
+import { uploadImage, deleteUpload } from '../../controllers/admin/upload.controller';
+import { validate } from '../../middleware/validation.middleware';
+import { deleteUploadSchema } from '../../validations/admin-content.validation';
 
 const router: Router = Router();
 
@@ -17,6 +19,17 @@ router.post(
   '/image',
   uploadMiddleware.single('image'),
   uploadImage
+);
+
+/**
+ * @route DELETE /api/admin/uploads
+ * @desc Securely delete an image from Cloudinary using its public ID
+ * @access Private/Admin
+ */
+router.delete(
+  '/',
+  validate(deleteUploadSchema),
+  deleteUpload
 );
 
 export default router;

@@ -21,6 +21,7 @@ import {
   updatePopupSchema,
   updateTicketProfileSchema,
   updateTierSchema,
+  deleteUploadSchema,
 } from './admin-content.validation';
 
 const objectId = '507f1f77bcf86cd799439011';
@@ -230,3 +231,22 @@ describe('admin bookings query validation schema', () => {
     expectRejected(adminBookingsQuerySchema, { search: 'a'.repeat(201) });
   });
 });
+
+describe('deleteUploadSchema', () => {
+  it('accepts a valid payload', () => {
+    expectAccepted(deleteUploadSchema, { body: { publicId: 'some-public-id' } });
+  });
+
+  it('rejects missing publicId', () => {
+    expectRejected(deleteUploadSchema, { body: {} });
+  });
+
+  it('rejects empty publicId', () => {
+    expectRejected(deleteUploadSchema, { body: { publicId: '' } });
+  });
+
+  it('rejects extra properties due to strict schema', () => {
+    expectRejected(deleteUploadSchema, { body: { publicId: 'some-id', extra: 'field' } });
+  });
+});
+
