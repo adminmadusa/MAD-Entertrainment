@@ -11,23 +11,58 @@ import { drawFooter } from "./layout/draw-footer";
  * Generates a fully-designed, production-ready, scan-ready PDF ticket attachment buffer.
  * If individual ticket records exist, it compiles a multi-page PDF where each page represents one ticket.
  * If no individual ticket records exist, it generates a booking-level ticket.
+ *
+ * NOTE ON WORKER/SYSTEM CONTEXT (Condition 3):
+ * All background worker jobs (e.g. confirmations, resends, consistency repairs) and admin triggers
+ * generate PDFs for the purchaser's email. Therefore, they structurally operate in the purchaser's
+ * context. The default options object below defaults to `{ role: 'purchaser' }` to ensure all
+ * system/worker calls implicitly inherit and enforce purchaser QR-masking rules.
  */
 export async function generateTicketPDF(
   booking: any,
   event: any,
+  options: {
+    role?: 'purchaser' | 'attendee';
+    targetTicketId?: string;
+    userId?: string;
+  } = { role: "purchaser" }
 ): Promise<Buffer> {
+  const role = options?.role ?? "purchaser";
   let tickets: any[] = [];
   try {
-    tickets = await Ticket.find({
-      bookingId: booking._id,
-      status: "active",
-    }).sort({ createdAt: 1 });
+    if (role === "attendee") {
+      if (!options?.targetTicketId) {
+        throw new Error("targetTicketId is required for attendee PDF generation");
+      }
+      const ticket = await Ticket.findOne({
+        ticketId: options.targetTicketId,
+        status: "active",
+      });
+      if (!ticket) {
+        throw new Error(`Ticket not found: ${options.targetTicketId}`);
+      }
+      // Authorize attendee: must be claimed and assignee must match options.userId
+      if (
+        (ticket.assignmentStatus ?? "unassigned") !== "claimed" ||
+        !ticket.attendeeUserId ||
+        !options.userId ||
+        ticket.attendeeUserId.toString() !== options.userId
+      ) {
+        throw new Error("Unauthorized to access this ticket PDF");
+      }
+      tickets = [ticket];
+    } else {
+      tickets = await Ticket.find({
+        bookingId: booking._id,
+        status: "active",
+      }).sort({ createdAt: 1 });
+    }
   } catch (err) {
     // Graceful fallback to empty list
   }
 
   // Fallback to a single placeholder ticket representing the booking if no records found
-  if (tickets.length === 0) {
+  if (tickets.length === 0 && role === "purchaser") {
     tickets = [
       {
         ticketId: `TKT-${booking.bookingId}-001`,
@@ -70,7 +105,7 @@ export async function generateTicketPDF(
         drawAttendeeDetails(doc, ticket, booking);
 
         // 5. Generate and draw validation scanner QR block in the stub
-        await drawQRSection(doc, ticket, booking);
+        await drawQRSection(doc, ticket, booking, options);
 
         // 6. Draw printable instruction terms and support contact info at page base
         drawFooter(doc);

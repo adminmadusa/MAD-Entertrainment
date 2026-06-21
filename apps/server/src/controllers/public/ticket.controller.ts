@@ -6,11 +6,14 @@ import { AppError } from '../../middleware/error.middleware';
 import { Booking } from '../../models/booking.schema';
 import { Ticket } from '../../models/ticket.schema';
 import { logger } from '../../utils/logger';
+import { sendSuccess } from '../../utils/response';
+import { canViewTicketQR } from '../../services/public/ticket-ownership.service';
+import * as ticketService from '../../services/public/ticket.service';
 
 /**
  * GET /api/public/tickets/:ticketId/qr
  * Generates and returns a PNG QR code buffer for the specified ticketId.
- * Enforces strict browser-level immutable caching.
+ * Enforces strict browser-level immutable caching and ownership authorization.
  */
 export async function getTicketQR(
   req: Request,
@@ -44,7 +47,13 @@ export async function getTicketQR(
       throw AppError.forbidden('Associated booking is not confirmed');
     }
 
-    // 2. Generate QR code as a PNG buffer using local 'qrcode' package
+    // 2. Validate ticket visibility using canViewTicketQR
+    const hasAccess = await canViewTicketQR(ticket, req.user?.sub, req.session?.sessionId);
+    if (!hasAccess) {
+      throw AppError.forbidden('You do not have permission to view this QR code');
+    }
+
+    // 3. Generate QR code as a PNG buffer using local 'qrcode' package
     const qrContent = ticket.qrCode || ticket.ticketId;
     const qrBuffer = await qrcode.toBuffer(qrContent, {
       type: 'png',
@@ -52,12 +61,108 @@ export async function getTicketQR(
       width: 300,
     });
 
-    // 3. Set immutable caching headers & content type
+    // 4. Set immutable caching headers & content type
     res.setHeader('Content-Type', 'image/png');
     res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
 
-    // 4. Send the image buffer
+    // 5. Send the image buffer
     res.send(qrBuffer);
+  } catch (err) {
+    next(err);
+  }
+}
+
+/**
+ * POST /api/public/tickets/:ticketId/assign
+ * Body: { email: string }
+ */
+export async function assignTicket(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    const { ticketId } = req.params;
+    const { email } = req.body;
+
+    if (!email) {
+      throw AppError.badRequest('Attendee email is required');
+    }
+
+    if (!req.user?.sub) {
+      throw AppError.unauthorized('Authentication required');
+    }
+
+    await ticketService.assignTicket(ticketId, req.user.sub, email);
+
+    sendSuccess(res, null, 'Ticket assigned successfully');
+  } catch (err) {
+    next(err);
+  }
+}
+
+/**
+ * POST /api/public/tickets/:ticketId/claim
+ */
+export async function claimTicket(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    const { ticketId } = req.params;
+
+    if (!req.user?.sub || !req.user?.email) {
+      throw AppError.unauthorized('Authentication required');
+    }
+
+    await ticketService.claimTicket(ticketId, req.user.sub, req.user.email);
+
+    sendSuccess(res, null, 'Ticket claimed successfully');
+  } catch (err) {
+    next(err);
+  }
+}
+
+/**
+ * POST /api/public/tickets/:ticketId/revoke
+ */
+export async function revokeTicket(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    const { ticketId } = req.params;
+
+    if (!req.user?.sub) {
+      throw AppError.unauthorized('Authentication required');
+    }
+
+    await ticketService.revokeTicket(ticketId, req.user.sub);
+
+    sendSuccess(res, null, 'Ticket reassignment reset successful');
+  } catch (err) {
+    next(err);
+  }
+}
+
+/**
+ * GET /api/public/tickets/my-tickets
+ */
+export async function getMyTickets(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    if (!req.user?.sub) {
+      throw AppError.unauthorized('Authentication required');
+    }
+
+    const tickets = await ticketService.getAttendeeTickets(req.user.sub);
+
+    sendSuccess(res, { tickets }, 'My tickets retrieved successfully');
   } catch (err) {
     next(err);
   }

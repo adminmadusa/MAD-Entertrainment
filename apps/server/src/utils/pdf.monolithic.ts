@@ -2,20 +2,77 @@ import PDFDocument from 'pdfkit';
 import qrcode from 'qrcode';
 import { Ticket } from '../models/ticket.schema';
 import { logger } from './logger';
+import { getPurchaserPDFTicketState } from '../services/public/ticket-ownership.service';
 
-export async function generateTicketPDF(booking: any, event: any): Promise<Buffer> {
-  // 1. Fetch tickets associated with this booking, ordered deterministically
-  const tickets = await Ticket.find({ bookingId: booking._id, status: 'active' }).sort({ createdAt: 1 });
+/**
+ * Generates the ticket PDF buffer using the monolithic engine.
+ *
+ * NOTE ON WORKER/SYSTEM CONTEXT (Condition 3):
+ * All background worker jobs (e.g. confirmations, resends, consistency repairs) and admin triggers
+ * generate PDFs for the purchaser's email. Therefore, they structurally operate in the purchaser's
+ * context. The default options object below defaults to `{ role: 'purchaser' }` to ensure all
+ * system/worker calls implicitly inherit and enforce purchaser QR-masking rules.
+ */
+export async function generateTicketPDF(
+  booking: any,
+  event: any,
+  options: {
+    role?: 'purchaser' | 'attendee';
+    targetTicketId?: string;
+    userId?: string;
+  } = { role: 'purchaser' }
+): Promise<Buffer> {
+  const role = options?.role ?? 'purchaser';
+  let tickets: any[] = [];
+
+  if (role === 'attendee') {
+    if (!options?.targetTicketId) {
+      throw new Error('targetTicketId is required for attendee PDF generation');
+    }
+    const ticket = await Ticket.findOne({
+      ticketId: options.targetTicketId,
+      status: 'active',
+    });
+    if (!ticket) {
+      logger.error({ ticketId: options.targetTicketId }, 'Attendee ticket not found for PDF generation');
+      throw new Error(`Ticket not found: ${options.targetTicketId}`);
+    }
+    // Authorize attendee: must be claimed and assignee must match options.userId
+    if (
+      (ticket.assignmentStatus ?? 'unassigned') !== 'claimed' ||
+      !ticket.attendeeUserId ||
+      !options.userId ||
+      ticket.attendeeUserId.toString() !== options.userId
+    ) {
+      logger.error({ ticketId: options.targetTicketId, userId: options.userId }, 'Unauthorized attendee PDF request');
+      throw new Error('Unauthorized to access this ticket PDF');
+    }
+    tickets = [ticket];
+  } else {
+    // 1. Fetch active tickets associated with this booking, ordered deterministically
+    tickets = await Ticket.find({ bookingId: booking._id, status: 'active' }).sort({ createdAt: 1 });
+  }
 
   if (tickets.length === 0) {
     logger.error({ bookingId: booking._id }, 'No tickets found for booking during PDF generation');
     throw new Error(`No tickets found for booking: ${booking.bookingId}`);
   }
 
-  // 2. Generate QR PNG buffers in parallel
-  const qrPromises = tickets.map((t) =>
-    qrcode.toBuffer(t.qrCode ?? t.ticketId, { type: 'png', margin: 1 })
-  );
+  // 2. Generate QR PNG buffers in parallel (or null if masked)
+  const qrPromises = tickets.map((t) => {
+    let canRenderQR = false;
+    if (role === 'attendee') {
+      canRenderQR = true;
+    } else {
+      const state = getPurchaserPDFTicketState(t);
+      canRenderQR = state.canRenderQR;
+    }
+
+    if (canRenderQR) {
+      return qrcode.toBuffer(t.qrCode ?? t.ticketId, { type: 'png', margin: 1 });
+    }
+    return Promise.resolve(null);
+  });
   const qrBuffers = await Promise.all(qrPromises);
 
   return new Promise((resolve, reject) => {
@@ -176,16 +233,38 @@ export async function generateTicketPDF(booking: any, event: any): Promise<Buffe
       const tierYEnd = doc.y;
       currentY = Math.max(guestYEnd, tierYEnd) + 12;
 
+      const assignmentStatus = ticket.assignmentStatus ?? 'unassigned';
+      let canRenderQR = false;
+      let statusMessage = '';
+      if (role === 'attendee') {
+        canRenderQR = true;
+      } else {
+        const state = getPurchaserPDFTicketState(ticket);
+        canRenderQR = state.canRenderQR;
+        statusMessage = state.message || '';
+      }
+
       // Ticket ID
       doc.fillColor('#64748b')
         .font('Helvetica-Bold')
         .fontSize(8.5)
         .text('TICKET ID', leftColX, currentY);
 
+      let ticketIdText = ticket.ticketId;
+      if (!canRenderQR) {
+        if (assignmentStatus === 'pending') {
+          ticketIdText = 'Awaiting Claim';
+        } else if (assignmentStatus === 'claimed') {
+          ticketIdText = 'Claimed By Attendee';
+        } else {
+          ticketIdText = 'Restricted';
+        }
+      }
+
       doc.fillColor('#0f172a')
         .font('Courier-Bold')
         .fontSize(10.5)
-        .text(ticket.ticketId, leftColX, currentY + 12);
+        .text(ticketIdText, leftColX, currentY + 12);
 
       // Admit Count
       doc.fillColor('#64748b')
@@ -218,11 +297,34 @@ export async function generateTicketPDF(booking: any, event: any): Promise<Buffe
       const qrWidth = 120;
       const qrX = (doc.page.width - qrWidth) / 2;
 
-      if (qrBuffer) {
+      if (canRenderQR && qrBuffer) {
         doc.image(qrBuffer, qrX, currentY + 12, { width: qrWidth, height: qrWidth });
-      }
+        currentY += 12 + qrWidth + 12;
+      } else {
+        const boxWidth = 260;
+        const boxHeight = 100;
+        const boxX = (doc.page.width - boxWidth) / 2;
+        const boxY = currentY + 12;
 
-      currentY += 12 + qrWidth + 12;
+        doc.fillColor('#f8fafc')
+          .roundedRect(boxX, boxY, boxWidth, boxHeight, 6)
+          .fill();
+
+        doc.strokeColor('#e2e8f0')
+          .lineWidth(1)
+          .roundedRect(boxX, boxY, boxWidth, boxHeight, 6)
+          .stroke();
+
+        doc.fillColor('#64748b')
+          .font('Helvetica')
+          .fontSize(8.5)
+          .text(statusMessage, boxX + 12, boxY + 16, {
+            align: 'center',
+            width: boxWidth - 24,
+          });
+
+        currentY += 12 + boxHeight + 12;
+      }
 
       // Divider line below QR Section
       doc.moveTo(48, currentY)

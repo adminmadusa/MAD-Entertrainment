@@ -602,7 +602,7 @@ export class PublicBookingService {
       throw AppError.notFound('Booking not found');
     }
 
-    const tickets = await Ticket.find({ bookingId: booking._id });
+    const tickets = await Ticket.find({ bookingId: booking._id, status: 'active' });
 
     const ticketsReady = tickets.length > 0 && tickets.length === booking.totalTickets;
 
@@ -625,7 +625,7 @@ export class PublicBookingService {
       .sort({ createdAt: -1 });
 
     const bookingIds = bookings.map((b) => b._id);
-    const tickets = await Ticket.find({ bookingId: { $in: bookingIds } });
+    const tickets = await Ticket.find({ bookingId: { $in: bookingIds }, status: 'active' });
 
     // Compute per-booking readiness for the caller
     const ticketsReadyMap: Record<string, boolean> = {};
