@@ -153,6 +153,11 @@ export const updateEvent = async (id: string, data: Partial<IEvent>): Promise<an
   const existing = await Event.findById(id);
   if (!existing) return null;
 
+  const expectedVersion = data.eventVersion;
+  if (expectedVersion === undefined || expectedVersion === null) {
+    throw AppError.badRequest('Event version is required for update');
+  }
+
   const mergedBanner = data.bannerImage !== undefined ? data.bannerImage : existing.bannerImage;
   const mergedPoster = data.posterImage !== undefined ? data.posterImage : existing.posterImage;
   const mergedGallery = data.galleryImages !== undefined ? data.galleryImages : existing.galleryImages;
@@ -201,8 +206,15 @@ export const updateEvent = async (id: string, data: Partial<IEvent>): Promise<an
   const newGalleryIds = data.galleryImages?.map((img) => img.publicId) || [];
   const removedGalleryIds = oldGalleryIds.filter((id) => id && !newGalleryIds.includes(id));
 
-  const updated = await Event.findByIdAndUpdate(id, { ...data, eventVersion: existing.eventVersion + 1 }, { new: true });
-  if (!updated) return null;
+  const { eventVersion: _eventVersion, ...updateData } = data;
+  const updated = await Event.findOneAndUpdate(
+    { _id: id, eventVersion: expectedVersion },
+    { $set: updateData, $inc: { eventVersion: 1 } },
+    { new: true }
+  );
+  if (!updated) {
+    throw AppError.conflict('Event has been modified by another process. Please refresh and try again.');
+  }
   await CacheService.delPattern('events:*');
 
   const publicIdsToDelete: string[] = [];
@@ -261,4 +273,3 @@ export const deleteEvent = async (id: string): Promise<IEvent | null> => {
   await CacheService.delPattern('events:*');
   return deleted;
 };
-

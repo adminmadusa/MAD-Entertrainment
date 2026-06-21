@@ -392,7 +392,9 @@ export const createEventSchema = z.object({
 
 export const updateEventSchema = z.object({
   params: adminIdParamSchema.shape.params,
-  body: eventBodySchema.partial().superRefine(validateEventImages),
+  body: eventBodySchema.partial().extend({
+    eventVersion: z.number().int().nonnegative(),
+  }).superRefine(validateEventImages),
 });
 
 export const adminEventsQuerySchema = z.object({

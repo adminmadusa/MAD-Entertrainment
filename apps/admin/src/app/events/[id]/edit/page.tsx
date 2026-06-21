@@ -7,7 +7,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 
 import { EventGalleryUpload } from '@/components/EventGalleryUpload';
-import { adminGetEvent, adminUpdateEvent, AdminEvent } from '@/lib/api/admin/event.service';
+import { adminGetEvent, adminUpdateEvent, AdminEvent, type AdminEventUpdatePayload } from '@/lib/api/admin/event.service';
 import { adminGetCategories } from '@/lib/api/admin/category.service';
 import { adminGetTiers } from '@/lib/api/admin/tier.service';
 import { adminGetTicketProfiles } from '@/lib/api/admin/ticket-profile.service';
@@ -164,7 +164,7 @@ export default function EditEventPage() {
   };
 
   const updateMutation = useMutation({
-    mutationFn: (payload: Partial<AdminEvent>) => adminUpdateEvent(id, payload),
+    mutationFn: (payload: AdminEventUpdatePayload) => adminUpdateEvent(id, payload),
     onSuccess: () => router.push('/events'),
     onError: (err) => setError(extractApiError(err).message),
   });
@@ -198,12 +198,13 @@ export default function EditEventPage() {
 
       const isProfileType = ticketingType === 'profile';
       
-      const payload: Partial<AdminEvent> & Record<string, unknown> = {
+      const payload: AdminEventUpdatePayload & Record<string, unknown> = {
         title: title.trim(),
         slug: generatedSlug,
         description: description.trim(),
         category,
         status,
+        eventVersion: event.eventVersion,
         bookingMode: BookingMode.GENERAL_ADMISSION,
         bannerImage: coverImage ?? undefined,
         posterImage: posterImage ?? undefined,

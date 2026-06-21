@@ -91,7 +91,7 @@ describe('admin mutation validation schemas', () => {
     ['update category', updateCategorySchema, { params: { id: objectId }, body: { name: 'Comedy' } }],
     ['create tier', createTierSchema, { body: { name: 'VIP' } }],
     ['update tier', updateTierSchema, { params: { id: objectId }, body: { name: 'Gold' } }],
-    ['update event', updateEventSchema, { params: { id: objectId }, body: { title: 'Updated event' } }],
+    ['update event', updateEventSchema, { params: { id: objectId }, body: { title: 'Updated event', eventVersion: 1 } }],
     ['update DJ operator', updateDJOperatorSchema, { params: { id: objectId }, body: { name: 'Updated DJ' } }],
     ['update ticket profile', updateTicketProfileSchema, { params: { id: objectId }, body: { name: 'Updated profile' } }],
     ['scanner lookup booking reference', scannerLookupSchema, { params: { reference: 'MAD-2026-ABCDE' }, query: { eventId: objectId } }],
@@ -125,7 +125,7 @@ describe('admin mutation validation schemas', () => {
     ['process refund param', processRefundSchema, { params: { id: 'not-an-object-id' }, body: { action: 'approve' } }],
     ['update category param', updateCategorySchema, { params: { id: 'not-an-object-id' }, body: { name: 'Concerts' } }],
     ['update tier param', updateTierSchema, { params: { id: 'not-an-object-id' }, body: { name: 'VIP' } }],
-    ['update event param', updateEventSchema, { params: { id: 'not-an-object-id' }, body: { title: 'Updated' } }],
+    ['update event param', updateEventSchema, { params: { id: 'not-an-object-id' }, body: { title: 'Updated', eventVersion: 1 } }],
     ['update DJ operator param', updateDJOperatorSchema, { params: { id: 'not-an-object-id' }, body: { name: 'Updated' } }],
     ['update ticket profile param', updateTicketProfileSchema, { params: { id: 'not-an-object-id' }, body: { name: 'Updated' } }],
     ['refund booking id', createRefundSchema, { body: { bookingId: 'bad', paymentId: otherObjectId, amount: 100 } }],
@@ -250,6 +250,25 @@ describe('event image validations', () => {
     expectAccepted(createEventSchema, {
       body: {
         ...validEventBody,
+      },
+    });
+  });
+
+  it('accepts update event payload with eventVersion', () => {
+    expectAccepted(updateEventSchema, {
+      params: { id: objectId },
+      body: {
+        title: 'Updated event',
+        eventVersion: 1,
+      },
+    });
+  });
+
+  it('rejects update event payload without eventVersion', () => {
+    expectRejected(updateEventSchema, {
+      params: { id: objectId },
+      body: {
+        title: 'Updated event',
       },
     });
   });
