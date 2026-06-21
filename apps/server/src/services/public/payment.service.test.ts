@@ -375,15 +375,22 @@ describe('Payment Service', () => {
         bookingId: 'MAD-2026-ABCDE',
         userId: { toString: () => 'user-owner' },
         status: BookingStatus.CONFIRMED,
+        totalAmount: 100,
+        currency: 'inr',
       };
-      const mockPayment = { _id: 'p-123', gateway: 'razorpay', status: PaymentStatus.PAID, save: vi.fn() };
+      // Payment must carry gatewayOrderId matching the submitted order_123,
+      // and a second Payment.findOne call (replay check) must return null.
+      const mockPayment = { _id: 'p-123', gateway: 'razorpay', status: PaymentStatus.PAID, gatewayOrderId: 'order_123', amount: 100, currency: 'inr', save: vi.fn() };
 
       vi.mocked(Booking.findOne).mockResolvedValue(mockBooking as any);
-      vi.mocked(Payment.findOne).mockReturnValueOnce({ sort: vi.fn().mockResolvedValue(mockPayment) } as any);
+      vi.mocked(Payment.findOne)
+        .mockReturnValueOnce({ sort: vi.fn().mockResolvedValue(mockPayment) } as any) // main lookup
+        .mockResolvedValueOnce(null as any);                                           // replay check
 
+      const sig = razorpaySignature('order_123', 'pay_123');
       const result = await PaymentService.verifyPayment(
         'MAD-2026-ABCDE',
-        { razorpay_order_id: 'order_123', razorpay_payment_id: 'pay_123', razorpay_signature: 'sig' },
+        { razorpay_order_id: 'order_123', razorpay_payment_id: 'pay_123', razorpay_signature: sig },
         { userId: 'user-owner' }
       );
 
@@ -397,15 +404,20 @@ describe('Payment Service', () => {
         bookingId: 'MAD-2026-ABCDE',
         sessionId: 'session-owner',
         status: BookingStatus.CONFIRMED,
+        totalAmount: 100,
+        currency: 'inr',
       };
-      const mockPayment = { _id: 'p-123', gateway: 'razorpay', status: PaymentStatus.PAID, save: vi.fn() };
+      const mockPayment = { _id: 'p-123', gateway: 'razorpay', status: PaymentStatus.PAID, gatewayOrderId: 'order_123', amount: 100, currency: 'inr', save: vi.fn() };
 
       vi.mocked(Booking.findOne).mockResolvedValue(mockBooking as any);
-      vi.mocked(Payment.findOne).mockReturnValueOnce({ sort: vi.fn().mockResolvedValue(mockPayment) } as any);
+      vi.mocked(Payment.findOne)
+        .mockReturnValueOnce({ sort: vi.fn().mockResolvedValue(mockPayment) } as any)
+        .mockResolvedValueOnce(null as any); // replay check
 
+      const sig = razorpaySignature('order_123', 'pay_123');
       const result = await PaymentService.verifyPayment(
         'MAD-2026-ABCDE',
-        { razorpay_order_id: 'order_123', razorpay_payment_id: 'pay_123', razorpay_signature: 'sig' },
+        { razorpay_order_id: 'order_123', razorpay_payment_id: 'pay_123', razorpay_signature: sig },
         { sessionId: 'session-owner' }
       );
 
@@ -413,13 +425,20 @@ describe('Payment Service', () => {
       expect(mockPayment.save).not.toHaveBeenCalled();
     });
 
-    it('should reject a different authenticated user before reading payment state', async () => {
-      vi.mocked(Booking.findOne).mockResolvedValue({
+    it('should reject a different authenticated user before confirming payment', async () => {
+      // Under the new flow, payment is looked up first, THEN ownership is checked.
+      // For a PENDING payment the 403 still fires — just after the payment lookup.
+      const mockBooking = {
         _id: 'b-123',
         bookingId: 'MAD-2026-ABCDE',
         userId: { toString: () => 'user-owner' },
-        status: BookingStatus.CONFIRMED,
-      } as any);
+        status: BookingStatus.AWAITING_PAYMENT,
+      };
+      // Payment is PENDING so the PAID bypass is not triggered and ownership IS enforced.
+      const mockPayment = { _id: 'p-123', gateway: 'razorpay', status: PaymentStatus.PENDING, gatewayOrderId: 'order_123', save: vi.fn() };
+
+      vi.mocked(Booking.findOne).mockResolvedValue(mockBooking as any);
+      vi.mocked(Payment.findOne).mockReturnValueOnce({ sort: vi.fn().mockResolvedValue(mockPayment) } as any);
 
       await expect(
         PaymentService.verifyPayment(
@@ -428,16 +447,19 @@ describe('Payment Service', () => {
           { userId: 'user-attacker' }
         )
       ).rejects.toThrow('You do not have access to this booking');
-      expect(Payment.findOne).not.toHaveBeenCalled();
     });
 
-    it('should reject a different guest session before reading payment state', async () => {
-      vi.mocked(Booking.findOne).mockResolvedValue({
+    it('should reject a different guest session before confirming payment', async () => {
+      const mockBooking = {
         _id: 'b-123',
         bookingId: 'MAD-2026-ABCDE',
         sessionId: 'session-owner',
-        status: BookingStatus.CONFIRMED,
-      } as any);
+        status: BookingStatus.AWAITING_PAYMENT,
+      };
+      const mockPayment = { _id: 'p-123', gateway: 'razorpay', status: PaymentStatus.PENDING, gatewayOrderId: 'order_123', save: vi.fn() };
+
+      vi.mocked(Booking.findOne).mockResolvedValue(mockBooking as any);
+      vi.mocked(Payment.findOne).mockReturnValueOnce({ sort: vi.fn().mockResolvedValue(mockPayment) } as any);
 
       await expect(
         PaymentService.verifyPayment(
@@ -446,24 +468,28 @@ describe('Payment Service', () => {
           { sessionId: 'session-attacker' }
         )
       ).rejects.toThrow('You do not have access to this booking');
-      expect(Payment.findOne).not.toHaveBeenCalled();
     });
 
-    it('should require ownership before returning the already-paid idempotent path', async () => {
-      vi.mocked(Booking.findOne).mockResolvedValue({
+    it('should require ownership before confirming an unconfirmed payment', async () => {
+      // No ownershipContext at all, PENDING payment — ownership guard fires.
+      const mockBooking = {
         _id: 'b-123',
         bookingId: 'MAD-2026-ABCDE',
         userId: { toString: () => 'user-owner' },
-        status: BookingStatus.CONFIRMED,
-      } as any);
+        status: BookingStatus.AWAITING_PAYMENT,
+      };
+      const mockPayment = { _id: 'p-123', gateway: 'razorpay', status: PaymentStatus.PENDING, gatewayOrderId: 'order_123', save: vi.fn() };
+
+      vi.mocked(Booking.findOne).mockResolvedValue(mockBooking as any);
+      vi.mocked(Payment.findOne).mockReturnValueOnce({ sort: vi.fn().mockResolvedValue(mockPayment) } as any);
 
       await expect(
         PaymentService.verifyPayment(
           'MAD-2026-ABCDE',
           { razorpay_order_id: 'order_123', razorpay_payment_id: 'pay_123', razorpay_signature: 'sig' }
+          // No ownershipContext — defaults to {} which has no userId/sessionId
         )
       ).rejects.toThrow('You do not have access to this booking');
-      expect(Payment.findOne).not.toHaveBeenCalled();
     });
 
     it('should verify a valid payment when the authenticated user owns the booking', async () => {
@@ -615,11 +641,13 @@ describe('Payment Service', () => {
     });
 
     it('should return booking successfully when payment is already paid', async () => {
-      const mockBooking = { _id: 'b-123', bookingId: 'MAD-2026-ABCDE', status: BookingStatus.CONFIRMED };
-      const mockPayment = { _id: 'p-123', gateway: 'razorpay', status: PaymentStatus.PAID, gatewayOrderId: 'order_123', gatewayPaymentId: 'pay_123', save: vi.fn() };
+      const mockBooking = { _id: 'b-123', bookingId: 'MAD-2026-ABCDE', status: BookingStatus.CONFIRMED, totalAmount: 100, currency: 'inr' };
+      const mockPayment = { _id: 'p-123', gateway: 'razorpay', status: PaymentStatus.PAID, gatewayOrderId: 'order_123', gatewayPaymentId: 'pay_123', amount: 100, currency: 'inr', save: vi.fn() };
 
       vi.mocked(Booking.findOne).mockResolvedValue(mockBooking as any);
-      vi.mocked(Payment.findOne).mockReturnValueOnce({ sort: vi.fn().mockResolvedValue(mockPayment) } as any);
+      vi.mocked(Payment.findOne)
+        .mockReturnValueOnce({ sort: vi.fn().mockResolvedValue(mockPayment) } as any) // main lookup
+        .mockResolvedValueOnce(null as any);                                           // replay check
 
       const result = await PaymentService.verifyPayment('MAD-2026-ABCDE', {
         razorpay_order_id: 'order_123',
@@ -629,7 +657,6 @@ describe('Payment Service', () => {
 
       expect(result).toBe(mockBooking);
       expect(mockPayment.save).not.toHaveBeenCalled();
-      expect(Payment.findOne).toHaveBeenCalledTimes(1);
     });
 
     it('should allow retry verification for the same payment record', async () => {
@@ -1409,8 +1436,9 @@ describe('Payment Service', () => {
 
     it('BUG-297: verifyPayment succeeds using session ownership after webhook confirms and links userId', async () => {
       const mockRegisteredUserId = new mongoose.Types.ObjectId();
+      const bookingId = new mongoose.Types.ObjectId();
       const mockBooking = {
-        _id: 'guest-booking-verify-297',
+        _id: bookingId,
         bookingId: 'MAD-2026-VERIFY297',
         eventId: 'e-123',
         status: BookingStatus.CONFIRMED,
@@ -1419,7 +1447,7 @@ describe('Payment Service', () => {
         sessionId: 'session-preserved-verify-297',
         userId: mockRegisteredUserId,
         totalAmount: 100,
-        currency: 'INR',
+        currency: 'inr',
       };
 
       const mockPayment = {
@@ -1427,8 +1455,25 @@ describe('Payment Service', () => {
         gateway: 'stripe',
         status: PaymentStatus.PAID,
         gatewayOrderId: 'pi_verify_297',
+        amount: 100,
+        currency: 'inr',
         save: vi.fn(),
       };
+
+      const mockStripe = {
+        paymentIntents: {
+          retrieve: vi.fn().mockResolvedValue({
+            status: 'succeeded',
+            metadata: {
+              bookingId: bookingId.toHexString(),
+              bookingReference: 'MAD-2026-VERIFY297',
+            },
+            amount_received: 10000, // 100 * 100 paise
+            currency: 'inr',
+          }),
+        },
+      };
+      vi.mocked(getStripe).mockReturnValue(mockStripe as any);
 
       vi.mocked(Booking.findOne).mockResolvedValue(mockBooking as any);
       vi.mocked(Payment.findOne).mockReturnValue({
@@ -1443,9 +1488,11 @@ describe('Payment Service', () => {
       );
 
       expect(result).toBeDefined();
-      expect(result._id).toBe('guest-booking-verify-297');
+      expect(result._id).toEqual(bookingId);
       expect(result.userId).toBe(mockRegisteredUserId);
       expect(result.sessionId).toBe('session-preserved-verify-297');
+      // Stripe API was called — proof was verified by validateGatewayProof.
+      expect(mockStripe.paymentIntents.retrieve).toHaveBeenCalledWith('pi_verify_297');
     });
   });
 
@@ -1650,6 +1697,296 @@ describe('Payment Service', () => {
         findOneAndUpdateSpy.mockRestore();
         vi.mocked(getEnv).mockReturnValue(originalEnv);
       }
+    });
+  });
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // BUG-297 — validateGatewayProof() via verifyPayment() PAID path
+  //
+  // These tests verify that a payment whose status is already PAID (set by the
+  // webhook arriving first) is accepted or rejected correctly without ever
+  // calling assertBookingOwnership().
+  //
+  // Positive tests: legitimate caller with rotated session gets 200-equivalent.
+  // Negative tests: attacker presenting invalid proof is rejected with 400.
+  // ─────────────────────────────────────────────────────────────────────────────
+  describe('BUG-297 — verifyPayment PAID path (validateGatewayProof)', () => {
+    const bookingObjectId = new mongoose.Types.ObjectId();
+    const bookingIdStr = bookingObjectId.toHexString();
+
+    // A booking that has already been confirmed by the webhook.
+    // booking.userId is a registered user — the guest session is now stale.
+    const confirmedBooking = {
+      _id: bookingObjectId,
+      bookingId: 'MAD-BOOKING-001',
+      eventId: 'e-123',
+      totalAmount: 100,
+      currency: 'inr',
+      status: 'confirmed',
+      userId: new mongoose.Types.ObjectId(), // linked by webhook
+      sessionId: 'old-session-id',           // stale guest session
+      save: vi.fn().mockResolvedValue(undefined),
+    };
+
+    // ── Helpers ────────────────────────────────────────────────────────────────
+
+    const makeStripePayment = (overrides: Record<string, unknown> = {}) => ({
+      _id: new mongoose.Types.ObjectId(),
+      bookingId: bookingObjectId,
+      gateway: 'stripe',
+      status: PaymentStatus.PAID,
+      gatewayOrderId: 'pi_test_001',
+      amount: 100,
+      currency: 'inr',
+      save: vi.fn(),
+      ...overrides,
+    });
+
+    const makeRazorpayPayment = (overrides: Record<string, unknown> = {}) => ({
+      _id: new mongoose.Types.ObjectId(),
+      bookingId: bookingObjectId,
+      gateway: 'razorpay',
+      status: PaymentStatus.PAID,
+      gatewayOrderId: 'order_rzp_001',
+      amount: 100,
+      currency: 'inr',
+      save: vi.fn(),
+      ...overrides,
+    });
+
+    const validStripeIntent = {
+      status: 'succeeded',
+      metadata: { bookingId: bookingIdStr, bookingReference: 'MAD-BOOKING-001' },
+      amount_received: 10000,
+      currency: 'inr',
+    };
+
+    beforeEach(() => {
+      vi.mocked(Booking.findOne).mockImplementation(() =>
+        createMockQuery(confirmedBooking) as any
+      );
+    });
+
+    // ── POSITIVE: Webhook-first race resolution ────────────────────────────────
+
+    it('[BUG-297][POSITIVE] Stripe — webhook wins, rotated session, full proof passes → 200', async () => {
+      vi.mocked(Payment.findOne).mockImplementation(() =>
+        createMockQuery(makeStripePayment()) as any
+      );
+      const mockStripe = {
+        paymentIntents: { retrieve: vi.fn().mockResolvedValue(validStripeIntent) },
+      };
+      vi.mocked(getStripe).mockReturnValue(mockStripe as any);
+
+      // ownershipContext uses a DIFFERENT session — simulates rotated session post-redirect.
+      const result = await PaymentService.verifyPayment(
+        bookingIdStr,
+        { paymentIntentId: 'pi_test_001' },
+        { sessionId: 'new-rotated-session' }   // does NOT match confirmedBooking.sessionId
+      );
+
+      // Must return the booking (no 403 thrown).
+      expect(result).toBeDefined();
+      expect(result._id.toString()).toBe(bookingIdStr);
+      // Stripe API was called — proof was verified, not skipped.
+      expect(mockStripe.paymentIntents.retrieve).toHaveBeenCalledWith('pi_test_001');
+    });
+
+    it('[BUG-297][POSITIVE] Razorpay — webhook wins, rotated session, full proof passes → 200', async () => {
+      vi.mocked(Payment.findOne).mockImplementation(() =>
+        createMockQuery(makeRazorpayPayment()) as any
+      );
+      // No duplicate payment record.
+      vi.mocked(Payment.findOne)
+        .mockImplementationOnce(() => createMockQuery(makeRazorpayPayment()) as any) // main lookup
+        .mockImplementationOnce(() => createMockQuery(null) as any);                 // replay check
+
+      const sig = razorpaySignature('order_rzp_001', 'pay_rzp_001');
+
+      const result = await PaymentService.verifyPayment(
+        bookingIdStr,
+        {
+          razorpay_order_id: 'order_rzp_001',
+          razorpay_payment_id: 'pay_rzp_001',
+          razorpay_signature: sig,
+        },
+        { sessionId: 'new-rotated-session' }
+      );
+
+      expect(result).toBeDefined();
+      expect(result._id.toString()).toBe(bookingIdStr);
+    });
+
+    // ── NEGATIVE: Stripe security rejections on PAID path ─────────────────────
+
+    it('[BUG-297][NEGATIVE] Stripe — PAID booking, bookingId metadata mismatch → 400', async () => {
+      vi.mocked(Payment.findOne).mockImplementation(() =>
+        createMockQuery(makeStripePayment()) as any
+      );
+      const mockStripe = {
+        paymentIntents: {
+          retrieve: vi.fn().mockResolvedValue({
+            ...validStripeIntent,
+            metadata: { bookingId: 'OTHER_BOOKING_ID', bookingReference: 'MAD-OTHER' },
+          }),
+        },
+      };
+      vi.mocked(getStripe).mockReturnValue(mockStripe as any);
+
+      await expect(
+        PaymentService.verifyPayment(bookingIdStr, { paymentIntentId: 'pi_test_001' }, {})
+      ).rejects.toThrow('Stripe payment intent does not belong to this booking');
+    });
+
+    it('[BUG-297][NEGATIVE] Stripe — PAID booking, intent status not succeeded → 400', async () => {
+      vi.mocked(Payment.findOne).mockImplementation(() =>
+        createMockQuery(makeStripePayment()) as any
+      );
+      const mockStripe = {
+        paymentIntents: {
+          retrieve: vi.fn().mockResolvedValue({
+            ...validStripeIntent,
+            status: 'requires_payment_method',
+          }),
+        },
+      };
+      vi.mocked(getStripe).mockReturnValue(mockStripe as any);
+
+      await expect(
+        PaymentService.verifyPayment(bookingIdStr, { paymentIntentId: 'pi_test_001' }, {})
+      ).rejects.toThrow('Stripe payment verification failed');
+    });
+
+    it('[BUG-297][NEGATIVE] Stripe — PAID booking, amount mismatch → 400', async () => {
+      vi.mocked(Payment.findOne).mockImplementation(() =>
+        createMockQuery(makeStripePayment()) as any
+      );
+      const mockStripe = {
+        paymentIntents: {
+          retrieve: vi.fn().mockResolvedValue({
+            ...validStripeIntent,
+            amount_received: 5000, // Wrong — expects 10000 paise
+          }),
+        },
+      };
+      vi.mocked(getStripe).mockReturnValue(mockStripe as any);
+
+      await expect(
+        PaymentService.verifyPayment(bookingIdStr, { paymentIntentId: 'pi_test_001' }, {})
+      ).rejects.toThrow('Payment amount does not match booking total');
+    });
+
+    it('[BUG-297][NEGATIVE] Stripe — PAID booking, currency mismatch → 400', async () => {
+      vi.mocked(Payment.findOne).mockImplementation(() =>
+        createMockQuery(makeStripePayment()) as any
+      );
+      const mockStripe = {
+        paymentIntents: {
+          retrieve: vi.fn().mockResolvedValue({
+            ...validStripeIntent,
+            currency: 'usd', // Wrong — booking is INR
+          }),
+        },
+      };
+      vi.mocked(getStripe).mockReturnValue(mockStripe as any);
+
+      await expect(
+        PaymentService.verifyPayment(bookingIdStr, { paymentIntentId: 'pi_test_001' }, {})
+      ).rejects.toThrow('Payment currency does not match booking currency');
+    });
+
+    // ── NEGATIVE: Razorpay security rejections on PAID path ───────────────────
+
+    it('[BUG-297][NEGATIVE] Razorpay — PAID booking, order ID mismatch → 400', async () => {
+      vi.mocked(Payment.findOne).mockImplementation(() =>
+        createMockQuery(makeRazorpayPayment()) as any // gatewayOrderId = order_rzp_001
+      );
+      const sig = razorpaySignature('order_other', 'pay_rzp_001');
+
+      await expect(
+        PaymentService.verifyPayment(
+          bookingIdStr,
+          {
+            razorpay_order_id: 'order_other',   // does NOT match payment.gatewayOrderId
+            razorpay_payment_id: 'pay_rzp_001',
+            razorpay_signature: sig,
+          },
+          {}
+        )
+      ).rejects.toThrow('Razorpay order does not belong to this booking');
+    });
+
+    it('[BUG-297][NEGATIVE] Razorpay — PAID booking, invalid signature → 400', async () => {
+      vi.mocked(Payment.findOne).mockImplementation(() =>
+        createMockQuery(makeRazorpayPayment()) as any
+      );
+
+      await expect(
+        PaymentService.verifyPayment(
+          bookingIdStr,
+          {
+            razorpay_order_id: 'order_rzp_001',
+            razorpay_payment_id: 'pay_rzp_001',
+            razorpay_signature: 'invalid_signature',
+          },
+          {}
+        )
+      ).rejects.toThrow('Razorpay signature verification failed');
+    });
+
+    it('[BUG-297][NEGATIVE] Razorpay — PAID booking, payment ID replay → 400', async () => {
+      const payment = makeRazorpayPayment();
+      vi.mocked(Payment.findOne)
+        .mockImplementationOnce(() => createMockQuery(payment) as any)   // main lookup
+        .mockImplementationOnce(() =>                                     // replay check — duplicate found
+          createMockQuery({ _id: new mongoose.Types.ObjectId() }) as any
+        );
+
+      const sig = razorpaySignature('order_rzp_001', 'pay_rzp_001');
+
+      await expect(
+        PaymentService.verifyPayment(
+          bookingIdStr,
+          {
+            razorpay_order_id: 'order_rzp_001',
+            razorpay_payment_id: 'pay_rzp_001',
+            razorpay_signature: sig,
+          },
+          {}
+        )
+      ).rejects.toThrow('Razorpay payment has already been used');
+    });
+
+    it('[BUG-297][NEGATIVE] Razorpay — PAID booking, missing credentials → 400', async () => {
+      vi.mocked(Payment.findOne).mockImplementation(() =>
+        createMockQuery(makeRazorpayPayment()) as any
+      );
+
+      await expect(
+        PaymentService.verifyPayment(
+          bookingIdStr,
+          {
+            razorpay_order_id: 'order_rzp_001',
+            // razorpay_payment_id and razorpay_signature intentionally absent
+          },
+          {}
+        )
+      ).rejects.toThrow('Missing Razorpay credentials in payment payload');
+    });
+
+    // ── REGRESSION: existing zero-proof shortcut is gone ──────────────────────
+
+    it('[BUG-297][REGRESSION] Stripe PAID path — no paymentIntentId in payload → 400 (zero-proof shortcut removed)', async () => {
+      vi.mocked(Payment.findOne).mockImplementation(() =>
+        createMockQuery(makeStripePayment()) as any
+      );
+
+      // Previously this would return booking with zero validation.
+      // Now it must fail because no gateway identifier is present — caught by
+      // assertProductionPaymentIntegrity before even reaching validateGatewayProof.
+      await expect(
+        PaymentService.verifyPayment(bookingIdStr, {}, {})
+      ).rejects.toThrow();
     });
   });
 });
