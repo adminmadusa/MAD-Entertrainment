@@ -260,7 +260,7 @@ export const createEventSchema = z.object({
     startDate: z.string().datetime(),
     endDate: z.string().datetime().optional(),
     doorsOpenTime: z.string().optional(),
-    showTime: z.string(),
+    showTime: z.string().optional(),
     venue: z.string().min(1),
     onlineStreamUrl: z.string().url().optional(),
     isOnline: z.boolean().optional(),
