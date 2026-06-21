@@ -13,6 +13,11 @@ import { QueueService } from '../../services/queue.service';
 import { getQueueName } from '../../config/queue.config';
 import { CacheService } from '../../services/cache.service';
 
+const maskTransactionId = (id: string): string => {
+  if (!id || id.length <= 8) return '****';
+  return `${id.substring(0, 4)}...${id.substring(id.length - 4)}`;
+};
+
 // ─────────────────────────────────────────────
 // Issue Guest Session Token
 // ─────────────────────────────────────────────
@@ -489,11 +494,6 @@ export async function recoverBooking(
   const ip = req.ip || req.socket.remoteAddress || '';
   const userAgent = req.headers['user-agent'] || '';
 
-  const maskTransactionId = (id: string): string => {
-    if (!id || id.length <= 8) return '****';
-    return `${id.substring(0, 4)}...${id.substring(id.length - 4)}`;
-  };
-
   const maskedTxId = maskTransactionId(transactionId);
 
   try {
@@ -605,10 +605,6 @@ export async function verifyRecoveredBookingOTP(
   const ip = req.ip || req.socket.remoteAddress || '';
   const userAgent = req.headers['user-agent'] || '';
 
-  const maskTransactionId = (id: string): string => {
-    if (!id || id.length <= 8) return '****';
-    return `${id.substring(0, 4)}...${id.substring(id.length - 4)}`;
-  };
   const maskedTxId = maskTransactionId(transactionId);
 
   try {
@@ -627,12 +623,13 @@ export async function verifyRecoveredBookingOTP(
 
     const result = await AuthService.verifyMagicLinkOrOTP(otp, booking.guestEmail!);
 
-    const isProd = getEnv().NODE_ENV === 'production';
+    const env = getEnv();
+    const isProd = env.NODE_ENV === 'production';
     res.cookie('refreshToken', result.refreshToken, {
       httpOnly: true,
       secure: isProd,
       sameSite: isProd ? 'none' : 'lax',
-      domain: isProd ? '.esparex.in' : undefined,
+      domain: env.COOKIE_DOMAIN || (isProd ? '.esparex.in' : undefined),
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 

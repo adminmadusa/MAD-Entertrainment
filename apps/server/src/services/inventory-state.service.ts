@@ -24,12 +24,6 @@ const RESERVATION_TRANSITIONS: Record<ReservationStatus, ReservationStatus[]> = 
   [ReservationStatus.REFUNDED]: [],
 };
 
-export function assertInventoryTransition(from: InventoryState, to: InventoryState, context: Record<string, unknown>) {
-  if (!INVENTORY_TRANSITIONS[from]?.includes(to)) {
-    logger.warn({ from, to, ...context }, 'Invalid inventory transition rejected');
-    throw AppError.badRequest(`Invalid inventory transition: ${from} -> ${to}`);
-  }
-}
 
 export function assertReservationTransition(from: ReservationStatus, to: ReservationStatus, context: Record<string, unknown>) {
   if (!RESERVATION_TRANSITIONS[from]?.includes(to)) {
