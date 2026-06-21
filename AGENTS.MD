@@ -1,509 +1,746 @@
 # AGENTS.md
 
-## Purpose
+# MAD Entertrainment Engineering Governance & AI Agent Operating System
 
-This file defines how AI coding agents must work in this repository.
+Version: 1.0
 
-The agent must follow these rules before editing, testing, refactoring, installing dependencies, changing project structure, staging, committing, pushing, merging, or deleting branches.
+Status: Mandatory
 
----
+Applies To:
 
-## Hard Safety Rule
-
-Audit-only means no file changes.
-
-The agent must not create, edit, delete, refactor, install, stage, commit, push, merge, rebase, or delete branches unless the developer explicitly approves the exact action.
-
-Do not edit first and explain later.
-
----
-
-## Core Workflow Rule
-
-Only one active implementation task is allowed at a time.
-
-A task is not complete until all of the following are finished:
-
-* Implementation
-* Verification
-* PR Review
-* Merge
-* Branch Cleanup
-* Develop Sync
-
-If a feature is awaiting any of the above, do not begin a new implementation stream.
-
-New findings, bugs, audits, ideas, and improvements must be added to the backlog and prioritized later.
+* Human Developers
+* AI Coding Agents
+* Code Review Agents
+* Audit Agents
+* Refactoring Agents
+* PR Review Agents
 
 ---
 
-## Manual Verification Gate
+# PURPOSE
 
-Before any change, the agent must stop and show:
+This document defines how all engineering work must be performed in the MAD Entertrainment repository.
 
-* Current branch
-* `git status --short`
-* Exact files proposed for change
-* Why each file needs changing
-* Risk level for each file
-* Proposed patch summary
-* Verification plan
-* Rollback plan
+The goals are:
 
-Proceed only after the developer explicitly says:
+* Maintain a Single Source of Truth (SSOT)
+* Prevent duplicate logic
+* Prevent duplicate UI
+* Prevent dead code
+* Prevent legacy code accumulation
+* Prevent orphan APIs
+* Prevent orphan UI
+* Maintain repository hygiene
+* Maintain frontend/backend alignment
+* Protect production systems
+* Maintain long-term maintainability
 
-```txt
-Approved to edit these files:
-- <path>
-- <path>
-```
-
-If approval is not explicit, do not edit.
+Failure to follow these rules is considered a governance violation.
 
 ---
 
-## Branch and Commit Safety
+# CORE PRINCIPLES
 
-Never commit directly to protected branches.
+Every change must satisfy:
 
-Protected branches:
-
-* `develop`
-* `live`
-
-Before editing, always run:
-
-```bash
-git branch --show-current
-git status --short
-```
-
-If the current branch is `develop` or `live`, stop and ask to create a task branch.
-
-All work must happen on a task branch created from `develop`.
-
-Allowed task branch names:
-
-```txt
-feat/<task-name>
-docs/<task-name>
-fix/<task-name>
-refactor/<task-name>
-test/<task-name>
-chore/<task-name>
-audit/<task-name>
-seo/<task-name>
-```
-
-Examples:
-
-```txt
-docs/add-testing-guide
-fix/mobile-ticket-spacing
-refactor/extract-auth-cooldown-hook
-test/add-socket-handler-tests
-chore/add-server-lint
-audit/dpdp-review
-seo/structured-data-enhancement
-```
-
-Never run these commands without explicit approval:
-
-```bash
-git add
-git commit
-git push
-git merge
-git rebase
-git branch -d
-git branch -D
-git push origin --delete
-```
-
-Before committing, show:
-
-* Current branch
-* Full `git status --short`
-* Exact files to stage
-* Exact commit message
-* Test/lint/build results
-* Whether the branch is safe to commit on
-
-Commit only after the developer explicitly approves the commit message.
-
-Use Conventional Commits.
-
-Examples:
-
-```txt
-docs: add testing guide
-test: add socket handler coverage
-refactor: extract ticket status banners
-fix: reduce mobile ticket wallet spacing
-chore: add server lint script
-```
+1. Correctness
+2. Security
+3. Maintainability
+4. Scalability
+5. Simplicity
+6. Traceability
+7. Reversibility
 
 ---
 
-## Branch Hygiene Rule
+# ONE TASK RULE
 
-Before creating a new task branch:
+Only one active implementation task may exist at a time.
 
-1. Verify current branch
+A task is not complete until:
 
-```bash
-git branch --show-current
-```
+* Implementation Complete
+* Verification Complete
+* PR Approved
+* Merge Complete
+* Branch Cleanup Complete
+* Develop Sync Complete
 
-2. Verify working tree
+Do not begin a second implementation stream until the first is fully completed.
 
-```bash
-git status --short
-```
+New findings must be added to backlog.
 
-3. Check for unfinished task branches
-
-```bash
-git branch
-```
-
-4. Confirm the current implementation task is:
-
-* Merged
-* Cleaned up
-* Synced with develop
-
-Do not create a new implementation branch if another implementation branch is still active.
+Never interrupt active implementation.
 
 ---
 
-## Before Editing
+# HARD SAFETY RULE
 
-Before making changes, the agent must:
+Audit-only means:
 
-1. Inspect relevant files.
-2. State exact files to be changed.
-3. Explain why each file must change.
-4. Identify risk level.
-5. Ask for approval.
-6. Wait for explicit approval.
+NO:
 
-Do not edit first and explain later.
-
----
-
-## High-Risk Areas
-
-Always ask before changing:
-
-* Payment logic
-* Auth logic
-* Security logic
-* Upload logic
-* Database schema
-* Migrations
-* Deployment config
-* Environment variables
-* CI/CD behavior
-* Socket handlers
-* Production API behavior
-
-Known high-risk files:
-
-```txt
-apps/server/src/services/public/payment.service.ts
-apps/server/src/sockets/index.ts
-```
-
-Do not refactor high-risk files without tests first.
-
----
-
-## Safe Starting Areas
-
-Safer cleanup and refactor targets:
-
-```txt
-README.md
-TESTING.md
-TODO-AUDIT-FIXES.md
-docs/*
-apps/web/src/app/tickets/page.tsx
-apps/web/src/components/auth/AuthForm.tsx
-apps/admin/src/app/team/page.tsx
-```
-
----
-
-## Mobile UI Rules
-
-When improving mobile UI:
-
-* Do not change backend behavior.
-* Do not change business logic.
-* Prefer reducing excessive padding before restructuring.
-* Keep primary actions visible earlier.
-* Collapse secondary filters only when appropriate.
-* Avoid horizontal scrolling where possible.
-* Document manual mobile verification.
-
-Known mobile findings:
-
-```txt
-Admin tables have medium-risk horizontal scrolling.
-Event detail pages contain tall mobile sections.
-Checkout pages have deeply buried payment sections.
-```
-
----
-
-## Large File Rules
-
-Files over 500 lines should not receive unrelated logic.
-
-When touching a large file:
-
-1. Identify one extraction target.
-2. Extract only one component, hook, helper, constants group, or type group.
-3. Keep behavior unchanged.
-4. Add/update tests if behavior changes.
-5. Avoid mixing feature work and refactoring.
-
-Known large-file priorities:
-
-```txt
-Safe:
-- tickets/page.tsx
-- AuthForm.tsx
-- team/page.tsx
-
-Medium:
-- admin bookings page modal extraction
-
-High:
-- payment.service.ts
-```
-
----
-
-## Duplicate Code Rules
-
-Before adding code:
-
-```bash
-rg "functionName|componentName|similar text"
-find . -name "*similar*"
-```
-
-Preferred tools:
-
-```txt
-jscpd
-knip
-```
-
-Use caution:
-
-```txt
-depcheck
-```
-
-Never remove dependencies based solely on depcheck.
-
----
-
-## Dead and Legacy Code Rules
-
-Before deleting anything:
-
-1. Search references.
-2. Check imports/exports.
-3. Check routes.
-4. Check dynamic imports.
-5. Check config/scripts/tests.
-6. Check runtime conventions.
-7. Confirm with knip.
-8. Obtain approval.
-
-Never delete:
-
-* Payment files
-* Auth files
-* Socket files
-* Migration files
-* Deployment files
-* Environment files
+* Editing
+* Refactoring
+* Deleting
+* Installing packages
+* Staging
+* Committing
+* Pushing
+* Merging
+* Rebasing
+* Branch deletion
 
 without explicit approval.
 
----
+Never modify code first.
 
-## Testing and Coverage Rules
-
-Do not raise coverage thresholds blindly.
-
-Process:
-
-1. Measure coverage.
-2. Record baseline.
-3. Set threshold slightly below baseline.
-4. Raise gradually.
-
-Priority gaps:
-
-```txt
-Socket handlers
-AuthForm smoke tests
-Tickets page smoke tests
-EventDetailClient smoke tests
-CheckoutContent smoke tests
-Admin booking page smoke tests
-```
+Always audit first.
 
 ---
 
-## Tooling Rules
+# SINGLE SOURCE OF TRUTH (SSOT)
+
+Every business rule must have exactly one owner.
+
+Ownership Matrix:
+
+Auth → Server
+
+Payments → Server
+
+Bookings → Server
+
+Ticket Status → Server
+
+Pricing → Server
+
+Availability → Server
+
+Seat Locking → Server
+
+RBAC → Server
+
+Notifications → Server
+
+UI State → Frontend
+
+UI Presentation → Frontend
+
+Frontend must never own business rules.
+
+Frontend must never duplicate backend decisions.
+
+---
+
+# SHARED OWNERSHIP RULE
+
+Reusable logic must live in:
+
+packages/shared
+
+packages/contracts
+
+packages/types
+
+packages/utils
+
+packages/validations
+
+Before creating:
+
+* Utility
+* Type
+* Schema
+* Constant
+* Validation
+
+Search repository first.
+
+Reuse existing implementations.
+
+Do not create duplicates.
+
+---
+
+# FRONTEND BACKEND CONTRACT GOVERNANCE
+
+Every UI must trace:
+
+Page
+→ API
+→ Service
+→ Database
+
+Before implementation identify:
+
+* Endpoint
+* Request Schema
+* Response Schema
+* Error Schema
+* Auth Rules
+* Ownership Rules
+
+Frontend assumptions must match backend responses exactly.
+
+No frontend-only business logic.
+
+No duplicated validation.
+
+Shared schemas are mandatory.
+
+---
+
+# ORPHAN PREVENTION POLICY
+
+Every page must have:
+
+* Route
+* Owner
+* Consumer
+* Purpose
+
+Every API must have:
+
+* Consumer
+* Owner
+* Purpose
+
+Every component must have:
+
+* Consumer
+* Purpose
+
+Every service must have:
+
+* Caller
+
+If no consumer exists:
+
+Do not create it.
+
+---
+
+# DUPLICATE CODE PREVENTION
+
+Before adding code:
+
+Search repository.
+
+Review:
+
+* Components
+* Services
+* Hooks
+* Utilities
+* Validators
+* Contracts
+
+Never duplicate:
+
+* Validation
+* Pricing
+* Status Logic
+* Permissions
+* API Wrappers
+* Formatting Functions
+* Error Handling Patterns
+
+Reuse existing implementation.
+
+---
+
+# DEAD CODE POLICY
+
+Before every PR:
+
+Review:
+
+* Unused imports
+* Unused functions
+* Unused hooks
+* Unused state
+* Unused interfaces
+* Unused types
+* Unused constants
+* Unused files
+* Unused routes
+
+If verified unused:
+
+Delete it.
+
+Do not keep:
+
+"for future use"
+
+code.
+
+---
+
+# LEGACY CODE POLICY
+
+Legacy code requires:
+
+LEGACY
+Reason
+Owner
+Ticket
+Removal Plan
+
+Example:
+
+LEGACY
+Reason: Checkout V1 compatibility
+Owner: Platform Team
+Ticket: BUG-401
+
+Undocumented legacy code is technical debt.
+
+---
+
+# FILE SIZE GOVERNANCE
+
+Preferred Limits
+
+Component:
+0-300 lines
+
+Hook:
+0-250 lines
+
+Schema:
+0-300 lines
+
+Controller:
+0-200 lines
+
+Service:
+0-500 lines
+
+Review Required
+
+Component:
+301-500
+
+Service:
+501-700
+
+Refactor Required
+
+701+
+
+PR Blocked
+
+1000+
+
+No exceptions.
+
+---
+
+# CODE QUALITY RULES
+
+Every file must satisfy:
+
+* Single Responsibility Principle
+* Clear Naming
+* Low Coupling
+* High Cohesion
+* Minimal Complexity
+* Readability
+* Maintainability
+
+Avoid:
+
+* Magic Numbers
+* Magic Strings
+* Nested Conditions
+* Duplicated Error Handling
+* Duplicated Validation
+
+Prefer:
+
+* Shared Constants
+* Shared Types
+* Shared Schemas
+* Shared Utilities
+
+---
+
+# REPOSITORY HYGIENE
+
+Disallowed Folder Names:
+
+temp
+temp2
+misc
+old
+backup
+new-folder
+final
+test2
+
+Every folder requires ownership.
+
+Every file requires ownership.
+
+Avoid dumping unrelated utilities into generic folders.
+
+---
+
+# BRANCH SAFETY
+
+Protected Branches:
+
+develop
+
+live
+
+Never commit directly.
+
+Always create task branches.
+
+Allowed:
+
+feat/<name>
+
+fix/<name>
+
+refactor/<name>
+
+audit/<name>
+
+docs/<name>
+
+test/<name>
+
+chore/<name>
+
+seo/<name>
+
+Examples:
+
+feat/ticket-dashboard
+
+fix/payment-verification
+
+audit/ui-005-review
+
+refactor/auth-hook
+
+---
+
+# BRANCH HYGIENE
+
+Before new work:
+
+git branch --show-current
+
+git status --short
+
+git branch
+
+Verify:
+
+* Working tree clean
+* Previous task completed
+* Previous branch merged
+* Previous branch cleaned
+
+Do not stack implementation branches.
+
+---
+
+# MANUAL VERIFICATION GATE
+
+Before editing show:
+
+* Current Branch
+* Git Status
+* Files To Change
+* Reason For Change
+* Risk Level
+* Patch Summary
+* Verification Plan
+* Rollback Plan
+
+Wait for approval.
+
+Required approval:
+
+Approved to edit:
+
+<file>
+
+<file>
+
+Without approval:
+
+Stop.
+
+---
+
+# HIGH RISK AREAS
+
+Require explicit approval:
+
+* Payment Logic
+* Auth Logic
+* Upload Logic
+* Security Logic
+* Database Schema
+* Migrations
+* CI/CD
+* Deployment
+* Environment Variables
+* Socket Handlers
+
+Never refactor high-risk systems without tests.
+
+---
+
+# MOBILE UX GOVERNANCE
+
+All mobile screens must support:
+
+* Responsive Layout
+* No Horizontal Scroll
+* 44px Touch Targets
+* Keyboard Safety
+* Visible CTA
+* Accessible Navigation
+
+Required states:
+
+Loading
+
+Empty
+
+Error
+
+Offline
+
+Unauthorized
+
+Success
+
+---
+
+# ACCESSIBILITY GOVERNANCE
+
+Required:
+
+* ARIA Labels
+* Keyboard Navigation
+* Focus Management
+* Screen Reader Support
+* Escape Key Handling
+* Form Labels
+
+Accessibility regressions block merge.
+
+---
+
+# TESTING GOVERNANCE
+
+Before merge run:
+
+pnpm lint
+
+pnpm test
+
+pnpm build
+
+Failures must be resolved.
+
+Never ignore failures.
+
+---
+
+# TOOLING GOVERNANCE
 
 Before adding tooling:
 
-* Review existing scripts.
-* Extend existing tooling where possible.
-* Avoid overlapping tools.
-* Do not install dependencies without approval.
+Review existing tooling.
 
-Known lint status:
+Avoid overlap.
 
-```txt
-apps/web     -> ESLint
-apps/admin   -> ESLint
-apps/server  -> No dedicated lint script
-root         -> Turbo lint
-```
+Avoid duplicate tools.
+
+Do not install dependencies without approval.
 
 ---
 
-## Governance Checks
+# DOCUMENTATION GOVERNANCE
 
-Review existing governance tooling before adding new rules.
+Changes affecting:
 
-Known governance script:
+* Payments
+* Auth
+* Bookings
+* Tickets
+* APIs
+* Infrastructure
+* Deployments
 
-```txt
-scripts/ci_governance_check.ts
-```
+must update documentation.
 
-Before PR or merge, run approved checks:
+Required documents:
 
-```bash
-pnpm lint
-pnpm test
-pnpm build
-```
+AGENTS.md
 
-Do not ignore failures.
+ARCHITECTURE.md
 
----
+API_CONTRACTS.md
 
-## Implementation Workflow
+RUNBOOK.md
 
-### Audit
+TESTING.md
 
-* Inspect files
-* Identify branch
-* Identify risk
-* Identify scope
-* Confirm one-task rule
+DEPLOYMENT_MAP.md
 
-### Plan
-
-Provide:
-
-* Goal
-* Files to change
-* Files not to touch
-* Risk level
-* Test plan
-* Rollback plan
-
-### Implement
-
-* Smallest safe change
-* No unrelated cleanup
-* One extraction at a time
-* No high-risk refactors without tests
-
-### Verify
-
-Run approved verification:
-
-```bash
-pnpm lint
-pnpm test
-pnpm build
-```
-
-For mobile work document:
-
-* Device width
-* Page tested
-* Before/after behavior
-* CTA visibility
-* Scroll behavior
-
-### Commit
-
-Only after approval.
-
-Show:
-
-```bash
-git branch --show-current
-git status --short
-```
-
-Then provide:
-
-* Files changed
-* Commit message
-* Verification results
+CHANGELOG.md
 
 ---
 
-## PR, Merge, and Branch Cleanup
+# AUDIT REQUIREMENTS
 
-Do not open PRs, merge, or delete branches without approval.
+Every audit must review:
 
-Before PR:
+* Functionality
+* Security
+* Performance
+* Maintainability
+* Dead Code
+* Duplicate Code
+* Legacy Code
+* Unused Files
+* Repository Hygiene
+* Frontend Backend Alignment
+* Future Risk
 
-* Branch is not develop/live
-* Scope matches approval
-* Verification completed
-* TODOs updated
-* No risky files changed without approval
+No assumptions.
 
-PR description must include:
+Evidence required.
 
-* What changed
-* Why it changed
-* Files changed
-* Tests run
-* Manual QA
-* Risks
-* Follow-up items
+---
 
-After merge into develop, only with approval:
+# IMPLEMENTATION WORKFLOW
 
-```bash
-git checkout develop
-git pull origin develop
-git branch -d <branch>
-git push origin --delete <branch>
-```
+PHASE 1
 
-For releases:
+Audit
 
-* Verify develop
-* Obtain release approval
-* Merge develop → live only after approval
+PHASE 2
 
-Never delete branches automatically.
+Plan
+
+PHASE 3
+
+Approval
+
+PHASE 4
+
+Implementation
+
+PHASE 5
+
+Verification
+
+PHASE 6
+
+Approval
+
+PHASE 7
+
+Commit
+
+PHASE 8
+
+Push
+
+PHASE 9
+
+PR
+
+PHASE 10
+
+Merge
+
+PHASE 11
+
+Cleanup
+
+PHASE 12
+
+Develop Sync
+
+---
+
+# PR QUALITY GATE
+
+Before merge answer:
+
+1. Is there a single source of truth?
+
+2. Did we add duplicate logic?
+
+3. Did we add duplicate validation?
+
+4. Did we add duplicate UI?
+
+5. Did we create dead code?
+
+6. Did we create legacy code?
+
+7. Did we create orphan UI?
+
+8. Did we create orphan APIs?
+
+9. Are frontend and backend aligned?
+
+10. Are file size limits respected?
+
+11. Can a new developer understand this in ten minutes?
+
+If any answer is NO:
+
+Do not merge.
+
+---
+
+# RELEASE GOVERNANCE
+
+Before merging develop → live:
+
+Verify:
+
+* Build Passes
+* Tests Pass
+* Contracts Valid
+* No Critical Findings
+* Rollback Plan Exists
+
+Release only after explicit approval.
+
+---
+
+# FINAL MAD GOLDEN RULE
+
+Do not optimize for speed.
+
+Optimize for:
+
+Correctness
+
+Maintainability
+
+Safety
+
+Consistency
+
+Traceability
+
+Long-Term Repository Health
+
+The cleanest code is the code that never needs to be rewritten.

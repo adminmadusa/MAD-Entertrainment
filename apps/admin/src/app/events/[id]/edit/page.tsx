@@ -1,6 +1,4 @@
 'use client';
-
-import { EVENT_CATEGORY_LABELS, BookingMode, TicketTier, EventStatus } from '@mad/shared';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { useParams, useRouter } from 'next/navigation';
@@ -34,6 +32,18 @@ interface TicketTierInput {
 const defaultTier = (): TicketTierInput => ({
   name: 'general', price: '', capacity: '', groupSize: '', minPerBooking: '', discount: '', taxPercent: '', startDate: '', endDate: '', description: '', isAvailable: true,
 });
+
+const EVENT_STATUS_LABELS: Partial<Record<EventStatus, string>> = {
+  [EventStatus.DRAFT]: 'Draft',
+  [EventStatus.PUBLISHED]: 'Published',
+  [EventStatus.POSTPONED]: 'Postponed',
+  [EventStatus.COMPLETED]: 'Completed',
+  [EventStatus.CANCELLED]: 'Cancelled',
+  [EventStatus.SOLD_OUT]: 'Sold Out',
+};
+
+const isEventLifecycleStatus = (status: EventStatus): status is EventLifecycleStatus =>
+  Object.prototype.hasOwnProperty.call(EVENT_STATUS_TRANSITIONS, status);
 
 export default function EditEventPage() {
   const { id } = useParams() as { id: string };
@@ -281,6 +291,8 @@ export default function EditEventPage() {
 
   const ticketsCheckedIn = event?.ticketsCheckedIn ?? 0;
   const ticketsSold = event?.ticketsSold ?? 0;
+  const allowedNextStatuses = isEventLifecycleStatus(status) ? EVENT_STATUS_TRANSITIONS[status] : [];
+  const statusOptions = Array.from(new Set<EventStatus>([status, ...allowedNextStatuses]));
 
   let attendanceStatus = 'NO ATTENDANCE';
   let attendanceColorClass = 'bg-red-500/10 text-red-400 border-red-500/30';
@@ -414,11 +426,11 @@ export default function EditEventPage() {
             </Field>
             <Field label="Status">
               <select id="event-status" value={status} onChange={(e) => setStatus(e.target.value as EventStatus)} className={inputCls}>
-                <option value={EventStatus.DRAFT} className="bg-background-card">Draft</option>
-                <option value={EventStatus.PUBLISHED} className="bg-background-card">Published</option>
-                <option value={EventStatus.CANCELLED} className="bg-background-card">Cancelled</option>
-                <option value={EventStatus.SOLD_OUT} className="bg-background-card">Sold Out</option>
-                <option value={EventStatus.COMPLETED} className="bg-background-card">Completed</option>
+                {statusOptions.map((option) => (
+                  <option key={option} value={option} className="bg-background-card">
+                    {EVENT_STATUS_LABELS[option] ?? option}
+                  </option>
+                ))}
               </select>
             </Field>
             <Field label="Venue *">
