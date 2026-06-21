@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { EventStatus } from '@mad/shared';
 import { adminCreateEvent, adminGetEvent, adminGetEvents, adminUpdateEvent, type AdminEvent } from './event.service';
 import { adminApiClient } from '@/lib/api/client';
 
@@ -17,7 +18,7 @@ const eventFixture: AdminEvent = {
   slug: 'mad-night',
   description: 'Main event',
   category: 'concert',
-  status: 'draft',
+  status: EventStatus.DRAFT,
   venue: 'Warehouse',
   startDate: '2026-06-01T00:00:00.000Z',
   ticketTiers: [],

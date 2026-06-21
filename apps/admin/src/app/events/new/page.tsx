@@ -1,6 +1,6 @@
 'use client';
 
-import { EventCategory, EVENT_CATEGORY_LABELS, BookingMode, TicketTier, EventStatus } from '@mad/shared';
+import { EVENT_CATEGORY_LABELS, BookingMode, TicketTier, EventStatus } from '@mad/shared';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
@@ -171,8 +171,10 @@ export default function CreateEventPage() {
           }))
           .filter((o) => o.totalCapacity !== undefined || o.isActive !== undefined);
         
-        // Let server calculate totalCapacity
-        payload.totalCapacity = 1; // Temporary mock, server computes correctly
+        // EVT-008A: Temporary compatibility workaround.
+        // Profile-based event creation still requires totalCapacity >= 1.
+        // Remove when the profile create contract lets the server derive capacity without a placeholder.
+        payload.totalCapacity = 1;
       } else {
         const ticketTiers = tiers.map((t) => ({
           name: t.name,
