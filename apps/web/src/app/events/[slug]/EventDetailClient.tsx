@@ -13,6 +13,7 @@ import { publicGetEventBySlug } from '@/lib/api/public.service';
 import { TicketSelectionContent } from '@/components/booking/TicketSelectionContent';
 import { CheckoutContent } from '@/components/booking/CheckoutContent';
 import { EventGallery } from './components/EventGallery';
+import { EventOverview } from './components/EventOverview';
 import { EventStickyCTA } from './components/EventStickyCTA';
 
 interface EventDetailClientProps {
@@ -29,7 +30,6 @@ interface EventDetailClientProps {
 export default function EventDetailClient({ slug, initialEvent }: EventDetailClientProps) {
   const router = useRouter();
 
-  const [isOverviewOpen, setIsOverviewOpen] = useState(false);
   const [isFavorited, setIsFavorited] = useState(false);
   const [scrollY, setScrollY] = useState(0);
 
@@ -46,11 +46,6 @@ export default function EventDetailClient({ slug, initialEvent }: EventDetailCli
   const [checkoutBookingId, setCheckoutBookingId] = useState<string | null>(null);
 
   // Focus traps for dialogs
-  const overviewRef = useFocusTrap<HTMLDivElement>({
-    isActive: isOverviewOpen,
-    onClose: () => setIsOverviewOpen(false),
-  });
-
   const bookingModalRef = useFocusTrap<HTMLDivElement>({
     isActive: isBookingModalOpen,
     onClose: () => setIsBookingModalOpen(false),
@@ -124,11 +119,6 @@ export default function EventDetailClient({ slug, initialEvent }: EventDetailCli
   const minPrice = prices.length > 0 ? Math.min(...prices) : 0;
   const maxPrice = prices.length > 0 ? Math.max(...prices) : 0;
   const priceDisplay = minPrice === maxPrice ? `₹${minPrice}` : `₹${minPrice} - ₹${maxPrice}`;
-
-  // Truncated description (150 chars limit)
-  const descriptionPreview = event.description.length > 150 
-    ? `${event.description.substring(0, 150)}...`
-    : event.description;
 
   // Social proof mock data
   const SOCIAL_AVATARS = ['A', 'R', 'K', 'S', 'P'];
@@ -350,49 +340,11 @@ export default function EventDetailClient({ slug, initialEvent }: EventDetailCli
               </span>
             </div>
 
-            {/* Organizer card */}
-            <div className="glass rounded-2xl border border-white/5 p-5 flex items-center justify-between gap-4 hover:border-white/10 transition-colors">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center font-bold text-lg text-accent-purple-light flex-shrink-0">
-                  {event.organizerName?.charAt(0).toUpperCase() || 'M'}
-                </div>
-                <div>
-                  <div className="flex items-center gap-1.5 text-sm font-bold text-white">
-                    <span>{event.organizerName || 'MAD Organizer'}</span>
-                    <span className="text-[10px] text-accent-cyan px-2 py-0.5 bg-accent-cyan/10 rounded-full border border-accent-cyan/20">
-                      Top organizer
-                    </span>
-                  </div>
-                  <div className="text-xs text-text-muted mt-0.5">
-                    20.5k followers · {event.category} events
-                  </div>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => alert('Following organizer!')}
-                className="flex-shrink-0 px-5 py-2 text-xs font-semibold rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white transition-all active:scale-95"
-              >
-                + Follow
-              </button>
-            </div>
-
-            {/* Overview */}
-            <div className="space-y-3">
-              <h2 className="text-base font-bold text-white">Overview</h2>
-              <div className="text-text-secondary text-sm leading-relaxed">
-                <p>{descriptionPreview}</p>
-                {event.description.length > 150 && (
-                  <button
-                    type="button"
-                    onClick={() => setIsOverviewOpen(true)}
-                    className="text-accent-cyan hover:text-accent-cyan/80 font-semibold inline-flex items-center gap-1 mt-2 hover:underline"
-                  >
-                    Read more →
-                  </button>
-                )}
-              </div>
-            </div>
+            <EventOverview
+              description={event.description}
+              organizerName={event.organizerName}
+              category={event.category}
+            />
 
             <EventGallery images={event.galleryImages} />
 
@@ -507,48 +459,6 @@ export default function EventDetailClient({ slug, initialEvent }: EventDetailCli
         </div>
       </div>
 
-      {/* Overview Modal Drawer */}
-      {isOverviewOpen && (
-        <div className="fixed inset-0 z-[100] flex justify-end bg-black/60 backdrop-blur-sm">
-          {/* Backdrop click to close */}
-          <div className="absolute inset-0" onClick={() => setIsOverviewOpen(false)} />
-
-          <div
-            ref={overviewRef}
-            tabIndex={-1}
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="overview-modal-title"
-            className="w-full max-w-md bg-[#0d111d] h-full shadow-2xl relative z-10 border-l border-white/10 p-6 flex flex-col justify-between animate-slide-in focus:outline-none"
-          >
-            <div className="space-y-6">
-              <div className="flex items-center justify-between border-b border-white/10 pb-4">
-                <h3 id="overview-modal-title" className="text-white font-bold text-lg">Overview</h3>
-                <button 
-                  type="button" 
-                  onClick={() => setIsOverviewOpen(false)}
-                  aria-label="Close overview drawer"
-                  className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-text-secondary hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-accent-purple"
-                >
-                  ✕
-                </button>
-              </div>
-              <div className="overflow-y-auto max-h-[80vh] text-text-secondary text-sm leading-relaxed pr-2 custom-scrollbar">
-                {event.description}
-              </div>
-            </div>
-            <div className="pt-4 border-t border-white/10 flex justify-end">
-              <button 
-                type="button" 
-                onClick={() => setIsOverviewOpen(false)}
-                className="px-5 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white text-xs font-semibold"
-              >
-                Close Drawer
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
       {/* Ticket Selection Modal overlay */}
       {isBookingModalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm md:p-4 animate-fade-in">
