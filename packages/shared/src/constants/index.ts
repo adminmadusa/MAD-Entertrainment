@@ -34,7 +34,6 @@ export enum EventStatus {
   COMPLETED = 'completed',
   SOLD_OUT = 'sold_out',
 }
-};
 
 // ─── Booking Status ──────────────────────────────────────────
 export enum BookingStatus {
