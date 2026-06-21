@@ -105,13 +105,30 @@ export async function getMyBookings(
       throw AppError.unauthorized('Authentication required');
     }
 
-    const bookings = await PublicBookingService.getMyBookings(
+    const bookingsResult = await PublicBookingService.getMyBookings(
       req.user.sub
     );
 
+    // Mask ticket QR codes if assignmentStatus is 'pending' or 'claimed'
+    const maskedTickets = bookingsResult.tickets.map((t: any) => {
+      const ticketObj = typeof t.toObject === 'function' ? t.toObject() : t;
+      if (
+        ticketObj.assignmentStatus === 'pending' ||
+        ticketObj.assignmentStatus === 'claimed'
+      ) {
+        ticketObj.qrCode = undefined;
+        ticketObj.qrCodeImage = undefined;
+      }
+      return ticketObj;
+    });
+
     sendSuccess(
       res,
-      bookings,
+      {
+        bookings: bookingsResult.bookings,
+        tickets: maskedTickets,
+        ticketsReadyMap: bookingsResult.ticketsReadyMap,
+      },
       'Bookings retrieved successfully'
     );
   } catch (err) {
@@ -172,9 +189,26 @@ export async function getBooking(
       throw err;
     }
 
+    // Mask ticket QR codes if assignmentStatus is 'pending' or 'claimed'
+    const maskedTickets = result.tickets.map((t: any) => {
+      const ticketObj = typeof t.toObject === 'function' ? t.toObject() : t;
+      if (
+        ticketObj.assignmentStatus === 'pending' ||
+        ticketObj.assignmentStatus === 'claimed'
+      ) {
+        ticketObj.qrCode = undefined;
+        ticketObj.qrCodeImage = undefined;
+      }
+      return ticketObj;
+    });
+
     sendSuccess(
       res,
-      result,
+      {
+        booking: result.booking,
+        tickets: maskedTickets,
+        ticketsReady: result.ticketsReady,
+      },
       'Booking retrieved successfully'
     );
   } catch (err) {
@@ -225,6 +259,8 @@ export async function downloadBookingPDF(
   try {
     const { bookingId } = req.params;
     const token = req.query?.token as string;
+    const reqUserId = req.user?.sub;
+    const reqSessionId = req.session?.sessionId || undefined;
 
     let booking: any;
 
@@ -252,9 +288,6 @@ export async function downloadBookingPDF(
         throw AppError.forbidden('Invalid download request parameters');
       }
     } else {
-      const reqUserId = req.user?.sub;
-      const reqSessionId = req.session?.sessionId || undefined;
-
       const result = await PublicBookingService.getBookingByReference(bookingId);
       if (!result) {
         if (!reqUserId) {
@@ -291,7 +324,10 @@ export async function downloadBookingPDF(
       }
     }
 
-    const pdfBuffer = await generateTicketPDF(booking, booking.eventId);
+    const pdfBuffer = await generateTicketPDF(booking, booking.eventId, {
+      role: 'purchaser',
+      userId: reqUserId,
+    });
 
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename="MAD_Ticket_${booking.bookingId}.pdf"`);

@@ -107,6 +107,9 @@ let _webhookLimiter: RateLimiter | undefined;
 let _adminLimiter: RateLimiter | undefined;
 let _resendLimiter: RateLimiter | undefined;
 let _recoveryLimiter: RateLimiter | undefined;
+let _ticketAssignLimiter: RateLimiter | undefined;
+let _ticketClaimLimiter: RateLimiter | undefined;
+let _ticketRevokeLimiter: RateLimiter | undefined;
 
 function makeLimiter(prefix: 'general' | 'auth' | 'payment' | 'booking' | 'webhook' | 'admin'): RateLimiter {
   const e = getEnv();
@@ -202,6 +205,60 @@ export function initRateLimiters(): void {
       });
     },
   });
+
+  _ticketAssignLimiter = rateLimit({
+    windowMs: 60 * 60 * 1000, // 1 hour window
+    limit: 20,
+    standardHeaders: true,
+    legacyHeaders: false,
+    passOnStoreError: true,
+    store: new ResilientRedisStore('ticket-assign'),
+    keyGenerator: (req: any) => {
+      return req.user?.sub || req.ip || '';
+    },
+    handler: (req: any, res: any) => {
+      res.status(429).json({
+        success: false,
+        message: 'Too many assign requests. Please try again after an hour.',
+      });
+    },
+  });
+
+  _ticketClaimLimiter = rateLimit({
+    windowMs: 60 * 60 * 1000, // 1 hour window
+    limit: 10,
+    standardHeaders: true,
+    legacyHeaders: false,
+    passOnStoreError: true,
+    store: new ResilientRedisStore('ticket-claim'),
+    keyGenerator: (req: any) => {
+      return req.user?.sub || req.ip || '';
+    },
+    handler: (req: any, res: any) => {
+      res.status(429).json({
+        success: false,
+        message: 'Too many claim requests. Please try again after an hour.',
+      });
+    },
+  });
+
+  _ticketRevokeLimiter = rateLimit({
+    windowMs: 24 * 60 * 60 * 1000, // 24 hour window
+    limit: 5,
+    standardHeaders: true,
+    legacyHeaders: false,
+    passOnStoreError: true,
+    store: new ResilientRedisStore('ticket-revoke'),
+    keyGenerator: (req: any) => {
+      return req.params.ticketId || req.ip || '';
+    },
+    handler: (req: any, res: any) => {
+      res.status(429).json({
+        success: false,
+        message: 'Too many revoke requests for this ticket. Please try again tomorrow.',
+      });
+    },
+  });
 }
 
 export const generalLimiter = (req: any, res: any, next: any) => {
@@ -266,4 +323,28 @@ export const recoveryLimiter = (req: any, res: any, next: any) => {
     return next();
   }
   return _recoveryLimiter(req, res, next);
+};
+
+export const ticketAssignLimiter = (req: any, res: any, next: any) => {
+  if (!_ticketAssignLimiter) {
+    logger.error('ticketAssignLimiter called before initRateLimiters() — rate limiting inactive');
+    return next();
+  }
+  return _ticketAssignLimiter(req, res, next);
+};
+
+export const ticketClaimLimiter = (req: any, res: any, next: any) => {
+  if (!_ticketClaimLimiter) {
+    logger.error('ticketClaimLimiter called before initRateLimiters() — rate limiting inactive');
+    return next();
+  }
+  return _ticketClaimLimiter(req, res, next);
+};
+
+export const ticketRevokeLimiter = (req: any, res: any, next: any) => {
+  if (!_ticketRevokeLimiter) {
+    logger.error('ticketRevokeLimiter called before initRateLimiters() — rate limiting inactive');
+    return next();
+  }
+  return _ticketRevokeLimiter(req, res, next);
 };

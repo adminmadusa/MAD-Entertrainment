@@ -39,17 +39,17 @@ export const scanTicket = async (req: Request, res: Response, next: NextFunction
       });
     }
 
-    if (ticket.status === 'replaced') {
-      return res.status(400).json({
-        success: false,
-        message: 'Ticket Replaced: Please use the latest ticket.',
-      });
-    }
+    const isEntryValid =
+      ticket.status === 'active' &&
+      (
+        ticket.assignmentStatus === 'unassigned' ||
+        ticket.assignmentStatus === 'claimed'
+      );
 
-    if (ticket.status === 'voided') {
+    if (!isEntryValid) {
       return res.status(400).json({
         success: false,
-        message: 'Ticket Voided: This ticket is no longer valid.',
+        message: 'Ticket is not valid for entry',
       });
     }
 
@@ -80,7 +80,11 @@ export const scanTicket = async (req: Request, res: Response, next: NextFunction
 
     // Atomically check-in the ticket
     const updatedTicket = await Ticket.findOneAndUpdate(
-      { _id: ticket._id, $or: [{ scannedAt: { $exists: false } }, { scannedAt: null }] },
+      {
+        _id: ticket._id,
+        status: 'active',
+        $or: [{ scannedAt: { $exists: false } }, { scannedAt: null }]
+      },
       { $set: { scannedAt: new Date(), scannedById: new Types.ObjectId(scannerId) } },
       { new: true }
     );
