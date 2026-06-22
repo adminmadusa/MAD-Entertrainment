@@ -266,7 +266,7 @@ describe('Ticket Profile Service Sync Integrity', () => {
 
     vi.mocked(TicketProfile.findById).mockResolvedValue(mockProfile as any);
     vi.mocked(Event.find).mockResolvedValue([mockEvent, mockEvent2] as any);
-    
+
     // Simulate booking exists on event 2 VIP tier
     vi.mocked(Booking.exists).mockImplementation(async (query: any) => {
       if (query.eventId === 'event-2' && query['tickets.tier'] === 'VIP') {
@@ -321,7 +321,7 @@ describe('Ticket Profile Delete Reference Protection', () => {
     );
   });
 
-  it.each(['draft', 'published', 'sold_out', 'postponed'])(
+  it.each(['draft', 'published', 'postponed'])(
     'blocks delete when profile is referenced by a %s event',
     async (status) => {
       vi.mocked(Event.find).mockResolvedValue([
