@@ -47,7 +47,6 @@ const EVENT_STATUS_LABELS: Partial<Record<EventStatus, string>> = {
   [EventStatus.POSTPONED]: 'Postponed',
   [EventStatus.COMPLETED]: 'Completed',
   [EventStatus.CANCELLED]: 'Cancelled',
-  [EventStatus.SOLD_OUT]: 'Sold Out',
 };
 
 const isEventLifecycleStatus = (status: EventStatus): status is EventLifecycleStatus =>

@@ -90,7 +90,6 @@ describe('Admin Event Service', () => {
       EventStatus.COMPLETED,
       EventStatus.CANCELLED,
       EventStatus.POSTPONED,
-      EventStatus.SOLD_OUT,
     ])('rejects initial status %s with conflict', async (status) => {
       try {
         await eventService.createEvent({ status } as any);
@@ -106,24 +105,7 @@ describe('Admin Event Service', () => {
       expect(CacheService.delPattern).not.toHaveBeenCalled();
     });
 
-    it('rejects sold_out in lifecycle validation input', () => {
-      const result = createEventSchema.safeParse({
-        body: {
-          title: 'Lifecycle Test',
-          slug: 'lifecycle-test',
-          description: 'Lifecycle test event',
-          category: 'concert',
-          status: EventStatus.SOLD_OUT,
-          bookingMode: 'general_admission',
-          bannerImage: { url: 'https://example.com/banner.jpg', publicId: 'banner' },
-          startDate: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-          venue: 'Test Venue',
-          totalCapacity: 100,
-        },
-      });
 
-      expect(result.success).toBe(false);
-    });
   });
 
   describe('deleteEvent', () => {

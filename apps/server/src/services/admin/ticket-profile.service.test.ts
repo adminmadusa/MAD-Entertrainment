@@ -339,24 +339,6 @@ describe('Ticket Profile Delete Reference Protection', () => {
     }
   );
 
-  it('does not block delete solely because profile is referenced by a sold_out event', async () => {
-    vi.mocked(Event.find).mockResolvedValue([
-      {
-        ...historicalEvent,
-        status: EventStatus.SOLD_OUT,
-      },
-    ] as any);
-
-    await expect(ticketProfileService.deleteTicketProfile('profile-1')).resolves.toEqual({
-      _id: 'profile-1',
-      isDeleted: true,
-    });
-    expect(TicketProfile.findByIdAndUpdate).toHaveBeenCalledWith(
-      'profile-1',
-      { isDeleted: true },
-      { new: true }
-    );
-  });
 
   it('blocks delete when profile is referenced by a future event', async () => {
     vi.mocked(Event.find).mockResolvedValue([
@@ -387,24 +369,6 @@ describe('Ticket Profile Delete Reference Protection', () => {
     expect(TicketProfile.findByIdAndUpdate).not.toHaveBeenCalled();
   });
 
-  it('does not block delete solely because profile is referenced by a sold_out event status string', async () => {
-    vi.mocked(Event.find).mockResolvedValue([
-      {
-        ...historicalEvent,
-        status: 'sold_out',
-      },
-    ] as any);
-
-    await expect(ticketProfileService.deleteTicketProfile('profile-1')).resolves.toEqual({
-      _id: 'profile-1',
-      isDeleted: true,
-    });
-    expect(TicketProfile.findByIdAndUpdate).toHaveBeenCalledWith(
-      'profile-1',
-      { isDeleted: true },
-      { new: true }
-    );
-  });
 
   it.each(['draft', 'published', 'postponed'])(
     'blocks delete when profile is referenced by a %s event',
