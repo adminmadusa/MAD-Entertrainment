@@ -387,6 +387,43 @@ describe('Ticket Profile Delete Reference Protection', () => {
     expect(TicketProfile.findByIdAndUpdate).not.toHaveBeenCalled();
   });
 
+  it('does not block delete solely because profile is referenced by a sold_out event status string', async () => {
+    vi.mocked(Event.find).mockResolvedValue([
+      {
+        ...historicalEvent,
+        status: 'sold_out',
+      },
+    ] as any);
+
+    await expect(ticketProfileService.deleteTicketProfile('profile-1')).resolves.toEqual({
+      _id: 'profile-1',
+      isDeleted: true,
+    });
+    expect(TicketProfile.findByIdAndUpdate).toHaveBeenCalledWith(
+      'profile-1',
+      { isDeleted: true },
+      { new: true }
+    );
+  });
+
+  it.each(['draft', 'published', 'postponed'])(
+    'blocks delete when profile is referenced by a %s event',
+    async (status) => {
+      vi.mocked(Event.find).mockResolvedValue([
+        {
+          ...historicalEvent,
+          status,
+        },
+      ] as any);
+
+      await expect(ticketProfileService.deleteTicketProfile('profile-1')).rejects.toThrow(
+        'Ticket Profile is referenced by active events and cannot be deleted'
+      );
+
+      expect(TicketProfile.findByIdAndUpdate).not.toHaveBeenCalled();
+    }
+  );
+
   it('blocks delete when a referenced event has tier-level sold tickets', async () => {
     vi.mocked(Event.find).mockResolvedValue([
       {
@@ -400,7 +437,6 @@ describe('Ticket Profile Delete Reference Protection', () => {
     );
     expect(TicketProfile.findByIdAndUpdate).not.toHaveBeenCalled();
   });
-
   it('blocks delete when referenced historical events have bookings', async () => {
     vi.mocked(Event.find).mockResolvedValue([historicalEvent] as any);
     vi.mocked(Booking.exists).mockResolvedValue({ _id: 'booking-id' } as any);
@@ -408,7 +444,11 @@ describe('Ticket Profile Delete Reference Protection', () => {
     await expect(ticketProfileService.deleteTicketProfile('profile-1')).rejects.toThrow(
       'Ticket Profile is referenced by active events and cannot be deleted'
     );
-    expect(Booking.exists).toHaveBeenCalledWith({ eventId: { $in: ['event-1'] } });
+
+    expect(Booking.exists).toHaveBeenCalledWith({
+      eventId: { $in: ['event-1'] },
+    });
+
     expect(TicketProfile.findByIdAndUpdate).not.toHaveBeenCalled();
   });
 
@@ -419,7 +459,11 @@ describe('Ticket Profile Delete Reference Protection', () => {
     await expect(ticketProfileService.deleteTicketProfile('profile-1')).rejects.toThrow(
       'Ticket Profile is referenced by active events and cannot be deleted'
     );
-    expect(Reservation.exists).toHaveBeenCalledWith({ eventId: { $in: ['event-1'] } });
+
+    expect(Reservation.exists).toHaveBeenCalledWith({
+      eventId: { $in: ['event-1'] },
+    });
+
     expect(TicketProfile.findByIdAndUpdate).not.toHaveBeenCalled();
   });
 
@@ -430,7 +474,11 @@ describe('Ticket Profile Delete Reference Protection', () => {
     await expect(ticketProfileService.deleteTicketProfile('profile-1')).rejects.toThrow(
       'Ticket Profile is referenced by active events and cannot be deleted'
     );
-    expect(Ticket.exists).toHaveBeenCalledWith({ eventId: { $in: ['event-1'] } });
+
+    expect(Ticket.exists).toHaveBeenCalledWith({
+      eventId: { $in: ['event-1'] },
+    });
+
     expect(TicketProfile.findByIdAndUpdate).not.toHaveBeenCalled();
   });
 
@@ -439,9 +487,18 @@ describe('Ticket Profile Delete Reference Protection', () => {
 
     await ticketProfileService.deleteTicketProfile('profile-1');
 
-    expect(Booking.exists).toHaveBeenCalledWith({ eventId: { $in: ['event-1'] } });
-    expect(Reservation.exists).toHaveBeenCalledWith({ eventId: { $in: ['event-1'] } });
-    expect(Ticket.exists).toHaveBeenCalledWith({ eventId: { $in: ['event-1'] } });
+    expect(Booking.exists).toHaveBeenCalledWith({
+      eventId: { $in: ['event-1'] },
+    });
+
+    expect(Reservation.exists).toHaveBeenCalledWith({
+      eventId: { $in: ['event-1'] },
+    });
+
+    expect(Ticket.exists).toHaveBeenCalledWith({
+      eventId: { $in: ['event-1'] },
+    });
+
     expect(TicketProfile.findByIdAndUpdate).toHaveBeenCalledWith(
       'profile-1',
       { isDeleted: true },
