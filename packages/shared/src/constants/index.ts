@@ -32,10 +32,9 @@ export enum EventStatus {
   CANCELLED = 'cancelled',
   POSTPONED = 'postponed',
   COMPLETED = 'completed',
-  SOLD_OUT = 'sold_out',
 }
 
-export type EventLifecycleStatus = Exclude<EventStatus, EventStatus.SOLD_OUT>;
+export type EventLifecycleStatus = EventStatus;
 
 export const EVENT_STATUS_TRANSITIONS: Readonly<Record<EventLifecycleStatus, readonly EventLifecycleStatus[]>> = {
   [EventStatus.DRAFT]: [EventStatus.PUBLISHED, EventStatus.CANCELLED],

@@ -274,9 +274,7 @@ type EventImageValidationBody = {
   posterImage?: EventImageValidationAsset;
   galleryImages?: EventImageValidationAsset[];
 };
-const eventLifecycleStatuses = Object.values(EventStatus).filter(
-  (status): status is EventLifecycleStatus => status !== EventStatus.SOLD_OUT
-) as [EventLifecycleStatus, ...EventLifecycleStatus[]];
+const eventLifecycleStatuses = Object.values(EventStatus) as [EventLifecycleStatus, ...EventLifecycleStatus[]];
 
 const eventLifecycleStatusSchema = z.enum(eventLifecycleStatuses);
 

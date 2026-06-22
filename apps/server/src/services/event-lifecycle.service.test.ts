@@ -64,7 +64,7 @@ describe('EventLifecycleService', () => {
     );
   });
 
-  it('does not complete future, cancelled, postponed, completed, sold_out, deleted, or missing-endDate events', async () => {
+  it('does not complete future, cancelled, postponed, completed, deleted, or missing-endDate events', async () => {
     const now = new Date('2026-06-22T12:00:00.000Z');
     vi.mocked(Event.updateMany).mockResolvedValue({ matchedCount: 0, modifiedCount: 0 } as any);
 
@@ -86,7 +86,6 @@ describe('EventLifecycleService', () => {
             EventStatus.POSTPONED,
             EventStatus.CANCELLED,
             EventStatus.COMPLETED,
-            EventStatus.SOLD_OUT,
           ],
         },
       }),
