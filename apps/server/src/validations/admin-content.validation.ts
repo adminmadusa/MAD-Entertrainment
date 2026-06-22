@@ -275,12 +275,15 @@ type EventImageValidationBody = {
   galleryImages?: EventImageValidationAsset[];
 };
 
+<<<<<<< HEAD
 const eventLifecycleStatuses = Object.values(EventStatus).filter(
   (status): status is EventLifecycleStatus => status !== EventStatus.SOLD_OUT
 ) as [EventLifecycleStatus, ...EventLifecycleStatus[]];
 
 const eventLifecycleStatusSchema = z.enum(eventLifecycleStatuses);
 
+=======
+>>>>>>> origin/develop
 export const validateEventImages = (body: EventImageValidationBody, ctx: z.RefinementCtx) => {
   const banner = body.bannerImage;
   const poster = body.posterImage;
