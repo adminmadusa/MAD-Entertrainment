@@ -105,6 +105,36 @@ describe('Diagnostics Service', () => {
     });
   });
 
+  describe('listDeadLetterJobs', () => {
+    it('should query and return paginated metadata for DLQ jobs', async () => {
+      const mockJobs = [
+        { _id: 'job1', queueName: 'booking-queue', jobId: 'j1', jobName: 'booking:confirm', attemptsMade: 3, failedReason: 'Error', processedAt: new Date() },
+      ];
+
+      vi.mocked(DeadLetterJob.countDocuments).mockResolvedValue(1);
+      
+      const selectMock = vi.fn().mockReturnValue({
+        sort: vi.fn().mockReturnValue({
+          skip: vi.fn().mockReturnValue({
+            limit: vi.fn().mockReturnValue({
+              lean: vi.fn().mockResolvedValue(mockJobs)
+            })
+          })
+        })
+      });
+
+      vi.mocked(DeadLetterJob.find).mockReturnValue({
+        select: selectMock
+      } as any);
+
+      const result = await DiagnosticsService.listDeadLetterJobs(1, 10, 'booking-queue', 'j1');
+
+      expect(result.data).toEqual(mockJobs);
+      expect(result.pagination.total).toBe(1);
+      expect(selectMock).toHaveBeenCalledWith('-data -stacktrace');
+    });
+  });
+
   describe('retryDeadLetterJob', () => {
     it('should re-enqueue and delete DLQ job if it exists', async () => {
       const mockDlqId = new Types.ObjectId().toString();
@@ -141,7 +171,7 @@ describe('Diagnostics Service', () => {
   });
 
   describe('retryAllDeadLetterJobs', () => {
-    it('should bulk retry all logged dead letter jobs', async () => {
+    it('should bulk retry failed jobs if total count is within limits', async () => {
       const mockDlqId1 = new Types.ObjectId().toString();
       const mockDlqId2 = new Types.ObjectId().toString();
 
@@ -150,8 +180,15 @@ describe('Diagnostics Service', () => {
         { _id: mockDlqId2, queueName: 'b', jobName: 'j', data: {}, jobId: '2' },
       ];
 
+      vi.mocked(DeadLetterJob.countDocuments).mockResolvedValue(2);
+      
+      const selectMock = vi.fn().mockReturnValue({
+        limit: vi.fn().mockReturnValue({
+          lean: vi.fn().mockResolvedValue(mockJobs)
+        })
+      });
       vi.mocked(DeadLetterJob.find).mockReturnValue({
-        limit: vi.fn().mockResolvedValue(mockJobs),
+        select: selectMock
       } as any);
 
       vi.mocked(DeadLetterJob.findById)
@@ -163,6 +200,14 @@ describe('Diagnostics Service', () => {
       expect(stats.successCount).toBe(2);
       expect(stats.failedCount).toBe(0);
       expect(QueueService.enqueue).toHaveBeenCalledTimes(2);
+    });
+
+    it('should reject bulk retry if total count exceeds the safety limit', async () => {
+      vi.mocked(DeadLetterJob.countDocuments).mockResolvedValue(51);
+
+      await expect(DiagnosticsService.retryAllDeadLetterJobs()).rejects.toThrow(
+        'Too many DLQ jobs to replay at once'
+      );
     });
   });
 });

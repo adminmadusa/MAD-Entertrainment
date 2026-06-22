@@ -117,6 +117,50 @@ export class DiagnosticsService {
     };
   }
 
+  public static readonly MAX_DLQ_REPLAY_BATCH = 50;
+
+  /**
+   * DLQ Tooling: Retrieves a paginated, sorted, and filtered metadata list of Dead Letter Jobs.
+   */
+  static async listDeadLetterJobs(
+    page: number = 1,
+    limit: number = 20,
+    queueName?: string,
+    search?: string
+  ): Promise<{ data: any[]; pagination: { page: number; limit: number; total: number; totalPages: number } }> {
+    const filter: any = {};
+
+    if (queueName) {
+      filter.queueName = queueName;
+    }
+
+    if (search) {
+      const searchRegex = new RegExp(search, 'i');
+      filter.$or = [
+        { jobId: searchRegex },
+        { jobName: searchRegex },
+      ];
+    }
+
+    const total = await DeadLetterJob.countDocuments(filter);
+    const jobs = await DeadLetterJob.find(filter)
+      .select('-data -stacktrace')
+      .sort({ processedAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .lean();
+
+    return {
+      data: jobs,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit) || 1,
+      },
+    };
+  }
+
   /**
    * DLQ Tooling: Retries a specific Dead Letter Job by re-enqueuing it and deleting the DLQ record.
    */
@@ -152,10 +196,15 @@ export class DiagnosticsService {
   }
 
   /**
-   * DLQ Tooling: Retries all logged failed jobs in the collection.
+   * DLQ Tooling: Retries all logged failed jobs in the collection, subject to the safety limit.
    */
   static async retryAllDeadLetterJobs(): Promise<{ successCount: number; failedCount: number }> {
-    const failedJobs = await DeadLetterJob.find({}).limit(500);
+    const totalCount = await DeadLetterJob.countDocuments({});
+    if (totalCount > this.MAX_DLQ_REPLAY_BATCH) {
+      throw new Error('Too many DLQ jobs to replay at once');
+    }
+
+    const failedJobs = await DeadLetterJob.find({}).select('_id').limit(this.MAX_DLQ_REPLAY_BATCH).lean();
     let successCount = 0;
     let failedCount = 0;
 

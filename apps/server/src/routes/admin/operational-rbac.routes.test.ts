@@ -30,10 +30,15 @@ vi.mock('../../controllers/admin/diagnostics.controller', () => ({
   getSystemDiagnostics: vi.fn(),
   retryFailedJob: vi.fn(),
   retryAllFailedJobs: vi.fn(),
+<<<<<<< HEAD
   getQueuesStatus: vi.fn(),
   pauseQueueHandler: vi.fn(),
   resumeQueueHandler: vi.fn(),
   drainQueueHandler: vi.fn(),
+=======
+  listDeadLetterJobs: vi.fn(),
+  getDeadLetterJob: vi.fn(),
+>>>>>>> develop
 }));
 
 vi.mock('../../controllers/admin/refund.controller', () => ({
@@ -146,11 +151,14 @@ function getRouteMiddleware(router: any, path: string, method: Method) {
   // Find requireRole or requireSuperAdmin
   const guard = handlers.find(
     (h: any) =>
+      // Reference equality — most reliable: covers routes where adminLimiter precedes requireSuperAdmin
+      h === requireSuperAdmin ||
+      h === requireAdmin ||
       h.name === 'requireSuperAdmin' ||
       h.name === 'requireAdmin' ||
       (h.toString().includes('roles') && h.toString().includes('req.admin')) ||
-      // Anonymous function returned by requireRole
-      (h.length === 3 && !h.toString().includes('validate'))
+      // Anonymous function returned by requireRole — must reference req.admin to exclude rate limiters
+      (h.length === 3 && !h.toString().includes('validate') && h.toString().includes('req.admin'))
   );
 
   if (!guard) {
@@ -216,10 +224,11 @@ describe('admin operational RBAC routes', () => {
     });
   });
 
+  // GET /system is intentionally accessible to all authenticated admins (not SuperAdmin-only).
+  // Its Admin-level access is verified in diagnostics.routes.test.ts.
   it.each([
     ['/consistency', 'get'],
     ['/reservations', 'get'],
-    ['/system', 'get'],
     ['/consistency/repair', 'post'],
     ['/dlq/:id/retry', 'post'],
     ['/dlq/retry-all', 'post'],
