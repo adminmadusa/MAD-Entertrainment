@@ -250,6 +250,10 @@ export const updateEvent = async (id: string, data: Partial<IEvent>): Promise<Ev
     }
   }
 
+  if (data.totalCapacity !== undefined) {
+    data.isSoldOut = data.totalCapacity > 0 && (existing.soldCount || 0) >= data.totalCapacity;
+  }
+
   const oldBannerId = existing.bannerImage?.publicId;
   const newBannerId = data.bannerImage?.publicId;
   const bannerReplaced = newBannerId && oldBannerId && oldBannerId !== newBannerId;

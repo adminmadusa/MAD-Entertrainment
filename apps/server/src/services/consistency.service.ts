@@ -158,11 +158,11 @@ async function countEventInventoryMismatches(): Promise<number> {
 
     const soldTotal = confirmedBookings[0]?.total ?? 0;
     const reservedTotal = activeReservations[0]?.total ?? 0;
-    const expectedIsSoldOut = soldTotal >= event.totalCapacity;
+    const shouldBeSoldOut = event.totalCapacity > 0 && soldTotal >= event.totalCapacity;
     if (
       event.soldCount !== soldTotal ||
       event.reservedCount !== reservedTotal ||
-      event.isSoldOut !== expectedIsSoldOut
+      event.isSoldOut !== shouldBeSoldOut
     ) {
       mismatches++;
     }
@@ -194,12 +194,12 @@ async function repairEventInventoryMismatches(): Promise<number> {
 
     const soldTotal = confirmedBookings[0]?.total ?? 0;
     const reservedTotal = activeReservations[0]?.total ?? 0;
-    const expectedIsSoldOut = soldTotal >= event.totalCapacity;
+    const shouldBeSoldOut = event.totalCapacity > 0 && soldTotal >= event.totalCapacity;
 
     if (
       event.soldCount !== soldTotal ||
       event.reservedCount !== reservedTotal ||
-      event.isSoldOut !== expectedIsSoldOut
+      event.isSoldOut !== shouldBeSoldOut
     ) {
       // Also update individual tier soldCounts based on confirmed bookings
       const tierSoldCounts = new Map<string, number>();
@@ -236,7 +236,7 @@ async function repairEventInventoryMismatches(): Promise<number> {
           $set: { 
             soldCount: soldTotal, 
             reservedCount: reservedTotal, 
-            isSoldOut: expectedIsSoldOut,
+            isSoldOut: shouldBeSoldOut,
             ticketTiers: updatedTiers,
           },
           $inc: {

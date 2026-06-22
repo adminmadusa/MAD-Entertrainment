@@ -451,9 +451,12 @@ export const cancelBooking = async (
           }
         }
 
+        const nextSoldCount = Math.max(0, (event.soldCount || 0) - booking.totalTickets);
+        const shouldBeSoldOut = event.totalCapacity > 0 && nextSoldCount >= event.totalCapacity;
+
         await Event.findOneAndUpdate(
           { _id: booking.eventId },
-          { $inc: decUpdate, $set: { isSoldOut: false } },
+          { $inc: decUpdate, $set: { isSoldOut: shouldBeSoldOut } },
           { new: true, session }
         );
       } else if (previousStatus === BookingStatus.AWAITING_PAYMENT) {
@@ -1092,4 +1095,3 @@ export const getBookingsSummary = async (eventId?: string): Promise<BookingsSumm
 
   return result;
 };
-
