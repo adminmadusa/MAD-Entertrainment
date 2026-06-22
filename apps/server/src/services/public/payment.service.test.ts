@@ -474,10 +474,13 @@ describe('Payment Service', () => {
       vi.mocked(Booking.findOne).mockResolvedValue(mockBooking as any);
       vi.mocked(Payment.findOne).mockReturnValueOnce({ sort: vi.fn().mockResolvedValue(mockPayment) } as any);
 
+      // Generate a valid signature so it passes validateGatewayProof and fails on ownership check
+      const sig = razorpaySignature('order_123', 'pay_123');
+
       await expect(
         PaymentService.verifyPayment(
           'MAD-2026-ABCDE',
-          { razorpay_order_id: 'order_123', razorpay_payment_id: 'pay_123', razorpay_signature: 'sig' },
+          { razorpay_order_id: 'order_123', razorpay_payment_id: 'pay_123', razorpay_signature: sig },
           { userId: 'user-attacker' }
         )
       ).rejects.toThrow('You do not have access to this booking');
@@ -501,7 +504,7 @@ describe('Payment Service', () => {
           { razorpay_order_id: 'order_123', razorpay_payment_id: 'pay_123', razorpay_signature: 'sig' },
           { sessionId: 'session-attacker' }
         )
-      ).rejects.toThrow('You do not have access to this booking');
+      ).rejects.toThrow('Razorpay signature verification failed');
     });
 
     it('should require ownership before confirming an unconfirmed payment', async () => {
@@ -523,7 +526,7 @@ describe('Payment Service', () => {
           { razorpay_order_id: 'order_123', razorpay_payment_id: 'pay_123', razorpay_signature: 'sig' }
           // No ownershipContext — defaults to {} which has no userId/sessionId
         )
-      ).rejects.toThrow('You do not have access to this booking');
+      ).rejects.toThrow('Razorpay signature verification failed');
     });
 
     it('should verify a valid payment when the authenticated user owns the booking', async () => {
@@ -1612,6 +1615,7 @@ describe('Payment Service', () => {
     it('verifyPayment should block payment verification and trigger refund if event has started', async () => {
       const mockBooking = {
         _id: 'booking_123',
+        bookingId: 'booking_123',
         eventId: 'event_123',
         status: BookingStatus.AWAITING_PAYMENT,
         totalAmount: 100,
@@ -1637,6 +1641,23 @@ describe('Payment Service', () => {
         isDeleted: false,
         startDate: new Date(Date.now() - 3600000), // 1 hour ago
       };
+
+      // Mock Stripe client to return a valid retrieve intent matching this booking
+      const mockStripe = {
+        paymentIntents: {
+          retrieve: vi.fn().mockResolvedValue({
+            id: 'pi_123',
+            status: 'succeeded',
+            amount_received: 10000,
+            currency: 'inr',
+            metadata: {
+              bookingId: 'booking_123',
+              bookingReference: 'booking_123',
+            },
+          }),
+        },
+      };
+      vi.mocked(getStripe).mockReturnValue(mockStripe as any);
 
       vi.mocked(Booking.findOne).mockResolvedValue(mockBooking as any);
       vi.mocked(Payment.findOne).mockReturnValue({ sort: vi.fn().mockResolvedValue(mockPayment) } as any);
@@ -2021,6 +2042,146 @@ describe('Payment Service', () => {
       await expect(
         PaymentService.verifyPayment(bookingIdStr, {}, {})
       ).rejects.toThrow();
+    });
+
+    // ── BUG-297 Additional Ownership Recovery Guards and Tests ────────────────
+
+    it('[BUG-297] does not overwrite existing authenticated owner when gateway proof is valid but ownership context belongs to a different authenticated user', async () => {
+      // existing authenticated owner: UserA
+      const userAId = new mongoose.Types.ObjectId();
+      const mockBooking = {
+        _id: bookingObjectId,
+        bookingId: 'MAD-BOOKING-001',
+        eventId: 'e-123',
+        totalAmount: 100,
+        currency: 'inr',
+        status: 'confirmed',
+        userId: userAId, // UserA
+        sessionId: 'session-old',
+        save: vi.fn().mockResolvedValue(undefined),
+      };
+
+      vi.mocked(Booking.findOne).mockImplementation(() =>
+        createMockQuery(mockBooking) as any
+      );
+
+      // PAID Stripe payment
+      vi.mocked(Payment.findOne).mockImplementation(() =>
+        createMockQuery(makeStripePayment()) as any
+      );
+
+      const mockStripe = {
+        paymentIntents: { retrieve: vi.fn().mockResolvedValue(validStripeIntent) },
+      };
+      vi.mocked(getStripe).mockReturnValue(mockStripe as any);
+
+      // Attempt to verify as UserB
+      const userBId = new mongoose.Types.ObjectId().toHexString();
+
+      await expect(
+        PaymentService.verifyPayment(
+          bookingIdStr,
+          { paymentIntentId: 'pi_test_001' },
+          { userId: userBId } // different authenticated user
+        )
+      ).rejects.toThrow('You do not have access to this booking');
+
+      // Verify booking.userId remains unchanged (UserA)
+      expect(mockBooking.userId).toEqual(userAId);
+    });
+
+    it('[BUG-297] rotated guest session recovers ownership (PENDING payment)', async () => {
+      // Guest booking: userId is null, sessionId is old
+      const mockBooking = {
+        _id: bookingObjectId,
+        bookingId: 'MAD-BOOKING-001',
+        eventId: 'e-123',
+        totalAmount: 100,
+        currency: 'inr',
+        status: BookingStatus.AWAITING_PAYMENT,
+        tickets: [],
+        userId: undefined,
+        sessionId: 'session-old',
+        bookingVersion: 1,
+        save: vi.fn().mockResolvedValue(undefined),
+      };
+
+      vi.mocked(Booking.findOne).mockImplementation(() =>
+        createMockQuery(mockBooking) as any
+      );
+
+      // PENDING payment
+      const pendingPayment = makeStripePayment({ status: PaymentStatus.PENDING });
+      vi.mocked(Payment.findOne).mockImplementation(() =>
+        createMockQuery(pendingPayment) as any
+      );
+
+      const mockStripe = {
+        paymentIntents: { retrieve: vi.fn().mockResolvedValue(validStripeIntent) },
+      };
+      vi.mocked(getStripe).mockReturnValue(mockStripe as any);
+
+      vi.mocked(Booking.findOneAndUpdate).mockResolvedValue({
+        ...mockBooking,
+        status: BookingStatus.CONFIRMED,
+      } as any);
+
+      // verifyPayment called with a new rotated session
+      const result = await PaymentService.verifyPayment(
+        bookingIdStr,
+        { paymentIntentId: 'pi_test_001' },
+        { sessionId: 'session-new-rotated' }
+      );
+
+      expect(result).toBeDefined();
+      // Verify sessionId was updated to the new session ID
+      expect(mockBooking.sessionId).toBe('session-new-rotated');
+      expect(mockBooking.userId).toBeUndefined();
+      expect(mockBooking.save).toHaveBeenCalled();
+    });
+
+    it('[BUG-297] rotated guest session recovers ownership (PAID payment)', async () => {
+      // Guest booking: userId is null, sessionId is old
+      const mockBooking = {
+        _id: bookingObjectId,
+        bookingId: 'MAD-BOOKING-001',
+        eventId: 'e-123',
+        totalAmount: 100,
+        currency: 'inr',
+        status: BookingStatus.CONFIRMED,
+        tickets: [],
+        userId: undefined,
+        sessionId: 'session-old',
+        bookingVersion: 1,
+        save: vi.fn().mockResolvedValue(undefined),
+      };
+
+      vi.mocked(Booking.findOne).mockImplementation(() =>
+        createMockQuery(mockBooking) as any
+      );
+
+      // PAID payment (already confirmed by webhook)
+      vi.mocked(Payment.findOne).mockImplementation(() =>
+        createMockQuery(makeStripePayment()) as any
+      );
+
+      const mockStripe = {
+        paymentIntents: { retrieve: vi.fn().mockResolvedValue(validStripeIntent) },
+      };
+      vi.mocked(getStripe).mockReturnValue(mockStripe as any);
+
+      // verifyPayment called with a new rotated session
+      const result = await PaymentService.verifyPayment(
+        bookingIdStr,
+        { paymentIntentId: 'pi_test_001' },
+        { sessionId: 'session-new-rotated' }
+      );
+
+      expect(result).toBeDefined();
+      // Verify sessionId was updated to the new session ID
+      expect(mockBooking.sessionId).toBe('session-new-rotated');
+      expect(mockBooking.userId).toBeUndefined();
+      expect(mockBooking.save).toHaveBeenCalled();
     });
   });
 });
