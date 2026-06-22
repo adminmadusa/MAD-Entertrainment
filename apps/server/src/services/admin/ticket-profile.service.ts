@@ -6,6 +6,13 @@ import { Reservation } from '../../models/reservation.schema';
 import { Booking } from '../../models/booking.schema';
 import { Ticket } from '../../models/ticket.schema';
 import { AppError } from '../../middleware/error.middleware';
+import { EventStatus, type EventLifecycleStatus } from '@mad/shared';
+
+const ACTIVE_PROFILE_EVENT_STATUSES: readonly EventLifecycleStatus[] = [
+  EventStatus.DRAFT,
+  EventStatus.PUBLISHED,
+  EventStatus.POSTPONED,
+];
 
 /**
  * Resolves event ticket tiers dynamically by merging profile tickets with event-specific overrides.
@@ -81,7 +88,7 @@ export const syncProfileEvents = async (profileId: string) => {
 
   const events = await Event.find({
     ticketProfileId: profileId,
-    status: { $in: ['draft', 'published', 'sold_out'] },
+    status: { $in: ACTIVE_PROFILE_EVENT_STATUSES },
     isDeleted: { $ne: true },
   });
 
@@ -182,7 +189,7 @@ export const updateTicketProfile = async (
     if (removedTiers.length > 0) {
       const events = await Event.find({
         ticketProfileId: id,
-        status: { $in: ['draft', 'published', 'sold_out'] },
+        status: { $in: ACTIVE_PROFILE_EVENT_STATUSES },
         isDeleted: { $ne: true },
       });
 
@@ -220,7 +227,6 @@ export const updateTicketProfile = async (
   return updated;
 };
 
-const ACTIVE_REFERENCE_STATUSES = ['draft', 'published', 'sold_out', 'postponed'];
 const DELETE_BLOCKED_MESSAGE = 'Ticket Profile is referenced by active events and cannot be deleted';
 
 const ensureTicketProfileCanBeDeleted = async (profileId: string) => {
@@ -232,7 +238,7 @@ const ensureTicketProfileCanBeDeleted = async (profileId: string) => {
   if (referencedEvents.length === 0) return;
 
   const now = new Date();
-  const activeEvents = referencedEvents.filter((event: any) => ACTIVE_REFERENCE_STATUSES.includes(event.status));
+  const activeEvents = referencedEvents.filter((event: any) => ACTIVE_PROFILE_EVENT_STATUSES.includes(event.status));
   const futureEvents = referencedEvents.filter((event: any) => event.startDate && new Date(event.startDate) > now);
   const eventsWithSoldTickets = referencedEvents.filter((event: any) => {
     const eventSoldCount = event.soldCount ?? 0;
