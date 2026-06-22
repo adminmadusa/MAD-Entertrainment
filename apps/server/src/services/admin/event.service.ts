@@ -66,6 +66,19 @@ export const assertEventStatusTransition = (
 const isEventLifecycleStatus = (status: EventStatus): status is EventLifecycleStatus =>
   Object.prototype.hasOwnProperty.call(EVENT_STATUS_TRANSITIONS, status);
 
+const INITIAL_EVENT_STATUSES: readonly EventStatus[] = [
+  EventStatus.DRAFT,
+  EventStatus.PUBLISHED,
+];
+
+export const assertInitialEventStatus = (status?: EventStatus): void => {
+  if (!status) return;
+
+  if (!INITIAL_EVENT_STATUSES.includes(status)) {
+    throw AppError.conflict('Invalid initial event status');
+  }
+};
+
 type EventAttendanceMetrics = {
   ticketsSold: number;
   ticketsCheckedIn: number;
@@ -100,6 +113,7 @@ const getEventAttendanceMetrics = async (event: IEvent): Promise<EventAttendance
 
 export const createEvent = async (data: Partial<IEvent>): Promise<IEvent> => {
   validateEventImagesPayload(data.bannerImage, data.posterImage, data.galleryImages);
+  assertInitialEventStatus(data.status);
 
   if (data.title && !data.slug) {
     data.slug = data.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');

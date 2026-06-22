@@ -136,7 +136,7 @@ async function repairStaleSeatReservations(): Promise<number> {
 }
 
 async function countEventInventoryMismatches(): Promise<number> {
-  const events = await Event.find({}).select('_id soldCount reservedCount').lean();
+  const events = await Event.find({}).select('_id soldCount reservedCount totalCapacity isSoldOut').lean();
   let mismatches = 0;
 
   for (const event of events) {
@@ -158,7 +158,12 @@ async function countEventInventoryMismatches(): Promise<number> {
 
     const soldTotal = confirmedBookings[0]?.total ?? 0;
     const reservedTotal = activeReservations[0]?.total ?? 0;
-    if (event.soldCount !== soldTotal || event.reservedCount !== reservedTotal) {
+    const expectedIsSoldOut = soldTotal >= event.totalCapacity;
+    if (
+      event.soldCount !== soldTotal ||
+      event.reservedCount !== reservedTotal ||
+      event.isSoldOut !== expectedIsSoldOut
+    ) {
       mismatches++;
     }
   }
@@ -167,7 +172,7 @@ async function countEventInventoryMismatches(): Promise<number> {
 }
 
 async function repairEventInventoryMismatches(): Promise<number> {
-  const events = await Event.find({}).select('_id soldCount reservedCount ticketTiers eventVersion');
+  const events = await Event.find({}).select('_id soldCount reservedCount totalCapacity isSoldOut ticketTiers eventVersion');
   let repairedCount = 0;
 
   for (const event of events) {
@@ -189,8 +194,13 @@ async function repairEventInventoryMismatches(): Promise<number> {
 
     const soldTotal = confirmedBookings[0]?.total ?? 0;
     const reservedTotal = activeReservations[0]?.total ?? 0;
+    const expectedIsSoldOut = soldTotal >= event.totalCapacity;
 
-    if (event.soldCount !== soldTotal || event.reservedCount !== reservedTotal) {
+    if (
+      event.soldCount !== soldTotal ||
+      event.reservedCount !== reservedTotal ||
+      event.isSoldOut !== expectedIsSoldOut
+    ) {
       // Also update individual tier soldCounts based on confirmed bookings
       const tierSoldCounts = new Map<string, number>();
       const confirmedBookingsDocs = await Booking.find({ eventId: event._id, status: BookingStatus.CONFIRMED }).lean();
@@ -226,6 +236,7 @@ async function repairEventInventoryMismatches(): Promise<number> {
           $set: { 
             soldCount: soldTotal, 
             reservedCount: reservedTotal, 
+            isSoldOut: expectedIsSoldOut,
             ticketTiers: updatedTiers,
           },
           $inc: {

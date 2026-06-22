@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { EventCategory, BookingMode, BookingStatus, EventStatus, PopupTrigger, TicketTier } from '@mad/shared';
+import { EventCategory, BookingMode, BookingStatus, EventStatus, PopupTrigger, TicketTier, type EventLifecycleStatus } from '@mad/shared';
 import { objectIdSchema } from '@mad/validations';
 
 // -- Common schemas --
@@ -275,6 +275,12 @@ type EventImageValidationBody = {
   galleryImages?: EventImageValidationAsset[];
 };
 
+const eventLifecycleStatuses = Object.values(EventStatus).filter(
+  (status): status is EventLifecycleStatus => status !== EventStatus.SOLD_OUT
+) as [EventLifecycleStatus, ...EventLifecycleStatus[]];
+
+const eventLifecycleStatusSchema = z.enum(eventLifecycleStatuses);
+
 export const validateEventImages = (body: EventImageValidationBody, ctx: z.RefinementCtx) => {
   const banner = body.bannerImage;
   const poster = body.posterImage;
@@ -333,7 +339,7 @@ const eventBodySchema = z.object({
     slug: z.string().min(1),
     description: z.string().min(1).max(5000),
     category: z.string().min(1),
-    status: z.nativeEnum(EventStatus).optional(),
+    status: eventLifecycleStatusSchema.optional(),
     bookingMode: z.nativeEnum(BookingMode),
     bannerImage: cloudinaryImageSchema,
     posterImage: cloudinaryImageSchema.optional(),
@@ -413,7 +419,7 @@ export const adminEventsQuerySchema = z.object({
     page: z.coerce.number().int().positive().default(1),
     limit: z.coerce.number().int().positive().max(100).default(15),
     search: z.string().max(200).optional(),
-    status: z.nativeEnum(EventStatus).optional(),
+    status: eventLifecycleStatusSchema.optional(),
   }).strict(),
 });
 
