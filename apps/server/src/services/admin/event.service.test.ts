@@ -33,13 +33,18 @@ import { Booking } from '../../models/booking.schema';
 import { Ticket } from '../../models/ticket.schema';
 import { TicketProfile } from '../../models/ticket-profile.schema';
 import { CacheService } from '../cache.service';
+import { createEventSchema } from '../../validations/admin-content.validation';
 
 vi.mock('../../models/event.schema', () => ({
-  Event: {
+  Event: Object.assign(vi.fn(function (this: any, data: any) {
+    Object.assign(this, data);
+    this.save = vi.fn().mockResolvedValue(this);
+  }), {
+    findOne: vi.fn(),
     findById: vi.fn(),
     findByIdAndUpdate: vi.fn(),
     findOneAndUpdate: vi.fn(),
-  },
+  }),
 }));
 
 vi.mock('../../models/booking.schema', () => ({
@@ -69,6 +74,56 @@ vi.mock('../cache.service', () => ({
 describe('Admin Event Service', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(Event.findOne).mockResolvedValue(null);
+  });
+
+  describe('createEvent - Initial Lifecycle Governance', () => {
+    it.each([EventStatus.DRAFT, EventStatus.PUBLISHED])('allows initial status %s', async (status) => {
+      const result = await eventService.createEvent({ status } as any);
+
+      expect(result.status).toBe(status);
+      expect(Event).toHaveBeenCalledWith({ status });
+      expect(CacheService.delPattern).toHaveBeenCalledWith('events:*');
+    });
+
+    it.each([
+      EventStatus.COMPLETED,
+      EventStatus.CANCELLED,
+      EventStatus.POSTPONED,
+      EventStatus.SOLD_OUT,
+    ])('rejects initial status %s with conflict', async (status) => {
+      try {
+        await eventService.createEvent({ status } as any);
+        throw new Error('Expected createEvent to reject');
+      } catch (error) {
+        expect(error).toMatchObject({
+          message: 'Invalid initial event status',
+          statusCode: HTTP_STATUS.CONFLICT,
+        });
+      }
+
+      expect(Event).not.toHaveBeenCalled();
+      expect(CacheService.delPattern).not.toHaveBeenCalled();
+    });
+
+    it('rejects sold_out in lifecycle validation input', () => {
+      const result = createEventSchema.safeParse({
+        body: {
+          title: 'Lifecycle Test',
+          slug: 'lifecycle-test',
+          description: 'Lifecycle test event',
+          category: 'concert',
+          status: EventStatus.SOLD_OUT,
+          bookingMode: 'general_admission',
+          bannerImage: { url: 'https://example.com/banner.jpg', publicId: 'banner' },
+          startDate: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+          venue: 'Test Venue',
+          totalCapacity: 100,
+        },
+      });
+
+      expect(result.success).toBe(false);
+    });
   });
 
   describe('deleteEvent', () => {
