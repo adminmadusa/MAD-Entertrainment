@@ -1003,20 +1003,61 @@ export class PaymentService {
       throw AppError.notFound('Payment record not found for booking');
     }
 
-    // BUG-297: If the webhook already confirmed this payment, bypass assertBookingOwnership()
-    // ONLY after the full gateway cryptographic proof has been validated.
-    // This resolves the race condition where the webhook arrives first, links booking.userId
-    // to a registered user, and the frontend request then fails ownership with a rotated session.
-    //
-    // assertBookingOwnership() remains fully enforced for all PENDING (unconfirmed) payments below.
+    const env = getEnv();
+
+    // 1. Validate the cryptographic gateway proof first (Stripe retrieve / Razorpay signature checks).
+    //    Proving possession of these credentials serves as authoritative confirmation of purchase ownership,
+    //    allowing ownership recovery/sync and bypassing traditional session/user matching checks.
+    await this.validateGatewayProof(booking, payment, gatewayPayload, env);
+
+    // 2. Perform Ownership Recovery/Sync:
+    let bookingModified = false;
+
+    // Check if the booking is already owned by an authenticated user
+    if (booking.userId) {
+      if (ownershipContext.userId) {
+        if (booking.userId.toString() !== ownershipContext.userId) {
+          logger.warn(
+            { bookingId: booking._id, existingOwner: booking.userId, attemptedOwner: ownershipContext.userId },
+            'Ownership recovery blocked: cannot overwrite existing authenticated user ownership'
+          );
+          throw AppError.forbidden('You do not have access to this booking');
+        }
+      }
+      // If booking.userId is set and client is guest (ownershipContext.userId is undefined),
+      // we do not mutate booking.sessionId or booking.userId.
+    } else {
+      // booking.userId is null/undefined
+      if (ownershipContext.userId) {
+        logger.info(
+          { bookingId: booking._id, newUser: ownershipContext.userId },
+          'Ownership recovery: linking booking to authenticated user'
+        );
+        booking.userId = new Types.ObjectId(ownershipContext.userId);
+        bookingModified = true;
+      }
+      
+      if (ownershipContext.sessionId && booking.sessionId !== ownershipContext.sessionId) {
+        logger.info(
+          { bookingId: booking._id, oldSession: booking.sessionId, newSession: ownershipContext.sessionId },
+          'Ownership recovery: updating booking sessionId to client session'
+        );
+        booking.sessionId = ownershipContext.sessionId;
+        bookingModified = true;
+      }
+    }
+
+    if (bookingModified) {
+      booking.bookingVersion += 1;
+      await booking.save();
+    }
+
+    // 3. If the webhook already confirmed the payment, return the recovered booking immediately.
     if (payment.status === PaymentStatus.PAID) {
-      await this.validateGatewayProof(booking, payment, gatewayPayload, getEnv());
       return booking;
     }
 
-    // Payment is not yet confirmed — enforce standard session / user ownership.
-    this.assertBookingOwnership(booking, ownershipContext);
-
+    // 4. If the payment is still PENDING, validate event constraints and confirm booking.
     const event = await Event.findById(booking.eventId);
     if (!event || event.status !== 'published' || event.isDeleted === true) {
       throw AppError.notFound('Event not found or not published');
@@ -1034,194 +1075,11 @@ export class PaymentService {
       throw AppError.badRequest('This event is no longer available for booking.');
     }
 
-    const env = getEnv();
     let confirmedBooking: IBooking | null = null;
 
     if (payment.gateway === 'razorpay') {
-      const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = gatewayPayload;
-
-      if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
-        throw AppError.badRequest('Missing Razorpay credentials in payment payload');
-      }
-
+      const { razorpay_payment_id, razorpay_signature } = gatewayPayload;
       const isMock = env.MOCK_PAYMENTS && razorpay_payment_id.startsWith('pay_mock_') && razorpay_signature === 'mock_signature';
-
-      if (isMock) {
-        this.assertProductionMockRuntimeBlocked({
-          bookingId: booking._id.toString(),
-          paymentId: razorpay_payment_id,
-          gateway: 'razorpay',
-          requestSource: 'frontend_verify',
-        });
-      }
-
-      if (!payment.gatewayOrderId || payment.gatewayOrderId !== razorpay_order_id) {
-        logger.error(
-          {
-            bookingId: booking._id,
-            bookingReference: booking.bookingId,
-            paymentId: payment._id,
-            expectedOrderId: payment.gatewayOrderId,
-            receivedOrderId: razorpay_order_id,
-            razorpayPaymentId: razorpay_payment_id,
-          },
-          'SECURITY: Razorpay order ID mismatch — possible payment replay attack'
-        );
-        auditLog({
-          action: 'PAYMENT_SECURITY_VIOLATION',
-          status: 'failure',
-          metadata: {
-            bookingId: booking._id.toString(),
-            bookingReference: booking.bookingId,
-            gateway: 'razorpay',
-            expectedOrderId: payment.gatewayOrderId,
-            receivedOrderId: razorpay_order_id,
-            razorpayPaymentId: razorpay_payment_id,
-            violationType: 'razorpay_order_mismatch',
-            isMock,
-          },
-          description: `SECURITY VIOLATION: Razorpay order mismatch for booking ${booking.bookingId}`
-        });
-
-        throw AppError.badRequest('Razorpay order does not belong to this booking');
-      }
-
-      if (!isMock) {
-        const text = razorpay_order_id + '|' + razorpay_payment_id;
-        const expectedSignature = crypto
-          .createHmac('sha256', env.RAZORPAY_KEY_SECRET || '')
-          .update(text)
-          .digest('hex');
-
-        if (expectedSignature !== razorpay_signature) {
-          await this.failPaymentAndReleaseInventory(booking, payment, 'Signature verification failed');
-          auditLog({
-            action: 'PAYMENT_VERIFICATION_FAILED',
-            status: 'failure',
-            metadata: {
-              bookingId: booking._id.toString(),
-              bookingReference: booking.bookingId,
-              gateway: 'razorpay',
-              reason: 'Signature verification failed',
-            },
-            description: `Failed Razorpay payment signature check for booking ${booking.bookingId}`
-          });
-
-          throw AppError.badRequest('Razorpay signature verification failed');
-        }
-      }
-
-      const duplicateGatewayPayment = await Payment.findOne({
-        gateway: 'razorpay',
-        gatewayPaymentId: razorpay_payment_id,
-        _id: { $ne: payment._id },
-      });
-
-      if (duplicateGatewayPayment) {
-        logger.error(
-          {
-            bookingId: booking._id,
-            bookingReference: booking.bookingId,
-            paymentId: payment._id,
-            duplicatePaymentId: duplicateGatewayPayment._id,
-            razorpayOrderId: razorpay_order_id,
-            razorpayPaymentId: razorpay_payment_id,
-          },
-          'SECURITY: Razorpay payment ID already attached to another payment'
-        );
-        auditLog({
-          action: 'PAYMENT_SECURITY_VIOLATION',
-          status: 'failure',
-          metadata: {
-            bookingId: booking._id.toString(),
-            bookingReference: booking.bookingId,
-            gateway: 'razorpay',
-            paymentId: payment._id?.toString(),
-            duplicatePaymentId: duplicateGatewayPayment._id?.toString(),
-            razorpayOrderId: razorpay_order_id,
-            razorpayPaymentId: razorpay_payment_id,
-            violationType: 'razorpay_payment_id_duplicate',
-            isMock,
-          },
-          description: `SECURITY VIOLATION: Razorpay payment ID replay for booking ${booking.bookingId}`
-        });
-
-        throw AppError.badRequest('Razorpay payment has already been used');
-      }
-
-      // Amount & currency verification (defense-in-depth sanity checks)
-      if (payment.amount !== undefined && booking.totalAmount !== undefined) {
-        const expectedAmountPaise = Math.round(booking.totalAmount * 100);
-        const paymentAmountPaise = Math.round(payment.amount * 100);
-
-        if (paymentAmountPaise !== expectedAmountPaise) {
-          logger.error(
-            {
-              bookingId: booking._id,
-              bookingReference: booking.bookingId,
-              paymentId: payment._id,
-              expectedAmountPaise,
-              paymentAmountPaise,
-            },
-            'SECURITY: Razorpay payment amount mismatch'
-          );
-          await this.failPaymentAndReleaseInventory(
-            booking,
-            payment,
-            `Amount mismatch: expected ${expectedAmountPaise} paise, got payment record with ${paymentAmountPaise} paise`
-          );
-          auditLog({
-            action: 'PAYMENT_SECURITY_VIOLATION',
-            status: 'failure',
-            metadata: {
-              bookingId: booking._id.toString(),
-              bookingReference: booking.bookingId,
-              gateway: 'razorpay',
-              expectedAmountPaise,
-              receivedAmountPaise: paymentAmountPaise,
-              violationType: 'amount_mismatch',
-            },
-            description: `SECURITY VIOLATION: Razorpay payment amount mismatch for booking ${booking.bookingId}`
-          });
-          throw AppError.badRequest('Payment amount does not match booking total');
-        }
-      }
-
-      if (payment.currency !== undefined && booking.currency !== undefined) {
-        const expectedCurrency = (booking.currency || 'INR').toLowerCase();
-        const paymentCurrency = (payment.currency || 'INR').toLowerCase();
-        if (paymentCurrency !== expectedCurrency) {
-          logger.error(
-            {
-              bookingId: booking._id,
-              bookingReference: booking.bookingId,
-              paymentId: payment._id,
-              expectedCurrency,
-              paymentCurrency,
-            },
-            'SECURITY: Razorpay payment currency mismatch'
-          );
-          await this.failPaymentAndReleaseInventory(
-            booking,
-            payment,
-            `Currency mismatch: expected ${expectedCurrency}, got payment record with ${paymentCurrency}`
-          );
-          auditLog({
-            action: 'PAYMENT_SECURITY_VIOLATION',
-            status: 'failure',
-            metadata: {
-              bookingId: booking._id.toString(),
-              bookingReference: booking.bookingId,
-              gateway: 'razorpay',
-              expectedCurrency,
-              receivedCurrency: paymentCurrency,
-              violationType: 'currency_mismatch',
-            },
-            description: `SECURITY VIOLATION: Razorpay payment currency mismatch for booking ${booking.bookingId}`
-          });
-          throw AppError.badRequest('Payment currency does not match booking currency');
-        }
-      }
 
       payment.gatewayPaymentId = razorpay_payment_id;
       payment.gatewaySignature = razorpay_signature;
@@ -1244,226 +1102,28 @@ export class PaymentService {
 
       confirmedBooking = await this.confirmBooking(booking, payment);
     } else {
-      // ── Stripe verification (PR-02 hardened) ──────────────────────────────────
-      const { paymentIntentId } = gatewayPayload;
-      if (!paymentIntentId) {
-        throw AppError.badRequest('Missing Stripe paymentIntentId in payment payload');
-      }
-
+      // Stripe
       const isMock = env.MOCK_PAYMENTS && paymentIntentId.startsWith('pi_mock_');
 
-      if (isMock) {
-        this.assertProductionMockRuntimeBlocked({
+      payment.gatewayPaymentId = paymentIntentId;
+      payment.paidAt = new Date();
+
+      auditLog({
+        action: 'PAYMENT_VERIFIED',
+        status: 'success',
+        metadata: {
           bookingId: booking._id.toString(),
-          paymentId: paymentIntentId,
+          bookingReference: booking.bookingId,
           gateway: 'stripe',
-          requestSource: 'frontend_verify',
-        });
-      }
+          paymentIntentId,
+          isMock,
+        },
+        description: isMock
+          ? `Verified mock Stripe payment intent ${paymentIntentId} for booking ${booking.bookingId}`
+          : `Verified Stripe payment intent ${paymentIntentId} for booking ${booking.bookingId}`
+      });
 
-      if (isMock) {
-        payment.gatewayPaymentId = paymentIntentId;
-        payment.paidAt = new Date();
-
-        auditLog({
-          action: 'PAYMENT_VERIFIED',
-          status: 'success',
-          metadata: {
-            bookingId: booking._id.toString(),
-            bookingReference: booking.bookingId,
-            gateway: 'stripe',
-            paymentIntentId,
-            isMock: true,
-          },
-          description: `Verified mock Stripe payment intent ${paymentIntentId} for booking ${booking.bookingId}`
-        });
-
-        confirmedBooking = await this.confirmBooking(booking, payment);
-      } else {
-        const stripe = getStripe();
-        const intent = await stripe.paymentIntents.retrieve(paymentIntentId);
-
-        // 1. Status check — only 'succeeded' is a valid terminal state for confirmation.
-        //    Reject processing, requires_action, canceled, requires_payment_method, expired.
-        if (intent.status !== 'succeeded') {
-          logger.warn(
-            { bookingId: booking._id, bookingReference: booking.bookingId, paymentIntentId, intentStatus: intent.status },
-            'Stripe verification rejected: intent not in succeeded state'
-          );
-          await this.failPaymentAndReleaseInventory(booking, payment, `Stripe status: ${intent.status}`);
-          auditLog({
-            action: 'PAYMENT_VERIFICATION_FAILED',
-            status: 'failure',
-            metadata: {
-              bookingId: booking._id.toString(),
-              bookingReference: booking.bookingId,
-              gateway: 'stripe',
-              reason: `Stripe intent status: ${intent.status}`,
-            },
-            description: `Stripe verification failed: intent status is ${intent.status} for booking ${booking.bookingId}`
-          });
-
-          throw AppError.badRequest(`Stripe payment verification failed. Status is "${intent.status}"`);
-        }
-
-        // 2. Booking binding check — the intent MUST have been created for THIS booking.
-        //    Prevents cross-booking replay: attacker cannot use their own succeeded intent
-        //    to confirm a victim's booking.
-        const intentBookingId = intent.metadata?.bookingId;
-        const intentBookingReference = intent.metadata?.bookingReference;
-
-        if (intentBookingId !== booking._id.toString()) {
-          logger.error(
-            {
-              bookingId: booking._id,
-              bookingReference: booking.bookingId,
-              paymentIntentId,
-              intentBookingId,
-              intentBookingReference,
-            },
-            'SECURITY: Stripe intent bookingId metadata mismatch — possible replay attack'
-          );
-          auditLog({
-            action: 'PAYMENT_SECURITY_VIOLATION',
-            status: 'failure',
-            metadata: {
-              bookingId: booking._id.toString(),
-              bookingReference: booking.bookingId,
-              gateway: 'stripe',
-              intentBookingId,
-              intentBookingReference,
-              violationType: 'booking_id_mismatch',
-            },
-            description: `SECURITY VIOLATION: Stripe intent bookingId mismatch for booking ${booking.bookingId}`
-          });
-
-          throw AppError.badRequest('Stripe payment intent does not belong to this booking');
-        }
-
-        // 3. Secondary reference binding — confirms the intent was created in our system,
-        //    not crafted externally with only a matching bookingId.
-        if (intentBookingReference && intentBookingReference !== booking.bookingId) {
-          logger.error(
-            {
-              bookingId: booking._id,
-              bookingReference: booking.bookingId,
-              paymentIntentId,
-              intentBookingReference,
-            },
-            'SECURITY: Stripe intent bookingReference metadata mismatch'
-          );
-          auditLog({
-            action: 'PAYMENT_SECURITY_VIOLATION',
-            status: 'failure',
-            metadata: {
-              bookingId: booking._id.toString(),
-              bookingReference: booking.bookingId,
-              gateway: 'stripe',
-              intentBookingReference,
-              violationType: 'booking_reference_mismatch',
-            },
-            description: `SECURITY VIOLATION: Stripe intent bookingReference mismatch for booking ${booking.bookingId}`
-          });
-
-          throw AppError.badRequest('Stripe payment intent booking reference mismatch');
-        }
-
-        // 4. Amount validation — integer-safe paise comparison.
-        //    Underpayment and overpayment are both rejected.
-        const expectedAmountPaise = Math.round(booking.totalAmount * 100);
-        const receivedAmountPaise = intent.amount_received ?? 0;
-
-        if (receivedAmountPaise !== expectedAmountPaise) {
-          logger.error(
-            {
-              bookingId: booking._id,
-              bookingReference: booking.bookingId,
-              paymentIntentId,
-              expectedAmountPaise,
-              receivedAmountPaise,
-            },
-            'SECURITY: Stripe payment amount mismatch'
-          );
-          await this.failPaymentAndReleaseInventory(booking, payment, `Amount mismatch: expected ${expectedAmountPaise} paise, received ${receivedAmountPaise}`, 'auto_recovery', 'AMOUNT_MISMATCH');
-          auditLog({
-            action: 'PAYMENT_SECURITY_VIOLATION',
-            status: 'failure',
-            metadata: {
-              bookingId: booking._id.toString(),
-              bookingReference: booking.bookingId,
-              gateway: 'stripe',
-              expectedAmountPaise,
-              receivedAmountPaise,
-              violationType: 'amount_mismatch',
-            },
-            description: `SECURITY VIOLATION: Stripe payment amount mismatch for booking ${booking.bookingId}`
-          });
-
-          throw AppError.badRequest('Payment amount does not match booking total');
-        }
-
-        // 5. Currency validation — case-insensitive.
-        const expectedCurrency = (booking.currency || 'INR').toLowerCase();
-        const receivedCurrency = (intent.currency || '').toLowerCase();
-
-        if (receivedCurrency !== expectedCurrency) {
-          logger.error(
-            {
-              bookingId: booking._id,
-              bookingReference: booking.bookingId,
-              paymentIntentId,
-              expectedCurrency,
-              receivedCurrency,
-            },
-            'SECURITY: Stripe payment currency mismatch'
-          );
-          await this.failPaymentAndReleaseInventory(booking, payment, `Currency mismatch: expected ${expectedCurrency}, received ${receivedCurrency}`, 'auto_recovery', 'CURRENCY_MISMATCH');
-          auditLog({
-            action: 'PAYMENT_SECURITY_VIOLATION',
-            status: 'failure',
-            metadata: {
-              bookingId: booking._id.toString(),
-              bookingReference: booking.bookingId,
-              gateway: 'stripe',
-              expectedCurrency,
-              receivedCurrency,
-              violationType: 'currency_mismatch',
-            },
-            description: `SECURITY VIOLATION: Stripe payment currency mismatch for booking ${booking.bookingId}`
-          });
-
-          throw AppError.badRequest('Payment currency does not match booking currency');
-        }
-
-        // All checks passed — record payment and confirm booking.
-        logger.info(
-          {
-            bookingId: booking._id,
-            bookingReference: booking.bookingId,
-            paymentIntentId,
-            amountPaise: receivedAmountPaise,
-            currency: receivedCurrency,
-          },
-          'Stripe payment verification passed all binding checks'
-        );
-
-        payment.gatewayPaymentId = paymentIntentId;
-        payment.paidAt = new Date();
-
-        auditLog({
-          action: 'PAYMENT_VERIFIED',
-          status: 'success',
-          metadata: {
-            bookingId: booking._id.toString(),
-            bookingReference: booking.bookingId,
-            gateway: 'stripe',
-            paymentIntentId,
-          },
-          description: `Verified Stripe payment intent ${paymentIntentId} for booking ${booking.bookingId}`
-        });
-
-        confirmedBooking = await this.confirmBooking(booking, payment);
-      }
+      confirmedBooking = await this.confirmBooking(booking, payment);
     }
 
     if (confirmedBooking) {
