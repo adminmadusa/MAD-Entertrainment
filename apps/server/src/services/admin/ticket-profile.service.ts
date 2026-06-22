@@ -7,9 +7,17 @@ import { Reservation } from '../../models/reservation.schema';
 import { Booking } from '../../models/booking.schema';
 import { Ticket } from '../../models/ticket.schema';
 import { AppError } from '../../middleware/error.middleware';
+const PROFILE_SYNC_STATUSES = [
+  EventStatus.DRAFT,
+  EventStatus.PUBLISHED,
+];
 
-const PROFILE_SYNC_STATUSES = [EventStatus.DRAFT, EventStatus.PUBLISHED];
-const ACTIVE_REFERENCE_STATUSES = [EventStatus.DRAFT, EventStatus.PUBLISHED, EventStatus.POSTPONED];
+const ACTIVE_REFERENCE_STATUSES = [
+  EventStatus.DRAFT,
+  EventStatus.PUBLISHED,
+  EventStatus.SOLD_OUT,
+  EventStatus.POSTPONED,
+];
 
 /**
  * Resolves event ticket tiers dynamically by merging profile tickets with event-specific overrides.
