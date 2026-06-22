@@ -1,4 +1,3 @@
-import { EventStatus } from '@mad/shared';
 import { TicketProfile, ITicketProfile } from '../../models/ticket-profile.schema';
 import { Event } from '../../models/event.schema';
 import { CacheService } from '../cache.service';
@@ -7,15 +6,11 @@ import { Reservation } from '../../models/reservation.schema';
 import { Booking } from '../../models/booking.schema';
 import { Ticket } from '../../models/ticket.schema';
 import { AppError } from '../../middleware/error.middleware';
-const PROFILE_SYNC_STATUSES = [
-  EventStatus.DRAFT,
-  EventStatus.PUBLISHED,
-];
+import { EventStatus, type EventLifecycleStatus } from '@mad/shared';
 
-const ACTIVE_REFERENCE_STATUSES = [
+const ACTIVE_PROFILE_EVENT_STATUSES: readonly EventLifecycleStatus[] = [
   EventStatus.DRAFT,
   EventStatus.PUBLISHED,
-  EventStatus.SOLD_OUT,
   EventStatus.POSTPONED,
 ];
 
@@ -93,7 +88,7 @@ export const syncProfileEvents = async (profileId: string) => {
 
   const events = await Event.find({
     ticketProfileId: profileId,
-    status: { $in: PROFILE_SYNC_STATUSES },
+    status: { $in: ACTIVE_PROFILE_EVENT_STATUSES },
     isDeleted: { $ne: true },
   });
 
@@ -194,7 +189,7 @@ export const updateTicketProfile = async (
     if (removedTiers.length > 0) {
       const events = await Event.find({
         ticketProfileId: id,
-        status: { $in: PROFILE_SYNC_STATUSES },
+        status: { $in: ACTIVE_PROFILE_EVENT_STATUSES },
         isDeleted: { $ne: true },
       });
 
@@ -243,7 +238,7 @@ const ensureTicketProfileCanBeDeleted = async (profileId: string) => {
   if (referencedEvents.length === 0) return;
 
   const now = new Date();
-  const activeEvents = referencedEvents.filter((event: any) => ACTIVE_REFERENCE_STATUSES.includes(event.status));
+  const activeEvents = referencedEvents.filter((event: any) => ACTIVE_PROFILE_EVENT_STATUSES.includes(event.status));
   const futureEvents = referencedEvents.filter((event: any) => event.startDate && new Date(event.startDate) > now);
   const eventsWithSoldTickets = referencedEvents.filter((event: any) => {
     const eventSoldCount = event.soldCount ?? 0;

@@ -17,6 +17,7 @@ import { Reservation } from '../../models/reservation.schema';
 import { Booking } from '../../models/booking.schema';
 import { Ticket } from '../../models/ticket.schema';
 import { CacheService } from '../cache.service';
+import { EventStatus } from '@mad/shared';
 
 vi.mock('../../models/ticket-profile.schema', () => ({
   TicketProfile: {
@@ -320,7 +321,43 @@ describe('Ticket Profile Delete Reference Protection', () => {
       { new: true }
     );
   });
-  
+
+  it.each([EventStatus.DRAFT, EventStatus.PUBLISHED, EventStatus.POSTPONED])(
+    'blocks delete when profile is referenced by a %s event',
+    async (status) => {
+      vi.mocked(Event.find).mockResolvedValue([
+        {
+          ...historicalEvent,
+          status,
+        },
+      ] as any);
+
+      await expect(ticketProfileService.deleteTicketProfile('profile-1')).rejects.toThrow(
+        'Ticket Profile is referenced by active events and cannot be deleted'
+      );
+      expect(TicketProfile.findByIdAndUpdate).not.toHaveBeenCalled();
+    }
+  );
+
+  it('does not block delete solely because profile is referenced by a sold_out event', async () => {
+    vi.mocked(Event.find).mockResolvedValue([
+      {
+        ...historicalEvent,
+        status: EventStatus.SOLD_OUT,
+      },
+    ] as any);
+
+    await expect(ticketProfileService.deleteTicketProfile('profile-1')).resolves.toEqual({
+      _id: 'profile-1',
+      isDeleted: true,
+    });
+    expect(TicketProfile.findByIdAndUpdate).toHaveBeenCalledWith(
+      'profile-1',
+      { isDeleted: true },
+      { new: true }
+    );
+  });
+
   it('blocks delete when profile is referenced by a future event', async () => {
     vi.mocked(Event.find).mockResolvedValue([
       {
@@ -350,7 +387,7 @@ describe('Ticket Profile Delete Reference Protection', () => {
     expect(TicketProfile.findByIdAndUpdate).not.toHaveBeenCalled();
   });
 
-  it('blocks delete when profile is referenced by a sold_out event', async () => {
+  it('does not block delete solely because profile is referenced by a sold_out event status string', async () => {
     vi.mocked(Event.find).mockResolvedValue([
       {
         ...historicalEvent,
@@ -358,13 +395,15 @@ describe('Ticket Profile Delete Reference Protection', () => {
       },
     ] as any);
 
-    await expect(
-      ticketProfileService.deleteTicketProfile('profile-1')
-    ).rejects.toThrow(
-      'Ticket Profile is referenced by active events and cannot be deleted'
+    await expect(ticketProfileService.deleteTicketProfile('profile-1')).resolves.toEqual({
+      _id: 'profile-1',
+      isDeleted: true,
+    });
+    expect(TicketProfile.findByIdAndUpdate).toHaveBeenCalledWith(
+      'profile-1',
+      { isDeleted: true },
+      { new: true }
     );
-
-    expect(TicketProfile.findByIdAndUpdate).not.toHaveBeenCalled();
   });
 
   it.each(['draft', 'published', 'postponed'])(
