@@ -266,7 +266,7 @@ describe('Ticket Profile Service Sync Integrity', () => {
 
     vi.mocked(TicketProfile.findById).mockResolvedValue(mockProfile as any);
     vi.mocked(Event.find).mockResolvedValue([mockEvent, mockEvent2] as any);
-    
+
     // Simulate booking exists on event 2 VIP tier
     vi.mocked(Booking.exists).mockImplementation(async (query: any) => {
       if (query.eventId === 'event-2' && query['tickets.tier'] === 'VIP') {
@@ -321,7 +321,7 @@ describe('Ticket Profile Delete Reference Protection', () => {
     );
   });
 
-  it.each(['draft', 'published', 'sold_out', 'postponed'])(
+  it.each(['draft', 'published', 'postponed'])(
     'blocks delete when profile is referenced by a %s event',
     async (status) => {
       vi.mocked(Event.find).mockResolvedValue([
@@ -334,23 +334,37 @@ describe('Ticket Profile Delete Reference Protection', () => {
       await expect(ticketProfileService.deleteTicketProfile('profile-1')).rejects.toThrow(
         'Ticket Profile is referenced by active events and cannot be deleted'
       );
+
       expect(TicketProfile.findByIdAndUpdate).not.toHaveBeenCalled();
     }
   );
 
-  it('blocks delete when profile is referenced by a future event', async () => {
+  it('allows delete when profile is referenced only by sold_out events', async () => {
     vi.mocked(Event.find).mockResolvedValue([
       {
         ...historicalEvent,
-        status: 'completed',
-        startDate: new Date('2099-01-01T00:00:00.000Z'),
+        status: 'sold_out',
       },
     ] as any);
 
-    await expect(ticketProfileService.deleteTicketProfile('profile-1')).rejects.toThrow(
-      'Ticket Profile is referenced by active events and cannot be deleted'
-    );
-    expect(TicketProfile.findByIdAndUpdate).not.toHaveBeenCalled();
+    await expect(
+      ticketProfileService.deleteTicketProfile('profile-1')
+    ).resolves.toMatchObject({
+      _id: 'profile-1',
+      isDeleted: true,
+    });
+
+    expect(TicketProfile.findByIdAndUpdate).toHaveBeenCalled();
+  });
+
+  it('allows delete when profile is referenced only by sold_out events', async () => {
+
+    await expect(
+      ticketProfileService.deleteTicketProfile('profile-1')
+    ).resolves.toMatchObject({
+      _id: 'profile-1',
+      isDeleted: true,
+    });
   });
 
   it('blocks delete when a referenced event has sold tickets', async () => {
