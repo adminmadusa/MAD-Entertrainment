@@ -1,3 +1,4 @@
+import { EventStatus } from '@mad/shared';
 import { TicketProfile, ITicketProfile } from '../../models/ticket-profile.schema';
 import { Event } from '../../models/event.schema';
 import { CacheService } from '../cache.service';
@@ -6,6 +7,17 @@ import { Reservation } from '../../models/reservation.schema';
 import { Booking } from '../../models/booking.schema';
 import { Ticket } from '../../models/ticket.schema';
 import { AppError } from '../../middleware/error.middleware';
+const PROFILE_SYNC_STATUSES = [
+  EventStatus.DRAFT,
+  EventStatus.PUBLISHED,
+];
+
+const ACTIVE_REFERENCE_STATUSES = [
+  EventStatus.DRAFT,
+  EventStatus.PUBLISHED,
+  EventStatus.SOLD_OUT,
+  EventStatus.POSTPONED,
+];
 
 /**
  * Resolves event ticket tiers dynamically by merging profile tickets with event-specific overrides.
@@ -81,7 +93,7 @@ export const syncProfileEvents = async (profileId: string) => {
 
   const events = await Event.find({
     ticketProfileId: profileId,
-    status: { $in: ['draft', 'published', 'sold_out'] },
+    status: { $in: PROFILE_SYNC_STATUSES },
     isDeleted: { $ne: true },
   });
 
@@ -182,7 +194,7 @@ export const updateTicketProfile = async (
     if (removedTiers.length > 0) {
       const events = await Event.find({
         ticketProfileId: id,
-        status: { $in: ['draft', 'published', 'sold_out'] },
+        status: { $in: PROFILE_SYNC_STATUSES },
         isDeleted: { $ne: true },
       });
 
@@ -220,7 +232,6 @@ export const updateTicketProfile = async (
   return updated;
 };
 
-const ACTIVE_REFERENCE_STATUSES = ['draft', 'published', 'sold_out', 'postponed'];
 const DELETE_BLOCKED_MESSAGE = 'Ticket Profile is referenced by active events and cannot be deleted';
 
 const ensureTicketProfileCanBeDeleted = async (profileId: string) => {
