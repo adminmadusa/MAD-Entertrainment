@@ -320,7 +320,7 @@ describe('Ticket Profile Delete Reference Protection', () => {
       { new: true }
     );
   });
-
+  
   it('blocks delete when profile is referenced by a future event', async () => {
     vi.mocked(Event.find).mockResolvedValue([
       {
