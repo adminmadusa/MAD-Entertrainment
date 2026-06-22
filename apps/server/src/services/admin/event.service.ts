@@ -66,7 +66,6 @@ export const assertEventStatusTransition = (
 const isEventLifecycleStatus = (status: EventStatus): status is EventLifecycleStatus =>
   Object.prototype.hasOwnProperty.call(EVENT_STATUS_TRANSITIONS, status);
 
-<<<<<<< HEAD
 const INITIAL_EVENT_STATUSES: readonly EventStatus[] = [
   EventStatus.DRAFT,
   EventStatus.PUBLISHED,
@@ -80,8 +79,6 @@ export const assertInitialEventStatus = (status?: EventStatus): void => {
   }
 };
 
-=======
->>>>>>> origin/develop
 type EventAttendanceMetrics = {
   ticketsSold: number;
   ticketsCheckedIn: number;
@@ -121,7 +118,7 @@ export const createEvent = async (data: Partial<IEvent>): Promise<IEvent> => {
   if (data.title && !data.slug) {
     data.slug = data.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
   }
-  
+
   if (data.slug) {
     let slug = data.slug.toLowerCase().trim();
     let isUnique = false;
@@ -185,7 +182,7 @@ export const getEvents = async (
     .sort({ createdAt: -1 })
     .skip(skip)
     .limit(limit);
-    
+
   return {
     events,
     total,

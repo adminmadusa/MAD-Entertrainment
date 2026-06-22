@@ -274,16 +274,12 @@ type EventImageValidationBody = {
   posterImage?: EventImageValidationAsset;
   galleryImages?: EventImageValidationAsset[];
 };
-
-<<<<<<< HEAD
 const eventLifecycleStatuses = Object.values(EventStatus).filter(
   (status): status is EventLifecycleStatus => status !== EventStatus.SOLD_OUT
 ) as [EventLifecycleStatus, ...EventLifecycleStatus[]];
 
 const eventLifecycleStatusSchema = z.enum(eventLifecycleStatuses);
 
-=======
->>>>>>> origin/develop
 export const validateEventImages = (body: EventImageValidationBody, ctx: z.RefinementCtx) => {
   const banner = body.bannerImage;
   const poster = body.posterImage;
@@ -338,73 +334,73 @@ export const validateEventImages = (body: EventImageValidationBody, ctx: z.Refin
 };
 
 const eventBodySchema = z.object({
-    title: z.string().min(1).max(200),
-    slug: z.string().min(1),
-    description: z.string().min(1).max(5000),
-    category: z.string().min(1),
-    status: eventLifecycleStatusSchema.optional(),
-    bookingMode: z.nativeEnum(BookingMode),
-    bannerImage: cloudinaryImageSchema,
-    posterImage: cloudinaryImageSchema.optional(),
-    galleryImages: z.array(cloudinaryImageSchema).optional(),
-    startDate: z.string().datetime(),
-    endDate: z.string().datetime().optional(),
-    doorsOpenTime: z.string().optional(),
-    showTime: z.string().optional(),
-    venue: z.string().min(1),
+  title: z.string().min(1).max(200),
+  slug: z.string().min(1),
+  description: z.string().min(1).max(5000),
+  category: z.string().min(1),
+  status: eventLifecycleStatusSchema.optional(),
+  bookingMode: z.nativeEnum(BookingMode),
+  bannerImage: cloudinaryImageSchema,
+  posterImage: cloudinaryImageSchema.optional(),
+  galleryImages: z.array(cloudinaryImageSchema).optional(),
+  startDate: z.string().datetime(),
+  endDate: z.string().datetime().optional(),
+  doorsOpenTime: z.string().optional(),
+  showTime: z.string().optional(),
+  venue: z.string().min(1),
 
-    djOperatorIds: z.array(z.string()).optional(),
-    ticketTiers: z
-      .array(
-        z.object({
-          tier: z.nativeEnum(TicketTier),
-          name: z.string(),
-          slug: z.string().optional(),
-          price: z.number().min(0),
-          totalCapacity: z.number().int().min(1),
-          groupSize: z.number().int().min(1).optional(),
-          minPerBooking: z.number().int().min(1).optional(),
-          maxPerBooking: z.number().int().min(1).optional(),
-          description: z.string().optional(),
-          perks: z.array(z.string()).optional(),
-          tags: z.array(z.string()).optional(),
-          discount: z.number().min(0).optional(),
-          taxPercent: z.number().min(0).max(100).optional(),
-          availabilityWindow: z
-            .object({
-              startDate: z.string().datetime(),
-              endDate: z.string().datetime(),
-            })
-            .optional(),
-          isActive: z.boolean().optional(),
-        })
-      )
-      .optional(),
-    totalCapacity: z.number().int().min(1),
-    isFeatured: z.boolean().optional(),
-    seatLayoutId: z.string().optional(),
-    tags: z.array(z.string()).optional(),
-    ageRestriction: z.number().int().min(0).optional(),
-    dresscode: z.string().optional(),
-    additionalInfo: z.string().optional(),
-    showCountdown: z.boolean().optional(),
-    isEarlyBird: z.boolean().optional(),
-    earlyBirdDeadline: z.string().datetime().optional(),
-    highlights: z.array(z.string()).optional(),
-    refundPolicy: z.string().max(1000).optional(),
-    organizerName: z.string().max(100).optional(),
-    ticketProfileId: z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid Mongoose ObjectId identifier').nullable().optional(),
-    requireTerms: z.boolean().optional(),
-    requireAgeConfirmation: z.boolean().optional(),
-    ticketOverrides: z.array(z.object({
-      tier: z.string(),
-      price: z.number().min(0).optional(),
-      totalCapacity: z.number().int().min(1).optional(),
-      isActive: z.boolean().optional(),
-      maxPerBooking: z.number().int().min(1).optional(),
-      minPerBooking: z.number().int().min(1).optional(),
-    })).optional(),
-  });
+  djOperatorIds: z.array(z.string()).optional(),
+  ticketTiers: z
+    .array(
+      z.object({
+        tier: z.nativeEnum(TicketTier),
+        name: z.string(),
+        slug: z.string().optional(),
+        price: z.number().min(0),
+        totalCapacity: z.number().int().min(1),
+        groupSize: z.number().int().min(1).optional(),
+        minPerBooking: z.number().int().min(1).optional(),
+        maxPerBooking: z.number().int().min(1).optional(),
+        description: z.string().optional(),
+        perks: z.array(z.string()).optional(),
+        tags: z.array(z.string()).optional(),
+        discount: z.number().min(0).optional(),
+        taxPercent: z.number().min(0).max(100).optional(),
+        availabilityWindow: z
+          .object({
+            startDate: z.string().datetime(),
+            endDate: z.string().datetime(),
+          })
+          .optional(),
+        isActive: z.boolean().optional(),
+      })
+    )
+    .optional(),
+  totalCapacity: z.number().int().min(1),
+  isFeatured: z.boolean().optional(),
+  seatLayoutId: z.string().optional(),
+  tags: z.array(z.string()).optional(),
+  ageRestriction: z.number().int().min(0).optional(),
+  dresscode: z.string().optional(),
+  additionalInfo: z.string().optional(),
+  showCountdown: z.boolean().optional(),
+  isEarlyBird: z.boolean().optional(),
+  earlyBirdDeadline: z.string().datetime().optional(),
+  highlights: z.array(z.string()).optional(),
+  refundPolicy: z.string().max(1000).optional(),
+  organizerName: z.string().max(100).optional(),
+  ticketProfileId: z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid Mongoose ObjectId identifier').nullable().optional(),
+  requireTerms: z.boolean().optional(),
+  requireAgeConfirmation: z.boolean().optional(),
+  ticketOverrides: z.array(z.object({
+    tier: z.string(),
+    price: z.number().min(0).optional(),
+    totalCapacity: z.number().int().min(1).optional(),
+    isActive: z.boolean().optional(),
+    maxPerBooking: z.number().int().min(1).optional(),
+    minPerBooking: z.number().int().min(1).optional(),
+  })).optional(),
+});
 
 export const createEventSchema = z.object({
   body: eventBodySchema.superRefine(validateEventImages),
