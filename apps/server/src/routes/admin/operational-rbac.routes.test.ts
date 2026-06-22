@@ -30,6 +30,10 @@ vi.mock('../../controllers/admin/diagnostics.controller', () => ({
   getSystemDiagnostics: vi.fn(),
   retryFailedJob: vi.fn(),
   retryAllFailedJobs: vi.fn(),
+  getQueuesStatus: vi.fn(),
+  pauseQueueHandler: vi.fn(),
+  resumeQueueHandler: vi.fn(),
+  drainQueueHandler: vi.fn(),
 }));
 
 vi.mock('../../controllers/admin/refund.controller', () => ({
@@ -219,6 +223,9 @@ describe('admin operational RBAC routes', () => {
     ['/consistency/repair', 'post'],
     ['/dlq/:id/retry', 'post'],
     ['/dlq/retry-all', 'post'],
+    ['/queues/:name/pause', 'post'],
+    ['/queues/:name/resume', 'post'],
+    ['/queues/:name/drain', 'post'],
   ] as Array<[string, Method]>)('allows only SUPER_ADMIN for diagnostics %s %s', (path, method) => {
     const middleware = getRouteMiddleware(diagnosticsRoutes, path, method);
 

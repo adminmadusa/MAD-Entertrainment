@@ -115,3 +115,31 @@ export async function adminGetEmailLogs(params: { page?: number; limit?: number;
   };
 }
 
+// ─── Queue Control ────────────────────────────────────────────
+
+export interface QueueControlStatus {
+  name: string;
+  isPaused: boolean;
+  active: number;
+  waiting: number;
+  delayed: number;
+  failed: number;
+  completed: number;
+}
+
+export async function adminGetQueues(): Promise<QueueControlStatus[]> {
+  const { data } = await adminApiClient.get<{ data: QueueControlStatus[] }>('/admin/diagnostics/queues');
+  return data.data;
+}
+
+export async function adminPauseQueue(name: string): Promise<void> {
+  await adminApiClient.post(`/admin/diagnostics/queues/${name}/pause`);
+}
+
+export async function adminResumeQueue(name: string): Promise<void> {
+  await adminApiClient.post(`/admin/diagnostics/queues/${name}/resume`);
+}
+
+export async function adminDrainQueue(name: string): Promise<void> {
+  await adminApiClient.post(`/admin/diagnostics/queues/${name}/drain`);
+}
