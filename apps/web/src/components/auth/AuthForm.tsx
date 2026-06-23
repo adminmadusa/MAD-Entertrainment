@@ -36,11 +36,6 @@ export interface AuthFormProps {
   onClose?: () => void;
 }
 
-const STEP_ANNOUNCEMENTS: Record<'request' | 'verify' | 'onboard', string> = {
-  request: 'Sign in screen',
-  verify: 'Verification code screen',
-  onboard: 'Profile completion screen',
-};
 
 export function AuthForm({
   mode,
@@ -68,7 +63,6 @@ export function AuthForm({
   const [otp, setOtp] = useState('');
   const [step, setStep] = useState<'request' | 'verify' | 'onboard'>('request');
   const [error, setError] = useState('');
-  const [stepAnnouncement, setStepAnnouncement] = useState('');
 
   useEffect(() => {
     if (initialEmail && !email) {
@@ -84,12 +78,10 @@ export function AuthForm({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token, onboardingRequired]);
 
-  // Announce step changes to screen readers and manage focus
+  // Manage focus on step change
   const firstFocusableRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
-    setStepAnnouncement(STEP_ANNOUNCEMENTS[step]);
-
     const STEP_FOCUS_IDS: Record<'request' | 'verify' | 'onboard', string> = {
       request: 'email',
       verify: 'otp',
@@ -281,16 +273,6 @@ export function AuthForm({
 
   return (
     <div className={`space-y-4 sm:space-y-6 relative ${className}`}>
-      {/* Screen reader step transition announcer */}
-      <div
-        role="status"
-        aria-live="polite"
-        aria-atomic="true"
-        className="sr-only"
-      >
-        {stepAnnouncement}
-      </div>
-
       {onClose && (
         <button
           type="button"
