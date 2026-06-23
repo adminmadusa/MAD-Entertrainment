@@ -174,10 +174,8 @@ export async function getMyTickets(
 
     const tokenizedTickets = tickets.map((t: any) => {
       const ticketObj = typeof t.toObject === 'function' ? t.toObject() : t;
-      if (ticketObj.qrCodeImage) {
-        const token = generateTicketQrToken(ticketObj.ticketId);
-        ticketObj.qrCodeImage = `${ticketObj.qrCodeImage}?token=${token}`;
-      }
+      const token = generateTicketQrToken(ticketObj.ticketId);
+      ticketObj.qrCodeImage = `/api/public/tickets/${ticketObj.ticketId}/qr?token=${token}`;
       return ticketObj;
     });
 

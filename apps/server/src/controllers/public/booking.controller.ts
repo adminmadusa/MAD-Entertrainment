@@ -127,9 +127,9 @@ export async function getMyBookings(
       ) {
         ticketObj.qrCode = undefined;
         ticketObj.qrCodeImage = undefined;
-      } else if (ticketObj.qrCodeImage) {
+      } else {
         const token = generateTicketQrToken(ticketObj.ticketId);
-        ticketObj.qrCodeImage = `${ticketObj.qrCodeImage}?token=${token}`;
+        ticketObj.qrCodeImage = `/api/public/tickets/${ticketObj.ticketId}/qr?token=${token}`;
       }
       return ticketObj;
     });
@@ -193,9 +193,9 @@ export async function getBooking(
       ) {
         ticketObj.qrCode = undefined;
         ticketObj.qrCodeImage = undefined;
-      } else if (ticketObj.qrCodeImage) {
+      } else {
         const token = generateTicketQrToken(ticketObj.ticketId);
-        ticketObj.qrCodeImage = `${ticketObj.qrCodeImage}?token=${token}`;
+        ticketObj.qrCodeImage = `/api/public/tickets/${ticketObj.ticketId}/qr?token=${token}`;
       }
       return ticketObj;
     });
