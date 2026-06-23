@@ -13,7 +13,7 @@ import { QueueService } from '../../services/queue.service';
 import { getQueueName } from '../../config/queue.config';
 import { CacheService } from '../../services/cache.service';
 import { getEnv } from '../../config/env';
-import { generateTicketQrToken } from '../../services/public/ticket-ownership.service';
+import { buildQrCodeImageUrl } from '../../services/public/ticket-ownership.service';
 
 
 
@@ -128,8 +128,7 @@ export async function getMyBookings(
         ticketObj.qrCode = undefined;
         ticketObj.qrCodeImage = undefined;
       } else {
-        const token = generateTicketQrToken(ticketObj.ticketId);
-        ticketObj.qrCodeImage = `/api/public/tickets/${ticketObj.ticketId}/qr?token=${token}`;
+        ticketObj.qrCodeImage = buildQrCodeImageUrl(ticketObj.ticketId);
       }
       return ticketObj;
     });
@@ -194,8 +193,7 @@ export async function getBooking(
         ticketObj.qrCode = undefined;
         ticketObj.qrCodeImage = undefined;
       } else {
-        const token = generateTicketQrToken(ticketObj.ticketId);
-        ticketObj.qrCodeImage = `/api/public/tickets/${ticketObj.ticketId}/qr?token=${token}`;
+        ticketObj.qrCodeImage = buildQrCodeImageUrl(ticketObj.ticketId);
       }
       return ticketObj;
     });
@@ -511,6 +509,8 @@ export async function recoverBooking(
 
     res.status(200).json({
       success: true,
+      bookingId: result.bookingId,
+      guestEmail: result.guestEmail,
       maskedEmail: result.maskedEmail,
       otpDispatched,
       cooldownSeconds,

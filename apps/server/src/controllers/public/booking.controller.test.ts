@@ -143,6 +143,8 @@ describe('Booking Controller — recoverBooking', () => {
     expect(res.status).toHaveBeenCalledWith(200);
     expect(res.json).toHaveBeenCalledWith({
       success: true,
+      bookingId: 'MAD-2026-ABCDE',
+      guestEmail: 'kalyan@gmail.com',
       maskedEmail: 'k*****n@gmail.com',
       otpDispatched: true,
       cooldownSeconds: 60,
@@ -207,6 +209,8 @@ describe('Booking Controller — recoverBooking', () => {
     expect(res.status).toHaveBeenCalledWith(200);
     expect(res.json).toHaveBeenCalledWith({
       success: true,
+      bookingId: 'MAD-2026-ABCDE',
+      guestEmail: 'kalyan@gmail.com',
       maskedEmail: 'k*****n@gmail.com',
       otpDispatched: false,
       cooldownSeconds: 45,

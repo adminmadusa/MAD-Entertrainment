@@ -723,6 +723,28 @@ Verify:
 
 Release only after explicit approval.
 
+DEPLOYMENT PARITY CHECK (MANDATORY)
+
+Before auditing any issue:
+
+- Verify frontend environment.
+- Verify frontend branch.
+- Verify backend environment.
+- Verify backend branch.
+- Verify deployment completion.
+
+MAD currently uses:
+
+Frontend:
+- Vercel Production → live
+- Vercel Test → develop
+
+Backend:
+- Render → live only
+
+Test environments share the same Render backend.
+
+A bug is not considered reproducible until deployment parity has been verified.
 ---
 
 # FINAL MAD GOLDEN RULE
