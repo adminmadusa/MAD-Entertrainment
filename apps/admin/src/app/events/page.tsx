@@ -4,26 +4,24 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { useState } from 'react';
-import { EventStatus } from '@mad/shared';
+import { EVENT_STATUS_METADATA, type EventStatus } from '@mad/shared';
 import { useAdminAuth } from '@/providers/AdminAuthProvider';
 
 import { adminGetEvents, adminDeleteEvent, type AdminEvent } from '@/lib/api/admin/event.service';
 import { extractApiError } from '@/lib/api/client';
 
-const STATUS_COLORS: Record<string, string> = {
-  draft: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/30',
-  published: 'bg-green-500/10 text-green-400 border-green-500/30',
-  cancelled: 'bg-red-500/10 text-red-400 border-red-500/30',
-  sold_out: 'bg-orange-500/10 text-orange-400 border-orange-500/30',
-  completed: 'bg-blue-500/10 text-blue-400 border-blue-500/30',
-};
+const EVENT_STATUS_FILTER_OPTIONS = Object.entries(EVENT_STATUS_METADATA);
+const getEventStatusMeta = (status?: EventStatus) =>
+  status && status in EVENT_STATUS_METADATA
+    ? EVENT_STATUS_METADATA[status as keyof typeof EVENT_STATUS_METADATA]
+    : undefined;
 
 export default function AdminEventsPage() {
   const { admin } = useAdminAuth();
   const qc = useQueryClient();
   const [search, setSearch] = useState('');
   const canMutateEvents = !!admin?.role && ['super_admin', 'admin', 'manager'].includes(admin.role);
-  const [statusFilter, setStatusFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useState<EventStatus | ''>('');
   const [page, setPage] = useState(1);
   const [deleteTarget, setDeleteTarget] = useState<AdminEvent | null>(null);
 
@@ -100,81 +98,89 @@ export default function AdminEventsPage() {
       );
     }
 
-    return sortedEvents.map((event) => (
-      <tr key={event._id} className="border-b border-border-subtle/40 hover:bg-white/2 transition-colors">
-        <td className="py-4 px-5">
-          <div className="flex items-center gap-3">
-            {event.bannerImage?.url ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={event.bannerImage.url} alt={event.title} className="w-10 h-10 rounded-lg object-cover flex-shrink-0" />
-            ) : (
-              <div className="w-10 h-10 rounded-lg bg-accent-purple/10 flex-shrink-0 flex items-center justify-center text-accent-purple text-xs font-bold">
-                {(event.title || '?')[0]}
+    return sortedEvents.map((event) => {
+      const statusMeta = getEventStatusMeta(event.status);
+
+      return (
+        <tr key={event._id} className="border-b border-border-subtle/40 hover:bg-white/2 transition-colors">
+          <td className="py-4 px-5">
+            <div className="flex items-center gap-3">
+              {event.bannerImage?.url ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={event.bannerImage.url} alt={event.title} className="w-10 h-10 rounded-lg object-cover flex-shrink-0" />
+              ) : (
+                <div className="w-10 h-10 rounded-lg bg-accent-purple/10 flex-shrink-0 flex items-center justify-center text-accent-purple text-xs font-bold">
+                  {(event.title || '?')[0]}
+                </div>
+              )}
+              <div className="min-w-0">
+                <p className="text-text-primary font-medium truncate max-w-52">{event.title || 'Untitled Event'}</p>
+                <p className="text-text-muted text-xs truncate">{event.slug || 'no-slug'}</p>
               </div>
+            </div>
+          </td>
+          <td className="py-4 px-4 capitalize text-text-secondary">
+            {event.category ? (
+              event.category.replace('_', ' ')
+            ) : (
+              <span className="text-xs px-2.5 py-1 rounded-full border border-yellow-500/30 bg-yellow-500/10 text-yellow-400 font-semibold animate-pulse inline-flex items-center gap-1">
+                ⚠️ Missing Category
+              </span>
             )}
-            <div className="min-w-0">
-              <p className="text-text-primary font-medium truncate max-w-52">{event.title || 'Untitled Event'}</p>
-              <p className="text-text-muted text-xs truncate">{event.slug || 'no-slug'}</p>
-            </div>
-          </div>
-        </td>
-        <td className="py-4 px-4 capitalize text-text-secondary">
-          {event.category ? (
-            event.category.replace('_', ' ')
-          ) : (
-            <span className="text-xs px-2.5 py-1 rounded-full border border-yellow-500/30 bg-yellow-500/10 text-yellow-400 font-semibold animate-pulse inline-flex items-center gap-1">
-              ⚠️ Missing Category
+          </td>
+          <td className="py-4 px-4 text-text-secondary">
+            {event.startDate ? (
+              new Date(event.startDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
+            ) : (
+              <span className="text-text-muted">N/A</span>
+            )}
+          </td>
+          <td className="py-4 px-4">
+            {statusMeta ? (
+              <span className={`text-xs px-2.5 py-1 rounded-full border font-medium ${statusMeta.className}`}>
+                {statusMeta.label}
+              </span>
+            ) : event.status ? (
+              <span className="text-xs px-2.5 py-1 rounded-full border font-medium border-border-subtle text-text-muted">
+                {event.status.replace('_', ' ')}
+              </span>
+            ) : (
+              <span className="text-xs px-2.5 py-1 rounded-full border border-yellow-500/30 bg-yellow-500/10 text-yellow-400 font-semibold animate-pulse inline-flex items-center gap-1">
+                ⚠️ Missing Status
+              </span>
+            )}
+          </td>
+          <td className="py-4 px-4">
+            <span
+              className={`text-lg ${event.isFeatured ? 'text-yellow-400' : 'text-text-muted'}`}
+              title={event.isFeatured ? 'Featured Event' : 'Standard Event'}
+            >
+              ★
             </span>
-          )}
-        </td>
-        <td className="py-4 px-4 text-text-secondary">
-          {event.startDate ? (
-            new Date(event.startDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
-          ) : (
-            <span className="text-text-muted">N/A</span>
-          )}
-        </td>
-        <td className="py-4 px-4">
-          {event.status ? (
-            <span className={`text-xs px-2.5 py-1 rounded-full border font-medium ${STATUS_COLORS[event.status] ?? ''}`}>
-              {event.status.replace('_', ' ')}
-            </span>
-          ) : (
-            <span className="text-xs px-2.5 py-1 rounded-full border border-yellow-500/30 bg-yellow-500/10 text-yellow-400 font-semibold animate-pulse inline-flex items-center gap-1">
-              ⚠️ Missing Status
-            </span>
-          )}
-        </td>
-        <td className="py-4 px-4">
-          <span
-            className={`text-lg ${event.isFeatured ? 'text-yellow-400' : 'text-text-muted'}`}
-            title={event.isFeatured ? 'Featured Event' : 'Standard Event'}
-          >
-            ★
-          </span>
-        </td>
-        <td className="py-4 px-5">
-          {canMutateEvents ? (
-            <div className="flex items-center justify-end gap-2">
-              <Link
-                href={`/events/${event._id}/edit`}
-                className="px-3 py-1.5 text-xs font-medium glass border border-border-subtle rounded-lg text-text-secondary hover:text-white hover:border-accent-purple/40 transition-all"
-              >
-                Edit
-              </Link>
-              <button
-                onClick={() => setDeleteTarget(event)}
-                className="px-3 py-1.5 text-xs font-medium glass border border-border-subtle rounded-lg text-text-muted hover:text-red-400 hover:border-red-500/40 transition-all"
-              >
-                Delete
-              </button>
-            </div>
-          ) : (
-            <div className="text-right text-text-muted">—</div>
-          )}
-        </td>
-      </tr>
-    ));
+          </td>
+          <td className="py-4 px-5">
+            {canMutateEvents ? (
+              <div className="flex items-center justify-end gap-2">
+                <Link
+                  href={`/events/${event._id}/edit`}
+                  className="px-3 py-1.5 text-xs font-medium glass border border-border-subtle rounded-lg text-text-secondary hover:text-white hover:border-accent-purple/40 transition-all"
+                >
+                  Edit
+                </Link>
+                <button
+                  onClick={() => setDeleteTarget(event)}
+                  className="px-3 py-1.5 text-xs font-medium glass border border-border-subtle rounded-lg text-text-muted hover:text-red-400 hover:border-red-500/40 transition-all"
+                >
+                  Delete
+                </button>
+              </div>
+            ) : (
+              <div className="text-right text-text-muted">—</div>
+            )}
+          </td>
+        </tr>
+      );
+    });
   };
 
   return (
@@ -209,15 +215,13 @@ export default function AdminEventsPage() {
         />
         <select
           value={statusFilter}
-          onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
+          onChange={(e) => { setStatusFilter(e.target.value as EventStatus | ''); setPage(1); }}
           className="px-4 py-2.5 rounded-xl bg-background-card border border-border-subtle text-sm text-text-primary focus:outline-none focus:border-accent-purple transition-colors"
         >
           <option value="">All Statuses</option>
-          <option value="draft">Draft</option>
-          <option value="published">Published</option>
-          <option value="cancelled">Cancelled</option>
-          <option value="sold_out">Sold Out</option>
-          <option value="completed">Completed</option>
+          {EVENT_STATUS_FILTER_OPTIONS.map(([value, meta]) => (
+            <option key={value} value={value}>{meta.label}</option>
+          ))}
         </select>
       </div>
 

@@ -7,7 +7,7 @@ import { Booking } from '../../models/booking.schema';
 import { Ticket } from '../../models/ticket.schema';
 import { logger } from '../../utils/logger';
 import { sendSuccess } from '../../utils/response';
-import { canViewTicketQR } from '../../services/public/ticket-ownership.service';
+import { canViewTicketQR, generateTicketQrToken, verifyTicketQrToken } from '../../services/public/ticket-ownership.service';
 import * as ticketService from '../../services/public/ticket.service';
 
 /**
@@ -47,8 +47,18 @@ export async function getTicketQR(
       throw AppError.forbidden('Associated booking is not confirmed');
     }
 
-    // 2. Validate ticket visibility using canViewTicketQR
-    const hasAccess = await canViewTicketQR(ticket, req.user?.sub, req.session?.sessionId);
+    // 2. Validate ticket visibility using token or canViewTicketQR
+    const token = req.query?.token as string;
+    let hasAccess = false;
+
+    if (token) {
+      hasAccess = verifyTicketQrToken(ticketId, token);
+    }
+
+    if (!hasAccess) {
+      hasAccess = await canViewTicketQR(ticket, req.user?.sub, req.session?.sessionId);
+    }
+
     if (!hasAccess) {
       throw AppError.forbidden('You do not have permission to view this QR code');
     }
@@ -162,7 +172,14 @@ export async function getMyTickets(
 
     const tickets = await ticketService.getAttendeeTickets(req.user.sub);
 
-    sendSuccess(res, { tickets }, 'My tickets retrieved successfully');
+    const tokenizedTickets = tickets.map((t: any) => {
+      const ticketObj = typeof t.toObject === 'function' ? t.toObject() : t;
+      const token = generateTicketQrToken(ticketObj.ticketId);
+      ticketObj.qrCodeImage = `/api/public/tickets/${ticketObj.ticketId}/qr?token=${token}`;
+      return ticketObj;
+    });
+
+    sendSuccess(res, { tickets: tokenizedTickets }, 'My tickets retrieved successfully');
   } catch (err) {
     next(err);
   }

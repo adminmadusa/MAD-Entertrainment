@@ -4,6 +4,9 @@ import { CacheService } from '../../services/cache.service';
 import { sendSuccess } from '../../utils/response';
 import { logger } from '../../utils/logger';
 
+type PublicEventListResult = Awaited<ReturnType<typeof PublicEventService.listEvents>>;
+type PublicEventDetailResult = Awaited<ReturnType<typeof PublicEventService.getEventBySlug>>;
+
 export async function listEvents(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const category = typeof req.query.category === 'string' ? req.query.category : undefined;
@@ -15,7 +18,7 @@ export async function listEvents(req: Request, res: Response, next: NextFunction
     const cacheKey = `events:list:${category || 'all'}:${search || 'none'}:${page}:${limit}:${includeTotal}`;
     const startTime = performance.now();
 
-    const cached = await CacheService.get<any>(cacheKey);
+    const cached = await CacheService.get<PublicEventListResult>(cacheKey);
     if (cached) {
       const duration = performance.now() - startTime;
       logger.info({ durationMs: duration.toFixed(0) }, '[events:cache-hit]');
@@ -45,7 +48,7 @@ export async function getEventBySlug(req: Request, res: Response, next: NextFunc
     const cacheKey = `events:detail:slug:${slug}`;
     const startTime = performance.now();
 
-    const cached = await CacheService.get<any>(cacheKey);
+    const cached = await CacheService.get<PublicEventDetailResult>(cacheKey);
     if (cached) {
       const duration = performance.now() - startTime;
       logger.info({ durationMs: duration.toFixed(0) }, '[events:detail:cache-hit]');

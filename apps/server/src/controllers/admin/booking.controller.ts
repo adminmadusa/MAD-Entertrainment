@@ -52,7 +52,9 @@ export const getBookingById = async (req: Request, res: Response, next: NextFunc
 export const cancelBooking = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { reason } = req.body;
-    const booking = await bookingService.cancelBooking(req.params.id, reason);
+    // PRICING-003: Extract verified admin identity for scan-protection RBAC and audit trail
+    const actor = { id: req.admin?.sub || 'system', role: req.admin?.role || 'unknown' };
+    const booking = await bookingService.cancelBooking(req.params.id, reason, undefined, undefined, actor);
     res.status(200).json({
       success: true,
       data: booking,

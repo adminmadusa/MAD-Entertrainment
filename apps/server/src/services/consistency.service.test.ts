@@ -1055,12 +1055,50 @@ describe('ConsistencyService - Stuck Processing, Notifications, Optimistic Locki
     );
   });
 
+  const setupInventoryRepairCycle = ({
+    event,
+    soldTotal,
+    reservedTotal = 0,
+    confirmedBookingDocs = [],
+    updateResult = { modifiedCount: 1 },
+  }: {
+    event: any;
+    soldTotal: number;
+    reservedTotal?: number;
+    confirmedBookingDocs?: any[];
+    updateResult?: { modifiedCount: number };
+  }) => {
+    vi.mocked(Event.find).mockReturnValue(mockCreateMockQuery([event]) as any);
+    (Booking as any).aggregate = vi.fn().mockResolvedValue([{ total: soldTotal }]);
+    (Reservation as any).aggregate = vi.fn().mockResolvedValue([{ total: reservedTotal }]);
+    vi.mocked(Booking.find).mockImplementation((filter: any) => {
+      if (filter?.eventId === event._id && filter?.status === BookingStatus.CONFIRMED) {
+        return mockCreateMockQuery(confirmedBookingDocs);
+      }
+      return mockCreateMockQuery([]);
+    });
+    vi.mocked(Reservation.find).mockReturnValue(mockCreateMockQuery([]) as any);
+    vi.mocked(Refund.find).mockReturnValue(mockCreateMockQuery([]) as any);
+    vi.mocked(Notification.find).mockReturnValue(mockCreateMockQuery([]) as any);
+    vi.mocked(Reservation.countDocuments).mockResolvedValue(0);
+    vi.mocked(Booking.countDocuments).mockResolvedValue(0);
+    vi.mocked(Payment.countDocuments).mockResolvedValue(0);
+    vi.mocked(Notification.countDocuments).mockResolvedValue(0);
+
+    const mockEventUpdateOne = vi.fn().mockResolvedValue(updateResult);
+    (Event as any).updateOne = mockEventUpdateOne;
+
+    return mockEventUpdateOne;
+  };
+
   it('should execute event inventory repair and handle optimistic lock conflicts', async () => {
     // 1. Setup mock Event that needs repair
     const mockEvent = {
       _id: 'event-inv-1',
       soldCount: 5,
       reservedCount: 2,
+      totalCapacity: 20,
+      isSoldOut: false,
       ticketTiers: [{ tier: 'general', soldCount: 3 }],
       eventVersion: 1,
     };
@@ -1101,7 +1139,7 @@ describe('ConsistencyService - Stuck Processing, Notifications, Optimistic Locki
     expect(mockEventUpdateOne).toHaveBeenCalledWith(
       { _id: 'event-inv-1', eventVersion: 1 },
       expect.objectContaining({
-        $set: expect.objectContaining({ soldCount: 10, reservedCount: 5 }),
+        $set: expect.objectContaining({ soldCount: 10, reservedCount: 5, isSoldOut: false }),
         $inc: { eventVersion: 1 }
       })
     );
@@ -1111,6 +1149,88 @@ describe('ConsistencyService - Stuck Processing, Notifications, Optimistic Locki
     expect(report2.repairs?.eventInventoryMismatchesRepaired).toBe(1);
   });
 
+  it('should repair isSoldOut to true when sold count exhausts capacity', async () => {
+    const mockEvent = {
+      _id: 'event-sold-out-true',
+      soldCount: 10,
+      reservedCount: 0,
+      totalCapacity: 10,
+      isSoldOut: false,
+      ticketTiers: [{ tier: 'general', soldCount: 10 }],
+      eventVersion: 1,
+    };
+
+    vi.mocked(Event.find).mockReturnValue(mockCreateMockQuery([mockEvent]) as any);
+    (Booking as any).aggregate = vi.fn().mockResolvedValue([{ total: 10 }]);
+    (Reservation as any).aggregate = vi.fn().mockResolvedValue([{ total: 0 }]);
+    vi.mocked(Booking.find).mockImplementation((filter: any) => {
+      if (filter && filter.status && filter.status.$in) {
+        return mockCreateMockQuery([]);
+      }
+      return mockCreateMockQuery([{ tickets: [{ tier: 'general', quantity: 10 }] }]);
+    });
+    vi.mocked(Reservation.find).mockReturnValue(mockCreateMockQuery([]));
+    vi.mocked(Refund.find).mockReturnValue(mockCreateMockQuery([]));
+    vi.mocked(Reservation.countDocuments).mockResolvedValue(0);
+    vi.mocked(Booking.countDocuments).mockResolvedValue(0);
+    vi.mocked(Payment.countDocuments).mockResolvedValue(0);
+    vi.mocked(Notification.countDocuments).mockResolvedValue(0);
+
+    const mockEventUpdateOne = vi.fn().mockResolvedValue({ modifiedCount: 1 });
+    (Event as any).updateOne = mockEventUpdateOne;
+
+    const report = await ConsistencyService.runRepairCycle();
+
+    expect(report.repairs?.eventInventoryMismatchesRepaired).toBe(1);
+    expect(mockEventUpdateOne).toHaveBeenCalledWith(
+      { _id: 'event-sold-out-true', eventVersion: 1 },
+      expect.objectContaining({
+        $set: expect.objectContaining({ isSoldOut: true }),
+      })
+    );
+  });
+
+  it('should repair isSoldOut to false when sold count is below capacity', async () => {
+    const mockEvent = {
+      _id: 'event-sold-out-false',
+      soldCount: 9,
+      reservedCount: 0,
+      totalCapacity: 10,
+      isSoldOut: true,
+      ticketTiers: [{ tier: 'general', soldCount: 9 }],
+      eventVersion: 1,
+    };
+
+    vi.mocked(Event.find).mockReturnValue(mockCreateMockQuery([mockEvent]) as any);
+    (Booking as any).aggregate = vi.fn().mockResolvedValue([{ total: 9 }]);
+    (Reservation as any).aggregate = vi.fn().mockResolvedValue([{ total: 0 }]);
+    vi.mocked(Booking.find).mockImplementation((filter: any) => {
+      if (filter && filter.status && filter.status.$in) {
+        return mockCreateMockQuery([]);
+      }
+      return mockCreateMockQuery([{ tickets: [{ tier: 'general', quantity: 9 }] }]);
+    });
+    vi.mocked(Reservation.find).mockReturnValue(mockCreateMockQuery([]));
+    vi.mocked(Refund.find).mockReturnValue(mockCreateMockQuery([]));
+    vi.mocked(Reservation.countDocuments).mockResolvedValue(0);
+    vi.mocked(Booking.countDocuments).mockResolvedValue(0);
+    vi.mocked(Payment.countDocuments).mockResolvedValue(0);
+    vi.mocked(Notification.countDocuments).mockResolvedValue(0);
+
+    const mockEventUpdateOne = vi.fn().mockResolvedValue({ modifiedCount: 1 });
+    (Event as any).updateOne = mockEventUpdateOne;
+
+    const report = await ConsistencyService.runRepairCycle();
+
+    expect(report.repairs?.eventInventoryMismatchesRepaired).toBe(1);
+    expect(mockEventUpdateOne).toHaveBeenCalledWith(
+      { _id: 'event-sold-out-false', eventVersion: 1 },
+      expect.objectContaining({
+        $set: expect.objectContaining({ isSoldOut: false }),
+      })
+    );
+  });
+
   it('should not throw and should emit logger.warn when a booking has tickets: undefined (malformed document)', async () => {
     const { logger } = await import('../utils/logger');
 
@@ -1118,6 +1238,8 @@ describe('ConsistencyService - Stuck Processing, Notifications, Optimistic Locki
       _id: 'event-corrupt-1',
       soldCount: 5,
       reservedCount: 0,
+      totalCapacity: 20,
+      isSoldOut: false,
       ticketTiers: [{ tier: 'general', soldCount: 5 }],
       eventVersion: 1,
     };
@@ -1161,6 +1283,183 @@ describe('ConsistencyService - Stuck Processing, Notifications, Optimistic Locki
     );
   });
 
+  it('repairs stale isSoldOut true to false when capacity is available', async () => {
+    const event = {
+      _id: 'event-stale-true',
+      soldCount: 9,
+      reservedCount: 0,
+      totalCapacity: 10,
+      isSoldOut: true,
+      ticketTiers: [{ tier: 'general', soldCount: 9 }],
+      eventVersion: 3,
+    };
+    const updateOne = setupInventoryRepairCycle({
+      event,
+      soldTotal: 9,
+      confirmedBookingDocs: [{ tickets: [{ tier: 'general', quantity: 9 }] }],
+    });
+
+    const report = await ConsistencyService.runRepairCycle();
+
+    expect(report.repairs?.eventInventoryMismatchesRepaired).toBe(1);
+    expect(updateOne).toHaveBeenCalledWith(
+      { _id: 'event-stale-true', eventVersion: 3 },
+      expect.objectContaining({
+        $set: expect.objectContaining({ isSoldOut: false, soldCount: 9, reservedCount: 0 }),
+        $inc: { eventVersion: 1 },
+      })
+    );
+  });
+
+  it('repairs stale isSoldOut false to true when sold count reaches capacity', async () => {
+    const event = {
+      _id: 'event-stale-false',
+      soldCount: 10,
+      reservedCount: 0,
+      totalCapacity: 10,
+      isSoldOut: false,
+      ticketTiers: [{ tier: 'general', soldCount: 10 }],
+      eventVersion: 4,
+    };
+    const updateOne = setupInventoryRepairCycle({
+      event,
+      soldTotal: 10,
+      confirmedBookingDocs: [{ tickets: [{ tier: 'general', quantity: 10 }] }],
+    });
+
+    const report = await ConsistencyService.runRepairCycle();
+
+    expect(report.repairs?.eventInventoryMismatchesRepaired).toBe(1);
+    expect(updateOne).toHaveBeenCalledWith(
+      { _id: 'event-stale-false', eventVersion: 4 },
+      expect.objectContaining({
+        $set: expect.objectContaining({ isSoldOut: true, soldCount: 10, reservedCount: 0 }),
+        $inc: { eventVersion: 1 },
+      })
+    );
+  });
+
+  it('is idempotent when rerun after isSoldOut reconciliation', async () => {
+    const staleEvent = {
+      _id: 'event-idempotent',
+      soldCount: 10,
+      reservedCount: 0,
+      totalCapacity: 10,
+      isSoldOut: false,
+      ticketTiers: [{ tier: 'general', soldCount: 10 }],
+      eventVersion: 2,
+    };
+    const repairedEvent = {
+      ...staleEvent,
+      isSoldOut: true,
+      eventVersion: 3,
+    };
+
+    vi.mocked(Event.find)
+      .mockReturnValueOnce(mockCreateMockQuery([staleEvent]) as any)
+      .mockReturnValueOnce(mockCreateMockQuery([staleEvent]) as any)
+      .mockReturnValueOnce(mockCreateMockQuery([repairedEvent]) as any)
+      .mockReturnValueOnce(mockCreateMockQuery([repairedEvent]) as any);
+    (Booking as any).aggregate = vi.fn().mockResolvedValue([{ total: 10 }]);
+    (Reservation as any).aggregate = vi.fn().mockResolvedValue([{ total: 0 }]);
+    vi.mocked(Booking.find).mockImplementation((filter: any) => {
+      if (filter?.eventId === 'event-idempotent' && filter?.status === BookingStatus.CONFIRMED) {
+        return mockCreateMockQuery([{ tickets: [{ tier: 'general', quantity: 10 }] }]);
+      }
+      return mockCreateMockQuery([]);
+    });
+    vi.mocked(Reservation.find).mockReturnValue(mockCreateMockQuery([]) as any);
+    vi.mocked(Refund.find).mockReturnValue(mockCreateMockQuery([]) as any);
+    vi.mocked(Notification.find).mockReturnValue(mockCreateMockQuery([]) as any);
+    vi.mocked(Reservation.countDocuments).mockResolvedValue(0);
+    vi.mocked(Booking.countDocuments).mockResolvedValue(0);
+    vi.mocked(Payment.countDocuments).mockResolvedValue(0);
+    vi.mocked(Notification.countDocuments).mockResolvedValue(0);
+    const updateOne = vi.fn().mockResolvedValue({ modifiedCount: 1 });
+    (Event as any).updateOne = updateOne;
+
+    const firstReport = await ConsistencyService.runRepairCycle();
+    const secondReport = await ConsistencyService.runRepairCycle();
+
+    expect(firstReport.repairs?.eventInventoryMismatchesRepaired).toBe(1);
+    expect(secondReport.repairs?.eventInventoryMismatchesRepaired).toBe(0);
+    expect(updateOne).toHaveBeenCalledTimes(1);
+  });
+
+  it('clears sold-out state after capacity increases above sold count', async () => {
+    const event = {
+      _id: 'event-capacity-increase',
+      soldCount: 100,
+      reservedCount: 0,
+      totalCapacity: 150,
+      isSoldOut: true,
+      ticketTiers: [{ tier: 'general', soldCount: 100 }],
+      eventVersion: 7,
+    };
+    const updateOne = setupInventoryRepairCycle({
+      event,
+      soldTotal: 100,
+      confirmedBookingDocs: [{ tickets: [{ tier: 'general', quantity: 100 }] }],
+    });
+
+    await ConsistencyService.runRepairCycle();
+
+    expect(updateOne).toHaveBeenCalledWith(
+      { _id: 'event-capacity-increase', eventVersion: 7 },
+      expect.objectContaining({
+        $set: expect.objectContaining({ isSoldOut: false }),
+      })
+    );
+  });
+
+  it('keeps sold-out state after cancellation when sold count still meets capacity', async () => {
+    const event = {
+      _id: 'event-cancel-recalc',
+      soldCount: 120,
+      reservedCount: 0,
+      totalCapacity: 100,
+      isSoldOut: false,
+      ticketTiers: [{ tier: 'general', soldCount: 120 }],
+      eventVersion: 8,
+    };
+    const updateOne = setupInventoryRepairCycle({
+      event,
+      soldTotal: 120,
+      confirmedBookingDocs: [{ tickets: [{ tier: 'general', quantity: 120 }] }],
+    });
+
+    await ConsistencyService.runRepairCycle();
+
+    expect(updateOne).toHaveBeenCalledWith(
+      { _id: 'event-cancel-recalc', eventVersion: 8 },
+      expect.objectContaining({
+        $set: expect.objectContaining({ isSoldOut: true }),
+      })
+    );
+  });
+
+  it('does not repair inventory when isSoldOut already matches sold count and capacity', async () => {
+    const event = {
+      _id: 'event-noop',
+      soldCount: 5,
+      reservedCount: 0,
+      totalCapacity: 10,
+      isSoldOut: false,
+      ticketTiers: [{ tier: 'general', soldCount: 5 }],
+      eventVersion: 9,
+    };
+    const updateOne = setupInventoryRepairCycle({
+      event,
+      soldTotal: 5,
+      confirmedBookingDocs: [{ tickets: [{ tier: 'general', quantity: 5 }] }],
+    });
+
+    const report = await ConsistencyService.runRepairCycle();
+
+    expect(report.repairs?.eventInventoryMismatchesRepaired).toBe(0);
+    expect(updateOne).not.toHaveBeenCalled();
+  });
+
   it('should reclaim stale seat locks without the 24-hour window constraint', async () => {
     const mockReservation = {
       _id: 'res-stale-1',
@@ -1202,4 +1501,3 @@ describe('ConsistencyService - Stuck Processing, Notifications, Optimistic Locki
     );
   });
 });
-

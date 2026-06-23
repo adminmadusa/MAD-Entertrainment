@@ -40,13 +40,16 @@ export const getRefunds = async (req: Request, res: Response, next: NextFunction
 export const processRefund = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { action, adminNotes, gatewayRefundId, manualOverride, overrideReason } = req.body;
+    // PRICING-003: Extract verified admin identity from JWT token for audit trail and RBAC
+    const actor = { id: req.admin?.sub || 'system', role: req.admin?.role || 'unknown' };
     const refund = await refundService.processRefund(
       req.params.id,
       action,
       adminNotes,
       gatewayRefundId,
       manualOverride,
-      overrideReason
+      overrideReason,
+      actor
     );
     if (!refund) {
       return res.status(404).json({ success: false, message: 'Refund request not found' });

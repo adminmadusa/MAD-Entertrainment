@@ -1,8 +1,9 @@
 import { EventStatus, SeatStatus } from '@mad/shared';
+import type { FilterQuery } from 'mongoose';
 
 import { getRedis } from '../../config/redis';
 import { AppError } from '../../middleware/error.middleware';
-import { Event } from '../../models/event.schema';
+import { Event, IEvent } from '../../models/event.schema';
 import { SeatLayout, ISeatLayout } from '../../models/seat-layout.schema';
 
 
@@ -12,7 +13,7 @@ export class PublicEventService {
     const limit = filters.limit || 12;
     const skip = (page - 1) * limit;
 
-    const query: Record<string, any> = {
+    const query: FilterQuery<IEvent> = {
       status: EventStatus.PUBLISHED,
       isDeleted: { $ne: true },
     };
@@ -29,7 +30,7 @@ export class PublicEventService {
     }
 
     const skipCount = filters.includeTotal === false;
-    let events: any[];
+    let events: Partial<IEvent>[];
     let total = 0;
 
     // 5-second query timeout to prevent Safari streaming stalls
@@ -41,7 +42,7 @@ export class PublicEventService {
         .skip(skip)
         .limit(limit)
         .select('title slug description category bannerImage startDate ticketTiers.price isSoldOut venue')
-        .lean();
+        .lean<Partial<IEvent>[]>();
       total = events.length;
     } else {
       [events, total] = await Promise.all([
@@ -50,7 +51,7 @@ export class PublicEventService {
           .skip(skip)
           .limit(limit)
           .select('title slug description category bannerImage startDate ticketTiers.price isSoldOut venue')
-          .lean(),
+          .lean<Partial<IEvent>[]>(),
         Event.countDocuments(query, queryOptions),
       ]);
     }

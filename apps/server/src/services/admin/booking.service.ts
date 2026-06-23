@@ -213,6 +213,7 @@ export interface CancelBookingPostCommitPayload {
   reason: string;
   releasedSeatIds: string[];
   shouldSendCancellationEmail: boolean;
+  actorId?: string;
 }
 
 export const executeCancelBookingSideEffects = async (
@@ -251,7 +252,8 @@ export const executeCancelBookingSideEffects = async (
     async () => {
       auditLog({
         action: payload.bookingStatus === BookingStatus.REFUNDED ? 'BOOKING_REFUNDED' : 'BOOKING_CANCELLED',
-        actor: { type: 'admin', id: 'system' },
+        // PRICING-003: Use real actor identity instead of hardcoded 'system'
+        actor: { type: 'admin', id: payload.actorId || 'system' },
         status: 'success',
         metadata: {
           bookingId: payload.bookingId,
@@ -354,7 +356,8 @@ export const cancelBooking = async (
   id: string,
   reason?: string,
   externalSession?: ClientSession,
-  targetStatus: BookingStatus = BookingStatus.CANCELLED
+  targetStatus: BookingStatus = BookingStatus.CANCELLED,
+  actor?: { id: string; role: string }
 ): Promise<any> => {
   const execute = async (session: ClientSession | undefined) => {
     const booking = await Booking.findById(id).session(session || null);
@@ -368,6 +371,14 @@ export const cancelBooking = async (
       booking.status === BookingStatus.REFUNDED
     ) {
       throw AppError.badRequest(`Booking is already in a terminal state: ${booking.status}`);
+    }
+
+    // PRICING-003: Check-in protection — block cancellation if any ticket is scanned (super_admin and system/internal calls are exempt)
+    if (actor && actor.role !== 'super_admin') {
+      const scannedTickets = await Ticket.find({ bookingId: booking._id, scannedAt: { $ne: null } }).session(session || null);
+      if ((scannedTickets as any[]).length > 0) {
+        throw AppError.badRequest('Cancellation blocked: Booking contains checked-in tickets. Only super_admin can cancel bookings with checked-in tickets.');
+      }
     }
 
     const previousStatus = booking.status;
@@ -440,9 +451,12 @@ export const cancelBooking = async (
           }
         }
 
+        const nextSoldCount = Math.max(0, (event.soldCount || 0) - booking.totalTickets);
+        const shouldBeSoldOut = event.totalCapacity > 0 && nextSoldCount >= event.totalCapacity;
+
         await Event.findOneAndUpdate(
           { _id: booking.eventId },
-          { $inc: decUpdate, $set: { isSoldOut: false } },
+          { $inc: decUpdate, $set: { isSoldOut: shouldBeSoldOut } },
           { new: true, session }
         );
       } else if (previousStatus === BookingStatus.AWAITING_PAYMENT) {
@@ -510,6 +524,8 @@ export const cancelBooking = async (
       bookingCreatedAt: booking.createdAt,
       reason: booking.cancellationReason || '',
       releasedSeatIds,
+      // PRICING-003: Carry actor identity into post-commit payload for audit log integrity
+      actorId: actor?.id,
       shouldSendCancellationEmail: targetStatus === BookingStatus.CANCELLED && !!booking.guestEmail,
     };
 
@@ -1079,4 +1095,3 @@ export const getBookingsSummary = async (eventId?: string): Promise<BookingsSumm
 
   return result;
 };
-

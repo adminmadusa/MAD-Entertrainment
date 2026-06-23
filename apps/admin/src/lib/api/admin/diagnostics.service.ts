@@ -76,7 +76,7 @@ export async function adminGetWebhooks(params: { page?: number; limit?: number; 
   if (params.limit) qs.set('limit', String(params.limit));
   if (params.provider) qs.set('provider', params.provider);
   if (params.status) qs.set('status', params.status);
-  
+
   const { data } = await adminApiClient.get<WebhookPaginatedResponse>(`/admin/webhooks?${qs}`);
   return data;
 }
@@ -99,7 +99,7 @@ export async function adminGetEmailLogs(params: { page?: number; limit?: number;
   if (params.page) qs.set('page', String(params.page));
   if (params.limit) qs.set('limit', String(params.limit));
   if (params.sent) qs.set('sent', params.sent);
-  
+
   const { data } = await adminApiClient.get<{
     data: EmailDiagnosticsRow[];
     pagination: EmailPaginatedResponse['pagination'];
@@ -114,4 +114,121 @@ export async function adminGetEmailLogs(params: { page?: number; limit?: number;
     }
   };
 }
+export interface DeadLetterJobMetadata {
+  _id: string;
+  queueName: string;
+  jobId: string;
+  jobName: string;
+  attemptsMade: number;
+  failedReason?: string;
+  processedAt: string;
+}
 
+export interface DeadLetterJobDetails extends DeadLetterJobMetadata {
+  data: any;
+  stacktrace?: string[];
+}
+
+export interface DlqPaginatedResponse {
+  data: DeadLetterJobMetadata[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+}
+
+export interface SystemHealthReport {
+  timestamp: string;
+  database: {
+    state: string;
+    readyState: number;
+    connectionsCount: number;
+  };
+  redis: {
+    connected: boolean;
+  };
+  queues: {
+    name: string;
+    active: number;
+    waiting: number;
+    delayed: number;
+    failed: number;
+    completed: number;
+    oldestWaitingJobAgeMs: number;
+  }[];
+  dlq: {
+    totalFailedCount: number;
+  };
+  sockets: {
+    initialized: boolean;
+    connectedClients: number;
+    adminClients: number;
+    emitsCount: Record<string, number>;
+    emitFailures: Record<string, number>;
+    skippedEmits: Record<string, number>;
+  };
+}
+
+export async function adminGetDlqJobs(params: {
+  page?: number;
+  limit?: number;
+  queueName?: string;
+  search?: string;
+}): Promise<DlqPaginatedResponse> {
+  const qs = new URLSearchParams();
+  if (params.page) qs.set('page', String(params.page));
+  if (params.limit) qs.set('limit', String(params.limit));
+  if (params.queueName) qs.set('queueName', params.queueName);
+  if (params.search) qs.set('search', params.search);
+
+  const { data } = await adminApiClient.get<DlqPaginatedResponse>(`/admin/diagnostics/dlq?${qs}`);
+  return data;
+}
+
+export async function adminGetDlqJobPayload(id: string): Promise<DeadLetterJobDetails> {
+  const { data } = await adminApiClient.get<{ data: DeadLetterJobDetails }>(`/admin/diagnostics/dlq/${id}`);
+  return data.data;
+}
+
+export async function adminRetryDlqJob(id: string): Promise<void> {
+  await adminApiClient.post(`/admin/diagnostics/dlq/${id}/retry`);
+}
+
+export async function adminRetryAllDlqJobs(): Promise<{ successCount: number; failedCount: number }> {
+  const { data } = await adminApiClient.post<{ data: { successCount: number; failedCount: number } }>('/admin/diagnostics/dlq/retry-all');
+  return data.data;
+}
+
+export async function adminGetSystemHealth(): Promise<SystemHealthReport> {
+  const { data } = await adminApiClient.get<{ data: SystemHealthReport }>('/admin/diagnostics/system');
+  return data.data;
+}
+
+export interface QueueControlStatus {
+  name: string;
+  isPaused: boolean;
+  active: number;
+  waiting: number;
+  delayed: number;
+  failed: number;
+  completed: number;
+}
+
+export async function adminGetQueues(): Promise<QueueControlStatus[]> {
+  const { data } = await adminApiClient.get<{ data: QueueControlStatus[] }>('/admin/diagnostics/queues');
+  return data.data;
+}
+
+export async function adminPauseQueue(name: string): Promise<void> {
+  await adminApiClient.post(`/admin/diagnostics/queues/${name}/pause`);
+}
+
+export async function adminResumeQueue(name: string): Promise<void> {
+  await adminApiClient.post(`/admin/diagnostics/queues/${name}/resume`);
+}
+
+export async function adminDrainQueue(name: string): Promise<void> {
+  await adminApiClient.post(`/admin/diagnostics/queues/${name}/drain`);
+}

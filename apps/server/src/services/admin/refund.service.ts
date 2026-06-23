@@ -1,6 +1,7 @@
 import { Refund, IRefund } from '../../models/refund.schema';
 import { Booking } from '../../models/booking.schema';
 import { Payment } from '../../models/payment.schema';
+import { Ticket } from '../../models/ticket.schema';
 import { cancelBooking, executeCancelBookingSideEffects } from './booking.service';
 import { runInTransaction } from '../../utils/transaction';
 import { AppError } from '../../middleware/error.middleware';
@@ -277,7 +278,8 @@ export const processRefund = async (
   adminNotes?: string,
   gatewayRefundId?: string,
   manualOverride?: boolean,
-  overrideReason?: string
+  overrideReason?: string,
+  actor?: { id: string; role: string }
 ): Promise<IRefund | null> => {
   let phase1Result: {
     refund: IRefund;
@@ -330,6 +332,19 @@ export const processRefund = async (
       }
 
       const isAutoRecovery = refund.origin === 'auto_recovery';
+
+      // PRICING-003: Check-in protection — block refund if any ticket is scanned (auto_recovery path is exempt)
+      if (!isAutoRecovery) {
+        const scannedTickets = await Ticket.find({ bookingId: booking._id, scannedAt: { $ne: null } }).session(session as any);
+        if ((scannedTickets as any[]).length > 0) {
+          if (!manualOverride) {
+            throw AppError.badRequest('Refund blocked: Booking contains checked-in tickets');
+          }
+          if (!actor || actor.role !== 'super_admin') {
+            throw AppError.forbidden('Only super_admin can override refunds for bookings with checked-in tickets');
+          }
+        }
+      }
 
       // 3. Validation path differentiation (B2)
       if (isAutoRecovery) {
@@ -416,7 +431,8 @@ export const processRefund = async (
         // Emit manual override audit event
         auditLog({
           action: 'REFUND_MANUAL_OVERRIDE',
-          actor: { type: 'admin', id: 'system' },
+          // PRICING-003: Use real actor identity instead of hardcoded 'system'
+          actor: { type: 'admin', id: actor?.id || 'system' },
           status: 'success',
           metadata: {
             refundId: refund._id.toString(),
@@ -512,7 +528,8 @@ export const processRefund = async (
         // Call cancelBooking conditionally first
         if (isFullRefund) {
           if (freshBooking.status === BookingStatus.CONFIRMED) {
-            const cancelResult = await cancelBooking(refund.bookingId.toString(), adminNotes || 'Admin Refund Processed', session, BookingStatus.REFUNDED);
+            // PRICING-003: Propagate actor so cancelBooking's scan-check respects the already-validated override
+            const cancelResult = await cancelBooking(refund.bookingId.toString(), adminNotes || 'Admin Refund Processed', session, BookingStatus.REFUNDED, actor);
             if (cancelResult && cancelResult.postCommitPayload) {
               cancelPostCommitPayload = cancelResult.postCommitPayload;
             }
@@ -526,7 +543,8 @@ export const processRefund = async (
           }
         } else if (refund.cancelTickets) {
           if (freshBooking.status === BookingStatus.CONFIRMED) {
-            const cancelResult = await cancelBooking(refund.bookingId.toString(), adminNotes || 'Admin Refund Processed', session, BookingStatus.CANCELLED);
+            // PRICING-003: Propagate actor so cancelBooking's scan-check respects the already-validated override
+            const cancelResult = await cancelBooking(refund.bookingId.toString(), adminNotes || 'Admin Refund Processed', session, BookingStatus.CANCELLED, actor);
             if (cancelResult && cancelResult.postCommitPayload) {
               cancelPostCommitPayload = cancelResult.postCommitPayload;
             }

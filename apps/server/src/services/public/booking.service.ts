@@ -79,8 +79,30 @@ export class PublicBookingService {
       throw AppError.badRequest('Event is sold out');
     }
 
+    // Consolidate ticket quantities and seat selection arrays by tier without mutating request DTO
+    const consolidatedMap = new Map<string, typeof data.tickets[0]>();
+    for (const ticketReq of data.tickets) {
+      const existing = consolidatedMap.get(ticketReq.tier);
+      if (existing) {
+        existing.quantity += ticketReq.quantity;
+        if (ticketReq.seats) {
+          existing.seats = [...(existing.seats || []), ...ticketReq.seats];
+        }
+      } else {
+        consolidatedMap.set(ticketReq.tier, {
+          tier: ticketReq.tier,
+          quantity: ticketReq.quantity,
+          seats: ticketReq.seats ? [...ticketReq.seats] : undefined,
+        });
+      }
+    }
+    const consolidatedTickets = Array.from(consolidatedMap.values());
+
     // Generate the fingerprint for the current request selection
-    const requestFingerprint = PublicBookingService.generateSelectionFingerprint(data);
+    const requestFingerprint = PublicBookingService.generateSelectionFingerprint({
+      ...data,
+      tickets: consolidatedTickets,
+    });
 
     // Look for an existing AWAITING_PAYMENT booking for this event and session/user
     const query: any = {
@@ -197,7 +219,7 @@ export class PublicBookingService {
     }
 
     // Validate Tiers and Quantities
-    for (const ticketReq of data.tickets) {
+    for (const ticketReq of consolidatedTickets) {
       const tierConfig = event.ticketTiers.find((t) => t.tier === ticketReq.tier && t.isActive);
       if (!tierConfig) {
         throw AppError.badRequest(`Ticket tier "${ticketReq.tier}" is invalid or inactive`);
@@ -256,7 +278,7 @@ export class PublicBookingService {
 
     // Seat lock validation (for seat-based events)
     if (event.bookingMode === BookingMode.SEAT_BASED) {
-      const allSeatReqs = data.tickets.flatMap((t) => t.seats || []);
+      const allSeatReqs = consolidatedTickets.flatMap((t) => t.seats || []);
       if (allSeatReqs.length !== totalTicketsCount) {
         throw AppError.badRequest('Seat selection is required and must match total tickets count for seat-based events');
       }
@@ -384,7 +406,7 @@ export class PublicBookingService {
         const reservations: IReservation[] = [];
         const postCommitCallbacks: Array<() => Promise<void>> = [];
         try {
-          for (const ticketReq of data.tickets) {
+          for (const ticketReq of consolidatedTickets) {
             const tierConfig = event.ticketTiers.find((t) => t.tier === ticketReq.tier);
             const groupSize = tierConfig?.groupSize || 1;
             const { reservations: allocated, postCommit } = await ReservationService.reserveForBooking({
@@ -429,7 +451,7 @@ export class PublicBookingService {
 
         // Update Seat statuses to LOCKED in MongoDB for the booking (to prevent other checkout threads booking it)
         if (event.bookingMode === BookingMode.SEAT_BASED) {
-          allSeatIds = data.tickets.flatMap((t) => t.seats || []).map((s) => s.seatId);
+          allSeatIds = consolidatedTickets.flatMap((t) => t.seats || []).map((s) => s.seatId);
           reservationBySeat = new Map(
             reservations.filter((reservation) => reservation.seatId).map((reservation) => [reservation.seatId, reservation.reservationId])
           );

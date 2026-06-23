@@ -6,6 +6,13 @@ import { Reservation } from '../../models/reservation.schema';
 import { Booking } from '../../models/booking.schema';
 import { Ticket } from '../../models/ticket.schema';
 import { AppError } from '../../middleware/error.middleware';
+import { EventStatus, type EventLifecycleStatus } from '@mad/shared';
+
+const ACTIVE_PROFILE_EVENT_STATUSES: readonly EventLifecycleStatus[] = [
+  EventStatus.DRAFT,
+  EventStatus.PUBLISHED,
+  EventStatus.POSTPONED,
+];
 
 /**
  * Resolves event ticket tiers dynamically by merging profile tickets with event-specific overrides.
@@ -81,7 +88,7 @@ export const syncProfileEvents = async (profileId: string) => {
 
   const events = await Event.find({
     ticketProfileId: profileId,
-    status: { $in: ['draft', 'published', 'sold_out'] },
+    status: { $in: ACTIVE_PROFILE_EVENT_STATUSES },
     isDeleted: { $ne: true },
   });
 
@@ -132,11 +139,23 @@ export const syncProfileEvents = async (profileId: string) => {
     );
     const totalCapacity = resolvedTiers.reduce((acc, tier) => acc + (tier.isActive ? tier.totalCapacity : 0), 0);
 
-    await Event.findByIdAndUpdate(event._id, {
-      ticketTiers: resolvedTiers,
-      totalCapacity,
-      eventVersion: event.eventVersion + 1,
-    });
+    const updated = await Event.findOneAndUpdate(
+      { _id: event._id, eventVersion: event.eventVersion },
+      {
+        $set: {
+          ticketTiers: resolvedTiers,
+          totalCapacity,
+        },
+        $inc: {
+          eventVersion: 1,
+        },
+      },
+      { new: true }
+    );
+
+    if (!updated) {
+      throw AppError.conflict('Event was modified while synchronizing ticket profiles. Please retry.');
+    }
   }
   await CacheService.delPattern('events:*');
 };
@@ -170,7 +189,7 @@ export const updateTicketProfile = async (
     if (removedTiers.length > 0) {
       const events = await Event.find({
         ticketProfileId: id,
-        status: { $in: ['draft', 'published', 'sold_out'] },
+        status: { $in: ACTIVE_PROFILE_EVENT_STATUSES },
         isDeleted: { $ne: true },
       });
 
@@ -208,7 +227,45 @@ export const updateTicketProfile = async (
   return updated;
 };
 
+const DELETE_BLOCKED_MESSAGE = 'Ticket Profile is referenced by active events and cannot be deleted';
+
+const ensureTicketProfileCanBeDeleted = async (profileId: string) => {
+  const referencedEvents = await Event.find({
+    ticketProfileId: profileId,
+    isDeleted: { $ne: true },
+  });
+
+  if (referencedEvents.length === 0) return;
+
+  const now = new Date();
+  const activeEvents = referencedEvents.filter((event: any) => ACTIVE_PROFILE_EVENT_STATUSES.includes(event.status));
+  const futureEvents = referencedEvents.filter((event: any) => event.startDate && new Date(event.startDate) > now);
+  const eventsWithSoldTickets = referencedEvents.filter((event: any) => {
+    const eventSoldCount = event.soldCount ?? 0;
+    const tierSoldCount = Array.isArray(event.ticketTiers)
+      ? event.ticketTiers.reduce((sum: number, tier: any) => sum + (tier.soldCount ?? 0), 0)
+      : 0;
+    return eventSoldCount > 0 || tierSoldCount > 0;
+  });
+
+  if (activeEvents.length > 0 || futureEvents.length > 0 || eventsWithSoldTickets.length > 0) {
+    throw AppError.conflict(DELETE_BLOCKED_MESSAGE);
+  }
+
+  const eventIds = referencedEvents.map((event: any) => event._id);
+  const [bookingExists, reservationExists, ticketExists] = await Promise.all([
+    Booking.exists({ eventId: { $in: eventIds } }),
+    Reservation.exists({ eventId: { $in: eventIds } }),
+    Ticket.exists({ eventId: { $in: eventIds } }),
+  ]);
+
+  if (bookingExists || reservationExists || ticketExists) {
+    throw AppError.conflict(DELETE_BLOCKED_MESSAGE);
+  }
+};
+
 export const deleteTicketProfile = async (id: string): Promise<ITicketProfile | null> => {
+  await ensureTicketProfileCanBeDeleted(id);
   const deleted = await TicketProfile.findByIdAndUpdate(id, { isDeleted: true }, { new: true });
   return deleted;
 };

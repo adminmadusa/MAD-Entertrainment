@@ -1,34 +1,124 @@
+import { EventStatus, EVENT_STATUS_TRANSITIONS, type EventLifecycleStatus } from '@mad/shared';
+import type { FilterQuery } from 'mongoose';
+
 import { Event, IEvent } from '../../models/event.schema';
 import { TicketProfile } from '../../models/ticket-profile.schema';
-import { Ticket } from '../../models/ticket.schema';
+import { Ticket, ITicket } from '../../models/ticket.schema';
 import { resolveEventTickets } from './ticket-profile.service';
 import { CacheService } from '../cache.service';
 import { Booking } from '../../models/booking.schema';
 import { AppError } from '../../middleware/error.middleware';
 import { safeDeleteImages } from './media-cleanup.service';
 
-export const deduplicateGallery = (
-  gallery?: { url: string; publicId: string }[]
-): { url: string; publicId: string }[] | undefined => {
-  if (!gallery) return undefined;
-  const seen = new Set<string>();
-  return gallery.filter((img) => {
-    if (!img.publicId) return false;
-    if (seen.has(img.publicId)) return false;
-    seen.add(img.publicId);
-    return true;
-  });
+export const validateEventImagesPayload = (
+  bannerImage?: { publicId?: string; hash?: string },
+  posterImage?: { publicId?: string; hash?: string },
+  galleryImages?: { publicId?: string; hash?: string }[]
+): void => {
+  const seenPublicIds = new Set<string>();
+  const seenHashes = new Set<string>();
+
+  const check = (img?: { publicId?: string; hash?: string }) => {
+    if (!img) return;
+    if (img.publicId) {
+      if (seenPublicIds.has(img.publicId)) {
+        throw AppError.badRequest('Duplicate image detected');
+      }
+      seenPublicIds.add(img.publicId);
+    }
+    if (img.hash) {
+      if (seenHashes.has(img.hash)) {
+        throw AppError.badRequest('Duplicate image detected');
+      }
+      seenHashes.add(img.hash);
+    }
+  };
+
+  check(bannerImage);
+  check(posterImage);
+  if (galleryImages && Array.isArray(galleryImages)) {
+    const totalCount = (bannerImage ? 1 : 0) + (posterImage ? 1 : 0) + galleryImages.length;
+    if (totalCount > 15) {
+      throw AppError.badRequest('Total event images cannot exceed 15');
+    }
+    for (const img of galleryImages) {
+      check(img);
+    }
+  }
+};
+
+export const assertEventStatusTransition = (
+  currentStatus: EventStatus,
+  nextStatus: EventStatus
+): void => {
+  if (currentStatus === nextStatus) return;
+
+  if (!isEventLifecycleStatus(currentStatus) || !isEventLifecycleStatus(nextStatus)) {
+    throw AppError.conflict('Invalid event status transition.');
+  }
+
+  const allowedTransitions = EVENT_STATUS_TRANSITIONS[currentStatus];
+  if (!allowedTransitions.includes(nextStatus)) {
+    throw AppError.conflict('Invalid event status transition.');
+  }
+};
+
+const isEventLifecycleStatus = (status: EventStatus): status is EventLifecycleStatus =>
+  Object.prototype.hasOwnProperty.call(EVENT_STATUS_TRANSITIONS, status);
+
+const INITIAL_EVENT_STATUSES: readonly EventStatus[] = [
+  EventStatus.DRAFT,
+  EventStatus.PUBLISHED,
+];
+
+export const assertInitialEventStatus = (status?: EventStatus): void => {
+  if (!status) return;
+
+  if (!INITIAL_EVENT_STATUSES.includes(status)) {
+    throw AppError.conflict('Invalid initial event status');
+  }
+};
+
+type EventAttendanceMetrics = {
+  ticketsSold: number;
+  ticketsCheckedIn: number;
+  ticketsRemaining: number;
+  attendancePercentage: number;
+  noShowCount: number;
+  noShowPercentage: number;
+};
+
+type EventWithAttendance = ReturnType<IEvent['toObject']> & EventAttendanceMetrics;
+const getEventAttendanceMetrics = async (event: IEvent): Promise<EventAttendanceMetrics> => {
+  const ticketsList = await Ticket.find({ eventId: event._id }).lean<ITicket[]>();
+  const ticketsSold = event.soldCount || 0;
+  const ticketsCheckedIn = ticketsList
+    .filter((ticket) => ticket.scannedAt !== undefined && ticket.scannedAt !== null)
+    .reduce((sum, ticket) => sum + (ticket.admits || 1), 0);
+  const ticketsRemaining = Math.max(0, ticketsSold - ticketsCheckedIn);
+
+  const attendancePercentage = ticketsSold > 0 ? Number(((ticketsCheckedIn / ticketsSold) * 100).toFixed(2)) : 0;
+  const noShowCount = ticketsRemaining;
+  const noShowPercentage = ticketsSold > 0 ? Number(((noShowCount / ticketsSold) * 100).toFixed(2)) : 0;
+
+  return {
+    ticketsSold,
+    ticketsCheckedIn,
+    ticketsRemaining,
+    attendancePercentage,
+    noShowCount,
+    noShowPercentage,
+  };
 };
 
 export const createEvent = async (data: Partial<IEvent>): Promise<IEvent> => {
-  if (data.galleryImages) {
-    data.galleryImages = deduplicateGallery(data.galleryImages);
-  }
+  validateEventImagesPayload(data.bannerImage, data.posterImage, data.galleryImages);
+  assertInitialEventStatus(data.status);
 
   if (data.title && !data.slug) {
     data.slug = data.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
   }
-  
+
   if (data.slug) {
     let slug = data.slug.toLowerCase().trim();
     let isUnique = false;
@@ -71,7 +161,7 @@ export const getEvents = async (
   filters: { search?: string; status?: string } = {}
 ): Promise<{ events: IEvent[]; total: number; pages: number }> => {
   const skip = (page - 1) * limit;
-  const query: any = { isDeleted: { $ne: true } };
+  const query: FilterQuery<IEvent> = { isDeleted: { $ne: true } };
 
   if (filters.status) {
     query.status = filters.status;
@@ -92,7 +182,7 @@ export const getEvents = async (
     .sort({ createdAt: -1 })
     .skip(skip)
     .limit(limit);
-    
+
   return {
     events,
     total,
@@ -100,39 +190,34 @@ export const getEvents = async (
   };
 };
 
-export const getEventById = async (id: string): Promise<any | null> => {
+export const getEventById = async (id: string): Promise<EventWithAttendance | null> => {
   const event = await Event.findById(id)
     .populate('djOperatorIds', 'name');
   if (!event) return null;
 
-  const ticketsList = await Ticket.find({ eventId: event._id }).lean();
-  const ticketsSold = event.soldCount || 0;
-  const ticketsCheckedIn = ticketsList
-    .filter((t: any) => t.scannedAt !== undefined && t.scannedAt !== null)
-    .reduce((sum: number, t: any) => sum + (t.admits || 1), 0);
-  const ticketsRemaining = Math.max(0, ticketsSold - ticketsCheckedIn);
-
-  const attendancePercentage = ticketsSold > 0 ? Number(((ticketsCheckedIn / ticketsSold) * 100).toFixed(2)) : 0;
-  const noShowCount = ticketsRemaining;
-  const noShowPercentage = ticketsSold > 0 ? Number(((noShowCount / ticketsSold) * 100).toFixed(2)) : 0;
-
   return {
     ...event.toObject(),
-    ticketsSold,
-    ticketsCheckedIn,
-    ticketsRemaining,
-    attendancePercentage,
-    noShowCount,
-    noShowPercentage
+    ...(await getEventAttendanceMetrics(event)),
   };
 };
 
-export const updateEvent = async (id: string, data: Partial<IEvent>): Promise<any | null> => {
+export const updateEvent = async (id: string, data: Partial<IEvent>): Promise<EventWithAttendance | null> => {
   const existing = await Event.findById(id);
   if (!existing) return null;
 
-  if (data.galleryImages) {
-    data.galleryImages = deduplicateGallery(data.galleryImages);
+  const expectedVersion = data.eventVersion;
+  if (expectedVersion === undefined || expectedVersion === null) {
+    throw AppError.badRequest('Event version is required for update');
+  }
+
+  const mergedBanner = data.bannerImage !== undefined ? data.bannerImage : existing.bannerImage;
+  const mergedPoster = data.posterImage !== undefined ? data.posterImage : existing.posterImage;
+  const mergedGallery = data.galleryImages !== undefined ? data.galleryImages : existing.galleryImages;
+
+  validateEventImagesPayload(mergedBanner, mergedPoster, mergedGallery);
+
+  if (data.status !== undefined) {
+    assertEventStatusTransition(existing.status, data.status);
   }
 
   const profileId = data.ticketProfileId !== undefined ? data.ticketProfileId : existing.ticketProfileId;
@@ -165,6 +250,10 @@ export const updateEvent = async (id: string, data: Partial<IEvent>): Promise<an
     }
   }
 
+  if (data.totalCapacity !== undefined) {
+    data.isSoldOut = data.totalCapacity > 0 && (existing.soldCount || 0) >= data.totalCapacity;
+  }
+
   const oldBannerId = existing.bannerImage?.publicId;
   const newBannerId = data.bannerImage?.publicId;
   const bannerReplaced = newBannerId && oldBannerId && oldBannerId !== newBannerId;
@@ -177,8 +266,15 @@ export const updateEvent = async (id: string, data: Partial<IEvent>): Promise<an
   const newGalleryIds = data.galleryImages?.map((img) => img.publicId) || [];
   const removedGalleryIds = oldGalleryIds.filter((id) => id && !newGalleryIds.includes(id));
 
-  const updated = await Event.findByIdAndUpdate(id, { ...data, eventVersion: existing.eventVersion + 1 }, { new: true });
-  if (!updated) return null;
+  const { eventVersion: _eventVersion, ...updateData } = data;
+  const updated = await Event.findOneAndUpdate(
+    { _id: id, eventVersion: expectedVersion },
+    { $set: updateData, $inc: { eventVersion: 1 } },
+    { new: true }
+  );
+  if (!updated) {
+    throw AppError.conflict('Event has been modified by another process. Please refresh and try again.');
+  }
   await CacheService.delPattern('events:*');
 
   const publicIdsToDelete: string[] = [];
@@ -190,25 +286,9 @@ export const updateEvent = async (id: string, data: Partial<IEvent>): Promise<an
     safeDeleteImages(publicIdsToDelete, 'Event', 'update');
   }
 
-  const ticketsList = await Ticket.find({ eventId: updated._id }).lean();
-  const ticketsSold = updated.soldCount || 0;
-  const ticketsCheckedIn = ticketsList
-    .filter((t: any) => t.scannedAt !== undefined && t.scannedAt !== null)
-    .reduce((sum: number, t: any) => sum + (t.admits || 1), 0);
-  const ticketsRemaining = Math.max(0, ticketsSold - ticketsCheckedIn);
-
-  const attendancePercentage = ticketsSold > 0 ? Number(((ticketsCheckedIn / ticketsSold) * 100).toFixed(2)) : 0;
-  const noShowCount = ticketsRemaining;
-  const noShowPercentage = ticketsSold > 0 ? Number(((noShowCount / ticketsSold) * 100).toFixed(2)) : 0;
-
   return {
     ...updated.toObject(),
-    ticketsSold,
-    ticketsCheckedIn,
-    ticketsRemaining,
-    attendancePercentage,
-    noShowCount,
-    noShowPercentage
+    ...(await getEventAttendanceMetrics(updated)),
   };
 };
 
@@ -237,4 +317,3 @@ export const deleteEvent = async (id: string): Promise<IEvent | null> => {
   await CacheService.delPattern('events:*');
   return deleted;
 };
-

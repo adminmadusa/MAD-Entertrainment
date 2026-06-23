@@ -7,7 +7,7 @@ validateEnv();
 import http from 'http';
 
 import { createApp } from './app';
-import { initCloudinary } from './config/cloudinary';
+import './config/cloudinary';
 import { connectDatabase, disconnectDatabase } from './config/database';
 import { initRazorpay } from './config/razorpay';
 import { getRedis, waitForRedisReady, disconnectRedis } from './config/redis';
@@ -19,6 +19,7 @@ import { initSocketIO, getIO } from './config/socket';
 import { initStripe } from './config/stripe';
 import { logger } from './utils/logger';
 import { startConsistencyWorker, stopConsistencyWorker } from './workers/consistency.worker';
+import { startEventLifecycleWorker, stopEventLifecycleWorker } from './workers/event-lifecycle.worker';
 import { startAllWorkers, stopAllWorkers } from './workers';
 import { seedAdmin } from './utils/seed-admin';
 import { seedCategoriesAndTiers } from './utils/seed-categories-tiers';
@@ -52,7 +53,6 @@ async function bootstrap(): Promise<void> {
   // Initialize rate limiters (falls back to memory if Redis is unavailable)
   initRateLimiters();
   
-  initCloudinary();
   initRazorpay();
   initStripe();
 
@@ -68,6 +68,7 @@ async function bootstrap(): Promise<void> {
   // ─── Initialize Socket.IO ──────────────────────────────────
   initSocketIO(httpServer);
   startConsistencyWorker();
+  startEventLifecycleWorker();
   startAllWorkers();
 
   // ─── Start Listening ───────────────────────────────────────
@@ -97,6 +98,7 @@ async function bootstrap(): Promise<void> {
       logger.info('HTTP server closed');
 
       stopConsistencyWorker();
+      stopEventLifecycleWorker();
       await stopAllWorkers();
       await disconnectDatabase();
       await disconnectRedis();

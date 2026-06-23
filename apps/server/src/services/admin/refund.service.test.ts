@@ -3,6 +3,7 @@ import { createRefund, processRefund, getRefunds } from './refund.service';
 import { Refund } from '../../models/refund.schema';
 import { Payment } from '../../models/payment.schema';
 import { Booking } from '../../models/booking.schema';
+import { Ticket } from '../../models/ticket.schema';
 import { cancelBooking } from './booking.service';
 import { runInTransaction } from '../../utils/transaction';
 import { BookingStatus, PaymentStatus } from '@mad/shared';
@@ -145,6 +146,18 @@ vi.mock('../../models/booking.schema', () => {
   return { Booking: MockBooking };
 });
 
+vi.mock('../../models/ticket.schema', () => {
+  const localCreateMockQuery = (val: any) => {
+    const query = Promise.resolve(val);
+    (query as any).session = () => query;
+    return query;
+  };
+  const MockTicket = {
+    find: vi.fn().mockImplementation(() => localCreateMockQuery([])),
+  };
+  return { Ticket: MockTicket };
+});
+
 describe('Admin Refund Service Tests', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -278,7 +291,7 @@ describe('Admin Refund Service Tests', () => {
       expect(result?.status).toBe('completed');
       expect(result?.gatewayRefundId).toBe('gateway-ref-123');
       expect(mockRefundSave).toHaveBeenCalled();
-      expect(cancelBooking).toHaveBeenCalledWith('booking-456', 'Full refund approve notes', 'mock-session', BookingStatus.REFUNDED);
+      expect(cancelBooking).toHaveBeenCalledWith('booking-456', 'Full refund approve notes', 'mock-session', BookingStatus.REFUNDED, undefined);
       expect(Payment.findByIdAndUpdate).toHaveBeenCalledWith(
         'payment-789',
         { status: PaymentStatus.REFUNDED },
@@ -579,7 +592,7 @@ describe('Admin Refund Service Tests', () => {
 
       expect(result?.status).toBe('completed');
       expect(mockRefundSave).toHaveBeenCalled();
-      expect(cancelBooking).toHaveBeenCalledWith('booking-456', 'Partial refund notes', 'mock-session', BookingStatus.CANCELLED);
+      expect(cancelBooking).toHaveBeenCalledWith('booking-456', 'Partial refund notes', 'mock-session', BookingStatus.CANCELLED, undefined);
       expect(Payment.findByIdAndUpdate).toHaveBeenCalledWith(
         'payment-789',
         { status: PaymentStatus.PARTIALLY_REFUNDED },
@@ -1146,5 +1159,110 @@ describe('Admin Refund Service Tests', () => {
       expect(createNotificationSafe).not.toHaveBeenCalled();
     });
   });
-});
 
+  describe('PRICING-003 Scan Protection', () => {
+    const scannedTicket = { _id: 'ticket-001', ticketId: 'TKT-001', scannedAt: new Date() };
+
+    const mockScannedQuery = () => {
+      const q = Promise.resolve([scannedTicket]);
+      (q as any).session = () => q;
+      return q as any;
+    };
+
+    it('should block refund if any ticket is scanned and manualOverride is false', async () => {
+      const mockRefund = {
+        _id: 'refund-scan-001', bookingId: 'booking-scan-001', paymentId: 'payment-scan-001',
+        amount: 300, status: 'requested', origin: 'manual', save: vi.fn(),
+      };
+      const mockPayment = { _id: 'payment-scan-001', amount: 500, status: PaymentStatus.PAID };
+      const mockBooking = { _id: 'booking-scan-001', status: BookingStatus.CONFIRMED };
+
+      vi.mocked(Refund.findOneAndUpdate).mockReturnValue(createMockQuery(mockRefund));
+      vi.mocked(Payment.findById).mockReturnValue({ session: vi.fn().mockResolvedValue(mockPayment) } as any);
+      vi.mocked(Booking.findById).mockReturnValue({ session: vi.fn().mockResolvedValue(mockBooking) } as any);
+      vi.mocked(Refund.find).mockReturnValue(createMockQuery([]));
+      vi.mocked(Ticket.find).mockReturnValueOnce(mockScannedQuery());
+
+      await expect(
+        processRefund('refund-scan-001', 'approve', 'Admin notes', 'gate-ref-123')
+      ).rejects.toThrow('Refund blocked: Booking contains checked-in tickets');
+    });
+
+    it('should block refund with 403 if actor is not super_admin and manualOverride is true', async () => {
+      const mockRefund = {
+        _id: 'refund-scan-002', bookingId: 'booking-scan-002', paymentId: 'payment-scan-002',
+        amount: 300, status: 'requested', origin: 'manual', save: vi.fn(),
+      };
+      const mockPayment = { _id: 'payment-scan-002', amount: 500, status: PaymentStatus.PAID };
+      const mockBooking = { _id: 'booking-scan-002', status: BookingStatus.CONFIRMED };
+      const adminActor = { id: 'admin-user-001', role: 'admin' };
+
+      vi.mocked(Refund.findOneAndUpdate).mockReturnValue(createMockQuery(mockRefund));
+      vi.mocked(Payment.findById).mockReturnValue({ session: vi.fn().mockResolvedValue(mockPayment) } as any);
+      vi.mocked(Booking.findById).mockReturnValue({ session: vi.fn().mockResolvedValue(mockBooking) } as any);
+      vi.mocked(Refund.find).mockReturnValue(createMockQuery([]));
+      vi.mocked(Ticket.find).mockReturnValueOnce(mockScannedQuery());
+
+      await expect(
+        processRefund('refund-scan-002', 'approve', 'Admin notes', 'gate-ref-456', true, 'Override reason here', adminActor)
+      ).rejects.toThrow('Only super_admin can override refunds for bookings with checked-in tickets');
+    });
+
+    it('should allow refund when actor is super_admin and manualOverride is true, and log real actor id', async () => {
+      const mockRefundSave = vi.fn();
+      const mockRefund = {
+        _id: 'refund-scan-003', bookingId: 'booking-scan-003', paymentId: 'payment-scan-003',
+        amount: 300, status: 'requested', origin: 'manual', save: mockRefundSave,
+      };
+      const mockPayment = { _id: 'payment-scan-003', amount: 500, status: PaymentStatus.PAID };
+      const mockBooking = { _id: 'booking-scan-003', status: BookingStatus.CONFIRMED };
+      const superAdminActor = { id: 'super-admin-001', role: 'super_admin' };
+
+      vi.mocked(Refund.findOneAndUpdate).mockReturnValue(createMockQuery(mockRefund));
+      vi.mocked(Payment.findById).mockReturnValue({ session: vi.fn().mockResolvedValue(mockPayment) } as any);
+      vi.mocked(Booking.findById).mockReturnValue({ session: vi.fn().mockResolvedValue(mockBooking) } as any);
+      vi.mocked(Refund.find).mockReturnValue(createMockQuery([]));
+      vi.mocked(Payment.findByIdAndUpdate).mockResolvedValue({} as any);
+      vi.mocked(Ticket.find).mockReturnValueOnce(mockScannedQuery());
+
+      const result = await processRefund(
+        'refund-scan-003', 'approve', 'Admin notes', 'gate-ref-789', true, 'Override reason here', superAdminActor
+      );
+
+      expect(result?.status).toBe('completed');
+      expect(auditLog).toHaveBeenCalledWith(expect.objectContaining({
+        action: 'REFUND_MANUAL_OVERRIDE',
+        actor: expect.objectContaining({ id: 'super-admin-001' }),
+      }));
+    });
+
+    it('should allow auto_recovery refund even if booking has scanned tickets (scan check is exempt)', async () => {
+      const mockRefundSave = vi.fn();
+      const mockRefund = {
+        _id: 'refund-auto-scan', bookingId: 'booking-auto-scan', paymentId: 'payment-auto-scan',
+        amount: 500, status: 'requested', origin: 'auto_recovery', recoveryReason: 'AMOUNT_MISMATCH',
+        save: mockRefundSave,
+      };
+      const mockPayment = {
+        _id: 'payment-auto-scan', amount: 500, status: PaymentStatus.FAILED,
+        gateway: 'stripe', gatewayOrderId: 'pi_auto_scan',
+      };
+      const mockBooking = { _id: 'booking-auto-scan', status: BookingStatus.FAILED };
+
+      vi.mocked(Refund.findOneAndUpdate).mockReturnValue(createMockQuery(mockRefund));
+      vi.mocked(Payment.findById).mockReturnValue({ session: vi.fn().mockResolvedValue(mockPayment) } as any);
+      vi.mocked(Booking.findById).mockReturnValue({ session: vi.fn().mockResolvedValue(mockBooking) } as any);
+      vi.mocked(Refund.find).mockReturnValue(createMockQuery([]));
+      vi.mocked(Payment.findByIdAndUpdate).mockResolvedValue({} as any);
+      // Even with scanned tickets, auto_recovery must NOT be blocked
+      vi.mocked(Ticket.find).mockReturnValue(mockScannedQuery());
+
+      mockStripeRefundsCreate.mockResolvedValue({ id: 're_auto_scan' });
+
+      const result = await processRefund('refund-auto-scan', 'approve', 'Auto recovery notes');
+
+      expect(result?.status).toBe('completed');
+      expect(result?.gatewayRefundId).toBe('re_auto_scan');
+    });
+  });
+});

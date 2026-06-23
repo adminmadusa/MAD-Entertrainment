@@ -1,13 +1,19 @@
 'use client';
-
-import { EventCategory, EVENT_CATEGORY_LABELS, BookingMode, TicketTier, EventStatus } from '@mad/shared';
+import {
+  EVENT_CATEGORY_LABELS,
+  BookingMode,
+  TicketTier,
+  EventStatus,
+  EVENT_STATUS_TRANSITIONS,
+  type EventLifecycleStatus,
+} from '@mad/shared';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { useParams, useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 
-import { CloudinaryUpload } from '@/components/CloudinaryUpload';
-import { adminGetEvent, adminUpdateEvent, AdminEvent } from '@/lib/api/admin/event.service';
+import { EventGalleryUpload } from '@/components/EventGalleryUpload';
+import { adminGetEvent, adminUpdateEvent, type AdminEventUpdatePayload } from '@/lib/api/admin/event.service';
 import { adminGetCategories } from '@/lib/api/admin/category.service';
 import { adminGetTiers } from '@/lib/api/admin/tier.service';
 import { adminGetTicketProfiles } from '@/lib/api/admin/ticket-profile.service';
@@ -35,6 +41,17 @@ const defaultTier = (): TicketTierInput => ({
   name: 'general', price: '', capacity: '', groupSize: '', minPerBooking: '', discount: '', taxPercent: '', startDate: '', endDate: '', description: '', isAvailable: true,
 });
 
+const EVENT_STATUS_LABELS: Partial<Record<EventStatus, string>> = {
+  [EventStatus.DRAFT]: 'Draft',
+  [EventStatus.PUBLISHED]: 'Published',
+  [EventStatus.POSTPONED]: 'Postponed',
+  [EventStatus.COMPLETED]: 'Completed',
+  [EventStatus.CANCELLED]: 'Cancelled',
+};
+
+const isEventLifecycleStatus = (status: EventStatus): status is EventLifecycleStatus =>
+  Object.prototype.hasOwnProperty.call(EVENT_STATUS_TRANSITIONS, status);
+
 export default function EditEventPage() {
   const { id } = useParams() as { id: string };
   const router = useRouter();
@@ -51,6 +68,8 @@ export default function EditEventPage() {
   const [requireAgeConfirmation, setRequireAgeConfirmation] = useState(false);
   const [ageRestriction, setAgeRestriction] = useState<number | ''>(18);
   const [coverImage, setCoverImage] = useState<CloudinaryImage | null>(null);
+  const [posterImage, setPosterImage] = useState<CloudinaryImage | null>(null);
+  const [galleryImages, setGalleryImages] = useState<CloudinaryImage[]>([]);
   const [tiers, setTiers] = useState<TicketTierInput[]>([defaultTier()]);
   const [error, setError] = useState('');
   const [venueName, setVenueName] = useState<string>('');
@@ -94,7 +113,7 @@ export default function EditEventPage() {
       setTitle(event.title || '');
       setDescription(event.description || '');
       setCategory(event.category || 'concert');
-      setStatus((event.status as EventStatus) || EventStatus.DRAFT);
+      setStatus(event.status || EventStatus.DRAFT);
       setStartDate(event.startDate ? new Date(event.startDate).toISOString().slice(0, 16) : '');
       setEndDate(event.endDate ? new Date(event.endDate).toISOString().slice(0, 16) : '');
       setVenueName(event.venue || '');
@@ -107,6 +126,8 @@ export default function EditEventPage() {
       setRequireAgeConfirmation(!!event.requireAgeConfirmation);
       setAgeRestriction(event.ageRestriction ?? 18);
       setCoverImage(event.bannerImage || null);
+      setPosterImage(event.posterImage || null);
+      setGalleryImages(event.galleryImages || []);
 
       if (event.ticketProfileId) {
         setTicketingType('profile');
@@ -160,7 +181,7 @@ export default function EditEventPage() {
   };
 
   const updateMutation = useMutation({
-    mutationFn: (payload: Partial<AdminEvent>) => adminUpdateEvent(id, payload),
+    mutationFn: (payload: AdminEventUpdatePayload) => adminUpdateEvent(id, payload),
     onSuccess: () => router.push('/events'),
     onError: (err) => setError(extractApiError(err).message),
   });
@@ -194,16 +215,19 @@ export default function EditEventPage() {
 
       const isProfileType = ticketingType === 'profile';
       
-      const payload: Partial<AdminEvent> & Record<string, unknown> = {
+      const payload: AdminEventUpdatePayload & Record<string, unknown> = {
         title: title.trim(),
         slug: generatedSlug,
         description: description.trim(),
         category,
         status,
+        eventVersion: event.eventVersion,
         bookingMode: BookingMode.GENERAL_ADMISSION,
         bannerImage: coverImage ?? undefined,
+        posterImage: posterImage ?? undefined,
+        galleryImages: galleryImages.length > 0 ? galleryImages : undefined,
         venue: venueName.trim(),
-        startDate: new Date(startDate).toISOString() as never,
+        startDate: new Date(startDate).toISOString(),
         endDate: endDate ? new Date(endDate).toISOString() : undefined,
         isFeatured,
         requireTerms,
@@ -274,6 +298,8 @@ export default function EditEventPage() {
 
   const ticketsCheckedIn = event?.ticketsCheckedIn ?? 0;
   const ticketsSold = event?.ticketsSold ?? 0;
+  const allowedNextStatuses = isEventLifecycleStatus(status) ? EVENT_STATUS_TRANSITIONS[status] : [];
+  const statusOptions = Array.from(new Set<EventStatus>([status, ...allowedNextStatuses]));
 
   let attendanceStatus = 'NO ATTENDANCE';
   let attendanceColorClass = 'bg-red-500/10 text-red-400 border-red-500/30';
@@ -367,15 +393,19 @@ export default function EditEventPage() {
           </motion.div>
         )}
 
-        {/* Cover Image */}
+        {/* Event Media Uploads */}
         <div className="glass rounded-2xl border border-border-subtle p-6">
-          <CloudinaryUpload
-            folder="events"
-            value={coverImage}
-            onChange={setCoverImage}
-            label="Cover Image"
-            aspectRatio="aspect-video"
-            id="event-cover-image"
+          <h2 className="text-white font-semibold mb-4">Event Media (Banner, Poster, & Gallery)</h2>
+          <EventGalleryUpload
+            bannerImage={coverImage}
+            posterImage={posterImage}
+            galleryImages={galleryImages}
+            onChange={(b, p, g) => {
+              setCoverImage(b);
+              setPosterImage(p);
+              setGalleryImages(g);
+            }}
+            maxTotalImages={15}
           />
         </div>
 
@@ -403,11 +433,11 @@ export default function EditEventPage() {
             </Field>
             <Field label="Status">
               <select id="event-status" value={status} onChange={(e) => setStatus(e.target.value as EventStatus)} className={inputCls}>
-                <option value={EventStatus.DRAFT} className="bg-background-card">Draft</option>
-                <option value={EventStatus.PUBLISHED} className="bg-background-card">Published</option>
-                <option value={EventStatus.CANCELLED} className="bg-background-card">Cancelled</option>
-                <option value={EventStatus.SOLD_OUT} className="bg-background-card">Sold Out</option>
-                <option value={EventStatus.COMPLETED} className="bg-background-card">Completed</option>
+                {statusOptions.map((option) => (
+                  <option key={option} value={option} className="bg-background-card">
+                    {EVENT_STATUS_LABELS[option] ?? option}
+                  </option>
+                ))}
               </select>
             </Field>
             <Field label="Venue *">

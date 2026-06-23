@@ -1,16 +1,6 @@
-import { v2 as cloudinary } from 'cloudinary';
-import { getEnv } from '../../config/env';
+import crypto from 'crypto';
+import { cloudinary } from '../../config/cloudinary';
 import { AppError } from '../../middleware/error.middleware';
-
-const env = getEnv();
-
-// Initialize Cloudinary
-cloudinary.config({
-  cloud_name: env.CLOUDINARY_CLOUD_NAME,
-  api_key: env.CLOUDINARY_API_KEY,
-  api_secret: env.CLOUDINARY_API_SECRET,
-  secure: true,
-});
 
 export class UploadService {
   /**
@@ -21,7 +11,9 @@ export class UploadService {
     buffer: Buffer,
     secureFilename: string,
     folderPath: string = 'general'
-  ): Promise<{ url: string; publicId: string }> {
+  ): Promise<{ url: string; publicId: string; hash: string }> {
+    const hash = crypto.createHash('sha256').update(buffer).digest('hex');
+
     return new Promise((resolve, reject) => {
       const uploadStream = cloudinary.uploader.upload_stream(
         {
@@ -38,6 +30,7 @@ export class UploadService {
             resolve({
               url: result.secure_url,
               publicId: result.public_id,
+              hash,
             });
           } else {
             reject(new AppError('Cloudinary upload returned null', 500));

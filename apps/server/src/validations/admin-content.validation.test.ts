@@ -91,7 +91,7 @@ describe('admin mutation validation schemas', () => {
     ['update category', updateCategorySchema, { params: { id: objectId }, body: { name: 'Comedy' } }],
     ['create tier', createTierSchema, { body: { name: 'VIP' } }],
     ['update tier', updateTierSchema, { params: { id: objectId }, body: { name: 'Gold' } }],
-    ['update event', updateEventSchema, { params: { id: objectId }, body: { title: 'Updated event' } }],
+    ['update event', updateEventSchema, { params: { id: objectId }, body: { title: 'Updated event', eventVersion: 1 } }],
     ['update DJ operator', updateDJOperatorSchema, { params: { id: objectId }, body: { name: 'Updated DJ' } }],
     ['update ticket profile', updateTicketProfileSchema, { params: { id: objectId }, body: { name: 'Updated profile' } }],
     ['scanner lookup booking reference', scannerLookupSchema, { params: { reference: 'MAD-2026-ABCDE' }, query: { eventId: objectId } }],
@@ -125,7 +125,7 @@ describe('admin mutation validation schemas', () => {
     ['process refund param', processRefundSchema, { params: { id: 'not-an-object-id' }, body: { action: 'approve' } }],
     ['update category param', updateCategorySchema, { params: { id: 'not-an-object-id' }, body: { name: 'Concerts' } }],
     ['update tier param', updateTierSchema, { params: { id: 'not-an-object-id' }, body: { name: 'VIP' } }],
-    ['update event param', updateEventSchema, { params: { id: 'not-an-object-id' }, body: { title: 'Updated' } }],
+    ['update event param', updateEventSchema, { params: { id: 'not-an-object-id' }, body: { title: 'Updated', eventVersion: 1 } }],
     ['update DJ operator param', updateDJOperatorSchema, { params: { id: 'not-an-object-id' }, body: { name: 'Updated' } }],
     ['update ticket profile param', updateTicketProfileSchema, { params: { id: 'not-an-object-id' }, body: { name: 'Updated' } }],
     ['refund booking id', createRefundSchema, { body: { bookingId: 'bad', paymentId: otherObjectId, amount: 100 } }],
@@ -230,5 +230,98 @@ describe('admin bookings query validation schema', () => {
 
   it('bounds search', () => {
     expectRejected(adminBookingsQuerySchema, { search: 'a'.repeat(201) });
+  });
+});
+
+describe('event image validations', () => {
+  const validEventBody = {
+    title: 'Test Event',
+    slug: 'test-event',
+    description: 'Test Description',
+    category: 'Concert',
+    bookingMode: 'general_admission',
+    bannerImage: { url: 'https://example.com/banner.jpg', publicId: 'banner1', hash: 'hash1' },
+    startDate: '2026-06-01T00:00:00.000Z',
+    venue: 'Test Venue',
+    totalCapacity: 100,
+  };
+
+  it('accepts event with 1 image (just banner)', () => {
+    expectAccepted(createEventSchema, {
+      body: {
+        ...validEventBody,
+      },
+    });
+  });
+
+  it('accepts update event payload with eventVersion', () => {
+    expectAccepted(updateEventSchema, {
+      params: { id: objectId },
+      body: {
+        title: 'Updated event',
+        eventVersion: 1,
+      },
+    });
+  });
+
+  it('rejects update event payload without eventVersion', () => {
+    expectRejected(updateEventSchema, {
+      params: { id: objectId },
+      body: {
+        title: 'Updated event',
+      },
+    });
+  });
+
+  it('accepts event with 15 images (banner + poster + 13 gallery images)', () => {
+    const galleryImages = Array.from({ length: 13 }, (_, i) => ({
+      url: `https://example.com/gallery${i}.jpg`,
+      publicId: `gallery${i}`,
+      hash: `hash_gallery_${i}`,
+    }));
+
+    expectAccepted(createEventSchema, {
+      body: {
+        ...validEventBody,
+        posterImage: { url: 'https://example.com/poster.jpg', publicId: 'poster', hash: 'hash_poster' },
+        galleryImages,
+      },
+    });
+  });
+
+  it('rejects event with 16 images (banner + poster + 14 gallery images)', () => {
+    const galleryImages = Array.from({ length: 14 }, (_, i) => ({
+      url: `https://example.com/gallery${i}.jpg`,
+      publicId: `gallery${i}`,
+      hash: `hash_gallery_${i}`,
+    }));
+
+    expectRejected(createEventSchema, {
+      body: {
+        ...validEventBody,
+        posterImage: { url: 'https://example.com/poster.jpg', publicId: 'poster', hash: 'hash_poster' },
+        galleryImages,
+      },
+    });
+  });
+
+  it('rejects event with duplicate publicId', () => {
+    expectRejected(createEventSchema, {
+      body: {
+        ...validEventBody,
+        posterImage: { url: 'https://example.com/poster.jpg', publicId: 'banner1', hash: 'hash_poster' }, // same publicId as bannerImage
+      },
+    });
+  });
+
+  it('rejects event with duplicate hash', () => {
+    expectRejected(createEventSchema, {
+      body: {
+        ...validEventBody,
+        galleryImages: [
+          { url: 'https://example.com/gallery.jpg', publicId: 'gallery1', hash: 'hash1' }, // same hash as bannerImage
+        ],
+      },
+    });
   });
 });

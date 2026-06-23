@@ -12,6 +12,9 @@ import { generateTicketPDF } from '../../utils/pdf';
 import { QueueService } from '../../services/queue.service';
 import { getQueueName } from '../../config/queue.config';
 import { CacheService } from '../../services/cache.service';
+import { getEnv } from '../../config/env';
+import { generateTicketQrToken } from '../../services/public/ticket-ownership.service';
+
 
 
 const maskTransactionId = (id: string): string => {
@@ -124,6 +127,9 @@ export async function getMyBookings(
       ) {
         ticketObj.qrCode = undefined;
         ticketObj.qrCodeImage = undefined;
+      } else {
+        const token = generateTicketQrToken(ticketObj.ticketId);
+        ticketObj.qrCodeImage = `/api/public/tickets/${ticketObj.ticketId}/qr?token=${token}`;
       }
       return ticketObj;
     });
@@ -187,6 +193,9 @@ export async function getBooking(
       ) {
         ticketObj.qrCode = undefined;
         ticketObj.qrCodeImage = undefined;
+      } else {
+        const token = generateTicketQrToken(ticketObj.ticketId);
+        ticketObj.qrCodeImage = `/api/public/tickets/${ticketObj.ticketId}/qr?token=${token}`;
       }
       return ticketObj;
     });
@@ -386,6 +395,7 @@ export async function resendBookingTickets(
     );
 
     const eventIdStr = (booking.eventId as any)._id?.toString() || booking.eventId.toString();
+    const resendId = crypto.randomUUID();
 
     // Reuse existing PDF / email infrastructure by enqueuing a pdf:generate job
     await QueueService.enqueue(
@@ -396,8 +406,10 @@ export async function resendBookingTickets(
         eventId: eventIdStr,
         recipientEmail: booking.guestEmail,
         guestName: booking.guestName,
+        isResend: true,
+        resendId,
       },
-      `pdf-generate-${booking._id}-resend-${Date.now()}` // Bypass BullMQ deduplication
+      `pdf-generate-${booking._id}-resend-${resendId}` // Bypass BullMQ deduplication
     );
 
     sendSuccess(
@@ -415,7 +427,6 @@ export async function resendBookingTickets(
 // ─────────────────────────────────────────────
 
 import { AuthService } from '../../services/public/auth.service';
-import { getEnv } from '../../config/env';
 
 // ─────────────────────────────────────────────
 // Recover Booking Email

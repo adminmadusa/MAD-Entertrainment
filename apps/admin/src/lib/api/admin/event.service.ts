@@ -1,4 +1,5 @@
 import { PaginationMeta } from '@mad/types';
+import { EventStatus } from '@mad/shared';
 import { adminApiClient } from '@/lib/api/client';
 
 
@@ -35,13 +36,14 @@ export interface AdminEvent {
   description: string;
   category?: string;
   bookingMode?: string;
-  status?: string;
+  status?: EventStatus;
   galleryImages?: CloudinaryImage[];
   venue: string;
   startDate: string;
   endDate?: string;
   ticketTiers: EventTier[];
   totalCapacity: number;
+  eventVersion: number;
   isFeatured: boolean;
   requireTerms?: boolean;
   requireAgeConfirmation?: boolean;
@@ -59,6 +61,7 @@ export interface AdminEvent {
   refundPolicy?: string;
   highlights?: string[];
   bannerImage?: CloudinaryImage;
+  posterImage?: CloudinaryImage;
   ticketsSold?: number;
   ticketsCheckedIn?: number;
   ticketsRemaining?: number;
@@ -72,27 +75,51 @@ export interface EventsResponse {
   data: {
     events: AdminEvent[];
     pagination: PaginationMeta;
+    total?: number;
+    pages?: number;
   };
+  pagination?: PaginationMeta;
   message?: string;
 }
+
+interface EventResponse {
+  success: boolean;
+  data: AdminEvent | { event: AdminEvent };
+  message?: string;
+}
+
+type PaginationSource = Partial<PaginationMeta> & { pages?: number };
+type EventStatusFilter = EventStatus | `${EventStatus}` | '';
 
 export interface EventFilters {
   page?: number;
   limit?: number;
-  status?: string;
-  category?: string;
+  status?: EventStatusFilter;
   search?: string;
-  featured?: boolean;
+}
+
+export type AdminEventUpdatePayload = Partial<AdminEvent> & Pick<AdminEvent, 'eventVersion'>;
+
+function isEventEnvelope(payload: EventResponse['data']): payload is { event: AdminEvent } {
+  return typeof payload === 'object' && payload !== null && 'event' in payload;
+}
+
+function unwrapAdminEvent(response: EventResponse): AdminEvent {
+  const payload = response.data;
+  if (isEventEnvelope(payload)) {
+    return payload.event;
+  }
+  return payload;
 }
 
 export async function adminGetEvents(filters: EventFilters = {}): Promise<{ items: AdminEvent[]; pagination: PaginationMeta }> {
   const params = new URLSearchParams();
   Object.entries(filters).forEach(([k, v]) => { if (v !== undefined && v !== '') params.set(k, String(v)); });
-  const { data } = await adminApiClient.get<any>(`/admin/events?${params}`);
+  const { data } = await adminApiClient.get<EventsResponse>(`/admin/events?${params}`);
   const payload = data?.data;
   const items = Array.isArray(payload?.events) ? payload.events : [];
   
-  const paginationSource = payload?.pagination || data?.pagination || payload;
+  const paginationSource: PaginationSource = payload?.pagination ?? data?.pagination ?? payload;
   const pagination = {
     page: paginationSource?.page ?? Number(filters.page) ?? 1,
     limit: paginationSource?.limit ?? Number(filters.limit) ?? 15,
@@ -104,27 +131,20 @@ export async function adminGetEvents(filters: EventFilters = {}): Promise<{ item
 }
 
 export async function adminGetEvent(id: string): Promise<AdminEvent> {
-  const { data } = await adminApiClient.get<{ data: { event: AdminEvent } | AdminEvent }>(`/admin/events/${id}`);
-  const payload = data?.data;
-  if (!payload) throw new Error('Event not found');
-  if ('event' in payload && payload.event) {
-    return payload.event as AdminEvent;
-  }
-  return payload as AdminEvent;
+  const { data } = await adminApiClient.get<EventResponse>(`/admin/events/${id}`);
+  return unwrapAdminEvent(data);
 }
 
 export async function adminCreateEvent(payload: Partial<AdminEvent>): Promise<AdminEvent> {
-  const { data } = await adminApiClient.post<{ data: AdminEvent }>('/admin/events', payload);
-  return data.data;
+  const { data } = await adminApiClient.post<EventResponse>('/admin/events', payload);
+  return unwrapAdminEvent(data);
 }
 
-export async function adminUpdateEvent(id: string, payload: Partial<AdminEvent>): Promise<AdminEvent> {
-  const { data } = await adminApiClient.put<{ data: AdminEvent }>(`/admin/events/${id}`, payload);
-  return data.data;
+export async function adminUpdateEvent(id: string, payload: AdminEventUpdatePayload): Promise<AdminEvent> {
+  const { data } = await adminApiClient.put<EventResponse>(`/admin/events/${id}`, payload);
+  return unwrapAdminEvent(data);
 }
 
 export async function adminDeleteEvent(id: string): Promise<void> {
   await adminApiClient.delete(`/admin/events/${id}`);
 }
-
-

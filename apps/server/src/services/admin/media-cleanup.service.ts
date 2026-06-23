@@ -1,5 +1,7 @@
 import { logger } from '../../utils/logger';
 import { UploadService } from './upload.service';
+import { cloudinary } from '../../config/cloudinary';
+import { Event } from '../../models/event.schema';
 
 /**
  * Perform asynchronous, fire-and-forget deletion of Cloudinary assets.
@@ -45,4 +47,57 @@ export const safeDeleteImages = (
       `Unhandled error in safeDeleteImages during ${entity} ${operation}`
     );
   });
+};
+
+/**
+ * Sweeps the temporary Cloudinary assets directory (events/temp/*) and deletes
+ * any unreferenced images older than 24 hours.
+ */
+export const cleanupTemporaryAssets = async (): Promise<{ deletedCount: number; checkedCount: number }> => {
+  let checkedCount = 0;
+  let deletedCount = 0;
+  try {
+    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+
+    // List all resources in the events/temp folder
+    const response = await new Promise<any>((resolve, reject) => {
+      cloudinary.api.resources(
+        {
+          type: 'upload',
+          prefix: 'mad-entertrainment/events/temp/',
+          max_results: 500,
+        },
+        (error: any, result: any) => {
+          if (error) reject(error);
+          else resolve(result);
+        }
+      );
+    });
+
+    const resources = response.resources || [];
+    for (const resource of resources) {
+      checkedCount++;
+      const createdAt = new Date(resource.created_at);
+      if (createdAt < twentyFourHoursAgo) {
+        const publicId = resource.public_id;
+
+        // Safety check: verify database references
+        const isReferenced = await Event.exists({
+          $or: [
+            { 'bannerImage.publicId': publicId },
+            { 'posterImage.publicId': publicId },
+            { 'galleryImages.publicId': publicId },
+          ],
+        });
+
+        if (!isReferenced) {
+          await UploadService.deleteImage(publicId);
+          deletedCount++;
+        }
+      }
+    }
+  } catch (err: any) {
+    logger.error({ error: err.message || err }, 'Error during temporary assets cleanup');
+  }
+  return { checkedCount, deletedCount };
 };
