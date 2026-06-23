@@ -132,59 +132,14 @@ function HeroSection() {
 
         {/* Subheadline */}
         <Reveal delay={0.3} trigger="mount">
-          <p className="text-text-secondary text-lg md:text-xl max-w-2xl mx-auto mb-10 leading-relaxed">
+          <p className="text-text-secondary text-lg md:text-xl max-w-2xl mx-auto mb-8 leading-relaxed">
             Book tickets for DJ nights, concerts, comedy shows, festivals, VIP events and unforgettable live experiences — all in one place.
           </p>
         </Reveal>
 
-        {/* Hero Search Block */}
-        <Reveal delay={0.35} trigger="mount">
-          <div className="max-w-2xl mx-auto mb-10 px-4">
-            <form action="/events" method="GET" className="relative flex items-center w-full">
-              <input
-                type="text"
-                name="search"
-                aria-label="Search events"
-                placeholder="Search events, DJ nights, concerts..."
-                className="w-full pl-12 pr-28 py-4 rounded-2xl bg-white/5 backdrop-blur-md border border-white/10 text-white placeholder:text-text-muted focus:outline-none focus:border-accent-purple focus:ring-2 focus:ring-accent-purple transition-all duration-300 shadow-2xl text-base md:text-lg"
-              />
-              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none" aria-hidden="true">
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-              </div>
-              <button
-                type="submit"
-                className="absolute right-2 top-1/2 -translate-y-1/2 px-5 py-2.5 btn-gradient text-white text-sm font-bold rounded-xl shadow-glow-sm hover:scale-105 active:scale-95 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple"
-              >
-                Search
-              </button>
-            </form>
-
-            {/* Quick Link Category Pills */}
-            <div className="flex flex-wrap gap-2 justify-center mt-4" role="navigation" aria-label="Quick category filters">
-              {[
-                { label: 'DJ Nights', value: 'dj-night' },
-                { label: 'Concerts', value: 'concert' },
-                { label: 'Festivals', value: 'festival' },
-                { label: 'Comedy', value: 'comedy' },
-                { label: 'VIP Events', value: 'vip-event' },
-              ].map((cat) => (
-                <Link
-                  key={cat.value}
-                  href={`/events?category=${cat.value}`}
-                  className="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-white/5 border border-white/5 text-text-muted hover:border-accent-purple/40 hover:text-white transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple"
-                >
-                  {cat.label}
-                </Link>
-              ))}
-            </div>
-          </div>
-        </Reveal>
-
         {/* CTAs */}
-        <Reveal delay={0.4} trigger="mount">
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+        <Reveal delay={0.35} trigger="mount">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
             <Link
               id="hero-book-now"
               href="/events"
@@ -203,9 +158,30 @@ function HeroSection() {
           </div>
         </Reveal>
 
+        {/* Quick Link Category Pills */}
+        <Reveal delay={0.4} trigger="mount">
+          <div className="flex flex-wrap gap-2 justify-center max-w-2xl mx-auto mb-10 px-4" role="navigation" aria-label="Quick category filters">
+            {[
+              { label: 'DJ Nights', value: 'dj_night' },
+              { label: 'Concerts', value: 'concert' },
+              { label: 'Festivals', value: 'festival' },
+              { label: 'Comedy', value: 'comedy' },
+              { label: 'VIP Events', value: 'vip_event' },
+            ].map((cat) => (
+              <Link
+                key={cat.value}
+                href={`/events?category=${cat.value}`}
+                className="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-white/5 border border-white/5 text-text-muted hover:border-accent-purple/40 hover:text-white transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple"
+              >
+                {cat.label}
+              </Link>
+            ))}
+          </div>
+        </Reveal>
+
         {/* Stats */}
-        <Reveal delay={0.5} trigger="mount">
-          <div className="mt-10 grid grid-cols-3 gap-6 max-w-xl mx-auto">
+        <Reveal delay={0.45} trigger="mount">
+          <div className="mt-8 grid grid-cols-3 gap-6 max-w-xl mx-auto">
             {[
               { value: '500+', label: 'Events' },
               { value: '50K+', label: 'Tickets Sold' },
@@ -229,68 +205,7 @@ function HeroSection() {
   );
 }
 
-// ─── Trust Grid Section ───────────────────────────────────────
 
-function TrustGridSection() {
-  const trustItems = [
-    {
-      title: 'Verified Events',
-      description: '100% official tickets sourced directly from event organizers and venue partners.',
-      icon: (
-        <svg className="w-6 h-6 text-accent-purple-light" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-        </svg>
-      ),
-    },
-    {
-      title: 'Secure Payments',
-      description: 'Encrypted Stripe and Razorpay checkouts with full fraud prevention safeguards.',
-      icon: (
-        <svg className="w-6 h-6 text-accent-cyan" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 00-2 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-        </svg>
-      ),
-    },
-    {
-      title: 'Instant Ticket Delivery',
-      description: 'Your secure QR-coded entry pass is dispatched instantly to your email and phone.',
-      icon: (
-        <svg className="w-6 h-6 text-accent-pink" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-        </svg>
-      ),
-    },
-    {
-      title: 'Refund Support Available',
-      description: 'Dedicated assistance to process administrative cancellation requests per event policies.',
-      icon: (
-        <svg className="w-6 h-6 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
-        </svg>
-      ),
-    },
-  ];
-
-  return (
-    <section className="py-8 bg-background relative z-20" aria-label="Trust and security guarantees">
-      <div className="container-mad">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 p-8 rounded-3xl glass border border-border-subtle shadow-glow-sm">
-          {trustItems.map((item) => (
-            <div key={item.title} className="flex gap-4 items-start">
-              <div className="flex-shrink-0 p-3 rounded-xl bg-white/5 border border-white/10" aria-hidden="true">
-                {item.icon}
-              </div>
-              <div>
-                <h3 className="text-white font-bold text-sm mb-1">{item.title}</h3>
-                <p className="text-text-secondary text-xs leading-relaxed">{item.description}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
 
 // ─── How It Works ─────────────────────────────────────────────
 
