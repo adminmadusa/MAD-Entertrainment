@@ -51,7 +51,6 @@ export async function ensureGuestBookingSession(): Promise<GuestBookingSession> 
 
   const session = await publicGetBookingSession();
   if (typeof window !== 'undefined') {
-    sessionStorage.removeItem('mad_checkout_session');
     sessionStorage.setItem(guestSessionIdKey, session.sessionId);
     sessionStorage.setItem(guestSessionTokenKey, session.token);
   }
@@ -288,14 +287,6 @@ export async function publicLogout(): Promise<{ success: boolean }> {
 
 export async function publicResendTicketEmail(bookingId: string, sessionToken?: string): Promise<{ success: boolean; message: string }> {
   const { data } = await apiClient.post<{ success: boolean; message: string }>(`/bookings/${bookingId}/resend`, {}, {
-    headers: getGuestSessionHeaders(sessionToken),
-  });
-  return data;
-}
-
-export async function publicDownloadTicketPDF(bookingId: string, sessionToken?: string): Promise<Blob> {
-  const { data } = await apiClient.get<Blob>(`/bookings/${bookingId}/download`, {
-    responseType: 'blob',
     headers: getGuestSessionHeaders(sessionToken),
   });
   return data;

@@ -31,6 +31,16 @@ export function generateTicketQrToken(ticketId: string): string {
 }
 
 /**
+ * Constructs the full relative QR code image URL for a ticketId.
+ * Generates a fresh 5-minute HMAC token and embeds it as a ?token= query param.
+ * This is the single source of truth for the qrCodeImage URL format.
+ */
+export function buildQrCodeImageUrl(ticketId: string): string {
+  const token = generateTicketQrToken(ticketId);
+  return `/api/public/tickets/${ticketId}/qr?token=${token}`;
+}
+
+/**
  * Verifies a stateless HMAC-signed token for a ticketId.
  * Returns true only if the token is well-formed, not expired, and
  * the signature matches exactly (timing-safe comparison).

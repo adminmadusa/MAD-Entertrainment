@@ -127,21 +127,6 @@ function TicketRetrievalContent() {
   const bookings = bookingsData?.bookings || [];
 
   useEffect(() => {
-    if (isAuthenticated && !isBookingsLoading) {
-      const justLoggedIn = sessionStorage.getItem('just_logged_in');
-      if (justLoggedIn) {
-        sessionStorage.removeItem('just_logged_in');
-        setErrorMsg(''); // Clear any stale validation errors from pre-login state
-        if (bookings.length > 0) {
-          setInfoMsg(`We found ${bookings.length} booking${bookings.length === 1 ? '' : 's'} linked to your email and added them to your account!`);
-          // Clear message after 6 seconds
-          setTimeout(() => setInfoMsg(''), 6000);
-        }
-      }
-    }
-  }, [isAuthenticated, isBookingsLoading, bookings.length]);
-
-  useEffect(() => {
     if (showLoginForGuest) {
       setIsAuthModalDismissed(false);
     }
@@ -762,7 +747,6 @@ function TicketRetrievalContent() {
                 isVerificationRequired={isOwnershipVerificationRequired}
                 bookingReference={queryRef}
                 onSuccess={() => { 
-                  sessionStorage.setItem('just_logged_in', 'true');
                   const dest = queryRef
                     ? `/dashboard?tab=tickets&ref=${encodeURIComponent(queryRef.trim())}`
                     : '/dashboard?tab=tickets';
