@@ -34,6 +34,7 @@ export interface AuthFormProps {
   bookingReference?: string;
   initialEmail?: string;
   onClose?: () => void;
+  onDirtyChange?: (dirty: boolean) => void;
 }
 
 
@@ -45,6 +46,7 @@ export function AuthForm({
   bookingReference,
   initialEmail,
   onClose,
+  onDirtyChange,
 }: AuthFormProps) {
   const { login, logout, token, setOnboardingRequired, onboardingRequired, user } = useAuth();
 
@@ -63,6 +65,13 @@ export function AuthForm({
   const [otp, setOtp] = useState('');
   const [step, setStep] = useState<'request' | 'verify' | 'onboard'>('request');
   const [error, setError] = useState('');
+
+  // Expose dirty state to parent provider
+  useEffect(() => {
+    if (onDirtyChange) {
+      onDirtyChange(email !== '' || otp !== '');
+    }
+  }, [email, otp, onDirtyChange]);
 
   useEffect(() => {
     if (initialEmail && !email) {
@@ -260,10 +269,13 @@ export function AuthForm({
   };
 
   const handleClose = () => {
-    setOtp('');
-    setError('');
-    setStep('request');
-    if (onClose) onClose();
+    if (onClose) {
+      onClose();
+    } else {
+      setOtp('');
+      setError('');
+      setStep('request');
+    }
   };
 
   const handleOnboardingCancel = () => {
