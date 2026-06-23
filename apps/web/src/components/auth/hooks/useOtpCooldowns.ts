@@ -2,7 +2,11 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 
-export function useOtpCooldowns() {
+export function useOtpCooldowns(options?: { namespace?: string }) {
+  const prefix = options?.namespace || 'mad_otp';
+  const requestExpiryKey = `${prefix}_request_cooldown_expiry`;
+  const verifyExpiryKey = `${prefix}_verify_cooldown_expiry`;
+
   const [requestCooldownRemaining, setRequestCooldownRemaining] = useState<number>(0);
   const [requestCooldownExpiry, setRequestCooldownExpiry] = useState<number | null>(null);
 
@@ -21,25 +25,25 @@ export function useOtpCooldowns() {
 
   const triggerRequestCooldown = useCallback((retryAfterSeconds: number) => {
     const proposedExpiry = Date.now() + retryAfterSeconds * 1000;
-    const storedExpiry = localStorage.getItem('mad_otp_request_cooldown_expiry');
+    const storedExpiry = localStorage.getItem(requestExpiryKey);
     const existingExpiry = storedExpiry ? Number(storedExpiry) : 0;
     const finalExpiry = Math.max(existingExpiry, proposedExpiry);
 
-    localStorage.setItem('mad_otp_request_cooldown_expiry', String(finalExpiry));
+    localStorage.setItem(requestExpiryKey, String(finalExpiry));
     setRequestCooldownExpiry(finalExpiry);
     setRequestCooldownRemaining(Math.ceil((finalExpiry - Date.now()) / 1000));
-  }, []);
+  }, [requestExpiryKey]);
 
   const triggerVerifyCooldown = useCallback((retryAfterSeconds: number) => {
     const proposedExpiry = Date.now() + retryAfterSeconds * 1000;
-    const storedExpiry = localStorage.getItem('mad_otp_verify_cooldown_expiry');
+    const storedExpiry = localStorage.getItem(verifyExpiryKey);
     const existingExpiry = storedExpiry ? Number(storedExpiry) : 0;
     const finalExpiry = Math.max(existingExpiry, proposedExpiry);
 
-    localStorage.setItem('mad_otp_verify_cooldown_expiry', String(finalExpiry));
+    localStorage.setItem(verifyExpiryKey, String(finalExpiry));
     setVerifyCooldownExpiry(finalExpiry);
     setVerifyCooldownRemaining(Math.ceil((finalExpiry - Date.now()) / 1000));
-  }, []);
+  }, [verifyExpiryKey]);
 
   const startTimer = useCallback(() => {
     setResendTimer(60);
@@ -58,7 +62,7 @@ export function useOtpCooldowns() {
   // Hydrate on mount
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const storedReqExpiry = localStorage.getItem('mad_otp_request_cooldown_expiry');
+      const storedReqExpiry = localStorage.getItem(requestExpiryKey);
       if (storedReqExpiry) {
         const expiry = Number(storedReqExpiry);
         if (expiry > Date.now()) {
@@ -66,7 +70,7 @@ export function useOtpCooldowns() {
           setRequestCooldownRemaining(Math.ceil((expiry - Date.now()) / 1000));
         }
       }
-      const storedVerExpiry = localStorage.getItem('mad_otp_verify_cooldown_expiry');
+      const storedVerExpiry = localStorage.getItem(verifyExpiryKey);
       if (storedVerExpiry) {
         const expiry = Number(storedVerExpiry);
         if (expiry > Date.now()) {
@@ -75,7 +79,7 @@ export function useOtpCooldowns() {
         }
       }
     }
-  }, []);
+  }, [requestExpiryKey, verifyExpiryKey]);
 
   // Set interval timer for request cooldown
   useEffect(() => {
@@ -89,14 +93,14 @@ export function useOtpCooldowns() {
       if (remaining <= 0) {
         setRequestCooldownRemaining(0);
         setRequestCooldownExpiry(null);
-        localStorage.removeItem('mad_otp_request_cooldown_expiry');
+        localStorage.removeItem(requestExpiryKey);
       } else {
         setRequestCooldownRemaining(remaining);
       }
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [requestCooldownExpiry]);
+  }, [requestCooldownExpiry, requestExpiryKey]);
 
   // Set interval timer for verify cooldown
   useEffect(() => {
@@ -110,19 +114,19 @@ export function useOtpCooldowns() {
       if (remaining <= 0) {
         setVerifyCooldownRemaining(0);
         setVerifyCooldownExpiry(null);
-        localStorage.removeItem('mad_otp_verify_cooldown_expiry');
+        localStorage.removeItem(verifyExpiryKey);
       } else {
         setVerifyCooldownRemaining(remaining);
       }
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [verifyCooldownExpiry]);
+  }, [verifyCooldownExpiry, verifyExpiryKey]);
 
   // Sync across tabs
   useEffect(() => {
     const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'mad_otp_request_cooldown_expiry') {
+      if (e.key === requestExpiryKey) {
         if (e.newValue) {
           const expiry = Number(e.newValue);
           if (expiry > Date.now()) {
@@ -137,7 +141,7 @@ export function useOtpCooldowns() {
           setRequestCooldownRemaining(0);
         }
       }
-      if (e.key === 'mad_otp_verify_cooldown_expiry') {
+      if (e.key === verifyExpiryKey) {
         if (e.newValue) {
           const expiry = Number(e.newValue);
           if (expiry > Date.now()) {
@@ -156,7 +160,7 @@ export function useOtpCooldowns() {
 
     window.addEventListener('storage', handleStorageChange);
     return () => window.removeEventListener('storage', handleStorageChange);
-  }, []);
+  }, [requestExpiryKey, verifyExpiryKey]);
 
   // Cleanup timers on unmount
   useEffect(() => {

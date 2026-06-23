@@ -74,6 +74,7 @@ vi.mock('@/utils/google-identity', () => ({
     });
   }),
   setGoogleIdentityCallback: vi.fn(),
+  registerGoogleIdentityCallback: vi.fn(() => vi.fn()),
 }));
 
 describe('AuthForm Component Smoke Tests', () => {

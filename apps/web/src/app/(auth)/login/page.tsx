@@ -2,18 +2,23 @@
 
 import { Suspense, useEffect } from 'react';
 import { AuthForm } from '@/components/auth/AuthForm';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/providers/AuthProvider';
+import { validateReturnTo } from '@/utils/safe-redirect';
 
 function LoginPageContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { isAuthenticated, isLoading: isAuthLoading, onboardingRequired } = useAuth();
+
+  const rawReturnTo = searchParams.get('returnTo');
+  const returnTo = validateReturnTo(rawReturnTo);
 
   useEffect(() => {
     if (!isAuthLoading && isAuthenticated && !onboardingRequired) {
-      router.replace('/dashboard');
+      router.replace(returnTo || '/dashboard');
     }
-  }, [isAuthenticated, isAuthLoading, onboardingRequired, router]);
+  }, [isAuthenticated, isAuthLoading, onboardingRequired, router, returnTo]);
 
   return (
     <div className="min-h-screen pt-28 pb-16 flex items-center justify-center relative overflow-hidden bg-background">
@@ -32,7 +37,7 @@ function LoginPageContent() {
             </p>
           </div>
 
-          <AuthForm mode="login" onSuccess={() => router.push('/dashboard')} />
+          <AuthForm mode="login" onSuccess={() => router.push(returnTo || '/dashboard')} />
         </div>
       </div>
     </div>

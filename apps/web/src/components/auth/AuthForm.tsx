@@ -30,10 +30,9 @@ export interface AuthFormProps {
   mode: 'login';
   onSuccess?: (data: AuthResponse) => void;
   className?: string;
-  isVerificationRequired?: boolean;
-  bookingReference?: string;
   initialEmail?: string;
   onClose?: () => void;
+  onDirtyChange?: (dirty: boolean) => void;
 }
 
 
@@ -41,10 +40,9 @@ export function AuthForm({
   mode,
   onSuccess,
   className = '',
-  isVerificationRequired,
-  bookingReference,
   initialEmail,
   onClose,
+  onDirtyChange,
 }: AuthFormProps) {
   const { login, logout, token, setOnboardingRequired, onboardingRequired, user } = useAuth();
 
@@ -63,6 +61,13 @@ export function AuthForm({
   const [otp, setOtp] = useState('');
   const [step, setStep] = useState<'request' | 'verify' | 'onboard'>('request');
   const [error, setError] = useState('');
+
+  // Expose dirty state to parent provider
+  useEffect(() => {
+    if (onDirtyChange) {
+      onDirtyChange(email !== '' || otp !== '');
+    }
+  }, [email, otp, onDirtyChange]);
 
   useEffect(() => {
     if (initialEmail && !email) {
@@ -100,8 +105,7 @@ export function AuthForm({
     return () => clearTimeout(timer);
   }, [step]);
 
-  // Google GSI reference markers to prevent concurrent initializations
-  const googleCallbackRef = useRef<(response: GoogleCredentialResponse) => void>(() => {});
+
 
   // ─── React Query Mutations ───────────────────────────────────
 
@@ -178,26 +182,7 @@ export function AuthForm({
     },
   });
 
-  // Synchronize dynamic callback reference
-  useEffect(() => {
-    googleCallbackRef.current = (response: GoogleCredentialResponse) => {
-      if (response?.credential) {
-        googleLoginMutation.mutate(response.credential);
-      }
-    };
-  }, [googleLoginMutation]);
 
-  const handleGoogleCredentialResponse = useCallback((response: GoogleCredentialResponse) => {
-    googleCallbackRef.current(response);
-  }, []);
-
-  // Sync the local callback with the global Google Identity singleton router
-  useEffect(() => {
-    setGoogleIdentityCallback(handleGoogleCredentialResponse);
-    return () => {
-      setGoogleIdentityCallback(null);
-    };
-  }, [handleGoogleCredentialResponse]);
 
   // Form Submissions
   const handleSubmitEmail = (e: React.FormEvent) => {
@@ -260,10 +245,13 @@ export function AuthForm({
   };
 
   const handleClose = () => {
-    setOtp('');
-    setError('');
-    setStep('request');
-    if (onClose) onClose();
+    if (onClose) {
+      onClose();
+    } else {
+      setOtp('');
+      setError('');
+      setStep('request');
+    }
   };
 
   const handleOnboardingCancel = () => {
@@ -298,8 +286,8 @@ export function AuthForm({
           verifyCooldownRemaining={verifyCooldownRemaining}
           formatTime={formatTime}
           error={error}
-          isVerificationRequired={isVerificationRequired}
           googleLoginIsPending={googleLoginMutation.isPending}
+          onGoogleLoginSuccess={(credential) => googleLoginMutation.mutate(credential)}
         />
       )}
 
