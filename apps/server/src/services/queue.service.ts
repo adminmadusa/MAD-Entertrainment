@@ -1,8 +1,19 @@
 import { Queue, QueueOptions } from 'bullmq';
 
-import { getQueueConnection, getQueuePrefix } from '../config/queue.config';
+import { getQueueConnection, getQueuePrefix, getQueueName } from '../config/queue.config';
 import { isRedisConnected } from '../config/redis';
 import { logger } from '../utils/logger';
+import { AppError } from '../middleware/error.middleware';
+
+export interface QueueControlStatus {
+  name: string;
+  isPaused: boolean;
+  active: number;
+  waiting: number;
+  delayed: number;
+  failed: number;
+  completed: number;
+}
 
 export class QueueService {
   private static queues: Record<string, Queue> = {};
@@ -76,6 +87,76 @@ export class QueueService {
 
       throw err;
     }
+  }
+
+  /**
+   * Pause a queue by base name. Workers stop consuming jobs; existing jobs remain safely in queue.
+   * Resolves to the env-qualified name (e.g. booking-queue-production) before operating.
+   */
+  static async pauseQueue(baseName: string): Promise<void> {
+    const resolved = getQueueName(baseName);
+    const queue = this.getQueue(resolved);
+    if (!queue) {
+      throw new Error(`Queue unavailable: Redis is offline. Cannot pause queue ${baseName}`);
+    }
+    await queue.pause();
+    logger.info({ queueName: baseName }, 'BullMQ Queue paused successfully');
+  }
+
+  /**
+   * Resume a paused queue by base name. Workers resume consuming jobs immediately.
+   */
+  static async resumeQueue(baseName: string): Promise<void> {
+    const resolved = getQueueName(baseName);
+    const queue = this.getQueue(resolved);
+    if (!queue) {
+      throw new Error(`Queue unavailable: Redis is offline. Cannot resume queue ${baseName}`);
+    }
+    await queue.resume();
+    logger.info({ queueName: baseName }, 'BullMQ Queue resumed successfully');
+  }
+
+  /**
+   * Drain a queue by base name — removes all waiting and delayed jobs.
+   * DESTRUCTIVE. Enforces hard backend block: only 'marketing-queue' is allowed to be drained.
+   */
+  static async drainQueue(queueName: string): Promise<void> {
+    if (queueName !== 'marketing-queue') {
+      throw AppError.forbidden(
+        'Draining is prohibited on transactional queues'
+      );
+    }
+    const resolved = getQueueName(queueName);
+    const queue = this.getQueue(resolved);
+    if (!queue) {
+      throw new Error(`Queue unavailable: Redis is offline. Cannot drain queue ${queueName}`);
+    }
+    await queue.drain();
+    logger.info({ queueName }, 'BullMQ Queue drained successfully');
+  }
+
+  /**
+   * Return live status metrics for a single queue by base name.
+   */
+  static async getQueueStatus(baseName: string): Promise<QueueControlStatus> {
+    const resolved = getQueueName(baseName);
+    const queue = this.getQueue(resolved);
+    if (!queue) {
+      throw new Error(`Queue unavailable: Redis is offline. Cannot get status for queue ${baseName}`);
+    }
+    const [counts, isPaused] = await Promise.all([
+      queue.getJobCounts('active', 'waiting', 'delayed', 'failed', 'completed'),
+      queue.isPaused(),
+    ]);
+    return {
+      name: baseName,
+      isPaused,
+      active: counts.active ?? 0,
+      waiting: counts.waiting ?? 0,
+      delayed: counts.delayed ?? 0,
+      failed: counts.failed ?? 0,
+      completed: counts.completed ?? 0,
+    };
   }
 
   /**

@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { QueueService } from './queue.service';
 import { isRedisConnected } from '../config/redis';
+import { AppError } from '../middleware/error.middleware';
 
 // Local state toggles to control mock behavior dynamically across tests
 let redisConnectedState = true;
@@ -19,6 +20,7 @@ vi.mock('../config/queue.config', () => ({
     maxRetriesPerRequest: null,
   }),
   getQueuePrefix: () => 'bull:test',
+  getQueueName: (name: string) => name,
 }));
 
 vi.mock('bullmq', () => {
@@ -32,6 +34,36 @@ vi.mock('bullmq', () => {
       return { id: 'job-mock-id' };
     });
     close = vi.fn().mockResolvedValue(undefined);
+    pause = vi.fn().mockImplementation(async () => {
+      if (queueShouldThrow) {
+        throw new Error('Redis connection lost');
+      }
+      return undefined;
+    });
+    resume = vi.fn().mockImplementation(async () => {
+      if (queueShouldThrow) {
+        throw new Error('Redis connection lost');
+      }
+      return undefined;
+    });
+    drain = vi.fn().mockImplementation(async () => {
+      if (queueShouldThrow) {
+        throw new Error('Redis connection lost');
+      }
+      return undefined;
+    });
+    isPaused = vi.fn().mockImplementation(async () => {
+      if (queueShouldThrow) {
+        throw new Error('Redis connection lost');
+      }
+      return false;
+    });
+    getJobCounts = vi.fn().mockImplementation(async (...types) => {
+      if (queueShouldThrow) {
+        throw new Error('Redis connection lost');
+      }
+      return { active: 1, waiting: 2, delayed: 3, failed: 4, completed: 5 };
+    });
 
     constructor(name: string, options: any) {
       this.name = name;
@@ -122,6 +154,89 @@ describe('Queue Service', () => {
       await expect(
         QueueService.enqueue('notification-queue', 'email:send', payload, 'email-id')
       ).rejects.toThrow('Queue connection error: Redis is offline');
+    });
+  });
+
+  describe('pauseQueue', () => {
+    it('should successfully pause a queue when Redis is active', async () => {
+      redisConnectedState = true;
+      await QueueService.pauseQueue('marketing-queue');
+      expect(lastQueueInstance).toBeDefined();
+      expect(lastQueueInstance.pause).toHaveBeenCalledTimes(1);
+    });
+
+    it('should throw error when Redis is offline', async () => {
+      redisConnectedState = false;
+      await expect(QueueService.pauseQueue('marketing-queue')).rejects.toThrow(
+        'Queue unavailable: Redis is offline. Cannot pause queue marketing-queue'
+      );
+    });
+  });
+
+  describe('resumeQueue', () => {
+    it('should successfully resume a queue when Redis is active', async () => {
+      redisConnectedState = true;
+      await QueueService.resumeQueue('marketing-queue');
+      expect(lastQueueInstance).toBeDefined();
+      expect(lastQueueInstance.resume).toHaveBeenCalledTimes(1);
+    });
+
+    it('should throw error when Redis is offline', async () => {
+      redisConnectedState = false;
+      await expect(QueueService.resumeQueue('marketing-queue')).rejects.toThrow(
+        'Queue unavailable: Redis is offline. Cannot resume queue marketing-queue'
+      );
+    });
+  });
+
+  describe('drainQueue', () => {
+    it('should successfully drain marketing-queue when Redis is active', async () => {
+      redisConnectedState = true;
+      await QueueService.drainQueue('marketing-queue');
+      expect(lastQueueInstance).toBeDefined();
+      expect(lastQueueInstance.drain).toHaveBeenCalledTimes(1);
+    });
+
+    it('should throw forbidden AppError if draining transactional queues (e.g. booking-queue)', async () => {
+      redisConnectedState = true;
+      await expect(QueueService.drainQueue('booking-queue')).rejects.toThrow(
+        'Draining is prohibited on transactional queues'
+      );
+    });
+
+    it('should throw error when Redis is offline', async () => {
+      redisConnectedState = false;
+      // Draining non-marketing queue fails first on the hard block
+      await expect(QueueService.drainQueue('booking-queue')).rejects.toThrow(
+        'Draining is prohibited on transactional queues'
+      );
+      // Draining marketing queue fails on Redis offline check
+      await expect(QueueService.drainQueue('marketing-queue')).rejects.toThrow(
+        'Queue unavailable: Redis is offline. Cannot drain queue marketing-queue'
+      );
+    });
+  });
+
+  describe('getQueueStatus', () => {
+    it('should return correct queue status metrics when Redis is active', async () => {
+      redisConnectedState = true;
+      const status = await QueueService.getQueueStatus('marketing-queue');
+      expect(status).toEqual({
+        name: 'marketing-queue',
+        isPaused: false,
+        active: 1,
+        waiting: 2,
+        delayed: 3,
+        failed: 4,
+        completed: 5,
+      });
+    });
+
+    it('should throw error when Redis is offline', async () => {
+      redisConnectedState = false;
+      await expect(QueueService.getQueueStatus('marketing-queue')).rejects.toThrow(
+        'Queue unavailable: Redis is offline. Cannot get status for queue marketing-queue'
+      );
     });
   });
 
