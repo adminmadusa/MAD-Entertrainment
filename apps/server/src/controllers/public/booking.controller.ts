@@ -509,6 +509,8 @@ export async function recoverBooking(
 
     res.status(200).json({
       success: true,
+      bookingId: result.bookingId,
+      guestEmail: result.guestEmail,
       maskedEmail: result.maskedEmail,
       otpDispatched,
       cooldownSeconds,

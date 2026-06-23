@@ -1,261 +1,211 @@
 'use client';
 
-import { BookingStatus, QUERY_KEYS } from '@mad/shared';
-import type { Booking, Event } from '@mad/types';
-import { useQuery } from '@tanstack/react-query';
-import { useState, useEffect, Suspense, useRef, useMemo } from 'react';
-import { Modal } from '@mad/ui';
-import Link from 'next/link';
+import { useState, useEffect, useCallback, useRef, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { Modal, ArrowLeft } from '@mad/ui';
 
-import { useCountdown } from '@/hooks/use-countdown.hook';
 import { extractApiError } from '@/lib/api/client';
 import {
-  getStoredGuestBookingSession,
-  publicGetBookingDetails,
   publicRecoverBookingEmail,
   publicVerifyRecoveredBookingOTP,
+  publicGoogleLogin,
 } from '@/lib/api/public.service';
 import { useAuth } from '@/providers/AuthProvider';
-import { AuthForm } from '@/components/auth/AuthForm';
-import { useBookings } from '@/hooks/use-bookings.hook';
-import { BookingCard } from '@/components/booking/shared/BookingCard';
+import { submitContactForm } from '@/app/actions/contact.actions';
+import { loadScriptOnce } from '@/lib/utils/load-script-once';
+import { initializeGoogleIdentity, setGoogleIdentityCallback } from '@/utils/google-identity';
+
+interface GoogleCredentialResponse {
+  credential?: string;
+  clientId?: string;
+  select_by?: string;
+}
+
+interface GoogleAccountsId {
+  initialize(config: {
+    client_id: string;
+    callback: (response: GoogleCredentialResponse) => void;
+    auto_select?: boolean;
+  }): void;
+  renderButton(
+    parent: HTMLElement | null,
+    options: {
+      theme?: string;
+      size?: string;
+      width?: string;
+      shape?: string;
+      text?: string;
+    }
+  ): void;
+}
+
+interface GoogleIdentity {
+  accounts: {
+    id: GoogleAccountsId;
+  };
+}
+
+type ModalState = 'find' | 'found' | 'otp' | 'support' | null;
 
 function TicketRetrievalContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const targetRef = searchParams.get('ref');
-  const pollCountRef = useRef(0);
 
-  const { login, setOnboardingRequired, logout, isAuthenticated, isLoading: isAuthLoading, user, onboardingRequired } = useAuth();
-  const guestSession = getStoredGuestBookingSession();
-  const singleBookingSessionToken = isAuthenticated ? undefined : guestSession?.token;
+  const { login, setOnboardingRequired, isAuthenticated, isLoading: isAuthLoading, onboardingRequired } = useAuth();
 
-  // Core Retrieval States
+  // Modal State Machine
+  const [activeModal, setActiveModal] = useState<ModalState>('find');
+
+  // Input States
   const [bookingRefInput, setBookingRefInput] = useState(targetRef || '');
-  const [queryRef, setQueryRef] = useState(targetRef || '');
-  const [step, setStep] = useState<'email' | 'portal'>('email');
-  const [showLoginForGuest, setShowLoginForGuest] = useState(false);
-  const [isAuthModalDismissed, setIsAuthModalDismissed] = useState(false);
-
-  // Recovery States
-  type LookupMode = 'reference' | 'transaction';
-  const [lookupMode, setLookupMode] = useState<LookupMode>('reference');
   const [transactionIdInput, setTransactionIdInput] = useState('');
-  const [recoveredEmail, setRecoveredEmail] = useState('');
-  const [isRecovering, setIsRecovering] = useState(false);
-  const [showRecoveryResult, setShowRecoveryResult] = useState(false);
-  const [showSupportGuidance, setShowSupportGuidance] = useState(false);
-
-  // OTP Verification States
+  
+  // Found/OTP States
+  const [foundBookingId, setFoundBookingId] = useState('');
+  const [foundEmail, setFoundEmail] = useState('');
   const [otpInput, setOtpInput] = useState('');
-  const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
-  const [recoveryCooldown, setRecoveryCooldown] = useState(0);
+  const [cooldown, setCooldown] = useState(0);
 
-  useEffect(() => {
-    if (recoveryCooldown <= 0) return;
-    const timer = setInterval(() => {
-      setRecoveryCooldown((prev) => Math.max(0, prev - 1));
-    }, 1000);
-    return () => clearInterval(timer);
-  }, [recoveryCooldown]);
+  // Support Form States
+  const [supportName, setSupportName] = useState('');
+  const [supportEmail, setSupportEmail] = useState('');
+  const [supportRef, setSupportRef] = useState('');
+  const [supportMessage, setSupportMessage] = useState('');
+  const [supportStatus, setSupportStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
+  const [supportError, setSupportError] = useState('');
 
-  // Use the SSOT bookings query and handlers
-  const {
-    bookings,
-    tickets,
-    ticketsReadyMap,
-    isLoading: isBookingsLoading,
-    downloadingId,
-    resendingId,
-    resendCooldowns,
-    errorMsg,
-    infoMsg,
-    setErrorMsg,
-    setInfoMsg,
-    handleDownloadPDF,
-    handleResendTickets,
-  } = useBookings();
+  // General Status States
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
+  const [infoMsg, setInfoMsg] = useState('');
 
-  useEffect(() => {
-    if (showLoginForGuest) {
-      setIsAuthModalDismissed(false);
-    }
-  }, [showLoginForGuest]);
+  // ARIA Live region announcement state
+  const [liveMessage, setLiveMessage] = useState('');
 
+  // Sync reference from URL parameters if provided
   useEffect(() => {
     if (targetRef) {
       setBookingRefInput(targetRef);
-      setQueryRef(targetRef);
-      pollCountRef.current = 0;
     }
   }, [targetRef]);
 
-  // Redirect to dashboard if already authenticated on mount
+  // Resend Cooldown Timer
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const timer = setInterval(() => {
+      setCooldown((prev) => Math.max(0, prev - 1));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [cooldown]);
+
+  // Redirect to dashboard if authenticated on mount or after login
   useEffect(() => {
     if (isAuthenticated && !isAuthLoading) {
-      if (onboardingRequired) {
-        const dest = targetRef 
-          ? `/dashboard?ref=${encodeURIComponent(targetRef.trim())}`
-          : '/dashboard';
-        router.replace(dest);
-      } else {
-        const dest = targetRef 
-          ? `/dashboard?tab=tickets&ref=${encodeURIComponent(targetRef.trim())}`
-          : '/dashboard?tab=tickets';
-        router.replace(dest);
-      }
+      const dest = targetRef || foundBookingId
+        ? `/dashboard?tab=tickets&ref=${encodeURIComponent((targetRef || foundBookingId).trim().toUpperCase())}`
+        : '/dashboard?tab=tickets';
+      router.replace(dest);
     }
-  }, [isAuthenticated, isAuthLoading, onboardingRequired, targetRef, router]);
+  }, [isAuthenticated, isAuthLoading, targetRef, foundBookingId, router]);
 
-  // Query a single booking by reference for guest or authenticated recovery.
-  const {
-    data: singleBookingData,
-    error: singleLookupError,
-    isLoading: isSingleLookupLoading,
-    isFetching: isSingleLookupFetching,
-  } = useQuery({
-    queryKey: QUERY_KEYS.public.bookings.detail(queryRef),
-    queryFn: () => publicGetBookingDetails(queryRef, singleBookingSessionToken),
-    enabled: !!queryRef,
-    retry: false,
-    refetchInterval: (query) => {
-      const data = query.state.data;
-      const status = data?.booking?.status;
-      const ticketsReady = data?.ticketsReady;
-      if (pollCountRef.current >= 5) return false;
-      // Poll while payment is processing
-      if (status === BookingStatus.AWAITING_PAYMENT || status === BookingStatus.EXPIRING) {
-        return 3000;
-      }
-      // Poll while booking is confirmed but tickets are still being generated
-      if (status === BookingStatus.CONFIRMED && !ticketsReady) {
-        return 3000;
-      }
-      return false;
-    },
-  });
-
-  useEffect(() => {
-    if (!isSingleLookupFetching && singleBookingData?.booking) {
-      const status = singleBookingData.booking.status;
-      const ticketsReady = singleBookingData.ticketsReady;
-      if (
-        status === BookingStatus.AWAITING_PAYMENT ||
-        status === BookingStatus.EXPIRING ||
-        (status === BookingStatus.CONFIRMED && !ticketsReady)
-      ) {
-        pollCountRef.current += 1;
-      }
+  // Close flow - redirects back or to home page
+  const handleClose = () => {
+    setActiveModal(null);
+    if (typeof window !== 'undefined' && window.history.length > 1) {
+      router.back();
+    } else {
+      router.push('/');
     }
-  }, [isSingleLookupFetching, singleBookingData?.booking, singleBookingData?.ticketsReady]);
+  };
 
-  const handleSearchSubmit = (e: React.FormEvent) => {
+  // 1. Submit Lookup (Booking Reference or Payment Transaction ID)
+  const handleLookupSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
     setInfoMsg('');
-    pollCountRef.current = 0;
-    setIsAuthModalDismissed(false);
+    setLiveMessage('');
 
-    const normalizedRef = bookingRefInput.trim().toUpperCase();
-    if (!normalizedRef) {
-      setErrorMsg('Please enter a booking reference ID.');
-      return;
-    }
-    setBookingRefInput(normalizedRef);
-    setQueryRef(normalizedRef);
-  };
+    const bookingRef = bookingRefInput.trim();
+    const transactionId = transactionIdInput.trim();
 
-  const handleSignOutAndVerifyEmail = () => {
-    logout();
-    setStep('email');
-    setErrorMsg('');
-    setInfoMsg('');
-    setIsAuthModalDismissed(false);
-  };
-
-  const handleSearchAnother = () => {
-    setQueryRef('');
-    setBookingRefInput('');
-    setErrorMsg('');
-    setInfoMsg('');
-    setShowLoginForGuest(false);
-    setLookupMode('reference');
-    setTransactionIdInput('');
-    setRecoveredEmail('');
-    setShowRecoveryResult(false);
-    setShowSupportGuidance(false);
-    setIsAuthModalDismissed(false);
-  };
-
-  const handleSwitchToRecovery = () => {
-    setErrorMsg('');
-    setInfoMsg('');
-    setLookupMode('transaction');
-    setTransactionIdInput('');
-    setRecoveredEmail('');
-    setShowRecoveryResult(false);
-    setShowSupportGuidance(false);
-  };
-
-  const handleSwitchToReference = () => {
-    setErrorMsg('');
-    setInfoMsg('');
-    setLookupMode('reference');
-    setTransactionIdInput('');
-    setRecoveredEmail('');
-    setShowRecoveryResult(false);
-    setShowSupportGuidance(false);
-  };
-
-  const handleRecoverySubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setErrorMsg('');
-    setInfoMsg('');
-
-    const txId = transactionIdInput.trim();
-    if (!txId) {
-      setErrorMsg('Transaction ID is required.');
+    if (!bookingRef && !transactionId) {
+      setErrorMsg('Please enter a Booking Reference or a Payment / Transaction ID.');
       return;
     }
 
-    if (txId.length < 4) {
-      setErrorMsg('Transaction ID must be at least 4 characters.');
-      return;
-    }
+    setIsSubmitting(true);
+    const queryInput = bookingRef || transactionId;
 
-    setIsRecovering(true);
     try {
-      const result = await publicRecoverBookingEmail(txId);
-      setRecoveredEmail(result.maskedEmail);
-      setRecoveryCooldown(result.cooldownSeconds || 60);
+      const result = await publicRecoverBookingEmail(queryInput);
+      setFoundBookingId(result.bookingId);
+      setFoundEmail(result.guestEmail);
+      setCooldown(result.cooldownSeconds || 60);
       setOtpInput('');
-      setShowRecoveryResult(true);
+      
+      setLiveMessage('Booking found');
+      setActiveModal('found');
+
       if (result.otpDispatched) {
-        setInfoMsg('Verification code sent to your email.');
+        setInfoMsg('A verification code has been sent to the registered email.');
+        setLiveMessage('Booking found. OTP sent successfully.');
       } else {
         setInfoMsg('A verification code was recently sent. Please wait before resending.');
       }
     } catch (err) {
       const apiErr = extractApiError(err);
-      const isAxiosError = err && typeof err === 'object' && 'response' in err;
-      const status = isAxiosError ? (err as { response?: { status?: number } }).response?.status : undefined;
-      if (status === 429) {
-        setErrorMsg('Too many recovery attempts. Please wait before trying again.');
-      } else if (status === 404) {
-        setErrorMsg('Recovery information not found. Verify the transaction ID and try again.');
-      } else {
-        setErrorMsg(apiErr.message || 'Unable to complete recovery right now. Please try again later.');
-      }
+      setErrorMsg(apiErr.message || 'No active booking found. Verify the reference and try again.');
+      setLiveMessage('Booking lookup failed. ' + (apiErr.message || ''));
     } finally {
-      setIsRecovering(false);
+      setIsSubmitting(false);
     }
   };
 
-  const handleVerifyOtp = async (e: React.FormEvent) => {
+  // 2. Dispatch OTP / Send OTP Action from Found Modal
+  const handleSendOtp = () => {
+    setErrorMsg('');
+    setInfoMsg('Verification code sent to your email.');
+    setLiveMessage('OTP sent successfully.');
+    setActiveModal('otp');
+  };
+
+  // 3. Resend OTP from OTP Modal
+  const handleResendOtp = async () => {
+    if (cooldown > 0) return;
+    setErrorMsg('');
+    setInfoMsg('');
+    setIsSubmitting(true);
+    setLiveMessage('Resending verification code...');
+
+    const queryInput = bookingRefInput.trim() || transactionIdInput.trim();
+
+    try {
+      const result = await publicRecoverBookingEmail(queryInput);
+      setCooldown(result.cooldownSeconds || 60);
+      setOtpInput('');
+      if (result.otpDispatched) {
+        setInfoMsg('A new verification code has been sent.');
+        setLiveMessage('OTP sent successfully.');
+      } else {
+        setInfoMsg('A verification code was recently sent. Please wait.');
+      }
+    } catch (err) {
+      const apiErr = extractApiError(err);
+      setErrorMsg(apiErr.message || 'Failed to resend verification code.');
+      setLiveMessage('Failed to resend verification code.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // 4. Verify OTP Code
+  const handleVerifyOtpSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
     setInfoMsg('');
+    setLiveMessage('');
 
     const otp = otpInput.trim().replace(/\s/g, '');
     if (!otp) {
@@ -267,526 +217,569 @@ function TicketRetrievalContent() {
       return;
     }
 
-    setIsVerifyingOtp(true);
+    setIsSubmitting(true);
+    setLiveMessage('Verifying code...');
+    const queryInput = bookingRefInput.trim() || transactionIdInput.trim();
+
     try {
-      const result = await publicVerifyRecoveredBookingOTP(transactionIdInput.trim(), otp);
+      const result = await publicVerifyRecoveredBookingOTP(queryInput, otp);
       login(result.token, result.user);
       setOnboardingRequired(!!result.onboardingRequired);
+      setLiveMessage('Successfully authenticated.');
       setInfoMsg('Successfully authenticated! Loading your tickets...');
     } catch (err) {
       const apiErr = extractApiError(err);
       setErrorMsg(apiErr.message || 'Invalid verification code. Please try again.');
+      setLiveMessage('OTP verification failed.');
     } finally {
-      setIsVerifyingOtp(false);
+      setIsSubmitting(false);
     }
   };
 
-  const handleResendRecoveryOtp = async () => {
-    if (recoveryCooldown > 0) return;
-    setErrorMsg('');
-    setInfoMsg('');
-    setIsRecovering(true);
+  // 5. Submit Support Request
+  const handleSupportFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSupportStatus('submitting');
+    setSupportError('');
+    setLiveMessage('Submitting support request...');
+
+    const formData = new FormData();
+    formData.append('name', supportName);
+    formData.append('email', supportEmail);
+    formData.append('issueType', 'ticket');
+    formData.append('bookingRef', supportRef);
+    formData.append('message', supportMessage);
+
     try {
-      const result = await publicRecoverBookingEmail(transactionIdInput.trim());
-      setRecoveryCooldown(result.cooldownSeconds || 60);
-      setOtpInput('');
-      if (result.otpDispatched) {
-        setInfoMsg('A new verification code has been sent to your email.');
+      const result = await submitContactForm(formData);
+      if (result.success) {
+        setSupportStatus('success');
+        setLiveMessage('Support request submitted successfully.');
+        setSupportName('');
+        setSupportEmail('');
+        setSupportRef('');
+        setSupportMessage('');
       } else {
-        setInfoMsg('A verification code was recently sent. Please wait.');
+        setSupportStatus('error');
+        setSupportError(result.message || 'Failed to submit. Please try again.');
+        setLiveMessage('Support request submission failed.');
       }
     } catch (err) {
-      const apiErr = extractApiError(err);
-      setErrorMsg(apiErr.message || 'Failed to resend verification code.');
-    } finally {
-      setIsRecovering(false);
+      setSupportStatus('error');
+      setSupportError('Failed to connect to the support server.');
+      setLiveMessage('Support request submission failed.');
     }
   };
 
-  const handleChangeTransactionId = () => {
-    setErrorMsg('');
-    setInfoMsg('');
-    setShowRecoveryResult(false);
-    setOtpInput('');
-    setRecoveryCooldown(0);
-  };
+  // Google Sign-In script loaders
+  const initializeGoogleSignIn = useCallback(() => {
+    const googleObj = (window as unknown as { google?: GoogleIdentity }).google;
+    const btnElement = document.getElementById('google-signin-btn-found');
+    if (typeof window !== 'undefined' && googleObj && btnElement && btnElement.innerHTML === '') {
+      try {
+        initializeGoogleIdentity(
+          process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || 'google_client_id_placeholder'
+        );
+        googleObj.accounts.id.renderButton(btnElement, {
+          theme: 'filled_dark',
+          size: 'large',
+          width: '100%',
+          shape: 'pill',
+          text: 'signin_with',
+        });
+      } catch (err) {
+        console.error('Failed to initialize Google login button:', err);
+      }
+    }
+  }, []);
 
-  const singleBooking = singleBookingData?.booking;
-  const singleTickets = singleBookingData?.tickets || [];
-  const singleLookupApiError = singleLookupError ? extractApiError(singleLookupError) : null;
-  const isOwnershipVerificationRequired = singleLookupApiError?.code === 'BOOKING_VERIFICATION_REQUIRED';
-  const isOwnershipMismatch = isAuthenticated && isOwnershipVerificationRequired;
-  const shouldShowPortal = (step === 'portal' || !!singleBooking) && !showLoginForGuest;
-  const shouldShowAuthForm =
-    ((!shouldShowPortal && !isSingleLookupLoading) && !isAuthModalDismissed) ||
-    showLoginForGuest;
-  const shouldShowReferenceForm = !singleBooking && !isAuthenticated;
+  useEffect(() => {
+    if (activeModal === 'found') {
+      let active = true;
+      const loadGsi = async () => {
+        try {
+          await loadScriptOnce('https://accounts.google.com/gsi/client');
+          if (active) {
+            setTimeout(() => {
+              if (active) initializeGoogleSignIn();
+            }, 50);
+          }
+        } catch (err) {
+          console.error('Failed to load Google script:', err);
+        }
+      };
+      loadGsi();
+      return () => {
+        active = false;
+      };
+    }
+  }, [activeModal, initializeGoogleSignIn]);
 
-  // Sorting and filtering logic for authenticated view
-  const sortedBookings = useMemo(() => {
-    return [...bookings].sort((a, b) => {
-      if (queryRef && a.bookingId === queryRef) return -1;
-      if (queryRef && b.bookingId === queryRef) return 1;
-      return 0;
-    });
-  }, [bookings, queryRef]);
+  useEffect(() => {
+    if (activeModal === 'found') {
+      setGoogleIdentityCallback(async (response) => {
+        if (response?.credential) {
+          setIsSubmitting(true);
+          setErrorMsg('');
+          setLiveMessage('Signing in with Google...');
+          try {
+            const data = await publicGoogleLogin(response.credential);
+            login(data.token, data.user);
+            setOnboardingRequired(!!data.onboardingRequired);
+            setLiveMessage('Successfully authenticated with Google.');
+            
+            const targetBookingId = foundBookingId || bookingRefInput.trim().toUpperCase();
+            const dest = targetBookingId.startsWith('MAD-')
+              ? `/dashboard?tab=tickets&ref=${encodeURIComponent(targetBookingId)}`
+              : `/dashboard?tab=tickets`;
+            router.push(dest);
+          } catch (err) {
+            const apiErr = extractApiError(err);
+            setErrorMsg(apiErr.message || 'Google authentication failed.');
+            setLiveMessage('Google authentication failed.');
+          } finally {
+            setIsSubmitting(false);
+          }
+        }
+      });
+      return () => {
+        setGoogleIdentityCallback(null);
+      };
+    }
+  }, [activeModal, foundBookingId, bookingRefInput, login, setOnboardingRequired, router]);
 
-  const upcomingBookings = useMemo(() => {
-    const now = new Date();
-    return sortedBookings.filter((booking) => {
-      const eventInfo = booking.eventId as unknown as Partial<Event>;
-      const startDate = eventInfo?.startDate ? new Date(eventInfo.startDate) : null;
-      const isConfirmed = booking.status === BookingStatus.CONFIRMED;
-      if (!isConfirmed) return false;
-      if (!startDate) return true;
-      return startDate >= now;
-    });
-  }, [sortedBookings]);
+  return (
+    <div className="min-h-screen bg-background relative overflow-hidden flex items-center justify-center">
+      {/* Background decorations */}
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-accent-purple/10 rounded-full blur-[130px] pointer-events-none" />
+      
+      {/* Accessibility Screen Reader Live Announcement */}
+      <div role="status" aria-live="polite" className="sr-only">
+        {liveMessage}
+      </div>
 
-  const pastBookings = useMemo(() => {
-    const now = new Date();
-    return sortedBookings.filter((booking) => {
-      const eventInfo = booking.eventId as unknown as Partial<Event>;
-      const startDate = eventInfo?.startDate ? new Date(eventInfo.startDate) : null;
-      const isConfirmed = booking.status === BookingStatus.CONFIRMED;
-      if (!isConfirmed) return true;
-      if (!startDate) return false;
-      return startDate < now;
-    });
-  }, [sortedBookings]);
-
-  const renderReferenceFormContent = () => {
-    if (showSupportGuidance) {
-      return (
-        <div className="glass rounded-3xl border border-border-subtle p-4 sm:p-8 space-y-4 sm:space-y-6 text-center animate-in fade-in duration-300">
-          <div className="w-12 h-12 bg-white/5 text-text-secondary text-2xl flex items-center justify-center rounded-full mx-auto">
-            ✉️
-          </div>
-          <div className="space-y-3">
-            <h3 className="text-white font-bold text-lg">Contact Support</h3>
-            <p className="text-text-secondary text-xs leading-relaxed max-w-sm mx-auto">
-              Please reach out to our support team to verify ownership and update your account email. When contacting us, please provide:
+      {/* ────────────────────────────────────────────────────────── */}
+      {/* Screen 1: Find My Tickets Modal */}
+      {/* ────────────────────────────────────────────────────────── */}
+      <Modal
+        isOpen={activeModal === 'find'}
+        onClose={handleClose}
+        closeOnBackdropClick={true}
+        enableSwipeToClose={true}
+        ariaLabelledBy="find-title"
+        ariaDescribedBy="find-desc"
+      >
+        <div className="space-y-6">
+          <div className="text-center">
+            <h2 id="find-title" className="text-2xl font-black text-white tracking-tight">
+              Find My Tickets
+            </h2>
+            <p id="find-desc" className="text-text-secondary text-sm mt-1.5 leading-relaxed">
+              Retrieve your booking using either reference ID or transaction ID.
             </p>
-            <ul className="text-left text-xs text-text-muted space-y-2 bg-white/5 border border-white/5 rounded-2xl p-4 max-w-xs mx-auto list-disc pl-8">
-              <li>Payment Transaction ID</li>
-              <li>Event name</li>
-              <li>Approximate purchase date</li>
-            </ul>
           </div>
-          <div className="flex flex-col gap-3 pt-2">
-            <Link
-              href="/contact"
-              className="w-full py-3 px-5 bg-accent-purple hover:bg-accent-purple-light text-white text-xs font-bold rounded-xl transition-all shadow-md text-center"
+
+          {errorMsg && (
+            <div role="alert" aria-live="assertive" className="p-3.5 bg-error/10 border border-error/30 rounded-xl text-xs text-red-400 text-center font-medium animate-in fade-in duration-200">
+              {errorMsg}
+            </div>
+          )}
+
+          <form onSubmit={handleLookupSubmit} className="space-y-4">
+            <div className="space-y-1.5">
+              <label htmlFor="bookingRef" className="text-xs font-semibold text-text-secondary uppercase tracking-wider block">
+                Booking Reference
+              </label>
+              <input
+                id="bookingRef"
+                type="text"
+                value={bookingRefInput}
+                onChange={(e) => {
+                  setBookingRefInput(e.target.value);
+                  if (e.target.value) setTransactionIdInput('');
+                }}
+                placeholder="e.g. MAD-2026-ABCDE"
+                disabled={isSubmitting}
+                aria-invalid={!!errorMsg && !transactionIdInput}
+                aria-describedby={errorMsg && !transactionIdInput ? "find-error-message" : undefined}
+                className="w-full bg-white/5 border border-border-subtle rounded-xl px-4 py-3 text-base lg:text-sm text-white placeholder:text-text-secondary focus:outline-none focus:border-accent-purple focus:ring-1 focus:ring-accent-purple transition-all font-mono uppercase tracking-wider"
+              />
+            </div>
+
+            <div className="flex items-center py-2">
+              <div className="flex-grow border-t border-border-subtle/30" />
+              <span className="mx-4 text-xs font-bold text-text-muted/40 uppercase tracking-widest">or</span>
+              <div className="flex-grow border-t border-border-subtle/30" />
+            </div>
+
+            <div className="space-y-1.5">
+              <label htmlFor="transactionId" className="text-xs font-semibold text-text-secondary uppercase tracking-wider block">
+                Payment / Transaction ID
+              </label>
+              <input
+                id="transactionId"
+                type="text"
+                value={transactionIdInput}
+                onChange={(e) => {
+                  setTransactionIdInput(e.target.value);
+                  if (e.target.value) setBookingRefInput('');
+                }}
+                placeholder="e.g. pay_xxxxxxxxxxxx"
+                disabled={isSubmitting}
+                aria-invalid={!!errorMsg && !bookingRefInput}
+                aria-describedby={errorMsg && !bookingRefInput ? "find-error-message" : undefined}
+                className="w-full bg-white/5 border border-border-subtle rounded-xl px-4 py-3 text-base lg:text-sm text-white placeholder:text-text-secondary focus:outline-none focus:border-accent-purple focus:ring-1 focus:ring-accent-purple transition-all font-mono tracking-wider"
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={isSubmitting || (!bookingRefInput.trim() && !transactionIdInput.trim())}
+              aria-label="Find Tickets"
+              className="w-full py-3.5 rounded-xl font-bold tracking-wide btn-gradient text-white shadow-lg active:scale-98 transition-all disabled:opacity-50 mt-2 flex items-center justify-center gap-2"
             >
-              Go to Support Contact Form
-            </Link>
+              {isSubmitting ? (
+                <>
+                  <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  Finding Tickets...
+                </>
+              ) : (
+                'Find Tickets'
+              )}
+            </button>
+          </form>
+
+          <div className="text-center pt-2 border-t border-white/5">
             <button
               type="button"
-              onClick={() => setShowSupportGuidance(false)}
-              className="text-xs text-text-muted hover:text-white transition-colors"
+              onClick={() => {
+                setErrorMsg('');
+                setActiveModal('support');
+              }}
+              className="text-xs font-semibold text-text-muted hover:text-white transition-colors py-1.5 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent-purple rounded"
             >
-              ← Go Back
+              Having issues? Contact Support
             </button>
           </div>
         </div>
-      );
-    }
+      </Modal>
 
-    if (showRecoveryResult) {
-      return (
-        <div className="glass rounded-3xl border border-border-subtle p-4 sm:p-8 space-y-4 sm:space-y-6 shadow-glow-purple text-center animate-in fade-in duration-300">
-          <div className="w-12 h-12 bg-accent-purple/10 text-accent-purple-light text-2xl flex items-center justify-center rounded-full mx-auto">
-            ✉️
+      {/* ────────────────────────────────────────────────────────── */}
+      {/* Screen 2: Booking Found Modal */}
+      {/* ────────────────────────────────────────────────────────── */}
+      <Modal
+        isOpen={activeModal === 'found'}
+        onClose={handleClose}
+        closeOnBackdropClick={true}
+        enableSwipeToClose={true}
+        ariaLabelledBy="found-title"
+        ariaDescribedBy="found-desc"
+      >
+        <div className="space-y-6">
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => {
+                setErrorMsg('');
+                setActiveModal('find');
+              }}
+              className="w-10 h-10 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple"
+              aria-label="Go back"
+            >
+              <ArrowLeft size={16} />
+            </button>
+            <h2 id="found-title" className="text-xl font-black text-white">
+              Booking Found!
+            </h2>
           </div>
-          <form onSubmit={handleVerifyOtp} className="space-y-4 text-center">
-            <div className="space-y-2">
-              <h3 className="text-white font-bold text-lg">Verification Required</h3>
-              <p className="text-text-secondary text-xs">
-                Verification code sent to:
-              </p>
-              <p className="text-white font-mono font-bold text-sm bg-white/5 border border-white/10 rounded-xl py-3 px-4 break-all select-all select-text selection:bg-accent-purple/50">
-                {recoveredEmail}
-              </p>
-              <p className="text-text-secondary text-xs mt-2">
-                Enter the 6-digit verification code to access your tickets.
-              </p>
+
+          <div className="p-5 bg-accent-purple/10 border border-accent-purple/30 rounded-2xl text-center space-y-3">
+            <p id="found-desc" className="text-text-secondary text-xs leading-relaxed">
+              We found your ticket booking under the following email address:
+            </p>
+            <p className="text-white font-mono font-bold text-sm bg-white/5 border border-white/10 rounded-xl py-3 px-4 break-all select-all selection:bg-accent-purple/50">
+              {foundEmail}
+            </p>
+            <p className="text-text-muted text-[10px] leading-relaxed">
+              Please verify ownership using OTP or Google authentication to access your tickets.
+            </p>
+          </div>
+
+          {errorMsg && (
+            <div role="alert" aria-live="assertive" className="p-3.5 bg-error/10 border border-error/30 rounded-xl text-xs text-red-400 text-center font-medium">
+              {errorMsg}
+            </div>
+          )}
+
+          <div className="space-y-4">
+            <button
+              type="button"
+              onClick={handleSendOtp}
+              disabled={isSubmitting}
+              aria-label="Send OTP code"
+              className="w-full py-3.5 rounded-xl font-bold tracking-wide btn-gradient text-white shadow-lg active:scale-98 transition-all flex items-center justify-center gap-2"
+            >
+              Send OTP Code
+            </button>
+
+            <div className="flex items-center">
+              <div className="flex-grow border-t border-border-subtle/30" />
+              <span className="mx-4 text-xs font-bold text-text-muted/40 uppercase tracking-widest">or</span>
+              <div className="flex-grow border-t border-border-subtle/30" />
             </div>
 
             <div className="space-y-3">
-              <label htmlFor="recovery-otp" className="text-xs font-semibold text-text-secondary uppercase tracking-wider ml-1 block text-center">
+              <div
+                id="google-signin-btn-found"
+                className="w-full min-h-[44px] flex justify-center items-center overflow-hidden hover:opacity-90 active:scale-98 transition-all duration-200"
+              />
+              {isSubmitting && (
+                <p className="text-center text-xs text-purple-300/80 animate-pulse">
+                  Authenticating...
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+      </Modal>
+
+      {/* ────────────────────────────────────────────────────────── */}
+      {/* Screen 3: OTP Verification Modal */}
+      {/* ────────────────────────────────────────────────────────── */}
+      <Modal
+        isOpen={activeModal === 'otp'}
+        onClose={handleClose}
+        closeOnBackdropClick={true}
+        enableSwipeToClose={true}
+        ariaLabelledBy="otp-title"
+        ariaDescribedBy="otp-desc"
+      >
+        <div className="space-y-6">
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => {
+                setErrorMsg('');
+                setActiveModal('found');
+              }}
+              className="w-10 h-10 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple"
+              aria-label="Go back"
+            >
+              <ArrowLeft size={16} />
+            </button>
+            <h2 id="otp-title" className="text-xl font-black text-white">
+              Verification Required
+            </h2>
+          </div>
+
+          <div className="text-center">
+            <p id="otp-desc" className="text-text-secondary text-sm leading-relaxed">
+              Enter the 6-digit verification code sent to <span className="text-white font-semibold">{foundEmail}</span>
+            </p>
+          </div>
+
+          {errorMsg && (
+            <div role="alert" aria-live="assertive" className="p-3.5 bg-error/10 border border-error/30 rounded-xl text-xs text-red-400 text-center font-medium">
+              {errorMsg}
+            </div>
+          )}
+          {infoMsg && (
+            <div role="status" aria-live="polite" className="p-3.5 bg-accent-purple/10 border border-accent-purple/30 rounded-xl text-xs text-purple-300 text-center font-medium">
+              {infoMsg}
+            </div>
+          )}
+
+          <form onSubmit={handleVerifyOtpSubmit} className="space-y-5">
+            <div className="space-y-2">
+              <label htmlFor="otp" className="text-xs font-semibold text-text-secondary uppercase tracking-wider block text-center">
                 6-Digit Passcode
               </label>
               <input
-                id="recovery-otp"
+                id="otp"
                 type="text"
                 required
                 maxLength={6}
                 pattern="[0-9]*"
                 inputMode="numeric"
                 autoComplete="one-time-code"
-                enterKeyHint="done"
                 value={otpInput}
                 onChange={(e) => setOtpInput(e.target.value.replace(/[^0-9]/g, ''))}
                 placeholder="000000"
-                className="w-full text-center font-black bg-white/5 border border-border-subtle rounded-2xl text-white placeholder:text-text-secondary focus:outline-none focus:border-accent-purple focus:ring-1 focus:ring-accent-purple transition-all duration-300 font-mono text-xl sm:text-3xl py-2.5 sm:py-4 tracking-[0.3em] sm:tracking-[0.6em] pl-[0.3em] sm:pl-[0.6em]"
+                disabled={isSubmitting}
+                aria-invalid={!!errorMsg}
+                aria-describedby={errorMsg ? "otp-error" : undefined}
+                className="w-full text-center font-black bg-white/5 border border-border-subtle rounded-2xl text-white placeholder:text-text-secondary focus:outline-none focus:border-accent-purple focus:ring-1 focus:ring-accent-purple transition-all duration-300 font-mono text-2xl sm:text-3xl py-3 tracking-[0.3em] pl-[0.3em]"
               />
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-3 pt-2">
+            <div className="flex flex-col sm:flex-row gap-3">
               <button
                 type="submit"
-                disabled={isVerifyingOtp}
-                className="flex-grow py-3 px-5 bg-accent-purple hover:bg-accent-purple-light text-white text-xs font-bold rounded-xl transition-all shadow-md disabled:opacity-60"
+                disabled={isSubmitting || otpInput.length !== 6}
+                aria-label="Verify OTP"
+                className="flex-grow py-3.5 px-5 btn-gradient text-white text-xs font-bold rounded-xl transition-all shadow-md active:scale-98 disabled:opacity-60 flex items-center justify-center gap-2"
               >
-                {isVerifyingOtp ? 'Verifying...' : 'Verify Code'}
+                {isSubmitting ? (
+                  <>
+                    <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    Verifying...
+                  </>
+                ) : (
+                  'Verify Code'
+                )}
               </button>
               <button
                 type="button"
-                onClick={handleResendRecoveryOtp}
-                disabled={recoveryCooldown > 0 || isRecovering}
-                className="flex-grow py-3 px-5 bg-white/5 hover:bg-white/10 border border-white/10 text-text-secondary hover:text-white text-xs font-bold rounded-xl transition-all disabled:opacity-60"
+                onClick={handleResendOtp}
+                disabled={cooldown > 0 || isSubmitting}
+                aria-label="Resend OTP code"
+                className="flex-grow py-3.5 px-5 bg-white/5 hover:bg-white/10 border border-white/10 text-text-secondary hover:text-white text-xs font-bold rounded-xl transition-all disabled:opacity-50"
               >
-                {recoveryCooldown > 0 ? `Resend (${recoveryCooldown}s)` : 'Resend Code'}
-              </button>
-            </div>
-            
-            <div className="pt-2">
-              <button
-                type="button"
-                onClick={handleChangeTransactionId}
-                className="text-xs text-text-muted hover:text-white transition-colors"
-              >
-                ← Change Transaction ID
+                {cooldown > 0 ? `Resend (${cooldown}s)` : 'Resend Code'}
               </button>
             </div>
           </form>
         </div>
-      );
-    }
+      </Modal>
 
-    return (
-      <div className="space-y-4">
-        <div className="glass p-1 rounded-xl border border-white/5 flex gap-1 w-full">
-          <button
-            type="button"
-            onClick={handleSwitchToReference}
-            className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all duration-300 ${
-              lookupMode === 'reference'
-                ? 'bg-accent-purple text-white shadow-md'
-                : 'text-text-secondary hover:text-white hover:bg-white/5'
-            }`}
-          >
-            Booking Reference
-          </button>
-          <button
-            type="button"
-            onClick={handleSwitchToRecovery}
-            className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all duration-300 ${
-              lookupMode === 'transaction'
-                ? 'bg-accent-purple text-white shadow-md'
-                : 'text-text-secondary hover:text-white hover:bg-white/5'
-            }`}
-          >
-            Payment ID Recovery
-          </button>
-        </div>
-
-        {lookupMode === 'reference' ? (
-          <form onSubmit={handleSearchSubmit} className="glass rounded-2xl border border-border-subtle p-4 sm:p-6 flex flex-col gap-3">
-            <div className="flex-grow space-y-1">
-              <label htmlFor="booking-ref-input" className="text-[10px] text-text-secondary font-medium tracking-wider uppercase">Search using your Booking Reference ID</label>
-              <input
-                id="booking-ref-input"
-                type="text"
-                value={bookingRefInput}
-                onChange={(e) => setBookingRefInput(e.target.value)}
-                placeholder="e.g. MAD-2026-ABCDE"
-                className="w-full px-4 py-2.5 rounded-xl bg-background border border-border-subtle text-base lg:text-sm text-text-primary focus:outline-none focus:border-accent-purple font-mono uppercase tracking-wider transition-colors"
-              />
-            </div>
+      {/* ────────────────────────────────────────────────────────── */}
+      {/* Screen 4: Contact Support Modal */}
+      {/* ────────────────────────────────────────────────────────── */}
+      <Modal
+        isOpen={activeModal === 'support'}
+        onClose={handleClose}
+        closeOnBackdropClick={true}
+        enableSwipeToClose={true}
+        ariaLabelledBy="support-title"
+        ariaDescribedBy="support-desc"
+      >
+        <div className="space-y-6">
+          <div className="flex items-center gap-3">
             <button
-              type="submit"
-              disabled={isSingleLookupLoading}
-              className="w-full h-11 px-6 btn-gradient text-white text-sm font-bold rounded-xl shadow-glow-sm disabled:opacity-60 transition-transform"
+              type="button"
+              onClick={() => {
+                setErrorMsg('');
+                setActiveModal('find');
+              }}
+              className="w-10 h-10 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple"
+              aria-label="Go back"
             >
-              {isSingleLookupLoading ? 'Searching...' : 'Lookup'}
+              <ArrowLeft size={16} />
             </button>
-          </form>
-        ) : (
-          <form onSubmit={handleRecoverySubmit} className="glass rounded-2xl border border-border-subtle p-4 sm:p-6 flex flex-col gap-3 animate-in fade-in duration-300">
-            <div className="flex-grow space-y-1">
-              <label htmlFor="transaction-id-input" className="text-[10px] text-text-secondary font-medium tracking-wider uppercase">Payment Transaction ID</label>
-              <input
-                id="transaction-id-input"
-                type="text"
-                value={transactionIdInput}
-                onChange={(e) => setTransactionIdInput(e.target.value)}
-                placeholder="e.g. pay_xxxxxxxxxx or pi_xxxxxxxxx"
-                className="w-full px-4 py-2.5 rounded-xl bg-background border border-border-subtle text-base lg:text-sm text-text-primary focus:outline-none focus:border-accent-purple font-mono tracking-wider transition-colors"
-              />
+            <h2 id="support-title" className="text-xl font-black text-white">
+              Contact Support
+            </h2>
+          </div>
+
+          <p id="support-desc" className="text-text-secondary text-xs leading-relaxed">
+            Need help retrieving your tickets? Fill out this request and our support team will contact you shortly.
+          </p>
+
+          {supportStatus === 'success' ? (
+            <div className="bg-accent-purple/15 border border-accent-purple/35 rounded-2xl p-6 text-center space-y-3 animate-in fade-in duration-300">
+              <span className="text-3xl block">✅</span>
+              <h3 className="text-white font-bold text-base">Request Submitted</h3>
+              <p className="text-text-secondary text-xs leading-relaxed">
+                Thank you! Your request was received. We will check the booking details and contact you via email soon.
+              </p>
+              <button
+                type="button"
+                onClick={() => setSupportStatus('idle')}
+                className="w-full py-2.5 bg-white/5 hover:bg-white/10 text-white border border-white/10 text-xs font-bold rounded-xl transition-all"
+              >
+                Send Another Request
+              </button>
             </div>
-            <button
-              type="submit"
-              disabled={isRecovering}
-              className="w-full h-11 px-6 btn-gradient text-white text-sm font-bold rounded-xl shadow-glow-sm disabled:opacity-60 transition-transform"
-            >
-              {isRecovering ? 'Finding...' : 'Find Booking Email'}
-            </button>
-          </form>
-        )}
-      </div>
-    );
-  };
+          ) : (
+            <form onSubmit={handleSupportFormSubmit} className="space-y-4">
+              {supportStatus === 'error' && (
+                <div role="alert" aria-live="assertive" className="p-3.5 bg-error/10 border border-error/30 rounded-xl text-xs text-red-400 font-medium">
+                  {supportError}
+                </div>
+              )}
 
-  return (
-    <div className="pt-20 sm:pt-28 pb-8 sm:pb-16 min-h-screen bg-background relative overflow-hidden">
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-accent-purple/10 rounded-full blur-[130px] pointer-events-none" />
-      <div className="absolute -bottom-10 -right-10 w-[300px] h-[300px] bg-purple-500/5 rounded-full blur-[100px] pointer-events-none" />
+              <div className="space-y-1.5">
+                <label htmlFor="supportName" className="text-xs font-semibold text-text-secondary block">
+                  Full Name <span className="text-red-500">*</span>
+                </label>
+                <input
+                  id="supportName"
+                  type="text"
+                  required
+                  value={supportName}
+                  onChange={(e) => setSupportName(e.target.value)}
+                  placeholder="e.g. John Doe"
+                  disabled={supportStatus === 'submitting'}
+                  className="w-full bg-white/5 border border-border-subtle rounded-xl px-3.5 py-2.5 text-base lg:text-sm text-white placeholder:text-text-secondary focus:outline-none focus:border-accent-purple transition-all"
+                />
+              </div>
 
-      <div className="container-mad max-w-3xl relative z-10 px-4 space-y-4 sm:space-y-8">
-        
-        {/* Header */}
-        <div className="text-center space-y-3">
-          <h1 className="text-display-sm font-black text-white tracking-tight">
-            {shouldShowPortal ? 'My Tickets' : 'Get Your Tickets'}
-          </h1>
-          {!shouldShowPortal && (
-            <p className="text-text-secondary text-sm max-w-md mx-auto leading-relaxed">
-              {queryRef
-                ? `Verify the email address used to book ${queryRef} to view your tickets.`
-                : 'View, download, or resend your tickets.'}
-            </p>
+              <div className="space-y-1.5">
+                <label htmlFor="supportEmail" className="text-xs font-semibold text-text-secondary block">
+                  Email Address <span className="text-red-500">*</span>
+                </label>
+                <input
+                  id="supportEmail"
+                  type="email"
+                  required
+                  value={supportEmail}
+                  onChange={(e) => setSupportEmail(e.target.value)}
+                  placeholder="e.g. john@example.com"
+                  disabled={supportStatus === 'submitting'}
+                  className="w-full bg-white/5 border border-border-subtle rounded-xl px-3.5 py-2.5 text-base lg:text-sm text-white placeholder:text-text-secondary focus:outline-none focus:border-accent-purple transition-all"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label htmlFor="supportRef" className="text-xs font-semibold text-text-secondary block">
+                  Booking Reference / Transaction ID
+                </label>
+                <input
+                  id="supportRef"
+                  type="text"
+                  value={supportRef}
+                  onChange={(e) => setSupportRef(e.target.value)}
+                  placeholder="e.g. MAD-YYYY-XXXXX or pay_xxxx"
+                  disabled={supportStatus === 'submitting'}
+                  className="w-full bg-white/5 border border-border-subtle rounded-xl px-3.5 py-2.5 text-base lg:text-sm text-white placeholder:text-text-secondary focus:outline-none focus:border-accent-purple font-mono transition-all"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label htmlFor="supportMessage" className="text-xs font-semibold text-text-secondary block">
+                  Message <span className="text-red-500">*</span>
+                </label>
+                <textarea
+                  id="supportMessage"
+                  required
+                  rows={4}
+                  value={supportMessage}
+                  onChange={(e) => setSupportMessage(e.target.value)}
+                  placeholder="Tell us what issues you are experiencing..."
+                  disabled={supportStatus === 'submitting'}
+                  className="w-full bg-white/5 border border-border-subtle rounded-xl px-3.5 py-2.5 text-base lg:text-sm text-white placeholder:text-text-secondary focus:outline-none focus:border-accent-purple resize-none transition-all"
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={supportStatus === 'submitting'}
+                aria-label="Submit support request"
+                className="w-full py-3.5 rounded-xl font-bold tracking-wide btn-gradient text-white shadow-lg active:scale-98 transition-all flex items-center justify-center gap-2"
+              >
+                {supportStatus === 'submitting' ? (
+                  <>
+                    <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    Submitting...
+                  </>
+                ) : (
+                  'Submit Request'
+                )}
+              </button>
+            </form>
           )}
         </div>
-
-        {/* Feedback Messages */}
-        {errorMsg && (
-          <div className="p-4 bg-error/10 border border-error/30 rounded-2xl text-xs text-red-400 text-center animate-in fade-in zoom-in duration-300">
-            {errorMsg}
-          </div>
-        )}
-
-        {infoMsg && (
-          <div className="p-4 bg-accent-purple/10 border border-accent-purple/30 rounded-2xl text-xs text-purple-300 text-center animate-in fade-in zoom-in duration-300">
-            {infoMsg}
-          </div>
-        )}
-
-        {isOwnershipMismatch && user && (
-          <div 
-            role="alert"
-            aria-live="polite"
-            className="glass rounded-3xl border border-error/30 bg-error/5 p-4 sm:p-6 space-y-3 sm:space-y-4 text-center animate-in fade-in zoom-in duration-300"
-          >
-            <h3 className="text-red-400 font-bold text-base">
-              We found this booking, but it belongs to a different account.
-            </h3>
-            <p className="text-text-secondary text-xs">
-              You are currently signed in as: <span className="text-white font-semibold">{user.email}</span>
-            </p>
-            <p className="text-text-muted text-xs">
-              To access these tickets, sign out and verify using the email address used during purchase.
-            </p>
-            <div className="flex justify-center pt-2">
-              <button
-                type="button"
-                onClick={handleSignOutAndVerifyEmail}
-                className="px-6 py-2.5 bg-error hover:bg-red-500 text-white text-xs font-bold rounded-xl transition-all shadow-md"
-              >
-                Sign Out & Verify Email
-              </button>
-            </div>
-          </div>
-        )}
-
-        {shouldShowAuthForm && (
-          <Modal
-            isOpen={shouldShowAuthForm}
-            onClose={() => {
-              if (showLoginForGuest) {
-                setShowLoginForGuest(false);
-              } else {
-                setIsAuthModalDismissed(true);
-              }
-            }}
-            showCloseButton={false}
-          >
-            <div className="space-y-6">
-              {!showLoginForGuest && !queryRef && (
-                <div className="bg-accent-purple/10 border border-accent-purple/30 rounded-2xl p-5 text-center shadow-glow-sm">
-                  <p className="text-text-secondary text-xs leading-relaxed">
-                    Sign in using the email used during booking.
-                  </p>
-                  <p className="text-text-muted text-[10px] mt-2 leading-relaxed">
-                    A 6-digit OTP will be sent to your email.
-                  </p>
-                </div>
-              )}
-              
-              <AuthForm 
-                mode="wallet" 
-                isVerificationRequired={isOwnershipVerificationRequired}
-                bookingReference={queryRef}
-                onSuccess={() => { 
-                  const dest = queryRef
-                    ? `/dashboard?tab=tickets&ref=${encodeURIComponent(queryRef.trim())}`
-                    : '/dashboard?tab=tickets';
-                  router.push(dest);
-                }} 
-                onClose={() => {
-                  if (showLoginForGuest) {
-                    setShowLoginForGuest(false);
-                  } else {
-                    setIsAuthModalDismissed(true);
-                  }
-                }}
-              />
-              {showLoginForGuest && (
-                <button 
-                  onClick={() => setShowLoginForGuest(false)} 
-                  className="mt-4 w-full text-xs text-text-muted hover:text-white transition-colors flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent-purple rounded-md py-1"
-                >
-                  <span>←</span> Cancel and return to ticket
-                </button>
-              )}
-            </div>
-          </Modal>
-        )}
-
-        {/* SCREEN 3: Consolidated Bookings Portal Dashboard */}
-        {shouldShowPortal && (
-          <div className="space-y-4 sm:space-y-8 animate-in fade-in slide-in-from-bottom-5 duration-500">
-            {singleBooking && isAuthenticated && (
-              <div className="flex justify-between items-center mb-4">
-                <button
-                  type="button"
-                  onClick={handleSearchAnother}
-                  className="text-xs px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-border-subtle rounded-lg text-text-primary hover:text-white transition-all flex items-center gap-1.5"
-                >
-                  <span>←</span> Back to My Tickets
-                </button>
-              </div>
-            )}
-
-            {(() => {
-              if (singleBooking) {
-                return (
-                  <BookingCard
-                    booking={singleBooking}
-                    tickets={singleTickets}
-                    ticketsReady={singleBookingData?.ticketsReady ?? false}
-                    downloading={downloadingId === singleBooking.bookingId}
-                    resending={resendingId === singleBooking.bookingId}
-                    resendCooldown={resendCooldowns[singleBooking.bookingId] || 0}
-                    onDownload={() => handleDownloadPDF(singleBooking.bookingId, singleBookingSessionToken)}
-                    onResend={() => handleResendTickets(singleBooking.bookingId, singleBookingSessionToken)}
-                    pollCount={pollCountRef.current}
-                    isFetchingSingle={isSingleLookupFetching && !isSingleLookupLoading}
-                  />
-                );
-              }
-
-              if (isBookingsLoading) {
-                return (
-                  <div className="text-center py-20 text-text-muted text-xs animate-pulse">
-                    Loading secure ticket resources...
-                  </div>
-                );
-              }
-
-              if (sortedBookings.length > 0) {
-                return (
-                  <div className="space-y-8">
-                    {upcomingBookings.length > 0 && (
-                      <div className="space-y-4">
-                        <h2 className="text-white font-bold text-lg border-b border-border-subtle/30 pb-2">Upcoming Tickets</h2>
-                        <div className="space-y-4 sm:space-y-6">
-                          {upcomingBookings.map((b) => (
-                            <BookingCard
-                              key={b._id}
-                              booking={b}
-                              tickets={tickets.filter(
-                                (t) => t.bookingId === b._id || t.bookingId?.toString() === b._id?.toString()
-                              )}
-                              ticketsReady={ticketsReadyMap[b._id?.toString() ?? ''] ?? false}
-                              isPast={false}
-                              isTarget={queryRef ? b.bookingId === queryRef : false}
-                              downloading={downloadingId === b.bookingId}
-                              resending={resendingId === b.bookingId}
-                              resendCooldown={resendCooldowns[b.bookingId] || 0}
-                              onDownload={() => handleDownloadPDF(b.bookingId)}
-                              onResend={() => handleResendTickets(b.bookingId)}
-                            />
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {pastBookings.length > 0 && (
-                      <div className="space-y-4">
-                        <h2 className="text-white font-bold text-lg border-b border-border-subtle/30 pb-2">Past Tickets</h2>
-                        <div className="space-y-4 sm:space-y-6">
-                          {pastBookings.map((b) => (
-                            <BookingCard
-                              key={b._id}
-                              booking={b}
-                              tickets={tickets.filter(
-                                (t) => t.bookingId === b._id || t.bookingId?.toString() === b._id?.toString()
-                              )}
-                              ticketsReady={ticketsReadyMap[b._id?.toString() ?? ''] ?? false}
-                              isPast={true}
-                              isTarget={queryRef ? b.bookingId === queryRef : false}
-                              downloading={downloadingId === b.bookingId}
-                              resending={resendingId === b.bookingId}
-                              resendCooldown={resendCooldowns[b.bookingId] || 0}
-                              onDownload={() => handleDownloadPDF(b.bookingId)}
-                              onResend={() => handleResendTickets(b.bookingId)}
-                            />
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                );
-              }
-
-              return (
-                <div className="glass rounded-3xl border border-border-subtle p-6 sm:p-16 text-center space-y-4">
-                  <div className="text-4xl">🎫</div>
-                  <h3 className="text-white font-bold text-base">No tickets found</h3>
-                  <p className="text-text-secondary text-sm max-w-sm mx-auto leading-relaxed">
-                    Tickets purchased using this email address will appear here automatically.
-                  </p>
-                  <div className="flex justify-center pt-4">
-                    <Link href="/events" className="w-full sm:w-auto px-4 py-2 sm:px-5 sm:py-2.5 bg-accent-purple hover:bg-accent-purple-light text-white text-xs font-bold rounded-xl transition-all shadow-md text-center">
-                      Browse Events
-                    </Link>
-                  </div>
-                </div>
-              );
-            })()}
-          </div>
-        )}
-
-        {shouldShowReferenceForm && (
-          <div className="space-y-4 pt-4 mt-4 sm:mt-8 max-w-md mx-auto">
-            {renderReferenceFormContent()}
-
-            {queryRef && singleLookupApiError && !isOwnershipVerificationRequired && !singleBooking && (
-              <div className="p-4 bg-error/10 border border-error/30 rounded-2xl text-xs text-red-400 text-center animate-in fade-in zoom-in duration-300">
-                {singleLookupApiError.message || `We couldn't retrieve booking ${queryRef}.`}
-              </div>
-            )}
-
-            {queryRef && isSingleLookupLoading && (
-              <div className="glass-strong rounded-3xl border border-border-subtle p-4 sm:p-8 shadow-2xl text-center text-text-muted text-xs animate-pulse">
-                Checking secure access for {queryRef}...
-              </div>
-            )}
-          </div>
-        )}
-
-      </div>
+      </Modal>
     </div>
   );
 }

@@ -40,21 +40,29 @@ export class BookingRecoveryService {
   static async getBookingByTransactionId(
     transactionId: string
   ): Promise<IBooking> {
-    // 1. Locate PAID payment record
-    const payment = await Payment.findOne({
-      $or: [
-        { gatewayPaymentId: transactionId },
-        { gatewayOrderId: transactionId },
-      ],
-      status: PaymentStatus.PAID,
-    });
+    let booking: IBooking | null = null;
 
-    if (!payment) {
-      throw AppError.notFound('Recovery information not found');
+    // Check if the input is a booking reference
+    if (transactionId.toUpperCase().startsWith('MAD-')) {
+      booking = await Booking.findOne({
+        bookingId: transactionId.toUpperCase(),
+      });
+    } else {
+      // 1. Locate PAID payment record
+      const payment = await Payment.findOne({
+        $or: [
+          { gatewayPaymentId: transactionId },
+          { gatewayOrderId: transactionId },
+        ],
+        status: PaymentStatus.PAID,
+      });
+
+      if (payment) {
+        // 2. Locate associated booking record
+        booking = await Booking.findById(payment.bookingId);
+      }
     }
 
-    // 2. Locate associated booking record
-    const booking = await Booking.findById(payment.bookingId);
     if (!booking) {
       throw AppError.notFound('Recovery information not found');
     }

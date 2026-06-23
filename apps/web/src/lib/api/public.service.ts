@@ -294,8 +294,8 @@ export async function publicResendTicketEmail(bookingId: string, sessionToken?: 
 
 export async function publicRecoverBookingEmail(
   transactionId: string
-): Promise<{ success: boolean; maskedEmail: string; otpDispatched: boolean; cooldownSeconds: number }> {
-  const { data } = await apiClient.post<{ success: boolean; maskedEmail: string; otpDispatched: boolean; cooldownSeconds: number }>(
+): Promise<{ success: boolean; bookingId: string; guestEmail: string; maskedEmail: string; otpDispatched: boolean; cooldownSeconds: number }> {
+  const { data } = await apiClient.post<{ success: boolean; bookingId: string; guestEmail: string; maskedEmail: string; otpDispatched: boolean; cooldownSeconds: number }>(
     '/bookings/recover',
     { transactionId }
   );
