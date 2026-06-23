@@ -343,9 +343,9 @@ export function AuthForm({
       {/* SCREEN 3: Profile Onboarding Form */}
       {step === 'onboard' && (
         <ProfileCompletionForm
-          initialFirstName=""
-          initialLastName=""
-          initialMobileNumber=""
+          initialFirstName={user?.firstName || ''}
+          initialLastName={user?.lastName || ''}
+          initialMobileNumber={user?.mobileNumber || ''}
           isCheckout={isCheckout}
           onSuccess={() => {
             if (onSuccess) {
