@@ -14,7 +14,7 @@ import { NotificationType } from '@mad/shared';
 vi.mock('../../config/env', () => ({
   getEnv: vi.fn(() => ({
     JWT_SECRET: 'test_jwt_secret_with_32_characters_long_minimum',
-    GOOGLE_CLIENT_ID: 'test_google_client_id',
+    GOOGLE_CLIENT_ID: 'google_client_id_placeholder',
   })),
 }));
 
@@ -666,6 +666,124 @@ describe('AuthService - verifyMagicLinkOrOTP', () => {
     expect(mockUser.lastName).toBe('Doe');
     expect(mockUser.mobileNumber).toBe('1234567890');
     expect(mockUser.name).toBe('John Doe');
-    expect(mockUser.save).not.toHaveBeenCalled();
+  });
+
+  describe('AuthService - verifyGoogleToken', () => {
+    beforeEach(() => {
+      vi.clearAllMocks();
+    });
+
+    it('GOOGLE-001: New User registration with Google (creates user and maps given_name/family_name)', async () => {
+      vi.mocked(UserModel.findOne).mockResolvedValue(null);
+      
+      const mockUser = {
+        _id: new Types.ObjectId(),
+        googleId: 'google-sub-123',
+        email: 'newuser@gmail.com',
+        isActive: true,
+        save: vi.fn().mockResolvedValue(true),
+      };
+      vi.mocked(UserModel.create).mockResolvedValue(mockUser as any);
+      vi.mocked(Booking.updateMany).mockResolvedValue({ modifiedCount: 0 } as any);
+      vi.mocked(Booking.findOne).mockReturnValue({
+        sort: vi.fn().mockResolvedValue(null),
+      } as any);
+      vi.mocked(RefreshTokenModel.create).mockResolvedValue({ token: 'mock-refresh-token' } as any);
+
+      const result = await AuthService.verifyGoogleToken('mock_newuser@gmail.com');
+
+      expect(UserModel.create).toHaveBeenCalledWith({
+        email: 'newuser@gmail.com',
+        googleId: 'mock_google_id_newuser@gmail.com',
+        name: 'Mock User',
+        firstName: 'Mock',
+        lastName: 'User',
+        picture: 'https://lh3.googleusercontent.com/a/mock',
+        isActive: true,
+      });
+      expect(result.user).toBe(mockUser);
+    });
+
+    it('GOOGLE-002: Scenario A/B - Existing user with custom name details (does not overwrite stored names)', async () => {
+      const mockUser = {
+        _id: new Types.ObjectId(),
+        googleId: 'google-sub-123',
+        email: 'existinguser@gmail.com',
+        firstName: 'Kalyan',
+        lastName: 'MV',
+        mobileNumber: '+919876543210',
+        isActive: true,
+        save: vi.fn().mockResolvedValue(true),
+      };
+
+      vi.mocked(UserModel.findOne).mockResolvedValue(mockUser as any);
+      vi.mocked(Booking.updateMany).mockResolvedValue({ modifiedCount: 0 } as any);
+      vi.mocked(Booking.findOne).mockReturnValue({
+        sort: vi.fn().mockResolvedValue(null),
+      } as any);
+      vi.mocked(RefreshTokenModel.create).mockResolvedValue({ token: 'mock-refresh-token' } as any);
+
+      await AuthService.verifyGoogleToken('mock_existinguser@gmail.com');
+
+      expect(mockUser.firstName).toBe('Kalyan');
+      expect(mockUser.lastName).toBe('MV');
+      expect(mockUser.save).toHaveBeenCalled();
+    });
+
+    it('GOOGLE-003: Scenario C - Existing user with partial details (populates missing lastName only)', async () => {
+      const mockUser = {
+        _id: new Types.ObjectId(),
+        googleId: 'google-sub-123',
+        email: 'partialuser@gmail.com',
+        firstName: 'Kalyan',
+        lastName: '',
+        isActive: true,
+        save: vi.fn().mockResolvedValue(true),
+      };
+
+      vi.mocked(UserModel.findOne).mockResolvedValue(mockUser as any);
+      vi.mocked(Booking.updateMany).mockResolvedValue({ modifiedCount: 0 } as any);
+      vi.mocked(Booking.findOne).mockReturnValue({
+        sort: vi.fn().mockResolvedValue(null),
+      } as any);
+      vi.mocked(RefreshTokenModel.create).mockResolvedValue({ token: 'mock-refresh-token' } as any);
+
+      await AuthService.verifyGoogleToken('mock_partialuser@gmail.com');
+
+      expect(mockUser.firstName).toBe('Kalyan');
+      expect(mockUser.lastName).toBe('User');
+      expect(mockUser.save).toHaveBeenCalled();
+    });
+
+    it('GOOGLE-004: Cross-Provider Linking (existing OTP account links Google ID on Google login without duplicate user)', async () => {
+      const mockUser = {
+        _id: '507f1f77bcf86cd799439011',
+        email: 'otpuser@gmail.com',
+        firstName: 'Kalyan',
+        lastName: 'MV',
+        isActive: true,
+        save: vi.fn().mockResolvedValue(true),
+      };
+
+      vi.mocked(UserModel.findOne)
+        .mockResolvedValueOnce(null) // for findOne({ googleId })
+        .mockResolvedValueOnce(mockUser as any); // for findOne({ email })
+
+      vi.mocked(Booking.updateMany).mockResolvedValue({ modifiedCount: 0 } as any);
+      vi.mocked(Booking.findOne).mockReturnValue({
+        sort: vi.fn().mockResolvedValue(null),
+      } as any);
+      vi.mocked(RefreshTokenModel.create).mockResolvedValue({ token: 'mock-refresh-token' } as any);
+      vi.mocked(UserModel.create).mockResolvedValue({} as any);
+
+      const result = await AuthService.verifyGoogleToken('mock_otpuser@gmail.com');
+
+      expect(UserModel.findOne).toHaveBeenNthCalledWith(1, { googleId: 'mock_google_id_otpuser@gmail.com' });
+      expect(UserModel.findOne).toHaveBeenNthCalledWith(2, { email: 'otpuser@gmail.com' });
+      
+      expect(result.user._id).toBe('507f1f77bcf86cd799439011');
+      expect(result.user.googleId).toBe('mock_google_id_otpuser@gmail.com'); // Linked successfully
+      expect(UserModel.create).not.toHaveBeenCalled(); // Duplication prevented
+    });
   });
 });

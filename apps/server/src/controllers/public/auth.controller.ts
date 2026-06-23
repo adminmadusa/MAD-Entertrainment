@@ -1,8 +1,6 @@
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response } from 'express';
 import { AuthService } from '../../services/public/auth.service';
 import { UserModel } from '../../models/user.schema';
-import { Booking } from '../../models/booking.schema';
-import { PublicBookingService } from '../../services/public/booking.service';
 import { getEnv } from '../../config/env';
 import { AppError } from '../../middleware/error.middleware';
 import { logger } from '../../utils/logger';
@@ -78,6 +76,9 @@ export class AuthController {
           email: result.user.email,
           name: result.user.name,
           picture: result.user.picture,
+          firstName: result.user.firstName ?? '',
+          lastName: result.user.lastName ?? '',
+          mobileNumber: result.user.mobileNumber ?? '',
         },
         token: result.accessToken,
         onboardingRequired,
@@ -117,6 +118,9 @@ export class AuthController {
           email: result.user.email,
           name: result.user.name,
           picture: result.user.picture,
+          firstName: result.user.firstName ?? '',
+          lastName: result.user.lastName ?? '',
+          mobileNumber: result.user.mobileNumber ?? '',
         },
         token: result.accessToken,
         onboardingRequired,
@@ -254,5 +258,4 @@ export class AuthController {
   }
 }
 
-// Utility import helper for typescript Typings compatibility
-import { Types } from 'mongoose';
+
