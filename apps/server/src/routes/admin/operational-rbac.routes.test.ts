@@ -30,15 +30,12 @@ vi.mock('../../controllers/admin/diagnostics.controller', () => ({
   getSystemDiagnostics: vi.fn(),
   retryFailedJob: vi.fn(),
   retryAllFailedJobs: vi.fn(),
-<<<<<<< HEAD
   getQueuesStatus: vi.fn(),
   pauseQueueHandler: vi.fn(),
   resumeQueueHandler: vi.fn(),
   drainQueueHandler: vi.fn(),
-=======
   listDeadLetterJobs: vi.fn(),
   getDeadLetterJob: vi.fn(),
->>>>>>> develop
 }));
 
 vi.mock('../../controllers/admin/refund.controller', () => ({

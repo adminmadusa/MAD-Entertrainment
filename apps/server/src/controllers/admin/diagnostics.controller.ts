@@ -9,11 +9,9 @@ import { QueueService, QueueControlStatus } from '../../services/queue.service';
 import { sendSuccess } from '../../utils/response';
 import { AppError } from '../../middleware/error.middleware';
 import { auditLog } from '../../utils/audit';
-<<<<<<< HEAD
 import { ALLOWED_QUEUE_NAMES } from '../../validations/queue.validation';
-=======
 import { decryptPayload, isEncrypted } from '../../utils/encryption';
->>>>>>> develop
+
 
 function redactSecrets(obj: any): any {
   if (obj === null || obj === undefined) return obj;
