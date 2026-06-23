@@ -1,7 +1,75 @@
+import crypto from 'crypto';
 import { Ticket } from '../../models/ticket.schema';
 import { Booking } from '../../models/booking.schema';
 import { AppError } from '../../middleware/error.middleware';
 import { PublicBookingService } from './booking.service';
+import { getEnv } from '../../config/env';
+
+// ─────────────────────────────────────────────
+// Stateless HMAC QR Token Helpers
+// Token format: <expiryTimestamp>.<signature>
+// Signature: HMAC-SHA256(ticketId + ":" + expiryTimestamp, JWT_SESSION_SECRET)
+// ─────────────────────────────────────────────
+
+/**
+ * Generates a stateless HMAC-signed query token for a ticketId.
+ * The token is appended to qrCodeImage URLs so browser <img> requests
+ * can be authenticated without Authorization headers.
+ * TTL: 5 minutes from generation.
+ */
+export function generateTicketQrToken(ticketId: string): string {
+  const env = getEnv();
+  const expiryTimestamp = Date.now() + 5 * 60 * 1000; // 5 minutes TTL
+  const dataToSign = `${ticketId}:${expiryTimestamp}`;
+
+  const signature = crypto
+    .createHmac('sha256', env.JWT_SESSION_SECRET)
+    .update(dataToSign)
+    .digest('hex');
+
+  return `${expiryTimestamp}.${signature}`;
+}
+
+/**
+ * Verifies a stateless HMAC-signed token for a ticketId.
+ * Returns true only if the token is well-formed, not expired, and
+ * the signature matches exactly (timing-safe comparison).
+ * Returns false on any validation failure — never throws.
+ */
+export function verifyTicketQrToken(ticketId: string, token: string): boolean {
+  if (!token) return false;
+
+  const parts = token.split('.');
+  if (parts.length !== 2) return false;
+
+  const [expiryStr, signature] = parts;
+  const expiryTimestamp = parseInt(expiryStr, 10);
+
+  if (isNaN(expiryTimestamp) || expiryTimestamp < Date.now()) {
+    return false;
+  }
+
+  try {
+    const env = getEnv();
+    const dataToSign = `${ticketId}:${expiryTimestamp}`;
+
+    const expectedSignature = crypto
+      .createHmac('sha256', env.JWT_SESSION_SECRET)
+      .update(dataToSign)
+      .digest('hex');
+
+    const signatureBuffer = Buffer.from(signature, 'hex');
+    const expectedSignatureBuffer = Buffer.from(expectedSignature, 'hex');
+
+    if (signatureBuffer.length !== expectedSignatureBuffer.length) {
+      return false;
+    }
+
+    return crypto.timingSafeEqual(signatureBuffer, expectedSignatureBuffer);
+  } catch {
+    return false;
+  }
+}
 
 /**
  * Asserts that the requester is the purchaser (booking owner) of the given ticket.
