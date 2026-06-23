@@ -3,77 +3,23 @@
 import { BookingStatus, QUERY_KEYS } from '@mad/shared';
 import type { Booking, Event } from '@mad/types';
 import { useQuery } from '@tanstack/react-query';
-import { motion } from 'framer-motion';
-import Link from 'next/link';
-import { useState, useEffect, Suspense, useRef } from 'react';
+import { useState, useEffect, Suspense, useRef, useMemo } from 'react';
 import { Modal } from '@mad/ui';
-
+import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
 
 import { useCountdown } from '@/hooks/use-countdown.hook';
-import { apiClient, extractApiError } from '@/lib/api/client';
+import { extractApiError } from '@/lib/api/client';
 import {
   getStoredGuestBookingSession,
   publicGetBookingDetails,
-  publicGetMyBookings,
-  publicResendTicketEmail,
   publicRecoverBookingEmail,
   publicVerifyRecoveredBookingOTP,
 } from '@/lib/api/public.service';
 import { useAuth } from '@/providers/AuthProvider';
 import { AuthForm } from '@/components/auth/AuthForm';
-import { BookingHeaderCard } from '@/components/booking/shared/BookingHeaderCard';
-import { TicketActions } from '@/components/booking/shared/TicketActions';
-import { EntryPassGrid } from '@/components/booking/shared/EntryPassGrid';
-
-function PaymentRecoveryBanner({ booking }: { booking: { logicalExpiresAt?: string | Date; expiresAt?: string | Date; bookingId: string } }) {
-  const countdown = useCountdown(booking?.logicalExpiresAt || booking?.expiresAt);
-  const isExpired = countdown.isExpired;
-
-  if (isExpired) return null;
-
-  return (
-    <div className="glass rounded-3xl border border-amber-500/30 bg-amber-500/10 p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-      <div className="space-y-1 text-center sm:text-left">
-        <h3 className="text-amber-400 font-bold text-base flex items-center gap-2 justify-center sm:justify-start">
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-          </svg>
-          Complete Your Payment
-        </h3>
-        <p className="text-text-secondary text-xs max-w-md">
-          Your seats are temporarily reserved. Complete your payment to confirm this booking. Reservation expires in <span className="font-mono font-bold text-amber-300">{countdown.minutes}:{String(countdown.seconds).padStart(2, '0')}</span>.
-        </p>
-      </div>
-      <div className="flex flex-col w-full sm:w-auto gap-3 shrink-0">
-        <Link href={`/checkout/${booking.bookingId}`} className="px-6 py-2.5 rounded-xl btn-gradient text-white font-bold text-sm shadow-glow-sm hover:scale-[1.02] active:scale-[0.98] transition-all text-center">
-          Complete Payment
-        </Link>
-        <a href="mailto:support@mad-entertainment.com" className="px-6 py-2.5 rounded-xl border border-white/10 text-white/80 hover:bg-white/5 font-bold text-sm hover:scale-[1.02] active:scale-[0.98] transition-all text-center">
-          Contact Support
-        </a>
-      </div>
-    </div>
-  );
-}
-
-function TicketStatusMessage({ status }: { status: string }) {
-  const messages: Record<string, string> = {
-    [BookingStatus.AWAITING_PAYMENT]: 'Complete payment to receive tickets.',
-    [BookingStatus.FAILED]: 'Payment was unsuccessful. Create a new booking to try again.',
-    [BookingStatus.EXPIRED]: 'Reservation expired before payment completed.',
-    [BookingStatus.CANCELLED]: 'This booking was cancelled.',
-    [BookingStatus.REFUNDED]: 'Payment has been refunded.',
-    [BookingStatus.EXPIRING]: 'We are processing this booking. Please check back shortly.',
-    [BookingStatus.PENDING]: 'This booking is pending. Please check back shortly.',
-  };
-
-  return (
-    <div className="glass-strong rounded-2xl border border-border-subtle p-6 text-center text-text-secondary text-sm">
-      {messages[status] || 'This booking is not ready for ticket access yet.'}
-    </div>
-  );
-}
+import { useBookings } from '@/hooks/use-bookings.hook';
+import { BookingCard } from '@/components/booking/shared/BookingCard';
 
 function TicketRetrievalContent() {
   const searchParams = useSearchParams();
@@ -91,8 +37,6 @@ function TicketRetrievalContent() {
   const [step, setStep] = useState<'email' | 'portal'>('email');
   const [showLoginForGuest, setShowLoginForGuest] = useState(false);
   const [isAuthModalDismissed, setIsAuthModalDismissed] = useState(false);
-  const [errorMsg, setErrorMsg] = useState('');
-  const [infoMsg, setInfoMsg] = useState('');
 
   // Recovery States
   type LookupMode = 'reference' | 'transaction';
@@ -116,26 +60,28 @@ function TicketRetrievalContent() {
     return () => clearInterval(timer);
   }, [recoveryCooldown]);
 
-  // Query Bookings (only enabled when authenticated)
-  const { data: bookingsData, isLoading: isBookingsLoading } = useQuery({
-    queryKey: QUERY_KEYS.public.bookings.mine(),
-    queryFn: publicGetMyBookings,
-    enabled: isAuthenticated,
-    retry: false,
-  });
-
-  const bookings = bookingsData?.bookings || [];
+  // Use the SSOT bookings query and handlers
+  const {
+    bookings,
+    tickets,
+    ticketsReadyMap,
+    isLoading: isBookingsLoading,
+    downloadingId,
+    resendingId,
+    resendCooldowns,
+    errorMsg,
+    infoMsg,
+    setErrorMsg,
+    setInfoMsg,
+    handleDownloadPDF,
+    handleResendTickets,
+  } = useBookings();
 
   useEffect(() => {
     if (showLoginForGuest) {
       setIsAuthModalDismissed(false);
     }
   }, [showLoginForGuest]);
-
-  // Resend / Download States
-  const [resendingId, setResendingId] = useState<string | null>(null);
-  const [downloadingId, setDownloadingId] = useState<string | null>(null);
-  const [singleResendCooldownSeconds, setSingleResendCooldownSeconds] = useState(0);
 
   useEffect(() => {
     if (targetRef) {
@@ -144,16 +90,6 @@ function TicketRetrievalContent() {
       pollCountRef.current = 0;
     }
   }, [targetRef]);
-
-  useEffect(() => {
-    if (singleResendCooldownSeconds <= 0) return;
-
-    const timer = setInterval(() => {
-      setSingleResendCooldownSeconds((prev) => Math.max(0, prev - 1));
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, [singleResendCooldownSeconds]);
 
   // Redirect to dashboard if already authenticated on mount
   useEffect(() => {
@@ -214,59 +150,6 @@ function TicketRetrievalContent() {
     }
   }, [isSingleLookupFetching, singleBookingData?.booking, singleBookingData?.ticketsReady]);
 
-
-  // ─── Actions ────────────────────────────────────────────────
-
-  const handleDownloadPDF = async (bookingId: string, sessionToken?: string) => {
-    try {
-      setErrorMsg('');
-      setInfoMsg('');
-      setDownloadingId(bookingId);
-
-      const headers: Record<string, string> = {};
-      if (sessionToken) {
-        headers.Authorization = `Bearer ${sessionToken}`;
-      }
-
-      const { data } = await apiClient.post<{ data: { downloadToken: string } }>(
-        `/bookings/${bookingId}/download-token`,
-        {},
-        { headers }
-      );
-      const token = data?.data?.downloadToken;
-      if (!token) {
-        throw new Error('Failed to generate download token');
-      }
-
-      const downloadUrl = `${apiClient.defaults.baseURL || ''}/bookings/${bookingId}/download?token=${token}`;
-      window.open(downloadUrl, '_blank');
-    } catch (err) {
-      const apiErr = extractApiError(err);
-      setErrorMsg(apiErr.message || 'Failed to download ticket PDF. Please try again.');
-    } finally {
-      setDownloadingId(null);
-    }
-  };
-
-  const handleResendTickets = async (bookingId: string, sessionToken?: string, withCooldown = false) => {
-    try {
-      setErrorMsg('');
-      setInfoMsg('');
-      setResendingId(bookingId);
-
-      const res = await publicResendTicketEmail(bookingId, sessionToken);
-      setInfoMsg(res.message || 'Tickets resent successfully to your email.');
-      if (withCooldown) {
-        setSingleResendCooldownSeconds(60);
-      }
-    } catch (err) {
-      const apiErr = extractApiError(err);
-      setErrorMsg(apiErr.message || 'Failed to resend tickets. Please try again.');
-    } finally {
-      setResendingId(null);
-    }
-  };
-
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
@@ -281,16 +164,6 @@ function TicketRetrievalContent() {
     }
     setBookingRefInput(normalizedRef);
     setQueryRef(normalizedRef);
-  };
-
-  const handleExitPortal = () => {
-    logout();
-    setStep('email');
-    setErrorMsg('');
-    setInfoMsg('');
-    setQueryRef('');
-    setBookingRefInput('');
-    setIsAuthModalDismissed(false);
   };
 
   const handleSignOutAndVerifyEmail = () => {
@@ -438,22 +311,6 @@ function TicketRetrievalContent() {
     setRecoveryCooldown(0);
   };
 
-  const handleContinueToSignIn = () => {
-    if (isAuthenticated) {
-      logout();
-    }
-    setQueryRef('');
-    setBookingRefInput('');
-    setShowLoginForGuest(true);
-    setLookupMode('reference');
-    setShowRecoveryResult(false);
-    setTransactionIdInput('');
-    setIsAuthModalDismissed(false);
-  };
-
-
-
-  const tickets = bookingsData?.tickets || [];
   const singleBooking = singleBookingData?.booking;
   const singleTickets = singleBookingData?.tickets || [];
   const singleLookupApiError = singleLookupError ? extractApiError(singleLookupError) : null;
@@ -464,6 +321,39 @@ function TicketRetrievalContent() {
     ((!shouldShowPortal && !isSingleLookupLoading) && !isAuthModalDismissed) ||
     showLoginForGuest;
   const shouldShowReferenceForm = !singleBooking && !isAuthenticated;
+
+  // Sorting and filtering logic for authenticated view
+  const sortedBookings = useMemo(() => {
+    return [...bookings].sort((a, b) => {
+      if (queryRef && a.bookingId === queryRef) return -1;
+      if (queryRef && b.bookingId === queryRef) return 1;
+      return 0;
+    });
+  }, [bookings, queryRef]);
+
+  const upcomingBookings = useMemo(() => {
+    const now = new Date();
+    return sortedBookings.filter((booking) => {
+      const eventInfo = booking.eventId as unknown as Partial<Event>;
+      const startDate = eventInfo?.startDate ? new Date(eventInfo.startDate) : null;
+      const isConfirmed = booking.status === BookingStatus.CONFIRMED;
+      if (!isConfirmed) return false;
+      if (!startDate) return true;
+      return startDate >= now;
+    });
+  }, [sortedBookings]);
+
+  const pastBookings = useMemo(() => {
+    const now = new Date();
+    return sortedBookings.filter((booking) => {
+      const eventInfo = booking.eventId as unknown as Partial<Event>;
+      const startDate = eventInfo?.startDate ? new Date(eventInfo.startDate) : null;
+      const isConfirmed = booking.status === BookingStatus.CONFIRMED;
+      if (!isConfirmed) return true;
+      if (!startDate) return false;
+      return startDate < now;
+    });
+  }, [sortedBookings]);
 
   const renderReferenceFormContent = () => {
     if (showSupportGuidance) {
@@ -648,15 +538,8 @@ function TicketRetrievalContent() {
     );
   };
 
-  const sortedBookings = [...bookings].sort((a, b) => {
-    if (queryRef && a.bookingId === queryRef) return -1;
-    if (queryRef && b.bookingId === queryRef) return 1;
-    return 0;
-  });
-
   return (
     <div className="pt-20 sm:pt-28 pb-8 sm:pb-16 min-h-screen bg-background relative overflow-hidden">
-      {/* Decorative Glow Elements */}
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-accent-purple/10 rounded-full blur-[130px] pointer-events-none" />
       <div className="absolute -bottom-10 -right-10 w-[300px] h-[300px] bg-purple-500/5 rounded-full blur-[100px] pointer-events-none" />
 
@@ -715,8 +598,6 @@ function TicketRetrievalContent() {
             </div>
           </div>
         )}
-
-
 
         {shouldShowAuthForm && (
           <Modal
@@ -789,108 +670,19 @@ function TicketRetrievalContent() {
 
             {(() => {
               if (singleBooking) {
-                const containerClasses = "glass rounded-3xl p-4 sm:p-6 md:p-8 space-y-4 sm:space-y-6 shadow-glow-purple transition-all duration-300 border-accent-purple ring-2 ring-accent-purple/50";
-
                 return (
-                  <div className={containerClasses}>
-                    <div className="flex items-center justify-between gap-3">
-                      <span className="text-[10px] text-accent-purple-light font-bold uppercase tracking-wider">
-                        Booking Details
-                      </span>
-                      <span className="text-[10px] text-text-muted font-mono">{singleBooking.bookingId}</span>
-                    </div>
-
-                    <BookingHeaderCard booking={singleBooking} isFetching={isSingleLookupFetching && !isSingleLookupLoading} pollCount={pollCountRef.current} />
-
-                    {singleBooking.status === BookingStatus.AWAITING_PAYMENT && (
-                      <PaymentRecoveryBanner booking={singleBooking} />
-                    )}
-
-                    {singleBooking.status === BookingStatus.CONFIRMED ? (
-                      (() => {
-                        const ticketsReady = singleBookingData?.ticketsReady;
-                        const pollsExhausted = pollCountRef.current >= 5;
-
-                        if (!ticketsReady) {
-                          return (
-                            <div className="space-y-3 pt-4 border-t border-border-subtle/30">
-                              <h3 className="text-white font-bold text-sm">Entry Passes</h3>
-                              {pollsExhausted ? (
-                                <div className="glass-strong rounded-2xl border border-border-subtle p-6 text-center text-text-secondary text-sm">
-                                  Your tickets are being processed and will appear in your email shortly.
-                                </div>
-                              ) : (
-                                <div className="glass-strong rounded-2xl border border-border-subtle p-6 text-center space-y-3">
-                                  <div className="flex items-center justify-center gap-2 text-accent-purple-light text-sm font-semibold">
-                                    <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
-                                    </svg>
-                                    Generating your tickets...
-                                  </div>
-                                  <p className="text-text-muted text-xs">This usually takes a few seconds. Your entry passes will appear here automatically.</p>
-                                </div>
-                              )}
-                            </div>
-                          );
-                        }
-
-                        return (
-                          <div className="space-y-4 pt-4 border-t border-border-subtle/30">
-                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-2">
-                              <h3 className="text-white font-bold text-sm">Entry Passes</h3>
-                              <TicketActions
-                                downloading={downloadingId === singleBooking.bookingId}
-                                resending={resendingId === singleBooking.bookingId}
-                                cooldown={singleResendCooldownSeconds}
-                                onDownload={() => handleDownloadPDF(singleBooking.bookingId, singleBookingSessionToken)}
-                                onResend={() => handleResendTickets(singleBooking.bookingId, singleBookingSessionToken, true)}
-                              />
-                            </div>
-                            <EntryPassGrid tickets={singleTickets} />
-
-                            {isAuthenticated ? (
-                              <div className="space-y-3 mt-4 sm:mt-8 pt-4 sm:pt-6 border-t border-border-subtle/30">
-                                <div className="flex flex-col sm:flex-row gap-3 justify-center items-center w-full">
-                                  <button
-                                    type="button"
-                                    onClick={handleSearchAnother}
-                                    className="w-full sm:w-auto px-4 py-2 sm:px-5 sm:py-2.5 bg-white/5 hover:bg-white/10 text-text-secondary hover:text-white text-xs font-bold rounded-xl transition-all border border-white/10"
-                                  >
-                                    Search Another Booking
-                                  </button>
-                                </div>
-                              </div>
-                            ) : (
-                              <div className="space-y-3 mt-4 sm:mt-8 pt-4 sm:pt-6 border-t border-border-subtle/30">
-                                <p className="text-text-muted text-xs leading-relaxed text-center">
-                                  Your ticket has been sent to <span className="text-white font-semibold">{singleBooking.guestEmail}</span>. You can view it anytime by signing in with the same email address.
-                                </p>
-                                <div className="flex flex-col sm:flex-row gap-3 justify-center items-center w-full">
-                                  <button
-                                    type="button"
-                                    onClick={() => setShowLoginForGuest(true)}
-                                    className="w-full sm:w-auto px-4 py-2 sm:px-5 sm:py-2.5 bg-accent-purple hover:bg-accent-purple-light text-white text-xs font-bold rounded-xl transition-all shadow-md"
-                                  >
-                                    Sign In to Account
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={handleSearchAnother}
-                                    className="w-full sm:w-auto px-4 py-2 sm:px-5 sm:py-2.5 bg-white/5 hover:bg-white/10 text-text-secondary hover:text-white text-xs font-bold rounded-xl transition-all border border-white/10"
-                                  >
-                                    Search Another Booking
-                                  </button>
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })()
-                    ) : (
-                      <TicketStatusMessage status={singleBooking.status} />
-                    )}
-                  </div>
+                  <BookingCard
+                    booking={singleBooking}
+                    tickets={singleTickets}
+                    ticketsReady={singleBookingData?.ticketsReady ?? false}
+                    downloading={downloadingId === singleBooking.bookingId}
+                    resending={resendingId === singleBooking.bookingId}
+                    resendCooldown={resendCooldowns[singleBooking.bookingId] || 0}
+                    onDownload={() => handleDownloadPDF(singleBooking.bookingId, singleBookingSessionToken)}
+                    onResend={() => handleResendTickets(singleBooking.bookingId, singleBookingSessionToken)}
+                    pollCount={pollCountRef.current}
+                    isFetchingSingle={isSingleLookupFetching && !isSingleLookupLoading}
+                  />
                 );
               }
 
@@ -902,97 +694,30 @@ function TicketRetrievalContent() {
                 );
               }
 
-              const renderBookingCard = (booking: Booking, isPast = false) => {
-                const bookingTickets = tickets.filter(
-                  (t) => t.bookingId === booking._id || t.bookingId?.toString() === booking._id?.toString()
-                );
-
-                const isTarget = queryRef && booking.bookingId === queryRef;
-                const containerClasses = `glass rounded-3xl border border-border-subtle p-4 sm:p-6 md:p-8 space-y-4 sm:space-y-6 shadow-xl transition-all duration-300 hover:border-white/10 ${
-                  isTarget ? "ring-2 ring-accent-purple/50 border-accent-purple shadow-glow-purple" : ""
-                } ${isPast ? "opacity-85" : ""}`;
-
-                return (
-                  <div
-                    key={booking._id}
-                    className={containerClasses}
-                  >
-                    <BookingHeaderCard booking={booking} />
-
-                    {/* Tickets list for confirmed bookings */}
-                    {booking.status === BookingStatus.CONFIRMED ? (
-                      (() => {
-                        const bookingTicketsReady =
-                          bookingsData?.ticketsReadyMap?.[booking._id?.toString() ?? ''] ?? false;
-
-                        if (!bookingTicketsReady) {
-                          return (
-                            <div className="space-y-3 pt-4 border-t border-border-subtle/30">
-                              <h3 className="text-white font-bold text-sm">Entry Passes</h3>
-                              <div className="glass-strong rounded-2xl border border-border-subtle p-6 text-center space-y-3">
-                                <div className="flex items-center justify-center gap-2 text-accent-purple-light text-sm font-semibold">
-                                  <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
-                                  </svg>
-                                  Generating your tickets...
-                                </div>
-                                <p className="text-text-muted text-xs">Your entry passes will appear here shortly.</p>
-                              </div>
-                            </div>
-                          );
-                        }
-
-                        return (
-                          <div className="space-y-4 pt-4 border-t border-border-subtle/30">
-                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-2">
-                              <h3 className="text-white font-bold text-sm">Entry Passes</h3>
-                              <TicketActions
-                                downloading={downloadingId === booking.bookingId}
-                                resending={resendingId === booking.bookingId}
-                                onDownload={() => handleDownloadPDF(booking.bookingId)}
-                                onResend={() => handleResendTickets(booking.bookingId)}
-                              />
-                            </div>
-                            <EntryPassGrid tickets={bookingTickets} />
-                          </div>
-                        );
-                      })()
-                    ) : (
-                      <TicketStatusMessage status={booking.status} />
-                    )}
-
-                  </div>
-                );
-              };
-
               if (sortedBookings.length > 0) {
-                const now = new Date();
-                const upcomingBookings = sortedBookings.filter((booking) => {
-                  const eventInfo = booking.eventId as unknown as Partial<Event>;
-                  const startDate = eventInfo?.startDate ? new Date(eventInfo.startDate) : null;
-                  const isConfirmed = booking.status === BookingStatus.CONFIRMED;
-                  if (!isConfirmed) return false;
-                  if (!startDate) return true;
-                  return startDate >= now;
-                });
-
-                const pastBookings = sortedBookings.filter((booking) => {
-                  const eventInfo = booking.eventId as unknown as Partial<Event>;
-                  const startDate = eventInfo?.startDate ? new Date(eventInfo.startDate) : null;
-                  const isConfirmed = booking.status === BookingStatus.CONFIRMED;
-                  if (!isConfirmed) return true;
-                  if (!startDate) return false;
-                  return startDate < now;
-                });
-
                 return (
                   <div className="space-y-8">
                     {upcomingBookings.length > 0 && (
                       <div className="space-y-4">
                         <h2 className="text-white font-bold text-lg border-b border-border-subtle/30 pb-2">Upcoming Tickets</h2>
                         <div className="space-y-4 sm:space-y-6">
-                          {upcomingBookings.map((b) => renderBookingCard(b, false))}
+                          {upcomingBookings.map((b) => (
+                            <BookingCard
+                              key={b._id}
+                              booking={b}
+                              tickets={tickets.filter(
+                                (t) => t.bookingId === b._id || t.bookingId?.toString() === b._id?.toString()
+                              )}
+                              ticketsReady={ticketsReadyMap[b._id?.toString() ?? ''] ?? false}
+                              isPast={false}
+                              isTarget={queryRef ? b.bookingId === queryRef : false}
+                              downloading={downloadingId === b.bookingId}
+                              resending={resendingId === b.bookingId}
+                              resendCooldown={resendCooldowns[b.bookingId] || 0}
+                              onDownload={() => handleDownloadPDF(b.bookingId)}
+                              onResend={() => handleResendTickets(b.bookingId)}
+                            />
+                          ))}
                         </div>
                       </div>
                     )}
@@ -1001,7 +726,23 @@ function TicketRetrievalContent() {
                       <div className="space-y-4">
                         <h2 className="text-white font-bold text-lg border-b border-border-subtle/30 pb-2">Past Tickets</h2>
                         <div className="space-y-4 sm:space-y-6">
-                          {pastBookings.map((b) => renderBookingCard(b, true))}
+                          {pastBookings.map((b) => (
+                            <BookingCard
+                              key={b._id}
+                              booking={b}
+                              tickets={tickets.filter(
+                                (t) => t.bookingId === b._id || t.bookingId?.toString() === b._id?.toString()
+                              )}
+                              ticketsReady={ticketsReadyMap[b._id?.toString() ?? ''] ?? false}
+                              isPast={true}
+                              isTarget={queryRef ? b.bookingId === queryRef : false}
+                              downloading={downloadingId === b.bookingId}
+                              resending={resendingId === b.bookingId}
+                              resendCooldown={resendCooldowns[b.bookingId] || 0}
+                              onDownload={() => handleDownloadPDF(b.bookingId)}
+                              onResend={() => handleResendTickets(b.bookingId)}
+                            />
+                          ))}
                         </div>
                       </div>
                     )}
