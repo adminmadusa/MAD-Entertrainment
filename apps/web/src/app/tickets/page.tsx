@@ -1,9 +1,7 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef, Suspense } from 'react';
+import { useState, useEffect, useRef, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { Modal, ArrowLeft } from '@mad/ui';
 
 import { extractApiError } from '@/lib/api/client';
 import {
@@ -16,35 +14,10 @@ import { submitContactForm } from '@/app/actions/contact.actions';
 import { useGoogleSignIn } from '@/components/auth/hooks/useGoogleSignIn';
 import { useOtpCooldowns } from '@/components/auth/hooks/useOtpCooldowns';
 
-interface GoogleCredentialResponse {
-  credential?: string;
-  clientId?: string;
-  select_by?: string;
-}
-
-interface GoogleAccountsId {
-  initialize(config: {
-    client_id: string;
-    callback: (response: GoogleCredentialResponse) => void;
-    auto_select?: boolean;
-  }): void;
-  renderButton(
-    parent: HTMLElement | null,
-    options: {
-      theme?: string;
-      size?: string;
-      width?: string;
-      shape?: string;
-      text?: string;
-    }
-  ): void;
-}
-
-interface GoogleIdentity {
-  accounts: {
-    id: GoogleAccountsId;
-  };
-}
+import { FindTicketsModal } from './components/FindTicketsModal';
+import { BookingFoundModal } from './components/BookingFoundModal';
+import { OtpVerificationModal } from './components/OtpVerificationModal';
+import { ContactSupportModal } from './components/ContactSupportModal';
 
 type ModalState = 'find' | 'found' | 'otp' | 'support' | null;
 
@@ -53,7 +26,7 @@ function TicketRetrievalContent() {
   const router = useRouter();
   const targetRef = searchParams.get('ref');
 
-  const { login, setOnboardingRequired, isAuthenticated, isLoading: isAuthLoading, onboardingRequired } = useAuth();
+  const { login, setOnboardingRequired, isAuthenticated, isLoading: isAuthLoading } = useAuth();
 
   // Modal State Machine
   const [activeModal, setActiveModal] = useState<ModalState>('find');
@@ -315,429 +288,74 @@ function TicketRetrievalContent() {
         {liveMessage}
       </div>
 
-      {/* ────────────────────────────────────────────────────────── */}
-      {/* Screen 1: Find My Tickets Modal */}
-      {/* ────────────────────────────────────────────────────────── */}
-      <Modal
+      <FindTicketsModal
         isOpen={activeModal === 'find'}
         onClose={handleClose}
-        closeOnBackdropClick={true}
-        enableSwipeToClose={true}
-        ariaLabelledBy="find-title"
-        ariaDescribedBy="find-desc"
-      >
-        <div className="space-y-6">
-          <div className="text-center">
-            <h2 id="find-title" className="text-2xl font-black text-white tracking-tight">
-              Find My Tickets
-            </h2>
-            <p id="find-desc" className="text-text-secondary text-sm mt-1.5 leading-relaxed">
-              Retrieve your booking using either reference ID or transaction ID.
-            </p>
-          </div>
+        bookingRefInput={bookingRefInput}
+        setBookingRefInput={setBookingRefInput}
+        transactionIdInput={transactionIdInput}
+        setTransactionIdInput={setTransactionIdInput}
+        isSubmitting={isSubmitting}
+        errorMsg={errorMsg}
+        onSubmit={handleLookupSubmit}
+        onOpenSupport={() => {
+          setErrorMsg('');
+          setActiveModal('support');
+        }}
+      />
 
-          {errorMsg && (
-            <div role="alert" aria-live="assertive" className="p-3.5 bg-error/10 border border-error/30 rounded-xl text-xs text-red-400 text-center font-medium animate-in fade-in duration-200">
-              {errorMsg}
-            </div>
-          )}
-
-          <form onSubmit={handleLookupSubmit} className="space-y-4">
-            <div className="space-y-1.5">
-              <label htmlFor="bookingRef" className="text-xs font-semibold text-text-secondary uppercase tracking-wider block">
-                Booking Reference
-              </label>
-              <input
-                id="bookingRef"
-                type="text"
-                value={bookingRefInput}
-                onChange={(e) => {
-                  setBookingRefInput(e.target.value);
-                  if (e.target.value) setTransactionIdInput('');
-                }}
-                placeholder="e.g. MAD-2026-ABCDE"
-                disabled={isSubmitting}
-                aria-invalid={!!errorMsg && !transactionIdInput}
-                aria-describedby={errorMsg && !transactionIdInput ? "find-error-message" : undefined}
-                className="w-full bg-white/5 border border-border-subtle rounded-xl px-4 py-3 text-base lg:text-sm text-white placeholder:text-text-secondary focus:outline-none focus:border-accent-purple focus:ring-1 focus:ring-accent-purple transition-all font-mono uppercase tracking-wider"
-              />
-            </div>
-
-            <div className="flex items-center py-2">
-              <div className="flex-grow border-t border-border-subtle/30" />
-              <span className="mx-4 text-xs font-bold text-text-muted/40 uppercase tracking-widest">or</span>
-              <div className="flex-grow border-t border-border-subtle/30" />
-            </div>
-
-            <div className="space-y-1.5">
-              <label htmlFor="transactionId" className="text-xs font-semibold text-text-secondary uppercase tracking-wider block">
-                Payment / Transaction ID
-              </label>
-              <input
-                id="transactionId"
-                type="text"
-                value={transactionIdInput}
-                onChange={(e) => {
-                  setTransactionIdInput(e.target.value);
-                  if (e.target.value) setBookingRefInput('');
-                }}
-                placeholder="e.g. pay_xxxxxxxxxxxx"
-                disabled={isSubmitting}
-                aria-invalid={!!errorMsg && !bookingRefInput}
-                aria-describedby={errorMsg && !bookingRefInput ? "find-error-message" : undefined}
-                className="w-full bg-white/5 border border-border-subtle rounded-xl px-4 py-3 text-base lg:text-sm text-white placeholder:text-text-secondary focus:outline-none focus:border-accent-purple focus:ring-1 focus:ring-accent-purple transition-all font-mono tracking-wider"
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={isSubmitting || (!bookingRefInput.trim() && !transactionIdInput.trim())}
-              aria-label="Find Tickets"
-              className="w-full py-3.5 rounded-xl font-bold tracking-wide btn-gradient text-white shadow-lg active:scale-98 transition-all disabled:opacity-50 mt-2 flex items-center justify-center gap-2"
-            >
-              {isSubmitting ? (
-                <>
-                  <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  Finding Tickets...
-                </>
-              ) : (
-                'Find Tickets'
-              )}
-            </button>
-          </form>
-
-          <div className="text-center pt-2 border-t border-white/5">
-            <button
-              type="button"
-              onClick={() => {
-                setErrorMsg('');
-                setActiveModal('support');
-              }}
-              className="text-xs font-semibold text-text-muted hover:text-white transition-colors py-1.5 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent-purple rounded"
-            >
-              Having issues? Contact Support
-            </button>
-          </div>
-        </div>
-      </Modal>
-
-      {/* ────────────────────────────────────────────────────────── */}
-      {/* Screen 2: Booking Found Modal */}
-      {/* ────────────────────────────────────────────────────────── */}
-      <Modal
+      <BookingFoundModal
         isOpen={activeModal === 'found'}
         onClose={handleClose}
-        closeOnBackdropClick={true}
-        enableSwipeToClose={true}
-        ariaLabelledBy="found-title"
-        ariaDescribedBy="found-desc"
-      >
-        <div className="space-y-6">
-          <div className="flex items-center gap-3">
-            <button
-              type="button"
-              onClick={() => {
-                setErrorMsg('');
-                setActiveModal('find');
-              }}
-              className="w-10 h-10 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple"
-              aria-label="Go back"
-            >
-              <ArrowLeft size={16} />
-            </button>
-            <h2 id="found-title" className="text-xl font-black text-white">
-              Booking Found!
-            </h2>
-          </div>
+        onGoBack={() => {
+          setErrorMsg('');
+          setActiveModal('find');
+        }}
+        foundEmail={foundEmail}
+        errorMsg={errorMsg}
+        handleSendOtp={handleSendOtp}
+        isSubmitting={isSubmitting}
+        googleBtnRef={googleBtnRef}
+      />
 
-          <div className="p-5 bg-accent-purple/10 border border-accent-purple/30 rounded-2xl text-center space-y-3">
-            <p id="found-desc" className="text-text-secondary text-xs leading-relaxed">
-              We found your ticket booking under the following email address:
-            </p>
-            <p className="text-white font-mono font-bold text-sm bg-white/5 border border-white/10 rounded-xl py-3 px-4 break-all select-all selection:bg-accent-purple/50">
-              {foundEmail}
-            </p>
-            <p className="text-text-muted text-[10px] leading-relaxed">
-              Please verify ownership using OTP or Google authentication to access your tickets.
-            </p>
-          </div>
-
-          {errorMsg && (
-            <div role="alert" aria-live="assertive" className="p-3.5 bg-error/10 border border-error/30 rounded-xl text-xs text-red-400 text-center font-medium">
-              {errorMsg}
-            </div>
-          )}
-
-          <div className="space-y-4">
-            <button
-              type="button"
-              onClick={handleSendOtp}
-              disabled={isSubmitting}
-              aria-label="Send OTP code"
-              className="w-full py-3.5 rounded-xl font-bold tracking-wide btn-gradient text-white shadow-lg active:scale-98 transition-all flex items-center justify-center gap-2"
-            >
-              Send OTP Code
-            </button>
-
-            <div className="flex items-center">
-              <div className="flex-grow border-t border-border-subtle/30" />
-              <span className="mx-4 text-xs font-bold text-text-muted/40 uppercase tracking-widest">or</span>
-              <div className="flex-grow border-t border-border-subtle/30" />
-            </div>
-
-            <div className="space-y-3">
-              <div
-                ref={googleBtnRef}
-                id="google-signin-btn-found"
-                className="w-full min-h-[44px] flex justify-center items-center overflow-hidden hover:opacity-90 active:scale-98 transition-all duration-200"
-              />
-              {isSubmitting && (
-                <p className="text-center text-xs text-purple-300/80 animate-pulse">
-                  Authenticating...
-                </p>
-              )}
-            </div>
-          </div>
-        </div>
-      </Modal>
-
-      {/* ────────────────────────────────────────────────────────── */}
-      {/* Screen 3: OTP Verification Modal */}
-      {/* ────────────────────────────────────────────────────────── */}
-      <Modal
+      <OtpVerificationModal
         isOpen={activeModal === 'otp'}
         onClose={handleClose}
-        closeOnBackdropClick={true}
-        enableSwipeToClose={true}
-        ariaLabelledBy="otp-title"
-        ariaDescribedBy="otp-desc"
-      >
-        <div className="space-y-6">
-          <div className="flex items-center gap-3">
-            <button
-              type="button"
-              onClick={() => {
-                setErrorMsg('');
-                setActiveModal('found');
-              }}
-              className="w-10 h-10 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple"
-              aria-label="Go back"
-            >
-              <ArrowLeft size={16} />
-            </button>
-            <h2 id="otp-title" className="text-xl font-black text-white">
-              Verification Required
-            </h2>
-          </div>
+        onGoBack={() => {
+          setErrorMsg('');
+          setActiveModal('found');
+        }}
+        foundEmail={foundEmail}
+        errorMsg={errorMsg}
+        infoMsg={infoMsg}
+        otpInput={otpInput}
+        setOtpInput={setOtpInput}
+        isSubmitting={isSubmitting}
+        cooldown={cooldown}
+        onSubmit={handleVerifyOtpSubmit}
+        handleResendOtp={handleResendOtp}
+      />
 
-          <div className="text-center">
-            <p id="otp-desc" className="text-text-secondary text-sm leading-relaxed">
-              Enter the 6-digit verification code sent to <span className="text-white font-semibold">{foundEmail}</span>
-            </p>
-          </div>
-
-          {errorMsg && (
-            <div role="alert" aria-live="assertive" className="p-3.5 bg-error/10 border border-error/30 rounded-xl text-xs text-red-400 text-center font-medium">
-              {errorMsg}
-            </div>
-          )}
-          {infoMsg && (
-            <div role="status" aria-live="polite" className="p-3.5 bg-accent-purple/10 border border-accent-purple/30 rounded-xl text-xs text-purple-300 text-center font-medium">
-              {infoMsg}
-            </div>
-          )}
-
-          <form onSubmit={handleVerifyOtpSubmit} className="space-y-5">
-            <div className="space-y-2">
-              <label htmlFor="otp" className="text-xs font-semibold text-text-secondary uppercase tracking-wider block text-center">
-                6-Digit Passcode
-              </label>
-              <input
-                id="otp"
-                type="text"
-                required
-                maxLength={6}
-                pattern="[0-9]*"
-                inputMode="numeric"
-                autoComplete="one-time-code"
-                value={otpInput}
-                onChange={(e) => setOtpInput(e.target.value.replace(/[^0-9]/g, ''))}
-                placeholder="000000"
-                disabled={isSubmitting}
-                aria-invalid={!!errorMsg}
-                aria-describedby={errorMsg ? "otp-error" : undefined}
-                className="w-full text-center font-black bg-white/5 border border-border-subtle rounded-2xl text-white placeholder:text-text-secondary focus:outline-none focus:border-accent-purple focus:ring-1 focus:ring-accent-purple transition-all duration-300 font-mono text-2xl sm:text-3xl py-3 tracking-[0.3em] pl-[0.3em]"
-              />
-            </div>
-
-            <div className="flex flex-col sm:flex-row gap-3">
-              <button
-                type="submit"
-                disabled={isSubmitting || otpInput.length !== 6}
-                aria-label="Verify OTP"
-                className="flex-grow py-3.5 px-5 btn-gradient text-white text-xs font-bold rounded-xl transition-all shadow-md active:scale-98 disabled:opacity-60 flex items-center justify-center gap-2"
-              >
-                {isSubmitting ? (
-                  <>
-                    <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    Verifying...
-                  </>
-                ) : (
-                  'Verify Code'
-                )}
-              </button>
-              <button
-                type="button"
-                onClick={handleResendOtp}
-                disabled={cooldown > 0 || isSubmitting}
-                aria-label="Resend OTP code"
-                className="flex-grow py-3.5 px-5 bg-white/5 hover:bg-white/10 border border-white/10 text-text-secondary hover:text-white text-xs font-bold rounded-xl transition-all disabled:opacity-50"
-              >
-                {cooldown > 0 ? `Resend (${cooldown}s)` : 'Resend Code'}
-              </button>
-            </div>
-          </form>
-        </div>
-      </Modal>
-
-      {/* ────────────────────────────────────────────────────────── */}
-      {/* Screen 4: Contact Support Modal */}
-      {/* ────────────────────────────────────────────────────────── */}
-      <Modal
+      <ContactSupportModal
         isOpen={activeModal === 'support'}
         onClose={handleClose}
-        closeOnBackdropClick={true}
-        enableSwipeToClose={true}
-        ariaLabelledBy="support-title"
-        ariaDescribedBy="support-desc"
-      >
-        <div className="space-y-6">
-          <div className="flex items-center gap-3">
-            <button
-              type="button"
-              onClick={() => {
-                setErrorMsg('');
-                setActiveModal('find');
-              }}
-              className="w-10 h-10 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple"
-              aria-label="Go back"
-            >
-              <ArrowLeft size={16} />
-            </button>
-            <h2 id="support-title" className="text-xl font-black text-white">
-              Contact Support
-            </h2>
-          </div>
-
-          <p id="support-desc" className="text-text-secondary text-xs leading-relaxed">
-            Need help retrieving your tickets? Fill out this request and our support team will contact you shortly.
-          </p>
-
-          {supportStatus === 'success' ? (
-            <div className="bg-accent-purple/15 border border-accent-purple/35 rounded-2xl p-6 text-center space-y-3 animate-in fade-in duration-300">
-              <span className="text-3xl block">✅</span>
-              <h3 className="text-white font-bold text-base">Request Submitted</h3>
-              <p className="text-text-secondary text-xs leading-relaxed">
-                Thank you! Your request was received. We will check the booking details and contact you via email soon.
-              </p>
-              <button
-                type="button"
-                onClick={() => setSupportStatus('idle')}
-                className="w-full py-2.5 bg-white/5 hover:bg-white/10 text-white border border-white/10 text-xs font-bold rounded-xl transition-all"
-              >
-                Send Another Request
-              </button>
-            </div>
-          ) : (
-            <form onSubmit={handleSupportFormSubmit} className="space-y-4">
-              {supportStatus === 'error' && (
-                <div role="alert" aria-live="assertive" className="p-3.5 bg-error/10 border border-error/30 rounded-xl text-xs text-red-400 font-medium">
-                  {supportError}
-                </div>
-              )}
-
-              <div className="space-y-1.5">
-                <label htmlFor="supportName" className="text-xs font-semibold text-text-secondary block">
-                  Full Name <span className="text-red-500">*</span>
-                </label>
-                <input
-                  id="supportName"
-                  type="text"
-                  required
-                  value={supportName}
-                  onChange={(e) => setSupportName(e.target.value)}
-                  placeholder="e.g. John Doe"
-                  disabled={supportStatus === 'submitting'}
-                  className="w-full bg-white/5 border border-border-subtle rounded-xl px-3.5 py-2.5 text-base lg:text-sm text-white placeholder:text-text-secondary focus:outline-none focus:border-accent-purple transition-all"
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <label htmlFor="supportEmail" className="text-xs font-semibold text-text-secondary block">
-                  Email Address <span className="text-red-500">*</span>
-                </label>
-                <input
-                  id="supportEmail"
-                  type="email"
-                  required
-                  value={supportEmail}
-                  onChange={(e) => setSupportEmail(e.target.value)}
-                  placeholder="e.g. john@example.com"
-                  disabled={supportStatus === 'submitting'}
-                  className="w-full bg-white/5 border border-border-subtle rounded-xl px-3.5 py-2.5 text-base lg:text-sm text-white placeholder:text-text-secondary focus:outline-none focus:border-accent-purple transition-all"
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <label htmlFor="supportRef" className="text-xs font-semibold text-text-secondary block">
-                  Booking Reference / Transaction ID
-                </label>
-                <input
-                  id="supportRef"
-                  type="text"
-                  value={supportRef}
-                  onChange={(e) => setSupportRef(e.target.value)}
-                  placeholder="e.g. MAD-YYYY-XXXXX or pay_xxxx"
-                  disabled={supportStatus === 'submitting'}
-                  className="w-full bg-white/5 border border-border-subtle rounded-xl px-3.5 py-2.5 text-base lg:text-sm text-white placeholder:text-text-secondary focus:outline-none focus:border-accent-purple font-mono transition-all"
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <label htmlFor="supportMessage" className="text-xs font-semibold text-text-secondary block">
-                  Message <span className="text-red-500">*</span>
-                </label>
-                <textarea
-                  id="supportMessage"
-                  required
-                  rows={4}
-                  value={supportMessage}
-                  onChange={(e) => setSupportMessage(e.target.value)}
-                  placeholder="Tell us what issues you are experiencing..."
-                  disabled={supportStatus === 'submitting'}
-                  className="w-full bg-white/5 border border-border-subtle rounded-xl px-3.5 py-2.5 text-base lg:text-sm text-white placeholder:text-text-secondary focus:outline-none focus:border-accent-purple resize-none transition-all"
-                />
-              </div>
-
-              <button
-                type="submit"
-                disabled={supportStatus === 'submitting'}
-                aria-label="Submit support request"
-                className="w-full py-3.5 rounded-xl font-bold tracking-wide btn-gradient text-white shadow-lg active:scale-98 transition-all flex items-center justify-center gap-2"
-              >
-                {supportStatus === 'submitting' ? (
-                  <>
-                    <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    Submitting...
-                  </>
-                ) : (
-                  'Submit Request'
-                )}
-              </button>
-            </form>
-          )}
-        </div>
-      </Modal>
+        onGoBack={() => {
+          setErrorMsg('');
+          setActiveModal('find');
+        }}
+        supportName={supportName}
+        setSupportName={setSupportName}
+        supportEmail={supportEmail}
+        setSupportEmail={setSupportEmail}
+        supportRef={supportRef}
+        setSupportRef={setSupportRef}
+        supportMessage={supportMessage}
+        setSupportMessage={setSupportMessage}
+        supportStatus={supportStatus}
+        setSupportStatus={setSupportStatus}
+        supportError={supportError}
+        onSubmit={handleSupportFormSubmit}
+      />
     </div>
   );
 }

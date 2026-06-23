@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState, useRef } from 'react';
 import { loadScriptOnce } from '@/lib/utils/load-script-once';
-import { initializeGoogleIdentity, setGoogleIdentityCallback, GoogleCredentialResponse } from '@/utils/google-identity';
+import { initializeGoogleIdentity, registerGoogleIdentityCallback, GoogleCredentialResponse } from '@/utils/google-identity';
+
 
 interface GoogleIdentity {
   accounts: {
@@ -56,14 +57,14 @@ export function useGoogleSignIn(options?: {
   }, [options?.onError]);
 
   useEffect(() => {
-    setGoogleIdentityCallback((response: GoogleCredentialResponse) => {
+    const unsubscribe = registerGoogleIdentityCallback((response: GoogleCredentialResponse) => {
       if (response?.credential) {
         successRef.current?.(response.credential);
       }
     });
 
     return () => {
-      setGoogleIdentityCallback(null);
+      unsubscribe();
     };
   }, []);
 
