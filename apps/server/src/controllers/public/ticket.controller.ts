@@ -7,7 +7,7 @@ import { Booking } from '../../models/booking.schema';
 import { Ticket } from '../../models/ticket.schema';
 import { logger } from '../../utils/logger';
 import { sendSuccess } from '../../utils/response';
-import { canViewTicketQR, generateTicketQrToken, verifyTicketQrToken } from '../../services/public/ticket-ownership.service';
+import { canViewTicketQR, buildQrCodeImageUrl, verifyTicketQrToken } from '../../services/public/ticket-ownership.service';
 import * as ticketService from '../../services/public/ticket.service';
 
 /**
@@ -174,8 +174,7 @@ export async function getMyTickets(
 
     const tokenizedTickets = tickets.map((t: any) => {
       const ticketObj = typeof t.toObject === 'function' ? t.toObject() : t;
-      const token = generateTicketQrToken(ticketObj.ticketId);
-      ticketObj.qrCodeImage = `/api/public/tickets/${ticketObj.ticketId}/qr?token=${token}`;
+      ticketObj.qrCodeImage = buildQrCodeImageUrl(ticketObj.ticketId);
       return ticketObj;
     });
 
