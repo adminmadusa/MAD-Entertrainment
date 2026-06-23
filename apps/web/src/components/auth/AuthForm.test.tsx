@@ -115,18 +115,6 @@ describe('AuthForm Component Smoke Tests', () => {
       expect(screen.getByLabelText(/email address/i)).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /continue with email/i })).toBeInTheDocument();
     });
-
-    it('should render wallet retrieve details when mode is wallet', () => {
-      renderComponent({ mode: 'wallet' });
-      expect(screen.getByRole('heading', { name: /get your tickets/i })).toBeInTheDocument();
-      expect(screen.getByText(/sign in using the email used during booking/i)).toBeInTheDocument();
-    });
-
-    it('should render inline compact inputs when mode is checkout', () => {
-      renderComponent({ mode: 'checkout' });
-      expect(screen.getByPlaceholderText(/enter your email address/i)).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /send code/i })).toBeInTheDocument();
-    });
   });
 
   describe('Email Validations', () => {
@@ -275,14 +263,16 @@ describe('AuthForm Component Smoke Tests', () => {
       });
 
       // Display warning info message about sent code/cooldown
-      expect(screen.getByRole('status')).toHaveTextContent(/verification code sent/i);
+      expect(screen.getByText(/verification code sent/i)).toBeInTheDocument();
 
       // Verify timer reduces by running timer
       await act(async () => {
         vi.advanceTimersByTime(5000);
       });
 
-      expect(screen.getByRole('status')).toHaveTextContent(/00:25/i);
+      const cooldownBanner = screen.getByText(/verification code sent\. new code available in/i).closest('[role="status"]');
+      expect(cooldownBanner).toBeInTheDocument();
+      expect(cooldownBanner).toHaveTextContent(/00:25/i);
       expect(submitBtn).toBeDisabled();
 
       // Fast forward past cooldown expiry
@@ -290,23 +280,8 @@ describe('AuthForm Component Smoke Tests', () => {
         vi.advanceTimersByTime(30000);
       });
 
-      expect(screen.queryByRole('status')).not.toBeInTheDocument();
+      expect(screen.queryByText(/verification code sent/i)).not.toBeInTheDocument();
       expect(submitBtn).not.toBeDisabled();
-    });
-  });
-
-  describe('Guest Checkout Flow', () => {
-    it('should render Guest button and handle callback', async () => {
-      const handleGuestContinue = vi.fn();
-      renderComponent({ mode: 'checkout', onGuestContinue: handleGuestContinue });
-
-      const guestBtn = screen.getByRole('button', { name: /continue as guest/i });
-      expect(guestBtn).toBeInTheDocument();
-
-      await act(async () => {
-        fireEvent.click(guestBtn);
-      });
-      expect(handleGuestContinue).toHaveBeenCalled();
     });
   });
 

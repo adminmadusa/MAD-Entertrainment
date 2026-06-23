@@ -37,7 +37,7 @@ interface GoogleIdentity {
 }
 
 export interface LoginFormProps {
-  mode: 'login' | 'wallet' | 'checkout';
+  mode: 'login';
   email: string;
   setEmail: (val: string) => void;
   onSubmit: (e: React.FormEvent) => void;
@@ -47,7 +47,6 @@ export interface LoginFormProps {
   formatTime: (seconds: number) => string;
   error: string;
   isVerificationRequired?: boolean;
-  onGuestContinue?: () => void;
   googleLoginIsPending: boolean;
 }
 
@@ -62,7 +61,6 @@ export function LoginForm({
   formatTime,
   error,
   isVerificationRequired,
-  onGuestContinue,
   googleLoginIsPending,
 }: LoginFormProps) {
   const initializeGoogleSignIn = useCallback(() => {
@@ -80,14 +78,14 @@ export function LoginForm({
             size: 'large',
             width: '100%',
             shape: 'pill',
-            text: mode === 'checkout' ? 'continue_with' : 'signin_with',
+            text: 'signin_with',
           });
         }
       } catch (err) {
         console.error('Failed to initialize Google login button:', err);
       }
     }
-  }, [mode]);
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -109,28 +107,11 @@ export function LoginForm({
     };
   }, [initializeGoogleSignIn]);
 
-  const isCheckout = mode === 'checkout';
+  // mode is always 'login' — retained as prop for future extensibility and test compatibility
+  void mode;
 
   return (
     <div className="space-y-4 sm:space-y-6">
-      {mode !== 'login' && (
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-black text-white mb-2 tracking-tight">
-            {mode === 'wallet' ? 'Get Your Tickets' : 'Welcome Back'}
-          </h1>
-          <p className="text-text-secondary text-sm leading-relaxed">
-            {mode === 'wallet'
-              ? 'Sign in using the email used during booking.'
-              : "Enter your email address and we'll send a verification code to securely access your bookings."}
-          </p>
-          {mode === 'wallet' && (
-            <p className="text-text-muted text-xs mt-2 leading-relaxed">
-              We'll send a secure verification code to retrieve your tickets.
-            </p>
-          )}
-        </div>
-      )}
-
       {/* Alert Banners */}
       {(() => {
         if (requestCooldownRemaining > 0) {
@@ -191,69 +172,44 @@ export function LoginForm({
         </div>
       )}
 
-      <form onSubmit={onSubmit} className={isCheckout ? 'flex gap-2' : 'space-y-4 sm:space-y-5'}>
-        {isCheckout ? (
-          <>
+      <form onSubmit={onSubmit} className="space-y-4 sm:space-y-5">
+        <div className="space-y-4 sm:space-y-5">
+          <div className="space-y-2">
+            <label htmlFor="email" className="text-xs font-semibold text-text-secondary uppercase tracking-wider ml-1">
+              Email Address
+            </label>
             <input
-              id="checkout-login-email"
+              id="email"
               type="email"
               required
               autoComplete="email"
-              aria-label="Email address"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="Enter your email address"
-              className="flex-grow bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-base lg:text-sm text-white placeholder:text-text-secondary focus:outline-none focus:border-accent-purple focus:ring-1 focus:ring-accent-purple transition-all"
+              placeholder="you@example.com"
+              className="w-full bg-white/5 border border-border-subtle rounded-xl px-4 py-3.5 text-base lg:text-sm text-white placeholder:text-text-secondary focus:outline-none focus:border-accent-purple focus:ring-1 focus:ring-accent-purple transition-all duration-300"
             />
-            <Button
-              type="submit"
-              variant="primary"
-              className="px-4 py-2 text-xs font-bold rounded-xl whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-              disabled={requestCooldownRemaining > 0}
-              isLoading={isPending}
-            >
-              {requestCooldownRemaining > 0 ? `Request Code (${formatTime(requestCooldownRemaining)})` : 'Send Code'}
-            </Button>
-          </>
-        ) : (
-          <div className="space-y-4 sm:space-y-5">
-            <div className="space-y-2">
-              <label htmlFor="email" className="text-xs font-semibold text-text-secondary uppercase tracking-wider ml-1">
-                Email Address
-              </label>
-              <input
-                id="email"
-                type="email"
-                required
-                autoComplete="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@example.com"
-                className="w-full bg-white/5 border border-border-subtle rounded-xl px-4 py-3.5 text-base lg:text-sm text-white placeholder:text-text-secondary focus:outline-none focus:border-accent-purple focus:ring-1 focus:ring-accent-purple transition-all duration-300"
-              />
-            </div>
-
-            <Button
-              type="submit"
-              variant="primary"
-              fullWidth
-              className="py-3.5 rounded-xl font-bold tracking-wide shadow-lg shadow-accent-purple/20 hover:shadow-accent-purple/40 active:scale-95 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-              disabled={requestCooldownRemaining > 0}
-              isLoading={isPending}
-            >
-              {requestCooldownRemaining > 0 ? `Request Code (${formatTime(requestCooldownRemaining)})` : 'Continue with Email'}
-            </Button>
           </div>
-        )}
+
+          <Button
+            type="submit"
+            variant="primary"
+            fullWidth
+            className="py-3.5 rounded-xl font-bold tracking-wide shadow-lg shadow-accent-purple/20 hover:shadow-accent-purple/40 active:scale-95 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            disabled={requestCooldownRemaining > 0}
+            isLoading={isPending}
+          >
+            {requestCooldownRemaining > 0 ? `Request Code (${formatTime(requestCooldownRemaining)})` : 'Continue with Email'}
+          </Button>
+        </div>
       </form>
 
       <p className="text-[11px] text-text-muted text-center leading-normal">
         By continuing, you agree to our{' '}
-        <Link href="/legal/terms" className="text-accent-purple hover:underline font-semibold">
+        <Link href="/legal/terms" className="text-accent-purple hover:underline font-semibold" aria-label="Terms of Service (opens in same tab)">
           Terms of Service
         </Link>{' '}
         and{' '}
-        <Link href="/legal/privacy" className="text-accent-purple hover:underline font-semibold">
+        <Link href="/legal/privacy" className="text-accent-purple hover:underline font-semibold" aria-label="Privacy Policy (opens in same tab)">
           Privacy Policy
         </Link>
         .
@@ -278,19 +234,6 @@ export function LoginForm({
           </p>
         )}
       </div>
-
-      {/* Checkout Guest continue option */}
-      {isCheckout && onGuestContinue && (
-        <div className="pt-2 border-t border-white/5 text-center">
-          <button
-            type="button"
-            onClick={onGuestContinue}
-            className="text-xs font-semibold text-text-muted hover:text-white transition-colors py-1 inline-block"
-          >
-            Continue as Guest →
-          </button>
-        </div>
-      )}
     </div>
   );
 }

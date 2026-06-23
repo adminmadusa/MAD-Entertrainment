@@ -27,9 +27,8 @@ interface GoogleCredentialResponse {
 }
 
 export interface AuthFormProps {
-  mode: 'login' | 'wallet' | 'checkout';
+  mode: 'login';
   onSuccess?: (data: AuthResponse) => void;
-  onGuestContinue?: () => void;
   className?: string;
   isVerificationRequired?: boolean;
   bookingReference?: string;
@@ -37,10 +36,15 @@ export interface AuthFormProps {
   onClose?: () => void;
 }
 
+const STEP_ANNOUNCEMENTS: Record<'request' | 'verify' | 'onboard', string> = {
+  request: 'Sign in screen',
+  verify: 'Verification code screen',
+  onboard: 'Profile completion screen',
+};
+
 export function AuthForm({
   mode,
   onSuccess,
-  onGuestContinue,
   className = '',
   isVerificationRequired,
   bookingReference,
@@ -64,7 +68,7 @@ export function AuthForm({
   const [otp, setOtp] = useState('');
   const [step, setStep] = useState<'request' | 'verify' | 'onboard'>('request');
   const [error, setError] = useState('');
-  const [infoMessage, setInfoMessage] = useState('');
+  const [stepAnnouncement, setStepAnnouncement] = useState('');
 
   useEffect(() => {
     if (initialEmail && !email) {
@@ -80,25 +84,28 @@ export function AuthForm({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token, onboardingRequired]);
 
+  // Announce step changes to screen readers and manage focus
+  const firstFocusableRef = useRef<HTMLInputElement | null>(null);
+
   useEffect(() => {
-    if (step === 'request') {
-      setTimeout(() => {
-        const checkoutEmailEl = document.getElementById('checkout-login-email');
-        const emailEl = document.getElementById('email');
-        if (checkoutEmailEl) checkoutEmailEl.focus();
-        else if (emailEl) emailEl.focus();
-      }, 50);
-    } else if (step === 'verify') {
-      setTimeout(() => {
-        const otpEl = document.getElementById('otp');
-        if (otpEl) otpEl.focus();
-      }, 50);
-    } else if (step === 'onboard') {
-      setTimeout(() => {
-        const firstNameEl = document.getElementById('firstName');
-        if (firstNameEl) firstNameEl.focus();
-      }, 50);
-    }
+    setStepAnnouncement(STEP_ANNOUNCEMENTS[step]);
+
+    const STEP_FOCUS_IDS: Record<'request' | 'verify' | 'onboard', string> = {
+      request: 'email',
+      verify: 'otp',
+      onboard: 'firstName',
+    };
+    const focusTargetId = STEP_FOCUS_IDS[step];
+
+    const timer = setTimeout(() => {
+      const el = document.getElementById(focusTargetId) as HTMLInputElement | null;
+      if (el) {
+        firstFocusableRef.current = el;
+        el.focus();
+      }
+    }, 50);
+
+    return () => clearTimeout(timer);
   }, [step]);
 
   // Google GSI reference markers to prevent concurrent initializations
@@ -111,9 +118,10 @@ export function AuthForm({
     mutationFn: () => publicRequestVerificationCode(email.trim().toLowerCase()),
     onSuccess: (res) => {
       setStep('verify');
-      setInfoMessage(res.message || 'Verification passcode dispatched. Please check your inbox.');
       setError('');
       startTimer();
+      // Suppress unused res warning — message was previously shown in duplicate banner
+      void res;
     },
     onError: (err) => {
       const apiErr = extractApiError(err);
@@ -138,7 +146,6 @@ export function AuthForm({
       setOnboardingRequired(!!data.onboardingRequired);
       setError('');
       setOtp('');
-      setInfoMessage('');
       if (data.onboardingRequired) {
         setStep('onboard');
       } else {
@@ -165,7 +172,6 @@ export function AuthForm({
       login(data.token, data.user);
       setOnboardingRequired(!!data.onboardingRequired);
       setError('');
-      setInfoMessage('Successfully authenticated with Google!');
       if (data.onboardingRequired) {
         setStep('onboard');
       } else {
@@ -205,7 +211,6 @@ export function AuthForm({
   const handleSubmitEmail = (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    setInfoMessage('');
 
     // 1. Normalize
     const cleanedData = {
@@ -259,7 +264,6 @@ export function AuthForm({
   const handleBackToOptions = () => {
     setStep('request');
     setError('');
-    setInfoMessage('');
     setOtp('');
   };
 
@@ -275,31 +279,29 @@ export function AuthForm({
     setStep('request');
   };
 
-  const isCheckout = mode === 'checkout';
-
   return (
     <div className={`space-y-4 sm:space-y-6 relative ${className}`}>
+      {/* Screen reader step transition announcer */}
+      <div
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+        className="sr-only"
+      >
+        {stepAnnouncement}
+      </div>
+
       {onClose && (
         <button
           type="button"
           onClick={handleClose}
-          className="absolute -top-2 -right-2 text-white hover:text-white/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple rounded-md p-1.5 z-50 transition-all flex items-center justify-center"
+          className="absolute -top-2 -right-2 text-white hover:text-white/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple rounded-md min-h-[44px] min-w-[44px] z-50 transition-all flex items-center justify-center"
           aria-label="Close"
         >
           <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
             <path d="M18 6L6 18M6 6l12 12" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </button>
-      )}
-
-      {infoMessage && (
-        <div 
-          role="status"
-          aria-live="polite"
-          className="p-4 bg-accent-purple/10 border border-accent-purple/30 rounded-2xl text-xs text-purple-300 text-center animate-in fade-in duration-300"
-        >
-          {infoMessage}
-        </div>
       )}
 
       {/* SCREEN 1: Request OTP Form */}
@@ -315,7 +317,6 @@ export function AuthForm({
           formatTime={formatTime}
           error={error}
           isVerificationRequired={isVerificationRequired}
-          onGuestContinue={onGuestContinue}
           googleLoginIsPending={googleLoginMutation.isPending}
         />
       )}
@@ -336,7 +337,6 @@ export function AuthForm({
           requestCooldownRemaining={requestCooldownRemaining}
           requestVerificationCodeIsPending={requestVerificationCodeMutation.isPending}
           onResend={() => requestVerificationCodeMutation.mutate()}
-          isCheckout={isCheckout}
         />
       )}
 
@@ -346,7 +346,6 @@ export function AuthForm({
           initialFirstName={user?.firstName || ''}
           initialLastName={user?.lastName || ''}
           initialMobileNumber={user?.mobileNumber || ''}
-          isCheckout={isCheckout}
           onSuccess={() => {
             if (onSuccess) {
               onSuccess({ token: token!, user: user! });
