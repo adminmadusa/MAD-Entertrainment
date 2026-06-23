@@ -175,11 +175,7 @@ export function EntryPassGrid({ tickets }: EntryPassGridProps) {
                     >
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
-                        src={
-                          ticket.qrCodeImage && !ticket.qrCodeImage.includes('api.qrserver.com')
-                            ? ticket.qrCodeImage
-                            : `/api/public/tickets/${ticket.ticketId}/qr`
-                        }
+                        src={ticket.qrCodeImage}
                         alt="QR Ticket Code"
                         className="w-44 h-44 bg-white transition-transform duration-300 group-hover:scale-[1.03]"
                       />
@@ -276,11 +272,7 @@ export function EntryPassGrid({ tickets }: EntryPassGridProps) {
               <div className="bg-white p-4 border-2 border-slate-200 rounded-2xl inline-block shadow-sm">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={
-                    zoomedTicket.qrCodeImage && !zoomedTicket.qrCodeImage.includes('api.qrserver.com')
-                      ? zoomedTicket.qrCodeImage
-                      : `/api/public/tickets/${zoomedTicket.ticketId}/qr`
-                  }
+                  src={zoomedTicket.qrCodeImage}
                   alt="Enlarged QR Scanner Code"
                   className="w-64 h-64 mx-auto select-none pointer-events-none"
                 />
