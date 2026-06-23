@@ -13,8 +13,8 @@ import {
 } from '@/lib/api/public.service';
 import { useAuth } from '@/providers/AuthProvider';
 import { submitContactForm } from '@/app/actions/contact.actions';
-import { loadScriptOnce } from '@/lib/utils/load-script-once';
-import { initializeGoogleIdentity, setGoogleIdentityCallback } from '@/utils/google-identity';
+import { useGoogleSignIn } from '@/components/auth/hooks/useGoogleSignIn';
+import { useOtpCooldowns } from '@/components/auth/hooks/useOtpCooldowns';
 
 interface GoogleCredentialResponse {
   credential?: string;
@@ -66,7 +66,46 @@ function TicketRetrievalContent() {
   const [foundBookingId, setFoundBookingId] = useState('');
   const [foundEmail, setFoundEmail] = useState('');
   const [otpInput, setOtpInput] = useState('');
-  const [cooldown, setCooldown] = useState(0);
+
+  const { requestCooldownRemaining: cooldown, triggerRequestCooldown: setCooldown } = useOtpCooldowns({ namespace: 'mad_otp_recovery' });
+
+  const googleBtnRef = useRef<HTMLDivElement>(null);
+
+  const { gsiLoaded, renderButton } = useGoogleSignIn({
+    onSuccess: async (credential) => {
+      setIsSubmitting(true);
+      setErrorMsg('');
+      setLiveMessage('Signing in with Google...');
+      try {
+        const data = await publicGoogleLogin(credential);
+        login(data.token, data.user);
+        setOnboardingRequired(!!data.onboardingRequired);
+        setLiveMessage('Successfully authenticated with Google.');
+        
+        const targetBookingId = foundBookingId || bookingRefInput.trim().toUpperCase();
+        const dest = targetBookingId.startsWith('MAD-')
+          ? `/dashboard?tab=tickets&ref=${encodeURIComponent(targetBookingId)}`
+          : `/dashboard?tab=tickets`;
+        router.push(dest);
+      } catch (err) {
+        const apiErr = extractApiError(err);
+        setErrorMsg(apiErr.message || 'Google authentication failed.');
+        setLiveMessage('Google authentication failed.');
+      } finally {
+        setIsSubmitting(false);
+      }
+    },
+    onError: (err) => {
+      setErrorMsg(err);
+      setLiveMessage('Google authentication failed.');
+    }
+  });
+
+  useEffect(() => {
+    if (activeModal === 'found' && gsiLoaded && googleBtnRef.current) {
+      renderButton(googleBtnRef.current);
+    }
+  }, [activeModal, gsiLoaded, renderButton]);
 
   // Support Form States
   const [supportName, setSupportName] = useState('');
@@ -91,14 +130,7 @@ function TicketRetrievalContent() {
     }
   }, [targetRef]);
 
-  // Resend Cooldown Timer
-  useEffect(() => {
-    if (cooldown <= 0) return;
-    const timer = setInterval(() => {
-      setCooldown((prev) => Math.max(0, prev - 1));
-    }, 1000);
-    return () => clearInterval(timer);
-  }, [cooldown]);
+
 
   // Redirect to dashboard if authenticated on mount or after login
   useEffect(() => {
@@ -271,82 +303,7 @@ function TicketRetrievalContent() {
     }
   };
 
-  // Google Sign-In script loaders
-  const initializeGoogleSignIn = useCallback(() => {
-    const googleObj = (window as unknown as { google?: GoogleIdentity }).google;
-    const btnElement = document.getElementById('google-signin-btn-found');
-    if (typeof window !== 'undefined' && googleObj && btnElement && btnElement.innerHTML === '') {
-      try {
-        initializeGoogleIdentity(
-          process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || 'google_client_id_placeholder'
-        );
-        googleObj.accounts.id.renderButton(btnElement, {
-          theme: 'filled_dark',
-          size: 'large',
-          width: '100%',
-          shape: 'pill',
-          text: 'signin_with',
-        });
-      } catch (err) {
-        console.error('Failed to initialize Google login button:', err);
-      }
-    }
-  }, []);
 
-  useEffect(() => {
-    if (activeModal === 'found') {
-      let active = true;
-      const loadGsi = async () => {
-        try {
-          await loadScriptOnce('https://accounts.google.com/gsi/client');
-          if (active) {
-            setTimeout(() => {
-              if (active) initializeGoogleSignIn();
-            }, 50);
-          }
-        } catch (err) {
-          console.error('Failed to load Google script:', err);
-        }
-      };
-      loadGsi();
-      return () => {
-        active = false;
-      };
-    }
-  }, [activeModal, initializeGoogleSignIn]);
-
-  useEffect(() => {
-    if (activeModal === 'found') {
-      setGoogleIdentityCallback(async (response) => {
-        if (response?.credential) {
-          setIsSubmitting(true);
-          setErrorMsg('');
-          setLiveMessage('Signing in with Google...');
-          try {
-            const data = await publicGoogleLogin(response.credential);
-            login(data.token, data.user);
-            setOnboardingRequired(!!data.onboardingRequired);
-            setLiveMessage('Successfully authenticated with Google.');
-            
-            const targetBookingId = foundBookingId || bookingRefInput.trim().toUpperCase();
-            const dest = targetBookingId.startsWith('MAD-')
-              ? `/dashboard?tab=tickets&ref=${encodeURIComponent(targetBookingId)}`
-              : `/dashboard?tab=tickets`;
-            router.push(dest);
-          } catch (err) {
-            const apiErr = extractApiError(err);
-            setErrorMsg(apiErr.message || 'Google authentication failed.');
-            setLiveMessage('Google authentication failed.');
-          } finally {
-            setIsSubmitting(false);
-          }
-        }
-      });
-      return () => {
-        setGoogleIdentityCallback(null);
-      };
-    }
-  }, [activeModal, foundBookingId, bookingRefInput, login, setOnboardingRequired, router]);
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden flex items-center justify-center">
@@ -530,6 +487,7 @@ function TicketRetrievalContent() {
 
             <div className="space-y-3">
               <div
+                ref={googleBtnRef}
                 id="google-signin-btn-found"
                 className="w-full min-h-[44px] flex justify-center items-center overflow-hidden hover:opacity-90 active:scale-98 transition-all duration-200"
               />

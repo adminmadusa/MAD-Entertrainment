@@ -1,10 +1,9 @@
 'use client';
 
-import React, { useEffect, useCallback } from 'react';
+import React, { useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { Button } from '@mad/ui';
-import { loadScriptOnce } from '@/lib/utils/load-script-once';
-import { initializeGoogleIdentity } from '@/utils/google-identity';
+import { useGoogleSignIn } from './hooks/useGoogleSignIn';
 
 interface GoogleCredentialResponse {
   credential?: string;
@@ -46,8 +45,8 @@ export interface LoginFormProps {
   verifyCooldownRemaining: number;
   formatTime: (seconds: number) => string;
   error: string;
-  isVerificationRequired?: boolean;
   googleLoginIsPending: boolean;
+  onGoogleLoginSuccess: (credential: string) => void;
 }
 
 export function LoginForm({
@@ -60,52 +59,19 @@ export function LoginForm({
   verifyCooldownRemaining,
   formatTime,
   error,
-  isVerificationRequired,
   googleLoginIsPending,
+  onGoogleLoginSuccess,
 }: LoginFormProps) {
-  const initializeGoogleSignIn = useCallback(() => {
-    const googleObj = (window as unknown as { google?: GoogleIdentity }).google;
-    const btnElement = document.getElementById('google-signin-btn-shared');
-    if (typeof window !== 'undefined' && googleObj) {
-      try {
-        initializeGoogleIdentity(
-          process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || 'google_client_id_placeholder'
-        );
-
-        if (btnElement && btnElement.innerHTML === '') {
-          googleObj.accounts.id.renderButton(btnElement, {
-            theme: 'filled_dark',
-            size: 'large',
-            width: '100%',
-            shape: 'pill',
-            text: 'signin_with',
-          });
-        }
-      } catch (err) {
-        console.error('Failed to initialize Google login button:', err);
-      }
-    }
-  }, []);
+  const googleBtnRef = useRef<HTMLDivElement>(null);
+  const { gsiLoaded, renderButton } = useGoogleSignIn({
+    onSuccess: onGoogleLoginSuccess,
+  });
 
   useEffect(() => {
-    let active = true;
-    const loadGsi = async () => {
-      try {
-        await loadScriptOnce('https://accounts.google.com/gsi/client');
-        if (active) {
-          setTimeout(() => {
-            if (active) initializeGoogleSignIn();
-          }, 50);
-        }
-      } catch (err) {
-        console.error('Failed to load Google script in shared auth form:', err);
-      }
-    };
-    loadGsi();
-    return () => {
-      active = false;
-    };
-  }, [initializeGoogleSignIn]);
+    if (gsiLoaded && googleBtnRef.current) {
+      renderButton(googleBtnRef.current);
+    }
+  }, [gsiLoaded, renderButton]);
 
   // mode is always 'login' — retained as prop for future extensibility and test compatibility
   void mode;
@@ -154,23 +120,7 @@ export function LoginForm({
         return null;
       })()}
 
-      {isVerificationRequired && (
-        <div 
-          role="alert"
-          aria-live="polite"
-          className="p-5 bg-accent-purple/10 border border-accent-purple/30 rounded-2xl text-center space-y-2 shadow-glow-sm animate-in fade-in duration-300"
-        >
-          <h3 className="text-accent-purple-light font-extrabold text-sm tracking-wide">
-            Booking Found
-          </h3>
-          <p className="text-text-secondary text-xs leading-relaxed">
-            Enter the email address used during purchase.
-          </p>
-          <p className="text-text-muted text-[10px] leading-relaxed">
-            We'll send you a verification code.
-          </p>
-        </div>
-      )}
+
 
       <form onSubmit={onSubmit} className="space-y-4 sm:space-y-5">
         <div className="space-y-4 sm:space-y-5">
@@ -225,6 +175,7 @@ export function LoginForm({
       {/* Google SSO button */}
       <div className="space-y-3">
         <div
+          ref={googleBtnRef}
           id="google-signin-btn-shared"
           className="w-full min-h-[44px] flex justify-center items-center overflow-hidden hover:opacity-90 active:scale-98 transition-all duration-200"
         />
