@@ -25,8 +25,8 @@ export const getAdmins = async (req: Request, res: Response, next: NextFunction)
 
 export const createAdmin = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const requestingAdminId = (req as any).admin?.sub || (req as any).admin?.id || 'system';
-    const requestingAdminRole = (req as any).admin?.role || 'super_admin';
+    const requestingAdminId = req.admin?.sub || 'system';
+    const requestingAdminRole = req.admin?.role || 'super_admin';
     const admin = await teamService.createAdmin(req.body, requestingAdminId, requestingAdminRole);
     res.status(201).json({
       success: true,
@@ -40,8 +40,8 @@ export const createAdmin = async (req: Request, res: Response, next: NextFunctio
 
 export const toggleAdminActive = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const requestingAdminId = (req as any).admin?.sub || (req as any).admin?.id;
-    const requestingAdminRole = (req as any).admin?.role;
+    const requestingAdminId = req.admin?.sub;
+    const requestingAdminRole = req.admin?.role;
     if (!requestingAdminId || !requestingAdminRole) {
       return res.status(401).json({ success: false, message: 'Admin authentication required' });
     }
@@ -63,8 +63,8 @@ export const toggleAdminActive = async (req: Request, res: Response, next: NextF
 
 export const updateAdmin = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const requestingAdminId = (req as any).admin?.sub || (req as any).admin?.id;
-    const requestingAdminRole = (req as any).admin?.role;
+    const requestingAdminId = req.admin?.sub;
+    const requestingAdminRole = req.admin?.role;
     if (!requestingAdminId || !requestingAdminRole) {
       return res.status(401).json({ success: false, message: 'Admin authentication required' });
     }
@@ -86,8 +86,8 @@ export const updateAdmin = async (req: Request, res: Response, next: NextFunctio
 
 export const updateAdminRole = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const requestingAdminId = (req as any).admin?.sub || (req as any).admin?.id;
-    const requestingAdminRole = (req as any).admin?.role;
+    const requestingAdminId = req.admin?.sub;
+    const requestingAdminRole = req.admin?.role;
     if (!requestingAdminId || !requestingAdminRole) {
       return res.status(401).json({ success: false, message: 'Admin authentication required' });
     }
@@ -109,8 +109,8 @@ export const updateAdminRole = async (req: Request, res: Response, next: NextFun
 
 export const resetAdminPassword = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const requestingAdminId = (req as any).admin?.sub || (req as any).admin?.id;
-    const requestingAdminRole = (req as any).admin?.role;
+    const requestingAdminId = req.admin?.sub;
+    const requestingAdminRole = req.admin?.role;
     if (!requestingAdminId || !requestingAdminRole) {
       return res.status(401).json({ success: false, message: 'Admin authentication required' });
     }

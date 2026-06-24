@@ -1,7 +1,7 @@
 'use client';
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { BookingStatus, getBookingStatusLabel } from '@mad/shared';
+import { BookingStatus, getBookingStatusLabel, AdminRole } from '@mad/shared';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useState, useEffect, Suspense, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
@@ -52,7 +52,7 @@ function BookingsContent() {
   const qc = useQueryClient();
   const searchParams = useSearchParams();
   const [search, setSearch] = useState('');
-  const canMutateBookings = !!admin?.role && ['super_admin', 'admin', 'support'].includes(admin.role);
+  const canMutateBookings = !!admin?.role && [AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.SUPPORT].includes(admin.role as AdminRole);
   const [statusFilter, setStatusFilter] = useState('');
   const [eventFilter, setEventFilter] = useState('');
   const [page, setPage] = useState(1);

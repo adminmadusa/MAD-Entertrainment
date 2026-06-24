@@ -5,6 +5,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { useState } from 'react';
 import { useAdminAuth } from '@/providers/AdminAuthProvider';
+import { AdminRole } from '@mad/shared';
+
 import { adminGetTicketProfiles, adminDeleteTicketProfile, adminUpdateTicketProfile } from '@/lib/api/admin/ticket-profile.service';
 import { extractApiError } from '@/lib/api/client';
 import ErrorState from '@/components/states/ErrorState';
@@ -14,7 +16,7 @@ export default function AdminTicketProfilesPage() {
   const { admin } = useAdminAuth();
   const qc = useQueryClient();
   const [deleteTarget, setDeleteTarget] = useState<TicketProfile | null>(null);
-  const canMutateProfiles = !!admin?.role && ['super_admin', 'admin', 'manager'].includes(admin.role);
+  const canMutateProfiles = !!admin?.role && [AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.MANAGER].includes(admin.role as AdminRole);
 
   const { data: profiles = [], isLoading, error } = useQuery({
     queryKey: ['admin-ticket-profiles'],

@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { useState } from 'react';
 import { useAdminAuth } from '@/providers/AdminAuthProvider';
+import { AdminRole } from '@mad/shared';
 
 import { adminGetDJs, adminDeleteDJ, adminUpdateDJ } from '@/lib/api/admin/dj.service';
 import { extractApiError } from '@/lib/api/client';
@@ -16,7 +17,7 @@ export default function AdminDJsPage() {
   const { admin } = useAdminAuth();
   const qc = useQueryClient();
   const [search, setSearch] = useState('');
-  const canMutateDJs = !!admin?.role && ['super_admin', 'admin', 'manager'].includes(admin.role);
+  const canMutateDJs = !!admin?.role && [AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.MANAGER].includes(admin.role as AdminRole);
   const [page, setPage] = useState(1);
   const [deleteTarget, setDeleteTarget] = useState<DJOperator | null>(null);
 

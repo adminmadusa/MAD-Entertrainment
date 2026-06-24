@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { useState } from 'react';
-import { EVENT_STATUS_METADATA, type EventStatus } from '@mad/shared';
+import { EVENT_STATUS_METADATA, type EventStatus, AdminRole } from '@mad/shared';
 import { useAdminAuth } from '@/providers/AdminAuthProvider';
 
 import { adminGetEvents, adminDeleteEvent, type AdminEvent } from '@/lib/api/admin/event.service';
@@ -20,7 +20,7 @@ export default function AdminEventsPage() {
   const { admin } = useAdminAuth();
   const qc = useQueryClient();
   const [search, setSearch] = useState('');
-  const canMutateEvents = !!admin?.role && ['super_admin', 'admin', 'manager'].includes(admin.role);
+  const canMutateEvents = !!admin?.role && [AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.MANAGER].includes(admin.role as AdminRole);
   const [statusFilter, setStatusFilter] = useState<EventStatus | ''>('');
   const [page, setPage] = useState(1);
   const [deleteTarget, setDeleteTarget] = useState<AdminEvent | null>(null);

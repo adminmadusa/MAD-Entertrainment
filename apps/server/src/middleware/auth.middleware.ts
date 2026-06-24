@@ -30,6 +30,7 @@ declare global {
     interface Request {
       user?: JwtUserPayload;
       admin?: JwtAdminPayload;
+      rawBody?: Buffer;
 
       session?: {
         sessionId: string;

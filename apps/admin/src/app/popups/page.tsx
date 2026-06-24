@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { useState } from 'react';
 import { useAdminAuth } from '@/providers/AdminAuthProvider';
+import { AdminRole } from '@mad/shared';
 
 import { adminGetPopups, adminDeletePopup, adminTogglePopup } from '@/lib/api/admin/popup.service';
 import { extractApiError } from '@/lib/api/client';
@@ -16,7 +17,7 @@ export default function AdminPopupsPage() {
   const { admin } = useAdminAuth();
   const qc = useQueryClient();
   const [page, setPage] = useState(1);
-  const canMutatePopups = !!admin?.role && ['super_admin', 'admin', 'manager'].includes(admin.role);
+  const canMutatePopups = !!admin?.role && [AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.MANAGER].includes(admin.role as AdminRole);
   const [deleteTarget, setDeleteTarget] = useState<PopupCampaign | null>(null);
 
   const { data, isLoading, error } = useQuery({
