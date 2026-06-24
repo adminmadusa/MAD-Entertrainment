@@ -434,20 +434,44 @@ refactor/auth-hook
 
 Before new work:
 
-git branch --show-current
+git checkout develop
 
-git status --short
+git pull origin develop
 
-git branch
+git status
 
 Verify:
 
 * Working tree clean
+* develop == origin/develop
 * Previous task completed
 * Previous branch merged
 * Previous branch cleaned
 
 Do not stack implementation branches.
+
+---
+
+# BRANCH LIFECYCLE MANAGEMENT
+
+Mandatory branch lifecycle rules:
+
+## 1. Audit Branches (audit/*)
+* Used for discovery, diagnostics, and evidence gathering only.
+* No production edits, commits, or deployments are allowed.
+* Once the audit is completed or an issue is created, the branch must be deleted immediately.
+
+## 2. Workstream Branches (feat/*, fix/*, refactor/*, etc.)
+* Strict boundary: 1 Issue = 1 Branch = 1 PR.
+* Reusing merged branches or combining multiple issues is forbidden.
+* Immediately after a PR is merged and verified in staging/production, delete both the local and remote branches.
+
+## 3. Stale Branch Policy
+* Any branch behind develop by > 30 commits is stale.
+* Stale branches must be rebased and continued, or closed and deleted.
+
+## 4. Weekly Cleanup Schedule
+* Human developers and AI agents must review local and remote branches weekly to prune stale or merged branches.
 
 ---
 
