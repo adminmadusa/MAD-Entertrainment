@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { Outfit } from 'next/font/google';
 
-import { PopupManager } from '@/components/common/PopupManager';
 import { ChunkRecoveryClear } from '@/components/common/ChunkRecoveryClear';
 import { Footer } from '@/components/layout/Footer';
 import { Navbar } from '@/components/layout/Navbar';
@@ -14,7 +13,6 @@ const outfit = Outfit({
   subsets: ['latin'],
   variable: '--font-outfit',
   display: 'swap',
-  weight: ['300', '400', '500', '600', '700', '800', '900'],
 });
 
 // ─── Metadata ─────────────────────────────────────────────────
@@ -158,7 +156,6 @@ export default function RootLayout({ children }: RootLayoutProps) {
             {children}
           </main>
           <Footer />
-          <PopupManager />
         </Providers>
       </body>
     </html>

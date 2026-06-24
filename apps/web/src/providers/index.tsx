@@ -6,6 +6,11 @@ import { useState, useEffect } from 'react';
 
 import { AuthProvider } from './AuthProvider';
 import { AuthModalProvider } from './AuthModalProvider';
+import dynamic from 'next/dynamic';
+
+const PopupManager = dynamic(() => import('@/components/common/PopupManager').then(mod => mod.PopupManager), {
+  ssr: false,
+});
 
 interface ProvidersProps {
   children: React.ReactNode;
@@ -79,6 +84,7 @@ export function Providers({ children }: ProvidersProps) {
       <AuthProvider>
         <AuthModalProvider>
           {children}
+          <PopupManager />
         </AuthModalProvider>
       </AuthProvider>
       {process.env.NODE_ENV === 'development' && (

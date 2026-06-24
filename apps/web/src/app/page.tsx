@@ -2,10 +2,13 @@ import { ScrollIndicator, ArrowRight } from '@mad/ui';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Suspense } from 'react';
+import dynamic from 'next/dynamic';
 
 import { Reveal, StaggerContainer, StaggerItem } from '@/components/common/PageTransition';
 import { DJOperatorsSection } from '@/components/ui/DjOperatorsSection';
-import { FeaturedEventsSection } from '@/components/ui/FeaturedEventsSection';
+const FeaturedEventsSection = dynamic(() => import('@/components/ui/FeaturedEventsSection').then(mod => mod.FeaturedEventsSection), {
+  ssr: true,
+});
 import {
   FeaturedEventsSkeleton,
   DJOperatorsSkeleton,
