@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useState } from 'react';
 import { useAdminAuth } from '@/providers/AdminAuthProvider';
 import { AdminRole } from '@mad/shared';
+import { formatDateTime, formatEventDate } from '@mad/utils';
 
 import { adminGetRefunds, adminProcessRefund, type AdminRefund } from '@/lib/api/admin/booking.service';
 import ErrorState from '@/components/states/ErrorState';
@@ -96,7 +97,7 @@ export default function AdminRefundsPage() {
             {refund.status}
           </span>
         </td>
-        <td className="py-3.5 px-4 text-text-muted text-xs">{new Date(refund.createdAt).toLocaleDateString('en-IN')}</td>
+        <td className="py-3.5 px-4 text-text-muted text-xs">{formatDateTime(refund.createdAt)}</td>
         <td className="py-3.5 px-4">
           {canProcessRefund && refund.status === 'requested' && (
             <button onClick={() => setProcessTarget(refund)}
@@ -212,7 +213,7 @@ export default function AdminRefundsPage() {
                     <p className="text-white font-semibold">{event?.title ?? '—'}</p>
                     {event?.startDate && (
                       <p className="text-text-muted text-xs mt-0.5">
-                        {new Date(event.startDate).toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}
+                        {formatEventDate(event.startDate)}
                       </p>
                     )}
                     {event?.venue && <p className="text-text-muted text-xs mt-0.5">{event.venue}</p>}

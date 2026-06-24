@@ -2,6 +2,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { BookingStatus, getBookingStatusLabel, AdminRole } from '@mad/shared';
+import { formatDateTime, formatEventDate } from '@mad/utils';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useState, useEffect, Suspense, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
@@ -235,7 +236,7 @@ function BookingsContent() {
             )}
           </td>
           <td className="py-4 px-4 text-text-muted text-xs">
-            {new Date(booking.createdAt).toLocaleDateString('en-IN')}
+            {formatDateTime(booking.createdAt)}
           </td>
           <td className="py-4 px-5 text-right">
             {canMutateBookings && booking.status === BookingStatus.CONFIRMED && (
@@ -454,12 +455,7 @@ function BookingsContent() {
                     <p className="text-white font-semibold">{(selectedBooking.eventId as { title?: string })?.title ?? '—'}</p>
                     <p className="text-text-secondary text-xs mt-0.5">
                       {selectedBooking.eventId?.startDate
-                        ? new Date(selectedBooking.eventId.startDate).toLocaleDateString('en-IN', {
-                            weekday: 'short',
-                            day: 'numeric',
-                            month: 'short',
-                            year: 'numeric',
-                          })
+                        ? formatEventDate(selectedBooking.eventId.startDate)
                         : '—'}
                     </p>
                   </div>
@@ -609,7 +605,7 @@ function BookingsContent() {
                             <span className="text-accent-purple font-semibold">
                               {log.action === 'BOOKING_EMAIL_CORRECTED' ? 'Email Corrected' : 'Tickets Resent'}
                             </span>
-                            <span className="text-text-muted">{new Date(log.timestamp).toLocaleString('en-IN')}</span>
+                            <span className="text-text-muted">{formatDateTime(log.timestamp)}</span>
                           </div>
                           <p className="text-text-secondary">{log.description}</p>
                           {log.metadata?.reason && (
@@ -642,9 +638,9 @@ function BookingsContent() {
                           </div>
                           
                           <div className="text-[10px] text-text-muted space-y-1">
-                            <p>Created: {new Date(t.createdAt).toLocaleString('en-IN')}</p>
+                            <p>Created: {formatDateTime(t.createdAt)}</p>
                             {t.replacedAt && (
-                              <p>Replaced: {new Date(t.replacedAt).toLocaleString('en-IN')}</p>
+                              <p>Replaced: {formatDateTime(t.replacedAt)}</p>
                             )}
                             {t.replacedByTicketId && (
                               <p className="font-mono text-accent-purple">Replaced by: {t.replacedByTicketId}</p>

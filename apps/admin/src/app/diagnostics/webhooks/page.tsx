@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { formatDateTime } from '@mad/utils';
 
 import { adminGetWebhooks } from '@/lib/api/admin/diagnostics.service';
 import ErrorState from '@/components/states/ErrorState';
@@ -88,7 +89,7 @@ export default function WebhookDiagnosticsPage() {
       return (
         <tr key={webhook._id} className="border-b border-border-subtle/40 hover:bg-white/2">
           <td className="py-3.5 px-4 text-text-muted text-xs">
-            {new Date(webhook.receivedAt).toLocaleString('en-IN')}
+            {formatDateTime(webhook.receivedAt)}
           </td>
           <td className="py-3.5 px-4 text-white font-medium capitalize">
             {webhook.provider}

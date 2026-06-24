@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { UserDetailResponse } from '@/lib/api/admin/user.service';
+import { formatDateTime } from '@mad/utils';
 
 interface UserProfileCardProps {
   profile: UserDetailResponse['data']['profile'];
@@ -97,15 +98,13 @@ export default function UserProfileCard({
           <div className="flex items-center justify-between">
             <span className="text-text-muted">Created Date</span>
             <span className="text-text-secondary">
-              {new Date(profile.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+              {formatDateTime(profile.createdAt)}
             </span>
           </div>
           <div className="flex items-center justify-between">
             <span className="text-text-muted">Last Login</span>
             <span className="text-text-secondary">
-              {profile.lastLogin
-                ? new Date(profile.lastLogin).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
-                : 'Never logged in'}
+              {profile.lastLogin ? formatDateTime(profile.lastLogin) : 'Never logged in'}
             </span>
           </div>
         </div>

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { formatDateTime } from '@mad/utils';
 
 interface UserRefundItem {
   refundId: string;
@@ -67,13 +68,7 @@ export default function UserRefundsTable({
                     </span>
                   </td>
                   <td className="py-3.5 px-4 text-text-secondary text-xs">
-                    {r.processedAt
-                      ? new Date(r.processedAt).toLocaleDateString('en-IN', {
-                          day: 'numeric',
-                          month: 'short',
-                          year: 'numeric',
-                        })
-                      : 'Pending'}
+                    {r.processedAt ? formatDateTime(r.processedAt) : 'Pending'}
                   </td>
                   <td className="py-3.5 px-5 text-right font-semibold text-white">
                     {new Intl.NumberFormat('en-IN', {

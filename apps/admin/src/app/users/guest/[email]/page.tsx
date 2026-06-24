@@ -1,6 +1,7 @@
 'use client';
 
 import { AdminRole, BookingStatus, BOOKING_STATUS_META } from '@mad/shared';
+import { formatDateTime, formatEventDate } from '@mad/utils';
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
@@ -156,7 +157,7 @@ export default function GuestUserDetailPage() {
               <div className="flex items-center justify-between">
                 <span className="text-text-muted">First Activity</span>
                 <span className="text-text-secondary">
-                  {new Date(profile.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                  {formatDateTime(profile.createdAt)}
                 </span>
               </div>
             </div>
@@ -250,7 +251,7 @@ export default function GuestUserDetailPage() {
                             <div>
                               <p className="font-semibold text-xs">{b.eventId.title}</p>
                               <p className="text-[10px] text-text-muted mt-0.5">
-                                {new Date(b.eventId.startDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
+                                {formatEventDate(b.eventId.startDate)}
                               </p>
                             </div>
                           ) : '—'}
@@ -265,7 +266,7 @@ export default function GuestUserDetailPage() {
                           </span>
                         </td>
                         <td className="py-3.5 px-4 text-text-secondary text-xs">
-                          {new Date(b.purchaseDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                          {formatDateTime(b.purchaseDate)}
                         </td>
                         <td className="py-3.5 px-4 text-text-primary font-medium">{b.ticketCount}</td>
                         <td className="py-3.5 px-5 text-right font-semibold text-white">
@@ -415,7 +416,7 @@ export default function GuestUserDetailPage() {
                         </td>
                         <td className="py-3.5 px-4 text-text-secondary text-xs">
                           {r.processedAt
-                            ? new Date(r.processedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
+                            ? formatDateTime(r.processedAt)
                             : 'Pending'}
                         </td>
                         <td className="py-3.5 px-5 text-right font-semibold text-white">

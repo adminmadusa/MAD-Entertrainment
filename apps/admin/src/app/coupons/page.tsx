@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { useAdminAuth } from '@/providers/AdminAuthProvider';
 import { AdminRole } from '@mad/shared';
+import { formatDate } from '@mad/utils';
 
 import { adminGetCoupons, adminDeleteCoupon, adminToggleCoupon } from '@/lib/api/admin/coupon.service';
 import { extractApiError } from '@/lib/api/client';
@@ -149,13 +150,7 @@ export default function AdminCouponsPage() {
     );
   }
 
-  const formatDate = (dateStr: Date | string) => {
-    return new Date(dateStr).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    });
-  };
+
 
   return (
     <div className="space-y-6">

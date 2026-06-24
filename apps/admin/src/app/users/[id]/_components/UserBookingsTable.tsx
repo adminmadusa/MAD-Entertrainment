@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { BookingStatus, BOOKING_STATUS_META } from '@mad/shared';
+import { formatDateTime, formatEventDate } from '@mad/utils';
 import { UserDetailResponse } from '@/lib/api/admin/user.service';
 
 interface UserBookingsTableProps {
@@ -50,10 +51,7 @@ export default function UserBookingsTable({
                       <div>
                         <p className="font-semibold text-xs">{b.eventId.title}</p>
                         <p className="text-[10px] text-text-muted mt-0.5">
-                          {new Date(b.eventId.startDate).toLocaleDateString('en-IN', {
-                            day: 'numeric',
-                            month: 'short',
-                          })}
+                          {formatEventDate(b.eventId.startDate)}
                         </p>
                       </div>
                     ) : (
@@ -70,11 +68,7 @@ export default function UserBookingsTable({
                     </span>
                   </td>
                   <td className="py-3.5 px-4 text-text-secondary text-xs">
-                    {new Date(b.purchaseDate).toLocaleDateString('en-IN', {
-                      day: 'numeric',
-                      month: 'short',
-                      year: 'numeric',
-                    })}
+                    {formatDateTime(b.purchaseDate)}
                   </td>
                   <td className="py-3.5 px-4 text-text-primary font-medium">{b.ticketCount}</td>
                   <td className="py-3.5 px-5 text-right font-semibold text-white">

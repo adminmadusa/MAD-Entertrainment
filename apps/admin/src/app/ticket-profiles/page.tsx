@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { useAdminAuth } from '@/providers/AdminAuthProvider';
 import { AdminRole } from '@mad/shared';
+import { formatDate } from '@mad/utils';
 
 import { adminGetTicketProfiles, adminDeleteTicketProfile, adminUpdateTicketProfile } from '@/lib/api/admin/ticket-profile.service';
 import { extractApiError } from '@/lib/api/client';
@@ -145,13 +146,7 @@ export default function AdminTicketProfilesPage() {
     ));
   };
 
-  const formatDate = (dateStr: Date | string) => {
-    return new Date(dateStr).toLocaleDateString('en-IN', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    });
-  };
+
 
   const getTicketsCount = (profile: TicketProfile) => {
     return profile.groups?.reduce((sum, group) => sum + (group.tickets?.length || 0), 0) || 0;
