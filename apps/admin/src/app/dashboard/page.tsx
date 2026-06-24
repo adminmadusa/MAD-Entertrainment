@@ -8,7 +8,7 @@ import { Suspense, useState } from 'react';
 import dynamic from 'next/dynamic';
 
 import { useAdminAuth } from '@/providers/AdminAuthProvider';
-import { AdminRole, EventStatus } from '@mad/shared';
+import { AdminRole, EventStatus, BOOKING_REFERENCE_REGEX } from '@mad/shared';
 import {
   adminGetDashboardSummary,
   adminGetRevenueChart,
@@ -105,7 +105,7 @@ function DashboardContent() {
     if (!query) return;
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    const refRegex = /^MAD-\d{4}-[A-Z0-9]{5}$/i;
+    const refRegex = new RegExp(BOOKING_REFERENCE_REGEX.source, 'i');
 
     if (emailRegex.test(query)) {
       router.push(`/bookings?search=${encodeURIComponent(query)}`);

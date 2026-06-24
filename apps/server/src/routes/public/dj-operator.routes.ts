@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { listDJOperators, getDJOperatorBySlug } from '../../controllers/public/dj-operator.controller';
 import { cdnCache } from '../../middleware/cache.middleware';
 import { validateQuery } from '../../middleware/validation.middleware';
-import { listDJOperatorsQuerySchema } from '../../validations/payment.validation';
+import { listDJOperatorsQuerySchema } from '../../validations/dj-operator.validation';
 
 const router: Router = Router();
 

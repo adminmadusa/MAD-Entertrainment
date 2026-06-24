@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { EventCategory } from '@mad/shared';
+import { EventCategory, BOOKING_REFERENCE_REGEX } from '@mad/shared';
 import { objectIdSchema, checkoutSchema as createBookingSchema, reserveTicketsSchema, checkoutDetailsSchema } from '@mad/validations';
 export { createBookingSchema, reserveTicketsSchema, checkoutDetailsSchema };
 
@@ -7,7 +7,7 @@ export { createBookingSchema, reserveTicketsSchema, checkoutDetailsSchema };
 
 export const bookingReferenceSchema = z
   .string()
-  .regex(/^MAD-\d{4}-[A-Z0-9]{5}$/, 'Invalid booking reference format (expected MAD-YYYY-XXXXX)')
+  .regex(BOOKING_REFERENCE_REGEX, 'Invalid booking reference format (expected MAD-YYYY-XXXXX)')
   .max(20);
 
 const booleanQuerySchema = z
@@ -30,12 +30,6 @@ export const listEventsQuerySchema = z.object({
   includeTotal: booleanQuerySchema.optional(),
 }).strict();
 
-export const listDJOperatorsQuerySchema = z.object({
-  search: z.string().max(200).optional(),
-  page: z.coerce.number().int().positive().default(1),
-  limit: paginationLimitSchema.default(12),
-  includeTotal: booleanQuerySchema.optional(),
-}).strict();
 
 export const getEventSeatLayoutParamSchema = z.object({
   eventId: objectIdSchema,
