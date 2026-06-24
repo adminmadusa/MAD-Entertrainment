@@ -1,0 +1,222 @@
+'use client';
+
+import { BookingStatus, getBookingStatusLabel } from '@mad/shared';
+import { formatDateTime } from '@mad/utils';
+import { useMemo } from 'react';
+import { AdminBooking } from '@/lib/api/admin/booking.service';
+
+const STATUS_COLORS: Record<string, string> = {
+  confirmed: 'bg-green-500/10 text-green-400 border-green-500/30',
+  pending: 'bg-amber-500/10 text-amber-400 border-amber-500/30',
+  awaiting_payment: 'bg-amber-500/10 text-amber-400 border-amber-500/30',
+  expiring: 'bg-blue-500/10 text-blue-400 border-blue-500/30',
+  cancelled: 'bg-red-500/10 text-red-400 border-red-500/30',
+  failed: 'bg-red-500/10 text-red-400 border-red-500/30',
+  refunded: 'bg-purple-500/10 text-purple-300 border-purple-500/30',
+  expired: 'bg-slate-500/10 text-slate-300 border-slate-500/30',
+};
+
+export interface BookingsTableProps {
+  bookings: AdminBooking[];
+  isLoading: boolean;
+  canMutateBookings: boolean;
+  sortField: 'bookingId' | 'totalAmount' | 'createdAt' | null;
+  sortOrder: 'asc' | 'desc';
+  onSort: (field: 'bookingId' | 'totalAmount' | 'createdAt') => void;
+  onRowClick: (booking: AdminBooking) => void;
+  onCancelClick: (booking: AdminBooking) => void;
+  pagination?: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+  onPageChange: (page: number) => void;
+  currentPage: number;
+}
+
+export default function BookingsTable({
+  bookings,
+  isLoading,
+  canMutateBookings,
+  sortField,
+  sortOrder,
+  onSort,
+  onRowClick,
+  onCancelClick,
+  pagination,
+  onPageChange,
+  currentPage,
+}: BookingsTableProps) {
+  // Sort bookings internally
+  const sortedBookings = useMemo(() => {
+    return [...bookings].sort((a, b) => {
+      if (!sortField) return 0;
+      const aVal = a[sortField];
+      const bVal = b[sortField];
+      if (typeof aVal === 'string' && typeof bVal === 'string') {
+        const aStr = aVal.toLowerCase();
+        const bStr = bVal.toLowerCase();
+        if (aStr < bStr) return sortOrder === 'asc' ? -1 : 1;
+        if (aStr > bStr) return sortOrder === 'asc' ? 1 : -1;
+        return 0;
+      }
+      if (aVal < bVal) return sortOrder === 'asc' ? -1 : 1;
+      if (aVal > bVal) return sortOrder === 'asc' ? 1 : -1;
+      return 0;
+    });
+  }, [bookings, sortField, sortOrder]);
+
+  const renderTableBody = () => {
+    if (isLoading) {
+      return Array.from({ length: 6 }).map((_, i) => (
+        <tr key={i} className="border-b border-border-subtle/40 animate-pulse">
+          {Array.from({ length: 7 }).map((__, j) => (
+            <td key={j} className="py-4 px-4">
+              <div className="h-3.5 bg-white/5 rounded w-20" />
+            </td>
+          ))}
+        </tr>
+      ));
+    }
+
+    if (sortedBookings.length === 0) {
+      return (
+        <tr>
+          <td colSpan={7} className="py-16 text-center text-text-muted">
+            No bookings found.
+          </td>
+        </tr>
+      );
+    }
+
+    return sortedBookings.map((booking) => {
+      const customer = booking.userId ?? booking.guestInfo;
+      const customerName = (customer as { name?: string })?.name ?? '—';
+      const customerEmail = (customer as { email?: string })?.email ?? '—';
+      return (
+        <tr
+          key={booking._id}
+          onClick={() => onRowClick(booking)}
+          className="border-b border-border-subtle/40 hover:bg-white/2 cursor-pointer transition-colors"
+        >
+          <td className="py-4 px-5 font-mono text-xs text-accent-purple">{booking.bookingId}</td>
+          <td className="py-4 px-4">
+            <p className="text-text-primary text-sm">{customerName}</p>
+            <p className="text-text-muted text-xs">{customerEmail}</p>
+          </td>
+          <td className="py-4 px-4 text-text-secondary text-sm max-w-40 truncate">
+            {(booking.eventId as { title?: string })?.title ?? '—'}
+          </td>
+          <td className="py-4 px-4 text-text-primary font-medium">
+            ₹{booking.totalAmount.toLocaleString('en-IN')}
+          </td>
+          <td className="py-4 px-4">
+            <span
+              className={`text-xs px-2.5 py-1 rounded-full border font-medium ${
+                STATUS_COLORS[booking.status] ?? 'text-text-muted border-border-subtle'
+              }`}
+            >
+              {getBookingStatusLabel(booking.status)}
+            </span>
+            {booking.status === BookingStatus.CONFIRMED && booking.totalTickets > 0 && (
+              <div className="mt-2">
+                <span
+                  className={`text-[10px] px-2 py-0.5 rounded-md border ${
+                    booking.ticketsScanned === booking.totalTickets
+                      ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
+                      : 'bg-white/5 border-border-subtle text-text-secondary'
+                  }`}
+                >
+                  {booking.ticketsScanned === booking.totalTickets
+                    ? 'Fully Checked In'
+                    : `${booking.ticketsScanned ?? 0} / ${booking.totalTickets} Checked In`}
+                </span>
+              </div>
+            )}
+          </td>
+          <td className="py-4 px-4 text-text-muted text-xs">
+            {formatDateTime(booking.createdAt)}
+          </td>
+          <td className="py-4 px-5 text-right">
+            {canMutateBookings && booking.status === BookingStatus.CONFIRMED && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onCancelClick(booking);
+                }}
+                className="px-3 py-1.5 text-xs glass border border-border-subtle rounded-lg text-text-muted hover:text-red-400 hover:border-red-500/40 transition-all"
+              >
+                Cancel
+              </button>
+            )}
+          </td>
+        </tr>
+      );
+    });
+  };
+
+  const renderSortArrow = (field: 'bookingId' | 'totalAmount' | 'createdAt') => {
+    if (sortField !== field) return '';
+    return sortOrder === 'asc' ? ' ▲' : ' ▼';
+  };
+
+  return (
+    <div className="glass rounded-2xl border border-border-subtle overflow-hidden">
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b border-border-subtle">
+              <th
+                onClick={() => onSort('bookingId')}
+                className="text-left text-text-muted font-medium py-3.5 px-5 cursor-pointer hover:text-white transition-colors select-none"
+              >
+                Reference{renderSortArrow('bookingId')}
+              </th>
+              <th className="text-left text-text-muted font-medium py-3.5 px-4">Customer</th>
+              <th className="text-left text-text-muted font-medium py-3.5 px-4">Event</th>
+              <th
+                onClick={() => onSort('totalAmount')}
+                className="text-left text-text-muted font-medium py-3.5 px-4 cursor-pointer hover:text-white transition-colors select-none"
+              >
+                Amount{renderSortArrow('totalAmount')}
+              </th>
+              <th className="text-left text-text-muted font-medium py-3.5 px-4">Status</th>
+              <th
+                onClick={() => onSort('createdAt')}
+                className="text-left text-text-muted font-medium py-3.5 px-4 cursor-pointer hover:text-white transition-colors select-none"
+              >
+                Date{renderSortArrow('createdAt')}
+              </th>
+              <th className="text-right text-text-muted font-medium py-3.5 px-5">Action</th>
+            </tr>
+          </thead>
+          <tbody>{renderTableBody()}</tbody>
+        </table>
+      </div>
+      {pagination && pagination.totalPages > 1 && (
+        <div className="flex items-center justify-between px-5 py-3 border-t border-border-subtle">
+          <p className="text-text-muted text-xs">
+            Page {pagination.page} of {pagination.totalPages}
+          </p>
+          <div className="flex gap-2">
+            <button
+              onClick={() => onPageChange(Math.max(1, currentPage - 1))}
+              disabled={currentPage === 1}
+              className="px-3 py-1.5 text-xs glass border border-border-subtle rounded-lg disabled:opacity-40 text-text-secondary"
+            >
+              ← Prev
+            </button>
+            <button
+              onClick={() => onPageChange(currentPage + 1)}
+              disabled={currentPage >= pagination.totalPages}
+              className="px-3 py-1.5 text-xs glass border border-border-subtle rounded-lg disabled:opacity-40 text-text-secondary"
+            >
+              Next →
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
