@@ -240,6 +240,8 @@ export const createDJOperatorSchema = z.object({
     bio: z.string().max(3000).optional(),
     specialties: z.array(z.string()).optional(),
     profileImage: cloudinaryImageSchema.optional(),
+    galleryImages: z.array(cloudinaryImageSchema).optional(),
+    experienceYears: z.number().int().min(0).optional(),
     socialLinks: z
       .array(
         z.object({
