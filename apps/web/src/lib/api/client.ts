@@ -1,5 +1,6 @@
 import { STORAGE_KEYS } from '@mad/shared';
 import axios, { AxiosError, AxiosInstance, InternalAxiosRequestConfig } from 'axios';
+import { isTokenExpired } from '@mad/utils';
 
 import { API_URL } from '@mad/shared/config/frontend';
 const BASE_URL = API_URL;
@@ -59,22 +60,7 @@ const processQueue = (error: unknown, token: string | null = null) => {
   failedQueue = [];
 };
 
-// ─── Token Validity Helper ────────────────────────────────────
-
-function isTokenExpiredOrMissing(token: string | null): boolean {
-  if (!token) return true;
-  try {
-    const parts = token.split('.');
-    if (parts.length !== 3) return true;
-    const base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
-    const padded = base64.padEnd(base64.length + (4 - (base64.length % 4)) % 4, '=');
-    const decoded = JSON.parse(atob(padded));
-    if (typeof decoded.exp !== 'number') return false;
-    return decoded.exp * 1000 < Date.now();
-  } catch {
-    return true;
-  }
-}
+// Local isTokenExpiredOrMissing deleted, imported from @mad/utils instead
 
 // ─── Core Refresh Executor ────────────────────────────────────
 
@@ -87,7 +73,7 @@ async function executeTokenRefresh(originalExpiredToken: string): Promise<string
 
   if (
     currentToken &&
-    !isTokenExpiredOrMissing(currentToken) &&
+    !isTokenExpired(currentToken) &&
     currentToken !== originalExpiredToken
   ) {
     // Another tab already completed the refresh. Use the propagated token.
@@ -138,7 +124,7 @@ async function executeWithFallbackLock(originalExpiredToken: string): Promise<st
         const start = Date.now();
         const poll = setInterval(() => {
           const t = localStorage.getItem(STORAGE_KEYS.USER_TOKEN);
-          if (t && !isTokenExpiredOrMissing(t) && t !== originalExpiredToken) {
+          if (t && !isTokenExpired(t) && t !== originalExpiredToken) {
             clearInterval(poll);
             apiClient.defaults.headers.common.Authorization = `Bearer ${t}`;
             resolve(t);
@@ -179,7 +165,7 @@ if (typeof window !== 'undefined') {
       return;
     }
 
-    if (event.newValue && !isTokenExpiredOrMissing(event.newValue)) {
+    if (event.newValue && !isTokenExpired(event.newValue)) {
       // Another tab successfully refreshed the token — adopt it and flush the queue.
       apiClient.defaults.headers.common.Authorization = `Bearer ${event.newValue}`;
       processQueue(null, event.newValue);
