@@ -17,7 +17,6 @@ import { formatEventDate } from '@/utils/date';
 export function FeaturedEventsSection({ initialEvents = [] }: { initialEvents: Event[] }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [activeCategory, setActiveCategory] = useState('all');
-  const [isMounted, setIsMounted] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   
   const prefersReducedMotion = useReducedMotion();
@@ -39,10 +38,7 @@ export function FeaturedEventsSection({ initialEvents = [] }: { initialEvents: E
     ? initialEvents
     : initialEvents.filter((e) => e.category === activeCategory);
 
-  // Set mounted on client to prevent SSR hydration mismatch and layout shift
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
+
 
   // Reset active index when category changes
   useEffect(() => {
@@ -189,7 +185,7 @@ export function FeaturedEventsSection({ initialEvents = [] }: { initialEvents: E
                   const isActive = absoluteOffset === 0;
                   
                   // Safe server default (1024 width) prevents layout shifts
-                  const currentWidth = isMounted ? windowWidth : 1024;
+                  const currentWidth = mounted ? windowWidth : 1024;
                   const isMobile = currentWidth < 640;
                   const spread = isMobile ? 100 : 160;
                   
