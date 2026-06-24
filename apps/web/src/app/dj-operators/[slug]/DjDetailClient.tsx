@@ -108,17 +108,8 @@ function getSocialIcon(platform: string) {
 
 // ─── Gallery Carousel Component ───────────────────────────────
 
-function GalleryCarousel({ galleryImages }: { galleryImages?: ImageAsset[] }) {
-  const images = galleryImages && galleryImages.length > 0
-    ? galleryImages
-    : [
-        { url: '', _id: '1', title: 'Live Set Glimpse 1' },
-        { url: '', _id: '2', title: 'Live Set Glimpse 2' },
-        { url: '', _id: '3', title: 'Live Set Glimpse 3' },
-        { url: '', _id: '4', title: 'Live Set Glimpse 4' },
-        { url: '', _id: '5', title: 'Live Set Glimpse 5' },
-        { url: '', _id: '6', title: 'Live Set Glimpse 6' },
-      ];
+function GalleryCarousel({ galleryImages = [] }: { galleryImages?: ImageAsset[] }) {
+  const images = galleryImages;
 
   const [activeIndex, setActiveIndex] = useState(0);
   const windowWidth = useWindowWidth();
@@ -200,7 +191,7 @@ function GalleryCarousel({ galleryImages }: { galleryImages?: ImageAsset[] }) {
 
             return (
               <motion.div
-                key={img._id || index}
+                key={img.publicId || index}
                 initial={false}
                 animate={{
                   x,
@@ -237,7 +228,7 @@ function GalleryCarousel({ galleryImages }: { galleryImages?: ImageAsset[] }) {
                   {img.url ? (
                     <Image
                       src={img.url}
-                      alt={img.title || `Gallery Image ${index + 1}`}
+                      alt={img.alt || `Gallery Image ${index + 1}`}
                       fill
                       priority={isActive}
                       sizes="(max-width: 768px) 100vw, 380px"
@@ -251,7 +242,7 @@ function GalleryCarousel({ galleryImages }: { galleryImages?: ImageAsset[] }) {
                   {!isActive && <div className="absolute inset-0 bg-black/40 transition-opacity" />}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent z-10 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-3">
                     <span className="text-[10px] font-bold text-white uppercase tracking-wider">
-                      {img.title || `Live Set Glimpse ${index + 1}`}
+                      {img.alt || `Live Set Glimpse ${index + 1}`}
                     </span>
                   </div>
                 </div>
@@ -436,13 +427,15 @@ export default function DJDetailClient() {
           <div className="max-w-4xl mx-auto space-y-8">
             
             {/* Media Gallery Carousel */}
-            <div className="glass p-5 md:p-8 rounded-3xl border border-border-subtle bg-bg-card/30 backdrop-blur-md">
-              <h2 className="text-xl font-bold text-white mb-4 uppercase tracking-wider border-b border-border-subtle/50 pb-3 flex items-center gap-2 text-glow-neon-pink">
-                <span className="w-1.5 h-6 bg-accent-pink rounded" />
-                Gallery & Media
-              </h2>
-              <GalleryCarousel galleryImages={dj.galleryImages} />
-            </div>
+            {dj.galleryImages && dj.galleryImages.length > 0 && (
+              <div className="glass p-5 md:p-8 rounded-3xl border border-border-subtle bg-bg-card/30 backdrop-blur-md">
+                <h2 className="text-xl font-bold text-white mb-4 uppercase tracking-wider border-b border-border-subtle/50 pb-3 flex items-center gap-2 text-glow-neon-pink">
+                  <span className="w-1.5 h-6 bg-accent-pink rounded" />
+                  Gallery & Media
+                </h2>
+                <GalleryCarousel galleryImages={dj.galleryImages} />
+              </div>
+            )}
 
             {/* Social Connect links */}
             {socialLinks.length > 0 && (

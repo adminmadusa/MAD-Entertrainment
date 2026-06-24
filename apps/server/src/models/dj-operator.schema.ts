@@ -6,6 +6,8 @@ export interface IDJOperator extends Document {
   bio?: string;
   specialties?: string[];
   profileImage?: { url: string; publicId: string };
+  galleryImages?: { url: string; publicId: string }[];
+  experienceYears?: number;
   socialLinks?: { platform: string; url: string }[];
   isActive: boolean;
   createdAt: Date;
@@ -27,6 +29,8 @@ const djOperatorSchema = new Schema<IDJOperator>(
     bio: { type: String, maxlength: 3000 },
     specialties: [String],
     profileImage: cloudinaryImageSchema,
+    galleryImages: [cloudinaryImageSchema],
+    experienceYears: { type: Number, default: 0, min: 0 },
     socialLinks: [
       new Schema(
         { platform: { type: String, required: true }, url: { type: String, required: true } },
