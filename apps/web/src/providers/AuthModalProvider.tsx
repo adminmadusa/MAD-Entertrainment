@@ -2,7 +2,10 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { Modal } from '@mad/ui';
-import { AuthForm } from '@/components/auth/AuthForm';
+import dynamic from 'next/dynamic';
+const AuthForm = dynamic(() => import('@/components/auth/AuthForm').then(mod => mod.AuthForm), {
+  ssr: false,
+});
 import { validateReturnTo } from '@/utils/safe-redirect';
 import { useRouter } from 'next/navigation';
 
