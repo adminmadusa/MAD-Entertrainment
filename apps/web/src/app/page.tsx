@@ -126,77 +126,67 @@ function HeroSection() {
       <div className="container-mad relative z-10 text-center pt-24 pb-12">
 
         {/* Headline */}
-        <Reveal delay={0.2} trigger="mount">
-          <h1 className="text-display-xl font-black text-white mb-6 leading-[1.02] text-glow-neon">
-            Experience the{' '}
-            <span className="text-gradient block">Extraordinary</span>
-          </h1>
-        </Reveal>
+        <h1 className="text-display-xl font-black text-white mb-6 leading-[1.02] text-glow-neon animate-hero-fade-in animation-delay-200">
+          Experience the{' '}
+          <span className="text-gradient block">Extraordinary</span>
+        </h1>
 
         {/* Subheadline */}
-        <Reveal delay={0.3} trigger="mount">
-          <p className="text-text-secondary text-lg md:text-xl max-w-2xl mx-auto mb-8 leading-relaxed">
-            Book tickets for DJ nights, concerts, comedy shows, festivals, VIP events and unforgettable live experiences — all in one place.
-          </p>
-        </Reveal>
+        <p className="text-text-secondary text-lg md:text-xl max-w-2xl mx-auto mb-8 leading-relaxed animate-hero-fade-in animation-delay-300">
+          Book tickets for DJ nights, concerts, comedy shows, festivals, VIP events and unforgettable live experiences — all in one place.
+        </p>
 
         {/* CTAs */}
-        <Reveal delay={0.35} trigger="mount">
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
-            <Link
-              id="hero-book-now"
-              href="/events"
-              className="px-8 py-4 btn-gradient text-white font-bold text-lg rounded-2xl shadow-glow inline-flex items-center gap-2 group focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-            >
-              Browse Events
-              <ArrowRight className="group-hover:translate-x-1 transition-transform" />
-            </Link>
-            <Link
-              id="hero-my-booking"
-              href="/tickets"
-              className="px-8 py-4 glass border border-border-subtle hover:border-accent-purple/50 text-text-primary hover:text-white hover:bg-accent-purple/10 font-semibold text-lg rounded-2xl transition-all duration-300 hover:shadow-glow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-            >
-              My Tickets
-            </Link>
-          </div>
-        </Reveal>
+        <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8 animate-hero-fade-in animation-delay-350">
+          <Link
+            id="hero-book-now"
+            href="/events"
+            className="px-8 py-4 btn-gradient text-white font-bold text-lg rounded-2xl shadow-glow inline-flex items-center gap-2 group focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+          >
+            Browse Events
+            <ArrowRight className="group-hover:translate-x-1 transition-transform" />
+          </Link>
+          <Link
+            id="hero-my-booking"
+            href="/tickets"
+            className="px-8 py-4 glass border border-border-subtle hover:border-accent-purple/50 text-text-primary hover:text-white hover:bg-accent-purple/10 font-semibold text-lg rounded-2xl transition-all duration-300 hover:shadow-glow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+          >
+            My Tickets
+          </Link>
+        </div>
 
         {/* Quick Link Category Pills */}
-        <Reveal delay={0.4} trigger="mount">
-          <div className="flex flex-wrap gap-2 justify-center max-w-2xl mx-auto mb-10 px-4" role="navigation" aria-label="Quick category filters">
-            {[
-              { label: 'DJ Nights', value: 'dj_night' },
-              { label: 'Concerts', value: 'concert' },
-              { label: 'Festivals', value: 'festival' },
-              { label: 'Comedy', value: 'comedy' },
-              { label: 'VIP Events', value: 'vip_event' },
-            ].map((cat) => (
-              <Link
-                key={cat.value}
-                href={`/events?category=${cat.value}`}
-                className="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-white/5 border border-white/5 text-text-muted hover:border-accent-purple/40 hover:text-white transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple"
-              >
-                {cat.label}
-              </Link>
-            ))}
-          </div>
-        </Reveal>
+        <div className="flex flex-wrap gap-2 justify-center max-w-2xl mx-auto mb-10 px-4 animate-hero-fade-in animation-delay-400" role="navigation" aria-label="Quick category filters">
+          {[
+            { label: 'DJ Nights', value: 'dj_night' },
+            { label: 'Concerts', value: 'concert' },
+            { label: 'Festivals', value: 'festival' },
+            { label: 'Comedy', value: 'comedy' },
+            { label: 'VIP Events', value: 'vip_event' },
+          ].map((cat) => (
+            <Link
+              key={cat.value}
+              href={`/events?category=${cat.value}`}
+              className="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-white/5 border border-white/5 text-text-muted hover:border-accent-purple/40 hover:text-white transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple"
+            >
+              {cat.label}
+            </Link>
+          ))}
+        </div>
 
         {/* Stats */}
-        <Reveal delay={0.45} trigger="mount">
-          <div className="mt-8 grid grid-cols-3 gap-6 max-w-xl mx-auto">
-            {[
-              { value: '500+', label: 'Events' },
-              { value: '50K+', label: 'Tickets Sold' },
-              { value: '100+', label: 'Artists' },
-            ].map((stat) => (
-              <div key={stat.label} className="text-center">
-                <div className="text-2xl md:text-3xl font-black text-gradient">{stat.value}</div>
-                <div className="text-text-muted text-sm mt-1">{stat.label}</div>
-              </div>
-            ))}
-          </div>
-        </Reveal>
+        <div className="mt-8 grid grid-cols-3 gap-6 max-w-xl mx-auto animate-hero-fade-in animation-delay-450">
+          {[
+            { value: '500+', label: 'Events' },
+            { value: '50K+', label: 'Tickets Sold' },
+            { value: '100+', label: 'Artists' },
+          ].map((stat) => (
+            <div key={stat.label} className="text-center">
+              <div className="text-2xl md:text-3xl font-black text-gradient">{stat.value}</div>
+              <div className="text-text-muted text-sm mt-1">{stat.label}</div>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Bottom Gradient Fade */}
