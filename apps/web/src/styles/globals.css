@@ -503,3 +503,51 @@ video {
   }
 }
 
+/* ─── Hero Entry Animations (UI-009B1) ─────────────────────── */
+@keyframes heroFadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-hero-fade-in {
+  /* Resilient animation: Do not set opacity: 0 on the class itself.
+     If CSS animations fail, elements remain visible (opacity: 1).
+     'both' fill mode applies 'from' styles during the delay period. */
+  animation: heroFadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animation-delay-200 {
+  animation-delay: 200ms;
+}
+
+.animation-delay-300 {
+  animation-delay: 300ms;
+}
+
+.animation-delay-350 {
+  animation-delay: 350ms;
+}
+
+.animation-delay-400 {
+  animation-delay: 400ms;
+}
+
+.animation-delay-450 {
+  animation-delay: 450ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-hero-fade-in {
+    opacity: 1 !important;
+    transform: none !important;
+    animation: none !important;
+  }
+}
+
+
