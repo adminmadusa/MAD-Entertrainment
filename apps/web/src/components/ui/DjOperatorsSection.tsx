@@ -1,5 +1,6 @@
 'use client';
 
+import { memo } from 'react';
 import { DJOperator } from '@mad/types';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
@@ -9,15 +10,14 @@ import { getOptimizedImageUrl } from '@/utils/image';
 
 // ─── DJ Card ──────────────────────────────────────────────────
 
-function DJCard({ dj }: { dj: DJOperator }) {
+const DJCard = memo(function DJCard({ dj }: { dj: DJOperator }) {
   return (
     <Link href={`/dj-operators/${dj.slug || dj._id}`} className="block h-full w-full">
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        whileHover={{ y: -6, scale: 1.02 }}
         transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-        className="group glass neon-glow-border rounded-2xl overflow-hidden flex flex-col h-full relative"
+        className="group glass neon-glow-border card-interactive rounded-2xl overflow-hidden flex flex-col h-full relative"
       >
         {/* Hover Gradient Glow Backdrop */}
         <div className="absolute -inset-px rounded-2xl bg-gradient-to-r from-primary via-accent to-cyan opacity-0 group-hover:opacity-10 transition-opacity duration-500 blur-sm pointer-events-none z-0" />
@@ -68,10 +68,11 @@ function DJCard({ dj }: { dj: DJOperator }) {
       </motion.div>
     </Link>
   );
-}
+});
+
 // ─── DJ Operators Section ─────────────────────────────────────
 
-export function DJOperatorsSection({ initialDJs = [] }: { initialDJs: DJOperator[] }) {
+export const DJOperatorsSection = memo(function DJOperatorsSection({ initialDJs = [] }: { initialDJs: DJOperator[] }) {
   const djs = initialDJs;
 
   // Don't render the section if no DJs
@@ -116,4 +117,4 @@ export function DJOperatorsSection({ initialDJs = [] }: { initialDJs: DJOperator
       </div>
     </section>
   );
-}
+});
