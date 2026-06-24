@@ -2,6 +2,7 @@
 
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { BookingStatus, getBookingStatusLabel } from '@mad/shared';
+import { formatEventDate } from '@mad/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useRef, useEffect, useCallback } from 'react';
 
@@ -252,7 +253,7 @@ export default function ScannerPage() {
             <option value="">-- Select Event to Start Scanning --</option>
             {events.map((ev) => (
               <option key={ev._id} value={ev._id}>
-                {ev.title} ({new Date(ev.startDate).toLocaleDateString()})
+                {ev.title} ({formatEventDate(ev.startDate)})
               </option>
             ))}
           </select>

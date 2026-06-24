@@ -1,6 +1,7 @@
 'use client';
 
 import { AdminRole } from '@mad/shared';
+import { formatDateTime } from '@mad/utils';
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
@@ -164,11 +165,7 @@ export default function UsersDirectoryPage() {
           </span>
         </td>
         <td className="py-4 px-4 text-text-secondary hidden lg:table-cell text-xs">
-          {new Date(user.createdAt).toLocaleDateString('en-IN', {
-            day: 'numeric',
-            month: 'short',
-            year: 'numeric',
-          })}
+          {formatDateTime(user.createdAt)}
         </td>
         <td className="py-4 px-4">
           {user.accountType === 'registered' ? (

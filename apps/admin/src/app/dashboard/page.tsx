@@ -9,6 +9,7 @@ import dynamic from 'next/dynamic';
 
 import { useAdminAuth } from '@/providers/AdminAuthProvider';
 import { AdminRole, EventStatus, BOOKING_REFERENCE_REGEX } from '@mad/shared';
+import { formatDateTime } from '@mad/utils';
 import {
   adminGetDashboardSummary,
   adminGetRevenueChart,
@@ -378,7 +379,7 @@ function DashboardContent() {
                       </div>
                       <p className="text-text-muted text-xs">{event.venue}</p>
                       <p className="text-text-secondary text-xs font-mono">
-                        Gates: {new Date(event.startDate).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
+                        Gates: {formatDateTime(event.startDate, { hour: '2-digit', minute: '2-digit' })}
                       </p>
                     </div>
                     

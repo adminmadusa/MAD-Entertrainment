@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { useState } from 'react';
 import { EVENT_STATUS_METADATA, type EventStatus, AdminRole } from '@mad/shared';
+import { formatEventDate } from '@mad/utils';
 import { useAdminAuth } from '@/providers/AdminAuthProvider';
 
 import { adminGetEvents, adminDeleteEvent, type AdminEvent } from '@/lib/api/admin/event.service';
@@ -130,7 +131,7 @@ export default function AdminEventsPage() {
           </td>
           <td className="py-4 px-4 text-text-secondary">
             {event.startDate ? (
-              new Date(event.startDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
+              formatEventDate(event.startDate)
             ) : (
               <span className="text-text-muted">N/A</span>
             )}

@@ -2,6 +2,7 @@
 
 import { AdminRole } from '@mad/shared';
 import { Admin } from '@mad/types';
+import { formatDateTime } from '@mad/utils';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
@@ -188,14 +189,10 @@ export default function AdminTeamPage() {
           </span>
         </td>
         <td className="py-4 px-4 text-text-secondary whitespace-nowrap">
-          {admin.createdAt
-            ? new Date(admin.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
-            : '—'}
+          {admin.createdAt ? formatDateTime(admin.createdAt) : '—'}
         </td>
         <td className="py-4 px-4 text-text-secondary whitespace-nowrap">
-          {admin.lastLogin
-            ? new Date(admin.lastLogin).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
-            : 'Invited • Awaiting First Login'}
+          {admin.lastLogin ? formatDateTime(admin.lastLogin) : 'Invited • Awaiting First Login'}
         </td>
         <td className="py-4 px-4">
           <span className={`text-xs px-2.5 py-1 rounded-full border font-medium ${

@@ -1,6 +1,7 @@
 'use client';
 
 import { QUERY_KEYS, AdminRole } from '@mad/shared';
+import { formatDateTime } from '@mad/utils';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import Link from 'next/link';
@@ -587,7 +588,7 @@ export default function DiagnosticsPage() {
                       <td className="py-3 px-4 text-text-secondary">{job.jobName}</td>
                       <td className="py-3 px-4 text-center font-bold text-text-primary">{job.attemptsMade}</td>
                       <td className="py-3 px-4 text-red-400 max-w-xs truncate" title={job.failedReason}>{job.failedReason || 'Unknown error'}</td>
-                      <td className="py-3 px-4 text-text-muted">{new Date(job.processedAt).toLocaleString('en-IN')}</td>
+                      <td className="py-3 px-4 text-text-muted">{formatDateTime(job.processedAt)}</td>
                       {isSuperAdmin && (
                         <td className="py-3 px-4 text-right space-x-1.5 whitespace-nowrap">
                           <button
@@ -689,7 +690,7 @@ export default function DiagnosticsPage() {
                     <td className="py-3 px-4 text-text-secondary">{res.seatId ?? res.section ?? '—'}</td>
                     <td className="py-3 px-4 text-text-secondary font-semibold">{res.bookingReference ?? '—'}</td>
                     <td className="py-3 px-4 text-text-muted text-center">{res.reservationVersion}</td>
-                    <td className="py-3 px-4 text-text-secondary">{new Date(res.expiresAt).toLocaleString('en-IN')}</td>
+                    <td className="py-3 px-4 text-text-secondary">{formatDateTime(res.expiresAt)}</td>
                   </tr>
                 ))}
                 {!reservations?.length && (
