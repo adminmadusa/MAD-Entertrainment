@@ -371,4 +371,14 @@ export interface PaginatedItemsResponse<T> {
   pagination: PaginationMeta;
 }
 
+export interface JwtPayload {
+  exp?: number;
+  iat?: number;
+  sub?: string;
+  iss?: string;
+  aud?: string;
+  [key: string]: unknown;
+}
+
+
 

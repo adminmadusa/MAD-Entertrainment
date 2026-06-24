@@ -11,6 +11,9 @@
     "clean": "rm -rf dist .turbo tsconfig.tsbuildinfo",
     "test": "echo 'No tests configured for utils library'"
   },
+  "dependencies": {
+    "@mad/types": "workspace:*"
+  },
   "devDependencies": {
     "typescript": "^5.9.3"
   }
