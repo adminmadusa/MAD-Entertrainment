@@ -406,7 +406,6 @@ function DashboardContent() {
               initialFirstName={user?.firstName || ''}
               initialLastName={user?.lastName || ''}
               initialMobileNumber={user?.mobileNumber || ''}
-              isCheckout={false}
               onCancel={() => logout()}
             />
           </div>

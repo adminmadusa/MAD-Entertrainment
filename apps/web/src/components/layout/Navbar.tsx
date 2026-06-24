@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import { useState, useEffect, useRef } from 'react';
 import { ArrowRight, useFocusTrap } from '@mad/ui';
 import { useAuth } from '@/providers/AuthProvider';
+import { useAuthModal } from '@/providers/AuthModalProvider';
 
 export function Navbar() {
   const pathname = usePathname();
@@ -16,6 +17,7 @@ export function Navbar() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
   const { isAuthenticated, user, logout } = useAuth();
+  const { openAuthModal } = useAuthModal();
 
   const firstName = user?.firstName || user?.name?.split(' ')[0] || 'Member';
 
@@ -244,12 +246,13 @@ export function Navbar() {
               )}
             </div>
           ) : (
-            <Link
-              href="/login"
+            <button
+              type="button"
+              onClick={() => openAuthModal()}
               className="px-4 py-2 text-sm font-medium text-text-secondary hover:text-text-primary transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded-xl"
             >
               Login
-            </Link>
+            </button>
           )}
           <Link
             href="/events"
@@ -381,16 +384,16 @@ export function Navbar() {
                     </button>
                   </>
                 ) : (
-                  <Link
-                    href="/login"
+                  <button
+                    type="button"
                     onClick={() => {
-                      navigatingRef.current = true;
                       setMobileOpen(false);
+                      openAuthModal();
                     }}
                     className="w-full py-3 px-4 text-text-secondary hover:text-text-primary hover:bg-white/5 rounded-xl transition-colors font-medium text-left block focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple"
                   >
                     Login
-                  </Link>
+                  </button>
                 )}
                 <Link
                   href="/events"

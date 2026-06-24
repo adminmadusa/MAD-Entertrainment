@@ -17,7 +17,6 @@ interface ProfileCompletionFormProps {
   initialMobileNumber?: string;
   onSuccess?: () => void;
   onCancel?: () => void;
-  isCheckout?: boolean;
 }
 
 export function ProfileCompletionForm({
@@ -27,7 +26,6 @@ export function ProfileCompletionForm({
   initialMobileNumber = '',
   onSuccess,
   onCancel,
-  isCheckout = false,
 }: ProfileCompletionFormProps) {
   const { token, login, setOnboardingRequired } = useAuth();
   const [firstName, setFirstName] = useState(initialFirstName);
@@ -113,12 +111,16 @@ export function ProfileCompletionForm({
       <div className="space-y-3 sm:space-y-4">
         <div className="space-y-2">
           <label htmlFor="firstName" className="text-xs font-semibold text-text-secondary uppercase tracking-wider ml-1">
-            First Name <span className="text-red-400">*</span>
+            First Name{' '}
+            <span className="text-red-400" aria-hidden="true">*</span>
+            <span className="sr-only">(required)</span>
           </label>
           <input
             id="firstName"
             type="text"
             required
+            aria-required="true"
+            autoComplete="given-name"
             disabled={isPending}
             enterKeyHint="next"
             value={firstName}
@@ -130,12 +132,16 @@ export function ProfileCompletionForm({
 
         <div className="space-y-2">
           <label htmlFor="lastName" className="text-xs font-semibold text-text-secondary uppercase tracking-wider ml-1">
-            Last Name <span className="text-red-400">*</span>
+            Last Name{' '}
+            <span className="text-red-400" aria-hidden="true">*</span>
+            <span className="sr-only">(required)</span>
           </label>
           <input
             id="lastName"
             type="text"
             required
+            aria-required="true"
+            autoComplete="family-name"
             disabled={isPending}
             enterKeyHint="next"
             value={lastName}
@@ -152,6 +158,8 @@ export function ProfileCompletionForm({
           <input
             id="mobileNumber"
             type="tel"
+            autoComplete="tel"
+            aria-describedby="mobile-hint"
             disabled={isPending}
             enterKeyHint="done"
             value={mobileNumber}
@@ -159,7 +167,7 @@ export function ProfileCompletionForm({
             placeholder="+919876543210"
             className="w-full bg-white/5 border border-border-subtle rounded-xl px-4 py-3 text-base lg:text-sm text-white placeholder:text-text-secondary focus:outline-none focus:border-accent-purple focus:ring-1 focus:ring-accent-purple transition-all duration-300"
           />
-          <p className="text-[10px] text-text-secondary ml-1">Include country code (e.g. +91)</p>
+          <p id="mobile-hint" className="text-[10px] text-text-secondary ml-1">Include country code (e.g. +91)</p>
         </div>
       </div>
 
@@ -168,11 +176,7 @@ export function ProfileCompletionForm({
           type="submit"
           variant="primary"
           fullWidth
-          className={
-            isCheckout
-              ? 'py-2.5 text-xs font-bold rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-2 focus-visible:ring-offset-background'
-              : 'py-3.5 rounded-xl font-bold tracking-wide shadow-lg shadow-accent-purple/20 hover:shadow-accent-purple/40 active:scale-95 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-2 focus-visible:ring-offset-background'
-          }
+          className="py-3.5 rounded-xl font-bold tracking-wide shadow-lg shadow-accent-purple/20 hover:shadow-accent-purple/40 active:scale-95 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           disabled={isPending}
           isLoading={isPending}
         >

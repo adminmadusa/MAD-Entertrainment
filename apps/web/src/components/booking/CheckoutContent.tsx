@@ -4,11 +4,12 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 import { QUERY_KEYS, BookingStatus } from '@mad/shared';
 import { Event, Booking, Ticket } from '@mad/types';
 import { useCountdown } from '@/hooks/use-countdown.hook';
+import { useCheckoutViewportController } from '@/hooks/use-checkout-viewport-controller';
 import { extractApiError } from '@/lib/api/client';
 import { loadScriptOnce } from '@/lib/utils/load-script-once';
 import { 
@@ -56,7 +57,7 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
   const [selectedGateway, setSelectedGateway] = useState<'stripe' | 'razorpay'>('razorpay');
   const [error, setError] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
-  const [isInputFocused, setIsInputFocused] = useState(false);
+  const viewport = useCheckoutViewportController();
 
   const {
     isLeaveModalOpen,
@@ -405,14 +406,7 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
             )}
 
             {/* Billing Information Form */}
-            <div
-              onFocusCapture={() => setIsInputFocused(true)}
-              onBlurCapture={(e) => {
-                if (!e.currentTarget.contains(e.relatedTarget as Node)) {
-                  setIsInputFocused(false);
-                }
-              }}
-            >
+            <div>
               <CheckoutForm
                 event={event}
                 isExpired={isExpired}
@@ -460,7 +454,7 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
       </div>
 
       {/* Sticky Place Order Footer (Mobile Only) */}
-      {!isInputFocused && (
+      {!viewport.isKeyboardOpen && (
         <div className={isModal ? "sticky bottom-0 z-40 bg-[#0d111d]/95 border-t border-white/10 py-3 mt-8 shadow-2xl lg:hidden" : "fixed bottom-0 left-0 right-0 z-40 bg-[#0d111d]/95 backdrop-blur-lg border-t border-white/10 shadow-2xl lg:hidden"}>
           <div className="container-mad max-w-4xl px-4 py-3 pb-[calc(1rem+env(safe-area-inset-bottom))] flex items-center gap-4">
             <div className="flex-1">

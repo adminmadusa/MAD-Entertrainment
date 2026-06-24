@@ -388,6 +388,69 @@ describe('Public Auth Controller - Profile Management Tests', () => {
         })
       );
     });
+
+    it('returns enriched user details (firstName, lastName, mobileNumber) in response payloads', async () => {
+      const mockResult = {
+        user: {
+          _id: 'user-123',
+          email: 'test@example.com',
+          name: 'Jane Smith',
+          picture: 'https://lh3.googleusercontent.com/a/photo',
+          firstName: 'Jane',
+          lastName: 'Smith',
+          mobileNumber: '+919876543210',
+        },
+        accessToken: 'mock-access-token',
+        refreshToken: 'mock-refresh-token',
+      };
+
+      vi.mocked(AuthService.verifyGoogleToken).mockResolvedValue(mockResult as any);
+      vi.mocked(AuthService.verifyMagicLinkOrOTP).mockResolvedValue(mockResult as any);
+
+      // Verify Google login controller returns all details
+      const googleReq = mockRequest({ body: { idToken: 'google-token-123' } });
+      const googleRes = mockResponse();
+      await AuthController.loginWithGoogle(googleReq, googleRes);
+
+      expect(googleRes.json).toHaveBeenCalledWith({
+        success: true,
+        data: {
+          user: {
+            id: 'user-123',
+            email: 'test@example.com',
+            name: 'Jane Smith',
+            picture: 'https://lh3.googleusercontent.com/a/photo',
+            firstName: 'Jane',
+            lastName: 'Smith',
+            mobileNumber: '+919876543210',
+          },
+          token: 'mock-access-token',
+          onboardingRequired: false,
+        },
+      });
+
+      // Verify OTP verification controller returns all details
+      const otpReq = mockRequest({ body: { otp: '123456', email: 'test@example.com' } });
+      const otpRes = mockResponse();
+      await AuthController.verifyMagicLinkOrOTP(otpReq, otpRes);
+
+      expect(otpRes.json).toHaveBeenCalledWith({
+        success: true,
+        data: {
+          user: {
+            id: 'user-123',
+            email: 'test@example.com',
+            name: 'Jane Smith',
+            picture: 'https://lh3.googleusercontent.com/a/photo',
+            firstName: 'Jane',
+            lastName: 'Smith',
+            mobileNumber: '+919876543210',
+          },
+          token: 'mock-access-token',
+          onboardingRequired: false,
+        },
+      });
+    });
   });
 });
 

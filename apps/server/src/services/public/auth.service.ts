@@ -8,7 +8,6 @@ import { UserModel, IUser } from '../../models/user.schema';
 import { MagicTokenModel } from '../../models/magic-token.schema';
 import { RefreshTokenModel } from '../../models/refresh-token.schema';
 import { Booking } from '../../models/booking.schema';
-import { Notification } from '../../models/notification.schema';
 import { createNotificationSafe } from '../notification.service';
 import { QueueService } from '../queue.service';
 import { magicLinkHtml } from '../../lib/email';
@@ -335,12 +334,12 @@ export class AuthService {
       }
     }
 
-    // Keep profile info updated from Google login
+    // Keep profile info updated from Google login safely (never overwrite existing values)
     let profileModified = false;
     if (!user.picture && picture) { user.picture = picture; profileModified = true; }
     if (!user.name && name) { user.name = name; profileModified = true; }
-    if (given_name && user.firstName !== given_name) { user.firstName = given_name; profileModified = true; }
-    if (family_name && user.lastName !== family_name) { user.lastName = family_name; profileModified = true; }
+    if (given_name && (!user.firstName || user.firstName.trim() === '')) { user.firstName = given_name; profileModified = true; }
+    if (family_name && (!user.lastName || user.lastName.trim() === '')) { user.lastName = family_name; profileModified = true; }
     if (profileModified) {
       await user.save();
     }

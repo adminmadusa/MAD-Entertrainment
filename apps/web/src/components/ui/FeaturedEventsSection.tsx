@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef, useMemo, useCallback, memo } from 'react';
 import { EventCategory, EVENT_CATEGORY_LABELS } from '@mad/shared';
 import { Event } from '@mad/types';
 import { motion, AnimatePresence, useReducedMotion, PanInfo } from 'framer-motion';
@@ -13,41 +13,33 @@ import { useWindowWidth, useMounted } from '@/hooks/use-window.hook';
 import { getOptimizedImageUrl } from '@/utils/image';
 import { formatEventDate } from '@/utils/date';
 
+const categoriesList = [
+  { label: 'All', value: 'all' },
+  { label: 'DJ Night', value: EventCategory.DJ_NIGHT },
+  { label: 'Concert', value: EventCategory.CONCERT },
+  { label: 'Festival', value: EventCategory.FESTIVAL },
+  { label: 'Comedy', value: EventCategory.COMEDY },
+  { label: 'Theatre', value: EventCategory.THEATRE },
+  { label: 'Live Show', value: EventCategory.LIVE_SHOW },
+  { label: 'Cinema', value: EventCategory.CINEMA },
+];
 
-export function FeaturedEventsSection({ initialEvents = [] }: { initialEvents: Event[] }) {
+export const FeaturedEventsSection = memo(function FeaturedEventsSection({ initialEvents = [] }: { initialEvents: Event[] }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [activeCategory, setActiveCategory] = useState('all');
-  const [isMounted, setIsMounted] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   
   const prefersReducedMotion = useReducedMotion();
   const mounted = useMounted();
 
-  const categoriesList = [
-    { label: 'All', value: 'all' },
-    { label: 'DJ Night', value: EventCategory.DJ_NIGHT },
-    { label: 'Concert', value: EventCategory.CONCERT },
-    { label: 'Festival', value: EventCategory.FESTIVAL },
-    { label: 'Comedy', value: EventCategory.COMEDY },
-    { label: 'Theatre', value: EventCategory.THEATRE },
-    { label: 'Live Show', value: EventCategory.LIVE_SHOW },
-    { label: 'Cinema', value: EventCategory.CINEMA },
-  ];
-
   // Filter events based on selected category
-  const events = activeCategory === 'all'
-    ? initialEvents
-    : initialEvents.filter((e) => e.category === activeCategory);
+  const events = useMemo(() => {
+    return activeCategory === 'all'
+      ? initialEvents
+      : initialEvents.filter((e) => e.category === activeCategory);
+  }, [initialEvents, activeCategory]);
 
-  // Set mounted on client to prevent SSR hydration mismatch and layout shift
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
 
-  // Reset active index when category changes
-  useEffect(() => {
-    setActiveIndex(0);
-  }, [activeCategory]);
 
   // SSR-safe responsive value — defaults to 1024 (desktop) on server,
   // updates to real viewport on mount. Never reads window during render.
@@ -58,18 +50,18 @@ export function FeaturedEventsSection({ initialEvents = [] }: { initialEvents: E
   // on desktop devices, when we have more than 1 event.
   const enable3D = mounted && !isMobile && !prefersReducedMotion && events.length > 1;
 
-  const nextSlide = () => {
+  const nextSlide = useCallback(() => {
     if (events.length === 0) return;
     setActiveIndex((prev) => (prev + 1) % events.length);
-  };
+  }, [events.length]);
 
-  const prevSlide = () => {
+  const prevSlide = useCallback(() => {
     if (events.length === 0) return;
     setActiveIndex((prev) => (prev - 1 + events.length) % events.length);
-  };
+  }, [events.length]);
 
   // Keyboard navigation within the carousel
-  const handleKeyDown = (e: React.KeyboardEvent) => {
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'ArrowLeft') {
       prevSlide();
       e.preventDefault();
@@ -77,17 +69,17 @@ export function FeaturedEventsSection({ initialEvents = [] }: { initialEvents: E
       nextSlide();
       e.preventDefault();
     }
-  };
+  }, [nextSlide, prevSlide]);
 
   // Mobile Drag / Swipe handling using Framer Motion gesture metadata
-  const handleDragEnd = (event: unknown, info: PanInfo) => {
+  const handleDragEnd = useCallback((event: unknown, info: PanInfo) => {
     const threshold = 50; // swipe threshold in pixels
     if (info.offset.x < -threshold) {
       nextSlide();
     } else if (info.offset.x > threshold) {
       prevSlide();
     }
-  };
+  }, [nextSlide, prevSlide]);
 
 
   return (
@@ -110,7 +102,10 @@ export function FeaturedEventsSection({ initialEvents = [] }: { initialEvents: E
                 return (
                   <button
                     key={cat.value}
-                    onClick={() => setActiveCategory(cat.value)}
+                    onClick={() => {
+                      setActiveCategory(cat.value);
+                      setActiveIndex(0);
+                    }}
                     className={`flex-shrink-0 min-h-[44px] min-w-[44px] px-5 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
                       isActive
                         ? 'bg-gradient-to-r from-primary to-accent text-white shadow-glow'
@@ -189,7 +184,7 @@ export function FeaturedEventsSection({ initialEvents = [] }: { initialEvents: E
                   const isActive = absoluteOffset === 0;
                   
                   // Safe server default (1024 width) prevents layout shifts
-                  const currentWidth = isMounted ? windowWidth : 1024;
+                  const currentWidth = mounted ? windowWidth : 1024;
                   const isMobile = currentWidth < 640;
                   const spread = isMobile ? 100 : 160;
                   
@@ -253,8 +248,8 @@ export function FeaturedEventsSection({ initialEvents = [] }: { initialEvents: E
                               src={getOptimizedImageUrl(event.bannerImage.url, 600)}
                               alt={`Promotional poster for ${event.title}`}
                               fill
-                              priority={isActive}
-                              sizes="(max-width: 768px) 100vw, 320px"
+                              priority={index === 0}
+                              sizes="(max-width: 640px) 260px, (max-width: 768px) 320px, 320px"
                               className="object-cover group-hover:scale-105 transition-transform duration-500"
                             />
                           ) : (
@@ -279,7 +274,7 @@ export function FeaturedEventsSection({ initialEvents = [] }: { initialEvents: E
                         </div>
 
                         {/* Card Content */}
-                        <div className="p-4 flex flex-col flex-grow bg-black/20 backdrop-blur-sm">
+                        <div className="p-4 flex flex-col flex-grow bg-black/20">
                           <div className="text-text-muted text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider mb-2 flex items-center gap-1.5">
                             <CalendarIcon className="w-3.5 h-3.5 text-accent-purple-light" />
                             {formatEventDate(event.startDate)}
@@ -293,7 +288,7 @@ export function FeaturedEventsSection({ initialEvents = [] }: { initialEvents: E
                         </div>
                       </Link>
 
-                      <div className={`px-4 pb-4 pt-3 border-t border-border-subtle/40 flex items-center justify-between mt-auto bg-black/40 backdrop-blur-md transition-opacity ${!isActive ? 'opacity-50' : ''}`}>
+                      <div className={`px-4 pb-4 pt-3 border-t border-border-subtle/40 flex items-center justify-between mt-auto bg-black/40 transition-opacity ${!isActive ? 'opacity-50' : ''}`}>
                         <div>
                           <div className="text-[9px] sm:text-[10px] text-text-muted font-medium">Tickets from</div>
                            <div className="text-white font-black text-xs sm:text-sm">
@@ -360,4 +355,4 @@ export function FeaturedEventsSection({ initialEvents = [] }: { initialEvents: E
       </div>
     </section>
   );
-}
+});

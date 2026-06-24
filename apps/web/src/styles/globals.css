@@ -242,7 +242,7 @@ video {
   }
 
   .card-interactive:hover {
-    transform: translateY(-6px) scale(1.02);
+    transform: translateY(-6px) scale(1.02) !important;
     box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.6), 
                 0 0 30px rgba(124, 58, 237, 0.25);
   }
@@ -458,3 +458,35 @@ video {
 .animate-scroll-dot {
   animation: scroll-dot 1.8s infinite ease-in-out;
 }
+
+/* Mobile Bottom Sheet Adaptations for @mad/ui Modal (AUTH-010) */
+@media (max-width: 640px) {
+  /* Target the outer fixed overlay flex container and align children to bottom */
+  div.fixed.inset-0.z-50.flex.items-center.justify-center {
+    align-items: flex-end;
+  }
+
+  /* Force the modal box to occupy full width, remove bottom rounded corners, add top rounded corners, and include safe area bottom padding */
+  div.fixed.inset-0.z-50.flex.items-center.justify-center > div[role="dialog"] {
+    max-width: 100% !important;
+    width: 100% !important;
+    border-bottom-left-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+    border-top-left-radius: 1.5rem !important; /* rounded-t-3xl */
+    border-top-right-radius: 1.5rem !important;
+    padding-bottom: calc(1.5rem + env(safe-area-inset-bottom)) !important;
+    transform-origin: bottom center;
+    /* Smooth native-like bottom-sheet entry animation */
+    animation: bottomSheetSlideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+}
+
+@keyframes bottomSheetSlideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+

@@ -29,11 +29,13 @@ export interface GoogleIdentity {
 }
 
 let googleIdentityInitialized = false;
-let activeGoogleCallback: ((response: GoogleCredentialResponse) => void) | null = null;
+const callbacks = new Set<(response: GoogleCredentialResponse) => void>();
+let legacyCleanup: (() => void) | null = null;
 
 /**
  * Initializes the Google Identity Services SDK exactly once per browser session.
  * Subsequent calls are safe and will be ignored.
+ * Uses a subscriber pattern to execute all registered component callbacks.
  */
 export function initializeGoogleIdentity(clientId: string): void {
   if (typeof window === 'undefined') return;
@@ -46,9 +48,7 @@ export function initializeGoogleIdentity(clientId: string): void {
       googleObj.accounts.id.initialize({
         client_id: clientId,
         callback: (response: GoogleCredentialResponse) => {
-          if (activeGoogleCallback) {
-            activeGoogleCallback(response);
-          }
+          callbacks.forEach((cb) => cb(response));
         },
         auto_select: false,
       });
@@ -60,11 +60,32 @@ export function initializeGoogleIdentity(clientId: string): void {
 }
 
 /**
+ * Registers a callback handler for a mounted auth component.
+ * Returns an unregister cleanup function.
+ */
+export function registerGoogleIdentityCallback(
+  callback: (response: GoogleCredentialResponse) => void
+): () => void {
+  callbacks.add(callback);
+  return () => {
+    callbacks.delete(callback);
+  };
+}
+
+/**
  * Sets the callback handler for the currently active/mounted auth component.
  * Pass null to clean up when the component unmounts.
+ * Retained for backward-compatibility.
  */
 export function setGoogleIdentityCallback(
   callback: ((response: GoogleCredentialResponse) => void) | null
 ): void {
-  activeGoogleCallback = callback;
+  if (legacyCleanup) {
+    legacyCleanup();
+    legacyCleanup = null;
+  }
+  if (callback) {
+    legacyCleanup = registerGoogleIdentityCallback(callback);
+  }
 }
+
