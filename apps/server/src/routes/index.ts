@@ -12,19 +12,9 @@ import publicTicketRoutes from './public/ticket.routes';
 import publicMarketingRoutes from './public/marketing.routes';
 
 const router: Router = Router();
-const unreconstructed: Router = Router();
-
-unreconstructed.use((_req, res) => {
-  res.status(501).json({
-    success: false,
-    message: 'This route is pending source reconstruction',
-  });
-});
 
 import publicAuthRoutes from './public/auth.routes';
 import publicCategoryRoutes from './public/category.routes';
-import { AuthController } from '../controllers/public/auth.controller';
-import { requireAuth } from '../middleware/auth.middleware';
 
 
 // ─── Health ───────────────────────────────────────────────────

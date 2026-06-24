@@ -43,14 +43,14 @@ function DashboardContent() {
   const { data: summary, isLoading } = useQuery({
     queryKey: ['admin-analytics-summary'],
     queryFn: adminGetDashboardSummary,
-    enabled: !!admin?.role && ['super_admin', 'admin', 'manager'].includes(admin.role),
+    enabled: !!admin?.role && [AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.MANAGER].includes(admin.role as AdminRole),
   });
 
   const { data: consistencyReport } = useQuery({
     queryKey: ['admin-diagnostics-consistency'],
     queryFn: adminGetConsistencyReport,
     refetchInterval: 30000,
-    enabled: !!admin?.role && ['super_admin'].includes(admin.role),
+    enabled: !!admin?.role && [AdminRole.SUPER_ADMIN].includes(admin.role as AdminRole),
   });
 
   const { data: eventsData, isLoading: isEventsLoading } = useQuery({
@@ -68,13 +68,13 @@ function DashboardContent() {
   const { data: failedWebhooksData, isLoading: isWebhooksLoading } = useQuery({
     queryKey: ['admin-diagnostics-webhooks-failed'],
     queryFn: () => adminGetWebhooks({ page: 1, limit: 5, status: 'failed' }),
-    enabled: !!admin?.role && ['super_admin'].includes(admin.role),
+    enabled: !!admin?.role && [AdminRole.SUPER_ADMIN].includes(admin.role as AdminRole),
   });
 
   const { data: emailLogsData, isLoading: isEmailsLoading } = useQuery({
     queryKey: ['admin-diagnostics-emails'],
     queryFn: () => adminGetEmailLogs({ page: 1, limit: 10 }),
-    enabled: !!admin?.role && ['super_admin', 'admin', 'manager', 'support'].includes(admin.role),
+    enabled: !!admin?.role && [AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.MANAGER, AdminRole.SUPPORT].includes(admin.role as AdminRole),
   });
 
   const failedEmails = (emailLogsData?.data || []).filter(email => email.status === 'failed');
@@ -83,19 +83,19 @@ function DashboardContent() {
   const { data: revenue } = useQuery({
     queryKey: ['admin-revenue-chart', 30],
     queryFn: () => adminGetRevenueChart(30),
-    enabled: !!admin?.role && ['super_admin', 'admin', 'manager'].includes(admin.role),
+    enabled: !!admin?.role && [AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.MANAGER].includes(admin.role as AdminRole),
   });
 
   const { data: attendanceSummary, isLoading: isAttendanceLoading } = useQuery({
     queryKey: ['admin-attendance-summary'],
     queryFn: adminGetAttendanceSummary,
-    enabled: !!admin?.role && ['super_admin', 'admin', 'manager'].includes(admin.role),
+    enabled: !!admin?.role && [AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.MANAGER].includes(admin.role as AdminRole),
   });
 
   const { data: attendanceRankings, isLoading: isRankingsLoading } = useQuery({
     queryKey: ['admin-attendance-rankings'],
     queryFn: adminGetAttendanceRankings,
-    enabled: !!admin?.role && ['super_admin', 'admin', 'manager'].includes(admin.role),
+    enabled: !!admin?.role && [AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.MANAGER].includes(admin.role as AdminRole),
   });
 
   const handleGlobalSearch = (e: React.FormEvent) => {

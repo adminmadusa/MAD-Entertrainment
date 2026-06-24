@@ -1,6 +1,6 @@
 'use client';
 
-import { QUERY_KEYS } from '@mad/shared';
+import { QUERY_KEYS, AdminRole } from '@mad/shared';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import Link from 'next/link';
@@ -28,8 +28,8 @@ export default function DiagnosticsPage() {
   const { admin } = useAdminAuth();
   const pathname = usePathname();
   const queryClient = useQueryClient();
-  const isSuperAdmin = admin?.role === 'super_admin';
-  const isAdmin = admin?.role === 'admin' || isSuperAdmin;
+  const isSuperAdmin = admin?.role === AdminRole.SUPER_ADMIN;
+  const isAdmin = admin?.role === AdminRole.ADMIN || isSuperAdmin;
 
   // Tabs state: health, queues, dlq, reservations
   const [activeSubTab, setActiveSubTab] = useState<'health' | 'queues' | 'dlq' | 'reservations'>('health');

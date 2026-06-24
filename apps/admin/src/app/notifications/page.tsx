@@ -3,6 +3,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useAdminAuth } from '@/providers/AdminAuthProvider';
+import { AdminRole } from '@mad/shared';
 
 import { adminGetNotifications, adminRetryNotification } from '@/lib/api/admin/notification.service';
 import ErrorState from '@/components/states/ErrorState';
@@ -11,7 +12,7 @@ export default function AdminNotificationsPage() {
   const { admin } = useAdminAuth();
   const qc = useQueryClient();
   const [page, setPage] = useState(1);
-  const canRetryNotification = !!admin?.role && ['super_admin', 'admin', 'support'].includes(admin.role);
+  const canRetryNotification = !!admin?.role && [AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.SUPPORT].includes(admin.role as AdminRole);
   const [channelFilter, setChannelFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
 

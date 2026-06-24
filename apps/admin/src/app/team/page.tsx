@@ -139,7 +139,7 @@ export default function AdminTeamPage() {
     return <LoadingState />;
   }
 
-  if (!currentAdmin || currentAdmin.role !== 'super_admin') {
+  if (!currentAdmin || currentAdmin.role !== AdminRole.SUPER_ADMIN) {
     return (
       <div className="py-12">
         <ErrorState message="Access Denied: Only Super Admins are permitted to manage administrative accounts." />
@@ -208,7 +208,7 @@ export default function AdminTeamPage() {
         </td>
         <td className="py-4 px-5">
           <div className="flex items-center justify-end gap-2">
-            {currentAdmin?.role === 'super_admin' ? (
+            {currentAdmin?.role === AdminRole.SUPER_ADMIN ? (
               <>
                 <button
                   onClick={() => {
@@ -310,7 +310,7 @@ export default function AdminTeamPage() {
             Manage administrative and back-office personnel
           </p>
         </div>
-        {currentAdmin?.role === 'super_admin' && (
+        {currentAdmin?.role === AdminRole.SUPER_ADMIN && (
           <button
             onClick={() => setIsInviteOpen(true)}
             className="px-4 py-2.5 btn-gradient text-white font-semibold text-sm rounded-xl shadow-glow-sm hover:scale-105 transition-transform flex items-center gap-2"
