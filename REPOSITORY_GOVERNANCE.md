@@ -42,7 +42,7 @@ The repository maintains a strict hierarchy to isolate policies, system definiti
 
 ```mermaid
 graph TD
-    README["README.md (Entrypoint & Monorepo Index)"] --> GOV["REPOSITORY_GOVERNANCE.md (Governance Policies & SSOT)"]
+    README["README.md (Entrypoint & Monorepo Index)"] --> GOV["REPOSITORY_GOVERNANCE.md (Governance SSOT)"]
     GOV --> ARCH["ARCHITECTURE.md (System Architecture SSOT)"]
     GOV --> DEPL["DEPLOYMENT_MAP.md (Deployment & Infrastructure SSOT)"]
     GOV --> API["API_CONTRACTS.md (API Contracts SSOT)"]
@@ -64,6 +64,20 @@ graph TD
 | [RUNBOOK.md](file:///Users/admin/Desktop/MAD%20Entertrainment/RUNBOOK.md) | Operational guidelines & scripts | Incident response, backup, and manual testing procedures. |
 | [AGENTS.MD](file:///Users/admin/Desktop/MAD%20Entertrainment/AGENTS.MD) | Operational developer instructions | Instructions for human and AI agents implementing the governance policies. |
 
+### Document Dependency Matrix
+
+A dependency matrix helps contributors understand which documents should be reviewed together:
+
+| Document | Depends On | Description |
+| :--- | :--- | :--- |
+| **README.md** | None | Root directory navigation entry point. |
+| **REPOSITORY_GOVERNANCE.md**| None | Canonical repository governance policies. |
+| **ARCHITECTURE.md** | [REPOSITORY_GOVERNANCE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/REPOSITORY_GOVERNANCE.md) | Package boundaries and coding standards inherit review matrices. |
+| **DEPLOYMENT_MAP.md** | [ARCHITECTURE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/ARCHITECTURE.md) | Infrastructure mapping is constrained by defined system boundaries. |
+| **API_CONTRACTS.md** | [ARCHITECTURE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/ARCHITECTURE.md) | Service interfaces depend on monorepo design layout. |
+| **ADR** | [ARCHITECTURE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/ARCHITECTURE.md) + [REPOSITORY_GOVERNANCE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/REPOSITORY_GOVERNANCE.md) | Rationale must map back to active architecture and governance. |
+| **RUNBOOK.md** | [ARCHITECTURE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/ARCHITECTURE.md) + [DEPLOYMENT_MAP.md](file:///Users/admin/Desktop/MAD%20Entertrainment/DEPLOYMENT_MAP.md) + [API_CONTRACTS.md](file:///Users/admin/Desktop/MAD%20Entertrainment/API_CONTRACTS.md) | Operations depend on system structure, routes, and hosting topology. |
+
 ---
 
 ## 3. Governance Principles
@@ -80,20 +94,40 @@ graph TD
 
 ## 4. Governance Roles & Ownership Matrix
 
+### Governance Ownership Diagram
+```mermaid
+graph TD
+    Gov["Repository Governance"]
+    Gov --> Maint["Repository Maintainers"]
+    Gov --> ArchOwner["Architecture Owner"]
+    Gov --> PlatformOwner["Platform Owner"]
+    Gov --> APIOwner["API Owner"]
+    Gov --> DocOwner["Documentation Owner"]
+    Gov --> Board["Architecture Review Board"]
+
+    ArchOwner --> ArchDoc["ARCHITECTURE.md"]
+    PlatformOwner --> DeplDoc["DEPLOYMENT_MAP.md"]
+    APIOwner --> APIDoc["API_CONTRACTS.md"]
+    DocOwner --> ReadmeDoc["README.md"]
+    Board --> ADR["ADR System"]
+```
+
 ### Roles and Responsibilities
 - **Repository Governance Owner**: Maintains `REPOSITORY_GOVERNANCE.md` and reviews repository change policy violations.
 - **Repository Maintainers**: Core engineers responsible for branch management, merge reviews, and documentation consistency.
 - **Architecture Review Board**: Approves structural changes, package boundaries, and ADRs.
-- **API Owner**: Custodian of public and internal contract schemas.
-- **Platform/Deployment Owner**: Controls hosting environments, database clusters, and environment variables.
+- **Architecture Owner**: Approves changes to ARCHITECTURE.md and monorepo package boundaries.
+- **API Owner**: Custodian of public and internal contract schemas (API_CONTRACTS.md).
+- **Platform/Deployment Owner**: Controls hosting environments, database clusters, and environment variables (DEPLOYMENT_MAP.md).
+- **Documentation Owner**: Manages README.md and documentation layout standards.
 - **Security Owner**: Reviews authentication, RBAC boundaries, encryption, and audit logs.
 
 ### Document Ownership Matrix
 | Document | Owner Role | Review Cycle |
 | :--- | :--- | :--- |
-| **README.md** | Repository Maintainers | Ongoing |
+| **README.md** | Documentation Owner | Ongoing |
 | **REPOSITORY_GOVERNANCE.md**| Repository Governance Owner | Quarterly |
-| **ARCHITECTURE.md** | Architecture Review Board | Bi-annual |
+| **ARCHITECTURE.md** | Architecture Owner | Bi-annual |
 | **DEPLOYMENT_MAP.md** | Platform/Deployment Owner | Bi-annual |
 | **API_CONTRACTS.md** | API Owner | Ongoing |
 | **docs/decisions/** | Architecture Review Board | Ongoing |
@@ -230,6 +264,19 @@ The following validation checks are scheduled for automated implementation in th
 - **Broken Link Detection**: Scan docs for invalid absolute or relative paths.
 - **Cross-Reference Audits**: Ensure every route listed in code maps to a contract in `API_CONTRACTS.md`.
 - **Branch Naming Enforcer**: Prevent pushes to branches that do not match the `feat/`, `fix/`, or `docs/` prefix structure.
+
+### Governance KPIs
+
+Measurable governance metrics are established to support future automation checks:
+
+| Metric | Target | Verification Method |
+| :--- | :--- | :--- |
+| **Broken documentation links** | 0 | Automated markdown link check scan |
+| **Outdated SSOT documents** | 0 | PR validation review checks |
+| **ADRs missing references** | 0 | Static analysis of ADR metadata links |
+| **Documentation coverage** | 100% | Audit mapping of packages and routes to SSOTs |
+| **Governance CI failures** | 0 | Automatic block on GitHub Actions build checks |
+| **Documentation review SLA** | 3 business days | Defined by repository review SLAs |
 
 ---
 

@@ -71,20 +71,16 @@ pnpm build
 
 ## System Documentation
 
-The repository maintains a strict documentation hierarchy. Each document serves as the Single Source of Truth (SSOT) for its respective domain:
+For detailed information about each subsystem, refer to the respective Single Source of Truth (SSOT) documents:
 
-```text
-README.md                      ← Entry point & navigation index
-│
-├── REPOSITORY_GOVERNANCE.md   ← Governance SSOT (branch/PR policy, standards)
-├── ARCHITECTURE.md            ← Architecture SSOT (package boundaries, standards)
-├── DEPLOYMENT_MAP.md          ← Deployment SSOT (infrastructure map, environments)
-├── API_CONTRACTS.md           ← API SSOT (Express endpoints, request/response schemas)
-├── docs/decisions/README.md   ← Architecture Decision Records (Technical rationale 'Why')
-└── RUNBOOK.md                 ← Operational Procedures (checklists, deployment commands)
-```
-
-For testing guidelines, see [TESTING.md](file:///Users/admin/Desktop/MAD%20Entertrainment/TESTING.md). For agent instructions, see [AGENTS.md](file:///Users/admin/Desktop/MAD%20Entertrainment/AGENTS.md).
+- [REPOSITORY_GOVERNANCE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/REPOSITORY_GOVERNANCE.md) — Governance policies, branch/PR standards, and review workflows.
+- [ARCHITECTURE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/ARCHITECTURE.md) — Canonical system architecture, package boundaries, and coding standards.
+- [DEPLOYMENT_MAP.md](file:///Users/admin/Desktop/MAD%20Entertrainment/DEPLOYMENT_MAP.md) — Infrastructure topology, environments, and CI/CD pipelines.
+- [API_CONTRACTS.md](file:///Users/admin/Desktop/MAD%20Entertrainment/API_CONTRACTS.md) — Express endpoint definitions, request/response schemas, and rate limits.
+- [docs/decisions/README.md](file:///Users/admin/Desktop/MAD%20Entertrainment/docs/decisions/README.md) — Architecture Decision Records (ADRs) explaining technical rationale.
+- [RUNBOOK.md](file:///Users/admin/Desktop/MAD%20Entertrainment/RUNBOOK.md) — Operational checklists, deployment instructions, and incident response.
+- [TESTING.md](file:///Users/admin/Desktop/MAD%20Entertrainment/TESTING.md) — Testing guidelines and verification requirements.
+- [AGENTS.md](file:///Users/admin/Desktop/MAD%20Entertrainment/AGENTS.md) — Operational instructions for human developers and AI agents.
 
 ---
 
