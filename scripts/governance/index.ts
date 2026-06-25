@@ -6,6 +6,7 @@ import { MetadataProvider } from './core/metadata';
 import { ValidatorLoader } from './core/loader';
 import { ConsoleReporter } from './core/reporter';
 import { JsonReporter } from './reports/json_reporter';
+import { GitHubActionsReporter } from './reports/github_reporter';
 
 // Import validators
 import { MarkdownValidator } from './validators/markdown_validator';
@@ -103,10 +104,20 @@ async function run() {
   const { totalErrors } = ConsoleReporter.report(results);
 
   // Write JSON report
-  JsonReporter.report(results, globalTotalTimeMs);
+  const reportContent = JsonReporter.report(results, globalTotalTimeMs);
 
-  if (totalErrors > 0) {
-    console.error('❌ Governance audit failed with errors. Check the report details above.');
+  // Run GitHub Actions Reporter if running in CI or if GHA env is active
+  let gatingSuccess = true;
+  if (process.env.GITHUB_ACTIONS === 'true') {
+    const ghaResult = GitHubActionsReporter.report(results, reportContent);
+    if (!ghaResult.success) {
+      console.error(`❌ CI Enforcement Failed: ${ghaResult.failureReason}`);
+      gatingSuccess = false;
+    }
+  }
+
+  if (totalErrors > 0 || !gatingSuccess) {
+    console.error('❌ Governance audit failed. Check the details above.');
     process.exit(1);
   }
 
