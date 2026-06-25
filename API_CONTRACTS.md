@@ -37,19 +37,20 @@ README.md
 
 ## Document Governance
 
-### API Contract Change Policy
-This document serves as the canonical Single Source of Truth (SSOT) for all public, internal, and admin API contracts of the **MAD Entertrainment** platform. Any changes to API endpoints, route mappings, payloads, headers, validation schemas, or status responses must be updated here.
+### API Change Policy
 
-The document **must** be updated whenever any of the following change:
-- API endpoint additions, removals, or route modifications
-- Request schema mutations (Zod schemas in `@mad/validations` or server route definitions)
-- Success or error response format updates
-- Webhook signature verification or processing events
-- Rate limiting thresholds or Redis rate limit groups
-- Token validation, RBAC, or middleware access controls
-- API ownership structure or lifecycle status
-
-Changes affecting API behavior must not be merged without updating this document.
+API_CONTRACTS.md must be updated whenever any of the following change:
+- New endpoint added
+- Endpoint removed
+- Request schema changes
+- Response schema changes
+- Authentication requirements change
+- Authorization rules change
+- Validation rules change
+- Error response changes
+- Rate limiting changes
+- Webhook contracts change
+- API version changes
 
 ### API Stability Classification
 The table below classifies the maturity and stability of the system's API contracts:
@@ -131,126 +132,126 @@ Each active route namespace is classified according to its operational state:
 ### Current Implementation
 The table below logs all active endpoints compiled from Express router maps and verified against `audit_data.json` and server source code:
 
-| Method | Path | Auth Required | Role Constraint | Purpose |
-| :--- | :--- | :--- | :--- | :--- |
-| **GET** | `/api/health` | None | Public | Health status check of DB, Redis, and Email transporter. |
-| **GET** | `/api/dev/email-health` | Yes (Admin) | `super_admin`, `admin`, `manager`, `support`, `scanner` | Development SMTP diagnostic configurations. |
-| **POST** | `/api/auth/google` | None (Rate Limited) | Public | Sign in/sign up using Google ID Token. |
-| **POST** | `/api/auth/check-email` | None (Rate Limited) | Public | Check if email is associated with a registered user. |
-| **POST** | `/api/auth/magic-link` | None (Rate Limited) | Public | Request transactional login OTP or Magic Link email. |
-| **POST** | `/api/auth/verify` | None (Rate Limited) | Public | Validate OTP or token; returns JWT access/refresh tokens. |
-| **POST** | `/api/auth/refresh` | None (Rate Limited) | Public | Reissue JWT access token using a valid refresh token. |
-| **POST** | `/api/auth/logout` | None | Public | Invalidate refresh token and clear cookies. |
-| **GET** | `/api/auth/me` | Yes (User) | Registered User | Fetch the authenticated customer profile. |
-| **PATCH** | `/api/auth/profile` | Yes (User) | Registered User | Update customer profile details. |
-| **GET** | `/api/events` | None | Public | List published events (filters: category, search, page). |
-| **GET** | `/api/events/:slug` | None | Public | Get single event details by URL slug. |
-| **GET** | `/api/events/:eventId/seats` | None | Public | Get current locked/reserved seating map. |
-| **GET** | `/api/bookings/session` | None | Public | Issue a stateless Guest Session Token for booking. |
-| **POST** | `/api/bookings` | Optional | Registered/Guest | Initiate a booking, lock seats, create pending transaction. |
-| **PUT** | `/api/bookings/:bookingId/checkout-details` | Optional | Registered/Guest | Save firstName, lastName, email, phone on pending booking. |
-| **GET** | `/api/bookings/me` | Yes (User) | Registered User | List ticket purchase history of the logged-in customer. |
-| **GET** | `/api/bookings/:bookingId` | Optional | Registered/Guest | Retrieve single booking confirmation by booking reference. |
-| **POST** | `/api/bookings/:bookingId/download-token` | Optional | Registered/Guest | Request a short-lived ticket PDF download access token. |
-| **GET** | `/api/bookings/:bookingId/download` | Optional | Registered/Guest | Download tickets PDF using download token. |
-| **POST** | `/api/bookings/:bookingId/resend` | Optional (Limited) | Registered/Guest | Resend tickets confirmation email. |
-| **POST** | `/api/bookings/recover` | None (Rate Limited) | Public | Initiate booking recovery for a guest transaction ID. |
-| **POST** | `/api/bookings/recover/verify` | None (Rate Limited) | Public | Verify recovery OTP and return booking search link. |
-| **POST** | `/api/payments/create-intent` | Optional | Registered/Guest | Create Stripe PaymentIntent or Razorpay Order for booking. |
-| **POST** | `/api/payments/verify` | Optional | Registered/Guest | Verify Razorpay signatures or check Stripe intent completion. |
-| **POST** | `/api/payments/webhook/stripe` | None | Public | Stripe payment status event webhook. |
-| **POST** | `/api/payments/webhook/razorpay` | None | Public | Razorpay payment status event webhook. |
-| **GET** | `/api/dj-operators` | None | Public | Fetch active DJ Operator profiles (cached). |
-| **GET** | `/api/dj-operators/:slug` | None | Public | Fetch detailed DJ Operator profile by slug (cached). |
-| **GET** | `/api/categories` | None | Public | Retrieve active event categories. |
-| **GET** | `/api/popups/active` | None | Public | Fetch active promotion cards (cached). |
-| **GET** | `/api/public/tickets/my-tickets` | Yes (User) | Registered User | Retrieve all tickets owned by the user. |
-| **GET** | `/api/public/tickets/:ticketId/qr` | Optional | Registered/Guest | Fetch ticket QR code payload (base64 image payload). |
-| **POST** | `/api/public/tickets/:ticketId/assign` | Yes (User) | Registered User | Assign ticket ownership to a target email address. |
-| **POST** | `/api/public/tickets/:ticketId/claim` | Yes (User) | Registered User | Claim a ticket assigned to the user's email. |
-| **POST** | `/api/public/tickets/:ticketId/revoke` | Yes (User) | Registered User | Revoke ticket assignment and reclaim ownership. |
-| **GET** | `/api/marketing/unsubscribe` | None | Public | Unsubscribe customer from newsletter campaigns. |
-| **POST** | `/api/admin/auth/login` | None | Public | Credentials admin login (returns admin JWT). |
-| **GET** | `/api/admin/auth/me` | Yes (Admin) | `super_admin` up to `scanner` | Retrieve current admin payload. |
-| **POST** | `/api/admin/auth/logout` | Yes (Admin) | `super_admin` up to `scanner` | Clear administrative sessions. |
-| **POST** | `/api/admin/uploads/image` | Yes (Admin) | `super_admin`, `admin`, `manager` | Upload image file to Cloudinary. |
-| **DELETE** | `/api/admin/uploads` | Yes (Admin) | `super_admin`, `admin`, `manager` | Delete image asset from Cloudinary. |
-| **POST** | `/api/admin/events` | Yes (Admin) | `super_admin`, `admin`, `manager` | Create a new event. |
-| **GET** | `/api/admin/events` | Yes (Admin) | `super_admin` up to `scanner` | List all events (including drafted, active, past). |
-| **GET** | `/api/admin/events/:id` | Yes (Admin) | `super_admin` up to `scanner` | Retrieve single event configuration by ID. |
-| **PUT** | `/api/admin/events/:id` | Yes (Admin) | `super_admin`, `admin`, `manager` | Update event details with concurrency safety. |
-| **DELETE** | `/api/admin/events/:id` | Yes (Admin) | `super_admin`, `admin`, `manager` | Delete event profile. |
-| **POST** | `/api/admin/dj-operators` | Yes (Admin) | `super_admin`, `admin`, `manager` | Create DJ Operator. |
-| **GET** | `/api/admin/dj-operators` | Yes (Admin) | `super_admin` up to `scanner` | List DJ Operators. |
-| **GET** | `/api/admin/dj-operators/:id` | Yes (Admin) | `super_admin` up to `scanner` | Retrieve DJ Operator details. |
-| **PUT** | `/api/admin/dj-operators/:id` | Yes (Admin) | `super_admin`, `admin`, `manager` | Update DJ Operator profile. |
-| **DELETE** | `/api/admin/dj-operators/:id` | Yes (Admin) | `super_admin`, `admin`, `manager` | Delete DJ Operator profile. |
-| **GET** | `/api/admin/bookings` | Yes (Admin) | `super_admin`, `admin`, `manager`, `support` | List and search bookings. |
-| **GET** | `/api/admin/bookings/summary` | Yes (Admin) | `super_admin`, `admin`, `manager`, `support` | Fetch aggregated bookings count statistics. |
-| **GET** | `/api/admin/bookings/:id` | Yes (Admin) | `super_admin`, `admin`, `manager`, `support` | Retrieve booking details by ID or reference string. |
-| **PATCH** | `/api/admin/bookings/:id/cancel` | Yes (Admin) | `super_admin`, `admin`, `support` | Cancel booking and release seats. |
-| **PATCH** | `/api/admin/bookings/:id/correct-email`| Yes (Admin) | `super_admin`, `admin`, `support` | Correct customer email on a completed booking. |
-| **POST** | `/api/admin/bookings/:id/resend` | Yes (Admin) | `super_admin`, `admin`, `support` | Force resend of ticket emails. |
-| **POST** | `/api/admin/refunds` | Yes (Admin) | `super_admin`, `admin` | Create a refund request for a booking. |
-| **GET** | `/api/admin/refunds` | Yes (Admin) | `super_admin`, `admin`, `support` | List and search refund requests. |
-| **PATCH** | `/api/admin/refunds/:id/process` | Yes (Admin) | `super_admin`, `admin` | Process (Approve/Reject) refund via gateway. |
-| **POST** | `/api/admin/coupons` | Yes (Admin) | `super_admin`, `admin`, `manager` | Create coupon. |
-| **GET** | `/api/admin/coupons` | Yes (Admin) | `super_admin`, `admin`, `manager`, `support` | List coupons. |
-| **GET** | `/api/admin/coupons/:id` | Yes (Admin) | `super_admin`, `admin`, `manager`, `support` | Retrieve coupon configuration by ID. |
-| **PUT** | `/api/admin/coupons/:id` | Yes (Admin) | `super_admin`, `admin`, `manager` | Update coupon settings. |
-| **DELETE** | `/api/admin/coupons/:id` | Yes (Admin) | `super_admin`, `admin`, `manager` | Delete coupon. |
-| **PATCH** | `/api/admin/coupons/:id/toggle` | Yes (Admin) | `super_admin`, `admin`, `manager` | Toggle coupon active status. |
-| **GET** | `/api/admin/analytics/summary` | Yes (Admin) | `super_admin`, `admin`, `manager` | Get system overview KPI numbers. |
-| **GET** | `/api/admin/analytics/revenue` | Yes (Admin) | `super_admin`, `admin`, `manager` | Get historical booking revenue data. |
-| **GET** | `/api/admin/analytics/attendance/summary`| Yes (Admin)| `super_admin`, `admin`, `manager` | Get ticket scan attendance ratios. |
-| **GET** | `/api/admin/analytics/attendance/rankings`| Yes (Admin)| `super_admin`, `admin`, `manager` | Get event attendance ranks. |
-| **GET** | `/api/admin/diagnostics/consistency` | Yes (Admin) | `super_admin` | Audit database/gateway record consistency. |
-| **POST** | `/api/admin/diagnostics/consistency/repair`| Yes (Admin)| `super_admin` | Fix identified database inconsistencies. |
-| **GET** | `/api/admin/diagnostics/reservations` | Yes (Admin) | `super_admin` | List locked reservation seats. |
-| **GET** | `/api/admin/diagnostics/system` | Yes (Admin) | Standard Admin / Super Admin | Fetch system status details (MongoDB, Redis, CPU). |
-| **GET** | `/api/admin/diagnostics/dlq` | Yes (Admin) | Standard Admin / Super Admin | List dead letter queue jobs. |
-| **GET** | `/api/admin/diagnostics/dlq/:id` | Yes (Admin) | `super_admin` | Retrieve dead letter queue job detail. |
-| **POST** | `/api/admin/diagnostics/dlq/:id/retry` | Yes (Admin) | `super_admin` | Retry processing a dead letter queue job. |
-| **POST** | `/api/admin/diagnostics/dlq/retry-all` | Yes (Admin) | `super_admin` | Retry processing all dead letter queue jobs. |
-| **GET** | `/api/admin/diagnostics/queues` | Yes (Admin) | Standard Admin / Super Admin | Fetch active queues status metrics. |
-| **POST** | `/api/admin/diagnostics/queues/:name/pause`| Yes (Admin)| `super_admin` | Pause specific task queue. |
-| **POST** | `/api/admin/diagnostics/queues/:name/resume`| Yes (Admin)| `super_admin` | Resume specific task queue. |
-| **POST** | `/api/admin/diagnostics/queues/:name/drain`| Yes (Admin) | `super_admin` | Drain specific task queue jobs. |
-| **GET** | `/api/admin/webhooks` | Yes (Admin) | `super_admin`, `admin` | Search and audit processed webhook payloads. |
-| **POST** | `/api/admin/categories` | Yes (Admin) | `super_admin`, `admin`, `manager` | Create category. |
-| **GET** | `/api/admin/categories` | Yes (Admin) | `super_admin` up to `scanner` | List all categories. |
-| **PUT** | `/api/admin/categories/:id` | Yes (Admin) | `super_admin`, `admin`, `manager` | Update category details. |
-| **DELETE** | `/api/admin/categories/:id` | Yes (Admin) | `super_admin`, `admin`, `manager` | Delete category. |
-| **POST** | `/api/admin/tiers` | Yes (Admin) | `super_admin`, `admin`, `manager` | Create ticket tier tag. |
-| **GET** | `/api/admin/tiers` | Yes (Admin) | `super_admin` up to `scanner` | List ticket tier tags. |
-| **PATCH** | `/api/admin/tiers/:id` | Yes (Admin) | `super_admin`, `admin`, `manager` | Update ticket tier tag name. |
-| **DELETE** | `/api/admin/tiers/:id` | Yes (Admin) | `super_admin`, `admin`, `manager` | Delete ticket tier tag. |
-| **POST** | `/api/admin/ticket-profiles` | Yes (Admin) | `super_admin`, `admin`, `manager` | Create ticket configuration profile. |
-| **GET** | `/api/admin/ticket-profiles` | Yes (Admin) | `super_admin` up to `scanner` | List ticket configuration profiles. |
-| **GET** | `/api/admin/ticket-profiles/:id` | Yes (Admin) | `super_admin` up to `scanner` | Retrieve single ticket profile. |
-| **PUT** | `/api/admin/ticket-profiles/:id` | Yes (Admin) | `super_admin`, `admin`, `manager` | Update ticket profile configuration. |
-| **DELETE** | `/api/admin/ticket-profiles/:id` | Yes (Admin) | `super_admin`, `admin`, `manager` | Delete ticket profile. |
-| **POST** | `/api/admin/popups` | Yes (Admin) | `super_admin`, `admin`, `manager` | Create active promotion card. |
-| **GET** | `/api/admin/popups` | Yes (Admin) | `super_admin`, `admin`, `manager`, `support` | List promotion cards. |
-| **GET** | `/api/admin/popups/:id` | Yes (Admin) | `super_admin`, `admin`, `manager`, `support` | Retrieve promotion card details. |
-| **PUT** | `/api/admin/popups/:id` | Yes (Admin) | `super_admin`, `admin`, `manager` | Update promotion card parameters. |
-| **DELETE** | `/api/admin/popups/:id` | Yes (Admin) | `super_admin`, `admin`, `manager` | Delete promotion card. |
-| **PATCH** | `/api/admin/popups/:id/toggle` | Yes (Admin) | `super_admin`, `admin`, `manager` | Toggle active status of promotion card. |
-| **GET** | `/api/admin/notifications` | Yes (Admin) | `super_admin`, `admin`, `manager`, `support` | Retrieve sent notifications list. |
-| **POST** | `/api/admin/notifications/:id/retry` | Yes (Admin) | `super_admin`, `admin`, `support` | Retry sending a failed email/SMS notification. |
-| **GET** | `/api/admin/team` | Yes (Admin) | `super_admin` | Retrieve list of administrator accounts. |
-| **POST** | `/api/admin/team` | Yes (Admin) | `super_admin` | Invite and create new administrative staff account. |
-| **PATCH** | `/api/admin/team/:id/toggle` | Yes (Admin) | `super_admin` | Toggle active status of administrative staff account. |
-| **PATCH** | `/api/admin/team/:id` | Yes (Admin) | `super_admin` | Edit admin name or email address. |
-| **PATCH** | `/api/admin/team/:id/role` | Yes (Admin) | `super_admin` | Update role permissions of administrative staff account. |
-| **POST** | `/api/admin/team/:id/reset-password` | Yes (Admin) | `super_admin` | Force override of admin account password credentials. |
-| **GET** | `/api/admin/scanner/lookup/:reference` | Yes (Admin)| `super_admin` up to `scanner` | Lookup ticket by scanner QR reference. |
-| **POST** | `/api/admin/scanner/scan` | Yes (Admin) | `super_admin` up to `scanner` | Verify scanner reference and mark ticket as checked in. |
-| **GET** | `/api/admin/users` | Yes (Admin) | `super_admin` up to `scanner` | Search registered customers and guest checkout records. |
-| **GET** | `/api/admin/users/guest/:email` | Yes (Admin) | `super_admin` up to `scanner` | Retrieve guest booking history details by email. |
-| **GET** | `/api/admin/users/:id` | Yes (Admin) | `super_admin` up to `scanner` | Retrieve detailed registered customer record & logs. |
-| **PATCH** | `/api/admin/users/:id/toggle-active` | Yes (Admin) | `super_admin` up to `scanner` | Activate or deactivate customer account credentials. |
-| **POST** | `/api/admin/marketing/send` | Yes (Admin) | `super_admin`, `admin` | Trigger a targeted email/SMS campaign. |
+| Method | Path | Visibility | Lifecycle | Auth Required | Role Constraint | Purpose |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **GET** | `/api/health` | Public | Stable | None | Public | Health status check of DB, Redis, and Email transporter. |
+| **GET** | `/api/dev/email-health` | Internal (Debug Only) | Experimental | Yes (Admin) | `super_admin`, `admin`, `manager`, `support`, `scanner` | Development SMTP diagnostic configurations. |
+| **POST** | `/api/auth/google` | Public | Stable | None (Rate Limited) | Public | Sign in/sign up using Google ID Token. |
+| **POST** | `/api/auth/check-email` | Public | Stable | None (Rate Limited) | Public | Check if email is associated with a registered user. |
+| **POST** | `/api/auth/magic-link` | Public | Stable | None (Rate Limited) | Public | Request transactional login OTP or Magic Link email. |
+| **POST** | `/api/auth/verify` | Public | Stable | None (Rate Limited) | Public | Validate OTP or token; returns JWT access/refresh tokens. |
+| **POST** | `/api/auth/refresh` | Public | Stable | None (Rate Limited) | Public | Reissue JWT access token using a valid refresh token. |
+| **POST** | `/api/auth/logout` | Public | Stable | None | Public | Invalidate refresh token and clear cookies. |
+| **GET** | `/api/auth/me` | Public | Stable | Yes (User) | Registered User | Fetch the authenticated customer profile. |
+| **PATCH** | `/api/auth/profile` | Public | Stable | Yes (User) | Registered User | Update customer profile details. |
+| **GET** | `/api/events` | Public | Stable | None | Public | List published events (filters: category, search, page). |
+| **GET** | `/api/events/:slug` | Public | Stable | None | Public | Get single event details by URL slug. |
+| **GET** | `/api/events/:eventId/seats` | Public | Stable | None | Public | Get current locked/reserved seating map. |
+| **GET** | `/api/bookings/session` | Public | Stable | None | Public | Issue a stateless Guest Session Token for booking. |
+| **POST** | `/api/bookings` | Public | Stable | Optional | Registered/Guest | Initiate a booking, lock seats, create pending transaction. |
+| **PUT** | `/api/bookings/:bookingId/checkout-details` | Public | Stable | Optional | Registered/Guest | Save firstName, lastName, email, phone on pending booking. |
+| **GET** | `/api/bookings/me` | Public | Stable | Yes (User) | Registered User | List ticket purchase history of the logged-in customer. |
+| **GET** | `/api/bookings/:bookingId` | Public | Stable | Optional | Registered/Guest | Retrieve single booking confirmation by booking reference. |
+| **POST** | `/api/bookings/:bookingId/download-token` | Public | Stable | Optional | Registered/Guest | Request a short-lived ticket PDF download access token. |
+| **GET** | `/api/bookings/:bookingId/download` | Public | Stable | Optional | Registered/Guest | Download tickets PDF using download token. |
+| **POST** | `/api/bookings/:bookingId/resend` | Public | Stable | Optional (Limited) | Registered/Guest | Resend tickets confirmation email. |
+| **POST** | `/api/bookings/recover` | Public | Stable | None (Rate Limited) | Public | Initiate booking recovery for a guest transaction ID. |
+| **POST** | `/api/bookings/recover/verify` | Public | Stable | None (Rate Limited) | Public | Verify recovery OTP and return booking search link. |
+| **POST** | `/api/payments/create-intent` | Public | Stable | Optional | Registered/Guest | Create Stripe PaymentIntent or Razorpay Order for booking. |
+| **POST** | `/api/payments/verify` | Public | Stable | Optional | Registered/Guest | Verify Razorpay signatures or check Stripe intent completion. |
+| **POST** | `/api/payments/webhook/stripe` | Public (Webhook) | Stable | None | Public | Stripe payment status event webhook. |
+| **POST** | `/api/payments/webhook/razorpay` | Public (Webhook) | Stable | None | Public | Razorpay payment status event webhook. |
+| **GET** | `/api/dj-operators` | Public | Stable | None | Public | Fetch active DJ Operator profiles (cached). |
+| **GET** | `/api/dj-operators/:slug` | Public | Stable | None | Public | Fetch detailed DJ Operator profile by slug (cached). |
+| **GET** | `/api/categories` | Public | Stable | None | Public | Retrieve active event categories. |
+| **GET** | `/api/popups/active` | Public | Stable | None | Public | Fetch active promotion cards (cached). |
+| **GET** | `/api/public/tickets/my-tickets` | Public | Stable | Yes (User) | Registered User | Retrieve all tickets owned by the user. |
+| **GET** | `/api/public/tickets/:ticketId/qr` | Public | Stable | Optional | Registered/Guest | Fetch ticket QR code payload (base64 image payload). |
+| **POST** | `/api/public/tickets/:ticketId/assign` | Public | Stable | Yes (User) | Registered User | Assign ticket ownership to a target email address. |
+| **POST** | `/api/public/tickets/:ticketId/claim` | Public | Stable | Yes (User) | Registered User | Claim a ticket assigned to the user's email. |
+| **POST** | `/api/public/tickets/:ticketId/revoke` | Public | Stable | Yes (User) | Registered User | Revoke ticket assignment and reclaim ownership. |
+| **GET** | `/api/marketing/unsubscribe` | Public | Stable | None | Public | Unsubscribe customer from newsletter campaigns. |
+| **POST** | `/api/admin/auth/login` | Public | Stable | None | Public | Credentials admin login (returns admin JWT). |
+| **GET** | `/api/admin/auth/me` | Internal (Admin) | Stable | Yes (Admin) | `super_admin` up to `scanner` | Retrieve current admin payload. |
+| **POST** | `/api/admin/auth/logout` | Internal (Admin) | Stable | Yes (Admin) | `super_admin` up to `scanner` | Clear administrative sessions. |
+| **POST** | `/api/admin/uploads/image` | Internal (Admin) | Stable | Yes (Admin) | `super_admin`, `admin`, `manager` | Upload image file to Cloudinary. |
+| **DELETE** | `/api/admin/uploads` | Internal (Admin) | Stable | Yes (Admin) | `super_admin`, `admin`, `manager` | Delete image asset from Cloudinary. |
+| **POST** | `/api/admin/events` | Internal (Admin) | Stable | Yes (Admin) | `super_admin`, `admin`, `manager` | Create a new event. |
+| **GET** | `/api/admin/events` | Internal (Admin) | Stable | Yes (Admin) | `super_admin` up to `scanner` | List all events (including drafted, active, past). |
+| **GET** | `/api/admin/events/:id` | Internal (Admin) | Stable | Yes (Admin) | `super_admin` up to `scanner` | Retrieve single event configuration by ID. |
+| **PUT** | `/api/admin/events/:id` | Internal (Admin) | Stable | Yes (Admin) | `super_admin`, `admin`, `manager` | Update event details with concurrency safety. |
+| **DELETE** | `/api/admin/events/:id` | Internal (Admin) | Stable | Yes (Admin) | `super_admin`, `admin`, `manager` | Delete event profile. |
+| **POST** | `/api/admin/dj-operators` | Internal (Admin) | Stable | Yes (Admin) | `super_admin`, `admin`, `manager` | Create DJ Operator. |
+| **GET** | `/api/admin/dj-operators` | Internal (Admin) | Stable | Yes (Admin) | `super_admin` up to `scanner` | List DJ Operators. |
+| **GET** | `/api/admin/dj-operators/:id` | Internal (Admin) | Stable | Yes (Admin) | `super_admin` up to `scanner` | Retrieve DJ Operator details. |
+| **PUT** | `/api/admin/dj-operators/:id` | Internal (Admin) | Stable | Yes (Admin) | `super_admin`, `admin`, `manager` | Update DJ Operator profile. |
+| **DELETE** | `/api/admin/dj-operators/:id` | Internal (Admin) | Stable | Yes (Admin) | `super_admin`, `admin`, `manager` | Delete DJ Operator profile. |
+| **GET** | `/api/admin/bookings` | Internal (Admin) | Stable | Yes (Admin) | `super_admin`, `admin`, `manager`, `support` | List and search bookings. |
+| **GET** | `/api/admin/bookings/summary` | Internal (Admin) | Stable | Yes (Admin) | `super_admin`, `admin`, `manager`, `support` | Fetch aggregated bookings count statistics. |
+| **GET** | `/api/admin/bookings/:id` | Internal (Admin) | Stable | Yes (Admin) | `super_admin`, `admin`, `manager`, `support` | Retrieve booking details by ID or reference string. |
+| **PATCH** | `/api/admin/bookings/:id/cancel` | Internal (Admin) | Stable | Yes (Admin) | `super_admin`, `admin`, `support` | Cancel booking and release seats. |
+| **PATCH** | `/api/admin/bookings/:id/correct-email` | Internal (Admin) | Stable | Yes (Admin) | `super_admin`, `admin`, `support` | Correct customer email on a completed booking. |
+| **POST** | `/api/admin/bookings/:id/resend` | Internal (Admin) | Stable | Yes (Admin) | `super_admin`, `admin`, `support` | Force resend of ticket emails. |
+| **POST** | `/api/admin/refunds` | Internal (Admin) | Stable | Yes (Admin) | `super_admin`, `admin` | Create a refund request for a booking. |
+| **GET** | `/api/admin/refunds` | Internal (Admin) | Stable | Yes (Admin) | `super_admin`, `admin`, `support` | List and search refund requests. |
+| **PATCH** | `/api/admin/refunds/:id/process` | Internal (Admin) | Stable | Yes (Admin) | `super_admin`, `admin` | Process (Approve/Reject) refund via gateway. |
+| **POST** | `/api/admin/coupons` | Internal (Admin) | Stable | Yes (Admin) | `super_admin`, `admin`, `manager` | Create coupon. |
+| **GET** | `/api/admin/coupons` | Internal (Admin) | Stable | Yes (Admin) | `super_admin`, `admin`, `manager`, `support` | List coupons. |
+| **GET** | `/api/admin/coupons/:id` | Internal (Admin) | Stable | Yes (Admin) | `super_admin`, `admin`, `manager`, `support` | Retrieve coupon configuration by ID. |
+| **PUT** | `/api/admin/coupons/:id` | Internal (Admin) | Stable | Yes (Admin) | `super_admin`, `admin`, `manager` | Update coupon settings. |
+| **DELETE** | `/api/admin/coupons/:id` | Internal (Admin) | Stable | Yes (Admin) | `super_admin`, `admin`, `manager` | Delete coupon. |
+| **PATCH** | `/api/admin/coupons/:id/toggle` | Internal (Admin) | Stable | Yes (Admin) | `super_admin`, `admin`, `manager` | Toggle coupon active status. |
+| **GET** | `/api/admin/analytics/summary` | Internal (Admin) | Stable | Yes (Admin) | `super_admin`, `admin`, `manager` | Get system overview KPI numbers. |
+| **GET** | `/api/admin/analytics/revenue` | Internal (Admin) | Stable | Yes (Admin) | `super_admin`, `admin`, `manager` | Get historical booking revenue data. |
+| **GET** | `/api/admin/analytics/attendance/summary` | Internal (Admin) | Stable | Yes (Admin) | `super_admin`, `admin`, `manager` | Get ticket scan attendance ratios. |
+| **GET** | `/api/admin/analytics/attendance/rankings` | Internal (Admin) | Stable | Yes (Admin) | `super_admin`, `admin`, `manager` | Get event attendance ranks. |
+| **GET** | `/api/admin/diagnostics/consistency` | Internal (Diagnostics) | Stable | Yes (Admin) | `super_admin` | Audit database/gateway record consistency. |
+| **POST** | `/api/admin/diagnostics/consistency/repair` | Internal (Diagnostics) | Stable | Yes (Admin) | `super_admin` | Fix identified database inconsistencies. |
+| **GET** | `/api/admin/diagnostics/reservations` | Internal (Diagnostics) | Stable | Yes (Admin) | `super_admin` | List locked reservation seats. |
+| **GET** | `/api/admin/diagnostics/system` | Internal (Diagnostics) | Stable | Yes (Admin) | Standard Admin / Super Admin | Fetch system status details (MongoDB, Redis, CPU). |
+| **GET** | `/api/admin/diagnostics/dlq` | Internal (Diagnostics) | Stable | Yes (Admin) | Standard Admin / Super Admin | List dead letter queue jobs. |
+| **GET** | `/api/admin/diagnostics/dlq/:id` | Internal (Diagnostics) | Stable | Yes (Admin) | `super_admin` | Retrieve dead letter queue job detail. |
+| **POST** | `/api/admin/diagnostics/dlq/:id/retry` | Internal (Diagnostics) | Stable | Yes (Admin) | `super_admin` | Retry processing a dead letter queue job. |
+| **POST** | `/api/admin/diagnostics/dlq/retry-all` | Internal (Diagnostics) | Stable | Yes (Admin) | `super_admin` | Retry processing all dead letter queue jobs. |
+| **GET** | `/api/admin/diagnostics/queues` | Internal (Diagnostics) | Stable | Yes (Admin) | Standard Admin / Super Admin | Fetch active queues status metrics. |
+| **POST** | `/api/admin/diagnostics/queues/:name/pause` | Internal (Diagnostics) | Stable | Yes (Admin) | `super_admin` | Pause specific task queue. |
+| **POST** | `/api/admin/diagnostics/queues/:name/resume` | Internal (Diagnostics) | Stable | Yes (Admin) | `super_admin` | Resume specific task queue. |
+| **POST** | `/api/admin/diagnostics/queues/:name/drain` | Internal (Diagnostics) | Stable | Yes (Admin) | `super_admin` | Drain specific task queue jobs. |
+| **GET** | `/api/admin/webhooks` | Internal (Admin) | Stable | Yes (Admin) | `super_admin`, `admin` | Search and audit processed webhook payloads. |
+| **POST** | `/api/admin/categories` | Internal (Admin) | Stable | Yes (Admin) | `super_admin`, `admin`, `manager` | Create category. |
+| **GET** | `/api/admin/categories` | Internal (Admin) | Stable | Yes (Admin) | `super_admin` up to `scanner` | List all categories. |
+| **PUT** | `/api/admin/categories/:id` | Internal (Admin) | Stable | Yes (Admin) | `super_admin`, `admin`, `manager` | Update category details. |
+| **DELETE** | `/api/admin/categories/:id` | Internal (Admin) | Stable | Yes (Admin) | `super_admin`, `admin`, `manager` | Delete category. |
+| **POST** | `/api/admin/tiers` | Internal (Admin) | Stable | Yes (Admin) | `super_admin`, `admin`, `manager` | Create ticket tier tag. |
+| **GET** | `/api/admin/tiers` | Internal (Admin) | Stable | Yes (Admin) | `super_admin` up to `scanner` | List ticket tier tags. |
+| **PATCH** | `/api/admin/tiers/:id` | Internal (Admin) | Stable | Yes (Admin) | `super_admin`, `admin`, `manager` | Update ticket tier tag name. |
+| **DELETE** | `/api/admin/tiers/:id` | Internal (Admin) | Stable | Yes (Admin) | `super_admin`, `admin`, `manager` | Delete ticket tier tag. |
+| **POST** | `/api/admin/ticket-profiles` | Internal (Admin) | Stable | Yes (Admin) | `super_admin`, `admin`, `manager` | Create ticket configuration profile. |
+| **GET** | `/api/admin/ticket-profiles` | Internal (Admin) | Stable | Yes (Admin) | `super_admin` up to `scanner` | List ticket configuration profiles. |
+| **GET** | `/api/admin/ticket-profiles/:id` | Internal (Admin) | Stable | Yes (Admin) | `super_admin` up to `scanner` | Retrieve single ticket profile. |
+| **PUT** | `/api/admin/ticket-profiles/:id` | Internal (Admin) | Stable | Yes (Admin) | `super_admin`, `admin`, `manager` | Update ticket profile configuration. |
+| **DELETE** | `/api/admin/ticket-profiles/:id` | Internal (Admin) | Stable | Yes (Admin) | `super_admin`, `admin`, `manager` | Delete ticket profile. |
+| **POST** | `/api/admin/popups` | Internal (Admin) | Stable | Yes (Admin) | `super_admin`, `admin`, `manager` | Create active promotion card. |
+| **GET** | `/api/admin/popups` | Internal (Admin) | Stable | Yes (Admin) | `super_admin`, `admin`, `manager`, `support` | List promotion cards. |
+| **GET** | `/api/admin/popups/:id` | Internal (Admin) | Stable | Yes (Admin) | `super_admin`, `admin`, `manager`, `support` | Retrieve promotion card details. |
+| **PUT** | `/api/admin/popups/:id` | Internal (Admin) | Stable | Yes (Admin) | `super_admin`, `admin`, `manager` | Update promotion card parameters. |
+| **DELETE** | `/api/admin/popups/:id` | Internal (Admin) | Stable | Yes (Admin) | `super_admin`, `admin`, `manager` | Delete promotion card. |
+| **PATCH** | `/api/admin/popups/:id/toggle` | Internal (Admin) | Stable | Yes (Admin) | `super_admin`, `admin`, `manager` | Toggle active status of promotion card. |
+| **GET** | `/api/admin/notifications` | Internal (Admin) | Stable | Yes (Admin) | `super_admin`, `admin`, `manager`, `support` | Retrieve sent notifications list. |
+| **POST** | `/api/admin/notifications/:id/retry` | Internal (Admin) | Stable | Yes (Admin) | `super_admin`, `admin`, `support` | Retry sending a failed email/SMS notification. |
+| **GET** | `/api/admin/team` | Internal (Admin) | Stable | Yes (Admin) | `super_admin` | Retrieve list of administrator accounts. |
+| **POST** | `/api/admin/team` | Internal (Admin) | Stable | Yes (Admin) | `super_admin` | Invite and create new administrative staff account. |
+| **PATCH** | `/api/admin/team/:id/toggle` | Internal (Admin) | Stable | Yes (Admin) | `super_admin` | Toggle active status of administrative staff account. |
+| **PATCH** | `/api/admin/team/:id` | Internal (Admin) | Stable | Yes (Admin) | `super_admin` | Edit admin name or email address. |
+| **PATCH** | `/api/admin/team/:id/role` | Internal (Admin) | Stable | Yes (Admin) | `super_admin` | Update role permissions of administrative staff account. |
+| **POST** | `/api/admin/team/:id/reset-password` | Internal (Admin) | Stable | Yes (Admin) | `super_admin` | Force override of admin account password credentials. |
+| **GET** | `/api/admin/scanner/lookup/:reference` | Internal (Admin) | Stable | Yes (Admin) | `super_admin` up to `scanner` | Lookup ticket by scanner QR reference. |
+| **POST** | `/api/admin/scanner/scan` | Internal (Admin) | Stable | Yes (Admin) | `super_admin` up to `scanner` | Verify scanner reference and mark ticket as checked in. |
+| **GET** | `/api/admin/users` | Internal (Admin) | Stable | Yes (Admin) | `super_admin` up to `scanner` | Search registered customers and guest checkout records. |
+| **GET** | `/api/admin/users/guest/:email` | Internal (Admin) | Stable | Yes (Admin) | `super_admin` up to `scanner` | Retrieve guest booking history details by email. |
+| **GET** | `/api/admin/users/:id` | Internal (Admin) | Stable | Yes (Admin) | `super_admin` up to `scanner` | Retrieve detailed registered customer record & logs. |
+| **PATCH** | `/api/admin/users/:id/toggle-active` | Internal (Admin) | Stable | Yes (Admin) | `super_admin` up to `scanner` | Activate or deactivate customer account credentials. |
+| **POST** | `/api/admin/marketing/send` | Internal (Admin) | Stable | Yes (Admin) | `super_admin`, `admin` | Trigger a targeted email/SMS campaign. |
 
 ### Repository Standard
 - No routes may bypass Express routing definitions declared in `apps/server/src/routes/`.
