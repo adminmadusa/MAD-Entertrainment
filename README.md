@@ -71,13 +71,20 @@ pnpm build
 
 ## System Documentation
 
-Core system architecture, deployment configurations, and API contract specifications are documented in:
+The repository maintains a strict documentation hierarchy. Each document serves as the Single Source of Truth (SSOT) for its respective domain:
 
-- [ARCHITECTURE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/ARCHITECTURE.md) — System architecture SSOT
-- [DEPLOYMENT_MAP.md](file:///Users/admin/Desktop/MAD%20Entertrainment/DEPLOYMENT_MAP.md) — Infrastructure & deployment SSOT
-- [API_CONTRACTS.md](file:///Users/admin/Desktop/MAD%20Entertrainment/API_CONTRACTS.md) — API contracts SSOT
-- [RUNBOOK.md](file:///Users/admin/Desktop/MAD%20Entertrainment/RUNBOOK.md) — Operations and runbook procedures
-- [docs/decisions/README.md](file:///Users/admin/Desktop/MAD%20Entertrainment/docs/decisions/README.md) — Architecture Decision Records (ADRs)
+```text
+README.md                      ← Entry point & navigation index
+│
+├── REPOSITORY_GOVERNANCE.md   ← Governance SSOT (branch/PR policy, standards)
+├── ARCHITECTURE.md            ← Architecture SSOT (package boundaries, standards)
+├── DEPLOYMENT_MAP.md          ← Deployment SSOT (infrastructure map, environments)
+├── API_CONTRACTS.md           ← API SSOT (Express endpoints, request/response schemas)
+├── docs/decisions/README.md   ← Architecture Decision Records (Technical rationale 'Why')
+└── RUNBOOK.md                 ← Operational Procedures (checklists, deployment commands)
+```
+
+For testing guidelines, see [TESTING.md](file:///Users/admin/Desktop/MAD%20Entertrainment/TESTING.md). For agent instructions, see [AGENTS.md](file:///Users/admin/Desktop/MAD%20Entertrainment/AGENTS.md).
 
 ---
 

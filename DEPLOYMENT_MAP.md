@@ -11,6 +11,7 @@ Supersedes:
 
 Related Documents:
 - [README.md](file:///Users/admin/Desktop/MAD%20Entertrainment/README.md)
+- [REPOSITORY_GOVERNANCE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/REPOSITORY_GOVERNANCE.md)
 - [AGENTS.MD](file:///Users/admin/Desktop/MAD%20Entertrainment/AGENTS.MD)
 - [RUNBOOK.md](file:///Users/admin/Desktop/MAD%20Entertrainment/RUNBOOK.md)
 - [ARCHITECTURE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/ARCHITECTURE.md)
@@ -26,13 +27,12 @@ Below is the core documentation structure and relationships for MAD Entertrainme
 ```text
 README.md
 │
+├── REPOSITORY_GOVERNANCE.md     ← Governance SSOT
 ├── ARCHITECTURE.md              ← System architecture SSOT
 ├── DEPLOYMENT_MAP.md            ← Infrastructure & deployment SSOT
 ├── API_CONTRACTS.md             ← API contract SSOT
 ├── docs/decisions/README.md     ← Architecture Decision Records (ADRs)
-├── RUNBOOK.md                   ← Operational procedures
-├── AGENTS.MD                    ← Repository governance
-└── CHANGELOG.md                 ← Historical changes
+└── RUNBOOK.md                   ← Operational procedures
 ```
 
 ---

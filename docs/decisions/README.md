@@ -8,6 +8,7 @@ Last Updated: 2026-06-25
 
 Related Documents:
 - [README.md](file:///Users/admin/Desktop/MAD%20Entertrainment/README.md)
+- [REPOSITORY_GOVERNANCE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/REPOSITORY_GOVERNANCE.md)
 - [ARCHITECTURE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/ARCHITECTURE.md)
 - [DEPLOYMENT_MAP.md](file:///Users/admin/Desktop/MAD%20Entertrainment/DEPLOYMENT_MAP.md)
 - [API_CONTRACTS.md](file:///Users/admin/Desktop/MAD%20Entertrainment/API_CONTRACTS.md)
@@ -116,4 +117,4 @@ Architectural review and approvals are divided into operational areas:
 | **Infrastructure & Hosting**| Platform Team | [DEPLOYMENT_MAP.md](file:///Users/admin/Desktop/MAD%20Entertrainment/DEPLOYMENT_MAP.md) |
 | **Payments & Payouts** | Financial Domain Tech Lead | [API_CONTRACTS.md](file:///Users/admin/Desktop/MAD%20Entertrainment/API_CONTRACTS.md) |
 | **Authentication & AuthZ** | Security Architect | [API_CONTRACTS.md](file:///Users/admin/Desktop/MAD%20Entertrainment/API_CONTRACTS.md) |
-| **Governance & Quality** | Repository Governance Owner | [AGENTS.MD](file:///Users/admin/Desktop/MAD%20Entertrainment/AGENTS.MD) |
+| **Governance & Quality** | Repository Governance Owner | [REPOSITORY_GOVERNANCE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/REPOSITORY_GOVERNANCE.md) / [AGENTS.MD](file:///Users/admin/Desktop/MAD%20Entertrainment/AGENTS.MD) |

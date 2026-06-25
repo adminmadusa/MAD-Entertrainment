@@ -17,6 +17,11 @@ Applies To:
 
 ---
 
+## Relationship to Repository Governance Policy
+The repository governance policies (roles, matrices, branch and PR policies) are canonically defined in [REPOSITORY_GOVERNANCE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/REPOSITORY_GOVERNANCE.md). This file (`AGENTS.md`) serves as the operational instructions and guidelines for human and AI agents implementing those policies in the codebase.
+
+---
+
 # PURPOSE
 
 This document defines how all engineering work must be performed in the MAD Entertrainment repository.
@@ -131,9 +136,11 @@ Frontend must never own business rules.
 
 Frontend must never duplicate backend decisions.
 
+Repository Governance SSOT → REPOSITORY_GOVERNANCE.md
+
 Architecture Decisions (ADRs) → docs/decisions/README.md
 
-For details on why technical and architectural decisions are made, refer to the Architecture Decision Records (ADR) system at docs/decisions/README.md. All automated agents and human developers must review and adhere to the approved decisions.
+For policy rules, branch/PR standards, and document ownership, refer to the [REPOSITORY_GOVERNANCE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/REPOSITORY_GOVERNANCE.md). For details on why technical and architectural decisions are made, refer to the Architecture Decision Records (ADR) system at [docs/decisions/README.md](file:///Users/admin/Desktop/MAD%20Entertrainment/docs/decisions/README.md). All automated agents and human developers must review and adhere to the approved decisions.
 
 ---
 
@@ -630,6 +637,8 @@ DEPLOYMENT_MAP.md
 CHANGELOG.md
 
 docs/decisions/README.md
+
+REPOSITORY_GOVERNANCE.md
 
 ---
 
