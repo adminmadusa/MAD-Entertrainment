@@ -24,6 +24,36 @@ While our core SSOT documents (`ARCHITECTURE.md`, `DEPLOYMENT_MAP.md`, `API_CONT
 
 ---
 
+## ADR Numbering Policy
+
+To maintain long-term traceability and historical integrity as the repository grows, the following numbering rules apply:
+
+| Rule | Description | Example |
+| :--- | :--- | :--- |
+| **Never reuse numbers** | Each ADR number is permanently assigned. If an ADR is rejected or superseded, its number is never reassigned to a new decision. | `ADR-001` always remains the record for Booking Ownership. |
+| **Never renumber** | The index must preserve its original chronological order. Do not renumber existing decisions to fill in gaps. | Even if `ADR-002` is rejected, `ADR-003` remains `ADR-003`. |
+| **Superseded ADRs remain in the index** | Superseded decisions are never deleted from the index log; their status is updated to reference the replacing ADR. | `ADR-001` ➔ Superseded by `ADR-008`. |
+| **Deleted ADRs are prohibited** | Once an ADR is merged, it must never be deleted from the filesystem. Obsolete ADRs are marked as Deprecated or Superseded. | Preserve historical traceability of all decisions. |
+
+---
+
+## Decision Relationship Graph
+
+The following graph illustrates how architectural decisions feed into our Single Source of Truth (SSOT) documents and operational procedures:
+
+```mermaid
+graph TD
+    Decisions["Architecture Decisions"] --> ADR001["ADR-001 Booking Ownership"]
+    ADR001 --> ARCH["ARCHITECTURE.md"]
+    ADR001 --> API["API_CONTRACTS.md"]
+    ADR001 --> DEPL["DEPLOYMENT_MAP.md"]
+    ARCH --> RUN["RUNBOOK.md"]
+    API --> RUN
+    DEPL --> RUN
+```
+
+---
+
 ## ADR Creation Policy
 
 An ADR **must** be created and approved before merging any changes that:
