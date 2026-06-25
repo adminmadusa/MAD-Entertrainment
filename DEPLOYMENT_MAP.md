@@ -14,6 +14,7 @@ Related Documents:
 - [AGENTS.MD](file:///Users/admin/Desktop/MAD%20Entertrainment/AGENTS.MD)
 - [RUNBOOK.md](file:///Users/admin/Desktop/MAD%20Entertrainment/RUNBOOK.md)
 - [ARCHITECTURE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/ARCHITECTURE.md)
+- [API_CONTRACTS.md](file:///Users/admin/Desktop/MAD%20Entertrainment/API_CONTRACTS.md)
 
 ---
 
@@ -388,7 +389,7 @@ Rollback steps are executed manually from provider consoles:
 
 ### Current Implementation
 Observability is mapped to three targets:
-- **Endpoints**: Express hosts `/api/health` checking MongoDB and Redis connections.
+- **Endpoints**: Express hosts `/api/health` checking MongoDB and Redis connections (documented in [API_CONTRACTS.md](file:///Users/admin/Desktop/MAD%20Entertrainment/API_CONTRACTS.md)).
 - **Logging**: Render routes logs to Sentry. BullMQ failures are enqueued for dead-letter processing.
 - **Alerting**: Better Uptime monitors `apm.esparex.in/api/health`.
 

@@ -69,12 +69,14 @@ pnpm build
 
 ---
 
-## Deployment & Operations
+## System Documentation
 
-Operations runbooks, deployment procedures, disaster recovery instructions, environment configuration guides, and production validation workflows are documented in:
+Core system architecture, deployment configurations, and API contract specifications are documented in:
 
-- [RUNBOOK.md](file:///Users/admin/Desktop/MAD%20Entertrainment/RUNBOOK.md)
-- [DEPLOYMENT_MAP.md](file:///Users/admin/Desktop/MAD%20Entertrainment/DEPLOYMENT_MAP.md)
+- [ARCHITECTURE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/ARCHITECTURE.md) — System architecture SSOT
+- [DEPLOYMENT_MAP.md](file:///Users/admin/Desktop/MAD%20Entertrainment/DEPLOYMENT_MAP.md) — Infrastructure & deployment SSOT
+- [API_CONTRACTS.md](file:///Users/admin/Desktop/MAD%20Entertrainment/API_CONTRACTS.md) — API contracts SSOT
+- [RUNBOOK.md](file:///Users/admin/Desktop/MAD%20Entertrainment/RUNBOOK.md) — Operations and runbook procedures
 
 ---
 

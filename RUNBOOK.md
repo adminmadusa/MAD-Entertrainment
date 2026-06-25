@@ -23,7 +23,7 @@
 ## 1. Architecture Overview
 
 > [!NOTE]
-> For the detailed infrastructure topology, branch promotion strategy, environment variables classification, and external integrations register, see the canonical [DEPLOYMENT_MAP.md](file:///Users/admin/Desktop/MAD%20Entertrainment/DEPLOYMENT_MAP.md).
+> For detailed monorepo package boundaries and code patterns, see the canonical [ARCHITECTURE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/ARCHITECTURE.md). For infrastructure topology, environments, and CI/CD pipelines, see the canonical [DEPLOYMENT_MAP.md](file:///Users/admin/Desktop/MAD%20Entertrainment/DEPLOYMENT_MAP.md). For public and administrative Express route definitions, Zod schemas, validation specifications, and HTTP error codes, see the canonical [API_CONTRACTS.md](file:///Users/admin/Desktop/MAD%20Entertrainment/API_CONTRACTS.md).
 
 ```
 Customer Browser
@@ -322,7 +322,7 @@ git push --force-with-lease origin main
 1. Verify `MOCK_PAYMENTS=false` on the server.
 2. Check the Razorpay dashboard webhook delivery log — look for failed deliveries.
 3. Check server logs for `[PaymentService]` or `[WebhookController]` entries.
-4. Manually check the booking status via `/api/admin/bookings/{bookingId}`.
+4. Manually check the booking status via `/api/admin/bookings/{bookingId}` (see payload specifications in [API_CONTRACTS.md](file:///Users/admin/Desktop/MAD%20Entertrainment/API_CONTRACTS.md)).
 
 ### QR codes not appearing
 

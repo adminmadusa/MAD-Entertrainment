@@ -14,6 +14,7 @@ Related Documents:
 - [AGENTS.MD](file:///Users/admin/Desktop/MAD%20Entertrainment/AGENTS.MD)
 - [RUNBOOK.md](file:///Users/admin/Desktop/MAD%20Entertrainment/RUNBOOK.md)
 - [DEPLOYMENT_MAP.md](file:///Users/admin/Desktop/MAD%20Entertrainment/DEPLOYMENT_MAP.md)
+- [API_CONTRACTS.md](file:///Users/admin/Desktop/MAD%20Entertrainment/API_CONTRACTS.md)
 
 ---
 
@@ -342,7 +343,7 @@ Adding new features, modules, or packages is structured around workspaces:
 
 ### Repository Standard
 - **Circular Imports**: When adding packages, developers must run the compliance audit to confirm no circular imports are created.
-- **Validation Schema Alignment**: Any API payload validation must be defined in `@mad/validations` so that both the server and client share the exact Zod contract.
+- **Validation Schema Alignment**: Any API payload validation must be defined in `@mad/validations` so that both the server and client share the exact Zod contract (see the canonical [API_CONTRACTS.md](file:///Users/admin/Desktop/MAD%20Entertrainment/API_CONTRACTS.md)).
 
 ### Future Recommendations
 - Omitted (No active proposals exist for extension guidelines).
