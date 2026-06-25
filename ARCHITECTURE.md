@@ -1,6 +1,80 @@
 # MAD Entertrainment — Monorepo Architecture & Standards
 
-This document serves as the canonical **Single Source of Truth (SSOT)** for the architecture, package boundaries, data flows, and coding standards of the **MAD Entertrainment** platform.
+Status: Active  
+Version: 1.0  
+Owner: Repository Architecture  
+Review Cycle: Quarterly  
+Last Updated: 2026-06-25  
+
+Supersedes:
+- [governance.md](file:///Users/admin/Desktop/MAD%20Entertrainment/docs/architecture/governance.md) (Deleted)
+
+Related Documents:
+- [README.md](file:///Users/admin/Desktop/MAD%20Entertrainment/README.md)
+- [AGENTS.MD](file:///Users/admin/Desktop/MAD%20Entertrainment/AGENTS.MD)
+- [RUNBOOK.md](file:///Users/admin/Desktop/MAD%20Entertrainment/RUNBOOK.md)
+- [DEPLOYMENT_MAP.md](file:///Users/admin/Desktop/MAD%20Entertrainment/DEPLOYMENT_MAP.md)
+
+---
+
+## Repository Documentation Hierarchy
+
+Below is the core documentation structure and relationships for MAD Entertrainment:
+
+```text
+README.md
+│
+├── ARCHITECTURE.md              ← System architecture SSOT
+├── DEPLOYMENT_MAP.md            ← Infrastructure & deployment SSOT
+├── API_CONTRACTS.md             ← API contract SSOT
+├── RUNBOOK.md                   ← Operational procedures
+├── AGENTS.MD                    ← Repository governance
+└── CHANGELOG.md                 ← Historical changes
+```
+
+---
+
+## Document Governance
+
+### Architecture Change Policy
+This document serves as the canonical Single Source of Truth (SSOT) for the architecture, package boundaries, data flows, and coding standards of the **MAD Entertrainment** platform. Any modifications to the system's structural components must be reflected here.
+
+The document **must** be updated whenever any of the following change:
+- Package boundaries
+- New workspace packages
+- Runtime topology
+- Authentication architecture
+- Payment architecture
+- Deployment topology
+- CI/CD flow
+- Public API architecture
+- Queue architecture
+- Shared infrastructure
+- Dependency direction
+- Repository standards
+
+Changes affecting architecture must not be merged without updating this document.
+
+### Architecture Stability Classification
+The table below classifies the maturity and stability of the system's components:
+
+| Section | Stability |
+| :--- | :--- |
+| Monorepo | Stable |
+| Runtime | Stable |
+| Deployment | Stable |
+| Authentication | Stable |
+| Payments | Stable |
+| Build System | Stable |
+| Package Graph | Stable |
+| Future Architecture | Experimental |
+
+*Definitions*:
+- **Stable**: Production-ready, fully verified, and requires architectural review to modify.
+- **Active Development**: Undergoing active updates; backwards compatibility is maintained but schemas may expand.
+- **Experimental**: Proof-of-concept or unapproved proposal; subject to change or deletion.
+- **Planned**: Approved roadmap items not yet implemented.
+- **Deprecated**: Scheduled for removal; should not be used in new code.
 
 ---
 
@@ -35,7 +109,8 @@ All package references must follow a strict top-down dependency direction:
 - All workspace package imports must be declared in package manifests using `workspace:*` dependencies.
 
 ### Future Recommendations
-- See *Appendix A: Future Architecture Considerations* for proposals regarding package modularization (Status: Proposed).
+- See *Appendix: Future Architecture Considerations* — Proposal 1: "Package Modularization & Monorepo Tooling Migration (e.g., Migrate to Nx)" for proposals regarding package modularization.  
+  *Status*: Possible Future Enhancement (Not Approved) · Untracked
 
 ---
 
@@ -56,12 +131,13 @@ The monorepo contains five internal packages under `packages/*`:
 ### Repository Standard
 - **`@mad/shared`**: Allowed deps: None. Forbidden deps: Any package.
 - **`@mad/types`**: Allowed deps: `@mad/shared`. Forbidden deps: `@mad/utils`, `@mad/ui`, `@mad/validations`.
-- **`@mad/ui`**: Allowed deps: `react`, `react-dom`. Forbidden deps: Express, Mongoose, `@mad/utils`.
+- **`@mad/ui`**: Allowed deps: `react`. Forbidden deps: Express, Mongoose, `@mad/utils`, `@mad/shared`.
 - **`@mad/utils`**: Allowed deps: `@mad/types`. Forbidden deps: React, Next.js, Express, Mongoose.
 - **`@mad/validations`**: Allowed deps: `zod`. Forbidden deps: Next.js, Mongoose, Express.
 
 ### Future Recommendations
-- See *Appendix A* for proposals regarding `@mad/contracts` validation mappings (Status: Proposed).
+- See *Appendix: Future Architecture Considerations* — Proposal 2: "Centralized Service Contracts (`@mad/contracts`)" for proposals regarding validation contracts.  
+  *Status*: Possible Future Enhancement (Not Approved) · Untracked
 
 ---
 
@@ -85,7 +161,8 @@ The runtime stack consists of:
 - **Queue Separation**: Asynchronous work must be enqueued via `QueueService` rather than executed directly within HTTP request cycles.
 
 ### Future Recommendations
-- See *Appendix A* for background worker decoupling proposals (Status: Proposed).
+- See *Appendix: Future Architecture Considerations* — Proposal 3: "Microservice Decoupling of BullMQ Workers" and Proposal 4: "Message Broker Architecture" for backend worker and message queue scalability proposals.  
+  *Status*: Possible Future Enhancement (Not Approved) · Untracked
 
 ---
 
@@ -116,7 +193,8 @@ graph TD
 - **Staging Sharing**: Staging/testing frontends deploy on pushes to `develop` but share the production Render API endpoint.
 
 ### Future Recommendations
-- See *Appendix A* for proposals to isolate staging backends on Render (Status: Proposed).
+- See *Appendix: Future Architecture Considerations* — Proposal 5: "Dedicated Staging Backend API" and Proposal 6: "Multi-Region Deployment" for deployment decoupling and scaling proposals.  
+  *Status*: Possible Future Enhancement (Not Approved) · Untracked
 
 ---
 
@@ -178,7 +256,8 @@ The project build graph requires shared libraries under `packages/*` to be compi
 - **Isolated Compiles**: Never run recursive build scripts (`pnpm -r build`) in backend server environments. Build commands must always filter targeting to prevent Next.js frontend compilation.
 
 ### Future Recommendations
-- See *Appendix A* for proposals regarding build tool migrations (Status: Proposed).
+- See *Appendix: Future Architecture Considerations* — Proposal 1: "Package Modularization & Monorepo Tooling Migration (e.g., Migrate to Nx)" for proposals regarding build tool migrations.  
+  *Status*: Possible Future Enhancement (Not Approved) · Untracked
 
 ---
 
@@ -207,7 +286,7 @@ System responsibilities are segregated between frontend (UI Presentation/State) 
 ### Current Implementation
 The repository enforces code standards at three levels:
 - **Architectural**: Stateless controllers, isolated middleware rate-limiters, and decoupled application bootstrap.
-- **Component**: React components must handle four render states (Loading, Error, Empty, Success) and delegate HTTP requests to service layers.
+- **Component**: React components must handle render states and delegate HTTP requests to service layers.
 - **Governance**: Automated CI checks.
 
 *Evidence*:
@@ -216,12 +295,14 @@ The repository enforces code standards at three levels:
 - `scripts/ci_governance_check.ts` blocks code containing direct Axios imports in UI directories or Sentry Node imports in Next.js folders.
 
 ### Repository Standard
-- **Axios Isolation**: Components and pages must never import Axios directly. All HTTP requests must be made via a dedicated service layer file.
-- **Render States**: Silent UI fallbacks are forbidden. Skeletons, error overlays, and empty-state placeholders must be rendered.
-- **Middleware rate-limiters**: Eager rate limiters using Redis stores must be declared as lazy wrappers, initialized inside `server.ts` after Redis is ready.
+- **Axios Isolation**: Components and pages must never import Axios directly. All HTTP requests must be made via a dedicated service layer file (except files inside `/lib/api/` or service wrapper modules).
+- **Render States**: Silent UI fallbacks are forbidden. Skeletons, error overlays, offline notifications, unauthorized blocks, and empty-state placeholders must be rendered to handle the six required UX states (Loading, Empty, Error, Offline, Unauthorized, Success) from `AGENTS.MD`.
+- **Middleware Rate-Limiters**: Eager rate limiters using Redis stores must be declared as lazy wrappers, initialized inside `server.ts` after Redis is ready.
+- **Placeholder Routes**: Backend routes returning `501 Not Implemented` are strictly prohibited in the production branch. Every route registered in Express must have a complete, tested controller implementation or be omitted entirely until ready.
 
 ### Future Recommendations
-- See *Appendix A* for client-side service generation proposals (Status: Proposed).
+- See *Appendix: Future Architecture Considerations* — Proposal 7: "Automated Client API Code Generation" for client-side service generation proposals.  
+  *Status*: Possible Future Enhancement (Not Approved) · Untracked
 
 ---
 
@@ -240,9 +321,12 @@ High-risk systems are located in isolated directories:
 ### Repository Standard
 - **Testing Requirements**: Any change to high-risk files requires complete test coverage, local verification run, and explicit approval before merge.
 - **Mock Disablement**: `MOCK_PAYMENTS` must be set to `false` in staging and production environments to prevent bypass vulnerabilities.
+- **Secret Hardening**: All JWT secret parameters and cryptographic keys must be defined in `apps/server/src/config/env.ts` with strict Zod validation requiring a minimum length of 32 characters (`z.string().min(32)`) to block weak credentials.
+- **Secret Masking**: The audit system and logger must filter out environment variable values containing security keywords (e.g. `SECRET`, `KEY`, `PASSWORD`, `TOKEN`). Raw secret values must never be written to logs or reports.
 
 ### Future Recommendations
-- See *Appendix A* for proposals regarding multi-factor auth integrations (Status: Proposed).
+- See *Appendix: Future Architecture Considerations* — Proposal 8: "Multi-Factor Authentication (MFA)" for proposals regarding multi-factor authentication.  
+  *Status*: Possible Future Enhancement (Not Approved) · Untracked
 
 ---
 
@@ -267,31 +351,92 @@ Adding new features, modules, or packages is structured around workspaces:
 
 ## 12. Appendix: Future Architecture Considerations
 
-The following enhancements represent potential improvements. They are not approved for implementation and serve as informational reference points only.
+The following proposals represent potential future enhancements. They are not approved for implementation and serve as informational reference points only to prevent undocumented roadmaps.
 
-### 1. Dedicated Staging Backend API
-- **Proposal**: Spin up a separate staging Render Node API instance connecting to a staging MongoDB cluster.
+### Proposal 1: Package Modularization & Monorepo Tooling Migration (e.g., Migrate to Nx)
+- **Description**: Migrate monorepo orchestration from Turborepo to Nx.
+- **Business Motivation**: Support advanced caching, remote execution, and fine-grained dependency graph visualization as the count of internal packages grows.
+- **Technical Benefit**: Faster build times via distributed computation caching and native workspace graph analysis.
+- **Dependencies**: Rewrite of root configuration, build pipelines, and CI steps.
+- **Risks**: Increased developer complexity, compilation configuration overhead during initial adoption.
+- **Approval Status**: Proposed (Possible Future Enhancement - Not Approved)
+- **Related ADR**: None
+- **Related Issue**: None
+- **Tracking Status**: Untracked
+
+### Proposal 2: Centralized Service Contracts (`@mad/contracts`)
+- **Description**: Introduce `@mad/contracts` package to define API endpoints, query schemas, and response types in a shared workspace project.
+- **Business Motivation**: Eliminate manual type syncing between frontend services and backend Express routes.
+- **Technical Benefit**: Guarantee API contract alignment at compilation time across the monorepo.
+- **Dependencies**: Refactoring all Express routes and React Query hooks to import types and schemas from `@mad/contracts`.
+- **Risks**: Compilation overhead, tight coupling of frontend and backend deployment timelines.
+- **Approval Status**: Proposed (Possible Future Enhancement - Not Approved)
+- **Related ADR**: None
+- **Related Issue**: None
+- **Tracking Status**: Untracked
+
+### Proposal 3: Microservice Decoupling of BullMQ Workers
+- **Description**: Decouple BullMQ queue processors from the primary Express API node and run them as independent container services.
+- **Business Motivation**: Isolate CPU-heavy operations (PDF generation, bulk mail runs) from HTTP api threads to maintain API performance.
+- **Technical Benefit**: Independent scalability of APIs and background workers.
+- **Dependencies**: Setup of a shared build target and separate Render Docker services.
+- **Risks**: Deployment orchestration and monitoring complexity.
+- **Approval Status**: Proposed (Possible Future Enhancement - Not Approved)
+- **Related ADR**: None
+- **Related Issue**: None
+- **Tracking Status**: Untracked
+
+### Proposal 4: Message Broker Architecture
+- **Description**: Replace Redis-backed BullMQ with a dedicated message broker such as RabbitMQ or Apache Kafka.
+- **Business Motivation**: Support persistent, durable event streaming and high-volume message partitioning across decoupled services.
+- **Technical Benefit**: Partitioned message delivery, historical event replay, and stronger delivery guarantees.
+- **Dependencies**: Provisioning messaging cluster, rewriting QueueService and worker bootstrap logic.
+- **Risks**: Operational overhead of managing a Kafka cluster or messaging infrastructure.
+- **Approval Status**: Proposed (Possible Future Enhancement - Not Approved)
+- **Related ADR**: None
+- **Related Issue**: None
+- **Tracking Status**: Untracked
+
+### Proposal 5: Dedicated Staging Backend API
+- **Description**: Spin up a separate staging Render Node API instance connecting to a staging MongoDB cluster.
 - **Business Motivation**: Prevent staging/testing frontends from contaminating production databases and Redis queues.
 - **Technical Benefit**: Complete staging data isolation and risk-free testing.
 - **Dependencies**: Setup of new environment parameters and database configurations.
 - **Risks**: Increased infrastructure overhead and monthly costs.
-- **Approval Status**: Proposed (Possible Future Enhancement - Not Approved).
-- **Related ADR**: None.
+- **Approval Status**: Proposed (Possible Future Enhancement - Not Approved)
+- **Related ADR**: None
+- **Related Issue**: None
+- **Tracking Status**: Untracked
 
-### 2. Microservice Decoupling of BullMQ Workers
-- **Proposal**: Decouple BullMQ queue processors from the primary Express API node and run them as independent container services.
-- **Business Motivation**: Isolate CPU-heavy operations (PDF generation, bulk mail runs) from HTTP api threads to maintain performance.
-- **Technical Benefit**: Independent scalability of APIs and workers.
-- **Dependencies**: Setup of a shared build target and separate Render Docker services.
-- **Risks**: Deployment orchestration complexity.
-- **Approval Status**: Proposed (Possible Future Enhancement - Not Approved).
-- **Related ADR**: None.
+### Proposal 6: Multi-Region Deployment
+- **Description**: Deploy redundant instances of the API and databases across multiple geographic regions.
+- **Business Motivation**: Reduce latency for global users and protect against regional cloud service provider outages.
+- **Technical Benefit**: High availability and failover resilience.
+- **Dependencies**: Multi-region MongoDB Atlas replica sets, global load balancing, and active-active Redis replication.
+- **Risks**: Massive increase in cloud infrastructure spend, data replication conflicts, and transaction serialization complexity.
+- **Approval Status**: Proposed (Possible Future Enhancement - Not Approved)
+- **Related ADR**: None
+- **Related Issue**: None
+- **Tracking Status**: Untracked
 
-### 3. Automated Client API Code Generation
-- **Proposal**: Configure `@mad/validations` or `@mad/server` to output Swagger/OpenAPI specifications, and compile client-side fetchers automatically.
+### Proposal 7: Automated Client API Code Generation
+- **Description**: Configure `@mad/validations` or `@mad/server` to output Swagger/OpenAPI specifications, and compile client-side fetchers automatically.
 - **Business Motivation**: Eliminate manual service layer creation in frontends.
 - **Technical Benefit**: Compile-time safety for API endpoints across the monorepo.
 - **Dependencies**: Integration of Swagger annotations and code-generation tooling in CI.
 - **Risks**: Tooling bloat and build time overhead.
-- **Approval Status**: Proposed (Possible Future Enhancement - Not Approved).
-- **Related ADR**: None.
+- **Approval Status**: Proposed (Possible Future Enhancement - Not Approved)
+- **Related ADR**: None
+- **Related Issue**: None
+- **Tracking Status**: Untracked
+
+### Proposal 8: Multi-Factor Authentication (MFA)
+- **Description**: Add Time-based One-time Password (TOTP) or hardware key verification for administrative accounts.
+- **Business Motivation**: Protect high-risk systems and customer data from credential compromise.
+- **Technical Benefit**: Multi-layered authentication security.
+- **Dependencies**: Integration with authenticator app API, UI development for registration and challenge verification flow.
+- **Risks**: Increased friction for administrator workflows, recovery flow management overhead.
+- **Approval Status**: Proposed (Possible Future Enhancement - Not Approved)
+- **Related ADR**: None
+- **Related Issue**: None
+- **Tracking Status**: Untracked
