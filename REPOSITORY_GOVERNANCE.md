@@ -260,23 +260,26 @@ The following validation checks are scheduled for automated implementation in th
 
 > [!NOTE]
 > **Status**: Possible Future Enhancement (Not Approved) · Untracked
-- **Markdown Linting**: Automatic linting of all repository documentation.
-- **Broken Link Detection**: Scan docs for invalid absolute or relative paths.
-- **Cross-Reference Audits**: Ensure every route listed in code maps to a contract in `API_CONTRACTS.md`.
-- **Branch Naming Enforcer**: Prevent pushes to branches that do not match the `feat/`, `fix/`, or `docs/` prefix structure.
+- **Markdown Linting**: Automatic syntax and style linting of all repository documentation.
+- **Broken Link Validation**: Scan documents for invalid absolute or relative paths.
+- **Cross-Reference Validation**: Verify structural references are fully resolved across documents.
+- **SSOT Consistency Checks**: Automate checking route definitions in Express code against `API_CONTRACTS.md`.
+- **ADR Validation**: Enforce ADR format consistency, status tags, and reviewer metadata verification.
+- **Documentation Freshness Reporting**: Automatically flags files that exceed their designated review cycle limits.
+- **Dead Document Detection**: Scan for obsolete document files or orphan configuration maps.
 
 ### Governance KPIs
 
 Measurable governance metrics are established to support future automation checks:
 
-| Metric | Target | Verification Method |
+| KPI | Target | Verification Method |
 | :--- | :--- | :--- |
 | **Broken documentation links** | 0 | Automated markdown link check scan |
-| **Outdated SSOT documents** | 0 | PR validation review checks |
-| **ADRs missing references** | 0 | Static analysis of ADR metadata links |
-| **Documentation coverage** | 100% | Audit mapping of packages and routes to SSOTs |
+| **Missing SSOT references** | 0 | Static parsing of cross-document links |
+| **ADR numbering inconsistencies** | 0 | Static analysis of ADR index and file names |
 | **Governance CI failures** | 0 | Automatic block on GitHub Actions build checks |
-| **Documentation review SLA** | 3 business days | Defined by repository review SLAs |
+| **Outdated governance documents** | 0 | Repository metadata freshness reviews |
+| **Documentation review SLA** | 3 business days | Defined by peer review cycle SLA policies |
 
 ---
 
