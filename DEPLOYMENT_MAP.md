@@ -17,6 +17,7 @@ Related Documents:
 - [ARCHITECTURE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/ARCHITECTURE.md)
 - [API_CONTRACTS.md](file:///Users/admin/Desktop/MAD%20Entertrainment/API_CONTRACTS.md)
 - [decisions/README.md](file:///Users/admin/Desktop/MAD%20Entertrainment/docs/decisions/README.md)
+- [CHANGELOG.md](file:///Users/admin/Desktop/MAD%20Entertrainment/CHANGELOG.md)
 
 ---
 
@@ -54,7 +55,7 @@ The document **must** be updated whenever any of the following change:
 - Monitoring stack
 - Infrastructure ownership
 
-Changes affecting deployment must not be merged without updating this document.
+Changes affecting deployment must not be merged without updating this document and logging the release in [CHANGELOG.md](file:///Users/admin/Desktop/MAD%20Entertrainment/CHANGELOG.md).
 
 ### Deployment Stability Classification
 The table below classifies the maturity and stability of the system's deployment workflows:

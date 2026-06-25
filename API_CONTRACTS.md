@@ -17,6 +17,7 @@ Related Documents:
 - [DEPLOYMENT_MAP.md](file:///Users/admin/Desktop/MAD%20Entertrainment/DEPLOYMENT_MAP.md)
 - [RUNBOOK.md](file:///Users/admin/Desktop/MAD%20Entertrainment/RUNBOOK.md)
 - [decisions/README.md](file:///Users/admin/Desktop/MAD%20Entertrainment/docs/decisions/README.md)
+- [CHANGELOG.md](file:///Users/admin/Desktop/MAD%20Entertrainment/CHANGELOG.md)
 
 ---
 
@@ -53,6 +54,8 @@ API_CONTRACTS.md must be updated whenever any of the following change:
 - Rate limiting changes
 - Webhook contracts change
 - API version changes
+
+Changes affecting API contracts must not be merged without updating this document and logging the release in [CHANGELOG.md](file:///Users/admin/Desktop/MAD%20Entertrainment/CHANGELOG.md).
 
 ### API Stability Classification
 The table below classifies the maturity and stability of the system's API contracts:

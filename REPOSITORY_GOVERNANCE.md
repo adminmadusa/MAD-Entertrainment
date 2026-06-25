@@ -15,6 +15,7 @@
   - [AGENTS.MD](file:///Users/admin/Desktop/MAD%20Entertrainment/AGENTS.MD)
   - [TESTING.md](file:///Users/admin/Desktop/MAD%20Entertrainment/TESTING.md)
   - [Architecture Decisions Index](file:///Users/admin/Desktop/MAD%20Entertrainment/docs/decisions/README.md)
+  - [CHANGELOG.md](file:///Users/admin/Desktop/MAD%20Entertrainment/CHANGELOG.md)
 - **Supersedes**: None (Initial Release)
 
 ---
@@ -166,7 +167,7 @@ stateDiagram-v2
 - **Draft**: A document modification is proposed in a workspace branch.
 - **Review**: The documentation PR is opened and audited.
 - **Approved**: Reviewers approve the documentation change, and it is merged into the `develop` branch.
-- **Published**: The branch is merged into `live`.
+- **Published**: The branch is merged into `live`. All merged changes must be documented in [CHANGELOG.md](file:///Users/admin/Desktop/MAD%20Entertrainment/CHANGELOG.md) under the appropriate version section before tag creation.
 - **Maintained**: The document remains the active reference and is updated with patch modifications.
 - **Deprecated**: The document or record is marked as obsolete (e.g. a superseded ADR or deprecated API).
 - **Archived**: Obsolete records are cataloged in an archive folder (e.g. `docs/archive/`) for historical reference.
@@ -220,6 +221,7 @@ No Pull Request may be merged without satisfying the following:
   - *UI Spacing/Layout*: Approved by Frontend Owner.
 - **Evidence Requirements**: PRs must provide test logs, build results, or audit reports confirming compliance.
 - **Rollback Requirements**: Every PR introducing operational changes must document a rollback strategy.
+- **Changelog Requirement**: All merged PRs that modify features, APIs, architecture, or deployments must include a corresponding entry in [CHANGELOG.md](file:///Users/admin/Desktop/MAD%20Entertrainment/CHANGELOG.md).
 
 ---
 
@@ -247,6 +249,7 @@ No Pull Request may be merged without satisfying the following:
 - Allowed branch names or branch promotion lifecycles.
 - CI/CD workflow requirements or verification gates.
 - Documentation structure or naming policies.
+- Release version increments or deprecation schedules (must update [CHANGELOG.md](file:///Users/admin/Desktop/MAD%20Entertrainment/CHANGELOG.md)).
 
 ### Deprecation & Archiving Rules
 - When a document is deprecated, a prominent `> [!WARNING] Deprecated` notice must be added at the top, referencing the replacing document.

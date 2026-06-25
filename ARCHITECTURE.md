@@ -17,6 +17,7 @@ Related Documents:
 - [DEPLOYMENT_MAP.md](file:///Users/admin/Desktop/MAD%20Entertrainment/DEPLOYMENT_MAP.md)
 - [API_CONTRACTS.md](file:///Users/admin/Desktop/MAD%20Entertrainment/API_CONTRACTS.md)
 - [decisions/README.md](file:///Users/admin/Desktop/MAD%20Entertrainment/docs/decisions/README.md)
+- [CHANGELOG.md](file:///Users/admin/Desktop/MAD%20Entertrainment/CHANGELOG.md)
 
 ---
 
@@ -56,7 +57,7 @@ The document **must** be updated whenever any of the following change:
 - Dependency direction
 - Repository standards
 
-Changes affecting architecture must not be merged without updating this document.
+Changes affecting architecture must not be merged without updating this document and logging the release in [CHANGELOG.md](file:///Users/admin/Desktop/MAD%20Entertrainment/CHANGELOG.md).
 
 ### Architecture Stability Classification
 The table below classifies the maturity and stability of the system's components:

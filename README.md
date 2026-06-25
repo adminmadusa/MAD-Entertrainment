@@ -81,6 +81,7 @@ For detailed information about each subsystem, refer to the respective Single So
 - [RUNBOOK.md](file:///Users/admin/Desktop/MAD%20Entertrainment/RUNBOOK.md) — Operational checklists, deployment instructions, and incident response.
 - [TESTING.md](file:///Users/admin/Desktop/MAD%20Entertrainment/TESTING.md) — Testing guidelines and verification requirements.
 - [AGENTS.md](file:///Users/admin/Desktop/MAD%20Entertrainment/AGENTS.md) — Operational instructions for human developers and AI agents.
+- [CHANGELOG.md](file:///Users/admin/Desktop/MAD%20Entertrainment/CHANGELOG.md) — Chronological release history and repository milestones.
 
 ---
 
