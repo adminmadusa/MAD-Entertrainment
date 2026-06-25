@@ -23,7 +23,14 @@ export interface DocDependency {
   dependsOn: string[];
 }
 
+export interface DocOwnership {
+  document: string;
+  ownerRole: string;
+  reviewCycle: string;
+}
+
 export interface GovernanceMetadata {
   requiredDocuments: string[];
   dependencyMatrix: DocDependency[];
+  ownershipMatrix?: DocOwnership[];
 }

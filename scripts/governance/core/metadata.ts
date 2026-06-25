@@ -2,7 +2,7 @@
 
 import { readFileSync, existsSync } from 'fs';
 import { resolve, relative, dirname } from 'path';
-import { GovernanceMetadata, DocDependency } from './types';
+import { GovernanceMetadata, DocDependency, DocOwnership } from './types';
 
 const workspaceRoot = resolve(__dirname, '../../..');
 
@@ -98,9 +98,11 @@ export class MetadataProvider {
 
     const requiredDocuments: string[] = ['REPOSITORY_GOVERNANCE.md'];
     const dependencyMatrix: DocDependency[] = [];
+    const ownershipMatrix: DocOwnership[] = [];
 
     let inRelatedDocsSection = false;
     let inDependencyMatrixTable = false;
+    let inOwnershipMatrixTable = false;
 
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
@@ -162,13 +164,125 @@ export class MetadataProvider {
           inDependencyMatrixTable = false;
         }
       }
+
+      // 3. Parse Document Ownership Matrix Table
+      // Header detection: | Document | Owner Role | Review Cycle |
+      if (/\|\s*Document\s*\|\s*Owner Role\s*\|\s*Review Cycle\s*\|/i.test(line)) {
+        inOwnershipMatrixTable = true;
+        // Skip the divider line
+        i++;
+        continue;
+      }
+
+      if (inOwnershipMatrixTable) {
+        if (line.trim().startsWith('|')) {
+          const cells = line.split('|').map(c => c.trim()).filter((_, idx, arr) => idx > 0 && idx < arr.length - 1);
+          if (cells.length >= 3) {
+            const docName = cleanDocName(cells[0]);
+            const ownerRole = cells[1];
+            const reviewCycle = cells[2];
+
+            ownershipMatrix.push({
+              document: docName,
+              ownerRole,
+              reviewCycle,
+            });
+          }
+        } else if (line.trim() === '') {
+          // Empty line exits the table
+          inOwnershipMatrixTable = false;
+        }
+      }
     }
 
     this.metadata = {
       requiredDocuments,
       dependencyMatrix,
+      ownershipMatrix,
     };
 
     return this.metadata;
   }
+}
+
+/**
+ * Helper to parse a metadata block from a markdown string.
+ */
+export function parseMarkdownMetadata(content: string): Record<string, any> | null {
+  const lines = content.split(/\r?\n/);
+  const metadataLines: string[] = [];
+  let inMetadataBlock = false;
+  let foundMetadata = false;
+
+  for (let i = 0; i < Math.min(lines.length, 50); i++) {
+    const line = lines[i].trim();
+    
+    if (line.toLowerCase() === '## metadata') {
+      inMetadataBlock = true;
+      foundMetadata = true;
+      continue;
+    }
+
+    if (inMetadataBlock) {
+      if (line.startsWith('---') || (line !== '' && !line.startsWith('-') && !line.startsWith('*') && !line.includes(':') && !/^\s+/.test(lines[i]))) {
+        break;
+      }
+      metadataLines.push(lines[i]);
+    } else {
+      if (i < 20 && (line.startsWith('- **') || line.startsWith('**') || line.startsWith('-') || /^[a-zA-Z\s\-]+:/.test(line))) {
+        foundMetadata = true;
+        metadataLines.push(lines[i]);
+      } else if (line.startsWith('---') && i > 0) {
+        break;
+      }
+    }
+  }
+
+  if (!foundMetadata || metadataLines.length === 0) {
+    return null;
+  }
+
+  const metadata: Record<string, any> = {};
+  let currentKey: string | null = null;
+
+  for (const line of metadataLines) {
+    const keyMatch = /^[-*\s]*\*\*?([a-zA-Z\s\-]+)\*\*?:\s*(.*)/.exec(line) || /^[-*\s]*([a-zA-Z\s\-]+):\s*(.*)/.exec(line);
+
+    if (keyMatch) {
+      const rawKey = keyMatch[1].trim();
+      const value = keyMatch[2].trim();
+      const normKey = rawKey.toLowerCase().replace(/[\s_\-]/g, '');
+      currentKey = normKey;
+      
+      if (normKey === 'lastupdated' || normKey === 'lastreviewed' || normKey === 'date') {
+        metadata['lastUpdated'] = value;
+        metadata['lastReviewed'] = value;
+        metadata['date'] = value;
+      } else {
+        metadata[normKey] = value;
+      }
+      continue;
+    }
+
+    if (currentKey === 'relateddocuments') {
+      const listItemMatch = /^\s*[-*]\s+(.*)/.exec(line);
+      if (listItemMatch) {
+        if (!Array.isArray(metadata['relateddocuments'])) {
+          metadata['relateddocuments'] = [];
+        }
+        metadata['relateddocuments'].push(listItemMatch[1].trim());
+      }
+    }
+  }
+
+  return {
+    owner: metadata['owner'] || metadata['authors'] || metadata['author'],
+    status: metadata['status'],
+    version: metadata['version'],
+    lastUpdated: metadata['lastupdated'] || metadata['lastUpdated'],
+    lastReviewed: metadata['lastreviewed'] || metadata['lastReviewed'],
+    date: metadata['date'],
+    reviewCycle: metadata['reviewcycle'],
+    relatedDocuments: metadata['relateddocuments']
+  };
 }
