@@ -40,13 +40,16 @@ README.md
 This document serves as the canonical Single Source of Truth (SSOT) for the deployment topology, release workflows, CI/CD pipelines, environments, and rollback strategies of the **MAD Entertrainment** platform. 
 
 The document **must** be updated whenever any of the following change:
-- Hosting providers or deployment targets
-- CI/CD workflow files or build configurations
-- DNS routing or reverse proxy paths
-- Environment variable schemas or groups
-- Rollback workflows or database backup scripts
-- External third-party API dependencies
-- Branch promotion pathways or environment isolation boundaries
+- Hosting provider
+- Deployment topology
+- CI/CD pipeline
+- Branch strategy
+- Environment URLs
+- External services
+- Secret categories
+- Rollback procedure
+- Monitoring stack
+- Infrastructure ownership
 
 Changes affecting deployment must not be merged without updating this document.
 
@@ -110,7 +113,17 @@ Our staging/testing environment operates under a shared-backend constraint:
 - **Topology**: The Vercel Test frontend (`test.esparex.in`, built from the `develop` branch) routes its requests to the production Render API backend (`apm.esparex.in`, built from the `live` branch).
 - **Operational Impact**:
   - Test activity performed on the staging URL (e.g. testing booking flows, database updates) directly modifies the production database cluster and enqueues jobs in the production Redis instance.
-  - Environment-specific differences (such as active booking records, user logins, and settings) are shared; testing operators must coordinate actions to prevent contamination of production metrics.
+  - Environment-specific behavior and data differences must be understood before testing. Testing operators must coordinate actions to prevent contamination of production metrics.
+
+#### Environment Risk Matrix
+The table below assesses the operational risk level based on the configuration of each environment:
+
+| Environment | Frontend | Backend | Database | Risk Level | Operational Implications |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Local** | Local Machine | Local Machine | Local / Dev DB | Low | Isolated sandbox. Changes do not affect other environments or production data. |
+| **Test** | Vercel Test | Production Render | Production DB | High | Shared backend constraint. Testing actions interact with live production data. |
+| **Preview** | Vercel Preview | Production Render | Production DB | Medium | Ephemeral UI validation. Poses risk of database mutation during PR validation cycles. |
+| **Production** | Vercel Production | Production Render | Production DB | Critical | Live client traffic. Requires strict change control and approvals. |
 
 ### Repository Standard
 - All environment parameters must be validated at runtime startup using Zod environment contracts.
