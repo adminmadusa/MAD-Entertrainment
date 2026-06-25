@@ -1,10 +1,16 @@
 # AGENTS.md
 
+- **Owner**: Repository Governance Owner
+- **Status**: Mandatory
+- **Version**: 1.0
+- **Review Cycle**: Quarterly
+- **Last Updated**: 2026-06-25
+- **Related Documents:**
+  - [REPOSITORY_GOVERNANCE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/REPOSITORY_GOVERNANCE.md)
+
+---
+
 # MAD Entertrainment Engineering Governance & AI Agent Operating System
-
-Version: 1.0
-
-Status: Mandatory
 
 Applies To:
 
