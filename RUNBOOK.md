@@ -23,7 +23,7 @@
 ## 1. Architecture Overview
 
 > [!NOTE]
-> For detailed monorepo package boundaries and code patterns, see the canonical [ARCHITECTURE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/ARCHITECTURE.md). For infrastructure topology, environments, and CI/CD pipelines, see the canonical [DEPLOYMENT_MAP.md](file:///Users/admin/Desktop/MAD%20Entertrainment/DEPLOYMENT_MAP.md). For public and administrative Express route definitions, Zod schemas, validation specifications, and HTTP error codes, see the canonical [API_CONTRACTS.md](file:///Users/admin/Desktop/MAD%20Entertrainment/API_CONTRACTS.md).
+> For detailed monorepo package boundaries and code patterns, see the canonical [ARCHITECTURE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/ARCHITECTURE.md). For infrastructure topology, environments, and CI/CD pipelines, see the canonical [DEPLOYMENT_MAP.md](file:///Users/admin/Desktop/MAD%20Entertrainment/DEPLOYMENT_MAP.md). For public and administrative Express route definitions, Zod schemas, validation specifications, and HTTP error codes, see the canonical [API_CONTRACTS.md](file:///Users/admin/Desktop/MAD%20Entertrainment/API_CONTRACTS.md). For historical architectural decisions and their technical rationale, see the canonical [Architecture Decision Records (ADRs)](file:///Users/admin/Desktop/MAD%20Entertrainment/docs/decisions/README.md).
 
 ```
 Customer Browser

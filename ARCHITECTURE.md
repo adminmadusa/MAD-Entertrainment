@@ -15,6 +15,7 @@ Related Documents:
 - [RUNBOOK.md](file:///Users/admin/Desktop/MAD%20Entertrainment/RUNBOOK.md)
 - [DEPLOYMENT_MAP.md](file:///Users/admin/Desktop/MAD%20Entertrainment/DEPLOYMENT_MAP.md)
 - [API_CONTRACTS.md](file:///Users/admin/Desktop/MAD%20Entertrainment/API_CONTRACTS.md)
+- [decisions/README.md](file:///Users/admin/Desktop/MAD%20Entertrainment/docs/decisions/README.md)
 
 ---
 
@@ -28,6 +29,7 @@ README.md
 ├── ARCHITECTURE.md              ← System architecture SSOT
 ├── DEPLOYMENT_MAP.md            ← Infrastructure & deployment SSOT
 ├── API_CONTRACTS.md             ← API contract SSOT
+├── docs/decisions/README.md     ← Architecture Decision Records (ADRs)
 ├── RUNBOOK.md                   ← Operational procedures
 ├── AGENTS.MD                    ← Repository governance
 └── CHANGELOG.md                 ← Historical changes
@@ -272,6 +274,7 @@ System responsibilities are segregated between frontend (UI Presentation/State) 
 *Evidence*:
 - `AGENTS.MD` §SSOT matrix defines the ownership boundaries.
 - Database access and Mongoose schemas reside exclusively under `apps/server/src/models/`.
+- [ADR-001: Booking Ownership](file:///Users/admin/Desktop/MAD%20Entertrainment/docs/decisions/ADR-001-booking-ownership.md) documents the decision details and consequences.
 
 ### Repository Standard
 - Frontends must never duplicate backend decisions, calculate ticket pricing, or enforce security role controls locally. The client must query the server and reflect returned data.

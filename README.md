@@ -77,6 +77,7 @@ Core system architecture, deployment configurations, and API contract specificat
 - [DEPLOYMENT_MAP.md](file:///Users/admin/Desktop/MAD%20Entertrainment/DEPLOYMENT_MAP.md) — Infrastructure & deployment SSOT
 - [API_CONTRACTS.md](file:///Users/admin/Desktop/MAD%20Entertrainment/API_CONTRACTS.md) — API contracts SSOT
 - [RUNBOOK.md](file:///Users/admin/Desktop/MAD%20Entertrainment/RUNBOOK.md) — Operations and runbook procedures
+- [docs/decisions/README.md](file:///Users/admin/Desktop/MAD%20Entertrainment/docs/decisions/README.md) — Architecture Decision Records (ADRs)
 
 ---
 

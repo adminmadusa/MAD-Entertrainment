@@ -15,6 +15,7 @@ Related Documents:
 - [ARCHITECTURE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/ARCHITECTURE.md)
 - [DEPLOYMENT_MAP.md](file:///Users/admin/Desktop/MAD%20Entertrainment/DEPLOYMENT_MAP.md)
 - [RUNBOOK.md](file:///Users/admin/Desktop/MAD%20Entertrainment/RUNBOOK.md)
+- [decisions/README.md](file:///Users/admin/Desktop/MAD%20Entertrainment/docs/decisions/README.md)
 
 ---
 
@@ -28,6 +29,7 @@ README.md
 ├── ARCHITECTURE.md              ← System architecture SSOT
 ├── DEPLOYMENT_MAP.md            ← Infrastructure & deployment SSOT
 ├── API_CONTRACTS.md             ← API contract SSOT
+├── docs/decisions/README.md     ← Architecture Decision Records (ADRs)
 ├── RUNBOOK.md                   ← Operational procedures
 ├── AGENTS.MD                    ← Repository governance
 └── CHANGELOG.md                 ← Historical changes
@@ -534,6 +536,7 @@ sequenceDiagram
 - **Seat Locking**: Handled using Mongoose sessions. Bookings are created in `reserved` status with a 15-minute expiration window.
 - **Verification**: Frontend calls `POST /api/payments/verify` to confirm transactions, but the canonical booking confirmation relies on webhook processing.
 - **Refund Policy (RFND-L02)**: Creating refunds requires tracking the original `paymentId`. Approving a refund executes the gateway api call, registers the `gatewayRefundId`, and updates the booking status to `refunded`.
+- **Decision Rationale**: See [ADR-001: Booking Ownership](file:///Users/admin/Desktop/MAD%20Entertrainment/docs/decisions/ADR-001-booking-ownership.md) for details on why all booking allocations and validations reside strictly on the backend.
 
 ### Repository Standard
 - Payments must never rely on frontend success callbacks to update database records. The webhook is the Single Source of Truth for transaction status.

@@ -131,6 +131,10 @@ Frontend must never own business rules.
 
 Frontend must never duplicate backend decisions.
 
+Architecture Decisions (ADRs) → docs/decisions/README.md
+
+For details on why technical and architectural decisions are made, refer to the Architecture Decision Records (ADR) system at docs/decisions/README.md. All automated agents and human developers must review and adhere to the approved decisions.
+
 ---
 
 # SHARED OWNERSHIP RULE
@@ -624,6 +628,8 @@ TESTING.md
 DEPLOYMENT_MAP.md
 
 CHANGELOG.md
+
+docs/decisions/README.md
 
 ---
 

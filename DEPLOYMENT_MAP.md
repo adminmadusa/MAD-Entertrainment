@@ -15,6 +15,7 @@ Related Documents:
 - [RUNBOOK.md](file:///Users/admin/Desktop/MAD%20Entertrainment/RUNBOOK.md)
 - [ARCHITECTURE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/ARCHITECTURE.md)
 - [API_CONTRACTS.md](file:///Users/admin/Desktop/MAD%20Entertrainment/API_CONTRACTS.md)
+- [decisions/README.md](file:///Users/admin/Desktop/MAD%20Entertrainment/docs/decisions/README.md)
 
 ---
 
@@ -28,6 +29,7 @@ README.md
 ├── ARCHITECTURE.md              ← System architecture SSOT
 ├── DEPLOYMENT_MAP.md            ← Infrastructure & deployment SSOT
 ├── API_CONTRACTS.md             ← API contract SSOT
+├── docs/decisions/README.md     ← Architecture Decision Records (ADRs)
 ├── RUNBOOK.md                   ← Operational procedures
 ├── AGENTS.MD                    ← Repository governance
 └── CHANGELOG.md                 ← Historical changes
