@@ -106,7 +106,7 @@ Complete this checklist before deploying to staging or production.
 
 ### Step 1 — Deploy the server (Render)
 
-1. Push to `main` — Render auto-deploys on push.
+1. Push to `live` — Render auto-deploys on push.
 2. Verify the build log in the Render dashboard for any missing env var errors.
 3. Confirm the health check passes:
    ```bash

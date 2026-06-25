@@ -149,8 +149,8 @@ Backlog – Not Started
 
 | Area                                | Status               | Risk   |
 | ----------------------------------- | -------------------- | ------ |
-| README.md                           | Missing              | Low    |
-| TESTING.md                          | Missing              | Low    |
+| README.md                           | ✅ Resolved          | Low    |
+| TESTING.md                          | ✅ Resolved          | Low    |
 | Server ESLint                       | Missing              | Low    |
 | Coverage Threshold                  | Not Configured       | Low    |
 | Admin Table Mobile UX               | Audit Recommended    | Medium |

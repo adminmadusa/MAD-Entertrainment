@@ -139,7 +139,7 @@ Reusable logic must live in:
 
 packages/shared
 
-packages/contracts
+packages/ui
 
 packages/types
 

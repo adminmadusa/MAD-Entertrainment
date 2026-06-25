@@ -1,3 +1,5 @@
+# MAD Entertrainment — Testing Guide
+
 ## Purpose
 
 This document explains how to verify changes safely within the MAD Entertrainment repository.
