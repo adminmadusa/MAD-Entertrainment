@@ -10,7 +10,8 @@
     "lint": "turbo lint",
     "test": "vitest run",
     "clean": "turbo clean && rm -rf node_modules .turbo",
-    "audit-data": "tsx ./scripts/gather_audit_data.ts"
+    "audit-data": "tsx ./scripts/gather_audit_data.ts",
+    "governance:docs": "tsx scripts/governance/index.ts"
   },
   "devDependencies": {
     "@playwright/test": "^1.60.0",

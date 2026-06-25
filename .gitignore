@@ -5,6 +5,7 @@ out/
 .next/
 .turbo/
 coverage/
+reports/
 *.tsbuildinfo
 .pnpm-store/
 # Generated service worker assets

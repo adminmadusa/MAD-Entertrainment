@@ -3,6 +3,14 @@
 > **Audience:** Developers and operators deploying or troubleshooting the MAD Entertrainment platform.  
 > **Stack:** Next.js 15 (web + admin on Vercel) · Express (server on Render) · MongoDB Atlas · Redis · Cloudinary · Razorpay
 
+Related Documents:
+- [README.md](file:///Users/admin/Desktop/MAD%20Entertrainment/README.md)
+- [REPOSITORY_GOVERNANCE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/REPOSITORY_GOVERNANCE.md)
+- [ARCHITECTURE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/ARCHITECTURE.md)
+- [DEPLOYMENT_MAP.md](file:///Users/admin/Desktop/MAD%20Entertrainment/DEPLOYMENT_MAP.md)
+- [API_CONTRACTS.md](file:///Users/admin/Desktop/MAD%20Entertrainment/API_CONTRACTS.md)
+- [AGENTS.MD](file:///Users/admin/Desktop/MAD%20Entertrainment/AGENTS.MD)
+
 ---
 
 ## Table of Contents
