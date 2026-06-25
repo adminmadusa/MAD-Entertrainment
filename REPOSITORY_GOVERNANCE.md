@@ -273,6 +273,9 @@ The following validation checks are scheduled for automated implementation in th
 
 ### Governance KPIs
 
+> [!NOTE]
+> The Repository Health Score is a weighted governance indicator derived from ownership compliance, documentation freshness, and document linkage. It is intended for reporting and trend analysis rather than acting as a pass/fail CI gate.
+
 Measurable governance metrics are established to support future automation checks:
 
 | KPI | Target | Verification Method |

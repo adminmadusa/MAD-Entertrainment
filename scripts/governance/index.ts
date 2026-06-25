@@ -15,6 +15,7 @@ import { CrossReferenceValidator } from './validators/cross_reference_validator'
 import { DocumentationValidator } from './validators/documentation_validator';
 import { SsotValidator } from './validators/ssot_validator';
 import { AdrValidator } from './validators/adr_validator';
+import { RepositoryHealthValidator } from './validators/repository_health_validator';
 
 const workspaceRoot = resolve(__dirname, '../..');
 
@@ -90,6 +91,7 @@ async function run() {
     new DocumentationValidator(),
     new SsotValidator(),
     new AdrValidator(),
+    new RepositoryHealthValidator(),
   ]);
 
   console.log('🚀 Running validators...');
