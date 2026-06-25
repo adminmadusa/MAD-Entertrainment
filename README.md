@@ -73,7 +73,8 @@ pnpm build
 
 Operations runbooks, deployment procedures, disaster recovery instructions, environment configuration guides, and production validation workflows are documented in:
 
-- `RUNBOOK.md`
+- [RUNBOOK.md](file:///Users/admin/Desktop/MAD%20Entertrainment/RUNBOOK.md)
+- [DEPLOYMENT_MAP.md](file:///Users/admin/Desktop/MAD%20Entertrainment/DEPLOYMENT_MAP.md)
 
 ---
 

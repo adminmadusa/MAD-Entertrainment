@@ -22,6 +22,9 @@
 
 ## 1. Architecture Overview
 
+> [!NOTE]
+> For the detailed infrastructure topology, branch promotion strategy, environment variables classification, and external integrations register, see the canonical [DEPLOYMENT_MAP.md](file:///Users/admin/Desktop/MAD%20Entertrainment/DEPLOYMENT_MAP.md).
+
 ```
 Customer Browser
   └─▶ Vercel  (web:   https://mad.esparex.in)
