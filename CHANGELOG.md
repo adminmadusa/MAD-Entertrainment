@@ -19,7 +19,7 @@
 ## 1. Executive Overview
 
 ### Purpose
-The `CHANGELOG.md` serves as the canonical history of all releases, architectural shifts, governance updates, and operational revisions in the MAD Entertrainment repository. It provides historical context on what was changed, when it was changed, and why it was changed.
+The `CHANGELOG.md` serves as the canonical history of all releases, architectural shifts, governance updates, and operational revisions in the MAD Entertrainment repository. It provides historical context on what was changed, when it was changed, and why it was changed. The document format is based on the [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) specification, and version numbering adheres to the [Semantic Versioning](https://semver.org/spec/v2.0.0.html) standard.
 
 ### Scope & Audience
 This log is intended for developers, platform operators, and automated auditing agents. It traces the timeline of repository updates in a structured, human-readable format.
@@ -97,7 +97,7 @@ Every release must satisfy the following checklist before merge:
 - None
 
 ### [v1.0.0] - 2026-06-25
-*Initial release baseline establishing the repository's foundational architecture and governance.*
+*Initial repository documentation baseline establishing the monorepo's foundational architecture, APIs, deployment environments, and governance. This represents the post-cleanup documentation state, not the first production software release.*
 
 #### Added
 - `REPOSITORY_GOVERNANCE.md` (Governance SSOT defining roles, matrices, and branching/PR policies).
