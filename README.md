@@ -1,5 +1,16 @@
 # MAD Entertrainment
 
+- **Owner**: Documentation Owner
+- **Status**: Active
+- **Version**: 1.0
+- **Review Cycle**: Ongoing
+- **Last Updated**: 2026-06-25
+- **Related Documents:**
+  - [REPOSITORY_GOVERNANCE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/REPOSITORY_GOVERNANCE.md)
+  - [AGENTS.MD](file:///Users/admin/Desktop/MAD%20Entertrainment/AGENTS.MD)
+
+---
+
 ## Overview
 
 This repository contains the MAD Entertrainment platform, including public web experiences, administration tools, booking workflows, ticketing systems, and supporting backend services.

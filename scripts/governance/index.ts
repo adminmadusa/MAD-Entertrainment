@@ -13,6 +13,8 @@ import { LinkValidator } from './validators/link_validator';
 import { MermaidValidator } from './validators/mermaid_validator';
 import { CrossReferenceValidator } from './validators/cross_reference_validator';
 import { DocumentationValidator } from './validators/documentation_validator';
+import { SsotValidator } from './validators/ssot_validator';
+import { AdrValidator } from './validators/adr_validator';
 
 const workspaceRoot = resolve(__dirname, '../..');
 
@@ -86,6 +88,8 @@ async function run() {
     new MermaidValidator(),
     new CrossReferenceValidator(),
     new DocumentationValidator(),
+    new SsotValidator(),
+    new AdrValidator(),
   ]);
 
   console.log('🚀 Running validators...');
