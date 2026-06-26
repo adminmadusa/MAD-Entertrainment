@@ -10,7 +10,11 @@ import { BookingCard } from '@/components/booking/shared/BookingCard';
 import { useBookings } from '@/hooks/use-bookings.hook';
 import { useAuth } from '@/providers/AuthProvider';
 import { ProfileCompletionForm } from '@/components/auth/ProfileCompletionForm';
-import { ProfileEditor } from '@/components/account/ProfileEditor';
+import dynamic from 'next/dynamic';
+
+const ProfileEditor = dynamic(() => import('@/components/account/ProfileEditor').then(mod => mod.ProfileEditor), {
+  ssr: false,
+});
 
 function BookingCardSkeleton() {
   return (
