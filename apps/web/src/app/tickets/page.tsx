@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, Suspense } from 'react';
+import { useState, useEffect, useRef, Suspense, useCallback } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 
 import { extractApiError } from '@/lib/api/client';
@@ -116,14 +116,14 @@ function TicketRetrievalContent() {
   }, [isAuthenticated, isAuthLoading, targetRef, foundBookingId, router]);
 
   // Close flow - redirects back or to home page
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     setActiveModal(null);
     if (typeof window !== 'undefined' && window.history.length > 1) {
       router.back();
     } else {
       router.push('/');
     }
-  };
+  }, [router]);
 
   // 1. Submit Lookup (Booking Reference or Payment Transaction ID)
   const handleLookupSubmit = async (e: React.FormEvent) => {
