@@ -4,7 +4,7 @@ import { publicGetMe, publicLogout } from '@/lib/api/public.service';
 import { STORAGE_KEYS } from '@mad/shared';
 import { useQueryClient } from '@tanstack/react-query';
 import { AuthUser } from '../types/auth';
-import { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import { createContext, useContext, useEffect, useState, useCallback, useMemo } from 'react';
 import axios from 'axios';
 import { isTokenExpired } from '@mad/utils';
 
@@ -164,19 +164,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [queryClient]);
 
 
+  const contextValue = useMemo(() => ({
+    user,
+    token,
+    isAuthenticated: !!token && !!user,
+    isLoading,
+    onboardingRequired,
+    setOnboardingRequired,
+    login,
+    logout,
+  }), [user, token, isLoading, onboardingRequired, setOnboardingRequired, login, logout]);
+
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        token,
-        isAuthenticated: !!token && !!user,
-        isLoading,
-        onboardingRequired,
-        setOnboardingRequired,
-        login,
-        logout,
-      }}
-    >
+    <AuthContext.Provider value={contextValue}>
       {children}
     </AuthContext.Provider>
   );

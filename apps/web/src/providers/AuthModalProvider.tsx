@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { Modal } from '@mad/ui';
 import dynamic from 'next/dynamic';
 const AuthForm = dynamic(() => import('@/components/auth/AuthForm').then(mod => mod.AuthForm), {
@@ -142,8 +142,16 @@ export function AuthModalProvider({ children }: AuthModalProviderProps) {
     }
   }, [closeAuthModal, returnTo, router]);
 
+  const modalValue = useMemo(() => ({
+    isOpen,
+    isDirty,
+    openAuthModal,
+    closeAuthModal,
+    setIsDirty,
+  }), [isOpen, isDirty, openAuthModal, closeAuthModal, setIsDirty]);
+
   return (
-    <AuthModalContext.Provider value={{ isOpen, isDirty, openAuthModal, closeAuthModal, setIsDirty }}>
+    <AuthModalContext.Provider value={modalValue}>
       {children}
 
       {/* Main Authentication Modal / Bottom Sheet */}
