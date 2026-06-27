@@ -156,9 +156,35 @@ export type DJOperator = {
   bio?: string;
   profileImage?: ImageAsset;
   specialties?: string[];
-  [key: string]: any;
+  galleryImages?: ImageAsset[];
+  experienceYears?: number;
+  socialLinks?: { platform: string; url: string }[];
+  isActive?: boolean;
+  isDeleted?: boolean;
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
+  [key: string]: unknown;
 };
-export type Coupon = { _id: string; code: string; [key: string]: any };
+export type Coupon = {
+  _id: string;
+  code: string;
+  description?: string;
+  discountType: 'percentage' | 'fixed';
+  discountValue: number;
+  minOrderAmount?: number;
+  maxDiscount?: number;
+  validFrom: string | Date;
+  validUntil: string | Date;
+  isActive: boolean;
+  applicableEventIds?: string[];
+  applicableCategories?: string[];
+  usedCount?: number;
+  usageLimit?: number;
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
+  [key: string]: unknown;
+};
+
 export type PopupCampaign = {
   _id: string;
   name?: string;
@@ -180,9 +206,28 @@ export type PopupCampaign = {
     soldCount?: number;
     totalCapacity?: number;
   };
-  [key: string]: any;
+  priority?: number;
+  isActive?: boolean;
+  linkedEventId?: string;
+  startDate?: string | Date;
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
+  [key: string]: unknown;
 };
-export type Admin = { _id: string; [key: string]: any };
+
+export type Admin = {
+  _id: string;
+  email: string;
+  name?: string;
+  firstName?: string;
+  lastName?: string;
+  role: string;
+  isActive: boolean;
+  lastLogin?: string | Date;
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
+  [key: string]: unknown;
+};
 
 export type Booking = {
   _id?: string;
@@ -280,7 +325,7 @@ export type Notification = {
   type: string;
   title?: string;
   body?: string;
-  data?: Record<string, any>;
+  data?: Record<string, unknown>;
   status?: 'queued' | 'processing' | 'sent' | 'failed';
   jobId?: string;
   errorMessage?: string;
@@ -300,8 +345,8 @@ export type Notification = {
 export type QueueJob = {
   id?: string;
   name: string;
-  data: Record<string, any>;
-  opts?: Record<string, any>;
+  data: Record<string, unknown>;
+  opts?: Record<string, unknown>;
 };
 
 export type DiagnosticsReport = {

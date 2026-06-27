@@ -1,7 +1,21 @@
 'use client';
 
+interface AttendanceRankingEvent {
+  eventId: string;
+  eventName: string;
+  ticketsCheckedIn?: number;
+  attendancePercentage?: number;
+  noShowCount?: number;
+  noShowPercentage?: number;
+}
+
+interface AttendanceRankings {
+  topAttended: AttendanceRankingEvent[];
+  lowestAttendance: AttendanceRankingEvent[];
+}
+
 interface AttendanceRankingsWidgetProps {
-  attendanceRankings: any;
+  attendanceRankings: AttendanceRankings | null | undefined;
   isLoading: boolean;
 }
 
@@ -24,11 +38,11 @@ export default function AttendanceRankingsWidget({ attendanceRankings, isLoading
             </tr>
           </thead>
           <tbody>
-            {attendanceRankings.topAttended.slice(0, 5).map((ev: any) => (
+            {attendanceRankings.topAttended.slice(0, 5).map((ev: AttendanceRankingEvent) => (
               <tr key={ev.eventId} className="border-b border-border-subtle/40 hover:bg-white/2">
                 <td className="py-3.5 px-6 text-text-primary truncate max-w-[160px]">{ev.eventName}</td>
                 <td className="py-3.5 px-4 text-right text-text-secondary">{ev.ticketsCheckedIn}</td>
-                <td className="py-3.5 px-6 text-right text-emerald-400 font-semibold">{Math.round(ev.attendancePercentage)}%</td>
+                <td className="py-3.5 px-6 text-right text-emerald-400 font-semibold">{Math.round(ev.attendancePercentage ?? 0)}%</td>
               </tr>
             ))}
           </tbody>
@@ -55,11 +69,11 @@ export default function AttendanceRankingsWidget({ attendanceRankings, isLoading
             </tr>
           </thead>
           <tbody>
-            {attendanceRankings.lowestAttendance.slice(0, 5).map((ev: any) => (
+            {attendanceRankings.lowestAttendance.slice(0, 5).map((ev: AttendanceRankingEvent) => (
               <tr key={ev.eventId} className="border-b border-border-subtle/40 hover:bg-white/2">
                 <td className="py-3.5 px-6 text-text-primary truncate max-w-[160px]">{ev.eventName}</td>
                 <td className="py-3.5 px-4 text-right text-text-secondary">{ev.noShowCount}</td>
-                <td className="py-3.5 px-6 text-right text-red-400 font-semibold">{Math.round(ev.noShowPercentage)}%</td>
+                <td className="py-3.5 px-6 text-right text-red-400 font-semibold">{Math.round(ev.noShowPercentage ?? 0)}%</td>
               </tr>
             ))}
           </tbody>

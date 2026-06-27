@@ -84,7 +84,7 @@ export interface EventsResponse {
 
 interface EventResponse {
   success: boolean;
-  data: AdminEvent | { event: AdminEvent };
+  data: { event: AdminEvent };
   message?: string;
 }
 
@@ -99,18 +99,6 @@ export interface EventFilters {
 }
 
 export type AdminEventUpdatePayload = Partial<AdminEvent> & Pick<AdminEvent, 'eventVersion'>;
-
-function isEventEnvelope(payload: EventResponse['data']): payload is { event: AdminEvent } {
-  return typeof payload === 'object' && payload !== null && 'event' in payload;
-}
-
-function unwrapAdminEvent(response: EventResponse): AdminEvent {
-  const payload = response.data;
-  if (isEventEnvelope(payload)) {
-    return payload.event;
-  }
-  return payload;
-}
 
 export async function adminGetEvents(filters: EventFilters = {}): Promise<{ items: AdminEvent[]; pagination: PaginationMeta }> {
   const params = new URLSearchParams();
@@ -132,17 +120,17 @@ export async function adminGetEvents(filters: EventFilters = {}): Promise<{ item
 
 export async function adminGetEvent(id: string): Promise<AdminEvent> {
   const { data } = await adminApiClient.get<EventResponse>(`/admin/events/${id}`);
-  return unwrapAdminEvent(data);
+  return data.data.event;
 }
 
 export async function adminCreateEvent(payload: Partial<AdminEvent>): Promise<AdminEvent> {
   const { data } = await adminApiClient.post<EventResponse>('/admin/events', payload);
-  return unwrapAdminEvent(data);
+  return data.data.event;
 }
 
 export async function adminUpdateEvent(id: string, payload: AdminEventUpdatePayload): Promise<AdminEvent> {
   const { data } = await adminApiClient.put<EventResponse>(`/admin/events/${id}`, payload);
-  return unwrapAdminEvent(data);
+  return data.data.event;
 }
 
 export async function adminDeleteEvent(id: string): Promise<void> {

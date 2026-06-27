@@ -2,8 +2,17 @@
 
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 
+interface RevenuePoint {
+  _id: string;
+  revenue: number;
+  count: number;
+  dailyGrossRevenue?: number;
+  dailyRefundAmount?: number;
+  dailyNetRevenue?: number;
+}
+
 interface RevenueChartWidgetProps {
-  revenue: any[] | undefined;
+  revenue: RevenuePoint[] | undefined;
 }
 
 export default function RevenueChartWidget({ revenue }: RevenueChartWidgetProps) {
