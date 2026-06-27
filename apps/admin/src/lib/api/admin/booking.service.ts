@@ -45,7 +45,7 @@ export interface AdminBooking {
     actor: string;
     status: string;
     timestamp: string;
-    metadata: Record<string, any>;
+    metadata: Record<string, unknown>;
     description: string;
   }[];
   individualTickets?: {
@@ -126,11 +126,27 @@ export interface NormalizedBookingDetail {
 export async function adminGetBookings(params: Record<string, string | number> = {}): Promise<NormalizedBookingsResponse> {
   try {
     const qs = new URLSearchParams(Object.entries(params).map(([k, v]) => [k, String(v)]));
-    const { data } = await adminApiClient.get<any>(`/admin/bookings?${qs}`);
+    const { data } = await adminApiClient.get<{
+      data: AdminBooking[] | { bookings: AdminBooking[]; pagination?: { page?: number; limit?: number; total?: number; totalPages?: number } };
+      pagination?: { page?: number; limit?: number; total?: number; totalPages?: number };
+    }>(`/admin/bookings?${qs}`);
      
-    const paginationSource = data?.data?.pagination || data?.pagination;
+    const paginationSource = (data?.data && typeof data.data === 'object' && 'pagination' in data.data ? data.data.pagination : null) || data?.pagination;
+    let items: AdminBooking[] = [];
+    if (Array.isArray(data?.data)) {
+      items = data.data;
+    } else if (data?.data && typeof data.data === 'object') {
+      if ('bookings' in data.data && Array.isArray(data.data.bookings)) {
+        items = data.data.bookings;
+      } else {
+        const foundArray = Object.values(data.data).find((v): v is AdminBooking[] => Array.isArray(v));
+        if (foundArray) {
+          items = foundArray;
+        }
+      }
+    }
     return {
-      items: Array.isArray(data?.data) ? data.data : (data?.data && Object.values(data.data).find((v: any) => Array.isArray(v)) || []),
+      items,
       pagination: {
         page: paginationSource?.page ?? 1,
         limit: paginationSource?.limit ?? 15,
@@ -221,11 +237,27 @@ export type NormalizedRefundsResponse = PaginatedItemsResponse<AdminRefund>;
 export async function adminGetRefunds(params: Record<string, string> = {}): Promise<NormalizedRefundsResponse> {
   try {
     const qs = new URLSearchParams(params);
-    const { data } = await adminApiClient.get<any>(`/admin/refunds?${qs}`);
+    const { data } = await adminApiClient.get<{
+      data: AdminRefund[] | { refunds: AdminRefund[]; pagination?: { page?: number; limit?: number; total?: number; totalPages?: number } };
+      pagination?: { page?: number; limit?: number; total?: number; totalPages?: number };
+    }>(`/admin/refunds?${qs}`);
      
-    const paginationSource = data?.data?.pagination || data?.pagination;
+    const paginationSource = (data?.data && typeof data.data === 'object' && 'pagination' in data.data ? data.data.pagination : null) || data?.pagination;
+    let items: AdminRefund[] = [];
+    if (Array.isArray(data?.data)) {
+      items = data.data;
+    } else if (data?.data && typeof data.data === 'object') {
+      if ('refunds' in data.data && Array.isArray(data.data.refunds)) {
+        items = data.data.refunds;
+      } else {
+        const foundArray = Object.values(data.data).find((v): v is AdminRefund[] => Array.isArray(v));
+        if (foundArray) {
+          items = foundArray;
+        }
+      }
+    }
     return {
-      items: Array.isArray(data?.data) ? data.data : (data?.data && Object.values(data.data).find((v: any) => Array.isArray(v)) || []),
+      items,
       pagination: {
         page: paginationSource?.page ?? 1,
         limit: paginationSource?.limit ?? 15,

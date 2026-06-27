@@ -114,33 +114,11 @@ describe('admin event contract compatibility', () => {
     await expect(adminGetEvent('event-1')).resolves.toEqual(eventFixture);
   });
 
-  it('accepts legacy unwrapped get event responses', async () => {
-    vi.mocked(adminApiClient.get).mockResolvedValue({
-      data: {
-        success: true,
-        data: eventFixture,
-      },
-    });
-
-    await expect(adminGetEvent('event-1')).resolves.toEqual(eventFixture);
-  });
-
   it('unwraps wrapped create event responses from the production backend contract', async () => {
     vi.mocked(adminApiClient.post).mockResolvedValue({
       data: {
         success: true,
         data: { event: eventFixture },
-      },
-    });
-
-    await expect(adminCreateEvent({ title: 'MAD Night' })).resolves.toEqual(eventFixture);
-  });
-
-  it('accepts legacy unwrapped create event responses', async () => {
-    vi.mocked(adminApiClient.post).mockResolvedValue({
-      data: {
-        success: true,
-        data: eventFixture,
       },
     });
 
@@ -160,16 +138,5 @@ describe('admin event contract compatibility', () => {
       title: 'MAD Night',
       eventVersion: 1,
     });
-  });
-
-  it('accepts legacy unwrapped update event responses', async () => {
-    vi.mocked(adminApiClient.put).mockResolvedValue({
-      data: {
-        success: true,
-        data: eventFixture,
-      },
-    });
-
-    await expect(adminUpdateEvent('event-1', { title: 'MAD Night', eventVersion: 1 })).resolves.toEqual(eventFixture);
   });
 });

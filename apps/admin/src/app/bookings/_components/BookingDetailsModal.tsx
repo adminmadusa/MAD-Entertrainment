@@ -213,7 +213,7 @@ export default function BookingDetailsModal({
                     <span className="text-text-muted">{formatDateTime(log.timestamp)}</span>
                   </div>
                   <p className="text-text-secondary">{log.description}</p>
-                  {log.metadata?.reason && <p className="text-text-muted italic bg-black/20 p-1 rounded">Reason: &ldquo;{log.metadata.reason}&rdquo;</p>}
+                  {log.metadata?.reason && <p className="text-text-muted italic bg-black/20 p-1 rounded">Reason: &ldquo;{String(log.metadata.reason)}&rdquo;</p>}
                 </div>
               ))}
             </div>

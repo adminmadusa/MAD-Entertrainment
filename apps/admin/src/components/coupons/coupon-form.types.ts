@@ -70,7 +70,7 @@ export function mapCouponToFormState(coupon: Coupon | null | undefined): CouponF
     validUntil: toLocalDatetimeString(coupon.validUntil),
     isActive: coupon.isActive ?? true,
     selectedEvents: coupon.applicableEventIds || [],
-    selectedCategories: coupon.applicableCategories || [],
+    selectedCategories: (coupon.applicableCategories as EventCategory[]) || [],
   };
 }
 
