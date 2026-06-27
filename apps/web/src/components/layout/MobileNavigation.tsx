@@ -2,7 +2,7 @@
 
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, memo } from 'react';
 import { useFocusTrap } from '@mad/ui';
 
 interface LinkItem {
@@ -20,7 +20,7 @@ interface MobileNavigationProps {
   openAuthModal: () => void;
 }
 
-export function MobileNavigation({
+export const MobileNavigation = memo(function MobileNavigation({
   isOpen,
   onClose,
   dynamicLinks,
@@ -197,4 +197,6 @@ export function MobileNavigation({
       )}
     </AnimatePresence>
   );
-}
+});
+
+MobileNavigation.displayName = 'MobileNavigation';

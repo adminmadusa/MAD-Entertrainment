@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { ArrowRight } from '@mad/ui';
 import { useAuth } from '@/providers/AuthProvider';
 import { useAuthModal } from '@/providers/AuthModalProvider';
@@ -28,25 +28,31 @@ export function Navbar() {
 
   const firstName = user?.firstName || user?.name?.split(' ')[0] || 'Member';
 
-  const dynamicLinks = isAuthenticated
-    ? [
-        { label: 'Home', href: '/' },
-        { label: 'Events', href: '/events' },
-        { label: 'DJs', href: '/dj-operators' },
-        { label: 'Help Center', href: '/support' },
-        { label: 'My Tickets', href: '/dashboard?tab=tickets' },
-      ]
-    : [
-        { label: 'Events', href: '/events' },
-        { label: 'DJs', href: '/dj-operators' },
-        { label: 'Help Center', href: '/support' },
-        { label: 'My Tickets', href: '/tickets' },
-      ];
+  const dynamicLinks = useMemo(() => {
+    return isAuthenticated
+      ? [
+          { label: 'Home', href: '/' },
+          { label: 'Events', href: '/events' },
+          { label: 'DJs', href: '/dj-operators' },
+          { label: 'Help Center', href: '/support' },
+          { label: 'My Tickets', href: '/dashboard?tab=tickets' },
+        ]
+      : [
+          { label: 'Events', href: '/events' },
+          { label: 'DJs', href: '/dj-operators' },
+          { label: 'Help Center', href: '/support' },
+          { label: 'My Tickets', href: '/tickets' },
+        ];
+  }, [isAuthenticated]);
 
-  const handleLogout = async () => {
+  const handleLogout = useCallback(async () => {
     await logout();
     setMobileOpen(false);
-  };
+  }, [logout]);
+
+  const handleCloseMobile = useCallback(() => {
+    setMobileOpen(false);
+  }, []);
 
   // Reset navigating flag or set hasOpenedMobile when mobile menu is opened
   useEffect(() => {
@@ -210,7 +216,7 @@ export function Navbar() {
       {hasOpenedMobile && (
         <MobileNavigation
           isOpen={mobileOpen}
-          onClose={() => setMobileOpen(false)}
+          onClose={handleCloseMobile}
           dynamicLinks={dynamicLinks}
           isAuthenticated={isAuthenticated}
           firstName={firstName}

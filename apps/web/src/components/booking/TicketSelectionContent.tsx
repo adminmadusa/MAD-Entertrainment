@@ -4,7 +4,7 @@ import { Event as EventData } from '@mad/types';
 import { Button } from '@mad/ui';
 import { useMutation } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 
 import { extractApiError } from '@/lib/api/client';
 import { ensureGuestBookingSession, publicCreateBooking } from '@/lib/api/public.service';
@@ -196,17 +196,19 @@ export function TicketSelectionContent({
     };
   }, [checkoutTriggerRef, handleCheckoutSubmit]);
 
-  // Calculate local subtotal estimation for sticky footer
-  let selectedCount = 0;
-  let subtotal = 0;
-  event.ticketTiers.forEach((tier) => {
-    const qty = quantities[tier.tier] || 0;
-    if (qty > 0) {
-      selectedCount += qty;
-      const price = Math.max(0, tier.price - (tier.discount || 0));
-      subtotal += price * qty;
-    }
-  });
+  const { selectedCount, subtotal } = useMemo(() => {
+    let count = 0;
+    let total = 0;
+    event.ticketTiers.forEach((tier) => {
+      const qty = quantities[tier.tier] || 0;
+      if (qty > 0) {
+        count += qty;
+        const price = Math.max(0, tier.price - (tier.discount || 0));
+        total += price * qty;
+      }
+    });
+    return { selectedCount: count, subtotal: total };
+  }, [quantities, event.ticketTiers]);
 
   return (
     <div className={`space-y-6 text-white ${isModal ? '' : 'container-mad max-w-2xl px-4 pb-32 pt-6'}`}>
