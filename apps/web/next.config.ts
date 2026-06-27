@@ -51,6 +51,12 @@ const nextConfig: NextConfig = {
   async headers() {
     // ── Content Security Policy (SEC-001) ──────────────────
     //
+    // NOTE: CSP and HSTS headers are applied in PRODUCTION only.
+    // Next.js dev mode (next dev) requires 'unsafe-eval' for HMR and
+    // React Refresh source maps. Applying a strict CSP in dev mode
+    // blocks all client-side JS execution. The policy is identical
+    // to what ships to production — only the delivery is gated.
+    //
     // script-src:
     //   'self'              — Next.js page bundles and API routes
     //   'unsafe-inline'     — Required: Next.js framework hydration scripts are
@@ -93,6 +99,7 @@ const nextConfig: NextConfig = {
     // object-src 'none'     — Disallows plugins (Flash, Java applets)
     // base-uri 'self'       — Prevents base tag injection attacks
     // form-action 'self'    — Prevents form hijacking
+    const isDev = process.env.NODE_ENV === 'development';
     const csp = [
       "default-src 'self'",
       "script-src 'self' 'unsafe-inline' https://accounts.google.com https://checkout.razorpay.com",
@@ -117,13 +124,22 @@ const nextConfig: NextConfig = {
             key: 'Permissions-Policy',
             value: 'camera=(), microphone=(), geolocation=(self)',
           },
-          // SEC-001 — Content Security Policy
-          { key: 'Content-Security-Policy', value: csp },
-          // SEC-002 — Strict Transport Security
-          // max-age=31536000 (1 year), includeSubDomains enforces HTTPS on all subdomains.
-          // preload is intentionally omitted — HSTS Preload List submission requires
-          // explicit decision and is irreversible without browser vendor action.
-          { key: 'Strict-Transport-Security', value: 'max-age=31536000; includeSubDomains' },
+          // SEC-001 — Content Security Policy (production only)
+          // Omitted in dev: Next.js HMR requires 'unsafe-eval' which conflicts
+          // with this policy. Production builds are pre-compiled and do not use eval.
+          ...(!isDev
+            ? [
+                { key: 'Content-Security-Policy', value: csp },
+                // SEC-002 — Strict Transport Security
+                // max-age=31536000 (1 year), includeSubDomains enforces HTTPS on all subdomains.
+                // preload is intentionally omitted — HSTS Preload List submission requires
+                // explicit decision and is irreversible without browser vendor action.
+                {
+                  key: 'Strict-Transport-Security',
+                  value: 'max-age=31536000; includeSubDomains',
+                },
+              ]
+            : []),
         ],
       },
       {
