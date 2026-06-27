@@ -1,8 +1,11 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { Modal } from '@mad/ui';
-import { AuthForm } from '@/components/auth/AuthForm';
+import dynamic from 'next/dynamic';
+const AuthForm = dynamic(() => import('@/components/auth/AuthForm').then(mod => mod.AuthForm), {
+  ssr: false,
+});
 import { validateReturnTo } from '@/utils/safe-redirect';
 import { useRouter } from 'next/navigation';
 
@@ -90,6 +93,17 @@ export function AuthModalProvider({ children }: AuthModalProviderProps) {
     setIsConfirmationOpen(false);
   }, []);
 
+  const isOpenRef = useRef(isOpen);
+  const isDirtyRef = useRef(isDirty);
+
+  useEffect(() => {
+    isOpenRef.current = isOpen;
+  }, [isOpen]);
+
+  useEffect(() => {
+    isDirtyRef.current = isDirty;
+  }, [isDirty]);
+
   // Listen for Next.js/Browser history navigation (back/forward buttons)
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -97,9 +111,11 @@ export function AuthModalProvider({ children }: AuthModalProviderProps) {
     const handlePopState = () => {
       const params = new URLSearchParams(window.location.search);
       const hasAuth = params.get('auth') === 'true';
+      const currentIsOpen = isOpenRef.current;
+      const currentIsDirty = isDirtyRef.current;
 
-      if (!hasAuth && isOpen) {
-        if (isDirty) {
+      if (!hasAuth && currentIsOpen) {
+        if (currentIsDirty) {
           // Put auth=true back to prevent navigation away, and trigger confirmation
           const currentParams = new URLSearchParams(window.location.search);
           currentParams.set('auth', 'true');
@@ -110,7 +126,7 @@ export function AuthModalProvider({ children }: AuthModalProviderProps) {
           setIsDirty(false);
           setReturnTo(null);
         }
-      } else if (hasAuth && !isOpen) {
+      } else if (hasAuth && !currentIsOpen) {
         setIsOpen(true);
         setReturnTo(validateReturnTo(params.get('returnTo')));
       }
@@ -118,7 +134,7 @@ export function AuthModalProvider({ children }: AuthModalProviderProps) {
 
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
-  }, [isOpen, isDirty]);
+  }, []);
 
   // Read initial URL state on mount
   useEffect(() => {
@@ -139,8 +155,16 @@ export function AuthModalProvider({ children }: AuthModalProviderProps) {
     }
   }, [closeAuthModal, returnTo, router]);
 
+  const modalValue = useMemo(() => ({
+    isOpen,
+    isDirty,
+    openAuthModal,
+    closeAuthModal,
+    setIsDirty,
+  }), [isOpen, isDirty, openAuthModal, closeAuthModal, setIsDirty]);
+
   return (
-    <AuthModalContext.Provider value={{ isOpen, isDirty, openAuthModal, closeAuthModal, setIsDirty }}>
+    <AuthModalContext.Provider value={modalValue}>
       {children}
 
       {/* Main Authentication Modal / Bottom Sheet */}

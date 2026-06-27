@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { BookingStatus, QUERY_KEYS } from '@mad/shared';
 import type { Booking, Ticket, Event } from '@mad/types';
@@ -47,12 +47,14 @@ export function useBookings() {
     setRefetchIntervalTime(hasPending ? 3000 : false);
   }, [bookings, ticketsReadyMap]);
 
+  const cooldownsExistRef = useRef(false);
+  cooldownsExistRef.current = Object.keys(resendCooldowns).length > 0;
+
   // 3. Cooldown timers
   useEffect(() => {
-    const keys = Object.keys(resendCooldowns);
-    if (keys.length === 0) return;
-
     const timer = setInterval(() => {
+      if (!cooldownsExistRef.current) return;
+
       setResendCooldowns((prev) => {
         const next = { ...prev };
         let changed = false;
@@ -70,7 +72,7 @@ export function useBookings() {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [resendCooldowns]);
+  }, []);
 
   // 4. Download and Resend Action Handlers
   const handleDownloadPDF = async (bookingId: string, sessionToken?: string) => {

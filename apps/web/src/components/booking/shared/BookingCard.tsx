@@ -4,7 +4,11 @@ import { BookingStatus } from '@mad/shared';
 import type { Booking, Ticket, Event } from '@mad/types';
 import { BookingHeaderCard } from '@/components/booking/shared/BookingHeaderCard';
 import { TicketActions } from '@/components/booking/shared/TicketActions';
-import { EntryPassGrid } from '@/components/booking/shared/EntryPassGrid';
+import dynamic from 'next/dynamic';
+
+const EntryPassGrid = dynamic(() => import('@/components/booking/shared/EntryPassGrid').then(mod => mod.EntryPassGrid), {
+  ssr: false,
+});
 import { useCountdown } from '@/hooks/use-countdown.hook';
 import Link from 'next/link';
 

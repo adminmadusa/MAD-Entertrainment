@@ -58,6 +58,12 @@ jobs:
       - name: Run CI Governance Abstraction Checks
         run: npx tsx scripts/ci_governance_check.ts
 
+      - name: Run CI Governance Documentation Validation
+        run: pnpm run governance:docs
+        env:
+          GOVERNANCE_MAX_WARNINGS: 15
+          GOVERNANCE_MIN_HEALTH_SCORE: 80
+
       - name: Build Workspace
         run: pnpm run build
 

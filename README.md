@@ -1,5 +1,16 @@
 # MAD Entertrainment
 
+- **Owner**: Documentation Owner
+- **Status**: Active
+- **Version**: 1.0
+- **Review Cycle**: Ongoing
+- **Last Updated**: 2026-06-25
+- **Related Documents:**
+  - [REPOSITORY_GOVERNANCE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/REPOSITORY_GOVERNANCE.md)
+  - [AGENTS.MD](file:///Users/admin/Desktop/MAD%20Entertrainment/AGENTS.MD)
+
+---
+
 ## Overview
 
 This repository contains the MAD Entertrainment platform, including public web experiences, administration tools, booking workflows, ticketing systems, and supporting backend services.
@@ -69,11 +80,19 @@ pnpm build
 
 ---
 
-## Deployment & Operations
+## System Documentation
 
-Operations runbooks, deployment procedures, disaster recovery instructions, environment configuration guides, and production validation workflows are documented in:
+For detailed information about each subsystem, refer to the respective Single Source of Truth (SSOT) documents:
 
-- `RUNBOOK.md`
+- [REPOSITORY_GOVERNANCE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/REPOSITORY_GOVERNANCE.md) — Governance policies, branch/PR standards, and review workflows.
+- [ARCHITECTURE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/ARCHITECTURE.md) — Canonical system architecture, package boundaries, and coding standards.
+- [DEPLOYMENT_MAP.md](file:///Users/admin/Desktop/MAD%20Entertrainment/DEPLOYMENT_MAP.md) — Infrastructure topology, environments, and CI/CD pipelines.
+- [API_CONTRACTS.md](file:///Users/admin/Desktop/MAD%20Entertrainment/API_CONTRACTS.md) — Express endpoint definitions, request/response schemas, and rate limits.
+- [docs/decisions/README.md](file:///Users/admin/Desktop/MAD%20Entertrainment/docs/decisions/README.md) — Architecture Decision Records (ADRs) explaining technical rationale.
+- [RUNBOOK.md](file:///Users/admin/Desktop/MAD%20Entertrainment/RUNBOOK.md) — Operational checklists, deployment instructions, and incident response.
+- [TESTING.md](file:///Users/admin/Desktop/MAD%20Entertrainment/TESTING.md) — Testing guidelines and verification requirements.
+- [AGENTS.md](file:///Users/admin/Desktop/MAD%20Entertrainment/AGENTS.md) — Operational instructions for human developers and AI agents.
+- [CHANGELOG.md](file:///Users/admin/Desktop/MAD%20Entertrainment/CHANGELOG.md) — Chronological release history and repository milestones.
 
 ---
 

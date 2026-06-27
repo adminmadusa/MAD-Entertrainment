@@ -4,6 +4,8 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
 import { useAdminAuth } from '@/providers/AdminAuthProvider';
+import { AdminRole } from '@mad/shared';
+
 
 import { adminGetCategories, adminCreateCategory, adminUpdateCategory, adminDeleteCategory, type AdminCategory } from '@/lib/api/admin/category.service';
 import { adminGetTiers, adminCreateTier, adminUpdateTier, adminDeleteTier, type AdminTier } from '@/lib/api/admin/tier.service';
@@ -13,7 +15,7 @@ export default function SettingsPage() {
   const { admin } = useAdminAuth();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<'categories' | 'tiers'>('categories');
-  const canMutateSettings = !!admin?.role && ['super_admin', 'admin', 'manager'].includes(admin.role);
+  const canMutateSettings = !!admin?.role && [AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.MANAGER].includes(admin.role as AdminRole);
   const [nameInput, setNameInput] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState('');

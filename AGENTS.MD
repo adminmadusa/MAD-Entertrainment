@@ -1,10 +1,16 @@
 # AGENTS.md
 
+- **Owner**: Repository Governance Owner
+- **Status**: Mandatory
+- **Version**: 1.0
+- **Review Cycle**: Quarterly
+- **Last Updated**: 2026-06-25
+- **Related Documents:**
+  - [REPOSITORY_GOVERNANCE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/REPOSITORY_GOVERNANCE.md)
+
+---
+
 # MAD Entertrainment Engineering Governance & AI Agent Operating System
-
-Version: 1.0
-
-Status: Mandatory
 
 Applies To:
 
@@ -14,6 +20,11 @@ Applies To:
 * Audit Agents
 * Refactoring Agents
 * PR Review Agents
+
+---
+
+## Relationship to Repository Governance Policy
+The repository governance policies (roles, matrices, branch and PR policies) are canonically defined in [REPOSITORY_GOVERNANCE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/REPOSITORY_GOVERNANCE.md). This file (`AGENTS.md`) serves as the operational instructions and guidelines for human and AI agents implementing those policies in the codebase.
 
 ---
 
@@ -131,6 +142,12 @@ Frontend must never own business rules.
 
 Frontend must never duplicate backend decisions.
 
+Repository Governance SSOT → REPOSITORY_GOVERNANCE.md
+
+Architecture Decisions (ADRs) → docs/decisions/README.md
+
+For policy rules, branch/PR standards, and document ownership, refer to the [REPOSITORY_GOVERNANCE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/REPOSITORY_GOVERNANCE.md). For details on why technical and architectural decisions are made, refer to the Architecture Decision Records (ADR) system at [docs/decisions/README.md](file:///Users/admin/Desktop/MAD%20Entertrainment/docs/decisions/README.md). All automated agents and human developers must review and adhere to the approved decisions.
+
 ---
 
 # SHARED OWNERSHIP RULE
@@ -139,7 +156,7 @@ Reusable logic must live in:
 
 packages/shared
 
-packages/contracts
+packages/ui
 
 packages/types
 
@@ -624,6 +641,10 @@ TESTING.md
 DEPLOYMENT_MAP.md
 
 CHANGELOG.md
+
+docs/decisions/README.md
+
+REPOSITORY_GOVERNANCE.md
 
 ---
 

@@ -46,7 +46,7 @@ export async function stripeWebhook(req: Request, res: Response): Promise<void> 
   const env = getEnv();
   const stripe = getStripe();
   const signature = req.headers['stripe-signature'];
-  const rawBody = (req as any).rawBody;
+  const rawBody = req.rawBody;
 
   if (!env.STRIPE_WEBHOOK_SECRET || !signature || !rawBody) {
     logger.warn('Stripe webhook received but missing configuration or signatures');
@@ -220,7 +220,7 @@ export async function stripeWebhook(req: Request, res: Response): Promise<void> 
 
 export async function razorpayWebhook(req: Request, res: Response): Promise<void> {
   const env = getEnv();
-  const rawBody = (req as any).rawBody;
+  const rawBody = req.rawBody;
   const signature = req.headers['x-razorpay-signature'] as string;
   const providerEventId = req.headers['x-razorpay-event-id'] as string | undefined;
 
@@ -258,7 +258,7 @@ export async function razorpayWebhook(req: Request, res: Response): Promise<void
   let razorpayRefundId: string | undefined;
 
   try {
-    body = JSON.parse(rawBody);
+    body = JSON.parse(rawBody.toString('utf8'));
     eventType = body.event;
     
     if (eventType.startsWith('refund.')) {

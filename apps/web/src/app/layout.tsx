@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { Outfit } from 'next/font/google';
 
-import { PopupManager } from '@/components/common/PopupManager';
 import { ChunkRecoveryClear } from '@/components/common/ChunkRecoveryClear';
 import { Footer } from '@/components/layout/Footer';
 import { Navbar } from '@/components/layout/Navbar';
@@ -14,7 +13,6 @@ const outfit = Outfit({
   subsets: ['latin'],
   variable: '--font-outfit',
   display: 'swap',
-  weight: ['300', '400', '500', '600', '700', '800', '900'],
 });
 
 // ─── Metadata ─────────────────────────────────────────────────
@@ -133,6 +131,15 @@ export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="en" className={`${outfit.variable} dark`} suppressHydrationWarning>
       <body className="bg-background text-text-primary antialiased relative min-h-screen">
+        {/* A11Y-001 — Skip to Main Content (WCAG 2.4.1 Level A)
+            Visually hidden until keyboard-focused. First focusable element
+            in the document. Targets #main-content which is the <main> landmark. */}
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[200] focus:px-4 focus:py-2 focus:rounded-xl focus:bg-accent-purple focus:text-white focus:font-bold focus:text-sm focus:shadow-glow focus:outline-none"
+        >
+          Skip to main content
+        </a>
         <script
           type="application/ld+json"
           // eslint-disable-next-line react/no-danger
@@ -158,7 +165,6 @@ export default function RootLayout({ children }: RootLayoutProps) {
             {children}
           </main>
           <Footer />
-          <PopupManager />
         </Providers>
       </body>
     </html>

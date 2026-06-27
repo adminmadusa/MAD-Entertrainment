@@ -8,7 +8,11 @@ import Link from 'next/link';
 import Image from 'next/image';
 
 import { publicGetEventBySlug } from '@/lib/api/public.service';
-import { EventBookingFlow } from './components/EventBookingFlow';
+import dynamic from 'next/dynamic';
+
+const EventBookingFlow = dynamic(() => import('./components/EventBookingFlow').then(mod => mod.EventBookingFlow), {
+  ssr: false,
+});
 import type { EventBookingFlowHandle } from './components/EventBookingFlow';
 import { EventGallery } from './components/EventGallery';
 import { EventOverview } from './components/EventOverview';

@@ -1,7 +1,13 @@
 'use client';
 
+interface AttendanceSummary {
+  totalCheckIns: number;
+  attendanceRate: number;
+  noShowRate: number;
+}
+
 interface AttendanceMetricsWidgetProps {
-  attendanceSummary: any;
+  attendanceSummary: AttendanceSummary | null | undefined;
   isLoading: boolean;
 }
 

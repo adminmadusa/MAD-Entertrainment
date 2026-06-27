@@ -4,10 +4,11 @@ import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { formatDateTime } from '@mad/utils';
 
 import { adminGetEmailLogs } from '@/lib/api/admin/diagnostics.service';
 import ErrorState from '@/components/states/ErrorState';
-import { QUERY_KEYS } from '@mad/shared';
+import { QUERY_KEYS, AdminRole } from '@mad/shared';
 import { useAdminAuth } from '@/providers/AdminAuthProvider';
 
 export default function EmailDiagnosticsPage() {
@@ -17,7 +18,7 @@ export default function EmailDiagnosticsPage() {
   const [page, setPage] = useState(1);
   const limit = 50;
 
-  const isSuperAdmin = admin?.role === 'super_admin';
+  const isSuperAdmin = admin?.role === AdminRole.SUPER_ADMIN;
 
   const { data, isLoading, error } = useQuery({
     queryKey: QUERY_KEYS.admin.diagnostics.emails({ page, status: statusFilter }),
@@ -113,7 +114,7 @@ export default function EmailDiagnosticsPage() {
       return (
         <tr key={email._id} className="border-b border-border-subtle/40 hover:bg-white/2">
           <td className="py-3.5 px-4 text-text-muted text-xs whitespace-nowrap">
-            {timestamp ? new Date(timestamp).toLocaleString('en-IN') : '-'}
+            {timestamp ? formatDateTime(timestamp) : '-'}
           </td>
           <td className="py-3.5 px-4 text-white font-medium max-w-[180px] truncate" title={email.recipient}>
             {email.recipient}

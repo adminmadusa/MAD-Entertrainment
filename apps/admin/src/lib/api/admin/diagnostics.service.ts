@@ -125,7 +125,7 @@ export interface DeadLetterJobMetadata {
 }
 
 export interface DeadLetterJobDetails extends DeadLetterJobMetadata {
-  data: any;
+  data: Record<string, unknown>;
   stacktrace?: string[];
 }
 

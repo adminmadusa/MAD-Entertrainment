@@ -6,7 +6,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useFocusTrap } from '@mad/ui';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 
 import { publicGetActivePopups } from '@/lib/api/public.service';
 
@@ -194,11 +194,11 @@ export function PopupManager() {
     }
   }, [popups, dismissed, activePopup]);
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     if (activePopup) markShown(activePopup);
     setActivePopup(null);
     setDismissed(true);
-  };
+  }, [activePopup]);
 
   if (!activePopup) return null;
 

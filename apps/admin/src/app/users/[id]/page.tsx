@@ -9,15 +9,19 @@ import ErrorState from '@/components/states/ErrorState';
 import LoadingState from '@/components/states/LoadingState';
 import { useAdminAuth } from '@/providers/AdminAuthProvider';
 
-import { useUserDetail } from './_hooks/use-user-detail.hook';
-import UserProfileCard from './_components/UserProfileCard';
-import UserStatsSummary from './_components/UserStatsSummary';
-import UserBookingsTable from './_components/UserBookingsTable';
-import UserTicketsTable from './_components/UserTicketsTable';
-import UserRefundsTable from './_components/UserRefundsTable';
-import UserConfirmModal from './_components/UserConfirmModal';
-import UserAlertBanner from './_components/UserAlertBanner';
-import UserTabsHeader from './_components/UserTabsHeader';
+import { useUserDetail } from '../_hooks/use-user-detail.hook';
+import UserProfileCard from '../_components/UserProfileCard';
+import UserStatsSummary from '../_components/UserStatsSummary';
+import UserBookingsTable from '../_components/UserBookingsTable';
+import UserTicketsTable from '../_components/UserTicketsTable';
+import UserRefundsTable from '../_components/UserRefundsTable';
+import UserAlertBanner from '../_components/UserAlertBanner';
+import UserTabsHeader from '../_components/UserTabsHeader';
+import dynamic from 'next/dynamic';
+
+const UserConfirmModal = dynamic(() => import('../_components/UserConfirmModal'), {
+  ssr: false,
+});
 
 export default function RegisteredUserDetailPage() {
   const { id } = useParams() as { id: string };

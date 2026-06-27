@@ -5,6 +5,7 @@ out/
 .next/
 .turbo/
 coverage/
+/reports/
 *.tsbuildinfo
 .pnpm-store/
 # Generated service worker assets
@@ -53,3 +54,4 @@ build.log
 
 # Local scratchpad scripts
 scratch/
+audit_data.json

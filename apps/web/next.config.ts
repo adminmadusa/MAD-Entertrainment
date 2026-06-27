@@ -49,6 +49,70 @@ const nextConfig: NextConfig = {
 
   // ─── Headers ──────────────────────────────────────────────
   async headers() {
+    // ── Content Security Policy (SEC-001) ──────────────────
+    //
+    // NOTE: CSP and HSTS headers are applied in PRODUCTION only.
+    // Next.js dev mode (next dev) requires 'unsafe-eval' for HMR and
+    // React Refresh source maps. Applying a strict CSP in dev mode
+    // blocks all client-side JS execution. The policy is identical
+    // to what ships to production — only the delivery is gated.
+    //
+    // script-src:
+    //   'self'              — Next.js page bundles and API routes
+    //   'unsafe-inline'     — Required: Next.js framework hydration scripts are
+    //                         injected as inline <script> elements. Nonce-based
+    //                         approach requires middleware and is deferred to a
+    //                         future hardening PR.
+    //                         JSON-LD <script type="application/ld+json"> blocks
+    //                         are data blocks (non-JS MIME), exempt from
+    //                         script-src per CSP Level 3 spec — 'unsafe-inline'
+    //                         here does not grant them additional trust.
+    //   accounts.google.com — Google Identity Services SDK
+    //   checkout.razorpay.com — Razorpay checkout SDK
+    //
+    // style-src:
+    //   'self'              — Tailwind CSS bundled stylesheet
+    //   'unsafe-inline'     — Required: 28 React style={{}} prop usages across
+    //                         the app (including global-error.tsx which operates
+    //                         outside the Tailwind class system by design)
+    //
+    // font-src:
+    //   'self'              — next/font/google self-hosts fonts at build time;
+    //                         no runtime request to fonts.googleapis.com
+    //
+    // img-src:
+    //   'self'              — local public assets
+    //   data:               — Next.js image optimisation internals
+    //   blob:               — Next.js image optimisation internals
+    //   res.cloudinary.com  — event/DJ image CDN
+    //   images.unsplash.com — supplemental imagery
+    //
+    // connect-src:
+    //   'self'              — /api/* proxy to backend (same origin)
+    //   accounts.google.com — Google Identity token exchange
+    //   api.razorpay.com    — Razorpay payment API
+    //
+    // frame-src:
+    //   api.razorpay.com    — Razorpay checkout iframe
+    //   accounts.google.com — Google Sign-In iframe
+    //
+    // object-src 'none'     — Disallows plugins (Flash, Java applets)
+    // base-uri 'self'       — Prevents base tag injection attacks
+    // form-action 'self'    — Prevents form hijacking
+    const isDev = process.env.NODE_ENV === 'development';
+    const csp = [
+      "default-src 'self'",
+      "script-src 'self' 'unsafe-inline' https://accounts.google.com https://checkout.razorpay.com",
+      "style-src 'self' 'unsafe-inline'",
+      "font-src 'self'",
+      "img-src 'self' data: blob: https://res.cloudinary.com https://images.unsplash.com",
+      "connect-src 'self' https://accounts.google.com https://api.razorpay.com",
+      "frame-src https://api.razorpay.com https://accounts.google.com",
+      "object-src 'none'",
+      "base-uri 'self'",
+      "form-action 'self'",
+    ].join('; ');
+
     return [
       {
         source: '/(.*)',
@@ -60,6 +124,22 @@ const nextConfig: NextConfig = {
             key: 'Permissions-Policy',
             value: 'camera=(), microphone=(), geolocation=(self)',
           },
+          // SEC-001 — Content Security Policy (production only)
+          // Omitted in dev: Next.js HMR requires 'unsafe-eval' which conflicts
+          // with this policy. Production builds are pre-compiled and do not use eval.
+          ...(!isDev
+            ? [
+                { key: 'Content-Security-Policy', value: csp },
+                // SEC-002 — Strict Transport Security
+                // max-age=31536000 (1 year), includeSubDomains enforces HTTPS on all subdomains.
+                // preload is intentionally omitted — HSTS Preload List submission requires
+                // explicit decision and is irreversible without browser vendor action.
+                {
+                  key: 'Strict-Transport-Security',
+                  value: 'max-age=31536000; includeSubDomains',
+                },
+              ]
+            : []),
         ],
       },
       {

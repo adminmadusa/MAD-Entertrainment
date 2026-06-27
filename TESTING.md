@@ -1,3 +1,16 @@
+# MAD Entertrainment — Testing Guide
+
+- **Owner**: QA Owner
+- **Status**: Active
+- **Version**: 1.0
+- **Review Cycle**: Ongoing
+- **Last Updated**: 2026-06-25
+- **Related Documents:**
+  - [README.md](file:///Users/admin/Desktop/MAD%20Entertrainment/README.md)
+  - [REPOSITORY_GOVERNANCE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/REPOSITORY_GOVERNANCE.md)
+
+---
+
 ## Purpose
 
 This document explains how to verify changes safely within the MAD Entertrainment repository.

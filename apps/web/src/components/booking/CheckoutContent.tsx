@@ -6,6 +6,8 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
+import dynamic from 'next/dynamic';
+
 import { QUERY_KEYS, BookingStatus } from '@mad/shared';
 import { Event, Booking, Ticket } from '@mad/types';
 import { useCountdown } from '@/hooks/use-countdown.hook';
@@ -23,7 +25,9 @@ import {
 import { CheckoutDetailsInput } from '@mad/validations';
 
 import { useCheckoutNavGuard } from './checkout/useCheckoutNavGuard';
-import { LeaveCheckoutModal } from './checkout/LeaveCheckoutModal';
+const LeaveCheckoutModal = dynamic(() => import('./checkout/LeaveCheckoutModal').then(mod => mod.LeaveCheckoutModal), {
+  ssr: false,
+});
 import { CheckoutForm } from './checkout/CheckoutForm';
 import { CheckoutPricing } from './checkout/CheckoutPricing';
 import { CheckoutPayment } from './checkout/CheckoutPayment';

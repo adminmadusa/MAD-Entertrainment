@@ -196,7 +196,8 @@ video {
     content: '';
     position: absolute;
     inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+    background-image: url('/images/noise.png');
+    background-repeat: repeat;
     pointer-events: none;
     z-index: 1;
   }
@@ -392,21 +393,21 @@ video {
 }
 
 .animate-ambient-shift-1 {
-  animation: ambient-shift-1 25s infinite alternate ease-in-out;
+  animation: ambient-shift-1 50s infinite alternate ease-in-out;
   will-change: transform;
   transform: translate3d(0, 0, 0);
   -webkit-transform: translate3d(0, 0, 0);
 }
 
 .animate-ambient-shift-2 {
-  animation: ambient-shift-2 30s infinite alternate ease-in-out;
+  animation: ambient-shift-2 60s infinite alternate ease-in-out;
   will-change: transform;
   transform: translate3d(0, 0, 0);
   -webkit-transform: translate3d(0, 0, 0);
 }
 
 .animate-ambient-shift-3 {
-  animation: ambient-shift-3 20s infinite alternate ease-in-out;
+  animation: ambient-shift-3 40s infinite alternate ease-in-out;
   will-change: transform;
   transform: translate3d(0, 0, 0);
   -webkit-transform: translate3d(0, 0, 0);
@@ -417,6 +418,18 @@ video {
   .animate-ambient-shift-2,
   .animate-ambient-shift-3 {
     animation: none !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-ambient-shift-1,
+  .animate-ambient-shift-2,
+  .animate-ambient-shift-3,
+  .animate-float,
+  .animate-scroll-dot {
+    animation: none !important;
+    transform: none !important;
+    transition: none !important;
   }
 }
 
@@ -489,4 +502,52 @@ video {
     transform: translateY(0);
   }
 }
+
+/* ─── Hero Entry Animations (UI-009B1) ─────────────────────── */
+@keyframes heroFadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-hero-fade-in {
+  /* Resilient animation: Do not set opacity: 0 on the class itself.
+     If CSS animations fail, elements remain visible (opacity: 1).
+     'both' fill mode applies 'from' styles during the delay period. */
+  animation: heroFadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animation-delay-200 {
+  animation-delay: 200ms;
+}
+
+.animation-delay-300 {
+  animation-delay: 300ms;
+}
+
+.animation-delay-350 {
+  animation-delay: 350ms;
+}
+
+.animation-delay-400 {
+  animation-delay: 400ms;
+}
+
+.animation-delay-450 {
+  animation-delay: 450ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-hero-fade-in {
+    opacity: 1 !important;
+    transform: none !important;
+    animation: none !important;
+  }
+}
+
 

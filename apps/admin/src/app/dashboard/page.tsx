@@ -8,7 +8,8 @@ import { Suspense, useState } from 'react';
 import dynamic from 'next/dynamic';
 
 import { useAdminAuth } from '@/providers/AdminAuthProvider';
-import { AdminRole, EventStatus } from '@mad/shared';
+import { AdminRole, EventStatus, BOOKING_REFERENCE_REGEX } from '@mad/shared';
+import { formatDateTime } from '@mad/utils';
 import {
   adminGetDashboardSummary,
   adminGetRevenueChart,
@@ -43,14 +44,14 @@ function DashboardContent() {
   const { data: summary, isLoading } = useQuery({
     queryKey: ['admin-analytics-summary'],
     queryFn: adminGetDashboardSummary,
-    enabled: !!admin?.role && ['super_admin', 'admin', 'manager'].includes(admin.role),
+    enabled: !!admin?.role && [AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.MANAGER].includes(admin.role as AdminRole),
   });
 
   const { data: consistencyReport } = useQuery({
     queryKey: ['admin-diagnostics-consistency'],
     queryFn: adminGetConsistencyReport,
     refetchInterval: 30000,
-    enabled: !!admin?.role && ['super_admin'].includes(admin.role),
+    enabled: !!admin?.role && [AdminRole.SUPER_ADMIN].includes(admin.role as AdminRole),
   });
 
   const { data: eventsData, isLoading: isEventsLoading } = useQuery({
@@ -68,13 +69,13 @@ function DashboardContent() {
   const { data: failedWebhooksData, isLoading: isWebhooksLoading } = useQuery({
     queryKey: ['admin-diagnostics-webhooks-failed'],
     queryFn: () => adminGetWebhooks({ page: 1, limit: 5, status: 'failed' }),
-    enabled: !!admin?.role && ['super_admin'].includes(admin.role),
+    enabled: !!admin?.role && [AdminRole.SUPER_ADMIN].includes(admin.role as AdminRole),
   });
 
   const { data: emailLogsData, isLoading: isEmailsLoading } = useQuery({
     queryKey: ['admin-diagnostics-emails'],
     queryFn: () => adminGetEmailLogs({ page: 1, limit: 10 }),
-    enabled: !!admin?.role && ['super_admin', 'admin', 'manager', 'support'].includes(admin.role),
+    enabled: !!admin?.role && [AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.MANAGER, AdminRole.SUPPORT].includes(admin.role as AdminRole),
   });
 
   const failedEmails = (emailLogsData?.data || []).filter(email => email.status === 'failed');
@@ -83,19 +84,19 @@ function DashboardContent() {
   const { data: revenue } = useQuery({
     queryKey: ['admin-revenue-chart', 30],
     queryFn: () => adminGetRevenueChart(30),
-    enabled: !!admin?.role && ['super_admin', 'admin', 'manager'].includes(admin.role),
+    enabled: !!admin?.role && [AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.MANAGER].includes(admin.role as AdminRole),
   });
 
   const { data: attendanceSummary, isLoading: isAttendanceLoading } = useQuery({
     queryKey: ['admin-attendance-summary'],
     queryFn: adminGetAttendanceSummary,
-    enabled: !!admin?.role && ['super_admin', 'admin', 'manager'].includes(admin.role),
+    enabled: !!admin?.role && [AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.MANAGER].includes(admin.role as AdminRole),
   });
 
   const { data: attendanceRankings, isLoading: isRankingsLoading } = useQuery({
     queryKey: ['admin-attendance-rankings'],
     queryFn: adminGetAttendanceRankings,
-    enabled: !!admin?.role && ['super_admin', 'admin', 'manager'].includes(admin.role),
+    enabled: !!admin?.role && [AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.MANAGER].includes(admin.role as AdminRole),
   });
 
   const handleGlobalSearch = (e: React.FormEvent) => {
@@ -105,7 +106,7 @@ function DashboardContent() {
     if (!query) return;
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    const refRegex = /^MAD-\d{4}-[A-Z0-9]{5}$/i;
+    const refRegex = new RegExp(BOOKING_REFERENCE_REGEX.source, 'i');
 
     if (emailRegex.test(query)) {
       router.push(`/bookings?search=${encodeURIComponent(query)}`);
@@ -378,7 +379,7 @@ function DashboardContent() {
                       </div>
                       <p className="text-text-muted text-xs">{event.venue}</p>
                       <p className="text-text-secondary text-xs font-mono">
-                        Gates: {new Date(event.startDate).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
+                        Gates: {formatDateTime(event.startDate, { hour: '2-digit', minute: '2-digit' })}
                       </p>
                     </div>
                     
