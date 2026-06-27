@@ -1,0 +1,56 @@
+# ROADMAP-001 — Post-Launch Engineering Roadmap (Free Infrastructure Edition)
+
+- **Owner**: Release Governance Board
+- **Status**: ACTIVE / CANONICAL POLICY
+- **Effective Date**: 2026-06-27
+
+---
+
+## 1. Objective
+Transition the MAD Entertrainment platform from engineering completion into stable production operations while explicitly operating within the current free-tier infrastructure constraints.
+
+---
+
+## 2. Current Infrastructure Constraints
+The project is configured to operate on free-tier services. Operational checks dependent on paid features are intentionally deferred:
+- **No Paid CI/CD**: Local verification is the source of truth; automatic lint, test, and audit pipelines on PRs/commits are deferred.
+- **Limited Render Compute**: Render free instance limits memory and uptime. Automatic monitoring and uptime tracking are deferred.
+- **Limited Vercel Resources**: Free-tier serverless limits execution logs, custom SSL key bindings, and edge caching metrics.
+- **Observability Restrictions**: Paid error tracking (Sentry Business/Datadog), synthetic monitoring, and live alerting are inactive.
+
+---
+
+## 3. Operational Guiding Principles
+
+### ✅ Verified (Local & Static Gates)
+These elements are validated before release commits:
+- Local development & preview execution.
+- Successful builds via `pnpm build`.
+- 100% success on `pnpm type-check`, `pnpm lint`, and `pnpm test`.
+- Visual alignment checks on Chrome, Safari, Firefox, and mobile engines.
+
+### ⚠ Deferred (Infrastructure Limitations)
+These capabilities depend on paid infrastructure:
+- Live Core Web Vitals profiling.
+- Automated GitHub Actions execution.
+- Real-user monitoring (RUM) and live alert metrics.
+- Paid integration monitoring (live SMTP delivery success rates, production DB latency).
+
+---
+
+## 4. Release Validation Policy
+All releases must be manually verified locally before being promoted:
+```bash
+pnpm type-check && pnpm lint && pnpm test && pnpm build && pnpm governance:docs
+```
+
+---
+
+## 5. Immediate Engineering Focus
+Future PR work should prioritize:
+1. Feature additions and enhancements.
+2. User interface bugs and customer feedback.
+3. Functional fixes.
+4. Business logic improvements.
+
+Refactors or performance auditing workstreams are deferred unless a concrete regression or production issue is identified.
