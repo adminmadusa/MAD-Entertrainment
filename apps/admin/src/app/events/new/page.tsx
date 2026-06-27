@@ -1,42 +1,32 @@
 'use client';
 
-import { EVENT_CATEGORY_LABELS, BookingMode, TicketTier, EventStatus } from '@mad/shared';
+import { BookingMode, TicketTier, EventStatus } from '@mad/shared';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
-import { EventGalleryUpload } from '@/components/EventGalleryUpload';
 import { adminCreateEvent, AdminEvent } from '@/lib/api/admin/event.service';
-import { TicketProfile, TicketGroup, TicketConfig } from '@mad/types';
+import { TicketProfile } from '@mad/types';
 import { adminGetCategories } from '@/lib/api/admin/category.service';
 import { adminGetTiers } from '@/lib/api/admin/tier.service';
 import { adminGetTicketProfiles } from '@/lib/api/admin/ticket-profile.service';
 import { extractApiError } from '@/lib/api/client';
-
-
-interface CloudinaryImage { url: string; publicId: string; alt?: string; }
-
-
-const TICKET_TIER_NAMES = ['general', 'silver', 'gold', 'platinum', 'vip', 'vvip', 'backstage', 'couple', 'group', 'family', 'early_bird', 'custom'];
-
-interface TicketTierInput {
-  name: string;
-  price: number | '';
-  capacity: number | '';
-  groupSize: number | '';
-  minPerBooking: number | '';
-  discount: number | '';
-  taxPercent: number | '';
-  startDate: string;
-  endDate: string;
-  description: string;
-  isAvailable: boolean;
-}
-
-const defaultTier = (): TicketTierInput => ({
-  name: 'general', price: '', capacity: '', groupSize: '', minPerBooking: '', discount: '', taxPercent: '', startDate: '', endDate: '', description: '', isAvailable: true,
-});
+import {
+  EventBasicInfoSection,
+  EventScheduleSection,
+  EventVenueSection,
+  EventTicketSection,
+  EventMediaSection,
+  EventAdvancedSettingsSection,
+  EventPublishSection,
+  EventFormActions,
+  Field,
+  inputCls,
+  defaultTier,
+  TicketTierInput,
+  CloudinaryImage
+} from './_components';
 
 export default function CreateEventPage() {
   const router = useRouter();
@@ -231,371 +221,82 @@ export default function CreateEventPage() {
           </motion.div>
         )}
 
-        {/* Event Media Uploads */}
-        <div className="glass rounded-2xl border border-border-subtle p-6">
-          <h2 className="text-white font-semibold mb-4">Event Media (Banner, Poster, & Gallery)</h2>
-          <EventGalleryUpload
-            bannerImage={coverImage}
-            posterImage={posterImage}
-            galleryImages={galleryImages}
-            onChange={(b, p, g) => {
-              setCoverImage(b);
-              setPosterImage(p);
-              setGalleryImages(g);
-            }}
-            maxTotalImages={15}
-          />
-        </div>
+        <EventMediaSection
+          coverImage={coverImage}
+          setCoverImage={setCoverImage}
+          posterImage={posterImage}
+          setPosterImage={setPosterImage}
+          galleryImages={galleryImages}
+          setGalleryImages={setGalleryImages}
+        />
 
-        {/* Basic Info */}
-        <div className="glass rounded-2xl border border-border-subtle p-6 space-y-5">
-          <h2 className="text-white font-semibold">Basic Information</h2>
-          <Field label="Event Title *">
-            <input id="event-title" value={title} onChange={(e) => setTitle(e.target.value)}
-              placeholder="e.g. Sunburn Festival 2025" required
-              className={inputCls} />
-          </Field>
-          <div className="grid grid-cols-2 gap-4">
-            <Field label="Category">
-              <select id="event-category" value={category} onChange={(e) => setCategory(e.target.value)} className={inputCls}>
-                {dbCategories.length > 0
-                  ? dbCategories.map((cat) => (
-                      <option key={cat._id} value={cat.slug} className="bg-background-card">
-                        {cat.name}
-                      </option>
-                    ))
-                  : Object.entries(EVENT_CATEGORY_LABELS).map(([val, label]) => (
-                      <option key={val} value={val} className="bg-background-card">{label}</option>
-                    ))}
-              </select>
-            </Field>
-                        <Field label="Status">
-              <select id="event-status" value={status} onChange={(e) => setStatus(e.target.value as EventStatus)} className={inputCls}>
-                <option value={EventStatus.DRAFT} className="bg-background-card">Draft</option>
-                <option value={EventStatus.PUBLISHED} className="bg-background-card">Published</option>
-              </select>
-            </Field>
-            <Field label="Venue *">
-              <div className="relative">
-                <input
-                  id="event-venue"
-                  value={venueName}
-                  onChange={(e) => setVenueName(e.target.value)}
-                  placeholder="Enter venue name"
-                  required
-                  className={inputCls + " pl-10"}
-                />
-                <span className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-5 w-5 text-text-muted"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 11c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm0 2c-4.418 0-8 1.79-8 4v3h16v-3c0-2.21-3.582-4-8-4z" />
-                  </svg>
-                </span>
-              </div>
-            </Field>
-          </div>
-          <Field label="Full Description *">
-            <textarea id="event-description" value={description} onChange={(e) => setDescription(e.target.value)}
-              placeholder="Describe the event in detail..." required rows={5}
-              className={`${inputCls} resize-none`} />
-          </Field>
-        </div>
+        <EventBasicInfoSection
+          title={title}
+          setTitle={setTitle}
+          category={category}
+          setCategory={setCategory}
+          description={description}
+          setDescription={setDescription}
+          organizerName={organizerName}
+          setOrganizerName={setOrganizerName}
+          highlightsInput={highlightsInput}
+          setHighlightsInput={setHighlightsInput}
+          refundPolicy={refundPolicy}
+          setRefundPolicy={setRefundPolicy}
+          dbCategories={dbCategories}
+          venueField={
+            <EventVenueSection venueName={venueName} setVenueName={setVenueName} />
+          }
+          publishField={
+            <EventPublishSection status={status} setStatus={setStatus} />
+          }
+        />
 
-        {/* Additional Details */}
-        <div className="glass rounded-2xl border border-border-subtle p-6 space-y-5">
-          <h2 className="text-white font-semibold">Additional Details</h2>
-          <div className="grid grid-cols-2 gap-4">
-            <Field label="Organizer Name">
-              <input id="event-organizer" value={organizerName} onChange={(e) => setOrganizerName(e.target.value)}
-                placeholder="e.g. Ellen Colby, The MARM Farm"
-                className={inputCls} />
-            </Field>
-            <Field label="Highlights (comma separated)">
-              <input id="event-highlights" value={highlightsInput} onChange={(e) => setHighlightsInput(e.target.value)}
-                placeholder="e.g. 12 hours, In person, Family friendly"
-                className={inputCls} />
-            </Field>
-          </div>
-          <Field label="Refund Policy">
-            <textarea id="event-refund-policy" value={refundPolicy} onChange={(e) => setRefundPolicy(e.target.value)}
-              placeholder="e.g. Refunds up to 7 days before event" rows={2}
-              className={`${inputCls} resize-none`} />
-          </Field>
-        </div>
+        <EventScheduleSection
+          startDate={startDate}
+          setStartDate={setStartDate}
+          endDate={endDate}
+          setEndDate={setEndDate}
+        />
 
-        {/* Schedule */}
-        <div className="glass rounded-2xl border border-border-subtle p-6 space-y-5">
-          <h2 className="text-white font-semibold">Schedule</h2>
-          <div className="grid grid-cols-2 gap-4">
-            <Field label="Start Date & Time *">
-              <input id="event-start-date" type="datetime-local" value={startDate} onChange={(e) => setStartDate(e.target.value)} required className={inputCls} />
-            </Field>
-            <Field label="End Date & Time">
-              <input type="datetime-local" value={endDate} onChange={(e) => setEndDate(e.target.value)} className={inputCls} />
-            </Field>
-          </div>
-        </div>
+        <EventTicketSection
+          ticketingType={ticketingType}
+          setTicketingType={setTicketingType}
+          tiers={tiers}
+          addTier={addTier}
+          removeTier={removeTier}
+          updateTier={updateTier}
+          dbTiers={dbTiers}
+          selectedProfileId={selectedProfileId}
+          setSelectedProfileId={setSelectedProfileId}
+          setOverrides={setOverrides}
+          dbProfiles={dbProfiles}
+          activeProfile={activeProfile}
+          overrides={overrides}
+          handleOverrideChange={handleOverrideChange}
+          title={title}
+        />
 
-        {/* Ticket Configuration */}
-        <div className="glass rounded-2xl border border-border-subtle p-6 space-y-6">
-          <div className="flex items-center justify-between border-b border-white/5 pb-4">
-            <h2 className="text-white font-semibold text-base">Ticketing Configuration</h2>
-            <div className="flex bg-white/5 p-1 rounded-xl border border-white/10">
-              <button
-                type="button"
-                onClick={() => setTicketingType('custom')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                  ticketingType === 'custom'
-                    ? 'bg-accent-purple text-white shadow-md'
-                    : 'text-text-secondary hover:text-white'
-                }`}
-              >
-                Custom Tiers
-              </button>
-              <button
-                type="button"
-                onClick={() => setTicketingType('profile')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                  ticketingType === 'profile'
-                    ? 'bg-accent-purple text-white shadow-md'
-                    : 'text-text-secondary hover:text-white'
-                }`}
-              >
-                Ticket Profile
-              </button>
-            </div>
-          </div>
+        <EventAdvancedSettingsSection
+          tags={tags}
+          setTags={setTags}
+          isFeatured={isFeatured}
+          setIsFeatured={setIsFeatured}
+          requireTerms={requireTerms}
+          setRequireTerms={setRequireTerms}
+          requireAgeConfirmation={requireAgeConfirmation}
+          setRequireAgeConfirmation={setRequireAgeConfirmation}
+          ageRestriction={ageRestriction}
+          setAgeRestriction={setAgeRestriction}
+        />
 
-          {ticketingType === 'custom' ? (
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-text-secondary text-sm font-medium">Define custom ticket tiers for this event</span>
-                <button type="button" onClick={addTier}
-                  className="text-accent-purple text-sm font-medium hover:text-accent-purple-light transition-colors">
-                  + Add Tier
-                </button>
-              </div>
-              {tiers.map((tier, i) => (
-                <div key={i} className="p-4 bg-white/3 rounded-xl border border-border-subtle space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-text-secondary text-sm font-medium capitalize">Tier {i + 1}</span>
-                    {tiers.length > 1 && (
-                      <button type="button" onClick={() => removeTier(i)} className="text-error text-xs hover:underline">Remove</button>
-                    )}
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <Field label="Tier Name">
-                      <select value={tier.name} onChange={(e) => updateTier(i, 'name', e.target.value)} className={inputCls}>
-                        {dbTiers.length > 0
-                          ? dbTiers.map((t) => (
-                              <option key={t._id} value={t.slug} className="bg-background-card capitalize">
-                                {t.name}
-                              </option>
-                            ))
-                          : TICKET_TIER_NAMES.map((n) => (
-                              <option key={n} value={n} className="bg-background-card capitalize">{n}</option>
-                            ))}
-                      </select>
-                    </Field>
-                    <Field label="Price (₹)">
-                      <input type="number" min="0" value={tier.price}
-                        onChange={(e) => updateTier(i, 'price', e.target.value === '' ? '' : Number(e.target.value))}
-                        placeholder="0" required className={inputCls} />
-                    </Field>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <Field label="Capacity *">
-                      <input type="number" min="1" value={tier.capacity}
-                        onChange={(e) => updateTier(i, 'capacity', e.target.value === '' ? '' : Number(e.target.value))}
-                        placeholder="100" required className={inputCls} />
-                    </Field>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="space-y-4">
-              <Field label="Select Ticket Profile *">
-                <select
-                  value={selectedProfileId}
-                  onChange={(e) => {
-                    setSelectedProfileId(e.target.value);
-                    setOverrides({});
-                  }}
-                  required={ticketingType === 'profile'}
-                  className={inputCls}
-                >
-                  <option value="" className="bg-background-card">-- Select a Profile --</option>
-                  {dbProfiles.map((p: TicketProfile) => (
-                    <option key={p._id} value={p._id} className="bg-background-card">
-                      {p.name} ({p.groups?.length || 0} groups)
-                    </option>
-                  ))}
-                </select>
-              </Field>
-
-              {activeProfile && (
-                <div className="space-y-6 pt-4 border-t border-white/5">
-                  <h3 className="text-white font-bold text-sm">Profile Preview & Event-Specific Overrides</h3>
-                  {activeProfile.groups?.map((group: TicketGroup, gIdx: number) => (
-                    <div key={`${group.slug}-${gIdx}`} className="space-y-3 p-4 bg-white/3 rounded-xl border border-white/5">
-                      <h4 className="text-accent-purple-light font-bold text-sm">{group.name}</h4>
-                      <p className="text-text-muted text-xs">{group.description}</p>
-                      
-                      <div className="space-y-3 pt-2">
-                        {group.tickets?.map((ticket: TicketConfig, tIdx: number) => {
-                          const override = overrides[ticket.tier] || {};
-                          return (
-                            <div key={`${ticket.tier}-${tIdx}`} className="p-3 bg-background rounded-lg border border-border-subtle flex flex-col md:flex-row md:items-center justify-between gap-4">
-                              <div className="flex-1">
-                                <span className="text-sm font-bold text-white block">{ticket.name.replace(/\{eventName\}/g, title || 'Event')}</span>
-                                <span className="text-xs text-text-muted">
-                                  Tier: <strong className="text-text-secondary">{ticket.tier}</strong> &bull; Price: <strong className="text-text-secondary">₹{ticket.price}</strong>
-                                </span>
-                              </div>
-                              <div className="flex flex-wrap items-center gap-4">
-                                <div className="space-y-1">
-                                  <label className="text-[10px] text-text-muted uppercase block">Capacity</label>
-                                  <input
-                                    type="number"
-                                    min={1}
-                                    value={override.totalCapacity !== undefined ? override.totalCapacity : ''}
-                                    placeholder={`${ticket.totalCapacity} (default)`}
-                                    onChange={(e) =>
-                                      handleOverrideChange(
-                                        ticket.tier,
-                                        'totalCapacity',
-                                        e.target.value === '' ? undefined : Number(e.target.value)
-                                      )
-                                    }
-                                    className="w-28 px-3 py-1.5 rounded-lg bg-background-card border border-border-subtle text-xs text-text-primary focus:outline-none focus:border-accent-purple"
-                                  />
-                                </div>
-                                <div className="space-y-1 pt-4">
-                                  <label className="flex items-center gap-2 cursor-pointer select-none">
-                                    <input
-                                      type="checkbox"
-                                      checked={override.isActive !== undefined ? override.isActive : true}
-                                      onChange={(e) =>
-                                        handleOverrideChange(ticket.tier, 'isActive', e.target.checked)
-                                      }
-                                      className="w-3.5 h-3.5 accent-accent-purple rounded"
-                                    />
-                                    <span className="text-[11px] text-text-secondary font-medium">Visible</span>
-                                  </label>
-                                </div>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* Options */}
-        <div className="glass rounded-2xl border border-border-subtle p-6 space-y-5">
-          <h2 className="text-white font-semibold">Options</h2>
-          <Field label="Tags (comma-separated)">
-            <input value={tags} onChange={(e) => setTags(e.target.value)}
-              placeholder="EDM, outdoor, live" className={inputCls} />
-          </Field>
-          
-          <div className="flex flex-wrap gap-6">
-            <label className="flex items-center gap-3 cursor-pointer select-none">
-              <input type="checkbox" checked={isFeatured} onChange={(e) => setIsFeatured(e.target.checked)}
-                className="w-4 h-4 accent-accent-purple rounded" />
-              <span className="text-text-secondary text-sm">Feature on homepage</span>
-            </label>
-          </div>
-        </div>
-
-        {/* Registration Requirements */}
-        <div className="glass p-6 rounded-2xl border border-white/5 space-y-4">
-          <h3 className="text-white font-bold text-lg mb-2">Registration Requirements</h3>
-          <div className="space-y-4 text-sm">
-            <label className="flex items-center gap-3 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={requireTerms}
-                onChange={(e) => setRequireTerms(e.target.checked)}
-                className="w-4 h-4 rounded bg-background border-white/20 text-accent-purple focus:ring-accent-purple"
-              />
-              <span className="text-text-secondary">Require Terms & Conditions</span>
-            </label>
-            <label className="flex items-center gap-3 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={requireAgeConfirmation}
-                onChange={(e) => setRequireAgeConfirmation(e.target.checked)}
-                className="w-4 h-4 rounded bg-background border-white/20 text-accent-purple focus:ring-accent-purple"
-              />
-              <span className="text-text-secondary">Require Age Confirmation</span>
-            </label>
-            {requireAgeConfirmation && (
-              <div className="pl-7">
-                <label className="block text-text-secondary mb-2">Age Requirement</label>
-                <select
-                  value={ageRestriction}
-                  onChange={(e) => setAgeRestriction(e.target.value === '' ? '' : Number(e.target.value))}
-                  className="px-4 py-2 bg-background border border-white/10 rounded-xl text-white focus:outline-none focus:border-accent-purple"
-                >
-                  <option value={18}>18</option>
-                  <option value={21}>21</option>
-                  <option value={25}>25</option>
-                  <option value={30}>30</option>
-                  <option value="">Custom</option>
-                </select>
-                {ageRestriction === '' && (
-                  <input
-                    type="number"
-                    min="1"
-                    placeholder="Enter age"
-                    onBlur={(e) => {
-                      if (e.target.value) setAgeRestriction(Number(e.target.value));
-                    }}
-                    className="w-full px-4 py-2 mt-2 bg-background border border-white/10 rounded-xl text-white focus:outline-none focus:border-accent-purple"
-                  />
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Submit */}
-        <div className="flex gap-4 pb-6">
-          <button type="button" onClick={() => router.back()}
-            className="flex-1 py-3 glass border border-border-subtle rounded-xl text-text-secondary font-medium hover:text-white transition-colors">
-            Cancel
-          </button>
-          <button id="event-submit" type="submit" disabled={createMutation.isPending}
-            className="flex-1 py-3 btn-gradient text-white font-bold rounded-xl shadow-glow-sm disabled:opacity-60 transition-all">
-            {createMutation.isPending ? 'Creating...' : 'Create Event'}
-          </button>
-        </div>
+        <EventFormActions
+          isPending={createMutation.isPending}
+          onCancel={() => router.back()}
+        />
       </form>
     </div>
   );
 }
 
-// Shared field wrapper
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div className="space-y-1.5">
-      <label className="text-text-secondary text-sm font-medium block">{label}</label>
-      {children}
-    </div>
-  );
-}
 
-const inputCls =
-  'w-full px-4 py-2.5 rounded-xl bg-background border border-border-subtle text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-purple transition-colors';
