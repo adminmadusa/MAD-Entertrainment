@@ -1,8 +1,8 @@
 'use client';
 
-import React from 'react';
+import React, { Suspense } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/providers/AuthProvider';
 import { useAuthModal } from '@/providers/AuthModalProvider';
 import { CalendarIcon } from '@mad/ui';
@@ -94,16 +94,28 @@ export function BottomNavigationSpacer() {
 
 // ─── Main Component ───────────────────────────────────────────
 
-export function BottomNavigation() {
+function BottomNavigationContent() {
   const pathname = usePathname();
   const { isAuthenticated } = useAuth();
   const { openAuthModal } = useAuthModal();
+  const searchParams = useSearchParams();
 
   if (!shouldShowBottomNav(pathname)) return null;
 
   const isHomeActive = pathname === '/';
   const isEventsActive = pathname?.startsWith('/events');
-  const isProfileActive = pathname?.startsWith('/dashboard');
+
+  // Determine active tab for My Tickets and Profile/Login
+  const tab = searchParams ? searchParams.get('tab') : null;
+  const refParam = searchParams ? searchParams.get('ref') : null;
+
+  const isTicketsActive = isAuthenticated
+    ? pathname === '/dashboard' && (tab === 'tickets' || !tab || !!refParam)
+    : pathname === '/tickets';
+
+  const isProfileActive = isAuthenticated
+    ? pathname === '/dashboard' && tab === 'account'
+    : false;
 
   return (
     <nav
@@ -137,15 +149,30 @@ export function BottomNavigation() {
           <span className="text-[10px] font-medium tracking-tight">Browse Events</span>
         </Link>
 
-        {/* Book Now (CTA - Intentionally never highlighted as active) */}
-        <Link
-          href="/events"
-          className="flex flex-col items-center justify-center flex-1 h-full text-text-secondary hover:text-white transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-inset"
-          aria-label="Book Now"
-        >
-          <TicketIcon size={20} className="mb-1 text-accent-pink" />
-          <span className="text-[10px] font-semibold tracking-tight text-accent-pink">Book Now</span>
-        </Link>
+        {/* My Tickets */}
+        {isAuthenticated ? (
+          <Link
+            href="/dashboard?tab=tickets"
+            className={`flex flex-col items-center justify-center flex-1 h-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-inset ${
+              isTicketsActive ? 'text-accent-purple' : 'text-text-secondary hover:text-white'
+            }`}
+            aria-label="Navigate to My Tickets"
+          >
+            <TicketIcon size={20} className="mb-1" />
+            <span className="text-[10px] font-medium tracking-tight">My Tickets</span>
+          </Link>
+        ) : (
+          <Link
+            href="/tickets"
+            className={`flex flex-col items-center justify-center flex-1 h-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-inset ${
+              isTicketsActive ? 'text-accent-purple' : 'text-text-secondary hover:text-white'
+            }`}
+            aria-label="Navigate to My Tickets"
+          >
+            <TicketIcon size={20} className="mb-1" />
+            <span className="text-[10px] font-medium tracking-tight">My Tickets</span>
+          </Link>
+        )}
 
         {/* Login / Profile */}
         {isAuthenticated ? (
@@ -172,5 +199,13 @@ export function BottomNavigation() {
         )}
       </div>
     </nav>
+  );
+}
+
+export function BottomNavigation() {
+  return (
+    <Suspense fallback={null}>
+      <BottomNavigationContent />
+    </Suspense>
   );
 }

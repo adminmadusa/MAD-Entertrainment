@@ -131,13 +131,8 @@ function HeroSection() {
           <span className="text-gradient block">Extraordinary</span>
         </h1>
 
-        {/* Subheadline */}
-        <p className="text-text-secondary text-lg md:text-xl max-w-2xl mx-auto mb-8 leading-relaxed animate-hero-fade-in animation-delay-300">
-          Book tickets for DJ nights, concerts, comedy shows, festivals, VIP events and unforgettable live experiences — all in one place.
-        </p>
-
         {/* CTAs */}
-        <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8 animate-hero-fade-in animation-delay-350">
+        <div className="flex flex-col sm:flex-row gap-4 justify-center animate-hero-fade-in animation-delay-350">
           <Link
             id="hero-book-now"
             href="/events"
@@ -153,39 +148,6 @@ function HeroSection() {
           >
             My Tickets
           </Link>
-        </div>
-
-        {/* Quick Link Category Pills */}
-        <div className="flex flex-wrap gap-2 justify-center max-w-2xl mx-auto mb-10 px-4 animate-hero-fade-in animation-delay-400" role="navigation" aria-label="Quick category filters">
-          {[
-            { label: 'DJ Nights', value: 'dj_night' },
-            { label: 'Concerts', value: 'concert' },
-            { label: 'Festivals', value: 'festival' },
-            { label: 'Comedy', value: 'comedy' },
-            { label: 'VIP Events', value: 'vip_event' },
-          ].map((cat) => (
-            <Link
-              key={cat.value}
-              href={`/events?category=${cat.value}`}
-              className="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-white/5 border border-white/5 text-text-muted hover:border-accent-purple/40 hover:text-white transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple"
-            >
-              {cat.label}
-            </Link>
-          ))}
-        </div>
-
-        {/* Stats */}
-        <div className="mt-8 grid grid-cols-3 gap-6 max-w-xl mx-auto animate-hero-fade-in animation-delay-450">
-          {[
-            { value: '500+', label: 'Events' },
-            { value: '50K+', label: 'Tickets Sold' },
-            { value: '100+', label: 'Artists' },
-          ].map((stat) => (
-            <div key={stat.label} className="text-center">
-              <div className="text-2xl md:text-3xl font-black text-gradient">{stat.value}</div>
-              <div className="text-text-muted text-sm mt-1">{stat.label}</div>
-            </div>
-          ))}
         </div>
       </div>
 
