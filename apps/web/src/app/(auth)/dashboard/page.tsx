@@ -2,49 +2,14 @@
 
 import { BookingStatus } from '@mad/shared';
 import type { Event } from '@mad/types';
-import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState, Suspense, useMemo } from 'react';
 
-import { BookingCard } from '@/components/booking/shared/BookingCard';
 import { useBookings } from '@/hooks/use-bookings.hook';
 import { useAuth } from '@/providers/AuthProvider';
 import { ProfileCompletionForm } from '@/components/auth/ProfileCompletionForm';
 import dynamic from 'next/dynamic';
-
-const ProfileEditor = dynamic(() => import('@/components/account/ProfileEditor').then(mod => mod.ProfileEditor), {
-  ssr: false,
-});
-
-function BookingCardSkeleton() {
-  return (
-    <div className="glass rounded-3xl border border-border-subtle p-6 space-y-4 animate-pulse">
-      <div className="flex justify-between items-center pb-4 border-b border-white/5">
-        <div className="space-y-2 flex-grow">
-          <div className="w-1/3 h-4 bg-white/10 rounded" />
-          <div className="w-1/4 h-3 bg-white/5 rounded" />
-        </div>
-        <div className="w-16 h-6 bg-white/10 rounded-full" />
-      </div>
-      <div className="w-full h-8 bg-white/5 rounded" />
-    </div>
-  );
-}
-
-const TOP_FAQS = [
-  {
-    q: 'How do I access my tickets?',
-    a: "All active tickets are displayed under the 'My Tickets' tab. Simply tap any event row to expand it, view the entry pass QR codes, or download the PDF.",
-  },
-  {
-    q: 'Can I get a refund for my booking?',
-    a: "Refund eligibility depends on the specific event policy. In general, tickets are non-refundable unless the event is cancelled. Please check the event page or refer to our <a href='/legal/refunds' class='text-accent-purple hover:underline font-semibold'>Refund Policy</a>.",
-  },
-  {
-    q: "What if I didn't receive my confirmation email?",
-    a: "Ensure you are logged in with the same email used during purchase. Expand the event row under 'My Tickets' and click 'Resend Email' to trigger a manual dispatch.",
-  },
-];
+import { DashboardTicketsTab, BookingCardSkeleton, DashboardAccountTab, DashboardSupportTab } from './_components';
 
 type TabType = 'tickets' | 'account' | 'support';
 
@@ -56,7 +21,6 @@ function DashboardContent() {
   // Tab and Expand states
   const [activeTab, setActiveTab] = useState<TabType>('tickets');
   const [expandedBookingId, setExpandedBookingId] = useState<string | null>(null);
-  const [activeTicketSubTab, setActiveTicketSubTab] = useState<'upcoming' | 'past' | 'cancelled'>('upcoming');
 
   // Consume SSOT hook for booking retrieval and actions
   const {
@@ -178,225 +142,11 @@ function DashboardContent() {
     );
   }, [expandedBooking, ticketsReadyMap]);
 
-  const renderTicketsTab = () => {
-    if (isBookingsLoading) {
-      return (
-        <div className="space-y-4">
-          <BookingCardSkeleton />
-          <BookingCardSkeleton />
-        </div>
-      );
-    }
 
-    if (bookingsError) {
-      return (
-        <div className="glass rounded-3xl border border-error/30 bg-error/5 p-8 text-center space-y-4">
-          <div className="text-2xl">⚠️</div>
-          <h4 className="text-red-400 font-bold">Failed to load tickets</h4>
-          <p className="text-text-secondary text-xs max-w-sm mx-auto">
-            We encountered an issue retrieving your ticket records. Please try again.
-          </p>
-          <button
-            onClick={() => refetch()}
-            className="px-5 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-white text-xs font-bold transition-all"
-          >
-            Retry
-          </button>
-        </div>
-      );
-    }
 
-    let subTabBookings = upcomingBookings;
-    if (activeTicketSubTab === 'past') {
-      subTabBookings = pastBookings;
-    } else if (activeTicketSubTab === 'cancelled') {
-      subTabBookings = cancelledBookings;
-    }
 
-    let emptyMessage = "You don't have any cancelled or refunded bookings.";
-    if (activeTicketSubTab === 'upcoming') {
-      emptyMessage = "You don't have any upcoming event bookings.";
-    } else if (activeTicketSubTab === 'past') {
-      emptyMessage = "You don't have any past event history.";
-    }
 
-    const renderSubTabs = () => {
-      return (
-        <div
-          className="glass p-1.5 rounded-2xl border border-white/5 flex gap-1 overflow-x-auto whitespace-nowrap scrollbar-none w-full mb-6"
-          role="tablist"
-          aria-label="Ticket categories"
-        >
-          <button
-            type="button"
-            role="tab"
-            id="subtab-upcoming"
-            aria-selected={activeTicketSubTab === 'upcoming'}
-            aria-controls="subtab-panel-upcoming"
-            onClick={() => setActiveTicketSubTab('upcoming')}
-            className={`flex-shrink-0 px-5 py-2.5 text-xs font-extrabold rounded-xl transition-all duration-300 min-h-[44px] flex items-center justify-center whitespace-nowrap ${
-              activeTicketSubTab === 'upcoming'
-                ? 'bg-accent-purple text-white shadow-md'
-                : 'text-text-secondary hover:text-white hover:bg-white/5'
-            }`}
-          >
-            Upcoming ({upcomingBookings.length})
-          </button>
-          <button
-            type="button"
-            role="tab"
-            id="subtab-past"
-            aria-selected={activeTicketSubTab === 'past'}
-            aria-controls="subtab-panel-past"
-            onClick={() => setActiveTicketSubTab('past')}
-            className={`flex-shrink-0 px-5 py-2.5 text-xs font-extrabold rounded-xl transition-all duration-300 min-h-[44px] flex items-center justify-center whitespace-nowrap ${
-              activeTicketSubTab === 'past'
-                ? 'bg-accent-purple text-white shadow-md'
-                : 'text-text-secondary hover:text-white hover:bg-white/5'
-            }`}
-          >
-            Past Events ({pastBookings.length})
-          </button>
-          <button
-            type="button"
-            role="tab"
-            id="subtab-cancelled"
-            aria-selected={activeTicketSubTab === 'cancelled'}
-            aria-controls="subtab-panel-cancelled"
-            onClick={() => setActiveTicketSubTab('cancelled')}
-            className={`flex-shrink-0 px-5 py-2.5 text-xs font-extrabold rounded-xl transition-all duration-300 min-h-[44px] flex items-center justify-center whitespace-nowrap ${
-              activeTicketSubTab === 'cancelled'
-                ? 'bg-accent-purple text-white shadow-md'
-                : 'text-text-secondary hover:text-white hover:bg-white/5'
-            }`}
-          >
-            Cancelled & Refunded ({cancelledBookings.length})
-          </button>
-        </div>
-      );
-    };
 
-    if (bookings.length === 0) {
-      return (
-        <div className="glass rounded-3xl border border-border-subtle p-12 text-center space-y-4">
-          <div className="text-4xl">🎟️</div>
-          <h4 className="text-white font-bold text-base">No tickets found</h4>
-          <p className="text-text-secondary text-xs max-w-sm mx-auto leading-relaxed">
-            You don't have any bookings yet. Once you book tickets for events, they will appear here automatically.
-          </p>
-          <div className="pt-2">
-            <Link
-              href="/events"
-              className="px-6 py-2.5 bg-accent-purple hover:bg-accent-purple-light text-white text-xs font-bold rounded-xl transition-all shadow-md inline-block"
-            >
-              Browse Events
-            </Link>
-          </div>
-        </div>
-      );
-    }
-
-    if (subTabBookings.length === 0) {
-      return (
-        <div className="space-y-6">
-          {renderSubTabs()}
-          <div className="glass rounded-3xl border border-border-subtle p-12 text-center space-y-4">
-            <div className="text-4xl">🎟️</div>
-            <h4 className="text-white font-bold text-base capitalize">No {activeTicketSubTab} bookings</h4>
-            <p className="text-text-secondary text-xs max-w-sm mx-auto leading-relaxed">
-              {emptyMessage}
-            </p>
-            {activeTicketSubTab === 'upcoming' && (
-              <div className="pt-2">
-                <Link
-                  href="/events"
-                  className="px-6 py-2.5 bg-accent-purple hover:bg-accent-purple-light text-white text-xs font-bold rounded-xl transition-all shadow-md inline-block"
-                >
-                  Browse Events
-                </Link>
-              </div>
-            )}
-          </div>
-        </div>
-      );
-    }
-
-    return (
-      <div className="space-y-6">
-        {renderSubTabs()}
-        <div className="space-y-4">
-          {subTabBookings.map((b) => (
-            <BookingCard
-              key={b._id}
-              booking={b}
-              tickets={tickets.filter(
-                (t) => t.bookingId === b._id || t.bookingId?.toString() === b._id?.toString()
-              )}
-              ticketsReady={ticketsReadyMap[b._id?.toString() ?? ''] ?? false}
-              isPast={activeTicketSubTab === 'past'}
-              collapsible={true}
-              isExpanded={expandedBookingId === b.bookingId}
-              onToggleExpand={() => setExpandedBookingId(expandedBookingId === b.bookingId ? null : b.bookingId)}
-              downloading={downloadingId === b.bookingId}
-              resending={resendingId === b.bookingId}
-              resendCooldown={resendCooldowns[b.bookingId] || 0}
-              onDownload={() => handleDownloadPDF(b.bookingId)}
-              onResend={() => handleResendTickets(b.bookingId)}
-            />
-          ))}
-        </div>
-      </div>
-    );
-  };
-
-  const renderAccountTab = () => {
-    return (
-      <div className="glass rounded-3xl border border-border-subtle p-6 sm:p-8 space-y-6 shadow-xl relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-accent-purple/5 blur-[100px] pointer-events-none" />
-        <ProfileEditor />
-      </div>
-    );
-  };
-
-  const renderSupportTab = () => {
-    return (
-      <div className="space-y-6">
-        <div className="glass rounded-3xl border border-border-subtle p-6 sm:p-8 space-y-4 shadow-xl relative overflow-hidden">
-          <h2 className="text-white font-bold text-xl">Need Assistance?</h2>
-          <p className="text-text-secondary text-sm max-w-lg">
-            Have questions about your booking, payment queries, or event logistics? Check out our quick answers below or contact our team directly.
-          </p>
-          <div className="pt-2 flex flex-wrap gap-3">
-            <Link
-              href="/contact"
-              className="px-6 py-2.5 bg-accent-purple hover:bg-accent-purple-light text-white text-xs font-bold rounded-xl transition-all shadow-md inline-block"
-            >
-              Contact Support
-            </Link>
-            <Link
-              href="/support"
-              className="px-6 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 text-white text-xs font-bold rounded-xl transition-all inline-block"
-            >
-              Support Hub
-            </Link>
-          </div>
-        </div>
-
-        <div className="space-y-3">
-          <h3 className="text-white font-bold text-sm uppercase tracking-wider opacity-60 pl-1">Frequently Asked Questions</h3>
-          <div className="space-y-4">
-            {TOP_FAQS.map((faq, idx) => (
-              <div key={idx} className="glass p-5 rounded-2xl border border-white/5 space-y-2">
-                <h4 className="text-white font-bold text-sm sm:text-base">{faq.q}</h4>
-                {/* eslint-disable-next-line react/no-danger */}
-                <p className="text-text-secondary text-xs sm:text-sm leading-relaxed" dangerouslySetInnerHTML={{ __html: faq.a }} />
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  };
 
   if (isAuthenticated && onboardingRequired) {
     return (
@@ -515,17 +265,34 @@ function DashboardContent() {
             <div className="space-y-6">
               {activeTab === 'tickets' && (
                 <div role="tabpanel" id="subtab-panel-tickets" aria-labelledby="subtab-tickets">
-                  {renderTicketsTab()}
+                  <DashboardTicketsTab
+                    bookings={bookings}
+                    tickets={tickets}
+                    ticketsReadyMap={ticketsReadyMap}
+                    isBookingsLoading={isBookingsLoading}
+                    bookingsError={bookingsError}
+                    expandedBookingId={expandedBookingId}
+                    onToggleExpand={(id) => setExpandedBookingId(expandedBookingId === id ? null : id)}
+                    downloadingId={downloadingId}
+                    resendingId={resendingId}
+                    resendCooldowns={resendCooldowns}
+                    refetch={refetch}
+                    onDownload={handleDownloadPDF}
+                    onResend={handleResendTickets}
+                    upcomingBookings={upcomingBookings}
+                    pastBookings={pastBookings}
+                    cancelledBookings={cancelledBookings}
+                  />
                 </div>
               )}
               {activeTab === 'account' && (
                 <div role="tabpanel" id="subtab-panel-account" aria-labelledby="subtab-account">
-                  {renderAccountTab()}
+                  <DashboardAccountTab />
                 </div>
               )}
               {activeTab === 'support' && (
                 <div role="tabpanel" id="subtab-panel-support" aria-labelledby="subtab-support">
-                  {renderSupportTab()}
+                  <DashboardSupportTab />
                 </div>
               )}
             </div>
