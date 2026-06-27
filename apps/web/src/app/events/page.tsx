@@ -43,11 +43,7 @@ export default function PublicEventsPage() {
         {/* Client-side interactive list wrapped in Suspense for useSearchParams */}
         <Suspense
           fallback={
-            <div className="space-y-8">
-              {/* Skeleton filter bar */}
-              <div className="h-16 glass border border-border-subtle rounded-2xl animate-pulse" />
-              <EventGridSkeleton count={8} />
-            </div>
+            <EventGridSkeleton count={8} />
           }
         >
           <EventsList />

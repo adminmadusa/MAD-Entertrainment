@@ -1,79 +1,29 @@
 'use client';
 
 import { EventCategory, EVENT_CATEGORY_LABELS } from '@mad/shared';
-import { EventGridSkeleton, CalendarIcon, SearchIcon } from '@mad/ui';
+import { EventGridSkeleton, CalendarIcon } from '@mad/ui';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useSearchParams, useRouter } from 'next/navigation';
-import { useState, useRef, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { useState } from 'react';
 
 import { publicGetEvents } from '@/lib/api/public.service';
 import { formatEventDate } from '@/utils/date';
 
 
-const CATEGORIES = [
-  { label: 'All', value: '' },
-  { label: 'MAD Events', value: EventCategory.MAD_EVENT },
-  { label: 'DJ Nights', value: EventCategory.DJ_NIGHT },
-  { label: 'Concerts', value: EventCategory.CONCERT },
-  { label: 'Festivals', value: EventCategory.FESTIVAL },
-  { label: 'Comedy', value: EventCategory.COMEDY },
-  { label: 'VIP Events', value: EventCategory.VIP_EVENT },
-  { label: 'Theatre', value: EventCategory.THEATRE },
-  { label: 'Cinema', value: EventCategory.CINEMA },
-];
-
-
 export function EventsList() {
   const searchParams = useSearchParams();
-  const router = useRouter();
 
   const urlCategory = searchParams.get('category') ?? '';
-  const [search, setSearch] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [page, setPage] = useState(1);
 
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedSearch(search);
-      setPage(1);
-    }, 400);
-
-    return () => clearTimeout(handler);
-  }, [search]);
-
-  const categoryListRef = useRef<HTMLDivElement>(null);
-
-  const handleTabKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
-    const buttons = categoryListRef.current?.querySelectorAll<HTMLButtonElement>('button[role="tab"]');
-    if (!buttons) return;
-
-    const buttonsArray = Array.from(buttons);
-    const currentIndex = buttonsArray.findIndex((btn) => document.activeElement === btn);
-    if (currentIndex === -1) return;
-
-    let nextIndex: number | null = null;
-    if (e.key === 'ArrowRight') {
-      nextIndex = (currentIndex + 1) % buttonsArray.length;
-    } else if (e.key === 'ArrowLeft') {
-      nextIndex = (currentIndex - 1 + buttonsArray.length) % buttonsArray.length;
-    }
-
-    if (nextIndex !== null) {
-      buttonsArray[nextIndex].focus();
-      buttonsArray[nextIndex].click();
-      e.preventDefault();
-    }
-  };
-
   const { data, isLoading } = useQuery({
-    queryKey: ['public-events', urlCategory, debouncedSearch, page],
+    queryKey: ['public-events', urlCategory, page],
     queryFn: () =>
       publicGetEvents({
         category: urlCategory || undefined,
-        search: debouncedSearch.trim() || undefined,
         page,
         limit: 12,
       }),
@@ -82,69 +32,8 @@ export function EventsList() {
   const events = data?.data ?? [];
   const pagination = data?.pagination;
 
-  const handleCategoryChange = (val: string) => {
-    const params = new URLSearchParams(searchParams.toString());
-    if (val) {
-      params.set('category', val);
-    } else {
-      params.delete('category');
-    }
-    params.delete('page');
-    setPage(1);
-    router.push(`/events?${params.toString()}`);
-  };
-
   return (
     <div className="pb-16 space-y-8">
-      {/* Filters */}
-      <div className="flex flex-col lg:flex-row gap-4 items-center justify-between glass border border-border-subtle p-4 rounded-2xl">
-        {/* Categories Scrollable list */}
-        <div
-          ref={categoryListRef}
-          className="flex gap-2 overflow-x-auto w-full scrollbar-hide py-1.5 snap-x snap-mandatory scroll-smooth touch-pan-x focus-visible:outline-none rounded-xl relative"
-          role="tablist"
-          aria-label="Event categories"
-          onKeyDown={handleTabKeyDown}
-        >
-          {CATEGORIES.map((cat, idx) => {
-            const active = urlCategory === cat.value;
-            const tabFlowIndex = active || (urlCategory === '' && idx === 0) ? 0 : -1;
-            return (
-              <button
-                key={cat.label}
-                onClick={() => handleCategoryChange(cat.value)}
-                role="tab"
-                aria-selected={active}
-                tabIndex={tabFlowIndex}
-                className={`px-4 py-2 text-xs rounded-xl font-semibold border whitespace-nowrap transition-all snap-center focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:outline-none ${
-                  active
-                    ? 'bg-accent-purple border-accent-purple text-white shadow-glow-sm'
-                    : 'bg-white/2 border-white/5 text-text-muted hover:border-white/10 hover:text-text-secondary'
-                }`}
-              >
-                {cat.label}
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Search Input */}
-        <div className="w-full lg:w-80 relative flex-shrink-0">
-          <input
-            type="text"
-            value={search}
-            aria-label="Search events"
-            onChange={(e) => {
-              setSearch(e.target.value);
-            }}
-            placeholder="Search events..."
-            className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-background border border-border-subtle text-base lg:text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-purple focus-visible:ring-2 focus-visible:ring-accent-purple transition-colors"
-          />
-          <div className="absolute left-3.5 top-3.5 text-text-muted pointer-events-none" aria-hidden="true">
-            <SearchIcon className="w-4 h-4" />
-          </div>
-        </div>
-      </div>
 
       {/* Event Grid */}
       {(() => {

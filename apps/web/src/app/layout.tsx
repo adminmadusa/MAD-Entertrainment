@@ -4,6 +4,7 @@ import { Outfit } from 'next/font/google';
 import { ChunkRecoveryClear } from '@/components/common/ChunkRecoveryClear';
 import { Footer } from '@/components/layout/Footer';
 import { Navbar } from '@/components/layout/Navbar';
+import { BottomNavigation, BottomNavigationSpacer } from '@/components/layout/BottomNavigation';
 import { Providers } from '@/providers';
 import '@/styles/globals.css';
 
@@ -163,7 +164,9 @@ export default function RootLayout({ children }: RootLayoutProps) {
           <Navbar />
           <main id="main-content" className="min-h-screen relative">
             {children}
+            <BottomNavigationSpacer />
           </main>
+          <BottomNavigation />
           <Footer />
         </Providers>
       </body>
