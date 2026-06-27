@@ -31,7 +31,6 @@ export function Navbar() {
   const dynamicLinks = useMemo(() => {
     return isAuthenticated
       ? [
-          { label: 'Home', href: '/' },
           { label: 'Events', href: '/events' },
           { label: 'DJs', href: '/dj-operators' },
           { label: 'Help Center', href: '/support' },
@@ -41,7 +40,7 @@ export function Navbar() {
           { label: 'Events', href: '/events' },
           { label: 'DJs', href: '/dj-operators' },
           { label: 'Help Center', href: '/support' },
-          { label: 'My Tickets', href: '/tickets' },
+          { label: 'Find My Tickets', href: '/tickets' },
         ];
   }, [isAuthenticated]);
 
@@ -225,32 +224,7 @@ export function Navbar() {
         />
       )}
 
-      {/* Mobile Floating Sticky CTA on Homepage */}
-      {pathname === '/' && (
-        <div
-          className={[
-            'fixed bottom-[calc(1.5rem+env(safe-area-inset-bottom))] left-1/2 -translate-x-1/2 z-40 md:hidden flex justify-center w-auto pointer-events-none transition-all duration-300 ease-in-out',
-            (!mobileOpen && !footerIntersecting)
-              ? 'opacity-100 scale-100'
-              : 'opacity-0 scale-95',
-          ].join(' ')}
-        >
-          <Link
-            href="/events"
-            tabIndex={(!mobileOpen && !footerIntersecting) ? 0 : -1}
-            aria-hidden={!(!mobileOpen && !footerIntersecting)}
-            className={[
-              'py-3 px-6 btn-gradient text-white rounded-full font-bold shadow-glow text-sm inline-flex items-center gap-2 active:scale-95 transition-transform border border-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-2 focus-visible:ring-offset-background',
-              (!mobileOpen && !footerIntersecting)
-                ? 'pointer-events-auto'
-                : 'pointer-events-none',
-            ].join(' ')}
-          >
-            Book Now
-            <ArrowRight size={14} />
-          </Link>
-        </div>
-      )}
+
     </header>
   );
 }
