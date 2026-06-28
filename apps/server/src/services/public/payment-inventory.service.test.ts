@@ -18,6 +18,7 @@ import { Event } from '../../models/event.schema';
 import { ReservationService } from '../reservation.service';
 import { SeatLayout } from '../../models/seat-layout.schema';
 import { Reservation } from '../../models/reservation.schema';
+import { emitToEvent, emitToBooking, emitToAdmin } from '../../config/socket';
 
 vi.mock('../../models/booking.schema', () => ({
   Booking: {
@@ -287,6 +288,26 @@ describe('PaymentInventoryService', () => {
       );
       expect(ReservationService.releaseCapacityForTerminalReservations).toHaveBeenCalledWith(['res_1']);
       expect(SeatLayout.updateOne).toHaveBeenCalled();
+
+      // Assert socket emissions
+      expect(emitToEvent).toHaveBeenCalledWith(
+        mockBooking.eventId.toString(),
+        'seat:unlocked',
+        { seatIds: ['seat_1'] },
+        mockBooking.bookingId
+      );
+      expect(emitToBooking).toHaveBeenCalledWith(
+        mockBooking._id.toString(),
+        'booking:updated',
+        { bookingId: mockBooking._id.toString(), status: BookingStatus.FAILED, bookingVersion: 2 },
+        mockBooking.bookingId
+      );
+      expect(emitToAdmin).toHaveBeenCalledWith(
+        'bookings',
+        'booking:updated',
+        { bookingId: mockBooking._id.toString(), status: BookingStatus.FAILED, bookingVersion: 2 },
+        mockBooking.bookingId
+      );
     });
   });
 });
