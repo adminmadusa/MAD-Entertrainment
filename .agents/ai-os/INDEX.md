@@ -66,18 +66,26 @@ This index lists all currently active and planned documents within the AI Operat
 - `architecture/diagrams/` **[PLANNED]**
 
 ## Standards Layer
-- `standards/README.md` **[PLANNED]**
-- `standards/typescript/` **[PLANNED]** — TS guidelines
-- `standards/react/` **[PLANNED]** — React components & state
-- `standards/nextjs/` **[PLANNED]** — RSC & routing
-- `standards/express/` **[PLANNED]** — middleware & handlers
-- `standards/database/` **[PLANNED]** — schemas, queries, indexes
-- `standards/testing/` **[PLANNED]** — test structure,Naming
-- `standards/performance/` **[PLANNED]** — budgets
-- `standards/security/` **[PLANNED]** — auth patterns
-- `standards/accessibility/` **[PLANNED]** — accessibility rules
-- `standards/naming/` **[PLANNED]** — folder/file conventions
-- `standards/api/` **[PLANNED]** — endpoint schemas
+- [standards/README.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/standards/README.md)
+- [standards/TYPESCRIPT.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/standards/TYPESCRIPT.md)
+- [standards/REACT.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/standards/REACT.md)
+- [standards/NEXTJS.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/standards/NEXTJS.md)
+- [standards/NODE_EXPRESS.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/standards/NODE_EXPRESS.md)
+- [standards/API_DESIGN.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/standards/API_DESIGN.md)
+- [standards/DATABASE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/standards/DATABASE.md)
+- [standards/VALIDATION.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/standards/VALIDATION.md)
+- [standards/ERROR_HANDLING.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/standards/ERROR_HANDLING.md)
+- [standards/LOGGING.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/standards/LOGGING.md)
+- [standards/TESTING.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/standards/TESTING.md)
+- [standards/SECURITY.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/standards/SECURITY.md)
+- [standards/PERFORMANCE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/standards/PERFORMANCE.md)
+- [standards/ACCESSIBILITY.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/standards/ACCESSIBILITY.md)
+- [standards/DEPENDENCY_MANAGEMENT.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/standards/DEPENDENCY_MANAGEMENT.md)
+- [standards/NAMING_CONVENTIONS.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/standards/NAMING_CONVENTIONS.md)
+- [standards/DOCUMENTATION.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/standards/DOCUMENTATION.md)
+- [standards/GIT_STANDARDS.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/standards/GIT_STANDARDS.md)
+- [standards/CI_CD.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/standards/CI_CD.md)
+- [standards/CONFIGURATION.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/standards/CONFIGURATION.md)
 
 ### Patterns
 - `standards/patterns/README.md` **[PLANNED]**
