@@ -55,3 +55,6 @@ build.log
 # Local scratchpad scripts
 scratch/
 audit_data.json
+
+# AI Operating System runtime artifacts
+.agents/ai-os/runtime/
