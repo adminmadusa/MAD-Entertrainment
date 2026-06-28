@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useMemo, useCallback, memo } from 'react';
+import { useState, useRef, useCallback, memo } from 'react';
 import { EventCategory, EVENT_CATEGORY_LABELS } from '@mad/shared';
 import { Event } from '@mad/types';
 import { motion, AnimatePresence, useReducedMotion, PanInfo } from 'framer-motion';
@@ -13,31 +13,14 @@ import { useWindowWidth, useMounted } from '@/hooks/use-window.hook';
 import { getOptimizedImageUrl } from '@/utils/image';
 import { formatEventDate } from '@/utils/date';
 
-const categoriesList = [
-  { label: 'All', value: 'all' },
-  { label: 'DJ Night', value: EventCategory.DJ_NIGHT },
-  { label: 'Concert', value: EventCategory.CONCERT },
-  { label: 'Festival', value: EventCategory.FESTIVAL },
-  { label: 'Comedy', value: EventCategory.COMEDY },
-  { label: 'Theatre', value: EventCategory.THEATRE },
-  { label: 'Live Show', value: EventCategory.LIVE_SHOW },
-  { label: 'Cinema', value: EventCategory.CINEMA },
-];
-
 export const FeaturedEventsSection = memo(function FeaturedEventsSection({ initialEvents = [] }: { initialEvents: Event[] }) {
   const [activeIndex, setActiveIndex] = useState(0);
-  const [activeCategory, setActiveCategory] = useState('all');
   const containerRef = useRef<HTMLDivElement>(null);
   
   const prefersReducedMotion = useReducedMotion();
   const mounted = useMounted();
 
-  // Filter events based on selected category
-  const events = useMemo(() => {
-    return activeCategory === 'all'
-      ? initialEvents
-      : initialEvents.filter((e) => e.category === activeCategory);
-  }, [initialEvents, activeCategory]);
+  const events = initialEvents;
 
 
 
@@ -84,44 +67,12 @@ export const FeaturedEventsSection = memo(function FeaturedEventsSection({ initi
 
   return (
     <section 
-      className="py-16 overflow-hidden" 
+      className="pt-8 pb-16 overflow-hidden" 
       aria-label="Featured events"
       role="region"
     >
       <div className="container-mad">
-        {/* Category Filter Pills */}
-        <Reveal>
-          <div className="w-full flex justify-center mb-10 relative" role="tablist" aria-label="Event Categories">
-            {/* Left and Right gradient edge masks to indicate scrollability on mobile */}
-            <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-background to-transparent pointer-events-none z-10 md:hidden" />
-            <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-background to-transparent pointer-events-none z-10 md:hidden" />
-            
-            <div className="flex gap-3 overflow-x-auto scrollbar-hide py-2 px-4 max-w-full -mx-4 sm:mx-0 -webkit-overflow-scrolling-touch md:flex-wrap md:justify-center relative">
-              {categoriesList.map((cat) => {
-                const isActive = activeCategory === cat.value;
-                return (
-                  <button
-                    key={cat.value}
-                    onClick={() => {
-                      setActiveCategory(cat.value);
-                      setActiveIndex(0);
-                    }}
-                    className={`flex-shrink-0 min-h-[44px] min-w-[44px] px-5 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
-                      isActive
-                        ? 'bg-gradient-to-r from-primary to-accent text-white shadow-glow'
-                        : 'bg-bg-card/60 backdrop-blur-md text-text-secondary hover:text-white border border-white/5 hover:border-accent-purple/40 hover:bg-bg-card/90'
-                    }`}
-                    role="tab"
-                    aria-selected={isActive}
-                    tabIndex={0}
-                  >
-                    {cat.label}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        </Reveal>
+
 
         <Reveal>
           <div className="flex items-end justify-between mb-10">

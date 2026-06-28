@@ -5,15 +5,11 @@ import { Suspense } from 'react';
 import dynamic from 'next/dynamic';
 
 import { Reveal, StaggerContainer, StaggerItem } from '@/components/common/PageTransition';
-import { DJOperatorsSection } from '@/components/ui/DjOperatorsSection';
 const FeaturedEventsSection = dynamic(() => import('@/components/ui/FeaturedEventsSection').then(mod => mod.FeaturedEventsSection), {
   ssr: true,
 });
-import {
-  FeaturedEventsSkeleton,
-  DJOperatorsSkeleton,
-} from '@/components/ui/HomeSkeletons';
-import { serverGetFeaturedEvents, serverGetDJs } from '@/lib/api/server.service';
+import { FeaturedEventsSkeleton } from '@/components/ui/HomeSkeletons';
+import { serverGetFeaturedEvents } from '@/lib/api/server.service';
 
 export const metadata: Metadata = {
   title: 'MAD Entertrainment — Book Shows, Events & DJ Nights',
@@ -45,11 +41,6 @@ async function FeaturedEventsServerSection() {
   return <FeaturedEventsSection initialEvents={events} />;
 }
 
-async function DJOperatorsServerSection() {
-  const djs = await serverGetDJs();
-  return <DJOperatorsSection initialDJs={djs} />;
-}
-
 
 
 // ─── Main HomePage Component (Instant TTFB / Streaming) ───────────
@@ -79,11 +70,6 @@ export default function HomePage() {
         <FeaturedEventsServerSection />
       </Suspense>
 
-      {/* ─── DJ Operators (Streamed) ───────────────────────── */}
-      <Suspense fallback={<DJOperatorsSkeleton />}>
-        <DJOperatorsServerSection />
-      </Suspense>
-
 
 
       {/* ─── How It Works ─────────────────────────────────── */}
@@ -101,7 +87,7 @@ function HeroSection() {
   return (
     <section
       id="hero"
-      className="relative min-h-[85vh] min-h-[85svh] md:min-h-[88vh] md:min-h-[88dvh] lg:min-h-[90vh] lg:min-h-[90dvh] flex items-center justify-center overflow-hidden"
+      className="relative min-h-[70vh] min-h-[70svh] md:min-h-[75vh] md:min-h-[75dvh] lg:min-h-[80vh] lg:min-h-[80dvh] flex items-center justify-center overflow-hidden"
       aria-label="Hero section"
     >
       {/* Animated Background */}
@@ -123,7 +109,7 @@ function HeroSection() {
       />
 
       {/* Content */}
-      <div className="container-mad relative z-10 text-center pt-24 pb-12">
+      <div className="container-mad relative z-10 text-center pt-28 pb-16">
 
         {/* Headline */}
         <h1 className="text-display-xl font-black text-white mb-6 leading-[1.02] text-glow-neon animate-hero-fade-in animation-delay-200">
