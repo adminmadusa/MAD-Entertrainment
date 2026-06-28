@@ -145,10 +145,13 @@ This index lists all currently active and planned documents within the AI Operat
 - [prompts/governance/pre-implementation-audit/PROMPT.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/prompts/governance/pre-implementation-audit/PROMPT.md)
 
 ## Templates Layer
-- `templates/README.md` **[PLANNED]**
-- `templates/md/` **[PLANNED]**
-- `templates/ts/` **[PLANNED]**
-- `templates/config/` **[PLANNED]**
+- [templates/README.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/templates/README.md)
+- [templates/REGISTRY.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/templates/REGISTRY.md)
+- [templates/audit/repository-audit-report/TEMPLATE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/templates/audit/repository-audit-report/TEMPLATE.md)
+- [templates/planning/implementation-plan/TEMPLATE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/templates/planning/implementation-plan/TEMPLATE.md)
+- [templates/implementation/bug-fix-report/TEMPLATE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/templates/implementation/bug-fix-report/TEMPLATE.md)
+- [templates/governance/pre-implementation-report/TEMPLATE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/templates/governance/pre-implementation-report/TEMPLATE.md)
+- [templates/documentation/adr/TEMPLATE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/templates/documentation/adr/TEMPLATE.md)
 
 ## Validation Layer
 - [validation/README.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/validation/README.md)
