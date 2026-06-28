@@ -176,9 +176,17 @@ This index lists all currently active and planned documents within the AI Operat
 - [validation/validators/GOVERNANCE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/validation/validators/GOVERNANCE.md)
 
 ## Knowledge Layer (Non-Authoritative)
-- `knowledge/README.md` **[PLANNED]**
-- `knowledge/index.md` **[PLANNED]**
-- `knowledge/ki-*.md` **[PLANNED]** — Knowledge Items (KIs)
+- [knowledge/README.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/knowledge/README.md)
+- [knowledge/REGISTRY.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/knowledge/REGISTRY.md)
+- [knowledge/frameworks/react.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/knowledge/frameworks/react.md)
+- [knowledge/frameworks/nextjs.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/knowledge/frameworks/nextjs.md)
+- [knowledge/libraries/mongoose.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/knowledge/libraries/mongoose.md)
+- [knowledge/infrastructure/vercel.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/knowledge/infrastructure/vercel.md)
+- [knowledge/vendors/stripe.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/knowledge/vendors/stripe.md)
+- [knowledge/troubleshooting/connection-issues.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/knowledge/troubleshooting/connection-issues.md)
+- [knowledge/migration-guides/next-upgrade.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/knowledge/migration-guides/next-upgrade.md)
+- [knowledge/best-practices/clean-code.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/knowledge/best-practices/clean-code.md)
+- [knowledge/playbooks/deployment-recovery.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/knowledge/playbooks/deployment-recovery.md)
 
 ## Runtime Layer (Gitignored)
 - `runtime/indexes/` **[PLANNED]** — vector embeddings directory
