@@ -33,12 +33,10 @@ import { eventCancellationHtml } from '../../lib/email';
 /**
  * Maps a Mongoose Booking document onto a safe Normalized AdminBooking DTO representation with dynamic attendance.
  */
-const mapBookingToAdminDTO = async (booking: any, preloadedTickets?: any[]) => {
+const mapBookingToAdminDTO = (booking: any, ticketsList: any[], auditLogs: any[]) => {
   const isSeatBased = booking.tickets?.[0]?.seats?.length > 0;
   const mode = booking.eventId?.bookingMode || (isSeatBased ? 'seat_based' : 'general_admission');
 
-  // Query actual individual ticket barcodes checked in
-  const ticketsList = preloadedTickets || await Ticket.find({ bookingId: booking._id }).lean();
   const totalTickets = ticketsList.reduce((sum: number, t: any) => sum + (t.admits || 1), 0);
   const ticketsScanned = ticketsList
     .filter((t: any) => t.scannedAt !== undefined && t.scannedAt !== null)
@@ -62,15 +60,6 @@ const mapBookingToAdminDTO = async (booking: any, preloadedTickets?: any[]) => {
     keepUpdated: booking.keepUpdated ?? false,
     sendBestEvents: booking.sendBestEvents ?? false,
   };
-
-  // Fetch associated AuditLog documents matching the booking
-  const auditLogs = await AuditLogModel.find({
-    $or: [
-      { 'metadata.bookingId': booking._id.toString() },
-      { 'metadata.bookingReference': booking.bookingId }
-    ],
-    action: { $in: ['BOOKING_EMAIL_CORRECTED', 'BOOKING_TICKETS_RESENT'] }
-  }).sort({ createdAt: -1 }).lean();
 
   return {
     _id: booking._id.toString(),
@@ -123,6 +112,36 @@ const mapBookingToAdminDTO = async (booking: any, preloadedTickets?: any[]) => {
 };
 
 /**
+ * Merges logs matching by bookingId and bookingReference, deduplicates by _id,
+ * and preserves descending createdAt chronological sorting order.
+ */
+const getAuditLogsForBooking = (
+  bookingId: string,
+  bookingRef: string,
+  logsByBookingId: Record<string, any[]>
+): any[] => {
+  const logs = [
+    ...(logsByBookingId[bookingId] || []),
+    ...(logsByBookingId[bookingRef] || [])
+  ];
+
+  // Deduplicate logs by immutable _id identifier
+  const uniqueMap = new Map<string, any>();
+  for (const log of logs) {
+    if (log && log._id) {
+      uniqueMap.set(log._id.toString(), log);
+    }
+  }
+
+  const uniqueLogs = Array.from(uniqueMap.values());
+
+  // Sort descending by createdAt
+  uniqueLogs.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+  return uniqueLogs;
+};
+
+/**
  * Fetch paginated list of bookings with optional status and fuzzy reference/email filtering.
  */
 export const getBookings = async (
@@ -160,6 +179,7 @@ export const getBookings = async (
     .limit(limit);
 
   const bookingIds = bookings.map((b) => b._id);
+  const bookingReferences = bookings.map((b) => b.bookingId);
   const allTickets = await Ticket.find({ bookingId: { $in: bookingIds } }).lean();
   const ticketsByBookingId = allTickets.reduce((acc: Record<string, any[]>, ticket: any) => {
     const bId = ticket.bookingId.toString();
@@ -168,9 +188,35 @@ export const getBookings = async (
     return acc;
   }, {});
 
-  const mappedBookings = await Promise.all(
-    bookings.map((b) => mapBookingToAdminDTO(b, ticketsByBookingId[b._id.toString()] || []))
-  );
+  // Bulk query AuditLog documents with .lean() to match original retrieval semantics
+  const allLogs = await AuditLogModel.find({
+    $or: [
+      { 'metadata.bookingId': { $in: bookingIds.map(id => id.toString()) } },
+      { 'metadata.bookingReference': { $in: bookingReferences } }
+    ],
+    action: { $in: ['BOOKING_EMAIL_CORRECTED', 'BOOKING_TICKETS_RESENT'] }
+  }).sort({ createdAt: -1 }).lean();
+
+  const logsByBookingId = allLogs.reduce((acc: Record<string, any[]>, log: any) => {
+    const bId = log.metadata?.bookingId?.toString();
+    const bRef = log.metadata?.bookingReference;
+    if (bId) {
+      if (!acc[bId]) acc[bId] = [];
+      acc[bId].push(log);
+    }
+    if (bRef) {
+      if (!acc[bRef]) acc[bRef] = [];
+      acc[bRef].push(log);
+    }
+    return acc;
+  }, {});
+
+  // Map synchronously since mapBookingToAdminDTO is pure
+  const mappedBookings = bookings.map((b) => {
+    const tickets = ticketsByBookingId[b._id.toString()] || [];
+    const uniqueLogs = getAuditLogsForBooking(b._id.toString(), b.bookingId, logsByBookingId);
+    return mapBookingToAdminDTO(b, tickets, uniqueLogs);
+  });
 
   return {
     data: mappedBookings,
@@ -192,7 +238,19 @@ export const getBookingById = async (id: string) => {
   if (!booking) {
     return null;
   }
-  return await mapBookingToAdminDTO(booking);
+  
+  // Load tickets and audit logs as pre-requisite for the pure mapper
+  const tickets = await Ticket.find({ bookingId: booking._id }).lean();
+  
+  const auditLogs = await AuditLogModel.find({
+    $or: [
+      { 'metadata.bookingId': booking._id.toString() },
+      { 'metadata.bookingReference': booking.bookingId }
+    ],
+    action: { $in: ['BOOKING_EMAIL_CORRECTED', 'BOOKING_TICKETS_RESENT'] }
+  }).sort({ createdAt: -1 }).lean();
+  
+  return mapBookingToAdminDTO(booking, tickets, auditLogs);
 };
 
 /**
