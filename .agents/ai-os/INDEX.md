@@ -121,9 +121,13 @@ This index lists all currently active and planned documents within the AI Operat
 - [governance/LIFECYCLE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/governance/LIFECYCLE.md)
 
 ## Skills Layer
-- `skills/README.md` **[PLANNED]**
-- `skills/core/` **[PLANNED]** — TS, React, Testing skills
-- `skills/domain/` **[PLANNED]** — auth, bookings, payments, tickets skills
+- [skills/README.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/skills/README.md)
+- [skills/REGISTRY.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/skills/REGISTRY.md)
+- [skills/core/naming-audit/SKILL.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/skills/core/naming-audit/SKILL.md)
+- [skills/core/architecture-review/SKILL.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/skills/core/architecture-review/SKILL.md)
+- [skills/core/typescript-audit/SKILL.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/skills/core/typescript-audit/SKILL.md)
+- [skills/core/react-audit/SKILL.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/skills/core/react-audit/SKILL.md)
+- [skills/core/security-audit/SKILL.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/skills/core/security-audit/SKILL.md)
 
 ## Prompts Layer
 - `prompts/README.md` **[PLANNED]**
