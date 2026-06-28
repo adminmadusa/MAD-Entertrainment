@@ -15,9 +15,20 @@ import { useGoogleSignIn } from '@/components/auth/hooks/useGoogleSignIn';
 import { useOtpCooldowns } from '@/components/auth/hooks/useOtpCooldowns';
 
 import { FindTicketsModal } from './components/FindTicketsModal';
-import { BookingFoundModal } from './components/BookingFoundModal';
-import { OtpVerificationModal } from './components/OtpVerificationModal';
-import { ContactSupportModal } from './components/ContactSupportModal';
+import dynamic from 'next/dynamic';
+
+const BookingFoundModal = dynamic(
+  () => import('./components/BookingFoundModal').then((mod) => mod.BookingFoundModal),
+  { ssr: false }
+);
+const OtpVerificationModal = dynamic(
+  () => import('./components/OtpVerificationModal').then((mod) => mod.OtpVerificationModal),
+  { ssr: false }
+);
+const ContactSupportModal = dynamic(
+  () => import('./components/ContactSupportModal').then((mod) => mod.ContactSupportModal),
+  { ssr: false }
+);
 
 type ModalState = 'find' | 'found' | 'otp' | 'support' | null;
 
