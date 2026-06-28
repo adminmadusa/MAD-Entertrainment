@@ -23,3 +23,4 @@ export class TaskMetricsCollector {
     };
   }
 }
+export const taskMetricsCollector = new TaskMetricsCollector();

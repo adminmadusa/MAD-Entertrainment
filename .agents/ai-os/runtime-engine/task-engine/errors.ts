@@ -1,7 +1,7 @@
 import { RuntimeEngineError } from '../errors';
 
 export class TaskEngineError extends RuntimeEngineError {
-  constructor(message: string, phase: string = 'Executing') {
+  constructor(message: string, phase = 'Executing') {
     super(message, phase);
     this.name = 'TaskEngineError';
   }

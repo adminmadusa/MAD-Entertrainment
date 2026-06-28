@@ -1,6 +1,6 @@
 import { TASK_STATES, TaskState } from './task-state';
 import { TaskEngineEventEmitter } from './events';
-import { TaskMetricsCollector } from './metrics';
+import { taskMetricsCollector } from './metrics';
 import { intentDetector } from './intent-detector';
 import { contextResolver } from './context-resolver';
 import { executionPlanner } from './execution-planner';
@@ -8,14 +8,13 @@ import { workflowBuilder } from './workflow-builder';
 import { pipelineRunner } from './pipeline-runner';
 import { revalidationRunner } from './revalidation';
 import { reportController } from './report-controller';
-import { TaskExecutionResult } from './types';
+import { ExecutionPlan, TaskExecutionResult, ExecutionMode } from './types';
 import { PipelineBuilder } from '../orchestrator/pipeline-builder';
 import { ReportGenerator } from '../report-generator';
 
 export class TaskExecutionEngine {
   private state: TaskState = TASK_STATES.IDLE;
   private events = new TaskEngineEventEmitter();
-  private metrics = new TaskMetricsCollector();
   private pipelineBuilder = new PipelineBuilder();
   private reportGenerator = new ReportGenerator();
 
@@ -23,80 +22,92 @@ export class TaskExecutionEngine {
     this.events.subscribe(listener);
   }
 
-  async executeTask(
+  async planTask(
     repoRoot: string,
-    filesList: string[],
     taskId: string,
     request: string,
-    autofixEnabled = false
+    mode: ExecutionMode
+  ): Promise<ExecutionPlan> {
+    this.state = TASK_STATES.INTENT_DETECTION;
+    this.events.emit('TASK_STARTED', 'Task planning initiated.');
+
+    const intent = intentDetector.detectIntent(request);
+    this.events.emit('INTENT_DETECTED', `Intent detected: ${intent.intent}`, { intent });
+
+    this.state = TASK_STATES.CONTEXT_RESOLUTION;
+    const context = contextResolver.resolveContext(repoRoot, taskId, request, intent, mode);
+    this.events.emit('CONTEXT_RESOLVED', 'Context resolved successfully.', { context });
+
+    this.state = TASK_STATES.PLANNING;
+    const plan = executionPlanner.generatePlan(intent, context, mode);
+    this.events.emit('PLAN_CREATED', 'Execution plan built successfully.', { plan });
+
+    return plan;
+  }
+
+  async executeTask(
+    plan: ExecutionPlan,
+    filesList: string[]
   ): Promise<TaskExecutionResult> {
     const startMs = Date.now();
-    this.state = TASK_STATES.INTENT_DETECTION;
-    this.events.emit('TASK_STARTED', 'Task execution initiated.');
-    this.metrics.start();
+    this.state = TASK_STATES.EXECUTION;
+    this.events.emit('STEP_STARTED', 'Starting execution workflow...');
+    taskMetricsCollector.start();
 
     try {
-      // 1. Intent Detection
-      const intent = intentDetector.detectIntent(request);
-      this.events.emit('INTENT_DETECTED', `Intent detected: ${intent.intent}`, { intent });
-
-      // 2. Context Resolution
-      this.state = TASK_STATES.CONTEXT_RESOLUTION;
-      const context = contextResolver.resolveContext(intent);
-      this.events.emit('CONTEXT_RESOLVED', 'Context resolved successfully.', { context });
-
-      // 3. Planning
-      this.state = TASK_STATES.PLANNING;
-      const planGraph = executionPlanner.planGraph(intent, context);
-      const workflow = workflowBuilder.buildWorkflow(planGraph);
-      this.events.emit('PLAN_CREATED', 'Execution workflow planner finalized.');
-
-      // 4. Execution & Validation
-      this.state = TASK_STATES.EXECUTION;
+      const autofixEnabled = plan.executionMode === 'FIX';
       const pipelineSteps = this.pipelineBuilder.buildPipeline({
-        taskId,
-        validators: context.validators,
-        skills: context.skills,
-        prompt: context.prompt,
-        template: context.template,
+        taskId: plan.context.taskId,
+        validators: plan.context.selectedValidators,
+        skills: plan.context.selectedSkills,
+        prompt: plan.context.selectedPrompts[0] || '',
+        template: plan.context.selectedTemplates[0] || '',
         autofixEnabled
       });
 
-      this.events.emit('STEP_STARTED', 'Executing pipeline steps...');
-      const stepResults = await pipelineRunner.executePipeline(repoRoot, filesList, pipelineSteps);
-      this.events.emit('STEP_COMPLETED', 'Pipeline steps executed.');
+      const stepResults = await pipelineRunner.executePipeline(
+        plan.context.repoRoot,
+        filesList,
+        pipelineSteps
+      );
+      this.events.emit('STEP_COMPLETED', 'Execution steps completed.');
 
-      // Compiles findings
+      // Extract findings
       const validationStep = stepResults.find(s => s.stepName === 'Validate target states');
       const findings = validationStep ? (validationStep.results || []).flatMap((r: any) => r.findings || []) : [];
 
-      // 5. Revalidation
       let revalidationFindings = undefined;
       if (autofixEnabled) {
         this.state = TASK_STATES.REVALIDATION;
-        const revalResults = await revalidationRunner.revalidate(repoRoot, filesList, context.validators);
+        const revalResults = await revalidationRunner.revalidate(
+          plan.context.repoRoot,
+          filesList,
+          plan.context.selectedValidators
+        );
         revalidationFindings = revalResults.flatMap(r => r.findings || []);
       }
 
-      // 6. Reporting
       this.state = TASK_STATES.REPORTING;
       const durationMs = Date.now() - startMs;
       const report = this.reportGenerator.generateAuditReport(
-        `sess_task_${taskId}`,
-        taskId,
+        `sess_task_${plan.planId}`,
+        plan.context.taskId,
         durationMs,
         findings
       );
 
-      const reportPath = await reportController.writeReport(repoRoot, report, 'task-engine');
+      const reportPath = await reportController.writeReport(
+        plan.context.repoRoot,
+        report,
+        'task-engine'
+      );
 
       this.state = TASK_STATES.COMPLETED;
       this.events.emit('TASK_COMPLETED', 'Task execution finished successfully.');
 
       return {
         success: true,
-        intent,
-        context,
+        plan,
         steps: stepResults,
         findings,
         revalidationFindings,

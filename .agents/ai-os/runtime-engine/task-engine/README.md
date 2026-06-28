@@ -1,21 +1,43 @@
 # AI Task Execution Engine
 
-The Task Execution Engine is the primary intelligence entry point of the AI Operating System. It maps natural language instructions to intent models, resolves layer contexts, builds deterministic planner workflows, and schedules executable runs.
+The Task Execution Engine is the primary intelligence entry point of the AI Operating System. It maps natural language requests to intent models, resolves capability contexts, builds deterministic execution plan graphs, and schedules pipeline execution.
 
-## Usage Example
+## Execution Lifecycle
+
+```
+Natural Language Request
+           ↓
+    Intent Detection
+           ↓
+  Capability Resolution
+           ↓
+    Execution Graph (DAG)
+           ↓
+     Execution Plan
+           ↓
+      Orchestrator
+     ↙            ↘
+  Success       Failure
+     ↓            ↓
+  Report       Recovery
+                  ↓
+                Report
+```
+
+## Public API Stability
+
+The Task Engine exposes exactly two stable public APIs:
 
 ```ts
-import { TaskExecutionEngine } from './engine';
+planTask(
+  repoRoot: string,
+  taskId: string,
+  request: string,
+  mode: ExecutionMode
+): Promise<ExecutionPlan>;
 
-const engine = new TaskExecutionEngine();
-
-const result = await engine.executeTask(
-  process.cwd(),
-  ['apps/web/temp2/test.tsx'],
-  'TASK-111',
-  'Audit authentication middleware',
-  false
-);
-
-console.log(result.intent.intent); // 'audit'
+executeTask(
+  plan: ExecutionPlan,
+  filesList: string[]
+): Promise<TaskExecutionResult>;
 ```

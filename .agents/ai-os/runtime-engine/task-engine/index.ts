@@ -12,3 +12,4 @@ export { PipelineRunner } from './pipeline-runner';
 export { RevalidationRunner } from './revalidation';
 export { ReportController } from './report-controller';
 export { AutofixController } from './autofix-controller';
+export { capabilityResolver, CapabilityResolver } from './capability-resolver';

@@ -1,22 +1,32 @@
-import { IntentResult, TaskContext } from './types';
+import { IntentResult, TaskContext, ExecutionMode } from './types';
+import { capabilityResolver } from './capability-resolver';
 
 export class ContextResolver {
-  resolveContext(intent: IntentResult): TaskContext {
+  resolveContext(
+    repoRoot: string,
+    taskId: string,
+    request: string,
+    intent: IntentResult,
+    mode?: ExecutionMode
+  ): TaskContext {
+    const tags = [intent.intent, intent.intent === 'audit' ? 'naming' : intent.intent];
+    const detectedValidators = capabilityResolver.resolveCapabilities('validator', tags);
+    const detectedSkills = capabilityResolver.resolveCapabilities('skill', tags);
+    const prompts = capabilityResolver.resolveCapabilities('prompt', tags);
+    const templates = capabilityResolver.resolveCapabilities('template', tags);
+
     const context: TaskContext = {
-      layers: ['foundation', 'repository', 'domain', 'standards'],
-      validators: ['VAL-NAM-001', 'VAL-TS-001'],
-      skills: ['core/naming-audit', 'core/typescript-audit'],
-      prompt: 'PRM-AUD-001',
-      template: 'TMP-AUD-001'
+      repoRoot,
+      taskId,
+      request,
+      mode: mode || 'VALIDATE',
+      selectedValidators: detectedValidators,
+      selectedSkills: detectedSkills,
+      selectedPrompts: prompts,
+      selectedTemplates: templates
     };
 
-    if (intent.target === 'authentication') {
-      context.layers.push('architecture');
-      context.validators.push('VAL-ARC-001');
-      context.skills.push('core/architecture-review');
-    }
-
-    return context;
+    return Object.freeze(context);
   }
 }
 export const contextResolver = new ContextResolver();

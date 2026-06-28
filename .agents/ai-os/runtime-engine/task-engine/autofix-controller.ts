@@ -8,7 +8,7 @@ export class AutofixController {
     findings: Finding[],
     safeOnly = true
   ): Promise<AutoFixResult[]> {
-    // Generates fixes for matched findings
+    // Critical findings are treated as unsafe to auto-fix, recommending manual changes
     const targetFindings = safeOnly
       ? findings.filter(f => f.severity !== 'critical')
       : findings;
