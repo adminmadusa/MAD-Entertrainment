@@ -87,16 +87,17 @@ This index lists all currently active and planned documents within the AI Operat
 - [standards/CI_CD.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/standards/CI_CD.md)
 - [standards/CONFIGURATION.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/standards/CONFIGURATION.md)
 
-### Patterns
-- `standards/patterns/README.md` **[PLANNED]**
-- `standards/patterns/repository-pattern.md` **[PLANNED]**
-- `standards/patterns/service-pattern.md` **[PLANNED]**
-- `standards/patterns/controller-pattern.md` **[PLANNED]**
-- `standards/patterns/validation-pattern.md` **[PLANNED]**
-- `standards/patterns/error-handling-pattern.md` **[PLANNED]**
-- `standards/patterns/react-query-pattern.md` **[PLANNED]**
-- `standards/patterns/form-pattern.md` **[PLANNED]**
-- `standards/patterns/transaction-pattern.md` **[PLANNED]**
+## Patterns Layer
+- [patterns/README.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/patterns/README.md)
+- [patterns/frontend/HYDRATION_SAFETY.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/patterns/frontend/HYDRATION_SAFETY.md)
+- [patterns/frontend/ERROR_RECOVERY.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/patterns/frontend/ERROR_RECOVERY.md)
+- [patterns/backend/ASYNC_CONTROLLER.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/patterns/backend/ASYNC_CONTROLLER.md)
+- [patterns/backend/TRANSACTION.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/patterns/backend/TRANSACTION.md)
+- [patterns/backend/BACKGROUND_JOB.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/patterns/backend/BACKGROUND_JOB.md)
+- [patterns/database/INDEX_POLICY.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/patterns/database/INDEX_POLICY.md)
+- [patterns/infrastructure/ENV_VALIDATION.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/patterns/infrastructure/ENV_VALIDATION.md)
+- [patterns/security/MOCK_PAYMENT_LOCK.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/patterns/security/MOCK_PAYMENT_LOCK.md)
+- [patterns/security/WEBHOOK_VALIDATION.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/patterns/security/WEBHOOK_VALIDATION.md)
 
 ### Anti-patterns
 - `standards/anti-patterns/README.md` **[PLANNED]**
