@@ -99,16 +99,14 @@ This index lists all currently active and planned documents within the AI Operat
 - [patterns/security/MOCK_PAYMENT_LOCK.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/patterns/security/MOCK_PAYMENT_LOCK.md)
 - [patterns/security/WEBHOOK_VALIDATION.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/patterns/security/WEBHOOK_VALIDATION.md)
 
-### Anti-patterns
-- `standards/anti-patterns/README.md` **[PLANNED]**
-- `standards/anti-patterns/business-logic-in-components.md` **[PLANNED]**
-- `standards/anti-patterns/god-service.md` **[PLANNED]**
-- `standards/anti-patterns/duplicate-validation.md` **[PLANNED]**
-- `standards/anti-patterns/circular-imports.md` **[PLANNED]**
-- `standards/anti-patterns/inline-api-calls.md` **[PLANNED]**
-- `standards/anti-patterns/magic-strings.md` **[PLANNED]**
-- `standards/anti-patterns/state-duplication.md` **[PLANNED]**
-- `standards/anti-patterns/missing-error-boundaries.md` **[PLANNED]**
+## Anti-Patterns Layer
+- [anti-patterns/README.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/anti-patterns/README.md)
+- [anti-patterns/frontend/HYDRATION_MISMATCH.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/anti-patterns/frontend/HYDRATION_MISMATCH.md)
+- [anti-patterns/frontend/SOFT_LINK_IN_ERROR.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/anti-patterns/frontend/SOFT_LINK_IN_ERROR.md)
+- [anti-patterns/backend/MISSING_TRANSACTION.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/anti-patterns/backend/MISSING_TRANSACTION.md)
+- [anti-patterns/database/AUTOINDEX_IN_PROD.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/anti-patterns/database/AUTOINDEX_IN_PROD.md)
+- [anti-patterns/performance/MATH_RANDOM_IDS.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/anti-patterns/performance/MATH_RANDOM_IDS.md)
+- [anti-patterns/security/PRODUCTION_MOCK_PAYMENT.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/anti-patterns/security/PRODUCTION_MOCK_PAYMENT.md)
 
 ## Governance Layer
 - `governance/README.md` **[PLANNED]**
