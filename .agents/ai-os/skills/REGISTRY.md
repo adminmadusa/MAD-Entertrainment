@@ -28,5 +28,17 @@ This document lists the active core skills registered in the AI Operating System
 
 ---
 
-## 2. Skill Dependency Graph
-Skills run independently of each other but require validation schemas from the Validation layer and rule parameters from the Standards layer.
+## 2. Project Skill Catalog Registry
+
+| Skill ID | Version | Status | Owner | Knowledge Dependencies | Validation Dependencies | Consumers |
+|----------|---------|--------|-------|------------------------|-------------------------|-----------|
+| **SKI-PRJ-001** (authentication-audit) | 1.0.0 | active | Platform Team | Domain (Authentication), Architecture (Security) | VAL-SEC-002, VAL-TS-001 | CLI, CI Hooks |
+| **SKI-PRJ-002** (booking-audit) | 1.0.0 | active | Platform Team | Domain (Bookings), Architecture (Resilience) | VAL-DB-001, VAL-EXP-001 | CLI, CI Hooks |
+| **SKI-PRJ-003** (payment-audit) | 1.0.0 | active | Platform Team | Domain (Payments), Architecture (Integration) | VAL-SEC-001, VAL-SEC-002 | CLI, CI Hooks |
+| **SKI-PRJ-004** (ticket-audit) | 1.0.0 | active | Platform Team | Domain (Tickets), Architecture (Components) | VAL-ARC-001, VAL-DB-001 | CLI, CI Hooks |
+| **SKI-PRJ-005** (repository-governance) | 1.0.0 | active | Platform Team | Governance (Audit, Git, PR) | VAL-GOV-001, VAL-GOV-002 | CLI, CI Hooks |
+
+---
+
+## 3. Skill Dependency Graph
+Skills run independently of each other but require validation schemas from the Validation layer and rule parameters from the Standards/Domain layers. Project skills may also delegate analysis tasks to core skills (e.g., `payment-audit` invokes `security-audit`).

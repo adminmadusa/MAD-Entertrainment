@@ -123,11 +123,17 @@ This index lists all currently active and planned documents within the AI Operat
 ## Skills Layer
 - [skills/README.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/skills/README.md)
 - [skills/REGISTRY.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/skills/REGISTRY.md)
+- [skills/project/README.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/skills/project/README.md)
 - [skills/core/naming-audit/SKILL.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/skills/core/naming-audit/SKILL.md)
 - [skills/core/architecture-review/SKILL.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/skills/core/architecture-review/SKILL.md)
 - [skills/core/typescript-audit/SKILL.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/skills/core/typescript-audit/SKILL.md)
 - [skills/core/react-audit/SKILL.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/skills/core/react-audit/SKILL.md)
 - [skills/core/security-audit/SKILL.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/skills/core/security-audit/SKILL.md)
+- [skills/project/authentication-audit/SKILL.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/skills/project/authentication-audit/SKILL.md)
+- [skills/project/booking-audit/SKILL.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/skills/project/booking-audit/SKILL.md)
+- [skills/project/payment-audit/SKILL.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/skills/project/payment-audit/SKILL.md)
+- [skills/project/ticket-audit/SKILL.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/skills/project/ticket-audit/SKILL.md)
+- [skills/project/repository-governance/SKILL.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/skills/project/repository-governance/SKILL.md)
 
 ## Prompts Layer
 - `prompts/README.md` **[PLANNED]**
