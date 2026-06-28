@@ -189,6 +189,20 @@ This index lists all currently active and planned documents within the AI Operat
 - [knowledge/playbooks/deployment-recovery.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/knowledge/playbooks/deployment-recovery.md)
 
 ## Runtime Layer (Gitignored)
+- [runtime/README.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/runtime/README.md)
+- [runtime/REGISTRY.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/runtime/REGISTRY.md)
+- [runtime/ENGINE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/runtime/ENGINE.md)
+- [runtime/BOOT.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/runtime/BOOT.md)
+- [runtime/CONTEXT.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/runtime/CONTEXT.md)
+- [runtime/DISCOVERY.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/runtime/DISCOVERY.md)
+- [runtime/EXECUTION.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/runtime/EXECUTION.md)
+- [runtime/RESOLUTION.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/runtime/RESOLUTION.md)
+- [runtime/VALIDATION.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/runtime/VALIDATION.md)
+- [runtime/REPORTING.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/runtime/REPORTING.md)
+- [runtime/CACHE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/runtime/CACHE.md)
+- [runtime/SESSION.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/runtime/SESSION.md)
+- [runtime/RECOVERY.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/runtime/RECOVERY.md)
+- [runtime/STATE_MACHINE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/runtime/STATE_MACHINE.md)
 - `runtime/indexes/` **[PLANNED]** — vector embeddings directory
 
 ## Registries (Auto-Generated Catalogs)
