@@ -43,6 +43,7 @@ import { SeatLayout } from '../../models/seat-layout.schema';
 import { auditLog } from '../../utils/audit';
 import { logger } from '../../utils/logger';
 import { runInTransaction } from '../../utils/transaction';
+import { PaymentInventoryService } from './payment-inventory.service';
 import {
   StripeChargeWebhookPayload,
   StripeRefundWebhookPayload,
@@ -148,16 +149,7 @@ export class PaymentRefundService {
       return;
     }
 
-    booking.status = BookingStatus.FAILED;
-    booking.bookingVersion += 1;
-    await booking.save();
-    const failedReservations = await ReservationService.transitionForBooking(booking._id, ReservationStatus.FAILED, {
-      paymentReference: payment.gatewayPaymentId ?? payment.gatewayOrderId,
-      paymentId: payment._id as any,
-      reason,
-      correlationId: booking.bookingId,
-    });
-    await ReservationService.releaseCapacityForTerminalReservations(failedReservations);
+    await PaymentInventoryService.releaseInventoryForFailedPayment(booking, payment, reason);
 
     // Asynchronous, exception-safe Payment Failure Email Trigger
     if (booking.guestEmail) {
@@ -228,63 +220,6 @@ export class PaymentRefundService {
         }, 'Failed to queue payment failure email gracefully.');
       }
     }
-
-    const event = await Event.findById(booking.eventId);
-    const releasedSeatIds: string[] = [];
-
-    if (event && event.bookingMode === 'seat_based') {
-      const allSeatIds = booking.tickets.flatMap((ticket) => ticket.seats || []).map((seat) => seat.seatId);
-      if (allSeatIds.length > 0) {
-        await SeatLayout.updateOne(
-          { eventId: event._id },
-          {
-            $set: {
-              'seats.$[seat].status': SeatStatus.AVAILABLE,
-            },
-            $unset: {
-              'seats.$[seat].lockedBy': '',
-              'seats.$[seat].lockedAt': '',
-              'seats.$[seat].bookedByBookingId': '',
-              'seats.$[seat].reservationId': '',
-            },
-            $inc: {
-              'seats.$[seat].seatVersion': 1,
-            },
-          },
-          {
-            arrayFilters: [
-              {
-                'seat.seatId': { $in: allSeatIds },
-                'seat.status': SeatStatus.LOCKED,
-                'seat.bookedByBookingId': booking._id.toString(),
-              },
-            ],
-          }
-        );
-        releasedSeatIds.push(...allSeatIds);
-      }
-    }
-
-    if (event && releasedSeatIds.length > 0) {
-      PaymentRefundService.safeEmit(
-        'seat:unlocked',
-        () => emitToEvent(event._id.toString(), 'seat:unlocked', { seatIds: releasedSeatIds }, booking.bookingId),
-        { eventId: event._id.toString(), bookingId: booking._id.toString(), seatIds: releasedSeatIds }
-      );
-    }
-
-    PaymentRefundService.safeEmit(
-      'booking:updated',
-      () => emitToBooking(booking._id.toString(), 'booking:updated', { bookingId: booking._id.toString(), status: booking.status, bookingVersion: booking.bookingVersion }, booking.bookingId),
-      { bookingId: booking._id.toString(), status: booking.status, bookingVersion: booking.bookingVersion }
-    );
-    PaymentRefundService.safeEmit(
-      'admin booking:updated',
-      () => emitToAdmin('bookings', 'booking:updated', { bookingId: booking._id.toString(), status: booking.status, bookingVersion: booking.bookingVersion }, booking.bookingId),
-      { bookingId: booking._id.toString(), status: booking.status, bookingVersion: booking.bookingVersion }
-    );
-
-    logger.info({ bookingId: booking._id, paymentId: payment._id, releasedSeatIds, reason }, 'Payment failed and reserved inventory released');
   }
 
   // ─── Webhook Refund Reconciliation — Public Entry Points ───────────────────
