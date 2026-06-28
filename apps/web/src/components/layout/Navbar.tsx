@@ -40,7 +40,7 @@ export function Navbar() {
           { label: 'Events', href: '/events' },
           { label: 'DJs', href: '/dj-operators' },
           { label: 'Help Center', href: '/support' },
-          { label: 'Find My Tickets', href: '/tickets' },
+          { label: 'My Tickets', href: '/tickets' },
         ];
   }, [isAuthenticated]);
 

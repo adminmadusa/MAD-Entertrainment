@@ -40,7 +40,7 @@ export function FindTicketsModal({
       <div className="space-y-6">
         <div className="text-center">
           <h2 id="find-title" className="text-2xl font-black text-white tracking-tight">
-            Find My Tickets
+            My Tickets
           </h2>
           <p id="find-desc" className="text-text-secondary text-sm mt-1.5 leading-relaxed">
             Retrieve your booking using either reference ID or transaction ID.
