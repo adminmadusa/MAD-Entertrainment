@@ -136,10 +136,13 @@ This index lists all currently active and planned documents within the AI Operat
 - [skills/project/repository-governance/SKILL.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/skills/project/repository-governance/SKILL.md)
 
 ## Prompts Layer
-- `prompts/README.md` **[PLANNED]**
-- `prompts/system/` **[PLANNED]** — helper prompts
-- `prompts/user/` **[PLANNED]** — developer-facing prompts
-- `prompts/orchestrations/` **[PLANNED]** — composite prompts
+- [prompts/README.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/prompts/README.md)
+- [prompts/REGISTRY.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/prompts/REGISTRY.md)
+- [prompts/audit/repository-audit/PROMPT.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/prompts/audit/repository-audit/PROMPT.md)
+- [prompts/implementation/bug-fix/PROMPT.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/prompts/implementation/bug-fix/PROMPT.md)
+- [prompts/planning/implementation-plan/PROMPT.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/prompts/planning/implementation-plan/PROMPT.md)
+- [prompts/review/code-review/PROMPT.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/prompts/review/code-review/PROMPT.md)
+- [prompts/governance/pre-implementation-audit/PROMPT.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/prompts/governance/pre-implementation-audit/PROMPT.md)
 
 ## Templates Layer
 - `templates/README.md` **[PLANNED]**
