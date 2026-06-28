@@ -71,18 +71,40 @@ function UserIcon({ className = '', size = 20 }: { className?: string; size?: nu
   );
 }
 
-// ─── Visibility Helper ────────────────────────────────────────
-
 export function shouldShowBottomNav(pathname: string | null): boolean {
   if (!pathname) return false;
-  // Hidden on checkout or booking flow
-  if (pathname.startsWith('/checkout/')) return false;
 
-  const visiblePrefixes = ['/events', '/dj-operators', '/support', '/tickets', '/dashboard'];
-  const isExactHome = pathname === '/';
-  const matchesPrefix = visiblePrefixes.some((prefix) => pathname.startsWith(prefix));
+  // 1. Task-focused/transactional paths where the Bottom Navigation must be hidden to prevent distraction/overlap.
+  // This includes details pages (events/[slug], dj-operators/[slug]), checkout paths, and authentication.
+  const isEventDetail = pathname.startsWith('/events/');
+  const isDjDetail = pathname.startsWith('/dj-operators/');
+  const isCheckout = pathname.startsWith('/checkout/');
+  const isLogin = pathname === '/login';
 
-  return isExactHome || matchesPrefix;
+  if (isEventDetail || isDjDetail || isCheckout || isLogin) {
+    return false;
+  }
+
+  // 2. Primary navigation routes where the Bottom Navigation is explicitly visible.
+  const primaryRoutes = [
+    '/',
+    '/events',
+    '/dj-operators',
+    '/support',
+    '/tickets',
+  ];
+
+  if (primaryRoutes.includes(pathname)) {
+    return true;
+  }
+
+  // 3. User Dashboard sub-routes (which are treated as primary navigation areas)
+  if (pathname === '/dashboard' || pathname.startsWith('/dashboard/')) {
+    return true;
+  }
+
+  // Default fallback is to hide the navigation for any other unrecognized or task-focused pages
+  return false;
 }
 
 export function BottomNavigationSpacer() {
@@ -135,18 +157,20 @@ function BottomNavigationContent() {
           <span className="text-[10px] font-medium tracking-tight">Home</span>
         </Link>
 
-        {/* Browse Events */}
+        {/* Browse Events / Book Now */}
         <Link
           href="/events"
           className={`flex flex-col items-center justify-center flex-1 h-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-inset ${
             isEventsActive ? 'text-accent-purple' : 'text-text-secondary hover:text-white'
           }`}
-          aria-label="Navigate to Browse Events"
+          aria-label={isHomeActive ? 'Navigate to Book Now' : 'Navigate to Browse Events'}
         >
           <div className="w-5 h-5 mb-1 flex items-center justify-center">
             <CalendarIcon className="w-full h-full" />
           </div>
-          <span className="text-[10px] font-medium tracking-tight">Browse Events</span>
+          <span className="text-[10px] font-medium tracking-tight">
+            {isHomeActive ? 'Book Now' : 'Browse Events'}
+          </span>
         </Link>
 
         {/* My Tickets */}
