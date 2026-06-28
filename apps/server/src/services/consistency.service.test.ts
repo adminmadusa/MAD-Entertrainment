@@ -26,10 +26,20 @@ vi.mock('mongoose', async (importOriginal) => {
   };
 });
 
+const { mockTriggerRefundRequest } = vi.hoisted(() => ({
+  mockTriggerRefundRequest: vi.fn(),
+}));
+
 vi.mock('./public/payment.service', () => ({
   PaymentService: {
     confirmBooking: vi.fn(),
-    triggerRefundRequest: vi.fn(),
+    triggerRefundRequest: mockTriggerRefundRequest,
+  },
+}));
+
+vi.mock('./public/payment-refund.service', () => ({
+  PaymentRefundService: {
+    triggerRefundRequest: mockTriggerRefundRequest,
   },
 }));
 
