@@ -1,4 +1,4 @@
-import { ScrollIndicator, ArrowRight } from '@mad/ui';
+import { ArrowRight } from '@mad/ui';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Suspense } from 'react';
@@ -109,7 +109,7 @@ function HeroSection() {
       />
 
       {/* Content */}
-      <div className="container-mad relative z-10 text-center pt-28 pb-16">
+      <div className="container-mad relative z-10 text-center pt-24 pb-8">
 
         {/* Headline */}
         <h1 className="text-display-xl font-black text-white mb-6 leading-[1.02] text-glow-neon animate-hero-fade-in animation-delay-200">
@@ -140,8 +140,6 @@ function HeroSection() {
       {/* Bottom Gradient Fade */}
       <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent" />
 
-      {/* Scroll Indicator */}
-      <ScrollIndicator />
     </section>
   );
 }
