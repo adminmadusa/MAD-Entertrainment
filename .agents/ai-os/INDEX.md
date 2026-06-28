@@ -138,9 +138,26 @@ This index lists all currently active and planned documents within the AI Operat
 - `templates/config/` **[PLANNED]**
 
 ## Validation Layer
-- `validation/README.md` **[PLANNED]**
-- `validation/schemas/` **[PLANNED]** — JSON schema files
-- `scripts/` **[PLANNED]** — validation runners (validate.ts, scaffold.ts, etc.)
+- [validation/README.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/validation/README.md)
+- [validation/ENGINE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/validation/ENGINE.md)
+- [validation/REGISTRY.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/validation/REGISTRY.md)
+- [validation/RULE_CATALOG.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/validation/RULE_CATALOG.md)
+- [validation/REPORTING.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/validation/REPORTING.md)
+- [validation/validators/NAMING.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/validation/validators/NAMING.md)
+- [validation/validators/REPOSITORY.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/validation/validators/REPOSITORY.md)
+- [validation/validators/ARCHITECTURE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/validation/validators/ARCHITECTURE.md)
+- [validation/validators/TYPESCRIPT.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/validation/validators/TYPESCRIPT.md)
+- [validation/validators/REACT.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/validation/validators/REACT.md)
+- [validation/validators/NEXTJS.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/validation/validators/NEXTJS.md)
+- [validation/validators/NODE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/validation/validators/NODE.md)
+- [validation/validators/DATABASE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/validation/validators/DATABASE.md)
+- [validation/validators/API.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/validation/validators/API.md)
+- [validation/validators/SECURITY.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/validation/validators/SECURITY.md)
+- [validation/validators/PERFORMANCE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/validation/validators/PERFORMANCE.md)
+- [validation/validators/ACCESSIBILITY.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/validation/validators/ACCESSIBILITY.md)
+- [validation/validators/TESTING.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/validation/validators/TESTING.md)
+- [validation/validators/DOCUMENTATION.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/validation/validators/DOCUMENTATION.md)
+- [validation/validators/GOVERNANCE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/validation/validators/GOVERNANCE.md)
 
 ## Knowledge Layer (Non-Authoritative)
 - `knowledge/README.md` **[PLANNED]**
