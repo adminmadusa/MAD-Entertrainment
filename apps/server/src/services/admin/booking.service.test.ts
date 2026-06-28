@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { BookingStatus, ReservationStatus } from '@mad/shared';
-import { correctBookingEmail, resendBookingTickets, getBookingsSummary, cancelBooking, expireBooking } from './booking.service';
+import { correctBookingEmail, resendBookingTickets, getBookingsSummary, cancelBooking, expireBooking, getBookings, getBookingById } from './booking.service';
 import { Booking } from '../../models/booking.schema';
 import { UserModel } from '../../models/user.schema';
 import { Ticket } from '../../models/ticket.schema';
@@ -8,6 +8,7 @@ import { Payment } from '../../models/payment.schema';
 import { Event } from '../../models/event.schema';
 import { Coupon } from '../../models/coupon.schema';
 import { Refund } from '../../models/refund.schema';
+import { AuditLogModel } from '../../models/audit-log.schema';
 
 vi.mock('../../models/coupon.schema', () => ({
   Coupon: {
@@ -48,6 +49,9 @@ vi.mock('../../models/notification.schema', () => ({
 vi.mock('../../models/booking.schema', () => ({
   Booking: {
     findById: vi.fn(),
+    findOne: vi.fn(),
+    find: vi.fn(),
+    countDocuments: vi.fn(),
     aggregate: vi.fn(),
   },
 }));
@@ -1142,6 +1146,231 @@ describe('Admin Booking Service Backend Tests', () => {
       } as any);
 
       await expect(expireBooking('booking-confirmed')).rejects.toThrow('Cannot expire booking in status: confirmed');
+    });
+  });
+
+  describe('PERF-001: getBookings and getBookingById DTO Parity & Performance Tests', () => {
+    beforeEach(() => {
+      vi.clearAllMocks();
+    });
+
+    it('should retrieve paginated bookings list and match DTO payload schema contract', async () => {
+      const mockEventId = new mongoose.Types.ObjectId();
+      const mockBookingId = new mongoose.Types.ObjectId();
+      
+      const mockBookings = [
+        {
+          _id: mockBookingId,
+          bookingId: 'MAD-2026-TEST1',
+          status: BookingStatus.CONFIRMED,
+          tickets: [{ tier: 'general', tierName: 'General', quantity: 2, pricePerTicket: 100, subtotal: 200 }],
+          totalTickets: 2,
+          totalAmount: 200,
+          currency: 'INR',
+          createdAt: new Date('2026-06-28T10:00:00Z'),
+          guestName: 'John Doe',
+          guestEmail: 'john@example.com',
+          guestPhone: '+919876543210',
+          eventId: {
+            _id: mockEventId,
+            title: 'Sample Concert',
+            startDate: new Date('2026-07-01T12:00:00Z'),
+            bookingMode: 'general_admission',
+          },
+        }
+      ];
+
+      const mockTickets = [
+        {
+          ticketId: 'TCK-1',
+          bookingId: mockBookingId,
+          status: 'active',
+          createdAt: new Date('2026-06-28T10:05:00Z'),
+          admits: 1,
+        }
+      ];
+
+      const mockAuditLogs = [
+        {
+          _id: new mongoose.Types.ObjectId(),
+          action: 'BOOKING_EMAIL_CORRECTED',
+          actor: { id: 'admin-1' },
+          status: 'success',
+          createdAt: new Date('2026-06-28T10:10:00Z'),
+          metadata: { bookingId: mockBookingId.toString() },
+          description: 'Corrected email',
+        }
+      ];
+
+      // Mock Mongoose calls for getBookings
+      vi.mocked(Booking.countDocuments).mockResolvedValue(1);
+      
+      const mockLimit = vi.fn().mockResolvedValue(mockBookings);
+      const mockSkip = vi.fn().mockReturnValue({ limit: mockLimit });
+      const mockSort = vi.fn().mockReturnValue({ skip: mockSkip });
+      const mockPopulate = vi.fn().mockReturnValue({ sort: mockSort });
+      vi.mocked(Booking.find).mockReturnValue({ populate: mockPopulate } as any);
+
+      vi.mocked(Ticket.find).mockReturnValue({
+        lean: vi.fn().mockResolvedValue(mockTickets),
+      } as any);
+
+      vi.mocked(AuditLogModel.find).mockReturnValue({
+        sort: vi.fn().mockReturnValue({
+          lean: vi.fn().mockResolvedValue(mockAuditLogs),
+        }),
+      } as any);
+
+      // Perform request
+      const result = await getBookings(1, 10);
+
+      // Verify DB queries count (1 count, 1 find, 1 tickets, 1 audit logs = 4 queries total)
+      expect(Booking.countDocuments).toHaveBeenCalledTimes(1);
+      expect(Booking.find).toHaveBeenCalledTimes(1);
+      expect(Ticket.find).toHaveBeenCalledTimes(1);
+      expect(AuditLogModel.find).toHaveBeenCalledTimes(1);
+
+      // Strengthen Performance Verification: Verify that the bulk-loading strategy is used
+      expect(AuditLogModel.find).toHaveBeenCalledWith(
+        expect.objectContaining({
+          $or: [
+            { 'metadata.bookingId': { $in: [mockBookingId.toString()] } },
+            { 'metadata.bookingReference': { $in: ['MAD-2026-TEST1'] } }
+          ],
+          action: { $in: ['BOOKING_EMAIL_CORRECTED', 'BOOKING_TICKETS_RESENT'] }
+        })
+      );
+
+      // Verify payload structure parity via maintainable matchers (Omit fragile full-object exact comparisons)
+      expect(result.data).toHaveLength(1);
+      const dto = result.data[0];
+      
+      expect(dto).toEqual(
+        expect.objectContaining({
+          _id: mockBookingId.toString(),
+          bookingId: 'MAD-2026-TEST1',
+          status: BookingStatus.CONFIRMED,
+          totalAmount: 200,
+          currency: 'INR',
+          mode: 'general_admission',
+          totalTickets: 1,
+          ticketsScanned: 0,
+          ticketsRemaining: 1,
+          attendanceStatus: 'NOT_ATTENDED',
+        })
+      );
+
+      expect(dto.eventId).toEqual(
+        expect.objectContaining({
+          _id: mockEventId.toString(),
+          title: 'Sample Concert',
+        })
+      );
+
+      expect(dto.tickets).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ tierName: 'General', quantity: 2, price: 100 })
+        ])
+      );
+
+      expect(dto.auditHistory).toEqual([
+        expect.objectContaining({
+          action: 'BOOKING_EMAIL_CORRECTED',
+          actor: 'admin-1',
+          status: 'success',
+          description: 'Corrected email',
+        })
+      ]);
+
+      expect(dto.individualTickets).toEqual([
+        expect.objectContaining({
+          ticketId: 'TCK-1',
+          status: 'active',
+        })
+      ]);
+
+      expect(result.pagination).toEqual({
+        page: 1,
+        limit: 10,
+        total: 1,
+        totalPages: 1,
+      });
+    });
+
+    it('should retrieve a single booking by ID with pre-loaded logs and tickets', async () => {
+      const mockEventId = new mongoose.Types.ObjectId();
+      const mockBookingId = new mongoose.Types.ObjectId();
+      
+      const mockBooking = {
+        _id: mockBookingId,
+        bookingId: 'MAD-2026-TEST1',
+        status: BookingStatus.CONFIRMED,
+        tickets: [{ tier: 'general', tierName: 'General', quantity: 2, pricePerTicket: 100, subtotal: 200 }],
+        totalTickets: 2,
+        totalAmount: 200,
+        currency: 'INR',
+        createdAt: new Date('2026-06-28T10:00:00Z'),
+        guestName: 'John Doe',
+        guestEmail: 'john@example.com',
+        guestPhone: '+919876543210',
+        eventId: {
+          _id: mockEventId,
+          title: 'Sample Concert',
+          startDate: new Date('2026-07-01T12:00:00Z'),
+          bookingMode: 'general_admission',
+        },
+      };
+
+      const mockTickets = [
+        {
+          ticketId: 'TCK-1',
+          bookingId: mockBookingId,
+          status: 'active',
+          createdAt: new Date('2026-06-28T10:05:00Z'),
+          admits: 1,
+        }
+      ];
+
+      const mockAuditLogs = [
+        {
+          _id: new mongoose.Types.ObjectId(),
+          action: 'BOOKING_EMAIL_CORRECTED',
+          actor: { id: 'admin-1' },
+          status: 'success',
+          createdAt: new Date('2026-06-28T10:10:00Z'),
+          metadata: { bookingId: mockBookingId.toString() },
+          description: 'Corrected email',
+        }
+      ];
+
+      const mockFindOnePopulate = vi.fn().mockResolvedValue(mockBooking);
+      vi.mocked(Booking.findOne).mockReturnValue({
+        populate: mockFindOnePopulate,
+      } as any);
+
+      vi.mocked(Ticket.find).mockReturnValue({
+        lean: vi.fn().mockResolvedValue(mockTickets),
+      } as any);
+
+      vi.mocked(AuditLogModel.find).mockReturnValue({
+        sort: vi.fn().mockReturnValue({
+          lean: vi.fn().mockResolvedValue(mockAuditLogs),
+        }),
+      } as any);
+
+      const result = await getBookingById(mockBookingId.toString());
+
+      expect(Booking.findOne).toHaveBeenCalledTimes(1);
+      expect(Ticket.find).toHaveBeenCalledTimes(1);
+      expect(AuditLogModel.find).toHaveBeenCalledTimes(1);
+      
+      expect(result).toEqual(
+        expect.objectContaining({
+          bookingId: 'MAD-2026-TEST1',
+          status: BookingStatus.CONFIRMED,
+          totalAmount: 200,
+        })
+      );
     });
   });
 });
