@@ -835,6 +835,10 @@ export const correctBookingEmail = async (
   reason: string,
   adminId: string
 ): Promise<any> => {
+  // 1. Fetch admin details outside transaction to minimize transactional locks
+  const admin = await AdminModel.findById(adminId).lean();
+  const adminDetails = admin ? `${admin.name} (${admin.email})` : adminId;
+
   const result = await runInTransaction(async (session) => {
     const booking = await Booking.findById(id).session(session || null);
     if (!booking) {
@@ -861,54 +865,84 @@ export const correctBookingEmail = async (
 
     await booking.save({ session });
 
-    // Void and replace active tickets
-    const activeTickets = await Ticket.find({ bookingId: booking._id, status: 'active' }).session(session || null);
+    // 2. Perform one bulk ticket read
+    const allTickets = await Ticket.find({ bookingId: booking._id }).session(session || null).lean();
+    const activeTickets = allTickets.filter(t => t.status === 'active');
 
-    for (const oldTicket of activeTickets) {
-      const baseMatch = oldTicket.ticketId.match(/^(TKT-[A-Z0-9]+-\d+)(?:-R\d+)?$/);
-      const baseTicketId = baseMatch ? baseMatch[1] : oldTicket.ticketId;
-
-      const count = await Ticket.countDocuments({
-        ticketId: { $regex: new RegExp(`^${baseTicketId}(?:-R\\d+)?$`) }
-      }).session(session || null);
-
-      let rev = count;
-      let newTicketId = `${baseTicketId}-R${rev}`;
-      while (await Ticket.exists({ ticketId: newTicketId }).session(session || null)) {
-        rev++;
-        newTicketId = `${baseTicketId}-R${rev}`;
+    if (activeTickets.length > 0) {
+      const maxRevisionMap = new Map<string, number>();
+      
+      // Calculate highest ticket revisions in memory
+      for (const t of allTickets) {
+        const baseMatch = t.ticketId.match(/^(TKT-[A-Z0-9]+-\d+)(?:-R(\d+))?$/);
+        if (baseMatch) {
+          const base = baseMatch[1];
+          const rev = baseMatch[2] ? parseInt(baseMatch[2], 10) : 0;
+          const currentMax = maxRevisionMap.get(base) ?? -1;
+          if (rev > currentMax) {
+            maxRevisionMap.set(base, rev);
+          }
+        }
       }
 
-      // Mark old ticket as replaced
-      oldTicket.status = 'replaced';
-      oldTicket.replacedByTicketId = newTicketId;
-      oldTicket.replacedAt = new Date();
-      oldTicket.replacementReason = 'EMAIL_CORRECTION';
-      await oldTicket.save({ session: session || undefined });
+      const bulkUpdateOps = [];
+      const newTickets = [];
+      const now = new Date();
 
-      // Create new active ticket
-      const newTicket = new Ticket({
-        ticketId: newTicketId,
-        bookingId: booking._id,
-        eventId: booking.eventId,
-        tierName: oldTicket.tierName,
-        tier: oldTicket.tier,
-        admits: oldTicket.admits,
-        seatId: oldTicket.seatId,
-        row: oldTicket.row,
-        seatNumber: oldTicket.seatNumber,
-        section: oldTicket.section,
-        qrCode: newTicketId,
-        qrCodeImage: `/api/public/tickets/${newTicketId}/qr`,
-        status: 'active',
-        assignmentStatus: 'unassigned',
-      });
-      await newTicket.save({ session: session || undefined });
+      for (const oldTicket of activeTickets) {
+        const baseMatch = oldTicket.ticketId.match(/^(TKT-[A-Z0-9]+-\d+)(?:-R\d+)?$/);
+        const baseTicketId = baseMatch ? baseMatch[1] : oldTicket.ticketId;
+
+        const highestRev = maxRevisionMap.get(baseTicketId) ?? 0;
+        const nextRev = highestRev + 1;
+        const newTicketId = `${baseTicketId}-R${nextRev}`;
+        maxRevisionMap.set(baseTicketId, nextRev);
+
+        bulkUpdateOps.push({
+          updateOne: {
+            filter: { _id: oldTicket._id },
+            update: {
+              $set: {
+                status: 'replaced' as const,
+                replacedByTicketId: newTicketId,
+                replacedAt: now,
+                replacementReason: 'EMAIL_CORRECTION' as const,
+                updatedAt: now
+              }
+            }
+          }
+        });
+
+        newTickets.push({
+          ticketId: newTicketId,
+          bookingId: booking._id,
+          eventId: oldTicket.eventId,
+          tierName: oldTicket.tierName,
+          tier: oldTicket.tier,
+          admits: oldTicket.admits,
+          seatId: oldTicket.seatId,
+          row: oldTicket.row,
+          seatNumber: oldTicket.seatNumber,
+          section: oldTicket.section,
+          qrCode: newTicketId,
+          qrCodeImage: `/api/public/tickets/${newTicketId}/qr`,
+          status: 'active' as const,
+          assignmentStatus: 'unassigned' as const,
+        });
+      }
+
+      // 3. Execute bulk status updates and verify result atomicity
+      const bulkWriteResult = await Ticket.bulkWrite(bulkUpdateOps, { session });
+      if (bulkWriteResult.modifiedCount !== activeTickets.length) {
+        throw new Error(`Bulk write mismatch: expected ${activeTickets.length} modified tickets, got ${bulkWriteResult.modifiedCount}`);
+      }
+
+      // 4. Execute batch insertions and verify result atomicity
+      const insertedTickets = await Ticket.insertMany(newTickets, { session });
+      if (insertedTickets.length !== newTickets.length) {
+        throw new Error(`Bulk insert mismatch: expected ${newTickets.length} inserted tickets, got ${insertedTickets.length}`);
+      }
     }
-
-    // Fetch executing admin's email and name for descriptive log representation
-    const admin = await AdminModel.findById(adminId).session(session || null);
-    const adminDetails = admin ? `${admin.name} (${admin.email})` : adminId;
 
     const postCommitPayload = {
       bookingId: booking._id.toString(),
