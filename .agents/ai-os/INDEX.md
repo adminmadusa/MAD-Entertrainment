@@ -210,6 +210,7 @@ This index lists all currently active and planned documents within the AI Operat
 - [runtime-engine/engine.ts](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/runtime-engine/engine.ts)
 - [runtime-engine/validators/README.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/runtime-engine/validators/README.md)
 - [runtime-engine/autofix/README.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/runtime-engine/autofix/README.md)
+- [runtime-engine/orchestrator/README.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/runtime-engine/orchestrator/README.md)
 
 ## Registries (Auto-Generated Catalogs)
 - `skills/catalog.json` **[PLANNED]**
