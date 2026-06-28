@@ -4,3 +4,4 @@ packages:
 
 overrides:
   esbuild: 0.28.0
+  ws: ^8.21.0

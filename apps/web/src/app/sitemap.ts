@@ -1,6 +1,6 @@
 import type { MetadataRoute } from 'next';
 
-import { API_URL } from '@mad/shared/config/frontend';
+import { safeServerFetch } from '@/lib/api/server.service';
 
 const SITE_URL = 'https://madentertainment.in';
 
@@ -38,71 +38,44 @@ const STATIC_ROUTES: MetadataRoute.Sitemap = [
   },
 ];
 
+interface SitemapEventResponse {
+  events?: { slug?: string }[];
+}
+
+interface SitemapDJResponse {
+  data?: { slug?: string }[];
+  djOperators?: { slug?: string }[];
+  djs?: { slug?: string }[];
+}
+
 /** Fetch all published event slugs for dynamic sitemap entries */
 async function getEventSlugs(): Promise<string[]> {
-  if (!API_URL || !API_URL.startsWith('http')) {
-    console.warn(
-      'Sitemap: NEXT_PUBLIC_API_URL missing or invalid. Skipping dynamic sitemap entries.'
-    );
-    return [];
-  }
-
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 5000);
-
-  try {
-    // Fetch up to 100 events to generate slug URLs (matches backend maximum allowed limit)
-    const res = await fetch(`${API_URL}/events?page=1&limit=100`, {
-      next: { revalidate: 3600 }, // Sitemap is rebuilt hourly
-      signal: controller.signal,
-    });
-    clearTimeout(timeoutId);
-    if (!res.ok) return [];
-    const body = await res.json();
-    const events: { slug?: string }[] = body?.data?.events ?? [];
-    return events.map((e) => e.slug).filter((s): s is string => Boolean(s));
-  } catch (error) {
-    clearTimeout(timeoutId);
-    console.error(
-      'Sitemap: Failed to fetch dynamic event sitemap entries:',
-      error
-    );
-    return [];
-  }
+  const body = await safeServerFetch<SitemapEventResponse>(
+    '/events?page=1&limit=100',
+    {
+      fallback: { events: [] },
+      revalidate: 3600,
+      timeoutMs: 5000,
+      label: 'Sitemap Event Slugs',
+    }
+  );
+  const events = body?.events ?? [];
+  return events.map((e) => e.slug).filter((s): s is string => Boolean(s));
 }
 
 /** Fetch all published DJ operator slugs for dynamic sitemap entries */
 async function getDJSlugs(): Promise<string[]> {
-  if (!API_URL || !API_URL.startsWith('http')) {
-    console.warn(
-      'Sitemap: NEXT_PUBLIC_API_URL missing or invalid. Skipping dynamic sitemap entries.'
-    );
-    return [];
-  }
-
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 5000);
-
-  try {
-    // Fetch up to 100 DJ operators to generate slug URLs (matches backend maximum allowed limit)
-    const res = await fetch(`${API_URL}/dj-operators?limit=100`, {
-      next: { revalidate: 3600 },
-      signal: controller.signal,
-    });
-    clearTimeout(timeoutId);
-    if (!res.ok) return [];
-    const body = await res.json();
-    const payload = body?.data ?? {};
-    const djs: { slug?: string }[] = payload.data ?? payload.djOperators ?? payload.djs ?? [];
-    return djs.map((d) => d.slug).filter((s): s is string => Boolean(s));
-  } catch (error) {
-    clearTimeout(timeoutId);
-    console.error(
-      'Sitemap: Failed to fetch dynamic DJ sitemap entries:',
-      error
-    );
-    return [];
-  }
+  const body = await safeServerFetch<SitemapDJResponse>(
+    '/dj-operators?limit=100',
+    {
+      fallback: {},
+      revalidate: 3600,
+      timeoutMs: 5000,
+      label: 'Sitemap DJ Slugs',
+    }
+  );
+  const djs = body?.data ?? body?.djOperators ?? body?.djs ?? [];
+  return djs.map((d) => d.slug).filter((s): s is string => Boolean(s));
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {

@@ -25,10 +25,5 @@
   },
   "dependencies": {
     "socket.io-client": "^4.8.1"
-  },
-  "pnpm": {
-    "overrides": {
-      "ws": "^8.21.0"
-    }
   }
 }

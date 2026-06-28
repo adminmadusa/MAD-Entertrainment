@@ -2,79 +2,159 @@ import 'server-only';
 import { Event, DJOperator } from '@mad/types';
 import { API_URL } from '@mad/shared/config/frontend';
 
-// Cache configuration
-const CACHE_OPTIONS = {
-  next: {
-    revalidate: 60, // Cache for 60 seconds (ISR)
-  },
-};
+// Detect Next.js build compilation phase
+const isBuildPhase = process.env.NEXT_PHASE === 'phase-production-build';
+
+export type SafeFetchOptions<T> = RequestInit & {
+  timeoutMs?: number;
+  revalidate?: number;
+  retries?: number;
+  label?: string;
+} & (
+  | { failFast: true; fallback?: T }
+  | { failFast?: false; fallback: T }
+);
 
 /**
- * Fetch with timeout protection to prevent Safari streaming stalls.
- * Uses AbortController to enforce 8-second timeout on all server-side data fetches.
+ * Centrally manages all server-side HTTP data fetching.
+ * Handles timeouts, build-phase detection, retry backoffs, and structured logs.
  */
-async function fetchWithTimeout(
-  url: string,
-  options: RequestInit & { next?: { revalidate?: number } } = {},
-  timeoutMs: number = 8000
-) {
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+type UnpackedOptions<T> = RequestInit & {
+  fallback?: T;
+  failFast?: boolean;
+  timeoutMs?: number;
+  revalidate?: number;
+  retries?: number;
+  label?: string;
+};
 
-  try {
-    return await fetch(url, {
-      ...options,
-      signal: controller.signal,
-    });
-  } finally {
-    clearTimeout(timeoutId);
+export async function safeServerFetch<T>(
+  endpoint: string,
+  options: SafeFetchOptions<T>
+): Promise<T> {
+  const {
+    fallback,
+    failFast = false,
+    timeoutMs = 8000,
+    revalidate = 60,
+    retries = 1,
+    label = 'Server Fetch',
+    headers,
+    ...rest
+  } = options as UnpackedOptions<T>;
+
+  if (isBuildPhase) {
+    console.warn(`[Build] Skipped ${label} fetch during production compilation.`);
+    return fallback as T;
   }
+
+  const url = `${API_URL}${endpoint}`;
+  const method = (rest.method ?? 'GET').toUpperCase();
+  const isIdempotent = ['GET', 'HEAD', 'OPTIONS', 'TRACE'].includes(method);
+  let attempt = 0;
+
+  const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+  while (attempt <= retries) {
+    attempt++;
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+    try {
+      const res = await fetch(url, {
+        ...rest,
+        headers: {
+          'Content-Type': 'application/json',
+          ...headers,
+        },
+        next: { revalidate },
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+
+      // Disable retry for client errors (4xx)
+      if (res.status >= 400 && res.status < 500) {
+        throw new Error(`HTTP ${res.status}: Client request invalid. Skipping retry.`);
+      }
+
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}: Server returned error state.`);
+      }
+
+      const body = await res.json();
+      return (body?.data ?? body) as T;
+    } catch (error) {
+      clearTimeout(timeoutId);
+
+      const isTimeout = error instanceof DOMException && error.name === 'AbortError';
+      let errorMsg = String(error);
+      if (isTimeout) {
+        errorMsg = `Timeout after ${timeoutMs}ms`;
+      } else if (error instanceof Error) {
+        errorMsg = error.message;
+      }
+      const isClientError = errorMsg.includes('Client request invalid');
+
+      // Only retry if eligible (not client error, idempotent method, and retries remain)
+      if (attempt <= retries && isIdempotent && !isClientError) {
+        const backoffMs = attempt * 200;
+        console.warn(`[Server Fetch] Retrying ${label} (${attempt}/${retries}) in ${backoffMs}ms due to: ${errorMsg}`);
+        await delay(backoffMs);
+        continue;
+      }
+
+      if (failFast) {
+        console.error(`[Server Fetch Error] ${label} failed permanently on attempt ${attempt}: ${errorMsg}`);
+        throw error;
+      }
+
+      console.error(`[Server Fetch Error] ${label} failed permanently after ${attempt} attempts. Fallback returned. Error: ${errorMsg}`);
+      return fallback as T;
+    }
+  }
+
+  return fallback as T;
 }
 
 export async function serverGetFeaturedEvents(): Promise<Event[]> {
-  try {
-    const url = `${API_URL}/events?page=1&limit=6`;
-    const res = await fetchWithTimeout(url, CACHE_OPTIONS, 8000);
-    if (!res.ok) {
-      const responseText = await res.text();
-      throw new Error(`HTTP error! status: ${res.status}; response: ${responseText}`);
+  const payload = await safeServerFetch<{ events: Event[] }>(
+    '/events?page=1&limit=6',
+    {
+      fallback: { events: [] },
+      revalidate: 60,
+      timeoutMs: 8000,
+      retries: 1,
+      label: 'Featured Events',
     }
-
-    const body = await res.json();
-    const payload = body?.data || {};
-    return Array.isArray(payload.events) ? payload.events : [];
-  } catch (error) {
-    const errorMsg = error instanceof Error ? error.message : String(error);
-    console.error('[server-fetch] Featured events error:', errorMsg);
-    return [];
-  }
+  );
+  return Array.isArray(payload.events) ? payload.events : [];
 }
 
 export async function serverGetDJs(): Promise<DJOperator[]> {
-  try {
-    const url = `${API_URL}/dj-operators?limit=6&includeTotal=false`;
-    const res = await fetchWithTimeout(url, CACHE_OPTIONS, 8000);
-    if (!res.ok) {
-      const responseText = await res.text();
-      throw new Error(`HTTP error! status: ${res.status}; response: ${responseText}`);
+  const payload = await safeServerFetch<{
+    data?: DJOperator[];
+    djOperators?: DJOperator[];
+    djs?: DJOperator[];
+  }>(
+    '/dj-operators?limit=6&includeTotal=false',
+    {
+      fallback: {},
+      revalidate: 60,
+      timeoutMs: 8000,
+      retries: 1,
+      label: 'DJ Operators',
     }
+  );
 
-    const body = await res.json();
-    const payload = body?.data || {};
-    
-    if (Array.isArray(payload.data)) {
-      return payload.data;
-    }
-    if (Array.isArray(payload.djOperators)) {
-      return payload.djOperators;
-    }
-    if (Array.isArray(payload.djs)) {
-      return payload.djs;
-    }
-    return [];
-  } catch (error) {
-    const errorMsg = error instanceof Error ? error.message : String(error);
-    console.error('[server-fetch] DJ Operators error:', errorMsg);
-    return [];
+  if (Array.isArray(payload.data)) {
+    return payload.data;
   }
+  if (Array.isArray(payload.djOperators)) {
+    return payload.djOperators;
+  }
+  if (Array.isArray(payload.djs)) {
+    return payload.djs;
+  }
+  return [];
 }
