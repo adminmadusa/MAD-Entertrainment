@@ -109,20 +109,16 @@ This index lists all currently active and planned documents within the AI Operat
 - [anti-patterns/security/PRODUCTION_MOCK_PAYMENT.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/anti-patterns/security/PRODUCTION_MOCK_PAYMENT.md)
 
 ## Governance Layer
-- `governance/README.md` **[PLANNED]**
-- `governance/GOVERNANCE.md` **[PLANNED]** — governance matrix
-- `governance/foundation/amendment-policy.md` **[PLANNED]**
-- `governance/architecture/adr-lifecycle.md` **[PLANNED]**
-- `governance/domain/rule-change-policy.md` **[PLANNED]**
-- `governance/standards/standards-policy.md` **[PLANNED]**
-- `governance/skills/skill-lifecycle.md` **[PLANNED]**
-- `governance/prompts/prompt-lifecycle.md` **[PLANNED]**
-- `governance/templates/template-policy.md` **[PLANNED]**
-- `governance/knowledge/ki-policy.md` **[PLANNED]**
-- `governance/git/branch-policy.md` **[PLANNED]**
-- `governance/security/security-policy.md` **[PLANNED]**
-- `governance/deployment/deployment-policy.md` **[PLANNED]**
-- `governance/repository/hygiene-policy.md` **[PLANNED]**
+- [governance/README.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/governance/README.md)
+- [governance/AUDIT.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/governance/AUDIT.md)
+- [governance/CODE_REVIEW.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/governance/CODE_REVIEW.md)
+- [governance/TESTING.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/governance/TESTING.md)
+- [governance/GIT.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/governance/GIT.md)
+- [governance/PULL_REQUEST.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/governance/PULL_REQUEST.md)
+- [governance/DEPLOYMENT.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/governance/DEPLOYMENT.md)
+- [governance/ADR.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/governance/ADR.md)
+- [governance/OWNERSHIP.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/governance/OWNERSHIP.md)
+- [governance/LIFECYCLE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/governance/LIFECYCLE.md)
 
 ## Skills Layer
 - `skills/README.md` **[PLANNED]**
