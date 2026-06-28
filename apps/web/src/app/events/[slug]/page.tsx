@@ -2,10 +2,9 @@ import type { Metadata, ResolvingMetadata } from 'next';
 
 import { publicGetEventBySlug } from '@/lib/api/public.service';
 import { getCachedEvent } from '@/utils/cached-event';
+import { buildBreadcrumbJsonLd, SITE_URL } from '@/utils/seo';
 
 import EventDetailClient from './EventDetailClient';
-
-const SITE_URL = 'https://madentertainment.in';
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -144,13 +143,28 @@ export default async function EventPage({ params }: Props) {
     <>
       {/* JSON-LD structured data — enables Google rich event cards in search */}
       {initialEvent && (
-        <script
-          type="application/ld+json"
-          // eslint-disable-next-line react/no-danger
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify(buildEventJsonLd(initialEvent, slug)),
-          }}
-        />
+        <>
+          <script
+            type="application/ld+json"
+            // eslint-disable-next-line react/no-danger
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify(buildEventJsonLd(initialEvent, slug)),
+            }}
+          />
+          <script
+            type="application/ld+json"
+            // eslint-disable-next-line react/no-danger
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify(
+                buildBreadcrumbJsonLd([
+                  { name: 'Home', url: SITE_URL },
+                  { name: 'Events', url: `${SITE_URL}/events` },
+                  { name: initialEvent.title, url: `${SITE_URL}/events/${slug}` },
+                ])
+              ),
+            }}
+          />
+        </>
       )}
 
       <EventDetailClient slug={slug} initialEvent={initialEvent} />
