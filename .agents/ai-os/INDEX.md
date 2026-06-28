@@ -32,31 +32,21 @@ This index lists all currently active and planned documents within the AI Operat
 - [repository/DEPLOYMENT_MAP.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/repository/DEPLOYMENT_MAP.md)
 
 ## Domain Layer
-- `domain/README.md` **[PLANNED]**
-- `domain/auth/lifecycle.md` **[PLANNED]**
-- `domain/auth/rules.md` **[PLANNED]**
-- `domain/auth/schema.md` **[PLANNED]**
-- `domain/bookings/lifecycle.md` **[PLANNED]**
-- `domain/bookings/rules.md` **[PLANNED]**
-- `domain/bookings/schema.md` **[PLANNED]**
-- `domain/payments/lifecycle.md` **[PLANNED]**
-- `domain/payments/rules.md` **[PLANNED]**
-- `domain/payments/schema.md` **[PLANNED]**
-- `domain/tickets/lifecycle.md` **[PLANNED]**
-- `domain/tickets/rules.md` **[PLANNED]**
-- `domain/tickets/schema.md` **[PLANNED]**
-- `domain/events/lifecycle.md` **[PLANNED]**
-- `domain/events/rules.md` **[PLANNED]**
-- `domain/events/schema.md` **[PLANNED]**
-- `domain/venues/lifecycle.md` **[PLANNED]**
-- `domain/venues/rules.md` **[PLANNED]**
-- `domain/venues/schema.md` **[PLANNED]**
-- `domain/artists/lifecycle.md` **[PLANNED]**
-- `domain/artists/rules.md` **[PLANNED]**
-- `domain/artists/schema.md` **[PLANNED]**
-- `domain/notifications/lifecycle.md` **[PLANNED]**
-- `domain/notifications/rules.md` **[PLANNED]**
-- `domain/notifications/schema.md` **[PLANNED]**
+- [domain/README.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/domain/README.md)
+- [domain/GLOSSARY.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/domain/GLOSSARY.md)
+- [domain/CAPABILITIES.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/domain/CAPABILITIES.md)
+- [domain/ENTITIES.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/domain/ENTITIES.md)
+- [domain/STATE_MACHINES.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/domain/STATE_MACHINES.md)
+- [domain/BUSINESS_RULES.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/domain/BUSINESS_RULES.md)
+- [domain/EVENTS.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/domain/EVENTS.md)
+- [domain/AUTHENTICATION.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/domain/AUTHENTICATION.md)
+- [domain/BOOKINGS.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/domain/BOOKINGS.md)
+- [domain/PAYMENTS.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/domain/PAYMENTS.md)
+- [domain/TICKETS.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/domain/TICKETS.md)
+- [domain/EVENT_MANAGEMENT.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/domain/EVENT_MANAGEMENT.md)
+- [domain/NOTIFICATIONS.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/domain/NOTIFICATIONS.md)
+- [domain/ADMINISTRATION.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/domain/ADMINISTRATION.md)
+- [domain/INTEGRATIONS.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/domain/INTEGRATIONS.md)
 
 ## Architecture Layer
 - `architecture/README.md` **[PLANNED]**
