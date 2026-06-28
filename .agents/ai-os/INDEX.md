@@ -205,6 +205,10 @@ This index lists all currently active and planned documents within the AI Operat
 - [runtime/STATE_MACHINE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/runtime/STATE_MACHINE.md)
 - `runtime/indexes/` **[PLANNED]** — vector embeddings directory
 
+## Executable Runtime Engine
+- [runtime-engine/README.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/runtime-engine/README.md)
+- [runtime-engine/engine.ts](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/runtime-engine/engine.ts)
+
 ## Registries (Auto-Generated Catalogs)
 - `skills/catalog.json` **[PLANNED]**
 - `skills/draft-catalog.json` **[PLANNED]**

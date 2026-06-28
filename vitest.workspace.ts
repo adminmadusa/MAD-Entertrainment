@@ -67,5 +67,22 @@ export default [
         '**/.next/**'
       ]
     }
+  },
+  {
+    test: {
+      name: 'ai-os',
+      environment: 'node',
+      globals: true,
+      include: [
+        '.agents/ai-os/runtime-engine/**/*.test.ts'
+      ],
+      exclude: [
+        '**/node_modules/**',
+        '**/dist/**',
+        '**/e2e/**',
+        '**/.next/**'
+      ]
+    }
   }
 ];
+
