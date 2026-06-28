@@ -49,22 +49,21 @@ This index lists all currently active and planned documents within the AI Operat
 - [domain/INTEGRATIONS.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/domain/INTEGRATIONS.md)
 
 ## Architecture Layer
-- `architecture/README.md` **[PLANNED]**
-- `architecture/overview.md` **[PLANNED]** — system architecture summary
-- `architecture/decisions/README.md` **[PLANNED]**
-- `architecture/decisions/adr-0001-root-directory.md` **[PLANNED]** (Refer to [ADR Pack v1.0](file:///Users/admin/.gemini/antigravity-ide/brain/779811d6-484f-466f-9034-b88edfa29085/AI_OS_ADR_Pack_v1.md))
-- `architecture/decisions/adr-0002-schema-organization.md` **[PLANNED]**
-- `architecture/decisions/adr-0003-governance-ownership.md` **[PLANNED]**
-- `architecture/decisions/adr-0004-skill-lifecycle.md` **[PLANNED]**
-- `architecture/decisions/adr-0005-knowledge-ownership.md` **[PLANNED]**
-- `architecture/decisions/adr-0006-conflict-resolution.md` **[PLANNED]**
-- `architecture/decisions/adr-0007-discovery-model.md` **[PLANNED]**
-- `architecture/decisions/adr-0008-registry-architecture.md` **[PLANNED]**
-- `architecture/decisions/adr-0009-version-compatibility.md` **[PLANNED]**
-- `architecture/decisions/adr-0010-freeze-policy.md` **[PLANNED]**
-- `architecture/decisions/adr-0011-monorepo-structure.md` **[PLANNED]**
-- `architecture/contracts/README.md` **[PLANNED]**
-- `architecture/diagrams/README.md` **[PLANNED]**
+- [architecture/README.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/architecture/README.md)
+- [architecture/SYSTEM_OVERVIEW.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/architecture/SYSTEM_OVERVIEW.md)
+- [architecture/ARCHITECTURAL_PRINCIPLES.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/architecture/ARCHITECTURAL_PRINCIPLES.md)
+- [architecture/COMPONENTS.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/architecture/COMPONENTS.md)
+- [architecture/PACKAGE_BOUNDARIES.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/architecture/PACKAGE_BOUNDARIES.md)
+- [architecture/REQUEST_LIFECYCLE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/architecture/REQUEST_LIFECYCLE.md)
+- [architecture/INTEGRATION_ARCHITECTURE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/architecture/INTEGRATION_ARCHITECTURE.md)
+- [architecture/SECURITY_ARCHITECTURE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/architecture/SECURITY_ARCHITECTURE.md)
+- [architecture/PERFORMANCE_ARCHITECTURE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/architecture/PERFORMANCE_ARCHITECTURE.md)
+- [architecture/RESILIENCE_ARCHITECTURE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/architecture/RESILIENCE_ARCHITECTURE.md)
+- [architecture/OBSERVABILITY_ARCHITECTURE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/architecture/OBSERVABILITY_ARCHITECTURE.md)
+- [architecture/DECISION_INDEX.md](file:///Users/admin/Desktop/MAD%20Entertrainment/.agents/ai-os/architecture/DECISION_INDEX.md)
+- `architecture/decisions/` **[PLANNED]**
+- `architecture/contracts/` **[PLANNED]**
+- `architecture/diagrams/` **[PLANNED]**
 
 ## Standards Layer
 - `standards/README.md` **[PLANNED]**
