@@ -34,6 +34,7 @@ import { runInTransaction } from '../../utils/transaction';
 import { cancelBooking, executeCancelBookingSideEffects } from '../admin/booking.service';
 import { PublicBookingService } from './booking.service';
 import { PaymentRefundService } from './payment-refund.service';
+import { PaymentInventoryService } from './payment-inventory.service';
 
 export interface StripeChargeWebhookPayload {
   id: string;
@@ -1260,168 +1261,25 @@ export class PaymentService {
 
         // 1. Pre-validation for Late Recovery
         if (isLateRecovery) {
-          // Validate general capacity
-          if (event.soldCount + event.reservedCount + booking.totalTickets > event.totalCapacity) {
+          try {
+            await PaymentInventoryService.validateLateRecoveryCapacity(booking, event, allSeatIds, session);
+          } catch (err: any) {
             _payment.status = PaymentStatus.FAILED;
             _payment.failedAt = new Date();
-            _payment.failureReason = 'LATE_PAYMENT_RECOVERY_REJECTED_CAPACITY_EXHAUSTED';
+            _payment.failureReason = err.message === 'SEAT_ALLOCATION_FAILED'
+              ? 'LATE_PAYMENT_RECOVERY_REJECTED_SEATS_TAKEN'
+              : 'LATE_PAYMENT_RECOVERY_REJECTED_CAPACITY_EXHAUSTED';
             await _payment.save({ session });
             await this.triggerRefundRequest(booking, _payment, _payment.failureReason, session, 'auto_recovery', 'EXPIRED_BOOKING_CAPACITY_UNAVAILABLE');
             return { success: false, booking: null };
           }
-
-          // Validate tier capacity
-          for (const bookedTicket of booking.tickets) {
-            const tierConfig = event.ticketTiers.find((t) => t.tier === bookedTicket.tier);
-            if (!tierConfig) {
-              _payment.status = PaymentStatus.FAILED;
-              _payment.failedAt = new Date();
-              _payment.failureReason = 'LATE_PAYMENT_RECOVERY_REJECTED_INVALID_TIER';
-              await _payment.save({ session });
-              await this.triggerRefundRequest(booking, _payment, _payment.failureReason, session, 'auto_recovery', 'EXPIRED_BOOKING_CAPACITY_UNAVAILABLE');
-              return { success: false, booking: null };
-            }
-
-            // Fetch active reservations count for this specific tier
-            const activeTierAgg = await Reservation.aggregate([
-              {
-                $match: {
-                  eventId: event._id,
-                  tier: bookedTicket.tier,
-                  status: { $in: [ReservationStatus.RESERVED, ReservationStatus.PENDING_PAYMENT] }
-                }
-              },
-              { $group: { _id: null, total: { $sum: '$quantity' } } }
-            ]).session(session);
-            const tierReserved = activeTierAgg[0]?.total ?? 0;
-
-            if (tierConfig.soldCount + tierReserved + bookedTicket.quantity * (tierConfig.groupSize || 1) > tierConfig.totalCapacity) {
-              _payment.status = PaymentStatus.FAILED;
-              _payment.failedAt = new Date();
-              _payment.failureReason = 'LATE_PAYMENT_RECOVERY_REJECTED_CAPACITY_EXHAUSTED';
-              await _payment.save({ session });
-              await this.triggerRefundRequest(booking, _payment, _payment.failureReason, session, 'auto_recovery', 'EXPIRED_BOOKING_CAPACITY_UNAVAILABLE');
-              return { success: false, booking: null };
-            }
-          }
-
-          // Validate seats status
-          if (event.bookingMode === 'seat_based' && allSeatIds.length > 0) {
-            const layoutQuery = SeatLayout.findOne({
-              eventId: event._id,
-              seats: {
-                $elemMatch: {
-                  seatId: { $in: allSeatIds },
-                  status: { $ne: SeatStatus.AVAILABLE }
-                }
-              }
-            }).session(session);
-            const layout = await (layoutQuery && typeof layoutQuery.lean === 'function' ? layoutQuery.lean() : layoutQuery);
-            if (layout) {
-              _payment.status = PaymentStatus.FAILED;
-              _payment.failedAt = new Date();
-              _payment.failureReason = 'LATE_PAYMENT_RECOVERY_REJECTED_SEATS_TAKEN';
-              await _payment.save({ session });
-              await this.triggerRefundRequest(booking, _payment, _payment.failureReason, session, 'auto_recovery', 'EXPIRED_BOOKING_CAPACITY_UNAVAILABLE');
-              return { success: false, booking: null };
-            }
-          }
         }
 
         // 2. Allocate Seats (SeatLayout update)
-        if (event.bookingMode === 'seat_based' && allSeatIds.length > 0) {
-          const seatUpdateResult = await SeatLayout.updateOne(
-            { eventId: event._id },
-            {
-              $set: {
-                'seats.$[seat].status': SeatStatus.BOOKED,
-                'seats.$[seat].bookedByBookingId': booking._id.toString()
-              },
-              $unset: {
-                'seats.$[seat].lockedBy': '',
-                'seats.$[seat].lockedAt': '',
-              },
-              $inc: {
-                'seats.$[seat].seatVersion': 1,
-              },
-            },
-            {
-              arrayFilters: [
-                {
-                  'seat.seatId': { $in: allSeatIds },
-                  $or: [
-                    { 'seat.bookedByBookingId': booking._id.toString() },
-                    { 'seat.status': SeatStatus.AVAILABLE }
-                  ]
-                },
-              ],
-              session,
-            }
-          );
-
-          if (seatUpdateResult.modifiedCount !== allSeatIds.length) {
-            throw new Error('SEAT_ALLOCATION_FAILED');
-          }
-        }
+        await PaymentInventoryService.allocateSeats(booking, event, allSeatIds, session);
 
         // 3. Allocate Event Capacity
-        const incUpdate: Record<string, number> = {
-          soldCount: booking.totalTickets,
-          eventVersion: 1,
-        };
-
-        for (const bookedTicket of booking.tickets) {
-          const tierIndex = event.ticketTiers.findIndex((t) => t.tier === bookedTicket.tier);
-          if (tierIndex !== -1) {
-            const groupSize = event.ticketTiers[tierIndex].groupSize || 1;
-            incUpdate[`ticketTiers.${tierIndex}.soldCount`] = bookedTicket.quantity * groupSize;
-          }
-        }
-
-        const eventQuery: any = { _id: event._id };
-        
-        if (isLateRecovery) {
-          eventQuery.$expr = {
-            $lte: [
-              { $add: ['$soldCount', '$reservedCount', booking.totalTickets] },
-              '$totalCapacity'
-            ]
-          };
-          
-          for (const bookedTicket of booking.tickets) {
-            const tierIndex = event.ticketTiers.findIndex((t) => t.tier === bookedTicket.tier);
-            if (tierIndex !== -1) {
-              const activeTierAgg = await Reservation.aggregate([
-                {
-                  $match: {
-                    eventId: event._id,
-                    tier: bookedTicket.tier,
-                    status: { $in: [ReservationStatus.RESERVED, ReservationStatus.PENDING_PAYMENT] }
-                  }
-                },
-                { $group: { _id: null, total: { $sum: '$quantity' } } }
-              ]).session(session);
-              const tierReserved = activeTierAgg[0]?.total ?? 0;
-              
-              const groupSize = event.ticketTiers[tierIndex].groupSize || 1;
-              eventQuery[`ticketTiers.${tierIndex}.soldCount`] = {
-                $lte: event.ticketTiers[tierIndex].totalCapacity - tierReserved - bookedTicket.quantity * groupSize
-              };
-            }
-          }
-        } else {
-          incUpdate.reservedCount = -booking.totalTickets;
-        }
-
-        const updatedEvent = await Event.findOneAndUpdate(
-          eventQuery,
-          { $inc: incUpdate },
-          { new: true, session }
-        );
-
-        if (!updatedEvent) {
-          throw new Error('EVENT_CAPACITY_ALLOCATION_FAILED');
-        }
+        const updatedEvent = await PaymentInventoryService.allocateEventCapacity(booking, event, isLateRecovery, session);
 
         // Check if user already exists matching the guestEmail
         const user = await UserModel.findOne({
