@@ -1,29 +1,79 @@
 // scripts/governance/core/knowledge_graph.ts
 import { existsSync, readFileSync, writeFileSync, readdirSync, statSync } from 'fs';
 import { resolve, join, relative } from 'path';
+import { createHash } from 'crypto';
 import { DependencyAnalyzer } from './dependency_analyzer';
 import { baselinesDir } from './finding_manager';
+
+export interface CacheEntry {
+  hash: string;
+  lastModified: number;
+  dependencies: string[];
+  exports: string[];
+  dynamicImports: string[];
+  assetReferences: string[];
+}
 
 export interface GraphCache {
   version: string;
   timestamp: string;
-  files: Record<string, { size: number; mtime: number }>;
-  graph: Record<string, string[]>;
+  files: Record<string, CacheEntry>;
+}
+
+export interface GraphMetrics {
+  scannedFiles: number;
+  parsedFiles: number;
+  cacheHits: number;
+  cacheMisses: number;
+  parserFailures: number;
+  graphBuildDurationMs: number;
 }
 
 export class KnowledgeGraph {
   private static workspaceRoot = resolve(__dirname, '../../..');
   private static cacheFile = join(baselinesDir, 'cached-dependency-graph.json');
-  private static graphVersion = '1.0.0';
+  private static graphVersion = '1.1.0'; // Updated schema version
 
   private graph = new Map<string, string[]>(); // file -> files it imports
-  private consumers = new Map<string, string[]>(); // file -> files that import it
+  private consumers = new Map<string, Set<string>>(); // file -> files that import it
+  
+  // Cache detailed metadata for each file
+  private fileMetadata = new Map<string, CacheEntry>();
+
+  private metrics: GraphMetrics = {
+    scannedFiles: 0,
+    parsedFiles: 0,
+    cacheHits: 0,
+    cacheMisses: 0,
+    parserFailures: 0,
+    graphBuildDurationMs: 0,
+  };
 
   constructor() {
     this.loadOrBuild();
   }
 
+  public getPerformanceMetrics(): GraphMetrics {
+    return this.metrics;
+  }
+
+  public getParserWarnings(): { file: string; message: string; line?: number }[] {
+    return DependencyAnalyzer.getWarnings();
+  }
+
+  private getFileHash(fullPath: string): string {
+    try {
+      const content = readFileSync(fullPath);
+      return createHash('sha1').update(content).digest('hex');
+    } catch (e) {
+      return '';
+    }
+  }
+
   private loadOrBuild() {
+    const buildStart = Date.now();
+    DependencyAnalyzer.clearWarnings();
+
     let cache: GraphCache | null = null;
     let cacheIsValid = false;
 
@@ -31,50 +81,87 @@ export class KnowledgeGraph {
       try {
         const content = readFileSync(KnowledgeGraph.cacheFile, 'utf8');
         cache = JSON.parse(content) as GraphCache;
+        // Invalidate on schema version mismatch
         if (cache.version === KnowledgeGraph.graphVersion) {
-          cacheIsValid = this.validateCacheFiles(cache.files);
+          cacheIsValid = true;
         }
       } catch (e) {
         // Fallback to rebuilding
       }
     }
 
-    if (cacheIsValid && cache) {
-      this.graph = new Map(Object.entries(cache.graph));
-      this.buildConsumersMap();
-      console.log('📦 Loaded Dependency Knowledge Graph from Cache.');
-    } else {
-      console.log('⚙️ Rebuilding Dependency Knowledge Graph...');
-      const startTime = Date.now();
-      this.rebuild();
-      console.log(`⚙️ Dependency Knowledge Graph rebuilt in ${Date.now() - startTime}ms.`);
-    }
-  }
-
-  private validateCacheFiles(cachedFiles: Record<string, { size: number; mtime: number }>): boolean {
     const currentFiles = this.scanAllWorkspaceFiles();
-    const cachedPaths = Object.keys(cachedFiles);
-    
-    if (cachedPaths.length !== currentFiles.length) {
-      return false;
+    this.metrics.scannedFiles = currentFiles.length;
+
+    const fileMap = new Map<string, string>(); // path -> hash
+    for (const file of currentFiles) {
+      const fullPath = resolve(KnowledgeGraph.workspaceRoot, file);
+      const hash = this.getFileHash(fullPath);
+      fileMap.set(file, hash);
     }
 
-    for (const path of currentFiles) {
-      const cached = cachedFiles[path];
-      if (!cached) return false;
+    if (cacheIsValid && cache) {
+      console.log('📦 Reconciling Dependency Knowledge Graph Incrementally...');
+      
+      const cachedFiles = cache.files || {};
+      const newCacheFiles: Record<string, CacheEntry> = {};
 
-      const fullPath = resolve(KnowledgeGraph.workspaceRoot, path);
-      try {
-        const stats = statSync(fullPath);
-        if (stats.size !== cached.size || stats.mtimeMs !== cached.mtime) {
-          return false;
+      // 1. Identify modified/new files and copy clean cache entries
+      for (const file of currentFiles) {
+        const currentHash = fileMap.get(file) || '';
+        const cached = cachedFiles[file];
+        const fullPath = resolve(KnowledgeGraph.workspaceRoot, file);
+        let mtime = 0;
+        try {
+          mtime = statSync(fullPath).mtimeMs;
+        } catch (e) {}
+
+        if (cached && cached.hash === currentHash) {
+          // Cache hit: Re-use clean entry
+          newCacheFiles[file] = cached;
+          this.graph.set(file, cached.dependencies);
+          this.fileMetadata.set(file, cached);
+          this.metrics.cacheHits++;
+        } else {
+          // Cache miss: Re-parse file
+          this.metrics.cacheMisses++;
+          const detailed = DependencyAnalyzer.analyzeFileDetailed(file);
+          const entry: CacheEntry = {
+            hash: currentHash,
+            lastModified: mtime,
+            dependencies: detailed.dependencies,
+            exports: detailed.exports,
+            dynamicImports: detailed.dynamicImports,
+            assetReferences: detailed.assetReferences,
+          };
+          newCacheFiles[file] = entry;
+          this.graph.set(file, detailed.dependencies);
+          this.fileMetadata.set(file, entry);
+          this.metrics.parsedFiles++;
         }
-      } catch (e) {
-        return false;
       }
+
+      this.buildConsumersMap();
+
+      // Write cached json
+      const updatedCache: GraphCache = {
+        version: KnowledgeGraph.graphVersion,
+        timestamp: new Date().toISOString(),
+        files: newCacheFiles,
+      };
+      
+      try {
+        writeFileSync(KnowledgeGraph.cacheFile, JSON.stringify(updatedCache, null, 2), 'utf8');
+      } catch (e) {}
+      
+    } else {
+      console.log('⚙️ Rebuilding Dependency Knowledge Graph from Scratch...');
+      this.rebuild(currentFiles, fileMap);
     }
 
-    return true;
+    this.metrics.parserFailures = DependencyAnalyzer.getWarnings().length;
+    this.metrics.graphBuildDurationMs = Date.now() - buildStart;
+    console.log(`⚙️ Dependency Knowledge Graph loaded in ${this.metrics.graphBuildDurationMs}ms (Hits: ${this.metrics.cacheHits}, Misses: ${this.metrics.cacheMisses}, Parsed: ${this.metrics.parsedFiles}).`);
   }
 
   private scanAllWorkspaceFiles(dir: string = KnowledgeGraph.workspaceRoot, fileList: string[] = []): string[] {
@@ -86,41 +173,64 @@ export class KnowledgeGraph {
         item === '.next' ||
         item === '.governance' ||
         item === 'dist' ||
-        item === '.turbo'
+        item === '.turbo' ||
+        item === 'coverage' ||
+        item === 'reports' ||
+        item === 'scratch'
       ) {
         continue;
       }
       
       const fullPath = join(dir, item);
-      const stats = statSync(fullPath);
+      let stats;
+      try {
+        stats = statSync(fullPath);
+      } catch (e) {
+        continue;
+      }
+
       if (stats.isDirectory()) {
         this.scanAllWorkspaceFiles(fullPath, fileList);
-      } else if (/\.(ts|tsx)$/.test(item) && !item.endsWith('.test.ts') && !item.endsWith('.test.tsx')) {
-        fileList.push(relative(KnowledgeGraph.workspaceRoot, fullPath));
+      } else {
+        // Supported file formats: Source, Assets, Configurations, Documentation
+        const isSupported = /\.(ts|tsx|js|jsx|css|scss|png|jpg|jpeg|svg|webp|md|json|yaml|yml)$/i.test(item);
+        if (isSupported) {
+          fileList.push(relative(KnowledgeGraph.workspaceRoot, fullPath));
+        }
       }
     }
     return fileList;
   }
 
-  private rebuild() {
-    const files = this.scanAllWorkspaceFiles();
-    const fileStats: Record<string, { size: number; mtime: number }> = {};
-    const rawGraph: Record<string, string[]> = {};
-
+  private rebuild(files: string[], fileMap: Map<string, string>) {
     this.graph.clear();
+    this.fileMetadata.clear();
+    const rawCacheFiles: Record<string, CacheEntry> = {};
 
     for (const file of files) {
       const fullPath = resolve(KnowledgeGraph.workspaceRoot, file);
+      let mtime = 0;
       try {
-        const stats = statSync(fullPath);
-        fileStats[file] = { size: stats.size, mtime: stats.mtimeMs };
-      } catch (e) {
-        continue;
-      }
+        mtime = statSync(fullPath).mtimeMs;
+      } catch (e) {}
 
-      const imports = DependencyAnalyzer.analyzeImports(file);
-      this.graph.set(file, imports);
-      rawGraph[file] = imports;
+      const detailed = DependencyAnalyzer.analyzeFileDetailed(file);
+      const hash = fileMap.get(file) || '';
+      
+      const entry: CacheEntry = {
+        hash,
+        lastModified: mtime,
+        dependencies: detailed.dependencies,
+        exports: detailed.exports,
+        dynamicImports: detailed.dynamicImports,
+        assetReferences: detailed.assetReferences,
+      };
+
+      this.graph.set(file, detailed.dependencies);
+      this.fileMetadata.set(file, entry);
+      rawCacheFiles[file] = entry;
+      this.metrics.parsedFiles++;
+      this.metrics.cacheMisses++;
     }
 
     this.buildConsumersMap();
@@ -129,20 +239,24 @@ export class KnowledgeGraph {
     const cache: GraphCache = {
       version: KnowledgeGraph.graphVersion,
       timestamp: new Date().toISOString(),
-      files: fileStats,
-      graph: rawGraph,
+      files: rawCacheFiles,
     };
 
-    writeFileSync(KnowledgeGraph.cacheFile, JSON.stringify(cache, null, 2), 'utf8');
+    try {
+      writeFileSync(KnowledgeGraph.cacheFile, JSON.stringify(cache, null, 2), 'utf8');
+    } catch (e) {}
   }
 
   private buildConsumersMap() {
     this.consumers.clear();
     for (const [file, imports] of this.graph.entries()) {
       for (const imp of imports) {
-        const list = this.consumers.get(imp) || [];
-        list.push(file);
-        this.consumers.set(imp, list);
+        let set = this.consumers.get(imp);
+        if (!set) {
+          set = new Set<string>();
+          this.consumers.set(imp, set);
+        }
+        set.add(file);
       }
     }
   }
@@ -151,7 +265,22 @@ export class KnowledgeGraph {
    * Returns all files that import this path directly.
    */
   public getDirectConsumers(filePath: string): string[] {
-    return this.consumers.get(filePath) || [];
+    const set = this.consumers.get(filePath);
+    return set ? Array.from(set) : [];
+  }
+
+  /**
+   * Returns all files imported directly by this path.
+   */
+  public getDependencies(filePath: string): string[] {
+    return this.graph.get(filePath) || [];
+  }
+
+  /**
+   * Returns detailed metadata (exports, dynamic imports, asset references) for a file.
+   */
+  public getDetailedData(filePath: string): CacheEntry | undefined {
+    return this.fileMetadata.get(filePath);
   }
 
   /**
@@ -176,5 +305,70 @@ export class KnowledgeGraph {
 
     return affected;
   }
+
+  /**
+   * Updates a file incrementally in the graph.
+   * Re-analyzes only the changed file and updates incoming/outgoing edges.
+   */
+  public updateFileIncremental(filePath: string) {
+    const fullPath = resolve(KnowledgeGraph.workspaceRoot, filePath);
+    if (!existsSync(fullPath)) {
+      // File deleted
+      const oldDeps = this.graph.get(filePath) || [];
+      this.graph.delete(filePath);
+      this.fileMetadata.delete(filePath);
+      
+      // Remove F from old dependencies' consumers
+      for (const d of oldDeps) {
+        const set = this.consumers.get(d);
+        if (set) {
+          set.delete(filePath);
+        }
+      }
+      return;
+    }
+
+    // File added or modified
+    const oldDeps = this.graph.get(filePath) || [];
+    const hash = this.getFileHash(fullPath);
+    let mtime = 0;
+    try {
+      mtime = statSync(fullPath).mtimeMs;
+    } catch (e) {}
+
+    const detailed = DependencyAnalyzer.analyzeFileDetailed(filePath);
+    const entry: CacheEntry = {
+      hash,
+      lastModified: mtime,
+      dependencies: detailed.dependencies,
+      exports: detailed.exports,
+      dynamicImports: detailed.dynamicImports,
+      assetReferences: detailed.assetReferences,
+    };
+
+    // Update graph and metadata maps
+    this.graph.set(filePath, detailed.dependencies);
+    this.fileMetadata.set(filePath, entry);
+
+    // Remove from old dependencies' consumers
+    for (const d of oldDeps) {
+      if (!detailed.dependencies.includes(d)) {
+        const set = this.consumers.get(d);
+        if (set) {
+          set.delete(filePath);
+        }
+      }
+    }
+
+    // Add to new dependencies' consumers
+    for (const d of detailed.dependencies) {
+      let set = this.consumers.get(d);
+      if (!set) {
+        set = new Set<string>();
+        this.consumers.set(d, set);
+      }
+      set.add(filePath);
+    }
+  }
 }
-export const graphInstanceVersion = '1.0.0';
+export const graphInstanceVersion = '1.1.0';
