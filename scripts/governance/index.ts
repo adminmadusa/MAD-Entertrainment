@@ -21,6 +21,8 @@ import { RepositoryHealthValidator } from './validators/repository_health_valida
 
 // Import new Audit Intelligence components
 import { UIDesignValidator } from './validators/ui_design_validator';
+import { SharedComponentValidator } from './validators/shared_component_validator';
+import { AccessibilityValidator } from './validators/accessibility_validator';
 import { AuditEngine } from './core/audit_engine';
 import { StatelessViolation } from './core/types';
 
@@ -119,6 +121,7 @@ async function run() {
 
   // Initialize Audit Engine
   const auditEngine = new AuditEngine();
+  metadata.knowledgeGraph = auditEngine.getKnowledgeGraph();
 
   // 1. Discover all markdown and source code files
   const markdownFiles = new Set<string>();
@@ -200,17 +203,33 @@ async function run() {
     }
   }
 
-  // 3. Execute Stateless UI Design Validator
-  console.log('🎨 Running stateless UI design system validator...');
-  const uiValidator = new UIDesignValidator();
-  const uiResult = await uiValidator.run(finalUiFiles, metadata);
-  
-  // Add UI design violations
-  const uiViolations = uiValidator.getStatelessViolations(finalUiFiles);
-  statelessViolations.push(...uiViolations);
+  // 3. Execute Stateless UI Design Validators
+  console.log('🎨 Running stateless UI design and architecture validators...');
+  const uiLoader = new ValidatorLoader();
+  uiLoader.registerAll([
+    new UIDesignValidator(),
+    new AccessibilityValidator(),
+    new SharedComponentValidator(),
+  ]);
 
-  // Combine standard and UI results for console logging compatibility
-  results.push(uiResult);
+  const uiResults = await uiLoader.runAll(finalUiFiles, metadata);
+  results.push(...uiResults);
+
+  // Convert UI results to StatelessViolation records for lifecycle reconciliation
+  for (const uiResult of uiResults) {
+    const allErrors = [...uiResult.errors, ...uiResult.warnings];
+    for (const error of allErrors) {
+      statelessViolations.push({
+        rule: error.rule,
+        path: error.file,
+        construct: 'UIElement',
+        line: error.line,
+        snippet: error.snippet,
+        message: error.message,
+        confidence: error.rule === 'VAL-UI-002' || error.rule === 'VAL-UI-003' ? 1.0 : 0.9,
+      });
+    }
+  }
 
   // 4. Run State and Lifecycle Reconciliation
   console.log('🧠 Running Audit Intelligence Engine...');

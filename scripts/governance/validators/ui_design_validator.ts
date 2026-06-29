@@ -1,8 +1,9 @@
 // scripts/governance/validators/ui_design_validator.ts
 import { readFileSync, existsSync } from 'fs';
 import { resolve } from 'path';
+import * as ts from 'typescript';
 import { GovernanceValidator } from '../core/validator';
-import { ValidationResult, ValidationError, StatelessViolation } from '../core/types';
+import { ValidationResult, ValidationError } from '../core/types';
 
 const workspaceRoot = resolve(__dirname, '../../..');
 
@@ -11,26 +12,127 @@ export class UIDesignValidator implements GovernanceValidator {
 
   public async run(files: string[], metadata: any): Promise<ValidationResult> {
     const startTime = Date.now();
-    const violations = this.getStatelessViolations(files);
-
     const errors: ValidationError[] = [];
     const warnings: ValidationError[] = [];
+    let parserFailures = 0;
 
-    for (const v of violations) {
-      const err: ValidationError = {
-        file: v.path,
-        line: v.line,
-        rule: v.rule,
-        severity: v.rule === 'VAL-UI-002' || v.rule === 'VAL-UI-003' ? 'ERROR' : 'WARNING',
-        snippet: v.snippet,
-        message: v.message,
+    for (const file of files) {
+      const fullPath = resolve(workspaceRoot, file);
+      if (!existsSync(fullPath)) continue;
+
+      // Skip test files
+      if (
+        file.endsWith('.test.tsx') ||
+        file.endsWith('.test.ts') ||
+        file.endsWith('.spec.tsx') ||
+        file.endsWith('.spec.ts')
+      ) {
+        continue;
+      }
+
+      let content: string;
+      try {
+        content = readFileSync(fullPath, 'utf8');
+      } catch (err) {
+        continue;
+      }
+
+      let sourceFile: ts.SourceFile;
+      try {
+        sourceFile = ts.createSourceFile(
+          fullPath,
+          content,
+          ts.ScriptTarget.Latest,
+          true
+        );
+      } catch (err: any) {
+        parserFailures++;
+        warnings.push({
+          file,
+          line: 1,
+          rule: 'AST-PARSE-WARNING',
+          severity: 'WARNING',
+          message: `Failed to parse file AST: ${err?.message || err}`,
+        });
+        continue;
+      }
+
+      const lines = content.split('\n');
+
+      // AST Walker for Rules
+      const walk = (node: ts.Node) => {
+        // Rule 1: VAL-UI-007 - Hardcoded Colors (Hex colors check)
+        if (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node)) {
+          const text = node.text;
+          const hexPattern = /#([0-9a-fA-F]{3,6}|[0-9a-fA-F]{8})\b/g;
+          if (hexPattern.test(text)) {
+            const { line } = ts.getLineAndCharacterOfPosition(sourceFile, node.getStart());
+            const hexMatch = text.match(hexPattern)?.[0];
+            warnings.push({
+              file,
+              line: line + 1,
+              rule: 'VAL-UI-007',
+              severity: 'WARNING',
+              snippet: lines[line]?.trim(),
+              message: `Hardcoded color '${hexMatch}' detected. Standardize using design tokens/theme variables.`,
+            });
+          }
+        }
+
+        ts.forEachChild(node, walk);
       };
 
-      if (err.severity === 'ERROR') {
-        errors.push(err);
-      } else {
-        warnings.push(err);
+      // Rule 2: VAL-UI-008 - Heading Hierarchy (h1 -> h2 -> h3 -> etc.)
+      const headings: { level: number; line: number }[] = [];
+      const collectHeadings = (node: ts.Node) => {
+        if (ts.isJsxOpeningElement(node) || ts.isJsxSelfClosingElement(node)) {
+          const tagName = node.tagName.getText(sourceFile);
+          const headingMatch = /^h([1-6])$/i.exec(tagName);
+          if (headingMatch) {
+            const level = parseInt(headingMatch[1], 10);
+            const { line } = ts.getLineAndCharacterOfPosition(sourceFile, node.getStart());
+            headings.push({ level, line });
+          }
+        }
+        ts.forEachChild(node, collectHeadings);
+      };
+
+      // Walk source file
+      try {
+        walk(sourceFile);
+        collectHeadings(sourceFile);
+      } catch (err: any) {
+        parserFailures++;
+        warnings.push({
+          file,
+          line: 1,
+          rule: 'AST-PARSE-WARNING',
+          severity: 'WARNING',
+          message: `AST traversal crashed: ${err?.message || err}`,
+        });
+        continue;
       }
+
+      // Process Heading Hierarchy
+      let maxLevel = 0;
+      for (const h of headings) {
+        if (maxLevel > 0 && h.level > maxLevel + 1) {
+          warnings.push({
+            file,
+            line: h.line + 1,
+            rule: 'VAL-UI-008',
+            severity: 'WARNING',
+            snippet: lines[h.line]?.trim(),
+            message: `Heading level jump detected (h${h.level} after h${maxLevel}). Headings must follow a strict sequential hierarchy (h1 -> h2 -> h3).`,
+          });
+        }
+        maxLevel = Math.max(maxLevel, h.level);
+      }
+    }
+
+    const duration = Date.now() - startTime;
+    if (duration > 200) {
+      console.warn(`[PERF ALERT] UIDesignValidator execution took ${duration}ms, exceeding budget of 200ms.`);
     }
 
     return {
@@ -39,108 +141,11 @@ export class UIDesignValidator implements GovernanceValidator {
       errors,
       warnings,
       statistics: {
-        violationsFound: violations.length,
+        filesProcessed: files.length,
+        parserFailures,
+        durationMs: duration,
       },
-      executionTimeMs: Date.now() - startTime,
+      executionTimeMs: duration,
     };
   }
-
-  /**
-   * Evaluates the files statelessly and returns normalized violations.
-   */
-  public getStatelessViolations(files: string[]): StatelessViolation[] {
-    const violations: StatelessViolation[] = [];
-
-    for (const file of files) {
-      const fullPath = resolve(workspaceRoot, file);
-      if (!existsSync(fullPath)) continue;
-
-      const content = readFileSync(fullPath, 'utf8');
-      const lines = content.split('\n');
-
-      // Skip test files
-      if (file.endsWith('.test.tsx') || file.endsWith('.test.ts')) {
-        continue;
-      }
-
-      // Check 1: VAL-UI-006 - Field layout wrapper check
-      const isOfficialField = file === 'apps/admin/src/app/events/new/_components/Field.tsx';
-      if (!isOfficialField && (content.includes('function Field') || content.includes('const Field ='))) {
-        const lineIdx = lines.findIndex(l => l.includes('function Field') || l.includes('const Field ='));
-        violations.push({
-          rule: 'VAL-UI-006',
-          path: file,
-          construct: 'Field',
-          line: lineIdx >= 0 ? lineIdx + 1 : undefined,
-          snippet: lineIdx >= 0 ? lines[lineIdx].trim() : undefined,
-          message: 'Local duplication of <Field> wrapper. Use a shared components package.',
-          confidence: 0.95,
-        });
-      }
-
-      // Check 2: VAL-UI-004 - Table abstraction check (admin app only)
-      if (file.includes('apps/admin/src') && content.includes('<table')) {
-        const lineIdx = lines.findIndex(l => l.includes('<table'));
-        violations.push({
-          rule: 'VAL-UI-004',
-          path: file,
-          construct: 'table',
-          line: lineIdx >= 0 ? lineIdx + 1 : undefined,
-          snippet: lineIdx >= 0 ? lines[lineIdx].trim() : undefined,
-          message: 'Raw <table> element used in admin portal. Use a reusable shared Table component.',
-          confidence: 0.90,
-        });
-      }
-
-      // Check 3: VAL-UI-005 - Button styling check (admin app only)
-      if (file.includes('apps/admin/src') && content.includes('<button') && !file.includes('AdminSidebar.tsx') && !file.includes('AdminShell.tsx')) {
-        const lineIdx = lines.findIndex(l => l.includes('<button'));
-        violations.push({
-          rule: 'VAL-UI-005',
-          path: file,
-          construct: 'button',
-          line: lineIdx >= 0 ? lineIdx + 1 : undefined,
-          snippet: lineIdx >= 0 ? lines[lineIdx].trim() : undefined,
-          message: 'Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.',
-          confidence: 0.85,
-        });
-      }
-
-      // Check 4: Modal Backdrop overlays (VAL-UI-001 / VAL-UI-002 / VAL-UI-003)
-      if (content.includes('backdrop-blur-sm') && content.includes('fixed inset-0')) {
-        const lineIdx = lines.findIndex(l => l.includes('fixed inset-0') && l.includes('backdrop-blur-sm'));
-        const hasSharedModalImport = content.includes("import { Modal } from '@mad/ui'") || content.includes("import Modal");
-        const hasAriaDialog = content.includes('role="dialog"') || content.includes("role='dialog'");
-
-        if (!hasSharedModalImport) {
-          // Custom modal definition
-          violations.push({
-            rule: 'VAL-UI-002',
-            path: file,
-            construct: 'modal-backdrop',
-            line: lineIdx >= 0 ? lineIdx + 1 : undefined,
-            snippet: lineIdx >= 0 ? lines[lineIdx].trim() : undefined,
-            message: 'Custom backdrop & modal container coded. Use shared <Modal> component from @mad/ui to avoid styles drift.',
-            confidence: 1.0,
-          });
-
-          if (!hasAriaDialog) {
-            // Missing accessibility
-            violations.push({
-              rule: 'VAL-UI-003',
-              path: file,
-              construct: 'modal-accessibility',
-              line: lineIdx >= 0 ? lineIdx + 1 : undefined,
-              snippet: lineIdx >= 0 ? lines[lineIdx].trim() : undefined,
-              message: 'Custom modal backdrop is missing role="dialog" or aria-modal="true" accessibility tags.',
-              confidence: 1.0,
-            });
-          }
-        }
-      }
-    }
-
-    return violations;
-  }
 }
-export const uiDesignValidatorVersion = '1.0.0';
