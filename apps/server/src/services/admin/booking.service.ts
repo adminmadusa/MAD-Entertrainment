@@ -172,15 +172,52 @@ export const getBookings = async (
   }
 
   const total = await Booking.countDocuments(filter);
-  const bookings = await Booking.find(filter)
-    .populate('eventId')
+  const bookingProjection = {
+    _id: 1,
+    bookingId: 1,
+    status: 1,
+    totalAmount: 1,
+    currency: 1,
+    eventId: 1,
+    userId: 1,
+    guestName: 1,
+    firstName: 1,
+    lastName: 1,
+    guestEmail: 1,
+    guestPhone: 1,
+    keepUpdated: 1,
+    sendBestEvents: 1,
+    tickets: 1,
+    createdAt: 1,
+    cancellationReason: 1,
+    cancelledAt: 1,
+  };
+
+  const bookings = await Booking.find(filter, bookingProjection)
+    .populate({
+      path: 'eventId',
+      select: '_id title startDate bannerImage bookingMode'
+    })
     .sort({ createdAt: -1 })
     .skip(skip)
-    .limit(limit);
+    .limit(limit)
+    .lean();
 
   const bookingIds = bookings.map((b) => b._id);
   const bookingReferences = bookings.map((b) => b.bookingId);
-  const allTickets = await Ticket.find({ bookingId: { $in: bookingIds } }).lean();
+
+  const ticketProjection = {
+    bookingId: 1,
+    admits: 1,
+    scannedAt: 1,
+    ticketId: 1,
+    status: 1,
+    createdAt: 1,
+    replacedAt: 1,
+    replacedByTicketId: 1,
+    replacementReason: 1,
+  };
+  const allTickets = await Ticket.find({ bookingId: { $in: bookingIds } }, ticketProjection).lean();
   const ticketsByBookingId = allTickets.reduce((acc: Record<string, any[]>, ticket: any) => {
     const bId = ticket.bookingId.toString();
     if (!acc[bId]) acc[bId] = [];
@@ -188,6 +225,15 @@ export const getBookings = async (
     return acc;
   }, {});
 
+  const logProjection = {
+    _id: 1,
+    action: 1,
+    actor: 1,
+    status: 1,
+    createdAt: 1,
+    metadata: 1,
+    description: 1,
+  };
   // Bulk query AuditLog documents with .lean() to match original retrieval semantics
   const allLogs = await AuditLogModel.find({
     $or: [
@@ -195,7 +241,7 @@ export const getBookings = async (
       { 'metadata.bookingReference': { $in: bookingReferences } }
     ],
     action: { $in: ['BOOKING_EMAIL_CORRECTED', 'BOOKING_TICKETS_RESENT'] }
-  }).sort({ createdAt: -1 }).lean();
+  }, logProjection).sort({ createdAt: -1 }).lean();
 
   const logsByBookingId = allLogs.reduce((acc: Record<string, any[]>, log: any) => {
     const bId = log.metadata?.bookingId?.toString();
@@ -234,21 +280,67 @@ export const getBookings = async (
  */
 export const getBookingById = async (id: string) => {
   const query = Types.ObjectId.isValid(id) ? { _id: id } : { bookingId: id };
-  const booking = await Booking.findOne(query).populate('eventId');
+  const bookingProjection = {
+    _id: 1,
+    bookingId: 1,
+    status: 1,
+    totalAmount: 1,
+    currency: 1,
+    eventId: 1,
+    userId: 1,
+    guestName: 1,
+    firstName: 1,
+    lastName: 1,
+    guestEmail: 1,
+    guestPhone: 1,
+    keepUpdated: 1,
+    sendBestEvents: 1,
+    tickets: 1,
+    createdAt: 1,
+    cancellationReason: 1,
+    cancelledAt: 1,
+  };
+  const booking = await Booking.findOne(query, bookingProjection)
+    .populate({
+      path: 'eventId',
+      select: '_id title startDate bannerImage bookingMode'
+    })
+    .lean();
+
   if (!booking) {
     return null;
   }
   
   // Load tickets and audit logs as pre-requisite for the pure mapper
-  const tickets = await Ticket.find({ bookingId: booking._id }).lean();
+  const ticketProjection = {
+    bookingId: 1,
+    admits: 1,
+    scannedAt: 1,
+    ticketId: 1,
+    status: 1,
+    createdAt: 1,
+    replacedAt: 1,
+    replacedByTicketId: 1,
+    replacementReason: 1,
+  };
+  const tickets = await Ticket.find({ bookingId: booking._id }, ticketProjection).lean();
   
+  const logProjection = {
+    _id: 1,
+    action: 1,
+    actor: 1,
+    status: 1,
+    createdAt: 1,
+    metadata: 1,
+    description: 1,
+  };
   const auditLogs = await AuditLogModel.find({
     $or: [
       { 'metadata.bookingId': booking._id.toString() },
       { 'metadata.bookingReference': booking.bookingId }
     ],
     action: { $in: ['BOOKING_EMAIL_CORRECTED', 'BOOKING_TICKETS_RESENT'] }
-  }).sort({ createdAt: -1 }).lean();
+  }, logProjection).sort({ createdAt: -1 }).lean();
   
   return mapBookingToAdminDTO(booking, tickets, auditLogs);
 };

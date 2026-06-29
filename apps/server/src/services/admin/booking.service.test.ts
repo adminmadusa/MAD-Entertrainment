@@ -1545,7 +1545,8 @@ describe('Admin Booking Service Backend Tests', () => {
       // Mock Mongoose calls for getBookings
       vi.mocked(Booking.countDocuments).mockResolvedValue(1);
       
-      const mockLimit = vi.fn().mockResolvedValue(mockBookings);
+      const mockLean = vi.fn().mockResolvedValue(mockBookings);
+      const mockLimit = vi.fn().mockReturnValue({ lean: mockLean });
       const mockSkip = vi.fn().mockReturnValue({ limit: mockLimit });
       const mockSort = vi.fn().mockReturnValue({ skip: mockSkip });
       const mockPopulate = vi.fn().mockReturnValue({ sort: mockSort });
@@ -1578,6 +1579,15 @@ describe('Admin Booking Service Backend Tests', () => {
             { 'metadata.bookingReference': { $in: ['MAD-2026-TEST1'] } }
           ],
           action: { $in: ['BOOKING_EMAIL_CORRECTED', 'BOOKING_TICKETS_RESENT'] }
+        }),
+        expect.objectContaining({
+          _id: 1,
+          action: 1,
+          actor: 1,
+          status: 1,
+          createdAt: 1,
+          metadata: 1,
+          description: 1
         })
       );
 
@@ -1683,7 +1693,10 @@ describe('Admin Booking Service Backend Tests', () => {
         }
       ];
 
-      const mockFindOnePopulate = vi.fn().mockResolvedValue(mockBooking);
+      const mockLean = vi.fn().mockResolvedValue(mockBooking);
+      const mockFindOnePopulate = vi.fn().mockReturnValue({
+        lean: mockLean,
+      });
       vi.mocked(Booking.findOne).mockReturnValue({
         populate: mockFindOnePopulate,
       } as any);
@@ -1711,6 +1724,190 @@ describe('Admin Booking Service Backend Tests', () => {
           totalAmount: 200,
         })
       );
+    });
+
+    it('should pass regression tests for guest, authenticated, cancelled bookings, replaced tickets, and empty sets', async () => {
+      const mockEventId = new mongoose.Types.ObjectId();
+      const mockBookingId = new mongoose.Types.ObjectId();
+      
+      const mockBookings = [
+        {
+          _id: mockBookingId,
+          bookingId: 'MAD-2026-REG1',
+          status: BookingStatus.CANCELLED,
+          tickets: [],
+          totalTickets: 0,
+          totalAmount: 0,
+          currency: 'INR',
+          createdAt: new Date('2026-06-28T10:00:00Z'),
+          guestName: 'Guest Customer',
+          guestEmail: 'guest@example.com',
+          guestPhone: '+919876543219',
+          cancellationReason: 'User cancelled',
+          cancelledAt: new Date('2026-06-28T11:00:00Z'),
+          eventId: {
+            _id: mockEventId,
+            title: 'Sample Concert',
+            startDate: new Date('2026-07-01T12:00:00Z'),
+            bookingMode: 'general_admission',
+          },
+        }
+      ];
+
+      vi.mocked(Booking.countDocuments).mockResolvedValue(1);
+
+      const mockLean = vi.fn().mockResolvedValue(mockBookings);
+      const mockLimit = vi.fn().mockReturnValue({ lean: mockLean });
+      const mockSkip = vi.fn().mockReturnValue({ limit: mockLimit });
+      const mockSort = vi.fn().mockReturnValue({ skip: mockSkip });
+      const mockPopulate = vi.fn().mockReturnValue({ sort: mockSort });
+      vi.mocked(Booking.find).mockReturnValue({ populate: mockPopulate } as any);
+
+      vi.mocked(Ticket.find).mockReturnValue({
+        lean: vi.fn().mockResolvedValue([]),
+      } as any);
+
+      vi.mocked(AuditLogModel.find).mockReturnValue({
+        sort: vi.fn().mockReturnValue({
+          lean: vi.fn().mockResolvedValue([]),
+        }),
+      } as any);
+
+      const result = await getBookings(1, 10);
+
+      expect(result.data).toHaveLength(1);
+      const dto = result.data[0];
+      expect(dto.userId).toBeNull();
+      expect(dto.guestInfo).toEqual(expect.objectContaining({
+        email: 'guest@example.com',
+        name: 'Guest Customer',
+      }));
+      expect(dto.status).toBe(BookingStatus.CANCELLED);
+      expect(dto.cancellationReason).toBe('User cancelled');
+      expect(dto.cancelledAt).toBeDefined();
+      expect(dto.auditHistory).toHaveLength(0);
+      expect(dto.tickets).toHaveLength(0);
+    });
+
+    it('should dynamically verify projection coverage against mapper requirements', async () => {
+      const mockEventId = new mongoose.Types.ObjectId();
+      const mockBookingId = new mongoose.Types.ObjectId();
+      
+      const projectedBookingOnly = {
+        _id: mockBookingId,
+        bookingId: 'MAD-2026-PROJ1',
+        status: BookingStatus.CONFIRMED,
+        totalAmount: 100,
+        currency: 'INR',
+        eventId: {
+          _id: mockEventId,
+          title: 'Concert',
+          startDate: new Date(),
+          bookingMode: 'general_admission',
+        },
+        userId: new mongoose.Types.ObjectId(),
+        guestName: 'Test',
+        firstName: 'Test',
+        lastName: 'User',
+        guestEmail: 'test@example.com',
+        guestPhone: '+919999999999',
+        keepUpdated: true,
+        sendBestEvents: false,
+        tickets: [
+          {
+            tierName: 'General',
+            quantity: 1,
+            pricePerTicket: 100,
+            seats: []
+          }
+        ],
+        createdAt: new Date(),
+        cancellationReason: undefined,
+        cancelledAt: undefined,
+      };
+
+      const mockTickets = [
+        {
+          ticketId: 'T-1',
+          bookingId: mockBookingId,
+          status: 'replaced',
+          createdAt: new Date(),
+          replacedAt: new Date(),
+          replacedByTicketId: 'T-2',
+          replacementReason: 'EMAIL_CORRECTION',
+          admits: 1,
+        }
+      ];
+
+      const mockLogs = [
+        {
+          _id: new mongoose.Types.ObjectId(),
+          action: 'BOOKING_EMAIL_CORRECTED',
+          actor: { id: 'admin-1' },
+          status: 'success',
+          createdAt: new Date(),
+          metadata: { bookingId: mockBookingId.toString() },
+          description: 'Updated email',
+        }
+      ];
+
+      vi.mocked(Booking.countDocuments).mockResolvedValue(1);
+
+      const mockLean = vi.fn().mockResolvedValue([projectedBookingOnly]);
+      const mockLimit = vi.fn().mockReturnValue({ lean: mockLean });
+      const mockSkip = vi.fn().mockReturnValue({ limit: mockLimit });
+      const mockSort = vi.fn().mockReturnValue({ skip: mockSkip });
+      const mockPopulate = vi.fn().mockReturnValue({ sort: mockSort });
+      vi.mocked(Booking.find).mockReturnValue({ populate: mockPopulate } as any);
+
+      vi.mocked(Ticket.find).mockReturnValue({
+        lean: vi.fn().mockResolvedValue(mockTickets),
+      } as any);
+
+      vi.mocked(AuditLogModel.find).mockReturnValue({
+        sort: vi.fn().mockReturnValue({
+          lean: vi.fn().mockResolvedValue(mockLogs),
+        }),
+      } as any);
+
+      const result = await getBookings(1, 10);
+
+      expect(result.data).toHaveLength(1);
+      const mapped = result.data[0];
+      expect(mapped._id).toBe(mockBookingId.toString());
+      expect(mapped.individualTickets[0].replacedByTicketId).toBe('T-2');
+      expect(mapped.individualTickets[0].replacementReason).toBe('EMAIL_CORRECTION');
+    });
+
+    it('should return empty pagination response when no bookings are found', async () => {
+      vi.mocked(Booking.countDocuments).mockResolvedValue(0);
+
+      const mockLean = vi.fn().mockResolvedValue([]);
+      const mockLimit = vi.fn().mockReturnValue({ lean: mockLean });
+      const mockSkip = vi.fn().mockReturnValue({ limit: mockLimit });
+      const mockSort = vi.fn().mockReturnValue({ skip: mockSkip });
+      const mockPopulate = vi.fn().mockReturnValue({ sort: mockSort });
+      vi.mocked(Booking.find).mockReturnValue({ populate: mockPopulate } as any);
+
+      vi.mocked(Ticket.find).mockReturnValue({
+        lean: vi.fn().mockResolvedValue([]),
+      } as any);
+
+      vi.mocked(AuditLogModel.find).mockReturnValue({
+        sort: vi.fn().mockReturnValue({
+          lean: vi.fn().mockResolvedValue([]),
+        }),
+      } as any);
+
+      const result = await getBookings(1, 10);
+
+      expect(result.data).toHaveLength(0);
+      expect(result.pagination).toEqual({
+        page: 1,
+        limit: 10,
+        total: 0,
+        totalPages: 1,
+      });
     });
   });
 });
