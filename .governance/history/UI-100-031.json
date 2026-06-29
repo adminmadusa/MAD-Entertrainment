@@ -1,0 +1,11 @@
+{
+  "id": "UI-100-031",
+  "history": [
+    {
+      "timestamp": "2026-06-29T08:09:57.179Z",
+      "action": "CREATED",
+      "status": "NEW",
+      "notes": "New finding registered: Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui."
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "id": "UI-100-037",
+  "rule": "VAL-UI-005",
+  "ruleVersion": "1.0.0",
+  "engineVersion": "1.0.0",
+  "domain": "UI UX Guild",
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "feature": "button",
+  "status": "NEW",
+  "confidence": 0.85,
+  "relationships": [],
+  "evidence": {
+    "path": "apps/admin/src/app/popups/new/page.tsx",
+    "construct": "button",
+    "snippet": "<button",
+    "line": 87,
+    "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui."
+  },
+  "createdDate": "2026-06-29T08:09:58.754Z",
+  "firstDetected": "2026-06-29T08:09:58.754Z",
+  "lastDetected": "2026-06-29T08:09:59.453Z"
+}

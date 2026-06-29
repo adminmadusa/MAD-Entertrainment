@@ -1,0 +1,23 @@
+{
+  "id": "UI-100-051",
+  "rule": "VAL-UI-002",
+  "ruleVersion": "1.0.0",
+  "engineVersion": "1.0.0",
+  "domain": "UI UX Guild",
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "feature": "modal-backdrop",
+  "status": "NEW",
+  "confidence": 1,
+  "relationships": [],
+  "evidence": {
+    "path": "apps/admin/src/app/team/_components/InviteAdminModal.tsx",
+    "construct": "modal-backdrop",
+    "snippet": "<div className=\"fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4\">",
+    "line": 54,
+    "message": "Custom backdrop & modal container coded. Use shared <Modal> component from @mad/ui to avoid styles drift."
+  },
+  "createdDate": "2026-06-29T08:10:05.354Z",
+  "firstDetected": "2026-06-29T08:10:05.354Z",
+  "lastDetected": "2026-06-29T08:10:05.354Z"
+}

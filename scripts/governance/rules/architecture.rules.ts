@@ -1,0 +1,53 @@
+// scripts/governance/rules/architecture.rules.ts
+import { RuleDefinition } from '../core/types';
+
+export const architectureRules: RuleDefinition[] = [
+  {
+    id: 'VAL-ARC-001',
+    name: 'Observability Isolation',
+    category: 'ARCHITECTURE',
+    severity: 'ERROR',
+    confidence: 1.0,
+    defaultLifecycle: 'NEW',
+    ciPolicy: 'FAIL_BUILD',
+    owner: 'Platform Team',
+    version: '1.0.0',
+    documentationLink: 'AGENTS.md#code-quality-rules',
+  },
+  {
+    id: 'VAL-ARC-002',
+    name: 'DTO Governance - Direct Axios Import Block',
+    category: 'ARCHITECTURE',
+    severity: 'ERROR',
+    confidence: 1.0,
+    defaultLifecycle: 'NEW',
+    ciPolicy: 'FAIL_BUILD',
+    owner: 'Platform Team',
+    version: '1.0.0',
+    documentationLink: 'AGENTS.md#frontend-backend-contract-governance',
+  },
+  {
+    id: 'VAL-ARC-003',
+    name: 'App Router Layout Safety',
+    category: 'ARCHITECTURE',
+    severity: 'ERROR',
+    confidence: 1.0,
+    defaultLifecycle: 'NEW',
+    ciPolicy: 'FAIL_BUILD',
+    owner: 'Platform Team',
+    version: '1.0.0',
+    documentationLink: 'AGENTS.md#file-size-governance',
+  },
+  {
+    id: 'VAL-ARC-004',
+    name: 'Validation Drift Prevention',
+    category: 'ARCHITECTURE',
+    severity: 'WARNING',
+    confidence: 0.95,
+    defaultLifecycle: 'NEW',
+    ciPolicy: 'WARN',
+    owner: 'Platform Team',
+    version: '1.0.0',
+    documentationLink: 'AGENTS.md#frontend-backend-contract-governance',
+  },
+];

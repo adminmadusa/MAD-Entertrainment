@@ -1,0 +1,21 @@
+{
+  "id": "HYG-010",
+  "rule": "Orphaned Documentation",
+  "ruleVersion": "1.0.0",
+  "engineVersion": "1.0.0",
+  "domain": "Platform Team",
+  "owner": "Platform Team",
+  "package": "docs",
+  "feature": "Document",
+  "status": "NEW",
+  "confidence": 1,
+  "relationships": [],
+  "evidence": {
+    "path": "docs/remediation-plan.md",
+    "construct": "Document",
+    "message": "Document exists in the repository but has no incoming references from any other active documentation."
+  },
+  "createdDate": "2026-06-29T08:09:51.552Z",
+  "firstDetected": "2026-06-29T08:09:51.552Z",
+  "lastDetected": "2026-06-29T08:09:51.552Z"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "UI-100-098",
+  "rule": "VAL-UI-006",
+  "ruleVersion": "1.0.0",
+  "engineVersion": "1.0.0",
+  "domain": "Platform Team",
+  "owner": "Platform Team",
+  "package": "apps",
+  "feature": "Field",
+  "status": "NEW",
+  "confidence": 0.95,
+  "relationships": [],
+  "evidence": {
+    "path": "apps/admin/src/components/events/EventRequirementsCard.tsx",
+    "construct": "Field",
+    "snippet": "function Field({ label, children }: { label: string; children: React.ReactNode }) {",
+    "line": 6,
+    "message": "Local duplication of <Field> wrapper. Use a shared components package."
+  },
+  "createdDate": "2026-06-29T08:10:40.373Z",
+  "firstDetected": "2026-06-29T08:10:40.373Z",
+  "lastDetected": "2026-06-29T08:10:40.373Z"
+}

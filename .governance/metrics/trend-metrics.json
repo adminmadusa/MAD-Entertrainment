@@ -1,0 +1,68 @@
+[
+  {
+    "timestamp": "2026-06-29T08:10:44.955Z",
+    "totalFindings": 147,
+    "newFindings": 147,
+    "closedFindings": 0,
+    "regressionCount": 0,
+    "falsePositiveRate": 0,
+    "averageConfidence": 0.9207482993197272,
+    "averageResolutionTimeMs": 0,
+    "scores": {
+      "architecture": 100,
+      "security": 100,
+      "performance": 100,
+      "accessibility": 0,
+      "uiConsistency": 0,
+      "technicalDebt": 100,
+      "testing": 100,
+      "documentation": 100,
+      "maintainability": 100,
+      "overall": 75
+    }
+  },
+  {
+    "timestamp": "2026-06-29T08:26:00.272Z",
+    "totalFindings": 148,
+    "newFindings": 148,
+    "closedFindings": 0,
+    "regressionCount": 0,
+    "falsePositiveRate": 0,
+    "averageConfidence": 0.9202702702702696,
+    "averageResolutionTimeMs": 0,
+    "scores": {
+      "architecture": 100,
+      "security": 100,
+      "performance": 100,
+      "accessibility": 0,
+      "uiConsistency": 0,
+      "technicalDebt": 100,
+      "testing": 100,
+      "documentation": 100,
+      "maintainability": 100,
+      "overall": 75
+    }
+  },
+  {
+    "timestamp": "2026-06-29T08:26:00.865Z",
+    "totalFindings": 148,
+    "newFindings": 148,
+    "closedFindings": 0,
+    "regressionCount": 0,
+    "falsePositiveRate": 0,
+    "averageConfidence": 0.9202702702702696,
+    "averageResolutionTimeMs": 0,
+    "scores": {
+      "architecture": 100,
+      "security": 100,
+      "performance": 100,
+      "accessibility": 0,
+      "uiConsistency": 0,
+      "technicalDebt": 100,
+      "testing": 100,
+      "documentation": 100,
+      "maintainability": 100,
+      "overall": 75
+    }
+  }
+]

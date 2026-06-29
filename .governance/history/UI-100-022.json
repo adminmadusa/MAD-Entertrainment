@@ -1,0 +1,11 @@
+{
+  "id": "UI-100-022",
+  "history": [
+    {
+      "timestamp": "2026-06-29T08:09:54.121Z",
+      "action": "CREATED",
+      "status": "NEW",
+      "notes": "New finding registered: Raw <table> element used in admin portal. Use a reusable shared Table component."
+    }
+  ]
+}
