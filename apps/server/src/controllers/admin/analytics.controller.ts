@@ -49,8 +49,11 @@ export const getSummary = async (req: Request, res: Response, next: NextFunction
       {
         $lookup: {
           from: 'bookings',
-          localField: 'bookingId',
-          foreignField: '_id',
+          let: { bookingId: '$bookingId' },
+          pipeline: [
+            { $match: { $expr: { $eq: ['$_id', '$$bookingId'] } } },
+            { $project: { _id: 1, eventId: 1, status: 1 } }
+          ],
           as: 'booking'
         }
       },
@@ -99,8 +102,11 @@ export const getSummary = async (req: Request, res: Response, next: NextFunction
       {
         $lookup: {
           from: 'events',
-          localField: '_id',
-          foreignField: '_id',
+          let: { eventId: '$_id' },
+          pipeline: [
+            { $match: { $expr: { $eq: ['$_id', '$$eventId'] } } },
+            { $project: { title: 1, startDate: 1 } }
+          ],
           as: 'eventDetails'
         }
       },
@@ -293,12 +299,16 @@ export const getAttendanceSummary = async (req: Request, res: Response, next: Ne
 
     const totalEvents = await Event.countDocuments({ isDeleted: { $ne: true } });
 
-    const ticketStats = await Ticket.aggregate([
+    const ticketStats = await Booking.aggregate([
+      { $match: { status: BookingStatus.CONFIRMED } },
       {
         $lookup: {
           from: 'events',
-          localField: 'eventId',
-          foreignField: '_id',
+          let: { eventId: '$eventId' },
+          pipeline: [
+            { $match: { $expr: { $eq: ['$_id', '$$eventId'] } } },
+            { $project: { isDeleted: 1 } }
+          ],
           as: 'event'
         }
       },
@@ -306,21 +316,23 @@ export const getAttendanceSummary = async (req: Request, res: Response, next: Ne
       { $match: { 'event.isDeleted': { $ne: true } } },
       {
         $lookup: {
-          from: 'bookings',
-          localField: 'bookingId',
-          foreignField: '_id',
-          as: 'booking'
+          from: 'tickets',
+          let: { bookingId: '$_id' },
+          pipeline: [
+            { $match: { $expr: { $eq: ['$bookingId', '$$bookingId'] } } },
+            { $project: { admits: 1, scannedAt: 1 } }
+          ],
+          as: 'tickets'
         }
       },
-      { $unwind: '$booking' },
-      { $match: { 'booking.status': BookingStatus.CONFIRMED } },
+      { $unwind: '$tickets' },
       {
         $group: {
           _id: null,
-          totalSold: { $sum: '$admits' },
+          totalSold: { $sum: '$tickets.admits' },
           totalCheckedIn: {
             $sum: {
-              $cond: [{ $ne: ['$scannedAt', null] }, '$admits', 0]
+              $cond: [{ $ne: ['$tickets.scannedAt', null] }, '$tickets.admits', 0]
             }
           }
         }
@@ -375,8 +387,11 @@ export const getAttendanceRankings = async (req: Request, res: Response, next: N
             {
               $lookup: {
                 from: 'bookings',
-                localField: 'bookingId',
-                foreignField: '_id',
+                let: { bookingId: '$bookingId' },
+                pipeline: [
+                  { $match: { $expr: { $eq: ['$_id', '$$bookingId'] } } },
+                  { $project: { status: 1 } }
+                ],
                 as: 'booking'
               }
             },
