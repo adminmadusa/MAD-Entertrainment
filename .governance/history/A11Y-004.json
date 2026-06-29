@@ -1,0 +1,11 @@
+{
+  "id": "A11Y-004",
+  "history": [
+    {
+      "timestamp": "2026-06-29T08:09:52.813Z",
+      "action": "CREATED",
+      "status": "NEW",
+      "notes": "New finding registered: Custom modal backdrop is missing role=\"dialog\" or aria-modal=\"true\" accessibility tags."
+    }
+  ]
+}

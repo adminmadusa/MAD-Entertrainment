@@ -2,13 +2,14 @@
 
 import { readdirSync, statSync, existsSync } from 'fs';
 import { resolve, join, relative } from 'path';
+import { execSync } from 'child_process';
 import { MetadataProvider } from './core/metadata';
 import { ValidatorLoader } from './core/loader';
 import { ConsoleReporter } from './core/reporter';
 import { JsonReporter } from './reports/json_reporter';
 import { GitHubActionsReporter } from './reports/github_reporter';
 
-// Import validators
+// Import standard validators
 import { MarkdownValidator } from './validators/markdown_validator';
 import { LinkValidator } from './validators/link_validator';
 import { MermaidValidator } from './validators/mermaid_validator';
@@ -17,6 +18,11 @@ import { DocumentationValidator } from './validators/documentation_validator';
 import { SsotValidator } from './validators/ssot_validator';
 import { AdrValidator } from './validators/adr_validator';
 import { RepositoryHealthValidator } from './validators/repository_health_validator';
+
+// Import new Audit Intelligence components
+import { UIDesignValidator } from './validators/ui_design_validator';
+import { AuditEngine } from './core/audit_engine';
+import { StatelessViolation } from './core/types';
 
 const workspaceRoot = resolve(__dirname, '../..');
 
@@ -36,7 +42,8 @@ function scanMarkdownFiles(dir: string, fileList: string[] = []): string[] {
         item !== '.pnpm-store' &&
         item !== '.turbo' &&
         item !== 'archive' &&
-        item !== 'audit'
+        item !== 'audit' &&
+        item !== '.governance'
       ) {
         scanMarkdownFiles(fullPath, fileList);
       }
@@ -47,6 +54,59 @@ function scanMarkdownFiles(dir: string, fileList: string[] = []): string[] {
   return fileList;
 }
 
+/**
+ * Recursively scans a directory for code source files.
+ */
+function scanSourceFiles(dir: string, fileList: string[] = []): string[] {
+  if (!existsSync(dir)) return fileList;
+  const items = readdirSync(dir);
+  for (const item of items) {
+    const fullPath = join(dir, item);
+    const stats = statSync(fullPath);
+    if (stats.isDirectory()) {
+      if (
+        item !== 'node_modules' &&
+        item !== '.git' &&
+        item !== '.pnpm-store' &&
+        item !== '.turbo' &&
+        item !== 'dist' &&
+        item !== '.next' &&
+        item !== '.governance'
+      ) {
+        scanSourceFiles(fullPath, fileList);
+      }
+    } else if (/\.(ts|tsx|js|jsx)$/.test(item)) {
+      fileList.push(relative(workspaceRoot, fullPath));
+    }
+  }
+  return fileList;
+}
+
+function getGitDiffFiles(): string[] {
+  try {
+    const output = execSync('git diff --name-only HEAD', { cwd: workspaceRoot, encoding: 'utf8' });
+    return output.split('\n').map(f => f.trim()).filter(Boolean);
+  } catch (e) {
+    return [];
+  }
+}
+
+function getGitBranch(): string {
+  try {
+    return execSync('git rev-parse --abbrev-ref HEAD', { cwd: workspaceRoot, encoding: 'utf8' }).trim();
+  } catch (e) {
+    return 'unknown';
+  }
+}
+
+function getGitCommit(): string {
+  try {
+    return execSync('git rev-parse --short HEAD', { cwd: workspaceRoot, encoding: 'utf8' }).trim();
+  } catch (e) {
+    return 'unknown';
+  }
+}
+
 async function run() {
   const globalStartTime = Date.now();
 
@@ -54,35 +114,56 @@ async function run() {
   const metadataProvider = new MetadataProvider();
   const metadata = metadataProvider.getMetadata();
 
-  // Discover files to check
-  // 1. Start with the required files from metadata
-  const filesToCheck = new Set<string>();
+  const isIncremental = process.argv.includes('--incremental');
+  const changedFiles = getGitDiffFiles();
+
+  // Initialize Audit Engine
+  const auditEngine = new AuditEngine();
+
+  // 1. Discover all markdown and source code files
+  const markdownFiles = new Set<string>();
   for (const doc of metadata.requiredDocuments) {
     const fullPath = resolve(workspaceRoot, doc);
     if (existsSync(fullPath) && statSync(fullPath).isFile()) {
-      filesToCheck.add(doc);
+      markdownFiles.add(doc);
     }
   }
 
-  // 2. Add all markdown files found in the root directory
   const rootItems = readdirSync(workspaceRoot);
   for (const item of rootItems) {
     if (item.endsWith('.md')) {
-      filesToCheck.add(item);
+      markdownFiles.add(item);
     }
   }
 
-  // 3. Scan the docs/ folder recursively for markdown files
   const docsDir = resolve(workspaceRoot, 'docs');
   const docsFiles = scanMarkdownFiles(docsDir);
   for (const file of docsFiles) {
-    filesToCheck.add(file);
+    markdownFiles.add(file);
   }
 
-  const filesArray = Array.from(filesToCheck);
-  console.log(`📂 Discovered ${filesArray.length} markdown documents to validate.`);
+  // Scan codebase sources for UI analysis
+  const uiSourceFiles = scanSourceFiles(resolve(workspaceRoot, 'apps/admin/src'));
+  const webSourceFiles = scanSourceFiles(resolve(workspaceRoot, 'apps/web/src'));
+  const uiFilesArray = [...uiSourceFiles, ...webSourceFiles];
 
-  // Instantiate and configure loader
+  let finalMarkdownFiles = Array.from(markdownFiles);
+  let finalUiFiles = uiFilesArray;
+
+  // 2. Perform Incremental & Dependency-Aware Auditing filter
+  if (isIncremental && changedFiles.length > 0) {
+    console.log(`🎯 Incremental scan enabled. Detected ${changedFiles.length} modified files.`);
+    const graph = auditEngine.getKnowledgeGraph();
+    const affected = graph.getAffectedConsumers(changedFiles);
+
+    finalMarkdownFiles = finalMarkdownFiles.filter(f => affected.has(f) || changedFiles.includes(f));
+    finalUiFiles = finalUiFiles.filter(f => affected.has(f) || changedFiles.includes(f));
+    console.log(`🎯 Downstream PR scope: Scanning ${finalMarkdownFiles.length} markdown and ${finalUiFiles.length} source files.`);
+  }
+
+  console.log(`📂 Discovered ${finalMarkdownFiles.length} markdown files and ${finalUiFiles.length} source code files to validate.`);
+
+  // Configure standard loader
   const loader = new ValidatorLoader();
   loader.registerAll([
     new MarkdownValidator(),
@@ -95,18 +176,61 @@ async function run() {
     new RepositoryHealthValidator(),
   ]);
 
-  console.log('🚀 Running validators...');
-  const results = await loader.runAll(filesArray, metadata);
+  console.log('🚀 Running standard validators...');
+  const validatorStart = Date.now();
+  const results = await loader.runAll(finalMarkdownFiles, metadata);
+  const validatorTime = Date.now() - validatorStart;
+
+  // Compile all violations to StatelessViolation shape
+  const statelessViolations: StatelessViolation[] = [];
+
+  // Parse results from standard validators
+  for (const result of results) {
+    const allErrors = [...result.errors, ...result.warnings];
+    for (const error of allErrors) {
+      statelessViolations.push({
+        rule: error.rule,
+        path: error.file,
+        construct: 'Document',
+        line: error.line,
+        snippet: error.snippet,
+        message: error.message,
+        confidence: 1.0, // High precision standard checks
+      });
+    }
+  }
+
+  // 3. Execute Stateless UI Design Validator
+  console.log('🎨 Running stateless UI design system validator...');
+  const uiValidator = new UIDesignValidator();
+  const uiResult = await uiValidator.run(finalUiFiles, metadata);
+  
+  // Add UI design violations
+  const uiViolations = uiValidator.getStatelessViolations(finalUiFiles);
+  statelessViolations.push(...uiViolations);
+
+  // Combine standard and UI results for console logging compatibility
+  results.push(uiResult);
+
+  // 4. Run State and Lifecycle Reconciliation
+  console.log('🧠 Running Audit Intelligence Engine...');
+  const engineResult = auditEngine.execute(statelessViolations, {
+    isIncremental,
+    changedFiles,
+    branchName: getGitBranch(),
+    commitSha: getGitCommit(),
+    validatorTimeMs: validatorTime,
+  });
 
   const globalTotalTimeMs = Date.now() - globalStartTime;
 
-  // Print results to console
+  // Print results summary to console (retaining backward compatibility)
   const { totalErrors } = ConsoleReporter.report(results);
 
   // Write JSON report
   const reportContent = JsonReporter.report(results, globalTotalTimeMs);
 
-  // Run GitHub Actions Reporter if running in CI or if GHA env is active
+  // Run GitHub Actions Reporter if running in CI
   let gatingSuccess = true;
   if (process.env.GITHUB_ACTIONS === 'true') {
     const ghaResult = GitHubActionsReporter.report(results, reportContent);
@@ -116,12 +240,15 @@ async function run() {
     }
   }
 
-  if (totalErrors > 0 || !gatingSuccess) {
-    console.error('❌ Governance audit failed. Check the details above.');
+  console.log(`\n⚖️ Gating Evaluation Action: ${engineResult.gatingAction}`);
+
+  // Gating decision
+  if (!engineResult.success || totalErrors > 0 || !gatingSuccess) {
+    console.error('\n❌ Governance audit failed. Check the details above.');
     process.exit(1);
   }
 
-  console.log('✅ Governance audit passed successfully!');
+  console.log('\n✅ Governance audit passed successfully!');
   process.exit(0);
 }
 

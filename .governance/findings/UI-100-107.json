@@ -1,0 +1,23 @@
+{
+  "id": "UI-100-107",
+  "rule": "VAL-UI-005",
+  "ruleVersion": "1.0.0",
+  "engineVersion": "1.0.0",
+  "domain": "UI UX Guild",
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "feature": "button",
+  "status": "NEW",
+  "confidence": 0.85,
+  "relationships": [],
+  "evidence": {
+    "path": "apps/admin/src/components/states/ErrorState.tsx",
+    "construct": "button",
+    "snippet": "<button onClick={retry} className=\"px-4 py-2 bg-accent-purple hover:bg-accent-purple/80 text-white rounded\">",
+    "line": 20,
+    "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui."
+  },
+  "createdDate": "2026-06-29T08:10:44.736Z",
+  "firstDetected": "2026-06-29T08:10:44.736Z",
+  "lastDetected": "2026-06-29T08:10:44.736Z"
+}

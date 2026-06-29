@@ -1,0 +1,23 @@
+{
+  "id": "UI-100-041",
+  "rule": "VAL-UI-004",
+  "ruleVersion": "1.0.0",
+  "engineVersion": "1.0.0",
+  "domain": "UI UX Guild",
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "feature": "table",
+  "status": "NEW",
+  "confidence": 0.9,
+  "relationships": [],
+  "evidence": {
+    "path": "apps/admin/src/app/refunds/page.tsx",
+    "construct": "table",
+    "snippet": "<table className=\"w-full text-sm\">",
+    "line": 147,
+    "message": "Raw <table> element used in admin portal. Use a reusable shared Table component."
+  },
+  "createdDate": "2026-06-29T08:10:00.402Z",
+  "firstDetected": "2026-06-29T08:10:00.402Z",
+  "lastDetected": "2026-06-29T08:10:00.402Z"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "UI-100-050",
+  "rule": "VAL-UI-005",
+  "ruleVersion": "1.0.0",
+  "engineVersion": "1.0.0",
+  "domain": "UI UX Guild",
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "feature": "button",
+  "status": "NEW",
+  "confidence": 0.85,
+  "relationships": [],
+  "evidence": {
+    "path": "apps/admin/src/app/team/_components/InviteAdminModal.tsx",
+    "construct": "button",
+    "snippet": "<button",
+    "line": 127,
+    "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui."
+  },
+  "createdDate": "2026-06-29T08:10:05.094Z",
+  "firstDetected": "2026-06-29T08:10:05.094Z",
+  "lastDetected": "2026-06-29T08:10:05.094Z"
+}

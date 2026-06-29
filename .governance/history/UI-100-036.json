@@ -1,0 +1,17 @@
+{
+  "id": "UI-100-036",
+  "history": [
+    {
+      "timestamp": "2026-06-29T08:09:58.291Z",
+      "action": "CREATED",
+      "status": "NEW",
+      "notes": "New finding registered: Local duplication of <Field> wrapper. Use a shared components package."
+    },
+    {
+      "timestamp": "2026-06-29T08:09:58.783Z",
+      "action": "RENAMED",
+      "status": "NEW",
+      "notes": "File renamed/relocated to apps/admin/src/app/popups/new/page.tsx"
+    }
+  ]
+}
