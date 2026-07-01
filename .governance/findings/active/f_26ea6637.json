@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 2,
+  "id": "f_26ea6637",
+  "rule": "Orphaned Documentation",
+  "ruleVersion": "1.0.0",
+  "engineVersion": "1.0.0",
+  "domain": "Platform Team",
+  "owner": "Platform Team",
+  "package": "docs",
+  "feature": "Document",
+  "status": "NEW",
+  "confidence": 1,
+  "relationships": [],
+  "evidence": {
+    "path": "docs/audit/auth-state-consistency.md",
+    "construct": "Document",
+    "message": "Document exists in the repository but has no incoming references from any other active documentation.",
+    "occurrences": [
+      {
+        "id": "103d5210aa5a02f82e474fc4075332e957c1a41f1e3d3bce0b9ba45f4f0b99b5",
+        "line": 0,
+        "column": 0,
+        "construct": "Document",
+        "snippet": "",
+        "message": "Document exists in the repository but has no incoming references from any other active documentation.",
+        "fingerprint": "103d5210aa5a02f82e474fc4075332e957c1a41f1e3d3bce0b9ba45f4f0b99b5"
+      }
+    ]
+  },
+  "createdDate": "2026-06-30T15:36:28.164Z",
+  "firstDetected": "2026-06-30T15:36:28.164Z",
+  "lastDetected": "2026-06-30T15:36:28.164Z",
+  "occurrenceCount": 1
+}

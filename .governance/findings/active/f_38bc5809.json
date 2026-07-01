@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 2,
+  "id": "f_38bc5809",
+  "rule": "VAL-UI-010",
+  "ruleVersion": "1.0.0",
+  "engineVersion": "1.0.0",
+  "domain": "UI UX Guild",
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "feature": "UIElement",
+  "status": "NEW",
+  "confidence": 0.9,
+  "relationships": [],
+  "evidence": {
+    "path": "apps/web/src/app/tickets/components/ContactSupportModal.tsx",
+    "construct": "UIElement",
+    "snippet": "<button",
+    "line": 52,
+    "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
+    "occurrences": [
+      {
+        "id": "62683d3f6a68b95f90a8e8118c9c5cb4abc59d7c708da6f732847b5f3505b12d",
+        "line": 52,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "<button",
+        "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
+        "fingerprint": "62683d3f6a68b95f90a8e8118c9c5cb4abc59d7c708da6f732847b5f3505b12d"
+      },
+      {
+        "id": "62683d3f6a68b95f90a8e8118c9c5cb4abc59d7c708da6f732847b5f3505b12d",
+        "line": 76,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "<button",
+        "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
+        "fingerprint": "62683d3f6a68b95f90a8e8118c9c5cb4abc59d7c708da6f732847b5f3505b12d"
+      },
+      {
+        "id": "62683d3f6a68b95f90a8e8118c9c5cb4abc59d7c708da6f732847b5f3505b12d",
+        "line": 155,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "<button",
+        "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
+        "fingerprint": "62683d3f6a68b95f90a8e8118c9c5cb4abc59d7c708da6f732847b5f3505b12d"
+      }
+    ]
+  },
+  "createdDate": "2026-06-30T15:36:27.266Z",
+  "firstDetected": "2026-06-30T15:36:27.266Z",
+  "lastDetected": "2026-06-30T15:36:27.266Z",
+  "occurrenceCount": 3
+}

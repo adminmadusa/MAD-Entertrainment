@@ -297,7 +297,7 @@ The repository enforces code standards at three levels:
 *Evidence*:
 - `apps/server/src/app.ts` imports controllers and mounts routes.
 - Component render states are verified in `apps/admin/src/components/states/`.
-- `scripts/ci_governance_check.ts` blocks code containing direct Axios imports in UI directories or Sentry Node imports in Next.js folders.
+- `scripts/ci-governance-check.ts` blocks code containing direct Axios imports in UI directories or Sentry Node imports in Next.js folders.
 
 ### Repository Standard
 - **Axios Isolation**: Components and pages must never import Axios directly. All HTTP requests must be made via a dedicated service layer file (except files inside `/lib/api/` or service wrapper modules).

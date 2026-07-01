@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 2,
+  "id": "f_8685e409",
+  "rule": "VAL-UI-010",
+  "ruleVersion": "1.0.0",
+  "engineVersion": "1.0.0",
+  "domain": "UI UX Guild",
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "feature": "UIElement",
+  "status": "NEW",
+  "confidence": 0.9,
+  "relationships": [],
+  "evidence": {
+    "path": "apps/admin/src/components/ticket-profiles/TicketTierCard.tsx",
+    "construct": "UIElement",
+    "snippet": "<button",
+    "line": 33,
+    "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
+    "occurrences": [
+      {
+        "id": "7bf3a6712e141e70526b687b4a26060dc8b421bb120126578fc0d913a0788e15",
+        "line": 33,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "<button",
+        "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
+        "fingerprint": "7bf3a6712e141e70526b687b4a26060dc8b421bb120126578fc0d913a0788e15"
+      }
+    ]
+  },
+  "createdDate": "2026-06-30T15:36:27.232Z",
+  "firstDetected": "2026-06-30T15:36:27.232Z",
+  "lastDetected": "2026-06-30T15:36:27.232Z",
+  "occurrenceCount": 1
+}

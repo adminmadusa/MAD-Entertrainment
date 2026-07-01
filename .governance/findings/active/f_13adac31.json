@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 2,
+  "id": "f_13adac31",
+  "rule": "VAL-UI-010",
+  "ruleVersion": "1.0.0",
+  "engineVersion": "1.0.0",
+  "domain": "UI UX Guild",
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "feature": "UIElement",
+  "status": "NEW",
+  "confidence": 0.9,
+  "relationships": [],
+  "evidence": {
+    "path": "apps/web/src/components/booking/shared/TicketActions.tsx",
+    "construct": "UIElement",
+    "snippet": "<button",
+    "line": 64,
+    "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
+    "occurrences": [
+      {
+        "id": "19fdef70965d0a38ed65c6ca894f69b7b0306d6977d350b0e0c027fd27fc1c88",
+        "line": 64,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "<button",
+        "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
+        "fingerprint": "19fdef70965d0a38ed65c6ca894f69b7b0306d6977d350b0e0c027fd27fc1c88"
+      },
+      {
+        "id": "19fdef70965d0a38ed65c6ca894f69b7b0306d6977d350b0e0c027fd27fc1c88",
+        "line": 82,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "<button",
+        "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
+        "fingerprint": "19fdef70965d0a38ed65c6ca894f69b7b0306d6977d350b0e0c027fd27fc1c88"
+      },
+      {
+        "id": "19fdef70965d0a38ed65c6ca894f69b7b0306d6977d350b0e0c027fd27fc1c88",
+        "line": 94,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "<button",
+        "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
+        "fingerprint": "19fdef70965d0a38ed65c6ca894f69b7b0306d6977d350b0e0c027fd27fc1c88"
+      }
+    ]
+  },
+  "createdDate": "2026-06-30T15:36:27.281Z",
+  "firstDetected": "2026-06-30T15:36:27.281Z",
+  "lastDetected": "2026-06-30T15:36:27.282Z",
+  "occurrenceCount": 3
+}

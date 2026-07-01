@@ -237,7 +237,7 @@ No Pull Request may be merged without satisfying the following:
 - **Build Checks**: Turbo workspace builds must compile cleanly (`pnpm build`).
 - **Test Integrity**: Every test suite must pass (`pnpm test`).
 - **Governance Audit**: Run `pnpm run audit-data` to check route structure and dependencies.
-- **Automation Verification**: CI checks (`scripts/ci_governance_check.ts` and `scripts/dependency_audit.ts`) must pass before merging.
+- **Automation Verification**: CI checks (`scripts/ci-governance-check.ts` and `scripts/dependency-audit.ts`) must pass before merging.
 
 ---
 
@@ -293,9 +293,9 @@ Measurable governance metrics are established to support future automation check
 
 ### Current Verification Rules
 - Linting runs via `pnpm lint` calling `turbo lint`.
-- Vulnerability scanning runs via `scripts/dependency_audit.ts` utilizing `.audit-exceptions.json`.
-- Structural checks run via `scripts/ci_governance_check.ts` to detect sentry/opentelemetry frontend leakage and validation drift.
-- Route verification collects active Express configurations into `audit_data.json`.
+- Vulnerability scanning runs via `scripts/dependency-audit.ts` utilizing `.audit-exceptions.json`.
+- Structural checks run via `scripts/ci-governance-check.ts` to detect sentry/opentelemetry frontend leakage and validation drift.
+- Route verification collects active Express configurations into `reports/audit/audit-data.json`.
 
 ### Repository Standard
 - Pre-commit or pre-push hooks must execute `pnpm lint` and `pnpm test`.

@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 2,
+  "id": "f_cf53ad54",
+  "rule": "VAL-UI-017",
+  "ruleVersion": "1.0.0",
+  "engineVersion": "1.0.0",
+  "domain": "Platform Team",
+  "owner": "Platform Team",
+  "package": "apps",
+  "feature": "UIElement",
+  "status": "NEW",
+  "confidence": 0.9,
+  "relationships": [],
+  "evidence": {
+    "path": "apps/admin/src/app/events/[id]/edit/page.tsx",
+    "construct": "UIElement",
+    "line": 1,
+    "message": "Safe delete classification: [REQUIRES_MANUAL_REVIEW] for \"apps/admin/src/app/events/[id]/edit/page.tsx\". Reason: Filename \"page\" referenced as text/string in other files: AGENTS.MD, API_CONTRACTS.md.",
+    "occurrences": [
+      {
+        "id": "077dd555f47877bb2205ea030048a25ea1232c1417082856e184f249d200b8ab",
+        "line": 1,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "",
+        "message": "Safe delete classification: [REQUIRES_MANUAL_REVIEW] for \"apps/admin/src/app/events/[id]/edit/page.tsx\". Reason: Filename \"page\" referenced as text/string in other files: AGENTS.MD, API_CONTRACTS.md.",
+        "fingerprint": "077dd555f47877bb2205ea030048a25ea1232c1417082856e184f249d200b8ab"
+      }
+    ]
+  },
+  "createdDate": "2026-06-30T15:36:27.143Z",
+  "firstDetected": "2026-06-30T15:36:27.143Z",
+  "lastDetected": "2026-06-30T15:36:27.143Z",
+  "occurrenceCount": 1
+}

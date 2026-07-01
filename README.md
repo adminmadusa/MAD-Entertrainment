@@ -101,7 +101,7 @@ For detailed information about each subsystem, refer to the respective Single So
 Before adding tooling, automation, repository-wide rules, or cleanup processes, review existing governance tooling:
 
 ```txt
-scripts/ci_governance_check.ts
+scripts/ci-governance-check.ts
 ```
 
 Avoid introducing overlapping governance checks when existing tooling already covers the requirement.

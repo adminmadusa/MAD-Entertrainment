@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 2,
+  "id": "f_e58936a1",
+  "rule": "Missing Document Owner",
+  "ruleVersion": "1.0.0",
+  "engineVersion": "1.0.0",
+  "domain": "Platform Team",
+  "owner": "Platform Team",
+  "package": "docs",
+  "feature": "Document",
+  "status": "NEW",
+  "confidence": 1,
+  "relationships": [],
+  "evidence": {
+    "path": "docs/audit/google-auth-regression.md",
+    "construct": "Document",
+    "message": "Every documentation file is required to have a defined \"Owner\" or \"Authors\" in its metadata block.",
+    "occurrences": [
+      {
+        "id": "0aec423254893a2a30c02e29460bbefd576540a0aeb91e44fb97d3c70fa6c1c2",
+        "line": 0,
+        "column": 0,
+        "construct": "Document",
+        "snippet": "",
+        "message": "Every documentation file is required to have a defined \"Owner\" or \"Authors\" in its metadata block.",
+        "fingerprint": "0aec423254893a2a30c02e29460bbefd576540a0aeb91e44fb97d3c70fa6c1c2"
+      }
+    ]
+  },
+  "createdDate": "2026-06-30T15:36:28.222Z",
+  "firstDetected": "2026-06-30T15:36:28.222Z",
+  "lastDetected": "2026-06-30T15:36:28.222Z",
+  "occurrenceCount": 1
+}

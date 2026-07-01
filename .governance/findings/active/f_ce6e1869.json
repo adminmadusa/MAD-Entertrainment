@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 2,
+  "id": "f_ce6e1869",
+  "rule": "Orphaned Documentation",
+  "ruleVersion": "1.0.0",
+  "engineVersion": "1.0.0",
+  "domain": "Platform Team",
+  "owner": "Platform Team",
+  "package": "docs",
+  "feature": "Document",
+  "status": "NEW",
+  "confidence": 1,
+  "relationships": [],
+  "evidence": {
+    "path": "docs/archive/audits/frontend-token-cleanup-audit.md",
+    "construct": "Document",
+    "message": "Document exists in the repository but has no incoming references from any other active documentation.",
+    "occurrences": [
+      {
+        "id": "f220dd02761c9a903314fa8b65cfebfeb5d4612256ee7a2091866404740efb6a",
+        "line": 0,
+        "column": 0,
+        "construct": "Document",
+        "snippet": "",
+        "message": "Document exists in the repository but has no incoming references from any other active documentation.",
+        "fingerprint": "f220dd02761c9a903314fa8b65cfebfeb5d4612256ee7a2091866404740efb6a"
+      }
+    ]
+  },
+  "createdDate": "2026-06-30T15:36:27.683Z",
+  "firstDetected": "2026-06-30T15:36:27.683Z",
+  "lastDetected": "2026-06-30T15:36:27.683Z",
+  "occurrenceCount": 1
+}

@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 2,
+  "id": "f_9eeaa927",
+  "rule": "Orphaned Documentation",
+  "ruleVersion": "1.0.0",
+  "engineVersion": "1.0.0",
+  "domain": "Platform Team",
+  "owner": "Platform Team",
+  "package": "docs",
+  "feature": "Document",
+  "status": "NEW",
+  "confidence": 1,
+  "relationships": [],
+  "evidence": {
+    "path": "docs/archive/branch-cleanup/2026-06/asset_review.md",
+    "construct": "Document",
+    "message": "Document exists in the repository but has no incoming references from any other active documentation.",
+    "occurrences": [
+      {
+        "id": "914b041a0433de6ba0b17d452434149700e5ced81a45fa25ac1aaa2b997eeaf3",
+        "line": 0,
+        "column": 0,
+        "construct": "Document",
+        "snippet": "",
+        "message": "Document exists in the repository but has no incoming references from any other active documentation.",
+        "fingerprint": "914b041a0433de6ba0b17d452434149700e5ced81a45fa25ac1aaa2b997eeaf3"
+      }
+    ]
+  },
+  "createdDate": "2026-06-30T15:36:27.794Z",
+  "firstDetected": "2026-06-30T15:36:27.794Z",
+  "lastDetected": "2026-06-30T15:36:27.794Z",
+  "occurrenceCount": 1
+}

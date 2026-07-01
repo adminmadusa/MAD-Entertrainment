@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 2,
+  "id": "f_c6d1dc29",
+  "rule": "Missing Document Owner",
+  "ruleVersion": "1.0.0",
+  "engineVersion": "1.0.0",
+  "domain": "Platform Team",
+  "owner": "Platform Team",
+  "package": "docs",
+  "feature": "Document",
+  "status": "NEW",
+  "confidence": 1,
+  "relationships": [],
+  "evidence": {
+    "path": "docs/audit/refund/REFUND-001-EVIDENCE.md",
+    "construct": "Document",
+    "message": "Every documentation file is required to have a defined \"Owner\" or \"Authors\" in its metadata block.",
+    "occurrences": [
+      {
+        "id": "08bc7336a2115de8e70c305fe22a3e5fa22452eba5944d8903e5af65fb628136",
+        "line": 0,
+        "column": 0,
+        "construct": "Document",
+        "snippet": "",
+        "message": "Every documentation file is required to have a defined \"Owner\" or \"Authors\" in its metadata block.",
+        "fingerprint": "08bc7336a2115de8e70c305fe22a3e5fa22452eba5944d8903e5af65fb628136"
+      }
+    ]
+  },
+  "createdDate": "2026-06-30T15:36:28.262Z",
+  "firstDetected": "2026-06-30T15:36:28.262Z",
+  "lastDetected": "2026-06-30T15:36:28.262Z",
+  "occurrenceCount": 1
+}

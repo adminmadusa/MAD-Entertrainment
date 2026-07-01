@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 2,
+  "id": "f_f2bceaa4",
+  "rule": "VAL-UI-010",
+  "ruleVersion": "1.0.0",
+  "engineVersion": "1.0.0",
+  "domain": "UI UX Guild",
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "feature": "UIElement",
+  "status": "NEW",
+  "confidence": 0.9,
+  "relationships": [],
+  "evidence": {
+    "path": "apps/admin/src/app/team/_components/EditAdminModal.tsx",
+    "construct": "UIElement",
+    "snippet": "<button",
+    "line": 94,
+    "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
+    "occurrences": [
+      {
+        "id": "66324ac0150b09498b271a0b06cee3d16793e8119fa5355a7d2507ad303ab83a",
+        "line": 94,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "<button",
+        "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
+        "fingerprint": "66324ac0150b09498b271a0b06cee3d16793e8119fa5355a7d2507ad303ab83a"
+      },
+      {
+        "id": "66324ac0150b09498b271a0b06cee3d16793e8119fa5355a7d2507ad303ab83a",
+        "line": 101,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "<button",
+        "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
+        "fingerprint": "66324ac0150b09498b271a0b06cee3d16793e8119fa5355a7d2507ad303ab83a"
+      }
+    ]
+  },
+  "createdDate": "2026-06-30T15:36:27.175Z",
+  "firstDetected": "2026-06-30T15:36:27.175Z",
+  "lastDetected": "2026-06-30T15:36:27.175Z",
+  "occurrenceCount": 2
+}

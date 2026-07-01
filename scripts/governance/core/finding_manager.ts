@@ -1,32 +1,52 @@
 // scripts/governance/core/finding_manager.ts
-import { existsSync, mkdirSync, readFileSync, writeFileSync, readdirSync } from 'fs';
+import { existsSync, mkdirSync, readFileSync, readdirSync } from 'fs';
 import { resolve, join } from 'path';
-import { Finding, FindingException, FindingStatus, HistoryEvent, StatelessViolation } from './types';
+import { Finding, FindingException, FindingStatus, HistoryEvent, StatelessViolation, FindingOccurrence } from './types';
 import { RuleRegistry } from '../rules/registry';
 import { RenameDetector } from './rename_detector';
+import { writeJsonIfChanged, persistenceStats } from './json_utils';
+import { createHash } from 'crypto';
+import { FingerprintEngine } from './fingerprint';
 
 export class FindingManager {
-  private static workspaceRoot = resolve(__dirname, '../../..');
-  private static govDir = resolve(FindingManager.workspaceRoot, '.governance');
-  private static findingsDir = join(FindingManager.govDir, 'findings');
-  private static exceptionsDir = join(FindingManager.govDir, 'exceptions');
-  private static historyDir = join(FindingManager.govDir, 'history');
-  private static baselinesDir = join(FindingManager.govDir, 'baselines');
-  private static metricsDir = join(FindingManager.govDir, 'metrics');
+  public static workspaceRoot = resolve(__dirname, '../../..');
+  public static govDir = resolve(FindingManager.workspaceRoot, '.governance');
+  public static findingsDir = join(FindingManager.govDir, 'findings');
+  public static activeDir = join(FindingManager.findingsDir, 'active');
+  public static closedDir = join(FindingManager.findingsDir, 'closed');
+  public static suppressedDir = join(FindingManager.findingsDir, 'suppressed');
+  public static archiveFindingsDir = join(FindingManager.govDir, 'archive/findings');
+  public static archiveHistoryDir = join(FindingManager.govDir, 'archive/history');
+  public static exceptionsDir = join(FindingManager.govDir, 'exceptions');
+  public static historyDir = join(FindingManager.govDir, 'history');
+  public static baselinesDir = join(FindingManager.govDir, 'baselines');
+  public static metricsDir = join(FindingManager.govDir, 'metrics');
 
   private findings = new Map<string, Finding>();
   private exceptions = new Map<string, FindingException>();
   private nextIndices = new Map<string, number>();
 
+  public static retentionPolicy = {
+    closedFindingsDays: 90,
+    dailySnapshots: 30,
+    monthlySnapshots: true,
+  };
+
   constructor() {
     this.ensureDirectoriesExist();
     this.loadAll();
+    this.applyRetentionPolicy();
   }
 
   private ensureDirectoriesExist() {
     const dirs = [
       FindingManager.govDir,
       FindingManager.findingsDir,
+      FindingManager.activeDir,
+      FindingManager.closedDir,
+      FindingManager.suppressedDir,
+      FindingManager.archiveFindingsDir,
+      FindingManager.archiveHistoryDir,
       FindingManager.exceptionsDir,
       FindingManager.historyDir,
       FindingManager.baselinesDir,
@@ -40,9 +60,9 @@ export class FindingManager {
   }
 
   private loadAll() {
-    // 1. Load Exceptions
+    // 1. Load Exceptions deterministically
     if (existsSync(FindingManager.exceptionsDir)) {
-      const files = readdirSync(FindingManager.exceptionsDir);
+      const files = readdirSync(FindingManager.exceptionsDir).sort();
       for (const file of files) {
         if (file.endsWith('.json')) {
           try {
@@ -56,19 +76,78 @@ export class FindingManager {
       }
     }
 
-    // 2. Load Findings
-    if (existsSync(FindingManager.findingsDir)) {
-      const files = readdirSync(FindingManager.findingsDir);
+    // 2. Load Findings from nested state subfolders
+    const stateDirs = [
+      FindingManager.activeDir,
+      FindingManager.closedDir,
+      FindingManager.suppressedDir,
+    ];
+
+    for (const dir of stateDirs) {
+      if (existsSync(dir)) {
+        const files = readdirSync(dir).sort();
+        for (const file of files) {
+          if (file.endsWith('.json')) {
+            try {
+              const content = readFileSync(join(dir, file), 'utf8');
+              const finding = JSON.parse(content) as Finding;
+              this.findings.set(finding.id, finding);
+              this.updateNextIndex(finding.id);
+            } catch (e) {
+              // Ignore bad finding JSONs
+            }
+          }
+        }
+      }
+    }
+  }
+
+  public applyRetentionPolicy() {
+    // 1. Archive closed findings to archive/findings/ after retention period
+    if (existsSync(FindingManager.closedDir)) {
+      const files = readdirSync(FindingManager.closedDir);
+      const now = Date.now();
+      const maxAgeMs = FindingManager.retentionPolicy.closedFindingsDays * 24 * 60 * 60 * 1000;
       for (const file of files) {
         if (file.endsWith('.json')) {
+          const filePath = join(FindingManager.closedDir, file);
           try {
-            const content = readFileSync(join(FindingManager.findingsDir, file), 'utf8');
-            const finding = JSON.parse(content) as Finding;
-            this.findings.set(finding.id, finding);
-            this.updateNextIndex(finding.id);
-          } catch (e) {
-            // Ignore bad finding JSONs
-          }
+            const stats = require('fs').statSync(filePath);
+            const ageMs = now - stats.mtime.getTime();
+            if (ageMs > maxAgeMs) {
+              const destPath = join(FindingManager.archiveFindingsDir, file);
+              require('fs').renameSync(filePath, destPath);
+              console.log(`🗄️ Archived expired closed finding: ${file}`);
+            }
+          } catch (e) {}
+        }
+      }
+    }
+
+    // 2. Prune daily snapshots in archive/history/ after retention period
+    if (existsSync(FindingManager.archiveHistoryDir)) {
+      const files = readdirSync(FindingManager.archiveHistoryDir);
+      const now = Date.now();
+      const maxAgeMs = FindingManager.retentionPolicy.dailySnapshots * 24 * 60 * 60 * 1000;
+      for (const file of files) {
+        if (file.endsWith('.json')) {
+          const filePath = join(FindingManager.archiveHistoryDir, file);
+          try {
+            const dateStr = file.replace('.json', '');
+            const fileDate = new Date(dateStr);
+            if (isNaN(fileDate.getTime())) continue;
+
+            const isFirstDayOfMonth = fileDate.getDate() === 1;
+            const ageMs = now - fileDate.getTime();
+
+            if (ageMs > maxAgeMs) {
+              if (FindingManager.retentionPolicy.monthlySnapshots && isFirstDayOfMonth) {
+                continue;
+              }
+              require('fs').unlinkSync(filePath);
+              console.log(`🗑️ Pruned old daily history snapshot: ${file}`);
+            }
+          } catch (e) {}
         }
       }
     }
@@ -108,7 +187,7 @@ export class FindingManager {
   }
 
   public getAllFindings(): Finding[] {
-    return Array.from(this.findings.values());
+    return Array.from(this.findings.values()).sort((a, b) => a.id.localeCompare(b.id));
   }
 
   public getFinding(id: string): Finding | undefined {
@@ -123,100 +202,178 @@ export class FindingManager {
     return undefined;
   }
 
+  public generateStableId(rule: string, path: string): string {
+    const data = `${rule}:${path}`;
+    const hash = createHash('sha256').update(data).digest('hex');
+    return `f_${hash.substring(0, 8)}`;
+  }
+
   /**
    * Tries to find an existing persistent finding matching a validator violation.
    */
-  public matchOrCreateFinding(violation: StatelessViolation): Finding {
+  public matchOrCreateFinding(violation: StatelessViolation, claimedFindingIds: Set<string> = new Set()): Finding {
     const rule = RuleRegistry.getRule(violation.rule);
     const category = rule?.category || 'HYGIENE';
     const ruleVersion = rule?.version || '1.0.0';
     const engineVersion = '1.0.0';
 
-    // 1. Precise Match (Same Rule + Same Path + Same Construct)
-    for (const finding of this.findings.values()) {
-      if (
-        finding.rule === violation.rule &&
-        finding.evidence.path === violation.path &&
-        finding.evidence.construct === violation.construct
-      ) {
-        // Update lines, snippet, and messages in memory (evidence updates)
-        finding.evidence.line = violation.line;
-        finding.evidence.snippet = violation.snippet;
-        finding.evidence.message = violation.message;
-        finding.lastDetected = new Date().toISOString();
-        return finding;
+    const path = violation.path;
+    const ruleId = violation.rule;
+    const findingId = this.generateStableId(ruleId, path);
+
+    const strategy = FingerprintEngine.getStrategy('SMART');
+    const fingerprint = strategy.fingerprint(ruleId, path, violation.construct || 'UIElement', violation.snippet || '');
+
+    const occurrence: FindingOccurrence = {
+      id: fingerprint,
+      line: violation.line || 0,
+      column: 0,
+      construct: violation.construct,
+      snippet: violation.snippet,
+      message: violation.message,
+      fingerprint,
+    };
+
+    // 1. Direct Match by stable ID (Grouped rule + path finding)
+    let finding = this.findings.get(findingId);
+    if (finding) {
+      if (!finding.evidence.occurrences) {
+        finding.evidence.occurrences = [];
       }
+      
+      const exists = finding.evidence.occurrences.some(o => o.id === fingerprint);
+      if (!exists) {
+        finding.evidence.occurrences.push(occurrence);
+        finding.evidence.occurrences.sort((a, b) => a.line - b.line);
+        finding.occurrenceCount = finding.evidence.occurrences.length;
+        finding.lastDetected = new Date().toISOString();
+        finding.lastModified = new Date().toISOString();
+        this.saveFinding(finding);
+      }
+      return finding;
     }
 
-    // 2. Rename Match (Same Rule + Same Construct + Current Path was renamed from Finding Path)
-    for (const finding of this.findings.values()) {
+    // 2. Rename Match (Same Rule + Current Path was renamed from old Finding Path)
+    for (const oldFinding of this.findings.values()) {
       if (
-        finding.rule === violation.rule &&
-        finding.evidence.construct === violation.construct &&
-        RenameDetector.wasRenamedFrom(violation.path, finding.evidence.path)
+        oldFinding.rule === ruleId &&
+        RenameDetector.wasRenamedFrom(path, oldFinding.evidence.path)
       ) {
-        // Update path to the new path, logging the path evolution
-        finding.evidence.path = violation.path;
-        finding.evidence.line = violation.line;
-        finding.evidence.snippet = violation.snippet;
-        finding.evidence.message = violation.message;
-        finding.lastDetected = new Date().toISOString();
-        this.saveFinding(finding); // Save updated file paths immediately
-        this.logHistoryEvent(finding.id, {
+        const oldId = oldFinding.id;
+        oldFinding.id = findingId;
+        oldFinding.evidence.path = path;
+        oldFinding.lastDetected = new Date().toISOString();
+        oldFinding.lastModified = new Date().toISOString();
+
+        if (oldFinding.evidence.occurrences) {
+          oldFinding.evidence.occurrences = oldFinding.evidence.occurrences.map(o => {
+            const newFingerprint = strategy.fingerprint(ruleId, path, o.construct || 'UIElement', o.snippet || '');
+            return {
+              ...o,
+              id: newFingerprint,
+              fingerprint: newFingerprint,
+            };
+          });
+        }
+
+        this.findings.delete(oldId);
+        this.findings.set(findingId, oldFinding);
+        this.saveFinding(oldFinding);
+
+        const oldFilePath = join(FindingManager.findingsDir, `${oldId}.json`);
+        if (existsSync(oldFilePath)) {
+          try {
+            require('fs').unlinkSync(oldFilePath);
+          } catch (e) {}
+        }
+
+        this.logHistoryEvent(findingId, {
           timestamp: new Date().toISOString(),
           action: 'RENAMED',
-          status: finding.status,
-          notes: `File renamed/relocated to ${violation.path}`,
+          status: oldFinding.status,
+          notes: `File renamed/relocated from ${oldFinding.evidence.path} to ${path}`,
         });
-        return finding;
+
+        return oldFinding;
       }
     }
 
-    // 3. Match failed: generate a new persistent finding
-    const newId = this.generateNewId(category);
+    // 3. New grouped finding
     const domain = rule?.owner || 'Platform Team';
     const firstDetected = new Date().toISOString();
 
     const newFinding: Finding = {
-      id: newId,
-      rule: violation.rule,
+      schemaVersion: 2,
+      id: findingId,
+      rule: ruleId,
       ruleVersion,
       engineVersion,
       domain,
-      owner: rule?.owner || 'Platform Team',
-      package: violation.path.split('/')[0] || 'shared',
-      feature: violation.construct || 'General',
-      status: rule?.defaultLifecycle || 'NEW',
+      owner: domain,
+      package: path.split('/')[0] || 'root',
+      feature: violation.construct || 'UIElement',
+      status: 'NEW',
       confidence: violation.confidence !== undefined ? violation.confidence : (rule?.confidence || 1.0),
       relationships: [],
       evidence: {
-        path: violation.path,
+        path,
         construct: violation.construct,
         snippet: violation.snippet,
         line: violation.line,
         message: violation.message,
+        occurrences: [occurrence],
       },
       createdDate: firstDetected,
       firstDetected,
       lastDetected: firstDetected,
+      occurrenceCount: 1,
     };
 
-    // Save records
-    this.findings.set(newId, newFinding);
+    this.findings.set(findingId, newFinding);
     this.saveFinding(newFinding);
-    this.logHistoryEvent(newId, {
+    this.logHistoryEvent(findingId, {
       timestamp: firstDetected,
       action: 'CREATED',
       status: newFinding.status,
-      notes: `New finding registered: ${violation.message}`,
+      notes: `New grouped finding registered: ${violation.message}`,
     });
 
     return newFinding;
   }
 
   public saveFinding(finding: Finding) {
-    const filePath = join(FindingManager.findingsDir, `${finding.id}.json`);
-    writeFileSync(filePath, JSON.stringify(finding, null, 2), 'utf8');
+    const previousPath = this.getFindingFilePath(finding.id);
+
+    let targetDir = FindingManager.activeDir;
+    if (finding.status === 'CLOSED') {
+      targetDir = FindingManager.closedDir;
+    } else if (finding.status === 'FALSE_POSITIVE' || finding.status === 'IGNORED') {
+      targetDir = FindingManager.suppressedDir;
+    }
+
+    const newPath = join(targetDir, `${finding.id}.json`);
+    const res = writeJsonIfChanged(newPath, finding);
+    if (res.written) {
+      persistenceStats.findingWritten++;
+    }
+
+    if (previousPath && previousPath !== newPath && existsSync(previousPath)) {
+      try {
+        require('fs').unlinkSync(previousPath);
+      } catch (e) {}
+    }
+  }
+
+  private getFindingFilePath(id: string): string | null {
+    const paths = [
+      join(FindingManager.activeDir, `${id}.json`),
+      join(FindingManager.closedDir, `${id}.json`),
+      join(FindingManager.suppressedDir, `${id}.json`),
+    ];
+    for (const p of paths) {
+      if (existsSync(p)) return p;
+    }
+    return null;
   }
 
   public logHistoryEvent(id: string, event: HistoryEvent) {
@@ -233,7 +390,7 @@ export class FindingManager {
     }
 
     historyRecord.history.push(event);
-    writeFileSync(historyPath, JSON.stringify(historyRecord, null, 2), 'utf8');
+    writeJsonIfChanged(historyPath, historyRecord);
   }
 
   public getHistory(id: string): HistoryEvent[] {

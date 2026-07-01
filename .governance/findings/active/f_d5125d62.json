@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 2,
+  "id": "f_d5125d62",
+  "rule": "VAL-UI-004",
+  "ruleVersion": "1.0.0",
+  "engineVersion": "1.0.0",
+  "domain": "UI UX Guild",
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "feature": "table",
+  "status": "NEW",
+  "confidence": 0.9,
+  "relationships": [],
+  "evidence": {
+    "path": "apps/admin/src/components/diagnostics/ReservationLedgerTab.tsx",
+    "construct": "table",
+    "snippet": "<table className=\"w-full text-xs\">",
+    "line": 33,
+    "message": "Raw <table> element used in admin portal. Use a reusable shared Table component.",
+    "occurrences": [
+      {
+        "id": "61a5a9c0ec4df8c0bf79389990549ab2761563a6f484637cb69c3890f308928a",
+        "line": 33,
+        "column": 0,
+        "construct": "table",
+        "snippet": "<table className=\"w-full text-xs\">",
+        "message": "Raw <table> element used in admin portal. Use a reusable shared Table component.",
+        "fingerprint": "61a5a9c0ec4df8c0bf79389990549ab2761563a6f484637cb69c3890f308928a"
+      },
+      {
+        "id": "a8bdcec8c926cf2adcb1f44214065126b1ec6d3609a8bc485ba5223fd4863f65",
+        "line": 33,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "<table className=\"w-full text-xs\">",
+        "message": "Raw <table> element used in portal. Use a reusable shared Table component.",
+        "fingerprint": "a8bdcec8c926cf2adcb1f44214065126b1ec6d3609a8bc485ba5223fd4863f65"
+      }
+    ]
+  },
+  "createdDate": "2026-06-29T08:10:33.158Z",
+  "firstDetected": "2026-06-29T08:10:33.158Z",
+  "lastDetected": "2026-06-30T15:36:27.213Z",
+  "occurrenceCount": 2
+}

@@ -56,15 +56,34 @@ export interface FindingRelationship {
   targetId: string;
 }
 
+export interface FindingOccurrence {
+  id: string; // SHA-256 fingerprint hash
+  line: number;
+  column?: number;
+  construct?: string;
+  snippet?: string;
+  message: string;
+  fingerprint: string;
+}
+
+export interface FindingStateMetadata {
+  firstSeenCommit?: string;
+  lastSeenCommit?: string;
+  firstSeenAudit?: string;
+  lastSeenAudit?: string;
+}
+
 export interface FindingEvidence {
   path: string;
   construct?: string;
   snippet?: string;
   line?: number;
   message: string;
+  occurrences?: FindingOccurrence[]; // <-- Added for grouped occurrences
 }
 
 export interface Finding {
+  schemaVersion?: number; // <-- Added for schema version tracking (default: 2)
   id: string;
   rule: string;
   ruleVersion: string;
@@ -80,6 +99,9 @@ export interface Finding {
   createdDate: string;
   firstDetected: string;
   lastDetected: string;
+  lastModified?: string; // <-- Added
+  occurrenceCount?: number; // <-- Added
+  state?: FindingStateMetadata; // <-- Added
 }
 
 export interface HistoryEvent {
@@ -110,6 +132,35 @@ export interface RepositorySnapshot {
   timestamp: string;
   engineVersion: string;
   ruleRegistryVersion: string;
+}
+
+export interface GovernancePerformanceMetrics {
+  findingsScanned: number;
+  filesScanned: number;
+  scanDurationMs: number;
+  groupingDurationMs: number;
+  migrationDurationMs?: number;
+  filesWritten: number;
+  filesArchived: number;
+}
+
+export interface GovernanceManifest {
+  schemaVersion: 2;
+  manifestVersion: 1;
+  migrationVersion: 1;
+  engineVersion: string;
+  findingCount: number;
+  historySnapshots: number;
+  lastMigration: string;
+  lastAudit: string;
+  performance?: GovernancePerformanceMetrics;
+}
+
+export interface FailureRecoveryMetadata {
+  failureTimestamp: string;
+  failedPhase: string;
+  exceptionSummary: string;
+  rollbackStatus: 'SUCCESS' | 'FAILED';
 }
 
 export interface GovernanceMetrics {

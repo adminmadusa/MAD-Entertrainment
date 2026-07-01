@@ -1,9 +1,10 @@
 // scripts/governance/core/knowledge_graph.ts
-import { existsSync, readFileSync, writeFileSync, readdirSync, statSync } from 'fs';
+import { existsSync, readFileSync, readdirSync, statSync } from 'fs';
 import { resolve, join, relative } from 'path';
 import { createHash } from 'crypto';
 import { DependencyAnalyzer } from './dependency_analyzer';
 import { baselinesDir } from './finding_manager';
+import { writeJsonIfChanged, canonicalizeJson, persistenceStats } from './json_utils';
 
 export interface CacheEntry {
   hash: string;
@@ -90,7 +91,7 @@ export class KnowledgeGraph {
       }
     }
 
-    const currentFiles = this.scanAllWorkspaceFiles();
+    const currentFiles = this.scanAllWorkspaceFiles().sort();
     this.metrics.scannedFiles = currentFiles.length;
 
     const fileMap = new Map<string, string>(); // path -> hash
@@ -143,16 +144,31 @@ export class KnowledgeGraph {
 
       this.buildConsumersMap();
 
-      // Write cached json
-      const updatedCache: GraphCache = {
-        version: KnowledgeGraph.graphVersion,
-        timestamp: new Date().toISOString(),
-        files: newCacheFiles,
-      };
-      
-      try {
-        writeFileSync(KnowledgeGraph.cacheFile, JSON.stringify(updatedCache, null, 2), 'utf8');
-      } catch (e) {}
+      // Compare cache files structurally excluding the cache timestamp itself
+      let cacheChanged = true;
+      const canonicalOldFiles = canonicalizeJson(cache.files || {});
+      const canonicalNewFiles = canonicalizeJson(newCacheFiles);
+      if (canonicalOldFiles === canonicalNewFiles) {
+        cacheChanged = false;
+      }
+
+      if (cacheChanged) {
+        // Write cached json
+        const updatedCache: GraphCache = {
+          version: KnowledgeGraph.graphVersion,
+          timestamp: new Date().toISOString(),
+          files: newCacheFiles,
+        };
+        const res = writeJsonIfChanged(KnowledgeGraph.cacheFile, updatedCache);
+        if (res.written) {
+          persistenceStats.cacheWritten++;
+        }
+      } else {
+        console.log('⚙️ Cache unchanged. Skipping write.');
+        // Increment examined/skipped counts manually since we bypassed writeJsonIfChanged
+        persistenceStats.examined++;
+        persistenceStats.skipped++;
+      }
       
     } else {
       console.log('⚙️ Rebuilding Dependency Knowledge Graph from Scratch...');
@@ -207,7 +223,8 @@ export class KnowledgeGraph {
     this.fileMetadata.clear();
     const rawCacheFiles: Record<string, CacheEntry> = {};
 
-    for (const file of files) {
+    const sortedFiles = [...files].sort();
+    for (const file of sortedFiles) {
       const fullPath = resolve(KnowledgeGraph.workspaceRoot, file);
       let mtime = 0;
       try {
@@ -242,9 +259,10 @@ export class KnowledgeGraph {
       files: rawCacheFiles,
     };
 
-    try {
-      writeFileSync(KnowledgeGraph.cacheFile, JSON.stringify(cache, null, 2), 'utf8');
-    } catch (e) {}
+    const res = writeJsonIfChanged(KnowledgeGraph.cacheFile, cache);
+    if (res.written) {
+      persistenceStats.cacheWritten++;
+    }
   }
 
   private buildConsumersMap() {
@@ -304,6 +322,14 @@ export class KnowledgeGraph {
     }
 
     return affected;
+  }
+
+
+  /**
+   * Returns a defensive copy of all indexed repository files.
+   */
+  public getIndexedFiles(): string[] {
+    return [...this.graph.keys()];
   }
 
   /**

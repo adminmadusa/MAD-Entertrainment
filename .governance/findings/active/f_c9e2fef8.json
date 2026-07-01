@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 2,
+  "id": "f_c9e2fef8",
+  "rule": "VAL-UI-007",
+  "ruleVersion": "1.0.0",
+  "engineVersion": "1.0.0",
+  "domain": "UI UX Guild",
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "feature": "UIElement",
+  "status": "NEW",
+  "confidence": 0.9,
+  "relationships": [],
+  "evidence": {
+    "path": "apps/web/src/app/events/[slug]/components/EventBookingFlow.tsx",
+    "construct": "UIElement",
+    "snippet": "className=\"w-full h-full md:h-[650px] max-w-4xl bg-[#0d111d] md:rounded-2xl border border-white/10 overflow-hidden relative flex flex-col md:flex-row shadow-2xl z-10 focus:outline-none\"",
+    "line": 111,
+    "message": "Hardcoded color '#0d111d' detected. Standardize using design tokens/theme variables.",
+    "occurrences": [
+      {
+        "id": "d497060e81ce7088de3cdd80e12a50da7c9937894592dfa76e5a341835d2ea13",
+        "line": 111,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "className=\"w-full h-full md:h-[650px] max-w-4xl bg-[#0d111d] md:rounded-2xl border border-white/10 overflow-hidden relative flex flex-col md:flex-row shadow-2xl z-10 focus:outline-none\"",
+        "message": "Hardcoded color '#0d111d' detected. Standardize using design tokens/theme variables.",
+        "fingerprint": "d497060e81ce7088de3cdd80e12a50da7c9937894592dfa76e5a341835d2ea13"
+      },
+      {
+        "id": "1ba645c6912be573b494d29e5792922b27917118a4a31fb7e8a4642e5d62332a",
+        "line": 124,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "<div className=\"w-full md:w-3/5 p-6 md:p-8 flex flex-col h-full border-r border-white/5 bg-[#0d111d] overflow-hidden\">",
+        "message": "Hardcoded color '#0d111d' detected. Standardize using design tokens/theme variables.",
+        "fingerprint": "1ba645c6912be573b494d29e5792922b27917118a4a31fb7e8a4642e5d62332a"
+      },
+      {
+        "id": "d6c9eeed10bc2fd11742737bafd202ee4e21b5ad55fd7864654b97a5f0186fd7",
+        "line": 152,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "<div className=\"border-t border-white/10 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] mt-4 flex items-center justify-between bg-[#0d111d] shrink-0\">",
+        "message": "Hardcoded color '#0d111d' detected. Standardize using design tokens/theme variables.",
+        "fingerprint": "d6c9eeed10bc2fd11742737bafd202ee4e21b5ad55fd7864654b97a5f0186fd7"
+      },
+      {
+        "id": "24ce3393e7b51597e843b7cdd232a9d557ae3db3e8f3e5b7ced0681c7ebf36c9",
+        "line": 168,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "<div className=\"hidden md:flex md:w-2/5 bg-[#121625] flex-col border-l border-white/5\">",
+        "message": "Hardcoded color '#121625' detected. Standardize using design tokens/theme variables.",
+        "fingerprint": "24ce3393e7b51597e843b7cdd232a9d557ae3db3e8f3e5b7ced0681c7ebf36c9"
+      },
+      {
+        "id": "2cfcd017a3dedb38a0b3f79bd525d8b8661c238c2f1194b73952059f6c8e1c27",
+        "line": 247,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "className=\"w-full h-full md:max-h-[95vh] max-w-4xl bg-[#0d111d] md:rounded-2xl border border-white/10 overflow-y-auto shadow-2xl relative z-10 p-6 custom-scrollbar focus:outline-none\"",
+        "message": "Hardcoded color '#0d111d' detected. Standardize using design tokens/theme variables.",
+        "fingerprint": "2cfcd017a3dedb38a0b3f79bd525d8b8661c238c2f1194b73952059f6c8e1c27"
+      }
+    ]
+  },
+  "createdDate": "2026-06-30T15:36:27.251Z",
+  "firstDetected": "2026-06-30T15:36:27.251Z",
+  "lastDetected": "2026-06-30T15:36:27.251Z",
+  "occurrenceCount": 5
+}

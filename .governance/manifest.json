@@ -1,0 +1,19 @@
+{
+  "engineVersion": "1.0.0",
+  "findingCount": 526,
+  "historySnapshots": 1,
+  "lastAudit": "2026-07-01T02:23:19.916Z",
+  "lastMigration": "2026-06-30T15:28:59Z",
+  "manifestVersion": 1,
+  "migrationVersion": 1,
+  "performance": {
+    "filesArchived": 4,
+    "filesScanned": 853,
+    "filesWritten": 0,
+    "findingsScanned": 526,
+    "groupingDurationMs": -45,
+    "migrationDurationMs": 0,
+    "scanDurationMs": 10
+  },
+  "schemaVersion": 2
+}

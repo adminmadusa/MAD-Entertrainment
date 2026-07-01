@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 2,
+  "id": "f_5ef69371",
+  "rule": "VAL-UI-010",
+  "ruleVersion": "1.0.0",
+  "engineVersion": "1.0.0",
+  "domain": "UI UX Guild",
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "feature": "UIElement",
+  "status": "NEW",
+  "confidence": 0.9,
+  "relationships": [],
+  "evidence": {
+    "path": "apps/admin/src/app/ticket-profiles/new/page.tsx",
+    "construct": "UIElement",
+    "snippet": "<button",
+    "line": 87,
+    "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
+    "occurrences": [
+      {
+        "id": "3509c1eac628a8eea331fa6b9bc46de39f71d129819611632b0141e9889f4d62",
+        "line": 87,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "<button",
+        "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
+        "fingerprint": "3509c1eac628a8eea331fa6b9bc46de39f71d129819611632b0141e9889f4d62"
+      },
+      {
+        "id": "3509c1eac628a8eea331fa6b9bc46de39f71d129819611632b0141e9889f4d62",
+        "line": 103,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "<button",
+        "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
+        "fingerprint": "3509c1eac628a8eea331fa6b9bc46de39f71d129819611632b0141e9889f4d62"
+      }
+    ]
+  },
+  "createdDate": "2026-06-30T15:36:27.184Z",
+  "firstDetected": "2026-06-30T15:36:27.184Z",
+  "lastDetected": "2026-06-30T15:36:27.184Z",
+  "occurrenceCount": 2
+}

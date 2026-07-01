@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 2,
+  "id": "f_e1af634f",
+  "rule": "VAL-UI-005",
+  "ruleVersion": "1.0.0",
+  "engineVersion": "1.0.0",
+  "domain": "UI UX Guild",
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "feature": "button",
+  "status": "NEW",
+  "confidence": 0.85,
+  "relationships": [],
+  "evidence": {
+    "path": "apps/admin/src/components/states/ErrorState.tsx",
+    "construct": "button",
+    "snippet": "<button onClick={retry} className=\"px-4 py-2 bg-accent-purple hover:bg-accent-purple/80 text-white rounded\">",
+    "line": 20,
+    "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
+    "occurrences": [
+      {
+        "id": "d6e25eff801689e8284979f8a19dbec43725230e55a2637cc92f0bddc095634f",
+        "line": 20,
+        "column": 0,
+        "construct": "button",
+        "snippet": "<button onClick={retry} className=\"px-4 py-2 bg-accent-purple hover:bg-accent-purple/80 text-white rounded\">",
+        "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
+        "fingerprint": "d6e25eff801689e8284979f8a19dbec43725230e55a2637cc92f0bddc095634f"
+      },
+      {
+        "id": "f3a901f1a71977a5d922e8e39f5934b04463e872eeb443ff95d9a5043f4db36c",
+        "line": 20,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "<button onClick={retry} className=\"px-4 py-2 bg-accent-purple hover:bg-accent-purple/80 text-white rounded\">",
+        "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
+        "fingerprint": "f3a901f1a71977a5d922e8e39f5934b04463e872eeb443ff95d9a5043f4db36c"
+      }
+    ]
+  },
+  "createdDate": "2026-06-29T08:10:44.736Z",
+  "firstDetected": "2026-06-29T08:10:44.736Z",
+  "lastDetected": "2026-06-30T15:36:27.230Z",
+  "occurrenceCount": 2
+}

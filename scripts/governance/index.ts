@@ -23,66 +23,14 @@ import { RepositoryHealthValidator } from './validators/repository_health_valida
 import { UIDesignValidator } from './validators/ui_design_validator';
 import { SharedComponentValidator } from './validators/shared_component_validator';
 import { AccessibilityValidator } from './validators/accessibility_validator';
+import { DeadAssetDuplicateValidator } from './validators/dead_asset_duplicate_validator';
 import { AuditEngine } from './core/audit_engine';
 import { StatelessViolation } from './core/types';
+import { persistenceStats } from './core/json_utils';
 
 const workspaceRoot = resolve(__dirname, '../..');
 
-/**
- * Recursively scans a directory for markdown (.md) files.
- */
-function scanMarkdownFiles(dir: string, fileList: string[] = []): string[] {
-  if (!existsSync(dir)) return fileList;
-  const items = readdirSync(dir);
-  for (const item of items) {
-    const fullPath = join(dir, item);
-    const stats = statSync(fullPath);
-    if (stats.isDirectory()) {
-      if (
-        item !== 'node_modules' &&
-        item !== '.git' &&
-        item !== '.pnpm-store' &&
-        item !== '.turbo' &&
-        item !== 'archive' &&
-        item !== 'audit' &&
-        item !== '.governance'
-      ) {
-        scanMarkdownFiles(fullPath, fileList);
-      }
-    } else if (item.endsWith('.md')) {
-      fileList.push(relative(workspaceRoot, fullPath));
-    }
-  }
-  return fileList;
-}
 
-/**
- * Recursively scans a directory for code source files.
- */
-function scanSourceFiles(dir: string, fileList: string[] = []): string[] {
-  if (!existsSync(dir)) return fileList;
-  const items = readdirSync(dir);
-  for (const item of items) {
-    const fullPath = join(dir, item);
-    const stats = statSync(fullPath);
-    if (stats.isDirectory()) {
-      if (
-        item !== 'node_modules' &&
-        item !== '.git' &&
-        item !== '.pnpm-store' &&
-        item !== '.turbo' &&
-        item !== 'dist' &&
-        item !== '.next' &&
-        item !== '.governance'
-      ) {
-        scanSourceFiles(fullPath, fileList);
-      }
-    } else if (/\.(ts|tsx|js|jsx)$/.test(item)) {
-      fileList.push(relative(workspaceRoot, fullPath));
-    }
-  }
-  return fileList;
-}
 
 function getGitDiffFiles(): string[] {
   try {
@@ -123,40 +71,33 @@ async function run() {
   const auditEngine = new AuditEngine();
   metadata.knowledgeGraph = auditEngine.getKnowledgeGraph();
 
-  // 1. Discover all markdown and source code files
+  // 1. Retrieve all indexed repository files from the KnowledgeGraph (SSOT traversal)
+  const graph = auditEngine.getKnowledgeGraph();
+  const indexedFiles = graph.getIndexedFiles().sort();
+
   const markdownFiles = new Set<string>();
   for (const doc of metadata.requiredDocuments) {
-    const fullPath = resolve(workspaceRoot, doc);
-    if (existsSync(fullPath) && statSync(fullPath).isFile()) {
+    if (indexedFiles.includes(doc)) {
       markdownFiles.add(doc);
     }
   }
 
-  const rootItems = readdirSync(workspaceRoot);
-  for (const item of rootItems) {
-    if (item.endsWith('.md')) {
-      markdownFiles.add(item);
+  for (const file of indexedFiles) {
+    if (file.endsWith('.md')) {
+      markdownFiles.add(file);
     }
   }
 
-  const docsDir = resolve(workspaceRoot, 'docs');
-  const docsFiles = scanMarkdownFiles(docsDir);
-  for (const file of docsFiles) {
-    markdownFiles.add(file);
-  }
-
-  // Scan codebase sources for UI analysis
-  const uiSourceFiles = scanSourceFiles(resolve(workspaceRoot, 'apps/admin/src'));
-  const webSourceFiles = scanSourceFiles(resolve(workspaceRoot, 'apps/web/src'));
-  const uiFilesArray = [...uiSourceFiles, ...webSourceFiles];
-
-  let finalMarkdownFiles = Array.from(markdownFiles);
-  let finalUiFiles = uiFilesArray;
+  const finalMarkdownFiles = Array.from(markdownFiles).sort();
+  const finalUiFiles = indexedFiles.filter(file => {
+    const isSource = /\.(ts|tsx|js|jsx)$/.test(file);
+    const isUnderAppSrc = file.startsWith('apps/admin/src/') || file.startsWith('apps/web/src/');
+    return isSource && isUnderAppSrc;
+  }).sort();
 
   // 2. Perform Incremental & Dependency-Aware Auditing filter
   if (isIncremental && changedFiles.length > 0) {
     console.log(`🎯 Incremental scan enabled. Detected ${changedFiles.length} modified files.`);
-    const graph = auditEngine.getKnowledgeGraph();
     const affected = graph.getAffectedConsumers(changedFiles);
 
     finalMarkdownFiles = finalMarkdownFiles.filter(f => affected.has(f) || changedFiles.includes(f));
@@ -231,8 +172,41 @@ async function run() {
     }
   }
 
+  // 3b. Execute Dead Asset & Duplicate Validator (Phase 3 Integration)
+  console.log('📦 Running dead asset and duplicate detection validators...');
+  const deadAssetLoader = new ValidatorLoader();
+  deadAssetLoader.register(new DeadAssetDuplicateValidator());
+  const deadAssetResults = await deadAssetLoader.runAll(indexedFiles, metadata);
+  results.push(...deadAssetResults);
+
+  // Convert Dead Asset results to StatelessViolation records for lifecycle reconciliation
+  for (const daResult of deadAssetResults) {
+    const allErrors = [...daResult.errors, ...daResult.warnings];
+    for (const error of allErrors) {
+      statelessViolations.push({
+        rule: error.rule,
+        path: error.file,
+        construct: 'UIElement',
+        line: error.line,
+        snippet: error.snippet,
+        message: error.message,
+        confidence: 0.9,
+      });
+    }
+  }
+
   // 4. Run State and Lifecycle Reconciliation
   console.log('🧠 Running Audit Intelligence Engine...');
+  // Sort statelessViolations deterministically before executing the engine
+  statelessViolations.sort((a, b) => {
+    if (a.path !== b.path) return a.path.localeCompare(b.path);
+    if (a.rule !== b.rule) return a.rule.localeCompare(b.rule);
+    if ((a.construct || '') !== (b.construct || '')) {
+      return (a.construct || '').localeCompare(b.construct || '');
+    }
+    if (a.line !== b.line) return (a.line || 0) - (b.line || 0);
+    return (a.message || '').localeCompare(b.message || '');
+  });
   const engineResult = auditEngine.execute(statelessViolations, {
     isIncremental,
     changedFiles,
@@ -260,6 +234,19 @@ async function run() {
   }
 
   console.log(`\n⚖️ Gating Evaluation Action: ${engineResult.gatingAction}`);
+
+  // Print persistence statistics
+  console.log('\n==================================================');
+  console.log('💾   Persistence Summary Statistics');
+  console.log('==================================================');
+  console.log(`JSON files examined:             ${persistenceStats.examined}`);
+  console.log(`JSON files written:              ${persistenceStats.written}`);
+  console.log(`JSON files skipped:              ${persistenceStats.skipped}`);
+  console.log(`Snapshot files written:          ${persistenceStats.snapshotWritten}`);
+  console.log(`Finding files written:           ${persistenceStats.findingWritten}`);
+  console.log(`Cache files written:             ${persistenceStats.cacheWritten}`);
+  console.log(`Trend files written:             ${persistenceStats.trendWritten}`);
+  console.log('==================================================\n');
 
   // Gating decision
   if (!engineResult.success || totalErrors > 0 || !gatingSuccess) {

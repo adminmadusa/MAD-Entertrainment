@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 2,
+  "id": "f_80c655f6",
+  "rule": "Orphaned Documentation",
+  "ruleVersion": "1.0.0",
+  "engineVersion": "1.0.0",
+  "domain": "Platform Team",
+  "owner": "Platform Team",
+  "package": "docs",
+  "feature": "Document",
+  "status": "NEW",
+  "confidence": 1,
+  "relationships": [],
+  "evidence": {
+    "path": "docs/remediation-plan.md",
+    "construct": "Document",
+    "message": "Document exists in the repository but has no incoming references from any other active documentation.",
+    "occurrences": [
+      {
+        "id": "b6991dbee60c9150b15d69421442ff998b6536df1cc35293de9d20f425e13fa0",
+        "line": 0,
+        "column": 0,
+        "construct": "Document",
+        "snippet": "",
+        "message": "Document exists in the repository but has no incoming references from any other active documentation.",
+        "fingerprint": "b6991dbee60c9150b15d69421442ff998b6536df1cc35293de9d20f425e13fa0"
+      }
+    ]
+  },
+  "createdDate": "2026-06-29T08:09:51.552Z",
+  "firstDetected": "2026-06-29T08:09:51.552Z",
+  "lastDetected": "2026-06-29T08:09:51.552Z",
+  "occurrenceCount": 1
+}

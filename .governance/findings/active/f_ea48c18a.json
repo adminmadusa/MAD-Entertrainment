@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 2,
+  "id": "f_ea48c18a",
+  "rule": "VAL-UI-018",
+  "ruleVersion": "1.0.0",
+  "engineVersion": "1.0.0",
+  "domain": "Platform Team",
+  "owner": "Platform Team",
+  "package": "apps",
+  "feature": "UIElement",
+  "status": "NEW",
+  "confidence": 0.9,
+  "relationships": [],
+  "evidence": {
+    "path": "apps/admin/src/app/dj-operators/[id]/edit/page.tsx",
+    "construct": "UIElement",
+    "message": "Possible Unreachable Route: no direct navigation links pointing to \"/dj-operators/[id]/edit\" were found in production files.",
+    "occurrences": [
+      {
+        "id": "e39c42f3bf5c650a63f583e9b58c090f3a86ef141d2b10996e90d66bc48190ec",
+        "line": 0,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "",
+        "message": "Possible Unreachable Route: no direct navigation links pointing to \"/dj-operators/[id]/edit\" were found in production files.",
+        "fingerprint": "e39c42f3bf5c650a63f583e9b58c090f3a86ef141d2b10996e90d66bc48190ec"
+      }
+    ]
+  },
+  "createdDate": "2026-06-30T15:36:27.134Z",
+  "firstDetected": "2026-06-30T15:36:27.134Z",
+  "lastDetected": "2026-06-30T15:36:27.134Z",
+  "occurrenceCount": 1
+}

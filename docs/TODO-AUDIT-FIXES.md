@@ -243,7 +243,7 @@ Do not refactor without tests first.
 Review before adding new tooling:
 
 ```txt
-scripts/ci_governance_check.ts
+scripts/ci-governance-check.ts
 ```
 
 Avoid creating duplicate governance scripts if existing tooling already covers the requirement.

@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 2,
+  "id": "f_e48a02b5",
+  "rule": "Orphaned Documentation",
+  "ruleVersion": "1.0.0",
+  "engineVersion": "1.0.0",
+  "domain": "Platform Team",
+  "owner": "Platform Team",
+  "package": "docs",
+  "feature": "Document",
+  "status": "NEW",
+  "confidence": 1,
+  "relationships": [],
+  "evidence": {
+    "path": "docs/archive/branch-cleanup/2026-06/supersession_review.md",
+    "construct": "Document",
+    "message": "Document exists in the repository but has no incoming references from any other active documentation.",
+    "occurrences": [
+      {
+        "id": "3e24b9b9ced14107991240c0c2021776676a08e9c9a911a911869c9a14f062aa",
+        "line": 0,
+        "column": 0,
+        "construct": "Document",
+        "snippet": "",
+        "message": "Document exists in the repository but has no incoming references from any other active documentation.",
+        "fingerprint": "3e24b9b9ced14107991240c0c2021776676a08e9c9a911a911869c9a14f062aa"
+      }
+    ]
+  },
+  "createdDate": "2026-06-30T15:36:27.914Z",
+  "firstDetected": "2026-06-30T15:36:27.914Z",
+  "lastDetected": "2026-06-30T15:36:27.914Z",
+  "occurrenceCount": 1
+}

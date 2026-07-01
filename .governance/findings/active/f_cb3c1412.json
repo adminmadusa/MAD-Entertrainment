@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 2,
+  "id": "f_cb3c1412",
+  "rule": "Missing Document Owner",
+  "ruleVersion": "1.0.0",
+  "engineVersion": "1.0.0",
+  "domain": "Platform Team",
+  "owner": "Platform Team",
+  "package": "docs",
+  "feature": "Document",
+  "status": "NEW",
+  "confidence": 1,
+  "relationships": [],
+  "evidence": {
+    "path": "docs/verification-results.md",
+    "construct": "Document",
+    "message": "Every documentation file is required to have a defined \"Owner\" or \"Authors\" in its metadata block.",
+    "occurrences": [
+      {
+        "id": "e659c1fe6bc640f3cb23c6fa7789550e8ec168dbbff0a9d59ae26da56592bdc0",
+        "line": 0,
+        "column": 0,
+        "construct": "Document",
+        "snippet": "",
+        "message": "Every documentation file is required to have a defined \"Owner\" or \"Authors\" in its metadata block.",
+        "fingerprint": "e659c1fe6bc640f3cb23c6fa7789550e8ec168dbbff0a9d59ae26da56592bdc0"
+      }
+    ]
+  },
+  "createdDate": "2026-06-29T08:09:51.645Z",
+  "firstDetected": "2026-06-29T08:09:51.645Z",
+  "lastDetected": "2026-06-29T08:09:51.645Z",
+  "occurrenceCount": 1
+}

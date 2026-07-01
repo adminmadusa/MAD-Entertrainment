@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 2,
+  "id": "f_03f191b9",
+  "rule": "Orphaned Documentation",
+  "ruleVersion": "1.0.0",
+  "engineVersion": "1.0.0",
+  "domain": "Platform Team",
+  "owner": "Platform Team",
+  "package": "apps",
+  "feature": "Document",
+  "status": "NEW",
+  "confidence": 1,
+  "relationships": [],
+  "evidence": {
+    "path": "apps/web/src/content/legal/payment.md",
+    "construct": "Document",
+    "message": "Document exists in the repository but has no incoming references from any other active documentation.",
+    "occurrences": [
+      {
+        "id": "5b297e0f437e51f369b63b60f8309372f887ed6de24d4cb81f6701ec6230a3a8",
+        "line": 0,
+        "column": 0,
+        "construct": "Document",
+        "snippet": "",
+        "message": "Document exists in the repository but has no incoming references from any other active documentation.",
+        "fingerprint": "5b297e0f437e51f369b63b60f8309372f887ed6de24d4cb81f6701ec6230a3a8"
+      }
+    ]
+  },
+  "createdDate": "2026-06-30T15:36:27.400Z",
+  "firstDetected": "2026-06-30T15:36:27.400Z",
+  "lastDetected": "2026-06-30T15:36:27.400Z",
+  "occurrenceCount": 1
+}

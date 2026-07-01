@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 2,
+  "id": "f_6ae55ef9",
+  "rule": "VAL-UI-010",
+  "ruleVersion": "1.0.0",
+  "engineVersion": "1.0.0",
+  "domain": "UI UX Guild",
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "feature": "UIElement",
+  "status": "NEW",
+  "confidence": 0.9,
+  "relationships": [],
+  "evidence": {
+    "path": "apps/admin/src/app/users/_components/UserProfileCard.tsx",
+    "construct": "UIElement",
+    "snippet": "<button",
+    "line": 59,
+    "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
+    "occurrences": [
+      {
+        "id": "46f5177d91b5c262f8eefa27d18c810296bc6fec935579d04c4efe555503cd49",
+        "line": 59,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "<button",
+        "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
+        "fingerprint": "46f5177d91b5c262f8eefa27d18c810296bc6fec935579d04c4efe555503cd49"
+      },
+      {
+        "id": "46f5177d91b5c262f8eefa27d18c810296bc6fec935579d04c4efe555503cd49",
+        "line": 81,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "<button",
+        "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
+        "fingerprint": "46f5177d91b5c262f8eefa27d18c810296bc6fec935579d04c4efe555503cd49"
+      },
+      {
+        "id": "46f5177d91b5c262f8eefa27d18c810296bc6fec935579d04c4efe555503cd49",
+        "line": 93,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "<button",
+        "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
+        "fingerprint": "46f5177d91b5c262f8eefa27d18c810296bc6fec935579d04c4efe555503cd49"
+      }
+    ]
+  },
+  "createdDate": "2026-06-30T15:36:27.191Z",
+  "firstDetected": "2026-06-30T15:36:27.191Z",
+  "lastDetected": "2026-06-30T15:36:27.191Z",
+  "occurrenceCount": 3
+}
