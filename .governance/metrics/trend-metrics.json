@@ -64,5 +64,181 @@
       "maintainability": 100,
       "overall": 75
     }
+  },
+  {
+    "timestamp": "2026-07-01T14:25:34.696Z",
+    "totalFindings": 720,
+    "newFindings": 584,
+    "closedFindings": 136,
+    "regressionCount": 0,
+    "falsePositiveRate": 0,
+    "averageConfidence": 0.9461111111111042,
+    "averageResolutionTimeMs": 7112.714285714285,
+    "scores": {
+      "architecture": 100,
+      "security": 100,
+      "performance": 100,
+      "accessibility": 0,
+      "uiConsistency": 0,
+      "technicalDebt": 100,
+      "testing": 100,
+      "documentation": 0,
+      "maintainability": 100,
+      "overall": 70
+    }
+  },
+  {
+    "timestamp": "2026-07-01T14:54:03.781Z",
+    "totalFindings": 720,
+    "newFindings": 584,
+    "closedFindings": 136,
+    "regressionCount": 0,
+    "falsePositiveRate": 0,
+    "averageConfidence": 0.9461111111111042,
+    "averageResolutionTimeMs": 7112.714285714285,
+    "scores": {
+      "architecture": 100,
+      "security": 100,
+      "performance": 100,
+      "accessibility": 0,
+      "uiConsistency": 0,
+      "technicalDebt": 100,
+      "testing": 100,
+      "documentation": 0,
+      "maintainability": 100,
+      "overall": 70
+    }
+  },
+  {
+    "timestamp": "2026-07-01T14:54:19.559Z",
+    "totalFindings": 720,
+    "newFindings": 584,
+    "closedFindings": 136,
+    "regressionCount": 0,
+    "falsePositiveRate": 0,
+    "averageConfidence": 0.9461111111111042,
+    "averageResolutionTimeMs": 7112.714285714285,
+    "scores": {
+      "architecture": 100,
+      "security": 100,
+      "performance": 100,
+      "accessibility": 0,
+      "uiConsistency": 0,
+      "technicalDebt": 100,
+      "testing": 100,
+      "documentation": 0,
+      "maintainability": 100,
+      "overall": 70
+    }
+  },
+  {
+    "timestamp": "2026-07-01T15:21:18.754Z",
+    "totalFindings": 720,
+    "newFindings": 584,
+    "closedFindings": 136,
+    "regressionCount": 0,
+    "falsePositiveRate": 0,
+    "averageConfidence": 0.9461111111111042,
+    "averageResolutionTimeMs": 7112.714285714285,
+    "scores": {
+      "architecture": 100,
+      "security": 100,
+      "performance": 100,
+      "accessibility": 0,
+      "uiConsistency": 0,
+      "technicalDebt": 100,
+      "testing": 100,
+      "documentation": 0,
+      "maintainability": 100,
+      "overall": 70
+    }
+  },
+  {
+    "timestamp": "2026-07-01T15:21:28.692Z",
+    "totalFindings": 720,
+    "newFindings": 584,
+    "closedFindings": 136,
+    "regressionCount": 0,
+    "falsePositiveRate": 0,
+    "averageConfidence": 0.9461111111111042,
+    "averageResolutionTimeMs": 7112.714285714285,
+    "scores": {
+      "architecture": 100,
+      "security": 100,
+      "performance": 100,
+      "accessibility": 0,
+      "uiConsistency": 0,
+      "technicalDebt": 100,
+      "testing": 100,
+      "documentation": 0,
+      "maintainability": 100,
+      "overall": 70
+    }
+  },
+  {
+    "timestamp": "2026-07-01T15:23:21.299Z",
+    "totalFindings": 720,
+    "newFindings": 584,
+    "closedFindings": 136,
+    "regressionCount": 0,
+    "falsePositiveRate": 0,
+    "averageConfidence": 0.9461111111111042,
+    "averageResolutionTimeMs": 7112.714285714285,
+    "scores": {
+      "architecture": 100,
+      "security": 100,
+      "performance": 100,
+      "accessibility": 0,
+      "uiConsistency": 0,
+      "technicalDebt": 100,
+      "testing": 100,
+      "documentation": 0,
+      "maintainability": 100,
+      "overall": 70
+    }
+  },
+  {
+    "timestamp": "2026-07-01T15:23:28.684Z",
+    "totalFindings": 720,
+    "newFindings": 584,
+    "closedFindings": 136,
+    "regressionCount": 0,
+    "falsePositiveRate": 0,
+    "averageConfidence": 0.9461111111111042,
+    "averageResolutionTimeMs": 7112.714285714285,
+    "scores": {
+      "architecture": 100,
+      "security": 100,
+      "performance": 100,
+      "accessibility": 0,
+      "uiConsistency": 0,
+      "technicalDebt": 100,
+      "testing": 100,
+      "documentation": 0,
+      "maintainability": 100,
+      "overall": 70
+    }
+  },
+  {
+    "timestamp": "2026-07-01T23:23:27.634Z",
+    "totalFindings": 720,
+    "newFindings": 584,
+    "closedFindings": 136,
+    "regressionCount": 0,
+    "falsePositiveRate": 0,
+    "averageConfidence": 0.9461111111111042,
+    "averageResolutionTimeMs": 7112.714285714285,
+    "scores": {
+      "architecture": 100,
+      "security": 100,
+      "performance": 100,
+      "accessibility": 0,
+      "uiConsistency": 0,
+      "technicalDebt": 100,
+      "testing": 100,
+      "documentation": 0,
+      "maintainability": 100,
+      "overall": 70
+    }
   }
 ]
