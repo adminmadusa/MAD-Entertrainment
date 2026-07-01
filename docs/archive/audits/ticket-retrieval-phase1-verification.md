@@ -24,33 +24,33 @@ View Tickets & QR Codes
 ### 1. Existing OTP Request and Verification Flow
 - **OTP Request**: Fully operational on the backend.
   - **Endpoint**: `POST /auth/magic-link`
-  - **Controller**: `AuthController.requestMagicLink` in [auth.controller.ts](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/controllers/public/auth.controller.ts)
-  - **Service**: `AuthService.requestMagicLink` in [auth.service.ts](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/services/public/auth.service.ts#L21-L69)
+  - **Controller**: `AuthController.requestMagicLink` in [auth.controller.ts](../../../apps/server/src/controllers/public/auth.controller.ts)
+  - **Service**: `AuthService.requestMagicLink` in [auth.service.ts](../../../apps/server/src/services/public/auth.service.ts#L21-L69)
   - **Operation**: Validates email, generates a 6-digit OTP, stores its SHA-256 hash in `MagicTokenModel` with a 15-minute TTL, and enqueues a job on `notification-queue` to send the passcode.
 - **OTP Verification**: Fully operational on the backend.
   - **Endpoint**: `POST /auth/verify`
-  - **Controller**: `AuthController.verifyMagicLinkOrOTP` in [auth.controller.ts](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/controllers/public/auth.controller.ts)
-  - **Service**: `AuthService.verifyMagicLinkOrOTP` in [auth.service.ts](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/services/public/auth.service.ts#L74-L130)
+  - **Controller**: `AuthController.verifyMagicLinkOrOTP` in [auth.controller.ts](../../../apps/server/src/controllers/public/auth.controller.ts)
+  - **Service**: `AuthService.verifyMagicLinkOrOTP` in [auth.service.ts](../../../apps/server/src/services/public/auth.service.ts#L74-L130)
   - **Operation**: Validates the passcode against the database hash. If valid, it retrieves or creates the `IUser` document and automatically links all guest bookings matching `guestEmail` to the user's `userId`.
 
 ---
 
 ### 2. Existing Booking Retrieval APIs
 - **Endpoint**: `GET /bookings/me`
-- **Controller**: `getMyBookings` in [booking.controller.ts](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/controllers/public/booking.controller.ts#L79-L101)
-- **Service**: `PublicBookingService.getMyBookings` in [booking.service.ts](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/services/public/booking.service.ts#L382-L392)
+- **Controller**: `getMyBookings` in [booking.controller.ts](../../../apps/server/src/controllers/public/booking.controller.ts#L79-L101)
+- **Service**: `PublicBookingService.getMyBookings` in [booking.service.ts](../../../apps/server/src/services/public/booking.service.ts#L382-L392)
 - **Operation**: Queries all bookings populated with event details where `userId` matches the authenticated session (`Booking.find({ userId }).populate('eventId')`), retrieves all associated tickets via `Ticket.find({ bookingId: { $in: bookingIds } })`, and responds with the full payload.
 
 ---
 
 ### 3. Existing Booking UI Components
-- **File Reference**: [my-booking/page.tsx](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/app/my-booking/page.tsx)
+- **File Reference**: [my-booking/page.tsx](../../../apps/web/src/app/my-booking/page.tsx)
 - **Status**: The `MyBookingContent` component contains fully designed, glassmorphic UI elements for displaying booking summaries, including event titles, venues, showtimes, statuses, total tickets count, and booking references. These UI styles and layout patterns are fully reusable.
 
 ---
 
 ### 4. Existing Ticket QR Rendering
-- **File Reference**: [my-booking/page.tsx](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/app/my-booking/page.tsx#L184-L190)
+- **File Reference**: [my-booking/page.tsx](../../../apps/web/src/app/my-booking/page.tsx#L184-L190)
 - **Status**: Dynamic QR codes are generated during checkout via `api.qrserver.com` and stored as a string URL on the `Ticket` schema under `qrCodeImage`. The client renders these QR codes directly using an `<img>` tag. This is completely reusable.
 
 ---
@@ -70,7 +70,7 @@ View Tickets & QR Codes
 ---
 
 ### 7. Existing Ownership Verification Logic
-- **File Reference**: [auth.service.ts](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/services/public/auth.service.ts#L74-L130)
+- **File Reference**: [auth.service.ts](../../../apps/server/src/services/public/auth.service.ts#L74-L130)
 - **Status**: Extremely secure. Guest bookings are linked to a verified user profile only when the user passes SHA-256 OTP passcode verification. Once verified, the JWT access token is used to query `GET /bookings/me`, guaranteeing that users can only view tickets belonging to their verified email address.
 
 ---
@@ -86,18 +86,18 @@ View Tickets & QR Codes
 
 #### Exact Frontend File and API References:
 1. **Email Collection Submission**:
-   - Triggers `publicRequestMagicLink(email)` in [public.service.ts](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/lib/api/public.service.ts#L340-L343).
+   - Triggers `publicRequestMagicLink(email)` in [public.service.ts](../../../apps/web/src/lib/api/public.service.ts#L340-L343).
    - Maps to backend `POST /auth/magic-link`.
 2. **OTP Verification Form**:
-   - Triggers `publicVerifyMagicLinkOrOTP({ email, otp })` in [public.service.ts](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/lib/api/public.service.ts#L345-L348).
+   - Triggers `publicVerifyMagicLinkOrOTP({ email, otp })` in [public.service.ts](../../../apps/web/src/lib/api/public.service.ts#L345-L348).
    - Maps to backend `POST /auth/verify`. Returns user profile and authentication session tokens.
 3. **Retrieving Bookings**:
-   - Triggers `publicGetMyBookings()` in [public.service.ts](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/lib/api/public.service.ts#L197-L200).
+   - Triggers `publicGetMyBookings()` in [public.service.ts](../../../apps/web/src/lib/api/public.service.ts#L197-L200).
    - Maps to backend `GET /bookings/me`.
 4. **Rendering Tickets & QR Codes**:
    - Iterates over the bookings list returned by `publicGetMyBookings()`.
    - Displays event and tier details.
-   - Renders QR codes via standard image tags pointing to `ticket.qrCodeImage` matching [ticket.schema.ts](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/models/ticket.schema.ts#L16).
+   - Renders QR codes via standard image tags pointing to `ticket.qrCodeImage` matching [ticket.schema.ts](../../../apps/server/src/models/ticket.schema.ts#L16).
 
 ---
 

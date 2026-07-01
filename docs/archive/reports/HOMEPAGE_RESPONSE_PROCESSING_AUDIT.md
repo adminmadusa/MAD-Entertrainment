@@ -11,9 +11,9 @@ Following the index optimization in #118, we audited every step of response proc
 ## 1. Execution Path Analysis
 
 ### A. Cache Hit Execution Path
-1. **Route Validation**: Joi/Zod schema parsing checks the request query ([event.routes.ts:L10](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/routes/public/event.routes.ts#L10)).
-2. **Controller Entry**: `listEvents` controller parses `page` and `limit` ([event.controller.ts:L6](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/controllers/public/event.controller.ts#L6)).
-3. **Cache Query (GET)**: Requests key `events:list:all:none:1:6` from Redis via `CacheService.get` ([cache.service.ts:L14](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/services/cache.service.ts#L14)).
+1. **Route Validation**: Joi/Zod schema parsing checks the request query ([event.routes.ts:L10](../../../apps/server/src/routes/public/event.routes.ts#L10)).
+2. **Controller Entry**: `listEvents` controller parses `page` and `limit` ([event.controller.ts:L6](../../../apps/server/src/controllers/public/event.controller.ts#L6)).
+3. **Cache Query (GET)**: Requests key `events:list:all:none:1:6` from Redis via `CacheService.get` ([cache.service.ts:L14](../../../apps/server/src/services/cache.service.ts#L14)).
 4. **Cache HIT Resolves**: JSON payload string retrieved from Redis, parsed into memory (`JSON.parse`).
 5. **Response Sending**: `sendSuccess` is called, invoking `res.json()`. Express serializes object and sends HTTP response.
 * **Measured Response Time (Production Mode / Local Server)**: **599.9ms–852.5ms**.
@@ -24,12 +24,12 @@ Following the index optimization in #118, we audited every step of response proc
 ### B. Cache Miss Execution Path
 1. **Validation & Controller Entry**: Schema validated; controller runs cache check.
 2. **Cache MISS**: `CacheService.get` returns `null` after cloud network roundtrip.
-3. **Service Layer Invocation**: Controller triggers `PublicEventService.listEvents` ([event.service.ts:L10](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/services/public/event.service.ts#L10)).
-4. **Parallel DB Queries**: `Promise.all` fires two parallel database calls ([event.service.ts:L31-L38](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/services/public/event.service.ts#L31-L38)):
+3. **Service Layer Invocation**: Controller triggers `PublicEventService.listEvents` ([event.service.ts:L10](../../../apps/server/src/services/public/event.service.ts#L10)).
+4. **Parallel DB Queries**: `Promise.all` fires two parallel database calls ([event.service.ts:L31-L38](../../../apps/server/src/services/public/event.service.ts#L31-L38)):
    - `Event.find(query).sort({ startDate: 1 }).skip(skip).limit(limit).lean()`
    - `Event.countDocuments(query)`
 5. **Mongoose Lean Object Deserialization**: MongoDB driver returns BSON payload. Mongoose parses BSON into memory as plain JSON objects.
-6. **Cache Save (SET)**: Controller saves the events array to Redis with a 60-second TTL via `CacheService.set` ([cache.service.ts:L33](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/services/cache.service.ts#L33)).
+6. **Cache Save (SET)**: Controller saves the events array to Redis with a 60-second TTL via `CacheService.set` ([cache.service.ts:L33](../../../apps/server/src/services/cache.service.ts#L33)).
 7. **Response Sending**: Express stringifies and returns the JSON payload.
 * **Measured Response Time (Production Mode / Local Server)**: **1105ms**.
 * **Additional Bottleneck (vs Cache Hit)**: **+505ms**. Driven by 1 parallel network roundtrip to MongoDB Atlas cloud database (~200ms) plus 1 network roundtrip to save cache in Redis Cloud (~150ms), and minor object processing.
@@ -48,7 +48,7 @@ Following the index optimization in #118, we audited every step of response proc
 
 ### 3. Populate Operations
 * **Measurement**: **0ms (None)**.
-* **Evidence**: Neither `PublicEventService.listEvents` ([event.service.ts:L10](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/services/public/event.service.ts#L10)) nor `PublicDJOperatorService.listDJOperators` ([dj-operator.service.ts:L5](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/services/public/dj-operator.service.ts#L5)) contains any `.populate(...)` calls. They operate directly on their root collections.
+* **Evidence**: Neither `PublicEventService.listEvents` ([event.service.ts:L10](../../../apps/server/src/services/public/event.service.ts#L10)) nor `PublicDJOperatorService.listDJOperators` ([dj-operator.service.ts:L5](../../../apps/server/src/services/public/dj-operator.service.ts#L5)) contains any `.populate(...)` calls. They operate directly on their root collections.
 
 ### 4. DTO Mapping Cost
 * **Measurement**: **0ms (None)**.
@@ -64,11 +64,11 @@ Following the index optimization in #118, we audited every step of response proc
 
 ### 7. countDocuments Usage
 * **Measurement**: **Duplicate / Wasteful DB Work**.
-* **Evidence**: Both endpoints invoke `Event.countDocuments` ([event.service.ts#L37](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/services/public/event.service.ts#L37)) and `DJOperator.countDocuments` ([dj-operator.service.ts#L27](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/services/public/dj-operator.service.ts#L27)) in parallel. The homepage only renders the first 6 static items, rendering the total counts entirely unused on the client page.
+* **Evidence**: Both endpoints invoke `Event.countDocuments` ([event.service.ts#L37](../../../apps/server/src/services/public/event.service.ts#L37)) and `DJOperator.countDocuments` ([dj-operator.service.ts#L27](../../../apps/server/src/services/public/dj-operator.service.ts#L27)) in parallel. The homepage only renders the first 6 static items, rendering the total counts entirely unused on the client page.
 
 ### 8. Missing .lean() Opportunities
 * **Measurement**: **None**.
-* **Evidence**: Both queries correctly use `.lean()` ([event.service.ts:L36](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/services/public/event.service.ts#L36), [dj-operator.service.ts:L26](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/services/public/dj-operator.service.ts#L26)), returning plain JavaScript objects instead of heavy Mongoose documents.
+* **Evidence**: Both queries correctly use `.lean()` ([event.service.ts:L36](../../../apps/server/src/services/public/event.service.ts#L36), [dj-operator.service.ts:L26](../../../apps/server/src/services/public/dj-operator.service.ts#L26)), returning plain JavaScript objects instead of heavy Mongoose documents.
 
 ### 9. Unnecessary Fields Returned to Homepage
 * **Featured Events**:
@@ -121,7 +121,7 @@ The remaining dev-mode and cloud network latencies are environment-specific, but
 
 ### Rank 1: Select Projection Fields (Minimal Code Refactor)
 * **How**: Project only the specific fields rendered on cards (excluding detailed ticket capacity arrays, descriptions, and gallery images).
-* **Location**: `event.service.ts` ([event.service.ts:L32](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/services/public/event.service.ts#L32)) and `dj-operator.service.ts` ([dj-operator.service.ts:L20](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/services/public/dj-operator.service.ts#L20))
+* **Location**: `event.service.ts` ([event.service.ts:L32](../../../apps/server/src/services/public/event.service.ts#L32)) and `dj-operator.service.ts` ([dj-operator.service.ts:L20](../../../apps/server/src/services/public/dj-operator.service.ts#L20))
 * **Estimated Improvement**: **10%–20% memory and serialization reduction**. Reduces payload size by 90%, speeding up Javascript JSON parsing and network transmission.
 * **Code Example**:
   ```typescript
@@ -131,7 +131,7 @@ The remaining dev-mode and cloud network latencies are environment-specific, but
 
 ### Rank 2: Skip Pagination Count for Homepage Card Feeds
 * **How**: Bypass the `countDocuments` query when the client only requires a fixed homepage card feed (page 1).
-* **Location**: `event.service.ts` ([event.service.ts:L37](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/services/public/event.service.ts#L37))
+* **Location**: `event.service.ts` ([event.service.ts:L37](../../../apps/server/src/services/public/event.service.ts#L37))
 * **Estimated Improvement**: **50% DB connection overhead reduction**. Reduces database call concurrency on cache misses, saving precious DB connection pool threads.
 
 ---
@@ -139,16 +139,16 @@ The remaining dev-mode and cloud network latencies are environment-specific, but
 ## 5. Top 5 Slowest Operations
 
 1. **Remote Redis Cloud GET/SET Transactions**:
-   * **Location**: `apps/server/src/services/cache.service.ts` ([cache.service.ts:L14](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/services/cache.service.ts#L14), [cache.service.ts:L33](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/services/cache.service.ts#L33))
+   * **Location**: `apps/server/src/services/cache.service.ts` ([cache.service.ts:L14](../../../apps/server/src/services/cache.service.ts#L14), [cache.service.ts:L33](../../../apps/server/src/services/cache.service.ts#L33))
    * **Action**: GET/SET pings to Upstash cloud servers.
 2. **Remote MongoDB Atlas Database Network Hops**:
-   * **Location**: `apps/server/src/services/public/event.service.ts` ([event.service.ts:L31-L38](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/services/public/event.service.ts#L31-L38))
+   * **Location**: `apps/server/src/services/public/event.service.ts` ([event.service.ts:L31-L38](../../../apps/server/src/services/public/event.service.ts#L31-L38))
    * **Action**: Parallel Event find and count Atlas roundtrips.
 3. **TSX Dev watch Hot-Reload Compiler Overhead (Dev Mode Only)**:
    * **Location**: `@mad/server:dev` command watcher (`tsx watch src/server.ts`)
    * **Action**: TypeScript module transpilation and event loop blocking.
 4. **Mongoose Document Deserialization**:
-   * **Location**: Mongoose query buffer parsing ([event.service.ts:L32](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/services/public/event.service.ts#L32))
+   * **Location**: Mongoose query buffer parsing ([event.service.ts:L32](../../../apps/server/src/services/public/event.service.ts#L32))
    * **Action**: Deserializing unprojected nested subdocuments.
 5. **Express JSON Stringify Serialization**:
    * **Location**: `response.ts:L4` (`res.json`)

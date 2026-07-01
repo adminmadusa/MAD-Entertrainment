@@ -6,7 +6,7 @@
 - **Post-Implementation Target**: < 400 lines (preferred < 350 lines)
 
 ## Current File Info
-- **File**: [AuthForm.tsx](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/components/auth/AuthForm.tsx)
+- **File**: [AuthForm.tsx](../../../apps/web/src/components/auth/AuthForm.tsx)
 
 
 ---
@@ -80,18 +80,18 @@ React Query Mutation Hooks triggering service calls:
 
 ## 5. Dependency Map
 - **Local Context Utilities**:
-  - [AuthProvider](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/providers/AuthProvider.tsx) (`useAuth`)
+  - [AuthProvider](../../../apps/web/src/providers/AuthProvider.tsx) (`useAuth`)
 - **API Services**:
-  - [public.service](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/lib/api/public.service.ts) (`publicRequestVerificationCode`, `publicVerifyVerificationCodeOrOTP`, `publicGoogleLogin`)
-  - [client](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/lib/api/client.ts) (`extractApiError`)
+  - [public.service](../../../apps/web/src/lib/api/public.service.ts) (`publicRequestVerificationCode`, `publicVerifyVerificationCodeOrOTP`, `publicGoogleLogin`)
+  - [client](../../../apps/web/src/lib/api/client.ts) (`extractApiError`)
 - **Third-Party Helpers / Assets**:
-  - [load-script-once](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/lib/utils/load-script-once.ts) (`loadScriptOnce`)
-  - [google-identity](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/utils/google-identity.ts) (`initializeGoogleIdentity`, `setGoogleIdentityCallback`)
+  - [load-script-once](../../../apps/web/src/lib/utils/load-script-once.ts) (`loadScriptOnce`)
+  - [google-identity](../../../apps/web/src/utils/google-identity.ts) (`initializeGoogleIdentity`, `setGoogleIdentityCallback`)
 - **Validations (Workspace Package)**:
   - `@mad/validations` (`checkEmailSchema`, `verifyAuthSchema`, `normalizeOtp`)
-  - [mapZodError](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/lib/validation/mapZodError.ts) (`mapZodErrorToFields`)
+  - [mapZodError](../../../apps/web/src/lib/validation/mapZodError.ts) (`mapZodErrorToFields`)
 - **Shared Sub-forms**:
-  - [ProfileCompletionForm](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/components/auth/ProfileCompletionForm.tsx)
+  - [ProfileCompletionForm](../../../apps/web/src/components/auth/ProfileCompletionForm.tsx)
 - **UI Components**:
   - `@mad/ui` (`Button`)
 

@@ -6,7 +6,7 @@ The following safe operational improvements are fully implemented, verified, and
 
 ### 1. Notification Log TTL Cleanup
 *   **Branch:** `chore/notification-ttl-retention`
-*   **Target Schema:** [notification.schema.ts](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/models/notification.schema.ts)
+*   **Target Schema:** [notification.schema.ts](../../../apps/server/src/models/notification.schema.ts)
 *   **Action:** Added a MongoDB TTL index on the `queuedAt` field with a **30-day retention period** (`expires: '30d'`).
 *   **Rationale:** Auto-expires transactional notification and email dispatch logs to prevent database storage bloat over time.
 *   **Preserved behavior:** Keeps the existing indexes and schema properties fully intact.
@@ -19,7 +19,7 @@ The following safe operational improvements are fully implemented, verified, and
 
 ### 2. Dead Letter Job TTL Cleanup
 *   **Branch:** `chore/deadletter-ttl-retention`
-*   **Target Schema:** [dead-letter-job.schema.ts](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/models/dead-letter-job.schema.ts)
+*   **Target Schema:** [dead-letter-job.schema.ts](../../../apps/server/src/models/dead-letter-job.schema.ts)
 *   **Action:** Added a MongoDB TTL index on the `processedAt` field with a **30-day retention period** (`expires: '30d'`).
 *   **Rationale:** Failed worker queues and BullMQ logs are automatically pruned after 30 days once their troubleshooting period passes.
 *   **Preserved behavior:** Keeps standard query execution pathways untouched.
@@ -52,7 +52,7 @@ The following safe operational improvements are fully implemented, verified, and
 *   *Does migration data contain it?* **NO.**
 *   *Do dashboards depend on it?* **NO.**
 *   *Deliverable:* **MIGRATE THEN REMOVE**
-*   *Action Plan:* Perform a clean-up types PR to safely remove the enum from [index.ts](file:///Users/admin/Desktop/MAD%20Entertrainment/packages/shared/src/constants/index.ts#L219) and coordinate any tests that may mock status checks.
+*   *Action Plan:* Perform a clean-up types PR to safely remove the enum from [index.ts](../../../packages/shared/src/constants/index.ts#L219) and coordinate any tests that may mock status checks.
 
 ---
 

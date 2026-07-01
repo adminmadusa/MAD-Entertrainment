@@ -11,8 +11,8 @@ Our objective is to verify every accessed field on the client side, assess the r
 ## 1. Consumer Matrix: Events Endpoint (`PublicEventService.listEvents`)
 
 The list events endpoint is consumed by exactly two frontend page locations:
-1. **Homepage Featured Events Carousel**: `apps/web/src/components/ui/FeaturedEventsSection.tsx` ([FeaturedEventsSection.tsx](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/components/ui/FeaturedEventsSection.tsx))
-2. **Events Directory Page**: `apps/web/src/app/events/EventsList.tsx` ([EventsList.tsx](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/app/events/EventsList.tsx))
+1. **Homepage Featured Events Carousel**: `apps/web/src/components/ui/FeaturedEventsSection.tsx` ([FeaturedEventsSection.tsx](../../../apps/web/src/components/ui/FeaturedEventsSection.tsx))
+2. **Events Directory Page**: `apps/web/src/app/events/EventsList.tsx` ([EventsList.tsx](../../../apps/web/src/app/events/EventsList.tsx))
 
 ### Field Access Matrix
 
@@ -45,8 +45,8 @@ The list events endpoint is consumed by exactly two frontend page locations:
 ## 2. Consumer Matrix: DJ Operators Endpoint (`PublicDJOperatorService.listDJOperators`)
 
 The list DJ operators endpoint is consumed by exactly two frontend page locations:
-1. **Homepage Artists Grid**: `apps/web/src/components/ui/DjOperatorsSection.tsx` ([DjOperatorsSection.tsx](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/components/ui/DjOperatorsSection.tsx))
-2. **DJs Discover Page**: `apps/web/src/app/dj-operators/page.tsx` ([page.tsx](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/app/dj-operators/page.tsx))
+1. **Homepage Artists Grid**: `apps/web/src/components/ui/DjOperatorsSection.tsx` ([DjOperatorsSection.tsx](../../../apps/web/src/components/ui/DjOperatorsSection.tsx))
+2. **DJs Discover Page**: `apps/web/src/app/dj-operators/page.tsx` ([page.tsx](../../../apps/web/src/app/dj-operators/page.tsx))
 
 ### Field Access Matrix
 
@@ -74,7 +74,7 @@ The list DJ operators endpoint is consumed by exactly two frontend page location
    * Therefore, detailed pages that require `galleryImages`, `socialLinks`, `refundPolicy`, and `organizerName` are **100% unaffected and receive the complete database payload**.
 
 2. **TypeScript Validation**:
-   * The shared type interface `Event` ([index.ts#L88](file:///Users/admin/Desktop/MAD%20Entertrainment/packages/types/src/index.ts#L88)) defines unselected list properties as **optional** (e.g. `description?`, `bannerImage?`, `isSoldOut?`, `highlights?`, `refundPolicy?`, `organizerName?`, `ticketOverrides?`).
+   * The shared type interface `Event` ([index.ts#L88](../../../packages/types/src/index.ts#L88)) defines unselected list properties as **optional** (e.g. `description?`, `bannerImage?`, `isSoldOut?`, `highlights?`, `refundPolicy?`, `organizerName?`, `ticketOverrides?`).
    * The `venue: string` and `category: string` are typed as required. Our events projection MUST include `venue` if it is accessed in list pages.
    * **Wait!** In `EventsList.tsx` or `FeaturedEventsSection.tsx`, is the `venue` property ever accessed? 
      - No, preview cards do not render the venue name.

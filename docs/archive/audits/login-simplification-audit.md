@@ -7,7 +7,7 @@ This audit evaluates the current state of public authentication routes, user int
 ## Current State
 
 ### 1. Login Page Audit
-- **File Path**: [login/page.tsx](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/app/(auth)/login/page.tsx)
+- **File Path**: [login/page.tsx](../../../apps/web/src/app/(auth)/login/page.tsx)
 - **UI Visibility Checklist**:
   - `Register`: **No** (not visible in the rendered UI)
   - `Sign Up`: **No** (not visible in the rendered UI)
@@ -65,7 +65,7 @@ This audit evaluates the current state of public authentication routes, user int
 ---
 
 ### 2. Registration Route Audit
-- **File Path**: [register/page.tsx](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/app/(auth)/register/page.tsx)
+- **File Path**: [register/page.tsx](../../../apps/web/src/app/(auth)/register/page.tsx)
 - **Current Behavior**: 
   - The registration route is **technically reachable** because the page file exists in the Next.js filesystem structure.
   - The route is **highly broken and obsolete**:
@@ -82,14 +82,14 @@ This audit evaluates the current state of public authentication routes, user int
 
 ### 3. Link Discovery Audit
 - A comprehensive search of the frontend source code yielded the following links/references to `/register`:
-  1. [sitemap.ts](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/app/sitemap.ts#L40) — Line 40: `url: \`${SITE_URL}/register\`,`
-  2. [register/page.tsx](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/app/(auth)/register/page.tsx#L186) — Line 186: `<Link href="/login" ...>Sign in</Link>` (self-reference back to login).
+  1. [sitemap.ts](../../../apps/web/src/app/sitemap.ts#L40) — Line 40: `url: \`${SITE_URL}/register\`,`
+  2. [register/page.tsx](../../../apps/web/src/app/(auth)/register/page.tsx#L186) — Line 186: `<Link href="/login" ...>Sign in</Link>` (self-reference back to login).
 - **Result**: No active, visible, user-facing navigation components (headers, menus, call-to-actions) expose or route users to `/register`.
 
 ---
 
 ### 4. Sitemap Audit
-- **File Path**: [sitemap.ts](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/app/sitemap.ts)
+- **File Path**: [sitemap.ts](../../../apps/web/src/app/sitemap.ts)
 - **Findings**:
   - `/register` currently exists as a static sitemap entry in the `STATIC_ROUTES` array (lines 39–44).
   - **SEO & Discoverability Impact**: Keeping it indexed encourages search engines to crawl a non-functional, obsolete form page. Removing `/register` from the sitemap will immediately protect search indexing and stop crawler traffic to a dead page.
@@ -106,7 +106,7 @@ While the large structural transition to passwordless logic is complete, there i
 ### Exact Files and Proposed Changes
 
 #### 1. Login Page Simplification
-*File: [login/page.tsx](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/app/(auth)/login/page.tsx)*
+*File: [login/page.tsx](../../../apps/web/src/app/(auth)/login/page.tsx)*
 - Refactor copy to replace technical magic-link jargon with modern passwordless terms:
   - **Line 113**: Change error from `'Failed to request login link.'` to `'Failed to send verification code. Please try again.'`
   - **Line 131**: Change error from `'Please request a new link.'` to `'Please request a new code.'`
@@ -117,7 +117,7 @@ While the large structural transition to passwordless logic is complete, there i
   - **Line 395**: Change action link from `'Resend Link'` to `'Resend Code'`
 
 #### 2. Registration Route Confinement (Graceful Redirect)
-*File: [register/page.tsx](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/app/(auth)/register/page.tsx)*
+*File: [register/page.tsx](../../../apps/web/src/app/(auth)/register/page.tsx)*
 - Because constraints prohibit deleting files/routes directly, we should redirect any legacy incoming `/register` traffic to the unified `/login` page on the client side:
   ```typescript
   'use client';
@@ -141,7 +141,7 @@ While the large structural transition to passwordless logic is complete, there i
   ```
 
 #### 3. Sitemap Cleanliness
-*File: [sitemap.ts](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/app/sitemap.ts)*
+*File: [sitemap.ts](../../../apps/web/src/app/sitemap.ts)*
 - **Lines 39–44**: Completely remove the `/register` entry from the static routes array to stop search engines from indexing this page.
 
 ---

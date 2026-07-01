@@ -20,16 +20,16 @@ This report presents the findings of a comprehensive audit of booking lifecycle 
 ## Phase-by-Phase Auditing Answers
 
 ### Phase 1 — Status Source of Truth
-We audited the enums defined in [packages/shared/src/constants/index.ts](file:///Users/admin/Desktop/MAD%20Entertrainment/packages/shared/src/constants/index.ts#L39-L157) and TypeScript types in [packages/types/src/index.ts](file:///Users/admin/Desktop/MAD%20Entertrainment/packages/types/src/index.ts#L175-L261):
+We audited the enums defined in [packages/shared/src/constants/index.ts](../../../packages/shared/src/constants/index.ts#L39-L157) and TypeScript types in [packages/types/src/index.ts](../../../packages/types/src/index.ts#L175-L261):
 
 * **Can a booking move from CONFIRMED → REFUNDED?**
-  **Yes**. In [refund.service.ts](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/services/admin/refund.service.ts#L80), the approved refund flow invokes `cancelBooking` with a target status of `BookingStatus.REFUNDED`.
+  **Yes**. In [refund.service.ts](../../../apps/server/src/services/admin/refund.service.ts#L80), the approved refund flow invokes `cancelBooking` with a target status of `BookingStatus.REFUNDED`.
 * **Can a booking move from PENDING → FAILED?**
-  **No**. In [payment.service.ts](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/services/public/payment.service.ts#L960), the payment failure flow includes a guard: `if (booking.status !== BookingStatus.AWAITING_PAYMENT) return;`. Since `PENDING` is not `AWAITING_PAYMENT`, the transition is skipped. (Furthermore, bookings are never initialized in the `PENDING` status; they are created as `AWAITING_PAYMENT`).
+  **No**. In [payment.service.ts](../../../apps/server/src/services/public/payment.service.ts#L960), the payment failure flow includes a guard: `if (booking.status !== BookingStatus.AWAITING_PAYMENT) return;`. Since `PENDING` is not `AWAITING_PAYMENT`, the transition is skipped. (Furthermore, bookings are never initialized in the `PENDING` status; they are created as `AWAITING_PAYMENT`).
 * **Can a booking move from REFUNDED → CONFIRMED?**
-  **No**. The confirmation flow [payment.service.ts](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/services/public/payment.service.ts#L1043) includes a strict guard: `if (![BookingStatus.AWAITING_PAYMENT, BookingStatus.EXPIRED, BookingStatus.EXPIRING].includes(previousStatus)) return booking;`. This blocks confirmation of any bookings already in terminal states like `REFUNDED`.
+  **No**. The confirmation flow [payment.service.ts](../../../apps/server/src/services/public/payment.service.ts#L1043) includes a strict guard: `if (![BookingStatus.AWAITING_PAYMENT, BookingStatus.EXPIRED, BookingStatus.EXPIRING].includes(previousStatus)) return booking;`. This blocks confirmation of any bookings already in terminal states like `REFUNDED`.
 * **Are terminal states enforced?**
-  **Yes**. In [booking.service.ts](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/services/admin/booking.service.ts#L212-L218), `cancelBooking` enforces that bookings already in `CANCELLED`, `FAILED`, or `REFUNDED` states throw `AppError.badRequest` if further cancellation is attempted.
+  **Yes**. In [booking.service.ts](../../../apps/server/src/services/admin/booking.service.ts#L212-L218), `cancelBooking` enforces that bookings already in `CANCELLED`, `FAILED`, or `REFUNDED` states throw `AppError.badRequest` if further cancellation is attempted.
 
 ---
 
@@ -45,14 +45,14 @@ Below is the status source and transition mapping:
 | **Failed** (`FAILED`) | Never created directly | `PaymentService.failPaymentAndReleaseInventory` (on payment intent / signature / webhook fail) or `PublicBookingService.createBooking` (if reservation allocation fails) | **Yes** |
 
 *Note on non-terminal intermediate states:*
-* **Awaiting Payment** (`AWAITING_PAYMENT`): Initialized at booking creation in [booking.service.ts](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/services/public/booking.service.ts#L227). Can transition to `CONFIRMED`, `FAILED`, or `EXPIRING`.
-* **Expiring** (`EXPIRING`): Intermediate locking status assigned in [consistency.service.ts](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/services/consistency.service.ts#L229) to prevent race conditions during expiration processing.
-* **Expired** (`EXPIRED`): Set in [consistency.service.ts](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/services/consistency.service.ts#L282) once logical timeout is processed. It remains non-terminal as a late recovery check can transition it back to `CONFIRMED`.
+* **Awaiting Payment** (`AWAITING_PAYMENT`): Initialized at booking creation in [booking.service.ts](../../../apps/server/src/services/public/booking.service.ts#L227). Can transition to `CONFIRMED`, `FAILED`, or `EXPIRING`.
+* **Expiring** (`EXPIRING`): Intermediate locking status assigned in [consistency.service.ts](../../../apps/server/src/services/consistency.service.ts#L229) to prevent race conditions during expiration processing.
+* **Expired** (`EXPIRED`): Set in [consistency.service.ts](../../../apps/server/src/services/consistency.service.ts#L282) once logical timeout is processed. It remains non-terminal as a late recovery check can transition it back to `CONFIRMED`.
 
 ---
 
 ### Phase 3 — Customer Portal Audit
-We audited the display logic inside [apps/web/src/app/tickets/page.tsx](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/app/tickets/page.tsx) and [BookingHeaderCard.tsx](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/components/booking/shared/BookingHeaderCard.tsx):
+We audited the display logic inside [apps/web/src/app/tickets/page.tsx](../../../apps/web/src/app/tickets/page.tsx) and [BookingHeaderCard.tsx](../../../apps/web/src/components/booking/shared/BookingHeaderCard.tsx):
 
 * **Does every backend status have a customer-facing representation?**
   **Yes**. `TicketStatusMessage` handles all statuses. `CONFIRMED` shows ticket barcodes; other statuses show helper text messages.
@@ -71,7 +71,7 @@ We audited page views under `apps/admin/src/app`:
 * **Are refunded bookings counted correctly?**
   **Partially**. In the Bookings list page summary widget, refunded bookings are counted under the `"cancelled"` aggregate count. However, they are completely excluded from Dashboard stats.
 * **Do all statuses appear in filters?**
-  **No**. `BookingStatus.PENDING` is missing from the bookings filter list (`BOOKING_STATUS_FILTERS` in [bookings/page.tsx](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/admin/src/app/bookings/page.tsx#L33)). On the Refunds page, `RefundStatus.REJECTED` is missing because rejected refunds are database-mapped to `'failed'`.
+  **No**. `BookingStatus.PENDING` is missing from the bookings filter list (`BOOKING_STATUS_FILTERS` in [bookings/page.tsx](../../../apps/admin/src/app/bookings/page.tsx#L33)). On the Refunds page, `RefundStatus.REJECTED` is missing because rejected refunds are database-mapped to `'failed'`.
 * **Are dashboard totals consistent with booking status counts?**
   **No**. The Admin Dashboard defines `totalBookings` as only `CONFIRMED` bookings, whereas the Bookings list page widget defines `totalBookings` as the sum of all bookings in the database regardless of status.
 
@@ -79,7 +79,7 @@ We audited page views under `apps/admin/src/app`:
 
 ### Phase 5 — API Consistency Audit
 All database models (`Booking`, `Payment`, `Reservation`) store statuses as string fields validated against their respective shared enums. Controllers correctly serialize and forward these models to API responses consistently.
-* *Inconsistency Found*: The shared TypeScript `Ticket` definition in [packages/types/src/index.ts](file:///Users/admin/Desktop/MAD%20Entertrainment/packages/types/src/index.ts#L238) contains a `status: string;` field, but the actual database Mongoose schema in [ticket.schema.ts](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/models/ticket.schema.ts) has no `status` field.
+* *Inconsistency Found*: The shared TypeScript `Ticket` definition in [packages/types/src/index.ts](../../../packages/types/src/index.ts#L238) contains a `status: string;` field, but the actual database Mongoose schema in [ticket.schema.ts](../../../apps/server/src/models/ticket.schema.ts) has no `status` field.
 
 ---
 
@@ -102,7 +102,7 @@ All database models (`Booking`, `Payment`, `Reservation`) store statuses as stri
   3. Query the database for the booking and payment documents.
   4. **Observation**: The booking status has updated to `'cancelled'`, but the corresponding `Payment` record status remains `'paid'`.
 * **Root Cause**:
-  In [booking.service.ts](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/services/admin/booking.service.ts#L223), the administrative cancellation helper `cancelBooking` updates the booking status, transitions the reservations, updates the event capacity, and releases seats, but never updates the status of the associated `Payment` document.
+  In [booking.service.ts](../../../apps/server/src/services/admin/booking.service.ts#L223), the administrative cancellation helper `cancelBooking` updates the booking status, transitions the reservations, updates the event capacity, and releases seats, but never updates the status of the associated `Payment` document.
 * **Impact**:
   Creates an inconsistent state where a booking is cancelled but its payment status remains paid/pending, causing discrepancies in financial auditing.
 * **Recommended Fix**:
@@ -126,8 +126,8 @@ All database models (`Booking`, `Payment`, `Reservation`) store statuses as stri
   2. Open the Admin Bookings page and note the value in the "Total Bookings" summary card.
   3. **Observation**: The counts differ (the bookings summary widget displays a higher number).
 * **Root Cause**:
-  * In [analytics.controller.ts](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/controllers/admin/analytics.controller.ts#L17), the Dashboard counts only bookings matching status `BookingStatus.CONFIRMED`.
-  * In [booking.service.ts](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/services/admin/booking.service.ts#L513), the Bookings page widget counts all bookings in the database matching `{ $sum: 1 }`, regardless of status.
+  * In [analytics.controller.ts](../../../apps/server/src/controllers/admin/analytics.controller.ts#L17), the Dashboard counts only bookings matching status `BookingStatus.CONFIRMED`.
+  * In [booking.service.ts](../../../apps/server/src/services/admin/booking.service.ts#L513), the Bookings page widget counts all bookings in the database matching `{ $sum: 1 }`, regardless of status.
 * **Impact**:
   Admin staff will see differing metrics for "Total Bookings" depending on which view they access.
 * **Recommended Fix**:
@@ -142,7 +142,7 @@ All database models (`Booking`, `Payment`, `Reservation`) store statuses as stri
   2. Click the status dropdown filter.
   3. **Observation**: The `"Pending"` status does not appear in the dropdown selection.
 * **Root Cause**:
-  In [bookings/page.tsx](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/admin/src/app/bookings/page.tsx#L33), the frontend constant array `BOOKING_STATUS_FILTERS` does not include `BookingStatus.PENDING`.
+  In [bookings/page.tsx](../../../apps/admin/src/app/bookings/page.tsx#L33), the frontend constant array `BOOKING_STATUS_FILTERS` does not include `BookingStatus.PENDING`.
 * **Impact**:
   If a booking is saved in the database with `status: 'pending'`, it cannot be filtered out.
 * **Recommended Fix**:
@@ -157,7 +157,7 @@ All database models (`Booking`, `Payment`, `Reservation`) store statuses as stri
   2. Query the processed refund record in the database.
   3. **Observation**: The status of the refund is `'failed'` instead of `'rejected'`.
 * **Root Cause**:
-  In [refund.service.ts](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/services/admin/refund.service.ts#L61), rejection maps to the status `'failed'`. The constant `RefundStatus.REJECTED = 'rejected'` in [index.ts](file:///Users/admin/Desktop/MAD%20Entertrainment/packages/shared/src/constants/index.ts#L219) is never written or set.
+  In [refund.service.ts](../../../apps/server/src/services/admin/refund.service.ts#L61), rejection maps to the status `'failed'`. The constant `RefundStatus.REJECTED = 'rejected'` in [index.ts](../../../packages/shared/src/constants/index.ts#L219) is never written or set.
 * **Impact**:
   Visual grouping of admin-rejected refunds and gateway-failed refunds under the same `'failed'` label makes auditing less precise.
 * **Recommended Fix**:
@@ -168,8 +168,8 @@ All database models (`Booking`, `Payment`, `Reservation`) store statuses as stri
 ### Finding 5: Inconsistency Between Database Ticket Model and Shared TypeScript Type Definition
 * **Severity**: Low
 * **Reproduction Steps**:
-  1. Open [ticket.schema.ts](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/models/ticket.schema.ts) and verify the absence of a `status` field.
-  2. Open the shared TypeScript definitions file [index.ts](file:///Users/admin/Desktop/MAD%20Entertrainment/packages/types/src/index.ts#L238) and observe the presence of `status: string;` in the `Ticket` type definition.
+  1. Open [ticket.schema.ts](../../../apps/server/src/models/ticket.schema.ts) and verify the absence of a `status` field.
+  2. Open the shared TypeScript definitions file [index.ts](../../../packages/types/src/index.ts#L238) and observe the presence of `status: string;` in the `Ticket` type definition.
 * **Root Cause**:
   The DB schema does not store `status` for individual ticket codes (implicit to booking status), but the shared TypeScript typings declared it, causing compiling mismatch potential.
 * **Impact**:

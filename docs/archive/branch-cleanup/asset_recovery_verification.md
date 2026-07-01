@@ -12,19 +12,19 @@ This report verifies that all unmerged documentation, visual layout, email, and 
 * **Operations guides copied:** ✅ **Yes**. Included in the runbook.
 
 ### Destination Paths
-* `RUNBOOK.md` Destination: [RUNBOOK.md](file:///Users/admin/.gemini/antigravity-ide/brain/241fee3a-1279-4014-8caf-434a77d66971/recovered_assets/docs/RUNBOOK.md)
+* `RUNBOOK.md` Destination: [RUNBOOK.md](../../../RUNBOOK.md)
 
 ---
 
 ## Design Asset Verification
 
-* **Screenshots captured:** ✅ **Yes** (Previous verification screenshots are archived in the brain media directory `/Users/admin/.gemini/antigravity-ide/brain/241fee3a-1279-4014-8caf-434a77d66971/`).
+* **Screenshots captured:** ✅ **Yes** (Previous verification screenshots are archived in the brain media directory).
 * **UI references archived:** ✅ **Yes**. Payment success modal and session clearing overrides are preserved in the runbook/code references.
 * **Design notes preserved:** ✅ **Yes**. Included in `RUNBOOK.md`.
 
 ### Destination Paths
-* Staging Runbook Design Notes: [RUNBOOK.md](file:///Users/admin/.gemini/antigravity-ide/brain/241fee3a-1279-4014-8caf-434a77d66971/recovered_assets/docs/RUNBOOK.md)
-* UI Verification media: `file:///Users/admin/.gemini/antigravity-ide/brain/241fee3a-1279-4014-8caf-434a77d66971/.tempmediaStorage/`
+* Staging Runbook Design Notes: [RUNBOOK.md](../../../RUNBOOK.md)
+* UI Verification media: (Archived in brain media directory)
 
 ---
 
@@ -36,15 +36,15 @@ This report verifies that all unmerged documentation, visual layout, email, and 
 * **Infrastructure components copied:** ✅ **Yes**.
 
 ### Destination Paths
-* Modular PDF Ticket System Directory: [ticket](file:///Users/admin/.gemini/antigravity-ide/brain/241fee3a-1279-4014-8caf-434a77d66971/recovered_assets/apps/server/src/lib/pdf/ticket/)
-* Modular PDF Entrypoint: [generate-ticket-pdf.ts](file:///Users/admin/.gemini/antigravity-ide/brain/241fee3a-1279-4014-8caf-434a77d66971/recovered_assets/apps/server/src/lib/pdf/ticket/generate-ticket-pdf.ts)
-* React Email Templates Directory: [templates](file:///Users/admin/.gemini/antigravity-ide/brain/241fee3a-1279-4014-8caf-434a77d66971/recovered_assets/apps/server/src/lib/email/templates/)
+* Modular PDF Ticket System Directory: [ticket](../../../apps/server/src/lib/pdf/ticket)
+* Modular PDF Entrypoint: [generate-ticket-pdf.ts](../../../apps/server/src/lib/pdf/ticket/generate-ticket-pdf.ts)
+* React Email Templates Directory: [templates](../../../apps/server/src/lib/email/templates)
 
 ---
 
 ## Recovery Test
 
-* **Archived assets can be located:** ✅ **Verified**. Files exist under `/Users/admin/.gemini/antigravity-ide/brain/241fee3a-1279-4014-8caf-434a77d66971/recovered_assets/`.
+* **Archived assets can be located:** ✅ **Verified**. Files exist under `recovered_assets/`.
 * **Files open successfully:** ✅ **Verified**. All files open successfully with positive byte sizes (e.g. `RUNBOOK.md` = 15KB, email template = 7KB).
 * **Git history remains recoverable:** ✅ **Verified**. Local archive tags have been successfully created on origin commits:
   * `archive/feat-production-pdf-ticket-system` (commit `6c250b3`)

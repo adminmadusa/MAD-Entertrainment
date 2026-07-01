@@ -7,17 +7,17 @@ Review Cycle: Quarterly
 Last Updated: 2026-06-25  
 
 Supersedes:
-- [governance.md](file:///Users/admin/Desktop/MAD%20Entertrainment/docs/architecture/governance.md) (Deleted)
+- [governance.md](docs/architecture/governance.md) (Deleted)
 
 Related Documents:
-- [README.md](file:///Users/admin/Desktop/MAD%20Entertrainment/README.md)
-- [REPOSITORY_GOVERNANCE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/REPOSITORY_GOVERNANCE.md)
-- [AGENTS.MD](file:///Users/admin/Desktop/MAD%20Entertrainment/AGENTS.MD)
-- [RUNBOOK.md](file:///Users/admin/Desktop/MAD%20Entertrainment/RUNBOOK.md)
-- [DEPLOYMENT_MAP.md](file:///Users/admin/Desktop/MAD%20Entertrainment/DEPLOYMENT_MAP.md)
-- [API_CONTRACTS.md](file:///Users/admin/Desktop/MAD%20Entertrainment/API_CONTRACTS.md)
-- [decisions/README.md](file:///Users/admin/Desktop/MAD%20Entertrainment/docs/decisions/README.md)
-- [CHANGELOG.md](file:///Users/admin/Desktop/MAD%20Entertrainment/CHANGELOG.md)
+- [README.md](README.md)
+- [REPOSITORY_GOVERNANCE.md](REPOSITORY_GOVERNANCE.md)
+- [AGENTS.MD](AGENTS.MD)
+- [RUNBOOK.md](RUNBOOK.md)
+- [DEPLOYMENT_MAP.md](DEPLOYMENT_MAP.md)
+- [API_CONTRACTS.md](API_CONTRACTS.md)
+- [decisions/README.md](docs/decisions/README.md)
+- [CHANGELOG.md](CHANGELOG.md)
 
 ---
 
@@ -57,7 +57,7 @@ The document **must** be updated whenever any of the following change:
 - Dependency direction
 - Repository standards
 
-Changes affecting architecture must not be merged without updating this document and logging the release in [CHANGELOG.md](file:///Users/admin/Desktop/MAD%20Entertrainment/CHANGELOG.md).
+Changes affecting architecture must not be merged without updating this document and logging the release in [CHANGELOG.md](CHANGELOG.md).
 
 ### Architecture Stability Classification
 The table below classifies the maturity and stability of the system's components:
@@ -275,7 +275,7 @@ System responsibilities are segregated between frontend (UI Presentation/State) 
 *Evidence*:
 - `AGENTS.MD` §SSOT matrix defines the ownership boundaries.
 - Database access and Mongoose schemas reside exclusively under `apps/server/src/models/`.
-- [ADR-001: Booking Ownership](file:///Users/admin/Desktop/MAD%20Entertrainment/docs/decisions/ADR-001-booking-ownership.md) documents the decision details and consequences.
+- [ADR-001: Booking Ownership](docs/decisions/ADR-001-booking-ownership.md) documents the decision details and consequences.
 
 ### Repository Standard
 - Frontends must never duplicate backend decisions, calculate ticket pricing, or enforce security role controls locally. The client must query the server and reflect returned data.
@@ -347,7 +347,7 @@ Adding new features, modules, or packages is structured around workspaces:
 
 ### Repository Standard
 - **Circular Imports**: When adding packages, developers must run the compliance audit to confirm no circular imports are created.
-- **Validation Schema Alignment**: Any API payload validation must be defined in `@mad/validations` so that both the server and client share the exact Zod contract (see the canonical [API_CONTRACTS.md](file:///Users/admin/Desktop/MAD%20Entertrainment/API_CONTRACTS.md)).
+- **Validation Schema Alignment**: Any API payload validation must be defined in `@mad/validations` so that both the server and client share the exact Zod contract (see the canonical [API_CONTRACTS.md](API_CONTRACTS.md)).
 
 ### Future Recommendations
 - Omitted (No active proposals exist for extension guidelines).

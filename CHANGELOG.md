@@ -8,12 +8,12 @@
 - **Changelog Format**: Keep a Changelog v1.0.0
 - **Versioning Strategy**: Semantic Versioning (SemVer) v2.0.0
 - **Related Documents:**
-  - [README.md](file:///Users/admin/Desktop/MAD%20Entertrainment/README.md)
-  - [REPOSITORY_GOVERNANCE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/REPOSITORY_GOVERNANCE.md)
-  - [RUNBOOK.md](file:///Users/admin/Desktop/MAD%20Entertrainment/RUNBOOK.md)
-  - [ARCHITECTURE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/ARCHITECTURE.md)
-  - [DEPLOYMENT_MAP.md](file:///Users/admin/Desktop/MAD%20Entertrainment/DEPLOYMENT_MAP.md)
-  - [API_CONTRACTS.md](file:///Users/admin/Desktop/MAD%20Entertrainment/API_CONTRACTS.md)
+  - [README.md](README.md)
+  - [REPOSITORY_GOVERNANCE.md](REPOSITORY_GOVERNANCE.md)
+  - [RUNBOOK.md](RUNBOOK.md)
+  - [ARCHITECTURE.md](ARCHITECTURE.md)
+  - [DEPLOYMENT_MAP.md](DEPLOYMENT_MAP.md)
+  - [API_CONTRACTS.md](API_CONTRACTS.md)
 
 ---
 
