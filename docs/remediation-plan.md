@@ -13,11 +13,11 @@ This document outlines the step-by-step staged remediation plan to stabilize pro
 Isolate BullMQ queues across environments (`local`, `staging`, `production`) to prevent local development environments from consuming production queues. When running locally or in development, a unique environment prefix (derived from `NODE_ENV` or `APP_ENV`) will be prepended to the queue names. This ensures local workers only process local jobs, completely eliminating queue collisions.
 
 ### Files Changed
-* [apps/server/src/config/queue.config.ts](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/config/queue.config.ts) (Export a helper to get environment-specific queue names)
-* [apps/server/src/services/queue.service.ts](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/services/queue.service.ts) (Incorporate prefix into enqueuing logic)
-* [apps/server/src/workers/email.worker.ts](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/workers/email.worker.ts) (Prefix worker registration)
-* [apps/server/src/workers/pdf.worker.ts](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/workers/pdf.worker.ts) (Prefix worker registration)
-* [apps/server/src/workers/booking.worker.ts](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/workers/booking.worker.ts) (Prefix worker registration)
+* [apps/server/src/config/queue.config.ts](../apps/server/src/config/queue.config.ts) (Export a helper to get environment-specific queue names)
+* [apps/server/src/services/queue.service.ts](../apps/server/src/services/queue.service.ts) (Incorporate prefix into enqueuing logic)
+* [apps/server/src/workers/email.worker.ts](../apps/server/src/workers/email.worker.ts) (Prefix worker registration)
+* [apps/server/src/workers/pdf.worker.ts](../apps/server/src/workers/pdf.worker.ts) (Prefix worker registration)
+* [apps/server/src/workers/booking.worker.ts](../apps/server/src/workers/booking.worker.ts) (Prefix worker registration)
 
 ### Risk Level
 **LOW**
@@ -36,8 +36,8 @@ Revert the git commit to restore standard queue name literals. No database chang
 Establish a global browser-level initialization guard on the window object (e.g., `window.__googleSdkInitialized`) to prevent multiple subsequent or parallel calls to `google.accounts.id.initialize()`. When the Login page or the Checkout Auth Card requests initialization, the library checks the guard first, completely eliminating the duplicate initialization crash.
 
 ### Files Changed
-* [apps/web/src/app/(auth)/login/page.tsx](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/app/(auth)/login/page.tsx) (Incorporate initialization guard)
-* [apps/web/src/components/auth/AuthForm.tsx](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/components/auth/AuthForm.tsx) (Incorporate initialization guard)
+* [apps/web/src/app/(auth)/login/page.tsx](../apps/web/src/app/(auth)/login/page.tsx) (Incorporate initialization guard)
+* [apps/web/src/components/auth/AuthForm.tsx](../apps/web/src/components/auth/AuthForm.tsx) (Incorporate initialization guard)
 
 ### Risk Level
 **LOW**
@@ -59,9 +59,9 @@ Enhance silent session refresh stability.
 3. Allow the client to store the refresh token in local storage as a fallback in production, passing it in the request body to `/auth/refresh` if the HttpOnly cookie is blocked by Safari ITP.
 
 ### Files Changed
-* [apps/web/src/lib/api/client.ts](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/lib/api/client.ts) (Axios locking lock)
-* [apps/server/src/services/public/auth.service.ts](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/services/public/auth.service.ts) (Grace period for recently rotated tokens)
-* [apps/server/src/controllers/public/auth.controller.ts](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/controllers/public/auth.controller.ts) (Accept refresh token from body fallback)
+* [apps/web/src/lib/api/client.ts](../apps/web/src/lib/api/client.ts) (Axios locking lock)
+* [apps/server/src/services/public/auth.service.ts](../apps/server/src/services/public/auth.service.ts) (Grace period for recently rotated tokens)
+* [apps/server/src/controllers/public/auth.controller.ts](../apps/server/src/controllers/public/auth.controller.ts) (Accept refresh token from body fallback)
 
 ### Risk Level
 **LOW-MEDIUM**
@@ -80,7 +80,7 @@ Revert backend changes to restore the strict RTR replay attack logic and fronten
 Integrate the global header `Navbar` with the React `useAuth` hook. If the user session is authenticated, display their profile dashboard access link and a global Sign Out CTA. If unauthenticated, display a Sign In button next to the standard CTAs.
 
 ### Files Changed
-* [apps/web/src/components/layout/Navbar.tsx](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/components/layout/Navbar.tsx)
+* [apps/web/src/components/layout/Navbar.tsx](../apps/web/src/components/layout/Navbar.tsx)
 
 ### Risk Level
 **LOW**

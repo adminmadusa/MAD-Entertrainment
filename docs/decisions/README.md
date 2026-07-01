@@ -7,11 +7,11 @@ Review Cycle: Ongoing
 Last Updated: 2026-06-25  
 
 Related Documents:
-- [README.md](file:///Users/admin/Desktop/MAD%20Entertrainment/README.md)
-- [REPOSITORY_GOVERNANCE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/REPOSITORY_GOVERNANCE.md)
-- [ARCHITECTURE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/ARCHITECTURE.md)
-- [DEPLOYMENT_MAP.md](file:///Users/admin/Desktop/MAD%20Entertrainment/DEPLOYMENT_MAP.md)
-- [API_CONTRACTS.md](file:///Users/admin/Desktop/MAD%20Entertrainment/API_CONTRACTS.md)
+- [README.md](../../README.md)
+- [REPOSITORY_GOVERNANCE.md](../../REPOSITORY_GOVERNANCE.md)
+- [ARCHITECTURE.md](../../ARCHITECTURE.md)
+- [DEPLOYMENT_MAP.md](../../DEPLOYMENT_MAP.md)
+- [API_CONTRACTS.md](../../API_CONTRACTS.md)
 
 ---
 
@@ -97,7 +97,7 @@ stateDiagram-v2
 ## ADR Governance & Review Process
 
 ### 1. Proposal Phase
-- Copy the [ADR_TEMPLATE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/docs/decisions/ADR_TEMPLATE.md) to create a new file named `docs/decisions/ADR-XXX-title.md`.
+- Copy the [ADR_TEMPLATE.md](ADR_TEMPLATE.md) to create a new file named `docs/decisions/ADR-XXX-title.md`.
 - Set the status to `Proposed` and fill in the Context, Problem Statement, and Alternatives Considered.
 
 ### 2. Review Phase
@@ -113,8 +113,8 @@ Architectural review and approvals are divided into operational areas:
 
 | Decision Category | Primary Reviewer / Owner | Relevant SSOT Document |
 | :--- | :--- | :--- |
-| **Architecture** | Principal Architect | [ARCHITECTURE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/ARCHITECTURE.md) |
-| **Infrastructure & Hosting**| Platform Team | [DEPLOYMENT_MAP.md](file:///Users/admin/Desktop/MAD%20Entertrainment/DEPLOYMENT_MAP.md) |
-| **Payments & Payouts** | Financial Domain Tech Lead | [API_CONTRACTS.md](file:///Users/admin/Desktop/MAD%20Entertrainment/API_CONTRACTS.md) |
-| **Authentication & AuthZ** | Security Architect | [API_CONTRACTS.md](file:///Users/admin/Desktop/MAD%20Entertrainment/API_CONTRACTS.md) |
-| **Governance & Quality** | Repository Governance Owner | [REPOSITORY_GOVERNANCE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/REPOSITORY_GOVERNANCE.md) / [AGENTS.MD](file:///Users/admin/Desktop/MAD%20Entertrainment/AGENTS.MD) |
+| **Architecture** | Principal Architect | [ARCHITECTURE.md](../../ARCHITECTURE.md) |
+| **Infrastructure & Hosting**| Platform Team | [DEPLOYMENT_MAP.md](../../DEPLOYMENT_MAP.md) |
+| **Payments & Payouts** | Financial Domain Tech Lead | [API_CONTRACTS.md](../../API_CONTRACTS.md) |
+| **Authentication & AuthZ** | Security Architect | [API_CONTRACTS.md](../../API_CONTRACTS.md) |
+| **Governance & Quality** | Repository Governance Owner | [REPOSITORY_GOVERNANCE.md](../../REPOSITORY_GOVERNANCE.md) / [AGENTS.MD](../../AGENTS.MD) |

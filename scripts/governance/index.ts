@@ -1,7 +1,7 @@
 // scripts/governance/index.ts
 
-import { readdirSync, statSync, existsSync } from 'fs';
-import { resolve, join, relative } from 'path';
+import { readdirSync, statSync, existsSync, readFileSync } from 'fs';
+import { resolve, join, relative, dirname } from 'path';
 import { execSync } from 'child_process';
 import { MetadataProvider } from './core/metadata';
 import { ValidatorLoader } from './core/loader';
@@ -29,32 +29,51 @@ import { StatelessViolation } from './core/types';
 const workspaceRoot = resolve(__dirname, '../..');
 
 /**
- * Recursively scans a directory for markdown (.md) files.
+ * Discovers all markdown (.md) files in the repository using git ls-files.
  */
-function scanMarkdownFiles(dir: string, fileList: string[] = []): string[] {
-  if (!existsSync(dir)) return fileList;
-  const items = readdirSync(dir);
-  for (const item of items) {
-    const fullPath = join(dir, item);
-    const stats = statSync(fullPath);
-    if (stats.isDirectory()) {
-      if (
-        item !== 'node_modules' &&
-        item !== '.git' &&
-        item !== '.pnpm-store' &&
-        item !== '.turbo' &&
-        item !== 'archive' &&
-        item !== 'audit' &&
-        item !== '.governance'
-      ) {
-        scanMarkdownFiles(fullPath, fileList);
+function getAllMarkdownFiles(workspaceRoot: string): string[] {
+  const markdownFiles = new Set<string>();
+  try {
+    const tracked = execSync('git ls-files "*.md"', { cwd: workspaceRoot, encoding: 'utf8' })
+      .split('\n')
+      .map(f => f.trim())
+      .filter(Boolean);
+    const untracked = execSync('git ls-files --others --exclude-standard "*.md"', { cwd: workspaceRoot, encoding: 'utf8' })
+      .split('\n')
+      .map(f => f.trim())
+      .filter(Boolean);
+      
+    for (const f of [...tracked, ...untracked]) {
+      if (!f.startsWith('node_modules/') && !f.startsWith('.governance/') && !f.startsWith('scratch/')) {
+        markdownFiles.add(f);
       }
-    } else if (item.endsWith('.md')) {
-      fileList.push(relative(workspaceRoot, fullPath));
     }
+  } catch (err) {
+    const scan = (dir: string) => {
+      const items = readdirSync(dir);
+      for (const item of items) {
+        if (['node_modules', '.git', '.next', '.governance', 'dist', '.turbo', 'coverage', 'scratch'].includes(item)) {
+          continue;
+        }
+        const full = join(dir, item);
+        let stats;
+        try {
+          stats = statSync(full);
+        } catch {
+          continue;
+        }
+        if (stats.isDirectory()) {
+          scan(full);
+        } else if (item.endsWith('.md')) {
+          markdownFiles.add(relative(workspaceRoot, full));
+        }
+      }
+    };
+    scan(workspaceRoot);
   }
-  return fileList;
+  return Array.from(markdownFiles).sort();
 }
+
 
 /**
  * Recursively scans a directory for code source files.
@@ -112,6 +131,64 @@ function getGitCommit(): string {
 async function run() {
   const globalStartTime = Date.now();
 
+  if (process.argv.includes('--update-history')) {
+    console.log('🔄 Updating historical files baseline...');
+    let gitFiles: string[] = [];
+    try {
+      const output = execSync('git log --all --format="" --name-only', { cwd: workspaceRoot, encoding: 'utf8' });
+      gitFiles = output.split('\n')
+        .map(f => f.trim())
+        .filter(f => f && !f.startsWith('node_modules/') && !f.startsWith('.governance/') && !f.startsWith('scratch/'));
+    } catch (err) {
+      console.error('❌ Failed to run git log for historical index. Make sure you are in a full clone git repository.');
+      process.exit(1);
+    }
+    
+    const currentFiles = getAllMarkdownFiles(workspaceRoot);
+    const allHistory = Array.from(new Set([...gitFiles, ...currentFiles])).sort();
+    
+    const baselinePath = resolve(workspaceRoot, '.governance/baselines/historical-files.json');
+    const dir = dirname(baselinePath);
+    if (!existsSync(dir)) {
+      const fs = require('fs');
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    const fs = require('fs');
+    fs.writeFileSync(baselinePath, JSON.stringify(allHistory, null, 2), 'utf8');
+    console.log(`✅ Successfully updated historical baseline with ${allHistory.length} entries.`);
+    process.exit(0);
+  }
+
+  // Drift detection locally
+  const historicalFilesPath = resolve(workspaceRoot, '.governance/baselines/historical-files.json');
+  if (process.env.GITHUB_ACTIONS !== 'true') {
+    let gitFiles: string[] = [];
+    try {
+      const output = execSync('git log --all --format="" --name-only', { cwd: workspaceRoot, encoding: 'utf8' });
+      gitFiles = output.split('\n')
+        .map(f => f.trim())
+        .filter(f => f && !f.startsWith('node_modules/') && !f.startsWith('.governance/') && !f.startsWith('scratch/'));
+    } catch {}
+
+    const currentFiles = getAllMarkdownFiles(workspaceRoot);
+    const allHistory = Array.from(new Set([...gitFiles, ...currentFiles])).sort();
+
+    if (allHistory.length > 0) {
+      if (existsSync(historicalFilesPath)) {
+        const committed = JSON.parse(readFileSync(historicalFilesPath, 'utf8'));
+        const missing = allHistory.filter(f => !committed.includes(f));
+        if (missing.length > 0) {
+          console.error(`❌ Historical files baseline is out of sync. Missing entries: ${missing.slice(0, 5).join(', ')}...`);
+          console.error(`👉 Please run "pnpm governance:docs --update-history" to synchronize.`);
+          process.exit(1);
+        }
+      } else {
+        console.error(`❌ Historical files baseline does not exist. Please run "pnpm governance:docs --update-history" to initialize.`);
+        process.exit(1);
+      }
+    }
+  }
+
   console.log('🔍 Initializing Governance Metadata Provider...');
   const metadataProvider = new MetadataProvider();
   const metadata = metadataProvider.getMetadata();
@@ -123,34 +200,15 @@ async function run() {
   const auditEngine = new AuditEngine();
   metadata.knowledgeGraph = auditEngine.getKnowledgeGraph();
 
-  // 1. Discover all markdown and source code files
-  const markdownFiles = new Set<string>();
-  for (const doc of metadata.requiredDocuments) {
-    const fullPath = resolve(workspaceRoot, doc);
-    if (existsSync(fullPath) && statSync(fullPath).isFile()) {
-      markdownFiles.add(doc);
-    }
-  }
-
-  const rootItems = readdirSync(workspaceRoot);
-  for (const item of rootItems) {
-    if (item.endsWith('.md')) {
-      markdownFiles.add(item);
-    }
-  }
-
-  const docsDir = resolve(workspaceRoot, 'docs');
-  const docsFiles = scanMarkdownFiles(docsDir);
-  for (const file of docsFiles) {
-    markdownFiles.add(file);
-  }
+  // Discover all markdown and source code files
+  const markdownFilesList = getAllMarkdownFiles(workspaceRoot);
 
   // Scan codebase sources for UI analysis
   const uiSourceFiles = scanSourceFiles(resolve(workspaceRoot, 'apps/admin/src'));
   const webSourceFiles = scanSourceFiles(resolve(workspaceRoot, 'apps/web/src'));
   const uiFilesArray = [...uiSourceFiles, ...webSourceFiles];
 
-  let finalMarkdownFiles = Array.from(markdownFiles);
+  let finalMarkdownFiles = markdownFilesList;
   let finalUiFiles = uiFilesArray;
 
   // 2. Perform Incremental & Dependency-Aware Auditing filter

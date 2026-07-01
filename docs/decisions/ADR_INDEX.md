@@ -4,4 +4,4 @@ This index maintains the chronological list of all architectural decisions made 
 
 | ADR | Title | Status | Category | Last Updated | Link |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **ADR-001** | Booking Ownership | Implemented | Architecture / API | 2026-06-25 | [ADR-001](file:///Users/admin/Desktop/MAD%20Entertrainment/docs/decisions/ADR-001-booking-ownership.md) |
+| **ADR-001** | Booking Ownership | Implemented | Architecture / API | 2026-06-25 | [ADR-001](ADR-001-booking-ownership.md) |

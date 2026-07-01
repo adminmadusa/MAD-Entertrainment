@@ -8,7 +8,7 @@ This implementation plan outlines the structural changes to resolve duplicate re
 
 ### apps/server (Backend Refund Domain)
 
-#### [MODIFY] [refund.service.ts](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/services/admin/refund.service.ts)
+#### [MODIFY] [refund.service.ts](../../../apps/server/src/services/admin/refund.service.ts)
 * **`createRefund`**:
   - Update the cumulative refund check to include `processing` and `completed` status:
     ```typescript

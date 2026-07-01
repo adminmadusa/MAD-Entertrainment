@@ -6,7 +6,7 @@ This document certifies that the implementation of the **Hybrid Ownership Contin
 
 ## 1. Access Restriction Verification (BookingController)
 
-We verified that guest sessions are still restricted from accessing account-bound bookings. The core read and download paths in [`booking.controller.ts`](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/controllers/public/booking.controller.ts) remain unchanged:
+We verified that guest sessions are still restricted from accessing account-bound bookings. The core read and download paths in [`booking.controller.ts`](../../../apps/server/src/controllers/public/booking.controller.ts) remain unchanged:
 
 ### A. Booking Details Retrieval (`GET /bookings/:bookingId`)
 - **Controller Guard Check**:
@@ -47,7 +47,7 @@ We verified that retaining the guest `sessionId` in the database does **not** ex
 ## 3. Structural Constraints Confirmation
 
 We confirm:
-- **No Refund Impact**: All refund logic ([`refund.service.ts`](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/services/admin/refund.service.ts)) is isolated and unaffected.
+- **No Refund Impact**: All refund logic ([`refund.service.ts`](../../../apps/server/src/services/admin/refund.service.ts)) is isolated and unaffected.
 - **No Schema Changes**: Database schemas remain unmodified. No collections migrations are required.
 - **No Webhook Integrity Impact**: Webhook signature verification and idempotency models are unmodified.
 - **No Payment Integrity Impact**: Payment intent generation, amount validations, and anti-mock-payment checks are unmodified.

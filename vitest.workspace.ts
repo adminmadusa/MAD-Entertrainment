@@ -67,5 +67,19 @@ export default [
         '**/.next/**'
       ]
     }
+  },
+  {
+    test: {
+      name: 'governance',
+      environment: 'node',
+      globals: true,
+      include: [
+        'scripts/governance/**/*.test.ts'
+      ],
+      exclude: [
+        '**/node_modules/**',
+        '**/dist/**'
+      ]
+    }
   }
 ];

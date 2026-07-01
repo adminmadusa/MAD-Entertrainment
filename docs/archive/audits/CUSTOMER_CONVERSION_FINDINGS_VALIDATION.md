@@ -29,7 +29,7 @@ All three findings under review are valid and confirmed against current source c
 ### Evidence
 
 **Location of defect:**  
-[EventsList.tsx L232](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/app/events/EventsList.tsx#L232)
+[EventsList.tsx L232](../../../apps/web/src/app/events/EventsList.tsx#L232)
 
 ```tsx
 ₹{Math.min(...event.ticketTiers.map((t) => t.price))}
@@ -49,7 +49,7 @@ ticketTiers: { type: [ticketTierConfigSchema], default: [] },
 
 **Confirmed: The listing query does not filter out zero-tier events.**  
 
-`PublicEventService.listEvents()` in [event.service.ts L43–L52](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/services/public/event.service.ts#L43) applies only a `status: PUBLISHED` + `isDeleted: false` filter. No minimum tier count is enforced:
+`PublicEventService.listEvents()` in [event.service.ts L43–L52](../../../apps/server/src/services/public/event.service.ts#L43) applies only a `status: PUBLISHED` + `isDeleted: false` filter. No minimum tier count is enforced:
 
 ```ts
 .select('title slug description category bannerImage startDate ticketTiers.price isSoldOut venue')
@@ -59,7 +59,7 @@ An event with `ticketTiers: []` will be returned by this query with `ticketTiers
 
 **Confirmed: Additional soft-delete filtering exists only for the detail endpoint.**  
 
-`getEventBySlug()` at [event.service.ts L73–L75](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/services/public/event.service.ts#L73) filters `isDeleted` tiers post-query:
+`getEventBySlug()` at [event.service.ts L73–L75](../../../apps/server/src/services/public/event.service.ts#L73) filters `isDeleted` tiers post-query:
 
 ```ts
 if (event.ticketTiers) {
@@ -79,7 +79,7 @@ This is JavaScript specification behaviour. Spreading an empty array into `Math.
 
 **Confirmed: The `FeaturedEventsSection.tsx` correctly guards this case.**  
 
-[FeaturedEventsSection.tsx L287](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/components/ui/FeaturedEventsSection.tsx#L287):
+[FeaturedEventsSection.tsx L287](../../../apps/web/src/components/ui/FeaturedEventsSection.tsx#L287):
 ```tsx
 ₹{event.ticketTiers && event.ticketTiers.length > 0
   ? Math.min(...event.ticketTiers.map((t) => t.price))
@@ -109,10 +109,10 @@ Any published event with an empty or fully-deleted `ticketTiers` array will disp
 
 | File | Role |
 |---|---|
-| [EventsList.tsx](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/app/events/EventsList.tsx) | Contains the unguarded `Math.min` expression at L232 |
-| [event.service.ts](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/services/public/event.service.ts) | Confirms listing query returns empty-tier events |
-| [event.schema.ts](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/models/event.schema.ts) | Confirms `ticketTiers` defaults to `[]` |
-| [FeaturedEventsSection.tsx](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/components/ui/FeaturedEventsSection.tsx) | Reference: already contains the correct guard |
+| [EventsList.tsx](../../../apps/web/src/app/events/EventsList.tsx) | Contains the unguarded `Math.min` expression at L232 |
+| [event.service.ts](../../../apps/server/src/services/public/event.service.ts) | Confirms listing query returns empty-tier events |
+| [event.schema.ts](../../../apps/server/src/models/event.schema.ts) | Confirms `ticketTiers` defaults to `[]` |
+| [FeaturedEventsSection.tsx](../../../apps/web/src/components/ui/FeaturedEventsSection.tsx) | Reference: already contains the correct guard |
 
 ### Recommended Fix
 
@@ -145,7 +145,7 @@ Scope is a single line change in one file. No other components are affected.
 ### Evidence
 
 **Location of defect:**  
-[TicketSelectionContent.tsx L130–L137](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/components/booking/TicketSelectionContent.tsx#L130-L137)
+[TicketSelectionContent.tsx L130–L137](../../../apps/web/src/components/booking/TicketSelectionContent.tsx#L130-L137)
 
 ```ts
 const handleApplyCoupon = (e: React.FormEvent) => {
@@ -162,7 +162,7 @@ const handleApplyCoupon = (e: React.FormEvent) => {
 
 **Confirmed: Backend validation is deferred to booking submission.**
 
-The coupon code is only transmitted to the server during `createBookingMutation.mutate()` at [L177–L181](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/components/booking/TicketSelectionContent.tsx#L177):
+The coupon code is only transmitted to the server during `createBookingMutation.mutate()` at [L177–L181](../../../apps/web/src/components/booking/TicketSelectionContent.tsx#L177):
 
 ```ts
 createBookingMutation.mutate({
@@ -180,7 +180,7 @@ The server only sees the coupon code after the user:
 
 **Confirmed: An invalid coupon triggers the full success celebration.**
 
-The celebration modal at [L274–L312](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/components/booking/TicketSelectionContent.tsx#L274) renders:
+The celebration modal at [L274–L312](../../../apps/web/src/components/booking/TicketSelectionContent.tsx#L274) renders:
 - Full-screen overlay with backdrop blur
 - Animated ping ring in emerald green
 - Large checkmark icon
@@ -192,7 +192,7 @@ This fires for `INVALID123`, `EXPIRED`, `DOESNOTEXIST`, or any other arbitrary s
 
 **Confirmed: Failure path exists but fires much later.**
 
-The `onError` handler in `createBookingMutation` at [L89–L100](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/components/booking/TicketSelectionContent.tsx#L89) includes:
+The `onError` handler in `createBookingMutation` at [L89–L100](../../../apps/web/src/components/booking/TicketSelectionContent.tsx#L89) includes:
 
 ```ts
 if (apiError.toLowerCase().includes('coupon') || apiError.toLowerCase().includes('promo')) {
@@ -229,7 +229,7 @@ The coupon UI was designed with an optimistic confirmation flow where the celebr
 
 | File | Role |
 |---|---|
-| [TicketSelectionContent.tsx](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/components/booking/TicketSelectionContent.tsx) | Contains `handleApplyCoupon` (L130–L137), celebration modal (L274–L312), and deferred validation error (L89–L100) |
+| [TicketSelectionContent.tsx](../../../apps/web/src/components/booking/TicketSelectionContent.tsx) | Contains `handleApplyCoupon` (L130–L137), celebration modal (L274–L312), and deferred validation error (L89–L100) |
 
 ### Recommended Fix
 
@@ -277,7 +277,7 @@ This removes the false positive while preserving the intent of immediate feedbac
 ### Evidence
 
 **Location of defect:**  
-[TicketSelectionContent.tsx L56–L73](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/components/booking/TicketSelectionContent.tsx#L56-L73)
+[TicketSelectionContent.tsx L56–L73](../../../apps/web/src/components/booking/TicketSelectionContent.tsx#L56-L73)
 
 ```ts
 useEffect(() => {
@@ -310,7 +310,7 @@ useEffect(() => {
 
 **Confirmed: The error renders as a generic banner.**
 
-The error state at [L210–L214](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/components/booking/TicketSelectionContent.tsx#L210):
+The error state at [L210–L214](../../../apps/web/src/components/booking/TicketSelectionContent.tsx#L210):
 
 ```tsx
 {error && (
@@ -325,7 +325,7 @@ The error is a static red banner with the message text. No action affordance is 
 
 **Confirmed: The failure blocks checkout entirely.**
 
-`handleCheckoutSubmit` at [L169–L172](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/components/booking/TicketSelectionContent.tsx#L169) performs a secondary guard:
+`handleCheckoutSubmit` at [L169–L172](../../../apps/web/src/components/booking/TicketSelectionContent.tsx#L169) performs a secondary guard:
 
 ```ts
 if (!sessionToken) {
@@ -338,7 +338,7 @@ If `sessionToken` remains empty (which it will, because the session initializati
 
 **Confirmed: `ensureGuestBookingSession()` depends on a server API call.**
 
-[public.service.ts L60–L72](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/lib/api/public.service.ts#L60):
+[public.service.ts L60–L72](../../../apps/web/src/lib/api/public.service.ts#L60):
 
 ```ts
 export async function ensureGuestBookingSession(): Promise<GuestBookingSession> {
@@ -375,8 +375,8 @@ The guest session initialization `useEffect` runs once on mount with no retry lo
 
 | File | Role |
 |---|---|
-| [TicketSelectionContent.tsx](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/components/booking/TicketSelectionContent.tsx) | Contains the session `useEffect` (L56–L74) and the blocked checkout guard (L169–L172) |
-| [public.service.ts](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/lib/api/public.service.ts) | Contains `ensureGuestBookingSession()` (L60–L72) showing the API dependency |
+| [TicketSelectionContent.tsx](../../../apps/web/src/components/booking/TicketSelectionContent.tsx) | Contains the session `useEffect` (L56–L74) and the blocked checkout guard (L169–L172) |
+| [public.service.ts](../../../apps/web/src/lib/api/public.service.ts) | Contains `ensureGuestBookingSession()` (L60–L72) showing the API dependency |
 
 ### Recommended Fix
 

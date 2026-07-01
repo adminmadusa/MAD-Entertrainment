@@ -9,12 +9,12 @@
 - **Review Cycle**: Ongoing
 - **Last Updated**: 2026-06-25
 - **Related Documents:**
-  - [README.md](file:///Users/admin/Desktop/MAD%20Entertrainment/README.md)
-  - [REPOSITORY_GOVERNANCE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/REPOSITORY_GOVERNANCE.md)
-  - [ARCHITECTURE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/ARCHITECTURE.md)
-  - [DEPLOYMENT_MAP.md](file:///Users/admin/Desktop/MAD%20Entertrainment/DEPLOYMENT_MAP.md)
-  - [API_CONTRACTS.md](file:///Users/admin/Desktop/MAD%20Entertrainment/API_CONTRACTS.md)
-  - [AGENTS.MD](file:///Users/admin/Desktop/MAD%20Entertrainment/AGENTS.MD)
+  - [README.md](README.md)
+  - [REPOSITORY_GOVERNANCE.md](REPOSITORY_GOVERNANCE.md)
+  - [ARCHITECTURE.md](ARCHITECTURE.md)
+  - [DEPLOYMENT_MAP.md](DEPLOYMENT_MAP.md)
+  - [API_CONTRACTS.md](API_CONTRACTS.md)
+  - [AGENTS.MD](AGENTS.MD)
 
 ---
 
@@ -36,7 +36,7 @@
 ## 1. Architecture Overview
 
 > [!NOTE]
-> For detailed monorepo package boundaries and code patterns, see the canonical [ARCHITECTURE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/ARCHITECTURE.md). For infrastructure topology, environments, and CI/CD pipelines, see the canonical [DEPLOYMENT_MAP.md](file:///Users/admin/Desktop/MAD%20Entertrainment/DEPLOYMENT_MAP.md). For public and administrative Express route definitions, Zod schemas, validation specifications, and HTTP error codes, see the canonical [API_CONTRACTS.md](file:///Users/admin/Desktop/MAD%20Entertrainment/API_CONTRACTS.md). For historical architectural decisions and their technical rationale, see the canonical [Architecture Decision Records (ADRs)](file:///Users/admin/Desktop/MAD%20Entertrainment/docs/decisions/README.md). For repository branching, PR review, and verification policies, see the canonical [REPOSITORY_GOVERNANCE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/REPOSITORY_GOVERNANCE.md). For chronological release history and version-specific operational changes, see the [CHANGELOG.md](file:///Users/admin/Desktop/MAD%20Entertrainment/CHANGELOG.md).
+> For detailed monorepo package boundaries and code patterns, see the canonical [ARCHITECTURE.md](ARCHITECTURE.md). For infrastructure topology, environments, and CI/CD pipelines, see the canonical [DEPLOYMENT_MAP.md](DEPLOYMENT_MAP.md). For public and administrative Express route definitions, Zod schemas, validation specifications, and HTTP error codes, see the canonical [API_CONTRACTS.md](API_CONTRACTS.md). For historical architectural decisions and their technical rationale, see the canonical [Architecture Decision Records (ADRs)](docs/decisions/README.md). For repository branching, PR review, and verification policies, see the canonical [REPOSITORY_GOVERNANCE.md](REPOSITORY_GOVERNANCE.md). For chronological release history and version-specific operational changes, see the [CHANGELOG.md](CHANGELOG.md).
 
 ```
 Customer Browser
@@ -335,7 +335,7 @@ git push --force-with-lease origin main
 1. Verify `MOCK_PAYMENTS=false` on the server.
 2. Check the Razorpay dashboard webhook delivery log — look for failed deliveries.
 3. Check server logs for `[PaymentService]` or `[WebhookController]` entries.
-4. Manually check the booking status via `/api/admin/bookings/{bookingId}` (see payload specifications in [API_CONTRACTS.md](file:///Users/admin/Desktop/MAD%20Entertrainment/API_CONTRACTS.md)).
+4. Manually check the booking status via `/api/admin/bookings/{bookingId}` (see payload specifications in [API_CONTRACTS.md](API_CONTRACTS.md)).
 
 ### QR codes not appearing
 

@@ -7,7 +7,7 @@ This document details the successful implementation of the **Ticket Retrieval Po
 ## Files Created & Changed
 
 ### 1. Unified Retrieval Portal (Created)
-- **File Path**: [tickets/page.tsx](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/app/tickets/page.tsx)
+- **File Path**: [tickets/page.tsx](../../../apps/web/src/app/tickets/page.tsx)
 - **Role**: Provides a dedicated, mobile-first `/tickets` route that implements the following multi-screen flow:
   1. **Screen 1 (Email Intake)**: Prompts user to input their email and triggers a secure 6-digit passcode dispatch.
   2. **Screen 2 (Passcode Verification)**: Collects the 6-digit numeric passcode, triggers token validation, automatically merges historical guest bookings with their profile on-the-fly, and logs the user in.
@@ -35,7 +35,7 @@ We successfully leveraged existing production endpoints without making any chang
 
 1. **UI Button**: Reused `Button` from `@mad/ui` to guarantee uniform styling, focus outlines, and built-in TanStack pending indicators.
 2. **Global Auth Context**: Utilized the `useAuth` hook from `@/providers/AuthProvider` to read token persistence, user profiles, and trigger local session login/logout state changes.
-3. **Pristine Visual Patterns**: Adapted the premium card layouts, monospace numeric typography, status-specific badges (confirmed/pending/failed), and spacing structures from [my-booking/page.tsx](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/app/my-booking/page.tsx).
+3. **Pristine Visual Patterns**: Adapted the premium card layouts, monospace numeric typography, status-specific badges (confirmed/pending/failed), and spacing structures from [my-booking/page.tsx](../../../apps/web/src/app/my-booking/page.tsx) (deleted).
 
 ---
 

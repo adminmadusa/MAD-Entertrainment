@@ -143,7 +143,7 @@ The hook satisfies all WCAG dialog keyboard interaction requirements.
 | `aria-modal` | `"true"` | ✅ |
 | `aria-labelledby` | `"qr-modal-title"` | ✅ |
 | Focus trap | `useFocusTrap` active | ✅ |
-| Escape | `onKeyDown`: `e.key === 'Escape' || e.key === 'Enter'` → close | ✅ |
+| Escape | `onKeyDown`: `e.key === 'Escape' \|\| e.key === 'Enter'` → close | ✅ |
 | Focus restoration | Via `useFocusTrap` | ✅ |
 
 **Verdict: PASS — No changes required.**
