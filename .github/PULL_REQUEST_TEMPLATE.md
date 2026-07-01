@@ -15,7 +15,7 @@
 ---
 
 ## 🚦 PR Quality Gate Checklist
-Before merging, you must answer the following 11 questions from [AGENTS.MD](file:///Users/admin/Desktop/MAD%20Entertrainment/AGENTS.MD):
+Before merging, you must answer the following 11 questions from [AGENTS.MD](../AGENTS.MD):
 
 1. **Is there a single source of truth?**
    - [ ] Yes | Explain/Reference:
