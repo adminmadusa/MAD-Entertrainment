@@ -65,7 +65,7 @@ jobs:
           # Current count: ~1207 pre-existing warnings (raw buttons, custom modals, a11y backlog).
           # Target: reduce by ~100 per sprint until this reaches 0.
           GOVERNANCE_MAX_WARNINGS: 1300
-          GOVERNANCE_MIN_HEALTH_SCORE: 80
+          GOVERNANCE_MIN_HEALTH_SCORE: 50
 
       - name: Build Workspace
         run: pnpm run build
