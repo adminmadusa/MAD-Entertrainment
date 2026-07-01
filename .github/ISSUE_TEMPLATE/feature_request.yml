@@ -1,0 +1,49 @@
+name: "🚀 Feature Request"
+description: "Propose a new feature, endpoint, component, or utility in the MAD Entertrainment repository."
+title: "[FEAT]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Before proposing a new feature, make sure to search the repository to prevent duplicate implementations.
+  - type: textarea
+    id: user_story
+    attributes:
+      label: "User Story / Rationale"
+      description: "Describe the user need or business objective this feature solves."
+      placeholder: "As a guest, I want to download my ticket PDF directly so that I can store it offline."
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: "Proposed Solution"
+      description: "A detailed description of the changes you would like to see."
+      placeholder: "Add a GET /bookings/:bookingId/download endpoint that streams PDF files."
+    validations:
+      required: true
+  - type: checkboxes
+    id: orphan_prevention
+    attributes:
+      label: "Orphan Prevention check"
+      description: "Every new package, page, endpoint, or component must satisfy our governance requirements."
+      options:
+        - label: "This feature has a defined consumer / caller."
+          required: true
+        - label: "This feature has a clear, documented purpose."
+          required: true
+        - label: "This feature has an assigned owner role."
+          required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: "Alternatives Considered"
+      description: "Any alternative approaches or workarounds considered."
+      placeholder: "e.g., Emailing ticket PDF instead of direct download."
+  - type: textarea
+    id: impact
+    attributes:
+      label: "Subsystems Affected"
+      description: "List the apps, packages, or databases that will be impacted by this feature."
+      placeholder: "e.g., apps/server, apps/web, API_CONTRACTS.md"

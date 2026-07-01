@@ -1,0 +1,27 @@
+# MAD Entertrainment CODEOWNERS
+# Reference: REPOSITORY_GOVERNANCE.md Section 4
+
+# --- Global Default ---
+* @adminmadusa
+
+# --- Apps (Applications) ---
+# Architecture Owner & Frontend Owner
+/apps/web/         @adminmadusa
+/apps/admin/       @adminmadusa
+# API Owner & Platform Owner
+/apps/server/      @adminmadusa
+
+# --- Shared Packages ---
+# Architecture Review Board
+/packages/         @adminmadusa
+
+# --- Documentation ---
+# Documentation Owner
+/docs/             @adminmadusa
+/*.md              @adminmadusa
+
+# --- Governance & Tooling ---
+# Repository Governance Owner
+/scripts/governance/ @adminmadusa
+/.governance/        @adminmadusa
+/.github/            @adminmadusa
