@@ -68,9 +68,9 @@ Google Login fails to work correctly in both the main login page and the checkou
 * **Frontend**:
   * [apps/web/src/app/(auth)/login/page.tsx](../../apps/web/src/app/(auth)/login/page.tsx)
   * [apps/web/src/components/auth/AuthForm.tsx](../../apps/web/src/components/auth/AuthForm.tsx)
-  * [apps/web/.env.local](../../apps/web/.env.local)
+  * [apps/web/.env.local](../../apps/web/.env.local) (deleted)
 * **Backend**:
-  * [apps/server/.env](../../apps/server/.env)
+  * [apps/server/.env](../../apps/server/.env) (deleted)
 
 ---
 
