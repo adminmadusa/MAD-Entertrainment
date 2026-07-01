@@ -73,7 +73,7 @@ export default async function DJPage({ params }: Props) {
           }}
         />
       )}
-      <DJDetailClient />
+      <DJDetailClient slug={slug} initialDJ={dj ?? undefined} />
     </>
   );
 }

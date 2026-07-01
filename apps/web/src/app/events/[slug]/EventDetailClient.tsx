@@ -31,25 +31,35 @@ interface EventDetailClientProps {
 
 export default function EventDetailClient({ slug, initialEvent }: EventDetailClientProps) {
   const [isFavorited, setIsFavorited] = useState(false);
-  const [scrollY, setScrollY] = useState(0);
+  // PERF-018B: Use a ref instead of React state for the parallax effect.
+  // Storing scrollY in state triggers a full component re-render on every
+  // scroll pixel (~60 times/second), causing high INP. A ref + direct DOM
+  // mutation bypasses React's render cycle entirely.
+  const heroImageRef = useRef<HTMLDivElement | null>(null);
   const bookingFlowRef = useRef<EventBookingFlowHandle>(null);
 
   useEffect(() => {
     const handleScroll = () => {
-      setScrollY(window.scrollY);
+      // PERF-018B: Mutate the DOM directly — no setState, no re-render.
+      if (heroImageRef.current) {
+        const scale = 1 + Math.min(window.scrollY / 5000, 0.06);
+        heroImageRef.current.style.transform = `scale(${scale})`;
+      }
     };
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   // Fetch event — seeded with server-side initialData to avoid a client waterfall.
-  // React Query will silently revalidate in the background.
   const { data: event, isLoading: isLoadingEvent } = useQuery<EventData>({
     queryKey: QUERY_KEYS.public.events.detail(slug),
     queryFn: () => publicGetEventBySlug(slug),
     enabled: !!slug,
     initialData: initialEvent,
-    // Don't treat initialData as stale immediately — give it 60 s before revalidating
+    // PERF-018C: staleTime prevents React Query from treating server-fetched
+    // initialData as immediately stale and firing a background refetch on mount.
+    // 60 s matches the server cache window; data re-validates after that.
+    staleTime: 60_000,
     initialDataUpdatedAt: initialEvent ? Date.now() : undefined,
   });
 
@@ -129,18 +139,22 @@ export default function EventDetailClient({ slug, initialEvent }: EventDetailCli
 
         {/* Hero image with parallax */}
         {event.bannerImage?.url ? (
-          <Image
-            src={event.bannerImage.url}
-            alt={event.title}
-            fill
-            priority
-            sizes="100vw"
-            className="absolute inset-0 w-full h-full object-cover"
-            style={{
-              transform: `scale(${1 + Math.min(scrollY / 5000, 0.06)})`,
-              transformOrigin: 'center',
-            }}
-          />
+          // PERF-018B: Wrapping div carries the ref so the scroll handler can
+          // mutate transform directly without going through React state.
+          <div
+            ref={heroImageRef}
+            className="absolute inset-0"
+            style={{ transformOrigin: 'center' }}
+          >
+            <Image
+              src={event.bannerImage.url}
+              alt={event.title}
+              fill
+              priority
+              sizes="100vw"
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+          </div>
         ) : (
           <div className="absolute inset-0 bg-gradient-to-br from-accent-purple/20 to-accent-pink/10" />
         )}
