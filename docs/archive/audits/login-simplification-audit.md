@@ -65,7 +65,7 @@ This audit evaluates the current state of public authentication routes, user int
 ---
 
 ### 2. Registration Route Audit
-- **File Path**: [register/page.tsx](../../../apps/web/src/app/(auth)/register/page.tsx)
+- **File Path**: [register/page.tsx](../../../apps/web/src/app/(auth)/register/page.tsx) (deleted)
 - **Current Behavior**: 
   - The registration route is **technically reachable** because the page file exists in the Next.js filesystem structure.
   - The route is **highly broken and obsolete**:
@@ -83,7 +83,7 @@ This audit evaluates the current state of public authentication routes, user int
 ### 3. Link Discovery Audit
 - A comprehensive search of the frontend source code yielded the following links/references to `/register`:
   1. [sitemap.ts](../../../apps/web/src/app/sitemap.ts#L40) — Line 40: `url: \`${SITE_URL}/register\`,`
-  2. [register/page.tsx](../../../apps/web/src/app/(auth)/register/page.tsx#L186) — Line 186: `<Link href="/login" ...>Sign in</Link>` (self-reference back to login).
+  2. [register/page.tsx](../../../apps/web/src/app/(auth)/register/page.tsx#L186) — Line 186: `<Link href="/login" ...>Sign in</Link>` (self-reference back to login) (deleted).
 - **Result**: No active, visible, user-facing navigation components (headers, menus, call-to-actions) expose or route users to `/register`.
 
 ---
@@ -117,7 +117,7 @@ While the large structural transition to passwordless logic is complete, there i
   - **Line 395**: Change action link from `'Resend Link'` to `'Resend Code'`
 
 #### 2. Registration Route Confinement (Graceful Redirect)
-*File: [register/page.tsx](../../../apps/web/src/app/(auth)/register/page.tsx)*
+*File: [register/page.tsx](../../../apps/web/src/app/(auth)/register/page.tsx)* (deleted)
 - Because constraints prohibit deleting files/routes directly, we should redirect any legacy incoming `/register` traffic to the unified `/login` page on the client side:
   ```typescript
   'use client';

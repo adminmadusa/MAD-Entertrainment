@@ -45,7 +45,7 @@ The list events endpoint is consumed by exactly two frontend page locations:
 ## 2. Consumer Matrix: DJ Operators Endpoint (`PublicDJOperatorService.listDJOperators`)
 
 The list DJ operators endpoint is consumed by exactly two frontend page locations:
-1. **Homepage Artists Grid**: `apps/web/src/components/ui/DjOperatorsSection.tsx` ([DjOperatorsSection.tsx](../../../apps/web/src/components/ui/DjOperatorsSection.tsx))
+1. **Homepage Artists Grid**: `apps/web/src/components/ui/DjOperatorsSection.tsx` ([DjOperatorsSection.tsx](../../../apps/web/src/components/ui/DjOperatorsSection.tsx) (deleted))
 2. **DJs Discover Page**: `apps/web/src/app/dj-operators/page.tsx` ([page.tsx](../../../apps/web/src/app/dj-operators/page.tsx))
 
 ### Field Access Matrix

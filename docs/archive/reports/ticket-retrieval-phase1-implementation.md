@@ -35,7 +35,7 @@ We successfully leveraged existing production endpoints without making any chang
 
 1. **UI Button**: Reused `Button` from `@mad/ui` to guarantee uniform styling, focus outlines, and built-in TanStack pending indicators.
 2. **Global Auth Context**: Utilized the `useAuth` hook from `@/providers/AuthProvider` to read token persistence, user profiles, and trigger local session login/logout state changes.
-3. **Pristine Visual Patterns**: Adapted the premium card layouts, monospace numeric typography, status-specific badges (confirmed/pending/failed), and spacing structures from [my-booking/page.tsx](../../../apps/web/src/app/my-booking/page.tsx).
+3. **Pristine Visual Patterns**: Adapted the premium card layouts, monospace numeric typography, status-specific badges (confirmed/pending/failed), and spacing structures from [my-booking/page.tsx](../../../apps/web/src/app/my-booking/page.tsx) (deleted).
 
 ---
 

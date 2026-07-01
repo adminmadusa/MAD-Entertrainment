@@ -44,13 +44,13 @@ View Tickets & QR Codes
 ---
 
 ### 3. Existing Booking UI Components
-- **File Reference**: [my-booking/page.tsx](../../../apps/web/src/app/my-booking/page.tsx)
+- **File Reference**: [my-booking/page.tsx](../../../apps/web/src/app/my-booking/page.tsx) (deleted)
 - **Status**: The `MyBookingContent` component contains fully designed, glassmorphic UI elements for displaying booking summaries, including event titles, venues, showtimes, statuses, total tickets count, and booking references. These UI styles and layout patterns are fully reusable.
 
 ---
 
 ### 4. Existing Ticket QR Rendering
-- **File Reference**: [my-booking/page.tsx](../../../apps/web/src/app/my-booking/page.tsx#L184-L190)
+- **File Reference**: [my-booking/page.tsx](../../../apps/web/src/app/my-booking/page.tsx#L184-L190) (deleted)
 - **Status**: Dynamic QR codes are generated during checkout via `api.qrserver.com` and stored as a string URL on the `Ticket` schema under `qrCodeImage`. The client renders these QR codes directly using an `<img>` tag. This is completely reusable.
 
 ---
