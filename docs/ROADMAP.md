@@ -12,8 +12,8 @@ Transition the MAD Entertrainment platform from engineering completion into stab
 ---
 
 ## 2. Current Infrastructure Constraints
-The project is configured to operate on free-tier services. Operational checks dependent on paid features are intentionally deferred:
-- **No Paid CI/CD**: Local verification is the source of truth; automatic lint, test, and audit pipelines on PRs/commits are deferred.
+The project is configured to operate on free-tier services. Operational checks dependent on paid features or deployment hosting configurations are intentionally deferred:
+- **No Paid CI/CD**: Standard lint, build, test, and dependency checks run automatically in GitHub Actions, but premium pipelines and auto-deployments are deferred.
 - **Limited Render Compute**: Render free instance limits memory and uptime. Automatic monitoring and uptime tracking are deferred.
 - **Limited Vercel Resources**: Free-tier serverless limits execution logs, custom SSL key bindings, and edge caching metrics.
 - **Observability Restrictions**: Paid error tracking (Sentry Business/Datadog), synthetic monitoring, and live alerting are inactive.
@@ -28,13 +28,14 @@ These elements are validated before release commits:
 - Successful builds via `pnpm build`.
 - 100% success on `pnpm type-check`, `pnpm lint`, and `pnpm test`.
 - Visual alignment checks on Chrome, Safari, Firefox, and mobile engines.
+- Automated static checks (GitHub Actions CI workflow execution).
 
 ### ⚠ Deferred (Infrastructure Limitations)
 These capabilities depend on paid infrastructure:
 - Live Core Web Vitals profiling.
-- Automated GitHub Actions execution.
 - Real-user monitoring (RUM) and live alert metrics.
 - Paid integration monitoring (live SMTP delivery success rates, production DB latency).
+- Auto-deployment configuration mapping and environment verification.
 
 ---
 
