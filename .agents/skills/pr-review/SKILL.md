@@ -34,7 +34,7 @@ Ensure all changes proposed in a Pull Request comply with code standards, testin
 
 ## Examples
 ### Verifying compliance checklist
-Refer to [REPOSITORY_GOVERNANCE.md#pull-request--review-requirements](file:///Users/admin/Desktop/MAD%20Entertrainment/REPOSITORY_GOVERNANCE.md#pull-request--review-requirements) for reviewer matrices.
+Refer to [REPOSITORY_GOVERNANCE.md#pull-request--review-requirements](../../../REPOSITORY_GOVERNANCE.md#pull-request--review-requirements) for reviewer matrices.
 
 ## Related Skills
 - [git-workflow](../git-workflow/SKILL.md)

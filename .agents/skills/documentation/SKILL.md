@@ -24,7 +24,7 @@ Ensure all repository documentation is structured, accurate, linked correctly, a
 
 ## Constraints
 - **Case-Sensitive Paths**: All reference links must match filesystem casing exactly (e.g. `AGENTS.MD` on case-sensitive filesystems).
-- **No Local Absolute Paths**: Never link using local workstation paths (e.g., `file:///Users/...` or `/tmp/...`).
+- **No Local Absolute Paths**: Never link using local workstation paths (e.g., local file protocols or absolute paths).
 - **No Placeholders**: Never commit empty files or unlinked templates.
 - **Document Ownership**: Ensure every document lists its owner role matching the matrix in `REPOSITORY_GOVERNANCE.md`.
 
@@ -39,7 +39,7 @@ Ensure all repository documentation is structured, accurate, linked correctly, a
 - **Review Cycle**: Ongoing
 - **Last Updated**: YYYY-MM-DD
 - **Related Documents:**
-  - [README.md](README.md)
+  - [README.md](../../../README.md)
 ```
 
 ## Related Skills

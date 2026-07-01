@@ -29,7 +29,7 @@ Maintain the structural integrity of the monorepo packages, prevent dependency l
 
 ## Examples
 ### Drafting a new ADR
-Refer to [docs/decisions/README.md#governance--review-process](file:///Users/admin/Desktop/MAD%20Entertrainment/docs/decisions/README.md#adr-governance--review-process) for guidelines.
+Refer to [docs/decisions/README.md#governance--review-process](../../../docs/decisions/README.md#adr-governance--review-process) for guidelines.
 
 ## Related Skills
 - [pr-review](../pr-review/SKILL.md)
