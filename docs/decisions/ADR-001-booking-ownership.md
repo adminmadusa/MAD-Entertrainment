@@ -7,9 +7,9 @@
 - **Reviewers**: Software Architecture Group, Core Platform Group
 - **Decision Category**: Architecture / API / Governance
 - **Related Documents**:
-  - [ARCHITECTURE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/ARCHITECTURE.md) (System Boundaries & Monorepo Topology)
-  - [DEPLOYMENT_MAP.md](file:///Users/admin/Desktop/MAD%20Entertrainment/DEPLOYMENT_MAP.md) (Environment Matrix & Shared Backend implications)
-  - [API_CONTRACTS.md](file:///Users/admin/Desktop/MAD%20Entertrainment/API_CONTRACTS.md) (Booking & Payment API contracts)
+  - [ARCHITECTURE.md](../../ARCHITECTURE.md) (System Boundaries & Monorepo Topology)
+  - [DEPLOYMENT_MAP.md](../../DEPLOYMENT_MAP.md) (Environment Matrix & Shared Backend implications)
+  - [API_CONTRACTS.md](../../API_CONTRACTS.md) (Booking & Payment API contracts)
 - **Related GitHub Issues**: None
 - **Related Pull Requests**: None
 
@@ -32,7 +32,7 @@ All booking state validation, seat locking calculations, pricing calculations, e
 
 - **The client applications** act strictly as presentation consumers. They submit booking requests (`POST /api/bookings`) and checkout details (`PUT /api/bookings/:id/checkout-details`), but never calculate ticket totals, generate booking references, or handle direct state mutations.
 - **The server** acts as the Single Source of Truth (SSOT). It manages seat holds inside database transactions, calculates coupon discounts, enforces expiration pings, and executes payment validations.
-- For the canonical definition of system boundaries and module packages, see [ARCHITECTURE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/ARCHITECTURE.md). For HTTP request/response schemas and Express endpoint contracts, see [API_CONTRACTS.md](file:///Users/admin/Desktop/MAD%20Entertrainment/API_CONTRACTS.md). For hosting layout and database environment configuration, see [DEPLOYMENT_MAP.md](file:///Users/admin/Desktop/MAD%20Entertrainment/DEPLOYMENT_MAP.md).
+- For the canonical definition of system boundaries and module packages, see [ARCHITECTURE.md](../../ARCHITECTURE.md). For HTTP request/response schemas and Express endpoint contracts, see [API_CONTRACTS.md](../../API_CONTRACTS.md). For hosting layout and database environment configuration, see [DEPLOYMENT_MAP.md](../../DEPLOYMENT_MAP.md).
 
 ---
 
@@ -68,17 +68,17 @@ All booking state validation, seat locking calculations, pricing calculations, e
 
 ### Migration Strategy
 - Already implemented. Database schemas reside in `apps/server/src/models/` and business validation rules live under `apps/server/src/services/`.
-- Frontend applications import validation primitive schemas directly from the shared workspace package `@mad/validations` (described in [ARCHITECTURE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/ARCHITECTURE.md#L345-L346)).
+- Frontend applications import validation primitive schemas directly from the shared workspace package `@mad/validations` (described in [ARCHITECTURE.md](../../ARCHITECTURE.md#L345-L346)).
 
 ### Operational Impact
 - Backend Render nodes handle all ticket locking transactions.
-- During high-concurrency pings, database connection pooling must scale to accommodate transaction loads (detailed in [DEPLOYMENT_MAP.md](file:///Users/admin/Desktop/MAD%20Entertrainment/DEPLOYMENT_MAP.md#L97-L100)).
+- During high-concurrency pings, database connection pooling must scale to accommodate transaction loads (detailed in [DEPLOYMENT_MAP.md](../../DEPLOYMENT_MAP.md#L97-L100)).
 
 ### Security Impact
 - Enforces user-specific context matching. The server validates that the active JWT `user.sub` owns the target booking reference (`MAD-YYYY-XXXXX`) before allowing any updates or PDF ticket downloads.
 
 ### Performance Impact
-- Rate limits protect the booking creation routes (`bookingLimiter` allows 10 requests per 15 minutes, documented in [API_CONTRACTS.md](file:///Users/admin/Desktop/MAD%20Entertrainment/API_CONTRACTS.md#L614-L621)) to prevent DDoS or lock exhaustion.
+- Rate limits protect the booking creation routes (`bookingLimiter` allows 10 requests per 15 minutes, documented in [API_CONTRACTS.md](../../API_CONTRACTS.md#L614-L621)) to prevent DDoS or lock exhaustion.
 
 ### Testing Strategy
 - Verified by booking integration tests (`apps/server/src/services/public/booking.service.test.ts` and `apps/server/src/controllers/public/booking.controller.test.ts`).
@@ -92,6 +92,6 @@ All booking state validation, seat locking calculations, pricing calculations, e
 - Automatic seat hold release hooks are monitored via dead-letter alerting systems to track if a transaction fail-to-release happens.
 
 ## References
-- [ARCHITECTURE.md (System Boundaries & SSOT Ownership Matrix)](file:///Users/admin/Desktop/MAD%20Entertrainment/ARCHITECTURE.md#L265-L281)
-- [API_CONTRACTS.md (Booking & Payment API Routes and Rate Limiting)](file:///Users/admin/Desktop/MAD%20Entertrainment/API_CONTRACTS.md#L508-L544)
-- [DEPLOYMENT_MAP.md (Deployment Environments & Database Connections)](file:///Users/admin/Desktop/MAD%20Entertrainment/DEPLOYMENT_MAP.md#L97-L100)
+- [ARCHITECTURE.md (System Boundaries & SSOT Ownership Matrix)](../../ARCHITECTURE.md#L265-L281)
+- [API_CONTRACTS.md (Booking & Payment API Routes and Rate Limiting)](../../API_CONTRACTS.md#L508-L544)
+- [DEPLOYMENT_MAP.md (Deployment Environments & Database Connections)](../../DEPLOYMENT_MAP.md#L97-L100)

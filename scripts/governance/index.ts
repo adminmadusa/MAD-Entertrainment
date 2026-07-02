@@ -1,7 +1,7 @@
 // scripts/governance/index.ts
 
-import { readdirSync, statSync, existsSync } from 'fs';
-import { resolve, join, relative } from 'path';
+import { readdirSync, statSync, existsSync, readFileSync } from 'fs';
+import { resolve, join, relative, dirname } from 'path';
 import { execSync } from 'child_process';
 import { MetadataProvider } from './core/metadata';
 import { ValidatorLoader } from './core/loader';
@@ -29,8 +29,6 @@ import { StatelessViolation } from './core/types';
 import { persistenceStats } from './core/json_utils';
 
 const workspaceRoot = resolve(__dirname, '../..');
-
-
 
 function getGitDiffFiles(): string[] {
   try {
@@ -60,6 +58,64 @@ function getGitCommit(): string {
 async function run() {
   const globalStartTime = Date.now();
 
+  if (process.argv.includes('--update-history')) {
+    console.log('🔄 Updating historical files baseline...');
+    let gitFiles: string[] = [];
+    try {
+      const output = execSync('git log --all --format="" --name-only', { cwd: workspaceRoot, encoding: 'utf8' });
+      gitFiles = output.split('\n')
+        .map(f => f.trim())
+        .filter(f => f && !f.startsWith('node_modules/') && !f.startsWith('.governance/') && !f.startsWith('scratch/'));
+    } catch (err) {
+      console.error('❌ Failed to run git log for historical index. Make sure you are in a full clone git repository.');
+      process.exit(1);
+    }
+    
+    const currentFiles = getAllMarkdownFiles(workspaceRoot);
+    const allHistory = Array.from(new Set([...gitFiles, ...currentFiles])).sort();
+    
+    const baselinePath = resolve(workspaceRoot, '.governance/baselines/historical-files.json');
+    const dir = dirname(baselinePath);
+    if (!existsSync(dir)) {
+      const fs = require('fs');
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    const fs = require('fs');
+    fs.writeFileSync(baselinePath, JSON.stringify(allHistory, null, 2), 'utf8');
+    console.log(`✅ Successfully updated historical baseline with ${allHistory.length} entries.`);
+    process.exit(0);
+  }
+
+  // Drift detection locally
+  const historicalFilesPath = resolve(workspaceRoot, '.governance/baselines/historical-files.json');
+  if (process.env.GITHUB_ACTIONS !== 'true') {
+    let gitFiles: string[] = [];
+    try {
+      const output = execSync('git log --all --format="" --name-only', { cwd: workspaceRoot, encoding: 'utf8' });
+      gitFiles = output.split('\n')
+        .map(f => f.trim())
+        .filter(f => f && !f.startsWith('node_modules/') && !f.startsWith('.governance/') && !f.startsWith('scratch/'));
+    } catch {}
+
+    const currentFiles = getAllMarkdownFiles(workspaceRoot);
+    const allHistory = Array.from(new Set([...gitFiles, ...currentFiles])).sort();
+
+    if (allHistory.length > 0) {
+      if (existsSync(historicalFilesPath)) {
+        const committed = JSON.parse(readFileSync(historicalFilesPath, 'utf8'));
+        const missing = allHistory.filter(f => !committed.includes(f));
+        if (missing.length > 0) {
+          console.error(`❌ Historical files baseline is out of sync. Missing entries: ${missing.slice(0, 5).join(', ')}...`);
+          console.error(`👉 Please run "pnpm governance:docs --update-history" to synchronize.`);
+          process.exit(1);
+        }
+      } else {
+        console.error(`❌ Historical files baseline does not exist. Please run "pnpm governance:docs --update-history" to initialize.`);
+        process.exit(1);
+      }
+    }
+  }
+
   console.log('🔍 Initializing Governance Metadata Provider...');
   const metadataProvider = new MetadataProvider();
   const metadata = metadataProvider.getMetadata();
@@ -70,30 +126,6 @@ async function run() {
   // Initialize Audit Engine
   const auditEngine = new AuditEngine();
   metadata.knowledgeGraph = auditEngine.getKnowledgeGraph();
-
-  // 1. Retrieve all indexed repository files from the KnowledgeGraph (SSOT traversal)
-  const graph = auditEngine.getKnowledgeGraph();
-  const indexedFiles = graph.getIndexedFiles().sort();
-
-  const markdownFiles = new Set<string>();
-  for (const doc of metadata.requiredDocuments) {
-    if (indexedFiles.includes(doc)) {
-      markdownFiles.add(doc);
-    }
-  }
-
-  for (const file of indexedFiles) {
-    if (file.endsWith('.md')) {
-      markdownFiles.add(file);
-    }
-  }
-
-  const finalMarkdownFiles = Array.from(markdownFiles).sort();
-  const finalUiFiles = indexedFiles.filter(file => {
-    const isSource = /\.(ts|tsx|js|jsx)$/.test(file);
-    const isUnderAppSrc = file.startsWith('apps/admin/src/') || file.startsWith('apps/web/src/');
-    return isSource && isUnderAppSrc;
-  }).sort();
 
   // 2. Perform Incremental & Dependency-Aware Auditing filter
   if (isIncremental && changedFiles.length > 0) {

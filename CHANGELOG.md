@@ -8,12 +8,12 @@
 - **Changelog Format**: Keep a Changelog v1.0.0
 - **Versioning Strategy**: Semantic Versioning (SemVer) v2.0.0
 - **Related Documents:**
-  - [README.md](file:///Users/admin/Desktop/MAD%20Entertrainment/README.md)
-  - [REPOSITORY_GOVERNANCE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/REPOSITORY_GOVERNANCE.md)
-  - [RUNBOOK.md](file:///Users/admin/Desktop/MAD%20Entertrainment/RUNBOOK.md)
-  - [ARCHITECTURE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/ARCHITECTURE.md)
-  - [DEPLOYMENT_MAP.md](file:///Users/admin/Desktop/MAD%20Entertrainment/DEPLOYMENT_MAP.md)
-  - [API_CONTRACTS.md](file:///Users/admin/Desktop/MAD%20Entertrainment/API_CONTRACTS.md)
+  - [README.md](README.md)
+  - [REPOSITORY_GOVERNANCE.md](REPOSITORY_GOVERNANCE.md)
+  - [RUNBOOK.md](RUNBOOK.md)
+  - [ARCHITECTURE.md](ARCHITECTURE.md)
+  - [DEPLOYMENT_MAP.md](DEPLOYMENT_MAP.md)
+  - [API_CONTRACTS.md](API_CONTRACTS.md)
 
 ---
 
@@ -95,7 +95,18 @@ Every release must satisfy the following checklist before merge:
 ### [Unreleased]
 *Planned or unreleased changes currently residing in the develop branch.*
 
-- None
+#### Added
+- `CONTRIBUTING.md` outlining the developer workflow, setup instructions, and quality checks.
+- Structured issue templates for bugs, feature requests, governance updates, and questions.
+- `PULL_REQUEST_TEMPLATE.md` enforcing the 11-question quality gate check.
+- `CODEOWNERS` configuration mapping domain owners to repository paths.
+- Repository-scoped AI Skills framework under `.agents/skills/` (governance audit, pr review, git workflow, documentation, and architecture review).
+
+#### Changed
+- Pinned TruffleHog Action in CI pipeline to a stable release version (`v3.95.7`).
+- Renewed the expired vulnerability exception for `serialize-javascript` (valid until 2026-10-01).
+- Corrected wrong paths and stale CI statements in `README.md` and `ROADMAP.md`.
+- Added standard metadata block to `TODO-AUDIT-FIXES.md`.
 
 ### [v1.0.0] - 2026-06-25
 *Initial repository documentation baseline establishing the monorepo's foundational architecture, APIs, deployment environments, and governance. This represents the post-cleanup documentation state, not the first production software release.*

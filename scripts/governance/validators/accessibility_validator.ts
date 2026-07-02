@@ -5,6 +5,7 @@ import * as ts from 'typescript';
 import { GovernanceValidator } from '../core/validator';
 import { ValidationResult, ValidationError } from '../core/types';
 import { governanceConfig } from '../core/governance.config';
+import { RuleRegistry } from '../rules/registry';
 
 const workspaceRoot = resolve(__dirname, '../../..');
 
@@ -135,21 +136,29 @@ export class AccessibilityValidator implements GovernanceValidator {
             const { line } = ts.getLineAndCharacterOfPosition(sourceFile, node.getStart());
 
             if (!hasSharedModalImport) {
-              errors.push({
+              const rule002 = RuleRegistry.getRule('VAL-UI-002');
+              const severity002 = rule002?.severity || 'ERROR';
+              const targetArray002 = severity002 === 'ERROR' ? errors : warnings;
+
+              targetArray002.push({
                 file,
                 line: line + 1,
                 rule: 'VAL-UI-002',
-                severity: 'ERROR',
+                severity: severity002,
                 snippet: lines[line]?.trim(),
                 message: 'Custom backdrop & modal container coded. Use shared <Modal> component from @mad/ui to avoid styles drift.',
               });
 
               if (!hasRoleDialog && !hasAriaModal) {
-                errors.push({
+                const rule003 = RuleRegistry.getRule('VAL-UI-003');
+                const severity003 = rule003?.severity || 'ERROR';
+                const targetArray003 = severity003 === 'ERROR' ? errors : warnings;
+
+                targetArray003.push({
                   file,
                   line: line + 1,
                   rule: 'VAL-UI-003',
-                  severity: 'ERROR',
+                  severity: severity003,
                   snippet: lines[line]?.trim(),
                   message: 'Custom modal backdrop is missing role="dialog" or aria-modal="true" accessibility tags.',
                 });

@@ -6,7 +6,7 @@
 - **Review Cycle**: Quarterly
 - **Last Updated**: 2026-06-25
 - **Related Documents:**
-  - [REPOSITORY_GOVERNANCE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/REPOSITORY_GOVERNANCE.md)
+  - [REPOSITORY_GOVERNANCE.md](REPOSITORY_GOVERNANCE.md)
 
 ---
 
@@ -24,7 +24,7 @@ Applies To:
 ---
 
 ## Relationship to Repository Governance Policy
-The repository governance policies (roles, matrices, branch and PR policies) are canonically defined in [REPOSITORY_GOVERNANCE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/REPOSITORY_GOVERNANCE.md). This file (`AGENTS.md`) serves as the operational instructions and guidelines for human and AI agents implementing those policies in the codebase.
+The repository governance policies (roles, matrices, branch and PR policies) are canonically defined in [REPOSITORY_GOVERNANCE.md](REPOSITORY_GOVERNANCE.md). This file (`AGENTS.md`) serves as the operational instructions and guidelines for human and AI agents implementing those policies in the codebase.
 
 ---
 
@@ -146,7 +146,7 @@ Repository Governance SSOT → REPOSITORY_GOVERNANCE.md
 
 Architecture Decisions (ADRs) → docs/decisions/README.md
 
-For policy rules, branch/PR standards, and document ownership, refer to the [REPOSITORY_GOVERNANCE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/REPOSITORY_GOVERNANCE.md). For details on why technical and architectural decisions are made, refer to the Architecture Decision Records (ADR) system at [docs/decisions/README.md](file:///Users/admin/Desktop/MAD%20Entertrainment/docs/decisions/README.md). All automated agents and human developers must review and adhere to the approved decisions.
+For policy rules, branch/PR standards, and document ownership, refer to the [REPOSITORY_GOVERNANCE.md](REPOSITORY_GOVERNANCE.md). For details on why technical and architectural decisions are made, refer to the Architecture Decision Records (ADR) system at [docs/decisions/README.md](docs/decisions/README.md). All automated agents and human developers must review and adhere to the approved decisions.
 
 ---
 

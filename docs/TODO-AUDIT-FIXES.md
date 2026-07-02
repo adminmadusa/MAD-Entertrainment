@@ -1,5 +1,17 @@
 # TODO Audit Fixes & Backlog
 
+- **Owner**: Repository Governance Owner
+- **Status**: Active
+- **Version**: 1.0
+- **Review Cycle**: Ongoing
+- **Last Updated**: 2026-07-01
+- **Related Documents:**
+  - [README.md](../README.md)
+  - [REPOSITORY_GOVERNANCE.md](../REPOSITORY_GOVERNANCE.md)
+  - [AGENTS.MD](../AGENTS.MD)
+
+---
+
 ## Purpose
 
 This file tracks known audit findings, technical debt, governance findings, and future improvement opportunities for the MAD Entertrainment repository.

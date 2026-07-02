@@ -53,12 +53,12 @@ Users experience inconsistent or failing transaction email deliveries, including
 
 ## 3. Affected Files
 * **Backend Configurations**:
-  * [apps/server/src/services/queue.service.ts](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/services/queue.service.ts)
-  * [apps/server/src/config/queue.config.ts](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/config/queue.config.ts)
+  * [apps/server/src/services/queue.service.ts](../../apps/server/src/services/queue.service.ts)
+  * [apps/server/src/config/queue.config.ts](../../apps/server/src/config/queue.config.ts)
 * **Workers**:
-  * [apps/server/src/workers/email.worker.ts](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/workers/email.worker.ts)
-  * [apps/server/src/workers/pdf.worker.ts](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/workers/pdf.worker.ts)
-  * [apps/server/src/workers/booking.worker.ts](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/workers/booking.worker.ts)
+  * [apps/server/src/workers/email.worker.ts](../../apps/server/src/workers/email.worker.ts)
+  * [apps/server/src/workers/pdf.worker.ts](../../apps/server/src/workers/pdf.worker.ts)
+  * [apps/server/src/workers/booking.worker.ts](../../apps/server/src/workers/booking.worker.ts)
 
 ---
 

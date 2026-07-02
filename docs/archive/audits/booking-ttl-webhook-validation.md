@@ -7,7 +7,7 @@ This validation audit evaluates the high-risk finding identified in the **Bookin
 ## 1. Technical Investigations
 
 ### 1. Booking TTL Configuration
-- **File Reference**: [booking.schema.ts](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/models/booking.schema.ts#L109)
+- **File Reference**: [booking.schema.ts](../../../apps/server/src/models/booking.schema.ts#L109)
 - **Code Block**:
   ```typescript
   expiresAt: { type: Date, index: { expireAfterSeconds: 0 } }, // TTL for pending bookings
@@ -15,7 +15,7 @@ This validation audit evaluates the high-risk finding identified in the **Bookin
 - **Behavior**: This is a native MongoDB Time-To-Live (TTL) index. MongoDB's background thread (which runs every 60 seconds) compares the current system time to the date in the `expiresAt` field. If `now >= expiresAt`, the entire `Booking` document is **physically and permanently deleted** from the collection.
 
 ### 2. Exact TTL Duration
-- **File Reference**: [booking.service.ts](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/services/public/booking.service.ts#L202-L203)
+- **File Reference**: [booking.service.ts](../../../apps/server/src/services/public/booking.service.ts#L202-L203)
 - **Code Block**:
   ```typescript
   // Expiry in 10 minutes (matching the TTL index on expiresAt)

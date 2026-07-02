@@ -88,7 +88,7 @@ The platform orchestrates transitions across three main entities: **Bookings**, 
 
 ### 2. Can a booking become confirmed without payment verification?
 **No.**
-- The only function that transitions a booking to `CONFIRMED` is the private `confirmBooking` in [payment.service.ts](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/services/public/payment.service.ts#L828-L850).
+- The only function that transitions a booking to `CONFIRMED` is the private `confirmBooking` in [payment.service.ts](../../apps/server/src/services/public/payment.service.ts#L828-L850).
 - `confirmBooking` is strictly called *only* inside:
   1. `confirmFromWebhook` (which validates that the payload has a verified HMAC webhook signature and matches actionable event types).
   2. `verifyPayment` (which runs HMAC SHA-256 checks on Razorpay redirect signatures, or fetches the original Stripe intent via the Stripe API to verify the `succeeded` status, currency, amount, and metadata bindings).
@@ -96,7 +96,7 @@ The platform orchestrates transitions across three main entities: **Bookings**, 
 ### 3. Can tickets generate before payment confirmation?
 **No.**
 - In synchronous mode, tickets are compiled in Mongoose directly inside `confirmBooking` *after* the status changes to `CONFIRMED`.
-- In asynchronous mode (`ENABLE_ASYNC_CHECKOUT = true`), `confirmBooking` enqueues a `booking:confirm` job to the `booking-queue` in [booking.worker.ts](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/workers/booking.worker.ts#L16). The worker checks `Ticket.countDocuments` and compiles QRs.
+- In asynchronous mode (`ENABLE_ASYNC_CHECKOUT = true`), `confirmBooking` enqueues a `booking:confirm` job to the `booking-queue` in [booking.worker.ts](../../apps/server/src/workers/booking.worker.ts#L16). The worker checks `Ticket.countDocuments` and compiles QRs.
 - Because the queue job is only enqueued *inside* the successful `confirmBooking` wrapper, ticket generation is blocked until payment is marked `PAID`.
 
 ### 4. Can emails fail while the booking remains confirmed?
@@ -127,7 +127,7 @@ The platform orchestrates transitions across three main entities: **Bookings**, 
 ## 4. Risks & Vulnerabilities Identified
 
 ### 🚨 CRITICAL RISK: MongoDB TTL Deletion Race Condition (Paid but Missing Booking)
-- **Vulnerability**: Pending bookings are assigned a 10-minute TTL index on `expiresAt` inside [booking.schema.ts](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/models/booking.schema.ts#L109).
+- **Vulnerability**: Pending bookings are assigned a 10-minute TTL index on `expiresAt` inside [booking.schema.ts](../../apps/server/src/models/booking.schema.ts#L109).
 - **Trigger**: MongoDB's background TTL thread periodically deletes documents where `expiresAt` has passed.
 - **Race Condition**: 
   1. A guest completes their checkout payment at 9 minutes and 50 seconds.

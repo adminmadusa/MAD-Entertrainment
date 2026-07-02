@@ -14,7 +14,7 @@ This report verifies the recovery and accessibility of unmerged assets from cand
 
 ### Destination Path
 All recovered files are stored locally in the brain directory:
-`/Users/admin/.gemini/antigravity-ide/brain/241fee3a-1279-4014-8caf-434a77d66971/recovered_assets/`
+`recovered_assets/`
 
 ---
 

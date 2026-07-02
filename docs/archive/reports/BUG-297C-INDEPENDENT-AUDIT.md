@@ -36,7 +36,7 @@ We verified that retaining the guest `sessionId` permanently on a booking docume
 
 We verified that:
 - **Zero Schema Changes**: The changes represent a logical shift in how the database is updated (removing `$unset` operations), requiring no database migrations or collections refactoring.
-- **Zero Refund Impact**: Refund logic ([`refund.service.ts`](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/services/admin/refund.service.ts)) remains completely isolated and unchanged.
+- **Zero Refund Impact**: Refund logic ([`refund.service.ts`](../../../apps/server/src/services/admin/refund.service.ts)) remains completely isolated and unchanged.
 - **Zero Webhook Integrity Impact**: Webhook signature verification and idempotency models are unmodified.
 
 ---

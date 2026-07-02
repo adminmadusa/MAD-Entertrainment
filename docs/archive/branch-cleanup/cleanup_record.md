@@ -47,17 +47,17 @@ The following branches containing unique unmerged assets were successfully prote
 All unmerged assets were verified, extracted, and stored in the governance registry:
 
 * **Staging & Production Runbook:**
-  * Path: [RUNBOOK.md](file:///Users/admin/.gemini/antigravity-ide/brain/241fee3a-1279-4014-8caf-434a77d66971/recovered_assets/docs/RUNBOOK.md)
+  * Path: [RUNBOOK.md](../../../RUNBOOK.md)
 * **Modular Ticket PDF Layout drawers:**
-  * Path: [ticket](file:///Users/admin/.gemini/antigravity-ide/brain/241fee3a-1279-4014-8caf-434a77d66971/recovered_assets/apps/server/src/lib/pdf/ticket/)
+  * Path: [ticket](../../../apps/server/src/lib/pdf/ticket)
 * **React Email Transactional Templates:**
-  * Path: [templates](file:///Users/admin/.gemini/antigravity-ide/brain/241fee3a-1279-4014-8caf-434a77d66971/recovered_assets/apps/server/src/lib/email/templates/)
+  * Path: [templates](../../../apps/server/src/lib/email/templates)
 
 ---
 
 ## 5. Audit Trail References
 
-* **Validation Audit:** [branch_cleanup_validation_audit.md](file:///Users/admin/.gemini/antigravity-ide/brain/241fee3a-1279-4014-8caf-434a77d66971/branch_cleanup_validation_audit.md)
-* **Execution Protocol:** [branch_cleanup_execution_protocol.md](file:///Users/admin/.gemini/antigravity-ide/brain/241fee3a-1279-4014-8caf-434a77d66971/branch_cleanup_execution_protocol.md)
-* **Recovery Verification:** [asset_recovery_verification.md](file:///Users/admin/.gemini/antigravity-ide/brain/241fee3a-1279-4014-8caf-434a77d66971/asset_recovery_verification.md)
-* **Final Authorization:** [final_cleanup_authorization_audit.md](file:///Users/admin/.gemini/antigravity-ide/brain/241fee3a-1279-4014-8caf-434a77d66971/final_cleanup_authorization_audit.md)
+* **Validation Audit:** [branch_cleanup_validation_audit.md](#) (Deleted)
+* **Execution Protocol:** [branch_cleanup_execution_protocol.md](#) (Deleted)
+* **Recovery Verification:** [asset_recovery_verification.md](#) (Deleted)
+* **Final Authorization:** [final_cleanup_authorization_audit.md](#) (Deleted)
