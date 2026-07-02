@@ -544,10 +544,8 @@ export class DocumentationValidator implements GovernanceValidator {
 
             if (finalSeverity === 'ERROR') {
               errors.push(err);
-              newCache[duplicate]?.errors.push(err);
             } else {
               warnings.push(err);
-              newCache[duplicate]?.warnings.push(err);
             }
           }
         }
@@ -607,10 +605,8 @@ export class DocumentationValidator implements GovernanceValidator {
           };
           if (severity === 'ERROR') {
             errors.push(err);
-            newCache[active]?.errors.push(err);
           } else {
             warnings.push(err);
-            newCache[active]?.warnings.push(err);
           }
         }
       }
