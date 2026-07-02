@@ -460,10 +460,8 @@ export function parseLinksFromLine(line: string): { type: 'inline' | 'reference'
 
             if (finalSeverity === 'ERROR') {
               errors.push(err);
-              newCache[duplicate]?.errors.push(err);
             } else {
               warnings.push(err);
-              newCache[duplicate]?.warnings.push(err);
             }
           }
         }

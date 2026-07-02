@@ -93,54 +93,70 @@ export class KnowledgeGraph {
     const currentFiles = this.scanAllWorkspaceFiles();
     this.metrics.scannedFiles = currentFiles.length;
 
-    const fileMap = new Map<string, string>(); // path -> hash
-    for (const file of currentFiles) {
-      const fullPath = resolve(KnowledgeGraph.workspaceRoot, file);
-      const hash = this.getFileHash(fullPath);
-      fileMap.set(file, hash);
-    }
-
     if (cacheIsValid && cache) {
       console.log('📦 Reconciling Dependency Knowledge Graph Incrementally...');
       
       const cachedFiles = cache.files || {};
       const newCacheFiles: Record<string, CacheEntry> = {};
 
-      // 1. Identify modified/new files and copy clean cache entries
+      let filesSkipped = 0;
+      let filesHashed = 0;
+      let filesReParsed = 0;
+
       for (const file of currentFiles) {
-        const currentHash = fileMap.get(file) || '';
-        const cached = cachedFiles[file];
         const fullPath = resolve(KnowledgeGraph.workspaceRoot, file);
         let mtime = 0;
         try {
           mtime = statSync(fullPath).mtimeMs;
         } catch (e) {}
 
-        if (cached && cached.hash === currentHash) {
-          // Cache hit: Re-use clean entry
+        const cached = cachedFiles[file];
+
+        if (cached && cached.lastModified === mtime) {
+          // Fast Path: mtime match -> Reuse cached entry and bypass hashing/file reading
           newCacheFiles[file] = cached;
           this.graph.set(file, cached.dependencies);
           this.fileMetadata.set(file, cached);
           this.metrics.cacheHits++;
+          filesSkipped++;
         } else {
-          // Cache miss: Re-parse file
-          this.metrics.cacheMisses++;
-          const detailed = DependencyAnalyzer.analyzeFileDetailed(file);
-          const entry: CacheEntry = {
-            hash: currentHash,
-            lastModified: mtime,
-            dependencies: detailed.dependencies,
-            exports: detailed.exports,
-            dynamicImports: detailed.dynamicImports,
-            assetReferences: detailed.assetReferences,
-          };
-          newCacheFiles[file] = entry;
-          this.graph.set(file, detailed.dependencies);
-          this.fileMetadata.set(file, entry);
-          this.metrics.parsedFiles++;
+          // Slow Path Fallback: compute hash
+          const currentHash = this.getFileHash(fullPath);
+          filesHashed++;
+
+          if (cached && cached.hash === currentHash) {
+            // Case A: content identical (e.g. Git checkout timestamp mismatch)
+            // Update lastModified to the new filesystem mtime to enable Fast Path on next run
+            const updatedEntry: CacheEntry = {
+              ...cached,
+              lastModified: mtime,
+            };
+            newCacheFiles[file] = updatedEntry;
+            this.graph.set(file, cached.dependencies);
+            this.fileMetadata.set(file, updatedEntry);
+            this.metrics.cacheHits++;
+          } else {
+            // Case B: actual file modification or new file -> Parse file
+            this.metrics.cacheMisses++;
+            const detailed = DependencyAnalyzer.analyzeFileDetailed(file);
+            const entry: CacheEntry = {
+              hash: currentHash,
+              lastModified: mtime,
+              dependencies: detailed.dependencies,
+              exports: detailed.exports,
+              dynamicImports: detailed.dynamicImports,
+              assetReferences: detailed.assetReferences,
+            };
+            newCacheFiles[file] = entry;
+            this.graph.set(file, detailed.dependencies);
+            this.fileMetadata.set(file, entry);
+            this.metrics.parsedFiles++;
+            filesReParsed++;
+          }
         }
       }
 
+      console.log(`⚡ Cache performance: ${filesSkipped} files skipped (mtime match), ${filesHashed} files hashed, ${filesReParsed} files re-parsed.`);
       this.buildConsumersMap();
 
       // Write cached json
@@ -156,7 +172,7 @@ export class KnowledgeGraph {
       
     } else {
       console.log('⚙️ Rebuilding Dependency Knowledge Graph from Scratch...');
-      this.rebuild(currentFiles, fileMap);
+      this.rebuild(currentFiles);
     }
 
     this.metrics.parserFailures = DependencyAnalyzer.getWarnings().length;
@@ -202,7 +218,7 @@ export class KnowledgeGraph {
     return fileList;
   }
 
-  private rebuild(files: string[], fileMap: Map<string, string>) {
+  private rebuild(files: string[]) {
     this.graph.clear();
     this.fileMetadata.clear();
     const rawCacheFiles: Record<string, CacheEntry> = {};
@@ -215,7 +231,7 @@ export class KnowledgeGraph {
       } catch (e) {}
 
       const detailed = DependencyAnalyzer.analyzeFileDetailed(file);
-      const hash = fileMap.get(file) || '';
+      const hash = this.getFileHash(fullPath);
       
       const entry: CacheEntry = {
         hash,
