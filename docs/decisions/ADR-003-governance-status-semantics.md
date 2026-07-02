@@ -1,4 +1,4 @@
-# ADR-002: Governance Status Semantics & Architecture Specification
+# ADR-003: Governance Status Semantics & Architecture Specification
 
 ## Metadata
 - **Status**: Proposed
@@ -118,7 +118,7 @@ Evaluate potential transitions of other automated statuses as rules and requirem
 
 ### Implementation Prerequisites
 Before Phase 3 begins, we must confirm:
-- [ ] ADR-002 approved and merged.
+- [ ] ADR-003 approved and merged.
 - [ ] Regression test suite passing with 0 failures.
 - [ ] No outstanding Governance Engine defects.
 - [ ] Governance documentation synchronized.

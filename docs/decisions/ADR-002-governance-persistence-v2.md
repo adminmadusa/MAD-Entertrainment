@@ -6,7 +6,7 @@
 - **Authors**: AI Architecture Agent & Repository Owner
 - **Reviewers**: Principal Software Architect
 - **Decision Category**: Governance
-- **Related Documents**: [REPOSITORY_GOVERNANCE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/REPOSITORY_GOVERNANCE.md), [ARCHITECTURE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/ARCHITECTURE.md)
+- **Related Documents**: [REPOSITORY_GOVERNANCE.md](../../REPOSITORY_GOVERNANCE.md), [ARCHITECTURE.md](../../ARCHITECTURE.md)
 - **Related GitHub Issues**: None
 - **Related Pull Requests**: None
 
@@ -63,3 +63,13 @@ Verify via a dry-run migration check and count integrity matrix assertions (ensu
 
 ### Rollback Strategy
 If validation fails, restore files from `.governance/migration-backup/` and log `FailureRecoveryMetadata` to `.governance/migration-failure.json`.
+
+---
+
+## Future Considerations
+- Evaluate expanding the hybrid cache validation (PERF-019) to additional resource-intensive subsystems.
+- Review retention policy thresholds as the governance findings database grows.
+
+## References
+- [REPOSITORY_GOVERNANCE.md](../../REPOSITORY_GOVERNANCE.md)
+- [ARCHITECTURE.md](../../ARCHITECTURE.md)
