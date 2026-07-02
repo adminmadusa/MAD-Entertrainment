@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 2,
+  "id": "f_b7c97d2d",
+  "rule": "Orphaned Documentation",
+  "ruleVersion": "1.0.0",
+  "engineVersion": "1.0.0",
+  "domain": "Platform Team",
+  "owner": "Platform Team",
+  "package": "docs",
+  "feature": "Document",
+  "status": "NEW",
+  "confidence": 1,
+  "relationships": [],
+  "evidence": {
+    "path": "docs/audit/refund/REFUND-002-ARCHITECTURE.md",
+    "construct": "Document",
+    "message": "Document exists in the repository but has no incoming references from any other active documentation.",
+    "occurrences": [
+      {
+        "id": "552dff8bfb968b76d1d9a5571ba27c4dc27d1c86978a5307fc77455cf2c51a18",
+        "line": 0,
+        "column": 0,
+        "construct": "Document",
+        "snippet": "",
+        "message": "Document exists in the repository but has no incoming references from any other active documentation.",
+        "fingerprint": "552dff8bfb968b76d1d9a5571ba27c4dc27d1c86978a5307fc77455cf2c51a18"
+      }
+    ]
+  },
+  "createdDate": "2026-06-30T15:36:28.324Z",
+  "firstDetected": "2026-06-30T15:36:28.324Z",
+  "lastDetected": "2026-06-30T15:36:28.324Z",
+  "occurrenceCount": 1
+}

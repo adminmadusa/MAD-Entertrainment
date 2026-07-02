@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 2,
+  "id": "f_52a67c75",
+  "rule": "VAL-UI-005",
+  "ruleVersion": "1.0.0",
+  "engineVersion": "1.0.0",
+  "domain": "UI UX Guild",
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "feature": "UIElement",
+  "status": "NEW",
+  "confidence": 0.9,
+  "relationships": [],
+  "evidence": {
+    "path": "apps/web/src/app/tickets/components/BookingFoundModal.tsx",
+    "construct": "UIElement",
+    "snippet": "<button",
+    "line": 38,
+    "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
+    "occurrences": [
+      {
+        "id": "bdb35ceb5b736e47ad82d0d74082bbfe454b006ef750c9e2b4662e0ce9633bb4",
+        "line": 38,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "<button",
+        "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
+        "fingerprint": "bdb35ceb5b736e47ad82d0d74082bbfe454b006ef750c9e2b4662e0ce9633bb4"
+      },
+      {
+        "id": "bdb35ceb5b736e47ad82d0d74082bbfe454b006ef750c9e2b4662e0ce9633bb4",
+        "line": 70,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "<button",
+        "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
+        "fingerprint": "bdb35ceb5b736e47ad82d0d74082bbfe454b006ef750c9e2b4662e0ce9633bb4"
+      }
+    ]
+  },
+  "createdDate": "2026-06-30T15:36:27.265Z",
+  "firstDetected": "2026-06-30T15:36:27.265Z",
+  "lastDetected": "2026-06-30T15:36:27.265Z",
+  "occurrenceCount": 2
+}

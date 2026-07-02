@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 2,
+  "id": "f_32f263fc",
+  "rule": "VAL-UI-010",
+  "ruleVersion": "1.0.0",
+  "engineVersion": "1.0.0",
+  "domain": "UI UX Guild",
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "feature": "UIElement",
+  "status": "NEW",
+  "confidence": 0.9,
+  "relationships": [],
+  "evidence": {
+    "path": "apps/admin/src/app/popups/[id]/edit/page.tsx",
+    "construct": "UIElement",
+    "snippet": "<button",
+    "line": 125,
+    "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
+    "occurrences": [
+      {
+        "id": "bed06fccdf561601d7c8a8411fe9c8399cd26abb9694efbd222d76ce36c39ebe",
+        "line": 125,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "<button",
+        "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
+        "fingerprint": "bed06fccdf561601d7c8a8411fe9c8399cd26abb9694efbd222d76ce36c39ebe"
+      },
+      {
+        "id": "bed06fccdf561601d7c8a8411fe9c8399cd26abb9694efbd222d76ce36c39ebe",
+        "line": 305,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "<button",
+        "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
+        "fingerprint": "bed06fccdf561601d7c8a8411fe9c8399cd26abb9694efbd222d76ce36c39ebe"
+      },
+      {
+        "id": "bed06fccdf561601d7c8a8411fe9c8399cd26abb9694efbd222d76ce36c39ebe",
+        "line": 312,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "<button",
+        "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
+        "fingerprint": "bed06fccdf561601d7c8a8411fe9c8399cd26abb9694efbd222d76ce36c39ebe"
+      },
+      {
+        "id": "4038f191bb47932792f69479b3b008a011d55012c4b2e507a7df586bb8d46f6d",
+        "line": 326,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "function Field({ label, children }: { label: string; children: React.ReactNode }) {",
+        "message": "Shared Component Enforcement: Local duplication of Field component wrapper. Import Field from shared library instead.",
+        "fingerprint": "4038f191bb47932792f69479b3b008a011d55012c4b2e507a7df586bb8d46f6d"
+      }
+    ]
+  },
+  "createdDate": "2026-06-30T15:36:27.156Z",
+  "firstDetected": "2026-06-30T15:36:27.156Z",
+  "lastDetected": "2026-06-30T15:36:27.157Z",
+  "occurrenceCount": 4
+}

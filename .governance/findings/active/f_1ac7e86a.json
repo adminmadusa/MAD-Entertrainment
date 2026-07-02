@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 2,
+  "id": "f_1ac7e86a",
+  "rule": "Broken Link Target",
+  "ruleVersion": "1.0.0",
+  "engineVersion": "1.0.0",
+  "domain": "Platform Team",
+  "owner": "Platform Team",
+  "package": "docs",
+  "feature": "Document",
+  "status": "NEW",
+  "confidence": 1,
+  "relationships": [],
+  "evidence": {
+    "path": "docs/archive/audits/ticket-retrieval-phase1-verification.md",
+    "construct": "Document",
+    "snippet": "- **File Reference**: [my-booking/page.tsx](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/app/my-booking/page.tsx)",
+    "line": 47,
+    "message": "Referenced file does not exist: \"file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/app/my-booking/page.tsx\" (resolved as: \"apps/web/src/app/my-booking/page.tsx\")",
+    "occurrences": [
+      {
+        "id": "642fdb215fecfd9bcea291120dce9a10cd6ec915a5eb203ab9b0415a4c8af19b",
+        "line": 47,
+        "column": 0,
+        "construct": "Document",
+        "snippet": "- **File Reference**: [my-booking/page.tsx](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/app/my-booking/page.tsx)",
+        "message": "Referenced file does not exist: \"file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/app/my-booking/page.tsx\" (resolved as: \"apps/web/src/app/my-booking/page.tsx\")",
+        "fingerprint": "642fdb215fecfd9bcea291120dce9a10cd6ec915a5eb203ab9b0415a4c8af19b"
+      },
+      {
+        "id": "642fdb215fecfd9bcea291120dce9a10cd6ec915a5eb203ab9b0415a4c8af19b",
+        "line": 53,
+        "column": 0,
+        "construct": "Document",
+        "snippet": "- **File Reference**: [my-booking/page.tsx](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/app/my-booking/page.tsx#L184-L190)",
+        "message": "Referenced file does not exist: \"file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/app/my-booking/page.tsx\" (resolved as: \"apps/web/src/app/my-booking/page.tsx\")",
+        "fingerprint": "642fdb215fecfd9bcea291120dce9a10cd6ec915a5eb203ab9b0415a4c8af19b"
+      }
+    ]
+  },
+  "createdDate": "2026-06-30T15:36:27.730Z",
+  "firstDetected": "2026-06-30T15:36:27.730Z",
+  "lastDetected": "2026-06-30T15:36:27.730Z",
+  "occurrenceCount": 2
+}

@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 2,
+  "id": "f_2215b27e",
+  "rule": "VAL-UI-010",
+  "ruleVersion": "1.0.0",
+  "engineVersion": "1.0.0",
+  "domain": "UI UX Guild",
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "feature": "UIElement",
+  "status": "NEW",
+  "confidence": 0.9,
+  "relationships": [],
+  "evidence": {
+    "path": "apps/web/src/app/tickets/components/OtpVerificationModal.tsx",
+    "construct": "UIElement",
+    "snippet": "<button",
+    "line": 46,
+    "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
+    "occurrences": [
+      {
+        "id": "beb49bffcbbaa2f80d8202a93ba620a0a44d2aec459f371ac84b48a123f10bc6",
+        "line": 46,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "<button",
+        "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
+        "fingerprint": "beb49bffcbbaa2f80d8202a93ba620a0a44d2aec459f371ac84b48a123f10bc6"
+      },
+      {
+        "id": "beb49bffcbbaa2f80d8202a93ba620a0a44d2aec459f371ac84b48a123f10bc6",
+        "line": 100,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "<button",
+        "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
+        "fingerprint": "beb49bffcbbaa2f80d8202a93ba620a0a44d2aec459f371ac84b48a123f10bc6"
+      },
+      {
+        "id": "beb49bffcbbaa2f80d8202a93ba620a0a44d2aec459f371ac84b48a123f10bc6",
+        "line": 115,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "<button",
+        "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
+        "fingerprint": "beb49bffcbbaa2f80d8202a93ba620a0a44d2aec459f371ac84b48a123f10bc6"
+      }
+    ]
+  },
+  "createdDate": "2026-06-30T15:36:27.269Z",
+  "firstDetected": "2026-06-30T15:36:27.269Z",
+  "lastDetected": "2026-06-30T15:36:27.269Z",
+  "occurrenceCount": 3
+}

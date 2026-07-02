@@ -1,0 +1,99 @@
+{
+  "schemaVersion": 2,
+  "id": "f_b23de152",
+  "rule": "VAL-UI-007",
+  "ruleVersion": "1.0.0",
+  "engineVersion": "1.0.0",
+  "domain": "UI UX Guild",
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "feature": "UIElement",
+  "status": "NEW",
+  "confidence": 0.9,
+  "relationships": [],
+  "evidence": {
+    "path": "apps/admin/src/components/dashboard/RevenueChartWidget.tsx",
+    "construct": "UIElement",
+    "snippet": "<stop offset=\"5%\" stopColor=\"#a855f7\" stopOpacity={0.8} />",
+    "line": 42,
+    "message": "Hardcoded color '#a855f7' detected. Standardize using design tokens/theme variables.",
+    "occurrences": [
+      {
+        "id": "782cbe02befa581ca7c07a43f8e401d173d3f460f15a0dc37944bfb492ce9ed4",
+        "line": 42,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "<stop offset=\"5%\" stopColor=\"#a855f7\" stopOpacity={0.8} />",
+        "message": "Hardcoded color '#a855f7' detected. Standardize using design tokens/theme variables.",
+        "fingerprint": "782cbe02befa581ca7c07a43f8e401d173d3f460f15a0dc37944bfb492ce9ed4"
+      },
+      {
+        "id": "d216b064913a305fa108c080be3117a0838cb4e687f6079480e7a8162089efda",
+        "line": 43,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "<stop offset=\"95%\" stopColor=\"#a855f7\" stopOpacity={0} />",
+        "message": "Hardcoded color '#a855f7' detected. Standardize using design tokens/theme variables.",
+        "fingerprint": "d216b064913a305fa108c080be3117a0838cb4e687f6079480e7a8162089efda"
+      },
+      {
+        "id": "ae5e44a62c9064bd320d8094b9641056327d940623c9eb1d1d18472f29b8abde",
+        "line": 46,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "<CartesianGrid strokeDasharray=\"3 3\" stroke=\"#ffffff10\" vertical={false} />",
+        "message": "Hardcoded color '#ffffff10' detected. Standardize using design tokens/theme variables.",
+        "fingerprint": "ae5e44a62c9064bd320d8094b9641056327d940623c9eb1d1d18472f29b8abde"
+      },
+      {
+        "id": "3a8bdd8618dcf2e7cadc1c1782e3382a36d14b8af3e28cd374ca44e81af8642b",
+        "line": 47,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "<XAxis dataKey=\"date\" stroke=\"#ffffff50\" fontSize={12} tickLine={false} axisLine={false} />",
+        "message": "Hardcoded color '#ffffff50' detected. Standardize using design tokens/theme variables.",
+        "fingerprint": "3a8bdd8618dcf2e7cadc1c1782e3382a36d14b8af3e28cd374ca44e81af8642b"
+      },
+      {
+        "id": "ce29b80853797e11f652837d51f6bc343611341d3c96ca7adac7e57d0ac6eea5",
+        "line": 48,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "<YAxis stroke=\"#ffffff50\" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `₹${value.toLocaleString('en-IN')}`} />",
+        "message": "Hardcoded color '#ffffff50' detected. Standardize using design tokens/theme variables.",
+        "fingerprint": "ce29b80853797e11f652837d51f6bc343611341d3c96ca7adac7e57d0ac6eea5"
+      },
+      {
+        "id": "a2969dc1c38d8d737453aa2b483675425ca780bc03f4cb02a71401db411ec686",
+        "line": 54,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "<div className=\"bg-[#1a1a1a] border border-[#333] p-4 rounded-xl space-y-1.5 shadow-glow-sm\">",
+        "message": "Hardcoded color '#1a1a1a' detected. Standardize using design tokens/theme variables.",
+        "fingerprint": "a2969dc1c38d8d737453aa2b483675425ca780bc03f4cb02a71401db411ec686"
+      },
+      {
+        "id": "1eb836690d6eec12b0623eb9a40327e51b687df21635139c7f073395a8fa415d",
+        "line": 62,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "<div className=\"border-t border-[#ffffff15] pt-1.5 mt-1.5\">",
+        "message": "Hardcoded color '#ffffff15' detected. Standardize using design tokens/theme variables.",
+        "fingerprint": "1eb836690d6eec12b0623eb9a40327e51b687df21635139c7f073395a8fa415d"
+      },
+      {
+        "id": "7f2cae558d89c5b7d2e03035fde3509675a7fe53a6fc8d2de28d41a34e90f9c3",
+        "line": 73,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "<Area type=\"monotone\" dataKey=\"revenue\" stroke=\"#a855f7\" strokeWidth={3} fillOpacity={1} fill=\"url(#colorRevenue)\" />",
+        "message": "Hardcoded color '#a855f7' detected. Standardize using design tokens/theme variables.",
+        "fingerprint": "7f2cae558d89c5b7d2e03035fde3509675a7fe53a6fc8d2de28d41a34e90f9c3"
+      }
+    ]
+  },
+  "createdDate": "2026-06-30T15:36:27.202Z",
+  "firstDetected": "2026-06-30T15:36:27.202Z",
+  "lastDetected": "2026-06-30T15:36:27.203Z",
+  "occurrenceCount": 8
+}

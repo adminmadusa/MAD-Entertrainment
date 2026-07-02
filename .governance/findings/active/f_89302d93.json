@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 2,
+  "id": "f_89302d93",
+  "rule": "Orphaned Documentation",
+  "ruleVersion": "1.0.0",
+  "engineVersion": "1.0.0",
+  "domain": "Platform Team",
+  "owner": "Platform Team",
+  "package": "docs",
+  "feature": "Document",
+  "status": "NEW",
+  "confidence": 1,
+  "relationships": [],
+  "evidence": {
+    "path": "docs/verification-results.md",
+    "construct": "Document",
+    "message": "Document exists in the repository but has no incoming references from any other active documentation.",
+    "occurrences": [
+      {
+        "id": "fb03ed2712e71703611270641c47c9da1fb10e0521358e26496ab5bcbab3c283",
+        "line": 0,
+        "column": 0,
+        "construct": "Document",
+        "snippet": "",
+        "message": "Document exists in the repository but has no incoming references from any other active documentation.",
+        "fingerprint": "fb03ed2712e71703611270641c47c9da1fb10e0521358e26496ab5bcbab3c283"
+      }
+    ]
+  },
+  "createdDate": "2026-06-29T08:09:51.907Z",
+  "firstDetected": "2026-06-29T08:09:51.907Z",
+  "lastDetected": "2026-06-29T08:09:51.907Z",
+  "occurrenceCount": 1
+}

@@ -19,6 +19,11 @@ describe('AuditEngine (Orchestrator Integration Flow)', () => {
     // Redirect FindingManager database directories to sandbox
     (FindingManager as any).govDir = sandboxRoot;
     (FindingManager as any).findingsDir = join(sandboxRoot, 'findings');
+    (FindingManager as any).activeDir = join(sandboxRoot, 'findings/active');
+    (FindingManager as any).closedDir = join(sandboxRoot, 'findings/closed');
+    (FindingManager as any).suppressedDir = join(sandboxRoot, 'findings/suppressed');
+    (FindingManager as any).archiveFindingsDir = join(sandboxRoot, 'archive/findings');
+    (FindingManager as any).archiveHistoryDir = join(sandboxRoot, 'archive/history');
     (FindingManager as any).exceptionsDir = join(sandboxRoot, 'exceptions');
     (FindingManager as any).historyDir = join(sandboxRoot, 'history');
     (FindingManager as any).baselinesDir = join(sandboxRoot, 'baselines');
@@ -98,7 +103,7 @@ describe('AuditEngine (Orchestrator Integration Flow)', () => {
     expect(firstFinding.status).toBe('NEW');
 
     // 2. Verify that findings got saved to sandbox database
-    const savedFindingPath = join((FindingManager as any).findingsDir, `${firstFinding.id}.json`);
+    const savedFindingPath = join((FindingManager as any).activeDir, `${firstFinding.id}.json`);
     expect(existsSync(savedFindingPath)).toBe(true);
 
     // 3. Verify reports got written to sandbox reports directory

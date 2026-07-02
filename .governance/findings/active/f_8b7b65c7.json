@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 2,
+  "id": "f_8b7b65c7",
+  "rule": "VAL-UI-005",
+  "ruleVersion": "1.0.0",
+  "engineVersion": "1.0.0",
+  "domain": "UI UX Guild",
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "feature": "button",
+  "status": "NEW",
+  "confidence": 0.85,
+  "relationships": [],
+  "evidence": {
+    "path": "apps/admin/src/components/diagnostics/RetryJobModal.tsx",
+    "construct": "button",
+    "snippet": "<button",
+    "line": 46,
+    "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
+    "occurrences": [
+      {
+        "id": "2c2f8b27f95cb55cc9d49bbde3ff6000134de74959ab3dd740dcf5c4177a9064",
+        "line": 46,
+        "column": 0,
+        "construct": "button",
+        "snippet": "<button",
+        "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
+        "fingerprint": "2c2f8b27f95cb55cc9d49bbde3ff6000134de74959ab3dd740dcf5c4177a9064"
+      },
+      {
+        "id": "30fabc8f38397effe1c0fed009423a03579c0a0194f675a8422d8ed9be4676fb",
+        "line": 46,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "<button",
+        "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
+        "fingerprint": "30fabc8f38397effe1c0fed009423a03579c0a0194f675a8422d8ed9be4676fb"
+      },
+      {
+        "id": "30fabc8f38397effe1c0fed009423a03579c0a0194f675a8422d8ed9be4676fb",
+        "line": 53,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "<button",
+        "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
+        "fingerprint": "30fabc8f38397effe1c0fed009423a03579c0a0194f675a8422d8ed9be4676fb"
+      }
+    ]
+  },
+  "createdDate": "2026-06-29T08:10:36.017Z",
+  "firstDetected": "2026-06-29T08:10:36.017Z",
+  "lastDetected": "2026-06-30T15:36:27.215Z",
+  "occurrenceCount": 3
+}

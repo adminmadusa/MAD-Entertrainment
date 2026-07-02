@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 2,
+  "id": "f_8f8aed5b",
+  "rule": "VAL-UI-010",
+  "ruleVersion": "1.0.0",
+  "engineVersion": "1.0.0",
+  "domain": "UI UX Guild",
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "feature": "UIElement",
+  "status": "NEW",
+  "confidence": 0.9,
+  "relationships": [],
+  "evidence": {
+    "path": "apps/admin/src/app/users/_components/UserBookingsTable.tsx",
+    "construct": "UIElement",
+    "snippet": "<table className=\"w-full text-sm\">",
+    "line": 27,
+    "message": "Shared Component Enforcement: Bypassed shared Table component in favor of raw HTML table element.",
+    "occurrences": [
+      {
+        "id": "5989ffda3d7efd5ed494feeeb044ddcec40a64ade82cb4b4ff94469faa702c88",
+        "line": 27,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "<table className=\"w-full text-sm\">",
+        "message": "Shared Component Enforcement: Bypassed shared Table component in favor of raw HTML table element.",
+        "fingerprint": "5989ffda3d7efd5ed494feeeb044ddcec40a64ade82cb4b4ff94469faa702c88"
+      },
+      {
+        "id": "a54d83f98dc583e86c6af030532eb611f30df9fcdf48b4baf14e62555e2810c6",
+        "line": 94,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "<button",
+        "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
+        "fingerprint": "a54d83f98dc583e86c6af030532eb611f30df9fcdf48b4baf14e62555e2810c6"
+      },
+      {
+        "id": "a54d83f98dc583e86c6af030532eb611f30df9fcdf48b4baf14e62555e2810c6",
+        "line": 101,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "<button",
+        "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
+        "fingerprint": "a54d83f98dc583e86c6af030532eb611f30df9fcdf48b4baf14e62555e2810c6"
+      }
+    ]
+  },
+  "createdDate": "2026-06-30T15:36:27.188Z",
+  "firstDetected": "2026-06-30T15:36:27.188Z",
+  "lastDetected": "2026-06-30T15:36:27.189Z",
+  "occurrenceCount": 3
+}

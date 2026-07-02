@@ -1,0 +1,99 @@
+{
+  "schemaVersion": 2,
+  "id": "f_dfc2a1ba",
+  "rule": "VAL-UI-010",
+  "ruleVersion": "1.0.0",
+  "engineVersion": "1.0.0",
+  "domain": "UI UX Guild",
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "feature": "UIElement",
+  "status": "NEW",
+  "confidence": 0.9,
+  "relationships": [],
+  "evidence": {
+    "path": "apps/admin/src/app/users/page.tsx",
+    "construct": "UIElement",
+    "snippet": "<button",
+    "line": 283,
+    "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
+    "occurrences": [
+      {
+        "id": "db1b0f67615cace551e8c28a3c6c8385a8510791273584e89258f7f84358746b",
+        "line": 283,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "<button",
+        "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
+        "fingerprint": "db1b0f67615cace551e8c28a3c6c8385a8510791273584e89258f7f84358746b"
+      },
+      {
+        "id": "db1b0f67615cace551e8c28a3c6c8385a8510791273584e89258f7f84358746b",
+        "line": 293,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "<button",
+        "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
+        "fingerprint": "db1b0f67615cace551e8c28a3c6c8385a8510791273584e89258f7f84358746b"
+      },
+      {
+        "id": "db1b0f67615cace551e8c28a3c6c8385a8510791273584e89258f7f84358746b",
+        "line": 318,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "<button",
+        "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
+        "fingerprint": "db1b0f67615cace551e8c28a3c6c8385a8510791273584e89258f7f84358746b"
+      },
+      {
+        "id": "5cfa955515763a81f7c99e9d234510c9339032e2c65065aada637556b66a0ef5",
+        "line": 332,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "<table className=\"w-full text-sm\">",
+        "message": "Shared Component Enforcement: Bypassed shared Table component in favor of raw HTML table element.",
+        "fingerprint": "5cfa955515763a81f7c99e9d234510c9339032e2c65065aada637556b66a0ef5"
+      },
+      {
+        "id": "db1b0f67615cace551e8c28a3c6c8385a8510791273584e89258f7f84358746b",
+        "line": 368,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "<button",
+        "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
+        "fingerprint": "db1b0f67615cace551e8c28a3c6c8385a8510791273584e89258f7f84358746b"
+      },
+      {
+        "id": "db1b0f67615cace551e8c28a3c6c8385a8510791273584e89258f7f84358746b",
+        "line": 375,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "<button",
+        "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
+        "fingerprint": "db1b0f67615cace551e8c28a3c6c8385a8510791273584e89258f7f84358746b"
+      },
+      {
+        "id": "db1b0f67615cace551e8c28a3c6c8385a8510791273584e89258f7f84358746b",
+        "line": 394,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "<button",
+        "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
+        "fingerprint": "db1b0f67615cace551e8c28a3c6c8385a8510791273584e89258f7f84358746b"
+      },
+      {
+        "id": "db1b0f67615cace551e8c28a3c6c8385a8510791273584e89258f7f84358746b",
+        "line": 404,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "<button",
+        "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
+        "fingerprint": "db1b0f67615cace551e8c28a3c6c8385a8510791273584e89258f7f84358746b"
+      }
+    ]
+  },
+  "createdDate": "2026-06-30T15:36:27.198Z",
+  "firstDetected": "2026-06-30T15:36:27.198Z",
+  "lastDetected": "2026-06-30T15:36:27.199Z",
+  "occurrenceCount": 8
+}

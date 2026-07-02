@@ -1,0 +1,108 @@
+{
+  "schemaVersion": 2,
+  "id": "f_661e9e6c",
+  "rule": "VAL-UI-010",
+  "ruleVersion": "1.0.0",
+  "engineVersion": "1.0.0",
+  "domain": "UI UX Guild",
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "feature": "UIElement",
+  "status": "NEW",
+  "confidence": 0.9,
+  "relationships": [],
+  "evidence": {
+    "path": "apps/admin/src/components/EventGalleryUpload.tsx",
+    "construct": "UIElement",
+    "snippet": "<button",
+    "line": 228,
+    "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
+    "occurrences": [
+      {
+        "id": "ecd2582749fc8f20955798c0921965df0715376a2a9300395dd9c5a37de049b6",
+        "line": 228,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "<button",
+        "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
+        "fingerprint": "ecd2582749fc8f20955798c0921965df0715376a2a9300395dd9c5a37de049b6"
+      },
+      {
+        "id": "ecd2582749fc8f20955798c0921965df0715376a2a9300395dd9c5a37de049b6",
+        "line": 235,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "<button",
+        "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
+        "fingerprint": "ecd2582749fc8f20955798c0921965df0715376a2a9300395dd9c5a37de049b6"
+      },
+      {
+        "id": "ecd2582749fc8f20955798c0921965df0715376a2a9300395dd9c5a37de049b6",
+        "line": 276,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "<button",
+        "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
+        "fingerprint": "ecd2582749fc8f20955798c0921965df0715376a2a9300395dd9c5a37de049b6"
+      },
+      {
+        "id": "ecd2582749fc8f20955798c0921965df0715376a2a9300395dd9c5a37de049b6",
+        "line": 283,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "<button",
+        "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
+        "fingerprint": "ecd2582749fc8f20955798c0921965df0715376a2a9300395dd9c5a37de049b6"
+      },
+      {
+        "id": "ecd2582749fc8f20955798c0921965df0715376a2a9300395dd9c5a37de049b6",
+        "line": 318,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "<button",
+        "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
+        "fingerprint": "ecd2582749fc8f20955798c0921965df0715376a2a9300395dd9c5a37de049b6"
+      },
+      {
+        "id": "ecd2582749fc8f20955798c0921965df0715376a2a9300395dd9c5a37de049b6",
+        "line": 360,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "<button",
+        "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
+        "fingerprint": "ecd2582749fc8f20955798c0921965df0715376a2a9300395dd9c5a37de049b6"
+      },
+      {
+        "id": "ecd2582749fc8f20955798c0921965df0715376a2a9300395dd9c5a37de049b6",
+        "line": 369,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "<button",
+        "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
+        "fingerprint": "ecd2582749fc8f20955798c0921965df0715376a2a9300395dd9c5a37de049b6"
+      },
+      {
+        "id": "ecd2582749fc8f20955798c0921965df0715376a2a9300395dd9c5a37de049b6",
+        "line": 379,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "<button",
+        "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
+        "fingerprint": "ecd2582749fc8f20955798c0921965df0715376a2a9300395dd9c5a37de049b6"
+      },
+      {
+        "id": "ecd2582749fc8f20955798c0921965df0715376a2a9300395dd9c5a37de049b6",
+        "line": 414,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "<button",
+        "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
+        "fingerprint": "ecd2582749fc8f20955798c0921965df0715376a2a9300395dd9c5a37de049b6"
+      }
+    ]
+  },
+  "createdDate": "2026-06-30T15:36:27.222Z",
+  "firstDetected": "2026-06-30T15:36:27.222Z",
+  "lastDetected": "2026-06-30T15:36:27.223Z",
+  "occurrenceCount": 9
+}

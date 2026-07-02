@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 2,
+  "id": "f_db1e7f3d",
+  "rule": "VAL-UI-005",
+  "ruleVersion": "1.0.0",
+  "engineVersion": "1.0.0",
+  "domain": "UI UX Guild",
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "feature": "UIElement",
+  "status": "NEW",
+  "confidence": 0.9,
+  "relationships": [],
+  "evidence": {
+    "path": "apps/web/src/app/(auth)/dashboard/_components/DashboardTicketsTab.tsx",
+    "construct": "UIElement",
+    "snippet": "<button",
+    "line": 80,
+    "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
+    "occurrences": [
+      {
+        "id": "a66d0f3f6a8869666dc79209948df40514f5bcd3624036f5ab081ced2c98ad67",
+        "line": 80,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "<button",
+        "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
+        "fingerprint": "a66d0f3f6a8869666dc79209948df40514f5bcd3624036f5ab081ced2c98ad67"
+      },
+      {
+        "id": "a66d0f3f6a8869666dc79209948df40514f5bcd3624036f5ab081ced2c98ad67",
+        "line": 111,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "<button",
+        "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
+        "fingerprint": "a66d0f3f6a8869666dc79209948df40514f5bcd3624036f5ab081ced2c98ad67"
+      },
+      {
+        "id": "a66d0f3f6a8869666dc79209948df40514f5bcd3624036f5ab081ced2c98ad67",
+        "line": 126,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "<button",
+        "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
+        "fingerprint": "a66d0f3f6a8869666dc79209948df40514f5bcd3624036f5ab081ced2c98ad67"
+      },
+      {
+        "id": "a66d0f3f6a8869666dc79209948df40514f5bcd3624036f5ab081ced2c98ad67",
+        "line": 141,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "<button",
+        "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
+        "fingerprint": "a66d0f3f6a8869666dc79209948df40514f5bcd3624036f5ab081ced2c98ad67"
+      }
+    ]
+  },
+  "createdDate": "2026-06-30T15:36:27.240Z",
+  "firstDetected": "2026-06-30T15:36:27.240Z",
+  "lastDetected": "2026-06-30T15:36:27.241Z",
+  "occurrenceCount": 4
+}

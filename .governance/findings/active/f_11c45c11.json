@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 2,
+  "id": "f_11c45c11",
+  "rule": "Orphaned Documentation",
+  "ruleVersion": "1.0.0",
+  "engineVersion": "1.0.0",
+  "domain": "Platform Team",
+  "owner": "Platform Team",
+  "package": "docs",
+  "feature": "Document",
+  "status": "NEW",
+  "confidence": 1,
+  "relationships": [],
+  "evidence": {
+    "path": "docs/audit/refund/REFUND-002-IMPLEMENTATION-PLAN.md",
+    "construct": "Document",
+    "message": "Document exists in the repository but has no incoming references from any other active documentation.",
+    "occurrences": [
+      {
+        "id": "93f08e99bac436d5d8530007d3ce3c220d7a65e99efe3707673a9943eafbbd46",
+        "line": 0,
+        "column": 0,
+        "construct": "Document",
+        "snippet": "",
+        "message": "Document exists in the repository but has no incoming references from any other active documentation.",
+        "fingerprint": "93f08e99bac436d5d8530007d3ce3c220d7a65e99efe3707673a9943eafbbd46"
+      }
+    ]
+  },
+  "createdDate": "2026-06-30T15:36:28.370Z",
+  "firstDetected": "2026-06-30T15:36:28.370Z",
+  "lastDetected": "2026-06-30T15:36:28.370Z",
+  "occurrenceCount": 1
+}
