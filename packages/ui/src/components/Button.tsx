@@ -1,4 +1,4 @@
-import React, { type ButtonHTMLAttributes, type ReactNode } from 'react';
+import React, { forwardRef, type ButtonHTMLAttributes, type ReactNode } from 'react';
 
 export type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: string;
@@ -8,27 +8,36 @@ export type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   rightIcon?: ReactNode;
 };
 
-export function Button({
-  className = '',
-  type = 'button',
-  fullWidth = false,
-  isLoading = false,
-  leftIcon,
-  rightIcon,
-  children,
-  disabled,
-  ...props
-}: ButtonProps) {
-  return (
-    <button
-      type={type}
-      className={`${fullWidth ? 'w-full ' : ''}${className}`}
-      disabled={disabled || isLoading}
-      {...props}
-    >
-      {isLoading ? 'Loading...' : leftIcon}
-      {children}
-      {!isLoading ? rightIcon : null}
-    </button>
-  );
-}
+export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
+  (
+    {
+      className = '',
+      type = 'button',
+      fullWidth = false,
+      isLoading = false,
+      leftIcon,
+      rightIcon,
+      children,
+      disabled,
+      ...props
+    },
+    ref,
+  ) => {
+    return (
+      <button
+        ref={ref}
+        type={type}
+        className={`${fullWidth ? 'w-full ' : ''}${className}`}
+        disabled={disabled || isLoading}
+        {...props}
+      >
+        {isLoading ? 'Loading...' : leftIcon}
+        {children}
+        {!isLoading ? rightIcon : null}
+      </button>
+    );
+  },
+);
+
+Button.displayName = 'Button';
+
