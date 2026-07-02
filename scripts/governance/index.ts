@@ -30,6 +30,49 @@ import { persistenceStats } from './core/json_utils';
 
 const workspaceRoot = resolve(__dirname, '../..');
 
+function getAllMarkdownFiles(workspaceRoot: string): string[] {
+  const markdownFiles = new Set<string>();
+  try {
+    const tracked = execSync('git ls-files "*.md"', { cwd: workspaceRoot, encoding: 'utf8' })
+      .split('\n')
+      .map(f => f.trim())
+      .filter(Boolean);
+    const untracked = execSync('git ls-files --others --exclude-standard "*.md"', { cwd: workspaceRoot, encoding: 'utf8' })
+      .split('\n')
+      .map(f => f.trim())
+      .filter(Boolean);
+      
+    for (const f of [...tracked, ...untracked]) {
+      if (!f.startsWith('node_modules/') && !f.startsWith('.governance/') && !f.startsWith('scratch/')) {
+        markdownFiles.add(f);
+      }
+    }
+  } catch (err) {
+    const scan = (dir: string) => {
+      const items = readdirSync(dir);
+      for (const item of items) {
+        if (['node_modules', '.git', '.next', '.governance', 'dist', '.turbo', 'coverage', 'scratch'].includes(item)) {
+          continue;
+        }
+        const full = join(dir, item);
+        let stats;
+        try {
+          stats = statSync(full);
+        } catch {
+          continue;
+        }
+        if (stats.isDirectory()) {
+          scan(full);
+        } else if (item.endsWith('.md')) {
+          markdownFiles.add(relative(workspaceRoot, full));
+        }
+      }
+    };
+    scan(workspaceRoot);
+  }
+  return Array.from(markdownFiles).sort();
+}
+
 function getGitDiffFiles(): string[] {
   try {
     const output = execSync('git diff --name-only HEAD', { cwd: workspaceRoot, encoding: 'utf8' });
@@ -126,6 +169,30 @@ async function run() {
   // Initialize Audit Engine
   const auditEngine = new AuditEngine();
   metadata.knowledgeGraph = auditEngine.getKnowledgeGraph();
+
+  // 1. Retrieve all indexed repository files from the KnowledgeGraph (SSOT traversal)
+  const graph = auditEngine.getKnowledgeGraph();
+  const indexedFiles = graph.getIndexedFiles().sort();
+
+  const markdownFiles = new Set<string>();
+  for (const doc of metadata.requiredDocuments) {
+    if (indexedFiles.includes(doc)) {
+      markdownFiles.add(doc);
+    }
+  }
+
+  for (const file of indexedFiles) {
+    if (file.endsWith('.md')) {
+      markdownFiles.add(file);
+    }
+  }
+
+  let finalMarkdownFiles = Array.from(markdownFiles).sort();
+  let finalUiFiles = indexedFiles.filter(file => {
+    const isSource = /\.(ts|tsx|js|jsx)$/.test(file);
+    const isUnderAppSrc = file.startsWith('apps/admin/src/') || file.startsWith('apps/web/src/');
+    return isSource && isUnderAppSrc;
+  }).sort();
 
   // 2. Perform Incremental & Dependency-Aware Auditing filter
   if (isIncremental && changedFiles.length > 0) {

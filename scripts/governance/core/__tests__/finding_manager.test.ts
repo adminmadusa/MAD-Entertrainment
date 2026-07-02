@@ -20,10 +20,22 @@ describe('FindingManager (State Persistence & Serialization)', () => {
     // Override FindingManager's static directories to sandbox tests
     (FindingManager as any).govDir = scratchRoot;
     (FindingManager as any).findingsDir = join(scratchRoot, 'findings');
+    (FindingManager as any).activeDir = join(scratchRoot, 'findings/active');
+    (FindingManager as any).closedDir = join(scratchRoot, 'findings/closed');
+    (FindingManager as any).suppressedDir = join(scratchRoot, 'findings/suppressed');
+    (FindingManager as any).archiveFindingsDir = join(scratchRoot, 'archive/findings');
+    (FindingManager as any).archiveHistoryDir = join(scratchRoot, 'archive/history');
     (FindingManager as any).exceptionsDir = join(scratchRoot, 'exceptions');
     (FindingManager as any).historyDir = join(scratchRoot, 'history');
     (FindingManager as any).baselinesDir = join(scratchRoot, 'baselines');
     (FindingManager as any).metricsDir = join(scratchRoot, 'metrics');
+
+    // Spy on RenameDetector early so it binds before finding_manager uses it
+    vi.spyOn(RenameDetector, 'wasRenamedFrom').mockImplementation((current, old) => {
+      const newPath = 'apps/web/src/components/CoolButton.tsx';
+      const oldPath = 'apps/web/src/components/Button.tsx';
+      return current === newPath && old === oldPath;
+    });
 
     // Spy on RuleRegistry to ensure rules are resolved deterministically
     vi.spyOn(RuleRegistry, 'getRule').mockImplementation((id: string) => {
@@ -75,12 +87,12 @@ describe('FindingManager (State Persistence & Serialization)', () => {
     const finding = fm.matchOrCreateFinding(violation);
 
     expect(finding.id).toBeDefined();
-    expect(finding.id.startsWith('UI-100-')).toBe(true);
+    expect(finding.id.startsWith('f_')).toBe(true);
     expect(finding.status).toBe('NEW');
     expect(finding.evidence.path).toBe(violation.path);
 
     // Verify finding is saved to disk
-    const savedPath = join((FindingManager as any).findingsDir, `${finding.id}.json`);
+    const savedPath = join((FindingManager as any).activeDir, `${finding.id}.json`);
     expect(existsSync(savedPath)).toBe(true);
 
     const savedContent = JSON.parse(readFileSync(savedPath, 'utf8')) as Finding;
@@ -112,11 +124,6 @@ describe('FindingManager (State Persistence & Serialization)', () => {
     const originalFinding = fm.getAllFindings()[0];
     const oldPath = originalFinding.evidence.path;
     const newPath = 'apps/web/src/components/CoolButton.tsx';
-
-    // Mock RenameDetector behavior
-    vi.spyOn(RenameDetector, 'wasRenamedFrom').mockImplementation((current, old) => {
-      return current === newPath && old === oldPath;
-    });
 
     const violation: StatelessViolation = {
       rule: 'VAL-UI-001',

@@ -241,6 +241,11 @@ export class FindingManager {
         finding.evidence.occurrences = [];
       }
       
+      // Update primary evidence values
+      finding.evidence.line = violation.line;
+      finding.evidence.snippet = violation.snippet;
+      finding.evidence.message = violation.message;
+
       const exists = finding.evidence.occurrences.some(o => o.id === fingerprint);
       if (!exists) {
         finding.evidence.occurrences.push(occurrence);
