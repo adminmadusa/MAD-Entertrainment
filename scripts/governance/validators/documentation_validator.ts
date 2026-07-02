@@ -111,6 +111,84 @@ export function parseLinksFromLine(line: string): { type: 'inline' | 'reference'
   }
   return links;
 }
+
+/**
+ * Resolves path casing cross-platform.
+ *
+ * CI executes on Linux (case-sensitive filesystem) while many contributors develop
+ * on macOS/Windows (case-insensitive).
+ *
+ * We intentionally distinguish:
+ * - file missing (NOT_FOUND) -> VAL-DOC-003
+ * - file exists with incorrect casing (CASE_MISMATCH) -> VAL-DOC-004
+ * - file exists with correct casing (FOUND)
+ *
+ * to ensure deterministic validation across platforms.
+ */
+export function checkPathCasing(
+  workspaceRoot: string,
+  targetRelPath: string
+): { status: 'NOT_FOUND' | 'CASE_MISMATCH' | 'FOUND'; canonicalPath?: string } {
+  const segments = targetRelPath.split(/[\\/]/).filter(Boolean);
+  let currentDir = workspaceRoot;
+  let casingMismatch = false;
+
+  for (const segment of segments) {
+    try {
+      if (!existsSync(currentDir)) {
+        return { status: 'NOT_FOUND' };
+      }
+      const actualFiles = readdirSync(currentDir);
+      
+      // Check for exact case-sensitive match
+      if (actualFiles.includes(segment)) {
+        currentDir = resolve(currentDir, segment);
+        continue;
+      }
+
+      // Check for case-insensitive match
+      const lowerSegment = segment.toLowerCase();
+      const match = actualFiles.find(f => f.toLowerCase() === lowerSegment);
+      if (match) {
+        casingMismatch = true;
+        currentDir = resolve(currentDir, match);
+        continue;
+      }
+
+      // No match at all
+      return { status: 'NOT_FOUND' };
+    } catch {
+      return { status: 'NOT_FOUND' };
+    }
+  }
+
+  const canonicalPath = relative(workspaceRoot, currentDir);
+  return {
+    status: casingMismatch ? 'CASE_MISMATCH' : 'FOUND',
+    canonicalPath,
+  };
+}
+
+export class DocumentationValidator implements GovernanceValidator {
+  readonly name = 'DocumentationValidator';
+
+  public async run(files: string[], metadata: GovernanceMetadata): Promise<ValidationResult> {
+    const errors: ValidationError[] = [];
+    const warnings: ValidationError[] = [];
+    const startTime = Date.now();
+
+    const docGovConfig = governanceConfig.documentationGovernance;
+    const enforcement = docGovConfig.enforcement;
+
+    // Helper to get severity based on rule enforcement config
+    const getSeverity = (ruleId: string): 'ERROR' | 'WARNING' | 'INFO' | null => {
+      const level = enforcement[ruleId as keyof typeof enforcement];
+      if (level === 'FAIL_BUILD') return 'ERROR';
+      if (level === 'WARN') return 'WARNING';
+      if (level === 'OFF') return null;
+      return 'ERROR'; // fallback default
+    };
+
     // 1. Load or initialize historical files baseline index
     let historicalFiles = new Set<string>();
     if (existsSync(historicalFilesPath)) {
@@ -345,6 +423,10 @@ export function parseLinksFromLine(line: string): { type: 'inline' | 'reference'
 
               // Resolve relative path to workspace root
               const resolvedPath = resolve(workspaceRoot, targetRelPath);
+
+              const pathStatus = checkPathCasing(workspaceRoot, targetRelPath);
+
+              if (pathStatus.status === 'NOT_FOUND') {
                 // Check if it historically existed in baseline
                 const existedHistorically = historicalFiles.has(targetRelPath);
                 if (!existedHistorically) {
@@ -355,6 +437,8 @@ export function parseLinksFromLine(line: string): { type: 'inline' | 'reference'
                     addViolation('VAL-DOC-003', `Broken relative link: referenced file "${targetRelPath}" has been deleted, which is only permitted in historical archives.`, lineNum, trimmed);
                   }
                 }
+              } else if (pathStatus.status === 'CASE_MISMATCH') {
+                addViolation('VAL-DOC-004', `Filename casing mismatch: relative link path "${targetRelPath}" casing does not match the actual filesystem casing on disk.`, lineNum, trimmed);
               }
             }
           }
@@ -374,7 +458,14 @@ export function parseLinksFromLine(line: string): { type: 'inline' | 'reference'
       }
 
       // Check Temporary Documentation rule
-      const isTempName = docGovConfig.disallowedTempPatterns.some(pat => relPath.includes(pat));
+      const pathSegments = relPath.split(/[\\/]/);
+      const filename = pathSegments[pathSegments.length - 1];
+      const filenameWithoutExt = filename.includes('.') ? filename.substring(0, filename.lastIndexOf('.')) : filename;
+      const isTempName = docGovConfig.disallowedTempPatterns.some(pat => {
+        const hasMatchingDir = pathSegments.slice(0, -1).some(seg => seg.toLowerCase() === pat);
+        const hasMatchingFile = filenameWithoutExt.toLowerCase() === pat;
+        return hasMatchingDir || hasMatchingFile;
+      });
       if (isTempName) {
         addViolation('VAL-DOC-008', 'Temporary or draft document remains committed in the repository.');
       }
@@ -503,6 +594,31 @@ export function parseLinksFromLine(line: string): { type: 'inline' | 'reference'
         if (activeFiles.has(target) && !visited.has(target)) {
           visited.add(target);
           queue.push(target);
+        }
+      }
+    }
+
+    // Flag active files not visited as orphans
+    for (const active of activeFiles) {
+      if (!visited.has(active) && !entrypoints.includes(active)) {
+        const ruleId = 'VAL-DOC-007';
+        const severity = getSeverity(ruleId);
+        if (severity) {
+          const err: ValidationError = {
+            file: active,
+            rule: ruleId,
+            severity,
+            message: 'Orphaned document: active production file has no incoming links from any documentation entrypoint.',
+          };
+          if (severity === 'ERROR') {
+            errors.push(err);
+          } else {
+            warnings.push(err);
+          }
+        }
+      }
+    }
+
     // Write updated validation cache back to disk
     try {
       const baselinesDir = dirname(validationCachePath);
