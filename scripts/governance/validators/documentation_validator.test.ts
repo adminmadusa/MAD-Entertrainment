@@ -159,4 +159,28 @@ No entrypoint points to this document.
     // Since orphans cause warnings under staged rollout policy
     expect(result.warnings.some(e => e.rule === 'VAL-DOC-007')).toBe(true);
   });
+
+  it('should not mutate cache warnings or accumulate duplicate warnings across runs', async () => {
+    const file1 = join(testDirName, 'orphan-doc-cache-test.md');
+    const fullFile1 = join(testDir, 'orphan-doc-cache-test.md');
+
+    writeFileSync(fullFile1, `
+# Cache Test Orphan
+- **Status**: Active
+No incoming link from any entrypoint.
+`, 'utf8');
+
+    // Run validator first time.
+    const result1 = await validator.run([file1], { requiredDocuments: [], dependencyMatrix: [] });
+    const warningsCount1 = result1.warnings.filter(w => w.rule === 'VAL-DOC-007' && w.file === file1).length;
+    expect(warningsCount1).toBe(1);
+
+    // Run validator second time (simulating a cache hit).
+    const result2 = await validator.run([file1], { requiredDocuments: [], dependencyMatrix: [] });
+    const warningsCount2 = result2.warnings.filter(w => w.rule === 'VAL-DOC-007' && w.file === file1).length;
+    
+    // Assert warning count remains exactly 1 (no duplicates accumulated).
+    expect(warningsCount2).toBe(1);
+  });
 });
+
