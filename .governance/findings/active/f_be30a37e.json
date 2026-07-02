@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 2,
+  "id": "f_be30a37e",
+  "rule": "VAL-UI-009",
+  "ruleVersion": "1.0.0",
+  "engineVersion": "1.0.0",
+  "domain": "UI UX Guild",
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "feature": "UIElement",
+  "status": "NEW",
+  "confidence": 0.9,
+  "relationships": [],
+  "evidence": {
+    "path": "apps/admin/src/components/coupons/CouponForm.tsx",
+    "construct": "UIElement",
+    "snippet": "<div",
+    "line": 212,
+    "message": "Element <div> with click handler lacks a tabIndex or role attribute, breaking keyboard accessibility.",
+    "occurrences": [
+      {
+        "id": "7daaef1df5323a6a8cee2760e3065b14b67bf81b3fd7dce744e4e947c6e32d82",
+        "line": 212,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "<div",
+        "message": "Element <div> with click handler lacks a tabIndex or role attribute, breaking keyboard accessibility.",
+        "fingerprint": "7daaef1df5323a6a8cee2760e3065b14b67bf81b3fd7dce744e4e947c6e32d82"
+      }
+    ]
+  },
+  "createdDate": "2026-06-30T15:36:27.200Z",
+  "firstDetected": "2026-06-30T15:36:27.200Z",
+  "lastDetected": "2026-06-30T15:36:27.200Z",
+  "occurrenceCount": 1
+}

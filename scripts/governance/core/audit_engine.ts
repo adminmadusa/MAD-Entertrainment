@@ -1,5 +1,5 @@
 // scripts/governance/core/audit_engine.ts
-import { existsSync, readdirSync, writeFileSync } from 'fs';
+import { existsSync, readdirSync, readFileSync } from 'fs';
 import { resolve, join } from 'path';
 import { FindingManager } from './finding_manager';
 import { LifecycleManager } from './lifecycle_manager';
@@ -8,6 +8,7 @@ import { MetricsEngine } from './metrics_engine';
 import { ReportEngine } from './report_engine';
 import { GatingAction, ConfidenceEngine } from './confidence_engine';
 import { Finding, StatelessViolation, RepositorySnapshot } from './types';
+import { writeJsonIfChanged, persistenceStats } from './json_utils';
 
 export class AuditEngine {
   private static workspaceRoot = resolve(__dirname, '../../..');
@@ -57,8 +58,10 @@ export class AuditEngine {
 
     // 1. Process violations through FindingManager
     console.log(`🧠 Matching ${rawViolations.length} stateless violations...`);
+    const claimedFindingIds = new Set<string>();
     for (const violation of rawViolations) {
-      const finding = this.findingManager.matchOrCreateFinding(violation);
+      const finding = this.findingManager.matchOrCreateFinding(violation, claimedFindingIds);
+      claimedFindingIds.add(finding.id);
       activeFindingIds.add(finding.id);
     }
 
@@ -137,6 +140,58 @@ export class AuditEngine {
       memoryUsageBytes: process.memoryUsage().heapUsed,
     });
 
+    // 10. Generate daily history snapshot
+    const todayStr = new Date().toISOString().split('T')[0];
+    const snapshotPath = join(FindingManager.archiveHistoryDir, `${todayStr}.json`);
+    const activeFindingsCount = allFindings.filter(f => f.status === 'NEW' || f.status === 'CONFIRMED' || f.status === 'REGRESSION').length;
+    const closedFindingsCount = allFindings.filter(f => f.status === 'CLOSED').length;
+    const suppressedFindingsCount = allFindings.filter(f => f.status === 'FALSE_POSITIVE' || f.status === 'IGNORED').length;
+    
+    const snapshotData = {
+      timestamp: new Date().toISOString(),
+      activeCount: activeFindingsCount,
+      closedCount: closedFindingsCount,
+      suppressedCount: suppressedFindingsCount,
+      findings: allFindings.map(f => ({
+        id: f.id,
+        rule: f.rule,
+        status: f.status,
+        occurrenceCount: f.occurrenceCount || 1,
+      }))
+    };
+    const historyRes = writeJsonIfChanged(snapshotPath, snapshotData);
+    if (historyRes.written) {
+      persistenceStats.trendWritten++;
+    }
+
+    // 11. Generate manifest.json
+    const manifestPath = join(FindingManager.govDir, 'manifest.json');
+    let historySnapshots = 0;
+    if (existsSync(FindingManager.archiveHistoryDir)) {
+      historySnapshots = readdirSync(FindingManager.archiveHistoryDir).filter(f => f.endsWith('.json')).length;
+    }
+
+    const manifest = {
+      schemaVersion: 2,
+      manifestVersion: 1,
+      migrationVersion: 1,
+      engineVersion: '1.0.0',
+      findingCount: allFindings.length,
+      historySnapshots,
+      lastMigration: '2026-06-30T15:28:59Z',
+      lastAudit: new Date().toISOString(),
+      performance: {
+        findingsScanned: allFindings.length,
+        filesScanned: options.changedFiles ? options.changedFiles.length : 0,
+        scanDurationMs: totalDuration,
+        groupingDurationMs: totalDuration - (options.validatorTimeMs || 0),
+        migrationDurationMs: 0,
+        filesWritten: persistenceStats.findingWritten,
+        filesArchived: closedFindingsCount,
+      }
+    };
+    writeJsonIfChanged(manifestPath, manifest);
+
     return {
       success: finalGating !== 'FAIL_BUILD',
       findings: allFindings,
@@ -151,7 +206,31 @@ export class AuditEngine {
       `snapshot-${new Date().toISOString().substring(0, 7)}.json`
     );
     try {
-      writeFileSync(snapshotPath, JSON.stringify(snapshot, null, 2), 'utf8');
+      let stateChanged = true;
+      if (existsSync(snapshotPath)) {
+        const content = readFileSync(snapshotPath, 'utf8');
+        const existing = JSON.parse(content) as RepositorySnapshot;
+        if (
+          existing.commit === snapshot.commit &&
+          existing.branch === snapshot.branch &&
+          existing.engineVersion === snapshot.engineVersion &&
+          existing.ruleRegistryVersion === snapshot.ruleRegistryVersion
+        ) {
+          stateChanged = false;
+        }
+      }
+
+      if (stateChanged) {
+        const res = writeJsonIfChanged(snapshotPath, snapshot);
+        if (res.written) {
+          persistenceStats.snapshotWritten++;
+        }
+      } else {
+        console.log('📸 Repository snapshot state unchanged. Skipping write.');
+        // Increment examined/skipped counts manually since we bypassed writeJsonIfChanged
+        persistenceStats.examined++;
+        persistenceStats.skipped++;
+      }
     } catch (e) {
       // Ignore write errors for baseline snapshot
     }

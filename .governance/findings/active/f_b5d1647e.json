@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 2,
+  "id": "f_b5d1647e",
+  "rule": "VAL-UI-004",
+  "ruleVersion": "1.0.0",
+  "engineVersion": "1.0.0",
+  "domain": "UI UX Guild",
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "feature": "table",
+  "status": "NEW",
+  "confidence": 0.9,
+  "relationships": [],
+  "evidence": {
+    "path": "apps/admin/src/app/popups/page.tsx",
+    "construct": "table",
+    "snippet": "<table className=\"w-full text-sm\">",
+    "line": 177,
+    "message": "Raw <table> element used in admin portal. Use a reusable shared Table component.",
+    "occurrences": [
+      {
+        "id": "9d3529ff9ee4e2eb184ce2091274a0816b3082d987327a73353f5cd0c34edf4b",
+        "line": 177,
+        "column": 0,
+        "construct": "table",
+        "snippet": "<table className=\"w-full text-sm\">",
+        "message": "Raw <table> element used in admin portal. Use a reusable shared Table component.",
+        "fingerprint": "9d3529ff9ee4e2eb184ce2091274a0816b3082d987327a73353f5cd0c34edf4b"
+      },
+      {
+        "id": "887da07a98bf9c6bc255b65efae516f9f372052eaff72aab1b2b750c9129d3ad",
+        "line": 177,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "<table className=\"w-full text-sm\">",
+        "message": "Raw <table> element used in portal. Use a reusable shared Table component.",
+        "fingerprint": "887da07a98bf9c6bc255b65efae516f9f372052eaff72aab1b2b750c9129d3ad"
+      }
+    ]
+  },
+  "createdDate": "2026-06-29T08:10:44.693Z",
+  "firstDetected": "2026-06-29T08:10:44.693Z",
+  "lastDetected": "2026-06-30T15:36:27.160Z",
+  "occurrenceCount": 2
+}

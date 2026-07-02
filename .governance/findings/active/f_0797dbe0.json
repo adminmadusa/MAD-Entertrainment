@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 2,
+  "id": "f_0797dbe0",
+  "rule": "VAL-UI-003",
+  "ruleVersion": "1.0.0",
+  "engineVersion": "1.0.0",
+  "domain": "UI UX Guild",
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "feature": "UIElement",
+  "status": "NEW",
+  "confidence": 1,
+  "relationships": [],
+  "evidence": {
+    "path": "apps/web/src/app/events/[slug]/components/EventOverview.tsx",
+    "construct": "UIElement",
+    "snippet": "<div className=\"fixed inset-0 z-[100] flex justify-end bg-black/60 backdrop-blur-sm\">",
+    "line": 72,
+    "message": "Custom modal backdrop is missing role=\"dialog\" or aria-modal=\"true\" accessibility tags.",
+    "occurrences": [
+      {
+        "id": "e0ef5b6b75657b3b4506a881119622dbfd38a0791ee73581df9977818cf6d13d",
+        "line": 72,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "<div className=\"fixed inset-0 z-[100] flex justify-end bg-black/60 backdrop-blur-sm\">",
+        "message": "Custom modal backdrop is missing role=\"dialog\" or aria-modal=\"true\" accessibility tags.",
+        "fingerprint": "e0ef5b6b75657b3b4506a881119622dbfd38a0791ee73581df9977818cf6d13d"
+      }
+    ]
+  },
+  "createdDate": "2026-06-30T15:36:27.254Z",
+  "firstDetected": "2026-06-30T15:36:27.254Z",
+  "lastDetected": "2026-06-30T15:36:27.254Z",
+  "occurrenceCount": 1
+}

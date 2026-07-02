@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 2,
+  "id": "f_70e3bd0c",
+  "rule": "VAL-UI-008",
+  "ruleVersion": "1.0.0",
+  "engineVersion": "1.0.0",
+  "domain": "UI UX Guild",
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "feature": "UIElement",
+  "status": "NEW",
+  "confidence": 0.9,
+  "relationships": [],
+  "evidence": {
+    "path": "apps/web/src/app/events/[slug]/EventDetailClient.tsx",
+    "construct": "UIElement",
+    "snippet": "<h3 className=\"text-base font-bold text-white\">Good to know</h3>",
+    "line": 289,
+    "message": "Heading level jump detected (h3 after h1). Headings must follow a strict sequential hierarchy (h1 -> h2 -> h3).",
+    "occurrences": [
+      {
+        "id": "ed103c3f1b7fda398988ad5f986be7ff853d3c8faa2b2a6649f36f4344b4f278",
+        "line": 289,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "<h3 className=\"text-base font-bold text-white\">Good to know</h3>",
+        "message": "Heading level jump detected (h3 after h1). Headings must follow a strict sequential hierarchy (h1 -> h2 -> h3).",
+        "fingerprint": "ed103c3f1b7fda398988ad5f986be7ff853d3c8faa2b2a6649f36f4344b4f278"
+      }
+    ]
+  },
+  "createdDate": "2026-06-30T15:36:27.258Z",
+  "firstDetected": "2026-06-30T15:36:27.258Z",
+  "lastDetected": "2026-06-30T15:36:27.258Z",
+  "occurrenceCount": 1
+}

@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 2,
+  "id": "f_de6748d7",
+  "rule": "VAL-UI-010",
+  "ruleVersion": "1.0.0",
+  "engineVersion": "1.0.0",
+  "domain": "UI UX Guild",
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "feature": "UIElement",
+  "status": "NEW",
+  "confidence": 0.9,
+  "relationships": [],
+  "evidence": {
+    "path": "apps/web/src/app/events/[slug]/components/EventBookingFlow.tsx",
+    "construct": "UIElement",
+    "snippet": "<button",
+    "line": 114,
+    "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
+    "occurrences": [
+      {
+        "id": "9171f4a9ba3a686dcf100d66eb3416c50fcd4ee82b792d7e771bd49ee904dfbf",
+        "line": 114,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "<button",
+        "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
+        "fingerprint": "9171f4a9ba3a686dcf100d66eb3416c50fcd4ee82b792d7e771bd49ee904dfbf"
+      },
+      {
+        "id": "9171f4a9ba3a686dcf100d66eb3416c50fcd4ee82b792d7e771bd49ee904dfbf",
+        "line": 154,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "<button",
+        "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
+        "fingerprint": "9171f4a9ba3a686dcf100d66eb3416c50fcd4ee82b792d7e771bd49ee904dfbf"
+      }
+    ]
+  },
+  "createdDate": "2026-06-30T15:36:27.252Z",
+  "firstDetected": "2026-06-30T15:36:27.252Z",
+  "lastDetected": "2026-06-30T15:36:27.252Z",
+  "occurrenceCount": 2
+}

@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 2,
+  "id": "f_fe40cdad",
+  "rule": "VAL-UI-010",
+  "ruleVersion": "1.0.0",
+  "engineVersion": "1.0.0",
+  "domain": "UI UX Guild",
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "feature": "UIElement",
+  "status": "NEW",
+  "confidence": 0.9,
+  "relationships": [],
+  "evidence": {
+    "path": "apps/web/src/app/dj-operators/page.tsx",
+    "construct": "UIElement",
+    "snippet": "<button",
+    "line": 95,
+    "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
+    "occurrences": [
+      {
+        "id": "a69aa25eb2d2c72851bca040069ea5e68f98bc3d888b7d3ea08d6725c057bccd",
+        "line": 95,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "<button",
+        "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
+        "fingerprint": "a69aa25eb2d2c72851bca040069ea5e68f98bc3d888b7d3ea08d6725c057bccd"
+      },
+      {
+        "id": "a69aa25eb2d2c72851bca040069ea5e68f98bc3d888b7d3ea08d6725c057bccd",
+        "line": 181,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "<button",
+        "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
+        "fingerprint": "a69aa25eb2d2c72851bca040069ea5e68f98bc3d888b7d3ea08d6725c057bccd"
+      },
+      {
+        "id": "a69aa25eb2d2c72851bca040069ea5e68f98bc3d888b7d3ea08d6725c057bccd",
+        "line": 196,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "<button",
+        "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
+        "fingerprint": "a69aa25eb2d2c72851bca040069ea5e68f98bc3d888b7d3ea08d6725c057bccd"
+      }
+    ]
+  },
+  "createdDate": "2026-06-30T15:36:27.247Z",
+  "firstDetected": "2026-06-30T15:36:27.247Z",
+  "lastDetected": "2026-06-30T15:36:27.248Z",
+  "occurrenceCount": 3
+}

@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 2,
+  "id": "f_6a156d8e",
+  "rule": "VAL-UI-010",
+  "ruleVersion": "1.0.0",
+  "engineVersion": "1.0.0",
+  "domain": "UI UX Guild",
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "feature": "UIElement",
+  "status": "NEW",
+  "confidence": 0.9,
+  "relationships": [],
+  "evidence": {
+    "path": "apps/admin/src/components/diagnostics/ReservationLedgerTab.tsx",
+    "construct": "UIElement",
+    "snippet": "<table className=\"w-full text-xs\">",
+    "line": 33,
+    "message": "Shared Component Enforcement: Bypassed shared Table component in favor of raw HTML table element.",
+    "occurrences": [
+      {
+        "id": "aab0af3ee79774a89d35f4b95b0b567aeea7a2845e6a15b0078b6ee392a545b0",
+        "line": 33,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "<table className=\"w-full text-xs\">",
+        "message": "Shared Component Enforcement: Bypassed shared Table component in favor of raw HTML table element.",
+        "fingerprint": "aab0af3ee79774a89d35f4b95b0b567aeea7a2845e6a15b0078b6ee392a545b0"
+      }
+    ]
+  },
+  "createdDate": "2026-06-30T15:36:27.213Z",
+  "firstDetected": "2026-06-30T15:36:27.213Z",
+  "lastDetected": "2026-06-30T15:36:27.213Z",
+  "occurrenceCount": 1
+}

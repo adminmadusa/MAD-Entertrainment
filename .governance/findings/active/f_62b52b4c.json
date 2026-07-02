@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 2,
+  "id": "f_62b52b4c",
+  "rule": "VAL-UI-018",
+  "ruleVersion": "1.0.0",
+  "engineVersion": "1.0.0",
+  "domain": "Platform Team",
+  "owner": "Platform Team",
+  "package": "apps",
+  "feature": "UIElement",
+  "status": "NEW",
+  "confidence": 0.9,
+  "relationships": [],
+  "evidence": {
+    "path": "apps/web/src/app/checkout/[bookingId]/page.tsx",
+    "construct": "UIElement",
+    "message": "Possible Unreachable Route: no direct navigation links pointing to \"/checkout/[bookingId]\" were found in production files.",
+    "occurrences": [
+      {
+        "id": "f9ba6381c237ad060f3fe413e674143359beab65118c94dbdac8814a5e7d42d5",
+        "line": 0,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "",
+        "message": "Possible Unreachable Route: no direct navigation links pointing to \"/checkout/[bookingId]\" were found in production files.",
+        "fingerprint": "f9ba6381c237ad060f3fe413e674143359beab65118c94dbdac8814a5e7d42d5"
+      }
+    ]
+  },
+  "createdDate": "2026-06-30T15:36:27.244Z",
+  "firstDetected": "2026-06-30T15:36:27.244Z",
+  "lastDetected": "2026-06-30T15:36:27.244Z",
+  "occurrenceCount": 1
+}

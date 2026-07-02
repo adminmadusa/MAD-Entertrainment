@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 2,
+  "id": "f_7f868cf0",
+  "rule": "Orphaned Documentation",
+  "ruleVersion": "1.0.0",
+  "engineVersion": "1.0.0",
+  "domain": "Platform Team",
+  "owner": "Platform Team",
+  "package": "docs",
+  "feature": "Document",
+  "status": "NEW",
+  "confidence": 1,
+  "relationships": [],
+  "evidence": {
+    "path": "docs/archive/audits/ticket-retrieval-phase1-verification.md",
+    "construct": "Document",
+    "message": "Document exists in the repository but has no incoming references from any other active documentation.",
+    "occurrences": [
+      {
+        "id": "d02f58a4ea52a6a71b4b56588494f6182cbb6a8c14b0849ec516bf6bd91907ff",
+        "line": 0,
+        "column": 0,
+        "construct": "Document",
+        "snippet": "",
+        "message": "Document exists in the repository but has no incoming references from any other active documentation.",
+        "fingerprint": "d02f58a4ea52a6a71b4b56588494f6182cbb6a8c14b0849ec516bf6bd91907ff"
+      }
+    ]
+  },
+  "createdDate": "2026-06-30T15:36:27.752Z",
+  "firstDetected": "2026-06-30T15:36:27.752Z",
+  "lastDetected": "2026-06-30T15:36:27.752Z",
+  "occurrenceCount": 1
+}

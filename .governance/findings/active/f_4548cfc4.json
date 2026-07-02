@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 2,
+  "id": "f_4548cfc4",
+  "rule": "VAL-UI-007",
+  "ruleVersion": "1.0.0",
+  "engineVersion": "1.0.0",
+  "domain": "UI UX Guild",
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "feature": "UIElement",
+  "status": "NEW",
+  "confidence": 0.9,
+  "relationships": [],
+  "evidence": {
+    "path": "apps/web/src/components/booking/TicketSelectionContent.tsx",
+    "construct": "UIElement",
+    "snippet": "<div className=\"bg-[#1a1d2d] border border-white/10 rounded-3xl p-8 max-w-xs w-full text-center shadow-2xl animate-in fade-in zoom-in duration-200\">",
+    "line": 304,
+    "message": "Hardcoded color '#1a1d2d' detected. Standardize using design tokens/theme variables.",
+    "occurrences": [
+      {
+        "id": "5d50b7552c12b460b685d819fca4519a45261b470706e6d9ae2b93e4d61b7a84",
+        "line": 304,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "<div className=\"bg-[#1a1d2d] border border-white/10 rounded-3xl p-8 max-w-xs w-full text-center shadow-2xl animate-in fade-in zoom-in duration-200\">",
+        "message": "Hardcoded color '#1a1d2d' detected. Standardize using design tokens/theme variables.",
+        "fingerprint": "5d50b7552c12b460b685d819fca4519a45261b470706e6d9ae2b93e4d61b7a84"
+      },
+      {
+        "id": "8540242d9955e041f91c650b6a074f77f51ea516c59a75165eb50067a9c10408",
+        "line": 451,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "<div className=\"fixed bottom-0 left-0 right-0 bg-[#0d111d]/95 backdrop-blur-lg border-t border-white/10 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] z-50 shadow-2xl\">",
+        "message": "Hardcoded color '#0d111d' detected. Standardize using design tokens/theme variables.",
+        "fingerprint": "8540242d9955e041f91c650b6a074f77f51ea516c59a75165eb50067a9c10408"
+      }
+    ]
+  },
+  "createdDate": "2026-06-30T15:36:27.283Z",
+  "firstDetected": "2026-06-30T15:36:27.283Z",
+  "lastDetected": "2026-06-30T15:36:27.283Z",
+  "occurrenceCount": 2
+}

@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 2,
+  "id": "f_61a4e20e",
+  "rule": "Missing Document Owner",
+  "ruleVersion": "1.0.0",
+  "engineVersion": "1.0.0",
+  "domain": "Platform Team",
+  "owner": "Platform Team",
+  "package": "docs",
+  "feature": "Document",
+  "status": "NEW",
+  "confidence": 1,
+  "relationships": [],
+  "evidence": {
+    "path": "docs/remediation-plan.md",
+    "construct": "Document",
+    "message": "Every documentation file is required to have a defined \"Owner\" or \"Authors\" in its metadata block.",
+    "occurrences": [
+      {
+        "id": "d5b964461e4943240f1f781638d5ae142725d0f98860f47da801b7ea20cc161a",
+        "line": 0,
+        "column": 0,
+        "construct": "Document",
+        "snippet": "",
+        "message": "Every documentation file is required to have a defined \"Owner\" or \"Authors\" in its metadata block.",
+        "fingerprint": "d5b964461e4943240f1f781638d5ae142725d0f98860f47da801b7ea20cc161a"
+      }
+    ]
+  },
+  "createdDate": "2026-06-29T08:09:51.468Z",
+  "firstDetected": "2026-06-29T08:09:51.468Z",
+  "lastDetected": "2026-06-29T08:09:51.468Z",
+  "occurrenceCount": 1
+}

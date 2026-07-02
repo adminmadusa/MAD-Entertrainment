@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 2,
+  "id": "f_67c8fb03",
+  "rule": "VAL-UI-009",
+  "ruleVersion": "1.0.0",
+  "engineVersion": "1.0.0",
+  "domain": "UI UX Guild",
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "feature": "UIElement",
+  "status": "NEW",
+  "confidence": 0.9,
+  "relationships": [],
+  "evidence": {
+    "path": "apps/web/src/components/booking/checkout/LeaveCheckoutModal.tsx",
+    "construct": "UIElement",
+    "snippet": "<div className=\"absolute inset-0\" onClick={onClose} />",
+    "line": 20,
+    "message": "Element <div> with click handler lacks a tabIndex or role attribute, breaking keyboard accessibility.",
+    "occurrences": [
+      {
+        "id": "096ee9714587eea48c9178a1ffeb78063a42c96e3ecf4ae069a60b2dccda96e1",
+        "line": 20,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "<div className=\"absolute inset-0\" onClick={onClose} />",
+        "message": "Element <div> with click handler lacks a tabIndex or role attribute, breaking keyboard accessibility.",
+        "fingerprint": "096ee9714587eea48c9178a1ffeb78063a42c96e3ecf4ae069a60b2dccda96e1"
+      }
+    ]
+  },
+  "createdDate": "2026-06-30T15:36:27.273Z",
+  "firstDetected": "2026-06-30T15:36:27.273Z",
+  "lastDetected": "2026-06-30T15:36:27.273Z",
+  "occurrenceCount": 1
+}

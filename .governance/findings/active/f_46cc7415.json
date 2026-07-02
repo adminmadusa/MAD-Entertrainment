@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 2,
+  "id": "f_46cc7415",
+  "rule": "VAL-UI-010",
+  "ruleVersion": "1.0.0",
+  "engineVersion": "1.0.0",
+  "domain": "UI UX Guild",
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "feature": "UIElement",
+  "status": "NEW",
+  "confidence": 0.9,
+  "relationships": [],
+  "evidence": {
+    "path": "apps/admin/src/components/diagnostics/DrainQueueModal.tsx",
+    "construct": "UIElement",
+    "snippet": "<button",
+    "line": 44,
+    "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
+    "occurrences": [
+      {
+        "id": "03c81fcd03fa200b693be26de270f7566ff0a46b43b9e7d2c1fe399716cfda98",
+        "line": 44,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "<button",
+        "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
+        "fingerprint": "03c81fcd03fa200b693be26de270f7566ff0a46b43b9e7d2c1fe399716cfda98"
+      },
+      {
+        "id": "03c81fcd03fa200b693be26de270f7566ff0a46b43b9e7d2c1fe399716cfda98",
+        "line": 51,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "<button",
+        "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
+        "fingerprint": "03c81fcd03fa200b693be26de270f7566ff0a46b43b9e7d2c1fe399716cfda98"
+      }
+    ]
+  },
+  "createdDate": "2026-06-30T15:36:27.210Z",
+  "firstDetected": "2026-06-30T15:36:27.210Z",
+  "lastDetected": "2026-06-30T15:36:27.211Z",
+  "occurrenceCount": 2
+}

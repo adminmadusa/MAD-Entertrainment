@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 2,
+  "id": "f_17651f0c",
+  "rule": "VAL-UI-002",
+  "ruleVersion": "1.0.0",
+  "engineVersion": "1.0.0",
+  "domain": "UI UX Guild",
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "feature": "modal-backdrop",
+  "status": "NEW",
+  "confidence": 1,
+  "relationships": [],
+  "evidence": {
+    "path": "apps/admin/src/app/bookings/_components/CorrectEmailModal.tsx",
+    "construct": "modal-backdrop",
+    "snippet": "<div className=\"fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4\">",
+    "line": 59,
+    "message": "Custom backdrop & modal container coded. Use shared <Modal> component from @mad/ui to avoid styles drift.",
+    "occurrences": [
+      {
+        "id": "8f7edb4246ffbf236d4ecc11ca21811527c750c77d45afc358c76a745995094c",
+        "line": 59,
+        "column": 0,
+        "construct": "modal-backdrop",
+        "snippet": "<div className=\"fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4\">",
+        "message": "Custom backdrop & modal container coded. Use shared <Modal> component from @mad/ui to avoid styles drift.",
+        "fingerprint": "8f7edb4246ffbf236d4ecc11ca21811527c750c77d45afc358c76a745995094c"
+      },
+      {
+        "id": "9cc10cdfcdf9a324096a2f529b448405660f019ab9c474267cafed99d438f42c",
+        "line": 59,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "<div className=\"fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4\">",
+        "message": "Custom backdrop & modal container coded. Use shared <Modal> component from @mad/ui to avoid styles drift.",
+        "fingerprint": "9cc10cdfcdf9a324096a2f529b448405660f019ab9c474267cafed99d438f42c"
+      }
+    ]
+  },
+  "createdDate": "2026-06-29T08:09:52.265Z",
+  "firstDetected": "2026-06-29T08:09:52.265Z",
+  "lastDetected": "2026-06-30T15:36:27.122Z",
+  "occurrenceCount": 2
+}

@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 2,
+  "id": "f_84bd2659",
+  "rule": "VAL-UI-019",
+  "ruleVersion": "1.0.0",
+  "engineVersion": "1.0.0",
+  "domain": "Platform Team",
+  "owner": "Platform Team",
+  "package": "apps",
+  "feature": "UIElement",
+  "status": "NEW",
+  "confidence": 0.9,
+  "relationships": [],
+  "evidence": {
+    "path": "apps/web/next-env.d.ts",
+    "construct": "UIElement",
+    "line": 1,
+    "message": "Duplicate file detected: shares 100% similarity with \"apps/admin/next-env.d.ts\".",
+    "occurrences": [
+      {
+        "id": "53eb4942a5e451f499d17da599ca8b4b1b068a5f09b2de8cfd6bcbb9fa482c10",
+        "line": 1,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "",
+        "message": "Duplicate file detected: shares 100% similarity with \"apps/admin/next-env.d.ts\".",
+        "fingerprint": "53eb4942a5e451f499d17da599ca8b4b1b068a5f09b2de8cfd6bcbb9fa482c10"
+      }
+    ]
+  },
+  "createdDate": "2026-06-30T15:36:27.239Z",
+  "firstDetected": "2026-06-30T15:36:27.239Z",
+  "lastDetected": "2026-06-30T15:36:27.239Z",
+  "occurrenceCount": 1
+}

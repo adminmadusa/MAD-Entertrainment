@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 2,
+  "id": "f_602d3eae",
+  "rule": "VAL-UI-010",
+  "ruleVersion": "1.0.0",
+  "engineVersion": "1.0.0",
+  "domain": "UI UX Guild",
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "feature": "UIElement",
+  "status": "NEW",
+  "confidence": 0.9,
+  "relationships": [],
+  "evidence": {
+    "path": "apps/admin/src/components/CloudinaryUpload.tsx",
+    "construct": "UIElement",
+    "snippet": "<button",
+    "line": 122,
+    "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
+    "occurrences": [
+      {
+        "id": "48e6b0c13664c62be0c270c8879dc376da6156c79bf65e5969dffe8ad0cf89b3",
+        "line": 122,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "<button",
+        "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
+        "fingerprint": "48e6b0c13664c62be0c270c8879dc376da6156c79bf65e5969dffe8ad0cf89b3"
+      },
+      {
+        "id": "48e6b0c13664c62be0c270c8879dc376da6156c79bf65e5969dffe8ad0cf89b3",
+        "line": 129,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "<button",
+        "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
+        "fingerprint": "48e6b0c13664c62be0c270c8879dc376da6156c79bf65e5969dffe8ad0cf89b3"
+      }
+    ]
+  },
+  "createdDate": "2026-06-30T15:36:27.199Z",
+  "firstDetected": "2026-06-30T15:36:27.199Z",
+  "lastDetected": "2026-06-30T15:36:27.199Z",
+  "occurrenceCount": 2
+}

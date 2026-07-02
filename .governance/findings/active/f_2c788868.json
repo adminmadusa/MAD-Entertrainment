@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 2,
+  "id": "f_2c788868",
+  "rule": "Orphaned Documentation",
+  "ruleVersion": "1.0.0",
+  "engineVersion": "1.0.0",
+  "domain": "Platform Team",
+  "owner": "Platform Team",
+  "package": "docs",
+  "feature": "Document",
+  "status": "NEW",
+  "confidence": 1,
+  "relationships": [],
+  "evidence": {
+    "path": "docs/audit/refund/REFUND-001-FINDINGS.md",
+    "construct": "Document",
+    "message": "Document exists in the repository but has no incoming references from any other active documentation.",
+    "occurrences": [
+      {
+        "id": "2105af03cc9a5f37a3a0a194fbc7cccbc4bc61f9df0b471d11ea66eba5f27530",
+        "line": 0,
+        "column": 0,
+        "construct": "Document",
+        "snippet": "",
+        "message": "Document exists in the repository but has no incoming references from any other active documentation.",
+        "fingerprint": "2105af03cc9a5f37a3a0a194fbc7cccbc4bc61f9df0b471d11ea66eba5f27530"
+      }
+    ]
+  },
+  "createdDate": "2026-06-30T15:36:28.304Z",
+  "firstDetected": "2026-06-30T15:36:28.304Z",
+  "lastDetected": "2026-06-30T15:36:28.304Z",
+  "occurrenceCount": 1
+}
