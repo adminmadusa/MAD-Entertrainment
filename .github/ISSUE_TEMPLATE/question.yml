@@ -1,0 +1,23 @@
+name: "❓ Question or Discussion"
+description: "Ask a question about the architecture, developer workflow, or system behavior."
+title: "[QUESTION]: "
+labels: ["question"]
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: "Summary of Question / Topic"
+      placeholder: "e.g., How do we mock external email providers in local test runs?"
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: "Context"
+      description: "Any relevant documents or file paths in the codebase related to your question."
+      placeholder: "e.g., packages/utils/src/email.ts"
+  - type: textarea
+    id: background
+    attributes:
+      label: "What have you tried / researched so far?"
+      placeholder: "I looked at TESTING.md and the vitest setup but couldn't find zeptomail mocking guidance."

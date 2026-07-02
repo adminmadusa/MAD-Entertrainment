@@ -1,0 +1,79 @@
+name: "🐛 Bug Report"
+description: "Report a software defect or unexpected behavior in the MAD Entertrainment repository."
+title: "[BUG]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please fill out this form as completely as possible. Ensure you have run a **Deployment Parity Check** as required by our repository rules.
+  - type: textarea
+    id: description
+    attributes:
+      label: "Description of the Bug"
+      description: "A clear and concise description of what the bug is."
+      placeholder: "e.g., Guest checkouts fail when a payment is processed while database TTL deletion triggers."
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: "Steps to Reproduce"
+      description: "Steps to reproduce the behavior. Please list these sequentially."
+      placeholder: |
+        1. Go to '/events/dj-party'
+        2. Click on 'Book Now'
+        3. Complete payment
+        4. See error
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: "Expected Behavior"
+      description: "What you expected to happen."
+      placeholder: "e.g., Booking status transitions to completed, ticket is delivered."
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: "Actual Behavior"
+      description: "What actually happened."
+      placeholder: "e.g., Page hangs, DB error in logs."
+    validations:
+      required: true
+  - type: checkboxes
+    id: deployment_parity
+    attributes:
+      label: "Deployment Parity Check (Mandatory)"
+      description: "MAD requires that all bugs be verified across environments before reporting."
+      options:
+        - label: "I have verified the frontend environment & branch."
+          required: true
+        - label: "I have verified the backend environment & branch."
+          required: true
+        - label: "I have confirmed deployment completion on both ends."
+          required: true
+  - type: dropdown
+    id: environment
+    attributes:
+      label: "Environment"
+      options:
+        - "Local / Development"
+        - "Vercel Test / Develop Branch"
+        - "Vercel Production / Live Branch"
+      default: 0
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: "Logs, Stack Traces, or Console Output"
+      description: "Attach relevant logs from Render, Sentry, or local console."
+      render: bash
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: "Screenshots or Visual Evidence"
+      description: "Drag/paste images or links to demonstrates the issue."

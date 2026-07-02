@@ -1,0 +1,47 @@
+name: "⚖️ Governance Issue"
+description: "Propose an Architecture Decision Record (ADR), governance rule update, or register an exception."
+title: "[GOV]: "
+labels: ["governance"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this template to request modifications to repository-wide rules, branching standards, or review matrices.
+  - type: dropdown
+    id: category
+    attributes:
+      label: "Governance Request Type"
+      options:
+        - "Create new Architecture Decision Record (ADR)"
+        - "Modify REPOSITORY_GOVERNANCE.md or AGENTS.md policy"
+        - "Register/renew an audit exception"
+        - "Add, modify, or remove a governance validator rule"
+        - "Other structural/governance issue"
+      default: 0
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: "Context & Problem Statement"
+      description: "Explain the background circumstances, current limitations, or rationale behind this request."
+      placeholder: "e.g., The flat-file finding database has reached 720 entries and needs consolidation."
+    validations:
+      required: true
+  - type: textarea
+    id: proposed_change
+    attributes:
+      label: "Proposed Change / Justification"
+      description: "Detailed description of the rule changes, exception lifetime, or ADR proposal."
+      placeholder: "e.g., Create ADR-002 for DB High Availability configuration."
+    validations:
+      required: true
+  - type: checkboxes
+    id: compliance
+    attributes:
+      label: "Governance Compliance Check"
+      options:
+        - label: "I have reviewed the REPOSITORY_GOVERNANCE.md and AGENTS.md files."
+          required: true
+        - label: "I understand that governance changes require Review Board approval."
+          required: true

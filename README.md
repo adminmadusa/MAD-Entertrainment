@@ -112,7 +112,7 @@ Avoid introducing overlapping governance checks when existing tooling already co
 
 Repository audit findings, technical debt, governance findings, and future improvements are tracked in:
 
-* `TODO-AUDIT-FIXES.md`
+* [docs/TODO-AUDIT-FIXES.md](docs/TODO-AUDIT-FIXES.md)
 
 Backlog items must not interrupt an active implementation task unless there is a critical production issue.
 

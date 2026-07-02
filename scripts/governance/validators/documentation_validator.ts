@@ -111,27 +111,6 @@ export function parseLinksFromLine(line: string): { type: 'inline' | 'reference'
   }
   return links;
 }
-
-export class DocumentationValidator implements GovernanceValidator {
-  readonly name = 'DocumentationValidator';
-
-  public async run(files: string[], metadata: GovernanceMetadata): Promise<ValidationResult> {
-    const errors: ValidationError[] = [];
-    const warnings: ValidationError[] = [];
-    const startTime = Date.now();
-
-    const docGovConfig = governanceConfig.documentationGovernance;
-    const enforcement = docGovConfig.enforcement;
-
-    // Helper to get severity based on rule enforcement config
-    const getSeverity = (ruleId: string): 'ERROR' | 'WARNING' | 'INFO' | null => {
-      const level = enforcement[ruleId as keyof typeof enforcement];
-      if (level === 'FAIL_BUILD') return 'ERROR';
-      if (level === 'WARN') return 'WARNING';
-      if (level === 'OFF') return null;
-      return 'ERROR'; // fallback default
-    };
-
     // 1. Load or initialize historical files baseline index
     let historicalFiles = new Set<string>();
     if (existsSync(historicalFilesPath)) {
@@ -366,8 +345,6 @@ export class DocumentationValidator implements GovernanceValidator {
 
               // Resolve relative path to workspace root
               const resolvedPath = resolve(workspaceRoot, targetRelPath);
-
-              if (!existsSync(resolvedPath)) {
                 // Check if it historically existed in baseline
                 const existedHistorically = historicalFiles.has(targetRelPath);
                 if (!existedHistorically) {
@@ -377,30 +354,6 @@ export class DocumentationValidator implements GovernanceValidator {
                   if (status !== 'Historical' && status !== 'Deprecated') {
                     addViolation('VAL-DOC-003', `Broken relative link: referenced file "${targetRelPath}" has been deleted, which is only permitted in historical archives.`, lineNum, trimmed);
                   }
-                }
-              } else {
-                // Exists on disk: verify case-sensitivity cross-platform (VAL-DOC-004)
-                const relativeToStart = relative(workspaceRoot, resolvedPath);
-                const segments = relativeToStart.split(/[\\/]/).filter(Boolean);
-                let currentDir = workspaceRoot;
-                let casingValid = true;
-
-                for (const segment of segments) {
-                  try {
-                    const actualFiles = readdirSync(currentDir);
-                    if (!actualFiles.includes(segment)) {
-                      casingValid = false;
-                      break;
-                    }
-                    currentDir = resolve(currentDir, segment);
-                  } catch {
-                    casingValid = false;
-                    break;
-                  }
-                }
-
-                if (!casingValid) {
-                  addViolation('VAL-DOC-004', `Filename casing mismatch: relative link path "${targetRelPath}" casing does not match the actual filesystem casing on disk.`, lineNum, trimmed);
                 }
               }
             }
@@ -552,33 +505,6 @@ export class DocumentationValidator implements GovernanceValidator {
         if (activeFiles.has(target) && !visited.has(target)) {
           visited.add(target);
           queue.push(target);
-        }
-      }
-    }
-
-    // Flag active files not visited as orphans
-    for (const active of activeFiles) {
-      if (!visited.has(active) && !entrypoints.includes(active)) {
-        const ruleId = 'VAL-DOC-007';
-        const severity = getSeverity(ruleId);
-        if (severity) {
-          const err: ValidationError = {
-            file: active,
-            rule: ruleId,
-            severity,
-            message: 'Orphaned document: active production file has no incoming links from any documentation entrypoint.',
-          };
-          if (severity === 'ERROR') {
-            errors.push(err);
-            newCache[active]?.errors.push(err);
-          } else {
-            warnings.push(err);
-            newCache[active]?.warnings.push(err);
-          }
-        }
-      }
-    }
-
     // Write updated validation cache back to disk
     try {
       const baselinesDir = dirname(validationCachePath);

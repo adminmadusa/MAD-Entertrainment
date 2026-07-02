@@ -401,7 +401,6 @@
   ".agents/ai-os/validation/validators/SECURITY.md",
   ".agents/ai-os/validation/validators/TESTING.md",
   ".agents/ai-os/validation/validators/TYPESCRIPT.md",
-  ".audit-exceptions.json",
   ".github/workflows/ci.yml",
   ".gitignore",
   ".husky/pre-commit",
