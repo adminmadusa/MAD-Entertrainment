@@ -232,6 +232,7 @@ function main() {
   };
 
   const outPath = "reports/audit/audit-data.json";
+  require("fs").mkdirSync(require("path").dirname(outPath), { recursive: true });
   require("fs").writeFileSync(outPath, JSON.stringify(audit, null, 2));
   log(`Audit data written to ${outPath}`);
 }
