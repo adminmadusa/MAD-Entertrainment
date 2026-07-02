@@ -112,6 +112,63 @@ export function parseLinksFromLine(line: string): { type: 'inline' | 'reference'
   return links;
 }
 
+/**
+ * Resolves path casing cross-platform.
+ *
+ * CI executes on Linux (case-sensitive filesystem) while many contributors develop
+ * on macOS/Windows (case-insensitive).
+ *
+ * We intentionally distinguish:
+ * - file missing (NOT_FOUND) -> VAL-DOC-003
+ * - file exists with incorrect casing (CASE_MISMATCH) -> VAL-DOC-004
+ * - file exists with correct casing (FOUND)
+ *
+ * to ensure deterministic validation across platforms.
+ */
+export function checkPathCasing(
+  workspaceRoot: string,
+  targetRelPath: string
+): { status: 'NOT_FOUND' | 'CASE_MISMATCH' | 'FOUND'; canonicalPath?: string } {
+  const segments = targetRelPath.split(/[\\/]/).filter(Boolean);
+  let currentDir = workspaceRoot;
+  let casingMismatch = false;
+
+  for (const segment of segments) {
+    try {
+      if (!existsSync(currentDir)) {
+        return { status: 'NOT_FOUND' };
+      }
+      const actualFiles = readdirSync(currentDir);
+      
+      // Check for exact case-sensitive match
+      if (actualFiles.includes(segment)) {
+        currentDir = resolve(currentDir, segment);
+        continue;
+      }
+
+      // Check for case-insensitive match
+      const lowerSegment = segment.toLowerCase();
+      const match = actualFiles.find(f => f.toLowerCase() === lowerSegment);
+      if (match) {
+        casingMismatch = true;
+        currentDir = resolve(currentDir, match);
+        continue;
+      }
+
+      // No match at all
+      return { status: 'NOT_FOUND' };
+    } catch {
+      return { status: 'NOT_FOUND' };
+    }
+  }
+
+  const canonicalPath = relative(workspaceRoot, currentDir);
+  return {
+    status: casingMismatch ? 'CASE_MISMATCH' : 'FOUND',
+    canonicalPath,
+  };
+}
+
 export class DocumentationValidator implements GovernanceValidator {
   readonly name = 'DocumentationValidator';
 
@@ -367,7 +424,9 @@ export class DocumentationValidator implements GovernanceValidator {
               // Resolve relative path to workspace root
               const resolvedPath = resolve(workspaceRoot, targetRelPath);
 
-              if (!existsSync(resolvedPath)) {
+              const pathStatus = checkPathCasing(workspaceRoot, targetRelPath);
+
+              if (pathStatus.status === 'NOT_FOUND') {
                 // Check if it historically existed in baseline
                 const existedHistorically = historicalFiles.has(targetRelPath);
                 if (!existedHistorically) {
@@ -378,30 +437,8 @@ export class DocumentationValidator implements GovernanceValidator {
                     addViolation('VAL-DOC-003', `Broken relative link: referenced file "${targetRelPath}" has been deleted, which is only permitted in historical archives.`, lineNum, trimmed);
                   }
                 }
-              } else {
-                // Exists on disk: verify case-sensitivity cross-platform (VAL-DOC-004)
-                const relativeToStart = relative(workspaceRoot, resolvedPath);
-                const segments = relativeToStart.split(/[\\/]/).filter(Boolean);
-                let currentDir = workspaceRoot;
-                let casingValid = true;
-
-                for (const segment of segments) {
-                  try {
-                    const actualFiles = readdirSync(currentDir);
-                    if (!actualFiles.includes(segment)) {
-                      casingValid = false;
-                      break;
-                    }
-                    currentDir = resolve(currentDir, segment);
-                  } catch {
-                    casingValid = false;
-                    break;
-                  }
-                }
-
-                if (!casingValid) {
-                  addViolation('VAL-DOC-004', `Filename casing mismatch: relative link path "${targetRelPath}" casing does not match the actual filesystem casing on disk.`, lineNum, trimmed);
-                }
+              } else if (pathStatus.status === 'CASE_MISMATCH') {
+                addViolation('VAL-DOC-004', `Filename casing mismatch: relative link path "${targetRelPath}" casing does not match the actual filesystem casing on disk.`, lineNum, trimmed);
               }
             }
           }

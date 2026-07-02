@@ -104,6 +104,17 @@ Link: [Target](Target.md)
     const result2 = await validator.run([file1, targetFileRel], { requiredDocuments: [], dependencyMatrix: [] });
     expect(result2.success).toBe(false);
     expect(result2.errors.some(e => e.rule === 'VAL-DOC-004')).toBe(true);
+
+    // Nonexistent file link
+    writeFileSync(fullFile1, `
+# Source
+- **Status**: Active
+Link: [Missing](missing.md)
+`, 'utf8');
+
+    const result3 = await validator.run([file1], { requiredDocuments: [], dependencyMatrix: [] });
+    expect(result3.success).toBe(false);
+    expect(result3.errors.some(e => e.rule === 'VAL-DOC-003')).toBe(true);
   });
 
   it('should validate duplicate markdown files', async () => {
