@@ -132,4 +132,49 @@ describe('Dependency Graph Foundation (Phase 1)', () => {
     unlinkSync(file1);
     unlinkSync(file2);
   });
+
+  it('should validate hybrid caching, mtime matches, timestamp modifications, and content modifications', () => {
+    const fs = require('fs');
+    const tempFile = resolve(workspaceRoot, 'packages/temp_perf_test_file.ts');
+    
+    // 1. Initial creation of temp file in scanned workspace
+    writeFileSync(tempFile, 'export const tempVal = 123;', 'utf8');
+    
+    try {
+      // Rebuild/register the new file
+      new KnowledgeGraph();
+      
+      // Second run: mtime should match, hitting the fast path
+      const g2 = new KnowledgeGraph();
+      const metadata2 = g2.getDetailedData('packages/temp_perf_test_file.ts');
+      expect(metadata2).toBeDefined();
+      expect(metadata2?.hash).toBeDefined();
+
+      // 2. Simulate git timestamp change (git checkout/restore simulation):
+      // Modify mtime without altering content
+      const futureTime = (Date.now() + 50000) / 1000;
+      fs.utimesSync(tempFile, futureTime, futureTime);
+      
+      const g3 = new KnowledgeGraph();
+      const metadata3 = g3.getDetailedData('packages/temp_perf_test_file.ts');
+      // The cached timestamp should have been updated to the new mtime (futureTime * 1000)
+      // due to hash matching fallback reconciliation
+      expect(metadata3).toBeDefined();
+      expect(Math.abs((metadata3?.lastModified || 0) - futureTime * 1000)).toBeLessThan(1000);
+
+      // 3. Real content modification (mtime and content hash both change)
+      writeFileSync(tempFile, 'export const tempVal = 456; // edited content', 'utf8');
+      const g4 = new KnowledgeGraph();
+      const metadata4 = g4.getDetailedData('packages/temp_perf_test_file.ts');
+      expect(metadata4).toBeDefined();
+      expect(metadata4?.hash).not.toBe(metadata3?.hash);
+    } finally {
+      if (fs.existsSync(tempFile)) {
+        fs.unlinkSync(tempFile);
+      }
+      // Run once more to remove tempFile from cache baselines
+      new KnowledgeGraph();
+    }
+  });
 });
+
