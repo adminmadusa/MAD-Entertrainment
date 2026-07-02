@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 2,
+  "id": "f_15178456",
+  "rule": "VAL-UI-003",
+  "ruleVersion": "1.0.0",
+  "engineVersion": "1.0.0",
+  "domain": "UI UX Guild",
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "feature": "UIElement",
+  "status": "NEW",
+  "confidence": 1,
+  "relationships": [],
+  "evidence": {
+    "path": "apps/web/src/app/events/[slug]/components/EventBookingFlow.tsx",
+    "construct": "UIElement",
+    "snippet": "<div className=\"fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm md:p-4 animate-fade-in\">",
+    "line": 101,
+    "message": "Custom modal backdrop is missing role=\"dialog\" or aria-modal=\"true\" accessibility tags.",
+    "occurrences": [
+      {
+        "id": "ed9db2141d2ac8dd5cf56c01c4b30ca7788fafe0f02d3b105d8e86e02b633776",
+        "line": 101,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "<div className=\"fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm md:p-4 animate-fade-in\">",
+        "message": "Custom modal backdrop is missing role=\"dialog\" or aria-modal=\"true\" accessibility tags.",
+        "fingerprint": "ed9db2141d2ac8dd5cf56c01c4b30ca7788fafe0f02d3b105d8e86e02b633776"
+      },
+      {
+        "id": "ed9db2141d2ac8dd5cf56c01c4b30ca7788fafe0f02d3b105d8e86e02b633776",
+        "line": 233,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "<div className=\"fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm md:p-4 animate-fade-in\">",
+        "message": "Custom modal backdrop is missing role=\"dialog\" or aria-modal=\"true\" accessibility tags.",
+        "fingerprint": "ed9db2141d2ac8dd5cf56c01c4b30ca7788fafe0f02d3b105d8e86e02b633776"
+      }
+    ]
+  },
+  "createdDate": "2026-06-30T15:36:27.250Z",
+  "firstDetected": "2026-06-30T15:36:27.250Z",
+  "lastDetected": "2026-06-30T15:36:27.250Z",
+  "occurrenceCount": 2
+}

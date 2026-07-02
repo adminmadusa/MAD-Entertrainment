@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 2,
+  "id": "f_e42dc933",
+  "rule": "VAL-UI-010",
+  "ruleVersion": "1.0.0",
+  "engineVersion": "1.0.0",
+  "domain": "UI UX Guild",
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "feature": "UIElement",
+  "status": "NEW",
+  "confidence": 0.9,
+  "relationships": [],
+  "evidence": {
+    "path": "apps/admin/src/components/dj-operators/DJBasicInfoCard.tsx",
+    "construct": "UIElement",
+    "snippet": "export const Field: React.FC<{ label: string; htmlFor?: string; children: React.ReactNode }> = ({",
+    "line": 4,
+    "message": "Shared Component Enforcement: Local duplication of Field component wrapper. Import Field from shared library instead.",
+    "occurrences": [
+      {
+        "id": "32b789e2663520c70dd2084e0cd18adf3a3d808095c9b7db10ceaa44fbedb883",
+        "line": 4,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "export const Field: React.FC<{ label: string; htmlFor?: string; children: React.ReactNode }> = ({",
+        "message": "Shared Component Enforcement: Local duplication of Field component wrapper. Import Field from shared library instead.",
+        "fingerprint": "32b789e2663520c70dd2084e0cd18adf3a3d808095c9b7db10ceaa44fbedb883"
+      }
+    ]
+  },
+  "createdDate": "2026-06-30T15:36:27.216Z",
+  "firstDetected": "2026-06-30T15:36:27.216Z",
+  "lastDetected": "2026-06-30T15:36:27.216Z",
+  "occurrenceCount": 1
+}

@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 2,
+  "id": "f_0a0ee3c1",
+  "rule": "VAL-UI-003",
+  "ruleVersion": "1.0.0",
+  "engineVersion": "1.0.0",
+  "domain": "UI UX Guild",
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "feature": "modal-accessibility",
+  "status": "CLOSED",
+  "confidence": 1,
+  "relationships": [],
+  "evidence": {
+    "path": "apps/admin/src/components/AdminShell.tsx",
+    "construct": "modal-accessibility",
+    "snippet": "className=\"fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden\"",
+    "line": 75,
+    "message": "Custom modal backdrop is missing role=\"dialog\" or aria-modal=\"true\" accessibility tags.",
+    "occurrences": [
+      {
+        "id": "28a6f41dd09876eef07d0aac411ac139c80ac6b8b1777889ca4a6559155b94e3",
+        "line": 75,
+        "column": 0,
+        "construct": "modal-accessibility",
+        "snippet": "className=\"fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden\"",
+        "message": "Custom modal backdrop is missing role=\"dialog\" or aria-modal=\"true\" accessibility tags.",
+        "fingerprint": "28a6f41dd09876eef07d0aac411ac139c80ac6b8b1777889ca4a6559155b94e3"
+      }
+    ]
+  },
+  "createdDate": "2026-06-29T08:10:19.926Z",
+  "firstDetected": "2026-06-29T08:10:19.926Z",
+  "lastDetected": "2026-06-29T08:10:19.926Z",
+  "occurrenceCount": 1
+}

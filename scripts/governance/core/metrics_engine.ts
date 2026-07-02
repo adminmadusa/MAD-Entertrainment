@@ -1,9 +1,10 @@
 // scripts/governance/core/metrics_engine.ts
-import { existsSync, readFileSync, writeFileSync } from 'fs';
+import { existsSync, readFileSync } from 'fs';
 import { resolve, join } from 'path';
 import { Finding, GovernanceMetrics, PerformanceGuardrails } from './types';
 import { RuleRegistry } from '../rules/registry';
 import { metricsDir } from './finding_manager';
+import { writeJsonIfChanged, persistenceStats } from './json_utils';
 
 export class MetricsEngine {
   private static trendMetricsFile = join(metricsDir, 'trend-metrics.json');
@@ -150,6 +151,41 @@ export class MetricsEngine {
       }
     }
 
+    if (trends.length > 0) {
+      const lastTrend = trends[trends.length - 1];
+      let metricsChanged = false;
+      
+      if (
+        lastTrend.totalFindings !== metrics.totalFindings ||
+        lastTrend.newFindings !== metrics.newFindings ||
+        lastTrend.closedFindings !== metrics.closedFindings ||
+        lastTrend.regressionCount !== metrics.regressionCount ||
+        lastTrend.falsePositiveRate !== metrics.falsePositiveRate ||
+        lastTrend.averageConfidence !== metrics.averageConfidence ||
+        lastTrend.averageResolutionTimeMs !== metrics.averageResolutionTimeMs
+      ) {
+        metricsChanged = true;
+      } else {
+        const oldScores = lastTrend.scores || {};
+        const newScores = metrics.scores || {};
+        const allScoreKeys = new Set([...Object.keys(oldScores), ...Object.keys(newScores)]);
+        for (const key of allScoreKeys) {
+          if (oldScores[key] !== newScores[key]) {
+            metricsChanged = true;
+            break;
+          }
+        }
+      }
+
+      if (!metricsChanged) {
+        console.log('📊 Trend metrics unchanged. Skipping append.');
+        // Increment examined/skipped counts manually since we bypassed writeJsonIfChanged
+        persistenceStats.examined++;
+        persistenceStats.skipped++;
+        return;
+      }
+    }
+
     trends.push({
       timestamp: new Date().toISOString(),
       ...metrics,
@@ -160,7 +196,10 @@ export class MetricsEngine {
       trends = trends.slice(trends.length - 50);
     }
 
-    writeFileSync(this.trendMetricsFile, JSON.stringify(trends, null, 2), 'utf8');
+    const res = writeJsonIfChanged(this.trendMetricsFile, trends);
+    if (res.written) {
+      persistenceStats.trendWritten++;
+    }
   }
 
   /**

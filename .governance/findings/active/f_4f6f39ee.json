@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 2,
+  "id": "f_4f6f39ee",
+  "rule": "VAL-UI-011",
+  "ruleVersion": "1.0.0",
+  "engineVersion": "1.0.0",
+  "domain": "UI UX Guild",
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "feature": "UIElement",
+  "status": "NEW",
+  "confidence": 0.9,
+  "relationships": [],
+  "evidence": {
+    "path": "apps/admin/src/app/error.tsx",
+    "construct": "UIElement",
+    "line": 1,
+    "message": "Duplicate component layout detected: shares 76% similarity with \"ErrorBoundary\" in \"apps/admin/src/components/ErrorBoundary.tsx\". Recommendation: Extract the duplicated layout/logic from \"apps/admin/src/app/error.tsx\" and \"apps/admin/src/components/ErrorBoundary.tsx\" into a single reusable shared component in \"packages/ui\".",
+    "occurrences": [
+      {
+        "id": "99c6ffe78b8d2c55126ccc0013e85b34aa838647c02e8b54d0c66e4d6c5ffc23",
+        "line": 1,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "",
+        "message": "Duplicate component layout detected: shares 76% similarity with \"ErrorBoundary\" in \"apps/admin/src/components/ErrorBoundary.tsx\". Recommendation: Extract the duplicated layout/logic from \"apps/admin/src/app/error.tsx\" and \"apps/admin/src/components/ErrorBoundary.tsx\" into a single reusable shared component in \"packages/ui\".",
+        "fingerprint": "99c6ffe78b8d2c55126ccc0013e85b34aa838647c02e8b54d0c66e4d6c5ffc23"
+      }
+    ]
+  },
+  "createdDate": "2026-06-30T15:36:27.142Z",
+  "firstDetected": "2026-06-30T15:36:27.142Z",
+  "lastDetected": "2026-06-30T15:36:27.142Z",
+  "occurrenceCount": 1
+}

@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 2,
+  "id": "f_c0303cc7",
+  "rule": "VAL-UI-006",
+  "ruleVersion": "1.0.0",
+  "engineVersion": "1.0.0",
+  "domain": "Platform Team",
+  "owner": "Platform Team",
+  "package": "apps",
+  "feature": "Field",
+  "status": "NEW",
+  "confidence": 0.95,
+  "relationships": [],
+  "evidence": {
+    "path": "apps/admin/src/app/popups/[id]/edit/page.tsx",
+    "construct": "Field",
+    "snippet": "function Field({ label, children }: { label: string; children: React.ReactNode }) {",
+    "line": 326,
+    "message": "Local duplication of <Field> wrapper. Use a shared components package.",
+    "occurrences": [
+      {
+        "id": "3ef7ea24a42270e770450e065d78cc2cdebea9b8e10ed46313b672899ccbf369",
+        "line": 326,
+        "column": 0,
+        "construct": "Field",
+        "snippet": "function Field({ label, children }: { label: string; children: React.ReactNode }) {",
+        "message": "Local duplication of <Field> wrapper. Use a shared components package.",
+        "fingerprint": "3ef7ea24a42270e770450e065d78cc2cdebea9b8e10ed46313b672899ccbf369"
+      },
+      {
+        "id": "bd63236a66ba870add13cbfad00e855d4a863998ee1f7ad8cd7198dae3835478",
+        "line": 326,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "function Field({ label, children }: { label: string; children: React.ReactNode }) {",
+        "message": "Local duplication of <Field> wrapper. Use a shared components package.",
+        "fingerprint": "bd63236a66ba870add13cbfad00e855d4a863998ee1f7ad8cd7198dae3835478"
+      }
+    ]
+  },
+  "createdDate": "2026-06-29T08:10:44.677Z",
+  "firstDetected": "2026-06-29T08:10:44.677Z",
+  "lastDetected": "2026-06-30T15:36:27.156Z",
+  "occurrenceCount": 2
+}

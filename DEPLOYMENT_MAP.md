@@ -235,9 +235,9 @@ sequenceDiagram
   CI->>CI: 2. Spin up MongoDB v6 Container
   CI->>CI: 3. Run Lints (pnpm run lint)
   CI->>CI: 4. Run Type Checks (pnpm run type-check)
-  CI->>CI: 5. Run CI Governance Checks (ci_governance_check.ts)
+  CI->>CI: 5. Run CI Governance Checks (ci-governance-check.ts)
   CI->>CI: 6. Build Workspace (pnpm run build)
-  CI->>CI: 7. Run Dependency Vulnerability Audit (dependency_audit.ts)
+  CI->>CI: 7. Run Dependency Vulnerability Audit (dependency-audit.ts)
   CI->>CI: 8. Run Verification Tests (pnpm run test)
   CI-->>Git: Status: Success
   Git->>Vercel: Trigger Frontend Build (on live/develop push)

@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 2,
+  "id": "f_643b51be",
+  "rule": "VAL-UI-007",
+  "ruleVersion": "1.0.0",
+  "engineVersion": "1.0.0",
+  "domain": "UI UX Guild",
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "feature": "UIElement",
+  "status": "NEW",
+  "confidence": 0.9,
+  "relationships": [],
+  "evidence": {
+    "path": "apps/web/src/app/events/[slug]/components/EventOverview.tsx",
+    "construct": "UIElement",
+    "snippet": "className=\"w-full max-w-md bg-[#0d111d] h-full shadow-2xl relative z-10 border-l border-white/10 p-6 flex flex-col justify-between animate-slide-in focus:outline-none\"",
+    "line": 82,
+    "message": "Hardcoded color '#0d111d' detected. Standardize using design tokens/theme variables.",
+    "occurrences": [
+      {
+        "id": "b868e8f28719dfe95c86ed8ff5679e898497cb8394157a73dbbb98dad85825bf",
+        "line": 82,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "className=\"w-full max-w-md bg-[#0d111d] h-full shadow-2xl relative z-10 border-l border-white/10 p-6 flex flex-col justify-between animate-slide-in focus:outline-none\"",
+        "message": "Hardcoded color '#0d111d' detected. Standardize using design tokens/theme variables.",
+        "fingerprint": "b868e8f28719dfe95c86ed8ff5679e898497cb8394157a73dbbb98dad85825bf"
+      }
+    ]
+  },
+  "createdDate": "2026-06-30T15:36:27.255Z",
+  "firstDetected": "2026-06-30T15:36:27.255Z",
+  "lastDetected": "2026-06-30T15:36:27.255Z",
+  "occurrenceCount": 1
+}
