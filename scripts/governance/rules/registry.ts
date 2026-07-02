@@ -4,6 +4,7 @@ import { uiRules } from './ui.rules';
 import { securityRules } from './security.rules';
 import { performanceRules } from './performance.rules';
 import { architectureRules } from './architecture.rules';
+import { docRules } from './documentation.rules';
 
 export class RuleRegistry {
   private static rules = new Map<string, RuleDefinition>();
@@ -17,6 +18,7 @@ export class RuleRegistry {
       ...securityRules,
       ...performanceRules,
       ...architectureRules,
+      ...docRules,
     ];
 
     for (const rule of allRules) {

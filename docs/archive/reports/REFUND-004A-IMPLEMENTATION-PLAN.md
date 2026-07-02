@@ -26,7 +26,7 @@ Implement the revised refund webhook reconciliation design to address all findin
 
 ### Component 1: Model Schema
 
-#### [MODIFY] [refund.schema.ts](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/models/refund.schema.ts)
+#### [MODIFY] [refund.schema.ts](../../../apps/server/src/models/refund.schema.ts)
 
 - Add interface fields:
   ```ts
@@ -52,7 +52,7 @@ Implement the revised refund webhook reconciliation design to address all findin
 
 ### Component 2: Service Layer (Admin Approval Phase)
 
-#### [MODIFY] [refund.service.ts](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/services/admin/refund.service.ts)
+#### [MODIFY] [refund.service.ts](../../../apps/server/src/services/admin/refund.service.ts)
 
 - In `processRefund`, in the Approve path (right after the Stripe/Razorpay API call succeeds and returns `finalGatewayRefundId`, before the Phase 3 finalization transaction begins), persist the gateway ID to minimize the crash window:
   ```ts
@@ -71,7 +71,7 @@ Implement the revised refund webhook reconciliation design to address all findin
 
 ### Component 3: Service Layer (Reconciliation Handlers)
 
-#### [MODIFY] [payment.service.ts](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/services/public/payment.service.ts)
+#### [MODIFY] [payment.service.ts](../../../apps/server/src/services/public/payment.service.ts)
 
 Implement two static methods for Stripe and Razorpay webhook reconciliation.
 
@@ -159,7 +159,7 @@ import * as Sentry from '@sentry/node';
 
 ### Component 4: Controller Routing
 
-#### [MODIFY] [payment.controller.ts](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/controllers/public/payment.controller.ts)
+#### [MODIFY] [payment.controller.ts](../../../apps/server/src/controllers/public/payment.controller.ts)
 
 - **Stripe Webhook Handler (`stripeWebhook`):**
   - Add routing:
@@ -230,11 +230,11 @@ import * as Sentry from '@sentry/node';
 
 ### Component 5: Tests
 
-#### [MODIFY] [payment.controller.webhook.test.ts](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/controllers/public/payment.controller.webhook.test.ts)
+#### [MODIFY] [payment.controller.webhook.test.ts](../../../apps/server/src/controllers/public/payment.controller.webhook.test.ts)
 - Add tests to verify controller-to-service routing for Stripe `charge.refunded`, `refund.updated`, `refund.failed`, and Razorpay `refund.processed`, `refund.failed`.
 - Verify `paymentId` and custom `_reconciledRefundId` are written to the `WebhookEvent` model.
 
-#### [NEW] [payment.service.refund-webhook.test.ts](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/services/public/payment.service.refund-webhook.test.ts)
+#### [NEW] [payment.service.refund-webhook.test.ts](../../../apps/server/src/services/public/payment.service.refund-webhook.test.ts)
 - Implement comprehensive tests covering all scenarios from the updated test matrix.
 
 ---

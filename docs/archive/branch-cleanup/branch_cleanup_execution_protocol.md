@@ -50,13 +50,13 @@ For the branches requiring preservation, the following assets must be cherry-pic
 ### 1. Files To Preserve & Cherry-Pick
 * **Staging & Production Runbook (`RUNBOOK.md`)**:
   * Source Branch: `origin/feat/production-pdf-ticket-system` (or `origin/fix/payment-success-feedback`)
-  * Target Location: Root directory `/Users/admin/Desktop/MAD Entertrainment/RUNBOOK.md`
+  * Target Location: Root directory `RUNBOOK.md`
 * **Modular Ticket PDF Layout drawers**:
   * Source Branch: `origin/feat/production-pdf-ticket-system`
-  * Target Location: `/Users/admin/Desktop/MAD Entertrainment/apps/server/src/lib/pdf/ticket/generate-ticket-pdf.ts` and all components under `/layout/` and `/utils/`
+  * Target Location: `apps/server/src/lib/pdf/ticket/generate-ticket-pdf.ts` and all components under `/layout/` and `/utils/`
 * **React Email Transactional Templates**:
   * Source Branch: `origin/feat/production-pdf-ticket-system`
-  * Target Location: `/Users/admin/Desktop/MAD Entertrainment/apps/server/src/lib/email/templates/ticket-delivery.tsx` & `booking-confirmation.tsx`
+  * Target Location: `apps/server/src/lib/email/templates/ticket-delivery.tsx` & `booking-confirmation.tsx`
 
 ---
 

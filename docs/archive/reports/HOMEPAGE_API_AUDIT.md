@@ -54,7 +54,7 @@ sequenceDiagram
 The main driver behind the **800ms–2800ms** latency is **in-memory sorting and unindexed database queries**.
 
 #### 1. The DJ Operator Sorting Bottleneck
-* **File**: `apps/server/src/services/public/dj-operator.service.ts` ([dj-operator.service.ts:L20-L28](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/services/public/dj-operator.service.ts#L20-L28))
+* **File**: `apps/server/src/services/public/dj-operator.service.ts` ([dj-operator.service.ts:L20-L28](../../../apps/server/src/services/public/dj-operator.service.ts#L20-L28))
 * **Code**:
   ```typescript
   DJOperator.find(query)
@@ -65,12 +65,12 @@ The main driver behind the **800ms–2800ms** latency is **in-memory sorting and
     .lean()
   ```
 * **Index Review** (`apps/server/src/models/dj-operator.schema.ts`):
-  * The schema only indexes `isActive` ([dj-operator.schema.ts:L36](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/models/dj-operator.schema.ts#L36)) and `isDeleted` ([dj-operator.schema.ts:L37](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/models/dj-operator.schema.ts#L37)).
+  * The schema only indexes `isActive` ([dj-operator.schema.ts:L36](../../../apps/server/src/models/dj-operator.schema.ts#L36)) and `isDeleted` ([dj-operator.schema.ts:L37](../../../apps/server/src/models/dj-operator.schema.ts#L37)).
   * **There is no index on `name`.**
   * **Impact**: When sorting by `name`, MongoDB is forced to fetch *all* active DJ documents and perform an **in-memory blocking sort**. If the database grows under load, this blocks the DB engine, spiking latency up to 2.8 seconds.
 
 #### 2. The Event Query isDeleted Index Flaw
-* **File**: `apps/server/src/services/public/event.service.ts` ([event.service.ts:L31-L38](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/services/public/event.service.ts#L31-L38))
+* **File**: `apps/server/src/services/public/event.service.ts` ([event.service.ts:L31-L38](../../../apps/server/src/services/public/event.service.ts#L31-L38))
 * **Code**:
   ```typescript
   Event.find(query)

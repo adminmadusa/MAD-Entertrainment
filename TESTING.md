@@ -6,8 +6,8 @@
 - **Review Cycle**: Ongoing
 - **Last Updated**: 2026-06-25
 - **Related Documents:**
-  - [README.md](file:///Users/admin/Desktop/MAD%20Entertrainment/README.md)
-  - [REPOSITORY_GOVERNANCE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/REPOSITORY_GOVERNANCE.md)
+  - [README.md](README.md)
+  - [REPOSITORY_GOVERNANCE.md](REPOSITORY_GOVERNANCE.md)
 
 ---
 

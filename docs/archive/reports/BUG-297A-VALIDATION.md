@@ -7,12 +7,12 @@ This document provides evidence and validation of the changes resolving BUG-297.
 ## 1. Ownership Retention Validation
 
 ### A. Retention of `sessionId` after `confirmBooking()`
-- **Evidence**: Added unit test `BUG-297: Guest booking confirms and assigns userId while preserving sessionId` in [`payment.service.test.ts`](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/services/public/payment.service.test.ts).
+- **Evidence**: Added unit test `BUG-297: Guest booking confirms and assigns userId while preserving sessionId` in [`payment.service.test.ts`](../../../apps/server/src/services/public/payment.service.test.ts).
 - **Result**: The test executes `confirmBooking()` through the webhook confirmation flow, and verifies that the `Booking.findOneAndUpdate` update object contains the new `userId` in `$set` but does **not** contain `sessionId` in the `$unset` block.
 - **Output Status**: **Pass**
 
 ### B. Retention of `sessionId` after `linkBookingsToUser()`
-- **Evidence**: Updated unit test `OTP-012: Guest booking claim` in [`auth.service.test.ts`](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/services/public/auth.service.test.ts).
+- **Evidence**: Updated unit test `OTP-012: Guest booking claim` in [`auth.service.test.ts`](../../../apps/server/src/services/public/auth.service.test.ts).
 - **Result**: Asserts that `Booking.updateMany` is called with `$set: { userId }` and contains **no** `$unset: { sessionId: 1 }` operations, confirming the session ID is preserved during user registration and logins.
 - **Output Status**: **Pass**
 
@@ -30,7 +30,7 @@ This document provides evidence and validation of the changes resolving BUG-297.
     booking.sessionId === ownershipContext.sessionId;
   ```
   Since `booking.sessionId` was preserved in the database, `isGuestOwner` evaluates to `true`. Ownership validation passes, and the checkout success page loads.
-- **Evidence**: Verified by unit test `BUG-297: verifyPayment succeeds using session ownership after webhook confirms and links userId` in [`payment.service.test.ts`](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/services/public/payment.service.test.ts).
+- **Evidence**: Verified by unit test `BUG-297: verifyPayment succeeds using session ownership after webhook confirms and links userId` in [`payment.service.test.ts`](../../../apps/server/src/services/public/payment.service.test.ts).
 - **Status**: **Pass**
 
 ### B. Verify-before-Webhook Race
@@ -46,7 +46,7 @@ This document provides evidence and validation of the changes resolving BUG-297.
 ### A. Unit Tests (`pnpm test`)
 All 733 tests in the monorepo passed successfully.
 ```txt
- RUN  v4.1.9 /Users/admin/Desktop/MAD Entertrainment
+ RUN  v4.1.9 /workspace/MAD Entertrainment
 
  ✓  server  apps/server/src/services/public/auth.service.test.ts (21 tests) 14ms
  ✓  server  apps/server/src/services/public/payment.service.test.ts (44 tests) 31ms

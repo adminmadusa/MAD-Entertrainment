@@ -10,9 +10,9 @@
 
 The following immutable Git state snapshots were captured and archived in the repository:
 
-* **Remote Branch Snapshot:** [remote_branch_snapshot_after.txt](file:///Users/admin/Desktop/MAD%20Entertrainment/docs/archive/branch-cleanup/evidence/remote_branch_snapshot_after.txt)
-* **Remote Tag Snapshot:** [remote_tags_snapshot.txt](file:///Users/admin/Desktop/MAD%20Entertrainment/docs/archive/branch-cleanup/evidence/remote_tags_snapshot.txt)
-* **Local Tracking Snapshot:** [remote_tracking_snapshot.txt](file:///Users/admin/Desktop/MAD%20Entertrainment/docs/archive/branch-cleanup/evidence/remote_tracking_snapshot.txt)
+* **Remote Branch Snapshot:** [remote_branch_snapshot_after.txt](evidence/remote_branch_snapshot_after.txt)
+* **Remote Tag Snapshot:** [remote_tags_snapshot.txt](evidence/remote_tags_snapshot.txt)
+* **Local Tracking Snapshot:** [remote_tracking_snapshot.txt](evidence/remote_tracking_snapshot.txt)
 
 ---
 
@@ -85,12 +85,12 @@ We cross-referenced `cleanup_record.md` and `final_cleanup_authorization_audit.m
 ## Phase 6 — Evidence Archival
 
 All captured Git outputs were successfully archived under:
-`/Users/admin/Desktop/MAD Entertrainment/docs/archive/branch-cleanup/evidence/`
+`docs/archive/branch-cleanup/evidence/`
 
 ### Evidence Files Created:
-1. [remote_branch_snapshot_after.txt](file:///Users/admin/Desktop/MAD%20Entertrainment/docs/archive/branch-cleanup/evidence/remote_branch_snapshot_after.txt)
-2. [remote_tags_snapshot.txt](file:///Users/admin/Desktop/MAD%20Entertrainment/docs/archive/branch-cleanup/evidence/remote_tags_snapshot.txt)
-3. [remote_tracking_snapshot.txt](file:///Users/admin/Desktop/MAD%20Entertrainment/docs/archive/branch-cleanup/evidence/remote_tracking_snapshot.txt)
+1. [remote_branch_snapshot_after.txt](evidence/remote_branch_snapshot_after.txt)
+2. [remote_tags_snapshot.txt](evidence/remote_tags_snapshot.txt)
+3. [remote_tracking_snapshot.txt](evidence/remote_tracking_snapshot.txt)
 
 ---
 

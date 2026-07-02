@@ -46,7 +46,7 @@ We highly recommend **Option A (Logical EXPIRED Status with Deferred 30-day TTL)
 ### Recommended Execution Plan (The Smallest Safe Fix)
 To implement Option A without needing database index rebuilds or complex schema migrations, we can leverage the existing `{ expireAfterSeconds: 0 }` TTL index by dynamically moving `expiresAt` forward:
 
-1. **Keep TTL Index**: Keep the `{ expireAfterSeconds: 0 }` TTL index on `expiresAt` exactly as configured in [booking.schema.ts](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/models/booking.schema.ts#L109).
+1. **Keep TTL Index**: Keep the `{ expireAfterSeconds: 0 }` TTL index on `expiresAt` exactly as configured in [booking.schema.ts](../../../apps/server/src/models/booking.schema.ts#L109).
 2. **Initial Booking Creation**: 
    - Set the booking `status` to `AWAITING_PAYMENT`.
    - Set a new field, `logicalExpiresAt = now + 10 minutes` to represent the checkout window.
@@ -64,13 +64,13 @@ This represents the absolute **cleanest, safest, and most resilient** production
 
 ## 3. Exact Files Requiring Modification
 
-### 1. [booking.schema.ts](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/models/booking.schema.ts)
+### 1. [booking.schema.ts](../../../apps/server/src/models/booking.schema.ts)
 - Add `logicalExpiresAt?: Date` to the schema and interface to track the exact checkout window separate from physical deletion.
 
-### 2. [booking.service.ts](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/services/public/booking.service.ts)
+### 2. [booking.service.ts](../../../apps/server/src/services/public/booking.service.ts)
 - Set `logicalExpiresAt = new Date(Date.now() + 10 * 60 * 1000)` and `expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)` (30 days) during initial booking creation.
 
-### 3. [payment.service.ts](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/services/public/payment.service.ts)
+### 3. [payment.service.ts](../../../apps/server/src/services/public/payment.service.ts)
 - Refactor the atomic confirmation status filter inside `confirmBooking` to allow transitions from `AWAITING_PAYMENT` OR `EXPIRED` statuses to `CONFIRMED`:
   ```typescript
   const confirmedBooking = await Booking.findOneAndUpdate(
@@ -81,6 +81,6 @@ This represents the absolute **cleanest, safest, and most resilient** production
   ```
 - Implement seat-conflict check during recovery: if specific locked seats were already taken, log a high-priority admin alert to prompt manual ticket re-seating while confirming the booking.
 
-### 4. [consistency.service.ts](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/services/consistency.service.ts)
+### 4. [consistency.service.ts](../../../apps/server/src/services/consistency.service.ts)
 - Add a query to scan for bookings where `status === AWAITING_PAYMENT` and `logicalExpiresAt <= now`. 
 - Transition these stale bookings to `EXPIRED` status and release their locked seats and capacity.

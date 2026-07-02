@@ -6,8 +6,8 @@
 - **Review Cycle**: Ongoing
 - **Last Updated**: 2026-06-25
 - **Related Documents:**
-  - [REPOSITORY_GOVERNANCE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/REPOSITORY_GOVERNANCE.md)
-  - [AGENTS.MD](file:///Users/admin/Desktop/MAD%20Entertrainment/AGENTS.MD)
+  - [REPOSITORY_GOVERNANCE.md](REPOSITORY_GOVERNANCE.md)
+  - [AGENTS.MD](AGENTS.MD)
 
 ---
 
@@ -84,15 +84,15 @@ pnpm build
 
 For detailed information about each subsystem, refer to the respective Single Source of Truth (SSOT) documents:
 
-- [REPOSITORY_GOVERNANCE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/REPOSITORY_GOVERNANCE.md) — Governance policies, branch/PR standards, and review workflows.
-- [ARCHITECTURE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/ARCHITECTURE.md) — Canonical system architecture, package boundaries, and coding standards.
-- [DEPLOYMENT_MAP.md](file:///Users/admin/Desktop/MAD%20Entertrainment/DEPLOYMENT_MAP.md) — Infrastructure topology, environments, and CI/CD pipelines.
-- [API_CONTRACTS.md](file:///Users/admin/Desktop/MAD%20Entertrainment/API_CONTRACTS.md) — Express endpoint definitions, request/response schemas, and rate limits.
-- [docs/decisions/README.md](file:///Users/admin/Desktop/MAD%20Entertrainment/docs/decisions/README.md) — Architecture Decision Records (ADRs) explaining technical rationale.
-- [RUNBOOK.md](file:///Users/admin/Desktop/MAD%20Entertrainment/RUNBOOK.md) — Operational checklists, deployment instructions, and incident response.
-- [TESTING.md](file:///Users/admin/Desktop/MAD%20Entertrainment/TESTING.md) — Testing guidelines and verification requirements.
-- [AGENTS.md](file:///Users/admin/Desktop/MAD%20Entertrainment/AGENTS.md) — Operational instructions for human developers and AI agents.
-- [CHANGELOG.md](file:///Users/admin/Desktop/MAD%20Entertrainment/CHANGELOG.md) — Chronological release history and repository milestones.
+- [REPOSITORY_GOVERNANCE.md](REPOSITORY_GOVERNANCE.md) — Governance policies, branch/PR standards, and review workflows.
+- [ARCHITECTURE.md](ARCHITECTURE.md) — Canonical system architecture, package boundaries, and coding standards.
+- [DEPLOYMENT_MAP.md](DEPLOYMENT_MAP.md) — Infrastructure topology, environments, and CI/CD pipelines.
+- [API_CONTRACTS.md](API_CONTRACTS.md) — Express endpoint definitions, request/response schemas, and rate limits.
+- [docs/decisions/README.md](docs/decisions/README.md) — Architecture Decision Records (ADRs) explaining technical rationale.
+- [RUNBOOK.md](RUNBOOK.md) — Operational checklists, deployment instructions, and incident response.
+- [TESTING.md](TESTING.md) — Testing guidelines and verification requirements.
+- [AGENTS.MD](AGENTS.MD) — Operational instructions for human developers and AI agents.
+- [CHANGELOG.md](CHANGELOG.md) — Chronological release history and repository milestones.
 
 ---
 
@@ -112,7 +112,7 @@ Avoid introducing overlapping governance checks when existing tooling already co
 
 Repository audit findings, technical debt, governance findings, and future improvements are tracked in:
 
-* `TODO-AUDIT-FIXES.md`
+* [docs/TODO-AUDIT-FIXES.md](docs/TODO-AUDIT-FIXES.md)
 
 Backlog items must not interrupt an active implementation task unless there is a critical production issue.
 

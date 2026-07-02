@@ -4,9 +4,9 @@ Version: 1.0
 ## Purpose
 This document defines investigation and root-cause analysis standards for this workspace.
 
-These standards supplement the repository [AGENTS.MD](file:///Users/admin/Desktop/MAD%20Entertrainment/AGENTS.MD) and apply only to debugging, incident response, root-cause analysis, and forensic investigations.
+These standards supplement the repository [AGENTS.MD](../AGENTS.MD) and apply only to debugging, incident response, root-cause analysis, and forensic investigations.
 
-If any conflict exists, the repository [AGENTS.MD](file:///Users/admin/Desktop/MAD%20Entertrainment/AGENTS.MD) takes precedence.
+If any conflict exists, the repository [AGENTS.MD](../AGENTS.MD) takes precedence.
 
 ---
 

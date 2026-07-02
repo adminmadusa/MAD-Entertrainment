@@ -17,7 +17,7 @@ This validation stream certified the platform against five primary quality bench
 ---
 
 ## 2. Walkthrough Video & Verification Reference
-- Functional tests are recorded under: [staging_web_validation_1782554814170.webp](file:///Users/admin/.gemini/antigravity-ide/brain/5c5c4ff5-ed9e-46ad-b40c-e10ac54f273e/staging_web_validation_1782554814170.webp)
+- Functional tests are recorded under: `staging_web_validation_1782554814170.webp` (Deleted)
 - Visual changes were captured at every navigation step:
   - Homepage: `step_1_home.png`
   - Events: `step_2_events.png`

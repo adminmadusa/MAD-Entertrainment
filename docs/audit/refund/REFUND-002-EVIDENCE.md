@@ -5,7 +5,7 @@ This document details the exact refund approval path, transaction boundaries, lo
 ---
 
 ## 1. Current Approval Flow
-The approval flow is implemented in `processRefund()` ([refund.service.ts:L274](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/services/admin/refund.service.ts#L274)). The sequence is:
+The approval flow is implemented in `processRefund()` ([refund.service.ts:L274](../../../apps/server/src/services/admin/refund.service.ts#L274)). The sequence is:
 1. **Document Claim**: Atomically fetch and transition the refund status from `'requested'` to `'processing'` via `Refund.findOneAndUpdate()`.
 2. **Context Retrieval**: Retrieve referenced `Payment` and `Booking` documents.
 3. **Status Validation**: Check that the payment is in `PAID` or `PARTIALLY_REFUNDED` status, and the booking is in `CONFIRMED` or `CANCELLED` status.
@@ -21,7 +21,7 @@ The approval path segments database operations across distinct boundaries:
 * **Segment 1 (Claim)**: Independent atomic Mongoose write operation. Runs outside of any transaction session.
 * **Segment 2 (Validation & Balance Check)**: Standalone read operations executed outside of any transaction session.
 * **Segment 3 (Gateway Call)**: API call executed over HTTPS outside of database transaction boundaries.
-* **Segment 4 (Persistence)**: Multi-document write operation wrapped inside `runInTransaction()` ([refund.service.ts:L454](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/services/admin/refund.service.ts#L454)).
+* **Segment 4 (Persistence)**: Multi-document write operation wrapped inside `runInTransaction()` ([refund.service.ts:L454](../../../apps/server/src/services/admin/refund.service.ts#L454)).
 * **Segment 5 (Error Revert)**: Standalone write query in the `catch` block (`Refund.updateOne`) executed outside of a transaction session.
 
 ---

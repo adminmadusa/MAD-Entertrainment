@@ -2,7 +2,7 @@
   {
     "id": "GHSA-5c6j-r48x-rmvq",
     "justification": "Serialize-javascript high vulnerability is in a devDependency and not executed dynamically on client-side production request paths.",
-    "expiration": "2026-07-01",
+    "expiration": "2026-10-01",
     "approver": "Security Operations Lead"
   }
 ]

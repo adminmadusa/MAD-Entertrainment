@@ -10,14 +10,14 @@ Supersedes:
 - None (First version establishing the Deployment SSOT)
 
 Related Documents:
-- [README.md](file:///Users/admin/Desktop/MAD%20Entertrainment/README.md)
-- [REPOSITORY_GOVERNANCE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/REPOSITORY_GOVERNANCE.md)
-- [AGENTS.MD](file:///Users/admin/Desktop/MAD%20Entertrainment/AGENTS.MD)
-- [RUNBOOK.md](file:///Users/admin/Desktop/MAD%20Entertrainment/RUNBOOK.md)
-- [ARCHITECTURE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/ARCHITECTURE.md)
-- [API_CONTRACTS.md](file:///Users/admin/Desktop/MAD%20Entertrainment/API_CONTRACTS.md)
-- [decisions/README.md](file:///Users/admin/Desktop/MAD%20Entertrainment/docs/decisions/README.md)
-- [CHANGELOG.md](file:///Users/admin/Desktop/MAD%20Entertrainment/CHANGELOG.md)
+- [README.md](README.md)
+- [REPOSITORY_GOVERNANCE.md](REPOSITORY_GOVERNANCE.md)
+- [AGENTS.MD](AGENTS.MD)
+- [RUNBOOK.md](RUNBOOK.md)
+- [ARCHITECTURE.md](ARCHITECTURE.md)
+- [API_CONTRACTS.md](API_CONTRACTS.md)
+- [decisions/README.md](docs/decisions/README.md)
+- [CHANGELOG.md](CHANGELOG.md)
 
 ---
 
@@ -55,7 +55,7 @@ The document **must** be updated whenever any of the following change:
 - Monitoring stack
 - Infrastructure ownership
 
-Changes affecting deployment must not be merged without updating this document and logging the release in [CHANGELOG.md](file:///Users/admin/Desktop/MAD%20Entertrainment/CHANGELOG.md).
+Changes affecting deployment must not be merged without updating this document and logging the release in [CHANGELOG.md](CHANGELOG.md).
 
 ### Deployment Stability Classification
 The table below classifies the maturity and stability of the system's deployment workflows:
@@ -392,7 +392,7 @@ Rollback steps are executed manually from provider consoles:
 
 ### Current Implementation
 Observability is mapped to three targets:
-- **Endpoints**: Express hosts `/api/health` checking MongoDB and Redis connections (documented in [API_CONTRACTS.md](file:///Users/admin/Desktop/MAD%20Entertrainment/API_CONTRACTS.md)).
+- **Endpoints**: Express hosts `/api/health` checking MongoDB and Redis connections (documented in [API_CONTRACTS.md](API_CONTRACTS.md)).
 - **Logging**: Render routes logs to Sentry. BullMQ failures are enqueued for dead-letter processing.
 - **Alerting**: Better Uptime monitors `apm.esparex.in/api/health`.
 

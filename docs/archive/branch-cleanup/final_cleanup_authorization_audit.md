@@ -24,7 +24,7 @@ We compared the Branch Cleanup Validation Audit, Branch Cleanup Execution Protoc
 
 We verified that all unmerged documentation, visual layout, email, and PDF design assets have been successfully copied, verified, and are independently accessible.
 
-* **Documentation Preserved:** ✅ **Yes**. Staging & Production Runbook (`RUNBOOK.md`) extracted to [RUNBOOK.md](file:///Users/admin/.gemini/antigravity-ide/brain/241fee3a-1279-4014-8caf-434a77d66971/recovered_assets/docs/RUNBOOK.md).
+* **Documentation Preserved:** ✅ **Yes**. Staging & Production Runbook (`RUNBOOK.md`) extracted to [RUNBOOK.md](../../../RUNBOOK.md).
 * **Design Assets Preserved:** ✅ **Yes**. Visual PDF ticket card layouts, typography metrics, and color configurations preserved.
 * **Code Assets Preserved:** ✅ **Yes**. Modular PDF generation modules (`apps/server/src/lib/pdf/ticket/...`) and React Email templates (`apps/server/src/lib/email/templates/...`) copied.
 
