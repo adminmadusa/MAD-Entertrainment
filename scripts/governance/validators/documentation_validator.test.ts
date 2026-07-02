@@ -159,4 +159,57 @@ No entrypoint points to this document.
     // Since orphans cause warnings under staged rollout policy
     expect(result.warnings.some(e => e.rule === 'VAL-DOC-007')).toBe(true);
   });
+
+  it('should validate VAL-DOC-008 temporary files correctly', async () => {
+    // 1. Files that must fail
+    const failingFiles = [
+      'temp.md',
+      'draft.md',
+      'backup.md',
+      'tmp/some-doc.md'
+    ];
+
+    for (const f of failingFiles) {
+      const relPath = join(testDirName, f);
+      const fullPath = join(testDir, f);
+      const parentDir = require('path').dirname(fullPath);
+      if (!existsSync(parentDir)) {
+        mkdirSync(parentDir, { recursive: true });
+      }
+      writeFileSync(fullPath, `
+# Temporary Document
+- **Status**: Active
+This is a test temporary file.
+`, 'utf8');
+
+      const result = await validator.run([relPath], { requiredDocuments: [], dependencyMatrix: [] });
+      expect(result.errors.some(e => e.rule === 'VAL-DOC-008')).toBe(true);
+    }
+
+    // 2. Files that must pass
+    const passingFiles = [
+      'templates/some-doc.md',
+      'template.md',
+      'attempt.md',
+      'contempt.md'
+    ];
+
+    for (const f of passingFiles) {
+      const relPath = join(testDirName, f);
+      const fullPath = join(testDir, f);
+      const parentDir = require('path').dirname(fullPath);
+      if (!existsSync(parentDir)) {
+        mkdirSync(parentDir, { recursive: true });
+      }
+      writeFileSync(fullPath, `
+# Valid Document
+- **Status**: Active
+This should pass VAL-DOC-008 validation.
+`, 'utf8');
+
+      const result = await validator.run([relPath], { requiredDocuments: [], dependencyMatrix: [] });
+      expect(result.errors.some(e => e.rule === 'VAL-DOC-008')).toBe(false);
+    }
+  });
 });
+
