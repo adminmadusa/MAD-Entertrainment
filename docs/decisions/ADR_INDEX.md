@@ -5,3 +5,4 @@ This index maintains the chronological list of all architectural decisions made 
 | ADR | Title | Status | Category | Last Updated | Link |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | **ADR-001** | Booking Ownership | Implemented | Architecture / API | 2026-06-25 | [ADR-001](ADR-001-booking-ownership.md) |
+| **ADR-002** | Governance Status Semantics | Proposed | Governance | 2026-07-02 | [ADR-002](ADR-002-governance-status-semantics.md) |
