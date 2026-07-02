@@ -458,7 +458,14 @@ export class DocumentationValidator implements GovernanceValidator {
       }
 
       // Check Temporary Documentation rule
-      const isTempName = docGovConfig.disallowedTempPatterns.some(pat => relPath.includes(pat));
+      const pathSegments = relPath.split(/[\\/]/);
+      const filename = pathSegments[pathSegments.length - 1];
+      const filenameWithoutExt = filename.includes('.') ? filename.substring(0, filename.lastIndexOf('.')) : filename;
+      const isTempName = docGovConfig.disallowedTempPatterns.some(pat => {
+        const hasMatchingDir = pathSegments.slice(0, -1).some(seg => seg.toLowerCase() === pat);
+        const hasMatchingFile = filenameWithoutExt.toLowerCase() === pat;
+        return hasMatchingDir || hasMatchingFile;
+      });
       if (isTempName) {
         addViolation('VAL-DOC-008', 'Temporary or draft document remains committed in the repository.');
       }
