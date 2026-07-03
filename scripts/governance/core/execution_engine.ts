@@ -20,6 +20,7 @@ import { DeadAssetDuplicateValidator } from '../validators/dead_asset_duplicate_
 import { SecurityValidator } from '../validators/security_validator';
 import { PerformanceValidator } from '../validators/performance_validator';
 import { ArchitectureValidator } from '../validators/architecture_validator';
+import { RepositoryHygieneValidator } from '../validators/repository_hygiene_validator';
 
 export class ExecutionEngine {
   private static initialized = false;
@@ -143,6 +144,13 @@ export class ExecutionEngine {
       supportedRules: ['VAL-ARC-001', 'VAL-ARC-002', 'VAL-ARC-003', 'VAL-ARC-004'],
       supportedFileTypes: ['.ts', '.tsx'],
       priority: 90,
+    });
+
+    ValidatorRegistry.registerValidator(new RepositoryHygieneValidator(), {
+      id: 'RepositoryHygieneValidator',
+      supportedRules: ['VAL-HYG-001', 'VAL-HYG-002', 'VAL-HYG-003', 'VAL-HYG-004', 'VAL-HYG-005', 'VAL-HYG-006'],
+      supportedFileTypes: ['.ts', '.tsx', '.js', '.jsx', '.md'],
+      priority: 95,
     });
 
     // 4. Validate Registry
