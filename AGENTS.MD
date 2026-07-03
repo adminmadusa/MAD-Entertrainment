@@ -540,45 +540,55 @@ Never refactor high-risk systems without tests.
 
 ---
 
-# MOBILE UX GOVERNANCE
+# VISUAL, UX & ACCESSIBILITY GOVERNANCE
 
-All mobile screens must support:
+## Design Principles
+- **Mobile-First & Responsive**: Design layouts to scale gracefully. No horizontal scrolling is permitted on supported mobile viewports.
+- **Accessibility-First**: Ensure all visual elements are accessible from design inception. Follow WCAG AA conformance guidelines.
+- **Visual Consistency**: Use the project's approved design tokens for spacing, typography, colors, and elevation. Avoid hardcoded values.
+- **Reuse Existing Components**: Prioritize composition and customization of existing components over creating custom overrides.
+- **Technology Alignment**: Prefer existing repository UI components, reuse approved design system primitives, and use shared design tokens. Introduce new components only when existing primitives cannot satisfy the requirement. (For MAD Entertrainment, this currently means shadcn/ui and Radix UI).
 
-* Responsive Layout
-* No Horizontal Scroll
-* 44px Touch Targets
-* Keyboard Safety
-* Visible CTA
-* Accessible Navigation
+## Responsive & Tailwind Standards
+- **Breakpoint System**: Utilize standard responsive breakpoints consistently across pages.
+- **Layout Containers**: Use standard page spacing, consistent margin containers, and layout grids.
+- **Flexbox & Grid Layouts**: Enforce flexbox/grid containers to handle overflow, wrapping, and text truncation cleanly.
 
-Required states:
+## Component & State Standards
+- **Touch Target Sizes**: Minimum 44px for all interactive buttons, links, and form fields.
+- **Accessible Focus**: Focus indicators must be highly visible when navigating via keyboard.
+- **Standard States**: Interactive elements must support and visually distinguish:
+  - Default / Hover / Active
+  - Focus Visible / Keyboard Navigation
+  - Disabled / Readonly
+  - Loading / Skeletons / Transition states
+- **Boundary UI States**: Every data-driven container must implement fallback templates for:
+  - Loading state
+  - Empty state
+  - Error state
+  - Offline state
+  - Unauthorized state
+  - Success state
 
-Loading
+## Accessibility Requirements (WCAG AA)
+- **Semantic HTML**: Use appropriate HTML5 tags (e.g., `<main>`, `<section>`, `<article>`, `<nav>`, `<button>`).
+- **ARIA & Screen Readers**: Provide descriptive `aria-label` tags for icon buttons, and maintain correct role mappings.
+- **Keyboard Navigation**: Keep focus order logical and trap focus properly within modals/drawers. Implement Escape-key handling to close overlays.
+- **Contrast**: Text and interactive components must satisfy WCAG AA contrast ratio requirements.
 
-Empty
+## UI Performance
+- Minimize layout shift (CLS).
+- Lazy-load large content where appropriate.
+- Avoid unnecessary client-side rendering.
+- Prefer skeletons over spinners for longer loads.
+- Avoid blocking animations.
+- Optimize images and media.
 
-Error
+## Repository UI Rules
+- **Modals & Drawers**: Use responsive drawers for mobile viewports and dialog modals for desktop screens.
+- **Navigation Consistency**: Align navbars, menus, and footers across the user web application and back-office admin portals.
+- **Form Controls**: Use explicit form labels, helper descriptions, error alerts, and native validation states.
 
-Offline
-
-Unauthorized
-
-Success
-
----
-
-# ACCESSIBILITY GOVERNANCE
-
-Required:
-
-* ARIA Labels
-* Keyboard Navigation
-* Focus Management
-* Screen Reader Support
-* Escape Key Handling
-* Form Labels
-
-Accessibility regressions block merge.
 
 ---
 
