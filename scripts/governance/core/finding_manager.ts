@@ -1,5 +1,5 @@
 // scripts/governance/core/finding_manager.ts
-import { existsSync, mkdirSync, readFileSync, readdirSync } from 'fs';
+import { existsSync, mkdirSync, readFileSync, readdirSync, statSync } from 'fs';
 import { resolve, join } from 'path';
 import { Finding, FindingException, FindingStatus, HistoryEvent, StatelessViolation, FindingOccurrence } from './types';
 import { RuleRegistry } from '../rules/registry';
@@ -84,41 +84,54 @@ export class FindingManager {
       FindingManager.suppressedDir,
     ];
 
+    const getJsonFilesRecursive = (dir: string): string[] => {
+      const results: string[] = [];
+      if (!existsSync(dir)) return results;
+      const list = readdirSync(dir);
+      for (const file of list) {
+        const fullPath = join(dir, file);
+        if (statSync(fullPath).isDirectory()) {
+          results.push(...getJsonFilesRecursive(fullPath));
+        } else if (file.endsWith('.json')) {
+          results.push(fullPath);
+        }
+      }
+      return results;
+    };
+
     for (const dir of stateDirs) {
       if (existsSync(dir)) {
-        const files = readdirSync(dir).sort();
-        for (const file of files) {
-          if (file.endsWith('.json')) {
-            try {
-              const content = readFileSync(join(dir, file), 'utf8');
-              const finding = JSON.parse(content) as Finding;
+        const files = getJsonFilesRecursive(dir).sort();
+        for (const filePath of files) {
+          try {
+            const content = readFileSync(filePath, 'utf8');
+            const finding = JSON.parse(content) as Finding;
 
-              // Inline upgrade of legacy STRICT occurrence fingerprints to SMART
-              if (finding.evidence.occurrences) {
-                const strategy = FingerprintEngine.getStrategy('SMART');
-                finding.evidence.occurrences = finding.evidence.occurrences.map(o => {
-                  const smartFingerprint = strategy.fingerprint(
-                    finding.rule,
-                    finding.evidence.path,
-                    o.construct || 'UIElement',
-                    o.snippet || ''
-                  );
-                  if (o.id !== smartFingerprint || o.fingerprint !== smartFingerprint) {
-                    return {
-                      ...o,
-                      id: smartFingerprint,
-                      fingerprint: smartFingerprint,
-                    };
-                  }
-                  return o;
-                });
-              }
-
-              this.findings.set(finding.id, finding);
-              this.updateNextIndex(finding.id);
-            } catch (e) {
-              // Ignore bad finding JSONs
+            // Inline upgrade of legacy STRICT occurrence fingerprints to SMART
+            if (finding.evidence.occurrences) {
+              const strategy = FingerprintEngine.getStrategy('SMART');
+              finding.evidence.occurrences = finding.evidence.occurrences.map(o => {
+                const smartFingerprint = strategy.fingerprint(
+                  finding.rule,
+                  finding.evidence.path,
+                  o.construct || 'UIElement',
+                  o.snippet || ''
+                );
+                if (o.id !== smartFingerprint || o.fingerprint !== smartFingerprint) {
+                  return {
+                    ...o,
+                    id: smartFingerprint,
+                    fingerprint: smartFingerprint,
+                  };
+                }
+                return o;
+              });
             }
+
+            this.findings.set(finding.id, finding);
+            this.updateNextIndex(finding.id);
+          } catch (e) {
+            // Ignore bad finding JSONs
           }
         }
       }
@@ -128,21 +141,47 @@ export class FindingManager {
   public applyRetentionPolicy() {
     // 1. Archive closed findings to archive/findings/ after retention period
     if (existsSync(FindingManager.closedDir)) {
-      const files = readdirSync(FindingManager.closedDir);
+      const getClosedFiles = (dir: string): string[] => {
+        const results: string[] = [];
+        const files = readdirSync(dir);
+        for (const file of files) {
+          const fullPath = join(dir, file);
+          if (statSync(fullPath).isDirectory()) {
+            results.push(...getClosedFiles(fullPath));
+          } else if (file.endsWith('.json')) {
+            results.push(fullPath);
+          }
+        }
+        return results;
+      };
+
+      const files = getClosedFiles(FindingManager.closedDir);
       const now = Date.now();
       const maxAgeMs = FindingManager.retentionPolicy.closedFindingsDays * 24 * 60 * 60 * 1000;
-      for (const file of files) {
-        if (file.endsWith('.json')) {
-          const filePath = join(FindingManager.closedDir, file);
-          try {
-            const stats = require('fs').statSync(filePath);
-            const ageMs = now - stats.mtime.getTime();
-            if (ageMs > maxAgeMs) {
-              const destPath = join(FindingManager.archiveFindingsDir, file);
-              require('fs').renameSync(filePath, destPath);
-              console.log(`🗄️ Archived expired closed finding: ${file}`);
-            }
-          } catch (e) {}
+      for (const filePath of files) {
+        try {
+          const stats = statSync(filePath);
+          const ageMs = now - stats.mtime.getTime();
+          if (ageMs > maxAgeMs) {
+            const fileName = resolve(filePath).split('/').pop() || '';
+            const destPath = join(FindingManager.archiveFindingsDir, fileName);
+            require('fs').renameSync(filePath, destPath);
+            console.log(`🗄️ Archived expired closed finding: ${fileName}`);
+          }
+        } catch (e) {}
+      }
+
+      // Clean up empty directories in closedDir
+      const subdirs = readdirSync(FindingManager.closedDir);
+      for (const subdir of subdirs) {
+        const fullSubdir = join(FindingManager.closedDir, subdir);
+        if (statSync(fullSubdir).isDirectory()) {
+          const contents = readdirSync(fullSubdir);
+          if (contents.length === 0) {
+            try {
+              require('fs').rmdirSync(fullSubdir);
+            } catch (e) {}
+          }
         }
       }
     }
@@ -458,7 +497,9 @@ export class FindingManager {
 
     let targetDir = FindingManager.activeDir;
     if (finding.status === 'CLOSED') {
-      targetDir = FindingManager.closedDir;
+      const dateStr = finding.lastModified || new Date().toISOString();
+      const monthFolder = dateStr.substring(0, 7); // YYYY-MM
+      targetDir = join(FindingManager.closedDir, monthFolder);
     } else if (finding.status === 'FALSE_POSITIVE' || finding.status === 'IGNORED') {
       targetDir = FindingManager.suppressedDir;
     }
@@ -477,13 +518,26 @@ export class FindingManager {
   }
 
   private getFindingFilePath(id: string): string | null {
-    const paths = [
-      join(FindingManager.activeDir, `${id}.json`),
-      join(FindingManager.closedDir, `${id}.json`),
-      join(FindingManager.suppressedDir, `${id}.json`),
-    ];
-    for (const p of paths) {
-      if (existsSync(p)) return p;
+    // 1. Check active and suppressed
+    const activePath = join(FindingManager.activeDir, `${id}.json`);
+    if (existsSync(activePath)) return activePath;
+    const suppressedPath = join(FindingManager.suppressedDir, `${id}.json`);
+    if (existsSync(suppressedPath)) return suppressedPath;
+
+    // 2. Check closed flat
+    const closedFlatPath = join(FindingManager.closedDir, `${id}.json`);
+    if (existsSync(closedFlatPath)) return closedFlatPath;
+
+    // 3. Search closed subdirectories
+    if (existsSync(FindingManager.closedDir)) {
+      const subdirs = readdirSync(FindingManager.closedDir);
+      for (const subdir of subdirs) {
+        const fullSubdir = join(FindingManager.closedDir, subdir);
+        if (statSync(fullSubdir).isDirectory()) {
+          const checkPath = join(fullSubdir, `${id}.json`);
+          if (existsSync(checkPath)) return checkPath;
+        }
+      }
     }
     return null;
   }

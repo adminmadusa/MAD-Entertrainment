@@ -1,6 +1,7 @@
 // scripts/governance/core/json_utils.ts
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'fs';
 import { dirname } from 'path';
+import { createHash } from 'crypto';
 
 export const persistenceStats = {
   examined: 0,
@@ -64,56 +65,16 @@ export function writeJsonIfChanged(filePath: string, object: any): { written: bo
   if (existsSync(filePath)) {
     try {
       const existingContent = readFileSync(filePath, 'utf8');
-      const existingObj = JSON.parse(existingContent);
+      
+      const existingHash = createHash('sha256').update(existingContent).digest('hex');
+      const newHash = createHash('sha256').update(newContent).digest('hex');
 
-      // Volatility Filtering to avoid Git/disk churn on unchanged state
-      if (filePath.endsWith('manifest.json')) {
-        const cleanExisting = {
-          ...existingObj,
-          lastAudit: undefined,
-          performance: existingObj.performance
-            ? {
-                ...existingObj.performance,
-                scanDurationMs: undefined,
-                groupingDurationMs: undefined,
-                migrationDurationMs: undefined,
-                filesWritten: undefined,
-              }
-            : undefined,
-        };
-        const cleanNew = {
-          ...object,
-          lastAudit: undefined,
-          performance: object.performance
-            ? {
-                ...object.performance,
-                scanDurationMs: undefined,
-                groupingDurationMs: undefined,
-                migrationDurationMs: undefined,
-                filesWritten: undefined,
-              }
-            : undefined,
-        };
-        if (canonicalizeJson(cleanExisting) === canonicalizeJson(cleanNew)) {
-          persistenceStats.skipped++;
-          return { written: false, skipped: true };
-        }
-      } else if (filePath.includes('archive/history/')) {
-        const cleanExisting = { ...existingObj, timestamp: undefined };
-        const cleanNew = { ...object, timestamp: undefined };
-        if (canonicalizeJson(cleanExisting) === canonicalizeJson(cleanNew)) {
-          persistenceStats.skipped++;
-          return { written: false, skipped: true };
-        }
-      } else {
-        const existingCanonical = canonicalizeJson(existingObj);
-        if (existingCanonical === newContent) {
-          persistenceStats.skipped++;
-          return { written: false, skipped: true };
-        }
+      if (existingHash === newHash) {
+        persistenceStats.skipped++;
+        return { written: false, skipped: true };
       }
     } catch (e) {
-      // If parsing existing fails, we proceed with write
+      // Proceed with write if read or hashing fails
     }
   }
 

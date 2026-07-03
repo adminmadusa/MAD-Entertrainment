@@ -27,6 +27,9 @@ const VALID_SEVERITIES = new Set<RuleSeverity>([
   'WARNING',
   'ERROR',
   'CRITICAL',
+  'HIGH',
+  'MEDIUM',
+  'LOW',
 ]);
 
 const VALID_CI_POLICIES = new Set<RuleCiPolicy>([

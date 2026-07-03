@@ -213,8 +213,9 @@ export class AuditEngine {
       persistenceStats.trendWritten++;
     }
 
-    // 11. Generate manifest.json
+    // 11. Generate manifest.json and manifest.local.json
     const manifestPath = join(FindingManager.govDir, 'manifest.json');
+    const manifestLocalPath = join(FindingManager.govDir, 'manifest.local.json');
     let historySnapshots = 0;
     if (existsSync(FindingManager.archiveHistoryDir)) {
       historySnapshots = readdirSync(FindingManager.archiveHistoryDir).filter(f => f.endsWith('.json')).length;
@@ -225,10 +226,13 @@ export class AuditEngine {
       manifestVersion: 1,
       migrationVersion: 1,
       engineVersion: '1.0.0',
+    };
+
+    const manifestLocal = {
+      lastAudit: new Date().toISOString(),
+      lastMigration: '2026-06-30T15:28:59Z',
       findingCount: allFindings.length,
       historySnapshots,
-      lastMigration: '2026-06-30T15:28:59Z',
-      lastAudit: new Date().toISOString(),
       performance: {
         findingsScanned: allFindings.length,
         filesScanned: options.changedFiles ? options.changedFiles.length : 0,
@@ -239,7 +243,9 @@ export class AuditEngine {
         filesArchived: closedFindingsCount,
       }
     };
+
     writeJsonIfChanged(manifestPath, manifest);
+    writeJsonIfChanged(manifestLocalPath, manifestLocal);
 
     return {
       success: finalGating !== 'FAIL_BUILD',

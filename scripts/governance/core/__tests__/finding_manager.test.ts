@@ -297,4 +297,32 @@ describe('FindingManager (State Persistence & Serialization)', () => {
     expect(countAfterRun2).toBe(countAfterRun1);
     expect(countAfterRun2).toBe(2);
   });
+
+  it('should save closed findings in partitioned month folders and load them recursively', () => {
+    const violation: StatelessViolation = {
+      rule: 'VAL-UI-001',
+      path: 'apps/web/src/components/ClosedTest.tsx',
+      construct: 'button',
+      line: 12,
+      snippet: '<button>',
+      message: 'Raw HTML button',
+      confidence: 1.0,
+    };
+
+    const finding = fm.matchOrCreateFinding(violation);
+    finding.status = 'CLOSED';
+    finding.lastModified = '2026-07-03T12:00:00Z';
+    fm.saveFinding(finding);
+
+    // Verify it is saved in a YYYY-MM subfolder
+    const expectedSubfolder = join((FindingManager as any).closedDir, '2026-07');
+    const expectedPath = join(expectedSubfolder, `${finding.id}.json`);
+    expect(existsSync(expectedPath)).toBe(true);
+
+    // Create a new FindingManager instance to test recursive loadAll
+    const fm2 = new FindingManager();
+    const loaded = (fm2 as any).findings.get(finding.id);
+    expect(loaded).toBeDefined();
+    expect(loaded.status).toBe('CLOSED');
+  });
 });

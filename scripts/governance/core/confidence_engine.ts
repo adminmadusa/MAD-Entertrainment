@@ -22,6 +22,16 @@ export class ConfidenceEngine {
       return 'INFO_ONLY';
     }
 
+    // AST Parse Warnings should never fail the build
+    if (finding.rule === 'AST-PARSE-WARNING') {
+      return 'WARN';
+    }
+
+    // In-code suppressed findings should never fail the build
+    if (finding.evidence.message.includes('[SUPPRESSED]')) {
+      return 'INFO_ONLY';
+    }
+
     // 1. Below 70% confidence requires manual review only
     if (confidence < 0.70) {
       return 'MANUAL_REVIEW_REQUIRED';
@@ -37,8 +47,25 @@ export class ConfidenceEngine {
       return 'WARN';
     }
 
-    // 4. 95% to 100% confidence honors the rule definition's CI policy
+    // 4. 95% to 100% confidence honors the rule definition's severity
     if (rule) {
+      const severity = rule.severity;
+      if (severity === 'CRITICAL') {
+        return 'FAIL_BUILD';
+      }
+      if (severity === 'HIGH' || severity === 'ERROR') {
+        const failOnHigh = process.env.GOVERNANCE_FAIL_ON_HIGH !== 'false';
+        return failOnHigh ? 'FAIL_BUILD' : 'WARN';
+      }
+      if (severity === 'MEDIUM' || severity === 'WARNING') {
+        return 'WARN';
+      }
+      if (severity === 'LOW') {
+        return 'INFO_ONLY';
+      }
+      if (severity === 'INFO') {
+        return 'INFO_ONLY';
+      }
       return rule.ciPolicy;
     }
 

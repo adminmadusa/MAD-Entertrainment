@@ -12,7 +12,7 @@ export type RuleCategory =
   | 'REPOSITORY'
   | 'INFRASTRUCTURE';
 
-export type RuleSeverity = 'INFO' | 'WARNING' | 'ERROR' | 'CRITICAL';
+export type RuleSeverity = 'INFO' | 'WARNING' | 'ERROR' | 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
 
 export type RuleStatus = 'ACTIVE' | 'DEPRECATED' | 'EXPERIMENTAL' | 'DISABLED';
 

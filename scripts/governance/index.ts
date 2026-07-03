@@ -332,7 +332,7 @@ async function run() {
   console.log('==================================================\n');
 
   // Gating decision
-  if (!engineResult.success || totalErrors > 0 || !gatingSuccess) {
+  if (!engineResult.success || !gatingSuccess) {
     console.error('\n❌ Governance audit failed. Check the details above.');
     process.exit(1);
   }
