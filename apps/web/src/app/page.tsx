@@ -41,8 +41,6 @@ async function FeaturedEventsServerSection() {
   return <FeaturedEventsSection initialEvents={events} />;
 }
 
-
-
 // ─── Main HomePage Component (Instant TTFB / Streaming) ───────────
 
 export default function HomePage() {
@@ -69,8 +67,6 @@ export default function HomePage() {
       <Suspense fallback={<FeaturedEventsSkeleton />}>
         <FeaturedEventsServerSection />
       </Suspense>
-
-
 
       {/* ─── How It Works ─────────────────────────────────── */}
       <HowItWorksSection />
@@ -143,8 +139,6 @@ function HeroSection() {
     </section>
   );
 }
-
-
 
 // ─── How It Works ─────────────────────────────────────────────
 
@@ -274,4 +268,3 @@ function CTASection() {
     </section>
   );
 }
-

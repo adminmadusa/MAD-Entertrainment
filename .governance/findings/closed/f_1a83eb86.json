@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:55.352Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 10,
+    "message": "Trailing whitespace characters detected.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "446385d83430b5e0c5b48909d2125e368c4f2e229c18578e30d6121b892358bc",
+        "id": "446385d83430b5e0c5b48909d2125e368c4f2e229c18578e30d6121b892358bc",
+        "line": 10,
+        "message": "Trailing whitespace characters detected."
+      }
+    ],
+    "path": "apps/web/src/app/legal/components/LegalSupportCard.tsx"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:55.352Z",
+  "id": "f_1a83eb86",
+  "lastDetected": "2026-07-03T12:25:55.352Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-004",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

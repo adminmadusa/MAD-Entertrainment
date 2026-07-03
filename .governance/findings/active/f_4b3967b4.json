@@ -1,34 +1,33 @@
 {
-  "schemaVersion": 2,
-  "id": "f_4b3967b4",
-  "rule": "Orphaned Documentation",
-  "ruleVersion": "1.0.0",
-  "engineVersion": "1.0.0",
-  "domain": "Platform Team",
-  "owner": "Platform Team",
-  "package": "docs",
-  "feature": "Document",
-  "status": "NEW",
   "confidence": 1,
-  "relationships": [],
+  "createdDate": "2026-06-30T15:36:28.240Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
   "evidence": {
-    "path": "docs/audit/refresh-token-race-condition.md",
     "construct": "Document",
     "message": "Document exists in the repository but has no incoming references from any other active documentation.",
     "occurrences": [
       {
-        "id": "a59d125424793b8f03291d3675c84fb18d68fc6f67a2bc308e96721b087ab32b",
-        "line": 0,
         "column": 0,
         "construct": "Document",
-        "snippet": "",
-        "message": "Document exists in the repository but has no incoming references from any other active documentation.",
-        "fingerprint": "a59d125424793b8f03291d3675c84fb18d68fc6f67a2bc308e96721b087ab32b"
+        "fingerprint": "a59d125424793b8f03291d3675c84fb18d68fc6f67a2bc308e96721b087ab32b",
+        "id": "a59d125424793b8f03291d3675c84fb18d68fc6f67a2bc308e96721b087ab32b",
+        "line": 0,
+        "message": "Document exists in the repository but has no incoming references from any other active documentation."
       }
-    ]
+    ],
+    "path": "docs/audit/refresh-token-race-condition.md"
   },
-  "createdDate": "2026-06-30T15:36:28.240Z",
+  "feature": "Document",
   "firstDetected": "2026-06-30T15:36:28.240Z",
+  "id": "f_4b3967b4",
   "lastDetected": "2026-06-30T15:36:28.240Z",
-  "occurrenceCount": 1
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "docs",
+  "relationships": [],
+  "rule": "Orphaned Documentation",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "REGRESSION"
 }

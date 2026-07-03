@@ -1,34 +1,33 @@
 {
-  "schemaVersion": 2,
-  "id": "f_81a177a9",
-  "rule": "Orphaned Documentation",
-  "ruleVersion": "1.0.0",
-  "engineVersion": "1.0.0",
-  "domain": "Platform Team",
-  "owner": "Platform Team",
-  "package": "docs",
-  "feature": "Document",
-  "status": "NEW",
   "confidence": 1,
-  "relationships": [],
+  "createdDate": "2026-06-30T15:36:28.422Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
   "evidence": {
-    "path": "docs/audit/ticket-retrieval-portal-audit.md",
     "construct": "Document",
     "message": "Document exists in the repository but has no incoming references from any other active documentation.",
     "occurrences": [
       {
-        "id": "c46ad3810311353478a8ac856ea05cf5cf3ef31364a2324777b7f67e0012e7ad",
-        "line": 0,
         "column": 0,
         "construct": "Document",
-        "snippet": "",
-        "message": "Document exists in the repository but has no incoming references from any other active documentation.",
-        "fingerprint": "c46ad3810311353478a8ac856ea05cf5cf3ef31364a2324777b7f67e0012e7ad"
+        "fingerprint": "c46ad3810311353478a8ac856ea05cf5cf3ef31364a2324777b7f67e0012e7ad",
+        "id": "c46ad3810311353478a8ac856ea05cf5cf3ef31364a2324777b7f67e0012e7ad",
+        "line": 0,
+        "message": "Document exists in the repository but has no incoming references from any other active documentation."
       }
-    ]
+    ],
+    "path": "docs/audit/ticket-retrieval-portal-audit.md"
   },
-  "createdDate": "2026-06-30T15:36:28.422Z",
+  "feature": "Document",
   "firstDetected": "2026-06-30T15:36:28.422Z",
+  "id": "f_81a177a9",
   "lastDetected": "2026-06-30T15:36:28.422Z",
-  "occurrenceCount": 1
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "docs",
+  "relationships": [],
+  "rule": "Orphaned Documentation",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "REGRESSION"
 }

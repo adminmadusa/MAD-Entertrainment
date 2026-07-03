@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:55.168Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 3,
+    "message": "Imports must be grouped in order: Node built-ins, Third-party packages, Workspace aliases, Relative paths, Side-effects.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "afb152b10828bf561ddad24134ef562662d8200396b93a01afc5b2450daf6718",
+        "id": "afb152b10828bf561ddad24134ef562662d8200396b93a01afc5b2450daf6718",
+        "line": 3,
+        "message": "Imports must be grouped in order: Node built-ins, Third-party packages, Workspace aliases, Relative paths, Side-effects."
+      }
+    ],
+    "path": "apps/web/src/app/events/EventsList.tsx"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:55.168Z",
+  "id": "f_bb6a5a85",
+  "lastDetected": "2026-07-03T12:25:55.168Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-001",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

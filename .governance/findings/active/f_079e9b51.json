@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:50.093Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 3,
+    "message": "Groups of imports must be separated by a single blank line.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "95c1628654a44e2f6366cf332f25c7789939eb73c6a823f7fbec268a11e1d6c2",
+        "id": "95c1628654a44e2f6366cf332f25c7789939eb73c6a823f7fbec268a11e1d6c2",
+        "line": 3,
+        "message": "Groups of imports must be separated by a single blank line."
+      }
+    ],
+    "path": "apps/server/src/lib/email/templates/payment-failure.tsx"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:50.093Z",
+  "id": "f_079e9b51",
+  "lastDetected": "2026-07-03T12:25:50.093Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-001",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

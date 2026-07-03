@@ -1,45 +1,45 @@
 {
-  "schemaVersion": 2,
-  "id": "f_76f85ca3",
-  "rule": "VAL-UI-010",
-  "ruleVersion": "1.0.0",
-  "engineVersion": "1.0.0",
-  "domain": "UI UX Guild",
-  "owner": "UI UX Guild",
-  "package": "apps",
-  "feature": "UIElement",
-  "status": "NEW",
   "confidence": 0.9,
-  "relationships": [],
+  "createdDate": "2026-06-30T15:36:27.271Z",
+  "domain": "UI UX Guild",
+  "engineVersion": "1.0.0",
   "evidence": {
-    "path": "apps/web/src/components/auth/OtpVerifyForm.tsx",
     "construct": "UIElement",
-    "snippet": "<button",
-    "line": 55,
+    "line": 133,
     "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
     "occurrences": [
       {
+        "column": 0,
+        "construct": "UIElement",
+        "fingerprint": "fdd9ec837972f3ee4da94f6ef9d3905263108bed908b6a890d1d8a6b073abe65",
         "id": "fdd9ec837972f3ee4da94f6ef9d3905263108bed908b6a890d1d8a6b073abe65",
         "line": 55,
-        "column": 0,
-        "construct": "UIElement",
-        "snippet": "<button",
         "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
-        "fingerprint": "fdd9ec837972f3ee4da94f6ef9d3905263108bed908b6a890d1d8a6b073abe65"
+        "snippet": "<button"
       },
       {
-        "id": "fdd9ec837972f3ee4da94f6ef9d3905263108bed908b6a890d1d8a6b073abe65",
-        "line": 133,
         "column": 0,
         "construct": "UIElement",
-        "snippet": "<button",
+        "fingerprint": "fdd9ec837972f3ee4da94f6ef9d3905263108bed908b6a890d1d8a6b073abe65",
+        "id": "fdd9ec837972f3ee4da94f6ef9d3905263108bed908b6a890d1d8a6b073abe65",
+        "line": 133,
         "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
-        "fingerprint": "fdd9ec837972f3ee4da94f6ef9d3905263108bed908b6a890d1d8a6b073abe65"
+        "snippet": "<button"
       }
-    ]
+    ],
+    "path": "apps/web/src/components/auth/OtpVerifyForm.tsx",
+    "snippet": "<button"
   },
-  "createdDate": "2026-06-30T15:36:27.271Z",
+  "feature": "UIElement",
   "firstDetected": "2026-06-30T15:36:27.271Z",
+  "id": "f_76f85ca3",
   "lastDetected": "2026-06-30T15:36:27.271Z",
-  "occurrenceCount": 2
+  "occurrenceCount": 2,
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-UI-010",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "REGRESSION"
 }

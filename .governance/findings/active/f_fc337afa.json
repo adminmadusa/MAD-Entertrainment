@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:56.556Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 3,
+    "message": "Import from types module \"@mad/types\" should use \"import type\".",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "5286a25edff1fe686da3d59e15eddcdcbb2b715d0bf5cc1125e4ef3751d81e9d",
+        "id": "5286a25edff1fe686da3d59e15eddcdcbb2b715d0bf5cc1125e4ef3751d81e9d",
+        "line": 3,
+        "message": "Import from types module \"@mad/types\" should use \"import type\"."
+      }
+    ],
+    "path": "apps/web/src/utils/cached-event.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:56.556Z",
+  "id": "f_fc337afa",
+  "lastDetected": "2026-07-03T12:25:56.556Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-003",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

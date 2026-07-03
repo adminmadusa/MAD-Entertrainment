@@ -26,7 +26,7 @@ export function useCheckoutViewportController(): ViewportState {
     if (typeof window === 'undefined' || !window.visualViewport) return;
 
     const vv = window.visualViewport;
-    
+
     // Set initial baseline height (assumed keyboard-closed height)
     baselineHeightRef.current = window.innerHeight;
     lastWidthRef.current = vv.width;
@@ -66,14 +66,14 @@ export function useCheckoutViewportController(): ViewportState {
 
     vv.addEventListener('resize', handleResize);
     vv.addEventListener('scroll', handleResize);
-    
+
     // Initial invocation
     handleResize();
 
     return () => {
       vv.removeEventListener('resize', handleResize);
       vv.removeEventListener('scroll', handleResize);
-      
+
       // Clean up the CSS properties from documentElement on unmount
       document.documentElement.style.removeProperty('--visual-viewport-height');
       document.documentElement.style.removeProperty('--visual-viewport-offset-top');

@@ -255,7 +255,7 @@ export class ReservationService {
       });
 
       const previousStatus = reservation.status;
-      
+
       // Perform database-level atomic update to prevent double transition and double capacity releases
       const updatedReservation = await Reservation.findOneAndUpdate(
         { _id: reservation._id, status: previousStatus },

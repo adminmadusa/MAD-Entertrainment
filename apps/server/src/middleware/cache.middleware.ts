@@ -18,7 +18,7 @@ export const cdnCache = (maxAgeSeconds: number, sMaxAgeSeconds: number): Request
       res.setHeader('Cache-Control', 'no-store');
       return next();
     }
-    
+
     const staleWhileRevalidate = Math.round(sMaxAgeSeconds * 0.2);
     res.setHeader(
       'Cache-Control',

@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:59.998Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 30,
+    "message": "Trailing whitespace characters detected.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "980b540373b5dae812e74b07491bdee2a7ab1218951a06493386049e0abe1754",
+        "id": "980b540373b5dae812e74b07491bdee2a7ab1218951a06493386049e0abe1754",
+        "line": 30,
+        "message": "Trailing whitespace characters detected."
+      }
+    ],
+    "path": "scripts/governance/core/fixers/malformed_atx_heading_fixer.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:59.998Z",
+  "id": "f_015025ae",
+  "lastDetected": "2026-07-03T12:25:59.998Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "scripts",
+  "relationships": [],
+  "rule": "VAL-HYG-004",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

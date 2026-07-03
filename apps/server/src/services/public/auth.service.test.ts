@@ -252,7 +252,7 @@ describe('AuthService - requestMagicLink', () => {
     vi.mocked(isRedisConnected).mockReturnValue(true);
     vi.mocked(mockRedis.set).mockResolvedValue('OK');
     vi.mocked(magicLinkHtml).mockResolvedValue('<html>magic link</html>');
-    
+
     const mockToken = {
       _id: new Types.ObjectId(),
       email: 'user@example.com',
@@ -328,7 +328,7 @@ describe('AuthService - requestMagicLink', () => {
     vi.mocked(isRedisConnected).mockReturnValue(true);
     vi.mocked(mockRedis.set).mockResolvedValue('OK');
     vi.mocked(magicLinkHtml).mockResolvedValue('<html>magic link</html>');
-    
+
     const mockToken = {
       _id: new Types.ObjectId(),
       email: 'user@example.com',
@@ -347,7 +347,7 @@ describe('AuthService - requestMagicLink', () => {
 
   it('OTP-004: Redis offline + existing token under cooldown (Mongo fallback returns OTP_COOLDOWN_ACTIVE)', async () => {
     vi.mocked(isRedisConnected).mockReturnValue(false);
-    
+
     const existingToken = {
       email: 'user@example.com',
       createdAt: new Date(Date.now() - 30 * 1000), // 30 seconds ago
@@ -370,13 +370,13 @@ describe('AuthService - requestMagicLink', () => {
 
   it('OTP-005: Redis offline + expired cooldown (old token removed, new token issued)', async () => {
     vi.mocked(isRedisConnected).mockReturnValue(false);
-    
+
     const existingToken = {
       email: 'user@example.com',
       createdAt: new Date(Date.now() - 70 * 1000), // 70 seconds ago (expired cooldown)
     };
     vi.mocked(MagicTokenModel.findOne).mockResolvedValue(existingToken as any);
-    
+
     const mockToken = {
       _id: new Types.ObjectId(),
       email: 'user@example.com',
@@ -396,7 +396,7 @@ describe('AuthService - requestMagicLink', () => {
   it('OTP-006: Redis offline + no token (request succeeds)', async () => {
     vi.mocked(isRedisConnected).mockReturnValue(false);
     vi.mocked(MagicTokenModel.findOne).mockResolvedValue(null);
-    
+
     const mockToken = {
       _id: new Types.ObjectId(),
       email: 'user@example.com',
@@ -452,7 +452,7 @@ describe('AuthService - verifyMagicLinkOrOTP', () => {
     expect(mockUser.save).toHaveBeenCalled();
     expect(mockUser.lastLogin).toBeInstanceOf(Date);
     expect(MagicTokenModel.deleteOne).toHaveBeenCalledWith({ _id: mockToken._id });
-    
+
     expect(result.user).toBe(mockUser);
     expect(result.accessToken).toBe('mock-access-token');
     expect(result.refreshToken).toBeTypeOf('string');
@@ -675,7 +675,7 @@ describe('AuthService - verifyMagicLinkOrOTP', () => {
 
     it('GOOGLE-001: New User registration with Google (creates user and maps given_name/family_name)', async () => {
       vi.mocked(UserModel.findOne).mockResolvedValue(null);
-      
+
       const mockUser = {
         _id: new Types.ObjectId(),
         googleId: 'google-sub-123',
@@ -780,7 +780,7 @@ describe('AuthService - verifyMagicLinkOrOTP', () => {
 
       expect(UserModel.findOne).toHaveBeenNthCalledWith(1, { googleId: 'mock_google_id_otpuser@gmail.com' });
       expect(UserModel.findOne).toHaveBeenNthCalledWith(2, { email: 'otpuser@gmail.com' });
-      
+
       expect(result.user._id).toBe('507f1f77bcf86cd799439011');
       expect(result.user.googleId).toBe('mock_google_id_otpuser@gmail.com'); // Linked successfully
       expect(UserModel.create).not.toHaveBeenCalled(); // Duplication prevented

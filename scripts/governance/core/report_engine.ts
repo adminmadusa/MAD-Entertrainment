@@ -27,7 +27,7 @@ export class ReportEngine {
   } {
     const activeDir = join(ReportEngine.workspaceRoot, '.governance/archive/history');
     let prevSnapshot: any = null;
-    
+
     if (existsSync(activeDir)) {
       try {
         const files = require('fs').readdirSync(activeDir).filter((f: string) => f.endsWith('.json')).sort();
@@ -40,7 +40,7 @@ export class ReportEngine {
 
     const currentActive = findings.filter(f => f.status === 'NEW' || f.status === 'CONFIRMED' || f.status === 'REGRESSION').length;
     const prevActive = prevSnapshot ? prevSnapshot.activeCount || 0 : 0;
-    
+
     const netChange = currentActive - prevActive;
     const resolvedCount = findings.filter(f => f.status === 'CLOSED').length;
     const suppressedCount = findings.filter(f => f.status === 'FALSE_POSITIVE' || f.status === 'IGNORED').length;

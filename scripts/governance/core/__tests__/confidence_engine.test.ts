@@ -44,7 +44,7 @@ describe('ConfidenceEngine (CI Gating Policy Evaluation)', () => {
   it('should return INFO_ONLY for findings with confidence between 70% and 89%', () => {
     const finding1 = { ...baseFinding, status: 'NEW', confidence: 0.70 };
     const finding2 = { ...baseFinding, status: 'NEW', confidence: 0.89 };
-    
+
     expect(ConfidenceEngine.evaluate(finding1)).toBe('INFO_ONLY');
     expect(ConfidenceEngine.evaluate(finding2)).toBe('INFO_ONLY');
   });
@@ -52,18 +52,18 @@ describe('ConfidenceEngine (CI Gating Policy Evaluation)', () => {
   it('should return WARN for findings with confidence between 90% and 94%', () => {
     const finding1 = { ...baseFinding, status: 'NEW', confidence: 0.90 };
     const finding2 = { ...baseFinding, status: 'NEW', confidence: 0.94 };
-    
+
     expect(ConfidenceEngine.evaluate(finding1)).toBe('WARN');
     expect(ConfidenceEngine.evaluate(finding2)).toBe('WARN');
   });
 
   it('should fallback to FAIL_BUILD when the rule definition is missing from the registry', () => {
     vi.spyOn(RuleRegistry, 'getRule').mockReturnValue(undefined);
-    
+
     const finding = { ...baseFinding, status: 'NEW', confidence: 0.95 };
     const action = ConfidenceEngine.evaluate(finding);
     expect(action).toBe('FAIL_BUILD');
-    
+
     vi.restoreAllMocks();
   });
 

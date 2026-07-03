@@ -51,5 +51,5 @@
   "rule": "VAL-UI-010",
   "ruleVersion": "1.0.0",
   "schemaVersion": 2,
-  "status": "NEW"
+  "status": "REGRESSION"
 }

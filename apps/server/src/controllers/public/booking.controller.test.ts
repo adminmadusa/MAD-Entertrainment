@@ -1,4 +1,4 @@
-import { vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { Types } from 'mongoose';
 
 vi.hoisted(() => {
@@ -8,7 +8,6 @@ vi.hoisted(() => {
   process.env.JWT_SESSION_SECRET = 'this_is_a_very_long_jwt_session_secret_with_more_than_32_characters';
 });
 
-import { describe, it, expect, beforeEach } from 'vitest';
 import { createBooking, recoverBooking, verifyRecoveredBookingOTP, getBooking, downloadBookingPDF, resendBookingTickets } from './booking.controller';
 import { PublicBookingService } from '../../services/public/booking.service';
 import { BookingRecoveryService } from '../../services/public/booking-recovery.service';
@@ -791,4 +790,3 @@ describe('Booking Controller — Guest Ownership & Booking Enumeration Hardening
     );
   });
 });
-

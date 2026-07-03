@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:54.214Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 2,
+    "message": "Groups of imports must be separated by a single blank line.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "a051d5a695fc7551895ae8478f2baa7d9d7439466972e38461425269453565df",
+        "id": "a051d5a695fc7551895ae8478f2baa7d9d7439466972e38461425269453565df",
+        "line": 2,
+        "message": "Groups of imports must be separated by a single blank line."
+      }
+    ],
+    "path": "apps/server/src/utils/seed-admin.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:54.214Z",
+  "id": "f_5d2373a4",
+  "lastDetected": "2026-07-03T12:25:54.214Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-001",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

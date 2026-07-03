@@ -1,0 +1,11 @@
+{
+  "history": [
+    {
+      "action": "CREATED",
+      "notes": "New grouped finding registered: Imports within the same group must be sorted alphabetically (\"bcryptjs\" should precede \"mongoose\").",
+      "status": "NEW",
+      "timestamp": "2026-07-03T12:25:51.207Z"
+    }
+  ],
+  "id": "f_cff0ea8d"
+}

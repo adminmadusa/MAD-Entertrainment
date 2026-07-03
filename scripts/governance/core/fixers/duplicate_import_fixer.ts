@@ -134,7 +134,7 @@ export class DuplicateImportFixer implements Fixer {
       // Build the merged import string
       const firstImp = group[0];
       const quoteChar = firstImp.moduleSpecifier.getText(sourceFile).charAt(0) || "'";
-      
+
       const elementsText = Array.from(specifiersMap.values()).map(spec => {
         if (spec.propertyName) {
           return `${spec.propertyName} as ${spec.name}`;

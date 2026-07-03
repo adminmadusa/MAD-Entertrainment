@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:26:02.054Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 4,
+    "message": "Groups of imports must be separated by a single blank line.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "f5f0ce5ba9e1f610f3ebbf7c007b1dfde4bc1911987f0cfa4a8eae792e5a8d3d",
+        "id": "f5f0ce5ba9e1f610f3ebbf7c007b1dfde4bc1911987f0cfa4a8eae792e5a8d3d",
+        "line": 4,
+        "message": "Groups of imports must be separated by a single blank line."
+      }
+    ],
+    "path": "scripts/governance/validators/helpers/duplicate_file_detector.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:26:02.054Z",
+  "id": "f_6df167b8",
+  "lastDetected": "2026-07-03T12:26:02.054Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "scripts",
+  "relationships": [],
+  "rule": "VAL-HYG-001",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CONFIRMED"
+}

@@ -1,0 +1,58 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:55.800Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 190,
+    "message": "Trailing whitespace characters detected.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "f510e1f4a5ff1c3ef8645f11489738d5490c3ebe6d38ecee8ef8e6842bf542db",
+        "id": "f510e1f4a5ff1c3ef8645f11489738d5490c3ebe6d38ecee8ef8e6842bf542db",
+        "line": 96,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "f510e1f4a5ff1c3ef8645f11489738d5490c3ebe6d38ecee8ef8e6842bf542db",
+        "id": "f510e1f4a5ff1c3ef8645f11489738d5490c3ebe6d38ecee8ef8e6842bf542db",
+        "line": 188,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "f510e1f4a5ff1c3ef8645f11489738d5490c3ebe6d38ecee8ef8e6842bf542db",
+        "id": "f510e1f4a5ff1c3ef8645f11489738d5490c3ebe6d38ecee8ef8e6842bf542db",
+        "line": 189,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "f510e1f4a5ff1c3ef8645f11489738d5490c3ebe6d38ecee8ef8e6842bf542db",
+        "id": "f510e1f4a5ff1c3ef8645f11489738d5490c3ebe6d38ecee8ef8e6842bf542db",
+        "line": 190,
+        "message": "Trailing whitespace characters detected."
+      }
+    ],
+    "path": "apps/web/src/components/booking/checkout/CheckoutForm.tsx"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:55.800Z",
+  "id": "f_f65e1cbf",
+  "lastDetected": "2026-07-03T12:25:55.800Z",
+  "occurrenceCount": 4,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-004",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

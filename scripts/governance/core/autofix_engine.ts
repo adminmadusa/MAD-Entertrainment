@@ -1,16 +1,19 @@
-import { resolve, relative } from 'path';
-import { readFileSync, existsSync } from 'fs';
-import { MetadataProvider } from './metadata';
+// scripts/governance/core/autofix_engine.ts
+import { existsSync, readFileSync } from 'fs';
+import { relative, resolve } from 'path';
+
 import { AuditEngine } from './audit_engine';
+import type { AutoFixObserver } from './autofix_observer';
 import { ExecutionEngine } from './execution_engine';
-import { ValidatorRegistry } from './validator_registry';
-import { StatelessViolation, ValidationError } from './types';
-import { FixContext } from './fix_context';
-import { FixResult } from './fix_result';
-import { FixRegistry } from './fix_registry';
-import { RollbackManager } from './rollback_manager';
 import { FileWriter } from './file_writer';
-import { FixResultItem } from './fix_types';
+import { FixContext } from './fix_context';
+import { FixRegistry } from './fix_registry';
+import { FixResult } from './fix_result';
+import type { FixResultItem } from './fix_types';
+import { MetadataProvider } from './metadata';
+import { RollbackManager } from './rollback_manager';
+import type { StatelessViolation } from './types';
+import { ValidatorRegistry } from './validator_registry';
 
 export class AutoFixEngine {
   /**
@@ -24,7 +27,7 @@ export class AutoFixEngine {
   /**
    * Main entry point to execute autofix.
    */
-  public static async execute(context: FixContext): Promise<FixResult> {
+  public static async execute(context: FixContext, observer?: AutoFixObserver): Promise<FixResult> {
     const result = new FixResult();
 
     if (context.preview || context.dryRun) {
@@ -103,34 +106,68 @@ export class AutoFixEngine {
 
     // 3. Process each violation
     for (const violation of violations) {
+      // Graceful interruption check before starting the next item
+      if (context.signal?.aborted) {
+        context.logger.warn('⚠️  Execution aborted by signal controller.');
+        break;
+      }
+
       const ruleId = violation.rule;
       const filePath = violation.path;
 
       if (!FixRegistry.supports(ruleId)) {
-        result.addResult({
+        const skipItem: FixResultItem = {
           ruleId,
           filePath,
           success: false,
           message: `No fixer registered for rule: ${ruleId}`,
           safety: 'UNSUPPORTED',
           applied: false,
-        });
+        };
+        result.addResult(skipItem);
+
+        if (observer?.onFixSkipped) {
+          try {
+            const dummyFixer = { ruleId, safety: 'UNSUPPORTED' as const, fix: async () => ({}) as any };
+            observer.onFixSkipped(violation, dummyFixer, 'No fixer registered');
+          } catch (e: any) {
+            context.logger.warn(`AutoFixObserver.onFixSkipped failed: ${e.message}`);
+          }
+        }
         continue;
       }
 
       const fixer = FixRegistry.get(ruleId)!;
 
-      // Safety classification enforcement
-      if (context.safeOnly && fixer.safety !== 'SAFE') {
-        result.addResult({
+      // Delegate execution decision to the pluggable ExecutionPolicy.
+      if (!context.executionPolicy.shouldExecute(violation, fixer, context)) {
+        const skipItem: FixResultItem = {
           ruleId,
           filePath,
           success: true,
-          message: `Skipped non-safe fixer (${fixer.safety}) for rule: ${ruleId}`,
+          message: `Fix skipped by execution policy (${fixer.safety})`,
           safety: fixer.safety,
           applied: false,
-        });
+        };
+        result.addResult(skipItem);
+
+        if (observer?.onFixSkipped) {
+          try {
+            observer.onFixSkipped(violation, fixer, 'Skipped by execution policy');
+          } catch (e: any) {
+            context.logger.warn(`AutoFixObserver.onFixSkipped failed: ${e.message}`);
+          }
+        }
         continue;
+      }
+
+      // Observer hook: onFixStarted
+      if (observer?.onFixStarted) {
+        try {
+          observer.onFixStarted(violation, fixer);
+        } catch (e: any) {
+          context.logger.warn(`AutoFixObserver.onFixStarted failed: ${e.message}`);
+        }
       }
 
       // Record original file content before running the fixer (only if not dry run / preview)
@@ -153,9 +190,17 @@ export class AutoFixEngine {
         }
 
         result.addResult(fixResult);
+
+        if (observer?.onFixApplied) {
+          try {
+            observer.onFixApplied(violation, fixer, fixResult);
+          } catch (e: any) {
+            context.logger.warn(`AutoFixObserver.onFixApplied failed: ${e.message}`);
+          }
+        }
       } catch (err: any) {
         context.logger.error(`Failed to apply fixer for rule ${ruleId} on ${filePath}: ${err.message}`, err);
-        result.addResult({
+        const errorItem = {
           ruleId,
           filePath,
           success: false,
@@ -163,7 +208,16 @@ export class AutoFixEngine {
           safety: fixer.safety,
           applied: false,
           error: err,
-        });
+        };
+        result.addResult(errorItem);
+
+        if (observer?.onFixApplied) {
+          try {
+            observer.onFixApplied(violation, fixer, errorItem);
+          } catch (e: any) {
+            context.logger.warn(`AutoFixObserver.onFixApplied failed: ${e.message}`);
+          }
+        }
       }
     }
 
@@ -172,6 +226,14 @@ export class AutoFixEngine {
       const rollbackFile = rollbackSession.save();
       if (rollbackFile) {
         context.logger.log(`💾 Rollback session saved at: ${rollbackFile}`);
+      }
+    }
+
+    if (observer?.onExecutionFinished) {
+      try {
+        observer.onExecutionFinished();
+      } catch (e: any) {
+        context.logger.warn(`AutoFixObserver.onExecutionFinished failed: ${e.message}`);
       }
     }
 

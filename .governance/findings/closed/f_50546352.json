@@ -1,0 +1,50 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:56.299Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 50,
+    "message": "Trailing whitespace characters detected.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "837927aca1829468f07ed0d65b0c7497f85dd38436b85d2ba9a18729074056ce",
+        "id": "837927aca1829468f07ed0d65b0c7497f85dd38436b85d2ba9a18729074056ce",
+        "line": 10,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "837927aca1829468f07ed0d65b0c7497f85dd38436b85d2ba9a18729074056ce",
+        "id": "837927aca1829468f07ed0d65b0c7497f85dd38436b85d2ba9a18729074056ce",
+        "line": 11,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "837927aca1829468f07ed0d65b0c7497f85dd38436b85d2ba9a18729074056ce",
+        "id": "837927aca1829468f07ed0d65b0c7497f85dd38436b85d2ba9a18729074056ce",
+        "line": 50,
+        "message": "Trailing whitespace characters detected."
+      }
+    ],
+    "path": "apps/web/src/components/ui/HomeSkeletons.tsx"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:56.299Z",
+  "id": "f_50546352",
+  "lastDetected": "2026-07-03T12:25:56.299Z",
+  "occurrenceCount": 3,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-004",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

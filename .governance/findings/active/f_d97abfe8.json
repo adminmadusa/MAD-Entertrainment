@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:51.761Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 2,
+    "message": "Groups of imports must be separated by a single blank line.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "ead7565401dc949b43ee3fa75c610375841a00a91debe9dc6bc4ae9e3278d8fd",
+        "id": "ead7565401dc949b43ee3fa75c610375841a00a91debe9dc6bc4ae9e3278d8fd",
+        "line": 2,
+        "message": "Groups of imports must be separated by a single blank line."
+      }
+    ],
+    "path": "apps/server/src/routes/admin/dj-operator.routes.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:51.761Z",
+  "id": "f_d97abfe8",
+  "lastDetected": "2026-07-03T12:25:51.761Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-001",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

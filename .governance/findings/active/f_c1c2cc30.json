@@ -1,0 +1,35 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:49:55.822Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 9,
+    "message": "Imports within the same group must be sorted alphabetically (\"../core/fix_registry\" should precede \"../core/fix_types\").",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "54ac011c76bd0bd7313e82fabadca864f51dbfdcb3d8cc75ae9b85080fb87d98",
+        "id": "54ac011c76bd0bd7313e82fabadca864f51dbfdcb3d8cc75ae9b85080fb87d98",
+        "line": 9,
+        "message": "Imports within the same group must be sorted alphabetically (\"../core/fix_registry\" should precede \"../core/fix_types\")."
+      }
+    ],
+    "path": "scripts/governance/cli/interactive_approval_policy.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:49:55.822Z",
+  "id": "f_c1c2cc30",
+  "lastDetected": "2026-07-03T12:51:17.267Z",
+  "lastModified": "2026-07-03T12:51:17.267Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "scripts",
+  "relationships": [],
+  "rule": "VAL-HYG-001",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

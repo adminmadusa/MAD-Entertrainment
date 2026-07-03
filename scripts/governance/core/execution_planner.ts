@@ -16,7 +16,7 @@ export class ExecutionPlanner {
   }): ExecutionPlan {
     // 1. Get all registered validators
     const allDefs = ValidatorRegistry.getAllValidators();
-    
+
     // 2. Filter based on configuration
     let enabledDefs = allDefs;
     if (filters?.enabledOnly !== false) {
@@ -104,7 +104,7 @@ export class ExecutionPlanner {
             }
           }
         }
-        
+
         visited.set(id, 'visited');
         // Add to sorted list if it is in the filtered list (or resolve dependency recursively)
         if (!sorted.some(s => s.id === id)) {

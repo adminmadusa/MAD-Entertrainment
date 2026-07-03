@@ -1,0 +1,23 @@
+{
+  "history": [
+    {
+      "action": "CREATED",
+      "notes": "New grouped finding registered: Groups of imports must be separated by a single blank line.",
+      "status": "NEW",
+      "timestamp": "2026-07-03T12:25:58.768Z"
+    },
+    {
+      "action": "FIX_FAILED",
+      "notes": "Violation still detected after auto-fix attempt. Finding confirmed as persistent. (Transitioned from NEW to CONFIRMED)",
+      "status": "CONFIRMED",
+      "timestamp": "2026-07-03T12:53:13.600Z"
+    },
+    {
+      "action": "RESOLVED",
+      "notes": "Code violation no longer detected. Marking finding as closed. (Transitioned from CONFIRMED to CLOSED)",
+      "status": "CLOSED",
+      "timestamp": "2026-07-03T13:02:40.693Z"
+    }
+  ],
+  "id": "f_f5e7edb4"
+}

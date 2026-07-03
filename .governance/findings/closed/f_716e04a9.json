@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:49.660Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 11,
+    "message": "Duplicate import declaration from module path \"vitest\".",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "8a750583179f64972e568da2e43b9cabbb5e81ae297760ab5c8483fe45e9fed6",
+        "id": "8a750583179f64972e568da2e43b9cabbb5e81ae297760ab5c8483fe45e9fed6",
+        "line": 11,
+        "message": "Duplicate import declaration from module path \"vitest\"."
+      }
+    ],
+    "path": "apps/server/src/controllers/public/booking.controller.test.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:49.660Z",
+  "id": "f_716e04a9",
+  "lastDetected": "2026-07-03T12:25:49.660Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-002",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

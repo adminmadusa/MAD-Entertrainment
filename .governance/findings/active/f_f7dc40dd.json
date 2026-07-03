@@ -5,7 +5,7 @@
   "engineVersion": "1.0.0",
   "evidence": {
     "construct": "button",
-    "line": 261,
+    "line": 259,
     "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
     "occurrences": [
       {
@@ -31,7 +31,7 @@
         "construct": "UIElement",
         "fingerprint": "83fcb1df0af53c4ef8be86d847beed2ed5cc612b96250eed724577532357c5c2",
         "id": "83fcb1df0af53c4ef8be86d847beed2ed5cc612b96250eed724577532357c5c2",
-        "line": 217,
+        "line": 215,
         "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
         "snippet": "<button"
       },
@@ -40,7 +40,7 @@
         "construct": "UIElement",
         "fingerprint": "83fcb1df0af53c4ef8be86d847beed2ed5cc612b96250eed724577532357c5c2",
         "id": "83fcb1df0af53c4ef8be86d847beed2ed5cc612b96250eed724577532357c5c2",
-        "line": 224,
+        "line": 222,
         "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
         "snippet": "<button"
       },
@@ -49,7 +49,7 @@
         "construct": "UIElement",
         "fingerprint": "83fcb1df0af53c4ef8be86d847beed2ed5cc612b96250eed724577532357c5c2",
         "id": "83fcb1df0af53c4ef8be86d847beed2ed5cc612b96250eed724577532357c5c2",
-        "line": 255,
+        "line": 253,
         "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
         "snippet": "<button"
       },
@@ -58,7 +58,7 @@
         "construct": "UIElement",
         "fingerprint": "83fcb1df0af53c4ef8be86d847beed2ed5cc612b96250eed724577532357c5c2",
         "id": "83fcb1df0af53c4ef8be86d847beed2ed5cc612b96250eed724577532357c5c2",
-        "line": 261,
+        "line": 259,
         "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
         "snippet": "<button"
       }
@@ -69,8 +69,8 @@
   "feature": "button",
   "firstDetected": "2026-06-29T08:09:52.713Z",
   "id": "f_f7dc40dd",
-  "lastDetected": "2026-07-03T08:48:21.086Z",
-  "lastModified": "2026-07-03T08:48:21.086Z",
+  "lastDetected": "2026-07-03T13:02:40.699Z",
+  "lastModified": "2026-07-03T13:02:40.699Z",
   "occurrenceCount": 6,
   "owner": "UI UX Guild",
   "package": "apps",
@@ -78,5 +78,5 @@
   "rule": "VAL-UI-005",
   "ruleVersion": "1.0.0",
   "schemaVersion": 2,
-  "status": "NEW"
+  "status": "REGRESSION"
 }

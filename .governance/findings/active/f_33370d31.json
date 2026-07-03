@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:47.927Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 3,
+    "message": "Imports must be grouped in order: Node built-ins, Third-party packages, Workspace aliases, Relative paths, Side-effects.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "08f0630ffa9cbae60812f90a8589a6b47aef6fd5c417d13a25c3df2207b8e53f",
+        "id": "08f0630ffa9cbae60812f90a8589a6b47aef6fd5c417d13a25c3df2207b8e53f",
+        "line": 3,
+        "message": "Imports must be grouped in order: Node built-ins, Third-party packages, Workspace aliases, Relative paths, Side-effects."
+      }
+    ],
+    "path": "apps/admin/src/components/coupons/CouponForm.tsx"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:47.927Z",
+  "id": "f_33370d31",
+  "lastDetected": "2026-07-03T12:25:47.927Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-001",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

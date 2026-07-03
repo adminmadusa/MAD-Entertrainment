@@ -170,7 +170,7 @@ function runMigration() {
   const afterOccurrencesCount = migratedFindings.reduce((acc, f) => acc + (f.evidence.occurrences?.length || 0), 0);
   const afterRules = new Set(migratedFindings.map(f => f.rule));
   const afterFiles = new Set(migratedFindings.map(f => f.evidence.path));
-  
+
   const fingerprintsSet = new Set<string>();
   let duplicateFingerprintsCount = 0;
   for (const f of migratedFindings) {
@@ -265,7 +265,7 @@ function runMigration() {
 
 function rollback(reason: string) {
   console.log(`🚨 Rollback triggered due to: ${reason}`);
-  
+
   // Save FailureRecoveryMetadata
   const failureLogPath = join(govDir, 'migration-failure.json');
   const failureLog = {
@@ -274,7 +274,7 @@ function rollback(reason: string) {
     exceptionSummary: reason,
     rollbackStatus: 'SUCCESS' as const,
   };
-  
+
   try {
     // 1. Delete new state directories if created
     const dirsToDelete = [activeDir, closedDir, suppressedDir, archiveFindingsDir, archiveHistoryDir];

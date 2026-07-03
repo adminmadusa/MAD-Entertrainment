@@ -1,0 +1,58 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:56.790Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 85,
+    "message": "Trailing whitespace characters detected.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "dceb0eb97ecfd1759bda75be604e202e3f9f5a43770708b98f429711bd036ef9",
+        "id": "dceb0eb97ecfd1759bda75be604e202e3f9f5a43770708b98f429711bd036ef9",
+        "line": 44,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "dceb0eb97ecfd1759bda75be604e202e3f9f5a43770708b98f429711bd036ef9",
+        "id": "dceb0eb97ecfd1759bda75be604e202e3f9f5a43770708b98f429711bd036ef9",
+        "line": 50,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "dceb0eb97ecfd1759bda75be604e202e3f9f5a43770708b98f429711bd036ef9",
+        "id": "dceb0eb97ecfd1759bda75be604e202e3f9f5a43770708b98f429711bd036ef9",
+        "line": 54,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "dceb0eb97ecfd1759bda75be604e202e3f9f5a43770708b98f429711bd036ef9",
+        "id": "dceb0eb97ecfd1759bda75be604e202e3f9f5a43770708b98f429711bd036ef9",
+        "line": 85,
+        "message": "Trailing whitespace characters detected."
+      }
+    ],
+    "path": "docs/archive/audits/booking-ttl-remediation-design.md"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:56.790Z",
+  "id": "f_85f15b24",
+  "lastDetected": "2026-07-03T12:25:56.790Z",
+  "occurrenceCount": 4,
+  "owner": "Platform Team",
+  "package": "docs",
+  "relationships": [],
+  "rule": "VAL-HYG-004",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

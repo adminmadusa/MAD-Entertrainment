@@ -1,0 +1,50 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:59.187Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 266,
+    "message": "Trailing whitespace characters detected.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "c8801d989517b7924b6eebb8e4338e375f544e1ec0f91b4ca02eb4d1297f6d7b",
+        "id": "c8801d989517b7924b6eebb8e4338e375f544e1ec0f91b4ca02eb4d1297f6d7b",
+        "line": 95,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "c8801d989517b7924b6eebb8e4338e375f544e1ec0f91b4ca02eb4d1297f6d7b",
+        "id": "c8801d989517b7924b6eebb8e4338e375f544e1ec0f91b4ca02eb4d1297f6d7b",
+        "line": 116,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "c8801d989517b7924b6eebb8e4338e375f544e1ec0f91b4ca02eb4d1297f6d7b",
+        "id": "c8801d989517b7924b6eebb8e4338e375f544e1ec0f91b4ca02eb4d1297f6d7b",
+        "line": 266,
+        "message": "Trailing whitespace characters detected."
+      }
+    ],
+    "path": "scripts/governance/core/finding_manager.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:59.187Z",
+  "id": "f_b61f4b57",
+  "lastDetected": "2026-07-03T12:25:59.187Z",
+  "occurrenceCount": 3,
+  "owner": "Platform Team",
+  "package": "scripts",
+  "relationships": [],
+  "rule": "VAL-HYG-004",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

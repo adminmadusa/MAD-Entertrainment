@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:52.822Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 2,
+    "message": "Imports within the same group must be sorted alphabetically (\"mongoose\" should precede \"vitest\").",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "eb4ff116b037bf7c75ad9939551f7d78761824b1d1f3f85766451789433c9656",
+        "id": "eb4ff116b037bf7c75ad9939551f7d78761824b1d1f3f85766451789433c9656",
+        "line": 2,
+        "message": "Imports within the same group must be sorted alphabetically (\"mongoose\" should precede \"vitest\")."
+      }
+    ],
+    "path": "apps/server/src/services/admin/user.service.test.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:52.822Z",
+  "id": "f_a5522429",
+  "lastDetected": "2026-07-03T12:25:52.822Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-001",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CONFIRMED"
+}

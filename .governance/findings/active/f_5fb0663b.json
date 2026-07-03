@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:53.356Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 2,
+    "message": "Imports within the same group must be sorted alphabetically (\"mongoose\" should precede \"vitest\").",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "89a3329c7b567c6039fe2a61e68c146fece5dd1da6fecc4c9fa5d803ebe62263",
+        "id": "89a3329c7b567c6039fe2a61e68c146fece5dd1da6fecc4c9fa5d803ebe62263",
+        "line": 2,
+        "message": "Imports within the same group must be sorted alphabetically (\"mongoose\" should precede \"vitest\")."
+      }
+    ],
+    "path": "apps/server/src/services/public/ownership-characterization.test.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:53.356Z",
+  "id": "f_5fb0663b",
+  "lastDetected": "2026-07-03T12:25:53.356Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-001",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CONFIRMED"
+}

@@ -27,7 +27,7 @@ export class ValidatorRegistry {
     this.initialize();
 
     const id = metadata?.id || validator.name || validator.constructor.name;
-    
+
     // Fail fast for duplicate validator IDs
     if (this.validators.has(id)) {
       throw new Error(`Validator Registry Error: Duplicate validator ID detected: "${id}"`);
@@ -98,7 +98,7 @@ export class ValidatorRegistry {
         if (!RuleRegistry.ruleExists(ruleId)) {
           throw new Error(`Validator Registry Validation Error: Validator "${id}" references unregistered rule "${ruleId}"`);
         }
-        
+
         // Fail fast if duplicate supported rules are mapped across different active validators
         if (rulesUsed.has(ruleId)) {
           throw new Error(`Validator Registry Validation Error: Rule "${ruleId}" is claimed by multiple validators`);

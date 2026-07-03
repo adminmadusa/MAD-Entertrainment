@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:47.743Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 2,
+    "message": "Groups of imports must be separated by a single blank line.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "ab99e00862c08a17b18796e0a4622848233128c6580d8def185da3c60beb2bf6",
+        "id": "ab99e00862c08a17b18796e0a4622848233128c6580d8def185da3c60beb2bf6",
+        "line": 2,
+        "message": "Groups of imports must be separated by a single blank line."
+      }
+    ],
+    "path": "apps/admin/src/app/users/_hooks/use-user-detail.hook.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:47.743Z",
+  "id": "f_82b136a6",
+  "lastDetected": "2026-07-03T12:25:47.743Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-001",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

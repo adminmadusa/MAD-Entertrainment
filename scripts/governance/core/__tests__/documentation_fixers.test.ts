@@ -72,7 +72,7 @@ describe('Documentation Fixers', () => {
     it('should rewrite relative link to match casing on disk', async () => {
       const file = join(relativeSandboxPath, 'file1.md');
       const target = join(relativeSandboxPath, 'TARGET_FILE.md');
-      
+
       const fullFile = join(workspaceRoot, file);
       const fullTarget = join(workspaceRoot, target);
 
@@ -132,7 +132,7 @@ describe('Documentation Fixers', () => {
     it('should skip and report success false for file:/// paths pointing outside the workspace', async () => {
       const file = join(relativeSandboxPath, 'file.md');
       const fullFile = join(workspaceRoot, file);
-      
+
       const fileUrl = 'file:///Users/external/some-machine-file.txt';
       writeFileSync(fullFile, `Check [extern](${fileUrl})\n`, 'utf8');
 

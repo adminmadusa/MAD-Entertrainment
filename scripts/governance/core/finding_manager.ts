@@ -92,7 +92,7 @@ export class FindingManager {
             try {
               const content = readFileSync(join(dir, file), 'utf8');
               const finding = JSON.parse(content) as Finding;
-              
+
               // Inline upgrade of legacy STRICT occurrence fingerprints to SMART
               if (finding.evidence.occurrences) {
                 const strategy = FingerprintEngine.getStrategy('SMART');
@@ -113,7 +113,7 @@ export class FindingManager {
                   return o;
                 });
               }
-              
+
               this.findings.set(finding.id, finding);
               this.updateNextIndex(finding.id);
             } catch (e) {
@@ -263,7 +263,7 @@ export class FindingManager {
       if (!finding.evidence.occurrences) {
         finding.evidence.occurrences = [];
       }
-      
+
       // Reconcile occurrences on the first match of this finding in the run
       if (!claimedFindingIds.has(findingId)) {
         this.originalOccurrences.set(findingId, [...finding.evidence.occurrences]);

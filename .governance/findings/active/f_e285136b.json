@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:53.707Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 2,
+    "message": "Imports within the same group must be sorted alphabetically (\"../../config/env\" should precede \"../../config/stripe\").",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "ed1585d82d18d1fd193c2ec7260771f568c636d66b872d7121bccc32af0c14ff",
+        "id": "ed1585d82d18d1fd193c2ec7260771f568c636d66b872d7121bccc32af0c14ff",
+        "line": 2,
+        "message": "Imports within the same group must be sorted alphabetically (\"../../config/env\" should precede \"../../config/stripe\")."
+      }
+    ],
+    "path": "apps/server/src/services/public/stripe.adapter.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:53.707Z",
+  "id": "f_e285136b",
+  "lastDetected": "2026-07-03T12:25:53.707Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-001",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

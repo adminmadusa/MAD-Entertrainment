@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:49:56.161Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 2,
+    "message": "Duplicate import declaration from module path \"./execution_policy\".",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "885e1f2033ee19f9c5379af30a3f152b0617059ce0772411c3e3b3d30bfd7ad3",
+        "id": "885e1f2033ee19f9c5379af30a3f152b0617059ce0772411c3e3b3d30bfd7ad3",
+        "line": 2,
+        "message": "Duplicate import declaration from module path \"./execution_policy\"."
+      }
+    ],
+    "path": "scripts/governance/core/fix_context.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:49:56.161Z",
+  "id": "f_07f8d6c5",
+  "lastDetected": "2026-07-03T12:49:56.161Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "scripts",
+  "relationships": [],
+  "rule": "VAL-HYG-002",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

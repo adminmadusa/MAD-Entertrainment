@@ -1,12 +1,17 @@
-import { existsSync, readdirSync, unlinkSync, mkdirSync } from 'fs';
+// scripts/governance/core/rollback_manager.ts
+import { existsSync, mkdirSync, readdirSync } from 'fs';
 import { resolve, join } from 'path';
-import { readJsonIfExists, writeJsonIfChanged } from './json_utils';
+
 import { FileWriter } from './file_writer';
+import { readJsonIfExists, writeJsonIfChanged } from './json_utils';
+import { RollbackHistory } from './rollback_history';
 
 export interface RollbackBackup {
   id: string;
   timestamp: string;
   files: Record<string, string>; // relativePath -> content
+  restored?: boolean;
+  restoredAt?: string;
 }
 
 export class RollbackSession {
@@ -55,38 +60,56 @@ export class RollbackManager {
     return new RollbackSession(dir, workspaceRoot);
   }
 
+  /**
+   * Executes rollback on the latest active (unrestored) backup.
+   * Marks the backup as restored instead of deleting it.
+   */
   public static rollbackLatest(workspaceRoot: string): { success: boolean; filesRestored: string[] } {
-    const dir = this.backupsDir(workspaceRoot);
-    if (!existsSync(dir)) {
+    const latestActive = RollbackHistory.findLatestActive(workspaceRoot);
+    if (!latestActive) {
       return { success: false, filesRestored: [] };
     }
 
-    const files = readdirSync(dir)
-      .filter(f => f.endsWith('-rollback.json'))
-      .sort(); // Lexicographical sort matches chronological sort due to epoch timestamp prefix
+    return this.applyRollback(workspaceRoot, latestActive);
+  }
 
-    if (files.length === 0) {
+  /**
+   * Executes rollback on a specific backup by ID.
+   * Marks the backup as restored.
+   */
+  public static rollbackSession(workspaceRoot: string, sessionId: string): { success: boolean; filesRestored: string[] } {
+    const backup = RollbackHistory.find(workspaceRoot, sessionId);
+    if (!backup || backup.restored) {
       return { success: false, filesRestored: [] };
     }
 
-    const latestFile = files[files.length - 1];
-    const latestPath = join(dir, latestFile);
-    const backup = readJsonIfExists<RollbackBackup>(latestPath);
+    return this.applyRollback(workspaceRoot, backup);
+  }
 
-    if (!backup) {
-      return { success: false, filesRestored: [] };
-    }
-
+  private static applyRollback(workspaceRoot: string, backup: RollbackBackup): { success: boolean; filesRestored: string[] } {
     const filesRestored: string[] = [];
-    
-    // Restore files using centralized FileWriter to enforce validation checks
+
+    // Restore files using centralized FileWriter
     for (const [relPath, content] of Object.entries(backup.files)) {
       FileWriter.write(workspaceRoot, relPath, content);
       filesRestored.push(relPath);
     }
 
-    // Clean up backup file
-    unlinkSync(latestPath);
+    // Mark as restored and save back to the same file on disk
+    backup.restored = true;
+    backup.restoredAt = new Date().toISOString();
+
+    const dir = this.backupsDir(workspaceRoot);
+    // Find the file containing this backup
+    const files = readdirSync(dir).filter(f => f.endsWith('-rollback.json'));
+    for (const file of files) {
+      const filePath = join(dir, file);
+      const data = readJsonIfExists<RollbackBackup>(filePath);
+      if (data && data.id === backup.id) {
+        writeJsonIfChanged(filePath, backup);
+        break;
+      }
+    }
 
     return { success: true, filesRestored };
   }

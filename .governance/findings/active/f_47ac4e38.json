@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:55.863Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 12,
+    "message": "Import from types module \"@mad/types\" should use \"import type\".",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "cd6cbfa7ae2bf0b96b2b97d651def391ead1a72cc1f8e553db2023e029fcf887",
+        "id": "cd6cbfa7ae2bf0b96b2b97d651def391ead1a72cc1f8e553db2023e029fcf887",
+        "line": 12,
+        "message": "Import from types module \"@mad/types\" should use \"import type\"."
+      }
+    ],
+    "path": "apps/web/src/components/booking/CheckoutContent.tsx"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:55.863Z",
+  "id": "f_47ac4e38",
+  "lastDetected": "2026-07-03T12:25:55.863Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-003",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CONFIRMED"
+}

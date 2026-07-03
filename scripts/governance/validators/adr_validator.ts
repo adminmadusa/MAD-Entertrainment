@@ -58,9 +58,9 @@ export class AdrValidator implements GovernanceValidator {
     try {
       adrFiles = readdirSync(decisionsPath).filter(file => {
         const lower = file.toLowerCase();
-        return lower.endsWith('.md') && 
-               lower !== 'readme.md' && 
-               lower !== 'adr_index.md' && 
+        return lower.endsWith('.md') &&
+               lower !== 'readme.md' &&
+               lower !== 'adr_index.md' &&
                lower !== 'adr_template.md';
       });
     } catch (err: any) {
@@ -99,7 +99,7 @@ export class AdrValidator implements GovernanceValidator {
       }
 
       const adrNum = parseInt(nameMatch[1], 10);
-      
+
       const content = readFileSync(fullPath, 'utf8');
       const lines = content.split(/\r?\n/);
 
@@ -396,7 +396,7 @@ export class AdrValidator implements GovernanceValidator {
             const title = cells[1];
             const status = cells[2];
             const linkCell = cells[5];
-            
+
             // Extract link path from markdown e.g. [ADR-001](file:///...)
             let link = '';
             const linkMatch = /\[[^\]]+\]\(([^)]+)\)/.exec(linkCell);

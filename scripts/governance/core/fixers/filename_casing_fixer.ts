@@ -30,7 +30,7 @@ export class FilenameCasingFixer implements Fixer {
     const originalLine = lines[lineIdx];
     const fileDir = dirname(fullPath);
     const parsedLinks = parseLinksFromLine(originalLine);
-    
+
     let updatedLine = originalLine;
     let anyChanges = false;
 
@@ -48,16 +48,16 @@ export class FilenameCasingFixer implements Fixer {
           // Compute new relative URL relative to containing file's directory
           const targetFullPath = resolve(context.workspaceRoot, casingStatus.canonicalPath);
           let newRelUrl = relative(fileDir, targetFullPath);
-          
+
           // Guarantee forward slashes
           newRelUrl = newRelUrl.replace(/\\/g, '/');
-          
+
           if (!newRelUrl.startsWith('.')) {
             newRelUrl = './' + newRelUrl;
           }
-          
+
           const fullNewUrl = newRelUrl + anchor;
-          
+
           // Replace link target casing segment
           updatedLine = updatedLine.replace(pl.urlOrRef, fullNewUrl);
           anyChanges = true;

@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:51.314Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 55,
+    "message": "File must terminate with exactly one trailing newline character.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "ee3b9a2dce9ffb7dc4d33a6932eb4732f9065a461cbabe7307d65e1e9fde0f67",
+        "id": "ee3b9a2dce9ffb7dc4d33a6932eb4732f9065a461cbabe7307d65e1e9fde0f67",
+        "line": 55,
+        "message": "File must terminate with exactly one trailing newline character."
+      }
+    ],
+    "path": "apps/server/src/models/dead-letter-job.schema.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:51.314Z",
+  "id": "f_5cd7e695",
+  "lastDetected": "2026-07-03T12:25:51.314Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-005",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

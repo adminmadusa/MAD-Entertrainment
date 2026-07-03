@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:59.155Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 7,
+    "message": "Trailing whitespace characters detected.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "593cfbd23cd021b6054c0db191118781f815f1f2c15f598e9703cae5dd4d6c60",
+        "id": "593cfbd23cd021b6054c0db191118781f815f1f2c15f598e9703cae5dd4d6c60",
+        "line": 7,
+        "message": "Trailing whitespace characters detected."
+      }
+    ],
+    "path": "scripts/governance/core/file_writer.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:59.155Z",
+  "id": "f_3947469e",
+  "lastDetected": "2026-07-03T12:25:59.155Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "scripts",
+  "relationships": [],
+  "rule": "VAL-HYG-004",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:48.539Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 2,
+    "message": "Imports within the same group must be sorted alphabetically (\"@mad/shared\" should precede \"@mad/types\").",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "20dcd53df0338450a47d4bfa41cc560971437b8a9c3f486446304246582c3d54",
+        "id": "20dcd53df0338450a47d4bfa41cc560971437b8a9c3f486446304246582c3d54",
+        "line": 2,
+        "message": "Imports within the same group must be sorted alphabetically (\"@mad/shared\" should precede \"@mad/types\")."
+      }
+    ],
+    "path": "apps/admin/src/lib/api/admin/event.service.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:48.539Z",
+  "id": "f_973422fa",
+  "lastDetected": "2026-07-03T12:25:48.539Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-001",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CONFIRMED"
+}

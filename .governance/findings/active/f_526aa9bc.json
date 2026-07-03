@@ -5,7 +5,7 @@
   "engineVersion": "1.0.0",
   "evidence": {
     "construct": "modal-backdrop",
-    "line": 239,
+    "line": 237,
     "message": "Custom backdrop & modal container coded. Use shared <Modal> component from @mad/ui to avoid styles drift.",
     "occurrences": [
       {
@@ -13,7 +13,7 @@
         "construct": "UIElement",
         "fingerprint": "37a6a4be325d4bc5ef9b220d51f4d658ed9cd4855cb53c043527dc7016441e36",
         "id": "37a6a4be325d4bc5ef9b220d51f4d658ed9cd4855cb53c043527dc7016441e36",
-        "line": 239,
+        "line": 237,
         "message": "Custom backdrop & modal container coded. Use shared <Modal> component from @mad/ui to avoid styles drift.",
         "snippet": "<div className=\"fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4\">"
       }
@@ -24,8 +24,8 @@
   "feature": "modal-backdrop",
   "firstDetected": "2026-06-29T08:09:52.763Z",
   "id": "f_526aa9bc",
-  "lastDetected": "2026-07-03T08:48:21.085Z",
-  "lastModified": "2026-07-03T08:48:21.085Z",
+  "lastDetected": "2026-07-03T13:02:40.698Z",
+  "lastModified": "2026-07-03T13:02:40.698Z",
   "occurrenceCount": 1,
   "owner": "UI UX Guild",
   "package": "apps",
@@ -33,5 +33,5 @@
   "rule": "VAL-UI-002",
   "ruleVersion": "1.0.0",
   "schemaVersion": 2,
-  "status": "NEW"
+  "status": "REGRESSION"
 }

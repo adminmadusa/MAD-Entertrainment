@@ -1,0 +1,58 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:49.508Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 7,
+    "message": "Trailing whitespace characters detected.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "36fedc49524e483c6328759eef7e7d9c9fdea340e552d50527ef8cc24b87729f",
+        "id": "36fedc49524e483c6328759eef7e7d9c9fdea340e552d50527ef8cc24b87729f",
+        "line": 4,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "36fedc49524e483c6328759eef7e7d9c9fdea340e552d50527ef8cc24b87729f",
+        "id": "36fedc49524e483c6328759eef7e7d9c9fdea340e552d50527ef8cc24b87729f",
+        "line": 5,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "36fedc49524e483c6328759eef7e7d9c9fdea340e552d50527ef8cc24b87729f",
+        "id": "36fedc49524e483c6328759eef7e7d9c9fdea340e552d50527ef8cc24b87729f",
+        "line": 6,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "36fedc49524e483c6328759eef7e7d9c9fdea340e552d50527ef8cc24b87729f",
+        "id": "36fedc49524e483c6328759eef7e7d9c9fdea340e552d50527ef8cc24b87729f",
+        "line": 7,
+        "message": "Trailing whitespace characters detected."
+      }
+    ],
+    "path": "apps/server/src/controllers/admin/upload.controller.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:49.508Z",
+  "id": "f_4cb1bdcc",
+  "lastDetected": "2026-07-03T12:25:49.508Z",
+  "occurrenceCount": 4,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-004",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

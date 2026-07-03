@@ -29,7 +29,7 @@ export class WorkstationPathFixer implements Fixer {
 
     const originalLine = lines[lineIdx];
     const fileDir = dirname(fullPath);
-    
+
     // Parse links from line
     const parsedLinks = parseLinksFromLine(originalLine);
     let updatedLine = originalLine;
@@ -53,7 +53,7 @@ export class WorkstationPathFixer implements Fixer {
         if (isInsideWorkspace) {
           // Resolve relative URL relative to containing file's directory
           let newRelUrl = relative(fileDir, targetFullPath);
-          
+
           // Guarantee forward slashes
           newRelUrl = newRelUrl.replace(/\\/g, '/');
 

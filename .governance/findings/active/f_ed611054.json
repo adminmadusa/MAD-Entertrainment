@@ -1,45 +1,45 @@
 {
-  "schemaVersion": 2,
-  "id": "f_ed611054",
-  "rule": "VAL-UI-010",
-  "ruleVersion": "1.0.0",
-  "engineVersion": "1.0.0",
-  "domain": "UI UX Guild",
-  "owner": "UI UX Guild",
-  "package": "apps",
-  "feature": "UIElement",
-  "status": "NEW",
   "confidence": 0.9,
-  "relationships": [],
+  "createdDate": "2026-06-30T15:36:27.130Z",
+  "domain": "UI UX Guild",
+  "engineVersion": "1.0.0",
   "evidence": {
-    "path": "apps/admin/src/app/dashboard/page.tsx",
     "construct": "UIElement",
-    "snippet": "<button",
-    "line": 242,
-    "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
+    "line": 431,
+    "message": "Shared Component Enforcement: Bypassed shared Table component in favor of raw HTML table element.",
     "occurrences": [
       {
+        "column": 0,
+        "construct": "UIElement",
+        "fingerprint": "c75173ffd93081d42decdeffdee328327836afb30dffbd49184ec471601690e6",
         "id": "c75173ffd93081d42decdeffdee328327836afb30dffbd49184ec471601690e6",
         "line": 242,
-        "column": 0,
-        "construct": "UIElement",
-        "snippet": "<button",
         "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
-        "fingerprint": "c75173ffd93081d42decdeffdee328327836afb30dffbd49184ec471601690e6"
+        "snippet": "<button"
       },
       {
-        "id": "6d83cbfe7dd9f57dae2e17d2e469f37862823c28a49f4032c775c537bf8b9014",
-        "line": 431,
         "column": 0,
         "construct": "UIElement",
-        "snippet": "<table className=\"w-full text-sm\">",
+        "fingerprint": "6d83cbfe7dd9f57dae2e17d2e469f37862823c28a49f4032c775c537bf8b9014",
+        "id": "6d83cbfe7dd9f57dae2e17d2e469f37862823c28a49f4032c775c537bf8b9014",
+        "line": 431,
         "message": "Shared Component Enforcement: Bypassed shared Table component in favor of raw HTML table element.",
-        "fingerprint": "6d83cbfe7dd9f57dae2e17d2e469f37862823c28a49f4032c775c537bf8b9014"
+        "snippet": "<table className=\"w-full text-sm\">"
       }
-    ]
+    ],
+    "path": "apps/admin/src/app/dashboard/page.tsx",
+    "snippet": "<table className=\"w-full text-sm\">"
   },
-  "createdDate": "2026-06-30T15:36:27.130Z",
+  "feature": "UIElement",
   "firstDetected": "2026-06-30T15:36:27.130Z",
+  "id": "f_ed611054",
   "lastDetected": "2026-06-30T15:36:27.130Z",
-  "occurrenceCount": 2
+  "occurrenceCount": 2,
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-UI-010",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "REGRESSION"
 }

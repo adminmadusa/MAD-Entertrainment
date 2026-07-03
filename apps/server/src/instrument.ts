@@ -4,7 +4,7 @@ import { getEnv } from './config/env';
 
 export function initializeSentry() {
   const env = getEnv();
-  
+
   if (env.NODE_ENV !== 'production' || !process.env.SENTRY_DSN) {
     return;
   }

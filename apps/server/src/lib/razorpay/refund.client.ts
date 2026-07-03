@@ -26,7 +26,7 @@ export async function createRazorpayRefund(params: RazorpayRefundRequest): Promi
   }
 
   const credentials = Buffer.from(`${env.RAZORPAY_KEY_ID}:${env.RAZORPAY_KEY_SECRET}`).toString('base64');
-  
+
   try {
     const response = await axios.post<{ id: string; status: 'pending' | 'processed' | 'failed' }>(
       `https://api.razorpay.com/v1/payments/${params.paymentId}/refund`,
@@ -90,7 +90,7 @@ export async function createRazorpayRefund(params: RazorpayRefundRequest): Promi
       }
       throw new AppError(message, status || HTTP_STATUS.INTERNAL_SERVER_ERROR);
     }
-    
+
     // Log unexpected errors
     logger.error({ err, paymentId: params.paymentId }, 'Unexpected error in Razorpay refund client');
     throw new AppError(`Razorpay refund failed: ${err.message || 'Unknown error'}`, HTTP_STATUS.INTERNAL_SERVER_ERROR);

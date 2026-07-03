@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:51.605Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 47,
+    "message": "Imports within the same group must be sorted alphabetically (\"../../middleware/rate.middleware\" should precede \"./auth.routes\").",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "66403cfd26ea2e75c9ffafa71410591e4e4bc3b7155749b03a5ed6ef8f99f400",
+        "id": "66403cfd26ea2e75c9ffafa71410591e4e4bc3b7155749b03a5ed6ef8f99f400",
+        "line": 47,
+        "message": "Imports within the same group must be sorted alphabetically (\"../../middleware/rate.middleware\" should precede \"./auth.routes\")."
+      }
+    ],
+    "path": "apps/server/src/routes/admin/auth.routes.test.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:51.605Z",
+  "id": "f_3a8cf4b6",
+  "lastDetected": "2026-07-03T12:25:51.605Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-001",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

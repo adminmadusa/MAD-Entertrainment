@@ -1,34 +1,33 @@
 {
-  "schemaVersion": 2,
-  "id": "f_8a007d94",
-  "rule": "Missing Document Owner",
-  "ruleVersion": "1.0.0",
-  "engineVersion": "1.0.0",
-  "domain": "Platform Team",
-  "owner": "Platform Team",
-  "package": "docs",
-  "feature": "Document",
-  "status": "NEW",
   "confidence": 1,
-  "relationships": [],
+  "createdDate": "2026-06-30T15:36:28.422Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
   "evidence": {
-    "path": "docs/audit/ticket-retrieval-portal-audit.md",
     "construct": "Document",
     "message": "Every documentation file is required to have a defined \"Owner\" or \"Authors\" in its metadata block.",
     "occurrences": [
       {
-        "id": "dc87154af49b0abe1c3411b48efb400cf8b19726544b5599c328946660975e86",
-        "line": 0,
         "column": 0,
         "construct": "Document",
-        "snippet": "",
-        "message": "Every documentation file is required to have a defined \"Owner\" or \"Authors\" in its metadata block.",
-        "fingerprint": "dc87154af49b0abe1c3411b48efb400cf8b19726544b5599c328946660975e86"
+        "fingerprint": "dc87154af49b0abe1c3411b48efb400cf8b19726544b5599c328946660975e86",
+        "id": "dc87154af49b0abe1c3411b48efb400cf8b19726544b5599c328946660975e86",
+        "line": 0,
+        "message": "Every documentation file is required to have a defined \"Owner\" or \"Authors\" in its metadata block."
       }
-    ]
+    ],
+    "path": "docs/audit/ticket-retrieval-portal-audit.md"
   },
-  "createdDate": "2026-06-30T15:36:28.422Z",
+  "feature": "Document",
   "firstDetected": "2026-06-30T15:36:28.422Z",
+  "id": "f_8a007d94",
   "lastDetected": "2026-06-30T15:36:28.422Z",
-  "occurrenceCount": 1
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "docs",
+  "relationships": [],
+  "rule": "Missing Document Owner",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "REGRESSION"
 }

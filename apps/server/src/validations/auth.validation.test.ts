@@ -195,4 +195,3 @@ describe('public auth validation schemas', () => {
     });
   });
 });
-

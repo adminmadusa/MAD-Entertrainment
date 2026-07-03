@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:51.313Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 2,
+    "message": "Groups of imports must be separated by a single blank line.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "d553adb4432ac48f3a04047af41937f4409dca8c416fbffab0c0a4cc4b90ed66",
+        "id": "d553adb4432ac48f3a04047af41937f4409dca8c416fbffab0c0a4cc4b90ed66",
+        "line": 2,
+        "message": "Groups of imports must be separated by a single blank line."
+      }
+    ],
+    "path": "apps/server/src/models/dead-letter-job.schema.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:51.313Z",
+  "id": "f_b25c4010",
+  "lastDetected": "2026-07-03T12:25:51.313Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-001",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CONFIRMED"
+}

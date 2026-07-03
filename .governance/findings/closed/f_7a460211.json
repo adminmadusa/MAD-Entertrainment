@@ -1,0 +1,50 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:55.720Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 111,
+    "message": "Trailing whitespace characters detected.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "eda6d82f2f6b30e9e9e1d426cce6bff93047afa131be4e92b72ddb2c54fdb1f3",
+        "id": "eda6d82f2f6b30e9e9e1d426cce6bff93047afa131be4e92b72ddb2c54fdb1f3",
+        "line": 85,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "eda6d82f2f6b30e9e9e1d426cce6bff93047afa131be4e92b72ddb2c54fdb1f3",
+        "id": "eda6d82f2f6b30e9e9e1d426cce6bff93047afa131be4e92b72ddb2c54fdb1f3",
+        "line": 96,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "eda6d82f2f6b30e9e9e1d426cce6bff93047afa131be4e92b72ddb2c54fdb1f3",
+        "id": "eda6d82f2f6b30e9e9e1d426cce6bff93047afa131be4e92b72ddb2c54fdb1f3",
+        "line": 111,
+        "message": "Trailing whitespace characters detected."
+      }
+    ],
+    "path": "apps/web/src/components/auth/LoginForm.tsx"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:55.720Z",
+  "id": "f_7a460211",
+  "lastDetected": "2026-07-03T12:25:55.720Z",
+  "occurrenceCount": 3,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-004",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

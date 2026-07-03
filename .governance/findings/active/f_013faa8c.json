@@ -1,0 +1,35 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:59.997Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 3,
+    "message": "Groups of imports must be separated by a single blank line.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "da1c60f5b7b50d6d387837f7b77d075f559b837f67734930920597d2d86725dc",
+        "id": "da1c60f5b7b50d6d387837f7b77d075f559b837f67734930920597d2d86725dc",
+        "line": 3,
+        "message": "Groups of imports must be separated by a single blank line."
+      }
+    ],
+    "path": "scripts/governance/core/fixers/trailing_whitespace_fixer.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:59.997Z",
+  "id": "f_013faa8c",
+  "lastDetected": "2026-07-03T12:26:00.141Z",
+  "lastModified": "2026-07-03T12:26:00.141Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "scripts",
+  "relationships": [],
+  "rule": "VAL-HYG-001",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

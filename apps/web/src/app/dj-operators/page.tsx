@@ -134,7 +134,7 @@ export default function DJsPage() {
                             <span className="text-text-muted text-xs">No Image</span>
                           </div>
                         )}
-                        
+
                         {/* Active Badge */}
                         <div className="absolute top-3 right-3 z-10 flex gap-2">
                           {dj.isActive && (
@@ -157,7 +157,7 @@ export default function DJsPage() {
                             </p>
                           )}
                         </div>
-                        
+
                         <div className="flex items-center justify-between pt-4 mt-2 border-t border-border-subtle text-xs">
                           <div className="text-text-secondary">
                             <span className="font-bold text-white">{dj.experienceYears || 0}</span> Years Exp.

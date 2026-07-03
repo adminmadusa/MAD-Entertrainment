@@ -130,7 +130,7 @@ export class DuplicateComponentDetector {
 
         if (similarityPct >= threshold) {
           metrics.duplicatesDetected++;
-          
+
           // Determine recommendation
           let recommendation = '';
           if (sigA.file.startsWith('packages/ui/')) {
@@ -184,8 +184,8 @@ export class DuplicateComponentDetector {
           currentDepth++;
           if (currentDepth > maxDepth) maxDepth = currentDepth;
 
-          const tagNameNode = isOpening 
-            ? (node as ts.JsxOpeningElement).tagName 
+          const tagNameNode = isOpening
+            ? (node as ts.JsxOpeningElement).tagName
             : (node as ts.JsxSelfClosingElement).tagName;
           const tagName = tagNameNode.getText(sourceFile);
           jsxTags.add(tagName);

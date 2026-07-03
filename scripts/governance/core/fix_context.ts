@@ -1,3 +1,5 @@
+// scripts/governance/core/fix_context.ts
+import { type ExecutionPolicy, StandardExecutionPolicy } from './execution_policy';
 import { RollbackSession } from './rollback_manager';
 
 export interface FixLogger {
@@ -17,6 +19,8 @@ export interface FixOptions {
   json?: boolean;
   report?: string;
   logger?: FixLogger;
+  executionPolicy?: ExecutionPolicy;
+  signal?: AbortSignal;
 }
 
 export class FixContext {
@@ -30,6 +34,8 @@ export class FixContext {
   public readonly json: boolean;
   public readonly report?: string;
   public readonly logger: FixLogger;
+  public readonly executionPolicy: ExecutionPolicy;
+  public readonly signal?: AbortSignal;
   public rollbackSession?: RollbackSession;
 
   constructor(options: FixOptions) {
@@ -47,5 +53,7 @@ export class FixContext {
       warn: (msg) => console.warn(`⚠️  [Auto-Fix] ${msg}`),
       error: (msg, err) => console.error(`❌  [Auto-Fix] ${msg}`, err || ''),
     };
+    this.executionPolicy = options.executionPolicy ?? new StandardExecutionPolicy();
+    this.signal = options.signal;
   }
 }

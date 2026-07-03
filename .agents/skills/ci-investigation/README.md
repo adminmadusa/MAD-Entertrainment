@@ -21,7 +21,7 @@ ci-investigation/
 ```
 
 ## Setup & Use
-AI Agents operating in this repository automatically discover this skill from the `.agents` customizations root. 
+AI Agents operating in this repository automatically discover this skill from the `.agents` customizations root.
 - When a build or pipeline check fails, load `SKILL.md` first.
 - Refer to `CHECKLIST.md` to run initial terminal diagnostics.
 - Copy the templates in `templates/` to isolate and document the issue.

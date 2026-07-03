@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:58.667Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 3,
+    "message": "Groups of imports must be separated by a single blank line.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "822a0444012706bfe8973e0791e08c0f02e400be90f92c5ba9d58296029a7d71",
+        "id": "822a0444012706bfe8973e0791e08c0f02e400be90f92c5ba9d58296029a7d71",
+        "line": 3,
+        "message": "Groups of imports must be separated by a single blank line."
+      }
+    ],
+    "path": "scripts/governance/core/ast_parser_cache.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:58.667Z",
+  "id": "f_0f383d0d",
+  "lastDetected": "2026-07-03T12:25:58.667Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "scripts",
+  "relationships": [],
+  "rule": "VAL-HYG-001",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

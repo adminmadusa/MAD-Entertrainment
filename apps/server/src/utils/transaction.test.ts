@@ -59,7 +59,7 @@ describe('runInTransaction utility', () => {
   beforeEach(() => {
     _resetTransactionSupport();
     vi.clearAllMocks();
-    
+
     // Default mock behavior
     vi.mocked(mongoose.startSession).mockResolvedValue(mockSession as any);
     mockConnection.getClient.mockReturnValue({
@@ -152,7 +152,7 @@ describe('runInTransaction utility', () => {
   // Test 6: exactly-once callback guarantee and error propagation on normal error
   it('should execute callback exactly once and propagate error on normal transaction error', async () => {
     const callback = vi.fn().mockRejectedValue(new Error('Normal DB write error'));
-    
+
     mockSession.withTransaction.mockImplementationOnce(async (cb) => {
       await cb();
     });

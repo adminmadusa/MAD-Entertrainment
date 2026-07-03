@@ -78,7 +78,7 @@ export class SafeDeleteClassifier {
           const references: string[] = [];
           for (const scope of searchScopes) {
             if (scope.file === targetFile) continue;
-            
+
             const regex = new RegExp(`\\b${basename}\\b`);
             if (regex.test(scope.content)) {
               references.push(scope.file);

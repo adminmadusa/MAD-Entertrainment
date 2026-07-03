@@ -1,0 +1,11 @@
+{
+  "history": [
+    {
+      "action": "CREATED",
+      "notes": "New grouped finding registered: Imports within the same group must be sorted alphabetically (\"mongoose\" should precede \"vitest\").",
+      "status": "NEW",
+      "timestamp": "2026-07-03T12:25:51.282Z"
+    }
+  ],
+  "id": "f_495561a0"
+}

@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:47.359Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 5,
+    "message": "Groups of imports must be separated by a single blank line.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "c0b5956393b838eee0645befc35bb31b842b33d0f08187dda60a3d08cb397920",
+        "id": "c0b5956393b838eee0645befc35bb31b842b33d0f08187dda60a3d08cb397920",
+        "line": 5,
+        "message": "Groups of imports must be separated by a single blank line."
+      }
+    ],
+    "path": "apps/admin/src/app/refunds/page.tsx"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:47.359Z",
+  "id": "f_afc8fd60",
+  "lastDetected": "2026-07-03T12:25:47.359Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-001",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CONFIRMED"
+}

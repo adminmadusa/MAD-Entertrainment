@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:51.376Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 2,
+    "message": "Groups of imports must be separated by a single blank line.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "33140d2a6d624fc52738f82f0ad3349d32ffecb488ccef0d3cd04b71033ea415",
+        "id": "33140d2a6d624fc52738f82f0ad3349d32ffecb488ccef0d3cd04b71033ea415",
+        "line": 2,
+        "message": "Groups of imports must be separated by a single blank line."
+      }
+    ],
+    "path": "apps/server/src/models/notification.schema.test.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:51.376Z",
+  "id": "f_75847f5c",
+  "lastDetected": "2026-07-03T12:25:51.376Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-001",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

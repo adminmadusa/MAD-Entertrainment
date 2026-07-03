@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:57.273Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 8,
+    "message": "Trailing whitespace characters detected.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "3b6bd2d3bee4a6d725192c5af48ca097ac90f9f618fecee2ee384ebe29210cb1",
+        "id": "3b6bd2d3bee4a6d725192c5af48ca097ac90f9f618fecee2ee384ebe29210cb1",
+        "line": 8,
+        "message": "Trailing whitespace characters detected."
+      }
+    ],
+    "path": "docs/audit/refresh-token-race-condition.md"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:57.273Z",
+  "id": "f_447f58b3",
+  "lastDetected": "2026-07-03T12:25:57.273Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "docs",
+  "relationships": [],
+  "rule": "VAL-HYG-004",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

@@ -210,7 +210,7 @@ describe('DLQ Failure and Alerting Flow', () => {
   describe('Alert Grouping & Fingerprinting', () => {
     it('should generate identical fingerprints for duplicate failures on same queue and message', async () => {
       const failedHandler = mockFailedListeners['booking-queue'];
-      
+
       const mockJob1 = {
         id: 'job-1',
         name: 'booking:confirm',
@@ -265,7 +265,7 @@ describe('DLQ Failure and Alerting Flow', () => {
 
       // Durability verification
       expect(DeadLetterJob.create).toHaveBeenCalled();
-      
+
       // Resiliency verification
       expect(logger.error).toHaveBeenCalledWith(
         expect.objectContaining({

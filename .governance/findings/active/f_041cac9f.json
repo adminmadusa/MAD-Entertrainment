@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:49.273Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 2,
+    "message": "Groups of imports must be separated by a single blank line.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "7a3688770c80afc15c6fcfd884f441828c5b3d58c8a739197876295b3dcabf10",
+        "id": "7a3688770c80afc15c6fcfd884f441828c5b3d58c8a739197876295b3dcabf10",
+        "line": 2,
+        "message": "Groups of imports must be separated by a single blank line."
+      }
+    ],
+    "path": "apps/server/src/controllers/admin/diagnostics.controller.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:49.273Z",
+  "id": "f_041cac9f",
+  "lastDetected": "2026-07-03T12:25:49.273Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-001",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

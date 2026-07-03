@@ -5,7 +5,7 @@
   "engineVersion": "1.0.0",
   "evidence": {
     "construct": "table",
-    "line": 179,
+    "line": 177,
     "message": "Raw <table> element used in portal. Use a reusable shared Table component.",
     "occurrences": [
       {
@@ -13,7 +13,7 @@
         "construct": "UIElement",
         "fingerprint": "ebd7f87c619b95c84fe9d22cb03d24acdfbc399323b1017f8d954fed1ee8b2e5",
         "id": "ebd7f87c619b95c84fe9d22cb03d24acdfbc399323b1017f8d954fed1ee8b2e5",
-        "line": 179,
+        "line": 177,
         "message": "Raw <table> element used in portal. Use a reusable shared Table component.",
         "snippet": "<table className=\"w-full text-sm text-left\">"
       }
@@ -24,8 +24,8 @@
   "feature": "table",
   "firstDetected": "2026-06-29T08:09:59.597Z",
   "id": "f_29582196",
-  "lastDetected": "2026-07-03T08:48:21.111Z",
-  "lastModified": "2026-07-03T08:48:21.111Z",
+  "lastDetected": "2026-07-03T13:02:40.703Z",
+  "lastModified": "2026-07-03T13:02:40.703Z",
   "occurrenceCount": 1,
   "owner": "UI UX Guild",
   "package": "apps",
@@ -33,5 +33,5 @@
   "rule": "VAL-UI-004",
   "ruleVersion": "1.0.0",
   "schemaVersion": 2,
-  "status": "NEW"
+  "status": "REGRESSION"
 }

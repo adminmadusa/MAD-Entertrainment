@@ -27,7 +27,7 @@ describe('Dead Asset & Duplicate Detection Validator (Phase 2)', () => {
     const usedCompPath = join(testDir, 'UsedComponent.tsx');
     const unusedCompPath = join(testDir, 'UnusedComponent.tsx');
     const unusedHookPath = join(testDir, 'useUnusedHook.ts');
-    
+
     const comp1Path = join(testDir, 'DuplicateComp1.tsx');
     const comp2Path = join(testDir, 'DuplicateComp2.tsx');
 

@@ -44,7 +44,7 @@ export class BlankLineFixer implements Fixer {
           const start = node.getFullStart();
           const ranges = ts.getLeadingCommentRanges(text, start) || [];
           const trailing = ts.getTrailingCommentRanges(text, node.getEnd()) || [];
-          
+
           for (const r of [...ranges, ...trailing]) {
             if (r.kind === ts.SyntaxKind.MultiLineCommentTrivia) {
               skippedSpans.push({ start: r.pos, end: r.end });
@@ -95,7 +95,7 @@ export class BlankLineFixer implements Fixer {
         let runStart = i;
         let runEnd = i;
         let runCharPos = charPos;
-        
+
         while (
           runEnd < lines.length &&
           lines[runEnd].trim() === '' &&

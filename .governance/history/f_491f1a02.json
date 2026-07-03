@@ -1,0 +1,11 @@
+{
+  "history": [
+    {
+      "action": "CREATED",
+      "notes": "New grouped finding registered: Imports must be grouped in order: Node built-ins, Third-party packages, Workspace aliases, Relative paths, Side-effects.",
+      "status": "NEW",
+      "timestamp": "2026-07-03T12:25:50.972Z"
+    }
+  ],
+  "id": "f_491f1a02"
+}

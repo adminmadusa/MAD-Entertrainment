@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:48.648Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 2,
+    "message": "Import from types module \"@mad/types\" should use \"import type\".",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "ba592be7dca54306b70f5028e17958bd1ce9b5ec836907e5393bea119f9b5cb4",
+        "id": "ba592be7dca54306b70f5028e17958bd1ce9b5ec836907e5393bea119f9b5cb4",
+        "line": 2,
+        "message": "Import from types module \"@mad/types\" should use \"import type\"."
+      }
+    ],
+    "path": "apps/admin/src/lib/api/admin/ticket-profile.service.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:48.648Z",
+  "id": "f_6a9fdac5",
+  "lastDetected": "2026-07-03T12:25:48.648Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-003",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

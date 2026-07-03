@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:53.851Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 258,
+    "message": "Trailing whitespace characters detected.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "66f78f0d8ab4dea0851bd7e33956bbdbeced45b85d98ebdaa351336d24b94311",
+        "id": "66f78f0d8ab4dea0851bd7e33956bbdbeced45b85d98ebdaa351336d24b94311",
+        "line": 258,
+        "message": "Trailing whitespace characters detected."
+      }
+    ],
+    "path": "apps/server/src/services/reservation.service.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:53.851Z",
+  "id": "f_9fc43d39",
+  "lastDetected": "2026-07-03T12:25:53.851Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-004",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

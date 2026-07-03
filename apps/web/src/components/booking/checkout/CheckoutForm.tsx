@@ -93,7 +93,7 @@ export function CheckoutForm({ event, isExpired, isDisabled, onSubmit, onErrorSe
 
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors);
-      
+
       const firstErrorKey = Object.keys(errors)[0];
       let elementId = '';
       if (firstErrorKey === 'firstName') elementId = 'checkout-first-name';
@@ -185,9 +185,9 @@ export function CheckoutForm({ event, isExpired, isDisabled, onSubmit, onErrorSe
           {!user && (() => {
             const normalizedEmail = guestEmail.trim().toLowerCase();
             const normalizedConfirm = guestEmailConfirm.trim().toLowerCase();
-            const emailsMatch = 
-              normalizedEmail.length > 0 && 
-              normalizedConfirm.length > 0 && 
+            const emailsMatch =
+              normalizedEmail.length > 0 &&
+              normalizedConfirm.length > 0 &&
               normalizedEmail === normalizedConfirm;
 
             return (

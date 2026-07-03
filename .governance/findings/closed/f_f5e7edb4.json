@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:58.768Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 3,
+    "message": "Groups of imports must be separated by a single blank line.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "638398747d91843898eb276aee6c0ce06970dcf0a62481bff762fd31a883f605",
+        "id": "638398747d91843898eb276aee6c0ce06970dcf0a62481bff762fd31a883f605",
+        "line": 3,
+        "message": "Groups of imports must be separated by a single blank line."
+      }
+    ],
+    "path": "scripts/governance/core/autofix_engine.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:58.768Z",
+  "id": "f_f5e7edb4",
+  "lastDetected": "2026-07-03T12:25:58.768Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "scripts",
+  "relationships": [],
+  "rule": "VAL-HYG-001",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

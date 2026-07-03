@@ -1,36 +1,36 @@
 {
-  "schemaVersion": 2,
-  "id": "f_138276d2",
-  "rule": "VAL-UI-009",
-  "ruleVersion": "1.0.0",
-  "engineVersion": "1.0.0",
-  "domain": "UI UX Guild",
-  "owner": "UI UX Guild",
-  "package": "apps",
-  "feature": "UIElement",
-  "status": "NEW",
   "confidence": 0.9,
-  "relationships": [],
+  "createdDate": "2026-06-30T15:36:27.289Z",
+  "domain": "UI UX Guild",
+  "engineVersion": "1.0.0",
   "evidence": {
-    "path": "apps/web/src/components/support/FAQAccordion.tsx",
     "construct": "UIElement",
-    "snippet": "<details",
     "line": 30,
     "message": "Element <details> with click handler lacks a tabIndex or role attribute, breaking keyboard accessibility.",
     "occurrences": [
       {
-        "id": "1402cda72f5ffc727bfe8389335cff54eee13e2a18d8c6a1bdcbb36789646eaf",
-        "line": 30,
         "column": 0,
         "construct": "UIElement",
-        "snippet": "<details",
+        "fingerprint": "1402cda72f5ffc727bfe8389335cff54eee13e2a18d8c6a1bdcbb36789646eaf",
+        "id": "1402cda72f5ffc727bfe8389335cff54eee13e2a18d8c6a1bdcbb36789646eaf",
+        "line": 30,
         "message": "Element <details> with click handler lacks a tabIndex or role attribute, breaking keyboard accessibility.",
-        "fingerprint": "1402cda72f5ffc727bfe8389335cff54eee13e2a18d8c6a1bdcbb36789646eaf"
+        "snippet": "<details"
       }
-    ]
+    ],
+    "path": "apps/web/src/components/support/FAQAccordion.tsx",
+    "snippet": "<details"
   },
-  "createdDate": "2026-06-30T15:36:27.289Z",
+  "feature": "UIElement",
   "firstDetected": "2026-06-30T15:36:27.289Z",
+  "id": "f_138276d2",
   "lastDetected": "2026-06-30T15:36:27.289Z",
-  "occurrenceCount": 1
+  "occurrenceCount": 1,
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-UI-009",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "REGRESSION"
 }

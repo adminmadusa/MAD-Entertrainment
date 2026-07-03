@@ -1,6 +1,6 @@
 # Phase 2026-06 — Cleanup Record
 
-**Auditor:** Principal Repository Governance Engineer  
+**Auditor:** Principal Repository Governance Engineer
 **Date:** June 16, 2026
 
 ---

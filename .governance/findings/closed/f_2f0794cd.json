@@ -1,0 +1,42 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:51.533Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 26,
+    "message": "Trailing whitespace characters detected.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "bd1a44897ec7036a912fdc9fe3e1c18dad334fe219b8847448acd75031b6edbd",
+        "id": "bd1a44897ec7036a912fdc9fe3e1c18dad334fe219b8847448acd75031b6edbd",
+        "line": 15,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "bd1a44897ec7036a912fdc9fe3e1c18dad334fe219b8847448acd75031b6edbd",
+        "id": "bd1a44897ec7036a912fdc9fe3e1c18dad334fe219b8847448acd75031b6edbd",
+        "line": 26,
+        "message": "Trailing whitespace characters detected."
+      }
+    ],
+    "path": "apps/server/src/models/ticket.schema.test.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:51.533Z",
+  "id": "f_2f0794cd",
+  "lastDetected": "2026-07-03T12:25:51.533Z",
+  "occurrenceCount": 2,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-004",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

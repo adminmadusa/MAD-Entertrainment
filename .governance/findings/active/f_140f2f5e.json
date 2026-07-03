@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:48.572Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 3,
+    "message": "Imports within the same group must be sorted alphabetically (\"@/lib/api/client\" should precede \"@mad/types\").",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "8fef78ea446a16a082f4f4531db88984768f4c62d48f15aaff2aa98ca12e1179",
+        "id": "8fef78ea446a16a082f4f4531db88984768f4c62d48f15aaff2aa98ca12e1179",
+        "line": 3,
+        "message": "Imports within the same group must be sorted alphabetically (\"@/lib/api/client\" should precede \"@mad/types\")."
+      }
+    ],
+    "path": "apps/admin/src/lib/api/admin/notification.service.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:48.572Z",
+  "id": "f_140f2f5e",
+  "lastDetected": "2026-07-03T12:25:48.572Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-001",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

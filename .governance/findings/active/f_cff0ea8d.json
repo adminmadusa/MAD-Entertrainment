@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:51.207Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 2,
+    "message": "Imports within the same group must be sorted alphabetically (\"bcryptjs\" should precede \"mongoose\").",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "b9603c903371a7b19385e6989df3e3ba2862ccf789f71edab725519ad5ca0c0e",
+        "id": "b9603c903371a7b19385e6989df3e3ba2862ccf789f71edab725519ad5ca0c0e",
+        "line": 2,
+        "message": "Imports within the same group must be sorted alphabetically (\"bcryptjs\" should precede \"mongoose\")."
+      }
+    ],
+    "path": "apps/server/src/models/admin.schema.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:51.207Z",
+  "id": "f_cff0ea8d",
+  "lastDetected": "2026-07-03T12:25:51.207Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-001",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

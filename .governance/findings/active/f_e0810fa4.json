@@ -1,34 +1,33 @@
 {
-  "schemaVersion": 2,
-  "id": "f_e0810fa4",
-  "rule": "Orphaned Documentation",
-  "ruleVersion": "1.0.0",
-  "engineVersion": "1.0.0",
-  "domain": "Platform Team",
-  "owner": "Platform Team",
-  "package": "docs",
-  "feature": "Document",
-  "status": "NEW",
   "confidence": 1,
-  "relationships": [],
+  "createdDate": "2026-06-30T15:36:28.126Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
   "evidence": {
-    "path": "docs/audit/admin-mobile-shell-audit.md",
     "construct": "Document",
     "message": "Document exists in the repository but has no incoming references from any other active documentation.",
     "occurrences": [
       {
-        "id": "7b73e5e9c46ce60cbc8afe20758b22073c003f33f4b1eb632fb35ce805de79e3",
-        "line": 0,
         "column": 0,
         "construct": "Document",
-        "snippet": "",
-        "message": "Document exists in the repository but has no incoming references from any other active documentation.",
-        "fingerprint": "7b73e5e9c46ce60cbc8afe20758b22073c003f33f4b1eb632fb35ce805de79e3"
+        "fingerprint": "7b73e5e9c46ce60cbc8afe20758b22073c003f33f4b1eb632fb35ce805de79e3",
+        "id": "7b73e5e9c46ce60cbc8afe20758b22073c003f33f4b1eb632fb35ce805de79e3",
+        "line": 0,
+        "message": "Document exists in the repository but has no incoming references from any other active documentation."
       }
-    ]
+    ],
+    "path": "docs/audit/admin-mobile-shell-audit.md"
   },
-  "createdDate": "2026-06-30T15:36:28.126Z",
+  "feature": "Document",
   "firstDetected": "2026-06-30T15:36:28.126Z",
+  "id": "f_e0810fa4",
   "lastDetected": "2026-06-30T15:36:28.126Z",
-  "occurrenceCount": 1
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "docs",
+  "relationships": [],
+  "rule": "Orphaned Documentation",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "REGRESSION"
 }

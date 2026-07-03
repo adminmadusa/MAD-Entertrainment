@@ -48,7 +48,7 @@ flowchart TD
     C --> D["4. Formulate & Test Hypotheses"]
     D --> E["5. Confirm Root Cause"]
     E --> F["6. Remediate & Verify"]
-    
+
     style E fill:#d4edda,stroke:#28a745,stroke-width:2px
 ```
 

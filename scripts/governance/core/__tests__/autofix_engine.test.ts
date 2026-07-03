@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { existsSync, readFileSync, writeFileSync, mkdirSync, rmSync, readdirSync } from 'fs';
 import { resolve, join } from 'path';
 import { AutoFixEngine } from '../autofix_engine';
+import { SafeOnlyExecutionPolicy } from '../execution_policy';
 import { FixContext, FixLogger } from '../fix_context';
 import { FixRegistry } from '../fix_registry';
 import { Fixer, FixResultItem } from '../fix_types';
@@ -61,7 +62,7 @@ const silentLogger: FixLogger = {
 describe('AutoFixEngine & Rollback Workflow', () => {
   beforeEach(() => {
     FixRegistry.clear();
-    
+
     // Clean and recreate sandbox directory
     if (existsSync(testSandboxDir)) {
       rmSync(testSandboxDir, { recursive: true, force: true });
@@ -263,6 +264,7 @@ describe('AutoFixEngine & Rollback Workflow', () => {
     const context = new FixContext({
       workspaceRoot,
       safeOnly: true,
+      executionPolicy: new SafeOnlyExecutionPolicy(),
       logger: silentLogger,
     });
 

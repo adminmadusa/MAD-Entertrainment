@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:26:00.222Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 2,
+    "message": "Imports within the same group must be sorted alphabetically (\"../fix_context\" should precede \"../fix_types\").",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "5c3e4b4357df25a66ca97d2746c28dfa58541515c5f6ee984673e40a6349842c",
+        "id": "5c3e4b4357df25a66ca97d2746c28dfa58541515c5f6ee984673e40a6349842c",
+        "line": 2,
+        "message": "Imports within the same group must be sorted alphabetically (\"../fix_context\" should precede \"../fix_types\")."
+      }
+    ],
+    "path": "scripts/governance/core/fixers/type_import_fixer.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:26:00.222Z",
+  "id": "f_2b1cfa66",
+  "lastDetected": "2026-07-03T12:26:00.222Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "scripts",
+  "relationships": [],
+  "rule": "VAL-HYG-001",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

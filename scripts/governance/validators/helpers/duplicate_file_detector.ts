@@ -116,7 +116,7 @@ export class DuplicateFileDetector {
     const cleanContent = content
       .replace(/\/\*[\s\S]*?\*\/|([^\\:]|^)\/\/.*$/gm, '$1')
       .toLowerCase();
-    
+
     const words = cleanContent.match(/\b[a-z0-9_]{3,25}\b/g) || [];
     return new Set(words);
   }

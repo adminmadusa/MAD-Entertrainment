@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:47.596Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 6,
+    "message": "Groups of imports must be separated by a single blank line.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "0ed48ad1f08bc29ade09381c302d966cd54cebcb3523bccc0b1e395eb7862cdb",
+        "id": "0ed48ad1f08bc29ade09381c302d966cd54cebcb3523bccc0b1e395eb7862cdb",
+        "line": 6,
+        "message": "Groups of imports must be separated by a single blank line."
+      }
+    ],
+    "path": "apps/admin/src/app/ticket-profiles/new/page.tsx"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:47.596Z",
+  "id": "f_71e2cfca",
+  "lastDetected": "2026-07-03T12:25:47.596Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-001",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

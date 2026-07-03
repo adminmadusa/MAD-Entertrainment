@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T13:02:40.556Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 4,
+    "message": "Groups of imports must be separated by a single blank line.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "5111ef0846b40b5d984a52231334665e3e7e866a247b36d3c1060861001a3737",
+        "id": "5111ef0846b40b5d984a52231334665e3e7e866a247b36d3c1060861001a3737",
+        "line": 4,
+        "message": "Groups of imports must be separated by a single blank line."
+      }
+    ],
+    "path": "scripts/governance/core/__tests__/session_store.test.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T13:02:40.556Z",
+  "id": "f_9cc763a6",
+  "lastDetected": "2026-07-03T13:02:40.556Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "scripts",
+  "relationships": [],
+  "rule": "VAL-HYG-001",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

@@ -1,0 +1,50 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:56.028Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 28,
+    "message": "Trailing whitespace characters detected.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "8734c3051e06a3808bad32ee2464f748c9ca12ec19fd7dc4b6f3a8e091ee73c1",
+        "id": "8734c3051e06a3808bad32ee2464f748c9ca12ec19fd7dc4b6f3a8e091ee73c1",
+        "line": 25,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "8734c3051e06a3808bad32ee2464f748c9ca12ec19fd7dc4b6f3a8e091ee73c1",
+        "id": "8734c3051e06a3808bad32ee2464f748c9ca12ec19fd7dc4b6f3a8e091ee73c1",
+        "line": 27,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "8734c3051e06a3808bad32ee2464f748c9ca12ec19fd7dc4b6f3a8e091ee73c1",
+        "id": "8734c3051e06a3808bad32ee2464f748c9ca12ec19fd7dc4b6f3a8e091ee73c1",
+        "line": 28,
+        "message": "Trailing whitespace characters detected."
+      }
+    ],
+    "path": "apps/web/src/components/common/PageTransition.tsx"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:56.028Z",
+  "id": "f_2d0e176c",
+  "lastDetected": "2026-07-03T12:25:56.028Z",
+  "occurrenceCount": 3,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-004",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

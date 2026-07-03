@@ -1,0 +1,23 @@
+{
+  "history": [
+    {
+      "action": "CREATED",
+      "notes": "New grouped finding registered: Trailing whitespace characters detected.",
+      "status": "NEW",
+      "timestamp": "2026-07-03T12:25:54.695Z"
+    },
+    {
+      "action": "FIX_VERIFIED",
+      "notes": "Violation no longer detected after auto-fix. Fix verified by targeted re-scan. (Transitioned from NEW to VERIFIED)",
+      "status": "VERIFIED",
+      "timestamp": "2026-07-03T12:53:13.182Z"
+    },
+    {
+      "action": "AUTO_CLOSED",
+      "notes": "Finding automatically closed after successful fix verification. (Transitioned from VERIFIED to CLOSED)",
+      "status": "CLOSED",
+      "timestamp": "2026-07-03T12:53:13.183Z"
+    }
+  ],
+  "id": "f_103c40a3"
+}

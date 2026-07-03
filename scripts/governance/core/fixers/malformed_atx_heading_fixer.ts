@@ -27,7 +27,7 @@ export class MalformedAtxHeadingFixer implements Fixer {
     }
 
     const originalLine = lines[lineIdx];
-    
+
     // Heading spacing normalization: e.g. #Heading -> # Heading
     const fixedLine = originalLine.replace(/^(#+)([^#\s])/, '$1 $2');
 

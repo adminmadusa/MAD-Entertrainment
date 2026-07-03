@@ -1,0 +1,42 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:55.574Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 117,
+    "message": "Trailing whitespace characters detected.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "e9b732e82c611b0e084c8cf03e6df8a0a63456a88243dd65fa5ababc0ecdf175",
+        "id": "e9b732e82c611b0e084c8cf03e6df8a0a63456a88243dd65fa5ababc0ecdf175",
+        "line": 110,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "e9b732e82c611b0e084c8cf03e6df8a0a63456a88243dd65fa5ababc0ecdf175",
+        "id": "e9b732e82c611b0e084c8cf03e6df8a0a63456a88243dd65fa5ababc0ecdf175",
+        "line": 117,
+        "message": "Trailing whitespace characters detected."
+      }
+    ],
+    "path": "apps/web/src/components/account/ProfileEditor.test.tsx"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:55.574Z",
+  "id": "f_4b0f80b8",
+  "lastDetected": "2026-07-03T12:25:55.574Z",
+  "occurrenceCount": 2,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-004",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

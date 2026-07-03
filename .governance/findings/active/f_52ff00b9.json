@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:26:01.544Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 4,
+    "message": "Groups of imports must be separated by a single blank line.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "8d2358cdea7d17457e53de8295e139a96b03f3246bbb5d9e8eab2c570fb9f949",
+        "id": "8d2358cdea7d17457e53de8295e139a96b03f3246bbb5d9e8eab2c570fb9f949",
+        "line": 4,
+        "message": "Groups of imports must be separated by a single blank line."
+      }
+    ],
+    "path": "scripts/governance/validators/accessibility_validator.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:26:01.544Z",
+  "id": "f_52ff00b9",
+  "lastDetected": "2026-07-03T12:26:01.544Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "scripts",
+  "relationships": [],
+  "rule": "VAL-HYG-001",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

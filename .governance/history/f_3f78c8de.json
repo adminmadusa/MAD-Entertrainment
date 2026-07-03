@@ -11,6 +11,24 @@
       "notes": "Occurrences updated. Active count: 6",
       "status": "NEW",
       "timestamp": "2026-07-03T08:48:21.102Z"
+    },
+    {
+      "action": "FIX_VERIFIED",
+      "notes": "Violation no longer detected after auto-fix. Fix verified by targeted re-scan. (Transitioned from NEW to VERIFIED)",
+      "status": "VERIFIED",
+      "timestamp": "2026-07-03T12:53:13.279Z"
+    },
+    {
+      "action": "AUTO_CLOSED",
+      "notes": "Finding automatically closed after successful fix verification. (Transitioned from VERIFIED to CLOSED)",
+      "status": "CLOSED",
+      "timestamp": "2026-07-03T12:53:13.280Z"
+    },
+    {
+      "action": "DETECTED_AGAIN",
+      "notes": "Finding regressed. Code violation re-introduced. (Transitioned from CLOSED to REGRESSION)",
+      "status": "REGRESSION",
+      "timestamp": "2026-07-03T13:02:40.621Z"
     }
   ],
   "id": "f_3f78c8de"

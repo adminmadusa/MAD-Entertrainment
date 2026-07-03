@@ -28,7 +28,7 @@ function getAllMarkdownFiles(workspaceRoot: string): string[] {
       .split('\n')
       .map(f => f.trim())
       .filter(Boolean);
-      
+
     for (const f of [...tracked, ...untracked]) {
       if (!f.startsWith('node_modules/') && !f.startsWith('.governance/') && !f.startsWith('scratch/')) {
         markdownFiles.add(f);
@@ -100,10 +100,10 @@ async function run() {
       console.error('❌ Failed to run git log for historical index. Make sure you are in a full clone git repository.');
       process.exit(1);
     }
-    
+
     const currentFiles = getAllMarkdownFiles(workspaceRoot);
     const allHistory = Array.from(new Set([...gitFiles, ...currentFiles])).sort();
-    
+
     const baselinePath = resolve(workspaceRoot, '.governance/baselines/historical-files.json');
     const dir = dirname(baselinePath);
     if (!existsSync(dir)) {
@@ -160,8 +160,6 @@ async function run() {
   // 1. Retrieve all indexed repository files from the KnowledgeGraph (SSOT traversal)
   const graph = auditEngine.getKnowledgeGraph();
   const indexedFiles = graph.getIndexedFiles().sort();
-
-
 
   // 2. Parse CLI filters
   const args = process.argv;
@@ -249,12 +247,12 @@ async function run() {
 
   for (const result of report.results) {
     const allErrors = [...result.errors, ...result.warnings];
-    const def = ValidatorRegistry.getValidator(result.name) || 
+    const def = ValidatorRegistry.getValidator(result.name) ||
                 ValidatorRegistry.getAllValidators().find(v => v.name === result.name);
-    
-    const construct = def?.id === 'DeadAssetDuplicateValidator' || 
-                      def?.id === 'UIDesignValidator' || 
-                      def?.id === 'AccessibilityValidator' || 
+
+    const construct = def?.id === 'DeadAssetDuplicateValidator' ||
+                      def?.id === 'UIDesignValidator' ||
+                      def?.id === 'AccessibilityValidator' ||
                       def?.id === 'SharedComponentValidator' ? 'UIElement' : 'Document';
 
     let confidence = 1.0;

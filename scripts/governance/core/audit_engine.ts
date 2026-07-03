@@ -155,7 +155,7 @@ export class AuditEngine {
     const activeFindingsCount = allFindings.filter(f => f.status === 'NEW' || f.status === 'CONFIRMED' || f.status === 'REGRESSION').length;
     const closedFindingsCount = allFindings.filter(f => f.status === 'CLOSED').length;
     const suppressedFindingsCount = allFindings.filter(f => f.status === 'FALSE_POSITIVE' || f.status === 'IGNORED').length;
-    
+
     const snapshotData = {
       timestamp: new Date().toISOString(),
       activeCount: activeFindingsCount,

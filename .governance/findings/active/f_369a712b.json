@@ -1,34 +1,33 @@
 {
-  "schemaVersion": 2,
-  "id": "f_369a712b",
-  "rule": "Missing Document Owner",
-  "ruleVersion": "1.0.0",
-  "engineVersion": "1.0.0",
-  "domain": "Platform Team",
-  "owner": "Platform Team",
-  "package": "docs",
-  "feature": "Document",
-  "status": "NEW",
   "confidence": 1,
-  "relationships": [],
+  "createdDate": "2026-06-30T15:36:28.240Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
   "evidence": {
-    "path": "docs/audit/refresh-token-race-condition.md",
     "construct": "Document",
     "message": "Every documentation file is required to have a defined \"Owner\" or \"Authors\" in its metadata block.",
     "occurrences": [
       {
-        "id": "99bc0a9336b190029da798b0c141f15ca0e6e4a6fc6829fdaa406d2d8d051bc1",
-        "line": 0,
         "column": 0,
         "construct": "Document",
-        "snippet": "",
-        "message": "Every documentation file is required to have a defined \"Owner\" or \"Authors\" in its metadata block.",
-        "fingerprint": "99bc0a9336b190029da798b0c141f15ca0e6e4a6fc6829fdaa406d2d8d051bc1"
+        "fingerprint": "99bc0a9336b190029da798b0c141f15ca0e6e4a6fc6829fdaa406d2d8d051bc1",
+        "id": "99bc0a9336b190029da798b0c141f15ca0e6e4a6fc6829fdaa406d2d8d051bc1",
+        "line": 0,
+        "message": "Every documentation file is required to have a defined \"Owner\" or \"Authors\" in its metadata block."
       }
-    ]
+    ],
+    "path": "docs/audit/refresh-token-race-condition.md"
   },
-  "createdDate": "2026-06-30T15:36:28.240Z",
+  "feature": "Document",
   "firstDetected": "2026-06-30T15:36:28.240Z",
+  "id": "f_369a712b",
   "lastDetected": "2026-06-30T15:36:28.240Z",
-  "occurrenceCount": 1
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "docs",
+  "relationships": [],
+  "rule": "Missing Document Owner",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "REGRESSION"
 }

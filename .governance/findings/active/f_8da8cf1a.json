@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:48.921Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 1,
+    "message": "Imports must be grouped in order: Node built-ins, Third-party packages, Workspace aliases, Relative paths, Side-effects.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "87b1d255835342bea5a84e8dfa71215ba30f9ab201685f8f7858ec0a3630e1ec",
+        "id": "87b1d255835342bea5a84e8dfa71215ba30f9ab201685f8f7858ec0a3630e1ec",
+        "line": 1,
+        "message": "Imports must be grouped in order: Node built-ins, Third-party packages, Workspace aliases, Relative paths, Side-effects."
+      }
+    ],
+    "path": "apps/server/scripts/notification-jobid-dedupe.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:48.921Z",
+  "id": "f_8da8cf1a",
+  "lastDetected": "2026-07-03T12:25:48.921Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-001",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

@@ -152,7 +152,7 @@ describe('AdminUserService unit tests', () => {
     it('aggregates user metadata, confirmed spends using payments, and refunds correctly', async () => {
       const userId = new Types.ObjectId('60d5ec482f8fb814c489705a');
       const bookingId = new Types.ObjectId('60d5ec482f8fb814c489705b');
-      
+
       vi.mocked(UserModel.findById).mockReturnValue({
         lean: vi.fn().mockResolvedValue({
           _id: userId,

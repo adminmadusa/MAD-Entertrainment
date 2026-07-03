@@ -1,0 +1,11 @@
+{
+  "history": [
+    {
+      "action": "CREATED",
+      "notes": "New grouped finding registered: Imports within the same group must be sorted alphabetically (\"@mad/shared\" should precede \"@mad/types\").",
+      "status": "NEW",
+      "timestamp": "2026-07-03T12:25:55.914Z"
+    }
+  ],
+  "id": "f_6e0e2f2d"
+}

@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:48.991Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 15,
+    "message": "File must terminate with exactly one trailing newline character.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "f19af842f6f994b094963a7eab360277e87e751383860b0699f98e608028efe9",
+        "id": "f19af842f6f994b094963a7eab360277e87e751383860b0699f98e608028efe9",
+        "line": 15,
+        "message": "File must terminate with exactly one trailing newline character."
+      }
+    ],
+    "path": "apps/server/src/config/cloudinary.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:48.991Z",
+  "id": "f_3b072baa",
+  "lastDetected": "2026-07-03T12:25:48.991Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-005",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:47.502Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 3,
+    "message": "Imports must be grouped in order: Node built-ins, Third-party packages, Workspace aliases, Relative paths, Side-effects.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "2bf6fa576094b0a51f9cf0078977bd89150a3a1bdc5ac209b3957954b1f4a0b5",
+        "id": "2bf6fa576094b0a51f9cf0078977bd89150a3a1bdc5ac209b3957954b1f4a0b5",
+        "line": 3,
+        "message": "Imports must be grouped in order: Node built-ins, Third-party packages, Workspace aliases, Relative paths, Side-effects."
+      }
+    ],
+    "path": "apps/admin/src/app/team/_components/ResetPasswordModal.tsx"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:47.502Z",
+  "id": "f_960b6529",
+  "lastDetected": "2026-07-03T12:25:47.502Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-001",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:26:00.635Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 3,
+    "message": "Groups of imports must be separated by a single blank line.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "190f37ff8078ce03aaf7468b0ac16658f230ddc74d81cdd439617ea56e6f37ed",
+        "id": "190f37ff8078ce03aaf7468b0ac16658f230ddc74d81cdd439617ea56e6f37ed",
+        "line": 3,
+        "message": "Groups of imports must be separated by a single blank line."
+      }
+    ],
+    "path": "scripts/governance/core/rollback_manager.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:26:00.635Z",
+  "id": "f_e6310681",
+  "lastDetected": "2026-07-03T12:26:00.635Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "scripts",
+  "relationships": [],
+  "rule": "VAL-HYG-001",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

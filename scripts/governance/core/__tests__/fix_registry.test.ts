@@ -53,7 +53,7 @@ describe('FixRegistry', () => {
     FixRegistry.register(fixer1);
 
     expect(FixRegistry.registeredRuleIds()).toEqual(['VAL-TEST-001', 'VAL-TEST-002']);
-    
+
     const fixers = FixRegistry.registeredFixers();
     expect(fixers.length).toBe(2);
     expect(fixers).toContain(fixer1);

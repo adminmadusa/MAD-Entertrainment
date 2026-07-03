@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:57.531Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 2,
+    "message": "Groups of imports must be separated by a single blank line.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "8dfbb6d265f834d6edd80e07a94aca7dfb17a570ec5fe9e25950c559deb5a16b",
+        "id": "8dfbb6d265f834d6edd80e07a94aca7dfb17a570ec5fe9e25950c559deb5a16b",
+        "line": 2,
+        "message": "Groups of imports must be separated by a single blank line."
+      }
+    ],
+    "path": "packages/utils/src/jwt.test.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:57.531Z",
+  "id": "f_a6516672",
+  "lastDetected": "2026-07-03T12:25:57.531Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "packages",
+  "relationships": [],
+  "rule": "VAL-HYG-001",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CONFIRMED"
+}

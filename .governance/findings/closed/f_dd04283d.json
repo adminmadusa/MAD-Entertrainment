@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:49.852Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 10,
+    "message": "Duplicate import declaration from module path \"vitest\".",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "33f73431c4839ca8fc468d7530502fd0a746fa0be57e9f3ba2c5a9c5b8fef95d",
+        "id": "33f73431c4839ca8fc468d7530502fd0a746fa0be57e9f3ba2c5a9c5b8fef95d",
+        "line": 10,
+        "message": "Duplicate import declaration from module path \"vitest\"."
+      }
+    ],
+    "path": "apps/server/src/controllers/public/ticket.controller.test.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:49.852Z",
+  "id": "f_dd04283d",
+  "lastDetected": "2026-07-03T12:25:49.852Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-002",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

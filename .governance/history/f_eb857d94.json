@@ -1,0 +1,11 @@
+{
+  "history": [
+    {
+      "action": "CREATED",
+      "notes": "New grouped finding registered: Imports within the same group must be sorted alphabetically (\"@react-email/components\" should precede \"react\").",
+      "status": "NEW",
+      "timestamp": "2026-07-03T12:25:49.959Z"
+    }
+  ],
+  "id": "f_eb857d94"
+}

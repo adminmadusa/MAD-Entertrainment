@@ -226,7 +226,7 @@ function DashboardContent() {
             <h2 className="text-white font-semibold">Global Operational Search</h2>
             <p className="text-text-muted text-xs mt-0.5">Locate customer bookings instantly by email or reference number</p>
           </div>
-          
+
           <form onSubmit={handleGlobalSearch} className="space-y-2">
             <div className="flex flex-col sm:flex-row gap-3">
               <input
@@ -353,7 +353,7 @@ function DashboardContent() {
               {todaysEvents.length} Active {todaysEvents.length === 1 ? 'Event' : 'Events'}
             </span>
           </div>
-          
+
           {isEventsLoading ? (
             <div className="p-8 text-center text-text-muted animate-pulse">Loading active schedule...</div>
           ) : todaysEvents.length === 0 ? (
@@ -369,7 +369,7 @@ function DashboardContent() {
                 const sold = event.ticketsSold ?? 0;
                 const capacity = event.totalCapacity ?? 1;
                 const pct = Math.min(100, Math.round((sold / capacity) * 100));
-                
+
                 return (
                   <div key={event._id} className="p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-white/2 transition-colors">
                     <div className="space-y-1">
@@ -382,16 +382,16 @@ function DashboardContent() {
                         Gates: {formatDateTime(event.startDate, { hour: '2-digit', minute: '2-digit' })}
                       </p>
                     </div>
-                    
+
                     <div className="w-full sm:w-48 space-y-1.5">
                       <div className="flex justify-between text-xs">
                         <span className="text-text-secondary">Capacity Sold ({pct}%)</span>
                         <span className="text-white font-semibold">{sold} / {capacity}</span>
                       </div>
                       <div className="w-full bg-white/5 border border-white/10 rounded-full h-2.5 overflow-hidden">
-                        <div 
-                          className="bg-accent-purple h-full rounded-full transition-all duration-500" 
-                          style={{ width: `${pct}%` }} 
+                        <div
+                          className="bg-accent-purple h-full rounded-full transition-all duration-500"
+                          style={{ width: `${pct}%` }}
                         />
                       </div>
                     </div>

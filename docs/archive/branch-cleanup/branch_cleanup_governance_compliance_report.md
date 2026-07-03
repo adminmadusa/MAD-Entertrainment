@@ -1,7 +1,7 @@
 # MAD Entertainment – Branch Cleanup Governance Compliance Report
 
-**Certified by:** Principal Repository Governance Engineer  
-**Date:** June 16, 2026  
+**Certified by:** Principal Repository Governance Engineer
+**Date:** June 16, 2026
 **Status:** COMPLIANT & LOCKED (All Phases Complete)
 
 ---

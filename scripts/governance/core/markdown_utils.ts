@@ -75,7 +75,7 @@ export function checkPathCasing(
         return { status: 'NOT_FOUND' };
       }
       const actualFiles = readdirSync(currentDir);
-      
+
       // Check for exact case-sensitive match
       if (actualFiles.includes(segment)) {
         currentDir = resolve(currentDir, segment);

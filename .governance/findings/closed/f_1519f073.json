@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:55.842Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 36,
+    "message": "Trailing whitespace characters detected.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "4903c9372a90e0df3ccf3c02ad7831b3be51d6dc6620807811cc4478e93822c2",
+        "id": "4903c9372a90e0df3ccf3c02ad7831b3be51d6dc6620807811cc4478e93822c2",
+        "line": 36,
+        "message": "Trailing whitespace characters detected."
+      }
+    ],
+    "path": "apps/web/src/components/booking/checkout/LeaveCheckoutModal.tsx"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:55.842Z",
+  "id": "f_1519f073",
+  "lastDetected": "2026-07-03T12:25:55.842Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-004",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

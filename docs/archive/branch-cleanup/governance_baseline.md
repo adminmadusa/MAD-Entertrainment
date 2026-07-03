@@ -1,6 +1,6 @@
 # Repository Governance Baseline
 
-**Effective Date:** June 16, 2026  
+**Effective Date:** June 16, 2026
 **Applicability:** All Future Branch Cleanup Operations
 
 This repository follows the **MAD Entertainment Repository Cleanup Governance Standard**.

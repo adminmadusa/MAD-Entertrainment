@@ -1,0 +1,42 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:50.874Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 93,
+    "message": "Trailing whitespace characters detected.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "2c480d921a24b56849c2c62b37698df26038446cf64f8869f9076cf7c4f7300e",
+        "id": "2c480d921a24b56849c2c62b37698df26038446cf64f8869f9076cf7c4f7300e",
+        "line": 29,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "2c480d921a24b56849c2c62b37698df26038446cf64f8869f9076cf7c4f7300e",
+        "id": "2c480d921a24b56849c2c62b37698df26038446cf64f8869f9076cf7c4f7300e",
+        "line": 93,
+        "message": "Trailing whitespace characters detected."
+      }
+    ],
+    "path": "apps/server/src/lib/razorpay/refund.client.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:50.874Z",
+  "id": "f_25bd1e5f",
+  "lastDetected": "2026-07-03T12:25:50.874Z",
+  "occurrenceCount": 2,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-004",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

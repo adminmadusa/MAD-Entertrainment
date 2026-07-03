@@ -1,0 +1,50 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:54.052Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 66,
+    "message": "Trailing whitespace characters detected.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "b8b26a69bb5443d44732f3c2bd9e5d544cceee36d0409c35c31afad5273edd01",
+        "id": "b8b26a69bb5443d44732f3c2bd9e5d544cceee36d0409c35c31afad5273edd01",
+        "line": 38,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "b8b26a69bb5443d44732f3c2bd9e5d544cceee36d0409c35c31afad5273edd01",
+        "id": "b8b26a69bb5443d44732f3c2bd9e5d544cceee36d0409c35c31afad5273edd01",
+        "line": 54,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "b8b26a69bb5443d44732f3c2bd9e5d544cceee36d0409c35c31afad5273edd01",
+        "id": "b8b26a69bb5443d44732f3c2bd9e5d544cceee36d0409c35c31afad5273edd01",
+        "line": 66,
+        "message": "Trailing whitespace characters detected."
+      }
+    ],
+    "path": "apps/server/src/utils/jwt.test.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:54.052Z",
+  "id": "f_8ff890ef",
+  "lastDetected": "2026-07-03T12:25:54.052Z",
+  "occurrenceCount": 3,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-004",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

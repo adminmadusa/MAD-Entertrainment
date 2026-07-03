@@ -1,0 +1,74 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:53.665Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 1547,
+    "message": "Trailing whitespace characters detected.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "4bd023dbe56e75173bfc68cbd6219c13c8980aad4699ffa5d3a503f78cd68432",
+        "id": "4bd023dbe56e75173bfc68cbd6219c13c8980aad4699ffa5d3a503f78cd68432",
+        "line": 577,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "4bd023dbe56e75173bfc68cbd6219c13c8980aad4699ffa5d3a503f78cd68432",
+        "id": "4bd023dbe56e75173bfc68cbd6219c13c8980aad4699ffa5d3a503f78cd68432",
+        "line": 996,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "4bd023dbe56e75173bfc68cbd6219c13c8980aad4699ffa5d3a503f78cd68432",
+        "id": "4bd023dbe56e75173bfc68cbd6219c13c8980aad4699ffa5d3a503f78cd68432",
+        "line": 1042,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "4bd023dbe56e75173bfc68cbd6219c13c8980aad4699ffa5d3a503f78cd68432",
+        "id": "4bd023dbe56e75173bfc68cbd6219c13c8980aad4699ffa5d3a503f78cd68432",
+        "line": 1383,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "4bd023dbe56e75173bfc68cbd6219c13c8980aad4699ffa5d3a503f78cd68432",
+        "id": "4bd023dbe56e75173bfc68cbd6219c13c8980aad4699ffa5d3a503f78cd68432",
+        "line": 1397,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "4bd023dbe56e75173bfc68cbd6219c13c8980aad4699ffa5d3a503f78cd68432",
+        "id": "4bd023dbe56e75173bfc68cbd6219c13c8980aad4699ffa5d3a503f78cd68432",
+        "line": 1547,
+        "message": "Trailing whitespace characters detected."
+      }
+    ],
+    "path": "apps/server/src/services/public/payment.service.test.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:53.665Z",
+  "id": "f_8e108b75",
+  "lastDetected": "2026-07-03T12:25:53.665Z",
+  "occurrenceCount": 6,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-004",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

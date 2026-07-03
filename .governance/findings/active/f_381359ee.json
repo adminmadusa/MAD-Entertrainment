@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:49.118Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 1,
+    "message": "Imports must be grouped in order: Node built-ins, Third-party packages, Workspace aliases, Relative paths, Side-effects.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "9415f6128400f9e6cccbcd8d5048d68d3557b3dcbbb5b02debb1fd432a575ef2",
+        "id": "9415f6128400f9e6cccbcd8d5048d68d3557b3dcbbb5b02debb1fd432a575ef2",
+        "line": 1,
+        "message": "Imports must be grouped in order: Node built-ins, Third-party packages, Workspace aliases, Relative paths, Side-effects."
+      }
+    ],
+    "path": "apps/server/src/controllers/admin/analytics.controller.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:49.118Z",
+  "id": "f_381359ee",
+  "lastDetected": "2026-07-03T12:25:49.118Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-001",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CONFIRMED"
+}

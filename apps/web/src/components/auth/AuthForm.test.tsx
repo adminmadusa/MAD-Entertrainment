@@ -380,7 +380,7 @@ describe('AuthForm Component Smoke Tests', () => {
   describe('Close Button Visibility', () => {
     it('should show close button on all screens when onClose is passed', async () => {
       const mockClose = vi.fn();
-      
+
       mockUseAuth.mockReturnValue({
         login: mockLogin,
         logout: mockLogout,
@@ -393,7 +393,7 @@ describe('AuthForm Component Smoke Tests', () => {
       const { unmount } = renderComponent({ mode: 'login', onClose: mockClose });
       let closeBtn = screen.getByRole('button', { name: /close/i });
       expect(closeBtn).toBeInTheDocument();
-      
+
       await act(async () => {
         fireEvent.click(closeBtn);
       });

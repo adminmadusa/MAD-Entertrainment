@@ -1,0 +1,35 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:47.340Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 3,
+    "message": "Import from types module \"@mad/types\" should use \"import type\".",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "9815b5be7eff8bdafd3ddd31254e65add6c33924226ab66704fe727b7b5df106",
+        "id": "9815b5be7eff8bdafd3ddd31254e65add6c33924226ab66704fe727b7b5df106",
+        "line": 14,
+        "message": "Import from types module \"@mad/types\" should use \"import type\"."
+      }
+    ],
+    "path": "apps/admin/src/app/ticket-profiles/page.tsx"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:47.340Z",
+  "id": "f_9a2b93e4",
+  "lastDetected": "2026-07-03T12:25:47.621Z",
+  "lastModified": "2026-07-03T12:25:47.621Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-003",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CONFIRMED"
+}

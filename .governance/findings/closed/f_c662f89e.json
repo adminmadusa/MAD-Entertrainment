@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:59.233Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 3,
+    "message": "Imports within the same group must be sorted alphabetically (\"./fix_context\" should precede \"./fix_result\").",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "6be050565cc54c12728489693b624e4803a616f025aadca9584d8d6ee8d7593e",
+        "id": "6be050565cc54c12728489693b624e4803a616f025aadca9584d8d6ee8d7593e",
+        "line": 3,
+        "message": "Imports within the same group must be sorted alphabetically (\"./fix_context\" should precede \"./fix_result\")."
+      }
+    ],
+    "path": "scripts/governance/core/fix_lifecycle_integrator.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:59.233Z",
+  "id": "f_c662f89e",
+  "lastDetected": "2026-07-03T12:25:59.233Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "scripts",
+  "relationships": [],
+  "rule": "VAL-HYG-001",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

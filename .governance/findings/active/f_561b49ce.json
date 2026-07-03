@@ -1,34 +1,33 @@
 {
-  "schemaVersion": 2,
-  "id": "f_561b49ce",
-  "rule": "VAL-UI-018",
-  "ruleVersion": "1.0.0",
-  "engineVersion": "1.0.0",
-  "domain": "Platform Team",
-  "owner": "Platform Team",
-  "package": "apps",
-  "feature": "UIElement",
-  "status": "NEW",
   "confidence": 0.9,
-  "relationships": [],
+  "createdDate": "2026-06-30T15:36:27.265Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
   "evidence": {
-    "path": "apps/web/src/app/legal/[doc]/page.tsx",
     "construct": "UIElement",
     "message": "Possible Unreachable Route: no direct navigation links pointing to \"/legal/[doc]\" were found in production files.",
     "occurrences": [
       {
-        "id": "bde5cef05438fd557fdea706ae7f91f062c5cbb8cd87d4818b30c4764b7dfad2",
-        "line": 0,
         "column": 0,
         "construct": "UIElement",
-        "snippet": "",
-        "message": "Possible Unreachable Route: no direct navigation links pointing to \"/legal/[doc]\" were found in production files.",
-        "fingerprint": "bde5cef05438fd557fdea706ae7f91f062c5cbb8cd87d4818b30c4764b7dfad2"
+        "fingerprint": "bde5cef05438fd557fdea706ae7f91f062c5cbb8cd87d4818b30c4764b7dfad2",
+        "id": "bde5cef05438fd557fdea706ae7f91f062c5cbb8cd87d4818b30c4764b7dfad2",
+        "line": 0,
+        "message": "Possible Unreachable Route: no direct navigation links pointing to \"/legal/[doc]\" were found in production files."
       }
-    ]
+    ],
+    "path": "apps/web/src/app/legal/[doc]/page.tsx"
   },
-  "createdDate": "2026-06-30T15:36:27.265Z",
+  "feature": "UIElement",
   "firstDetected": "2026-06-30T15:36:27.265Z",
+  "id": "f_561b49ce",
   "lastDetected": "2026-06-30T15:36:27.265Z",
-  "occurrenceCount": 1
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-UI-018",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "REGRESSION"
 }

@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:49.168Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 2,
+    "message": "Groups of imports must be separated by a single blank line.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "8edcf06d2ac5ac9d3ea67083314b65b8a05b174ca7e065fbb621d62ec342534b",
+        "id": "8edcf06d2ac5ac9d3ea67083314b65b8a05b174ca7e065fbb621d62ec342534b",
+        "line": 2,
+        "message": "Groups of imports must be separated by a single blank line."
+      }
+    ],
+    "path": "apps/server/src/controllers/admin/auth.controller.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:49.168Z",
+  "id": "f_78db9700",
+  "lastDetected": "2026-07-03T12:25:49.168Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-001",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

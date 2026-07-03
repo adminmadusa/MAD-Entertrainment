@@ -1,45 +1,45 @@
 {
-  "schemaVersion": 2,
-  "id": "f_f9fcdaed",
-  "rule": "VAL-UI-010",
-  "ruleVersion": "1.0.0",
-  "engineVersion": "1.0.0",
-  "domain": "UI UX Guild",
-  "owner": "UI UX Guild",
-  "package": "apps",
-  "feature": "UIElement",
-  "status": "NEW",
   "confidence": 0.9,
-  "relationships": [],
+  "createdDate": "2026-06-30T15:36:27.288Z",
+  "domain": "UI UX Guild",
+  "engineVersion": "1.0.0",
   "evidence": {
-    "path": "apps/web/src/components/support/ContactForm.tsx",
     "construct": "UIElement",
-    "snippet": "<button",
-    "line": 45,
+    "line": 158,
     "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
     "occurrences": [
       {
+        "column": 0,
+        "construct": "UIElement",
+        "fingerprint": "2f2ab005ebe71171e691297dd38d4a20845a4034575db6bf1e94dc7c9b7bddbe",
         "id": "2f2ab005ebe71171e691297dd38d4a20845a4034575db6bf1e94dc7c9b7bddbe",
         "line": 45,
-        "column": 0,
-        "construct": "UIElement",
-        "snippet": "<button",
         "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
-        "fingerprint": "2f2ab005ebe71171e691297dd38d4a20845a4034575db6bf1e94dc7c9b7bddbe"
+        "snippet": "<button"
       },
       {
-        "id": "2f2ab005ebe71171e691297dd38d4a20845a4034575db6bf1e94dc7c9b7bddbe",
-        "line": 158,
         "column": 0,
         "construct": "UIElement",
-        "snippet": "<button",
+        "fingerprint": "2f2ab005ebe71171e691297dd38d4a20845a4034575db6bf1e94dc7c9b7bddbe",
+        "id": "2f2ab005ebe71171e691297dd38d4a20845a4034575db6bf1e94dc7c9b7bddbe",
+        "line": 158,
         "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
-        "fingerprint": "2f2ab005ebe71171e691297dd38d4a20845a4034575db6bf1e94dc7c9b7bddbe"
+        "snippet": "<button"
       }
-    ]
+    ],
+    "path": "apps/web/src/components/support/ContactForm.tsx",
+    "snippet": "<button"
   },
-  "createdDate": "2026-06-30T15:36:27.288Z",
+  "feature": "UIElement",
   "firstDetected": "2026-06-30T15:36:27.288Z",
+  "id": "f_f9fcdaed",
   "lastDetected": "2026-06-30T15:36:27.288Z",
-  "occurrenceCount": 2
+  "occurrenceCount": 2,
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-UI-010",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "REGRESSION"
 }

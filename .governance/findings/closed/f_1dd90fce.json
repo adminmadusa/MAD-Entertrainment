@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:58.823Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 30,
+    "message": "Trailing whitespace characters detected.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "b14d5c30133f00b36eb1e9ba913241f0d982c92292c32d5c9241f49979175dc5",
+        "id": "b14d5c30133f00b36eb1e9ba913241f0d982c92292c32d5c9241f49979175dc5",
+        "line": 30,
+        "message": "Trailing whitespace characters detected."
+      }
+    ],
+    "path": "scripts/governance/core/dead_asset_duplicate_validator.test.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:58.823Z",
+  "id": "f_1dd90fce",
+  "lastDetected": "2026-07-03T12:25:58.823Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "scripts",
+  "relationships": [],
+  "rule": "VAL-HYG-004",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

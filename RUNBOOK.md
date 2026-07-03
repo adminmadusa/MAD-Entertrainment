@@ -1,6 +1,6 @@
 # MAD Entertrainment — Staging & Production Runbook
 
-> **Audience:** Developers and operators deploying or troubleshooting the MAD Entertrainment platform.  
+> **Audience:** Developers and operators deploying or troubleshooting the MAD Entertrainment platform.
 > **Stack:** Next.js 15 (web + admin on Vercel) · Express (server on Render) · MongoDB Atlas · Redis · Cloudinary · Razorpay
 
 - **Owner**: Platform/Deployment Owner

@@ -1,0 +1,58 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:26:02.619Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 62,
+    "message": "Trailing whitespace characters detected.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "7160495f4e5f1c15454fc029debde5cd25490280515a9bdcee2dc07754be4adb",
+        "id": "7160495f4e5f1c15454fc029debde5cd25490280515a9bdcee2dc07754be4adb",
+        "line": 44,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "7160495f4e5f1c15454fc029debde5cd25490280515a9bdcee2dc07754be4adb",
+        "id": "7160495f4e5f1c15454fc029debde5cd25490280515a9bdcee2dc07754be4adb",
+        "line": 46,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "7160495f4e5f1c15454fc029debde5cd25490280515a9bdcee2dc07754be4adb",
+        "id": "7160495f4e5f1c15454fc029debde5cd25490280515a9bdcee2dc07754be4adb",
+        "line": 58,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "7160495f4e5f1c15454fc029debde5cd25490280515a9bdcee2dc07754be4adb",
+        "id": "7160495f4e5f1c15454fc029debde5cd25490280515a9bdcee2dc07754be4adb",
+        "line": 62,
+        "message": "Trailing whitespace characters detected."
+      }
+    ],
+    "path": "scripts/governance/validators/repository_health_validator.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:26:02.619Z",
+  "id": "f_05e0383d",
+  "lastDetected": "2026-07-03T12:26:02.619Z",
+  "occurrenceCount": 4,
+  "owner": "Platform Team",
+  "package": "scripts",
+  "relationships": [],
+  "rule": "VAL-HYG-004",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

@@ -203,5 +203,5 @@
   "rule": "VAL-UI-007",
   "ruleVersion": "1.0.0",
   "schemaVersion": 2,
-  "status": "NEW"
+  "status": "REGRESSION"
 }

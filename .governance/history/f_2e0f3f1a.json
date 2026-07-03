@@ -1,0 +1,11 @@
+{
+  "history": [
+    {
+      "action": "CREATED",
+      "notes": "New grouped finding registered: Imports within the same group must be sorted alphabetically (\"./public/marketing.routes\" should precede \"./public/ticket.routes\").",
+      "status": "NEW",
+      "timestamp": "2026-07-03T12:25:52.159Z"
+    }
+  ],
+  "id": "f_2e0f3f1a"
+}

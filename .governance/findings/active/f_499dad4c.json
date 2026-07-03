@@ -1,0 +1,35 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:58.222Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 6,
+    "message": "Imports within the same group must be sorted alphabetically (\"../finding_manager\" should precede \"../fix_result\").",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "ab84936858bb7794615bbce3874c13436ff1dca9f21a54e1ec506863b600fc6b",
+        "id": "ab84936858bb7794615bbce3874c13436ff1dca9f21a54e1ec506863b600fc6b",
+        "line": 6,
+        "message": "Imports within the same group must be sorted alphabetically (\"../finding_manager\" should precede \"../fix_result\")."
+      }
+    ],
+    "path": "scripts/governance/core/__tests__/fix_lifecycle_integrator.test.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:58.222Z",
+  "id": "f_499dad4c",
+  "lastDetected": "2026-07-03T12:49:56.259Z",
+  "lastModified": "2026-07-03T12:49:56.259Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "scripts",
+  "relationships": [],
+  "rule": "VAL-HYG-001",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

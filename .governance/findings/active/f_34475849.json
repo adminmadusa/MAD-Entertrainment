@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:46.743Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 10,
+    "message": "Imports within the same group must be sorted alphabetically (\"@/components/coupons/CouponForm\" should precede \"@/lib/api/client\").",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "281fe21bcd37a63d71a9a9715e6a00d940fae10bc603f444798beb6dc2f3994a",
+        "id": "281fe21bcd37a63d71a9a9715e6a00d940fae10bc603f444798beb6dc2f3994a",
+        "line": 10,
+        "message": "Imports within the same group must be sorted alphabetically (\"@/components/coupons/CouponForm\" should precede \"@/lib/api/client\")."
+      }
+    ],
+    "path": "apps/admin/src/app/coupons/new/page.tsx"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:46.743Z",
+  "id": "f_34475849",
+  "lastDetected": "2026-07-03T12:25:46.743Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-001",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:53.964Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 2,
+    "message": "Imports within the same group must be sorted alphabetically (\"@sentry/node\" should precede \"nodemailer\").",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "5f5698686838ec6df1afbf8930172480f5f722d45ff367685fd27ce7614474d7",
+        "id": "5f5698686838ec6df1afbf8930172480f5f722d45ff367685fd27ce7614474d7",
+        "line": 2,
+        "message": "Imports within the same group must be sorted alphabetically (\"@sentry/node\" should precede \"nodemailer\")."
+      }
+    ],
+    "path": "apps/server/src/utils/email.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:53.964Z",
+  "id": "f_692e5ae6",
+  "lastDetected": "2026-07-03T12:25:53.964Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-001",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CONFIRMED"
+}

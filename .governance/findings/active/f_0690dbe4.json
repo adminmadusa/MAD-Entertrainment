@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:46.606Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 4,
+    "message": "Imports within the same group must be sorted alphabetically (\"@/lib/api/admin/booking.service\" should precede \"@mad/shared\").",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "be5c312e48855114596663a9a0020b659b3fc37548fe69b5e403aa78e713f5be",
+        "id": "be5c312e48855114596663a9a0020b659b3fc37548fe69b5e403aa78e713f5be",
+        "line": 4,
+        "message": "Imports within the same group must be sorted alphabetically (\"@/lib/api/admin/booking.service\" should precede \"@mad/shared\")."
+      }
+    ],
+    "path": "apps/admin/src/app/bookings/_components/BookingFilters.tsx"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:46.606Z",
+  "id": "f_0690dbe4",
+  "lastDetected": "2026-07-03T12:25:46.606Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-001",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

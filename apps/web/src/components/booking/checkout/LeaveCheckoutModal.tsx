@@ -33,7 +33,7 @@ export function LeaveCheckoutModal({ isOpen, onClose, onConfirm }: LeaveCheckout
             Are you sure you want to leave checkout? The items you've selected may not be available later.
           </p>
         </div>
-        
+
         <div className="grid grid-cols-2 gap-3 pt-2">
           <button
             type="button"

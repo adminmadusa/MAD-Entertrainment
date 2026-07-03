@@ -1,0 +1,17 @@
+{
+  "history": [
+    {
+      "action": "CREATED",
+      "notes": "New grouped finding registered: Groups of imports must be separated by a single blank line.",
+      "status": "NEW",
+      "timestamp": "2026-07-03T12:25:54.859Z"
+    },
+    {
+      "action": "CREATED",
+      "notes": "New grouped finding registered: Groups of imports must be separated by a single blank line.",
+      "status": "NEW",
+      "timestamp": "2026-07-03T12:49:55.798Z"
+    }
+  ],
+  "id": "f_df5a4559"
+}

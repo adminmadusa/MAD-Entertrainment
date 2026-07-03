@@ -5,7 +5,7 @@
   "engineVersion": "1.0.0",
   "evidence": {
     "construct": "modal-accessibility",
-    "line": 200,
+    "line": 198,
     "message": "Custom modal backdrop is missing role=\"dialog\" or aria-modal=\"true\" accessibility tags.",
     "occurrences": [
       {
@@ -13,7 +13,7 @@
         "construct": "UIElement",
         "fingerprint": "600301c3c745478519a14819dce802d905f693c779fad1e5453dde33c6ae5a01",
         "id": "600301c3c745478519a14819dce802d905f693c779fad1e5453dde33c6ae5a01",
-        "line": 200,
+        "line": 198,
         "message": "Custom modal backdrop is missing role=\"dialog\" or aria-modal=\"true\" accessibility tags.",
         "snippet": "<div className=\"fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4\">"
       }
@@ -24,8 +24,8 @@
   "feature": "modal-accessibility",
   "firstDetected": "2026-06-29T08:10:00.243Z",
   "id": "f_e8e6a5e8",
-  "lastDetected": "2026-07-03T08:48:21.111Z",
-  "lastModified": "2026-07-03T08:48:21.111Z",
+  "lastDetected": "2026-07-03T13:02:40.703Z",
+  "lastModified": "2026-07-03T13:02:40.703Z",
   "occurrenceCount": 1,
   "owner": "UI UX Guild",
   "package": "apps",
@@ -33,5 +33,5 @@
   "rule": "VAL-UI-003",
   "ruleVersion": "1.0.0",
   "schemaVersion": 2,
-  "status": "NEW"
+  "status": "REGRESSION"
 }

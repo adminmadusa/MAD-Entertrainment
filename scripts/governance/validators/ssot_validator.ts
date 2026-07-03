@@ -122,8 +122,8 @@ export class SsotValidator implements GovernanceValidator {
             });
             fileFailed = true;
           } else {
-            const matchesExpected = expectedOwners.some(expected => 
-              actualOwner.toLowerCase().includes(expected.toLowerCase()) || 
+            const matchesExpected = expectedOwners.some(expected =>
+              actualOwner.toLowerCase().includes(expected.toLowerCase()) ||
               expected.toLowerCase().includes(actualOwner.toLowerCase())
             );
             if (!matchesExpected) {
@@ -189,7 +189,7 @@ export class SsotValidator implements GovernanceValidator {
       const headingList = this.extractHeadings(lines);
       const sectionRequirements = REQUIRED_SECTIONS[relPath] || [];
       for (const requirementList of sectionRequirements) {
-        const hasSection = requirementList.some(reqName => 
+        const hasSection = requirementList.some(reqName =>
           headingList.some(h => h.toLowerCase().includes(reqName.toLowerCase()))
         );
         if (!hasSection) {
@@ -239,7 +239,7 @@ export class SsotValidator implements GovernanceValidator {
     // Scan to find metadata. It can be a list under "## Metadata" or at the very start.
     for (let i = 0; i < Math.min(lines.length, 50); i++) {
       const line = lines[i].trim();
-      
+
       if (line.toLowerCase() === '## metadata') {
         inMetadataBlock = true;
         foundMetadata = true;
@@ -282,7 +282,7 @@ export class SsotValidator implements GovernanceValidator {
         const value = keyMatch[2].trim();
         const normKey = rawKey.toLowerCase().replace(/[\s_\-]/g, '');
         currentKey = normKey;
-        
+
         // Normalize specific common aliases
         if (normKey === 'lastupdated' || normKey === 'lastreviewed' || normKey === 'date') {
           metadata['lastUpdated'] = value;
@@ -375,7 +375,7 @@ export class SsotValidator implements GovernanceValidator {
 
     for (const block of blocks) {
       const trimmed = block.trim();
-      
+
       // Keep track of code blocks
       if (trimmed.startsWith('```')) {
         inCodeBlock = !inCodeBlock;
@@ -396,7 +396,7 @@ export class SsotValidator implements GovernanceValidator {
       }
 
       const cleaned = this.cleanTextForComparison(trimmed);
-      
+
       // Only check paragraphs with significant content (e.g. > 15 words and > 80 chars)
       const words = cleaned.split(' ');
       if (words.length < 15 || cleaned.length < 80) {

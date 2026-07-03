@@ -24,7 +24,7 @@ interface CacheEntry {
 
 export function getNormalizedStatus(statusStr: string, relPath: string): string {
   const norm = statusStr.trim().replace(/^\*\*|\*\*$/g, '').toLowerCase();
-  
+
   if (relPath.startsWith('docs/archive/')) {
     return 'Historical';
   }
@@ -47,7 +47,7 @@ export function getNormalizedStatus(statusStr: string, relPath: string): string 
   if (['deprecated', 'superseded', 'rejected'].some(k => norm.includes(k))) {
     return 'Deprecated';
   }
-  
+
   // ADR mapping fallback
   if (relPath.startsWith('docs/decisions/')) {
     if (['proposed', 'accepted', 'implemented'].some(k => norm.includes(k))) {
@@ -263,7 +263,7 @@ export class DocumentationValidator implements GovernanceValidator {
         }
 
         // VAL-DOC-005: Secret & Credential Detection
-        const hasSecretPattern = 
+        const hasSecretPattern =
           /(?:api[_-]?key|api[_-]?secret|client[_-]?secret|db[_-]?password|database[_-]?password|auth[_-]?token|access[_-]?token|private[_-]?key|session[_-]?secret|jwt[_-]?secret)\b\s*[:=]\s*["']?([a-zA-Z0-9_\-\.\~]{16,})["']?/i.test(line) ||
           /-----BEGIN [A-Z ]*PRIVATE KEY-----/.test(line) ||
           /xox[bapr]-[0-9]{12}-[0-9]{12}-[a-zA-Z0-9]{24}/.test(line) ||
@@ -273,14 +273,14 @@ export class DocumentationValidator implements GovernanceValidator {
         if (hasSecretPattern) {
           // FP mitigation check: check if it contains placeholder indicators
           const lower = trimmed.toLowerCase();
-          const isPlaceholder = 
-            lower.includes('placeholder') || 
-            lower.includes('mock') || 
-            lower.includes('your_') || 
-            lower.includes('example_') || 
-            lower.includes('test_') || 
+          const isPlaceholder =
+            lower.includes('placeholder') ||
+            lower.includes('mock') ||
+            lower.includes('your_') ||
+            lower.includes('example_') ||
+            lower.includes('test_') ||
             lower.includes('dummy') ||
-            lower.includes('<') || 
+            lower.includes('<') ||
             lower.includes('>');
 
           if (!isPlaceholder) {
@@ -369,7 +369,7 @@ export class DocumentationValidator implements GovernanceValidator {
         .replace(/^## Metadata[\s\S]*?---/gi, '') // remove metadata block
         .replace(/[#\|\*\-\`]/g, ' ') // remove structure chars
         .toLowerCase();
-      
+
       const tokens = cleanContent.match(/\b[a-z0-9_]{3,25}\b/g) || [];
       const tokenSet = new Set(tokens);
       fileTokensMap.set(relPath, tokenSet);
@@ -393,7 +393,7 @@ export class DocumentationValidator implements GovernanceValidator {
       const tokensA = fileTokensMap.get(fileA)!;
       const contentA = fileContentMap.get(fileA) || '';
       const statusA = fileStatusMap.get(fileA);
-      
+
       if (tokensA.size === 0 || contentA.length < 200 || fileA.endsWith('TEMPLATE.md')) {
         continue;
       }

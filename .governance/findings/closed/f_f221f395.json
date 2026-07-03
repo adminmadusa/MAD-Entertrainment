@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:58.878Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 181,
+    "message": "File must terminate with exactly one trailing newline character.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "30d8d998b1149542bb04f0d2fbc76d30c750b0afc2a4291d1dde59b6550a027d",
+        "id": "30d8d998b1149542bb04f0d2fbc76d30c750b0afc2a4291d1dde59b6550a027d",
+        "line": 181,
+        "message": "File must terminate with exactly one trailing newline character."
+      }
+    ],
+    "path": "scripts/governance/core/dependency_graph.test.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:58.878Z",
+  "id": "f_f221f395",
+  "lastDetected": "2026-07-03T12:25:58.878Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "scripts",
+  "relationships": [],
+  "rule": "VAL-HYG-005",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

@@ -1,72 +1,73 @@
 {
-  "schemaVersion": 2,
-  "id": "f_bec667c1",
-  "rule": "VAL-UI-010",
-  "ruleVersion": "1.0.0",
-  "engineVersion": "1.0.0",
-  "domain": "UI UX Guild",
-  "owner": "UI UX Guild",
-  "package": "apps",
-  "feature": "UIElement",
-  "status": "NEW",
   "confidence": 0.9,
-  "relationships": [],
+  "createdDate": "2026-06-30T15:36:27.186Z",
+  "domain": "UI UX Guild",
+  "engineVersion": "1.0.0",
   "evidence": {
-    "path": "apps/admin/src/app/ticket-profiles/page.tsx",
     "construct": "UIElement",
-    "snippet": "<button",
-    "line": 105,
+    "line": 220,
     "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
     "occurrences": [
       {
+        "column": 0,
+        "construct": "UIElement",
+        "fingerprint": "1ea01341d4cac64782c3088160f27e24ae387bea34e656e50293e649af2d403b",
         "id": "1ea01341d4cac64782c3088160f27e24ae387bea34e656e50293e649af2d403b",
         "line": 105,
-        "column": 0,
-        "construct": "UIElement",
-        "snippet": "<button",
         "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
-        "fingerprint": "1ea01341d4cac64782c3088160f27e24ae387bea34e656e50293e649af2d403b"
+        "snippet": "<button"
       },
       {
+        "column": 0,
+        "construct": "UIElement",
+        "fingerprint": "1ea01341d4cac64782c3088160f27e24ae387bea34e656e50293e649af2d403b",
         "id": "1ea01341d4cac64782c3088160f27e24ae387bea34e656e50293e649af2d403b",
         "line": 134,
-        "column": 0,
-        "construct": "UIElement",
-        "snippet": "<button",
         "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
-        "fingerprint": "1ea01341d4cac64782c3088160f27e24ae387bea34e656e50293e649af2d403b"
+        "snippet": "<button"
       },
       {
+        "column": 0,
+        "construct": "UIElement",
+        "fingerprint": "7f91ff076a91f4156d0ceb2577789dc651ca4ec1ca7bdbf690057a6d44277384",
         "id": "7f91ff076a91f4156d0ceb2577789dc651ca4ec1ca7bdbf690057a6d44277384",
-        "line": 179,
-        "column": 0,
-        "construct": "UIElement",
-        "snippet": "<table className=\"w-full text-sm text-left\">",
+        "line": 177,
         "message": "Shared Component Enforcement: Bypassed shared Table component in favor of raw HTML table element.",
-        "fingerprint": "7f91ff076a91f4156d0ceb2577789dc651ca4ec1ca7bdbf690057a6d44277384"
+        "snippet": "<table className=\"w-full text-sm text-left\">"
       },
       {
-        "id": "1ea01341d4cac64782c3088160f27e24ae387bea34e656e50293e649af2d403b",
-        "line": 216,
         "column": 0,
         "construct": "UIElement",
-        "snippet": "<button",
+        "fingerprint": "1ea01341d4cac64782c3088160f27e24ae387bea34e656e50293e649af2d403b",
+        "id": "1ea01341d4cac64782c3088160f27e24ae387bea34e656e50293e649af2d403b",
+        "line": 214,
         "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
-        "fingerprint": "1ea01341d4cac64782c3088160f27e24ae387bea34e656e50293e649af2d403b"
+        "snippet": "<button"
       },
       {
-        "id": "1ea01341d4cac64782c3088160f27e24ae387bea34e656e50293e649af2d403b",
-        "line": 222,
         "column": 0,
         "construct": "UIElement",
-        "snippet": "<button",
+        "fingerprint": "1ea01341d4cac64782c3088160f27e24ae387bea34e656e50293e649af2d403b",
+        "id": "1ea01341d4cac64782c3088160f27e24ae387bea34e656e50293e649af2d403b",
+        "line": 220,
         "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
-        "fingerprint": "1ea01341d4cac64782c3088160f27e24ae387bea34e656e50293e649af2d403b"
+        "snippet": "<button"
       }
-    ]
+    ],
+    "path": "apps/admin/src/app/ticket-profiles/page.tsx",
+    "snippet": "<button"
   },
-  "createdDate": "2026-06-30T15:36:27.186Z",
+  "feature": "UIElement",
   "firstDetected": "2026-06-30T15:36:27.186Z",
-  "lastDetected": "2026-06-30T15:36:27.186Z",
-  "occurrenceCount": 5
+  "id": "f_bec667c1",
+  "lastDetected": "2026-07-03T13:02:40.704Z",
+  "lastModified": "2026-07-03T13:02:40.704Z",
+  "occurrenceCount": 5,
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-UI-010",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "REGRESSION"
 }

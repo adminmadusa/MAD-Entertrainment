@@ -41,9 +41,9 @@ export class RepositoryHealthValidator implements GovernanceValidator {
     const matchMatrixDoc = (relPath: string, matrixDoc: string): boolean => {
       const normRel = relPath.replace(/\\/g, '/');
       const normMatrix = matrixDoc.replace(/\\/g, '/').replace(/\/$/, '');
-      
+
       if (normRel === normMatrix) return true;
-      
+
       const fullMatrixPath = resolve(workspaceRoot, normMatrix);
       if (existsSync(fullMatrixPath) && statSync(fullMatrixPath).isDirectory()) {
         return normRel.startsWith(normMatrix + '/');
@@ -55,11 +55,11 @@ export class RepositoryHealthValidator implements GovernanceValidator {
     const isOwnerAligned = (actual: string, expected: string): boolean => {
       const actualLower = actual.toLowerCase();
       const expectedLower = expected.toLowerCase();
-      
+
       if (actualLower.includes(expectedLower) || expectedLower.includes(actualLower)) {
         return true;
       }
-      
+
       const keywords: Record<string, string[]> = {
         'api owner': ['api', 'contract', 'governance'],
         'architecture owner': ['architecture', 'architect'],

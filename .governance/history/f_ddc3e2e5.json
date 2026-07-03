@@ -1,0 +1,11 @@
+{
+  "history": [
+    {
+      "action": "CREATED",
+      "notes": "New grouped finding registered: Import from types module \"../types\" should use \"import type\".",
+      "status": "NEW",
+      "timestamp": "2026-07-03T12:26:01.026Z"
+    }
+  ],
+  "id": "f_ddc3e2e5"
+}

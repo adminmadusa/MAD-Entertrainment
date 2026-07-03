@@ -60,12 +60,12 @@ export function readJsonIfExists<T = any>(filePath: string): T | undefined {
 export function writeJsonIfChanged(filePath: string, object: any): { written: boolean; skipped: boolean } {
   persistenceStats.examined++;
   const newContent = canonicalizeJson(object);
-  
+
   if (existsSync(filePath)) {
     try {
       const existingContent = readFileSync(filePath, 'utf8');
       const existingObj = JSON.parse(existingContent);
-      
+
       // Volatility Filtering to avoid Git/disk churn on unchanged state
       if (filePath.endsWith('manifest.json')) {
         const cleanExisting = {

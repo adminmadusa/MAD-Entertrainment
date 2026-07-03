@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:26:02.760Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 5,
+    "message": "Import from types module \"../core/types\" should use \"import type\".",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "dbb6e3cec1c48d213e1afbcc095aa0c47d962785b114153e351308b7b4f21e7b",
+        "id": "dbb6e3cec1c48d213e1afbcc095aa0c47d962785b114153e351308b7b4f21e7b",
+        "line": 5,
+        "message": "Import from types module \"../core/types\" should use \"import type\"."
+      }
+    ],
+    "path": "scripts/governance/validators/repository_hygiene_validator.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:26:02.760Z",
+  "id": "f_ea1c9ccb",
+  "lastDetected": "2026-07-03T12:26:02.760Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "scripts",
+  "relationships": [],
+  "rule": "VAL-HYG-003",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

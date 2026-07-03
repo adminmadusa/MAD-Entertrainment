@@ -1,45 +1,45 @@
 {
-  "schemaVersion": 2,
-  "id": "f_9c29d294",
-  "rule": "VAL-UI-005",
-  "ruleVersion": "1.0.0",
-  "engineVersion": "1.0.0",
-  "domain": "UI UX Guild",
-  "owner": "UI UX Guild",
-  "package": "apps",
-  "feature": "UIElement",
-  "status": "NEW",
   "confidence": 0.9,
-  "relationships": [],
+  "createdDate": "2026-06-30T15:36:27.273Z",
+  "domain": "UI UX Guild",
+  "engineVersion": "1.0.0",
   "evidence": {
-    "path": "apps/web/src/components/booking/checkout/LeaveCheckoutModal.tsx",
     "construct": "UIElement",
-    "snippet": "<button",
-    "line": 38,
+    "line": 45,
     "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
     "occurrences": [
       {
+        "column": 0,
+        "construct": "UIElement",
+        "fingerprint": "1032f95c2ebf106911847cb009c5713d0cd98f78637a052ade2067ed1e71b306",
         "id": "1032f95c2ebf106911847cb009c5713d0cd98f78637a052ade2067ed1e71b306",
         "line": 38,
-        "column": 0,
-        "construct": "UIElement",
-        "snippet": "<button",
         "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
-        "fingerprint": "1032f95c2ebf106911847cb009c5713d0cd98f78637a052ade2067ed1e71b306"
+        "snippet": "<button"
       },
       {
-        "id": "1032f95c2ebf106911847cb009c5713d0cd98f78637a052ade2067ed1e71b306",
-        "line": 45,
         "column": 0,
         "construct": "UIElement",
-        "snippet": "<button",
+        "fingerprint": "1032f95c2ebf106911847cb009c5713d0cd98f78637a052ade2067ed1e71b306",
+        "id": "1032f95c2ebf106911847cb009c5713d0cd98f78637a052ade2067ed1e71b306",
+        "line": 45,
         "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
-        "fingerprint": "1032f95c2ebf106911847cb009c5713d0cd98f78637a052ade2067ed1e71b306"
+        "snippet": "<button"
       }
-    ]
+    ],
+    "path": "apps/web/src/components/booking/checkout/LeaveCheckoutModal.tsx",
+    "snippet": "<button"
   },
-  "createdDate": "2026-06-30T15:36:27.273Z",
+  "feature": "UIElement",
   "firstDetected": "2026-06-30T15:36:27.273Z",
+  "id": "f_9c29d294",
   "lastDetected": "2026-06-30T15:36:27.273Z",
-  "occurrenceCount": 2
+  "occurrenceCount": 2,
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-UI-005",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "REGRESSION"
 }

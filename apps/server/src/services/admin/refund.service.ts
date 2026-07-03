@@ -644,7 +644,7 @@ export const processRefund = async (
 
           if (emailHtml && notificationType) {
             const jobId = `refund-${updated._id}-${Date.now()}`;
-            
+
             // Post-commit failure isolation: Notification creation and Email Enqueue
             try {
               // Post-commit ordering constraint: createNotificationSafe must succeed before QueueService.enqueue
