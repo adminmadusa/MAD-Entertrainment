@@ -1,45 +1,37 @@
 {
-  "schemaVersion": 2,
-  "id": "f_839e768e",
-  "rule": "VAL-UI-006",
-  "ruleVersion": "1.0.0",
-  "engineVersion": "1.0.0",
-  "domain": "Platform Team",
-  "owner": "Platform Team",
-  "package": "apps",
-  "feature": "Field",
-  "status": "NEW",
   "confidence": 0.95,
-  "relationships": [],
+  "createdDate": "2026-06-29T08:10:40.617Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
   "evidence": {
-    "path": "apps/admin/src/components/events/EventTicketingCard.tsx",
     "construct": "Field",
-    "snippet": "function Field({ label, children }: { label: string; children: React.ReactNode }) {",
     "line": 23,
     "message": "Local duplication of <Field> wrapper. Use a shared components package.",
     "occurrences": [
       {
-        "id": "63dfa8fc9677a68fc3bef643e0ac485ae1ffb2a64bae59782b1306870668a070",
-        "line": 23,
-        "column": 0,
-        "construct": "Field",
-        "snippet": "function Field({ label, children }: { label: string; children: React.ReactNode }) {",
-        "message": "Local duplication of <Field> wrapper. Use a shared components package.",
-        "fingerprint": "63dfa8fc9677a68fc3bef643e0ac485ae1ffb2a64bae59782b1306870668a070"
-      },
-      {
-        "id": "756c4b7df6018f535b8892a3153a3e0beca8ac1dd71cdc080dea6000af630a69",
-        "line": 23,
         "column": 0,
         "construct": "UIElement",
-        "snippet": "function Field({ label, children }: { label: string; children: React.ReactNode }) {",
+        "fingerprint": "756c4b7df6018f535b8892a3153a3e0beca8ac1dd71cdc080dea6000af630a69",
+        "id": "756c4b7df6018f535b8892a3153a3e0beca8ac1dd71cdc080dea6000af630a69",
+        "line": 23,
         "message": "Local duplication of <Field> wrapper. Use a shared components package.",
-        "fingerprint": "756c4b7df6018f535b8892a3153a3e0beca8ac1dd71cdc080dea6000af630a69"
+        "snippet": "function Field({ label, children }: { label: string; children: React.ReactNode }) {"
       }
-    ]
+    ],
+    "path": "apps/admin/src/components/events/EventTicketingCard.tsx",
+    "snippet": "function Field({ label, children }: { label: string; children: React.ReactNode }) {"
   },
-  "createdDate": "2026-06-29T08:10:40.617Z",
+  "feature": "Field",
   "firstDetected": "2026-06-29T08:10:40.617Z",
-  "lastDetected": "2026-06-30T15:36:27.228Z",
-  "occurrenceCount": 2
+  "id": "f_839e768e",
+  "lastDetected": "2026-07-03T08:48:21.132Z",
+  "lastModified": "2026-07-03T08:48:21.132Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-UI-006",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
 }

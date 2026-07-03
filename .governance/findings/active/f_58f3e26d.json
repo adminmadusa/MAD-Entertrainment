@@ -1,45 +1,37 @@
 {
-  "schemaVersion": 2,
-  "id": "f_58f3e26d",
-  "rule": "VAL-UI-003",
-  "ruleVersion": "1.0.0",
-  "engineVersion": "1.0.0",
-  "domain": "UI UX Guild",
-  "owner": "UI UX Guild",
-  "package": "apps",
-  "feature": "modal-accessibility",
-  "status": "NEW",
   "confidence": 1,
-  "relationships": [],
+  "createdDate": "2026-06-29T08:09:52.347Z",
+  "domain": "UI UX Guild",
+  "engineVersion": "1.0.0",
   "evidence": {
-    "path": "apps/admin/src/app/bookings/_components/CorrectEmailModal.tsx",
     "construct": "modal-accessibility",
-    "snippet": "<div className=\"fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4\">",
     "line": 59,
     "message": "Custom modal backdrop is missing role=\"dialog\" or aria-modal=\"true\" accessibility tags.",
     "occurrences": [
       {
-        "id": "354e2bc1f2002a0ea8ac2906bde25d7fd389b254bb019082b795c6e665a4450f",
-        "line": 59,
-        "column": 0,
-        "construct": "modal-accessibility",
-        "snippet": "<div className=\"fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4\">",
-        "message": "Custom modal backdrop is missing role=\"dialog\" or aria-modal=\"true\" accessibility tags.",
-        "fingerprint": "354e2bc1f2002a0ea8ac2906bde25d7fd389b254bb019082b795c6e665a4450f"
-      },
-      {
-        "id": "7f074784446cf1ddc973c25b9d23899d79e19236dfdf5363a260455a777f19b3",
-        "line": 59,
         "column": 0,
         "construct": "UIElement",
-        "snippet": "<div className=\"fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4\">",
+        "fingerprint": "7f074784446cf1ddc973c25b9d23899d79e19236dfdf5363a260455a777f19b3",
+        "id": "7f074784446cf1ddc973c25b9d23899d79e19236dfdf5363a260455a777f19b3",
+        "line": 59,
         "message": "Custom modal backdrop is missing role=\"dialog\" or aria-modal=\"true\" accessibility tags.",
-        "fingerprint": "7f074784446cf1ddc973c25b9d23899d79e19236dfdf5363a260455a777f19b3"
+        "snippet": "<div className=\"fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4\">"
       }
-    ]
+    ],
+    "path": "apps/admin/src/app/bookings/_components/CorrectEmailModal.tsx",
+    "snippet": "<div className=\"fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4\">"
   },
-  "createdDate": "2026-06-29T08:09:52.347Z",
+  "feature": "modal-accessibility",
   "firstDetected": "2026-06-29T08:09:52.347Z",
-  "lastDetected": "2026-06-30T15:36:27.122Z",
-  "occurrenceCount": 2
+  "id": "f_58f3e26d",
+  "lastDetected": "2026-07-03T08:48:21.083Z",
+  "lastModified": "2026-07-03T08:48:21.083Z",
+  "occurrenceCount": 1,
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-UI-003",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
 }

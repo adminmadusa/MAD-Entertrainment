@@ -1,53 +1,35 @@
 {
-  "schemaVersion": 2,
-  "id": "f_a8abf096",
-  "rule": "VAL-UI-011",
-  "ruleVersion": "1.0.0",
-  "engineVersion": "1.0.0",
-  "domain": "UI UX Guild",
-  "owner": "UI UX Guild",
-  "package": "apps",
-  "feature": "UIElement",
-  "status": "NEW",
   "confidence": 0.9,
-  "relationships": [],
+  "createdDate": "2026-06-30T15:36:27.231Z",
+  "domain": "UI UX Guild",
+  "engineVersion": "1.0.0",
   "evidence": {
-    "path": "apps/admin/src/components/ticket-profiles/ProfileFormActions.tsx",
     "construct": "UIElement",
     "line": 1,
-    "message": "Duplicate component layout detected: shares 97% similarity with \"EventEditActions\" in \"apps/admin/src/components/events/EventEditActions.tsx\". Recommendation: Extract the duplicated layout/logic from \"apps/admin/src/components/events/EventEditActions.tsx\" and \"apps/admin/src/components/ticket-profiles/ProfileFormActions.tsx\" into a single reusable shared component in \"packages/ui\".",
+    "message": "Duplicate component layout detected: shares 98% similarity with \"DJFormActions\" in \"apps/admin/src/components/dj-operators/DJFormActions.tsx\". Recommendation: Extract the duplicated layout/logic from \"apps/admin/src/components/dj-operators/DJFormActions.tsx\" and \"apps/admin/src/components/ticket-profiles/ProfileFormActions.tsx\" into a single reusable shared component in \"packages/ui\".",
     "occurrences": [
       {
-        "id": "eb0f1e1d38a7e7b21bddcd19a2f068644d67404856d31b6a350c96523f406554",
-        "line": 1,
         "column": 0,
         "construct": "UIElement",
-        "snippet": "",
-        "message": "Duplicate component layout detected: shares 97% similarity with \"EventEditActions\" in \"apps/admin/src/components/events/EventEditActions.tsx\". Recommendation: Extract the duplicated layout/logic from \"apps/admin/src/components/events/EventEditActions.tsx\" and \"apps/admin/src/components/ticket-profiles/ProfileFormActions.tsx\" into a single reusable shared component in \"packages/ui\".",
-        "fingerprint": "eb0f1e1d38a7e7b21bddcd19a2f068644d67404856d31b6a350c96523f406554"
-      },
-      {
+        "fingerprint": "eb0f1e1d38a7e7b21bddcd19a2f068644d67404856d31b6a350c96523f406554",
         "id": "eb0f1e1d38a7e7b21bddcd19a2f068644d67404856d31b6a350c96523f406554",
         "line": 1,
-        "column": 0,
-        "construct": "UIElement",
-        "snippet": "",
-        "message": "Duplicate component layout detected: shares 97% similarity with \"EventFormActions\" in \"apps/admin/src/app/events/new/_components/EventFormActions.tsx\". Recommendation: Extract the duplicated layout/logic from \"apps/admin/src/app/events/new/_components/EventFormActions.tsx\" and \"apps/admin/src/components/ticket-profiles/ProfileFormActions.tsx\" into a single reusable shared component in \"packages/ui\".",
-        "fingerprint": "eb0f1e1d38a7e7b21bddcd19a2f068644d67404856d31b6a350c96523f406554"
-      },
-      {
-        "id": "eb0f1e1d38a7e7b21bddcd19a2f068644d67404856d31b6a350c96523f406554",
-        "line": 1,
-        "column": 0,
-        "construct": "UIElement",
-        "snippet": "",
-        "message": "Duplicate component layout detected: shares 98% similarity with \"DJFormActions\" in \"apps/admin/src/components/dj-operators/DJFormActions.tsx\". Recommendation: Extract the duplicated layout/logic from \"apps/admin/src/components/dj-operators/DJFormActions.tsx\" and \"apps/admin/src/components/ticket-profiles/ProfileFormActions.tsx\" into a single reusable shared component in \"packages/ui\".",
-        "fingerprint": "eb0f1e1d38a7e7b21bddcd19a2f068644d67404856d31b6a350c96523f406554"
+        "message": "Duplicate component layout detected: shares 97% similarity with \"EventEditActions\" in \"apps/admin/src/components/events/EventEditActions.tsx\". Recommendation: Extract the duplicated layout/logic from \"apps/admin/src/components/events/EventEditActions.tsx\" and \"apps/admin/src/components/ticket-profiles/ProfileFormActions.tsx\" into a single reusable shared component in \"packages/ui\"."
       }
-    ]
+    ],
+    "path": "apps/admin/src/components/ticket-profiles/ProfileFormActions.tsx"
   },
-  "createdDate": "2026-06-30T15:36:27.231Z",
+  "feature": "UIElement",
   "firstDetected": "2026-06-30T15:36:27.231Z",
-  "lastDetected": "2026-06-30T15:36:27.231Z",
-  "occurrenceCount": 3
+  "id": "f_a8abf096",
+  "lastDetected": "2026-07-03T08:48:21.133Z",
+  "lastModified": "2026-07-03T08:48:21.133Z",
+  "occurrenceCount": 1,
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-UI-011",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
 }

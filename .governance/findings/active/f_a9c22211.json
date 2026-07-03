@@ -1,45 +1,37 @@
 {
-  "schemaVersion": 2,
-  "id": "f_a9c22211",
-  "rule": "VAL-UI-006",
-  "ruleVersion": "1.0.0",
-  "engineVersion": "1.0.0",
-  "domain": "Platform Team",
-  "owner": "Platform Team",
-  "package": "apps",
-  "feature": "Field",
-  "status": "NEW",
   "confidence": 0.95,
-  "relationships": [],
+  "createdDate": "2026-06-29T08:10:39.337Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
   "evidence": {
-    "path": "apps/admin/src/components/events/EventBasicInfoCard.tsx",
     "construct": "Field",
-    "snippet": "function Field({ label, children }: { label: string; children: React.ReactNode }) {",
     "line": 16,
     "message": "Local duplication of <Field> wrapper. Use a shared components package.",
     "occurrences": [
       {
-        "id": "1a362e14656a087669f5ba0ff27110175bb2332922d5f76c90fd1ae23d6b3c58",
-        "line": 16,
-        "column": 0,
-        "construct": "Field",
-        "snippet": "function Field({ label, children }: { label: string; children: React.ReactNode }) {",
-        "message": "Local duplication of <Field> wrapper. Use a shared components package.",
-        "fingerprint": "1a362e14656a087669f5ba0ff27110175bb2332922d5f76c90fd1ae23d6b3c58"
-      },
-      {
-        "id": "91e06829f3688bd7f16ebdd78459b2a312d3ad1963450b55bd29eb506d8e75fb",
-        "line": 16,
         "column": 0,
         "construct": "UIElement",
-        "snippet": "function Field({ label, children }: { label: string; children: React.ReactNode }) {",
+        "fingerprint": "91e06829f3688bd7f16ebdd78459b2a312d3ad1963450b55bd29eb506d8e75fb",
+        "id": "91e06829f3688bd7f16ebdd78459b2a312d3ad1963450b55bd29eb506d8e75fb",
+        "line": 16,
         "message": "Local duplication of <Field> wrapper. Use a shared components package.",
-        "fingerprint": "91e06829f3688bd7f16ebdd78459b2a312d3ad1963450b55bd29eb506d8e75fb"
+        "snippet": "function Field({ label, children }: { label: string; children: React.ReactNode }) {"
       }
-    ]
+    ],
+    "path": "apps/admin/src/components/events/EventBasicInfoCard.tsx",
+    "snippet": "function Field({ label, children }: { label: string; children: React.ReactNode }) {"
   },
-  "createdDate": "2026-06-29T08:10:39.337Z",
+  "feature": "Field",
   "firstDetected": "2026-06-29T08:10:39.337Z",
-  "lastDetected": "2026-06-30T15:36:27.224Z",
-  "occurrenceCount": 2
+  "id": "f_a9c22211",
+  "lastDetected": "2026-07-03T08:48:21.128Z",
+  "lastModified": "2026-07-03T08:48:21.128Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-UI-006",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
 }

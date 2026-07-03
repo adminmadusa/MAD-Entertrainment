@@ -1,0 +1,3584 @@
+{
+  "activeCount": 584,
+  "closedCount": 12,
+  "findings": [
+    {
+      "id": "f_003b6801",
+      "occurrenceCount": 1,
+      "rule": "Missing Document Owner",
+      "status": "NEW"
+    },
+    {
+      "id": "f_00997917",
+      "occurrenceCount": 6,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_01013b40",
+      "occurrenceCount": 1,
+      "rule": "Orphaned Documentation",
+      "status": "NEW"
+    },
+    {
+      "id": "f_012e962a",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-003",
+      "status": "NEW"
+    },
+    {
+      "id": "f_01d31250",
+      "occurrenceCount": 1,
+      "rule": "VAL-DOC-007",
+      "status": "NEW"
+    },
+    {
+      "id": "f_0215268d",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-011",
+      "status": "NEW"
+    },
+    {
+      "id": "f_0254de5d",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-018",
+      "status": "CLOSED"
+    },
+    {
+      "id": "f_029eb7af",
+      "occurrenceCount": 5,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_02a1b8b3",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-017",
+      "status": "NEW"
+    },
+    {
+      "id": "f_03f191b9",
+      "occurrenceCount": 1,
+      "rule": "Orphaned Documentation",
+      "status": "NEW"
+    },
+    {
+      "id": "f_046f59f1",
+      "occurrenceCount": 1,
+      "rule": "VAL-DOC-007",
+      "status": "NEW"
+    },
+    {
+      "id": "f_05ee0211",
+      "occurrenceCount": 4,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_05ef9268",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-011",
+      "status": "NEW"
+    },
+    {
+      "id": "f_06536d2c",
+      "occurrenceCount": 1,
+      "rule": "Orphaned Documentation",
+      "status": "NEW"
+    },
+    {
+      "id": "f_06650b76",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-004",
+      "status": "NEW"
+    },
+    {
+      "id": "f_06d580b8",
+      "occurrenceCount": 2,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_077a44b1",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-004",
+      "status": "NEW"
+    },
+    {
+      "id": "f_0797dbe0",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-003",
+      "status": "NEW"
+    },
+    {
+      "id": "f_07b7c061",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_07ec34cb",
+      "occurrenceCount": 3,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_08330b1c",
+      "occurrenceCount": 4,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_0838beda",
+      "occurrenceCount": 1,
+      "rule": "VAL-DOC-007",
+      "status": "NEW"
+    },
+    {
+      "id": "f_09e0561c",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-002",
+      "status": "NEW"
+    },
+    {
+      "id": "f_09fec16c",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-002",
+      "status": "NEW"
+    },
+    {
+      "id": "f_0a0ee3c1",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-003",
+      "status": "CLOSED"
+    },
+    {
+      "id": "f_0a555d44",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-011",
+      "status": "NEW"
+    },
+    {
+      "id": "f_0ac3151e",
+      "occurrenceCount": 1,
+      "rule": "Missing Document Owner",
+      "status": "NEW"
+    },
+    {
+      "id": "f_0af5420d",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-002",
+      "status": "NEW"
+    },
+    {
+      "id": "f_0b05e2e7",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-014",
+      "status": "NEW"
+    },
+    {
+      "id": "f_0b45094d",
+      "occurrenceCount": 1,
+      "rule": "Missing Document Owner",
+      "status": "NEW"
+    },
+    {
+      "id": "f_0d24fdbb",
+      "occurrenceCount": 1,
+      "rule": "VAL-DOC-007",
+      "status": "NEW"
+    },
+    {
+      "id": "f_0d3fc70e",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-003",
+      "status": "NEW"
+    },
+    {
+      "id": "f_0dbe989f",
+      "occurrenceCount": 2,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_0e1eccbd",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-004",
+      "status": "NEW"
+    },
+    {
+      "id": "f_0e3fed80",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_0ec48469",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-011",
+      "status": "NEW"
+    },
+    {
+      "id": "f_0f1b452d",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-007",
+      "status": "NEW"
+    },
+    {
+      "id": "f_0f73ae5c",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-004",
+      "status": "NEW"
+    },
+    {
+      "id": "f_104da291",
+      "occurrenceCount": 7,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_11c45c11",
+      "occurrenceCount": 1,
+      "rule": "Orphaned Documentation",
+      "status": "NEW"
+    },
+    {
+      "id": "f_11f6bb30",
+      "occurrenceCount": 5,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_120c9dee",
+      "occurrenceCount": 2,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_13459daa",
+      "occurrenceCount": 1,
+      "rule": "Orphaned Documentation",
+      "status": "NEW"
+    },
+    {
+      "id": "f_138276d2",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-009",
+      "status": "NEW"
+    },
+    {
+      "id": "f_13adac31",
+      "occurrenceCount": 3,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_149a0e9e",
+      "occurrenceCount": 3,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_14a08147",
+      "occurrenceCount": 1,
+      "rule": "Missing Document Owner",
+      "status": "NEW"
+    },
+    {
+      "id": "f_15178456",
+      "occurrenceCount": 2,
+      "rule": "VAL-UI-003",
+      "status": "NEW"
+    },
+    {
+      "id": "f_15293f22",
+      "occurrenceCount": 1,
+      "rule": "VAL-DOC-007",
+      "status": "NEW"
+    },
+    {
+      "id": "f_155ac410",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-002",
+      "status": "NEW"
+    },
+    {
+      "id": "f_15851077",
+      "occurrenceCount": 1,
+      "rule": "VAL-DOC-007",
+      "status": "NEW"
+    },
+    {
+      "id": "f_15d4eb10",
+      "occurrenceCount": 2,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_1600bac4",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_16cc8b06",
+      "occurrenceCount": 4,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_16ed90fc",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-006",
+      "status": "NEW"
+    },
+    {
+      "id": "f_174b1459",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-004",
+      "status": "NEW"
+    },
+    {
+      "id": "f_17651f0c",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-002",
+      "status": "NEW"
+    },
+    {
+      "id": "f_1792008d",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-011",
+      "status": "NEW"
+    },
+    {
+      "id": "f_17d0842b",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_18e046c5",
+      "occurrenceCount": 2,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_19245412",
+      "occurrenceCount": 1,
+      "rule": "Orphaned Documentation",
+      "status": "NEW"
+    },
+    {
+      "id": "f_1932a0c0",
+      "occurrenceCount": 1,
+      "rule": "VAL-DOC-007",
+      "status": "NEW"
+    },
+    {
+      "id": "f_1944e096",
+      "occurrenceCount": 2,
+      "rule": "VAL-UI-004",
+      "status": "NEW"
+    },
+    {
+      "id": "f_19ee7618",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_1a602f2d",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-003",
+      "status": "NEW"
+    },
+    {
+      "id": "f_1ac7e86a",
+      "occurrenceCount": 2,
+      "rule": "Broken Link Target",
+      "status": "CLOSED"
+    },
+    {
+      "id": "f_1ae2681a",
+      "occurrenceCount": 3,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_1b2fcc03",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-009",
+      "status": "NEW"
+    },
+    {
+      "id": "f_1b697040",
+      "occurrenceCount": 2,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_1c3b11a6",
+      "occurrenceCount": 1,
+      "rule": "Orphaned Documentation",
+      "status": "NEW"
+    },
+    {
+      "id": "f_1cbdaba7",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-011",
+      "status": "NEW"
+    },
+    {
+      "id": "f_1e78614c",
+      "occurrenceCount": 3,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_200c317d",
+      "occurrenceCount": 3,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_20e588bd",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_21efe1b5",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-011",
+      "status": "NEW"
+    },
+    {
+      "id": "f_2215b27e",
+      "occurrenceCount": 3,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_2289cc29",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-008",
+      "status": "NEW"
+    },
+    {
+      "id": "f_2293a376",
+      "occurrenceCount": 1,
+      "rule": "Orphaned Documentation",
+      "status": "NEW"
+    },
+    {
+      "id": "f_22ef707b",
+      "occurrenceCount": 1,
+      "rule": "VAL-DOC-007",
+      "status": "NEW"
+    },
+    {
+      "id": "f_235d952f",
+      "occurrenceCount": 1,
+      "rule": "Missing Document Owner",
+      "status": "NEW"
+    },
+    {
+      "id": "f_2384b603",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-011",
+      "status": "NEW"
+    },
+    {
+      "id": "f_239c928d",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-003",
+      "status": "NEW"
+    },
+    {
+      "id": "f_23ea23a9",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-002",
+      "status": "NEW"
+    },
+    {
+      "id": "f_25aef57a",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-011",
+      "status": "NEW"
+    },
+    {
+      "id": "f_2627f71e",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-003",
+      "status": "NEW"
+    },
+    {
+      "id": "f_26ea6637",
+      "occurrenceCount": 1,
+      "rule": "Orphaned Documentation",
+      "status": "NEW"
+    },
+    {
+      "id": "f_270fe564",
+      "occurrenceCount": 1,
+      "rule": "Missing Document Owner",
+      "status": "NEW"
+    },
+    {
+      "id": "f_273e039a",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-011",
+      "status": "NEW"
+    },
+    {
+      "id": "f_29582196",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-004",
+      "status": "NEW"
+    },
+    {
+      "id": "f_29a77102",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-002",
+      "status": "NEW"
+    },
+    {
+      "id": "f_29b052cd",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-002",
+      "status": "CLOSED"
+    },
+    {
+      "id": "f_2a4d1ce3",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-004",
+      "status": "NEW"
+    },
+    {
+      "id": "f_2a9abf94",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-011",
+      "status": "NEW"
+    },
+    {
+      "id": "f_2b6e7ea1",
+      "occurrenceCount": 2,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_2c171b98",
+      "occurrenceCount": 3,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_2c6a2f1c",
+      "occurrenceCount": 1,
+      "rule": "Missing Document Owner",
+      "status": "NEW"
+    },
+    {
+      "id": "f_2c788868",
+      "occurrenceCount": 1,
+      "rule": "Orphaned Documentation",
+      "status": "NEW"
+    },
+    {
+      "id": "f_2cf8fc38",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_2cfb1d39",
+      "occurrenceCount": 1,
+      "rule": "Orphaned Documentation",
+      "status": "NEW"
+    },
+    {
+      "id": "f_2d4bc2a1",
+      "occurrenceCount": 2,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_2d7288fe",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-011",
+      "status": "NEW"
+    },
+    {
+      "id": "f_2d733442",
+      "occurrenceCount": 1,
+      "rule": "Missing Document Owner",
+      "status": "NEW"
+    },
+    {
+      "id": "f_2dc2a1ec",
+      "occurrenceCount": 1,
+      "rule": "Missing Document Owner",
+      "status": "NEW"
+    },
+    {
+      "id": "f_3050b955",
+      "occurrenceCount": 1,
+      "rule": "Missing Document Owner",
+      "status": "NEW"
+    },
+    {
+      "id": "f_3096c4ef",
+      "occurrenceCount": 1,
+      "rule": "Missing Document Owner",
+      "status": "NEW"
+    },
+    {
+      "id": "f_30ae653d",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-011",
+      "status": "NEW"
+    },
+    {
+      "id": "f_313f7b0d",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-007",
+      "status": "NEW"
+    },
+    {
+      "id": "f_316f08d7",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-002",
+      "status": "NEW"
+    },
+    {
+      "id": "f_31c8e8f3",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_320f04a0",
+      "occurrenceCount": 4,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_32f263fc",
+      "occurrenceCount": 4,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_3300424d",
+      "occurrenceCount": 1,
+      "rule": "Missing Document Owner",
+      "status": "NEW"
+    },
+    {
+      "id": "f_333580ac",
+      "occurrenceCount": 2,
+      "rule": "VAL-UI-009",
+      "status": "NEW"
+    },
+    {
+      "id": "f_33f8bc2a",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-019",
+      "status": "NEW"
+    },
+    {
+      "id": "f_35341c2c",
+      "occurrenceCount": 2,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_3576e109",
+      "occurrenceCount": 5,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_35bd803f",
+      "occurrenceCount": 4,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_35ed6f61",
+      "occurrenceCount": 1,
+      "rule": "Missing Document Owner",
+      "status": "NEW"
+    },
+    {
+      "id": "f_35f7edc0",
+      "occurrenceCount": 1,
+      "rule": "Missing Document Owner",
+      "status": "NEW"
+    },
+    {
+      "id": "f_363688b4",
+      "occurrenceCount": 6,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_369a712b",
+      "occurrenceCount": 1,
+      "rule": "Missing Document Owner",
+      "status": "NEW"
+    },
+    {
+      "id": "f_383186aa",
+      "occurrenceCount": 7,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_385af59e",
+      "occurrenceCount": 1,
+      "rule": "Missing Document Owner",
+      "status": "NEW"
+    },
+    {
+      "id": "f_38bc5809",
+      "occurrenceCount": 3,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_391b26e7",
+      "occurrenceCount": 3,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_3aab4d99",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-019",
+      "status": "NEW"
+    },
+    {
+      "id": "f_3af0f3b0",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-003",
+      "status": "NEW"
+    },
+    {
+      "id": "f_3bd112ba",
+      "occurrenceCount": 6,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_3c789787",
+      "occurrenceCount": 2,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_3cdd9726",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-011",
+      "status": "NEW"
+    },
+    {
+      "id": "f_3cf97f47",
+      "occurrenceCount": 4,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_3daa366e",
+      "occurrenceCount": 1,
+      "rule": "VAL-DOC-007",
+      "status": "NEW"
+    },
+    {
+      "id": "f_3ef9892a",
+      "occurrenceCount": 2,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_3f78c8de",
+      "occurrenceCount": 6,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_413c6cdd",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-017",
+      "status": "NEW"
+    },
+    {
+      "id": "f_41d12ea5",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-018",
+      "status": "NEW"
+    },
+    {
+      "id": "f_41dfd87b",
+      "occurrenceCount": 1,
+      "rule": "Orphaned Documentation",
+      "status": "NEW"
+    },
+    {
+      "id": "f_4226e79b",
+      "occurrenceCount": 1,
+      "rule": "Missing Document Owner",
+      "status": "NEW"
+    },
+    {
+      "id": "f_428a4ade",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-011",
+      "status": "NEW"
+    },
+    {
+      "id": "f_436b98fd",
+      "occurrenceCount": 7,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_43716eda",
+      "occurrenceCount": 2,
+      "rule": "VAL-UI-002",
+      "status": "NEW"
+    },
+    {
+      "id": "f_4446a10d",
+      "occurrenceCount": 6,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_4543606b",
+      "occurrenceCount": 1,
+      "rule": "Orphaned Documentation",
+      "status": "CLOSED"
+    },
+    {
+      "id": "f_4548cfc4",
+      "occurrenceCount": 2,
+      "rule": "VAL-UI-007",
+      "status": "NEW"
+    },
+    {
+      "id": "f_4660882f",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_467c78a4",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-014",
+      "status": "NEW"
+    },
+    {
+      "id": "f_46983aa5",
+      "occurrenceCount": 2,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_46a8a3f0",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_46cc7415",
+      "occurrenceCount": 2,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_478f4083",
+      "occurrenceCount": 2,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_4938bac1",
+      "occurrenceCount": 2,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_49496dd6",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-018",
+      "status": "NEW"
+    },
+    {
+      "id": "f_49f70e63",
+      "occurrenceCount": 1,
+      "rule": "Missing Document Owner",
+      "status": "NEW"
+    },
+    {
+      "id": "f_49f975d4",
+      "occurrenceCount": 1,
+      "rule": "Missing Document Owner",
+      "status": "NEW"
+    },
+    {
+      "id": "f_4a6a852d",
+      "occurrenceCount": 2,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_4ab1b3f8",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_4b3967b4",
+      "occurrenceCount": 1,
+      "rule": "Orphaned Documentation",
+      "status": "NEW"
+    },
+    {
+      "id": "f_4c191cc0",
+      "occurrenceCount": 3,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_4c61a726",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-011",
+      "status": "NEW"
+    },
+    {
+      "id": "f_4cec8606",
+      "occurrenceCount": 1,
+      "rule": "Missing Document Owner",
+      "status": "NEW"
+    },
+    {
+      "id": "f_4dae77f3",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-002",
+      "status": "NEW"
+    },
+    {
+      "id": "f_4e11dcf1",
+      "occurrenceCount": 4,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_4e544c48",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-017",
+      "status": "NEW"
+    },
+    {
+      "id": "f_4e5cdce2",
+      "occurrenceCount": 2,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_4ebb95a5",
+      "occurrenceCount": 2,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_4f6f39ee",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-011",
+      "status": "NEW"
+    },
+    {
+      "id": "f_4fb536c1",
+      "occurrenceCount": 1,
+      "rule": "Missing Template Heading",
+      "status": "CLOSED"
+    },
+    {
+      "id": "f_5016d844",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-004",
+      "status": "NEW"
+    },
+    {
+      "id": "f_513d1df5",
+      "occurrenceCount": 1,
+      "rule": "VAL-DOC-007",
+      "status": "NEW"
+    },
+    {
+      "id": "f_514effc9",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_517b2e96",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_51ffc742",
+      "occurrenceCount": 1,
+      "rule": "Orphaned Documentation",
+      "status": "NEW"
+    },
+    {
+      "id": "f_526aa9bc",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-002",
+      "status": "NEW"
+    },
+    {
+      "id": "f_52829c6c",
+      "occurrenceCount": 1,
+      "rule": "Missing Document Owner",
+      "status": "NEW"
+    },
+    {
+      "id": "f_52a3a475",
+      "occurrenceCount": 2,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_52a67c75",
+      "occurrenceCount": 2,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_52fcc21a",
+      "occurrenceCount": 6,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_5304653a",
+      "occurrenceCount": 1,
+      "rule": "Missing Document Owner",
+      "status": "NEW"
+    },
+    {
+      "id": "f_539e0638",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_5540a5ec",
+      "occurrenceCount": 2,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_554458da",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_55bfaea8",
+      "occurrenceCount": 4,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_56031cc0",
+      "occurrenceCount": 1,
+      "rule": "Orphaned Documentation",
+      "status": "NEW"
+    },
+    {
+      "id": "f_561b49ce",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-018",
+      "status": "NEW"
+    },
+    {
+      "id": "f_56595850",
+      "occurrenceCount": 1,
+      "rule": "Orphaned Documentation",
+      "status": "NEW"
+    },
+    {
+      "id": "f_566660f9",
+      "occurrenceCount": 1,
+      "rule": "Orphaned Documentation",
+      "status": "NEW"
+    },
+    {
+      "id": "f_56884a33",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_56a76285",
+      "occurrenceCount": 14,
+      "rule": "VAL-UI-007",
+      "status": "NEW"
+    },
+    {
+      "id": "f_56cba796",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-003",
+      "status": "NEW"
+    },
+    {
+      "id": "f_56fc4f7d",
+      "occurrenceCount": 2,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_56fe1047",
+      "occurrenceCount": 1,
+      "rule": "VAL-DOC-007",
+      "status": "NEW"
+    },
+    {
+      "id": "f_58e1ae2a",
+      "occurrenceCount": 2,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_58f3e26d",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-003",
+      "status": "NEW"
+    },
+    {
+      "id": "f_5938c372",
+      "occurrenceCount": 6,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_59b4dc13",
+      "occurrenceCount": 2,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_5a7dba99",
+      "occurrenceCount": 1,
+      "rule": "Missing Document Owner",
+      "status": "NEW"
+    },
+    {
+      "id": "f_5aa60960",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-002",
+      "status": "NEW"
+    },
+    {
+      "id": "f_5aa867d4",
+      "occurrenceCount": 1,
+      "rule": "Missing Document Owner",
+      "status": "NEW"
+    },
+    {
+      "id": "f_5b9128ed",
+      "occurrenceCount": 6,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_5cacb94b",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_5cda1ed7",
+      "occurrenceCount": 3,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_5d0126d4",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_5e3ab7a7",
+      "occurrenceCount": 1,
+      "rule": "Missing Document Owner",
+      "status": "NEW"
+    },
+    {
+      "id": "f_5ea71986",
+      "occurrenceCount": 1,
+      "rule": "Missing Document Owner",
+      "status": "NEW"
+    },
+    {
+      "id": "f_5ef69371",
+      "occurrenceCount": 2,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_5f6b5b37",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_5f99af18",
+      "occurrenceCount": 1,
+      "rule": "VAL-DOC-007",
+      "status": "NEW"
+    },
+    {
+      "id": "f_5fb8f7da",
+      "occurrenceCount": 1,
+      "rule": "Orphaned Documentation",
+      "status": "NEW"
+    },
+    {
+      "id": "f_5fe2846a",
+      "occurrenceCount": 1,
+      "rule": "Orphaned Documentation",
+      "status": "NEW"
+    },
+    {
+      "id": "f_602d3eae",
+      "occurrenceCount": 2,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_604616a0",
+      "occurrenceCount": 7,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_60b8f27d",
+      "occurrenceCount": 1,
+      "rule": "Missing Document Owner",
+      "status": "NEW"
+    },
+    {
+      "id": "f_61951892",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-009",
+      "status": "NEW"
+    },
+    {
+      "id": "f_61a4e20e",
+      "occurrenceCount": 1,
+      "rule": "Missing Document Owner",
+      "status": "NEW"
+    },
+    {
+      "id": "f_62b52b4c",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-018",
+      "status": "NEW"
+    },
+    {
+      "id": "f_6388efb7",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_63b3a7e3",
+      "occurrenceCount": 2,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_63d03049",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-011",
+      "status": "NEW"
+    },
+    {
+      "id": "f_643b51be",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-007",
+      "status": "NEW"
+    },
+    {
+      "id": "f_661e9e6c",
+      "occurrenceCount": 9,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_67611cbb",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-006",
+      "status": "NEW"
+    },
+    {
+      "id": "f_67907db2",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_67c8fb03",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-009",
+      "status": "NEW"
+    },
+    {
+      "id": "f_67f6c05f",
+      "occurrenceCount": 3,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_6804a636",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-006",
+      "status": "NEW"
+    },
+    {
+      "id": "f_683788fc",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-011",
+      "status": "NEW"
+    },
+    {
+      "id": "f_6a156d8e",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_6a1a3e95",
+      "occurrenceCount": 1,
+      "rule": "Orphaned Documentation",
+      "status": "NEW"
+    },
+    {
+      "id": "f_6a882e4b",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-011",
+      "status": "NEW"
+    },
+    {
+      "id": "f_6ae55ef9",
+      "occurrenceCount": 3,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_6b42b415",
+      "occurrenceCount": 1,
+      "rule": "VAL-DOC-007",
+      "status": "NEW"
+    },
+    {
+      "id": "f_6bff5857",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-011",
+      "status": "NEW"
+    },
+    {
+      "id": "f_6c92a9ea",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-017",
+      "status": "NEW"
+    },
+    {
+      "id": "f_6d3afd83",
+      "occurrenceCount": 1,
+      "rule": "Missing Document Owner",
+      "status": "NEW"
+    },
+    {
+      "id": "f_6dc4df76",
+      "occurrenceCount": 1,
+      "rule": "Orphaned Documentation",
+      "status": "NEW"
+    },
+    {
+      "id": "f_6dd74f21",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-017",
+      "status": "NEW"
+    },
+    {
+      "id": "f_6e061830",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_6e536ac9",
+      "occurrenceCount": 1,
+      "rule": "VAL-DOC-007",
+      "status": "NEW"
+    },
+    {
+      "id": "f_6eea776d",
+      "occurrenceCount": 1,
+      "rule": "VAL-DOC-007",
+      "status": "NEW"
+    },
+    {
+      "id": "f_6f1e70cb",
+      "occurrenceCount": 2,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_6f1f273a",
+      "occurrenceCount": 1,
+      "rule": "Orphaned Documentation",
+      "status": "NEW"
+    },
+    {
+      "id": "f_70b19df1",
+      "occurrenceCount": 1,
+      "rule": "Orphaned Documentation",
+      "status": "NEW"
+    },
+    {
+      "id": "f_70c435ef",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-004",
+      "status": "NEW"
+    },
+    {
+      "id": "f_70e3bd0c",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-008",
+      "status": "NEW"
+    },
+    {
+      "id": "f_70f8bb10",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-002",
+      "status": "NEW"
+    },
+    {
+      "id": "f_711a2bfd",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-004",
+      "status": "NEW"
+    },
+    {
+      "id": "f_71afd56e",
+      "occurrenceCount": 2,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_71fe9c3d",
+      "occurrenceCount": 3,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_72672387",
+      "occurrenceCount": 2,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_72a7f3b4",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-006",
+      "status": "NEW"
+    },
+    {
+      "id": "f_7304c1dc",
+      "occurrenceCount": 2,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_75021a4a",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-018",
+      "status": "NEW"
+    },
+    {
+      "id": "f_75e018db",
+      "occurrenceCount": 3,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_7609c912",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-003",
+      "status": "NEW"
+    },
+    {
+      "id": "f_763d570c",
+      "occurrenceCount": 3,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_76a0fb10",
+      "occurrenceCount": 2,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_76d99ff5",
+      "occurrenceCount": 1,
+      "rule": "VAL-DOC-007",
+      "status": "NEW"
+    },
+    {
+      "id": "f_76f85ca3",
+      "occurrenceCount": 2,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_778d15f9",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-017",
+      "status": "NEW"
+    },
+    {
+      "id": "f_792eab35",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_79df5b8c",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-008",
+      "status": "NEW"
+    },
+    {
+      "id": "f_79edf83c",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-003",
+      "status": "NEW"
+    },
+    {
+      "id": "f_7abbc0e6",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-002",
+      "status": "NEW"
+    },
+    {
+      "id": "f_7b2a3a08",
+      "occurrenceCount": 1,
+      "rule": "VAL-DOC-007",
+      "status": "NEW"
+    },
+    {
+      "id": "f_7b75fb2f",
+      "occurrenceCount": 1,
+      "rule": "Missing Document Owner",
+      "status": "NEW"
+    },
+    {
+      "id": "f_7bba7ba0",
+      "occurrenceCount": 1,
+      "rule": "Missing Document Owner",
+      "status": "NEW"
+    },
+    {
+      "id": "f_7c1bd896",
+      "occurrenceCount": 3,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_7c3b3f1c",
+      "occurrenceCount": 2,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_7ca5ea62",
+      "occurrenceCount": 1,
+      "rule": "VAL-DOC-007",
+      "status": "NEW"
+    },
+    {
+      "id": "f_7d23ecd4",
+      "occurrenceCount": 1,
+      "rule": "Missing Document Owner",
+      "status": "NEW"
+    },
+    {
+      "id": "f_7e324c2f",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-004",
+      "status": "NEW"
+    },
+    {
+      "id": "f_7f868cf0",
+      "occurrenceCount": 1,
+      "rule": "Orphaned Documentation",
+      "status": "NEW"
+    },
+    {
+      "id": "f_809106b0",
+      "occurrenceCount": 1,
+      "rule": "Missing Document Owner",
+      "status": "NEW"
+    },
+    {
+      "id": "f_80c655f6",
+      "occurrenceCount": 1,
+      "rule": "Orphaned Documentation",
+      "status": "NEW"
+    },
+    {
+      "id": "f_80cde2c0",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-003",
+      "status": "NEW"
+    },
+    {
+      "id": "f_8108912d",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-002",
+      "status": "NEW"
+    },
+    {
+      "id": "f_814929b7",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-002",
+      "status": "CLOSED"
+    },
+    {
+      "id": "f_81a177a9",
+      "occurrenceCount": 1,
+      "rule": "Orphaned Documentation",
+      "status": "NEW"
+    },
+    {
+      "id": "f_81e20ea2",
+      "occurrenceCount": 1,
+      "rule": "Orphaned Documentation",
+      "status": "NEW"
+    },
+    {
+      "id": "f_8291d1ea",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-007",
+      "status": "NEW"
+    },
+    {
+      "id": "f_839e768e",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-006",
+      "status": "NEW"
+    },
+    {
+      "id": "f_848a7237",
+      "occurrenceCount": 1,
+      "rule": "Orphaned Documentation",
+      "status": "NEW"
+    },
+    {
+      "id": "f_84bd2659",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-019",
+      "status": "NEW"
+    },
+    {
+      "id": "f_859bc3ab",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_8685e409",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_8720c664",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-011",
+      "status": "NEW"
+    },
+    {
+      "id": "f_8734124e",
+      "occurrenceCount": 1,
+      "rule": "Missing Document Owner",
+      "status": "NEW"
+    },
+    {
+      "id": "f_8761ba44",
+      "occurrenceCount": 1,
+      "rule": "VAL-DOC-007",
+      "status": "NEW"
+    },
+    {
+      "id": "f_87a4a165",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_87b7b04a",
+      "occurrenceCount": 1,
+      "rule": "VAL-DOC-007",
+      "status": "NEW"
+    },
+    {
+      "id": "f_87ed7d12",
+      "occurrenceCount": 2,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_883dacf5",
+      "occurrenceCount": 1,
+      "rule": "VAL-DOC-007",
+      "status": "NEW"
+    },
+    {
+      "id": "f_884f0747",
+      "occurrenceCount": 1,
+      "rule": "Missing Document Owner",
+      "status": "NEW"
+    },
+    {
+      "id": "f_8855ade3",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_89080178",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-004",
+      "status": "NEW"
+    },
+    {
+      "id": "f_89302d93",
+      "occurrenceCount": 1,
+      "rule": "Orphaned Documentation",
+      "status": "NEW"
+    },
+    {
+      "id": "f_893601fa",
+      "occurrenceCount": 1,
+      "rule": "Missing Document Owner",
+      "status": "NEW"
+    },
+    {
+      "id": "f_89c66119",
+      "occurrenceCount": 4,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_89f9d052",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-018",
+      "status": "NEW"
+    },
+    {
+      "id": "f_8a007d94",
+      "occurrenceCount": 1,
+      "rule": "Missing Document Owner",
+      "status": "NEW"
+    },
+    {
+      "id": "f_8a2a5b49",
+      "occurrenceCount": 3,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_8a688fcd",
+      "occurrenceCount": 1,
+      "rule": "VAL-DOC-007",
+      "status": "NEW"
+    },
+    {
+      "id": "f_8b7b65c7",
+      "occurrenceCount": 2,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_8b816e3f",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-011",
+      "status": "NEW"
+    },
+    {
+      "id": "f_8bf19053",
+      "occurrenceCount": 1,
+      "rule": "Missing Document Owner",
+      "status": "NEW"
+    },
+    {
+      "id": "f_8d1220d3",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_8d47be98",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-009",
+      "status": "NEW"
+    },
+    {
+      "id": "f_8da94010",
+      "occurrenceCount": 1,
+      "rule": "VAL-DOC-007",
+      "status": "NEW"
+    },
+    {
+      "id": "f_8dbcf3f5",
+      "occurrenceCount": 2,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_8e39299f",
+      "occurrenceCount": 1,
+      "rule": "VAL-DOC-007",
+      "status": "NEW"
+    },
+    {
+      "id": "f_8f6a9835",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-011",
+      "status": "NEW"
+    },
+    {
+      "id": "f_8f8aed5b",
+      "occurrenceCount": 3,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_8fa0b167",
+      "occurrenceCount": 1,
+      "rule": "VAL-DOC-007",
+      "status": "NEW"
+    },
+    {
+      "id": "f_8fe6386f",
+      "occurrenceCount": 2,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_8feadd3e",
+      "occurrenceCount": 3,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_90883e95",
+      "occurrenceCount": 4,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_90c56629",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-011",
+      "status": "NEW"
+    },
+    {
+      "id": "f_90d07a34",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-011",
+      "status": "NEW"
+    },
+    {
+      "id": "f_911d1ea7",
+      "occurrenceCount": 1,
+      "rule": "Missing Document Owner",
+      "status": "NEW"
+    },
+    {
+      "id": "f_914c32aa",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_91a1ee78",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_92466779",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-011",
+      "status": "NEW"
+    },
+    {
+      "id": "f_92635040",
+      "occurrenceCount": 1,
+      "rule": "VAL-DOC-007",
+      "status": "NEW"
+    },
+    {
+      "id": "f_927f2eac",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_92af7f66",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_92b5f0df",
+      "occurrenceCount": 1,
+      "rule": "VAL-DOC-007",
+      "status": "NEW"
+    },
+    {
+      "id": "f_9333d8fa",
+      "occurrenceCount": 4,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_944a1684",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-002",
+      "status": "NEW"
+    },
+    {
+      "id": "f_94930887",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-011",
+      "status": "NEW"
+    },
+    {
+      "id": "f_94bccedd",
+      "occurrenceCount": 2,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_94f4cdea",
+      "occurrenceCount": 1,
+      "rule": "Orphaned Documentation",
+      "status": "NEW"
+    },
+    {
+      "id": "f_95c007d4",
+      "occurrenceCount": 1,
+      "rule": "Orphaned Documentation",
+      "status": "NEW"
+    },
+    {
+      "id": "f_95c09dde",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-009",
+      "status": "NEW"
+    },
+    {
+      "id": "f_95dfcf89",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-011",
+      "status": "NEW"
+    },
+    {
+      "id": "f_96345cfd",
+      "occurrenceCount": 2,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_96594578",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-017",
+      "status": "NEW"
+    },
+    {
+      "id": "f_96a4e8db",
+      "occurrenceCount": 1,
+      "rule": "VAL-DOC-007",
+      "status": "NEW"
+    },
+    {
+      "id": "f_97050c9b",
+      "occurrenceCount": 1,
+      "rule": "VAL-DOC-007",
+      "status": "NEW"
+    },
+    {
+      "id": "f_97a7f1e7",
+      "occurrenceCount": 1,
+      "rule": "Orphaned Documentation",
+      "status": "NEW"
+    },
+    {
+      "id": "f_97c381dd",
+      "occurrenceCount": 2,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_97d71878",
+      "occurrenceCount": 4,
+      "rule": "VAL-UI-009",
+      "status": "NEW"
+    },
+    {
+      "id": "f_99fa7b25",
+      "occurrenceCount": 1,
+      "rule": "Missing Document Owner",
+      "status": "NEW"
+    },
+    {
+      "id": "f_9a6c8394",
+      "occurrenceCount": 4,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_9b53db70",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-006",
+      "status": "NEW"
+    },
+    {
+      "id": "f_9b7be2bc",
+      "occurrenceCount": 1,
+      "rule": "VAL-DOC-007",
+      "status": "NEW"
+    },
+    {
+      "id": "f_9be05ecb",
+      "occurrenceCount": 2,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_9c29d294",
+      "occurrenceCount": 2,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_9cb07775",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-006",
+      "status": "NEW"
+    },
+    {
+      "id": "f_9cd711bd",
+      "occurrenceCount": 5,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_9d1f2096",
+      "occurrenceCount": 1,
+      "rule": "Missing Document Owner",
+      "status": "NEW"
+    },
+    {
+      "id": "f_9d8ad598",
+      "occurrenceCount": 7,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_9db54c02",
+      "occurrenceCount": 4,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_9eaf5dd3",
+      "occurrenceCount": 1,
+      "rule": "Missing Document Owner",
+      "status": "NEW"
+    },
+    {
+      "id": "f_9eeaa927",
+      "occurrenceCount": 1,
+      "rule": "Orphaned Documentation",
+      "status": "NEW"
+    },
+    {
+      "id": "f_9ef1e83b",
+      "occurrenceCount": 4,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_9f314e1a",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-011",
+      "status": "NEW"
+    },
+    {
+      "id": "f_9f74ab91",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-011",
+      "status": "NEW"
+    },
+    {
+      "id": "f_9f8a9951",
+      "occurrenceCount": 3,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_9fe289fe",
+      "occurrenceCount": 7,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_9ffa7592",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_a015cd0b",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-011",
+      "status": "NEW"
+    },
+    {
+      "id": "f_a09dbf24",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-002",
+      "status": "NEW"
+    },
+    {
+      "id": "f_a0ffb061",
+      "occurrenceCount": 4,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_a12d68d9",
+      "occurrenceCount": 2,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_a39806e0",
+      "occurrenceCount": 1,
+      "rule": "Missing Document Owner",
+      "status": "NEW"
+    },
+    {
+      "id": "f_a3ea4975",
+      "occurrenceCount": 3,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_a50ce401",
+      "occurrenceCount": 1,
+      "rule": "Missing Document Owner",
+      "status": "NEW"
+    },
+    {
+      "id": "f_a51e620c",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-007",
+      "status": "NEW"
+    },
+    {
+      "id": "f_a52ec321",
+      "occurrenceCount": 3,
+      "rule": "VAL-UI-009",
+      "status": "NEW"
+    },
+    {
+      "id": "f_a57a7f03",
+      "occurrenceCount": 1,
+      "rule": "Missing Document Owner",
+      "status": "NEW"
+    },
+    {
+      "id": "f_a58f8772",
+      "occurrenceCount": 1,
+      "rule": "VAL-DOC-007",
+      "status": "NEW"
+    },
+    {
+      "id": "f_a5e2a9fe",
+      "occurrenceCount": 1,
+      "rule": "Missing Document Owner",
+      "status": "NEW"
+    },
+    {
+      "id": "f_a68dfdc6",
+      "occurrenceCount": 3,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_a6a7c7ec",
+      "occurrenceCount": 1,
+      "rule": "Missing Document Owner",
+      "status": "NEW"
+    },
+    {
+      "id": "f_a77440b3",
+      "occurrenceCount": 1,
+      "rule": "Missing Document Owner",
+      "status": "NEW"
+    },
+    {
+      "id": "f_a77a33ef",
+      "occurrenceCount": 8,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_a873d832",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-017",
+      "status": "NEW"
+    },
+    {
+      "id": "f_a8abf096",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-011",
+      "status": "NEW"
+    },
+    {
+      "id": "f_a8ae88ad",
+      "occurrenceCount": 2,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_a8e31a94",
+      "occurrenceCount": 1,
+      "rule": "Orphaned Documentation",
+      "status": "NEW"
+    },
+    {
+      "id": "f_a8ed0797",
+      "occurrenceCount": 3,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_a940a246",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-011",
+      "status": "NEW"
+    },
+    {
+      "id": "f_a95c4f07",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-003",
+      "status": "NEW"
+    },
+    {
+      "id": "f_a9c22211",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-006",
+      "status": "NEW"
+    },
+    {
+      "id": "f_aa7c92bc",
+      "occurrenceCount": 1,
+      "rule": "Missing Document Owner",
+      "status": "NEW"
+    },
+    {
+      "id": "f_aaca525c",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-011",
+      "status": "NEW"
+    },
+    {
+      "id": "f_ab07a7b4",
+      "occurrenceCount": 1,
+      "rule": "Orphaned Documentation",
+      "status": "NEW"
+    },
+    {
+      "id": "f_ab43ea28",
+      "occurrenceCount": 1,
+      "rule": "VAL-DOC-007",
+      "status": "NEW"
+    },
+    {
+      "id": "f_ad2a0d10",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-002",
+      "status": "NEW"
+    },
+    {
+      "id": "f_ad5c0de4",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_ae0a53aa",
+      "occurrenceCount": 1,
+      "rule": "VAL-DOC-007",
+      "status": "NEW"
+    },
+    {
+      "id": "f_ae79ef8c",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-008",
+      "status": "NEW"
+    },
+    {
+      "id": "f_ae9531c9",
+      "occurrenceCount": 1,
+      "rule": "Missing Document Owner",
+      "status": "NEW"
+    },
+    {
+      "id": "f_aea1b199",
+      "occurrenceCount": 4,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_aefbb842",
+      "occurrenceCount": 1,
+      "rule": "Missing Document Owner",
+      "status": "NEW"
+    },
+    {
+      "id": "f_b03f28ca",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-004",
+      "status": "NEW"
+    },
+    {
+      "id": "f_b0785314",
+      "occurrenceCount": 1,
+      "rule": "Orphaned Documentation",
+      "status": "NEW"
+    },
+    {
+      "id": "f_b094a7a2",
+      "occurrenceCount": 1,
+      "rule": "Missing Document Owner",
+      "status": "NEW"
+    },
+    {
+      "id": "f_b157e6d1",
+      "occurrenceCount": 1,
+      "rule": "VAL-DOC-007",
+      "status": "NEW"
+    },
+    {
+      "id": "f_b23de152",
+      "occurrenceCount": 8,
+      "rule": "VAL-UI-007",
+      "status": "NEW"
+    },
+    {
+      "id": "f_b29acfe0",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_b2b22261",
+      "occurrenceCount": 1,
+      "rule": "Orphaned Documentation",
+      "status": "NEW"
+    },
+    {
+      "id": "f_b2e9ee9c",
+      "occurrenceCount": 1,
+      "rule": "Missing Document Owner",
+      "status": "NEW"
+    },
+    {
+      "id": "f_b35a4186",
+      "occurrenceCount": 2,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_b362493d",
+      "occurrenceCount": 1,
+      "rule": "Duplicate Governance Policy",
+      "status": "NEW"
+    },
+    {
+      "id": "f_b36f6872",
+      "occurrenceCount": 2,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_b4a51820",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-011",
+      "status": "NEW"
+    },
+    {
+      "id": "f_b4bdca94",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-002",
+      "status": "CLOSED"
+    },
+    {
+      "id": "f_b50f9e27",
+      "occurrenceCount": 1,
+      "rule": "Orphaned Documentation",
+      "status": "NEW"
+    },
+    {
+      "id": "f_b5cbae4a",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-019",
+      "status": "NEW"
+    },
+    {
+      "id": "f_b5d14e3d",
+      "occurrenceCount": 1,
+      "rule": "Orphaned Documentation",
+      "status": "NEW"
+    },
+    {
+      "id": "f_b5d1647e",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-004",
+      "status": "NEW"
+    },
+    {
+      "id": "f_b683d5e1",
+      "occurrenceCount": 1,
+      "rule": "Missing Document Owner",
+      "status": "NEW"
+    },
+    {
+      "id": "f_b6948415",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_b7ba75d4",
+      "occurrenceCount": 3,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_b7c97d2d",
+      "occurrenceCount": 1,
+      "rule": "Orphaned Documentation",
+      "status": "NEW"
+    },
+    {
+      "id": "f_b7e111de",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_b85dcfd1",
+      "occurrenceCount": 5,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_b9665c13",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-017",
+      "status": "NEW"
+    },
+    {
+      "id": "f_b973178e",
+      "occurrenceCount": 1,
+      "rule": "Missing Document Owner",
+      "status": "NEW"
+    },
+    {
+      "id": "f_b9c2b975",
+      "occurrenceCount": 2,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_ba69004d",
+      "occurrenceCount": 1,
+      "rule": "Missing Document Owner",
+      "status": "NEW"
+    },
+    {
+      "id": "f_baec9b03",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-011",
+      "status": "NEW"
+    },
+    {
+      "id": "f_bb72e342",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-002",
+      "status": "NEW"
+    },
+    {
+      "id": "f_bbc97378",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-008",
+      "status": "NEW"
+    },
+    {
+      "id": "f_bc6e8f92",
+      "occurrenceCount": 1,
+      "rule": "Missing Document Owner",
+      "status": "CLOSED"
+    },
+    {
+      "id": "f_bce41c62",
+      "occurrenceCount": 1,
+      "rule": "Orphaned Documentation",
+      "status": "NEW"
+    },
+    {
+      "id": "f_bd419df4",
+      "occurrenceCount": 4,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_bd932fb1",
+      "occurrenceCount": 3,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_be201689",
+      "occurrenceCount": 1,
+      "rule": "Missing Document Owner",
+      "status": "NEW"
+    },
+    {
+      "id": "f_be30a37e",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-009",
+      "status": "NEW"
+    },
+    {
+      "id": "f_be895456",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-011",
+      "status": "NEW"
+    },
+    {
+      "id": "f_bec4b7de",
+      "occurrenceCount": 3,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_bec667c1",
+      "occurrenceCount": 5,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_bf4aa604",
+      "occurrenceCount": 3,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_bf59ed6a",
+      "occurrenceCount": 7,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_bfb64bd3",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-011",
+      "status": "NEW"
+    },
+    {
+      "id": "f_c00489f9",
+      "occurrenceCount": 1,
+      "rule": "VAL-DOC-007",
+      "status": "NEW"
+    },
+    {
+      "id": "f_c0303cc7",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-006",
+      "status": "NEW"
+    },
+    {
+      "id": "f_c03a5c25",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-009",
+      "status": "NEW"
+    },
+    {
+      "id": "f_c05be511",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-003",
+      "status": "NEW"
+    },
+    {
+      "id": "f_c1b33085",
+      "occurrenceCount": 1,
+      "rule": "VAL-DOC-007",
+      "status": "NEW"
+    },
+    {
+      "id": "f_c41c888b",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-011",
+      "status": "NEW"
+    },
+    {
+      "id": "f_c487d213",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-002",
+      "status": "NEW"
+    },
+    {
+      "id": "f_c4a1bb1e",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-007",
+      "status": "NEW"
+    },
+    {
+      "id": "f_c55ed907",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-011",
+      "status": "NEW"
+    },
+    {
+      "id": "f_c6d1dc29",
+      "occurrenceCount": 1,
+      "rule": "Missing Document Owner",
+      "status": "NEW"
+    },
+    {
+      "id": "f_c74a1524",
+      "occurrenceCount": 2,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_c7a2e740",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-003",
+      "status": "NEW"
+    },
+    {
+      "id": "f_c7f9ab18",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_c82dc53e",
+      "occurrenceCount": 4,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_c939ab82",
+      "occurrenceCount": 1,
+      "rule": "Missing Document Owner",
+      "status": "NEW"
+    },
+    {
+      "id": "f_c961b18e",
+      "occurrenceCount": 1,
+      "rule": "Orphaned Documentation",
+      "status": "NEW"
+    },
+    {
+      "id": "f_c9e2fef8",
+      "occurrenceCount": 5,
+      "rule": "VAL-UI-007",
+      "status": "NEW"
+    },
+    {
+      "id": "f_ca062e3a",
+      "occurrenceCount": 2,
+      "rule": "VAL-UI-009",
+      "status": "NEW"
+    },
+    {
+      "id": "f_cb3c1412",
+      "occurrenceCount": 1,
+      "rule": "Missing Document Owner",
+      "status": "NEW"
+    },
+    {
+      "id": "f_cc5ca125",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-018",
+      "status": "NEW"
+    },
+    {
+      "id": "f_ccf93b12",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_cd480f5e",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-011",
+      "status": "NEW"
+    },
+    {
+      "id": "f_cdfc6e61",
+      "occurrenceCount": 1,
+      "rule": "Missing Document Owner",
+      "status": "NEW"
+    },
+    {
+      "id": "f_ce14304e",
+      "occurrenceCount": 1,
+      "rule": "Missing Document Owner",
+      "status": "NEW"
+    },
+    {
+      "id": "f_ce6e1869",
+      "occurrenceCount": 1,
+      "rule": "Orphaned Documentation",
+      "status": "NEW"
+    },
+    {
+      "id": "f_ce9a8f1c",
+      "occurrenceCount": 4,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_cee10155",
+      "occurrenceCount": 1,
+      "rule": "Orphaned Documentation",
+      "status": "NEW"
+    },
+    {
+      "id": "f_cf0862bc",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-006",
+      "status": "NEW"
+    },
+    {
+      "id": "f_cf24dd38",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-018",
+      "status": "NEW"
+    },
+    {
+      "id": "f_cf53ad54",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-017",
+      "status": "CLOSED"
+    },
+    {
+      "id": "f_cfd56b14",
+      "occurrenceCount": 1,
+      "rule": "Missing Document Owner",
+      "status": "NEW"
+    },
+    {
+      "id": "f_d01224d6",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-003",
+      "status": "NEW"
+    },
+    {
+      "id": "f_d04b7143",
+      "occurrenceCount": 1,
+      "rule": "Orphaned Documentation",
+      "status": "NEW"
+    },
+    {
+      "id": "f_d06f3034",
+      "occurrenceCount": 6,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_d09a342d",
+      "occurrenceCount": 1,
+      "rule": "Orphaned Documentation",
+      "status": "NEW"
+    },
+    {
+      "id": "f_d0e7d5f6",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-017",
+      "status": "NEW"
+    },
+    {
+      "id": "f_d170a20e",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-011",
+      "status": "NEW"
+    },
+    {
+      "id": "f_d1f09987",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-011",
+      "status": "NEW"
+    },
+    {
+      "id": "f_d2246467",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-003",
+      "status": "NEW"
+    },
+    {
+      "id": "f_d231f451",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-011",
+      "status": "NEW"
+    },
+    {
+      "id": "f_d256c840",
+      "occurrenceCount": 1,
+      "rule": "VAL-DOC-007",
+      "status": "NEW"
+    },
+    {
+      "id": "f_d27bc78d",
+      "occurrenceCount": 2,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_d27faecb",
+      "occurrenceCount": 1,
+      "rule": "Orphaned Documentation",
+      "status": "NEW"
+    },
+    {
+      "id": "f_d2e84a01",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-009",
+      "status": "NEW"
+    },
+    {
+      "id": "f_d3fe2179",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-011",
+      "status": "NEW"
+    },
+    {
+      "id": "f_d4f48650",
+      "occurrenceCount": 1,
+      "rule": "Orphaned Documentation",
+      "status": "NEW"
+    },
+    {
+      "id": "f_d5125d62",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-004",
+      "status": "NEW"
+    },
+    {
+      "id": "f_d5f0eb58",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-011",
+      "status": "NEW"
+    },
+    {
+      "id": "f_d629b5f7",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_d64767d9",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-011",
+      "status": "NEW"
+    },
+    {
+      "id": "f_d68445db",
+      "occurrenceCount": 9,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_d73b60d5",
+      "occurrenceCount": 4,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_d7b0dfc1",
+      "occurrenceCount": 1,
+      "rule": "VAL-DOC-007",
+      "status": "NEW"
+    },
+    {
+      "id": "f_d8821b83",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-009",
+      "status": "NEW"
+    },
+    {
+      "id": "f_d8c974bb",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-004",
+      "status": "NEW"
+    },
+    {
+      "id": "f_d90e1c26",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-011",
+      "status": "NEW"
+    },
+    {
+      "id": "f_d9819ecb",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_da701887",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-004",
+      "status": "NEW"
+    },
+    {
+      "id": "f_da85a340",
+      "occurrenceCount": 1,
+      "rule": "Orphaned Documentation",
+      "status": "NEW"
+    },
+    {
+      "id": "f_daae71f0",
+      "occurrenceCount": 1,
+      "rule": "Missing Document Owner",
+      "status": "NEW"
+    },
+    {
+      "id": "f_dac8085f",
+      "occurrenceCount": 5,
+      "rule": "VAL-UI-007",
+      "status": "NEW"
+    },
+    {
+      "id": "f_db0ad605",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_db0e67eb",
+      "occurrenceCount": 2,
+      "rule": "VAL-UI-009",
+      "status": "NEW"
+    },
+    {
+      "id": "f_db1e7f3d",
+      "occurrenceCount": 4,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_db63ad5c",
+      "occurrenceCount": 1,
+      "rule": "VAL-DOC-007",
+      "status": "NEW"
+    },
+    {
+      "id": "f_dc843385",
+      "occurrenceCount": 1,
+      "rule": "Orphaned Documentation",
+      "status": "NEW"
+    },
+    {
+      "id": "f_dd7e2c48",
+      "occurrenceCount": 1,
+      "rule": "Orphaned Documentation",
+      "status": "NEW"
+    },
+    {
+      "id": "f_dd9f24ff",
+      "occurrenceCount": 1,
+      "rule": "Missing Document Owner",
+      "status": "NEW"
+    },
+    {
+      "id": "f_ddd1ab27",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_de56eaa3",
+      "occurrenceCount": 1,
+      "rule": "VAL-DOC-007",
+      "status": "NEW"
+    },
+    {
+      "id": "f_de58524a",
+      "occurrenceCount": 1,
+      "rule": "Orphaned Documentation",
+      "status": "NEW"
+    },
+    {
+      "id": "f_de632e1a",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-008",
+      "status": "NEW"
+    },
+    {
+      "id": "f_de6748d7",
+      "occurrenceCount": 2,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_de71513a",
+      "occurrenceCount": 1,
+      "rule": "Orphaned Documentation",
+      "status": "NEW"
+    },
+    {
+      "id": "f_ded1387a",
+      "occurrenceCount": 2,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_df2b69e7",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-018",
+      "status": "NEW"
+    },
+    {
+      "id": "f_df61496d",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-002",
+      "status": "NEW"
+    },
+    {
+      "id": "f_dfc2a1ba",
+      "occurrenceCount": 8,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_dfd929f1",
+      "occurrenceCount": 1,
+      "rule": "Orphaned Documentation",
+      "status": "NEW"
+    },
+    {
+      "id": "f_e0708c07",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-011",
+      "status": "NEW"
+    },
+    {
+      "id": "f_e0810fa4",
+      "occurrenceCount": 1,
+      "rule": "Orphaned Documentation",
+      "status": "NEW"
+    },
+    {
+      "id": "f_e0968783",
+      "occurrenceCount": 2,
+      "rule": "VAL-UI-009",
+      "status": "NEW"
+    },
+    {
+      "id": "f_e0c15617",
+      "occurrenceCount": 2,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_e0f0ad4d",
+      "occurrenceCount": 4,
+      "rule": "VAL-UI-009",
+      "status": "NEW"
+    },
+    {
+      "id": "f_e1af634f",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_e22f42e3",
+      "occurrenceCount": 1,
+      "rule": "Missing Document Owner",
+      "status": "NEW"
+    },
+    {
+      "id": "f_e4258dbe",
+      "occurrenceCount": 1,
+      "rule": "Orphaned Documentation",
+      "status": "NEW"
+    },
+    {
+      "id": "f_e42dc933",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_e4889403",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-017",
+      "status": "NEW"
+    },
+    {
+      "id": "f_e48a02b5",
+      "occurrenceCount": 1,
+      "rule": "Orphaned Documentation",
+      "status": "NEW"
+    },
+    {
+      "id": "f_e4e3ea3d",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-008",
+      "status": "NEW"
+    },
+    {
+      "id": "f_e55881af",
+      "occurrenceCount": 1,
+      "rule": "VAL-DOC-007",
+      "status": "NEW"
+    },
+    {
+      "id": "f_e58936a1",
+      "occurrenceCount": 1,
+      "rule": "Missing Document Owner",
+      "status": "NEW"
+    },
+    {
+      "id": "f_e5bb750c",
+      "occurrenceCount": 3,
+      "rule": "Broken Link Target",
+      "status": "CLOSED"
+    },
+    {
+      "id": "f_e6148d46",
+      "occurrenceCount": 3,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_e62475df",
+      "occurrenceCount": 2,
+      "rule": "VAL-UI-009",
+      "status": "NEW"
+    },
+    {
+      "id": "f_e625a343",
+      "occurrenceCount": 1,
+      "rule": "VAL-DOC-007",
+      "status": "NEW"
+    },
+    {
+      "id": "f_e7230971",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-008",
+      "status": "NEW"
+    },
+    {
+      "id": "f_e7946bc6",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-011",
+      "status": "NEW"
+    },
+    {
+      "id": "f_e7bf6b4f",
+      "occurrenceCount": 3,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_e7e94110",
+      "occurrenceCount": 1,
+      "rule": "VAL-DOC-007",
+      "status": "NEW"
+    },
+    {
+      "id": "f_e83f7be0",
+      "occurrenceCount": 1,
+      "rule": "Broken Link Target",
+      "status": "CLOSED"
+    },
+    {
+      "id": "f_e8e6a5e8",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-003",
+      "status": "NEW"
+    },
+    {
+      "id": "f_e9700388",
+      "occurrenceCount": 1,
+      "rule": "Missing Document Owner",
+      "status": "NEW"
+    },
+    {
+      "id": "f_e9bd89df",
+      "occurrenceCount": 4,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_ea13f490",
+      "occurrenceCount": 1,
+      "rule": "Missing Document Owner",
+      "status": "NEW"
+    },
+    {
+      "id": "f_ea48c18a",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-018",
+      "status": "NEW"
+    },
+    {
+      "id": "f_eb3c0245",
+      "occurrenceCount": 1,
+      "rule": "Missing Document Owner",
+      "status": "NEW"
+    },
+    {
+      "id": "f_eb7d280c",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_ebd44076",
+      "occurrenceCount": 2,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_ec699093",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-004",
+      "status": "NEW"
+    },
+    {
+      "id": "f_ecc91785",
+      "occurrenceCount": 1,
+      "rule": "Missing Document Owner",
+      "status": "NEW"
+    },
+    {
+      "id": "f_ed611054",
+      "occurrenceCount": 2,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_ee8670bd",
+      "occurrenceCount": 4,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_eeb96eb8",
+      "occurrenceCount": 1,
+      "rule": "Orphaned Documentation",
+      "status": "NEW"
+    },
+    {
+      "id": "f_eee8ac0e",
+      "occurrenceCount": 6,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_ef50e1ba",
+      "occurrenceCount": 1,
+      "rule": "Missing Document Owner",
+      "status": "NEW"
+    },
+    {
+      "id": "f_ef7c7add",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_ef891f95",
+      "occurrenceCount": 2,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_efcd7f2f",
+      "occurrenceCount": 1,
+      "rule": "VAL-DOC-007",
+      "status": "NEW"
+    },
+    {
+      "id": "f_f0000a21",
+      "occurrenceCount": 7,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_f0b747e2",
+      "occurrenceCount": 1,
+      "rule": "Orphaned Documentation",
+      "status": "NEW"
+    },
+    {
+      "id": "f_f0fe6535",
+      "occurrenceCount": 7,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_f1de28c5",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-003",
+      "status": "NEW"
+    },
+    {
+      "id": "f_f2bceaa4",
+      "occurrenceCount": 2,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_f35f1aae",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-003",
+      "status": "NEW"
+    },
+    {
+      "id": "f_f376549e",
+      "occurrenceCount": 2,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_f3a24f0e",
+      "occurrenceCount": 7,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_f3b51b8a",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_f4770673",
+      "occurrenceCount": 2,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_f4b3a25f",
+      "occurrenceCount": 2,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_f5e25e48",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-004",
+      "status": "NEW"
+    },
+    {
+      "id": "f_f698f7fb",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-011",
+      "status": "NEW"
+    },
+    {
+      "id": "f_f6d812fe",
+      "occurrenceCount": 2,
+      "rule": "VAL-UI-007",
+      "status": "NEW"
+    },
+    {
+      "id": "f_f7145a2b",
+      "occurrenceCount": 7,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_f71fe9d9",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-011",
+      "status": "NEW"
+    },
+    {
+      "id": "f_f7372131",
+      "occurrenceCount": 1,
+      "rule": "VAL-DOC-007",
+      "status": "NEW"
+    },
+    {
+      "id": "f_f75aa9b1",
+      "occurrenceCount": 1,
+      "rule": "Orphaned Documentation",
+      "status": "NEW"
+    },
+    {
+      "id": "f_f774ef1d",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_f7a6c8bc",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_f7dc40dd",
+      "occurrenceCount": 6,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_f80044ad",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-011",
+      "status": "NEW"
+    },
+    {
+      "id": "f_f8f3bb7a",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-011",
+      "status": "NEW"
+    },
+    {
+      "id": "f_f92f05dd",
+      "occurrenceCount": 1,
+      "rule": "Orphaned Documentation",
+      "status": "NEW"
+    },
+    {
+      "id": "f_f9922630",
+      "occurrenceCount": 7,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_f9fcdaed",
+      "occurrenceCount": 2,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_fa4507de",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_fa82ac4b",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-007",
+      "status": "NEW"
+    },
+    {
+      "id": "f_fb392d54",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-004",
+      "status": "NEW"
+    },
+    {
+      "id": "f_fb74c404",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-002",
+      "status": "NEW"
+    },
+    {
+      "id": "f_fbd913a0",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-002",
+      "status": "NEW"
+    },
+    {
+      "id": "f_fbe77220",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-011",
+      "status": "NEW"
+    },
+    {
+      "id": "f_fc4f19c8",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-011",
+      "status": "NEW"
+    },
+    {
+      "id": "f_fcb6aa16",
+      "occurrenceCount": 1,
+      "rule": "Missing Document Owner",
+      "status": "NEW"
+    },
+    {
+      "id": "f_fdea0a15",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-017",
+      "status": "NEW"
+    },
+    {
+      "id": "f_fe2f222d",
+      "occurrenceCount": 3,
+      "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_fe40cdad",
+      "occurrenceCount": 3,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_ff8c5251",
+      "occurrenceCount": 3,
+      "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_ffb2d9dd",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-011",
+      "status": "NEW"
+    }
+  ],
+  "suppressedCount": 0,
+  "timestamp": "2026-07-03T08:48:21.152Z"
+}

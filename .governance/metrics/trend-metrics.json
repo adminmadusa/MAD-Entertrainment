@@ -64,5 +64,27 @@
     },
     "timestamp": "2026-07-02T17:26:44.934Z",
     "totalFindings": 577
+  },
+  {
+    "averageConfidence": 0.9347315436241569,
+    "averageResolutionTimeMs": 1,
+    "closedFindings": 12,
+    "falsePositiveRate": 0,
+    "newFindings": 584,
+    "regressionCount": 0,
+    "scores": {
+      "accessibility": 0,
+      "architecture": 100,
+      "documentation": 0,
+      "maintainability": 100,
+      "overall": 70,
+      "performance": 100,
+      "security": 100,
+      "technicalDebt": 100,
+      "testing": 100,
+      "uiConsistency": 0
+    },
+    "timestamp": "2026-07-03T08:48:21.148Z",
+    "totalFindings": 596
   }
 ]

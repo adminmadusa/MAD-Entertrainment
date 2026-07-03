@@ -1,4 +1,7 @@
 {
+  "branch": "feat/governance-pr2-persistence",
+  "commit": "cfbbe600",
   "engineVersion": "1.0.0",
-  "ruleRegistryVersion": "1.0.0"
+  "ruleRegistryVersion": "1.0.0",
+  "timestamp": "2026-07-03T08:48:21.147Z"
 }

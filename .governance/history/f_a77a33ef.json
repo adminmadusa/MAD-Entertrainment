@@ -1,0 +1,17 @@
+{
+  "history": [
+    {
+      "action": "CREATED",
+      "notes": "New grouped finding registered: Shared Component Enforcement: Local duplication of Field component wrapper. Import Field from shared library instead.",
+      "status": "NEW",
+      "timestamp": "2026-07-03T07:29:55.197Z"
+    },
+    {
+      "action": "UPDATED",
+      "notes": "Occurrences updated. Active count: 8",
+      "status": "NEW",
+      "timestamp": "2026-07-03T08:48:21.130Z"
+    }
+  ],
+  "id": "f_a77a33ef"
+}

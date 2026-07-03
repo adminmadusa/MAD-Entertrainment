@@ -1,54 +1,73 @@
 {
-  "schemaVersion": 2,
-  "id": "f_029eb7af",
-  "rule": "VAL-UI-010",
-  "ruleVersion": "1.0.0",
-  "engineVersion": "1.0.0",
-  "domain": "UI UX Guild",
-  "owner": "UI UX Guild",
-  "package": "apps",
-  "feature": "UIElement",
-  "status": "NEW",
   "confidence": 0.9,
-  "relationships": [],
+  "createdDate": "2026-06-30T15:36:27.257Z",
+  "domain": "UI UX Guild",
+  "engineVersion": "1.0.0",
   "evidence": {
-    "path": "apps/web/src/app/events/[slug]/components/EventStickyCTA.tsx",
     "construct": "UIElement",
-    "snippet": "<button",
-    "line": 77,
+    "line": 163,
     "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
     "occurrences": [
       {
-        "id": "ee8a23ecd4fbb97f95dd93ae75b97b705df48f9828331a6e22ef1fbfc847fc33",
-        "line": 77,
         "column": 0,
         "construct": "UIElement",
-        "snippet": "<button",
+        "fingerprint": "ee8a23ecd4fbb97f95dd93ae75b97b705df48f9828331a6e22ef1fbfc847fc33",
+        "id": "ee8a23ecd4fbb97f95dd93ae75b97b705df48f9828331a6e22ef1fbfc847fc33",
+        "line": 103,
         "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
-        "fingerprint": "ee8a23ecd4fbb97f95dd93ae75b97b705df48f9828331a6e22ef1fbfc847fc33"
+        "snippet": "<button"
       },
       {
-        "id": "ee8a23ecd4fbb97f95dd93ae75b97b705df48f9828331a6e22ef1fbfc847fc33",
-        "line": 88,
         "column": 0,
         "construct": "UIElement",
-        "snippet": "<button",
+        "fingerprint": "ee8a23ecd4fbb97f95dd93ae75b97b705df48f9828331a6e22ef1fbfc847fc33",
+        "id": "ee8a23ecd4fbb97f95dd93ae75b97b705df48f9828331a6e22ef1fbfc847fc33",
+        "line": 112,
         "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
-        "fingerprint": "ee8a23ecd4fbb97f95dd93ae75b97b705df48f9828331a6e22ef1fbfc847fc33"
+        "snippet": "<button"
       },
       {
-        "id": "ee8a23ecd4fbb97f95dd93ae75b97b705df48f9828331a6e22ef1fbfc847fc33",
-        "line": 116,
         "column": 0,
         "construct": "UIElement",
-        "snippet": "<button",
+        "fingerprint": "ee8a23ecd4fbb97f95dd93ae75b97b705df48f9828331a6e22ef1fbfc847fc33",
+        "id": "ee8a23ecd4fbb97f95dd93ae75b97b705df48f9828331a6e22ef1fbfc847fc33",
+        "line": 124,
         "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
-        "fingerprint": "ee8a23ecd4fbb97f95dd93ae75b97b705df48f9828331a6e22ef1fbfc847fc33"
+        "snippet": "<button"
+      },
+      {
+        "column": 0,
+        "construct": "UIElement",
+        "fingerprint": "ee8a23ecd4fbb97f95dd93ae75b97b705df48f9828331a6e22ef1fbfc847fc33",
+        "id": "ee8a23ecd4fbb97f95dd93ae75b97b705df48f9828331a6e22ef1fbfc847fc33",
+        "line": 155,
+        "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
+        "snippet": "<button"
+      },
+      {
+        "column": 0,
+        "construct": "UIElement",
+        "fingerprint": "ee8a23ecd4fbb97f95dd93ae75b97b705df48f9828331a6e22ef1fbfc847fc33",
+        "id": "ee8a23ecd4fbb97f95dd93ae75b97b705df48f9828331a6e22ef1fbfc847fc33",
+        "line": 163,
+        "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
+        "snippet": "<button"
       }
-    ]
+    ],
+    "path": "apps/web/src/app/events/[slug]/components/EventStickyCTA.tsx",
+    "snippet": "<button"
   },
-  "createdDate": "2026-06-30T15:36:27.257Z",
+  "feature": "UIElement",
   "firstDetected": "2026-06-30T15:36:27.257Z",
-  "lastDetected": "2026-06-30T15:36:27.258Z",
-  "occurrenceCount": 3
+  "id": "f_029eb7af",
+  "lastDetected": "2026-07-03T08:48:21.141Z",
+  "lastModified": "2026-07-03T08:48:21.141Z",
+  "occurrenceCount": 5,
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-UI-010",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
 }

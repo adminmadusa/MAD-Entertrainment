@@ -1,45 +1,37 @@
 {
-  "schemaVersion": 2,
-  "id": "f_155ac410",
-  "rule": "VAL-UI-002",
-  "ruleVersion": "1.0.0",
-  "engineVersion": "1.0.0",
-  "domain": "UI UX Guild",
-  "owner": "UI UX Guild",
-  "package": "apps",
-  "feature": "modal-backdrop",
-  "status": "NEW",
   "confidence": 1,
-  "relationships": [],
+  "createdDate": "2026-06-29T08:10:44.853Z",
+  "domain": "UI UX Guild",
+  "engineVersion": "1.0.0",
   "evidence": {
-    "path": "apps/web/src/app/events/[slug]/components/EventOverview.tsx",
     "construct": "modal-backdrop",
-    "snippet": "<div className=\"fixed inset-0 z-[100] flex justify-end bg-black/60 backdrop-blur-sm\">",
     "line": 72,
     "message": "Custom backdrop & modal container coded. Use shared <Modal> component from @mad/ui to avoid styles drift.",
     "occurrences": [
       {
-        "id": "684e0115d8619f5ae81ecbec6cd4b35e5a1f3115f46222767bdbbabcc28ac701",
-        "line": 72,
-        "column": 0,
-        "construct": "modal-backdrop",
-        "snippet": "<div className=\"fixed inset-0 z-[100] flex justify-end bg-black/60 backdrop-blur-sm\">",
-        "message": "Custom backdrop & modal container coded. Use shared <Modal> component from @mad/ui to avoid styles drift.",
-        "fingerprint": "684e0115d8619f5ae81ecbec6cd4b35e5a1f3115f46222767bdbbabcc28ac701"
-      },
-      {
-        "id": "5a5e8959a2af8d353b7ec6fceb8aecb78213397a84c77cc93019e3d177bbcf85",
-        "line": 72,
         "column": 0,
         "construct": "UIElement",
-        "snippet": "<div className=\"fixed inset-0 z-[100] flex justify-end bg-black/60 backdrop-blur-sm\">",
+        "fingerprint": "5a5e8959a2af8d353b7ec6fceb8aecb78213397a84c77cc93019e3d177bbcf85",
+        "id": "5a5e8959a2af8d353b7ec6fceb8aecb78213397a84c77cc93019e3d177bbcf85",
+        "line": 72,
         "message": "Custom backdrop & modal container coded. Use shared <Modal> component from @mad/ui to avoid styles drift.",
-        "fingerprint": "5a5e8959a2af8d353b7ec6fceb8aecb78213397a84c77cc93019e3d177bbcf85"
+        "snippet": "<div className=\"fixed inset-0 z-[100] flex justify-end bg-black/60 backdrop-blur-sm\">"
       }
-    ]
+    ],
+    "path": "apps/web/src/app/events/[slug]/components/EventOverview.tsx",
+    "snippet": "<div className=\"fixed inset-0 z-[100] flex justify-end bg-black/60 backdrop-blur-sm\">"
   },
-  "createdDate": "2026-06-29T08:10:44.853Z",
+  "feature": "modal-backdrop",
   "firstDetected": "2026-06-29T08:10:44.853Z",
-  "lastDetected": "2026-06-30T15:36:27.254Z",
-  "occurrenceCount": 2
+  "id": "f_155ac410",
+  "lastDetected": "2026-07-03T08:48:21.140Z",
+  "lastModified": "2026-07-03T08:48:21.140Z",
+  "occurrenceCount": 1,
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-UI-002",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
 }

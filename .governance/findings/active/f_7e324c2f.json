@@ -1,45 +1,37 @@
 {
-  "schemaVersion": 2,
-  "id": "f_7e324c2f",
-  "rule": "VAL-UI-004",
-  "ruleVersion": "1.0.0",
-  "engineVersion": "1.0.0",
-  "domain": "UI UX Guild",
-  "owner": "UI UX Guild",
-  "package": "apps",
-  "feature": "table",
-  "status": "NEW",
   "confidence": 0.9,
-  "relationships": [],
+  "createdDate": "2026-06-29T08:10:18.378Z",
+  "domain": "UI UX Guild",
+  "engineVersion": "1.0.0",
   "evidence": {
-    "path": "apps/admin/src/app/users/page.tsx",
     "construct": "table",
-    "snippet": "<table className=\"w-full text-sm\">",
     "line": 332,
-    "message": "Raw <table> element used in admin portal. Use a reusable shared Table component.",
+    "message": "Raw <table> element used in portal. Use a reusable shared Table component.",
     "occurrences": [
       {
-        "id": "848c826eef6ff10cd7950d5676f79f4a029904f4f999f87f03e53469095e151e",
-        "line": 332,
-        "column": 0,
-        "construct": "table",
-        "snippet": "<table className=\"w-full text-sm\">",
-        "message": "Raw <table> element used in admin portal. Use a reusable shared Table component.",
-        "fingerprint": "848c826eef6ff10cd7950d5676f79f4a029904f4f999f87f03e53469095e151e"
-      },
-      {
-        "id": "ed82543c789346806fbfa20996cf8e305b4e82b3ae3e890462d732262a4ec597",
-        "line": 332,
         "column": 0,
         "construct": "UIElement",
-        "snippet": "<table className=\"w-full text-sm\">",
+        "fingerprint": "ed82543c789346806fbfa20996cf8e305b4e82b3ae3e890462d732262a4ec597",
+        "id": "ed82543c789346806fbfa20996cf8e305b4e82b3ae3e890462d732262a4ec597",
+        "line": 332,
         "message": "Raw <table> element used in portal. Use a reusable shared Table component.",
-        "fingerprint": "ed82543c789346806fbfa20996cf8e305b4e82b3ae3e890462d732262a4ec597"
+        "snippet": "<table className=\"w-full text-sm\">"
       }
-    ]
+    ],
+    "path": "apps/admin/src/app/users/page.tsx",
+    "snippet": "<table className=\"w-full text-sm\">"
   },
-  "createdDate": "2026-06-29T08:10:18.378Z",
+  "feature": "table",
   "firstDetected": "2026-06-29T08:10:18.378Z",
-  "lastDetected": "2026-06-30T15:36:27.196Z",
-  "occurrenceCount": 2
+  "id": "f_7e324c2f",
+  "lastDetected": "2026-07-03T08:48:21.117Z",
+  "lastModified": "2026-07-03T08:48:21.117Z",
+  "occurrenceCount": 1,
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-UI-004",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
 }

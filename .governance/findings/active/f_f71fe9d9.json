@@ -1,71 +1,35 @@
 {
-  "schemaVersion": 2,
-  "id": "f_f71fe9d9",
-  "rule": "VAL-UI-011",
-  "ruleVersion": "1.0.0",
-  "engineVersion": "1.0.0",
-  "domain": "UI UX Guild",
-  "owner": "UI UX Guild",
-  "package": "apps",
-  "feature": "UIElement",
-  "status": "NEW",
   "confidence": 0.9,
-  "relationships": [],
+  "createdDate": "2026-06-30T15:36:27.163Z",
+  "domain": "UI UX Guild",
+  "engineVersion": "1.0.0",
   "evidence": {
-    "path": "apps/admin/src/app/popups/page.tsx",
     "construct": "UIElement",
     "line": 1,
-    "message": "Duplicate component layout detected: shares 75% similarity with \"AdminNotificationsPage\" in \"apps/admin/src/app/notifications/page.tsx\". Recommendation: Extract the duplicated layout/logic from \"apps/admin/src/app/notifications/page.tsx\" and \"apps/admin/src/app/popups/page.tsx\" into a single reusable shared component in \"packages/ui\".",
+    "message": "Duplicate component layout detected: shares 95% similarity with \"AdminDJsPage\" in \"apps/admin/src/app/dj-operators/page.tsx\". Recommendation: Extract the duplicated layout/logic from \"apps/admin/src/app/dj-operators/page.tsx\" and \"apps/admin/src/app/popups/page.tsx\" into a single reusable shared component in \"packages/ui\".",
     "occurrences": [
       {
-        "id": "aca3a9543361dca5162718927a3a1b68ba4c67e4a6c3606ba4d6cc48a62e45fd",
-        "line": 1,
         "column": 0,
         "construct": "UIElement",
-        "snippet": "",
-        "message": "Duplicate component layout detected: shares 75% similarity with \"AdminNotificationsPage\" in \"apps/admin/src/app/notifications/page.tsx\". Recommendation: Extract the duplicated layout/logic from \"apps/admin/src/app/notifications/page.tsx\" and \"apps/admin/src/app/popups/page.tsx\" into a single reusable shared component in \"packages/ui\".",
-        "fingerprint": "aca3a9543361dca5162718927a3a1b68ba4c67e4a6c3606ba4d6cc48a62e45fd"
-      },
-      {
+        "fingerprint": "aca3a9543361dca5162718927a3a1b68ba4c67e4a6c3606ba4d6cc48a62e45fd",
         "id": "aca3a9543361dca5162718927a3a1b68ba4c67e4a6c3606ba4d6cc48a62e45fd",
         "line": 1,
-        "column": 0,
-        "construct": "UIElement",
-        "snippet": "",
-        "message": "Duplicate component layout detected: shares 89% similarity with \"AdminCouponsPage\" in \"apps/admin/src/app/coupons/page.tsx\". Recommendation: Extract the duplicated layout/logic from \"apps/admin/src/app/coupons/page.tsx\" and \"apps/admin/src/app/popups/page.tsx\" into a single reusable shared component in \"packages/ui\".",
-        "fingerprint": "aca3a9543361dca5162718927a3a1b68ba4c67e4a6c3606ba4d6cc48a62e45fd"
-      },
-      {
-        "id": "aca3a9543361dca5162718927a3a1b68ba4c67e4a6c3606ba4d6cc48a62e45fd",
-        "line": 1,
-        "column": 0,
-        "construct": "UIElement",
-        "snippet": "",
-        "message": "Duplicate component layout detected: shares 89% similarity with \"AdminEventsPage\" in \"apps/admin/src/app/events/page.tsx\". Recommendation: Extract the duplicated layout/logic from \"apps/admin/src/app/events/page.tsx\" and \"apps/admin/src/app/popups/page.tsx\" into a single reusable shared component in \"packages/ui\".",
-        "fingerprint": "aca3a9543361dca5162718927a3a1b68ba4c67e4a6c3606ba4d6cc48a62e45fd"
-      },
-      {
-        "id": "aca3a9543361dca5162718927a3a1b68ba4c67e4a6c3606ba4d6cc48a62e45fd",
-        "line": 1,
-        "column": 0,
-        "construct": "UIElement",
-        "snippet": "",
-        "message": "Duplicate component layout detected: shares 92% similarity with \"AdminTicketProfilesPage\" in \"apps/admin/src/app/ticket-profiles/page.tsx\". Recommendation: Extract the duplicated layout/logic from \"apps/admin/src/app/popups/page.tsx\" and \"apps/admin/src/app/ticket-profiles/page.tsx\" into a single reusable shared component in \"packages/ui\".",
-        "fingerprint": "aca3a9543361dca5162718927a3a1b68ba4c67e4a6c3606ba4d6cc48a62e45fd"
-      },
-      {
-        "id": "aca3a9543361dca5162718927a3a1b68ba4c67e4a6c3606ba4d6cc48a62e45fd",
-        "line": 1,
-        "column": 0,
-        "construct": "UIElement",
-        "snippet": "",
-        "message": "Duplicate component layout detected: shares 95% similarity with \"AdminDJsPage\" in \"apps/admin/src/app/dj-operators/page.tsx\". Recommendation: Extract the duplicated layout/logic from \"apps/admin/src/app/dj-operators/page.tsx\" and \"apps/admin/src/app/popups/page.tsx\" into a single reusable shared component in \"packages/ui\".",
-        "fingerprint": "aca3a9543361dca5162718927a3a1b68ba4c67e4a6c3606ba4d6cc48a62e45fd"
+        "message": "Duplicate component layout detected: shares 75% similarity with \"AdminNotificationsPage\" in \"apps/admin/src/app/notifications/page.tsx\". Recommendation: Extract the duplicated layout/logic from \"apps/admin/src/app/notifications/page.tsx\" and \"apps/admin/src/app/popups/page.tsx\" into a single reusable shared component in \"packages/ui\"."
       }
-    ]
+    ],
+    "path": "apps/admin/src/app/popups/page.tsx"
   },
-  "createdDate": "2026-06-30T15:36:27.163Z",
+  "feature": "UIElement",
   "firstDetected": "2026-06-30T15:36:27.163Z",
-  "lastDetected": "2026-06-30T15:36:27.164Z",
-  "occurrenceCount": 5
+  "id": "f_f71fe9d9",
+  "lastDetected": "2026-07-03T08:48:21.100Z",
+  "lastModified": "2026-07-03T08:48:21.100Z",
+  "occurrenceCount": 1,
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-UI-011",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
 }

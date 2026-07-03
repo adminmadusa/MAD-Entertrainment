@@ -1,36 +1,37 @@
 {
-  "schemaVersion": 2,
-  "id": "f_95c09dde",
-  "rule": "VAL-UI-009",
-  "ruleVersion": "1.0.0",
-  "engineVersion": "1.0.0",
-  "domain": "UI UX Guild",
-  "owner": "UI UX Guild",
-  "package": "apps",
-  "feature": "UIElement",
-  "status": "NEW",
   "confidence": 0.9,
-  "relationships": [],
+  "createdDate": "2026-06-30T15:36:27.245Z",
+  "domain": "UI UX Guild",
+  "engineVersion": "1.0.0",
   "evidence": {
-    "path": "apps/web/src/app/dj-operators/[slug]/DjDetailClient.tsx",
     "construct": "UIElement",
-    "snippet": "<motion.div",
-    "line": 193,
+    "line": 208,
     "message": "Element <motion.div> with click handler lacks a tabIndex or role attribute, breaking keyboard accessibility.",
     "occurrences": [
       {
-        "id": "4f114bf76468208a84e50a55ed3f3581f26f6677b0d8fb51278efa77277f31b4",
-        "line": 193,
         "column": 0,
         "construct": "UIElement",
-        "snippet": "<motion.div",
+        "fingerprint": "4f114bf76468208a84e50a55ed3f3581f26f6677b0d8fb51278efa77277f31b4",
+        "id": "4f114bf76468208a84e50a55ed3f3581f26f6677b0d8fb51278efa77277f31b4",
+        "line": 208,
         "message": "Element <motion.div> with click handler lacks a tabIndex or role attribute, breaking keyboard accessibility.",
-        "fingerprint": "4f114bf76468208a84e50a55ed3f3581f26f6677b0d8fb51278efa77277f31b4"
+        "snippet": "<motion.div"
       }
-    ]
+    ],
+    "path": "apps/web/src/app/dj-operators/[slug]/DjDetailClient.tsx",
+    "snippet": "<motion.div"
   },
-  "createdDate": "2026-06-30T15:36:27.245Z",
+  "feature": "UIElement",
   "firstDetected": "2026-06-30T15:36:27.245Z",
-  "lastDetected": "2026-06-30T15:36:27.245Z",
-  "occurrenceCount": 1
+  "id": "f_95c09dde",
+  "lastDetected": "2026-07-03T08:48:21.138Z",
+  "lastModified": "2026-07-03T08:48:21.138Z",
+  "occurrenceCount": 1,
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-UI-009",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
 }

@@ -1,0 +1,54 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-06-30T15:36:27.683Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 68,
+    "message": "Referenced file does not exist: \"file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/app/(auth)/register/page.tsx\" (resolved as: \"apps/web/src/app/(auth)/register/page.tsx\")",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "083b40862377ac8d0f2297e0d4e775f9fbcc90ae262c18cc1ca34b93dc16a35a",
+        "id": "083b40862377ac8d0f2297e0d4e775f9fbcc90ae262c18cc1ca34b93dc16a35a",
+        "line": 68,
+        "message": "Referenced file does not exist: \"file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/app/(auth)/register/page.tsx\" (resolved as: \"apps/web/src/app/(auth)/register/page.tsx\")",
+        "snippet": "- **File Path**: [register/page.tsx](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/app/(auth)/register/page.tsx)"
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "1459954e2bf20382c45e7bb2d2739ae828cb523a03123cd1de60f4c7a03cfaa4",
+        "id": "1459954e2bf20382c45e7bb2d2739ae828cb523a03123cd1de60f4c7a03cfaa4",
+        "line": 86,
+        "message": "Referenced file does not exist: \"file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/app/(auth)/register/page.tsx\" (resolved as: \"apps/web/src/app/(auth)/register/page.tsx\")",
+        "snippet": "2. [register/page.tsx](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/app/(auth)/register/page.tsx#L186) — Line 186: `<Link href=\"/login\" ...>Sign in</Link>` (self-reference back to login)."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "03fe566c21fce86cc0eba7f57f2ff0646f6d533fc827001f11db6c7978252fa4",
+        "id": "03fe566c21fce86cc0eba7f57f2ff0646f6d533fc827001f11db6c7978252fa4",
+        "line": 120,
+        "message": "Referenced file does not exist: \"file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/app/(auth)/register/page.tsx\" (resolved as: \"apps/web/src/app/(auth)/register/page.tsx\")",
+        "snippet": "*File: [register/page.tsx](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/app/(auth)/register/page.tsx)*"
+      }
+    ],
+    "path": "docs/archive/audits/login-simplification-audit.md",
+    "snippet": "- **File Path**: [register/page.tsx](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/app/(auth)/register/page.tsx)"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-06-30T15:36:27.683Z",
+  "id": "f_e5bb750c",
+  "lastDetected": "2026-06-30T15:36:27.684Z",
+  "occurrenceCount": 3,
+  "owner": "Platform Team",
+  "package": "docs",
+  "relationships": [],
+  "rule": "Broken Link Target",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

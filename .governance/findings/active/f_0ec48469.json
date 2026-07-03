@@ -1,62 +1,35 @@
 {
-  "schemaVersion": 2,
-  "id": "f_0ec48469",
-  "rule": "VAL-UI-011",
-  "ruleVersion": "1.0.0",
-  "engineVersion": "1.0.0",
-  "domain": "UI UX Guild",
-  "owner": "UI UX Guild",
-  "package": "apps",
-  "feature": "UIElement",
-  "status": "NEW",
   "confidence": 0.9,
-  "relationships": [],
+  "createdDate": "2026-06-30T15:36:27.227Z",
+  "domain": "UI UX Guild",
+  "engineVersion": "1.0.0",
   "evidence": {
-    "path": "apps/admin/src/components/events/EventScheduleCard.tsx",
     "construct": "UIElement",
     "line": 1,
-    "message": "Duplicate component layout detected: shares 78% similarity with \"DJSocialLinksCard\" in \"apps/admin/src/components/dj-operators/DJSocialLinksCard.tsx\". Recommendation: Extract the duplicated layout/logic from \"apps/admin/src/components/dj-operators/DJSocialLinksCard.tsx\" and \"apps/admin/src/components/events/EventScheduleCard.tsx\" into a single reusable shared component in \"packages/ui\".",
+    "message": "Duplicate component layout detected: shares 83% similarity with \"EventAdditionalDetailsCard\" in \"apps/admin/src/components/events/EventAdditionalDetailsCard.tsx\". Recommendation: Extract the duplicated layout/logic from \"apps/admin/src/components/events/EventAdditionalDetailsCard.tsx\" and \"apps/admin/src/components/events/EventScheduleCard.tsx\" into a single reusable shared component in \"packages/ui\".",
     "occurrences": [
       {
-        "id": "328c74afa7b1e0c2440a8d3f68db9e4eb5aa65d9fe9fbd8d456b8a16f264181d",
-        "line": 1,
         "column": 0,
         "construct": "UIElement",
-        "snippet": "",
-        "message": "Duplicate component layout detected: shares 78% similarity with \"DJSocialLinksCard\" in \"apps/admin/src/components/dj-operators/DJSocialLinksCard.tsx\". Recommendation: Extract the duplicated layout/logic from \"apps/admin/src/components/dj-operators/DJSocialLinksCard.tsx\" and \"apps/admin/src/components/events/EventScheduleCard.tsx\" into a single reusable shared component in \"packages/ui\".",
-        "fingerprint": "328c74afa7b1e0c2440a8d3f68db9e4eb5aa65d9fe9fbd8d456b8a16f264181d"
-      },
-      {
+        "fingerprint": "328c74afa7b1e0c2440a8d3f68db9e4eb5aa65d9fe9fbd8d456b8a16f264181d",
         "id": "328c74afa7b1e0c2440a8d3f68db9e4eb5aa65d9fe9fbd8d456b8a16f264181d",
         "line": 1,
-        "column": 0,
-        "construct": "UIElement",
-        "snippet": "",
-        "message": "Duplicate component layout detected: shares 82% similarity with \"DJBasicInfoCard\" in \"apps/admin/src/components/dj-operators/DJBasicInfoCard.tsx\". Recommendation: Extract the duplicated layout/logic from \"apps/admin/src/components/dj-operators/DJBasicInfoCard.tsx\" and \"apps/admin/src/components/events/EventScheduleCard.tsx\" into a single reusable shared component in \"packages/ui\".",
-        "fingerprint": "328c74afa7b1e0c2440a8d3f68db9e4eb5aa65d9fe9fbd8d456b8a16f264181d"
-      },
-      {
-        "id": "328c74afa7b1e0c2440a8d3f68db9e4eb5aa65d9fe9fbd8d456b8a16f264181d",
-        "line": 1,
-        "column": 0,
-        "construct": "UIElement",
-        "snippet": "",
-        "message": "Duplicate component layout detected: shares 82% similarity with \"EventScheduleSection\" in \"apps/admin/src/app/events/new/_components/EventScheduleSection.tsx\". Recommendation: Extract the duplicated layout/logic from \"apps/admin/src/app/events/new/_components/EventScheduleSection.tsx\" and \"apps/admin/src/components/events/EventScheduleCard.tsx\" into a single reusable shared component in \"packages/ui\".",
-        "fingerprint": "328c74afa7b1e0c2440a8d3f68db9e4eb5aa65d9fe9fbd8d456b8a16f264181d"
-      },
-      {
-        "id": "328c74afa7b1e0c2440a8d3f68db9e4eb5aa65d9fe9fbd8d456b8a16f264181d",
-        "line": 1,
-        "column": 0,
-        "construct": "UIElement",
-        "snippet": "",
-        "message": "Duplicate component layout detected: shares 83% similarity with \"EventAdditionalDetailsCard\" in \"apps/admin/src/components/events/EventAdditionalDetailsCard.tsx\". Recommendation: Extract the duplicated layout/logic from \"apps/admin/src/components/events/EventAdditionalDetailsCard.tsx\" and \"apps/admin/src/components/events/EventScheduleCard.tsx\" into a single reusable shared component in \"packages/ui\".",
-        "fingerprint": "328c74afa7b1e0c2440a8d3f68db9e4eb5aa65d9fe9fbd8d456b8a16f264181d"
+        "message": "Duplicate component layout detected: shares 78% similarity with \"DJSocialLinksCard\" in \"apps/admin/src/components/dj-operators/DJSocialLinksCard.tsx\". Recommendation: Extract the duplicated layout/logic from \"apps/admin/src/components/dj-operators/DJSocialLinksCard.tsx\" and \"apps/admin/src/components/events/EventScheduleCard.tsx\" into a single reusable shared component in \"packages/ui\"."
       }
-    ]
+    ],
+    "path": "apps/admin/src/components/events/EventScheduleCard.tsx"
   },
-  "createdDate": "2026-06-30T15:36:27.227Z",
+  "feature": "UIElement",
   "firstDetected": "2026-06-30T15:36:27.227Z",
-  "lastDetected": "2026-06-30T15:36:27.227Z",
-  "occurrenceCount": 4
+  "id": "f_0ec48469",
+  "lastDetected": "2026-07-03T08:48:21.131Z",
+  "lastModified": "2026-07-03T08:48:21.131Z",
+  "occurrenceCount": 1,
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-UI-011",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
 }

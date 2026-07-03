@@ -1,54 +1,46 @@
 {
-  "schemaVersion": 2,
-  "id": "f_43716eda",
-  "rule": "VAL-UI-002",
-  "ruleVersion": "1.0.0",
-  "engineVersion": "1.0.0",
-  "domain": "UI UX Guild",
-  "owner": "UI UX Guild",
-  "package": "apps",
-  "feature": "modal-backdrop",
-  "status": "NEW",
   "confidence": 1,
-  "relationships": [],
+  "createdDate": "2026-06-29T08:10:44.830Z",
+  "domain": "UI UX Guild",
+  "engineVersion": "1.0.0",
   "evidence": {
-    "path": "apps/web/src/app/events/[slug]/components/EventBookingFlow.tsx",
     "construct": "modal-backdrop",
-    "snippet": "<div className=\"fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm md:p-4 animate-fade-in\">",
-    "line": 101,
+    "line": 233,
     "message": "Custom backdrop & modal container coded. Use shared <Modal> component from @mad/ui to avoid styles drift.",
     "occurrences": [
       {
-        "id": "d81dacf5a98d6ebe6d3f8cfee0840bd694b5edc345b968063c5a03984e2384f2",
-        "line": 101,
-        "column": 0,
-        "construct": "modal-backdrop",
-        "snippet": "<div className=\"fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm md:p-4 animate-fade-in\">",
-        "message": "Custom backdrop & modal container coded. Use shared <Modal> component from @mad/ui to avoid styles drift.",
-        "fingerprint": "d81dacf5a98d6ebe6d3f8cfee0840bd694b5edc345b968063c5a03984e2384f2"
-      },
-      {
-        "id": "2caceca5e488986d50aff3e579411cacfadc3690a4d5609c7e04772a7abc2145",
-        "line": 101,
         "column": 0,
         "construct": "UIElement",
-        "snippet": "<div className=\"fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm md:p-4 animate-fade-in\">",
+        "fingerprint": "2caceca5e488986d50aff3e579411cacfadc3690a4d5609c7e04772a7abc2145",
+        "id": "2caceca5e488986d50aff3e579411cacfadc3690a4d5609c7e04772a7abc2145",
+        "line": 101,
         "message": "Custom backdrop & modal container coded. Use shared <Modal> component from @mad/ui to avoid styles drift.",
-        "fingerprint": "2caceca5e488986d50aff3e579411cacfadc3690a4d5609c7e04772a7abc2145"
+        "snippet": "<div className=\"fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm md:p-4 animate-fade-in\">"
       },
       {
+        "column": 0,
+        "construct": "UIElement",
+        "fingerprint": "2caceca5e488986d50aff3e579411cacfadc3690a4d5609c7e04772a7abc2145",
         "id": "2caceca5e488986d50aff3e579411cacfadc3690a4d5609c7e04772a7abc2145",
         "line": 233,
-        "column": 0,
-        "construct": "UIElement",
-        "snippet": "<div className=\"fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm md:p-4 animate-fade-in\">",
         "message": "Custom backdrop & modal container coded. Use shared <Modal> component from @mad/ui to avoid styles drift.",
-        "fingerprint": "2caceca5e488986d50aff3e579411cacfadc3690a4d5609c7e04772a7abc2145"
+        "snippet": "<div className=\"fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm md:p-4 animate-fade-in\">"
       }
-    ]
+    ],
+    "path": "apps/web/src/app/events/[slug]/components/EventBookingFlow.tsx",
+    "snippet": "<div className=\"fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm md:p-4 animate-fade-in\">"
   },
-  "createdDate": "2026-06-29T08:10:44.830Z",
+  "feature": "modal-backdrop",
   "firstDetected": "2026-06-29T08:10:44.830Z",
-  "lastDetected": "2026-06-30T15:36:27.249Z",
-  "occurrenceCount": 3
+  "id": "f_43716eda",
+  "lastDetected": "2026-07-03T08:48:21.140Z",
+  "lastModified": "2026-07-03T08:48:21.140Z",
+  "occurrenceCount": 2,
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-UI-002",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
 }

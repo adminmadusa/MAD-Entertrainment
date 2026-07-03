@@ -1,62 +1,35 @@
 {
-  "schemaVersion": 2,
-  "id": "f_a940a246",
-  "rule": "VAL-UI-011",
-  "ruleVersion": "1.0.0",
-  "engineVersion": "1.0.0",
-  "domain": "UI UX Guild",
-  "owner": "UI UX Guild",
-  "package": "apps",
-  "feature": "UIElement",
-  "status": "NEW",
   "confidence": 0.9,
-  "relationships": [],
+  "createdDate": "2026-06-30T15:36:27.175Z",
+  "domain": "UI UX Guild",
+  "engineVersion": "1.0.0",
   "evidence": {
-    "path": "apps/admin/src/app/team/_components/EditAdminModal.tsx",
     "construct": "UIElement",
     "line": 1,
-    "message": "Duplicate component layout detected: shares 76% similarity with \"InviteAdminModal\" in \"apps/admin/src/app/team/_components/InviteAdminModal.tsx\". Recommendation: Extract the duplicated layout/logic from \"apps/admin/src/app/team/_components/EditAdminModal.tsx\" and \"apps/admin/src/app/team/_components/InviteAdminModal.tsx\" into a single reusable shared component in \"packages/ui\".",
+    "message": "Duplicate component layout detected: shares 89% similarity with \"ResetPasswordModal\" in \"apps/admin/src/app/team/_components/ResetPasswordModal.tsx\". Recommendation: Extract the duplicated layout/logic from \"apps/admin/src/app/team/_components/EditAdminModal.tsx\" and \"apps/admin/src/app/team/_components/ResetPasswordModal.tsx\" into a single reusable shared component in \"packages/ui\".",
     "occurrences": [
       {
-        "id": "fc32fb06a2d987d662a97fd4adb15854d83e3129a70b338933e77d5bc3d7d1b0",
-        "line": 1,
         "column": 0,
         "construct": "UIElement",
-        "snippet": "",
-        "message": "Duplicate component layout detected: shares 76% similarity with \"InviteAdminModal\" in \"apps/admin/src/app/team/_components/InviteAdminModal.tsx\". Recommendation: Extract the duplicated layout/logic from \"apps/admin/src/app/team/_components/EditAdminModal.tsx\" and \"apps/admin/src/app/team/_components/InviteAdminModal.tsx\" into a single reusable shared component in \"packages/ui\".",
-        "fingerprint": "fc32fb06a2d987d662a97fd4adb15854d83e3129a70b338933e77d5bc3d7d1b0"
-      },
-      {
+        "fingerprint": "fc32fb06a2d987d662a97fd4adb15854d83e3129a70b338933e77d5bc3d7d1b0",
         "id": "fc32fb06a2d987d662a97fd4adb15854d83e3129a70b338933e77d5bc3d7d1b0",
         "line": 1,
-        "column": 0,
-        "construct": "UIElement",
-        "snippet": "",
-        "message": "Duplicate component layout detected: shares 82% similarity with \"ChangeRoleModal\" in \"apps/admin/src/app/team/_components/ChangeRoleModal.tsx\". Recommendation: Extract the duplicated layout/logic from \"apps/admin/src/app/team/_components/ChangeRoleModal.tsx\" and \"apps/admin/src/app/team/_components/EditAdminModal.tsx\" into a single reusable shared component in \"packages/ui\".",
-        "fingerprint": "fc32fb06a2d987d662a97fd4adb15854d83e3129a70b338933e77d5bc3d7d1b0"
-      },
-      {
-        "id": "fc32fb06a2d987d662a97fd4adb15854d83e3129a70b338933e77d5bc3d7d1b0",
-        "line": 1,
-        "column": 0,
-        "construct": "UIElement",
-        "snippet": "",
-        "message": "Duplicate component layout detected: shares 84% similarity with \"CorrectEmailModal\" in \"apps/admin/src/app/bookings/_components/CorrectEmailModal.tsx\". Recommendation: Extract the duplicated layout/logic from \"apps/admin/src/app/bookings/_components/CorrectEmailModal.tsx\" and \"apps/admin/src/app/team/_components/EditAdminModal.tsx\" into a single reusable shared component in \"packages/ui\".",
-        "fingerprint": "fc32fb06a2d987d662a97fd4adb15854d83e3129a70b338933e77d5bc3d7d1b0"
-      },
-      {
-        "id": "fc32fb06a2d987d662a97fd4adb15854d83e3129a70b338933e77d5bc3d7d1b0",
-        "line": 1,
-        "column": 0,
-        "construct": "UIElement",
-        "snippet": "",
-        "message": "Duplicate component layout detected: shares 89% similarity with \"ResetPasswordModal\" in \"apps/admin/src/app/team/_components/ResetPasswordModal.tsx\". Recommendation: Extract the duplicated layout/logic from \"apps/admin/src/app/team/_components/EditAdminModal.tsx\" and \"apps/admin/src/app/team/_components/ResetPasswordModal.tsx\" into a single reusable shared component in \"packages/ui\".",
-        "fingerprint": "fc32fb06a2d987d662a97fd4adb15854d83e3129a70b338933e77d5bc3d7d1b0"
+        "message": "Duplicate component layout detected: shares 76% similarity with \"InviteAdminModal\" in \"apps/admin/src/app/team/_components/InviteAdminModal.tsx\". Recommendation: Extract the duplicated layout/logic from \"apps/admin/src/app/team/_components/EditAdminModal.tsx\" and \"apps/admin/src/app/team/_components/InviteAdminModal.tsx\" into a single reusable shared component in \"packages/ui\"."
       }
-    ]
+    ],
+    "path": "apps/admin/src/app/team/_components/EditAdminModal.tsx"
   },
-  "createdDate": "2026-06-30T15:36:27.175Z",
+  "feature": "UIElement",
   "firstDetected": "2026-06-30T15:36:27.175Z",
-  "lastDetected": "2026-06-30T15:36:27.176Z",
-  "occurrenceCount": 4
+  "id": "f_a940a246",
+  "lastDetected": "2026-07-03T08:48:21.105Z",
+  "lastModified": "2026-07-03T08:48:21.105Z",
+  "occurrenceCount": 1,
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-UI-011",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
 }

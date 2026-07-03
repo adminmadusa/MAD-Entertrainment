@@ -1,71 +1,35 @@
 {
-  "schemaVersion": 2,
-  "id": "f_1792008d",
-  "rule": "VAL-UI-011",
-  "ruleVersion": "1.0.0",
-  "engineVersion": "1.0.0",
-  "domain": "UI UX Guild",
-  "owner": "UI UX Guild",
-  "package": "apps",
-  "feature": "UIElement",
-  "status": "NEW",
   "confidence": 0.9,
-  "relationships": [],
+  "createdDate": "2026-06-30T15:36:27.237Z",
+  "domain": "UI UX Guild",
+  "engineVersion": "1.0.0",
   "evidence": {
-    "path": "apps/server/src/lib/email/templates/payment-failure.tsx",
     "construct": "UIElement",
     "line": 1,
-    "message": "Duplicate component layout detected: shares 85% similarity with \"BookingConfirmationEmail\" in \"apps/server/src/lib/email/templates/booking-confirmation.tsx\". Recommendation: Extract the duplicated layout/logic from \"apps/server/src/lib/email/templates/booking-confirmation.tsx\" and \"apps/server/src/lib/email/templates/payment-failure.tsx\" into a single reusable shared component in \"packages/ui\".",
+    "message": "Duplicate component layout detected: shares 88% similarity with \"TicketDeliveryEmail\" in \"apps/server/src/lib/email/templates/ticket-delivery.tsx\". Recommendation: Extract the duplicated layout/logic from \"apps/server/src/lib/email/templates/payment-failure.tsx\" and \"apps/server/src/lib/email/templates/ticket-delivery.tsx\" into a single reusable shared component in \"packages/ui\".",
     "occurrences": [
       {
-        "id": "6909f9165047c0ec7e6e1a04bf8797093a72bd1f3021d6e91b35dac123d26293",
-        "line": 1,
         "column": 0,
         "construct": "UIElement",
-        "snippet": "",
-        "message": "Duplicate component layout detected: shares 85% similarity with \"BookingConfirmationEmail\" in \"apps/server/src/lib/email/templates/booking-confirmation.tsx\". Recommendation: Extract the duplicated layout/logic from \"apps/server/src/lib/email/templates/booking-confirmation.tsx\" and \"apps/server/src/lib/email/templates/payment-failure.tsx\" into a single reusable shared component in \"packages/ui\".",
-        "fingerprint": "6909f9165047c0ec7e6e1a04bf8797093a72bd1f3021d6e91b35dac123d26293"
-      },
-      {
+        "fingerprint": "6909f9165047c0ec7e6e1a04bf8797093a72bd1f3021d6e91b35dac123d26293",
         "id": "6909f9165047c0ec7e6e1a04bf8797093a72bd1f3021d6e91b35dac123d26293",
         "line": 1,
-        "column": 0,
-        "construct": "UIElement",
-        "snippet": "",
-        "message": "Duplicate component layout detected: shares 88% similarity with \"EventCancellationEmail\" in \"apps/server/src/lib/email/templates/event-cancellation.tsx\". Recommendation: Extract the duplicated layout/logic from \"apps/server/src/lib/email/templates/event-cancellation.tsx\" and \"apps/server/src/lib/email/templates/payment-failure.tsx\" into a single reusable shared component in \"packages/ui\".",
-        "fingerprint": "6909f9165047c0ec7e6e1a04bf8797093a72bd1f3021d6e91b35dac123d26293"
-      },
-      {
-        "id": "6909f9165047c0ec7e6e1a04bf8797093a72bd1f3021d6e91b35dac123d26293",
-        "line": 1,
-        "column": 0,
-        "construct": "UIElement",
-        "snippet": "",
-        "message": "Duplicate component layout detected: shares 88% similarity with \"FullRefundEmail\" in \"apps/server/src/lib/email/templates/full-refund.tsx\". Recommendation: Extract the duplicated layout/logic from \"apps/server/src/lib/email/templates/full-refund.tsx\" and \"apps/server/src/lib/email/templates/payment-failure.tsx\" into a single reusable shared component in \"packages/ui\".",
-        "fingerprint": "6909f9165047c0ec7e6e1a04bf8797093a72bd1f3021d6e91b35dac123d26293"
-      },
-      {
-        "id": "6909f9165047c0ec7e6e1a04bf8797093a72bd1f3021d6e91b35dac123d26293",
-        "line": 1,
-        "column": 0,
-        "construct": "UIElement",
-        "snippet": "",
-        "message": "Duplicate component layout detected: shares 88% similarity with \"PartialRefundEmail\" in \"apps/server/src/lib/email/templates/partial-refund.tsx\". Recommendation: Extract the duplicated layout/logic from \"apps/server/src/lib/email/templates/partial-refund.tsx\" and \"apps/server/src/lib/email/templates/payment-failure.tsx\" into a single reusable shared component in \"packages/ui\".",
-        "fingerprint": "6909f9165047c0ec7e6e1a04bf8797093a72bd1f3021d6e91b35dac123d26293"
-      },
-      {
-        "id": "6909f9165047c0ec7e6e1a04bf8797093a72bd1f3021d6e91b35dac123d26293",
-        "line": 1,
-        "column": 0,
-        "construct": "UIElement",
-        "snippet": "",
-        "message": "Duplicate component layout detected: shares 88% similarity with \"TicketDeliveryEmail\" in \"apps/server/src/lib/email/templates/ticket-delivery.tsx\". Recommendation: Extract the duplicated layout/logic from \"apps/server/src/lib/email/templates/payment-failure.tsx\" and \"apps/server/src/lib/email/templates/ticket-delivery.tsx\" into a single reusable shared component in \"packages/ui\".",
-        "fingerprint": "6909f9165047c0ec7e6e1a04bf8797093a72bd1f3021d6e91b35dac123d26293"
+        "message": "Duplicate component layout detected: shares 85% similarity with \"BookingConfirmationEmail\" in \"apps/server/src/lib/email/templates/booking-confirmation.tsx\". Recommendation: Extract the duplicated layout/logic from \"apps/server/src/lib/email/templates/booking-confirmation.tsx\" and \"apps/server/src/lib/email/templates/payment-failure.tsx\" into a single reusable shared component in \"packages/ui\"."
       }
-    ]
+    ],
+    "path": "apps/server/src/lib/email/templates/payment-failure.tsx"
   },
-  "createdDate": "2026-06-30T15:36:27.237Z",
+  "feature": "UIElement",
   "firstDetected": "2026-06-30T15:36:27.237Z",
-  "lastDetected": "2026-06-30T15:36:27.238Z",
-  "occurrenceCount": 5
+  "id": "f_1792008d",
+  "lastDetected": "2026-07-03T08:48:21.135Z",
+  "lastModified": "2026-07-03T08:48:21.135Z",
+  "occurrenceCount": 1,
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-UI-011",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
 }

@@ -1,80 +1,35 @@
 {
-  "schemaVersion": 2,
-  "id": "f_e7946bc6",
-  "rule": "VAL-UI-011",
-  "ruleVersion": "1.0.0",
-  "engineVersion": "1.0.0",
-  "domain": "UI UX Guild",
-  "owner": "UI UX Guild",
-  "package": "apps",
-  "feature": "UIElement",
-  "status": "NEW",
   "confidence": 0.9,
-  "relationships": [],
+  "createdDate": "2026-06-30T15:36:27.186Z",
+  "domain": "UI UX Guild",
+  "engineVersion": "1.0.0",
   "evidence": {
-    "path": "apps/admin/src/app/ticket-profiles/page.tsx",
     "construct": "UIElement",
     "line": 1,
-    "message": "Duplicate component layout detected: shares 75% similarity with \"STATUS_COLORS\" in \"apps/admin/src/app/refunds/page.tsx\". Recommendation: Extract the duplicated layout/logic from \"apps/admin/src/app/refunds/page.tsx\" and \"apps/admin/src/app/ticket-profiles/page.tsx\" into a single reusable shared component in \"packages/ui\".",
+    "message": "Duplicate component layout detected: shares 92% similarity with \"AdminPopupsPage\" in \"apps/admin/src/app/popups/page.tsx\". Recommendation: Extract the duplicated layout/logic from \"apps/admin/src/app/popups/page.tsx\" and \"apps/admin/src/app/ticket-profiles/page.tsx\" into a single reusable shared component in \"packages/ui\".",
     "occurrences": [
       {
-        "id": "03794c5fc9d8ccc14fd522f71d5757ad04f156856b2fb56d0137fe1d57291b38",
-        "line": 1,
         "column": 0,
         "construct": "UIElement",
-        "snippet": "",
-        "message": "Duplicate component layout detected: shares 75% similarity with \"STATUS_COLORS\" in \"apps/admin/src/app/refunds/page.tsx\". Recommendation: Extract the duplicated layout/logic from \"apps/admin/src/app/refunds/page.tsx\" and \"apps/admin/src/app/ticket-profiles/page.tsx\" into a single reusable shared component in \"packages/ui\".",
-        "fingerprint": "03794c5fc9d8ccc14fd522f71d5757ad04f156856b2fb56d0137fe1d57291b38"
-      },
-      {
+        "fingerprint": "03794c5fc9d8ccc14fd522f71d5757ad04f156856b2fb56d0137fe1d57291b38",
         "id": "03794c5fc9d8ccc14fd522f71d5757ad04f156856b2fb56d0137fe1d57291b38",
         "line": 1,
-        "column": 0,
-        "construct": "UIElement",
-        "snippet": "",
-        "message": "Duplicate component layout detected: shares 76% similarity with \"AdminNotificationsPage\" in \"apps/admin/src/app/notifications/page.tsx\". Recommendation: Extract the duplicated layout/logic from \"apps/admin/src/app/notifications/page.tsx\" and \"apps/admin/src/app/ticket-profiles/page.tsx\" into a single reusable shared component in \"packages/ui\".",
-        "fingerprint": "03794c5fc9d8ccc14fd522f71d5757ad04f156856b2fb56d0137fe1d57291b38"
-      },
-      {
-        "id": "03794c5fc9d8ccc14fd522f71d5757ad04f156856b2fb56d0137fe1d57291b38",
-        "line": 1,
-        "column": 0,
-        "construct": "UIElement",
-        "snippet": "",
-        "message": "Duplicate component layout detected: shares 84% similarity with \"AdminEventsPage\" in \"apps/admin/src/app/events/page.tsx\". Recommendation: Extract the duplicated layout/logic from \"apps/admin/src/app/events/page.tsx\" and \"apps/admin/src/app/ticket-profiles/page.tsx\" into a single reusable shared component in \"packages/ui\".",
-        "fingerprint": "03794c5fc9d8ccc14fd522f71d5757ad04f156856b2fb56d0137fe1d57291b38"
-      },
-      {
-        "id": "03794c5fc9d8ccc14fd522f71d5757ad04f156856b2fb56d0137fe1d57291b38",
-        "line": 1,
-        "column": 0,
-        "construct": "UIElement",
-        "snippet": "",
-        "message": "Duplicate component layout detected: shares 89% similarity with \"AdminDJsPage\" in \"apps/admin/src/app/dj-operators/page.tsx\". Recommendation: Extract the duplicated layout/logic from \"apps/admin/src/app/dj-operators/page.tsx\" and \"apps/admin/src/app/ticket-profiles/page.tsx\" into a single reusable shared component in \"packages/ui\".",
-        "fingerprint": "03794c5fc9d8ccc14fd522f71d5757ad04f156856b2fb56d0137fe1d57291b38"
-      },
-      {
-        "id": "03794c5fc9d8ccc14fd522f71d5757ad04f156856b2fb56d0137fe1d57291b38",
-        "line": 1,
-        "column": 0,
-        "construct": "UIElement",
-        "snippet": "",
-        "message": "Duplicate component layout detected: shares 92% similarity with \"AdminCouponsPage\" in \"apps/admin/src/app/coupons/page.tsx\". Recommendation: Extract the duplicated layout/logic from \"apps/admin/src/app/coupons/page.tsx\" and \"apps/admin/src/app/ticket-profiles/page.tsx\" into a single reusable shared component in \"packages/ui\".",
-        "fingerprint": "03794c5fc9d8ccc14fd522f71d5757ad04f156856b2fb56d0137fe1d57291b38"
-      },
-      {
-        "id": "03794c5fc9d8ccc14fd522f71d5757ad04f156856b2fb56d0137fe1d57291b38",
-        "line": 1,
-        "column": 0,
-        "construct": "UIElement",
-        "snippet": "",
-        "message": "Duplicate component layout detected: shares 92% similarity with \"AdminPopupsPage\" in \"apps/admin/src/app/popups/page.tsx\". Recommendation: Extract the duplicated layout/logic from \"apps/admin/src/app/popups/page.tsx\" and \"apps/admin/src/app/ticket-profiles/page.tsx\" into a single reusable shared component in \"packages/ui\".",
-        "fingerprint": "03794c5fc9d8ccc14fd522f71d5757ad04f156856b2fb56d0137fe1d57291b38"
+        "message": "Duplicate component layout detected: shares 75% similarity with \"STATUS_COLORS\" in \"apps/admin/src/app/refunds/page.tsx\". Recommendation: Extract the duplicated layout/logic from \"apps/admin/src/app/refunds/page.tsx\" and \"apps/admin/src/app/ticket-profiles/page.tsx\" into a single reusable shared component in \"packages/ui\"."
       }
-    ]
+    ],
+    "path": "apps/admin/src/app/ticket-profiles/page.tsx"
   },
-  "createdDate": "2026-06-30T15:36:27.186Z",
+  "feature": "UIElement",
   "firstDetected": "2026-06-30T15:36:27.186Z",
-  "lastDetected": "2026-06-30T15:36:27.187Z",
-  "occurrenceCount": 6
+  "id": "f_e7946bc6",
+  "lastDetected": "2026-07-03T08:48:21.112Z",
+  "lastModified": "2026-07-03T08:48:21.112Z",
+  "occurrenceCount": 1,
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-UI-011",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
 }

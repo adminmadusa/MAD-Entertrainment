@@ -1,0 +1,33 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T07:29:55.090Z",
+  "domain": "Architecture Review Board",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "message": "Orphaned document: active production file has no incoming links from any documentation entrypoint.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "509c9dd1c9dcc65f01a4b0c22087a4c04ce0d86f9faf5102ee435b3debec1bc7",
+        "id": "509c9dd1c9dcc65f01a4b0c22087a4c04ce0d86f9faf5102ee435b3debec1bc7",
+        "line": 0,
+        "message": "Orphaned document: active production file has no incoming links from any documentation entrypoint."
+      }
+    ],
+    "path": ".agents/skills/pr-review/SKILL.md"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T07:29:55.090Z",
+  "id": "f_ae0a53aa",
+  "lastDetected": "2026-07-03T07:29:55.090Z",
+  "occurrenceCount": 1,
+  "owner": "Architecture Review Board",
+  "package": ".agents",
+  "relationships": [],
+  "rule": "VAL-DOC-007",
+  "ruleVersion": "2.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

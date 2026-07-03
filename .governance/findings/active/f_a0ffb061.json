@@ -1,72 +1,64 @@
 {
-  "schemaVersion": 2,
-  "id": "f_a0ffb061",
-  "rule": "VAL-UI-005",
-  "ruleVersion": "1.0.0",
-  "engineVersion": "1.0.0",
-  "domain": "UI UX Guild",
-  "owner": "UI UX Guild",
-  "package": "apps",
-  "feature": "button",
-  "status": "NEW",
   "confidence": 0.85,
-  "relationships": [],
+  "createdDate": "2026-06-29T08:10:28.791Z",
+  "domain": "UI UX Guild",
+  "engineVersion": "1.0.0",
   "evidence": {
-    "path": "apps/admin/src/components/diagnostics/DlqInspectorDrawer.tsx",
     "construct": "button",
-    "snippet": "<button",
-    "line": 33,
+    "line": 115,
     "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
     "occurrences": [
       {
-        "id": "fd6bbd27e0aa13fffca668505bdbbaa3d2cb38504ccdc40c18d900939fd48a0c",
-        "line": 33,
-        "column": 0,
-        "construct": "button",
-        "snippet": "<button",
-        "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
-        "fingerprint": "fd6bbd27e0aa13fffca668505bdbbaa3d2cb38504ccdc40c18d900939fd48a0c"
-      },
-      {
-        "id": "6a1c3d24cbff16e9f5e9cf94eb4d6a62c645e66813a56eecc2b3af2f13fd516c",
-        "line": 33,
         "column": 0,
         "construct": "UIElement",
-        "snippet": "<button",
+        "fingerprint": "6a1c3d24cbff16e9f5e9cf94eb4d6a62c645e66813a56eecc2b3af2f13fd516c",
+        "id": "6a1c3d24cbff16e9f5e9cf94eb4d6a62c645e66813a56eecc2b3af2f13fd516c",
+        "line": 33,
         "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
-        "fingerprint": "6a1c3d24cbff16e9f5e9cf94eb4d6a62c645e66813a56eecc2b3af2f13fd516c"
+        "snippet": "<button"
       },
       {
+        "column": 0,
+        "construct": "UIElement",
+        "fingerprint": "6a1c3d24cbff16e9f5e9cf94eb4d6a62c645e66813a56eecc2b3af2f13fd516c",
         "id": "6a1c3d24cbff16e9f5e9cf94eb4d6a62c645e66813a56eecc2b3af2f13fd516c",
         "line": 81,
-        "column": 0,
-        "construct": "UIElement",
-        "snippet": "<button",
         "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
-        "fingerprint": "6a1c3d24cbff16e9f5e9cf94eb4d6a62c645e66813a56eecc2b3af2f13fd516c"
+        "snippet": "<button"
       },
       {
+        "column": 0,
+        "construct": "UIElement",
+        "fingerprint": "6a1c3d24cbff16e9f5e9cf94eb4d6a62c645e66813a56eecc2b3af2f13fd516c",
         "id": "6a1c3d24cbff16e9f5e9cf94eb4d6a62c645e66813a56eecc2b3af2f13fd516c",
         "line": 108,
-        "column": 0,
-        "construct": "UIElement",
-        "snippet": "<button",
         "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
-        "fingerprint": "6a1c3d24cbff16e9f5e9cf94eb4d6a62c645e66813a56eecc2b3af2f13fd516c"
+        "snippet": "<button"
       },
       {
-        "id": "6a1c3d24cbff16e9f5e9cf94eb4d6a62c645e66813a56eecc2b3af2f13fd516c",
-        "line": 115,
         "column": 0,
         "construct": "UIElement",
-        "snippet": "<button",
+        "fingerprint": "6a1c3d24cbff16e9f5e9cf94eb4d6a62c645e66813a56eecc2b3af2f13fd516c",
+        "id": "6a1c3d24cbff16e9f5e9cf94eb4d6a62c645e66813a56eecc2b3af2f13fd516c",
+        "line": 115,
         "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
-        "fingerprint": "6a1c3d24cbff16e9f5e9cf94eb4d6a62c645e66813a56eecc2b3af2f13fd516c"
+        "snippet": "<button"
       }
-    ]
+    ],
+    "path": "apps/admin/src/components/diagnostics/DlqInspectorDrawer.tsx",
+    "snippet": "<button"
   },
-  "createdDate": "2026-06-29T08:10:28.791Z",
+  "feature": "button",
   "firstDetected": "2026-06-29T08:10:28.791Z",
-  "lastDetected": "2026-06-30T15:36:27.209Z",
-  "occurrenceCount": 5
+  "id": "f_a0ffb061",
+  "lastDetected": "2026-07-03T08:48:21.121Z",
+  "lastModified": "2026-07-03T08:48:21.121Z",
+  "occurrenceCount": 4,
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-UI-005",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
 }
