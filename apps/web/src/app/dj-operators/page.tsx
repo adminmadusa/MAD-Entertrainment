@@ -24,6 +24,10 @@ export default function DJsPage() {
         page,
         limit: 12,
       }),
+    // PERF-018E: Keep list data fresh for 30 s so back-navigation shows
+    // cached results immediately instead of re-fetching and flashing skeletons.
+    staleTime: 30_000,
+    gcTime: 5 * 60_000,
   });
 
   const djs = data?.data ?? [];

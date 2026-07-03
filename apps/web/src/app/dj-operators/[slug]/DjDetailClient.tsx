@@ -5,12 +5,11 @@ import { useQuery } from '@tanstack/react-query';
 import { motion, AnimatePresence, useReducedMotion, PanInfo } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
 import { ArrowRight, ArrowLeft } from '@mad/ui';
-import { ImageAsset } from '@mad/types';
+import { ImageAsset, DJOperator } from '@mad/types';
 
 import { publicGetDJBySlug } from '@/lib/api/public.service';
-import { useWindowWidth } from '@/hooks/use-window.hook';
+import { useWindowWidth, useMounted } from '@/hooks/use-window.hook';
 
 // ─── SVG Icons ────────────────────────────────────────────────
 
@@ -110,6 +109,11 @@ function getSocialIcon(platform: string) {
 
 function GalleryCarousel({ galleryImages = [] }: { galleryImages?: ImageAsset[] }) {
   const images = galleryImages;
+  // PERF-018D: useMounted prevents SSR/hydration layout shift.
+  // useWindowWidth() defaults to 1024 on the server. On mobile devices this
+  // causes a jump from cardWidth=380 → 240 after hydration (CLS 0.08).
+  // The gallery is below-fold; deferring to after mount eliminates the shift.
+  const mounted = useMounted();
 
   const [activeIndex, setActiveIndex] = useState(0);
   const windowWidth = useWindowWidth();
@@ -146,6 +150,17 @@ function GalleryCarousel({ galleryImages = [] }: { galleryImages?: ImageAsset[] 
 
   const cardWidth = windowWidth < 640 ? 240 : 380;
   const cardHeight = cardWidth * (9 / 16);
+
+  // Reserve space matching mobile card height until client has hydrated
+  if (!mounted) {
+    return (
+      <div
+        className="relative w-full max-w-4xl mx-auto mt-6"
+        style={{ minHeight: `${240 * (9 / 16)}px` }}
+        aria-hidden="true"
+      />
+    );
+  }
 
   return (
     <div 
@@ -291,13 +306,30 @@ function GalleryCarousel({ galleryImages = [] }: { galleryImages?: ImageAsset[] 
 
 // ─── Main DJDetailClient Component ───────────────────────────
 
-export default function DJDetailClient() {
-  const params = useParams();
-  const slug = params.slug as string;
+interface DJDetailClientProps {
+  /** Slug passed from the server page — avoids useParams() round-trip */
+  slug: string;
+  /**
+   * DJ data pre-fetched server-side. Passed as `initialData` to useQuery
+   * so the client renders immediately without a duplicate network round-trip.
+   * Falls back to a client-side fetch if undefined (e.g. build-time error).
+   */
+  initialDJ?: DJOperator;
+}
+
+export default function DJDetailClient({ slug, initialDJ }: DJDetailClientProps) {
+  // PERF-018A: slug now comes from the server page as a prop.
+  // useParams() was the previous fallback; removed to eliminate the extra
+  // hook call and the client-side waterfall it triggered.
 
   const { data: dj, isLoading, error } = useQuery({
     queryKey: ['public-dj', slug],
     queryFn: () => publicGetDJBySlug(slug),
+    initialData: initialDJ,
+    // Treat server-fetched data as fresh for 60 s to prevent an immediate
+    // background refetch on mount (React Query default staleTime is 0).
+    staleTime: 60_000,
+    initialDataUpdatedAt: initialDJ ? Date.now() : undefined,
   });
 
   if (isLoading) {
