@@ -14,6 +14,7 @@ vi.mock('../../controllers/public/booking.controller', () => ({
   resendBookingTickets: vi.fn(),
   recoverBooking: vi.fn((req: any, res: any) => res.status(200).json({ success: true, email: 'test@example.com' })),
   verifyRecoveredBookingOTP: vi.fn(),
+  generateDownloadToken: vi.fn(),
 }));
 
 vi.mock('../../middleware/auth.middleware', () => ({

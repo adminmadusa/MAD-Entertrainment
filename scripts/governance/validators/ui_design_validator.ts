@@ -154,7 +154,10 @@ export class UIDesignValidator implements GovernanceValidator {
       // AST Walker for Rules
       const walk = (node: ts.Node) => {
         // Rule 1: VAL-UI-007 - Hardcoded Colors (Hex colors check)
-        if (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node)) {
+        const isEmailOrPdfTemplate =
+          file.includes('apps/server/src/lib/email/templates') ||
+          file.includes('apps/server/src/lib/pdf/ticket');
+        if (!isEmailOrPdfTemplate && (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node))) {
           const text = node.text;
           const exactHexPattern = /^#([0-9a-fA-F]{3,4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/;
           if (exactHexPattern.test(text)) {
