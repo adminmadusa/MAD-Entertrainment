@@ -9333,6 +9333,14 @@
       "hash": "881d706c0f6ab4edd6c8ae60f38623acf18abd31",
       "lastModified": 1783069132952.7847
     },
+    "docs/governance/ROADMAP.md": {
+      "assetReferences": [],
+      "dependencies": [],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "5920273804ccbae6fa09bb91f1f2b3225b1b9625",
+      "lastModified": 1783072314699.2363
+    },
     "docs/governance/VALIDATOR_REGISTRY.md": {
       "assetReferences": [],
       "dependencies": [],
@@ -11860,6 +11868,6 @@
       "lastModified": 1783050805912.8364
     }
   },
-  "timestamp": "2026-07-03T09:44:53.348Z",
+  "timestamp": "2026-07-03T09:52:26.383Z",
   "version": "1.1.0"
 }
