@@ -61,4 +61,11 @@ scratch/
 .governance/analytics/
 .governance/metrics/
 .governance/archive/
+.governance/history/.governance/analytics/
+.governance/baselines/
+.governance/archive/
 .governance/history/
+.governance/findings/
+.governance/baseline.json
+.governance/manifest.json
+.governance/metrics/
