@@ -2910,6 +2910,8 @@
   "scripts/governance/validators/accessibility_validator.ts",
   "scripts/governance/validators/adr_validator.test.ts",
   "scripts/governance/validators/adr_validator.ts",
+  "scripts/governance/validators/architecture_validator.test.ts",
+  "scripts/governance/validators/architecture_validator.ts",
   "scripts/governance/validators/cross_reference_validator.test.ts",
   "scripts/governance/validators/cross_reference_validator.ts",
   "scripts/governance/validators/dead_asset_duplicate_validator.ts",

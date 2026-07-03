@@ -4252,8 +4252,8 @@
       "exports": [
         "default"
       ],
-      "hash": "1372793ef40b67bc933dbc0106b15fc0de299042",
-      "lastModified": 1781697712094.1306
+      "hash": "5ad86bf22c58cc80b14c1e364af0a516b7c251ca",
+      "lastModified": 1783076532228.0574
     },
     "apps/server/src/routes/admin/category.routes.ts": {
       "assetReferences": [],
@@ -5053,15 +5053,16 @@
       "assetReferences": [],
       "dependencies": [
         "apps/server/src/models/notification.schema.ts",
-        "apps/server/src/utils/email.ts"
+        "apps/server/src/utils/email.ts",
+        "apps/server/src/utils/logger.ts"
       ],
       "dynamicImports": [],
       "exports": [
         "getNotifications",
         "retryNotification"
       ],
-      "hash": "01bb0ae6fcf1d650b78fbd99dadfa1871b86ab24",
-      "lastModified": 1781697712105.1165
+      "hash": "ead9f4ff978d511bc4c0d8dd2e60490bc3be11b7",
+      "lastModified": 1783076483422.952
     },
     "apps/server/src/services/admin/popup.service.ts": {
       "assetReferences": [],
@@ -6005,7 +6006,8 @@
         "apps/server/src/services/queue.service.ts",
         "apps/server/src/config/queue.config.ts",
         "packages/shared/src/index.ts",
-        "apps/server/src/config/env.ts"
+        "apps/server/src/config/env.ts",
+        "apps/server/src/utils/logger.ts"
       ],
       "dynamicImports": [],
       "exports": [
@@ -6014,8 +6016,8 @@
         "revokeTicket",
         "getAttendeeTickets"
       ],
-      "hash": "5ded095462d9b823b3664d7d6b472f2d6fbd23be",
-      "lastModified": 1782035739802.4053
+      "hash": "af00bf0f7559e61c264724059f5dfc51c1aaeb72",
+      "lastModified": 1783076471839.011
     },
     "apps/server/src/services/queue.service.test.ts": {
       "assetReferences": [],
@@ -6492,10 +6494,14 @@
         "updateEventSchema",
         "adminEventsQuerySchema",
         "createTicketProfileSchema",
-        "updateTicketProfileSchema"
+        "updateTicketProfileSchema",
+        "cancelBookingSchema",
+        "correctBookingEmailSchema",
+        "resendBookingTicketsSchema",
+        "bookingsSummarySchema"
       ],
-      "hash": "c9f646f667f93371954aa005517ba6e2a9ae001b",
-      "lastModified": 1783059854405.1438
+      "hash": "ab920e1ae67e7826fbf769782b727578364e631a",
+      "lastModified": 1783076523990.1667
     },
     "apps/server/src/validations/admin-user.validation.ts": {
       "assetReferences": [],
@@ -8191,10 +8197,11 @@
       "exports": [
         "apiClient",
         "extractApiError",
-        "ApiError"
+        "ApiError",
+        "isAxiosError"
       ],
-      "hash": "626af86f7398b8e4e90b26c93ed06696c370f4cf",
-      "lastModified": 1782645682515.5244
+      "hash": "10b9b459da01dd485aa2e2b059a7d6597cd67d33",
+      "lastModified": 1783076497450.7007
     },
     "apps/web/src/lib/api/public.service.ts": {
       "assetReferences": [],
@@ -8316,15 +8323,16 @@
         "apps/web/src/lib/api/public.service.ts",
         "packages/shared/src/index.ts",
         "apps/web/src/types/auth.ts",
-        "packages/utils/src/index.ts"
+        "packages/utils/src/index.ts",
+        "apps/web/src/lib/api/client.ts"
       ],
       "dynamicImports": [],
       "exports": [
         "AuthProvider",
         "useAuth"
       ],
-      "hash": "5eb7c1fdef843e39270aa343fc235a117ac9046f",
-      "lastModified": 1782623379327.6006
+      "hash": "fc7b41f27833b2a99df37c852ab95f2e94e7e578",
+      "lastModified": 1783076514898.71
     },
     "apps/web/src/providers/index.tsx": {
       "assetReferences": [],
@@ -11984,6 +11992,6 @@
       "lastModified": 1783050805912.8364
     }
   },
-  "timestamp": "2026-07-03T10:48:24.932Z",
+  "timestamp": "2026-07-03T11:02:19.604Z",
   "version": "1.1.0"
 }

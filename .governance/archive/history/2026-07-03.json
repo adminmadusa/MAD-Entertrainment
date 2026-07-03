@@ -1,6 +1,6 @@
 {
-  "activeCount": 859,
-  "closedCount": 51,
+  "activeCount": 855,
+  "closedCount": 55,
   "findings": [
     {
       "id": "f_003b6801",
@@ -1980,7 +1980,7 @@
       "id": "f_605b4696",
       "occurrenceCount": 3,
       "rule": "VAL-ARC-001",
-      "status": "NEW"
+      "status": "CLOSED"
     },
     {
       "id": "f_60b8f27d",
@@ -3162,7 +3162,7 @@
       "id": "f_9a00636e",
       "occurrenceCount": 1,
       "rule": "VAL-ARC-002",
-      "status": "NEW"
+      "status": "CLOSED"
     },
     {
       "id": "f_9a6c8394",
@@ -3942,7 +3942,7 @@
       "id": "f_bc808d12",
       "occurrenceCount": 1,
       "rule": "VAL-ARC-001",
-      "status": "NEW"
+      "status": "CLOSED"
     },
     {
       "id": "f_bccdac98",
@@ -4302,7 +4302,7 @@
       "id": "f_cf23d79d",
       "occurrenceCount": 11,
       "rule": "VAL-ARC-004",
-      "status": "NEW"
+      "status": "CLOSED"
     },
     {
       "id": "f_cf24dd38",
@@ -5464,5 +5464,5 @@
     }
   ],
   "suppressedCount": 0,
-  "timestamp": "2026-07-03T10:47:18.681Z"
+  "timestamp": "2026-07-03T11:03:04.168Z"
 }
