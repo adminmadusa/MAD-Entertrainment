@@ -9268,6 +9268,14 @@
       "hash": "c32704441f519e38231da524b243c799a6ece47f",
       "lastModified": 1783069158945.1804
     },
+    "docs/governance/MAD_AI_OPERATING_INSTRUCTIONS.md": {
+      "assetReferences": [],
+      "dependencies": [],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "27bed672649a61da9d61fcbb7c1b6054e7fa33fb",
+      "lastModified": 1783072390195.7695
+    },
     "docs/governance/NAMING_CONVENTIONS.md": {
       "assetReferences": [],
       "dependencies": [
@@ -11868,6 +11876,6 @@
       "lastModified": 1783050805912.8364
     }
   },
-  "timestamp": "2026-07-03T09:52:26.383Z",
+  "timestamp": "2026-07-03T09:53:31.418Z",
   "version": "1.1.0"
 }

@@ -1,5 +1,5 @@
 {
-  "activeCount": 851,
+  "activeCount": 854,
   "closedCount": 49,
   "findings": [
     {
@@ -414,6 +414,12 @@
       "id": "f_13adac31",
       "occurrenceCount": 3,
       "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_144189a4",
+      "occurrenceCount": 1,
+      "rule": "Missing Document Owner",
       "status": "NEW"
     },
     {
@@ -1812,6 +1818,12 @@
       "id": "f_5938c372",
       "occurrenceCount": 6,
       "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_596def01",
+      "occurrenceCount": 1,
+      "rule": "VAL-DOC-007",
       "status": "NEW"
     },
     {
@@ -4497,6 +4509,12 @@
       "status": "NEW"
     },
     {
+      "id": "f_d79a17a2",
+      "occurrenceCount": 1,
+      "rule": "Orphaned Documentation",
+      "status": "NEW"
+    },
+    {
       "id": "f_d7b0dfc1",
       "occurrenceCount": 1,
       "rule": "VAL-DOC-007",
@@ -5404,5 +5422,5 @@
     }
   ],
   "suppressedCount": 0,
-  "timestamp": "2026-07-03T09:52:27.957Z"
+  "timestamp": "2026-07-03T09:53:33.222Z"
 }

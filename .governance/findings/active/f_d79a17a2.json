@@ -1,0 +1,33 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T09:53:33.211Z",
+  "domain": "Architecture Review Board",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "message": "Document exists in the repository but has no incoming references from any other active documentation.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "d3f3a4308022e5c28ce8d8a899b051191b1a05bb1fe56994d339f1b6a851147d",
+        "id": "d3f3a4308022e5c28ce8d8a899b051191b1a05bb1fe56994d339f1b6a851147d",
+        "line": 0,
+        "message": "Document exists in the repository but has no incoming references from any other active documentation."
+      }
+    ],
+    "path": "docs/governance/MAD_AI_OPERATING_INSTRUCTIONS.md"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T09:53:33.211Z",
+  "id": "f_d79a17a2",
+  "lastDetected": "2026-07-03T09:53:33.211Z",
+  "occurrenceCount": 1,
+  "owner": "Architecture Review Board",
+  "package": "docs",
+  "relationships": [],
+  "rule": "Orphaned Documentation",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}
