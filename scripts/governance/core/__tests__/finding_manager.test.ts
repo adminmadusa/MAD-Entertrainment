@@ -85,6 +85,7 @@ describe('FindingManager (State Persistence & Serialization)', () => {
     };
 
     const finding = fm.matchOrCreateFinding(violation);
+    fm.finalizeFinding(finding.id);
 
     expect(finding.id).toBeDefined();
     expect(finding.id.startsWith('f_')).toBe(true);
@@ -136,6 +137,7 @@ describe('FindingManager (State Persistence & Serialization)', () => {
     };
 
     const matchedFinding = fm.matchOrCreateFinding(violation);
+    fm.finalizeFinding(matchedFinding.id);
 
     expect(matchedFinding.id).toBe(originalFinding.id);
     expect(matchedFinding.evidence.path).toBe(newPath);

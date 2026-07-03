@@ -73,6 +73,11 @@ export class AuditEngine {
       scannedFiles: options.scannedFiles,
     });
 
+    // 2.5. Finalize active finding occurrences and apply write suppression if structurally unchanged
+    for (const id of activeFindingIds) {
+      this.findingManager.finalizeFinding(id);
+    }
+
     // 3. Load and run governance plugins (if any exist)
     this.executePlugins(rawViolations);
 
