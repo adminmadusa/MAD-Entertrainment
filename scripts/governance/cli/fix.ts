@@ -2,6 +2,7 @@ import { resolve } from 'path';
 import { AutoFixEngine } from '../core/autofix_engine';
 import { FixContext } from '../core/fix_context';
 import { RollbackManager } from '../core/rollback_manager';
+import { FixRegistry } from '../core/fix_registry';
 
 const workspaceRoot = resolve(__dirname, '../../..');
 
@@ -35,6 +36,9 @@ async function run() {
       process.exit(1);
     }
   }
+
+  // Register default standard fixers
+  FixRegistry.registerDefaultFixers();
 
   // 2. Parse CLI Options
   const dryRun = args.includes('--dry-run');

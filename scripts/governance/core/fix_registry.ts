@@ -1,7 +1,16 @@
 import { Fixer } from './fix_types';
+import { MalformedAtxHeadingFixer } from './fixers/malformed_atx_heading_fixer';
+import { FilenameCasingFixer } from './fixers/filename_casing_fixer';
+import { WorkstationPathFixer } from './fixers/workstation_path_fixer';
 
 export class FixRegistry {
   private static fixers = new Map<string, Fixer>();
+
+  public static registerDefaultFixers() {
+    this.register(new MalformedAtxHeadingFixer());
+    this.register(new FilenameCasingFixer());
+    this.register(new WorkstationPathFixer());
+  }
 
   public static register(fixer: Fixer) {
     if (this.fixers.has(fixer.ruleId)) {
