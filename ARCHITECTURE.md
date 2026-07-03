@@ -4,7 +4,7 @@ Status: Active
 Version: 1.0
 Owner: Repository Architecture
 Review Cycle: Quarterly
-Last Updated: 2026-06-25
+Last Updated: 2026-07-03
 
 Supersedes:
 - [governance.md](docs/architecture/governance.md) (Deleted)
@@ -122,8 +122,8 @@ All package references must follow a strict top-down dependency direction:
 
 ### Current Implementation
 The monorepo contains five internal packages under `packages/*`:
-1. **`@mad/shared`**: Contains core domain enums (`BookingStatus`, `EventStatus`), query keys, and status metadata.
-2. **`@mad/types`**: Declares TypeScript interfaces representing database entities (`Event`, `Seat`, `Booking`).
+1. **`@mad/shared`**: Contains core domain enums (`BookingStatus`, `EventStatus`, `EventMemoryPublicationState`), gallery limit constants (`MAX_MEMORIES_GALLERY_LIMIT`, `DEFAULT_MEMORIES_GALLERY_LIMIT`), query keys, and status metadata.
+2. **`@mad/types`**: Declares TypeScript interfaces representing database entities (`Event`, `Seat`, `Booking`, `EventMemoryConfig`).
 3. **`@mad/ui`**: Exports reusable React layout elements and primitives.
 4. **`@mad/utils`**: Contains stateless utilities (`date.ts`, `jwt.ts`).
 5. **`@mad/validations`**: Exports Zod schemas for input payload validation (`checkoutSchema`, `verifyAuthSchema`).
@@ -239,6 +239,113 @@ sequenceDiagram
 
 ### Future Recommendations
 - Omitted (No active proposals exist for system data flows).
+
+---
+
+## 6.1. Event Memories Data Flow
+
+### Current Implementation
+
+Event Memories is a post-event content sub-system embedded within the `Event` document. It is owned and enforced exclusively by the backend.
+
+*Evidence*:
+- `apps/server/src/models/event.schema.ts` — `eventMemorySchema` sub-document
+- `apps/server/src/services/admin/event.service.ts` — publication state transition guard
+- `apps/server/src/services/public/event.service.ts` — memories suppression logic
+- `apps/server/src/controllers/admin/event.controller.ts` — `getPreviewToken()`
+- `packages/shared/src/constants/index.ts` — `EventMemoryPublicationState` enum
+- `packages/types/src/index.ts` — `EventMemoryConfig` type
+
+#### Publication State Lifecycle
+
+```mermaid
+stateDiagram-v2
+  [*] --> DRAFT : Admin saves initial memories
+  DRAFT --> PREVIEW : Admin requests preview
+  PREVIEW --> PUBLISHED : Admin publishes
+  DRAFT --> PUBLISHED : Admin publishes directly
+  PUBLISHED --> HIDDEN : Admin hides memories
+  HIDDEN --> PUBLISHED : Admin re-publishes
+  PUBLISHED --> [*] : Admin clears (memories = null)
+  HIDDEN --> [*] : Admin clears (memories = null)
+```
+
+| State | Public Visibility | Booking Allowed | Preview Token Required |
+| :--- | :--- | :--- | :--- |
+| `DRAFT` | ❌ Hidden from public | N/A | ✅ Required |
+| `PREVIEW` | ❌ Hidden from public | N/A | ✅ Required |
+| `PUBLISHED` | ✅ Visible | N/A (event is COMPLETED) | ❌ Not required |
+| `HIDDEN` | ❌ Hidden from public | N/A | ✅ Required |
+
+#### Database Schema
+
+The `memories` field is an optional, nullable sub-document on the `Event` Mongoose model (`apps/server/src/models/event.schema.ts`):
+
+```text
+Event {
+  memories: {
+    publicationState  String  enum(DRAFT|PREVIEW|PUBLISHED|HIDDEN)  default=DRAFT
+    heading           String  maxlength=200  optional
+    thankYouMessage   String  maxlength=2000  optional
+    highlights        [String]  default=[]
+    gallery: [{
+      url             String  required
+      publicId        String  required
+      hash            String  optional
+      order           Number  default=0
+    }]  max=50 items
+    publishedAt       Date  optional
+  } | null  default=null
+}
+```
+
+**Schema Design Notes:**
+- `memories` defaults to `null` on all existing and new events. The sub-document is created on first admin write.
+- `publishedAt` is set exactly once — on the first transition to `PUBLISHED`. Subsequent `HIDDEN → PUBLISHED` re-publications preserve the original value to maintain a stable "published since" timestamp on the public-facing UI.
+- Removed gallery items are detected by diffing `oldMemoryGalleryIds` against `newMemoryGalleryIds` and submitted to `safeDeleteImages` for Cloudinary cleanup.
+
+#### Preview Token Flow
+
+```mermaid
+sequenceDiagram
+  autonumber
+  actor Admin
+  participant AdminUI as Admin Next.js
+  participant Server as Express Server
+  participant PublicUI as Public Next.js
+
+  Admin->>AdminUI: Click "Preview" in EventMemoriesCard
+  AdminUI->>Server: POST /api/admin/events/:id/preview-token
+  Server-->>AdminUI: { token, expiresAt } (TTL: 15 min)
+  AdminUI->>PublicUI: Open /events/:slug?preview=<token>
+  PublicUI->>Server: GET /api/events/:slug?preview=<token>
+  Server->>Server: verifyPreviewToken(token, JWT_ADMIN_SECRET)
+  Server-->>PublicUI: Event data with memories (all states)
+```
+
+#### Ownership Matrix
+
+| Responsibility | Owner | Location |
+| :--- | :--- | :--- |
+| Publication state enum | `@mad/shared` | `packages/shared/src/constants/index.ts` |
+| Shared TypeScript type | `@mad/types` | `packages/types/src/index.ts` |
+| Gallery limit constants | `@mad/shared` | `packages/shared/src/constants/index.ts` |
+| Database schema | `apps/server` | `apps/server/src/models/event.schema.ts` |
+| Zod validation schema | `apps/server` | `apps/server/src/validations/admin-content.validation.ts` |
+| Publication state transitions | `apps/server` | `apps/server/src/services/admin/event.service.ts` |
+| Public memories suppression | `apps/server` | `apps/server/src/services/public/event.service.ts` |
+| Preview token generation | `apps/server` | `apps/server/src/controllers/admin/event.controller.ts` |
+| Admin compose UI | `apps/admin` | `apps/admin/src/components/events/EventMemoriesCard.tsx` |
+| Public display UI | `apps/web` | `apps/web/src/app/events/[slug]/components/EventMemoriesRecap.tsx` |
+
+### Repository Standard
+- The backend is the sole authority for all publication state transitions. Frontends must never evaluate or override publication states.
+- Preview tokens must be signed with `JWT_ADMIN_SECRET` (distinct from `JWT_SECRET`) and have a maximum TTL of 15 minutes.
+- The `publicationState` field must match the `EventMemoryPublicationState` enum. Arbitrary string values are rejected at the Zod validation layer.
+- Gallery images are Cloudinary assets. Deletion of orphaned assets must be performed via `safeDeleteImages` to avoid Cloudinary storage leaks.
+
+### Future Recommendations
+- Omitted (No active proposals exist for Event Memories).
 
 ---
 
