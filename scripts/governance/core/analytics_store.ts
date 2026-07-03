@@ -24,32 +24,38 @@ export class AnalyticsStore {
 
     // Inject shared metadata/timestamp
     const repoWithMetadata: any = {
-      ...result.repository,
+      schemaVersion: result.repository.schemaVersion,
       generatedAt,
+      data: {
+        overallScore: result.repository.overallScore,
+        categoryScores: result.repository.categoryScores,
+        findings: result.repository.findings,
+        kpis: result.repository.kpis,
+      }
     };
 
     const rulesWithMetadata: any = {
       schemaVersion: result.repository.schemaVersion,
       generatedAt,
-      rules: result.rules,
+      data: result.rules,
     };
 
     const fixesWithMetadata: any = {
       schemaVersion: result.repository.schemaVersion,
       generatedAt,
-      fixes: result.fixes,
+      data: result.fixes,
     };
 
     const sessionsWithMetadata: any = {
       schemaVersion: result.repository.schemaVersion,
       generatedAt,
-      sessions: result.sessions,
+      data: result.sessions,
     };
 
     const trendsWithMetadata: any = {
       schemaVersion: result.repository.schemaVersion,
       generatedAt,
-      trends: result.trends,
+      data: result.trends,
     };
 
     // Write in fixed order

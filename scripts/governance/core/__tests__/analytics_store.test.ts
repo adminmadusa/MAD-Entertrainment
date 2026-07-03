@@ -1,13 +1,14 @@
 // scripts/governance/core/__tests__/analytics_store.test.ts
 import { existsSync, mkdirSync, readFileSync, rmSync } from 'fs';
-import { resolve } from 'path';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { resolve, join } from 'path';
+import { beforeEach, afterEach, describe, expect, it } from 'vitest';
 
 import { AnalyticsStore } from '../analytics_store';
 import type { AnalyticsResult } from '../analytics_types';
 
-const workspaceRoot = resolve(__dirname, '../../../../..');
-const sandboxAnalyticsDir = resolve(workspaceRoot, '.governance/analytics');
+// Isolate test sandbox directory under the current test folder
+const testSandboxRoot = resolve(__dirname, 'temp_sandbox');
+const testAnalyticsDir = join(testSandboxRoot, '.governance/analytics');
 
 describe('AnalyticsStore', () => {
   const dummyResult: AnalyticsResult = {
@@ -85,46 +86,93 @@ describe('AnalyticsStore', () => {
   };
 
   beforeEach(() => {
-    if (existsSync(sandboxAnalyticsDir)) {
-      rmSync(sandboxAnalyticsDir, { recursive: true, force: true });
+    if (existsSync(testSandboxRoot)) {
+      rmSync(testSandboxRoot, { recursive: true, force: true });
     }
-    mkdirSync(sandboxAnalyticsDir, { recursive: true });
+    mkdirSync(testSandboxRoot, { recursive: true });
   });
 
-  it('correctly persists analytics files under .governance/analytics/', () => {
+  afterEach(() => {
+    if (existsSync(testSandboxRoot)) {
+      rmSync(testSandboxRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('correctly persists analytics files under test_sandbox/.governance/analytics/ with data wrapping', () => {
     const generatedAt = '2026-07-03T12:00:00.000Z';
-    const res = AnalyticsStore.write(dummyResult, generatedAt, workspaceRoot);
+    const res = AnalyticsStore.write(dummyResult, generatedAt, testSandboxRoot);
 
     expect(res.writtenCount).toBe(5);
     expect(res.skippedCount).toBe(0);
 
-    // Verify files presence
-    const files = ['repository.json', 'rules.json', 'fixes.json', 'sessions.json', 'trends.json'];
+    const files = [
+      { name: 'repository.json', type: 'object' },
+      { name: 'rules.json', type: 'array' },
+      { name: 'fixes.json', type: 'object' },
+      { name: 'sessions.json', type: 'array' },
+      { name: 'trends.json', type: 'array' },
+    ];
+
+    const iso8601Regex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3})?Z$/;
+
     for (const file of files) {
-      expect(existsSync(resolve(sandboxAnalyticsDir, file))).toBe(true);
+      const filePath = join(testAnalyticsDir, file.name);
+      expect(existsSync(filePath)).toBe(true);
+
+      const content = readFileSync(filePath, 'utf8');
+      const parsed = JSON.parse(content);
+
+      // Verify standardized envelope metadata
+      expect(Number.isInteger(parsed.schemaVersion)).toBe(true);
+      expect(parsed.schemaVersion).toBe(1);
+      expect(parsed.generatedAt).toMatch(iso8601Regex);
+      expect(parsed.generatedAt).toBe(generatedAt);
+
+      // Verify nested payload and data types
+      expect(parsed.data).toBeDefined();
+      if (file.type === 'array') {
+        expect(Array.isArray(parsed.data)).toBe(true);
+      } else {
+        expect(typeof parsed.data).toBe('object');
+        expect(parsed.data).not.toBeNull();
+        expect(Array.isArray(parsed.data)).toBe(false);
+      }
+
+      // Assert that the raw file keys are sorted alphabetically
+      const keys = Object.keys(parsed);
+      const sortedKeys = [...keys].sort();
+      expect(keys).toEqual(sortedKeys);
     }
-
-    // Read repository.json and assert deterministic keys (e.g. sorted keys)
-    const content = readFileSync(resolve(sandboxAnalyticsDir, 'repository.json'), 'utf8');
-    const parsed = JSON.parse(content);
-    expect(parsed.schemaVersion).toBe(1);
-    expect(parsed.generatedAt).toBe(generatedAt);
-    expect(parsed.overallScore).toBe(92);
-
-    // Assert that the raw file keys are sorted alphabetically (checked by serializing matching structure)
-    const keys = Object.keys(parsed);
-    const sortedKeys = [...keys].sort();
-    expect(keys).toEqual(sortedKeys);
   });
 
-  it('satisfies idempotency (zero writes on identical consecutive calls)', () => {
-    const generatedAt = '2026-07-03T12:00:00.000Z';
-    const firstRun = AnalyticsStore.write(dummyResult, generatedAt, workspaceRoot);
+  it('satisfies idempotency (zero writes on identical consecutive calls, preserving generatedAt)', () => {
+    const firstGeneratedAt = '2026-07-03T12:00:00.000Z';
+    const secondGeneratedAt = '2026-07-03T13:00:00.000Z'; // Different timestamp
+
+    // 1. Run once
+    const firstRun = AnalyticsStore.write(dummyResult, firstGeneratedAt, testSandboxRoot);
     expect(firstRun.writtenCount).toBe(5);
     expect(firstRun.skippedCount).toBe(0);
 
-    const secondRun = AnalyticsStore.write(dummyResult, generatedAt, workspaceRoot);
+    // Capture the exact file contents after the first run
+    const files = ['repository.json', 'rules.json', 'fixes.json', 'sessions.json', 'trends.json'];
+    const firstRunContents: Record<string, string> = {};
+    for (const file of files) {
+      firstRunContents[file] = readFileSync(join(testAnalyticsDir, file), 'utf8');
+    }
+
+    // 2. Run again with identical input data but a new generatedAt timestamp
+    const secondRun = AnalyticsStore.write(dummyResult, secondGeneratedAt, testSandboxRoot);
     expect(secondRun.writtenCount).toBe(0);
-    expect(secondRun.skippedCount).toBe(5); // Skipped all because files didn't change
+    expect(secondRun.skippedCount).toBe(5); // All 5 should be skipped (idempotent)
+
+    // 3. Verify that the file contents and the generatedAt timestamp did not change
+    for (const file of files) {
+      const currentContent = readFileSync(join(testAnalyticsDir, file), 'utf8');
+      expect(currentContent).toBe(firstRunContents[file]);
+      
+      const parsed = JSON.parse(currentContent);
+      expect(parsed.generatedAt).toBe(firstGeneratedAt); // Preserved the original timestamp
+    }
   });
 });
