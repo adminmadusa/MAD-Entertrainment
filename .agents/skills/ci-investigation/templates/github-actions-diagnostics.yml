@@ -1,0 +1,73 @@
+# GitHub Actions Diagnostic Instrumentation Snippet
+# Copy and insert these steps into .github/workflows/ci.yml before the failing step to collect evidence.
+
+      - name: Debug Environment Info
+        run: |
+          echo "=== RUNNER OS INFO ==="
+          uname -a || true
+          echo "RUNNER_OS: $RUNNER_OS"
+          
+          echo "=== RUNTIME VERSIONS ==="
+          node -v || true
+          npm -v || true
+          pnpm -v || true
+          yarn -v || true
+          
+          echo "=== LOCALLY INSTALLED TOOLING ==="
+          npx esbuild --version || true
+          npx tsx --version || true
+          npx tsc -v || true
+          npx eslint -v || true
+        continue-on-error: true
+
+      - name: Debug Workspace Integrity
+        run: |
+          echo "=== GIT CONFIG & STATE ==="
+          git rev-parse HEAD || true
+          git status || true
+          
+          echo "=== SCAN FOR UNRESOLVED MERGE MARKERS ==="
+          grep -rn "<<<<<<<" . || echo "No HEAD merge markers found."
+          grep -rn "=======" . || echo "No separator merge markers found."
+          grep -rn ">>>>>>>" . || echo "No incoming merge markers found."
+          
+          echo "=== FILE METADATA AND HASHES ==="
+          # Replace <PATH_TO_FAILING_FILE> with the file path reported in the error log
+          FILE_PATH="<PATH_TO_FAILING_FILE>"
+          if [ -f "$FILE_PATH" ]; then
+            echo "File exists: $FILE_PATH"
+            ls -la "$FILE_PATH"
+            echo "SHA256 Hash:"
+            openssl dgst -sha256 "$FILE_PATH" || sha256sum "$FILE_PATH" || true
+            echo "Line Endings:"
+            od -c "$FILE_PATH" | head -n 20 || true
+            echo "=== PARSER CONTEXT (Lines around error) ==="
+            # Prints lines 300 to 400. Modify ranges as appropriate for the error output
+            sed -n '300,400p' "$FILE_PATH" | awk '{print NR+299 ": " $0}' || true
+          else
+            echo "File not found: $FILE_PATH"
+          fi
+        continue-on-error: true
+
+      - name: Debug Tooling Isolation
+        run: |
+          FILE_PATH="<PATH_TO_FAILING_FILE>"
+          if [ -f "$FILE_PATH" ]; then
+            echo "=== DIRECT ESBUILD TRANSPILATION TEST ==="
+            npx esbuild "$FILE_PATH" --bundle --platform=node --outfile=/dev/null || true
+            
+            echo "=== DIRECT TSX EXECUTION TEST ==="
+            npx tsx "$FILE_PATH" || true
+            
+            echo "=== DIRECT TSC TYPECHECK TEST ==="
+            npx tsc --noEmit || true
+          fi
+        continue-on-error: true
+
+      - name: Archive Diagnostic Outputs
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-diagnostic-logs
+          path: |
+            <PATH_TO_FAILING_FILE>
+          if-no-files-found: warn
