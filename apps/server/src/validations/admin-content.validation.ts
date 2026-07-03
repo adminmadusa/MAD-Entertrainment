@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { EventCategory, BookingMode, BookingStatus, EventStatus, PopupTrigger, TicketTier, type EventLifecycleStatus, BOOKING_REFERENCE_REGEX } from '@mad/shared';
+import { EventCategory, BookingMode, BookingStatus, EventStatus, PopupTrigger, TicketTier, type EventLifecycleStatus, BOOKING_REFERENCE_REGEX, EventMemoryPublicationState, MAX_MEMORIES_GALLERY_LIMIT } from '@mad/shared';
 import { objectIdSchema } from '@mad/validations';
 
 // -- Common schemas --
@@ -333,6 +333,18 @@ export const validateEventImages = (body: EventImageValidationBody, ctx: z.Refin
   }
 };
 
+const eventMemoryItemSchema = cloudinaryImageSchema.extend({
+  order: z.number().int().nonnegative().default(0),
+});
+
+const eventMemorySchema = z.object({
+  publicationState: z.nativeEnum(EventMemoryPublicationState).default(EventMemoryPublicationState.DRAFT),
+  heading: z.string().max(200).optional(),
+  thankYouMessage: z.string().max(2000).optional(),
+  highlights: z.array(z.string()).optional(),
+  gallery: z.array(eventMemoryItemSchema).max(MAX_MEMORIES_GALLERY_LIMIT).default([]),
+}).strict().nullable().optional();
+
 const eventBodySchema = z.object({
   title: z.string().min(1).max(200),
   slug: z.string().min(1),
@@ -400,6 +412,7 @@ const eventBodySchema = z.object({
     maxPerBooking: z.number().int().min(1).optional(),
     minPerBooking: z.number().int().min(1).optional(),
   })).optional(),
+  memories: eventMemorySchema,
 });
 
 export const createEventSchema = z.object({

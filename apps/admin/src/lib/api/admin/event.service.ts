@@ -1,5 +1,5 @@
 import { PaginationMeta } from '@mad/types';
-import { EventStatus } from '@mad/shared';
+import { EventStatus, EventMemoryPublicationState } from '@mad/shared';
 import { adminApiClient } from '@/lib/api/client';
 
 
@@ -68,6 +68,14 @@ export interface AdminEvent {
   attendancePercentage?: number;
   noShowCount?: number;
   noShowPercentage?: number;
+  memories?: {
+    publicationState: EventMemoryPublicationState;
+    heading?: string;
+    thankYouMessage?: string;
+    highlights?: string[];
+    gallery: (CloudinaryImage & { order: number })[];
+    publishedAt?: string;
+  } | null;
 }
 
 export interface EventsResponse {

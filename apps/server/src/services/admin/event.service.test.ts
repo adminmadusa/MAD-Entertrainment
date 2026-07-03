@@ -14,6 +14,10 @@ vi.mock('./media-cleanup.service', () => ({
   safeDeleteImages: vi.fn(),
 }));
 
+vi.mock('../../utils/audit', () => ({
+  auditLog: vi.fn(),
+}));
+
 vi.mock('@mad/shared', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@mad/shared')>();
   const sharedSource = await vi.importActual<typeof import('../../../../../packages/shared/src')>(
@@ -27,7 +31,7 @@ vi.mock('@mad/shared', async (importOriginal) => {
 });
 
 import * as eventService from './event.service';
-import { EventStatus, HTTP_STATUS } from '@mad/shared';
+import { EventStatus, HTTP_STATUS, EventMemoryPublicationState } from '@mad/shared';
 import { Event } from '../../models/event.schema';
 import { Booking } from '../../models/booking.schema';
 import { Ticket } from '../../models/ticket.schema';
@@ -528,6 +532,147 @@ describe('Admin Event Service', () => {
           galleryImages: [{ url: 'g-url', publicId: 'g1', hash: 'hash-banner' }], // duplicate of existing banner hash
         } as any)
       ).rejects.toThrow('Duplicate image detected');
+    });
+  });
+
+
+  // ─── Event Memories Test Suite ──────────────────────────────────────────────
+  describe('updateEvent - Event Memories', () => {
+    const makeExistingEvent = (overrides = {}) => ({
+      _id: 'event-1',
+      status: 'COMPLETED',
+      ticketTiers: [],
+      eventVersion: 1,
+      memories: null,
+      toObject: function () { return this; },
+      ...overrides,
+    });
+
+    const makeUpdatedEvent = (existingEvent, extra = {}) => ({
+      ...existingEvent,
+      ...extra,
+      toObject: function () { return this; },
+    });
+
+    const setupMocks = (existing, updated) => {
+      vi.mocked(Event.findById).mockResolvedValue(existing);
+      vi.mocked(Event.findOneAndUpdate).mockResolvedValue(updated);
+      vi.mocked(Ticket.find).mockReturnValue({ lean: vi.fn().mockResolvedValue([]) });
+    };
+
+    it('stamps publishedAt on first publish (null to PUBLISHED)', async () => {
+      const existing = makeExistingEvent({ memories: null });
+      const memories = { publicationState: EventMemoryPublicationState.PUBLISHED, gallery: [] };
+      const updated = makeUpdatedEvent(existing, { memories: { ...memories, publishedAt: new Date() } });
+      setupMocks(existing, updated);
+      await eventService.updateEvent('event-1', { eventVersion: 1, memories });
+      const setArg = vi.mocked(Event.findOneAndUpdate).mock.calls[0][1].$set;
+      expect(setArg.memories.publishedAt).toBeInstanceOf(Date);
+    });
+
+    it('preserves original publishedAt on re-publish (HIDDEN to PUBLISHED)', async () => {
+      const originalDate = new Date('2025-01-01T00:00:00Z');
+      const existing = makeExistingEvent({
+        memories: { publicationState: EventMemoryPublicationState.HIDDEN, gallery: [], publishedAt: originalDate },
+      });
+      const memories = { publicationState: EventMemoryPublicationState.PUBLISHED, gallery: [] };
+      const updated = makeUpdatedEvent(existing, { memories: { ...memories, publishedAt: originalDate } });
+      setupMocks(existing, updated);
+      await eventService.updateEvent('event-1', { eventVersion: 1, memories });
+      const setArg = vi.mocked(Event.findOneAndUpdate).mock.calls[0][1].$set;
+      expect(setArg.memories.publishedAt).toEqual(originalDate);
+    });
+
+    it('does NOT overwrite publishedAt when editing already-published memories', async () => {
+      const existing = makeExistingEvent({
+        memories: { publicationState: EventMemoryPublicationState.PUBLISHED, gallery: [], publishedAt: new Date('2025-01-01') },
+      });
+      const memories = { publicationState: EventMemoryPublicationState.PUBLISHED, gallery: [{ url: 'u', publicId: 'p', order: 0 }] };
+      const updated = makeUpdatedEvent(existing, { memories });
+      setupMocks(existing, updated);
+      await eventService.updateEvent('event-1', { eventVersion: 1, memories });
+      const setArg = vi.mocked(Event.findOneAndUpdate).mock.calls[0][1].$set;
+      expect(setArg.memories.publishedAt).toBeUndefined();
+    });
+
+    it('removes memory gallery images dropped from the update payload', async () => {
+      const existing = makeExistingEvent({
+        memories: { publicationState: EventMemoryPublicationState.DRAFT, gallery: [
+          { url: 'u1', publicId: 'keep', order: 0 },
+          { url: 'u2', publicId: 'remove-me', order: 1 },
+        ]},
+      });
+      const memories = { publicationState: EventMemoryPublicationState.DRAFT, gallery: [{ url: 'u1', publicId: 'keep', order: 0 }] };
+      setupMocks(existing, makeUpdatedEvent(existing, { memories }));
+      const { safeDeleteImages } = await import('./media-cleanup.service');
+      await eventService.updateEvent('event-1', { eventVersion: 1, memories });
+      expect(safeDeleteImages).toHaveBeenCalledWith(expect.arrayContaining(['remove-me']), 'Event', 'update');
+    });
+
+    it('does NOT delete gallery images when memories is absent from payload', async () => {
+      const existing = makeExistingEvent({
+        memories: { publicationState: EventMemoryPublicationState.PUBLISHED, gallery: [{ url: 'u', publicId: 'keep', order: 0 }] },
+      });
+      setupMocks(existing, makeUpdatedEvent(existing));
+      const { safeDeleteImages } = await import('./media-cleanup.service');
+      await eventService.updateEvent('event-1', { eventVersion: 1 });
+      const allDeleted = vi.mocked(safeDeleteImages).mock.calls.flatMap((c) => c[0]);
+      expect(allDeleted).not.toContain('keep');
+    });
+
+    it('Cloudinary cleanup runs AFTER the DB write succeeds', async () => {
+      const callOrder = [];
+      const existing = makeExistingEvent({
+        memories: { publicationState: EventMemoryPublicationState.DRAFT, gallery: [{ url: 'u', publicId: 'old-img', order: 0 }] },
+      });
+      const memories = { publicationState: EventMemoryPublicationState.DRAFT, gallery: [] };
+      const updated = makeUpdatedEvent(existing, { memories });
+      vi.mocked(Event.findById).mockResolvedValue(existing);
+      vi.mocked(Event.findOneAndUpdate).mockImplementation(async () => { callOrder.push('db-write'); return updated; });
+      vi.mocked(Ticket.find).mockReturnValue({ lean: vi.fn().mockResolvedValue([]) });
+      const { safeDeleteImages } = await import('./media-cleanup.service');
+      vi.mocked(safeDeleteImages).mockImplementation(() => { callOrder.push('cloudinary-delete'); });
+      await eventService.updateEvent('event-1', { eventVersion: 1, memories });
+      expect(callOrder.indexOf('db-write')).toBeLessThan(callOrder.indexOf('cloudinary-delete'));
+    });
+
+    it('emits event.memories.published audit action on first publish', async () => {
+      const existing = makeExistingEvent({ memories: null });
+      const memories = { publicationState: EventMemoryPublicationState.PUBLISHED, gallery: [] };
+      setupMocks(existing, makeUpdatedEvent(existing, { memories: { ...memories, publishedAt: new Date() } }));
+      const { auditLog } = await import('../../utils/audit');
+      await eventService.updateEvent('event-1', { eventVersion: 1, memories });
+      expect(auditLog).toHaveBeenCalledWith(expect.objectContaining({ action: 'event.memories.published' }));
+    });
+
+    it('emits event.memories.hidden audit action on PUBLISHED to HIDDEN', async () => {
+      const existing = makeExistingEvent({
+        memories: { publicationState: EventMemoryPublicationState.PUBLISHED, gallery: [], publishedAt: new Date() },
+      });
+      const memories = { publicationState: EventMemoryPublicationState.HIDDEN, gallery: [] };
+      setupMocks(existing, makeUpdatedEvent(existing, { memories }));
+      const { auditLog } = await import('../../utils/audit');
+      await eventService.updateEvent('event-1', { eventVersion: 1, memories });
+      expect(auditLog).toHaveBeenCalledWith(expect.objectContaining({ action: 'event.memories.hidden' }));
+    });
+
+    it('emits event.memories.updated for generic edits', async () => {
+      const existing = makeExistingEvent({ memories: { publicationState: EventMemoryPublicationState.DRAFT, gallery: [] } });
+      const memories = { publicationState: EventMemoryPublicationState.DRAFT, gallery: [], heading: 'Great night' };
+      setupMocks(existing, makeUpdatedEvent(existing, { memories }));
+      const { auditLog } = await import('../../utils/audit');
+      await eventService.updateEvent('event-1', { eventVersion: 1, memories });
+      expect(auditLog).toHaveBeenCalledWith(expect.objectContaining({ action: 'event.memories.updated' }));
+    });
+
+    it('does NOT call auditLog when memories is absent from payload', async () => {
+      const existing = makeExistingEvent({
+        memories: { publicationState: EventMemoryPublicationState.PUBLISHED, gallery: [], publishedAt: new Date() },
+      });
+      setupMocks(existing, makeUpdatedEvent(existing));
+      const { auditLog } = await import('../../utils/audit');
+      await eventService.updateEvent('event-1', { eventVersion: 1 });
+      expect(auditLog).not.toHaveBeenCalled();
     });
   });
 });
