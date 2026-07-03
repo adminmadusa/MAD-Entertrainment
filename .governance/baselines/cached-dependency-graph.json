@@ -10391,8 +10391,8 @@
       "dependencies": [],
       "dynamicImports": [],
       "exports": [],
-      "hash": "5aa599a6c2c080e0d71aed4bfe31cbfeb0708a15",
-      "lastModified": 1783050805894.98
+      "hash": "13a7449e4503021f4b8875f5ec7cc53950dda3d2",
+      "lastModified": 1783077898881.1365
     },
     "packages/shared/package.json": {
       "assetReferences": [],
@@ -10878,6 +10878,18 @@
       "hash": "bd2a68db3b590795ccdf113bba5420d50ef275ec",
       "lastModified": 1783050805897.51
     },
+    "scripts/governance/cli/fix.ts": {
+      "assetReferences": [],
+      "dependencies": [
+        "scripts/governance/core/autofix_engine.ts",
+        "scripts/governance/core/fix_context.ts",
+        "scripts/governance/core/rollback_manager.ts"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "1c2501b9e09cd0e6b01cabc20da780a3c985dbcf",
+      "lastModified": 1783077894127.9026
+    },
     "scripts/governance/core/__tests__/ast_parser_cache.test.ts": {
       "assetReferences": [],
       "dependencies": [
@@ -10902,6 +10914,23 @@
       "exports": [],
       "hash": "24d7100a247be683b7e7766088fd83a8c555797d",
       "lastModified": 1783050805897.6802
+    },
+    "scripts/governance/core/__tests__/autofix_engine.test.ts": {
+      "assetReferences": [],
+      "dependencies": [
+        "scripts/governance/core/autofix_engine.ts",
+        "scripts/governance/core/fix_context.ts",
+        "scripts/governance/core/fix_registry.ts",
+        "scripts/governance/core/fix_types.ts",
+        "scripts/governance/core/types.ts",
+        "scripts/governance/core/execution_engine.ts",
+        "scripts/governance/core/rollback_manager.ts",
+        "scripts/governance/core/file_writer.ts"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "88e63099b221693d60923c3ba2bccbe4992beaf7",
+      "lastModified": 1783077935954.425
     },
     "scripts/governance/core/__tests__/confidence_engine.test.ts": {
       "assetReferences": [],
@@ -10943,6 +10972,19 @@
       "exports": [],
       "hash": "52178e394705072659760916a85ef9c136af5987",
       "lastModified": 1783068412390.9834
+    },
+    "scripts/governance/core/__tests__/fix_registry.test.ts": {
+      "assetReferences": [],
+      "dependencies": [
+        "scripts/governance/core/fix_registry.ts",
+        "scripts/governance/core/fix_types.ts",
+        "scripts/governance/core/types.ts",
+        "scripts/governance/core/fix_context.ts"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "e02bdf97c6d2b12b3bff07f529330e69b595a77f",
+      "lastModified": 1783077904313.5667
     },
     "scripts/governance/core/__tests__/lifecycle_manager.test.ts": {
       "assetReferences": [],
@@ -11009,6 +11051,28 @@
       ],
       "hash": "bea2e4c24af67d2eae6e17578a9e9654f5919730",
       "lastModified": 1783062821521.806
+    },
+    "scripts/governance/core/autofix_engine.ts": {
+      "assetReferences": [],
+      "dependencies": [
+        "scripts/governance/core/metadata.ts",
+        "scripts/governance/core/audit_engine.ts",
+        "scripts/governance/core/execution_engine.ts",
+        "scripts/governance/core/validator_registry.ts",
+        "scripts/governance/core/types.ts",
+        "scripts/governance/core/fix_context.ts",
+        "scripts/governance/core/fix_result.ts",
+        "scripts/governance/core/fix_registry.ts",
+        "scripts/governance/core/rollback_manager.ts",
+        "scripts/governance/core/file_writer.ts",
+        "scripts/governance/core/fix_types.ts"
+      ],
+      "dynamicImports": [],
+      "exports": [
+        "AutoFixEngine"
+      ],
+      "hash": "be5cd3947124b361785dbae82e6b74e965e4b009",
+      "lastModified": 1783077886418.4668
     },
     "scripts/governance/core/confidence_engine.ts": {
       "assetReferences": [],
@@ -11138,6 +11202,16 @@
       "hash": "72a1016cb0093d6d22cf192c5ca162502aad747e",
       "lastModified": 1783072855981.057
     },
+    "scripts/governance/core/file_writer.ts": {
+      "assetReferences": [],
+      "dependencies": [],
+      "dynamicImports": [],
+      "exports": [
+        "FileWriter"
+      ],
+      "hash": "9ae0e843910ec97c4a1c41ad307670b8d77bcd56",
+      "lastModified": 1783077853229.4075
+    },
     "scripts/governance/core/finding_manager.ts": {
       "assetReferences": [],
       "dependencies": [
@@ -11181,6 +11255,59 @@
       ],
       "hash": "156394de3161a33aaf99229c04b2fe33afbbfbe1",
       "lastModified": 1783050805899.7844
+    },
+    "scripts/governance/core/fix_context.ts": {
+      "assetReferences": [],
+      "dependencies": [
+        "scripts/governance/core/rollback_manager.ts"
+      ],
+      "dynamicImports": [],
+      "exports": [
+        "FixLogger",
+        "FixOptions",
+        "FixContext"
+      ],
+      "hash": "a9f628e8ea9b3cd998b2f59b14189d8765577059",
+      "lastModified": 1783077848336.2922
+    },
+    "scripts/governance/core/fix_registry.ts": {
+      "assetReferences": [],
+      "dependencies": [
+        "scripts/governance/core/fix_types.ts"
+      ],
+      "dynamicImports": [],
+      "exports": [
+        "FixRegistry"
+      ],
+      "hash": "ac795198e3e524669419ef062db5c8e1ce50ffad",
+      "lastModified": 1783077874284.0688
+    },
+    "scripts/governance/core/fix_result.ts": {
+      "assetReferences": [],
+      "dependencies": [
+        "scripts/governance/core/fix_types.ts"
+      ],
+      "dynamicImports": [],
+      "exports": [
+        "FixResult"
+      ],
+      "hash": "b409e8e25cd93a0a01908ef850f028fc341f7aa9",
+      "lastModified": 1783077867867.755
+    },
+    "scripts/governance/core/fix_types.ts": {
+      "assetReferences": [],
+      "dependencies": [
+        "scripts/governance/core/types.ts",
+        "scripts/governance/core/fix_context.ts"
+      ],
+      "dynamicImports": [],
+      "exports": [
+        "SafetyLevel",
+        "Fixer",
+        "FixResultItem"
+      ],
+      "hash": "70167a44cc54836a6ec7754fbdbff497cc9cacbc",
+      "lastModified": 1783077842811.2812
     },
     "scripts/governance/core/governance.config.ts": {
       "assetReferences": [],
@@ -11306,6 +11433,21 @@
       ],
       "hash": "a97f5e0d6dc8bfda9ed95d9f8dbd48096673e041",
       "lastModified": 1782995848143.9702
+    },
+    "scripts/governance/core/rollback_manager.ts": {
+      "assetReferences": [],
+      "dependencies": [
+        "scripts/governance/core/json_utils.ts",
+        "scripts/governance/core/file_writer.ts"
+      ],
+      "dynamicImports": [],
+      "exports": [
+        "RollbackBackup",
+        "RollbackSession",
+        "RollbackManager"
+      ],
+      "hash": "eef8fd3432f01a1d9da6e01f181bfcaf7ecd5799",
+      "lastModified": 1783077860568.1973
     },
     "scripts/governance/core/types.ts": {
       "assetReferences": [],
@@ -12025,6 +12167,6 @@
       "lastModified": 1783050805912.8364
     }
   },
-  "timestamp": "2026-07-03T11:12:36.481Z",
+  "timestamp": "2026-07-03T11:25:49.603Z",
   "version": "1.1.0"
 }

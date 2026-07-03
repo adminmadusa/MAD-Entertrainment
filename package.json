@@ -11,7 +11,8 @@
     "test": "vitest run",
     "clean": "turbo clean && rm -rf node_modules .turbo",
     "audit-data": "tsx ./scripts/gather-audit-data.ts",
-    "governance:docs": "tsx scripts/governance/index.ts"
+    "governance:docs": "tsx scripts/governance/index.ts",
+    "governance:fix": "tsx scripts/governance/cli/fix.ts"
   },
   "devDependencies": {
     "@playwright/test": "^1.60.0",
