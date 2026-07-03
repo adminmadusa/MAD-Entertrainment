@@ -1,6 +1,5 @@
 {
-  "generatedAt": "2026-07-03T13:19:33.498Z",
-  "rules": [
+  "data": [
     {
       "activeCount": 0,
       "avgResolutionTimeMs": 0,
@@ -86,13 +85,13 @@
       "severity": "ERROR"
     },
     {
-      "activeCount": 1,
+      "activeCount": 0,
       "avgResolutionTimeMs": 0,
       "category": "HYGIENE",
-      "fixCoverage": 0,
+      "fixCoverage": 1,
       "fixable": false,
-      "regressionCount": 1,
-      "resolvedCount": 0,
+      "regressionCount": 0,
+      "resolvedCount": 1,
       "ruleId": "Duplicate Governance Policy",
       "ruleName": "Duplicate Governance Policy",
       "severity": "WARNING"
@@ -374,13 +373,13 @@
       "severity": "ERROR"
     },
     {
-      "activeCount": 161,
+      "activeCount": 157,
       "avgResolutionTimeMs": 0,
       "category": "HYGIENE",
-      "fixCoverage": 0,
+      "fixCoverage": 0.2,
       "fixable": false,
-      "regressionCount": 26,
-      "resolvedCount": 1,
+      "regressionCount": 25,
+      "resolvedCount": 5,
       "ruleId": "Missing Document Owner",
       "ruleName": "Missing Document Owner",
       "severity": "WARNING"
@@ -530,7 +529,7 @@
       "severity": "ERROR"
     },
     {
-      "activeCount": 67,
+      "activeCount": 72,
       "avgResolutionTimeMs": 0,
       "category": "HYGIENE",
       "fixCoverage": 0,
@@ -722,7 +721,7 @@
       "severity": "WARNING"
     },
     {
-      "activeCount": 144,
+      "activeCount": 146,
       "avgResolutionTimeMs": 0,
       "category": "HYGIENE",
       "fixCoverage": 0,
@@ -782,7 +781,7 @@
       "severity": "WARNING"
     },
     {
-      "activeCount": 3,
+      "activeCount": 4,
       "avgResolutionTimeMs": 7990.355555555556,
       "category": "HYGIENE",
       "fixCoverage": 0.9777777777777777,
@@ -1094,5 +1093,6 @@
       "severity": "WARNING"
     }
   ],
+  "generatedAt": "2026-07-03T15:07:46.556Z",
   "schemaVersion": 1
 }

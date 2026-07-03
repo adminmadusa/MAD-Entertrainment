@@ -1,5 +1,6 @@
 [
   ".agents/AGENTS.md",
+  ".agents/SKILLS_INDEX.md",
   ".agents/ai-os/CHANGELOG.md",
   ".agents/ai-os/FOUNDATION.md",
   ".agents/ai-os/INDEX.md",
@@ -416,6 +417,7 @@
   ".agents/skills/git-workflow/SKILL.md",
   ".agents/skills/governance-audit/SKILL.md",
   ".agents/skills/pr-review/SKILL.md",
+  ".agents/skills/ui-ux/SKILL.md",
   ".audit-exceptions.json",
   ".github/CODEOWNERS",
   ".github/ISSUE_TEMPLATE/bug_report.yml",

@@ -1,7 +1,5 @@
 {
-  "generatedAt": "2026-07-03T13:19:33.498Z",
-  "schemaVersion": 1,
-  "trends": [
+  "data": [
     {
       "activeFindings": 565,
       "closedFindings": 9,
@@ -204,6 +202,15 @@
       "overallScore": 70,
       "timestamp": "2026-07-03T13:19:33.491Z",
       "totalFindings": 1765
+    },
+    {
+      "activeFindings": 1450,
+      "closedFindings": 323,
+      "overallScore": 70,
+      "timestamp": "2026-07-03T15:07:46.548Z",
+      "totalFindings": 1773
     }
-  ]
+  ],
+  "generatedAt": "2026-07-03T15:07:46.556Z",
+  "schemaVersion": 1
 }

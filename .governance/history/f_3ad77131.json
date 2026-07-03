@@ -1,0 +1,11 @@
+{
+  "history": [
+    {
+      "action": "CREATED",
+      "notes": "New grouped finding registered: Document exists in the repository but has no incoming references from any other active documentation.",
+      "status": "NEW",
+      "timestamp": "2026-07-03T15:07:46.219Z"
+    }
+  ],
+  "id": "f_3ad77131"
+}

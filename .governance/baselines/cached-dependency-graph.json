@@ -11,17 +11,21 @@
       "hash": "0609f9578588c7f8c394196d5b75f6eeea0090ac",
       "lastModified": 1783050805775.0671
     },
-    ".agents/skills/architecture-review/SKILL.md": {
+    ".agents/SKILLS_INDEX.md": {
       "assetReferences": [],
-      "dependencies": [
-        "docs/decisions/README.md",
-        ".agents/skills/pr-review/SKILL.md",
-        ".agents/skills/documentation/SKILL.md"
-      ],
+      "dependencies": [],
       "dynamicImports": [],
       "exports": [],
-      "hash": "601fdde8dc3ca9ef018ad47db548723c49761bab",
-      "lastModified": 1783050805775.2659
+      "hash": "628892012384713719ee962779f88a88997f47bf",
+      "lastModified": 1783091246423.3005
+    },
+    ".agents/skills/architecture-review/SKILL.md": {
+      "assetReferences": [],
+      "dependencies": [],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "67d19d84c6ce6ca4ca03d53b6d7f3d1f1dc55b76",
+      "lastModified": 1783091246423.6548
     },
     ".agents/skills/ci-investigation/CHECKLIST.md": {
       "assetReferences": [],
@@ -39,19 +43,15 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "e0ce9c2391b9dff4c7671b6bd72fc23cdd3af22b",
-      "lastModified": 1783084515020.2776
+      "lastModified": 1783088832211.786
     },
     ".agents/skills/ci-investigation/SKILL.md": {
       "assetReferences": [],
-      "dependencies": [
-        ".agents/skills/ci-investigation/CHECKLIST.md",
-        ".agents/skills/ci-investigation/templates/evidence-matrix.md",
-        ".agents/skills/ci-investigation/templates/evidence-matrix.md"
-      ],
+      "dependencies": [],
       "dynamicImports": [],
       "exports": [],
-      "hash": "8834cb93e57c5204c158dc5cd07589b9d8f2f5ed",
-      "lastModified": 1783084515020.614
+      "hash": "4304b7427e073a4f7a9253ad09e5e8de47176a53",
+      "lastModified": 1783091246423.9832
     },
     ".agents/skills/ci-investigation/examples/dependency-resolution.md": {
       "assetReferences": [],
@@ -111,14 +111,11 @@
     },
     ".agents/skills/documentation/SKILL.md": {
       "assetReferences": [],
-      "dependencies": [
-        "README.md",
-        ".agents/skills/governance-audit/SKILL.md"
-      ],
+      "dependencies": [],
       "dynamicImports": [],
       "exports": [],
-      "hash": "6c183745f91b191c00113ec4643d737221e4244c",
-      "lastModified": 1783050805776.849
+      "hash": "d4bf3d6a64d295e06c0e97afc6e2424fc08f5351",
+      "lastModified": 1783091246424.2349
     },
     ".agents/skills/git-workflow/SKILL.md": {
       "assetReferences": [],
@@ -133,13 +130,12 @@
     ".agents/skills/governance-audit/SKILL.md": {
       "assetReferences": [],
       "dependencies": [
-        ".agents/skills/pr-review/SKILL.md",
-        ".agents/skills/documentation/SKILL.md"
+        "AGENTS.MD"
       ],
       "dynamicImports": [],
       "exports": [],
-      "hash": "f38689d72ad71ab44e5b6b524cdd05fd942d50fb",
-      "lastModified": 1783050805777.0938
+      "hash": "16dc02daf20c1eda703cbb7edf2428dfa079fffd",
+      "lastModified": 1783091246424.5393
     },
     ".agents/skills/pr-review/SKILL.md": {
       "assetReferences": [],
@@ -152,6 +148,14 @@
       "exports": [],
       "hash": "633cae97fb8e4fea8f303148b631b1346d632d2c",
       "lastModified": 1783050805778.4443
+    },
+    ".agents/skills/ui-ux/SKILL.md": {
+      "assetReferences": [],
+      "dependencies": [],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "67407df1d437821fcc8c5620be320d72a198cc32",
+      "lastModified": 1783091246424.9192
     },
     ".audit-exceptions.json": {
       "assetReferences": [],
@@ -245,8 +249,8 @@
       ],
       "dynamicImports": [],
       "exports": [],
-      "hash": "04f59484539746d9782b4bc9d05c321c581fe927",
-      "lastModified": 1783050805867.6267
+      "hash": "6ee3428cfa6b213708450ba58b352f42cc7e7156",
+      "lastModified": 1783091246425.1987
     },
     "API_CONTRACTS.md": {
       "assetReferences": [],
@@ -263,8 +267,8 @@
       ],
       "dynamicImports": [],
       "exports": [],
-      "hash": "2030ceadc9fe547b4b2a723dbd95e7448f221b04",
-      "lastModified": 1783084516293.6816
+      "hash": "d1b270b044011e2e50970a21114e71c3e23bbe75",
+      "lastModified": 1783089674812.2273
     },
     "ARCHITECTURE.md": {
       "assetReferences": [],
@@ -284,8 +288,8 @@
       ],
       "dynamicImports": [],
       "exports": [],
-      "hash": "194ab9c22777a959c0cfb09ea1aa5909c725234c",
-      "lastModified": 1783084516294.2356
+      "hash": "f4a1c6cd8984e7bda2c515fb5703d4d5a47f08e8",
+      "lastModified": 1783089581063.3667
     },
     "CHANGELOG.md": {
       "assetReferences": [],
@@ -299,8 +303,8 @@
       ],
       "dynamicImports": [],
       "exports": [],
-      "hash": "eefde1c951b3ec9763900457459f4224991a8df7",
-      "lastModified": 1783050805868.306
+      "hash": "bc2be2bf67ec274f2fdbe1e760cc9fc9a0786232",
+      "lastModified": 1783089481504.1309
     },
     "CONTRIBUTING.md": {
       "assetReferences": [],
@@ -312,7 +316,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "35ce0552f86f8286632e70d29bbff886db66a983",
-      "lastModified": 1783084516295.058
+      "lastModified": 1783088833242.527
     },
     "DEPLOYMENT_MAP.md": {
       "assetReferences": [],
@@ -331,7 +335,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "2bbab23c311bacb571a48102dde5a9f1a464f15a",
-      "lastModified": 1783084516295.4653
+      "lastModified": 1783088833243.117
     },
     "README.md": {
       "assetReferences": [],
@@ -419,8 +423,8 @@
       ],
       "dynamicImports": [],
       "exports": [],
-      "hash": "b3dd68ba8e2b56ee2a62f011598812c2eaf070bc",
-      "lastModified": 1783084516295.903
+      "hash": "80ae94208d4c520e621a93acffd88df30640937d",
+      "lastModified": 1783091246361.8142
     },
     "TESTING.md": {
       "assetReferences": [],
@@ -439,7 +443,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "ebda079a286f93a15ece240ae72e87b33980f861",
-      "lastModified": 1783084516298.5361
+      "lastModified": 1783088833244.3887
     },
     "apps/admin/next-env.d.ts": {
       "assetReferences": [],
@@ -660,7 +664,7 @@
         "AdminCouponsPage"
       ],
       "hash": "1dfe3672b6409cc76cd73c7a204a87264fc21dc8",
-      "lastModified": 1783084516300.8162
+      "lastModified": 1783088833244.6687
     },
     "apps/admin/src/app/dashboard/page.tsx": {
       "assetReferences": [],
@@ -684,7 +688,7 @@
         "AdminDashboardPage"
       ],
       "hash": "e43118f121e293334441870b2fa27db898ed9e9f",
-      "lastModified": 1783084516301.2017
+      "lastModified": 1783088833245.2522
     },
     "apps/admin/src/app/diagnostics/emails/page.tsx": {
       "assetReferences": [],
@@ -700,7 +704,7 @@
         "EmailDiagnosticsPage"
       ],
       "hash": "0609596ddd4e2510da82f2568a12adffacb3ff42",
-      "lastModified": 1783084516301.4805
+      "lastModified": 1783088833245.683
     },
     "apps/admin/src/app/diagnostics/page.tsx": {
       "assetReferences": [],
@@ -737,7 +741,7 @@
         "WebhookDiagnosticsPage"
       ],
       "hash": "0a9efa7550c6b42c8917f52823249847c256e726",
-      "lastModified": 1783084516301.979
+      "lastModified": 1783088833246.0522
     },
     "apps/admin/src/app/dj-operators/[id]/edit/page.tsx": {
       "assetReferences": [],
@@ -821,7 +825,7 @@
         "EditEventPage"
       ],
       "hash": "3be338fba200f386174f3026d3977bb193ce0fb5",
-      "lastModified": 1783059854398.6106
+      "lastModified": 1783088792357.4001
     },
     "apps/admin/src/app/events/new/_components/EventAdvancedSettingsSection.tsx": {
       "assetReferences": [],
@@ -933,7 +937,7 @@
         "inputCls"
       ],
       "hash": "cb8bbe2bf39ce6b7a746d462e30b112d95475299",
-      "lastModified": 1783084516302.3142
+      "lastModified": 1783088833246.6765
     },
     "apps/admin/src/app/events/new/_components/constants.ts": {
       "assetReferences": [],
@@ -1007,7 +1011,7 @@
         "CreateEventPage"
       ],
       "hash": "684906352bb34ce8b7ea2f5762edf197a88af023",
-      "lastModified": 1783084516303.2034
+      "lastModified": 1783088833247.2153
     },
     "apps/admin/src/app/events/page.tsx": {
       "assetReferences": [],
@@ -1023,7 +1027,7 @@
         "AdminEventsPage"
       ],
       "hash": "2cfb9426949ae4d2132256be3309f909a1f1d091",
-      "lastModified": 1783084516304.4004
+      "lastModified": 1783088833247.491
     },
     "apps/admin/src/app/layout.tsx": {
       "assetReferences": [
@@ -1144,7 +1148,7 @@
         "AdminRefundsPage"
       ],
       "hash": "c381ea4011e49cae53701bf1df3323a604d30d61",
-      "lastModified": 1783084516304.7405
+      "lastModified": 1783088833248.4856
     },
     "apps/admin/src/app/scanner/page.tsx": {
       "assetReferences": [],
@@ -1163,7 +1167,7 @@
         "ScannerPage"
       ],
       "hash": "a5251daac14eb8cdef698331f06342c0f45d8e57",
-      "lastModified": 1783084516305.1172
+      "lastModified": 1783088833248.7317
     },
     "apps/admin/src/app/settings/page.tsx": {
       "assetReferences": [],
@@ -1320,7 +1324,7 @@
         "AdminTicketProfilesPage"
       ],
       "hash": "026fdc860d213a1dd6b93d59a0bba6914329364e",
-      "lastModified": 1783084516305.361
+      "lastModified": 1783088833249.049
     },
     "apps/admin/src/app/users/[id]/page.tsx": {
       "assetReferences": [],
@@ -1550,7 +1554,7 @@
         "EventGalleryUpload"
       ],
       "hash": "1b8570fff35fec0d10c7f52b8155d33e6f97d358",
-      "lastModified": 1783084516305.7683
+      "lastModified": 1783088833249.5012
     },
     "apps/admin/src/components/bookings/BookingsSummaryWidget.tsx": {
       "assetReferences": [],
@@ -1931,7 +1935,7 @@
         "EventMemoriesCard"
       ],
       "hash": "9519a18d7644c5f43cefd5592051decd5cfe05b9",
-      "lastModified": 1783059854400.2295
+      "lastModified": 1783088792358.699
     },
     "apps/admin/src/components/events/EventRequirementsCard.tsx": {
       "assetReferences": [],
@@ -2108,7 +2112,7 @@
         "adminGetAttendanceRankings"
       ],
       "hash": "8cfe92826f5e19335e9ee4caeb2776bd75fc39ee",
-      "lastModified": 1783084516306.0369
+      "lastModified": 1783088833249.8818
     },
     "apps/admin/src/lib/api/admin/auth.service.ts": {
       "assetReferences": [],
@@ -2156,7 +2160,7 @@
         "adminGetBookingsSummary"
       ],
       "hash": "9d8bffddfccd66a753a9bb1b91466224143a4c8f",
-      "lastModified": 1783084516306.3098
+      "lastModified": 1783088833250.1453
     },
     "apps/admin/src/lib/api/admin/category.service.ts": {
       "assetReferences": [],
@@ -2285,7 +2289,7 @@
         "adminDeleteEvent"
       ],
       "hash": "5c0456b267edd85adb21b8761a8352358d9fa56f",
-      "lastModified": 1783084516306.637
+      "lastModified": 1783088833250.729
     },
     "apps/admin/src/lib/api/admin/notification.service.ts": {
       "assetReferences": [],
@@ -2463,7 +2467,7 @@
         "canAccessRoute"
       ],
       "hash": "94565650021194318c8181a1fe4e9c55a9a648d9",
-      "lastModified": 1783084516307.215
+      "lastModified": 1783088833251.134
     },
     "apps/admin/src/providers/AdminAuthProvider.tsx": {
       "assetReferences": [],
@@ -2570,7 +2574,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "533d8bf5f2f2e2c650691253f9cdb7c98fb780d9",
-      "lastModified": 1783084516307.4663
+      "lastModified": 1783088833251.5664
     },
     "apps/server/scripts/notification-jobid-dedupe.ts": {
       "assetReferences": [],
@@ -2618,7 +2622,7 @@
         "createApp"
       ],
       "hash": "6ea9d7f3a2eaa49ed71268fd634087db61050cea",
-      "lastModified": 1783084516307.744
+      "lastModified": 1783088833251.8884
     },
     "apps/server/src/config/cloudinary.ts": {
       "assetReferences": [],
@@ -2630,7 +2634,7 @@
         "cloudinary"
       ],
       "hash": "2d4602f77568976749379c94804db6d7e9bb84ac",
-      "lastModified": 1783084516307.965
+      "lastModified": 1783088833252.487
     },
     "apps/server/src/config/database.ts": {
       "assetReferences": [],
@@ -2673,7 +2677,7 @@
         "generateOpenApiDocument"
       ],
       "hash": "4c536552c36e47a2710ec198a44f40ba38572d8e",
-      "lastModified": 1783084516308.2222
+      "lastModified": 1783088833252.7366
     },
     "apps/server/src/config/queue.config.ts": {
       "assetReferences": [],
@@ -2688,7 +2692,7 @@
         "getQueuePrefix"
       ],
       "hash": "0d4945cc7d2f2a4eaafc41ddf235c8268d40e227",
-      "lastModified": 1783084516308.526
+      "lastModified": 1783088833253.2861
     },
     "apps/server/src/config/razorpay.ts": {
       "assetReferences": [],
@@ -2790,7 +2794,7 @@
         "getAttendanceRankings"
       ],
       "hash": "e164e33c9a117ef10289ea3c23ca98247bd0a5c0",
-      "lastModified": 1783084516308.933
+      "lastModified": 1783088833254.6648
     },
     "apps/server/src/controllers/admin/auth.controller.test.ts": {
       "assetReferences": [],
@@ -2803,7 +2807,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "7f0202f26cd840b65d88b3f34073203523bd940c",
-      "lastModified": 1783084516309.537
+      "lastModified": 1783088833255.117
     },
     "apps/server/src/controllers/admin/auth.controller.ts": {
       "assetReferences": [],
@@ -2833,7 +2837,7 @@
         "getBookingsSummary"
       ],
       "hash": "dde1829e27bca213451ee7593a4312d3df85fceb",
-      "lastModified": 1783084516310.0652
+      "lastModified": 1783088833256.0557
     },
     "apps/server/src/controllers/admin/category.controller.ts": {
       "assetReferences": [],
@@ -2947,7 +2951,7 @@
         "getPreviewToken"
       ],
       "hash": "efbacab0ce82f221801a162cdfc54f2b87281adc",
-      "lastModified": 1783059854401.3516
+      "lastModified": 1783088792359.2288
     },
     "apps/server/src/controllers/admin/marketing.controller.ts": {
       "assetReferences": [],
@@ -3103,7 +3107,7 @@
         "deleteUpload"
       ],
       "hash": "6ae9faf346e8fd894f564eccf5a741c7cfa6ce0a",
-      "lastModified": 1783084516310.2888
+      "lastModified": 1783088833256.3992
     },
     "apps/server/src/controllers/admin/user.controller.test.ts": {
       "assetReferences": [],
@@ -3141,7 +3145,7 @@
         "getWebhooks"
       ],
       "hash": "5c72024e3b9c7c59270b35f174639973b62f191e",
-      "lastModified": 1783084516310.5034
+      "lastModified": 1783088833257.1843
     },
     "apps/server/src/controllers/public/auth.controller.test.ts": {
       "assetReferences": [],
@@ -3154,7 +3158,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "99631385ad9a2c7dcaeffd1a9e11cc7b90903a38",
-      "lastModified": 1783084516310.832
+      "lastModified": 1783088833257.6538
     },
     "apps/server/src/controllers/public/auth.controller.ts": {
       "assetReferences": [],
@@ -3171,7 +3175,7 @@
         "AuthController"
       ],
       "hash": "1feb1ee9d2bec5709ca7d374a60639957ae0e347",
-      "lastModified": 1783084516311.0984
+      "lastModified": 1783088833257.9119
     },
     "apps/server/src/controllers/public/booking.controller.test.ts": {
       "assetReferences": [],
@@ -3186,7 +3190,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "0fd3fbc8311f2b4281f9c60db82f46277bae24e1",
-      "lastModified": 1783084516311.4731
+      "lastModified": 1783088833258.2173
     },
     "apps/server/src/controllers/public/booking.controller.ts": {
       "assetReferences": [],
@@ -3220,7 +3224,7 @@
         "verifyRecoveredBookingOTP"
       ],
       "hash": "6b60b3abacee9e010ffb12607def0a918447bc84",
-      "lastModified": 1783084516311.8142
+      "lastModified": 1783088833258.496
     },
     "apps/server/src/controllers/public/dj-operator.controller.ts": {
       "assetReferences": [],
@@ -3253,7 +3257,7 @@
         "getEventSeatLayout"
       ],
       "hash": "bf12eb1c3fdaf8dddc4bd3f040eb220a69575ae0",
-      "lastModified": 1783084516312.0718
+      "lastModified": 1783088833258.734
     },
     "apps/server/src/controllers/public/marketing.controller.ts": {
       "assetReferences": [],
@@ -3290,7 +3294,7 @@
         "razorpayWebhook"
       ],
       "hash": "b34caefb31963775a5478928dfee2119bee21697",
-      "lastModified": 1783084516312.4265
+      "lastModified": 1783088833259.1013
     },
     "apps/server/src/controllers/public/payment.controller.webhook.test.ts": {
       "assetReferences": [],
@@ -3303,7 +3307,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "4ed424f6f6c962e1aaa0bde6ee12d7e42f1f3332",
-      "lastModified": 1783084516315.9402
+      "lastModified": 1783088833259.5117
     },
     "apps/server/src/controllers/public/popup.controller.ts": {
       "assetReferences": [],
@@ -3335,7 +3339,7 @@
       ],
       "exports": [],
       "hash": "98519636b23846f0e5c11ded4bdbb41050533f93",
-      "lastModified": 1783084516316.7478
+      "lastModified": 1783088833259.8237
     },
     "apps/server/src/controllers/public/ticket.controller.ts": {
       "assetReferences": [],
@@ -3370,7 +3374,7 @@
         "initializeSentry"
       ],
       "hash": "7d437e5b7ef45ba05e6a302ae951acd622d02998",
-      "lastModified": 1783084516317.195
+      "lastModified": 1783088833260.0344
     },
     "apps/server/src/lib/email/index.ts": {
       "assetReferences": [],
@@ -3506,7 +3510,7 @@
         "magicLinkHtml"
       ],
       "hash": "5c896dd71aa7d7a5f7a545602049701c59383c11",
-      "lastModified": 1783084516317.4844
+      "lastModified": 1783088833260.422
     },
     "apps/server/src/lib/email/templates/partial-refund.tsx": {
       "assetReferences": [],
@@ -3702,7 +3706,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "004c65c7496109e2d766efb53db4d3daaf22479a",
-      "lastModified": 1783084516317.827
+      "lastModified": 1783088833260.8586
     },
     "apps/server/src/lib/razorpay/refund.client.ts": {
       "assetReferences": [],
@@ -3719,7 +3723,7 @@
         "createRazorpayRefund"
       ],
       "hash": "fc0dc6e0bfdcb797eb9ee22628f7597eef193381",
-      "lastModified": 1783084516318.125
+      "lastModified": 1783088833261.0984
     },
     "apps/server/src/middleware/auth.middleware.ts": {
       "assetReferences": [],
@@ -3740,7 +3744,7 @@
         "requireSuperAdmin"
       ],
       "hash": "5b5939f1afc244617a3a1ff1093c6e8fb882e568",
-      "lastModified": 1783084516318.7695
+      "lastModified": 1783088833261.4175
     },
     "apps/server/src/middleware/cache.middleware.ts": {
       "assetReferences": [],
@@ -3751,7 +3755,7 @@
         "cdnCache"
       ],
       "hash": "e1f24c3b276afc8d6e18ec42c5edd04bf8c0601c",
-      "lastModified": 1783084516319.0286
+      "lastModified": 1783088833262.1316
     },
     "apps/server/src/middleware/correlation.middleware.ts": {
       "assetReferences": [],
@@ -3842,7 +3846,7 @@
         "uploadMiddleware"
       ],
       "hash": "6d5a8091e82d9439700eaebff615492b7f8e90c7",
-      "lastModified": 1783084516319.3274
+      "lastModified": 1783088833262.449
     },
     "apps/server/src/middleware/validation.middleware.test.ts": {
       "assetReferences": [],
@@ -3929,7 +3933,7 @@
         "Booking"
       ],
       "hash": "18ab80404cacd8e34e4ddc4857dbe042b353e398",
-      "lastModified": 1783084516319.6548
+      "lastModified": 1783088833262.9165
     },
     "apps/server/src/models/category.schema.ts": {
       "assetReferences": [],
@@ -3979,7 +3983,7 @@
         "DeadLetterJob"
       ],
       "hash": "c534d727c251316160c5cb9a9599ebb2fa3d2274",
-      "lastModified": 1783084516319.9175
+      "lastModified": 1783088833263.1147
     },
     "apps/server/src/models/dj-operator.schema.ts": {
       "assetReferences": [],
@@ -4003,7 +4007,7 @@
         "Event"
       ],
       "hash": "52b04bf08e8f3226683214a8464f3f89252363ae",
-      "lastModified": 1783084516320.2002
+      "lastModified": 1783088833263.3274
     },
     "apps/server/src/models/index.ts": {
       "assetReferences": [],
@@ -4033,7 +4037,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "b0f668e9a5b087f208cffb9b6ced628b664256b5",
-      "lastModified": 1783084516320.4512
+      "lastModified": 1783088833263.5674
     },
     "apps/server/src/models/magic-token.schema.ts": {
       "assetReferences": [],
@@ -4178,7 +4182,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "8f0ed92e79c1cbf3911caf4ab1437950905496db",
-      "lastModified": 1783084516321.4534
+      "lastModified": 1783088833263.7734
     },
     "apps/server/src/models/ticket.schema.ts": {
       "assetReferences": [],
@@ -4191,7 +4195,7 @@
         "Ticket"
       ],
       "hash": "8e9936f712ede44425cb0922204953de2777248f",
-      "lastModified": 1783084516322.0225
+      "lastModified": 1783088833263.9697
     },
     "apps/server/src/models/tier.schema.ts": {
       "assetReferences": [],
@@ -4283,7 +4287,7 @@
         "default"
       ],
       "hash": "5ad86bf22c58cc80b14c1e364af0a516b7c251ca",
-      "lastModified": 1783084516323.7532
+      "lastModified": 1783088833264.2605
     },
     "apps/server/src/routes/admin/category.routes.ts": {
       "assetReferences": [],
@@ -4378,7 +4382,7 @@
         "default"
       ],
       "hash": "848980cae726d9ca98fa0141e000c6023479fe83",
-      "lastModified": 1783059854402.5862
+      "lastModified": 1783088792359.84
     },
     "apps/server/src/routes/admin/marketing.routes.ts": {
       "assetReferences": [],
@@ -4640,7 +4644,7 @@
         "default"
       ],
       "hash": "64c8c1d5200a339c7197d850ef170d1f4a51e84d",
-      "lastModified": 1783084516324.023
+      "lastModified": 1783088833264.4521
     },
     "apps/server/src/routes/index.ts": {
       "assetReferences": [],
@@ -4727,7 +4731,7 @@
         "default"
       ],
       "hash": "15ef606cc0dfe9b9c854ad25b5c6c4d76ca7cf76",
-      "lastModified": 1783084516324.2458
+      "lastModified": 1783088833264.7305
     },
     "apps/server/src/routes/public/category.routes.ts": {
       "assetReferences": [],
@@ -4851,7 +4855,7 @@
       ],
       "exports": [],
       "hash": "b38509e1ce4b717a4fe1e5b8df6435d5bc03da90",
-      "lastModified": 1783084516324.4895
+      "lastModified": 1783088833264.9773
     },
     "apps/server/src/services/admin/auth.service.ts": {
       "assetReferences": [],
@@ -4892,7 +4896,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "6b99515c3368c654adae15043ed3280d0cea308a",
-      "lastModified": 1783084516326.0105
+      "lastModified": 1783088833265.7322
     },
     "apps/server/src/services/admin/booking.service.ts": {
       "assetReferences": [],
@@ -4936,7 +4940,7 @@
         "getBookingsSummary"
       ],
       "hash": "54b8d7c9a10ddf774fa349ac891a028ceee55178",
-      "lastModified": 1783084516326.9807
+      "lastModified": 1783088833266.68
     },
     "apps/server/src/services/admin/category.service.ts": {
       "assetReferences": [],
@@ -5021,7 +5025,7 @@
       ],
       "exports": [],
       "hash": "92440a469cec971849cd59762825bf3b83b8677a",
-      "lastModified": 1783059854403.1892
+      "lastModified": 1783088792360.387
     },
     "apps/server/src/services/admin/event.service.ts": {
       "assetReferences": [],
@@ -5049,7 +5053,7 @@
         "deleteEvent"
       ],
       "hash": "2201050d867d6ee2d4ffc27933e75ef0b5b2a423",
-      "lastModified": 1783059854403.6409
+      "lastModified": 1783088792360.7017
     },
     "apps/server/src/services/admin/media-cleanup.service.test.ts": {
       "assetReferences": [],
@@ -5092,7 +5096,7 @@
         "retryNotification"
       ],
       "hash": "ead9f4ff978d511bc4c0d8dd2e60490bc3be11b7",
-      "lastModified": 1783084516327.2502
+      "lastModified": 1783088833266.9387
     },
     "apps/server/src/services/admin/popup.service.ts": {
       "assetReferences": [],
@@ -5132,7 +5136,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "9d53558523fd878df62787f7ce1015a34b957ab9",
-      "lastModified": 1783084516327.8787
+      "lastModified": 1783088833268.464
     },
     "apps/server/src/services/admin/refund.service.ts": {
       "assetReferences": [],
@@ -5164,7 +5168,7 @@
         "processRefund"
       ],
       "hash": "ce11092a281a0ccea1e7ba749ae9eee999fbf7cb",
-      "lastModified": 1783084516328.7021
+      "lastModified": 1783088833269.431
     },
     "apps/server/src/services/admin/team.service.test.ts": {
       "assetReferences": [],
@@ -5177,7 +5181,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "f16794b61f2007fbe472290e480db674bb8f2623",
-      "lastModified": 1783084516329.0283
+      "lastModified": 1783088833269.6619
     },
     "apps/server/src/services/admin/team.service.ts": {
       "assetReferences": [],
@@ -5282,7 +5286,7 @@
         "UploadService"
       ],
       "hash": "906c5224374aa722931263076c59406606c3c5de",
-      "lastModified": 1783084516329.4788
+      "lastModified": 1783088833269.9055
     },
     "apps/server/src/services/admin/user.service.test.ts": {
       "assetReferences": [],
@@ -5297,7 +5301,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "2a8e85ff6d3e323c4cac838c88d4919ff705d04a",
-      "lastModified": 1783084516329.8147
+      "lastModified": 1783088833270.244
     },
     "apps/server/src/services/admin/user.service.ts": {
       "assetReferences": [],
@@ -5316,7 +5320,7 @@
         "AdminUserService"
       ],
       "hash": "76cdfa17f780174d9c86c0ad7a2d9f268278fa48",
-      "lastModified": 1783084516330.179
+      "lastModified": 1783088833271.0544
     },
     "apps/server/src/services/cache.service.test.ts": {
       "assetReferences": [],
@@ -5327,7 +5331,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "c6252eff557220fc137845139b47507028daba24",
-      "lastModified": 1783084516330.5505
+      "lastModified": 1783088833271.295
     },
     "apps/server/src/services/cache.service.ts": {
       "assetReferences": [],
@@ -5340,7 +5344,7 @@
         "CacheService"
       ],
       "hash": "8617d1644ff793a2e651493fbac10d0c2cb73146",
-      "lastModified": 1783084516330.8892
+      "lastModified": 1783088833271.506
     },
     "apps/server/src/services/consistency.service.test.ts": {
       "assetReferences": [],
@@ -5365,7 +5369,7 @@
       ],
       "exports": [],
       "hash": "8c33079ec5e15b2c261b03d9137ebc58c5adad8c",
-      "lastModified": 1783084516335.8748
+      "lastModified": 1783088833272.4417
     },
     "apps/server/src/services/consistency.service.ts": {
       "assetReferences": [],
@@ -5400,7 +5404,7 @@
         "ConsistencyService"
       ],
       "hash": "409e74179a055b365eb5b48c940f2f59c2ecc26b",
-      "lastModified": 1783084516336.4656
+      "lastModified": 1783088833272.8694
     },
     "apps/server/src/services/diagnostics.service.test.ts": {
       "assetReferences": [],
@@ -5413,7 +5417,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "1a9d8610400b3d38ef0fd7ec14cd3f1a6feae9a2",
-      "lastModified": 1783084516336.7148
+      "lastModified": 1783088833273.0964
     },
     "apps/server/src/services/diagnostics.service.ts": {
       "assetReferences": [],
@@ -5522,7 +5526,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "4a0c54ebe35b87b995212e9cac3c9eabe842e44c",
-      "lastModified": 1783084516337.22
+      "lastModified": 1783088833273.3997
     },
     "apps/server/src/services/public/auth.service.ts": {
       "assetReferences": [],
@@ -5548,7 +5552,7 @@
         "AuthService"
       ],
       "hash": "baa68b27f2b28853cad9ffacb768214bb4a6fe25",
-      "lastModified": 1783084516337.8384
+      "lastModified": 1783088833273.685
     },
     "apps/server/src/services/public/booking-recovery.service.test.ts": {
       "assetReferences": [],
@@ -5597,7 +5601,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "80e20e35ea007f1d8197e4585bfd5107b562e6ed",
-      "lastModified": 1783084516338.8818
+      "lastModified": 1783088833274.0122
     },
     "apps/server/src/services/public/booking.service.ts": {
       "assetReferences": [],
@@ -5623,7 +5627,7 @@
         "PublicBookingService"
       ],
       "hash": "e01ec2103d5a4758b060f2f5814d0d0a4036ddbc",
-      "lastModified": 1783084516339.3025
+      "lastModified": 1783088833274.5413
     },
     "apps/server/src/services/public/dj-operator.service.ts": {
       "assetReferences": [],
@@ -5653,7 +5657,7 @@
       ],
       "exports": [],
       "hash": "e1d1c6eb3b05df48613b516c693e92f5977f73ec",
-      "lastModified": 1783084516339.5518
+      "lastModified": 1783088833274.8984
     },
     "apps/server/src/services/public/event.service.ts": {
       "assetReferences": [],
@@ -5672,7 +5676,7 @@
         "PublicEventService"
       ],
       "hash": "093352bb01a4f6607d908c0a52736d452c335d67",
-      "lastModified": 1783059854404.5466
+      "lastModified": 1783088792361.1567
     },
     "apps/server/src/services/public/ownership-characterization.test.ts": {
       "assetReferences": [],
@@ -5689,7 +5693,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "cce81aa5efcc3ab157dc4a47f8d255f1a283d432",
-      "lastModified": 1783084516339.8215
+      "lastModified": 1783088833275.258
     },
     "apps/server/src/services/public/ownership-consolidation.test.ts": {
       "assetReferences": [],
@@ -5720,7 +5724,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "57faa8ac334390153aa33a66489d9abaa8df78e2",
-      "lastModified": 1783084516340.0696
+      "lastModified": 1783088833275.5007
     },
     "apps/server/src/services/public/payment-booking.service.ts": {
       "assetReferences": [],
@@ -5747,7 +5751,7 @@
         "PaymentBookingService"
       ],
       "hash": "de1e7f5ee43609ed191064da6fa8f9e85816d562",
-      "lastModified": 1783084516340.301
+      "lastModified": 1783088833275.7878
     },
     "apps/server/src/services/public/payment-inventory.service.test.ts": {
       "assetReferences": [],
@@ -5916,7 +5920,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "cf29ddbc104f37035612ac38e7353fabe0cad25e",
-      "lastModified": 1783084516341.2034
+      "lastModified": 1783088833277.6855
     },
     "apps/server/src/services/public/payment.service.ts": {
       "assetReferences": [],
@@ -5963,7 +5967,7 @@
         "PaymentService"
       ],
       "hash": "281b10c3eabc22e45d4f69b514d1435c9d090221",
-      "lastModified": 1783084516342.8396
+      "lastModified": 1783088833279.2957
     },
     "apps/server/src/services/public/popup.service.ts": {
       "assetReferences": [],
@@ -6050,7 +6054,7 @@
         "getAttendeeTickets"
       ],
       "hash": "af00bf0f7559e61c264724059f5dfc51c1aaeb72",
-      "lastModified": 1783084516343.2983
+      "lastModified": 1783088833279.748
     },
     "apps/server/src/services/queue.service.test.ts": {
       "assetReferences": [],
@@ -6062,7 +6066,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "e87e5f8740894db70d4bf1f73167f93b8bc898a2",
-      "lastModified": 1783084516343.6677
+      "lastModified": 1783088833280.1611
     },
     "apps/server/src/services/queue.service.ts": {
       "assetReferences": [],
@@ -6115,7 +6119,7 @@
         "ReservationService"
       ],
       "hash": "453f8c4310d82eee557197ec30db16d55de1331d",
-      "lastModified": 1783084516345.2952
+      "lastModified": 1783088833281.6077
     },
     "apps/server/src/sockets/index.test.ts": {
       "assetReferences": [],
@@ -6127,7 +6131,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "c333e34ee7de597469040ae014157eca466e326e",
-      "lastModified": 1783084516346.3408
+      "lastModified": 1783088833281.919
     },
     "apps/server/src/sockets/index.ts": {
       "assetReferences": [],
@@ -6150,7 +6154,7 @@
         "registerAdminSocketHandlers"
       ],
       "hash": "8a31428bb6afa35a1f9389ddd163171c5cf4fe95",
-      "lastModified": 1783084516347.4934
+      "lastModified": 1783088833282.2002
     },
     "apps/server/src/types/admin/booking.types.ts": {
       "assetReferences": [],
@@ -6224,7 +6228,7 @@
         "normalizeEmail"
       ],
       "hash": "719505df71230154a36a023fa7417d40355bf6d8",
-      "lastModified": 1783084516348.4058
+      "lastModified": 1783088833282.5955
     },
     "apps/server/src/utils/encryption.test.ts": {
       "assetReferences": [],
@@ -6235,7 +6239,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "f9c660c473aa4356a7986799bad991b406819235",
-      "lastModified": 1783084516349.1843
+      "lastModified": 1783088833282.815
     },
     "apps/server/src/utils/encryption.ts": {
       "assetReferences": [],
@@ -6264,7 +6268,7 @@
         "generateSecureFilename"
       ],
       "hash": "b6ff9c5075419add2ab9fee12406abd8e130bda2",
-      "lastModified": 1783084516349.8218
+      "lastModified": 1783088833283.0483
     },
     "apps/server/src/utils/jwt.test.ts": {
       "assetReferences": [],
@@ -6274,7 +6278,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "78e894b8866bbc9d11027230c4d52a0a68cb3837",
-      "lastModified": 1783084516350.8967
+      "lastModified": 1783088833283.2598
     },
     "apps/server/src/utils/jwt.ts": {
       "assetReferences": [],
@@ -6296,7 +6300,7 @@
         "verifySessionToken"
       ],
       "hash": "06d85983c9a6be0a501dd7bc2287fc9044065d6e",
-      "lastModified": 1783084516351.2786
+      "lastModified": 1783088833283.565
     },
     "apps/server/src/utils/logger.ts": {
       "assetReferences": [],
@@ -6390,7 +6394,7 @@
         "sendForbidden"
       ],
       "hash": "073a63895141b5394ba67173aada681d6970182e",
-      "lastModified": 1783084516351.9307
+      "lastModified": 1783088833283.783
     },
     "apps/server/src/utils/seed-admin.ts": {
       "assetReferences": [],
@@ -6429,7 +6433,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "d6a66fe201138757db926a6b8d15557af1e76314",
-      "lastModified": 1783084516352.3008
+      "lastModified": 1783088833284.0264
     },
     "apps/server/src/utils/transaction.ts": {
       "assetReferences": [],
@@ -6534,7 +6538,7 @@
         "bookingsSummarySchema"
       ],
       "hash": "5d6d95f97db2998333862bdb0f0e9e2719fcc7c6",
-      "lastModified": 1783084516353.3718
+      "lastModified": 1783088833284.549
     },
     "apps/server/src/validations/admin-user.validation.ts": {
       "assetReferences": [],
@@ -6562,7 +6566,7 @@
         "resetAdminPasswordSchema"
       ],
       "hash": "af0f16684ffb4443bf8f8f976a184ae73bd9256b",
-      "lastModified": 1783084516353.6223
+      "lastModified": 1783088833284.7773
     },
     "apps/server/src/validations/auth.validation.test.ts": {
       "assetReferences": [],
@@ -6572,7 +6576,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "df260d4ef0c17529d6ea284b7300dd3aea93aece",
-      "lastModified": 1783084516353.8916
+      "lastModified": 1783088833285.2498
     },
     "apps/server/src/validations/auth.validation.ts": {
       "assetReferences": [],
@@ -6592,7 +6596,7 @@
         "logoutAuthSchema"
       ],
       "hash": "dc159d32730a214199449f386fea19bcc9a49435",
-      "lastModified": 1783084516354.1433
+      "lastModified": 1783088833285.6606
     },
     "apps/server/src/validations/booking-recovery.validation.test.ts": {
       "assetReferences": [],
@@ -6602,7 +6606,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "b910a469fd0d0fc77c9896478897b32aaf571534",
-      "lastModified": 1783084516354.4194
+      "lastModified": 1783088833285.8723
     },
     "apps/server/src/validations/booking-recovery.validation.ts": {
       "assetReferences": [],
@@ -6613,7 +6617,7 @@
         "verifyRecoveredBookingOTPSchema"
       ],
       "hash": "ef5a87a12f7912689174e00c31b318a570f91dbd",
-      "lastModified": 1783084516354.6477
+      "lastModified": 1783088833286.0803
     },
     "apps/server/src/validations/booking.validation.test.ts": {
       "assetReferences": [],
@@ -6724,7 +6728,7 @@
         "stopBookingWorker"
       ],
       "hash": "39e1fce335830c0ee6be156985c6af3403ceae8d",
-      "lastModified": 1783084516354.9275
+      "lastModified": 1783088833286.4443
     },
     "apps/server/src/workers/consistency.worker.ts": {
       "assetReferences": [],
@@ -6752,7 +6756,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "f77187f2bad912f3dea46afd4c76d848ba1406a9",
-      "lastModified": 1783084516355.191
+      "lastModified": 1783088833286.7998
     },
     "apps/server/src/workers/email.worker.ts": {
       "assetReferences": [],
@@ -6777,7 +6781,7 @@
         "stopEmailWorker"
       ],
       "hash": "b1a334fa5966fb59d12bdd8be9176704000f34be",
-      "lastModified": 1783084516355.459
+      "lastModified": 1783088833287.195
     },
     "apps/server/src/workers/event-lifecycle.worker.ts": {
       "assetReferences": [],
@@ -6831,7 +6835,7 @@
         "stopPDFWorker"
       ],
       "hash": "77071b943220d8347846ecbc3332c0b331dfbf12",
-      "lastModified": 1783084516355.8066
+      "lastModified": 1783088833287.524
     },
     "apps/server/src/workers/workers.test.ts": {
       "assetReferences": [],
@@ -6851,7 +6855,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "47d43a71df99e2ce21f9f4d647b2b083b9ccd343",
-      "lastModified": 1783084516356.6892
+      "lastModified": 1783088833287.995
     },
     "apps/server/tsconfig.json": {
       "assetReferences": [],
@@ -7068,7 +7072,7 @@
         "UserDashboardPage"
       ],
       "hash": "450371a7408aed79e4202c30d0cd80b5a6633216",
-      "lastModified": 1783084516357.3943
+      "lastModified": 1783088833288.863
     },
     "apps/web/src/app/(auth)/login/page.tsx": {
       "assetReferences": [],
@@ -7102,7 +7106,7 @@
         "submitContactForm"
       ],
       "hash": "36a03539f250d8036e5bb47b58309716c50ad6dc",
-      "lastModified": 1783084516357.659
+      "lastModified": 1783088833289.2622
     },
     "apps/web/src/app/checkout/[bookingId]/page.tsx": {
       "assetReferences": [],
@@ -7127,7 +7131,7 @@
         "ContactPage"
       ],
       "hash": "5b3b8aae8914367b2906aaf62b1dd30345d3e391",
-      "lastModified": 1783084516357.8806
+      "lastModified": 1783088833289.5032
     },
     "apps/web/src/app/dj-operators/[slug]/DjDetailClient.tsx": {
       "assetReferences": [],
@@ -7142,7 +7146,7 @@
         "DJDetailClient"
       ],
       "hash": "b196a54a365422377e0c327d3fa67e9c36369cc5",
-      "lastModified": 1783084516358.6975
+      "lastModified": 1783088833289.9578
     },
     "apps/web/src/app/dj-operators/[slug]/page.tsx": {
       "assetReferences": [],
@@ -7170,7 +7174,7 @@
         "DJsPage"
       ],
       "hash": "834c5131fd49e5b9e816e3d764cc7f6e8ee9cab0",
-      "lastModified": 1783084516359.0408
+      "lastModified": 1783088833290.314
     },
     "apps/web/src/app/error.tsx": {
       "assetReferences": [],
@@ -7182,7 +7186,7 @@
         "ErrorPage"
       ],
       "hash": "cb6ef4f21f4dab82f027c33a7702e2ce4049c8ba",
-      "lastModified": 1783084516359.4119
+      "lastModified": 1783088833290.976
     },
     "apps/web/src/app/events/EventsList.tsx": {
       "assetReferences": [],
@@ -7218,7 +7222,7 @@
         "EventDetailClient"
       ],
       "hash": "cb6e91b64bb8cf4d801c9d65e91316acef6d2221",
-      "lastModified": 1783059854405.736
+      "lastModified": 1783088792361.811
     },
     "apps/web/src/app/events/[slug]/components/EventBookingFlow.tsx": {
       "assetReferences": [],
@@ -7259,7 +7263,7 @@
         "EventMemoriesRecap"
       ],
       "hash": "f56edbbfb1ee674a5078f1e25e83a25f8f9e52cd",
-      "lastModified": 1783059854406.0005
+      "lastModified": 1783088792361.9756
     },
     "apps/web/src/app/events/[slug]/components/EventOverview.tsx": {
       "assetReferences": [],
@@ -7281,7 +7285,7 @@
         "EventStickyCTA"
       ],
       "hash": "fcfe26cc2e697587c0ef0d9fbfc2f584450fa3d7",
-      "lastModified": 1783059854406.3345
+      "lastModified": 1783088792362.1992
     },
     "apps/web/src/app/events/[slug]/page.tsx": {
       "assetReferences": [],
@@ -7323,7 +7327,7 @@
         "GlobalError"
       ],
       "hash": "d0265b176c8c9fc39191ddf54bfe7c1278c296aa",
-      "lastModified": 1783084516359.7307
+      "lastModified": 1783088833291.254
     },
     "apps/web/src/app/layout.tsx": {
       "assetReferences": [
@@ -7364,7 +7368,7 @@
         "LegalDocPage"
       ],
       "hash": "38a7067549ae48672bee57fd464d8c5f324a58b5",
-      "lastModified": 1783084516360.0347
+      "lastModified": 1783088833291.7268
     },
     "apps/web/src/app/legal/components/LegalMobileTabs.tsx": {
       "assetReferences": [],
@@ -7376,7 +7380,7 @@
         "LegalMobileTabs"
       ],
       "hash": "9e9ba997e76c83ed2b567d46e7a100ad004716a3",
-      "lastModified": 1783084516360.3843
+      "lastModified": 1783088833292.0867
     },
     "apps/web/src/app/legal/components/LegalSidebar.tsx": {
       "assetReferences": [],
@@ -7389,7 +7393,7 @@
         "LegalSidebar"
       ],
       "hash": "56f2a694124ba38afd140a4cec238a5502afe543",
-      "lastModified": 1783084516360.6882
+      "lastModified": 1783088833292.4412
     },
     "apps/web/src/app/legal/components/LegalSupportCard.tsx": {
       "assetReferences": [],
@@ -7399,7 +7403,7 @@
         "LegalSupportCard"
       ],
       "hash": "917d66933b62b6477676def0befdd57d64ad8da1",
-      "lastModified": 1783084516361.6936
+      "lastModified": 1783088833293.2615
     },
     "apps/web/src/app/legal/components/LegalViewer.tsx": {
       "assetReferences": [],
@@ -7411,7 +7415,7 @@
         "LegalViewer"
       ],
       "hash": "99b330665a82a28f41043e511ebf560aa35c2a1c",
-      "lastModified": 1783084516361.9326
+      "lastModified": 1783088833293.5361
     },
     "apps/web/src/app/legal/layout.tsx": {
       "assetReferences": [],
@@ -7462,7 +7466,7 @@
         "HomePage"
       ],
       "hash": "1a2db164e25bf3cd16119436da7f5bdb8280d6f6",
-      "lastModified": 1783084516362.185
+      "lastModified": 1783088833293.9502
     },
     "apps/web/src/app/robots.ts": {
       "assetReferences": [],
@@ -7570,7 +7574,7 @@
         "TicketRetrievalPage"
       ],
       "hash": "8727493943f7f57967c0565924b6f80a3037b76b",
-      "lastModified": 1783084516362.4883
+      "lastModified": 1783088833294.7083
     },
     "apps/web/src/components/account/ProfileEditor.test.tsx": {
       "assetReferences": [],
@@ -7580,7 +7584,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "a2d7cd729acfac975c8ed81432217afa4d255fa7",
-      "lastModified": 1783084516363.971
+      "lastModified": 1783088833295.1929
     },
     "apps/web/src/components/account/ProfileEditor.tsx": {
       "assetReferences": [],
@@ -7617,7 +7621,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "9d668e3395b2f0fc3da598b515de5e197241141d",
-      "lastModified": 1783084516364.2734
+      "lastModified": 1783088833295.6602
     },
     "apps/web/src/components/auth/AuthForm.tsx": {
       "assetReferences": [],
@@ -7640,7 +7644,7 @@
         "AuthForm"
       ],
       "hash": "113d69f0fa37c947a0a433608ab351c1ba395e80",
-      "lastModified": 1783084516364.5215
+      "lastModified": 1783088833296.1558
     },
     "apps/web/src/components/auth/LoginForm.tsx": {
       "assetReferences": [],
@@ -7654,7 +7658,7 @@
         "LoginForm"
       ],
       "hash": "90ea24a0a12cb79d4855351be08983f10d28105f",
-      "lastModified": 1783084516364.899
+      "lastModified": 1783088833296.5276
     },
     "apps/web/src/components/auth/OtpVerifyForm.tsx": {
       "assetReferences": [],
@@ -7667,7 +7671,7 @@
         "OtpVerifyForm"
       ],
       "hash": "618bcb6afea8cbd70ea85d3dab36cd6854f76e6d",
-      "lastModified": 1783084516365.3167
+      "lastModified": 1783088833296.8462
     },
     "apps/web/src/components/auth/ProfileCompletionForm.tsx": {
       "assetReferences": [],
@@ -7685,7 +7689,7 @@
         "ProfileCompletionForm"
       ],
       "hash": "e5ed271fe1282f3d24584e737e5f5256c9d81622",
-      "lastModified": 1783084516366.352
+      "lastModified": 1783088833297.7244
     },
     "apps/web/src/components/auth/hooks/useGoogleSignIn.ts": {
       "assetReferences": [],
@@ -7735,7 +7739,7 @@
         "CheckoutContent"
       ],
       "hash": "d9a23eb574ef61ff9e299e004aa1b883d1c60b6f",
-      "lastModified": 1783084516367.403
+      "lastModified": 1783088833298.2566
     },
     "apps/web/src/components/booking/TicketSelectionContent.tsx": {
       "assetReferences": [],
@@ -7751,7 +7755,7 @@
         "TicketSelectionContent"
       ],
       "hash": "b0fb4c57b2b196159974890a1106ae581f30d700",
-      "lastModified": 1783084516367.8215
+      "lastModified": 1783088833298.578
     },
     "apps/web/src/components/booking/checkout/CheckoutForm.tsx": {
       "assetReferences": [],
@@ -7766,7 +7770,7 @@
         "CheckoutForm"
       ],
       "hash": "64b83f13dd23f8e8eb33e05acab7d0e1c4c57d3a",
-      "lastModified": 1783084516368.185
+      "lastModified": 1783088833298.825
     },
     "apps/web/src/components/booking/checkout/CheckoutPayment.tsx": {
       "assetReferences": [],
@@ -7800,7 +7804,7 @@
         "LeaveCheckoutModal"
       ],
       "hash": "fdd1ae96d270370a424282ff7b17ad8edde6cf25",
-      "lastModified": 1783084516368.4517
+      "lastModified": 1783088833299.057
     },
     "apps/web/src/components/booking/checkout/useCheckoutNavGuard.ts": {
       "assetReferences": [],
@@ -7829,7 +7833,7 @@
         "BookingCard"
       ],
       "hash": "41cbf606ebdb7cedd8f6be619d6749d5a2aa6857",
-      "lastModified": 1783084516368.7683
+      "lastModified": 1783088833299.3162
     },
     "apps/web/src/components/booking/shared/BookingHeaderCard.tsx": {
       "assetReferences": [],
@@ -7855,7 +7859,7 @@
         "EntryPassGrid"
       ],
       "hash": "7def17ff645e5504f32de3a494ff8cb48edf1568",
-      "lastModified": 1783084516369.4497
+      "lastModified": 1783088833299.7817
     },
     "apps/web/src/components/booking/shared/TicketActions.tsx": {
       "assetReferences": [],
@@ -7891,7 +7895,7 @@
         "FloatingCountdown"
       ],
       "hash": "2ad6af72630a2149c07b308d825d4f7709882942",
-      "lastModified": 1783084516370.2976
+      "lastModified": 1783088833300.1765
     },
     "apps/web/src/components/common/PageTransition.tsx": {
       "assetReferences": [],
@@ -7903,7 +7907,7 @@
         "StaggerItem"
       ],
       "hash": "bab71b0ffa28efedabfa008f6190237e049905ba",
-      "lastModified": 1783084516372.236
+      "lastModified": 1783088833300.534
     },
     "apps/web/src/components/common/PopupManager.tsx": {
       "assetReferences": [],
@@ -8013,7 +8017,7 @@
         "ContactForm"
       ],
       "hash": "cec817299633fb26945fc3f1336c2fda2481279d",
-      "lastModified": 1783084516374.4023
+      "lastModified": 1783088833301.3555
     },
     "apps/web/src/components/support/FAQAccordion.tsx": {
       "assetReferences": [],
@@ -8025,7 +8029,7 @@
         "FAQAccordion"
       ],
       "hash": "e98ce72c5b2e31f682c26eab7c6a6fe5dc8814d4",
-      "lastModified": 1783084516374.7883
+      "lastModified": 1783088833301.6904
     },
     "apps/web/src/components/support/SupportHubClient.tsx": {
       "assetReferences": [],
@@ -8038,7 +8042,7 @@
         "SupportHubClient"
       ],
       "hash": "d721bcd9e8177d91fa8d0a6fc2fd870ca5801a88",
-      "lastModified": 1783084516376.5107
+      "lastModified": 1783088833301.9277
     },
     "apps/web/src/components/ui/FeaturedEventsSection.tsx": {
       "assetReferences": [],
@@ -8056,7 +8060,7 @@
         "FeaturedEventsSection"
       ],
       "hash": "ba9ac367af84215ba877b233fa8e724dbd1cf2c3",
-      "lastModified": 1783084516377.185
+      "lastModified": 1783088833302.1816
     },
     "apps/web/src/components/ui/HomeSkeletons.tsx": {
       "assetReferences": [],
@@ -8066,7 +8070,7 @@
         "FeaturedEventsSkeleton"
       ],
       "hash": "a0c16dd23f46d706055a074d9f34ba29b4d237bc",
-      "lastModified": 1783084516377.5518
+      "lastModified": 1783088833304.239
     },
     "apps/web/src/content/faqContent.ts": {
       "assetReferences": [],
@@ -8184,7 +8188,7 @@
         "useBookings"
       ],
       "hash": "97c296679b7523747408fbd1cd8c58726782ce5e",
-      "lastModified": 1783084516378.4133
+      "lastModified": 1783088833304.5776
     },
     "apps/web/src/hooks/use-checkout-viewport-controller.ts": {
       "assetReferences": [],
@@ -8195,7 +8199,7 @@
         "useCheckoutViewportController"
       ],
       "hash": "9e9ba6a23a404d5afef7a353f20818d446aace37",
-      "lastModified": 1783084516378.6326
+      "lastModified": 1783088833304.8416
     },
     "apps/web/src/hooks/use-countdown.hook.ts": {
       "assetReferences": [],
@@ -8234,7 +8238,7 @@
         "isAxiosError"
       ],
       "hash": "10b9b459da01dd485aa2e2b059a7d6597cd67d33",
-      "lastModified": 1783084516379.0332
+      "lastModified": 1783088833305.624
     },
     "apps/web/src/lib/api/public.service.ts": {
       "assetReferences": [],
@@ -8280,7 +8284,7 @@
         "publicVerifyRecoveredBookingOTP"
       ],
       "hash": "4b78f40de88943d618dea2ca45fa3d1d30fb1424",
-      "lastModified": 1783084516379.26
+      "lastModified": 1783088833306.0603
     },
     "apps/web/src/lib/api/server.service.ts": {
       "assetReferences": [],
@@ -8330,7 +8334,7 @@
         "mapZodErrorToFields"
       ],
       "hash": "a5f2677b17f92afc77595824adfcb8c113dafea6",
-      "lastModified": 1783084516379.46
+      "lastModified": 1783088833306.729
     },
     "apps/web/src/providers/AuthModalProvider.tsx": {
       "assetReferences": [],
@@ -8348,7 +8352,7 @@
         "AuthModalProvider"
       ],
       "hash": "69cea969d7b940fd72185f354bd91584adfdb508",
-      "lastModified": 1783084516379.7034
+      "lastModified": 1783088833307.1768
     },
     "apps/web/src/providers/AuthProvider.tsx": {
       "assetReferences": [],
@@ -8365,7 +8369,7 @@
         "useAuth"
       ],
       "hash": "f0b31a52ea72acc19366a815901a92899f4829ac",
-      "lastModified": 1783084516380.5476
+      "lastModified": 1783088833307.6274
     },
     "apps/web/src/providers/index.tsx": {
       "assetReferences": [],
@@ -8463,7 +8467,7 @@
         "setGoogleIdentityCallback"
       ],
       "hash": "ce9d68209c1240d8ec4f2976865535506f0fcbc9",
-      "lastModified": 1783084516380.7913
+      "lastModified": 1783088833307.9922
     },
     "apps/web/src/utils/image-loader.ts": {
       "assetReferences": [],
@@ -8611,7 +8615,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "ef0dbc258be7d31274ec0d6f27d4f76334a6eed9",
-      "lastModified": 1783084516381.2844
+      "lastModified": 1783088833308.8223
     },
     "docs/archive/audits/DASHBOARD_SIMPLIFICATION_VALIDATION.md": {
       "assetReferences": [],
@@ -8619,7 +8623,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "700426d4cf82d3a43174531b7b4928dcb85ff7fc",
-      "lastModified": 1783084516381.5764
+      "lastModified": 1783088833310.0452
     },
     "docs/archive/audits/artists-vs-dj-operators-audit.md": {
       "assetReferences": [],
@@ -8627,7 +8631,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "d2e24853a7c559d31da030db7c69d9a183e184f9",
-      "lastModified": 1783084516381.8857
+      "lastModified": 1783088833310.3394
     },
     "docs/archive/audits/backend-token-cleanup-audit.md": {
       "assetReferences": [],
@@ -8643,7 +8647,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "2e20879ca0ed38be4b09a036b14bfb4e2eb70932",
-      "lastModified": 1783084516383.0168
+      "lastModified": 1783088833310.9897
     },
     "docs/archive/audits/booking-ttl-remediation-design.md": {
       "assetReferences": [],
@@ -8657,7 +8661,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "b135acd3058bd4c29e689bd38a318b0dbd92d678",
-      "lastModified": 1783084516383.2563
+      "lastModified": 1783088833311.2786
     },
     "docs/archive/audits/booking-ttl-webhook-validation.md": {
       "assetReferences": [],
@@ -8668,7 +8672,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "04d46e54b0cabdeb602c07a5d2948158786fe442",
-      "lastModified": 1783084516383.496
+      "lastModified": 1783088833311.579
     },
     "docs/archive/audits/dashboard-information-architecture-audit.md": {
       "assetReferences": [],
@@ -8676,7 +8680,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "b2b51fcebdfa8877673552d8fec5e7489bc1aff6",
-      "lastModified": 1783084516383.7922
+      "lastModified": 1783088833311.8545
     },
     "docs/archive/audits/dashboard-simplification-audit.md": {
       "assetReferences": [],
@@ -8684,7 +8688,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "967e27198755bb4e24dec72f0aa7585e5c131d5c",
-      "lastModified": 1783084516384.116
+      "lastModified": 1783088833312.3198
     },
     "docs/archive/audits/frontend-token-cleanup-audit.md": {
       "assetReferences": [],
@@ -8700,7 +8704,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "f4deb3bee3388dd6b9765ed1253ea4780e3a5032",
-      "lastModified": 1783084516384.393
+      "lastModified": 1783088833312.7007
     },
     "docs/archive/audits/login-simplification-audit.md": {
       "assetReferences": [],
@@ -8717,7 +8721,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "bdff7408c1cd3c666f889b214c1a33e1529f58e4",
-      "lastModified": 1783084516385.532
+      "lastModified": 1783088833313.1458
     },
     "docs/archive/audits/regression-audit.md": {
       "assetReferences": [],
@@ -8725,7 +8729,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "1cb4605e042cd119b22b677e06497dab4f0e32a4",
-      "lastModified": 1783084516385.799
+      "lastModified": 1783088833313.4219
     },
     "docs/archive/audits/ticket-retrieval-phase1-verification.md": {
       "assetReferences": [],
@@ -8755,7 +8759,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "6b0842763f366517138cc9b5ae0582a7afabf3c3",
-      "lastModified": 1783084516386.09
+      "lastModified": 1783088833313.6724
     },
     "docs/archive/branch-cleanup/2026-06/asset_review.md": {
       "assetReferences": [],
@@ -8795,7 +8799,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "db381f86716c2d425dc141f198156692adb6ca27",
-      "lastModified": 1783084516386.4004
+      "lastModified": 1783088833314.0757
     },
     "docs/archive/branch-cleanup/2026-06/compliance_report.md": {
       "assetReferences": [],
@@ -8848,7 +8852,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "282b25131b51b73677b47ed8ac8edb5db29c8ca4",
-      "lastModified": 1783084516386.7468
+      "lastModified": 1783088833314.4753
     },
     "docs/archive/branch-cleanup/branch_cleanup_execution_protocol.md": {
       "assetReferences": [],
@@ -8856,7 +8860,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "52d392bf18874153b0b8fce88238bcd18744f10f",
-      "lastModified": 1783084516387.6023
+      "lastModified": 1783088833315.2698
     },
     "docs/archive/branch-cleanup/branch_cleanup_governance_compliance_report.md": {
       "assetReferences": [],
@@ -8881,7 +8885,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "4c73d40c439fd6ff2b32a9777137412c66caafd5",
-      "lastModified": 1783084516387.8477
+      "lastModified": 1783088833315.4998
     },
     "docs/archive/branch-cleanup/branch_cleanup_index.md": {
       "assetReferences": [],
@@ -8898,7 +8902,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "48d74ce21dc491a856110c1e29677f73afeda00c",
-      "lastModified": 1783084516388.0923
+      "lastModified": 1783088833315.7158
     },
     "docs/archive/branch-cleanup/branch_cleanup_validation_audit.md": {
       "assetReferences": [],
@@ -8906,7 +8910,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "a14bb0283378ec6e655550bfac8d59fb6314151d",
-      "lastModified": 1783084516388.3145
+      "lastModified": 1783088833316.1016
     },
     "docs/archive/branch-cleanup/cleanup_record.md": {
       "assetReferences": [],
@@ -8922,7 +8926,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "7826fa064daed0621e426b59d9544009188bc284",
-      "lastModified": 1783084516388.5703
+      "lastModified": 1783088833316.316
     },
     "docs/archive/branch-cleanup/final_cleanup_authorization_audit.md": {
       "assetReferences": [],
@@ -8932,7 +8936,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "9af38ff12930eda67d7a03d5497ec1969c203ee5",
-      "lastModified": 1783084516388.8489
+      "lastModified": 1783088833316.5518
     },
     "docs/archive/branch-cleanup/governance_baseline.md": {
       "assetReferences": [],
@@ -8940,7 +8944,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "65e7b940d1f9a63d139bf040e54de8dcda09c83b",
-      "lastModified": 1783084516389.088
+      "lastModified": 1783088833316.7488
     },
     "docs/audit/admin-mobile-shell-audit.md": {
       "assetReferences": [],
@@ -8948,7 +8952,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "0689a75af4e212eec18ea3e6f61e8bf8cd85edf1",
-      "lastModified": 1783084516389.4702
+      "lastModified": 1783088833317.5046
     },
     "docs/audit/auth-duplication-report.md": {
       "assetReferences": [],
@@ -8990,7 +8994,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "2c67ea91933d564c475c1103ec60d68a7cc21cd9",
-      "lastModified": 1783084516389.844
+      "lastModified": 1783088833318.11
     },
     "docs/audit/email-delivery-regression.md": {
       "assetReferences": [],
@@ -9025,7 +9029,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "8858f07787f222055ee644d78c2691a00aad9cd8",
-      "lastModified": 1783084516390.7114
+      "lastModified": 1783088833318.5134
     },
     "docs/audit/refund/REFUND-001-EVIDENCE.md": {
       "assetReferences": [],
@@ -9142,7 +9146,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "cf08ad58771dff46e1df6fe36721d3d66546ca38",
-      "lastModified": 1783084516390.9644
+      "lastModified": 1783088833318.8857
     },
     "docs/decisions/ADR-001-booking-ownership.md": {
       "assetReferences": [],
@@ -9189,7 +9193,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "d6859412d5100e67f95b6175346771dddcc980f8",
-      "lastModified": 1783084516391.2227
+      "lastModified": 1783088833319.514
     },
     "docs/decisions/ADR-004-governance-execution-engine.md": {
       "assetReferences": [],
@@ -9202,7 +9206,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "c9fad1533334c0e3ab84333cc5ed70d2955a6265",
-      "lastModified": 1783084516391.4905
+      "lastModified": 1783088833319.8962
     },
     "docs/decisions/ADR_INDEX.md": {
       "assetReferences": [],
@@ -9215,7 +9219,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "a26ed9c2fd1ed4fe8ba1a3993523f220f6542784",
-      "lastModified": 1783084516391.6914
+      "lastModified": 1783088833320.2517
     },
     "docs/decisions/ADR_TEMPLATE.md": {
       "assetReferences": [],
@@ -9244,7 +9248,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "ad964814a9246644c4715519d1ef02383c23ad00",
-      "lastModified": 1783084516392.0767
+      "lastModified": 1783088833320.4941
     },
     "docs/finding_classification_todo.md": {
       "assetReferences": [],
@@ -9265,7 +9269,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "bea97c0f1ee519d0f5f7b2133a9645b4bf179bdd",
-      "lastModified": 1783084516392.3845
+      "lastModified": 1783088833320.7864
     },
     "docs/governance/DEPENDENCY_POLICY.md": {
       "assetReferences": [],
@@ -9278,7 +9282,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "4bbfef240eb25cfa331de8f7cfa2274503ec752a",
-      "lastModified": 1783084516392.6333
+      "lastModified": 1783088833321.2239
     },
     "docs/governance/EXECUTION_ENGINE.md": {
       "assetReferences": [],
@@ -9286,7 +9290,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "6c405077440a6b0decb980f3d025e857f898b0bf",
-      "lastModified": 1783084516393.1543
+      "lastModified": 1783088833321.659
     },
     "docs/governance/EXECUTION_PIPELINE.md": {
       "assetReferences": [],
@@ -9294,7 +9298,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "867960ccdbef8de5b8da7eb6a3345e3266c52159",
-      "lastModified": 1783084516393.3647
+      "lastModified": 1783088833321.9001
     },
     "docs/governance/FILE_LIFECYCLE.md": {
       "assetReferences": [],
@@ -9307,7 +9311,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "c32704441f519e38231da524b243c799a6ece47f",
-      "lastModified": 1783084516393.5173
+      "lastModified": 1783088833322.0593
     },
     "docs/governance/MAD_AI_OPERATING_INSTRUCTIONS.md": {
       "assetReferences": [],
@@ -9315,7 +9319,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "27bed672649a61da9d61fcbb7c1b6054e7fa33fb",
-      "lastModified": 1783084516393.8281
+      "lastModified": 1783088833322.6868
     },
     "docs/governance/NAMING_CONVENTIONS.md": {
       "assetReferences": [],
@@ -9328,7 +9332,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "dfefd8a5924932236af0241736225031bdd5a786",
-      "lastModified": 1783084516394.0137
+      "lastModified": 1783088833322.859
     },
     "docs/governance/REGISTRY.md": {
       "assetReferences": [],
@@ -9341,7 +9345,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "cb7a6ceb400725aa8a2ca428e7916b4aec587472",
-      "lastModified": 1783084516394.3752
+      "lastModified": 1783088833323.2307
     },
     "docs/governance/REPOSITORY_POLICY.md": {
       "assetReferences": [],
@@ -9367,7 +9371,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "d247af6c2b7a2112608e128ceecad723973b04b3",
-      "lastModified": 1783084516394.6606
+      "lastModified": 1783088833323.5308
     },
     "docs/governance/REPOSITORY_STRUCTURE.md": {
       "assetReferences": [],
@@ -9380,7 +9384,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "881d706c0f6ab4edd6c8ae60f38623acf18abd31",
-      "lastModified": 1783084516394.8481
+      "lastModified": 1783088833323.7017
     },
     "docs/governance/ROADMAP.md": {
       "assetReferences": [],
@@ -9388,7 +9392,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "5920273804ccbae6fa09bb91f1f2b3225b1b9625",
-      "lastModified": 1783084516395.1853
+      "lastModified": 1783088833324.021
     },
     "docs/governance/VALIDATOR_REGISTRY.md": {
       "assetReferences": [],
@@ -9396,7 +9400,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "d1c16c8133ca4849597a01ef9f6dd1a78a75b990",
-      "lastModified": 1783084516395.3423
+      "lastModified": 1783088833324.1711
     },
     "docs/governance/WORKSPACE_POLICY.md": {
       "assetReferences": [],
@@ -9409,7 +9413,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "8ba052761bb78c38de9dfa810ec8bf1a49dec9aa",
-      "lastModified": 1783084516395.4917
+      "lastModified": 1783088833324.32
     },
     "docs/governance/rules/ADR_GAP.md": {
       "assetReferences": [],
@@ -9419,7 +9423,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "c8e57cab1e6d530a1186036552fda56c2cde558b",
-      "lastModified": 1783084516395.8184
+      "lastModified": 1783088833324.6226
     },
     "docs/governance/rules/ADR_STATUS_MISMATCH.md": {
       "assetReferences": [],
@@ -9429,7 +9433,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "e582a29305fef7a6374894c9dfaedb3dd5f527d3",
-      "lastModified": 1783084516396.1243
+      "lastModified": 1783088833324.8286
     },
     "docs/governance/rules/ADR_TITLE_MISMATCH.md": {
       "assetReferences": [],
@@ -9439,7 +9443,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "343e4928377e74fa45aba17e1107cfe4c4b6fe5a",
-      "lastModified": 1783084516397.6428
+      "lastModified": 1783088833325.5452
     },
     "docs/governance/rules/AST_PARSE_WARNING.md": {
       "assetReferences": [],
@@ -9449,7 +9453,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "22e586463be0230f8933fe66a6bf38fb2c081c6d",
-      "lastModified": 1783084516397.9087
+      "lastModified": 1783088833325.8208
     },
     "docs/governance/rules/BROKEN_ANCHOR.md": {
       "assetReferences": [],
@@ -9459,7 +9463,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "fd8bf4e335370cb067afe5911dceb5093587d85d",
-      "lastModified": 1783084516398.1052
+      "lastModified": 1783088833326.0938
     },
     "docs/governance/rules/BROKEN_LINK_TARGET.md": {
       "assetReferences": [],
@@ -9469,7 +9473,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "ef7a940b5925d24d0e308cdce8fc77ec413a9690",
-      "lastModified": 1783084516398.792
+      "lastModified": 1783088833326.7502
     },
     "docs/governance/rules/BROKEN_REF_LINK.md": {
       "assetReferences": [],
@@ -9479,7 +9483,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "64c9c94614a2feefd8cad49169a6404c81323fe8",
-      "lastModified": 1783084516399.0366
+      "lastModified": 1783088833327.117
     },
     "docs/governance/rules/CIRCULAR_DOC.md": {
       "assetReferences": [],
@@ -9489,7 +9493,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "7f1400b87ef5120b3b0a6119ff3b2f74d9dc8c3e",
-      "lastModified": 1783084516399.2332
+      "lastModified": 1783088833327.3098
     },
     "docs/governance/rules/DUPLICATE_ADR_NUM.md": {
       "assetReferences": [],
@@ -9499,7 +9503,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "3ded1edaee55c3b3924a8d0b45816d5b9cd7f621",
-      "lastModified": 1783084516400.088
+      "lastModified": 1783088833328.0361
     },
     "docs/governance/rules/DUPLICATE_HEADING.md": {
       "assetReferences": [],
@@ -9509,7 +9513,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "45d3318be5e85d81628a8a52c9a3034ded95734d",
-      "lastModified": 1783084516400.2437
+      "lastModified": 1783088833328.1965
     },
     "docs/governance/rules/DUPLICATE_POLICY.md": {
       "assetReferences": [],
@@ -9519,7 +9523,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "6dddef117306e8e1898894d22f0e5e0ca5657e0d",
-      "lastModified": 1783084516400.3872
+      "lastModified": 1783088833328.347
     },
     "docs/governance/rules/EMPTY_MERMAID.md": {
       "assetReferences": [],
@@ -9529,7 +9533,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "7e626eff6106d68416f1a55982e243071025012f",
-      "lastModified": 1783084516400.5293
+      "lastModified": 1783088833328.5063
     },
     "docs/governance/rules/INVALID_ADR_DATE.md": {
       "assetReferences": [],
@@ -9539,7 +9543,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "9c98076d2991f56cc9e573c92000b17a3f9ba0b5",
-      "lastModified": 1783084516400.6782
+      "lastModified": 1783088833328.6636
     },
     "docs/governance/rules/INVALID_ADR_NAMING.md": {
       "assetReferences": [],
@@ -9549,7 +9553,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "47060e773701ba9f728f9e87201efd738aeae8f3",
-      "lastModified": 1783084516400.819
+      "lastModified": 1783088833328.9292
     },
     "docs/governance/rules/INVALID_ADR_STATUS.md": {
       "assetReferences": [],
@@ -9559,7 +9563,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "48b03523f8d5004510f5d81515cc68f268d886e0",
-      "lastModified": 1783084516400.964
+      "lastModified": 1783088833329.091
     },
     "docs/governance/rules/INVALID_MERMAID_CONNECTION.md": {
       "assetReferences": [],
@@ -9569,7 +9573,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "bc96e6638e54ba631b741cdf69a94cca0db1543a",
-      "lastModified": 1783084516401.1235
+      "lastModified": 1783088833329.388
     },
     "docs/governance/rules/INVALID_MERMAID_TYPE.md": {
       "assetReferences": [],
@@ -9579,7 +9583,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "0055bf6317964a78d2d7c41f6c7f6ac8d987a512",
-      "lastModified": 1783084516401.2676
+      "lastModified": 1783088833329.535
     },
     "docs/governance/rules/INVALID_METADATA_DATE.md": {
       "assetReferences": [],
@@ -9589,7 +9593,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "9fcc4f1d9bac704f4d1856399a10d42eac81e08f",
-      "lastModified": 1783084516401.4233
+      "lastModified": 1783088833329.682
     },
     "docs/governance/rules/INVALID_SSOT_DATE.md": {
       "assetReferences": [],
@@ -9599,7 +9603,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "2b2377232ba4992713c796ad94ef19c6df2a9cc9",
-      "lastModified": 1783084516401.6892
+      "lastModified": 1783088833329.9182
     },
     "docs/governance/rules/MALFORMED_ATX_HEADING.md": {
       "assetReferences": [],
@@ -9609,7 +9613,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "27e4ee6c1292e7b7de2692a53108323c4b7765fb",
-      "lastModified": 1783084516401.966
+      "lastModified": 1783088833330.1096
     },
     "docs/governance/rules/MALFORMED_H1.md": {
       "assetReferences": [],
@@ -9619,7 +9623,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "d62c6d555389d77c0a4eeb345cecb4478e977e4f",
-      "lastModified": 1783084516402.1763
+      "lastModified": 1783088833330.9187
     },
     "docs/governance/rules/MALFORMED_MERMAID_ENCLOSURE.md": {
       "assetReferences": [],
@@ -9629,7 +9633,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "5f7b987bf3142e6ebd4a46d97bc26437d0d63ebe",
-      "lastModified": 1783084516402.9014
+      "lastModified": 1783088833331.1045
     },
     "docs/governance/rules/MALFORMED_MERMAID_QUOTES.md": {
       "assetReferences": [],
@@ -9639,7 +9643,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "ee98daa4f605cbd66790da92a398ee3b55f85348",
-      "lastModified": 1783084516403.0664
+      "lastModified": 1783088833331.36
     },
     "docs/governance/rules/MALFORMED_TABLE.md": {
       "assetReferences": [],
@@ -9649,7 +9653,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "2b520911a96944e1fe4543490254d23c62037b91",
-      "lastModified": 1783084516403.2275
+      "lastModified": 1783088833331.5212
     },
     "docs/governance/rules/MISSING_ADR_AUTHORS.md": {
       "assetReferences": [],
@@ -9659,7 +9663,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "4eabdc82645bb9398c589860ca0f284902f6a603",
-      "lastModified": 1783084516403.3875
+      "lastModified": 1783088833331.6802
     },
     "docs/governance/rules/MISSING_ADR_DATE.md": {
       "assetReferences": [],
@@ -9669,7 +9673,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "ff4dae5d3da58ac582b6ee62599ef25e7dab28bd",
-      "lastModified": 1783084516403.653
+      "lastModified": 1783088833332.019
     },
     "docs/governance/rules/MISSING_ADR_DIR.md": {
       "assetReferences": [],
@@ -9679,7 +9683,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "2db1f47c78359eb253329a4584ac8d157b6dbf24",
-      "lastModified": 1783084516403.868
+      "lastModified": 1783088833332.2766
     },
     "docs/governance/rules/MISSING_ADR_DOCS.md": {
       "assetReferences": [],
@@ -9689,7 +9693,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "d8319457c44253517c4cb212913b9c0188b66982",
-      "lastModified": 1783084516404.0747
+      "lastModified": 1783088833332.496
     },
     "docs/governance/rules/MISSING_ADR_HEADING.md": {
       "assetReferences": [],
@@ -9699,7 +9703,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "aea3ce663674f5ac60d396bd669459b0cb6ddaea",
-      "lastModified": 1783084516404.6155
+      "lastModified": 1783088833333.097
     },
     "docs/governance/rules/MISSING_ADR_INDEX.md": {
       "assetReferences": [],
@@ -9709,7 +9713,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "930b5bec460b43b88f3a89f5bfda18a481e6c903",
-      "lastModified": 1783084516405.1584
+      "lastModified": 1783088833333.3525
     },
     "docs/governance/rules/MISSING_ADR_METADATA.md": {
       "assetReferences": [],
@@ -9719,7 +9723,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "f47f9aea500e37523e9516116599d2f0d6640cd8",
-      "lastModified": 1783084516405.9304
+      "lastModified": 1783088833334.0964
     },
     "docs/governance/rules/MISSING_ADR_STATUS.md": {
       "assetReferences": [],
@@ -9729,7 +9733,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "125951beeee3b7c121e4554b508e3b5ae31be65f",
-      "lastModified": 1783084516406.1475
+      "lastModified": 1783088833334.2888
     },
     "docs/governance/rules/MISSING_DOC_OWNER.md": {
       "assetReferences": [],
@@ -9739,7 +9743,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "51e0d5f629343d615ca5f90f239a5a981c5318ae",
-      "lastModified": 1783084516406.318
+      "lastModified": 1783088833334.4397
     },
     "docs/governance/rules/MISSING_H1.md": {
       "assetReferences": [],
@@ -9749,7 +9753,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "d3a990ee01eab107fb359fc183a630e84a6e033e",
-      "lastModified": 1783084516406.471
+      "lastModified": 1783088833334.585
     },
     "docs/governance/rules/MISSING_INDEX_ENTRY.md": {
       "assetReferences": [],
@@ -9759,7 +9763,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "c640654bab1509b363c1a8f3474cf6d1a7dce670",
-      "lastModified": 1783084516406.6345
+      "lastModified": 1783088833334.9617
     },
     "docs/governance/rules/MISSING_REVIEW_DATE.md": {
       "assetReferences": [],
@@ -9769,7 +9773,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "081bdb5a7fe8591c8bfe276e9890576e44a7f314",
-      "lastModified": 1783084516406.7908
+      "lastModified": 1783088833335.1167
     },
     "docs/governance/rules/MISSING_SECTION.md": {
       "assetReferences": [],
@@ -9779,7 +9783,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "85b1cfd1c95e5251b94ae77b224b2c1ead3df84c",
-      "lastModified": 1783084516406.9458
+      "lastModified": 1783088833335.262
     },
     "docs/governance/rules/MISSING_SSOT.md": {
       "assetReferences": [],
@@ -9789,7 +9793,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "ad2c1522dba7289fdd912e2d1c90beef01fdc2c1",
-      "lastModified": 1783084516407.2163
+      "lastModified": 1783088833335.4016
     },
     "docs/governance/rules/MISSING_SSOT_DATE.md": {
       "assetReferences": [],
@@ -9799,7 +9803,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "375fe1266672a5e7d441889e6d7eb0d35d7ec456",
-      "lastModified": 1783084516408.6628
+      "lastModified": 1783088833335.6318
     },
     "docs/governance/rules/MISSING_SSOT_FIELD.md": {
       "assetReferences": [],
@@ -9809,7 +9813,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "87f6fd119e883a820b737197056ddd98f95b24b3",
-      "lastModified": 1783084516408.8923
+      "lastModified": 1783088833335.8394
     },
     "docs/governance/rules/MISSING_SSOT_METADATA.md": {
       "assetReferences": [],
@@ -9819,7 +9823,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "240eabbc45e3962c87eeabb03ea7b5dfeb1a1fb0",
-      "lastModified": 1783084516409.6523
+      "lastModified": 1783088833336.6082
     },
     "docs/governance/rules/MISSING_SSOT_OWNER.md": {
       "assetReferences": [],
@@ -9829,7 +9833,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "fe2ce3d0dbb05d59d7feef08735dded8937bd49b",
-      "lastModified": 1783084516409.8252
+      "lastModified": 1783088833336.7712
     },
     "docs/governance/rules/MISSING_SSOT_REF.md": {
       "assetReferences": [],
@@ -9839,7 +9843,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "46ab7d10d7f162af929341e256a3ef7164495888",
-      "lastModified": 1783084516409.9985
+      "lastModified": 1783088833336.913
     },
     "docs/governance/rules/ORPHANED_DOC.md": {
       "assetReferences": [],
@@ -9849,7 +9853,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "55b82bfc3d405e6fda022bb37fd8d6e569df03d6",
-      "lastModified": 1783084516410.1711
+      "lastModified": 1783088833337.0513
     },
     "docs/governance/rules/ORPHAN_INDEX.md": {
       "assetReferences": [],
@@ -9859,7 +9863,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "a93ac0ca251be29e410054995d98bee963c4465f",
-      "lastModified": 1783084516410.3557
+      "lastModified": 1783088833337.339
     },
     "docs/governance/rules/OUTDATED_DOC.md": {
       "assetReferences": [],
@@ -9869,7 +9873,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "c9625cd34e12aa8b205bd4a3410e26fb0bf7e039",
-      "lastModified": 1783084516410.6204
+      "lastModified": 1783088833337.558
     },
     "docs/governance/rules/README.md": {
       "assetReferences": [],
@@ -9966,7 +9970,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "8cd4a509edbe20978a9891bb8427b23cb20a5a04",
-      "lastModified": 1783084516410.9507
+      "lastModified": 1783088833337.8135
     },
     "docs/governance/rules/READ_DIR_ERROR.md": {
       "assetReferences": [],
@@ -9976,7 +9980,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "a9b26553b6d4bd4acd2b6127fc1b9876d058af84",
-      "lastModified": 1783084516411.8286
+      "lastModified": 1783088833338.744
     },
     "docs/governance/rules/SSOT_OWNER_INCONSISTENCY.md": {
       "assetReferences": [],
@@ -9986,7 +9990,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "bb167a9d3ee23e980618e8b7b23b550f995fd983",
-      "lastModified": 1783084516412.0945
+      "lastModified": 1783088833338.91
     },
     "docs/governance/rules/UNCLOSED_CODE_BLOCK.md": {
       "assetReferences": [],
@@ -9996,7 +10000,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "3549adc7909f3d28757c3b46993e89bbcf3c2cb4",
-      "lastModified": 1783084516412.91
+      "lastModified": 1783088833339.0715
     },
     "docs/governance/rules/UNCLOSED_MERMAID.md": {
       "assetReferences": [],
@@ -10006,7 +10010,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "f972e1bd1b8459fff593035fae73222416afa54e",
-      "lastModified": 1783084516413.1016
+      "lastModified": 1783088833339.2134
     },
     "docs/governance/rules/VAL-ARC-001.md": {
       "assetReferences": [],
@@ -10016,7 +10020,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "0bf522477c7b4f7c491f2aff69c3e7e80a22b37c",
-      "lastModified": 1783084516413.2698
+      "lastModified": 1783088833339.3552
     },
     "docs/governance/rules/VAL-ARC-002.md": {
       "assetReferences": [],
@@ -10026,7 +10030,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "ec6bfcb739a7fe33744d7a0103997623b10cb6db",
-      "lastModified": 1783084516413.425
+      "lastModified": 1783088833339.636
     },
     "docs/governance/rules/VAL-ARC-003.md": {
       "assetReferences": [],
@@ -10036,7 +10040,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "2548ec7c4f21fe91788ba81bea2c260e88c53186",
-      "lastModified": 1783084516413.5806
+      "lastModified": 1783088833339.9148
     },
     "docs/governance/rules/VAL-ARC-004.md": {
       "assetReferences": [],
@@ -10046,7 +10050,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "aaa540c280f61b63b5209800afee974da6ff1b70",
-      "lastModified": 1783084516413.735
+      "lastModified": 1783088833340.0737
     },
     "docs/governance/rules/VAL-DOC-001.md": {
       "assetReferences": [],
@@ -10056,7 +10060,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "e968bfd7bf629ac80e2986b7ce96dd962a3bb659",
-      "lastModified": 1783084516413.889
+      "lastModified": 1783088833340.233
     },
     "docs/governance/rules/VAL-DOC-002.md": {
       "assetReferences": [],
@@ -10066,7 +10070,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "1d5bd7ebfdcffa1f3c3789503734755f6dec618f",
-      "lastModified": 1783084516414.0396
+      "lastModified": 1783088833340.3828
     },
     "docs/governance/rules/VAL-DOC-003.md": {
       "assetReferences": [],
@@ -10076,7 +10080,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "c5af0039914f2dbda348a2ab332f3ec18dd837b6",
-      "lastModified": 1783084516414.2751
+      "lastModified": 1783088833340.5947
     },
     "docs/governance/rules/VAL-DOC-004.md": {
       "assetReferences": [],
@@ -10086,7 +10090,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "836a282c1b5151ce1af4ff9ddf7403d43e77ba08",
-      "lastModified": 1783084516414.5293
+      "lastModified": 1783088833340.793
     },
     "docs/governance/rules/VAL-DOC-005.md": {
       "assetReferences": [],
@@ -10096,7 +10100,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "95a944e984eb4c2cff7040180f0694b0ae3803fc",
-      "lastModified": 1783084516414.7712
+      "lastModified": 1783088833341.6543
     },
     "docs/governance/rules/VAL-DOC-006.md": {
       "assetReferences": [],
@@ -10106,7 +10110,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "87b8e91f838754393777177a7190b5ee1d6d02e9",
-      "lastModified": 1783084516415.0083
+      "lastModified": 1783088833341.8162
     },
     "docs/governance/rules/VAL-DOC-007.md": {
       "assetReferences": [],
@@ -10116,7 +10120,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "a09542316a15e6dedb41dd87b937a080ec423be5",
-      "lastModified": 1783084516415.526
+      "lastModified": 1783088833341.9565
     },
     "docs/governance/rules/VAL-DOC-008.md": {
       "assetReferences": [],
@@ -10126,7 +10130,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "46a7ae69af252085780390241f69ce3377c343e0",
-      "lastModified": 1783084516415.6843
+      "lastModified": 1783088833342.0974
     },
     "docs/governance/rules/VAL-PFM-001.md": {
       "assetReferences": [],
@@ -10136,7 +10140,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "436ad53d413fd387493fb44817032c205cd84e7c",
-      "lastModified": 1783084516416.0103
+      "lastModified": 1783088833342.467
     },
     "docs/governance/rules/VAL-PFM-002.md": {
       "assetReferences": [],
@@ -10146,7 +10150,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "5ad0207490c2d33375d96187c5a5f7fb4a1e9e01",
-      "lastModified": 1783084516416.2422
+      "lastModified": 1783088833342.6794
     },
     "docs/governance/rules/VAL-SEC-001.md": {
       "assetReferences": [],
@@ -10156,7 +10160,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "3d6455633246d295333031bb5f7f9b794ff5f5a5",
-      "lastModified": 1783084516416.5056
+      "lastModified": 1783088833343.9255
     },
     "docs/governance/rules/VAL-SEC-002.md": {
       "assetReferences": [],
@@ -10166,7 +10170,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "93813fbca99e0f3859cb4668511aa04b4232ff70",
-      "lastModified": 1783084516416.6929
+      "lastModified": 1783088833344.0842
     },
     "docs/governance/rules/VAL-UI-001.md": {
       "assetReferences": [],
@@ -10176,7 +10180,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "0ba57e3553b07ca0a919c123a2066aaaca5c604f",
-      "lastModified": 1783084516416.912
+      "lastModified": 1783088833344.3306
     },
     "docs/governance/rules/VAL-UI-002.md": {
       "assetReferences": [],
@@ -10186,7 +10190,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "8d8d1da7e97df4fadde8a7717830b2a398b627ec",
-      "lastModified": 1783084516417.4583
+      "lastModified": 1783088833344.533
     },
     "docs/governance/rules/VAL-UI-003.md": {
       "assetReferences": [],
@@ -10196,7 +10200,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "143ac7ed45917f38acc9a19fd354c8bc5405db45",
-      "lastModified": 1783084516417.7285
+      "lastModified": 1783088833345.4106
     },
     "docs/governance/rules/VAL-UI-004.md": {
       "assetReferences": [],
@@ -10206,7 +10210,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "00a518ecd67864ede41af6c26a416a54e6c0e193",
-      "lastModified": 1783084516417.9092
+      "lastModified": 1783088833345.562
     },
     "docs/governance/rules/VAL-UI-005.md": {
       "assetReferences": [],
@@ -10216,7 +10220,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "2e2b18dced7b0d7ece4e0408732b1a89d224bd30",
-      "lastModified": 1783084516418.1013
+      "lastModified": 1783088833345.701
     },
     "docs/governance/rules/VAL-UI-006.md": {
       "assetReferences": [],
@@ -10226,7 +10230,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "b9fcd1e0e2940ef4fa8e481bb56ef38f4ea47117",
-      "lastModified": 1783084516418.4812
+      "lastModified": 1783088833345.9922
     },
     "docs/governance/rules/VAL-UI-007.md": {
       "assetReferences": [],
@@ -10236,7 +10240,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "89d8ff8d3ea8cc62c525d22e1e1ee72bc517b866",
-      "lastModified": 1783084516418.778
+      "lastModified": 1783088833346.1619
     },
     "docs/governance/rules/VAL-UI-008.md": {
       "assetReferences": [],
@@ -10246,7 +10250,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "65c9a4e249c15929419f475f29d589b7836dca31",
-      "lastModified": 1783084516419.0544
+      "lastModified": 1783088833346.303
     },
     "docs/governance/rules/VAL-UI-009.md": {
       "assetReferences": [],
@@ -10256,7 +10260,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "0eb245f6eadc52cec94110f7c075378d4d454d0d",
-      "lastModified": 1783084516419.5608
+      "lastModified": 1783088833346.44
     },
     "docs/governance/rules/VAL-UI-010.md": {
       "assetReferences": [],
@@ -10266,7 +10270,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "ef5b28408e95bf191741cd8a0ffc3ba0534c2940",
-      "lastModified": 1783084516419.7817
+      "lastModified": 1783088833346.5923
     },
     "docs/governance/rules/VAL-UI-011.md": {
       "assetReferences": [],
@@ -10276,7 +10280,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "e4553ccf5317c8568e9abeab3445c6e7b0b9f4e6",
-      "lastModified": 1783084516420.0002
+      "lastModified": 1783088833346.7493
     },
     "docs/governance/rules/VAL-UI-012.md": {
       "assetReferences": [],
@@ -10286,7 +10290,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "1eba865b32003ffe0434cee6664ba50e97d855bc",
-      "lastModified": 1783084516420.6177
+      "lastModified": 1783088833346.998
     },
     "docs/governance/rules/VAL-UI-013.md": {
       "assetReferences": [],
@@ -10296,7 +10300,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "d2bebf1942059a94a350afb4599a6f9fe66403b3",
-      "lastModified": 1783084516421.118
+      "lastModified": 1783088833347.173
     },
     "docs/governance/rules/VAL-UI-014.md": {
       "assetReferences": [],
@@ -10306,7 +10310,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "3d196ab85b7e11cdb90f4c6549a5b0636b665234",
-      "lastModified": 1783084516421.4731
+      "lastModified": 1783088833347.3296
     },
     "docs/governance/rules/VAL-UI-015.md": {
       "assetReferences": [],
@@ -10316,7 +10320,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "01701cadce4a41251f5609e07ded8c5a48829ec3",
-      "lastModified": 1783084516421.7659
+      "lastModified": 1783088833347.487
     },
     "docs/governance/rules/VAL-UI-016.md": {
       "assetReferences": [],
@@ -10326,7 +10330,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "5234d25184dc59058598a61514b8b10c168180c3",
-      "lastModified": 1783084516422.0728
+      "lastModified": 1783088833347.7954
     },
     "docs/governance/rules/VAL-UI-017.md": {
       "assetReferences": [],
@@ -10336,7 +10340,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "cf7d3d9690288314f215ef58616235a5d8fd652e",
-      "lastModified": 1783084516423.6099
+      "lastModified": 1783088833347.9834
     },
     "docs/governance/rules/VAL-UI-018.md": {
       "assetReferences": [],
@@ -10346,7 +10350,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "bb1c9b47366614898a51c8aa247dcfbbfbdfccda",
-      "lastModified": 1783084516424.3022
+      "lastModified": 1783088833348.1543
     },
     "docs/governance/rules/VAL-UI-019.md": {
       "assetReferences": [],
@@ -10356,7 +10360,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "819cc3af1b4d0f49be8a7faba2d936b533d4d85f",
-      "lastModified": 1783084516425.0708
+      "lastModified": 1783088833348.4817
     },
     "docs/remediation-plan.md": {
       "assetReferences": [],
@@ -10392,7 +10396,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "065ff0b0102a6f04eadcfaae7557d79ba50b760c",
-      "lastModified": 1783084516426.112
+      "lastModified": 1783088833349.0007
     },
     "packages/shared/package.json": {
       "assetReferences": [],
@@ -10446,7 +10450,7 @@
         "BOOKING_REFERENCE_REGEX"
       ],
       "hash": "b7ce2e5807d7fc76c545529658105be480cbc968",
-      "lastModified": 1783084516427.0376
+      "lastModified": 1783088833349.4373
     },
     "packages/shared/src/constants/query-keys.ts": {
       "assetReferences": [],
@@ -10535,7 +10539,7 @@
         "JwtPayload"
       ],
       "hash": "69bad65a352899000010d4908d10653f446c182b",
-      "lastModified": 1783084516427.5857
+      "lastModified": 1783088833349.8792
     },
     "packages/types/tsconfig.json": {
       "assetReferences": [],
@@ -10564,7 +10568,7 @@
         "Button"
       ],
       "hash": "26bf3d8b4347eff6ced3333b8a0ae530838a952f",
-      "lastModified": 1783084516428.1335
+      "lastModified": 1783088833350.4092
     },
     "packages/ui/src/components/EventGridSkeleton.tsx": {
       "assetReferences": [],
@@ -10664,7 +10668,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "c5938c5664ed494756b7346790a1251e05b1ddc4",
-      "lastModified": 1783084516429.3508
+      "lastModified": 1783088833350.7463
     },
     "packages/utils/src/date.ts": {
       "assetReferences": [],
@@ -10706,7 +10710,7 @@
         "extractApiError"
       ],
       "hash": "7023c0bd0923a1c9c488ecec1ce816ee26e23d11",
-      "lastModified": 1783084516429.5566
+      "lastModified": 1783088833351.231
     },
     "packages/utils/src/jwt.test.ts": {
       "assetReferences": [],
@@ -10716,7 +10720,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "7bf07c52c116d08ff446d89109980c38af3e0baf",
-      "lastModified": 1783084516429.7944
+      "lastModified": 1783088833351.5642
     },
     "packages/utils/src/jwt.ts": {
       "assetReferences": [],
@@ -10729,7 +10733,7 @@
         "isTokenExpired"
       ],
       "hash": "3e0937e3b8f1ad497b15ee1a0b809d3f7abaac3b",
-      "lastModified": 1783084516430.001
+      "lastModified": 1783088833352.4429
     },
     "packages/utils/tsconfig.json": {
       "assetReferences": [],
@@ -10779,7 +10783,7 @@
         "AdminDlqRetryInput"
       ],
       "hash": "08e30970c80455dce7cd9c5c1f9d5031b05cd559",
-      "lastModified": 1783084516430.321
+      "lastModified": 1783088833352.8645
     },
     "packages/validations/src/normalizers.ts": {
       "assetReferences": [],
@@ -10858,7 +10862,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "dd5c9521098e55c5177a2fa3e286af826b4b33ee",
-      "lastModified": 1783084516430.533
+      "lastModified": 1783088833353.4475
     },
     "scripts/dependency-audit.ts": {
       "assetReferences": [],
@@ -10866,7 +10870,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "43dcb3a86056482268e8c35aec5c1fa3c4967333",
-      "lastModified": 1783084516430.783
+      "lastModified": 1783088833353.678
     },
     "scripts/gather-audit-data.ts": {
       "assetReferences": [],
@@ -10876,7 +10880,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "d639325231748a9df4d2311a47bbc9727b0149bb",
-      "lastModified": 1783084516431.0415
+      "lastModified": 1783088833353.907
     },
     "scripts/governance/cli/fix.ts": {
       "assetReferences": [],
@@ -10903,7 +10907,7 @@
         "resumeSessionExecution"
       ],
       "hash": "943b3c89a391cf72178b13f6c433791ea5325cc9",
-      "lastModified": 1783084516431.2712
+      "lastModified": 1783088833354.1597
     },
     "scripts/governance/cli/interactive_approval_policy.ts": {
       "assetReferences": [],
@@ -10923,7 +10927,7 @@
         "InteractiveApprovalPolicy"
       ],
       "hash": "f796f0107f1e4130a4ab227b14b1b773003a4dae",
-      "lastModified": 1783084516431.6562
+      "lastModified": 1783088833354.6135
     },
     "scripts/governance/cli/interactive_reporter.ts": {
       "assetReferences": [],
@@ -10940,7 +10944,7 @@
         "ConsoleInteractionProvider"
       ],
       "hash": "2343d54699240363f82309441a4df074a14787cb",
-      "lastModified": 1783084516431.9434
+      "lastModified": 1783088833354.8777
     },
     "scripts/governance/cli/rollback.ts": {
       "assetReferences": [],
@@ -10952,7 +10956,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "32c6a161f7613a71a720e84b9e9f56d94a3c7bd5",
-      "lastModified": 1783084516432.2097
+      "lastModified": 1783088833355.4995
     },
     "scripts/governance/cli/session.ts": {
       "assetReferences": [],
@@ -10965,7 +10969,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "3da1b3ec98839568358229ee4c03dd6b586299f3",
-      "lastModified": 1783084516432.582
+      "lastModified": 1783088833355.7102
     },
     "scripts/governance/core/__tests__/analytics_engine.test.ts": {
       "assetReferences": [
@@ -10979,7 +10983,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "946dda79ec611cd54c67256cfc6bc0508a48f097",
-      "lastModified": 1783084694852.261
+      "lastModified": 1783088833356.0356
     },
     "scripts/governance/core/__tests__/analytics_store.test.ts": {
       "assetReferences": [],
@@ -10989,8 +10993,8 @@
       ],
       "dynamicImports": [],
       "exports": [],
-      "hash": "7f8576f1946dfc3630a0f825bd68ed5c14f0e004",
-      "lastModified": 1783084629838.82
+      "hash": "8dd748f95806c5139610f37ee90d765959354a0a",
+      "lastModified": 1783088833610.9875
     },
     "scripts/governance/core/__tests__/ast_parser_cache.test.ts": {
       "assetReferences": [],
@@ -11000,7 +11004,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "b5f8dbe24c4b4c8a482309741e3109c9bdf6dc5d",
-      "lastModified": 1783084516432.8713
+      "lastModified": 1783088833357.8047
     },
     "scripts/governance/core/__tests__/audit_engine.integration.test.ts": {
       "assetReferences": [],
@@ -11033,7 +11037,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "047f5f52aa5e0ecb507832ad2a23ddf141941966",
-      "lastModified": 1783084516433.16
+      "lastModified": 1783088833358.0386
     },
     "scripts/governance/core/__tests__/confidence_engine.test.ts": {
       "assetReferences": [],
@@ -11045,7 +11049,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "62eeef72ac4a511fa8f3d3da75de83e819c34e3c",
-      "lastModified": 1783084516433.396
+      "lastModified": 1783088833358.6697
     },
     "scripts/governance/core/__tests__/documentation_fixers.test.ts": {
       "assetReferences": [
@@ -11061,7 +11065,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "524c9a7a0493f2f3ab885f9d55cb37d153af329c",
-      "lastModified": 1783084516433.6147
+      "lastModified": 1783088833358.9202
     },
     "scripts/governance/core/__tests__/execution_engine.test.ts": {
       "assetReferences": [],
@@ -11077,7 +11081,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "8cc4a28af7781cfb2dfd94f4a6e2778c253936d3",
-      "lastModified": 1783084516433.8623
+      "lastModified": 1783088833359.8284
     },
     "scripts/governance/core/__tests__/finding_manager.test.ts": {
       "assetReferences": [],
@@ -11090,7 +11094,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "52178e394705072659760916a85ef9c136af5987",
-      "lastModified": 1783084516434.1914
+      "lastModified": 1783088833360.3894
     },
     "scripts/governance/core/__tests__/fix_lifecycle_integrator.test.ts": {
       "assetReferences": [],
@@ -11106,7 +11110,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "fbcccc96968d86d446b30c36e01f0178663a27a0",
-      "lastModified": 1783084516434.511
+      "lastModified": 1783088833360.6165
     },
     "scripts/governance/core/__tests__/fix_registry.test.ts": {
       "assetReferences": [],
@@ -11119,7 +11123,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "26bd5b1555b5a1d6e8fe2fb66b7fb60d6fd675a8",
-      "lastModified": 1783084516434.6777
+      "lastModified": 1783088833360.8342
     },
     "scripts/governance/core/__tests__/interactive_execution.test.ts": {
       "assetReferences": [],
@@ -11133,7 +11137,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "7d341ffdca6a2aec1917cf18bff2b43808be57a5",
-      "lastModified": 1783084516434.9597
+      "lastModified": 1783088833361.1123
     },
     "scripts/governance/core/__tests__/lifecycle_manager.test.ts": {
       "assetReferences": [],
@@ -11145,7 +11149,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "d922aa45adf9c91a02c478a5f0f393ce34504c7f",
-      "lastModified": 1783084516435.2747
+      "lastModified": 1783088833361.486
     },
     "scripts/governance/core/__tests__/markdown_utils.test.ts": {
       "assetReferences": [],
@@ -11155,7 +11159,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "3d077513e02e42068f42d3ce843a238539a56d8b",
-      "lastModified": 1783084516435.5754
+      "lastModified": 1783088833361.9268
     },
     "scripts/governance/core/__tests__/metrics_engine.test.ts": {
       "assetReferences": [],
@@ -11181,7 +11185,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "1e119d3fd1b2a821a6ff1e4158edc4e80b9da14b",
-      "lastModified": 1783084516436.0115
+      "lastModified": 1783088833362.137
     },
     "scripts/governance/core/__tests__/repository_hygiene_fixers.test.ts": {
       "assetReferences": [],
@@ -11199,7 +11203,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "3899c597f59f1ad96e6291a83dcdf73ab3eb5b42",
-      "lastModified": 1783084516436.764
+      "lastModified": 1783088833362.5068
     },
     "scripts/governance/core/__tests__/rollback_history.test.ts": {
       "assetReferences": [],
@@ -11211,7 +11215,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "9186e122656f830aca1117373052cbefb52b85f2",
-      "lastModified": 1783084516437.6926
+      "lastModified": 1783088833362.682
     },
     "scripts/governance/core/__tests__/rule_registry.test.ts": {
       "assetReferences": [],
@@ -11222,7 +11226,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "2b3ae49f9fd2437883d179d6048de031d882b0c5",
-      "lastModified": 1783084516438.0989
+      "lastModified": 1783088833362.923
     },
     "scripts/governance/core/__tests__/session_manager.test.ts": {
       "assetReferences": [],
@@ -11236,7 +11240,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "36f59a291f0a44eb7d8c4c609e6ef8460e30ae53",
-      "lastModified": 1783084516438.413
+      "lastModified": 1783088833363.089
     },
     "scripts/governance/core/__tests__/session_store.test.ts": {
       "assetReferences": [],
@@ -11246,7 +11250,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "f1c96e7f0e69f57cf95e44d86cde2aa17230cce3",
-      "lastModified": 1783084516438.736
+      "lastModified": 1783088833363.2554
     },
     "scripts/governance/core/analytics_engine.ts": {
       "assetReferences": [],
@@ -11260,7 +11264,7 @@
         "AnalyticsEngine"
       ],
       "hash": "1092507532df4377188204df890ce390d7463468",
-      "lastModified": 1783084658637.2107
+      "lastModified": 1783088833363.684
     },
     "scripts/governance/core/analytics_store.ts": {
       "assetReferences": [],
@@ -11272,8 +11276,8 @@
       "exports": [
         "AnalyticsStore"
       ],
-      "hash": "44d67e08246ec6eacb080cba94b5fc984e2ac23a",
-      "lastModified": 1783084748602.6555
+      "hash": "b5192ce74f5d9a6b44ce5707164b7713740e2730",
+      "lastModified": 1783088833611.2136
     },
     "scripts/governance/core/analytics_types.ts": {
       "assetReferences": [],
@@ -11291,7 +11295,7 @@
         "AnalyticsResult"
       ],
       "hash": "bd5edd5b2d0bbbd7bbafcb30380fe6a64a4d4427",
-      "lastModified": 1783084537580.9338
+      "lastModified": 1783088833364.2563
     },
     "scripts/governance/core/approval_plan.ts": {
       "assetReferences": [],
@@ -11301,7 +11305,7 @@
         "ApprovalPlan"
       ],
       "hash": "3b620b93842a38439e5185db2d25c8f52012b72b",
-      "lastModified": 1783084516439.0273
+      "lastModified": 1783088833365.3164
     },
     "scripts/governance/core/ast_parser_cache.ts": {
       "assetReferences": [],
@@ -11312,7 +11316,7 @@
         "ASTParserCache"
       ],
       "hash": "c1427258e63dd047dc7d738217f5713cb9653a77",
-      "lastModified": 1783084516439.3145
+      "lastModified": 1783088833365.5105
     },
     "scripts/governance/core/audit_engine.ts": {
       "assetReferences": [],
@@ -11337,7 +11341,7 @@
         "auditEngineVersion"
       ],
       "hash": "9b844d0c61652cbfb51e21506fc3d43e83e01b84",
-      "lastModified": 1783084678901.5215
+      "lastModified": 1783088833365.861
     },
     "scripts/governance/core/autofix_engine.ts": {
       "assetReferences": [],
@@ -11360,7 +11364,7 @@
         "AutoFixEngine"
       ],
       "hash": "2b39ab7efc5979b2d8bc7e13e54d96294fe44478",
-      "lastModified": 1783084516439.9656
+      "lastModified": 1783088833366.167
     },
     "scripts/governance/core/autofix_observer.ts": {
       "assetReferences": [],
@@ -11373,7 +11377,7 @@
         "AutoFixObserver"
       ],
       "hash": "cb9111f66895601d68c1ba8f10435c96b8934695",
-      "lastModified": 1783084516442.414
+      "lastModified": 1783088833366.324
     },
     "scripts/governance/core/confidence_engine.ts": {
       "assetReferences": [],
@@ -11411,7 +11415,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "2c876637034f87a33be3ddc359666c0eb3d66b9a",
-      "lastModified": 1783084516442.6812
+      "lastModified": 1783088833366.6074
     },
     "scripts/governance/core/dependency_analyzer.ts": {
       "assetReferences": [],
@@ -11439,7 +11443,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "a24950b450161792a5d579855eeeaa3ee0da1d0b",
-      "lastModified": 1783084516442.95
+      "lastModified": 1783088833367.507
     },
     "scripts/governance/core/execution_engine.ts": {
       "assetReferences": [],
@@ -11471,7 +11475,7 @@
         "ExecutionReport"
       ],
       "hash": "fd9d07d8c5158848dd51ca3e7f75ba996ee85bd6",
-      "lastModified": 1783084516443.253
+      "lastModified": 1783088833367.808
     },
     "scripts/governance/core/execution_mode.ts": {
       "assetReferences": [],
@@ -11482,7 +11486,7 @@
         "resolveExecutionMode"
       ],
       "hash": "579aa8cd9738847c431dcaa977220718a3705a19",
-      "lastModified": 1783084516443.5928
+      "lastModified": 1783088833367.9688
     },
     "scripts/governance/core/execution_planner.ts": {
       "assetReferences": [],
@@ -11496,7 +11500,7 @@
         "ExecutionPlanner"
       ],
       "hash": "05dbcc21fc0d2d6b16cec7b6cd32e1f3035be1b0",
-      "lastModified": 1783084516443.8037
+      "lastModified": 1783088833368.1433
     },
     "scripts/governance/core/execution_policy.ts": {
       "assetReferences": [],
@@ -11515,7 +11519,7 @@
         "resolveExecutionPolicy"
       ],
       "hash": "6b094299cbc9c1032bf292e37fd5df77bd2f317b",
-      "lastModified": 1783084516444.0867
+      "lastModified": 1783088833368.3015
     },
     "scripts/governance/core/execution_scheduler.ts": {
       "assetReferences": [],
@@ -11532,7 +11536,7 @@
         "ExecutionScheduler"
       ],
       "hash": "72a1016cb0093d6d22cf192c5ca162502aad747e",
-      "lastModified": 1783084516444.79
+      "lastModified": 1783088833368.6309
     },
     "scripts/governance/core/file_writer.ts": {
       "assetReferences": [],
@@ -11542,7 +11546,7 @@
         "FileWriter"
       ],
       "hash": "e9b9094ecda4ee9012d99956dc078aeb4d3784e8",
-      "lastModified": 1783084516445.017
+      "lastModified": 1783088833369.1096
     },
     "scripts/governance/core/finding_manager.ts": {
       "assetReferences": [],
@@ -11561,7 +11565,7 @@
         "metricsDir"
       ],
       "hash": "25ea5f75c4f28c91690eaaed7231857478a91664",
-      "lastModified": 1783084516445.4175
+      "lastModified": 1783088833370.3079
     },
     "scripts/governance/core/fingerprint.test.ts": {
       "assetReferences": [],
@@ -11571,7 +11575,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "ccf86cd570d45496c8d6283cac7952973eb5a6f5",
-      "lastModified": 1783084516446.0835
+      "lastModified": 1783088833370.7625
     },
     "scripts/governance/core/fingerprint.ts": {
       "assetReferences": [],
@@ -11601,7 +11605,7 @@
         "FixContext"
       ],
       "hash": "b4d3281ca3130fec08d6c6e38a4fadb9e171f9f0",
-      "lastModified": 1783084516446.2542
+      "lastModified": 1783088833370.9163
     },
     "scripts/governance/core/fix_lifecycle_integrator.ts": {
       "assetReferences": [],
@@ -11617,7 +11621,7 @@
         "FixLifecycleIntegrator"
       ],
       "hash": "f3664b4cefaf6f6658f92c0ba7fca09e07b6b15c",
-      "lastModified": 1783084516446.6428
+      "lastModified": 1783088833371.191
     },
     "scripts/governance/core/fix_registry.ts": {
       "assetReferences": [],
@@ -11638,7 +11642,7 @@
         "FixRegistry"
       ],
       "hash": "b9f5d1f86b032785b5595b252b8f2a9cb055ee65",
-      "lastModified": 1783084516447.3584
+      "lastModified": 1783088833371.437
     },
     "scripts/governance/core/fix_result.ts": {
       "assetReferences": [],
@@ -11650,7 +11654,7 @@
         "FixResult"
       ],
       "hash": "b409e8e25cd93a0a01908ef850f028fc341f7aa9",
-      "lastModified": 1783084516447.673
+      "lastModified": 1783088833372.0593
     },
     "scripts/governance/core/fix_types.ts": {
       "assetReferences": [],
@@ -11665,7 +11669,7 @@
         "FixResultItem"
       ],
       "hash": "70167a44cc54836a6ec7754fbdbff497cc9cacbc",
-      "lastModified": 1783084516447.9812
+      "lastModified": 1783088833372.3088
     },
     "scripts/governance/core/fixers/blank_line_fixer.ts": {
       "assetReferences": [],
@@ -11680,7 +11684,7 @@
         "BlankLineFixer"
       ],
       "hash": "7fe20e535e70754ce4b26cf1fe75eef83559d5b1",
-      "lastModified": 1783084516448.2302
+      "lastModified": 1783088833372.5442
     },
     "scripts/governance/core/fixers/duplicate_import_fixer.ts": {
       "assetReferences": [],
@@ -11695,7 +11699,7 @@
         "DuplicateImportFixer"
       ],
       "hash": "171bbf761e4543363ba7906a19be637cfbb38d8c",
-      "lastModified": 1783084516448.4268
+      "lastModified": 1783088833372.7375
     },
     "scripts/governance/core/fixers/eof_newline_fixer.ts": {
       "assetReferences": [],
@@ -11709,7 +11713,7 @@
         "EofNewlineFixer"
       ],
       "hash": "87cb31cf245dbfab390a96b8621b5913f08614ae",
-      "lastModified": 1783084516448.6604
+      "lastModified": 1783088833373.0652
     },
     "scripts/governance/core/fixers/filename_casing_fixer.ts": {
       "assetReferences": [],
@@ -11724,7 +11728,7 @@
         "FilenameCasingFixer"
       ],
       "hash": "164cf37cde317d4eda84134d715f9297eab5e685",
-      "lastModified": 1783084516448.843
+      "lastModified": 1783088833373.2334
     },
     "scripts/governance/core/fixers/import_order_fixer.ts": {
       "assetReferences": [],
@@ -11738,7 +11742,7 @@
         "ImportOrderFixer"
       ],
       "hash": "d66b710a84cbf32b3cb6c3466233d2b27a898dae",
-      "lastModified": 1783084516449.083
+      "lastModified": 1783088833373.4502
     },
     "scripts/governance/core/fixers/index.ts": {
       "assetReferences": [],
@@ -11766,7 +11770,7 @@
         "TypeImportFixer"
       ],
       "hash": "fd983d49b9918702d877403ac6be08c1db47cf89",
-      "lastModified": 1783084516449.3938
+      "lastModified": 1783088833374.408
     },
     "scripts/governance/core/fixers/malformed_atx_heading_fixer.ts": {
       "assetReferences": [],
@@ -11780,7 +11784,7 @@
         "MalformedAtxHeadingFixer"
       ],
       "hash": "1c92bb9a5b0c4913677396ef58e908fc71523164",
-      "lastModified": 1783084516449.5588
+      "lastModified": 1783088833374.5737
     },
     "scripts/governance/core/fixers/trailing_whitespace_fixer.ts": {
       "assetReferences": [],
@@ -11794,7 +11798,7 @@
         "TrailingWhitespaceFixer"
       ],
       "hash": "124c04faf99203c1aa857e054812e4b6aac62181",
-      "lastModified": 1783084516449.8447
+      "lastModified": 1783088833374.8186
     },
     "scripts/governance/core/fixers/type_import_fixer.ts": {
       "assetReferences": [],
@@ -11808,7 +11812,7 @@
         "TypeImportFixer"
       ],
       "hash": "c8e862f05fe3e333cb2448d68f2bf1a26c9b7248",
-      "lastModified": 1783084516450.2258
+      "lastModified": 1783088833375.1277
     },
     "scripts/governance/core/fixers/workstation_path_fixer.ts": {
       "assetReferences": [],
@@ -11823,7 +11827,7 @@
         "WorkstationPathFixer"
       ],
       "hash": "da4fb0a0ee2cbbc9cd7f0ca41dbbea232f73aabb",
-      "lastModified": 1783084516450.8267
+      "lastModified": 1783088833375.3826
     },
     "scripts/governance/core/git_metadata_provider.ts": {
       "assetReferences": [],
@@ -11835,7 +11839,7 @@
         "ShellGitMetadataProvider"
       ],
       "hash": "a2b152cd57e0325eef7cd5349b216f7f205fe865",
-      "lastModified": 1783084516451.0994
+      "lastModified": 1783088833375.6418
     },
     "scripts/governance/core/governance.config.ts": {
       "assetReferences": [],
@@ -11855,7 +11859,7 @@
         "InteractiveResult"
       ],
       "hash": "19365729d9b1ca1f9811cfc1e94b9df43aced1a8",
-      "lastModified": 1783084516451.3765
+      "lastModified": 1783088833375.8535
     },
     "scripts/governance/core/json_utils.ts": {
       "assetReferences": [],
@@ -11869,7 +11873,7 @@
         "writeJsonIfChanged"
       ],
       "hash": "58e50e69d1c5e628c83993b8d6dd08f02c8cecfa",
-      "lastModified": 1783084516452.0708
+      "lastModified": 1783088833376.3464
     },
     "scripts/governance/core/knowledge_graph.ts": {
       "assetReferences": [],
@@ -11887,7 +11891,7 @@
         "graphInstanceVersion"
       ],
       "hash": "bb082a4b039dd082b358a699f7793892eb0dad6d",
-      "lastModified": 1783084516452.9033
+      "lastModified": 1783088833376.7322
     },
     "scripts/governance/core/lifecycle_manager.ts": {
       "assetReferences": [],
@@ -11901,7 +11905,7 @@
         "defaultLifecycleVersion"
       ],
       "hash": "346ed8d732d55a85e847847073a004b68a1a1894",
-      "lastModified": 1783084516453.2073
+      "lastModified": 1783088833377.0906
     },
     "scripts/governance/core/markdown_utils.ts": {
       "assetReferences": [],
@@ -11915,7 +11919,7 @@
         "resolveRelativePath"
       ],
       "hash": "21409a17974fdcee60d2ce28e1072f2d1ddc1bcc",
-      "lastModified": 1783084516453.417
+      "lastModified": 1783088833377.6616
     },
     "scripts/governance/core/metadata.ts": {
       "assetReferences": [],
@@ -11930,7 +11934,7 @@
         "parseMarkdownMetadata"
       ],
       "hash": "a716514a4329fa73d06b9389f85c8e2f73c6e5da",
-      "lastModified": 1783084516453.7341
+      "lastModified": 1783088833378.1963
     },
     "scripts/governance/core/metrics_engine.ts": {
       "assetReferences": [],
@@ -11946,7 +11950,7 @@
         "ruleRegistryVersion"
       ],
       "hash": "43f34cd3eb4e12002140aeecef75512d09ba4670",
-      "lastModified": 1783084516454.0571
+      "lastModified": 1783088833378.5178
     },
     "scripts/governance/core/recovery_manager.ts": {
       "assetReferences": [],
@@ -11960,7 +11964,7 @@
         "RecoveryManager"
       ],
       "hash": "35abfabe2036ca08583f15e2c398ae92bcddbb91",
-      "lastModified": 1783084516454.328
+      "lastModified": 1783088833378.7039
     },
     "scripts/governance/core/rename_detector.ts": {
       "assetReferences": [],
@@ -11986,7 +11990,7 @@
         "defaultReportVersion"
       ],
       "hash": "2014feff1d0bb68e9c770d8b47ef761cd2f66292",
-      "lastModified": 1783084516454.6882
+      "lastModified": 1783088833379.002
     },
     "scripts/governance/core/reporter.ts": {
       "assetReferences": [],
@@ -11998,7 +12002,7 @@
         "ConsoleReporter"
       ],
       "hash": "16198f84d0802c1f27b17dde79494b41cbb736e5",
-      "lastModified": 1783084516455.1216
+      "lastModified": 1783088833379.6187
     },
     "scripts/governance/core/rollback_history.ts": {
       "assetReferences": [],
@@ -12011,7 +12015,7 @@
         "RollbackHistory"
       ],
       "hash": "3542bdcb5227c32561b2dfd74ab7911be111f829",
-      "lastModified": 1783084516455.388
+      "lastModified": 1783088833379.7627
     },
     "scripts/governance/core/rollback_manager.ts": {
       "assetReferences": [],
@@ -12027,7 +12031,7 @@
         "RollbackManager"
       ],
       "hash": "8cd7cca41e61ca704f214843e22dd994da57c9b7",
-      "lastModified": 1783084516455.5957
+      "lastModified": 1783088833379.9104
     },
     "scripts/governance/core/rollback_verifier.ts": {
       "assetReferences": [],
@@ -12040,7 +12044,7 @@
         "RollbackVerifier"
       ],
       "hash": "6610149cd35adec5ee36ff00d7be6705aeb08f3b",
-      "lastModified": 1783084516455.813
+      "lastModified": 1783088833380.0574
     },
     "scripts/governance/core/session_manager.ts": {
       "assetReferences": [],
@@ -12062,7 +12066,7 @@
         "SessionManager"
       ],
       "hash": "0a1c69a12977fcf1aa41ffc5dbdacb7edc3734ff",
-      "lastModified": 1783084516456.081
+      "lastModified": 1783088833380.2402
     },
     "scripts/governance/core/session_result.ts": {
       "assetReferences": [],
@@ -12072,7 +12076,7 @@
         "SessionResult"
       ],
       "hash": "206df5b0ff9d05e6dd16542ae73456571e9310d7",
-      "lastModified": 1783084516456.7297
+      "lastModified": 1783088833380.4036
     },
     "scripts/governance/core/session_store.ts": {
       "assetReferences": [],
@@ -12085,7 +12089,7 @@
         "SessionStore"
       ],
       "hash": "972b85db5f105ce755da0ed9c173216917bdd4c2",
-      "lastModified": 1783084516456.934
+      "lastModified": 1783088833380.5674
     },
     "scripts/governance/core/types.ts": {
       "assetReferences": [],
@@ -12118,7 +12122,7 @@
         "StatelessViolation"
       ],
       "hash": "32cf207b0fb34501244804311660994ed8a6d890",
-      "lastModified": 1783084516457.3457
+      "lastModified": 1783088833380.8784
     },
     "scripts/governance/core/validator.ts": {
       "assetReferences": [],
@@ -12144,7 +12148,7 @@
         "ValidatorRegistry"
       ],
       "hash": "8f5e9f8cd668459abeff00104e80061ef749938a",
-      "lastModified": 1783084516457.6516
+      "lastModified": 1783088833381.036
     },
     "scripts/governance/core/verification_result.ts": {
       "assetReferences": [],
@@ -12155,7 +12159,7 @@
         "VerificationResult"
       ],
       "hash": "a2c20175a5b5e20e8750a2597a276865883b842b",
-      "lastModified": 1783084516458.125
+      "lastModified": 1783088833381.1963
     },
     "scripts/governance/core/verification_runner.ts": {
       "assetReferences": [],
@@ -12169,7 +12173,7 @@
         "VerificationRunner"
       ],
       "hash": "d8540f88c5df6f53bb1c1c5621cea55bc3c704ad",
-      "lastModified": 1783084516458.5322
+      "lastModified": 1783088833381.3672
     },
     "scripts/governance/index.ts": {
       "assetReferences": [],
@@ -12187,7 +12191,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "69fc7011e161933cfa39e196d75c7fe2b4dd55bd",
-      "lastModified": 1783084516459.163
+      "lastModified": 1783088833381.6213
     },
     "scripts/governance/migrate-findings.ts": {
       "assetReferences": [],
@@ -12199,7 +12203,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "c5c2d4521165c561f75d1f8811b94254894c14d6",
-      "lastModified": 1783084516459.7944
+      "lastModified": 1783088833382.0005
     },
     "scripts/governance/rules/index.ts": {
       "assetReferences": [],
@@ -12226,7 +12230,7 @@
         "hygieneRules"
       ],
       "hash": "3686ac6cb9926e7c2a78bdc6091b7c6c1e8934ce",
-      "lastModified": 1783084516460.3433
+      "lastModified": 1783088833382.2458
     },
     "scripts/governance/rules/metadata/ACCESSIBILITY.ts": {
       "assetReferences": [],
@@ -12238,7 +12242,7 @@
         "accessibilityRules"
       ],
       "hash": "bf087bc92f59bfd7bd4d3d9639b60d022ec230d5",
-      "lastModified": 1783084516460.841
+      "lastModified": 1783088833382.5261
     },
     "scripts/governance/rules/metadata/ARCHITECTURE.ts": {
       "assetReferences": [],
@@ -12250,7 +12254,7 @@
         "architectureRules"
       ],
       "hash": "6525760dce30fe79d3cca91336f46fc6f0210853",
-      "lastModified": 1783084516461.4685
+      "lastModified": 1783088833383.34
     },
     "scripts/governance/rules/metadata/DOCUMENTATION.ts": {
       "assetReferences": [],
@@ -12262,7 +12266,7 @@
         "docRules"
       ],
       "hash": "762d04eafde0dc57cbbe9ca5c2a451f67ed83bab",
-      "lastModified": 1783084516462.0974
+      "lastModified": 1783088833383.6174
     },
     "scripts/governance/rules/metadata/HYGIENE.ts": {
       "assetReferences": [],
@@ -12274,7 +12278,7 @@
         "hygieneRules"
       ],
       "hash": "e6f9017c3a99be485c8700acb256a2f09ac2da15",
-      "lastModified": 1783084516462.5542
+      "lastModified": 1783088833383.8735
     },
     "scripts/governance/rules/metadata/PERFORMANCE.ts": {
       "assetReferences": [],
@@ -12286,7 +12290,7 @@
         "performanceRules"
       ],
       "hash": "4885958ac70e628806411c20f3db51dce62eee29",
-      "lastModified": 1783084516462.7642
+      "lastModified": 1783088833384.0312
     },
     "scripts/governance/rules/metadata/SECURITY.ts": {
       "assetReferences": [],
@@ -12298,7 +12302,7 @@
         "securityRules"
       ],
       "hash": "fa8ef0c253080381c96b0f3a6bc3e548ea9c2bdf",
-      "lastModified": 1783084516463.0134
+      "lastModified": 1783088833384.1719
     },
     "scripts/governance/rules/metadata/UI.ts": {
       "assetReferences": [],
@@ -12310,7 +12314,7 @@
         "uiRules"
       ],
       "hash": "1c98a943e5af4fde07838cfbba7322bdde14adec",
-      "lastModified": 1783084516463.5051
+      "lastModified": 1783088833384.349
     },
     "scripts/governance/rules/metadata/UX.ts": {
       "assetReferences": [],
@@ -12322,7 +12326,7 @@
         "uxRules"
       ],
       "hash": "0d333768a6514c1806a6f85dec8067d5d9bce476",
-      "lastModified": 1783084516463.7092
+      "lastModified": 1783088833384.5164
     },
     "scripts/governance/rules/registry.ts": {
       "assetReferences": [],
@@ -12343,7 +12347,7 @@
         "ruleRegistryVersion"
       ],
       "hash": "0ea8e6553fba37f0b0bbea19ca27fd80dbe0307f",
-      "lastModified": 1783084516464.151
+      "lastModified": 1783088833384.8208
     },
     "scripts/governance/rules/types.ts": {
       "assetReferences": [],
@@ -12358,7 +12362,7 @@
         "RuleDefinition"
       ],
       "hash": "1ad0eecc76974d3a56ac72567c04c463c585b1fa",
-      "lastModified": 1783084516464.4429
+      "lastModified": 1783088833385.113
     },
     "scripts/governance/validators/accessibility_validator.ts": {
       "assetReferences": [],
@@ -12374,7 +12378,7 @@
         "AccessibilityValidator"
       ],
       "hash": "075112426db65e6479eae860e77fa9ae447d44d6",
-      "lastModified": 1783084516464.7507
+      "lastModified": 1783088833385.4534
     },
     "scripts/governance/validators/adr_validator.test.ts": {
       "assetReferences": [],
@@ -12384,7 +12388,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "471e1e326d3b3ec67b4bd89d900b4052bc48c883",
-      "lastModified": 1783084516465.0046
+      "lastModified": 1783088833385.8042
     },
     "scripts/governance/validators/adr_validator.ts": {
       "assetReferences": [],
@@ -12397,7 +12401,7 @@
         "AdrValidator"
       ],
       "hash": "b1f813dda7b3f609f8bc30c7ffff6b60823790c8",
-      "lastModified": 1783084516465.3213
+      "lastModified": 1783088833386.1597
     },
     "scripts/governance/validators/architecture_validator.test.ts": {
       "assetReferences": [],
@@ -12409,7 +12413,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "3c37be0ae3f74a86eea22953d6f8339e5ee5c445",
-      "lastModified": 1783084516465.8337
+      "lastModified": 1783088833386.5276
     },
     "scripts/governance/validators/architecture_validator.ts": {
       "assetReferences": [],
@@ -12423,7 +12427,7 @@
         "ArchitectureValidator"
       ],
       "hash": "ae10d54406493eb365ef81754bebb98295275328",
-      "lastModified": 1783084516466.7888
+      "lastModified": 1783088833387.2607
     },
     "scripts/governance/validators/cross_reference_validator.test.ts": {
       "assetReferences": [],
@@ -12434,7 +12438,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "a98db2e316b42164bb078de9bfe052554c0fb40f",
-      "lastModified": 1783084516467.1523
+      "lastModified": 1783088833387.4993
     },
     "scripts/governance/validators/cross_reference_validator.ts": {
       "assetReferences": [],
@@ -12467,7 +12471,7 @@
         "DeadAssetDuplicateValidator"
       ],
       "hash": "fc1eb747445f088dacb423593a8dd86e42794cc4",
-      "lastModified": 1783084516467.417
+      "lastModified": 1783088833387.702
     },
     "scripts/governance/validators/documentation_validator.test.ts": {
       "assetReferences": [],
@@ -12477,7 +12481,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "9fe8e7bfb4026bf3d1e9c3afee9e36e33cc5a671",
-      "lastModified": 1783084516467.7383
+      "lastModified": 1783088833387.9395
     },
     "scripts/governance/validators/documentation_validator.ts": {
       "assetReferences": [],
@@ -12494,7 +12498,7 @@
         "DocumentationValidator"
       ],
       "hash": "1c2536c8aafd6bbc00c8d35038de62c9a1c16f38",
-      "lastModified": 1783084516468.1082
+      "lastModified": 1783088833388.3257
     },
     "scripts/governance/validators/helpers/dead_asset_detector.ts": {
       "assetReferences": [],
@@ -12509,7 +12513,7 @@
         "deadAssetDetectorVersion"
       ],
       "hash": "eba8ee7868482e0600c204097a4505ca50be44e8",
-      "lastModified": 1783084516468.907
+      "lastModified": 1783088833388.6978
     },
     "scripts/governance/validators/helpers/duplicate_component_detector.ts": {
       "assetReferences": [],
@@ -12524,7 +12528,7 @@
         "duplicateComponentDetectorVersion"
       ],
       "hash": "804672fd54838dcb45d7fe1840afdf454285e9e7",
-      "lastModified": 1783084516469.2356
+      "lastModified": 1783088833389.0193
     },
     "scripts/governance/validators/helpers/duplicate_file_detector.ts": {
       "assetReferences": [],
@@ -12540,7 +12544,7 @@
         "duplicateFileDetectorVersion"
       ],
       "hash": "369c90364925b6ba935f43fefd8537429f67e45d",
-      "lastModified": 1783084516469.9968
+      "lastModified": 1783088833389.9917
     },
     "scripts/governance/validators/helpers/safe_delete_classifier.ts": {
       "assetReferences": [],
@@ -12555,7 +12559,7 @@
         "safeDeleteClassifierVersion"
       ],
       "hash": "69da5a04be94207eefb2ed2a86ee5532bdfe912b",
-      "lastModified": 1783084516470.2341
+      "lastModified": 1783088833390.316
     },
     "scripts/governance/validators/link_validator.test.ts": {
       "assetReferences": [],
@@ -12565,7 +12569,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "85f46e865582e0e5b876e252de7287b0e3fae88f",
-      "lastModified": 1783084516470.4795
+      "lastModified": 1783088833390.5593
     },
     "scripts/governance/validators/link_validator.ts": {
       "assetReferences": [],
@@ -12590,7 +12594,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "7c89eb3184e5661c5174b1965b49c92b753dd9fc",
-      "lastModified": 1783084516470.806
+      "lastModified": 1783088833390.7573
     },
     "scripts/governance/validators/markdown_validator.ts": {
       "assetReferences": [],
@@ -12603,7 +12607,7 @@
         "MarkdownValidator"
       ],
       "hash": "233a97b2e1aa27ae68c0f85f291daa8c9ea7553c",
-      "lastModified": 1783084516471.1194
+      "lastModified": 1783088833391.2751
     },
     "scripts/governance/validators/mermaid_validator.test.ts": {
       "assetReferences": [],
@@ -12613,7 +12617,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "528d3faaa7ea48b9f84a654d0650b7a8cabda14d",
-      "lastModified": 1783084516471.369
+      "lastModified": 1783088833391.5518
     },
     "scripts/governance/validators/mermaid_validator.ts": {
       "assetReferences": [],
@@ -12638,7 +12642,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "bf705427e096411d899049758d8eb49370745952",
-      "lastModified": 1783084516472.2847
+      "lastModified": 1783088833392.0056
     },
     "scripts/governance/validators/performance_validator.ts": {
       "assetReferences": [],
@@ -12652,7 +12656,7 @@
         "PerformanceValidator"
       ],
       "hash": "c7bdcbf0289b256e15508bff406401cd86a5c0d1",
-      "lastModified": 1783084516474.529
+      "lastModified": 1783088833393.0955
     },
     "scripts/governance/validators/repository_health_validator.test.ts": {
       "assetReferences": [],
@@ -12663,7 +12667,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "095f19fd9aca1579748e5eb8c8b426a230e82114",
-      "lastModified": 1783084516474.6763
+      "lastModified": 1783088833393.2568
     },
     "scripts/governance/validators/repository_health_validator.ts": {
       "assetReferences": [],
@@ -12678,7 +12682,7 @@
         "RepositoryHealthValidator"
       ],
       "hash": "c6e4d36676bc328fccf2972967f1a54bcb9e1f2b",
-      "lastModified": 1783084516475.5215
+      "lastModified": 1783088833393.5537
     },
     "scripts/governance/validators/repository_hygiene_validator.test.ts": {
       "assetReferences": [],
@@ -12689,7 +12693,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "4dd6e40eed99fbacc14f557794bf9c37846fed17",
-      "lastModified": 1783084516475.7698
+      "lastModified": 1783088833393.856
     },
     "scripts/governance/validators/repository_hygiene_validator.ts": {
       "assetReferences": [],
@@ -12703,7 +12707,7 @@
         "RepositoryHygieneValidator"
       ],
       "hash": "05ae09bf91d69e99489a5c5ef349b1d62c0c204c",
-      "lastModified": 1783084516475.9873
+      "lastModified": 1783088833394.2195
     },
     "scripts/governance/validators/security_validator.test.ts": {
       "assetReferences": [],
@@ -12715,7 +12719,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "ce2d72501f8f7ef12b08b3040ddf532982ec58e2",
-      "lastModified": 1783084516476.6865
+      "lastModified": 1783088833394.531
     },
     "scripts/governance/validators/security_validator.ts": {
       "assetReferences": [],
@@ -12729,7 +12733,7 @@
         "SecurityValidator"
       ],
       "hash": "2cc90d9d5c7b8a9d239c1211c5ccfb2d47df5b77",
-      "lastModified": 1783084516476.9878
+      "lastModified": 1783088833394.869
     },
     "scripts/governance/validators/shared_component_validator.ts": {
       "assetReferences": [],
@@ -12744,7 +12748,7 @@
         "SharedComponentValidator"
       ],
       "hash": "c6c3c39920c19ac88a96b2727c752a15fd50a8d3",
-      "lastModified": 1783084516477.2974
+      "lastModified": 1783088833395.3162
     },
     "scripts/governance/validators/ssot_validator.test.ts": {
       "assetReferences": [],
@@ -12754,7 +12758,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "765df14074135512202a2d066d92512b726d6238",
-      "lastModified": 1783084516477.4766
+      "lastModified": 1783088833395.4836
     },
     "scripts/governance/validators/ssot_validator.ts": {
       "assetReferences": [],
@@ -12767,7 +12771,7 @@
         "SsotValidator"
       ],
       "hash": "af04c2531a832de18fd2ad1e0ceea159799e76e8",
-      "lastModified": 1783084516477.869
+      "lastModified": 1783088833396.241
     },
     "scripts/governance/validators/ui_design_validator.ts": {
       "assetReferences": [],
@@ -12781,7 +12785,7 @@
         "UIDesignValidator"
       ],
       "hash": "d99a63cf7ace22c3605c1b377c13d2fc178f84b3",
-      "lastModified": 1783084516478.1418
+      "lastModified": 1783088833396.6846
     },
     "scripts/governance/validators/ui_validators.test.ts": {
       "assetReferences": [],
@@ -12795,7 +12799,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "cb4e30cec77411059f1ffde0dab926a564ffc353",
-      "lastModified": 1783084516478.4019
+      "lastModified": 1783088833397.092
     },
     "tsconfig.base.json": {
       "assetReferences": [],
@@ -12854,6 +12858,6 @@
       "lastModified": 1783050805912.8364
     }
   },
-  "timestamp": "2026-07-03T13:19:15.119Z",
+  "timestamp": "2026-07-03T15:07:42.803Z",
   "version": "1.1.0"
 }

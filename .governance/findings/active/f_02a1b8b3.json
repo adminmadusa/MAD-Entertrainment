@@ -6,7 +6,7 @@
   "evidence": {
     "construct": "UIElement",
     "line": 1,
-    "message": "Safe delete classification: [REQUIRES_MANUAL_REVIEW] for \"apps/admin/src/app/popups/[id]/edit/page.tsx\". Reason: Filename \"page\" referenced as text/string in other files: .agents/skills/ci-investigation/examples/deployment-failure.md, AGENTS.MD.",
+    "message": "Safe delete classification: [REQUIRES_MANUAL_REVIEW] for \"apps/admin/src/app/popups/[id]/edit/page.tsx\". Reason: Filename \"page\" referenced as text/string in other files: .agents/skills/ci-investigation/examples/deployment-failure.md, .agents/skills/ui-ux/SKILL.md.",
     "occurrences": [
       {
         "column": 0,
@@ -14,7 +14,7 @@
         "fingerprint": "f8749dd7f63aea7203089303e51471e2f676222b35ac4d5a1d3e54495e34b894",
         "id": "f8749dd7f63aea7203089303e51471e2f676222b35ac4d5a1d3e54495e34b894",
         "line": 1,
-        "message": "Safe delete classification: [REQUIRES_MANUAL_REVIEW] for \"apps/admin/src/app/popups/[id]/edit/page.tsx\". Reason: Filename \"page\" referenced as text/string in other files: .agents/skills/ci-investigation/examples/deployment-failure.md, AGENTS.MD."
+        "message": "Safe delete classification: [REQUIRES_MANUAL_REVIEW] for \"apps/admin/src/app/popups/[id]/edit/page.tsx\". Reason: Filename \"page\" referenced as text/string in other files: .agents/skills/ci-investigation/examples/deployment-failure.md, .agents/skills/ui-ux/SKILL.md."
       }
     ],
     "path": "apps/admin/src/app/popups/[id]/edit/page.tsx"
@@ -22,8 +22,8 @@
   "feature": "UIElement",
   "firstDetected": "2026-06-30T15:36:27.157Z",
   "id": "f_02a1b8b3",
-  "lastDetected": "2026-07-03T08:48:21.098Z",
-  "lastModified": "2026-07-03T08:48:21.098Z",
+  "lastDetected": "2026-07-03T15:07:46.539Z",
+  "lastModified": "2026-07-03T15:07:46.539Z",
   "occurrenceCount": 1,
   "owner": "Platform Team",
   "package": "apps",

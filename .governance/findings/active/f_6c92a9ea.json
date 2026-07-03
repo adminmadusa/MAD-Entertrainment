@@ -6,7 +6,7 @@
   "evidence": {
     "construct": "UIElement",
     "line": 1,
-    "message": "Safe delete classification: [REQUIRES_MANUAL_REVIEW] for \"apps/admin/src/app/dj-operators/[id]/edit/page.tsx\". Reason: Filename \"page\" referenced as text/string in other files: .agents/skills/ci-investigation/examples/deployment-failure.md, AGENTS.MD.",
+    "message": "Safe delete classification: [REQUIRES_MANUAL_REVIEW] for \"apps/admin/src/app/dj-operators/[id]/edit/page.tsx\". Reason: Filename \"page\" referenced as text/string in other files: .agents/skills/ci-investigation/examples/deployment-failure.md, .agents/skills/ui-ux/SKILL.md.",
     "occurrences": [
       {
         "column": 0,
@@ -14,7 +14,7 @@
         "fingerprint": "7f43b8889197d1d5df2ecaecb833f2d3fe403a3ca6b0782b707c2565f6da2bf7",
         "id": "7f43b8889197d1d5df2ecaecb833f2d3fe403a3ca6b0782b707c2565f6da2bf7",
         "line": 1,
-        "message": "Safe delete classification: [REQUIRES_MANUAL_REVIEW] for \"apps/admin/src/app/dj-operators/[id]/edit/page.tsx\". Reason: Filename \"page\" referenced as text/string in other files: .agents/skills/ci-investigation/examples/deployment-failure.md, AGENTS.MD."
+        "message": "Safe delete classification: [REQUIRES_MANUAL_REVIEW] for \"apps/admin/src/app/dj-operators/[id]/edit/page.tsx\". Reason: Filename \"page\" referenced as text/string in other files: .agents/skills/ci-investigation/examples/deployment-failure.md, .agents/skills/ui-ux/SKILL.md."
       }
     ],
     "path": "apps/admin/src/app/dj-operators/[id]/edit/page.tsx"
@@ -22,8 +22,8 @@
   "feature": "UIElement",
   "firstDetected": "2026-06-30T15:36:27.134Z",
   "id": "f_6c92a9ea",
-  "lastDetected": "2026-07-03T08:48:21.089Z",
-  "lastModified": "2026-07-03T08:48:21.089Z",
+  "lastDetected": "2026-07-03T15:07:46.538Z",
+  "lastModified": "2026-07-03T15:07:46.538Z",
   "occurrenceCount": 1,
   "owner": "Platform Team",
   "package": "apps",

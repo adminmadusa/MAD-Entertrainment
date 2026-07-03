@@ -1,6 +1,6 @@
 {
   "confidence": 1,
-  "createdDate": "2026-07-03T07:29:54.738Z",
+  "createdDate": "2026-07-03T07:29:55.068Z",
   "domain": "Architecture Review Board",
   "engineVersion": "1.0.0",
   "evidence": {
@@ -10,18 +10,18 @@
       {
         "column": 0,
         "construct": "Document",
-        "fingerprint": "506d8d14b749d49a41786b5c6dfa60e0c36e779eea777f48b2e6cfbc58b30595",
-        "id": "506d8d14b749d49a41786b5c6dfa60e0c36e779eea777f48b2e6cfbc58b30595",
+        "fingerprint": "5a509fdb1b9c41a808310f19c7c76be2b3477a8bc273b4f5956e9fbff3ebb643",
+        "id": "5a509fdb1b9c41a808310f19c7c76be2b3477a8bc273b4f5956e9fbff3ebb643",
         "line": 0,
         "message": "Every documentation file is required to have a defined \"Owner\" or \"Authors\" in its metadata block."
       }
     ],
-    "path": ".agents/skills/architecture-review/SKILL.md"
+    "path": ".agents/skills/governance-audit/SKILL.md"
   },
   "feature": "Document",
-  "firstDetected": "2026-07-03T07:29:54.738Z",
-  "id": "f_9d1f2096",
-  "lastDetected": "2026-07-03T07:29:54.738Z",
+  "firstDetected": "2026-07-03T07:29:55.068Z",
+  "id": "f_e22f42e3",
+  "lastDetected": "2026-07-03T07:29:55.068Z",
   "occurrenceCount": 1,
   "owner": "Architecture Review Board",
   "package": ".agents",
@@ -29,5 +29,5 @@
   "rule": "Missing Document Owner",
   "ruleVersion": "1.0.0",
   "schemaVersion": 2,
-  "status": "NEW"
+  "status": "CLOSED"
 }

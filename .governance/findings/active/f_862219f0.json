@@ -1,29 +1,28 @@
 {
   "confidence": 1,
-  "createdDate": "2026-07-03T13:19:33.484Z",
+  "createdDate": "2026-07-03T15:07:46.530Z",
   "domain": "Platform Team",
   "engineVersion": "1.0.0",
   "evidence": {
     "construct": "Document",
-    "line": 72,
+    "line": 173,
     "message": "Trailing whitespace characters detected.",
     "occurrences": [
       {
         "column": 0,
         "construct": "Document",
-        "fingerprint": "51416cfd352f7f15180adeab100aa57086082a8b1e6af27aaf47c40caf367d83",
-        "id": "51416cfd352f7f15180adeab100aa57086082a8b1e6af27aaf47c40caf367d83",
-        "line": 72,
+        "fingerprint": "37dd1797e63116d59ed01d1011513865fe17079353d337216334801d437d3fdc",
+        "id": "37dd1797e63116d59ed01d1011513865fe17079353d337216334801d437d3fdc",
+        "line": 173,
         "message": "Trailing whitespace characters detected."
       }
     ],
-    "path": "scripts/governance/core/analytics_store.ts"
+    "path": "scripts/governance/core/__tests__/analytics_store.test.ts"
   },
   "feature": "Document",
-  "firstDetected": "2026-07-03T13:19:33.484Z",
-  "id": "f_d7ffc846",
-  "lastDetected": "2026-07-03T15:07:46.545Z",
-  "lastModified": "2026-07-03T15:07:46.545Z",
+  "firstDetected": "2026-07-03T15:07:46.530Z",
+  "id": "f_862219f0",
+  "lastDetected": "2026-07-03T15:07:46.530Z",
   "occurrenceCount": 1,
   "owner": "Platform Team",
   "package": "scripts",

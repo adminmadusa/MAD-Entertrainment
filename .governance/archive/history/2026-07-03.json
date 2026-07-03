@@ -1,6 +1,6 @@
 {
-  "activeCount": 1447,
-  "closedCount": 318,
+  "activeCount": 1450,
+  "closedCount": 323,
   "findings": [
     {
       "id": "f_003b6801",
@@ -586,6 +586,12 @@
     },
     {
       "id": "f_0e7e26f6",
+      "occurrenceCount": 1,
+      "rule": "VAL-DOC-007",
+      "status": "NEW"
+    },
+    {
+      "id": "f_0e8716d3",
       "occurrenceCount": 1,
       "rule": "VAL-DOC-007",
       "status": "NEW"
@@ -2367,6 +2373,12 @@
       "status": "NEW"
     },
     {
+      "id": "f_3ad77131",
+      "occurrenceCount": 1,
+      "rule": "Orphaned Documentation",
+      "status": "NEW"
+    },
+    {
       "id": "f_3af0f3b0",
       "occurrenceCount": 1,
       "rule": "VAL-UI-003",
@@ -3102,7 +3114,7 @@
       "id": "f_4cec8606",
       "occurrenceCount": 1,
       "rule": "Missing Document Owner",
-      "status": "NEW"
+      "status": "CLOSED"
     },
     {
       "id": "f_4d20565a",
@@ -3669,6 +3681,12 @@
       "status": "CLOSED"
     },
     {
+      "id": "f_57c104b4",
+      "occurrenceCount": 1,
+      "rule": "Orphaned Documentation",
+      "status": "NEW"
+    },
+    {
       "id": "f_57cc2b06",
       "occurrenceCount": 1,
       "rule": "VAL-DOC-003",
@@ -4086,6 +4104,12 @@
       "id": "f_630c11d4",
       "occurrenceCount": 1,
       "rule": "VAL-HYG-001",
+      "status": "NEW"
+    },
+    {
+      "id": "f_6356648a",
+      "occurrenceCount": 1,
+      "rule": "Orphaned Documentation",
       "status": "NEW"
     },
     {
@@ -5289,6 +5313,12 @@
       "status": "CLOSED"
     },
     {
+      "id": "f_805431cf",
+      "occurrenceCount": 1,
+      "rule": "VAL-DOC-007",
+      "status": "NEW"
+    },
+    {
       "id": "f_809106b0",
       "occurrenceCount": 1,
       "rule": "Missing Document Owner",
@@ -5502,6 +5532,12 @@
       "id": "f_8607fe8e",
       "occurrenceCount": 1,
       "rule": "VAL-HYG-003",
+      "status": "NEW"
+    },
+    {
+      "id": "f_862219f0",
+      "occurrenceCount": 1,
+      "rule": "VAL-HYG-004",
       "status": "NEW"
     },
     {
@@ -6435,6 +6471,12 @@
       "status": "NEW"
     },
     {
+      "id": "f_9d05976f",
+      "occurrenceCount": 1,
+      "rule": "Orphaned Documentation",
+      "status": "NEW"
+    },
+    {
       "id": "f_9d08a98d",
       "occurrenceCount": 1,
       "rule": "VAL-HYG-001",
@@ -6444,7 +6486,7 @@
       "id": "f_9d1f2096",
       "occurrenceCount": 1,
       "rule": "Missing Document Owner",
-      "status": "NEW"
+      "status": "CLOSED"
     },
     {
       "id": "f_9d4cfb2b",
@@ -6957,6 +6999,12 @@
       "status": "NEW"
     },
     {
+      "id": "f_a7cc31e2",
+      "occurrenceCount": 1,
+      "rule": "Orphaned Documentation",
+      "status": "NEW"
+    },
+    {
       "id": "f_a7e2b2d8",
       "occurrenceCount": 1,
       "rule": "VAL-HYG-001",
@@ -7374,7 +7422,7 @@
       "id": "f_b362493d",
       "occurrenceCount": 1,
       "rule": "Duplicate Governance Policy",
-      "status": "REGRESSION"
+      "status": "CLOSED"
     },
     {
       "id": "f_b36f6872",
@@ -8454,7 +8502,7 @@
       "id": "f_cfd56b14",
       "occurrenceCount": 1,
       "rule": "Missing Document Owner",
-      "status": "REGRESSION"
+      "status": "CLOSED"
     },
     {
       "id": "f_cff0ea8d",
@@ -9294,7 +9342,7 @@
       "id": "f_e22f42e3",
       "occurrenceCount": 1,
       "rule": "Missing Document Owner",
-      "status": "NEW"
+      "status": "CLOSED"
     },
     {
       "id": "f_e241316e",
@@ -10594,5 +10642,5 @@
     }
   ],
   "suppressedCount": 0,
-  "timestamp": "2026-07-03T13:19:33.606Z"
+  "timestamp": "2026-07-03T15:07:46.647Z"
 }

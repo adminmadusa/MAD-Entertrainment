@@ -31,5 +31,5 @@
   "rule": "Duplicate Governance Policy",
   "ruleVersion": "1.0.0",
   "schemaVersion": 2,
-  "status": "REGRESSION"
+  "status": "CLOSED"
 }
