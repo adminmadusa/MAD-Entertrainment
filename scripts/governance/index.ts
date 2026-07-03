@@ -230,6 +230,16 @@ async function run() {
     for (const m of report.metrics) {
       console.log(`${m.validatorId.padEnd(32)}: ${m.durationMs}ms (files: ${m.filesProcessed}, heap delta: ${Math.round(m.memoryDeltaBytes / 1024)}KB)`);
     }
+    if (report.cacheMetrics) {
+      const cm = report.cacheMetrics;
+      const totalContent = cm.fileContentHits + cm.fileContentMisses;
+      const totalAST = cm.astHits + cm.astMisses;
+      const contentRate = totalContent > 0 ? ((cm.fileContentHits / totalContent) * 100).toFixed(1) : '0.0';
+      const astRate = totalAST > 0 ? ((cm.astHits / totalAST) * 100).toFixed(1) : '0.0';
+      console.log('--------------------------------------------------');
+      console.log(`File Content Cache Hits/Misses  : ${cm.fileContentHits} / ${cm.fileContentMisses} (${contentRate}% hits)`);
+      console.log(`AST Parser Cache Hits/Misses    : ${cm.astHits} / ${cm.astMisses} (${astRate}% hits)`);
+    }
     console.log('==================================================\n');
   }
 

@@ -1,6 +1,7 @@
 // scripts/governance/core/execution_scheduler.ts
 import { ValidatorDefinition } from './validator_registry';
 import { ValidationResult, ValidationError } from './types';
+import { FileContentCache, ASTParserCache } from './ast_parser_cache';
 
 export interface ValidatorExecutionMetrics {
   validatorId: string;
@@ -14,11 +15,19 @@ export interface ValidatorExecutionMetrics {
   warningsCount: number;
 }
 
+export interface CacheMetrics {
+  fileContentHits: number;
+  fileContentMisses: number;
+  astHits: number;
+  astMisses: number;
+}
+
 export interface ExecutionReport {
   results: ValidationResult[];
   metrics: ValidatorExecutionMetrics[];
   totalExecutionTimeMs: number;
   totalMemoryDeltaBytes: number;
+  cacheMetrics?: CacheMetrics;
 }
 
 export class ExecutionScheduler {
@@ -27,6 +36,10 @@ export class ExecutionScheduler {
     files: string[],
     metadata: any
   ): Promise<ExecutionReport> {
+    // Initialize/clear caches for this run
+    FileContentCache.clear();
+    ASTParserCache.clear();
+
     const results: ValidationResult[] = [];
     const metrics: ValidatorExecutionMetrics[] = [];
     const schedulerStart = Date.now();
@@ -97,11 +110,25 @@ export class ExecutionScheduler {
     const totalExecutionTimeMs = Date.now() - schedulerStart;
     const totalMemoryDeltaBytes = process.memoryUsage().heapUsed - memStartGlobal;
 
+    // Collect cache metrics and clean up
+    const contentMetrics = FileContentCache.getMetrics();
+    const astMetrics = ASTParserCache.getMetrics();
+    const cacheMetrics: CacheMetrics = {
+      fileContentHits: contentMetrics.hits,
+      fileContentMisses: contentMetrics.misses,
+      astHits: astMetrics.hits,
+      astMisses: astMetrics.misses,
+    };
+
+    FileContentCache.clear();
+    ASTParserCache.clear();
+
     return {
       results,
       metrics,
       totalExecutionTimeMs,
       totalMemoryDeltaBytes,
+      cacheMetrics,
     };
   }
 }

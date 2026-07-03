@@ -1,10 +1,11 @@
 // scripts/governance/validators/ui_validators.test.ts
-import { describe, it, expect, beforeAll, vi } from 'vitest';
+import { describe, it, expect, beforeAll, beforeEach, vi } from 'vitest';
 import * as fs from 'fs';
 import { UIDesignValidator } from './ui_design_validator';
 import { AccessibilityValidator } from './accessibility_validator';
 import { SharedComponentValidator } from './shared_component_validator';
 import { RuleRegistry } from '../rules/registry';
+import { FileContentCache, ASTParserCache } from '../core/ast_parser_cache';
 
 vi.mock('fs', () => ({
   existsSync: vi.fn(),
@@ -14,6 +15,11 @@ vi.mock('fs', () => ({
 describe('UI and Accessibility AST Validators', () => {
   beforeAll(() => {
     RuleRegistry.initialize();
+  });
+
+  beforeEach(() => {
+    FileContentCache.clear();
+    ASTParserCache.clear();
   });
 
   describe('UIDesignValidator', () => {

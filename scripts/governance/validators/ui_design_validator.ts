@@ -1,9 +1,10 @@
 // scripts/governance/validators/ui_design_validator.ts
-import { readFileSync, existsSync } from 'fs';
+import { existsSync } from 'fs';
 import { resolve } from 'path';
 import * as ts from 'typescript';
 import { GovernanceValidator } from '../core/validator';
 import { ValidationResult, ValidationError } from '../core/types';
+import { FileContentCache, ASTParserCache } from '../core/ast_parser_cache';
 
 const workspaceRoot = resolve(__dirname, '../../..');
 
@@ -17,9 +18,6 @@ export class UIDesignValidator implements GovernanceValidator {
     let parserFailures = 0;
 
     for (const file of files) {
-      const fullPath = resolve(workspaceRoot, file);
-      if (!existsSync(fullPath)) continue;
-
       // Skip test files
       if (
         file.endsWith('.test.tsx') ||
@@ -30,29 +28,25 @@ export class UIDesignValidator implements GovernanceValidator {
         continue;
       }
 
-      let content: string;
-      try {
-        content = readFileSync(fullPath, 'utf8');
-      } catch (err) {
+      const fullPath = resolve(workspaceRoot, file);
+      if (!existsSync(fullPath)) {
         continue;
       }
 
-      let sourceFile: ts.SourceFile;
-      try {
-        sourceFile = ts.createSourceFile(
-          fullPath,
-          content,
-          ts.ScriptTarget.Latest,
-          true
-        );
-      } catch (err: any) {
+      const content = FileContentCache.getFileContent(file);
+      if (content === null) {
+        continue;
+      }
+
+      const sourceFile = ASTParserCache.getSourceFile(file);
+      if (!sourceFile) {
         parserFailures++;
         warnings.push({
           file,
           line: 1,
           rule: 'AST-PARSE-WARNING',
           severity: 'WARNING',
-          message: `Failed to parse file AST: ${err?.message || err}`,
+          message: `Failed to parse file AST via cache`,
         });
         continue;
       }

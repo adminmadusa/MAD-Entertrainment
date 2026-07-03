@@ -10837,6 +10837,16 @@
       "hash": "bd2a68db3b590795ccdf113bba5420d50ef275ec",
       "lastModified": 1783050805897.51
     },
+    "scripts/governance/core/__tests__/ast_parser_cache.test.ts": {
+      "assetReferences": [],
+      "dependencies": [
+        "scripts/governance/core/ast_parser_cache.ts"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "b5f8dbe24c4b4c8a482309741e3109c9bdf6dc5d",
+      "lastModified": 1783072913127.9219
+    },
     "scripts/governance/core/__tests__/audit_engine.integration.test.ts": {
       "assetReferences": [],
       "dependencies": [
@@ -10927,6 +10937,17 @@
       "exports": [],
       "hash": "67acb9f4e12136a7e05465e5c43443f481ad1b36",
       "lastModified": 1783069715379.0066
+    },
+    "scripts/governance/core/ast_parser_cache.ts": {
+      "assetReferences": [],
+      "dependencies": [],
+      "dynamicImports": [],
+      "exports": [
+        "FileContentCache",
+        "ASTParserCache"
+      ],
+      "hash": "c1427258e63dd047dc7d738217f5713cb9653a77",
+      "lastModified": 1783072818658.6328
     },
     "scripts/governance/core/audit_engine.ts": {
       "assetReferences": [],
@@ -11060,16 +11081,18 @@
       "assetReferences": [],
       "dependencies": [
         "scripts/governance/core/validator_registry.ts",
-        "scripts/governance/core/types.ts"
+        "scripts/governance/core/types.ts",
+        "scripts/governance/core/ast_parser_cache.ts"
       ],
       "dynamicImports": [],
       "exports": [
         "ValidatorExecutionMetrics",
+        "CacheMetrics",
         "ExecutionReport",
         "ExecutionScheduler"
       ],
-      "hash": "52215452c0a91fb0a6a2028a63e68c3fec11daa8",
-      "lastModified": 1783070839357.2664
+      "hash": "72a1016cb0093d6d22cf192c5ca162502aad747e",
+      "lastModified": 1783072855981.057
     },
     "scripts/governance/core/finding_manager.ts": {
       "assetReferences": [],
@@ -11314,8 +11337,8 @@
       ],
       "dynamicImports": [],
       "exports": [],
-      "hash": "851068965ea95c856ea8dbcc7d4e2c5fa15e29e5",
-      "lastModified": 1783071002752.8613
+      "hash": "ceead74241bdfad9ccf900556e4efd2f2c4d37e6",
+      "lastModified": 1783072865037.6042
     },
     "scripts/governance/migrate-findings.ts": {
       "assetReferences": [],
@@ -11494,14 +11517,15 @@
         "scripts/governance/core/validator.ts",
         "scripts/governance/core/types.ts",
         "scripts/governance/core/governance.config.ts",
-        "scripts/governance/rules/registry.ts"
+        "scripts/governance/rules/registry.ts",
+        "scripts/governance/core/ast_parser_cache.ts"
       ],
       "dynamicImports": [],
       "exports": [
         "AccessibilityValidator"
       ],
-      "hash": "6e1d3b5e48cb87e188ec8fa0f4a4733aa62d0839",
-      "lastModified": 1783050805903.9753
+      "hash": "075112426db65e6479eae860e77fa9ae447d44d6",
+      "lastModified": 1783072896927.5574
     },
     "scripts/governance/validators/adr_validator.test.ts": {
       "assetReferences": [],
@@ -11761,14 +11785,15 @@
       "dependencies": [
         "scripts/governance/core/validator.ts",
         "scripts/governance/core/types.ts",
-        "scripts/governance/core/governance.config.ts"
+        "scripts/governance/core/governance.config.ts",
+        "scripts/governance/core/ast_parser_cache.ts"
       ],
       "dynamicImports": [],
       "exports": [
         "SharedComponentValidator"
       ],
-      "hash": "5868f7d51d60cfe59a54d5ee35df430ad7a1cfff",
-      "lastModified": 1783050805912.6265
+      "hash": "c6c3c39920c19ac88a96b2727c752a15fd50a8d3",
+      "lastModified": 1783072907451.176
     },
     "scripts/governance/validators/ssot_validator.test.ts": {
       "assetReferences": [],
@@ -11797,14 +11822,15 @@
       "assetReferences": [],
       "dependencies": [
         "scripts/governance/core/validator.ts",
-        "scripts/governance/core/types.ts"
+        "scripts/governance/core/types.ts",
+        "scripts/governance/core/ast_parser_cache.ts"
       ],
       "dynamicImports": [],
       "exports": [
         "UIDesignValidator"
       ],
-      "hash": "40fdc691f5573192200fa7412dfeebfad3d8fb6a",
-      "lastModified": 1783050805912.7166
+      "hash": "d99a63cf7ace22c3605c1b377c13d2fc178f84b3",
+      "lastModified": 1783072886740.957
     },
     "scripts/governance/validators/ui_validators.test.ts": {
       "assetReferences": [],
@@ -11812,12 +11838,13 @@
         "scripts/governance/validators/ui_design_validator.ts",
         "scripts/governance/validators/accessibility_validator.ts",
         "scripts/governance/validators/shared_component_validator.ts",
-        "scripts/governance/rules/registry.ts"
+        "scripts/governance/rules/registry.ts",
+        "scripts/governance/core/ast_parser_cache.ts"
       ],
       "dynamicImports": [],
       "exports": [],
-      "hash": "a42134ae5e248843d652e2c6369d69f15e74b172",
-      "lastModified": 1783071880241.0203
+      "hash": "cb4e30cec77411059f1ffde0dab926a564ffc353",
+      "lastModified": 1783072927929.8496
     },
     "tsconfig.base.json": {
       "assetReferences": [],
@@ -11876,6 +11903,6 @@
       "lastModified": 1783050805912.8364
     }
   },
-  "timestamp": "2026-07-03T09:53:31.418Z",
+  "timestamp": "2026-07-03T10:03:42.390Z",
   "version": "1.1.0"
 }
