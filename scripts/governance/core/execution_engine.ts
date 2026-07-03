@@ -17,6 +17,7 @@ import { UIDesignValidator } from '../validators/ui_design_validator';
 import { AccessibilityValidator } from '../validators/accessibility_validator';
 import { SharedComponentValidator } from '../validators/shared_component_validator';
 import { DeadAssetDuplicateValidator } from '../validators/dead_asset_duplicate_validator';
+import { SecurityValidator } from '../validators/security_validator';
 
 export class ExecutionEngine {
   private static initialized = false;
@@ -119,6 +120,13 @@ export class ExecutionEngine {
       supportedRules: ['VAL-UI-011', 'VAL-UI-012', 'VAL-UI-013', 'VAL-UI-014', 'VAL-UI-015', 'VAL-UI-016', 'VAL-UI-017', 'VAL-UI-018', 'VAL-UI-019'],
       supportedFileTypes: ['*'],
       priority: 70,
+    });
+
+    ValidatorRegistry.registerValidator(new SecurityValidator(), {
+      id: 'SecurityValidator',
+      supportedRules: ['VAL-SEC-001', 'VAL-SEC-002'],
+      supportedFileTypes: ['.ts'],
+      priority: 80,
     });
 
     // 4. Validate Registry
