@@ -9316,6 +9316,953 @@
       "hash": "8ba052761bb78c38de9dfa810ec8bf1a49dec9aa",
       "lastModified": 1783069139616.3486
     },
+    "docs/governance/rules/ADR_GAP.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "docs/governance/REGISTRY.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "c8e57cab1e6d530a1186036552fda56c2cde558b",
+      "lastModified": 1783070562522.8528
+    },
+    "docs/governance/rules/ADR_STATUS_MISMATCH.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "docs/governance/REGISTRY.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "e582a29305fef7a6374894c9dfaedb3dd5f527d3",
+      "lastModified": 1783070562523.1526
+    },
+    "docs/governance/rules/ADR_TITLE_MISMATCH.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "docs/governance/REGISTRY.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "343e4928377e74fa45aba17e1107cfe4c4b6fe5a",
+      "lastModified": 1783070562523.0796
+    },
+    "docs/governance/rules/AST_PARSE_WARNING.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "docs/governance/REGISTRY.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "22e586463be0230f8933fe66a6bf38fb2c081c6d",
+      "lastModified": 1783070562524.6707
+    },
+    "docs/governance/rules/BROKEN_ANCHOR.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "docs/governance/REGISTRY.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "fd8bf4e335370cb067afe5911dceb5093587d85d",
+      "lastModified": 1783070562524.5994
+    },
+    "docs/governance/rules/BROKEN_LINK_TARGET.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "docs/governance/REGISTRY.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "ef7a940b5925d24d0e308cdce8fc77ec413a9690",
+      "lastModified": 1783070562524.44
+    },
+    "docs/governance/rules/BROKEN_REF_LINK.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "docs/governance/REGISTRY.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "64c9c94614a2feefd8cad49169a6404c81323fe8",
+      "lastModified": 1783070562524.5269
+    },
+    "docs/governance/rules/CIRCULAR_DOC.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "docs/governance/REGISTRY.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "7f1400b87ef5120b3b0a6119ff3b2f74d9dc8c3e",
+      "lastModified": 1783070562521.364
+    },
+    "docs/governance/rules/DUPLICATE_ADR_NUM.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "docs/governance/REGISTRY.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "3ded1edaee55c3b3924a8d0b45816d5b9cd7f621",
+      "lastModified": 1783070562522.776
+    },
+    "docs/governance/rules/DUPLICATE_HEADING.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "docs/governance/REGISTRY.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "45d3318be5e85d81628a8a52c9a3034ded95734d",
+      "lastModified": 1783070562520.447
+    },
+    "docs/governance/rules/DUPLICATE_POLICY.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "docs/governance/REGISTRY.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "6dddef117306e8e1898894d22f0e5e0ca5657e0d",
+      "lastModified": 1783070562523.9155
+    },
+    "docs/governance/rules/EMPTY_MERMAID.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "docs/governance/REGISTRY.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "7e626eff6106d68416f1a55982e243071025012f",
+      "lastModified": 1783070562521.549
+    },
+    "docs/governance/rules/INVALID_ADR_DATE.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "docs/governance/REGISTRY.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "9c98076d2991f56cc9e573c92000b17a3f9ba0b5",
+      "lastModified": 1783070562522.399
+    },
+    "docs/governance/rules/INVALID_ADR_NAMING.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "docs/governance/REGISTRY.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "47060e773701ba9f728f9e87201efd738aeae8f3",
+      "lastModified": 1783070562521.962
+    },
+    "docs/governance/rules/INVALID_ADR_STATUS.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "docs/governance/REGISTRY.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "48b03523f8d5004510f5d81515cc68f268d886e0",
+      "lastModified": 1783070562522.2493
+    },
+    "docs/governance/rules/INVALID_MERMAID_CONNECTION.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "docs/governance/REGISTRY.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "bc96e6638e54ba631b741cdf69a94cca0db1543a",
+      "lastModified": 1783070562521.7825
+    },
+    "docs/governance/rules/INVALID_MERMAID_TYPE.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "docs/governance/REGISTRY.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "0055bf6317964a78d2d7c41f6c7f6ac8d987a512",
+      "lastModified": 1783070562521.6091
+    },
+    "docs/governance/rules/INVALID_METADATA_DATE.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "docs/governance/REGISTRY.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "9fcc4f1d9bac704f4d1856399a10d42eac81e08f",
+      "lastModified": 1783070562524.2893
+    },
+    "docs/governance/rules/INVALID_SSOT_DATE.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "docs/governance/REGISTRY.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "2b2377232ba4992713c796ad94ef19c6df2a9cc9",
+      "lastModified": 1783070562520.814
+    },
+    "docs/governance/rules/MALFORMED_ATX_HEADING.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "docs/governance/REGISTRY.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "27e4ee6c1292e7b7de2692a53108323c4b7765fb",
+      "lastModified": 1783070562520.3843
+    },
+    "docs/governance/rules/MALFORMED_H1.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "docs/governance/REGISTRY.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "d62c6d555389d77c0a4eeb345cecb4478e977e4f",
+      "lastModified": 1783070562522.026
+    },
+    "docs/governance/rules/MALFORMED_MERMAID_ENCLOSURE.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "docs/governance/REGISTRY.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "5f7b987bf3142e6ebd4a46d97bc26437d0d63ebe",
+      "lastModified": 1783070562521.7249
+    },
+    "docs/governance/rules/MALFORMED_MERMAID_QUOTES.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "docs/governance/REGISTRY.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "ee98daa4f605cbd66790da92a398ee3b55f85348",
+      "lastModified": 1783070562521.6675
+    },
+    "docs/governance/rules/MALFORMED_TABLE.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "docs/governance/REGISTRY.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "2b520911a96944e1fe4543490254d23c62037b91",
+      "lastModified": 1783070562520.5667
+    },
+    "docs/governance/rules/MISSING_ADR_AUTHORS.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "docs/governance/REGISTRY.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "4eabdc82645bb9398c589860ca0f284902f6a603",
+      "lastModified": 1783070562522.474
+    },
+    "docs/governance/rules/MISSING_ADR_DATE.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "docs/governance/REGISTRY.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "ff4dae5d3da58ac582b6ee62599ef25e7dab28bd",
+      "lastModified": 1783070562522.3245
+    },
+    "docs/governance/rules/MISSING_ADR_DIR.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "docs/governance/REGISTRY.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "2db1f47c78359eb253329a4584ac8d157b6dbf24",
+      "lastModified": 1783070562521.8457
+    },
+    "docs/governance/rules/MISSING_ADR_DOCS.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "docs/governance/REGISTRY.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "d8319457c44253517c4cb212913b9c0188b66982",
+      "lastModified": 1783070562522.55
+    },
+    "docs/governance/rules/MISSING_ADR_HEADING.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "docs/governance/REGISTRY.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "aea3ce663674f5ac60d396bd669459b0cb6ddaea",
+      "lastModified": 1783070562522.6958
+    },
+    "docs/governance/rules/MISSING_ADR_INDEX.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "docs/governance/REGISTRY.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "930b5bec460b43b88f3a89f5bfda18a481e6c903",
+      "lastModified": 1783070562522.9277
+    },
+    "docs/governance/rules/MISSING_ADR_METADATA.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "docs/governance/REGISTRY.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "f47f9aea500e37523e9516116599d2f0d6640cd8",
+      "lastModified": 1783070562522.6248
+    },
+    "docs/governance/rules/MISSING_ADR_STATUS.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "docs/governance/REGISTRY.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "125951beeee3b7c121e4554b508e3b5ae31be65f",
+      "lastModified": 1783070562522.1726
+    },
+    "docs/governance/rules/MISSING_DOC_OWNER.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "docs/governance/REGISTRY.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "51e0d5f629343d615ca5f90f239a5a981c5318ae",
+      "lastModified": 1783070562523.9807
+    },
+    "docs/governance/rules/MISSING_H1.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "docs/governance/REGISTRY.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "d3a990ee01eab107fb359fc183a630e84a6e033e",
+      "lastModified": 1783070562522.0918
+    },
+    "docs/governance/rules/MISSING_INDEX_ENTRY.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "docs/governance/REGISTRY.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "c640654bab1509b363c1a8f3474cf6d1a7dce670",
+      "lastModified": 1783070562523.002
+    },
+    "docs/governance/rules/MISSING_REVIEW_DATE.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "docs/governance/REGISTRY.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "081bdb5a7fe8591c8bfe276e9890576e44a7f314",
+      "lastModified": 1783070562524.22
+    },
+    "docs/governance/rules/MISSING_SECTION.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "docs/governance/REGISTRY.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "85b1cfd1c95e5251b94ae77b224b2c1ead3df84c",
+      "lastModified": 1783070562521.2993
+    },
+    "docs/governance/rules/MISSING_SSOT.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "docs/governance/REGISTRY.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "ad2c1522dba7289fdd912e2d1c90beef01fdc2c1",
+      "lastModified": 1783070562520.6287
+    },
+    "docs/governance/rules/MISSING_SSOT_DATE.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "docs/governance/REGISTRY.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "375fe1266672a5e7d441889e6d7eb0d35d7ec456",
+      "lastModified": 1783070562520.7456
+    },
+    "docs/governance/rules/MISSING_SSOT_FIELD.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "docs/governance/REGISTRY.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "87f6fd119e883a820b737197056ddd98f95b24b3",
+      "lastModified": 1783070562521.1614
+    },
+    "docs/governance/rules/MISSING_SSOT_METADATA.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "docs/governance/REGISTRY.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "240eabbc45e3962c87eeabb03ea7b5dfeb1a1fb0",
+      "lastModified": 1783070562521.2368
+    },
+    "docs/governance/rules/MISSING_SSOT_OWNER.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "docs/governance/REGISTRY.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "fe2ce3d0dbb05d59d7feef08735dded8937bd49b",
+      "lastModified": 1783070562520.686
+    },
+    "docs/governance/rules/MISSING_SSOT_REF.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "docs/governance/REGISTRY.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "46ab7d10d7f162af929341e256a3ef7164495888",
+      "lastModified": 1783070562521.4294
+    },
+    "docs/governance/rules/ORPHANED_DOC.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "docs/governance/REGISTRY.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "55b82bfc3d405e6fda022bb37fd8d6e569df03d6",
+      "lastModified": 1783070562524.0554
+    },
+    "docs/governance/rules/ORPHAN_INDEX.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "docs/governance/REGISTRY.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "a93ac0ca251be29e410054995d98bee963c4465f",
+      "lastModified": 1783070562523.2295
+    },
+    "docs/governance/rules/OUTDATED_DOC.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "docs/governance/REGISTRY.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "c9625cd34e12aa8b205bd4a3410e26fb0bf7e039",
+      "lastModified": 1783070562524.3691
+    },
+    "docs/governance/rules/README.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "docs/governance/rules/VAL-UI-003.md",
+        "docs/governance/rules/VAL-UI-009.md",
+        "docs/governance/rules/VAL-ARC-001.md",
+        "docs/governance/rules/VAL-ARC-002.md",
+        "docs/governance/rules/VAL-ARC-003.md",
+        "docs/governance/rules/VAL-ARC-004.md",
+        "docs/governance/rules/ADR_GAP.md",
+        "docs/governance/rules/CIRCULAR_DOC.md",
+        "docs/governance/rules/DUPLICATE_ADR_NUM.md",
+        "docs/governance/rules/DUPLICATE_HEADING.md",
+        "docs/governance/rules/EMPTY_MERMAID.md",
+        "docs/governance/rules/ADR_STATUS_MISMATCH.md",
+        "docs/governance/rules/ADR_TITLE_MISMATCH.md",
+        "docs/governance/rules/INVALID_ADR_DATE.md",
+        "docs/governance/rules/INVALID_ADR_STATUS.md",
+        "docs/governance/rules/INVALID_ADR_NAMING.md",
+        "docs/governance/rules/INVALID_MERMAID_TYPE.md",
+        "docs/governance/rules/INVALID_MERMAID_CONNECTION.md",
+        "docs/governance/rules/INVALID_SSOT_DATE.md",
+        "docs/governance/rules/MALFORMED_ATX_HEADING.md",
+        "docs/governance/rules/MALFORMED_H1.md",
+        "docs/governance/rules/MALFORMED_MERMAID_ENCLOSURE.md",
+        "docs/governance/rules/MALFORMED_MERMAID_QUOTES.md",
+        "docs/governance/rules/MALFORMED_TABLE.md",
+        "docs/governance/rules/MISSING_ADR_AUTHORS.md",
+        "docs/governance/rules/MISSING_ADR_DATE.md",
+        "docs/governance/rules/MISSING_ADR_INDEX.md",
+        "docs/governance/rules/MISSING_ADR_METADATA.md",
+        "docs/governance/rules/MISSING_ADR_DOCS.md",
+        "docs/governance/rules/MISSING_ADR_STATUS.md",
+        "docs/governance/rules/MISSING_ADR_DIR.md",
+        "docs/governance/rules/MISSING_H1.md",
+        "docs/governance/rules/MISSING_INDEX_ENTRY.md",
+        "docs/governance/rules/MISSING_SECTION.md",
+        "docs/governance/rules/MISSING_SSOT_DATE.md",
+        "docs/governance/rules/MISSING_SSOT.md",
+        "docs/governance/rules/MISSING_SSOT_METADATA.md",
+        "docs/governance/rules/MISSING_SSOT_FIELD.md",
+        "docs/governance/rules/MISSING_SSOT_OWNER.md",
+        "docs/governance/rules/MISSING_SSOT_REF.md",
+        "docs/governance/rules/MISSING_ADR_HEADING.md",
+        "docs/governance/rules/ORPHAN_INDEX.md",
+        "docs/governance/rules/READ_DIR_ERROR.md",
+        "docs/governance/rules/UNCLOSED_CODE_BLOCK.md",
+        "docs/governance/rules/UNCLOSED_MERMAID.md",
+        "docs/governance/rules/AST_PARSE_WARNING.md",
+        "docs/governance/rules/BROKEN_ANCHOR.md",
+        "docs/governance/rules/BROKEN_LINK_TARGET.md",
+        "docs/governance/rules/BROKEN_REF_LINK.md",
+        "docs/governance/rules/DUPLICATE_POLICY.md",
+        "docs/governance/rules/INVALID_METADATA_DATE.md",
+        "docs/governance/rules/MISSING_DOC_OWNER.md",
+        "docs/governance/rules/MISSING_REVIEW_DATE.md",
+        "docs/governance/rules/ORPHANED_DOC.md",
+        "docs/governance/rules/OUTDATED_DOC.md",
+        "docs/governance/rules/SSOT_OWNER_INCONSISTENCY.md",
+        "docs/governance/rules/VAL-DOC-001.md",
+        "docs/governance/rules/VAL-DOC-002.md",
+        "docs/governance/rules/VAL-DOC-003.md",
+        "docs/governance/rules/VAL-DOC-004.md",
+        "docs/governance/rules/VAL-DOC-006.md",
+        "docs/governance/rules/VAL-DOC-007.md",
+        "docs/governance/rules/VAL-DOC-008.md",
+        "docs/governance/rules/VAL-PFM-001.md",
+        "docs/governance/rules/VAL-PFM-002.md",
+        "docs/governance/rules/VAL-DOC-005.md",
+        "docs/governance/rules/VAL-SEC-001.md",
+        "docs/governance/rules/VAL-SEC-002.md",
+        "docs/governance/rules/VAL-UI-001.md",
+        "docs/governance/rules/VAL-UI-002.md",
+        "docs/governance/rules/VAL-UI-004.md",
+        "docs/governance/rules/VAL-UI-005.md",
+        "docs/governance/rules/VAL-UI-006.md",
+        "docs/governance/rules/VAL-UI-007.md",
+        "docs/governance/rules/VAL-UI-008.md",
+        "docs/governance/rules/VAL-UI-010.md",
+        "docs/governance/rules/VAL-UI-011.md",
+        "docs/governance/rules/VAL-UI-012.md",
+        "docs/governance/rules/VAL-UI-013.md",
+        "docs/governance/rules/VAL-UI-014.md",
+        "docs/governance/rules/VAL-UI-015.md",
+        "docs/governance/rules/VAL-UI-016.md",
+        "docs/governance/rules/VAL-UI-017.md",
+        "docs/governance/rules/VAL-UI-018.md",
+        "docs/governance/rules/VAL-UI-019.md",
+        "docs/governance/REPOSITORY_POLICY.md",
+        "docs/governance/REGISTRY.md",
+        "docs/governance/BASELINE.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "8cd4a509edbe20978a9891bb8427b23cb20a5a04",
+      "lastModified": 1783070451475.7354
+    },
+    "docs/governance/rules/READ_DIR_ERROR.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "docs/governance/REGISTRY.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "a9b26553b6d4bd4acd2b6127fc1b9876d058af84",
+      "lastModified": 1783070562521.905
+    },
+    "docs/governance/rules/SSOT_OWNER_INCONSISTENCY.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "docs/governance/REGISTRY.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "bb167a9d3ee23e980618e8b7b23b550f995fd983",
+      "lastModified": 1783070562524.1409
+    },
+    "docs/governance/rules/UNCLOSED_CODE_BLOCK.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "docs/governance/REGISTRY.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "3549adc7909f3d28757c3b46993e89bbcf3c2cb4",
+      "lastModified": 1783070562520.5076
+    },
+    "docs/governance/rules/UNCLOSED_MERMAID.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "docs/governance/REGISTRY.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "f972e1bd1b8459fff593035fae73222416afa54e",
+      "lastModified": 1783070562521.4897
+    },
+    "docs/governance/rules/VAL-ARC-001.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "docs/governance/REGISTRY.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "0bf522477c7b4f7c491f2aff69c3e7e80a22b37c",
+      "lastModified": 1783070562519.9849
+    },
+    "docs/governance/rules/VAL-ARC-002.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "docs/governance/REGISTRY.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "ec6bfcb739a7fe33744d7a0103997623b10cb6db",
+      "lastModified": 1783070562520.052
+    },
+    "docs/governance/rules/VAL-ARC-003.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "docs/governance/REGISTRY.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "2548ec7c4f21fe91788ba81bea2c260e88c53186",
+      "lastModified": 1783070562520.245
+    },
+    "docs/governance/rules/VAL-ARC-004.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "docs/governance/REGISTRY.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "aaa540c280f61b63b5209800afee974da6ff1b70",
+      "lastModified": 1783070562520.317
+    },
+    "docs/governance/rules/VAL-DOC-001.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "docs/governance/REGISTRY.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "e968bfd7bf629ac80e2986b7ce96dd962a3bb659",
+      "lastModified": 1783070562523.3003
+    },
+    "docs/governance/rules/VAL-DOC-002.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "docs/governance/REGISTRY.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "1d5bd7ebfdcffa1f3c3789503734755f6dec618f",
+      "lastModified": 1783070562523.3804
+    },
+    "docs/governance/rules/VAL-DOC-003.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "docs/governance/REGISTRY.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "c5af0039914f2dbda348a2ab332f3ec18dd837b6",
+      "lastModified": 1783070562523.4497
+    },
+    "docs/governance/rules/VAL-DOC-004.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "docs/governance/REGISTRY.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "836a282c1b5151ce1af4ff9ddf7403d43e77ba08",
+      "lastModified": 1783070562523.5178
+    },
+    "docs/governance/rules/VAL-DOC-005.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "docs/governance/REGISTRY.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "95a944e984eb4c2cff7040180f0694b0ae3803fc",
+      "lastModified": 1783070562519.7935
+    },
+    "docs/governance/rules/VAL-DOC-006.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "docs/governance/REGISTRY.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "87b8e91f838754393777177a7190b5ee1d6d02e9",
+      "lastModified": 1783070562523.583
+    },
+    "docs/governance/rules/VAL-DOC-007.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "docs/governance/REGISTRY.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "a09542316a15e6dedb41dd87b937a080ec423be5",
+      "lastModified": 1783070562523.643
+    },
+    "docs/governance/rules/VAL-DOC-008.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "docs/governance/REGISTRY.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "46a7ae69af252085780390241f69ce3377c343e0",
+      "lastModified": 1783070562523.8481
+    },
+    "docs/governance/rules/VAL-PFM-001.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "docs/governance/REGISTRY.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "436ad53d413fd387493fb44817032c205cd84e7c",
+      "lastModified": 1783070562519.8645
+    },
+    "docs/governance/rules/VAL-PFM-002.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "docs/governance/REGISTRY.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "5ad0207490c2d33375d96187c5a5f7fb4a1e9e01",
+      "lastModified": 1783070562519.9246
+    },
+    "docs/governance/rules/VAL-SEC-001.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "docs/governance/REGISTRY.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "3d6455633246d295333031bb5f7f9b794ff5f5a5",
+      "lastModified": 1783070562519.6338
+    },
+    "docs/governance/rules/VAL-SEC-002.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "docs/governance/REGISTRY.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "93813fbca99e0f3859cb4668511aa04b4232ff70",
+      "lastModified": 1783070562519.7144
+    },
+    "docs/governance/rules/VAL-UI-001.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "docs/governance/REGISTRY.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "0ba57e3553b07ca0a919c123a2066aaaca5c604f",
+      "lastModified": 1783070562518.2864
+    },
+    "docs/governance/rules/VAL-UI-002.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "docs/governance/REGISTRY.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "8d8d1da7e97df4fadde8a7717830b2a398b627ec",
+      "lastModified": 1783070562518.3958
+    },
+    "docs/governance/rules/VAL-UI-003.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "docs/governance/REGISTRY.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "143ac7ed45917f38acc9a19fd354c8bc5405db45",
+      "lastModified": 1783070562519.4807
+    },
+    "docs/governance/rules/VAL-UI-004.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "docs/governance/REGISTRY.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "00a518ecd67864ede41af6c26a416a54e6c0e193",
+      "lastModified": 1783070562518.467
+    },
+    "docs/governance/rules/VAL-UI-005.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "docs/governance/REGISTRY.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "2e2b18dced7b0d7ece4e0408732b1a89d224bd30",
+      "lastModified": 1783070562518.5327
+    },
+    "docs/governance/rules/VAL-UI-006.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "docs/governance/REGISTRY.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "b9fcd1e0e2940ef4fa8e481bb56ef38f4ea47117",
+      "lastModified": 1783070562518.5955
+    },
+    "docs/governance/rules/VAL-UI-007.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "docs/governance/REGISTRY.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "89d8ff8d3ea8cc62c525d22e1e1ee72bc517b866",
+      "lastModified": 1783070562518.6663
+    },
+    "docs/governance/rules/VAL-UI-008.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "docs/governance/REGISTRY.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "65c9a4e249c15929419f475f29d589b7836dca31",
+      "lastModified": 1783070562518.7324
+    },
+    "docs/governance/rules/VAL-UI-009.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "docs/governance/REGISTRY.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "0eb245f6eadc52cec94110f7c075378d4d454d0d",
+      "lastModified": 1783070562519.558
+    },
+    "docs/governance/rules/VAL-UI-010.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "docs/governance/REGISTRY.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "ef5b28408e95bf191741cd8a0ffc3ba0534c2940",
+      "lastModified": 1783070562518.8022
+    },
+    "docs/governance/rules/VAL-UI-011.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "docs/governance/REGISTRY.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "e4553ccf5317c8568e9abeab3445c6e7b0b9f4e6",
+      "lastModified": 1783070562518.872
+    },
+    "docs/governance/rules/VAL-UI-012.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "docs/governance/REGISTRY.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "1eba865b32003ffe0434cee6664ba50e97d855bc",
+      "lastModified": 1783070562518.9404
+    },
+    "docs/governance/rules/VAL-UI-013.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "docs/governance/REGISTRY.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "d2bebf1942059a94a350afb4599a6f9fe66403b3",
+      "lastModified": 1783070562519.0051
+    },
+    "docs/governance/rules/VAL-UI-014.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "docs/governance/REGISTRY.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "3d196ab85b7e11cdb90f4c6549a5b0636b665234",
+      "lastModified": 1783070562519.0664
+    },
+    "docs/governance/rules/VAL-UI-015.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "docs/governance/REGISTRY.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "01701cadce4a41251f5609e07ded8c5a48829ec3",
+      "lastModified": 1783070562519.1423
+    },
+    "docs/governance/rules/VAL-UI-016.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "docs/governance/REGISTRY.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "5234d25184dc59058598a61514b8b10c168180c3",
+      "lastModified": 1783070562519.2024
+    },
+    "docs/governance/rules/VAL-UI-017.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "docs/governance/REGISTRY.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "cf7d3d9690288314f215ef58616235a5d8fd652e",
+      "lastModified": 1783070562519.273
+    },
+    "docs/governance/rules/VAL-UI-018.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "docs/governance/REGISTRY.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "bb1c9b47366614898a51c8aa247dcfbbfbdfccda",
+      "lastModified": 1783070562519.3325
+    },
+    "docs/governance/rules/VAL-UI-019.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "docs/governance/REGISTRY.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "819cc3af1b4d0f49be8a7faba2d936b533d4d85f",
+      "lastModified": 1783070562519.3975
+    },
     "docs/remediation-plan.md": {
       "assetReferences": [],
       "dependencies": [
@@ -10727,6 +11674,6 @@
       "lastModified": 1783050805912.8364
     }
   },
-  "timestamp": "2026-07-03T09:09:05.823Z",
+  "timestamp": "2026-07-03T09:22:46.770Z",
   "version": "1.1.0"
 }

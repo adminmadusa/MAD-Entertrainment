@@ -1,0 +1,11 @@
+{
+  "history": [
+    {
+      "action": "CREATED",
+      "notes": "New grouped finding registered: Duplicate document detected: \"docs/governance/rules/MALFORMED_TABLE.md\" (Status: Active) shares 86% similarity with canonical \"docs/governance/rules/MALFORMED_ATX_HEADING.md\" (Status: Active).",
+      "status": "NEW",
+      "timestamp": "2026-07-03T09:21:03.756Z"
+    }
+  ],
+  "id": "f_ae1f73d0"
+}

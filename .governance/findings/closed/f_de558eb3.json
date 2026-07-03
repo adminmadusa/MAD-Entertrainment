@@ -1,0 +1,36 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T09:21:04.046Z",
+  "domain": "Architecture Review Board",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 67,
+    "message": "Reference to a file that never existed in the repository: \"docs/governance/governance/REPOSITORY_POLICY.md\"",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "593cb9c5cd1d8e181a094ae1980375703c24e21841cdf11b21c2ae926590ae39",
+        "id": "593cb9c5cd1d8e181a094ae1980375703c24e21841cdf11b21c2ae926590ae39",
+        "line": 67,
+        "message": "Reference to a file that never existed in the repository: \"docs/governance/governance/REPOSITORY_POLICY.md\"",
+        "snippet": "| Proposed | 2026-07-03 | Platform Team | [REPOSITORY_POLICY.md](../governance/REPOSITORY_POLICY.md) |"
+      }
+    ],
+    "path": "docs/governance/rules/ORPHAN_INDEX.md",
+    "snippet": "| Proposed | 2026-07-03 | Platform Team | [REPOSITORY_POLICY.md](../governance/REPOSITORY_POLICY.md) |"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T09:21:04.046Z",
+  "id": "f_de558eb3",
+  "lastDetected": "2026-07-03T09:21:04.046Z",
+  "occurrenceCount": 1,
+  "owner": "Architecture Review Board",
+  "package": "docs",
+  "relationships": [],
+  "rule": "VAL-DOC-003",
+  "ruleVersion": "2.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

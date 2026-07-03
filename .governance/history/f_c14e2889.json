@@ -1,0 +1,11 @@
+{
+  "history": [
+    {
+      "action": "CREATED",
+      "notes": "New grouped finding registered: Duplicate document detected: \"docs/governance/rules/INVALID_SSOT_DATE.md\" (Status: Active) shares 88% similarity with canonical \"docs/governance/rules/DUPLICATE_POLICY.md\" (Status: Active).",
+      "status": "NEW",
+      "timestamp": "2026-07-03T09:21:03.685Z"
+    }
+  ],
+  "id": "f_c14e2889"
+}

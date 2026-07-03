@@ -1,0 +1,11 @@
+{
+  "history": [
+    {
+      "action": "CREATED",
+      "notes": "New grouped finding registered: Duplicate document detected: \"docs/governance/rules/MISSING_SSOT_OWNER.md\" (Status: Active) shares 86% similarity with canonical \"docs/governance/rules/AST_PARSE_WARNING.md\" (Status: Active).",
+      "status": "NEW",
+      "timestamp": "2026-07-03T09:21:04.003Z"
+    }
+  ],
+  "id": "f_94c5431d"
+}

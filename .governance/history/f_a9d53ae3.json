@@ -1,0 +1,11 @@
+{
+  "history": [
+    {
+      "action": "CREATED",
+      "notes": "New grouped finding registered: Duplicate document detected: \"docs/governance/rules/VAL-UI-011.md\" (Status: Active) shares 86% similarity with canonical \"docs/governance/rules/VAL-UI-010.md\" (Status: Active).",
+      "status": "NEW",
+      "timestamp": "2026-07-03T09:21:04.565Z"
+    }
+  ],
+  "id": "f_a9d53ae3"
+}

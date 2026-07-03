@@ -1,0 +1,37 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T09:21:03.512Z",
+  "domain": "Architecture Review Board",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 70,
+    "message": "Forbidden local workstation path (file:///) detected.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "50a9a8d93658f9a8e98ca7c9786b93d98292a2ba0daaa4c567273c2e8d50ad89",
+        "id": "50a9a8d93658f9a8e98ca7c9786b93d98292a2ba0daaa4c567273c2e8d50ad89",
+        "line": 70,
+        "message": "Forbidden local workstation path (file:///) detected.",
+        "snippet": "[Repository Policy] (file:///C:/User/Desktop/REPOSITORY_POLICY.md)"
+      }
+    ],
+    "path": "docs/governance/rules/BROKEN_REF_LINK.md",
+    "snippet": "[Repository Policy] (file:///C:/User/Desktop/REPOSITORY_POLICY.md)"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T09:21:03.512Z",
+  "id": "f_f59fe15a",
+  "lastDetected": "2026-07-03T09:21:54.385Z",
+  "lastModified": "2026-07-03T09:21:54.385Z",
+  "occurrenceCount": 1,
+  "owner": "Architecture Review Board",
+  "package": "docs",
+  "relationships": [],
+  "rule": "VAL-DOC-001",
+  "ruleVersion": "2.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

@@ -1,0 +1,33 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T09:21:03.960Z",
+  "domain": "Architecture Review Board",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "message": "Orphaned document: active production file has no incoming links from any documentation entrypoint.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "acbbfe8c57fa07e69e48d93cc9b3c58a8fe398d2f0ddb47ad994e281c9b5f850",
+        "id": "acbbfe8c57fa07e69e48d93cc9b3c58a8fe398d2f0ddb47ad994e281c9b5f850",
+        "line": 0,
+        "message": "Orphaned document: active production file has no incoming links from any documentation entrypoint."
+      }
+    ],
+    "path": "docs/governance/rules/MISSING_SSOT_DATE.md"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T09:21:03.960Z",
+  "id": "f_127ba022",
+  "lastDetected": "2026-07-03T09:21:03.960Z",
+  "occurrenceCount": 1,
+  "owner": "Architecture Review Board",
+  "package": "docs",
+  "relationships": [],
+  "rule": "VAL-DOC-007",
+  "ruleVersion": "2.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

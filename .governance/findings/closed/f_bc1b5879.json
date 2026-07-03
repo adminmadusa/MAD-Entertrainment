@@ -1,0 +1,45 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T09:21:03.498Z",
+  "domain": "Architecture Review Board",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 70,
+    "message": "Reference to a file that never existed in the repository: \"../../../../C:/User/Desktop/REPOSITORY_POLICY.md\"",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "efe6462d263d8d1700810d7003acaba26c348e1be7f50209f4120be7f0c8ea75",
+        "id": "efe6462d263d8d1700810d7003acaba26c348e1be7f50209f4120be7f0c8ea75",
+        "line": 64,
+        "message": "Reference to a file that never existed in the repository: \"docs/governance/rules/REPOSITORY_POLICY.md\"",
+        "snippet": "[Repository Policy](./REPOSITORY_POLICY.md)"
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "42a2caddf9d1fd39b09d9a053b88b2edc6c650c620c869278f310773026bf36d",
+        "id": "42a2caddf9d1fd39b09d9a053b88b2edc6c650c620c869278f310773026bf36d",
+        "line": 70,
+        "message": "Reference to a file that never existed in the repository: \"../../../../C:/User/Desktop/REPOSITORY_POLICY.md\"",
+        "snippet": "[Repository Policy](file:///C:/User/Desktop/REPOSITORY_POLICY.md)"
+      }
+    ],
+    "path": "docs/governance/rules/BROKEN_LINK_TARGET.md",
+    "snippet": "[Repository Policy](file:///C:/User/Desktop/REPOSITORY_POLICY.md)"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T09:21:03.498Z",
+  "id": "f_bc1b5879",
+  "lastDetected": "2026-07-03T09:21:03.498Z",
+  "occurrenceCount": 2,
+  "owner": "Architecture Review Board",
+  "package": "docs",
+  "relationships": [],
+  "rule": "VAL-DOC-003",
+  "ruleVersion": "2.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

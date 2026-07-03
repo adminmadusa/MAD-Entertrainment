@@ -1,0 +1,17 @@
+{
+  "history": [
+    {
+      "action": "CREATED",
+      "notes": "New grouped finding registered: Invalid arrow connector \"->\" detected. In flowchart/graph diagrams, use \"-->\" instead.",
+      "status": "NEW",
+      "timestamp": "2026-07-03T09:21:03.570Z"
+    },
+    {
+      "action": "RESOLVED",
+      "notes": "Code violation no longer detected. Marking finding as closed. (Transitioned from NEW to CLOSED)",
+      "status": "CLOSED",
+      "timestamp": "2026-07-03T09:21:54.374Z"
+    }
+  ],
+  "id": "f_400f5868"
+}

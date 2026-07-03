@@ -1,0 +1,45 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T09:21:04.017Z",
+  "domain": "Architecture Review Board",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 70,
+    "message": "Reference to a file that never existed in the repository: \"../../../../C:/User/Desktop/REPOSITORY_POLICY.md\"",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "c25b8b891d94263cb3f005db18656fbc195d2782d3c491b3eb08d32f0e5fa1f6",
+        "id": "c25b8b891d94263cb3f005db18656fbc195d2782d3c491b3eb08d32f0e5fa1f6",
+        "line": 64,
+        "message": "Reference to a file that never existed in the repository: \"docs/governance/rules/REPOSITORY_POLICY.md\"",
+        "snippet": "[Repository Policy](./REPOSITORY_POLICY.md)"
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "0360e0767d2004671d11b1d54053cb28abdc5c3d515c9ca8896dbf6b6dda6409",
+        "id": "0360e0767d2004671d11b1d54053cb28abdc5c3d515c9ca8896dbf6b6dda6409",
+        "line": 70,
+        "message": "Reference to a file that never existed in the repository: \"../../../../C:/User/Desktop/REPOSITORY_POLICY.md\"",
+        "snippet": "[Repository Policy](file:///C:/User/Desktop/REPOSITORY_POLICY.md)"
+      }
+    ],
+    "path": "docs/governance/rules/MISSING_SSOT_REF.md",
+    "snippet": "[Repository Policy](file:///C:/User/Desktop/REPOSITORY_POLICY.md)"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T09:21:04.017Z",
+  "id": "f_d9aeeab6",
+  "lastDetected": "2026-07-03T09:21:04.017Z",
+  "occurrenceCount": 2,
+  "owner": "Architecture Review Board",
+  "package": "docs",
+  "relationships": [],
+  "rule": "VAL-DOC-003",
+  "ruleVersion": "2.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

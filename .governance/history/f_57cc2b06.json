@@ -1,0 +1,17 @@
+{
+  "history": [
+    {
+      "action": "CREATED",
+      "notes": "New grouped finding registered: Reference to a file that never existed in the repository: \"docs/governance/governance/REPOSITORY_POLICY.md\"",
+      "status": "NEW",
+      "timestamp": "2026-07-03T09:21:03.813Z"
+    },
+    {
+      "action": "RESOLVED",
+      "notes": "Code violation no longer detected. Marking finding as closed. (Transitioned from NEW to CLOSED)",
+      "status": "CLOSED",
+      "timestamp": "2026-07-03T09:21:54.375Z"
+    }
+  ],
+  "id": "f_57cc2b06"
+}

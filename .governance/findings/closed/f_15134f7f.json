@@ -1,0 +1,36 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T09:21:04.214Z",
+  "domain": "Architecture Review Board",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 9,
+    "message": "Forbidden local workstation path (file:///) detected.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "6d1b8744c53ff902d3858450c200d2565784c2586e27ecc5c49cfa0d5f52dad6",
+        "id": "6d1b8744c53ff902d3858450c200d2565784c2586e27ecc5c49cfa0d5f52dad6",
+        "line": 9,
+        "message": "Forbidden local workstation path (file:///) detected.",
+        "snippet": "Detects workstation-specific local folder paths (like workstation file:/// paths)."
+      }
+    ],
+    "path": "docs/governance/rules/VAL-DOC-001.md",
+    "snippet": "Detects workstation-specific local folder paths (like workstation file:/// paths)."
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T09:21:04.214Z",
+  "id": "f_15134f7f",
+  "lastDetected": "2026-07-03T09:21:04.214Z",
+  "occurrenceCount": 1,
+  "owner": "Architecture Review Board",
+  "package": "docs",
+  "relationships": [],
+  "rule": "VAL-DOC-001",
+  "ruleVersion": "2.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

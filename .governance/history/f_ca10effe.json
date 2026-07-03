@@ -1,0 +1,11 @@
+{
+  "history": [
+    {
+      "action": "CREATED",
+      "notes": "New grouped finding registered: Duplicate document detected: \"docs/governance/rules/UNCLOSED_MERMAID.md\" (Status: Active) shares 85% similarity with canonical \"docs/governance/rules/INVALID_MERMAID_TYPE.md\" (Status: Active).",
+      "status": "NEW",
+      "timestamp": "2026-07-03T09:21:04.144Z"
+    }
+  ],
+  "id": "f_ca10effe"
+}

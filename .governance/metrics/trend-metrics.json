@@ -130,5 +130,93 @@
     },
     "timestamp": "2026-07-03T09:09:06.814Z",
     "totalFindings": 605
+  },
+  {
+    "averageConfidence": 0.9550808314087722,
+    "averageResolutionTimeMs": 1,
+    "closedFindings": 13,
+    "falsePositiveRate": 0,
+    "newFindings": 853,
+    "regressionCount": 0,
+    "scores": {
+      "accessibility": 0,
+      "architecture": 100,
+      "documentation": 0,
+      "maintainability": 100,
+      "overall": 70,
+      "performance": 100,
+      "security": 100,
+      "technicalDebt": 100,
+      "testing": 100,
+      "uiConsistency": 0
+    },
+    "timestamp": "2026-07-03T09:21:04.743Z",
+    "totalFindings": 866
+  },
+  {
+    "averageConfidence": 0.9550808314087722,
+    "averageResolutionTimeMs": 1,
+    "closedFindings": 39,
+    "falsePositiveRate": 0,
+    "newFindings": 827,
+    "regressionCount": 0,
+    "scores": {
+      "accessibility": 0,
+      "architecture": 100,
+      "documentation": 0,
+      "maintainability": 100,
+      "overall": 70,
+      "performance": 100,
+      "security": 100,
+      "technicalDebt": 100,
+      "testing": 100,
+      "uiConsistency": 0
+    },
+    "timestamp": "2026-07-03T09:21:54.387Z",
+    "totalFindings": 866
+  },
+  {
+    "averageConfidence": 0.9552873563218354,
+    "averageResolutionTimeMs": 40606,
+    "closedFindings": 44,
+    "falsePositiveRate": 0,
+    "newFindings": 826,
+    "regressionCount": 0,
+    "scores": {
+      "accessibility": 0,
+      "architecture": 100,
+      "documentation": 0,
+      "maintainability": 100,
+      "overall": 70,
+      "performance": 100,
+      "security": 100,
+      "technicalDebt": 100,
+      "testing": 100,
+      "uiConsistency": 0
+    },
+    "timestamp": "2026-07-03T09:22:20.768Z",
+    "totalFindings": 870
+  },
+  {
+    "averageConfidence": 0.9552873563218354,
+    "averageResolutionTimeMs": 40606,
+    "closedFindings": 48,
+    "falsePositiveRate": 0,
+    "newFindings": 822,
+    "regressionCount": 0,
+    "scores": {
+      "accessibility": 0,
+      "architecture": 100,
+      "documentation": 0,
+      "maintainability": 100,
+      "overall": 70,
+      "performance": 100,
+      "security": 100,
+      "technicalDebt": 100,
+      "testing": 100,
+      "uiConsistency": 0
+    },
+    "timestamp": "2026-07-03T09:22:47.812Z",
+    "totalFindings": 870
   }
 ]

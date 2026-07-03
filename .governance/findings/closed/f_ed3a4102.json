@@ -1,0 +1,36 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T09:21:03.741Z",
+  "domain": "Documentation Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 75,
+    "message": "Invalid arrow connector \"->\" detected. In flowchart/graph diagrams, use \"-->\" instead.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "178b6074d4cc25c48f0d7b47a14ba8dd3e579504f3d686af5ddea14fe46a360a",
+        "id": "178b6074d4cc25c48f0d7b47a14ba8dd3e579504f3d686af5ddea14fe46a360a",
+        "line": 75,
+        "message": "Invalid arrow connector \"->\" detected. In flowchart/graph diagrams, use \"-->\" instead.",
+        "snippet": "A -> B"
+      }
+    ],
+    "path": "docs/governance/rules/MALFORMED_MERMAID_QUOTES.md",
+    "snippet": "A -> B"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T09:21:03.741Z",
+  "id": "f_ed3a4102",
+  "lastDetected": "2026-07-03T09:21:03.741Z",
+  "occurrenceCount": 1,
+  "owner": "Documentation Team",
+  "package": "docs",
+  "relationships": [],
+  "rule": "Invalid Mermaid Flowchart Connection",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

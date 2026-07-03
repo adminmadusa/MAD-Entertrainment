@@ -1,0 +1,36 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T09:21:03.849Z",
+  "domain": "Architecture Review Board",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 67,
+    "message": "Reference to a file that never existed in the repository: \"docs/governance/governance/REPOSITORY_POLICY.md\"",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "1f6542d3cdd836624c28993869f857af53b951e1e3c790f87c2ec399706001f9",
+        "id": "1f6542d3cdd836624c28993869f857af53b951e1e3c790f87c2ec399706001f9",
+        "line": 67,
+        "message": "Reference to a file that never existed in the repository: \"docs/governance/governance/REPOSITORY_POLICY.md\"",
+        "snippet": "| Proposed | 2026-07-03 | Platform Team | [REPOSITORY_POLICY.md](../governance/REPOSITORY_POLICY.md) |"
+      }
+    ],
+    "path": "docs/governance/rules/MISSING_ADR_INDEX.md",
+    "snippet": "| Proposed | 2026-07-03 | Platform Team | [REPOSITORY_POLICY.md](../governance/REPOSITORY_POLICY.md) |"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T09:21:03.849Z",
+  "id": "f_88a3cedf",
+  "lastDetected": "2026-07-03T09:21:03.849Z",
+  "occurrenceCount": 1,
+  "owner": "Architecture Review Board",
+  "package": "docs",
+  "relationships": [],
+  "rule": "VAL-DOC-003",
+  "ruleVersion": "2.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

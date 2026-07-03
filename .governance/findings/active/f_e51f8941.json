@@ -1,0 +1,33 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T09:21:03.627Z",
+  "domain": "Architecture Review Board",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "message": "Orphaned document: active production file has no incoming links from any documentation entrypoint.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "14539825f1c521ade19b3edc4ad28521ccebf1da82e00af710bfcf1c47d7f455",
+        "id": "14539825f1c521ade19b3edc4ad28521ccebf1da82e00af710bfcf1c47d7f455",
+        "line": 0,
+        "message": "Orphaned document: active production file has no incoming links from any documentation entrypoint."
+      }
+    ],
+    "path": "docs/governance/rules/INVALID_ADR_STATUS.md"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T09:21:03.627Z",
+  "id": "f_e51f8941",
+  "lastDetected": "2026-07-03T09:21:03.627Z",
+  "occurrenceCount": 1,
+  "owner": "Architecture Review Board",
+  "package": "docs",
+  "relationships": [],
+  "rule": "VAL-DOC-007",
+  "ruleVersion": "2.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

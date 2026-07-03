@@ -1,0 +1,11 @@
+{
+  "history": [
+    {
+      "action": "CREATED",
+      "notes": "New grouped finding registered: Duplicate document detected: \"docs/governance/rules/INVALID_MERMAID_CONNECTION.md\" (Status: Active) shares 91% similarity with canonical \"docs/governance/rules/EMPTY_MERMAID.md\" (Status: Active).",
+      "status": "NEW",
+      "timestamp": "2026-07-03T09:21:03.640Z"
+    }
+  ],
+  "id": "f_f30d93e1"
+}

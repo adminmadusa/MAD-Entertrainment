@@ -1,0 +1,33 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T09:21:03.440Z",
+  "domain": "Architecture Review Board",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "message": "Every documentation file is required to have a defined \"Owner\" or \"Authors\" in its metadata block.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "f561fee6efa0aae2c0f3aa1a105197a0641c3d118ec3d5de0e9e465b4f3c6a85",
+        "id": "f561fee6efa0aae2c0f3aa1a105197a0641c3d118ec3d5de0e9e465b4f3c6a85",
+        "line": 0,
+        "message": "Every documentation file is required to have a defined \"Owner\" or \"Authors\" in its metadata block."
+      }
+    ],
+    "path": "docs/governance/rules/ADR_STATUS_MISMATCH.md"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T09:21:03.440Z",
+  "id": "f_1813b4cb",
+  "lastDetected": "2026-07-03T09:21:03.440Z",
+  "occurrenceCount": 1,
+  "owner": "Architecture Review Board",
+  "package": "docs",
+  "relationships": [],
+  "rule": "Missing Document Owner",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

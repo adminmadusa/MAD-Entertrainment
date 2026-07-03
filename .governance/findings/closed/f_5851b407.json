@@ -1,0 +1,36 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T09:22:20.729Z",
+  "domain": "Architecture Review Board",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 70,
+    "message": "Forbidden absolute local filesystem path detected.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "b1b74f5d2c327b5acda82421c873bcee48a938314c79c61a8ecac555c6cfe395",
+        "id": "b1b74f5d2c327b5acda82421c873bcee48a938314c79c61a8ecac555c6cfe395",
+        "line": 70,
+        "message": "Forbidden absolute local filesystem path detected.",
+        "snippet": "[Repository Policy] (file://C:/User/Desktop/REPOSITORY_POLICY.md)"
+      }
+    ],
+    "path": "docs/governance/rules/BROKEN_LINK_TARGET.md",
+    "snippet": "[Repository Policy] (file://C:/User/Desktop/REPOSITORY_POLICY.md)"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T09:22:20.729Z",
+  "id": "f_5851b407",
+  "lastDetected": "2026-07-03T09:22:20.729Z",
+  "occurrenceCount": 1,
+  "owner": "Architecture Review Board",
+  "package": "docs",
+  "relationships": [],
+  "rule": "VAL-DOC-002",
+  "ruleVersion": "2.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}
