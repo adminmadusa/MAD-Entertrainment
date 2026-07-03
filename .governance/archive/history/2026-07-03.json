@@ -1,5 +1,5 @@
 {
-  "activeCount": 591,
+  "activeCount": 593,
   "closedCount": 12,
   "findings": [
     {
@@ -516,6 +516,12 @@
       "id": "f_2627f71e",
       "occurrenceCount": 1,
       "rule": "VAL-UI-003",
+      "status": "NEW"
+    },
+    {
+      "id": "f_268d0962",
+      "occurrenceCount": 1,
+      "rule": "Orphaned Documentation",
       "status": "NEW"
     },
     {
@@ -3255,6 +3261,12 @@
       "status": "NEW"
     },
     {
+      "id": "f_e75ad2b2",
+      "occurrenceCount": 1,
+      "rule": "VAL-DOC-007",
+      "status": "NEW"
+    },
+    {
       "id": "f_e7946bc6",
       "occurrenceCount": 1,
       "rule": "VAL-UI-011",
@@ -3622,5 +3634,5 @@
     }
   ],
   "suppressedCount": 0,
-  "timestamp": "2026-07-03T08:59:47.771Z"
+  "timestamp": "2026-07-03T09:09:06.818Z"
 }

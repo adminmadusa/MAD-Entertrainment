@@ -2586,6 +2586,7 @@
   "docs/governance/DEPENDENCY_POLICY.md",
   "docs/governance/FILE_LIFECYCLE.md",
   "docs/governance/NAMING_CONVENTIONS.md",
+  "docs/governance/REGISTRY.md",
   "docs/governance/REPOSITORY_POLICY.md",
   "docs/governance/REPOSITORY_STRUCTURE.md",
   "docs/governance/WORKSPACE_POLICY.md",
