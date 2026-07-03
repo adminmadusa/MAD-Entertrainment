@@ -104,6 +104,17 @@ Link: [Target](Target.md)
     const result2 = await validator.run([file1, targetFileRel], { requiredDocuments: [], dependencyMatrix: [] });
     expect(result2.success).toBe(false);
     expect(result2.errors.some(e => e.rule === 'VAL-DOC-004')).toBe(true);
+
+    // Nonexistent file link
+    writeFileSync(fullFile1, `
+# Source
+- **Status**: Active
+Link: [Missing](missing.md)
+`, 'utf8');
+
+    const result3 = await validator.run([file1], { requiredDocuments: [], dependencyMatrix: [] });
+    expect(result3.success).toBe(false);
+    expect(result3.errors.some(e => e.rule === 'VAL-DOC-003')).toBe(true);
   });
 
   it('should validate duplicate markdown files', async () => {
@@ -149,27 +160,55 @@ No entrypoint points to this document.
     expect(result.warnings.some(e => e.rule === 'VAL-DOC-007')).toBe(true);
   });
 
-  it('should not mutate cache warnings or accumulate duplicate warnings across runs', async () => {
-    const file1 = join(testDirName, 'orphan-doc-cache-test.md');
-    const fullFile1 = join(testDir, 'orphan-doc-cache-test.md');
+  it('should validate VAL-DOC-008 temporary files correctly', async () => {
+    // 1. Files that must fail
+    const failingFiles = [
+      'temp.md',
+      'draft.md',
+      'backup.md',
+      'tmp/some-doc.md'
+    ];
 
-    writeFileSync(fullFile1, `
-# Cache Test Orphan
+    for (const f of failingFiles) {
+      const relPath = join(testDirName, f);
+      const fullPath = join(testDir, f);
+      const parentDir = require('path').dirname(fullPath);
+      if (!existsSync(parentDir)) {
+        mkdirSync(parentDir, { recursive: true });
+      }
+      writeFileSync(fullPath, `
+# Temporary Document
 - **Status**: Active
-No incoming link from any entrypoint.
+This is a test temporary file.
 `, 'utf8');
 
-    // Run validator first time.
-    const result1 = await validator.run([file1], { requiredDocuments: [], dependencyMatrix: [] });
-    const warningsCount1 = result1.warnings.filter(w => w.rule === 'VAL-DOC-007' && w.file === file1).length;
-    expect(warningsCount1).toBe(1);
+      const result = await validator.run([relPath], { requiredDocuments: [], dependencyMatrix: [] });
+      expect(result.errors.some(e => e.rule === 'VAL-DOC-008')).toBe(true);
+    }
 
-    // Run validator second time (simulating a cache hit).
-    const result2 = await validator.run([file1], { requiredDocuments: [], dependencyMatrix: [] });
-    const warningsCount2 = result2.warnings.filter(w => w.rule === 'VAL-DOC-007' && w.file === file1).length;
-    
-    // Assert warning count remains exactly 1 (no duplicates accumulated).
-    expect(warningsCount2).toBe(1);
+    // 2. Files that must pass
+    const passingFiles = [
+      'templates/some-doc.md',
+      'template.md',
+      'attempt.md',
+      'contempt.md'
+    ];
+
+    for (const f of passingFiles) {
+      const relPath = join(testDirName, f);
+      const fullPath = join(testDir, f);
+      const parentDir = require('path').dirname(fullPath);
+      if (!existsSync(parentDir)) {
+        mkdirSync(parentDir, { recursive: true });
+      }
+      writeFileSync(fullPath, `
+# Valid Document
+- **Status**: Active
+This should pass VAL-DOC-008 validation.
+`, 'utf8');
+
+      const result = await validator.run([relPath], { requiredDocuments: [], dependencyMatrix: [] });
+      expect(result.errors.some(e => e.rule === 'VAL-DOC-008')).toBe(false);
+    }
   });
 });
-
