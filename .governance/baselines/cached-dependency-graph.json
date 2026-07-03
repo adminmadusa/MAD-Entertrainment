@@ -11487,6 +11487,16 @@
       "hash": "6e1d3b5e48cb87e188ec8fa0f4a4733aa62d0839",
       "lastModified": 1783050805903.9753
     },
+    "scripts/governance/validators/adr_validator.test.ts": {
+      "assetReferences": [],
+      "dependencies": [
+        "scripts/governance/validators/adr_validator.ts"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "471e1e326d3b3ec67b4bd89d900b4052bc48c883",
+      "lastModified": 1783071799529.2424
+    },
     "scripts/governance/validators/adr_validator.ts": {
       "assetReferences": [],
       "dependencies": [
@@ -11499,6 +11509,17 @@
       ],
       "hash": "24dffa200767152fdbc05c736be791ffc0341497",
       "lastModified": 1782555245623.9578
+    },
+    "scripts/governance/validators/cross_reference_validator.test.ts": {
+      "assetReferences": [],
+      "dependencies": [
+        "scripts/governance/validators/cross_reference_validator.ts",
+        "scripts/governance/core/types.ts"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "a98db2e316b42164bb078de9bfe052554c0fb40f",
+      "lastModified": 1783071715412.2454
     },
     "scripts/governance/validators/cross_reference_validator.ts": {
       "assetReferences": [],
@@ -11622,6 +11643,16 @@
       "hash": "927141ad5296a46430524a784108d3c3b1855d29",
       "lastModified": 1783050805912.517
     },
+    "scripts/governance/validators/link_validator.test.ts": {
+      "assetReferences": [],
+      "dependencies": [
+        "scripts/governance/validators/link_validator.ts"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "85f46e865582e0e5b876e252de7287b0e3fae88f",
+      "lastModified": 1783071665884.7937
+    },
     "scripts/governance/validators/link_validator.ts": {
       "assetReferences": [],
       "dependencies": [
@@ -11637,6 +11668,16 @@
       "hash": "906cfcbbc9ddd821b7ee22c210eb613c9c53c438",
       "lastModified": 1782555245625.7551
     },
+    "scripts/governance/validators/markdown_validator.test.ts": {
+      "assetReferences": [],
+      "dependencies": [
+        "scripts/governance/validators/markdown_validator.ts"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "7c89eb3184e5661c5174b1965b49c92b753dd9fc",
+      "lastModified": 1783071638588.9714
+    },
     "scripts/governance/validators/markdown_validator.ts": {
       "assetReferences": [],
       "dependencies": [
@@ -11650,6 +11691,16 @@
       "hash": "d69c3f16a121426a8d629e37c5879dc8b0ec1d0d",
       "lastModified": 1782555245626.764
     },
+    "scripts/governance/validators/mermaid_validator.test.ts": {
+      "assetReferences": [],
+      "dependencies": [
+        "scripts/governance/validators/mermaid_validator.ts"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "528d3faaa7ea48b9f84a654d0650b7a8cabda14d",
+      "lastModified": 1783071679751.7324
+    },
     "scripts/governance/validators/mermaid_validator.ts": {
       "assetReferences": [],
       "dependencies": [
@@ -11662,6 +11713,17 @@
       ],
       "hash": "00b5b9b7ea53f3eee0a6fee3eba7e18243fcd4ca",
       "lastModified": 1782555245627.7415
+    },
+    "scripts/governance/validators/repository_health_validator.test.ts": {
+      "assetReferences": [],
+      "dependencies": [
+        "scripts/governance/validators/repository_health_validator.ts",
+        "scripts/governance/core/types.ts"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "095f19fd9aca1579748e5eb8c8b426a230e82114",
+      "lastModified": 1783071829123.1802
     },
     "scripts/governance/validators/repository_health_validator.ts": {
       "assetReferences": [],
@@ -11692,6 +11754,16 @@
       "hash": "5868f7d51d60cfe59a54d5ee35df430ad7a1cfff",
       "lastModified": 1783050805912.6265
     },
+    "scripts/governance/validators/ssot_validator.test.ts": {
+      "assetReferences": [],
+      "dependencies": [
+        "scripts/governance/validators/ssot_validator.ts"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "765df14074135512202a2d066d92512b726d6238",
+      "lastModified": 1783071786452.9905
+    },
     "scripts/governance/validators/ssot_validator.ts": {
       "assetReferences": [],
       "dependencies": [
@@ -11717,6 +11789,19 @@
       ],
       "hash": "40fdc691f5573192200fa7412dfeebfad3d8fb6a",
       "lastModified": 1783050805912.7166
+    },
+    "scripts/governance/validators/ui_validators.test.ts": {
+      "assetReferences": [],
+      "dependencies": [
+        "scripts/governance/validators/ui_design_validator.ts",
+        "scripts/governance/validators/accessibility_validator.ts",
+        "scripts/governance/validators/shared_component_validator.ts",
+        "scripts/governance/rules/registry.ts"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "a42134ae5e248843d652e2c6369d69f15e74b172",
+      "lastModified": 1783071880241.0203
     },
     "tsconfig.base.json": {
       "assetReferences": [],
@@ -11775,6 +11860,6 @@
       "lastModified": 1783050805912.8364
     }
   },
-  "timestamp": "2026-07-03T09:33:11.357Z",
+  "timestamp": "2026-07-03T09:44:53.348Z",
   "version": "1.1.0"
 }
