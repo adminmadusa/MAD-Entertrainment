@@ -1,6 +1,6 @@
 {
-  "activeCount": 855,
-  "closedCount": 55,
+  "activeCount": 854,
+  "closedCount": 56,
   "findings": [
     {
       "id": "f_003b6801",
@@ -2076,7 +2076,7 @@
       "id": "f_65b2bfc8",
       "occurrenceCount": 1,
       "rule": "VAL-ARC-002",
-      "status": "NEW"
+      "status": "CLOSED"
     },
     {
       "id": "f_66059766",
@@ -5464,5 +5464,5 @@
     }
   ],
   "suppressedCount": 0,
-  "timestamp": "2026-07-03T11:03:04.168Z"
+  "timestamp": "2026-07-03T11:12:49.780Z"
 }

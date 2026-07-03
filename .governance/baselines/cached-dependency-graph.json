@@ -3691,6 +3691,36 @@
       "hash": "3667e75c7ef8a8c48294250d08551c852a5c3c27",
       "lastModified": 1781600354110.7266
     },
+    "apps/server/src/lib/razorpay/refund.client.test.ts": {
+      "assetReferences": [],
+      "dependencies": [
+        "packages/shared/src/index.ts",
+        "apps/server/src/lib/razorpay/refund.client.ts",
+        "apps/server/src/config/env.ts",
+        "apps/server/src/middleware/error.middleware.ts"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "004c65c7496109e2d766efb53db4d3daaf22479a",
+      "lastModified": 1783077139297.214
+    },
+    "apps/server/src/lib/razorpay/refund.client.ts": {
+      "assetReferences": [],
+      "dependencies": [
+        "packages/shared/src/index.ts",
+        "apps/server/src/config/env.ts",
+        "apps/server/src/middleware/error.middleware.ts",
+        "apps/server/src/utils/logger.ts"
+      ],
+      "dynamicImports": [],
+      "exports": [
+        "RazorpayRefundRequest",
+        "RazorpayRefundResponse",
+        "createRazorpayRefund"
+      ],
+      "hash": "0d6341c39d991f9156ba6675748f5bdd9cc063be",
+      "lastModified": 1783077048061.5615
+    },
     "apps/server/src/middleware/auth.middleware.ts": {
       "assetReferences": [],
       "dependencies": [
@@ -5092,15 +5122,17 @@
         "apps/server/src/services/admin/booking.service.ts",
         "apps/server/src/utils/transaction.ts",
         "packages/shared/src/index.ts",
+        "apps/server/src/middleware/error.middleware.ts",
         "apps/server/src/services/notification.service.ts",
         "apps/server/src/models/notification.schema.ts",
         "apps/server/src/services/queue.service.ts",
-        "apps/server/src/utils/audit.ts"
+        "apps/server/src/utils/audit.ts",
+        "apps/server/src/lib/razorpay/refund.client.ts"
       ],
       "dynamicImports": [],
       "exports": [],
-      "hash": "6a0288102fc39796debbc0dffd8fff63bed7a10e",
-      "lastModified": 1782214932144.5837
+      "hash": "80a61e581c02873f26d2c598013712cd2b0242fe",
+      "lastModified": 1783077126730.2314
     },
     "apps/server/src/services/admin/refund.service.ts": {
       "assetReferences": [],
@@ -5122,7 +5154,8 @@
         "apps/server/src/config/stripe.ts",
         "apps/server/src/config/razorpay.ts",
         "apps/server/src/utils/audit.ts",
-        "apps/server/src/config/env.ts"
+        "apps/server/src/config/env.ts",
+        "apps/server/src/lib/razorpay/refund.client.ts"
       ],
       "dynamicImports": [],
       "exports": [
@@ -5130,8 +5163,8 @@
         "getRefunds",
         "processRefund"
       ],
-      "hash": "713b0b7151c1d5c80b1fd655d9643144aab594dc",
-      "lastModified": 1782214932150.5217
+      "hash": "7f68cda4f317876787a3d5c586c306e6cb7ff553",
+      "lastModified": 1783077072951.7554
     },
     "apps/server/src/services/admin/team.service.test.ts": {
       "assetReferences": [],
@@ -11992,6 +12025,6 @@
       "lastModified": 1783050805912.8364
     }
   },
-  "timestamp": "2026-07-03T11:02:19.604Z",
+  "timestamp": "2026-07-03T11:12:36.481Z",
   "version": "1.1.0"
 }
