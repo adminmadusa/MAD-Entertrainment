@@ -1,6 +1,6 @@
 'use client';
 
-import { QUERY_KEYS } from '@mad/shared';
+import { QUERY_KEYS, EventStatus } from '@mad/shared';
 import { Event as EventData } from '@mad/types';
 import { useQuery } from '@tanstack/react-query';
 import { useState, useEffect, useRef, type ReactNode } from 'react';
@@ -17,6 +17,7 @@ import type { EventBookingFlowHandle } from './components/EventBookingFlow';
 import { EventGallery } from './components/EventGallery';
 import { EventOverview } from './components/EventOverview';
 import { EventStickyCTA } from './components/EventStickyCTA';
+import { EventMemoriesRecap } from './components/EventMemoriesRecap';
 
 interface EventDetailClientProps {
   /** Slug extracted by the server page — avoids useParams() call */
@@ -289,13 +290,20 @@ export default function EventDetailClient({ slug, initialEvent }: EventDetailCli
               </span>
             </div>
 
+            {event.status === EventStatus.COMPLETED && event.memories && (
+              <EventMemoriesRecap memories={event.memories} />
+            )}
+
             <EventOverview
               description={event.description}
               organizerName={event.organizerName}
               category={event.category}
             />
 
-            <EventGallery images={event.galleryImages} />
+            {/* Only render promotional event gallery if memories are not published */}
+            {!(event.status === EventStatus.COMPLETED && event.memories) && (
+              <EventGallery images={event.galleryImages} />
+            )}
 
             {/* Good to know + Refund policy */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -403,6 +411,7 @@ export default function EventDetailClient({ slug, initialEvent }: EventDetailCli
             isFavorited={isFavorited}
             onGetTickets={() => bookingFlowRef.current?.openBooking()}
             onToggleFavorite={() => setIsFavorited(!isFavorited)}
+            isCompleted={event.status === EventStatus.COMPLETED}
           />
 
         </div>

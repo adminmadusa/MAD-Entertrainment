@@ -1,4 +1,4 @@
-import { EventStatus, EVENT_STATUS_TRANSITIONS, type EventLifecycleStatus } from '@mad/shared';
+import { EventStatus, EVENT_STATUS_TRANSITIONS, type EventLifecycleStatus, EventMemoryPublicationState } from '@mad/shared';
 import type { FilterQuery } from 'mongoose';
 
 import { Event, IEvent } from '../../models/event.schema';
@@ -9,6 +9,7 @@ import { CacheService } from '../cache.service';
 import { Booking } from '../../models/booking.schema';
 import { AppError } from '../../middleware/error.middleware';
 import { safeDeleteImages } from './media-cleanup.service';
+import { auditLog } from '../../utils/audit';
 
 export const validateEventImagesPayload = (
   bannerImage?: { publicId?: string; hash?: string },
@@ -254,6 +255,25 @@ export const updateEvent = async (id: string, data: Partial<IEvent>): Promise<Ev
     data.isSoldOut = data.totalCapacity > 0 && (existing.soldCount || 0) >= data.totalCapacity;
   }
 
+  // ─── Event Memories: publication state transition guard ────────────────────
+  if (data.memories !== undefined && data.memories !== null) {
+    const incomingState = data.memories.publicationState;
+    const existingState = existing.memories?.publicationState;
+
+    // publishedAt records the FIRST time memories were published.
+    // It is preserved on subsequent publish operations (e.g. HIDDEN → PUBLISHED)
+    // so that the public-facing "published since" date is stable.
+    if (
+      incomingState === EventMemoryPublicationState.PUBLISHED &&
+      existingState !== EventMemoryPublicationState.PUBLISHED
+    ) {
+      // Preserve a prior publishedAt if it exists (re-publication after hide);
+      // otherwise stamp now for the first time.
+      const preservedPublishedAt = existing.memories?.publishedAt ?? new Date();
+      data.memories = { ...data.memories, publishedAt: preservedPublishedAt };
+    }
+  }
+
   const oldBannerId = existing.bannerImage?.publicId;
   const newBannerId = data.bannerImage?.publicId;
   const bannerReplaced = newBannerId && oldBannerId && oldBannerId !== newBannerId;
@@ -265,6 +285,13 @@ export const updateEvent = async (id: string, data: Partial<IEvent>): Promise<Ev
   const oldGalleryIds = existing.galleryImages?.map((img) => img.publicId) || [];
   const newGalleryIds = data.galleryImages?.map((img) => img.publicId) || [];
   const removedGalleryIds = oldGalleryIds.filter((id) => id && !newGalleryIds.includes(id));
+
+  // ─── Event Memories: gallery image cleanup ─────────────────────────────────
+  const oldMemoryGalleryIds = existing.memories?.gallery?.map((img) => img.publicId) || [];
+  const newMemoryGalleryIds = data.memories?.gallery?.map((img) => img.publicId) || [];
+  const removedMemoryGalleryIds = data.memories !== undefined
+    ? oldMemoryGalleryIds.filter((pid) => pid && !newMemoryGalleryIds.includes(pid))
+    : [];
 
   const { eventVersion: _eventVersion, ...updateData } = data;
   const updated = await Event.findOneAndUpdate(
@@ -281,9 +308,39 @@ export const updateEvent = async (id: string, data: Partial<IEvent>): Promise<Ev
   if (bannerReplaced && oldBannerId) publicIdsToDelete.push(oldBannerId);
   if (posterReplaced && oldPosterId) publicIdsToDelete.push(oldPosterId);
   if (removedGalleryIds.length > 0) publicIdsToDelete.push(...removedGalleryIds);
+  if (removedMemoryGalleryIds.length > 0) publicIdsToDelete.push(...removedMemoryGalleryIds);
 
   if (publicIdsToDelete.length > 0) {
     safeDeleteImages(publicIdsToDelete, 'Event', 'update');
+  }
+
+  // ─── Event Memories: audit log (transition-aware) ─────────────────────────
+  if (data.memories !== undefined) {
+    const incomingState = data.memories?.publicationState;
+    const existingState = existing.memories?.publicationState;
+
+    let auditAction: string;
+    if (incomingState === EventMemoryPublicationState.PUBLISHED && existingState !== EventMemoryPublicationState.PUBLISHED) {
+      auditAction = 'event.memories.published';
+    } else if (incomingState === EventMemoryPublicationState.HIDDEN && existingState === EventMemoryPublicationState.PUBLISHED) {
+      auditAction = 'event.memories.hidden';
+    } else if (data.memories === null) {
+      auditAction = 'event.memories.cleared';
+    } else {
+      auditAction = 'event.memories.updated';
+    }
+
+    auditLog({
+      action: auditAction,
+      status: 'success',
+      metadata: {
+        eventId: id,
+        previousState: existingState,
+        publicationState: updated.memories?.publicationState,
+        galleryCount: updated.memories?.gallery?.length ?? 0,
+      },
+      description: `Event memories ${auditAction.split('.').pop()} for event ${id}`,
+    });
   }
 
   return {

@@ -1,4 +1,4 @@
-import { EventCategory, BookingMode, EventStatus, TicketTier } from '@mad/shared';
+import { EventCategory, BookingMode, EventStatus, TicketTier, EventMemoryPublicationState } from '@mad/shared';
 import { Schema, model, Document, Types } from 'mongoose';
 
 const cloudinaryImageSchema = new Schema(
@@ -141,7 +141,46 @@ export interface IEvent extends Document {
   highlights?: string[];
   refundPolicy?: string;
   organizerName?: string;
+  memories?: {
+    publicationState: EventMemoryPublicationState;
+    heading?: string;
+    thankYouMessage?: string;
+    highlights?: string[];
+    gallery: {
+      url: string;
+      publicId: string;
+      hash?: string;
+      order: number;
+    }[];
+    publishedAt?: Date;
+  } | null;
 }
+
+const eventMemorySchema = new Schema(
+  {
+    publicationState: {
+      type: String,
+      enum: Object.values(EventMemoryPublicationState),
+      default: EventMemoryPublicationState.DRAFT,
+    },
+    heading: { type: String, maxlength: 200, trim: true },
+    thankYouMessage: { type: String, maxlength: 2000, trim: true },
+    highlights: { type: [String], default: [] },
+    gallery: {
+      type: [
+        {
+          url: { type: String, required: true },
+          publicId: { type: String, required: true },
+          hash: { type: String },
+          order: { type: Number, default: 0 },
+        },
+      ],
+      default: [],
+    },
+    publishedAt: Date,
+  },
+  { _id: false }
+);
 
 const eventSchema = new Schema<IEvent>(
   {
@@ -206,6 +245,7 @@ const eventSchema = new Schema<IEvent>(
     highlights: [String],
     refundPolicy: { type: String, maxlength: 1000 },
     organizerName: { type: String, maxlength: 100 },
+    memories: { type: eventMemorySchema, default: null },
   },
   {
     timestamps: true,
