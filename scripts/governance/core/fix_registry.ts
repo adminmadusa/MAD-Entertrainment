@@ -2,6 +2,12 @@ import { Fixer } from './fix_types';
 import { MalformedAtxHeadingFixer } from './fixers/malformed_atx_heading_fixer';
 import { FilenameCasingFixer } from './fixers/filename_casing_fixer';
 import { WorkstationPathFixer } from './fixers/workstation_path_fixer';
+import { TrailingWhitespaceFixer } from './fixers/trailing_whitespace_fixer';
+import { EofNewlineFixer } from './fixers/eof_newline_fixer';
+import { BlankLineFixer } from './fixers/blank_line_fixer';
+import { DuplicateImportFixer } from './fixers/duplicate_import_fixer';
+import { ImportOrderFixer } from './fixers/import_order_fixer';
+import { TypeImportFixer } from './fixers/type_import_fixer';
 
 export class FixRegistry {
   private static fixers = new Map<string, Fixer>();
@@ -10,6 +16,12 @@ export class FixRegistry {
     this.register(new MalformedAtxHeadingFixer());
     this.register(new FilenameCasingFixer());
     this.register(new WorkstationPathFixer());
+    this.register(new TrailingWhitespaceFixer());
+    this.register(new EofNewlineFixer());
+    this.register(new BlankLineFixer());
+    this.register(new DuplicateImportFixer());
+    this.register(new ImportOrderFixer());
+    this.register(new TypeImportFixer());
   }
 
   public static register(fixer: Fixer) {
