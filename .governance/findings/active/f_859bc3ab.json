@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 2,
+  "id": "f_859bc3ab",
+  "rule": "VAL-UI-005",
+  "ruleVersion": "1.0.0",
+  "engineVersion": "1.0.0",
+  "domain": "UI UX Guild",
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "feature": "button",
+  "status": "NEW",
+  "confidence": 0.85,
+  "relationships": [],
+  "evidence": {
+    "path": "apps/admin/src/components/ticket-profiles/TicketTierCard.tsx",
+    "construct": "button",
+    "snippet": "<button",
+    "line": 33,
+    "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
+    "occurrences": [
+      {
+        "id": "ccb40cfbce6fb0f23e9e01bf365d189e3667b19895eaff387bec41fd382f0555",
+        "line": 33,
+        "column": 0,
+        "construct": "button",
+        "snippet": "<button",
+        "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
+        "fingerprint": "ccb40cfbce6fb0f23e9e01bf365d189e3667b19895eaff387bec41fd382f0555"
+      },
+      {
+        "id": "283c3fe7bd7e73a0b5045ba7060216fc7723e573144f952bc48010d368f1ac80",
+        "line": 33,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "<button",
+        "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
+        "fingerprint": "283c3fe7bd7e73a0b5045ba7060216fc7723e573144f952bc48010d368f1ac80"
+      }
+    ]
+  },
+  "createdDate": "2026-06-29T08:10:44.802Z",
+  "firstDetected": "2026-06-29T08:10:44.802Z",
+  "lastDetected": "2026-06-30T15:36:27.232Z",
+  "occurrenceCount": 2
+}

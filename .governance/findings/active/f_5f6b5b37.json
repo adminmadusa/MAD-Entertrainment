@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 2,
+  "id": "f_5f6b5b37",
+  "rule": "VAL-UI-010",
+  "ruleVersion": "1.0.0",
+  "engineVersion": "1.0.0",
+  "domain": "UI UX Guild",
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "feature": "UIElement",
+  "status": "NEW",
+  "confidence": 0.9,
+  "relationships": [],
+  "evidence": {
+    "path": "apps/admin/src/app/error.tsx",
+    "construct": "UIElement",
+    "snippet": "<button",
+    "line": 12,
+    "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
+    "occurrences": [
+      {
+        "id": "0a4c455ce7bb6e6e879c93e70dc190125a7235d88d52c00447df3b455272c2e4",
+        "line": 12,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "<button",
+        "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
+        "fingerprint": "0a4c455ce7bb6e6e879c93e70dc190125a7235d88d52c00447df3b455272c2e4"
+      }
+    ]
+  },
+  "createdDate": "2026-06-30T15:36:27.142Z",
+  "firstDetected": "2026-06-30T15:36:27.142Z",
+  "lastDetected": "2026-06-30T15:36:27.142Z",
+  "occurrenceCount": 1
+}

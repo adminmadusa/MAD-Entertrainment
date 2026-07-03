@@ -30,11 +30,11 @@ Our objective is to verify that these mechanisms work securely and correctly acr
   3. The `Booking` status is changed.
   4. Querying the booking on the client side or checking the database reveals the booking status is `'cancelled'` instead of `'refunded'`. The UI displays *"This booking was cancelled"* rather than *"Payment has been refunded."*
 * **Root Cause**:
-  In [refund.service.ts](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/services/admin/refund.service.ts#L79), the approval flow calls the administrative helper `cancelBooking` to handle event capacity release and seat unlocked states:
+  In [refund.service.ts](../../../apps/server/src/services/admin/refund.service.ts#L79), the approval flow calls the administrative helper `cancelBooking` to handle event capacity release and seat unlocked states:
   ```typescript
   await cancelBooking(updated.bookingId.toString(), adminNotes || 'Admin Refund Processed', session);
   ```
-  Inside [booking.service.ts](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/services/admin/booking.service.ts#L214), `cancelBooking` sets the booking status unconditionally to `BookingStatus.CANCELLED`:
+  Inside [booking.service.ts](../../../apps/server/src/services/admin/booking.service.ts#L214), `cancelBooking` sets the booking status unconditionally to `BookingStatus.CANCELLED`:
   ```typescript
   booking.status = BookingStatus.CANCELLED;
   ```
@@ -53,7 +53,7 @@ Our objective is to verify that these mechanisms work securely and correctly acr
   4. Click the **Lookup** button.
   5. **Observation**: Nothing happens. No API request is dispatched, no spinner appears, and no error message is displayed. The page remains completely static and unresponsive.
 * **Root Cause**:
-  In [page.tsx](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/app/tickets/page.tsx#L156), the React Query definition for the single booking lookup has the following query enablement guard:
+  In [page.tsx](../../../apps/web/src/app/tickets/page.tsx#L156), the React Query definition for the single booking lookup has the following query enablement guard:
   ```typescript
   enabled: !!queryRef && (isAuthenticated || !!singleBookingSessionToken),
   ```
@@ -70,7 +70,7 @@ Our objective is to verify that these mechanisms work securely and correctly acr
   2. Navigate directly to `/tickets`.
   3. **Observation**: Instead of being greeted with the **Complete Your Profile** form, the user is presented with the generic email input screen asking them to request an OTP code, even though they are already logged in.
 * **Root Cause**:
-  In [page.tsx](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/app/tickets/page.tsx#L142-L145), the redirection effect only transitions the user to the portal if they do not require onboarding:
+  In [page.tsx](../../../apps/web/src/app/tickets/page.tsx#L142-L145), the redirection effect only transitions the user to the portal if they do not require onboarding:
   ```typescript
   useEffect(() => {
     if (isAuthenticated && !isAuthLoading && !onboardingRequired) {
@@ -79,7 +79,7 @@ Our objective is to verify that these mechanisms work securely and correctly acr
   }, [isAuthenticated, isAuthLoading, onboardingRequired]);
   ```
   Since `onboardingRequired` is `true`, `step` remains `'email'` and `shouldShowAuthForm` becomes `true`, displaying the `AuthForm`. 
-  Inside [AuthForm.tsx](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/components/auth/AuthForm.tsx#L142), the initial state of the form's active step is hardcoded to `'request'`:
+  Inside [AuthForm.tsx](../../../apps/web/src/components/auth/AuthForm.tsx#L142), the initial state of the form's active step is hardcoded to `'request'`:
   ```typescript
   const [step, setStep] = useState<'request' | 'verify' | 'onboard'>('request');
   ```
@@ -93,8 +93,8 @@ Our objective is to verify that these mechanisms work securely and correctly acr
 
 ### 1. Case-Insensitive Email Matching Verification
 We confirmed that case insensitivity is enforced at multiple layers:
-* **Database Schema**: The `guestEmail` field in [booking.schema.ts](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/models/booking.schema.ts#L66) and the `email` field in [user.schema.ts](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/models/user.schema.ts#L19) use the Mongoose `lowercase: true` option. Any values saved are converted to lower-case.
-* **Authentication Services**: Email arguments in [auth.service.ts](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/services/public/auth.service.ts#L39) are systematically normalized using `.trim().toLowerCase()`.
+* **Database Schema**: The `guestEmail` field in [booking.schema.ts](../../../apps/server/src/models/booking.schema.ts#L66) and the `email` field in [user.schema.ts](../../../apps/server/src/models/user.schema.ts#L19) use the Mongoose `lowercase: true` option. Any values saved are converted to lower-case.
+* **Authentication Services**: Email arguments in [auth.service.ts](../../../apps/server/src/services/public/auth.service.ts#L39) are systematically normalized using `.trim().toLowerCase()`.
 * **Account Linking**: The query in `linkBookingsToUser` uses the normalized lower-case email address to link guest bookings to user accounts, ensuring cases such as `JOHN@GMAIL.COM` and `john@gmail.com` resolve to the same user.
 
 ### 2. Multi-booking Retrieval Verification

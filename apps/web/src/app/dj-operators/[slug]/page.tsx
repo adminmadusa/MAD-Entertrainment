@@ -1,6 +1,7 @@
 import { Metadata, ResolvingMetadata } from 'next';
 
-import { publicGetDJBySlug } from '@/lib/api/public.service';
+import { getCachedDJ } from '@/utils/cached-dj';
+import { buildBreadcrumbJsonLd, SITE_URL } from '@/utils/seo';
 
 import DJDetailClient from './DjDetailClient';
 
@@ -15,7 +16,7 @@ export async function generateMetadata(
   const { slug } = await params;
 
   try {
-    const dj = await publicGetDJBySlug(slug);
+    const dj = await getCachedDJ(slug);
 
     if (!dj) {
       return {
@@ -32,7 +33,7 @@ export async function generateMetadata(
       openGraph: {
         title: dj.name,
         description: dj.bio?.substring(0, 160),
-        url: `https://madentertainment.in/dj-operators/${slug}`,
+        url: `${SITE_URL}/dj-operators/${slug}`,
         siteName: 'MAD Entertainment',
         images: bannerUrl ? [{ url: bannerUrl, width: 800, height: 800 }] : previousImages,
         locale: 'en_IN',
@@ -46,6 +47,33 @@ export async function generateMetadata(
   }
 }
 
-export default function DJPage() {
-  return <DJDetailClient />;
+export default async function DJPage({ params }: Props) {
+  const { slug } = await params;
+  let dj: Awaited<ReturnType<typeof getCachedDJ>> | undefined;
+  try {
+    dj = await getCachedDJ(slug);
+  } catch {
+    // Swallow — client component will re-fetch if needed
+  }
+
+  return (
+    <>
+      {dj && (
+        <script
+          type="application/ld+json"
+          // eslint-disable-next-line react/no-danger
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(
+              buildBreadcrumbJsonLd([
+                { name: 'Home', url: SITE_URL },
+                { name: 'DJs', url: `${SITE_URL}/dj-operators` },
+                { name: dj.name, url: `${SITE_URL}/dj-operators/${slug}` },
+              ])
+            ),
+          }}
+        />
+      )}
+      <DJDetailClient slug={slug} initialDJ={dj ?? undefined} />
+    </>
+  );
 }

@@ -171,7 +171,7 @@ describe('Analytics Controller Tests', () => {
   describe('getAttendanceSummary', () => {
     it('should handle "no sales" safely and return 0% rates', async () => {
       vi.mocked(Event.countDocuments).mockResolvedValueOnce(3);
-      vi.mocked(Ticket.aggregate).mockResolvedValueOnce([]);
+      vi.mocked(Booking.aggregate).mockResolvedValueOnce([]);
 
       const req = mockRequest();
       const res = mockResponse();
@@ -194,7 +194,7 @@ describe('Analytics Controller Tests', () => {
 
     it('should calculate correct metrics when there are sales but "no scans" (100% no-shows)', async () => {
       vi.mocked(Event.countDocuments).mockResolvedValueOnce(5);
-      vi.mocked(Ticket.aggregate).mockResolvedValueOnce([{ _id: null, totalSold: 200, totalCheckedIn: 0 }]);
+      vi.mocked(Booking.aggregate).mockResolvedValueOnce([{ _id: null, totalSold: 200, totalCheckedIn: 0 }]);
 
       const req = mockRequest();
       const res = mockResponse();
@@ -217,7 +217,7 @@ describe('Analytics Controller Tests', () => {
 
     it('should compute partial attendance metrics perfectly', async () => {
       vi.mocked(Event.countDocuments).mockResolvedValueOnce(5);
-      vi.mocked(Ticket.aggregate).mockResolvedValueOnce([{ _id: null, totalSold: 200, totalCheckedIn: 80 }]);
+      vi.mocked(Booking.aggregate).mockResolvedValueOnce([{ _id: null, totalSold: 200, totalCheckedIn: 80 }]);
 
       const req = mockRequest();
       const res = mockResponse();
@@ -240,7 +240,7 @@ describe('Analytics Controller Tests', () => {
 
     it('should compute full attendance metrics perfectly', async () => {
       vi.mocked(Event.countDocuments).mockResolvedValueOnce(5);
-      vi.mocked(Ticket.aggregate).mockResolvedValueOnce([{ _id: null, totalSold: 250, totalCheckedIn: 250 }]);
+      vi.mocked(Booking.aggregate).mockResolvedValueOnce([{ _id: null, totalSold: 250, totalCheckedIn: 250 }]);
 
       const req = mockRequest();
       const res = mockResponse();

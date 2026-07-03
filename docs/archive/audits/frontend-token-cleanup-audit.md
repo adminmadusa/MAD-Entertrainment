@@ -14,7 +14,7 @@ The goal of this audit is to identify all frontend token query extraction, URL t
 ---
 
 ## PART 1 — LOGIN PAGE AUDIT
-* **File Path:** [login/page.tsx](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/app/(auth)/login/page.tsx)
+* **File Path:** [login/page.tsx](../../../apps/web/src/app/(auth)/login/page.tsx)
 
 ### 1. Code Identification
 * **Token Query Extraction & URL Parsing:**
@@ -43,7 +43,7 @@ The goal of this audit is to identify all frontend token query extraction, URL t
 ---
 
 ## PART 2 — AUTHFORM AUDIT
-* **File Path:** [AuthForm.tsx](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/components/auth/AuthForm.tsx)
+* **File Path:** [AuthForm.tsx](../../../apps/web/src/components/auth/AuthForm.tsx)
 
 ### 1. Code Identification
 * **initialToken Prop:**
@@ -95,8 +95,8 @@ The goal of this audit is to identify all frontend token query extraction, URL t
 
 ## PART 3 — API CLIENT AUDIT
 * **File Paths:**
-  * [public.service.ts](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/lib/api/public.service.ts)
-  * [auth.ts](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/types/auth.ts)
+  * [public.service.ts](../../../apps/web/src/lib/api/public.service.ts)
+  * [auth.ts](../../../apps/web/src/types/auth.ts)
 
 ### 1. Code Identification
 * **VerifyMagicLinkOrOTPPayload:**
@@ -148,7 +148,7 @@ The goal of this audit is to identify all frontend token query extraction, URL t
 ### 1. Exact Files and Changes
 
 #### A. Login Page Simplification
-*File: [login/page.tsx](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/app/(auth)/login/page.tsx)*
+*File: [login/page.tsx](../../../apps/web/src/app/(auth)/login/page.tsx)*
 * Remove `useSearchParams` import and query parameter parsing.
 * Remove `initialToken` prop from the `<AuthForm>` invocation.
 * **Line-by-line Diff:**
@@ -169,7 +169,7 @@ The goal of this audit is to identify all frontend token query extraction, URL t
   ```
 
 #### B. AuthForm Cleanup
-*File: [AuthForm.tsx](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/components/auth/AuthForm.tsx)*
+*File: [AuthForm.tsx](../../../apps/web/src/components/auth/AuthForm.tsx)*
 * Remove `initialToken` parameter from component signature, destructured props, and interface definition.
 * Remove `initialToken` `useEffect` auto-trigger block.
 * Simplify `verifyMutation` payload composition to only pass `otp` and `email`.
@@ -210,7 +210,7 @@ The goal of this audit is to identify all frontend token query extraction, URL t
   ```
 
 #### C. Type Simplification
-*File: [auth.ts](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/types/auth.ts)*
+*File: [auth.ts](../../../apps/web/src/types/auth.ts)*
 * Restrict `VerifyMagicLinkOrOTPPayload` to strictly enforce OTP-only verification fields.
 * **Line-by-line Diff:**
   ```diff

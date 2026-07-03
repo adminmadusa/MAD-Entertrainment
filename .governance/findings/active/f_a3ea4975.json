@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 2,
+  "id": "f_a3ea4975",
+  "rule": "VAL-UI-010",
+  "ruleVersion": "1.0.0",
+  "engineVersion": "1.0.0",
+  "domain": "UI UX Guild",
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "feature": "UIElement",
+  "status": "NEW",
+  "confidence": 0.9,
+  "relationships": [],
+  "evidence": {
+    "path": "apps/web/src/components/layout/UserDropdown.tsx",
+    "construct": "UIElement",
+    "snippet": "<button",
+    "line": 57,
+    "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
+    "occurrences": [
+      {
+        "id": "09fdce1d91e74c789e822fea46cf0e55e91d13ceb6c87dc2a9d1a7c6cec85b76",
+        "line": 57,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "<button",
+        "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
+        "fingerprint": "09fdce1d91e74c789e822fea46cf0e55e91d13ceb6c87dc2a9d1a7c6cec85b76"
+      },
+      {
+        "id": "09fdce1d91e74c789e822fea46cf0e55e91d13ceb6c87dc2a9d1a7c6cec85b76",
+        "line": 69,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "<button",
+        "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
+        "fingerprint": "09fdce1d91e74c789e822fea46cf0e55e91d13ceb6c87dc2a9d1a7c6cec85b76"
+      },
+      {
+        "id": "09fdce1d91e74c789e822fea46cf0e55e91d13ceb6c87dc2a9d1a7c6cec85b76",
+        "line": 118,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "<button",
+        "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
+        "fingerprint": "09fdce1d91e74c789e822fea46cf0e55e91d13ceb6c87dc2a9d1a7c6cec85b76"
+      }
+    ]
+  },
+  "createdDate": "2026-06-30T15:36:27.287Z",
+  "firstDetected": "2026-06-30T15:36:27.287Z",
+  "lastDetected": "2026-06-30T15:36:27.288Z",
+  "occurrenceCount": 3
+}

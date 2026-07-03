@@ -7,15 +7,15 @@
 - **Review Cycle**: Quarterly
 - **Last Updated**: 2026-06-25
 - **Related Documents:**
-  - [README.md](file:///Users/admin/Desktop/MAD%20Entertrainment/README.md)
-  - [ARCHITECTURE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/ARCHITECTURE.md)
-  - [DEPLOYMENT_MAP.md](file:///Users/admin/Desktop/MAD%20Entertrainment/DEPLOYMENT_MAP.md)
-  - [API_CONTRACTS.md](file:///Users/admin/Desktop/MAD%20Entertrainment/API_CONTRACTS.md)
-  - [RUNBOOK.md](file:///Users/admin/Desktop/MAD%20Entertrainment/RUNBOOK.md)
-  - [AGENTS.MD](file:///Users/admin/Desktop/MAD%20Entertrainment/AGENTS.MD)
-  - [TESTING.md](file:///Users/admin/Desktop/MAD%20Entertrainment/TESTING.md)
-  - [Architecture Decisions Index](file:///Users/admin/Desktop/MAD%20Entertrainment/docs/decisions/README.md)
-  - [CHANGELOG.md](file:///Users/admin/Desktop/MAD%20Entertrainment/CHANGELOG.md)
+  - [README.md](README.md)
+  - [ARCHITECTURE.md](ARCHITECTURE.md)
+  - [DEPLOYMENT_MAP.md](DEPLOYMENT_MAP.md)
+  - [API_CONTRACTS.md](API_CONTRACTS.md)
+  - [RUNBOOK.md](RUNBOOK.md)
+  - [AGENTS.MD](AGENTS.MD)
+  - [TESTING.md](TESTING.md)
+  - [Architecture Decisions Index](docs/decisions/README.md)
+  - [CHANGELOG.md](CHANGELOG.md)
 - **Supersedes**: None (Initial Release)
 
 ---
@@ -56,14 +56,14 @@ graph TD
 
 | Document | Primary Focus | Role in Hierarchy |
 | :--- | :--- | :--- |
-| [README.md](file:///Users/admin/Desktop/MAD%20Entertrainment/README.md) | Entry point & Quickstart | Navigational directory for the monorepo workspace. |
-| [REPOSITORY_GOVERNANCE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/REPOSITORY_GOVERNANCE.md) | Governance & Branching policies | Single Source of Truth for documentation, PR rules, and change policy. |
-| [ARCHITECTURE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/ARCHITECTURE.md) | Module boundaries & Code standards | Canonical system design, folder structure, and code design standards. |
-| [DEPLOYMENT_MAP.md](file:///Users/admin/Desktop/MAD%20Entertrainment/DEPLOYMENT_MAP.md) | Topology & Environments | Canonical map of infrastructure, CI/CD, and environment config. |
-| [API_CONTRACTS.md](file:///Users/admin/Desktop/MAD%20Entertrainment/API_CONTRACTS.md) | Endpoint definitions & validation | Authority on request/response schemas, errors, and authentication. |
-| [docs/decisions/](file:///Users/admin/Desktop/MAD%20Entertrainment/docs/decisions/README.md) | Decision records (ADRs) | Rationale behind historical technical decisions (the "Why"). |
-| [RUNBOOK.md](file:///Users/admin/Desktop/MAD%20Entertrainment/RUNBOOK.md) | Operational guidelines & scripts | Incident response, backup, and manual testing procedures. |
-| [AGENTS.MD](file:///Users/admin/Desktop/MAD%20Entertrainment/AGENTS.MD) | Operational developer instructions | Instructions for human and AI agents implementing the governance policies. |
+| [README.md](README.md) | Entry point & Quickstart | Navigational directory for the monorepo workspace. |
+| [REPOSITORY_GOVERNANCE.md](REPOSITORY_GOVERNANCE.md) | Governance & Branching policies | Single Source of Truth for documentation, PR rules, and change policy. |
+| [ARCHITECTURE.md](ARCHITECTURE.md) | Module boundaries & Code standards | Canonical system design, folder structure, and code design standards. |
+| [DEPLOYMENT_MAP.md](DEPLOYMENT_MAP.md) | Topology & Environments | Canonical map of infrastructure, CI/CD, and environment config. |
+| [API_CONTRACTS.md](API_CONTRACTS.md) | Endpoint definitions & validation | Authority on request/response schemas, errors, and authentication. |
+| [docs/decisions/](docs/decisions/README.md) | Decision records (ADRs) | Rationale behind historical technical decisions (the "Why"). |
+| [RUNBOOK.md](RUNBOOK.md) | Operational guidelines & scripts | Incident response, backup, and manual testing procedures. |
+| [AGENTS.MD](AGENTS.MD) | Operational developer instructions | Instructions for human and AI agents implementing the governance policies. |
 
 ### Document Dependency Matrix
 
@@ -73,11 +73,11 @@ A dependency matrix helps contributors understand which documents should be revi
 | :--- | :--- | :--- |
 | **README.md** | None | Root directory navigation entry point. |
 | **REPOSITORY_GOVERNANCE.md**| None | Canonical repository governance policies. |
-| **ARCHITECTURE.md** | [REPOSITORY_GOVERNANCE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/REPOSITORY_GOVERNANCE.md) | Package boundaries and coding standards inherit review matrices. |
-| **DEPLOYMENT_MAP.md** | [ARCHITECTURE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/ARCHITECTURE.md) | Infrastructure mapping is constrained by defined system boundaries. |
-| **API_CONTRACTS.md** | [ARCHITECTURE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/ARCHITECTURE.md) | Service interfaces depend on monorepo design layout. |
-| **ADR** | [ARCHITECTURE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/ARCHITECTURE.md) + [REPOSITORY_GOVERNANCE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/REPOSITORY_GOVERNANCE.md) | Rationale must map back to active architecture and governance. |
-| **RUNBOOK.md** | [ARCHITECTURE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/ARCHITECTURE.md) + [DEPLOYMENT_MAP.md](file:///Users/admin/Desktop/MAD%20Entertrainment/DEPLOYMENT_MAP.md) + [API_CONTRACTS.md](file:///Users/admin/Desktop/MAD%20Entertrainment/API_CONTRACTS.md) | Operations depend on system structure, routes, and hosting topology. |
+| **ARCHITECTURE.md** | [REPOSITORY_GOVERNANCE.md](REPOSITORY_GOVERNANCE.md) | Package boundaries and coding standards inherit review matrices. |
+| **DEPLOYMENT_MAP.md** | [ARCHITECTURE.md](ARCHITECTURE.md) | Infrastructure mapping is constrained by defined system boundaries. |
+| **API_CONTRACTS.md** | [ARCHITECTURE.md](ARCHITECTURE.md) | Service interfaces depend on monorepo design layout. |
+| **ADR** | [ARCHITECTURE.md](ARCHITECTURE.md) + [REPOSITORY_GOVERNANCE.md](REPOSITORY_GOVERNANCE.md) | Rationale must map back to active architecture and governance. |
+| **RUNBOOK.md** | [ARCHITECTURE.md](ARCHITECTURE.md) + [DEPLOYMENT_MAP.md](DEPLOYMENT_MAP.md) + [API_CONTRACTS.md](API_CONTRACTS.md) | Operations depend on system structure, routes, and hosting topology. |
 
 ---
 
@@ -143,11 +143,11 @@ Use this matrix to determine the SSOT location, whether an ADR is required, and 
 
 | Area | SSOT Document | ADR Required | Verification Requirements |
 | :--- | :--- | :--- | :--- |
-| **Architecture** | [ARCHITECTURE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/ARCHITECTURE.md) | Yes | Workspace build + structural review |
-| **Deployment** | [DEPLOYMENT_MAP.md](file:///Users/admin/Desktop/MAD%20Entertrainment/DEPLOYMENT_MAP.md) | Sometimes | Configuration validation + smoke test |
-| **API Contracts** | [API_CONTRACTS.md](file:///Users/admin/Desktop/MAD%20Entertrainment/API_CONTRACTS.md) | Breaking changes only | Integration tests + validation checks |
-| **Security** | [AGENTS.MD](file:///Users/admin/Desktop/MAD%20Entertrainment/AGENTS.MD) / ADR | Yes | Security review + secret scanning |
-| **Governance** | [REPOSITORY_GOVERNANCE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/REPOSITORY_GOVERNANCE.md) | Yes | Document review + link audits |
+| **Architecture** | [ARCHITECTURE.md](ARCHITECTURE.md) | Yes | Workspace build + structural review |
+| **Deployment** | [DEPLOYMENT_MAP.md](DEPLOYMENT_MAP.md) | Sometimes | Configuration validation + smoke test |
+| **API Contracts** | [API_CONTRACTS.md](API_CONTRACTS.md) | Breaking changes only | Integration tests + validation checks |
+| **Security** | [AGENTS.MD](AGENTS.MD) / ADR | Yes | Security review + secret scanning |
+| **Governance** | [REPOSITORY_GOVERNANCE.md](REPOSITORY_GOVERNANCE.md) | Yes | Document review + link audits |
 
 ---
 
@@ -167,7 +167,7 @@ stateDiagram-v2
 - **Draft**: A document modification is proposed in a workspace branch.
 - **Review**: The documentation PR is opened and audited.
 - **Approved**: Reviewers approve the documentation change, and it is merged into the `develop` branch.
-- **Published**: The branch is merged into `live`. All merged changes must be documented in [CHANGELOG.md](file:///Users/admin/Desktop/MAD%20Entertrainment/CHANGELOG.md) under the appropriate version section before tag creation.
+- **Published**: The branch is merged into `live`. All merged changes must be documented in [CHANGELOG.md](CHANGELOG.md) under the appropriate version section before tag creation.
 - **Maintained**: The document remains the active reference and is updated with patch modifications.
 - **Deprecated**: The document or record is marked as obsolete (e.g. a superseded ADR or deprecated API).
 - **Archived**: Obsolete records are cataloged in an archive folder (e.g. `docs/archive/`) for historical reference.
@@ -177,20 +177,20 @@ stateDiagram-v2
 ## 7. Subsystem Governance Rules
 
 ### Architecture Governance
-- Modifying package boundaries, folder structures, or introducing dependencies requires updating [ARCHITECTURE.md](file:///Users/admin/Desktop/MAD%20Entertrainment/ARCHITECTURE.md).
+- Modifying package boundaries, folder structures, or introducing dependencies requires updating [ARCHITECTURE.md](ARCHITECTURE.md).
 - Speculative designs are prohibited; only current systems are described. Future recommendations must reside under a clearly marked Appendix.
 
 ### Deployment Governance
-- Any change in environment variables, hosting providers, or database setup requires modifying [DEPLOYMENT_MAP.md](file:///Users/admin/Desktop/MAD%20Entertrainment/DEPLOYMENT_MAP.md).
+- Any change in environment variables, hosting providers, or database setup requires modifying [DEPLOYMENT_MAP.md](DEPLOYMENT_MAP.md).
 - Staging and production configurations must be isolated to prevent testing modifications to production data.
 
 ### API Governance
-- Request/Response payload mutations, authorization changes, or endpoint additions require updating [API_CONTRACTS.md](file:///Users/admin/Desktop/MAD%20Entertrainment/API_CONTRACTS.md).
+- Request/Response payload mutations, authorization changes, or endpoint additions require updating [API_CONTRACTS.md](API_CONTRACTS.md).
 - Frontends must consume validation schemas from `@mad/validations` rather than creating independent checks.
 
 ### ADR Governance
 - Significant deviations from standard boundaries must be recorded in `docs/decisions/`.
-- ADRs must respect the numbering and lifecycle policies defined in [docs/decisions/README.md](file:///Users/admin/Desktop/MAD%20Entertrainment/docs/decisions/README.md).
+- ADRs must respect the numbering and lifecycle policies defined in [docs/decisions/README.md](docs/decisions/README.md).
 
 ---
 
@@ -221,7 +221,7 @@ No Pull Request may be merged without satisfying the following:
   - *UI Spacing/Layout*: Approved by Frontend Owner.
 - **Evidence Requirements**: PRs must provide test logs, build results, or audit reports confirming compliance.
 - **Rollback Requirements**: Every PR introducing operational changes must document a rollback strategy.
-- **Changelog Requirement**: All merged PRs that modify features, APIs, architecture, or deployments must include a corresponding entry in [CHANGELOG.md](file:///Users/admin/Desktop/MAD%20Entertrainment/CHANGELOG.md).
+- **Changelog Requirement**: All merged PRs that modify features, APIs, architecture, or deployments must include a corresponding entry in [CHANGELOG.md](CHANGELOG.md).
 
 ---
 
@@ -229,7 +229,7 @@ No Pull Request may be merged without satisfying the following:
 
 ### Documentation Standards
 - **Markdown**: GFM compliant, short concise lists.
-- **Links**: Clickable absolute paths using the `file:///Users/admin/Desktop/MAD%20Entertrainment/` prefix.
+- **Links**: Clickable repository-relative paths, immutable commit permalinks, or repository URLs. Absolute local workstation paths are forbidden.
 - **Diagrams**: Mermaid diagrams with standard state or flow layouts.
 - **No Placeholders**: Real images and working code scripts only.
 
@@ -237,7 +237,7 @@ No Pull Request may be merged without satisfying the following:
 - **Build Checks**: Turbo workspace builds must compile cleanly (`pnpm build`).
 - **Test Integrity**: Every test suite must pass (`pnpm test`).
 - **Governance Audit**: Run `pnpm run audit-data` to check route structure and dependencies.
-- **Automation Verification**: CI checks (`scripts/ci_governance_check.ts` and `scripts/dependency_audit.ts`) must pass before merging.
+- **Automation Verification**: CI checks (`scripts/ci-governance-check.ts` and `scripts/dependency-audit.ts`) must pass before merging.
 
 ---
 
@@ -249,7 +249,7 @@ No Pull Request may be merged without satisfying the following:
 - Allowed branch names or branch promotion lifecycles.
 - CI/CD workflow requirements or verification gates.
 - Documentation structure or naming policies.
-- Release version increments or deprecation schedules (must update [CHANGELOG.md](file:///Users/admin/Desktop/MAD%20Entertrainment/CHANGELOG.md)).
+- Release version increments or deprecation schedules (must update [CHANGELOG.md](CHANGELOG.md)).
 
 ### Deprecation & Archiving Rules
 - When a document is deprecated, a prominent `> [!WARNING] Deprecated` notice must be added at the top, referencing the replacing document.
@@ -293,9 +293,9 @@ Measurable governance metrics are established to support future automation check
 
 ### Current Verification Rules
 - Linting runs via `pnpm lint` calling `turbo lint`.
-- Vulnerability scanning runs via `scripts/dependency_audit.ts` utilizing `.audit-exceptions.json`.
-- Structural checks run via `scripts/ci_governance_check.ts` to detect sentry/opentelemetry frontend leakage and validation drift.
-- Route verification collects active Express configurations into `audit_data.json`.
+- Vulnerability scanning runs via `scripts/dependency-audit.ts` utilizing `.audit-exceptions.json`.
+- Structural checks run via `scripts/ci-governance-check.ts` to detect sentry/opentelemetry frontend leakage and validation drift.
+- Route verification collects active Express configurations into `reports/audit/audit-data.json`.
 
 ### Repository Standard
 - Pre-commit or pre-push hooks must execute `pnpm lint` and `pnpm test`.

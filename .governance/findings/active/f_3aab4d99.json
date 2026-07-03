@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 2,
+  "id": "f_3aab4d99",
+  "rule": "VAL-UI-019",
+  "ruleVersion": "1.0.0",
+  "engineVersion": "1.0.0",
+  "domain": "Platform Team",
+  "owner": "Platform Team",
+  "package": "apps",
+  "feature": "UIElement",
+  "status": "NEW",
+  "confidence": 0.9,
+  "relationships": [],
+  "evidence": {
+    "path": "apps/admin/playwright.config.ts",
+    "construct": "UIElement",
+    "line": 1,
+    "message": "Duplicate file detected: shares 97% similarity with \"apps/web/playwright.config.ts\".",
+    "occurrences": [
+      {
+        "id": "f1d6b3317b722465470658225a0b9e067f61c2d7bc211e8ab96087fbe3817ebb",
+        "line": 1,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "",
+        "message": "Duplicate file detected: shares 97% similarity with \"apps/web/playwright.config.ts\".",
+        "fingerprint": "f1d6b3317b722465470658225a0b9e067f61c2d7bc211e8ab96087fbe3817ebb"
+      }
+    ]
+  },
+  "createdDate": "2026-06-30T15:36:27.116Z",
+  "firstDetected": "2026-06-30T15:36:27.116Z",
+  "lastDetected": "2026-06-30T15:36:27.116Z",
+  "occurrenceCount": 1
+}

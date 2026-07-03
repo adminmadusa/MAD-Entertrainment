@@ -4,7 +4,7 @@
 
 The following exact files were modified on branch `fix/payment-verification-ownership`:
 
-### 1. [`apps/server/src/services/public/payment.service.ts`](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/services/public/payment.service.ts)
+### 1. [`apps/server/src/services/public/payment.service.ts`](../../../apps/server/src/services/public/payment.service.ts)
 - **Function**: `confirmBooking()`
 - **Changes**: Removed the `unsetFields.sessionId = 1` assignment inside `confirmBooking()`. This preserves the guest `sessionId` in the database when the webhook links `userId` to the booking document.
   ```diff
@@ -15,7 +15,7 @@ The following exact files were modified on branch `fix/payment-verification-owne
            }
   ```
 
-### 2. [`apps/server/src/services/public/auth.service.ts`](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/services/public/auth.service.ts)
+### 2. [`apps/server/src/services/public/auth.service.ts`](../../../apps/server/src/services/public/auth.service.ts)
 - **Function**: `linkBookingsToUser()`
 - **Changes**: Removed the `$unset: { sessionId: 1 }` instruction from the bulk booking update query. This preserves the guest `sessionId` on historical bookings when linking them to a newly logged-in/OTP-authenticated user.
   ```diff
@@ -34,10 +34,10 @@ The following exact files were modified on branch `fix/payment-verification-owne
 
 ## 2. Test Modifications
 
-1. **[`apps/server/src/services/public/auth.service.test.ts`](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/services/public/auth.service.test.ts)**
+1. **[`apps/server/src/services/public/auth.service.test.ts`](../../../apps/server/src/services/public/auth.service.test.ts)**
    - Updated the `OTP-012: Guest booking claim` test case to remove the `$unset: { sessionId: 1 }` mock expectation.
 
-2. **[`apps/server/src/services/public/payment.service.test.ts`](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/services/public/payment.service.test.ts)**
+2. **[`apps/server/src/services/public/payment.service.test.ts`](../../../apps/server/src/services/public/payment.service.test.ts)**
    - Updated the existing registered user webhook linking test case to match the modified `$unset` expectation (which now only checks for `expiresAt` and `logicalExpiresAt`).
    - Added `BUG-297: Guest booking confirms and assigns userId while preserving sessionId` to verify that `confirmBooking` retains the session ID.
    - Added `BUG-297: verifyPayment succeeds using session ownership after webhook confirms and links userId` to verify that `verifyPayment` succeeds using guest session ownership even after the booking is linked to a user.

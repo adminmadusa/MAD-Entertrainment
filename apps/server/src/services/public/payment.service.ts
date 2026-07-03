@@ -7,8 +7,9 @@ import { BookingStatus, PaymentStatus, ReservationStatus, SeatStatus, Notificati
 import { emitToAdmin, emitToBooking, emitToEvent } from '../../config/socket';
 import { getEnv } from '../../config/env';
 import { getQueueName } from '../../config/queue.config';
-import { getRazorpay, isRazorpayEnabled } from '../../config/razorpay';
-import { getStripe, isStripeEnabled } from '../../config/stripe';
+import { StripeAdapter } from './stripe.adapter';
+import { RazorpayAdapter } from './razorpay.adapter';
+import { PaymentValidationService } from './payment-validation.service';
 import { AppError } from '../../middleware/error.middleware';
 import { Booking, IBooking } from '../../models/booking.schema';
 import { Coupon } from '../../models/coupon.schema';
@@ -32,6 +33,9 @@ import { createNotificationSafe } from '../notification.service';
 import { runInTransaction } from '../../utils/transaction';
 import { cancelBooking, executeCancelBookingSideEffects } from '../admin/booking.service';
 import { PublicBookingService } from './booking.service';
+import { PaymentRefundService } from './payment-refund.service';
+import { PaymentInventoryService } from './payment-inventory.service';
+import { PaymentBookingService } from './payment-booking.service';
 
 export interface StripeChargeWebhookPayload {
   id: string;
@@ -84,68 +88,7 @@ export class PaymentService {
       requestSource?: string;
     } = {}
   ): void {
-    const env = getEnv();
-    const isProd = env.NODE_ENV === 'production' || env.APP_ENV === 'production';
-    if (!isProd) return;
-
-    const metadata = {
-      bookingId: context.bookingId,
-      paymentId: context.paymentId,
-      environment: env.NODE_ENV || env.APP_ENV,
-      requestSource: context.requestSource,
-      gateway: context.gateway,
-    };
-
-    // Rule 1: Reject env.MOCK_PAYMENTS === true
-    if (env.MOCK_PAYMENTS) {
-      const errorMsg = 'MOCK_PAYMENTS_PRODUCTION_BLOCKED: Mock payments cannot be enabled in production environments.';
-      logger.error(metadata, errorMsg);
-      auditLog({
-        action: 'MOCK_PAYMENTS_PRODUCTION_BLOCKED',
-        status: 'failure',
-        description: errorMsg,
-        metadata,
-      });
-      try {
-        Sentry.captureException(new Error(errorMsg), {
-          tags: { type: 'MOCK_PAYMENTS_PRODUCTION_BLOCKED', environment: metadata.environment, gateway: metadata.gateway },
-          extra: metadata,
-        });
-      } catch (err) {
-        logger.error(err, 'Failed to log MOCK_PAYMENTS_PRODUCTION_BLOCKED to Sentry');
-      }
-      throw new Error(errorMsg);
-    }
-
-    if (context.gateway === 'mock') {
-      this.assertProductionMockRuntimeBlocked(context);
-    }
-
-    // Rule 2: Reject mock identifiers
-    const mockPatterns = ['pi_mock_', 'pay_mock_', 'order_mock_', '_secret_mock'];
-    for (const id of identifiers) {
-      if (!id) continue;
-      if (mockPatterns.some((pattern) => id.includes(pattern))) {
-        const errorMsg = `MOCK_PAYMENT_IDENTIFIER_DETECTED: Mock payment identifier "${id}" submitted in production.`;
-        const localMetadata = { ...metadata, paymentId: id };
-        logger.error(localMetadata, errorMsg);
-        auditLog({
-          action: 'MOCK_PAYMENT_IDENTIFIER_DETECTED',
-          status: 'failure',
-          description: errorMsg,
-          metadata: localMetadata,
-        });
-        try {
-          Sentry.captureException(new Error(errorMsg), {
-            tags: { type: 'MOCK_PAYMENT_IDENTIFIER_DETECTED', environment: localMetadata.environment, gateway: localMetadata.gateway },
-            extra: localMetadata,
-          });
-        } catch (err) {
-          logger.error(err, 'Failed to log MOCK_PAYMENT_IDENTIFIER_DETECTED to Sentry');
-        }
-        throw new Error(errorMsg);
-      }
-    }
+    PaymentValidationService.assertProductionPaymentIntegrity(identifiers, getEnv(), context);
   }
 
   private static assertProductionMockRuntimeBlocked(
@@ -156,35 +99,7 @@ export class PaymentService {
       requestSource?: string;
     } = {}
   ): void {
-    const env = getEnv();
-    const isProd = env.NODE_ENV === 'production' || env.APP_ENV === 'production';
-    if (!isProd) return;
-
-    const metadata = {
-      bookingId: context.bookingId,
-      paymentId: context.paymentId,
-      environment: env.NODE_ENV || env.APP_ENV,
-      requestSource: context.requestSource,
-      gateway: context.gateway,
-    };
-
-    const errorMsg = 'MOCK_PAYMENT_RUNTIME_BLOCKED: Mock payment execution path reached in production.';
-    logger.error(metadata, errorMsg);
-    auditLog({
-      action: 'MOCK_PAYMENT_RUNTIME_BLOCKED',
-      status: 'failure',
-      description: errorMsg,
-      metadata,
-    });
-    try {
-      Sentry.captureException(new Error(errorMsg), {
-        tags: { type: 'MOCK_PAYMENT_RUNTIME_BLOCKED', environment: metadata.environment, gateway: metadata.gateway },
-        extra: metadata,
-      });
-    } catch (err) {
-      logger.error(err, 'Failed to log MOCK_PAYMENT_RUNTIME_BLOCKED to Sentry');
-    }
-    throw new Error(errorMsg);
+    PaymentValidationService.assertProductionMockRuntimeBlocked(getEnv(), context);
   }
 
   static async createPaymentIntent(bookingId: string, gateway: 'stripe' | 'razorpay', ownershipContext: PaymentOwnershipContext = {}) {
@@ -271,8 +186,7 @@ export class PaymentService {
           if (env.MOCK_PAYMENTS) {
             clientSecret = existingPayment.gatewayOrderId + '_secret_mock';
           } else {
-            const stripe = getStripe();
-            const intent = await stripe.paymentIntents.retrieve(existingPayment.gatewayOrderId!);
+            const intent = await StripeAdapter.retrievePaymentIntent(existingPayment.gatewayOrderId!);
             clientSecret = intent.client_secret!;
           }
 
@@ -353,7 +267,7 @@ export class PaymentService {
       };
     }
 
-    if (!isRazorpayEnabled()) {
+    if (!RazorpayAdapter.isEnabled()) {
       throw AppError.badRequest('Razorpay is not enabled / credentials missing');
     }
 
@@ -363,9 +277,8 @@ export class PaymentService {
     }
 
     try {
-      const rzp = getRazorpay();
-      const order = await rzp.orders.create({
-        amount: amountPaise,
+      const order = await RazorpayAdapter.createOrder({
+        amountPaise,
         currency: 'INR',
         receipt: booking.bookingId,
       });
@@ -466,21 +379,17 @@ export class PaymentService {
       };
     }
 
-    if (!isStripeEnabled()) {
+    if (!StripeAdapter.isEnabled()) {
       throw AppError.badRequest('Stripe is not enabled / credentials missing');
     }
 
     const amountPaise = Math.round(booking.totalAmount * 100);
     try {
-      const stripe = getStripe();
-      const paymentIntent = await stripe.paymentIntents.create({
-        amount: amountPaise,
-        currency: booking.currency?.toLowerCase() || 'inr',
-        metadata: {
-          bookingId: booking._id.toString(),
-          bookingReference: booking.bookingId,
-          environment: getEnv().NODE_ENV,
-        },
+      const paymentIntent = await StripeAdapter.createPaymentIntent({
+        amountPaise,
+        currency: booking.currency || 'INR',
+        bookingId: booking._id.toString(),
+        bookingReference: booking.bookingId,
       });
 
       const payment = await this.createPendingPayment(
@@ -1161,13 +1070,8 @@ export class PaymentService {
     env: ReturnType<typeof getEnv>
   ): Promise<void> {
     if (payment.gateway === 'razorpay') {
-      const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = gatewayPayload || {};
-
-      if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
-        throw AppError.badRequest('Missing Razorpay credentials in payment payload');
-      }
-
-      const isMock = env.MOCK_PAYMENTS && razorpay_payment_id.startsWith('pay_mock_') && razorpay_signature === 'mock_signature';
+      const { razorpay_payment_id, razorpay_signature } = gatewayPayload || {};
+      const isMock = env.MOCK_PAYMENTS && razorpay_payment_id?.startsWith('pay_mock_') && razorpay_signature === 'mock_signature';
 
       if (isMock) {
         this.assertProductionMockRuntimeBlocked({
@@ -1178,171 +1082,23 @@ export class PaymentService {
         });
       }
 
-      // Order ID binding — the submitted order must match the payment record created for this booking.
-      if (!payment.gatewayOrderId || payment.gatewayOrderId !== razorpay_order_id) {
-        logger.error(
-          {
-            bookingId: booking._id,
-            bookingReference: booking.bookingId,
-            paymentId: payment._id,
-            expectedOrderId: payment.gatewayOrderId,
-            receivedOrderId: razorpay_order_id,
-            razorpayPaymentId: razorpay_payment_id,
-          },
-          'SECURITY: Razorpay order ID mismatch on PAID path — possible payment replay attack'
-        );
-        auditLog({
-          action: 'PAYMENT_SECURITY_VIOLATION',
-          status: 'failure',
-          metadata: {
-            bookingId: booking._id.toString(),
-            bookingReference: booking.bookingId,
-            gateway: 'razorpay',
-            expectedOrderId: payment.gatewayOrderId,
-            receivedOrderId: razorpay_order_id,
-            razorpayPaymentId: razorpay_payment_id,
-            violationType: 'razorpay_order_mismatch',
-            paidPath: true,
-            isMock,
-          },
-          description: `SECURITY VIOLATION: Razorpay order mismatch on PAID path for booking ${booking.bookingId}`
-        });
-        throw AppError.badRequest('Razorpay order does not belong to this booking');
-      }
-
-      // HMAC-SHA256 signature validation — proves the caller possesses the frontend checkout credentials.
-      if (!isMock) {
-        const text = razorpay_order_id + '|' + razorpay_payment_id;
-        const expectedSignature = crypto
-          .createHmac('sha256', env.RAZORPAY_KEY_SECRET || '')
-          .update(text)
-          .digest('hex');
-
-        if (expectedSignature !== razorpay_signature) {
-          auditLog({
-            action: 'PAYMENT_VERIFICATION_FAILED',
-            status: 'failure',
-            metadata: {
-              bookingId: booking._id.toString(),
-              bookingReference: booking.bookingId,
-              gateway: 'razorpay',
-              reason: 'Signature verification failed (PAID path)',
-            },
-            description: `Failed Razorpay payment signature check on PAID path for booking ${booking.bookingId}`
-          });
-          throw AppError.badRequest('Razorpay signature verification failed');
-        }
-      }
-
-      // Replay protection — no other payment record may claim this gatewayPaymentId.
+      // Replay protection DB check
       const duplicateGatewayPayment = await Payment.findOne({
         gateway: 'razorpay',
         gatewayPaymentId: razorpay_payment_id,
         _id: { $ne: payment._id },
       });
 
-      if (duplicateGatewayPayment) {
-        logger.error(
-          {
-            bookingId: booking._id,
-            bookingReference: booking.bookingId,
-            paymentId: payment._id,
-            duplicatePaymentId: duplicateGatewayPayment._id,
-            razorpayOrderId: razorpay_order_id,
-            razorpayPaymentId: razorpay_payment_id,
-          },
-          'SECURITY: Razorpay payment ID already attached to another payment (PAID path)'
-        );
-        auditLog({
-          action: 'PAYMENT_SECURITY_VIOLATION',
-          status: 'failure',
-          metadata: {
-            bookingId: booking._id.toString(),
-            bookingReference: booking.bookingId,
-            gateway: 'razorpay',
-            paymentId: payment._id?.toString(),
-            duplicatePaymentId: duplicateGatewayPayment._id?.toString(),
-            razorpayOrderId: razorpay_order_id,
-            razorpayPaymentId: razorpay_payment_id,
-            violationType: 'razorpay_payment_id_duplicate',
-            paidPath: true,
-            isMock,
-          },
-          description: `SECURITY VIOLATION: Razorpay payment ID replay on PAID path for booking ${booking.bookingId}`
-        });
-        throw AppError.badRequest('Razorpay payment has already been used');
-      }
-
-      // Amount validation — defense-in-depth against payment record tampering.
-      if (payment.amount !== undefined && booking.totalAmount !== undefined) {
-        const expectedAmountPaise = Math.round(booking.totalAmount * 100);
-        const paymentAmountPaise = Math.round(payment.amount * 100);
-        if (paymentAmountPaise !== expectedAmountPaise) {
-          logger.error(
-            {
-              bookingId: booking._id,
-              bookingReference: booking.bookingId,
-              paymentId: payment._id,
-              expectedAmountPaise,
-              paymentAmountPaise,
-            },
-            'SECURITY: Razorpay payment amount mismatch (PAID path)'
-          );
-          auditLog({
-            action: 'PAYMENT_SECURITY_VIOLATION',
-            status: 'failure',
-            metadata: {
-              bookingId: booking._id.toString(),
-              bookingReference: booking.bookingId,
-              gateway: 'razorpay',
-              expectedAmountPaise,
-              receivedAmountPaise: paymentAmountPaise,
-              violationType: 'amount_mismatch',
-              paidPath: true,
-            },
-            description: `SECURITY VIOLATION: Razorpay payment amount mismatch on PAID path for booking ${booking.bookingId}`
-          });
-          throw AppError.badRequest('Payment amount does not match booking total');
-        }
-      }
-
-      // Currency validation — defense-in-depth.
-      if (payment.currency !== undefined && booking.currency !== undefined) {
-        const expectedCurrency = (booking.currency || 'INR').toLowerCase();
-        const paymentCurrency = (payment.currency || 'INR').toLowerCase();
-        if (paymentCurrency !== expectedCurrency) {
-          logger.error(
-            {
-              bookingId: booking._id,
-              bookingReference: booking.bookingId,
-              paymentId: payment._id,
-              expectedCurrency,
-              paymentCurrency,
-            },
-            'SECURITY: Razorpay payment currency mismatch (PAID path)'
-          );
-          auditLog({
-            action: 'PAYMENT_SECURITY_VIOLATION',
-            status: 'failure',
-            metadata: {
-              bookingId: booking._id.toString(),
-              bookingReference: booking.bookingId,
-              gateway: 'razorpay',
-              expectedCurrency,
-              receivedCurrency: paymentCurrency,
-              violationType: 'currency_mismatch',
-              paidPath: true,
-            },
-            description: `SECURITY VIOLATION: Razorpay payment currency mismatch on PAID path for booking ${booking.bookingId}`
-          });
-          throw AppError.badRequest('Payment currency does not match booking currency');
-        }
-      }
-
+      PaymentValidationService.validateRazorpayProof({
+        booking,
+        payment,
+        gatewayPayload,
+        hasDuplicatePayment: Boolean(duplicateGatewayPayment),
+        isMock,
+        razorpayKeySecret: env.RAZORPAY_KEY_SECRET,
+      });
     } else {
-      // ── Stripe ────────────────────────────────────────────────────────────────
       const { paymentIntentId } = gatewayPayload || {};
-
       if (!paymentIntentId) {
         throw AppError.badRequest('Missing Stripe paymentIntentId in payment payload');
       }
@@ -1356,131 +1112,17 @@ export class PaymentService {
           gateway: 'stripe',
           requestSource: 'frontend_verify',
         });
-        // Mock path: no Stripe API call — proof is the pi_mock_ prefix under MOCK_PAYMENTS.
         return;
       }
 
-      const stripe = getStripe();
-      const intent = await stripe.paymentIntents.retrieve(paymentIntentId);
+      const intent = await StripeAdapter.retrievePaymentIntent(paymentIntentId);
 
-      // 1. Status — only 'succeeded' is a valid terminal state.
-      if (intent.status !== 'succeeded') {
-        logger.warn(
-          { bookingId: booking._id, bookingReference: booking.bookingId, paymentIntentId, intentStatus: intent.status },
-          'Stripe verification rejected on PAID path: intent not in succeeded state'
-        );
-        auditLog({
-          action: 'PAYMENT_VERIFICATION_FAILED',
-          status: 'failure',
-          metadata: {
-            bookingId: booking._id.toString(),
-            bookingReference: booking.bookingId,
-            gateway: 'stripe',
-            reason: `Stripe intent status: ${intent.status} (PAID path)`,
-          },
-          description: `Stripe verification failed on PAID path: intent status is ${intent.status} for booking ${booking.bookingId}`
-        });
-        throw AppError.badRequest(`Stripe payment verification failed. Status is "${intent.status}"`);
-      }
-
-      // 2. bookingId binding — the intent must have been created for THIS booking.
-      const intentBookingId = intent.metadata?.bookingId;
-      const intentBookingReference = intent.metadata?.bookingReference;
-
-      if (intentBookingId !== booking._id.toString()) {
-        logger.error(
-          { bookingId: booking._id, bookingReference: booking.bookingId, paymentIntentId, intentBookingId },
-          'SECURITY: Stripe intent bookingId metadata mismatch on PAID path — possible replay attack'
-        );
-        auditLog({
-          action: 'PAYMENT_SECURITY_VIOLATION',
-          status: 'failure',
-          metadata: {
-            bookingId: booking._id.toString(),
-            bookingReference: booking.bookingId,
-            gateway: 'stripe',
-            intentBookingId,
-            violationType: 'booking_id_mismatch',
-            paidPath: true,
-          },
-          description: `SECURITY VIOLATION: Stripe intent bookingId mismatch on PAID path for booking ${booking.bookingId}`
-        });
-        throw AppError.badRequest('Stripe payment intent does not belong to this booking');
-      }
-
-      // 3. bookingReference binding — secondary reference confirms our system created the intent.
-      if (intentBookingReference && intentBookingReference !== booking.bookingId) {
-        logger.error(
-          { bookingId: booking._id, bookingReference: booking.bookingId, paymentIntentId, intentBookingReference },
-          'SECURITY: Stripe intent bookingReference metadata mismatch on PAID path'
-        );
-        auditLog({
-          action: 'PAYMENT_SECURITY_VIOLATION',
-          status: 'failure',
-          metadata: {
-            bookingId: booking._id.toString(),
-            bookingReference: booking.bookingId,
-            gateway: 'stripe',
-            intentBookingReference,
-            violationType: 'booking_reference_mismatch',
-            paidPath: true,
-          },
-          description: `SECURITY VIOLATION: Stripe intent bookingReference mismatch on PAID path for booking ${booking.bookingId}`
-        });
-        throw AppError.badRequest('Stripe payment intent booking reference mismatch');
-      }
-
-      // 4. Amount validation — integer-safe paise comparison.
-      const expectedAmountPaise = Math.round(booking.totalAmount * 100);
-      const receivedAmountPaise = intent.amount_received ?? 0;
-
-      if (receivedAmountPaise !== expectedAmountPaise) {
-        logger.error(
-          { bookingId: booking._id, bookingReference: booking.bookingId, paymentIntentId, expectedAmountPaise, receivedAmountPaise },
-          'SECURITY: Stripe payment amount mismatch on PAID path'
-        );
-        auditLog({
-          action: 'PAYMENT_SECURITY_VIOLATION',
-          status: 'failure',
-          metadata: {
-            bookingId: booking._id.toString(),
-            bookingReference: booking.bookingId,
-            gateway: 'stripe',
-            expectedAmountPaise,
-            receivedAmountPaise,
-            violationType: 'amount_mismatch',
-            paidPath: true,
-          },
-          description: `SECURITY VIOLATION: Stripe payment amount mismatch on PAID path for booking ${booking.bookingId}`
-        });
-        throw AppError.badRequest('Payment amount does not match booking total');
-      }
-
-      // 5. Currency validation — case-insensitive.
-      const expectedCurrency = (booking.currency || 'INR').toLowerCase();
-      const receivedCurrency = (intent.currency || '').toLowerCase();
-
-      if (receivedCurrency !== expectedCurrency) {
-        logger.error(
-          { bookingId: booking._id, bookingReference: booking.bookingId, paymentIntentId, expectedCurrency, receivedCurrency },
-          'SECURITY: Stripe payment currency mismatch on PAID path'
-        );
-        auditLog({
-          action: 'PAYMENT_SECURITY_VIOLATION',
-          status: 'failure',
-          metadata: {
-            bookingId: booking._id.toString(),
-            bookingReference: booking.bookingId,
-            gateway: 'stripe',
-            expectedCurrency,
-            receivedCurrency,
-            violationType: 'currency_mismatch',
-            paidPath: true,
-          },
-          description: `SECURITY VIOLATION: Stripe payment currency mismatch on PAID path for booking ${booking.bookingId}`
-        });
-        throw AppError.badRequest('Payment currency does not match booking currency');
-      }
+      PaymentValidationService.validateStripeProof({
+        booking,
+        payment,
+        intent,
+        isMock,
+      });
     }
   }
 
@@ -1492,37 +1134,6 @@ export class PaymentService {
     }
   }
 
-  private static async redeemCouponForConfirmedBooking(booking: IBooking, payment: IPayment, session?: ClientSession): Promise<void> {
-    if (!booking.couponId) {
-      return;
-    }
-
-    const result = await Coupon.updateOne(
-      {
-        _id: booking.couponId,
-        $expr: { $lt: ['$usedCount', '$usageLimit'] },
-      },
-      { $inc: { usedCount: 1 } },
-      { session }
-    );
-
-    if (result.modifiedCount !== 1) {
-      logger.warn(
-        {
-          bookingId: booking._id,
-          bookingReference: booking.bookingId,
-          paymentId: payment._id,
-          couponId: booking.couponId,
-        },
-        'Coupon redemption rejected because usage limit has been reached'
-      );
-
-      const err = AppError.conflict('Coupon usage limit reached');
-      err.code = 'COUPON_USAGE_LIMIT_REACHED';
-      throw err;
-    }
-  }
-
   private static async triggerRefundRequest(
     booking: IBooking,
     payment: IPayment,
@@ -1531,42 +1142,14 @@ export class PaymentService {
     origin: 'manual' | 'auto_recovery' = 'manual',
     recoveryReason?: 'AMOUNT_MISMATCH' | 'BOOKING_REFERENCE_MISMATCH' | 'BOOKING_ID_MISMATCH' | 'CURRENCY_MISMATCH' | 'PAYMENT_VALIDATION_FAILURE' | 'EXPIRED_BOOKING_CAPACITY_UNAVAILABLE'
   ): Promise<void> {
-    const idempotencyKey = `auto-refund-${payment._id}`;
-
-    const existingRefund = await Refund.findOne({
-      paymentId: payment._id,
-      status: { $in: ['requested', 'processing', 'completed'] }
-    }).session(session || null);
-
-    if (!existingRefund) {
-      try {
-        await Refund.create([{
-          bookingId: booking._id,
-          paymentId: payment._id,
-          amount: booking.totalAmount,
-          currency: booking.currency || 'INR',
-          reason: reason || 'LATE_PAYMENT_RECOVERY_REJECTED',
-          status: 'requested',
-          idempotencyKey,
-          origin,
-          recoveryReason,
-        }], { session });
-        logger.info(
-          { bookingId: booking._id, paymentId: payment._id, amount: booking.totalAmount, reason, idempotencyKey, origin, recoveryReason },
-          'Created automatic Refund request record due to validation mismatch / recovery'
-        );
-      } catch (err: any) {
-        const isDuplicateKey = err.code === 11000 || err.code === '11000' || err.message?.includes('E11000');
-        if (isDuplicateKey) {
-          logger.warn(
-            { paymentId: payment._id, idempotencyKey },
-            'Duplicate refund request creation race detected. Handled idempotently.'
-          );
-        } else {
-          throw err;
-        }
-      }
-    }
+    return PaymentRefundService.triggerRefundRequest(
+      booking,
+      payment,
+      reason,
+      session,
+      origin,
+      recoveryReason
+    );
   }
 
   private static async failPaymentAndReleaseInventory(
@@ -1576,164 +1159,13 @@ export class PaymentService {
     origin?: 'manual' | 'auto_recovery',
     recoveryReason?: 'AMOUNT_MISMATCH' | 'BOOKING_REFERENCE_MISMATCH' | 'BOOKING_ID_MISMATCH' | 'CURRENCY_MISMATCH' | 'PAYMENT_VALIDATION_FAILURE' | 'EXPIRED_BOOKING_CAPACITY_UNAVAILABLE'
   ) {
-    payment.status = PaymentStatus.FAILED;
-    payment.failedAt = new Date();
-    payment.failureReason = reason;
-    await payment.save();
-
-    if (origin === 'auto_recovery') {
-      await this.triggerRefundRequest(booking, payment, reason, undefined, origin, recoveryReason).catch(() => {});
-    }
-
-    if (booking.status !== BookingStatus.AWAITING_PAYMENT) {
-      logger.info(
-        {
-          bookingId: booking._id,
-          bookingStatus: booking.status,
-          paymentId: payment._id,
-        },
-        'Skipping booking failure transition and inventory release for already-processed booking'
-      );
-      return;
-    }
-
-    booking.status = BookingStatus.FAILED;
-    booking.bookingVersion += 1;
-    await booking.save();
-    const failedReservations = await ReservationService.transitionForBooking(booking._id, ReservationStatus.FAILED, {
-      paymentReference: payment.gatewayPaymentId ?? payment.gatewayOrderId,
-      paymentId: payment._id as any,
+    return PaymentRefundService.failPaymentAndReleaseInventory(
+      booking,
+      payment,
       reason,
-      correlationId: booking.bookingId,
-    });
-    await ReservationService.releaseCapacityForTerminalReservations(failedReservations);
-
-    // Asynchronous, exception-safe Payment Failure Email Trigger
-    if (booking.guestEmail) {
-      try {
-        const existingNotification = await Notification.findOne({
-          jobId: `payfail-${payment._id}`
-        });
-
-        if (!existingNotification) {
-          const event = await Event.findById(booking.eventId);
-          const emailBody = await paymentFailureHtml({
-            customerName: booking.guestName,
-            eventTitle: event?.title || 'MAD Event',
-            bookingReference: booking.bookingId,
-            retryUrl: `${getEnv().FRONTEND_URL || 'http://localhost:3000'}/checkout/${booking.bookingId}`,
-          });
-
-          const jobId = `payfail-${payment._id}`;
-
-          await createNotificationSafe({
-            jobId,
-            status: 'queued',
-            queuedAt: new Date(),
-            type: NotificationType.PAYMENT_FAILED,
-            channel: 'email',
-            recipient: booking.guestEmail,
-            subject: `Payment Failed for ${event?.title || 'MAD Event'}`,
-            isSent: false,
-            retryCount: 0,
-            bookingId: booking._id,
-            eventId: event?._id
-          });
-
-          await QueueService.enqueue(
-            getQueueName('notification-queue'),
-            'email-dispatch',
-            {
-              to: booking.guestEmail,
-              subject: `Payment Failed for ${event?.title || 'MAD Event'}`,
-              html: emailBody,
-              notificationType: NotificationType.PAYMENT_FAILED,
-              bookingId: booking._id.toString(),
-              eventId: booking.eventId.toString(),
-            },
-            jobId
-          );
-
-          logger.info({
-            emailType: 'PAYMENT_FAILED',
-            recipient: booking.guestEmail,
-            bookingId: booking._id.toString(),
-            eventId: booking.eventId.toString(),
-            timestamp: new Date().toISOString(),
-            success: true
-          }, 'Payment failure email queued successfully.');
-        } else {
-          logger.info({ bookingId: booking._id, paymentId: payment._id }, 'Payment failure email already queued or sent; skipping duplicate.');
-        }
-      } catch (err) {
-        logger.error({
-          err,
-          emailType: 'PAYMENT_FAILED',
-          recipient: booking.guestEmail,
-          bookingId: booking._id.toString(),
-          eventId: booking.eventId.toString(),
-          timestamp: new Date().toISOString(),
-          success: false
-        }, 'Failed to queue payment failure email gracefully.');
-      }
-    }
-
-    const event = await Event.findById(booking.eventId);
-    const releasedSeatIds: string[] = [];
-
-    if (event && event.bookingMode === 'seat_based') {
-      const allSeatIds = booking.tickets.flatMap((ticket) => ticket.seats || []).map((seat) => seat.seatId);
-      if (allSeatIds.length > 0) {
-        await SeatLayout.updateOne(
-          { eventId: event._id },
-          {
-            $set: {
-              'seats.$[seat].status': SeatStatus.AVAILABLE,
-            },
-            $unset: {
-              'seats.$[seat].lockedBy': '',
-              'seats.$[seat].lockedAt': '',
-              'seats.$[seat].bookedByBookingId': '',
-              'seats.$[seat].reservationId': '',
-            },
-            $inc: {
-              'seats.$[seat].seatVersion': 1,
-            },
-          },
-          {
-            arrayFilters: [
-              {
-                'seat.seatId': { $in: allSeatIds },
-                'seat.status': SeatStatus.LOCKED,
-                'seat.bookedByBookingId': booking._id.toString(),
-              },
-            ],
-          }
-        );
-        releasedSeatIds.push(...allSeatIds);
-      }
-    }
-
-    if (event && releasedSeatIds.length > 0) {
-      this.safeEmit(
-        'seat:unlocked',
-        () => emitToEvent(event._id.toString(), 'seat:unlocked', { seatIds: releasedSeatIds }, booking.bookingId),
-        { eventId: event._id.toString(), bookingId: booking._id.toString(), seatIds: releasedSeatIds }
-      );
-    }
-
-    this.safeEmit(
-      'booking:updated',
-      () => emitToBooking(booking._id.toString(), 'booking:updated', { bookingId: booking._id.toString(), status: booking.status, bookingVersion: booking.bookingVersion }, booking.bookingId),
-      { bookingId: booking._id.toString(), status: booking.status, bookingVersion: booking.bookingVersion }
+      origin,
+      recoveryReason
     );
-    this.safeEmit(
-      'admin booking:updated',
-      () => emitToAdmin('bookings', 'booking:updated', { bookingId: booking._id.toString(), status: booking.status, bookingVersion: booking.bookingVersion }, booking.bookingId),
-      { bookingId: booking._id.toString(), status: booking.status, bookingVersion: booking.bookingVersion }
-    );
-
-    logger.info({ bookingId: booking._id, paymentId: payment._id, releasedSeatIds, reason }, 'Payment failed and reserved inventory released');
   }
 
   private static async confirmBooking(booking: IBooking, _payment: IPayment): Promise<IBooking | null> {
@@ -1764,360 +1196,12 @@ export class PaymentService {
     let transactionResult;
     try {
       transactionResult = await runInTransaction(async (session) => {
-        // 0. Atomic payment status transition inside transaction
-        let claimedPayment = _payment;
-        if (_payment.status === PaymentStatus.PENDING) {
-          claimedPayment = await Payment.findOneAndUpdate(
-            { _id: _payment._id, status: PaymentStatus.PENDING },
-            {
-              $set: {
-                status: PaymentStatus.PAID,
-                gatewayPaymentId: _payment.gatewayPaymentId,
-                gatewaySignature: _payment.gatewaySignature,
-                paidAt: _payment.paidAt || new Date(),
-              }
-            },
-            { new: true, session }
-          );
-
-          if (!claimedPayment) {
-            throw new Error('PAYMENT_ALREADY_CLAIMED_OR_NOT_PENDING');
-          }
-
-          // Sync back memory object status
-          _payment.status = PaymentStatus.PAID;
-          _payment.gatewayPaymentId = claimedPayment.gatewayPaymentId;
-          _payment.gatewaySignature = claimedPayment.gatewaySignature;
-          _payment.paidAt = claimedPayment.paidAt;
+        if (!session) {
+          throw new Error('NO_DATABASE_SESSION_AVAILABLE');
         }
-
-        // Check event start/end date constraints
-        const now = new Date();
-        if (now >= new Date(event.startDate) || (event.endDate && now > new Date(event.endDate))) {
-          throw new Error('EVENT_EXPIRED_DURING_CONFIRMATION');
-        }
-
-        // 1. Pre-validation for Late Recovery
-        if (isLateRecovery) {
-          // Validate general capacity
-          if (event.soldCount + event.reservedCount + booking.totalTickets > event.totalCapacity) {
-            _payment.status = PaymentStatus.FAILED;
-            _payment.failedAt = new Date();
-            _payment.failureReason = 'LATE_PAYMENT_RECOVERY_REJECTED_CAPACITY_EXHAUSTED';
-            await _payment.save({ session });
-            await this.triggerRefundRequest(booking, _payment, _payment.failureReason, session, 'auto_recovery', 'EXPIRED_BOOKING_CAPACITY_UNAVAILABLE');
-            return { success: false, booking: null };
-          }
-
-          // Validate tier capacity
-          for (const bookedTicket of booking.tickets) {
-            const tierConfig = event.ticketTiers.find((t) => t.tier === bookedTicket.tier);
-            if (!tierConfig) {
-              _payment.status = PaymentStatus.FAILED;
-              _payment.failedAt = new Date();
-              _payment.failureReason = 'LATE_PAYMENT_RECOVERY_REJECTED_INVALID_TIER';
-              await _payment.save({ session });
-              await this.triggerRefundRequest(booking, _payment, _payment.failureReason, session, 'auto_recovery', 'EXPIRED_BOOKING_CAPACITY_UNAVAILABLE');
-              return { success: false, booking: null };
-            }
-
-            // Fetch active reservations count for this specific tier
-            const activeTierAgg = await Reservation.aggregate([
-              {
-                $match: {
-                  eventId: event._id,
-                  tier: bookedTicket.tier,
-                  status: { $in: [ReservationStatus.RESERVED, ReservationStatus.PENDING_PAYMENT] }
-                }
-              },
-              { $group: { _id: null, total: { $sum: '$quantity' } } }
-            ]).session(session);
-            const tierReserved = activeTierAgg[0]?.total ?? 0;
-
-            if (tierConfig.soldCount + tierReserved + bookedTicket.quantity * (tierConfig.groupSize || 1) > tierConfig.totalCapacity) {
-              _payment.status = PaymentStatus.FAILED;
-              _payment.failedAt = new Date();
-              _payment.failureReason = 'LATE_PAYMENT_RECOVERY_REJECTED_CAPACITY_EXHAUSTED';
-              await _payment.save({ session });
-              await this.triggerRefundRequest(booking, _payment, _payment.failureReason, session, 'auto_recovery', 'EXPIRED_BOOKING_CAPACITY_UNAVAILABLE');
-              return { success: false, booking: null };
-            }
-          }
-
-          // Validate seats status
-          if (event.bookingMode === 'seat_based' && allSeatIds.length > 0) {
-            const layoutQuery = SeatLayout.findOne({
-              eventId: event._id,
-              seats: {
-                $elemMatch: {
-                  seatId: { $in: allSeatIds },
-                  status: { $ne: SeatStatus.AVAILABLE }
-                }
-              }
-            }).session(session);
-            const layout = await (layoutQuery && typeof layoutQuery.lean === 'function' ? layoutQuery.lean() : layoutQuery);
-            if (layout) {
-              _payment.status = PaymentStatus.FAILED;
-              _payment.failedAt = new Date();
-              _payment.failureReason = 'LATE_PAYMENT_RECOVERY_REJECTED_SEATS_TAKEN';
-              await _payment.save({ session });
-              await this.triggerRefundRequest(booking, _payment, _payment.failureReason, session, 'auto_recovery', 'EXPIRED_BOOKING_CAPACITY_UNAVAILABLE');
-              return { success: false, booking: null };
-            }
-          }
-        }
-
-        // 2. Allocate Seats (SeatLayout update)
-        if (event.bookingMode === 'seat_based' && allSeatIds.length > 0) {
-          const seatUpdateResult = await SeatLayout.updateOne(
-            { eventId: event._id },
-            {
-              $set: {
-                'seats.$[seat].status': SeatStatus.BOOKED,
-                'seats.$[seat].bookedByBookingId': booking._id.toString()
-              },
-              $unset: {
-                'seats.$[seat].lockedBy': '',
-                'seats.$[seat].lockedAt': '',
-              },
-              $inc: {
-                'seats.$[seat].seatVersion': 1,
-              },
-            },
-            {
-              arrayFilters: [
-                {
-                  'seat.seatId': { $in: allSeatIds },
-                  $or: [
-                    { 'seat.bookedByBookingId': booking._id.toString() },
-                    { 'seat.status': SeatStatus.AVAILABLE }
-                  ]
-                },
-              ],
-              session,
-            }
-          );
-
-          if (seatUpdateResult.modifiedCount !== allSeatIds.length) {
-            throw new Error('SEAT_ALLOCATION_FAILED');
-          }
-        }
-
-        // 3. Allocate Event Capacity
-        const incUpdate: Record<string, number> = {
-          soldCount: booking.totalTickets,
-          eventVersion: 1,
-        };
-
-        for (const bookedTicket of booking.tickets) {
-          const tierIndex = event.ticketTiers.findIndex((t) => t.tier === bookedTicket.tier);
-          if (tierIndex !== -1) {
-            const groupSize = event.ticketTiers[tierIndex].groupSize || 1;
-            incUpdate[`ticketTiers.${tierIndex}.soldCount`] = bookedTicket.quantity * groupSize;
-          }
-        }
-
-        const eventQuery: any = { _id: event._id };
-        
-        if (isLateRecovery) {
-          eventQuery.$expr = {
-            $lte: [
-              { $add: ['$soldCount', '$reservedCount', booking.totalTickets] },
-              '$totalCapacity'
-            ]
-          };
-          
-          for (const bookedTicket of booking.tickets) {
-            const tierIndex = event.ticketTiers.findIndex((t) => t.tier === bookedTicket.tier);
-            if (tierIndex !== -1) {
-              const activeTierAgg = await Reservation.aggregate([
-                {
-                  $match: {
-                    eventId: event._id,
-                    tier: bookedTicket.tier,
-                    status: { $in: [ReservationStatus.RESERVED, ReservationStatus.PENDING_PAYMENT] }
-                  }
-                },
-                { $group: { _id: null, total: { $sum: '$quantity' } } }
-              ]).session(session);
-              const tierReserved = activeTierAgg[0]?.total ?? 0;
-              
-              const groupSize = event.ticketTiers[tierIndex].groupSize || 1;
-              eventQuery[`ticketTiers.${tierIndex}.soldCount`] = {
-                $lte: event.ticketTiers[tierIndex].totalCapacity - tierReserved - bookedTicket.quantity * groupSize
-              };
-            }
-          }
-        } else {
-          incUpdate.reservedCount = -booking.totalTickets;
-        }
-
-        const updatedEvent = await Event.findOneAndUpdate(
-          eventQuery,
-          { $inc: incUpdate },
-          { new: true, session }
-        );
-
-        if (!updatedEvent) {
-          throw new Error('EVENT_CAPACITY_ALLOCATION_FAILED');
-        }
-
-        // Check if user already exists matching the guestEmail
-        const user = await UserModel.findOne({
-          email: booking.guestEmail?.trim().toLowerCase()
-        }).session(session || null);
-
-        const setFields: any = {
-          status: BookingStatus.CONFIRMED,
-          paymentId: _payment._id,
-          confirmedAt: new Date(),
-        };
-        const unsetFields: any = {
-          expiresAt: 1,
-          logicalExpiresAt: 1,
-        };
-
-        if (user) {
-          setFields.userId = user._id;
-        }
-
-        // 4. Booking Confirmation Status Transition
-        const previousBookingDoc = await Booking.findOneAndUpdate(
-          { _id: booking._id, status: { $in: [BookingStatus.AWAITING_PAYMENT, BookingStatus.EXPIRED, BookingStatus.EXPIRING] } },
-          {
-            $set: setFields,
-            $unset: unsetFields,
-            $inc: { bookingVersion: 1 }
-          },
-          { new: false, session }
-        );
-        if (!previousBookingDoc) {
-          throw new Error('CONCURRENT_CONFIRMATION_OR_NOT_FOUND');
-        }
-
-        await this.redeemCouponForConfirmedBooking(previousBookingDoc, _payment, session);
-
-        // 5. Update Reservation status to CONFIRMED
-        await ReservationService.transitionForBooking(previousBookingDoc._id, ReservationStatus.CONFIRMED, {
-          paymentReference: _payment.gatewayPaymentId ?? _payment.gatewayOrderId,
-          paymentId: _payment._id as any,
-          reason: 'payment-confirmed',
-          correlationId: previousBookingDoc.bookingId,
-          includeTerminal: isLateRecovery,
-        }, session);
-
-        const confirmedBooking = previousBookingDoc;
-        confirmedBooking.status = BookingStatus.CONFIRMED;
-        confirmedBooking.paymentId = _payment._id as any;
-        confirmedBooking.bookingVersion += 1;
-        booking = confirmedBooking;
-
-        if (updatedEvent && updatedEvent.soldCount >= updatedEvent.totalCapacity && !updatedEvent.isSoldOut) {
-          await Event.updateOne({ _id: booking.eventId }, { $set: { isSoldOut: true } }, { session });
-        }
-
-        // 6. Generate Tickets & Notification (sync path only)
-        let generatedTickets = [];
-        let syncNotification = null;
-        if (!getEnv().ENABLE_ASYNC_CHECKOUT) {
-          // Mid-Flight Booking Protection: Verify and repair totalTickets if needed
-          let expectedTotalTickets = 0;
-          for (const t of booking.tickets) {
-            const tierConfig = event?.ticketTiers?.find((tc) => tc.tier === t.tier);
-            expectedTotalTickets += t.quantity * (tierConfig?.groupSize || 1);
-          }
-          if (booking.totalTickets !== expectedTotalTickets) {
-            booking.totalTickets = expectedTotalTickets;
-            if (typeof Booking.updateOne === 'function') {
-              await Booking.updateOne({ _id: booking._id }, { $set: { totalTickets: expectedTotalTickets } }, { session });
-            }
-          }
-
-          let ticketIndex = 1;
-          for (const bookedTicket of booking.tickets) {
-            if (event && event.bookingMode === 'seat_based' && bookedTicket.seats) {
-              for (const seat of bookedTicket.seats) {
-                const ticketId = `TKT-${booking.bookingId}-${String(ticketIndex).padStart(3, '0')}`;
-                const qrCodeText = ticketId;
-
-                const ticket = await Ticket.findOneAndUpdate(
-                  { ticketId },
-                  {
-                    $setOnInsert: {
-                      bookingId: booking._id,
-                      eventId: booking.eventId,
-                      tierName: bookedTicket.tierName,
-                      tier: bookedTicket.tier,
-                      admits: 1,
-                      seatId: seat.seatId,
-                      row: seat.row,
-                      seatNumber: seat.number,
-                      section: seat.section,
-                      qrCode: qrCodeText,
-                      qrCodeImage: `/api/public/tickets/${ticketId}/qr`,
-                      assignmentStatus: 'unassigned',
-                    },
-                  },
-                  { upsert: true, new: true, setDefaultsOnInsert: true, session }
-                );
-                generatedTickets.push(ticket);
-                ticketIndex++;
-              }
-            } else {
-              const tierConfig = event?.ticketTiers?.find(t => t.tier === bookedTicket.tier);
-              const groupSize = tierConfig?.groupSize || 1;
-              const totalAdmissions = bookedTicket.quantity * groupSize;
-
-              for (let i = 0; i < totalAdmissions; i++) {
-                const ticketId = `TKT-${booking.bookingId}-${String(ticketIndex).padStart(3, '0')}`;
-                const qrCodeText = ticketId;
-
-                const ticket = await Ticket.findOneAndUpdate(
-                  { ticketId },
-                  {
-                    $setOnInsert: {
-                      bookingId: booking._id,
-                      eventId: booking.eventId,
-                      tierName: bookedTicket.tierName,
-                      tier: bookedTicket.tier,
-                      admits: 1,
-                      qrCode: qrCodeText,
-                      qrCodeImage: `/api/public/tickets/${ticketId}/qr`,
-                      assignmentStatus: 'unassigned',
-                    },
-                  },
-                  { upsert: true, new: true, setDefaultsOnInsert: true, session }
-                );
-                generatedTickets.push(ticket);
-                ticketIndex++;
-              }
-            }
-          }
-
-          const jobId = `email:dispatch:${booking._id}`;
-          syncNotification = await createNotificationSafe({
-            jobId,
-            status: 'processing',
-            queuedAt: new Date(),
-            processedAt: new Date(),
-            type: NotificationType.BOOKING_CONFIRMED,
-            bookingId: booking._id,
-            eventId: booking.eventId,
-            channel: 'email',
-            recipient: booking.guestEmail,
-            subject: `Your Ticket for ${event?.title || 'MAD Event'} [${booking.bookingId}]`,
-            isSent: false,
-            retryCount: 0,
-          }, { session });
-        }
-
-        return {
-          success: true,
-          booking,
-          updatedEvent,
-          generatedTickets,
-          syncNotification,
-        };
+        return PaymentBookingService.confirmBooking(booking, _payment, session, event, allSeatIds, isLateRecovery, {
+          triggerRefundRequest: this.triggerRefundRequest.bind(this)
+        });
       });
     } catch (err: any) {
       logger.error({ err, bookingId: booking._id }, 'Confirmation transaction aborted and rolled back');
@@ -2337,52 +1421,11 @@ export class PaymentService {
     webhookEventId: string,
     eventType: string
   ): Promise<{ status: 'completed' | 'failed' | 'anomaly' | 'skipped'; refundId?: string; paymentId?: string }> {
-    let gatewayPaymentId: string;
-    let gatewayRefundId: string | undefined;
-    let gatewayStatus = 'succeeded';
-    let amountInCents = 0;
-
-    if (eventType === 'charge.refunded') {
-      const charge = chargeOrRefund as StripeChargeWebhookPayload;
-      gatewayPaymentId = charge.id;
-      gatewayRefundId = charge.refunds?.data?.[0]?.id;
-      amountInCents = charge.refunds?.data?.[0]?.amount || 0;
-    } else {
-      const refund = chargeOrRefund as StripeRefundWebhookPayload;
-      gatewayPaymentId = refund.charge;
-      gatewayRefundId = refund.id;
-      gatewayStatus = refund.status;
-      amountInCents = refund.amount || 0;
-    }
-
-    if (!gatewayRefundId) {
-      logger.warn({ chargeId: gatewayPaymentId, webhookEventId, eventType }, 'Stripe webhook received but missing gatewayRefundId');
-      return { status: 'skipped' };
-    }
-
-    // Stripe status mappings: only complete if succeeded
-    if (eventType === 'refund.updated' && gatewayStatus !== 'succeeded' && gatewayStatus !== 'failed') {
-      logger.info({ gatewayRefundId, gatewayStatus, webhookEventId }, 'Stripe refund updated with non-terminal status - skipping');
-      return { status: 'skipped' };
-    }
-
-    this.assertProductionPaymentIntegrity(
-      [gatewayPaymentId, gatewayRefundId],
-      {
-        paymentId: gatewayPaymentId,
-        gateway: 'stripe',
-        requestSource: 'webhook',
-      }
+    return PaymentRefundService.reconcileStripeRefundWebhook(
+      chargeOrRefund,
+      webhookEventId,
+      eventType
     );
-
-    return this.reconcileRefundWebhook({
-      gateway: 'stripe',
-      gatewayPaymentId,
-      gatewayRefundId,
-      amountMajorUnits: amountInCents / 100,
-      gatewayStatus,
-      webhookEventId
-    });
   }
 
   static async reconcileRazorpayRefundWebhook(
@@ -2390,459 +1433,10 @@ export class PaymentService {
     eventType: string,
     webhookEventId: string
   ): Promise<{ status: 'completed' | 'failed' | 'anomaly' | 'skipped'; refundId?: string; paymentId?: string }> {
-    const gatewayPaymentId = refundEntity.payment_id;
-    const gatewayRefundId = refundEntity.id;
-    const amountInPaise = refundEntity.amount;
-    const gatewayStatus = eventType === 'refund.processed' ? 'processed' : 'failed';
-
-    if (!gatewayRefundId) {
-      logger.warn({ paymentId: gatewayPaymentId, webhookEventId, eventType }, 'Razorpay webhook received but missing gatewayRefundId');
-      return { status: 'skipped' };
-    }
-
-    this.assertProductionPaymentIntegrity(
-      [gatewayPaymentId, gatewayRefundId],
-      {
-        paymentId: gatewayPaymentId,
-        gateway: 'razorpay',
-        requestSource: 'webhook',
-      }
-    );
-
-    return this.reconcileRefundWebhook({
-      gateway: 'razorpay',
-      gatewayPaymentId,
-      gatewayRefundId,
-      amountMajorUnits: amountInPaise / 100,
-      gatewayStatus,
+    return PaymentRefundService.reconcileRazorpayRefundWebhook(
+      refundEntity,
+      eventType,
       webhookEventId
-    });
-  }
-
-  private static async reconcileRefundWebhook(params: {
-    gateway: 'stripe' | 'razorpay';
-    gatewayPaymentId: string;
-    gatewayRefundId: string;
-    amountMajorUnits: number;
-    gatewayStatus: string;
-    webhookEventId: string;
-  }): Promise<{ status: 'completed' | 'failed' | 'anomaly' | 'skipped'; refundId?: string; paymentId?: string }> {
-    const { gateway, gatewayPaymentId, gatewayRefundId, amountMajorUnits, gatewayStatus, webhookEventId } = params;
-    const isSucceeded = gatewayStatus === 'succeeded' || gatewayStatus === 'processed';
-    const isFailed = gatewayStatus === 'failed';
-
-    // Primary Lookup
-    let refund = await Refund.findOne({ gatewayRefundId });
-
-    // Fallback Lookup (RFND-H02)
-    if (!refund && gatewayPaymentId) {
-      const paymentObj = await Payment.findOne({ gatewayPaymentId, gateway });
-      if (paymentObj) {
-        refund = await Refund.findOne({
-          paymentId: paymentObj._id,
-          status: { $in: [RefundStatus.PROCESSING, RefundStatus.REQUESTED] },
-          amount: amountMajorUnits
-        });
-      }
-    }
-
-    // Gateway-Initiated Auto-Creation (RFND-B-F02)
-    if (!refund) {
-      const paymentObj = await Payment.findOne({ gatewayPaymentId, gateway });
-      if (paymentObj) {
-        const isFullRefund = amountMajorUnits === paymentObj.amount;
-        
-        try {
-          const result = await runInTransaction(async (session) => {
-            // Serialization lock on Payment
-            await Payment.findOneAndUpdate(
-              { _id: paymentObj._id },
-              { $set: { updatedAt: new Date() } },
-              { session, new: true }
-            );
-
-            // Double check duplicate gatewayRefundId to prevent race
-            const doubleCheck = await Refund.findOne({ gatewayRefundId }).session(session);
-            if (doubleCheck) {
-              return { status: 'completed' as const, refundId: doubleCheck._id.toString(), paymentId: paymentObj._id.toString() };
-            }
-
-            const createdRefund = await Refund.create([{
-              bookingId: paymentObj.bookingId,
-              paymentId: paymentObj._id,
-              amount: amountMajorUnits,
-              currency: paymentObj.currency,
-              reason: 'Reconciled from gateway-initiated refund webhook',
-              status: RefundStatus.COMPLETED,
-              origin: 'manual',
-              gatewayRefundId,
-              gatewayRefundStatus: gatewayStatus,
-              reconciledAt: new Date(),
-              processedAt: new Date(),
-              webhookEventId,
-              cancelTickets: isFullRefund
-            }], { session });
-
-            const newRefundDoc = createdRefund[0];
-
-            // Calculate new Payment Status
-            const otherCompletedRefunds = await Refund.find({
-              paymentId: paymentObj._id,
-              status: RefundStatus.COMPLETED,
-              _id: { $ne: newRefundDoc._id }
-            }).session(session);
-            const totalCompletedRefunded = otherCompletedRefunds.reduce((sum, r) => sum + r.amount, 0);
-            const isReallyFullRefund = (totalCompletedRefunded + newRefundDoc.amount) === paymentObj.amount;
-            const newPaymentStatus = isReallyFullRefund ? PaymentStatus.REFUNDED : PaymentStatus.PARTIALLY_REFUNDED;
-
-            await Payment.findByIdAndUpdate(paymentObj._id, { status: newPaymentStatus }, { session });
-
-            let cancelPostCommitPayload = null;
-            const booking = await Booking.findById(paymentObj.bookingId).session(session);
-            if (booking) {
-              if (isReallyFullRefund) {
-                if (booking.status === BookingStatus.CONFIRMED) {
-                  const cancelResult = await cancelBooking(
-                    booking._id.toString(),
-                    `${gateway === 'stripe' ? 'Stripe' : 'Razorpay'} Webhook Full Auto-Refund`,
-                    session,
-                    BookingStatus.REFUNDED
-                  );
-                  if (cancelResult && cancelResult.postCommitPayload) {
-                    cancelPostCommitPayload = cancelResult.postCommitPayload;
-                  }
-                } else if (booking.status === BookingStatus.CANCELLED) {
-                  booking.status = BookingStatus.REFUNDED;
-                  booking.bookingVersion += 1;
-                  await booking.save({ session });
-                }
-              } else {
-                // Partial refund
-                logger.info({ paymentId: paymentObj._id, bookingId: booking._id }, 'Partial gateway-initiated refund - flagging for manual review, booking active');
-              }
-            }
-
-            return {
-              status: 'completed' as const,
-              refundId: newRefundDoc._id.toString(),
-              paymentId: paymentObj._id.toString(),
-              cancelPostCommitPayload,
-              isNewRefund: true
-            };
-          });
-
-          // Run post-commit cancellation effects outside session
-          if (result.cancelPostCommitPayload) {
-            try {
-              await executeCancelBookingSideEffects(result.cancelPostCommitPayload);
-            } catch (err) {
-              logger.error({ err }, `Error executing booking cancel side effects post-commit in reconcileRefundWebhook (${gateway})`);
-            }
-          }
-
-          // Trigger email notification for the auto-created refund
-          if (result.isNewRefund) {
-            try {
-              await this.triggerRefundEmailNotification(result.refundId);
-            } catch (err) {
-              logger.error({ err, refundId: result.refundId }, 'Failed to trigger auto-created refund notification email');
-            }
-          }
-
-          return { status: result.status, refundId: result.refundId, paymentId: result.paymentId };
-        } catch (err: any) {
-          logger.error({ err, gatewayRefundId }, `Failed to process auto-created ${gateway} refund webhook`);
-          throw err;
-        }
-      }
-      logger.warn({ gatewayPaymentId, gatewayRefundId }, `${gateway} webhook received but no matching Payment or Refund record found`);
-      return { status: 'skipped' };
-    }
-
-    // Check terminal states (Idempotency)
-    if (refund.status === RefundStatus.COMPLETED) {
-      if (isFailed) {
-        // Anomaly Alert (RFND-M02)
-        const gatewayLabel = gateway === 'stripe' ? 'Stripe' : 'Razorpay';
-        const errMsg = `CRITICAL ANOMALY: Webhook reports ${gatewayLabel} refund ${gatewayRefundId} failed, but DB status is completed!`;
-        logger.error({ refundId: refund._id, gatewayRefundId }, errMsg);
-        
-        // Structured Audit Log for state anomaly
-        auditLog({
-          action: 'REFUND_RECONCILIATION_ANOMALY',
-          actor: { type: 'admin', id: 'system' },
-          status: 'failure',
-          description: errMsg,
-          metadata: {
-            refundId: refund._id.toString(),
-            gatewayRefundId,
-            gatewayStatus,
-            dbStatus: refund.status,
-          }
-        });
-
-        Sentry.captureMessage(errMsg, { level: 'error' as const });
-        return { status: 'anomaly', refundId: refund._id.toString(), paymentId: refund.paymentId.toString() };
-      }
-      return { status: 'completed', refundId: refund._id.toString(), paymentId: refund.paymentId.toString() };
-    }
-
-    if (refund.status === RefundStatus.FAILED) {
-      if (isSucceeded) {
-        // Anomaly Alert (RFND-M02)
-        const gatewayLabel = gateway === 'stripe' ? 'Stripe' : 'Razorpay';
-        const errMsg = `CRITICAL ANOMALY: Webhook reports ${gatewayLabel} refund ${gatewayRefundId} succeeded, but DB status is failed!`;
-        logger.error({ refundId: refund._id, gatewayRefundId }, errMsg);
-
-        // Structured Audit Log for state anomaly
-        auditLog({
-          action: 'REFUND_RECONCILIATION_ANOMALY',
-          actor: { type: 'admin', id: 'system' },
-          status: 'failure',
-          description: errMsg,
-          metadata: {
-            refundId: refund._id.toString(),
-            gatewayRefundId,
-            gatewayStatus,
-            dbStatus: refund.status,
-          }
-        });
-
-        Sentry.captureMessage(errMsg, { level: 'error' as const });
-        return { status: 'anomaly', refundId: refund._id.toString(), paymentId: refund.paymentId.toString() };
-      }
-      return { status: 'failed', refundId: refund._id.toString(), paymentId: refund.paymentId.toString() };
-    }
-
-    // Execute Reconciliation Transaction
-    try {
-      const result = await runInTransaction(async (session) => {
-        // Serialization lock on Payment
-        const payment = await Payment.findOneAndUpdate(
-          { _id: refund.paymentId },
-          { $set: { updatedAt: new Date() } },
-          { session, new: true }
-        );
-
-        if (!payment) throw new Error('Payment not found');
-
-        const booking = await Booking.findById(refund.bookingId).session(session);
-        if (!booking) throw new Error('Booking not found');
-
-        // Atomic Status Transition (RFND-M01)
-        const updatedRefund = await Refund.findOneAndUpdate(
-          { _id: refund._id, status: { $in: [RefundStatus.PROCESSING, RefundStatus.REQUESTED] } },
-          {
-            $set: {
-              status: isFailed ? RefundStatus.FAILED : RefundStatus.COMPLETED,
-              gatewayRefundStatus: gatewayStatus,
-              reconciledAt: new Date(),
-              processedAt: new Date(),
-              webhookEventId
-            }
-          },
-          { session, new: true }
-        );
-
-        if (!updatedRefund) {
-          // Concurrent win
-          const currentRefund = await Refund.findById(refund._id).session(session);
-          if (currentRefund?.status === RefundStatus.COMPLETED) {
-            return { status: 'completed' as const, refundId: refund._id.toString(), paymentId: payment._id.toString() };
-          }
-          return { status: 'failed' as const, refundId: refund._id.toString(), paymentId: payment._id.toString() };
-        }
-
-        if (updatedRefund.status === RefundStatus.COMPLETED) {
-          // Calculate new Payment Status
-          const otherCompletedRefunds = await Refund.find({
-            paymentId: payment._id,
-            status: RefundStatus.COMPLETED,
-            _id: { $ne: updatedRefund._id }
-          }).session(session);
-          const totalCompletedRefunded = otherCompletedRefunds.reduce((sum, r) => sum + r.amount, 0);
-          const isFullRefund = (totalCompletedRefunded + updatedRefund.amount) === payment.amount;
-          const newPaymentStatus = isFullRefund ? PaymentStatus.REFUNDED : PaymentStatus.PARTIALLY_REFUNDED;
-
-          await Payment.findByIdAndUpdate(payment._id, { status: newPaymentStatus }, { session });
-
-          let cancelPostCommitPayload = null;
-          if (isFullRefund) {
-            if (booking.status === BookingStatus.CONFIRMED) {
-              const cancelResult = await cancelBooking(booking._id.toString(), `${gateway === 'stripe' ? 'Stripe' : 'Razorpay'} Webhook Reconciled`, session, BookingStatus.REFUNDED);
-              if (cancelResult && cancelResult.postCommitPayload) {
-                cancelPostCommitPayload = cancelResult.postCommitPayload;
-              }
-            } else if (booking.status === BookingStatus.CANCELLED) {
-              booking.status = BookingStatus.REFUNDED;
-              booking.bookingVersion += 1;
-              await booking.save({ session });
-            }
-          } else if (updatedRefund.cancelTickets && booking.status === BookingStatus.CONFIRMED) {
-            const cancelResult = await cancelBooking(booking._id.toString(), `${gateway === 'stripe' ? 'Stripe' : 'Razorpay'} Webhook Reconciled`, session, BookingStatus.CANCELLED);
-            if (cancelResult && cancelResult.postCommitPayload) {
-              cancelPostCommitPayload = cancelResult.postCommitPayload;
-            }
-          }
-
-          return {
-            status: 'completed' as const,
-            refundId: updatedRefund._id.toString(),
-            paymentId: payment._id.toString(),
-            cancelPostCommitPayload,
-            transitioned: true
-          };
-        } else {
-          // Failed refund
-          return {
-            status: 'failed' as const,
-            refundId: updatedRefund._id.toString(),
-            paymentId: payment._id.toString()
-          };
-        }
-      });
-
-      // Run post-commit cancellation effects outside session
-      if (result.cancelPostCommitPayload) {
-        try {
-          await executeCancelBookingSideEffects(result.cancelPostCommitPayload);
-        } catch (err) {
-          logger.error({ err }, `Error executing booking cancel side effects post-commit in reconcileRefundWebhook (${gateway})`);
-        }
-      }
-
-      // Trigger email notification if webhook was the thread that completed the transition
-      if (result.status === 'completed' && result.transitioned) {
-        try {
-          await this.triggerRefundEmailNotification(result.refundId);
-        } catch (err) {
-          logger.error({ err, refundId: result.refundId }, 'Failed to trigger reconciled refund notification email');
-        }
-      }
-
-      return { status: result.status, refundId: result.refundId, paymentId: result.paymentId };
-    } catch (err: any) {
-      logger.error({ err, refundId: refund._id }, `Error during ${gateway} refund webhook reconciliation`);
-      throw err;
-    }
-  }
-
-  private static async triggerRefundEmailNotification(refundId: string): Promise<void> {
-    try {
-      const refund = await Refund.findById(refundId);
-      if (!refund || refund.status !== RefundStatus.COMPLETED) {
-        return;
-      }
-
-      const booking = await Booking.findById(refund.bookingId).populate('eventId');
-      if (!booking || !booking.guestEmail) {
-        return;
-      }
-
-      const event = booking.eventId as any;
-      const refundAmount = refund.amount;
-      const totalAmount = booking.totalAmount;
-
-      let emailHtml = '';
-      let subject = '';
-      let notificationType: NotificationType | undefined;
-
-      const completedRefunds = await Refund.find({
-        paymentId: refund.paymentId,
-        status: RefundStatus.COMPLETED
-      });
-      const totalRefunded = completedRefunds.reduce((sum, r) => sum + r.amount, 0);
-      const payment = await Payment.findById(refund.paymentId);
-      const isFullRefund = payment ? totalRefunded === payment.amount : false;
-
-      if (isFullRefund) {
-        const existingNotification = await Notification.findOne({
-          jobId: { $regex: `^refund-${refund._id}` }
-        });
-
-        if (!existingNotification) {
-          const formattedRefundDate = new Date(refund.processedAt || new Date()).toLocaleDateString('en-IN', {
-            weekday: 'long',
-            day: 'numeric',
-            month: 'long',
-            year: 'numeric',
-          });
-
-          emailHtml = await fullRefundHtml({
-            customerName: booking.guestName,
-            bookingReference: booking.bookingId,
-            eventTitle: event?.title || 'MAD Event',
-            refundAmount: refundAmount,
-            refundDate: formattedRefundDate,
-            settlementTimeline: '5-7 business days',
-            currency: booking.currency || 'INR',
-          });
-
-          subject = `Refund Processed for ${booking.bookingId}`;
-          notificationType = NotificationType.FULL_REFUND;
-        }
-      } else {
-        const existingNotification = await Notification.findOne({
-          jobId: { $regex: `^refund-${refund._id}` }
-        });
-
-        if (!existingNotification) {
-          emailHtml = await partialRefundHtml({
-            customerName: booking.guestName,
-            bookingReference: booking.bookingId,
-            originalAmount: totalAmount,
-            refundAmount: refundAmount,
-            remainingAmount: Math.max(0, totalAmount - totalRefunded),
-            reason: refund.reason || 'Tier adjustment refund',
-            currency: booking.currency || 'INR',
-          });
-
-          subject = `Partial Refund Processed for ${booking.bookingId}`;
-          notificationType = NotificationType.PARTIAL_REFUND;
-        }
-      }
-
-      if (emailHtml && notificationType) {
-        const jobId = `refund-${refund._id}-${Date.now()}`;
-        // CQ-02 notification array consistency fix
-        await createNotificationSafe({
-          jobId,
-          status: 'queued',
-          queuedAt: new Date(),
-          type: notificationType,
-          channel: 'email',
-          recipient: booking.guestEmail,
-          subject,
-          isSent: false,
-          retryCount: 0,
-          bookingId: booking._id,
-          eventId: event?._id
-        });
-
-        await QueueService.enqueue(
-          getQueueName('notification-queue'),
-          'email-dispatch',
-          {
-            to: booking.guestEmail,
-            subject,
-            html: emailHtml,
-            notificationType,
-            bookingId: booking._id.toString(),
-            eventId: event?._id?.toString() || booking.eventId?.toString() || '',
-          },
-          jobId
-        );
-
-        logger.info({
-          emailType: isFullRefund ? 'FULL_REFUND' : 'PARTIAL_REFUND',
-          recipient: booking.guestEmail,
-          bookingId: booking._id.toString(),
-          refundId: refund._id.toString(),
-          jobId,
-        }, 'Successfully enqueued refund notification email job via webhook reconciliation');
-      }
-    } catch (err) {
-      logger.error({ err, refundId }, 'Error triggering email notification in webhook reconciliation');
-    }
+    );
   }
 }

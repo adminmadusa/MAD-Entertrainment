@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 2,
+  "id": "f_0254de5d",
+  "rule": "VAL-UI-018",
+  "ruleVersion": "1.0.0",
+  "engineVersion": "1.0.0",
+  "domain": "Platform Team",
+  "owner": "Platform Team",
+  "package": "apps",
+  "feature": "UIElement",
+  "status": "NEW",
+  "confidence": 0.9,
+  "relationships": [],
+  "evidence": {
+    "path": "apps/admin/src/app/events/[id]/edit/page.tsx",
+    "construct": "UIElement",
+    "message": "Possible Unreachable Route: no direct navigation links pointing to \"/events/[id]/edit\" were found in production files.",
+    "occurrences": [
+      {
+        "id": "96b38d9b98c1f2bf58f9d86cca8273d214f1baa89fd546114085c86847c05075",
+        "line": 0,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "",
+        "message": "Possible Unreachable Route: no direct navigation links pointing to \"/events/[id]/edit\" were found in production files.",
+        "fingerprint": "96b38d9b98c1f2bf58f9d86cca8273d214f1baa89fd546114085c86847c05075"
+      }
+    ]
+  },
+  "createdDate": "2026-06-30T15:36:27.143Z",
+  "firstDetected": "2026-06-30T15:36:27.143Z",
+  "lastDetected": "2026-06-30T15:36:27.143Z",
+  "occurrenceCount": 1
+}

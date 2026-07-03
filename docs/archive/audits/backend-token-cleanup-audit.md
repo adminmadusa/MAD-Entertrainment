@@ -14,7 +14,7 @@ The goal of this audit is to identify routes, controllers, services, database sc
 ---
 
 ## PART 1 — ROUTES AUDIT
-* **File Path:** [auth.routes.ts](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/routes/public/auth.routes.ts)
+* **File Path:** [auth.routes.ts](../../../apps/server/src/routes/public/auth.routes.ts)
 
 ### 1. Route Analysis
 * **GET /verify (GET Redirect):**
@@ -38,7 +38,7 @@ The goal of this audit is to identify routes, controllers, services, database sc
 ---
 
 ## PART 2 — CONTROLLERS AUDIT
-* **File Path:** [auth.controller.ts](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/controllers/public/auth.controller.ts)
+* **File Path:** [auth.controller.ts](../../../apps/server/src/controllers/public/auth.controller.ts)
 
 ### 1. Controller Method Analysis
 * **redirectMagicLink (Lines 46-60):**
@@ -63,7 +63,7 @@ The goal of this audit is to identify routes, controllers, services, database sc
 ---
 
 ## PART 3 — SERVICES AUDIT
-* **File Path:** [auth.service.ts](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/services/public/auth.service.ts)
+* **File Path:** [auth.service.ts](../../../apps/server/src/services/public/auth.service.ts)
 
 ### 1. Service Logic Separation
 
@@ -136,7 +136,7 @@ The goal of this audit is to identify routes, controllers, services, database sc
 ### 1. Exact Files and Changes
 
 #### A. Routes Simplification
-*File: [auth.routes.ts](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/routes/public/auth.routes.ts)*
+*File: [auth.routes.ts](../../../apps/server/src/routes/public/auth.routes.ts)*
 * Remove legacy `GET /verify` redirect route.
 * **Line-by-line Diff:**
   ```diff
@@ -151,7 +151,7 @@ The goal of this audit is to identify routes, controllers, services, database sc
   ```
 
 #### B. Controller Cleanup
-*File: [auth.controller.ts](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/controllers/public/auth.controller.ts)*
+*File: [auth.controller.ts](../../../apps/server/src/controllers/public/auth.controller.ts)*
 * Remove the static method `redirectMagicLink` completely.
 * Simplify parameter schema check inside `verifyMagicLinkOrOTP` to require only `otp` and `email`.
 * **Line-by-line Diff:**
@@ -194,7 +194,7 @@ The goal of this audit is to identify routes, controllers, services, database sc
   ```
 
 #### C. Service Refactoring
-*File: [auth.service.ts](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/services/public/auth.service.ts)*
+*File: [auth.service.ts](../../../apps/server/src/services/public/auth.service.ts)*
 * Remove random `token` generation and link URL constructs in `requestMagicLink`.
 * Simplify `verifyMagicLinkOrOTP` to strictly parse OTP hashes without token checks.
 * **Line-by-line Diff:**
@@ -287,7 +287,7 @@ The goal of this audit is to identify routes, controllers, services, database sc
   ```
 
 #### D. Schema Cleanliness
-*File: [magic-token.schema.ts](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/models/magic-token.schema.ts)*
+*File: [magic-token.schema.ts](../../../apps/server/src/models/magic-token.schema.ts)*
 * Remove `token` field from interface and schema.
 * **Line-by-line Diff:**
   ```diff

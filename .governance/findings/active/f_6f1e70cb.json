@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 2,
+  "id": "f_6f1e70cb",
+  "rule": "VAL-UI-010",
+  "ruleVersion": "1.0.0",
+  "engineVersion": "1.0.0",
+  "domain": "UI UX Guild",
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "feature": "UIElement",
+  "status": "NEW",
+  "confidence": 0.9,
+  "relationships": [],
+  "evidence": {
+    "path": "apps/admin/src/app/bookings/_components/CancelBookingModal.tsx",
+    "construct": "UIElement",
+    "snippet": "<button",
+    "line": 48,
+    "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
+    "occurrences": [
+      {
+        "id": "2c6b4f06325a654cbc009b7c3df709e96a64d047a62adb2e9414fed43aefe67d",
+        "line": 48,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "<button",
+        "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
+        "fingerprint": "2c6b4f06325a654cbc009b7c3df709e96a64d047a62adb2e9414fed43aefe67d"
+      },
+      {
+        "id": "2c6b4f06325a654cbc009b7c3df709e96a64d047a62adb2e9414fed43aefe67d",
+        "line": 55,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "<button",
+        "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
+        "fingerprint": "2c6b4f06325a654cbc009b7c3df709e96a64d047a62adb2e9414fed43aefe67d"
+      }
+    ]
+  },
+  "createdDate": "2026-06-30T15:36:27.121Z",
+  "firstDetected": "2026-06-30T15:36:27.121Z",
+  "lastDetected": "2026-06-30T15:36:27.121Z",
+  "occurrenceCount": 2
+}

@@ -1,12 +1,18 @@
 'use client';
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { useState, useEffect } from 'react';
 
 import { AuthProvider } from './AuthProvider';
 import { AuthModalProvider } from './AuthModalProvider';
 import dynamic from 'next/dynamic';
+
+const ReactQueryDevtools =
+  process.env.NODE_ENV === 'development'
+    ? dynamic(() => import('@tanstack/react-query-devtools').then((mod) => mod.ReactQueryDevtools), {
+        ssr: false,
+      })
+    : () => null;
 
 const PopupManager = dynamic(() => import('@/components/common/PopupManager').then(mod => mod.PopupManager), {
   ssr: false,

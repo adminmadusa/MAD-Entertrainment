@@ -1,5 +1,17 @@
 # TODO Audit Fixes & Backlog
 
+- **Owner**: Repository Governance Owner
+- **Status**: Active
+- **Version**: 1.0
+- **Review Cycle**: Ongoing
+- **Last Updated**: 2026-07-01
+- **Related Documents:**
+  - [README.md](../README.md)
+  - [REPOSITORY_GOVERNANCE.md](../REPOSITORY_GOVERNANCE.md)
+  - [AGENTS.MD](../AGENTS.MD)
+
+---
+
 ## Purpose
 
 This file tracks known audit findings, technical debt, governance findings, and future improvement opportunities for the MAD Entertrainment repository.
@@ -243,7 +255,7 @@ Do not refactor without tests first.
 Review before adding new tooling:
 
 ```txt
-scripts/ci_governance_check.ts
+scripts/ci-governance-check.ts
 ```
 
 Avoid creating duplicate governance scripts if existing tooling already covers the requirement.

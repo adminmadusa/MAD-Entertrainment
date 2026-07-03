@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 2,
+  "id": "f_70b19df1",
+  "rule": "Orphaned Documentation",
+  "ruleVersion": "1.0.0",
+  "engineVersion": "1.0.0",
+  "domain": "Platform Team",
+  "owner": "Platform Team",
+  "package": "docs",
+  "feature": "Document",
+  "status": "NEW",
+  "confidence": 1,
+  "relationships": [],
+  "evidence": {
+    "path": "docs/archive/audits/login-simplification-audit.md",
+    "construct": "Document",
+    "message": "Document exists in the repository but has no incoming references from any other active documentation.",
+    "occurrences": [
+      {
+        "id": "19118d07856e0d3d2366f627f97f26c60d1d37447335a7de2c88def92fc676a3",
+        "line": 0,
+        "column": 0,
+        "construct": "Document",
+        "snippet": "",
+        "message": "Document exists in the repository but has no incoming references from any other active documentation.",
+        "fingerprint": "19118d07856e0d3d2366f627f97f26c60d1d37447335a7de2c88def92fc676a3"
+      }
+    ]
+  },
+  "createdDate": "2026-06-30T15:36:27.706Z",
+  "firstDetected": "2026-06-30T15:36:27.706Z",
+  "lastDetected": "2026-06-30T15:36:27.706Z",
+  "occurrenceCount": 1
+}

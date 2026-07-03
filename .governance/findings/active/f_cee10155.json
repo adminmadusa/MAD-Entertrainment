@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 2,
+  "id": "f_cee10155",
+  "rule": "Orphaned Documentation",
+  "ruleVersion": "1.0.0",
+  "engineVersion": "1.0.0",
+  "domain": "Platform Team",
+  "owner": "Platform Team",
+  "package": "docs",
+  "feature": "Document",
+  "status": "NEW",
+  "confidence": 1,
+  "relationships": [],
+  "evidence": {
+    "path": "docs/archive/audits/regression-audit.md",
+    "construct": "Document",
+    "message": "Document exists in the repository but has no incoming references from any other active documentation.",
+    "occurrences": [
+      {
+        "id": "42481905fcc832cc6b7f915102a277f9b5cc8364d0cfab8d978d56306c420843",
+        "line": 0,
+        "column": 0,
+        "construct": "Document",
+        "snippet": "",
+        "message": "Document exists in the repository but has no incoming references from any other active documentation.",
+        "fingerprint": "42481905fcc832cc6b7f915102a277f9b5cc8364d0cfab8d978d56306c420843"
+      }
+    ]
+  },
+  "createdDate": "2026-06-30T15:36:27.729Z",
+  "firstDetected": "2026-06-30T15:36:27.729Z",
+  "lastDetected": "2026-06-30T15:36:27.729Z",
+  "occurrenceCount": 1
+}

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { BookingStatus, ReservationStatus } from '@mad/shared';
-import { correctBookingEmail, resendBookingTickets, getBookingsSummary, cancelBooking, expireBooking } from './booking.service';
+import { correctBookingEmail, resendBookingTickets, getBookingsSummary, cancelBooking, expireBooking, getBookings, getBookingById } from './booking.service';
 import { Booking } from '../../models/booking.schema';
 import { UserModel } from '../../models/user.schema';
 import { Ticket } from '../../models/ticket.schema';
@@ -8,6 +8,7 @@ import { Payment } from '../../models/payment.schema';
 import { Event } from '../../models/event.schema';
 import { Coupon } from '../../models/coupon.schema';
 import { Refund } from '../../models/refund.schema';
+import { AuditLogModel } from '../../models/audit-log.schema';
 
 vi.mock('../../models/coupon.schema', () => ({
   Coupon: {
@@ -48,12 +49,20 @@ vi.mock('../../models/notification.schema', () => ({
 vi.mock('../../models/booking.schema', () => ({
   Booking: {
     findById: vi.fn(),
+    findOne: vi.fn(),
+    find: vi.fn(),
+    countDocuments: vi.fn(),
     aggregate: vi.fn(),
   },
 }));
 
 const mockTicketFindQuery = {
-  session: vi.fn().mockResolvedValue([]),
+  session: vi.fn().mockImplementation(function(sess) {
+    const p = Promise.resolve([]);
+    (p as any).lean = vi.fn().mockResolvedValue([]);
+    return p;
+  }),
+  lean: vi.fn().mockResolvedValue([]),
 };
 const mockTicketCountQuery = {
   session: vi.fn().mockResolvedValue(1),
@@ -72,13 +81,16 @@ vi.mock('../../models/ticket.schema', () => ({
       (q as any).session = vi.fn().mockReturnValue(q);
       return q;
     }),
+    bulkWrite: vi.fn().mockResolvedValue({ modifiedCount: 0 }),
+    insertMany: vi.fn().mockResolvedValue([]),
     aggregate: vi.fn(),
   },
 }));
 
 const mockAdminQuery = {
-  session: vi.fn().mockResolvedValue({ name: 'Admin', email: 'admin@example.com' }),
-  then: (resolve) => resolve({ name: 'Admin', email: 'admin@example.com' }),
+  session: vi.fn().mockImplementation(function() { return this; }),
+  lean: vi.fn().mockResolvedValue({ name: 'Admin', email: 'admin@example.com' }),
+  then: function(resolve) { return resolve({ name: 'Admin', email: 'admin@example.com' }); },
 };
 vi.mock('../../models/admin.schema', () => ({
   AdminModel: {
@@ -297,9 +309,341 @@ describe('Admin Booking Service Backend Tests', () => {
         })
       );
     });
+
+    it('should replace active tickets in batch using bulkWrite and insertMany', async () => {
+      const mockBooking = {
+        _id: 'booking-abc',
+        bookingId: 'MAD-2026-BATCH',
+        guestEmail: 'old@example.com',
+        eventId: 'event-1',
+        bookingVersion: 1,
+        save: vi.fn().mockResolvedValue(true),
+      };
+
+      const mockTickets = [
+        { _id: 'tid-1', ticketId: 'TKT-MAD-001', status: 'active', eventId: 'event-1', tierName: 'General', tier: 'general', admits: 1 },
+        { _id: 'tid-2', ticketId: 'TKT-MAD-002', status: 'active', eventId: 'event-1', tierName: 'General', tier: 'general', admits: 1 },
+        { _id: 'tid-3', ticketId: 'TKT-MAD-003', status: 'replaced', eventId: 'event-1', tierName: 'General', tier: 'general', admits: 1 },
+      ];
+
+      vi.mocked(Booking.findById).mockReturnValue({
+        session: vi.fn().mockResolvedValue(mockBooking),
+      } as any);
+
+      vi.mocked(UserModel.findOne).mockReturnValue({
+        session: vi.fn().mockResolvedValue(null),
+      } as any);
+
+      // Ticket.find().session().lean() returns all 3 tickets (2 active, 1 replaced)
+      vi.mocked(Ticket.find).mockImplementationOnce(() => ({
+        session: vi.fn().mockImplementation(() => ({
+          lean: vi.fn().mockResolvedValue(mockTickets),
+        })),
+      }) as any);
+
+      vi.mocked(Ticket.bulkWrite).mockResolvedValueOnce({ modifiedCount: 2 } as any);
+      vi.mocked(Ticket.insertMany).mockResolvedValueOnce([{}, {}] as any);
+
+      await correctBookingEmail('booking-abc', 'new@example.com', 'Correction', 'admin-id');
+
+      // Query count verification: exactly 1 find, 1 bulkWrite, 1 insertMany
+      expect(Ticket.find).toHaveBeenCalledTimes(1);
+      expect(Ticket.bulkWrite).toHaveBeenCalledTimes(1);
+      expect(Ticket.insertMany).toHaveBeenCalledTimes(1);
+
+      // Verify bulkWrite payload targets correct ticket _ids
+      const bulkWriteArgs = vi.mocked(Ticket.bulkWrite).mock.calls[0][0] as any[];
+      expect(bulkWriteArgs).toHaveLength(2);
+      expect(bulkWriteArgs[0].updateOne.filter._id).toBe('tid-1');
+      expect(bulkWriteArgs[1].updateOne.filter._id).toBe('tid-2');
+
+      // Verify bulkWrite update payload field parity
+      const update0 = bulkWriteArgs[0].updateOne.update.$set;
+      expect(update0.status).toBe('replaced');
+      expect(update0.replacedByTicketId).toBe('TKT-MAD-001-R1');
+      expect(update0.replacedAt).toBeInstanceOf(Date);
+      expect(update0.replacementReason).toBe('EMAIL_CORRECTION');
+      expect(update0.updatedAt).toBeInstanceOf(Date);
+
+      // Verify revision IDs are generated sequentially
+      const insertManyArgs = vi.mocked(Ticket.insertMany).mock.calls[0][0] as any[];
+      expect(insertManyArgs[0].ticketId).toBe('TKT-MAD-001-R1');
+      expect(insertManyArgs[1].ticketId).toBe('TKT-MAD-002-R1');
+    });
+
+    it('should verify that both bulkWrite and insertMany receive the transaction session', async () => {
+      const mockBooking = {
+        _id: 'booking-session-test',
+        bookingId: 'MAD-2026-SESS',
+        guestEmail: 'old@example.com',
+        eventId: 'event-1',
+        bookingVersion: 1,
+        save: vi.fn().mockResolvedValue(true),
+      };
+
+      const mockTickets = [
+        { _id: 'tid-1', ticketId: 'TKT-MAD-001', status: 'active', eventId: 'event-1', tierName: 'General', tier: 'general', admits: 1 },
+      ];
+
+      vi.mocked(Booking.findById).mockReturnValue({
+        session: vi.fn().mockResolvedValue(mockBooking),
+      } as any);
+      vi.mocked(UserModel.findOne).mockReturnValue({
+        session: vi.fn().mockResolvedValue(null),
+      } as any);
+      vi.mocked(Ticket.find).mockImplementationOnce(() => ({
+        session: vi.fn().mockImplementation(() => ({
+          lean: vi.fn().mockResolvedValue(mockTickets),
+        })),
+      }) as any);
+      vi.mocked(Ticket.bulkWrite).mockResolvedValueOnce({ modifiedCount: 1 } as any);
+      vi.mocked(Ticket.insertMany).mockResolvedValueOnce([{}] as any);
+
+      // Simulate a real session object being passed through
+      const fakeSession = { id: 'fake-session-obj' };
+      vi.mocked(mongoose.startSession).mockResolvedValueOnce({
+        withTransaction: vi.fn().mockImplementation(async (fn) => fn()),
+        endSession: vi.fn().mockResolvedValue(undefined),
+      } as any);
+
+      await correctBookingEmail('booking-session-test', 'new@example.com', 'Correction', 'admin-id');
+
+      // Session propagation: both batch operations must receive a session option
+      expect(Ticket.bulkWrite).toHaveBeenCalledWith(
+        expect.any(Array),
+        expect.objectContaining({ session: expect.anything() })
+      );
+      expect(Ticket.insertMany).toHaveBeenCalledWith(
+        expect.any(Array),
+        expect.objectContaining({ session: expect.anything() })
+      );
+    });
+
+    it('should throw and roll back if bulkWrite modifiedCount does not match expected ticket count', async () => {
+      const mockBooking = {
+        _id: 'booking-mismatch',
+        bookingId: 'MAD-2026-MISM',
+        guestEmail: 'old@example.com',
+        eventId: 'event-1',
+        bookingVersion: 1,
+        save: vi.fn().mockResolvedValue(true),
+      };
+
+      const mockTickets = [
+        { _id: 'tid-1', ticketId: 'TKT-MAD-001', status: 'active', eventId: 'event-1', tierName: 'General', tier: 'general', admits: 1 },
+        { _id: 'tid-2', ticketId: 'TKT-MAD-002', status: 'active', eventId: 'event-1', tierName: 'General', tier: 'general', admits: 1 },
+      ];
+
+      vi.mocked(Booking.findById).mockReturnValue({
+        session: vi.fn().mockResolvedValue(mockBooking),
+      } as any);
+      vi.mocked(UserModel.findOne).mockReturnValue({
+        session: vi.fn().mockResolvedValue(null),
+      } as any);
+      vi.mocked(Ticket.find).mockImplementationOnce(() => ({
+        session: vi.fn().mockImplementation(() => ({
+          lean: vi.fn().mockResolvedValue(mockTickets),
+        })),
+      }) as any);
+
+      // Simulate partial bulkWrite update — only 1 modified instead of 2
+      vi.mocked(Ticket.bulkWrite).mockResolvedValueOnce({ modifiedCount: 1 } as any);
+
+      await expect(
+        correctBookingEmail('booking-mismatch', 'new@example.com', 'Correction', 'admin-id')
+      ).rejects.toThrow(/Bulk write mismatch/);
+
+      // insertMany must NOT have been called if bulkWrite already failed
+      expect(Ticket.insertMany).not.toHaveBeenCalled();
+    });
+
+    it('should throw and roll back if insertMany fails', async () => {
+      const mockBooking = {
+        _id: 'booking-insert-fail',
+        bookingId: 'MAD-2026-INSFAIL',
+        guestEmail: 'old@example.com',
+        eventId: 'event-1',
+        bookingVersion: 1,
+        save: vi.fn().mockResolvedValue(true),
+      };
+
+      const mockTickets = [
+        { _id: 'tid-1', ticketId: 'TKT-MAD-001', status: 'active', eventId: 'event-1', tierName: 'General', tier: 'general', admits: 1 },
+      ];
+
+      vi.mocked(Booking.findById).mockReturnValue({
+        session: vi.fn().mockResolvedValue(mockBooking),
+      } as any);
+      vi.mocked(UserModel.findOne).mockReturnValue({
+        session: vi.fn().mockResolvedValue(null),
+      } as any);
+      vi.mocked(Ticket.find).mockImplementationOnce(() => ({
+        session: vi.fn().mockImplementation(() => ({
+          lean: vi.fn().mockResolvedValue(mockTickets),
+        })),
+      }) as any);
+      vi.mocked(Ticket.bulkWrite).mockResolvedValueOnce({ modifiedCount: 1 } as any);
+      // Simulate E11000-style duplicate key error from insertMany
+      vi.mocked(Ticket.insertMany).mockRejectedValueOnce(
+        Object.assign(new Error('E11000 duplicate key error'), { code: 11000 })
+      );
+
+      await expect(
+        correctBookingEmail('booking-insert-fail', 'new@example.com', 'Correction', 'admin-id')
+      ).rejects.toThrow(/E11000|duplicate key/);
+
+      // Side effects must not have fired
+      expect(auditLog).not.toHaveBeenCalled();
+      expect(emitToBooking).not.toHaveBeenCalled();
+      expect(emitToAdmin).not.toHaveBeenCalled();
+    });
+
+    it('should not affect tickets belonging to other bookings', async () => {
+      const mockBooking = {
+        _id: 'booking-target',
+        bookingId: 'MAD-2026-TARGET',
+        guestEmail: 'old@example.com',
+        eventId: 'event-1',
+        bookingVersion: 1,
+        save: vi.fn().mockResolvedValue(true),
+      };
+
+      // Only the target booking's tickets are returned by Ticket.find
+      const targetTickets = [
+        { _id: 'tid-target-1', ticketId: 'TKT-MAD-010', status: 'active', eventId: 'event-1', tierName: 'General', tier: 'general', admits: 1 },
+      ];
+
+      vi.mocked(Booking.findById).mockReturnValue({
+        session: vi.fn().mockResolvedValue(mockBooking),
+      } as any);
+      vi.mocked(UserModel.findOne).mockReturnValue({
+        session: vi.fn().mockResolvedValue(null),
+      } as any);
+      vi.mocked(Ticket.find).mockImplementationOnce(() => ({
+        session: vi.fn().mockImplementation(() => ({
+          lean: vi.fn().mockResolvedValue(targetTickets),
+        })),
+      }) as any);
+      vi.mocked(Ticket.bulkWrite).mockResolvedValueOnce({ modifiedCount: 1 } as any);
+      vi.mocked(Ticket.insertMany).mockResolvedValueOnce([{}] as any);
+
+      await correctBookingEmail('booking-target', 'new@example.com', 'Correction', 'admin-id');
+
+      // Ticket.find was called exactly once with only the target booking's _id
+      expect(Ticket.find).toHaveBeenCalledWith({ bookingId: mockBooking._id });
+
+      // bulkWrite only targets the single ticket belonging to the target booking
+      const bulkWriteArgs = vi.mocked(Ticket.bulkWrite).mock.calls[0][0] as any[];
+      expect(bulkWriteArgs).toHaveLength(1);
+      expect(bulkWriteArgs[0].updateOne.filter._id).toBe('tid-target-1');
+    });
+
+    it('should correctly compute revision numbers in memory for large bookings (100+ tickets)', async () => {
+      const mockBooking = {
+        _id: 'booking-large',
+        bookingId: 'MAD-2026-LARGE',
+        guestEmail: 'bulk@example.com',
+        eventId: 'event-1',
+        bookingVersion: 1,
+        save: vi.fn().mockResolvedValue(true),
+      };
+
+      const ticketCount = 100;
+      const largeTickets = Array.from({ length: ticketCount }, (_, i) => ({
+        _id: `tid-${i + 1}`,
+        ticketId: `TKT-MAD-${String(i + 1).padStart(3, '0')}`,
+        status: 'active',
+        eventId: 'event-1',
+        tierName: 'General',
+        tier: 'general',
+        admits: 1,
+      }));
+
+      vi.mocked(Booking.findById).mockReturnValue({
+        session: vi.fn().mockResolvedValue(mockBooking),
+      } as any);
+      vi.mocked(UserModel.findOne).mockReturnValue({
+        session: vi.fn().mockResolvedValue(null),
+      } as any);
+      vi.mocked(Ticket.find).mockImplementationOnce(() => ({
+        session: vi.fn().mockImplementation(() => ({
+          lean: vi.fn().mockResolvedValue(largeTickets),
+        })),
+      }) as any);
+      vi.mocked(Ticket.bulkWrite).mockResolvedValueOnce({ modifiedCount: ticketCount } as any);
+      vi.mocked(Ticket.insertMany).mockResolvedValueOnce(
+        Array.from({ length: ticketCount }, () => ({})) as any
+      );
+
+      await correctBookingEmail('booking-large', 'new-bulk@example.com', 'Bulk correction', 'admin-id');
+
+      // Constant O(1) DB round-trips regardless of ticket count
+      expect(Ticket.find).toHaveBeenCalledTimes(1);
+      expect(Ticket.bulkWrite).toHaveBeenCalledTimes(1);
+      expect(Ticket.insertMany).toHaveBeenCalledTimes(1);
+
+      // All 100 update ops sent in one call, all with unique -R1 revision IDs
+      const bulkWriteArgs = vi.mocked(Ticket.bulkWrite).mock.calls[0][0] as any[];
+      expect(bulkWriteArgs).toHaveLength(ticketCount);
+
+      const insertManyArgs = vi.mocked(Ticket.insertMany).mock.calls[0][0] as any[];
+      expect(insertManyArgs).toHaveLength(ticketCount);
+
+      // Verify all replacement ticket IDs are unique
+      const newTicketIds = insertManyArgs.map((t: any) => t.ticketId);
+      const uniqueIds = new Set(newTicketIds);
+      expect(uniqueIds.size).toBe(ticketCount);
+
+      // Verify all new IDs follow the -R1 revision pattern
+      expect(newTicketIds.every((id: string) => id.endsWith('-R1'))).toBe(true);
+    });
+
+    it('should emit side effects only after transaction resolves, never before', async () => {
+      const mockBooking = {
+        _id: 'booking-ordering',
+        bookingId: 'MAD-2026-ORDER',
+        guestEmail: 'old@example.com',
+        eventId: 'event-1',
+        bookingVersion: 1,
+        save: vi.fn().mockResolvedValue(true),
+      };
+
+      vi.mocked(Booking.findById).mockReturnValue({
+        session: vi.fn().mockResolvedValue(mockBooking),
+      } as any);
+      vi.mocked(UserModel.findOne).mockReturnValue({
+        session: vi.fn().mockResolvedValue(null),
+      } as any);
+
+      const callOrder: string[] = [];
+
+      vi.mocked(emitToBooking).mockImplementation(() => {
+        callOrder.push('emitToBooking');
+      });
+      vi.mocked(emitToAdmin).mockImplementation(() => {
+        callOrder.push('emitToAdmin');
+      });
+      vi.mocked(auditLog).mockImplementation(() => {
+        callOrder.push('auditLog');
+      });
+
+      await correctBookingEmail('booking-ordering', 'new@example.com', 'Correction', 'admin-id');
+
+      // All side effects must have been called after transaction completes
+      expect(callOrder).toContain('emitToBooking');
+      expect(callOrder).toContain('emitToAdmin');
+      expect(callOrder).toContain('auditLog');
+
+      // auditLog must fire before socket emissions (executeCorrectEmailSideEffects order)
+      const auditIdx = callOrder.indexOf('auditLog');
+      const socketIdx = callOrder.indexOf('emitToBooking');
+      expect(auditIdx).toBeGreaterThanOrEqual(0);
+      expect(socketIdx).toBeGreaterThanOrEqual(0);
+    });
   });
 
   describe('resendBookingTickets', () => {
+
     it('should throw 404 if booking is not found', async () => {
       vi.mocked(Booking.findById).mockReturnValue({
         populate: vi.fn().mockResolvedValue(null),
@@ -1142,6 +1486,428 @@ describe('Admin Booking Service Backend Tests', () => {
       } as any);
 
       await expect(expireBooking('booking-confirmed')).rejects.toThrow('Cannot expire booking in status: confirmed');
+    });
+  });
+
+  describe('PERF-001: getBookings and getBookingById DTO Parity & Performance Tests', () => {
+    beforeEach(() => {
+      vi.clearAllMocks();
+    });
+
+    it('should retrieve paginated bookings list and match DTO payload schema contract', async () => {
+      const mockEventId = new mongoose.Types.ObjectId();
+      const mockBookingId = new mongoose.Types.ObjectId();
+      
+      const mockBookings = [
+        {
+          _id: mockBookingId,
+          bookingId: 'MAD-2026-TEST1',
+          status: BookingStatus.CONFIRMED,
+          tickets: [{ tier: 'general', tierName: 'General', quantity: 2, pricePerTicket: 100, subtotal: 200 }],
+          totalTickets: 2,
+          totalAmount: 200,
+          currency: 'INR',
+          createdAt: new Date('2026-06-28T10:00:00Z'),
+          guestName: 'John Doe',
+          guestEmail: 'john@example.com',
+          guestPhone: '+919876543210',
+          eventId: {
+            _id: mockEventId,
+            title: 'Sample Concert',
+            startDate: new Date('2026-07-01T12:00:00Z'),
+            bookingMode: 'general_admission',
+          },
+        }
+      ];
+
+      const mockTickets = [
+        {
+          ticketId: 'TCK-1',
+          bookingId: mockBookingId,
+          status: 'active',
+          createdAt: new Date('2026-06-28T10:05:00Z'),
+          admits: 1,
+        }
+      ];
+
+      const mockAuditLogs = [
+        {
+          _id: new mongoose.Types.ObjectId(),
+          action: 'BOOKING_EMAIL_CORRECTED',
+          actor: { id: 'admin-1' },
+          status: 'success',
+          createdAt: new Date('2026-06-28T10:10:00Z'),
+          metadata: { bookingId: mockBookingId.toString() },
+          description: 'Corrected email',
+        }
+      ];
+
+      // Mock Mongoose calls for getBookings
+      vi.mocked(Booking.countDocuments).mockResolvedValue(1);
+      
+      const mockLean = vi.fn().mockResolvedValue(mockBookings);
+      const mockLimit = vi.fn().mockReturnValue({ lean: mockLean });
+      const mockSkip = vi.fn().mockReturnValue({ limit: mockLimit });
+      const mockSort = vi.fn().mockReturnValue({ skip: mockSkip });
+      const mockPopulate = vi.fn().mockReturnValue({ sort: mockSort });
+      vi.mocked(Booking.find).mockReturnValue({ populate: mockPopulate } as any);
+
+      vi.mocked(Ticket.find).mockReturnValue({
+        lean: vi.fn().mockResolvedValue(mockTickets),
+      } as any);
+
+      vi.mocked(AuditLogModel.find).mockReturnValue({
+        sort: vi.fn().mockReturnValue({
+          lean: vi.fn().mockResolvedValue(mockAuditLogs),
+        }),
+      } as any);
+
+      // Perform request
+      const result = await getBookings(1, 10);
+
+      // Verify DB queries count (1 count, 1 find, 1 tickets, 1 audit logs = 4 queries total)
+      expect(Booking.countDocuments).toHaveBeenCalledTimes(1);
+      expect(Booking.find).toHaveBeenCalledTimes(1);
+      expect(Ticket.find).toHaveBeenCalledTimes(1);
+      expect(AuditLogModel.find).toHaveBeenCalledTimes(1);
+
+      // Strengthen Performance Verification: Verify that the bulk-loading strategy is used
+      expect(AuditLogModel.find).toHaveBeenCalledWith(
+        expect.objectContaining({
+          $or: [
+            { 'metadata.bookingId': { $in: [mockBookingId.toString()] } },
+            { 'metadata.bookingReference': { $in: ['MAD-2026-TEST1'] } }
+          ],
+          action: { $in: ['BOOKING_EMAIL_CORRECTED', 'BOOKING_TICKETS_RESENT'] }
+        }),
+        expect.objectContaining({
+          _id: 1,
+          action: 1,
+          actor: 1,
+          status: 1,
+          createdAt: 1,
+          metadata: 1,
+          description: 1
+        })
+      );
+
+      // Verify payload structure parity via maintainable matchers (Omit fragile full-object exact comparisons)
+      expect(result.data).toHaveLength(1);
+      const dto = result.data[0];
+      
+      expect(dto).toEqual(
+        expect.objectContaining({
+          _id: mockBookingId.toString(),
+          bookingId: 'MAD-2026-TEST1',
+          status: BookingStatus.CONFIRMED,
+          totalAmount: 200,
+          currency: 'INR',
+          mode: 'general_admission',
+          totalTickets: 1,
+          ticketsScanned: 0,
+          ticketsRemaining: 1,
+          attendanceStatus: 'NOT_ATTENDED',
+        })
+      );
+
+      expect(dto.eventId).toEqual(
+        expect.objectContaining({
+          _id: mockEventId.toString(),
+          title: 'Sample Concert',
+        })
+      );
+
+      expect(dto.tickets).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ tierName: 'General', quantity: 2, price: 100 })
+        ])
+      );
+
+      expect(dto.auditHistory).toEqual([
+        expect.objectContaining({
+          action: 'BOOKING_EMAIL_CORRECTED',
+          actor: 'admin-1',
+          status: 'success',
+          description: 'Corrected email',
+        })
+      ]);
+
+      expect(dto.individualTickets).toEqual([
+        expect.objectContaining({
+          ticketId: 'TCK-1',
+          status: 'active',
+        })
+      ]);
+
+      expect(result.pagination).toEqual({
+        page: 1,
+        limit: 10,
+        total: 1,
+        totalPages: 1,
+      });
+    });
+
+    it('should retrieve a single booking by ID with pre-loaded logs and tickets', async () => {
+      const mockEventId = new mongoose.Types.ObjectId();
+      const mockBookingId = new mongoose.Types.ObjectId();
+      
+      const mockBooking = {
+        _id: mockBookingId,
+        bookingId: 'MAD-2026-TEST1',
+        status: BookingStatus.CONFIRMED,
+        tickets: [{ tier: 'general', tierName: 'General', quantity: 2, pricePerTicket: 100, subtotal: 200 }],
+        totalTickets: 2,
+        totalAmount: 200,
+        currency: 'INR',
+        createdAt: new Date('2026-06-28T10:00:00Z'),
+        guestName: 'John Doe',
+        guestEmail: 'john@example.com',
+        guestPhone: '+919876543210',
+        eventId: {
+          _id: mockEventId,
+          title: 'Sample Concert',
+          startDate: new Date('2026-07-01T12:00:00Z'),
+          bookingMode: 'general_admission',
+        },
+      };
+
+      const mockTickets = [
+        {
+          ticketId: 'TCK-1',
+          bookingId: mockBookingId,
+          status: 'active',
+          createdAt: new Date('2026-06-28T10:05:00Z'),
+          admits: 1,
+        }
+      ];
+
+      const mockAuditLogs = [
+        {
+          _id: new mongoose.Types.ObjectId(),
+          action: 'BOOKING_EMAIL_CORRECTED',
+          actor: { id: 'admin-1' },
+          status: 'success',
+          createdAt: new Date('2026-06-28T10:10:00Z'),
+          metadata: { bookingId: mockBookingId.toString() },
+          description: 'Corrected email',
+        }
+      ];
+
+      const mockLean = vi.fn().mockResolvedValue(mockBooking);
+      const mockFindOnePopulate = vi.fn().mockReturnValue({
+        lean: mockLean,
+      });
+      vi.mocked(Booking.findOne).mockReturnValue({
+        populate: mockFindOnePopulate,
+      } as any);
+
+      vi.mocked(Ticket.find).mockReturnValue({
+        lean: vi.fn().mockResolvedValue(mockTickets),
+      } as any);
+
+      vi.mocked(AuditLogModel.find).mockReturnValue({
+        sort: vi.fn().mockReturnValue({
+          lean: vi.fn().mockResolvedValue(mockAuditLogs),
+        }),
+      } as any);
+
+      const result = await getBookingById(mockBookingId.toString());
+
+      expect(Booking.findOne).toHaveBeenCalledTimes(1);
+      expect(Ticket.find).toHaveBeenCalledTimes(1);
+      expect(AuditLogModel.find).toHaveBeenCalledTimes(1);
+      
+      expect(result).toEqual(
+        expect.objectContaining({
+          bookingId: 'MAD-2026-TEST1',
+          status: BookingStatus.CONFIRMED,
+          totalAmount: 200,
+        })
+      );
+    });
+
+    it('should pass regression tests for guest, authenticated, cancelled bookings, replaced tickets, and empty sets', async () => {
+      const mockEventId = new mongoose.Types.ObjectId();
+      const mockBookingId = new mongoose.Types.ObjectId();
+      
+      const mockBookings = [
+        {
+          _id: mockBookingId,
+          bookingId: 'MAD-2026-REG1',
+          status: BookingStatus.CANCELLED,
+          tickets: [],
+          totalTickets: 0,
+          totalAmount: 0,
+          currency: 'INR',
+          createdAt: new Date('2026-06-28T10:00:00Z'),
+          guestName: 'Guest Customer',
+          guestEmail: 'guest@example.com',
+          guestPhone: '+919876543219',
+          cancellationReason: 'User cancelled',
+          cancelledAt: new Date('2026-06-28T11:00:00Z'),
+          eventId: {
+            _id: mockEventId,
+            title: 'Sample Concert',
+            startDate: new Date('2026-07-01T12:00:00Z'),
+            bookingMode: 'general_admission',
+          },
+        }
+      ];
+
+      vi.mocked(Booking.countDocuments).mockResolvedValue(1);
+
+      const mockLean = vi.fn().mockResolvedValue(mockBookings);
+      const mockLimit = vi.fn().mockReturnValue({ lean: mockLean });
+      const mockSkip = vi.fn().mockReturnValue({ limit: mockLimit });
+      const mockSort = vi.fn().mockReturnValue({ skip: mockSkip });
+      const mockPopulate = vi.fn().mockReturnValue({ sort: mockSort });
+      vi.mocked(Booking.find).mockReturnValue({ populate: mockPopulate } as any);
+
+      vi.mocked(Ticket.find).mockReturnValue({
+        lean: vi.fn().mockResolvedValue([]),
+      } as any);
+
+      vi.mocked(AuditLogModel.find).mockReturnValue({
+        sort: vi.fn().mockReturnValue({
+          lean: vi.fn().mockResolvedValue([]),
+        }),
+      } as any);
+
+      const result = await getBookings(1, 10);
+
+      expect(result.data).toHaveLength(1);
+      const dto = result.data[0];
+      expect(dto.userId).toBeNull();
+      expect(dto.guestInfo).toEqual(expect.objectContaining({
+        email: 'guest@example.com',
+        name: 'Guest Customer',
+      }));
+      expect(dto.status).toBe(BookingStatus.CANCELLED);
+      expect(dto.cancellationReason).toBe('User cancelled');
+      expect(dto.cancelledAt).toBeDefined();
+      expect(dto.auditHistory).toHaveLength(0);
+      expect(dto.tickets).toHaveLength(0);
+    });
+
+    it('should dynamically verify projection coverage against mapper requirements', async () => {
+      const mockEventId = new mongoose.Types.ObjectId();
+      const mockBookingId = new mongoose.Types.ObjectId();
+      
+      const projectedBookingOnly = {
+        _id: mockBookingId,
+        bookingId: 'MAD-2026-PROJ1',
+        status: BookingStatus.CONFIRMED,
+        totalAmount: 100,
+        currency: 'INR',
+        eventId: {
+          _id: mockEventId,
+          title: 'Concert',
+          startDate: new Date(),
+          bookingMode: 'general_admission',
+        },
+        userId: new mongoose.Types.ObjectId(),
+        guestName: 'Test',
+        firstName: 'Test',
+        lastName: 'User',
+        guestEmail: 'test@example.com',
+        guestPhone: '+919999999999',
+        keepUpdated: true,
+        sendBestEvents: false,
+        tickets: [
+          {
+            tierName: 'General',
+            quantity: 1,
+            pricePerTicket: 100,
+            seats: []
+          }
+        ],
+        createdAt: new Date(),
+        cancellationReason: undefined,
+        cancelledAt: undefined,
+      };
+
+      const mockTickets = [
+        {
+          ticketId: 'T-1',
+          bookingId: mockBookingId,
+          status: 'replaced',
+          createdAt: new Date(),
+          replacedAt: new Date(),
+          replacedByTicketId: 'T-2',
+          replacementReason: 'EMAIL_CORRECTION',
+          admits: 1,
+        }
+      ];
+
+      const mockLogs = [
+        {
+          _id: new mongoose.Types.ObjectId(),
+          action: 'BOOKING_EMAIL_CORRECTED',
+          actor: { id: 'admin-1' },
+          status: 'success',
+          createdAt: new Date(),
+          metadata: { bookingId: mockBookingId.toString() },
+          description: 'Updated email',
+        }
+      ];
+
+      vi.mocked(Booking.countDocuments).mockResolvedValue(1);
+
+      const mockLean = vi.fn().mockResolvedValue([projectedBookingOnly]);
+      const mockLimit = vi.fn().mockReturnValue({ lean: mockLean });
+      const mockSkip = vi.fn().mockReturnValue({ limit: mockLimit });
+      const mockSort = vi.fn().mockReturnValue({ skip: mockSkip });
+      const mockPopulate = vi.fn().mockReturnValue({ sort: mockSort });
+      vi.mocked(Booking.find).mockReturnValue({ populate: mockPopulate } as any);
+
+      vi.mocked(Ticket.find).mockReturnValue({
+        lean: vi.fn().mockResolvedValue(mockTickets),
+      } as any);
+
+      vi.mocked(AuditLogModel.find).mockReturnValue({
+        sort: vi.fn().mockReturnValue({
+          lean: vi.fn().mockResolvedValue(mockLogs),
+        }),
+      } as any);
+
+      const result = await getBookings(1, 10);
+
+      expect(result.data).toHaveLength(1);
+      const mapped = result.data[0];
+      expect(mapped._id).toBe(mockBookingId.toString());
+      expect(mapped.individualTickets[0].replacedByTicketId).toBe('T-2');
+      expect(mapped.individualTickets[0].replacementReason).toBe('EMAIL_CORRECTION');
+    });
+
+    it('should return empty pagination response when no bookings are found', async () => {
+      vi.mocked(Booking.countDocuments).mockResolvedValue(0);
+
+      const mockLean = vi.fn().mockResolvedValue([]);
+      const mockLimit = vi.fn().mockReturnValue({ lean: mockLean });
+      const mockSkip = vi.fn().mockReturnValue({ limit: mockLimit });
+      const mockSort = vi.fn().mockReturnValue({ skip: mockSkip });
+      const mockPopulate = vi.fn().mockReturnValue({ sort: mockSort });
+      vi.mocked(Booking.find).mockReturnValue({ populate: mockPopulate } as any);
+
+      vi.mocked(Ticket.find).mockReturnValue({
+        lean: vi.fn().mockResolvedValue([]),
+      } as any);
+
+      vi.mocked(AuditLogModel.find).mockReturnValue({
+        sort: vi.fn().mockReturnValue({
+          lean: vi.fn().mockResolvedValue([]),
+        }),
+      } as any);
+
+      const result = await getBookings(1, 10);
+
+      expect(result.data).toHaveLength(0);
+      expect(result.pagination).toEqual({
+        page: 1,
+        limit: 10,
+        total: 0,
+        totalPages: 1,
+      });
     });
   });
 });

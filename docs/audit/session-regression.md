@@ -54,12 +54,12 @@ Users experience sudden unexpected logouts. The browser network inspect panel re
 
 ## 3. Affected Files
 * **Frontend**:
-  * [apps/web/src/lib/api/client.ts](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/lib/api/client.ts)
-  * [apps/web/src/providers/AuthProvider.tsx](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/providers/AuthProvider.tsx)
+  * [apps/web/src/lib/api/client.ts](../../apps/web/src/lib/api/client.ts)
+  * [apps/web/src/providers/AuthProvider.tsx](../../apps/web/src/providers/AuthProvider.tsx)
 * **Backend**:
-  * [apps/server/src/services/public/auth.service.ts](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/services/public/auth.service.ts)
-  * [apps/server/src/controllers/public/auth.controller.ts](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/controllers/public/auth.controller.ts)
-  * [apps/server/src/models/refresh-token.schema.ts](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/server/src/models/refresh-token.schema.ts)
+  * [apps/server/src/services/public/auth.service.ts](../../apps/server/src/services/public/auth.service.ts)
+  * [apps/server/src/controllers/public/auth.controller.ts](../../apps/server/src/controllers/public/auth.controller.ts)
+  * [apps/server/src/models/refresh-token.schema.ts](../../apps/server/src/models/refresh-token.schema.ts)
 
 ---
 

@@ -7,12 +7,12 @@ This independent audit verifies that the AuthForm extraction has been executed c
 ## 1. File Verification
 
 The following files were successfully created/modified:
-- [x] [AuthForm.tsx](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/components/auth/AuthForm.tsx) (Modified)
-- [x] [useOtpCooldowns.ts](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/components/auth/hooks/useOtpCooldowns.ts) (New Hook)
-- [x] [LoginForm.tsx](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/components/auth/LoginForm.tsx) (New Form Component)
-- [x] [OtpVerifyForm.tsx](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/components/auth/OtpVerifyForm.tsx) (New Form Component)
+- [x] [AuthForm.tsx](../../../apps/web/src/components/auth/AuthForm.tsx) (Modified)
+- [x] [useOtpCooldowns.ts](../../../apps/web/src/components/auth/hooks/useOtpCooldowns.ts) (New Hook)
+- [x] [LoginForm.tsx](../../../apps/web/src/components/auth/LoginForm.tsx) (New Form Component)
+- [x] [OtpVerifyForm.tsx](../../../apps/web/src/components/auth/OtpVerifyForm.tsx) (New Form Component)
 
-The existing [ProfileCompletionForm.tsx](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/components/auth/ProfileCompletionForm.tsx) was preserved and reused as-is. No onboarding or registration form (`RegisterForm.tsx`) was created, preventing duplicate onboarding flow logic.
+The existing [ProfileCompletionForm.tsx](../../../apps/web/src/components/auth/ProfileCompletionForm.tsx) was preserved and reused as-is. No onboarding or registration form (`RegisterForm.tsx`) was created, preventing duplicate onboarding flow logic.
 
 ---
 

@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 2,
+  "id": "f_41dfd87b",
+  "rule": "Orphaned Documentation",
+  "ruleVersion": "1.0.0",
+  "engineVersion": "1.0.0",
+  "domain": "Platform Team",
+  "owner": "Platform Team",
+  "package": "docs",
+  "feature": "Document",
+  "status": "NEW",
+  "confidence": 1,
+  "relationships": [],
+  "evidence": {
+    "path": "docs/archive/branch-cleanup/2026-06/compliance_report.md",
+    "construct": "Document",
+    "message": "Document exists in the repository but has no incoming references from any other active documentation.",
+    "occurrences": [
+      {
+        "id": "0a9f57bfb71eeb97b5aae15c04fd72735b02a4413b786716e92b8059faabf741",
+        "line": 0,
+        "column": 0,
+        "construct": "Document",
+        "snippet": "",
+        "message": "Document exists in the repository but has no incoming references from any other active documentation.",
+        "fingerprint": "0a9f57bfb71eeb97b5aae15c04fd72735b02a4413b786716e92b8059faabf741"
+      }
+    ]
+  },
+  "createdDate": "2026-06-30T15:36:27.878Z",
+  "firstDetected": "2026-06-30T15:36:27.878Z",
+  "lastDetected": "2026-06-30T15:36:27.878Z",
+  "occurrenceCount": 1
+}

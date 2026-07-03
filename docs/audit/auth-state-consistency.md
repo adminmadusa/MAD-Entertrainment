@@ -59,9 +59,9 @@ Users who log in successfully report a lack of visual indicators of their logged
 
 ## 3. Affected Files
 * **Frontend Components**:
-  * [apps/web/src/components/layout/Navbar.tsx](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/components/layout/Navbar.tsx)
-  * [apps/web/src/app/(auth)/dashboard/page.tsx](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/app/(auth)/dashboard/page.tsx)
-  * [apps/web/src/components/auth/AuthForm.tsx](file:///Users/admin/Desktop/MAD%20Entertrainment/apps/web/src/components/auth/AuthForm.tsx)
+  * [apps/web/src/components/layout/Navbar.tsx](../../apps/web/src/components/layout/Navbar.tsx)
+  * [apps/web/src/app/(auth)/dashboard/page.tsx](../../apps/web/src/app/(auth)/dashboard/page.tsx)
+  * [apps/web/src/components/auth/AuthForm.tsx](../../apps/web/src/components/auth/AuthForm.tsx)
 
 ---
 

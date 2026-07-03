@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 2,
+  "id": "f_6a882e4b",
+  "rule": "VAL-UI-011",
+  "ruleVersion": "1.0.0",
+  "engineVersion": "1.0.0",
+  "domain": "UI UX Guild",
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "feature": "UIElement",
+  "status": "NEW",
+  "confidence": 0.9,
+  "relationships": [],
+  "evidence": {
+    "path": "apps/web/src/app/tickets/components/ContactSupportModal.tsx",
+    "construct": "UIElement",
+    "line": 1,
+    "message": "Duplicate component layout detected: shares 75% similarity with \"OtpVerificationModal\" in \"apps/web/src/app/tickets/components/OtpVerificationModal.tsx\". Recommendation: Extract the duplicated layout/logic from \"apps/web/src/app/tickets/components/ContactSupportModal.tsx\" and \"apps/web/src/app/tickets/components/OtpVerificationModal.tsx\" into a single reusable shared component in \"packages/ui\".",
+    "occurrences": [
+      {
+        "id": "b21c8e3a0053010500b52c06d5e6184f0d207d606590976ca06b4b4f42aa8d6d",
+        "line": 1,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "",
+        "message": "Duplicate component layout detected: shares 75% similarity with \"OtpVerificationModal\" in \"apps/web/src/app/tickets/components/OtpVerificationModal.tsx\". Recommendation: Extract the duplicated layout/logic from \"apps/web/src/app/tickets/components/ContactSupportModal.tsx\" and \"apps/web/src/app/tickets/components/OtpVerificationModal.tsx\" into a single reusable shared component in \"packages/ui\".",
+        "fingerprint": "b21c8e3a0053010500b52c06d5e6184f0d207d606590976ca06b4b4f42aa8d6d"
+      }
+    ]
+  },
+  "createdDate": "2026-06-30T15:36:27.267Z",
+  "firstDetected": "2026-06-30T15:36:27.267Z",
+  "lastDetected": "2026-06-30T15:36:27.267Z",
+  "occurrenceCount": 1
+}

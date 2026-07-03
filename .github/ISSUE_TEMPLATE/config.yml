@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: MAD Entertrainment Operational Runbook
+    url: https://github.com/adminmadusa/MAD-Entertrainment/blob/develop/RUNBOOK.md
+    about: Please refer to the runbook for operational checklists and procedures.

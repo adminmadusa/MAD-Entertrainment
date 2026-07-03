@@ -54,11 +54,11 @@
 
 All governance artifacts generated during this cycle:
 
-1. **Validation Audit:** [branch_cleanup_validation_audit.md](file:///Users/admin/Desktop/MAD%20Entertrainment/docs/archive/branch-cleanup/branch_cleanup_validation_audit.md)
-2. **Execution Protocol:** [branch_cleanup_execution_protocol.md](file:///Users/admin/Desktop/MAD%20Entertrainment/docs/archive/branch-cleanup/branch_cleanup_execution_protocol.md)
-3. **Recovery Verification:** [asset_recovery_verification.md](file:///Users/admin/Desktop/MAD%20Entertrainment/docs/archive/branch-cleanup/asset_recovery_verification.md)
-4. **Authorization Audit:** [final_cleanup_authorization_audit.md](file:///Users/admin/Desktop/MAD%20Entertrainment/docs/archive/branch-cleanup/final_cleanup_authorization_audit.md)
-5. **Cleanup Record:** [cleanup_record.md](file:///Users/admin/Desktop/MAD%20Entertrainment/docs/archive/branch-cleanup/cleanup_record.md)
-6. **Governance Compliance:** [branch_cleanup_governance_compliance_report.md](file:///Users/admin/Desktop/MAD%20Entertrainment/docs/archive/branch-cleanup/branch_cleanup_governance_compliance_report.md)
-7. **Governance Baseline:** [governance_baseline.md](file:///Users/admin/Desktop/MAD%20Entertrainment/docs/archive/branch-cleanup/governance_baseline.md)
-8. **Live Git Evidence Snapshots:** [evidence/](file:///Users/admin/Desktop/MAD%20Entertrainment/docs/archive/branch-cleanup/evidence/)
+1. **Validation Audit:** [branch_cleanup_validation_audit.md](branch_cleanup_validation_audit.md)
+2. **Execution Protocol:** [branch_cleanup_execution_protocol.md](branch_cleanup_execution_protocol.md)
+3. **Recovery Verification:** [asset_recovery_verification.md](asset_recovery_verification.md)
+4. **Authorization Audit:** [final_cleanup_authorization_audit.md](final_cleanup_authorization_audit.md)
+5. **Cleanup Record:** [cleanup_record.md](cleanup_record.md)
+6. **Governance Compliance:** [branch_cleanup_governance_compliance_report.md](branch_cleanup_governance_compliance_report.md)
+7. **Governance Baseline:** [governance_baseline.md](governance_baseline.md)
+8. **Live Git Evidence Snapshots:** [evidence/](evidence)

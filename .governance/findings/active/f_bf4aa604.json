@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 2,
+  "id": "f_bf4aa604",
+  "rule": "VAL-UI-005",
+  "ruleVersion": "1.0.0",
+  "engineVersion": "1.0.0",
+  "domain": "UI UX Guild",
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "feature": "UIElement",
+  "status": "NEW",
+  "confidence": 0.9,
+  "relationships": [],
+  "evidence": {
+    "path": "apps/web/src/components/booking/shared/EntryPassGrid.tsx",
+    "construct": "UIElement",
+    "snippet": "<button",
+    "line": 170,
+    "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
+    "occurrences": [
+      {
+        "id": "e35776b1c43c924882375e5f9fcc8375e572898ba3b07e339280e8fa46d18fcc",
+        "line": 170,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "<button",
+        "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
+        "fingerprint": "e35776b1c43c924882375e5f9fcc8375e572898ba3b07e339280e8fa46d18fcc"
+      },
+      {
+        "id": "e35776b1c43c924882375e5f9fcc8375e572898ba3b07e339280e8fa46d18fcc",
+        "line": 214,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "<button",
+        "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
+        "fingerprint": "e35776b1c43c924882375e5f9fcc8375e572898ba3b07e339280e8fa46d18fcc"
+      },
+      {
+        "id": "e35776b1c43c924882375e5f9fcc8375e572898ba3b07e339280e8fa46d18fcc",
+        "line": 243,
+        "column": 0,
+        "construct": "UIElement",
+        "snippet": "<button",
+        "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
+        "fingerprint": "e35776b1c43c924882375e5f9fcc8375e572898ba3b07e339280e8fa46d18fcc"
+      }
+    ]
+  },
+  "createdDate": "2026-06-30T15:36:27.279Z",
+  "firstDetected": "2026-06-30T15:36:27.279Z",
+  "lastDetected": "2026-06-30T15:36:27.279Z",
+  "occurrenceCount": 3
+}

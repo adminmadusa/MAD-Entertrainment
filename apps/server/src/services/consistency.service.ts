@@ -19,6 +19,7 @@ import { QueueService } from './queue.service';
 import { getQueueName } from '../config/queue.config';
 import { Refund } from '../models/refund.schema';
 import { PaymentService } from './public/payment.service';
+import { PaymentRefundService } from './public/payment-refund.service';
 import { fullRefundHtml, partialRefundHtml, eventCancellationHtml, paymentFailureHtml } from '../lib/email';
 import { getEnv } from '../config/env';
 import { createNotificationSafe } from './notification.service';
@@ -741,7 +742,7 @@ export class ConsistencyService {
           await payment.save();
 
           if (booking) {
-            await (PaymentService as any).triggerRefundRequest(booking, payment, 'BOOKING_UNRECOVERABLE');
+            await PaymentRefundService.triggerRefundRequest(booking, payment, 'BOOKING_UNRECOVERABLE');
           } else {
             // Create refund request manually since booking is missing
             const idempotencyKey = `auto-refund-${payment._id}`;
@@ -802,7 +803,7 @@ export class ConsistencyService {
               payment.failedAt = new Date();
               payment.failureReason = payment.failureReason || 'LATE_PAYMENT_RECOVERY_REJECTED';
               await payment.save();
-              await (PaymentService as any).triggerRefundRequest(booking, payment, payment.failureReason);
+              await PaymentRefundService.triggerRefundRequest(booking, payment, payment.failureReason);
               successCount++;
             }
           } catch (confirmError: any) {
@@ -815,7 +816,7 @@ export class ConsistencyService {
             payment.failedAt = new Date();
             payment.failureReason = confirmError.message || 'LATE_PAYMENT_RECOVERY_ERROR';
             await payment.save();
-            await (PaymentService as any).triggerRefundRequest(booking, payment, payment.failureReason);
+            await PaymentRefundService.triggerRefundRequest(booking, payment, payment.failureReason);
             successCount++;
           }
         }

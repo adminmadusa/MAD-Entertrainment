@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 2,
+  "id": "f_4226e79b",
+  "rule": "Missing Document Owner",
+  "ruleVersion": "1.0.0",
+  "engineVersion": "1.0.0",
+  "domain": "Platform Team",
+  "owner": "Platform Team",
+  "package": "docs",
+  "feature": "Document",
+  "status": "NEW",
+  "confidence": 1,
+  "relationships": [],
+  "evidence": {
+    "path": "docs/archive/audits/dashboard-simplification-audit.md",
+    "construct": "Document",
+    "message": "Every documentation file is required to have a defined \"Owner\" or \"Authors\" in its metadata block.",
+    "occurrences": [
+      {
+        "id": "4b709fb7e1bc04d1fffd4083c8bccce8df52c14b9eccf3acfabe0366fb265744",
+        "line": 0,
+        "column": 0,
+        "construct": "Document",
+        "snippet": "",
+        "message": "Every documentation file is required to have a defined \"Owner\" or \"Authors\" in its metadata block.",
+        "fingerprint": "4b709fb7e1bc04d1fffd4083c8bccce8df52c14b9eccf3acfabe0366fb265744"
+      }
+    ]
+  },
+  "createdDate": "2026-06-30T15:36:27.661Z",
+  "firstDetected": "2026-06-30T15:36:27.661Z",
+  "lastDetected": "2026-06-30T15:36:27.661Z",
+  "occurrenceCount": 1
+}
