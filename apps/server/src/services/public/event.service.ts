@@ -1,10 +1,36 @@
-import { EventStatus, SeatStatus } from '@mad/shared';
+import { EventStatus, SeatStatus, EventMemoryPublicationState } from '@mad/shared';
 import type { FilterQuery } from 'mongoose';
+import jwt from 'jsonwebtoken';
 
 import { getRedis } from '../../config/redis';
 import { AppError } from '../../middleware/error.middleware';
 import { Event, IEvent } from '../../models/event.schema';
 import { SeatLayout, ISeatLayout } from '../../models/seat-layout.schema';
+import { getEnv } from '../../config/env';
+import { auditLog } from '../../utils/audit';
+
+export function verifyPreviewToken(token: string): {
+  valid: boolean;
+  eventId?: string;
+  adminId?: string;
+  expiresAt?: number;
+} {
+  try {
+    const env = getEnv();
+    const decoded = jwt.verify(token, env.JWT_ADMIN_SECRET) as any;
+    if (decoded && decoded.eventId && decoded.adminId) {
+      return {
+        valid: true,
+        eventId: decoded.eventId,
+        adminId: decoded.adminId,
+        expiresAt: decoded.exp ? decoded.exp * 1000 : undefined,
+      };
+    }
+  } catch (err) {
+    // Suppress token verification errors and return invalid
+  }
+  return { valid: false };
+}
 
 
 export class PublicEventService {
@@ -59,11 +85,21 @@ export class PublicEventService {
     return { events, total };
   }
 
-  static async getEventBySlug(slug: string) {
+  static async getEventBySlug(slug: string, previewToken?: string) {
     // 5-second query timeout to prevent Safari streaming stalls
     const queryOptions = { maxTimeMS: 5000 };
 
-    const event = await Event.findOne({ slug, status: EventStatus.PUBLISHED, isDeleted: { $ne: true } }, null, queryOptions)
+    // Serve both PUBLISHED and COMPLETED events so the event detail page
+    // remains accessible after an event has ended.
+    const event = await Event.findOne(
+      {
+        slug,
+        status: { $in: [EventStatus.PUBLISHED, EventStatus.COMPLETED] },
+        isDeleted: { $ne: true },
+      },
+      null,
+      queryOptions
+    )
       .populate('djOperatorIds')
       .lean();
 
@@ -73,6 +109,36 @@ export class PublicEventService {
 
     if (event.ticketTiers) {
       event.ticketTiers = event.ticketTiers.filter(tier => tier.isDeleted !== true);
+    }
+
+    let isPreviewValid = false;
+    if (previewToken) {
+      const decoded = verifyPreviewToken(previewToken);
+      if (decoded.valid && decoded.eventId && String(decoded.eventId) === String(event._id)) {
+        isPreviewValid = true;
+
+        // Audit preview accessed (only after token is valid and event matches)
+        auditLog({
+          action: 'event.memories.preview.accessed',
+          status: 'success',
+          metadata: {
+            eventId: String(event._id),
+            adminId: decoded.adminId,
+            timestamp: new Date().toISOString(),
+          },
+          description: `Preview token accessed for event ${event._id} by admin ${decoded.adminId}`,
+        });
+      }
+    }
+
+    // Suppress memories from the public response unless they are actively PUBLISHED or a valid preview token is provided.
+    // DRAFT, PREVIEW, and HIDDEN states must never reach public consumers.
+    if (
+      event.memories &&
+      event.memories.publicationState !== EventMemoryPublicationState.PUBLISHED &&
+      !isPreviewValid
+    ) {
+      event.memories = null;
     }
 
     return event;

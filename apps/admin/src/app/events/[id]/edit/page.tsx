@@ -4,6 +4,7 @@ import {
   BookingMode,
   TicketTier,
   EventStatus,
+  EventMemoryPublicationState,
   EVENT_STATUS_TRANSITIONS,
   type EventLifecycleStatus,
 } from '@mad/shared';
@@ -31,6 +32,7 @@ import { EventScheduleCard } from '@/components/events/EventScheduleCard';
 import { EventTicketingCard, type TicketTierInput } from '@/components/events/EventTicketingCard';
 import { EventRequirementsCard } from '@/components/events/EventRequirementsCard';
 import { EventEditActions } from '@/components/events/EventEditActions';
+import { EventMemoriesCard, type MemoriesState } from '@/components/events/EventMemoriesCard';
 
 const defaultTier = (): TicketTierInput => ({
   name: 'general',
@@ -40,6 +42,14 @@ const defaultTier = (): TicketTierInput => ({
 
 const isEventLifecycleStatus = (status: EventStatus): status is EventLifecycleStatus =>
   Object.prototype.hasOwnProperty.call(EVENT_STATUS_TRANSITIONS, status);
+
+const DEFAULT_MEMORIES_STATE: MemoriesState = {
+  publicationState: EventMemoryPublicationState.DRAFT,
+  heading: '',
+  thankYouMessage: '',
+  highlightsInput: '',
+  gallery: [],
+};
 
 export default function EditEventPage() {
   const { id } = useParams() as { id: string };
@@ -65,6 +75,7 @@ export default function EditEventPage() {
   const [organizerName, setOrganizerName] = useState('');
   const [refundPolicy, setRefundPolicy] = useState('');
   const [highlightsInput, setHighlightsInput] = useState('');
+  const [memories, setMemories] = useState<MemoriesState>(DEFAULT_MEMORIES_STATE);
 
   // Ticket Profile and Overrides state
   const [ticketingType, setTicketingType] = useState<'custom' | 'profile'>('custom');
@@ -121,6 +132,19 @@ export default function EditEventPage() {
         setTiers(event.ticketTiers && event.ticketTiers.length > 0
           ? event.ticketTiers.map((t) => ({ name: t.name, price: t.price, capacity: t.totalCapacity || t.quantity || 100 }))
           : [defaultTier()]);
+      }
+
+      // Hydrate memories from server response
+      if (event.memories) {
+        setMemories({
+          publicationState: event.memories.publicationState,
+          heading: event.memories.heading ?? '',
+          thankYouMessage: event.memories.thankYouMessage ?? '',
+          highlightsInput: event.memories.highlights?.join(', ') ?? '',
+          gallery: (event.memories.gallery ?? []).map((img, i) => ({ ...img, order: i })),
+        });
+      } else {
+        setMemories(DEFAULT_MEMORIES_STATE);
       }
     }
   }, [event]);
@@ -187,6 +211,7 @@ export default function EditEventPage() {
         highlights: highlightsInput.split(',').map((h) => h.trim()).filter(Boolean),
         refundPolicy: refundPolicy.trim() || undefined,
         organizerName: organizerName.trim() || undefined,
+        memories: buildMemoriesPayload(),
       };
 
       if (isProfileType) {
@@ -222,6 +247,24 @@ export default function EditEventPage() {
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to update event');
     }
+  };
+
+  // Build memories sub-document for the save payload.
+  const buildMemoriesPayload = () => {
+    return {
+      publicationState: memories.publicationState,
+      heading: memories.heading.trim() || undefined,
+      thankYouMessage: memories.thankYouMessage.trim() || undefined,
+      highlights: memories.highlightsInput
+        .split(',')
+        .map((h) => h.trim())
+        .filter(Boolean),
+      gallery: memories.gallery.map((img, i) => ({
+        url: img.url,
+        publicId: img.publicId,
+        order: i,
+      })),
+    };
   };
 
   if (isEventLoading) {
@@ -304,6 +347,14 @@ export default function EditEventPage() {
           ageRestriction={ageRestriction} setAgeRestriction={setAgeRestriction}
           tags={tags} setTags={setTags}
           isFeatured={isFeatured} setIsFeatured={setIsFeatured}
+        />
+
+        {/* Event Memories — only rendered when status is COMPLETED */}
+        <EventMemoriesCard
+          eventStatus={status}
+          eventSlug={event?.slug ?? ''}
+          value={memories}
+          onChange={setMemories}
         />
 
         <EventEditActions

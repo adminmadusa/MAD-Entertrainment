@@ -310,6 +310,18 @@ export const SEAT_LOCK_TTL_SECONDS = 10 * 60; // 10 minutes
 // ─── Max Tickets Per Booking ─────────────────────────────────
 export const MAX_TICKETS_PER_BOOKING = 10;
 
+// ─── Event Memory Publication State ──────────────────────────
+export enum EventMemoryPublicationState {
+  DRAFT = 'DRAFT',
+  PREVIEW = 'PREVIEW',
+  PUBLISHED = 'PUBLISHED',
+  HIDDEN = 'HIDDEN',
+}
+
+// ─── Event Memory Gallery Limits ──────────────────────────────
+export const DEFAULT_MEMORIES_GALLERY_LIMIT = 30;
+export const MAX_MEMORIES_GALLERY_LIMIT = 50;
+
 // ─── Popup Cooldown ──────────────────────────────────────────
 export const POPUP_COOLDOWN_HOURS = 24;
 export const POPUP_SESSION_KEY_PREFIX = 'mad_popup_';
@@ -355,4 +367,6 @@ export * from './storage-keys';
 
 // ─── Booking Reference ───────────────────────────────────────
 export const BOOKING_REFERENCE_REGEX = /^MAD-\d{4}-[A-Z0-9]{5}$/;
+
+
 

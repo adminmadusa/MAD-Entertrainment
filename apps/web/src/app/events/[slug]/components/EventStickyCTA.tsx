@@ -11,6 +11,7 @@ type EventStickyCTAProps = {
   isFavorited: boolean;
   onGetTickets: () => void;
   onToggleFavorite: () => void;
+  isCompleted?: boolean;
 };
 
 export function EventStickyCTA({
@@ -24,6 +25,7 @@ export function EventStickyCTA({
   isFavorited,
   onGetTickets,
   onToggleFavorite,
+  isCompleted = false,
 }: EventStickyCTAProps) {
   return (
     <>
@@ -31,11 +33,19 @@ export function EventStickyCTA({
       <div className="hidden lg:block lg:col-span-5 self-start lg:sticky lg:top-24">
         <div className="glass rounded-2xl border border-white/10 p-6 space-y-5 shadow-2xl">
           <div>
-            <span className="text-xs text-text-muted font-medium">Tickets from</span>
-            <div className="text-3xl font-black text-accent-purple-light mt-0.5 leading-none">
-              {priceLabel}
-              <span className="text-sm font-normal text-text-muted ml-1">/ person</span>
-            </div>
+            {isCompleted ? (
+              <div className="text-2xl font-black text-text-muted mt-0.5 leading-none">
+                Sales Closed
+              </div>
+            ) : (
+              <>
+                <span className="text-xs text-text-muted font-medium">Tickets from</span>
+                <div className="text-3xl font-black text-accent-purple-light mt-0.5 leading-none">
+                  {priceLabel}
+                  <span className="text-sm font-normal text-text-muted ml-1">/ person</span>
+                </div>
+              </>
+            )}
           </div>
 
           <div className="space-y-2.5 text-sm text-text-secondary border-y border-white/5 py-4">
@@ -60,30 +70,56 @@ export function EventStickyCTA({
             </div>
           </div>
 
-          <div className="space-y-2">
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-text-muted">Availability</span>
-              {scarcityStatus}
+          {isCompleted ? (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-text-muted">Status</span>
+                <span className="text-red-400 font-semibold uppercase tracking-wider">
+                  Event Ended
+                </span>
+              </div>
+              <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
+                <div className="h-full bg-white/5 w-0 rounded-full" />
+              </div>
+              <div className="text-[10px] text-text-muted">Tickets are no longer available.</div>
             </div>
-            <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-gradient-to-r from-accent-purple to-accent-pink rounded-full transition-all duration-700"
-                style={{ width: `${availabilityPercent}%` }}
-              />
+          ) : (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-text-muted">Availability</span>
+                {scarcityStatus}
+              </div>
+              <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-accent-purple to-accent-pink rounded-full transition-all duration-700"
+                  style={{ width: `${availabilityPercent}%` }}
+                />
+              </div>
+              <div className="text-[10px] text-text-muted">{availabilityText}</div>
             </div>
-            <div className="text-[10px] text-text-muted">{availabilityText}</div>
-          </div>
+          )}
 
-          <button
-            type="button"
-            onClick={onGetTickets}
-            className="w-full py-4 bg-gradient-to-r from-accent-purple to-accent-pink hover:from-accent-purple-light hover:to-accent-pink/80 text-white font-black text-sm rounded-xl shadow-glow transition-all duration-300 hover:scale-[1.02] active:scale-95 inline-flex items-center justify-center gap-2"
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
-            </svg>
-            Get tickets
-          </button>
+          {isCompleted ? (
+            <button
+              type="button"
+              disabled
+              className="w-full py-4 bg-white/5 border border-white/10 text-text-muted font-black text-sm rounded-xl cursor-not-allowed inline-flex items-center justify-center gap-2"
+              aria-label="Ticket bookings closed"
+            >
+              Event Ended
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={onGetTickets}
+              className="w-full py-4 bg-gradient-to-r from-accent-purple to-accent-pink hover:from-accent-purple-light hover:to-accent-pink/80 text-white font-black text-sm rounded-xl shadow-glow transition-all duration-300 hover:scale-[1.02] active:scale-95 inline-flex items-center justify-center gap-2"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
+              </svg>
+              Get tickets
+            </button>
+          )}
 
           <button
             type="button"
@@ -101,7 +137,7 @@ export function EventStickyCTA({
             <svg className="w-3.5 h-3.5 text-text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
             </svg>
-            <span>Secure checkout · No hidden fees</span>
+            <span>{isCompleted ? 'Ticket sales ended' : 'Secure checkout · No hidden fees'}</span>
           </div>
         </div>
       </div>
@@ -110,16 +146,28 @@ export function EventStickyCTA({
       <div className="fixed bottom-0 left-0 right-0 bg-background/90 backdrop-blur-lg border-t border-white/10 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] z-50 shadow-2xl lg:hidden">
         <div className="container-mad max-w-7xl px-4 flex items-center justify-between gap-4">
           <div>
-            <div className="text-xs text-text-muted font-medium">Tickets from</div>
-            <div className="text-base font-black text-accent-purple-light">{priceLabel}</div>
+            <div className="text-xs text-text-muted font-medium">Ticket status</div>
+            <div className="text-base font-black text-text-muted">
+              {isCompleted ? 'Sales Closed' : priceLabel}
+            </div>
           </div>
-          <button
-            type="button"
-            onClick={onGetTickets}
-            className="px-8 py-3.5 bg-gradient-to-r from-accent-purple to-accent-pink hover:from-accent-purple-light hover:to-accent-pink/80 text-white font-black text-sm rounded-xl shadow-glow transition-all duration-300 hover:scale-105 active:scale-95"
-          >
-            Get tickets
-          </button>
+          {isCompleted ? (
+            <button
+              type="button"
+              disabled
+              className="px-8 py-3.5 bg-white/5 border border-white/10 text-text-muted font-black text-sm rounded-xl cursor-not-allowed"
+            >
+              Event Ended
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={onGetTickets}
+              className="px-8 py-3.5 bg-gradient-to-r from-accent-purple to-accent-pink hover:from-accent-purple-light hover:to-accent-pink/80 text-white font-black text-sm rounded-xl shadow-glow transition-all duration-300 hover:scale-105 active:scale-95"
+            >
+              Get tickets
+            </button>
+          )}
         </div>
       </div>
     </>
