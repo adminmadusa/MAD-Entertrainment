@@ -2927,6 +2927,8 @@
   "scripts/governance/validators/mermaid_validator.ts",
   "scripts/governance/validators/repository_health_validator.test.ts",
   "scripts/governance/validators/repository_health_validator.ts",
+  "scripts/governance/validators/security_validator.test.ts",
+  "scripts/governance/validators/security_validator.ts",
   "scripts/governance/validators/shared_component_validator.ts",
   "scripts/governance/validators/ssot_validator.test.ts",
   "scripts/governance/validators/ssot_validator.ts",
