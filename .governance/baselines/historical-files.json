@@ -2925,6 +2925,8 @@
   "scripts/governance/validators/markdown_validator.ts",
   "scripts/governance/validators/mermaid_validator.test.ts",
   "scripts/governance/validators/mermaid_validator.ts",
+  "scripts/governance/validators/performance_validator.test.ts",
+  "scripts/governance/validators/performance_validator.ts",
   "scripts/governance/validators/repository_health_validator.test.ts",
   "scripts/governance/validators/repository_health_validator.ts",
   "scripts/governance/validators/security_validator.test.ts",

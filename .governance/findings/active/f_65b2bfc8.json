@@ -1,0 +1,36 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T10:46:46.301Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 20,
+    "message": "Direct 'import axios from \"axios\"' in business layer \"admin/refund.service.ts\". Route HTTP calls through the approved API client wrapper (e.g. apiClient, adminApiClient) instead.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "0fb3422df4059a341d6adc078964c84ab23631e65ca809effa7d77308cbf4384",
+        "id": "0fb3422df4059a341d6adc078964c84ab23631e65ca809effa7d77308cbf4384",
+        "line": 20,
+        "message": "Direct 'import axios from \"axios\"' in business layer \"admin/refund.service.ts\". Route HTTP calls through the approved API client wrapper (e.g. apiClient, adminApiClient) instead.",
+        "snippet": "import axios from 'axios';"
+      }
+    ],
+    "path": "apps/server/src/services/admin/refund.service.ts",
+    "snippet": "import axios from 'axios';"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T10:46:46.301Z",
+  "id": "f_65b2bfc8",
+  "lastDetected": "2026-07-03T10:46:46.301Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-ARC-002",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

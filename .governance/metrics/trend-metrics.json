@@ -350,5 +350,49 @@
     },
     "timestamp": "2026-07-03T09:53:33.217Z",
     "totalFindings": 903
+  },
+  {
+    "averageConfidence": 0.9553846153846115,
+    "averageResolutionTimeMs": 40606,
+    "closedFindings": 49,
+    "falsePositiveRate": 0,
+    "newFindings": 861,
+    "regressionCount": 0,
+    "scores": {
+      "accessibility": 0,
+      "architecture": 45,
+      "documentation": 0,
+      "maintainability": 100,
+      "overall": 62,
+      "performance": 100,
+      "security": 100,
+      "technicalDebt": 100,
+      "testing": 100,
+      "uiConsistency": 0
+    },
+    "timestamp": "2026-07-03T10:46:46.369Z",
+    "totalFindings": 910
+  },
+  {
+    "averageConfidence": 0.9553846153846115,
+    "averageResolutionTimeMs": 40606,
+    "closedFindings": 51,
+    "falsePositiveRate": 0,
+    "newFindings": 859,
+    "regressionCount": 0,
+    "scores": {
+      "accessibility": 0,
+      "architecture": 55,
+      "documentation": 0,
+      "maintainability": 100,
+      "overall": 63,
+      "performance": 100,
+      "security": 100,
+      "technicalDebt": 100,
+      "testing": 100,
+      "uiConsistency": 0
+    },
+    "timestamp": "2026-07-03T10:47:18.677Z",
+    "totalFindings": 910
   }
 ]

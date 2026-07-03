@@ -19,6 +19,7 @@ import { SharedComponentValidator } from '../validators/shared_component_validat
 import { DeadAssetDuplicateValidator } from '../validators/dead_asset_duplicate_validator';
 import { SecurityValidator } from '../validators/security_validator';
 import { PerformanceValidator } from '../validators/performance_validator';
+import { ArchitectureValidator } from '../validators/architecture_validator';
 
 export class ExecutionEngine {
   private static initialized = false;
@@ -135,6 +136,13 @@ export class ExecutionEngine {
       supportedRules: ['VAL-PFM-001', 'VAL-PFM-002'],
       supportedFileTypes: ['.tsx', '.ts'],
       priority: 85,
+    });
+
+    ValidatorRegistry.registerValidator(new ArchitectureValidator(), {
+      id: 'ArchitectureValidator',
+      supportedRules: ['VAL-ARC-001', 'VAL-ARC-002', 'VAL-ARC-003', 'VAL-ARC-004'],
+      supportedFileTypes: ['.ts', '.tsx'],
+      priority: 90,
     });
 
     // 4. Validate Registry

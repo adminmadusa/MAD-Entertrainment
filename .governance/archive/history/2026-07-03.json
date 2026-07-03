@@ -1,6 +1,6 @@
 {
-  "activeCount": 854,
-  "closedCount": 49,
+  "activeCount": 859,
+  "closedCount": 51,
   "findings": [
     {
       "id": "f_003b6801",
@@ -1251,6 +1251,12 @@
       "status": "NEW"
     },
     {
+      "id": "f_3e1d54b3",
+      "occurrenceCount": 33,
+      "rule": "VAL-ARC-004",
+      "status": "CLOSED"
+    },
+    {
       "id": "f_3ef9892a",
       "occurrenceCount": 2,
       "rule": "VAL-UI-010",
@@ -1971,6 +1977,12 @@
       "status": "NEW"
     },
     {
+      "id": "f_605b4696",
+      "occurrenceCount": 3,
+      "rule": "VAL-ARC-001",
+      "status": "NEW"
+    },
+    {
       "id": "f_60b8f27d",
       "occurrenceCount": 1,
       "rule": "Missing Document Owner",
@@ -2058,6 +2070,12 @@
       "id": "f_658b2625",
       "occurrenceCount": 1,
       "rule": "Missing Document Owner",
+      "status": "NEW"
+    },
+    {
+      "id": "f_65b2bfc8",
+      "occurrenceCount": 1,
+      "rule": "VAL-ARC-002",
       "status": "NEW"
     },
     {
@@ -3141,6 +3159,12 @@
       "status": "NEW"
     },
     {
+      "id": "f_9a00636e",
+      "occurrenceCount": 1,
+      "rule": "VAL-ARC-002",
+      "status": "NEW"
+    },
+    {
       "id": "f_9a6c8394",
       "occurrenceCount": 4,
       "rule": "VAL-UI-005",
@@ -3915,6 +3939,12 @@
       "status": "CLOSED"
     },
     {
+      "id": "f_bc808d12",
+      "occurrenceCount": 1,
+      "rule": "VAL-ARC-001",
+      "status": "NEW"
+    },
+    {
       "id": "f_bccdac98",
       "occurrenceCount": 1,
       "rule": "Missing Document Owner",
@@ -4266,6 +4296,12 @@
       "id": "f_cf0862bc",
       "occurrenceCount": 1,
       "rule": "VAL-UI-006",
+      "status": "NEW"
+    },
+    {
+      "id": "f_cf23d79d",
+      "occurrenceCount": 11,
+      "rule": "VAL-ARC-004",
       "status": "NEW"
     },
     {
@@ -4621,6 +4657,12 @@
       "occurrenceCount": 1,
       "rule": "Orphaned Documentation",
       "status": "NEW"
+    },
+    {
+      "id": "f_dd71abce",
+      "occurrenceCount": 38,
+      "rule": "VAL-ARC-004",
+      "status": "CLOSED"
     },
     {
       "id": "f_dd7e2c48",
@@ -5422,5 +5464,5 @@
     }
   ],
   "suppressedCount": 0,
-  "timestamp": "2026-07-03T09:53:33.222Z"
+  "timestamp": "2026-07-03T10:47:18.681Z"
 }

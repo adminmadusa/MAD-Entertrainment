@@ -1,0 +1,324 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T10:46:46.274Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 191,
+    "message": "Local Zod schema (z.number()) declared outside the shared validation package. Move this schema to 'packages/validations/src/' and re-export it from '@mad/validations'.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "c8f6fd39542d0fb6850f4b2c4d3f2b84453ac06b1ddb9c5bc974af03fe26eea0",
+        "id": "c8f6fd39542d0fb6850f4b2c4d3f2b84453ac06b1ddb9c5bc974af03fe26eea0",
+        "line": 34,
+        "message": "Local Zod schema (z.object()) declared outside the shared validation package. Move this schema to 'packages/validations/src/' and re-export it from '@mad/validations'.",
+        "snippet": "schema: z.object({"
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "19e300f4ec82113589069091bfaa143f01f6b62e897fcd6440b58eea0979da2c",
+        "id": "19e300f4ec82113589069091bfaa143f01f6b62e897fcd6440b58eea0979da2c",
+        "line": 35,
+        "message": "Local Zod schema (z.boolean()) declared outside the shared validation package. Move this schema to 'packages/validations/src/' and re-export it from '@mad/validations'.",
+        "snippet": "success: z.boolean(),"
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "af83cf2892b34a89e4ff36b83b272b967538e889ee0a432554865b85cab1f6b6",
+        "id": "af83cf2892b34a89e4ff36b83b272b967538e889ee0a432554865b85cab1f6b6",
+        "line": 36,
+        "message": "Local Zod schema (z.string()) declared outside the shared validation package. Move this schema to 'packages/validations/src/' and re-export it from '@mad/validations'.",
+        "snippet": "timestamp: z.string(),"
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "e992772bbc0ea353dda00b1a0eefe3a8673c8e90295ecac57092acb1b17dfc00",
+        "id": "e992772bbc0ea353dda00b1a0eefe3a8673c8e90295ecac57092acb1b17dfc00",
+        "line": 37,
+        "message": "Local Zod schema (z.string()) declared outside the shared validation package. Move this schema to 'packages/validations/src/' and re-export it from '@mad/validations'.",
+        "snippet": "database: z.string(),"
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "45bb7373e64d3748b5ad24f6dad71e59a0034146b01656e97c761e3ad2fb05d6",
+        "id": "45bb7373e64d3748b5ad24f6dad71e59a0034146b01656e97c761e3ad2fb05d6",
+        "line": 38,
+        "message": "Local Zod schema (z.string()) declared outside the shared validation package. Move this schema to 'packages/validations/src/' and re-export it from '@mad/validations'.",
+        "snippet": "redis: z.string(),"
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "8ece74918e2680f23dc0b49e61cd0416110d3fbd580de8bb9b438c5a3e1decf5",
+        "id": "8ece74918e2680f23dc0b49e61cd0416110d3fbd580de8bb9b438c5a3e1decf5",
+        "line": 39,
+        "message": "Local Zod schema (z.number()) declared outside the shared validation package. Move this schema to 'packages/validations/src/' and re-export it from '@mad/validations'.",
+        "snippet": "uptime: z.number(),"
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "b3c278fa83e3c35ffb200cd5904f0f86cddae75d37ae6a18783b4fb7c448396d",
+        "id": "b3c278fa83e3c35ffb200cd5904f0f86cddae75d37ae6a18783b4fb7c448396d",
+        "line": 40,
+        "message": "Local Zod schema (z.object()) declared outside the shared validation package. Move this schema to 'packages/validations/src/' and re-export it from '@mad/validations'.",
+        "snippet": "memory: z.object({"
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "5ce220205ac54e4131fec203474f8afb4e81860d316a77d1ed763acc07242e43",
+        "id": "5ce220205ac54e4131fec203474f8afb4e81860d316a77d1ed763acc07242e43",
+        "line": 41,
+        "message": "Local Zod schema (z.number()) declared outside the shared validation package. Move this schema to 'packages/validations/src/' and re-export it from '@mad/validations'.",
+        "snippet": "heapUsed: z.number(),"
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "87229e0d60a8693820de86218fc0c8665099b618b253fcb122655a74479e41c0",
+        "id": "87229e0d60a8693820de86218fc0c8665099b618b253fcb122655a74479e41c0",
+        "line": 42,
+        "message": "Local Zod schema (z.number()) declared outside the shared validation package. Move this schema to 'packages/validations/src/' and re-export it from '@mad/validations'.",
+        "snippet": "rss: z.number(),"
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "c8f6fd39542d0fb6850f4b2c4d3f2b84453ac06b1ddb9c5bc974af03fe26eea0",
+        "id": "c8f6fd39542d0fb6850f4b2c4d3f2b84453ac06b1ddb9c5bc974af03fe26eea0",
+        "line": 62,
+        "message": "Local Zod schema (z.object()) declared outside the shared validation package. Move this schema to 'packages/validations/src/' and re-export it from '@mad/validations'.",
+        "snippet": "schema: z.object({"
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "19e300f4ec82113589069091bfaa143f01f6b62e897fcd6440b58eea0979da2c",
+        "id": "19e300f4ec82113589069091bfaa143f01f6b62e897fcd6440b58eea0979da2c",
+        "line": 63,
+        "message": "Local Zod schema (z.boolean()) declared outside the shared validation package. Move this schema to 'packages/validations/src/' and re-export it from '@mad/validations'.",
+        "snippet": "success: z.boolean(),"
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "fd8cfe2047b1dc6cbe079a709bcf7debb2a9a46d1a4052af059d527cb8475d1e",
+        "id": "fd8cfe2047b1dc6cbe079a709bcf7debb2a9a46d1a4052af059d527cb8475d1e",
+        "line": 64,
+        "message": "Local Zod schema (z.object()) declared outside the shared validation package. Move this schema to 'packages/validations/src/' and re-export it from '@mad/validations'.",
+        "snippet": "data: z.object({"
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "6286937848a2f917ee1ac13b8014eefe824c93063dd72720ceab2ad921f30d51",
+        "id": "6286937848a2f917ee1ac13b8014eefe824c93063dd72720ceab2ad921f30d51",
+        "line": 65,
+        "message": "Local Zod schema (z.string()) declared outside the shared validation package. Move this schema to 'packages/validations/src/' and re-export it from '@mad/validations'.",
+        "snippet": "token: z.string(),"
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "669e0f43a27d95e36ecad0169c8e6db26b40fe0573c8f8f5a9dbeef13cac0700",
+        "id": "669e0f43a27d95e36ecad0169c8e6db26b40fe0573c8f8f5a9dbeef13cac0700",
+        "line": 66,
+        "message": "Local Zod schema (z.string()) declared outside the shared validation package. Move this schema to 'packages/validations/src/' and re-export it from '@mad/validations'.",
+        "snippet": "sessionId: z.string(),"
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "d31a30ff48409449f191de9f82be7d3330846cadbb0a6eaaacdc200c6e8e8ff7",
+        "id": "d31a30ff48409449f191de9f82be7d3330846cadbb0a6eaaacdc200c6e8e8ff7",
+        "line": 82,
+        "message": "Local Zod schema (z.object()) declared outside the shared validation package. Move this schema to 'packages/validations/src/' and re-export it from '@mad/validations'.",
+        "snippet": "headers: z.object({"
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "9637f38bab8db493ac5865c18183555fd4395792c8d74683b89d51aa979d30c3",
+        "id": "9637f38bab8db493ac5865c18183555fd4395792c8d74683b89d51aa979d30c3",
+        "line": 83,
+        "message": "Local Zod schema (z.string()) declared outside the shared validation package. Move this schema to 'packages/validations/src/' and re-export it from '@mad/validations'.",
+        "snippet": "'x-session-id': z.string().describe('Cryptographically signed JWT session token'),"
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "c8f6fd39542d0fb6850f4b2c4d3f2b84453ac06b1ddb9c5bc974af03fe26eea0",
+        "id": "c8f6fd39542d0fb6850f4b2c4d3f2b84453ac06b1ddb9c5bc974af03fe26eea0",
+        "line": 98,
+        "message": "Local Zod schema (z.object()) declared outside the shared validation package. Move this schema to 'packages/validations/src/' and re-export it from '@mad/validations'.",
+        "snippet": "schema: z.object({"
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "19e300f4ec82113589069091bfaa143f01f6b62e897fcd6440b58eea0979da2c",
+        "id": "19e300f4ec82113589069091bfaa143f01f6b62e897fcd6440b58eea0979da2c",
+        "line": 99,
+        "message": "Local Zod schema (z.boolean()) declared outside the shared validation package. Move this schema to 'packages/validations/src/' and re-export it from '@mad/validations'.",
+        "snippet": "success: z.boolean(),"
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "c00f8466dbbb180e87396c9fc8273622ef2906c89069e28d3610b939615f124e",
+        "id": "c00f8466dbbb180e87396c9fc8273622ef2906c89069e28d3610b939615f124e",
+        "line": 100,
+        "message": "Local Zod schema (z.string()) declared outside the shared validation package. Move this schema to 'packages/validations/src/' and re-export it from '@mad/validations'.",
+        "snippet": "message: z.string(),"
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "fd8cfe2047b1dc6cbe079a709bcf7debb2a9a46d1a4052af059d527cb8475d1e",
+        "id": "fd8cfe2047b1dc6cbe079a709bcf7debb2a9a46d1a4052af059d527cb8475d1e",
+        "line": 101,
+        "message": "Local Zod schema (z.object()) declared outside the shared validation package. Move this schema to 'packages/validations/src/' and re-export it from '@mad/validations'.",
+        "snippet": "data: z.object({"
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "22a54b4976676cb6636672feb3e22a65c5d49a0751a9a79b71503052135320f2",
+        "id": "22a54b4976676cb6636672feb3e22a65c5d49a0751a9a79b71503052135320f2",
+        "line": 102,
+        "message": "Local Zod schema (z.string()) declared outside the shared validation package. Move this schema to 'packages/validations/src/' and re-export it from '@mad/validations'.",
+        "snippet": "_id: z.string(),"
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "3650a346303ce6f85aefc2896254e863442096aaafa338a1efa0154e16682894",
+        "id": "3650a346303ce6f85aefc2896254e863442096aaafa338a1efa0154e16682894",
+        "line": 103,
+        "message": "Local Zod schema (z.string()) declared outside the shared validation package. Move this schema to 'packages/validations/src/' and re-export it from '@mad/validations'.",
+        "snippet": "bookingId: z.string(),"
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "2b1b27275c3be7b0d484e78ad4f050114db667c187a0147c0bbe95775c9fcafb",
+        "id": "2b1b27275c3be7b0d484e78ad4f050114db667c187a0147c0bbe95775c9fcafb",
+        "line": 104,
+        "message": "Local Zod schema (z.number()) declared outside the shared validation package. Move this schema to 'packages/validations/src/' and re-export it from '@mad/validations'.",
+        "snippet": "totalAmount: z.number(),"
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "a9719d487c95b04057f74900827217c3fa2df42c6ede6579f556079bb3de82bf",
+        "id": "a9719d487c95b04057f74900827217c3fa2df42c6ede6579f556079bb3de82bf",
+        "line": 105,
+        "message": "Local Zod schema (z.string()) declared outside the shared validation package. Move this schema to 'packages/validations/src/' and re-export it from '@mad/validations'.",
+        "snippet": "status: z.string(),"
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "34b32cd5b140b2b4848ed6b9f5b2313dbb7b5792bbeb56c79d67530ee3b0e3be",
+        "id": "34b32cd5b140b2b4848ed6b9f5b2313dbb7b5792bbeb56c79d67530ee3b0e3be",
+        "line": 123,
+        "message": "Local Zod schema (z.object()) declared outside the shared validation package. Move this schema to 'packages/validations/src/' and re-export it from '@mad/validations'.",
+        "snippet": "params: z.object({"
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "d29aca64b500d7054bed285b93c33f290e821ba9f762347e54a1a64cb21900f0",
+        "id": "d29aca64b500d7054bed285b93c33f290e821ba9f762347e54a1a64cb21900f0",
+        "line": 124,
+        "message": "Local Zod schema (z.string()) declared outside the shared validation package. Move this schema to 'packages/validations/src/' and re-export it from '@mad/validations'.",
+        "snippet": "bookingId: z.string().describe('Mongoose ObjectId or human-readable Booking ID (e.g. MAD-2026-ABCDE)'),"
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "d31a30ff48409449f191de9f82be7d3330846cadbb0a6eaaacdc200c6e8e8ff7",
+        "id": "d31a30ff48409449f191de9f82be7d3330846cadbb0a6eaaacdc200c6e8e8ff7",
+        "line": 126,
+        "message": "Local Zod schema (z.object()) declared outside the shared validation package. Move this schema to 'packages/validations/src/' and re-export it from '@mad/validations'.",
+        "snippet": "headers: z.object({"
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "74c3d3bdb7ecc764d794bbcb9e2b3d7c7b6b0760102076c003e838c8dd584878",
+        "id": "74c3d3bdb7ecc764d794bbcb9e2b3d7c7b6b0760102076c003e838c8dd584878",
+        "line": 127,
+        "message": "Local Zod schema (z.string()) declared outside the shared validation package. Move this schema to 'packages/validations/src/' and re-export it from '@mad/validations'.",
+        "snippet": "'x-session-id': z.string().optional().describe('JWT session token to prove transient ownership'),"
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "c8f6fd39542d0fb6850f4b2c4d3f2b84453ac06b1ddb9c5bc974af03fe26eea0",
+        "id": "c8f6fd39542d0fb6850f4b2c4d3f2b84453ac06b1ddb9c5bc974af03fe26eea0",
+        "line": 187,
+        "message": "Local Zod schema (z.object()) declared outside the shared validation package. Move this schema to 'packages/validations/src/' and re-export it from '@mad/validations'.",
+        "snippet": "schema: z.object({"
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "19e300f4ec82113589069091bfaa143f01f6b62e897fcd6440b58eea0979da2c",
+        "id": "19e300f4ec82113589069091bfaa143f01f6b62e897fcd6440b58eea0979da2c",
+        "line": 188,
+        "message": "Local Zod schema (z.boolean()) declared outside the shared validation package. Move this schema to 'packages/validations/src/' and re-export it from '@mad/validations'.",
+        "snippet": "success: z.boolean(),"
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "fd8cfe2047b1dc6cbe079a709bcf7debb2a9a46d1a4052af059d527cb8475d1e",
+        "id": "fd8cfe2047b1dc6cbe079a709bcf7debb2a9a46d1a4052af059d527cb8475d1e",
+        "line": 189,
+        "message": "Local Zod schema (z.object()) declared outside the shared validation package. Move this schema to 'packages/validations/src/' and re-export it from '@mad/validations'.",
+        "snippet": "data: z.object({"
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "458df47fadbecd33f5ff19c8efeb70f80d71ae4242ef72ccb7ed87b18bb5e9ec",
+        "id": "458df47fadbecd33f5ff19c8efeb70f80d71ae4242ef72ccb7ed87b18bb5e9ec",
+        "line": 190,
+        "message": "Local Zod schema (z.number()) declared outside the shared validation package. Move this schema to 'packages/validations/src/' and re-export it from '@mad/validations'.",
+        "snippet": "successCount: z.number(),"
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "8cdfc071eab7debae26343beb5851ec1c5f8d06525b498d9ef63f7aef37aafef",
+        "id": "8cdfc071eab7debae26343beb5851ec1c5f8d06525b498d9ef63f7aef37aafef",
+        "line": 191,
+        "message": "Local Zod schema (z.number()) declared outside the shared validation package. Move this schema to 'packages/validations/src/' and re-export it from '@mad/validations'.",
+        "snippet": "failedCount: z.number(),"
+      }
+    ],
+    "path": "apps/server/src/config/openapi.ts",
+    "snippet": "failedCount: z.number(),"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T10:46:46.274Z",
+  "id": "f_3e1d54b3",
+  "lastDetected": "2026-07-03T10:46:46.274Z",
+  "occurrenceCount": 33,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-ARC-004",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}
