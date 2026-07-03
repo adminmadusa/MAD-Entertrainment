@@ -1,5 +1,5 @@
 {
-  "activeCount": 1442,
+  "activeCount": 1447,
   "closedCount": 318,
   "findings": [
     {
@@ -2859,6 +2859,12 @@
       "status": "NEW"
     },
     {
+      "id": "f_476697f2",
+      "occurrenceCount": 1,
+      "rule": "VAL-HYG-001",
+      "status": "NEW"
+    },
+    {
       "id": "f_478f4083",
       "occurrenceCount": 2,
       "rule": "VAL-UI-005",
@@ -4797,6 +4803,12 @@
       "status": "NEW"
     },
     {
+      "id": "f_7312d397",
+      "occurrenceCount": 1,
+      "rule": "VAL-HYG-001",
+      "status": "NEW"
+    },
+    {
       "id": "f_731a2886",
       "occurrenceCount": 1,
       "rule": "VAL-HYG-006",
@@ -5508,6 +5520,12 @@
       "id": "f_8685e409",
       "occurrenceCount": 1,
       "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_86ba638e",
+      "occurrenceCount": 1,
+      "rule": "VAL-HYG-003",
       "status": "NEW"
     },
     {
@@ -8829,6 +8847,12 @@
       "status": "NEW"
     },
     {
+      "id": "f_d7ffc846",
+      "occurrenceCount": 1,
+      "rule": "VAL-HYG-004",
+      "status": "NEW"
+    },
+    {
       "id": "f_d821c9e1",
       "occurrenceCount": 1,
       "rule": "VAL-HYG-001",
@@ -8845,6 +8869,12 @@
       "occurrenceCount": 1,
       "rule": "VAL-HYG-003",
       "status": "CONFIRMED"
+    },
+    {
+      "id": "f_d8b21995",
+      "occurrenceCount": 1,
+      "rule": "VAL-HYG-001",
+      "status": "NEW"
     },
     {
       "id": "f_d8c974bb",
@@ -10564,5 +10594,5 @@
     }
   ],
   "suppressedCount": 0,
-  "timestamp": "2026-07-03T13:04:51.758Z"
+  "timestamp": "2026-07-03T13:19:33.606Z"
 }

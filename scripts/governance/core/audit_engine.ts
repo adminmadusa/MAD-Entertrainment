@@ -9,6 +9,11 @@ import { ReportEngine } from './report_engine';
 import { GatingAction, ConfidenceEngine } from './confidence_engine';
 import { Finding, StatelessViolation, RepositorySnapshot } from './types';
 import { writeJsonIfChanged, persistenceStats } from './json_utils';
+import { SessionStore } from './session_store';
+import { RollbackHistory } from './rollback_history';
+import { AnalyticsEngine } from './analytics_engine';
+import { AnalyticsStore } from './analytics_store';
+import { FixRegistry } from './fix_registry';
 
 export class AuditEngine {
   private static workspaceRoot = resolve(__dirname, '../../..');
@@ -114,6 +119,41 @@ export class AuditEngine {
     if (options.isIncremental && prAffectedFiles.size > 0) {
       this.reportEngine.generatePRReport(allFindings, prAffectedFiles);
     }
+
+    // 7.5. Compile and Write Analytics Datasets
+    console.log('📊 Compiling governance analytics...');
+    if (FixRegistry.getAll().length === 0) {
+      FixRegistry.registerDefaultFixers(); // Ensure fixers are registered for supports checks
+    }
+    const sessionStore = new SessionStore(AuditEngine.workspaceRoot);
+    const rollbackProvider = {
+      list: () => RollbackHistory.list(AuditEngine.workspaceRoot),
+    };
+    const trendProvider = {
+      getTrends: () => {
+        const file = join(AuditEngine.workspaceRoot, '.governance/metrics/trend-metrics.json');
+        if (existsSync(file)) {
+          try {
+            return JSON.parse(readFileSync(file, 'utf8'));
+          } catch {
+            return [];
+          }
+        }
+        return [];
+      },
+    };
+    const generatedAt = new Date().toISOString();
+    const analyticsResult = AnalyticsEngine.compile(
+      allFindings,
+      metrics,
+      sessionStore,
+      rollbackProvider,
+      this.findingManager,
+      FixRegistry,
+      trendProvider,
+      generatedAt
+    );
+    AnalyticsStore.write(analyticsResult, generatedAt, AuditEngine.workspaceRoot);
 
     // 8. Determine Gating & Build Failures
     // Check if any active violation in scope triggers FAIL_BUILD

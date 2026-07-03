@@ -1,19 +1,19 @@
 {
   "engineVersion": "1.0.0",
-  "findingCount": 1760,
+  "findingCount": 1765,
   "historySnapshots": 1,
-  "lastAudit": "2026-07-03T13:04:51.763Z",
+  "lastAudit": "2026-07-03T13:19:33.611Z",
   "lastMigration": "2026-06-30T15:28:59Z",
   "manifestVersion": 1,
   "migrationVersion": 1,
   "performance": {
     "filesArchived": 318,
-    "filesScanned": 478,
-    "filesWritten": 4,
-    "findingsScanned": 1760,
-    "groupingDurationMs": -1547,
+    "filesScanned": 12,
+    "filesWritten": 1,
+    "findingsScanned": 1765,
+    "groupingDurationMs": -1369,
     "migrationDurationMs": 0,
-    "scanDurationMs": 22
+    "scanDurationMs": 151
   },
   "schemaVersion": 2
 }

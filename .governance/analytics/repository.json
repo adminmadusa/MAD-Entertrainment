@@ -1,0 +1,29 @@
+{
+  "categoryScores": {
+    "accessibility": 0,
+    "architecture": 100,
+    "documentation": 0,
+    "maintainability": 100,
+    "performance": 100,
+    "security": 100,
+    "technicalDebt": 100,
+    "testing": 100,
+    "uiConsistency": 0
+  },
+  "findings": {
+    "active": 1447,
+    "closed": 318,
+    "falsePositives": 0,
+    "regressions": 161,
+    "total": 1765
+  },
+  "generatedAt": "2026-07-03T13:19:33.498Z",
+  "kpis": {
+    "autoFixCoverage": 0.7672955974842768,
+    "averageConfidence": 0.976997167138815,
+    "averageResolutionTimeMs": 273549,
+    "regressionRate": 0.5062893081761006
+  },
+  "overallScore": 70,
+  "schemaVersion": 1
+}
