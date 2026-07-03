@@ -2577,6 +2577,7 @@
   "docs/decisions/ADR-002-governance-persistence-v2.md",
   "docs/decisions/ADR-002-governance-status-semantics.md",
   "docs/decisions/ADR-003-governance-status-semantics.md",
+  "docs/decisions/ADR-004-governance-execution-engine.md",
   "docs/decisions/ADR_INDEX.md",
   "docs/decisions/ADR_TEMPLATE.md",
   "docs/decisions/README.md",

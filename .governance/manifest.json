@@ -2,18 +2,18 @@
   "engineVersion": "1.0.0",
   "findingCount": 896,
   "historySnapshots": 1,
-  "lastAudit": "2026-07-03T09:31:32.095Z",
+  "lastAudit": "2026-07-03T09:32:05.754Z",
   "lastMigration": "2026-06-30T15:28:59Z",
   "manifestVersion": 1,
   "migrationVersion": 1,
   "performance": {
     "filesArchived": 48,
-    "filesScanned": 8,
-    "filesWritten": 9,
+    "filesScanned": 0,
+    "filesWritten": 0,
     "findingsScanned": 896,
-    "groupingDurationMs": -1129,
+    "groupingDurationMs": -1288,
     "migrationDurationMs": 0,
-    "scanDurationMs": 59
+    "scanDurationMs": 14
   },
   "schemaVersion": 2
 }
