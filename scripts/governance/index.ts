@@ -309,6 +309,7 @@ async function run() {
   const engineResult = auditEngine.execute(statelessViolations, {
     isIncremental,
     changedFiles,
+    scannedFiles: [...finalMarkdownFiles, ...finalUiFiles],
     branchName: getGitBranch(),
     commitSha: getGitCommit(),
     validatorTimeMs: validatorTime,

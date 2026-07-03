@@ -43,6 +43,7 @@ export class AuditEngine {
     options: {
       isIncremental?: boolean;
       changedFiles?: string[];
+      scannedFiles?: string[];
       commitSha?: string;
       branchName?: string;
       validatorTimeMs?: number;
@@ -67,7 +68,10 @@ export class AuditEngine {
 
     // 2. Reconcile statuses (resolve resolved findings, tag regressions)
     console.log('🔄 Reconciling finding lifecycle states...');
-    this.lifecycleManager.reconcile(activeFindingIds);
+    this.lifecycleManager.reconcile(activeFindingIds, {
+      isIncremental: options.isIncremental,
+      scannedFiles: options.scannedFiles,
+    });
 
     // 3. Load and run governance plugins (if any exist)
     this.executePlugins(rawViolations);

@@ -12,9 +12,14 @@ export class LifecycleManager {
   /**
    * Evaluates and updates the state of all findings based on the active scan violations list.
    * @param detectedFindingIds Set of finding IDs that were detected in the current scan.
+   * @param options Incremental scanning option controls.
    */
-  public reconcile(detectedFindingIds: Set<string>) {
+  public reconcile(
+    detectedFindingIds: Set<string>,
+    options: { isIncremental?: boolean; scannedFiles?: string[] } = {}
+  ) {
     const allFindings = this.findingManager.getAllFindings();
+    const scannedSet = new Set(options.scannedFiles || []);
 
     for (const finding of allFindings) {
       const isDetected = detectedFindingIds.has(finding.id);
@@ -37,6 +42,11 @@ export class LifecycleManager {
       } else {
         // --- CASE 2: Finding was NOT detected in current scan ---
         
+        // In incremental mode, only resolve/close findings if their file path was actually scanned in the run
+        if (options.isIncremental && !scannedSet.has(finding.evidence.path)) {
+          continue;
+        }
+
         if (
           currentStatus === 'NEW' ||
           currentStatus === 'CONFIRMED' ||
