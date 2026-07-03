@@ -1,0 +1,17 @@
+{
+  "history": [
+    {
+      "action": "CREATED",
+      "notes": "New grouped finding registered: ADR is missing required heading from template: \"## Future Considerations\"",
+      "status": "NEW",
+      "timestamp": "2026-07-03T09:32:50.932Z"
+    },
+    {
+      "action": "RESOLVED",
+      "notes": "Code violation no longer detected. Marking finding as closed. (Transitioned from NEW to CLOSED)",
+      "status": "CLOSED",
+      "timestamp": "2026-07-03T09:33:12.675Z"
+    }
+  ],
+  "id": "f_bc0b5ce2"
+}

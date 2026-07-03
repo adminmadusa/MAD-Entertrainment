@@ -47,11 +47,29 @@ All validator execution orchestration is removed from the CLI, which is simplifi
 
 ## Technical & Operational Impact
 
+### Migration Strategy
+No historical data migration is required, as the change only affects the in-memory execution pipeline and orchestration flow. All output JSON formats remain backwards-compatible.
+
 ### Operational Impact
 Adds precise timing and memory footprint metrics to the console when `--performance` is used.
+
+### Security Impact
+No security impact, as all checks execute locally or within secure CI runners without outbound connections or privilege changes.
 
 ### Performance Impact
 Ensures each file type is only passed to validators that declare support, reducing unnecessary file scans.
 
 ### Testing Strategy
 Verify with Vitest unit tests covering planner sorting, circle checks, filter applications, and registry validations.
+
+### Rollback Strategy
+To roll back this execution engine, revert the changes made to `scripts/governance/index.ts` to restore the manual `ValidatorLoader` orchestration.
+
+---
+
+## Future Considerations
+Assess parallelizing validator runs or moving to worker threads if scan sizes grow beyond current single-thread thresholds.
+
+## References
+- [REPOSITORY_GOVERNANCE.md](../../REPOSITORY_GOVERNANCE.md)
+- [ARCHITECTURE.md](../../ARCHITECTURE.md)

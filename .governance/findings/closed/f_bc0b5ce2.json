@@ -1,0 +1,33 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T09:32:50.932Z",
+  "domain": "Documentation Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "message": "ADR is missing required heading from template: \"### Security Impact\"",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "d00e842e286f7967ff5051d2e20731ccca4f14ebecec8344be508922f5f72b85",
+        "id": "d00e842e286f7967ff5051d2e20731ccca4f14ebecec8344be508922f5f72b85",
+        "line": 0,
+        "message": "ADR is missing required heading from template: \"## Future Considerations\""
+      }
+    ],
+    "path": "docs/decisions/ADR-004-governance-execution-engine.md"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T09:32:50.932Z",
+  "id": "f_bc0b5ce2",
+  "lastDetected": "2026-07-03T09:32:50.932Z",
+  "occurrenceCount": 1,
+  "owner": "Documentation Team",
+  "package": "docs",
+  "relationships": [],
+  "rule": "Missing Template Heading",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

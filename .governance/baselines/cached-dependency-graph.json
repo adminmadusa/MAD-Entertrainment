@@ -9150,17 +9150,31 @@
       "hash": "c414c45f3658510e54f25d8aa36cb3bbc024c68d",
       "lastModified": 1783050805889.2437
     },
+    "docs/decisions/ADR-004-governance-execution-engine.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "REPOSITORY_GOVERNANCE.md",
+        "ARCHITECTURE.md",
+        "REPOSITORY_GOVERNANCE.md",
+        "ARCHITECTURE.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "c9fad1533334c0e3ab84333cc5ed70d2955a6265",
+      "lastModified": 1783071181403.1638
+    },
     "docs/decisions/ADR_INDEX.md": {
       "assetReferences": [],
       "dependencies": [
         "docs/decisions/ADR-001-booking-ownership.md",
         "docs/decisions/ADR-002-governance-persistence-v2.md",
-        "docs/decisions/ADR-003-governance-status-semantics.md"
+        "docs/decisions/ADR-003-governance-status-semantics.md",
+        "docs/decisions/ADR-004-governance-execution-engine.md"
       ],
       "dynamicImports": [],
       "exports": [],
-      "hash": "8a127047749c5122c9ac146b91bdebbb77c4a21c",
-      "lastModified": 1783050805894.5925
+      "hash": "8a4c4c1150669d10f7fdf5e245235cdb0235c302",
+      "lastModified": 1783071155720.2026
     },
     "docs/decisions/ADR_TEMPLATE.md": {
       "assetReferences": [],
@@ -11761,6 +11775,6 @@
       "lastModified": 1783050805912.8364
     }
   },
-  "timestamp": "2026-07-03T09:31:30.800Z",
+  "timestamp": "2026-07-03T09:33:11.357Z",
   "version": "1.1.0"
 }
