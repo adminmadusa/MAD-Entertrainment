@@ -1,0 +1,36 @@
+{
+  "confidence": 0.9,
+  "createdDate": "2026-07-03T09:30:52.425Z",
+  "domain": "UI UX Guild",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "UIElement",
+    "line": 50,
+    "message": "Hardcoded color '#0d0d0d' detected. Standardize using design tokens/theme variables.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "UIElement",
+        "fingerprint": "6260415d5da3c1fad3abe8c9c28f3170b9d2df33d0ff3624d6353014f598a6e6",
+        "id": "6260415d5da3c1fad3abe8c9c28f3170b9d2df33d0ff3624d6353014f598a6e6",
+        "line": 50,
+        "message": "Hardcoded color '#0d0d0d' detected. Standardize using design tokens/theme variables.",
+        "snippet": "backgroundColor: \"#0d0d0d\","
+      }
+    ],
+    "path": "apps/server/src/lib/email/templates/components/EmailLayout.tsx",
+    "snippet": "backgroundColor: \"#0d0d0d\","
+  },
+  "feature": "UIElement",
+  "firstDetected": "2026-07-03T09:30:52.425Z",
+  "id": "f_3bf6d267",
+  "lastDetected": "2026-07-03T09:30:52.425Z",
+  "occurrenceCount": 1,
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-UI-007",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

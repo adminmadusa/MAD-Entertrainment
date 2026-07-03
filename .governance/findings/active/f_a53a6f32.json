@@ -1,0 +1,54 @@
+{
+  "confidence": 0.9,
+  "createdDate": "2026-07-03T09:30:52.388Z",
+  "domain": "UI UX Guild",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "UIElement",
+    "line": 42,
+    "message": "Hardcoded color '#333333' detected. Standardize using design tokens/theme variables.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "UIElement",
+        "fingerprint": "10ba3d71f77e5e5a9273cb17419edbe98d57106f345797729ebc34ba767129de",
+        "id": "10ba3d71f77e5e5a9273cb17419edbe98d57106f345797729ebc34ba767129de",
+        "line": 31,
+        "message": "Hardcoded color '#444444' detected. Standardize using design tokens/theme variables.",
+        "snippet": "color: \"#444444\","
+      },
+      {
+        "column": 0,
+        "construct": "UIElement",
+        "fingerprint": "03633eff5c9ffe12a244936ebe01af0725120cd6e3ab72784b63cdc2e5d88d67",
+        "id": "03633eff5c9ffe12a244936ebe01af0725120cd6e3ab72784b63cdc2e5d88d67",
+        "line": 35,
+        "message": "Hardcoded color '#a78bfa' detected. Standardize using design tokens/theme variables.",
+        "snippet": "color: \"#a78bfa\","
+      },
+      {
+        "column": 0,
+        "construct": "UIElement",
+        "fingerprint": "7e684b64a2121ebf968f5fd7011155aa7269c2771c613c26b9b28f38b842e66c",
+        "id": "7e684b64a2121ebf968f5fd7011155aa7269c2771c613c26b9b28f38b842e66c",
+        "line": 42,
+        "message": "Hardcoded color '#333333' detected. Standardize using design tokens/theme variables.",
+        "snippet": "color: \"#333333\","
+      }
+    ],
+    "path": "apps/server/src/lib/email/templates/components/EmailFooter.tsx",
+    "snippet": "color: \"#333333\","
+  },
+  "feature": "UIElement",
+  "firstDetected": "2026-07-03T09:30:52.388Z",
+  "id": "f_a53a6f32",
+  "lastDetected": "2026-07-03T09:30:52.388Z",
+  "occurrenceCount": 3,
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-UI-007",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

@@ -1,0 +1,11 @@
+{
+  "history": [
+    {
+      "action": "CREATED",
+      "notes": "New grouped finding registered: Hardcoded color '#444444' detected. Standardize using design tokens/theme variables.",
+      "status": "NEW",
+      "timestamp": "2026-07-03T09:30:52.388Z"
+    }
+  ],
+  "id": "f_a53a6f32"
+}

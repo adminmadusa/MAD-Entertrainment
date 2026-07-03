@@ -1,0 +1,36 @@
+{
+  "confidence": 0.9,
+  "createdDate": "2026-07-03T09:30:52.590Z",
+  "domain": "UI UX Guild",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "UIElement",
+    "line": 96,
+    "message": "Hardcoded color '#1A1A1A' detected. Standardize using design tokens/theme variables.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "UIElement",
+        "fingerprint": "40049cf9ead97240f96b435fcebef46e7725f752abb14f9c74f18edded7e1811",
+        "id": "40049cf9ead97240f96b435fcebef46e7725f752abb14f9c74f18edded7e1811",
+        "line": 96,
+        "message": "Hardcoded color '#1A1A1A' detected. Standardize using design tokens/theme variables.",
+        "snippet": ".fill(\"#1A1A1A\"); // Dark subtle container inside luxury card"
+      }
+    ],
+    "path": "apps/server/src/lib/pdf/ticket/layout/draw-attendee-details.ts",
+    "snippet": ".fill(\"#1A1A1A\"); // Dark subtle container inside luxury card"
+  },
+  "feature": "UIElement",
+  "firstDetected": "2026-07-03T09:30:52.590Z",
+  "id": "f_8730f5ed",
+  "lastDetected": "2026-07-03T09:30:52.590Z",
+  "occurrenceCount": 1,
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-UI-007",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

@@ -1,0 +1,90 @@
+{
+  "confidence": 0.9,
+  "createdDate": "2026-07-03T09:30:52.859Z",
+  "domain": "UI UX Guild",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "UIElement",
+    "line": 323,
+    "message": "Hardcoded color '#dead' detected. Standardize using design tokens/theme variables.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "UIElement",
+        "fingerprint": "2a1afd622576b66a478013b860d81b4e4bbba276e83cad90ab541fdde1f95170",
+        "id": "2a1afd622576b66a478013b860d81b4e4bbba276e83cad90ab541fdde1f95170",
+        "line": 203,
+        "message": "Hardcoded color '#dead' detected. Standardize using design tokens/theme variables.",
+        "snippet": "documentationLink: 'AGENTS.md#dead-code-policy',"
+      },
+      {
+        "column": 0,
+        "construct": "UIElement",
+        "fingerprint": "2a1afd622576b66a478013b860d81b4e4bbba276e83cad90ab541fdde1f95170",
+        "id": "2a1afd622576b66a478013b860d81b4e4bbba276e83cad90ab541fdde1f95170",
+        "line": 223,
+        "message": "Hardcoded color '#dead' detected. Standardize using design tokens/theme variables.",
+        "snippet": "documentationLink: 'AGENTS.md#dead-code-policy',"
+      },
+      {
+        "column": 0,
+        "construct": "UIElement",
+        "fingerprint": "2a1afd622576b66a478013b860d81b4e4bbba276e83cad90ab541fdde1f95170",
+        "id": "2a1afd622576b66a478013b860d81b4e4bbba276e83cad90ab541fdde1f95170",
+        "line": 243,
+        "message": "Hardcoded color '#dead' detected. Standardize using design tokens/theme variables.",
+        "snippet": "documentationLink: 'AGENTS.md#dead-code-policy',"
+      },
+      {
+        "column": 0,
+        "construct": "UIElement",
+        "fingerprint": "2a1afd622576b66a478013b860d81b4e4bbba276e83cad90ab541fdde1f95170",
+        "id": "2a1afd622576b66a478013b860d81b4e4bbba276e83cad90ab541fdde1f95170",
+        "line": 263,
+        "message": "Hardcoded color '#dead' detected. Standardize using design tokens/theme variables.",
+        "snippet": "documentationLink: 'AGENTS.md#dead-code-policy',"
+      },
+      {
+        "column": 0,
+        "construct": "UIElement",
+        "fingerprint": "2a1afd622576b66a478013b860d81b4e4bbba276e83cad90ab541fdde1f95170",
+        "id": "2a1afd622576b66a478013b860d81b4e4bbba276e83cad90ab541fdde1f95170",
+        "line": 283,
+        "message": "Hardcoded color '#dead' detected. Standardize using design tokens/theme variables.",
+        "snippet": "documentationLink: 'AGENTS.md#dead-code-policy',"
+      },
+      {
+        "column": 0,
+        "construct": "UIElement",
+        "fingerprint": "2a1afd622576b66a478013b860d81b4e4bbba276e83cad90ab541fdde1f95170",
+        "id": "2a1afd622576b66a478013b860d81b4e4bbba276e83cad90ab541fdde1f95170",
+        "line": 303,
+        "message": "Hardcoded color '#dead' detected. Standardize using design tokens/theme variables.",
+        "snippet": "documentationLink: 'AGENTS.md#dead-code-policy',"
+      },
+      {
+        "column": 0,
+        "construct": "UIElement",
+        "fingerprint": "2a1afd622576b66a478013b860d81b4e4bbba276e83cad90ab541fdde1f95170",
+        "id": "2a1afd622576b66a478013b860d81b4e4bbba276e83cad90ab541fdde1f95170",
+        "line": 323,
+        "message": "Hardcoded color '#dead' detected. Standardize using design tokens/theme variables.",
+        "snippet": "documentationLink: 'AGENTS.md#dead-code-policy',"
+      }
+    ],
+    "path": "scripts/governance/rules/metadata/UI.ts",
+    "snippet": "documentationLink: 'AGENTS.md#dead-code-policy',"
+  },
+  "feature": "UIElement",
+  "firstDetected": "2026-07-03T09:30:52.859Z",
+  "id": "f_d529a54e",
+  "lastDetected": "2026-07-03T09:30:52.859Z",
+  "occurrenceCount": 7,
+  "owner": "UI UX Guild",
+  "package": "scripts",
+  "relationships": [],
+  "rule": "VAL-UI-007",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

@@ -1,0 +1,117 @@
+{
+  "confidence": 0.9,
+  "createdDate": "2026-07-03T09:30:52.630Z",
+  "domain": "UI UX Guild",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "UIElement",
+    "line": 20,
+    "message": "Hardcoded color '#1F2937' detected. Standardize using design tokens/theme variables.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "UIElement",
+        "fingerprint": "9ed820139a2d75a4df99e3825ae8690fed698e838399b86585e2755da62d01a5",
+        "id": "9ed820139a2d75a4df99e3825ae8690fed698e838399b86585e2755da62d01a5",
+        "line": 3,
+        "message": "Hardcoded color '#F5F5F5' detected. Standardize using design tokens/theme variables.",
+        "snippet": "PAGE_BACKGROUND: \"#F5F5F5\","
+      },
+      {
+        "column": 0,
+        "construct": "UIElement",
+        "fingerprint": "746f5485e51b4aaebce516365f6084fd58c5e485eabdb232c7d892875fecfa8e",
+        "id": "746f5485e51b4aaebce516365f6084fd58c5e485eabdb232c7d892875fecfa8e",
+        "line": 6,
+        "message": "Hardcoded color '#121212' detected. Standardize using design tokens/theme variables.",
+        "snippet": "CARD_BACKGROUND: \"#121212\","
+      },
+      {
+        "column": 0,
+        "construct": "UIElement",
+        "fingerprint": "a3e18c3114d478576eee630ad27fb83725da477985dd5db1b433e57921d4374b",
+        "id": "a3e18c3114d478576eee630ad27fb83725da477985dd5db1b433e57921d4374b",
+        "line": 9,
+        "message": "Hardcoded color '#2D2D2D' detected. Standardize using design tokens/theme variables.",
+        "snippet": "CARD_BORDER: \"#2D2D2D\","
+      },
+      {
+        "column": 0,
+        "construct": "UIElement",
+        "fingerprint": "19dea4d7e758bdc1538d78874ae12585d8560f67291556537e95ed9ccba5bc99",
+        "id": "19dea4d7e758bdc1538d78874ae12585d8560f67291556537e95ed9ccba5bc99",
+        "line": 12,
+        "message": "Hardcoded color '#EF4444' detected. Standardize using design tokens/theme variables.",
+        "snippet": "BRAND_RED: \"#EF4444\", // Primary MAD logo color"
+      },
+      {
+        "column": 0,
+        "construct": "UIElement",
+        "fingerprint": "a41ae6a4f9ef5c4534eaabf7200c7095caabf4fa380f13dc05b3540d712b1258",
+        "id": "a41ae6a4f9ef5c4534eaabf7200c7095caabf4fa380f13dc05b3540d712b1258",
+        "line": 13,
+        "message": "Hardcoded color '#D97706' detected. Standardize using design tokens/theme variables.",
+        "snippet": "ACCENT_VIP: \"#D97706\", // Amber/Gold for VIP"
+      },
+      {
+        "column": 0,
+        "construct": "UIElement",
+        "fingerprint": "0473817e7e86372967bc453d256f97d0c6039c39480a7b528cee24ce7880bf2a",
+        "id": "0473817e7e86372967bc453d256f97d0c6039c39480a7b528cee24ce7880bf2a",
+        "line": 14,
+        "message": "Hardcoded color '#8B5CF6' detected. Standardize using design tokens/theme variables.",
+        "snippet": "ACCENT_GA: \"#8B5CF6\", // Deep Purple for General Admission"
+      },
+      {
+        "column": 0,
+        "construct": "UIElement",
+        "fingerprint": "6ea1fe4221b1e39797e149962ace33dbf8162b54fddaa592936df821e9db2ced",
+        "id": "6ea1fe4221b1e39797e149962ace33dbf8162b54fddaa592936df821e9db2ced",
+        "line": 15,
+        "message": "Hardcoded color '#10B981' detected. Standardize using design tokens/theme variables.",
+        "snippet": "ACCENT_CONFIRMED: \"#10B981\", // Emerald green for status indicators"
+      },
+      {
+        "column": 0,
+        "construct": "UIElement",
+        "fingerprint": "77d4e0a3ac7870684605dbd031313c9789c3f96753e7292e09a4091a7b997e2c",
+        "id": "77d4e0a3ac7870684605dbd031313c9789c3f96753e7292e09a4091a7b997e2c",
+        "line": 18,
+        "message": "Hardcoded color '#FFFFFF' detected. Standardize using design tokens/theme variables.",
+        "snippet": "TEXT_PRIMARY: \"#FFFFFF\", // Primary white text inside card"
+      },
+      {
+        "column": 0,
+        "construct": "UIElement",
+        "fingerprint": "7e0b67754d82adff5e020f14ef3d8ec69840637019fad55592f97f173631c5eb",
+        "id": "7e0b67754d82adff5e020f14ef3d8ec69840637019fad55592f97f173631c5eb",
+        "line": 19,
+        "message": "Hardcoded color '#A3A3A3' detected. Standardize using design tokens/theme variables.",
+        "snippet": "TEXT_MUTED: \"#A3A3A3\", // Gray for secondary/subtitles"
+      },
+      {
+        "column": 0,
+        "construct": "UIElement",
+        "fingerprint": "b655201c4363fd47617cd9025244c6f4652998206bc65ce81d15e2c9b85b51fc",
+        "id": "b655201c4363fd47617cd9025244c6f4652998206bc65ce81d15e2c9b85b51fc",
+        "line": 20,
+        "message": "Hardcoded color '#1F2937' detected. Standardize using design tokens/theme variables.",
+        "snippet": "TEXT_DARK: \"#1F2937\", // Dark text for outside/page contexts"
+      }
+    ],
+    "path": "apps/server/src/lib/pdf/ticket/utils/colors.ts",
+    "snippet": "TEXT_DARK: \"#1F2937\", // Dark text for outside/page contexts"
+  },
+  "feature": "UIElement",
+  "firstDetected": "2026-07-03T09:30:52.630Z",
+  "id": "f_9e2a25fd",
+  "lastDetected": "2026-07-03T09:30:52.630Z",
+  "occurrenceCount": 10,
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-UI-007",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

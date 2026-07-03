@@ -1,0 +1,33 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T09:31:32.082Z",
+  "domain": "Architecture Review Board",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "message": "Document exists in the repository but has no incoming references from any other active documentation.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "db4615f4c76c51b23a396f25f22e3cb49a9ab915776f6f6b221173ba104acee8",
+        "id": "db4615f4c76c51b23a396f25f22e3cb49a9ab915776f6f6b221173ba104acee8",
+        "line": 0,
+        "message": "Document exists in the repository but has no incoming references from any other active documentation."
+      }
+    ],
+    "path": "docs/governance/VALIDATOR_REGISTRY.md"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T09:31:32.082Z",
+  "id": "f_cce89b32",
+  "lastDetected": "2026-07-03T09:31:32.082Z",
+  "occurrenceCount": 1,
+  "owner": "Architecture Review Board",
+  "package": "docs",
+  "relationships": [],
+  "rule": "Orphaned Documentation",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

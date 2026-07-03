@@ -1,5 +1,5 @@
 {
-  "activeCount": 822,
+  "activeCount": 848,
   "closedCount": 48,
   "findings": [
     {
@@ -78,6 +78,12 @@
       "id": "f_045285a2",
       "occurrenceCount": 1,
       "rule": "VAL-DOC-007",
+      "status": "NEW"
+    },
+    {
+      "id": "f_04546d68",
+      "occurrenceCount": 12,
+      "rule": "VAL-UI-007",
       "status": "NEW"
     },
     {
@@ -261,6 +267,12 @@
       "status": "NEW"
     },
     {
+      "id": "f_0ca94361",
+      "occurrenceCount": 12,
+      "rule": "VAL-UI-007",
+      "status": "NEW"
+    },
+    {
       "id": "f_0ceb4005",
       "occurrenceCount": 1,
       "rule": "VAL-DOC-007",
@@ -418,6 +430,12 @@
     },
     {
       "id": "f_14bee6b7",
+      "occurrenceCount": 1,
+      "rule": "VAL-DOC-007",
+      "status": "NEW"
+    },
+    {
+      "id": "f_14e46f56",
       "occurrenceCount": 1,
       "rule": "VAL-DOC-007",
       "status": "NEW"
@@ -777,6 +795,12 @@
       "status": "NEW"
     },
     {
+      "id": "f_274b303e",
+      "occurrenceCount": 1,
+      "rule": "Missing Document Owner",
+      "status": "NEW"
+    },
+    {
       "id": "f_27844f3c",
       "occurrenceCount": 1,
       "rule": "Missing Document Owner",
@@ -993,6 +1017,12 @@
       "status": "NEW"
     },
     {
+      "id": "f_326f2ce1",
+      "occurrenceCount": 31,
+      "rule": "VAL-UI-007",
+      "status": "NEW"
+    },
+    {
       "id": "f_32a5bd4a",
       "occurrenceCount": 1,
       "rule": "VAL-DOC-007",
@@ -1026,6 +1056,12 @@
       "id": "f_33f8bc2a",
       "occurrenceCount": 1,
       "rule": "VAL-UI-019",
+      "status": "NEW"
+    },
+    {
+      "id": "f_342655a4",
+      "occurrenceCount": 1,
+      "rule": "VAL-DOC-007",
       "status": "NEW"
     },
     {
@@ -1131,6 +1167,12 @@
       "status": "NEW"
     },
     {
+      "id": "f_3930f717",
+      "occurrenceCount": 1,
+      "rule": "Orphaned Documentation",
+      "status": "NEW"
+    },
+    {
       "id": "f_3aab4d99",
       "occurrenceCount": 1,
       "rule": "VAL-UI-019",
@@ -1152,6 +1194,12 @@
       "id": "f_3bd112ba",
       "occurrenceCount": 6,
       "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_3bf6d267",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-007",
       "status": "NEW"
     },
     {
@@ -2001,6 +2049,12 @@
       "status": "NEW"
     },
     {
+      "id": "f_66059766",
+      "occurrenceCount": 1,
+      "rule": "Missing Document Owner",
+      "status": "NEW"
+    },
+    {
       "id": "f_661e9e6c",
       "occurrenceCount": 9,
       "rule": "VAL-UI-010",
@@ -2373,6 +2427,12 @@
       "status": "NEW"
     },
     {
+      "id": "f_795d0870",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-007",
+      "status": "NEW"
+    },
+    {
       "id": "f_79df5b8c",
       "occurrenceCount": 1,
       "rule": "VAL-UI-008",
@@ -2625,6 +2685,12 @@
       "status": "NEW"
     },
     {
+      "id": "f_8730f5ed",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-007",
+      "status": "NEW"
+    },
+    {
       "id": "f_8734124e",
       "occurrenceCount": 1,
       "rule": "Missing Document Owner",
@@ -2677,6 +2743,12 @@
       "occurrenceCount": 1,
       "rule": "VAL-DOC-003",
       "status": "CLOSED"
+    },
+    {
+      "id": "f_88b2d53a",
+      "occurrenceCount": 20,
+      "rule": "VAL-UI-007",
+      "status": "NEW"
     },
     {
       "id": "f_89080178",
@@ -3063,6 +3135,18 @@
       "status": "NEW"
     },
     {
+      "id": "f_9abac425",
+      "occurrenceCount": 13,
+      "rule": "VAL-UI-007",
+      "status": "NEW"
+    },
+    {
+      "id": "f_9ae6d1cb",
+      "occurrenceCount": 13,
+      "rule": "VAL-UI-007",
+      "status": "NEW"
+    },
+    {
       "id": "f_9b02e694",
       "occurrenceCount": 1,
       "rule": "Missing Document Owner",
@@ -3102,6 +3186,12 @@
       "id": "f_9c29d294",
       "occurrenceCount": 2,
       "rule": "VAL-UI-005",
+      "status": "NEW"
+    },
+    {
+      "id": "f_9c2a97d4",
+      "occurrenceCount": 2,
+      "rule": "VAL-UI-007",
       "status": "NEW"
     },
     {
@@ -3156,6 +3246,12 @@
       "id": "f_9dedf633",
       "occurrenceCount": 1,
       "rule": "VAL-DOC-006",
+      "status": "NEW"
+    },
+    {
+      "id": "f_9e2a25fd",
+      "occurrenceCount": 10,
+      "rule": "VAL-UI-007",
       "status": "NEW"
     },
     {
@@ -3261,6 +3357,12 @@
       "status": "NEW"
     },
     {
+      "id": "f_a1aafb2c",
+      "occurrenceCount": 1,
+      "rule": "Missing Document Owner",
+      "status": "NEW"
+    },
+    {
       "id": "f_a32be612",
       "occurrenceCount": 1,
       "rule": "VAL-DOC-007",
@@ -3300,6 +3402,12 @@
       "id": "f_a52ec321",
       "occurrenceCount": 3,
       "rule": "VAL-UI-009",
+      "status": "NEW"
+    },
+    {
+      "id": "f_a53a6f32",
+      "occurrenceCount": 3,
+      "rule": "VAL-UI-007",
       "status": "NEW"
     },
     {
@@ -3354,6 +3462,12 @@
       "id": "f_a77a33ef",
       "occurrenceCount": 8,
       "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_a8134280",
+      "occurrenceCount": 1,
+      "rule": "VAL-UI-009",
       "status": "NEW"
     },
     {
@@ -4059,6 +4173,12 @@
       "status": "NEW"
     },
     {
+      "id": "f_cce89b32",
+      "occurrenceCount": 1,
+      "rule": "Orphaned Documentation",
+      "status": "NEW"
+    },
+    {
       "id": "f_ccf93b12",
       "occurrenceCount": 1,
       "rule": "VAL-UI-005",
@@ -4221,6 +4341,12 @@
       "status": "NEW"
     },
     {
+      "id": "f_d26b55b6",
+      "occurrenceCount": 1,
+      "rule": "VAL-DOC-007",
+      "status": "NEW"
+    },
+    {
       "id": "f_d27bc78d",
       "occurrenceCount": 2,
       "rule": "VAL-UI-005",
@@ -4299,6 +4425,12 @@
       "status": "NEW"
     },
     {
+      "id": "f_d529a54e",
+      "occurrenceCount": 7,
+      "rule": "VAL-UI-007",
+      "status": "NEW"
+    },
+    {
       "id": "f_d5872f92",
       "occurrenceCount": 2,
       "rule": "VAL-DOC-003",
@@ -4374,6 +4506,12 @@
       "id": "f_d9819ecb",
       "occurrenceCount": 1,
       "rule": "VAL-UI-010",
+      "status": "NEW"
+    },
+    {
+      "id": "f_d999fe4c",
+      "occurrenceCount": 22,
+      "rule": "VAL-UI-007",
       "status": "NEW"
     },
     {
@@ -4533,6 +4671,12 @@
       "status": "NEW"
     },
     {
+      "id": "f_e04d6eef",
+      "occurrenceCount": 4,
+      "rule": "VAL-UI-007",
+      "status": "NEW"
+    },
+    {
       "id": "f_e0708c07",
       "occurrenceCount": 1,
       "rule": "VAL-UI-011",
@@ -4680,6 +4824,12 @@
       "id": "f_e7230971",
       "occurrenceCount": 1,
       "rule": "VAL-UI-008",
+      "status": "NEW"
+    },
+    {
+      "id": "f_e751a1ad",
+      "occurrenceCount": 1,
+      "rule": "Orphaned Documentation",
       "status": "NEW"
     },
     {
@@ -5175,6 +5325,12 @@
       "status": "NEW"
     },
     {
+      "id": "f_fdf89f26",
+      "occurrenceCount": 18,
+      "rule": "VAL-UI-007",
+      "status": "NEW"
+    },
+    {
       "id": "f_fe2f222d",
       "occurrenceCount": 3,
       "rule": "VAL-UI-005",
@@ -5224,5 +5380,5 @@
     }
   ],
   "suppressedCount": 0,
-  "timestamp": "2026-07-03T09:22:47.816Z"
+  "timestamp": "2026-07-03T09:31:32.091Z"
 }
