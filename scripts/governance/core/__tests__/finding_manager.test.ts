@@ -183,4 +183,118 @@ describe('FindingManager (State Persistence & Serialization)', () => {
 
     expect(() => new FindingManager()).not.toThrow();
   });
+
+  // ---
+  // Occurrence Identity Regression Tests
+  // These tests verify that the runtime deduplication matches the migration
+  // semantics defined in scripts/governance/migrate-findings.ts:
+  //   identity = fingerprint + line   (NOT fingerprint alone)
+  // ---
+
+  it('(occurrence-identity-1) should NOT create a second occurrence when fingerprint AND line are identical', () => {
+    // Two violations: same rule, same path, same snippet, same line.
+    // Result: one occurrence, occurrenceCount = 1.
+    const violation: StatelessViolation = {
+      rule: 'VAL-UI-001',
+      path: 'apps/web/src/components/OccDedup.tsx',
+      construct: 'button',
+      line: 10,
+      snippet: '<button>',
+      message: 'Raw button',
+      confidence: 1.0,
+    };
+
+    // First scan run
+    const claimed1 = new Set<string>();
+    const f1 = fm.matchOrCreateFinding(violation, claimed1);
+    claimed1.add(f1.id);
+    fm.finalizeFinding(f1.id);
+
+    // Second scan run — identical violation, same line
+    const claimed2 = new Set<string>();
+    const f2 = fm.matchOrCreateFinding(violation, claimed2);
+    claimed2.add(f2.id);
+    fm.finalizeFinding(f2.id);
+
+    expect(f2.id).toBe(f1.id);
+    expect(f2.evidence.occurrences?.length).toBe(1);
+    expect(f2.occurrenceCount).toBe(1);
+  });
+
+  it('(occurrence-identity-2) should create TWO occurrences when fingerprint is identical but lines differ', () => {
+    // Two violations: same rule, same path, same snippet — different lines.
+    // Identity = fingerprint + line, so both must be preserved.
+    // occurrenceCount must equal 2.
+    const violationA: StatelessViolation = {
+      rule: 'VAL-UI-001',
+      path: 'apps/web/src/components/OccMultiLine.tsx',
+      construct: 'button',
+      line: 10,
+      snippet: '<button>',
+      message: 'Raw button',
+      confidence: 1.0,
+    };
+    const violationB: StatelessViolation = {
+      ...violationA,
+      line: 40,   // different source location, same normalized snippet
+    };
+
+    const claimed = new Set<string>();
+
+    // First violation — creates the finding
+    const finding = fm.matchOrCreateFinding(violationA, claimed);
+    claimed.add(finding.id);
+
+    // Second violation — must be added as a SEPARATE occurrence (different line)
+    fm.matchOrCreateFinding(violationB, claimed);
+
+    fm.finalizeFinding(finding.id);
+
+    expect(finding.evidence.occurrences?.length).toBe(2);
+    expect(finding.occurrenceCount).toBe(2);
+
+    const lines = (finding.evidence.occurrences ?? [])
+      .map(o => o.line)
+      .sort((a, b) => a - b);
+    expect(lines).toEqual([10, 40]);
+  });
+
+  it('(occurrence-identity-3) should not lose occurrences when the engine re-runs over a persisted multi-occurrence finding', () => {
+    // Simulates a finding with two same-fingerprint occurrences already on disk
+    // (produced by the migration script). After a re-run the count must be unchanged.
+    const sharedPath = 'apps/web/src/components/OccPersist.tsx';
+    const violationA: StatelessViolation = {
+      rule: 'VAL-UI-001',
+      path: sharedPath,
+      construct: 'button',
+      line: 50,
+      snippet: '<button>',
+      message: 'Raw button',
+      confidence: 1.0,
+    };
+    const violationB: StatelessViolation = { ...violationA, line: 90 };
+
+    // Run 1 — establish baseline with two occurrences on disk
+    const claimed1 = new Set<string>();
+    const f1 = fm.matchOrCreateFinding(violationA, claimed1);
+    claimed1.add(f1.id);
+    fm.matchOrCreateFinding(violationB, claimed1);
+    fm.finalizeFinding(f1.id);
+
+    const countAfterRun1 = f1.evidence.occurrences?.length ?? 0;
+
+    // Run 2 — engine re-processes the same violations
+    const claimed2 = new Set<string>();
+    const f2 = fm.matchOrCreateFinding(violationA, claimed2);
+    claimed2.add(f2.id);
+    fm.matchOrCreateFinding(violationB, claimed2);
+    fm.finalizeFinding(f2.id);
+
+    const countAfterRun2 = f2.evidence.occurrences?.length ?? 0;
+
+    // No occurrences must be lost between runs
+    expect(f2.id).toBe(f1.id);
+    expect(countAfterRun2).toBe(countAfterRun1);
+    expect(countAfterRun2).toBe(2);
+  });
 });

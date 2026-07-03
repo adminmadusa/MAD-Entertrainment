@@ -9199,6 +9199,110 @@
       "hash": "23bffdb3872bc91d5e0301db8f2f505f7e1719a8",
       "lastModified": 1782354666523.6348
     },
+    "docs/governance/BASELINE.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "docs/governance/REPOSITORY_POLICY.md",
+        "docs/governance/REPOSITORY_STRUCTURE.md",
+        "docs/governance/REPOSITORY_POLICY.md",
+        "docs/governance/REPOSITORY_STRUCTURE.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "bea97c0f1ee519d0f5f7b2133a9645b4bf179bdd",
+      "lastModified": 1783069164526.739
+    },
+    "docs/governance/DEPENDENCY_POLICY.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "docs/governance/REPOSITORY_POLICY.md",
+        "docs/governance/WORKSPACE_POLICY.md",
+        "docs/governance/REPOSITORY_POLICY.md",
+        "docs/governance/WORKSPACE_POLICY.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "4bbfef240eb25cfa331de8f7cfa2274503ec752a",
+      "lastModified": 1783069145914.2412
+    },
+    "docs/governance/FILE_LIFECYCLE.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "docs/governance/REPOSITORY_POLICY.md",
+        "docs/governance/REPOSITORY_STRUCTURE.md",
+        "docs/governance/REPOSITORY_POLICY.md",
+        "docs/governance/REPOSITORY_STRUCTURE.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "c32704441f519e38231da524b243c799a6ece47f",
+      "lastModified": 1783069158945.1804
+    },
+    "docs/governance/NAMING_CONVENTIONS.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "docs/governance/REPOSITORY_POLICY.md",
+        "docs/governance/REPOSITORY_STRUCTURE.md",
+        "docs/governance/REPOSITORY_POLICY.md",
+        "docs/governance/REPOSITORY_STRUCTURE.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "dfefd8a5924932236af0241736225031bdd5a786",
+      "lastModified": 1783069152457.6577
+    },
+    "docs/governance/REPOSITORY_POLICY.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "docs/governance/REPOSITORY_STRUCTURE.md",
+        "docs/governance/WORKSPACE_POLICY.md",
+        "docs/governance/DEPENDENCY_POLICY.md",
+        "docs/governance/NAMING_CONVENTIONS.md",
+        "docs/governance/FILE_LIFECYCLE.md",
+        "docs/governance/BASELINE.md",
+        "REPOSITORY_GOVERNANCE.md",
+        "ARCHITECTURE.md",
+        "docs/governance/NAMING_CONVENTIONS.md",
+        "docs/governance/REPOSITORY_STRUCTURE.md",
+        "docs/governance/WORKSPACE_POLICY.md",
+        "docs/governance/DEPENDENCY_POLICY.md",
+        "docs/governance/NAMING_CONVENTIONS.md",
+        "docs/governance/FILE_LIFECYCLE.md",
+        "docs/governance/BASELINE.md",
+        "REPOSITORY_GOVERNANCE.md",
+        "ARCHITECTURE.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "d247af6c2b7a2112608e128ceecad723973b04b3",
+      "lastModified": 1783069081341.9578
+    },
+    "docs/governance/REPOSITORY_STRUCTURE.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "docs/governance/REPOSITORY_POLICY.md",
+        "docs/governance/WORKSPACE_POLICY.md",
+        "docs/governance/REPOSITORY_POLICY.md",
+        "docs/governance/WORKSPACE_POLICY.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "881d706c0f6ab4edd6c8ae60f38623acf18abd31",
+      "lastModified": 1783069132952.7847
+    },
+    "docs/governance/WORKSPACE_POLICY.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "docs/governance/REPOSITORY_POLICY.md",
+        "docs/governance/DEPENDENCY_POLICY.md",
+        "docs/governance/REPOSITORY_POLICY.md",
+        "docs/governance/DEPENDENCY_POLICY.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "8ba052761bb78c38de9dfa810ec8bf1a49dec9aa",
+      "lastModified": 1783069139616.3486
+    },
     "docs/remediation-plan.md": {
       "assetReferences": [],
       "dependencies": [
@@ -10526,6 +10630,6 @@
       "lastModified": 1783050805912.8364
     }
   },
-  "timestamp": "2026-07-03T08:48:20.057Z",
+  "timestamp": "2026-07-03T08:59:46.691Z",
   "version": "1.1.0"
 }

@@ -275,7 +275,12 @@ export class FindingManager {
       finding.evidence.snippet = violation.snippet;
       finding.evidence.message = violation.message;
 
-      const exists = finding.evidence.occurrences.some(o => o.id === fingerprint);
+      // Identity = fingerprint + line (matches migrate-findings.ts semantics).
+      // Two occurrences sharing the same normalized snippet but on different lines
+      // are distinct source locations and must both be preserved.
+      const exists = finding.evidence.occurrences.some(
+        o => o.id === fingerprint && o.line === (violation.line || 0)
+      );
       if (!exists) {
         finding.evidence.occurrences.push(occurrence);
         finding.evidence.occurrences.sort((a, b) => a.line - b.line);
@@ -314,7 +319,10 @@ export class FindingManager {
         if (!oldFinding.evidence.occurrences) {
           oldFinding.evidence.occurrences = [];
         }
-        const exists = oldFinding.evidence.occurrences.some(o => o.id === fingerprint);
+        // Identity = fingerprint + line (matches migrate-findings.ts semantics).
+        const exists = oldFinding.evidence.occurrences.some(
+          o => o.id === fingerprint && o.line === (violation.line || 0)
+        );
         if (!exists) {
           oldFinding.evidence.occurrences.push(occurrence);
           oldFinding.evidence.occurrences.sort((a, b) => a.line - b.line);

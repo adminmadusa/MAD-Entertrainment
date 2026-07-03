@@ -1,5 +1,5 @@
 {
-  "activeCount": 584,
+  "activeCount": 591,
   "closedCount": 12,
   "findings": [
     {
@@ -60,6 +60,12 @@
       "id": "f_03f191b9",
       "occurrenceCount": 1,
       "rule": "Orphaned Documentation",
+      "status": "NEW"
+    },
+    {
+      "id": "f_045285a2",
+      "occurrenceCount": 1,
+      "rule": "VAL-DOC-007",
       "status": "NEW"
     },
     {
@@ -663,6 +669,12 @@
       "status": "NEW"
     },
     {
+      "id": "f_32a5bd4a",
+      "occurrenceCount": 1,
+      "rule": "VAL-DOC-007",
+      "status": "NEW"
+    },
+    {
       "id": "f_32f263fc",
       "occurrenceCount": 4,
       "rule": "VAL-UI-010",
@@ -1008,6 +1020,12 @@
       "id": "f_5016d844",
       "occurrenceCount": 1,
       "rule": "VAL-UI-004",
+      "status": "NEW"
+    },
+    {
+      "id": "f_503f70f1",
+      "occurrenceCount": 1,
+      "rule": "VAL-DOC-007",
       "status": "NEW"
     },
     {
@@ -1374,6 +1392,12 @@
       "id": "f_6a882e4b",
       "occurrenceCount": 1,
       "rule": "VAL-UI-011",
+      "status": "NEW"
+    },
+    {
+      "id": "f_6a9a40c0",
+      "occurrenceCount": 1,
+      "rule": "VAL-DOC-007",
       "status": "NEW"
     },
     {
@@ -1989,6 +2013,12 @@
       "status": "NEW"
     },
     {
+      "id": "f_95607185",
+      "occurrenceCount": 1,
+      "rule": "VAL-DOC-007",
+      "status": "NEW"
+    },
+    {
       "id": "f_95c007d4",
       "occurrenceCount": 1,
       "rule": "Orphaned Documentation",
@@ -2026,6 +2056,12 @@
     },
     {
       "id": "f_97050c9b",
+      "occurrenceCount": 1,
+      "rule": "VAL-DOC-007",
+      "status": "NEW"
+    },
+    {
+      "id": "f_9719c7ee",
       "occurrenceCount": 1,
       "rule": "VAL-DOC-007",
       "status": "NEW"
@@ -2392,6 +2428,12 @@
     },
     {
       "id": "f_b157e6d1",
+      "occurrenceCount": 1,
+      "rule": "VAL-DOC-007",
+      "status": "NEW"
+    },
+    {
+      "id": "f_b1c42a06",
       "occurrenceCount": 1,
       "rule": "VAL-DOC-007",
       "status": "NEW"
@@ -3580,5 +3622,5 @@
     }
   ],
   "suppressedCount": 0,
-  "timestamp": "2026-07-03T08:48:21.152Z"
+  "timestamp": "2026-07-03T08:59:47.771Z"
 }
