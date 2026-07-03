@@ -181,6 +181,7 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
             email: booking.guestEmail,
           },
           theme: {
+            // governance-ignore VAL-UI-007: Razorpay payment gateway API requires a literal hex color value; CSS variables are not supported by this external SDK
             color: '#8b5cf6',
           },
           modal: {

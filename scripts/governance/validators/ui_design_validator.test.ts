@@ -1,5 +1,5 @@
 // scripts/governance/validators/ui_design_validator.test.ts
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { UIDesignValidator } from './ui_design_validator';
 import { writeFileSync, rmSync, mkdirSync, existsSync } from 'fs';
 import { join } from 'path';
@@ -73,4 +73,13 @@ describe('UIDesignValidator', () => {
     const result = await runWithTempFile('apps/server/src/lib/pdf/ticket/TicketPDF.tsx', content);
     expect(result.warnings.length).toBe(0);
   });
+
+  it('should skip hardcoded color checks in Next.js global-error.tsx (no CSS tokens available in error boundary)', async () => {
+    const content = `
+      const bodyStyle = { background: "#0B0F1A", color: "#E2E8F0" };
+    `;
+    const result = await runWithTempFile('global-error.tsx', content);
+    expect(result.warnings.length).toBe(0);
+  });
 });
+

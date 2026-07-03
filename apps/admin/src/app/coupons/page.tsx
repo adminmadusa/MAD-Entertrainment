@@ -241,7 +241,7 @@ export default function AdminCouponsPage() {
               exit={{ opacity: 0, scale: 0.95 }}
               className="glass-strong rounded-2xl border border-border-subtle p-6 max-w-sm w-full"
             >
-              <h3 className="text-white font-bold text-lg mb-2">Delete Coupon?</h3>
+              <h2 className="text-white font-bold text-lg mb-2">Delete Coupon?</h2>
               <p className="text-text-secondary text-sm mb-1">
                 Coupon code <strong className="text-white font-mono">{deleteTarget.code}</strong> will be permanently deleted.
               </p>

@@ -247,7 +247,7 @@ export default function AdminDJsPage() {
               exit={{ opacity: 0, scale: 0.95 }}
               className="glass-strong rounded-2xl border border-border-subtle p-6 max-w-sm w-full"
             >
-              <h3 className="text-white font-bold text-lg mb-2">Delete DJ Operator?</h3>
+              <h2 className="text-white font-bold text-lg mb-2">Delete DJ Operator?</h2>
               <p className="text-text-secondary text-sm mb-1">
                 <strong className="text-white">{deleteTarget.name}</strong> will be permanently deleted.
               </p>

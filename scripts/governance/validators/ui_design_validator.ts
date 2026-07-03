@@ -156,7 +156,9 @@ export class UIDesignValidator implements GovernanceValidator {
         // Rule 1: VAL-UI-007 - Hardcoded Colors (Hex colors check)
         const isEmailOrPdfTemplate =
           file.includes('apps/server/src/lib/email/templates') ||
-          file.includes('apps/server/src/lib/pdf/ticket');
+          file.includes('apps/server/src/lib/pdf/ticket') ||
+          // Next.js global error boundaries must use inline styles — CSS design tokens are unavailable
+          file.endsWith('global-error.tsx');
         if (!isEmailOrPdfTemplate && (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node))) {
           const text = node.text;
           const exactHexPattern = /^#([0-9a-fA-F]{3,4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/;

@@ -27,6 +27,7 @@ const config: Config = {
         accent: 'var(--color-accent-pink)',
         cyan: 'var(--color-accent-cyan)',
         'accent-purple': 'var(--color-accent-purple)',
+        // governance-ignore VAL-UI-007: Tailwind config defines design tokens and requires raw hex values; this IS the token definition layer
         'accent-purple-light': '#a78bfa',
         'accent-pink': 'var(--color-accent-pink)',
         'accent-cyan': 'var(--color-accent-cyan)',

@@ -194,7 +194,7 @@ export default function AdminRefundsPage() {
               >
                 {/* Context Column (Left) */}
                 <div className="space-y-4 text-sm border-r border-white/5 pr-4 md:block hidden">
-                  <h4 className="text-white font-bold text-base border-b border-white/5 pb-2">Refund Request Detail</h4>
+                  <h2 className="text-white font-bold text-base border-b border-white/5 pb-2">Refund Request Detail</h2>
 
                   <div>
                     <span className="text-[10px] text-text-muted uppercase tracking-wider block font-semibold">Booking ID</span>
@@ -235,7 +235,7 @@ export default function AdminRefundsPage() {
                 <div className="space-y-4 flex flex-col justify-between">
                   <div className="space-y-4">
                     <div>
-                      <h3 className="text-white font-bold text-lg">Process Refund</h3>
+                      <h2 className="text-white font-bold text-lg">Process Refund</h2>
                       <p className="text-text-muted text-xs">Authorize or reject refund request</p>
                     </div>
 

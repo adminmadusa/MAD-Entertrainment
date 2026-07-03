@@ -308,7 +308,7 @@ export default function EventDetailClient({ slug, initialEvent }: EventDetailCli
             {/* Good to know + Refund policy */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="glass rounded-2xl border border-white/5 p-5 space-y-4 hover:border-white/10 transition-colors">
-                <h3 className="text-base font-bold text-white">Good to know</h3>
+                <h2 className="text-base font-bold text-white">Good to know</h2>
                 <div className="space-y-3 text-xs text-text-secondary">
                   <div className="flex items-start gap-3">
                     <svg className="w-4 h-4 mt-0.5 flex-shrink-0 text-text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -339,7 +339,7 @@ export default function EventDetailClient({ slug, initialEvent }: EventDetailCli
               </div>
 
               <div className="glass rounded-2xl border border-white/5 p-5 space-y-4 hover:border-white/10 transition-colors">
-                <h3 className="text-base font-bold text-white">Refund policy</h3>
+                <h2 className="text-base font-bold text-white">Refund policy</h2>
                 <p className="text-xs text-text-secondary leading-relaxed">
                   {event.refundPolicy || 'All sales are final. No refunds or exchanges are permitted unless the event is cancelled or postponed.'}
                 </p>
