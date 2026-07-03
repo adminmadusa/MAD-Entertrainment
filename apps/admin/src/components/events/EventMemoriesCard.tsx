@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useRef, useState, useCallback } from 'react';
+import { FormField } from '@mad/ui';
 import {
   EventStatus,
   EventMemoryPublicationState,
@@ -81,29 +82,6 @@ type UploadEntry = {
   error?: string;
 };
 
-// ─── Field wrapper ────────────────────────────────────────────────────────────
-
-function Field({
-  label,
-  hint,
-  children,
-}: {
-  label: string;
-  hint?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="space-y-1.5">
-      <label className="text-text-secondary text-sm font-medium block">
-        {label}
-        {hint && (
-          <span className="ml-2 text-[11px] text-text-muted font-normal">{hint}</span>
-        )}
-      </label>
-      {children}
-    </div>
-  );
-}
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
@@ -384,7 +362,7 @@ export const EventMemoriesCard = React.memo(function EventMemoriesCard({
 
       {/* Content fields */}
       <div className="space-y-4">
-        <Field label="Section Heading" hint="optional">
+        <FormField label="Section Heading" hint="optional">
           <input
             id="memories-heading"
             value={heading}
@@ -393,9 +371,9 @@ export const EventMemoriesCard = React.memo(function EventMemoriesCard({
             maxLength={120}
             className={inputCls}
           />
-        </Field>
+        </FormField>
 
-        <Field label="Thank You Message" hint="optional — shown to attendees">
+        <FormField label="Thank You Message" hint="optional — shown to attendees">
           <textarea
             id="memories-thank-you"
             value={thankYouMessage}
@@ -408,9 +386,9 @@ export const EventMemoriesCard = React.memo(function EventMemoriesCard({
           <p className="text-[11px] text-text-muted text-right">
             {thankYouMessage.length} / 500
           </p>
-        </Field>
+        </FormField>
 
-        <Field label="Highlights" hint="comma separated, optional">
+        <FormField label="Highlights" hint="comma separated, optional">
           <input
             id="memories-highlights"
             value={highlightsInput}
@@ -418,7 +396,7 @@ export const EventMemoriesCard = React.memo(function EventMemoriesCard({
             placeholder="e.g. 2000 attendees, 5 hours of music, Sold out"
             className={inputCls}
           />
-        </Field>
+        </FormField>
       </div>
 
       {/* Gallery section */}

@@ -1,20 +1,10 @@
 import React from 'react';
 import { DJBasicInfoCardProps, inputCls } from './types';
+import { FormField } from '@mad/ui';
 
-export const Field: React.FC<{ label: string; htmlFor?: string; children: React.ReactNode }> = ({
-  label,
-  htmlFor,
-  children,
-}) => {
-  return (
-    <div className="space-y-1.5">
-      <label htmlFor={htmlFor} className="text-text-secondary text-sm font-medium block">
-        {label}
-      </label>
-      {children}
-    </div>
-  );
-};
+// Re-export FormField as Field to maintain backward compatibility with DJSocialLinksCard
+export { FormField as Field };
+
 
 export const DJBasicInfoCard: React.FC<DJBasicInfoCardProps> = ({
   name,
@@ -32,7 +22,7 @@ export const DJBasicInfoCard: React.FC<DJBasicInfoCardProps> = ({
   return (
     <div className="glass rounded-2xl border border-border-subtle p-6 space-y-5">
       <h2 className="text-white font-semibold">Basic Information</h2>
-      <Field label="DJ Name / Stage Name *" htmlFor="dj-name">
+      <FormField label="DJ Name / Stage Name *" htmlFor="dj-name">
         <input
           id="dj-name"
           value={name}
@@ -41,9 +31,9 @@ export const DJBasicInfoCard: React.FC<DJBasicInfoCardProps> = ({
           required
           className={inputCls}
         />
-      </Field>
+      </FormField>
       <div className="grid grid-cols-2 gap-4">
-        <Field label={isEdit ? 'Slug' : 'Slug (optional)'} htmlFor="dj-slug">
+        <FormField label={isEdit ? 'Slug' : 'Slug (optional)'} htmlFor="dj-slug">
           <input
             id="dj-slug"
             value={slug}
@@ -51,8 +41,8 @@ export const DJBasicInfoCard: React.FC<DJBasicInfoCardProps> = ({
             placeholder="e.g. dj-shaan"
             className={inputCls}
           />
-        </Field>
-        <Field label="Specialties / Genres (comma-separated)" htmlFor="dj-specialties">
+        </FormField>
+        <FormField label="Specialties / Genres (comma-separated)" htmlFor="dj-specialties">
           <input
             id="dj-specialties"
             value={specialties}
@@ -60,10 +50,10 @@ export const DJBasicInfoCard: React.FC<DJBasicInfoCardProps> = ({
             placeholder="e.g. Techno, House, Progressive"
             className={inputCls}
           />
-        </Field>
+        </FormField>
       </div>
       <div className="grid grid-cols-2 gap-4">
-        <Field label="Experience (Years)" htmlFor="dj-experience-years">
+        <FormField label="Experience (Years)" htmlFor="dj-experience-years">
           <input
             id="dj-experience-years"
             type="number"
@@ -73,9 +63,9 @@ export const DJBasicInfoCard: React.FC<DJBasicInfoCardProps> = ({
             placeholder="e.g. 5"
             className={inputCls}
           />
-        </Field>
+        </FormField>
       </div>
-      <Field label="Bio (optional)" htmlFor="dj-bio">
+      <FormField label="Bio (optional)" htmlFor="dj-bio">
         <textarea
           id="dj-bio"
           value={bio}
@@ -84,7 +74,7 @@ export const DJBasicInfoCard: React.FC<DJBasicInfoCardProps> = ({
           rows={4}
           className={`${inputCls} resize-none`}
         />
-      </Field>
+      </FormField>
     </div>
   );
 };
