@@ -1,21 +1,17 @@
 'use client';
 
-import { useState, useEffect, useRef, Suspense, useCallback } from 'react';
+import dynamic from 'next/dynamic';
 import { useSearchParams, useRouter } from 'next/navigation';
+import { useState, useEffect, useRef, Suspense, useCallback } from 'react';
 
-import { extractApiError } from '@/lib/api/client';
-import {
-  publicRecoverBookingEmail,
-  publicVerifyRecoveredBookingOTP,
-  publicGoogleLogin,
-} from '@/lib/api/public.service';
-import { useAuth } from '@/providers/AuthProvider';
 import { submitContactForm } from '@/app/actions/contact.actions';
 import { useGoogleSignIn } from '@/components/auth/hooks/useGoogleSignIn';
 import { useOtpCooldowns } from '@/components/auth/hooks/useOtpCooldowns';
+import { extractApiError } from '@/lib/api/client';
+import { publicRecoverBookingEmail, publicVerifyRecoveredBookingOTP, publicGoogleLogin } from '@/lib/api/public.service';
+import { useAuth } from '@/providers/AuthProvider';
 
 import { FindTicketsModal } from './components/FindTicketsModal';
-import dynamic from 'next/dynamic';
 
 const BookingFoundModal = dynamic(
   () => import('./components/BookingFoundModal').then((mod) => mod.BookingFoundModal),

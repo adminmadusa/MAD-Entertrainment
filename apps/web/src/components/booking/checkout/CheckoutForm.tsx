@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { CheckoutDetailsInput, checkoutDetailsSchema } from '@mad/validations';
-import { useAuth } from '@/providers/AuthProvider';
+import { useEffect, useState } from 'react';
+
 import { mapZodErrorToFields } from '@/lib/validation/mapZodError';
-import { Event } from '@mad/types';
+import { useAuth } from '@/providers/AuthProvider';
+import type { Event } from '@mad/types';
+import { CheckoutDetailsInput, checkoutDetailsSchema } from '@mad/validations';
 
 interface CheckoutFormProps {
   event?: Event | null;

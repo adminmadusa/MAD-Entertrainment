@@ -1,15 +1,13 @@
 'use client';
 
-import { useState, useEffect, useMemo, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useEffect, useMemo, useRef, useState } from 'react';
+
+import { apiClient, extractApiError } from '@/lib/api/client';
+import { publicGetMyBookings, publicResendTicketEmail } from '@/lib/api/public.service';
+import { useAuth } from '@/providers/AuthProvider';
 import { BookingStatus, QUERY_KEYS } from '@mad/shared';
 import type { Booking, Ticket, Event } from '@mad/types';
-import {
-  publicGetMyBookings,
-  publicResendTicketEmail,
-} from '@/lib/api/public.service';
-import { apiClient, extractApiError } from '@/lib/api/client';
-import { useAuth } from '@/providers/AuthProvider';
 
 export function useBookings() {
   const { isAuthenticated } = useAuth();

@@ -1,6 +1,7 @@
 'use client';
 
 import { useParams, useRouter } from 'next/navigation';
+
 import { CheckoutContent } from '@/components/booking/CheckoutContent';
 
 export default function CheckoutPage() {

@@ -5,16 +5,16 @@
   "engineVersion": "1.0.0",
   "evidence": {
     "construct": "Document",
-    "line": 3,
-    "message": "Imports must be grouped in order: Node built-ins, Third-party packages, Workspace aliases, Relative paths, Side-effects.",
+    "line": 4,
+    "message": "Imports within the same group must be sorted alphabetically (\"next/navigation\" should precede \"react\").",
     "occurrences": [
       {
         "column": 0,
         "construct": "Document",
         "fingerprint": "bc2b277d430ab8324e79602c1ec779f67ebe2dfe34cd298e8fbb9aea38d3412a",
         "id": "bc2b277d430ab8324e79602c1ec779f67ebe2dfe34cd298e8fbb9aea38d3412a",
-        "line": 3,
-        "message": "Imports must be grouped in order: Node built-ins, Third-party packages, Workspace aliases, Relative paths, Side-effects."
+        "line": 4,
+        "message": "Imports within the same group must be sorted alphabetically (\"next/navigation\" should precede \"react\")."
       }
     ],
     "path": "apps/web/src/app/(auth)/login/page.tsx"
@@ -22,7 +22,8 @@
   "feature": "Document",
   "firstDetected": "2026-07-03T12:25:54.814Z",
   "id": "f_188a56f3",
-  "lastDetected": "2026-07-03T12:25:54.814Z",
+  "lastDetected": "2026-07-04T04:24:24.713Z",
+  "lastModified": "2026-07-04T04:24:24.713Z",
   "occurrenceCount": 1,
   "owner": "Platform Team",
   "package": "apps",

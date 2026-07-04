@@ -1,6 +1,6 @@
-import { Booking, Event } from '@mad/types';
-import { getBookingStatusMeta, type BookingStatusTone } from '@mad/shared';
 import { formatEventDate } from '@/utils/date';
+import { getBookingStatusMeta, type BookingStatusTone } from '@mad/shared';
+import type { Booking, Event } from '@mad/types';
 
 interface BookingHeaderCardProps {
   booking: Booking;
