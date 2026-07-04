@@ -10,6 +10,7 @@ import dynamic from 'next/dynamic';
 import { useAdminAuth } from '@/providers/AdminAuthProvider';
 import { AdminRole, EventStatus, BOOKING_REFERENCE_REGEX } from '@mad/shared';
 import { formatDateTime } from '@mad/utils';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@mad/ui';
 import {
   adminGetDashboardSummary,
   adminGetRevenueChart,
@@ -427,26 +428,24 @@ function DashboardContent() {
           <div className="px-6 py-4 border-b border-border-subtle">
             <h2 className="text-white font-semibold">Top Events by Revenue</h2>
           </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-border-subtle">
-                  <th className="text-left text-text-muted font-medium py-3 px-6">Event</th>
-                  <th className="text-left text-text-muted font-medium py-3 px-4">Bookings</th>
-                  <th className="text-right text-text-muted font-medium py-3 px-6">Net Revenue</th>
-                </tr>
-              </thead>
-              <tbody>
-                {summary.topEvents.map((ev) => (
-                  <tr key={ev._id} className="border-b border-border-subtle/40 hover:bg-white/2">
-                    <td className="py-3.5 px-6 text-text-primary">{ev.event?.title ?? 'Deleted Event'}</td>
-                    <td className="py-3.5 px-4 text-text-secondary">{ev.count}</td>
-                    <td className="py-3.5 px-6 text-right text-white font-semibold">₹{ev.revenue.toLocaleString('en-IN')}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="py-3 px-6">Event</TableHead>
+                <TableHead className="py-3 px-4">Bookings</TableHead>
+                <TableHead className="py-3 px-6 text-right">Net Revenue</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {summary.topEvents.map((ev) => (
+                <TableRow key={ev._id} className="border-b border-border-subtle/40 hover:bg-white/2">
+                  <TableCell className="py-3.5 px-6 text-text-primary">{ev.event?.title ?? 'Deleted Event'}</TableCell>
+                  <TableCell className="py-3.5 px-4 text-text-secondary">{ev.count}</TableCell>
+                  <TableCell className="py-3.5 px-6 text-right text-white font-semibold">₹{ev.revenue.toLocaleString('en-IN')}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         </div>
       )}
     </div>
