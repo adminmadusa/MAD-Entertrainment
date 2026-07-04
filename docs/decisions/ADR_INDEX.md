@@ -9,3 +9,4 @@ This index maintains the chronological list of all architectural decisions made 
 | **ADR-003** | Governance Status Semantics & Architecture Specification | Proposed | Governance | 2026-07-02 | [ADR-003](ADR-003-governance-status-semantics.md) |
 | **ADR-004** | Governance Rule Execution Engine | Implemented | Governance | 2026-07-03 | [ADR-004](ADR-004-governance-execution-engine.md) |
 | **ADR-005** | Git Governance Engine Core Design Principles & Schema Contracts | Accepted | Governance | 2026-07-04 | [ADR-005](ADR-005-git-governance-engine-design-principles.md) |
+| **ADR-006** | Repository Governance Platform — Public Contract Freeze | Accepted | Platform Architecture | 2026-07-04 | [ADR-006](ADR-006-public-contract-freeze.md) |
