@@ -3,6 +3,7 @@ export interface BranchInfo {
   isLocal: boolean;
   isRemote: boolean;
   sha: string;
+  treeSha: string;
   upstream: string | null;
   authorName: string;
   authorEmail: string;

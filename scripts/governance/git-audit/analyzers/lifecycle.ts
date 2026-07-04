@@ -26,17 +26,7 @@ export function determineLifecycleState(
     return 'Integration';
   }
 
-  // 4. Duplicate Candidate
-  if (isDuplicate) {
-    return 'Duplicate Candidate';
-  }
-
-  // 5. Experimental (AI OS phase branches)
-  if (name.startsWith('feat/ai-os-phase-')) {
-    return 'Experimental';
-  }
-
-  // 6. Ready For Delete (Local or remote that passes all deletion safety checks)
+  // 4. Ready For Delete (Local or remote that passes all deletion safety checks)
   const isMergedOrPatchEquiv = v.isMerged || v.isSquashMerged;
   const hasNoBlocks = 
     !v.isProtected &&
@@ -52,9 +42,19 @@ export function determineLifecycleState(
     return 'Ready For Delete';
   }
 
-  // 7. Blocked
+  // 5. Blocked
   if (isMergedOrPatchEquiv && !hasNoBlocks) {
     return 'Blocked';
+  }
+
+  // 6. Duplicate Candidate
+  if (isDuplicate) {
+    return 'Duplicate Candidate';
+  }
+
+  // 7. Experimental (AI OS phase branches)
+  if (name.startsWith('feat/ai-os-phase-')) {
+    return 'Experimental';
   }
 
   // 8. Open PR

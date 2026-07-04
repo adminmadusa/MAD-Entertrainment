@@ -1,13 +1,13 @@
-import { isReachable } from '../utils/git';
+import { isReachable, refExists } from '../utils/git';
 
 export function checkReachableFromDevelop(refName: string): boolean {
-  return isReachable(refName, 'develop');
+  return refExists('develop') && isReachable(refName, 'develop');
 }
 
 export function checkReachableFromLive(refName: string): boolean {
-  return isReachable(refName, 'live');
+  return refExists('live') && isReachable(refName, 'live');
 }
 
 export function checkReachableFromRemediation(refName: string): boolean {
-  return isReachable(refName, 'test/remediation-integration');
+  return refExists('test/remediation-integration') && isReachable(refName, 'test/remediation-integration');
 }

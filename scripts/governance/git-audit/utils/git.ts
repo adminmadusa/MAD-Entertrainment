@@ -1,7 +1,11 @@
 import { runCommand, runWithExitCode } from './exec';
 
 export function isReachable(fromBranch: string, toBranch: string): boolean {
-  return runWithExitCode(`git merge-base --is-ancestor "${fromBranch}" "${toBranch}"`);
+  return runWithExitCode(`git merge-base --is-ancestor "${fromBranch}" "${toBranch}"`) === 0;
+}
+
+export function refExists(refName: string): boolean {
+  return runWithExitCode(`git rev-parse --verify --quiet "${refName}"`) === 0;
 }
 
 export function getUpstream(branch: string): string | null {

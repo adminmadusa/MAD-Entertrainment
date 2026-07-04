@@ -19,6 +19,7 @@ import { ActionItem } from './models/action';
 import { getMergedPRNumber } from './utils/git';
 import { defaultConfig } from './utils/config';
 import { analyzeStaleStatus } from './analyzers/dead-branches';
+import { runCommand } from './utils/exec';
 
 function main() {
   console.log('[git-governance-engine] Initializing metadata collection...');
@@ -29,6 +30,7 @@ function main() {
   const worktreeMap = collectWorktrees();
   const danglingCommitsCount = collectDanglingCommitsCount();
   const branchNames = rawBranches.map(b => b.name);
+  const isWorkingTreeClean = runCommand('git status --porcelain').trim() === '';
   
   // Perform stack ancestry check for AI OS phase branches
   const stackReport = analyzeAiOsStack(branchNames);
@@ -100,7 +102,6 @@ function main() {
         const phaseNum = parseInt(match[1], 10);
         
         // If it is an intermediate stack parent, it is part of active stack
-        // It is blocked from deletion if the stack tip (Phase 20) is not merged/backed up
         isPartOfActiveStack = phaseNum < 20 && !isStackSafeToPrune;
         
         // Populate usedByBranches for stack hierarchy
@@ -209,14 +210,25 @@ function main() {
       estimatedEffort = '1 min';
       shellCommand = rb.isLocal ? `git branch -d ${name}` : `git push origin --delete ${name.replace('origin/', '')}`;
     } else if (state === 'Duplicate Candidate') {
-      action = rb.isLocal ? 'Delete Local' : 'Delete Remote';
-      status = 'Execute Now';
-      risk = 'Low';
-      reason = `Duplicate candidate branch. functionally identical to another branch ref.`;
-      preconditions = rb.isLocal ? ['git checkout develop'] : [];
-      rollbackStrategy = rb.isLocal ? `git branch ${name} ${rb.sha}` : `git push origin ${rb.sha}:refs/heads/${name}`;
-      estimatedEffort = '1 min';
-      shellCommand = rb.isLocal ? `git branch -d ${name}` : `git push origin --delete ${name.replace('origin/', '')}`;
+      if (deletionReport.isReadyForDeletion) {
+        action = rb.isLocal ? 'Delete Local' : 'Delete Remote';
+        status = 'Execute Now';
+        risk = 'Low';
+        reason = `Duplicate candidate branch. functionally identical to another branch ref.`;
+        preconditions = rb.isLocal ? ['git checkout develop'] : [];
+        rollbackStrategy = rb.isLocal ? `git branch ${name} ${rb.sha}` : `git push origin ${rb.sha}:refs/heads/${name}`;
+        estimatedEffort = '1 min';
+        shellCommand = rb.isLocal ? `git branch -d ${name}` : `git push origin --delete ${name.replace('origin/', '')}`;
+      } else {
+        action = 'Wait for counterpart merge';
+        status = 'Blocked';
+        risk = 'Medium';
+        reason = `Duplicate candidate; blocked because counterpart is active/unmerged: ${deletionReport.blockedReasons.join(' ')}`;
+        preconditions = [];
+        rollbackStrategy = 'N/A';
+        estimatedEffort = 'N/A';
+        shellCommand = `# BLOCKED\n# Branch: ${name}\n# Reason: Duplicate of unmerged active branch.`;
+      }
     } else if (state === 'Experimental') {
       if (isStackSafeToPrune) {
         action = 'Consolidate Stack (Delete Local)';
@@ -296,18 +308,29 @@ function main() {
   }
 
   // 4. Compute Health Score
-  const scoreReport = analyzeHealthScore(registeredBranches);
+  const scoreReport = analyzeHealthScore(registeredBranches, {
+    isWorkingTreeClean,
+    worktreesCount: worktreeMap.size,
+    danglingCommitsCount,
+    isStackValid: stackReport.isStackValid
+  });
 
   // 5. Gather Metrics
   const metrics = {
+    isWorkingTreeClean,
+    overallScore: scoreReport.overallScore,
+    branchHygieneScore: scoreReport.branchHygieneScore,
+    repositoryHealthScore: scoreReport.repositoryHealthScore,
+    technicalDebtScore: scoreReport.technicalDebtScore,
+    gitGovernanceScore: scoreReport.gitGovernanceScore,
     localBranchCount: registeredBranches.filter(b => b.isLocal).length,
     remoteBranchCount: registeredBranches.filter(b => b.isRemote).length,
     protectedBranchesCount: registeredBranches.filter(b => b.lifecycleState === 'Protected').length,
     activeBranchesCount: registeredBranches.filter(b => b.lifecycleState === 'Active Development').length,
     experimentalBranchesCount: registeredBranches.filter(b => b.lifecycleState === 'Experimental').length,
-    mergedBranchesCount: registeredBranches.filter(b => b.lifecycleState === 'Patch Equivalent').length, // includes squash
+    mergedBranchesCount: registeredBranches.filter(b => b.lifecycleState === 'Patch Equivalent' || b.lifecycleState === 'Ready For Delete').length,
     duplicateBranchesCount: registeredBranches.filter(b => b.lifecycleState === 'Duplicate Candidate').length,
-    deadBranchesCount: registeredBranches.filter(b => b.behind > 30).length,
+    deadBranchesCount: registeredBranches.filter(b => b.behind > config.stale_commit_threshold).length,
     readyForDeleteBranchesCount: registeredBranches.filter(b => b.lifecycleState === 'Ready For Delete').length,
     remoteOrphanBranchesCount: 0,
     localOrphanBranchesCount: registeredBranches.filter(b => b.isLocal && !b.upstream && b.lifecycleState !== 'Protected' && b.lifecycleState !== 'Archived' && b.lifecycleState !== 'Integration').length,

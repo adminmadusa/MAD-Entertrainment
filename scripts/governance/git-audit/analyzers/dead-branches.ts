@@ -17,7 +17,7 @@ export function analyzeStaleStatus(branch: BranchInfo, config: GovernanceConfig)
   const timeDiffMs = nowMs - commitTimestampMs;
   const daysSinceLastCommit = Math.max(0, Math.floor(timeDiffMs / (1000 * 60 * 60 * 24)));
 
-  const isStale = daysSinceLastCommit > config.stale_days;
+  const isStale = daysSinceLastCommit > config.stale_days || lagCommits > config.stale_commit_threshold;
   const isAbandoned = daysSinceLastCommit > config.max_branch_age;
 
   return {

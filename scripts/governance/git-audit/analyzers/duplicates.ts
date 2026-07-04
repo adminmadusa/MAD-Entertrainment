@@ -20,7 +20,7 @@ export function analyzeDuplicateBranches(
   }
 
   for (const b of allBranches) {
-    if (b.name !== name && b.sha !== currentBranch.sha) {
+    if (b.name !== name) {
       if (b.name === 'develop' || b.name === 'live' || b.name === 'origin/develop' || b.name === 'origin/live') {
         continue;
       }
@@ -29,30 +29,38 @@ export function analyzeDuplicateBranches(
       const cleanB = b.name.replace('origin/', '');
       if (cleanA === cleanB) continue;
 
-      // 1. Same resulting tree: diff is empty
-      const diffOutput = runCommand(`git diff "${name}".."${b.name}"`);
-      const isSameTree = diffOutput.trim() === '';
+      const isSameSha = currentBranch.sha === b.sha;
+      const isSameTree = isSameSha || (currentBranch.treeSha === b.treeSha);
 
-      // 2. Same patch-ids: git cherry returns only equivalent commits
-      const cherryOutput = runCommand(`git cherry "${b.name}" "${name}"`);
-      const hasUnique = cherryOutput.split('\n').filter(Boolean).some(l => l.startsWith('+'));
+      if (isSameTree) {
+        // Only run cherry check if trees are equivalent (fast boundary filter)
+        const cherryOutput = runCommand(`git cherry "${b.name}" "${name}"`);
+        const hasUnique = cherryOutput.split('\n').filter(Boolean).some(l => l.startsWith('+'));
 
-      if (isSameTree && !hasUnique) {
-        return {
-          isDuplicate: true,
-          duplicateOf: b.name,
-          reason: `Resulting tree and patches are identical to branch '${b.name}'.`,
-          confidence: '99%'
-        };
+        if (!hasUnique) {
+          let duplicateOf = b.name;
+          let reason = `Resulting tree and patches are identical to branch '${b.name}'.`;
+          const targetIsAncestor = runWithExitCode(`git merge-base --is-ancestor "${b.name}" develop`) === 0;
+          if (targetIsAncestor) {
+            duplicateOf = currentBranch.isLocal ? 'develop' : 'origin/develop';
+            reason = `Resulting tree and patches are identical to branch '${b.name}', which has been fully merged into '${duplicateOf}'.`;
+          }
+          return {
+            isDuplicate: true,
+            duplicateOf,
+            reason,
+            confidence: '99%'
+          };
+        }
       }
     }
   }
 
-  // Check for known naming redundancies (like server-hygiene-duplicate-imports under HYG-002)
+  // Check for known naming redundancies
   if (name.includes('server-hygiene-duplicate-imports')) {
-    // If it is patch-equivalent to develop already, it's a confirmed duplicate
-    const isPatchEq = runCommand(`git cherry develop "${name}"`).split('\n').filter(Boolean).every(l => l.startsWith('-'));
-    if (isPatchEq) {
+    const cherryOutput = runCommand(`git cherry develop "${name}"`);
+    const isPatchEq = cherryOutput.split('\n').filter(Boolean).every(l => l.startsWith('-'));
+    if (isPatchEq && cherryOutput.trim() !== '') {
       return {
         isDuplicate: true,
         duplicateOf: 'fix/hyg-002-duplicate-imports',

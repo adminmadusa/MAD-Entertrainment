@@ -152,7 +152,7 @@ function main() {
     } else if (lifecycleState === 'Duplicate Candidate' && deletionReport.isReadyForDeletion) {
       decision = 'SAFE_DELETE';
     } else if (name === 'feat/ai-os-phase-20-task-engine') {
-      decision = 'KEEP'; // must keep stack tip as experimental active reference
+      decision = 'KEEP';
     } else if (lifecycleState === 'Active Development' && b.uniqueCommits.length > 0) {
       decision = 'MERGE_FIRST';
     } else if (lifecycleState === 'Integration') {

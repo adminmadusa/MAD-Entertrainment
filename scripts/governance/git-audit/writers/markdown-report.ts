@@ -5,7 +5,7 @@ import { ActionItem } from '../models/action';
 import { ScoreReport } from '../utils/scoring';
 
 const WORKSPACE_REPORT_PATH = '/Users/admin/Desktop/MAD Entertrainment/.agents/git_repository_hygiene_audit.md';
-const BRAIN_REPORT_PATH = '/Users/admin/.gemini/antigravity-ide/brain/5ec77dfb-c991-40e2-9ca2-944b443e59dd/git_repository_hygiene_audit.md';
+const BRAIN_REPORT_PATH = '/Users/admin/.gemini/antigravity-ide/brain/f4cd9fff-aa45-46e3-9614-728336e2d561/git_repository_hygiene_audit.md';
 const CLEANUP_SCRIPT_PATH = '/Users/admin/Desktop/MAD Entertrainment/.agents/cleanup_commands.sh';
 
 export function writeMarkdownReport(
@@ -140,14 +140,20 @@ ${legacyCommands || '# No legacy branch archivals.\n'}
 
 **Date**: 2026-07-04  
 **Repository**: MAD Entertrainment  
-**Overall Git Repository Hygiene Score**: **${scoreReport.overallScore} / 100**
+
+### Git Repository Scores
+* **Overall Git Repository Hygiene Score**: **${scoreReport.overallScore} / 100**
+* **Branch Hygiene Score**: **${scoreReport.branchHygieneScore} / 100**
+* **Repository Health Score**: **${scoreReport.repositoryHealthScore} / 100**
+* **Technical Debt Score**: **${scoreReport.technicalDebtScore} / 100**
+* **Git Governance Score**: **${scoreReport.gitGovernanceScore} / 100**
 
 ---
 
 ## 1. Repository Health Analysis
 
 ### 1.1. Overall Git Repository Health Score
-The repository is evaluated using a deterministic scoring model with fixed deductions, yielding a hygiene score of **${scoreReport.overallScore} / 100**. While the remote branch references are clean, the local workspace remains cluttered with unpruned tracking branches, local-only stacks, and a legacy default branch.
+The repository is evaluated using a deterministic scoring model with fixed deductions, yielding an overall hygiene score of **${scoreReport.overallScore} / 100**. While the remote branch references are clean, the local workspace remains cluttered with unpruned tracking branches, local-only stacks, and a legacy default branch.
 
 ### 1.2. Local Branch Hygiene
 * **Total Local Branches**: ${metrics.localBranchCount} branches.
