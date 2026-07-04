@@ -10,11 +10,11 @@ export function runCommand(cmd: string): string {
   }
 }
 
-export function runWithExitCode(cmd: string): boolean {
+export function runWithExitCode(cmd: string): number {
   try {
     execSync(cmd, { cwd: repoPath, stdio: 'ignore' });
-    return true;
+    return 0;
   } catch (err) {
-    return false;
+    return 1;
   }
 }
