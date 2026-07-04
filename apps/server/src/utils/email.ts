@@ -5,19 +5,10 @@ import { getEnv } from '../config/env';
 import { logger } from './logger';
 import { auditLog } from './audit';
 
-export interface EmailAttachment {
-  filename: string;
-  content: Buffer;
-  contentType?: string;
-}
+import type { EmailAttachment, SendEmailInput } from './email.types';
 
-export interface SendEmailInput {
-  to: string;
-  subject: string;
-  html: string;
-  attachments?: EmailAttachment[];
-  messageId?: string;
-}
+export type { EmailAttachment, SendEmailInput } from './email.types';
+
 
 let transporter: nodemailer.Transporter | null = null;
 
