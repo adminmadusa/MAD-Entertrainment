@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-04T04:24:22.291Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 59,
+    "message": "File must terminate with exactly one trailing newline character.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "6bd75333567c79f9521d3d17dbeb15e548366c0252bfb9f495c31feb3ff39914",
+        "id": "6bd75333567c79f9521d3d17dbeb15e548366c0252bfb9f495c31feb3ff39914",
+        "line": 59,
+        "message": "File must terminate with exactly one trailing newline character."
+      }
+    ],
+    "path": "apps/server/src/utils/encryption.test.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-04T04:24:22.291Z",
+  "id": "f_2944959a",
+  "lastDetected": "2026-07-04T04:24:22.291Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-005",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

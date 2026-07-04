@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:48.468Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 2,
+    "message": "Import from types module \"@mad/types\" should use \"import type\".",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "082b89366da351d23d31a6990f61123cce35317a391a692fa258c7418649e1e6",
+        "id": "082b89366da351d23d31a6990f61123cce35317a391a692fa258c7418649e1e6",
+        "line": 2,
+        "message": "Import from types module \"@mad/types\" should use \"import type\"."
+      }
+    ],
+    "path": "apps/admin/src/lib/api/admin/diagnostics.service.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:48.468Z",
+  "id": "f_b0a1ea7e",
+  "lastDetected": "2026-07-03T12:25:48.468Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-003",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "REGRESSION"
+}

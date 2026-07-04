@@ -1,0 +1,43 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-04T04:24:23.095Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 107,
+    "message": "Trailing whitespace characters detected.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "20d8dee618879d6ed3898d5ac826ab4473a4a5476e1c9c8e0817e6201246e9d6",
+        "id": "20d8dee618879d6ed3898d5ac826ab4473a4a5476e1c9c8e0817e6201246e9d6",
+        "line": 95,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "20d8dee618879d6ed3898d5ac826ab4473a4a5476e1c9c8e0817e6201246e9d6",
+        "id": "20d8dee618879d6ed3898d5ac826ab4473a4a5476e1c9c8e0817e6201246e9d6",
+        "line": 107,
+        "message": "Trailing whitespace characters detected."
+      }
+    ],
+    "path": "apps/web/src/components/booking/shared/BookingCard.tsx"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-04T04:24:23.095Z",
+  "id": "f_c1c1c265",
+  "lastDetected": "2026-07-04T04:44:14.205Z",
+  "lastModified": "2026-07-04T04:44:14.205Z",
+  "occurrenceCount": 2,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-004",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

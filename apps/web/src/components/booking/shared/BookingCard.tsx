@@ -1,16 +1,17 @@
 'use client';
 
-import { BookingStatus } from '@mad/shared';
-import type { Booking, Ticket, Event } from '@mad/types';
+import dynamic from 'next/dynamic';
+import Link from 'next/link';
+
 import { BookingHeaderCard } from '@/components/booking/shared/BookingHeaderCard';
 import { TicketActions } from '@/components/booking/shared/TicketActions';
-import dynamic from 'next/dynamic';
+import { useCountdown } from '@/hooks/use-countdown.hook';
+import { BookingStatus } from '@mad/shared';
+import type { Booking, Ticket, Event } from '@mad/types';
 
 const EntryPassGrid = dynamic(() => import('@/components/booking/shared/EntryPassGrid').then(mod => mod.EntryPassGrid), {
   ssr: false,
 });
-import { useCountdown } from '@/hooks/use-countdown.hook';
-import Link from 'next/link';
 
 const getEventCategoryStyles = (category?: string) => {
   const cat = (category || '').toLowerCase();

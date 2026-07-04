@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:47.478Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 3,
+    "message": "Imports must be grouped in order: Node built-ins, Third-party packages, Workspace aliases, Relative paths, Side-effects.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "03202d6d4b47b7f066fcf3b130b2732f353dee31f3ddab056c7e648d7931f121",
+        "id": "03202d6d4b47b7f066fcf3b130b2732f353dee31f3ddab056c7e648d7931f121",
+        "line": 3,
+        "message": "Imports must be grouped in order: Node built-ins, Third-party packages, Workspace aliases, Relative paths, Side-effects."
+      }
+    ],
+    "path": "apps/admin/src/app/team/_components/InviteAdminModal.tsx"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:47.478Z",
+  "id": "f_e2ce4bc6",
+  "lastDetected": "2026-07-03T12:25:47.478Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-001",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "REGRESSION"
+}

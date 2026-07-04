@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-04T04:24:20.657Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 24,
+    "message": "Trailing whitespace characters detected.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "ce43daabd67fcff760eef40b88016189dc2cf28f898ec2dc05050a2027ff08cd",
+        "id": "ce43daabd67fcff760eef40b88016189dc2cf28f898ec2dc05050a2027ff08cd",
+        "line": 24,
+        "message": "Trailing whitespace characters detected."
+      }
+    ],
+    "path": ".agents/skills/ci-investigation/README.md"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-04T04:24:20.657Z",
+  "id": "f_a4f5ac7d",
+  "lastDetected": "2026-07-04T04:24:20.657Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": ".agents",
+  "relationships": [],
+  "rule": "VAL-HYG-004",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

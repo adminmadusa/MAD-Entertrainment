@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:58.793Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 3,
+    "message": "Imports within the same group must be sorted alphabetically (\"../rules/registry\" should precede \"./types\").",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "b11ff5c29f77c78fd563007c6f152fc06c1985284d5c51a160be966cd6a4bbae",
+        "id": "b11ff5c29f77c78fd563007c6f152fc06c1985284d5c51a160be966cd6a4bbae",
+        "line": 3,
+        "message": "Imports within the same group must be sorted alphabetically (\"../rules/registry\" should precede \"./types\")."
+      }
+    ],
+    "path": "scripts/governance/core/confidence_engine.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:58.793Z",
+  "id": "f_23e49120",
+  "lastDetected": "2026-07-03T12:25:58.793Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "scripts",
+  "relationships": [],
+  "rule": "VAL-HYG-001",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "REGRESSION"
+}

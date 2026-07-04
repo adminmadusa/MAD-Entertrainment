@@ -1,54 +1,46 @@
 {
-  "schemaVersion": 2,
-  "id": "f_9be05ecb",
-  "rule": "VAL-UI-005",
-  "ruleVersion": "1.0.0",
-  "engineVersion": "1.0.0",
-  "domain": "UI UX Guild",
-  "owner": "UI UX Guild",
-  "package": "apps",
-  "feature": "button",
-  "status": "NEW",
   "confidence": 0.85,
-  "relationships": [],
+  "createdDate": "2026-06-29T08:10:15.359Z",
+  "domain": "UI UX Guild",
+  "engineVersion": "1.0.0",
   "evidence": {
-    "path": "apps/admin/src/app/users/_components/UserRefundsTable.tsx",
     "construct": "button",
-    "snippet": "<button",
-    "line": 93,
+    "line": 100,
     "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
     "occurrences": [
       {
-        "id": "9cf619fbf2e204159cbe29c8f469a1bca88756e6148df9efbd65b06bb028f26f",
-        "line": 93,
-        "column": 0,
-        "construct": "button",
-        "snippet": "<button",
-        "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
-        "fingerprint": "9cf619fbf2e204159cbe29c8f469a1bca88756e6148df9efbd65b06bb028f26f"
-      },
-      {
-        "id": "86f14192cc350380e34a120124b42dcb8209af65e93bdb37745f876efe8677a4",
-        "line": 93,
         "column": 0,
         "construct": "UIElement",
-        "snippet": "<button",
+        "fingerprint": "86f14192cc350380e34a120124b42dcb8209af65e93bdb37745f876efe8677a4",
+        "id": "86f14192cc350380e34a120124b42dcb8209af65e93bdb37745f876efe8677a4",
+        "line": 93,
         "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
-        "fingerprint": "86f14192cc350380e34a120124b42dcb8209af65e93bdb37745f876efe8677a4"
+        "snippet": "<button"
       },
       {
+        "column": 0,
+        "construct": "UIElement",
+        "fingerprint": "86f14192cc350380e34a120124b42dcb8209af65e93bdb37745f876efe8677a4",
         "id": "86f14192cc350380e34a120124b42dcb8209af65e93bdb37745f876efe8677a4",
         "line": 100,
-        "column": 0,
-        "construct": "UIElement",
-        "snippet": "<button",
         "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
-        "fingerprint": "86f14192cc350380e34a120124b42dcb8209af65e93bdb37745f876efe8677a4"
+        "snippet": "<button"
       }
-    ]
+    ],
+    "path": "apps/admin/src/app/users/_components/UserRefundsTable.tsx",
+    "snippet": "<button"
   },
-  "createdDate": "2026-06-29T08:10:15.359Z",
+  "feature": "button",
   "firstDetected": "2026-06-29T08:10:15.359Z",
-  "lastDetected": "2026-06-30T15:36:27.191Z",
-  "occurrenceCount": 3
+  "id": "f_9be05ecb",
+  "lastDetected": "2026-07-04T04:44:14.176Z",
+  "lastModified": "2026-07-04T04:44:14.176Z",
+  "occurrenceCount": 2,
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-UI-005",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
 }

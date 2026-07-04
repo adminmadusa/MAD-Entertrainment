@@ -1,36 +1,37 @@
 {
-  "schemaVersion": 2,
-  "id": "f_b6948415",
-  "rule": "VAL-UI-010",
-  "ruleVersion": "1.0.0",
-  "engineVersion": "1.0.0",
-  "domain": "UI UX Guild",
-  "owner": "UI UX Guild",
-  "package": "apps",
-  "feature": "UIElement",
-  "status": "NEW",
   "confidence": 0.9,
-  "relationships": [],
+  "createdDate": "2026-06-30T15:36:27.279Z",
+  "domain": "UI UX Guild",
+  "engineVersion": "1.0.0",
   "evidence": {
-    "path": "apps/web/src/components/booking/shared/BookingCard.tsx",
     "construct": "UIElement",
-    "snippet": "<button",
-    "line": 237,
+    "line": 238,
     "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
     "occurrences": [
       {
-        "id": "9c4fe3fa1c9290a9f51f90dc1f50c5ed8cb24bf7126a5f909a45be2cc61e1aa7",
-        "line": 237,
         "column": 0,
         "construct": "UIElement",
-        "snippet": "<button",
+        "fingerprint": "9c4fe3fa1c9290a9f51f90dc1f50c5ed8cb24bf7126a5f909a45be2cc61e1aa7",
+        "id": "9c4fe3fa1c9290a9f51f90dc1f50c5ed8cb24bf7126a5f909a45be2cc61e1aa7",
+        "line": 238,
         "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
-        "fingerprint": "9c4fe3fa1c9290a9f51f90dc1f50c5ed8cb24bf7126a5f909a45be2cc61e1aa7"
+        "snippet": "<button"
       }
-    ]
+    ],
+    "path": "apps/web/src/components/booking/shared/BookingCard.tsx",
+    "snippet": "<button"
   },
-  "createdDate": "2026-06-30T15:36:27.279Z",
+  "feature": "UIElement",
   "firstDetected": "2026-06-30T15:36:27.279Z",
-  "lastDetected": "2026-06-30T15:36:27.279Z",
-  "occurrenceCount": 1
+  "id": "f_b6948415",
+  "lastDetected": "2026-07-04T04:44:14.205Z",
+  "lastModified": "2026-07-04T04:44:14.206Z",
+  "occurrenceCount": 1,
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-UI-010",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
 }

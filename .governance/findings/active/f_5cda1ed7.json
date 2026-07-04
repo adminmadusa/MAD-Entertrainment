@@ -1,63 +1,55 @@
 {
-  "schemaVersion": 2,
-  "id": "f_5cda1ed7",
-  "rule": "VAL-UI-005",
-  "ruleVersion": "1.0.0",
-  "engineVersion": "1.0.0",
-  "domain": "UI UX Guild",
-  "owner": "UI UX Guild",
-  "package": "apps",
-  "feature": "button",
-  "status": "NEW",
   "confidence": 0.85,
-  "relationships": [],
+  "createdDate": "2026-06-29T08:10:24.382Z",
+  "domain": "UI UX Guild",
+  "engineVersion": "1.0.0",
   "evidence": {
-    "path": "apps/admin/src/components/coupons/CouponForm.tsx",
     "construct": "button",
-    "snippet": "<button",
-    "line": 188,
+    "line": 257,
     "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
     "occurrences": [
       {
-        "id": "8649bd9f0fa7dee77441da7e20c1895655ae7ae3ebfab0d2f6503f858232a608",
-        "line": 188,
-        "column": 0,
-        "construct": "button",
-        "snippet": "<button",
-        "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
-        "fingerprint": "8649bd9f0fa7dee77441da7e20c1895655ae7ae3ebfab0d2f6503f858232a608"
-      },
-      {
-        "id": "69b1de35909d507985eb6bdc6cd26afe48369f56be98d628b847eeb35e86cd53",
-        "line": 188,
         "column": 0,
         "construct": "UIElement",
-        "snippet": "<button",
+        "fingerprint": "69b1de35909d507985eb6bdc6cd26afe48369f56be98d628b847eeb35e86cd53",
+        "id": "69b1de35909d507985eb6bdc6cd26afe48369f56be98d628b847eeb35e86cd53",
+        "line": 188,
         "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
-        "fingerprint": "69b1de35909d507985eb6bdc6cd26afe48369f56be98d628b847eeb35e86cd53"
+        "snippet": "<button"
       },
       {
+        "column": 0,
+        "construct": "UIElement",
+        "fingerprint": "69b1de35909d507985eb6bdc6cd26afe48369f56be98d628b847eeb35e86cd53",
         "id": "69b1de35909d507985eb6bdc6cd26afe48369f56be98d628b847eeb35e86cd53",
         "line": 251,
-        "column": 0,
-        "construct": "UIElement",
-        "snippet": "<button",
         "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
-        "fingerprint": "69b1de35909d507985eb6bdc6cd26afe48369f56be98d628b847eeb35e86cd53"
+        "snippet": "<button"
       },
       {
-        "id": "69b1de35909d507985eb6bdc6cd26afe48369f56be98d628b847eeb35e86cd53",
-        "line": 257,
         "column": 0,
         "construct": "UIElement",
-        "snippet": "<button",
+        "fingerprint": "69b1de35909d507985eb6bdc6cd26afe48369f56be98d628b847eeb35e86cd53",
+        "id": "69b1de35909d507985eb6bdc6cd26afe48369f56be98d628b847eeb35e86cd53",
+        "line": 257,
         "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
-        "fingerprint": "69b1de35909d507985eb6bdc6cd26afe48369f56be98d628b847eeb35e86cd53"
+        "snippet": "<button"
       }
-    ]
+    ],
+    "path": "apps/admin/src/components/coupons/CouponForm.tsx",
+    "snippet": "<button"
   },
-  "createdDate": "2026-06-29T08:10:24.382Z",
+  "feature": "button",
   "firstDetected": "2026-06-29T08:10:24.382Z",
-  "lastDetected": "2026-06-30T15:36:27.200Z",
-  "occurrenceCount": 4
+  "id": "f_5cda1ed7",
+  "lastDetected": "2026-07-04T04:44:14.178Z",
+  "lastModified": "2026-07-04T04:44:14.178Z",
+  "occurrenceCount": 3,
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-UI-005",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
 }

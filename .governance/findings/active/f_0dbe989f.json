@@ -1,45 +1,46 @@
 {
-  "schemaVersion": 2,
-  "id": "f_0dbe989f",
-  "rule": "VAL-UI-010",
-  "ruleVersion": "1.0.0",
-  "engineVersion": "1.0.0",
-  "domain": "UI UX Guild",
-  "owner": "UI UX Guild",
-  "package": "apps",
-  "feature": "UIElement",
-  "status": "NEW",
   "confidence": 0.9,
-  "relationships": [],
+  "createdDate": "2026-06-30T15:36:27.267Z",
+  "domain": "UI UX Guild",
+  "engineVersion": "1.0.0",
   "evidence": {
-    "path": "apps/web/src/app/tickets/components/FindTicketsModal.tsx",
     "construct": "UIElement",
-    "snippet": "<button",
-    "line": 103,
+    "line": 122,
     "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
     "occurrences": [
       {
-        "id": "0cf0f84a5c2674fe9cd864fd7707fd0218fea37658cadac36720a078d42c2c16",
-        "line": 103,
         "column": 0,
         "construct": "UIElement",
-        "snippet": "<button",
+        "fingerprint": "0cf0f84a5c2674fe9cd864fd7707fd0218fea37658cadac36720a078d42c2c16",
+        "id": "0cf0f84a5c2674fe9cd864fd7707fd0218fea37658cadac36720a078d42c2c16",
+        "line": 104,
         "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
-        "fingerprint": "0cf0f84a5c2674fe9cd864fd7707fd0218fea37658cadac36720a078d42c2c16"
+        "snippet": "<button"
       },
       {
-        "id": "0cf0f84a5c2674fe9cd864fd7707fd0218fea37658cadac36720a078d42c2c16",
-        "line": 121,
         "column": 0,
         "construct": "UIElement",
-        "snippet": "<button",
+        "fingerprint": "0cf0f84a5c2674fe9cd864fd7707fd0218fea37658cadac36720a078d42c2c16",
+        "id": "0cf0f84a5c2674fe9cd864fd7707fd0218fea37658cadac36720a078d42c2c16",
+        "line": 122,
         "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
-        "fingerprint": "0cf0f84a5c2674fe9cd864fd7707fd0218fea37658cadac36720a078d42c2c16"
+        "snippet": "<button"
       }
-    ]
+    ],
+    "path": "apps/web/src/app/tickets/components/FindTicketsModal.tsx",
+    "snippet": "<button"
   },
-  "createdDate": "2026-06-30T15:36:27.267Z",
+  "feature": "UIElement",
   "firstDetected": "2026-06-30T15:36:27.267Z",
-  "lastDetected": "2026-06-30T15:36:27.267Z",
-  "occurrenceCount": 2
+  "id": "f_0dbe989f",
+  "lastDetected": "2026-07-04T04:44:14.199Z",
+  "lastModified": "2026-07-04T04:44:14.199Z",
+  "occurrenceCount": 2,
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-UI-010",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
 }

@@ -1,36 +1,29 @@
 'use client';
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { AnimatePresence } from 'framer-motion';
+import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
-import dynamic from 'next/dynamic';
-
-import { QUERY_KEYS, BookingStatus } from '@mad/shared';
-import { Event, Booking, Ticket } from '@mad/types';
-import { useCountdown } from '@/hooks/use-countdown.hook';
 import { useCheckoutViewportController } from '@/hooks/use-checkout-viewport-controller';
+import { useCountdown } from '@/hooks/use-countdown.hook';
 import { extractApiError } from '@/lib/api/client';
+import { publicGetBookingDetails, publicCreatePaymentIntent, publicVerifyPayment, publicSaveCheckoutDetails, getStoredGuestBookingSession, type PaymentIntentResponse } from '@/lib/api/public.service';
 import { loadScriptOnce } from '@/lib/utils/load-script-once';
-import { 
-  publicGetBookingDetails, 
-  publicCreatePaymentIntent, 
-  publicVerifyPayment, 
-  publicSaveCheckoutDetails,
-  getStoredGuestBookingSession,
-  PaymentIntentResponse
-} from '@/lib/api/public.service';
+import { BookingStatus, QUERY_KEYS } from '@mad/shared';
+import type { Booking, Event, Ticket } from '@mad/types';
 import { CheckoutDetailsInput } from '@mad/validations';
 
+import { CheckoutForm } from './checkout/CheckoutForm';
+import { CheckoutPayment } from './checkout/CheckoutPayment';
+import { CheckoutPricing } from './checkout/CheckoutPricing';
 import { useCheckoutNavGuard } from './checkout/useCheckoutNavGuard';
+
 const LeaveCheckoutModal = dynamic(() => import('./checkout/LeaveCheckoutModal').then(mod => mod.LeaveCheckoutModal), {
   ssr: false,
 });
-import { CheckoutForm } from './checkout/CheckoutForm';
-import { CheckoutPricing } from './checkout/CheckoutPricing';
-import { CheckoutPayment } from './checkout/CheckoutPayment';
 
 interface RazorpayInstance {
   open(): void;

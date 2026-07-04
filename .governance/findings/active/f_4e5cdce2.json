@@ -1,54 +1,46 @@
 {
-  "schemaVersion": 2,
-  "id": "f_4e5cdce2",
-  "rule": "VAL-UI-005",
-  "ruleVersion": "1.0.0",
-  "engineVersion": "1.0.0",
-  "domain": "UI UX Guild",
-  "owner": "UI UX Guild",
-  "package": "apps",
-  "feature": "button",
-  "status": "NEW",
   "confidence": 0.85,
-  "relationships": [],
+  "createdDate": "2026-06-29T08:10:02.711Z",
+  "domain": "UI UX Guild",
+  "engineVersion": "1.0.0",
   "evidence": {
-    "path": "apps/admin/src/app/team/_components/ChangeRoleModal.tsx",
     "construct": "button",
-    "snippet": "<button",
-    "line": 83,
+    "line": 90,
     "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
     "occurrences": [
       {
-        "id": "3f40a529886a98bba89ccea3b890537afc35ced6385062edf3bc1b1872d34401",
-        "line": 83,
-        "column": 0,
-        "construct": "button",
-        "snippet": "<button",
-        "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
-        "fingerprint": "3f40a529886a98bba89ccea3b890537afc35ced6385062edf3bc1b1872d34401"
-      },
-      {
-        "id": "f0a19e80a7cfc4d27bff61e056d8a1ca8154a71ff54b886c54f9bdcdb6448622",
-        "line": 83,
         "column": 0,
         "construct": "UIElement",
-        "snippet": "<button",
+        "fingerprint": "f0a19e80a7cfc4d27bff61e056d8a1ca8154a71ff54b886c54f9bdcdb6448622",
+        "id": "f0a19e80a7cfc4d27bff61e056d8a1ca8154a71ff54b886c54f9bdcdb6448622",
+        "line": 83,
         "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
-        "fingerprint": "f0a19e80a7cfc4d27bff61e056d8a1ca8154a71ff54b886c54f9bdcdb6448622"
+        "snippet": "<button"
       },
       {
+        "column": 0,
+        "construct": "UIElement",
+        "fingerprint": "f0a19e80a7cfc4d27bff61e056d8a1ca8154a71ff54b886c54f9bdcdb6448622",
         "id": "f0a19e80a7cfc4d27bff61e056d8a1ca8154a71ff54b886c54f9bdcdb6448622",
         "line": 90,
-        "column": 0,
-        "construct": "UIElement",
-        "snippet": "<button",
         "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
-        "fingerprint": "f0a19e80a7cfc4d27bff61e056d8a1ca8154a71ff54b886c54f9bdcdb6448622"
+        "snippet": "<button"
       }
-    ]
+    ],
+    "path": "apps/admin/src/app/team/_components/ChangeRoleModal.tsx",
+    "snippet": "<button"
   },
-  "createdDate": "2026-06-29T08:10:02.711Z",
+  "feature": "button",
   "firstDetected": "2026-06-29T08:10:02.711Z",
-  "lastDetected": "2026-06-30T15:36:27.173Z",
-  "occurrenceCount": 3
+  "id": "f_4e5cdce2",
+  "lastDetected": "2026-07-04T04:44:14.169Z",
+  "lastModified": "2026-07-04T04:44:14.169Z",
+  "occurrenceCount": 2,
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-UI-005",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
 }

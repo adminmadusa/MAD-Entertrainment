@@ -1,0 +1,50 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-04T04:24:23.616Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 10,
+    "message": "Trailing whitespace characters detected.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "3c39e745c0f35d00b452e94fb81b5381fbb75285c483069e27e52a997f2e92d0",
+        "id": "3c39e745c0f35d00b452e94fb81b5381fbb75285c483069e27e52a997f2e92d0",
+        "line": 2,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "3c39e745c0f35d00b452e94fb81b5381fbb75285c483069e27e52a997f2e92d0",
+        "id": "3c39e745c0f35d00b452e94fb81b5381fbb75285c483069e27e52a997f2e92d0",
+        "line": 3,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "3c39e745c0f35d00b452e94fb81b5381fbb75285c483069e27e52a997f2e92d0",
+        "id": "3c39e745c0f35d00b452e94fb81b5381fbb75285c483069e27e52a997f2e92d0",
+        "line": 10,
+        "message": "Trailing whitespace characters detected."
+      }
+    ],
+    "path": "docs/archive/audits/dashboard-information-architecture-audit.md"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-04T04:24:23.616Z",
+  "id": "f_133f2815",
+  "lastDetected": "2026-07-04T04:24:23.616Z",
+  "occurrenceCount": 3,
+  "owner": "Platform Team",
+  "package": "docs",
+  "relationships": [],
+  "rule": "VAL-HYG-004",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

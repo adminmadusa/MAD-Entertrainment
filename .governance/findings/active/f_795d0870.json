@@ -1,0 +1,37 @@
+{
+  "confidence": 0.9,
+  "createdDate": "2026-07-03T09:30:52.680Z",
+  "domain": "UI UX Guild",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "UIElement",
+    "line": 30,
+    "message": "Hardcoded color '#a78bfa' detected. Standardize using design tokens/theme variables.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "UIElement",
+        "fingerprint": "6ef32effd5554035b9182ed72991e226e45c314c181f1a6022fb7496ae18edb1",
+        "id": "6ef32effd5554035b9182ed72991e226e45c314c181f1a6022fb7496ae18edb1",
+        "line": 30,
+        "message": "Hardcoded color '#a78bfa' detected. Standardize using design tokens/theme variables.",
+        "snippet": "'accent-purple-light': '#a78bfa',"
+      }
+    ],
+    "path": "apps/web/tailwind.config.ts",
+    "snippet": "'accent-purple-light': '#a78bfa',"
+  },
+  "feature": "UIElement",
+  "firstDetected": "2026-07-03T09:30:52.680Z",
+  "id": "f_795d0870",
+  "lastDetected": "2026-07-04T04:44:37.203Z",
+  "lastModified": "2026-07-04T04:44:37.203Z",
+  "occurrenceCount": 1,
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-UI-007",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "REGRESSION"
+}

@@ -1,19 +1,12 @@
 'use client';
 
-import { Event as EventData } from '@mad/types';
-import { useFocusTrap } from '@mad/ui';
 import Image from 'next/image';
-import {
-  forwardRef,
-  useEffect,
-  useImperativeHandle,
-  useRef,
-  useState,
-  type ReactNode,
-} from 'react';
+import { forwardRef, useEffect, useImperativeHandle, useRef, useState, type ReactNode } from 'react';
 
 import { CheckoutContent } from '@/components/booking/CheckoutContent';
 import { TicketSelectionContent } from '@/components/booking/TicketSelectionContent';
+import type { Event as EventData } from '@mad/types';
+import { useFocusTrap } from '@mad/ui';
 
 export type EventBookingFlowHandle = {
   openBooking: () => void;

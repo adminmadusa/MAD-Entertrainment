@@ -11,15 +11,6 @@
       {
         "column": 0,
         "construct": "UIElement",
-        "fingerprint": "b5ba6348200ae3b11a2f0523b172cfa61a58a93bd459aff2ae0d810a1d50bd81",
-        "id": "b5ba6348200ae3b11a2f0523b172cfa61a58a93bd459aff2ae0d810a1d50bd81",
-        "line": 40,
-        "message": "Element <div> with click handler lacks a tabIndex or role attribute, breaking keyboard accessibility.",
-        "snippet": "<div className=\"relative glass-strong rounded-2xl border border-accent-purple/30 p-4 shadow-glow flex items-center gap-4 cursor-pointer hover:bg-white/5 transition-colors overflow-hidden\" onClick={() => setIsExpanded(true)}>"
-      },
-      {
-        "column": 0,
-        "construct": "UIElement",
         "fingerprint": "509d1bc7d5c45b163976efc58de51367eb4b6c076b7d55b75253dee700d19155",
         "id": "509d1bc7d5c45b163976efc58de51367eb4b6c076b7d55b75253dee700d19155",
         "line": 40,
@@ -33,9 +24,9 @@
   "feature": "UIElement",
   "firstDetected": "2026-06-30T15:36:27.285Z",
   "id": "f_1b2fcc03",
-  "lastDetected": "2026-07-04T03:02:11.396Z",
-  "lastModified": "2026-07-04T03:02:11.396Z",
-  "occurrenceCount": 2,
+  "lastDetected": "2026-07-04T04:44:14.207Z",
+  "lastModified": "2026-07-04T04:44:14.207Z",
+  "occurrenceCount": 1,
   "owner": "UI UX Guild",
   "package": "apps",
   "relationships": [],

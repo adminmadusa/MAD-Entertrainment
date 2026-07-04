@@ -1,35 +1,35 @@
 {
-  "schemaVersion": 2,
-  "id": "f_6a882e4b",
-  "rule": "VAL-UI-011",
-  "ruleVersion": "1.0.0",
-  "engineVersion": "1.0.0",
-  "domain": "UI UX Guild",
-  "owner": "UI UX Guild",
-  "package": "apps",
-  "feature": "UIElement",
-  "status": "NEW",
   "confidence": 0.9,
-  "relationships": [],
+  "createdDate": "2026-06-30T15:36:27.267Z",
+  "domain": "UI UX Guild",
+  "engineVersion": "1.0.0",
   "evidence": {
-    "path": "apps/web/src/app/tickets/components/ContactSupportModal.tsx",
     "construct": "UIElement",
     "line": 1,
-    "message": "Duplicate component layout detected: shares 75% similarity with \"OtpVerificationModal\" in \"apps/web/src/app/tickets/components/OtpVerificationModal.tsx\". Recommendation: Extract the duplicated layout/logic from \"apps/web/src/app/tickets/components/ContactSupportModal.tsx\" and \"apps/web/src/app/tickets/components/OtpVerificationModal.tsx\" into a single reusable shared component in \"packages/ui\".",
+    "message": "Duplicate component layout detected [Category C — Form, Confidence: 75%, Severity: WARNING]: shares similarity with \"OtpVerificationModal\" in \"apps/web/src/app/tickets/components/OtpVerificationModal.tsx\". Recommendation: Extract reusable shared form component or local CRUD fields wrapper to dry-up page/form structure. (Estimated Effort: Medium (3-6 hours), Risk: Medium).",
     "occurrences": [
       {
-        "id": "b21c8e3a0053010500b52c06d5e6184f0d207d606590976ca06b4b4f42aa8d6d",
-        "line": 1,
         "column": 0,
         "construct": "UIElement",
-        "snippet": "",
-        "message": "Duplicate component layout detected: shares 75% similarity with \"OtpVerificationModal\" in \"apps/web/src/app/tickets/components/OtpVerificationModal.tsx\". Recommendation: Extract the duplicated layout/logic from \"apps/web/src/app/tickets/components/ContactSupportModal.tsx\" and \"apps/web/src/app/tickets/components/OtpVerificationModal.tsx\" into a single reusable shared component in \"packages/ui\".",
-        "fingerprint": "b21c8e3a0053010500b52c06d5e6184f0d207d606590976ca06b4b4f42aa8d6d"
+        "fingerprint": "b21c8e3a0053010500b52c06d5e6184f0d207d606590976ca06b4b4f42aa8d6d",
+        "id": "b21c8e3a0053010500b52c06d5e6184f0d207d606590976ca06b4b4f42aa8d6d",
+        "line": 1,
+        "message": "Duplicate component layout detected [Category C — Form, Confidence: 75%, Severity: WARNING]: shares similarity with \"OtpVerificationModal\" in \"apps/web/src/app/tickets/components/OtpVerificationModal.tsx\". Recommendation: Extract reusable shared form component or local CRUD fields wrapper to dry-up page/form structure. (Estimated Effort: Medium (3-6 hours), Risk: Medium)."
       }
-    ]
+    ],
+    "path": "apps/web/src/app/tickets/components/ContactSupportModal.tsx"
   },
-  "createdDate": "2026-06-30T15:36:27.267Z",
+  "feature": "UIElement",
   "firstDetected": "2026-06-30T15:36:27.267Z",
-  "lastDetected": "2026-06-30T15:36:27.267Z",
-  "occurrenceCount": 1
+  "id": "f_6a882e4b",
+  "lastDetected": "2026-07-04T04:44:14.199Z",
+  "lastModified": "2026-07-04T04:44:14.199Z",
+  "occurrenceCount": 1,
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-UI-011",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
 }

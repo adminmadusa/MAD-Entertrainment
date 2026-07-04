@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+
 import { Modal } from '@mad/ui';
 
 interface FindTicketsModalProps {

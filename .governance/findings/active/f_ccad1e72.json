@@ -1,0 +1,58 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-04T04:24:23.596Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 5,
+    "message": "Trailing whitespace characters detected.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "d9b586e7fc70094d286d98d92af7fe871dd8a9234a3a15f83db0bd63923afedd",
+        "id": "d9b586e7fc70094d286d98d92af7fe871dd8a9234a3a15f83db0bd63923afedd",
+        "line": 2,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "d9b586e7fc70094d286d98d92af7fe871dd8a9234a3a15f83db0bd63923afedd",
+        "id": "d9b586e7fc70094d286d98d92af7fe871dd8a9234a3a15f83db0bd63923afedd",
+        "line": 3,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "d9b586e7fc70094d286d98d92af7fe871dd8a9234a3a15f83db0bd63923afedd",
+        "id": "d9b586e7fc70094d286d98d92af7fe871dd8a9234a3a15f83db0bd63923afedd",
+        "line": 4,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "d9b586e7fc70094d286d98d92af7fe871dd8a9234a3a15f83db0bd63923afedd",
+        "id": "d9b586e7fc70094d286d98d92af7fe871dd8a9234a3a15f83db0bd63923afedd",
+        "line": 5,
+        "message": "Trailing whitespace characters detected."
+      }
+    ],
+    "path": "docs/archive/audits/DASHBOARD_SIMPLIFICATION_VALIDATION.md"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-04T04:24:23.596Z",
+  "id": "f_ccad1e72",
+  "lastDetected": "2026-07-04T04:24:23.596Z",
+  "occurrenceCount": 4,
+  "owner": "Platform Team",
+  "package": "docs",
+  "relationships": [],
+  "rule": "VAL-HYG-004",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

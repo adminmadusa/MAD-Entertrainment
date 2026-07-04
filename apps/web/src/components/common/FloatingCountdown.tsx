@@ -1,13 +1,13 @@
 'use client';
 
-import { PopupCampaign } from '@mad/types';
-import { Modal } from '@mad/ui';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useState } from 'react';
 
 import { useCountdown } from '@/hooks/use-countdown.hook';
+import type { PopupCampaign } from '@mad/types';
+import { Modal } from '@mad/ui';
 
 
 interface FloatingCountdownProps {

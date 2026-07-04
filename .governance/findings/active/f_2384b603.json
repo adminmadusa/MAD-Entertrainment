@@ -1,35 +1,35 @@
 {
-  "schemaVersion": 2,
-  "id": "f_2384b603",
-  "rule": "VAL-UI-011",
-  "ruleVersion": "1.0.0",
-  "engineVersion": "1.0.0",
-  "domain": "UI UX Guild",
-  "owner": "UI UX Guild",
-  "package": "apps",
-  "feature": "UIElement",
-  "status": "NEW",
   "confidence": 0.9,
-  "relationships": [],
+  "createdDate": "2026-06-30T15:36:27.214Z",
+  "domain": "UI UX Guild",
+  "engineVersion": "1.0.0",
   "evidence": {
-    "path": "apps/admin/src/components/diagnostics/RetryAllModal.tsx",
     "construct": "UIElement",
     "line": 1,
-    "message": "Duplicate component layout detected: shares 82% similarity with \"RetryJobModal\" in \"apps/admin/src/components/diagnostics/RetryJobModal.tsx\". Recommendation: Extract the duplicated layout/logic from \"apps/admin/src/components/diagnostics/RetryAllModal.tsx\" and \"apps/admin/src/components/diagnostics/RetryJobModal.tsx\" into a single reusable shared component in \"packages/ui\".",
+    "message": "Duplicate component layout detected [Category A — Layout, Confidence: 82%, Severity: WARNING]: shares similarity with \"RetryJobModal\" in \"apps/admin/src/components/diagnostics/RetryJobModal.tsx\". Recommendation: Extract shared structural wrapper component to \"packages/ui\" for layout styling standardization. (Estimated Effort: Low-Medium (2-4 hours), Risk: Low-Medium).",
     "occurrences": [
       {
-        "id": "6f3c8d36e328f097b7b984326f005be58d5705949f2b1fa93764e61025fcd961",
-        "line": 1,
         "column": 0,
         "construct": "UIElement",
-        "snippet": "",
-        "message": "Duplicate component layout detected: shares 82% similarity with \"RetryJobModal\" in \"apps/admin/src/components/diagnostics/RetryJobModal.tsx\". Recommendation: Extract the duplicated layout/logic from \"apps/admin/src/components/diagnostics/RetryAllModal.tsx\" and \"apps/admin/src/components/diagnostics/RetryJobModal.tsx\" into a single reusable shared component in \"packages/ui\".",
-        "fingerprint": "6f3c8d36e328f097b7b984326f005be58d5705949f2b1fa93764e61025fcd961"
+        "fingerprint": "6f3c8d36e328f097b7b984326f005be58d5705949f2b1fa93764e61025fcd961",
+        "id": "6f3c8d36e328f097b7b984326f005be58d5705949f2b1fa93764e61025fcd961",
+        "line": 1,
+        "message": "Duplicate component layout detected [Category A — Layout, Confidence: 82%, Severity: WARNING]: shares similarity with \"RetryJobModal\" in \"apps/admin/src/components/diagnostics/RetryJobModal.tsx\". Recommendation: Extract shared structural wrapper component to \"packages/ui\" for layout styling standardization. (Estimated Effort: Low-Medium (2-4 hours), Risk: Low-Medium)."
       }
-    ]
+    ],
+    "path": "apps/admin/src/components/diagnostics/RetryAllModal.tsx"
   },
-  "createdDate": "2026-06-30T15:36:27.214Z",
+  "feature": "UIElement",
   "firstDetected": "2026-06-30T15:36:27.214Z",
-  "lastDetected": "2026-06-30T15:36:27.214Z",
-  "occurrenceCount": 1
+  "id": "f_2384b603",
+  "lastDetected": "2026-07-04T04:44:14.182Z",
+  "lastModified": "2026-07-04T04:44:14.182Z",
+  "occurrenceCount": 1,
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-UI-011",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
 }

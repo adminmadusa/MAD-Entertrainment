@@ -1,0 +1,59 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-04T04:24:22.867Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 292,
+    "message": "Trailing whitespace characters detected.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "b95049bbf38b6660f60015eaaae9d9fa9f40752b9612afec38fab7874b0b13af",
+        "id": "b95049bbf38b6660f60015eaaae9d9fa9f40752b9612afec38fab7874b0b13af",
+        "line": 44,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "b95049bbf38b6660f60015eaaae9d9fa9f40752b9612afec38fab7874b0b13af",
+        "id": "b95049bbf38b6660f60015eaaae9d9fa9f40752b9612afec38fab7874b0b13af",
+        "line": 64,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "b95049bbf38b6660f60015eaaae9d9fa9f40752b9612afec38fab7874b0b13af",
+        "id": "b95049bbf38b6660f60015eaaae9d9fa9f40752b9612afec38fab7874b0b13af",
+        "line": 159,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "b95049bbf38b6660f60015eaaae9d9fa9f40752b9612afec38fab7874b0b13af",
+        "id": "b95049bbf38b6660f60015eaaae9d9fa9f40752b9612afec38fab7874b0b13af",
+        "line": 292,
+        "message": "Trailing whitespace characters detected."
+      }
+    ],
+    "path": "apps/web/src/app/tickets/page.tsx"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-04T04:24:22.867Z",
+  "id": "f_9227478c",
+  "lastDetected": "2026-07-04T04:44:14.201Z",
+  "lastModified": "2026-07-04T04:44:14.201Z",
+  "occurrenceCount": 4,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-004",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

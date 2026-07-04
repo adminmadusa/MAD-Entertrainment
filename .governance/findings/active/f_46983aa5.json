@@ -1,54 +1,46 @@
 {
-  "schemaVersion": 2,
-  "id": "f_46983aa5",
-  "rule": "VAL-UI-005",
-  "ruleVersion": "1.0.0",
-  "engineVersion": "1.0.0",
-  "domain": "UI UX Guild",
-  "owner": "UI UX Guild",
-  "package": "apps",
-  "feature": "button",
-  "status": "NEW",
   "confidence": 0.85,
-  "relationships": [],
+  "createdDate": "2026-06-29T08:09:52.068Z",
+  "domain": "UI UX Guild",
+  "engineVersion": "1.0.0",
   "evidence": {
-    "path": "apps/admin/src/app/bookings/_components/CancelBookingModal.tsx",
     "construct": "button",
-    "snippet": "<button",
-    "line": 48,
+    "line": 55,
     "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
     "occurrences": [
       {
-        "id": "374640080571b1d14d9a390218a968527a80324d14d4605a9524043573726ce7",
-        "line": 48,
-        "column": 0,
-        "construct": "button",
-        "snippet": "<button",
-        "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
-        "fingerprint": "374640080571b1d14d9a390218a968527a80324d14d4605a9524043573726ce7"
-      },
-      {
-        "id": "a99e4b6cdc1a7cdfb757f842bd67e3c61835ce55f4e7b055f720919d36e11642",
-        "line": 48,
         "column": 0,
         "construct": "UIElement",
-        "snippet": "<button",
+        "fingerprint": "a99e4b6cdc1a7cdfb757f842bd67e3c61835ce55f4e7b055f720919d36e11642",
+        "id": "a99e4b6cdc1a7cdfb757f842bd67e3c61835ce55f4e7b055f720919d36e11642",
+        "line": 48,
         "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
-        "fingerprint": "a99e4b6cdc1a7cdfb757f842bd67e3c61835ce55f4e7b055f720919d36e11642"
+        "snippet": "<button"
       },
       {
+        "column": 0,
+        "construct": "UIElement",
+        "fingerprint": "a99e4b6cdc1a7cdfb757f842bd67e3c61835ce55f4e7b055f720919d36e11642",
         "id": "a99e4b6cdc1a7cdfb757f842bd67e3c61835ce55f4e7b055f720919d36e11642",
         "line": 55,
-        "column": 0,
-        "construct": "UIElement",
-        "snippet": "<button",
         "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
-        "fingerprint": "a99e4b6cdc1a7cdfb757f842bd67e3c61835ce55f4e7b055f720919d36e11642"
+        "snippet": "<button"
       }
-    ]
+    ],
+    "path": "apps/admin/src/app/bookings/_components/CancelBookingModal.tsx",
+    "snippet": "<button"
   },
-  "createdDate": "2026-06-29T08:09:52.068Z",
+  "feature": "button",
   "firstDetected": "2026-06-29T08:09:52.068Z",
-  "lastDetected": "2026-06-30T15:36:27.121Z",
-  "occurrenceCount": 3
+  "id": "f_46983aa5",
+  "lastDetected": "2026-07-04T04:44:14.156Z",
+  "lastModified": "2026-07-04T04:44:14.156Z",
+  "occurrenceCount": 2,
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-UI-005",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
 }

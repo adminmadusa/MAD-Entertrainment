@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:56.556Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 2,
+    "message": "Groups of imports must be separated by a single blank line.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "ce319af52a5bab9b2c7767ac393ad074f29fd3438e4f897c2e06bd6553b8055b",
+        "id": "ce319af52a5bab9b2c7767ac393ad074f29fd3438e4f897c2e06bd6553b8055b",
+        "line": 2,
+        "message": "Groups of imports must be separated by a single blank line."
+      }
+    ],
+    "path": "apps/web/src/utils/cached-event.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:56.556Z",
+  "id": "f_ecaf23a2",
+  "lastDetected": "2026-07-03T12:25:56.556Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-001",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "REGRESSION"
+}

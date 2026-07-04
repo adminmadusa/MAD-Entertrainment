@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-04T04:24:21.109Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 2,
+    "message": "Duplicate import declaration from module path \"@asteasolutions/zod-to-openapi\".",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "d8fa68f46e46c92d2e34f7c5ec127be511df0e95cb04488881f318efbb91c2e2",
+        "id": "d8fa68f46e46c92d2e34f7c5ec127be511df0e95cb04488881f318efbb91c2e2",
+        "line": 2,
+        "message": "Duplicate import declaration from module path \"@asteasolutions/zod-to-openapi\"."
+      }
+    ],
+    "path": "apps/server/src/config/openapi.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-04T04:24:21.109Z",
+  "id": "f_d0af2687",
+  "lastDetected": "2026-07-04T04:24:21.109Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-002",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

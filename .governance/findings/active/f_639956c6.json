@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-04T04:24:24.063Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 370,
+    "message": "Excessive consecutive blank lines detected (4 lines).",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "0b330916ecc8e6168e412b483cebdc58040b6f2f01cd9d60d6c7108f72b00a08",
+        "id": "0b330916ecc8e6168e412b483cebdc58040b6f2f01cd9d60d6c7108f72b00a08",
+        "line": 370,
+        "message": "Excessive consecutive blank lines detected (4 lines)."
+      }
+    ],
+    "path": "packages/shared/src/constants/index.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-04T04:24:24.063Z",
+  "id": "f_639956c6",
+  "lastDetected": "2026-07-04T04:24:24.063Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "packages",
+  "relationships": [],
+  "rule": "VAL-HYG-006",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

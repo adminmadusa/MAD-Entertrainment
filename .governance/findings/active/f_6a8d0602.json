@@ -1,0 +1,42 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-04T04:24:23.362Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 12,
+    "message": "Trailing whitespace characters detected.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "1b84ddded368813032f7d3ccaa4a14705b4dcc724425a906da470cab701fceb9",
+        "id": "1b84ddded368813032f7d3ccaa4a14705b4dcc724425a906da470cab701fceb9",
+        "line": 6,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "1b84ddded368813032f7d3ccaa4a14705b4dcc724425a906da470cab701fceb9",
+        "id": "1b84ddded368813032f7d3ccaa4a14705b4dcc724425a906da470cab701fceb9",
+        "line": 12,
+        "message": "Trailing whitespace characters detected."
+      }
+    ],
+    "path": "apps/web/src/lib/validation/mapZodError.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-04T04:24:23.362Z",
+  "id": "f_6a8d0602",
+  "lastDetected": "2026-07-04T04:24:23.362Z",
+  "occurrenceCount": 2,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-004",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

@@ -1,54 +1,55 @@
 {
-  "schemaVersion": 2,
-  "id": "f_fe2f222d",
-  "rule": "VAL-UI-005",
-  "ruleVersion": "1.0.0",
-  "engineVersion": "1.0.0",
-  "domain": "UI UX Guild",
-  "owner": "UI UX Guild",
-  "package": "apps",
-  "feature": "UIElement",
-  "status": "NEW",
   "confidence": 0.9,
-  "relationships": [],
+  "createdDate": "2026-06-30T15:36:27.268Z",
+  "domain": "UI UX Guild",
+  "engineVersion": "1.0.0",
   "evidence": {
-    "path": "apps/web/src/app/tickets/components/OtpVerificationModal.tsx",
     "construct": "UIElement",
-    "snippet": "<button",
-    "line": 46,
+    "line": 116,
     "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
     "occurrences": [
       {
-        "id": "d631fddb631f28e50e6114bde4a8f5e01a8aaffe2104b240cbe4a93a2ed900ad",
-        "line": 46,
         "column": 0,
         "construct": "UIElement",
-        "snippet": "<button",
+        "fingerprint": "d631fddb631f28e50e6114bde4a8f5e01a8aaffe2104b240cbe4a93a2ed900ad",
+        "id": "d631fddb631f28e50e6114bde4a8f5e01a8aaffe2104b240cbe4a93a2ed900ad",
+        "line": 47,
         "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
-        "fingerprint": "d631fddb631f28e50e6114bde4a8f5e01a8aaffe2104b240cbe4a93a2ed900ad"
+        "snippet": "<button"
       },
       {
-        "id": "d631fddb631f28e50e6114bde4a8f5e01a8aaffe2104b240cbe4a93a2ed900ad",
-        "line": 100,
         "column": 0,
         "construct": "UIElement",
-        "snippet": "<button",
+        "fingerprint": "d631fddb631f28e50e6114bde4a8f5e01a8aaffe2104b240cbe4a93a2ed900ad",
+        "id": "d631fddb631f28e50e6114bde4a8f5e01a8aaffe2104b240cbe4a93a2ed900ad",
+        "line": 101,
         "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
-        "fingerprint": "d631fddb631f28e50e6114bde4a8f5e01a8aaffe2104b240cbe4a93a2ed900ad"
+        "snippet": "<button"
       },
       {
-        "id": "d631fddb631f28e50e6114bde4a8f5e01a8aaffe2104b240cbe4a93a2ed900ad",
-        "line": 115,
         "column": 0,
         "construct": "UIElement",
-        "snippet": "<button",
+        "fingerprint": "d631fddb631f28e50e6114bde4a8f5e01a8aaffe2104b240cbe4a93a2ed900ad",
+        "id": "d631fddb631f28e50e6114bde4a8f5e01a8aaffe2104b240cbe4a93a2ed900ad",
+        "line": 116,
         "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
-        "fingerprint": "d631fddb631f28e50e6114bde4a8f5e01a8aaffe2104b240cbe4a93a2ed900ad"
+        "snippet": "<button"
       }
-    ]
+    ],
+    "path": "apps/web/src/app/tickets/components/OtpVerificationModal.tsx",
+    "snippet": "<button"
   },
-  "createdDate": "2026-06-30T15:36:27.268Z",
+  "feature": "UIElement",
   "firstDetected": "2026-06-30T15:36:27.268Z",
-  "lastDetected": "2026-06-30T15:36:27.268Z",
-  "occurrenceCount": 3
+  "id": "f_fe2f222d",
+  "lastDetected": "2026-07-04T04:44:14.200Z",
+  "lastModified": "2026-07-04T04:44:14.200Z",
+  "occurrenceCount": 3,
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-UI-005",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
 }

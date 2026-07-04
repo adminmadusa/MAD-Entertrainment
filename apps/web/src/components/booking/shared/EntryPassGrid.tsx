@@ -1,6 +1,7 @@
-import { Ticket } from '@mad/types';
 import { motion } from 'framer-motion';
 import { useEffect, useRef, useState } from 'react';
+
+import type { Ticket } from '@mad/types';
 
 interface ExtendedTicket extends Ticket {
   assignmentStatus?: 'unassigned' | 'pending' | 'claimed';
