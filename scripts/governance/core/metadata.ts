@@ -216,7 +216,7 @@ export function parseMarkdownMetadata(content: string): Record<string, any> | nu
 
   for (let i = 0; i < Math.min(lines.length, 50); i++) {
     const line = lines[i].trim();
-    
+
     if (line.toLowerCase() === '## metadata') {
       inMetadataBlock = true;
       foundMetadata = true;
@@ -253,7 +253,7 @@ export function parseMarkdownMetadata(content: string): Record<string, any> | nu
       const value = keyMatch[2].trim();
       const normKey = rawKey.toLowerCase().replace(/[\s_\-]/g, '');
       currentKey = normKey;
-      
+
       if (normKey === 'lastupdated' || normKey === 'lastreviewed' || normKey === 'date') {
         metadata['lastUpdated'] = value;
         metadata['lastReviewed'] = value;

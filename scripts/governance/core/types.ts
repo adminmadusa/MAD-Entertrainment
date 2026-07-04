@@ -194,18 +194,8 @@ export interface PerformanceGuardrails {
   memoryUsageBytes: number;
 }
 
-export interface RuleDefinition {
-  id: string;
-  name: string;
-  category: 'UI' | 'UX' | 'ACCESSIBILITY' | 'SECURITY' | 'PERFORMANCE' | 'ARCHITECTURE' | 'HYGIENE';
-  severity: 'INFO' | 'WARNING' | 'ERROR' | 'CRITICAL';
-  confidence: number;
-  defaultLifecycle: FindingStatus;
-  ciPolicy: 'FAIL_BUILD' | 'WARN' | 'INFO_ONLY';
-  owner: string;
-  version: string;
-  documentationLink: string;
-}
+import { RuleDefinition } from '../rules/types';
+export { RuleDefinition };
 
 // --- Stateless Violation Input ---
 

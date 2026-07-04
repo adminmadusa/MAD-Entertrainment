@@ -14,7 +14,7 @@ export class ConsoleReporter {
     for (const res of results) {
       const statusIcon = res.success ? '✅' : '❌';
       console.log(`${statusIcon}  ${res.name.padEnd(30)} [${res.executionTimeMs} ms]`);
-      
+
       if (res.errors.length > 0 || res.warnings.length > 0) {
         // Print errors
         res.errors.forEach((err) => {
