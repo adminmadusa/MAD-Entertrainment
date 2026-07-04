@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { BookingHeaderCard } from '@/components/booking/shared/BookingHeaderCard';
 import { TicketActions } from '@/components/booking/shared/TicketActions';
 import { useCountdown } from '@/hooks/use-countdown.hook';
+import { formatDate, formatDateTime } from '@/utils/date';
 import { BookingStatus } from '@mad/shared';
 import type { Booking, Ticket, Event } from '@mad/types';
 
@@ -219,7 +220,7 @@ export function BookingCard({
             <div>
               <span className="text-[10px] text-text-muted uppercase tracking-wider block">Purchased On</span>
               <span className="text-white font-semibold font-sans">
-                {new Date(booking.createdAt).toLocaleDateString(undefined, { dateStyle: 'medium' })} {new Date(booking.createdAt).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
+                {formatDate(booking.createdAt, { dateStyle: 'medium' })} {formatDateTime(booking.createdAt, { hour: '2-digit', minute: '2-digit' })}
               </span>
             </div>
           )}
@@ -274,7 +275,7 @@ export function BookingCard({
               </div>
               <p className="text-text-muted text-[11px] sm:text-xs flex flex-wrap items-center gap-x-2 gap-y-0.5">
                 {eventInfo?.startDate && (
-                  <span>Event Date: {new Date(eventInfo.startDate).toLocaleDateString(undefined, { dateStyle: 'medium' })}</span>
+                  <span>Event Date: {formatDate(eventInfo.startDate, { dateStyle: 'medium' })}</span>
                 )}
                 {eventInfo?.venue && (
                   <span className="truncate max-w-[150px] sm:max-w-none">| {eventInfo.venue}</span>
