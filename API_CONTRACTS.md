@@ -4,8 +4,6 @@ Status: Active
 Version: 1.0
 Owner: Repository Architecture & API Governance
 Review Cycle: Quarterly
-Last Updated: 2026-07-03
-API Version: v1 (Active)
 
 Supersedes:
 - None (First version establishing the API Contract SSOT)

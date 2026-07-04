@@ -37,28 +37,18 @@ import { PaymentRefundService } from './payment-refund.service';
 import { PaymentInventoryService } from './payment-inventory.service';
 import { PaymentBookingService } from './payment-booking.service';
 
-export interface StripeChargeWebhookPayload {
-  id: string;
-  refunds?: {
-    data?: Array<{
-      id: string;
-      amount: number;
-    }>;
-  };
-}
+import type {
+  StripeChargeWebhookPayload,
+  StripeRefundWebhookPayload,
+  RazorpayRefundWebhookPayload,
+} from './payment.types';
 
-export interface StripeRefundWebhookPayload {
-  id: string;
-  charge: string;
-  status: string;
-  amount: number;
-}
+export type {
+  StripeChargeWebhookPayload,
+  StripeRefundWebhookPayload,
+  RazorpayRefundWebhookPayload,
+} from './payment.types';
 
-export interface RazorpayRefundWebhookPayload {
-  id: string;
-  payment_id: string;
-  amount: number;
-}
 
 type PaymentOwnershipContext = {
   userId?: string;

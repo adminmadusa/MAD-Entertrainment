@@ -4,7 +4,6 @@ Status: Active
 Version: 1.0
 Owner: Repository Architecture
 Review Cycle: Quarterly
-Last Updated: 2026-07-03
 
 Supersedes:
 - [governance.md](docs/architecture/governance.md) (Deleted)

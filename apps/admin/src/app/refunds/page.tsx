@@ -193,7 +193,6 @@ export default function AdminRefundsPage() {
               >
                 {/* Context Column (Left) */}
                 <div className="space-y-4 text-sm border-r border-white/5 pr-4 md:block hidden">
-                  <h2 className="text-white font-bold text-base border-b border-white/5 pb-2">Refund Request Detail</h2>
 
                   <div>
                     <span className="text-[10px] text-text-muted uppercase tracking-wider block font-semibold">Booking ID</span>

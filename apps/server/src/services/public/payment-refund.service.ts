@@ -48,7 +48,8 @@ import {
   StripeChargeWebhookPayload,
   StripeRefundWebhookPayload,
   RazorpayRefundWebhookPayload,
-} from './payment.service';
+} from './payment.types';
+
 
 // ─────────────────────────────────────────────────────────────────────────────
 
