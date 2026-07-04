@@ -33,7 +33,6 @@ export function getWorktreeMap(): Map<string, string> {
   const output = runCommand('git worktree list');
   const lines = output.split('\n').filter(Boolean);
   for (const line of lines) {
-    // Correctly handle paths with spaces by matching from the end of the line
     const match = line.match(/(.+?)\s+([0-9a-fA-F]+)\s+\[([^\]]+)\]$/);
     if (match) {
       map.set(match[3], match[1]);
@@ -43,10 +42,11 @@ export function getWorktreeMap(): Map<string, string> {
 }
 
 export function hasGitTags(branchName: string): boolean {
+  // Check if there are tags containing this branch tip
   const sha = runCommand(`git rev-parse "${branchName}"`);
-  if (!sha) return false;
-  const tags = runCommand(`git tag --points-at "${sha}"`);
-  return !!tags;
+  if (!sha || sha.includes('error')) return false;
+  const tags = runCommand(`git tag --contains "${sha}"`);
+  return !!tags.trim();
 }
 
 export function getMergedPRNumber(branchName: string): string | null {

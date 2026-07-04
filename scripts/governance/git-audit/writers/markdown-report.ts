@@ -6,6 +6,7 @@ import { ScoreReport } from '../utils/scoring';
 
 const WORKSPACE_REPORT_PATH = '/Users/admin/Desktop/MAD Entertrainment/.agents/git_repository_hygiene_audit.md';
 const BRAIN_REPORT_PATH = '/Users/admin/.gemini/antigravity-ide/brain/5ec77dfb-c991-40e2-9ca2-944b443e59dd/git_repository_hygiene_audit.md';
+const CLEANUP_SCRIPT_PATH = '/Users/admin/Desktop/MAD Entertrainment/.agents/cleanup_commands.sh';
 
 export function writeMarkdownReport(
   branches: RegisteredBranch[],
@@ -42,9 +43,9 @@ export function writeMarkdownReport(
     
     if (v.isProtected) {
       mustNever = 'Yes';
-    } else if (b.lifecycleState === 'LEGACY') {
+    } else if (b.lifecycleState === 'Archived') {
       needsReview = 'Yes';
-    } else if (b.lifecycleState === 'READY_FOR_DELETION') {
+    } else if (b.lifecycleState === 'Ready For Delete') {
       safeDelete = 'Yes';
     } else {
       needsReview = 'Yes';
@@ -53,10 +54,11 @@ export function writeMarkdownReport(
     verificationTable += `| \`${b.name}\` | ${hasUnique} | ${isMerged} | ${squashMerged} | ${patchEquiv} | ${reachDev} | ${reachLive} | ${hasUpstream} | ${openPr} | ${usedBy} | ${safeDelete} | ${needsReview} | ${mustNever} |\n`;
   }
 
-  // Build final action queue table
-  let actionTable = '| Branch | Verification | Action | Risk | Status | Reason | Effort |\n| :--- | :--- | :--- | :---: | :---: | :--- | :---: |\n';
+  // Build final action queue table containing confidence, evidence, verification
+  let actionTable = '| Branch | Lifecycle State | Action | Confidence | Verification | Evidence | Risk |\n| :--- | :--- | :--- | :---: | :--- | :--- | :---: |\n';
   for (const a of actions) {
-    actionTable += `| \`${a.branchName}\` | ${a.verification} | ${a.action} | ${a.risk} | **${a.status}** | ${a.reason} | ${a.estimatedEffort} |\n`;
+    const evidenceStr = a.evidence.map(e => `\`${e}\``).join(', ');
+    actionTable += `| \`${a.branchName}\` | **${a.status === 'Blocked' ? 'Blocked' : 'Ready'}** | ${a.action} | ${a.confidence} | ${a.verification} | ${evidenceStr} | ${a.risk} |\n`;
   }
 
   // Build health score deductions markdown
@@ -69,6 +71,70 @@ export function writeMarkdownReport(
       scoreDeductions += `| ${d.category} | -${d.points} | ${d.reason} |\n`;
     }
   }
+
+  // Build clean shell command execution block
+  let safeCommands = '';
+  let blockedCommands = '';
+  let activeCommands = '';
+  let experimentalCommands = '';
+  let legacyCommands = '';
+
+  for (const a of actions) {
+    const cleanName = a.branchName;
+    const isRemote = cleanName.startsWith('origin/');
+    
+    if (a.status === 'Execute Now' || a.action.includes('Delete')) {
+      if (a.risk === 'Low') {
+        if (isRemote) {
+          safeCommands += `git push origin --delete ${cleanName.replace('origin/', '')}\n`;
+        } else {
+          safeCommands += `git branch -d ${cleanName}\n`;
+        }
+      } else {
+        legacyCommands += `# Branch: ${cleanName}\n# Reason: ${a.reason}\n# git branch -D ${cleanName}\n\n`;
+      }
+    } else if (a.status === 'Blocked') {
+      blockedCommands += `# Branch: ${cleanName}\n# Reason: ${a.reason}\n# Command: git branch -d ${cleanName}\n\n`;
+    } else if (a.action.includes('Rebase')) {
+      activeCommands += `# Branch: ${cleanName}\n# Reason: ${a.reason}\n# Command: git checkout ${cleanName} && git pull origin develop\n\n`;
+    } else {
+      experimentalCommands += `# Branch: ${cleanName}\n# Reason: ${a.reason}\n# Command: git branch -d ${cleanName}\n\n`;
+    }
+  }
+
+  const shellScript = `#!/bin/bash
+# MAD Entertrainment Git Cleanup Commands
+# Generated on: ${new Date().toISOString().split('T')[0]}
+
+# ==========================================
+# 1. SAFE TO DELETE COMMANDS
+# ==========================================
+${safeCommands || '# No safe branches verified for deletion right now.\n'}
+
+# ==========================================
+# 2. EXPERIMENTAL & STACKED BRANCHES (PENDING MERGE)
+# ==========================================
+${experimentalCommands || '# No experimental branch stack actions pending.\n'}
+
+# ==========================================
+# 3. ACTIVE BRANCH SYNC (REBASES)
+# ==========================================
+${activeCommands || '# No active branches require sync.\n'}
+
+# ==========================================
+# 4. BLOCKED BRANCHES (UNMERGED / ACTIVE WORKTREE / OPEN PR)
+# ==========================================
+${blockedCommands || '# No blocked branches.\n'}
+
+# ==========================================
+# 5. LEGACY BRANCH ARCHIVAL (REQUIRES MANUAL CLEARANCE)
+# ==========================================
+${legacyCommands || '# No legacy branch archivals.\n'}
+`;
+
+  // Write the clean shell commands script
+  fs.writeFileSync(CLEANUP_SCRIPT_PATH, shellScript, 'utf8');
+  fs.chmodSync(CLEANUP_SCRIPT_PATH, '755');
 
   const markdown = `# Git Repository Hygiene Audit Report
 
@@ -161,7 +227,7 @@ The cleanup of the repository must be conducted in the following strict phases t
 * Merge the integration container branch \`test/remediation-integration\` (incorporating the 7 validated hotfixes) into \`develop\` after running the automated builds.
 
 ### Phase 3: Delete Merged Local Branches
-* Prune local branches that are verified as \`READY_FOR_DELETION\` using \`git branch -d\` (e.g. \`fix/hyg-002-duplicate-imports\` and Sentry branch).
+* Prune local branches that are verified as \`Ready For Delete\` using \`git branch -d\` (e.g. \`fix/hyg-002-duplicate-imports\` and Sentry branch).
 
 ### Phase 4: Delete Duplicate Branches
 * Force-delete duplicate unmerged branches whose code edits have already been integrated under another name.
@@ -213,6 +279,16 @@ ${scoreDeductions}
 Structured action items generated based on multi-dimensional checks:
 
 ${actionTable}
+
+---
+
+## 11. Executable Cleanup Script (\`cleanup_commands.sh\`)
+
+Below is the generated execution script. It has also been saved to [.agents/cleanup_commands.sh](file://${CLEANUP_SCRIPT_PATH}) and marked as executable.
+
+\`\`\`bash
+${shellScript}
+\`\`\`
 `;
 
   // Write to both workspace and brain folder

@@ -9,6 +9,7 @@ import { analyzeDuplicateBranches } from './analyzers/duplicates';
 import { determineLifecycleState } from './analyzers/lifecycle';
 import { analyzeHealthScore } from './analyzers/health-score';
 import { isProtectedBranch } from './validators/protection-validator';
+import { validateDeletionPolicy } from './validators/deletion-validator';
 import { writeBranchRegistry } from './writers/branch-registry';
 import { writeVerificationRegistry } from './writers/verification-registry';
 import { writeActionQueue, writeRepositoryMetrics } from './writers/action-queue';
@@ -16,11 +17,14 @@ import { writeMarkdownReport } from './writers/markdown-report';
 import { RegisteredBranch, VerificationInfo } from './models/registry';
 import { ActionItem } from './models/action';
 import { getMergedPRNumber } from './utils/git';
+import { defaultConfig } from './utils/config';
+import { analyzeStaleStatus } from './analyzers/dead-branches';
 
 function main() {
   console.log('[git-governance-engine] Initializing metadata collection...');
 
-  // 1. Gather raw evidence
+  // 1. Load config and gather raw evidence
+  const config = defaultConfig;
   const rawBranches = collectAllBranches();
   const worktreeMap = collectWorktrees();
   const danglingCommitsCount = collectDanglingCommitsCount();
@@ -29,13 +33,27 @@ function main() {
   // Perform stack ancestry check for AI OS phase branches
   const stackReport = analyzeAiOsStack(branchNames);
 
+  // Check the specific deletion gates for the AI OS Stack Tip (Phase 20)
+  const phase20Local = rawBranches.find(b => b.name === 'feat/ai-os-phase-20-task-engine');
+  const phase20RemoteExists = rawBranches.some(b => b.name === 'origin/feat/ai-os-phase-20-task-engine');
+  
+  let isPhase20Merged = false;
+  let isPhase20Active = false;
+  
+  if (phase20Local) {
+    isPhase20Merged = checkReachableFromDevelop(phase20Local.name) || analyzePatchEquivalence(phase20Local.name);
+    isPhase20Active = worktreeMap.has(phase20Local.name);
+  }
+  
+  // Stack parents are only safe to delete if Phase 20 exists, is merged, is backed up on remote, and is not active
+  const isStackSafeToPrune = phase20Local && isPhase20Merged && phase20RemoteExists && !isPhase20Active;
+
   // 2. Perform verification and mapping
   const registeredBranches: RegisteredBranch[] = [];
   const verifications: VerificationInfo[] = [];
 
   for (const b of rawBranches) {
     const name = b.name;
-    const cleanName = b.isRemote ? name.replace('origin/', '') : name;
 
     // Ancestry / Reachability
     const isMerged = checkReachableFromDevelop(name);
@@ -55,10 +73,9 @@ function main() {
     } else {
       const detectedPr = getMergedPRNumber(name);
       if (detectedPr) {
-        hasOpenPR = 'NO'; // already merged PR
+        hasOpenPR = 'NO';
         prNumber = detectedPr;
       } else if (!isProtectedBranch(name) && name !== 'main' && name !== 'origin/main' && name !== 'test/remediation-integration') {
-        // If unmerged, we infer it might have a draft or open PR
         if (!isMerged && !isSquashMerged) {
           hasOpenPR = 'UNKNOWN';
         }
@@ -75,14 +92,16 @@ function main() {
     let isAnotherBranchBasedOnIt = false;
     const usedByBranches: string[] = [];
 
-    // Stack membership
+    // Stack membership & validation
     let isPartOfActiveStack = false;
     if (name.startsWith('feat/ai-os-phase-')) {
       const match = name.match(/^feat\/ai-os-phase-(\d+)-/);
       if (match) {
         const phaseNum = parseInt(match[1], 10);
-        // If a phase branch has a downstream phase branch in the stack, it is a stack parent/part of active stack
-        isPartOfActiveStack = phaseNum < 20 && stackReport.isStackValid;
+        
+        // If it is an intermediate stack parent, it is part of active stack
+        // It is blocked from deletion if the stack tip (Phase 20) is not merged/backed up
+        isPartOfActiveStack = phaseNum < 20 && !isStackSafeToPrune;
         
         // Populate usedByBranches for stack hierarchy
         const nextPhase = stackReport.phaseChain.find(pc => pc.phase === phaseNum + 1);
@@ -96,7 +115,6 @@ function main() {
     // Check which branch tip is parent of others
     for (const other of rawBranches) {
       if (other.name !== name && other.sha !== b.sha) {
-        // Check if other branch is based on this branch (excluding Stack branches which are handled above)
         if (!name.startsWith('feat/ai-os-phase-') && other.upstream === name) {
           usedByBranches.push(other.name);
           isAnotherBranchBasedOnIt = true;
@@ -148,8 +166,11 @@ function main() {
     // Duplicate detection
     const dupReport = analyzeDuplicateBranches(b, rawBranches);
 
+    // Stale check
+    const staleReport = analyzeStaleStatus(b, config);
+
     // Determine lifecycle state
-    const lifecycleState = determineLifecycleState(b, verification, dupReport.isDuplicate);
+    const lifecycleState = determineLifecycleState(b, verification, dupReport.isDuplicate, staleReport.isStale);
 
     registeredBranches.push({
       ...b,
@@ -169,29 +190,35 @@ function main() {
     let action = 'Keep';
     let status: 'Execute Now' | 'Pending' | 'Blocked' = 'Blocked';
     let risk: 'Low' | 'Medium' | 'High' | 'N/A' = 'N/A';
-    let reason = 'Protected or required branch';
+    let reason = 'Protected or active development branch';
     let preconditions: string[] = [];
     let rollbackStrategy = 'N/A';
     let estimatedEffort = 'N/A';
+    let shellCommand = '';
+    
+    // Evaluate strict deletion policy
+    const deletionReport = validateDeletionPolicy(v, rb.isLocal);
 
-    if (state === 'READY_FOR_DELETION') {
-      action = 'Delete Local';
-      status = 'Execute Now';
-      risk = 'Low';
-      reason = 'Branch is fully merged/squash-merged and meets all safety validation gates.';
-      preconditions = ['git checkout develop'];
-      rollbackStrategy = `git branch ${name} ${rb.sha}`;
-      estimatedEffort = '1 min';
-    } else if (state === 'DUPLICATE') {
+    if (state === 'Ready For Delete' && deletionReport.isReadyForDeletion) {
       action = rb.isLocal ? 'Delete Local' : 'Delete Remote';
       status = 'Execute Now';
       risk = 'Low';
-      reason = `Redundant duplicate branch. functionally resolved under another branch ref.`;
+      reason = 'Branch is fully merged/squash-merged and meets all safety validation gates.';
       preconditions = rb.isLocal ? ['git checkout develop'] : [];
       rollbackStrategy = rb.isLocal ? `git branch ${name} ${rb.sha}` : `git push origin ${rb.sha}:refs/heads/${name}`;
       estimatedEffort = '1 min';
-    } else if (state === 'STACK_PARENT') {
-      if (stackReport.isStackValid) {
+      shellCommand = rb.isLocal ? `git branch -d ${name}` : `git push origin --delete ${name.replace('origin/', '')}`;
+    } else if (state === 'Duplicate Candidate') {
+      action = rb.isLocal ? 'Delete Local' : 'Delete Remote';
+      status = 'Execute Now';
+      risk = 'Low';
+      reason = `Duplicate candidate branch. functionally identical to another branch ref.`;
+      preconditions = rb.isLocal ? ['git checkout develop'] : [];
+      rollbackStrategy = rb.isLocal ? `git branch ${name} ${rb.sha}` : `git push origin ${rb.sha}:refs/heads/${name}`;
+      estimatedEffort = '1 min';
+      shellCommand = rb.isLocal ? `git branch -d ${name}` : `git push origin --delete ${name.replace('origin/', '')}`;
+    } else if (state === 'Experimental') {
+      if (isStackSafeToPrune) {
         action = 'Consolidate Stack (Delete Local)';
         status = 'Pending';
         risk = 'Low';
@@ -199,40 +226,38 @@ function main() {
         preconditions = ['Verify Phase 20 branch is fully integrated'];
         rollbackStrategy = `git branch ${name} ${rb.sha}`;
         estimatedEffort = '1 min';
+        shellCommand = `git branch -d ${name}`;
       } else {
         action = 'Wait for parent stack resolution';
         status = 'Blocked';
         risk = 'High';
-        reason = `Stacked branch containment is broken or incomplete. Link validation failed: ${stackReport.brokenLinkReason}`;
+        reason = `Stacked branch containment is broken or incomplete. Link validation failed: ${stackReport.brokenLinkReason || 'Phase 20 is not merged or backed up.'}`;
         preconditions = [];
         rollbackStrategy = 'N/A';
         estimatedEffort = 'N/A';
+        shellCommand = `# BLOCKED\n# Branch: ${name}\n# Reason: AI OS stack tip (Phase 20) is unmerged or not backed up.`;
       }
-    } else if (state === 'STACK_CHILD') {
-      action = 'Consolidate / Keep Active';
-      status = 'Pending';
-      risk = 'Medium';
-      reason = 'Active tip of experimental AI OS phase stacked sequence.';
-      preconditions = [];
-      rollbackStrategy = 'N/A';
-      estimatedEffort = 'N/A';
-    } else if (state === 'LEGACY') {
+    } else if (state === 'Archived') {
       action = 'Archive / Delete Legacy';
       status = 'Blocked';
       risk = 'Medium';
-      reason = 'Legacy base branch (main). Requires repository owner permissions and default branch adjustments.';
+      reason = 'Legacy base branch. Requires repository owner permissions and default branch adjustments.';
       preconditions = ['Admin clearance obtained'];
-      rollbackStrategy = `git branch main ${rb.sha}`;
+      rollbackStrategy = `git branch ${name} ${rb.sha}`;
       estimatedEffort = '1 min';
-    } else if (state === 'ACTIVE' || state === 'OPEN_PR' || state === 'INTEGRATION') {
-      if (rb.behind > 0) {
+      shellCommand = `# BLOCKED\n# Branch: ${name}\n# Reason: Legacy base branch.`;
+    } else if (state === 'Active Development' || state === 'Open PR' || state === 'Integration') {
+      // Rebase recommendation only if active, unmerged, not stale, and behind develop
+      const isStale = rb.behind > 30; // stale check
+      if (rb.behind > 0 && !isStale && state !== 'Integration') {
         action = 'Rebase Local';
         status = 'Pending';
         risk = 'Medium';
-        reason = `Unmerged branch is behind develop by ${rb.behind} commits. Requires rebase synchronization.`;
+        reason = `Unmerged active branch is behind develop by ${rb.behind} commits. Requires rebase synchronization.`;
         preconditions = ['git checkout ' + name, 'git pull origin develop'];
         rollbackStrategy = 'git rebase --abort';
         estimatedEffort = '2 min';
+        shellCommand = `# ACTIVE SYNC\n# git checkout ${name} && git pull origin develop`;
       } else {
         action = 'Keep Active';
         status = 'Pending';
@@ -241,25 +266,17 @@ function main() {
         preconditions = [];
         rollbackStrategy = 'N/A';
         estimatedEffort = 'N/A';
+        shellCommand = `# ACTIVE DEVELOPMENT\n# Branch: ${name}\n# Reason: Unmerged active development branch.`;
       }
-    } else if (state === 'PATCH_EQUIVALENT' || state === 'MERGED') {
-      if (rb.isRemote) {
-        action = 'Delete Remote';
-        status = 'Pending';
-        risk = 'Low';
-        reason = 'Remote branch is fully merged/squash-merged upstream.';
-        preconditions = [`git push origin --delete ${name.replace('origin/', '')}`];
-        rollbackStrategy = `git push origin ${rb.sha}:refs/heads/${name.replace('origin/', '')}`;
-        estimatedEffort = '1 min';
-      } else {
-        action = 'Prune / Resolve Block';
-        status = 'Blocked';
-        risk = 'Medium';
-        reason = 'Local branch is merged but blocked from safe deletion by verification parameters.';
-        preconditions = [];
-        rollbackStrategy = 'N/A';
-        estimatedEffort = 'N/A';
-      }
+    } else if (state === 'Blocked') {
+      action = 'Prune / Resolve Block';
+      status = 'Blocked';
+      risk = 'Medium';
+      reason = `Branch is merged but blocked from safe deletion: ${deletionReport.blockedReasons.join(' ')}`;
+      preconditions = [];
+      rollbackStrategy = 'N/A';
+      estimatedEffort = 'N/A';
+      shellCommand = `# BLOCKED\n# Branch: ${name}\n# Reason: ${deletionReport.blockedReasons.join('; ')}`;
     }
 
     actionQueue.push({
@@ -268,10 +285,13 @@ function main() {
       action,
       risk,
       status,
+      confidence: deletionReport.confidence,
+      evidence: Object.keys(v.evidence.commands),
       reason,
       preconditions,
       rollbackStrategy,
-      estimatedEffort
+      estimatedEffort,
+      shellCommand
     });
   }
 
@@ -282,17 +302,21 @@ function main() {
   const metrics = {
     localBranchCount: registeredBranches.filter(b => b.isLocal).length,
     remoteBranchCount: registeredBranches.filter(b => b.isRemote).length,
-    protectedBranchesCount: registeredBranches.filter(b => b.lifecycleState === 'PROTECTED').length,
-    activeBranchesCount: registeredBranches.filter(b => b.lifecycleState === 'ACTIVE').length,
-    experimentalBranchesCount: registeredBranches.filter(b => b.lifecycleState === 'STACK_PARENT' || b.lifecycleState === 'STACK_CHILD').length,
-    mergedBranchesCount: registeredBranches.filter(b => b.lifecycleState === 'MERGED' || b.lifecycleState === 'PATCH_EQUIVALENT').length,
-    duplicateBranchesCount: registeredBranches.filter(b => b.lifecycleState === 'DUPLICATE').length,
+    protectedBranchesCount: registeredBranches.filter(b => b.lifecycleState === 'Protected').length,
+    activeBranchesCount: registeredBranches.filter(b => b.lifecycleState === 'Active Development').length,
+    experimentalBranchesCount: registeredBranches.filter(b => b.lifecycleState === 'Experimental').length,
+    mergedBranchesCount: registeredBranches.filter(b => b.lifecycleState === 'Patch Equivalent').length, // includes squash
+    duplicateBranchesCount: registeredBranches.filter(b => b.lifecycleState === 'Duplicate Candidate').length,
     deadBranchesCount: registeredBranches.filter(b => b.behind > 30).length,
-    readyForDeleteBranchesCount: registeredBranches.filter(b => b.lifecycleState === 'READY_FOR_DELETION').length,
-    remoteOrphanBranchesCount: registeredBranches.filter(b => b.lifecycleState === 'Orphan Remote').length,
-    localOrphanBranchesCount: registeredBranches.filter(b => b.isLocal && !b.upstream && b.lifecycleState !== 'PROTECTED' && b.lifecycleState !== 'LEGACY' && b.lifecycleState !== 'INTEGRATION').length,
+    readyForDeleteBranchesCount: registeredBranches.filter(b => b.lifecycleState === 'Ready For Delete').length,
+    remoteOrphanBranchesCount: 0,
+    localOrphanBranchesCount: registeredBranches.filter(b => b.isLocal && !b.upstream && b.lifecycleState !== 'Protected' && b.lifecycleState !== 'Archived' && b.lifecycleState !== 'Integration').length,
     branchesWithoutUpstreamCount: registeredBranches.filter(b => b.isLocal && !b.upstream).length,
-    branchesWaitingForMergeCount: registeredBranches.filter(b => b.isLocal && b.lifecycleState !== 'READY_FOR_DELETION' && b.lifecycleState !== 'PROTECTED').length
+    branchesWaitingForMergeCount: registeredBranches.filter(b => b.isLocal && b.lifecycleState !== 'Ready For Delete' && b.lifecycleState !== 'Protected').length,
+    openPrBranchesCount: registeredBranches.filter(b => b.lifecycleState === 'Open PR').length,
+    archivedBranchesCount: registeredBranches.filter(b => b.lifecycleState === 'Archived').length,
+    danglingCommitsCount,
+    worktreesCount: worktreeMap.size
   };
 
   const orphanRemotes = registeredBranches.filter(

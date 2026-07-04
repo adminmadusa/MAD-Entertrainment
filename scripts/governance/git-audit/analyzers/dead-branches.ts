@@ -1,4 +1,5 @@
 import { BranchInfo } from '../models/branch';
+import { GovernanceConfig } from '../utils/config';
 
 export interface StaleReport {
   isStale: boolean;
@@ -7,7 +8,7 @@ export interface StaleReport {
   daysSinceLastCommit: number;
 }
 
-export function analyzeStaleStatus(branch: BranchInfo): StaleReport {
+export function analyzeStaleStatus(branch: BranchInfo, config: GovernanceConfig): StaleReport {
   const lagCommits = branch.behind;
   
   // Calculate days since last commit
@@ -16,10 +17,8 @@ export function analyzeStaleStatus(branch: BranchInfo): StaleReport {
   const timeDiffMs = nowMs - commitTimestampMs;
   const daysSinceLastCommit = Math.max(0, Math.floor(timeDiffMs / (1000 * 60 * 60 * 24)));
 
-  const isStale = lagCommits > 30;
-  
-  // Abandoned: No activity for > 14 days and unmerged
-  const isAbandoned = daysSinceLastCommit > 14 && lagCommits > 0;
+  const isStale = daysSinceLastCommit > config.stale_days;
+  const isAbandoned = daysSinceLastCommit > config.max_branch_age;
 
   return {
     isStale,

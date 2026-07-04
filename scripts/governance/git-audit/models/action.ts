@@ -4,24 +4,24 @@ export interface ActionItem {
   action: string;
   risk: 'Low' | 'Medium' | 'High' | 'N/A';
   status: 'Execute Now' | 'Pending' | 'Blocked';
+  confidence: string; // e.g., "99%", "0%"
+  evidence: string[];
   reason: string;
   preconditions: string[];
   rollbackStrategy: string;
   estimatedEffort: string;
+  shellCommand: string;
 }
 
 export type LifecycleState =
-  | 'PROTECTED'
-  | 'ACTIVE'
-  | 'OPEN_PR'
-  | 'STACK_PARENT'
-  | 'STACK_CHILD'
-  | 'INTEGRATION'
-  | 'PATCH_EQUIVALENT'
-  | 'MERGED'
-  | 'DUPLICATE'
-  | 'LEGACY'
-  | 'ARCHIVED'
-  | 'READY_FOR_DELETION'
-  | 'BLOCKED'
-  | 'UNKNOWN';
+  | 'Protected'
+  | 'Active Development'
+  | 'Open PR'
+  | 'Integration'
+  | 'Patch Equivalent'
+  | 'Duplicate Candidate'
+  | 'Experimental'
+  | 'Archived'
+  | 'Stale'
+  | 'Ready For Delete'
+  | 'Blocked';

@@ -17,7 +17,7 @@ export function computeHygieneScore(
 
   // 1. Merged / Patch-Equivalent local branches lingering
   const lingeringLocalMerged = branches.filter(
-    b => b.isLocal && (b.category === 'Fully merged' || b.category === 'Patch-equivalent' || b.category === 'READY_FOR_DELETION')
+    b => b.isLocal && (b.category === 'Ready For Delete' || b.category === 'Patch Equivalent')
   );
   if (lingeringLocalMerged.length > 0) {
     const pts = lingeringLocalMerged.length * 2;
@@ -28,29 +28,23 @@ export function computeHygieneScore(
     });
   }
 
-  // 2. Duplicate branches
-  const duplicates = branches.filter(b => b.category === 'Duplicate');
+  // 2. Duplicate candidates
+  const duplicates = branches.filter(b => b.category === 'Duplicate Candidate');
   if (duplicates.length > 0) {
-    const pts = duplicates.length * 5; // 5 points per duplicate ref
+    const pts = duplicates.length * 5;
     deductions.push({
       category: 'Governance Compliance',
       points: pts,
-      reason: `${duplicates.length} duplicate branches present: ${duplicates.map(b => b.name).join(', ')}`
+      reason: `${duplicates.length} duplicate candidate branches present: ${duplicates.map(b => b.name).join(', ')}`
     });
   }
 
-  // 3. Stale unmerged branches (behind > 30, not experimental/stack/legacy/duplicate/protected)
+  // 3. Stale unmerged branches (behind stale thresholds, non-experimental/protected/archived)
   const staleUnmerged = branches.filter(
-    b => b.behind > 30 &&
-         b.category !== 'Experimental' &&
-         b.category !== 'STACK_PARENT' &&
-         b.category !== 'STACK_CHILD' &&
-         b.category !== 'Legacy' &&
-         b.category !== 'Duplicate' &&
-         b.category !== 'Protected'
+    b => b.category === 'Stale'
   );
   if (staleUnmerged.length > 0) {
-    const pts = staleUnmerged.length * 5;
+    const pts = staleUnmerged.length * 2; // -2 points per stale branch
     deductions.push({
       category: 'Branch Hygiene',
       points: pts,
@@ -58,34 +52,26 @@ export function computeHygieneScore(
     });
   }
 
-  // 4. Stale experimental stack branches (behind > 30)
-  const staleExperimental = branches.filter(
-    b => (b.category === 'Experimental' || b.category === 'STACK_PARENT' || b.category === 'STACK_CHILD') && b.behind > 30
-  );
-  if (staleExperimental.length > 0) {
-    const pts = staleExperimental.length * 1;
-    deductions.push({
-      category: 'Repository Organization',
-      points: pts,
-      reason: `${staleExperimental.length} stale experimental stack branches: ${staleExperimental.map(b => b.name).join(', ')}`
-    });
-  }
-
-  // 5. Legacy default branches lingering
-  const legacyLingering = branches.filter(b => b.category === 'Legacy');
+  // 4. Legacy/Archived branches lingering
+  const legacyLingering = branches.filter(b => b.category === 'Archived');
   if (legacyLingering.length > 0) {
     const pts = legacyLingering.length * 5;
     deductions.push({
       category: 'Repository Organization',
       points: pts,
-      reason: `${legacyLingering.length} legacy branches lingering: ${legacyLingering.map(b => b.name).join(', ')}`
+      reason: `${legacyLingering.length} archived/legacy branches lingering: ${legacyLingering.map(b => b.name).join(', ')}`
     });
   }
 
-  // 6. Orphan remote branches (remote only, no local matching, not protected/legacy)
-  const remoteOrphans = branches.filter(b => b.category === 'Orphan Remote');
+  // 5. Orphan remote branches (remote only, no local matching, not protected/archived)
+  const remoteOrphans = branches.filter(
+    b => b.isLocal === false && 
+         b.category !== 'Protected' && 
+         b.category !== 'Archived' &&
+         !branches.some(l => l.isLocal && l.name === b.name.replace('origin/', ''))
+  );
   if (remoteOrphans.length > 0) {
-    const pts = remoteOrphans.length * 3;
+    const pts = remoteOrphans.length * 1; // -1 point per remote orphan
     deductions.push({
       category: 'Remote Hygiene',
       points: pts,
