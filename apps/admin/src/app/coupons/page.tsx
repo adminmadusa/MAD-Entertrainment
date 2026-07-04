@@ -8,6 +8,7 @@ import { useState } from 'react';
 import { useAdminAuth } from '@/providers/AdminAuthProvider';
 import { AdminRole } from '@mad/shared';
 import { formatDate } from '@mad/utils';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@mad/ui';
 
 import { adminGetCoupons, adminDeleteCoupon, adminToggleCoupon } from '@/lib/api/admin/coupon.service';
 import { extractApiError } from '@/lib/api/client';
@@ -46,33 +47,33 @@ export default function AdminCouponsPage() {
   const renderTableBody = () => {
     if (isLoading) {
       return Array.from({ length: 5 }).map((_, i) => (
-        <tr key={i} className="border-b border-border-subtle/50 animate-pulse">
-          <td className="py-4 px-5"><div className="h-4 bg-white/5 rounded w-48" /></td>
-          <td className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-24" /></td>
-          <td className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-16" /></td>
-          <td className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-36" /></td>
-          <td className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-16" /></td>
-          <td className="py-4 px-5"><div className="h-4 bg-white/5 rounded w-20 ml-auto" /></td>
-        </tr>
+        <TableRow key={i} className="border-b border-border-subtle/50 animate-pulse">
+          <TableCell className="py-4 px-5"><div className="h-4 bg-white/5 rounded w-48" /></TableCell>
+          <TableCell className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-24" /></TableCell>
+          <TableCell className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-16" /></TableCell>
+          <TableCell className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-36" /></TableCell>
+          <TableCell className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-16" /></TableCell>
+          <TableCell className="py-4 px-5"><div className="h-4 bg-white/5 rounded w-20 ml-auto" /></TableCell>
+        </TableRow>
       ));
     }
 
     if (coupons.length === 0) {
       return (
-        <tr>
-          <td colSpan={6} className="py-16 text-center text-text-muted">
+        <TableRow>
+          <TableCell colSpan={6} className="py-16 text-center text-text-muted">
             No coupons found.{' '}
             <Link href="/coupons/new" className="text-accent-purple hover:underline">
               Create one →
             </Link>
-          </td>
-        </tr>
+          </TableCell>
+        </TableRow>
       );
     }
 
     return coupons.map((coupon) => (
-      <tr key={coupon._id} className="border-b border-border-subtle/40 hover:bg-white/2 transition-colors">
-        <td className="py-4 px-5">
+      <TableRow key={coupon._id} className="border-b border-border-subtle/40 hover:bg-white/2 transition-colors">
+        <TableCell className="py-4 px-5">
           <div>
             <span className="text-white font-mono font-bold bg-white/5 border border-white/10 px-2 py-0.5 rounded-lg text-sm mr-2 select-all">
               {coupon.code}
@@ -81,22 +82,22 @@ export default function AdminCouponsPage() {
               <p className="text-text-muted text-xs mt-1.5 max-w-xs truncate">{coupon.description}</p>
             )}
           </div>
-        </td>
-        <td className="py-4 px-4 text-text-secondary font-medium">
+        </TableCell>
+        <TableCell className="py-4 px-4 text-text-secondary font-medium">
           {coupon.discountType === 'percentage' ? (
             <span className="text-accent-purple font-semibold">{coupon.discountValue}% Off</span>
           ) : (
             <span className="text-emerald-400 font-semibold">₹{coupon.discountValue} Off</span>
           )}
-        </td>
-        <td className="py-4 px-4 text-text-secondary">
+        </TableCell>
+        <TableCell className="py-4 px-4 text-text-secondary">
           <span className="text-text-primary font-semibold">{coupon.usedCount}</span> / {coupon.usageLimit}
-        </td>
-        <td className="py-4 px-4 text-text-secondary text-xs">
+        </TableCell>
+        <TableCell className="py-4 px-4 text-text-secondary text-xs">
           <div>{formatDate(coupon.validFrom)}</div>
           <div className="text-text-muted mt-0.5">to {formatDate(coupon.validUntil)}</div>
-        </td>
-        <td className="py-4 px-4">
+        </TableCell>
+        <TableCell className="py-4 px-4">
           {canMutateCoupons ? (
             <button
               onClick={() => toggleMutation.mutate(coupon._id)}
@@ -117,8 +118,8 @@ export default function AdminCouponsPage() {
               {coupon.isActive ? 'Active' : 'Inactive'}
             </span>
           )}
-        </td>
-        <td className="py-4 px-5">
+        </TableCell>
+        <TableCell className="py-4 px-5">
           {canMutateCoupons ? (
             <div className="flex items-center justify-end gap-2">
               <Link
@@ -137,8 +138,8 @@ export default function AdminCouponsPage() {
           ) : (
             <div className="text-right text-text-muted">—</div>
           )}
-        </td>
-      </tr>
+        </TableCell>
+      </TableRow>
     ));
   };
 
@@ -187,23 +188,21 @@ export default function AdminCouponsPage() {
 
       {/* Table */}
       <div className="glass rounded-2xl border border-border-subtle overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-border-subtle">
-                <th className="text-left text-text-muted font-medium py-3.5 px-5">Code & Description</th>
-                <th className="text-left text-text-muted font-medium py-3.5 px-4">Discount</th>
-                <th className="text-left text-text-muted font-medium py-3.5 px-4">Usage Limit</th>
-                <th className="text-left text-text-muted font-medium py-3.5 px-4">Validity Period</th>
-                <th className="text-left text-text-muted font-medium py-3.5 px-4">Status</th>
-                <th className="text-right text-text-muted font-medium py-3.5 px-5">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {renderTableBody()}
-            </tbody>
-          </table>
-        </div>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="py-3.5 px-5">Code & Description</TableHead>
+              <TableHead className="py-3.5 px-4">Discount</TableHead>
+              <TableHead className="py-3.5 px-4">Usage Limit</TableHead>
+              <TableHead className="py-3.5 px-4">Validity Period</TableHead>
+              <TableHead className="py-3.5 px-4">Status</TableHead>
+              <TableHead className="py-3.5 px-5 text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {renderTableBody()}
+          </TableBody>
+        </Table>
 
         {/* Pagination */}
         {pagination && pagination.totalPages > 1 && (

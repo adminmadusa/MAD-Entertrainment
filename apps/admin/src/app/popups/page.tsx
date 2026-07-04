@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { useAdminAuth } from '@/providers/AdminAuthProvider';
 import { AdminRole } from '@mad/shared';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@mad/ui';
 
 import { adminGetPopups, adminDeletePopup, adminTogglePopup } from '@/lib/api/admin/popup.service';
 import { extractApiError } from '@/lib/api/client';
@@ -44,33 +45,33 @@ export default function AdminPopupsPage() {
   const renderTableBody = () => {
     if (isLoading) {
       return Array.from({ length: 5 }).map((_, i) => (
-        <tr key={i} className="border-b border-border-subtle/50 animate-pulse">
-          <td className="py-4 px-5"><div className="h-4 bg-white/5 rounded w-48" /></td>
-          <td className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-28" /></td>
-          <td className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-16" /></td>
-          <td className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-12" /></td>
-          <td className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-16" /></td>
-          <td className="py-4 px-5"><div className="h-4 bg-white/5 rounded w-20 ml-auto" /></td>
-        </tr>
+        <TableRow key={i} className="border-b border-border-subtle/50 animate-pulse">
+          <TableCell className="py-4 px-5"><div className="h-4 bg-white/5 rounded w-48" /></TableCell>
+          <TableCell className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-28" /></TableCell>
+          <TableCell className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-16" /></TableCell>
+          <TableCell className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-12" /></TableCell>
+          <TableCell className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-16" /></TableCell>
+          <TableCell className="py-4 px-5"><div className="h-4 bg-white/5 rounded w-20 ml-auto" /></TableCell>
+        </TableRow>
       ));
     }
 
     if (popups.length === 0) {
       return (
-        <tr>
-          <td colSpan={6} className="py-16 text-center text-text-muted">
+        <TableRow>
+          <TableCell colSpan={6} className="py-16 text-center text-text-muted">
             No popup campaigns found.{' '}
             <Link href="/popups/new" className="text-accent-purple hover:underline">
               Create one →
             </Link>
-          </td>
-        </tr>
+          </TableCell>
+        </TableRow>
       );
     }
 
     return popups.map((popup) => (
-      <tr key={popup._id} className="border-b border-border-subtle/40 hover:bg-white/2 transition-colors">
-        <td className="py-4 px-5">
+      <TableRow key={popup._id} className="border-b border-border-subtle/40 hover:bg-white/2 transition-colors">
+        <TableCell className="py-4 px-5">
           <div className="flex items-center gap-3">
             {popup.image?.url ? (
               // eslint-disable-next-line @next/next/no-img-element
@@ -85,18 +86,18 @@ export default function AdminPopupsPage() {
               <p className="text-text-muted text-xs truncate">{popup.title}</p>
             </div>
           </div>
-        </td>
-        <td className="py-4 px-4 text-text-secondary capitalize">
+        </TableCell>
+        <TableCell className="py-4 px-4 text-text-secondary capitalize">
           {popup.trigger.replace('_', ' ')}
           {popup.triggerDelay ? ` (${popup.triggerDelay / 1000}s)` : ''}
-        </td>
-        <td className="py-4 px-4 text-text-secondary">
+        </TableCell>
+        <TableCell className="py-4 px-4 text-text-secondary">
           {popup.cooldownHours}h
-        </td>
-        <td className="py-4 px-4 text-text-secondary font-semibold">
+        </TableCell>
+        <TableCell className="py-4 px-4 text-text-secondary font-semibold">
           {popup.priority}
-        </td>
-        <td className="py-4 px-4">
+        </TableCell>
+        <TableCell className="py-4 px-4">
           {canMutatePopups ? (
             <button
               onClick={() => toggleMutation.mutate(popup._id)}
@@ -117,8 +118,8 @@ export default function AdminPopupsPage() {
               {popup.isActive ? 'Active' : 'Inactive'}
             </span>
           )}
-        </td>
-        <td className="py-4 px-5">
+        </TableCell>
+        <TableCell className="py-4 px-5">
           {canMutatePopups ? (
             <div className="flex items-center justify-end gap-2">
               <Link
@@ -137,8 +138,8 @@ export default function AdminPopupsPage() {
           ) : (
             <div className="text-right text-text-muted">—</div>
           )}
-        </td>
-      </tr>
+        </TableCell>
+      </TableRow>
     ));
   };
 
@@ -173,23 +174,21 @@ export default function AdminPopupsPage() {
 
       {/* Table */}
       <div className="glass rounded-2xl border border-border-subtle overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-border-subtle">
-                <th className="text-left text-text-muted font-medium py-3.5 px-5">Campaign</th>
-                <th className="text-left text-text-muted font-medium py-3.5 px-4">Trigger</th>
-                <th className="text-left text-text-muted font-medium py-3.5 px-4">Cooldown</th>
-                <th className="text-left text-text-muted font-medium py-3.5 px-4">Priority</th>
-                <th className="text-left text-text-muted font-medium py-3.5 px-4">Status</th>
-                <th className="text-right text-text-muted font-medium py-3.5 px-5">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {renderTableBody()}
-            </tbody>
-          </table>
-        </div>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="py-3.5 px-5">Campaign</TableHead>
+              <TableHead className="py-3.5 px-4">Trigger</TableHead>
+              <TableHead className="py-3.5 px-4">Cooldown</TableHead>
+              <TableHead className="py-3.5 px-4">Priority</TableHead>
+              <TableHead className="py-3.5 px-4">Status</TableHead>
+              <TableHead className="py-3.5 px-5 text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {renderTableBody()}
+          </TableBody>
+        </Table>
 
         {/* Pagination */}
         {pagination && pagination.totalPages > 1 && (
