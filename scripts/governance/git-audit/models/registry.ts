@@ -18,6 +18,8 @@ export interface VerificationInfo {
   hasActiveDeployment: boolean;
   remediationIntegrated: boolean;
   verificationStatus: 'VERIFIED' | 'INFERRED' | 'UNKNOWN';
+  isDuplicate?: boolean;
+  duplicateOf?: string | null;
   evidence: {
     commands: Record<string, string>;
     outputs: Record<string, string>;
@@ -26,5 +28,7 @@ export interface VerificationInfo {
 
 export interface RegisteredBranch extends BranchInfo {
   lifecycleState: string;
+  classificationReason?: string;
+  classificationConfidence?: string;
   verification: VerificationInfo;
 }

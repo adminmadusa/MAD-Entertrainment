@@ -1,4 +1,5 @@
 import { RegisteredBranch } from '../models/registry';
+import { BranchLifecycleState } from '../../platform/contracts';
 
 export interface Deduction {
   category: 'Branch Hygiene' | 'Repository Health' | 'Technical Debt' | 'Git Governance';
@@ -29,7 +30,7 @@ export class BranchHygieneScorer {
 
     // 1. Lingering merged/patch-equivalent local branches
     const lingeringMerged = branches.filter(
-      b => b.isLocal && (b.lifecycleState === 'Ready For Delete' || b.lifecycleState === 'Patch Equivalent')
+      b => b.isLocal && (b.lifecycleState === BranchLifecycleState.DELETE_READY || b.lifecycleState === BranchLifecycleState.MERGED)
     );
     if (lingeringMerged.length > 0) {
       const pts = Math.min(30, lingeringMerged.length * 5);
@@ -41,7 +42,7 @@ export class BranchHygieneScorer {
     }
 
     // 2. Stale branches
-    const staleBranches = branches.filter(b => b.lifecycleState === 'Stale');
+    const staleBranches = branches.filter(b => b.lifecycleState === BranchLifecycleState.STALE);
     if (staleBranches.length > 0) {
       const pts = Math.min(30, staleBranches.length * 5);
       deductions.push({
@@ -54,8 +55,7 @@ export class BranchHygieneScorer {
     // 3. Orphan remote branches
     const remoteOrphans = branches.filter(
       b => b.isRemote &&
-           b.lifecycleState !== 'Protected' &&
-           b.lifecycleState !== 'Archived' &&
+           b.lifecycleState !== BranchLifecycleState.ARCHIVED &&
            !branches.some(l => l.isLocal && l.name === b.name.replace('origin/', ''))
     );
     if (remoteOrphans.length > 0) {
@@ -71,9 +71,7 @@ export class BranchHygieneScorer {
     const localOrphans = branches.filter(
       b => b.isLocal &&
            !b.upstream &&
-           b.lifecycleState !== 'Protected' &&
-           b.lifecycleState !== 'Archived' &&
-           b.lifecycleState !== 'Integration'
+           b.lifecycleState !== BranchLifecycleState.ARCHIVED
     );
     if (localOrphans.length > 0) {
       const pts = Math.min(20, localOrphans.length * 3);
@@ -153,7 +151,7 @@ export class TechnicalDebtScorer {
     const deductions: Deduction[] = [];
 
     // 1. Duplicate candidate branches
-    const duplicates = branches.filter(b => b.lifecycleState === 'Duplicate Candidate');
+    const duplicates = branches.filter(b => b.verification.isDuplicate === true);
     if (duplicates.length > 0) {
       const pts = Math.min(40, duplicates.length * 10);
       deductions.push({
@@ -164,7 +162,7 @@ export class TechnicalDebtScorer {
     }
 
     // 2. Lingering legacy/archived branches
-    const legacyLingering = branches.filter(b => b.lifecycleState === 'Archived');
+    const legacyLingering = branches.filter(b => b.lifecycleState === BranchLifecycleState.ARCHIVED);
     if (legacyLingering.length > 0) {
       const pts = Math.min(20, legacyLingering.length * 10);
       deductions.push({
@@ -176,8 +174,7 @@ export class TechnicalDebtScorer {
 
     // 3. Branches significantly behind develop
     const laggingBranches = branches.filter(
-      b => b.lifecycleState !== 'Protected' &&
-           b.lifecycleState !== 'Archived' &&
+      b => b.lifecycleState !== BranchLifecycleState.ARCHIVED &&
            b.behind > 50
     );
     if (laggingBranches.length > 0) {
@@ -210,6 +207,7 @@ export class GitGovernanceScorer {
       const cleanName = b.name.replace('origin/', '');
       const isSystemRef = cleanName === 'develop' || cleanName === 'live' || cleanName === 'main' || cleanName === 'test/remediation-integration';
       if (isSystemRef) return false;
+      if (b.lifecycleState === BranchLifecycleState.ARCHIVED) return false;
       return !allowedPrefixes.some(p => cleanName.startsWith(p));
     });
     if (namingViolations.length > 0) {
@@ -245,7 +243,7 @@ export class GitGovernanceScorer {
     const openPrLingering = branches.filter(
       b => b.isLocal &&
            b.verification.prNumber &&
-           b.lifecycleState !== 'Ready For Delete' &&
+           b.lifecycleState !== BranchLifecycleState.DELETE_READY &&
            !b.verification.hasUniqueCommits
     );
     if (openPrLingering.length > 0) {
