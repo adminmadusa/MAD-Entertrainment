@@ -283,4 +283,3 @@ apiClient.interceptors.response.use(
 export { extractApiError } from '@mad/utils';
 export type { ApiError } from '@mad/utils';
 export { isAxiosError } from 'axios';
-
