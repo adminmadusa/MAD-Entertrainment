@@ -41,7 +41,7 @@ export class DeadAssetDetector {
     // 2. Identify all icon exports in the codebase (specifically in Icons.tsx)
     const iconFiles = files.filter(f => f.endsWith('Icons.tsx') || f.endsWith('Icons.ts'));
     const allIconExports = new Map<string, { file: string; symbol: string }>();
-    
+
     for (const iconFile of iconFiles) {
       const detailed = graph.getDetailedData(iconFile);
       if (detailed && detailed.exports) {
@@ -272,7 +272,7 @@ export class DeadAssetDetector {
 
     // Filter out route groups e.g., (auth), (marketing)
     const filteredParts = parts.filter(p => !p.startsWith('(') && !p.endsWith(')'));
-    
+
     // Resolve path
     const routePath = '/' + filteredParts.join('/');
     return routePath === '//' ? '/' : routePath;
