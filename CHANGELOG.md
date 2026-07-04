@@ -95,7 +95,18 @@ Every release must satisfy the following checklist before merge:
 ### [Unreleased]
 *Planned or unreleased changes currently residing in the develop branch.*
 
+### [v1.2.0] - 2026-07-04
+*Completed Repository Governance Platform and automated Git Hygiene Engine. Completes Roadmap Phases 1–8.*
+
 #### Added
+- **Core Platform Contracts** (Phase 2) — codified frozen abstractions under `platform/contracts/` (`EngineContext`, `GovernanceProvider`, `GovernanceRule`, `Finding`, `CleanupAction`, `ReportModel`, `EventBroker`).
+- **Platform Compatibility Tests** (Phase 2.5) — compatibility test suite verifying load-time capabilities, rule Registries, DAG dependency order, domain snapshots, and serialization.
+- **Rules Engine** (Phase 3) — converted legacy analyzers to structured `GovernanceRule` classes (`BranchNamingRule`, `DuplicateTreeRule`, `IntegrationLagRule`, `OrphanedBranchRule`, `StaleBranchRule`).
+- **Cleanup Planner** (Phase 4) — dynamic action planner with `GitCommandBuilder` to queue safe command-line remedies.
+- **Historical Trend Engine** (Phase 5) — lightweight, git-independent trend logging with error boundaries and delta mapping.
+- **Lifecycle State Machine** (Phase 6) — pure `LifecycleClassifier` mapping branches to enum lifecycle states (`ACTIVE`, `OPEN_PR`, `MERGED`, `DELETE_READY`, `STALE`, etc.) orthogonally to branch protection.
+- **Manual Branch Review** (Phase 7) — dynamic review decisions generator saving audit decisions sheet to `.agents/branch_review_decisions.md` while preserving custom inputs on successive runs.
+- **AI OS Stack Resolution** (Phase 8) — cascading safety pruning utility `prune-stack.ts` checking working tree cleanliness, evaluating verification gates, deleting merged branches safely, and writing a JSON audit trail log.
 - `CONTRIBUTING.md` outlining the developer workflow, setup instructions, and quality checks.
 - Structured issue templates for bugs, feature requests, governance updates, and questions.
 - `PULL_REQUEST_TEMPLATE.md` enforcing the 11-question quality gate check.
@@ -103,6 +114,7 @@ Every release must satisfy the following checklist before merge:
 - Repository-scoped AI Skills framework under `.agents/skills/` (governance audit, pr review, git workflow, documentation, and architecture review).
 
 #### Changed
+- Fixed ancestry/reachability check bug by correcting `runWithExitCode` to return numeric exit codes rather than booleans.
 - Pinned TruffleHog Action in CI pipeline to a stable release version (`v3.95.7`).
 - Renewed the expired vulnerability exception for `serialize-javascript` (valid until 2026-10-01).
 - Corrected wrong paths and stale CI statements in `README.md` and `ROADMAP.md`.
