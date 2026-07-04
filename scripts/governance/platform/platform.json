@@ -1,0 +1,9 @@
+{
+  "platformVersion": "1.0.0",
+  "apiVersion": "1.0",
+  "schemaVersion": "1.0",
+  "contractsPath": "contracts/index.ts",
+  "providers": ["git"],
+  "description": "Repository Governance Platform — Git Governance Provider v1.0",
+  "adr": "docs/decisions/ADR-006-public-contract-freeze.md"
+}
