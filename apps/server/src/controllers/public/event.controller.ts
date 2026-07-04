@@ -84,7 +84,7 @@ export async function getEventBySlug(req: Request, res: Response, next: NextFunc
 export async function getEventSeatLayout(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const eventId = req.params.eventId;
-    
+
     // Live seats changing frequently - query directly
     const layout = await PublicEventService.getEventSeatLayout(eventId);
     sendSuccess(res, layout, 'Seat layout retrieved');

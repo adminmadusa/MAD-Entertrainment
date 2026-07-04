@@ -233,10 +233,10 @@ async function repairEventInventoryMismatches(): Promise<number> {
 
       const updateResult = await Event.updateOne(
         { _id: event._id, eventVersion: event.eventVersion },
-        { 
-          $set: { 
-            soldCount: soldTotal, 
-            reservedCount: reservedTotal, 
+        {
+          $set: {
+            soldCount: soldTotal,
+            reservedCount: reservedTotal,
             isSoldOut: shouldBeSoldOut,
             ticketTiers: updatedTiers,
           },
@@ -728,14 +728,14 @@ export class ConsistencyService {
     for (const payment of candidatePayments) {
       try {
         const booking = await Booking.findById(payment.bookingId);
-        
+
         // Case C: Booking already FAILED, CANCELLED, or otherwise unrecoverable (including missing booking)
         if (!booking || booking.status === BookingStatus.FAILED || booking.status === BookingStatus.CANCELLED) {
           logger.warn(
             { paymentId: payment._id, bookingId: payment.bookingId, bookingStatus: booking?.status },
             'Watchdog: Booking is missing or in an unrecoverable status. Failing payment and triggering refund.'
           );
-          
+
           payment.status = PaymentStatus.FAILED;
           payment.failedAt = new Date();
           payment.failureReason = 'BOOKING_UNRECOVERABLE';
@@ -784,7 +784,7 @@ export class ConsistencyService {
 
           try {
             const confirmResult = await (PaymentService as any).confirmBooking(booking, payment);
-            
+
             const updatedBooking = await Booking.findById(booking._id).select('status').lean();
             if (updatedBooking?.status === BookingStatus.CONFIRMED) {
               logger.info(
@@ -1017,7 +1017,7 @@ export class ConsistencyService {
         }
 
         const jobId = `refund-${refund._id}-retry`;
-        
+
         await createNotificationSafe([{
           jobId,
           status: 'queued',

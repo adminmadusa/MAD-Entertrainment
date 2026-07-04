@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { useAdminAuth } from '@/providers/AdminAuthProvider';
 import { AdminRole } from '@mad/shared';
 import { formatDateTime, formatEventDate } from '@mad/utils';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@mad/ui';
 
 import { adminGetRefunds, adminProcessRefund, type AdminRefund } from '@/lib/api/admin/booking.service';
 import ErrorState from '@/components/states/ErrorState';
@@ -73,40 +74,40 @@ export default function AdminRefundsPage() {
   const renderTableBody = () => {
     if (isLoading) {
       return Array.from({ length: 5 }).map((_, i) => (
-        <tr key={i} className="border-b border-border-subtle/40 animate-pulse">
-          {Array.from({ length: 6 }).map((__, j) => <td key={j} className="py-4 px-4"><div className="h-3.5 bg-white/5 rounded w-20" /></td>)}
-        </tr>
+        <TableRow key={i} className="border-b border-border-subtle/40 animate-pulse">
+          {Array.from({ length: 6 }).map((__, j) => <TableCell key={j} className="py-4 px-4"><div className="h-3.5 bg-white/5 rounded w-20" /></TableCell>)}
+        </TableRow>
       ));
     }
 
     if (sortedRefunds.length === 0) {
       return (
-        <tr><td colSpan={6} className="py-16 text-center text-text-muted">No refunds found.</td></tr>
+        <TableRow><TableCell colSpan={6} className="py-16 text-center text-text-muted">No refunds found.</TableCell></TableRow>
       );
     }
 
     return sortedRefunds.map((refund) => (
-      <tr key={refund._id} className="border-b border-border-subtle/40 hover:bg-white/2">
-        <td className="py-3.5 px-4 font-mono text-xs text-accent-purple">
+      <TableRow key={refund._id} className="border-b border-border-subtle/40 hover:bg-white/2">
+        <TableCell className="py-3.5 px-4 font-mono text-xs text-accent-purple">
           {(refund.bookingId as { bookingId?: string })?.bookingId ?? String(refund.bookingId).slice(-8)}
-        </td>
-        <td className="py-3.5 px-4 text-white font-semibold">₹{refund.amount.toLocaleString('en-IN')}</td>
-        <td className="py-3.5 px-4 text-text-secondary max-w-40 truncate">{refund.reason ?? '—'}</td>
-        <td className="py-3.5 px-4">
+        </TableCell>
+        <TableCell className="py-3.5 px-4 text-white font-semibold">₹{refund.amount.toLocaleString('en-IN')}</TableCell>
+        <TableCell className="py-3.5 px-4 text-text-secondary max-w-40 truncate">{refund.reason ?? '—'}</TableCell>
+        <TableCell className="py-3.5 px-4">
           <span className={`text-xs px-2.5 py-1 rounded-full border font-medium ${STATUS_COLORS[refund.status] ?? ''}`}>
             {refund.status}
           </span>
-        </td>
-        <td className="py-3.5 px-4 text-text-muted text-xs">{formatDateTime(refund.createdAt)}</td>
-        <td className="py-3.5 px-4">
+        </TableCell>
+        <TableCell className="py-3.5 px-4 text-text-muted text-xs">{formatDateTime(refund.createdAt)}</TableCell>
+        <TableCell className="py-3.5 px-4">
           {canProcessRefund && refund.status === 'requested' && (
             <button onClick={() => setProcessTarget(refund)}
               className="px-3 py-1.5 text-xs glass border border-accent-purple/30 rounded-lg text-accent-purple hover:bg-accent-purple/10 transition-all">
               Process
             </button>
           )}
-        </td>
-      </tr>
+        </TableCell>
+      </TableRow>
     ));
   };
 
@@ -143,29 +144,27 @@ export default function AdminRefundsPage() {
       </div>
 
       <div className="glass rounded-2xl border border-border-subtle overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-border-subtle">
-                <th className="text-left text-text-muted font-medium py-3.5 px-4">Booking</th>
-                <th onClick={() => handleSort('amount')} className="text-left text-text-muted font-medium py-3.5 px-4 cursor-pointer hover:text-white transition-colors select-none">
-                  Amount {sortField === 'amount' ? (sortOrder === 'asc' ? '▲' : '▼') : ''}
-                </th>
-                <th className="text-left text-text-muted font-medium py-3.5 px-4">Reason</th>
-                <th onClick={() => handleSort('status')} className="text-left text-text-muted font-medium py-3.5 px-4 cursor-pointer hover:text-white transition-colors select-none">
-                  Status {sortField === 'status' ? (sortOrder === 'asc' ? '▲' : '▼') : ''}
-                </th>
-                <th onClick={() => handleSort('createdAt')} className="text-left text-text-muted font-medium py-3.5 px-4 cursor-pointer hover:text-white transition-colors select-none">
-                  Requested {sortField === 'createdAt' ? (sortOrder === 'asc' ? '▲' : '▼') : ''}
-                </th>
-                <th className="text-left text-text-muted font-medium py-3.5 px-4">Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {renderTableBody()}
-            </tbody>
-          </table>
-        </div>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="py-3.5 px-4">Booking</TableHead>
+              <TableHead onClick={() => handleSort('amount')} className="py-3.5 px-4 cursor-pointer hover:text-white transition-colors select-none">
+                Amount {sortField === 'amount' ? (sortOrder === 'asc' ? '▲' : '▼') : ''}
+              </TableHead>
+              <TableHead className="py-3.5 px-4">Reason</TableHead>
+              <TableHead onClick={() => handleSort('status')} className="py-3.5 px-4 cursor-pointer hover:text-white transition-colors select-none">
+                Status {sortField === 'status' ? (sortOrder === 'asc' ? '▲' : '▼') : ''}
+              </TableHead>
+              <TableHead onClick={() => handleSort('createdAt')} className="py-3.5 px-4 cursor-pointer hover:text-white transition-colors select-none">
+                Requested {sortField === 'createdAt' ? (sortOrder === 'asc' ? '▲' : '▼') : ''}
+              </TableHead>
+              <TableHead className="py-3.5 px-4">Action</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {renderTableBody()}
+          </TableBody>
+        </Table>
         {pagination && pagination.totalPages > 1 && (
           <div className="flex items-center justify-between px-5 py-3 border-t border-border-subtle">
             <p className="text-text-muted text-xs">Page {pagination.page} of {pagination.totalPages}</p>
@@ -183,7 +182,7 @@ export default function AdminRefundsPage() {
           const customer = booking?.guestInfo ?? booking?.userId;
           const event = booking?.eventId;
           const payment = processTarget.paymentId as any;
-          
+
           return (
             <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
               <motion.div
@@ -194,20 +193,19 @@ export default function AdminRefundsPage() {
               >
                 {/* Context Column (Left) */}
                 <div className="space-y-4 text-sm border-r border-white/5 pr-4 md:block hidden">
-                  <h4 className="text-white font-bold text-base border-b border-white/5 pb-2">Refund Request Detail</h4>
-                  
+
                   <div>
                     <span className="text-[10px] text-text-muted uppercase tracking-wider block font-semibold">Booking ID</span>
                     <span className="text-accent-purple font-mono font-bold">{booking?.bookingId ?? '—'}</span>
                   </div>
-                  
+
                   <div>
                     <span className="text-[10px] text-text-muted uppercase tracking-wider block font-semibold">Customer Info</span>
                     <p className="text-white font-medium">{customer?.name ?? '—'}</p>
                     <p className="text-text-secondary text-xs">{customer?.email ?? '—'}</p>
                     {customer?.phone && <p className="text-text-secondary text-xs">{customer.phone}</p>}
                   </div>
-                  
+
                   <div>
                     <span className="text-[10px] text-text-muted uppercase tracking-wider block font-semibold">Event Parameters</span>
                     <p className="text-white font-semibold">{event?.title ?? '—'}</p>
@@ -235,7 +233,7 @@ export default function AdminRefundsPage() {
                 <div className="space-y-4 flex flex-col justify-between">
                   <div className="space-y-4">
                     <div>
-                      <h3 className="text-white font-bold text-lg">Process Refund</h3>
+                      <h2 className="text-white font-bold text-lg">Process Refund</h2>
                       <p className="text-text-muted text-xs">Authorize or reject refund request</p>
                     </div>
 

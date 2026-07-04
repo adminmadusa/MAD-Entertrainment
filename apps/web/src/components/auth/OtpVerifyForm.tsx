@@ -85,7 +85,7 @@ export function OtpVerifyForm({
           />
           {/* OTP Validation error rendering */}
           {verifyCooldownRemaining > 0 && (
-            <div 
+            <div
               role="alert"
               aria-live="assertive"
               className="text-center text-xs text-red-500 font-medium mt-2 animate-in fade-in duration-200"
@@ -94,7 +94,7 @@ export function OtpVerifyForm({
             </div>
           )}
           {verifyCooldownRemaining <= 0 && error && (
-            <div 
+            <div
               role="alert"
               aria-live="assertive"
               className="text-center text-xs text-red-500 font-medium mt-2 animate-in fade-in duration-200"

@@ -108,7 +108,7 @@ describe('Ticket Ownership Service Tests', () => {
     it('returns true for claimed status only if attendeeUserId matches', async () => {
       const userId = new Types.ObjectId();
       const ticket = { status: 'active', assignmentStatus: 'claimed', attendeeUserId: userId };
-      
+
       expect(await canViewTicketQR(ticket, userId.toString())).toBe(true);
       expect(await canViewTicketQR(ticket, 'wrong_user')).toBe(false);
     });
@@ -116,7 +116,7 @@ describe('Ticket Ownership Service Tests', () => {
     it('returns true for unassigned status if user is booking owner', async () => {
       const userId = new Types.ObjectId();
       const ticket = { status: 'active', assignmentStatus: 'unassigned', bookingId: 'b1' };
-      
+
       vi.mocked(Booking.findById).mockReturnValue({
         lean: vi.fn().mockResolvedValue({ userId }),
       } as any);
@@ -126,7 +126,7 @@ describe('Ticket Ownership Service Tests', () => {
 
     it('returns true for unassigned status if guest session matches', async () => {
       const ticket = { status: 'active', assignmentStatus: 'unassigned', bookingId: 'b1' };
-      
+
       vi.mocked(Booking.findById).mockReturnValue({
         lean: vi.fn().mockResolvedValue({ sessionId: 's1' }),
       } as any);
@@ -144,7 +144,7 @@ describe('Ticket Ownership Service Tests', () => {
     it('allows attendee if claimed and user matches', async () => {
       const userId = new Types.ObjectId();
       const ticket = { status: 'active', assignmentStatus: 'claimed', attendeeUserId: userId };
-      
+
       expect(await canDownloadTicketPDF(ticket, 'attendee', userId.toString())).toBe(true);
       expect(await canDownloadTicketPDF(ticket, 'attendee', 'wrong_user')).toBe(false);
     });
@@ -157,7 +157,7 @@ describe('Ticket Ownership Service Tests', () => {
     it('allows purchaser if user owns booking', async () => {
       const userId = new Types.ObjectId();
       const ticket = { status: 'active', bookingId: 'b1' };
-      
+
       vi.mocked(Booking.findById).mockReturnValue({
         lean: vi.fn().mockResolvedValue({ userId }),
       } as any);

@@ -453,4 +453,3 @@ describe('Public Auth Controller - Profile Management Tests', () => {
     });
   });
 });
-

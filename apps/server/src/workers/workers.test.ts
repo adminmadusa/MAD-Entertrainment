@@ -372,7 +372,7 @@ describe('Asynchronous Workers', () => {
 
       vi.mocked(Booking.findById).mockResolvedValue(mockBooking as any);
       vi.mocked(Event.findById).mockResolvedValue(mockEvent as any);
-      
+
       const fakePdfBuffer = Buffer.from('fake-pdf-content');
       vi.mocked(generateTicketPDF).mockResolvedValue(fakePdfBuffer);
       vi.mocked(Notification.findOne).mockResolvedValue(null);
@@ -421,7 +421,7 @@ describe('Asynchronous Workers', () => {
 
       vi.mocked(Booking.findById).mockResolvedValue(mockBooking as any);
       vi.mocked(Event.findById).mockResolvedValue(mockEvent as any);
-      
+
       vi.mocked(Notification.findOne).mockResolvedValue({
         status: 'sent',
         isSent: true,
@@ -455,7 +455,7 @@ describe('Asynchronous Workers', () => {
 
       vi.mocked(Booking.findById).mockResolvedValue(mockBooking as any);
       vi.mocked(Event.findById).mockResolvedValue(mockEvent as any);
-      
+
       const fakePdfBuffer = Buffer.from('fake-pdf-content');
       vi.mocked(generateTicketPDF).mockResolvedValue(fakePdfBuffer);
       vi.mocked(Notification.findOne).mockResolvedValue({
@@ -824,7 +824,7 @@ describe('Asynchronous Workers', () => {
 
       // Verify SMTP send was skipped
       expect(sendEmail).not.toHaveBeenCalled();
-      
+
       // Verify Notification log is updated to sent/complete to avoid dangling states
       expect(Notification.updateOne).toHaveBeenCalledWith(
         { jobId },

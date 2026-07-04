@@ -37,28 +37,18 @@ import { PaymentRefundService } from './payment-refund.service';
 import { PaymentInventoryService } from './payment-inventory.service';
 import { PaymentBookingService } from './payment-booking.service';
 
-export interface StripeChargeWebhookPayload {
-  id: string;
-  refunds?: {
-    data?: Array<{
-      id: string;
-      amount: number;
-    }>;
-  };
-}
+import type {
+  StripeChargeWebhookPayload,
+  StripeRefundWebhookPayload,
+  RazorpayRefundWebhookPayload,
+} from './payment.types';
 
-export interface StripeRefundWebhookPayload {
-  id: string;
-  charge: string;
-  status: string;
-  amount: number;
-}
+export type {
+  StripeChargeWebhookPayload,
+  StripeRefundWebhookPayload,
+  RazorpayRefundWebhookPayload,
+} from './payment.types';
 
-export interface RazorpayRefundWebhookPayload {
-  id: string;
-  payment_id: string;
-  amount: number;
-}
 
 type PaymentOwnershipContext = {
   userId?: string;
@@ -945,7 +935,7 @@ export class PaymentService {
         booking.userId = new Types.ObjectId(ownershipContext.userId);
         bookingModified = true;
       }
-      
+
       if (ownershipContext.sessionId && booking.sessionId !== ownershipContext.sessionId) {
         logger.info(
           { bookingId: booking._id, oldSession: booking.sessionId, newSession: ownershipContext.sessionId },
@@ -1205,7 +1195,7 @@ export class PaymentService {
       });
     } catch (err: any) {
       logger.error({ err, bookingId: booking._id }, 'Confirmation transaction aborted and rolled back');
-      
+
       if (err.message === 'PAYMENT_ALREADY_CLAIMED_OR_NOT_PENDING') {
         logger.info(
           { bookingId: booking._id, paymentId: _payment._id },
@@ -1227,7 +1217,7 @@ export class PaymentService {
         const currentBooking = await Booking.findById(booking._id).select('status paymentId').lean().catch(() => null);
         if (currentBooking?.status === BookingStatus.CONFIRMED) {
           const isSamePayment = currentBooking.paymentId && currentBooking.paymentId.toString() === _payment._id.toString();
-          
+
           if (isSamePayment) {
             logger.info(
               { bookingId: booking._id, paymentId: _payment._id },
@@ -1254,7 +1244,7 @@ export class PaymentService {
           }
         }
       }
-      
+
       _payment.status = PaymentStatus.FAILED;
       _payment.failureReason = reason;
       try {

@@ -41,7 +41,7 @@ function TicketRetrievalContent() {
   // Input States
   const [bookingRefInput, setBookingRefInput] = useState(targetRef || '');
   const [transactionIdInput, setTransactionIdInput] = useState('');
-  
+
   // Found/OTP States
   const [foundBookingId, setFoundBookingId] = useState('');
   const [foundEmail, setFoundEmail] = useState('');
@@ -61,7 +61,7 @@ function TicketRetrievalContent() {
         login(data.token, data.user);
         setOnboardingRequired(!!data.onboardingRequired);
         setLiveMessage('Successfully authenticated with Google.');
-        
+
         const targetBookingId = foundBookingId || bookingRefInput.trim().toUpperCase();
         const dest = targetBookingId.startsWith('MAD-')
           ? `/dashboard?tab=tickets&ref=${encodeURIComponent(targetBookingId)}`
@@ -110,8 +110,6 @@ function TicketRetrievalContent() {
     }
   }, [targetRef]);
 
-
-
   // Redirect to dashboard if authenticated on mount or after login
   useEffect(() => {
     if (isAuthenticated && !isAuthLoading) {
@@ -156,7 +154,7 @@ function TicketRetrievalContent() {
       setFoundEmail(result.guestEmail);
       setCooldown(result.cooldownSeconds || 60);
       setOtpInput('');
-      
+
       setLiveMessage('Booking found');
       setActiveModal('found');
 
@@ -283,13 +281,11 @@ function TicketRetrievalContent() {
     }
   };
 
-
-
   return (
     <div className="min-h-screen bg-background relative overflow-hidden flex items-center justify-center">
       {/* Background decorations */}
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-accent-purple/10 rounded-full blur-[130px] pointer-events-none" />
-      
+
       {/* Accessibility Screen Reader Live Announcement */}
       <div role="status" aria-live="polite" className="sr-only">
         {liveMessage}

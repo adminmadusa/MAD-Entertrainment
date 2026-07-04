@@ -84,8 +84,6 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
   const booking = details?.booking;
   const event = asEvent((booking as Booking | undefined)?.eventId);
 
-
-
   const handleViewTickets = () => {
     allowNavigation();
     router.push(`/tickets?ref=${booking?.bookingId}`);
@@ -176,6 +174,7 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
             email: booking.guestEmail,
           },
           theme: {
+            // governance-ignore VAL-UI-007: Razorpay payment gateway API requires a literal hex color value; CSS variables are not supported by this external SDK
             color: '#8b5cf6',
           },
           modal: {
@@ -260,7 +259,7 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
         {!isModal && (
           <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-accent-purple/5 rounded-full blur-[150px] pointer-events-none" />
         )}
-        
+
         <div className="max-w-md w-full glass rounded-3xl border border-white/10 p-8 text-center space-y-6 shadow-glow relative z-10">
           {/* Glowing Checkmark */}
           <div className="flex justify-center">
@@ -289,8 +288,6 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
           <p className="text-xs text-text-muted leading-relaxed">
             We have sent your confirmation email and tickets to <span className="text-white font-semibold">{booking.guestEmail || 'your email'}</span>.
           </p>
-
-
 
           {/* Action Buttons */}
           <div className="pt-2 flex flex-col gap-3">
@@ -354,7 +351,7 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
           >
             ←
           </button>
-          
+
           <div className="text-center">
             <h1 id="checkout-modal-title" className="text-sm font-bold text-white tracking-wide">Checkout</h1>
             <div className={`text-[10px] font-semibold mt-0.5 ${isExpired ? 'text-red-400' : 'text-accent-cyan animate-pulse'}`}>
@@ -383,7 +380,7 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           {/* Left Column: Event summary card & Billing details */}
           <div className="lg:col-span-8 space-y-4">
-            
+
             {/* Event Summary Card */}
             {event && (
               <div className="glass rounded-2xl border border-white/5 p-4 flex gap-4 items-center">
@@ -480,7 +477,7 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
           </div>
         )}
       </AnimatePresence>
-      
+
       {/* Leave Checkout Confirmation Modal */}
       <LeaveCheckoutModal
         isOpen={isLeaveModalOpen}

@@ -10,8 +10,9 @@ import {
     resendBookingTickets,
     recoverBooking,
     verifyRecoveredBookingOTP,
+    generateDownloadToken,
 } from '../../controllers/public/booking.controller';
-import * as bookingController from '../../controllers/public/booking.controller';
+
 import { recoverBookingSchema, verifyRecoveredBookingOTPSchema } from '../../validations/booking-recovery.validation';
 
 import {
@@ -83,7 +84,8 @@ router.post(
     '/:bookingId/download-token',
     optionalAuth,
     validateParams(bookingReferenceParamSchema),
-    (req, res, next) => bookingController.generateDownloadToken(req, res, next)
+    generateDownloadToken
+
 );
 
 router.get(

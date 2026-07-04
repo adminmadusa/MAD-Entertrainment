@@ -141,7 +141,7 @@ export function EntryPassGrid({ tickets }: EntryPassGridProps) {
                     <div className="w-44 h-44 rounded-xl border border-white/5 bg-white/[0.03] backdrop-blur-md flex flex-col items-center justify-center p-4 text-center space-y-2 relative overflow-hidden group">
                       {/* Subtle light glow effect */}
                       <div className="absolute -inset-px bg-gradient-to-r from-accent-purple/20 to-accent-blue/20 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                      
+
                       <div className="relative z-10 flex flex-col items-center space-y-2">
                         <div className="p-2.5 rounded-full bg-accent-purple/10 text-accent-purple-light">
                           {assignmentStatus === 'pending' ? (
@@ -154,7 +154,7 @@ export function EntryPassGrid({ tickets }: EntryPassGridProps) {
                             </svg>
                           )}
                         </div>
-                        
+
                         <div className="text-white font-bold text-xs uppercase tracking-wider leading-tight">
                           {assignmentStatus === 'pending' ? 'Ticket Assigned' : 'Ticket Claimed'}
                         </div>

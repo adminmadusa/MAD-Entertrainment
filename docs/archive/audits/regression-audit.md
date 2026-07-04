@@ -1,15 +1,15 @@
 # QA Regression Audit Report
-**MAD Entertrainment Platform**  
-*Document Status: Draft / Audit Only*  
+**MAD Entertrainment Platform**
+*Document Status: Draft / Audit Only*
 *Target Branch: `chore/qa-regression-audit`*
 
 ---
 
 ## Executive Summary
 
-This QA Regression Audit provides a comprehensive review of the core business flows, administration tools, and backend infrastructure of the **MAD Entertainment** monorepo following the successful removal of the dormant `Artists` module. 
+This QA Regression Audit provides a comprehensive review of the core business flows, administration tools, and backend infrastructure of the **MAD Entertainment** monorepo following the successful removal of the dormant `Artists` module.
 
-By analyzing code structures across `apps/web` (customer client), `apps/admin` (admin panel), `apps/server` (Express API server), and the shared packages, we verified that the purging of `artistIds` did not introduce compiling or runtime regressions. Additionally, we reviewed critical paths—such as passenger login, booking seat-locking mechanisms, Stripe/Razorpay secure payment verification, and background worker fallback systems. 
+By analyzing code structures across `apps/web` (customer client), `apps/admin` (admin panel), `apps/server` (Express API server), and the shared packages, we verified that the purging of `artistIds` did not introduce compiling or runtime regressions. Additionally, we reviewed critical paths—such as passenger login, booking seat-locking mechanisms, Stripe/Razorpay secure payment verification, and background worker fallback systems.
 
 All core regression checks have **PASSED**, and the platform is structurally robust. This report details the verified flows, potential risks, and recommendations for high-throughput production readiness.
 
@@ -95,7 +95,7 @@ We classify the remaining production readiness risks following this audit as **L
 *   **Recommendation**: Run a simple database update during the next deployment window to clean obsolete database fields from older event records:
     ```javascript
     db.events.updateMany(
-      { artistIds: { $exists: true } }, 
+      { artistIds: { $exists: true } },
       { $unset: { artistIds: "" } }
     );
     ```

@@ -1,6 +1,8 @@
 import React from 'react';
 import { type TicketProfile } from '@mad/types';
 import { type AdminTier } from '@/lib/api/admin/tier.service';
+import { FormField } from '@mad/ui';
+
 
 const TICKET_TIER_NAMES = [
   'general',
@@ -20,14 +22,6 @@ const TICKET_TIER_NAMES = [
 const inputCls =
   'w-full px-4 py-2.5 rounded-xl bg-background border border-border-subtle text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-purple transition-colors';
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div className="space-y-1.5">
-      <label className="text-text-secondary text-sm font-medium block">{label}</label>
-      {children}
-    </div>
-  );
-}
 
 export interface TicketTierInput {
   name: string;
@@ -129,7 +123,7 @@ export const EventTicketingCard = React.memo(function EventTicketingCard({
                 )}
               </div>
               <div className="grid grid-cols-2 gap-4">
-                <Field label="Tier Name">
+                <FormField label="Tier Name">
                   <select
                     value={tier.name}
                     onChange={(e) => onUpdateTier(i, 'name', e.target.value)}
@@ -147,8 +141,8 @@ export const EventTicketingCard = React.memo(function EventTicketingCard({
                           </option>
                         ))}
                   </select>
-                </Field>
-                <Field label="Price (₹)">
+                </FormField>
+                <FormField label="Price (₹)">
                   <input
                     type="number"
                     min="0"
@@ -160,10 +154,10 @@ export const EventTicketingCard = React.memo(function EventTicketingCard({
                     required
                     className={inputCls}
                   />
-                </Field>
+                </FormField>
               </div>
               <div className="grid grid-cols-2 gap-4">
-                <Field label="Capacity *">
+                <FormField label="Capacity *">
                   <input
                     type="number"
                     min="1"
@@ -175,14 +169,14 @@ export const EventTicketingCard = React.memo(function EventTicketingCard({
                     required
                     className={inputCls}
                   />
-                </Field>
+                </FormField>
               </div>
             </div>
           ))}
         </div>
       ) : (
         <div className="space-y-4">
-          <Field label="Select Ticket Profile *">
+          <FormField label="Select Ticket Profile *">
             <select
               value={selectedProfileId}
               onChange={(e) => {
@@ -198,7 +192,7 @@ export const EventTicketingCard = React.memo(function EventTicketingCard({
                 </option>
               ))}
             </select>
-          </Field>
+          </FormField>
 
           {activeProfile && (
             <div className="space-y-6 pt-4 border-t border-white/5">

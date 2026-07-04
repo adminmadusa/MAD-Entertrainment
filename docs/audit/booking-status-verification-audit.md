@@ -32,7 +32,7 @@ sequenceDiagram
     Svr-->>Web: 12. Return Gateway Credentials (Order ID / Client Secret)
     Web->>User: 13. Present Checkout Modal / Prompt Payment
     User->>GW: 14. Complete Payment Authorization
-    
+
     par Frontend Redirect Verification (Synchronous Path)
         GW-->>Web: 15a. Redirect to /checkout/verify (with signature/intentId)
         Web->>Svr: 16a. POST /payments/verify
@@ -129,7 +129,7 @@ The platform orchestrates transitions across three main entities: **Bookings**, 
 ### 🚨 CRITICAL RISK: MongoDB TTL Deletion Race Condition (Paid but Missing Booking)
 - **Vulnerability**: Pending bookings are assigned a 10-minute TTL index on `expiresAt` inside [booking.schema.ts](../../apps/server/src/models/booking.schema.ts#L109).
 - **Trigger**: MongoDB's background TTL thread periodically deletes documents where `expiresAt` has passed.
-- **Race Condition**: 
+- **Race Condition**:
   1. A guest completes their checkout payment at 9 minutes and 50 seconds.
   2. The webhook delivery takes 15 seconds.
   3. Meanwhile, at 10 minutes, the MongoDB TTL thread deletes the `Booking` document.
@@ -163,7 +163,7 @@ The platform orchestrates transitions across three main entities: **Bookings**, 
 
 ### 1. Resolve the TTL Expiration Deletion Vulnerability
 - **Fix**: Remove the automatic MongoDB TTL index on the `Booking` collection's `expiresAt` field.
-- **Alternative Cleanup**: Instead of physical deletion via TTL index, let bookings remain in the database. A background cleaner process (e.g. cron or BullMQ scheduler) should look for expired bookings (`status: AWAITING_PAYMENT` and `expiresAt < now`), mark them as `EXPIRED` or `FAILED`, and release their seats. 
+- **Alternative Cleanup**: Instead of physical deletion via TTL index, let bookings remain in the database. A background cleaner process (e.g. cron or BullMQ scheduler) should look for expired bookings (`status: AWAITING_PAYMENT` and `expiresAt < now`), mark them as `EXPIRED` or `FAILED`, and release their seats.
 - **Recovery Path**: If a payment webhook arrives for an `EXPIRED` booking, the system can automatically recover it, transition it to `CONFIRMED`, generate tickets, and notify the admins.
 
 ### 2. Standardize Asynchronous Checkout

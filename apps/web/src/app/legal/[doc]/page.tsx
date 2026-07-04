@@ -21,7 +21,7 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: LegalDocPageProps): Promise<Metadata> {
   const resolvedParams = await params;
   const docMeta = legalDocuments.find((d) => d.slug === resolvedParams.doc);
-  
+
   if (!docMeta) {
     return {
       title: 'Document Not Found | MAD Entertainment',
@@ -57,10 +57,10 @@ export default async function LegalDocPage({ params }: LegalDocPageProps) {
   }
 
   return (
-    <LegalViewer 
-      title={docMeta.title} 
-      lastUpdated={docMeta.lastUpdated} 
-      markdownContent={content} 
+    <LegalViewer
+      title={docMeta.title}
+      lastUpdated={docMeta.lastUpdated}
+      markdownContent={content}
     />
   );
 }

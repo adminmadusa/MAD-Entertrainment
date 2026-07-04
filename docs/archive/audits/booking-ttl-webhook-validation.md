@@ -61,7 +61,7 @@ T = 10:05  | Webhook arrives: POST /webhook/razorpay (payment.captured event).
 ## 3. Detailed Audit Questions & Answers
 
 ### 1. Can a valid paid booking be deleted before confirmation?
-**Yes.** 
+**Yes.**
 If a user completes a payment successfully, but the frontend verification redirect is closed/interrupted, the backend relies entirely on the webhook fallback. If that webhook takes longer than the remaining TTL window to arrive, the `Booking` document is permanently deleted from MongoDB.
 
 ### 2. What is the worst-case timeline?
@@ -92,7 +92,7 @@ Paid attendees will arrive at the venue entry scanner, try to load their tickets
 
 **C. Production-impacting defect requiring fix.**
 
-The combination of a short 10-minute native MongoDB TTL physical deletion index with a fallback webhook architecture is a critical engineering defect. It guarantees that any delayed webhook or slow user payment results in permanent data loss (orphaned PAID transaction records and zero ticket generation). 
+The combination of a short 10-minute native MongoDB TTL physical deletion index with a fallback webhook architecture is a critical engineering defect. It guarantees that any delayed webhook or slow user payment results in permanent data loss (orphaned PAID transaction records and zero ticket generation).
 
 ### Recommendations
 1. **Remove Physical Deletion**: Remove `{ expireAfterSeconds: 0 }` from `Booking.schema.ts`.

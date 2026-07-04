@@ -14,7 +14,7 @@ let emailVerificationPromise: Promise<boolean> | null = null;
 
 async function checkEmailHealth(): Promise<boolean> {
   const now = Date.now();
-  
+
   if (now - lastEmailCheckTime > EMAIL_CHECK_TTL) {
     if (!emailVerificationPromise) {
       emailVerificationPromise = verifyTransporter()
@@ -29,7 +29,7 @@ async function checkEmailHealth(): Promise<boolean> {
     }
     return emailVerificationPromise;
   }
-  
+
   return cachedEmailStatus;
 }
 

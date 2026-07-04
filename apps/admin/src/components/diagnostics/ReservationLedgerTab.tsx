@@ -1,5 +1,6 @@
 import { ReservationDiagnosticsRow } from '@/lib/api/admin/diagnostics.service';
 import { formatDateTime } from '@mad/utils';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@mad/ui';
 
 export interface ReservationLedgerTabProps {
   reservations: ReservationDiagnosticsRow[] | undefined;
@@ -29,42 +30,40 @@ export function ReservationLedgerTab({
           <option value="failed">Failed</option>
         </select>
       </div>
-      <div className="overflow-x-auto">
-        <table className="w-full text-xs">
-          <thead>
-            <tr className="border-b border-border-subtle text-text-muted text-left">
-              {['Reservation', 'Status', 'Inventory', 'Qty', 'Seat/Section', 'Booking', 'Version', 'Expires'].map(
-                (heading) => (
-                  <th key={heading} className="font-medium py-3 px-4">
-                    {heading}
-                  </th>
-                )
-              )}
-            </tr>
-          </thead>
-          <tbody>
-            {(reservations ?? []).map((res) => (
-              <tr key={res._id} className="border-b border-border-subtle/40 hover:bg-white/[0.01]">
-                <td className="py-3 px-4 font-mono text-accent-purple">{res.reservationId}</td>
-                <td className="py-3 px-4 text-white capitalize">{res.status.replace('_', ' ')}</td>
-                <td className="py-3 px-4 text-text-secondary capitalize">{res.inventoryState}</td>
-                <td className="py-3 px-4 text-text-secondary font-bold text-center">{res.quantity}</td>
-                <td className="py-3 px-4 text-text-secondary">{res.seatId ?? res.section ?? '—'}</td>
-                <td className="py-3 px-4 text-text-secondary font-semibold">{res.bookingReference ?? '—'}</td>
-                <td className="py-3 px-4 text-text-muted text-center">{res.reservationVersion}</td>
-                <td className="py-3 px-4 text-text-secondary">{formatDateTime(res.expiresAt)}</td>
-              </tr>
-            ))}
-            {!reservations?.length && (
-              <tr>
-                <td colSpan={8} className="py-10 text-center text-text-muted">
-                  No reservation logs found.
-                </td>
-              </tr>
+      <Table className="text-xs">
+        <TableHeader>
+          <TableRow className="text-left text-text-muted">
+            {['Reservation', 'Status', 'Inventory', 'Qty', 'Seat/Section', 'Booking', 'Version', 'Expires'].map(
+              (heading) => (
+                <TableHead key={heading} className="font-medium py-3 px-4">
+                  {heading}
+                </TableHead>
+              )
             )}
-          </tbody>
-        </table>
-      </div>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {(reservations ?? []).map((res) => (
+            <TableRow key={res._id} className="border-b border-border-subtle/40 hover:bg-white/[0.01]">
+              <TableCell className="py-3 px-4 font-mono text-accent-purple">{res.reservationId}</TableCell>
+              <TableCell className="py-3 px-4 text-white capitalize">{res.status.replace('_', ' ')}</TableCell>
+              <TableCell className="py-3 px-4 text-text-secondary capitalize">{res.inventoryState}</TableCell>
+              <TableCell className="py-3 px-4 text-text-secondary font-bold text-center">{res.quantity}</TableCell>
+              <TableCell className="py-3 px-4 text-text-secondary">{res.seatId ?? res.section ?? '—'}</TableCell>
+              <TableCell className="py-3 px-4 text-text-secondary font-semibold">{res.bookingReference ?? '—'}</TableCell>
+              <TableCell className="py-3 px-4 text-text-muted text-center">{res.reservationVersion}</TableCell>
+              <TableCell className="py-3 px-4 text-text-secondary">{formatDateTime(res.expiresAt)}</TableCell>
+            </TableRow>
+          ))}
+          {!reservations?.length && (
+            <TableRow>
+              <TableCell colSpan={8} className="py-10 text-center text-text-muted">
+                No reservation logs found.
+              </TableCell>
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
     </div>
   );
 }

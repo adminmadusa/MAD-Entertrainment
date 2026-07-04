@@ -41,17 +41,17 @@ This document details the architectural design to resolve the **Booking TTL Dele
 
 ## 2. Recommendation
 
-We highly recommend **Option A (Logical EXPIRED Status with Deferred 30-day TTL)**. 
+We highly recommend **Option A (Logical EXPIRED Status with Deferred 30-day TTL)**.
 
 ### Recommended Execution Plan (The Smallest Safe Fix)
 To implement Option A without needing database index rebuilds or complex schema migrations, we can leverage the existing `{ expireAfterSeconds: 0 }` TTL index by dynamically moving `expiresAt` forward:
 
 1. **Keep TTL Index**: Keep the `{ expireAfterSeconds: 0 }` TTL index on `expiresAt` exactly as configured in [booking.schema.ts](../../../apps/server/src/models/booking.schema.ts#L109).
-2. **Initial Booking Creation**: 
+2. **Initial Booking Creation**:
    - Set the booking `status` to `AWAITING_PAYMENT`.
    - Set a new field, `logicalExpiresAt = now + 10 minutes` to represent the checkout window.
    - Set the database `expiresAt = now + 30 days`. This ensures MongoDB will not physically delete the document for 30 days, giving ample time for webhook processing and recovery.
-3. **Inventory Release**: 
+3. **Inventory Release**:
    - A background job or consistency check (e.g., `ConsistencyService`) identifies bookings where `now >= logicalExpiresAt` and `status === AWAITING_PAYMENT`.
    - It transitions the booking status logically to `EXPIRED` (or `FAILED`) and immediately releases the locked seats in MongoDB and Redis locks.
 4. **Webhook Recovery Path**:
@@ -82,5 +82,5 @@ This represents the absolute **cleanest, safest, and most resilient** production
 - Implement seat-conflict check during recovery: if specific locked seats were already taken, log a high-priority admin alert to prompt manual ticket re-seating while confirming the booking.
 
 ### 4. [consistency.service.ts](../../../apps/server/src/services/consistency.service.ts)
-- Add a query to scan for bookings where `status === AWAITING_PAYMENT` and `logicalExpiresAt <= now`. 
+- Add a query to scan for bookings where `status === AWAITING_PAYMENT` and `logicalExpiresAt <= now`.
 - Transition these stale bookings to `EXPIRED` status and release their locked seats and capacity.

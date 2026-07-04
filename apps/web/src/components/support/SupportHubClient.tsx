@@ -22,11 +22,11 @@ export function SupportHubClient() {
   const filteredFaqs = useMemo(() => {
     return faqContent.filter((faq) => {
       const matchesCategory = activeCategory === 'all' || faq.category === activeCategory;
-      const matchesSearch = 
-        searchQuery === '' || 
-        faq.question.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      const matchesSearch =
+        searchQuery === '' ||
+        faq.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
         faq.answer.toLowerCase().includes(searchQuery.toLowerCase());
-        
+
       return matchesCategory && matchesSearch;
     });
   }, [searchQuery, activeCategory]);
@@ -39,7 +39,7 @@ export function SupportHubClient() {
 
   return (
     <div className="w-full max-w-4xl mx-auto space-y-12">
-      
+
       {/* Search Header */}
       <section className="text-center space-y-6">
         <h1 className="text-white font-bold text-4xl tracking-tight">How can we help you?</h1>
@@ -102,7 +102,7 @@ export function SupportHubClient() {
           Contact Support
         </a>
       </section>
-      
+
     </div>
   );
 }

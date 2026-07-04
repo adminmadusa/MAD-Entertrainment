@@ -1,10 +1,10 @@
 # MAD Entertrainment — Deployment Map
 
-Status: Active  
-Version: 1.0  
-Owner: DevOps & Platform Engineering  
-Review Cycle: Quarterly  
-Last Updated: 2026-06-25  
+Status: Active
+Version: 1.0
+Owner: DevOps & Platform Engineering
+Review Cycle: Quarterly
+Last Updated: 2026-06-25
 
 Supersedes:
 - None (First version establishing the Deployment SSOT)
@@ -41,7 +41,7 @@ README.md
 ## Document Governance
 
 ### Deployment Change Policy
-This document serves as the canonical Single Source of Truth (SSOT) for the deployment topology, release workflows, CI/CD pipelines, environments, and rollback strategies of the **MAD Entertrainment** platform. 
+This document serves as the canonical Single Source of Truth (SSOT) for the deployment topology, release workflows, CI/CD pipelines, environments, and rollback strategies of the **MAD Entertrainment** platform.
 
 The document **must** be updated whenever any of the following change:
 - Hosting provider
@@ -135,7 +135,7 @@ The table below assesses the operational risk level based on the configuration o
 - Deployment configurations must accurately document shared or isolated database cluster boundaries.
 
 ### Future Recommendations
-- See *Appendix: Future Deployment Considerations* — Proposal 1: "Dedicated Staging Backend API" for proposals to isolate staging backends on Render.  
+- See *Appendix: Future Deployment Considerations* — Proposal 1: "Dedicated Staging Backend API" for proposals to isolate staging backends on Render.
   *Status*: Possible Future Enhancement (Not Approved) · Untracked
 
 ---
@@ -177,7 +177,7 @@ graph TD
 - All HTTP calls from Vercel frontends must route through the `/api/*` proxy rewrite to avoid CORS preflight latency.
 
 ### Future Recommendations
-- See *Appendix: Future Deployment Considerations* — Proposal 2: "Microservice Decoupling of BullMQ Workers" for worker isolation.  
+- See *Appendix: Future Deployment Considerations* — Proposal 2: "Microservice Decoupling of BullMQ Workers" for worker isolation.
   *Status*: Possible Future Enhancement (Not Approved) · Untracked
 
 ---
@@ -254,7 +254,7 @@ sequenceDiagram
 - **Build Isolation**: Build commands in backend environments must use target filters (`pnpm --filter @mad/server... build`) to prevent compiling Next.js frontends on stateful Render API nodes.
 
 ### Future Recommendations
-- See *Appendix: Future Deployment Considerations* — Proposal 3: "Automated Client API Code Generation" for build integrations.  
+- See *Appendix: Future Deployment Considerations* — Proposal 3: "Automated Client API Code Generation" for build integrations.
   *Status*: Possible Future Enhancement (Not Approved) · Untracked
 
 ---
@@ -309,7 +309,7 @@ The platform integrates with several third-party software and cloud service prov
 - Safe fallback paths and user-friendly error handlers must be implemented for all external service interfaces. Uptime checkers must alert operations when service endpoints fail.
 
 ### Future Recommendations
-- See *Appendix: Future Deployment Considerations* — Proposal 4: "Message Broker Architecture" for queue brokers.  
+- See *Appendix: Future Deployment Considerations* — Proposal 4: "Message Broker Architecture" for queue brokers.
   *Status*: Possible Future Enhancement (Not Approved) · Untracked
 
 ---
@@ -356,7 +356,7 @@ The repository enforces security policies at compile, code, and hosting levels:
 - **Continuous Audits**: Pushes and PRs must run TruffleHog secrets scanning. Dependency audits must block critical/high vulnerabilities unless excepted.
 
 ### Future Recommendations
-- See *Appendix: Future Deployment Considerations* — Proposal 5: "Multi-Factor Authentication (MFA)" for administrative security.  
+- See *Appendix: Future Deployment Considerations* — Proposal 5: "Multi-Factor Authentication (MFA)" for administrative security.
   *Status*: Possible Future Enhancement (Not Approved) · Untracked
 
 ---

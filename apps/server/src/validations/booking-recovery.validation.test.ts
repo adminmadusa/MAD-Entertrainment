@@ -84,4 +84,3 @@ describe('Verify Recovered Booking OTP Validation Schema', () => {
     expect(result.success).toBe(false);
   });
 });
-

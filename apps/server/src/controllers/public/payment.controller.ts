@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+import * as Sentry from '@sentry/node';
 
 import { getEnv } from '../../config/env';
 import { AppError } from '../../middleware/error.middleware';
@@ -59,6 +60,11 @@ export async function stripeWebhook(req: Request, res: Response): Promise<void> 
     event = stripe.webhooks.constructEvent(rawBody, signature, env.STRIPE_WEBHOOK_SECRET);
   } catch (err: any) {
     logger.error({ err }, 'Stripe webhook signature validation failed');
+    try {
+      Sentry.captureException(err, {
+        tags: { gateway: 'stripe', type: 'webhook_signature_failed' },
+      });
+    } catch (_) {}
     auditLog({
       action: 'WEBHOOK_SIGNATURE_INVALID',
       status: 'failure',
@@ -208,6 +214,12 @@ export async function stripeWebhook(req: Request, res: Response): Promise<void> 
     await webhookEvent.save();
 
     logger.error({ err, eventId: event.id }, 'Stripe webhook handler failed');
+    try {
+      Sentry.captureException(err, {
+        tags: { gateway: 'stripe', eventId: event.id, eventType: event.type },
+        extra: { bookingId: webhookEvent.bookingId },
+      });
+    } catch (_) {}
     auditLog({
       action: 'WEBHOOK_PROCESS_FAILED',
       status: 'failure',
@@ -238,6 +250,11 @@ export async function razorpayWebhook(req: Request, res: Response): Promise<void
 
   if (expectedSignature !== signature) {
     logger.error('Razorpay webhook signature validation failed');
+    try {
+      Sentry.captureException(new Error('Razorpay webhook signature validation failed'), {
+        tags: { gateway: 'razorpay', type: 'webhook_signature_failed' },
+      });
+    } catch (_) {}
     auditLog({
       action: 'WEBHOOK_SIGNATURE_INVALID',
       status: 'failure',
@@ -403,6 +420,12 @@ export async function razorpayWebhook(req: Request, res: Response): Promise<void
         { err, eventId, eventType, razorpayOrderId, razorpayPaymentId },
         'PR-03: Unexpected error in Razorpay webhook confirmation — requires manual review'
       );
+      try {
+        Sentry.captureException(err, {
+          tags: { gateway: 'razorpay', eventId, eventType, action: 'confirm' },
+          extra: { razorpayOrderId, razorpayPaymentId }
+        });
+      } catch (_) {}
       auditLog({
         action: 'WEBHOOK_PROCESS_FAILED',
         status: 'failure',
@@ -456,6 +479,12 @@ export async function razorpayWebhook(req: Request, res: Response): Promise<void
         { err, eventId, eventType, razorpayRefundId },
         'Unexpected error in Razorpay refund webhook reconciliation — requires manual review'
       );
+      try {
+        Sentry.captureException(err, {
+          tags: { gateway: 'razorpay', eventId, eventType, action: 'reconcile_refund' },
+          extra: { refundId: razorpayRefundId }
+        });
+      } catch (_) {}
       auditLog({
         action: 'WEBHOOK_PROCESS_FAILED',
         status: 'failure',

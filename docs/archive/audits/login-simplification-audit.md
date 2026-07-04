@@ -66,7 +66,7 @@ This audit evaluates the current state of public authentication routes, user int
 
 ### 2. Registration Route Audit
 - **File Path**: [register/page.tsx](../../../apps/web/src/app/(auth)/register/page.tsx) (deleted)
-- **Current Behavior**: 
+- **Current Behavior**:
   - The registration route is **technically reachable** because the page file exists in the Next.js filesystem structure.
   - The route is **highly broken and obsolete**:
     - The backend contains **no `/register` route**; only passwordless authentication endpoints exist.

@@ -408,7 +408,7 @@ describe('stripeWebhook — audit trail preservation', () => {
   it('preserves the original status of a Stripe success record after duplicate delivery', async () => {
     const eventId = 'evt_stripe_test_456';
     mockStripeConstructEvent(eventId);
-    
+
     const req = makeStripeRequest(eventId);
     const res = makeResponse();
 
@@ -670,4 +670,3 @@ describe('razorpayWebhook — refund reconciliation routing', () => {
     expect(res.status).toHaveBeenCalledWith(200);
   });
 });
-

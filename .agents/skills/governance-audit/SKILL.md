@@ -1,44 +1,54 @@
-# Governance Audit Skill
-
 ---
 name: "governance-audit"
-description: "Audit repository code, layout, and documentation against MAD Entertrainment compliance rules."
+description: "Audit repository compliance rules, file sizes, warnings ratchets, and manage the governance engine codebase (validators, fixers, rollbacks, sessions, analytics)."
+version: "1.1"
+owner: "Principal Software Architect"
+last_updated: "2026-07-03"
+depends_on: "None"
+supersedes: "None"
+scope: "Governance"
+priority: "Core"
 ---
 
+# Governance Audit & Development Skill
+
 ## Purpose
-Enforce the static and dynamic verification gates of the repository's governance engine, preventing violations from entering protected branches.
+Enforce the static and dynamic verification gates of the repository, and guide modifications to the governance framework itself (validators, fixers, rollbacks, sessions, analytics).
 
-## When to Use
-- Before staging files for commit.
-- Before opening a Pull Request.
-- During CI workflow configuration checks.
-- When investigating structural consistency, file organization, or dependency paths.
+## Trigger Keywords
+governance, validator, fixer, lifecycle, rollback, findings, analytics, persistence, rule metadata, audit engine, warnings ratchet, gating evaluation.
 
-## Inputs
-- **Changed files**: Identified via `git diff` or `git status`.
-- **Governance rules**: Defined in `scripts/governance/rules/`.
-- **Existing findings**: Located in `.governance/findings/`.
+## Prerequisites
+- Repository audit completed.
+- Existing findings database checked.
+- Code duplication checks performed.
+- Reuse opportunities identified first.
 
-## Outputs
-- **Audit reports**: Located in `reports/governance/`.
-- **Validation exit codes**: 0 for success, non-zero for blockages.
+## Boundaries
+- **When to Use**:
+  - Before committing files or opening a PR.
+  - When writing new validator rules under `scripts/governance/rules/`.
+  - When extending or modifying `AutoFixEngine`, `RollbackManager`, `SessionStore`, or `AnalyticsEngine`.
+- **When NOT to Use**:
+  - For general repository architecture decisions.
+  - For frontend UI styling or layout creation.
+  - For general client/server application feature implementation.
 
-## Constraints
-- **Audit-Only**: Never edit, refactor, or delete files during a run.
-- **Ratchet boundaries**: Respect the active `GOVERNANCE_MAX_WARNINGS` threshold in CI configuration.
-- **SSOT boundaries**: Business rules belong strictly to the server; the frontend must not calculate or validate backend contracts.
+## Reuse Policy
+Before proposing a new validator, fixer, workflow, or utility:
+- Search for existing implementations first.
+- Extend existing capabilities where appropriate.
+- Do not create duplicate abstractions.
+- Explain why a new component is required if reuse is not possible.
 
-## Examples
-### Running the static document check
-```bash
-pnpm run governance:docs
-```
+## Skill Relationships
+Primary:
+- pr-review
+Collaborates with:
+- architecture-review
+Does Not Replace:
+- ci-investigation
+- documentation
 
-### Running the workspace configuration audit
-```bash
-pnpm run audit-data
-```
-
-## Related Skills
-- [pr-review](../pr-review/SKILL.md)
-- [documentation](../documentation/SKILL.md)
+## Related Rules
+- Refer to [AGENTS.MD](../../../AGENTS.MD) for quality checklists, PR gates, and static warning ratchets.

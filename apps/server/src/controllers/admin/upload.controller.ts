@@ -1,10 +1,10 @@
 import { Request, Response } from 'express';
 import { AppError } from '../../middleware/error.middleware';
 import { sendSuccess } from '../../utils/response';
-import { 
-  validateFilenameAndExtension, 
-  validateMagicBytes, 
-  generateSecureFilename 
+import {
+  validateFilenameAndExtension,
+  validateMagicBytes,
+  generateSecureFilename
 } from '../../utils/file-security';
 import { UploadService } from '../../services/admin/upload.service';
 import { uploadImageQuerySchema } from '@mad/validations';

@@ -4,7 +4,7 @@
 - **Status**: Active
 - **Version**: 1.0
 - **Review Cycle**: Ongoing (Upon each release)
-- **Last Updated**: 2026-06-25
+- **Last Updated**: 2026-07-03
 - **Changelog Format**: Keep a Changelog v1.0.0
 - **Versioning Strategy**: Semantic Versioning (SemVer) v2.0.0
 - **Related Documents:**
@@ -108,7 +108,39 @@ Every release must satisfy the following checklist before merge:
 - Corrected wrong paths and stale CI statements in `README.md` and `ROADMAP.md`.
 - Added standard metadata block to `TODO-AUDIT-FIXES.md`.
 
+### [v1.1.0] - 2026-07-03
+*Completed Event Experience — Event Memories feature. PR [#439](https://github.com/adminmadusa/MAD-Entertrainment/pull/439). Release commit `79c15d00`.*
+
+#### Added
+- **Event Memories** — post-event content sub-document on the `Event` model, allowing administrators to attach a photo gallery, heading, thank-you message, and highlight copy to completed events.
+- **`EventMemoryPublicationState` enum** (`packages/shared`) — four-state publication lifecycle: `DRAFT` → `PREVIEW` → `PUBLISHED` → `HIDDEN`.
+- **`EventMemoryConfig` type** (`packages/types`) — shared TypeScript type used by all layers (server schema, admin form, public response).
+- **`MAX_MEMORIES_GALLERY_LIMIT` constant** (50 items) and **`DEFAULT_MEMORIES_GALLERY_LIMIT`** (30 items) (`packages/shared`).
+- **Admin API — Preview Token endpoint** — `POST /api/admin/events/:id/preview-token` generates a 15-minute short-lived JWT allowing admins to preview memories in `DRAFT` or `PREVIEW` state on the public event page without publishing.
+- **Admin UI — EventMemoriesCard** (`apps/admin`) — full-featured admin component for composing and publishing event memories, including gallery management, publication state controls, and previewing.
+- **Admin UI — Event Edit page** — integrated `EventMemoriesCard` into the event edit page (`apps/admin/src/app/events/[id]/edit/page.tsx`).
+- **Public UI — EventMemoriesRecap** (`apps/web`) — component rendered on the public event detail page when memories are in `PUBLISHED` state.
+- **Public UI — EventStickyCTA** updates — completed events suppress the "Buy Tickets" CTA; the sticky bar adapts to the `COMPLETED` event lifecycle status.
+- **Database schema** — `eventMemorySchema` embedded sub-document added to the `Event` Mongoose model with fields: `publicationState`, `heading` (max 200 chars), `thankYouMessage` (max 2000 chars), `highlights` (string array), `gallery` (up to 50 Cloudinary assets with `order`), `publishedAt` (stable first-publish timestamp).
+
+#### Changed
+- **`PUT /api/admin/events/:id`** — extended request body to accept an optional `memories` sub-document. The `updateEvent` service enforces publication state transition rules, preserves the first `publishedAt` timestamp on subsequent publish operations, and cleans up removed Cloudinary gallery assets.
+- **`GET /api/events/:slug`** — now serves both `PUBLISHED` and `COMPLETED` events so that completed event detail pages remain publicly accessible. Suppresses `memories` data unless `publicationState === PUBLISHED` or a valid preview token is provided.
+- **`adminEventsQuerySchema` / `updateEventSchema`** — Zod validation extended to include the `eventMemorySchema` validator with `MAX_MEMORIES_GALLERY_LIMIT` enforcement, `order` field, and strict nullable/optional semantics.
+- **Backend audit log** — transition-aware audit actions emitted on memory state changes: `event.memories.published`, `event.memories.hidden`, `event.memories.cleared`, `event.memories.updated`, `event.memories.preview.generated`, `event.memories.preview.accessed`.
+- **`apps/server/src/services/admin/event.service.test.ts`** — extended with 15 new test cases covering Event Memories state transitions, preview token generation, and gallery cleanup.
+- **`apps/server/src/services/public/event.service.test.ts`** — new test file (243 lines) covering public event retrieval including COMPLETED status, preview token validation, and memories suppression logic.
+
+#### Documentation
+- `API_CONTRACTS.md` updated with new Event Memories endpoints and preview token flow.
+- `ARCHITECTURE.md` updated with Event Memories lifecycle and database schema additions.
+- `RUNBOOK.md` updated with operational guidance for publishing Event Memories.
+- `CHANGELOG.md` this entry.
+
+---
+
 ### [v1.0.0] - 2026-06-25
+
 *Initial repository documentation baseline establishing the monorepo's foundational architecture, APIs, deployment environments, and governance. This represents the post-cleanup documentation state, not the first production software release.*
 
 #### Added

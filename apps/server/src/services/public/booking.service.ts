@@ -121,7 +121,7 @@ export class PublicBookingService {
 
     if (existingBooking) {
       // Compute fingerprint if missing (for legacy bookings)
-      const existingFingerprint = existingBooking.selectionFingerprint || 
+      const existingFingerprint = existingBooking.selectionFingerprint ||
         PublicBookingService.generateSelectionFingerprint({
           eventId: existingBooking.eventId.toString(),
           tickets: existingBooking.tickets.map((t: any) => ({

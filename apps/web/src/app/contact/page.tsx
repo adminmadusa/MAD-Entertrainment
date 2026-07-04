@@ -24,10 +24,10 @@ export default function ContactPage() {
         <div className="glass-strong border border-border-subtle rounded-3xl p-6 sm:p-10 shadow-xl relative overflow-hidden">
           {/* Subtle Background Glow */}
           <div className="absolute top-0 right-0 w-64 h-64 bg-accent-purple/5 blur-[100px] pointer-events-none" />
-          
+
           <ContactForm />
         </div>
-        
+
         <div className="mt-12 text-center">
           <p className="text-text-muted text-sm">
             Looking for quick answers? Check our <a href="/support" className="text-accent-purple hover:underline">Help Center</a>.

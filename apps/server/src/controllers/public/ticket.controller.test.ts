@@ -1,4 +1,4 @@
-import { vi } from 'vitest';
+import { vi, beforeEach, describe, expect, it } from 'vitest';
 
 vi.hoisted(() => {
   process.env.MONGODB_URI = 'mongodb://localhost:27017/test';
@@ -7,8 +7,8 @@ vi.hoisted(() => {
   process.env.JWT_SESSION_SECRET = 'this_is_a_very_long_jwt_session_secret_with_more_than_32_characters';
 });
 
-import { beforeEach, describe, expect, it } from 'vitest';
 import qrcode from 'qrcode';
+
 
 
 import { BookingStatus } from '@mad/shared';

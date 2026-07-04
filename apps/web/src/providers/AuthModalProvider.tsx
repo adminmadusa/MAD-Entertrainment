@@ -44,7 +44,7 @@ export function AuthModalProvider({ children }: AuthModalProviderProps) {
   const syncWithUrl = useCallback((open: boolean, redirectUrl?: string | null) => {
     if (typeof window === 'undefined') return;
     const currentParams = new URLSearchParams(window.location.search);
-    
+
     if (open) {
       currentParams.set('auth', 'true');
       if (redirectUrl) {

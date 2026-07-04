@@ -17,7 +17,7 @@
 ---
 
 ## Context
-The MAD Entertrainment Governance Engine indexes, reconciles, and gates codebase violations using a findings database represented by JSON files under `.governance/findings/`. The system defines ten lifecycle statuses in `FindingStatus` (`NEW`, `CONFIRMED`, `FALSE_POSITIVE`, `VERIFIED`, `DOCUMENTED`, `IMPLEMENTED`, `INTENTIONAL`, `IGNORED`, `CLOSED`, `REGRESSION`). 
+The MAD Entertrainment Governance Engine indexes, reconciles, and gates codebase violations using a findings database represented by JSON files under `.governance/findings/`. The system defines ten lifecycle statuses in `FindingStatus` (`NEW`, `CONFIRMED`, `FALSE_POSITIVE`, `VERIFIED`, `DOCUMENTED`, `IMPLEMENTED`, `INTENTIONAL`, `IGNORED`, `CLOSED`, `REGRESSION`).
 
 While automated statuses (e.g. `NEW`, `CLOSED`, `REGRESSION`) are reconciled dynamically in code, the manual override statuses (`INTENTIONAL`, `DOCUMENTED`, `IMPLEMENTED`) have undefined semantics, inconsistent gating bypass behavior in code, and are completely unmanaged by the reconciliation transition rules.
 

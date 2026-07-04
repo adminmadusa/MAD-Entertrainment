@@ -143,12 +143,6 @@ function DashboardContent() {
     );
   }, [expandedBooking, ticketsReadyMap]);
 
-
-
-
-
-
-
   if (isAuthenticated && onboardingRequired) {
     return (
       <div className="pt-20 sm:pt-28 pb-16 min-h-screen bg-background relative overflow-hidden">

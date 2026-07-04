@@ -73,7 +73,7 @@ export const retryNotification = async (id: string): Promise<INotification | nul
     notification.errorMessage = err.message;
     notification.processedAt = new Date();
     await notification.save();
-    logger.error({ err }, `[Notification Service] Retry failed for notification ${id}`);
+    logger.error({ err, notificationId: id }, '[Notification Service] Retry failed for notification');
     throw err;
   }
 

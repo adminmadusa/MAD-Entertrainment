@@ -101,8 +101,6 @@ export function AuthForm({
     return () => clearTimeout(timer);
   }, [step]);
 
-
-
   // ─── React Query Mutations ───────────────────────────────────
 
   // Request verification code / OTP passcode dispatch
@@ -177,8 +175,6 @@ export function AuthForm({
       setError(apiErr.message || 'Google authentication failed. Please try again.');
     },
   });
-
-
 
   // Form Submissions
   const handleSubmitEmail = (e: React.FormEvent) => {

@@ -5,8 +5,6 @@ import { CheckoutDetailsInput, ReserveTicketsInput } from '@mad/validations';
 import type { AuthResponse, AuthUser, VerificationCodeRequestResponse, VerifyVerificationCodeOrOTPPayload } from '../../types/auth';
 import { apiClient } from './client';
 
-
-
 export interface VerifyPaymentPayload {
   razorpay_order_id?: string;
   razorpay_payment_id?: string;
@@ -152,8 +150,6 @@ export async function publicGetDJBySlug(slug: string): Promise<DJOperator> {
   return data.data;
 }
 
-
-
 export async function publicCreateBooking(
   payload: ReserveTicketsInput,
   sessionToken: string
@@ -237,14 +233,10 @@ export async function publicGetActivePopups(): Promise<PopupCampaign[]> {
 
 // ─── Auth ────────────────────────────────────────────────────
 
-
-
 export async function publicGoogleLogin(idToken: string): Promise<AuthResponse> {
   const { data } = await apiClient.post<{ data: AuthResponse }>('/auth/google', { idToken });
   return data.data;
 }
-
-
 
 export async function publicRequestVerificationCode(
   email: string,
@@ -282,8 +274,6 @@ export async function publicLogout(): Promise<{ success: boolean }> {
   const { data } = await apiClient.post<{ data: { success: boolean } }>('/auth/logout');
   return data.data;
 }
-
-
 
 export async function publicResendTicketEmail(bookingId: string, sessionToken?: string): Promise<{ success: boolean; message: string }> {
   const { data } = await apiClient.post<{ success: boolean; message: string }>(`/bookings/${bookingId}/resend`, {}, {

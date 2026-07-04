@@ -92,13 +92,13 @@ export function TicketSelectionContent({
     onError: (err) => {
       const apiError = extractApiError(err).message;
       setError(apiError);
-      
+
       // If error might be coupon related, clear the success state
       if (apiError.toLowerCase().includes('coupon') || apiError.toLowerCase().includes('promo')) {
         setCouponApplied(false);
         setCouponMessage({ type: 'error', text: '⚠ Unable to apply promo code. Please check and try again.' });
       }
-      
+
       if (setIsPendingChange) setIsPendingChange(false);
     },
   });
@@ -175,7 +175,7 @@ export function TicketSelectionContent({
     }
 
     if (setIsPendingChange) setIsPendingChange(true);
-    
+
     // Only send coupon code if it's explicitly applied
     createBookingMutation.mutate({
       eventId,
@@ -260,7 +260,7 @@ export function TicketSelectionContent({
             </button>
           )}
         </form>
-        
+
         {/* Coupon Applied Details Block */}
         {couponApplied && (
           <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-3 mt-3 flex items-start gap-3">
@@ -279,7 +279,7 @@ export function TicketSelectionContent({
 
         {/* Error Messages (if any) */}
         {couponMessage && couponMessage.type === 'error' && (
-          <div 
+          <div
             className="text-[11px] font-medium pt-1 text-red-400"
             role="status"
             aria-live="polite"
@@ -291,9 +291,9 @@ export function TicketSelectionContent({
 
       {/* Celebration Modal */}
       {showCelebration && (
-        <div 
-          className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" 
-          role="dialog" 
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+          role="dialog"
           aria-modal="true"
           onKeyDown={(e) => {
             if (e.key === 'Escape' || e.key === 'Enter') {
@@ -318,10 +318,10 @@ export function TicketSelectionContent({
               <p>Code: <span className="text-white font-mono font-bold">{couponCode}</span></p>
               <p className="text-[11px] text-text-muted italic">Discount eligibility will be confirmed during checkout.</p>
             </div>
-            <button 
+            <button
               type="button"
               autoFocus
-              onClick={() => setShowCelebration(false)} 
+              onClick={() => setShowCelebration(false)}
               className="w-full bg-gradient-to-r from-accent-purple to-accent-pink py-3 rounded-xl font-bold text-white shadow-glow hover:scale-[1.02] active:scale-95 transition-all"
             >
               OK
@@ -388,7 +388,7 @@ export function TicketSelectionContent({
                         <p className="text-xs text-text-muted leading-relaxed">
                           {tier.description || 'General Entry Ticket'}
                         </p>
-                        
+
                         <div className="flex items-center gap-2">
                           {isFree ? (
                             <span className="text-emerald-400 font-black text-sm uppercase tracking-wider">

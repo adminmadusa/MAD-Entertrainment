@@ -131,7 +131,7 @@ export async function assignTicket(
     );
   } catch (err) {
     // Log failure but do not roll back the db transaction (already committed)
-    logger.error({ err }, `Post-commit enqueue failed for assignment of ${ticketId}`);
+    logger.error({ err, ticketId }, 'Post-commit enqueue failed for assignment');
   }
 }
 
@@ -253,7 +253,7 @@ export async function claimTicket(
       jobId
     );
   } catch (err) {
-    logger.error({ err }, `Post-commit enqueue failed for claim of ${ticketId}`);
+    logger.error({ err, ticketId }, 'Post-commit enqueue failed for claim');
   }
 }
 
@@ -472,7 +472,7 @@ export async function revokeTicket(
       }
     }
   } catch (err) {
-    logger.error({ err }, `Post-commit enqueue failed for revocation of ${ticketId}`);
+    logger.error({ err, ticketId }, 'Post-commit enqueue failed for revocation');
   }
 }
 

@@ -108,14 +108,14 @@ describe('ProfileEditor Component', () => {
 
   it('cancels edit mode on cancel click', async () => {
     renderComponent();
-    
+
     // Toggle edit mode
     await act(async () => {
       fireEvent.click(screen.getByRole('button', { name: /edit profile/i }));
     });
 
     const cancelBtn = screen.getByRole('button', { name: /cancel/i });
-    
+
     await act(async () => {
       fireEvent.click(cancelBtn);
     });

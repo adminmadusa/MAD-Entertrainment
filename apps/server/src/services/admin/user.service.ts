@@ -212,7 +212,7 @@ export class AdminUserService {
     const bookingsMapped = bookings.map(b => {
       const bookingTickets = tickets.filter(t => t.bookingId.toString() === b._id.toString());
       const bookingRefunds = refunds.filter(r => r.bookingId.toString() === b._id.toString());
-      
+
       const ticketsScanned = bookingTickets.filter(t => !!t.scannedAt).reduce((sum, t) => sum + (t.admits || 1), 0);
       const totalTicketsCount = bookingTickets.reduce((sum, t) => sum + (t.admits || 1), 0);
 

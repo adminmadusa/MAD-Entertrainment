@@ -1,5 +1,6 @@
 import { DeadLetterJobMetadata, DlqPaginatedResponse } from '@/lib/api/admin/diagnostics.service';
 import { formatDateTime } from '@mad/utils';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@mad/ui';
 
 export interface DeadLetterQueueTabProps {
   dlqResponse: DlqPaginatedResponse | undefined;
@@ -107,65 +108,63 @@ export function DeadLetterQueueTab({
 
       {/* DLQ Table */}
       <div className="glass rounded-2xl border border-border-subtle overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-xs">
-            <thead>
-              <tr className="border-b border-border-subtle text-text-muted text-left">
-                <th className="py-3 px-4 font-medium">Queue Name</th>
-                <th className="py-3 px-4 font-medium">Job ID</th>
-                <th className="py-3 px-4 font-medium">Job Name</th>
-                <th className="py-3 px-4 font-medium text-center">Attempts</th>
-                <th className="py-3 px-4 font-medium">Failure Reason</th>
-                <th className="py-3 px-4 font-medium">Failed Date</th>
-                {isSuperAdmin && <th className="py-3 px-4 font-medium text-right">Actions</th>}
-              </tr>
-            </thead>
-            <tbody>
-              {(dlqResponse?.data ?? []).map((job) => (
-                <tr key={job._id} className="border-b border-border-subtle/40 hover:bg-white/[0.01]">
-                  <td className="py-3 px-4 font-semibold text-white">{job.queueName}</td>
-                  <td className="py-3 px-4 font-mono text-accent-purple-light">{job.jobId}</td>
-                  <td className="py-3 px-4 text-text-secondary">{job.jobName}</td>
-                  <td className="py-3 px-4 text-center font-bold text-text-primary">{job.attemptsMade}</td>
-                  <td className="py-3 px-4 text-red-400 max-w-xs truncate" title={job.failedReason}>
-                    {job.failedReason || 'Unknown error'}
-                  </td>
-                  <td className="py-3 px-4 text-text-muted">{formatDateTime(job.processedAt)}</td>
-                  {isSuperAdmin && (
-                    <td className="py-3 px-4 text-right space-x-1.5 whitespace-nowrap">
-                      <button
-                        onClick={() => onInspect(job._id)}
-                        className="px-2 py-1 bg-white/5 hover:bg-white/10 text-white text-[10px] font-medium rounded-lg border border-border-subtle transition-colors"
-                      >
-                        Inspect
-                      </button>
-                      <button
-                        onClick={() => onRetry(job)}
-                        className="px-2 py-1 bg-accent-purple/20 hover:bg-accent-purple/30 text-accent-purple-light text-[10px] font-semibold rounded-lg border border-accent-purple/40 transition-colors"
-                      >
-                        Retry
-                      </button>
-                    </td>
-                  )}
-                </tr>
-              ))}
-              {!dlqResponse?.data?.length && !isDlqLoading && (
-                <tr>
-                  <td colSpan={isSuperAdmin ? 7 : 6} className="py-12 text-center text-text-muted">
-                    No dead letter queue jobs recorded. System is healthy!
-                  </td>
-                </tr>
-              )}
-              {isDlqLoading && (
-                <tr>
-                  <td colSpan={isSuperAdmin ? 7 : 6} className="py-12 text-center text-text-muted">
-                    Fetching DLQ data...
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+        <Table className="text-xs">
+          <TableHeader>
+            <TableRow className="text-left text-text-muted">
+              <TableHead className="py-3 px-4 font-medium">Queue Name</TableHead>
+              <TableHead className="py-3 px-4 font-medium">Job ID</TableHead>
+              <TableHead className="py-3 px-4 font-medium">Job Name</TableHead>
+              <TableHead className="py-3 px-4 font-medium text-center">Attempts</TableHead>
+              <TableHead className="py-3 px-4 font-medium">Failure Reason</TableHead>
+              <TableHead className="py-3 px-4 font-medium">Failed Date</TableHead>
+              {isSuperAdmin && <TableHead className="py-3 px-4 font-medium text-right">Actions</TableHead>}
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {(dlqResponse?.data ?? []).map((job) => (
+              <TableRow key={job._id} className="border-b border-border-subtle/40 hover:bg-white/[0.01]">
+                <TableCell className="py-3 px-4 font-semibold text-white">{job.queueName}</TableCell>
+                <TableCell className="py-3 px-4 font-mono text-accent-purple-light">{job.jobId}</TableCell>
+                <TableCell className="py-3 px-4 text-text-secondary">{job.jobName}</TableCell>
+                <TableCell className="py-3 px-4 text-center font-bold text-text-primary">{job.attemptsMade}</TableCell>
+                <TableCell className="py-3 px-4 text-red-400 max-w-xs truncate" title={job.failedReason}>
+                  {job.failedReason || 'Unknown error'}
+                </TableCell>
+                <TableCell className="py-3 px-4 text-text-muted">{formatDateTime(job.processedAt)}</TableCell>
+                {isSuperAdmin && (
+                  <TableCell className="py-3 px-4 text-right space-x-1.5 whitespace-nowrap">
+                    <button
+                      onClick={() => onInspect(job._id)}
+                      className="px-2 py-1 bg-white/5 hover:bg-white/10 text-white text-[10px] font-medium rounded-lg border border-border-subtle transition-colors"
+                    >
+                      Inspect
+                    </button>
+                    <button
+                      onClick={() => onRetry(job)}
+                      className="px-2 py-1 bg-accent-purple/20 hover:bg-accent-purple/30 text-accent-purple-light text-[10px] font-semibold rounded-lg border border-accent-purple/40 transition-colors"
+                    >
+                      Retry
+                    </button>
+                  </TableCell>
+                )}
+              </TableRow>
+            ))}
+            {!dlqResponse?.data?.length && !isDlqLoading && (
+              <TableRow>
+                <TableCell colSpan={isSuperAdmin ? 7 : 6} className="py-12 text-center text-text-muted">
+                  No dead letter queue jobs recorded. System is healthy!
+                </TableCell>
+              </TableRow>
+            )}
+            {isDlqLoading && (
+              <TableRow>
+                <TableCell colSpan={isSuperAdmin ? 7 : 6} className="py-12 text-center text-text-muted">
+                  Fetching DLQ data...
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
 
         {/* Pagination Controls */}
         {dlqResponse && dlqResponse.pagination.totalPages > 1 && (

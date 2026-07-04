@@ -46,7 +46,7 @@ export default function CreateEventPage() {
   const [posterImage, setPosterImage] = useState<CloudinaryImage | null>(null);
   const [galleryImages, setGalleryImages] = useState<CloudinaryImage[]>([]);
   const [tiers, setTiers] = useState<TicketTierInput[]>([defaultTier()]);
-  
+
   // Ticket Profile and Overrides state
   const [ticketingType, setTicketingType] = useState<'custom' | 'profile'>('custom');
   const [selectedProfileId, setSelectedProfileId] = useState('');
@@ -123,7 +123,7 @@ export default function CreateEventPage() {
       const generatedSlug = title.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^[-]+|[-]+$/g, '');
 
       const isProfileType = ticketingType === 'profile';
-      
+
       const payload: Partial<AdminEvent> & { bookingMode?: string } = {
         title: title.trim(),
         slug: generatedSlug,
@@ -160,7 +160,7 @@ export default function CreateEventPage() {
             isActive: vals.isActive !== undefined ? vals.isActive : undefined,
           }))
           .filter((o) => o.totalCapacity !== undefined || o.isActive !== undefined);
-        
+
         // EVT-008A: Temporary compatibility workaround.
         // Profile-based event creation still requires totalCapacity >= 1.
         // Remove when the profile create contract lets the server derive capacity without a placeholder.
@@ -298,5 +298,3 @@ export default function CreateEventPage() {
     </div>
   );
 }
-
-

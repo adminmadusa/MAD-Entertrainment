@@ -7,6 +7,7 @@ import { useState } from 'react';
 import { EVENT_STATUS_METADATA, type EventStatus, AdminRole } from '@mad/shared';
 import { formatEventDate } from '@mad/utils';
 import { useAdminAuth } from '@/providers/AdminAuthProvider';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@mad/ui';
 
 import { adminGetEvents, adminDeleteEvent, type AdminEvent } from '@/lib/api/admin/event.service';
 import { extractApiError } from '@/lib/api/client';
@@ -51,8 +52,6 @@ export default function AdminEventsPage() {
     },
   });
 
-
-
   const events = Array.isArray(data?.items) ? data?.items : [];
   const pagination = data?.pagination;
 
@@ -75,27 +74,27 @@ export default function AdminEventsPage() {
   const renderTableBody = () => {
     if (isLoading) {
       return Array.from({ length: 5 }).map((_, i) => (
-        <tr key={i} className="border-b border-border-subtle/50 animate-pulse">
-          <td className="py-4 px-5"><div className="h-4 bg-white/5 rounded w-48" /></td>
-          <td className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-20" /></td>
-          <td className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-24" /></td>
-          <td className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-16" /></td>
-          <td className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-12" /></td>
-          <td className="py-4 px-5"><div className="h-4 bg-white/5 rounded w-20 ml-auto" /></td>
-        </tr>
+        <TableRow key={i} className="border-b border-border-subtle/50 animate-pulse">
+          <TableCell className="py-4 px-5"><div className="h-4 bg-white/5 rounded w-48" /></TableCell>
+          <TableCell className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-20" /></TableCell>
+          <TableCell className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-24" /></TableCell>
+          <TableCell className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-16" /></TableCell>
+          <TableCell className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-12" /></TableCell>
+          <TableCell className="py-4 px-5"><div className="h-4 bg-white/5 rounded w-20 ml-auto" /></TableCell>
+        </TableRow>
       ));
     }
 
     if (sortedEvents.length === 0) {
       return (
-        <tr>
-          <td colSpan={6} className="py-16 text-center text-text-muted">
+        <TableRow>
+          <TableCell colSpan={6} className="py-16 text-center text-text-muted">
             No events found.{' '}
             <Link href="/events/new" className="text-accent-purple hover:underline">
               Create one →
             </Link>
-          </td>
-        </tr>
+          </TableCell>
+        </TableRow>
       );
     }
 
@@ -103,8 +102,8 @@ export default function AdminEventsPage() {
       const statusMeta = getEventStatusMeta(event.status);
 
       return (
-        <tr key={event._id} className="border-b border-border-subtle/40 hover:bg-white/2 transition-colors">
-          <td className="py-4 px-5">
+        <TableRow key={event._id} className="border-b border-border-subtle/40 hover:bg-white/2 transition-colors">
+          <TableCell className="py-4 px-5">
             <div className="flex items-center gap-3">
               {event.bannerImage?.url ? (
                 // eslint-disable-next-line @next/next/no-img-element
@@ -119,8 +118,8 @@ export default function AdminEventsPage() {
                 <p className="text-text-muted text-xs truncate">{event.slug || 'no-slug'}</p>
               </div>
             </div>
-          </td>
-          <td className="py-4 px-4 capitalize text-text-secondary">
+          </TableCell>
+          <TableCell className="py-4 px-4 capitalize text-text-secondary">
             {event.category ? (
               event.category.replace('_', ' ')
             ) : (
@@ -128,15 +127,15 @@ export default function AdminEventsPage() {
                 ⚠️ Missing Category
               </span>
             )}
-          </td>
-          <td className="py-4 px-4 text-text-secondary">
+          </TableCell>
+          <TableCell className="py-4 px-4 text-text-secondary">
             {event.startDate ? (
               formatEventDate(event.startDate)
             ) : (
               <span className="text-text-muted">N/A</span>
             )}
-          </td>
-          <td className="py-4 px-4">
+          </TableCell>
+          <TableCell className="py-4 px-4">
             {statusMeta ? (
               <span className={`text-xs px-2.5 py-1 rounded-full border font-medium ${statusMeta.className}`}>
                 {statusMeta.label}
@@ -150,16 +149,16 @@ export default function AdminEventsPage() {
                 ⚠️ Missing Status
               </span>
             )}
-          </td>
-          <td className="py-4 px-4">
+          </TableCell>
+          <TableCell className="py-4 px-4">
             <span
               className={`text-lg ${event.isFeatured ? 'text-yellow-400' : 'text-text-muted'}`}
               title={event.isFeatured ? 'Featured Event' : 'Standard Event'}
             >
               ★
             </span>
-          </td>
-          <td className="py-4 px-5">
+          </TableCell>
+          <TableCell className="py-4 px-5">
             {canMutateEvents ? (
               <div className="flex items-center justify-end gap-2">
                 <Link
@@ -178,8 +177,8 @@ export default function AdminEventsPage() {
             ) : (
               <div className="text-right text-text-muted">—</div>
             )}
-          </td>
-        </tr>
+          </TableCell>
+        </TableRow>
       );
     });
   };
@@ -228,31 +227,29 @@ export default function AdminEventsPage() {
 
       {/* Table */}
       <div className="glass rounded-2xl border border-border-subtle overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-border-subtle">
-                <th onClick={() => handleSort('title')} className="text-left text-text-muted font-medium py-3.5 px-5 cursor-pointer hover:text-white transition-colors select-none">
-                  Event {sortField === 'title' ? (sortOrder === 'asc' ? '▲' : '▼') : ''}
-                </th>
-                <th onClick={() => handleSort('category')} className="text-left text-text-muted font-medium py-3.5 px-4 cursor-pointer hover:text-white transition-colors select-none">
-                  Category {sortField === 'category' ? (sortOrder === 'asc' ? '▲' : '▼') : ''}
-                </th>
-                <th onClick={() => handleSort('startDate')} className="text-left text-text-muted font-medium py-3.5 px-4 cursor-pointer hover:text-white transition-colors select-none">
-                  Date {sortField === 'startDate' ? (sortOrder === 'asc' ? '▲' : '▼') : ''}
-                </th>
-                <th onClick={() => handleSort('status')} className="text-left text-text-muted font-medium py-3.5 px-4 cursor-pointer hover:text-white transition-colors select-none">
-                  Status {sortField === 'status' ? (sortOrder === 'asc' ? '▲' : '▼') : ''}
-                </th>
-                <th className="text-left text-text-muted font-medium py-3.5 px-4">Featured</th>
-                <th className="text-right text-text-muted font-medium py-3.5 px-5">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {renderTableBody()}
-            </tbody>
-          </table>
-        </div>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead onClick={() => handleSort('title')} className="py-3.5 px-5 cursor-pointer hover:text-white transition-colors select-none">
+                Event {sortField === 'title' ? (sortOrder === 'asc' ? '▲' : '▼') : ''}
+              </TableHead>
+              <TableHead onClick={() => handleSort('category')} className="py-3.5 px-4 cursor-pointer hover:text-white transition-colors select-none">
+                Category {sortField === 'category' ? (sortOrder === 'asc' ? '▲' : '▼') : ''}
+              </TableHead>
+              <TableHead onClick={() => handleSort('startDate')} className="py-3.5 px-4 cursor-pointer hover:text-white transition-colors select-none">
+                Date {sortField === 'startDate' ? (sortOrder === 'asc' ? '▲' : '▼') : ''}
+              </TableHead>
+              <TableHead onClick={() => handleSort('status')} className="py-3.5 px-4 cursor-pointer hover:text-white transition-colors select-none">
+                Status {sortField === 'status' ? (sortOrder === 'asc' ? '▲' : '▼') : ''}
+              </TableHead>
+              <TableHead className="py-3.5 px-4">Featured</TableHead>
+              <TableHead className="py-3.5 px-5 text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {renderTableBody()}
+          </TableBody>
+        </Table>
 
         {/* Pagination */}
         {pagination && pagination.totalPages > 1 && (
@@ -290,7 +287,7 @@ export default function AdminEventsPage() {
               exit={{ opacity: 0, scale: 0.95 }}
               className="glass-strong rounded-2xl border border-border-subtle p-6 max-w-sm w-full"
             >
-              <h3 className="text-white font-bold text-lg mb-2">Delete Event?</h3>
+              <h2 className="text-white font-bold text-lg mb-2">Delete Event?</h2>
               <p className="text-text-secondary text-sm mb-1">
                 <strong className="text-white">{deleteTarget.title}</strong> will be permanently deleted
                 along with its Cloudinary images.

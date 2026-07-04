@@ -100,7 +100,7 @@ export function ProfileCompletionForm({
       </div>
 
       {displayError && (
-        <div 
+        <div
           role="alert"
           aria-live="assertive"
           className="p-4 bg-error/10 border border-error/30 rounded-2xl text-xs text-red-400 text-center animate-in fade-in duration-300"
