@@ -2,6 +2,7 @@
   "history": [
     {
 <<<<<<< HEAD
+<<<<<<< HEAD
       "action": "UPDATED",
       "notes": "Occurrences updated. Active count: 4",
       "status": "NEW",
@@ -17,28 +18,43 @@
       "notes": "Finding regressed. Code violation re-introduced. (Transitioned from CLOSED to REGRESSION)",
       "status": "REGRESSION",
       "timestamp": "2026-07-04T04:54:05.080Z"
+=======
+      "action": "DETECTED_AGAIN",
+      "notes": "Finding regressed. Code violation re-introduced. (Transitioned from CLOSED to REGRESSION)",
+      "status": "REGRESSION",
+      "timestamp": "2026-07-04T05:20:18.274Z"
+>>>>>>> fix/web-hygiene-api
     },
     {
       "action": "UPDATED",
       "notes": "Occurrences updated. Active count: 4",
       "status": "REGRESSION",
+<<<<<<< HEAD
       "timestamp": "2026-07-04T04:54:05.187Z"
 >>>>>>> fix/web-hygiene-core
+=======
+      "timestamp": "2026-07-04T05:20:18.378Z"
+>>>>>>> fix/web-hygiene-api
     },
     {
       "action": "DETECTED_AGAIN",
       "notes": "Finding regressed. Code violation re-introduced. (Transitioned from CLOSED to REGRESSION)",
       "status": "REGRESSION",
 <<<<<<< HEAD
+<<<<<<< HEAD
       "timestamp": "2026-07-04T03:15:48.572Z"
 =======
       "timestamp": "2026-07-04T04:55:08.578Z"
 >>>>>>> fix/web-hygiene-core
+=======
+      "timestamp": "2026-07-04T05:30:03.719Z"
+>>>>>>> fix/web-hygiene-api
     },
     {
       "action": "UPDATED",
       "notes": "Occurrences updated. Active count: 4",
       "status": "REGRESSION",
+<<<<<<< HEAD
 <<<<<<< HEAD
       "timestamp": "2026-07-04T03:15:48.732Z"
     },
@@ -152,6 +168,9 @@
 =======
       "timestamp": "2026-07-04T04:55:08.591Z"
 >>>>>>> fix/web-hygiene-core
+=======
+      "timestamp": "2026-07-04T05:30:03.731Z"
+>>>>>>> fix/web-hygiene-api
     }
   ],
   "id": "f_97d71878"

@@ -1,8 +1,9 @@
 'use client';
 
 import React from 'react';
+
+import type { AuthUser } from '@/types/auth';
 import { Button } from '@mad/ui';
-import { AuthUser } from '@/types/auth';
 
 interface ProfileViewCardProps {
   user: AuthUser | null;

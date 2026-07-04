@@ -1,11 +1,11 @@
 'use client';
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { useState, useEffect } from 'react';
-
-import { AuthProvider } from './AuthProvider';
-import { AuthModalProvider } from './AuthModalProvider';
 import dynamic from 'next/dynamic';
+import { useEffect, useState } from 'react';
+
+import { AuthModalProvider } from './AuthModalProvider';
+import { AuthProvider } from './AuthProvider';
 
 const ReactQueryDevtools =
   process.env.NODE_ENV === 'development'

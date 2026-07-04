@@ -5,6 +5,7 @@
       "notes": "New grouped finding registered: Duplicate import declaration from module path \"@asteasolutions/zod-to-openapi\".",
       "status": "NEW",
 <<<<<<< HEAD
+<<<<<<< HEAD
       "timestamp": "2026-07-04T03:15:44.971Z"
     },
     {
@@ -21,6 +22,9 @@
 =======
       "timestamp": "2026-07-04T04:54:01.680Z"
 >>>>>>> fix/web-hygiene-core
+=======
+      "timestamp": "2026-07-04T05:20:14.643Z"
+>>>>>>> fix/web-hygiene-api
     }
   ],
   "id": "f_d0af2687"

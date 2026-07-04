@@ -5,10 +5,14 @@
       "notes": "New grouped finding registered: Trailing whitespace characters detected.",
       "status": "NEW",
 <<<<<<< HEAD
+<<<<<<< HEAD
       "timestamp": "2026-07-04T03:15:45.068Z"
 =======
       "timestamp": "2026-07-04T04:54:01.778Z"
 >>>>>>> fix/web-hygiene-core
+=======
+      "timestamp": "2026-07-04T05:20:14.756Z"
+>>>>>>> fix/web-hygiene-api
     }
   ],
   "id": "f_4cb1bdcc"

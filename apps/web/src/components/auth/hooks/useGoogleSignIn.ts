@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useState, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+
 import { loadScriptOnce } from '@/lib/utils/load-script-once';
-import { initializeGoogleIdentity, registerGoogleIdentityCallback, GoogleCredentialResponse } from '@/utils/google-identity';
+import { GoogleCredentialResponse, initializeGoogleIdentity, registerGoogleIdentityCallback } from '@/utils/google-identity';
 
 
 interface GoogleIdentity {

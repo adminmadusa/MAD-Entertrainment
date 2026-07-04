@@ -1,10 +1,14 @@
 {
   "confidence": 1,
 <<<<<<< HEAD
+<<<<<<< HEAD
   "createdDate": "2026-07-04T03:15:47.766Z",
 =======
   "createdDate": "2026-07-04T04:54:04.445Z",
 >>>>>>> fix/web-hygiene-core
+=======
+  "createdDate": "2026-07-04T05:20:17.636Z",
+>>>>>>> fix/web-hygiene-api
   "domain": "Platform Team",
   "engineVersion": "1.0.0",
   "evidence": {
@@ -33,6 +37,7 @@
   },
   "feature": "Document",
 <<<<<<< HEAD
+<<<<<<< HEAD
   "firstDetected": "2026-07-04T03:15:47.766Z",
   "id": "f_abba3a99",
   "lastDetected": "2026-07-04T03:15:47.766Z",
@@ -41,6 +46,11 @@
   "id": "f_abba3a99",
   "lastDetected": "2026-07-04T04:54:04.445Z",
 >>>>>>> fix/web-hygiene-core
+=======
+  "firstDetected": "2026-07-04T05:20:17.636Z",
+  "id": "f_abba3a99",
+  "lastDetected": "2026-07-04T05:20:17.636Z",
+>>>>>>> fix/web-hygiene-api
   "occurrenceCount": 2,
   "owner": "Platform Team",
   "package": "docs",

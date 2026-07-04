@@ -92,7 +92,7 @@ async function run() {
     console.log('🔄 Updating historical files baseline...');
     let gitFiles: string[] = [];
     try {
-      const output = execSync('git log --all --format="" --name-only', { cwd: workspaceRoot, encoding: 'utf8' });
+      const output = execSync('git log --all --format="" --name-only', { cwd: workspaceRoot, encoding: 'utf8', maxBuffer: 10 * 1024 * 1024 });
       gitFiles = output.split('\n')
         .map(f => f.trim())
         .filter(f => f && !f.startsWith('node_modules/') && !f.startsWith('.governance/') && !f.startsWith('scratch/'));

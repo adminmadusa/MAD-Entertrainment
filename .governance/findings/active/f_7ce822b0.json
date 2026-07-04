@@ -1,19 +1,27 @@
 {
   "confidence": 1,
 <<<<<<< HEAD
+<<<<<<< HEAD
   "createdDate": "2026-07-04T03:15:46.653Z",
 =======
   "createdDate": "2026-07-04T04:54:03.342Z",
 >>>>>>> fix/web-hygiene-core
+=======
+  "createdDate": "2026-07-04T05:20:16.441Z",
+>>>>>>> fix/web-hygiene-api
   "domain": "Platform Team",
   "engineVersion": "1.0.0",
   "evidence": {
     "construct": "Document",
 <<<<<<< HEAD
+<<<<<<< HEAD
     "line": 25,
 =======
     "line": 27,
 >>>>>>> fix/web-hygiene-core
+=======
+    "line": 25,
+>>>>>>> fix/web-hygiene-api
     "message": "Trailing whitespace characters detected.",
     "occurrences": [
       {
@@ -22,10 +30,14 @@
         "fingerprint": "51d2b651869467a4836aa62bc84bde9c95f916f082a90297b9740b51e47bbe18",
         "id": "51d2b651869467a4836aa62bc84bde9c95f916f082a90297b9740b51e47bbe18",
 <<<<<<< HEAD
+<<<<<<< HEAD
         "line": 17,
 =======
         "line": 19,
 >>>>>>> fix/web-hygiene-core
+=======
+        "line": 17,
+>>>>>>> fix/web-hygiene-api
         "message": "Trailing whitespace characters detected."
       },
       {
@@ -33,11 +45,15 @@
         "construct": "Document",
         "fingerprint": "51d2b651869467a4836aa62bc84bde9c95f916f082a90297b9740b51e47bbe18",
         "id": "51d2b651869467a4836aa62bc84bde9c95f916f082a90297b9740b51e47bbe18",
+<<<<<<< HEAD
 <<<<<<< HEAD
         "line": 24,
 =======
         "line": 26,
 >>>>>>> fix/web-hygiene-core
+=======
+        "line": 24,
+>>>>>>> fix/web-hygiene-api
         "message": "Trailing whitespace characters detected."
       },
       {
@@ -46,16 +62,21 @@
         "fingerprint": "51d2b651869467a4836aa62bc84bde9c95f916f082a90297b9740b51e47bbe18",
         "id": "51d2b651869467a4836aa62bc84bde9c95f916f082a90297b9740b51e47bbe18",
 <<<<<<< HEAD
+<<<<<<< HEAD
         "line": 25,
 =======
         "line": 27,
 >>>>>>> fix/web-hygiene-core
+=======
+        "line": 25,
+>>>>>>> fix/web-hygiene-api
         "message": "Trailing whitespace characters detected."
       }
     ],
     "path": "apps/web/src/app/legal/components/LegalSidebar.tsx"
   },
   "feature": "Document",
+<<<<<<< HEAD
 <<<<<<< HEAD
   "firstDetected": "2026-07-04T03:15:46.653Z",
   "id": "f_7ce822b0",
@@ -65,6 +86,11 @@
   "id": "f_7ce822b0",
   "lastDetected": "2026-07-04T04:54:03.342Z",
 >>>>>>> fix/web-hygiene-core
+=======
+  "firstDetected": "2026-07-04T05:20:16.441Z",
+  "id": "f_7ce822b0",
+  "lastDetected": "2026-07-04T05:20:16.441Z",
+>>>>>>> fix/web-hygiene-api
   "occurrenceCount": 3,
   "owner": "Platform Team",
   "package": "apps",

@@ -1,10 +1,17 @@
 {
   "history": [
     {
+<<<<<<< HEAD
       "action": "CREATED",
       "notes": "New grouped finding registered: Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
       "status": "NEW",
       "timestamp": "2026-07-03T16:43:23.686Z"
+=======
+      "action": "UPDATED",
+      "notes": "Occurrences updated. Active count: 1",
+      "status": "NEW",
+      "timestamp": "2026-07-04T05:20:18.559Z"
+>>>>>>> fix/web-hygiene-api
     }
   ],
   "id": "f_6e061830"

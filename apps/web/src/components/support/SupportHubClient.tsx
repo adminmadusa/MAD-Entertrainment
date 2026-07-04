@@ -1,7 +1,9 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useMemo, useState } from 'react';
+
 import { faqContent, FAQCategory } from '@/content/faqContent';
+
 import { FAQAccordion } from './FAQAccordion';
 
 const CATEGORIES: { id: FAQCategory | 'all'; label: string; icon: string }[] = [

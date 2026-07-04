@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 {
   "scratch/test-doc-validator/contempt.md": {
     "hash": "65e3d78b351b0808011b9e895b143e76b27e846a",
@@ -17228,3 +17229,6 @@
     ]
   }
 }
+=======
+{}
+>>>>>>> fix/web-hygiene-api

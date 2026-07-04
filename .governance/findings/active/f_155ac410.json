@@ -6,6 +6,9 @@
   "evidence": {
     "construct": "modal-backdrop",
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> fix/web-hygiene-api
     "line": 72,
 =======
     "line": 73,
@@ -18,10 +21,14 @@
         "fingerprint": "5a5e8959a2af8d353b7ec6fceb8aecb78213397a84c77cc93019e3d177bbcf85",
         "id": "5a5e8959a2af8d353b7ec6fceb8aecb78213397a84c77cc93019e3d177bbcf85",
 <<<<<<< HEAD
+<<<<<<< HEAD
         "line": 72,
 =======
         "line": 73,
 >>>>>>> fix/web-hygiene-core
+=======
+        "line": 72,
+>>>>>>> fix/web-hygiene-api
         "message": "Custom backdrop & modal container coded. Use shared <Modal> component from @mad/ui to avoid styles drift.",
         "snippet": "<div className=\"fixed inset-0 z-[100] flex justify-end bg-black/60 backdrop-blur-sm\">"
       }
@@ -33,12 +40,17 @@
   "firstDetected": "2026-06-29T08:10:44.853Z",
   "id": "f_155ac410",
 <<<<<<< HEAD
+<<<<<<< HEAD
   "lastDetected": "2026-07-04T04:11:43.105Z",
   "lastModified": "2026-07-04T04:11:43.105Z",
 =======
   "lastDetected": "2026-07-04T04:54:05.312Z",
   "lastModified": "2026-07-04T04:54:05.312Z",
 >>>>>>> fix/web-hygiene-core
+=======
+  "lastDetected": "2026-07-04T05:20:18.530Z",
+  "lastModified": "2026-07-04T05:20:18.530Z",
+>>>>>>> fix/web-hygiene-api
   "occurrenceCount": 1,
   "owner": "UI UX Guild",
   "package": "apps",

@@ -1,17 +1,17 @@
 'use client';
 
-import { useState, useRef, useCallback, memo } from 'react';
-import { EventCategory, EVENT_CATEGORY_LABELS } from '@mad/shared';
-import { Event } from '@mad/types';
-import { motion, AnimatePresence, useReducedMotion, PanInfo } from 'framer-motion';
+import { AnimatePresence, motion, type PanInfo, useReducedMotion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowRight, ArrowLeft, CalendarIcon } from '@mad/ui';
+import { memo, useCallback, useRef, useState } from 'react';
 
 import { Reveal } from '@/components/common/PageTransition';
-import { useWindowWidth, useMounted } from '@/hooks/use-window.hook';
-import { getOptimizedImageUrl } from '@/utils/image';
+import { useMounted, useWindowWidth } from '@/hooks/use-window.hook';
 import { formatEventDate } from '@/utils/date';
+import { getOptimizedImageUrl } from '@/utils/image';
+import { EventCategory, EVENT_CATEGORY_LABELS } from '@mad/shared';
+import type { Event } from '@mad/types';
+import { ArrowLeft, ArrowRight, CalendarIcon } from '@mad/ui';
 
 export const FeaturedEventsSection = memo(function FeaturedEventsSection({ initialEvents = [] }: { initialEvents: Event[] }) {
   const [activeIndex, setActiveIndex] = useState(0);

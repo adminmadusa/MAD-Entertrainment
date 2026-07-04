@@ -1,19 +1,27 @@
 {
   "confidence": 1,
 <<<<<<< HEAD
+<<<<<<< HEAD
   "createdDate": "2026-07-04T03:15:46.689Z",
 =======
   "createdDate": "2026-07-04T04:54:03.377Z",
 >>>>>>> fix/web-hygiene-core
+=======
+  "createdDate": "2026-07-04T05:20:16.478Z",
+>>>>>>> fix/web-hygiene-api
   "domain": "Platform Team",
   "engineVersion": "1.0.0",
   "evidence": {
     "construct": "Document",
 <<<<<<< HEAD
+<<<<<<< HEAD
     "line": 16,
 =======
     "line": 17,
 >>>>>>> fix/web-hygiene-core
+=======
+    "line": 16,
+>>>>>>> fix/web-hygiene-api
     "message": "Trailing whitespace characters detected.",
     "occurrences": [
       {
@@ -22,16 +30,21 @@
         "fingerprint": "b84cfb4d91b28020828415775886233885dbfeba48851d547bf5019e822cfb59",
         "id": "b84cfb4d91b28020828415775886233885dbfeba48851d547bf5019e822cfb59",
 <<<<<<< HEAD
+<<<<<<< HEAD
         "line": 16,
 =======
         "line": 17,
 >>>>>>> fix/web-hygiene-core
+=======
+        "line": 16,
+>>>>>>> fix/web-hygiene-api
         "message": "Trailing whitespace characters detected."
       }
     ],
     "path": "apps/web/src/app/legal/components/LegalViewer.tsx"
   },
   "feature": "Document",
+<<<<<<< HEAD
 <<<<<<< HEAD
   "firstDetected": "2026-07-04T03:15:46.689Z",
   "id": "f_9d8e64f3",
@@ -41,6 +54,11 @@
   "id": "f_9d8e64f3",
   "lastDetected": "2026-07-04T04:54:03.377Z",
 >>>>>>> fix/web-hygiene-core
+=======
+  "firstDetected": "2026-07-04T05:20:16.478Z",
+  "id": "f_9d8e64f3",
+  "lastDetected": "2026-07-04T05:20:16.478Z",
+>>>>>>> fix/web-hygiene-api
   "occurrenceCount": 1,
   "owner": "Platform Team",
   "package": "apps",

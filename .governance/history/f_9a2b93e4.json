@@ -2,6 +2,7 @@
   "history": [
     {
 <<<<<<< HEAD
+<<<<<<< HEAD
       "action": "RESOLVED",
       "notes": "Code violation no longer detected. Marking finding as closed. (Transitioned from CONFIRMED to CLOSED)",
       "status": "CLOSED",
@@ -18,11 +19,18 @@
       "status": "REGRESSION",
       "timestamp": "2026-07-04T04:54:05.083Z"
 >>>>>>> fix/web-hygiene-core
+=======
+      "action": "DETECTED_AGAIN",
+      "notes": "Finding regressed. Code violation re-introduced. (Transitioned from CLOSED to REGRESSION)",
+      "status": "REGRESSION",
+      "timestamp": "2026-07-04T05:20:18.276Z"
+>>>>>>> fix/web-hygiene-api
     },
     {
       "action": "UPDATED",
       "notes": "Occurrences updated. Active count: 1",
       "status": "REGRESSION",
+<<<<<<< HEAD
 <<<<<<< HEAD
       "timestamp": "2026-07-04T01:59:45.462Z"
     },
@@ -82,6 +90,9 @@
 =======
       "timestamp": "2026-07-04T04:54:05.202Z"
 >>>>>>> fix/web-hygiene-core
+=======
+      "timestamp": "2026-07-04T05:20:18.395Z"
+>>>>>>> fix/web-hygiene-api
     }
   ],
   "id": "f_9a2b93e4"

@@ -1,5 +1,6 @@
 {
 <<<<<<< HEAD
+<<<<<<< HEAD
   "branch": "fix/governance-documentation-cleanup",
   "commit": "b76abb4c",
   "engineVersion": "1.0.0",
@@ -12,4 +13,11 @@
   "ruleRegistryVersion": "1.0.0",
   "timestamp": "2026-07-04T04:54:05.393Z"
 >>>>>>> fix/web-hygiene-core
+=======
+  "branch": "fix/web-hygiene-api",
+  "commit": "b76abb4c",
+  "engineVersion": "1.0.0",
+  "ruleRegistryVersion": "1.0.0",
+  "timestamp": "2026-07-04T05:20:18.617Z"
+>>>>>>> fix/web-hygiene-api
 }

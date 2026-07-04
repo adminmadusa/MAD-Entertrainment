@@ -2,6 +2,7 @@
   "history": [
     {
 <<<<<<< HEAD
+<<<<<<< HEAD
       "action": "RENAMED",
       "notes": "File renamed/relocated from apps/admin/src/app/ticket-profiles/page.tsx to apps/admin/src/app/ticket-profiles/page.tsx",
       "status": "NEW",
@@ -24,31 +25,46 @@
       "status": "REGRESSION",
       "timestamp": "2026-07-04T04:54:05.008Z"
 >>>>>>> fix/web-hygiene-core
+=======
+      "action": "DETECTED_AGAIN",
+      "notes": "Finding regressed. Code violation re-introduced. (Transitioned from CLOSED to REGRESSION)",
+      "status": "REGRESSION",
+      "timestamp": "2026-07-04T05:20:18.193Z"
+>>>>>>> fix/web-hygiene-api
     },
     {
       "action": "UPDATED",
       "notes": "Occurrences updated. Active count: 1",
       "status": "REGRESSION",
 <<<<<<< HEAD
+<<<<<<< HEAD
       "timestamp": "2026-07-04T03:15:48.758Z"
 =======
       "timestamp": "2026-07-04T04:54:05.204Z"
 >>>>>>> fix/web-hygiene-core
+=======
+      "timestamp": "2026-07-04T05:20:18.397Z"
+>>>>>>> fix/web-hygiene-api
     },
     {
       "action": "DETECTED_AGAIN",
       "notes": "Finding regressed. Code violation re-introduced. (Transitioned from CLOSED to REGRESSION)",
       "status": "REGRESSION",
 <<<<<<< HEAD
+<<<<<<< HEAD
       "timestamp": "2026-07-04T03:15:57.206Z"
 =======
       "timestamp": "2026-07-04T04:55:08.569Z"
 >>>>>>> fix/web-hygiene-core
+=======
+      "timestamp": "2026-07-04T05:30:03.710Z"
+>>>>>>> fix/web-hygiene-api
     },
     {
       "action": "UPDATED",
       "notes": "Occurrences updated. Active count: 1",
       "status": "REGRESSION",
+<<<<<<< HEAD
 <<<<<<< HEAD
       "timestamp": "2026-07-04T03:15:57.224Z"
     },
@@ -150,6 +166,9 @@
 =======
       "timestamp": "2026-07-04T04:55:08.591Z"
 >>>>>>> fix/web-hygiene-core
+=======
+      "timestamp": "2026-07-04T05:30:03.732Z"
+>>>>>>> fix/web-hygiene-api
     }
   ],
   "id": "f_29582196"

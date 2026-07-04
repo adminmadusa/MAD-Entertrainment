@@ -1,15 +1,23 @@
 {
   "confidence": 1,
 <<<<<<< HEAD
+<<<<<<< HEAD
   "createdDate": "2026-07-04T03:15:47.107Z",
 =======
   "createdDate": "2026-07-04T04:54:03.781Z",
 >>>>>>> fix/web-hygiene-core
+=======
+  "createdDate": "2026-07-04T05:20:16.899Z",
+>>>>>>> fix/web-hygiene-api
   "domain": "Platform Team",
   "engineVersion": "1.0.0",
   "evidence": {
     "construct": "Document",
+<<<<<<< HEAD
     "line": 103,
+=======
+    "line": 105,
+>>>>>>> fix/web-hygiene-api
     "message": "Trailing whitespace characters detected.",
     "occurrences": [
       {
@@ -17,6 +25,7 @@
         "construct": "Document",
         "fingerprint": "94920a3d0c7dc2921ec938e761465321a9e4f22690ea53375738e27eb7cc9bb9",
         "id": "94920a3d0c7dc2921ec938e761465321a9e4f22690ea53375738e27eb7cc9bb9",
+<<<<<<< HEAD
         "line": 23,
         "message": "Trailing whitespace characters detected."
       },
@@ -33,6 +42,8 @@
         "construct": "Document",
         "fingerprint": "94920a3d0c7dc2921ec938e761465321a9e4f22690ea53375738e27eb7cc9bb9",
         "id": "94920a3d0c7dc2921ec938e761465321a9e4f22690ea53375738e27eb7cc9bb9",
+=======
+>>>>>>> fix/web-hygiene-api
         "line": 25,
         "message": "Trailing whitespace characters detected."
       },
@@ -41,6 +52,17 @@
         "construct": "Document",
         "fingerprint": "94920a3d0c7dc2921ec938e761465321a9e4f22690ea53375738e27eb7cc9bb9",
         "id": "94920a3d0c7dc2921ec938e761465321a9e4f22690ea53375738e27eb7cc9bb9",
+<<<<<<< HEAD
+=======
+        "line": 26,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "94920a3d0c7dc2921ec938e761465321a9e4f22690ea53375738e27eb7cc9bb9",
+        "id": "94920a3d0c7dc2921ec938e761465321a9e4f22690ea53375738e27eb7cc9bb9",
+>>>>>>> fix/web-hygiene-api
         "line": 27,
         "message": "Trailing whitespace characters detected."
       },
@@ -49,7 +71,11 @@
         "construct": "Document",
         "fingerprint": "94920a3d0c7dc2921ec938e761465321a9e4f22690ea53375738e27eb7cc9bb9",
         "id": "94920a3d0c7dc2921ec938e761465321a9e4f22690ea53375738e27eb7cc9bb9",
+<<<<<<< HEAD
         "line": 40,
+=======
+        "line": 29,
+>>>>>>> fix/web-hygiene-api
         "message": "Trailing whitespace characters detected."
       },
       {
@@ -57,13 +83,26 @@
         "construct": "Document",
         "fingerprint": "94920a3d0c7dc2921ec938e761465321a9e4f22690ea53375738e27eb7cc9bb9",
         "id": "94920a3d0c7dc2921ec938e761465321a9e4f22690ea53375738e27eb7cc9bb9",
+<<<<<<< HEAD
         "line": 103,
+=======
+        "line": 42,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "94920a3d0c7dc2921ec938e761465321a9e4f22690ea53375738e27eb7cc9bb9",
+        "id": "94920a3d0c7dc2921ec938e761465321a9e4f22690ea53375738e27eb7cc9bb9",
+        "line": 105,
+>>>>>>> fix/web-hygiene-api
         "message": "Trailing whitespace characters detected."
       }
     ],
     "path": "apps/web/src/components/support/SupportHubClient.tsx"
   },
   "feature": "Document",
+<<<<<<< HEAD
 <<<<<<< HEAD
   "firstDetected": "2026-07-04T03:15:47.107Z",
   "id": "f_cc1ff979",
@@ -73,6 +112,11 @@
   "id": "f_cc1ff979",
   "lastDetected": "2026-07-04T04:54:03.781Z",
 >>>>>>> fix/web-hygiene-core
+=======
+  "firstDetected": "2026-07-04T05:20:16.899Z",
+  "id": "f_cc1ff979",
+  "lastDetected": "2026-07-04T05:20:16.899Z",
+>>>>>>> fix/web-hygiene-api
   "occurrenceCount": 6,
   "owner": "Platform Team",
   "package": "apps",

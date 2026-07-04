@@ -2,6 +2,7 @@
   "history": [
     {
 <<<<<<< HEAD
+<<<<<<< HEAD
       "action": "CREATED",
       "notes": "New grouped finding registered: Raw <table> element used in portal. Use a reusable shared Table component.",
       "status": "NEW",
@@ -18,11 +19,18 @@
       "status": "REGRESSION",
       "timestamp": "2026-07-04T04:54:05.069Z"
 >>>>>>> fix/web-hygiene-core
+=======
+      "action": "DETECTED_AGAIN",
+      "notes": "Finding regressed. Code violation re-introduced. (Transitioned from CLOSED to REGRESSION)",
+      "status": "REGRESSION",
+      "timestamp": "2026-07-04T05:20:18.260Z"
+>>>>>>> fix/web-hygiene-api
     },
     {
       "action": "DETECTED_AGAIN",
       "notes": "Finding regressed. Code violation re-introduced. (Transitioned from CLOSED to REGRESSION)",
       "status": "REGRESSION",
+<<<<<<< HEAD
 <<<<<<< HEAD
       "timestamp": "2026-07-04T03:15:48.542Z"
     },
@@ -82,6 +90,9 @@
 =======
       "timestamp": "2026-07-04T04:55:08.576Z"
 >>>>>>> fix/web-hygiene-core
+=======
+      "timestamp": "2026-07-04T05:30:03.717Z"
+>>>>>>> fix/web-hygiene-api
     }
   ],
   "id": "f_7e324c2f"

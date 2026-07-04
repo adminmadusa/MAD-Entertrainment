@@ -2,6 +2,7 @@
   "history": [
     {
 <<<<<<< HEAD
+<<<<<<< HEAD
       "action": "CREATED",
       "notes": "New grouped finding registered: Duplicate component layout detected [Category D — Business Logic, Confidence: 88%, Severity: WARNING]: shares similarity with \"BookingConfirmationEmail\" in \"apps/server/src/lib/email/templates/booking-confirmation.tsx\". Recommendation: Extract shared business rules and api state hooks to \"packages/shared/src/hooks\" or package services instead of UI components. (Estimated Effort: Medium (4-8 hours), Risk: High (requires validation schema/API alignment and unit testing)).",
       "status": "NEW",
@@ -24,6 +25,12 @@
       "status": "NEW",
       "timestamp": "2026-07-04T04:54:05.247Z"
 >>>>>>> fix/web-hygiene-core
+=======
+      "action": "UPDATED",
+      "notes": "Occurrences updated. Active count: 1",
+      "status": "NEW",
+      "timestamp": "2026-07-04T05:20:18.457Z"
+>>>>>>> fix/web-hygiene-api
     }
   ],
   "id": "f_90c56629"

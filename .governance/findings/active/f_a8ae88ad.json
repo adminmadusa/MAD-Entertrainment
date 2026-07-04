@@ -6,10 +6,14 @@
   "evidence": {
     "construct": "UIElement",
 <<<<<<< HEAD
+<<<<<<< HEAD
     "line": 191,
 =======
     "line": 192,
 >>>>>>> fix/web-hygiene-core
+=======
+    "line": 191,
+>>>>>>> fix/web-hygiene-api
     "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
     "occurrences": [
       {
@@ -18,10 +22,14 @@
         "fingerprint": "7f0a38ece6364582894e8004b2d9505c629cad5a3de992e0d28044fb4f9610e7",
         "id": "7f0a38ece6364582894e8004b2d9505c629cad5a3de992e0d28044fb4f9610e7",
 <<<<<<< HEAD
+<<<<<<< HEAD
         "line": 177,
 =======
         "line": 178,
 >>>>>>> fix/web-hygiene-core
+=======
+        "line": 177,
+>>>>>>> fix/web-hygiene-api
         "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
         "snippet": "<button"
       },
@@ -31,10 +39,14 @@
         "fingerprint": "7f0a38ece6364582894e8004b2d9505c629cad5a3de992e0d28044fb4f9610e7",
         "id": "7f0a38ece6364582894e8004b2d9505c629cad5a3de992e0d28044fb4f9610e7",
 <<<<<<< HEAD
+<<<<<<< HEAD
         "line": 191,
 =======
         "line": 192,
 >>>>>>> fix/web-hygiene-core
+=======
+        "line": 191,
+>>>>>>> fix/web-hygiene-api
         "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
         "snippet": "<button"
       }
@@ -46,12 +58,17 @@
   "firstDetected": "2026-06-30T15:36:27.258Z",
   "id": "f_a8ae88ad",
 <<<<<<< HEAD
+<<<<<<< HEAD
   "lastDetected": "2026-07-04T04:11:43.108Z",
   "lastModified": "2026-07-04T04:11:43.108Z",
 =======
   "lastDetected": "2026-07-04T04:54:05.314Z",
   "lastModified": "2026-07-04T04:54:05.314Z",
 >>>>>>> fix/web-hygiene-core
+=======
+  "lastDetected": "2026-07-04T05:20:18.532Z",
+  "lastModified": "2026-07-04T05:20:18.532Z",
+>>>>>>> fix/web-hygiene-api
   "occurrenceCount": 2,
   "owner": "UI UX Guild",
   "package": "apps",

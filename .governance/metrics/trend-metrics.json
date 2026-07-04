@@ -89,6 +89,7 @@
   },
   {
 <<<<<<< HEAD
+<<<<<<< HEAD
     "averageConfidence": 0.9759763313609514,
     "averageResolutionTimeMs": 72372253.3076923,
     "closedFindings": 308,
@@ -103,6 +104,13 @@
     "newFindings": 716,
     "regressionCount": 642,
 >>>>>>> fix/web-hygiene-core
+=======
+    "averageConfidence": 0.9759336099585106,
+    "averageResolutionTimeMs": 72372253.3076923,
+    "closedFindings": 335,
+    "falsePositiveRate": 0,
+    "newFindings": 717,
+    "regressionCount": 635,
     "scores": {
       "accessibility": 0,
       "architecture": 55,
@@ -115,6 +123,30 @@
       "testing": 100,
       "uiConsistency": 0
     },
+    "timestamp": "2026-07-04T05:20:18.620Z",
+    "totalFindings": 1687
+  },
+  {
+    "averageConfidence": 0.9759336099585106,
+    "averageResolutionTimeMs": 72372253.3076923,
+    "closedFindings": 336,
+    "falsePositiveRate": 0,
+    "newFindings": 716,
+    "regressionCount": 635,
+>>>>>>> fix/web-hygiene-api
+    "scores": {
+      "accessibility": 0,
+      "architecture": 55,
+      "documentation": 0,
+      "maintainability": 100,
+      "overall": 63,
+      "performance": 100,
+      "security": 100,
+      "technicalDebt": 100,
+      "testing": 100,
+      "uiConsistency": 0
+    },
+<<<<<<< HEAD
 <<<<<<< HEAD
     "timestamp": "2026-07-04T04:11:43.115Z",
     "totalFindings": 1690
@@ -179,5 +211,9 @@
     "timestamp": "2026-07-04T04:55:08.597Z",
     "totalFindings": 1686
 >>>>>>> fix/web-hygiene-core
+=======
+    "timestamp": "2026-07-04T05:30:03.737Z",
+    "totalFindings": 1687
+>>>>>>> fix/web-hygiene-api
   }
 ]

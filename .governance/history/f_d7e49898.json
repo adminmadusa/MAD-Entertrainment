@@ -5,6 +5,7 @@
       "notes": "New grouped finding registered: Duplicate import declaration from module path \"@mad/shared\".",
       "status": "NEW",
 <<<<<<< HEAD
+<<<<<<< HEAD
       "timestamp": "2026-07-04T03:15:45.548Z"
     },
     {
@@ -21,6 +22,9 @@
 =======
       "timestamp": "2026-07-04T04:54:02.256Z"
 >>>>>>> fix/web-hygiene-core
+=======
+      "timestamp": "2026-07-04T05:20:15.331Z"
+>>>>>>> fix/web-hygiene-api
     }
   ],
   "id": "f_d7e49898"

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+
 import { submitContactForm } from '@/app/actions/contact.actions';
 
 export function ContactForm() {

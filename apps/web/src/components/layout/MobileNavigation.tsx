@@ -1,8 +1,9 @@
 'use client';
 
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import Link from 'next/link';
 import { useRef, useEffect, memo } from 'react';
+
 import { useFocusTrap } from '@mad/ui';
 
 interface LinkItem {

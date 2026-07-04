@@ -52,12 +52,17 @@
   "firstDetected": "2026-06-29T08:10:28.791Z",
   "id": "f_a0ffb061",
 <<<<<<< HEAD
+<<<<<<< HEAD
   "lastDetected": "2026-07-04T04:11:43.086Z",
   "lastModified": "2026-07-04T04:11:43.086Z",
 =======
   "lastDetected": "2026-07-04T04:54:05.211Z",
   "lastModified": "2026-07-04T04:54:05.211Z",
 >>>>>>> fix/web-hygiene-core
+=======
+  "lastDetected": "2026-07-04T05:20:18.409Z",
+  "lastModified": "2026-07-04T05:20:18.409Z",
+>>>>>>> fix/web-hygiene-api
   "occurrenceCount": 4,
   "owner": "UI UX Guild",
   "package": "apps",

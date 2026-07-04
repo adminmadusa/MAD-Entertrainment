@@ -2,6 +2,7 @@
   "history": [
     {
 <<<<<<< HEAD
+<<<<<<< HEAD
       "action": "CREATED",
       "notes": "New grouped finding registered: Local duplication of <Field> wrapper. Use a shared components package.",
       "status": "NEW",
@@ -18,11 +19,18 @@
       "status": "REGRESSION",
       "timestamp": "2026-07-04T04:54:05.071Z"
 >>>>>>> fix/web-hygiene-core
+=======
+      "action": "DETECTED_AGAIN",
+      "notes": "Finding regressed. Code violation re-introduced. (Transitioned from CLOSED to REGRESSION)",
+      "status": "REGRESSION",
+      "timestamp": "2026-07-04T05:20:18.262Z"
+>>>>>>> fix/web-hygiene-api
     },
     {
       "action": "DETECTED_AGAIN",
       "notes": "Finding regressed. Code violation re-introduced. (Transitioned from CLOSED to REGRESSION)",
       "status": "REGRESSION",
+<<<<<<< HEAD
 <<<<<<< HEAD
       "timestamp": "2026-07-04T03:15:48.546Z"
     },
@@ -82,6 +90,9 @@
 =======
       "timestamp": "2026-07-04T04:55:08.577Z"
 >>>>>>> fix/web-hygiene-core
+=======
+      "timestamp": "2026-07-04T05:30:03.718Z"
+>>>>>>> fix/web-hygiene-api
     }
   ],
   "id": "f_839e768e"

@@ -1,9 +1,10 @@
 'use client';
 
-import { useAuth } from '@/providers/AuthProvider';
-import { useAuthModal } from '@/providers/AuthModalProvider';
 import Link from 'next/link';
 import { useState, useEffect, useRef } from 'react';
+
+import { useAuthModal } from '@/providers/AuthModalProvider';
+import { useAuth } from '@/providers/AuthProvider';
 
 export function UserDropdown() {
   const { isAuthenticated, user, logout } = useAuth();

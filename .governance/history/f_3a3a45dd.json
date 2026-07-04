@@ -5,10 +5,14 @@
       "notes": "New grouped finding registered: File must terminate with exactly one trailing newline character.",
       "status": "NEW",
 <<<<<<< HEAD
+<<<<<<< HEAD
       "timestamp": "2026-07-04T03:15:48.030Z"
 =======
       "timestamp": "2026-07-04T04:54:04.709Z"
 >>>>>>> fix/web-hygiene-core
+=======
+      "timestamp": "2026-07-04T05:20:17.897Z"
+>>>>>>> fix/web-hygiene-api
     }
   ],
   "id": "f_3a3a45dd"

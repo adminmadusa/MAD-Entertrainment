@@ -1,6 +1,7 @@
 {
   "history": [
     {
+<<<<<<< HEAD
       "action": "RESOLVED",
       "notes": "Code violation no longer detected. Marking finding as closed. (Transitioned from NEW to CLOSED)",
       "status": "CLOSED",
@@ -41,6 +42,12 @@
       "notes": "Finding regressed. Code violation re-introduced. (Transitioned from CLOSED to REGRESSION)",
       "status": "REGRESSION",
       "timestamp": "2026-07-04T04:15:24.525Z"
+=======
+      "action": "DETECTED_AGAIN",
+      "notes": "Finding regressed. Code violation re-introduced. (Transitioned from CLOSED to REGRESSION)",
+      "status": "REGRESSION",
+      "timestamp": "2026-07-04T05:20:18.243Z"
+>>>>>>> fix/web-hygiene-api
     }
   ],
   "id": "f_682439c7"

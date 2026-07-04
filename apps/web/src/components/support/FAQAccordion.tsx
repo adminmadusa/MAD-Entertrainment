@@ -1,7 +1,8 @@
 'use client';
 
-import { FAQ } from '@/content/faqContent';
 import { useState } from 'react';
+
+import type { FAQ } from '@/content/faqContent';
 
 interface FAQAccordionProps {
   faqs: FAQ[];

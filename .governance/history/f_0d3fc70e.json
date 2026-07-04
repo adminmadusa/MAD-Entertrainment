@@ -2,6 +2,7 @@
   "history": [
     {
 <<<<<<< HEAD
+<<<<<<< HEAD
       "action": "CREATED",
       "notes": "New grouped finding registered: Custom modal backdrop is missing role=\"dialog\" or aria-modal=\"true\" accessibility tags.",
       "status": "NEW",
@@ -36,6 +37,12 @@
       "status": "NEW",
       "timestamp": "2026-07-04T04:54:05.191Z"
 >>>>>>> fix/web-hygiene-core
+=======
+      "action": "UPDATED",
+      "notes": "Occurrences updated. Active count: 1",
+      "status": "NEW",
+      "timestamp": "2026-07-04T05:20:18.381Z"
+>>>>>>> fix/web-hygiene-api
     }
   ],
   "id": "f_0d3fc70e"

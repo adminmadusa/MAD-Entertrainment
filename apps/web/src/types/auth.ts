@@ -1,4 +1,4 @@
-import { AuthUser as SharedAuthUser } from '@mad/types';
+import type { AuthUser as SharedAuthUser } from '@mad/types';
 export type AuthUser = SharedAuthUser;
 
 export interface AuthResponse {

@@ -23,12 +23,17 @@
   "firstDetected": "2026-07-03T12:25:47.340Z",
   "id": "f_9a2b93e4",
 <<<<<<< HEAD
+<<<<<<< HEAD
   "lastDetected": "2026-07-04T04:15:24.670Z",
   "lastModified": "2026-07-04T04:15:24.670Z",
 =======
   "lastDetected": "2026-07-04T04:54:05.202Z",
   "lastModified": "2026-07-04T04:54:05.202Z",
 >>>>>>> fix/web-hygiene-core
+=======
+  "lastDetected": "2026-07-04T05:20:18.395Z",
+  "lastModified": "2026-07-04T05:20:18.395Z",
+>>>>>>> fix/web-hygiene-api
   "occurrenceCount": 1,
   "owner": "Platform Team",
   "package": "apps",

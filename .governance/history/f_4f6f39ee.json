@@ -2,6 +2,7 @@
   "history": [
     {
 <<<<<<< HEAD
+<<<<<<< HEAD
       "action": "CREATED",
       "notes": "New grouped finding registered: Duplicate component layout detected [Category B — Visual, Confidence: 76%, Severity: WARNING]: shares similarity with \"ErrorBoundary\" in \"apps/admin/src/components/ErrorBoundary.tsx\". Recommendation: Standardize visual presentation (flex structure, margins) using design tokens or Tailwind utility classes instead of creating component abstractions. (Estimated Effort: Low (1-2 hours), Risk: Low).",
       "status": "NEW",
@@ -24,6 +25,12 @@
       "status": "NEW",
       "timestamp": "2026-07-04T04:54:05.179Z"
 >>>>>>> fix/web-hygiene-core
+=======
+      "action": "UPDATED",
+      "notes": "Occurrences updated. Active count: 1",
+      "status": "NEW",
+      "timestamp": "2026-07-04T05:20:18.369Z"
+>>>>>>> fix/web-hygiene-api
     }
   ],
   "id": "f_4f6f39ee"

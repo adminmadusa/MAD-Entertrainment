@@ -5,6 +5,7 @@
       "notes": "New grouped finding registered: Import from types module \"../core/types\" should use \"import type\".",
       "status": "NEW",
 <<<<<<< HEAD
+<<<<<<< HEAD
       "timestamp": "2026-07-04T03:15:48.222Z"
     },
     {
@@ -21,6 +22,9 @@
 =======
       "timestamp": "2026-07-04T04:54:04.900Z"
 >>>>>>> fix/web-hygiene-core
+=======
+      "timestamp": "2026-07-04T05:20:18.085Z"
+>>>>>>> fix/web-hygiene-api
     }
   ],
   "id": "f_88e41770"
