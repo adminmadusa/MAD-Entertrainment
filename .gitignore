@@ -58,4 +58,14 @@ scratch/
 # Governance runtime artifacts
 # Generated locally by the governance engine. Use governance tooling locally
 # as needed. Not tracked in version control.
+.agents/action_queue.json
+.agents/baseline.json
+.agents/branch_registry.json
+.agents/cleanup_commands.sh
+.agents/git_repository_hygiene_audit.md
+.agents/git_verification_report.json
+.agents/repository_metrics.json
+.agents/verification_registry.json
+.agents/GIT_VERIFICATION_REPORT.md
+.agents/REPOSITORY_BASELINE.md
 .governance/

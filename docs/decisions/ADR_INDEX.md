@@ -7,3 +7,5 @@ This index maintains the chronological list of all architectural decisions made 
 | **ADR-001** | Booking Ownership | Implemented | Architecture / API / Governance | 2026-06-25 | [ADR-001](ADR-001-booking-ownership.md) |
 | **ADR-002** | Governance Finding Persistence v2 | Implemented | Governance | 2026-07-01 | [ADR-002](ADR-002-governance-persistence-v2.md) |
 | **ADR-003** | Governance Status Semantics & Architecture Specification | Proposed | Governance | 2026-07-02 | [ADR-003](ADR-003-governance-status-semantics.md) |
+| **ADR-004** | Governance Rule Execution Engine | Implemented | Governance | 2026-07-03 | [ADR-004](ADR-004-governance-execution-engine.md) |
+| **ADR-005** | Git Governance Engine Core Design Principles & Schema Contracts | Accepted | Governance | 2026-07-04 | [ADR-005](ADR-005-git-governance-engine-design-principles.md) |
