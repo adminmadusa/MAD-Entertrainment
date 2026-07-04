@@ -54,7 +54,7 @@ describe('Fingerprint strategies', () => {
         /* Block comment inside */
         Click Me
       </button>
-      
+
     `;
 
     const fp1 = smart.fingerprint('VAL-UI-010', 'src/Component.tsx', 'Button', rawCode);
