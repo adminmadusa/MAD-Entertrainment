@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useAdminAuth } from '@/providers/AdminAuthProvider';
 import { AdminRole } from '@mad/shared';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@mad/ui';
 
 import { adminGetNotifications, adminRetryNotification } from '@/lib/api/admin/notification.service';
 import ErrorState from '@/components/states/ErrorState';
@@ -38,37 +39,37 @@ export default function AdminNotificationsPage() {
   const renderTableBody = () => {
     if (isLoading) {
       return Array.from({ length: 5 }).map((_, i) => (
-        <tr key={i} className="border-b border-border-subtle/50 animate-pulse">
-          <td className="py-4 px-5"><div className="h-4 bg-white/5 rounded w-32" /></td>
-          <td className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-16" /></td>
-          <td className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-64" /></td>
-          <td className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-8" /></td>
-          <td className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-16" /></td>
-          <td className="py-4 px-5"><div className="h-4 bg-white/5 rounded w-12 ml-auto" /></td>
-        </tr>
+        <TableRow key={i} className="border-b border-border-subtle/50 animate-pulse">
+          <TableCell className="py-4 px-5"><div className="h-4 bg-white/5 rounded w-32" /></TableCell>
+          <TableCell className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-16" /></TableCell>
+          <TableCell className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-64" /></TableCell>
+          <TableCell className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-8" /></TableCell>
+          <TableCell className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-16" /></TableCell>
+          <TableCell className="py-4 px-5"><div className="h-4 bg-white/5 rounded w-12 ml-auto" /></TableCell>
+        </TableRow>
       ));
     }
 
     if (notifications.length === 0) {
       return (
-        <tr>
-          <td colSpan={6} className="py-16 text-center text-text-muted">
+        <TableRow>
+          <TableCell colSpan={6} className="py-16 text-center text-text-muted">
             No transmission logs found.
-          </td>
-        </tr>
+          </TableCell>
+        </TableRow>
       );
     }
 
     return notifications.map((notif) => (
-      <tr key={notif._id} className="border-b border-border-subtle/40 hover:bg-white/2 transition-colors">
-        <td className="py-4 px-5">
+      <TableRow key={notif._id} className="border-b border-border-subtle/40 hover:bg-white/2 transition-colors">
+        <TableCell className="py-4 px-5">
           <div className="font-medium text-text-primary truncate max-w-40">{notif.recipient}</div>
           <div className="text-[10px] text-text-muted font-mono">{notif._id}</div>
-        </td>
-        <td className="py-4 px-4">
+        </TableCell>
+        <TableCell className="py-4 px-4">
           <span className="text-xs text-text-secondary capitalize font-medium">{notif.channel}</span>
-        </td>
-        <td className="py-4 px-4 max-w-xs text-text-secondary">
+        </TableCell>
+        <TableCell className="py-4 px-4 max-w-xs text-text-secondary">
           {notif.subject && <div className="font-semibold text-xs text-white truncate">{notif.subject}</div>}
           <p className="text-xs truncate">{notif.body}</p>
           {notif.failureReason && (
@@ -76,11 +77,11 @@ export default function AdminNotificationsPage() {
               Error: {notif.failureReason}
             </p>
           )}
-        </td>
-        <td className="py-4 px-4 text-text-secondary">
+        </TableCell>
+        <TableCell className="py-4 px-4 text-text-secondary">
           {notif.retryCount}
-        </td>
-        <td className="py-4 px-4">
+        </TableCell>
+        <TableCell className="py-4 px-4">
           <span className={`text-xs px-2.5 py-1 rounded-full border font-medium ${
             notif.isSent
               ? 'bg-green-500/10 text-green-400 border-green-500/30'
@@ -88,8 +89,8 @@ export default function AdminNotificationsPage() {
           }`}>
             {notif.isSent ? 'Sent' : 'Failed'}
           </span>
-        </td>
-        <td className="py-4 px-5 text-right">
+        </TableCell>
+        <TableCell className="py-4 px-5 text-right">
           {canRetryNotification && !notif.isSent ? (
             <button
               onClick={() => retryMutation.mutate(notif._id)}
@@ -101,8 +102,8 @@ export default function AdminNotificationsPage() {
           ) : (
             <span className="text-text-muted text-xs">—</span>
           )}
-        </td>
-      </tr>
+        </TableCell>
+      </TableRow>
     ));
   };
 
@@ -155,23 +156,21 @@ export default function AdminNotificationsPage() {
 
       {/* Table */}
       <div className="glass rounded-2xl border border-border-subtle overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-border-subtle">
-                <th className="text-left text-text-muted font-medium py-3.5 px-5">Recipient</th>
-                <th className="text-left text-text-muted font-medium py-3.5 px-4">Channel</th>
-                <th className="text-left text-text-muted font-medium py-3.5 px-4">Message</th>
-                <th className="text-left text-text-muted font-medium py-3.5 px-4">Attempts</th>
-                <th className="text-left text-text-muted font-medium py-3.5 px-4">Status</th>
-                <th className="text-right text-text-muted font-medium py-3.5 px-5">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {renderTableBody()}
-            </tbody>
-          </table>
-        </div>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="py-3.5 px-5">Recipient</TableHead>
+              <TableHead className="py-3.5 px-4">Channel</TableHead>
+              <TableHead className="py-3.5 px-4">Message</TableHead>
+              <TableHead className="py-3.5 px-4">Attempts</TableHead>
+              <TableHead className="py-3.5 px-4">Status</TableHead>
+              <TableHead className="py-3.5 px-5 text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {renderTableBody()}
+          </TableBody>
+        </Table>
 
         {/* Pagination */}
         {pagination && pagination.totalPages > 1 && (

@@ -1,6 +1,8 @@
 import React from 'react';
 import { EVENT_CATEGORY_LABELS, EventStatus } from '@mad/shared';
 import { type AdminCategory } from '@/lib/api/admin/category.service';
+import { FormField } from '@mad/ui';
+
 
 const EVENT_STATUS_LABELS: Partial<Record<EventStatus, string>> = {
   [EventStatus.DRAFT]: 'Draft',
@@ -13,14 +15,6 @@ const EVENT_STATUS_LABELS: Partial<Record<EventStatus, string>> = {
 const inputCls =
   'w-full px-4 py-2.5 rounded-xl bg-background border border-border-subtle text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-purple transition-colors';
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div className="space-y-1.5">
-      <label className="text-text-secondary text-sm font-medium block">{label}</label>
-      {children}
-    </div>
-  );
-}
 
 export interface EventBasicInfoCardProps {
   title: string;
@@ -54,7 +48,7 @@ export const EventBasicInfoCard = React.memo(function EventBasicInfoCard({
   return (
     <div className="glass rounded-2xl border border-border-subtle p-6 space-y-5">
       <h2 className="text-white font-semibold">Basic Information</h2>
-      <Field label="Event Title *">
+      <FormField label="Event Title *">
         <input
           id="event-title"
           value={title}
@@ -63,9 +57,9 @@ export const EventBasicInfoCard = React.memo(function EventBasicInfoCard({
           required
           className={inputCls}
         />
-      </Field>
+      </FormField>
       <div className="grid grid-cols-2 gap-4">
-        <Field label="Category">
+        <FormField label="Category">
           <select
             id="event-category"
             value={category}
@@ -84,8 +78,8 @@ export const EventBasicInfoCard = React.memo(function EventBasicInfoCard({
                   </option>
                 ))}
           </select>
-        </Field>
-        <Field label="Status">
+        </FormField>
+        <FormField label="Status">
           <select
             id="event-status"
             value={status}
@@ -98,8 +92,8 @@ export const EventBasicInfoCard = React.memo(function EventBasicInfoCard({
               </option>
             ))}
           </select>
-        </Field>
-        <Field label="Venue *">
+        </FormField>
+        <FormField label="Venue *">
           <div className="relative">
             <input
               id="event-venue"
@@ -126,9 +120,9 @@ export const EventBasicInfoCard = React.memo(function EventBasicInfoCard({
               </svg>
             </span>
           </div>
-        </Field>
+        </FormField>
       </div>
-      <Field label="Full Description *">
+      <FormField label="Full Description *">
         <textarea
           id="event-description"
           value={description}
@@ -138,7 +132,7 @@ export const EventBasicInfoCard = React.memo(function EventBasicInfoCard({
           rows={5}
           className={`${inputCls} resize-none`}
         />
-      </Field>
+      </FormField>
     </div>
   );
 });

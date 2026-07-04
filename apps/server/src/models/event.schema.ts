@@ -254,8 +254,6 @@ const eventSchema = new Schema<IEvent>(
   }
 );
 
-
-
 // ─── Indexes ──────────────────────────────────────────────────
 eventSchema.index({ startDate: 1, status: 1 });
 eventSchema.index({ category: 1, status: 1, startDate: 1 });

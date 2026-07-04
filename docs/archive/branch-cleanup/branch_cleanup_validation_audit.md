@@ -1,7 +1,7 @@
 # MAD Entertainment – Repository Cleanup & Asset Preservation Protocol
 
-**Role:** Lead Staff Engineer (Repository Governance)  
-**Date:** June 16, 2026  
+**Role:** Lead Staff Engineer (Repository Governance)
+**Date:** June 16, 2026
 **Status:** VALIDATION REPORT COMPLETE (Assessment Only)
 
 ---

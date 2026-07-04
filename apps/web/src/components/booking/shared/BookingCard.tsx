@@ -91,7 +91,7 @@ interface BookingCardProps {
   ticketsReady: boolean;
   isPast?: boolean;
   isTarget?: boolean;
-  
+
   // Accordion Props
   collapsible?: boolean;
   isExpanded?: boolean;
@@ -103,7 +103,7 @@ interface BookingCardProps {
   resendCooldown: number;
   onDownload: () => void;
   onResend: () => void;
-  
+
   // Custom context e.g. for guest lookup / token passing
   pollCount?: number;
   isFetchingSingle?: boolean;

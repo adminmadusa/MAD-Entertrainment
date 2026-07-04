@@ -16,7 +16,7 @@ export async function submitContactForm(formData: FormData) {
     // In a real application, you would send this to an email provider
     // like Resend, SendGrid, or save it to a database ticket system.
     // The email subject would be constructed as: `[${issueType.toUpperCase()}] ${name}`
-    
+
     // Example of constructing the formatted body:
     /*
       Name: ${name}
@@ -24,7 +24,7 @@ export async function submitContactForm(formData: FormData) {
       Booking Reference: ${bookingRef || 'Not provided'}
       Transaction ID: ${transactionId || 'Not provided'}
       Issue Type: ${issueType}
-      
+
       Message:
       ${message}
     */

@@ -92,7 +92,7 @@ export default function DJsPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
-                <h3 className="text-xl font-bold text-white mb-2">No DJs Found</h3>
+                <h2 className="text-xl font-bold text-white mb-2">No DJs Found</h2>
                 <p className="text-text-muted text-sm max-w-sm mx-auto mb-6">
                   We couldn't find any DJ Operators matching your search criteria.
                 </p>
@@ -134,7 +134,7 @@ export default function DJsPage() {
                             <span className="text-text-muted text-xs">No Image</span>
                           </div>
                         )}
-                        
+
                         {/* Active Badge */}
                         <div className="absolute top-3 right-3 z-10 flex gap-2">
                           {dj.isActive && (
@@ -148,16 +148,16 @@ export default function DJsPage() {
                       {/* Content */}
                       <div className="p-5 flex flex-col flex-grow">
                         <div className="flex-grow">
-                          <h3 className="font-bold text-lg text-white mb-1.5 group-hover:text-accent-purple transition-colors line-clamp-1">
+                          <h2 className="font-bold text-lg text-white mb-1.5 group-hover:text-accent-purple transition-colors line-clamp-1">
                             {dj.name}
-                          </h3>
+                          </h2>
                           {dj.specialties && dj.specialties.length > 0 && (
                             <p className="text-xs text-text-muted mb-3 line-clamp-1">
                               {dj.specialties.join(', ')}
                             </p>
                           )}
                         </div>
-                        
+
                         <div className="flex items-center justify-between pt-4 mt-2 border-t border-border-subtle text-xs">
                           <div className="text-text-secondary">
                             <span className="font-bold text-white">{dj.experienceYears || 0}</span> Years Exp.

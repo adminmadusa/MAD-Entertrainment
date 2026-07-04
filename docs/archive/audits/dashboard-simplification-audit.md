@@ -1,13 +1,13 @@
 # Dashboard & Navigation UX Simplification Audit
-**MAD Entertrainment Platform**  
-*Document Status: Draft / Audit Only*  
+**MAD Entertrainment Platform**
+*Document Status: Draft / Audit Only*
 *Target Branch: `feat/dashboard-simplification`*
 
 ---
 
 ## Executive Summary
 
-This audit evaluates opportunities to simplify the customer and admin dashboard UX within the **MAD Entertrainment** codebase without altering business logic, database schemas, or API contracts. By analyzing existing routes, authentication flows, page architectures, and mobile responsiveness, we have identified substantial redundancies, broken paths (dead-ends), and layout conflicts. 
+This audit evaluates opportunities to simplify the customer and admin dashboard UX within the **MAD Entertrainment** codebase without altering business logic, database schemas, or API contracts. By analyzing existing routes, authentication flows, page architectures, and mobile responsiveness, we have identified substantial redundancies, broken paths (dead-ends), and layout conflicts.
 
 Implementing the recommended changes will significantly reduce cognitive load for admins, eliminate redundant page hops for customers, fix critical navigation failures, and ensure the entire platform is responsive, modern, and visually premium on all viewports.
 
@@ -24,18 +24,18 @@ graph TD
     Landing["Landing Page (/)"] -- "1. Click My Booking" --> MyBookingPublic["My Booking Portal (/my-booking)"]
     Landing -- "Invisible Route (No Link)" --> TicketPortal["Ticket Portal (/tickets)"]
     Landing -- "Broken Links (404)" --> DeadEnds["404 Pages (/artists, /contact, /faq, /refunds)"]
-    
+
     MyBookingPublic -- "Requires typing Ref ID" --> BookingDetails["Booking Details & QRs (/my-booking?ref=ID)"]
-    
+
     TicketPortal -- "Email + OTP Login" --> TicketWallet["Ticket Wallet View (/tickets#portal)"]
-    
+
     Landing -- "Click Book Now" --> Events["Browse Events (/events)"]
     Events --> Checkout["Checkout Screen (/checkout/ID)"]
     Checkout -- "Requires Login/OTP" --> DashboardRedirect["Auto Redirect to /dashboard"]
-    
+
     Landing -- "Manual URL or Redirect" --> Login["Sign In (/login)"]
     Login -- "Email + OTP or Google" --> Dashboard["Authenticated Dashboard (/dashboard)"]
-    
+
     Dashboard -- "Click View Details" --> BookingDetails
 ```
 
@@ -94,16 +94,16 @@ Depending on the starting context, retrieving a QR entry pass is highly tedious:
     2. Input Email $\rightarrow$ Get OTP $\rightarrow$ Input OTP $\rightarrow$ Click "**Verify Passcode**".
     3. **Result**: 2 clicks, and bookings and tickets/QRs are rendered *directly* in a unified list without extra page hops or reference typing.
 
-> [!WARNING]  
+> [!WARNING]
 > **The `/tickets` Discovery Gap**: The `/tickets` portal provides the single best customer experience (passwordless authentication $\rightarrow$ instant listing of all bookings AND QRs in a single view), yet **it is not linked anywhere in the navbar or footer navigation**. It is practically invisible to users unless they receive a direct transactional email link.
 
 ---
 
 ### 2. Core Customer UX Pain Points & Gaps
 
-*   **Redundant Auth & Page Portals**: 
+*   **Redundant Auth & Page Portals**:
     `/login` and `/tickets` are parallel, duplicate flows that handle passwordless OTP authentication exactly the same way under the hood, but lead to different screens. `/login` sends users to `/dashboard` (which doesn't show QRs), while `/tickets` keeps them in a unified "Ticket Wallet" layout.
-*   **The `/my-booking` Double-Query Loop**: 
+*   **The `/my-booking` Double-Query Loop**:
     If a logged-in user on `/dashboard` clicks "View Details →", they are sent to the public `/my-booking?ref=ID` page. Rather than passing booking details, `/my-booking` initiates a brand-new API query `publicGetBookingDetails` to fetch the same data, wasting bandwidth.
 *   **Obsolete Registration Route**:
     `/register` is obsolete and broken because passwordless credentials cannot be initialized via the legacy form. Although it is now client-side redirected to `/login`, the legacy files remain, and it is still indexed in `sitemap.ts`.

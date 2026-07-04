@@ -16,13 +16,11 @@ import { formatEventDate } from '@/utils/date';
 export const FeaturedEventsSection = memo(function FeaturedEventsSection({ initialEvents = [] }: { initialEvents: Event[] }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
-  
+
   const prefersReducedMotion = useReducedMotion();
   const mounted = useMounted();
 
   const events = initialEvents;
-
-
 
   // SSR-safe responsive value — defaults to 1024 (desktop) on server,
   // updates to real viewport on mount. Never reads window during render.
@@ -66,8 +64,8 @@ export const FeaturedEventsSection = memo(function FeaturedEventsSection({ initi
 
 
   return (
-    <section 
-      className="pt-8 pb-16 overflow-hidden" 
+    <section
+      className="pt-8 pb-16 overflow-hidden"
       aria-label="Featured events"
       role="region"
     >
@@ -107,9 +105,9 @@ export const FeaturedEventsSection = memo(function FeaturedEventsSection({ initi
             </p>
           </div>
         ) : (
-          <div 
+          <div
             ref={containerRef}
-            className="relative w-full max-w-6xl mx-auto h-[450px] sm:h-[500px] mt-8 focus:outline-none" 
+            className="relative w-full max-w-6xl mx-auto h-[450px] sm:h-[500px] mt-8 focus:outline-none"
             style={{ perspective: '1200px' }}
             role="group"
             aria-roledescription="carousel"
@@ -126,19 +124,19 @@ export const FeaturedEventsSection = memo(function FeaturedEventsSection({ initi
               <AnimatePresence initial={false} mode="popLayout">
                 {events.map((event, index) => {
                   const offset = index - activeIndex;
-                  
+
                   // Wrap logic for infinite carousel feel
                   let absoluteOffset = offset;
                   if (offset > events.length / 2) absoluteOffset -= events.length;
                   if (offset < -events.length / 2) absoluteOffset += events.length;
-                  
+
                   const isActive = absoluteOffset === 0;
-                  
+
                   // Safe server default (1024 width) prevents layout shifts
                   const currentWidth = mounted ? windowWidth : 1024;
                   const isMobile = currentWidth < 640;
                   const spread = isMobile ? 100 : 160;
-                  
+
                   // Cover flow 3D math
                   const x = absoluteOffset * spread;
                   const z = isActive || isMobile ? 0 : -150 - Math.abs(absoluteOffset) * 60;
@@ -208,7 +206,7 @@ export const FeaturedEventsSection = memo(function FeaturedEventsSection({ initi
                               🎧
                             </div>
                           )}
-                          
+
                           {/* Dark overlay for inactive slides to make the center pop */}
                           {!isActive && <div className="absolute inset-0 bg-black/40 transition-opacity" />}
 
@@ -246,10 +244,10 @@ export const FeaturedEventsSection = memo(function FeaturedEventsSection({ initi
                             ₹{event.ticketTiers && event.ticketTiers.length > 0 ? Math.min(...event.ticketTiers.map((t) => t.price)) : 0}
                           </div>
                         </div>
-                        <Link 
-                          href={`/events/${event.slug}`} 
-                          id={`event-card-book-${event.slug}`} 
-                          tabIndex={isActive ? 0 : -1} 
+                        <Link
+                          href={`/events/${event.slug}`}
+                          id={`event-card-book-${event.slug}`}
+                          tabIndex={isActive ? 0 : -1}
                           aria-label={event.isSoldOut ? `View details for ${event.title}` : `Book tickets for ${event.title}`}
                           className={`px-2.5 py-1.5 sm:px-3.5 sm:py-2 text-[10px] sm:text-xs font-bold text-white btn-gradient rounded-xl shadow-glow-sm group-hover:scale-105 transition-all text-center inline-block focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
                             !isActive ? 'pointer-events-none opacity-50 cursor-not-allowed' : ''
@@ -263,25 +261,25 @@ export const FeaturedEventsSection = memo(function FeaturedEventsSection({ initi
                 })}
               </AnimatePresence>
             </div>
-            
+
             {/* Navigation Controls */}
             {events.length > 1 && (
               <>
-                <button 
+                <button
                   onClick={prevSlide}
                   className="absolute left-0 sm:left-4 top-1/2 -translate-y-1/2 z-30 p-3 sm:p-4 rounded-full glass border border-border-subtle text-white hover:text-accent-purple hover:border-accent-purple/50 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-2 focus-visible:ring-offset-background shadow-lg"
                   aria-label="Previous event"
                 >
                   <ArrowLeft size={20} />
                 </button>
-                <button 
+                <button
                   onClick={nextSlide}
                   className="absolute right-0 sm:right-4 top-1/2 -translate-y-1/2 z-30 p-3 sm:p-4 rounded-full glass border border-border-subtle text-white hover:text-accent-purple hover:border-accent-purple/50 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-2 focus-visible:ring-offset-background shadow-lg"
                   aria-label="Next event"
                 >
                   <ArrowRight size={20} />
                 </button>
- 
+
                 {/* Dots indicator */}
                 <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 flex gap-2 z-30" role="tablist" aria-label="Carousel slide triggers">
                   {events.map((_, idx) => (
@@ -291,8 +289,8 @@ export const FeaturedEventsSection = memo(function FeaturedEventsSection({ initi
                       role="tab"
                       aria-selected={idx === activeIndex}
                       className={`w-2 h-2 rounded-full transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
-                        idx === activeIndex 
-                          ? 'bg-accent-purple w-6 shadow-glow-sm' 
+                        idx === activeIndex
+                          ? 'bg-accent-purple w-6 shadow-glow-sm'
                           : 'bg-border-subtle hover:bg-accent-purple/50'
                       }`}
                       aria-label={`Go to slide ${idx + 1}`}

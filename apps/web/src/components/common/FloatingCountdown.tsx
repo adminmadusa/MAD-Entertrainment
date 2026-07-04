@@ -20,7 +20,7 @@ export function FloatingCountdown({ popup, onClose }: FloatingCountdownProps) {
 
   // We rely on the endDate of the campaign or the linkedEvent's earlyBirdDeadline/startDate
   const targetDate = popup.endDate || popup.linkedEvent?.earlyBirdDeadline || popup.linkedEvent?.startDate;
-  
+
   const { days, hours, minutes, seconds, isExpired } = useCountdown(targetDate);
 
   if (isExpired) {
@@ -38,7 +38,7 @@ export function FloatingCountdown({ popup, onClose }: FloatingCountdownProps) {
       className="fixed bottom-4 right-4 z-40 sm:bottom-6 sm:right-6 w-[calc(100%-2rem)] sm:w-auto"
     >
       <div className="relative glass-strong rounded-2xl border border-accent-purple/30 p-4 shadow-glow flex items-center gap-4 cursor-pointer hover:bg-white/5 transition-colors overflow-hidden" onClick={() => setIsExpanded(true)}>
-        
+
         {/* Minimize/Close Button - Stops propagation to prevent opening modal */}
         <button
           onClick={(e) => {
@@ -64,7 +64,7 @@ export function FloatingCountdown({ popup, onClose }: FloatingCountdownProps) {
         <div className="flex-1 pr-6">
           <p className="text-accent-purple text-xs font-bold uppercase tracking-wider mb-1">Limited Time</p>
           <h3 className="text-white font-semibold text-sm line-clamp-1">{popup.title}</h3>
-          
+
           <div className="flex items-center gap-2 mt-2">
             <div className="flex gap-1 text-white text-xs font-mono font-medium">
               <span className="bg-white/10 px-1.5 py-0.5 rounded">{formatTime(days)}</span>d
@@ -74,7 +74,7 @@ export function FloatingCountdown({ popup, onClose }: FloatingCountdownProps) {
             </div>
           </div>
         </div>
-        
+
         {/* Chevron */}
         <div className="text-white/50">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">

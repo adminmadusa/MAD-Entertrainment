@@ -191,8 +191,8 @@ export class AuthService {
           email: userEmail,
           firstName: magicRecord.firstName,
           lastName: magicRecord.lastName,
-          name: (magicRecord.firstName || magicRecord.lastName) 
-            ? `${magicRecord.firstName || ''} ${magicRecord.lastName || ''}`.trim() 
+          name: (magicRecord.firstName || magicRecord.lastName)
+            ? `${magicRecord.firstName || ''} ${magicRecord.lastName || ''}`.trim()
             : undefined,
           mobileNumber: magicRecord.mobileNumber,
           isActive: true,
@@ -534,7 +534,7 @@ export class AuthService {
       // Strictly prevent multiple parallel processes or race conditions from linking the same booking twice
       const result = await Booking.updateMany(
         { guestEmail: email, userId: { $exists: false } },
-        { 
+        {
           $set: { userId: new Types.ObjectId(userId) }
         }
       );

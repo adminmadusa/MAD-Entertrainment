@@ -7,7 +7,7 @@ function createMockJwt(payload: any, hasThreeParts = true): string {
   // Node.js Buffer is globally available in Vitest/Node environment
   const headerBase64 = Buffer.from(JSON.stringify(header)).toString('base64url');
   const payloadBase64 = Buffer.from(JSON.stringify(payload)).toString('base64url');
-  
+
   if (!hasThreeParts) {
     return `${headerBase64}.${payloadBase64}`;
   }
@@ -23,7 +23,7 @@ describe('JWT Utilities', () => {
     it('TC-001: should decode a valid token with ASCII payload', () => {
       const payload = { sub: 'user_123', name: 'John Doe', exp: Math.floor(Date.now() / 1000) + 3600 };
       const token = createMockJwt(payload);
-      
+
       const decoded = decodeJwt(token);
       expect(decoded).toEqual(payload);
     });
@@ -59,7 +59,7 @@ describe('JWT Utilities', () => {
     it('TC-008: should decode UTF-8 special characters correctly', () => {
       const payload = { sub: 'user_123', name: 'Jürgen Müller' };
       const token = createMockJwt(payload);
-      
+
       const decoded = decodeJwt(token);
       expect(decoded).toEqual(payload);
       expect(decoded?.name).toBe('Jürgen Müller');
@@ -68,7 +68,7 @@ describe('JWT Utilities', () => {
     it('TC-009: should decode emoji characters correctly', () => {
       const payload = { sub: 'user_123', name: '🚀 User' };
       const token = createMockJwt(payload);
-      
+
       const decoded = decodeJwt(token);
       expect(decoded).toEqual(payload);
       expect(decoded?.name).toBe('🚀 User');
@@ -77,7 +77,7 @@ describe('JWT Utilities', () => {
     it('TC-012: should use Buffer fallback if globalThis.atob is undefined (SSR/Node safety)', () => {
       const payload = { sub: 'user_123' };
       const token = createMockJwt(payload);
-      
+
       // Temporarily mock globalThis.atob as undefined
       const originalAtob = globalThis.atob;
       delete (globalThis as any).atob;

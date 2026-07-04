@@ -303,10 +303,10 @@ export function registerSocketHandlers(socket: Socket): void {
         return;
       }
       socket.data.sessionId = sessionId;
-      
+
       const { isRedisConnected } = require('../config/redis');
       let success = false;
-      
+
       if (isRedisConnected()) {
         success = await acquireLocks(eventId, seatIds, sessionId);
       } else {
@@ -377,7 +377,7 @@ export function registerSocketHandlers(socket: Socket): void {
 
       const { isRedisConnected } = require('../config/redis');
       let releasedSeatIds: string[] = seatIds;
-      
+
       if (isRedisConnected()) {
         const releasedKeys = await releaseLocks(eventId, seatIds, sessionId);
         releasedSeatIds = releasedKeys.map((key) => key.split(':').at(-1)).filter(Boolean) as string[];
@@ -498,7 +498,7 @@ export function registerSocketHandlers(socket: Socket): void {
 
     const locks = socket.data.lockedSeats as Set<string> | undefined;
     const releasedList: { eventId: string; seatIds: string[] }[] = [];
-    
+
     if (locks && locks.size > 0) {
       const grouped = new Map<string, string[]>();
       for (const lock of locks) {

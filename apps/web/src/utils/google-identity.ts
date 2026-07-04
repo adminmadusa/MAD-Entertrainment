@@ -88,4 +88,3 @@ export function setGoogleIdentityCallback(
     legacyCleanup = registerGoogleIdentityCallback(callback);
   }
 }
-

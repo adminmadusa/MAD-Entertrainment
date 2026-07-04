@@ -112,4 +112,3 @@ export async function adminGetAttendanceRankings(): Promise<AttendanceRankings> 
     return { topAttended: [], lowestAttendance: [] };
   }
 }
-

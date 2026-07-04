@@ -51,5 +51,3 @@ export const logoutAuthSchema = z.preprocess(
     refreshToken: refreshTokenSchema.optional(),
   }).strict()
 );
-
-

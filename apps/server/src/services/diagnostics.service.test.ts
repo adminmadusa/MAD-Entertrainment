@@ -112,7 +112,7 @@ describe('Diagnostics Service', () => {
       ];
 
       vi.mocked(DeadLetterJob.countDocuments).mockResolvedValue(1);
-      
+
       const selectMock = vi.fn().mockReturnValue({
         sort: vi.fn().mockReturnValue({
           skip: vi.fn().mockReturnValue({
@@ -181,7 +181,7 @@ describe('Diagnostics Service', () => {
       ];
 
       vi.mocked(DeadLetterJob.countDocuments).mockResolvedValue(2);
-      
+
       const selectMock = vi.fn().mockReturnValue({
         limit: vi.fn().mockReturnValue({
           lean: vi.fn().mockResolvedValue(mockJobs)

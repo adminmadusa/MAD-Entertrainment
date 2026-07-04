@@ -25,10 +25,10 @@ export function FAQAccordion({ faqs }: FAQAccordionProps) {
     <div className="space-y-3">
       {faqs.map((faq) => {
         const isOpen = openId === faq.id;
-        
+
         return (
-          <details 
-            key={faq.id} 
+          <details
+            key={faq.id}
             className="group glass-strong border border-border-subtle rounded-2xl overflow-hidden [&_summary::-webkit-details-marker]:hidden"
             open={isOpen}
             onClick={(e) => {
@@ -49,7 +49,7 @@ export function FAQAccordion({ faqs }: FAQAccordionProps) {
                 </svg>
               </span>
             </summary>
-            
+
             <div className="px-5 pb-5 pt-1 text-text-secondary text-sm leading-relaxed border-t border-border-subtle/30 mt-2">
               {/* eslint-disable-next-line react/no-danger */}
               <p dangerouslySetInnerHTML={{ __html: faq.answer }} />

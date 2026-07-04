@@ -7,13 +7,16 @@ import { Ticket } from '../../models/ticket.schema';
 import { cancelBooking } from './booking.service';
 import { runInTransaction } from '../../utils/transaction';
 import { BookingStatus, PaymentStatus } from '@mad/shared';
+import { AppError } from '../../middleware/error.middleware';
 import { createNotificationSafe } from '../notification.service';
 import { Notification } from '../../models/notification.schema';
 import { QueueService } from '../queue.service';
 import { auditLog } from '../../utils/audit';
-import axios from 'axios';
+import { createRazorpayRefund } from '../../lib/razorpay/refund.client';
 
-vi.mock('axios');
+vi.mock('../../lib/razorpay/refund.client', () => ({
+  createRazorpayRefund: vi.fn(),
+}));
 
 const mockStripeRefundsCreate = vi.fn();
 vi.mock('../../config/stripe', () => ({
@@ -91,7 +94,7 @@ vi.mock('../../models/refund.schema', () => {
   MockRefund.prototype.save = vi.fn().mockImplementation(function (this: any) {
     return Promise.resolve(this);
   });
-  
+
   const localCreateMockQuery = (val: any) => {
     const query = Promise.resolve(val);
     (query as any).session = () => query;
@@ -530,7 +533,7 @@ describe('Admin Refund Service Tests', () => {
       vi.mocked(Payment.findById).mockImplementation(() => createMockQuery(mockPayment));
       vi.mocked(Booking.findById).mockImplementation(() => createMockQuery(mockBooking));
       vi.mocked(Refund.find).mockImplementation(() => createMockQuery([]));
-      
+
       // First findOne returns null (race condition)
       vi.mocked(Refund.findOne)
         .mockImplementationOnce(() => createMockQuery(null)) // check inside transaction
@@ -603,7 +606,7 @@ describe('Admin Refund Service Tests', () => {
     it('should allow multiple identical amount partial refunds with different idempotency keys', async () => {
       const mockPayment = { _id: 'p-123', bookingId: 'b-123', status: PaymentStatus.PAID, amount: 500 };
       const mockBooking = { _id: 'b-123', status: BookingStatus.CONFIRMED };
-      
+
       vi.mocked(Payment.findById).mockImplementation(() => createMockQuery(mockPayment));
       vi.mocked(Booking.findById).mockImplementation(() => createMockQuery(mockBooking));
       vi.mocked(Refund.findOne).mockImplementation(() => createMockQuery(null));
@@ -639,7 +642,7 @@ describe('Admin Refund Service Tests', () => {
     it('should successfully create auto-recovery refund with correct origin and reason', async () => {
       const mockPayment = { _id: 'p-123', bookingId: 'b-123', status: PaymentStatus.PAID, amount: 500 };
       const mockBooking = { _id: 'b-123', status: BookingStatus.CONFIRMED };
-      
+
       vi.mocked(Payment.findById).mockImplementation(() => createMockQuery(mockPayment));
       vi.mocked(Booking.findById).mockImplementation(() => createMockQuery(mockBooking));
       vi.mocked(Refund.findOne).mockImplementation(() => createMockQuery(null));
@@ -765,25 +768,18 @@ describe('Admin Refund Service Tests', () => {
       vi.mocked(Refund.find).mockReturnValue(createMockQuery([]));
       vi.mocked(Payment.findByIdAndUpdate).mockResolvedValue({} as any);
 
-      vi.mocked(axios.post).mockResolvedValue({
-        data: { id: 'rfnd_rzp_999' }
+      vi.mocked(createRazorpayRefund).mockResolvedValue({
+        id: 'rfnd_rzp_999',
+        status: 'processed',
       });
 
       const result = await processRefund('ref-rzp', 'approve', 'Approve razorpay refund');
 
-      expect(axios.post).toHaveBeenCalledWith(
-        'https://api.razorpay.com/v1/payments/pay_rzp_123/refund',
-        {
-          amount: 30000,
-        },
-        {
-          headers: {
-            'Authorization': expect.stringContaining('Basic '),
-            'Content-Type': 'application/json',
-            'X-Refund-Idempotency': 'ref-rzp',
-          }
-        }
-      );
+      expect(createRazorpayRefund).toHaveBeenCalledWith({
+        paymentId: 'pay_rzp_123',
+        amountPaise: 30000,
+        idempotencyKey: 'ref-rzp',
+      });
       expect(result?.status).toBe('completed');
       expect(result?.gatewayRefundId).toBe('rfnd_rzp_999');
       expect(mockRefundSave).toHaveBeenCalled();
@@ -814,16 +810,9 @@ describe('Admin Refund Service Tests', () => {
       vi.mocked(Booking.findById).mockReturnValue({ session: vi.fn().mockResolvedValue(mockBooking) } as any);
       vi.mocked(Refund.find).mockReturnValue(createMockQuery([]));
 
-      const apiError = {
-        response: {
-          data: {
-            error: {
-              description: 'Insufficient balance'
-            }
-          }
-        }
-      };
-      vi.mocked(axios.post).mockRejectedValue(apiError);
+      vi.mocked(createRazorpayRefund).mockRejectedValue(
+        AppError.badRequest('Razorpay refund failed: Insufficient balance')
+      );
 
       await expect(
         processRefund('ref-rzp-fail', 'approve', 'Approve razorpay refund')
@@ -1018,7 +1007,7 @@ describe('Admin Refund Service Tests', () => {
       vi.mocked(Refund.findOneAndUpdate).mockReturnValue(createMockQuery(mockRefund));
       vi.mocked(Payment.findById).mockReturnValue({ session: vi.fn().mockResolvedValue(mockPayment) } as any);
       vi.mocked(Booking.findById).mockReturnValue({ session: vi.fn().mockResolvedValue(mockBooking) } as any);
-      
+
       vi.mocked(Refund.find).mockReturnValue(createMockQuery([{ amount: 50, status: 'completed' }]));
 
       await expect(
@@ -1074,7 +1063,7 @@ describe('Admin Refund Service Tests', () => {
 
       vi.mocked(Refund.findOneAndUpdate).mockReturnValue(createMockQuery(mockRefund));
       vi.mocked(Payment.findById).mockReturnValue({ session: vi.fn().mockResolvedValue(mockPayment) } as any);
-      
+
       // First findById resolves in Phase 1 (CONFIRMED)
       // Second findById resolves inside transaction (REFUNDED)
       vi.mocked(Booking.findById)

@@ -91,7 +91,7 @@ export class PaymentBookingService {
           ? 'LATE_PAYMENT_RECOVERY_REJECTED_SEATS_TAKEN'
           : 'LATE_PAYMENT_RECOVERY_REJECTED_CAPACITY_EXHAUSTED';
         await _payment.save({ session });
-        
+
         const refundTrigger = options?.triggerRefundRequest || PaymentRefundService.triggerRefundRequest;
         await refundTrigger(
           booking,

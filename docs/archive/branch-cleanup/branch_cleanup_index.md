@@ -2,7 +2,7 @@
 
 ## Cleanup Cycle
 
-**Date:** June 16, 2026  
+**Date:** June 16, 2026
 **Auditor:** Principal Repository Governance Engineer
 
 ---
