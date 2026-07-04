@@ -1,0 +1,36 @@
+{
+  "confidence": 0.9,
+  "createdDate": "2026-07-03T16:43:22.310Z",
+  "domain": "UI UX Guild",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "UIElement",
+    "line": 16,
+    "message": "Shared Component Enforcement: Local duplication of Field component wrapper. Import Field from shared library instead.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "UIElement",
+        "fingerprint": "396c795dc07e0550dc89ef4b1057aca381934942309c5c33a20d992632f76384",
+        "id": "396c795dc07e0550dc89ef4b1057aca381934942309c5c33a20d992632f76384",
+        "line": 16,
+        "message": "Shared Component Enforcement: Local duplication of Field component wrapper. Import Field from shared library instead.",
+        "snippet": "function Field({ label, children }: { label: string; children: React.ReactNode }) {"
+      }
+    ],
+    "path": "apps/admin/src/components/events/EventBasicInfoCard.tsx",
+    "snippet": "function Field({ label, children }: { label: string; children: React.ReactNode }) {"
+  },
+  "feature": "UIElement",
+  "firstDetected": "2026-07-03T16:43:22.310Z",
+  "id": "f_56884a33",
+  "lastDetected": "2026-07-03T16:43:22.310Z",
+  "occurrenceCount": 1,
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-UI-010",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

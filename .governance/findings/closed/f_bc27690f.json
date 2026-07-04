@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:52.940Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 1,
+    "message": "Imports must be grouped in order: Node built-ins, Third-party packages, Workspace aliases, Relative paths, Side-effects.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "51aee6a21326db6b8b79fc57334e73606aab1e293c4bac5875917246cb155bf0",
+        "id": "51aee6a21326db6b8b79fc57334e73606aab1e293c4bac5875917246cb155bf0",
+        "line": 1,
+        "message": "Imports must be grouped in order: Node built-ins, Third-party packages, Workspace aliases, Relative paths, Side-effects."
+      }
+    ],
+    "path": "apps/server/src/services/consistency.service.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:52.940Z",
+  "id": "f_bc27690f",
+  "lastDetected": "2026-07-03T12:25:52.940Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-001",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

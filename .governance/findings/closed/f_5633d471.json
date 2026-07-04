@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:55.915Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 1,
+    "message": "Import from types module \"@mad/types\" should use \"import type\".",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "6a77de2e5bcb350a9107fb911277db5ba19a8b91e3a1ca8313445d35b6ef6dc0",
+        "id": "6a77de2e5bcb350a9107fb911277db5ba19a8b91e3a1ca8313445d35b6ef6dc0",
+        "line": 1,
+        "message": "Import from types module \"@mad/types\" should use \"import type\"."
+      }
+    ],
+    "path": "apps/web/src/components/booking/shared/BookingHeaderCard.tsx"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:55.915Z",
+  "id": "f_5633d471",
+  "lastDetected": "2026-07-03T12:25:55.915Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-003",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

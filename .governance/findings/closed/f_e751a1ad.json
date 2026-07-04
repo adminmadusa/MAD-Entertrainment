@@ -1,0 +1,33 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T09:31:32.066Z",
+  "domain": "Architecture Review Board",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "message": "Document exists in the repository but has no incoming references from any other active documentation.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "bdd149abd87b1a3c4e467a2de7a2f4adae30351b9dfb341a828b5202eedde4d3",
+        "id": "bdd149abd87b1a3c4e467a2de7a2f4adae30351b9dfb341a828b5202eedde4d3",
+        "line": 0,
+        "message": "Document exists in the repository but has no incoming references from any other active documentation."
+      }
+    ],
+    "path": "docs/governance/EXECUTION_PIPELINE.md"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T09:31:32.066Z",
+  "id": "f_e751a1ad",
+  "lastDetected": "2026-07-03T09:31:32.066Z",
+  "occurrenceCount": 1,
+  "owner": "Architecture Review Board",
+  "package": "docs",
+  "relationships": [],
+  "rule": "Orphaned Documentation",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

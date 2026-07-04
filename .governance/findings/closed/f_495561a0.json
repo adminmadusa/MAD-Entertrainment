@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:51.282Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 2,
+    "message": "Imports within the same group must be sorted alphabetically (\"mongoose\" should precede \"vitest\").",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "e60d4e29511275f2efd02dea06873dfe10dc0f4e3dfaa7e44fe6ac0d89712eda",
+        "id": "e60d4e29511275f2efd02dea06873dfe10dc0f4e3dfaa7e44fe6ac0d89712eda",
+        "line": 2,
+        "message": "Imports within the same group must be sorted alphabetically (\"mongoose\" should precede \"vitest\")."
+      }
+    ],
+    "path": "apps/server/src/models/dead-letter-job.schema.test.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:51.282Z",
+  "id": "f_495561a0",
+  "lastDetected": "2026-07-03T12:25:51.282Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-001",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

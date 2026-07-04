@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-04T01:59:45.423Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 3,
+    "message": "Imports within the same group must be sorted alphabetically (\"@mad/ui\" should precede \"@mad/utils\").",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "5349070b17902420b887330521765cddd70ae45376d7dd27f2d13f9f35ed7d6f",
+        "id": "5349070b17902420b887330521765cddd70ae45376d7dd27f2d13f9f35ed7d6f",
+        "line": 3,
+        "message": "Imports within the same group must be sorted alphabetically (\"@mad/ui\" should precede \"@mad/utils\")."
+      }
+    ],
+    "path": "apps/admin/src/components/diagnostics/ReservationLedgerTab.tsx"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-04T01:59:45.423Z",
+  "id": "f_b68297b3",
+  "lastDetected": "2026-07-04T01:59:45.423Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-001",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

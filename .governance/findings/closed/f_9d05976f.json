@@ -1,0 +1,33 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T15:07:46.169Z",
+  "domain": "Architecture Review Board",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "message": "Document exists in the repository but has no incoming references from any other active documentation.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "98731a051d1af9ad288a483a85ced4b262366c39b929468de7f88edc890b0667",
+        "id": "98731a051d1af9ad288a483a85ced4b262366c39b929468de7f88edc890b0667",
+        "line": 0,
+        "message": "Document exists in the repository but has no incoming references from any other active documentation."
+      }
+    ],
+    "path": ".agents/skills/ci-investigation/CHECKLIST.md"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T15:07:46.169Z",
+  "id": "f_9d05976f",
+  "lastDetected": "2026-07-03T15:07:46.169Z",
+  "occurrenceCount": 1,
+  "owner": "Architecture Review Board",
+  "package": ".agents",
+  "relationships": [],
+  "rule": "Orphaned Documentation",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

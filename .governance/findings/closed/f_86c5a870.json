@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-04T01:59:45.367Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 2,
+    "message": "Groups of imports must be separated by a single blank line.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "58036a40dbefc8c720e1976f8fe029a640ab4325fa507fa8d677ceab7893265c",
+        "id": "58036a40dbefc8c720e1976f8fe029a640ab4325fa507fa8d677ceab7893265c",
+        "line": 2,
+        "message": "Groups of imports must be separated by a single blank line."
+      }
+    ],
+    "path": "apps/admin/src/app/users/_components/UserTicketsTable.tsx"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-04T01:59:45.367Z",
+  "id": "f_86c5a870",
+  "lastDetected": "2026-07-04T01:59:45.367Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-001",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

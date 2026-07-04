@@ -1,0 +1,33 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T07:29:54.796Z",
+  "domain": "Architecture Review Board",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "message": "Every documentation file is required to have a defined \"Owner\" or \"Authors\" in its metadata block.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "73de1e740c5204a2ade8f9434732df1bca400d0751e72580874814a8c3e93b86",
+        "id": "73de1e740c5204a2ade8f9434732df1bca400d0751e72580874814a8c3e93b86",
+        "line": 0,
+        "message": "Every documentation file is required to have a defined \"Owner\" or \"Authors\" in its metadata block."
+      }
+    ],
+    "path": ".agents/skills/ci-investigation/examples/dependency-resolution.md"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T07:29:54.796Z",
+  "id": "f_2d733442",
+  "lastDetected": "2026-07-03T07:29:54.796Z",
+  "occurrenceCount": 1,
+  "owner": "Architecture Review Board",
+  "package": ".agents",
+  "relationships": [],
+  "rule": "Missing Document Owner",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

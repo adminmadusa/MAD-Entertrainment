@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:53.985Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 2,
+    "message": "Groups of imports must be separated by a single blank line.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "ad63c32278943bb9a5e9980ccd6b0d889a3ed70afee7e3efb4ce45e546f5d38f",
+        "id": "ad63c32278943bb9a5e9980ccd6b0d889a3ed70afee7e3efb4ce45e546f5d38f",
+        "line": 2,
+        "message": "Groups of imports must be separated by a single blank line."
+      }
+    ],
+    "path": "apps/server/src/utils/encryption.test.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:53.985Z",
+  "id": "f_2d4d97f9",
+  "lastDetected": "2026-07-03T12:25:53.985Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-001",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

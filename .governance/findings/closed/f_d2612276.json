@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:52.560Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 38,
+    "message": "Imports within the same group must be sorted alphabetically (\"../../models/event.schema\" should precede \"./media-cleanup.service\").",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "5c7b3b6b9f4d905c6e70ded6ef396bcdb893da5d649964076572da1b3226c942",
+        "id": "5c7b3b6b9f4d905c6e70ded6ef396bcdb893da5d649964076572da1b3226c942",
+        "line": 38,
+        "message": "Imports within the same group must be sorted alphabetically (\"../../models/event.schema\" should precede \"./media-cleanup.service\")."
+      }
+    ],
+    "path": "apps/server/src/services/admin/media-cleanup.service.test.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:52.560Z",
+  "id": "f_d2612276",
+  "lastDetected": "2026-07-03T12:25:52.560Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-001",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

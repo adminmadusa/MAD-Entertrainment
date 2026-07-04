@@ -1,0 +1,46 @@
+{
+  "confidence": 0.9,
+  "createdDate": "2026-06-30T15:36:27.245Z",
+  "domain": "UI UX Guild",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "UIElement",
+    "line": 46,
+    "message": "Hardcoded color '#0B0F1A' detected. Standardize using design tokens/theme variables.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "UIElement",
+        "fingerprint": "cbabce45ec3f703b631c10fe6c21f477acf72b3e1c8ed791a4d4d7ca94030f4c",
+        "id": "cbabce45ec3f703b631c10fe6c21f477acf72b3e1c8ed791a4d4d7ca94030f4c",
+        "line": 46,
+        "message": "Hardcoded color '#0B0F1A' detected. Standardize using design tokens/theme variables.",
+        "snippet": "<polygon points=\"9.75,15.02 15.5,12 9.75,8.98 9.75,15.02\" fill=\"#0B0F1A\" />"
+      },
+      {
+        "column": 0,
+        "construct": "UIElement",
+        "fingerprint": "cbabce45ec3f703b631c10fe6c21f477acf72b3e1c8ed791a4d4d7ca94030f4c",
+        "id": "cbabce45ec3f703b631c10fe6c21f477acf72b3e1c8ed791a4d4d7ca94030f4c",
+        "line": 47,
+        "message": "Hardcoded color '#0B0F1A' detected. Standardize using design tokens/theme variables.",
+        "snippet": "<polygon points=\"9.75,15.02 15.5,12 9.75,8.98 9.75,15.02\" fill=\"#0B0F1A\" />"
+      }
+    ],
+    "path": "apps/web/src/app/dj-operators/[slug]/DjDetailClient.tsx",
+    "snippet": "<polygon points=\"9.75,15.02 15.5,12 9.75,8.98 9.75,15.02\" fill=\"#0B0F1A\" />"
+  },
+  "feature": "UIElement",
+  "firstDetected": "2026-06-30T15:36:27.245Z",
+  "id": "f_a51e620c",
+  "lastDetected": "2026-07-03T16:39:41.039Z",
+  "lastModified": "2026-07-03T16:39:41.039Z",
+  "occurrenceCount": 2,
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-UI-007",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

@@ -1,0 +1,45 @@
+{
+  "confidence": 0.9,
+  "createdDate": "2026-07-03T09:30:52.406Z",
+  "domain": "UI UX Guild",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "UIElement",
+    "line": 34,
+    "message": "Hardcoded color '#a78bfa' detected. Standardize using design tokens/theme variables.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "UIElement",
+        "fingerprint": "573a6eeb69c83db1ad9d1105f56ef0fdda88b156c25690daa1616dbdd6d3ae62",
+        "id": "573a6eeb69c83db1ad9d1105f56ef0fdda88b156c25690daa1616dbdd6d3ae62",
+        "line": 28,
+        "message": "Hardcoded color '#ffffff' detected. Standardize using design tokens/theme variables.",
+        "snippet": "color: \"#ffffff\","
+      },
+      {
+        "column": 0,
+        "construct": "UIElement",
+        "fingerprint": "d93a802abcc6ea5a2841b186fd456f4b79786336458094ae11b77ae6dd723926",
+        "id": "d93a802abcc6ea5a2841b186fd456f4b79786336458094ae11b77ae6dd723926",
+        "line": 34,
+        "message": "Hardcoded color '#a78bfa' detected. Standardize using design tokens/theme variables.",
+        "snippet": "color: \"#a78bfa\","
+      }
+    ],
+    "path": "apps/server/src/lib/email/templates/components/EmailHeader.tsx",
+    "snippet": "color: \"#a78bfa\","
+  },
+  "feature": "UIElement",
+  "firstDetected": "2026-07-03T09:30:52.406Z",
+  "id": "f_9c2a97d4",
+  "lastDetected": "2026-07-03T09:30:52.406Z",
+  "occurrenceCount": 2,
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-UI-007",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

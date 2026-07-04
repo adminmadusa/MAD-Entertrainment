@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:56.105Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 5,
+    "message": "Groups of imports must be separated by a single blank line.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "354984558b43b0cc3ca01efe2d6ac29620c2aadceddcb319b8a5bb79bba326bf",
+        "id": "354984558b43b0cc3ca01efe2d6ac29620c2aadceddcb319b8a5bb79bba326bf",
+        "line": 5,
+        "message": "Groups of imports must be separated by a single blank line."
+      }
+    ],
+    "path": "apps/web/src/components/layout/Footer.tsx"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:56.105Z",
+  "id": "f_c9e2da3b",
+  "lastDetected": "2026-07-03T12:25:56.105Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-001",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

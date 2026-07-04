@@ -1,0 +1,42 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:47.927Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 8,
+    "message": "Import from types module \"./coupon-form.types\" should use \"import type\".",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "bb86cd5e126a86940ea7240d699ffbeebe37e7cbb4c3d1755912c9592fee4cbb",
+        "id": "bb86cd5e126a86940ea7240d699ffbeebe37e7cbb4c3d1755912c9592fee4cbb",
+        "line": 4,
+        "message": "Import from types module \"@mad/types\" should use \"import type\"."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "bb86cd5e126a86940ea7240d699ffbeebe37e7cbb4c3d1755912c9592fee4cbb",
+        "id": "bb86cd5e126a86940ea7240d699ffbeebe37e7cbb4c3d1755912c9592fee4cbb",
+        "line": 8,
+        "message": "Import from types module \"./coupon-form.types\" should use \"import type\"."
+      }
+    ],
+    "path": "apps/admin/src/components/coupons/CouponForm.tsx"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:47.927Z",
+  "id": "f_de770e63",
+  "lastDetected": "2026-07-03T12:25:47.927Z",
+  "occurrenceCount": 2,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-003",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

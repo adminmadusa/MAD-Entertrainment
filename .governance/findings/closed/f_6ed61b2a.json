@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:46.989Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 4,
+    "message": "Groups of imports must be separated by a single blank line.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "1f98c24ee551986696ec187c67a79194b253437aa39ed612896f15fdba2cb098",
+        "id": "1f98c24ee551986696ec187c67a79194b253437aa39ed612896f15fdba2cb098",
+        "line": 4,
+        "message": "Groups of imports must be separated by a single blank line."
+      }
+    ],
+    "path": "apps/admin/src/app/events/new/_components/EventAdvancedSettingsSection.tsx"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:46.989Z",
+  "id": "f_6ed61b2a",
+  "lastDetected": "2026-07-03T12:25:46.989Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-001",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

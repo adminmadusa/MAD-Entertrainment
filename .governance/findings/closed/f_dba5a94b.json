@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:51.847Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 1,
+    "message": "Imports must be grouped in order: Node built-ins, Third-party packages, Workspace aliases, Relative paths, Side-effects.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "33ccce4c8688bb5e13304f545728325438a25e6c66d4776fd291bcfc7c329d98",
+        "id": "33ccce4c8688bb5e13304f545728325438a25e6c66d4776fd291bcfc7c329d98",
+        "line": 1,
+        "message": "Imports must be grouped in order: Node built-ins, Third-party packages, Workspace aliases, Relative paths, Side-effects."
+      }
+    ],
+    "path": "apps/server/src/routes/admin/operational-rbac.routes.test.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:51.847Z",
+  "id": "f_dba5a94b",
+  "lastDetected": "2026-07-03T12:25:51.847Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-001",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

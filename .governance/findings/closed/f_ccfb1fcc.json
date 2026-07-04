@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:47.899Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 2,
+    "message": "Import from types module \"@mad/types\" should use \"import type\".",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "d410d7eab797e202fe3ca0a9f8e6e5459de5766de162d99661517ddf35e39b66",
+        "id": "d410d7eab797e202fe3ca0a9f8e6e5459de5766de162d99661517ddf35e39b66",
+        "line": 2,
+        "message": "Import from types module \"@mad/types\" should use \"import type\"."
+      }
+    ],
+    "path": "apps/admin/src/components/coupons/coupon-form.types.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:47.899Z",
+  "id": "f_ccfb1fcc",
+  "lastDetected": "2026-07-03T12:25:47.899Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-003",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

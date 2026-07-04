@@ -1,0 +1,43 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:57.995Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 9,
+    "message": "Import from types module \"../types\" should use \"import type\".",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "4a0dd0ef1636d1047847f32bccf1d776f7a7a58603d92e39131b35a6d48b76af",
+        "id": "4a0dd0ef1636d1047847f32bccf1d776f7a7a58603d92e39131b35a6d48b76af",
+        "line": 8,
+        "message": "Import from types module \"../fix_types\" should use \"import type\"."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "4a0dd0ef1636d1047847f32bccf1d776f7a7a58603d92e39131b35a6d48b76af",
+        "id": "4a0dd0ef1636d1047847f32bccf1d776f7a7a58603d92e39131b35a6d48b76af",
+        "line": 9,
+        "message": "Import from types module \"../types\" should use \"import type\"."
+      }
+    ],
+    "path": "scripts/governance/core/__tests__/autofix_engine.test.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:57.995Z",
+  "id": "f_127b11e5",
+  "lastDetected": "2026-07-03T12:49:56.259Z",
+  "lastModified": "2026-07-03T12:49:56.259Z",
+  "occurrenceCount": 2,
+  "owner": "Platform Team",
+  "package": "scripts",
+  "relationships": [],
+  "rule": "VAL-HYG-003",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

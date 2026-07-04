@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:53.940Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 4,
+    "message": "Groups of imports must be separated by a single blank line.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "ae58bd8bc8b634fcfe9947d15d8433e3f242545845ae3816344ed4b001bb4b7a",
+        "id": "ae58bd8bc8b634fcfe9947d15d8433e3f242545845ae3816344ed4b001bb4b7a",
+        "line": 4,
+        "message": "Groups of imports must be separated by a single blank line."
+      }
+    ],
+    "path": "apps/server/src/utils/email.test.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:53.940Z",
+  "id": "f_eed270e5",
+  "lastDetected": "2026-07-03T12:25:53.940Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-001",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

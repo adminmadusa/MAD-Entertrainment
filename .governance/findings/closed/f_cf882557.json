@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:54.720Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 2,
+    "message": "Imports within the same group must be sorted alphabetically (\"mongoose\" should precede \"vitest\").",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "466c1a9719bd45bfc8e7a3f9bb36dcc7423e5d78320ed6d1db4761a600415583",
+        "id": "466c1a9719bd45bfc8e7a3f9bb36dcc7423e5d78320ed6d1db4761a600415583",
+        "line": 2,
+        "message": "Imports within the same group must be sorted alphabetically (\"mongoose\" should precede \"vitest\")."
+      }
+    ],
+    "path": "apps/server/src/workers/workers.test.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:54.720Z",
+  "id": "f_cf882557",
+  "lastDetected": "2026-07-03T12:25:54.720Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-001",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

@@ -1,36 +1,46 @@
 {
-  "schemaVersion": 2,
-  "id": "f_0f1b452d",
-  "rule": "VAL-UI-007",
-  "ruleVersion": "1.0.0",
-  "engineVersion": "1.0.0",
-  "domain": "UI UX Guild",
-  "owner": "UI UX Guild",
-  "package": "apps",
-  "feature": "UIElement",
-  "status": "NEW",
   "confidence": 0.9,
-  "relationships": [],
+  "createdDate": "2026-06-30T15:36:27.286Z",
+  "domain": "UI UX Guild",
+  "engineVersion": "1.0.0",
   "evidence": {
-    "path": "apps/web/src/components/layout/Footer.tsx",
     "construct": "UIElement",
-    "snippet": "<polygon points=\"9.75,15.02 15.5,12 9.75,8.98 9.75,15.02\" fill=\"#0B0F1A\" />",
     "line": 180,
     "message": "Hardcoded color '#0B0F1A' detected. Standardize using design tokens/theme variables.",
     "occurrences": [
       {
-        "id": "bb2e7b76da82ffe2c2d87fe805f6336b8d8c01b38ccb9028e106d674780af7d5",
-        "line": 180,
         "column": 0,
         "construct": "UIElement",
-        "snippet": "<polygon points=\"9.75,15.02 15.5,12 9.75,8.98 9.75,15.02\" fill=\"#0B0F1A\" />",
+        "fingerprint": "bb2e7b76da82ffe2c2d87fe805f6336b8d8c01b38ccb9028e106d674780af7d5",
+        "id": "bb2e7b76da82ffe2c2d87fe805f6336b8d8c01b38ccb9028e106d674780af7d5",
+        "line": 180,
         "message": "Hardcoded color '#0B0F1A' detected. Standardize using design tokens/theme variables.",
-        "fingerprint": "bb2e7b76da82ffe2c2d87fe805f6336b8d8c01b38ccb9028e106d674780af7d5"
+        "snippet": "<polygon points=\"9.75,15.02 15.5,12 9.75,8.98 9.75,15.02\" fill=\"#0B0F1A\" />"
+      },
+      {
+        "column": 0,
+        "construct": "UIElement",
+        "fingerprint": "513adc982653d39f5d116d8830df92ca3c2c13c660a89fca52e2982ba74870a5",
+        "id": "513adc982653d39f5d116d8830df92ca3c2c13c660a89fca52e2982ba74870a5",
+        "line": 180,
+        "message": "Hardcoded color '#0B0F1A' detected. Standardize using design tokens/theme variables.",
+        "snippet": "<polygon points=\"9.75,15.02 15.5,12 9.75,8.98 9.75,15.02\" fill=\"#0B0F1A\" />"
       }
-    ]
+    ],
+    "path": "apps/web/src/components/layout/Footer.tsx",
+    "snippet": "<polygon points=\"9.75,15.02 15.5,12 9.75,8.98 9.75,15.02\" fill=\"#0B0F1A\" />"
   },
-  "createdDate": "2026-06-30T15:36:27.286Z",
+  "feature": "UIElement",
   "firstDetected": "2026-06-30T15:36:27.286Z",
-  "lastDetected": "2026-06-30T15:36:27.286Z",
-  "occurrenceCount": 1
+  "id": "f_0f1b452d",
+  "lastDetected": "2026-07-04T03:02:11.396Z",
+  "lastModified": "2026-07-04T03:02:11.396Z",
+  "occurrenceCount": 2,
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-UI-007",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
 }

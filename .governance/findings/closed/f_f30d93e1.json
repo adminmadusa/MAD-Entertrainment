@@ -1,0 +1,33 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T09:21:03.640Z",
+  "domain": "Architecture Review Board",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "message": "Duplicate document detected: \"docs/governance/rules/INVALID_MERMAID_CONNECTION.md\" (Status: Active) shares 91% similarity with canonical \"docs/governance/rules/EMPTY_MERMAID.md\" (Status: Active).",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "2756b939141944478f62e1aa7a8a43f721a7c5eff19417496e72e5f28dfe6bb0",
+        "id": "2756b939141944478f62e1aa7a8a43f721a7c5eff19417496e72e5f28dfe6bb0",
+        "line": 0,
+        "message": "Duplicate document detected: \"docs/governance/rules/INVALID_MERMAID_CONNECTION.md\" (Status: Active) shares 91% similarity with canonical \"docs/governance/rules/EMPTY_MERMAID.md\" (Status: Active)."
+      }
+    ],
+    "path": "docs/governance/rules/INVALID_MERMAID_CONNECTION.md"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T09:21:03.640Z",
+  "id": "f_f30d93e1",
+  "lastDetected": "2026-07-03T09:21:03.640Z",
+  "occurrenceCount": 1,
+  "owner": "Architecture Review Board",
+  "package": "docs",
+  "relationships": [],
+  "rule": "VAL-DOC-006",
+  "ruleVersion": "2.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

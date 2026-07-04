@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:53.732Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 2,
+    "message": "Groups of imports must be separated by a single blank line.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "8c71741f919026124a812b7cdd19a735e4083165bda9ff7d31316e0c1626b201",
+        "id": "8c71741f919026124a812b7cdd19a735e4083165bda9ff7d31316e0c1626b201",
+        "line": 2,
+        "message": "Groups of imports must be separated by a single blank line."
+      }
+    ],
+    "path": "apps/server/src/services/public/ticket-ownership.service.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:53.732Z",
+  "id": "f_7482c071",
+  "lastDetected": "2026-07-03T12:25:53.732Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-001",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:56.619Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 2,
+    "message": "Groups of imports must be separated by a single blank line.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "de68aa36fb7dbb131d4c961f74578f1f5fb8583e9a6751fae384d8269957aae8",
+        "id": "de68aa36fb7dbb131d4c961f74578f1f5fb8583e9a6751fae384d8269957aae8",
+        "line": 2,
+        "message": "Groups of imports must be separated by a single blank line."
+      }
+    ],
+    "path": "apps/web/vitest.config.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:56.619Z",
+  "id": "f_1d71fdc1",
+  "lastDetected": "2026-07-03T12:25:56.619Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-001",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

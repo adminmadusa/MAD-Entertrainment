@@ -1,0 +1,33 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T09:21:03.512Z",
+  "domain": "Architecture Review Board",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "message": "Duplicate document detected: \"docs/governance/rules/BROKEN_REF_LINK.md\" (Status: Active) shares 93% similarity with canonical \"docs/governance/rules/BROKEN_LINK_TARGET.md\" (Status: Active).",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "28acc282d6f7a8bd27a8c821ee221f8a7a6879780cbc0618ae833d42c83ed0f6",
+        "id": "28acc282d6f7a8bd27a8c821ee221f8a7a6879780cbc0618ae833d42c83ed0f6",
+        "line": 0,
+        "message": "Duplicate document detected: \"docs/governance/rules/BROKEN_REF_LINK.md\" (Status: Active) shares 92% similarity with canonical \"docs/governance/rules/BROKEN_ANCHOR.md\" (Status: Active)."
+      }
+    ],
+    "path": "docs/governance/rules/BROKEN_REF_LINK.md"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T09:21:03.512Z",
+  "id": "f_b46641b9",
+  "lastDetected": "2026-07-03T09:21:03.512Z",
+  "occurrenceCount": 1,
+  "owner": "Architecture Review Board",
+  "package": "docs",
+  "relationships": [],
+  "rule": "VAL-DOC-006",
+  "ruleVersion": "2.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

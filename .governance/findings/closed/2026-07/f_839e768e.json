@@ -1,0 +1,36 @@
+{
+  "confidence": 0.9,
+  "createdDate": "2026-07-03T16:43:22.446Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "UIElement",
+    "line": 23,
+    "message": "Local duplication of <Field> wrapper. Use a shared components package.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "UIElement",
+        "fingerprint": "756c4b7df6018f535b8892a3153a3e0beca8ac1dd71cdc080dea6000af630a69",
+        "id": "756c4b7df6018f535b8892a3153a3e0beca8ac1dd71cdc080dea6000af630a69",
+        "line": 23,
+        "message": "Local duplication of <Field> wrapper. Use a shared components package.",
+        "snippet": "function Field({ label, children }: { label: string; children: React.ReactNode }) {"
+      }
+    ],
+    "path": "apps/admin/src/components/events/EventTicketingCard.tsx",
+    "snippet": "function Field({ label, children }: { label: string; children: React.ReactNode }) {"
+  },
+  "feature": "UIElement",
+  "firstDetected": "2026-07-03T16:43:22.446Z",
+  "id": "f_839e768e",
+  "lastDetected": "2026-07-03T16:43:22.446Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-UI-006",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

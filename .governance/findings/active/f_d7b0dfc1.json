@@ -1,0 +1,33 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T07:29:54.797Z",
+  "domain": "Architecture Review Board",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "message": "Orphaned document: active production file has no incoming links from any documentation entrypoint.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "caba08e1daf82c28845f63147d313e6cde483ca851b1edd642ea1b986403731e",
+        "id": "caba08e1daf82c28845f63147d313e6cde483ca851b1edd642ea1b986403731e",
+        "line": 0,
+        "message": "Orphaned document: active production file has no incoming links from any documentation entrypoint."
+      }
+    ],
+    "path": ".agents/skills/ci-investigation/examples/dependency-resolution.md"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T07:29:54.797Z",
+  "id": "f_d7b0dfc1",
+  "lastDetected": "2026-07-03T07:29:54.797Z",
+  "occurrenceCount": 1,
+  "owner": "Architecture Review Board",
+  "package": ".agents",
+  "relationships": [],
+  "rule": "VAL-DOC-007",
+  "ruleVersion": "2.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

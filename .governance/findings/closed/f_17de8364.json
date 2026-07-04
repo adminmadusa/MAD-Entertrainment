@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:52.095Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 2,
+    "message": "Groups of imports must be separated by a single blank line.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "d349da6a285879da3f5143d31140491b2e9c5a7c09aded8609cf2ff516fc765f",
+        "id": "d349da6a285879da3f5143d31140491b2e9c5a7c09aded8609cf2ff516fc765f",
+        "line": 2,
+        "message": "Groups of imports must be separated by a single blank line."
+      }
+    ],
+    "path": "apps/server/src/routes/admin/webhook.routes.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:52.095Z",
+  "id": "f_17de8364",
+  "lastDetected": "2026-07-03T12:25:52.095Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-001",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

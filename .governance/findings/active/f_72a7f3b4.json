@@ -1,0 +1,36 @@
+{
+  "confidence": 0.9,
+  "createdDate": "2026-07-04T03:02:11.394Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "UIElement",
+    "line": 86,
+    "message": "Local duplication of <Field> wrapper. Use a shared components package.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "UIElement",
+        "fingerprint": "3477b2ea5f3bdf04c470e4675f10aa66d9252c790f9cc52dc267a259f11f7c56",
+        "id": "3477b2ea5f3bdf04c470e4675f10aa66d9252c790f9cc52dc267a259f11f7c56",
+        "line": 86,
+        "message": "Local duplication of <Field> wrapper. Use a shared components package.",
+        "snippet": "function Field({"
+      }
+    ],
+    "path": "apps/admin/src/components/events/EventMemoriesCard.tsx",
+    "snippet": "function Field({"
+  },
+  "feature": "UIElement",
+  "firstDetected": "2026-07-04T03:02:11.394Z",
+  "id": "f_72a7f3b4",
+  "lastDetected": "2026-07-04T03:02:11.394Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-UI-006",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

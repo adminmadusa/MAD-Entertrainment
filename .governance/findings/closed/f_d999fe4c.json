@@ -1,0 +1,163 @@
+{
+  "confidence": 0.9,
+  "createdDate": "2026-07-03T09:30:52.369Z",
+  "domain": "UI UX Guild",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "UIElement",
+    "line": 281,
+    "message": "Hardcoded color '#a78bfa' detected. Standardize using design tokens/theme variables.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "UIElement",
+        "fingerprint": "04782d8fabba7a0358f58715df11f3083dc817178115a41b795a3d055a3c92ed",
+        "id": "04782d8fabba7a0358f58715df11f3083dc817178115a41b795a3d055a3c92ed",
+        "line": 141,
+        "message": "Hardcoded color '#4ade80' detected. Standardize using design tokens/theme variables.",
+        "snippet": "color: \"#4ade80\","
+      },
+      {
+        "column": 0,
+        "construct": "UIElement",
+        "fingerprint": "10c53692f5acf4e502c8c46678b25bb64771a17158f64fe2e03892c0b2749fcc",
+        "id": "10c53692f5acf4e502c8c46678b25bb64771a17158f64fe2e03892c0b2749fcc",
+        "line": 155,
+        "message": "Hardcoded color '#ffffff' detected. Standardize using design tokens/theme variables.",
+        "snippet": "color: \"#ffffff\","
+      },
+      {
+        "column": 0,
+        "construct": "UIElement",
+        "fingerprint": "9e9bceb570140f3179d16318ceb3c0609503d8d67503682df3d81af2f6831201",
+        "id": "9e9bceb570140f3179d16318ceb3c0609503d8d67503682df3d81af2f6831201",
+        "line": 164,
+        "message": "Hardcoded color '#888888' detected. Standardize using design tokens/theme variables.",
+        "snippet": "color: \"#888888\","
+      },
+      {
+        "column": 0,
+        "construct": "UIElement",
+        "fingerprint": "d2fc3d294af37e979850bfaccaf4c382226def5143d06a208a58fda28242c6da",
+        "id": "d2fc3d294af37e979850bfaccaf4c382226def5143d06a208a58fda28242c6da",
+        "line": 171,
+        "message": "Hardcoded color '#c0c0c0' detected. Standardize using design tokens/theme variables.",
+        "snippet": "color: \"#c0c0c0\","
+      },
+      {
+        "column": 0,
+        "construct": "UIElement",
+        "fingerprint": "10c53692f5acf4e502c8c46678b25bb64771a17158f64fe2e03892c0b2749fcc",
+        "id": "10c53692f5acf4e502c8c46678b25bb64771a17158f64fe2e03892c0b2749fcc",
+        "line": 176,
+        "message": "Hardcoded color '#ffffff' detected. Standardize using design tokens/theme variables.",
+        "snippet": "color: \"#ffffff\","
+      },
+      {
+        "column": 0,
+        "construct": "UIElement",
+        "fingerprint": "79573e679acb6404758d08afc48519ca8638ce9c594a3be7dcac3fe7dcf5c119",
+        "id": "79573e679acb6404758d08afc48519ca8638ce9c594a3be7dcac3fe7dcf5c119",
+        "line": 191,
+        "message": "Hardcoded color '#666666' detected. Standardize using design tokens/theme variables.",
+        "snippet": "color: \"#666666\","
+      },
+      {
+        "column": 0,
+        "construct": "UIElement",
+        "fingerprint": "16ed685fb952dadf5bffad4edf10b2b0a94d46785a89e97a150572623421220d",
+        "id": "16ed685fb952dadf5bffad4edf10b2b0a94d46785a89e97a150572623421220d",
+        "line": 200,
+        "message": "Hardcoded color '#a78bfa' detected. Standardize using design tokens/theme variables.",
+        "snippet": "color: \"#a78bfa\","
+      },
+      {
+        "column": 0,
+        "construct": "UIElement",
+        "fingerprint": "42362ad3f63fb66e6a000b1239c11f9288730c4193040fce0ea60bd2eb81c672",
+        "id": "42362ad3f63fb66e6a000b1239c11f9288730c4193040fce0ea60bd2eb81c672",
+        "line": 214,
+        "message": "Hardcoded color '#555555' detected. Standardize using design tokens/theme variables.",
+        "snippet": "color: \"#555555\","
+      },
+      {
+        "column": 0,
+        "construct": "UIElement",
+        "fingerprint": "42362ad3f63fb66e6a000b1239c11f9288730c4193040fce0ea60bd2eb81c672",
+        "id": "42362ad3f63fb66e6a000b1239c11f9288730c4193040fce0ea60bd2eb81c672",
+        "line": 223,
+        "message": "Hardcoded color '#555555' detected. Standardize using design tokens/theme variables.",
+        "snippet": "color: \"#555555\","
+      },
+      {
+        "column": 0,
+        "construct": "UIElement",
+        "fingerprint": "42362ad3f63fb66e6a000b1239c11f9288730c4193040fce0ea60bd2eb81c672",
+        "id": "42362ad3f63fb66e6a000b1239c11f9288730c4193040fce0ea60bd2eb81c672",
+        "line": 232,
+        "message": "Hardcoded color '#555555' detected. Standardize using design tokens/theme variables.",
+        "snippet": "color: \"#555555\","
+      },
+      {
+        "column": 0,
+        "construct": "UIElement",
+        "fingerprint": "d2fc3d294af37e979850bfaccaf4c382226def5143d06a208a58fda28242c6da",
+        "id": "d2fc3d294af37e979850bfaccaf4c382226def5143d06a208a58fda28242c6da",
+        "line": 247,
+        "message": "Hardcoded color '#c0c0c0' detected. Standardize using design tokens/theme variables.",
+        "snippet": "color: \"#c0c0c0\","
+      },
+      {
+        "column": 0,
+        "construct": "UIElement",
+        "fingerprint": "d2fc3d294af37e979850bfaccaf4c382226def5143d06a208a58fda28242c6da",
+        "id": "d2fc3d294af37e979850bfaccaf4c382226def5143d06a208a58fda28242c6da",
+        "line": 254,
+        "message": "Hardcoded color '#c0c0c0' detected. Standardize using design tokens/theme variables.",
+        "snippet": "color: \"#c0c0c0\","
+      },
+      {
+        "column": 0,
+        "construct": "UIElement",
+        "fingerprint": "cf8db9a0a50542e6f5d21142469bac1ef0053b7fa086c818a7a2f58cdc1470f2",
+        "id": "cf8db9a0a50542e6f5d21142469bac1ef0053b7fa086c818a7a2f58cdc1470f2",
+        "line": 261,
+        "message": "Hardcoded color '#e0e0e0' detected. Standardize using design tokens/theme variables.",
+        "snippet": "color: \"#e0e0e0\","
+      },
+      {
+        "column": 0,
+        "construct": "UIElement",
+        "fingerprint": "9e9bceb570140f3179d16318ceb3c0609503d8d67503682df3d81af2f6831201",
+        "id": "9e9bceb570140f3179d16318ceb3c0609503d8d67503682df3d81af2f6831201",
+        "line": 273,
+        "message": "Hardcoded color '#888888' detected. Standardize using design tokens/theme variables.",
+        "snippet": "color: \"#888888\","
+      },
+      {
+        "column": 0,
+        "construct": "UIElement",
+        "fingerprint": "16ed685fb952dadf5bffad4edf10b2b0a94d46785a89e97a150572623421220d",
+        "id": "16ed685fb952dadf5bffad4edf10b2b0a94d46785a89e97a150572623421220d",
+        "line": 281,
+        "message": "Hardcoded color '#a78bfa' detected. Standardize using design tokens/theme variables.",
+        "snippet": "color: \"#a78bfa\","
+      }
+    ],
+    "path": "apps/server/src/lib/email/templates/booking-confirmation.tsx",
+    "snippet": "color: \"#a78bfa\","
+  },
+  "feature": "UIElement",
+  "firstDetected": "2026-07-03T09:30:52.369Z",
+  "id": "f_d999fe4c",
+  "lastDetected": "2026-07-03T15:32:08.299Z",
+  "lastModified": "2026-07-03T15:32:08.299Z",
+  "occurrenceCount": 15,
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-UI-007",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

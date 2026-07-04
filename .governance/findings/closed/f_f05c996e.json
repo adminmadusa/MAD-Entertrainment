@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:55.960Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 3,
+    "message": "Import from types module \"@mad/types\" should use \"import type\".",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "cb649caa2c853ef5863ca69de119a8e88c4d49f463c129030f28ae11971785c9",
+        "id": "cb649caa2c853ef5863ca69de119a8e88c4d49f463c129030f28ae11971785c9",
+        "line": 3,
+        "message": "Import from types module \"@mad/types\" should use \"import type\"."
+      }
+    ],
+    "path": "apps/web/src/components/booking/TicketSelectionContent.tsx"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:55.960Z",
+  "id": "f_f05c996e",
+  "lastDetected": "2026-07-03T12:25:55.960Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-003",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}
