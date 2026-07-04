@@ -1,5 +1,6 @@
 import crypto from 'crypto';
-import { BookingStatus, ReservationStatus, SeatStatus, InventoryState, PaymentStatus } from '@mad/shared';
+import { BookingStatus, ReservationStatus, SeatStatus, InventoryState, PaymentStatus, NotificationType } from '@mad/shared';
+
 import mongoose, { Types, ClientSession } from 'mongoose';
 import { createNotificationSafe } from '../notification.service';
 
@@ -24,7 +25,7 @@ import { QueueService } from '../queue.service';
 import { getQueueName } from '../../config/queue.config';
 import { BookingsSummaryResponse } from '../../types/admin/booking.types';
 import { Notification } from '../../models/notification.schema';
-import { NotificationType } from '@mad/shared';
+
 import { eventCancellationHtml } from '../../lib/email';
 
 /**
