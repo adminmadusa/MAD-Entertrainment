@@ -765,23 +765,17 @@ describe('Admin Refund Service Tests', () => {
       vi.mocked(Refund.find).mockReturnValue(createMockQuery([]));
       vi.mocked(Payment.findByIdAndUpdate).mockResolvedValue({} as any);
 
-      vi.mocked(axios.post).mockResolvedValue({
-        data: { id: 'rfnd_rzp_999' }
+      mockRazorpayPaymentsRefund.mockResolvedValue({
+        id: 'rfnd_rzp_999'
       });
 
       const result = await processRefund('ref-rzp', 'approve', 'Approve razorpay refund');
 
-      expect(axios.post).toHaveBeenCalledWith(
-        'https://api.razorpay.com/v1/payments/pay_rzp_123/refund',
+      expect(mockRazorpayPaymentsRefund).toHaveBeenCalledWith(
+        'pay_rzp_123',
         {
           amount: 30000,
-        },
-        {
-          headers: {
-            'Authorization': expect.stringContaining('Basic '),
-            'Content-Type': 'application/json',
-            'X-Refund-Idempotency': 'ref-rzp',
-          }
+          receipt: 'ref-rzp',
         }
       );
       expect(result?.status).toBe('completed');
@@ -815,15 +809,11 @@ describe('Admin Refund Service Tests', () => {
       vi.mocked(Refund.find).mockReturnValue(createMockQuery([]));
 
       const apiError = {
-        response: {
-          data: {
-            error: {
-              description: 'Insufficient balance'
-            }
-          }
+        error: {
+          description: 'Insufficient balance'
         }
       };
-      vi.mocked(axios.post).mockRejectedValue(apiError);
+      mockRazorpayPaymentsRefund.mockRejectedValue(apiError);
 
       await expect(
         processRefund('ref-rzp-fail', 'approve', 'Approve razorpay refund')

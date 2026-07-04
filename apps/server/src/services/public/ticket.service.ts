@@ -9,6 +9,7 @@ import { QueueService } from '../queue.service';
 import { getQueueName } from '../../config/queue.config';
 import { NotificationType, BookingStatus } from '@mad/shared';
 import { getEnv } from '../../config/env';
+import { logger } from '../../utils/logger';
 
 /**
  * Assigns or reassigns an unassigned/pending ticket to a guest attendee.
@@ -130,7 +131,7 @@ export async function assignTicket(
     );
   } catch (err) {
     // Log failure but do not roll back the db transaction (already committed)
-    console.error(`Post-commit enqueue failed for assignment of ${ticketId}:`, err);
+    logger.error({ err }, `Post-commit enqueue failed for assignment of ${ticketId}`);
   }
 }
 
@@ -252,7 +253,7 @@ export async function claimTicket(
       jobId
     );
   } catch (err) {
-    console.error(`Post-commit enqueue failed for claim of ${ticketId}:`, err);
+    logger.error({ err }, `Post-commit enqueue failed for claim of ${ticketId}`);
   }
 }
 
@@ -471,7 +472,7 @@ export async function revokeTicket(
       }
     }
   } catch (err) {
-    console.error(`Post-commit enqueue failed for revocation of ${ticketId}:`, err);
+    logger.error({ err }, `Post-commit enqueue failed for revocation of ${ticketId}`);
   }
 }
 

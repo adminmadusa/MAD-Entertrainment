@@ -5,8 +5,8 @@ import { STORAGE_KEYS } from '@mad/shared';
 import { useQueryClient } from '@tanstack/react-query';
 import { AuthUser } from '../types/auth';
 import { createContext, useContext, useEffect, useState, useCallback, useMemo } from 'react';
-import axios from 'axios';
 import { isTokenExpired } from '@mad/utils';
+import { isAxiosError } from '@/lib/api/client';
 
 
 interface AuthContextValue {
@@ -83,7 +83,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       } catch (err) {
         let shouldEvict = false;
-        if (axios.isAxiosError(err)) {
+        if (isAxiosError(err)) {
           const status = err.response?.status;
           if (status === 401 || status === 403) {
             shouldEvict = true;
