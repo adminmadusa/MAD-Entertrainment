@@ -68,4 +68,5 @@ scratch/
 .agents/verification_registry.json
 .agents/GIT_VERIFICATION_REPORT.md
 .agents/REPOSITORY_BASELINE.md
+.agents/trend_report.json
 .governance/

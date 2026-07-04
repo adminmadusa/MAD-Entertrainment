@@ -20,6 +20,8 @@ import { getMergedPRNumber } from './utils/git';
 import { defaultConfig } from './utils/config';
 import { analyzeStaleStatus } from './analyzers/dead-branches';
 import { runCommand } from './utils/exec';
+import { TrendStore, TrendCalculator } from './utils/trend';
+import path from 'path';
 
 function main() {
   console.log('[git-governance-engine] Initializing metadata collection...');
@@ -347,14 +349,24 @@ function main() {
   );
   metrics.remoteOrphanBranchesCount = orphanRemotes.length;
 
-  // 6. Write registries and action queue
+  // 6. Calculate trend deltas & persist current run scores
+  const repoRoot = path.join(__dirname, '../../..');
+  const trendStore = new TrendStore(repoRoot);
+  const trendHistory = trendStore.load();
+  const previousSnapshot = trendHistory.history.length > 0
+    ? trendHistory.history[trendHistory.history.length - 1]
+    : null;
+  const trendDeltas = TrendCalculator.calculateDeltas(scoreReport, previousSnapshot);
+  trendStore.save(scoreReport, config.trendHistoryLimit);
+
+  // 7. Write registries and action queue
   writeBranchRegistry(registeredBranches);
   writeVerificationRegistry(verifications);
   writeActionQueue(actionQueue);
   writeRepositoryMetrics(metrics);
 
-  // 7. Write Markdown report
-  writeMarkdownReport(registeredBranches, actionQueue, scoreReport, metrics, danglingCommitsCount);
+  // 8. Write Markdown report
+  writeMarkdownReport(registeredBranches, actionQueue, scoreReport, metrics, danglingCommitsCount, trendDeltas);
 
   console.log('[git-governance-engine] Execution completed successfully.');
   console.log(`[git-governance-engine] Final hygiene score: ${scoreReport.overallScore}/100.`);

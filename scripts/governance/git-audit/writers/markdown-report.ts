@@ -3,6 +3,7 @@ import path from 'path';
 import { RegisteredBranch } from '../models/registry';
 import { ActionItem } from '../models/action';
 import { ScoreReport } from '../utils/scoring';
+import { TrendDeltas, ScoreDelta } from '../utils/trend';
 
 const WORKSPACE_REPORT_PATH = '/Users/admin/Desktop/MAD Entertrainment/.agents/git_repository_hygiene_audit.md';
 const BRAIN_REPORT_PATH = '/Users/admin/.gemini/antigravity-ide/brain/f4cd9fff-aa45-46e3-9614-728336e2d561/git_repository_hygiene_audit.md';
@@ -13,8 +14,18 @@ export function writeMarkdownReport(
   actions: ActionItem[],
   scoreReport: ScoreReport,
   metrics: Record<string, any>,
-  danglingCommitsCount: number
+  danglingCommitsCount: number,
+  trendDeltas: TrendDeltas | null = null
 ): void {
+  function formatTrend(deltaObj: ScoreDelta | undefined): string {
+    if (!deltaObj) return 'N/A';
+    if (deltaObj.previous === null || deltaObj.delta === null) {
+      return `${deltaObj.current} (First run)`;
+    }
+    const arrow = deltaObj.delta > 0 ? '↑' : deltaObj.delta < 0 ? '↓' : '→';
+    const sign = deltaObj.delta > 0 ? '+' : '';
+    return `${deltaObj.previous} → ${deltaObj.current} (${sign}${deltaObj.delta}) ${arrow}`;
+  }
   // Build branch inventory table
   let inventoryTable = '| Branch Name | Scope | Category | Base Commit SHA | Reason / Evidence |\n| :--- | :---: | :---: | :---: | :--- |\n';
   for (const b of branches) {
@@ -136,17 +147,23 @@ ${legacyCommands || '# No legacy branch archivals.\n'}
   fs.writeFileSync(CLEANUP_SCRIPT_PATH, shellScript, 'utf8');
   fs.chmodSync(CLEANUP_SCRIPT_PATH, '755');
 
+  const overallTrend = trendDeltas ? formatTrend(trendDeltas.overall) : 'N/A';
+  const hygieneTrend = trendDeltas ? formatTrend(trendDeltas.branchHygiene) : 'N/A';
+  const healthTrend = trendDeltas ? formatTrend(trendDeltas.repositoryHealth) : 'N/A';
+  const debtTrend = trendDeltas ? formatTrend(trendDeltas.technicalDebt) : 'N/A';
+  const govTrend = trendDeltas ? formatTrend(trendDeltas.gitGovernance) : 'N/A';
+
   const markdown = `# Git Repository Hygiene Audit Report
 
 **Date**: 2026-07-04  
 **Repository**: MAD Entertrainment  
 
-### Git Repository Scores
-* **Overall Git Repository Hygiene Score**: **${scoreReport.overallScore} / 100**
-* **Branch Hygiene Score**: **${scoreReport.branchHygieneScore} / 100**
-* **Repository Health Score**: **${scoreReport.repositoryHealthScore} / 100**
-* **Technical Debt Score**: **${scoreReport.technicalDebtScore} / 100**
-* **Git Governance Score**: **${scoreReport.gitGovernanceScore} / 100**
+### Git Repository Scores & Trend Progression
+* **Overall Git Repository Hygiene Score**: **${scoreReport.overallScore} / 100** (Trend: \`${overallTrend}\`)
+* **Branch Hygiene Score**: **${scoreReport.branchHygieneScore} / 100** (Trend: \`${hygieneTrend}\`)
+* **Repository Health Score**: **${scoreReport.repositoryHealthScore} / 100** (Trend: \`${healthTrend}\`)
+* **Technical Debt Score**: **${scoreReport.technicalDebtScore} / 100** (Trend: \`${debtTrend}\`)
+* **Git Governance Score**: **${scoreReport.gitGovernanceScore} / 100** (Trend: \`${govTrend}\`)
 
 ---
 
