@@ -1,14 +1,15 @@
 'use client';
 
-import React, { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import { Button } from '@mad/ui';
-import { useAuth } from '@/providers/AuthProvider';
-import { publicUpdateProfile } from '@/lib/api/public.service';
+import React, { useState } from 'react';
+
 import { extractApiError } from '@/lib/api/client';
-import { AuthUser } from '@/types/auth';
-import { updateProfileSchema, normalizePhone } from '@mad/validations';
+import { publicUpdateProfile } from '@/lib/api/public.service';
 import { mapZodErrorToFields } from '@/lib/validation/mapZodError';
+import { useAuth } from '@/providers/AuthProvider';
+import type { AuthUser } from '@/types/auth';
+import { Button } from '@mad/ui';
+import { updateProfileSchema, normalizePhone } from '@mad/validations';
 
 interface ProfileCompletionFormProps {
   mode?: 'onboarding' | 'edit';

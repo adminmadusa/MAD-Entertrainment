@@ -4,21 +4,17 @@ import { useMutation } from '@tanstack/react-query';
 import { useState, useEffect, useCallback, useRef } from 'react';
 
 import { extractApiError } from '@/lib/api/client';
-import {
-  publicRequestVerificationCode,
-  publicVerifyVerificationCodeOrOTP,
-  publicGoogleLogin,
-} from '@/lib/api/public.service';
-import { useAuth } from '@/providers/AuthProvider';
-import { setGoogleIdentityCallback } from '@/utils/google-identity';
-import { AuthResponse, VerificationCodeRequestResponse } from '@/types/auth';
-import { ProfileCompletionForm } from './ProfileCompletionForm';
-import { checkEmailSchema, verifyAuthSchema, normalizeOtp } from '@mad/validations';
+import { publicRequestVerificationCode, publicVerifyVerificationCodeOrOTP, publicGoogleLogin } from '@/lib/api/public.service';
 import { mapZodErrorToFields } from '@/lib/validation/mapZodError';
+import { useAuth } from '@/providers/AuthProvider';
+import type { AuthResponse, VerificationCodeRequestResponse } from '@/types/auth';
+import { setGoogleIdentityCallback } from '@/utils/google-identity';
+import { checkEmailSchema, verifyAuthSchema, normalizeOtp } from '@mad/validations';
 
 import { useOtpCooldowns } from './hooks/useOtpCooldowns';
 import { LoginForm } from './LoginForm';
 import { OtpVerifyForm } from './OtpVerifyForm';
+import { ProfileCompletionForm } from './ProfileCompletionForm';
 
 interface GoogleCredentialResponse {
   credential?: string;

@@ -1,13 +1,15 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { Modal } from '@mad/ui';
 import dynamic from 'next/dynamic';
+import { useRouter } from 'next/navigation';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef } from 'react';
+
+import { validateReturnTo } from '@/utils/safe-redirect';
+import { Modal } from '@mad/ui';
+
 const AuthForm = dynamic(() => import('@/components/auth/AuthForm').then(mod => mod.AuthForm), {
   ssr: false,
 });
-import { validateReturnTo } from '@/utils/safe-redirect';
-import { useRouter } from 'next/navigation';
 
 export interface AuthModalContextType {
   isOpen: boolean;

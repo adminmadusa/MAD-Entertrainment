@@ -1,0 +1,11 @@
+{
+  "history": [
+    {
+      "action": "CREATED",
+      "notes": "New grouped finding registered: Excessive consecutive blank lines detected (4 lines).",
+      "status": "NEW",
+      "timestamp": "2026-07-04T04:24:24.063Z"
+    }
+  ],
+  "id": "f_639956c6"
+}

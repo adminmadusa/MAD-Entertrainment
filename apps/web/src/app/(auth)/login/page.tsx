@@ -1,8 +1,9 @@
 'use client';
 
-import { Suspense, useEffect } from 'react';
-import { AuthForm } from '@/components/auth/AuthForm';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { Suspense, useEffect } from 'react';
+
+import { AuthForm } from '@/components/auth/AuthForm';
 import { useAuth } from '@/providers/AuthProvider';
 import { validateReturnTo } from '@/utils/safe-redirect';
 
