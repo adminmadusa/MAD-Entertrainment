@@ -67,11 +67,11 @@ export class MarkdownValidator implements GovernanceValidator {
             }
 
             const cleanText = headingText.replace(/#+$/, '').trim();
-            
+
             // Update hierarchy
             currentHierarchy[level - 1] = cleanText;
             currentHierarchy.length = level; // Truncate to current level depth
-            
+
             const headingPath = currentHierarchy.join(' > ');
 
             if (headingPathsSet.has(headingPath)) {
