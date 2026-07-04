@@ -130,7 +130,9 @@ export class DuplicateComponentDetector {
 
         if (similarityPct >= threshold) {
           metrics.duplicatesDetected++;
-          
+
+          const catInfo = this.categorizeDuplication(sigA, sigB);
+
           // Determine recommendation
           let recommendation = '';
           if (sigA.file.startsWith('packages/ui/')) {
@@ -138,7 +140,7 @@ export class DuplicateComponentDetector {
           } else if (sigB.file.startsWith('packages/ui/')) {
             recommendation = `Use the existing shared component exported by "${sigB.file}" instead of duplicating it in "${sigA.file}".`;
           } else {
-            recommendation = `Extract the duplicated layout/logic from "${sigA.file}" and "${sigB.file}" into a single reusable shared component in "packages/ui".`;
+            recommendation = `${catInfo.target} (Estimated Effort: ${catInfo.effort}, Risk: ${catInfo.risk}).`;
           }
 
           // Return standard ValidationError
@@ -147,7 +149,7 @@ export class DuplicateComponentDetector {
             line: 1,
             rule: 'VAL-UI-011',
             severity: 'WARNING',
-            message: `Duplicate component layout detected: shares ${similarityPct}% similarity with "${sigB.componentName}" in "${sigB.file}". Recommendation: ${recommendation}`,
+            message: `Duplicate component layout detected [${catInfo.category}, Confidence: ${similarityPct}%, Severity: WARNING]: shares similarity with "${sigB.componentName}" in "${sigB.file}". Recommendation: ${recommendation}`,
           });
 
           violations.push({
@@ -155,13 +157,97 @@ export class DuplicateComponentDetector {
             line: 1,
             rule: 'VAL-UI-011',
             severity: 'WARNING',
-            message: `Duplicate component layout detected: shares ${similarityPct}% similarity with "${sigA.componentName}" in "${sigA.file}". Recommendation: ${recommendation}`,
+            message: `Duplicate component layout detected [${catInfo.category}, Confidence: ${similarityPct}%, Severity: WARNING]: shares similarity with "${sigA.componentName}" in "${sigA.file}". Recommendation: ${recommendation}`,
           });
         }
       }
     }
 
     return { violations, metrics };
+  }
+
+  private static categorizeDuplication(
+    sigA: ComponentSignature,
+    sigB: ComponentSignature
+  ): {
+    category: string;
+    target: string;
+    effort: string;
+    risk: string;
+  } {
+    const nameA = sigA.componentName.toLowerCase();
+    const nameB = sigB.componentName.toLowerCase();
+    const pathA = sigA.file.toLowerCase();
+    const pathB = sigB.file.toLowerCase();
+
+    // 1. Check for Form (Category C)
+    const formKeywords = ['form', 'create', 'edit', 'selection', 'input', 'new', 'update'];
+    const isForm = formKeywords.some(kw => nameA.includes(kw) || nameB.includes(kw) || pathA.includes(kw) || pathB.includes(kw)) ||
+                   sigA.jsxTags.has('form') || sigB.jsxTags.has('form') ||
+                   sigA.jsxTags.has('input') || sigB.jsxTags.has('input') ||
+                   sigA.hooks.has('useForm');
+
+    if (isForm) {
+      return {
+        category: 'Category C — Form',
+        target: 'Extract reusable shared form component or local CRUD fields wrapper to dry-up page/form structure.',
+        effort: 'Medium (3-6 hours)',
+        risk: 'Medium',
+      };
+    }
+
+    // 2. Check for Infrastructure (Category E)
+    const infraKeywords = ['table', 'search', 'pagination', 'filter', 'toolbar', 'grid'];
+    const isInfra = infraKeywords.some(kw => nameA.includes(kw) || nameB.includes(kw)) ||
+                    sigA.jsxTags.has('table') || sigB.jsxTags.has('table') ||
+                    sigA.jsxTags.has('Table') || sigB.jsxTags.has('Table');
+
+    if (isInfra) {
+      return {
+        category: 'Category E — Infrastructure',
+        target: 'Extract reusable table, filter, or pagination wrappers to "packages/ui" as shared components.',
+        effort: 'Medium (2-4 hours)',
+        risk: 'Low',
+      };
+    }
+
+    // 3. Check for Layout (Category A)
+    const layoutKeywords = ['layout', 'shell', 'sidebar', 'modal', 'dialog', 'card', 'drawer'];
+    const isLayout = layoutKeywords.some(kw => nameA.includes(kw) || nameB.includes(kw)) ||
+                     sigA.jsxTags.has('Dialog') || sigB.jsxTags.has('Dialog') ||
+                     sigA.jsxTags.has('Modal') || sigB.jsxTags.has('Modal');
+
+    if (isLayout) {
+      return {
+        category: 'Category A — Layout',
+        target: 'Extract shared structural wrapper component to "packages/ui" for layout styling standardization.',
+        effort: 'Low-Medium (2-4 hours)',
+        risk: 'Low-Medium',
+      };
+    }
+
+    // 4. Check for Business Logic (Category D)
+    const businessKeywords = ['booking', 'payment', 'refund', 'auth', 'ticket', 'coupon', 'checkout', 'operator'];
+    const usesBusinessHook = Array.from(sigA.hooks).some(h => businessKeywords.some(kw => h.toLowerCase().includes(kw))) ||
+                             Array.from(sigB.hooks).some(h => businessKeywords.some(kw => h.toLowerCase().includes(kw)));
+    const hasBusinessTerms = businessKeywords.some(kw => nameA.includes(kw) || nameB.includes(kw));
+
+    if (usesBusinessHook || hasBusinessTerms) {
+      return {
+        category: 'Category D — Business Logic',
+        target: 'Extract shared business rules and api state hooks to "packages/shared/src/hooks" or package services instead of UI components.',
+        effort: 'Medium (4-8 hours)',
+        risk: 'High (requires validation schema/API alignment and unit testing)',
+      };
+    }
+
+    // 5. Fallback to Category B - Visual
+    return {
+      category: 'Category B — Visual',
+      target: 'Standardize visual presentation (flex structure, margins) using design tokens or Tailwind utility classes instead of creating component abstractions.',
+      effort: 'Low (1-2 hours)',
+      risk: 'Low',
+    };
   }
 
   private static extractSignature(file: string, content: string): ComponentSignature | null {
@@ -184,8 +270,8 @@ export class DuplicateComponentDetector {
           currentDepth++;
           if (currentDepth > maxDepth) maxDepth = currentDepth;
 
-          const tagNameNode = isOpening 
-            ? (node as ts.JsxOpeningElement).tagName 
+          const tagNameNode = isOpening
+            ? (node as ts.JsxOpeningElement).tagName
             : (node as ts.JsxSelfClosingElement).tagName;
           const tagName = tagNameNode.getText(sourceFile);
           jsxTags.add(tagName);

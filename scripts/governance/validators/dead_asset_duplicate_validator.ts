@@ -31,8 +31,8 @@ export class DeadAssetDuplicateValidator implements GovernanceValidator {
 
     // 2. Load configurations and fallbacks dynamically
     const config = governanceConfig || {};
-    const ignorePatterns = (config as any).ignoreFiles || 
-      (config.sharedComponentEnforcement?.ignoreFiles) || 
+    const ignorePatterns = (config as any).ignoreFiles ||
+      (config.sharedComponentEnforcement?.ignoreFiles) ||
       ['node_modules', 'dist', 'build', 'coverage'];
 
     // 3. Execute Helper Modules

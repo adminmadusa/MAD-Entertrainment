@@ -37,7 +37,7 @@ export class KnowledgeGraph {
 
   private graph = new Map<string, string[]>(); // file -> files it imports
   private consumers = new Map<string, Set<string>>(); // file -> files that import it
-  
+
   // Cache detailed metadata for each file
   private fileMetadata = new Map<string, CacheEntry>();
 
@@ -96,7 +96,7 @@ export class KnowledgeGraph {
 
     if (cacheIsValid && cache) {
       console.log('📦 Reconciling Dependency Knowledge Graph Incrementally...');
-      
+
       const cachedFiles = cache.files || {};
       const newCacheFiles: Record<string, CacheEntry> = {};
 
@@ -185,7 +185,7 @@ export class KnowledgeGraph {
         persistenceStats.examined++;
         persistenceStats.skipped++;
       }
-      
+
     } else {
       console.log('⚙️ Rebuilding Dependency Knowledge Graph from Scratch...');
       this.rebuild(currentFiles);
@@ -212,7 +212,7 @@ export class KnowledgeGraph {
       ) {
         continue;
       }
-      
+
       const fullPath = join(dir, item);
       let stats;
       try {
@@ -249,7 +249,7 @@ export class KnowledgeGraph {
 
       const detailed = DependencyAnalyzer.analyzeFileDetailed(file);
       const hash = this.getFileHash(fullPath);
-      
+
       const entry: CacheEntry = {
         hash,
         lastModified: mtime,
@@ -359,7 +359,7 @@ export class KnowledgeGraph {
       const oldDeps = this.graph.get(filePath) || [];
       this.graph.delete(filePath);
       this.fileMetadata.delete(filePath);
-      
+
       // Remove F from old dependencies' consumers
       for (const d of oldDeps) {
         const set = this.consumers.get(d);
