@@ -1,8 +1,10 @@
 'use client';
 
-import React, { useEffect, useRef } from 'react';
 import Link from 'next/link';
+import React, { useEffect, useRef } from 'react';
+
 import { Button } from '@mad/ui';
+
 import { useGoogleSignIn } from './hooks/useGoogleSignIn';
 
 interface GoogleCredentialResponse {

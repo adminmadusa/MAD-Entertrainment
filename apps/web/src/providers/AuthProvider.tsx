@@ -1,12 +1,14 @@
 'use client';
 
+import { useQueryClient } from '@tanstack/react-query';
+import { createContext, useContext, useEffect, useState, useCallback, useMemo } from 'react';
+
+import { isAxiosError } from '@/lib/api/client';
 import { publicGetMe, publicLogout } from '@/lib/api/public.service';
 import { STORAGE_KEYS } from '@mad/shared';
-import { useQueryClient } from '@tanstack/react-query';
-import { AuthUser } from '../types/auth';
-import { createContext, useContext, useEffect, useState, useCallback, useMemo } from 'react';
 import { isTokenExpired } from '@mad/utils';
-import { isAxiosError } from '@/lib/api/client';
+
+import type { AuthUser } from '../types/auth';
 
 
 interface AuthContextValue {
