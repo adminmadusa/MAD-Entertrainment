@@ -81,17 +81,30 @@ export class TrendStore {
   }
 
   /**
-   * Loads the history file. Returns a valid TrendHistoryFile structure even
-   * if the file is missing, corrupt, or has a schema version mismatch.
+   * Loads the history file. Returns a valid TrendHistoryFile structure.
+   * Distinguishes error scenarios: missing files, corrupted JSON (with backup),
+   * schema mismatch (with backup), and engine version warnings.
    */
   public load(): TrendHistoryFile {
     if (!fs.existsSync(this.filepath)) {
+      // 1. Missing file: normal first run path
       return this.emptyHistory();
     }
 
     try {
       const raw = fs.readFileSync(this.filepath, 'utf8');
-      const data = JSON.parse(raw);
+      let data: any;
+      try {
+        data = JSON.parse(raw);
+      } catch (jsonErr) {
+        // 2. Corrupted JSON: warn, backup, and reset
+        const backupPath = this.filepath.replace('.json', '.corrupt.json');
+        console.warn(`⚠️ Corrupted JSON in trend report. Backing up to ${path.basename(backupPath)} and resetting.`);
+        try {
+          fs.writeFileSync(backupPath, raw, 'utf8');
+        } catch (_) {}
+        return this.emptyHistory();
+      }
 
       if (!data || typeof data !== 'object' || !Array.isArray(data.history)) {
         console.warn('⚠️ Malformed trend history format. Resetting history.');
@@ -99,13 +112,23 @@ export class TrendStore {
       }
 
       if (data.schemaVersion !== CURRENT_SCHEMA_VERSION) {
-        console.warn(`⚠️ Trend schema mismatch (found: ${data.schemaVersion}, expected: ${CURRENT_SCHEMA_VERSION}). Resetting history.`);
+        // 3. Schema Version Mismatch: warn, backup versioned, and reset
+        const backupPath = this.filepath.replace('.json', `.schema-v${data.schemaVersion || 'unknown'}.json`);
+        console.warn(`⚠️ Schema mismatch (found: ${data.schemaVersion}, expected: ${CURRENT_SCHEMA_VERSION}). Backing up to ${path.basename(backupPath)} and resetting.`);
+        try {
+          fs.writeFileSync(backupPath, JSON.stringify(data, null, 2), 'utf8');
+        } catch (_) {}
         return this.emptyHistory();
+      }
+
+      if (data.engineVersion !== CURRENT_ENGINE_VERSION) {
+        // 4. Engine Version Mismatch: log diagnostic warning but preserve compatible data
+        console.warn(`ℹ️ Engine version changed (found: ${data.engineVersion}, expected: ${CURRENT_ENGINE_VERSION}). Preserving compatible snapshot data.`);
       }
 
       return data as TrendHistoryFile;
     } catch (e) {
-      console.warn('⚠️ Failed to parse trend history JSON. Recovering by resetting history.', e);
+      console.warn('⚠️ Unexpected error loading trend history. Resetting.', e);
       return this.emptyHistory();
     }
   }

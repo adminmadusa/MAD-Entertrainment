@@ -171,4 +171,54 @@ describe('TrendStore (File persistence and error recovery)', () => {
       Date.prototype.toISOString = originalToISOString;
     }
   });
+
+  it('should backup corrupted JSON to .corrupt.json and reset', () => {
+    const file = path.resolve(tempDir, '.agents/trend_report.json');
+    fs.mkdirSync(path.dirname(file), { recursive: true });
+    fs.writeFileSync(file, 'corrupt text', 'utf8');
+
+    const data = store.load();
+    expect(data.history).toHaveLength(0);
+
+    const backupFile = path.resolve(tempDir, '.agents/trend_report.corrupt.json');
+    expect(fs.existsSync(backupFile)).toBe(true);
+    expect(fs.readFileSync(backupFile, 'utf8')).toBe('corrupt text');
+  });
+
+  it('should backup schema mismatches to .schema-v{version}.json and reset', () => {
+    const file = path.resolve(tempDir, '.agents/trend_report.json');
+    fs.mkdirSync(path.dirname(file), { recursive: true });
+    
+    const mismatchedData = {
+      schemaVersion: '2.5.9',
+      engineVersion: '1.0.0',
+      history: [{ timestamp: '2026-07-04T12:00:00Z', scores: makeScores(70, 70, 70, 70, 70) }]
+    };
+    fs.writeFileSync(file, JSON.stringify(mismatchedData, null, 2), 'utf8');
+
+    const data = store.load();
+    expect(data.history).toHaveLength(0);
+
+    const backupFile = path.resolve(tempDir, '.agents/trend_report.schema-v2.5.9.json');
+    expect(fs.existsSync(backupFile)).toBe(true);
+    const backupContent = JSON.parse(fs.readFileSync(backupFile, 'utf8'));
+    expect(backupContent.schemaVersion).toBe('2.5.9');
+  });
+
+  it('should log warning and preserve history if engineVersion changes but schemaVersion remains compatible', () => {
+    const file = path.resolve(tempDir, '.agents/trend_report.json');
+    fs.mkdirSync(path.dirname(file), { recursive: true });
+
+    const dataWithEngineMismatch = {
+      schemaVersion: CURRENT_SCHEMA_VERSION,
+      engineVersion: '2.9.9', // mismatch
+      history: [{ timestamp: '2026-07-04T12:00:00Z', scores: makeScores(85, 85, 85, 85, 85) }]
+    };
+    fs.writeFileSync(file, JSON.stringify(dataWithEngineMismatch, null, 2), 'utf8');
+
+    const data = store.load();
+    // Engine version mismatch must preserve history (not reset it)
+    expect(data.history).toHaveLength(1);
+    expect(data.history[0].scores.overallScore).toBe(85);
+  });
 });
