@@ -1,0 +1,33 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T15:07:46.355Z",
+  "domain": "Architecture Review Board",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "message": "Document exists in the repository but has no incoming references from any other active documentation.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "090307eb37151d9bc16c6dc334b233f883ff0f5ebe37cbdcf197df7a09e6be2d",
+        "id": "090307eb37151d9bc16c6dc334b233f883ff0f5ebe37cbdcf197df7a09e6be2d",
+        "line": 0,
+        "message": "Document exists in the repository but has no incoming references from any other active documentation."
+      }
+    ],
+    "path": ".agents/skills/ui-ux/SKILL.md"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T15:07:46.355Z",
+  "id": "f_57c104b4",
+  "lastDetected": "2026-07-03T15:07:46.355Z",
+  "occurrenceCount": 1,
+  "owner": "Architecture Review Board",
+  "package": ".agents",
+  "relationships": [],
+  "rule": "Orphaned Documentation",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

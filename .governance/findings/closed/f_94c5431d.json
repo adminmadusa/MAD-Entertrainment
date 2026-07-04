@@ -1,0 +1,33 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T09:21:04.003Z",
+  "domain": "Architecture Review Board",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "message": "Duplicate document detected: \"docs/governance/rules/MISSING_SSOT_OWNER.md\" (Status: Active) shares 95% similarity with canonical \"docs/governance/rules/MISSING_SSOT_DATE.md\" (Status: Active).",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "43878e17de8a28466113e185819b26e3e3bed32b9f36ab10514822b7720b6283",
+        "id": "43878e17de8a28466113e185819b26e3e3bed32b9f36ab10514822b7720b6283",
+        "line": 0,
+        "message": "Duplicate document detected: \"docs/governance/rules/MISSING_SSOT_OWNER.md\" (Status: Active) shares 86% similarity with canonical \"docs/governance/rules/AST_PARSE_WARNING.md\" (Status: Active)."
+      }
+    ],
+    "path": "docs/governance/rules/MISSING_SSOT_OWNER.md"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T09:21:04.003Z",
+  "id": "f_94c5431d",
+  "lastDetected": "2026-07-03T09:21:04.003Z",
+  "occurrenceCount": 1,
+  "owner": "Architecture Review Board",
+  "package": "docs",
+  "relationships": [],
+  "rule": "VAL-DOC-006",
+  "ruleVersion": "2.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

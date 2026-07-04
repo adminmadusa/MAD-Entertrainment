@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:55.892Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 3,
+    "message": "Imports must be grouped in order: Node built-ins, Third-party packages, Workspace aliases, Relative paths, Side-effects.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "dba67fd62701f94121b95e66d508d2fa9a29dd1a1db7281c4222532ed83209f8",
+        "id": "dba67fd62701f94121b95e66d508d2fa9a29dd1a1db7281c4222532ed83209f8",
+        "line": 3,
+        "message": "Imports must be grouped in order: Node built-ins, Third-party packages, Workspace aliases, Relative paths, Side-effects."
+      }
+    ],
+    "path": "apps/web/src/components/booking/shared/BookingCard.tsx"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:55.892Z",
+  "id": "f_e5134c9b",
+  "lastDetected": "2026-07-03T12:25:55.892Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-001",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

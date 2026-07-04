@@ -1,0 +1,33 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T09:21:04.074Z",
+  "domain": "Architecture Review Board",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "message": "Duplicate document detected: \"docs/governance/rules/OUTDATED_DOC.md\" (Status: Active) shares 91% similarity with canonical \"docs/governance/rules/MISSING_SSOT_DATE.md\" (Status: Active).",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "3dc9d79e68effa9f8ea35d0646cf8f4dbc884a75fd6b35c5a9f5dde489e3c81b",
+        "id": "3dc9d79e68effa9f8ea35d0646cf8f4dbc884a75fd6b35c5a9f5dde489e3c81b",
+        "line": 0,
+        "message": "Duplicate document detected: \"docs/governance/rules/OUTDATED_DOC.md\" (Status: Active) shares 87% similarity with canonical \"docs/governance/rules/INVALID_SSOT_DATE.md\" (Status: Active)."
+      }
+    ],
+    "path": "docs/governance/rules/OUTDATED_DOC.md"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T09:21:04.074Z",
+  "id": "f_1735b343",
+  "lastDetected": "2026-07-03T09:21:04.074Z",
+  "occurrenceCount": 1,
+  "owner": "Architecture Review Board",
+  "package": "docs",
+  "relationships": [],
+  "rule": "VAL-DOC-006",
+  "ruleVersion": "2.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

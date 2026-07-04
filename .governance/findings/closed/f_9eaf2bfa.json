@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:46.760Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 3,
+    "message": "Imports must be grouped in order: Node built-ins, Third-party packages, Workspace aliases, Relative paths, Side-effects.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "a1b5015273f62cca6d4ee396a59b60f854d86420e70af318ea80a1de59b038af",
+        "id": "a1b5015273f62cca6d4ee396a59b60f854d86420e70af318ea80a1de59b038af",
+        "line": 3,
+        "message": "Imports must be grouped in order: Node built-ins, Third-party packages, Workspace aliases, Relative paths, Side-effects."
+      }
+    ],
+    "path": "apps/admin/src/app/coupons/page.tsx"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:46.760Z",
+  "id": "f_9eaf2bfa",
+  "lastDetected": "2026-07-03T12:25:46.760Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-001",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

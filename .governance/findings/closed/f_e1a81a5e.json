@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:26:01.910Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 3,
+    "message": "Imports within the same group must be sorted alphabetically (\"../core/types\" should precede \"../core/validator\").",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "9e5869c19f9a0ef9b21b6f292847878bd5947c068334407fff28af941534eabe",
+        "id": "9e5869c19f9a0ef9b21b6f292847878bd5947c068334407fff28af941534eabe",
+        "line": 3,
+        "message": "Imports within the same group must be sorted alphabetically (\"../core/types\" should precede \"../core/validator\")."
+      }
+    ],
+    "path": "scripts/governance/validators/dead_asset_duplicate_validator.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:26:01.910Z",
+  "id": "f_e1a81a5e",
+  "lastDetected": "2026-07-03T12:26:01.910Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "scripts",
+  "relationships": [],
+  "rule": "VAL-HYG-001",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

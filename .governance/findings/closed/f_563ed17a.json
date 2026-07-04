@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:48.234Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 4,
+    "message": "Groups of imports must be separated by a single blank line.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "7bd65095410ea254dc29eee0ff290d19cded1aebfab60eb7fecefcacb7bce159",
+        "id": "7bd65095410ea254dc29eee0ff290d19cded1aebfab60eb7fecefcacb7bce159",
+        "line": 4,
+        "message": "Groups of imports must be separated by a single blank line."
+      }
+    ],
+    "path": "apps/admin/src/components/events/EventMemoriesCard.tsx"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:48.234Z",
+  "id": "f_563ed17a",
+  "lastDetected": "2026-07-03T12:25:48.234Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-001",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

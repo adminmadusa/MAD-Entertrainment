@@ -1,0 +1,42 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:26:00.293Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 5,
+    "message": "Import from types module \"../types\" should use \"import type\".",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "db546f7c84c43f2b60e5350c4775d0f8a396419143407e38abf7f40927682a06",
+        "id": "db546f7c84c43f2b60e5350c4775d0f8a396419143407e38abf7f40927682a06",
+        "line": 3,
+        "message": "Import from types module \"../fix_types\" should use \"import type\"."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "db546f7c84c43f2b60e5350c4775d0f8a396419143407e38abf7f40927682a06",
+        "id": "db546f7c84c43f2b60e5350c4775d0f8a396419143407e38abf7f40927682a06",
+        "line": 5,
+        "message": "Import from types module \"../types\" should use \"import type\"."
+      }
+    ],
+    "path": "scripts/governance/core/fixers/workstation_path_fixer.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:26:00.293Z",
+  "id": "f_5ace439f",
+  "lastDetected": "2026-07-03T12:26:00.293Z",
+  "occurrenceCount": 2,
+  "owner": "Platform Team",
+  "package": "scripts",
+  "relationships": [],
+  "rule": "VAL-HYG-003",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

@@ -1,0 +1,45 @@
+{
+  "confidence": 0.9,
+  "createdDate": "2026-07-03T16:43:21.779Z",
+  "domain": "UI UX Guild",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "UIElement",
+    "line": 347,
+    "message": "Element <th> with click handler lacks a tabIndex or role attribute, breaking keyboard accessibility.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "UIElement",
+        "fingerprint": "0c8aac13365f45a94c01fbdbd93b46c7c39957f21ca3a85115824ada26d0a42d",
+        "id": "0c8aac13365f45a94c01fbdbd93b46c7c39957f21ca3a85115824ada26d0a42d",
+        "line": 335,
+        "message": "Element <th> with click handler lacks a tabIndex or role attribute, breaking keyboard accessibility.",
+        "snippet": "<th"
+      },
+      {
+        "column": 0,
+        "construct": "UIElement",
+        "fingerprint": "0c8aac13365f45a94c01fbdbd93b46c7c39957f21ca3a85115824ada26d0a42d",
+        "id": "0c8aac13365f45a94c01fbdbd93b46c7c39957f21ca3a85115824ada26d0a42d",
+        "line": 347,
+        "message": "Element <th> with click handler lacks a tabIndex or role attribute, breaking keyboard accessibility.",
+        "snippet": "<th"
+      }
+    ],
+    "path": "apps/admin/src/app/users/page.tsx",
+    "snippet": "<th"
+  },
+  "feature": "UIElement",
+  "firstDetected": "2026-07-03T16:43:21.779Z",
+  "id": "f_333580ac",
+  "lastDetected": "2026-07-03T16:43:21.779Z",
+  "occurrenceCount": 2,
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-UI-009",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

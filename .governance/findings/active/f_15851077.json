@@ -1,0 +1,33 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T07:29:55.775Z",
+  "domain": "Architecture Review Board",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "message": "Orphaned document: active production file has no incoming links from any documentation entrypoint.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "6535a426dac00c5df472028fa589159dd118351ca098330cb153763e0f18a060",
+        "id": "6535a426dac00c5df472028fa589159dd118351ca098330cb153763e0f18a060",
+        "line": 0,
+        "message": "Orphaned document: active production file has no incoming links from any documentation entrypoint."
+      }
+    ],
+    "path": "docs/audit/ticket-retrieval-portal-audit.md"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T07:29:55.775Z",
+  "id": "f_15851077",
+  "lastDetected": "2026-07-03T07:29:55.775Z",
+  "occurrenceCount": 1,
+  "owner": "Architecture Review Board",
+  "package": "docs",
+  "relationships": [],
+  "rule": "VAL-DOC-007",
+  "ruleVersion": "2.0.0",
+  "schemaVersion": 2,
+  "status": "REGRESSION"
+}

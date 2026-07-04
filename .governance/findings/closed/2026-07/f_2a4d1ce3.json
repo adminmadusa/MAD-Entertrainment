@@ -1,0 +1,36 @@
+{
+  "confidence": 0.9,
+  "createdDate": "2026-07-03T16:43:21.408Z",
+  "domain": "UI UX Guild",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "UIElement",
+    "line": 167,
+    "message": "Raw <table> element used in portal. Use a reusable shared Table component.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "UIElement",
+        "fingerprint": "089cedb74b263916ab81af18f5e77f91b5278298dd7a63bc80f748e45fc1aad8",
+        "id": "089cedb74b263916ab81af18f5e77f91b5278298dd7a63bc80f748e45fc1aad8",
+        "line": 167,
+        "message": "Raw <table> element used in portal. Use a reusable shared Table component.",
+        "snippet": "<table className=\"w-full text-sm\">"
+      }
+    ],
+    "path": "apps/admin/src/app/team/_components/TeamTable.tsx",
+    "snippet": "<table className=\"w-full text-sm\">"
+  },
+  "feature": "UIElement",
+  "firstDetected": "2026-07-03T16:43:21.408Z",
+  "id": "f_2a4d1ce3",
+  "lastDetected": "2026-07-03T16:43:21.408Z",
+  "occurrenceCount": 1,
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-UI-004",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

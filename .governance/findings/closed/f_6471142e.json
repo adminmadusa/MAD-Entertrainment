@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:26:00.882Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 2,
+    "message": "Import from types module \"../types\" should use \"import type\".",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "99dc56924391ada507be3bf6dcc534da2497b1b4a2736fe2f2ac69feb31530af",
+        "id": "99dc56924391ada507be3bf6dcc534da2497b1b4a2736fe2f2ac69feb31530af",
+        "line": 2,
+        "message": "Import from types module \"../types\" should use \"import type\"."
+      }
+    ],
+    "path": "scripts/governance/rules/metadata/ACCESSIBILITY.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:26:00.882Z",
+  "id": "f_6471142e",
+  "lastDetected": "2026-07-03T12:26:00.882Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "scripts",
+  "relationships": [],
+  "rule": "VAL-HYG-003",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

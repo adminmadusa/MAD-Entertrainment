@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:49.806Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 4,
+    "message": "Imports must be grouped in order: Node built-ins, Third-party packages, Workspace aliases, Relative paths, Side-effects.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "a3d57ded6ded3c2bc47a8e2787e43397032d7c164addbb1d6854b4e3206a6797",
+        "id": "a3d57ded6ded3c2bc47a8e2787e43397032d7c164addbb1d6854b4e3206a6797",
+        "line": 4,
+        "message": "Imports must be grouped in order: Node built-ins, Third-party packages, Workspace aliases, Relative paths, Side-effects."
+      }
+    ],
+    "path": "apps/server/src/controllers/public/payment.controller.webhook.test.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:49.806Z",
+  "id": "f_65513415",
+  "lastDetected": "2026-07-03T12:25:49.806Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-001",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

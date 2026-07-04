@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:58.943Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 4,
+    "message": "Imports within the same group must be sorted alphabetically (\"./execution_planner\" should precede \"./validator_registry\").",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "090d0affafddb03f3ded703e8c6d9e422a378e9e5cd6dafb7ffef5b295838033",
+        "id": "090d0affafddb03f3ded703e8c6d9e422a378e9e5cd6dafb7ffef5b295838033",
+        "line": 4,
+        "message": "Imports within the same group must be sorted alphabetically (\"./execution_planner\" should precede \"./validator_registry\")."
+      }
+    ],
+    "path": "scripts/governance/core/execution_engine.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:58.943Z",
+  "id": "f_bad912e5",
+  "lastDetected": "2026-07-03T12:25:58.943Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "scripts",
+  "relationships": [],
+  "rule": "VAL-HYG-001",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

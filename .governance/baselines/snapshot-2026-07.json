@@ -1,4 +1,7 @@
 {
+  "branch": "chore/governance-gitignore",
+  "commit": "605beb38",
   "engineVersion": "1.0.0",
-  "ruleRegistryVersion": "1.0.0"
+  "ruleRegistryVersion": "1.0.0",
+  "timestamp": "2026-07-04T03:07:06.515Z"
 }

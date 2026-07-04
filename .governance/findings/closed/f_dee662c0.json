@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:52.007Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 30,
+    "message": "Imports within the same group must be sorted alphabetically (\"../../middleware/auth.middleware\" should precede \"./upload.routes\").",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "0bf3d9f4c149791f074bdaff9c8655b48506145853cfef1cfe2e7fdc8d60002b",
+        "id": "0bf3d9f4c149791f074bdaff9c8655b48506145853cfef1cfe2e7fdc8d60002b",
+        "line": 30,
+        "message": "Imports within the same group must be sorted alphabetically (\"../../middleware/auth.middleware\" should precede \"./upload.routes\")."
+      }
+    ],
+    "path": "apps/server/src/routes/admin/upload.routes.test.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:52.007Z",
+  "id": "f_dee662c0",
+  "lastDetected": "2026-07-03T12:25:52.007Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-001",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

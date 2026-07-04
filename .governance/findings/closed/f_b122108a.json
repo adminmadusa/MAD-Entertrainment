@@ -1,0 +1,33 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T09:21:04.626Z",
+  "domain": "Architecture Review Board",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "message": "Duplicate document detected: \"docs/governance/rules/VAL-UI-014.md\" (Status: Active) shares 94% similarity with canonical \"docs/governance/rules/VAL-UI-012.md\" (Status: Active).",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "e81b44babaa101c06f168aa714304fecb7b53207c0a847906886fd4e2b8c88e7",
+        "id": "e81b44babaa101c06f168aa714304fecb7b53207c0a847906886fd4e2b8c88e7",
+        "line": 0,
+        "message": "Duplicate document detected: \"docs/governance/rules/VAL-UI-014.md\" (Status: Active) shares 93% similarity with canonical \"docs/governance/rules/VAL-UI-013.md\" (Status: Active)."
+      }
+    ],
+    "path": "docs/governance/rules/VAL-UI-014.md"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T09:21:04.626Z",
+  "id": "f_b122108a",
+  "lastDetected": "2026-07-03T09:21:04.626Z",
+  "occurrenceCount": 1,
+  "owner": "Architecture Review Board",
+  "package": "docs",
+  "relationships": [],
+  "rule": "VAL-DOC-006",
+  "ruleVersion": "2.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

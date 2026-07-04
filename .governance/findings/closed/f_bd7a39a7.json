@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:55.959Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 3,
+    "message": "Imports must be grouped in order: Node built-ins, Third-party packages, Workspace aliases, Relative paths, Side-effects.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "3457b19d76d0bf2eb30549f5f2b5a849e193705e64bd525880e0e37f1fe27027",
+        "id": "3457b19d76d0bf2eb30549f5f2b5a849e193705e64bd525880e0e37f1fe27027",
+        "line": 3,
+        "message": "Imports must be grouped in order: Node built-ins, Third-party packages, Workspace aliases, Relative paths, Side-effects."
+      }
+    ],
+    "path": "apps/web/src/components/booking/TicketSelectionContent.tsx"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:55.959Z",
+  "id": "f_bd7a39a7",
+  "lastDetected": "2026-07-03T12:25:55.959Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-001",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

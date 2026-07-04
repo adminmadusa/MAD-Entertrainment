@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:52.999Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 9,
+    "message": "Imports within the same group must be sorted alphabetically (\"../utils/logger\" should precede \"./queue.service\").",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "e6a830057e38830af8e087119f4c8577aa2de2f7d302342ea4e12a610d780a5f",
+        "id": "e6a830057e38830af8e087119f4c8577aa2de2f7d302342ea4e12a610d780a5f",
+        "line": 9,
+        "message": "Imports within the same group must be sorted alphabetically (\"../utils/logger\" should precede \"./queue.service\")."
+      }
+    ],
+    "path": "apps/server/src/services/diagnostics.service.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:52.999Z",
+  "id": "f_454817a1",
+  "lastDetected": "2026-07-03T12:25:52.999Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-001",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

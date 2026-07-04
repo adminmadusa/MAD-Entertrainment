@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:26:01.783Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 45,
+    "message": "Imports must be grouped in order: Node built-ins, Third-party packages, Workspace aliases, Relative paths, Side-effects.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "0da7c57155e2a069e0bf2ab03845feb2310e09d5cb81cea92d10ee5d5232c67b",
+        "id": "0da7c57155e2a069e0bf2ab03845feb2310e09d5cb81cea92d10ee5d5232c67b",
+        "line": 45,
+        "message": "Imports must be grouped in order: Node built-ins, Third-party packages, Workspace aliases, Relative paths, Side-effects."
+      }
+    ],
+    "path": "scripts/governance/validators/architecture_validator.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:26:01.783Z",
+  "id": "f_3d8a8f79",
+  "lastDetected": "2026-07-03T12:26:01.783Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "scripts",
+  "relationships": [],
+  "rule": "VAL-HYG-001",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

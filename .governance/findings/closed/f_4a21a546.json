@@ -1,0 +1,35 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:47.973Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 1,
+    "message": "Imports must be grouped in order: Node built-ins, Third-party packages, Workspace aliases, Relative paths, Side-effects.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "03a7db37976608e9c028648789d0036ed07991bf2b0382b32b3c9548206363b7",
+        "id": "03a7db37976608e9c028648789d0036ed07991bf2b0382b32b3c9548206363b7",
+        "line": 1,
+        "message": "Imports must be grouped in order: Node built-ins, Third-party packages, Workspace aliases, Relative paths, Side-effects."
+      }
+    ],
+    "path": "apps/admin/src/components/dj-operators/DJBasicInfoCard.tsx"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:47.973Z",
+  "id": "f_4a21a546",
+  "lastDetected": "2026-07-03T17:05:04.421Z",
+  "lastModified": "2026-07-03T17:05:04.421Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-001",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

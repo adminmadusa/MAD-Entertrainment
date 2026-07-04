@@ -8,24 +8,216 @@
       ],
       "dynamicImports": [],
       "exports": [],
-      "hash": "7efe585354c76d3f4bc9e01369df1efac25c20b7",
-      "lastModified": 1782647089633.8372
+      "hash": "0609f9578588c7f8c394196d5b75f6eeea0090ac",
+      "lastModified": 1783050805775.0671
+    },
+    ".agents/skills/architecture-review/SKILL.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "docs/decisions/README.md",
+        ".agents/skills/pr-review/SKILL.md",
+        ".agents/skills/documentation/SKILL.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "601fdde8dc3ca9ef018ad47db548723c49761bab",
+      "lastModified": 1783132807509.9932
+    },
+    ".agents/skills/ci-investigation/CHECKLIST.md": {
+      "assetReferences": [],
+      "dependencies": [
+        ".agents/skills/ci-investigation/templates/evidence-matrix.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "8689ada5037bc6d6503a60cd334879ac7efcd723",
+      "lastModified": 1783050805775.8574
+    },
+    ".agents/skills/ci-investigation/README.md": {
+      "assetReferences": [],
+      "dependencies": [],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "12b22b7804bdddef79ef2446adbb6e0e18e5818d",
+      "lastModified": 1783132807510.5862
+    },
+    ".agents/skills/ci-investigation/SKILL.md": {
+      "assetReferences": [],
+      "dependencies": [
+        ".agents/skills/ci-investigation/CHECKLIST.md",
+        ".agents/skills/ci-investigation/templates/evidence-matrix.md",
+        ".agents/skills/ci-investigation/templates/evidence-matrix.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "662065523d5a46fff2d95ce102c26321308df33b",
+      "lastModified": 1783132807510.8142
+    },
+    ".agents/skills/ci-investigation/examples/dependency-resolution.md": {
+      "assetReferences": [],
+      "dependencies": [],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "36bbbb33257e61b06e79f3a484fd93f7126748f2",
+      "lastModified": 1783050805776.1606
+    },
+    ".agents/skills/ci-investigation/examples/deployment-failure.md": {
+      "assetReferences": [],
+      "dependencies": [],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "78a5fa41b7479615106456defc44a4cf237611c6",
+      "lastModified": 1783050805776.2378
+    },
+    ".agents/skills/ci-investigation/examples/test-failure.md": {
+      "assetReferences": [],
+      "dependencies": [],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "39763eeadf4b1b8d9b375f169c4f66ef4f3d10f4",
+      "lastModified": 1783050805776.312
+    },
+    ".agents/skills/ci-investigation/examples/transpilation-failure.md": {
+      "assetReferences": [],
+      "dependencies": [],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "b956c6b9cec96d3569ca8d8c36627ef617d16d4a",
+      "lastModified": 1783050805776.3965
+    },
+    ".agents/skills/ci-investigation/templates/ci-investigation-prompt.md": {
+      "assetReferences": [],
+      "dependencies": [],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "12b31dd43fa0bc215eae2046f2b474f941867fb8",
+      "lastModified": 1783050805776.526
+    },
+    ".agents/skills/ci-investigation/templates/evidence-matrix.md": {
+      "assetReferences": [],
+      "dependencies": [],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "f1d91e55a7986a73a97dfeeaeaa6bfd6ec6ef81e",
+      "lastModified": 1783050805776.6118
+    },
+    ".agents/skills/ci-investigation/templates/github-actions-diagnostics.yml": {
+      "assetReferences": [],
+      "dependencies": [],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "ae7069033d66f283a9e44c3bc929e49aae2c03e4",
+      "lastModified": 1783050805776.7087
+    },
+    ".agents/skills/documentation/SKILL.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "README.md",
+        ".agents/skills/governance-audit/SKILL.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "6c183745f91b191c00113ec4643d737221e4244c",
+      "lastModified": 1783132807510.9521
+    },
+    ".agents/skills/git-workflow/SKILL.md": {
+      "assetReferences": [],
+      "dependencies": [
+        ".agents/skills/pr-review/SKILL.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "8f150d70d79679325d6a38a87402aa12a90ec49e",
+      "lastModified": 1783050805776.9841
+    },
+    ".agents/skills/governance-audit/SKILL.md": {
+      "assetReferences": [],
+      "dependencies": [
+        ".agents/skills/pr-review/SKILL.md",
+        ".agents/skills/documentation/SKILL.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "f38689d72ad71ab44e5b6b524cdd05fd942d50fb",
+      "lastModified": 1783132807511.0857
+    },
+    ".agents/skills/pr-review/SKILL.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "REPOSITORY_GOVERNANCE.md",
+        ".agents/skills/git-workflow/SKILL.md",
+        ".agents/skills/architecture-review/SKILL.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "633cae97fb8e4fea8f303148b631b1346d632d2c",
+      "lastModified": 1783050805778.4443
     },
     ".audit-exceptions.json": {
       "assetReferences": [],
       "dependencies": [],
       "dynamicImports": [],
       "exports": [],
-      "hash": "e8054a9c921aa8af9c8a76129cdcd9e125c4107c",
-      "lastModified": 1781697712028.3337
+      "hash": "821dd650489a5558f31f269f15d21d4c375f1bd9",
+      "lastModified": 1783050805778.5989
+    },
+    ".github/ISSUE_TEMPLATE/bug_report.yml": {
+      "assetReferences": [],
+      "dependencies": [],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "dd8d977371e2d2360f2ca6a011b99d4d23d16878",
+      "lastModified": 1783050805778.8188
+    },
+    ".github/ISSUE_TEMPLATE/config.yml": {
+      "assetReferences": [],
+      "dependencies": [],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "2506f3dd0de2f41929499698d210c9efbf2eea9e",
+      "lastModified": 1783050805778.9019
+    },
+    ".github/ISSUE_TEMPLATE/feature_request.yml": {
+      "assetReferences": [],
+      "dependencies": [],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "01037880ec9a7ac0a3cd4508a9e81177227f1b8c",
+      "lastModified": 1783050805778.9854
+    },
+    ".github/ISSUE_TEMPLATE/governance_issue.yml": {
+      "assetReferences": [],
+      "dependencies": [],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "28a6252a5d5f6484fd20144a26e6b729461e7863",
+      "lastModified": 1783050805779.0913
+    },
+    ".github/ISSUE_TEMPLATE/question.yml": {
+      "assetReferences": [],
+      "dependencies": [],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "5e627487f26f5ce3a7ca9e473670364076e32d38",
+      "lastModified": 1783050805779.194
+    },
+    ".github/PULL_REQUEST_TEMPLATE.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "AGENTS.MD"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "d5c41b91209684d8c2f873f2979e4813531f7df8",
+      "lastModified": 1783050805779.297
     },
     ".github/workflows/ci.yml": {
       "assetReferences": [],
       "dependencies": [],
       "dynamicImports": [],
       "exports": [],
-      "hash": "4fadb1bc4de7103a8238b38399400bff97152040",
-      "lastModified": 1782835584942.6343
+      "hash": "b235c0830fdc5cbc52af735eec73be829bb8de80",
+      "lastModified": 1783050805779.611
     },
     ".pnpm-store/v11/.tmp/pnpm-9.15.0-1779599810508/package.json": {
       "assetReferences": [],
@@ -53,8 +245,8 @@
       ],
       "dynamicImports": [],
       "exports": [],
-      "hash": "f35dcab273c0c9d81ff246276cf0862266461661",
-      "lastModified": 1782646416614.4507
+      "hash": "04f59484539746d9782b4bc9d05c321c581fe927",
+      "lastModified": 1783132807598.999
     },
     "API_CONTRACTS.md": {
       "assetReferences": [],
@@ -71,16 +263,29 @@
       ],
       "dynamicImports": [],
       "exports": [],
-      "hash": "7fd7520de44e83c4b537f9e9b091eb4d50279298",
-      "lastModified": 1782555245431.421
+      "hash": "bf7141b94add52109c9ab737fee3ab9a25a9f6a5",
+      "lastModified": 1783132807599.9817
     },
     "ARCHITECTURE.md": {
       "assetReferences": [],
-      "dependencies": [],
+      "dependencies": [
+        "docs/architecture/governance.md",
+        "README.md",
+        "REPOSITORY_GOVERNANCE.md",
+        "AGENTS.MD",
+        "RUNBOOK.md",
+        "DEPLOYMENT_MAP.md",
+        "API_CONTRACTS.md",
+        "docs/decisions/README.md",
+        "CHANGELOG.md",
+        "CHANGELOG.md",
+        "docs/decisions/ADR-001-booking-ownership.md",
+        "API_CONTRACTS.md"
+      ],
       "dynamicImports": [],
       "exports": [],
-      "hash": "65cd7d26315cd66ce4b9f6e82f5a98d4f52e6751",
-      "lastModified": 1782835626424.8665
+      "hash": "bcb1495df12b3b435331294dbe8997f7c0f72bca",
+      "lastModified": 1783132807600.1946
     },
     "CHANGELOG.md": {
       "assetReferences": [],
@@ -94,32 +299,106 @@
       ],
       "dynamicImports": [],
       "exports": [],
-      "hash": "06e615201fe0e8fc9604ebe769c704fb917c9cfa",
-      "lastModified": 1782555245432.1323
+      "hash": "eefde1c951b3ec9763900457459f4224991a8df7",
+      "lastModified": 1783132807600.9275
+    },
+    "CONTRIBUTING.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "README.md",
+        "REPOSITORY_GOVERNANCE.md",
+        "AGENTS.MD"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "cb66bbde38a8787d254ad60d3130e0f69703de43",
+      "lastModified": 1783132807601.158
     },
     "DEPLOYMENT_MAP.md": {
       "assetReferences": [],
-      "dependencies": [],
+      "dependencies": [
+        "README.md",
+        "REPOSITORY_GOVERNANCE.md",
+        "AGENTS.MD",
+        "RUNBOOK.md",
+        "ARCHITECTURE.md",
+        "API_CONTRACTS.md",
+        "docs/decisions/README.md",
+        "CHANGELOG.md",
+        "CHANGELOG.md",
+        "API_CONTRACTS.md"
+      ],
       "dynamicImports": [],
       "exports": [],
-      "hash": "2ce68c7e187bdabf7d8e25176f55779b4c9e22fd",
-      "lastModified": 1782835637334.692
+      "hash": "ab0deafc2d558150300319fefc6dafacdb3bbb71",
+      "lastModified": 1783132807601.4805
     },
     "README.md": {
       "assetReferences": [],
-      "dependencies": [],
+      "dependencies": [
+        "REPOSITORY_GOVERNANCE.md",
+        "AGENTS.MD",
+        "REPOSITORY_GOVERNANCE.md",
+        "ARCHITECTURE.md",
+        "DEPLOYMENT_MAP.md",
+        "API_CONTRACTS.md",
+        "docs/decisions/README.md",
+        "RUNBOOK.md",
+        "TESTING.md",
+        "AGENTS.MD",
+        "CHANGELOG.md",
+        "docs/TODO-AUDIT-FIXES.md"
+      ],
       "dynamicImports": [],
       "exports": [],
-      "hash": "a18d7376ecfee9fbfee7c948b286016c20bc6b8f",
-      "lastModified": 1782835592023.3755
+      "hash": "311bc034c4e8d05b8b56bd8eee812d840e923979",
+      "lastModified": 1783050805868.7517
     },
     "REPOSITORY_GOVERNANCE.md": {
       "assetReferences": [],
-      "dependencies": [],
+      "dependencies": [
+        "README.md",
+        "ARCHITECTURE.md",
+        "DEPLOYMENT_MAP.md",
+        "API_CONTRACTS.md",
+        "RUNBOOK.md",
+        "AGENTS.MD",
+        "TESTING.md",
+        "docs/decisions/README.md",
+        "CHANGELOG.md",
+        "README.md",
+        "REPOSITORY_GOVERNANCE.md",
+        "ARCHITECTURE.md",
+        "DEPLOYMENT_MAP.md",
+        "API_CONTRACTS.md",
+        "docs/decisions/README.md",
+        "RUNBOOK.md",
+        "AGENTS.MD",
+        "REPOSITORY_GOVERNANCE.md",
+        "ARCHITECTURE.md",
+        "ARCHITECTURE.md",
+        "ARCHITECTURE.md",
+        "REPOSITORY_GOVERNANCE.md",
+        "ARCHITECTURE.md",
+        "DEPLOYMENT_MAP.md",
+        "API_CONTRACTS.md",
+        "ARCHITECTURE.md",
+        "DEPLOYMENT_MAP.md",
+        "API_CONTRACTS.md",
+        "AGENTS.MD",
+        "REPOSITORY_GOVERNANCE.md",
+        "CHANGELOG.md",
+        "ARCHITECTURE.md",
+        "DEPLOYMENT_MAP.md",
+        "API_CONTRACTS.md",
+        "docs/decisions/README.md",
+        "CHANGELOG.md",
+        "CHANGELOG.md"
+      ],
       "dynamicImports": [],
       "exports": [],
-      "hash": "05e1b4cafb7390f6a6f23436c1a95c13a9b700ee",
-      "lastModified": 1782835615730.3718
+      "hash": "264d656c75529524d42c5c28059f6c87bf4ad16c",
+      "lastModified": 1783050805868.9087
     },
     "RUNBOOK.md": {
       "assetReferences": [],
@@ -140,8 +419,8 @@
       ],
       "dynamicImports": [],
       "exports": [],
-      "hash": "42664de0b814680465f7b9cb97e4aac7a58ebd0e",
-      "lastModified": 1782555245439.0862
+      "hash": "de426f3b5bcc9af788f404a78976cbf5acbab5c1",
+      "lastModified": 1783132807601.8894
     },
     "TESTING.md": {
       "assetReferences": [],
@@ -151,8 +430,8 @@
       ],
       "dynamicImports": [],
       "exports": [],
-      "hash": "70ea444d8439ff635156707e0aeaf814929b4307",
-      "lastModified": 1782555245440.6787
+      "hash": "29d8f9e53f0037086a276a46bc18361fd25eb8cb",
+      "lastModified": 1783050805869.2395
     },
     "apps/admin/e2e/bookings.spec.ts": {
       "assetReferences": [],
@@ -160,7 +439,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "50ffec952454f0dd19f3d4d7808b88f91a504f71",
-      "lastModified": 1781697712031.7422
+      "lastModified": 1783132807602.2383
     },
     "apps/admin/next-env.d.ts": {
       "assetReferences": [],
@@ -212,7 +491,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "c0dd0564605126445ea657c7782b7abb514263ca",
-      "lastModified": 1782649282586.9795
+      "lastModified": 1783130507563.9175
     },
     "apps/admin/public/manifest.json": {
       "assetReferences": [],
@@ -224,13 +503,13 @@
     },
     "apps/admin/public/sw.js": {
       "assetReferences": [
-        "/_next/static/css/3d7627c8ff15abb7.css"
+        "/_next/static/css/04c04f6e1f8fb67a.css"
       ],
       "dependencies": [],
       "dynamicImports": [],
       "exports": [],
-      "hash": "e42c02782bf0b93e7fab61afdff7b9a68bfc431c",
-      "lastModified": 1782649282613.4758
+      "hash": "0b5f80a3c416d5fefe6d1919abb014758577e958",
+      "lastModified": 1783130507580.407
     },
     "apps/admin/public/workbox-bba81d7d.js": {
       "assetReferences": [],
@@ -238,7 +517,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "ce32d8b765f1aaf5aecc0290417e834c7aede9e2",
-      "lastModified": 1782649282613.8862
+      "lastModified": 1783130507585.854
     },
     "apps/admin/src/app/bookings/_components/BookingDetailsModal.tsx": {
       "assetReferences": [],
@@ -282,7 +561,7 @@
         "BookingsTable"
       ],
       "hash": "6b444765595ca70469e02f54b273763d64a28228",
-      "lastModified": 1782555245445.096
+      "lastModified": 1783132807602.798
     },
     "apps/admin/src/app/bookings/_components/CancelBookingModal.tsx": {
       "assetReferences": [],
@@ -381,7 +660,7 @@
         "AdminCouponsPage"
       ],
       "hash": "94acbd5f8df74b4ecdd91e52066a63a2c0aad1ed",
-      "lastModified": 1782555245456.036
+      "lastModified": 1783132807603.233
     },
     "apps/admin/src/app/dashboard/page.tsx": {
       "assetReferences": [],
@@ -405,7 +684,7 @@
         "AdminDashboardPage"
       ],
       "hash": "b6d18c641716d2a430e9deff38813ce2d8e6a0a8",
-      "lastModified": 1782555245456.4795
+      "lastModified": 1783132807603.71
     },
     "apps/admin/src/app/diagnostics/emails/page.tsx": {
       "assetReferences": [],
@@ -421,7 +700,7 @@
         "EmailDiagnosticsPage"
       ],
       "hash": "cdd44646ff32586b5ac9dbea23d27bae854c37a7",
-      "lastModified": 1782555245457.0852
+      "lastModified": 1783132807604.0269
     },
     "apps/admin/src/app/diagnostics/page.tsx": {
       "assetReferences": [],
@@ -458,7 +737,7 @@
         "WebhookDiagnosticsPage"
       ],
       "hash": "302b610cf93f2bd5701ba3e89c976fcb2eec3b06",
-      "lastModified": 1782555245458.7385
+      "lastModified": 1783132807604.151
     },
     "apps/admin/src/app/dj-operators/[id]/edit/page.tsx": {
       "assetReferences": [],
@@ -504,7 +783,7 @@
         "AdminDJsPage"
       ],
       "hash": "379a5bd1c0667c7b585620e1b9b9bce0129f75fe",
-      "lastModified": 1782555245460.5344
+      "lastModified": 1783132807604.6025
     },
     "apps/admin/src/app/error.tsx": {
       "assetReferences": [],
@@ -534,14 +813,15 @@
         "apps/admin/src/components/events/EventScheduleCard.tsx",
         "apps/admin/src/components/events/EventTicketingCard.tsx",
         "apps/admin/src/components/events/EventRequirementsCard.tsx",
-        "apps/admin/src/components/events/EventEditActions.tsx"
+        "apps/admin/src/components/events/EventEditActions.tsx",
+        "apps/admin/src/components/events/EventMemoriesCard.tsx"
       ],
       "dynamicImports": [],
       "exports": [
         "EditEventPage"
       ],
-      "hash": "3b5f3e4785cd277cd91ff4db473e490c161363e4",
-      "lastModified": 1782555245461.0623
+      "hash": "3be338fba200f386174f3026d3977bb193ce0fb5",
+      "lastModified": 1783088792357.4001
     },
     "apps/admin/src/app/events/new/_components/EventAdvancedSettingsSection.tsx": {
       "assetReferences": [],
@@ -653,7 +933,7 @@
         "inputCls"
       ],
       "hash": "0b6bca8865813867003222bc72483422adcee2e2",
-      "lastModified": 1782623379310.5732
+      "lastModified": 1783132807604.7485
     },
     "apps/admin/src/app/events/new/_components/constants.ts": {
       "assetReferences": [],
@@ -727,7 +1007,7 @@
         "CreateEventPage"
       ],
       "hash": "69ef148061aeea522ca3c96d066b875fbed4ad93",
-      "lastModified": 1782623379311.9148
+      "lastModified": 1783132807605.0889
     },
     "apps/admin/src/app/events/page.tsx": {
       "assetReferences": [],
@@ -743,7 +1023,7 @@
         "AdminEventsPage"
       ],
       "hash": "da42356b3c2c6e845828b2e0bd263f1ff360e24d",
-      "lastModified": 1782555245481.6736
+      "lastModified": 1783132807605.415
     },
     "apps/admin/src/app/layout.tsx": {
       "assetReferences": [
@@ -791,7 +1071,7 @@
         "AdminNotificationsPage"
       ],
       "hash": "5c1829d57a3d12fa28e066707bb8823b4af4e69f",
-      "lastModified": 1782555245484.5945
+      "lastModified": 1783132807605.5654
     },
     "apps/admin/src/app/page.tsx": {
       "assetReferences": [],
@@ -816,7 +1096,7 @@
         "EditPopupPage"
       ],
       "hash": "ffd7a4cd511dad999e22ef28e965683b6448eb2b",
-      "lastModified": 1781697712039.669
+      "lastModified": 1783132807606.1501
     },
     "apps/admin/src/app/popups/new/page.tsx": {
       "assetReferences": [],
@@ -831,7 +1111,7 @@
         "CreatePopupPage"
       ],
       "hash": "e60da801944cacc1a4d0361ec209b7677966a076",
-      "lastModified": 1781697712039.8755
+      "lastModified": 1783132807606.537
     },
     "apps/admin/src/app/popups/page.tsx": {
       "assetReferences": [],
@@ -848,7 +1128,7 @@
         "AdminPopupsPage"
       ],
       "hash": "f2213b5a70ce36c9dcd49687ae553e9dcee48ffe",
-      "lastModified": 1782555245487.1626
+      "lastModified": 1783132807606.9897
     },
     "apps/admin/src/app/refunds/page.tsx": {
       "assetReferences": [],
@@ -864,7 +1144,7 @@
         "AdminRefundsPage"
       ],
       "hash": "50056b728b014e0bcd35a0459fc2f4071bde1a2f",
-      "lastModified": 1782555245488.2617
+      "lastModified": 1783132807607.25
     },
     "apps/admin/src/app/scanner/page.tsx": {
       "assetReferences": [],
@@ -883,7 +1163,7 @@
         "ScannerPage"
       ],
       "hash": "1339838a9564d130a2183c09b9d1349b45547875",
-      "lastModified": 1782555245489.001
+      "lastModified": 1783132807607.676
     },
     "apps/admin/src/app/settings/page.tsx": {
       "assetReferences": [],
@@ -963,7 +1243,7 @@
         "TeamTable"
       ],
       "hash": "08bc6caef10ba02d3dcaa58badc7e47532941d03",
-      "lastModified": 1782555245494.2585
+      "lastModified": 1783132807607.899
     },
     "apps/admin/src/app/team/page.tsx": {
       "assetReferences": [],
@@ -1040,7 +1320,7 @@
         "AdminTicketProfilesPage"
       ],
       "hash": "8f55717f6ce1926554cf29aca2f0d6c64e7c519b",
-      "lastModified": 1782555245502.1199
+      "lastModified": 1783132807608.0645
     },
     "apps/admin/src/app/users/[id]/page.tsx": {
       "assetReferences": [],
@@ -1090,7 +1370,7 @@
         "UserBookingsTable"
       ],
       "hash": "da97db3310954fca6c2d6de679361b4221ed8d03",
-      "lastModified": 1782555245509.6357
+      "lastModified": 1783132807608.3987
     },
     "apps/admin/src/app/users/_components/UserConfirmModal.tsx": {
       "assetReferences": [],
@@ -1127,7 +1407,7 @@
         "UserRefundsTable"
       ],
       "hash": "d7dd60b47eb5673ca522693729a86e351173b610",
-      "lastModified": 1782555245510.612
+      "lastModified": 1783132807608.5896
     },
     "apps/admin/src/app/users/_components/UserStatsSummary.tsx": {
       "assetReferences": [],
@@ -1157,7 +1437,7 @@
         "UserTicketsTable"
       ],
       "hash": "2b0ea0247041e32f83a6475e1bed6addf7670c27",
-      "lastModified": 1782555245512.5696
+      "lastModified": 1783132807608.9417
     },
     "apps/admin/src/app/users/_hooks/use-user-detail.hook.ts": {
       "assetReferences": [],
@@ -1208,7 +1488,7 @@
         "UsersDirectoryPage"
       ],
       "hash": "147e06b5598c7d7d99ee7cf4a2a329ec45231359",
-      "lastModified": 1782555245518.1409
+      "lastModified": 1783132807609.1833
     },
     "apps/admin/src/components/AdminShell.tsx": {
       "assetReferences": [],
@@ -1270,7 +1550,7 @@
         "EventGalleryUpload"
       ],
       "hash": "25ec86f3654582822bc6346cea1c31e6d7d86496",
-      "lastModified": 1782214932110.5693
+      "lastModified": 1783132807609.346
     },
     "apps/admin/src/components/bookings/BookingsSummaryWidget.tsx": {
       "assetReferences": [],
@@ -1294,7 +1574,7 @@
         "CouponForm"
       ],
       "hash": "12af05bd0e5369e80af74004e9adf7b3d4cf085e",
-      "lastModified": 1782555245518.6418
+      "lastModified": 1783132807610.0918
     },
     "apps/admin/src/components/coupons/coupon-form.types.ts": {
       "assetReferences": [],
@@ -1335,7 +1615,7 @@
         "AttendanceRankingsWidget"
       ],
       "hash": "053fc768611330b15b28d1fecbdcded2f85892bc",
-      "lastModified": 1782623379314.259
+      "lastModified": 1783132807610.4783
     },
     "apps/admin/src/components/dashboard/RevenueChartWidget.tsx": {
       "assetReferences": [],
@@ -1359,7 +1639,7 @@
         "DeadLetterQueueTab"
       ],
       "hash": "47f8583215f755df08a320a659ce99a21ae2deb1",
-      "lastModified": 1782555245521.9875
+      "lastModified": 1783132807610.6125
     },
     "apps/admin/src/components/diagnostics/DiagnosticsAccessDenied.tsx": {
       "assetReferences": [],
@@ -1382,7 +1662,7 @@
         "DiagnosticsHealthTab"
       ],
       "hash": "f444fc0b8025ac8d63988f2c9d206ddd9f076b34",
-      "lastModified": 1782555245524.2375
+      "lastModified": 1783132807610.8926
     },
     "apps/admin/src/components/diagnostics/DiagnosticsModals.tsx": {
       "assetReferences": [],
@@ -1447,7 +1727,7 @@
         "QueueControlsTab"
       ],
       "hash": "d3ea754dc4a79f0eb6955d61e7059106a312e8c1",
-      "lastModified": 1782555245526.5745
+      "lastModified": 1783132807611.2253
     },
     "apps/admin/src/components/diagnostics/ReservationLedgerTab.tsx": {
       "assetReferences": [],
@@ -1461,7 +1741,7 @@
         "ReservationLedgerTab"
       ],
       "hash": "348236d70989bb94d26424fcabc010c5dc4caef2",
-      "lastModified": 1782555245526.8896
+      "lastModified": 1783132807611.598
     },
     "apps/admin/src/components/diagnostics/RetryAllModal.tsx": {
       "assetReferences": [],
@@ -1498,7 +1778,7 @@
         "DJBasicInfoCard"
       ],
       "hash": "21e313b10ea68cb116f6987075fe3515f9019a3a",
-      "lastModified": 1782555245528.9136
+      "lastModified": 1783132807612.1545
     },
     "apps/admin/src/components/dj-operators/DJFormActions.tsx": {
       "assetReferences": [],
@@ -1582,7 +1862,7 @@
         "EventAdditionalDetailsCard"
       ],
       "hash": "355506af3e0e96d2b71706d0165cc3300f2cc9b4",
-      "lastModified": 1782555245533.7722
+      "lastModified": 1783132807612.663
     },
     "apps/admin/src/components/events/EventAttendanceCard.tsx": {
       "assetReferences": [],
@@ -1609,7 +1889,7 @@
         "EventBasicInfoCard"
       ],
       "hash": "a4f012c100d2096523a850fcd019881572e192b2",
-      "lastModified": 1782555245535.0562
+      "lastModified": 1783132807613.0652
     },
     "apps/admin/src/components/events/EventEditActions.tsx": {
       "assetReferences": [],
@@ -1636,6 +1916,23 @@
       "hash": "24ecd09b4e050f4f67799e98597cddc051777cf4",
       "lastModified": 1782555245536.8567
     },
+    "apps/admin/src/components/events/EventMemoriesCard.tsx": {
+      "assetReferences": [],
+      "dependencies": [
+        "packages/shared/src/index.ts",
+        "apps/admin/src/lib/api/client.ts",
+        "apps/admin/src/lib/api/admin/event.service.ts"
+      ],
+      "dynamicImports": [],
+      "exports": [
+        "MemoryGalleryItem",
+        "MemoriesState",
+        "EventMemoriesCardProps",
+        "EventMemoriesCard"
+      ],
+      "hash": "9519a18d7644c5f43cefd5592051decd5cfe05b9",
+      "lastModified": 1783132807614.2666
+    },
     "apps/admin/src/components/events/EventRequirementsCard.tsx": {
       "assetReferences": [],
       "dependencies": [],
@@ -1645,7 +1942,7 @@
         "EventRequirementsCard"
       ],
       "hash": "5a1abaacc02792ae7b5589434e6801133e6eef24",
-      "lastModified": 1782555245537.9563
+      "lastModified": 1783132807615.0903
     },
     "apps/admin/src/components/events/EventScheduleCard.tsx": {
       "assetReferences": [],
@@ -1656,7 +1953,7 @@
         "EventScheduleCard"
       ],
       "hash": "8412b138aa19ba50d4096bc3224cdba4a768a60e",
-      "lastModified": 1782555245538.265
+      "lastModified": 1783132807615.2085
     },
     "apps/admin/src/components/events/EventTicketingCard.tsx": {
       "assetReferences": [],
@@ -1671,7 +1968,7 @@
         "EventTicketingCard"
       ],
       "hash": "318ba339c5116c19b4dca1f83658a8d866498023",
-      "lastModified": 1782555245538.6243
+      "lastModified": 1783132807615.7185
     },
     "apps/admin/src/components/states/ErrorState.tsx": {
       "assetReferences": [],
@@ -1811,7 +2108,7 @@
         "adminGetAttendanceRankings"
       ],
       "hash": "58af4dc9407eb733e860c9fd68594580354924c8",
-      "lastModified": 1782035739744.5286
+      "lastModified": 1783132807616.6948
     },
     "apps/admin/src/lib/api/admin/auth.service.ts": {
       "assetReferences": [],
@@ -1859,7 +2156,7 @@
         "adminGetBookingsSummary"
       ],
       "hash": "253fb225cb653085874114e338e9af7cc13638cf",
-      "lastModified": 1782623379314.7266
+      "lastModified": 1783132807616.834
     },
     "apps/admin/src/lib/api/admin/category.service.ts": {
       "assetReferences": [],
@@ -1987,8 +2284,8 @@
         "adminUpdateEvent",
         "adminDeleteEvent"
       ],
-      "hash": "f31756ad9904a92dba9e9037c5ad62bfb3d58b1d",
-      "lastModified": 1782623379315.5312
+      "hash": "5c19f9eccd88f9cb55611f4a97fc9467ed247cee",
+      "lastModified": 1783132807617.296
     },
     "apps/admin/src/lib/api/admin/notification.service.ts": {
       "assetReferences": [],
@@ -2166,7 +2463,7 @@
         "canAccessRoute"
       ],
       "hash": "eda6386dfddad7441453555217296e8334c6f74e",
-      "lastModified": 1781697712059.4639
+      "lastModified": 1783132807617.4307
     },
     "apps/admin/src/providers/AdminAuthProvider.tsx": {
       "assetReferences": [],
@@ -2273,7 +2570,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "2700f30e420864d1ff4b86e8757b0ad8cce5cd5b",
-      "lastModified": 1781697712061.252
+      "lastModified": 1783132807617.8545
     },
     "apps/server/scripts/notification-jobid-dedupe.ts": {
       "assetReferences": [],
@@ -2321,7 +2618,7 @@
         "createApp"
       ],
       "hash": "662d2b8c01ffa4fea3ed7bfd06bc41015b0e01fa",
-      "lastModified": 1781842831302.4243
+      "lastModified": 1783132807618.039
     },
     "apps/server/src/config/cloudinary.ts": {
       "assetReferences": [],
@@ -2333,7 +2630,7 @@
         "cloudinary"
       ],
       "hash": "2b9d329d4c23af76ac73246cda3d88feb1a51688",
-      "lastModified": 1782214932112.786
+      "lastModified": 1783132807618.1602
     },
     "apps/server/src/config/database.ts": {
       "assetReferences": [],
@@ -2376,7 +2673,7 @@
         "generateOpenApiDocument"
       ],
       "hash": "c84ed4a3945fcefc4fbc314cdfbc6e2c329a3a78",
-      "lastModified": 1781697712064.3992
+      "lastModified": 1783132807618.357
     },
     "apps/server/src/config/queue.config.ts": {
       "assetReferences": [],
@@ -2391,7 +2688,7 @@
         "getQueuePrefix"
       ],
       "hash": "39b0365b27bc9baeaf60a6091f16353f42968072",
-      "lastModified": 1781697712064.8057
+      "lastModified": 1783132807618.4749
     },
     "apps/server/src/config/razorpay.ts": {
       "assetReferences": [],
@@ -2472,7 +2769,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "d6495eb497822c4731aa8e2947010472530eea16",
-      "lastModified": 1782694717640.0457
+      "lastModified": 1783050805869.4036
     },
     "apps/server/src/controllers/admin/analytics.controller.ts": {
       "assetReferences": [],
@@ -2493,7 +2790,7 @@
         "getAttendanceRankings"
       ],
       "hash": "e6b9f1f66af3ac705941b8ddd7bf18c40b8aaa55",
-      "lastModified": 1782694717640.354
+      "lastModified": 1783132807618.6526
     },
     "apps/server/src/controllers/admin/auth.controller.test.ts": {
       "assetReferences": [],
@@ -2506,7 +2803,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "0458cbfc7cc6282786593bcc1ec9a642e0ccf2d2",
-      "lastModified": 1781697712067.3098
+      "lastModified": 1783132807618.9639
     },
     "apps/server/src/controllers/admin/auth.controller.ts": {
       "assetReferences": [],
@@ -2536,7 +2833,7 @@
         "getBookingsSummary"
       ],
       "hash": "51d74f05d959f331dc768177d2bf0ad6e6b25c0a",
-      "lastModified": 1782214932113.2021
+      "lastModified": 1783132807619.532
     },
     "apps/server/src/controllers/admin/category.controller.ts": {
       "assetReferences": [],
@@ -2635,18 +2932,22 @@
     "apps/server/src/controllers/admin/event.controller.ts": {
       "assetReferences": [],
       "dependencies": [
-        "apps/server/src/services/admin/event.service.ts"
+        "apps/server/src/services/admin/event.service.ts",
+        "apps/server/src/config/env.ts",
+        "apps/server/src/utils/audit.ts"
       ],
       "dynamicImports": [],
       "exports": [
+        "EVENT_MEMORIES_PREVIEW_TOKEN_TTL_MINUTES",
         "createEvent",
         "getEvents",
         "getEventById",
         "updateEvent",
-        "deleteEvent"
+        "deleteEvent",
+        "getPreviewToken"
       ],
-      "hash": "dac8684758fc6185bda6ece8152dfe10cfccbf8c",
-      "lastModified": 1782035739752.858
+      "hash": "efbacab0ce82f221801a162cdfc54f2b87281adc",
+      "lastModified": 1783088792359.2288
     },
     "apps/server/src/controllers/admin/marketing.controller.ts": {
       "assetReferences": [],
@@ -2802,7 +3103,7 @@
         "deleteUpload"
       ],
       "hash": "e151e0e823d833efce00934dfc57f9faa28d0115",
-      "lastModified": 1782035739754.9138
+      "lastModified": 1783132807619.6646
     },
     "apps/server/src/controllers/admin/user.controller.test.ts": {
       "assetReferences": [],
@@ -2840,7 +3141,7 @@
         "getWebhooks"
       ],
       "hash": "7e6a53b18f954a5dea55520d35d0c68af4dc5ec9",
-      "lastModified": 1781697712072.739
+      "lastModified": 1783132807619.781
     },
     "apps/server/src/controllers/public/auth.controller.test.ts": {
       "assetReferences": [],
@@ -2853,7 +3154,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "fffcbc06478f413a0140483dce01791c284c5d30",
-      "lastModified": 1782271743500.5054
+      "lastModified": 1783132807619.9324
     },
     "apps/server/src/controllers/public/auth.controller.ts": {
       "assetReferences": [],
@@ -2870,7 +3171,7 @@
         "AuthController"
       ],
       "hash": "87266925f8ba1d71c1384e2fa00afe79db5be515",
-      "lastModified": 1782271743501.892
+      "lastModified": 1783132807620.119
     },
     "apps/server/src/controllers/public/booking.controller.test.ts": {
       "assetReferences": [],
@@ -2885,7 +3186,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "ac22560c0097525fa469d159fe8c1ac0c7375ddd",
-      "lastModified": 1782221900465.4524
+      "lastModified": 1783132807620.2664
     },
     "apps/server/src/controllers/public/booking.controller.ts": {
       "assetReferences": [],
@@ -2919,7 +3220,7 @@
         "verifyRecoveredBookingOTP"
       ],
       "hash": "876c17938e5b77ba79aa2cc2d8529be75c85a75a",
-      "lastModified": 1782221900466.1636
+      "lastModified": 1783132807621.009
     },
     "apps/server/src/controllers/public/dj-operator.controller.ts": {
       "assetReferences": [],
@@ -2951,8 +3252,8 @@
         "getEventBySlug",
         "getEventSeatLayout"
       ],
-      "hash": "e3afc9c0d0ba09a3df1eeabb3b04d332a3c9fe8a",
-      "lastModified": 1782214932136.0364
+      "hash": "0d6737de5c576b370ba53eb6864a182bda4c92ac",
+      "lastModified": 1783132807621.2986
     },
     "apps/server/src/controllers/public/marketing.controller.ts": {
       "assetReferences": [],
@@ -2989,7 +3290,7 @@
         "razorpayWebhook"
       ],
       "hash": "b4657c5c91de730f787fa98980355c4f7d1bdac8",
-      "lastModified": 1782555245549.0156
+      "lastModified": 1783132807621.4463
     },
     "apps/server/src/controllers/public/payment.controller.webhook.test.ts": {
       "assetReferences": [],
@@ -3002,7 +3303,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "dc742a44fdb8d10a4701b7be501ce283401f9f5e",
-      "lastModified": 1782035739758.244
+      "lastModified": 1783132807622.0408
     },
     "apps/server/src/controllers/public/popup.controller.ts": {
       "assetReferences": [],
@@ -3034,7 +3335,7 @@
       ],
       "exports": [],
       "hash": "80429752b4a7ef36f1cdfdebb78f132f2c5c06e7",
-      "lastModified": 1782214932137.2837
+      "lastModified": 1783132807622.26
     },
     "apps/server/src/controllers/public/ticket.controller.ts": {
       "assetReferences": [],
@@ -3069,7 +3370,7 @@
         "initializeSentry"
       ],
       "hash": "2d7b95a0ee558c74135514a0c1a065e18163bb59",
-      "lastModified": 1781697712076.3484
+      "lastModified": 1783132807622.9734
     },
     "apps/server/src/lib/email/index.ts": {
       "assetReferences": [],
@@ -3205,7 +3506,7 @@
         "magicLinkHtml"
       ],
       "hash": "8e0d45f80c8ef528206ae8c2197f8fc171bfa451",
-      "lastModified": 1781697712078.5974
+      "lastModified": 1783132807623.462
     },
     "apps/server/src/lib/email/templates/partial-refund.tsx": {
       "assetReferences": [],
@@ -3409,7 +3710,7 @@
         "requireSuperAdmin"
       ],
       "hash": "0d98163f3c5aa6d882c36be63970a0b2a66b45d7",
-      "lastModified": 1782555245550.027
+      "lastModified": 1783132807623.6016
     },
     "apps/server/src/middleware/cache.middleware.ts": {
       "assetReferences": [],
@@ -3420,7 +3721,7 @@
         "cdnCache"
       ],
       "hash": "297ecf8f7c787a5ae84947bdcef7c334df679baa",
-      "lastModified": 1781697712082.8005
+      "lastModified": 1783132807623.711
     },
     "apps/server/src/middleware/correlation.middleware.ts": {
       "assetReferences": [],
@@ -3511,7 +3812,7 @@
         "uploadMiddleware"
       ],
       "hash": "a0cd70f6bddabd799379bb1a8d6abc56e4d43a51",
-      "lastModified": 1781697712085.246
+      "lastModified": 1783132807623.8186
     },
     "apps/server/src/middleware/validation.middleware.test.ts": {
       "assetReferences": [],
@@ -3598,7 +3899,7 @@
         "Booking"
       ],
       "hash": "8d8044831c887a43494ae26eec95b2a4ebc21b23",
-      "lastModified": 1782035739764.8884
+      "lastModified": 1783132807624.0073
     },
     "apps/server/src/models/category.schema.ts": {
       "assetReferences": [],
@@ -3648,7 +3949,7 @@
         "DeadLetterJob"
       ],
       "hash": "70977874a1ee5df3e2213f7e7509a1a491bb2581",
-      "lastModified": 1781697712087.7786
+      "lastModified": 1783132807624.1162
     },
     "apps/server/src/models/dj-operator.schema.ts": {
       "assetReferences": [],
@@ -3671,8 +3972,8 @@
         "IEvent",
         "Event"
       ],
-      "hash": "23d15c27298d828b303b59026bc0e4432bc8d44b",
-      "lastModified": 1782214932138.1787
+      "hash": "e1b3393f53e76ec0630d39ed49ac2107673b64b7",
+      "lastModified": 1783132807624.7292
     },
     "apps/server/src/models/index.ts": {
       "assetReferences": [],
@@ -3702,7 +4003,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "74c064368b3006018dd3aa9c7f214d947e18a41e",
-      "lastModified": 1781697712088.6023
+      "lastModified": 1783132807624.837
     },
     "apps/server/src/models/magic-token.schema.ts": {
       "assetReferences": [],
@@ -3847,7 +4148,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "8bece108235c4203a01fac7dcdc17f83a537a9d9",
-      "lastModified": 1782035739766.1328
+      "lastModified": 1783132807624.9417
     },
     "apps/server/src/models/ticket.schema.ts": {
       "assetReferences": [],
@@ -3860,7 +4161,7 @@
         "Ticket"
       ],
       "hash": "6cad6a0b61c752cbc35d54af51e58f598ba7d60f",
-      "lastModified": 1782035739766.9124
+      "lastModified": 1783132807625.0552
     },
     "apps/server/src/models/tier.schema.ts": {
       "assetReferences": [],
@@ -3952,7 +4253,7 @@
         "default"
       ],
       "hash": "1372793ef40b67bc933dbc0106b15fc0de299042",
-      "lastModified": 1781697712094.1306
+      "lastModified": 1783132807625.5786
     },
     "apps/server/src/routes/admin/category.routes.ts": {
       "assetReferences": [],
@@ -4046,8 +4347,8 @@
       "exports": [
         "default"
       ],
-      "hash": "1d3923b7f89f26286696f784f996211ad73c5835",
-      "lastModified": 1782035739767.3206
+      "hash": "848980cae726d9ca98fa0141e000c6023479fe83",
+      "lastModified": 1783088792359.84
     },
     "apps/server/src/routes/admin/marketing.routes.ts": {
       "assetReferences": [],
@@ -4309,7 +4610,7 @@
         "default"
       ],
       "hash": "727315a7bec8d2229d18c5a9901f50ee44a00a59",
-      "lastModified": 1781697712100.5283
+      "lastModified": 1783132807625.6863
     },
     "apps/server/src/routes/index.ts": {
       "assetReferences": [],
@@ -4379,7 +4680,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "0027f10983240d367ad229efdb18144ca6c3d183",
-      "lastModified": 1781697712101.418
+      "lastModified": 1783132807626.2625
     },
     "apps/server/src/routes/public/booking.routes.ts": {
       "assetReferences": [],
@@ -4396,7 +4697,7 @@
         "default"
       ],
       "hash": "0d918f179f3bcd74facb1ea9e09a20394089b3d7",
-      "lastModified": 1781697712101.704
+      "lastModified": 1783132807626.4893
     },
     "apps/server/src/routes/public/category.routes.ts": {
       "assetReferences": [],
@@ -4520,7 +4821,7 @@
       ],
       "exports": [],
       "hash": "7b1916d96f1ea07301c2c518241ccecc51bb2505",
-      "lastModified": 1782214932141.0193
+      "lastModified": 1783132807626.78
     },
     "apps/server/src/services/admin/auth.service.ts": {
       "assetReferences": [],
@@ -4561,7 +4862,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "f00bfe8a28842ea20aab9257c7afbb80676faa61",
-      "lastModified": 1782691801027.9592
+      "lastModified": 1783132807627.2764
     },
     "apps/server/src/services/admin/booking.service.ts": {
       "assetReferences": [],
@@ -4605,7 +4906,7 @@
         "getBookingsSummary"
       ],
       "hash": "f7cadd4e67ee90c1c3463caf4a7e57d09a415d46",
-      "lastModified": 1782691801028.5364
+      "lastModified": 1783132807627.4636
     },
     "apps/server/src/services/admin/category.service.ts": {
       "assetReferences": [],
@@ -4681,14 +4982,16 @@
         "apps/server/src/models/ticket-profile.schema.ts",
         "apps/server/src/services/cache.service.ts",
         "apps/server/src/validations/admin-content.validation.ts",
-        "apps/server/src/services/admin/media-cleanup.service.ts"
+        "apps/server/src/services/admin/media-cleanup.service.ts",
+        "apps/server/src/utils/audit.ts"
       ],
       "dynamicImports": [
-        "./media-cleanup.service"
+        "./media-cleanup.service",
+        "../../utils/audit"
       ],
       "exports": [],
-      "hash": "73a31058cd3dd7bec301c543d67b36b4d248af97",
-      "lastModified": 1782214932142.6406
+      "hash": "92440a469cec971849cd59762825bf3b83b8677a",
+      "lastModified": 1783088792360.387
     },
     "apps/server/src/services/admin/event.service.ts": {
       "assetReferences": [],
@@ -4701,7 +5004,8 @@
         "apps/server/src/services/cache.service.ts",
         "apps/server/src/models/booking.schema.ts",
         "apps/server/src/middleware/error.middleware.ts",
-        "apps/server/src/services/admin/media-cleanup.service.ts"
+        "apps/server/src/services/admin/media-cleanup.service.ts",
+        "apps/server/src/utils/audit.ts"
       ],
       "dynamicImports": [],
       "exports": [
@@ -4714,8 +5018,8 @@
         "updateEvent",
         "deleteEvent"
       ],
-      "hash": "da3e49f4d54dc9c5361ee5d81503ca451f185c8f",
-      "lastModified": 1782214932143.3772
+      "hash": "2201050d867d6ee2d4ffc27933e75ef0b5b2a423",
+      "lastModified": 1783088792360.7017
     },
     "apps/server/src/services/admin/media-cleanup.service.test.ts": {
       "assetReferences": [],
@@ -4757,7 +5061,7 @@
         "retryNotification"
       ],
       "hash": "01bb0ae6fcf1d650b78fbd99dadfa1871b86ab24",
-      "lastModified": 1781697712105.1165
+      "lastModified": 1783132807627.589
     },
     "apps/server/src/services/admin/popup.service.ts": {
       "assetReferences": [],
@@ -4795,7 +5099,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "6a0288102fc39796debbc0dffd8fff63bed7a10e",
-      "lastModified": 1782214932144.5837
+      "lastModified": 1783132807627.8958
     },
     "apps/server/src/services/admin/refund.service.ts": {
       "assetReferences": [],
@@ -4826,7 +5130,7 @@
         "processRefund"
       ],
       "hash": "713b0b7151c1d5c80b1fd655d9643144aab594dc",
-      "lastModified": 1782214932150.5217
+      "lastModified": 1783132807628.1887
     },
     "apps/server/src/services/admin/team.service.test.ts": {
       "assetReferences": [],
@@ -4839,7 +5143,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "781fc8fd843fad61951e2305d4090d79d7c2b3ec",
-      "lastModified": 1782035739780.3303
+      "lastModified": 1783132807628.3352
     },
     "apps/server/src/services/admin/team.service.ts": {
       "assetReferences": [],
@@ -4944,7 +5248,7 @@
         "UploadService"
       ],
       "hash": "c64f69bb615aedcd04636da9290d07595ccd6eac",
-      "lastModified": 1782214932153.5361
+      "lastModified": 1783132807628.4443
     },
     "apps/server/src/services/admin/user.service.test.ts": {
       "assetReferences": [],
@@ -4959,7 +5263,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "ea29263f00c2c782865898a017cf4a2b0ae158d8",
-      "lastModified": 1782035739782.9314
+      "lastModified": 1783132807628.6191
     },
     "apps/server/src/services/admin/user.service.ts": {
       "assetReferences": [],
@@ -4978,7 +5282,7 @@
         "AdminUserService"
       ],
       "hash": "0a93a0ddbce4dd7568eff217640369be5003e091",
-      "lastModified": 1782035739783.8538
+      "lastModified": 1783132807628.7537
     },
     "apps/server/src/services/cache.service.test.ts": {
       "assetReferences": [],
@@ -4989,7 +5293,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "4536fda3e482c329e6bc177e6cce6d1f6c768764",
-      "lastModified": 1781697712108.5422
+      "lastModified": 1783132807628.892
     },
     "apps/server/src/services/cache.service.ts": {
       "assetReferences": [],
@@ -5002,7 +5306,7 @@
         "CacheService"
       ],
       "hash": "b2f6cd11ec52946f4fefc61e816370469cf962a5",
-      "lastModified": 1781697712108.6414
+      "lastModified": 1783132807629.0913
     },
     "apps/server/src/services/consistency.service.test.ts": {
       "assetReferences": [],
@@ -5027,7 +5331,7 @@
       ],
       "exports": [],
       "hash": "889d689bb6b568f60e6034c9ba2d9edf7d37cc3f",
-      "lastModified": 1782652398823.118
+      "lastModified": 1783132807629.5356
     },
     "apps/server/src/services/consistency.service.ts": {
       "assetReferences": [],
@@ -5062,7 +5366,7 @@
         "ConsistencyService"
       ],
       "hash": "69b92187154bda7083c4077b5c625136647d2b49",
-      "lastModified": 1782652398823.8154
+      "lastModified": 1783132807629.8677
     },
     "apps/server/src/services/diagnostics.service.test.ts": {
       "assetReferences": [],
@@ -5075,7 +5379,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "0cba70e00e3a0b1d59b3279e0e129c6a8d0f12cc",
-      "lastModified": 1782214932165.4626
+      "lastModified": 1783132807630.0735
     },
     "apps/server/src/services/diagnostics.service.ts": {
       "assetReferences": [],
@@ -5184,7 +5488,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "e55ec6bd87fbfe8730be7e9572d31ec997474249",
-      "lastModified": 1782271743502.705
+      "lastModified": 1783132807630.5906
     },
     "apps/server/src/services/public/auth.service.ts": {
       "assetReferences": [],
@@ -5210,7 +5514,7 @@
         "AuthService"
       ],
       "hash": "cad76aa317ab979ff004bd15f68f1dc727d727d4",
-      "lastModified": 1782271743504.5735
+      "lastModified": 1783132807630.7595
     },
     "apps/server/src/services/public/booking-recovery.service.test.ts": {
       "assetReferences": [],
@@ -5259,7 +5563,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "2b04cf7765f17e4c33ec4650694dc8c394ba83d5",
-      "lastModified": 1782214932169.4028
+      "lastModified": 1783132807630.9614
     },
     "apps/server/src/services/public/booking.service.ts": {
       "assetReferences": [],
@@ -5285,7 +5589,7 @@
         "PublicBookingService"
       ],
       "hash": "0206ca1c2a1177098353ed08d329041124e5864a",
-      "lastModified": 1782214932169.9797
+      "lastModified": 1783132807631.1348
     },
     "apps/server/src/services/public/dj-operator.service.ts": {
       "assetReferences": [],
@@ -5300,6 +5604,23 @@
       "hash": "3c3d5204caed33c4f14516b02324789ccb10b36f",
       "lastModified": 1782453783708.264
     },
+    "apps/server/src/services/public/event.service.test.ts": {
+      "assetReferences": [],
+      "dependencies": [
+        "packages/shared/src/index.ts",
+        "apps/server/src/services/public/event.service.ts",
+        "apps/server/src/models/event.schema.ts",
+        "apps/server/src/utils/audit.ts"
+      ],
+      "dynamicImports": [
+        "./event.service",
+        "../../models/event.schema",
+        "../../utils/audit"
+      ],
+      "exports": [],
+      "hash": "2659383c3c1b0aea7c694f795d7faf44bfe77aef",
+      "lastModified": 1783132807631.5889
+    },
     "apps/server/src/services/public/event.service.ts": {
       "assetReferences": [],
       "dependencies": [
@@ -5307,14 +5628,17 @@
         "apps/server/src/config/redis.ts",
         "apps/server/src/middleware/error.middleware.ts",
         "apps/server/src/models/event.schema.ts",
-        "apps/server/src/models/seat-layout.schema.ts"
+        "apps/server/src/models/seat-layout.schema.ts",
+        "apps/server/src/config/env.ts",
+        "apps/server/src/utils/audit.ts"
       ],
       "dynamicImports": [],
       "exports": [
+        "verifyPreviewToken",
         "PublicEventService"
       ],
-      "hash": "ff457ea22a0226c337dd69a8098e392620b30dde",
-      "lastModified": 1782453783708.9065
+      "hash": "093352bb01a4f6607d908c0a52736d452c335d67",
+      "lastModified": 1783088792361.1567
     },
     "apps/server/src/services/public/ownership-characterization.test.ts": {
       "assetReferences": [],
@@ -5331,7 +5655,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "42e4c3fb83504b3b75e28f4b6e34811cb2169572",
-      "lastModified": 1782035739792.9973
+      "lastModified": 1783132807631.7354
     },
     "apps/server/src/services/public/ownership-consolidation.test.ts": {
       "assetReferences": [],
@@ -5362,7 +5686,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "e93dc22d03f865ffdf99263045b116e444545a77",
-      "lastModified": 1782035739794.772
+      "lastModified": 1783132807631.9265
     },
     "apps/server/src/services/public/payment-booking.service.ts": {
       "assetReferences": [],
@@ -5389,7 +5713,7 @@
         "PaymentBookingService"
       ],
       "hash": "5a81ff8b742e7586db6f51279c57d5760d82da81",
-      "lastModified": 1782654302388.8035
+      "lastModified": 1783132807632.0708
     },
     "apps/server/src/services/public/payment-inventory.service.test.ts": {
       "assetReferences": [],
@@ -5406,7 +5730,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "0803c43dbf533c46dd6f2f55ef95313fc75cfbf9",
-      "lastModified": 1782653322662.8376
+      "lastModified": 1783050805874.8425
     },
     "apps/server/src/services/public/payment-inventory.service.ts": {
       "assetReferences": [],
@@ -5426,7 +5750,7 @@
         "PaymentInventoryService"
       ],
       "hash": "618f9e7030dd350b7087fa35fb197dcf11bdcc62",
-      "lastModified": 1782653322663.5205
+      "lastModified": 1783050805874.952
     },
     "apps/server/src/services/public/payment-refund.service.ts": {
       "assetReferences": [],
@@ -5459,7 +5783,7 @@
         "PaymentRefundService"
       ],
       "hash": "711b7ab6c76b87d972b3a0cf41b3885d9ccbaf92",
-      "lastModified": 1782653322664.0032
+      "lastModified": 1783050805875.0693
     },
     "apps/server/src/services/public/payment-validation.service.ts": {
       "assetReferences": [],
@@ -5475,7 +5799,7 @@
         "PaymentValidationService"
       ],
       "hash": "3121d9e33c82911179b4a83eaa81680a0d691743",
-      "lastModified": 1782647089634.4617
+      "lastModified": 1783050805875.199
     },
     "apps/server/src/services/public/payment.production.test.ts": {
       "assetReferences": [],
@@ -5517,7 +5841,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "519fc7e5a4f16184474b09823767427b5855100d",
-      "lastModified": 1782650912193.4304
+      "lastModified": 1783050805875.3208
     },
     "apps/server/src/services/public/payment.service.refund-webhook.test.ts": {
       "assetReferences": [],
@@ -5558,7 +5882,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "42b6fe968c8a7769b949d9c21115dcdd96b65234",
-      "lastModified": 1782214932171.5542
+      "lastModified": 1783132807632.5867
     },
     "apps/server/src/services/public/payment.service.ts": {
       "assetReferences": [],
@@ -5605,7 +5929,7 @@
         "PaymentService"
       ],
       "hash": "5afd45fd6e39e7266ec6bd45f47b3281f659566f",
-      "lastModified": 1782654302389.3308
+      "lastModified": 1783132807633.432
     },
     "apps/server/src/services/public/popup.service.ts": {
       "assetReferences": [],
@@ -5629,7 +5953,7 @@
         "RazorpayAdapter"
       ],
       "hash": "2b8d577ceeffc8663d9cccbcb9b0b86386b6b2c1",
-      "lastModified": 1782647089635.6985
+      "lastModified": 1783050805875.778
     },
     "apps/server/src/services/public/stripe.adapter.ts": {
       "assetReferences": [],
@@ -5642,7 +5966,7 @@
         "StripeAdapter"
       ],
       "hash": "0ad4da6376226d404411286d3a15bda50f2a37a2",
-      "lastModified": 1782647089636.0964
+      "lastModified": 1783050805875.8518
     },
     "apps/server/src/services/public/ticket-ownership.service.ts": {
       "assetReferences": [],
@@ -5691,7 +6015,7 @@
         "getAttendeeTickets"
       ],
       "hash": "5ded095462d9b823b3664d7d6b472f2d6fbd23be",
-      "lastModified": 1782035739802.4053
+      "lastModified": 1783132807633.6157
     },
     "apps/server/src/services/queue.service.test.ts": {
       "assetReferences": [],
@@ -5703,7 +6027,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "6ce87be47cf065ade90228f3b70b45d90c6743a2",
-      "lastModified": 1782214932175.1423
+      "lastModified": 1783132807633.9004
     },
     "apps/server/src/services/queue.service.ts": {
       "assetReferences": [],
@@ -5756,7 +6080,7 @@
         "ReservationService"
       ],
       "hash": "18f7cf78e6b62e51e498403280747519aa0c9425",
-      "lastModified": 1782035739802.8784
+      "lastModified": 1783132807634.2007
     },
     "apps/server/src/sockets/index.test.ts": {
       "assetReferences": [],
@@ -5768,7 +6092,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "3156001da3a04974dec05889881f10d3a045a4aa",
-      "lastModified": 1782214932176.0132
+      "lastModified": 1783132807634.366
     },
     "apps/server/src/sockets/index.ts": {
       "assetReferences": [],
@@ -5791,7 +6115,7 @@
         "registerAdminSocketHandlers"
       ],
       "hash": "7efc1d4f900d9df4d5954017da675c2d1e9a5780",
-      "lastModified": 1782035739804.6282
+      "lastModified": 1783132807634.5576
     },
     "apps/server/src/types/admin/booking.types.ts": {
       "assetReferences": [],
@@ -5865,7 +6189,7 @@
         "normalizeEmail"
       ],
       "hash": "bde4c157a9c33fa7be80addeb5bdb87427302e74",
-      "lastModified": 1781713048967.1545
+      "lastModified": 1783132807634.7651
     },
     "apps/server/src/utils/encryption.test.ts": {
       "assetReferences": [],
@@ -5876,7 +6200,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "50eaec4cd3e5ab6f1ccc15b427ac0df7d1e92cbb",
-      "lastModified": 1781697712121.7026
+      "lastModified": 1783132807634.8901
     },
     "apps/server/src/utils/encryption.ts": {
       "assetReferences": [],
@@ -5905,7 +6229,7 @@
         "generateSecureFilename"
       ],
       "hash": "2c8c03bd373ac7e16678b9a331a421fb74da9cf9",
-      "lastModified": 1781697712122.065
+      "lastModified": 1783132807635.022
     },
     "apps/server/src/utils/jwt.test.ts": {
       "assetReferences": [],
@@ -5915,7 +6239,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "b10d20dd90546f9b8229350db56ab457632327a7",
-      "lastModified": 1781697712122.1921
+      "lastModified": 1783132807635.1548
     },
     "apps/server/src/utils/jwt.ts": {
       "assetReferences": [],
@@ -5937,7 +6261,7 @@
         "verifySessionToken"
       ],
       "hash": "0ba72256fcd55fc9ce5e1ac77bc99aef8b9a16cd",
-      "lastModified": 1781697712122.5933
+      "lastModified": 1783132807635.7996
     },
     "apps/server/src/utils/logger.ts": {
       "assetReferences": [],
@@ -6031,7 +6355,7 @@
         "sendForbidden"
       ],
       "hash": "82842eddcca3a055eac28885480a425049c45e93",
-      "lastModified": 1781697712123.853
+      "lastModified": 1783132807635.9106
     },
     "apps/server/src/utils/seed-admin.ts": {
       "assetReferences": [],
@@ -6070,7 +6394,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "489f73b537d14fd40031d38f84831b3cd06db3a5",
-      "lastModified": 1782035739807.8945
+      "lastModified": 1783132807636.3245
     },
     "apps/server/src/utils/transaction.ts": {
       "assetReferences": [],
@@ -6170,8 +6494,8 @@
         "createTicketProfileSchema",
         "updateTicketProfileSchema"
       ],
-      "hash": "97d2d2225fb372db7c8bf3b752943174bef5bd4f",
-      "lastModified": 1782555245554.5896
+      "hash": "c9f646f667f93371954aa005517ba6e2a9ae001b",
+      "lastModified": 1783132807636.7507
     },
     "apps/server/src/validations/admin-user.validation.ts": {
       "assetReferences": [],
@@ -6199,7 +6523,7 @@
         "resetAdminPasswordSchema"
       ],
       "hash": "df8ca313a328eb073f14aed041d6806e1cf6764b",
-      "lastModified": 1781697712125.889
+      "lastModified": 1783132807636.8694
     },
     "apps/server/src/validations/auth.validation.test.ts": {
       "assetReferences": [],
@@ -6209,7 +6533,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "1087f9751061e929aa5f4bc49bb9c09e74f36b73",
-      "lastModified": 1781697712126.1462
+      "lastModified": 1783132807637.0576
     },
     "apps/server/src/validations/auth.validation.ts": {
       "assetReferences": [],
@@ -6229,7 +6553,7 @@
         "logoutAuthSchema"
       ],
       "hash": "29d50f5977fbcaea4b0eae2c1a9457dd3840d377",
-      "lastModified": 1781842831306.3687
+      "lastModified": 1783132807637.1758
     },
     "apps/server/src/validations/booking-recovery.validation.test.ts": {
       "assetReferences": [],
@@ -6239,7 +6563,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "0fb2945e950a2293a623adf8a1bcafc2f22c171d",
-      "lastModified": 1781697712127.1355
+      "lastModified": 1783132807638.508
     },
     "apps/server/src/validations/booking-recovery.validation.ts": {
       "assetReferences": [],
@@ -6250,7 +6574,7 @@
         "verifyRecoveredBookingOTPSchema"
       ],
       "hash": "4a1fc8eba3a118245dba074614c26b80d206ae35",
-      "lastModified": 1781697712127.3076
+      "lastModified": 1783132807638.7979
     },
     "apps/server/src/validations/booking.validation.test.ts": {
       "assetReferences": [],
@@ -6361,7 +6685,7 @@
         "stopBookingWorker"
       ],
       "hash": "64617b8b436f6912e2aee29f972ada17d20c85a0",
-      "lastModified": 1782035739811.4648
+      "lastModified": 1783132807638.9807
     },
     "apps/server/src/workers/consistency.worker.ts": {
       "assetReferences": [],
@@ -6389,7 +6713,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "0fe7184148b7afa422fae2b28859b7d3e107f9d9",
-      "lastModified": 1781697712129.2024
+      "lastModified": 1783132807639.1392
     },
     "apps/server/src/workers/email.worker.ts": {
       "assetReferences": [],
@@ -6414,7 +6738,7 @@
         "stopEmailWorker"
       ],
       "hash": "a75dbb649152aee34c266260f18283bd5e8d1431",
-      "lastModified": 1781697712129.5427
+      "lastModified": 1783132807639.275
     },
     "apps/server/src/workers/event-lifecycle.worker.ts": {
       "assetReferences": [],
@@ -6468,7 +6792,7 @@
         "stopPDFWorker"
       ],
       "hash": "ab3c9461a46f00058aa53f92737eb9ed8dc31d89",
-      "lastModified": 1781715403496.4932
+      "lastModified": 1783132807639.4045
     },
     "apps/server/src/workers/workers.test.ts": {
       "assetReferences": [],
@@ -6488,7 +6812,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "2fca58748ef69742711138b76f8e8a0ecfd88615",
-      "lastModified": 1781715403496.7354
+      "lastModified": 1783132807639.6404
     },
     "apps/server/tsconfig.json": {
       "assetReferences": [],
@@ -6705,7 +7029,7 @@
         "UserDashboardPage"
       ],
       "hash": "cfbf176b62f6b248ff6fece069bc9eb56deb6b3c",
-      "lastModified": 1782623379318.073
+      "lastModified": 1783132807639.8035
     },
     "apps/web/src/app/(auth)/login/page.tsx": {
       "assetReferences": [],
@@ -6739,7 +7063,7 @@
         "submitContactForm"
       ],
       "hash": "324b1c41348dd6af89bb932935896e31829aa390",
-      "lastModified": 1781697712142.1758
+      "lastModified": 1783132807640.1057
     },
     "apps/web/src/app/checkout/[bookingId]/page.tsx": {
       "assetReferences": [],
@@ -6764,7 +7088,7 @@
         "ContactPage"
       ],
       "hash": "5b58d4d258903bc9342386889724fdfa2c3abf8c",
-      "lastModified": 1781697712142.557
+      "lastModified": 1783132807640.2192
     },
     "apps/web/src/app/dj-operators/[slug]/DjDetailClient.tsx": {
       "assetReferences": [],
@@ -6778,8 +7102,8 @@
       "exports": [
         "DJDetailClient"
       ],
-      "hash": "a0a73bb3b84c35e37286113ced020da93ac1e72b",
-      "lastModified": 1782555245565.688
+      "hash": "461a38e587d33d71a515e757cd1532db4bb2a8e8",
+      "lastModified": 1783132807640.4944
     },
     "apps/web/src/app/dj-operators/[slug]/page.tsx": {
       "assetReferences": [],
@@ -6793,8 +7117,8 @@
         "generateMetadata",
         "DJPage"
       ],
-      "hash": "1ba9384ff4aff0e1d9426dea6e8a1f128348a87a",
-      "lastModified": 1782648902824.0813
+      "hash": "c2f60f2501374ed5a7acf1b5bcaa40ae5c1beb02",
+      "lastModified": 1783050805876.1572
     },
     "apps/web/src/app/dj-operators/page.tsx": {
       "assetReferences": [],
@@ -6806,8 +7130,8 @@
       "exports": [
         "DJsPage"
       ],
-      "hash": "b07b7a8f7f1942a4bc233a1eeba51e0113465371",
-      "lastModified": 1782453783709.1604
+      "hash": "65c2f48f8ea6169fb5d28af621f288cef2089154",
+      "lastModified": 1783132807640.8887
     },
     "apps/web/src/app/error.tsx": {
       "assetReferences": [],
@@ -6819,7 +7143,7 @@
         "ErrorPage"
       ],
       "hash": "fa0069eeafde5f8c3ce0dce710a0304ed45f4612",
-      "lastModified": 1781697712143.6787
+      "lastModified": 1783132807641.2153
     },
     "apps/web/src/app/events/EventsList.tsx": {
       "assetReferences": [],
@@ -6833,8 +7157,8 @@
       "exports": [
         "EventsList"
       ],
-      "hash": "d5430cc0f9e734f0b8fff837f0e2924bed3c5ba7",
-      "lastModified": 1782623379318.4814
+      "hash": "8abe78550f09bc1a6f3ae7e17469a303586f3114",
+      "lastModified": 1783050805876.5645
     },
     "apps/web/src/app/events/[slug]/EventDetailClient.tsx": {
       "assetReferences": [],
@@ -6845,7 +7169,8 @@
         "apps/web/src/app/events/[slug]/components/EventBookingFlow.tsx",
         "apps/web/src/app/events/[slug]/components/EventGallery.tsx",
         "apps/web/src/app/events/[slug]/components/EventOverview.tsx",
-        "apps/web/src/app/events/[slug]/components/EventStickyCTA.tsx"
+        "apps/web/src/app/events/[slug]/components/EventStickyCTA.tsx",
+        "apps/web/src/app/events/[slug]/components/EventMemoriesRecap.tsx"
       ],
       "dynamicImports": [
         "./components/EventBookingFlow"
@@ -6853,8 +7178,8 @@
       "exports": [
         "EventDetailClient"
       ],
-      "hash": "afa81c2dd73b5aad53e058a787d92c9b3feece9d",
-      "lastModified": 1782623379318.7852
+      "hash": "cb6e91b64bb8cf4d801c9d65e91316acef6d2221",
+      "lastModified": 1783132807641.8794
     },
     "apps/web/src/app/events/[slug]/components/EventBookingFlow.tsx": {
       "assetReferences": [],
@@ -6884,6 +7209,19 @@
       "hash": "77f75c37f70f2994da576eb6cc5799537cbd7658",
       "lastModified": 1782214932179.5183
     },
+    "apps/web/src/app/events/[slug]/components/EventMemoriesRecap.tsx": {
+      "assetReferences": [],
+      "dependencies": [
+        "apps/web/src/app/events/[slug]/components/EventGallery.tsx",
+        "packages/types/src/index.ts"
+      ],
+      "dynamicImports": [],
+      "exports": [
+        "EventMemoriesRecap"
+      ],
+      "hash": "f56edbbfb1ee674a5078f1e25e83a25f8f9e52cd",
+      "lastModified": 1783088792361.9756
+    },
     "apps/web/src/app/events/[slug]/components/EventOverview.tsx": {
       "assetReferences": [],
       "dependencies": [
@@ -6903,8 +7241,8 @@
       "exports": [
         "EventStickyCTA"
       ],
-      "hash": "c52d990e95b89319c2fda646ebab87295a23afbd",
-      "lastModified": 1782214932180.355
+      "hash": "fcfe26cc2e697587c0ef0d9fbfc2f584450fa3d7",
+      "lastModified": 1783088792362.1992
     },
     "apps/web/src/app/events/[slug]/page.tsx": {
       "assetReferences": [],
@@ -6920,7 +7258,7 @@
         "EventPage"
       ],
       "hash": "d002e083410e1225a8eea9b9bf705a5a5a1f9d0a",
-      "lastModified": 1782648902824.4272
+      "lastModified": 1783050805877.5413
     },
     "apps/web/src/app/events/page.tsx": {
       "assetReferences": [],
@@ -6934,7 +7272,7 @@
         "PublicEventsPage"
       ],
       "hash": "86ad42297e6ffd4db4728df2ea78eb62df995042",
-      "lastModified": 1782623379319.0596
+      "lastModified": 1783050805877.9143
     },
     "apps/web/src/app/global-error.tsx": {
       "assetReferences": [],
@@ -6946,7 +7284,7 @@
         "GlobalError"
       ],
       "hash": "f63e01b8ef97ee2d25f411fd150d885bef0e4427",
-      "lastModified": 1781697712145.4182
+      "lastModified": 1783132807642.0317
     },
     "apps/web/src/app/layout.tsx": {
       "assetReferences": [
@@ -6972,7 +7310,7 @@
         "RootLayout"
       ],
       "hash": "978d311bf2d600b404da507276b2dd18afc3a877",
-      "lastModified": 1782623379319.543
+      "lastModified": 1783050805878.133
     },
     "apps/web/src/app/legal/[doc]/page.tsx": {
       "assetReferences": [],
@@ -6987,7 +7325,7 @@
         "LegalDocPage"
       ],
       "hash": "3a6cfb351e33698b6a59c8a693f8b73abccfdebb",
-      "lastModified": 1781697712146.062
+      "lastModified": 1783132807642.143
     },
     "apps/web/src/app/legal/components/LegalMobileTabs.tsx": {
       "assetReferences": [],
@@ -6999,7 +7337,7 @@
         "LegalMobileTabs"
       ],
       "hash": "8dc5bdb15a2fcfa127f880a6dd383cfbfc49506c",
-      "lastModified": 1781697712146.4404
+      "lastModified": 1783132807642.249
     },
     "apps/web/src/app/legal/components/LegalSidebar.tsx": {
       "assetReferences": [],
@@ -7012,7 +7350,7 @@
         "LegalSidebar"
       ],
       "hash": "9d02ea252bd49bcc5afa620fdd499f6d8d2a0407",
-      "lastModified": 1781697712147.4043
+      "lastModified": 1783132807642.3577
     },
     "apps/web/src/app/legal/components/LegalSupportCard.tsx": {
       "assetReferences": [],
@@ -7022,7 +7360,7 @@
         "LegalSupportCard"
       ],
       "hash": "c89574852d4b25ad8d9de1870fe5f14cf8991b25",
-      "lastModified": 1781697712147.6577
+      "lastModified": 1783132807642.471
     },
     "apps/web/src/app/legal/components/LegalViewer.tsx": {
       "assetReferences": [],
@@ -7034,7 +7372,7 @@
         "LegalViewer"
       ],
       "hash": "65c0819c154b5e01e200569d10e2ac3cf7f43c80",
-      "lastModified": 1781697712147.9048
+      "lastModified": 1783132807642.582
     },
     "apps/web/src/app/legal/layout.tsx": {
       "assetReferences": [],
@@ -7085,7 +7423,7 @@
         "HomePage"
       ],
       "hash": "1c3cef49a2505a66f4d92b7e1b7e8a07c569d0b6",
-      "lastModified": 1782647621178.3298
+      "lastModified": 1783132807642.9941
     },
     "apps/web/src/app/robots.ts": {
       "assetReferences": [],
@@ -7107,7 +7445,7 @@
         "sitemap"
       ],
       "hash": "215fa2db9a266ccb29f9f60c71b035f13de4878a",
-      "lastModified": 1782647089637.1873
+      "lastModified": 1783050805878.8774
     },
     "apps/web/src/app/support/page.tsx": {
       "assetReferences": [],
@@ -7156,7 +7494,7 @@
         "FindTicketsModal"
       ],
       "hash": "0fea7ebfcb8cdaa874263f0221fa69d69c2f9c5b",
-      "lastModified": 1782647089637.5815
+      "lastModified": 1783050805879.078
     },
     "apps/web/src/app/tickets/components/OtpVerificationModal.tsx": {
       "assetReferences": [],
@@ -7193,7 +7531,7 @@
         "TicketRetrievalPage"
       ],
       "hash": "724a8835d4dc8f42d75ce40dab84bb0c73b90263",
-      "lastModified": 1782647089638.0073
+      "lastModified": 1783132807643.3784
     },
     "apps/web/src/components/account/ProfileEditor.test.tsx": {
       "assetReferences": [],
@@ -7203,7 +7541,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "8d5d4102d9435e59d9c5c35ce5166185a081e525",
-      "lastModified": 1781842831307.8782
+      "lastModified": 1783132807643.5803
     },
     "apps/web/src/components/account/ProfileEditor.tsx": {
       "assetReferences": [],
@@ -7240,7 +7578,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "dbde89bbe260f2c5f2d7cabfb389441e5078b7e7",
-      "lastModified": 1782271743511.0813
+      "lastModified": 1783132807643.737
     },
     "apps/web/src/components/auth/AuthForm.tsx": {
       "assetReferences": [],
@@ -7263,7 +7601,7 @@
         "AuthForm"
       ],
       "hash": "f69945cf64a53d3c0e23dc057d5b6999067b28fb",
-      "lastModified": 1782647621178.6672
+      "lastModified": 1783132807644.0056
     },
     "apps/web/src/components/auth/LoginForm.tsx": {
       "assetReferences": [],
@@ -7277,7 +7615,7 @@
         "LoginForm"
       ],
       "hash": "1143365df202d8f8c5e7b38378cbbedb410dc395",
-      "lastModified": 1782271743511.9097
+      "lastModified": 1783132807644.3364
     },
     "apps/web/src/components/auth/OtpVerifyForm.tsx": {
       "assetReferences": [],
@@ -7290,7 +7628,7 @@
         "OtpVerifyForm"
       ],
       "hash": "62ecd43a0f3a8fb10496335257f498db1c27d4c9",
-      "lastModified": 1782647621179.0469
+      "lastModified": 1783132807645.8176
     },
     "apps/web/src/components/auth/ProfileCompletionForm.tsx": {
       "assetReferences": [],
@@ -7308,7 +7646,7 @@
         "ProfileCompletionForm"
       ],
       "hash": "6d6d0317611998f9982abbed629b4937fb2ce678",
-      "lastModified": 1782271743512.9458
+      "lastModified": 1783132807646.012
     },
     "apps/web/src/components/auth/hooks/useGoogleSignIn.ts": {
       "assetReferences": [],
@@ -7358,7 +7696,7 @@
         "CheckoutContent"
       ],
       "hash": "b5edb23614e24c37ab34e36f95bb31cd7c06cea4",
-      "lastModified": 1782623379321.929
+      "lastModified": 1783132807646.4426
     },
     "apps/web/src/components/booking/TicketSelectionContent.tsx": {
       "assetReferences": [],
@@ -7374,7 +7712,7 @@
         "TicketSelectionContent"
       ],
       "hash": "52ccffd4258fa9f73cecf67c6d101997207315f5",
-      "lastModified": 1782623379322.8013
+      "lastModified": 1783132807646.6074
     },
     "apps/web/src/components/booking/checkout/CheckoutForm.tsx": {
       "assetReferences": [],
@@ -7389,7 +7727,7 @@
         "CheckoutForm"
       ],
       "hash": "5e6f36ddd817d389e7249e2b1547ffbc8f1663b7",
-      "lastModified": 1781842831310.143
+      "lastModified": 1783132807646.827
     },
     "apps/web/src/components/booking/checkout/CheckoutPayment.tsx": {
       "assetReferences": [],
@@ -7423,7 +7761,7 @@
         "LeaveCheckoutModal"
       ],
       "hash": "6291bb7f207fb7c7a88cc32f4e9f8222cb12cb1f",
-      "lastModified": 1781697712152.1985
+      "lastModified": 1783132807646.9622
     },
     "apps/web/src/components/booking/checkout/useCheckoutNavGuard.ts": {
       "assetReferences": [],
@@ -7452,7 +7790,7 @@
         "BookingCard"
       ],
       "hash": "05e1b2a3325262164eee766480c67152a72880a1",
-      "lastModified": 1782623379323.278
+      "lastModified": 1783132807647.1282
     },
     "apps/web/src/components/booking/shared/BookingHeaderCard.tsx": {
       "assetReferences": [],
@@ -7478,7 +7816,7 @@
         "EntryPassGrid"
       ],
       "hash": "6044bad2eae89a8c3829dd57013ecd87ba39b986",
-      "lastModified": 1782214932180.775
+      "lastModified": 1783132807647.3958
     },
     "apps/web/src/components/booking/shared/TicketActions.tsx": {
       "assetReferences": [],
@@ -7514,7 +7852,7 @@
         "FloatingCountdown"
       ],
       "hash": "297bee23b140cd40622de8bdf3eca298589ada49",
-      "lastModified": 1781697712153.5696
+      "lastModified": 1783132807647.601
     },
     "apps/web/src/components/common/PageTransition.tsx": {
       "assetReferences": [],
@@ -7526,7 +7864,7 @@
         "StaggerItem"
       ],
       "hash": "9238b8164eadab675d2ee62a40e8e5d8debe4d7b",
-      "lastModified": 1782555245572.181
+      "lastModified": 1783132807647.8562
     },
     "apps/web/src/components/common/PopupManager.tsx": {
       "assetReferences": [],
@@ -7558,7 +7896,7 @@
         "BottomNavigation"
       ],
       "hash": "15a79827599a4cea13005c559a7e0f3542ac2737",
-      "lastModified": 1782647089640.3499
+      "lastModified": 1783050805879.7566
     },
     "apps/web/src/components/layout/Footer.tsx": {
       "assetReferences": [],
@@ -7611,7 +7949,7 @@
         "Navbar"
       ],
       "hash": "4059a6651c4526ca5a2cf5f2623961f3737f1108",
-      "lastModified": 1782647089640.7268
+      "lastModified": 1783050805879.925
     },
     "apps/web/src/components/layout/UserDropdown.tsx": {
       "assetReferences": [],
@@ -7636,7 +7974,7 @@
         "ContactForm"
       ],
       "hash": "d6b2c624a038c83a5255e4c70b31f4c28e7dfd36",
-      "lastModified": 1781697712155.08
+      "lastModified": 1783132807648.0374
     },
     "apps/web/src/components/support/FAQAccordion.tsx": {
       "assetReferences": [],
@@ -7648,7 +7986,7 @@
         "FAQAccordion"
       ],
       "hash": "281ecf86d7f4cb462ca2fc5a8a4ee60094dc2fe2",
-      "lastModified": 1781697712155.3184
+      "lastModified": 1783132807648.3108
     },
     "apps/web/src/components/support/SupportHubClient.tsx": {
       "assetReferences": [],
@@ -7661,7 +7999,7 @@
         "SupportHubClient"
       ],
       "hash": "d2fa5104e567739a4ea92b400cabd2d7d1501095",
-      "lastModified": 1781697712155.6084
+      "lastModified": 1783132807648.4944
     },
     "apps/web/src/components/ui/FeaturedEventsSection.tsx": {
       "assetReferences": [],
@@ -7679,7 +8017,7 @@
         "FeaturedEventsSection"
       ],
       "hash": "aeeb8be44a5f5e8410bcdd14bfdb7edea256b003",
-      "lastModified": 1782647089641.193
+      "lastModified": 1783132807648.7175
     },
     "apps/web/src/components/ui/HomeSkeletons.tsx": {
       "assetReferences": [],
@@ -7689,7 +8027,7 @@
         "FeaturedEventsSkeleton"
       ],
       "hash": "abbfa1c5c80cf9b425e80a9c2c902522f7f17d40",
-      "lastModified": 1782647089641.535
+      "lastModified": 1783132807648.9067
     },
     "apps/web/src/content/faqContent.ts": {
       "assetReferences": [],
@@ -7807,7 +8145,7 @@
         "useBookings"
       ],
       "hash": "b58b51fc1d57af9acb92b9ca22917a4fcbbaa483",
-      "lastModified": 1782623379326.6091
+      "lastModified": 1783132807649.091
     },
     "apps/web/src/hooks/use-checkout-viewport-controller.ts": {
       "assetReferences": [],
@@ -7818,7 +8156,7 @@
         "useCheckoutViewportController"
       ],
       "hash": "2635579018f54cede29e05cd10cd8693420f25e0",
-      "lastModified": 1782271827651.7227
+      "lastModified": 1783132807649.2036
     },
     "apps/web/src/hooks/use-countdown.hook.ts": {
       "assetReferences": [],
@@ -7856,7 +8194,7 @@
         "ApiError"
       ],
       "hash": "626af86f7398b8e4e90b26c93ed06696c370f4cf",
-      "lastModified": 1782645682515.5244
+      "lastModified": 1783132807649.3572
     },
     "apps/web/src/lib/api/public.service.ts": {
       "assetReferences": [],
@@ -7902,7 +8240,7 @@
         "publicVerifyRecoveredBookingOTP"
       ],
       "hash": "89c7606e7a39899be6a180f6e5dc8efac5956796",
-      "lastModified": 1782221900471.3591
+      "lastModified": 1783132807649.496
     },
     "apps/web/src/lib/api/server.service.ts": {
       "assetReferences": [],
@@ -7918,7 +8256,7 @@
         "serverGetDJs"
       ],
       "hash": "2ce12286e306bd09f597186eb843bc6b36fe0c3e",
-      "lastModified": 1782647089641.924
+      "lastModified": 1783050805880.4521
     },
     "apps/web/src/lib/utils/chunk-recovery.ts": {
       "assetReferences": [],
@@ -7952,7 +8290,7 @@
         "mapZodErrorToFields"
       ],
       "hash": "5673b64d383deb6c3e8cf6fbea9fd75e8dd326cf",
-      "lastModified": 1781842831311.7952
+      "lastModified": 1783132807649.7715
     },
     "apps/web/src/providers/AuthModalProvider.tsx": {
       "assetReferences": [],
@@ -7970,7 +8308,7 @@
         "AuthModalProvider"
       ],
       "hash": "61257e85ff3ad6e4ee0bf5d2b30c1d9c52ee37eb",
-      "lastModified": 1782647621179.4202
+      "lastModified": 1783132807650.066
     },
     "apps/web/src/providers/AuthProvider.tsx": {
       "assetReferences": [],
@@ -7986,7 +8324,7 @@
         "useAuth"
       ],
       "hash": "5eb7c1fdef843e39270aa343fc235a117ac9046f",
-      "lastModified": 1782623379327.6006
+      "lastModified": 1783132807650.3958
     },
     "apps/web/src/providers/index.tsx": {
       "assetReferences": [],
@@ -8003,7 +8341,7 @@
         "Providers"
       ],
       "hash": "d217c71171e1d026454e046d87b56277b8400e25",
-      "lastModified": 1782647089642.7625
+      "lastModified": 1783050805880.7153
     },
     "apps/web/src/styles/globals.css": {
       "assetReferences": [
@@ -8044,7 +8382,7 @@
         "getCachedDJ"
       ],
       "hash": "ec65e01f61046c049455083a3c34c669515ddc82",
-      "lastModified": 1782648902824.6345
+      "lastModified": 1783050805880.7888
     },
     "apps/web/src/utils/cached-event.ts": {
       "assetReferences": [],
@@ -8084,7 +8422,7 @@
         "setGoogleIdentityCallback"
       ],
       "hash": "12083e2d58a2c9261bd319e44f929dcb2cf8e30f",
-      "lastModified": 1782271743522.623
+      "lastModified": 1783132807650.527
     },
     "apps/web/src/utils/image-loader.ts": {
       "assetReferences": [],
@@ -8094,7 +8432,7 @@
         "universalLoader"
       ],
       "hash": "5e112fa7b43e217f62b462d24ecd14e733f8e6a3",
-      "lastModified": 1782647089643.2197
+      "lastModified": 1783050805880.898
     },
     "apps/web/src/utils/image.ts": {
       "assetReferences": [],
@@ -8140,7 +8478,7 @@
         "buildBreadcrumbJsonLd"
       ],
       "hash": "81ca0036936363f5b5303b86f4f962476ff9aacd",
-      "lastModified": 1782648902824.8752
+      "lastModified": 1783050805880.9668
     },
     "apps/web/tailwind.config.ts": {
       "assetReferences": [],
@@ -8150,7 +8488,7 @@
         "default"
       ],
       "hash": "8ef3b580c6e05865606f378d3817147d083384e4",
-      "lastModified": 1781697712166.44
+      "lastModified": 1783132807650.7368
     },
     "apps/web/tsconfig.json": {
       "assetReferences": [],
@@ -8191,16 +8529,20 @@
       "dependencies": [],
       "dynamicImports": [],
       "exports": [],
-      "hash": "63c8d2b8993595f75b440f964003ee2fd3503250",
-      "lastModified": 1782623379329.11
+      "hash": "7e02d0b1723ba9627cd90311e979a6b19651d1ef",
+      "lastModified": 1783050805881.0857
     },
     "docs/TODO-AUDIT-FIXES.md": {
       "assetReferences": [],
-      "dependencies": [],
+      "dependencies": [
+        "README.md",
+        "REPOSITORY_GOVERNANCE.md",
+        "AGENTS.MD"
+      ],
       "dynamicImports": [],
       "exports": [],
-      "hash": "e848aa3677ceb4c33e3f052b1d580f41672f1cb3",
-      "lastModified": 1782835598708.9966
+      "hash": "a19c1f92f5e22520991d987e63a6142302c7f731",
+      "lastModified": 1783050805881.2239
     },
     "docs/archive/audits/CUSTOMER_CONVERSION_FINDINGS_VALIDATION.md": {
       "assetReferences": [],
@@ -8227,8 +8569,8 @@
       ],
       "dynamicImports": [],
       "exports": [],
-      "hash": "87816418a2e54754d95536a5bed4bbe56059e874",
-      "lastModified": 1781697712168.1824
+      "hash": "7067180882ef13cc3b7aef9c89fa941dc8c84b6a",
+      "lastModified": 1783132807651.0962
     },
     "docs/archive/audits/DASHBOARD_SIMPLIFICATION_VALIDATION.md": {
       "assetReferences": [],
@@ -8236,7 +8578,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "e2877fc21cce22f4fa99f9f424648652ec06910e",
-      "lastModified": 1781697712168.5093
+      "lastModified": 1783132807651.2388
     },
     "docs/archive/audits/artists-vs-dj-operators-audit.md": {
       "assetReferences": [],
@@ -8244,7 +8586,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "a19deddc3ec9a30ae76caa9953c9df78cda0da2f",
-      "lastModified": 1781697712168.6658
+      "lastModified": 1783132807651.5085
     },
     "docs/archive/audits/backend-token-cleanup-audit.md": {
       "assetReferences": [],
@@ -8259,8 +8601,8 @@
       ],
       "dynamicImports": [],
       "exports": [],
-      "hash": "a3dcc1c90293e7603efd69c8c3031be4938fe3bd",
-      "lastModified": 1781697712168.7712
+      "hash": "8246de65cf58c068a8895d334ade751cc2712368",
+      "lastModified": 1783132807651.6604
     },
     "docs/archive/audits/booking-ttl-remediation-design.md": {
       "assetReferences": [],
@@ -8273,8 +8615,8 @@
       ],
       "dynamicImports": [],
       "exports": [],
-      "hash": "74322d7ecea4d8682622347af45a7b4f8bf2618d",
-      "lastModified": 1781697712168.9758
+      "hash": "f304761ab7c663bb714d2cb59f821790c1dd6084",
+      "lastModified": 1783132807651.9878
     },
     "docs/archive/audits/booking-ttl-webhook-validation.md": {
       "assetReferences": [],
@@ -8284,8 +8626,8 @@
       ],
       "dynamicImports": [],
       "exports": [],
-      "hash": "50c191e12e1893f6af0681f60c50604d9ede8f17",
-      "lastModified": 1781697712169.0789
+      "hash": "7b48a1999bdf4cca6230b67fc7787f85f8cc20eb",
+      "lastModified": 1783132807652.3103
     },
     "docs/archive/audits/dashboard-information-architecture-audit.md": {
       "assetReferences": [],
@@ -8293,7 +8635,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "11c70171feb23444dc06b8dcb0e9528be67e3366",
-      "lastModified": 1782555245584.267
+      "lastModified": 1783132807652.6248
     },
     "docs/archive/audits/dashboard-simplification-audit.md": {
       "assetReferences": [],
@@ -8301,7 +8643,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "f6e02f45e9d52b7d130158b598b3c0507d17432c",
-      "lastModified": 1782555245584.6135
+      "lastModified": 1783132807653.2944
     },
     "docs/archive/audits/frontend-token-cleanup-audit.md": {
       "assetReferences": [],
@@ -8316,8 +8658,8 @@
       ],
       "dynamicImports": [],
       "exports": [],
-      "hash": "e568e3cd45f88285779d025676b0524d89271982",
-      "lastModified": 1781697712169.3208
+      "hash": "19f589a6e9208ebd6a557b7374c2576d1cabb985",
+      "lastModified": 1783132807653.434
     },
     "docs/archive/audits/login-simplification-audit.md": {
       "assetReferences": [],
@@ -8333,8 +8675,8 @@
       ],
       "dynamicImports": [],
       "exports": [],
-      "hash": "1ea74f5f78be8a6170d546cf2b09694e07fdda59",
-      "lastModified": 1781697712169.4656
+      "hash": "a4e1d9458d4f479f71165b07694912dea6eb201c",
+      "lastModified": 1783132807653.676
     },
     "docs/archive/audits/regression-audit.md": {
       "assetReferences": [],
@@ -8342,7 +8684,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "bcd81ce8c842212b4ac27cab2e509a5c1933714f",
-      "lastModified": 1782555245584.9106
+      "lastModified": 1783132807653.885
     },
     "docs/archive/audits/ticket-retrieval-phase1-verification.md": {
       "assetReferences": [],
@@ -8363,8 +8705,8 @@
       ],
       "dynamicImports": [],
       "exports": [],
-      "hash": "9525fd151c9f01dbabbc0cfbfca89e3dfbe0b6b5",
-      "lastModified": 1781697712169.6177
+      "hash": "19b6240d8323f3c374efb1408b71a5196a2b32ba",
+      "lastModified": 1783050805882.2683
     },
     "docs/archive/audits/venues-module-audit.md": {
       "assetReferences": [],
@@ -8372,7 +8714,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "2ad3d3dcb2b2e99969d8a7602a0da67b638cd396",
-      "lastModified": 1781697712169.744
+      "lastModified": 1783132807654.0813
     },
     "docs/archive/branch-cleanup/2026-06/asset_review.md": {
       "assetReferences": [],
@@ -8412,7 +8754,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "b10fc2ec6f9162735967c40826d4fe07ebd32945",
-      "lastModified": 1781697712170.974
+      "lastModified": 1783132807654.3025
     },
     "docs/archive/branch-cleanup/2026-06/compliance_report.md": {
       "assetReferences": [],
@@ -8427,8 +8769,8 @@
       "dependencies": [],
       "dynamicImports": [],
       "exports": [],
-      "hash": "b3dcd3bba9d2cbca4918b5fdb3663d2d09db593c",
-      "lastModified": 1781697712171.465
+      "hash": "95c96e03bb58fb4c6a5d1c227dafc38b991b9968",
+      "lastModified": 1783050805882.384
     },
     "docs/archive/branch-cleanup/2026-06/supersession_review.md": {
       "assetReferences": [],
@@ -8441,16 +8783,16 @@
     "docs/archive/branch-cleanup/asset_recovery_verification.md": {
       "assetReferences": [],
       "dependencies": [
-        "../../.gemini/antigravity-ide/brain/241fee3a-1279-4014-8caf-434a77d66971/recovered_assets/docs/RUNBOOK.md",
-        "../../.gemini/antigravity-ide/brain/241fee3a-1279-4014-8caf-434a77d66971/recovered_assets/docs/RUNBOOK.md",
-        "../../.gemini/antigravity-ide/brain/241fee3a-1279-4014-8caf-434a77d66971/recovered_assets/apps/server/src/lib/pdf/ticket",
-        "../../.gemini/antigravity-ide/brain/241fee3a-1279-4014-8caf-434a77d66971/recovered_assets/apps/server/src/lib/pdf/ticket/generate-ticket-pdf.ts",
-        "../../.gemini/antigravity-ide/brain/241fee3a-1279-4014-8caf-434a77d66971/recovered_assets/apps/server/src/lib/email/templates"
+        "RUNBOOK.md",
+        "RUNBOOK.md",
+        "apps/server/src/lib/pdf/ticket",
+        "apps/server/src/lib/pdf/ticket/generate-ticket-pdf.ts",
+        "apps/server/src/lib/email/templates"
       ],
       "dynamicImports": [],
       "exports": [],
-      "hash": "e47ea1e2f7a77c2ff1019fff7235e45e0ef50d15",
-      "lastModified": 1781697712172.5464
+      "hash": "d6a8f1d6bca600c4d4ea6ae305ee495bce241245",
+      "lastModified": 1783050805882.499
     },
     "docs/archive/branch-cleanup/branch_cleanup_evidence_verification.md": {
       "assetReferences": [],
@@ -8464,21 +8806,20 @@
       ],
       "dynamicImports": [],
       "exports": [],
-      "hash": "73153c9dd511ddaff730de194c85cc8eb3bd3cd4",
-      "lastModified": 1781697712172.828
+      "hash": "0523730e7a4e1cc5fd900498084e195a2e364683",
+      "lastModified": 1783132807654.4878
     },
     "docs/archive/branch-cleanup/branch_cleanup_execution_protocol.md": {
       "assetReferences": [],
       "dependencies": [],
       "dynamicImports": [],
       "exports": [],
-      "hash": "4ae9890d83f1a3e5abec5fe67e82788423e09f93",
-      "lastModified": 1781697712173.658
+      "hash": "dce558c3226607ffb515f6c2c875cf89e46f9ff7",
+      "lastModified": 1783132807654.6484
     },
     "docs/archive/branch-cleanup/branch_cleanup_governance_compliance_report.md": {
       "assetReferences": [],
       "dependencies": [
-        "docs/archive/branch-cleanup/remaining_branches_audit.md",
         "docs/archive/branch-cleanup/branch_cleanup_validation_audit.md",
         "docs/archive/branch-cleanup/branch_cleanup_validation_audit.md",
         "docs/archive/branch-cleanup/branch_cleanup_execution_protocol.md",
@@ -8498,8 +8839,8 @@
       ],
       "dynamicImports": [],
       "exports": [],
-      "hash": "4f22d902d63db4e169e3c4bff8a66af611905035",
-      "lastModified": 1781697712173.8286
+      "hash": "3f24dcb6daa2474c7782cbcc0957765b8e76f0f5",
+      "lastModified": 1783132807654.7705
     },
     "docs/archive/branch-cleanup/branch_cleanup_index.md": {
       "assetReferences": [],
@@ -8515,8 +8856,8 @@
       ],
       "dynamicImports": [],
       "exports": [],
-      "hash": "9569baa83c374af25cba0dcfa553e7749d894961",
-      "lastModified": 1781697712173.9666
+      "hash": "a0f6dfc1f09bdbdecf79ab43d9091da3c95290e4",
+      "lastModified": 1783132807654.8958
     },
     "docs/archive/branch-cleanup/branch_cleanup_validation_audit.md": {
       "assetReferences": [],
@@ -8524,33 +8865,33 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "adbf8e2eb8a219a4bcbf0598c9d23f8e901d73d2",
-      "lastModified": 1781697712174.1836
+      "lastModified": 1783132807655.2026
     },
     "docs/archive/branch-cleanup/cleanup_record.md": {
       "assetReferences": [],
       "dependencies": [
-        "../../.gemini/antigravity-ide/brain/241fee3a-1279-4014-8caf-434a77d66971/recovered_assets/docs/RUNBOOK.md",
-        "../../.gemini/antigravity-ide/brain/241fee3a-1279-4014-8caf-434a77d66971/recovered_assets/apps/server/src/lib/pdf/ticket",
-        "../../.gemini/antigravity-ide/brain/241fee3a-1279-4014-8caf-434a77d66971/recovered_assets/apps/server/src/lib/email/templates",
-        "../../.gemini/antigravity-ide/brain/241fee3a-1279-4014-8caf-434a77d66971/branch_cleanup_validation_audit.md",
-        "../../.gemini/antigravity-ide/brain/241fee3a-1279-4014-8caf-434a77d66971/branch_cleanup_execution_protocol.md",
-        "../../.gemini/antigravity-ide/brain/241fee3a-1279-4014-8caf-434a77d66971/asset_recovery_verification.md",
-        "../../.gemini/antigravity-ide/brain/241fee3a-1279-4014-8caf-434a77d66971/final_cleanup_authorization_audit.md"
+        "RUNBOOK.md",
+        "apps/server/src/lib/pdf/ticket",
+        "apps/server/src/lib/email/templates",
+        "docs/archive/branch-cleanup/",
+        "docs/archive/branch-cleanup/",
+        "docs/archive/branch-cleanup/",
+        "docs/archive/branch-cleanup/"
       ],
       "dynamicImports": [],
       "exports": [],
-      "hash": "a2cb6ebf71ef76702b9960a16b9a0d8209cf87c1",
-      "lastModified": 1781697712174.323
+      "hash": "77121b67b7d69faae1b4ad49efc39967bf8896ec",
+      "lastModified": 1783132807655.319
     },
     "docs/archive/branch-cleanup/final_cleanup_authorization_audit.md": {
       "assetReferences": [],
       "dependencies": [
-        "../../.gemini/antigravity-ide/brain/241fee3a-1279-4014-8caf-434a77d66971/recovered_assets/docs/RUNBOOK.md"
+        "RUNBOOK.md"
       ],
       "dynamicImports": [],
       "exports": [],
-      "hash": "e177f3f77be0c71c8c236f955050ce1d4aa22394",
-      "lastModified": 1781697712174.9805
+      "hash": "97ea0adc25b02314711fe93bdb9725203a74d805",
+      "lastModified": 1783132807655.514
     },
     "docs/archive/branch-cleanup/governance_baseline.md": {
       "assetReferences": [],
@@ -8558,7 +8899,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "192fb29e9c81822b7681de3c2f0529afd796fb80",
-      "lastModified": 1781697712175.1562
+      "lastModified": 1783132807655.6272
     },
     "docs/audit/admin-mobile-shell-audit.md": {
       "assetReferences": [],
@@ -8566,7 +8907,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "f296e85e9cf8c3598c70facadf239e803d3f9b0d",
-      "lastModified": 1782354666516.0002
+      "lastModified": 1783132807655.781
     },
     "docs/audit/auth-duplication-report.md": {
       "assetReferences": [],
@@ -8583,8 +8924,8 @@
       ],
       "dynamicImports": [],
       "exports": [],
-      "hash": "b1e471bfcf51af3d75d773bca5e9720787201309",
-      "lastModified": 1782354666516.3567
+      "hash": "02f3b715555422415903672c1305fca783551dce",
+      "lastModified": 1783050805886.1782
     },
     "docs/audit/auth-state-consistency.md": {
       "assetReferences": [],
@@ -8595,8 +8936,8 @@
       ],
       "dynamicImports": [],
       "exports": [],
-      "hash": "0ec9e1337aa775917cb3c11228991d05297a2dd4",
-      "lastModified": 1782354666516.7017
+      "hash": "bc252c5d560e79199491892feec2e179b790fb16",
+      "lastModified": 1783050805886.3254
     },
     "docs/audit/booking-status-verification-audit.md": {
       "assetReferences": [],
@@ -8607,8 +8948,8 @@
       ],
       "dynamicImports": [],
       "exports": [],
-      "hash": "ff7230358cb210fc6b5c55304444067a0ab0bddf",
-      "lastModified": 1782354666517.4128
+      "hash": "08349a29806c5f4c258eca0b9a05531fe5146116",
+      "lastModified": 1783132807655.9216
     },
     "docs/audit/email-delivery-regression.md": {
       "assetReferences": [],
@@ -8621,8 +8962,8 @@
       ],
       "dynamicImports": [],
       "exports": [],
-      "hash": "cc4067b576677d4320756be0c9993642fdb22d65",
-      "lastModified": 1782354666517.8054
+      "hash": "420ab7367a04711464d3033c7fb3cbd1b7b439b0",
+      "lastModified": 1783050805886.604
     },
     "docs/audit/google-auth-regression.md": {
       "assetReferences": [],
@@ -8634,8 +8975,8 @@
       ],
       "dynamicImports": [],
       "exports": [],
-      "hash": "7391b9e37ade7ec39a931d04de9bd0a3d2af8f17",
-      "lastModified": 1782354666518.1506
+      "hash": "63236a1d1ebf27c5af7c5058cf63b4bed50de716",
+      "lastModified": 1783050805886.7363
     },
     "docs/audit/refresh-token-race-condition.md": {
       "assetReferences": [],
@@ -8643,7 +8984,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "50dc8365421ec661d91b93b566f72e6d090f4c6b",
-      "lastModified": 1782354666518.7388
+      "lastModified": 1783132807656.1152
     },
     "docs/audit/refund/REFUND-001-EVIDENCE.md": {
       "assetReferences": [],
@@ -8676,8 +9017,8 @@
       ],
       "dynamicImports": [],
       "exports": [],
-      "hash": "db18fbe0a98a2cb090390a21dac16a138c42410b",
-      "lastModified": 1782354666519.9722
+      "hash": "a6db31557c274f0494b1a2cda228bb5e424daf31",
+      "lastModified": 1783050805886.8672
     },
     "docs/audit/refund/REFUND-001-EXECUTIVE-SUMMARY.md": {
       "assetReferences": [],
@@ -8708,8 +9049,8 @@
       ],
       "dynamicImports": [],
       "exports": [],
-      "hash": "7e454e0a0c8e86b97b34bb3d4504fc29360dfa33",
-      "lastModified": 1782354666520.5557
+      "hash": "5da85021dd06ebe46a687609df7f8f4e3b7f6e7b",
+      "lastModified": 1783050805886.9937
     },
     "docs/audit/refund/REFUND-002-ARCHITECTURE.md": {
       "assetReferences": [],
@@ -8727,8 +9068,8 @@
       ],
       "dynamicImports": [],
       "exports": [],
-      "hash": "e98a3858d6fc855987952db7e75da93e28fa207c",
-      "lastModified": 1782354666521.7073
+      "hash": "e10dc7ea587fcc2a2cceffa641080592f1b26eab",
+      "lastModified": 1783050805887.1147
     },
     "docs/audit/refund/REFUND-002-IMPLEMENTATION-PLAN.md": {
       "assetReferences": [],
@@ -8737,8 +9078,8 @@
       ],
       "dynamicImports": [],
       "exports": [],
-      "hash": "45748ead184d636342bbe7b63a6c5bfe9ba05ec3",
-      "lastModified": 1782354666522.003
+      "hash": "a87e280a2ea98584a4446f15fec049262ab4a83b",
+      "lastModified": 1783050805888.7405
     },
     "docs/audit/session-regression.md": {
       "assetReferences": [],
@@ -8751,8 +9092,8 @@
       ],
       "dynamicImports": [],
       "exports": [],
-      "hash": "71350ae31b457f0125c7301ddc05edc649341d5d",
-      "lastModified": 1782354666522.8506
+      "hash": "682ae6a6cfe01dd11a11e6026f3e044d177c1015",
+      "lastModified": 1783050805888.898
     },
     "docs/audit/ticket-retrieval-portal-audit.md": {
       "assetReferences": [],
@@ -8760,7 +9101,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "bb9ef339b2b644dba842db46e6a5c98ea0e9eabb",
-      "lastModified": 1782354666523.0063
+      "lastModified": 1783132807656.2612
     },
     "docs/decisions/ADR-001-booking-ownership.md": {
       "assetReferences": [],
@@ -8780,24 +9121,46 @@
       ],
       "dynamicImports": [],
       "exports": [],
-      "hash": "88571f4ff0b2c4250619d23ab3277991a9004834",
-      "lastModified": 1782555245586.23
+      "hash": "948f5266c6c562bd9614d53c377d0cfa8d545984",
+      "lastModified": 1783050805889.0544
     },
     "docs/decisions/ADR-002-governance-persistence-v2.md": {
       "assetReferences": [],
-      "dependencies": [],
+      "dependencies": [
+        "REPOSITORY_GOVERNANCE.md",
+        "ARCHITECTURE.md",
+        "REPOSITORY_GOVERNANCE.md",
+        "ARCHITECTURE.md"
+      ],
       "dynamicImports": [],
       "exports": [],
-      "hash": "9b0b75b22a4ca0c482dc7735cdf0aeafe4bf4109",
-      "lastModified": 1782872656137.1934
+      "hash": "0d738307243648db16452f947807df0a070f13d7",
+      "lastModified": 1783050805889.1394
+    },
+    "docs/decisions/ADR-003-governance-status-semantics.md": {
+      "assetReferences": [],
+      "dependencies": [
+        "REPOSITORY_GOVERNANCE.md",
+        "AGENTS.MD",
+        "AGENTS.MD",
+        "REPOSITORY_GOVERNANCE.md"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "c414c45f3658510e54f25d8aa36cb3bbc024c68d",
+      "lastModified": 1783132807656.4673
     },
     "docs/decisions/ADR_INDEX.md": {
       "assetReferences": [],
-      "dependencies": [],
+      "dependencies": [
+        "docs/decisions/ADR-001-booking-ownership.md",
+        "docs/decisions/ADR-002-governance-persistence-v2.md",
+        "docs/decisions/ADR-003-governance-status-semantics.md"
+      ],
       "dynamicImports": [],
       "exports": [],
-      "hash": "9cb20049440c2014cc5f992dc3c81933ccb164b7",
-      "lastModified": 1782872649801.869
+      "hash": "8a127047749c5122c9ac146b91bdebbb77c4a21c",
+      "lastModified": 1783132807656.866
     },
     "docs/decisions/ADR_TEMPLATE.md": {
       "assetReferences": [],
@@ -8825,8 +9188,8 @@
       ],
       "dynamicImports": [],
       "exports": [],
-      "hash": "8c5478a2e77ef61fca597c5c3801df0d4c6b5ff1",
-      "lastModified": 1782555245587.5303
+      "hash": "0c499720ed36454ddb888b359730e590623001c2",
+      "lastModified": 1783132807657.0483
     },
     "docs/finding_classification_todo.md": {
       "assetReferences": [],
@@ -8853,8 +9216,8 @@
       ],
       "dynamicImports": [],
       "exports": [],
-      "hash": "6adb94933cc432c6288850387abbd614a32d6e5b",
-      "lastModified": 1782354666524.012
+      "hash": "da45497171795a88a526c924323a6cae512e8333",
+      "lastModified": 1783050805894.8518
     },
     "docs/verification-results.md": {
       "assetReferences": [],
@@ -8870,7 +9233,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "5aa599a6c2c080e0d71aed4bfe31cbfeb0708a15",
-      "lastModified": 1782835579183.311
+      "lastModified": 1783132807657.2366
     },
     "packages/shared/package.json": {
       "assetReferences": [],
@@ -8913,6 +9276,8 @@
         "HTTP_STATUS",
         "SEAT_LOCK_TTL_SECONDS",
         "MAX_TICKETS_PER_BOOKING",
+        "DEFAULT_MEMORIES_GALLERY_LIMIT",
+        "MAX_MEMORIES_GALLERY_LIMIT",
         "POPUP_COOLDOWN_HOURS",
         "POPUP_SESSION_KEY_PREFIX",
         "API_ROUTES",
@@ -8921,8 +9286,8 @@
         "EVENT_CATEGORY_LABELS",
         "BOOKING_REFERENCE_REGEX"
       ],
-      "hash": "8d201f5274593fd712080d3e9eafb113b41c73c6",
-      "lastModified": 1782555245588.3755
+      "hash": "62602d2a9ad219e00d4b10f989c4bc4275a43422",
+      "lastModified": 1783132807657.5679
     },
     "packages/shared/src/constants/query-keys.ts": {
       "assetReferences": [],
@@ -8989,6 +9354,7 @@
         "TicketGroup",
         "TicketProfile",
         "TicketOverride",
+        "EventMemoryConfig",
         "Event",
         "Seat",
         "SeatLayout",
@@ -9009,8 +9375,8 @@
         "PaginatedItemsResponse",
         "JwtPayload"
       ],
-      "hash": "95dc66656146b0848bd6df82735dbe513b26a93e",
-      "lastModified": 1782623379329.4253
+      "hash": "1cdb52285b6c2959bbda892c240f14bc2a4ba441",
+      "lastModified": 1783132807657.8723
     },
     "packages/types/tsconfig.json": {
       "assetReferences": [],
@@ -9038,8 +9404,8 @@
         "ButtonProps",
         "Button"
       ],
-      "hash": "c5fc19770e86ce0d23838f6fb4329de804413b14",
-      "lastModified": 1782623379329.7095
+      "hash": "9d3b7f024a4e369f57f11eadeef8d889d3088625",
+      "lastModified": 1783132807658.0305
     },
     "packages/ui/src/components/EventGridSkeleton.tsx": {
       "assetReferences": [],
@@ -9111,7 +9477,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "d7a724604459dba9e3b4fbdc1020388c0eff42e7",
-      "lastModified": 1782623379331.4207
+      "lastModified": 1783132807658.152
     },
     "packages/ui/tsconfig.json": {
       "assetReferences": [],
@@ -9139,7 +9505,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "0eb23788a1918fb1a88ba0be32be5fc463dac763",
-      "lastModified": 1782555245592.4597
+      "lastModified": 1783132807658.481
     },
     "packages/utils/src/date.ts": {
       "assetReferences": [],
@@ -9181,7 +9547,7 @@
         "extractApiError"
       ],
       "hash": "0fc4e68ed70249aa5363d73d9a886ced11b6c79a",
-      "lastModified": 1782623379331.9106
+      "lastModified": 1783132807658.6133
     },
     "packages/utils/src/jwt.test.ts": {
       "assetReferences": [],
@@ -9191,7 +9557,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "f8707491c445ff1e74ea3129f20ce1465b85e221",
-      "lastModified": 1782555245595.3315
+      "lastModified": 1783132807658.7898
     },
     "packages/utils/src/jwt.ts": {
       "assetReferences": [],
@@ -9204,7 +9570,7 @@
         "isTokenExpired"
       ],
       "hash": "c9f290f4072d20982c88cc44ba9cb2f125eab611",
-      "lastModified": 1782555245595.582
+      "lastModified": 1783132807658.9165
     },
     "packages/utils/tsconfig.json": {
       "assetReferences": [],
@@ -9254,7 +9620,7 @@
         "AdminDlqRetryInput"
       ],
       "hash": "00b96e4fb120b98e6a68f0defc3ed0096bc6384d",
-      "lastModified": 1782214932183.2915
+      "lastModified": 1783132807659.109
     },
     "packages/validations/src/normalizers.ts": {
       "assetReferences": [],
@@ -9301,7 +9667,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "f2c10dee12a6fb40dc2c827ad7ef182374ff3735",
-      "lastModified": 1782647089646.304
+      "lastModified": 1783050805896.736
     },
     "pnpm-workspace.yaml": {
       "assetReferences": [],
@@ -9309,7 +9675,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "ea56402ad214be28fa79f083b05d4eb3339b13b5",
-      "lastModified": 1782647089646.8083
+      "lastModified": 1783050805896.9236
     },
     "render.yaml": {
       "assetReferences": [],
@@ -9325,7 +9691,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "6bedc43ab62c7366dddeda42aada7be41b5fbb2d",
-      "lastModified": 1782835691343.3792
+      "lastModified": 1783050805897.3088
     },
     "scripts/cleanup-ports.js": {
       "assetReferences": [],
@@ -9333,7 +9699,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "b083994d26b3b65d2440018b8923b1cd9266b490",
-      "lastModified": 1781697712193.5645
+      "lastModified": 1783132807659.2327
     },
     "scripts/dependency-audit.ts": {
       "assetReferences": [],
@@ -9341,7 +9707,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "e7a2aa7a7830e2c3210e0b6174c58172e520dc37",
-      "lastModified": 1781697712194.0786
+      "lastModified": 1783132807659.4238
     },
     "scripts/gather-audit-data.ts": {
       "assetReferences": [],
@@ -9350,8 +9716,82 @@
       ],
       "dynamicImports": [],
       "exports": [],
-      "hash": "e1a79e061d8d5b07daf0832b1860b7c995dfbfef",
-      "lastModified": 1782835555028.3652
+      "hash": "bd2a68db3b590795ccdf113bba5420d50ef275ec",
+      "lastModified": 1783132807659.6006
+    },
+    "scripts/governance/core/__tests__/audit_engine.integration.test.ts": {
+      "assetReferences": [],
+      "dependencies": [
+        "scripts/governance/core/audit_engine.ts",
+        "scripts/governance/core/finding_manager.ts",
+        "scripts/governance/core/report_engine.ts",
+        "scripts/governance/core/metrics_engine.ts",
+        "scripts/governance/rules/registry.ts",
+        "scripts/governance/core/types.ts"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "24d7100a247be683b7e7766088fd83a8c555797d",
+      "lastModified": 1783050805897.6802
+    },
+    "scripts/governance/core/__tests__/confidence_engine.test.ts": {
+      "assetReferences": [],
+      "dependencies": [
+        "scripts/governance/core/confidence_engine.ts",
+        "scripts/governance/rules/registry.ts",
+        "scripts/governance/core/types.ts"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "b62769404794651bfa66bf6b16cb87e6c4901686",
+      "lastModified": 1783133219749.5225
+    },
+    "scripts/governance/core/__tests__/finding_manager.test.ts": {
+      "assetReferences": [],
+      "dependencies": [
+        "scripts/governance/core/finding_manager.ts",
+        "scripts/governance/rules/registry.ts",
+        "scripts/governance/core/rename_detector.ts",
+        "scripts/governance/core/types.ts"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "8befbdda16087c8d043500f5f845b6ac462ca01b",
+      "lastModified": 1783133219749.815
+    },
+    "scripts/governance/core/__tests__/lifecycle_manager.test.ts": {
+      "assetReferences": [],
+      "dependencies": [
+        "scripts/governance/core/lifecycle_manager.ts",
+        "scripts/governance/core/finding_manager.ts",
+        "scripts/governance/core/types.ts"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "a5344b13b56e7470eda7dbfd506c76331c984da5",
+      "lastModified": 1783133219750.0354
+    },
+    "scripts/governance/core/__tests__/metrics_engine.test.ts": {
+      "assetReferences": [],
+      "dependencies": [
+        "scripts/governance/core/metrics_engine.ts",
+        "scripts/governance/rules/registry.ts",
+        "scripts/governance/core/types.ts"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "8693b323d8436c52b21095e17659f3bd193894b0",
+      "lastModified": 1783050805899.0117
+    },
+    "scripts/governance/core/__tests__/rule_registry.test.ts": {
+      "assetReferences": [],
+      "dependencies": [
+        "scripts/governance/rules/registry.ts"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "00eb529e9839f6f11c3cff06651c1c764ff587d5",
+      "lastModified": 1783133599993.7788
     },
     "scripts/governance/core/audit_engine.ts": {
       "assetReferences": [],
@@ -9371,7 +9811,7 @@
         "auditEngineVersion"
       ],
       "hash": "fa49f3662b08225ce92d004e53ca094cf960d68c",
-      "lastModified": 1782872351506.6086
+      "lastModified": 1783133219750.3333
     },
     "scripts/governance/core/confidence_engine.ts": {
       "assetReferences": [],
@@ -9385,7 +9825,7 @@
         "ConfidenceEngine"
       ],
       "hash": "5657009913f2e18f6c5a5170169be7fa01511ab9",
-      "lastModified": 1782722091336.996
+      "lastModified": 1783133219750.4604
     },
     "scripts/governance/core/constants.ts": {
       "assetReferences": [],
@@ -9409,7 +9849,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "fb9b0db088b39d30d509439d6158b0846e834dcb",
-      "lastModified": 1782737225911.0422
+      "lastModified": 1783133599994.0583
     },
     "scripts/governance/core/dependency_analyzer.ts": {
       "assetReferences": [],
@@ -9424,7 +9864,7 @@
         "dependencyAnalyzerVersion"
       ],
       "hash": "2137ecd5f13d9eb7e6955ab6bedb51f8ffd7d7c2",
-      "lastModified": 1782737225911.5732
+      "lastModified": 1783050805899.4563
     },
     "scripts/governance/core/dependency_graph.test.ts": {
       "assetReferences": [
@@ -9436,8 +9876,8 @@
       ],
       "dynamicImports": [],
       "exports": [],
-      "hash": "dd90c8a506f4514e3d23fd363f8096564bbe9b1d",
-      "lastModified": 1782737225911.8677
+      "hash": "df4017ace269f936c87e5857f29d5888568b5716",
+      "lastModified": 1783133599994.3013
     },
     "scripts/governance/core/finding_manager.ts": {
       "assetReferences": [],
@@ -9455,8 +9895,8 @@
         "baselinesDir",
         "metricsDir"
       ],
-      "hash": "65d9cd0ffe177c737af48b471f3b6058d77d14ff",
-      "lastModified": 1782872636534.364
+      "hash": "223ff29940aa431ce4e9ee2618116557ceaf1939",
+      "lastModified": 1783133219751.2134
     },
     "scripts/governance/core/fingerprint.test.ts": {
       "assetReferences": [],
@@ -9466,7 +9906,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "d3b8529a653512f9bb7808015e13e697f0385a09",
-      "lastModified": 1782872696818.9844
+      "lastModified": 1783133599994.5806
     },
     "scripts/governance/core/fingerprint.ts": {
       "assetReferences": [],
@@ -9481,7 +9921,7 @@
         "FingerprintEngine"
       ],
       "hash": "156394de3161a33aaf99229c04b2fe33afbbfbe1",
-      "lastModified": 1782872682378.2446
+      "lastModified": 1783050805899.7844
     },
     "scripts/governance/core/governance.config.ts": {
       "assetReferences": [],
@@ -9490,8 +9930,8 @@
       "exports": [
         "governanceConfig"
       ],
-      "hash": "ac80cc4dfbac7ee9e86e6d580129bd1f001df6b2",
-      "lastModified": 1782724118847.66
+      "hash": "4c70be09b9b25e32cc461669374674062c2d3eed",
+      "lastModified": 1783050805899.855
     },
     "scripts/governance/core/json_utils.ts": {
       "assetReferences": [],
@@ -9505,7 +9945,7 @@
         "writeJsonIfChanged"
       ],
       "hash": "4c06990a66e16bb0b6762a154757016c4067ec8c",
-      "lastModified": 1782872616459.4038
+      "lastModified": 1783133599994.7297
     },
     "scripts/governance/core/knowledge_graph.ts": {
       "assetReferences": [],
@@ -9522,8 +9962,8 @@
         "KnowledgeGraph",
         "graphInstanceVersion"
       ],
-      "hash": "f40e4880fd8ca5d8f2ae9a7495db174053b091a4",
-      "lastModified": 1782833489454.2617
+      "hash": "c1560aaf66907dae747ee0857bef8ae68aa1f628",
+      "lastModified": 1783133599994.9568
     },
     "scripts/governance/core/lifecycle_manager.ts": {
       "assetReferences": [],
@@ -9537,7 +9977,7 @@
         "defaultLifecycleVersion"
       ],
       "hash": "0c0e0e9994a7d5550577313ff6e5685162a8838d",
-      "lastModified": 1782722091337.5022
+      "lastModified": 1783133219751.838
     },
     "scripts/governance/core/loader.ts": {
       "assetReferences": [],
@@ -9550,7 +9990,7 @@
         "ValidatorLoader"
       ],
       "hash": "e63783f581b19f599a302cc1b505a63fb2dcaa4c",
-      "lastModified": 1782555245616.1433
+      "lastModified": 1783132807662.2466
     },
     "scripts/governance/core/metadata.ts": {
       "assetReferences": [],
@@ -9565,7 +10005,7 @@
         "parseMarkdownMetadata"
       ],
       "hash": "55461d68a6a3a642312b3aeecbdb77e90e8f5e9b",
-      "lastModified": 1782555245617.1038
+      "lastModified": 1783133599995.1484
     },
     "scripts/governance/core/metrics_engine.ts": {
       "assetReferences": [],
@@ -9581,7 +10021,7 @@
         "ruleRegistryVersion"
       ],
       "hash": "28e8c844bd62639e5cc897fa400c5892de16784f",
-      "lastModified": 1782833505648.592
+      "lastModified": 1783133219752.222
     },
     "scripts/governance/core/rename_detector.ts": {
       "assetReferences": [],
@@ -9592,7 +10032,7 @@
         "engineVersion"
       ],
       "hash": "1229cabcd1d66895a131aa9d2053ea0d3d727fa3",
-      "lastModified": 1782722091337.806
+      "lastModified": 1783050805902.9392
     },
     "scripts/governance/core/report_engine.ts": {
       "assetReferences": [],
@@ -9607,7 +10047,7 @@
         "defaultReportVersion"
       ],
       "hash": "c5ec785851d5a2b638fe29c2d9955e7cd634835e",
-      "lastModified": 1782872369811.8865
+      "lastModified": 1783133219752.5403
     },
     "scripts/governance/core/reporter.ts": {
       "assetReferences": [],
@@ -9619,7 +10059,7 @@
         "ConsoleReporter"
       ],
       "hash": "a97f5e0d6dc8bfda9ed95d9f8dbd48096673e041",
-      "lastModified": 1782555245617.771
+      "lastModified": 1783133599995.276
     },
     "scripts/governance/core/types.ts": {
       "assetReferences": [],
@@ -9650,7 +10090,7 @@
         "StatelessViolation"
       ],
       "hash": "1df30af44e6f6648c99ae3251002fb8bd35204d2",
-      "lastModified": 1782836269600.8896
+      "lastModified": 1783133599995.7407
     },
     "scripts/governance/core/validator.ts": {
       "assetReferences": [],
@@ -9690,8 +10130,8 @@
       ],
       "dynamicImports": [],
       "exports": [],
-      "hash": "700251ff27af7cb303d4e8a44ab16a108c2139f0",
-      "lastModified": 1782833532490.2158
+      "hash": "658f6c66c984221b5fda08580658ee4c3b1e8ba7",
+      "lastModified": 1783133219753.1326
     },
     "scripts/governance/migrate-findings.ts": {
       "assetReferences": [],
@@ -9702,7 +10142,7 @@
       "dynamicImports": [],
       "exports": [],
       "hash": "94096a448f7ccf6d7c2b918ddf506d3a034307e9",
-      "lastModified": 1782872643903.9148
+      "lastModified": 1783133219753.2798
     },
     "scripts/governance/rules/architecture.rules.ts": {
       "assetReferences": [],
@@ -9714,7 +10154,19 @@
         "architectureRules"
       ],
       "hash": "41e5ae5649205e27539fdacd96c3722237f28443",
-      "lastModified": 1782722091338.6328
+      "lastModified": 1783132807663.734
+    },
+    "scripts/governance/rules/documentation.rules.ts": {
+      "assetReferences": [],
+      "dependencies": [
+        "scripts/governance/core/types.ts"
+      ],
+      "dynamicImports": [],
+      "exports": [
+        "docRules"
+      ],
+      "hash": "814b763a68849d28c9b187e726671630688386a4",
+      "lastModified": 1783132807663.8667
     },
     "scripts/governance/rules/performance.rules.ts": {
       "assetReferences": [],
@@ -9726,7 +10178,7 @@
         "performanceRules"
       ],
       "hash": "666c850fba02a85acd652156816ff3e8c312ee3a",
-      "lastModified": 1782722091338.7522
+      "lastModified": 1783132807663.94
     },
     "scripts/governance/rules/registry.ts": {
       "assetReferences": [],
@@ -9735,15 +10187,16 @@
         "scripts/governance/rules/ui.rules.ts",
         "scripts/governance/rules/security.rules.ts",
         "scripts/governance/rules/performance.rules.ts",
-        "scripts/governance/rules/architecture.rules.ts"
+        "scripts/governance/rules/architecture.rules.ts",
+        "scripts/governance/rules/documentation.rules.ts"
       ],
       "dynamicImports": [],
       "exports": [
         "RuleRegistry",
         "ruleRegistryVersion"
       ],
-      "hash": "eda87cc1c5bb7c788d463f511699088ef114ebdf",
-      "lastModified": 1782722091338.857
+      "hash": "5e3057f0bb9ae1b35fc35bb202ffa0f86f824549",
+      "lastModified": 1783133599996.0461
     },
     "scripts/governance/rules/security.rules.ts": {
       "assetReferences": [],
@@ -9755,7 +10208,7 @@
         "securityRules"
       ],
       "hash": "c07102fcc09015e4a815d9f66fa62657a26416ec",
-      "lastModified": 1782722091338.9324
+      "lastModified": 1783132807664.2878
     },
     "scripts/governance/rules/ui.rules.ts": {
       "assetReferences": [],
@@ -9766,22 +10219,23 @@
       "exports": [
         "uiRules"
       ],
-      "hash": "62b4de895d5f88d6778fb66180f6a58801f508e5",
-      "lastModified": 1782744615942.2712
+      "hash": "88ba7d9b98069cd4674c8b52a4ed7f74e9a31b61",
+      "lastModified": 1783132807664.4297
     },
     "scripts/governance/validators/accessibility_validator.ts": {
       "assetReferences": [],
       "dependencies": [
         "scripts/governance/core/validator.ts",
         "scripts/governance/core/types.ts",
-        "scripts/governance/core/governance.config.ts"
+        "scripts/governance/core/governance.config.ts",
+        "scripts/governance/rules/registry.ts"
       ],
       "dynamicImports": [],
       "exports": [
         "AccessibilityValidator"
       ],
-      "hash": "21f2acfba0eec3bf091f1307404526b48a60e565",
-      "lastModified": 1782724118849.6682
+      "hash": "6e1d3b5e48cb87e188ec8fa0f4a4733aa62d0839",
+      "lastModified": 1783133599996.2847
     },
     "scripts/governance/validators/adr_validator.ts": {
       "assetReferences": [],
@@ -9794,7 +10248,7 @@
         "AdrValidator"
       ],
       "hash": "24dffa200767152fdbc05c736be791ffc0341497",
-      "lastModified": 1782555245623.9578
+      "lastModified": 1783133219753.7637
     },
     "scripts/governance/validators/cross_reference_validator.ts": {
       "assetReferences": [],
@@ -9827,20 +10281,35 @@
         "DeadAssetDuplicateValidator"
       ],
       "hash": "f2c4a523ffe17dfb33bd5b6003150973a7bfd052",
-      "lastModified": 1782737225913.134
+      "lastModified": 1783133599996.4175
+    },
+    "scripts/governance/validators/documentation_validator.test.ts": {
+      "assetReferences": [],
+      "dependencies": [
+        "scripts/governance/validators/documentation_validator.ts"
+      ],
+      "dynamicImports": [],
+      "exports": [],
+      "hash": "9df8b7bfc178f83e76f2aec786392cd5f1ba1c14",
+      "lastModified": 1783133219754.1533
     },
     "scripts/governance/validators/documentation_validator.ts": {
       "assetReferences": [],
       "dependencies": [
         "scripts/governance/core/validator.ts",
-        "scripts/governance/core/types.ts"
+        "scripts/governance/core/types.ts",
+        "scripts/governance/core/metadata.ts",
+        "scripts/governance/core/governance.config.ts"
       ],
       "dynamicImports": [],
       "exports": [
+        "getNormalizedStatus",
+        "parseLinksFromLine",
+        "checkPathCasing",
         "DocumentationValidator"
       ],
-      "hash": "8f0e7cc0b77d2762654744fbccc773bdd45f7fb2",
-      "lastModified": 1782555245625.1624
+      "hash": "10abc63aa9454fd6db2014358728bca12a9e90ec",
+      "lastModified": 1783133219754.3586
     },
     "scripts/governance/validators/helpers/dead_asset_detector.ts": {
       "assetReferences": [],
@@ -9855,7 +10324,7 @@
         "deadAssetDetectorVersion"
       ],
       "hash": "ffb259705bed09db241a308513720b6dc9c5997d",
-      "lastModified": 1782737225913.4792
+      "lastModified": 1783133599996.9592
     },
     "scripts/governance/validators/helpers/duplicate_component_detector.ts": {
       "assetReferences": [],
@@ -9870,7 +10339,7 @@
         "duplicateComponentDetectorVersion"
       ],
       "hash": "613909a65ec50f98b19872e421672d36e6af293e",
-      "lastModified": 1782737225913.6812
+      "lastModified": 1783133599997.4229
     },
     "scripts/governance/validators/helpers/duplicate_file_detector.ts": {
       "assetReferences": [],
@@ -9886,7 +10355,7 @@
         "duplicateFileDetectorVersion"
       ],
       "hash": "f9414c421e7fcf04a0db4d5a56f8556da2dd1aa4",
-      "lastModified": 1782737225913.955
+      "lastModified": 1783133599997.8215
     },
     "scripts/governance/validators/helpers/safe_delete_classifier.ts": {
       "assetReferences": [],
@@ -9901,7 +10370,7 @@
         "safeDeleteClassifierVersion"
       ],
       "hash": "927141ad5296a46430524a784108d3c3b1855d29",
-      "lastModified": 1782737225914.2876
+      "lastModified": 1783133599998.16
     },
     "scripts/governance/validators/link_validator.ts": {
       "assetReferences": [],
@@ -9929,7 +10398,7 @@
         "MarkdownValidator"
       ],
       "hash": "d69c3f16a121426a8d629e37c5879dc8b0ec1d0d",
-      "lastModified": 1782555245626.764
+      "lastModified": 1783133219755.423
     },
     "scripts/governance/validators/mermaid_validator.ts": {
       "assetReferences": [],
@@ -9957,7 +10426,7 @@
         "RepositoryHealthValidator"
       ],
       "hash": "3555bf3948d8ff4ce3eea4dea2d42f58f1bbb633",
-      "lastModified": 1782555245628.2031
+      "lastModified": 1783133599998.3506
     },
     "scripts/governance/validators/shared_component_validator.ts": {
       "assetReferences": [],
@@ -9971,7 +10440,7 @@
         "SharedComponentValidator"
       ],
       "hash": "5868f7d51d60cfe59a54d5ee35df430ad7a1cfff",
-      "lastModified": 1782724118850.1863
+      "lastModified": 1783133599999.3965
     },
     "scripts/governance/validators/ssot_validator.ts": {
       "assetReferences": [],
@@ -9984,7 +10453,7 @@
         "SsotValidator"
       ],
       "hash": "85a8f4f69d453ff5203c4c35532764914491562b",
-      "lastModified": 1782555245628.7273
+      "lastModified": 1783133599999.6038
     },
     "scripts/governance/validators/ui_design_validator.ts": {
       "assetReferences": [],
@@ -9997,7 +10466,7 @@
         "UIDesignValidator"
       ],
       "hash": "40fdc691f5573192200fa7412dfeebfad3d8fb6a",
-      "lastModified": 1782724118850.7634
+      "lastModified": 1783133599999.8645
     },
     "tsconfig.base.json": {
       "assetReferences": [],
@@ -10053,9 +10522,9 @@
         "default"
       ],
       "hash": "cdf68ed136a599931d1ce55a2cccd7edf3cc1d1a",
-      "lastModified": 1782872273517.3416
+      "lastModified": 1783050805912.8364
     }
   },
-  "timestamp": "2026-07-01T02:25:08.147Z",
+  "timestamp": "2026-07-04T03:02:10.319Z",
   "version": "1.1.0"
 }

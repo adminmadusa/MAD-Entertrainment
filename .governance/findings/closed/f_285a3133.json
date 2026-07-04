@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T17:05:04.133Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 272,
+    "message": "File must terminate with exactly one trailing newline character.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "f7b11ac11bca4b7b98835e970fa1c3aead1d9ec679a8a70e3cae8f45e22d5d1e",
+        "id": "f7b11ac11bca4b7b98835e970fa1c3aead1d9ec679a8a70e3cae8f45e22d5d1e",
+        "line": 272,
+        "message": "File must terminate with exactly one trailing newline character."
+      }
+    ],
+    "path": "apps/admin/src/components/coupons/CouponForm.tsx"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T17:05:04.133Z",
+  "id": "f_285a3133",
+  "lastDetected": "2026-07-03T17:05:04.133Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-005",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

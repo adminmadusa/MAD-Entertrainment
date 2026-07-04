@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:54.647Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 1,
+    "message": "Imports must be grouped in order: Node built-ins, Third-party packages, Workspace aliases, Relative paths, Side-effects.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "844eb4b55400f62545b69fb49ccf37f09302031b6042cab7bd5af2bd55a3f0f7",
+        "id": "844eb4b55400f62545b69fb49ccf37f09302031b6042cab7bd5af2bd55a3f0f7",
+        "line": 1,
+        "message": "Imports must be grouped in order: Node built-ins, Third-party packages, Workspace aliases, Relative paths, Side-effects."
+      }
+    ],
+    "path": "apps/server/src/workers/email.worker.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:54.647Z",
+  "id": "f_48e2cb7a",
+  "lastDetected": "2026-07-03T12:25:54.647Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-001",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

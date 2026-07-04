@@ -1,0 +1,33 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T09:21:03.713Z",
+  "domain": "Architecture Review Board",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "message": "Duplicate document detected: \"docs/governance/rules/MALFORMED_H1.md\" (Status: Active) shares 86% similarity with canonical \"docs/governance/rules/INVALID_SSOT_DATE.md\" (Status: Active).",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "6c5857004eb327ec57027cccb8a3422c05e2a043b0df1a51c3c440ee9500da34",
+        "id": "6c5857004eb327ec57027cccb8a3422c05e2a043b0df1a51c3c440ee9500da34",
+        "line": 0,
+        "message": "Duplicate document detected: \"docs/governance/rules/MALFORMED_H1.md\" (Status: Active) shares 85% similarity with canonical \"docs/governance/rules/DUPLICATE_POLICY.md\" (Status: Active)."
+      }
+    ],
+    "path": "docs/governance/rules/MALFORMED_H1.md"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T09:21:03.713Z",
+  "id": "f_9cad4c89",
+  "lastDetected": "2026-07-03T09:21:03.713Z",
+  "occurrenceCount": 1,
+  "owner": "Architecture Review Board",
+  "package": "docs",
+  "relationships": [],
+  "rule": "VAL-DOC-006",
+  "ruleVersion": "2.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

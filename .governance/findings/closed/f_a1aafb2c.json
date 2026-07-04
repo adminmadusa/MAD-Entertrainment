@@ -1,0 +1,33 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T09:31:32.051Z",
+  "domain": "Architecture Review Board",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "message": "Every documentation file is required to have a defined \"Owner\" or \"Authors\" in its metadata block.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "4feac5e88cf62aabda1109357d1dff5d858bbfb8ed4ee6e496fc3041ae3ef4ce",
+        "id": "4feac5e88cf62aabda1109357d1dff5d858bbfb8ed4ee6e496fc3041ae3ef4ce",
+        "line": 0,
+        "message": "Every documentation file is required to have a defined \"Owner\" or \"Authors\" in its metadata block."
+      }
+    ],
+    "path": "docs/governance/EXECUTION_ENGINE.md"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T09:31:32.051Z",
+  "id": "f_a1aafb2c",
+  "lastDetected": "2026-07-03T09:31:32.051Z",
+  "occurrenceCount": 1,
+  "owner": "Architecture Review Board",
+  "package": "docs",
+  "relationships": [],
+  "rule": "Missing Document Owner",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

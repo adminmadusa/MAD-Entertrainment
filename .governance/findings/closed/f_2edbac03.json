@@ -1,0 +1,33 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T09:21:03.814Z",
+  "domain": "Architecture Review Board",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "message": "Duplicate document detected: \"docs/governance/rules/MISSING_ADR_DOCS.md\" (Status: Active) shares 96% similarity with canonical \"docs/governance/rules/INVALID_ADR_DATE.md\" (Status: Active).",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "777bcf5c527bc2af762042399c7bfc1265cc8fc76cdc45719c2f2dd73ae3f857",
+        "id": "777bcf5c527bc2af762042399c7bfc1265cc8fc76cdc45719c2f2dd73ae3f857",
+        "line": 0,
+        "message": "Duplicate document detected: \"docs/governance/rules/MISSING_ADR_DOCS.md\" (Status: Active) shares 100% similarity with canonical \"docs/governance/rules/MISSING_ADR_AUTHORS.md\" (Status: Active)."
+      }
+    ],
+    "path": "docs/governance/rules/MISSING_ADR_DOCS.md"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T09:21:03.814Z",
+  "id": "f_2edbac03",
+  "lastDetected": "2026-07-03T09:21:03.814Z",
+  "occurrenceCount": 1,
+  "owner": "Architecture Review Board",
+  "package": "docs",
+  "relationships": [],
+  "rule": "VAL-DOC-006",
+  "ruleVersion": "2.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

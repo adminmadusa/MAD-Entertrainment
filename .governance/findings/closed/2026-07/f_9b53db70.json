@@ -1,0 +1,37 @@
+{
+  "confidence": 0.9,
+  "createdDate": "2026-07-03T16:43:21.144Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "UIElement",
+    "line": 326,
+    "message": "Local duplication of <Field> wrapper. Use a shared components package.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "UIElement",
+        "fingerprint": "6736fa5f2a704a25f4e3bd5e9127e5690c066cafe751a06f3694f967730cdff0",
+        "id": "6736fa5f2a704a25f4e3bd5e9127e5690c066cafe751a06f3694f967730cdff0",
+        "line": 288,
+        "message": "Local duplication of <Field> wrapper. Use a shared components package.",
+        "snippet": "function Field({ label, children }: { label: string; children: React.ReactNode }) {"
+      }
+    ],
+    "path": "apps/admin/src/app/popups/new/page.tsx",
+    "snippet": "function Field({ label, children }: { label: string; children: React.ReactNode }) {"
+  },
+  "feature": "UIElement",
+  "firstDetected": "2026-07-03T16:43:21.144Z",
+  "id": "f_9b53db70",
+  "lastDetected": "2026-07-03T16:43:21.177Z",
+  "lastModified": "2026-07-03T16:43:21.177Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-UI-006",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

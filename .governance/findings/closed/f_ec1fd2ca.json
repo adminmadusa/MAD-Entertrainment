@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:56.183Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 3,
+    "message": "Imports must be grouped in order: Node built-ins, Third-party packages, Workspace aliases, Relative paths, Side-effects.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "01b26b6b895cdcbdd5c0a14ecdf7b36a72441064e420c565b4091d0c1a977fbd",
+        "id": "01b26b6b895cdcbdd5c0a14ecdf7b36a72441064e420c565b4091d0c1a977fbd",
+        "line": 3,
+        "message": "Imports must be grouped in order: Node built-ins, Third-party packages, Workspace aliases, Relative paths, Side-effects."
+      }
+    ],
+    "path": "apps/web/src/components/layout/UserDropdown.tsx"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:56.183Z",
+  "id": "f_ec1fd2ca",
+  "lastDetected": "2026-07-03T12:25:56.183Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-001",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

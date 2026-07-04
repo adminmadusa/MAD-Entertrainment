@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:47.973Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 2,
+    "message": "Import from types module \"./types\" should use \"import type\".",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "9c7c8d3c22fe4d10a0e169a32cf8fbaacd6d62bdc30ba3e62c9f1452f1c74b96",
+        "id": "9c7c8d3c22fe4d10a0e169a32cf8fbaacd6d62bdc30ba3e62c9f1452f1c74b96",
+        "line": 2,
+        "message": "Import from types module \"./types\" should use \"import type\"."
+      }
+    ],
+    "path": "apps/admin/src/components/dj-operators/DJBasicInfoCard.tsx"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:47.973Z",
+  "id": "f_d2a83560",
+  "lastDetected": "2026-07-03T12:25:47.973Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-003",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

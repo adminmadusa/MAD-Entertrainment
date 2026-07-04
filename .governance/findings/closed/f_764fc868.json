@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:47.850Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 7,
+    "message": "Imports within the same group must be sorted alphabetically (\"@/lib/rbac/navigation-permissions\" should precede \"@/providers/AdminAuthProvider\").",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "7b4c28208bc76137774d19a53867b378d6c627d5a5cdb5e5a6a2f205d23a88f0",
+        "id": "7b4c28208bc76137774d19a53867b378d6c627d5a5cdb5e5a6a2f205d23a88f0",
+        "line": 7,
+        "message": "Imports within the same group must be sorted alphabetically (\"@/lib/rbac/navigation-permissions\" should precede \"@/providers/AdminAuthProvider\")."
+      }
+    ],
+    "path": "apps/admin/src/components/AdminShell.tsx"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:47.850Z",
+  "id": "f_764fc868",
+  "lastDetected": "2026-07-03T12:25:47.850Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-001",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

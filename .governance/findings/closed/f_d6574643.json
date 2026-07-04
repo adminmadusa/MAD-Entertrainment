@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T17:05:04.225Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 2,
+    "message": "Groups of imports must be separated by a single blank line.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "2019bee778b3b6d255af47195f4f69db866495c40f5e52bbbc7fb1236e8d2930",
+        "id": "2019bee778b3b6d255af47195f4f69db866495c40f5e52bbbc7fb1236e8d2930",
+        "line": 2,
+        "message": "Groups of imports must be separated by a single blank line."
+      }
+    ],
+    "path": "apps/admin/src/components/events/EventScheduleCard.tsx"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T17:05:04.225Z",
+  "id": "f_d6574643",
+  "lastDetected": "2026-07-03T17:05:04.225Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-001",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

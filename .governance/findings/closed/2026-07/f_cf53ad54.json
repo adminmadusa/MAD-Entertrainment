@@ -1,0 +1,35 @@
+{
+  "confidence": 0.9,
+  "createdDate": "2026-06-30T15:36:27.143Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "UIElement",
+    "line": 1,
+    "message": "Safe delete classification: [REQUIRES_MANUAL_REVIEW] for \"apps/admin/src/app/events/[id]/edit/page.tsx\". Reason: Filename \"page\" referenced as text/string in other files: AGENTS.MD, API_CONTRACTS.md.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "UIElement",
+        "fingerprint": "077dd555f47877bb2205ea030048a25ea1232c1417082856e184f249d200b8ab",
+        "id": "077dd555f47877bb2205ea030048a25ea1232c1417082856e184f249d200b8ab",
+        "line": 1,
+        "message": "Safe delete classification: [REQUIRES_MANUAL_REVIEW] for \"apps/admin/src/app/events/[id]/edit/page.tsx\". Reason: Filename \"page\" referenced as text/string in other files: AGENTS.MD, API_CONTRACTS.md.",
+        "snippet": ""
+      }
+    ],
+    "path": "apps/admin/src/app/events/[id]/edit/page.tsx"
+  },
+  "feature": "UIElement",
+  "firstDetected": "2026-06-30T15:36:27.143Z",
+  "id": "f_cf53ad54",
+  "lastDetected": "2026-06-30T15:36:27.143Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-UI-017",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}
