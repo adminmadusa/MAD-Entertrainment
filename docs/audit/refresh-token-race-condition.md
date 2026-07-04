@@ -5,7 +5,7 @@ The MAD Entertainment server implements Refresh Token Rotation (RTR) inside `Aut
 
 However, in client applications, page hydration, boot, or concurrent data pre-fetching often initiates several API requests in parallel. If these requests fail with a `401 Unauthorized` status simultaneously (e.g. because the access token has expired), they independently trigger the Axios interceptor's refresh routine.
 
-Due to execution/network latency, two concurrent requests can transmit the same expired refresh token to `/auth/refresh` at nearly the same millisecond. 
+Due to execution/network latency, two concurrent requests can transmit the same expired refresh token to `/auth/refresh` at nearly the same millisecond.
 - **Request A** is processed first, successfully rotating the token and setting the original record to `isRevoked = true`.
 - **Request B** arrives milliseconds later with the same token. The server sees the token is already revoked, instantly flags a false-positive replay attack, revokes all other active refresh tokens for that user, and logs the legitimate user out.
 

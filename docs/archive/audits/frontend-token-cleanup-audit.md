@@ -7,7 +7,7 @@
 ---
 
 ## Executive Summary
-This audit outlines the frontend dependencies on legacy magic-link URL tokens before complete removal. With the migration to the passwordless **OTP-only email template** complete, the frontend no longer receives or requires one-click magic-link redirection mechanisms. 
+This audit outlines the frontend dependencies on legacy magic-link URL tokens before complete removal. With the migration to the passwordless **OTP-only email template** complete, the frontend no longer receives or requires one-click magic-link redirection mechanisms.
 
 The goal of this audit is to identify all frontend token query extraction, URL token parsing, `initialToken` prop pass-through, automatic verification mutations, and type dependencies in order to lay out a risk-free removal plan.
 
@@ -119,7 +119,7 @@ The goal of this audit is to identify all frontend token query extraction, URL t
   ```
 
 * **Shared OTP/Token Verification Structures:**
-  Both magic-link tokens and OTP passcodes route through the identical HTTP client adapter `publicVerifyMagicLinkOrOTP` mapping to `POST /auth/verify`. 
+  Both magic-link tokens and OTP passcodes route through the identical HTTP client adapter `publicVerifyMagicLinkOrOTP` mapping to `POST /auth/verify`.
 
 ### 2. Analysis & Impact
 * **Current Behavior:** The frontend type model marks `token`, `otp`, and `email` as optional parameters, relying on runtime validation to ensure either the token or the OTP tuple is populated.
@@ -156,11 +156,11 @@ The goal of this audit is to identify all frontend token query extraction, URL t
   -import { useSearchParams } from 'next/navigation';
    import { Suspense } from 'react';
    import { AuthForm } from '@/components/auth/AuthForm';
-   
+
    function LoginPageContent() {
   -  const searchParams = useSearchParams();
   -  const queryToken = searchParams.get('token');
-  
+
      return (
        ...
   -          <AuthForm mode="login" initialToken={queryToken} />
@@ -182,7 +182,7 @@ The goal of this audit is to identify all frontend token query extraction, URL t
      className?: string;
   -  initialToken?: string | null;
    }
-   
+
   -export function AuthForm({ mode, onSuccess, onGuestContinue, className = '', initialToken }: AuthFormProps) {
   +export function AuthForm({ mode, onSuccess, onGuestContinue, className = '' }: AuthFormProps) {
      const { login } = useAuth();

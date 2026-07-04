@@ -214,4 +214,3 @@ export async function sendEmail(input: SendEmailInput): Promise<void> {
 export function normalizeEmail(email: string): string {
   return email.trim().toLowerCase();
 }
-

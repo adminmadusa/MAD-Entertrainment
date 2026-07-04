@@ -1,8 +1,6 @@
 import { PaginatedItemsResponse, PaginationMeta } from '@mad/types';
 import { adminApiClient } from '@/lib/api/client';
 
-
-
 export interface AdminBooking {
   _id: string;
   bookingId: string;
@@ -130,7 +128,7 @@ export async function adminGetBookings(params: Record<string, string | number> =
       data: AdminBooking[] | { bookings: AdminBooking[]; pagination?: { page?: number; limit?: number; total?: number; totalPages?: number } };
       pagination?: { page?: number; limit?: number; total?: number; totalPages?: number };
     }>(`/admin/bookings?${qs}`);
-     
+
     const paginationSource = (data?.data && typeof data.data === 'object' && 'pagination' in data.data ? data.data.pagination : null) || data?.pagination;
     let items: AdminBooking[] = [];
     if (Array.isArray(data?.data)) {
@@ -241,7 +239,7 @@ export async function adminGetRefunds(params: Record<string, string> = {}): Prom
       data: AdminRefund[] | { refunds: AdminRefund[]; pagination?: { page?: number; limit?: number; total?: number; totalPages?: number } };
       pagination?: { page?: number; limit?: number; total?: number; totalPages?: number };
     }>(`/admin/refunds?${qs}`);
-     
+
     const paginationSource = (data?.data && typeof data.data === 'object' && 'pagination' in data.data ? data.data.pagination : null) || data?.pagination;
     let items: AdminRefund[] = [];
     if (Array.isArray(data?.data)) {
@@ -315,4 +313,3 @@ export async function adminGetBookingsSummary(eventId?: string): Promise<AdminBo
   const { data } = await adminApiClient.get<{ data: AdminBookingsSummary }>(`/admin/bookings/summary?${qs}`);
   return data.data;
 }
-

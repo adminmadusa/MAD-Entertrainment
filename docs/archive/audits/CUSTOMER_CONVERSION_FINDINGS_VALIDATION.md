@@ -1,8 +1,8 @@
 # Customer Conversion Funnel — Findings Validation Report
 
-**Scope:** Findings #1, #5, #6  
-**Mode:** Read-only inspection — no code changes  
-**Date:** 2026-06-02  
+**Scope:** Findings #1, #5, #6
+**Mode:** Read-only inspection — no code changes
+**Date:** 2026-06-02
 
 ---
 
@@ -28,7 +28,7 @@ All three findings under review are valid and confirmed against current source c
 
 ### Evidence
 
-**Location of defect:**  
+**Location of defect:**
 [EventsList.tsx L232](../../../apps/web/src/app/events/EventsList.tsx#L232)
 
 ```tsx
@@ -37,7 +37,7 @@ All three findings under review are valid and confirmed against current source c
 
 **No length guard is present.** This is confirmed by direct inspection of the file.
 
-**Confirmed: `ticketTiers` can be empty.**  
+**Confirmed: `ticketTiers` can be empty.**
 
 The server-side Mongoose schema defines the field as:
 ```ts
@@ -47,7 +47,7 @@ ticketTiers: { type: [ticketTierConfigSchema], default: [] },
 
 `default: []` confirms that an event can exist in the database with a completely empty `ticketTiers` array. There is no server-side validation that requires at least one tier when publishing an event.
 
-**Confirmed: The listing query does not filter out zero-tier events.**  
+**Confirmed: The listing query does not filter out zero-tier events.**
 
 `PublicEventService.listEvents()` in [event.service.ts L43–L52](../../../apps/server/src/services/public/event.service.ts#L43) applies only a `status: PUBLISHED` + `isDeleted: false` filter. No minimum tier count is enforced:
 
@@ -57,7 +57,7 @@ ticketTiers: { type: [ticketTierConfigSchema], default: [] },
 
 An event with `ticketTiers: []` will be returned by this query with `ticketTiers: []` in the payload.
 
-**Confirmed: Additional soft-delete filtering exists only for the detail endpoint.**  
+**Confirmed: Additional soft-delete filtering exists only for the detail endpoint.**
 
 `getEventBySlug()` at [event.service.ts L73–L75](../../../apps/server/src/services/public/event.service.ts#L73) filters `isDeleted` tiers post-query:
 
@@ -69,7 +69,7 @@ if (event.ticketTiers) {
 
 This means even a published event with all tiers soft-deleted could produce `ticketTiers: []` on the detail endpoint as well. The listing endpoint performs no such filter — it passes the raw projected array directly.
 
-**Confirmed: `Math.min(...[])` produces `Infinity` in JavaScript.**  
+**Confirmed: `Math.min(...[])` produces `Infinity` in JavaScript.**
 
 ```js
 Math.min(...[]) // → Infinity
@@ -77,7 +77,7 @@ Math.min(...[]) // → Infinity
 
 This is JavaScript specification behaviour. Spreading an empty array into `Math.min` produces `Infinity` because `Math.min()` with no arguments returns `Infinity` by definition.
 
-**Confirmed: The `FeaturedEventsSection.tsx` correctly guards this case.**  
+**Confirmed: The `FeaturedEventsSection.tsx` correctly guards this case.**
 
 [FeaturedEventsSection.tsx L287](../../../apps/web/src/components/ui/FeaturedEventsSection.tsx#L287):
 ```tsx
@@ -144,7 +144,7 @@ Scope is a single line change in one file. No other components are affected.
 
 ### Evidence
 
-**Location of defect:**  
+**Location of defect:**
 [TicketSelectionContent.tsx L130–L137](../../../apps/web/src/components/booking/TicketSelectionContent.tsx#L130-L137)
 
 ```ts
@@ -263,7 +263,7 @@ This removes the false positive while preserving the intent of immediate feedbac
 
 ### Regression Risk
 
-**Low for the interim messaging approach.** Changing the celebration copy carries no functional risk.  
+**Low for the interim messaging approach.** Changing the celebration copy carries no functional risk.
 **Medium for the API validation approach.** Requires a backend endpoint that validates coupon applicability for an event and quantity combination. Must handle the case where the endpoint itself fails (network error), so it cannot block checkout if unavailable.
 
 ---
@@ -276,7 +276,7 @@ This removes the false positive while preserving the intent of immediate feedbac
 
 ### Evidence
 
-**Location of defect:**  
+**Location of defect:**
 [TicketSelectionContent.tsx L56–L73](../../../apps/web/src/components/booking/TicketSelectionContent.tsx#L56-L73)
 
 ```ts

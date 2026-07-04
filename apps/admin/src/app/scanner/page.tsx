@@ -143,11 +143,11 @@ export default function ScannerPage() {
   useEffect(() => {
     const handleOnline = () => setIsOffline(false);
     const handleOffline = () => setIsOffline(true);
-    
+
     setIsOffline(!navigator.onLine);
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
-    
+
     return () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
@@ -310,7 +310,7 @@ export default function ScannerPage() {
               <h2 className="text-3xl font-black text-white">VALID TICKET</h2>
               <p className="text-text-secondary mt-1 font-mono text-sm">{lastScanResult.ticketId}</p>
             </div>
-            
+
             <div className="mt-4 px-6 py-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
               <p className="text-emerald-400 font-bold text-lg">
                 ADMIT: {lastScanResult.admits} {typeof lastScanResult.admits === 'number' && lastScanResult.admits > 1 ? 'PEOPLE' : 'PERSON'}
@@ -390,7 +390,7 @@ export default function ScannerPage() {
                 </div>
               </div>
             )}
-            
+
             <div className="flex items-center justify-between border-b border-white/5 pb-2 mb-2">
               <h4 className="text-sm font-semibold text-text-muted uppercase tracking-wider">Tickets ({lookupResult.tickets.length})</h4>
               {(() => {
@@ -413,7 +413,7 @@ export default function ScannerPage() {
                 {bulkSummary}
               </div>
             )}
-            
+
             <div className="space-y-3">
               {lookupResult.tickets.map((t) => (
                 <div key={t.ticketId} className="bg-background border border-border-subtle rounded-xl p-4 flex items-center justify-between">

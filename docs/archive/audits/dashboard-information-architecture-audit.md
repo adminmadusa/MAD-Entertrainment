@@ -1,13 +1,13 @@
 # Dashboard Information Architecture Audit
-**MAD Entertrainment Platform**  
-*Document Status: Draft / Audit Only*  
+**MAD Entertrainment Platform**
+*Document Status: Draft / Audit Only*
 *Target Branch: `feat/dashboard-information-architecture`*
 
 ---
 
 ## Executive Summary
 
-The **MAD Entertrainment Admin Platform** (`apps/admin`) currently suffers from high cognitive load, layout duplication, and excessive navigation items in the sidebar. Out of the 14 items currently exposed in the primary sidebar, multiple pairs (such as `Dashboard` / `Analytics`, and `Artists` / `DJ Operators`) are virtually identical, repeating backend queries, data visualizers, and UI component boilerplate. 
+The **MAD Entertrainment Admin Platform** (`apps/admin`) currently suffers from high cognitive load, layout duplication, and excessive navigation items in the sidebar. Out of the 14 items currently exposed in the primary sidebar, multiple pairs (such as `Dashboard` / `Analytics`, and `Artists` / `DJ Operators`) are virtually identical, repeating backend queries, data visualizers, and UI component boilerplate.
 
 This audit evaluates the information architecture of the admin dashboard and designs a streamlined navigation hierarchy. By consolidating redundant views, grouping related content sub-tasks, and improving workflow transitions, we can reduce the primary sidebar to **6 high-level hubs** and dramatically decrease the clicks required for common administrative operations.
 

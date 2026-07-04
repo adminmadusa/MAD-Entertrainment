@@ -91,7 +91,7 @@ describe('Socket Handlers (Public Namespace)', () => {
     mockRedis.expire.mockReset();
     mockRedis.isRedisConnected.mockReset();
     mockEventModel.exists.mockReset();
-    
+
     // Default behaviors
     mockRedis.isRedisConnected.mockReturnValue(true);
 

@@ -113,7 +113,7 @@ export function createApp(): Application {
         const url = tokens.url(req, res);
         const status = tokens.status(req, res);
         const responseTime = tokens['response-time'](req, res);
-        
+
         const log = req.log || logger;
         log.info(`${method} ${url} ${status} - ${responseTime} ms`);
         return null;

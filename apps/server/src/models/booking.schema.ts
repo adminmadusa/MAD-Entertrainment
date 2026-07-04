@@ -134,11 +134,11 @@ bookingSchema.index({ status: 1, createdAt: -1 });
 
 bookingSchema.index(
   { sessionId: 1, eventId: 1 },
-  { 
-    unique: true, 
-    partialFilterExpression: { 
+  {
+    unique: true,
+    partialFilterExpression: {
       status: BookingStatus.AWAITING_PAYMENT,
-      sessionId: { $type: 'string' } 
+      sessionId: { $type: 'string' }
     },
     name: 'idx_session_event_awaiting_payment'
   }
@@ -146,9 +146,9 @@ bookingSchema.index(
 
 bookingSchema.index(
   { userId: 1, eventId: 1 },
-  { 
-    unique: true, 
-    partialFilterExpression: { 
+  {
+    unique: true,
+    partialFilterExpression: {
       status: BookingStatus.AWAITING_PAYMENT,
       userId: { $exists: true }
     },

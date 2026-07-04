@@ -1,8 +1,8 @@
 # Dashboard Simplification Validation Report
-**MAD Entertrainment Platform**  
-*Document Status: Completed / Validation Only*  
-*Target File:* `apps/admin/src/app/dashboard/page.tsx`  
-*Date:* 2026-06-02  
+**MAD Entertrainment Platform**
+*Document Status: Completed / Validation Only*
+*Target File:* `apps/admin/src/app/dashboard/page.tsx`
+*Date:* 2026-06-02
 
 ---
 

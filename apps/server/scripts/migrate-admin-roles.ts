@@ -5,10 +5,10 @@ import { logger } from '../src/utils/logger';
 
 async function runMigration() {
   logger.info('🚀 Starting Admin Role Casing Normalization Migration...');
-  
+
   try {
     await connectDatabase();
-    
+
     const rolesMap = {
       SUPER_ADMIN: 'super_admin',
       ADMIN: 'admin',
@@ -20,9 +20,9 @@ async function runMigration() {
     for (const [upper, lower] of Object.entries(rolesMap)) {
       const query = { role: upper };
       const update = { $set: { role: lower } };
-      
+
       const result = await AdminModel.collection.updateMany(query, update);
-      
+
       logger.info(
         `Normalized role: ${upper} ➔ ${lower}. Modified: ${result.modifiedCount} documents.`
       );

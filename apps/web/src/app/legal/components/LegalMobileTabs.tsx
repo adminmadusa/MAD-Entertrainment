@@ -8,13 +8,13 @@ export function LegalMobileTabs() {
   const pathname = usePathname();
 
   return (
-    <nav 
+    <nav
       className="md:hidden flex overflow-x-auto snap-x hide-scrollbar gap-2 mb-6 pb-2"
       aria-label="Legal Center Navigation"
     >
       {legalDocuments.map((doc) => {
         const isActive = pathname === `/legal/${doc.slug}`;
-        
+
         return (
           <Link
             key={doc.slug}

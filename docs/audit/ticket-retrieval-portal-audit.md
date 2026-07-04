@@ -25,7 +25,7 @@ This audit evaluates the current state of booking lookup, verification, ticketin
 ---
 
 ### 2. Existing Authentication Flow
-- **Unified Passwordless Architecture**: The platform operates entirely on a passwordless mechanism. 
+- **Unified Passwordless Architecture**: The platform operates entirely on a passwordless mechanism.
 - **Automatic Linking**: Since `AuthService.verifyMagicLinkOrOTP` runs an automatic database query (`Booking.updateMany({ guestEmail: email, userId: { $exists: false } }, { $set: { userId: user._id } })`) during passcode verification, the user registration and booking consolidation are seamlessly unified.
 - **Verification Reuse**: Any guest who inputs their email on the "My Tickets" search page can trigger the `/auth/magic-link` endpoint to receive a passcode. When they verify this passcode via `/auth/verify`, they are logged in. Calling `GET /bookings/me` will immediately return **all** historical and active bookings linked to that email.
 

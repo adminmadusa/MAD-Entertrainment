@@ -1,10 +1,10 @@
 # Architecture Decision Records (ADRs)
 
-Status: Active  
-Version: 1.0  
-Owner: Repository Architecture  
-Review Cycle: Ongoing  
-Last Updated: 2026-06-25  
+Status: Active
+Version: 1.0
+Owner: Repository Architecture
+Review Cycle: Ongoing
+Last Updated: 2026-06-25
 
 Related Documents:
 - [README.md](../../README.md)

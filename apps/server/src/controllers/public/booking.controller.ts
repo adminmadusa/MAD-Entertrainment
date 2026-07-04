@@ -15,8 +15,6 @@ import { CacheService } from '../../services/cache.service';
 import { getEnv } from '../../config/env';
 import { buildQrCodeImageUrl } from '../../services/public/ticket-ownership.service';
 
-
-
 const maskTransactionId = (id: string): string => {
   if (!id || id.length <= 8) return '****';
   return `${id.substring(0, 4)}...${id.substring(id.length - 4)}`;
@@ -629,5 +627,3 @@ export async function verifyRecoveredBookingOTP(
     next(err);
   }
 }
-
-

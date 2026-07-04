@@ -935,7 +935,7 @@ export class PaymentService {
         booking.userId = new Types.ObjectId(ownershipContext.userId);
         bookingModified = true;
       }
-      
+
       if (ownershipContext.sessionId && booking.sessionId !== ownershipContext.sessionId) {
         logger.info(
           { bookingId: booking._id, oldSession: booking.sessionId, newSession: ownershipContext.sessionId },
@@ -1195,7 +1195,7 @@ export class PaymentService {
       });
     } catch (err: any) {
       logger.error({ err, bookingId: booking._id }, 'Confirmation transaction aborted and rolled back');
-      
+
       if (err.message === 'PAYMENT_ALREADY_CLAIMED_OR_NOT_PENDING') {
         logger.info(
           { bookingId: booking._id, paymentId: _payment._id },
@@ -1217,7 +1217,7 @@ export class PaymentService {
         const currentBooking = await Booking.findById(booking._id).select('status paymentId').lean().catch(() => null);
         if (currentBooking?.status === BookingStatus.CONFIRMED) {
           const isSamePayment = currentBooking.paymentId && currentBooking.paymentId.toString() === _payment._id.toString();
-          
+
           if (isSamePayment) {
             logger.info(
               { bookingId: booking._id, paymentId: _payment._id },
@@ -1244,7 +1244,7 @@ export class PaymentService {
           }
         }
       }
-      
+
       _payment.status = PaymentStatus.FAILED;
       _payment.failureReason = reason;
       try {

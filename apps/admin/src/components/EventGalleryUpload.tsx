@@ -353,7 +353,7 @@ export function EventGalleryUpload({
               <div key={img.publicId} className="relative aspect-video rounded-xl overflow-hidden border border-border-subtle bg-black/40 group">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={img.url} alt={`Gallery ${index}`} className="w-full h-full object-cover" />
-                
+
                 {/* Mobile/Desktop controls */}
                 <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-between p-2">
                   <div className="flex w-full justify-between items-center">

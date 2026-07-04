@@ -16,7 +16,7 @@ export const getSummary = async (req: Request, res: Response, next: NextFunction
     }
 
     const totalBookings = await Booking.countDocuments({ status: BookingStatus.CONFIRMED });
-    
+
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
     const recentBookings = await Booking.countDocuments({

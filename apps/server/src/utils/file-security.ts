@@ -80,7 +80,7 @@ export function validateMagicBytes(buffer: Buffer, mimetype: string) {
 }
 
 /**
- * Generates a completely secure, random UUID filename to prevent 
+ * Generates a completely secure, random UUID filename to prevent
  * path traversal, overwrites, or execution based on filename guessing.
  */
 export function generateSecureFilename() {

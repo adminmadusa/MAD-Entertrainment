@@ -367,6 +367,3 @@ export * from './storage-keys';
 
 // ─── Booking Reference ───────────────────────────────────────
 export const BOOKING_REFERENCE_REGEX = /^MAD-\d{4}-[A-Z0-9]{5}$/;
-
-
-

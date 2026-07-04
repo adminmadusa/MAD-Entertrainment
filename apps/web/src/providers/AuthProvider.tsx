@@ -59,7 +59,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setToken(storedToken);
             const storedUser = localStorage.getItem(STORAGE_KEYS.USER_DATA);
             if (storedUser) setUser(JSON.parse(storedUser));
-            
+
             // Re-validate profile in background
             const { onboardingRequired: obReq, ...userProfile } = await publicGetMe();
             setUser(userProfile);

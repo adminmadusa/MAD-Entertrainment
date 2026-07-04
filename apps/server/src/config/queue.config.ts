@@ -42,4 +42,3 @@ export function getQueuePrefix(): string {
   }
   return `bull:${env.NODE_ENV}`;
 }
-

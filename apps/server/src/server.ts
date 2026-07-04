@@ -35,13 +35,13 @@ async function bootstrap(): Promise<void> {
 
   // ─── Initialize Services ───────────────────────────────────
   await connectDatabase();
-  
+
   // Seed initial admin user if needed
   await seedAdmin();
-  
+
   // Seed default categories and tiers if needed
   await seedCategoriesAndTiers();
-  
+
   // Connect Redis and await connection readiness
   try {
     getRedis();
@@ -52,7 +52,7 @@ async function bootstrap(): Promise<void> {
 
   // Initialize rate limiters (falls back to memory if Redis is unavailable)
   initRateLimiters();
-  
+
   initRazorpay();
   initStripe();
 

@@ -72,7 +72,7 @@ export class CacheService {
     try {
       const redis = getRedis();
       const fullPattern = this.getFullKey(pattern);
-      
+
       let cursor = '0';
       do {
         const [nextCursor, keys] = await redis.scan(cursor, 'MATCH', fullPattern, 'COUNT', 250);

@@ -176,7 +176,7 @@ describe('team.service unit tests', () => {
         save: vi.fn(),
         session: vi.fn().mockReturnThis(),
       };
-      
+
       vi.mocked(AdminModel.findById).mockReturnValue({
         session: vi.fn().mockResolvedValue(mockTarget),
       } as any);
@@ -246,7 +246,7 @@ describe('team.service unit tests', () => {
         save: vi.fn(),
         session: vi.fn().mockReturnThis(),
       };
-      
+
       vi.mocked(AdminModel.findById).mockReturnValue({
         session: vi.fn().mockResolvedValue(mockTarget),
       } as any);
@@ -264,7 +264,7 @@ describe('team.service unit tests', () => {
         save: vi.fn(),
         session: vi.fn().mockReturnThis(),
       };
-      
+
       vi.mocked(AdminModel.findById).mockReturnValue({
         session: vi.fn().mockResolvedValue(mockTarget),
       } as any);
@@ -288,7 +288,7 @@ describe('team.service unit tests', () => {
         session: vi.fn().mockReturnThis(),
         toObject: vi.fn().mockReturnValue({ _id: '60d5ec482f8fb814c489705a', name: 'New Name', email: 'new@example.com' }),
       };
-      
+
       vi.mocked(AdminModel.findById).mockReturnValue({
         session: vi.fn().mockResolvedValue(mockTarget),
       } as any);

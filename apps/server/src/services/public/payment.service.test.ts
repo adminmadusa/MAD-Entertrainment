@@ -574,7 +574,7 @@ describe('Payment Service', () => {
       vi.mocked(Payment.findOne).mockReturnValue({
         sort: vi.fn().mockResolvedValue({ _id: 'p-123', gateway: 'razorpay', status: PaymentStatus.PENDING, gatewayOrderId: 'order_123', save: vi.fn() }),
       } as any);
-      
+
       const payload = {
         razorpay_order_id: 'order_123',
         razorpay_payment_id: 'pay_123',
@@ -993,7 +993,7 @@ describe('Payment Service', () => {
       } as any);
 
       const result = await PaymentService.confirmFromWebhook('order_123', 'pay_123', 'payment.captured', 'evt_123');
-      
+
       expect(result.status).toBe('skipped');
       expect(mockPayment.failureReason).toBe('LATE_PAYMENT_RECOVERY_REJECTED_CAPACITY_EXHAUSTED');
       expect(mockPayment.save).toHaveBeenCalled();
@@ -1039,7 +1039,7 @@ describe('Payment Service', () => {
       }) as any);
 
       const result = await PaymentService.confirmFromWebhook('order_123', 'pay_123', 'payment.captured', 'evt_123');
-      
+
       expect(result.status).toBe('skipped');
       expect(mockPayment.failureReason).toBe('LATE_PAYMENT_RECOVERY_REJECTED_SEATS_TAKEN');
       expect(mockPayment.save).toHaveBeenCalled();
@@ -1380,7 +1380,7 @@ describe('Payment Service', () => {
 
       vi.mocked(Payment.findOne).mockResolvedValue(mockPayment as any);
       vi.mocked(Booking.findById).mockResolvedValue(mockBooking as any);
-      
+
       // Mock UserModel.findOne to return the registered user
       vi.mocked(UserModel.findOne).mockImplementation(() => createMockQuery(mockRegisteredUser) as any);
       vi.mocked(Booking.findOneAndUpdate).mockResolvedValue(mockBooking as any);
@@ -1394,7 +1394,7 @@ describe('Payment Service', () => {
       const result = await PaymentService.confirmFromWebhook('order_guest_456', 'pay_guest_456', 'payment.captured', 'evt_guest_456');
 
       expect(result.status).toBe('confirmed');
-      
+
       // Assert findOneAndUpdate was called with userId in $set and expiresAt/logicalExpiresAt in $unset
       expect(Booking.findOneAndUpdate).toHaveBeenCalledWith(
         expect.objectContaining({ _id: 'guest-booking-456' }),
@@ -1544,7 +1544,7 @@ describe('Payment Service', () => {
         bookingVersion: 1,
         save: vi.fn(),
       };
-      
+
       const mockPayment = {
         _id: 'p-123',
         gatewayOrderId: 'order_123',

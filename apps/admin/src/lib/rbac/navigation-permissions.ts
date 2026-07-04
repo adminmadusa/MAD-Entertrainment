@@ -34,7 +34,7 @@ export function canAccessRoute(path: string, role: string): boolean {
   // Find the matching prefix configuration, sorting by length descending to match most specific first
   const matchedPrefix = Object.keys(ROUTE_PERMISSIONS)
     .sort((a, b) => b.length - a.length)
-    .find(prefix => 
+    .find(prefix =>
       path === prefix || path.startsWith(prefix + '/')
     );
   if (!matchedPrefix) return true; // Non-configured or public routes bypass check
