@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { formatDateTime } from '@mad/utils';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@mad/ui';
 
 import { adminGetWebhooks } from '@/lib/api/admin/diagnostics.service';
 import ErrorState from '@/components/states/ErrorState';
@@ -69,15 +70,15 @@ export default function WebhookDiagnosticsPage() {
   const renderTableBody = () => {
     if (isLoading) {
       return Array.from({ length: 5 }).map((_, i) => (
-        <tr key={i} className="border-b border-border-subtle/40 animate-pulse">
-          {Array.from({ length: 6 }).map((__, j) => <td key={j} className="py-4 px-4"><div className="h-3.5 bg-white/5 rounded w-20" /></td>)}
-        </tr>
+        <TableRow key={i} className="border-b border-border-subtle/40 animate-pulse">
+          {Array.from({ length: 6 }).map((__, j) => <TableCell key={j} className="py-4 px-4"><div className="h-3.5 bg-white/5 rounded w-20" /></TableCell>)}
+        </TableRow>
       ));
     }
 
     if (webhooks.length === 0) {
       return (
-        <tr><td colSpan={6} className="py-16 text-center text-text-muted">No webhooks found.</td></tr>
+        <TableRow><TableCell colSpan={6} className="py-16 text-center text-text-muted">No webhooks found.</TableCell></TableRow>
       );
     }
 
@@ -87,28 +88,28 @@ export default function WebhookDiagnosticsPage() {
         : (webhook.bookingId as any)?.bookingId ?? '-';
 
       return (
-        <tr key={webhook._id} className="border-b border-border-subtle/40 hover:bg-white/2">
-          <td className="py-3.5 px-4 text-text-muted text-xs">
+        <TableRow key={webhook._id} className="border-b border-border-subtle/40 hover:bg-white/2">
+          <TableCell className="py-3.5 px-4 text-text-muted text-xs">
             {formatDateTime(webhook.receivedAt)}
-          </td>
-          <td className="py-3.5 px-4 text-white font-medium capitalize">
+          </TableCell>
+          <TableCell className="py-3.5 px-4 text-white font-medium capitalize">
             {webhook.provider}
-          </td>
-          <td className="py-3.5 px-4 text-text-secondary text-sm font-mono truncate max-w-[200px]" title={webhook.eventType}>
+          </TableCell>
+          <TableCell className="py-3.5 px-4 text-text-secondary text-sm font-mono truncate max-w-[200px]" title={webhook.eventType}>
             {webhook.eventType ?? '-'}
-          </td>
-          <td className="py-3.5 px-4 font-mono text-xs text-accent-purple">
+          </TableCell>
+          <TableCell className="py-3.5 px-4 font-mono text-xs text-accent-purple">
             {bookingIdStr}
-          </td>
-          <td className="py-3.5 px-4">
+          </TableCell>
+          <TableCell className="py-3.5 px-4">
             <span className={`text-xs px-2.5 py-1 rounded-full border font-medium ${STATUS_COLORS[webhook.status] ?? 'bg-white/10 text-white border-white/20'}`}>
               {webhook.status}
             </span>
-          </td>
-          <td className="py-3.5 px-4 text-text-secondary text-xs truncate max-w-[200px]" title={webhook.errorMessage}>
+          </TableCell>
+          <TableCell className="py-3.5 px-4 text-text-secondary text-xs truncate max-w-[200px]" title={webhook.errorMessage}>
             {webhook.errorMessage ?? '-'}
-          </td>
-        </tr>
+          </TableCell>
+        </TableRow>
       );
     });
   };
@@ -205,20 +206,18 @@ export default function WebhookDiagnosticsPage() {
 
       {/* Table */}
       <div className="glass rounded-2xl border border-border-subtle overflow-hidden flex flex-col min-h-[400px]">
-        <div className="overflow-x-auto flex-1">
-          <table className="w-full text-sm">
-            <thead className="bg-surface-hover/30">
-              <tr className="border-b border-border-subtle">
-                {['Timestamp', 'Provider', 'Event Type', 'Booking ID', 'Status', 'Error Message'].map((h) => (
-                  <th key={h} className="text-left text-text-muted font-medium py-3.5 px-4 whitespace-nowrap uppercase text-xs tracking-wider">{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {renderTableBody()}
-            </tbody>
-          </table>
-        </div>
+        <Table>
+          <TableHeader className="bg-surface-hover/30">
+            <TableRow>
+              {['Timestamp', 'Provider', 'Event Type', 'Booking ID', 'Status', 'Error Message'].map((h) => (
+                <TableHead key={h} className="py-3.5 px-4 whitespace-nowrap uppercase text-xs tracking-wider">{h}</TableHead>
+              ))}
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {renderTableBody()}
+          </TableBody>
+        </Table>
 
         {/* Pagination */}
         {pagination && pagination.totalPages > 1 && (
