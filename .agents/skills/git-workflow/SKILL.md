@@ -149,5 +149,50 @@ git pull origin develop
 git checkout -b feat/my-issue-name
 ```
 
+## Safe Branch Cleanup Protocol
+Prune local branches safely and conservatively using a deterministic verification sequence.
+
+### Phase 1: Verification Commands
+Before deleting any branch, run the following commands to gather reproducible evidence:
+1. **Direct Reachability**: Check if the branch tip is ancestor-reachable from `develop`:
+   ```bash
+   git merge-base --is-ancestor <branch_name> develop && echo "Ancestor" || echo "Not Ancestor"
+   ```
+2. **Patch Equivalence (for squash merges)**: Compare the branch tip patch-ID against the upstream branch:
+   ```bash
+   git cherry develop <branch_name>
+   ```
+   * An output prefixed with `-` indicates that the branch has a commit with the identical patch-ID merged on the target branch.
+   * To verify the matching patch-IDs manually:
+     ```bash
+     git show <branch_commit> | git patch-id
+     git show <upstream_merged_commit> | git patch-id
+     ```
+
+### Phase 2: Safe Deletion Sequence
+1. **Safe Delete**: Run lowercase `-d` first:
+   ```bash
+   git branch -d <branch_name>
+   ```
+2. **Handle Rejection**: If Git refuses because the branch is squash-merged (generating a different commit hash on `develop` than the branch tip):
+   - Rerun the patch-ID verification commands.
+   - Confirm the PR is closed/merged and the code changes are fully integrated.
+   - Force-delete the specific verified branch:
+     ```bash
+     git branch -D <branch_name>
+     ```
+
+### Phase 3: Post-Cleanup Verification
+Always run these checks after any branch deletion to ensure workspace integrity:
+1. **Clean Workspace Check**: Ensure no untracked files were modified or deleted:
+   ```bash
+   git status
+   ```
+2. **Workspace Build Verification**: Confirm that all projects compile successfully:
+   ```bash
+   pnpm run build
+   ```
+
 ## Related Skills
 - [pr-review](../pr-review/SKILL.md)
+
