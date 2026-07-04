@@ -1,4 +1,5 @@
 'use client';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@mad/ui';
 
 interface AttendanceRankingEvent {
   eventId: string;
@@ -28,26 +29,24 @@ export default function AttendanceRankingsWidget({ attendanceRankings, isLoading
       return <div className="h-24 flex items-center justify-center text-text-muted text-sm">No attendance data available yet.</div>;
     }
     return (
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-border-subtle">
-              <th className="text-left text-text-muted font-medium py-3 px-6">Event</th>
-              <th className="text-right text-text-muted font-medium py-3 px-4">Checked In</th>
-              <th className="text-right text-text-muted font-medium py-3 px-6">Attendance</th>
-            </tr>
-          </thead>
-          <tbody>
-            {attendanceRankings.topAttended.slice(0, 5).map((ev: AttendanceRankingEvent) => (
-              <tr key={ev.eventId} className="border-b border-border-subtle/40 hover:bg-white/2">
-                <td className="py-3.5 px-6 text-text-primary truncate max-w-[160px]">{ev.eventName}</td>
-                <td className="py-3.5 px-4 text-right text-text-secondary">{ev.ticketsCheckedIn}</td>
-                <td className="py-3.5 px-6 text-right text-emerald-400 font-semibold">{Math.round(ev.attendancePercentage ?? 0)}%</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="py-3 px-6">Event</TableHead>
+            <TableHead className="py-3 px-4 text-right">Checked In</TableHead>
+            <TableHead className="py-3 px-6 text-right">Attendance</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {attendanceRankings.topAttended.slice(0, 5).map((ev: AttendanceRankingEvent) => (
+            <TableRow key={ev.eventId} className="border-b border-border-subtle/40 hover:bg-white/2">
+              <TableCell className="py-3.5 px-6 text-text-primary truncate max-w-[160px]">{ev.eventName}</TableCell>
+              <TableCell className="py-3.5 px-4 text-right text-text-secondary">{ev.ticketsCheckedIn}</TableCell>
+              <TableCell className="py-3.5 px-6 text-right text-emerald-400 font-semibold">{Math.round(ev.attendancePercentage ?? 0)}%</TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
     );
   })();
 
@@ -59,26 +58,24 @@ export default function AttendanceRankingsWidget({ attendanceRankings, isLoading
       return <div className="h-24 flex items-center justify-center text-text-muted text-sm">No attendance data available yet.</div>;
     }
     return (
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-border-subtle">
-              <th className="text-left text-text-muted font-medium py-3 px-6">Event</th>
-              <th className="text-right text-text-muted font-medium py-3 px-4">No Shows</th>
-              <th className="text-right text-text-muted font-medium py-3 px-6">No-Show %</th>
-            </tr>
-          </thead>
-          <tbody>
-            {attendanceRankings.lowestAttendance.slice(0, 5).map((ev: AttendanceRankingEvent) => (
-              <tr key={ev.eventId} className="border-b border-border-subtle/40 hover:bg-white/2">
-                <td className="py-3.5 px-6 text-text-primary truncate max-w-[160px]">{ev.eventName}</td>
-                <td className="py-3.5 px-4 text-right text-text-secondary">{ev.noShowCount}</td>
-                <td className="py-3.5 px-6 text-right text-red-400 font-semibold">{Math.round(ev.noShowPercentage ?? 0)}%</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="py-3 px-6">Event</TableHead>
+            <TableHead className="py-3 px-4 text-right">No Shows</TableHead>
+            <TableHead className="py-3 px-6 text-right">No-Show %</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {attendanceRankings.lowestAttendance.slice(0, 5).map((ev: AttendanceRankingEvent) => (
+            <TableRow key={ev.eventId} className="border-b border-border-subtle/40 hover:bg-white/2">
+              <TableCell className="py-3.5 px-6 text-text-primary truncate max-w-[160px]">{ev.eventName}</TableCell>
+              <TableCell className="py-3.5 px-4 text-right text-text-secondary">{ev.noShowCount}</TableCell>
+              <TableCell className="py-3.5 px-6 text-right text-red-400 font-semibold">{Math.round(ev.noShowPercentage ?? 0)}%</TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
     );
   })();
 
