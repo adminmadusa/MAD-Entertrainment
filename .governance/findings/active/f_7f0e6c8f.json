@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-04T09:51:14.113Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 674,
+    "message": "File must terminate with exactly one trailing newline character.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "ce06317eeb042da757cad09e4c23604d6481fa86e51e89ded9fe746ccda7b694",
+        "id": "ce06317eeb042da757cad09e4c23604d6481fa86e51e89ded9fe746ccda7b694",
+        "line": 674,
+        "message": "File must terminate with exactly one trailing newline character."
+      }
+    ],
+    "path": "apps/server/src/controllers/public/payment.controller.webhook.test.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-04T09:51:14.113Z",
+  "id": "f_7f0e6c8f",
+  "lastDetected": "2026-07-04T09:51:14.113Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-005",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

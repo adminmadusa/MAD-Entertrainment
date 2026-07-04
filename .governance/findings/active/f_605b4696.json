@@ -1,0 +1,54 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-04T09:51:14.950Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 474,
+    "message": "console.error() used in server production code. Use the approved logger (import { logger } from '../../utils/logger') instead.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "d2449faf53d94d8d037f590acc3992e370f5c07e8a7e5db5ddd44800fd9575d9",
+        "id": "d2449faf53d94d8d037f590acc3992e370f5c07e8a7e5db5ddd44800fd9575d9",
+        "line": 133,
+        "message": "console.error() used in server production code. Use the approved logger (import { logger } from '../../utils/logger') instead.",
+        "snippet": "console.error(`Post-commit enqueue failed for assignment of ${ticketId}:`, err);"
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "ddfa0fdd256653ec30d604cdeaa6cffa0c7f289f1048d67e865460823d632fdd",
+        "id": "ddfa0fdd256653ec30d604cdeaa6cffa0c7f289f1048d67e865460823d632fdd",
+        "line": 255,
+        "message": "console.error() used in server production code. Use the approved logger (import { logger } from '../../utils/logger') instead.",
+        "snippet": "console.error(`Post-commit enqueue failed for claim of ${ticketId}:`, err);"
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "b0b76609ed102937f8d75d4fed76f5b6b6493557eaaf3dda0640747a116f9b46",
+        "id": "b0b76609ed102937f8d75d4fed76f5b6b6493557eaaf3dda0640747a116f9b46",
+        "line": 474,
+        "message": "console.error() used in server production code. Use the approved logger (import { logger } from '../../utils/logger') instead.",
+        "snippet": "console.error(`Post-commit enqueue failed for revocation of ${ticketId}:`, err);"
+      }
+    ],
+    "path": "apps/server/src/services/public/ticket.service.ts",
+    "snippet": "console.error(`Post-commit enqueue failed for revocation of ${ticketId}:`, err);"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-04T09:51:14.950Z",
+  "id": "f_605b4696",
+  "lastDetected": "2026-07-04T09:51:14.950Z",
+  "occurrenceCount": 3,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-ARC-001",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-04T09:51:14.113Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 411,
+    "message": "Trailing whitespace characters detected.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "0241c00a71b010ec2c094c4433b572d55d2ff7dcf8bd76265234ad3e7a267e9d",
+        "id": "0241c00a71b010ec2c094c4433b572d55d2ff7dcf8bd76265234ad3e7a267e9d",
+        "line": 411,
+        "message": "Trailing whitespace characters detected."
+      }
+    ],
+    "path": "apps/server/src/controllers/public/payment.controller.webhook.test.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-04T09:51:14.113Z",
+  "id": "f_a1f015c6",
+  "lastDetected": "2026-07-04T09:51:14.113Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-004",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

@@ -1,54 +1,46 @@
 {
-  "schemaVersion": 2,
-  "id": "f_b36f6872",
-  "rule": "VAL-UI-005",
-  "ruleVersion": "1.0.0",
-  "engineVersion": "1.0.0",
-  "domain": "UI UX Guild",
-  "owner": "UI UX Guild",
-  "package": "apps",
-  "feature": "button",
-  "status": "NEW",
   "confidence": 0.85,
-  "relationships": [],
+  "createdDate": "2026-06-29T08:10:12.371Z",
+  "domain": "UI UX Guild",
+  "engineVersion": "1.0.0",
   "evidence": {
-    "path": "apps/admin/src/app/users/_components/UserBookingsTable.tsx",
     "construct": "button",
-    "snippet": "<button",
-    "line": 94,
+    "line": 101,
     "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
     "occurrences": [
       {
-        "id": "a68e8227da3d19f0ce9cc84b16ef3b6cf65a6df2c897eef775716c553f0a38e0",
-        "line": 94,
-        "column": 0,
-        "construct": "button",
-        "snippet": "<button",
-        "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
-        "fingerprint": "a68e8227da3d19f0ce9cc84b16ef3b6cf65a6df2c897eef775716c553f0a38e0"
-      },
-      {
-        "id": "e0cc0b6a7b3e22821b35bc89d98956415834d90102f72bf7263a56802018f430",
-        "line": 94,
         "column": 0,
         "construct": "UIElement",
-        "snippet": "<button",
+        "fingerprint": "e0cc0b6a7b3e22821b35bc89d98956415834d90102f72bf7263a56802018f430",
+        "id": "e0cc0b6a7b3e22821b35bc89d98956415834d90102f72bf7263a56802018f430",
+        "line": 94,
         "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
-        "fingerprint": "e0cc0b6a7b3e22821b35bc89d98956415834d90102f72bf7263a56802018f430"
+        "snippet": "<button"
       },
       {
+        "column": 0,
+        "construct": "UIElement",
+        "fingerprint": "e0cc0b6a7b3e22821b35bc89d98956415834d90102f72bf7263a56802018f430",
         "id": "e0cc0b6a7b3e22821b35bc89d98956415834d90102f72bf7263a56802018f430",
         "line": 101,
-        "column": 0,
-        "construct": "UIElement",
-        "snippet": "<button",
         "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
-        "fingerprint": "e0cc0b6a7b3e22821b35bc89d98956415834d90102f72bf7263a56802018f430"
+        "snippet": "<button"
       }
-    ]
+    ],
+    "path": "apps/admin/src/app/users/_components/UserBookingsTable.tsx",
+    "snippet": "<button"
   },
-  "createdDate": "2026-06-29T08:10:12.371Z",
+  "feature": "button",
   "firstDetected": "2026-06-29T08:10:12.371Z",
-  "lastDetected": "2026-06-30T15:36:27.188Z",
-  "occurrenceCount": 3
+  "id": "f_b36f6872",
+  "lastDetected": "2026-07-04T09:51:17.695Z",
+  "lastModified": "2026-07-04T09:51:17.695Z",
+  "occurrenceCount": 2,
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-UI-005",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
 }

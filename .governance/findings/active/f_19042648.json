@@ -1,0 +1,122 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-04T09:51:16.448Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 279,
+    "message": "Trailing whitespace characters detected.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "22fed022a98bde3b2809519da5f841729a35bc24ffcecb9e0975ce6c1617ba76",
+        "id": "22fed022a98bde3b2809519da5f841729a35bc24ffcecb9e0975ce6c1617ba76",
+        "line": 3,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "22fed022a98bde3b2809519da5f841729a35bc24ffcecb9e0975ce6c1617ba76",
+        "id": "22fed022a98bde3b2809519da5f841729a35bc24ffcecb9e0975ce6c1617ba76",
+        "line": 4,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "22fed022a98bde3b2809519da5f841729a35bc24ffcecb9e0975ce6c1617ba76",
+        "id": "22fed022a98bde3b2809519da5f841729a35bc24ffcecb9e0975ce6c1617ba76",
+        "line": 5,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "22fed022a98bde3b2809519da5f841729a35bc24ffcecb9e0975ce6c1617ba76",
+        "id": "22fed022a98bde3b2809519da5f841729a35bc24ffcecb9e0975ce6c1617ba76",
+        "line": 31,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "22fed022a98bde3b2809519da5f841729a35bc24ffcecb9e0975ce6c1617ba76",
+        "id": "22fed022a98bde3b2809519da5f841729a35bc24ffcecb9e0975ce6c1617ba76",
+        "line": 40,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "22fed022a98bde3b2809519da5f841729a35bc24ffcecb9e0975ce6c1617ba76",
+        "id": "22fed022a98bde3b2809519da5f841729a35bc24ffcecb9e0975ce6c1617ba76",
+        "line": 50,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "22fed022a98bde3b2809519da5f841729a35bc24ffcecb9e0975ce6c1617ba76",
+        "id": "22fed022a98bde3b2809519da5f841729a35bc24ffcecb9e0975ce6c1617ba76",
+        "line": 60,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "22fed022a98bde3b2809519da5f841729a35bc24ffcecb9e0975ce6c1617ba76",
+        "id": "22fed022a98bde3b2809519da5f841729a35bc24ffcecb9e0975ce6c1617ba76",
+        "line": 72,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "22fed022a98bde3b2809519da5f841729a35bc24ffcecb9e0975ce6c1617ba76",
+        "id": "22fed022a98bde3b2809519da5f841729a35bc24ffcecb9e0975ce6c1617ba76",
+        "line": 80,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "22fed022a98bde3b2809519da5f841729a35bc24ffcecb9e0975ce6c1617ba76",
+        "id": "22fed022a98bde3b2809519da5f841729a35bc24ffcecb9e0975ce6c1617ba76",
+        "line": 147,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "22fed022a98bde3b2809519da5f841729a35bc24ffcecb9e0975ce6c1617ba76",
+        "id": "22fed022a98bde3b2809519da5f841729a35bc24ffcecb9e0975ce6c1617ba76",
+        "line": 266,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "22fed022a98bde3b2809519da5f841729a35bc24ffcecb9e0975ce6c1617ba76",
+        "id": "22fed022a98bde3b2809519da5f841729a35bc24ffcecb9e0975ce6c1617ba76",
+        "line": 279,
+        "message": "Trailing whitespace characters detected."
+      }
+    ],
+    "path": "docs/archive/audits/CUSTOMER_CONVERSION_FINDINGS_VALIDATION.md"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-04T09:51:16.448Z",
+  "id": "f_19042648",
+  "lastDetected": "2026-07-04T09:51:16.448Z",
+  "occurrenceCount": 12,
+  "owner": "Platform Team",
+  "package": "docs",
+  "relationships": [],
+  "rule": "VAL-HYG-004",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

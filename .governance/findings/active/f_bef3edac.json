@@ -1,0 +1,42 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-04T09:51:16.763Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 4,
+    "message": "Trailing whitespace characters detected.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "731cc6680107fe874240c5ae961e8e6074289e844ac4762d47b565c7184229e6",
+        "id": "731cc6680107fe874240c5ae961e8e6074289e844ac4762d47b565c7184229e6",
+        "line": 3,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "731cc6680107fe874240c5ae961e8e6074289e844ac4762d47b565c7184229e6",
+        "id": "731cc6680107fe874240c5ae961e8e6074289e844ac4762d47b565c7184229e6",
+        "line": 4,
+        "message": "Trailing whitespace characters detected."
+      }
+    ],
+    "path": "docs/archive/branch-cleanup/cleanup_record.md"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-04T09:51:16.763Z",
+  "id": "f_bef3edac",
+  "lastDetected": "2026-07-04T09:51:16.763Z",
+  "occurrenceCount": 2,
+  "owner": "Platform Team",
+  "package": "docs",
+  "relationships": [],
+  "rule": "VAL-HYG-004",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

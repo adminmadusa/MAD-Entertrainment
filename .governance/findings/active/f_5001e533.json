@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-04T09:51:16.567Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 69,
+    "message": "Trailing whitespace characters detected.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "142c63d3ceaf196319a9ae41c5e03111d963edfebb86a5e8dc2841b1947278b5",
+        "id": "142c63d3ceaf196319a9ae41c5e03111d963edfebb86a5e8dc2841b1947278b5",
+        "line": 69,
+        "message": "Trailing whitespace characters detected."
+      }
+    ],
+    "path": "docs/archive/audits/login-simplification-audit.md"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-04T09:51:16.567Z",
+  "id": "f_5001e533",
+  "lastDetected": "2026-07-04T09:51:16.567Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "docs",
+  "relationships": [],
+  "rule": "VAL-HYG-004",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

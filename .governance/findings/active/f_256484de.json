@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-04T09:51:16.263Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 92,
+    "message": "File must terminate with exactly one trailing newline character.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "cbd8c10b537c05dc3a2fceb15b2eeb3a96243aead5c53c9fbd17bf885a5b4e86",
+        "id": "cbd8c10b537c05dc3a2fceb15b2eeb3a96243aead5c53c9fbd17bf885a5b4e86",
+        "line": 92,
+        "message": "File must terminate with exactly one trailing newline character."
+      }
+    ],
+    "path": "apps/web/src/utils/google-identity.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-04T09:51:16.263Z",
+  "id": "f_256484de",
+  "lastDetected": "2026-07-04T09:51:16.263Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-005",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

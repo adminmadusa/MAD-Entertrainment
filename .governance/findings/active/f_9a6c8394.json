@@ -1,72 +1,64 @@
 {
-  "schemaVersion": 2,
-  "id": "f_9a6c8394",
-  "rule": "VAL-UI-005",
-  "ruleVersion": "1.0.0",
-  "engineVersion": "1.0.0",
-  "domain": "UI UX Guild",
-  "owner": "UI UX Guild",
-  "package": "apps",
-  "feature": "button",
-  "status": "NEW",
   "confidence": 0.85,
-  "relationships": [],
+  "createdDate": "2026-06-29T08:10:27.705Z",
+  "domain": "UI UX Guild",
+  "engineVersion": "1.0.0",
   "evidence": {
-    "path": "apps/admin/src/components/diagnostics/DiagnosticsNavigation.tsx",
     "construct": "button",
-    "snippet": "<button",
-    "line": 42,
+    "line": 75,
     "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
     "occurrences": [
       {
-        "id": "5a1fdd8213a298c2b19064e3e21c47f159be7907a11324100a4e2151e2cfd84c",
-        "line": 42,
-        "column": 0,
-        "construct": "button",
-        "snippet": "<button",
-        "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
-        "fingerprint": "5a1fdd8213a298c2b19064e3e21c47f159be7907a11324100a4e2151e2cfd84c"
-      },
-      {
-        "id": "8031a12b8afc8d2fca9d4081316f1832d516b317c0e6f485d25b5d0d4920b0d3",
-        "line": 42,
         "column": 0,
         "construct": "UIElement",
-        "snippet": "<button",
+        "fingerprint": "8031a12b8afc8d2fca9d4081316f1832d516b317c0e6f485d25b5d0d4920b0d3",
+        "id": "8031a12b8afc8d2fca9d4081316f1832d516b317c0e6f485d25b5d0d4920b0d3",
+        "line": 42,
         "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
-        "fingerprint": "8031a12b8afc8d2fca9d4081316f1832d516b317c0e6f485d25b5d0d4920b0d3"
+        "snippet": "<button"
       },
       {
+        "column": 0,
+        "construct": "UIElement",
+        "fingerprint": "8031a12b8afc8d2fca9d4081316f1832d516b317c0e6f485d25b5d0d4920b0d3",
         "id": "8031a12b8afc8d2fca9d4081316f1832d516b317c0e6f485d25b5d0d4920b0d3",
         "line": 50,
-        "column": 0,
-        "construct": "UIElement",
-        "snippet": "<button",
         "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
-        "fingerprint": "8031a12b8afc8d2fca9d4081316f1832d516b317c0e6f485d25b5d0d4920b0d3"
+        "snippet": "<button"
       },
       {
+        "column": 0,
+        "construct": "UIElement",
+        "fingerprint": "8031a12b8afc8d2fca9d4081316f1832d516b317c0e6f485d25b5d0d4920b0d3",
         "id": "8031a12b8afc8d2fca9d4081316f1832d516b317c0e6f485d25b5d0d4920b0d3",
         "line": 58,
-        "column": 0,
-        "construct": "UIElement",
-        "snippet": "<button",
         "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
-        "fingerprint": "8031a12b8afc8d2fca9d4081316f1832d516b317c0e6f485d25b5d0d4920b0d3"
+        "snippet": "<button"
       },
       {
-        "id": "8031a12b8afc8d2fca9d4081316f1832d516b317c0e6f485d25b5d0d4920b0d3",
-        "line": 75,
         "column": 0,
         "construct": "UIElement",
-        "snippet": "<button",
+        "fingerprint": "8031a12b8afc8d2fca9d4081316f1832d516b317c0e6f485d25b5d0d4920b0d3",
+        "id": "8031a12b8afc8d2fca9d4081316f1832d516b317c0e6f485d25b5d0d4920b0d3",
+        "line": 75,
         "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
-        "fingerprint": "8031a12b8afc8d2fca9d4081316f1832d516b317c0e6f485d25b5d0d4920b0d3"
+        "snippet": "<button"
       }
-    ]
+    ],
+    "path": "apps/admin/src/components/diagnostics/DiagnosticsNavigation.tsx",
+    "snippet": "<button"
   },
-  "createdDate": "2026-06-29T08:10:27.705Z",
+  "feature": "button",
   "firstDetected": "2026-06-29T08:10:27.705Z",
-  "lastDetected": "2026-06-30T15:36:27.207Z",
-  "occurrenceCount": 5
+  "id": "f_9a6c8394",
+  "lastDetected": "2026-07-04T09:51:17.698Z",
+  "lastModified": "2026-07-04T09:51:17.698Z",
+  "occurrenceCount": 4,
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-UI-005",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
 }

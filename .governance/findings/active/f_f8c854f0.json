@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:46.869Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 3,
+    "message": "Imports must be grouped in order: Node built-ins, Third-party packages, Workspace aliases, Relative paths, Side-effects.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "a2a88ff9c3b001e9523e9705975c424a850450fe4f8d78118ae4726b30615cb8",
+        "id": "a2a88ff9c3b001e9523e9705975c424a850450fe4f8d78118ae4726b30615cb8",
+        "line": 3,
+        "message": "Imports must be grouped in order: Node built-ins, Third-party packages, Workspace aliases, Relative paths, Side-effects."
+      }
+    ],
+    "path": "apps/admin/src/app/dj-operators/[id]/edit/page.tsx"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:46.869Z",
+  "id": "f_f8c854f0",
+  "lastDetected": "2026-07-03T12:25:46.869Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-001",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "REGRESSION"
+}

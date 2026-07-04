@@ -1,45 +1,36 @@
 {
-  "schemaVersion": 2,
-  "id": "f_16ed90fc",
-  "rule": "VAL-UI-006",
-  "ruleVersion": "1.0.0",
-  "engineVersion": "1.0.0",
+  "confidence": 0.9,
+  "createdDate": "2026-07-03T16:43:21.841Z",
   "domain": "Platform Team",
-  "owner": "Platform Team",
-  "package": "apps",
-  "feature": "Field",
-  "status": "NEW",
-  "confidence": 0.95,
-  "relationships": [],
+  "engineVersion": "1.0.0",
   "evidence": {
-    "path": "apps/admin/src/components/coupons/CouponForm.tsx",
-    "construct": "Field",
-    "snippet": "function Field({ label, children }: { label: string; children: React.ReactNode }) {",
+    "construct": "UIElement",
     "line": 270,
     "message": "Local duplication of <Field> wrapper. Use a shared components package.",
     "occurrences": [
       {
-        "id": "ced87cc8a0d325ed5daa23113970b76051994ca853e6052364ce13e38a008f7d",
-        "line": 270,
-        "column": 0,
-        "construct": "Field",
-        "snippet": "function Field({ label, children }: { label: string; children: React.ReactNode }) {",
-        "message": "Local duplication of <Field> wrapper. Use a shared components package.",
-        "fingerprint": "ced87cc8a0d325ed5daa23113970b76051994ca853e6052364ce13e38a008f7d"
-      },
-      {
-        "id": "5cb58c2861a4759d78ceeeaf916762cdbbec25354a9910d8bd9292a54e10263d",
-        "line": 270,
         "column": 0,
         "construct": "UIElement",
-        "snippet": "function Field({ label, children }: { label: string; children: React.ReactNode }) {",
+        "fingerprint": "5cb58c2861a4759d78ceeeaf916762cdbbec25354a9910d8bd9292a54e10263d",
+        "id": "5cb58c2861a4759d78ceeeaf916762cdbbec25354a9910d8bd9292a54e10263d",
+        "line": 270,
         "message": "Local duplication of <Field> wrapper. Use a shared components package.",
-        "fingerprint": "5cb58c2861a4759d78ceeeaf916762cdbbec25354a9910d8bd9292a54e10263d"
+        "snippet": "function Field({ label, children }: { label: string; children: React.ReactNode }) {"
       }
-    ]
+    ],
+    "path": "apps/admin/src/components/coupons/CouponForm.tsx",
+    "snippet": "function Field({ label, children }: { label: string; children: React.ReactNode }) {"
   },
-  "createdDate": "2026-06-29T08:10:23.212Z",
-  "firstDetected": "2026-06-29T08:10:23.212Z",
-  "lastDetected": "2026-06-30T15:36:27.200Z",
-  "occurrenceCount": 2
+  "feature": "UIElement",
+  "firstDetected": "2026-07-03T16:43:21.841Z",
+  "id": "f_16ed90fc",
+  "lastDetected": "2026-07-03T16:43:21.841Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-UI-006",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "REGRESSION"
 }

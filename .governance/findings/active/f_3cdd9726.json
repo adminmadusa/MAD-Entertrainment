@@ -1,35 +1,35 @@
 {
-  "schemaVersion": 2,
-  "id": "f_3cdd9726",
-  "rule": "VAL-UI-011",
-  "ruleVersion": "1.0.0",
-  "engineVersion": "1.0.0",
-  "domain": "UI UX Guild",
-  "owner": "UI UX Guild",
-  "package": "apps",
-  "feature": "UIElement",
-  "status": "NEW",
   "confidence": 0.9,
-  "relationships": [],
+  "createdDate": "2026-06-30T15:36:27.195Z",
+  "domain": "UI UX Guild",
+  "engineVersion": "1.0.0",
   "evidence": {
-    "path": "apps/admin/src/app/users/guest/[email]/page.tsx",
     "construct": "UIElement",
     "line": 1,
-    "message": "Duplicate component layout detected: shares 91% similarity with \"RegisteredUserDetailPage\" in \"apps/admin/src/app/users/[id]/page.tsx\". Recommendation: Extract the duplicated layout/logic from \"apps/admin/src/app/users/[id]/page.tsx\" and \"apps/admin/src/app/users/guest/[email]/page.tsx\" into a single reusable shared component in \"packages/ui\".",
+    "message": "Duplicate component layout detected [Category D — Business Logic, Confidence: 91%, Severity: WARNING]: shares similarity with \"RegisteredUserDetailPage\" in \"apps/admin/src/app/users/[id]/page.tsx\". Recommendation: Extract shared business rules and api state hooks to \"packages/shared/src/hooks\" or package services instead of UI components. (Estimated Effort: Medium (4-8 hours), Risk: High (requires validation schema/API alignment and unit testing)).",
     "occurrences": [
       {
-        "id": "d1cc3768db7f40b50ea91534c0ec1bdfc41d2d43f5245312ac610f25d764a996",
-        "line": 1,
         "column": 0,
         "construct": "UIElement",
-        "snippet": "",
-        "message": "Duplicate component layout detected: shares 91% similarity with \"RegisteredUserDetailPage\" in \"apps/admin/src/app/users/[id]/page.tsx\". Recommendation: Extract the duplicated layout/logic from \"apps/admin/src/app/users/[id]/page.tsx\" and \"apps/admin/src/app/users/guest/[email]/page.tsx\" into a single reusable shared component in \"packages/ui\".",
-        "fingerprint": "d1cc3768db7f40b50ea91534c0ec1bdfc41d2d43f5245312ac610f25d764a996"
+        "fingerprint": "d1cc3768db7f40b50ea91534c0ec1bdfc41d2d43f5245312ac610f25d764a996",
+        "id": "d1cc3768db7f40b50ea91534c0ec1bdfc41d2d43f5245312ac610f25d764a996",
+        "line": 1,
+        "message": "Duplicate component layout detected [Category D — Business Logic, Confidence: 91%, Severity: WARNING]: shares similarity with \"RegisteredUserDetailPage\" in \"apps/admin/src/app/users/[id]/page.tsx\". Recommendation: Extract shared business rules and api state hooks to \"packages/shared/src/hooks\" or package services instead of UI components. (Estimated Effort: Medium (4-8 hours), Risk: High (requires validation schema/API alignment and unit testing))."
       }
-    ]
+    ],
+    "path": "apps/admin/src/app/users/guest/[email]/page.tsx"
   },
-  "createdDate": "2026-06-30T15:36:27.195Z",
+  "feature": "UIElement",
   "firstDetected": "2026-06-30T15:36:27.195Z",
-  "lastDetected": "2026-06-30T15:36:27.195Z",
-  "occurrenceCount": 1
+  "id": "f_3cdd9726",
+  "lastDetected": "2026-07-04T09:51:17.697Z",
+  "lastModified": "2026-07-04T09:51:17.697Z",
+  "occurrenceCount": 1,
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-UI-011",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
 }

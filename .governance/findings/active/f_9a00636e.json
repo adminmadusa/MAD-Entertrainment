@@ -1,0 +1,36 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-04T09:51:16.243Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 8,
+    "message": "Direct 'import axios from \"axios\"' in business layer \"providers/AuthProvider.tsx\". Route HTTP calls through the approved API client wrapper (e.g. apiClient, adminApiClient) instead.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "1d48bff3fd54e0c2cceb9becbf1a988b04a2599d70b222c1c4d8b9cb9bbc2af7",
+        "id": "1d48bff3fd54e0c2cceb9becbf1a988b04a2599d70b222c1c4d8b9cb9bbc2af7",
+        "line": 8,
+        "message": "Direct 'import axios from \"axios\"' in business layer \"providers/AuthProvider.tsx\". Route HTTP calls through the approved API client wrapper (e.g. apiClient, adminApiClient) instead.",
+        "snippet": "import axios from 'axios';"
+      }
+    ],
+    "path": "apps/web/src/providers/AuthProvider.tsx",
+    "snippet": "import axios from 'axios';"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-04T09:51:16.243Z",
+  "id": "f_9a00636e",
+  "lastDetected": "2026-07-04T09:51:16.243Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-ARC-002",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

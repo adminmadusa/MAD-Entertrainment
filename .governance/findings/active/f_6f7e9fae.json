@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:26:00.379Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 3,
+    "message": "Import from types module \"./types\" should use \"import type\".",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "750d1136f5dee74f0d0ab0e70e9b8d84829be7e4a0a2d8b0ba30db955938df0a",
+        "id": "750d1136f5dee74f0d0ab0e70e9b8d84829be7e4a0a2d8b0ba30db955938df0a",
+        "line": 3,
+        "message": "Import from types module \"./types\" should use \"import type\"."
+      }
+    ],
+    "path": "scripts/governance/core/lifecycle_manager.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:26:00.379Z",
+  "id": "f_6f7e9fae",
+  "lastDetected": "2026-07-03T12:26:00.379Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "scripts",
+  "relationships": [],
+  "rule": "VAL-HYG-003",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "REGRESSION"
+}

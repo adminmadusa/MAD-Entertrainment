@@ -1,53 +1,35 @@
 {
-  "schemaVersion": 2,
-  "id": "f_f8f3bb7a",
-  "rule": "VAL-UI-011",
-  "ruleVersion": "1.0.0",
-  "engineVersion": "1.0.0",
-  "domain": "UI UX Guild",
-  "owner": "UI UX Guild",
-  "package": "apps",
-  "feature": "UIElement",
-  "status": "NEW",
   "confidence": 0.9,
-  "relationships": [],
+  "createdDate": "2026-06-30T15:36:27.144Z",
+  "domain": "UI UX Guild",
+  "engineVersion": "1.0.0",
   "evidence": {
-    "path": "apps/admin/src/app/events/new/_components/EventFormActions.tsx",
     "construct": "UIElement",
     "line": 1,
-    "message": "Duplicate component layout detected: shares 100% similarity with \"EventEditActions\" in \"apps/admin/src/components/events/EventEditActions.tsx\". Recommendation: Extract the duplicated layout/logic from \"apps/admin/src/app/events/new/_components/EventFormActions.tsx\" and \"apps/admin/src/components/events/EventEditActions.tsx\" into a single reusable shared component in \"packages/ui\".",
+    "message": "Duplicate component layout detected [Category C — Form, Confidence: 97%, Severity: WARNING]: shares similarity with \"ProfileFormActions\" in \"apps/admin/src/components/ticket-profiles/ProfileFormActions.tsx\". Recommendation: Extract reusable shared form component or local CRUD fields wrapper to dry-up page/form structure. (Estimated Effort: Medium (3-6 hours), Risk: Medium).",
     "occurrences": [
       {
-        "id": "82086a79840180f8e34a83a2424c115eb1d10432986380702dab6577896d6264",
-        "line": 1,
         "column": 0,
         "construct": "UIElement",
-        "snippet": "",
-        "message": "Duplicate component layout detected: shares 100% similarity with \"EventEditActions\" in \"apps/admin/src/components/events/EventEditActions.tsx\". Recommendation: Extract the duplicated layout/logic from \"apps/admin/src/app/events/new/_components/EventFormActions.tsx\" and \"apps/admin/src/components/events/EventEditActions.tsx\" into a single reusable shared component in \"packages/ui\".",
-        "fingerprint": "82086a79840180f8e34a83a2424c115eb1d10432986380702dab6577896d6264"
-      },
-      {
+        "fingerprint": "82086a79840180f8e34a83a2424c115eb1d10432986380702dab6577896d6264",
         "id": "82086a79840180f8e34a83a2424c115eb1d10432986380702dab6577896d6264",
         "line": 1,
-        "column": 0,
-        "construct": "UIElement",
-        "snippet": "",
-        "message": "Duplicate component layout detected: shares 95% similarity with \"DJFormActions\" in \"apps/admin/src/components/dj-operators/DJFormActions.tsx\". Recommendation: Extract the duplicated layout/logic from \"apps/admin/src/app/events/new/_components/EventFormActions.tsx\" and \"apps/admin/src/components/dj-operators/DJFormActions.tsx\" into a single reusable shared component in \"packages/ui\".",
-        "fingerprint": "82086a79840180f8e34a83a2424c115eb1d10432986380702dab6577896d6264"
-      },
-      {
-        "id": "82086a79840180f8e34a83a2424c115eb1d10432986380702dab6577896d6264",
-        "line": 1,
-        "column": 0,
-        "construct": "UIElement",
-        "snippet": "",
-        "message": "Duplicate component layout detected: shares 97% similarity with \"ProfileFormActions\" in \"apps/admin/src/components/ticket-profiles/ProfileFormActions.tsx\". Recommendation: Extract the duplicated layout/logic from \"apps/admin/src/app/events/new/_components/EventFormActions.tsx\" and \"apps/admin/src/components/ticket-profiles/ProfileFormActions.tsx\" into a single reusable shared component in \"packages/ui\".",
-        "fingerprint": "82086a79840180f8e34a83a2424c115eb1d10432986380702dab6577896d6264"
+        "message": "Duplicate component layout detected [Category C — Form, Confidence: 100%, Severity: WARNING]: shares similarity with \"EventEditActions\" in \"apps/admin/src/components/events/EventEditActions.tsx\". Recommendation: Extract reusable shared form component or local CRUD fields wrapper to dry-up page/form structure. (Estimated Effort: Medium (3-6 hours), Risk: Medium)."
       }
-    ]
+    ],
+    "path": "apps/admin/src/app/events/new/_components/EventFormActions.tsx"
   },
-  "createdDate": "2026-06-30T15:36:27.144Z",
+  "feature": "UIElement",
   "firstDetected": "2026-06-30T15:36:27.144Z",
-  "lastDetected": "2026-06-30T15:36:27.144Z",
-  "occurrenceCount": 3
+  "id": "f_f8f3bb7a",
+  "lastDetected": "2026-07-04T09:51:17.669Z",
+  "lastModified": "2026-07-04T09:51:17.669Z",
+  "occurrenceCount": 1,
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-UI-011",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
 }

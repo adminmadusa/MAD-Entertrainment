@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-04T09:51:17.085Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 44,
+    "message": "File must terminate with exactly one trailing newline character.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "0b9794011283b5365da187151eee7485f79b46a229f3078af1422925abb8864b",
+        "id": "0b9794011283b5365da187151eee7485f79b46a229f3078af1422925abb8864b",
+        "line": 44,
+        "message": "File must terminate with exactly one trailing newline character."
+      }
+    ],
+    "path": "packages/ui/src/components/Button.tsx"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-04T09:51:17.085Z",
+  "id": "f_60f12898",
+  "lastDetected": "2026-07-04T09:51:17.085Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "packages",
+  "relationships": [],
+  "rule": "VAL-HYG-005",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

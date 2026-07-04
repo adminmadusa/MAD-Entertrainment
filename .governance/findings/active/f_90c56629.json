@@ -1,71 +1,35 @@
 {
-  "schemaVersion": 2,
-  "id": "f_90c56629",
-  "rule": "VAL-UI-011",
-  "ruleVersion": "1.0.0",
-  "engineVersion": "1.0.0",
-  "domain": "UI UX Guild",
-  "owner": "UI UX Guild",
-  "package": "apps",
-  "feature": "UIElement",
-  "status": "NEW",
   "confidence": 0.9,
-  "relationships": [],
+  "createdDate": "2026-06-30T15:36:27.236Z",
+  "domain": "UI UX Guild",
+  "engineVersion": "1.0.0",
   "evidence": {
-    "path": "apps/server/src/lib/email/templates/partial-refund.tsx",
     "construct": "UIElement",
     "line": 1,
-    "message": "Duplicate component layout detected: shares 88% similarity with \"BookingConfirmationEmail\" in \"apps/server/src/lib/email/templates/booking-confirmation.tsx\". Recommendation: Extract the duplicated layout/logic from \"apps/server/src/lib/email/templates/booking-confirmation.tsx\" and \"apps/server/src/lib/email/templates/partial-refund.tsx\" into a single reusable shared component in \"packages/ui\".",
+    "message": "Duplicate component layout detected [Category D — Business Logic, Confidence: 93%, Severity: WARNING]: shares similarity with \"TicketDeliveryEmail\" in \"apps/server/src/lib/email/templates/ticket-delivery.tsx\". Recommendation: Extract shared business rules and api state hooks to \"packages/shared/src/hooks\" or package services instead of UI components. (Estimated Effort: Medium (4-8 hours), Risk: High (requires validation schema/API alignment and unit testing)).",
     "occurrences": [
       {
-        "id": "fa8084b4476b8eeb4bf26865378522e97f5b02937be76bb69389d827a06b0514",
-        "line": 1,
         "column": 0,
         "construct": "UIElement",
-        "snippet": "",
-        "message": "Duplicate component layout detected: shares 88% similarity with \"BookingConfirmationEmail\" in \"apps/server/src/lib/email/templates/booking-confirmation.tsx\". Recommendation: Extract the duplicated layout/logic from \"apps/server/src/lib/email/templates/booking-confirmation.tsx\" and \"apps/server/src/lib/email/templates/partial-refund.tsx\" into a single reusable shared component in \"packages/ui\".",
-        "fingerprint": "fa8084b4476b8eeb4bf26865378522e97f5b02937be76bb69389d827a06b0514"
-      },
-      {
+        "fingerprint": "fa8084b4476b8eeb4bf26865378522e97f5b02937be76bb69389d827a06b0514",
         "id": "fa8084b4476b8eeb4bf26865378522e97f5b02937be76bb69389d827a06b0514",
         "line": 1,
-        "column": 0,
-        "construct": "UIElement",
-        "snippet": "",
-        "message": "Duplicate component layout detected: shares 88% similarity with \"PaymentFailureEmail\" in \"apps/server/src/lib/email/templates/payment-failure.tsx\". Recommendation: Extract the duplicated layout/logic from \"apps/server/src/lib/email/templates/partial-refund.tsx\" and \"apps/server/src/lib/email/templates/payment-failure.tsx\" into a single reusable shared component in \"packages/ui\".",
-        "fingerprint": "fa8084b4476b8eeb4bf26865378522e97f5b02937be76bb69389d827a06b0514"
-      },
-      {
-        "id": "fa8084b4476b8eeb4bf26865378522e97f5b02937be76bb69389d827a06b0514",
-        "line": 1,
-        "column": 0,
-        "construct": "UIElement",
-        "snippet": "",
-        "message": "Duplicate component layout detected: shares 93% similarity with \"EventCancellationEmail\" in \"apps/server/src/lib/email/templates/event-cancellation.tsx\". Recommendation: Extract the duplicated layout/logic from \"apps/server/src/lib/email/templates/event-cancellation.tsx\" and \"apps/server/src/lib/email/templates/partial-refund.tsx\" into a single reusable shared component in \"packages/ui\".",
-        "fingerprint": "fa8084b4476b8eeb4bf26865378522e97f5b02937be76bb69389d827a06b0514"
-      },
-      {
-        "id": "fa8084b4476b8eeb4bf26865378522e97f5b02937be76bb69389d827a06b0514",
-        "line": 1,
-        "column": 0,
-        "construct": "UIElement",
-        "snippet": "",
-        "message": "Duplicate component layout detected: shares 93% similarity with \"FullRefundEmail\" in \"apps/server/src/lib/email/templates/full-refund.tsx\". Recommendation: Extract the duplicated layout/logic from \"apps/server/src/lib/email/templates/full-refund.tsx\" and \"apps/server/src/lib/email/templates/partial-refund.tsx\" into a single reusable shared component in \"packages/ui\".",
-        "fingerprint": "fa8084b4476b8eeb4bf26865378522e97f5b02937be76bb69389d827a06b0514"
-      },
-      {
-        "id": "fa8084b4476b8eeb4bf26865378522e97f5b02937be76bb69389d827a06b0514",
-        "line": 1,
-        "column": 0,
-        "construct": "UIElement",
-        "snippet": "",
-        "message": "Duplicate component layout detected: shares 93% similarity with \"TicketDeliveryEmail\" in \"apps/server/src/lib/email/templates/ticket-delivery.tsx\". Recommendation: Extract the duplicated layout/logic from \"apps/server/src/lib/email/templates/partial-refund.tsx\" and \"apps/server/src/lib/email/templates/ticket-delivery.tsx\" into a single reusable shared component in \"packages/ui\".",
-        "fingerprint": "fa8084b4476b8eeb4bf26865378522e97f5b02937be76bb69389d827a06b0514"
+        "message": "Duplicate component layout detected [Category D — Business Logic, Confidence: 88%, Severity: WARNING]: shares similarity with \"BookingConfirmationEmail\" in \"apps/server/src/lib/email/templates/booking-confirmation.tsx\". Recommendation: Extract shared business rules and api state hooks to \"packages/shared/src/hooks\" or package services instead of UI components. (Estimated Effort: Medium (4-8 hours), Risk: High (requires validation schema/API alignment and unit testing))."
       }
-    ]
+    ],
+    "path": "apps/server/src/lib/email/templates/partial-refund.tsx"
   },
-  "createdDate": "2026-06-30T15:36:27.236Z",
+  "feature": "UIElement",
   "firstDetected": "2026-06-30T15:36:27.236Z",
-  "lastDetected": "2026-06-30T15:36:27.237Z",
-  "occurrenceCount": 5
+  "id": "f_90c56629",
+  "lastDetected": "2026-07-04T09:51:17.741Z",
+  "lastModified": "2026-07-04T09:51:17.741Z",
+  "occurrenceCount": 1,
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-UI-011",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
 }

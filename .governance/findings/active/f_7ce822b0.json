@@ -1,0 +1,50 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-04T09:51:15.600Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 25,
+    "message": "Trailing whitespace characters detected.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "51d2b651869467a4836aa62bc84bde9c95f916f082a90297b9740b51e47bbe18",
+        "id": "51d2b651869467a4836aa62bc84bde9c95f916f082a90297b9740b51e47bbe18",
+        "line": 17,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "51d2b651869467a4836aa62bc84bde9c95f916f082a90297b9740b51e47bbe18",
+        "id": "51d2b651869467a4836aa62bc84bde9c95f916f082a90297b9740b51e47bbe18",
+        "line": 24,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "51d2b651869467a4836aa62bc84bde9c95f916f082a90297b9740b51e47bbe18",
+        "id": "51d2b651869467a4836aa62bc84bde9c95f916f082a90297b9740b51e47bbe18",
+        "line": 25,
+        "message": "Trailing whitespace characters detected."
+      }
+    ],
+    "path": "apps/web/src/app/legal/components/LegalSidebar.tsx"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-04T09:51:15.600Z",
+  "id": "f_7ce822b0",
+  "lastDetected": "2026-07-04T09:51:15.600Z",
+  "occurrenceCount": 3,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-004",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

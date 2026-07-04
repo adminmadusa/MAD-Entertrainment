@@ -1,0 +1,66 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-04T09:51:17.026Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 7,
+    "message": "Trailing whitespace characters detected.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "ba044f6e4c8bc98cedb6e7825385de40680dca8f265efde7428470449310d175",
+        "id": "ba044f6e4c8bc98cedb6e7825385de40680dca8f265efde7428470449310d175",
+        "line": 3,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "ba044f6e4c8bc98cedb6e7825385de40680dca8f265efde7428470449310d175",
+        "id": "ba044f6e4c8bc98cedb6e7825385de40680dca8f265efde7428470449310d175",
+        "line": 4,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "ba044f6e4c8bc98cedb6e7825385de40680dca8f265efde7428470449310d175",
+        "id": "ba044f6e4c8bc98cedb6e7825385de40680dca8f265efde7428470449310d175",
+        "line": 5,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "ba044f6e4c8bc98cedb6e7825385de40680dca8f265efde7428470449310d175",
+        "id": "ba044f6e4c8bc98cedb6e7825385de40680dca8f265efde7428470449310d175",
+        "line": 6,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "ba044f6e4c8bc98cedb6e7825385de40680dca8f265efde7428470449310d175",
+        "id": "ba044f6e4c8bc98cedb6e7825385de40680dca8f265efde7428470449310d175",
+        "line": 7,
+        "message": "Trailing whitespace characters detected."
+      }
+    ],
+    "path": "docs/decisions/README.md"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-04T09:51:17.026Z",
+  "id": "f_b7662844",
+  "lastDetected": "2026-07-04T09:51:17.026Z",
+  "occurrenceCount": 5,
+  "owner": "Platform Team",
+  "package": "docs",
+  "relationships": [],
+  "rule": "VAL-HYG-004",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

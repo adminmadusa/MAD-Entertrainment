@@ -28,3 +28,26 @@ analytics/
 # They are not part of the canonical governance baseline and should not be
 # committed — snapshot trends are captured in metrics/trend-metrics.json instead.
 archive/
+
+# ── Auto-fix Rollback Backups & Sessions ─────────────────────────────────────
+# autofix/ contains rollback backup files and session state created by the
+# governance auto-fix engine (autofix_engine.ts). These are machine-specific
+# ephemeral artifacts used only for in-session rollback recovery. They must
+# not be committed — a backup on machine A cannot be applied on machine B.
+autofix/
+
+# ── AST & Content Speed Caches ───────────────────────────────────────────────
+# cached-*.json files are build-time speed caches for the dependency analyzer
+# (cached-dependency-graph.json) and the documentation validator
+# (cached-docs-validation.json). They store hashed file content and mtime
+# records to skip re-parsing unchanged files. They are regenerated on every
+# fresh clone and must not be committed.
+baselines/cached-*.json
+
+# ── Monthly Repository State Snapshots ───────────────────────────────────────
+# snapshot-YYYY-MM.json files are monthly repository state captures written by
+# the audit engine saveSnapshot(). They record commit SHA, branch, and engine
+# version for the current month. A new snapshot is written each month.
+# These are derived artifacts, not canonical governance baselines, and their
+# inclusion in Git causes recurring monthly noise diffs.
+baselines/snapshot-*.json

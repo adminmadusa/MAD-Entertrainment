@@ -1,0 +1,42 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-04T09:51:15.502Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 160,
+    "message": "Trailing whitespace characters detected.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "0fab31fe5346ab3e4daeeb219a5c8d11eab72fdb086a42c77119e699a83a15ef",
+        "id": "0fab31fe5346ab3e4daeeb219a5c8d11eab72fdb086a42c77119e699a83a15ef",
+        "line": 137,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "0fab31fe5346ab3e4daeeb219a5c8d11eab72fdb086a42c77119e699a83a15ef",
+        "id": "0fab31fe5346ab3e4daeeb219a5c8d11eab72fdb086a42c77119e699a83a15ef",
+        "line": 160,
+        "message": "Trailing whitespace characters detected."
+      }
+    ],
+    "path": "apps/web/src/app/dj-operators/page.tsx"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-04T09:51:15.502Z",
+  "id": "f_de90eec1",
+  "lastDetected": "2026-07-04T09:51:15.502Z",
+  "occurrenceCount": 2,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-004",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

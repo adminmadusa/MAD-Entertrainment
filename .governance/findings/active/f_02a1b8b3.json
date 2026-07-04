@@ -1,35 +1,35 @@
 {
-  "schemaVersion": 2,
-  "id": "f_02a1b8b3",
-  "rule": "VAL-UI-017",
-  "ruleVersion": "1.0.0",
-  "engineVersion": "1.0.0",
-  "domain": "Platform Team",
-  "owner": "Platform Team",
-  "package": "apps",
-  "feature": "UIElement",
-  "status": "NEW",
   "confidence": 0.9,
-  "relationships": [],
+  "createdDate": "2026-06-30T15:36:27.157Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
   "evidence": {
-    "path": "apps/admin/src/app/popups/[id]/edit/page.tsx",
     "construct": "UIElement",
     "line": 1,
-    "message": "Safe delete classification: [REQUIRES_MANUAL_REVIEW] for \"apps/admin/src/app/popups/[id]/edit/page.tsx\". Reason: Filename \"page\" referenced as text/string in other files: AGENTS.MD, API_CONTRACTS.md.",
+    "message": "Safe delete classification: [REQUIRES_MANUAL_REVIEW] for \"apps/admin/src/app/popups/[id]/edit/page.tsx\". Reason: Filename \"page\" referenced as text/string in other files: .agents/skills/ci-investigation/examples/deployment-failure.md, AGENTS.MD.",
     "occurrences": [
       {
-        "id": "f8749dd7f63aea7203089303e51471e2f676222b35ac4d5a1d3e54495e34b894",
-        "line": 1,
         "column": 0,
         "construct": "UIElement",
-        "snippet": "",
-        "message": "Safe delete classification: [REQUIRES_MANUAL_REVIEW] for \"apps/admin/src/app/popups/[id]/edit/page.tsx\". Reason: Filename \"page\" referenced as text/string in other files: AGENTS.MD, API_CONTRACTS.md.",
-        "fingerprint": "f8749dd7f63aea7203089303e51471e2f676222b35ac4d5a1d3e54495e34b894"
+        "fingerprint": "f8749dd7f63aea7203089303e51471e2f676222b35ac4d5a1d3e54495e34b894",
+        "id": "f8749dd7f63aea7203089303e51471e2f676222b35ac4d5a1d3e54495e34b894",
+        "line": 1,
+        "message": "Safe delete classification: [REQUIRES_MANUAL_REVIEW] for \"apps/admin/src/app/popups/[id]/edit/page.tsx\". Reason: Filename \"page\" referenced as text/string in other files: .agents/skills/ci-investigation/examples/deployment-failure.md, AGENTS.MD."
       }
-    ]
+    ],
+    "path": "apps/admin/src/app/popups/[id]/edit/page.tsx"
   },
-  "createdDate": "2026-06-30T15:36:27.157Z",
+  "feature": "UIElement",
   "firstDetected": "2026-06-30T15:36:27.157Z",
-  "lastDetected": "2026-06-30T15:36:27.157Z",
-  "occurrenceCount": 1
+  "id": "f_02a1b8b3",
+  "lastDetected": "2026-07-04T09:51:17.679Z",
+  "lastModified": "2026-07-04T09:51:17.679Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-UI-017",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
 }

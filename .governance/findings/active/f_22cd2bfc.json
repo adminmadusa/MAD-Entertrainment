@@ -1,0 +1,74 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-04T09:51:14.468Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 1077,
+    "message": "Trailing whitespace characters detected.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "f08a7eeb4d5cb7289ce068745645b89ab7e286ac0a8f1ed411dd2ce3a3953540",
+        "id": "f08a7eeb4d5cb7289ce068745645b89ab7e286ac0a8f1ed411dd2ce3a3953540",
+        "line": 94,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "f08a7eeb4d5cb7289ce068745645b89ab7e286ac0a8f1ed411dd2ce3a3953540",
+        "id": "f08a7eeb4d5cb7289ce068745645b89ab7e286ac0a8f1ed411dd2ce3a3953540",
+        "line": 533,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "f08a7eeb4d5cb7289ce068745645b89ab7e286ac0a8f1ed411dd2ce3a3953540",
+        "id": "f08a7eeb4d5cb7289ce068745645b89ab7e286ac0a8f1ed411dd2ce3a3953540",
+        "line": 606,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "f08a7eeb4d5cb7289ce068745645b89ab7e286ac0a8f1ed411dd2ce3a3953540",
+        "id": "f08a7eeb4d5cb7289ce068745645b89ab7e286ac0a8f1ed411dd2ce3a3953540",
+        "line": 642,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "f08a7eeb4d5cb7289ce068745645b89ab7e286ac0a8f1ed411dd2ce3a3953540",
+        "id": "f08a7eeb4d5cb7289ce068745645b89ab7e286ac0a8f1ed411dd2ce3a3953540",
+        "line": 1021,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "f08a7eeb4d5cb7289ce068745645b89ab7e286ac0a8f1ed411dd2ce3a3953540",
+        "id": "f08a7eeb4d5cb7289ce068745645b89ab7e286ac0a8f1ed411dd2ce3a3953540",
+        "line": 1077,
+        "message": "Trailing whitespace characters detected."
+      }
+    ],
+    "path": "apps/server/src/services/admin/refund.service.test.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-04T09:51:14.468Z",
+  "id": "f_22cd2bfc",
+  "lastDetected": "2026-07-04T09:51:14.468Z",
+  "occurrenceCount": 6,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-004",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

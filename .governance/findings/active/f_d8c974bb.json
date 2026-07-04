@@ -1,45 +1,37 @@
 {
-  "schemaVersion": 2,
-  "id": "f_d8c974bb",
-  "rule": "VAL-UI-004",
-  "ruleVersion": "1.0.0",
-  "engineVersion": "1.0.0",
-  "domain": "UI UX Guild",
-  "owner": "UI UX Guild",
-  "package": "apps",
-  "feature": "table",
-  "status": "NEW",
   "confidence": 0.9,
-  "relationships": [],
+  "createdDate": "2026-07-03T16:43:20.674Z",
+  "domain": "UI UX Guild",
+  "engineVersion": "1.0.0",
   "evidence": {
-    "path": "apps/admin/src/app/coupons/page.tsx",
-    "construct": "table",
-    "snippet": "<table className=\"w-full text-sm\">",
+    "construct": "UIElement",
     "line": 193,
-    "message": "Raw <table> element used in admin portal. Use a reusable shared Table component.",
+    "message": "Raw <table> element used in portal. Use a reusable shared Table component.",
     "occurrences": [
       {
-        "id": "d120ddd21b4a1b76cfcde637261c2a5e2abcbba767661bc0cdff29320f36caa2",
-        "line": 193,
-        "column": 0,
-        "construct": "table",
-        "snippet": "<table className=\"w-full text-sm\">",
-        "message": "Raw <table> element used in admin portal. Use a reusable shared Table component.",
-        "fingerprint": "d120ddd21b4a1b76cfcde637261c2a5e2abcbba767661bc0cdff29320f36caa2"
-      },
-      {
-        "id": "28bfdf875875b95d732f69a0ca5e772d26e433520a6e4e8a2bc956b50b2705a9",
-        "line": 193,
         "column": 0,
         "construct": "UIElement",
-        "snippet": "<table className=\"w-full text-sm\">",
+        "fingerprint": "28bfdf875875b95d732f69a0ca5e772d26e433520a6e4e8a2bc956b50b2705a9",
+        "id": "28bfdf875875b95d732f69a0ca5e772d26e433520a6e4e8a2bc956b50b2705a9",
+        "line": 193,
         "message": "Raw <table> element used in portal. Use a reusable shared Table component.",
-        "fingerprint": "28bfdf875875b95d732f69a0ca5e772d26e433520a6e4e8a2bc956b50b2705a9"
+        "snippet": "<table className=\"w-full text-sm\">"
       }
-    ]
+    ],
+    "path": "apps/admin/src/app/coupons/page.tsx",
+    "snippet": "<table className=\"w-full text-sm\">"
   },
-  "createdDate": "2026-06-29T08:09:52.601Z",
-  "firstDetected": "2026-06-29T08:09:52.601Z",
-  "lastDetected": "2026-06-30T15:36:27.126Z",
-  "occurrenceCount": 2
+  "feature": "UIElement",
+  "firstDetected": "2026-07-03T16:43:20.674Z",
+  "id": "f_d8c974bb",
+  "lastDetected": "2026-07-04T09:51:27.351Z",
+  "lastModified": "2026-07-04T09:51:27.351Z",
+  "occurrenceCount": 1,
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-UI-004",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "REGRESSION"
 }

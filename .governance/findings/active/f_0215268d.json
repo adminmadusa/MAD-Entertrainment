@@ -1,35 +1,35 @@
 {
-  "schemaVersion": 2,
-  "id": "f_0215268d",
-  "rule": "VAL-UI-011",
-  "ruleVersion": "1.0.0",
-  "engineVersion": "1.0.0",
-  "domain": "UI UX Guild",
-  "owner": "UI UX Guild",
-  "package": "apps",
-  "feature": "UIElement",
-  "status": "NEW",
   "confidence": 0.9,
-  "relationships": [],
+  "createdDate": "2026-06-30T15:36:27.234Z",
+  "domain": "UI UX Guild",
+  "engineVersion": "1.0.0",
   "evidence": {
-    "path": "apps/server/src/lib/email/templates/components/EmailFooter.tsx",
     "construct": "UIElement",
     "line": 1,
-    "message": "Duplicate component layout detected: shares 83% similarity with \"EmailHeader\" in \"apps/server/src/lib/email/templates/components/EmailHeader.tsx\". Recommendation: Extract the duplicated layout/logic from \"apps/server/src/lib/email/templates/components/EmailFooter.tsx\" and \"apps/server/src/lib/email/templates/components/EmailHeader.tsx\" into a single reusable shared component in \"packages/ui\".",
+    "message": "Duplicate component layout detected [Category B — Visual, Confidence: 83%, Severity: WARNING]: shares similarity with \"EmailHeader\" in \"apps/server/src/lib/email/templates/components/EmailHeader.tsx\". Recommendation: Standardize visual presentation (flex structure, margins) using design tokens or Tailwind utility classes instead of creating component abstractions. (Estimated Effort: Low (1-2 hours), Risk: Low).",
     "occurrences": [
       {
-        "id": "01bca9187c763484946ba23637b61e3512aa82d114bf227012e845b33ad7d6d5",
-        "line": 1,
         "column": 0,
         "construct": "UIElement",
-        "snippet": "",
-        "message": "Duplicate component layout detected: shares 83% similarity with \"EmailHeader\" in \"apps/server/src/lib/email/templates/components/EmailHeader.tsx\". Recommendation: Extract the duplicated layout/logic from \"apps/server/src/lib/email/templates/components/EmailFooter.tsx\" and \"apps/server/src/lib/email/templates/components/EmailHeader.tsx\" into a single reusable shared component in \"packages/ui\".",
-        "fingerprint": "01bca9187c763484946ba23637b61e3512aa82d114bf227012e845b33ad7d6d5"
+        "fingerprint": "01bca9187c763484946ba23637b61e3512aa82d114bf227012e845b33ad7d6d5",
+        "id": "01bca9187c763484946ba23637b61e3512aa82d114bf227012e845b33ad7d6d5",
+        "line": 1,
+        "message": "Duplicate component layout detected [Category B — Visual, Confidence: 83%, Severity: WARNING]: shares similarity with \"EmailHeader\" in \"apps/server/src/lib/email/templates/components/EmailHeader.tsx\". Recommendation: Standardize visual presentation (flex structure, margins) using design tokens or Tailwind utility classes instead of creating component abstractions. (Estimated Effort: Low (1-2 hours), Risk: Low)."
       }
-    ]
+    ],
+    "path": "apps/server/src/lib/email/templates/components/EmailFooter.tsx"
   },
-  "createdDate": "2026-06-30T15:36:27.234Z",
+  "feature": "UIElement",
   "firstDetected": "2026-06-30T15:36:27.234Z",
-  "lastDetected": "2026-06-30T15:36:27.234Z",
-  "occurrenceCount": 1
+  "id": "f_0215268d",
+  "lastDetected": "2026-07-04T09:51:17.738Z",
+  "lastModified": "2026-07-04T09:51:17.738Z",
+  "occurrenceCount": 1,
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-UI-011",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
 }

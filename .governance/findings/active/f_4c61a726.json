@@ -1,44 +1,35 @@
 {
-  "schemaVersion": 2,
-  "id": "f_4c61a726",
-  "rule": "VAL-UI-011",
-  "ruleVersion": "1.0.0",
-  "engineVersion": "1.0.0",
-  "domain": "UI UX Guild",
-  "owner": "UI UX Guild",
-  "package": "apps",
-  "feature": "UIElement",
-  "status": "NEW",
   "confidence": 0.9,
-  "relationships": [],
+  "createdDate": "2026-06-30T15:36:27.133Z",
+  "domain": "UI UX Guild",
+  "engineVersion": "1.0.0",
   "evidence": {
-    "path": "apps/admin/src/app/diagnostics/webhooks/page.tsx",
     "construct": "UIElement",
     "line": 1,
-    "message": "Duplicate component layout detected: shares 75% similarity with \"AdminNotificationsPage\" in \"apps/admin/src/app/notifications/page.tsx\". Recommendation: Extract the duplicated layout/logic from \"apps/admin/src/app/diagnostics/webhooks/page.tsx\" and \"apps/admin/src/app/notifications/page.tsx\" into a single reusable shared component in \"packages/ui\".",
+    "message": "Duplicate component layout detected [Category E — Infrastructure, Confidence: 98%, Severity: WARNING]: shares similarity with \"STATUS_COLORS\" in \"apps/admin/src/app/diagnostics/emails/page.tsx\". Recommendation: Extract reusable table, filter, or pagination wrappers to \"packages/ui\" as shared components. (Estimated Effort: Medium (2-4 hours), Risk: Low).",
     "occurrences": [
       {
-        "id": "8923152c62d367751b36b3b51874ceaeaba1c54c5d6c419d3afd1e80c0f4dd84",
-        "line": 1,
         "column": 0,
         "construct": "UIElement",
-        "snippet": "",
-        "message": "Duplicate component layout detected: shares 75% similarity with \"AdminNotificationsPage\" in \"apps/admin/src/app/notifications/page.tsx\". Recommendation: Extract the duplicated layout/logic from \"apps/admin/src/app/diagnostics/webhooks/page.tsx\" and \"apps/admin/src/app/notifications/page.tsx\" into a single reusable shared component in \"packages/ui\".",
-        "fingerprint": "8923152c62d367751b36b3b51874ceaeaba1c54c5d6c419d3afd1e80c0f4dd84"
-      },
-      {
+        "fingerprint": "8923152c62d367751b36b3b51874ceaeaba1c54c5d6c419d3afd1e80c0f4dd84",
         "id": "8923152c62d367751b36b3b51874ceaeaba1c54c5d6c419d3afd1e80c0f4dd84",
         "line": 1,
-        "column": 0,
-        "construct": "UIElement",
-        "snippet": "",
-        "message": "Duplicate component layout detected: shares 98% similarity with \"STATUS_COLORS\" in \"apps/admin/src/app/diagnostics/emails/page.tsx\". Recommendation: Extract the duplicated layout/logic from \"apps/admin/src/app/diagnostics/emails/page.tsx\" and \"apps/admin/src/app/diagnostics/webhooks/page.tsx\" into a single reusable shared component in \"packages/ui\".",
-        "fingerprint": "8923152c62d367751b36b3b51874ceaeaba1c54c5d6c419d3afd1e80c0f4dd84"
+        "message": "Duplicate component layout detected [Category E — Infrastructure, Confidence: 75%, Severity: WARNING]: shares similarity with \"AdminNotificationsPage\" in \"apps/admin/src/app/notifications/page.tsx\". Recommendation: Extract reusable table, filter, or pagination wrappers to \"packages/ui\" as shared components. (Estimated Effort: Medium (2-4 hours), Risk: Low)."
       }
-    ]
+    ],
+    "path": "apps/admin/src/app/diagnostics/webhooks/page.tsx"
   },
-  "createdDate": "2026-06-30T15:36:27.133Z",
+  "feature": "UIElement",
   "firstDetected": "2026-06-30T15:36:27.133Z",
-  "lastDetected": "2026-06-30T15:36:27.133Z",
-  "occurrenceCount": 2
+  "id": "f_4c61a726",
+  "lastDetected": "2026-07-04T09:51:17.666Z",
+  "lastModified": "2026-07-04T09:51:17.666Z",
+  "occurrenceCount": 1,
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-UI-011",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
 }

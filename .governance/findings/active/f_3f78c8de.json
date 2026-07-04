@@ -10,39 +10,12 @@
     "occurrences": [
       {
         "column": 0,
-        "construct": "button",
-        "fingerprint": "3bdef7681826ae38c101c18a2fe97f0e3620ba28e37a064f4b5bade357e88621",
-        "id": "3bdef7681826ae38c101c18a2fe97f0e3620ba28e37a064f4b5bade357e88621",
-        "line": 103,
-        "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
-        "snippet": "<button onClick={() => setProcessTarget(refund)}"
-      },
-      {
-        "column": 0,
-        "construct": "UIElement",
-        "fingerprint": "ca64ebf8b60044217e7253ff7c3ea5b5258f213930dcbcd6904ff120a4c44952",
-        "id": "ca64ebf8b60044217e7253ff7c3ea5b5258f213930dcbcd6904ff120a4c44952",
-        "line": 103,
-        "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
-        "snippet": "<button onClick={() => setProcessTarget(refund)}"
-      },
-      {
-        "column": 0,
         "construct": "UIElement",
         "fingerprint": "87f0325772c2b0539f992e3789759f2cba3bee7cf3d6a782dd673522c549ab94",
         "id": "87f0325772c2b0539f992e3789759f2cba3bee7cf3d6a782dd673522c549ab94",
         "line": 103,
         "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
         "snippet": "<button onClick={() => setProcessTarget(refund)}"
-      },
-      {
-        "column": 0,
-        "construct": "UIElement",
-        "fingerprint": "b1084770836fe8eaab9ea15abeeb79bae71c917f2b1e77a6c50c0b0374844d88",
-        "id": "b1084770836fe8eaab9ea15abeeb79bae71c917f2b1e77a6c50c0b0374844d88",
-        "line": 173,
-        "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
-        "snippet": "<button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1} className=\"px-3 py-1.5 text-xs glass border border-border-subtle rounded-lg disabled:opacity-40 text-text-secondary\">← Prev</button>"
       },
       {
         "column": 0,
@@ -56,29 +29,11 @@
       {
         "column": 0,
         "construct": "UIElement",
-        "fingerprint": "a5a7c19ee407c606d55b5ab4e81a5c693a9f3253ab1e30f3dab1fef4f2f58db2",
-        "id": "a5a7c19ee407c606d55b5ab4e81a5c693a9f3253ab1e30f3dab1fef4f2f58db2",
-        "line": 174,
-        "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
-        "snippet": "<button onClick={() => setPage((p) => p + 1)} disabled={page >= pagination.totalPages} className=\"px-3 py-1.5 text-xs glass border border-border-subtle rounded-lg disabled:opacity-40 text-text-secondary\">Next →</button>"
-      },
-      {
-        "column": 0,
-        "construct": "UIElement",
         "fingerprint": "d2a772033808dff6ebed35976e395cd5ef90e005fad87b201be6f31ba0666f8b",
         "id": "d2a772033808dff6ebed35976e395cd5ef90e005fad87b201be6f31ba0666f8b",
         "line": 174,
         "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
         "snippet": "<button onClick={() => setPage((p) => p + 1)} disabled={page >= pagination.totalPages} className=\"px-3 py-1.5 text-xs glass border border-border-subtle rounded-lg disabled:opacity-40 text-text-secondary\">Next →</button>"
-      },
-      {
-        "column": 0,
-        "construct": "UIElement",
-        "fingerprint": "da37bfac7cde875d3e22889a712b087c766e894dc1cf96c3c6a15962a8492a72",
-        "id": "da37bfac7cde875d3e22889a712b087c766e894dc1cf96c3c6a15962a8492a72",
-        "line": 257,
-        "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
-        "snippet": "<button key={a} type=\"button\" onClick={() => setAction(a)}"
       },
       {
         "column": 0,
@@ -92,29 +47,11 @@
       {
         "column": 0,
         "construct": "UIElement",
-        "fingerprint": "3ebedcb124b2243570a832adc44ad83ef8c2825b4ded3245e8355b1ff487aef8",
-        "id": "3ebedcb124b2243570a832adc44ad83ef8c2825b4ded3245e8355b1ff487aef8",
-        "line": 275,
-        "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
-        "snippet": "<button type=\"button\" onClick={() => setProcessTarget(null)} className=\"flex-1 py-2.5 glass border border-border-subtle rounded-xl text-sm text-text-secondary\">Cancel</button>"
-      },
-      {
-        "column": 0,
-        "construct": "UIElement",
         "fingerprint": "0b49eb578a30e4887ffa72447bd55df6b9864cf9b91974aebc37989e82e22bfe",
         "id": "0b49eb578a30e4887ffa72447bd55df6b9864cf9b91974aebc37989e82e22bfe",
         "line": 275,
         "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
         "snippet": "<button type=\"button\" onClick={() => setProcessTarget(null)} className=\"flex-1 py-2.5 glass border border-border-subtle rounded-xl text-sm text-text-secondary\">Cancel</button>"
-      },
-      {
-        "column": 0,
-        "construct": "UIElement",
-        "fingerprint": "9e5a1e8910953c2332d9b28a09b754fa70da71bbfb9f08dd6f7dca202d541d01",
-        "id": "9e5a1e8910953c2332d9b28a09b754fa70da71bbfb9f08dd6f7dca202d541d01",
-        "line": 276,
-        "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
-        "snippet": "<button type=\"button\" onClick={() => processMutation.mutate()} disabled={processMutation.isPending}"
       },
       {
         "column": 0,
@@ -132,9 +69,9 @@
   "feature": "button",
   "firstDetected": "2026-06-29T08:10:00.778Z",
   "id": "f_3f78c8de",
-  "lastDetected": "2026-07-04T03:02:11.361Z",
-  "lastModified": "2026-07-04T03:02:11.361Z",
-  "occurrenceCount": 13,
+  "lastDetected": "2026-07-04T09:51:17.682Z",
+  "lastModified": "2026-07-04T09:51:17.682Z",
+  "occurrenceCount": 6,
   "owner": "UI UX Guild",
   "package": "apps",
   "relationships": [],

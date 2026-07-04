@@ -1,54 +1,45 @@
 {
-  "schemaVersion": 2,
-  "id": "f_1944e096",
-  "rule": "VAL-UI-004",
-  "ruleVersion": "1.0.0",
-  "engineVersion": "1.0.0",
-  "domain": "UI UX Guild",
-  "owner": "UI UX Guild",
-  "package": "apps",
-  "feature": "table",
-  "status": "NEW",
   "confidence": 0.9,
-  "relationships": [],
+  "createdDate": "2026-07-03T16:43:21.865Z",
+  "domain": "UI UX Guild",
+  "engineVersion": "1.0.0",
   "evidence": {
-    "path": "apps/admin/src/components/dashboard/AttendanceRankingsWidget.tsx",
-    "construct": "table",
-    "snippet": "<table className=\"w-full text-sm\">",
-    "line": 32,
-    "message": "Raw <table> element used in admin portal. Use a reusable shared Table component.",
+    "construct": "UIElement",
+    "line": 63,
+    "message": "Raw <table> element used in portal. Use a reusable shared Table component.",
     "occurrences": [
       {
-        "id": "1f82e280bfd0caacfe7ebd52ef8e4bd0e9345b7d9eb0fb3c8d415c649f0f6b05",
-        "line": 32,
-        "column": 0,
-        "construct": "table",
-        "snippet": "<table className=\"w-full text-sm\">",
-        "message": "Raw <table> element used in admin portal. Use a reusable shared Table component.",
-        "fingerprint": "1f82e280bfd0caacfe7ebd52ef8e4bd0e9345b7d9eb0fb3c8d415c649f0f6b05"
-      },
-      {
-        "id": "8b6f3b8ca4a23e5db18eefd2e550fc2bedb6d892e9f5e7137725b7ea0e099df2",
-        "line": 32,
         "column": 0,
         "construct": "UIElement",
-        "snippet": "<table className=\"w-full text-sm\">",
+        "fingerprint": "8b6f3b8ca4a23e5db18eefd2e550fc2bedb6d892e9f5e7137725b7ea0e099df2",
+        "id": "8b6f3b8ca4a23e5db18eefd2e550fc2bedb6d892e9f5e7137725b7ea0e099df2",
+        "line": 32,
         "message": "Raw <table> element used in portal. Use a reusable shared Table component.",
-        "fingerprint": "8b6f3b8ca4a23e5db18eefd2e550fc2bedb6d892e9f5e7137725b7ea0e099df2"
+        "snippet": "<table className=\"w-full text-sm\">"
       },
       {
+        "column": 0,
+        "construct": "UIElement",
+        "fingerprint": "8b6f3b8ca4a23e5db18eefd2e550fc2bedb6d892e9f5e7137725b7ea0e099df2",
         "id": "8b6f3b8ca4a23e5db18eefd2e550fc2bedb6d892e9f5e7137725b7ea0e099df2",
         "line": 63,
-        "column": 0,
-        "construct": "UIElement",
-        "snippet": "<table className=\"w-full text-sm\">",
         "message": "Raw <table> element used in portal. Use a reusable shared Table component.",
-        "fingerprint": "8b6f3b8ca4a23e5db18eefd2e550fc2bedb6d892e9f5e7137725b7ea0e099df2"
+        "snippet": "<table className=\"w-full text-sm\">"
       }
-    ]
+    ],
+    "path": "apps/admin/src/components/dashboard/AttendanceRankingsWidget.tsx",
+    "snippet": "<table className=\"w-full text-sm\">"
   },
-  "createdDate": "2026-06-29T08:10:24.665Z",
-  "firstDetected": "2026-06-29T08:10:24.665Z",
-  "lastDetected": "2026-06-30T15:36:27.201Z",
-  "occurrenceCount": 3
+  "feature": "UIElement",
+  "firstDetected": "2026-07-03T16:43:21.865Z",
+  "id": "f_1944e096",
+  "lastDetected": "2026-07-03T16:43:21.865Z",
+  "occurrenceCount": 2,
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-UI-004",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "REGRESSION"
 }

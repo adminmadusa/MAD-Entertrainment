@@ -1,0 +1,11 @@
+{
+  "history": [
+    {
+      "action": "CREATED",
+      "notes": "New grouped finding registered: Trailing whitespace characters detected.",
+      "status": "NEW",
+      "timestamp": "2026-07-04T09:51:15.804Z"
+    }
+  ],
+  "id": "f_be3bd03c"
+}

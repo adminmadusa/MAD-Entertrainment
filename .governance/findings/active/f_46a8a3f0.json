@@ -1,45 +1,37 @@
 {
-  "schemaVersion": 2,
-  "id": "f_46a8a3f0",
-  "rule": "VAL-UI-005",
-  "ruleVersion": "1.0.0",
-  "engineVersion": "1.0.0",
-  "domain": "UI UX Guild",
-  "owner": "UI UX Guild",
-  "package": "apps",
-  "feature": "button",
-  "status": "NEW",
   "confidence": 0.85,
-  "relationships": [],
+  "createdDate": "2026-06-29T08:09:55.177Z",
+  "domain": "UI UX Guild",
+  "engineVersion": "1.0.0",
   "evidence": {
-    "path": "apps/admin/src/app/events/[id]/edit/page.tsx",
     "construct": "button",
-    "snippet": "<button",
-    "line": 245,
+    "line": 288,
     "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
     "occurrences": [
       {
-        "id": "99eb6989307261c80fd22b4620c88349ac30adb2cbd8565f00d1ef1d074db0a6",
-        "line": 245,
-        "column": 0,
-        "construct": "button",
-        "snippet": "<button",
-        "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
-        "fingerprint": "99eb6989307261c80fd22b4620c88349ac30adb2cbd8565f00d1ef1d074db0a6"
-      },
-      {
-        "id": "c4c97bc4fbb05136f71a19a95cbe85732ee7b36c5435812d8a3c681e7f24c944",
-        "line": 245,
         "column": 0,
         "construct": "UIElement",
-        "snippet": "<button",
+        "fingerprint": "c4c97bc4fbb05136f71a19a95cbe85732ee7b36c5435812d8a3c681e7f24c944",
+        "id": "c4c97bc4fbb05136f71a19a95cbe85732ee7b36c5435812d8a3c681e7f24c944",
+        "line": 288,
         "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
-        "fingerprint": "c4c97bc4fbb05136f71a19a95cbe85732ee7b36c5435812d8a3c681e7f24c944"
+        "snippet": "<button"
       }
-    ]
+    ],
+    "path": "apps/admin/src/app/events/[id]/edit/page.tsx",
+    "snippet": "<button"
   },
-  "createdDate": "2026-06-29T08:09:55.177Z",
+  "feature": "button",
   "firstDetected": "2026-06-29T08:09:55.177Z",
-  "lastDetected": "2026-06-30T15:36:27.142Z",
-  "occurrenceCount": 2
+  "id": "f_46a8a3f0",
+  "lastDetected": "2026-07-04T09:51:17.668Z",
+  "lastModified": "2026-07-04T09:51:17.668Z",
+  "occurrenceCount": 1,
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-UI-005",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
 }
