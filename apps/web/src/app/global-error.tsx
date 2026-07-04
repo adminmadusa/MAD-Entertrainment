@@ -1,12 +1,8 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
-import {
-  isChunkLoadFailure,
-  isBuildMismatchChunkFailure,
-  getChunkRecoveryTimestamp,
-  setChunkRecoveryTimestamp,
-} from '@/lib/utils/chunk-recovery';
+import { useEffect, useRef, useState } from 'react';
+
+import { isChunkLoadFailure, isBuildMismatchChunkFailure, getChunkRecoveryTimestamp, setChunkRecoveryTimestamp } from '@/lib/utils/chunk-recovery';
 
 interface GlobalErrorProps {
   error: Error & { digest?: string };
@@ -270,4 +266,3 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
     </html>
   );
 }
-

@@ -1,6 +1,10 @@
 {
   "confidence": 1,
+<<<<<<< HEAD
   "createdDate": "2026-07-04T03:15:47.824Z",
+=======
+  "createdDate": "2026-07-04T04:54:04.506Z",
+>>>>>>> fix/web-hygiene-core
   "domain": "Platform Team",
   "engineVersion": "1.0.0",
   "evidence": {
@@ -36,9 +40,15 @@
     "path": "docs/audit/booking-status-verification-audit.md"
   },
   "feature": "Document",
+<<<<<<< HEAD
   "firstDetected": "2026-07-04T03:15:47.824Z",
   "id": "f_ae301650",
   "lastDetected": "2026-07-04T03:15:47.824Z",
+=======
+  "firstDetected": "2026-07-04T04:54:04.506Z",
+  "id": "f_ae301650",
+  "lastDetected": "2026-07-04T04:54:04.506Z",
+>>>>>>> fix/web-hygiene-core
   "occurrenceCount": 3,
   "owner": "Platform Team",
   "package": "docs",

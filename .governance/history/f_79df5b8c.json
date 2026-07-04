@@ -1,6 +1,7 @@
 {
   "history": [
     {
+<<<<<<< HEAD
       "action": "CREATED",
       "notes": "New grouped finding registered: Heading level jump detected (h3 after h1). Headings must follow a strict sequential hierarchy (h1 -> h2 -> h3).",
       "status": "NEW",
@@ -17,23 +18,38 @@
       "notes": "Finding regressed. Code violation re-introduced. (Transitioned from CLOSED to REGRESSION)",
       "status": "REGRESSION",
       "timestamp": "2026-07-04T03:15:48.539Z"
+=======
+      "action": "DETECTED_AGAIN",
+      "notes": "Finding regressed. Code violation re-introduced. (Transitioned from CLOSED to REGRESSION)",
+      "status": "REGRESSION",
+      "timestamp": "2026-07-04T04:54:05.067Z"
+>>>>>>> fix/web-hygiene-core
     },
     {
       "action": "UPDATED",
       "notes": "Occurrences updated. Active count: 1",
       "status": "REGRESSION",
+<<<<<<< HEAD
       "timestamp": "2026-07-04T03:15:48.732Z"
+=======
+      "timestamp": "2026-07-04T04:54:05.187Z"
+>>>>>>> fix/web-hygiene-core
     },
     {
       "action": "DETECTED_AGAIN",
       "notes": "Finding regressed. Code violation re-introduced. (Transitioned from CLOSED to REGRESSION)",
       "status": "REGRESSION",
+<<<<<<< HEAD
       "timestamp": "2026-07-04T03:15:57.211Z"
+=======
+      "timestamp": "2026-07-04T04:55:08.576Z"
+>>>>>>> fix/web-hygiene-core
     },
     {
       "action": "UPDATED",
       "notes": "Occurrences updated. Active count: 1",
       "status": "REGRESSION",
+<<<<<<< HEAD
       "timestamp": "2026-07-04T03:15:57.223Z"
     },
     {
@@ -131,6 +147,9 @@
       "notes": "Occurrences updated. Active count: 1",
       "status": "REGRESSION",
       "timestamp": "2026-07-04T04:15:24.669Z"
+=======
+      "timestamp": "2026-07-04T04:55:08.590Z"
+>>>>>>> fix/web-hygiene-core
     }
   ],
   "id": "f_79df5b8c"

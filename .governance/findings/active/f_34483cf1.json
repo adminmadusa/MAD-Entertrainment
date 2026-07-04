@@ -1,6 +1,10 @@
 {
   "confidence": 1,
+<<<<<<< HEAD
   "createdDate": "2026-07-04T03:15:48.050Z",
+=======
+  "createdDate": "2026-07-04T04:54:04.730Z",
+>>>>>>> fix/web-hygiene-core
   "domain": "Platform Team",
   "engineVersion": "1.0.0",
   "evidence": {
@@ -52,9 +56,15 @@
     "path": "packages/utils/src/jwt.test.ts"
   },
   "feature": "Document",
+<<<<<<< HEAD
   "firstDetected": "2026-07-04T03:15:48.050Z",
   "id": "f_34483cf1",
   "lastDetected": "2026-07-04T03:15:48.050Z",
+=======
+  "firstDetected": "2026-07-04T04:54:04.730Z",
+  "id": "f_34483cf1",
+  "lastDetected": "2026-07-04T04:54:04.730Z",
+>>>>>>> fix/web-hygiene-core
   "occurrenceCount": 5,
   "owner": "Platform Team",
   "package": "packages",

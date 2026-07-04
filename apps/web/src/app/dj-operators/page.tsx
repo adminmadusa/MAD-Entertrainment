@@ -6,9 +6,9 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { SearchIcon } from '@mad/ui';
 
 import { publicGetDJs } from '@/lib/api/public.service';
+import { SearchIcon } from '@mad/ui';
 
 export default function DJsPage() {
   const router = useRouter();

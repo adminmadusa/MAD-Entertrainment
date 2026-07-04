@@ -2,6 +2,7 @@
   "history": [
     {
       "action": "UPDATED",
+<<<<<<< HEAD
       "notes": "Occurrences updated. Active count: 7",
       "status": "NEW",
       "timestamp": "2026-07-03T17:05:04.424Z"
@@ -17,6 +18,11 @@
       "notes": "Occurrences updated. Active count: 8",
       "status": "NEW",
       "timestamp": "2026-07-04T04:11:43.093Z"
+=======
+      "notes": "Occurrences updated. Active count: 8",
+      "status": "NEW",
+      "timestamp": "2026-07-04T04:54:05.219Z"
+>>>>>>> fix/web-hygiene-core
     }
   ],
   "id": "f_a77a33ef"

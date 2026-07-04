@@ -1,6 +1,7 @@
 {
   "history": [
     {
+<<<<<<< HEAD
       "action": "CREATED",
       "notes": "New grouped finding registered: Element <motion.div> with click handler lacks a tabIndex or role attribute, breaking keyboard accessibility.",
       "status": "NEW",
@@ -17,6 +18,12 @@
       "notes": "Occurrences updated. Active count: 1",
       "status": "NEW",
       "timestamp": "2026-07-04T04:11:43.102Z"
+=======
+      "action": "UPDATED",
+      "notes": "Occurrences updated. Active count: 1",
+      "status": "NEW",
+      "timestamp": "2026-07-04T04:54:05.306Z"
+>>>>>>> fix/web-hygiene-core
     }
   ],
   "id": "f_95c09dde"

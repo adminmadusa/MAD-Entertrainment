@@ -5,7 +5,11 @@
   "engineVersion": "1.0.0",
   "evidence": {
     "construct": "UIElement",
+<<<<<<< HEAD
     "line": 191,
+=======
+    "line": 192,
+>>>>>>> fix/web-hygiene-core
     "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
     "occurrences": [
       {
@@ -13,7 +17,11 @@
         "construct": "UIElement",
         "fingerprint": "3e61a5dde7c6223e6da16767f64e60917ecee8d63e74cc35a66537c411dcaa36",
         "id": "3e61a5dde7c6223e6da16767f64e60917ecee8d63e74cc35a66537c411dcaa36",
+<<<<<<< HEAD
         "line": 177,
+=======
+        "line": 178,
+>>>>>>> fix/web-hygiene-core
         "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
         "snippet": "<button"
       },
@@ -22,7 +30,11 @@
         "construct": "UIElement",
         "fingerprint": "3e61a5dde7c6223e6da16767f64e60917ecee8d63e74cc35a66537c411dcaa36",
         "id": "3e61a5dde7c6223e6da16767f64e60917ecee8d63e74cc35a66537c411dcaa36",
+<<<<<<< HEAD
         "line": 191,
+=======
+        "line": 192,
+>>>>>>> fix/web-hygiene-core
         "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
         "snippet": "<button"
       }
@@ -33,8 +45,13 @@
   "feature": "UIElement",
   "firstDetected": "2026-06-30T15:36:27.258Z",
   "id": "f_d27bc78d",
+<<<<<<< HEAD
   "lastDetected": "2026-07-04T04:11:43.107Z",
   "lastModified": "2026-07-04T04:11:43.107Z",
+=======
+  "lastDetected": "2026-07-04T04:54:05.314Z",
+  "lastModified": "2026-07-04T04:54:05.314Z",
+>>>>>>> fix/web-hygiene-core
   "occurrenceCount": 2,
   "owner": "UI UX Guild",
   "package": "apps",

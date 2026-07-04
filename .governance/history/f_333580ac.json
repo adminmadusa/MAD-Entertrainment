@@ -1,6 +1,7 @@
 {
   "history": [
     {
+<<<<<<< HEAD
       "action": "CREATED",
       "notes": "New grouped finding registered: Element <th> with click handler lacks a tabIndex or role attribute, breaking keyboard accessibility.",
       "status": "NEW",
@@ -11,11 +12,18 @@
       "notes": "Code violation no longer detected. Marking finding as closed. (Transitioned from NEW to CLOSED)",
       "status": "CLOSED",
       "timestamp": "2026-07-04T01:59:45.435Z"
+=======
+      "action": "DETECTED_AGAIN",
+      "notes": "Finding regressed. Code violation re-introduced. (Transitioned from CLOSED to REGRESSION)",
+      "status": "REGRESSION",
+      "timestamp": "2026-07-04T04:54:05.013Z"
+>>>>>>> fix/web-hygiene-core
     },
     {
       "action": "DETECTED_AGAIN",
       "notes": "Finding regressed. Code violation re-introduced. (Transitioned from CLOSED to REGRESSION)",
       "status": "REGRESSION",
+<<<<<<< HEAD
       "timestamp": "2026-07-04T03:15:48.372Z"
     },
     {
@@ -71,6 +79,9 @@
       "notes": "Finding regressed. Code violation re-introduced. (Transitioned from CLOSED to REGRESSION)",
       "status": "REGRESSION",
       "timestamp": "2026-07-04T04:15:24.485Z"
+=======
+      "timestamp": "2026-07-04T04:55:08.570Z"
+>>>>>>> fix/web-hygiene-core
     }
   ],
   "id": "f_333580ac"

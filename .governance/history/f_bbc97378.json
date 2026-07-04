@@ -1,6 +1,7 @@
 {
   "history": [
     {
+<<<<<<< HEAD
       "action": "CREATED",
       "notes": "New grouped finding registered: Heading level jump detected (h3 after h1). Headings must follow a strict sequential hierarchy (h1 -> h2 -> h3).",
       "status": "NEW",
@@ -11,11 +12,18 @@
       "notes": "Code violation no longer detected. Marking finding as closed. (Transitioned from NEW to CLOSED)",
       "status": "CLOSED",
       "timestamp": "2026-07-03T17:05:04.400Z"
+=======
+      "action": "DETECTED_AGAIN",
+      "notes": "Finding regressed. Code violation re-introduced. (Transitioned from CLOSED to REGRESSION)",
+      "status": "REGRESSION",
+      "timestamp": "2026-07-04T04:54:05.104Z"
+>>>>>>> fix/web-hygiene-core
     },
     {
       "action": "DETECTED_AGAIN",
       "notes": "Finding regressed. Code violation re-introduced. (Transitioned from CLOSED to REGRESSION)",
       "status": "REGRESSION",
+<<<<<<< HEAD
       "timestamp": "2026-07-04T03:15:48.614Z"
     },
     {
@@ -71,6 +79,9 @@
       "notes": "Finding regressed. Code violation re-introduced. (Transitioned from CLOSED to REGRESSION)",
       "status": "REGRESSION",
       "timestamp": "2026-07-04T04:15:24.601Z"
+=======
+      "timestamp": "2026-07-04T04:55:08.582Z"
+>>>>>>> fix/web-hygiene-core
     }
   ],
   "id": "f_bbc97378"

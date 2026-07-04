@@ -1,6 +1,10 @@
 {
   "confidence": 1,
+<<<<<<< HEAD
   "createdDate": "2026-07-04T03:15:46.489Z",
+=======
+  "createdDate": "2026-07-04T04:54:03.180Z",
+>>>>>>> fix/web-hygiene-core
   "domain": "Platform Team",
   "engineVersion": "1.0.0",
   "evidence": {
@@ -28,9 +32,15 @@
     "path": "apps/web/src/app/actions/contact.actions.ts"
   },
   "feature": "Document",
+<<<<<<< HEAD
   "firstDetected": "2026-07-04T03:15:46.489Z",
   "id": "f_2c6763bf",
   "lastDetected": "2026-07-04T03:15:46.489Z",
+=======
+  "firstDetected": "2026-07-04T04:54:03.180Z",
+  "id": "f_2c6763bf",
+  "lastDetected": "2026-07-04T04:54:03.180Z",
+>>>>>>> fix/web-hygiene-core
   "occurrenceCount": 2,
   "owner": "Platform Team",
   "package": "apps",

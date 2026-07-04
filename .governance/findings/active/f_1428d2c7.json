@@ -1,6 +1,10 @@
 {
   "confidence": 1,
+<<<<<<< HEAD
   "createdDate": "2026-07-04T03:15:45.735Z",
+=======
+  "createdDate": "2026-07-04T04:54:02.442Z",
+>>>>>>> fix/web-hygiene-core
   "domain": "Platform Team",
   "engineVersion": "1.0.0",
   "evidence": {
@@ -44,9 +48,15 @@
     "path": "apps/server/src/services/consistency.service.test.ts"
   },
   "feature": "Document",
+<<<<<<< HEAD
   "firstDetected": "2026-07-04T03:15:45.735Z",
   "id": "f_1428d2c7",
   "lastDetected": "2026-07-04T03:15:45.735Z",
+=======
+  "firstDetected": "2026-07-04T04:54:02.442Z",
+  "id": "f_1428d2c7",
+  "lastDetected": "2026-07-04T04:54:02.442Z",
+>>>>>>> fix/web-hygiene-core
   "occurrenceCount": 4,
   "owner": "Platform Team",
   "package": "apps",

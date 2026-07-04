@@ -1,6 +1,10 @@
 {
   "confidence": 1,
+<<<<<<< HEAD
   "createdDate": "2026-07-04T03:15:44.992Z",
+=======
+  "createdDate": "2026-07-04T04:54:01.700Z",
+>>>>>>> fix/web-hygiene-core
   "domain": "Platform Team",
   "engineVersion": "1.0.0",
   "evidence": {
@@ -20,9 +24,15 @@
     "path": "apps/server/src/config/queue.config.ts"
   },
   "feature": "Document",
+<<<<<<< HEAD
   "firstDetected": "2026-07-04T03:15:44.992Z",
   "id": "f_fdf4ff7a",
   "lastDetected": "2026-07-04T03:15:44.992Z",
+=======
+  "firstDetected": "2026-07-04T04:54:01.700Z",
+  "id": "f_fdf4ff7a",
+  "lastDetected": "2026-07-04T04:54:01.700Z",
+>>>>>>> fix/web-hygiene-core
   "occurrenceCount": 1,
   "owner": "Platform Team",
   "package": "apps",

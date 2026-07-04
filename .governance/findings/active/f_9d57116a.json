@@ -1,6 +1,10 @@
 {
   "confidence": 1,
+<<<<<<< HEAD
   "createdDate": "2026-07-04T03:15:47.784Z",
+=======
+  "createdDate": "2026-07-04T04:54:04.463Z",
+>>>>>>> fix/web-hygiene-core
   "domain": "Platform Team",
   "engineVersion": "1.0.0",
   "evidence": {
@@ -20,9 +24,15 @@
     "path": "docs/archive/branch-cleanup/governance_baseline.md"
   },
   "feature": "Document",
+<<<<<<< HEAD
   "firstDetected": "2026-07-04T03:15:47.784Z",
   "id": "f_9d57116a",
   "lastDetected": "2026-07-04T03:15:47.784Z",
+=======
+  "firstDetected": "2026-07-04T04:54:04.463Z",
+  "id": "f_9d57116a",
+  "lastDetected": "2026-07-04T04:54:04.463Z",
+>>>>>>> fix/web-hygiene-core
   "occurrenceCount": 1,
   "owner": "Platform Team",
   "package": "docs",

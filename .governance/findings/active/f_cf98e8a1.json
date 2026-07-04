@@ -1,6 +1,10 @@
 {
   "confidence": 1,
+<<<<<<< HEAD
   "createdDate": "2026-07-04T03:15:44.560Z",
+=======
+  "createdDate": "2026-07-04T04:54:01.253Z",
+>>>>>>> fix/web-hygiene-core
   "domain": "Platform Team",
   "engineVersion": "1.0.0",
   "evidence": {
@@ -20,9 +24,15 @@
     "path": ".agents/skills/ci-investigation/SKILL.md"
   },
   "feature": "Document",
+<<<<<<< HEAD
   "firstDetected": "2026-07-04T03:15:44.560Z",
   "id": "f_cf98e8a1",
   "lastDetected": "2026-07-04T03:15:44.560Z",
+=======
+  "firstDetected": "2026-07-04T04:54:01.253Z",
+  "id": "f_cf98e8a1",
+  "lastDetected": "2026-07-04T04:54:01.253Z",
+>>>>>>> fix/web-hygiene-core
   "occurrenceCount": 1,
   "owner": "Platform Team",
   "package": ".agents",
@@ -30,5 +40,9 @@
   "rule": "VAL-HYG-004",
   "ruleVersion": "1.0.0",
   "schemaVersion": 2,
+<<<<<<< HEAD
   "status": "REGRESSION"
+=======
+  "status": "NEW"
+>>>>>>> fix/web-hygiene-core
 }

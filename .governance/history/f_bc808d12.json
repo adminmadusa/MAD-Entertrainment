@@ -4,7 +4,11 @@
       "action": "CREATED",
       "notes": "New grouped finding registered: console.error() used in server production code. Use the approved logger (import { logger } from '../../utils/logger') instead.",
       "status": "NEW",
+<<<<<<< HEAD
       "timestamp": "2026-07-04T03:15:45.548Z"
+=======
+      "timestamp": "2026-07-04T04:54:02.257Z"
+>>>>>>> fix/web-hygiene-core
     }
   ],
   "id": "f_bc808d12"

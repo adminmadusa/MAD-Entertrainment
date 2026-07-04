@@ -22,8 +22,13 @@
   "feature": "UIElement",
   "firstDetected": "2026-06-30T15:36:27.169Z",
   "id": "f_a015cd0b",
+<<<<<<< HEAD
   "lastDetected": "2026-07-04T04:11:43.070Z",
   "lastModified": "2026-07-04T04:11:43.070Z",
+=======
+  "lastDetected": "2026-07-04T04:54:05.194Z",
+  "lastModified": "2026-07-04T04:54:05.194Z",
+>>>>>>> fix/web-hygiene-core
   "occurrenceCount": 1,
   "owner": "UI UX Guild",
   "package": "apps",

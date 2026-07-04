@@ -1,6 +1,7 @@
 {
   "history": [
     {
+<<<<<<< HEAD
       "action": "CREATED",
       "notes": "New grouped finding registered: Custom backdrop & modal container coded. Use shared <Modal> component from @mad/ui to avoid styles drift.",
       "status": "NEW",
@@ -17,6 +18,12 @@
       "notes": "Occurrences updated. Active count: 2",
       "status": "NEW",
       "timestamp": "2026-07-04T04:11:43.105Z"
+=======
+      "action": "UPDATED",
+      "notes": "Occurrences updated. Active count: 2",
+      "status": "NEW",
+      "timestamp": "2026-07-04T04:54:05.310Z"
+>>>>>>> fix/web-hygiene-core
     }
   ],
   "id": "f_43716eda"

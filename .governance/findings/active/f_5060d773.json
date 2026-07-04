@@ -1,11 +1,19 @@
 {
   "confidence": 1,
+<<<<<<< HEAD
   "createdDate": "2026-07-04T03:15:46.509Z",
+=======
+  "createdDate": "2026-07-04T04:54:03.198Z",
+>>>>>>> fix/web-hygiene-core
   "domain": "Platform Team",
   "engineVersion": "1.0.0",
   "evidence": {
     "construct": "Document",
+<<<<<<< HEAD
     "line": 29,
+=======
+    "line": 30,
+>>>>>>> fix/web-hygiene-core
     "message": "Trailing whitespace characters detected.",
     "occurrences": [
       {
@@ -13,7 +21,11 @@
         "construct": "Document",
         "fingerprint": "16644de2a49706ae5d490f9f019a7bb17a5d0ab63763997cafd02fc43cef041b",
         "id": "16644de2a49706ae5d490f9f019a7bb17a5d0ab63763997cafd02fc43cef041b",
+<<<<<<< HEAD
         "line": 26,
+=======
+        "line": 27,
+>>>>>>> fix/web-hygiene-core
         "message": "Trailing whitespace characters detected."
       },
       {
@@ -21,16 +33,26 @@
         "construct": "Document",
         "fingerprint": "16644de2a49706ae5d490f9f019a7bb17a5d0ab63763997cafd02fc43cef041b",
         "id": "16644de2a49706ae5d490f9f019a7bb17a5d0ab63763997cafd02fc43cef041b",
+<<<<<<< HEAD
         "line": 29,
+=======
+        "line": 30,
+>>>>>>> fix/web-hygiene-core
         "message": "Trailing whitespace characters detected."
       }
     ],
     "path": "apps/web/src/app/contact/page.tsx"
   },
   "feature": "Document",
+<<<<<<< HEAD
   "firstDetected": "2026-07-04T03:15:46.509Z",
   "id": "f_5060d773",
   "lastDetected": "2026-07-04T03:15:46.509Z",
+=======
+  "firstDetected": "2026-07-04T04:54:03.198Z",
+  "id": "f_5060d773",
+  "lastDetected": "2026-07-04T04:54:03.198Z",
+>>>>>>> fix/web-hygiene-core
   "occurrenceCount": 2,
   "owner": "Platform Team",
   "package": "apps",

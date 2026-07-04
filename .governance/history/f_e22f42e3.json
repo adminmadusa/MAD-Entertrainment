@@ -1,6 +1,7 @@
 {
   "history": [
     {
+<<<<<<< HEAD
       "action": "CREATED",
       "notes": "New grouped finding registered: Every documentation file is required to have a defined \"Owner\" or \"Authors\" in its metadata block.",
       "status": "NEW",
@@ -17,11 +18,18 @@
       "notes": "New grouped finding registered: Every documentation file is required to have a defined \"Owner\" or \"Authors\" in its metadata block.",
       "status": "NEW",
       "timestamp": "2026-07-04T03:02:11.357Z"
+=======
+      "action": "DETECTED_AGAIN",
+      "notes": "Finding regressed. Code violation re-introduced. (Transitioned from CLOSED to REGRESSION)",
+      "status": "REGRESSION",
+      "timestamp": "2026-07-04T04:54:05.134Z"
+>>>>>>> fix/web-hygiene-core
     },
     {
       "action": "DETECTED_AGAIN",
       "notes": "Finding regressed. Code violation re-introduced. (Transitioned from CLOSED to REGRESSION)",
       "status": "REGRESSION",
+<<<<<<< HEAD
       "timestamp": "2026-07-04T03:15:48.661Z"
     },
     {
@@ -71,6 +79,9 @@
       "notes": "Finding regressed. Code violation re-introduced. (Transitioned from CLOSED to REGRESSION)",
       "status": "REGRESSION",
       "timestamp": "2026-07-04T04:15:24.640Z"
+=======
+      "timestamp": "2026-07-04T04:55:08.586Z"
+>>>>>>> fix/web-hygiene-core
     }
   ],
   "id": "f_e22f42e3"

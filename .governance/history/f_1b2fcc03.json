@@ -4,6 +4,7 @@
       "action": "UPDATED",
       "notes": "Occurrences updated. Active count: 1",
       "status": "NEW",
+<<<<<<< HEAD
       "timestamp": "2026-07-03T16:43:26.060Z"
     },
     {
@@ -17,6 +18,9 @@
       "notes": "Occurrences updated. Active count: 1",
       "status": "NEW",
       "timestamp": "2026-07-04T04:11:43.112Z"
+=======
+      "timestamp": "2026-07-04T04:54:05.337Z"
+>>>>>>> fix/web-hygiene-core
     }
   ],
   "id": "f_1b2fcc03"

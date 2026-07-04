@@ -1,11 +1,19 @@
 {
   "confidence": 1,
+<<<<<<< HEAD
   "createdDate": "2026-07-04T03:15:46.616Z",
+=======
+  "createdDate": "2026-07-04T04:54:03.306Z",
+>>>>>>> fix/web-hygiene-core
   "domain": "Platform Team",
   "engineVersion": "1.0.0",
   "evidence": {
     "construct": "Document",
+<<<<<<< HEAD
     "line": 60,
+=======
+    "line": 63,
+>>>>>>> fix/web-hygiene-core
     "message": "Trailing whitespace characters detected.",
     "occurrences": [
       {
@@ -13,6 +21,7 @@
         "construct": "Document",
         "fingerprint": "a686dad8fc750ed0816cf9504d579501a885deef289688db1f574e35805d4362",
         "id": "a686dad8fc750ed0816cf9504d579501a885deef289688db1f574e35805d4362",
+<<<<<<< HEAD
         "line": 21,
         "message": "Trailing whitespace characters detected."
       },
@@ -38,6 +47,9 @@
         "fingerprint": "a686dad8fc750ed0816cf9504d579501a885deef289688db1f574e35805d4362",
         "id": "a686dad8fc750ed0816cf9504d579501a885deef289688db1f574e35805d4362",
         "line": 59,
+=======
+        "line": 24,
+>>>>>>> fix/web-hygiene-core
         "message": "Trailing whitespace characters detected."
       },
       {
@@ -47,14 +59,47 @@
         "id": "a686dad8fc750ed0816cf9504d579501a885deef289688db1f574e35805d4362",
         "line": 60,
         "message": "Trailing whitespace characters detected."
+<<<<<<< HEAD
+=======
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "a686dad8fc750ed0816cf9504d579501a885deef289688db1f574e35805d4362",
+        "id": "a686dad8fc750ed0816cf9504d579501a885deef289688db1f574e35805d4362",
+        "line": 61,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "a686dad8fc750ed0816cf9504d579501a885deef289688db1f574e35805d4362",
+        "id": "a686dad8fc750ed0816cf9504d579501a885deef289688db1f574e35805d4362",
+        "line": 62,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "a686dad8fc750ed0816cf9504d579501a885deef289688db1f574e35805d4362",
+        "id": "a686dad8fc750ed0816cf9504d579501a885deef289688db1f574e35805d4362",
+        "line": 63,
+        "message": "Trailing whitespace characters detected."
+>>>>>>> fix/web-hygiene-core
       }
     ],
     "path": "apps/web/src/app/legal/[doc]/page.tsx"
   },
   "feature": "Document",
+<<<<<<< HEAD
   "firstDetected": "2026-07-04T03:15:46.616Z",
   "id": "f_24176245",
   "lastDetected": "2026-07-04T03:15:46.616Z",
+=======
+  "firstDetected": "2026-07-04T04:54:03.306Z",
+  "id": "f_24176245",
+  "lastDetected": "2026-07-04T04:54:03.306Z",
+>>>>>>> fix/web-hygiene-core
   "occurrenceCount": 5,
   "owner": "Platform Team",
   "package": "apps",

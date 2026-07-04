@@ -1,6 +1,10 @@
 {
   "confidence": 1,
+<<<<<<< HEAD
   "createdDate": "2026-07-04T03:15:45.818Z",
+=======
+  "createdDate": "2026-07-04T04:54:02.522Z",
+>>>>>>> fix/web-hygiene-core
   "domain": "Platform Team",
   "engineVersion": "1.0.0",
   "evidence": {
@@ -36,9 +40,15 @@
     "path": "apps/server/src/services/public/auth.service.ts"
   },
   "feature": "Document",
+<<<<<<< HEAD
   "firstDetected": "2026-07-04T03:15:45.818Z",
   "id": "f_8e317cc7",
   "lastDetected": "2026-07-04T03:15:45.818Z",
+=======
+  "firstDetected": "2026-07-04T04:54:02.522Z",
+  "id": "f_8e317cc7",
+  "lastDetected": "2026-07-04T04:54:02.522Z",
+>>>>>>> fix/web-hygiene-core
   "occurrenceCount": 3,
   "owner": "Platform Team",
   "package": "apps",

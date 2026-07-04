@@ -1,11 +1,19 @@
 {
   "confidence": 1,
+<<<<<<< HEAD
   "createdDate": "2026-07-04T03:15:46.653Z",
+=======
+  "createdDate": "2026-07-04T04:54:03.342Z",
+>>>>>>> fix/web-hygiene-core
   "domain": "Platform Team",
   "engineVersion": "1.0.0",
   "evidence": {
     "construct": "Document",
+<<<<<<< HEAD
     "line": 25,
+=======
+    "line": 27,
+>>>>>>> fix/web-hygiene-core
     "message": "Trailing whitespace characters detected.",
     "occurrences": [
       {
@@ -13,7 +21,11 @@
         "construct": "Document",
         "fingerprint": "51d2b651869467a4836aa62bc84bde9c95f916f082a90297b9740b51e47bbe18",
         "id": "51d2b651869467a4836aa62bc84bde9c95f916f082a90297b9740b51e47bbe18",
+<<<<<<< HEAD
         "line": 17,
+=======
+        "line": 19,
+>>>>>>> fix/web-hygiene-core
         "message": "Trailing whitespace characters detected."
       },
       {
@@ -21,7 +33,11 @@
         "construct": "Document",
         "fingerprint": "51d2b651869467a4836aa62bc84bde9c95f916f082a90297b9740b51e47bbe18",
         "id": "51d2b651869467a4836aa62bc84bde9c95f916f082a90297b9740b51e47bbe18",
+<<<<<<< HEAD
         "line": 24,
+=======
+        "line": 26,
+>>>>>>> fix/web-hygiene-core
         "message": "Trailing whitespace characters detected."
       },
       {
@@ -29,16 +45,26 @@
         "construct": "Document",
         "fingerprint": "51d2b651869467a4836aa62bc84bde9c95f916f082a90297b9740b51e47bbe18",
         "id": "51d2b651869467a4836aa62bc84bde9c95f916f082a90297b9740b51e47bbe18",
+<<<<<<< HEAD
         "line": 25,
+=======
+        "line": 27,
+>>>>>>> fix/web-hygiene-core
         "message": "Trailing whitespace characters detected."
       }
     ],
     "path": "apps/web/src/app/legal/components/LegalSidebar.tsx"
   },
   "feature": "Document",
+<<<<<<< HEAD
   "firstDetected": "2026-07-04T03:15:46.653Z",
   "id": "f_7ce822b0",
   "lastDetected": "2026-07-04T03:15:46.653Z",
+=======
+  "firstDetected": "2026-07-04T04:54:03.342Z",
+  "id": "f_7ce822b0",
+  "lastDetected": "2026-07-04T04:54:03.342Z",
+>>>>>>> fix/web-hygiene-core
   "occurrenceCount": 3,
   "owner": "Platform Team",
   "package": "apps",

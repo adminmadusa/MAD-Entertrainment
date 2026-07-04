@@ -1,6 +1,10 @@
 {
   "confidence": 1,
+<<<<<<< HEAD
   "createdDate": "2026-07-04T03:15:47.879Z",
+=======
+  "createdDate": "2026-07-04T04:54:04.561Z",
+>>>>>>> fix/web-hygiene-core
   "domain": "Platform Team",
   "engineVersion": "1.0.0",
   "evidence": {
@@ -20,9 +24,15 @@
     "path": "docs/decisions/ADR_INDEX.md"
   },
   "feature": "Document",
+<<<<<<< HEAD
   "firstDetected": "2026-07-04T03:15:47.879Z",
   "id": "f_19e124e0",
   "lastDetected": "2026-07-04T03:15:47.879Z",
+=======
+  "firstDetected": "2026-07-04T04:54:04.561Z",
+  "id": "f_19e124e0",
+  "lastDetected": "2026-07-04T04:54:04.561Z",
+>>>>>>> fix/web-hygiene-core
   "occurrenceCount": 1,
   "owner": "Platform Team",
   "package": "docs",

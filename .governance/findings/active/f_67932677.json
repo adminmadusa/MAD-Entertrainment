@@ -1,6 +1,10 @@
 {
   "confidence": 1,
+<<<<<<< HEAD
   "createdDate": "2026-07-04T03:15:47.804Z",
+=======
+  "createdDate": "2026-07-04T04:54:04.483Z",
+>>>>>>> fix/web-hygiene-core
   "domain": "Platform Team",
   "engineVersion": "1.0.0",
   "evidence": {
@@ -60,9 +64,15 @@
     "path": "docs/audit/admin-mobile-shell-audit.md"
   },
   "feature": "Document",
+<<<<<<< HEAD
   "firstDetected": "2026-07-04T03:15:47.804Z",
   "id": "f_67932677",
   "lastDetected": "2026-07-04T03:15:47.804Z",
+=======
+  "firstDetected": "2026-07-04T04:54:04.483Z",
+  "id": "f_67932677",
+  "lastDetected": "2026-07-04T04:54:04.483Z",
+>>>>>>> fix/web-hygiene-core
   "occurrenceCount": 6,
   "owner": "Platform Team",
   "package": "docs",

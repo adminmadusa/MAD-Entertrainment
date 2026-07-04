@@ -1,6 +1,10 @@
 {
   "confidence": 1,
+<<<<<<< HEAD
   "createdDate": "2026-07-04T03:15:47.484Z",
+=======
+  "createdDate": "2026-07-04T04:54:04.158Z",
+>>>>>>> fix/web-hygiene-core
   "domain": "Platform Team",
   "engineVersion": "1.0.0",
   "evidence": {
@@ -44,9 +48,15 @@
     "path": "docs/archive/audits/DASHBOARD_SIMPLIFICATION_VALIDATION.md"
   },
   "feature": "Document",
+<<<<<<< HEAD
   "firstDetected": "2026-07-04T03:15:47.484Z",
   "id": "f_ccad1e72",
   "lastDetected": "2026-07-04T03:15:47.484Z",
+=======
+  "firstDetected": "2026-07-04T04:54:04.158Z",
+  "id": "f_ccad1e72",
+  "lastDetected": "2026-07-04T04:54:04.158Z",
+>>>>>>> fix/web-hygiene-core
   "occurrenceCount": 4,
   "owner": "Platform Team",
   "package": "docs",

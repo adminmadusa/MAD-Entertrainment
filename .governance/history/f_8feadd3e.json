@@ -1,6 +1,7 @@
 {
   "history": [
     {
+<<<<<<< HEAD
       "action": "CREATED",
       "notes": "New grouped finding registered: Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
       "status": "NEW",
@@ -17,6 +18,12 @@
       "notes": "Occurrences updated. Active count: 3",
       "status": "NEW",
       "timestamp": "2026-07-04T04:11:43.082Z"
+=======
+      "action": "UPDATED",
+      "notes": "Occurrences updated. Active count: 3",
+      "status": "NEW",
+      "timestamp": "2026-07-04T04:54:05.207Z"
+>>>>>>> fix/web-hygiene-core
     }
   ],
   "id": "f_8feadd3e"

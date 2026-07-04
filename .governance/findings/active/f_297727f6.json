@@ -1,6 +1,10 @@
 {
   "confidence": 1,
+<<<<<<< HEAD
   "createdDate": "2026-07-04T03:15:44.633Z",
+=======
+  "createdDate": "2026-07-04T04:54:01.333Z",
+>>>>>>> fix/web-hygiene-core
   "domain": "Platform Team",
   "engineVersion": "1.0.0",
   "evidence": {
@@ -68,9 +72,15 @@
     "path": "apps/admin/src/app/dashboard/page.tsx"
   },
   "feature": "Document",
+<<<<<<< HEAD
   "firstDetected": "2026-07-04T03:15:44.633Z",
   "id": "f_297727f6",
   "lastDetected": "2026-07-04T03:15:44.633Z",
+=======
+  "firstDetected": "2026-07-04T04:54:01.333Z",
+  "id": "f_297727f6",
+  "lastDetected": "2026-07-04T04:54:01.333Z",
+>>>>>>> fix/web-hygiene-core
   "occurrenceCount": 7,
   "owner": "Platform Team",
   "package": "apps",

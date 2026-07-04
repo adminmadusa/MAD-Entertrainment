@@ -1,6 +1,10 @@
 {
   "confidence": 1,
+<<<<<<< HEAD
   "createdDate": "2026-07-04T03:15:46.919Z",
+=======
+  "createdDate": "2026-07-04T04:54:03.594Z",
+>>>>>>> fix/web-hygiene-core
   "domain": "Platform Team",
   "engineVersion": "1.0.0",
   "evidence": {
@@ -20,9 +24,15 @@
     "path": "apps/web/src/components/booking/checkout/LeaveCheckoutModal.tsx"
   },
   "feature": "Document",
+<<<<<<< HEAD
   "firstDetected": "2026-07-04T03:15:46.919Z",
   "id": "f_1519f073",
   "lastDetected": "2026-07-04T03:15:46.919Z",
+=======
+  "firstDetected": "2026-07-04T04:54:03.594Z",
+  "id": "f_1519f073",
+  "lastDetected": "2026-07-04T04:54:03.594Z",
+>>>>>>> fix/web-hygiene-core
   "occurrenceCount": 1,
   "owner": "Platform Team",
   "package": "apps",

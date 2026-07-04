@@ -24,8 +24,13 @@
   "feature": "modal-backdrop",
   "firstDetected": "2026-06-29T08:10:21.946Z",
   "id": "f_fb74c404",
+<<<<<<< HEAD
   "lastDetected": "2026-07-04T04:11:43.091Z",
   "lastModified": "2026-07-04T04:11:43.091Z",
+=======
+  "lastDetected": "2026-07-04T04:54:05.215Z",
+  "lastModified": "2026-07-04T04:54:05.215Z",
+>>>>>>> fix/web-hygiene-core
   "occurrenceCount": 1,
   "owner": "UI UX Guild",
   "package": "apps",

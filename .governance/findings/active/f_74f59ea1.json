@@ -1,6 +1,10 @@
 {
   "confidence": 1,
+<<<<<<< HEAD
   "createdDate": "2026-07-04T03:15:47.916Z",
+=======
+  "createdDate": "2026-07-04T04:54:04.597Z",
+>>>>>>> fix/web-hygiene-core
   "domain": "Platform Team",
   "engineVersion": "1.0.0",
   "evidence": {
@@ -20,9 +24,15 @@
     "path": "docs/decisions/ADR-003-governance-status-semantics.md"
   },
   "feature": "Document",
+<<<<<<< HEAD
   "firstDetected": "2026-07-04T03:15:47.916Z",
   "id": "f_74f59ea1",
   "lastDetected": "2026-07-04T03:15:47.916Z",
+=======
+  "firstDetected": "2026-07-04T04:54:04.597Z",
+  "id": "f_74f59ea1",
+  "lastDetected": "2026-07-04T04:54:04.597Z",
+>>>>>>> fix/web-hygiene-core
   "occurrenceCount": 1,
   "owner": "Platform Team",
   "package": "docs",

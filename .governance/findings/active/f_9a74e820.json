@@ -1,6 +1,10 @@
 {
   "confidence": 1,
+<<<<<<< HEAD
   "createdDate": "2026-07-04T03:15:45.490Z",
+=======
+  "createdDate": "2026-07-04T04:54:02.198Z",
+>>>>>>> fix/web-hygiene-core
   "domain": "Platform Team",
   "engineVersion": "1.0.0",
   "evidence": {
@@ -20,10 +24,16 @@
     "path": "apps/server/src/routes/public/booking.routes.ts"
   },
   "feature": "Document",
+<<<<<<< HEAD
   "firstDetected": "2026-07-04T03:15:45.490Z",
   "id": "f_9a74e820",
   "lastDetected": "2026-07-04T03:59:50.993Z",
   "lastModified": "2026-07-04T03:59:50.993Z",
+=======
+  "firstDetected": "2026-07-04T04:54:02.198Z",
+  "id": "f_9a74e820",
+  "lastDetected": "2026-07-04T04:54:02.198Z",
+>>>>>>> fix/web-hygiene-core
   "occurrenceCount": 1,
   "owner": "Platform Team",
   "package": "apps",

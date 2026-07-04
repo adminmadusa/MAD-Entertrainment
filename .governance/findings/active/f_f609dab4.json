@@ -22,8 +22,13 @@
   "feature": "Document",
   "firstDetected": "2026-07-03T12:25:52.222Z",
   "id": "f_f609dab4",
+<<<<<<< HEAD
   "lastDetected": "2026-07-04T04:15:24.672Z",
   "lastModified": "2026-07-04T04:15:24.672Z",
+=======
+  "lastDetected": "2026-07-04T04:54:05.257Z",
+  "lastModified": "2026-07-04T04:54:05.257Z",
+>>>>>>> fix/web-hygiene-core
   "occurrenceCount": 1,
   "owner": "Platform Team",
   "package": "apps",

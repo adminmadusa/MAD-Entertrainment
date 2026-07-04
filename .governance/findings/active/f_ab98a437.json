@@ -1,6 +1,10 @@
 {
   "confidence": 1,
+<<<<<<< HEAD
   "createdDate": "2026-07-04T03:15:47.380Z",
+=======
+  "createdDate": "2026-07-04T04:54:04.054Z",
+>>>>>>> fix/web-hygiene-core
   "domain": "Platform Team",
   "engineVersion": "1.0.0",
   "evidence": {
@@ -220,9 +224,15 @@
     "path": "docs/archive/audits/artists-vs-dj-operators-audit.md"
   },
   "feature": "Document",
+<<<<<<< HEAD
   "firstDetected": "2026-07-04T03:15:47.380Z",
   "id": "f_ab98a437",
   "lastDetected": "2026-07-04T03:15:47.380Z",
+=======
+  "firstDetected": "2026-07-04T04:54:04.054Z",
+  "id": "f_ab98a437",
+  "lastDetected": "2026-07-04T04:54:04.054Z",
+>>>>>>> fix/web-hygiene-core
   "occurrenceCount": 26,
   "owner": "Platform Team",
   "package": "docs",

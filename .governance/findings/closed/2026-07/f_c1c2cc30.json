@@ -31,5 +31,5 @@
   "rule": "VAL-HYG-001",
   "ruleVersion": "1.0.0",
   "schemaVersion": 2,
-  "status": "CLOSED"
+  "status": "REGRESSION"
 }

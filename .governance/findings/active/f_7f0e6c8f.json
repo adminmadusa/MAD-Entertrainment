@@ -1,6 +1,10 @@
 {
   "confidence": 1,
+<<<<<<< HEAD
   "createdDate": "2026-07-04T03:15:45.237Z",
+=======
+  "createdDate": "2026-07-04T04:54:01.944Z",
+>>>>>>> fix/web-hygiene-core
   "domain": "Platform Team",
   "engineVersion": "1.0.0",
   "evidence": {
@@ -20,9 +24,15 @@
     "path": "apps/server/src/controllers/public/payment.controller.webhook.test.ts"
   },
   "feature": "Document",
+<<<<<<< HEAD
   "firstDetected": "2026-07-04T03:15:45.237Z",
   "id": "f_7f0e6c8f",
   "lastDetected": "2026-07-04T03:15:45.237Z",
+=======
+  "firstDetected": "2026-07-04T04:54:01.944Z",
+  "id": "f_7f0e6c8f",
+  "lastDetected": "2026-07-04T04:54:01.944Z",
+>>>>>>> fix/web-hygiene-core
   "occurrenceCount": 1,
   "owner": "Platform Team",
   "package": "apps",

@@ -22,8 +22,13 @@
   "feature": "UIElement",
   "firstDetected": "2026-06-30T15:36:27.264Z",
   "id": "f_413c6cdd",
+<<<<<<< HEAD
   "lastDetected": "2026-07-04T04:11:43.109Z",
   "lastModified": "2026-07-04T04:11:43.109Z",
+=======
+  "lastDetected": "2026-07-04T04:54:05.318Z",
+  "lastModified": "2026-07-04T04:54:05.318Z",
+>>>>>>> fix/web-hygiene-core
   "occurrenceCount": 1,
   "owner": "Platform Team",
   "package": "apps",

@@ -1,6 +1,10 @@
 {
   "confidence": 1,
+<<<<<<< HEAD
   "createdDate": "2026-07-04T03:15:47.067Z",
+=======
+  "createdDate": "2026-07-04T04:54:03.741Z",
+>>>>>>> fix/web-hygiene-core
   "domain": "Platform Team",
   "engineVersion": "1.0.0",
   "evidence": {
@@ -236,9 +240,15 @@
     "path": "apps/web/src/components/support/ContactForm.tsx"
   },
   "feature": "Document",
+<<<<<<< HEAD
   "firstDetected": "2026-07-04T03:15:47.067Z",
   "id": "f_d4e4659e",
   "lastDetected": "2026-07-04T03:15:47.067Z",
+=======
+  "firstDetected": "2026-07-04T04:54:03.741Z",
+  "id": "f_d4e4659e",
+  "lastDetected": "2026-07-04T04:54:03.741Z",
+>>>>>>> fix/web-hygiene-core
   "occurrenceCount": 28,
   "owner": "Platform Team",
   "package": "apps",

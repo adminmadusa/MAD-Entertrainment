@@ -1,6 +1,10 @@
 {
   "confidence": 1,
+<<<<<<< HEAD
   "createdDate": "2026-07-04T03:15:47.312Z",
+=======
+  "createdDate": "2026-07-04T04:54:03.984Z",
+>>>>>>> fix/web-hygiene-core
   "domain": "Platform Team",
   "engineVersion": "1.0.0",
   "evidence": {
@@ -108,9 +112,15 @@
     "path": "ARCHITECTURE.md"
   },
   "feature": "Document",
+<<<<<<< HEAD
   "firstDetected": "2026-07-04T03:15:47.312Z",
   "id": "f_227f1cb9",
   "lastDetected": "2026-07-04T03:15:47.312Z",
+=======
+  "firstDetected": "2026-07-04T04:54:03.984Z",
+  "id": "f_227f1cb9",
+  "lastDetected": "2026-07-04T04:54:03.984Z",
+>>>>>>> fix/web-hygiene-core
   "occurrenceCount": 12,
   "owner": "Platform Team",
   "package": "ARCHITECTURE.md",

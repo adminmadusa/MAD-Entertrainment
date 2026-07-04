@@ -24,8 +24,13 @@
   "feature": "modal-accessibility",
   "firstDetected": "2026-06-29T08:10:00.243Z",
   "id": "f_e8e6a5e8",
+<<<<<<< HEAD
   "lastDetected": "2026-07-04T04:11:43.079Z",
   "lastModified": "2026-07-04T04:11:43.079Z",
+=======
+  "lastDetected": "2026-07-04T04:54:05.203Z",
+  "lastModified": "2026-07-04T04:54:05.203Z",
+>>>>>>> fix/web-hygiene-core
   "occurrenceCount": 1,
   "owner": "UI UX Guild",
   "package": "apps",

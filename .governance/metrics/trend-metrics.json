@@ -88,12 +88,21 @@
     "totalFindings": 1475
   },
   {
+<<<<<<< HEAD
     "averageConfidence": 0.9759763313609514,
     "averageResolutionTimeMs": 72372253.3076923,
     "closedFindings": 308,
     "falsePositiveRate": 0,
     "newFindings": 594,
     "regressionCount": 788,
+=======
+    "averageConfidence": 0.9759193357058169,
+    "averageResolutionTimeMs": 72372253.3076923,
+    "closedFindings": 328,
+    "falsePositiveRate": 0,
+    "newFindings": 716,
+    "regressionCount": 642,
+>>>>>>> fix/web-hygiene-core
     "scores": {
       "accessibility": 0,
       "architecture": 55,
@@ -106,6 +115,7 @@
       "testing": 100,
       "uiConsistency": 0
     },
+<<<<<<< HEAD
     "timestamp": "2026-07-04T04:11:43.115Z",
     "totalFindings": 1690
   },
@@ -116,6 +126,18 @@
     "falsePositiveRate": 0,
     "newFindings": 593,
     "regressionCount": 788,
+=======
+    "timestamp": "2026-07-04T04:54:05.395Z",
+    "totalFindings": 1686
+  },
+  {
+    "averageConfidence": 0.9759193357058169,
+    "averageResolutionTimeMs": 72372253.3076923,
+    "closedFindings": 331,
+    "falsePositiveRate": 0,
+    "newFindings": 714,
+    "regressionCount": 641,
+>>>>>>> fix/web-hygiene-core
     "scores": {
       "accessibility": 0,
       "architecture": 55,
@@ -128,6 +150,7 @@
       "testing": 100,
       "uiConsistency": 0
     },
+<<<<<<< HEAD
     "timestamp": "2026-07-04T04:13:29.832Z",
     "totalFindings": 1690
   },
@@ -152,5 +175,9 @@
     },
     "timestamp": "2026-07-04T04:15:24.676Z",
     "totalFindings": 1690
+=======
+    "timestamp": "2026-07-04T04:55:08.597Z",
+    "totalFindings": 1686
+>>>>>>> fix/web-hygiene-core
   }
 ]

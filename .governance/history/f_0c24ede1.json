@@ -4,7 +4,11 @@
       "action": "CREATED",
       "notes": "New grouped finding registered: File must terminate with exactly one trailing newline character.",
       "status": "NEW",
+<<<<<<< HEAD
       "timestamp": "2026-07-04T03:15:46.204Z"
+=======
+      "timestamp": "2026-07-04T04:54:02.903Z"
+>>>>>>> fix/web-hygiene-core
     }
   ],
   "id": "f_0c24ede1"

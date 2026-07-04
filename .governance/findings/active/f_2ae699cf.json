@@ -1,6 +1,10 @@
 {
   "confidence": 1,
+<<<<<<< HEAD
   "createdDate": "2026-07-04T03:15:44.856Z",
+=======
+  "createdDate": "2026-07-04T04:54:01.568Z",
+>>>>>>> fix/web-hygiene-core
   "domain": "Platform Team",
   "engineVersion": "1.0.0",
   "evidence": {
@@ -20,9 +24,15 @@
     "path": "apps/admin/src/lib/api/admin/booking.service.ts"
   },
   "feature": "Document",
+<<<<<<< HEAD
   "firstDetected": "2026-07-04T03:15:44.856Z",
   "id": "f_2ae699cf",
   "lastDetected": "2026-07-04T03:15:44.856Z",
+=======
+  "firstDetected": "2026-07-04T04:54:01.568Z",
+  "id": "f_2ae699cf",
+  "lastDetected": "2026-07-04T04:54:01.568Z",
+>>>>>>> fix/web-hygiene-core
   "occurrenceCount": 1,
   "owner": "Platform Team",
   "package": "apps",

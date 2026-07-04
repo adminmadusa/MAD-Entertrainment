@@ -1,6 +1,10 @@
 {
   "confidence": 1,
+<<<<<<< HEAD
   "createdDate": "2026-07-04T03:15:46.427Z",
+=======
+  "createdDate": "2026-07-04T04:54:03.124Z",
+>>>>>>> fix/web-hygiene-core
   "domain": "Platform Team",
   "engineVersion": "1.0.0",
   "evidence": {
@@ -20,9 +24,15 @@
     "path": "apps/server/src/workers/pdf.worker.ts"
   },
   "feature": "Document",
+<<<<<<< HEAD
   "firstDetected": "2026-07-04T03:15:46.427Z",
   "id": "f_bc2b1848",
   "lastDetected": "2026-07-04T03:15:46.427Z",
+=======
+  "firstDetected": "2026-07-04T04:54:03.124Z",
+  "id": "f_bc2b1848",
+  "lastDetected": "2026-07-04T04:54:03.124Z",
+>>>>>>> fix/web-hygiene-core
   "occurrenceCount": 1,
   "owner": "Platform Team",
   "package": "apps",

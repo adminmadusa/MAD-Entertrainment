@@ -1,15 +1,15 @@
 'use client';
 
-import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { motion, AnimatePresence, useReducedMotion, PanInfo } from 'framer-motion';
+import { AnimatePresence, motion, type PanInfo, useReducedMotion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowRight, ArrowLeft } from '@mad/ui';
-import { ImageAsset, DJOperator } from '@mad/types';
+import { useState } from 'react';
 
+import { useMounted, useWindowWidth } from '@/hooks/use-window.hook';
 import { publicGetDJBySlug } from '@/lib/api/public.service';
-import { useWindowWidth, useMounted } from '@/hooks/use-window.hook';
+import type { DJOperator, ImageAsset } from '@mad/types';
+import { ArrowLeft, ArrowRight } from '@mad/ui';
 
 // ─── SVG Icons ────────────────────────────────────────────────
 

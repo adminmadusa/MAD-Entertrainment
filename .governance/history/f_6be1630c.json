@@ -4,6 +4,7 @@
       "action": "CREATED",
       "notes": "New grouped finding registered: Trailing whitespace characters detected.",
       "status": "NEW",
+<<<<<<< HEAD
       "timestamp": "2026-07-04T03:15:45.548Z"
     },
     {
@@ -17,6 +18,9 @@
       "notes": "Occurrences updated. Active count: 5",
       "status": "NEW",
       "timestamp": "2026-07-04T03:59:50.994Z"
+=======
+      "timestamp": "2026-07-04T04:54:02.256Z"
+>>>>>>> fix/web-hygiene-core
     }
   ],
   "id": "f_6be1630c"

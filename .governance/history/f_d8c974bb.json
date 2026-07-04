@@ -1,6 +1,7 @@
 {
   "history": [
     {
+<<<<<<< HEAD
       "action": "CREATED",
       "notes": "New grouped finding registered: Raw <table> element used in portal. Use a reusable shared Table component.",
       "status": "NEW",
@@ -17,23 +18,38 @@
       "notes": "Finding regressed. Code violation re-introduced. (Transitioned from CLOSED to REGRESSION)",
       "status": "REGRESSION",
       "timestamp": "2026-07-04T03:15:48.648Z"
+=======
+      "action": "DETECTED_AGAIN",
+      "notes": "Finding regressed. Code violation re-introduced. (Transitioned from CLOSED to REGRESSION)",
+      "status": "REGRESSION",
+      "timestamp": "2026-07-04T04:54:05.128Z"
+>>>>>>> fix/web-hygiene-core
     },
     {
       "action": "UPDATED",
       "notes": "Occurrences updated. Active count: 1",
       "status": "REGRESSION",
+<<<<<<< HEAD
       "timestamp": "2026-07-04T03:15:48.713Z"
+=======
+      "timestamp": "2026-07-04T04:54:05.170Z"
+>>>>>>> fix/web-hygiene-core
     },
     {
       "action": "DETECTED_AGAIN",
       "notes": "Finding regressed. Code violation re-introduced. (Transitioned from CLOSED to REGRESSION)",
       "status": "REGRESSION",
+<<<<<<< HEAD
       "timestamp": "2026-07-04T03:15:57.219Z"
+=======
+      "timestamp": "2026-07-04T04:55:08.585Z"
+>>>>>>> fix/web-hygiene-core
     },
     {
       "action": "UPDATED",
       "notes": "Occurrences updated. Active count: 1",
       "status": "REGRESSION",
+<<<<<<< HEAD
       "timestamp": "2026-07-04T03:15:57.222Z"
     },
     {
@@ -131,6 +147,9 @@
       "notes": "Occurrences updated. Active count: 1",
       "status": "REGRESSION",
       "timestamp": "2026-07-04T04:15:24.668Z"
+=======
+      "timestamp": "2026-07-04T04:55:08.589Z"
+>>>>>>> fix/web-hygiene-core
     }
   ],
   "id": "f_d8c974bb"

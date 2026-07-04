@@ -1,28 +1,28 @@
 {
   "confidence": 1,
-  "createdDate": "2026-07-03T12:25:46.552Z",
+  "createdDate": "2026-07-04T04:54:03.285Z",
   "domain": "Platform Team",
   "engineVersion": "1.0.0",
   "evidence": {
     "construct": "Document",
-    "line": 1,
+    "line": 270,
     "message": "File must terminate with exactly one trailing newline character.",
     "occurrences": [
       {
         "column": 0,
         "construct": "Document",
-        "fingerprint": "d16acb5245259df5ff1b6e4b5cc58d6989205bb2e40411c43038d42bcfcbef55",
-        "id": "d16acb5245259df5ff1b6e4b5cc58d6989205bb2e40411c43038d42bcfcbef55",
-        "line": 1,
+        "fingerprint": "199287271fcd8b3bded54ebfd6d0f2a8cccef12fce0fad59c9642d18b8b8fdcd",
+        "id": "199287271fcd8b3bded54ebfd6d0f2a8cccef12fce0fad59c9642d18b8b8fdcd",
+        "line": 270,
         "message": "File must terminate with exactly one trailing newline character."
       }
     ],
-    "path": "apps/admin/public/fallback-ce627215c0e4a9af.js"
+    "path": "apps/web/src/app/global-error.tsx"
   },
   "feature": "Document",
-  "firstDetected": "2026-07-03T12:25:46.552Z",
-  "id": "f_48a371da",
-  "lastDetected": "2026-07-03T12:25:46.552Z",
+  "firstDetected": "2026-07-04T04:54:03.285Z",
+  "id": "f_bfd74fe9",
+  "lastDetected": "2026-07-04T04:54:03.285Z",
   "occurrenceCount": 1,
   "owner": "Platform Team",
   "package": "apps",

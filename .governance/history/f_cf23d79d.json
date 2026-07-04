@@ -4,7 +4,11 @@
       "action": "CREATED",
       "notes": "New grouped finding registered: Local Zod schema (z.object()) declared outside the shared validation package. Move this schema to 'packages/validations/src/' and re-export it from '@mad/validations'.",
       "status": "NEW",
+<<<<<<< HEAD
       "timestamp": "2026-07-04T03:15:45.454Z"
+=======
+      "timestamp": "2026-07-04T04:54:02.161Z"
+>>>>>>> fix/web-hygiene-core
     }
   ],
   "id": "f_cf23d79d"

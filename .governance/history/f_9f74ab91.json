@@ -1,6 +1,7 @@
 {
   "history": [
     {
+<<<<<<< HEAD
       "action": "CREATED",
       "notes": "New grouped finding registered: Duplicate component layout detected [Category B — Visual, Confidence: 77%, Severity: WARNING]: shares similarity with \"DJPage\" in \"apps/web/src/app/dj-operators/[slug]/page.tsx\". Recommendation: Standardize visual presentation (flex structure, margins) using design tokens or Tailwind utility classes instead of creating component abstractions. (Estimated Effort: Low (1-2 hours), Risk: Low).",
       "status": "NEW",
@@ -17,6 +18,12 @@
       "notes": "Occurrences updated. Active count: 1",
       "status": "NEW",
       "timestamp": "2026-07-04T04:11:43.108Z"
+=======
+      "action": "UPDATED",
+      "notes": "Occurrences updated. Active count: 1",
+      "status": "NEW",
+      "timestamp": "2026-07-04T04:54:05.315Z"
+>>>>>>> fix/web-hygiene-core
     }
   ],
   "id": "f_9f74ab91"

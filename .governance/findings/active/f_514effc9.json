@@ -24,8 +24,13 @@
   "feature": "button",
   "firstDetected": "2026-06-29T08:09:53.572Z",
   "id": "f_514effc9",
+<<<<<<< HEAD
   "lastDetected": "2026-07-04T04:11:43.054Z",
   "lastModified": "2026-07-04T04:11:43.054Z",
+=======
+  "lastDetected": "2026-07-04T04:54:05.174Z",
+  "lastModified": "2026-07-04T04:54:05.174Z",
+>>>>>>> fix/web-hygiene-core
   "occurrenceCount": 1,
   "owner": "UI UX Guild",
   "package": "apps",

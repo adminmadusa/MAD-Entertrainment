@@ -1,45 +1,46 @@
 {
-  "schemaVersion": 2,
-  "id": "f_db0e67eb",
-  "rule": "VAL-UI-009",
-  "ruleVersion": "1.0.0",
-  "engineVersion": "1.0.0",
-  "domain": "UI UX Guild",
-  "owner": "UI UX Guild",
-  "package": "apps",
-  "feature": "UIElement",
-  "status": "NEW",
   "confidence": 0.9,
-  "relationships": [],
+  "createdDate": "2026-06-30T15:36:27.253Z",
+  "domain": "UI UX Guild",
+  "engineVersion": "1.0.0",
   "evidence": {
-    "path": "apps/web/src/app/events/[slug]/components/EventGallery.tsx",
     "construct": "UIElement",
-    "snippet": "<div",
-    "line": 31,
+    "line": 54,
     "message": "Element <div> with click handler lacks a tabIndex or role attribute, breaking keyboard accessibility.",
     "occurrences": [
       {
-        "id": "87542a5433240b7e95253c3e10825470ca46e5852b221d7c0b43cb221577bfac",
-        "line": 31,
         "column": 0,
         "construct": "UIElement",
-        "snippet": "<div",
+        "fingerprint": "87542a5433240b7e95253c3e10825470ca46e5852b221d7c0b43cb221577bfac",
+        "id": "87542a5433240b7e95253c3e10825470ca46e5852b221d7c0b43cb221577bfac",
+        "line": 32,
         "message": "Element <div> with click handler lacks a tabIndex or role attribute, breaking keyboard accessibility.",
-        "fingerprint": "87542a5433240b7e95253c3e10825470ca46e5852b221d7c0b43cb221577bfac"
+        "snippet": "<div"
       },
       {
-        "id": "87542a5433240b7e95253c3e10825470ca46e5852b221d7c0b43cb221577bfac",
-        "line": 53,
         "column": 0,
         "construct": "UIElement",
-        "snippet": "<div",
+        "fingerprint": "87542a5433240b7e95253c3e10825470ca46e5852b221d7c0b43cb221577bfac",
+        "id": "87542a5433240b7e95253c3e10825470ca46e5852b221d7c0b43cb221577bfac",
+        "line": 54,
         "message": "Element <div> with click handler lacks a tabIndex or role attribute, breaking keyboard accessibility.",
-        "fingerprint": "87542a5433240b7e95253c3e10825470ca46e5852b221d7c0b43cb221577bfac"
+        "snippet": "<div"
       }
-    ]
+    ],
+    "path": "apps/web/src/app/events/[slug]/components/EventGallery.tsx",
+    "snippet": "<div"
   },
-  "createdDate": "2026-06-30T15:36:27.253Z",
+  "feature": "UIElement",
   "firstDetected": "2026-06-30T15:36:27.253Z",
-  "lastDetected": "2026-06-30T15:36:27.253Z",
-  "occurrenceCount": 2
+  "id": "f_db0e67eb",
+  "lastDetected": "2026-07-04T04:54:05.311Z",
+  "lastModified": "2026-07-04T04:54:05.311Z",
+  "occurrenceCount": 2,
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-UI-009",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
 }

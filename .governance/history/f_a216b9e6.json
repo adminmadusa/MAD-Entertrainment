@@ -4,7 +4,11 @@
       "action": "CREATED",
       "notes": "New grouped finding registered: Excessive consecutive blank lines detected (3 lines).",
       "status": "NEW",
+<<<<<<< HEAD
       "timestamp": "2026-07-04T03:15:46.265Z"
+=======
+      "timestamp": "2026-07-04T04:54:02.963Z"
+>>>>>>> fix/web-hygiene-core
     }
   ],
   "id": "f_a216b9e6"

@@ -4,7 +4,11 @@
       "action": "CREATED",
       "notes": "New grouped finding registered: Trailing whitespace characters detected.",
       "status": "NEW",
+<<<<<<< HEAD
       "timestamp": "2026-07-04T03:15:46.963Z"
+=======
+      "timestamp": "2026-07-04T04:54:03.638Z"
+>>>>>>> fix/web-hygiene-core
     }
   ],
   "id": "f_c1c1c265"

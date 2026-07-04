@@ -4,6 +4,7 @@
       "action": "CREATED",
       "notes": "New grouped finding registered: Duplicate import declaration from module path \"vitest\".",
       "status": "NEW",
+<<<<<<< HEAD
       "timestamp": "2026-07-04T03:15:45.148Z"
     },
     {
@@ -17,6 +18,9 @@
       "notes": "Finding regressed. Code violation re-introduced. (Transitioned from CLOSED to REGRESSION)",
       "status": "REGRESSION",
       "timestamp": "2026-07-04T03:59:50.884Z"
+=======
+      "timestamp": "2026-07-04T04:54:01.857Z"
+>>>>>>> fix/web-hygiene-core
     }
   ],
   "id": "f_716e04a9"

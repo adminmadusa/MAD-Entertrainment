@@ -1,6 +1,10 @@
 {
   "confidence": 1,
+<<<<<<< HEAD
   "createdDate": "2026-07-04T03:15:45.148Z",
+=======
+  "createdDate": "2026-07-04T04:54:01.857Z",
+>>>>>>> fix/web-hygiene-core
   "domain": "Platform Team",
   "engineVersion": "1.0.0",
   "evidence": {
@@ -20,9 +24,15 @@
     "path": "apps/server/src/controllers/public/booking.controller.test.ts"
   },
   "feature": "Document",
+<<<<<<< HEAD
   "firstDetected": "2026-07-04T03:15:45.148Z",
   "id": "f_716e04a9",
   "lastDetected": "2026-07-04T03:15:45.148Z",
+=======
+  "firstDetected": "2026-07-04T04:54:01.857Z",
+  "id": "f_716e04a9",
+  "lastDetected": "2026-07-04T04:54:01.857Z",
+>>>>>>> fix/web-hygiene-core
   "occurrenceCount": 1,
   "owner": "Platform Team",
   "package": "apps",
@@ -30,5 +40,9 @@
   "rule": "VAL-HYG-002",
   "ruleVersion": "1.0.0",
   "schemaVersion": 2,
+<<<<<<< HEAD
   "status": "REGRESSION"
+=======
+  "status": "NEW"
+>>>>>>> fix/web-hygiene-core
 }

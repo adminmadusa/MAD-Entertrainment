@@ -1,6 +1,7 @@
 {
   "history": [
     {
+<<<<<<< HEAD
       "action": "RENAMED",
       "notes": "File renamed/relocated from apps/admin/src/app/ticket-profiles/page.tsx to apps/admin/src/app/ticket-profiles/page.tsx",
       "status": "NEW",
@@ -23,6 +24,12 @@
       "notes": "Occurrences updated. Active count: 1",
       "status": "NEW",
       "timestamp": "2026-07-04T04:11:43.078Z"
+=======
+      "action": "UPDATED",
+      "notes": "Occurrences updated. Active count: 1",
+      "status": "NEW",
+      "timestamp": "2026-07-04T04:54:05.203Z"
+>>>>>>> fix/web-hygiene-core
     }
   ],
   "id": "f_bb72e342"

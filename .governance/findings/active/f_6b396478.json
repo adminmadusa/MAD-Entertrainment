@@ -1,6 +1,10 @@
 {
   "confidence": 1,
+<<<<<<< HEAD
   "createdDate": "2026-07-04T03:15:46.322Z",
+=======
+  "createdDate": "2026-07-04T04:54:03.020Z",
+>>>>>>> fix/web-hygiene-core
   "domain": "Platform Team",
   "engineVersion": "1.0.0",
   "evidence": {
@@ -20,9 +24,15 @@
     "path": "apps/server/src/validations/booking-recovery.validation.test.ts"
   },
   "feature": "Document",
+<<<<<<< HEAD
   "firstDetected": "2026-07-04T03:15:46.322Z",
   "id": "f_6b396478",
   "lastDetected": "2026-07-04T03:15:46.322Z",
+=======
+  "firstDetected": "2026-07-04T04:54:03.020Z",
+  "id": "f_6b396478",
+  "lastDetected": "2026-07-04T04:54:03.020Z",
+>>>>>>> fix/web-hygiene-core
   "occurrenceCount": 1,
   "owner": "Platform Team",
   "package": "apps",

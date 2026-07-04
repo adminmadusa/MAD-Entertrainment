@@ -1,6 +1,10 @@
 {
   "confidence": 1,
+<<<<<<< HEAD
   "createdDate": "2026-07-04T03:15:46.734Z",
+=======
+  "createdDate": "2026-07-04T04:54:03.421Z",
+>>>>>>> fix/web-hygiene-core
   "domain": "Platform Team",
   "engineVersion": "1.0.0",
   "evidence": {
@@ -44,9 +48,15 @@
     "path": "apps/web/src/app/tickets/page.tsx"
   },
   "feature": "Document",
+<<<<<<< HEAD
   "firstDetected": "2026-07-04T03:15:46.734Z",
   "id": "f_9227478c",
   "lastDetected": "2026-07-04T03:15:46.734Z",
+=======
+  "firstDetected": "2026-07-04T04:54:03.421Z",
+  "id": "f_9227478c",
+  "lastDetected": "2026-07-04T04:54:03.421Z",
+>>>>>>> fix/web-hygiene-core
   "occurrenceCount": 4,
   "owner": "Platform Team",
   "package": "apps",
