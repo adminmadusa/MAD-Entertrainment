@@ -22,6 +22,8 @@ import { analyzeStaleStatus } from './analyzers/dead-branches';
 import { runCommand } from './utils/exec';
 import { TrendStore, TrendCalculator } from './utils/trend';
 import path from 'path';
+import { LifecycleClassifier } from './utils/lifecycle-classifier';
+import { BranchLifecycleState } from '../platform/contracts';
 
 function main() {
   console.log('[git-governance-engine] Initializing metadata collection...');
@@ -168,16 +170,36 @@ function main() {
 
     // Duplicate detection
     const dupReport = analyzeDuplicateBranches(b, rawBranches);
+    verification.isDuplicate = dupReport.isDuplicate;
+    verification.duplicateOf = dupReport.duplicateOf;
 
     // Stale check
     const staleReport = analyzeStaleStatus(b, config);
 
-    // Determine lifecycle state
-    const lifecycleState = determineLifecycleState(b, verification, dupReport.isDuplicate, staleReport.isStale);
+    // Construct data-driven signals
+    const signals = {
+      isProtected: isProtectedBranch(name),
+      isMerged,
+      isSquashMerged,
+      hasOpenPR: hasOpenPR === 'YES',
+      isStale: staleReport.isStale,
+      hasUpstream: b.isLocal ? !!b.upstream : rawBranches.some(l => l.isLocal && l.name === b.name.replace('origin/', '')),
+      ahead: b.ahead,
+      behind: b.behind,
+      hasUniqueCommits: b.uniqueCommits.length > 0,
+      isAnotherBranchBasedOnIt,
+      isPartOfActiveStack,
+      isLegacyDefault: name === 'main' || name === 'origin/main',
+    };
+
+    // Classify lifecycle state
+    const classification = LifecycleClassifier.classify(signals);
 
     registeredBranches.push({
       ...b,
-      lifecycleState,
+      lifecycleState: classification.state,
+      classificationReason: classification.reason,
+      classificationConfidence: classification.confidence,
       verification
     });
   }
@@ -202,7 +224,7 @@ function main() {
     // Evaluate strict deletion policy
     const deletionReport = validateDeletionPolicy(v, rb.isLocal);
 
-    if (state === 'Ready For Delete' && deletionReport.isReadyForDeletion) {
+    if (state === BranchLifecycleState.DELETE_READY && deletionReport.isReadyForDeletion) {
       action = rb.isLocal ? 'Delete Local' : 'Delete Remote';
       status = 'Execute Now';
       risk = 'Low';
@@ -211,12 +233,12 @@ function main() {
       rollbackStrategy = rb.isLocal ? `git branch ${name} ${rb.sha}` : `git push origin ${rb.sha}:refs/heads/${name}`;
       estimatedEffort = '1 min';
       shellCommand = rb.isLocal ? `git branch -d ${name}` : `git push origin --delete ${name.replace('origin/', '')}`;
-    } else if (state === 'Duplicate Candidate') {
+    } else if (v.isDuplicate) {
       if (deletionReport.isReadyForDeletion) {
         action = rb.isLocal ? 'Delete Local' : 'Delete Remote';
         status = 'Execute Now';
         risk = 'Low';
-        reason = `Duplicate candidate branch. functionally identical to another branch ref.`;
+        reason = `Duplicate candidate branch, functionally identical to another branch ref.`;
         preconditions = rb.isLocal ? ['git checkout develop'] : [];
         rollbackStrategy = rb.isLocal ? `git branch ${name} ${rb.sha}` : `git push origin ${rb.sha}:refs/heads/${name}`;
         estimatedEffort = '1 min';
@@ -231,7 +253,7 @@ function main() {
         estimatedEffort = 'N/A';
         shellCommand = `# BLOCKED\n# Branch: ${name}\n# Reason: Duplicate of unmerged active branch.`;
       }
-    } else if (state === 'Experimental') {
+    } else if (name.startsWith('feat/ai-os-phase-')) {
       if (isStackSafeToPrune) {
         action = 'Consolidate Stack (Delete Local)';
         status = 'Pending';
@@ -251,7 +273,7 @@ function main() {
         estimatedEffort = 'N/A';
         shellCommand = `# BLOCKED\n# Branch: ${name}\n# Reason: AI OS stack tip (Phase 20) is unmerged or not backed up.`;
       }
-    } else if (state === 'Archived') {
+    } else if (state === BranchLifecycleState.ARCHIVED) {
       action = 'Archive / Delete Legacy';
       status = 'Blocked';
       risk = 'Medium';
@@ -260,10 +282,18 @@ function main() {
       rollbackStrategy = `git branch ${name} ${rb.sha}`;
       estimatedEffort = '1 min';
       shellCommand = `# BLOCKED\n# Branch: ${name}\n# Reason: Legacy base branch.`;
-    } else if (state === 'Active Development' || state === 'Open PR' || state === 'Integration') {
+    } else if (state === BranchLifecycleState.MERGED) {
+      action = 'Prune / Resolve Block';
+      status = 'Blocked';
+      risk = 'Medium';
+      reason = `Branch is merged but blocked from safe deletion: ${deletionReport.blockedReasons.join(' ')}`;
+      preconditions = [];
+      rollbackStrategy = 'N/A';
+      estimatedEffort = 'N/A';
+      shellCommand = `# BLOCKED\n# Branch: ${name}\n# Reason: ${deletionReport.blockedReasons.join('; ')}`;
+    } else {
       // Rebase recommendation only if active, unmerged, not stale, and behind develop
-      const isStale = rb.behind > 30; // stale check
-      if (rb.behind > 0 && !isStale && state !== 'Integration') {
+      if (rb.behind > 0 && state !== BranchLifecycleState.STALE && state !== BranchLifecycleState.ORPHANED) {
         action = 'Rebase Local';
         status = 'Pending';
         risk = 'Medium';
@@ -282,15 +312,6 @@ function main() {
         estimatedEffort = 'N/A';
         shellCommand = `# ACTIVE DEVELOPMENT\n# Branch: ${name}\n# Reason: Unmerged active development branch.`;
       }
-    } else if (state === 'Blocked') {
-      action = 'Prune / Resolve Block';
-      status = 'Blocked';
-      risk = 'Medium';
-      reason = `Branch is merged but blocked from safe deletion: ${deletionReport.blockedReasons.join(' ')}`;
-      preconditions = [];
-      rollbackStrategy = 'N/A';
-      estimatedEffort = 'N/A';
-      shellCommand = `# BLOCKED\n# Branch: ${name}\n# Reason: ${deletionReport.blockedReasons.join('; ')}`;
     }
 
     actionQueue.push({
@@ -318,6 +339,34 @@ function main() {
   });
 
   // 5. Gather Metrics
+  const branchList = registeredBranches.map(rb => {
+    const v = rb.verification;
+    return {
+      name: rb.name,
+      lifecycleState: rb.lifecycleState,
+      reason: rb.classificationReason || '',
+      confidence: rb.classificationConfidence || 'LOW',
+      isLocal: rb.isLocal,
+      isRemote: rb.isRemote,
+      isProtected: v.isProtected,
+      signals: {
+        isProtected: v.isProtected,
+        isMerged: v.isMerged,
+        isSquashMerged: v.isSquashMerged,
+        hasOpenPR: v.hasOpenPR === 'YES',
+        isStale: rb.behind > config.stale_commit_threshold,
+        hasUpstream: rb.isLocal ? !!rb.upstream : registeredBranches.some(l => l.isLocal && l.name === rb.name.replace('origin/', '')),
+        ahead: rb.ahead,
+        behind: rb.behind,
+        hasUniqueCommits: v.hasUniqueCommits,
+        isAnotherBranchBasedOnIt: v.isAnotherBranchBasedOnIt,
+        isPartOfActiveStack: v.isPartOfActiveStack,
+        isLegacyDefault: rb.name === 'main' || rb.name === 'origin/main',
+        isDuplicate: v.isDuplicate || false,
+      }
+    };
+  });
+
   const metrics = {
     isWorkingTreeClean,
     overallScore: scoreReport.overallScore,
@@ -327,27 +376,23 @@ function main() {
     gitGovernanceScore: scoreReport.gitGovernanceScore,
     localBranchCount: registeredBranches.filter(b => b.isLocal).length,
     remoteBranchCount: registeredBranches.filter(b => b.isRemote).length,
-    protectedBranchesCount: registeredBranches.filter(b => b.lifecycleState === 'Protected').length,
-    activeBranchesCount: registeredBranches.filter(b => b.lifecycleState === 'Active Development').length,
-    experimentalBranchesCount: registeredBranches.filter(b => b.lifecycleState === 'Experimental').length,
-    mergedBranchesCount: registeredBranches.filter(b => b.lifecycleState === 'Patch Equivalent' || b.lifecycleState === 'Ready For Delete').length,
-    duplicateBranchesCount: registeredBranches.filter(b => b.lifecycleState === 'Duplicate Candidate').length,
+    protectedBranchesCount: registeredBranches.filter(b => b.verification.isProtected).length,
+    activeBranchesCount: registeredBranches.filter(b => b.lifecycleState === BranchLifecycleState.ACTIVE).length,
+    experimentalBranchesCount: registeredBranches.filter(b => b.name.startsWith('feat/ai-os-phase-')).length,
+    mergedBranchesCount: registeredBranches.filter(b => b.lifecycleState === BranchLifecycleState.MERGED || b.lifecycleState === BranchLifecycleState.DELETE_READY).length,
+    duplicateBranchesCount: registeredBranches.filter(b => b.verification.isDuplicate === true).length,
     deadBranchesCount: registeredBranches.filter(b => b.behind > config.stale_commit_threshold).length,
-    readyForDeleteBranchesCount: registeredBranches.filter(b => b.lifecycleState === 'Ready For Delete').length,
-    remoteOrphanBranchesCount: 0,
-    localOrphanBranchesCount: registeredBranches.filter(b => b.isLocal && !b.upstream && b.lifecycleState !== 'Protected' && b.lifecycleState !== 'Archived' && b.lifecycleState !== 'Integration').length,
+    readyForDeleteBranchesCount: registeredBranches.filter(b => b.lifecycleState === BranchLifecycleState.DELETE_READY).length,
+    remoteOrphanBranchesCount: registeredBranches.filter(b => b.isRemote && b.lifecycleState === BranchLifecycleState.ORPHANED).length,
+    localOrphanBranchesCount: registeredBranches.filter(b => b.isLocal && b.lifecycleState === BranchLifecycleState.ORPHANED).length,
     branchesWithoutUpstreamCount: registeredBranches.filter(b => b.isLocal && !b.upstream).length,
-    branchesWaitingForMergeCount: registeredBranches.filter(b => b.isLocal && b.lifecycleState !== 'Ready For Delete' && b.lifecycleState !== 'Protected').length,
-    openPrBranchesCount: registeredBranches.filter(b => b.lifecycleState === 'Open PR').length,
-    archivedBranchesCount: registeredBranches.filter(b => b.lifecycleState === 'Archived').length,
+    branchesWaitingForMergeCount: registeredBranches.filter(b => b.isLocal && b.lifecycleState !== BranchLifecycleState.DELETE_READY && !b.verification.isProtected).length,
+    openPrBranchesCount: registeredBranches.filter(b => b.lifecycleState === BranchLifecycleState.OPEN_PR).length,
+    archivedBranchesCount: registeredBranches.filter(b => b.lifecycleState === BranchLifecycleState.ARCHIVED).length,
     danglingCommitsCount,
-    worktreesCount: worktreeMap.size
+    worktreesCount: worktreeMap.size,
+    branches: branchList
   };
-
-  const orphanRemotes = registeredBranches.filter(
-    b => b.isRemote && !registeredBranches.some(l => l.isLocal && l.name === b.name.replace('origin/', ''))
-  );
-  metrics.remoteOrphanBranchesCount = orphanRemotes.length;
 
   // 6. Calculate trend deltas & persist current run scores
   const repoRoot = path.join(__dirname, '../../..');
