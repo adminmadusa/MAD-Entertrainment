@@ -5,6 +5,8 @@ import { createHash } from 'crypto';
 import { DependencyAnalyzer } from './dependency_analyzer';
 import { baselinesDir } from './finding_manager';
 import { writeJsonIfChanged, canonicalizeJson, persistenceStats } from './json_utils';
+import { governanceConfig } from './governance.config';
+
 
 export interface CacheEntry {
   hash: string;
@@ -214,6 +216,14 @@ export class KnowledgeGraph {
       }
 
       const fullPath = join(dir, item);
+      const relPath = relative(KnowledgeGraph.workspaceRoot, fullPath);
+
+      // Apply dynamic exclusions from governanceConfig
+      const excluded = governanceConfig.scanScope?.excludedPaths || [];
+      if (excluded.some(p => relPath === p || relPath.startsWith(p + '/'))) {
+        continue;
+      }
+
       let stats;
       try {
         stats = statSync(fullPath);

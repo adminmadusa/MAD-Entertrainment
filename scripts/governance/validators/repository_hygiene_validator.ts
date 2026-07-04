@@ -4,6 +4,8 @@ import { resolve } from 'path';
 import { GovernanceValidator } from '../core/validator';
 import { ValidationResult, ValidationError, GovernanceMetadata } from '../core/types';
 import { FileContentCache, ASTParserCache } from '../core/ast_parser_cache';
+import { governanceConfig } from '../core/governance.config';
+
 
 const workspaceRoot = resolve(__dirname, '../../..');
 
@@ -27,9 +29,17 @@ export class RepositoryHygieneValidator implements GovernanceValidator {
 
     const filteredFiles = files.filter(file => {
       const norm = file.replace(/\\/g, '/');
+
+      // Exclude configured scanScope.excludedPaths
+      const excludedPaths = governanceConfig.scanScope?.excludedPaths || [];
+      if (excludedPaths.some(p => norm === p || norm.startsWith(p + '/'))) {
+        return false;
+      }
+
       // Exclude build / generated / vendor dirs
       if (
         norm.startsWith('node_modules/') ||
+
         norm.startsWith('.next/') ||
         norm.startsWith('dist/') ||
         norm.startsWith('coverage/') ||

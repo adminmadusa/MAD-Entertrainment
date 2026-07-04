@@ -6,6 +6,8 @@ import { GovernanceValidator } from '../core/validator';
 import { ValidationResult, ValidationError, GovernanceMetadata } from '../core/types';
 import { extractLinks, parseMarkdownMetadata } from '../core/metadata';
 import { REVIEW_CYCLE_DURATIONS } from '../core/constants';
+import { governanceConfig } from '../core/governance.config';
+
 
 const workspaceRoot = resolve(__dirname, '../../..');
 
@@ -26,7 +28,21 @@ export class RepositoryHealthValidator implements GovernanceValidator {
   readonly name = 'RepositoryHealthValidator';
 
   public async run(files: string[], metadata: GovernanceMetadata): Promise<ValidationResult> {
+    const docExclusions = governanceConfig.scanScope?.documentationExclusions || [];
+    const excludedPaths = governanceConfig.scanScope?.excludedPaths || [];
+
+    files = files.filter(relPath => {
+      if (excludedPaths.some(p => relPath === p || relPath.startsWith(p + '/'))) {
+        return false;
+      }
+      if (docExclusions.some(p => relPath === p || relPath.startsWith(p + '/'))) {
+        return false;
+      }
+      return true;
+    });
+
     const errors: ValidationError[] = [];
+
     const warnings: ValidationError[] = [];
     const startTime = Date.now();
 

@@ -141,3 +141,6 @@ seo/<task-name>
 ```
 
 Do not commit directly to protected branches.
+
+For contribution guidelines, see [CONTRIBUTING.md](CONTRIBUTING.md).
+
