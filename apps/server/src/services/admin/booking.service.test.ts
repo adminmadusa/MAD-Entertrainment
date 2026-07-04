@@ -960,7 +960,7 @@ describe('Admin Booking Service Backend Tests', () => {
         withTransaction: vi.fn().mockRejectedValue(new Error('Database transaction abort')),
         endSession: vi.fn().mockResolvedValue(undefined),
       };
-      
+
       vi.mocked(mongoose.startSession).mockResolvedValueOnce(mockSession as any);
 
       await expect(cancelBooking('booking-123', 'Customer request')).rejects.toThrow('Database transaction abort');
@@ -1497,7 +1497,7 @@ describe('Admin Booking Service Backend Tests', () => {
     it('should retrieve paginated bookings list and match DTO payload schema contract', async () => {
       const mockEventId = new mongoose.Types.ObjectId();
       const mockBookingId = new mongoose.Types.ObjectId();
-      
+
       const mockBookings = [
         {
           _id: mockBookingId,
@@ -1544,7 +1544,7 @@ describe('Admin Booking Service Backend Tests', () => {
 
       // Mock Mongoose calls for getBookings
       vi.mocked(Booking.countDocuments).mockResolvedValue(1);
-      
+
       const mockLean = vi.fn().mockResolvedValue(mockBookings);
       const mockLimit = vi.fn().mockReturnValue({ lean: mockLean });
       const mockSkip = vi.fn().mockReturnValue({ limit: mockLimit });
@@ -1594,7 +1594,7 @@ describe('Admin Booking Service Backend Tests', () => {
       // Verify payload structure parity via maintainable matchers (Omit fragile full-object exact comparisons)
       expect(result.data).toHaveLength(1);
       const dto = result.data[0];
-      
+
       expect(dto).toEqual(
         expect.objectContaining({
           _id: mockBookingId.toString(),
@@ -1650,7 +1650,7 @@ describe('Admin Booking Service Backend Tests', () => {
     it('should retrieve a single booking by ID with pre-loaded logs and tickets', async () => {
       const mockEventId = new mongoose.Types.ObjectId();
       const mockBookingId = new mongoose.Types.ObjectId();
-      
+
       const mockBooking = {
         _id: mockBookingId,
         bookingId: 'MAD-2026-TEST1',
@@ -1716,7 +1716,7 @@ describe('Admin Booking Service Backend Tests', () => {
       expect(Booking.findOne).toHaveBeenCalledTimes(1);
       expect(Ticket.find).toHaveBeenCalledTimes(1);
       expect(AuditLogModel.find).toHaveBeenCalledTimes(1);
-      
+
       expect(result).toEqual(
         expect.objectContaining({
           bookingId: 'MAD-2026-TEST1',
@@ -1729,7 +1729,7 @@ describe('Admin Booking Service Backend Tests', () => {
     it('should pass regression tests for guest, authenticated, cancelled bookings, replaced tickets, and empty sets', async () => {
       const mockEventId = new mongoose.Types.ObjectId();
       const mockBookingId = new mongoose.Types.ObjectId();
-      
+
       const mockBookings = [
         {
           _id: mockBookingId,
@@ -1792,7 +1792,7 @@ describe('Admin Booking Service Backend Tests', () => {
     it('should dynamically verify projection coverage against mapper requirements', async () => {
       const mockEventId = new mongoose.Types.ObjectId();
       const mockBookingId = new mongoose.Types.ObjectId();
-      
+
       const projectedBookingOnly = {
         _id: mockBookingId,
         bookingId: 'MAD-2026-PROJ1',

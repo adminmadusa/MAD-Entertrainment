@@ -30,7 +30,7 @@ vi.mock('../../utils/audit', () => ({
 
 describe('PublicEventService - Secure Preview Infrastructure', () => {
   const adminSecret = 'test_jwt_secret_with_32_characters_long_minimum';
-  
+
   beforeAll(async () => {
     // Dynamically load service and model after env vars are set
     const serviceMod = await import('./event.service');

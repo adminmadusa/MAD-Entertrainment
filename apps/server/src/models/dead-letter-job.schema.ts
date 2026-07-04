@@ -51,4 +51,3 @@ deadLetterJobSchema.pre('save', function (next) {
 deadLetterJobSchema.index({ queueName: 1, processedAt: -1 });
 
 export const DeadLetterJob = model<IDeadLetterJob>('DeadLetterJob', deadLetterJobSchema);
-

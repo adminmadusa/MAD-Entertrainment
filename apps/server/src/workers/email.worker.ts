@@ -172,20 +172,20 @@ export async function handleJobExecution(jobId: string, data: any, attemptsMade:
         await processEmailDispatch(to, subject, html, attachments, bookingId, eventId, notificationType, messageId);
       }
     );
-    
-    await Notification.updateOne({ jobId }, { 
-      $set: { status: 'sent', processedAt: new Date(), isSent: true } 
+
+    await Notification.updateOne({ jobId }, {
+      $set: { status: 'sent', processedAt: new Date(), isSent: true }
     });
   } catch (err: any) {
-    await Notification.updateOne({ jobId }, { 
-      $set: { 
-        status: 'failed', 
-        errorMessage: err.message, 
+    await Notification.updateOne({ jobId }, {
+      $set: {
+        status: 'failed',
+        errorMessage: err.message,
         processedAt: new Date(),
         retryCount: attemptsMade
       }
     });
-    
+
     if (isPermanentSMTPError(err.message)) {
       logger.warn(
         {

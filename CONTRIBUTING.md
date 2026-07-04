@@ -14,7 +14,7 @@
 
 ## Welcome
 
-Thank you for contributing to MAD Entertrainment! To maintain the quality, correctness, and security of this codebase, we enforce a strict repository governance policy. 
+Thank you for contributing to MAD Entertrainment! To maintain the quality, correctness, and security of this codebase, we enforce a strict repository governance policy.
 
 Please read this document carefully before making your first commit.
 

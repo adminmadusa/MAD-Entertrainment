@@ -51,8 +51,6 @@ export default function AdminEventsPage() {
     },
   });
 
-
-
   const events = Array.isArray(data?.items) ? data?.items : [];
   const pagination = data?.pagination;
 

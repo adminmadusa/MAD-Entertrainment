@@ -221,4 +221,3 @@ const footerTextStyle: React.CSSProperties = {
   color: "#555555",
   lineHeight: "1.5",
 };
-

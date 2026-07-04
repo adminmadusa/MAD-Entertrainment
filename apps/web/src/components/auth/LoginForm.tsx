@@ -82,7 +82,7 @@ export function LoginForm({
       {(() => {
         if (requestCooldownRemaining > 0) {
           return (
-            <div 
+            <div
               role="status"
               aria-live="polite"
               className="p-4 bg-accent-purple/10 border border-accent-purple/30 rounded-2xl text-xs text-purple-300 text-center animate-in fade-in duration-300"
@@ -93,7 +93,7 @@ export function LoginForm({
         }
         if (verifyCooldownRemaining > 0) {
           return (
-            <div 
+            <div
               role="alert"
               aria-live="assertive"
               className="p-4 bg-error/10 border border-error/30 rounded-2xl text-xs text-red-400 text-center animate-in fade-in duration-300 space-y-1"
@@ -108,7 +108,7 @@ export function LoginForm({
         }
         if (error) {
           return (
-            <div 
+            <div
               role="alert"
               aria-live="assertive"
               className="p-4 bg-error/10 border border-error/30 rounded-2xl text-xs text-red-400 text-center animate-in fade-in duration-300"
@@ -119,8 +119,6 @@ export function LoginForm({
         }
         return null;
       })()}
-
-
 
       <form onSubmit={onSubmit} className="space-y-4 sm:space-y-5">
         <div className="space-y-4 sm:space-y-5">

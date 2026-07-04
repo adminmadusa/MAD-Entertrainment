@@ -20,4 +20,3 @@ import './magic-token.schema';
 import './refresh-token.schema';
 
 import './ticket-profile.schema';
-

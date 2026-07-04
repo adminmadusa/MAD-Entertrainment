@@ -114,7 +114,7 @@ export async function adminGetEvents(filters: EventFilters = {}): Promise<{ item
   const { data } = await adminApiClient.get<EventsResponse>(`/admin/events?${params}`);
   const payload = data?.data;
   const items = Array.isArray(payload?.events) ? payload.events : [];
-  
+
   const paginationSource: PaginationSource = payload?.pagination ?? data?.pagination ?? payload;
   const pagination = {
     page: paginationSource?.page ?? Number(filters.page) ?? 1,
@@ -122,7 +122,7 @@ export async function adminGetEvents(filters: EventFilters = {}): Promise<{ item
     total: paginationSource?.total ?? 0,
     totalPages: paginationSource?.totalPages ?? paginationSource?.pages ?? 1,
   };
-  
+
   return { items, pagination };
 }
 

@@ -73,4 +73,3 @@ ticketSchema.index({ attendeeUserId: 1 });
 ticketSchema.index({ attendeeEmail: 1, assignmentStatus: 1 });
 
 export const Ticket = model<ITicket>('Ticket', ticketSchema);
-

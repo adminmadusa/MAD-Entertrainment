@@ -791,4 +791,3 @@ describe('Booking Controller — Guest Ownership & Booking Enumeration Hardening
     );
   });
 });
-

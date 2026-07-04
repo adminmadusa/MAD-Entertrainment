@@ -1,10 +1,10 @@
 # MAD Entertrainment — Monorepo Architecture & Standards
 
-Status: Active  
-Version: 1.0  
-Owner: Repository Architecture  
-Review Cycle: Quarterly  
-Last Updated: 2026-06-25  
+Status: Active
+Version: 1.0
+Owner: Repository Architecture
+Review Cycle: Quarterly
+Last Updated: 2026-06-25
 
 Supersedes:
 - [governance.md](docs/architecture/governance.md) (Deleted)
@@ -113,7 +113,7 @@ All package references must follow a strict top-down dependency direction:
 - All workspace package imports must be declared in package manifests using `workspace:*` dependencies.
 
 ### Future Recommendations
-- See *Appendix: Future Architecture Considerations* — Proposal 1: "Package Modularization & Monorepo Tooling Migration (e.g., Migrate to Nx)" for proposals regarding package modularization.  
+- See *Appendix: Future Architecture Considerations* — Proposal 1: "Package Modularization & Monorepo Tooling Migration (e.g., Migrate to Nx)" for proposals regarding package modularization.
   *Status*: Possible Future Enhancement (Not Approved) · Untracked
 
 ---
@@ -140,7 +140,7 @@ The monorepo contains five internal packages under `packages/*`:
 - **`@mad/validations`**: Allowed deps: `zod`. Forbidden deps: Next.js, Mongoose, Express.
 
 ### Future Recommendations
-- See *Appendix: Future Architecture Considerations* — Proposal 2: "Centralized Service Contracts (`@mad/contracts`)" for proposals regarding validation contracts.  
+- See *Appendix: Future Architecture Considerations* — Proposal 2: "Centralized Service Contracts (`@mad/contracts`)" for proposals regarding validation contracts.
   *Status*: Possible Future Enhancement (Not Approved) · Untracked
 
 ---
@@ -165,7 +165,7 @@ The runtime stack consists of:
 - **Queue Separation**: Asynchronous work must be enqueued via `QueueService` rather than executed directly within HTTP request cycles.
 
 ### Future Recommendations
-- See *Appendix: Future Architecture Considerations* — Proposal 3: "Microservice Decoupling of BullMQ Workers" and Proposal 4: "Message Broker Architecture" for backend worker and message queue scalability proposals.  
+- See *Appendix: Future Architecture Considerations* — Proposal 3: "Microservice Decoupling of BullMQ Workers" and Proposal 4: "Message Broker Architecture" for backend worker and message queue scalability proposals.
   *Status*: Possible Future Enhancement (Not Approved) · Untracked
 
 ---
@@ -197,7 +197,7 @@ graph TD
 - **Staging Sharing**: Staging/testing frontends deploy on pushes to `develop` but share the production Render API endpoint.
 
 ### Future Recommendations
-- See *Appendix: Future Architecture Considerations* — Proposal 5: "Dedicated Staging Backend API" and Proposal 6: "Multi-Region Deployment" for deployment decoupling and scaling proposals.  
+- See *Appendix: Future Architecture Considerations* — Proposal 5: "Dedicated Staging Backend API" and Proposal 6: "Multi-Region Deployment" for deployment decoupling and scaling proposals.
   *Status*: Possible Future Enhancement (Not Approved) · Untracked
 
 ---
@@ -260,7 +260,7 @@ The project build graph requires shared libraries under `packages/*` to be compi
 - **Isolated Compiles**: Never run recursive build scripts (`pnpm -r build`) in backend server environments. Build commands must always filter targeting to prevent Next.js frontend compilation.
 
 ### Future Recommendations
-- See *Appendix: Future Architecture Considerations* — Proposal 1: "Package Modularization & Monorepo Tooling Migration (e.g., Migrate to Nx)" for proposals regarding build tool migrations.  
+- See *Appendix: Future Architecture Considerations* — Proposal 1: "Package Modularization & Monorepo Tooling Migration (e.g., Migrate to Nx)" for proposals regarding build tool migrations.
   *Status*: Possible Future Enhancement (Not Approved) · Untracked
 
 ---
@@ -306,7 +306,7 @@ The repository enforces code standards at three levels:
 - **Placeholder Routes**: Backend routes returning `501 Not Implemented` are strictly prohibited in the production branch. Every route registered in Express must have a complete, tested controller implementation or be omitted entirely until ready.
 
 ### Future Recommendations
-- See *Appendix: Future Architecture Considerations* — Proposal 7: "Automated Client API Code Generation" for client-side service generation proposals.  
+- See *Appendix: Future Architecture Considerations* — Proposal 7: "Automated Client API Code Generation" for client-side service generation proposals.
   *Status*: Possible Future Enhancement (Not Approved) · Untracked
 
 ---
@@ -330,7 +330,7 @@ High-risk systems are located in isolated directories:
 - **Secret Masking**: The audit system and logger must filter out environment variable values containing security keywords (e.g. `SECRET`, `KEY`, `PASSWORD`, `TOKEN`). Raw secret values must never be written to logs or reports.
 
 ### Future Recommendations
-- See *Appendix: Future Architecture Considerations* — Proposal 8: "Multi-Factor Authentication (MFA)" for proposals regarding multi-factor authentication.  
+- See *Appendix: Future Architecture Considerations* — Proposal 8: "Multi-Factor Authentication (MFA)" for proposals regarding multi-factor authentication.
   *Status*: Possible Future Enhancement (Not Approved) · Untracked
 
 ---

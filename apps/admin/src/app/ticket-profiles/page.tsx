@@ -146,8 +146,6 @@ export default function AdminTicketProfilesPage() {
     ));
   };
 
-
-
   const getTicketsCount = (profile: TicketProfile) => {
     return profile.groups?.reduce((sum, group) => sum + (group.tickets?.length || 0), 0) || 0;
   };

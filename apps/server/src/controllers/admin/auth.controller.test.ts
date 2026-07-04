@@ -64,7 +64,7 @@ describe('Admin Authentication Tests', () => {
       expect(decoded.sub).toBe(mockAdmin._id);
       expect(decoded.email).toBe(mockAdmin.email);
       expect(decoded.role).toBe(mockAdmin.role);
-      
+
       // Ensure the legacy id property is NOT in the payload
       expect((decoded as any).id).toBeUndefined();
     });

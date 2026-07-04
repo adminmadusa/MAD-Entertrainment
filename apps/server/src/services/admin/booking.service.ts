@@ -84,7 +84,7 @@ const mapBookingToAdminDTO = (booking: any, ticketsList: any[], auditLogs: any[]
     createdAt: booking.createdAt ? booking.createdAt.toISOString() : new Date().toISOString(),
     cancellationReason: booking.cancellationReason,
     cancelledAt: booking.cancelledAt ? booking.cancelledAt.toISOString() : undefined,
-    
+
     // Attendance details
     totalTickets,
     ticketsScanned,
@@ -310,7 +310,7 @@ export const getBookingById = async (id: string) => {
   if (!booking) {
     return null;
   }
-  
+
   // Load tickets and audit logs as pre-requisite for the pure mapper
   const ticketProjection = {
     bookingId: 1,
@@ -324,7 +324,7 @@ export const getBookingById = async (id: string) => {
     replacementReason: 1,
   };
   const tickets = await Ticket.find({ bookingId: booking._id }, ticketProjection).lean();
-  
+
   const logProjection = {
     _id: 1,
     action: 1,
@@ -341,7 +341,7 @@ export const getBookingById = async (id: string) => {
     ],
     action: { $in: ['BOOKING_EMAIL_CORRECTED', 'BOOKING_TICKETS_RESENT'] }
   }, logProjection).sort({ createdAt: -1 }).lean();
-  
+
   return mapBookingToAdminDTO(booking, tickets, auditLogs);
 };
 
@@ -963,7 +963,7 @@ export const correctBookingEmail = async (
 
     if (activeTickets.length > 0) {
       const maxRevisionMap = new Map<string, number>();
-      
+
       // Calculate highest ticket revisions in memory
       for (const t of allTickets) {
         const baseMatch = t.ticketId.match(/^(TKT-[A-Z0-9]+-\d+)(?:-R(\d+))?$/);

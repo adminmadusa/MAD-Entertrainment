@@ -7,7 +7,7 @@
 ---
 
 ## Executive Summary
-Following the successful completion of the frontend token cleanup (PR B) and standardizing on the **OTP-only email template** (PR A), this audit outlines the remaining backend dependencies on legacy magic-link URL tokens before complete deletion. 
+Following the successful completion of the frontend token cleanup (PR B) and standardizing on the **OTP-only email template** (PR A), this audit outlines the remaining backend dependencies on legacy magic-link URL tokens before complete deletion.
 
 The goal of this audit is to identify routes, controllers, services, database schemas, and API contracts that contain magic-link token logic, and to supply a zero-risk backend implementation plan to safely remove them while preserving 6-digit OTP passcode authentication and Google OAuth.
 
@@ -142,7 +142,7 @@ The goal of this audit is to identify routes, controllers, services, database sc
   ```diff
    // Request Magic Link / OTP Email (protected by auth-specific rate limiter)
    router.post('/magic-link', authLimiter, AuthController.requestMagicLink);
-   
+
   -// Verify Magic Link Click (GET redirect to web frontend)
   -router.get('/verify', AuthController.redirectMagicLink);
   -
@@ -209,10 +209,10 @@ The goal of this audit is to identify routes, controllers, services, database sc
        const otp = Math.floor(100000 + Math.random() * 900000).toString();
   -    const token = crypto.randomBytes(32).toString('hex');
        const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes TTL
-   
+
        // 2. Hash the OTP for secure database storage
        const otpHash = crypto.createHash('sha256').update(otp).digest('hex');
-   
+
        // 3. Save MagicToken (upsert for the email to prevent spamming records)
        await MagicTokenModel.findOneAndDelete({ email: trimmedEmail });
        await MagicTokenModel.create({
@@ -229,7 +229,7 @@ The goal of this audit is to identify routes, controllers, services, database sc
   -    // 4. Construct Verification Link
   -    const magicLinkUrl = `${origin}/login?token=${token}`;
   +    logger.info({ email: trimmedEmail }, "OTP login session created");
-   
+
        // 5. Compile HTML Template
        const html = await magicLinkHtml({
          email: trimmedEmail,
@@ -238,7 +238,7 @@ The goal of this audit is to identify routes, controllers, services, database sc
        });
        ...
      }
-  
+
      /**
   -   * Verifies the Magic Link token or OTP code, logs the user in, and sets up session.
   +   * Verifies the OTP code, logs the user in, and sets up session.
@@ -254,7 +254,7 @@ The goal of this audit is to identify routes, controllers, services, database sc
   +    if (!otp || !email) {
   +      throw AppError.badRequest('Verification code and email are required');
        }
-   
+
   -    let magicRecord = null;
   -
   -    if (email) {
@@ -280,7 +280,7 @@ The goal of this audit is to identify routes, controllers, services, database sc
   +      email: trimmedEmail,
   +      otp: otpHash, // Match using the secure SHA-256 hash
   +    });
-   
+
        if (!magicRecord || magicRecord.expiresAt < new Date()) {
          throw AppError.unauthorized('Invalid or expired login link/passcode');
        }
@@ -297,7 +297,7 @@ The goal of this audit is to identify routes, controllers, services, database sc
      otp: string;
      ...
    }
-   
+
    const magicTokenSchema = new Schema<IMagicToken>(
      {
        email: {

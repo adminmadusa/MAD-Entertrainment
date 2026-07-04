@@ -61,7 +61,7 @@ export async function processPDFGenerate(
       <h2>Hi ${booking.guestName},</h2>
       <p>Your booking <strong>${booking.bookingId}</strong> for the event <strong>"${event.title || 'MAD Event'}"</strong> has been successfully confirmed!</p>
       <p>Please find your ticket attached as a PDF document. You can present the QR code at the gate for entry.</p>
-      
+
       <div style="margin: 30px 0; text-align: center;">
         <a href="${ticketUrl}" style="background-color: #8B5CF6; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block; margin-bottom: 10px;">View Ticket Online</a>
         <br/>
@@ -78,8 +78,6 @@ export async function processPDFGenerate(
       <p>MAD Entertainment Team</p>
     </div>
   `;
-
-
 
   // Unify notification creation under createNotificationSafe
   const notification = await createNotificationSafe({

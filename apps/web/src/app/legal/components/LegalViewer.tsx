@@ -13,7 +13,7 @@ export function LegalViewer({ title, lastUpdated, markdownContent }: LegalViewer
   return (
     <div className="flex-1 w-full max-w-4xl pb-20">
       <LegalMobileTabs />
-      
+
       <div className="glass-strong rounded-3xl p-6 sm:p-10 border border-border-subtle">
         <header className="mb-10 pb-6 border-b border-border-subtle/50">
           <h1 className="text-white font-bold text-3xl sm:text-4xl mb-4 tracking-tight">

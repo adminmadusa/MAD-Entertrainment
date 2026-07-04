@@ -155,7 +155,7 @@ test('booking detail modal and email correction modal interactions', async ({ pa
   await expect(detailModal).toBeVisible();
   await expect(detailModal.locator('h3:text("MAD-2026-TEST")')).toBeVisible();
   await expect(detailModal.locator('text=Customer Info')).toBeVisible();
-  
+
   // Use first() to avoid strict mode violations on duplicated email strings
   await expect(detailModal.locator('text=john.doe@example.com').first()).toBeVisible();
   await expect(detailModal.locator('text=9876543210')).toBeVisible();

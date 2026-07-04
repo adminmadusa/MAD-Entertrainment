@@ -22,9 +22,9 @@ export default function WebhookDiagnosticsPage() {
 
   const { data, isLoading, error } = useQuery({
     queryKey: QUERY_KEYS.admin.diagnostics.webhooks({ page, provider: providerFilter, status: statusFilter }),
-    queryFn: () => adminGetWebhooks({ 
-      page, 
-      limit, 
+    queryFn: () => adminGetWebhooks({
+      page,
+      limit,
       ...(providerFilter && { provider: providerFilter }),
       ...(statusFilter && { status: statusFilter })
     }),
@@ -82,10 +82,10 @@ export default function WebhookDiagnosticsPage() {
     }
 
     return webhooks.map((webhook) => {
-      const bookingIdStr = typeof webhook.bookingId === 'string' 
-        ? webhook.bookingId 
+      const bookingIdStr = typeof webhook.bookingId === 'string'
+        ? webhook.bookingId
         : (webhook.bookingId as any)?.bookingId ?? '-';
-        
+
       return (
         <tr key={webhook._id} className="border-b border-border-subtle/40 hover:bg-white/2">
           <td className="py-3.5 px-4 text-text-muted text-xs">
@@ -145,8 +145,8 @@ export default function WebhookDiagnosticsPage() {
           <p className="text-text-muted text-sm mt-0.5">{pagination?.total ?? 0} total events</p>
         </div>
         <div className="flex items-center gap-3">
-          <select 
-            value={providerFilter} 
+          <select
+            value={providerFilter}
             onChange={handleProviderChange}
             className="px-4 py-2.5 rounded-xl bg-background-card border border-border-subtle text-sm text-text-primary focus:outline-none focus:border-accent-purple"
           >
@@ -154,8 +154,8 @@ export default function WebhookDiagnosticsPage() {
             <option value="stripe">Stripe</option>
             <option value="razorpay">Razorpay</option>
           </select>
-          <select 
-            value={statusFilter} 
+          <select
+            value={statusFilter}
             onChange={handleStatusChange}
             className="px-4 py-2.5 rounded-xl bg-background-card border border-border-subtle text-sm text-text-primary focus:outline-none focus:border-accent-purple"
           >
@@ -219,22 +219,22 @@ export default function WebhookDiagnosticsPage() {
             </tbody>
           </table>
         </div>
-        
+
         {/* Pagination */}
         {pagination && pagination.totalPages > 1 && (
           <div className="flex items-center justify-between px-5 py-3 border-t border-border-subtle bg-background-card/50">
             <p className="text-text-muted text-xs">Page {pagination.page} of {pagination.totalPages}</p>
             <div className="flex gap-2">
-              <button 
-                onClick={() => setPage((p) => Math.max(1, p - 1))} 
-                disabled={page === 1} 
+              <button
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={page === 1}
                 className="px-3 py-1.5 text-xs glass border border-border-subtle rounded-lg disabled:opacity-40 text-text-secondary hover:text-white transition-colors"
               >
                 ← Prev
               </button>
-              <button 
-                onClick={() => setPage((p) => p + 1)} 
-                disabled={page >= pagination.totalPages} 
+              <button
+                onClick={() => setPage((p) => p + 1)}
+                disabled={page >= pagination.totalPages}
                 className="px-3 py-1.5 text-xs glass border border-border-subtle rounded-lg disabled:opacity-40 text-text-secondary hover:text-white transition-colors"
               >
                 Next →

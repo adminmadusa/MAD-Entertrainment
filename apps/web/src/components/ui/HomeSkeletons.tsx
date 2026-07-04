@@ -7,8 +7,8 @@ import React from 'react';
  */
 export function FeaturedEventsSkeleton() {
   return (
-    <section 
-      className="py-16 overflow-hidden" 
+    <section
+      className="py-16 overflow-hidden"
       aria-hidden="true"
     >
       <div className="container-mad">
@@ -47,7 +47,7 @@ export function FeaturedEventsSkeleton() {
               <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
               <div className="absolute top-3 left-3 w-16 h-5 bg-white/10 rounded-full" />
             </div>
-            
+
             {/* Details Shimmer */}
             <div className="p-4 flex-grow flex flex-col justify-between">
               <div className="space-y-3">

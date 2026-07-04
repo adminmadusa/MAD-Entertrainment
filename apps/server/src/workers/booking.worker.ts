@@ -168,7 +168,7 @@ export function startBookingWorker(): void {
       logger.error({ err, jobId: job?.id }, 'Booking confirm job failed in BullMQ');
       if (job && job.attemptsMade >= (job.opts.attempts || 3)) {
         let dlqPersisted = false;
-        
+
         // 1. DLQ Persistence
         try {
           await DeadLetterJob.create({

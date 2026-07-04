@@ -95,7 +95,7 @@ export default function EmailDiagnosticsPage() {
       // Backward compatibility: resolve status using isSent if missing
       const status = email.status ?? (email.isSent ? 'sent' : 'failed');
       const timestamp = email.queuedAt || email.createdAt;
-      
+
       const bookingIdStr = email.bookingId?.bookingId ?? '-';
       const bookingIdLink = email.bookingId?._id ? (
         <Link

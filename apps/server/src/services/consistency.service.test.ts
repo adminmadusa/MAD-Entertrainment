@@ -509,7 +509,7 @@ describe('ConsistencyService - Confirmed Booking Ticket Watchdog', () => {
     vi.mocked(Booking.exists).mockResolvedValue(null as any);
 
     const reEnqueued = await (ConsistencyService as any).repairUnticketedConfirmedBookings();
- 
+
     expect(reEnqueued).toBe(0);
     expect(Booking.exists).toHaveBeenCalledWith({ _id: 'b-confirmed-deleted' });
     expect(QueueService.enqueue).not.toHaveBeenCalled();
@@ -637,7 +637,7 @@ describe('ConsistencyService - Pipeline Watchdog (PR-T4A)', () => {
       updatedAt: new Date(Date.now() - 20 * 60 * 1000),
     };
     vi.mocked(Notification.find).mockReturnValue(mockCreateMockQuery([mockNotification]) as any);
-    
+
     const mockRefund = {
       _id: 'ref-123',
       paymentId: 'p-123',
@@ -751,7 +751,7 @@ describe('ConsistencyService - Pipeline Watchdog (PR-T4A)', () => {
     };
     vi.mocked(Booking.find).mockReturnValue(mockCreateMockQuery([mockBooking]) as any);
     vi.mocked(Ticket.countDocuments).mockResolvedValue(2);
-    
+
     vi.mocked(Notification.exists)
       .mockResolvedValueOnce(false as any) // first call in loop
       .mockResolvedValueOnce(false as any); // final verification check
@@ -983,7 +983,7 @@ describe('ConsistencyService - Stuck Processing, Notifications, Optimistic Locki
     });
 
     vi.mocked(Notification.exists).mockResolvedValue(false as any);
-    
+
     const mockBooking = {
       _id: 'book-orph-1',
       bookingId: 'MAD-REF-1',

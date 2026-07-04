@@ -1,7 +1,7 @@
 # MAD Entertainment – Final Branch Cleanup Execution Protocol
 
-**Role:** Release Governance Engineer  
-**Date:** June 16, 2026  
+**Role:** Release Governance Engineer
+**Date:** June 16, 2026
 **Status:** PROTOCOL APPROVED (Assessment Only)
 
 ---

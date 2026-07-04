@@ -46,5 +46,3 @@ export const resetAdminPasswordSchema = z.object({
       .regex(/[^A-Za-z0-9]/, 'Password must contain at least one special character'),
   }),
 });
-
-

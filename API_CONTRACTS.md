@@ -1,11 +1,11 @@
 # MAD Entertrainment — API Contracts
 
-Status: Active  
-Version: 1.0  
-Owner: Repository Architecture & API Governance  
-Review Cycle: Quarterly  
-Last Updated: 2026-06-25  
-API Version: v1 (Active)  
+Status: Active
+Version: 1.0
+Owner: Repository Architecture & API Governance
+Review Cycle: Quarterly
+Last Updated: 2026-06-25
+API Version: v1 (Active)
 
 Supersedes:
 - None (First version establishing the API Contract SSOT)
@@ -264,7 +264,7 @@ The table below logs all active endpoints compiled from Express router maps and 
 - Custom parameter routes (e.g. `:id`) must validate parameter structures (Zod `objectIdSchema`) immediately.
 
 ### Future Recommendations
-- See *Appendix — Future API Considerations* — Proposal 3: "JSON API Standardized Pagination & Query Envelopes" for proposals on structuring standard response formats.  
+- See *Appendix — Future API Considerations* — Proposal 3: "JSON API Standardized Pagination & Query Envelopes" for proposals on structuring standard response formats.
   *Status*: Possible Future Enhancement (Not Approved) · Untracked
 
 ---
@@ -298,7 +298,7 @@ Access is authorized via the `requireAdmin` middleware and role checks:
 - Deactivated admin accounts (`isActive: false`) must have their tokens rejected on the next incoming request by loading the model in auth middleware.
 
 ### Future Recommendations
-- See *Appendix — Future API Considerations* — Proposal 2: "Centralized JWT Blacklist & Token Revocation Store" for blacklisting strategies.  
+- See *Appendix — Future API Considerations* — Proposal 2: "Centralized JWT Blacklist & Token Revocation Store" for blacklisting strategies.
   *Status*: Possible Future Enhancement (Not Approved) · Untracked
 
 ---
@@ -373,7 +373,7 @@ Enforces audit safety rules. When `manualOverride` is `true`, `overrideReason` m
 - Phone numbers must be verified against E.164 formats (`/^\+[1-9]\d{1,14}$/`) to guarantee SMS gateway compliance.
 
 ### Future Recommendations
-- See *Appendix — Future API Considerations* — Proposal 1: "Centralized Service Contracts (`@mad/contracts`)" for sharing validation logic.  
+- See *Appendix — Future API Considerations* — Proposal 1: "Centralized Service Contracts (`@mad/contracts`)" for sharing validation logic.
   *Status*: Possible Future Enhancement (Not Approved) · Untracked
 
 ---
@@ -432,7 +432,7 @@ Used when database constraints or processing rules fail (e.g. duplicate key, mon
 - All non-production environments may attach stack trace strings under the `stack` parameter, but this must be explicitly omitted in production builds.
 
 ### Future Recommendations
-- Standardize all REST payload responses to conform to the JSON:API specifications.  
+- Standardize all REST payload responses to conform to the JSON:API specifications.
   *Status*: Possible Future Enhancement (Not Approved) · Untracked
 
 ---
@@ -457,7 +457,7 @@ Validations use Zod schemas and normalizers to sanitize and format input data:
 - Model-level validations (Mongoose hooks) must act as a secondary fallback, not the primary validation layer.
 
 ### Future Recommendations
-- Implement schema validation checks on API response payloads to prevent data leakage.  
+- Implement schema validation checks on API response payloads to prevent data leakage.
   *Status*: Possible Future Enhancement (Not Approved) · Untracked
 
 ---
@@ -483,7 +483,7 @@ Exceptions are caught by global Express middlewares (`notFoundHandler`, `errorHa
 - Standard 500 errors must hide system details from the client in production.
 
 ### Future Recommendations
-- Implement a structured error classification schema mapping errors to centralized error codes.  
+- Implement a structured error classification schema mapping errors to centralized error codes.
   *Status*: Possible Future Enhancement (Not Approved) · Untracked
 
 ---
@@ -502,7 +502,7 @@ The API secures endpoints using several security controls:
 - All Webhook endpoints must consume raw bodies for HMAC validations instead of parsed JSON strings.
 
 ### Future Recommendations
-- See *Appendix — Future API Considerations* — Proposal 4: "OpenID Connect & OAuth2 Integration" for delegated authentication.  
+- See *Appendix — Future API Considerations* — Proposal 4: "OpenID Connect & OAuth2 Integration" for delegated authentication.
   *Status*: Possible Future Enhancement (Not Approved) · Untracked
 
 ---
@@ -546,7 +546,7 @@ sequenceDiagram
 - Seat release logic must run inside a database transaction to prevent double bookings.
 
 ### Future Recommendations
-- Implement automatic webhook reconcilers to sync missing payment states after prolonged outages.  
+- Implement automatic webhook reconcilers to sync missing payment states after prolonged outages.
   *Status*: Possible Future Enhancement (Not Approved) · Untracked
 
 ---
@@ -574,7 +574,7 @@ The server exposes two webhook endpoints to handle async payment notifications:
 - All webhook handlers must return an HTTP 200 OK immediately if a duplicate webhook event ID is detected.
 
 ### Future Recommendations
-- Implement a dead letter queue (DLQ) retry mechanic for failed webhook processing.  
+- Implement a dead letter queue (DLQ) retry mechanic for failed webhook processing.
   *Status*: Possible Future Enhancement (Not Approved) · Untracked
 
 ---
@@ -603,7 +603,7 @@ Rate limit windows and thresholds are configured by the `initRateLimiters` boots
 - Limiters must log warnings if Redis connections drop.
 
 ### Future Recommendations
-- Configure dynamic rate limits based on client API keys or IP reputations.  
+- Configure dynamic rate limits based on client API keys or IP reputations.
   *Status*: Possible Future Enhancement (Not Approved) · Untracked
 
 ---
@@ -620,7 +620,7 @@ Rate limit windows and thresholds are configured by the `initRateLimiters` boots
 - Deprecation schedules must be documented in release notes.
 
 ### Future Recommendations
-- See *Appendix — Future API Considerations* — Proposal 3: "JSON API Standardized Pagination & Query Envelopes" for response design updates.  
+- See *Appendix — Future API Considerations* — Proposal 3: "JSON API Standardized Pagination & Query Envelopes" for response design updates.
   *Status*: Possible Future Enhancement (Not Approved) · Untracked
 
 ---
@@ -644,7 +644,7 @@ The table below logs the security risk classifications and controls across the p
 The following speculative enhancements are tracked for potential future development:
 
 > Possible Future Enhancement (Not Approved)
-> 
+>
 > ### Proposal 1: Centralized Service Contracts (`@mad/contracts`)
 > - **Business Motivation**: Share validation schemas and typescript routes across the client and server projects to ensure compile-time API safety.
 > - **Technical Benefit**: Replaces manually duplicated types and Zod schemas with a single contract boundary package, enabling automatic client generation.
@@ -656,7 +656,7 @@ The following speculative enhancements are tracked for potential future developm
 > - **Tracking Status**: Untracked
 
 > Possible Future Enhancement (Not Approved)
-> 
+>
 > ### Proposal 2: Centralized JWT Blacklist & Token Revocation Store
 > - **Business Motivation**: Enable immediate logout and account suspension across all API instances.
 > - **Technical Benefit**: Replaces the stateless access token validation with a fast Redis-backed token blacklist check.
@@ -668,7 +668,7 @@ The following speculative enhancements are tracked for potential future developm
 > - **Tracking Status**: Untracked
 
 > Possible Future Enhancement (Not Approved)
-> 
+>
 > ### Proposal 3: JSON API Standardized Pagination & Query Envelopes
 > - **Business Motivation**: Align and standardize frontend queries, sorting, and pagination responses.
 > - **Technical Benefit**: Standardizes list response shapes to return `{ data, meta: { page, limit, total } }` formats across all domains.
@@ -680,7 +680,7 @@ The following speculative enhancements are tracked for potential future developm
 > - **Tracking Status**: Untracked
 
 > Possible Future Enhancement (Not Approved)
-> 
+>
 > ### Proposal 4: OpenID Connect & OAuth2 Integration
 > - **Business Motivation**: Support alternative sign-in options (Apple, Facebook) and SSO.
 > - **Technical Benefit**: Decouples the proprietary Google Auth routing to a standardized federated OAuth2 token validation.

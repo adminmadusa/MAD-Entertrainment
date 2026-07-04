@@ -88,7 +88,7 @@ describe('PR 4a: Booking Ownership Characterization Tests', () => {
   // STAGE 1: Strict Ownership Sites (Should reject guest session access with 403)
   // ───────────────────────────────────────────────────────────────────────────
   describe('STRICT SITES (current behavior rejects guest access after user account linkage)', () => {
-    
+
     it('CURRENT BEHAVIOR (strict): getBooking blocks guest access after account link — see PR4 decision doc', async () => {
       vi.mocked(PublicBookingService.getBookingByReference).mockResolvedValue({
         booking: linkedBooking as any,
@@ -195,7 +195,7 @@ describe('PR 4a: Booking Ownership Characterization Tests', () => {
 
     it('CURRENT BEHAVIOR (strict): canViewTicketQR blocks guest access after account link — see PR4 decision doc', async () => {
       const ticket = { status: 'active', assignmentStatus: 'unassigned', bookingId: mockBookingId };
-      
+
       vi.mocked(Booking.findById).mockReturnValue({
         lean: vi.fn().mockResolvedValue(linkedBooking),
       } as any);
@@ -209,7 +209,7 @@ describe('PR 4a: Booking Ownership Characterization Tests', () => {
   // STAGE 2: Lax Ownership Sites (Should permit guest session access)
   // ───────────────────────────────────────────────────────────────────────────
   describe('LAX SITES (current behavior permits guest access even after user account linkage)', () => {
-    
+
     it('CURRENT BEHAVIOR (lax): PaymentService.assertBookingOwnership allows guest verification post-link — see PR4 decision doc', () => {
       const assertCall = () => {
         (PaymentService as any).assertBookingOwnership(linkedBooking, {
