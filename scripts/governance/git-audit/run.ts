@@ -14,6 +14,7 @@ import { writeBranchRegistry } from './writers/branch-registry';
 import { writeVerificationRegistry } from './writers/verification-registry';
 import { writeActionQueue, writeRepositoryMetrics } from './writers/action-queue';
 import { writeMarkdownReport } from './writers/markdown-report';
+import { generateReviewDecisionsDocument } from './writers/review-generator';
 import { RegisteredBranch, VerificationInfo } from './models/registry';
 import { ActionItem } from './models/action';
 import { getMergedPRNumber } from './utils/git';
@@ -409,6 +410,7 @@ function main() {
   writeVerificationRegistry(verifications);
   writeActionQueue(actionQueue);
   writeRepositoryMetrics(metrics);
+  generateReviewDecisionsDocument(registeredBranches);
 
   // 8. Write Markdown report
   writeMarkdownReport(registeredBranches, actionQueue, scoreReport, metrics, danglingCommitsCount, trendDeltas);
