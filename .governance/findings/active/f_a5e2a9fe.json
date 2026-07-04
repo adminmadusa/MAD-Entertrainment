@@ -1,34 +1,33 @@
 {
-  "schemaVersion": 2,
-  "id": "f_a5e2a9fe",
-  "rule": "Missing Document Owner",
-  "ruleVersion": "1.0.0",
-  "engineVersion": "1.0.0",
-  "domain": "Platform Team",
-  "owner": "Platform Team",
-  "package": "apps",
-  "feature": "Document",
-  "status": "NEW",
   "confidence": 1,
-  "relationships": [],
+  "createdDate": "2026-06-30T15:36:27.378Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
   "evidence": {
-    "path": "apps/web/src/content/legal/dmca.md",
     "construct": "Document",
     "message": "Every documentation file is required to have a defined \"Owner\" or \"Authors\" in its metadata block.",
     "occurrences": [
       {
-        "id": "f393e96292c7498c66509a2e13e097c813c455bcf2e3d9467315495f64af41bc",
-        "line": 0,
         "column": 0,
         "construct": "Document",
-        "snippet": "",
-        "message": "Every documentation file is required to have a defined \"Owner\" or \"Authors\" in its metadata block.",
-        "fingerprint": "f393e96292c7498c66509a2e13e097c813c455bcf2e3d9467315495f64af41bc"
+        "fingerprint": "f393e96292c7498c66509a2e13e097c813c455bcf2e3d9467315495f64af41bc",
+        "id": "f393e96292c7498c66509a2e13e097c813c455bcf2e3d9467315495f64af41bc",
+        "line": 0,
+        "message": "Every documentation file is required to have a defined \"Owner\" or \"Authors\" in its metadata block."
       }
-    ]
+    ],
+    "path": "apps/web/src/content/legal/dmca.md"
   },
-  "createdDate": "2026-06-30T15:36:27.378Z",
+  "feature": "Document",
   "firstDetected": "2026-06-30T15:36:27.378Z",
+  "id": "f_a5e2a9fe",
   "lastDetected": "2026-06-30T15:36:27.378Z",
-  "occurrenceCount": 1
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "Missing Document Owner",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "REGRESSION"
 }

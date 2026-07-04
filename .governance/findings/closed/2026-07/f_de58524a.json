@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-06-30T15:36:27.862Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "message": "Document exists in the repository but has no incoming references from any other active documentation.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "39b032466d540d421795aed6f26be71961c3e51b3fd827701d4751464fc19a6c",
+        "id": "39b032466d540d421795aed6f26be71961c3e51b3fd827701d4751464fc19a6c",
+        "line": 0,
+        "message": "Document exists in the repository but has no incoming references from any other active documentation.",
+        "snippet": ""
+      }
+    ],
+    "path": "docs/archive/branch-cleanup/2026-06/cleanup_record.md"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-06-30T15:36:27.862Z",
+  "id": "f_de58524a",
+  "lastDetected": "2026-06-30T15:36:27.862Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "docs",
+  "relationships": [],
+  "rule": "Orphaned Documentation",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

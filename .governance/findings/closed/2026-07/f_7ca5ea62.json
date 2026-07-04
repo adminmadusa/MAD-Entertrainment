@@ -1,0 +1,33 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T07:29:55.046Z",
+  "domain": "Architecture Review Board",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "message": "Orphaned document: active production file has no incoming links from any documentation entrypoint.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "7f2f2bd0f1961bcbfa40b8920e8d70849799c80bd8c79e017a6db964ba8bfcb6",
+        "id": "7f2f2bd0f1961bcbfa40b8920e8d70849799c80bd8c79e017a6db964ba8bfcb6",
+        "line": 0,
+        "message": "Orphaned document: active production file has no incoming links from any documentation entrypoint."
+      }
+    ],
+    "path": ".agents/skills/git-workflow/SKILL.md"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T07:29:55.046Z",
+  "id": "f_7ca5ea62",
+  "lastDetected": "2026-07-03T07:29:55.046Z",
+  "occurrenceCount": 1,
+  "owner": "Architecture Review Board",
+  "package": ".agents",
+  "relationships": [],
+  "rule": "VAL-DOC-007",
+  "ruleVersion": "2.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

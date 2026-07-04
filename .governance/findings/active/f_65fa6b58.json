@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-04T03:15:45.086Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 18,
+    "message": "Trailing whitespace characters detected.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "53617aae1b70a89e812df057088c42babcae8cf9248dd2e909b7d1f25c1f1af9",
+        "id": "53617aae1b70a89e812df057088c42babcae8cf9248dd2e909b7d1f25c1f1af9",
+        "line": 18,
+        "message": "Trailing whitespace characters detected."
+      }
+    ],
+    "path": "apps/server/src/controllers/admin/webhook.controller.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-04T03:15:45.086Z",
+  "id": "f_65fa6b58",
+  "lastDetected": "2026-07-04T03:15:45.086Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-004",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

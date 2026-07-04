@@ -1,34 +1,33 @@
 {
-  "schemaVersion": 2,
-  "id": "f_6a1a3e95",
-  "rule": "Orphaned Documentation",
-  "ruleVersion": "1.0.0",
-  "engineVersion": "1.0.0",
-  "domain": "Platform Team",
-  "owner": "Platform Team",
-  "package": "apps",
-  "feature": "Document",
-  "status": "NEW",
   "confidence": 1,
-  "relationships": [],
+  "createdDate": "2026-06-30T15:36:27.418Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
   "evidence": {
-    "path": "apps/web/src/content/legal/privacy.md",
     "construct": "Document",
     "message": "Document exists in the repository but has no incoming references from any other active documentation.",
     "occurrences": [
       {
-        "id": "2e5a7af61531ef24c7f0c427e7627f0257d5cd9e00da9eddac16b4db475d0c7f",
-        "line": 0,
         "column": 0,
         "construct": "Document",
-        "snippet": "",
-        "message": "Document exists in the repository but has no incoming references from any other active documentation.",
-        "fingerprint": "2e5a7af61531ef24c7f0c427e7627f0257d5cd9e00da9eddac16b4db475d0c7f"
+        "fingerprint": "2e5a7af61531ef24c7f0c427e7627f0257d5cd9e00da9eddac16b4db475d0c7f",
+        "id": "2e5a7af61531ef24c7f0c427e7627f0257d5cd9e00da9eddac16b4db475d0c7f",
+        "line": 0,
+        "message": "Document exists in the repository but has no incoming references from any other active documentation."
       }
-    ]
+    ],
+    "path": "apps/web/src/content/legal/privacy.md"
   },
-  "createdDate": "2026-06-30T15:36:27.418Z",
+  "feature": "Document",
   "firstDetected": "2026-06-30T15:36:27.418Z",
+  "id": "f_6a1a3e95",
   "lastDetected": "2026-06-30T15:36:27.418Z",
-  "occurrenceCount": 1
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "Orphaned Documentation",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "REGRESSION"
 }

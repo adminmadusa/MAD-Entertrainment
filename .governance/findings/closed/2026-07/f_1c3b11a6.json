@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-06-29T08:09:51.199Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "message": "Document exists in the repository but has no incoming references from any other active documentation.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "b2960090c886c02a3440e76758a2a8c265fb0bdf50dcba12fccfbf6453673ce0",
+        "id": "b2960090c886c02a3440e76758a2a8c265fb0bdf50dcba12fccfbf6453673ce0",
+        "line": 0,
+        "message": "Document exists in the repository but has no incoming references from any other active documentation.",
+        "snippet": ""
+      }
+    ],
+    "path": "docs/PR4-DECISION-NEEDED.md"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-06-29T08:09:51.199Z",
+  "id": "f_1c3b11a6",
+  "lastDetected": "2026-06-29T08:09:51.199Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "docs",
+  "relationships": [],
+  "rule": "Orphaned Documentation",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

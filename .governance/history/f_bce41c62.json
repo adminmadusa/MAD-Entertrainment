@@ -1,0 +1,17 @@
+{
+  "history": [
+    {
+      "action": "CREATED",
+      "notes": "New grouped finding registered: Document exists in the repository but has no incoming references from any other active documentation.",
+      "status": "NEW",
+      "timestamp": "2026-07-03T16:43:25.171Z"
+    },
+    {
+      "action": "RESOLVED",
+      "notes": "Code violation no longer detected. Marking finding as closed. (Transitioned from NEW to CLOSED)",
+      "status": "CLOSED",
+      "timestamp": "2026-07-04T04:15:24.603Z"
+    }
+  ],
+  "id": "f_bce41c62"
+}

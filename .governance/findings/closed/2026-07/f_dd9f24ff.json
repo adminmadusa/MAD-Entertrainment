@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-06-30T15:36:27.435Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "message": "Every documentation file is required to have a defined \"Owner\" or \"Authors\" in its metadata block.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "5ec5d8ae9984de7d738c9eaba1cc2eb0033df570f00164a2e60fd36f75d982ba",
+        "id": "5ec5d8ae9984de7d738c9eaba1cc2eb0033df570f00164a2e60fd36f75d982ba",
+        "line": 0,
+        "message": "Every documentation file is required to have a defined \"Owner\" or \"Authors\" in its metadata block.",
+        "snippet": ""
+      }
+    ],
+    "path": "apps/web/src/content/legal/refunds.md"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-06-30T15:36:27.435Z",
+  "id": "f_dd9f24ff",
+  "lastDetected": "2026-06-30T15:36:27.435Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "Missing Document Owner",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

@@ -1,45 +1,37 @@
 {
-  "schemaVersion": 2,
-  "id": "f_d01224d6",
-  "rule": "VAL-UI-003",
-  "ruleVersion": "1.0.0",
-  "engineVersion": "1.0.0",
-  "domain": "UI UX Guild",
-  "owner": "UI UX Guild",
-  "package": "apps",
-  "feature": "modal-accessibility",
-  "status": "NEW",
   "confidence": 1,
-  "relationships": [],
+  "createdDate": "2026-06-29T08:09:52.120Z",
+  "domain": "UI UX Guild",
+  "engineVersion": "1.0.0",
   "evidence": {
-    "path": "apps/admin/src/app/bookings/_components/CancelBookingModal.tsx",
     "construct": "modal-accessibility",
-    "snippet": "<div className=\"fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4\">",
     "line": 27,
     "message": "Custom modal backdrop is missing role=\"dialog\" or aria-modal=\"true\" accessibility tags.",
     "occurrences": [
       {
-        "id": "9a768a966939cc772ad607ce10273133f817e43747db518886d330a10b50ffc3",
-        "line": 27,
-        "column": 0,
-        "construct": "modal-accessibility",
-        "snippet": "<div className=\"fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4\">",
-        "message": "Custom modal backdrop is missing role=\"dialog\" or aria-modal=\"true\" accessibility tags.",
-        "fingerprint": "9a768a966939cc772ad607ce10273133f817e43747db518886d330a10b50ffc3"
-      },
-      {
-        "id": "a0e5e1f19f9515e4977e6976e91fdb944e0257caf5dceda76ae86b11e2b4acdc",
-        "line": 27,
         "column": 0,
         "construct": "UIElement",
-        "snippet": "<div className=\"fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4\">",
+        "fingerprint": "a0e5e1f19f9515e4977e6976e91fdb944e0257caf5dceda76ae86b11e2b4acdc",
+        "id": "a0e5e1f19f9515e4977e6976e91fdb944e0257caf5dceda76ae86b11e2b4acdc",
+        "line": 27,
         "message": "Custom modal backdrop is missing role=\"dialog\" or aria-modal=\"true\" accessibility tags.",
-        "fingerprint": "a0e5e1f19f9515e4977e6976e91fdb944e0257caf5dceda76ae86b11e2b4acdc"
+        "snippet": "<div className=\"fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4\">"
       }
-    ]
+    ],
+    "path": "apps/admin/src/app/bookings/_components/CancelBookingModal.tsx",
+    "snippet": "<div className=\"fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4\">"
   },
-  "createdDate": "2026-06-29T08:09:52.120Z",
+  "feature": "modal-accessibility",
   "firstDetected": "2026-06-29T08:09:52.120Z",
-  "lastDetected": "2026-06-30T15:36:27.121Z",
-  "occurrenceCount": 2
+  "id": "f_d01224d6",
+  "lastDetected": "2026-07-04T04:11:43.046Z",
+  "lastModified": "2026-07-04T04:11:43.046Z",
+  "occurrenceCount": 1,
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-UI-003",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
 }

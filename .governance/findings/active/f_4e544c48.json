@@ -1,35 +1,35 @@
 {
-  "schemaVersion": 2,
-  "id": "f_4e544c48",
-  "rule": "VAL-UI-017",
-  "ruleVersion": "1.0.0",
-  "engineVersion": "1.0.0",
-  "domain": "Platform Team",
-  "owner": "Platform Team",
-  "package": "apps",
-  "feature": "UIElement",
-  "status": "NEW",
   "confidence": 0.9,
-  "relationships": [],
+  "createdDate": "2026-06-30T15:36:27.246Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
   "evidence": {
-    "path": "apps/web/src/app/dj-operators/[slug]/page.tsx",
     "construct": "UIElement",
     "line": 1,
-    "message": "Safe delete classification: [REQUIRES_MANUAL_REVIEW] for \"apps/web/src/app/dj-operators/[slug]/page.tsx\". Reason: Filename \"page\" referenced as text/string in other files: AGENTS.MD, API_CONTRACTS.md.",
+    "message": "Safe delete classification: [REQUIRES_MANUAL_REVIEW] for \"apps/web/src/app/dj-operators/[slug]/page.tsx\". Reason: Filename \"page\" referenced as text/string in other files: .agents/skills/ci-investigation/examples/deployment-failure.md, AGENTS.MD.",
     "occurrences": [
       {
-        "id": "14648b0e037639e988f8349c224708ae116108ef04692f2238cab503211ad786",
-        "line": 1,
         "column": 0,
         "construct": "UIElement",
-        "snippet": "",
-        "message": "Safe delete classification: [REQUIRES_MANUAL_REVIEW] for \"apps/web/src/app/dj-operators/[slug]/page.tsx\". Reason: Filename \"page\" referenced as text/string in other files: AGENTS.MD, API_CONTRACTS.md.",
-        "fingerprint": "14648b0e037639e988f8349c224708ae116108ef04692f2238cab503211ad786"
+        "fingerprint": "14648b0e037639e988f8349c224708ae116108ef04692f2238cab503211ad786",
+        "id": "14648b0e037639e988f8349c224708ae116108ef04692f2238cab503211ad786",
+        "line": 1,
+        "message": "Safe delete classification: [REQUIRES_MANUAL_REVIEW] for \"apps/web/src/app/dj-operators/[slug]/page.tsx\". Reason: Filename \"page\" referenced as text/string in other files: .agents/skills/ci-investigation/examples/deployment-failure.md, AGENTS.MD."
       }
-    ]
+    ],
+    "path": "apps/web/src/app/dj-operators/[slug]/page.tsx"
   },
-  "createdDate": "2026-06-30T15:36:27.246Z",
+  "feature": "UIElement",
   "firstDetected": "2026-06-30T15:36:27.246Z",
-  "lastDetected": "2026-06-30T15:36:27.246Z",
-  "occurrenceCount": 1
+  "id": "f_4e544c48",
+  "lastDetected": "2026-07-04T04:11:43.104Z",
+  "lastModified": "2026-07-04T04:11:43.104Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-UI-017",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
 }

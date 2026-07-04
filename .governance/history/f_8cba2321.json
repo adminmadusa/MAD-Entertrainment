@@ -1,0 +1,71 @@
+{
+  "history": [
+    {
+      "action": "RESOLVED",
+      "notes": "Code violation no longer detected. Marking finding as closed. (Transitioned from NEW to CLOSED)",
+      "status": "CLOSED",
+      "timestamp": "2026-07-03T16:39:41.178Z"
+    },
+    {
+      "action": "DETECTED_AGAIN",
+      "notes": "Finding regressed. Code violation re-introduced. (Transitioned from CLOSED to REGRESSION)",
+      "status": "REGRESSION",
+      "timestamp": "2026-07-03T16:43:25.797Z"
+    },
+    {
+      "action": "RESOLVED",
+      "notes": "Code violation no longer detected. Marking finding as closed. (Transitioned from REGRESSION to CLOSED)",
+      "status": "CLOSED",
+      "timestamp": "2026-07-04T03:02:11.648Z"
+    },
+    {
+      "action": "DETECTED_AGAIN",
+      "notes": "Finding regressed. Code violation re-introduced. (Transitioned from CLOSED to REGRESSION)",
+      "status": "REGRESSION",
+      "timestamp": "2026-07-04T03:15:48.562Z"
+    },
+    {
+      "action": "UPDATED",
+      "notes": "Occurrences updated. Active count: 1",
+      "status": "REGRESSION",
+      "timestamp": "2026-07-04T03:15:48.820Z"
+    },
+    {
+      "action": "DETECTED_AGAIN",
+      "notes": "Finding regressed. Code violation re-introduced. (Transitioned from CLOSED to REGRESSION)",
+      "status": "REGRESSION",
+      "timestamp": "2026-07-04T04:11:42.934Z"
+    },
+    {
+      "action": "UPDATED",
+      "notes": "Occurrences updated. Active count: 1",
+      "status": "REGRESSION",
+      "timestamp": "2026-07-04T04:11:43.100Z"
+    },
+    {
+      "action": "DETECTED_AGAIN",
+      "notes": "Finding regressed. Code violation re-introduced. (Transitioned from CLOSED to REGRESSION)",
+      "status": "REGRESSION",
+      "timestamp": "2026-07-04T04:13:29.728Z"
+    },
+    {
+      "action": "UPDATED",
+      "notes": "Occurrences updated. Active count: 1",
+      "status": "REGRESSION",
+      "timestamp": "2026-07-04T04:13:29.828Z"
+    },
+    {
+      "action": "DETECTED_AGAIN",
+      "notes": "Finding regressed. Code violation re-introduced. (Transitioned from CLOSED to REGRESSION)",
+      "status": "REGRESSION",
+      "timestamp": "2026-07-04T04:15:24.555Z"
+    },
+    {
+      "action": "UPDATED",
+      "notes": "Occurrences updated. Active count: 1",
+      "status": "REGRESSION",
+      "timestamp": "2026-07-04T04:15:24.672Z"
+    }
+  ],
+  "id": "f_8cba2321"
+}

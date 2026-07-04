@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:56.081Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 6,
+    "message": "Groups of imports must be separated by a single blank line.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "5cdf9f4dd9a5faf78a7388560d3abf38608a0b4ca41f92701d30ba35e32aa9ad",
+        "id": "5cdf9f4dd9a5faf78a7388560d3abf38608a0b4ca41f92701d30ba35e32aa9ad",
+        "line": 6,
+        "message": "Groups of imports must be separated by a single blank line."
+      }
+    ],
+    "path": "apps/web/src/components/layout/BottomNavigation.tsx"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:56.081Z",
+  "id": "f_a110f642",
+  "lastDetected": "2026-07-03T12:25:56.081Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-001",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "REGRESSION"
+}

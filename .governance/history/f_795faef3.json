@@ -1,0 +1,47 @@
+{
+  "history": [
+    {
+      "action": "RESOLVED",
+      "notes": "Code violation no longer detected. Marking finding as closed. (Transitioned from NEW to CLOSED)",
+      "status": "CLOSED",
+      "timestamp": "2026-07-03T16:39:41.159Z"
+    },
+    {
+      "action": "DETECTED_AGAIN",
+      "notes": "Finding regressed. Code violation re-introduced. (Transitioned from CLOSED to REGRESSION)",
+      "status": "REGRESSION",
+      "timestamp": "2026-07-03T16:43:25.771Z"
+    },
+    {
+      "action": "RESOLVED",
+      "notes": "Code violation no longer detected. Marking finding as closed. (Transitioned from REGRESSION to CLOSED)",
+      "status": "CLOSED",
+      "timestamp": "2026-07-04T03:02:11.620Z"
+    },
+    {
+      "action": "DETECTED_AGAIN",
+      "notes": "Finding regressed. Code violation re-introduced. (Transitioned from CLOSED to REGRESSION)",
+      "status": "REGRESSION",
+      "timestamp": "2026-07-04T03:15:48.532Z"
+    },
+    {
+      "action": "DETECTED_AGAIN",
+      "notes": "Finding regressed. Code violation re-introduced. (Transitioned from CLOSED to REGRESSION)",
+      "status": "REGRESSION",
+      "timestamp": "2026-07-04T04:11:42.918Z"
+    },
+    {
+      "action": "DETECTED_AGAIN",
+      "notes": "Finding regressed. Code violation re-introduced. (Transitioned from CLOSED to REGRESSION)",
+      "status": "REGRESSION",
+      "timestamp": "2026-07-04T04:13:29.717Z"
+    },
+    {
+      "action": "DETECTED_AGAIN",
+      "notes": "Finding regressed. Code violation re-introduced. (Transitioned from CLOSED to REGRESSION)",
+      "status": "REGRESSION",
+      "timestamp": "2026-07-04T04:15:24.542Z"
+    }
+  ],
+  "id": "f_795faef3"
+}

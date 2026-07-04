@@ -1,45 +1,36 @@
 {
-  "schemaVersion": 2,
-  "id": "f_89080178",
-  "rule": "VAL-UI-004",
-  "ruleVersion": "1.0.0",
-  "engineVersion": "1.0.0",
-  "domain": "UI UX Guild",
-  "owner": "UI UX Guild",
-  "package": "apps",
-  "feature": "table",
-  "status": "NEW",
   "confidence": 0.9,
-  "relationships": [],
+  "createdDate": "2026-07-03T16:43:20.772Z",
+  "domain": "UI UX Guild",
+  "engineVersion": "1.0.0",
   "evidence": {
-    "path": "apps/admin/src/app/diagnostics/webhooks/page.tsx",
-    "construct": "table",
-    "snippet": "<table className=\"w-full text-sm\">",
+    "construct": "UIElement",
     "line": 209,
-    "message": "Raw <table> element used in admin portal. Use a reusable shared Table component.",
+    "message": "Raw <table> element used in portal. Use a reusable shared Table component.",
     "occurrences": [
       {
-        "id": "470cf95e79b706fd4436f6af23a36c2f0a70dbaea5ccb254882674bc4b67b9a2",
-        "line": 209,
-        "column": 0,
-        "construct": "table",
-        "snippet": "<table className=\"w-full text-sm\">",
-        "message": "Raw <table> element used in admin portal. Use a reusable shared Table component.",
-        "fingerprint": "470cf95e79b706fd4436f6af23a36c2f0a70dbaea5ccb254882674bc4b67b9a2"
-      },
-      {
-        "id": "a73d218c84ba1deb584d83460063a25787a857f7b244fa778909b731eab2007d",
-        "line": 209,
         "column": 0,
         "construct": "UIElement",
-        "snippet": "<table className=\"w-full text-sm\">",
+        "fingerprint": "a73d218c84ba1deb584d83460063a25787a857f7b244fa778909b731eab2007d",
+        "id": "a73d218c84ba1deb584d83460063a25787a857f7b244fa778909b731eab2007d",
+        "line": 209,
         "message": "Raw <table> element used in portal. Use a reusable shared Table component.",
-        "fingerprint": "a73d218c84ba1deb584d83460063a25787a857f7b244fa778909b731eab2007d"
+        "snippet": "<table className=\"w-full text-sm\">"
       }
-    ]
+    ],
+    "path": "apps/admin/src/app/diagnostics/webhooks/page.tsx",
+    "snippet": "<table className=\"w-full text-sm\">"
   },
-  "createdDate": "2026-06-29T08:09:53.668Z",
-  "firstDetected": "2026-06-29T08:09:53.668Z",
-  "lastDetected": "2026-06-30T15:36:27.132Z",
-  "occurrenceCount": 2
+  "feature": "UIElement",
+  "firstDetected": "2026-07-03T16:43:20.772Z",
+  "id": "f_89080178",
+  "lastDetected": "2026-07-03T16:43:20.772Z",
+  "occurrenceCount": 1,
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-UI-004",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "REGRESSION"
 }

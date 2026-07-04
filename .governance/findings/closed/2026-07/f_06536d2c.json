@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-06-29T08:09:51.230Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "message": "Document exists in the repository but has no incoming references from any other active documentation.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "95712251f032f365be396521e01fb97860f99a42272eac9d22ead70fe404237c",
+        "id": "95712251f032f365be396521e01fb97860f99a42272eac9d22ead70fe404237c",
+        "line": 0,
+        "message": "Document exists in the repository but has no incoming references from any other active documentation.",
+        "snippet": ""
+      }
+    ],
+    "path": "docs/ROADMAP.md"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-06-29T08:09:51.230Z",
+  "id": "f_06536d2c",
+  "lastDetected": "2026-06-29T08:09:51.230Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "docs",
+  "relationships": [],
+  "rule": "Orphaned Documentation",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

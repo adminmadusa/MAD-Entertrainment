@@ -1,35 +1,35 @@
 {
-  "schemaVersion": 2,
-  "id": "f_413c6cdd",
-  "rule": "VAL-UI-017",
-  "ruleVersion": "1.0.0",
-  "engineVersion": "1.0.0",
-  "domain": "Platform Team",
-  "owner": "Platform Team",
-  "package": "apps",
-  "feature": "UIElement",
-  "status": "NEW",
   "confidence": 0.9,
-  "relationships": [],
+  "createdDate": "2026-06-30T15:36:27.264Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
   "evidence": {
-    "path": "apps/web/src/app/legal/[doc]/page.tsx",
     "construct": "UIElement",
     "line": 1,
-    "message": "Safe delete classification: [REQUIRES_MANUAL_REVIEW] for \"apps/web/src/app/legal/[doc]/page.tsx\". Reason: Filename \"page\" referenced as text/string in other files: AGENTS.MD, API_CONTRACTS.md.",
+    "message": "Safe delete classification: [REQUIRES_MANUAL_REVIEW] for \"apps/web/src/app/legal/[doc]/page.tsx\". Reason: Filename \"page\" referenced as text/string in other files: .agents/skills/ci-investigation/examples/deployment-failure.md, AGENTS.MD.",
     "occurrences": [
       {
-        "id": "e6cd8db8bb2ab74ed9ad0d07cf6192e614fdd43edbe3bda937b30501581b6935",
-        "line": 1,
         "column": 0,
         "construct": "UIElement",
-        "snippet": "",
-        "message": "Safe delete classification: [REQUIRES_MANUAL_REVIEW] for \"apps/web/src/app/legal/[doc]/page.tsx\". Reason: Filename \"page\" referenced as text/string in other files: AGENTS.MD, API_CONTRACTS.md.",
-        "fingerprint": "e6cd8db8bb2ab74ed9ad0d07cf6192e614fdd43edbe3bda937b30501581b6935"
+        "fingerprint": "e6cd8db8bb2ab74ed9ad0d07cf6192e614fdd43edbe3bda937b30501581b6935",
+        "id": "e6cd8db8bb2ab74ed9ad0d07cf6192e614fdd43edbe3bda937b30501581b6935",
+        "line": 1,
+        "message": "Safe delete classification: [REQUIRES_MANUAL_REVIEW] for \"apps/web/src/app/legal/[doc]/page.tsx\". Reason: Filename \"page\" referenced as text/string in other files: .agents/skills/ci-investigation/examples/deployment-failure.md, AGENTS.MD."
       }
-    ]
+    ],
+    "path": "apps/web/src/app/legal/[doc]/page.tsx"
   },
-  "createdDate": "2026-06-30T15:36:27.264Z",
+  "feature": "UIElement",
   "firstDetected": "2026-06-30T15:36:27.264Z",
-  "lastDetected": "2026-06-30T15:36:27.264Z",
-  "occurrenceCount": 1
+  "id": "f_413c6cdd",
+  "lastDetected": "2026-07-04T04:11:43.109Z",
+  "lastModified": "2026-07-04T04:11:43.109Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-UI-017",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
 }

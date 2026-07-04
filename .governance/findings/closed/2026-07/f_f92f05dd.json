@@ -1,0 +1,33 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T07:29:54.974Z",
+  "domain": "Architecture Review Board",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "message": "Document exists in the repository but has no incoming references from any other active documentation.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "a8ce6178c9f5b78024115302d68a659773c21b6c39a53269f91926feb1942af6",
+        "id": "a8ce6178c9f5b78024115302d68a659773c21b6c39a53269f91926feb1942af6",
+        "line": 0,
+        "message": "Document exists in the repository but has no incoming references from any other active documentation."
+      }
+    ],
+    "path": ".agents/skills/ci-investigation/templates/ci-investigation-prompt.md"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T07:29:54.974Z",
+  "id": "f_f92f05dd",
+  "lastDetected": "2026-07-03T07:29:54.974Z",
+  "occurrenceCount": 1,
+  "owner": "Architecture Review Board",
+  "package": ".agents",
+  "relationships": [],
+  "rule": "Orphaned Documentation",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

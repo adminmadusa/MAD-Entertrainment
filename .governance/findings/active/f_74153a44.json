@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-04T03:15:45.310Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 338,
+    "message": "File must terminate with exactly one trailing newline character.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "99efcd947890272e92a1553285e9faa519738600e2580b4f6427fe462084cb43",
+        "id": "99efcd947890272e92a1553285e9faa519738600e2580b4f6427fe462084cb43",
+        "line": 338,
+        "message": "File must terminate with exactly one trailing newline character."
+      }
+    ],
+    "path": "apps/server/src/middleware/auth.middleware.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-04T03:15:45.310Z",
+  "id": "f_74153a44",
+  "lastDetected": "2026-07-04T03:15:45.310Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-005",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

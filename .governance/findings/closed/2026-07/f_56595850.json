@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-06-30T15:36:28.281Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "message": "Document exists in the repository but has no incoming references from any other active documentation.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "e2694b826693a4d4377e8d00acbab99bc74f49fbde045ffc320809f2c49d862a",
+        "id": "e2694b826693a4d4377e8d00acbab99bc74f49fbde045ffc320809f2c49d862a",
+        "line": 0,
+        "message": "Document exists in the repository but has no incoming references from any other active documentation.",
+        "snippet": ""
+      }
+    ],
+    "path": "docs/audit/refund/REFUND-001-EXECUTIVE-SUMMARY.md"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-06-30T15:36:28.281Z",
+  "id": "f_56595850",
+  "lastDetected": "2026-06-30T15:36:28.281Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "docs",
+  "relationships": [],
+  "rule": "Orphaned Documentation",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

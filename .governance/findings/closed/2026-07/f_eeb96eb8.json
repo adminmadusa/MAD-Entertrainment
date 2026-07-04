@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-06-30T15:36:27.594Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "message": "Document exists in the repository but has no incoming references from any other active documentation.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "a3e2606438e60d64778cd395c294de2088e6338050afaa6418bb7d8451d1c04c",
+        "id": "a3e2606438e60d64778cd395c294de2088e6338050afaa6418bb7d8451d1c04c",
+        "line": 0,
+        "message": "Document exists in the repository but has no incoming references from any other active documentation.",
+        "snippet": ""
+      }
+    ],
+    "path": "docs/archive/audits/CUSTOMER_CONVERSION_FINDINGS_VALIDATION.md"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-06-30T15:36:27.594Z",
+  "id": "f_eeb96eb8",
+  "lastDetected": "2026-06-30T15:36:27.594Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "docs",
+  "relationships": [],
+  "rule": "Orphaned Documentation",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

@@ -1,54 +1,46 @@
 {
-  "schemaVersion": 2,
-  "id": "f_06d580b8",
-  "rule": "VAL-UI-005",
-  "ruleVersion": "1.0.0",
-  "engineVersion": "1.0.0",
-  "domain": "UI UX Guild",
-  "owner": "UI UX Guild",
-  "package": "apps",
-  "feature": "button",
-  "status": "NEW",
   "confidence": 0.85,
-  "relationships": [],
+  "createdDate": "2026-06-29T08:10:20.872Z",
+  "domain": "UI UX Guild",
+  "engineVersion": "1.0.0",
   "evidence": {
-    "path": "apps/admin/src/components/CloudinaryUpload.tsx",
     "construct": "button",
-    "snippet": "<button",
-    "line": 122,
+    "line": 129,
     "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
     "occurrences": [
       {
-        "id": "b6b8cd0818730d64df562dd01246fbe23c51490de6a2779d7c92f72b81012a6f",
-        "line": 122,
-        "column": 0,
-        "construct": "button",
-        "snippet": "<button",
-        "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
-        "fingerprint": "b6b8cd0818730d64df562dd01246fbe23c51490de6a2779d7c92f72b81012a6f"
-      },
-      {
-        "id": "2f52557d754759063f64da9ad7701043a490a8d97a7b5056b0ce835662b234b0",
-        "line": 122,
         "column": 0,
         "construct": "UIElement",
-        "snippet": "<button",
+        "fingerprint": "2f52557d754759063f64da9ad7701043a490a8d97a7b5056b0ce835662b234b0",
+        "id": "2f52557d754759063f64da9ad7701043a490a8d97a7b5056b0ce835662b234b0",
+        "line": 122,
         "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
-        "fingerprint": "2f52557d754759063f64da9ad7701043a490a8d97a7b5056b0ce835662b234b0"
+        "snippet": "<button"
       },
       {
+        "column": 0,
+        "construct": "UIElement",
+        "fingerprint": "2f52557d754759063f64da9ad7701043a490a8d97a7b5056b0ce835662b234b0",
         "id": "2f52557d754759063f64da9ad7701043a490a8d97a7b5056b0ce835662b234b0",
         "line": 129,
-        "column": 0,
-        "construct": "UIElement",
-        "snippet": "<button",
         "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
-        "fingerprint": "2f52557d754759063f64da9ad7701043a490a8d97a7b5056b0ce835662b234b0"
+        "snippet": "<button"
       }
-    ]
+    ],
+    "path": "apps/admin/src/components/CloudinaryUpload.tsx",
+    "snippet": "<button"
   },
-  "createdDate": "2026-06-29T08:10:20.872Z",
+  "feature": "button",
   "firstDetected": "2026-06-29T08:10:20.872Z",
-  "lastDetected": "2026-06-30T15:36:27.199Z",
-  "occurrenceCount": 3
+  "id": "f_06d580b8",
+  "lastDetected": "2026-07-04T04:11:43.084Z",
+  "lastModified": "2026-07-04T04:11:43.084Z",
+  "occurrenceCount": 2,
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-UI-005",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
 }

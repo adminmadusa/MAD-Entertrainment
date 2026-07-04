@@ -1,34 +1,33 @@
 {
-  "schemaVersion": 2,
-  "id": "f_51ffc742",
-  "rule": "Orphaned Documentation",
-  "ruleVersion": "1.0.0",
-  "engineVersion": "1.0.0",
-  "domain": "Platform Team",
-  "owner": "Platform Team",
-  "package": ".agents",
-  "feature": "Document",
-  "status": "NEW",
   "confidence": 1,
-  "relationships": [],
+  "createdDate": "2026-06-30T15:36:27.116Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
   "evidence": {
-    "path": ".agents/AGENTS.md",
     "construct": "Document",
     "message": "Document exists in the repository but has no incoming references from any other active documentation.",
     "occurrences": [
       {
-        "id": "d55c6fc3bea9855c4dfd157af3a23de591115844f41a319bc0f16cd67d344ad0",
-        "line": 0,
         "column": 0,
         "construct": "Document",
-        "snippet": "",
-        "message": "Document exists in the repository but has no incoming references from any other active documentation.",
-        "fingerprint": "d55c6fc3bea9855c4dfd157af3a23de591115844f41a319bc0f16cd67d344ad0"
+        "fingerprint": "d55c6fc3bea9855c4dfd157af3a23de591115844f41a319bc0f16cd67d344ad0",
+        "id": "d55c6fc3bea9855c4dfd157af3a23de591115844f41a319bc0f16cd67d344ad0",
+        "line": 0,
+        "message": "Document exists in the repository but has no incoming references from any other active documentation."
       }
-    ]
+    ],
+    "path": ".agents/AGENTS.md"
   },
-  "createdDate": "2026-06-30T15:36:27.116Z",
+  "feature": "Document",
   "firstDetected": "2026-06-30T15:36:27.116Z",
+  "id": "f_51ffc742",
   "lastDetected": "2026-06-30T15:36:27.116Z",
-  "occurrenceCount": 1
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": ".agents",
+  "relationships": [],
+  "rule": "Orphaned Documentation",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "REGRESSION"
 }

@@ -1,0 +1,29 @@
+{
+  "history": [
+    {
+      "action": "CREATED",
+      "notes": "New grouped finding registered: Safe delete classification: [REQUIRES_MANUAL_REVIEW] for \"apps/web/src/app/events/[slug]/page.tsx\". Reason: Filename \"page\" referenced as text/string in other files: .agents/skills/ci-investigation/examples/deployment-failure.md, .agents/skills/ui-ux/SKILL.md.",
+      "status": "NEW",
+      "timestamp": "2026-07-03T16:43:23.218Z"
+    },
+    {
+      "action": "UPDATED",
+      "notes": "Occurrences updated. Active count: 1",
+      "status": "NEW",
+      "timestamp": "2026-07-04T03:15:48.871Z"
+    },
+    {
+      "action": "UPDATED",
+      "notes": "Occurrences updated. Active count: 1",
+      "status": "NEW",
+      "timestamp": "2026-07-04T03:59:50.996Z"
+    },
+    {
+      "action": "UPDATED",
+      "notes": "Occurrences updated. Active count: 1",
+      "status": "NEW",
+      "timestamp": "2026-07-04T04:11:43.108Z"
+    }
+  ],
+  "id": "f_fdea0a15"
+}

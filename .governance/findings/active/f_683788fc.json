@@ -1,44 +1,35 @@
 {
-  "schemaVersion": 2,
-  "id": "f_683788fc",
-  "rule": "VAL-UI-011",
-  "ruleVersion": "1.0.0",
-  "engineVersion": "1.0.0",
-  "domain": "UI UX Guild",
-  "owner": "UI UX Guild",
-  "package": "apps",
-  "feature": "UIElement",
-  "status": "NEW",
   "confidence": 0.9,
-  "relationships": [],
+  "createdDate": "2026-06-30T15:36:27.224Z",
+  "domain": "UI UX Guild",
+  "engineVersion": "1.0.0",
   "evidence": {
-    "path": "apps/admin/src/components/events/EventAdditionalDetailsCard.tsx",
     "construct": "UIElement",
     "line": 1,
-    "message": "Duplicate component layout detected: shares 83% similarity with \"EventScheduleCard\" in \"apps/admin/src/components/events/EventScheduleCard.tsx\". Recommendation: Extract the duplicated layout/logic from \"apps/admin/src/components/events/EventAdditionalDetailsCard.tsx\" and \"apps/admin/src/components/events/EventScheduleCard.tsx\" into a single reusable shared component in \"packages/ui\".",
+    "message": "Duplicate component layout detected [Category C — Form, Confidence: 91%, Severity: WARNING]: shares similarity with \"DJBasicInfoCard\" in \"apps/admin/src/components/dj-operators/DJBasicInfoCard.tsx\". Recommendation: Extract reusable shared form component or local CRUD fields wrapper to dry-up page/form structure. (Estimated Effort: Medium (3-6 hours), Risk: Medium).",
     "occurrences": [
       {
-        "id": "acb3aee74d033fd741fddeac91b30bb8cbcec562153e90c2b3252b4a6ea31255",
-        "line": 1,
         "column": 0,
         "construct": "UIElement",
-        "snippet": "",
-        "message": "Duplicate component layout detected: shares 83% similarity with \"EventScheduleCard\" in \"apps/admin/src/components/events/EventScheduleCard.tsx\". Recommendation: Extract the duplicated layout/logic from \"apps/admin/src/components/events/EventAdditionalDetailsCard.tsx\" and \"apps/admin/src/components/events/EventScheduleCard.tsx\" into a single reusable shared component in \"packages/ui\".",
-        "fingerprint": "acb3aee74d033fd741fddeac91b30bb8cbcec562153e90c2b3252b4a6ea31255"
-      },
-      {
+        "fingerprint": "acb3aee74d033fd741fddeac91b30bb8cbcec562153e90c2b3252b4a6ea31255",
         "id": "acb3aee74d033fd741fddeac91b30bb8cbcec562153e90c2b3252b4a6ea31255",
         "line": 1,
-        "column": 0,
-        "construct": "UIElement",
-        "snippet": "",
-        "message": "Duplicate component layout detected: shares 91% similarity with \"DJBasicInfoCard\" in \"apps/admin/src/components/dj-operators/DJBasicInfoCard.tsx\". Recommendation: Extract the duplicated layout/logic from \"apps/admin/src/components/dj-operators/DJBasicInfoCard.tsx\" and \"apps/admin/src/components/events/EventAdditionalDetailsCard.tsx\" into a single reusable shared component in \"packages/ui\".",
-        "fingerprint": "acb3aee74d033fd741fddeac91b30bb8cbcec562153e90c2b3252b4a6ea31255"
+        "message": "Duplicate component layout detected [Category C — Form, Confidence: 83%, Severity: WARNING]: shares similarity with \"EventScheduleCard\" in \"apps/admin/src/components/events/EventScheduleCard.tsx\". Recommendation: Extract reusable shared form component or local CRUD fields wrapper to dry-up page/form structure. (Estimated Effort: Medium (3-6 hours), Risk: Medium)."
       }
-    ]
+    ],
+    "path": "apps/admin/src/components/events/EventAdditionalDetailsCard.tsx"
   },
-  "createdDate": "2026-06-30T15:36:27.224Z",
+  "feature": "UIElement",
   "firstDetected": "2026-06-30T15:36:27.224Z",
-  "lastDetected": "2026-06-30T15:36:27.224Z",
-  "occurrenceCount": 2
+  "id": "f_683788fc",
+  "lastDetected": "2026-07-04T04:11:43.092Z",
+  "lastModified": "2026-07-04T04:11:43.092Z",
+  "occurrenceCount": 1,
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-UI-011",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
 }

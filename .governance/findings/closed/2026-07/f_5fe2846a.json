@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-06-30T15:36:28.144Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "message": "Document exists in the repository but has no incoming references from any other active documentation.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "3a3745daf2c220097f6aa179ece732da52b0df8b487615ea74ed2a79f1146a14",
+        "id": "3a3745daf2c220097f6aa179ece732da52b0df8b487615ea74ed2a79f1146a14",
+        "line": 0,
+        "message": "Document exists in the repository but has no incoming references from any other active documentation.",
+        "snippet": ""
+      }
+    ],
+    "path": "docs/audit/auth-duplication-report.md"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-06-30T15:36:28.144Z",
+  "id": "f_5fe2846a",
+  "lastDetected": "2026-06-30T15:36:28.144Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "docs",
+  "relationships": [],
+  "rule": "Orphaned Documentation",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

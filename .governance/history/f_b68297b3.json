@@ -1,0 +1,17 @@
+{
+  "history": [
+    {
+      "action": "CREATED",
+      "notes": "New grouped finding registered: Imports within the same group must be sorted alphabetically (\"@mad/ui\" should precede \"@mad/utils\").",
+      "status": "NEW",
+      "timestamp": "2026-07-04T01:59:45.423Z"
+    },
+    {
+      "action": "RESOLVED",
+      "notes": "Code violation no longer detected. Marking finding as closed. (Transitioned from NEW to CLOSED)",
+      "status": "CLOSED",
+      "timestamp": "2026-07-04T03:02:11.725Z"
+    }
+  ],
+  "id": "f_b68297b3"
+}

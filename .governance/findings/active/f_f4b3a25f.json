@@ -1,54 +1,46 @@
 {
-  "schemaVersion": 2,
-  "id": "f_f4b3a25f",
-  "rule": "VAL-UI-005",
-  "ruleVersion": "1.0.0",
-  "engineVersion": "1.0.0",
-  "domain": "UI UX Guild",
-  "owner": "UI UX Guild",
-  "package": "apps",
-  "feature": "button",
-  "status": "NEW",
   "confidence": 0.85,
-  "relationships": [],
+  "createdDate": "2026-06-29T08:10:37.899Z",
+  "domain": "UI UX Guild",
+  "engineVersion": "1.0.0",
   "evidence": {
-    "path": "apps/admin/src/components/dj-operators/DJFormActions.tsx",
     "construct": "button",
-    "snippet": "<button",
-    "line": 12,
+    "line": 19,
     "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
     "occurrences": [
       {
-        "id": "4ef23fba80ddf26d2d0b8f81311eaaeaf7ae0a314241a613cb185f8162908b4a",
-        "line": 12,
-        "column": 0,
-        "construct": "button",
-        "snippet": "<button",
-        "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
-        "fingerprint": "4ef23fba80ddf26d2d0b8f81311eaaeaf7ae0a314241a613cb185f8162908b4a"
-      },
-      {
-        "id": "35cd49bc6f8b660f45bb3c89510bc820e8bf6c70457e60363266d12e55eeb363",
-        "line": 12,
         "column": 0,
         "construct": "UIElement",
-        "snippet": "<button",
+        "fingerprint": "35cd49bc6f8b660f45bb3c89510bc820e8bf6c70457e60363266d12e55eeb363",
+        "id": "35cd49bc6f8b660f45bb3c89510bc820e8bf6c70457e60363266d12e55eeb363",
+        "line": 12,
         "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
-        "fingerprint": "35cd49bc6f8b660f45bb3c89510bc820e8bf6c70457e60363266d12e55eeb363"
+        "snippet": "<button"
       },
       {
+        "column": 0,
+        "construct": "UIElement",
+        "fingerprint": "35cd49bc6f8b660f45bb3c89510bc820e8bf6c70457e60363266d12e55eeb363",
         "id": "35cd49bc6f8b660f45bb3c89510bc820e8bf6c70457e60363266d12e55eeb363",
         "line": 19,
-        "column": 0,
-        "construct": "UIElement",
-        "snippet": "<button",
         "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
-        "fingerprint": "35cd49bc6f8b660f45bb3c89510bc820e8bf6c70457e60363266d12e55eeb363"
+        "snippet": "<button"
       }
-    ]
+    ],
+    "path": "apps/admin/src/components/dj-operators/DJFormActions.tsx",
+    "snippet": "<button"
   },
-  "createdDate": "2026-06-29T08:10:37.899Z",
+  "feature": "button",
   "firstDetected": "2026-06-29T08:10:37.899Z",
-  "lastDetected": "2026-06-30T15:36:27.217Z",
-  "occurrenceCount": 3
+  "id": "f_f4b3a25f",
+  "lastDetected": "2026-07-04T04:11:43.090Z",
+  "lastModified": "2026-07-04T04:11:43.090Z",
+  "occurrenceCount": 2,
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-UI-005",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
 }

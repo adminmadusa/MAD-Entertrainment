@@ -1,0 +1,29 @@
+{
+  "history": [
+    {
+      "action": "CREATED",
+      "notes": "New grouped finding registered: Duplicate component layout detected [Category C — Form, Confidence: 82%, Severity: WARNING]: shares similarity with \"EventScheduleCard\" in \"apps/admin/src/components/events/EventScheduleCard.tsx\". Recommendation: Extract reusable shared form component or local CRUD fields wrapper to dry-up page/form structure. (Estimated Effort: Medium (3-6 hours), Risk: Medium).",
+      "status": "NEW",
+      "timestamp": "2026-07-03T16:43:20.986Z"
+    },
+    {
+      "action": "UPDATED",
+      "notes": "Occurrences updated. Active count: 1",
+      "status": "NEW",
+      "timestamp": "2026-07-03T17:05:04.410Z"
+    },
+    {
+      "action": "UPDATED",
+      "notes": "Occurrences updated. Active count: 1",
+      "status": "NEW",
+      "timestamp": "2026-07-04T03:15:48.725Z"
+    },
+    {
+      "action": "UPDATED",
+      "notes": "Occurrences updated. Active count: 1",
+      "status": "NEW",
+      "timestamp": "2026-07-04T04:11:43.060Z"
+    }
+  ],
+  "id": "f_05ef9268"
+}

@@ -1,0 +1,29 @@
+{
+  "history": [
+    {
+      "action": "CREATED",
+      "notes": "New grouped finding registered: Hardcoded color '#8b5cf6' detected. Standardize using design tokens/theme variables.",
+      "status": "NEW",
+      "timestamp": "2026-07-03T16:43:23.514Z"
+    },
+    {
+      "action": "UPDATED",
+      "notes": "Occurrences updated. Active count: 1",
+      "status": "NEW",
+      "timestamp": "2026-07-03T17:05:04.429Z"
+    },
+    {
+      "action": "UPDATED",
+      "notes": "Occurrences updated. Active count: 1",
+      "status": "NEW",
+      "timestamp": "2026-07-04T03:15:48.889Z"
+    },
+    {
+      "action": "UPDATED",
+      "notes": "Occurrences updated. Active count: 1",
+      "status": "NEW",
+      "timestamp": "2026-07-04T04:11:43.111Z"
+    }
+  ],
+  "id": "f_dac8085f"
+}

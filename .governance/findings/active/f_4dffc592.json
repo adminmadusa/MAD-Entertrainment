@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:52.347Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 2,
+    "message": "Groups of imports must be separated by a single blank line.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "b25901710b5fc2666dd1fe0c621695e8107d1c505afb2f7e6573467a18afdc5b",
+        "id": "b25901710b5fc2666dd1fe0c621695e8107d1c505afb2f7e6573467a18afdc5b",
+        "line": 2,
+        "message": "Groups of imports must be separated by a single blank line."
+      }
+    ],
+    "path": "apps/server/src/routes/public/popup.routes.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:52.347Z",
+  "id": "f_4dffc592",
+  "lastDetected": "2026-07-03T12:25:52.347Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-001",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "REGRESSION"
+}

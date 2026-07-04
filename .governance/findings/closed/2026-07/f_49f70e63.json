@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-06-30T15:36:27.399Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "message": "Every documentation file is required to have a defined \"Owner\" or \"Authors\" in its metadata block.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "27dce29e7207ec827860a0b09d289d7c45fd8654e15db65900151607ec975e76",
+        "id": "27dce29e7207ec827860a0b09d289d7c45fd8654e15db65900151607ec975e76",
+        "line": 0,
+        "message": "Every documentation file is required to have a defined \"Owner\" or \"Authors\" in its metadata block.",
+        "snippet": ""
+      }
+    ],
+    "path": "apps/web/src/content/legal/payment.md"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-06-30T15:36:27.399Z",
+  "id": "f_49f70e63",
+  "lastDetected": "2026-06-30T15:36:27.399Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "Missing Document Owner",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

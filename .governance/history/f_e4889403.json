@@ -1,0 +1,11 @@
+{
+  "history": [
+    {
+      "action": "CREATED",
+      "notes": "New grouped finding registered: Safe delete classification: [POSSIBLY_UNUSED] for \"apps/server/src/utils/zeptomail.ts\". Reason: File is only consumed by test/storybook files: apps/server/src/utils/zeptomail.test.ts.",
+      "status": "NEW",
+      "timestamp": "2026-07-03T16:43:22.779Z"
+    }
+  ],
+  "id": "f_e4889403"
+}

@@ -1,0 +1,42 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-04T03:15:45.170Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 632,
+    "message": "Excessive consecutive blank lines detected (3 lines).",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "7cae0240d6aac8671926b513495e320c3fe5451703dedfa1738ae27722230152",
+        "id": "7cae0240d6aac8671926b513495e320c3fe5451703dedfa1738ae27722230152",
+        "line": 17,
+        "message": "Excessive consecutive blank lines detected (3 lines)."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "7cae0240d6aac8671926b513495e320c3fe5451703dedfa1738ae27722230152",
+        "id": "7cae0240d6aac8671926b513495e320c3fe5451703dedfa1738ae27722230152",
+        "line": 632,
+        "message": "Excessive consecutive blank lines detected (3 lines)."
+      }
+    ],
+    "path": "apps/server/src/controllers/public/booking.controller.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-04T03:15:45.170Z",
+  "id": "f_c71f0a93",
+  "lastDetected": "2026-07-04T03:15:45.170Z",
+  "occurrenceCount": 2,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-006",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

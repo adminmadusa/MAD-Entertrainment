@@ -1,45 +1,36 @@
 {
-  "schemaVersion": 2,
-  "id": "f_077a44b1",
-  "rule": "VAL-UI-004",
-  "ruleVersion": "1.0.0",
-  "engineVersion": "1.0.0",
-  "domain": "UI UX Guild",
-  "owner": "UI UX Guild",
-  "package": "apps",
-  "feature": "table",
-  "status": "NEW",
   "confidence": 0.9,
-  "relationships": [],
+  "createdDate": "2026-07-03T16:43:21.926Z",
+  "domain": "UI UX Guild",
+  "engineVersion": "1.0.0",
   "evidence": {
-    "path": "apps/admin/src/components/diagnostics/DiagnosticsHealthTab.tsx",
-    "construct": "table",
-    "snippet": "<table className=\"w-full text-xs\">",
+    "construct": "UIElement",
     "line": 69,
-    "message": "Raw <table> element used in admin portal. Use a reusable shared Table component.",
+    "message": "Raw <table> element used in portal. Use a reusable shared Table component.",
     "occurrences": [
       {
-        "id": "866066aa4db870917e653f98862903a3f5768b6fb8c481f8b115bcc412bede1a",
-        "line": 69,
-        "column": 0,
-        "construct": "table",
-        "snippet": "<table className=\"w-full text-xs\">",
-        "message": "Raw <table> element used in admin portal. Use a reusable shared Table component.",
-        "fingerprint": "866066aa4db870917e653f98862903a3f5768b6fb8c481f8b115bcc412bede1a"
-      },
-      {
-        "id": "4cd423486f9229e8f8814c30fd1dda43cdc8ebea937c97bbf1e491c5775a2f56",
-        "line": 69,
         "column": 0,
         "construct": "UIElement",
-        "snippet": "<table className=\"w-full text-xs\">",
+        "fingerprint": "4cd423486f9229e8f8814c30fd1dda43cdc8ebea937c97bbf1e491c5775a2f56",
+        "id": "4cd423486f9229e8f8814c30fd1dda43cdc8ebea937c97bbf1e491c5775a2f56",
+        "line": 69,
         "message": "Raw <table> element used in portal. Use a reusable shared Table component.",
-        "fingerprint": "4cd423486f9229e8f8814c30fd1dda43cdc8ebea937c97bbf1e491c5775a2f56"
+        "snippet": "<table className=\"w-full text-xs\">"
       }
-    ]
+    ],
+    "path": "apps/admin/src/components/diagnostics/DiagnosticsHealthTab.tsx",
+    "snippet": "<table className=\"w-full text-xs\">"
   },
-  "createdDate": "2026-06-29T08:10:26.695Z",
-  "firstDetected": "2026-06-29T08:10:26.695Z",
-  "lastDetected": "2026-06-30T15:36:27.206Z",
-  "occurrenceCount": 2
+  "feature": "UIElement",
+  "firstDetected": "2026-07-03T16:43:21.926Z",
+  "id": "f_077a44b1",
+  "lastDetected": "2026-07-03T16:43:21.926Z",
+  "occurrenceCount": 1,
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-UI-004",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "REGRESSION"
 }

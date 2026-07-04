@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-06-30T15:36:27.551Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "message": "Every documentation file is required to have a defined \"Owner\" or \"Authors\" in its metadata block.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "dcfae5693e334df67bbd3d1265e194a0886686f6211e5331bff158e2be884799",
+        "id": "dcfae5693e334df67bbd3d1265e194a0886686f6211e5331bff158e2be884799",
+        "line": 0,
+        "message": "Every documentation file is required to have a defined \"Owner\" or \"Authors\" in its metadata block.",
+        "snippet": ""
+      }
+    ],
+    "path": "docs/archive/audits/booking-ttl-remediation-design.md"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-06-30T15:36:27.551Z",
+  "id": "f_b683d5e1",
+  "lastDetected": "2026-06-30T15:36:27.551Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "docs",
+  "relationships": [],
+  "rule": "Missing Document Owner",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

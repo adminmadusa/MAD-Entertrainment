@@ -1,0 +1,11 @@
+{
+  "history": [
+    {
+      "action": "CREATED",
+      "notes": "New grouped finding registered: Safe delete classification: [HIGH_CONFIDENCE_UNUSED] for \"apps/web/src/utils/image-loader.ts\". Reason: No active imports, consumers, or text references found.",
+      "status": "NEW",
+      "timestamp": "2026-07-03T16:43:24.154Z"
+    }
+  ],
+  "id": "f_d0e7d5f6"
+}

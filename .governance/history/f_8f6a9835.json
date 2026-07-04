@@ -1,0 +1,23 @@
+{
+  "history": [
+    {
+      "action": "CREATED",
+      "notes": "New grouped finding registered: Duplicate component layout detected [Category C — Form, Confidence: 75%, Severity: WARNING]: shares similarity with \"ContactSupportModal\" in \"apps/web/src/app/tickets/components/ContactSupportModal.tsx\". Recommendation: Extract reusable shared form component or local CRUD fields wrapper to dry-up page/form structure. (Estimated Effort: Medium (3-6 hours), Risk: Medium).",
+      "status": "NEW",
+      "timestamp": "2026-07-03T16:43:23.392Z"
+    },
+    {
+      "action": "UPDATED",
+      "notes": "Occurrences updated. Active count: 1",
+      "status": "NEW",
+      "timestamp": "2026-07-04T03:15:48.878Z"
+    },
+    {
+      "action": "UPDATED",
+      "notes": "Occurrences updated. Active count: 1",
+      "status": "NEW",
+      "timestamp": "2026-07-04T04:11:43.110Z"
+    }
+  ],
+  "id": "f_8f6a9835"
+}

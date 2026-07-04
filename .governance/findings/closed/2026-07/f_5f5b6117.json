@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-04T03:28:41.641Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 3,
+    "message": "There should be no blank lines within the same import group.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "27e6d4ee5bf18e2c98d02e1e22283f5b393b562b8c9f800db81ad30f03b4dbab",
+        "id": "27e6d4ee5bf18e2c98d02e1e22283f5b393b562b8c9f800db81ad30f03b4dbab",
+        "line": 3,
+        "message": "There should be no blank lines within the same import group."
+      }
+    ],
+    "path": "apps/server/src/config/openapi.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-04T03:28:41.641Z",
+  "id": "f_5f5b6117",
+  "lastDetected": "2026-07-04T03:28:41.641Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-001",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

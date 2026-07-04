@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:47.997Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 2,
+    "message": "Groups of imports must be separated by a single blank line.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "850ababc107604f3c61fc413d7a75856c3f5d208c00fb3a01420edbf085705d7",
+        "id": "850ababc107604f3c61fc413d7a75856c3f5d208c00fb3a01420edbf085705d7",
+        "line": 2,
+        "message": "Groups of imports must be separated by a single blank line."
+      }
+    ],
+    "path": "apps/admin/src/components/dj-operators/DJFormActions.tsx"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:47.997Z",
+  "id": "f_ff4816c7",
+  "lastDetected": "2026-07-03T12:25:47.997Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-001",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "REGRESSION"
+}

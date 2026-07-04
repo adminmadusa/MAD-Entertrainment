@@ -8,6 +8,7 @@
 - **Related Documents:**
   - [REPOSITORY_GOVERNANCE.md](REPOSITORY_GOVERNANCE.md)
   - [AGENTS.MD](AGENTS.MD)
+  - [CONTRIBUTING.md](CONTRIBUTING.md)
 
 ---
 
@@ -93,6 +94,7 @@ For detailed information about each subsystem, refer to the respective Single So
 - [TESTING.md](TESTING.md) — Testing guidelines and verification requirements.
 - [AGENTS.MD](AGENTS.MD) — Operational instructions for human developers and AI agents.
 - [CHANGELOG.md](CHANGELOG.md) — Chronological release history and repository milestones.
+- [docs/ROADMAP.md](docs/ROADMAP.md) — Post-launch engineering roadmap and free infrastructure policy.
 
 ---
 

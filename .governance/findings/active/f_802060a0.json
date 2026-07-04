@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-04T03:15:47.334Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 17,
+    "message": "Trailing whitespace characters detected.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "f076bb01814b3afa3c40274ee0c39142bd69667458c6d033eb8205c9e9446b66",
+        "id": "f076bb01814b3afa3c40274ee0c39142bd69667458c6d033eb8205c9e9446b66",
+        "line": 17,
+        "message": "Trailing whitespace characters detected."
+      }
+    ],
+    "path": "CONTRIBUTING.md"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-04T03:15:47.334Z",
+  "id": "f_802060a0",
+  "lastDetected": "2026-07-04T03:15:47.334Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "CONTRIBUTING.md",
+  "relationships": [],
+  "rule": "VAL-HYG-004",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

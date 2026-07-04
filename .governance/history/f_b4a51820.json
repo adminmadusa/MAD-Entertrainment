@@ -1,0 +1,29 @@
+{
+  "history": [
+    {
+      "action": "CREATED",
+      "notes": "New grouped finding registered: Duplicate component layout detected [Category E — Infrastructure, Confidence: 91%, Severity: WARNING]: shares similarity with \"UserBookingsTable\" in \"apps/admin/src/app/users/_components/UserBookingsTable.tsx\". Recommendation: Extract reusable table, filter, or pagination wrappers to \"packages/ui\" as shared components. (Estimated Effort: Medium (2-4 hours), Risk: Low).",
+      "status": "NEW",
+      "timestamp": "2026-07-03T16:43:21.681Z"
+    },
+    {
+      "action": "UPDATED",
+      "notes": "Occurrences updated. Active count: 1",
+      "status": "NEW",
+      "timestamp": "2026-07-04T01:59:45.468Z"
+    },
+    {
+      "action": "UPDATED",
+      "notes": "Occurrences updated. Active count: 1",
+      "status": "NEW",
+      "timestamp": "2026-07-04T03:15:48.761Z"
+    },
+    {
+      "action": "UPDATED",
+      "notes": "Occurrences updated. Active count: 1",
+      "status": "NEW",
+      "timestamp": "2026-07-04T04:11:43.082Z"
+    }
+  ],
+  "id": "f_b4a51820"
+}

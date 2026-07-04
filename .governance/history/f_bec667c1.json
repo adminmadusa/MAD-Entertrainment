@@ -1,0 +1,17 @@
+{
+  "history": [
+    {
+      "action": "RENAMED",
+      "notes": "File renamed/relocated from apps/admin/src/app/ticket-profiles/page.tsx to apps/admin/src/app/ticket-profiles/page.tsx",
+      "status": "NEW",
+      "timestamp": "2026-07-03T16:43:21.510Z"
+    },
+    {
+      "action": "UPDATED",
+      "notes": "Occurrences updated. Active count: 4",
+      "status": "NEW",
+      "timestamp": "2026-07-04T01:59:45.464Z"
+    }
+  ],
+  "id": "f_bec667c1"
+}

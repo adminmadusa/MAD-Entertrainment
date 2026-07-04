@@ -1,0 +1,11 @@
+{
+  "history": [
+    {
+      "action": "CREATED",
+      "notes": "New grouped finding registered: Element <div> with click handler lacks a tabIndex or role attribute, breaking keyboard accessibility.",
+      "status": "NEW",
+      "timestamp": "2026-07-03T16:43:21.809Z"
+    }
+  ],
+  "id": "f_8d47be98"
+}

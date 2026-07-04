@@ -1,0 +1,11 @@
+{
+  "history": [
+    {
+      "action": "CREATED",
+      "notes": "New grouped finding registered: Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
+      "status": "NEW",
+      "timestamp": "2026-07-03T16:43:24.119Z"
+    }
+  ],
+  "id": "f_c74a1524"
+}

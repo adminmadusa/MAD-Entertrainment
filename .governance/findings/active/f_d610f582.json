@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:56.253Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 4,
+    "message": "Groups of imports must be separated by a single blank line.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "c10bf46f8a40462d5285baa3c141c6cb32a9f90a2d16ce505206cfe2e203456d",
+        "id": "c10bf46f8a40462d5285baa3c141c6cb32a9f90a2d16ce505206cfe2e203456d",
+        "line": 4,
+        "message": "Groups of imports must be separated by a single blank line."
+      }
+    ],
+    "path": "apps/web/src/components/support/SupportHubClient.tsx"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:56.253Z",
+  "id": "f_d610f582",
+  "lastDetected": "2026-07-03T12:25:56.253Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-001",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "REGRESSION"
+}

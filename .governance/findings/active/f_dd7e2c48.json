@@ -1,34 +1,33 @@
 {
-  "schemaVersion": 2,
-  "id": "f_dd7e2c48",
-  "rule": "Orphaned Documentation",
-  "ruleVersion": "1.0.0",
-  "engineVersion": "1.0.0",
-  "domain": "Platform Team",
-  "owner": "Platform Team",
-  "package": "apps",
-  "feature": "Document",
-  "status": "NEW",
   "confidence": 1,
-  "relationships": [],
+  "createdDate": "2026-06-30T15:36:27.319Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
   "evidence": {
-    "path": "apps/web/src/content/legal/accessibility.md",
     "construct": "Document",
     "message": "Document exists in the repository but has no incoming references from any other active documentation.",
     "occurrences": [
       {
-        "id": "625c96d72fe6de77e02cdaff326d097158591543cb5ec34ef33badc862fb1c9d",
-        "line": 0,
         "column": 0,
         "construct": "Document",
-        "snippet": "",
-        "message": "Document exists in the repository but has no incoming references from any other active documentation.",
-        "fingerprint": "625c96d72fe6de77e02cdaff326d097158591543cb5ec34ef33badc862fb1c9d"
+        "fingerprint": "625c96d72fe6de77e02cdaff326d097158591543cb5ec34ef33badc862fb1c9d",
+        "id": "625c96d72fe6de77e02cdaff326d097158591543cb5ec34ef33badc862fb1c9d",
+        "line": 0,
+        "message": "Document exists in the repository but has no incoming references from any other active documentation."
       }
-    ]
+    ],
+    "path": "apps/web/src/content/legal/accessibility.md"
   },
-  "createdDate": "2026-06-30T15:36:27.319Z",
+  "feature": "Document",
   "firstDetected": "2026-06-30T15:36:27.319Z",
+  "id": "f_dd7e2c48",
   "lastDetected": "2026-06-30T15:36:27.319Z",
-  "occurrenceCount": 1
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "Orphaned Documentation",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "REGRESSION"
 }

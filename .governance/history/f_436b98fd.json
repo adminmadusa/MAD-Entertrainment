@@ -1,0 +1,29 @@
+{
+  "history": [
+    {
+      "action": "UPDATED",
+      "notes": "Occurrences updated. Active count: 7",
+      "status": "NEW",
+      "timestamp": "2026-07-03T16:43:26.005Z"
+    },
+    {
+      "action": "UPDATED",
+      "notes": "Occurrences updated. Active count: 6",
+      "status": "NEW",
+      "timestamp": "2026-07-04T01:59:45.460Z"
+    },
+    {
+      "action": "UPDATED",
+      "notes": "Occurrences updated. Active count: 7",
+      "status": "NEW",
+      "timestamp": "2026-07-04T03:15:48.740Z"
+    },
+    {
+      "action": "UPDATED",
+      "notes": "Occurrences updated. Active count: 7",
+      "status": "NEW",
+      "timestamp": "2026-07-04T04:11:43.069Z"
+    }
+  ],
+  "id": "f_436b98fd"
+}

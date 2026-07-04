@@ -1,0 +1,42 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-04T03:15:46.735Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 289,
+    "message": "Excessive consecutive blank lines detected (3 lines).",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "f84679337651699ead85ffbf52bf78d26904073d6455ffdee7163eab19869009",
+        "id": "f84679337651699ead85ffbf52bf78d26904073d6455ffdee7163eab19869009",
+        "line": 116,
+        "message": "Excessive consecutive blank lines detected (3 lines)."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "f84679337651699ead85ffbf52bf78d26904073d6455ffdee7163eab19869009",
+        "id": "f84679337651699ead85ffbf52bf78d26904073d6455ffdee7163eab19869009",
+        "line": 289,
+        "message": "Excessive consecutive blank lines detected (3 lines)."
+      }
+    ],
+    "path": "apps/web/src/app/tickets/page.tsx"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-04T03:15:46.735Z",
+  "id": "f_07a7d28e",
+  "lastDetected": "2026-07-04T03:15:46.735Z",
+  "occurrenceCount": 2,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-006",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

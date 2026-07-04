@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-06-30T15:36:27.319Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "message": "Every documentation file is required to have a defined \"Owner\" or \"Authors\" in its metadata block.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "f0c91e7a836977c2d9c7ecd47dfece52b3a2c0d25235baff4d5370a57b32ce84",
+        "id": "f0c91e7a836977c2d9c7ecd47dfece52b3a2c0d25235baff4d5370a57b32ce84",
+        "line": 0,
+        "message": "Every documentation file is required to have a defined \"Owner\" or \"Authors\" in its metadata block.",
+        "snippet": ""
+      }
+    ],
+    "path": "apps/web/src/content/legal/accessibility.md"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-06-30T15:36:27.319Z",
+  "id": "f_5e3ab7a7",
+  "lastDetected": "2026-06-30T15:36:27.319Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "Missing Document Owner",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

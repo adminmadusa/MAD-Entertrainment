@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-06-30T15:36:27.360Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "message": "Document exists in the repository but has no incoming references from any other active documentation.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "79527b42c4add5f99b12c2d37f25d564012842fe3ebdf644f3f2755a6f76f10a",
+        "id": "79527b42c4add5f99b12c2d37f25d564012842fe3ebdf644f3f2755a6f76f10a",
+        "line": 0,
+        "message": "Document exists in the repository but has no incoming references from any other active documentation.",
+        "snippet": ""
+      }
+    ],
+    "path": "apps/web/src/content/legal/data-deletion.md"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-06-30T15:36:27.360Z",
+  "id": "f_b50f9e27",
+  "lastDetected": "2026-06-30T15:36:27.360Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "Orphaned Documentation",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

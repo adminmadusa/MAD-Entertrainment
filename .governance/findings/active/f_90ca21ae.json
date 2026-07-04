@@ -1,0 +1,42 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-04T03:15:46.938Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 299,
+    "message": "Excessive consecutive blank lines detected (3 lines).",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "779c31f5dff3acabe374cc0e0f39fc1344bd4d07b95624cbc7a8a4b6b637deae",
+        "id": "779c31f5dff3acabe374cc0e0f39fc1344bd4d07b95624cbc7a8a4b6b637deae",
+        "line": 93,
+        "message": "Excessive consecutive blank lines detected (3 lines)."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "779c31f5dff3acabe374cc0e0f39fc1344bd4d07b95624cbc7a8a4b6b637deae",
+        "id": "779c31f5dff3acabe374cc0e0f39fc1344bd4d07b95624cbc7a8a4b6b637deae",
+        "line": 299,
+        "message": "Excessive consecutive blank lines detected (3 lines)."
+      }
+    ],
+    "path": "apps/web/src/components/booking/CheckoutContent.tsx"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-04T03:15:46.938Z",
+  "id": "f_90ca21ae",
+  "lastDetected": "2026-07-04T03:15:46.938Z",
+  "occurrenceCount": 2,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-006",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

@@ -1,34 +1,33 @@
 {
-  "schemaVersion": 2,
-  "id": "f_b50f9e27",
-  "rule": "Orphaned Documentation",
-  "ruleVersion": "1.0.0",
-  "engineVersion": "1.0.0",
-  "domain": "Platform Team",
-  "owner": "Platform Team",
-  "package": "apps",
-  "feature": "Document",
-  "status": "NEW",
   "confidence": 1,
-  "relationships": [],
+  "createdDate": "2026-06-30T15:36:27.360Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
   "evidence": {
-    "path": "apps/web/src/content/legal/data-deletion.md",
     "construct": "Document",
     "message": "Document exists in the repository but has no incoming references from any other active documentation.",
     "occurrences": [
       {
-        "id": "79527b42c4add5f99b12c2d37f25d564012842fe3ebdf644f3f2755a6f76f10a",
-        "line": 0,
         "column": 0,
         "construct": "Document",
-        "snippet": "",
-        "message": "Document exists in the repository but has no incoming references from any other active documentation.",
-        "fingerprint": "79527b42c4add5f99b12c2d37f25d564012842fe3ebdf644f3f2755a6f76f10a"
+        "fingerprint": "79527b42c4add5f99b12c2d37f25d564012842fe3ebdf644f3f2755a6f76f10a",
+        "id": "79527b42c4add5f99b12c2d37f25d564012842fe3ebdf644f3f2755a6f76f10a",
+        "line": 0,
+        "message": "Document exists in the repository but has no incoming references from any other active documentation."
       }
-    ]
+    ],
+    "path": "apps/web/src/content/legal/data-deletion.md"
   },
-  "createdDate": "2026-06-30T15:36:27.360Z",
+  "feature": "Document",
   "firstDetected": "2026-06-30T15:36:27.360Z",
+  "id": "f_b50f9e27",
   "lastDetected": "2026-06-30T15:36:27.360Z",
-  "occurrenceCount": 1
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "Orphaned Documentation",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "REGRESSION"
 }

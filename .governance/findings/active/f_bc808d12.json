@@ -1,0 +1,36 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-04T03:15:45.548Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 75,
+    "message": "console.error() used in server production code. Use the approved logger (import { logger } from '../../utils/logger') instead.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "428469e799ae5cd7b5c14f94d176565c82eac16006a498357ef3c85a8cdcec47",
+        "id": "428469e799ae5cd7b5c14f94d176565c82eac16006a498357ef3c85a8cdcec47",
+        "line": 75,
+        "message": "console.error() used in server production code. Use the approved logger (import { logger } from '../../utils/logger') instead.",
+        "snippet": "console.error(`[Notification Service] Retry failed for notification ${id}:`, err);"
+      }
+    ],
+    "path": "apps/server/src/services/admin/notification.service.ts",
+    "snippet": "console.error(`[Notification Service] Retry failed for notification ${id}:`, err);"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-04T03:15:45.548Z",
+  "id": "f_bc808d12",
+  "lastDetected": "2026-07-04T03:15:45.548Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-ARC-001",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

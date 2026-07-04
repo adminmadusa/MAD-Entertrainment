@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-06-30T15:36:27.861Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "message": "Every documentation file is required to have a defined \"Owner\" or \"Authors\" in its metadata block.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "6855db1a92d5e4fb2bebd8fd40d5545bf5ad1e73a3dc83b5368998fb3f30d946",
+        "id": "6855db1a92d5e4fb2bebd8fd40d5545bf5ad1e73a3dc83b5368998fb3f30d946",
+        "line": 0,
+        "message": "Every documentation file is required to have a defined \"Owner\" or \"Authors\" in its metadata block.",
+        "snippet": ""
+      }
+    ],
+    "path": "docs/archive/branch-cleanup/2026-06/cleanup_record.md"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-06-30T15:36:27.861Z",
+  "id": "f_a57a7f03",
+  "lastDetected": "2026-06-30T15:36:27.861Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "docs",
+  "relationships": [],
+  "rule": "Missing Document Owner",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}
