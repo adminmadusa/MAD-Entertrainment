@@ -154,7 +154,7 @@ export class MetricsEngine {
     if (trends.length > 0) {
       const lastTrend = trends[trends.length - 1];
       let metricsChanged = false;
-      
+
       if (
         lastTrend.totalFindings !== metrics.totalFindings ||
         lastTrend.newFindings !== metrics.newFindings ||
