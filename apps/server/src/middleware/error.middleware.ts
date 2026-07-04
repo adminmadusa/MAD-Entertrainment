@@ -1,5 +1,6 @@
 import { HTTP_STATUS } from '@mad/shared';
 import { ErrorRequestHandler, RequestHandler } from 'express';
+import * as Sentry from '@sentry/node';
 
 import { getEnv } from '../config/env';
 import { logger } from '../utils/logger';
@@ -87,6 +88,17 @@ export const errorHandler: ErrorRequestHandler = (err, req, res, _next) => {
 
   const env = getEnv();
   reqLogger.error({ err, path: req.path }, 'Unhandled request error');
+
+  if (env.NODE_ENV === 'production') {
+    try {
+      Sentry.captureException(err, {
+        tags: { path: req.path, type: 'unhandled_router_error' },
+      });
+    } catch (_) {
+      // Ignore Sentry failures
+    }
+  }
+
   res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
     success: false,
     message: env.NODE_ENV === 'production' ? 'An internal server error occurred' : err.message,
