@@ -3,6 +3,7 @@
 import { BookingStatus, getBookingStatusLabel } from '@mad/shared';
 import { formatDateTime } from '@mad/utils';
 import { useMemo } from 'react';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@mad/ui';
 import { AdminBooking } from '@/lib/api/admin/booking.service';
 
 const STATUS_COLORS: Record<string, string> = {
@@ -70,23 +71,23 @@ export default function BookingsTable({
   const renderTableBody = () => {
     if (isLoading) {
       return Array.from({ length: 6 }).map((_, i) => (
-        <tr key={i} className="border-b border-border-subtle/40 animate-pulse">
+        <TableRow key={i} className="border-b border-border-subtle/40 animate-pulse">
           {Array.from({ length: 7 }).map((__, j) => (
-            <td key={j} className="py-4 px-4">
+            <TableCell key={j} className="py-4 px-4">
               <div className="h-3.5 bg-white/5 rounded w-20" />
-            </td>
+            </TableCell>
           ))}
-        </tr>
+        </TableRow>
       ));
     }
 
     if (sortedBookings.length === 0) {
       return (
-        <tr>
-          <td colSpan={7} className="py-16 text-center text-text-muted">
+        <TableRow>
+          <TableCell colSpan={7} className="py-16 text-center text-text-muted">
             No bookings found.
-          </td>
-        </tr>
+          </TableCell>
+        </TableRow>
       );
     }
 
@@ -95,23 +96,23 @@ export default function BookingsTable({
       const customerName = (customer as { name?: string })?.name ?? '—';
       const customerEmail = (customer as { email?: string })?.email ?? '—';
       return (
-        <tr
+        <TableRow
           key={booking._id}
           onClick={() => onRowClick(booking)}
           className="border-b border-border-subtle/40 hover:bg-white/2 cursor-pointer transition-colors"
         >
-          <td className="py-4 px-5 font-mono text-xs text-accent-purple">{booking.bookingId}</td>
-          <td className="py-4 px-4">
+          <TableCell className="py-4 px-5 font-mono text-xs text-accent-purple">{booking.bookingId}</TableCell>
+          <TableCell className="py-4 px-4">
             <p className="text-text-primary text-sm">{customerName}</p>
             <p className="text-text-muted text-xs">{customerEmail}</p>
-          </td>
-          <td className="py-4 px-4 text-text-secondary text-sm max-w-40 truncate">
+          </TableCell>
+          <TableCell className="py-4 px-4 text-text-secondary text-sm max-w-40 truncate">
             {(booking.eventId as { title?: string })?.title ?? '—'}
-          </td>
-          <td className="py-4 px-4 text-text-primary font-medium">
+          </TableCell>
+          <TableCell className="py-4 px-4 text-text-primary font-medium">
             ₹{booking.totalAmount.toLocaleString('en-IN')}
-          </td>
-          <td className="py-4 px-4">
+          </TableCell>
+          <TableCell className="py-4 px-4">
             <span
               className={`text-xs px-2.5 py-1 rounded-full border font-medium ${
                 STATUS_COLORS[booking.status] ?? 'text-text-muted border-border-subtle'
@@ -134,11 +135,11 @@ export default function BookingsTable({
                 </span>
               </div>
             )}
-          </td>
-          <td className="py-4 px-4 text-text-muted text-xs">
+          </TableCell>
+          <TableCell className="py-4 px-4 text-text-muted text-xs">
             {formatDateTime(booking.createdAt)}
-          </td>
-          <td className="py-4 px-5 text-right">
+          </TableCell>
+          <TableCell className="py-4 px-5 text-right">
             {canMutateBookings && booking.status === BookingStatus.CONFIRMED && (
               <button
                 onClick={(e) => {
@@ -150,8 +151,8 @@ export default function BookingsTable({
                 Cancel
               </button>
             )}
-          </td>
-        </tr>
+          </TableCell>
+        </TableRow>
       );
     });
   };
@@ -163,37 +164,35 @@ export default function BookingsTable({
 
   return (
     <div className="glass rounded-2xl border border-border-subtle overflow-hidden">
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-border-subtle">
-              <th
-                onClick={() => onSort('bookingId')}
-                className="text-left text-text-muted font-medium py-3.5 px-5 cursor-pointer hover:text-white transition-colors select-none"
-              >
-                Reference{renderSortArrow('bookingId')}
-              </th>
-              <th className="text-left text-text-muted font-medium py-3.5 px-4">Customer</th>
-              <th className="text-left text-text-muted font-medium py-3.5 px-4">Event</th>
-              <th
-                onClick={() => onSort('totalAmount')}
-                className="text-left text-text-muted font-medium py-3.5 px-4 cursor-pointer hover:text-white transition-colors select-none"
-              >
-                Amount{renderSortArrow('totalAmount')}
-              </th>
-              <th className="text-left text-text-muted font-medium py-3.5 px-4">Status</th>
-              <th
-                onClick={() => onSort('createdAt')}
-                className="text-left text-text-muted font-medium py-3.5 px-4 cursor-pointer hover:text-white transition-colors select-none"
-              >
-                Date{renderSortArrow('createdAt')}
-              </th>
-              <th className="text-right text-text-muted font-medium py-3.5 px-5">Action</th>
-            </tr>
-          </thead>
-          <tbody>{renderTableBody()}</tbody>
-        </table>
-      </div>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead
+              onClick={() => onSort('bookingId')}
+              className="py-3.5 px-5 cursor-pointer hover:text-white transition-colors select-none"
+            >
+              Reference{renderSortArrow('bookingId')}
+            </TableHead>
+            <TableHead className="py-3.5 px-4">Customer</TableHead>
+            <TableHead className="py-3.5 px-4">Event</TableHead>
+            <TableHead
+              onClick={() => onSort('totalAmount')}
+              className="py-3.5 px-4 cursor-pointer hover:text-white transition-colors select-none"
+            >
+              Amount{renderSortArrow('totalAmount')}
+            </TableHead>
+            <TableHead className="py-3.5 px-4">Status</TableHead>
+            <TableHead
+              onClick={() => onSort('createdAt')}
+              className="py-3.5 px-4 cursor-pointer hover:text-white transition-colors select-none"
+            >
+              Date{renderSortArrow('createdAt')}
+            </TableHead>
+            <TableHead className="py-3.5 px-5 text-right">Action</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>{renderTableBody()}</TableBody>
+      </Table>
       {pagination && pagination.totalPages > 1 && (
         <div className="flex items-center justify-between px-5 py-3 border-t border-border-subtle">
           <p className="text-text-muted text-xs">

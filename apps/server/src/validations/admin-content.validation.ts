@@ -483,3 +483,32 @@ export const updateTicketProfileSchema = z.object({
   params: adminIdParamSchema.shape.params,
   body: createTicketProfileSchema.shape.body.partial(),
 });
+
+// -- Booking Validation (remediated from inline routes) --
+export const cancelBookingSchema = z.object({
+  body: z.object({
+    reason: z.string().max(500, 'Reason must be under 500 characters').optional(),
+  }),
+  params: adminIdParamSchema.shape.params,
+});
+
+export const correctBookingEmailSchema = z.object({
+  body: z.object({
+    newEmail: z.string().email('Invalid email address'),
+    reason: z
+      .string()
+      .min(5, 'Reason must be at least 5 characters')
+      .max(500, 'Reason must be under 500 characters'),
+  }),
+  params: adminIdParamSchema.shape.params,
+});
+
+export const resendBookingTicketsSchema = z.object({
+  params: adminIdParamSchema.shape.params,
+});
+
+export const bookingsSummarySchema = z.object({
+  query: z.object({
+    eventId: z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid event ID format').optional(),
+  }),
+});

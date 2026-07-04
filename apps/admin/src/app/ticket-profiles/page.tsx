@@ -7,6 +7,7 @@ import { useState } from 'react';
 import { useAdminAuth } from '@/providers/AdminAuthProvider';
 import { AdminRole } from '@mad/shared';
 import { formatDate } from '@mad/utils';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@mad/ui';
 
 import { adminGetTicketProfiles, adminDeleteTicketProfile, adminUpdateTicketProfile } from '@/lib/api/admin/ticket-profile.service';
 import { extractApiError } from '@/lib/api/client';
@@ -51,33 +52,33 @@ export default function AdminTicketProfilesPage() {
   const renderTableBody = () => {
     if (isLoading) {
       return Array.from({ length: 3 }).map((_, i) => (
-        <tr key={i} className="border-b border-border-subtle/50 animate-pulse">
-          <td className="py-4 px-5"><div className="h-4 bg-white/5 rounded w-48" /></td>
-          <td className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-12" /></td>
-          <td className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-16" /></td>
-          <td className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-24" /></td>
-          <td className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-16" /></td>
-          <td className="py-4 px-5"><div className="h-4 bg-white/5 rounded w-20 ml-auto" /></td>
-        </tr>
+        <TableRow key={i} className="border-b border-border-subtle/50 animate-pulse">
+          <TableCell className="py-4 px-5"><div className="h-4 bg-white/5 rounded w-48" /></TableCell>
+          <TableCell className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-12" /></TableCell>
+          <TableCell className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-16" /></TableCell>
+          <TableCell className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-24" /></TableCell>
+          <TableCell className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-16" /></TableCell>
+          <TableCell className="py-4 px-5"><div className="h-4 bg-white/5 rounded w-20 ml-auto" /></TableCell>
+        </TableRow>
       ));
     }
 
     if (profiles.length === 0) {
       return (
-        <tr>
-          <td colSpan={6} className="py-16 text-center text-text-muted">
+        <TableRow>
+          <TableCell colSpan={6} className="py-16 text-center text-text-muted">
             No ticket profiles found.{' '}
             <Link href="/ticket-profiles/new" className="text-accent-purple hover:underline">
               Create one →
             </Link>
-          </td>
-        </tr>
+          </TableCell>
+        </TableRow>
       );
     }
 
     return profiles.map((profile) => (
-      <tr key={profile._id} className="border-b border-border-subtle/40 hover:bg-white/2 transition-colors">
-        <td className="py-4 px-5">
+      <TableRow key={profile._id} className="border-b border-border-subtle/40 hover:bg-white/2 transition-colors">
+        <TableCell className="py-4 px-5">
           <div>
             <span className="text-white font-bold text-sm block">
               {profile.name}
@@ -86,21 +87,21 @@ export default function AdminTicketProfilesPage() {
               <p className="text-text-muted text-xs mt-1 max-w-xs truncate">{profile.description}</p>
             )}
           </div>
-        </td>
-        <td className="py-4 px-4 text-text-secondary font-medium">
+        </TableCell>
+        <TableCell className="py-4 px-4 text-text-secondary font-medium">
           <span className="text-white bg-white/5 px-2.5 py-0.5 rounded-lg border border-white/10 font-mono">
             {profile.groups?.length || 0}
           </span>
-        </td>
-        <td className="py-4 px-4 text-text-secondary font-medium">
+        </TableCell>
+        <TableCell className="py-4 px-4 text-text-secondary font-medium">
           <span className="text-accent-purple-light font-semibold font-mono">
             {getTicketsCount(profile)}
           </span>
-        </td>
-        <td className="py-4 px-4 text-text-secondary text-xs">
+        </TableCell>
+        <TableCell className="py-4 px-4 text-text-secondary text-xs">
           {formatDate(profile.createdAt)}
-        </td>
-        <td className="py-4 px-4">
+        </TableCell>
+        <TableCell className="py-4 px-4">
           {canMutateProfiles ? (
             <button
               onClick={() => toggleStatusMutation.mutate({ id: profile._id, isActive: !profile.isActive })}
@@ -121,8 +122,8 @@ export default function AdminTicketProfilesPage() {
               {profile.isActive ? 'Active' : 'Inactive'}
             </span>
           )}
-        </td>
-        <td className="py-4 px-5">
+        </TableCell>
+        <TableCell className="py-4 px-5">
           {canMutateProfiles ? (
             <div className="flex items-center justify-end gap-2">
               <Link
@@ -141,8 +142,8 @@ export default function AdminTicketProfilesPage() {
           ) : (
             <div className="text-right text-text-muted">—</div>
           )}
-        </td>
-      </tr>
+        </TableCell>
+      </TableRow>
     ));
   };
 
@@ -173,23 +174,21 @@ export default function AdminTicketProfilesPage() {
 
       {/* Table */}
       <div className="glass rounded-2xl border border-border-subtle overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm text-left">
-            <thead>
-              <tr className="border-b border-border-subtle text-text-muted">
-                <th className="py-3.5 px-5 font-medium">Profile Name & Description</th>
-                <th className="py-3.5 px-4 font-medium">Groups</th>
-                <th className="py-3.5 px-4 font-medium">Total Ticket Tiers</th>
-                <th className="py-3.5 px-4 font-medium">Created On</th>
-                <th className="py-3.5 px-4 font-medium">Status</th>
-                <th className="py-3.5 px-5 font-medium text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {renderTableBody()}
-            </tbody>
-          </table>
-        </div>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="py-3.5 px-5">Profile Name & Description</TableHead>
+              <TableHead className="py-3.5 px-4">Groups</TableHead>
+              <TableHead className="py-3.5 px-4">Total Ticket Tiers</TableHead>
+              <TableHead className="py-3.5 px-4">Created On</TableHead>
+              <TableHead className="py-3.5 px-4">Status</TableHead>
+              <TableHead className="py-3.5 px-5 text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {renderTableBody()}
+          </TableBody>
+        </Table>
       </div>
 
       {/* Delete Confirm Modal */}
@@ -202,7 +201,7 @@ export default function AdminTicketProfilesPage() {
               exit={{ opacity: 0, scale: 0.95 }}
               className="glass-strong rounded-2xl border border-border-subtle p-6 max-w-sm w-full"
             >
-              <h3 className="text-white font-bold text-lg mb-2">Delete Ticket Profile?</h3>
+              <h2 className="text-white font-bold text-lg mb-2">Delete Ticket Profile?</h2>
               <p className="text-text-secondary text-sm mb-1">
                 Profile <strong className="text-white">{deleteTarget.name}</strong> will be permanently deleted.
               </p>

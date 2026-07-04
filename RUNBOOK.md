@@ -7,7 +7,7 @@
 - **Status**: Active
 - **Version**: 1.0
 - **Review Cycle**: Ongoing
-- **Last Updated**: 2026-06-25
+- **Last Updated**: 2026-07-03
 - **Related Documents:**
   - [README.md](README.md)
   - [REPOSITORY_GOVERNANCE.md](REPOSITORY_GOVERNANCE.md)
@@ -30,6 +30,7 @@
 8. [Incident Response](#8-incident-response)
 9. [QR Validation Dry Run](#9-qr-validation-dry-run)
 10. [Real Booking Flow Test Script](#10-real-booking-flow-test-script)
+11. [Event Memories — Publishing Workflow](#11-event-memories--publishing-workflow)
 
 ---
 
@@ -404,4 +405,139 @@ Run through this script end-to-end on staging before going live:
 
 ---
 
-_Last updated: 2026-05-28 · Maintained in `RUNBOOK.md` at repo root._
+_Last updated: 2026-07-03 · Maintained in `RUNBOOK.md` at repo root._
+
+---
+
+## 11. Event Memories — Publishing Workflow
+
+> Audience: Platform operators and admin staff publishing post-event content.
+
+### Prerequisites
+
+#### Required Environment Variable
+
+| Variable | Required | Notes |
+| :--- | :--- | :--- |
+| `JWT_ADMIN_SECRET` | ✅ | Min 32 chars (same secret already required for admin auth). Signs Event Memories preview tokens. TTL is 15 minutes. |
+
+`JWT_ADMIN_SECRET` is already present in the Render environment. No new environment variable is required for Event Memories to function.
+
+---
+
+### Step 1 — Verify the Event is in COMPLETED Status
+
+Event Memories are intended for events with status `COMPLETED`. Confirm the event has been transitioned to `COMPLETED` via the admin event edit page before proceeding.
+
+```bash
+# Health check to confirm the backend is reachable
+curl https://apm.esparex.in/api/health
+# Expected: {"status":"ok", ...}
+```
+
+---
+
+### Step 2 — Open the Event Edit Page
+
+1. Log in to the admin panel at `https://madmin.esparex.in`.
+2. Navigate to **Events** → Select the completed event → Click **Edit**.
+3. Scroll to the **Event Memories** card (`EventMemoriesCard`).
+
+---
+
+### Step 3 — Compose Memories Content
+
+Complete the following fields in the Event Memories card:
+
+| Field | Max Length | Notes |
+| :--- | :--- | :--- |
+| Heading | 200 chars | Optional. Editorial headline shown above the gallery. |
+| Thank You Message | 2000 chars | Optional. Message displayed to attendees. |
+| Highlights | — | Optional. Bullet-point list of event highlights. |
+| Gallery | Up to 50 images | Upload via Cloudinary. Each image has a drag-and-drop `order` field. |
+
+When saving in this step, leave `publicationState` as `DRAFT`.
+
+---
+
+### Step 4 — Preview Memories (Optional)
+
+Before publishing, use the preview workflow to inspect how memories will look on the public event page:
+
+1. In the Event Memories card, click **Preview**.
+2. The admin panel calls `POST /api/admin/events/:id/preview-token` and receives a token valid for **15 minutes**.
+3. The admin panel opens the public event detail page with the preview token appended: `/events/:slug?preview=<token>`.
+4. The public page bypasses Redis cache and renders memories regardless of publication state.
+
+> [!NOTE]
+> The preview token is signed with `JWT_ADMIN_SECRET` and expires after 15 minutes. Sharing the URL grants temporary memories visibility to anyone with the link. Treat it as a short-lived access link.
+
+---
+
+### Step 5 — Publish Memories
+
+1. In the Event Memories card, change `publicationState` to **PUBLISHED**.
+2. Save the event (calls `PUT /api/admin/events/:id` with the updated `memories` sub-document).
+3. The backend:
+   - Sets `publishedAt` to the current UTC timestamp (first publish only).
+   - Emits audit log action `event.memories.published`.
+   - Clears the Redis event cache (`events:*` pattern) so the next public request fetches fresh data.
+
+---
+
+### Step 6 — Operational Verification
+
+After publishing, verify the following:
+
+```bash
+# 1. Confirm the public event detail endpoint returns memories
+curl https://apm.esparex.in/api/events/<slug>
+# Expected: event.memories.publicationState === "PUBLISHED"
+# Expected: event.memories.gallery is non-empty (if photos were uploaded)
+# Expected: event.status === "COMPLETED"
+
+# 2. Confirm memories are absent on a non-published event (suppression check)
+# A different DRAFT event should return memories: null
+```
+
+Verify on the public web:
+1. Open `https://mad.esparex.in/events/<slug>`
+2. Confirm the **EventMemoriesRecap** component renders below the event header.
+3. Confirm the "Buy Tickets" button is suppressed (event is COMPLETED).
+
+---
+
+### Hiding Memories (Rollback)
+
+If published memories must be removed from public view without deleting the content:
+
+1. Open the admin event edit page.
+2. In the Event Memories card, change `publicationState` to **HIDDEN**.
+3. Save the event.
+4. The backend emits audit action `event.memories.hidden` and clears the Redis cache.
+5. The public event page will no longer render the memories card.
+
+> [!IMPORTANT]
+> When memories are re-published after being hidden (`HIDDEN → PUBLISHED`), the backend preserves the original `publishedAt` timestamp. The public-facing "published since" date will not change.
+
+---
+
+### Clearing Memories
+
+To permanently remove the memories sub-document from the event:
+
+1. In the Event Memories card, use the **Clear Memories** action.
+2. This sends `memories: null` in the update payload.
+3. The backend removes the sub-document, deletes orphaned Cloudinary gallery assets via `safeDeleteImages`, and emits audit action `event.memories.cleared`.
+
+---
+
+### Troubleshooting
+
+| Symptom | Likely Cause | Resolution |
+| :--- | :--- | :--- |
+| Memories not visible on public page | `publicationState` is not `PUBLISHED` | Set state to `PUBLISHED` and save |
+| Preview token link shows old content | Redis cache served stale data | Preview requests bypass cache by design — confirm no proxy is caching the preview URL |
+| Gallery upload fails | Cloudinary credential misconfiguration | Verify `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` on Render |
+| Preview token expired | Token TTL is 15 minutes | Generate a new preview token from the admin panel |
+| "Event has been modified" error on save | Concurrent update — `eventVersion` mismatch | Refresh the event edit page and reapply memories changes |

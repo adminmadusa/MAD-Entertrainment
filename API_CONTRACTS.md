@@ -4,8 +4,6 @@ Status: Active
 Version: 1.0
 Owner: Repository Architecture & API Governance
 Review Cycle: Quarterly
-Last Updated: 2026-06-25
-API Version: v1 (Active)
 
 Supersedes:
 - None (First version establishing the API Contract SSOT)
@@ -186,6 +184,8 @@ The table below logs all active endpoints compiled from Express router maps and 
 | **GET** | `/api/admin/events/:id` | Internal (Admin) | Stable | Yes (Admin) | `super_admin` up to `scanner` | Retrieve single event configuration by ID. |
 | **PUT** | `/api/admin/events/:id` | Internal (Admin) | Stable | Yes (Admin) | `super_admin`, `admin`, `manager` | Update event details with concurrency safety. |
 | **DELETE** | `/api/admin/events/:id` | Internal (Admin) | Stable | Yes (Admin) | `super_admin`, `admin`, `manager` | Delete event profile. |
+| **PUT** | `/api/admin/events/:id` *(memories sub-document)* | Internal (Admin) | Stable | Yes (Admin) | `super_admin`, `admin`, `manager` | Update event including optional `memories` sub-document (publication state, gallery, heading, thank-you message). |
+| **POST** | `/api/admin/events/:id/preview-token` | Internal (Admin) | Stable | Yes (Admin) | `super_admin`, `admin`, `manager` | Generate a 15-minute JWT preview token for Event Memories. |
 | **POST** | `/api/admin/dj-operators` | Internal (Admin) | Stable | Yes (Admin) | `super_admin`, `admin`, `manager` | Create DJ Operator. |
 | **GET** | `/api/admin/dj-operators` | Internal (Admin) | Stable | Yes (Admin) | `super_admin` up to `scanner` | List DJ Operators. |
 | **GET** | `/api/admin/dj-operators/:id` | Internal (Admin) | Stable | Yes (Admin) | `super_admin` up to `scanner` | Retrieve DJ Operator details. |
@@ -622,6 +622,194 @@ Rate limit windows and thresholds are configured by the `initRateLimiters` boots
 ### Future Recommendations
 - See *Appendix — Future API Considerations* — Proposal 3: "JSON API Standardized Pagination & Query Envelopes" for response design updates.
   *Status*: Possible Future Enhancement (Not Approved) · Untracked
+
+---
+
+## 13. Event Memories Contracts
+
+### Current Implementation
+
+Event Memories is a post-event content sub-system that allows administrators to attach a curated photo gallery and editorial content to completed events. It introduces one new dedicated endpoint and extends two existing endpoints.
+
+*Evidence*:
+- Route: `apps/server/src/routes/admin/event.routes.ts` — `router.post('/:id/preview-token', ...)`
+- Controller: `apps/server/src/controllers/admin/event.controller.ts` — `getPreviewToken()`
+- Service: `apps/server/src/services/admin/event.service.ts` — `updateEvent()` memories branch
+- Public service: `apps/server/src/services/public/event.service.ts` — `getEventBySlug()` suppression logic
+- Validation: `apps/server/src/validations/admin-content.validation.ts` — `eventMemorySchema`
+- Schema: `apps/server/src/models/event.schema.ts` — `eventMemorySchema` sub-document
+- Shared enum: `packages/shared/src/constants/index.ts` — `EventMemoryPublicationState`
+- Shared type: `packages/types/src/index.ts` — `EventMemoryConfig`
+
+---
+
+#### 13.1 — POST `/api/admin/events/:id/preview-token`
+
+Generates a short-lived JWT that allows an administrator to load the public event detail page (`GET /api/events/:slug?preview=<token>`) and view Event Memories regardless of their current publication state.
+
+| Property | Value |
+| :--- | :--- |
+| **Method** | `POST` |
+| **Path** | `/api/admin/events/:id/preview-token` |
+| **Visibility** | Internal (Admin) |
+| **Authentication** | Required — Admin JWT (`requireAdmin`) |
+| **Authorization** | `super_admin`, `admin`, `manager` |
+| **Rate Limiting** | Standard admin limiter |
+
+**URL Parameters**
+
+| Parameter | Type | Validation | Notes |
+| :--- | :--- | :--- | :--- |
+| `id` | MongoDB ObjectId | Valid 24-char hex string | Must reference an existing event |
+
+**Request Body**
+
+None.
+
+**Response — 200 OK**
+
+```json
+{
+  "success": true,
+  "data": {
+    "token": "<signed-jwt-string>",
+    "expiresAt": "2026-07-03T20:15:00.000Z"
+  }
+}
+```
+
+| Field | Type | Notes |
+| :--- | :--- | :--- |
+| `token` | string | JWT signed with `JWT_ADMIN_SECRET`. Payload contains `eventId`, `adminId`, `issuedAt`, `expiresAt`. |
+| `expiresAt` | ISO 8601 datetime | Token lifetime is 15 minutes (`EVENT_MEMORIES_PREVIEW_TOKEN_TTL_MINUTES = 15`). |
+
+**Error Responses**
+
+| Status | Condition |
+| :--- | :--- |
+| `401 Unauthorized` | Admin JWT missing or expired |
+| `403 Forbidden` | Caller role is below `manager` |
+| `404 Not Found` | Event with `:id` does not exist |
+| `500 Internal Server Error` | JWT signing failure or unexpected server error |
+
+**Audit Log**
+
+Successful token generation emits an audit log entry with action `event.memories.preview.generated`, including `eventId`, `adminId`, and `expiresAt`.
+
+---
+
+#### 13.2 — PUT `/api/admin/events/:id` — Memories Sub-Document
+
+Event Memories are persisted via the existing event update endpoint. The `memories` field is an optional nullable sub-document added to the standard `updateEventSchema` request body.
+
+| Property | Value |
+| :--- | :--- |
+| **Method** | `PUT` |
+| **Path** | `/api/admin/events/:id` |
+| **Visibility** | Internal (Admin) |
+| **Authentication** | Required — Admin JWT (`requireAdmin`) |
+| **Authorization** | `super_admin`, `admin`, `manager` |
+
+**`memories` Sub-Document Schema (within request body)**
+
+The `memories` field is `nullable` and `optional`. When provided, the full sub-document is replaced.
+
+```json
+{
+  "eventVersion": 3,
+  "memories": {
+    "publicationState": "PUBLISHED",
+    "heading": "A Night to Remember",
+    "thankYouMessage": "Thank you for joining us!",
+    "highlights": ["Sold out in 2 hours", "500+ attendees"],
+    "gallery": [
+      {
+        "url": "https://res.cloudinary.com/mad/image/upload/v1234/event_memories/photo1.jpg",
+        "publicId": "event_memories/photo1",
+        "hash": "abc123",
+        "order": 0
+      }
+    ]
+  }
+}
+```
+
+**Memories Field Validation Rules**
+
+| Field | Type | Constraints | Notes |
+| :--- | :--- | :--- | :--- |
+| `publicationState` | `EventMemoryPublicationState` | Required. One of: `DRAFT`, `PREVIEW`, `PUBLISHED`, `HIDDEN` | Default: `DRAFT` |
+| `heading` | string | max 200 chars | Optional editorial heading |
+| `thankYouMessage` | string | max 2000 chars | Optional thank-you copy |
+| `highlights` | string[] | — | Optional bullet points |
+| `gallery` | array of image objects | max `MAX_MEMORIES_GALLERY_LIMIT` (50) items | Default: `[]` |
+| `gallery[].url` | string (URL) | Required | Cloudinary asset URL |
+| `gallery[].publicId` | string | Required | Cloudinary public ID for deletion tracking |
+| `gallery[].hash` | string | Optional | Content hash for deduplication |
+| `gallery[].order` | integer ≥ 0 | Required | Display order index; default `0` |
+
+**Publication State Rules (Server-Enforced)**
+
+| Transition | Behaviour |
+| :--- | :--- |
+| Any → `PUBLISHED` (first time) | Server sets `publishedAt` to current UTC timestamp |
+| `HIDDEN` → `PUBLISHED` (re-publish) | Server preserves original `publishedAt` (stable public timestamp) |
+| `memories: null` | Clears the sub-document from the event |
+| Gallery images removed from payload | Orphaned Cloudinary assets are deleted asynchronously via `safeDeleteImages` |
+
+**Audit Log Actions**
+
+| Action Key | Condition |
+| :--- | :--- |
+| `event.memories.published` | Transition into `PUBLISHED` from any other state |
+| `event.memories.hidden` | Transition from `PUBLISHED` to `HIDDEN` |
+| `event.memories.cleared` | `memories` is set to `null` |
+| `event.memories.updated` | Any other memories modification |
+
+---
+
+#### 13.3 — GET `/api/events/:slug` — Preview Token Support
+
+The existing public event detail endpoint is extended to accept an optional `preview` query parameter.
+
+| Property | Value |
+| :--- | :--- |
+| **Method** | `GET` |
+| **Path** | `/api/events/:slug?preview=<token>` |
+| **Visibility** | Public |
+| **Authentication** | None (preview token is self-contained) |
+
+**Query Parameters**
+
+| Parameter | Type | Notes |
+| :--- | :--- | :--- |
+| `preview` | string (JWT) | Optional. When present, the request bypasses the Redis cache entirely. The server validates the token against `JWT_ADMIN_SECRET`. |
+
+**Memories Visibility Rules**
+
+| Condition | Memories in Response |
+| :--- | :--- |
+| `publicationState === PUBLISHED` | Included (all fields) |
+| Valid `preview` token provided | Included (all fields), regardless of publication state |
+| `publicationState` is `DRAFT`, `PREVIEW`, or `HIDDEN` without valid token | `memories: null` |
+| Event has no memories | `memories: null` |
+
+**Scope of COMPLETED Events**
+
+From v1.1.0, `GET /api/events/:slug` returns events with status `PUBLISHED` **or** `COMPLETED`. Events in `COMPLETED` status suppress ticket purchase options on the frontend but remain publicly accessible so Event Memories can be displayed.
+
+**Audit Log**
+
+A successful preview access emits an audit entry with action `event.memories.preview.accessed`, including `eventId`, `adminId` (from the token payload), and `timestamp`.
+
+### Repository Standard
+- The `memories` sub-document must never be served publicly in `DRAFT`, `PREVIEW`, or `HIDDEN` states. The backend is the sole enforcement authority.
+- Preview tokens are signed with `JWT_ADMIN_SECRET` and expire in 15 minutes. The token is not stored server-side; validation is stateless.
+- Gallery images removed from the `memories.gallery` array must be cleaned up from Cloudinary using `safeDeleteImages`.
+- The `publishedAt` timestamp is immutable after the first publish. Re-publication after `HIDDEN` must preserve the original value.
+
+### Future Recommendations
+- Omitted (No active proposals exist for Event Memories).
 
 ---
 

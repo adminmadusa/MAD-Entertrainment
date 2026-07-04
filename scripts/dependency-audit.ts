@@ -108,7 +108,7 @@ function runAudit() {
 
     if (isCriticalOrHigh) {
       // Look for match in exceptions registry
-      const exception = exceptions.find(e => 
+      const exception = exceptions.find(e =>
         (ghsaId && e.id.toLowerCase() === ghsaId.toLowerCase()) ||
         cves.some((cve: string) => cve.toLowerCase() === e.id.toLowerCase()) ||
         e.id === id
