@@ -2,10 +2,11 @@ import type { Metadata, Viewport } from 'next';
 import { Outfit } from 'next/font/google';
 
 import { ChunkRecoveryClear } from '@/components/common/ChunkRecoveryClear';
+import { BottomNavigation, BottomNavigationSpacer } from '@/components/layout/BottomNavigation';
 import { Footer } from '@/components/layout/Footer';
 import { Navbar } from '@/components/layout/Navbar';
-import { BottomNavigation, BottomNavigationSpacer } from '@/components/layout/BottomNavigation';
 import { Providers } from '@/providers';
+
 import '@/styles/globals.css';
 
 // ─── Fonts ────────────────────────────────────────────────────

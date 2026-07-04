@@ -1,44 +1,35 @@
 {
-  "schemaVersion": 2,
-  "id": "f_8b816e3f",
-  "rule": "VAL-UI-011",
-  "ruleVersion": "1.0.0",
-  "engineVersion": "1.0.0",
-  "domain": "UI UX Guild",
-  "owner": "UI UX Guild",
-  "package": "apps",
-  "feature": "UIElement",
-  "status": "NEW",
   "confidence": 0.9,
-  "relationships": [],
+  "createdDate": "2026-06-30T15:36:27.192Z",
+  "domain": "UI UX Guild",
+  "engineVersion": "1.0.0",
   "evidence": {
-    "path": "apps/admin/src/app/users/_components/UserRefundsTable.tsx",
     "construct": "UIElement",
     "line": 1,
-    "message": "Duplicate component layout detected: shares 90% similarity with \"UserBookingsTable\" in \"apps/admin/src/app/users/_components/UserBookingsTable.tsx\". Recommendation: Extract the duplicated layout/logic from \"apps/admin/src/app/users/_components/UserBookingsTable.tsx\" and \"apps/admin/src/app/users/_components/UserRefundsTable.tsx\" into a single reusable shared component in \"packages/ui\".",
+    "message": "Duplicate component layout detected [Category E — Infrastructure, Confidence: 91%, Severity: WARNING]: shares similarity with \"UserTicketsTable\" in \"apps/admin/src/app/users/_components/UserTicketsTable.tsx\". Recommendation: Extract reusable table, filter, or pagination wrappers to \"packages/ui\" as shared components. (Estimated Effort: Medium (2-4 hours), Risk: Low).",
     "occurrences": [
       {
-        "id": "95fec788a568c8cea8300168e2800ac937086c8a632f44f1f0076c51a55d7c5a",
-        "line": 1,
         "column": 0,
         "construct": "UIElement",
-        "snippet": "",
-        "message": "Duplicate component layout detected: shares 90% similarity with \"UserBookingsTable\" in \"apps/admin/src/app/users/_components/UserBookingsTable.tsx\". Recommendation: Extract the duplicated layout/logic from \"apps/admin/src/app/users/_components/UserBookingsTable.tsx\" and \"apps/admin/src/app/users/_components/UserRefundsTable.tsx\" into a single reusable shared component in \"packages/ui\".",
-        "fingerprint": "95fec788a568c8cea8300168e2800ac937086c8a632f44f1f0076c51a55d7c5a"
-      },
-      {
+        "fingerprint": "95fec788a568c8cea8300168e2800ac937086c8a632f44f1f0076c51a55d7c5a",
         "id": "95fec788a568c8cea8300168e2800ac937086c8a632f44f1f0076c51a55d7c5a",
         "line": 1,
-        "column": 0,
-        "construct": "UIElement",
-        "snippet": "",
-        "message": "Duplicate component layout detected: shares 91% similarity with \"UserTicketsTable\" in \"apps/admin/src/app/users/_components/UserTicketsTable.tsx\". Recommendation: Extract the duplicated layout/logic from \"apps/admin/src/app/users/_components/UserRefundsTable.tsx\" and \"apps/admin/src/app/users/_components/UserTicketsTable.tsx\" into a single reusable shared component in \"packages/ui\".",
-        "fingerprint": "95fec788a568c8cea8300168e2800ac937086c8a632f44f1f0076c51a55d7c5a"
+        "message": "Duplicate component layout detected [Category E — Infrastructure, Confidence: 90%, Severity: WARNING]: shares similarity with \"UserBookingsTable\" in \"apps/admin/src/app/users/_components/UserBookingsTable.tsx\". Recommendation: Extract reusable table, filter, or pagination wrappers to \"packages/ui\" as shared components. (Estimated Effort: Medium (2-4 hours), Risk: Low)."
       }
-    ]
+    ],
+    "path": "apps/admin/src/app/users/_components/UserRefundsTable.tsx"
   },
-  "createdDate": "2026-06-30T15:36:27.192Z",
+  "feature": "UIElement",
   "firstDetected": "2026-06-30T15:36:27.192Z",
-  "lastDetected": "2026-06-30T15:36:27.193Z",
-  "occurrenceCount": 2
+  "id": "f_8b816e3f",
+  "lastDetected": "2026-07-04T04:54:05.206Z",
+  "lastModified": "2026-07-04T04:54:05.206Z",
+  "occurrenceCount": 1,
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-UI-011",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
 }

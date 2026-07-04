@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-04T04:54:03.927Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 45,
+    "message": "Trailing whitespace characters detected.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "22a76fba694431f13c2dd9eedde048bcbd7a5f82dcd60419f763fa8fdf2c61c8",
+        "id": "22a76fba694431f13c2dd9eedde048bcbd7a5f82dcd60419f763fa8fdf2c61c8",
+        "line": 45,
+        "message": "Trailing whitespace characters detected."
+      }
+    ],
+    "path": "apps/web/src/providers/AuthModalProvider.tsx"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-04T04:54:03.927Z",
+  "id": "f_06b114ce",
+  "lastDetected": "2026-07-04T04:54:03.927Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-004",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

@@ -11,29 +11,11 @@
       {
         "column": 0,
         "construct": "UIElement",
-        "fingerprint": "59ac79e9723a473fa606235b82533f2b11d7ef933c1512db8fd17acd1023f117",
-        "id": "59ac79e9723a473fa606235b82533f2b11d7ef933c1512db8fd17acd1023f117",
-        "line": 235,
-        "message": "Element <th> with click handler lacks a tabIndex or role attribute, breaking keyboard accessibility.",
-        "snippet": "<th onClick={() => handleSort('title')} className=\"text-left text-text-muted font-medium py-3.5 px-5 cursor-pointer hover:text-white transition-colors select-none\">"
-      },
-      {
-        "column": 0,
-        "construct": "UIElement",
         "fingerprint": "7260f032fc79326be020c628d091fabff7f97b8b9ee2a612ea90794751416367",
         "id": "7260f032fc79326be020c628d091fabff7f97b8b9ee2a612ea90794751416367",
         "line": 235,
         "message": "Element <th> with click handler lacks a tabIndex or role attribute, breaking keyboard accessibility.",
         "snippet": "<th onClick={() => handleSort('title')} className=\"text-left text-text-muted font-medium py-3.5 px-5 cursor-pointer hover:text-white transition-colors select-none\">"
-      },
-      {
-        "column": 0,
-        "construct": "UIElement",
-        "fingerprint": "572793da3300b3a939a4f07544df8965183e8fb3ea8565a835a2c824116ae897",
-        "id": "572793da3300b3a939a4f07544df8965183e8fb3ea8565a835a2c824116ae897",
-        "line": 238,
-        "message": "Element <th> with click handler lacks a tabIndex or role attribute, breaking keyboard accessibility.",
-        "snippet": "<th onClick={() => handleSort('category')} className=\"text-left text-text-muted font-medium py-3.5 px-4 cursor-pointer hover:text-white transition-colors select-none\">"
       },
       {
         "column": 0,
@@ -47,29 +29,11 @@
       {
         "column": 0,
         "construct": "UIElement",
-        "fingerprint": "7084a21e4c3a2540f2747a2d5228c24df953e1c3aebd4e6a135c313ef2954773",
-        "id": "7084a21e4c3a2540f2747a2d5228c24df953e1c3aebd4e6a135c313ef2954773",
-        "line": 241,
-        "message": "Element <th> with click handler lacks a tabIndex or role attribute, breaking keyboard accessibility.",
-        "snippet": "<th onClick={() => handleSort('startDate')} className=\"text-left text-text-muted font-medium py-3.5 px-4 cursor-pointer hover:text-white transition-colors select-none\">"
-      },
-      {
-        "column": 0,
-        "construct": "UIElement",
         "fingerprint": "4a25a03f1fef3e55f9f048d374b915051be02e5177bf490a03684daddeec98ad",
         "id": "4a25a03f1fef3e55f9f048d374b915051be02e5177bf490a03684daddeec98ad",
         "line": 241,
         "message": "Element <th> with click handler lacks a tabIndex or role attribute, breaking keyboard accessibility.",
         "snippet": "<th onClick={() => handleSort('startDate')} className=\"text-left text-text-muted font-medium py-3.5 px-4 cursor-pointer hover:text-white transition-colors select-none\">"
-      },
-      {
-        "column": 0,
-        "construct": "UIElement",
-        "fingerprint": "a4df14aef274a77f6f8f8fd4d43dbfcb62c671957fe75f467387d7ed9b625eaf",
-        "id": "a4df14aef274a77f6f8f8fd4d43dbfcb62c671957fe75f467387d7ed9b625eaf",
-        "line": 244,
-        "message": "Element <th> with click handler lacks a tabIndex or role attribute, breaking keyboard accessibility.",
-        "snippet": "<th onClick={() => handleSort('status')} className=\"text-left text-text-muted font-medium py-3.5 px-4 cursor-pointer hover:text-white transition-colors select-none\">"
       },
       {
         "column": 0,
@@ -87,14 +51,14 @@
   "feature": "UIElement",
   "firstDetected": "2026-06-30T15:36:27.149Z",
   "id": "f_97d71878",
-  "lastDetected": "2026-07-04T03:02:11.360Z",
-  "lastModified": "2026-07-04T03:02:11.360Z",
-  "occurrenceCount": 8,
+  "lastDetected": "2026-07-04T04:55:08.591Z",
+  "lastModified": "2026-07-04T04:55:08.591Z",
+  "occurrenceCount": 4,
   "owner": "UI UX Guild",
   "package": "apps",
   "relationships": [],
   "rule": "VAL-UI-009",
   "ruleVersion": "1.0.0",
   "schemaVersion": 2,
-  "status": "NEW"
+  "status": "REGRESSION"
 }

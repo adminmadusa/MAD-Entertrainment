@@ -1,7 +1,7 @@
 {
-  "branch": "chore/governance-gitignore",
-  "commit": "605beb38",
+  "branch": "fix/web-hygiene-core",
+  "commit": "b76abb4c",
   "engineVersion": "1.0.0",
   "ruleRegistryVersion": "1.0.0",
-  "timestamp": "2026-07-04T03:07:06.515Z"
+  "timestamp": "2026-07-04T04:54:05.393Z"
 }

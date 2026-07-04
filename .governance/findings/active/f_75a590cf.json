@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-04T04:54:02.559Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 124,
+    "message": "Trailing whitespace characters detected.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "3bed60d6d6007b0a7b0f8975af3a5f2177a7ff349adefe5346d9ab875fab762a",
+        "id": "3bed60d6d6007b0a7b0f8975af3a5f2177a7ff349adefe5346d9ab875fab762a",
+        "line": 124,
+        "message": "Trailing whitespace characters detected."
+      }
+    ],
+    "path": "apps/server/src/services/public/booking.service.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-04T04:54:02.559Z",
+  "id": "f_75a590cf",
+  "lastDetected": "2026-07-04T04:54:02.559Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-004",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

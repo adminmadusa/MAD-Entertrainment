@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-04T04:54:04.810Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 40,
+    "message": "Trailing whitespace characters detected.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "b261ed53c87818ae326be8687212b99fda98002f01f4cf2b9272ec95c8943d65",
+        "id": "b261ed53c87818ae326be8687212b99fda98002f01f4cf2b9272ec95c8943d65",
+        "line": 40,
+        "message": "Trailing whitespace characters detected."
+      }
+    ],
+    "path": "scripts/cleanup-ports.js"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-04T04:54:04.810Z",
+  "id": "f_da0d1695",
+  "lastDetected": "2026-07-04T04:54:04.810Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "scripts",
+  "relationships": [],
+  "rule": "VAL-HYG-004",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

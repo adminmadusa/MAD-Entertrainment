@@ -1,0 +1,11 @@
+{
+  "history": [
+    {
+      "action": "CREATED",
+      "notes": "New grouped finding registered: File must terminate with exactly one trailing newline character.",
+      "status": "NEW",
+      "timestamp": "2026-07-04T04:54:02.824Z"
+    }
+  ],
+  "id": "f_26c70e6f"
+}

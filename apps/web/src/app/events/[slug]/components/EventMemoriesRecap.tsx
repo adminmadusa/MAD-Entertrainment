@@ -1,8 +1,8 @@
 'use client';
 
-import { EventGallery } from './EventGallery';
+import type { EventMemoryConfig } from '@mad/types';
 
-import { EventMemoryConfig } from '@mad/types';
+import { EventGallery } from './EventGallery';
 
 type EventMemoriesRecapProps = {
   memories: EventMemoryConfig;

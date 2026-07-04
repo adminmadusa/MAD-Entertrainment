@@ -1,45 +1,46 @@
 {
-  "schemaVersion": 2,
-  "id": "f_4a6a852d",
-  "rule": "VAL-UI-010",
-  "ruleVersion": "1.0.0",
-  "engineVersion": "1.0.0",
-  "domain": "UI UX Guild",
-  "owner": "UI UX Guild",
-  "package": "apps",
-  "feature": "UIElement",
-  "status": "NEW",
   "confidence": 0.9,
-  "relationships": [],
+  "createdDate": "2026-06-30T15:36:27.260Z",
+  "domain": "UI UX Guild",
+  "engineVersion": "1.0.0",
   "evidence": {
-    "path": "apps/web/src/app/events/EventsList.tsx",
     "construct": "UIElement",
-    "snippet": "<button",
-    "line": 147,
+    "line": 159,
     "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
     "occurrences": [
       {
-        "id": "b9dc646c39c07ea69dd0e2bd766e38166c3a1376cf761c36dd8702c507be46cf",
-        "line": 147,
         "column": 0,
         "construct": "UIElement",
-        "snippet": "<button",
+        "fingerprint": "b9dc646c39c07ea69dd0e2bd766e38166c3a1376cf761c36dd8702c507be46cf",
+        "id": "b9dc646c39c07ea69dd0e2bd766e38166c3a1376cf761c36dd8702c507be46cf",
+        "line": 151,
         "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
-        "fingerprint": "b9dc646c39c07ea69dd0e2bd766e38166c3a1376cf761c36dd8702c507be46cf"
+        "snippet": "<button"
       },
       {
-        "id": "b9dc646c39c07ea69dd0e2bd766e38166c3a1376cf761c36dd8702c507be46cf",
-        "line": 155,
         "column": 0,
         "construct": "UIElement",
-        "snippet": "<button",
+        "fingerprint": "b9dc646c39c07ea69dd0e2bd766e38166c3a1376cf761c36dd8702c507be46cf",
+        "id": "b9dc646c39c07ea69dd0e2bd766e38166c3a1376cf761c36dd8702c507be46cf",
+        "line": 159,
         "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
-        "fingerprint": "b9dc646c39c07ea69dd0e2bd766e38166c3a1376cf761c36dd8702c507be46cf"
+        "snippet": "<button"
       }
-    ]
+    ],
+    "path": "apps/web/src/app/events/EventsList.tsx",
+    "snippet": "<button"
   },
-  "createdDate": "2026-06-30T15:36:27.260Z",
+  "feature": "UIElement",
   "firstDetected": "2026-06-30T15:36:27.260Z",
-  "lastDetected": "2026-06-30T15:36:27.260Z",
-  "occurrenceCount": 2
+  "id": "f_4a6a852d",
+  "lastDetected": "2026-07-04T04:54:05.316Z",
+  "lastModified": "2026-07-04T04:54:05.316Z",
+  "occurrenceCount": 2,
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-UI-010",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
 }

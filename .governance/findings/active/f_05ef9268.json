@@ -1,35 +1,35 @@
 {
-  "schemaVersion": 2,
-  "id": "f_05ef9268",
-  "rule": "VAL-UI-011",
-  "ruleVersion": "1.0.0",
-  "engineVersion": "1.0.0",
-  "domain": "UI UX Guild",
-  "owner": "UI UX Guild",
-  "package": "apps",
-  "feature": "UIElement",
-  "status": "NEW",
   "confidence": 0.9,
-  "relationships": [],
+  "createdDate": "2026-06-30T15:36:27.145Z",
+  "domain": "UI UX Guild",
+  "engineVersion": "1.0.0",
   "evidence": {
-    "path": "apps/admin/src/app/events/new/_components/EventScheduleSection.tsx",
     "construct": "UIElement",
     "line": 1,
-    "message": "Duplicate component layout detected: shares 82% similarity with \"EventScheduleCard\" in \"apps/admin/src/components/events/EventScheduleCard.tsx\". Recommendation: Extract the duplicated layout/logic from \"apps/admin/src/app/events/new/_components/EventScheduleSection.tsx\" and \"apps/admin/src/components/events/EventScheduleCard.tsx\" into a single reusable shared component in \"packages/ui\".",
+    "message": "Duplicate component layout detected [Category C — Form, Confidence: 82%, Severity: WARNING]: shares similarity with \"EventScheduleCard\" in \"apps/admin/src/components/events/EventScheduleCard.tsx\". Recommendation: Extract reusable shared form component or local CRUD fields wrapper to dry-up page/form structure. (Estimated Effort: Medium (3-6 hours), Risk: Medium).",
     "occurrences": [
       {
-        "id": "d4321681affdd7a6a43c1fef51ab01055de2f146941a24b80403b01842616672",
-        "line": 1,
         "column": 0,
         "construct": "UIElement",
-        "snippet": "",
-        "message": "Duplicate component layout detected: shares 82% similarity with \"EventScheduleCard\" in \"apps/admin/src/components/events/EventScheduleCard.tsx\". Recommendation: Extract the duplicated layout/logic from \"apps/admin/src/app/events/new/_components/EventScheduleSection.tsx\" and \"apps/admin/src/components/events/EventScheduleCard.tsx\" into a single reusable shared component in \"packages/ui\".",
-        "fingerprint": "d4321681affdd7a6a43c1fef51ab01055de2f146941a24b80403b01842616672"
+        "fingerprint": "d4321681affdd7a6a43c1fef51ab01055de2f146941a24b80403b01842616672",
+        "id": "d4321681affdd7a6a43c1fef51ab01055de2f146941a24b80403b01842616672",
+        "line": 1,
+        "message": "Duplicate component layout detected [Category C — Form, Confidence: 82%, Severity: WARNING]: shares similarity with \"EventScheduleCard\" in \"apps/admin/src/components/events/EventScheduleCard.tsx\". Recommendation: Extract reusable shared form component or local CRUD fields wrapper to dry-up page/form structure. (Estimated Effort: Medium (3-6 hours), Risk: Medium)."
       }
-    ]
+    ],
+    "path": "apps/admin/src/app/events/new/_components/EventScheduleSection.tsx"
   },
-  "createdDate": "2026-06-30T15:36:27.145Z",
+  "feature": "UIElement",
   "firstDetected": "2026-06-30T15:36:27.145Z",
-  "lastDetected": "2026-06-30T15:36:27.145Z",
-  "occurrenceCount": 1
+  "id": "f_05ef9268",
+  "lastDetected": "2026-07-04T04:54:05.181Z",
+  "lastModified": "2026-07-04T04:54:05.181Z",
+  "occurrenceCount": 1,
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-UI-011",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
 }

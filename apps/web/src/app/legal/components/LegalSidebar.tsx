@@ -2,7 +2,9 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+
 import { legalDocuments } from '@/content/legalDocuments';
+
 import { LegalSupportCard } from './LegalSupportCard';
 
 export function LegalSidebar() {

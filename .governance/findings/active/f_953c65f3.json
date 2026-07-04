@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-04T04:54:01.422Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 303,
+    "message": "File must terminate with exactly one trailing newline character.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "d44b3b28430f644403c824e2231bcfe542ee59de961379cf6d1eefd4a36eda7d",
+        "id": "d44b3b28430f644403c824e2231bcfe542ee59de961379cf6d1eefd4a36eda7d",
+        "line": 303,
+        "message": "File must terminate with exactly one trailing newline character."
+      }
+    ],
+    "path": "apps/admin/src/app/events/new/page.tsx"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-04T04:54:01.422Z",
+  "id": "f_953c65f3",
+  "lastDetected": "2026-07-04T04:54:01.422Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-005",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

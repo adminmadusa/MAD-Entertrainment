@@ -1,54 +1,46 @@
 {
-  "schemaVersion": 2,
-  "id": "f_b35a4186",
-  "rule": "VAL-UI-005",
-  "ruleVersion": "1.0.0",
-  "engineVersion": "1.0.0",
-  "domain": "UI UX Guild",
-  "owner": "UI UX Guild",
-  "package": "apps",
-  "feature": "button",
-  "status": "NEW",
   "confidence": 0.85,
-  "relationships": [],
+  "createdDate": "2026-06-29T08:10:34.250Z",
+  "domain": "UI UX Guild",
+  "engineVersion": "1.0.0",
   "evidence": {
-    "path": "apps/admin/src/components/diagnostics/RetryAllModal.tsx",
     "construct": "button",
-    "snippet": "<button",
-    "line": 35,
+    "line": 42,
     "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
     "occurrences": [
       {
-        "id": "60f83b5e4f2818f557e605119b9953aba63ed19cb27e6ee7d5fc80f8ee02cfb0",
-        "line": 35,
-        "column": 0,
-        "construct": "button",
-        "snippet": "<button",
-        "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
-        "fingerprint": "60f83b5e4f2818f557e605119b9953aba63ed19cb27e6ee7d5fc80f8ee02cfb0"
-      },
-      {
-        "id": "d652b562671847e9f42d4767d5e87bcbaadd354c358241dd4a65f2678b3c2f98",
-        "line": 35,
         "column": 0,
         "construct": "UIElement",
-        "snippet": "<button",
+        "fingerprint": "d652b562671847e9f42d4767d5e87bcbaadd354c358241dd4a65f2678b3c2f98",
+        "id": "d652b562671847e9f42d4767d5e87bcbaadd354c358241dd4a65f2678b3c2f98",
+        "line": 35,
         "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
-        "fingerprint": "d652b562671847e9f42d4767d5e87bcbaadd354c358241dd4a65f2678b3c2f98"
+        "snippet": "<button"
       },
       {
+        "column": 0,
+        "construct": "UIElement",
+        "fingerprint": "d652b562671847e9f42d4767d5e87bcbaadd354c358241dd4a65f2678b3c2f98",
         "id": "d652b562671847e9f42d4767d5e87bcbaadd354c358241dd4a65f2678b3c2f98",
         "line": 42,
-        "column": 0,
-        "construct": "UIElement",
-        "snippet": "<button",
         "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
-        "fingerprint": "d652b562671847e9f42d4767d5e87bcbaadd354c358241dd4a65f2678b3c2f98"
+        "snippet": "<button"
       }
-    ]
+    ],
+    "path": "apps/admin/src/components/diagnostics/RetryAllModal.tsx",
+    "snippet": "<button"
   },
-  "createdDate": "2026-06-29T08:10:34.250Z",
+  "feature": "button",
   "firstDetected": "2026-06-29T08:10:34.250Z",
-  "lastDetected": "2026-06-30T15:36:27.214Z",
-  "occurrenceCount": 3
+  "id": "f_b35a4186",
+  "lastDetected": "2026-07-04T04:54:05.213Z",
+  "lastModified": "2026-07-04T04:54:05.213Z",
+  "occurrenceCount": 2,
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-UI-005",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
 }

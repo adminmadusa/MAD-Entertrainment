@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:48.826Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 1,
+    "message": "Imports must be grouped in order: Node built-ins, Third-party packages, Workspace aliases, Relative paths, Side-effects.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "7a8bf460543a1f02b2d131b549f235886fbff468d135d5672f9143de267d698b",
+        "id": "7a8bf460543a1f02b2d131b549f235886fbff468d135d5672f9143de267d698b",
+        "line": 1,
+        "message": "Imports must be grouped in order: Node built-ins, Third-party packages, Workspace aliases, Relative paths, Side-effects."
+      }
+    ],
+    "path": "apps/server/scripts/create-notification-index.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:48.826Z",
+  "id": "f_dc99da7a",
+  "lastDetected": "2026-07-03T12:25:48.826Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-001",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "REGRESSION"
+}

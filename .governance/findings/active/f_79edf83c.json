@@ -1,45 +1,37 @@
 {
-  "schemaVersion": 2,
-  "id": "f_79edf83c",
-  "rule": "VAL-UI-003",
-  "ruleVersion": "1.0.0",
-  "engineVersion": "1.0.0",
-  "domain": "UI UX Guild",
-  "owner": "UI UX Guild",
-  "package": "apps",
-  "feature": "modal-accessibility",
-  "status": "NEW",
   "confidence": 1,
-  "relationships": [],
+  "createdDate": "2026-06-29T08:10:29.448Z",
+  "domain": "UI UX Guild",
+  "engineVersion": "1.0.0",
   "evidence": {
-    "path": "apps/admin/src/components/diagnostics/DlqInspectorDrawer.tsx",
     "construct": "modal-accessibility",
-    "snippet": "<div className=\"fixed inset-0 z-50 flex justify-end bg-black/60 backdrop-blur-sm transition-opacity\">",
     "line": 25,
     "message": "Custom modal backdrop is missing role=\"dialog\" or aria-modal=\"true\" accessibility tags.",
     "occurrences": [
       {
-        "id": "1aefb50ba8da576124aa40976b16c613ed60442fa6ce8048519638df7e0aca34",
-        "line": 25,
-        "column": 0,
-        "construct": "modal-accessibility",
-        "snippet": "<div className=\"fixed inset-0 z-50 flex justify-end bg-black/60 backdrop-blur-sm transition-opacity\">",
-        "message": "Custom modal backdrop is missing role=\"dialog\" or aria-modal=\"true\" accessibility tags.",
-        "fingerprint": "1aefb50ba8da576124aa40976b16c613ed60442fa6ce8048519638df7e0aca34"
-      },
-      {
-        "id": "615be5108f3b1cc716f29ccff6c14cf8866f5db9626d349492f14335978fe25a",
-        "line": 25,
         "column": 0,
         "construct": "UIElement",
-        "snippet": "<div className=\"fixed inset-0 z-50 flex justify-end bg-black/60 backdrop-blur-sm transition-opacity\">",
+        "fingerprint": "615be5108f3b1cc716f29ccff6c14cf8866f5db9626d349492f14335978fe25a",
+        "id": "615be5108f3b1cc716f29ccff6c14cf8866f5db9626d349492f14335978fe25a",
+        "line": 25,
         "message": "Custom modal backdrop is missing role=\"dialog\" or aria-modal=\"true\" accessibility tags.",
-        "fingerprint": "615be5108f3b1cc716f29ccff6c14cf8866f5db9626d349492f14335978fe25a"
+        "snippet": "<div className=\"fixed inset-0 z-50 flex justify-end bg-black/60 backdrop-blur-sm transition-opacity\">"
       }
-    ]
+    ],
+    "path": "apps/admin/src/components/diagnostics/DlqInspectorDrawer.tsx",
+    "snippet": "<div className=\"fixed inset-0 z-50 flex justify-end bg-black/60 backdrop-blur-sm transition-opacity\">"
   },
-  "createdDate": "2026-06-29T08:10:29.448Z",
+  "feature": "modal-accessibility",
   "firstDetected": "2026-06-29T08:10:29.448Z",
-  "lastDetected": "2026-06-30T15:36:27.208Z",
-  "occurrenceCount": 2
+  "id": "f_79edf83c",
+  "lastDetected": "2026-07-04T04:54:05.210Z",
+  "lastModified": "2026-07-04T04:54:05.210Z",
+  "occurrenceCount": 1,
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-UI-003",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
 }

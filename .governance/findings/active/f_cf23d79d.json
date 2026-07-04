@@ -1,0 +1,126 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-04T04:54:02.161Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 43,
+    "message": "Local Zod schema (z.string()) declared outside the shared validation package. Move this schema to 'packages/validations/src/' and re-export it from '@mad/validations'.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "13ed1d4ded3a0d46bc5247035696c43a4df5dc5ba090655651ce08cec137e35f",
+        "id": "13ed1d4ded3a0d46bc5247035696c43a4df5dc5ba090655651ce08cec137e35f",
+        "line": 16,
+        "message": "Local Zod schema (z.object()) declared outside the shared validation package. Move this schema to 'packages/validations/src/' and re-export it from '@mad/validations'.",
+        "snippet": "const cancelBookingSchema = z.object({"
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "2e260fdd291b85011cc6e0c63b59750f0009e7daa7a92eba6ebc9d13cec869b8",
+        "id": "2e260fdd291b85011cc6e0c63b59750f0009e7daa7a92eba6ebc9d13cec869b8",
+        "line": 17,
+        "message": "Local Zod schema (z.object()) declared outside the shared validation package. Move this schema to 'packages/validations/src/' and re-export it from '@mad/validations'.",
+        "snippet": "body: z.object({"
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "b93ee0190f0d4791c6c85fe7396f70e86986da881e4aca51ea55039a9911a738",
+        "id": "b93ee0190f0d4791c6c85fe7396f70e86986da881e4aca51ea55039a9911a738",
+        "line": 18,
+        "message": "Local Zod schema (z.string()) declared outside the shared validation package. Move this schema to 'packages/validations/src/' and re-export it from '@mad/validations'.",
+        "snippet": "reason: z.string().max(500, 'Reason must be under 500 characters').optional(),"
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "24b4c3f99e78b0cf30b4fbc7b50c9d70cdd5c171b67d0813eb2afc1a6dc1dd02",
+        "id": "24b4c3f99e78b0cf30b4fbc7b50c9d70cdd5c171b67d0813eb2afc1a6dc1dd02",
+        "line": 24,
+        "message": "Local Zod schema (z.object()) declared outside the shared validation package. Move this schema to 'packages/validations/src/' and re-export it from '@mad/validations'.",
+        "snippet": "const correctBookingEmailSchema = z.object({"
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "2e260fdd291b85011cc6e0c63b59750f0009e7daa7a92eba6ebc9d13cec869b8",
+        "id": "2e260fdd291b85011cc6e0c63b59750f0009e7daa7a92eba6ebc9d13cec869b8",
+        "line": 25,
+        "message": "Local Zod schema (z.object()) declared outside the shared validation package. Move this schema to 'packages/validations/src/' and re-export it from '@mad/validations'.",
+        "snippet": "body: z.object({"
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "0abf7ea2e44a5c5112bdae29e6e4f5942ed3070ec249eaa101af61b206da0802",
+        "id": "0abf7ea2e44a5c5112bdae29e6e4f5942ed3070ec249eaa101af61b206da0802",
+        "line": 26,
+        "message": "Local Zod schema (z.string()) declared outside the shared validation package. Move this schema to 'packages/validations/src/' and re-export it from '@mad/validations'.",
+        "snippet": "newEmail: z.string().email('Invalid email address'),"
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "0802228e3958dd5f95093c18759d66d09c6f8d9d074851cc2d59d5ec001d03b5",
+        "id": "0802228e3958dd5f95093c18759d66d09c6f8d9d074851cc2d59d5ec001d03b5",
+        "line": 27,
+        "message": "Local Zod schema (z.string()) declared outside the shared validation package. Move this schema to 'packages/validations/src/' and re-export it from '@mad/validations'.",
+        "snippet": "reason: z"
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "8700cfccd71563447e5f6258c4fed22acbe339f166c9a8449fa4793e4a6db3fd",
+        "id": "8700cfccd71563447e5f6258c4fed22acbe339f166c9a8449fa4793e4a6db3fd",
+        "line": 36,
+        "message": "Local Zod schema (z.object()) declared outside the shared validation package. Move this schema to 'packages/validations/src/' and re-export it from '@mad/validations'.",
+        "snippet": "const resendBookingTicketsSchema = z.object({"
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "d2318d3c9981a3a51fef127299dec1d27d66f2dda3c9bf8afc33db99e187f193",
+        "id": "d2318d3c9981a3a51fef127299dec1d27d66f2dda3c9bf8afc33db99e187f193",
+        "line": 41,
+        "message": "Local Zod schema (z.object()) declared outside the shared validation package. Move this schema to 'packages/validations/src/' and re-export it from '@mad/validations'.",
+        "snippet": "const bookingsSummarySchema = z.object({"
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "a17c7509f054149f96b71e760026de204f1647e74a966b57dfad6cf30adfd25e",
+        "id": "a17c7509f054149f96b71e760026de204f1647e74a966b57dfad6cf30adfd25e",
+        "line": 42,
+        "message": "Local Zod schema (z.object()) declared outside the shared validation package. Move this schema to 'packages/validations/src/' and re-export it from '@mad/validations'.",
+        "snippet": "query: z.object({"
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "eab056c090c06c7c8df52eabbb783d4d83978f3e4fa49d4b30f25178248ff40b",
+        "id": "eab056c090c06c7c8df52eabbb783d4d83978f3e4fa49d4b30f25178248ff40b",
+        "line": 43,
+        "message": "Local Zod schema (z.string()) declared outside the shared validation package. Move this schema to 'packages/validations/src/' and re-export it from '@mad/validations'.",
+        "snippet": "eventId: z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid event ID format').optional(),"
+      }
+    ],
+    "path": "apps/server/src/routes/admin/booking.routes.ts",
+    "snippet": "eventId: z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid event ID format').optional(),"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-04T04:54:02.161Z",
+  "id": "f_cf23d79d",
+  "lastDetected": "2026-07-04T04:54:02.161Z",
+  "occurrenceCount": 11,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-ARC-004",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

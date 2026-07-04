@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:56.052Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 4,
+    "message": "Import from types module \"@mad/types\" should use \"import type\".",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "d9f3f1b3a509f96fe4bea321b53088b707264b482e75cbdd08c8686a5baa44ea",
+        "id": "d9f3f1b3a509f96fe4bea321b53088b707264b482e75cbdd08c8686a5baa44ea",
+        "line": 4,
+        "message": "Import from types module \"@mad/types\" should use \"import type\"."
+      }
+    ],
+    "path": "apps/web/src/components/common/PopupManager.tsx"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:56.052Z",
+  "id": "f_e9f07dca",
+  "lastDetected": "2026-07-03T12:25:56.052Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-003",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "REGRESSION"
+}

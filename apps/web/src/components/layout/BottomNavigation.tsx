@@ -1,10 +1,11 @@
 'use client';
 
-import React, { Suspense } from 'react';
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
-import { useAuth } from '@/providers/AuthProvider';
+import React, { Suspense } from 'react';
+
 import { useAuthModal } from '@/providers/AuthModalProvider';
+import { useAuth } from '@/providers/AuthProvider';
 import { CalendarIcon } from '@mad/ui';
 
 // ─── Custom Icons inline to preserve UI package stability ──────

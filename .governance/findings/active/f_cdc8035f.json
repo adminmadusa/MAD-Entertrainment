@@ -1,0 +1,50 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-04T04:54:03.400Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 147,
+    "message": "Excessive consecutive blank lines detected (3 lines).",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "3674a3c9ae7b673b5a8031b5426bb4518e716a1eca3b424b17393618a8606dea",
+        "id": "3674a3c9ae7b673b5a8031b5426bb4518e716a1eca3b424b17393618a8606dea",
+        "line": 44,
+        "message": "Excessive consecutive blank lines detected (3 lines)."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "3674a3c9ae7b673b5a8031b5426bb4518e716a1eca3b424b17393618a8606dea",
+        "id": "3674a3c9ae7b673b5a8031b5426bb4518e716a1eca3b424b17393618a8606dea",
+        "line": 73,
+        "message": "Excessive consecutive blank lines detected (3 lines)."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "3674a3c9ae7b673b5a8031b5426bb4518e716a1eca3b424b17393618a8606dea",
+        "id": "3674a3c9ae7b673b5a8031b5426bb4518e716a1eca3b424b17393618a8606dea",
+        "line": 147,
+        "message": "Excessive consecutive blank lines detected (3 lines)."
+      }
+    ],
+    "path": "apps/web/src/app/page.tsx"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-04T04:54:03.400Z",
+  "id": "f_cdc8035f",
+  "lastDetected": "2026-07-04T04:54:03.400Z",
+  "occurrenceCount": 3,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-006",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

@@ -1,44 +1,35 @@
 {
-  "schemaVersion": 2,
-  "id": "f_25aef57a",
-  "rule": "VAL-UI-011",
-  "ruleVersion": "1.0.0",
-  "engineVersion": "1.0.0",
-  "domain": "UI UX Guild",
-  "owner": "UI UX Guild",
-  "package": "apps",
-  "feature": "UIElement",
-  "status": "NEW",
   "confidence": 0.9,
-  "relationships": [],
+  "createdDate": "2026-06-30T15:36:27.177Z",
+  "domain": "UI UX Guild",
+  "engineVersion": "1.0.0",
   "evidence": {
-    "path": "apps/admin/src/app/team/_components/InviteAdminModal.tsx",
     "construct": "UIElement",
     "line": 1,
-    "message": "Duplicate component layout detected: shares 76% similarity with \"EditAdminModal\" in \"apps/admin/src/app/team/_components/EditAdminModal.tsx\". Recommendation: Extract the duplicated layout/logic from \"apps/admin/src/app/team/_components/EditAdminModal.tsx\" and \"apps/admin/src/app/team/_components/InviteAdminModal.tsx\" into a single reusable shared component in \"packages/ui\".",
+    "message": "Duplicate component layout detected [Category C — Form, Confidence: 77%, Severity: WARNING]: shares similarity with \"ChangeRoleModal\" in \"apps/admin/src/app/team/_components/ChangeRoleModal.tsx\". Recommendation: Extract reusable shared form component or local CRUD fields wrapper to dry-up page/form structure. (Estimated Effort: Medium (3-6 hours), Risk: Medium).",
     "occurrences": [
       {
-        "id": "7cfc3cce16e2b0f960858f73f5e04f197479b46c9549e3454f70a8b1a96338e2",
-        "line": 1,
         "column": 0,
         "construct": "UIElement",
-        "snippet": "",
-        "message": "Duplicate component layout detected: shares 76% similarity with \"EditAdminModal\" in \"apps/admin/src/app/team/_components/EditAdminModal.tsx\". Recommendation: Extract the duplicated layout/logic from \"apps/admin/src/app/team/_components/EditAdminModal.tsx\" and \"apps/admin/src/app/team/_components/InviteAdminModal.tsx\" into a single reusable shared component in \"packages/ui\".",
-        "fingerprint": "7cfc3cce16e2b0f960858f73f5e04f197479b46c9549e3454f70a8b1a96338e2"
-      },
-      {
+        "fingerprint": "7cfc3cce16e2b0f960858f73f5e04f197479b46c9549e3454f70a8b1a96338e2",
         "id": "7cfc3cce16e2b0f960858f73f5e04f197479b46c9549e3454f70a8b1a96338e2",
         "line": 1,
-        "column": 0,
-        "construct": "UIElement",
-        "snippet": "",
-        "message": "Duplicate component layout detected: shares 77% similarity with \"ChangeRoleModal\" in \"apps/admin/src/app/team/_components/ChangeRoleModal.tsx\". Recommendation: Extract the duplicated layout/logic from \"apps/admin/src/app/team/_components/ChangeRoleModal.tsx\" and \"apps/admin/src/app/team/_components/InviteAdminModal.tsx\" into a single reusable shared component in \"packages/ui\".",
-        "fingerprint": "7cfc3cce16e2b0f960858f73f5e04f197479b46c9549e3454f70a8b1a96338e2"
+        "message": "Duplicate component layout detected [Category C — Form, Confidence: 76%, Severity: WARNING]: shares similarity with \"EditAdminModal\" in \"apps/admin/src/app/team/_components/EditAdminModal.tsx\". Recommendation: Extract reusable shared form component or local CRUD fields wrapper to dry-up page/form structure. (Estimated Effort: Medium (3-6 hours), Risk: Medium)."
       }
-    ]
+    ],
+    "path": "apps/admin/src/app/team/_components/InviteAdminModal.tsx"
   },
-  "createdDate": "2026-06-30T15:36:27.177Z",
+  "feature": "UIElement",
   "firstDetected": "2026-06-30T15:36:27.177Z",
-  "lastDetected": "2026-06-30T15:36:27.177Z",
-  "occurrenceCount": 2
+  "id": "f_25aef57a",
+  "lastDetected": "2026-07-04T04:54:05.198Z",
+  "lastModified": "2026-07-04T04:54:05.198Z",
+  "occurrenceCount": 1,
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-UI-011",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
 }

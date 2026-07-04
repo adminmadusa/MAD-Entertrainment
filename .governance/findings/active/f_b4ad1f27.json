@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-04T04:54:03.002Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 54,
+    "message": "Excessive consecutive blank lines detected (3 lines).",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "563c9742de0ad5d35b1160d4c7214a83ed38d729d833c71e0921c42cd3cb7ee5",
+        "id": "563c9742de0ad5d35b1160d4c7214a83ed38d729d833c71e0921c42cd3cb7ee5",
+        "line": 54,
+        "message": "Excessive consecutive blank lines detected (3 lines)."
+      }
+    ],
+    "path": "apps/server/src/validations/auth.validation.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-04T04:54:03.002Z",
+  "id": "f_b4ad1f27",
+  "lastDetected": "2026-07-04T04:54:03.002Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-006",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

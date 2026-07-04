@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:26:00.509Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 4,
+    "message": "Groups of imports must be separated by a single blank line.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "e34b9c4a764c878738a7a3efc40e4a28f672028e2000ac3ebb76a1e4224924f7",
+        "id": "e34b9c4a764c878738a7a3efc40e4a28f672028e2000ac3ebb76a1e4224924f7",
+        "line": 4,
+        "message": "Groups of imports must be separated by a single blank line."
+      }
+    ],
+    "path": "scripts/governance/core/metrics_engine.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:26:00.509Z",
+  "id": "f_90834362",
+  "lastDetected": "2026-07-03T12:26:00.509Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "scripts",
+  "relationships": [],
+  "rule": "VAL-HYG-001",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "REGRESSION"
+}

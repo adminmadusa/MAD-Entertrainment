@@ -1,0 +1,114 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-04T04:54:03.677Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 391,
+    "message": "Trailing whitespace characters detected.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "2f184372572c9718cb55826a0e37b40918ca32f94c209d935eaf811bc159c712",
+        "id": "2f184372572c9718cb55826a0e37b40918ca32f94c209d935eaf811bc159c712",
+        "line": 95,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "2f184372572c9718cb55826a0e37b40918ca32f94c209d935eaf811bc159c712",
+        "id": "2f184372572c9718cb55826a0e37b40918ca32f94c209d935eaf811bc159c712",
+        "line": 101,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "2f184372572c9718cb55826a0e37b40918ca32f94c209d935eaf811bc159c712",
+        "id": "2f184372572c9718cb55826a0e37b40918ca32f94c209d935eaf811bc159c712",
+        "line": 178,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "2f184372572c9718cb55826a0e37b40918ca32f94c209d935eaf811bc159c712",
+        "id": "2f184372572c9718cb55826a0e37b40918ca32f94c209d935eaf811bc159c712",
+        "line": 263,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "2f184372572c9718cb55826a0e37b40918ca32f94c209d935eaf811bc159c712",
+        "id": "2f184372572c9718cb55826a0e37b40918ca32f94c209d935eaf811bc159c712",
+        "line": 282,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "2f184372572c9718cb55826a0e37b40918ca32f94c209d935eaf811bc159c712",
+        "id": "2f184372572c9718cb55826a0e37b40918ca32f94c209d935eaf811bc159c712",
+        "line": 294,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "2f184372572c9718cb55826a0e37b40918ca32f94c209d935eaf811bc159c712",
+        "id": "2f184372572c9718cb55826a0e37b40918ca32f94c209d935eaf811bc159c712",
+        "line": 295,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "2f184372572c9718cb55826a0e37b40918ca32f94c209d935eaf811bc159c712",
+        "id": "2f184372572c9718cb55826a0e37b40918ca32f94c209d935eaf811bc159c712",
+        "line": 296,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "2f184372572c9718cb55826a0e37b40918ca32f94c209d935eaf811bc159c712",
+        "id": "2f184372572c9718cb55826a0e37b40918ca32f94c209d935eaf811bc159c712",
+        "line": 321,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "2f184372572c9718cb55826a0e37b40918ca32f94c209d935eaf811bc159c712",
+        "id": "2f184372572c9718cb55826a0e37b40918ca32f94c209d935eaf811bc159c712",
+        "line": 324,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "2f184372572c9718cb55826a0e37b40918ca32f94c209d935eaf811bc159c712",
+        "id": "2f184372572c9718cb55826a0e37b40918ca32f94c209d935eaf811bc159c712",
+        "line": 391,
+        "message": "Trailing whitespace characters detected."
+      }
+    ],
+    "path": "apps/web/src/components/booking/TicketSelectionContent.tsx"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-04T04:54:03.677Z",
+  "id": "f_16e58bcd",
+  "lastDetected": "2026-07-04T04:54:03.677Z",
+  "occurrenceCount": 11,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-004",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

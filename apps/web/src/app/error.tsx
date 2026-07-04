@@ -1,13 +1,9 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import {
-  isChunkLoadFailure,
-  isBuildMismatchChunkFailure,
-  getChunkRecoveryTimestamp,
-  setChunkRecoveryTimestamp,
-} from '@/lib/utils/chunk-recovery';
+import { useEffect, useState, useRef } from 'react';
+
+import { isChunkLoadFailure, isBuildMismatchChunkFailure, getChunkRecoveryTimestamp, setChunkRecoveryTimestamp } from '@/lib/utils/chunk-recovery';
 
 interface ErrorPageProps {
   error: Error & { digest?: string };
@@ -235,4 +231,3 @@ export default function ErrorPage({ error, reset }: ErrorPageProps) {
     </div>
   );
 }
-

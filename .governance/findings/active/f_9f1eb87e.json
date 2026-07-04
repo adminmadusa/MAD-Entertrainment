@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-04T04:54:03.556Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 102,
+    "message": "Trailing whitespace characters detected.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "80861ade75a567d026f34e848ae835b428bf7eb2783260a1f8c1d4615ca100be",
+        "id": "80861ade75a567d026f34e848ae835b428bf7eb2783260a1f8c1d4615ca100be",
+        "line": 102,
+        "message": "Trailing whitespace characters detected."
+      }
+    ],
+    "path": "apps/web/src/components/auth/ProfileCompletionForm.tsx"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-04T04:54:03.556Z",
+  "id": "f_9f1eb87e",
+  "lastDetected": "2026-07-04T04:54:03.556Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-004",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

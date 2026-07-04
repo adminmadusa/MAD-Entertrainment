@@ -1,45 +1,36 @@
 {
-  "schemaVersion": 2,
-  "id": "f_cf0862bc",
-  "rule": "VAL-UI-006",
-  "ruleVersion": "1.0.0",
-  "engineVersion": "1.0.0",
+  "confidence": 0.9,
+  "createdDate": "2026-07-03T16:43:22.413Z",
   "domain": "Platform Team",
-  "owner": "Platform Team",
-  "package": "apps",
-  "feature": "Field",
-  "status": "NEW",
-  "confidence": 0.95,
-  "relationships": [],
+  "engineVersion": "1.0.0",
   "evidence": {
-    "path": "apps/admin/src/components/events/EventScheduleCard.tsx",
-    "construct": "Field",
-    "snippet": "function Field({ label, children }: { label: string; children: React.ReactNode }) {",
+    "construct": "UIElement",
     "line": 6,
     "message": "Local duplication of <Field> wrapper. Use a shared components package.",
     "occurrences": [
       {
-        "id": "0c44c430b20ac112ca1e43798bfe1df6e26c708096567772c42fbb90e8700be2",
-        "line": 6,
-        "column": 0,
-        "construct": "Field",
-        "snippet": "function Field({ label, children }: { label: string; children: React.ReactNode }) {",
-        "message": "Local duplication of <Field> wrapper. Use a shared components package.",
-        "fingerprint": "0c44c430b20ac112ca1e43798bfe1df6e26c708096567772c42fbb90e8700be2"
-      },
-      {
-        "id": "dd837f5a6b7af04423991f8645bcf792147eec8ad63682af9263e4056a10b6e0",
-        "line": 6,
         "column": 0,
         "construct": "UIElement",
-        "snippet": "function Field({ label, children }: { label: string; children: React.ReactNode }) {",
+        "fingerprint": "dd837f5a6b7af04423991f8645bcf792147eec8ad63682af9263e4056a10b6e0",
+        "id": "dd837f5a6b7af04423991f8645bcf792147eec8ad63682af9263e4056a10b6e0",
+        "line": 6,
         "message": "Local duplication of <Field> wrapper. Use a shared components package.",
-        "fingerprint": "dd837f5a6b7af04423991f8645bcf792147eec8ad63682af9263e4056a10b6e0"
+        "snippet": "function Field({ label, children }: { label: string; children: React.ReactNode }) {"
       }
-    ]
+    ],
+    "path": "apps/admin/src/components/events/EventScheduleCard.tsx",
+    "snippet": "function Field({ label, children }: { label: string; children: React.ReactNode }) {"
   },
-  "createdDate": "2026-06-29T08:10:40.466Z",
-  "firstDetected": "2026-06-29T08:10:40.466Z",
-  "lastDetected": "2026-06-30T15:36:27.226Z",
-  "occurrenceCount": 2
+  "feature": "UIElement",
+  "firstDetected": "2026-07-03T16:43:22.413Z",
+  "id": "f_cf0862bc",
+  "lastDetected": "2026-07-03T16:43:22.413Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-UI-006",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "REGRESSION"
 }

@@ -1,0 +1,17 @@
+{
+  "history": [
+    {
+      "action": "DETECTED_AGAIN",
+      "notes": "Finding regressed. Code violation re-introduced. (Transitioned from CLOSED to REGRESSION)",
+      "status": "REGRESSION",
+      "timestamp": "2026-07-04T04:54:05.032Z"
+    },
+    {
+      "action": "UPDATED",
+      "notes": "Occurrences updated. Active count: 1",
+      "status": "REGRESSION",
+      "timestamp": "2026-07-04T04:54:05.214Z"
+    }
+  ],
+  "id": "f_4a21a546"
+}

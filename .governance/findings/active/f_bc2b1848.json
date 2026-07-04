@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-04T04:54:03.124Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 81,
+    "message": "Excessive consecutive blank lines detected (3 lines).",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "14524a8569fe45c5b3714300edd3f364509ecfd5e0fecb7801a4832147b02930",
+        "id": "14524a8569fe45c5b3714300edd3f364509ecfd5e0fecb7801a4832147b02930",
+        "line": 81,
+        "message": "Excessive consecutive blank lines detected (3 lines)."
+      }
+    ],
+    "path": "apps/server/src/workers/pdf.worker.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-04T04:54:03.124Z",
+  "id": "f_bc2b1848",
+  "lastDetected": "2026-07-04T04:54:03.124Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-006",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

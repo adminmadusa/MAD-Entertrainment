@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:54.771Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 3,
+    "message": "Imports must be grouped in order: Node built-ins, Third-party packages, Workspace aliases, Relative paths, Side-effects.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "34481b4ae845f7a4d9107c570334b0d2fdf07279c0115db77666b97ef08ba007",
+        "id": "34481b4ae845f7a4d9107c570334b0d2fdf07279c0115db77666b97ef08ba007",
+        "line": 3,
+        "message": "Imports must be grouped in order: Node built-ins, Third-party packages, Workspace aliases, Relative paths, Side-effects."
+      }
+    ],
+    "path": "apps/web/src/app/(auth)/dashboard/_components/DashboardTicketsTab.tsx"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:54.771Z",
+  "id": "f_41200ebf",
+  "lastDetected": "2026-07-03T12:25:54.771Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-001",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "REGRESSION"
+}

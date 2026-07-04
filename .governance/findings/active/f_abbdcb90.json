@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:50.896Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 1,
+    "message": "Imports must be grouped in order: Node built-ins, Third-party packages, Workspace aliases, Relative paths, Side-effects.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "326658f5cf700aba37d6683f1d6d9668f4790d1a5ede9e6a40b6fd3eaaf29211",
+        "id": "326658f5cf700aba37d6683f1d6d9668f4790d1a5ede9e6a40b6fd3eaaf29211",
+        "line": 1,
+        "message": "Imports must be grouped in order: Node built-ins, Third-party packages, Workspace aliases, Relative paths, Side-effects."
+      }
+    ],
+    "path": "apps/server/src/middleware/auth.middleware.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:50.896Z",
+  "id": "f_abbdcb90",
+  "lastDetected": "2026-07-03T12:25:50.896Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-001",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "REGRESSION"
+}

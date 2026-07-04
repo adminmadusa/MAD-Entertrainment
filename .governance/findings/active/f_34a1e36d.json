@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-04T04:54:04.925Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 2,
+    "message": "Import from types module \"../core/types\" should use \"import type\".",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "05c2aef318bf1198ae3943d09fb1c5b414bb2f5c2e3e31bf6941afd19bd5f892",
+        "id": "05c2aef318bf1198ae3943d09fb1c5b414bb2f5c2e3e31bf6941afd19bd5f892",
+        "line": 2,
+        "message": "Import from types module \"../core/types\" should use \"import type\"."
+      }
+    ],
+    "path": "scripts/governance/rules/documentation.rules.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-04T04:54:04.925Z",
+  "id": "f_34a1e36d",
+  "lastDetected": "2026-07-04T04:54:04.925Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "scripts",
+  "relationships": [],
+  "rule": "VAL-HYG-003",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

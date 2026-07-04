@@ -1,45 +1,37 @@
 {
-  "schemaVersion": 2,
-  "id": "f_56cba796",
-  "rule": "VAL-UI-003",
-  "ruleVersion": "1.0.0",
-  "engineVersion": "1.0.0",
-  "domain": "UI UX Guild",
-  "owner": "UI UX Guild",
-  "package": "apps",
-  "feature": "modal-accessibility",
-  "status": "NEW",
   "confidence": 1,
-  "relationships": [],
+  "createdDate": "2026-06-29T08:10:05.641Z",
+  "domain": "UI UX Guild",
+  "engineVersion": "1.0.0",
   "evidence": {
-    "path": "apps/admin/src/app/team/_components/InviteAdminModal.tsx",
     "construct": "modal-accessibility",
-    "snippet": "<div className=\"fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4\">",
     "line": 54,
     "message": "Custom modal backdrop is missing role=\"dialog\" or aria-modal=\"true\" accessibility tags.",
     "occurrences": [
       {
-        "id": "54454016e35228d7c99b5b2b972d802687066c1e22de94ba9ade424d73fd205c",
-        "line": 54,
-        "column": 0,
-        "construct": "modal-accessibility",
-        "snippet": "<div className=\"fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4\">",
-        "message": "Custom modal backdrop is missing role=\"dialog\" or aria-modal=\"true\" accessibility tags.",
-        "fingerprint": "54454016e35228d7c99b5b2b972d802687066c1e22de94ba9ade424d73fd205c"
-      },
-      {
-        "id": "3469c5f41d1b7f0034194b02c06957d7166085ff2f0a9fde2fc3bb944a8845be",
-        "line": 54,
         "column": 0,
         "construct": "UIElement",
-        "snippet": "<div className=\"fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4\">",
+        "fingerprint": "3469c5f41d1b7f0034194b02c06957d7166085ff2f0a9fde2fc3bb944a8845be",
+        "id": "3469c5f41d1b7f0034194b02c06957d7166085ff2f0a9fde2fc3bb944a8845be",
+        "line": 54,
         "message": "Custom modal backdrop is missing role=\"dialog\" or aria-modal=\"true\" accessibility tags.",
-        "fingerprint": "3469c5f41d1b7f0034194b02c06957d7166085ff2f0a9fde2fc3bb944a8845be"
+        "snippet": "<div className=\"fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4\">"
       }
-    ]
+    ],
+    "path": "apps/admin/src/app/team/_components/InviteAdminModal.tsx",
+    "snippet": "<div className=\"fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4\">"
   },
-  "createdDate": "2026-06-29T08:10:05.641Z",
+  "feature": "modal-accessibility",
   "firstDetected": "2026-06-29T08:10:05.641Z",
-  "lastDetected": "2026-06-30T15:36:27.176Z",
-  "occurrenceCount": 2
+  "id": "f_56cba796",
+  "lastDetected": "2026-07-04T04:54:05.198Z",
+  "lastModified": "2026-07-04T04:54:05.198Z",
+  "occurrenceCount": 1,
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-UI-003",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
 }

@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:26:03.168Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 2,
+    "message": "Imports within the same group must be sorted alphabetically (\"path\" should precede \"url\").",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "035cf0fc496fc5eb1168dedd0beba1e58c4fa2fd467fe390bfacae92632a01f6",
+        "id": "035cf0fc496fc5eb1168dedd0beba1e58c4fa2fd467fe390bfacae92632a01f6",
+        "line": 2,
+        "message": "Imports within the same group must be sorted alphabetically (\"path\" should precede \"url\")."
+      }
+    ],
+    "path": "vitest.workspace.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:26:03.168Z",
+  "id": "f_a17dfe69",
+  "lastDetected": "2026-07-03T12:26:03.168Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "vitest.workspace.ts",
+  "relationships": [],
+  "rule": "VAL-HYG-001",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "REGRESSION"
+}

@@ -1,0 +1,42 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-04T04:54:03.486Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 184,
+    "message": "Excessive consecutive blank lines detected (3 lines).",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "642b6a73f28fa0babc4c1e29d184ebef69a1b62b98022901325297d2616763d7",
+        "id": "642b6a73f28fa0babc4c1e29d184ebef69a1b62b98022901325297d2616763d7",
+        "line": 107,
+        "message": "Excessive consecutive blank lines detected (3 lines)."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "642b6a73f28fa0babc4c1e29d184ebef69a1b62b98022901325297d2616763d7",
+        "id": "642b6a73f28fa0babc4c1e29d184ebef69a1b62b98022901325297d2616763d7",
+        "line": 184,
+        "message": "Excessive consecutive blank lines detected (3 lines)."
+      }
+    ],
+    "path": "apps/web/src/components/auth/AuthForm.tsx"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-04T04:54:03.486Z",
+  "id": "f_1ddee57c",
+  "lastDetected": "2026-07-04T04:54:03.486Z",
+  "occurrenceCount": 2,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-006",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

@@ -1,7 +1,8 @@
 'use client';
 
-import { useFocusTrap } from '@mad/ui';
 import { useState } from 'react';
+
+import { useFocusTrap } from '@mad/ui';
 
 type EventOverviewProps = {
   description: string;

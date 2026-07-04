@@ -1,63 +1,55 @@
 {
-  "schemaVersion": 2,
-  "id": "f_07ec34cb",
-  "rule": "VAL-UI-005",
-  "ruleVersion": "1.0.0",
-  "engineVersion": "1.0.0",
-  "domain": "UI UX Guild",
-  "owner": "UI UX Guild",
-  "package": "apps",
-  "feature": "button",
-  "status": "NEW",
   "confidence": 0.85,
-  "relationships": [],
+  "createdDate": "2026-06-29T08:10:06.395Z",
+  "domain": "UI UX Guild",
+  "engineVersion": "1.0.0",
   "evidence": {
-    "path": "apps/admin/src/app/team/_components/ResetPasswordModal.tsx",
     "construct": "button",
-    "snippet": "<button",
-    "line": 84,
+    "line": 117,
     "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
     "occurrences": [
       {
-        "id": "7a72a73624732d0e18a02a06c0ed79a8b38541a338a48c2ffee2a7a84ba339a1",
-        "line": 84,
-        "column": 0,
-        "construct": "button",
-        "snippet": "<button",
-        "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
-        "fingerprint": "7a72a73624732d0e18a02a06c0ed79a8b38541a338a48c2ffee2a7a84ba339a1"
-      },
-      {
-        "id": "976e2be668cbeec28906d602d654a207bbe865a483b6fef350ff576772b0f800",
-        "line": 84,
         "column": 0,
         "construct": "UIElement",
-        "snippet": "<button",
+        "fingerprint": "976e2be668cbeec28906d602d654a207bbe865a483b6fef350ff576772b0f800",
+        "id": "976e2be668cbeec28906d602d654a207bbe865a483b6fef350ff576772b0f800",
+        "line": 84,
         "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
-        "fingerprint": "976e2be668cbeec28906d602d654a207bbe865a483b6fef350ff576772b0f800"
+        "snippet": "<button"
       },
       {
+        "column": 0,
+        "construct": "UIElement",
+        "fingerprint": "976e2be668cbeec28906d602d654a207bbe865a483b6fef350ff576772b0f800",
         "id": "976e2be668cbeec28906d602d654a207bbe865a483b6fef350ff576772b0f800",
         "line": 110,
-        "column": 0,
-        "construct": "UIElement",
-        "snippet": "<button",
         "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
-        "fingerprint": "976e2be668cbeec28906d602d654a207bbe865a483b6fef350ff576772b0f800"
+        "snippet": "<button"
       },
       {
-        "id": "976e2be668cbeec28906d602d654a207bbe865a483b6fef350ff576772b0f800",
-        "line": 117,
         "column": 0,
         "construct": "UIElement",
-        "snippet": "<button",
+        "fingerprint": "976e2be668cbeec28906d602d654a207bbe865a483b6fef350ff576772b0f800",
+        "id": "976e2be668cbeec28906d602d654a207bbe865a483b6fef350ff576772b0f800",
+        "line": 117,
         "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
-        "fingerprint": "976e2be668cbeec28906d602d654a207bbe865a483b6fef350ff576772b0f800"
+        "snippet": "<button"
       }
-    ]
+    ],
+    "path": "apps/admin/src/app/team/_components/ResetPasswordModal.tsx",
+    "snippet": "<button"
   },
-  "createdDate": "2026-06-29T08:10:06.395Z",
+  "feature": "button",
   "firstDetected": "2026-06-29T08:10:06.395Z",
-  "lastDetected": "2026-06-30T15:36:27.178Z",
-  "occurrenceCount": 4
+  "id": "f_07ec34cb",
+  "lastDetected": "2026-07-04T04:54:05.199Z",
+  "lastModified": "2026-07-04T04:54:05.199Z",
+  "occurrenceCount": 3,
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-UI-005",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
 }

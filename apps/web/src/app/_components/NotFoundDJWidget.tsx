@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { useEffect, useState } from 'react';
 
 /**
  * NotFoundDJWidget — the interactive equalizer/play/volume panel on the 404 page.

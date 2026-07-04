@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:26:01.910Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 3,
+    "message": "Import from types module \"../core/types\" should use \"import type\".",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "300ee7691c97c182d40f84ce4f92a3edf0e9988500c00a024e4705a5a03df60c",
+        "id": "300ee7691c97c182d40f84ce4f92a3edf0e9988500c00a024e4705a5a03df60c",
+        "line": 3,
+        "message": "Import from types module \"../core/types\" should use \"import type\"."
+      }
+    ],
+    "path": "scripts/governance/validators/dead_asset_duplicate_validator.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:26:01.910Z",
+  "id": "f_c7830790",
+  "lastDetected": "2026-07-03T12:26:01.910Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "scripts",
+  "relationships": [],
+  "rule": "VAL-HYG-003",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "REGRESSION"
+}

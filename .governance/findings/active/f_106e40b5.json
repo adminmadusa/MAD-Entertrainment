@@ -1,0 +1,42 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:47.122Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 6,
+    "message": "Import from types module \"./types\" should use \"import type\".",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "69200a7158a4af667ffa118d69a3100ac4750eca28d12c69946474dcae37ef77",
+        "id": "69200a7158a4af667ffa118d69a3100ac4750eca28d12c69946474dcae37ef77",
+        "line": 4,
+        "message": "Import from types module \"@mad/types\" should use \"import type\"."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "69200a7158a4af667ffa118d69a3100ac4750eca28d12c69946474dcae37ef77",
+        "id": "69200a7158a4af667ffa118d69a3100ac4750eca28d12c69946474dcae37ef77",
+        "line": 6,
+        "message": "Import from types module \"./types\" should use \"import type\"."
+      }
+    ],
+    "path": "apps/admin/src/app/events/new/_components/EventTicketSection.tsx"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:47.122Z",
+  "id": "f_106e40b5",
+  "lastDetected": "2026-07-03T12:25:47.122Z",
+  "occurrenceCount": 2,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-003",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "REGRESSION"
+}

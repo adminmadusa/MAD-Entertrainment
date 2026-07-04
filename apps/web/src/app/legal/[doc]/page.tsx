@@ -1,8 +1,11 @@
-import fs from 'fs/promises';
-import path from 'path';
+import fs from 'node:fs/promises';
+import path from 'node:path';
+
+import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { Metadata } from 'next';
+
 import { legalDocuments } from '@/content/legalDocuments';
+
 import { LegalViewer } from '../components/LegalViewer';
 
 interface LegalDocPageProps {

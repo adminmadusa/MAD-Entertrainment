@@ -1,6 +1,7 @@
 'use client';
 
 import ReactMarkdown from 'react-markdown';
+
 import { LegalMobileTabs } from './LegalMobileTabs';
 
 interface LegalViewerProps {

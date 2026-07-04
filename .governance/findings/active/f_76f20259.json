@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:55.747Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 4,
+    "message": "Groups of imports must be separated by a single blank line.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "08dd471cdc6e8a586079b837f7a9f7d435fd49d1bfa6c97b0641ec8882cb304c",
+        "id": "08dd471cdc6e8a586079b837f7a9f7d435fd49d1bfa6c97b0641ec8882cb304c",
+        "line": 4,
+        "message": "Groups of imports must be separated by a single blank line."
+      }
+    ],
+    "path": "apps/web/src/components/auth/OtpVerifyForm.tsx"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:55.747Z",
+  "id": "f_76f20259",
+  "lastDetected": "2026-07-03T12:25:55.747Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-001",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "REGRESSION"
+}

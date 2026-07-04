@@ -1,23 +1,24 @@
 'use client';
 
-import { QUERY_KEYS, EventStatus } from '@mad/shared';
-import { Event as EventData } from '@mad/types';
 import { useQuery } from '@tanstack/react-query';
-import { useState, useEffect, useRef, type ReactNode } from 'react';
-import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import Image from 'next/image';
+import Link from 'next/link';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 
 import { publicGetEventBySlug } from '@/lib/api/public.service';
-import dynamic from 'next/dynamic';
+import { QUERY_KEYS, EventStatus } from '@mad/shared';
+import type { Event as EventData } from '@mad/types';
+
+import type { EventBookingFlowHandle } from './components/EventBookingFlow';
+import { EventGallery } from './components/EventGallery';
+import { EventMemoriesRecap } from './components/EventMemoriesRecap';
+import { EventOverview } from './components/EventOverview';
+import { EventStickyCTA } from './components/EventStickyCTA';
 
 const EventBookingFlow = dynamic(() => import('./components/EventBookingFlow').then(mod => mod.EventBookingFlow), {
   ssr: false,
 });
-import type { EventBookingFlowHandle } from './components/EventBookingFlow';
-import { EventGallery } from './components/EventGallery';
-import { EventOverview } from './components/EventOverview';
-import { EventStickyCTA } from './components/EventStickyCTA';
-import { EventMemoriesRecap } from './components/EventMemoriesRecap';
 
 interface EventDetailClientProps {
   /** Slug extracted by the server page — avoids useParams() call */

@@ -1,0 +1,58 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-04T04:54:02.318Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 291,
+    "message": "Trailing whitespace characters detected.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "2ddc18fea583cb3060de9357157f02fb7a548c9c067b652d87793fdc12fe8a66",
+        "id": "2ddc18fea583cb3060de9357157f02fb7a548c9c067b652d87793fdc12fe8a66",
+        "line": 179,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "2ddc18fea583cb3060de9357157f02fb7a548c9c067b652d87793fdc12fe8a66",
+        "id": "2ddc18fea583cb3060de9357157f02fb7a548c9c067b652d87793fdc12fe8a66",
+        "line": 249,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "2ddc18fea583cb3060de9357157f02fb7a548c9c067b652d87793fdc12fe8a66",
+        "id": "2ddc18fea583cb3060de9357157f02fb7a548c9c067b652d87793fdc12fe8a66",
+        "line": 267,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "2ddc18fea583cb3060de9357157f02fb7a548c9c067b652d87793fdc12fe8a66",
+        "id": "2ddc18fea583cb3060de9357157f02fb7a548c9c067b652d87793fdc12fe8a66",
+        "line": 291,
+        "message": "Trailing whitespace characters detected."
+      }
+    ],
+    "path": "apps/server/src/services/admin/team.service.test.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-04T04:54:02.318Z",
+  "id": "f_e529001b",
+  "lastDetected": "2026-07-04T04:54:02.318Z",
+  "occurrenceCount": 4,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-004",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}
