@@ -5,7 +5,6 @@ import { auditLog } from './audit';
 import type { SendEmailInput } from './email.types';
 import { logger } from './logger';
 
-
 /**
  * Dispatches an email using the Zoho ZeptoMail HTTPS REST API.
  */
