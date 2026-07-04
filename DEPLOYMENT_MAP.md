@@ -99,7 +99,7 @@ The platform manages four distinct deployment environments.
 | **Purpose** | Sandbox coding | PR validation | Integration testing | Live customer traffic |
 | **Branch** | Local workspace | Pull Request | `develop` | `live` |
 | **Hosting** | Local machine | Vercel Serverless | Vercel Serverless | Vercel Serverless (Web/Admin), Render Node Container (API) |
-| **URL** | `http://localhost:3000` (Web)<br>`http://localhost:3002` (Admin) | Vercel Preview URL | `https://test.esparex.in` | `https://mad.esparex.in` (Web)<br>`https://madmin.esparex.in` (Admin)<br>`https://apm.esparex.in/api` (API) |
+| **URL** | `http://localhost:3000` (Web)<br>`http://localhost:3002` (Admin) | Vercel Preview URL | `https://testmad.esparex.in` (Web)<br>`https://testmadmin.esparex.in` (Admin) | `https://mad.esparex.in` (Web)<br>`https://madmin.esparex.in` (Admin)<br>`https://apm.esparex.in/api` (API) |
 | **Database** | Local MongoDB | MongoDB Atlas Sandbox | MongoDB Atlas Shared | MongoDB Atlas Prod |
 | **Redis** | Local Redis | Mock / None | Redis Cloud Shared | Redis Cloud Prod |
 | **Storage** | Local FS / Mock | Cloudinary Sandbox | Cloudinary Sandbox | Cloudinary Production |
@@ -114,7 +114,7 @@ The platform manages four distinct deployment environments.
 
 #### Current Deployment Constraint (Shared Backend Setup)
 Our staging/testing environment operates under a shared-backend constraint:
-- **Topology**: The Vercel Test frontend (`test.esparex.in`, built from the `develop` branch) routes its requests to the production Render API backend (`apm.esparex.in`, built from the `live` branch).
+- **Topology**: The Vercel Test frontend (`testmad.esparex.in`, built from the `develop` branch) routes its requests to the production Render API backend (`apm.esparex.in`, built from the `live` branch).
 - **Operational Impact**:
   - Test activity performed on the staging URL (e.g. testing booking flows, database updates) directly modifies the production database cluster and enqueues jobs in the production Redis instance.
   - Environment-specific behavior and data differences must be understood before testing. Testing operators must coordinate actions to prevent contamination of production metrics.
