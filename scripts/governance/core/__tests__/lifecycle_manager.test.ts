@@ -105,7 +105,7 @@ describe('LifecycleManager (Status Reconciliation State Machine)', () => {
         expiration: '2027-01-01',
         approver: 'Security Lead',
       };
-      
+
       const { mockFM, lifecycle } = setupMockFindingManager([finding], { 'TEST-004': exception });
 
       lifecycle.reconcile(new Set(['TEST-004']));
