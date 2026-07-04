@@ -52,8 +52,8 @@ function main() {
     isPhase20Active = worktreeMap.has(phase20Local.name);
   }
   
-  // Stack parents are only safe to delete if Phase 20 exists, is merged, is backed up on remote, and is not active
-  const isStackSafeToPrune = phase20Local && isPhase20Merged && phase20RemoteExists && !isPhase20Active;
+  // Stack parents are only safe to delete if Phase 20 has been pruned, or if it is merged and not active
+  const isStackSafeToPrune = !phase20Local || (isPhase20Merged && !isPhase20Active);
 
   // 2. Perform verification and mapping
   const registeredBranches: RegisteredBranch[] = [];

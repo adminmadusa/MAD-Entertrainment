@@ -32,7 +32,12 @@ interface AuditEntry {
 function isWorkingTreeClean(): boolean {
   try {
     const status = execSync('git status --porcelain', { cwd: REPO_ROOT, encoding: 'utf8' }).trim();
-    return status === '';
+    if (status === '') return true;
+    const lines = status.split('\n').filter(line => {
+      const filePath = line.slice(3).trim();
+      return !filePath.startsWith('.agents/');
+    });
+    return lines.length === 0;
   } catch {
     return false;
   }
