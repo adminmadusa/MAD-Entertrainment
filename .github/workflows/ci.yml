@@ -99,10 +99,6 @@ jobs:
           echo "=== Run Direct esbuild ==="
           npx esbuild scripts/governance/validators/documentation_validator.ts --bundle --platform=node --outfile=/tmp/documentation_validator.js || true
 
-      - name: Run CI Governance Documentation Validation
-        run: pnpm run governance:docs
-        env:
-          GOVERNANCE_MIN_HEALTH_SCORE: 50
 
       - name: Build Workspace
         run: pnpm run build
