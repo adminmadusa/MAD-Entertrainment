@@ -1,0 +1,33 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T07:29:55.664Z",
+  "domain": "Architecture Review Board",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "message": "Orphaned document: active production file has no incoming links from any documentation entrypoint.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "8e2369349428e3c54e2b723b35b00c3512c57959509c2df4f23c6310211643b9",
+        "id": "8e2369349428e3c54e2b723b35b00c3512c57959509c2df4f23c6310211643b9",
+        "line": 0,
+        "message": "Orphaned document: active production file has no incoming links from any documentation entrypoint."
+      }
+    ],
+    "path": "docs/audit/refund/REFUND-001-EXECUTIVE-SUMMARY.md"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T07:29:55.664Z",
+  "id": "f_6eea776d",
+  "lastDetected": "2026-07-03T07:29:55.664Z",
+  "occurrenceCount": 1,
+  "owner": "Architecture Review Board",
+  "package": "docs",
+  "relationships": [],
+  "rule": "VAL-DOC-007",
+  "ruleVersion": "2.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

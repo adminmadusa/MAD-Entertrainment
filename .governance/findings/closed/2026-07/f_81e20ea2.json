@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-06-30T15:36:27.639Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "message": "Document exists in the repository but has no incoming references from any other active documentation.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "6f4cefc9062324950eef84ff89cc60abe7171aec683829e9526a7187d320bbf8",
+        "id": "6f4cefc9062324950eef84ff89cc60abe7171aec683829e9526a7187d320bbf8",
+        "line": 0,
+        "message": "Document exists in the repository but has no incoming references from any other active documentation.",
+        "snippet": ""
+      }
+    ],
+    "path": "docs/archive/audits/dashboard-information-architecture-audit.md"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-06-30T15:36:27.639Z",
+  "id": "f_81e20ea2",
+  "lastDetected": "2026-06-30T15:36:27.639Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "docs",
+  "relationships": [],
+  "rule": "Orphaned Documentation",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

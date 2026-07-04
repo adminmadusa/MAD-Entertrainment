@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-04T03:15:45.294Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 225,
+    "message": "File must terminate with exactly one trailing newline character.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "481603be1a1bea2bdf962ac25acf0188e0183fac9c86d24dac7a47b1650480a6",
+        "id": "481603be1a1bea2bdf962ac25acf0188e0183fac9c86d24dac7a47b1650480a6",
+        "line": 225,
+        "message": "File must terminate with exactly one trailing newline character."
+      }
+    ],
+    "path": "apps/server/src/lib/email/templates/magic-link.tsx"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-04T03:15:45.294Z",
+  "id": "f_086381fb",
+  "lastDetected": "2026-07-04T03:15:45.294Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-005",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

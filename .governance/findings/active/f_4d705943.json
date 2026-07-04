@@ -1,0 +1,42 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-04T03:15:46.634Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 17,
+    "message": "Trailing whitespace characters detected.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "ce0fc32b570ec2c397f2c6c583c3788d920b5f93fd8ae0af1fd1d8615afdd99a",
+        "id": "ce0fc32b570ec2c397f2c6c583c3788d920b5f93fd8ae0af1fd1d8615afdd99a",
+        "line": 11,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "ce0fc32b570ec2c397f2c6c583c3788d920b5f93fd8ae0af1fd1d8615afdd99a",
+        "id": "ce0fc32b570ec2c397f2c6c583c3788d920b5f93fd8ae0af1fd1d8615afdd99a",
+        "line": 17,
+        "message": "Trailing whitespace characters detected."
+      }
+    ],
+    "path": "apps/web/src/app/legal/components/LegalMobileTabs.tsx"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-04T03:15:46.634Z",
+  "id": "f_4d705943",
+  "lastDetected": "2026-07-04T03:15:46.634Z",
+  "occurrenceCount": 2,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-004",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

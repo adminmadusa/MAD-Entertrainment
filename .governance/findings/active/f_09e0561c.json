@@ -1,45 +1,37 @@
 {
-  "schemaVersion": 2,
-  "id": "f_09e0561c",
-  "rule": "VAL-UI-002",
-  "ruleVersion": "1.0.0",
-  "engineVersion": "1.0.0",
-  "domain": "UI UX Guild",
-  "owner": "UI UX Guild",
-  "package": "apps",
-  "feature": "modal-backdrop",
-  "status": "NEW",
   "confidence": 1,
-  "relationships": [],
+  "createdDate": "2026-06-29T08:10:30.765Z",
+  "domain": "UI UX Guild",
+  "engineVersion": "1.0.0",
   "evidence": {
-    "path": "apps/admin/src/components/diagnostics/DrainQueueModal.tsx",
     "construct": "modal-backdrop",
-    "snippet": "<div className=\"fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200\">",
     "line": 20,
     "message": "Custom backdrop & modal container coded. Use shared <Modal> component from @mad/ui to avoid styles drift.",
     "occurrences": [
       {
-        "id": "bec499fcd70d4ba163e91a2b4b796d1ad7c6e453b105f657073d27c729af0e0c",
-        "line": 20,
-        "column": 0,
-        "construct": "modal-backdrop",
-        "snippet": "<div className=\"fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200\">",
-        "message": "Custom backdrop & modal container coded. Use shared <Modal> component from @mad/ui to avoid styles drift.",
-        "fingerprint": "bec499fcd70d4ba163e91a2b4b796d1ad7c6e453b105f657073d27c729af0e0c"
-      },
-      {
-        "id": "d7ea1a60b0e76ba8fc110c0e3d909580c88cf484114bea94d1154ce20e734353",
-        "line": 20,
         "column": 0,
         "construct": "UIElement",
-        "snippet": "<div className=\"fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200\">",
+        "fingerprint": "d7ea1a60b0e76ba8fc110c0e3d909580c88cf484114bea94d1154ce20e734353",
+        "id": "d7ea1a60b0e76ba8fc110c0e3d909580c88cf484114bea94d1154ce20e734353",
+        "line": 20,
         "message": "Custom backdrop & modal container coded. Use shared <Modal> component from @mad/ui to avoid styles drift.",
-        "fingerprint": "d7ea1a60b0e76ba8fc110c0e3d909580c88cf484114bea94d1154ce20e734353"
+        "snippet": "<div className=\"fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200\">"
       }
-    ]
+    ],
+    "path": "apps/admin/src/components/diagnostics/DrainQueueModal.tsx",
+    "snippet": "<div className=\"fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200\">"
   },
-  "createdDate": "2026-06-29T08:10:30.765Z",
+  "feature": "modal-backdrop",
   "firstDetected": "2026-06-29T08:10:30.765Z",
-  "lastDetected": "2026-06-30T15:36:27.210Z",
-  "occurrenceCount": 2
+  "id": "f_09e0561c",
+  "lastDetected": "2026-07-04T04:11:43.087Z",
+  "lastModified": "2026-07-04T04:11:43.087Z",
+  "occurrenceCount": 1,
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-UI-002",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
 }

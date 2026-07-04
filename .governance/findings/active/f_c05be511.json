@@ -1,45 +1,37 @@
 {
-  "schemaVersion": 2,
-  "id": "f_c05be511",
-  "rule": "VAL-UI-003",
-  "ruleVersion": "1.0.0",
-  "engineVersion": "1.0.0",
-  "domain": "UI UX Guild",
-  "owner": "UI UX Guild",
-  "package": "apps",
-  "feature": "modal-accessibility",
-  "status": "NEW",
   "confidence": 1,
-  "relationships": [],
+  "createdDate": "2026-06-29T08:10:03.206Z",
+  "domain": "UI UX Guild",
+  "engineVersion": "1.0.0",
   "evidence": {
-    "path": "apps/admin/src/app/team/_components/ChangeRoleModal.tsx",
     "construct": "modal-accessibility",
-    "snippet": "<div className=\"fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4\">",
     "line": 34,
     "message": "Custom modal backdrop is missing role=\"dialog\" or aria-modal=\"true\" accessibility tags.",
     "occurrences": [
       {
-        "id": "0097573612c1575f824188f2b5f95613f743057b71980302fedb61a5db628b21",
-        "line": 34,
-        "column": 0,
-        "construct": "modal-accessibility",
-        "snippet": "<div className=\"fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4\">",
-        "message": "Custom modal backdrop is missing role=\"dialog\" or aria-modal=\"true\" accessibility tags.",
-        "fingerprint": "0097573612c1575f824188f2b5f95613f743057b71980302fedb61a5db628b21"
-      },
-      {
-        "id": "f11ad8a19520e76e921c953439e29ff79b3b9031e4dc8c63d81018fe6d03d0bd",
-        "line": 34,
         "column": 0,
         "construct": "UIElement",
-        "snippet": "<div className=\"fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4\">",
+        "fingerprint": "f11ad8a19520e76e921c953439e29ff79b3b9031e4dc8c63d81018fe6d03d0bd",
+        "id": "f11ad8a19520e76e921c953439e29ff79b3b9031e4dc8c63d81018fe6d03d0bd",
+        "line": 34,
         "message": "Custom modal backdrop is missing role=\"dialog\" or aria-modal=\"true\" accessibility tags.",
-        "fingerprint": "f11ad8a19520e76e921c953439e29ff79b3b9031e4dc8c63d81018fe6d03d0bd"
+        "snippet": "<div className=\"fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4\">"
       }
-    ]
+    ],
+    "path": "apps/admin/src/app/team/_components/ChangeRoleModal.tsx",
+    "snippet": "<div className=\"fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4\">"
   },
-  "createdDate": "2026-06-29T08:10:03.206Z",
+  "feature": "modal-accessibility",
   "firstDetected": "2026-06-29T08:10:03.206Z",
-  "lastDetected": "2026-06-30T15:36:27.173Z",
-  "occurrenceCount": 2
+  "id": "f_c05be511",
+  "lastDetected": "2026-07-04T04:11:43.071Z",
+  "lastModified": "2026-07-04T04:11:43.071Z",
+  "occurrenceCount": 1,
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-UI-003",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
 }

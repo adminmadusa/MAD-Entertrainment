@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-06-30T15:36:27.617Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "message": "Document exists in the repository but has no incoming references from any other active documentation.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "974ceb539161e73a70647a3abc84c85ae23cd07f9b3bca44d9dca6dd40d7e0e4",
+        "id": "974ceb539161e73a70647a3abc84c85ae23cd07f9b3bca44d9dca6dd40d7e0e4",
+        "line": 0,
+        "message": "Document exists in the repository but has no incoming references from any other active documentation.",
+        "snippet": ""
+      }
+    ],
+    "path": "docs/archive/audits/DASHBOARD_SIMPLIFICATION_VALIDATION.md"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-06-30T15:36:27.617Z",
+  "id": "f_6dc4df76",
+  "lastDetected": "2026-06-30T15:36:27.617Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "docs",
+  "relationships": [],
+  "rule": "Orphaned Documentation",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

@@ -1,0 +1,23 @@
+{
+  "history": [
+    {
+      "action": "CREATED",
+      "notes": "New grouped finding registered: Custom backdrop & modal container coded. Use shared <Modal> component from @mad/ui to avoid styles drift.",
+      "status": "NEW",
+      "timestamp": "2026-07-03T16:43:22.002Z"
+    },
+    {
+      "action": "UPDATED",
+      "notes": "Occurrences updated. Active count: 1",
+      "status": "NEW",
+      "timestamp": "2026-07-04T03:15:48.766Z"
+    },
+    {
+      "action": "UPDATED",
+      "notes": "Occurrences updated. Active count: 1",
+      "status": "NEW",
+      "timestamp": "2026-07-04T04:11:43.087Z"
+    }
+  ],
+  "id": "f_09e0561c"
+}

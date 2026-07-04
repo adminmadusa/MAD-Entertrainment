@@ -1,6 +1,6 @@
 {
   "confidence": 0.9,
-  "createdDate": "2026-07-04T03:02:11.394Z",
+  "createdDate": "2026-07-03T07:29:55.197Z",
   "domain": "Platform Team",
   "engineVersion": "1.0.0",
   "evidence": {
@@ -22,9 +22,9 @@
     "snippet": "function Field({"
   },
   "feature": "UIElement",
-  "firstDetected": "2026-07-04T03:02:11.394Z",
+  "firstDetected": "2026-07-03T07:29:55.197Z",
   "id": "f_72a7f3b4",
-  "lastDetected": "2026-07-04T03:02:11.394Z",
+  "lastDetected": "2026-07-03T07:29:55.197Z",
   "occurrenceCount": 1,
   "owner": "Platform Team",
   "package": "apps",
@@ -32,5 +32,5 @@
   "rule": "VAL-UI-006",
   "ruleVersion": "1.0.0",
   "schemaVersion": 2,
-  "status": "NEW"
+  "status": "REGRESSION"
 }

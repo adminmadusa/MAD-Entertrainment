@@ -1,45 +1,36 @@
 {
-  "schemaVersion": 2,
-  "id": "f_ec699093",
-  "rule": "VAL-UI-004",
-  "ruleVersion": "1.0.0",
-  "engineVersion": "1.0.0",
-  "domain": "UI UX Guild",
-  "owner": "UI UX Guild",
-  "package": "apps",
-  "feature": "table",
-  "status": "NEW",
   "confidence": 0.9,
-  "relationships": [],
+  "createdDate": "2026-07-03T16:43:22.030Z",
+  "domain": "UI UX Guild",
+  "engineVersion": "1.0.0",
   "evidence": {
-    "path": "apps/admin/src/components/diagnostics/QueueControlsTab.tsx",
-    "construct": "table",
-    "snippet": "<table className=\"w-full text-xs\">",
+    "construct": "UIElement",
     "line": 43,
-    "message": "Raw <table> element used in admin portal. Use a reusable shared Table component.",
+    "message": "Raw <table> element used in portal. Use a reusable shared Table component.",
     "occurrences": [
       {
-        "id": "a0ca19c7d8b68ca418b491768cfc4e43a51aa762564610b1655f016aabcc9caf",
-        "line": 43,
-        "column": 0,
-        "construct": "table",
-        "snippet": "<table className=\"w-full text-xs\">",
-        "message": "Raw <table> element used in admin portal. Use a reusable shared Table component.",
-        "fingerprint": "a0ca19c7d8b68ca418b491768cfc4e43a51aa762564610b1655f016aabcc9caf"
-      },
-      {
-        "id": "fb4b8479ef36e2f75d83772faa27f6952a24c99ebc9d2ef783f91e4b579390f1",
-        "line": 43,
         "column": 0,
         "construct": "UIElement",
-        "snippet": "<table className=\"w-full text-xs\">",
+        "fingerprint": "fb4b8479ef36e2f75d83772faa27f6952a24c99ebc9d2ef783f91e4b579390f1",
+        "id": "fb4b8479ef36e2f75d83772faa27f6952a24c99ebc9d2ef783f91e4b579390f1",
+        "line": 43,
         "message": "Raw <table> element used in portal. Use a reusable shared Table component.",
-        "fingerprint": "fb4b8479ef36e2f75d83772faa27f6952a24c99ebc9d2ef783f91e4b579390f1"
+        "snippet": "<table className=\"w-full text-xs\">"
       }
-    ]
+    ],
+    "path": "apps/admin/src/components/diagnostics/QueueControlsTab.tsx",
+    "snippet": "<table className=\"w-full text-xs\">"
   },
-  "createdDate": "2026-06-29T08:10:31.551Z",
-  "firstDetected": "2026-06-29T08:10:31.551Z",
-  "lastDetected": "2026-06-30T15:36:27.211Z",
-  "occurrenceCount": 2
+  "feature": "UIElement",
+  "firstDetected": "2026-07-03T16:43:22.030Z",
+  "id": "f_ec699093",
+  "lastDetected": "2026-07-03T16:43:22.030Z",
+  "occurrenceCount": 1,
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-UI-004",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "REGRESSION"
 }

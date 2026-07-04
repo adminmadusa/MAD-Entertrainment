@@ -1,90 +1,37 @@
 {
-  "schemaVersion": 2,
-  "id": "f_dac8085f",
-  "rule": "VAL-UI-007",
-  "ruleVersion": "1.0.0",
-  "engineVersion": "1.0.0",
-  "domain": "UI UX Guild",
-  "owner": "UI UX Guild",
-  "package": "apps",
-  "feature": "UIElement",
-  "status": "NEW",
   "confidence": 0.9,
-  "relationships": [],
+  "createdDate": "2026-06-30T15:36:27.276Z",
+  "domain": "UI UX Guild",
+  "engineVersion": "1.0.0",
   "evidence": {
-    "path": "apps/web/src/components/booking/CheckoutContent.tsx",
     "construct": "UIElement",
-    "snippet": "color: '#8b5cf6',",
     "line": 186,
     "message": "Hardcoded color '#8b5cf6' detected. Standardize using design tokens/theme variables.",
     "occurrences": [
       {
+        "column": 0,
+        "construct": "UIElement",
+        "fingerprint": "ca8cb1c749b168b3789216b5bb55c89df77af76d889e205a1f4aada12163adec",
         "id": "ca8cb1c749b168b3789216b5bb55c89df77af76d889e205a1f4aada12163adec",
         "line": 186,
-        "column": 0,
-        "construct": "UIElement",
-        "snippet": "color: '#8b5cf6',",
         "message": "Hardcoded color '#8b5cf6' detected. Standardize using design tokens/theme variables.",
-        "fingerprint": "ca8cb1c749b168b3789216b5bb55c89df77af76d889e205a1f4aada12163adec"
-      },
-      {
-        "id": "ec9418f72b995825d1d50b077046fa3e75c35a5f0d11cfed1c072091d28e0751",
-        "line": 266,
-        "column": 0,
-        "construct": "UIElement",
-        "snippet": "<div className={isModal ? \"relative text-white p-6 text-center space-y-6\" : \"pt-24 pb-24 min-h-screen bg-[#0d111d] text-white relative overflow-x-hidden flex flex-col items-center justify-center w-full px-4\"}>",
-        "message": "Hardcoded color '#0d111d' detected. Standardize using design tokens/theme variables.",
-        "fingerprint": "ec9418f72b995825d1d50b077046fa3e75c35a5f0d11cfed1c072091d28e0751"
-      },
-      {
-        "id": "7c887e96aa47c3cd6b9e0ded63deba87a27eb9f65ea9ee37dc9cc14b0aafbe50",
-        "line": 348,
-        "column": 0,
-        "construct": "UIElement",
-        "snippet": "<div className={isModal ? \"relative text-white\" : \"pt-24 pb-24 min-h-screen bg-[#0d111d] text-white relative overflow-x-hidden flex flex-col items-center justify-center\"}>",
-        "message": "Hardcoded color '#0d111d' detected. Standardize using design tokens/theme variables.",
-        "fingerprint": "7c887e96aa47c3cd6b9e0ded63deba87a27eb9f65ea9ee37dc9cc14b0aafbe50"
-      },
-      {
-        "id": "ab00d095459cb2a3cd76070bb0d8759d99cf182d8154d704f45d162214be62c7",
-        "line": 354,
-        "column": 0,
-        "construct": "UIElement",
-        "snippet": "<div className={isModal ? \"sticky top-0 bg-[#0d111d] border-b border-white/10 py-3 z-50 shadow-md\" : \"fixed top-0 left-0 right-0 bg-[#0d111d]/90 backdrop-blur-md border-b border-white/10 py-3 z-50 shadow-md\"}>",
-        "message": "Hardcoded color '#0d111d' detected. Standardize using design tokens/theme variables.",
-        "fingerprint": "ab00d095459cb2a3cd76070bb0d8759d99cf182d8154d704f45d162214be62c7"
-      },
-      {
-        "id": "ab00d095459cb2a3cd76070bb0d8759d99cf182d8154d704f45d162214be62c7",
-        "line": 354,
-        "column": 0,
-        "construct": "UIElement",
-        "snippet": "<div className={isModal ? \"sticky top-0 bg-[#0d111d] border-b border-white/10 py-3 z-50 shadow-md\" : \"fixed top-0 left-0 right-0 bg-[#0d111d]/90 backdrop-blur-md border-b border-white/10 py-3 z-50 shadow-md\"}>",
-        "message": "Hardcoded color '#0d111d' detected. Standardize using design tokens/theme variables.",
-        "fingerprint": "ab00d095459cb2a3cd76070bb0d8759d99cf182d8154d704f45d162214be62c7"
-      },
-      {
-        "id": "6c61f2a0866920eda67697a18db198323069b80b2f29dedf41813388d2ffacd0",
-        "line": 462,
-        "column": 0,
-        "construct": "UIElement",
-        "snippet": "<div className={isModal ? \"sticky bottom-0 z-40 bg-[#0d111d]/95 border-t border-white/10 py-3 mt-8 shadow-2xl lg:hidden\" : \"fixed bottom-0 left-0 right-0 z-40 bg-[#0d111d]/95 backdrop-blur-lg border-t border-white/10 shadow-2xl lg:hidden\"}>",
-        "message": "Hardcoded color '#0d111d' detected. Standardize using design tokens/theme variables.",
-        "fingerprint": "6c61f2a0866920eda67697a18db198323069b80b2f29dedf41813388d2ffacd0"
-      },
-      {
-        "id": "6c61f2a0866920eda67697a18db198323069b80b2f29dedf41813388d2ffacd0",
-        "line": 462,
-        "column": 0,
-        "construct": "UIElement",
-        "snippet": "<div className={isModal ? \"sticky bottom-0 z-40 bg-[#0d111d]/95 border-t border-white/10 py-3 mt-8 shadow-2xl lg:hidden\" : \"fixed bottom-0 left-0 right-0 z-40 bg-[#0d111d]/95 backdrop-blur-lg border-t border-white/10 shadow-2xl lg:hidden\"}>",
-        "message": "Hardcoded color '#0d111d' detected. Standardize using design tokens/theme variables.",
-        "fingerprint": "6c61f2a0866920eda67697a18db198323069b80b2f29dedf41813388d2ffacd0"
+        "snippet": "color: '#8b5cf6',"
       }
-    ]
+    ],
+    "path": "apps/web/src/components/booking/CheckoutContent.tsx",
+    "snippet": "color: '#8b5cf6',"
   },
-  "createdDate": "2026-06-30T15:36:27.276Z",
+  "feature": "UIElement",
   "firstDetected": "2026-06-30T15:36:27.276Z",
-  "lastDetected": "2026-06-30T15:36:27.277Z",
-  "occurrenceCount": 7
+  "id": "f_dac8085f",
+  "lastDetected": "2026-07-04T04:11:43.111Z",
+  "lastModified": "2026-07-04T04:11:43.111Z",
+  "occurrenceCount": 1,
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-UI-007",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
 }

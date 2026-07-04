@@ -1,35 +1,35 @@
 {
-  "schemaVersion": 2,
-  "id": "f_d1f09987",
-  "rule": "VAL-UI-011",
-  "ruleVersion": "1.0.0",
-  "engineVersion": "1.0.0",
-  "domain": "UI UX Guild",
-  "owner": "UI UX Guild",
-  "package": "apps",
-  "feature": "UIElement",
-  "status": "NEW",
   "confidence": 0.9,
-  "relationships": [],
+  "createdDate": "2026-06-30T15:36:27.143Z",
+  "domain": "UI UX Guild",
+  "engineVersion": "1.0.0",
   "evidence": {
-    "path": "apps/admin/src/app/events/new/_components/EventAdvancedSettingsSection.tsx",
     "construct": "UIElement",
     "line": 1,
-    "message": "Duplicate component layout detected: shares 97% similarity with \"EventRequirementsCard\" in \"apps/admin/src/components/events/EventRequirementsCard.tsx\". Recommendation: Extract the duplicated layout/logic from \"apps/admin/src/app/events/new/_components/EventAdvancedSettingsSection.tsx\" and \"apps/admin/src/components/events/EventRequirementsCard.tsx\" into a single reusable shared component in \"packages/ui\".",
+    "message": "Duplicate component layout detected [Category C — Form, Confidence: 97%, Severity: WARNING]: shares similarity with \"EventRequirementsCard\" in \"apps/admin/src/components/events/EventRequirementsCard.tsx\". Recommendation: Extract reusable shared form component or local CRUD fields wrapper to dry-up page/form structure. (Estimated Effort: Medium (3-6 hours), Risk: Medium).",
     "occurrences": [
       {
-        "id": "ea9fbeed5c56adcc050de03c042300a512252bc3494b9943ab001c805a4fca4f",
-        "line": 1,
         "column": 0,
         "construct": "UIElement",
-        "snippet": "",
-        "message": "Duplicate component layout detected: shares 97% similarity with \"EventRequirementsCard\" in \"apps/admin/src/components/events/EventRequirementsCard.tsx\". Recommendation: Extract the duplicated layout/logic from \"apps/admin/src/app/events/new/_components/EventAdvancedSettingsSection.tsx\" and \"apps/admin/src/components/events/EventRequirementsCard.tsx\" into a single reusable shared component in \"packages/ui\".",
-        "fingerprint": "ea9fbeed5c56adcc050de03c042300a512252bc3494b9943ab001c805a4fca4f"
+        "fingerprint": "ea9fbeed5c56adcc050de03c042300a512252bc3494b9943ab001c805a4fca4f",
+        "id": "ea9fbeed5c56adcc050de03c042300a512252bc3494b9943ab001c805a4fca4f",
+        "line": 1,
+        "message": "Duplicate component layout detected [Category C — Form, Confidence: 97%, Severity: WARNING]: shares similarity with \"EventRequirementsCard\" in \"apps/admin/src/components/events/EventRequirementsCard.tsx\". Recommendation: Extract reusable shared form component or local CRUD fields wrapper to dry-up page/form structure. (Estimated Effort: Medium (3-6 hours), Risk: Medium)."
       }
-    ]
+    ],
+    "path": "apps/admin/src/app/events/new/_components/EventAdvancedSettingsSection.tsx"
   },
-  "createdDate": "2026-06-30T15:36:27.143Z",
+  "feature": "UIElement",
   "firstDetected": "2026-06-30T15:36:27.143Z",
-  "lastDetected": "2026-06-30T15:36:27.143Z",
-  "occurrenceCount": 1
+  "id": "f_d1f09987",
+  "lastDetected": "2026-07-04T04:11:43.059Z",
+  "lastModified": "2026-07-04T04:11:43.059Z",
+  "occurrenceCount": 1,
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-UI-011",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
 }

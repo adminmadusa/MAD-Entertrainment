@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:49:56.248Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 3,
+    "message": "Groups of imports must be separated by a single blank line.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "09961145c8415a340546a5dea72fa63ce5fc35c37ad7148bc4c473f73b0f7505",
+        "id": "09961145c8415a340546a5dea72fa63ce5fc35c37ad7148bc4c473f73b0f7505",
+        "line": 3,
+        "message": "Groups of imports must be separated by a single blank line."
+      }
+    ],
+    "path": "scripts/governance/core/fixers/malformed_atx_heading_fixer.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:49:56.248Z",
+  "id": "f_1b14c1af",
+  "lastDetected": "2026-07-03T12:49:56.248Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "scripts",
+  "relationships": [],
+  "rule": "VAL-HYG-001",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "REGRESSION"
+}

@@ -1,0 +1,58 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-04T03:15:44.752Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 210,
+    "message": "Trailing whitespace characters detected.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "36b74690702d79dbaa16c849960a3981b752a20e1cd216cc2fb7cdaacd062cd1",
+        "id": "36b74690702d79dbaa16c849960a3981b752a20e1cd216cc2fb7cdaacd062cd1",
+        "line": 186,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "36b74690702d79dbaa16c849960a3981b752a20e1cd216cc2fb7cdaacd062cd1",
+        "id": "36b74690702d79dbaa16c849960a3981b752a20e1cd216cc2fb7cdaacd062cd1",
+        "line": 198,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "36b74690702d79dbaa16c849960a3981b752a20e1cd216cc2fb7cdaacd062cd1",
+        "id": "36b74690702d79dbaa16c849960a3981b752a20e1cd216cc2fb7cdaacd062cd1",
+        "line": 203,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "36b74690702d79dbaa16c849960a3981b752a20e1cd216cc2fb7cdaacd062cd1",
+        "id": "36b74690702d79dbaa16c849960a3981b752a20e1cd216cc2fb7cdaacd062cd1",
+        "line": 210,
+        "message": "Trailing whitespace characters detected."
+      }
+    ],
+    "path": "apps/admin/src/app/refunds/page.tsx"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-04T03:15:44.752Z",
+  "id": "f_ead8877b",
+  "lastDetected": "2026-07-04T03:15:44.752Z",
+  "occurrenceCount": 4,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-004",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

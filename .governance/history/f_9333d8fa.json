@@ -1,0 +1,17 @@
+{
+  "history": [
+    {
+      "action": "RENAMED",
+      "notes": "File renamed/relocated from apps/admin/src/app/popups/new/page.tsx to apps/admin/src/app/popups/new/page.tsx",
+      "status": "NEW",
+      "timestamp": "2026-07-03T16:43:21.177Z"
+    },
+    {
+      "action": "UPDATED",
+      "notes": "Occurrences updated. Active count: 3",
+      "status": "NEW",
+      "timestamp": "2026-07-03T17:05:04.414Z"
+    }
+  ],
+  "id": "f_9333d8fa"
+}

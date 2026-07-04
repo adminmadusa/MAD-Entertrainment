@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:48.946Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 1,
+    "message": "Imports must be grouped in order: Node built-ins, Third-party packages, Workspace aliases, Relative paths, Side-effects.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "7646e9f088d3f2009da3a5c1ae064a10eac1f6280c9f1bae79a0110ed474b460",
+        "id": "7646e9f088d3f2009da3a5c1ae064a10eac1f6280c9f1bae79a0110ed474b460",
+        "line": 1,
+        "message": "Imports must be grouped in order: Node built-ins, Third-party packages, Workspace aliases, Relative paths, Side-effects."
+      }
+    ],
+    "path": "apps/server/scripts/verify-notifications-unique.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:48.946Z",
+  "id": "f_54a4e6a4",
+  "lastDetected": "2026-07-03T12:25:48.946Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-001",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "REGRESSION"
+}

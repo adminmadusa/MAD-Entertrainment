@@ -1,34 +1,33 @@
 {
-  "schemaVersion": 2,
-  "id": "f_03f191b9",
-  "rule": "Orphaned Documentation",
-  "ruleVersion": "1.0.0",
-  "engineVersion": "1.0.0",
-  "domain": "Platform Team",
-  "owner": "Platform Team",
-  "package": "apps",
-  "feature": "Document",
-  "status": "NEW",
   "confidence": 1,
-  "relationships": [],
+  "createdDate": "2026-06-30T15:36:27.400Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
   "evidence": {
-    "path": "apps/web/src/content/legal/payment.md",
     "construct": "Document",
     "message": "Document exists in the repository but has no incoming references from any other active documentation.",
     "occurrences": [
       {
-        "id": "5b297e0f437e51f369b63b60f8309372f887ed6de24d4cb81f6701ec6230a3a8",
-        "line": 0,
         "column": 0,
         "construct": "Document",
-        "snippet": "",
-        "message": "Document exists in the repository but has no incoming references from any other active documentation.",
-        "fingerprint": "5b297e0f437e51f369b63b60f8309372f887ed6de24d4cb81f6701ec6230a3a8"
+        "fingerprint": "5b297e0f437e51f369b63b60f8309372f887ed6de24d4cb81f6701ec6230a3a8",
+        "id": "5b297e0f437e51f369b63b60f8309372f887ed6de24d4cb81f6701ec6230a3a8",
+        "line": 0,
+        "message": "Document exists in the repository but has no incoming references from any other active documentation."
       }
-    ]
+    ],
+    "path": "apps/web/src/content/legal/payment.md"
   },
-  "createdDate": "2026-06-30T15:36:27.400Z",
+  "feature": "Document",
   "firstDetected": "2026-06-30T15:36:27.400Z",
+  "id": "f_03f191b9",
   "lastDetected": "2026-06-30T15:36:27.400Z",
-  "occurrenceCount": 1
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "Orphaned Documentation",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "REGRESSION"
 }

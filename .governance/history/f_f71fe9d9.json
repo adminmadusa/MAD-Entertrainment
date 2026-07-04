@@ -1,0 +1,35 @@
+{
+  "history": [
+    {
+      "action": "CREATED",
+      "notes": "New grouped finding registered: Duplicate component layout detected [Category C — Form, Confidence: 89%, Severity: WARNING]: shares similarity with \"AdminEventsPage\" in \"apps/admin/src/app/events/page.tsx\". Recommendation: Extract reusable shared form component or local CRUD fields wrapper to dry-up page/form structure. (Estimated Effort: Medium (3-6 hours), Risk: Medium).",
+      "status": "NEW",
+      "timestamp": "2026-07-03T16:43:21.200Z"
+    },
+    {
+      "action": "CREATED",
+      "notes": "New grouped finding registered: Duplicate component layout detected [Category C — Form, Confidence: 89%, Severity: WARNING]: shares similarity with \"AdminEventsPage\" in \"apps/admin/src/app/events/page.tsx\". Recommendation: Extract reusable shared form component or local CRUD fields wrapper to dry-up page/form structure. (Estimated Effort: Medium (3-6 hours), Risk: Medium).",
+      "status": "NEW",
+      "timestamp": "2026-07-03T16:44:19.575Z"
+    },
+    {
+      "action": "UPDATED",
+      "notes": "Occurrences updated. Active count: 1",
+      "status": "NEW",
+      "timestamp": "2026-07-03T17:05:04.417Z"
+    },
+    {
+      "action": "UPDATED",
+      "notes": "Occurrences updated. Active count: 1",
+      "status": "NEW",
+      "timestamp": "2026-07-04T03:15:48.737Z"
+    },
+    {
+      "action": "UPDATED",
+      "notes": "Occurrences updated. Active count: 1",
+      "status": "NEW",
+      "timestamp": "2026-07-04T04:11:43.067Z"
+    }
+  ],
+  "id": "f_f71fe9d9"
+}

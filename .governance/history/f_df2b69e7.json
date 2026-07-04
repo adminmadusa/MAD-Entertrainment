@@ -1,0 +1,11 @@
+{
+  "history": [
+    {
+      "action": "CREATED",
+      "notes": "New grouped finding registered: Possible Unreachable Route: no direct navigation links pointing to \"/popups/[id]/edit\" were found in production files.",
+      "status": "NEW",
+      "timestamp": "2026-07-03T16:43:21.144Z"
+    }
+  ],
+  "id": "f_df2b69e7"
+}

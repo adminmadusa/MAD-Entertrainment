@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-04T03:15:44.897Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 37,
+    "message": "Trailing whitespace characters detected.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "ad03aed1d554b39a0a128aca1bd523790d96d0c4596403c95b6ff39456c3240f",
+        "id": "ad03aed1d554b39a0a128aca1bd523790d96d0c4596403c95b6ff39456c3240f",
+        "line": 37,
+        "message": "Trailing whitespace characters detected."
+      }
+    ],
+    "path": "apps/admin/src/lib/rbac/navigation-permissions.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-04T03:15:44.897Z",
+  "id": "f_a0830261",
+  "lastDetected": "2026-07-04T03:15:44.897Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-004",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:49.405Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 2,
+    "message": "Imports within the same group must be sorted alphabetically (\"express\" should precede \"vitest\").",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "5e5ec522eb55f777484a5175ca94a4ff8baf5d33ac45145a694504bdd5f65849",
+        "id": "5e5ec522eb55f777484a5175ca94a4ff8baf5d33ac45145a694504bdd5f65849",
+        "line": 2,
+        "message": "Imports within the same group must be sorted alphabetically (\"express\" should precede \"vitest\")."
+      }
+    ],
+    "path": "apps/server/src/controllers/admin/scanner.controller.test.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:49.405Z",
+  "id": "f_f9440e5c",
+  "lastDetected": "2026-07-03T12:25:49.405Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-001",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "REGRESSION"
+}

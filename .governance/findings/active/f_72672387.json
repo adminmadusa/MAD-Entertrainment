@@ -1,54 +1,46 @@
 {
-  "schemaVersion": 2,
-  "id": "f_72672387",
-  "rule": "VAL-UI-005",
-  "ruleVersion": "1.0.0",
-  "engineVersion": "1.0.0",
-  "domain": "UI UX Guild",
-  "owner": "UI UX Guild",
-  "package": "apps",
-  "feature": "button",
-  "status": "NEW",
   "confidence": 0.85,
-  "relationships": [],
+  "createdDate": "2026-06-29T08:09:52.219Z",
+  "domain": "UI UX Guild",
+  "engineVersion": "1.0.0",
   "evidence": {
-    "path": "apps/admin/src/app/bookings/_components/CorrectEmailModal.tsx",
     "construct": "button",
-    "snippet": "<button",
-    "line": 113,
+    "line": 120,
     "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
     "occurrences": [
       {
-        "id": "78f766bc3971a546e021371b16093873f85f43204b14ee0564c842036681d483",
-        "line": 113,
-        "column": 0,
-        "construct": "button",
-        "snippet": "<button",
-        "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
-        "fingerprint": "78f766bc3971a546e021371b16093873f85f43204b14ee0564c842036681d483"
-      },
-      {
-        "id": "b9fd95ac1f95f36bf4eedff9adccb76fb2c531a6b5697d853c76032af1f2ce97",
-        "line": 113,
         "column": 0,
         "construct": "UIElement",
-        "snippet": "<button",
+        "fingerprint": "b9fd95ac1f95f36bf4eedff9adccb76fb2c531a6b5697d853c76032af1f2ce97",
+        "id": "b9fd95ac1f95f36bf4eedff9adccb76fb2c531a6b5697d853c76032af1f2ce97",
+        "line": 113,
         "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
-        "fingerprint": "b9fd95ac1f95f36bf4eedff9adccb76fb2c531a6b5697d853c76032af1f2ce97"
+        "snippet": "<button"
       },
       {
+        "column": 0,
+        "construct": "UIElement",
+        "fingerprint": "b9fd95ac1f95f36bf4eedff9adccb76fb2c531a6b5697d853c76032af1f2ce97",
         "id": "b9fd95ac1f95f36bf4eedff9adccb76fb2c531a6b5697d853c76032af1f2ce97",
         "line": 120,
-        "column": 0,
-        "construct": "UIElement",
-        "snippet": "<button",
         "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
-        "fingerprint": "b9fd95ac1f95f36bf4eedff9adccb76fb2c531a6b5697d853c76032af1f2ce97"
+        "snippet": "<button"
       }
-    ]
+    ],
+    "path": "apps/admin/src/app/bookings/_components/CorrectEmailModal.tsx",
+    "snippet": "<button"
   },
-  "createdDate": "2026-06-29T08:09:52.219Z",
+  "feature": "button",
   "firstDetected": "2026-06-29T08:09:52.219Z",
-  "lastDetected": "2026-06-30T15:36:27.122Z",
-  "occurrenceCount": 3
+  "id": "f_72672387",
+  "lastDetected": "2026-07-04T04:11:43.048Z",
+  "lastModified": "2026-07-04T04:11:43.048Z",
+  "occurrenceCount": 2,
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-UI-005",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
 }

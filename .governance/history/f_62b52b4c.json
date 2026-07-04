@@ -1,0 +1,11 @@
+{
+  "history": [
+    {
+      "action": "CREATED",
+      "notes": "New grouped finding registered: Possible Unreachable Route: no direct navigation links pointing to \"/checkout/[bookingId]\" were found in production files.",
+      "status": "NEW",
+      "timestamp": "2026-07-03T16:43:22.930Z"
+    }
+  ],
+  "id": "f_62b52b4c"
+}

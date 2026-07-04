@@ -9,6 +9,12 @@
   - [README.md](../README.md)
   - [REPOSITORY_GOVERNANCE.md](../REPOSITORY_GOVERNANCE.md)
   - [AGENTS.MD](../AGENTS.MD)
+  - [Historical Audits Index](audit/README.md)
+  - [Finding Classification Dashboard](finding_classification_todo.md)
+  - [Post-Launch Engineering Roadmap](ROADMAP.md)
+  - [Staged Remediation Plan](remediation-plan.md)
+  - [Verification Results](verification-results.md)
+  - [PR4 Decisions Needed](PR4-DECISION-NEEDED.md)
 
 ---
 

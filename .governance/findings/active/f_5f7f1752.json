@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:55.002Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 3,
+    "message": "Import from types module \"@mad/types\" should use \"import type\".",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "69e7a23c1295b9de229a67599e01c517defd7f130705e6d559286f0322402039",
+        "id": "69e7a23c1295b9de229a67599e01c517defd7f130705e6d559286f0322402039",
+        "line": 3,
+        "message": "Import from types module \"@mad/types\" should use \"import type\"."
+      }
+    ],
+    "path": "apps/web/src/app/events/[slug]/components/EventBookingFlow.tsx"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:55.002Z",
+  "id": "f_5f7f1752",
+  "lastDetected": "2026-07-03T12:25:55.002Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-003",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "REGRESSION"
+}

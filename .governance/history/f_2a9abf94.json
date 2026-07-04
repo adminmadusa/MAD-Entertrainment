@@ -1,0 +1,23 @@
+{
+  "history": [
+    {
+      "action": "CREATED",
+      "notes": "New grouped finding registered: Duplicate component layout detected [Category E — Infrastructure, Confidence: 75%, Severity: WARNING]: shares similarity with \"AdminNotificationsPage\" in \"apps/admin/src/app/notifications/page.tsx\". Recommendation: Extract reusable table, filter, or pagination wrappers to \"packages/ui\" as shared components. (Estimated Effort: Medium (2-4 hours), Risk: Low).",
+      "status": "NEW",
+      "timestamp": "2026-07-03T16:43:20.725Z"
+    },
+    {
+      "action": "UPDATED",
+      "notes": "Occurrences updated. Active count: 1",
+      "status": "NEW",
+      "timestamp": "2026-07-04T03:15:48.717Z"
+    },
+    {
+      "action": "UPDATED",
+      "notes": "Occurrences updated. Active count: 1",
+      "status": "NEW",
+      "timestamp": "2026-07-04T04:11:43.054Z"
+    }
+  ],
+  "id": "f_2a9abf94"
+}

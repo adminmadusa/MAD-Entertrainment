@@ -5,7 +5,7 @@
   "engineVersion": "1.0.0",
   "evidence": {
     "construct": "UIElement",
-    "line": 587,
+    "line": 609,
     "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
     "occurrences": [
       {
@@ -13,7 +13,7 @@
         "construct": "UIElement",
         "fingerprint": "c78a0b4743b7af278dd531d5f93c518ed105cd9b70b9d864b93dfe51f856f417",
         "id": "c78a0b4743b7af278dd531d5f93c518ed105cd9b70b9d864b93dfe51f856f417",
-        "line": 411,
+        "line": 433,
         "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
         "snippet": "<button"
       },
@@ -22,7 +22,7 @@
         "construct": "UIElement",
         "fingerprint": "c78a0b4743b7af278dd531d5f93c518ed105cd9b70b9d864b93dfe51f856f417",
         "id": "c78a0b4743b7af278dd531d5f93c518ed105cd9b70b9d864b93dfe51f856f417",
-        "line": 464,
+        "line": 486,
         "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
         "snippet": "<button"
       },
@@ -31,7 +31,7 @@
         "construct": "UIElement",
         "fingerprint": "c78a0b4743b7af278dd531d5f93c518ed105cd9b70b9d864b93dfe51f856f417",
         "id": "c78a0b4743b7af278dd531d5f93c518ed105cd9b70b9d864b93dfe51f856f417",
-        "line": 475,
+        "line": 497,
         "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
         "snippet": "<button"
       },
@@ -40,7 +40,7 @@
         "construct": "UIElement",
         "fingerprint": "c78a0b4743b7af278dd531d5f93c518ed105cd9b70b9d864b93dfe51f856f417",
         "id": "c78a0b4743b7af278dd531d5f93c518ed105cd9b70b9d864b93dfe51f856f417",
-        "line": 487,
+        "line": 509,
         "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
         "snippet": "<button"
       },
@@ -49,7 +49,7 @@
         "construct": "UIElement",
         "fingerprint": "c78a0b4743b7af278dd531d5f93c518ed105cd9b70b9d864b93dfe51f856f417",
         "id": "c78a0b4743b7af278dd531d5f93c518ed105cd9b70b9d864b93dfe51f856f417",
-        "line": 534,
+        "line": 556,
         "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
         "snippet": "<button"
       },
@@ -58,7 +58,7 @@
         "construct": "UIElement",
         "fingerprint": "c78a0b4743b7af278dd531d5f93c518ed105cd9b70b9d864b93dfe51f856f417",
         "id": "c78a0b4743b7af278dd531d5f93c518ed105cd9b70b9d864b93dfe51f856f417",
-        "line": 566,
+        "line": 588,
         "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
         "snippet": "<button"
       },
@@ -67,7 +67,7 @@
         "construct": "UIElement",
         "fingerprint": "c78a0b4743b7af278dd531d5f93c518ed105cd9b70b9d864b93dfe51f856f417",
         "id": "c78a0b4743b7af278dd531d5f93c518ed105cd9b70b9d864b93dfe51f856f417",
-        "line": 587,
+        "line": 609,
         "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
         "snippet": "<button"
       }
@@ -78,8 +78,8 @@
   "feature": "UIElement",
   "firstDetected": "2026-07-03T07:29:55.197Z",
   "id": "f_f0fe6535",
-  "lastDetected": "2026-07-03T17:05:04.423Z",
-  "lastModified": "2026-07-03T17:05:04.423Z",
+  "lastDetected": "2026-07-04T04:11:43.093Z",
+  "lastModified": "2026-07-04T04:11:43.093Z",
   "occurrenceCount": 7,
   "owner": "UI UX Guild",
   "package": "apps",

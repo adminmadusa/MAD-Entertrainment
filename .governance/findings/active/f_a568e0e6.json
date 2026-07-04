@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-04T03:15:45.857Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 800,
+    "message": "File must terminate with exactly one trailing newline character.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "76173c1ac77aea76033b03c0560b95c1edb30a09ee33db56c0ebe2f897198ed0",
+        "id": "76173c1ac77aea76033b03c0560b95c1edb30a09ee33db56c0ebe2f897198ed0",
+        "line": 800,
+        "message": "File must terminate with exactly one trailing newline character."
+      }
+    ],
+    "path": "apps/server/src/services/public/booking.service.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-04T03:15:45.857Z",
+  "id": "f_a568e0e6",
+  "lastDetected": "2026-07-04T03:15:45.857Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-005",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-04T03:28:41.666Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 11,
+    "message": "Excessive consecutive blank lines detected (3 lines).",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "f9be1a96f133d9f1d68c4b6efe5cf2b1e266657a32954d29ec37484d8fc723a3",
+        "id": "f9be1a96f133d9f1d68c4b6efe5cf2b1e266657a32954d29ec37484d8fc723a3",
+        "line": 11,
+        "message": "Excessive consecutive blank lines detected (3 lines)."
+      }
+    ],
+    "path": "apps/server/src/controllers/public/ticket.controller.test.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-04T03:28:41.666Z",
+  "id": "f_0f6a809a",
+  "lastDetected": "2026-07-04T03:28:41.666Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-006",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

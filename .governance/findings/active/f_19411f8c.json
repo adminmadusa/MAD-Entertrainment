@@ -1,0 +1,66 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-04T03:15:45.213Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 383,
+    "message": "Trailing whitespace characters detected.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "432b9d528c44103bfdbfc2b8fc086af1bbb09ce834b351f1d601d601a7e0543b",
+        "id": "432b9d528c44103bfdbfc2b8fc086af1bbb09ce834b351f1d601d601a7e0543b",
+        "line": 176,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "432b9d528c44103bfdbfc2b8fc086af1bbb09ce834b351f1d601d601a7e0543b",
+        "id": "432b9d528c44103bfdbfc2b8fc086af1bbb09ce834b351f1d601d601a7e0543b",
+        "line": 187,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "432b9d528c44103bfdbfc2b8fc086af1bbb09ce834b351f1d601d601a7e0543b",
+        "id": "432b9d528c44103bfdbfc2b8fc086af1bbb09ce834b351f1d601d601a7e0543b",
+        "line": 192,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "432b9d528c44103bfdbfc2b8fc086af1bbb09ce834b351f1d601d601a7e0543b",
+        "id": "432b9d528c44103bfdbfc2b8fc086af1bbb09ce834b351f1d601d601a7e0543b",
+        "line": 263,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "432b9d528c44103bfdbfc2b8fc086af1bbb09ce834b351f1d601d601a7e0543b",
+        "id": "432b9d528c44103bfdbfc2b8fc086af1bbb09ce834b351f1d601d601a7e0543b",
+        "line": 383,
+        "message": "Trailing whitespace characters detected."
+      }
+    ],
+    "path": "apps/server/src/controllers/public/payment.controller.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-04T03:15:45.213Z",
+  "id": "f_19411f8c",
+  "lastDetected": "2026-07-04T03:15:45.213Z",
+  "occurrenceCount": 5,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-004",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

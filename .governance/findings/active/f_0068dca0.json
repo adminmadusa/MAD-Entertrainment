@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-04T03:15:46.339Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 24,
+    "message": "File must terminate with exactly one trailing newline character.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "e330d46f80171ac6b41387405fc8a9d3eb41fd62976dcd308ffe4a8d36ed287a",
+        "id": "e330d46f80171ac6b41387405fc8a9d3eb41fd62976dcd308ffe4a8d36ed287a",
+        "line": 24,
+        "message": "File must terminate with exactly one trailing newline character."
+      }
+    ],
+    "path": "apps/server/src/validations/booking-recovery.validation.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-04T03:15:46.339Z",
+  "id": "f_0068dca0",
+  "lastDetected": "2026-07-04T03:15:46.339Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-005",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

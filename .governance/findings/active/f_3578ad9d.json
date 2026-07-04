@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:46.779Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 8,
+    "message": "Imports within the same group must be sorted alphabetically (\"next/dynamic\" should precede \"react\").",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "0fda5ea2b86581a3ba28afdbc565c755f1de7b0dc33471ee6ed5adb94909328b",
+        "id": "0fda5ea2b86581a3ba28afdbc565c755f1de7b0dc33471ee6ed5adb94909328b",
+        "line": 8,
+        "message": "Imports within the same group must be sorted alphabetically (\"next/dynamic\" should precede \"react\")."
+      }
+    ],
+    "path": "apps/admin/src/app/dashboard/page.tsx"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:46.779Z",
+  "id": "f_3578ad9d",
+  "lastDetected": "2026-07-03T12:25:46.779Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-001",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "REGRESSION"
+}

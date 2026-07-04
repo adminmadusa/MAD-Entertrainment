@@ -1,0 +1,42 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-04T03:15:46.981Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 156,
+    "message": "Trailing whitespace characters detected.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "c0c2dd98531ed90ce868ccb41dbb890f23a00651375d78f3403b01322a1c40a1",
+        "id": "c0c2dd98531ed90ce868ccb41dbb890f23a00651375d78f3403b01322a1c40a1",
+        "line": 143,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "c0c2dd98531ed90ce868ccb41dbb890f23a00651375d78f3403b01322a1c40a1",
+        "id": "c0c2dd98531ed90ce868ccb41dbb890f23a00651375d78f3403b01322a1c40a1",
+        "line": 156,
+        "message": "Trailing whitespace characters detected."
+      }
+    ],
+    "path": "apps/web/src/components/booking/shared/EntryPassGrid.tsx"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-04T03:15:46.981Z",
+  "id": "f_04eb6d26",
+  "lastDetected": "2026-07-04T03:15:46.981Z",
+  "occurrenceCount": 2,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-004",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

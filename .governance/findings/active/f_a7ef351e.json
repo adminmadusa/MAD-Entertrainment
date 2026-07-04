@@ -1,0 +1,35 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:49.660Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 12,
+    "message": "Groups of imports must be separated by a single blank line.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "204b947dd1b64880a0fa9967a1baec9fc0af4af90ed8f1648f864c10595398a8",
+        "id": "204b947dd1b64880a0fa9967a1baec9fc0af4af90ed8f1648f864c10595398a8",
+        "line": 12,
+        "message": "Groups of imports must be separated by a single blank line."
+      }
+    ],
+    "path": "apps/server/src/controllers/public/booking.controller.test.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:49.660Z",
+  "id": "f_a7ef351e",
+  "lastDetected": "2026-07-04T04:15:24.671Z",
+  "lastModified": "2026-07-04T04:15:24.671Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-001",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "REGRESSION"
+}

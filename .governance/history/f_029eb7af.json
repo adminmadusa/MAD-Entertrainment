@@ -1,0 +1,23 @@
+{
+  "history": [
+    {
+      "action": "CREATED",
+      "notes": "New grouped finding registered: Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
+      "status": "NEW",
+      "timestamp": "2026-07-03T16:43:23.166Z"
+    },
+    {
+      "action": "UPDATED",
+      "notes": "Occurrences updated. Active count: 5",
+      "status": "NEW",
+      "timestamp": "2026-07-04T03:15:48.869Z"
+    },
+    {
+      "action": "UPDATED",
+      "notes": "Occurrences updated. Active count: 5",
+      "status": "NEW",
+      "timestamp": "2026-07-04T04:11:43.106Z"
+    }
+  ],
+  "id": "f_029eb7af"
+}

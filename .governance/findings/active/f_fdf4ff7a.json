@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-04T03:15:44.992Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 46,
+    "message": "File must terminate with exactly one trailing newline character.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "0c6c7e26b30b0914e6de5ac33108728bc4013764ace23be32dea8088422e6cde",
+        "id": "0c6c7e26b30b0914e6de5ac33108728bc4013764ace23be32dea8088422e6cde",
+        "line": 46,
+        "message": "File must terminate with exactly one trailing newline character."
+      }
+    ],
+    "path": "apps/server/src/config/queue.config.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-04T03:15:44.992Z",
+  "id": "f_fdf4ff7a",
+  "lastDetected": "2026-07-04T03:15:44.992Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-005",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

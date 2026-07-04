@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-04T03:15:47.127Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 24,
+    "message": "Excessive consecutive blank lines detected (3 lines).",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "d50ac33d9bbc77a31659536fd181961448a9a47d75e0bec90e462f30ee2215b0",
+        "id": "d50ac33d9bbc77a31659536fd181961448a9a47d75e0bec90e462f30ee2215b0",
+        "line": 24,
+        "message": "Excessive consecutive blank lines detected (3 lines)."
+      }
+    ],
+    "path": "apps/web/src/components/ui/FeaturedEventsSection.tsx"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-04T03:15:47.127Z",
+  "id": "f_731a2886",
+  "lastDetected": "2026-07-04T03:15:47.127Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-006",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

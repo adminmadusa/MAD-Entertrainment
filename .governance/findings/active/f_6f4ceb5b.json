@@ -1,0 +1,42 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-04T03:15:46.788Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 396,
+    "message": "Trailing whitespace characters detected.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "6e9978586ba70a6f0b5e6b78f9c407fe6b8b5d17021507f405f3e972d291f2cb",
+        "id": "6e9978586ba70a6f0b5e6b78f9c407fe6b8b5d17021507f405f3e972d291f2cb",
+        "line": 383,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "6e9978586ba70a6f0b5e6b78f9c407fe6b8b5d17021507f405f3e972d291f2cb",
+        "id": "6e9978586ba70a6f0b5e6b78f9c407fe6b8b5d17021507f405f3e972d291f2cb",
+        "line": 396,
+        "message": "Trailing whitespace characters detected."
+      }
+    ],
+    "path": "apps/web/src/components/auth/AuthForm.test.tsx"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-04T03:15:46.788Z",
+  "id": "f_6f4ceb5b",
+  "lastDetected": "2026-07-04T03:15:46.788Z",
+  "occurrenceCount": 2,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-004",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

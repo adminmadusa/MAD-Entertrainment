@@ -411,7 +411,7 @@ Observability is mapped to three targets:
 
 ## 12. Appendix: Future Deployment Considerations
 
-The following proposals represent potential future enhancements. They are not approved for implementation and serve as informational reference points only to prevent undocumented roadmaps.
+The proposals listed below outline potential future deployment enhancements. They are not approved for active work and are included strictly for informational context to keep future roadmap paths documented.
 
 ### Proposal 1: Dedicated Staging Backend API
 - **Description**: Spin up a staging Render Node API instance connecting to a dedicated staging MongoDB cluster.

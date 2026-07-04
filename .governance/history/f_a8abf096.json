@@ -1,0 +1,23 @@
+{
+  "history": [
+    {
+      "action": "RENAMED",
+      "notes": "File renamed/relocated from apps/admin/src/components/ticket-profiles/ProfileFormActions.tsx to apps/admin/src/components/ticket-profiles/ProfileFormActions.tsx",
+      "status": "NEW",
+      "timestamp": "2026-07-03T16:43:22.495Z"
+    },
+    {
+      "action": "UPDATED",
+      "notes": "Occurrences updated. Active count: 1",
+      "status": "NEW",
+      "timestamp": "2026-07-04T03:15:48.781Z"
+    },
+    {
+      "action": "UPDATED",
+      "notes": "Occurrences updated. Active count: 1",
+      "status": "NEW",
+      "timestamp": "2026-07-04T04:11:43.095Z"
+    }
+  ],
+  "id": "f_a8abf096"
+}

@@ -1,0 +1,11 @@
+{
+  "history": [
+    {
+      "action": "CREATED",
+      "notes": "New grouped finding registered: Possible Unreachable Route: no direct navigation links pointing to \"/legal/[doc]\" were found in production files.",
+      "status": "NEW",
+      "timestamp": "2026-07-03T16:43:23.289Z"
+    }
+  ],
+  "id": "f_561b49ce"
+}

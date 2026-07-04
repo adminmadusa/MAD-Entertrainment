@@ -1,0 +1,50 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-04T03:15:45.818Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 537,
+    "message": "Trailing whitespace characters detected.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "0cee0e1eb6edd2b34b530bdc0cf24d3606c36bf0386f1217e7ff472e45d276c9",
+        "id": "0cee0e1eb6edd2b34b530bdc0cf24d3606c36bf0386f1217e7ff472e45d276c9",
+        "line": 194,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "0cee0e1eb6edd2b34b530bdc0cf24d3606c36bf0386f1217e7ff472e45d276c9",
+        "id": "0cee0e1eb6edd2b34b530bdc0cf24d3606c36bf0386f1217e7ff472e45d276c9",
+        "line": 195,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "0cee0e1eb6edd2b34b530bdc0cf24d3606c36bf0386f1217e7ff472e45d276c9",
+        "id": "0cee0e1eb6edd2b34b530bdc0cf24d3606c36bf0386f1217e7ff472e45d276c9",
+        "line": 537,
+        "message": "Trailing whitespace characters detected."
+      }
+    ],
+    "path": "apps/server/src/services/public/auth.service.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-04T03:15:45.818Z",
+  "id": "f_8e317cc7",
+  "lastDetected": "2026-07-04T03:15:45.818Z",
+  "occurrenceCount": 3,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-004",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

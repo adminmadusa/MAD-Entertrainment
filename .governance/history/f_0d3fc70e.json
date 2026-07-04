@@ -1,0 +1,35 @@
+{
+  "history": [
+    {
+      "action": "CREATED",
+      "notes": "New grouped finding registered: Custom modal backdrop is missing role=\"dialog\" or aria-modal=\"true\" accessibility tags.",
+      "status": "NEW",
+      "timestamp": "2026-07-03T16:43:21.199Z"
+    },
+    {
+      "action": "CREATED",
+      "notes": "New grouped finding registered: Custom modal backdrop is missing role=\"dialog\" or aria-modal=\"true\" accessibility tags.",
+      "status": "NEW",
+      "timestamp": "2026-07-03T16:44:19.573Z"
+    },
+    {
+      "action": "UPDATED",
+      "notes": "Occurrences updated. Active count: 1",
+      "status": "NEW",
+      "timestamp": "2026-07-04T01:59:45.458Z"
+    },
+    {
+      "action": "UPDATED",
+      "notes": "Occurrences updated. Active count: 1",
+      "status": "NEW",
+      "timestamp": "2026-07-04T03:15:48.736Z"
+    },
+    {
+      "action": "UPDATED",
+      "notes": "Occurrences updated. Active count: 1",
+      "status": "NEW",
+      "timestamp": "2026-07-04T04:11:43.066Z"
+    }
+  ],
+  "id": "f_0d3fc70e"
+}

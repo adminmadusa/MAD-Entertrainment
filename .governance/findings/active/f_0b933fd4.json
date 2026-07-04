@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T16:02:51.394Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 4,
+    "message": "Imports within the same group must be sorted alphabetically (\"crypto\" should precede \"path\").",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "fb60fe0913b19c6d746a9b368f2d87f7ca4a4ead245a0bb2125f621557acd74e",
+        "id": "fb60fe0913b19c6d746a9b368f2d87f7ca4a4ead245a0bb2125f621557acd74e",
+        "line": 4,
+        "message": "Imports within the same group must be sorted alphabetically (\"crypto\" should precede \"path\")."
+      }
+    ],
+    "path": "scripts/governance/core/json_utils.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T16:02:51.394Z",
+  "id": "f_0b933fd4",
+  "lastDetected": "2026-07-03T16:02:51.394Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "scripts",
+  "relationships": [],
+  "rule": "VAL-HYG-001",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "REGRESSION"
+}
