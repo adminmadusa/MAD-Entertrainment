@@ -1,0 +1,36 @@
+{
+  "confidence": 0.9,
+  "createdDate": "2026-06-30T15:36:27.273Z",
+  "domain": "UI UX Guild",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "UIElement",
+    "line": 28,
+    "message": "Hardcoded color '#0d111d' detected. Standardize using design tokens/theme variables.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "UIElement",
+        "fingerprint": "d56137b6e4ce6b7178f7b20fa7548b28f6c4c05f55fb54430cd320ea620f0669",
+        "id": "d56137b6e4ce6b7178f7b20fa7548b28f6c4c05f55fb54430cd320ea620f0669",
+        "line": 28,
+        "message": "Hardcoded color '#0d111d' detected. Standardize using design tokens/theme variables.",
+        "snippet": "className=\"w-full max-w-sm bg-[#0d111d] rounded-2xl border border-white/10 p-6 space-y-6 text-center shadow-2xl relative z-10 focus:outline-none\""
+      }
+    ],
+    "path": "apps/web/src/components/booking/checkout/LeaveCheckoutModal.tsx",
+    "snippet": "className=\"w-full max-w-sm bg-[#0d111d] rounded-2xl border border-white/10 p-6 space-y-6 text-center shadow-2xl relative z-10 focus:outline-none\""
+  },
+  "feature": "UIElement",
+  "firstDetected": "2026-06-30T15:36:27.273Z",
+  "id": "f_c4a1bb1e",
+  "lastDetected": "2026-06-30T15:36:27.273Z",
+  "occurrenceCount": 1,
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-UI-007",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "CLOSED"
+}

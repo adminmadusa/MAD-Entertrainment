@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:51.711Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 80,
+    "message": "Imports within the same group must be sorted alphabetically (\"../../middleware/auth.middleware\" should precede \"./diagnostics.routes\").",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "e6ea9cff516230e9273702cc5648ea25926aaef7702bc2d880d705ed8e9bf76a",
+        "id": "e6ea9cff516230e9273702cc5648ea25926aaef7702bc2d880d705ed8e9bf76a",
+        "line": 80,
+        "message": "Imports within the same group must be sorted alphabetically (\"../../middleware/auth.middleware\" should precede \"./diagnostics.routes\")."
+      }
+    ],
+    "path": "apps/server/src/routes/admin/diagnostics.routes.test.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:51.711Z",
+  "id": "f_65459d16",
+  "lastDetected": "2026-07-03T12:25:51.711Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-001",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "REGRESSION"
+}

@@ -1,0 +1,35 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:52.222Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 14,
+    "message": "There should be no blank lines within the same import group.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "f4aff738d26c1c4f7d7c0fca6fc0104903a32fc4273afd52ef729ebd903f39b9",
+        "id": "f4aff738d26c1c4f7d7c0fca6fc0104903a32fc4273afd52ef729ebd903f39b9",
+        "line": 14,
+        "message": "There should be no blank lines within the same import group."
+      }
+    ],
+    "path": "apps/server/src/routes/public/booking.routes.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:52.222Z",
+  "id": "f_f609dab4",
+  "lastDetected": "2026-07-04T05:20:18.471Z",
+  "lastModified": "2026-07-04T05:20:18.471Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-001",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "REGRESSION"
+}

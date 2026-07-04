@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:50.070Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 3,
+    "message": "Groups of imports must be separated by a single blank line.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "65c4a3335ded4a408cb2454430950a43b2a20cafb257be0a48ecd5f8bd085d4d",
+        "id": "65c4a3335ded4a408cb2454430950a43b2a20cafb257be0a48ecd5f8bd085d4d",
+        "line": 3,
+        "message": "Groups of imports must be separated by a single blank line."
+      }
+    ],
+    "path": "apps/server/src/lib/email/templates/partial-refund.tsx"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:50.070Z",
+  "id": "f_3c5c0103",
+  "lastDetected": "2026-07-03T12:25:50.070Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-001",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "REGRESSION"
+}

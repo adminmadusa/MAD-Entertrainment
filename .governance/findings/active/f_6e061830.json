@@ -1,36 +1,37 @@
 {
-  "schemaVersion": 2,
-  "id": "f_6e061830",
-  "rule": "VAL-UI-010",
-  "ruleVersion": "1.0.0",
-  "engineVersion": "1.0.0",
-  "domain": "UI UX Guild",
-  "owner": "UI UX Guild",
-  "package": "apps",
-  "feature": "UIElement",
-  "status": "NEW",
   "confidence": 0.9,
-  "relationships": [],
+  "createdDate": "2026-06-30T15:36:27.286Z",
+  "domain": "UI UX Guild",
+  "engineVersion": "1.0.0",
   "evidence": {
-    "path": "apps/web/src/components/common/PopupManager.tsx",
     "construct": "UIElement",
-    "snippet": "<button",
-    "line": 65,
+    "line": 64,
     "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
     "occurrences": [
       {
-        "id": "3e7ae7122f1da0965108239cf15231cdff3608078a9605c6591bc9b5fbc0d333",
-        "line": 65,
         "column": 0,
         "construct": "UIElement",
-        "snippet": "<button",
+        "fingerprint": "3e7ae7122f1da0965108239cf15231cdff3608078a9605c6591bc9b5fbc0d333",
+        "id": "3e7ae7122f1da0965108239cf15231cdff3608078a9605c6591bc9b5fbc0d333",
+        "line": 64,
         "message": "Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.",
-        "fingerprint": "3e7ae7122f1da0965108239cf15231cdff3608078a9605c6591bc9b5fbc0d333"
+        "snippet": "<button"
       }
-    ]
+    ],
+    "path": "apps/web/src/components/common/PopupManager.tsx",
+    "snippet": "<button"
   },
-  "createdDate": "2026-06-30T15:36:27.286Z",
+  "feature": "UIElement",
   "firstDetected": "2026-06-30T15:36:27.286Z",
-  "lastDetected": "2026-06-30T15:36:27.286Z",
-  "occurrenceCount": 1
+  "id": "f_6e061830",
+  "lastDetected": "2026-07-04T05:20:18.559Z",
+  "lastModified": "2026-07-04T05:20:18.559Z",
+  "occurrenceCount": 1,
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-UI-010",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
 }

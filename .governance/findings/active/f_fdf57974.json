@@ -1,0 +1,114 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-04T05:20:18.047Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 185,
+    "message": "Trailing whitespace characters detected.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "9cbfe9431eece126ecd3cab84439549a0ac8d0f88c92de590065347875cd6223",
+        "id": "9cbfe9431eece126ecd3cab84439549a0ac8d0f88c92de590065347875cd6223",
+        "line": 97,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "9cbfe9431eece126ecd3cab84439549a0ac8d0f88c92de590065347875cd6223",
+        "id": "9cbfe9431eece126ecd3cab84439549a0ac8d0f88c92de590065347875cd6223",
+        "line": 117,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "9cbfe9431eece126ecd3cab84439549a0ac8d0f88c92de590065347875cd6223",
+        "id": "9cbfe9431eece126ecd3cab84439549a0ac8d0f88c92de590065347875cd6223",
+        "line": 130,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "9cbfe9431eece126ecd3cab84439549a0ac8d0f88c92de590065347875cd6223",
+        "id": "9cbfe9431eece126ecd3cab84439549a0ac8d0f88c92de590065347875cd6223",
+        "line": 150,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "9cbfe9431eece126ecd3cab84439549a0ac8d0f88c92de590065347875cd6223",
+        "id": "9cbfe9431eece126ecd3cab84439549a0ac8d0f88c92de590065347875cd6223",
+        "line": 153,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "9cbfe9431eece126ecd3cab84439549a0ac8d0f88c92de590065347875cd6223",
+        "id": "9cbfe9431eece126ecd3cab84439549a0ac8d0f88c92de590065347875cd6223",
+        "line": 156,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "9cbfe9431eece126ecd3cab84439549a0ac8d0f88c92de590065347875cd6223",
+        "id": "9cbfe9431eece126ecd3cab84439549a0ac8d0f88c92de590065347875cd6223",
+        "line": 158,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "9cbfe9431eece126ecd3cab84439549a0ac8d0f88c92de590065347875cd6223",
+        "id": "9cbfe9431eece126ecd3cab84439549a0ac8d0f88c92de590065347875cd6223",
+        "line": 166,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "9cbfe9431eece126ecd3cab84439549a0ac8d0f88c92de590065347875cd6223",
+        "id": "9cbfe9431eece126ecd3cab84439549a0ac8d0f88c92de590065347875cd6223",
+        "line": 172,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "9cbfe9431eece126ecd3cab84439549a0ac8d0f88c92de590065347875cd6223",
+        "id": "9cbfe9431eece126ecd3cab84439549a0ac8d0f88c92de590065347875cd6223",
+        "line": 176,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "9cbfe9431eece126ecd3cab84439549a0ac8d0f88c92de590065347875cd6223",
+        "id": "9cbfe9431eece126ecd3cab84439549a0ac8d0f88c92de590065347875cd6223",
+        "line": 185,
+        "message": "Trailing whitespace characters detected."
+      }
+    ],
+    "path": "scripts/gather-audit-data.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-04T05:20:18.047Z",
+  "id": "f_fdf57974",
+  "lastDetected": "2026-07-04T05:20:18.047Z",
+  "occurrenceCount": 11,
+  "owner": "Platform Team",
+  "package": "scripts",
+  "relationships": [],
+  "rule": "VAL-HYG-004",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

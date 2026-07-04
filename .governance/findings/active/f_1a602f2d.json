@@ -1,45 +1,37 @@
 {
-  "schemaVersion": 2,
-  "id": "f_1a602f2d",
-  "rule": "VAL-UI-003",
-  "ruleVersion": "1.0.0",
-  "engineVersion": "1.0.0",
-  "domain": "UI UX Guild",
-  "owner": "UI UX Guild",
-  "package": "apps",
-  "feature": "modal-accessibility",
-  "status": "NEW",
   "confidence": 1,
-  "relationships": [],
+  "createdDate": "2026-06-29T08:10:34.896Z",
+  "domain": "UI UX Guild",
+  "engineVersion": "1.0.0",
   "evidence": {
-    "path": "apps/admin/src/components/diagnostics/RetryAllModal.tsx",
     "construct": "modal-accessibility",
-    "snippet": "<div className=\"fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm\">",
     "line": 15,
     "message": "Custom modal backdrop is missing role=\"dialog\" or aria-modal=\"true\" accessibility tags.",
     "occurrences": [
       {
-        "id": "8f031f2828cbad6a06db178e45818a7bfa2fc72db9876c9b21758570618e62de",
-        "line": 15,
-        "column": 0,
-        "construct": "modal-accessibility",
-        "snippet": "<div className=\"fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm\">",
-        "message": "Custom modal backdrop is missing role=\"dialog\" or aria-modal=\"true\" accessibility tags.",
-        "fingerprint": "8f031f2828cbad6a06db178e45818a7bfa2fc72db9876c9b21758570618e62de"
-      },
-      {
-        "id": "ef9f131abcc826e2ea027df7b9e087ef274c9f8b821e1ae0073c6eaa0361004b",
-        "line": 15,
         "column": 0,
         "construct": "UIElement",
-        "snippet": "<div className=\"fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm\">",
+        "fingerprint": "ef9f131abcc826e2ea027df7b9e087ef274c9f8b821e1ae0073c6eaa0361004b",
+        "id": "ef9f131abcc826e2ea027df7b9e087ef274c9f8b821e1ae0073c6eaa0361004b",
+        "line": 15,
         "message": "Custom modal backdrop is missing role=\"dialog\" or aria-modal=\"true\" accessibility tags.",
-        "fingerprint": "ef9f131abcc826e2ea027df7b9e087ef274c9f8b821e1ae0073c6eaa0361004b"
+        "snippet": "<div className=\"fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm\">"
       }
-    ]
+    ],
+    "path": "apps/admin/src/components/diagnostics/RetryAllModal.tsx",
+    "snippet": "<div className=\"fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm\">"
   },
-  "createdDate": "2026-06-29T08:10:34.896Z",
+  "feature": "modal-accessibility",
   "firstDetected": "2026-06-29T08:10:34.896Z",
-  "lastDetected": "2026-06-30T15:36:27.214Z",
-  "occurrenceCount": 2
+  "id": "f_1a602f2d",
+  "lastDetected": "2026-07-04T05:20:18.412Z",
+  "lastModified": "2026-07-04T05:20:18.412Z",
+  "occurrenceCount": 1,
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-UI-003",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
 }

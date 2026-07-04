@@ -1,72 +1,64 @@
 {
-  "schemaVersion": 2,
-  "id": "f_35bd803f",
-  "rule": "VAL-UI-005",
-  "ruleVersion": "1.0.0",
-  "engineVersion": "1.0.0",
-  "domain": "UI UX Guild",
-  "owner": "UI UX Guild",
-  "package": "apps",
-  "feature": "button",
-  "status": "NEW",
   "confidence": 0.85,
-  "relationships": [],
+  "createdDate": "2026-06-29T08:10:44.720Z",
+  "domain": "UI UX Guild",
+  "engineVersion": "1.0.0",
   "evidence": {
-    "path": "apps/admin/src/components/events/EventTicketingCard.tsx",
     "construct": "button",
-    "snippet": "<button",
-    "line": 80,
+    "line": 122,
     "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
     "occurrences": [
       {
-        "id": "4e6425c25773640d28e21e36bf3c4d6767f14bcf5c6641c5ed47f58fb045ce3e",
-        "line": 80,
-        "column": 0,
-        "construct": "button",
-        "snippet": "<button",
-        "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
-        "fingerprint": "4e6425c25773640d28e21e36bf3c4d6767f14bcf5c6641c5ed47f58fb045ce3e"
-      },
-      {
-        "id": "3d2aec1478b4e757f9e3a785b2077c0d9fa233f82d7c26d93327834fa08ec724",
-        "line": 80,
         "column": 0,
         "construct": "UIElement",
-        "snippet": "<button",
+        "fingerprint": "3d2aec1478b4e757f9e3a785b2077c0d9fa233f82d7c26d93327834fa08ec724",
+        "id": "3d2aec1478b4e757f9e3a785b2077c0d9fa233f82d7c26d93327834fa08ec724",
+        "line": 80,
         "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
-        "fingerprint": "3d2aec1478b4e757f9e3a785b2077c0d9fa233f82d7c26d93327834fa08ec724"
+        "snippet": "<button"
       },
       {
+        "column": 0,
+        "construct": "UIElement",
+        "fingerprint": "3d2aec1478b4e757f9e3a785b2077c0d9fa233f82d7c26d93327834fa08ec724",
         "id": "3d2aec1478b4e757f9e3a785b2077c0d9fa233f82d7c26d93327834fa08ec724",
         "line": 91,
-        "column": 0,
-        "construct": "UIElement",
-        "snippet": "<button",
         "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
-        "fingerprint": "3d2aec1478b4e757f9e3a785b2077c0d9fa233f82d7c26d93327834fa08ec724"
+        "snippet": "<button"
       },
       {
+        "column": 0,
+        "construct": "UIElement",
+        "fingerprint": "3d2aec1478b4e757f9e3a785b2077c0d9fa233f82d7c26d93327834fa08ec724",
         "id": "3d2aec1478b4e757f9e3a785b2077c0d9fa233f82d7c26d93327834fa08ec724",
         "line": 109,
-        "column": 0,
-        "construct": "UIElement",
-        "snippet": "<button",
         "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
-        "fingerprint": "3d2aec1478b4e757f9e3a785b2077c0d9fa233f82d7c26d93327834fa08ec724"
+        "snippet": "<button"
       },
       {
-        "id": "3d2aec1478b4e757f9e3a785b2077c0d9fa233f82d7c26d93327834fa08ec724",
-        "line": 122,
         "column": 0,
         "construct": "UIElement",
-        "snippet": "<button",
+        "fingerprint": "3d2aec1478b4e757f9e3a785b2077c0d9fa233f82d7c26d93327834fa08ec724",
+        "id": "3d2aec1478b4e757f9e3a785b2077c0d9fa233f82d7c26d93327834fa08ec724",
+        "line": 122,
         "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
-        "fingerprint": "3d2aec1478b4e757f9e3a785b2077c0d9fa233f82d7c26d93327834fa08ec724"
+        "snippet": "<button"
       }
-    ]
+    ],
+    "path": "apps/admin/src/components/events/EventTicketingCard.tsx",
+    "snippet": "<button"
   },
-  "createdDate": "2026-06-29T08:10:44.720Z",
+  "feature": "button",
   "firstDetected": "2026-06-29T08:10:44.720Z",
-  "lastDetected": "2026-06-30T15:36:27.228Z",
-  "occurrenceCount": 5
+  "id": "f_35bd803f",
+  "lastDetected": "2026-07-04T05:20:18.423Z",
+  "lastModified": "2026-07-04T05:20:18.423Z",
+  "occurrenceCount": 4,
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-UI-005",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
 }

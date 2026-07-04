@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:52.222Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 14,
+    "message": "Duplicate import declaration from module path \"../../controllers/public/booking.controller\".",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "f554cdf7ac765923c6a73df17b9c54fe3006a903af4a1b074b1da7f76196162e",
+        "id": "f554cdf7ac765923c6a73df17b9c54fe3006a903af4a1b074b1da7f76196162e",
+        "line": 14,
+        "message": "Duplicate import declaration from module path \"../../controllers/public/booking.controller\"."
+      }
+    ],
+    "path": "apps/server/src/routes/public/booking.routes.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:52.222Z",
+  "id": "f_706b0d80",
+  "lastDetected": "2026-07-03T12:25:52.222Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-002",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "REGRESSION"
+}

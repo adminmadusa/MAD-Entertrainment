@@ -1,15 +1,14 @@
 'use client';
 
-import { PopupTrigger, POPUP_SESSION_KEY_PREFIX } from '@mad/shared';
-import { PopupCampaign } from '@mad/types';
 import { useQuery } from '@tanstack/react-query';
-import { useFocusTrap } from '@mad/ui';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState, useCallback } from 'react';
 
 import { publicGetActivePopups } from '@/lib/api/public.service';
-
+import { POPUP_SESSION_KEY_PREFIX, PopupTrigger } from '@mad/shared';
+import type { PopupCampaign } from '@mad/types';
+import { useFocusTrap } from '@mad/ui';
 
 import { FloatingCountdown } from './FloatingCountdown';
 

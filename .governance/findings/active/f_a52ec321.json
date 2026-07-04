@@ -11,15 +11,6 @@
       {
         "column": 0,
         "construct": "UIElement",
-        "fingerprint": "2daac7cc0941efab8918665ca3acbc66cdd99008637140a84f6bf314df30bc03",
-        "id": "2daac7cc0941efab8918665ca3acbc66cdd99008637140a84f6bf314df30bc03",
-        "line": 151,
-        "message": "Element <th> with click handler lacks a tabIndex or role attribute, breaking keyboard accessibility.",
-        "snippet": "<th onClick={() => handleSort('amount')} className=\"text-left text-text-muted font-medium py-3.5 px-4 cursor-pointer hover:text-white transition-colors select-none\">"
-      },
-      {
-        "column": 0,
-        "construct": "UIElement",
         "fingerprint": "115ddc040837b51c3b14f486cb7a5c291c542d0698966b6b888436361e9990e2",
         "id": "115ddc040837b51c3b14f486cb7a5c291c542d0698966b6b888436361e9990e2",
         "line": 151,
@@ -29,29 +20,11 @@
       {
         "column": 0,
         "construct": "UIElement",
-        "fingerprint": "2ffce916aa1470e79bcc61e4431bc8600f9c7003c8264116e7ebe2292e6d7040",
-        "id": "2ffce916aa1470e79bcc61e4431bc8600f9c7003c8264116e7ebe2292e6d7040",
-        "line": 155,
-        "message": "Element <th> with click handler lacks a tabIndex or role attribute, breaking keyboard accessibility.",
-        "snippet": "<th onClick={() => handleSort('status')} className=\"text-left text-text-muted font-medium py-3.5 px-4 cursor-pointer hover:text-white transition-colors select-none\">"
-      },
-      {
-        "column": 0,
-        "construct": "UIElement",
         "fingerprint": "9ef6f17b3a5c7970971e3c3393d4572360668973e4b701f6bf55a481d31cb2c6",
         "id": "9ef6f17b3a5c7970971e3c3393d4572360668973e4b701f6bf55a481d31cb2c6",
         "line": 155,
         "message": "Element <th> with click handler lacks a tabIndex or role attribute, breaking keyboard accessibility.",
         "snippet": "<th onClick={() => handleSort('status')} className=\"text-left text-text-muted font-medium py-3.5 px-4 cursor-pointer hover:text-white transition-colors select-none\">"
-      },
-      {
-        "column": 0,
-        "construct": "UIElement",
-        "fingerprint": "079bb262193db740a0c2159f0a363b48ffa1901b5244eccf2185f41dc03fb4e5",
-        "id": "079bb262193db740a0c2159f0a363b48ffa1901b5244eccf2185f41dc03fb4e5",
-        "line": 158,
-        "message": "Element <th> with click handler lacks a tabIndex or role attribute, breaking keyboard accessibility.",
-        "snippet": "<th onClick={() => handleSort('createdAt')} className=\"text-left text-text-muted font-medium py-3.5 px-4 cursor-pointer hover:text-white transition-colors select-none\">"
       },
       {
         "column": 0,
@@ -69,14 +42,14 @@
   "feature": "UIElement",
   "firstDetected": "2026-06-30T15:36:27.166Z",
   "id": "f_a52ec321",
-  "lastDetected": "2026-07-04T03:02:11.362Z",
-  "lastModified": "2026-07-04T03:02:11.362Z",
-  "occurrenceCount": 6,
+  "lastDetected": "2026-07-03T16:43:26.005Z",
+  "lastModified": "2026-07-03T16:43:26.005Z",
+  "occurrenceCount": 3,
   "owner": "UI UX Guild",
   "package": "apps",
   "relationships": [],
   "rule": "VAL-UI-009",
   "ruleVersion": "1.0.0",
   "schemaVersion": 2,
-  "status": "NEW"
+  "status": "REGRESSION"
 }

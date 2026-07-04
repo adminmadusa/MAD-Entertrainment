@@ -1,71 +1,35 @@
 {
-  "schemaVersion": 2,
-  "id": "f_a015cd0b",
-  "rule": "VAL-UI-011",
-  "ruleVersion": "1.0.0",
-  "engineVersion": "1.0.0",
-  "domain": "UI UX Guild",
-  "owner": "UI UX Guild",
-  "package": "apps",
-  "feature": "UIElement",
-  "status": "NEW",
   "confidence": 0.9,
-  "relationships": [],
+  "createdDate": "2026-06-30T15:36:27.169Z",
+  "domain": "UI UX Guild",
+  "engineVersion": "1.0.0",
   "evidence": {
-    "path": "apps/admin/src/app/refunds/page.tsx",
     "construct": "UIElement",
     "line": 1,
-    "message": "Duplicate component layout detected: shares 75% similarity with \"AdminTicketProfilesPage\" in \"apps/admin/src/app/ticket-profiles/page.tsx\". Recommendation: Extract the duplicated layout/logic from \"apps/admin/src/app/refunds/page.tsx\" and \"apps/admin/src/app/ticket-profiles/page.tsx\" into a single reusable shared component in \"packages/ui\".",
+    "message": "Duplicate component layout detected [Category C — Form, Confidence: 79%, Severity: WARNING]: shares similarity with \"AdminCouponsPage\" in \"apps/admin/src/app/coupons/page.tsx\". Recommendation: Extract reusable shared form component or local CRUD fields wrapper to dry-up page/form structure. (Estimated Effort: Medium (3-6 hours), Risk: Medium).",
     "occurrences": [
       {
-        "id": "8f39c06eb6a935fb2a152a465f516045dd532af7f6d1c816db1f55fe96798d9c",
-        "line": 1,
         "column": 0,
         "construct": "UIElement",
-        "snippet": "",
-        "message": "Duplicate component layout detected: shares 75% similarity with \"AdminTicketProfilesPage\" in \"apps/admin/src/app/ticket-profiles/page.tsx\". Recommendation: Extract the duplicated layout/logic from \"apps/admin/src/app/refunds/page.tsx\" and \"apps/admin/src/app/ticket-profiles/page.tsx\" into a single reusable shared component in \"packages/ui\".",
-        "fingerprint": "8f39c06eb6a935fb2a152a465f516045dd532af7f6d1c816db1f55fe96798d9c"
-      },
-      {
+        "fingerprint": "8f39c06eb6a935fb2a152a465f516045dd532af7f6d1c816db1f55fe96798d9c",
         "id": "8f39c06eb6a935fb2a152a465f516045dd532af7f6d1c816db1f55fe96798d9c",
         "line": 1,
-        "column": 0,
-        "construct": "UIElement",
-        "snippet": "",
-        "message": "Duplicate component layout detected: shares 76% similarity with \"AdminNotificationsPage\" in \"apps/admin/src/app/notifications/page.tsx\". Recommendation: Extract the duplicated layout/logic from \"apps/admin/src/app/notifications/page.tsx\" and \"apps/admin/src/app/refunds/page.tsx\" into a single reusable shared component in \"packages/ui\".",
-        "fingerprint": "8f39c06eb6a935fb2a152a465f516045dd532af7f6d1c816db1f55fe96798d9c"
-      },
-      {
-        "id": "8f39c06eb6a935fb2a152a465f516045dd532af7f6d1c816db1f55fe96798d9c",
-        "line": 1,
-        "column": 0,
-        "construct": "UIElement",
-        "snippet": "",
-        "message": "Duplicate component layout detected: shares 77% similarity with \"AdminDJsPage\" in \"apps/admin/src/app/dj-operators/page.tsx\". Recommendation: Extract the duplicated layout/logic from \"apps/admin/src/app/dj-operators/page.tsx\" and \"apps/admin/src/app/refunds/page.tsx\" into a single reusable shared component in \"packages/ui\".",
-        "fingerprint": "8f39c06eb6a935fb2a152a465f516045dd532af7f6d1c816db1f55fe96798d9c"
-      },
-      {
-        "id": "8f39c06eb6a935fb2a152a465f516045dd532af7f6d1c816db1f55fe96798d9c",
-        "line": 1,
-        "column": 0,
-        "construct": "UIElement",
-        "snippet": "",
-        "message": "Duplicate component layout detected: shares 78% similarity with \"AdminEventsPage\" in \"apps/admin/src/app/events/page.tsx\". Recommendation: Extract the duplicated layout/logic from \"apps/admin/src/app/events/page.tsx\" and \"apps/admin/src/app/refunds/page.tsx\" into a single reusable shared component in \"packages/ui\".",
-        "fingerprint": "8f39c06eb6a935fb2a152a465f516045dd532af7f6d1c816db1f55fe96798d9c"
-      },
-      {
-        "id": "8f39c06eb6a935fb2a152a465f516045dd532af7f6d1c816db1f55fe96798d9c",
-        "line": 1,
-        "column": 0,
-        "construct": "UIElement",
-        "snippet": "",
-        "message": "Duplicate component layout detected: shares 79% similarity with \"AdminCouponsPage\" in \"apps/admin/src/app/coupons/page.tsx\". Recommendation: Extract the duplicated layout/logic from \"apps/admin/src/app/coupons/page.tsx\" and \"apps/admin/src/app/refunds/page.tsx\" into a single reusable shared component in \"packages/ui\".",
-        "fingerprint": "8f39c06eb6a935fb2a152a465f516045dd532af7f6d1c816db1f55fe96798d9c"
+        "message": "Duplicate component layout detected [Category C — Form, Confidence: 75%, Severity: WARNING]: shares similarity with \"AdminTicketProfilesPage\" in \"apps/admin/src/app/ticket-profiles/page.tsx\". Recommendation: Extract reusable shared form component or local CRUD fields wrapper to dry-up page/form structure. (Estimated Effort: Medium (3-6 hours), Risk: Medium)."
       }
-    ]
+    ],
+    "path": "apps/admin/src/app/refunds/page.tsx"
   },
-  "createdDate": "2026-06-30T15:36:27.169Z",
+  "feature": "UIElement",
   "firstDetected": "2026-06-30T15:36:27.169Z",
-  "lastDetected": "2026-06-30T15:36:27.170Z",
-  "occurrenceCount": 5
+  "id": "f_a015cd0b",
+  "lastDetected": "2026-07-04T05:20:18.384Z",
+  "lastModified": "2026-07-04T05:20:18.384Z",
+  "occurrenceCount": 1,
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-UI-011",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
 }

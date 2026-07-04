@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:48.599Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 3,
+    "message": "Imports within the same group must be sorted alphabetically (\"@/lib/api/client\" should precede \"@mad/types\").",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "8ccab6184167036e8d99d4fe0e43a59f36fe80fdb54df7258ca7cbd79ac6928c",
+        "id": "8ccab6184167036e8d99d4fe0e43a59f36fe80fdb54df7258ca7cbd79ac6928c",
+        "line": 3,
+        "message": "Imports within the same group must be sorted alphabetically (\"@/lib/api/client\" should precede \"@mad/types\")."
+      }
+    ],
+    "path": "apps/admin/src/lib/api/admin/popup.service.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:48.599Z",
+  "id": "f_cd7c8282",
+  "lastDetected": "2026-07-03T12:25:48.599Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-001",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "REGRESSION"
+}

@@ -1,45 +1,37 @@
 {
-  "schemaVersion": 2,
-  "id": "f_09fec16c",
-  "rule": "VAL-UI-002",
-  "ruleVersion": "1.0.0",
-  "engineVersion": "1.0.0",
-  "domain": "UI UX Guild",
-  "owner": "UI UX Guild",
-  "package": "apps",
-  "feature": "modal-backdrop",
-  "status": "NEW",
   "confidence": 1,
-  "relationships": [],
+  "createdDate": "2026-06-29T08:10:36.370Z",
+  "domain": "UI UX Guild",
+  "engineVersion": "1.0.0",
   "evidence": {
-    "path": "apps/admin/src/components/diagnostics/RetryJobModal.tsx",
     "construct": "modal-backdrop",
-    "snippet": "<div className=\"fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm\">",
     "line": 17,
     "message": "Custom backdrop & modal container coded. Use shared <Modal> component from @mad/ui to avoid styles drift.",
     "occurrences": [
       {
-        "id": "47d33edf9dcf570527eb045a69c0c2980397fb2d87f5fb7cceed05b326254570",
-        "line": 17,
-        "column": 0,
-        "construct": "modal-backdrop",
-        "snippet": "<div className=\"fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm\">",
-        "message": "Custom backdrop & modal container coded. Use shared <Modal> component from @mad/ui to avoid styles drift.",
-        "fingerprint": "47d33edf9dcf570527eb045a69c0c2980397fb2d87f5fb7cceed05b326254570"
-      },
-      {
-        "id": "c448b09acf3281f090aaefaa54ec97a224c1a2c4b10ee966a57e7111164cc8bd",
-        "line": 17,
         "column": 0,
         "construct": "UIElement",
-        "snippet": "<div className=\"fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm\">",
+        "fingerprint": "c448b09acf3281f090aaefaa54ec97a224c1a2c4b10ee966a57e7111164cc8bd",
+        "id": "c448b09acf3281f090aaefaa54ec97a224c1a2c4b10ee966a57e7111164cc8bd",
+        "line": 17,
         "message": "Custom backdrop & modal container coded. Use shared <Modal> component from @mad/ui to avoid styles drift.",
-        "fingerprint": "c448b09acf3281f090aaefaa54ec97a224c1a2c4b10ee966a57e7111164cc8bd"
+        "snippet": "<div className=\"fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm\">"
       }
-    ]
+    ],
+    "path": "apps/admin/src/components/diagnostics/RetryJobModal.tsx",
+    "snippet": "<div className=\"fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm\">"
   },
-  "createdDate": "2026-06-29T08:10:36.370Z",
+  "feature": "modal-backdrop",
   "firstDetected": "2026-06-29T08:10:36.370Z",
-  "lastDetected": "2026-06-30T15:36:27.215Z",
-  "occurrenceCount": 2
+  "id": "f_09fec16c",
+  "lastDetected": "2026-07-04T05:20:18.413Z",
+  "lastModified": "2026-07-04T05:20:18.413Z",
+  "occurrenceCount": 1,
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-UI-002",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
 }

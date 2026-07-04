@@ -1,0 +1,11 @@
+{
+  "history": [
+    {
+      "action": "CREATED",
+      "notes": "New grouped finding registered: Local Zod schema (z.object()) declared outside the shared validation package. Move this schema to 'packages/validations/src/' and re-export it from '@mad/validations'.",
+      "status": "NEW",
+      "timestamp": "2026-07-04T05:20:15.231Z"
+    }
+  ],
+  "id": "f_cf23d79d"
+}

@@ -1,6 +1,6 @@
 {
   "confidence": 1,
-  "createdDate": "2026-07-04T03:02:11.357Z",
+  "createdDate": "2026-07-03T16:39:41.030Z",
   "domain": "Architecture Review Board",
   "engineVersion": "1.0.0",
   "evidence": {
@@ -19,9 +19,9 @@
     "path": ".agents/skills/governance-audit/SKILL.md"
   },
   "feature": "Document",
-  "firstDetected": "2026-07-04T03:02:11.357Z",
+  "firstDetected": "2026-07-03T16:39:41.030Z",
   "id": "f_e22f42e3",
-  "lastDetected": "2026-07-04T03:02:11.357Z",
+  "lastDetected": "2026-07-03T16:39:41.030Z",
   "occurrenceCount": 1,
   "owner": "Architecture Review Board",
   "package": ".agents",
@@ -29,5 +29,5 @@
   "rule": "Missing Document Owner",
   "ruleVersion": "1.0.0",
   "schemaVersion": 2,
-  "status": "NEW"
+  "status": "REGRESSION"
 }

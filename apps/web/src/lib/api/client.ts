@@ -1,8 +1,8 @@
-import { STORAGE_KEYS } from '@mad/shared';
-import axios, { AxiosError, AxiosInstance, InternalAxiosRequestConfig } from 'axios';
-import { isTokenExpired } from '@mad/utils';
+import axios, { AxiosError, type AxiosInstance, type InternalAxiosRequestConfig } from 'axios';
 
+import { STORAGE_KEYS } from '@mad/shared';
 import { API_URL } from '@mad/shared/config/frontend';
+import { isTokenExpired } from '@mad/utils';
 const BASE_URL = API_URL;
 
 // Custom request configuration interface to prevent unsafe 'any' casts

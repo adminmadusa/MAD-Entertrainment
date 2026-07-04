@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-04T05:20:15.082Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 21,
+    "message": "Trailing whitespace characters detected.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "c656dbe54b8edd84dc3d562b1c0548cc825056d5f745c4638b933e379307bbe3",
+        "id": "c656dbe54b8edd84dc3d562b1c0548cc825056d5f745c4638b933e379307bbe3",
+        "line": 21,
+        "message": "Trailing whitespace characters detected."
+      }
+    ],
+    "path": "apps/server/src/middleware/cache.middleware.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-04T05:20:15.082Z",
+  "id": "f_c00c0e31",
+  "lastDetected": "2026-07-04T05:20:15.082Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-004",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

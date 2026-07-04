@@ -1,36 +1,37 @@
 {
-  "schemaVersion": 2,
-  "id": "f_79df5b8c",
-  "rule": "VAL-UI-008",
-  "ruleVersion": "1.0.0",
-  "engineVersion": "1.0.0",
-  "domain": "UI UX Guild",
-  "owner": "UI UX Guild",
-  "package": "apps",
-  "feature": "UIElement",
-  "status": "NEW",
   "confidence": 0.9,
-  "relationships": [],
+  "createdDate": "2026-07-03T16:43:21.072Z",
+  "domain": "UI UX Guild",
+  "engineVersion": "1.0.0",
   "evidence": {
-    "path": "apps/admin/src/app/events/page.tsx",
     "construct": "UIElement",
-    "snippet": "<h3 className=\"text-white font-bold text-lg mb-2\">Delete Event?</h3>",
     "line": 293,
     "message": "Heading level jump detected (h3 after h1). Headings must follow a strict sequential hierarchy (h1 -> h2 -> h3).",
     "occurrences": [
       {
-        "id": "5bea7ded69cd6a8f5219ca41b39e8c87107a029a278f8030bff5686912e2d8e6",
-        "line": 293,
         "column": 0,
         "construct": "UIElement",
-        "snippet": "<h3 className=\"text-white font-bold text-lg mb-2\">Delete Event?</h3>",
+        "fingerprint": "5bea7ded69cd6a8f5219ca41b39e8c87107a029a278f8030bff5686912e2d8e6",
+        "id": "5bea7ded69cd6a8f5219ca41b39e8c87107a029a278f8030bff5686912e2d8e6",
+        "line": 293,
         "message": "Heading level jump detected (h3 after h1). Headings must follow a strict sequential hierarchy (h1 -> h2 -> h3).",
-        "fingerprint": "5bea7ded69cd6a8f5219ca41b39e8c87107a029a278f8030bff5686912e2d8e6"
+        "snippet": "<h3 className=\"text-white font-bold text-lg mb-2\">Delete Event?</h3>"
       }
-    ]
+    ],
+    "path": "apps/admin/src/app/events/page.tsx",
+    "snippet": "<h3 className=\"text-white font-bold text-lg mb-2\">Delete Event?</h3>"
   },
-  "createdDate": "2026-06-30T15:36:27.149Z",
-  "firstDetected": "2026-06-30T15:36:27.149Z",
-  "lastDetected": "2026-06-30T15:36:27.149Z",
-  "occurrenceCount": 1
+  "feature": "UIElement",
+  "firstDetected": "2026-07-03T16:43:21.072Z",
+  "id": "f_79df5b8c",
+  "lastDetected": "2026-07-04T05:30:03.731Z",
+  "lastModified": "2026-07-04T05:30:03.731Z",
+  "occurrenceCount": 1,
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-UI-008",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "REGRESSION"
 }

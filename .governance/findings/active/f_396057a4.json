@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:55.669Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 14,
+    "message": "Import from types module \"@/types/auth\" should use \"import type\".",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "228a83cec0cf237a4c16a2e16f24859bca574afdcd01554ce76dcaee79ab4f36",
+        "id": "228a83cec0cf237a4c16a2e16f24859bca574afdcd01554ce76dcaee79ab4f36",
+        "line": 14,
+        "message": "Import from types module \"@/types/auth\" should use \"import type\"."
+      }
+    ],
+    "path": "apps/web/src/components/auth/AuthForm.tsx"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:55.669Z",
+  "id": "f_396057a4",
+  "lastDetected": "2026-07-03T12:25:55.669Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-003",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "REGRESSION"
+}

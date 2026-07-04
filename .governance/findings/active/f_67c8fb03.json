@@ -11,15 +11,6 @@
       {
         "column": 0,
         "construct": "UIElement",
-        "fingerprint": "096ee9714587eea48c9178a1ffeb78063a42c96e3ecf4ae069a60b2dccda96e1",
-        "id": "096ee9714587eea48c9178a1ffeb78063a42c96e3ecf4ae069a60b2dccda96e1",
-        "line": 20,
-        "message": "Element <div> with click handler lacks a tabIndex or role attribute, breaking keyboard accessibility.",
-        "snippet": "<div className=\"absolute inset-0\" onClick={onClose} />"
-      },
-      {
-        "column": 0,
-        "construct": "UIElement",
         "fingerprint": "35adc5fb6f440ea84910275f9936bce08f467643493c093477d2cb35353a0b35",
         "id": "35adc5fb6f440ea84910275f9936bce08f467643493c093477d2cb35353a0b35",
         "line": 20,
@@ -33,9 +24,9 @@
   "feature": "UIElement",
   "firstDetected": "2026-06-30T15:36:27.273Z",
   "id": "f_67c8fb03",
-  "lastDetected": "2026-07-04T03:02:11.396Z",
-  "lastModified": "2026-07-04T03:02:11.396Z",
-  "occurrenceCount": 2,
+  "lastDetected": "2026-07-04T05:20:18.551Z",
+  "lastModified": "2026-07-04T05:20:18.551Z",
+  "occurrenceCount": 1,
   "owner": "UI UX Guild",
   "package": "apps",
   "relationships": [],

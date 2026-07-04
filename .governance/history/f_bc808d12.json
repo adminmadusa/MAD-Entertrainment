@@ -1,0 +1,11 @@
+{
+  "history": [
+    {
+      "action": "CREATED",
+      "notes": "New grouped finding registered: console.error() used in server production code. Use the approved logger (import { logger } from '../../utils/logger') instead.",
+      "status": "NEW",
+      "timestamp": "2026-07-04T05:20:15.331Z"
+    }
+  ],
+  "id": "f_bc808d12"
+}

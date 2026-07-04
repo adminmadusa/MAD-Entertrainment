@@ -1,0 +1,29 @@
+{
+  "history": [
+    {
+      "action": "DETECTED_AGAIN",
+      "notes": "Finding regressed. Code violation re-introduced. (Transitioned from CLOSED to REGRESSION)",
+      "status": "REGRESSION",
+      "timestamp": "2026-07-04T05:20:18.318Z"
+    },
+    {
+      "action": "UPDATED",
+      "notes": "Occurrences updated. Active count: 1",
+      "status": "REGRESSION",
+      "timestamp": "2026-07-04T05:20:18.398Z"
+    },
+    {
+      "action": "DETECTED_AGAIN",
+      "notes": "Finding regressed. Code violation re-introduced. (Transitioned from CLOSED to REGRESSION)",
+      "status": "REGRESSION",
+      "timestamp": "2026-07-04T05:30:03.726Z"
+    },
+    {
+      "action": "UPDATED",
+      "notes": "Occurrences updated. Active count: 1",
+      "status": "REGRESSION",
+      "timestamp": "2026-07-04T05:30:03.732Z"
+    }
+  ],
+  "id": "f_de632e1a"
+}

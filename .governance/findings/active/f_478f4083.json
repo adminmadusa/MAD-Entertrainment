@@ -1,54 +1,46 @@
 {
-  "schemaVersion": 2,
-  "id": "f_478f4083",
-  "rule": "VAL-UI-005",
-  "ruleVersion": "1.0.0",
-  "engineVersion": "1.0.0",
-  "domain": "UI UX Guild",
-  "owner": "UI UX Guild",
-  "package": "apps",
-  "feature": "button",
-  "status": "NEW",
   "confidence": 0.85,
-  "relationships": [],
+  "createdDate": "2026-06-29T08:10:44.777Z",
+  "domain": "UI UX Guild",
+  "engineVersion": "1.0.0",
   "evidence": {
-    "path": "apps/admin/src/components/ticket-profiles/TicketGroupCard.tsx",
     "construct": "button",
-    "snippet": "<button",
-    "line": 32,
+    "line": 68,
     "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
     "occurrences": [
       {
-        "id": "a94dc3f4563900b73d32c67154d309aa8c88df3cc30d39f600353fc68f1bfbac",
-        "line": 32,
-        "column": 0,
-        "construct": "button",
-        "snippet": "<button",
-        "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
-        "fingerprint": "a94dc3f4563900b73d32c67154d309aa8c88df3cc30d39f600353fc68f1bfbac"
-      },
-      {
-        "id": "0df39d904caea2f66d8358e15ce19167efabd563369115a538615b2322cab754",
-        "line": 32,
         "column": 0,
         "construct": "UIElement",
-        "snippet": "<button",
+        "fingerprint": "0df39d904caea2f66d8358e15ce19167efabd563369115a538615b2322cab754",
+        "id": "0df39d904caea2f66d8358e15ce19167efabd563369115a538615b2322cab754",
+        "line": 32,
         "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
-        "fingerprint": "0df39d904caea2f66d8358e15ce19167efabd563369115a538615b2322cab754"
+        "snippet": "<button"
       },
       {
+        "column": 0,
+        "construct": "UIElement",
+        "fingerprint": "0df39d904caea2f66d8358e15ce19167efabd563369115a538615b2322cab754",
         "id": "0df39d904caea2f66d8358e15ce19167efabd563369115a538615b2322cab754",
         "line": 68,
-        "column": 0,
-        "construct": "UIElement",
-        "snippet": "<button",
         "message": "Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.",
-        "fingerprint": "0df39d904caea2f66d8358e15ce19167efabd563369115a538615b2322cab754"
+        "snippet": "<button"
       }
-    ]
+    ],
+    "path": "apps/admin/src/components/ticket-profiles/TicketGroupCard.tsx",
+    "snippet": "<button"
   },
-  "createdDate": "2026-06-29T08:10:44.777Z",
+  "feature": "button",
   "firstDetected": "2026-06-29T08:10:44.777Z",
-  "lastDetected": "2026-06-30T15:36:27.232Z",
-  "occurrenceCount": 3
+  "id": "f_478f4083",
+  "lastDetected": "2026-07-04T05:20:18.425Z",
+  "lastModified": "2026-07-04T05:20:18.425Z",
+  "occurrenceCount": 2,
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-UI-005",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
 }

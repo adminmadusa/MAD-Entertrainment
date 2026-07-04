@@ -1,0 +1,42 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-04T05:20:15.254Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 32,
+    "message": "Trailing whitespace characters detected.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "3fdba4b8909bbcac882f158ad2d9d9231e5a44a6b866871ffe0bef51a72dd257",
+        "id": "3fdba4b8909bbcac882f158ad2d9d9231e5a44a6b866871ffe0bef51a72dd257",
+        "line": 17,
+        "message": "Trailing whitespace characters detected."
+      },
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "3fdba4b8909bbcac882f158ad2d9d9231e5a44a6b866871ffe0bef51a72dd257",
+        "id": "3fdba4b8909bbcac882f158ad2d9d9231e5a44a6b866871ffe0bef51a72dd257",
+        "line": 32,
+        "message": "Trailing whitespace characters detected."
+      }
+    ],
+    "path": "apps/server/src/routes/health.routes.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-04T05:20:15.254Z",
+  "id": "f_c8c5b4b2",
+  "lastDetected": "2026-07-04T05:20:15.254Z",
+  "occurrenceCount": 2,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-004",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

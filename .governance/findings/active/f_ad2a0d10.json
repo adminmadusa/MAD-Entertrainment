@@ -1,45 +1,37 @@
 {
-  "schemaVersion": 2,
-  "id": "f_ad2a0d10",
-  "rule": "VAL-UI-002",
-  "ruleVersion": "1.0.0",
-  "engineVersion": "1.0.0",
-  "domain": "UI UX Guild",
-  "owner": "UI UX Guild",
-  "package": "apps",
-  "feature": "modal-backdrop",
-  "status": "NEW",
   "confidence": 1,
-  "relationships": [],
+  "createdDate": "2026-06-29T08:10:29.123Z",
+  "domain": "UI UX Guild",
+  "engineVersion": "1.0.0",
   "evidence": {
-    "path": "apps/admin/src/components/diagnostics/DlqInspectorDrawer.tsx",
     "construct": "modal-backdrop",
-    "snippet": "<div className=\"fixed inset-0 z-50 flex justify-end bg-black/60 backdrop-blur-sm transition-opacity\">",
     "line": 25,
     "message": "Custom backdrop & modal container coded. Use shared <Modal> component from @mad/ui to avoid styles drift.",
     "occurrences": [
       {
-        "id": "b9d8462f72db87df9e406b7b04138587c5e5890148f2970db70f219b59667d9f",
-        "line": 25,
-        "column": 0,
-        "construct": "modal-backdrop",
-        "snippet": "<div className=\"fixed inset-0 z-50 flex justify-end bg-black/60 backdrop-blur-sm transition-opacity\">",
-        "message": "Custom backdrop & modal container coded. Use shared <Modal> component from @mad/ui to avoid styles drift.",
-        "fingerprint": "b9d8462f72db87df9e406b7b04138587c5e5890148f2970db70f219b59667d9f"
-      },
-      {
-        "id": "bc5745e1793b53a8a6e98a31dbeca5a996a610ce84961aec52c49b2f0b1b852c",
-        "line": 25,
         "column": 0,
         "construct": "UIElement",
-        "snippet": "<div className=\"fixed inset-0 z-50 flex justify-end bg-black/60 backdrop-blur-sm transition-opacity\">",
+        "fingerprint": "bc5745e1793b53a8a6e98a31dbeca5a996a610ce84961aec52c49b2f0b1b852c",
+        "id": "bc5745e1793b53a8a6e98a31dbeca5a996a610ce84961aec52c49b2f0b1b852c",
+        "line": 25,
         "message": "Custom backdrop & modal container coded. Use shared <Modal> component from @mad/ui to avoid styles drift.",
-        "fingerprint": "bc5745e1793b53a8a6e98a31dbeca5a996a610ce84961aec52c49b2f0b1b852c"
+        "snippet": "<div className=\"fixed inset-0 z-50 flex justify-end bg-black/60 backdrop-blur-sm transition-opacity\">"
       }
-    ]
+    ],
+    "path": "apps/admin/src/components/diagnostics/DlqInspectorDrawer.tsx",
+    "snippet": "<div className=\"fixed inset-0 z-50 flex justify-end bg-black/60 backdrop-blur-sm transition-opacity\">"
   },
-  "createdDate": "2026-06-29T08:10:29.123Z",
+  "feature": "modal-backdrop",
   "firstDetected": "2026-06-29T08:10:29.123Z",
-  "lastDetected": "2026-06-30T15:36:27.208Z",
-  "occurrenceCount": 2
+  "id": "f_ad2a0d10",
+  "lastDetected": "2026-07-04T05:20:18.408Z",
+  "lastModified": "2026-07-04T05:20:18.408Z",
+  "occurrenceCount": 1,
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-UI-002",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
 }

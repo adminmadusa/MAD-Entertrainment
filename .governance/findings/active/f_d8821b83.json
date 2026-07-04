@@ -5,7 +5,7 @@
   "engineVersion": "1.0.0",
   "evidence": {
     "construct": "UIElement",
-    "line": 438,
+    "line": 460,
     "message": "Element <div> with click handler lacks a tabIndex or role attribute, breaking keyboard accessibility.",
     "occurrences": [
       {
@@ -13,7 +13,7 @@
         "construct": "UIElement",
         "fingerprint": "430697709fb506eb902772edaafbabe0a42c24c16ffb11a62a1e4c9416e45b4b",
         "id": "430697709fb506eb902772edaafbabe0a42c24c16ffb11a62a1e4c9416e45b4b",
-        "line": 438,
+        "line": 460,
         "message": "Element <div> with click handler lacks a tabIndex or role attribute, breaking keyboard accessibility.",
         "snippet": "<div"
       }
@@ -24,8 +24,8 @@
   "feature": "UIElement",
   "firstDetected": "2026-07-03T07:29:55.197Z",
   "id": "f_d8821b83",
-  "lastDetected": "2026-07-03T17:05:04.424Z",
-  "lastModified": "2026-07-03T17:05:04.424Z",
+  "lastDetected": "2026-07-04T05:20:18.421Z",
+  "lastModified": "2026-07-04T05:20:18.421Z",
   "occurrenceCount": 1,
   "owner": "UI UX Guild",
   "package": "apps",

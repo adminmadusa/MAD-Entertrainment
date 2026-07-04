@@ -1,6 +1,7 @@
 import { cache } from 'react';
+
 import { publicGetEventBySlug } from '@/lib/api/public.service';
-import { Event } from '@mad/types';
+import type { Event } from '@mad/types';
 
 /**
  * Request-scoped cached helper to retrieve event by slug on the server.

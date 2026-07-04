@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:55.033Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 3,
+    "message": "Import from types module \"@mad/types\" should use \"import type\".",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "bb8ff9d4de566014a017905a87a539f9decfbaf15ad2731ac46790e9e8667a8d",
+        "id": "bb8ff9d4de566014a017905a87a539f9decfbaf15ad2731ac46790e9e8667a8d",
+        "line": 3,
+        "message": "Import from types module \"@mad/types\" should use \"import type\"."
+      }
+    ],
+    "path": "apps/web/src/app/events/[slug]/components/EventGallery.tsx"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:55.033Z",
+  "id": "f_682439c7",
+  "lastDetected": "2026-07-03T12:25:55.033Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-003",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "REGRESSION"
+}

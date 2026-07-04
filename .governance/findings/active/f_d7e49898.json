@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-04T05:20:15.331Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 27,
+    "message": "Duplicate import declaration from module path \"@mad/shared\".",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "fbc2eb5aa4004aa4c0de3c2afe6685e9c727269e6e997031f4b5478bef3cc834",
+        "id": "fbc2eb5aa4004aa4c0de3c2afe6685e9c727269e6e997031f4b5478bef3cc834",
+        "line": 27,
+        "message": "Duplicate import declaration from module path \"@mad/shared\"."
+      }
+    ],
+    "path": "apps/server/src/services/admin/booking.service.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-04T05:20:15.331Z",
+  "id": "f_d7e49898",
+  "lastDetected": "2026-07-04T05:20:15.331Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-002",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

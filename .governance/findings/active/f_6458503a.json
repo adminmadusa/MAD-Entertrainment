@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-03T12:25:59.542Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 3,
+    "message": "Groups of imports must be separated by a single blank line.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "5568eebaecce776e8288f015c14adf2d1a8666af162d0692eb9290d0b1315c8f",
+        "id": "5568eebaecce776e8288f015c14adf2d1a8666af162d0692eb9290d0b1315c8f",
+        "line": 3,
+        "message": "Groups of imports must be separated by a single blank line."
+      }
+    ],
+    "path": "scripts/governance/core/fixers/blank_line_fixer.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-03T12:25:59.542Z",
+  "id": "f_6458503a",
+  "lastDetected": "2026-07-03T12:25:59.542Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "scripts",
+  "relationships": [],
+  "rule": "VAL-HYG-001",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "REGRESSION"
+}

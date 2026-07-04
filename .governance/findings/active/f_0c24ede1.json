@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-04T05:20:15.996Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 127,
+    "message": "File must terminate with exactly one trailing newline character.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "f611b9b3c6f092aba43e21b8a9e0051bf407fe9d30514774865108ac74516dbe",
+        "id": "f611b9b3c6f092aba43e21b8a9e0051bf407fe9d30514774865108ac74516dbe",
+        "line": 127,
+        "message": "File must terminate with exactly one trailing newline character."
+      }
+    ],
+    "path": "apps/server/src/utils/jwt.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-04T05:20:15.996Z",
+  "id": "f_0c24ede1",
+  "lastDetected": "2026-07-04T05:20:15.996Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-005",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}

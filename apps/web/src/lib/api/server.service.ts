@@ -1,6 +1,7 @@
-import 'server-only';
-import { Event, DJOperator } from '@mad/types';
 import { API_URL } from '@mad/shared/config/frontend';
+import type { DJOperator, Event } from '@mad/types';
+
+import 'server-only';
 
 // Detect Next.js build compilation phase
 const isBuildPhase = process.env.NEXT_PHASE === 'phase-production-build';

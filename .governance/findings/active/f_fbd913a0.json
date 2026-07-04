@@ -1,45 +1,37 @@
 {
-  "schemaVersion": 2,
-  "id": "f_fbd913a0",
-  "rule": "VAL-UI-002",
-  "ruleVersion": "1.0.0",
-  "engineVersion": "1.0.0",
-  "domain": "UI UX Guild",
-  "owner": "UI UX Guild",
-  "package": "apps",
-  "feature": "modal-backdrop",
-  "status": "NEW",
   "confidence": 1,
-  "relationships": [],
+  "createdDate": "2026-06-29T08:09:51.907Z",
+  "domain": "UI UX Guild",
+  "engineVersion": "1.0.0",
   "evidence": {
-    "path": "apps/admin/src/app/bookings/_components/BookingDetailsModal.tsx",
     "construct": "modal-backdrop",
-    "snippet": "<div className=\"fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-40 p-4\">",
     "line": 58,
     "message": "Custom backdrop & modal container coded. Use shared <Modal> component from @mad/ui to avoid styles drift.",
     "occurrences": [
       {
-        "id": "7246312b1dd3a7db2756f74acd3b77b931445ca1d797b3afc31807df0b57d577",
-        "line": 58,
-        "column": 0,
-        "construct": "modal-backdrop",
-        "snippet": "<div className=\"fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-40 p-4\">",
-        "message": "Custom backdrop & modal container coded. Use shared <Modal> component from @mad/ui to avoid styles drift.",
-        "fingerprint": "7246312b1dd3a7db2756f74acd3b77b931445ca1d797b3afc31807df0b57d577"
-      },
-      {
-        "id": "60de5741a02c8b806f5148a979367b77e1b0cc7c04683b1736f066d4cd52f830",
-        "line": 58,
         "column": 0,
         "construct": "UIElement",
-        "snippet": "<div className=\"fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-40 p-4\">",
+        "fingerprint": "60de5741a02c8b806f5148a979367b77e1b0cc7c04683b1736f066d4cd52f830",
+        "id": "60de5741a02c8b806f5148a979367b77e1b0cc7c04683b1736f066d4cd52f830",
+        "line": 58,
         "message": "Custom backdrop & modal container coded. Use shared <Modal> component from @mad/ui to avoid styles drift.",
-        "fingerprint": "60de5741a02c8b806f5148a979367b77e1b0cc7c04683b1736f066d4cd52f830"
+        "snippet": "<div className=\"fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-40 p-4\">"
       }
-    ]
+    ],
+    "path": "apps/admin/src/app/bookings/_components/BookingDetailsModal.tsx",
+    "snippet": "<div className=\"fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-40 p-4\">"
   },
-  "createdDate": "2026-06-29T08:09:51.907Z",
+  "feature": "modal-backdrop",
   "firstDetected": "2026-06-29T08:09:51.907Z",
-  "lastDetected": "2026-06-30T15:36:27.116Z",
-  "occurrenceCount": 2
+  "id": "f_fbd913a0",
+  "lastDetected": "2026-07-04T05:20:18.352Z",
+  "lastModified": "2026-07-04T05:20:18.352Z",
+  "occurrenceCount": 1,
+  "owner": "UI UX Guild",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-UI-002",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
 }

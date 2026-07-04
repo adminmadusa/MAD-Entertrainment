@@ -1,0 +1,11 @@
+{
+  "history": [
+    {
+      "action": "CREATED",
+      "notes": "New grouped finding registered: Duplicate import declaration from module path \"@asteasolutions/zod-to-openapi\".",
+      "status": "NEW",
+      "timestamp": "2026-07-04T05:20:14.643Z"
+    }
+  ],
+  "id": "f_d0af2687"
+}

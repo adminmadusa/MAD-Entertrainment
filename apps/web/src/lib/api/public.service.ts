@@ -1,8 +1,8 @@
-import { Event, Booking, Ticket, DJOperator, PopupCampaign, PaginatedDataResponse } from '@mad/types';
-import { AuthUser, AuthResponse, VerificationCodeRequestResponse, VerifyVerificationCodeOrOTPPayload } from '../../types/auth';
-import { ReserveTicketsInput, CheckoutDetailsInput } from '@mad/validations';
 import { STORAGE_VERSION } from '@mad/shared';
+import type { Booking, DJOperator, Event, PaginatedDataResponse, PopupCampaign, Ticket } from '@mad/types';
+import { CheckoutDetailsInput, ReserveTicketsInput } from '@mad/validations';
 
+import type { AuthResponse, AuthUser, VerificationCodeRequestResponse, VerifyVerificationCodeOrOTPPayload } from '../../types/auth';
 import { apiClient } from './client';
 
 
@@ -312,4 +312,3 @@ export async function publicVerifyRecoveredBookingOTP(
   );
   return data.data;
 }
-

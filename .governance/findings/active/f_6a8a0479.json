@@ -1,0 +1,34 @@
+{
+  "confidence": 1,
+  "createdDate": "2026-07-04T05:20:15.372Z",
+  "domain": "Platform Team",
+  "engineVersion": "1.0.0",
+  "evidence": {
+    "construct": "Document",
+    "line": 662,
+    "message": "Trailing whitespace characters detected.",
+    "occurrences": [
+      {
+        "column": 0,
+        "construct": "Document",
+        "fingerprint": "ebdecdf3410fe2e57e0e0e17bcc9ca99333438451b0a8f7c7a392bbe8149a0a3",
+        "id": "ebdecdf3410fe2e57e0e0e17bcc9ca99333438451b0a8f7c7a392bbe8149a0a3",
+        "line": 662,
+        "message": "Trailing whitespace characters detected."
+      }
+    ],
+    "path": "apps/server/src/services/admin/refund.service.ts"
+  },
+  "feature": "Document",
+  "firstDetected": "2026-07-04T05:20:15.372Z",
+  "id": "f_6a8a0479",
+  "lastDetected": "2026-07-04T05:20:15.372Z",
+  "occurrenceCount": 1,
+  "owner": "Platform Team",
+  "package": "apps",
+  "relationships": [],
+  "rule": "VAL-HYG-004",
+  "ruleVersion": "1.0.0",
+  "schemaVersion": 2,
+  "status": "NEW"
+}
