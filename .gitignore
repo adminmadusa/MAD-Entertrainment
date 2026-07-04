@@ -54,7 +54,6 @@ build.log
 
 # Local scratchpad scripts
 scratch/
-
 # Governance runtime artifacts
 # Generated locally by the governance engine. Use governance tooling locally
 # as needed. Not tracked in version control.
@@ -70,3 +69,9 @@ scratch/
 .agents/REPOSITORY_BASELINE.md
 .agents/trend_report.json
 .governance/
+
+audit_data.json
+
+# AI Operating System runtime artifacts
+.agents/ai-os/runtime/cache/
+.agents/ai-os/runtime/indexes/
