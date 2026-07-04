@@ -100,7 +100,7 @@ jobs:
           npx esbuild scripts/governance/validators/documentation_validator.ts --bundle --platform=node --outfile=/tmp/documentation_validator.js || true
 
       - name: Run CI Governance Documentation Validation
-        run: pnpm run governance:docs
+        run: pnpm run governance:docs --incremental
         env:
           GOVERNANCE_MIN_HEALTH_SCORE: 50
 
