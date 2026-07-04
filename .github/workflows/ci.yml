@@ -97,8 +97,7 @@ jobs:
           pnpm exec tsc --noEmit || true
 
           echo "=== Run Direct esbuild ==="
-          npx esbuild scripts/governance/validators/documentation_validator.ts --bundle --platform=node --outfile=/tmp/documentation_validator.js || true
-
+          npx esbuild scripts/governance/validators/documentation_validator.ts --bundle --platform=node --outfile=/tmp/documentation_validator.js || tr
 
       - name: Build Workspace
         run: pnpm run build
