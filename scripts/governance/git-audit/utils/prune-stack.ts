@@ -34,8 +34,7 @@ function isWorkingTreeClean(): boolean {
     const status = execSync('git status --porcelain', { cwd: REPO_ROOT, encoding: 'utf8' }).trim();
     if (status === '') return true;
     const lines = status.split('\n').filter(line => {
-      const filePath = line.slice(3).trim();
-      return !filePath.startsWith('.agents/');
+      return !line.includes('.agents/');
     });
     return lines.length === 0;
   } catch {
