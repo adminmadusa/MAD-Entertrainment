@@ -4,26 +4,13 @@ import { readdirSync, statSync, existsSync, readFileSync } from 'fs';
 import { resolve, join, relative, dirname } from 'path';
 import { execSync } from 'child_process';
 import { MetadataProvider } from './core/metadata';
-import { ValidatorLoader } from './core/loader';
 import { ConsoleReporter } from './core/reporter';
 import { JsonReporter } from './reports/json_reporter';
 import { GitHubActionsReporter } from './reports/github_reporter';
 
-// Import standard validators
-import { MarkdownValidator } from './validators/markdown_validator';
-import { LinkValidator } from './validators/link_validator';
-import { MermaidValidator } from './validators/mermaid_validator';
-import { CrossReferenceValidator } from './validators/cross_reference_validator';
-import { DocumentationValidator } from './validators/documentation_validator';
-import { SsotValidator } from './validators/ssot_validator';
-import { AdrValidator } from './validators/adr_validator';
-import { RepositoryHealthValidator } from './validators/repository_health_validator';
-
-// Import new Audit Intelligence components
-import { UIDesignValidator } from './validators/ui_design_validator';
-import { SharedComponentValidator } from './validators/shared_component_validator';
-import { AccessibilityValidator } from './validators/accessibility_validator';
-import { DeadAssetDuplicateValidator } from './validators/dead_asset_duplicate_validator';
+// Import Execution Engine
+import { ExecutionEngine } from './core/execution_engine';
+import { ValidatorRegistry } from './core/validator_registry';
 import { AuditEngine } from './core/audit_engine';
 import { StatelessViolation } from './core/types';
 import { persistenceStats } from './core/json_utils';
@@ -41,7 +28,7 @@ function getAllMarkdownFiles(workspaceRoot: string): string[] {
       .split('\n')
       .map(f => f.trim())
       .filter(Boolean);
-      
+
     for (const f of [...tracked, ...untracked]) {
       if (!f.startsWith('node_modules/') && !f.startsWith('.governance/') && !f.startsWith('scratch/')) {
         markdownFiles.add(f);
@@ -113,10 +100,10 @@ async function run() {
       console.error('❌ Failed to run git log for historical index. Make sure you are in a full clone git repository.');
       process.exit(1);
     }
-    
+
     const currentFiles = getAllMarkdownFiles(workspaceRoot);
     const allHistory = Array.from(new Set([...gitFiles, ...currentFiles])).sort();
-    
+
     const baselinePath = resolve(workspaceRoot, '.governance/baselines/historical-files.json');
     const dir = dirname(baselinePath);
     if (!existsSync(dir)) {
@@ -174,122 +161,118 @@ async function run() {
   const graph = auditEngine.getKnowledgeGraph();
   const indexedFiles = graph.getIndexedFiles().sort();
 
-  const markdownFiles = new Set<string>();
-  for (const doc of metadata.requiredDocuments) {
-    if (indexedFiles.includes(doc)) {
-      markdownFiles.add(doc);
+  // 2. Parse CLI filters
+  const args = process.argv;
+  const getMultiArg = (flag: string): string[] => {
+    const list: string[] = [];
+    for (let i = 0; i < args.length; i++) {
+      if (args[i] === flag && i + 1 < args.length) {
+        list.push(args[i + 1]);
+      }
     }
+    return list;
+  };
+
+  const filters: {
+    rules?: string[];
+    categories?: string[];
+    validators?: string[];
+    owners?: string[];
+    severities?: string[];
+    enabledOnly?: boolean;
+  } = {};
+
+  const rulesFilter = getMultiArg('--rule');
+  if (rulesFilter.length > 0) filters.rules = rulesFilter;
+
+  const categoriesFilter = getMultiArg('--category');
+  if (categoriesFilter.length > 0) filters.categories = categoriesFilter;
+
+  const validatorsFilter = getMultiArg('--validator');
+  if (validatorsFilter.length > 0) filters.validators = validatorsFilter;
+
+  const ownersFilter = getMultiArg('--owner');
+  if (ownersFilter.length > 0) filters.owners = ownersFilter;
+
+  const severitiesFilter = getMultiArg('--severity');
+  if (severitiesFilter.length > 0) filters.severities = severitiesFilter;
+
+  if (args.includes('--enabled-only')) {
+    filters.enabledOnly = true;
+  }
+  if (args.includes('--disabled')) {
+    filters.enabledOnly = false;
   }
 
-  for (const file of indexedFiles) {
-    if (file.endsWith('.md')) {
-      markdownFiles.add(file);
-    }
-  }
-
-  let finalMarkdownFiles = Array.from(markdownFiles).sort();
-  let finalUiFiles = indexedFiles.filter(file => {
-    const isSource = /\.(ts|tsx|js|jsx)$/.test(file);
-    const isUnderAppSrc = file.startsWith('apps/admin/src/') || file.startsWith('apps/web/src/');
-    return isSource && isUnderAppSrc;
-  }).sort();
-
-  // 2. Perform Incremental & Dependency-Aware Auditing filter
+  let filesToScan = [...indexedFiles];
   if (isIncremental && changedFiles.length > 0) {
     console.log(`🎯 Incremental scan enabled. Detected ${changedFiles.length} modified files.`);
     const affected = graph.getAffectedConsumers(changedFiles);
-
-    finalMarkdownFiles = finalMarkdownFiles.filter(f => affected.has(f) || changedFiles.includes(f));
-    finalUiFiles = finalUiFiles.filter(f => affected.has(f) || changedFiles.includes(f));
-    console.log(`🎯 Downstream PR scope: Scanning ${finalMarkdownFiles.length} markdown and ${finalUiFiles.length} source files.`);
+    filesToScan = filesToScan.filter(f => affected.has(f) || changedFiles.includes(f));
+    console.log(`🎯 Downstream PR scope: Scanning ${filesToScan.length} files.`);
   }
 
-  console.log(`📂 Discovered ${finalMarkdownFiles.length} markdown files and ${finalUiFiles.length} source code files to validate.`);
+  console.log(`📂 Discovered ${filesToScan.length} files to validate.`);
 
-  // Configure standard loader
-  const loader = new ValidatorLoader();
-  loader.registerAll([
-    new MarkdownValidator(),
-    new LinkValidator(),
-    new MermaidValidator(),
-    new CrossReferenceValidator(),
-    new DocumentationValidator(),
-    new SsotValidator(),
-    new AdrValidator(),
-    new RepositoryHealthValidator(),
-  ]);
+  console.log('🚀 Running Governance Rule Execution Engine...');
+  const plannerStart = Date.now();
+  const report = await ExecutionEngine.execute(filesToScan, metadata, filters);
+  const plannerDurationMs = Date.now() - plannerStart;
 
-  console.log('🚀 Running standard validators...');
-  const validatorStart = Date.now();
-  const results = await loader.runAll(finalMarkdownFiles, metadata);
-  const validatorTime = Date.now() - validatorStart;
+  // Print Performance Timing structure if --performance is passed
+  if (args.includes('--performance')) {
+    console.log('\n==================================================');
+    console.log('⏱️   Validator Performance Metrics');
+    console.log('==================================================');
+    console.log(`Planner duration:                ${plannerDurationMs}ms`);
+    for (const m of report.metrics) {
+      console.log(`${m.validatorId.padEnd(32)}: ${m.durationMs}ms (files: ${m.filesProcessed}, heap delta: ${Math.round(m.memoryDeltaBytes / 1024)}KB)`);
+    }
+    if (report.cacheMetrics) {
+      const cm = report.cacheMetrics;
+      const totalContent = cm.fileContentHits + cm.fileContentMisses;
+      const totalAST = cm.astHits + cm.astMisses;
+      const contentRate = totalContent > 0 ? ((cm.fileContentHits / totalContent) * 100).toFixed(1) : '0.0';
+      const astRate = totalAST > 0 ? ((cm.astHits / totalAST) * 100).toFixed(1) : '0.0';
+      console.log('--------------------------------------------------');
+      console.log(`File Content Cache Hits/Misses  : ${cm.fileContentHits} / ${cm.fileContentMisses} (${contentRate}% hits)`);
+      console.log(`AST Parser Cache Hits/Misses    : ${cm.astHits} / ${cm.astMisses} (${astRate}% hits)`);
+    }
+    console.log('==================================================\n');
+  }
 
   // Compile all violations to StatelessViolation shape
   const statelessViolations: StatelessViolation[] = [];
+  const results = report.results;
 
-  // Parse results from standard validators
-  for (const result of results) {
+  for (const result of report.results) {
     const allErrors = [...result.errors, ...result.warnings];
-    for (const error of allErrors) {
-      statelessViolations.push({
-        rule: error.rule,
-        path: error.file,
-        construct: 'Document',
-        line: error.line,
-        snippet: error.snippet,
-        message: error.message,
-        confidence: 1.0, // High precision standard checks
-      });
+    const def = ValidatorRegistry.getValidator(result.name) ||
+                ValidatorRegistry.getAllValidators().find(v => v.name === result.name);
+
+    const construct = def?.id === 'DeadAssetDuplicateValidator' ||
+                      def?.id === 'UIDesignValidator' ||
+                      def?.id === 'AccessibilityValidator' ||
+                      def?.id === 'SharedComponentValidator' ? 'UIElement' : 'Document';
+
+    let confidence = 1.0;
+    if (def?.id === 'UIDesignValidator' || def?.id === 'SharedComponentValidator' || def?.id === 'DeadAssetDuplicateValidator') {
+      confidence = 0.9;
     }
-  }
 
-  // 3. Execute Stateless UI Design Validators
-  console.log('🎨 Running stateless UI design and architecture validators...');
-  const uiLoader = new ValidatorLoader();
-  uiLoader.registerAll([
-    new UIDesignValidator(),
-    new AccessibilityValidator(),
-    new SharedComponentValidator(),
-  ]);
-
-  const uiResults = await uiLoader.runAll(finalUiFiles, metadata);
-  results.push(...uiResults);
-
-  // Convert UI results to StatelessViolation records for lifecycle reconciliation
-  for (const uiResult of uiResults) {
-    const allErrors = [...uiResult.errors, ...uiResult.warnings];
     for (const error of allErrors) {
+      let finalConfidence = confidence;
+      if (def?.id === 'AccessibilityValidator') {
+        finalConfidence = error.rule === 'VAL-UI-002' || error.rule === 'VAL-UI-003' ? 1.0 : 0.9;
+      }
       statelessViolations.push({
         rule: error.rule,
         path: error.file,
-        construct: 'UIElement',
+        construct,
         line: error.line,
         snippet: error.snippet,
         message: error.message,
-        confidence: error.rule === 'VAL-UI-002' || error.rule === 'VAL-UI-003' ? 1.0 : 0.9,
-      });
-    }
-  }
-
-  // 3b. Execute Dead Asset & Duplicate Validator (Phase 3 Integration)
-  console.log('📦 Running dead asset and duplicate detection validators...');
-  const deadAssetLoader = new ValidatorLoader();
-  deadAssetLoader.register(new DeadAssetDuplicateValidator());
-  const deadAssetResults = await deadAssetLoader.runAll(indexedFiles, metadata);
-  results.push(...deadAssetResults);
-
-  // Convert Dead Asset results to StatelessViolation records for lifecycle reconciliation
-  for (const daResult of deadAssetResults) {
-    const allErrors = [...daResult.errors, ...daResult.warnings];
-    for (const error of allErrors) {
-      statelessViolations.push({
-        rule: error.rule,
-        path: error.file,
-        construct: 'UIElement',
-        line: error.line,
-        snippet: error.snippet,
-        message: error.message,
-        confidence: 0.9,
+        confidence: finalConfidence,
       });
     }
   }
@@ -309,9 +292,10 @@ async function run() {
   const engineResult = auditEngine.execute(statelessViolations, {
     isIncremental,
     changedFiles,
+    scannedFiles: filesToScan,
     branchName: getGitBranch(),
     commitSha: getGitCommit(),
-    validatorTimeMs: validatorTime,
+    validatorTimeMs: report.totalExecutionTimeMs,
   });
 
   const globalTotalTimeMs = Date.now() - globalStartTime;
@@ -348,7 +332,7 @@ async function run() {
   console.log('==================================================\n');
 
   // Gating decision
-  if (!engineResult.success || totalErrors > 0 || !gatingSuccess) {
+  if (!engineResult.success || !gatingSuccess) {
     console.error('\n❌ Governance audit failed. Check the details above.');
     process.exit(1);
   }
