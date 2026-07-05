@@ -1,5 +1,7 @@
 'use client';
 
+import type { SyncResult } from '@/lib/offline-scanner.service';
+
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useRef, useEffect, useCallback } from 'react';
@@ -139,6 +141,7 @@ export default function ScannerPage() {
 
   const [isOffline, setIsOffline] = useState(false);
   const [offlineCount, setOfflineCount] = useState(0);
+  const [syncResult, setSyncResult] = useState<SyncResult | null>(null);
 
   useEffect(() => {
     const handleOnline = () => setIsOffline(false);
@@ -154,30 +157,27 @@ export default function ScannerPage() {
     };
   }, []);
 
+  // On reconnect: sync all pending offline scans using the hardened
+  // syncScans() orchestrator (GAP-1, GAP-3, GAP-4 fix).
   const syncOfflineScans = useCallback(async () => {
     if (isOffline) return;
-    const { getOfflineScans, clearOfflineScans } = await import('@/lib/offline-scanner.service');
-    const pendingScans = await getOfflineScans();
-    if (pendingScans.length === 0) return;
+    const { syncScans, getPendingScans } = await import('@/lib/offline-scanner.service');
+    const pending = await getPendingScans();
+    if (pending.length === 0) return;
 
-    for (const scan of pendingScans) {
-      try {
-        await adminScanTicket(scan.ticketId, scan.eventId);
-      } catch {
-        // Log or handle failed sync if necessary
-      }
-    }
-    await clearOfflineScans(pendingScans.map(s => s.id));
-    setOfflineCount(0);
-    alert(`Successfully synced ${pendingScans.length} offline scans!`);
+    const result = await syncScans(adminScanTicket);
+    setSyncResult(result);
+    // offlineCount now reflects only remaining failed scans, not total cleared.
+    setOfflineCount(result.failed.length);
   }, [isOffline]);
 
   useEffect(() => {
     if (!isOffline) {
       syncOfflineScans();
     } else {
-      import('@/lib/offline-scanner.service').then(({ getOfflineScans }) => {
-        getOfflineScans().then(scans => setOfflineCount(scans.length));
+      // When going offline, count only pending (not already-failed) records.
+      import('@/lib/offline-scanner.service').then(({ getPendingScans }) => {
+        getPendingScans().then(scans => setOfflineCount(scans.length));
       });
     }
   }, [isOffline, syncOfflineScans]);
@@ -199,7 +199,16 @@ export default function ScannerPage() {
     }
 
     if (isOffline) {
-      const { saveOfflineScan } = await import('@/lib/offline-scanner.service');
+      const { saveOfflineScan, isDuplicateScan } = await import('@/lib/offline-scanner.service');
+
+      // GAP-2 fix: prevent double-queueing the same ticket in the same offline session.
+      const duplicate = await isDuplicateScan(inputToProcess, selectedEventId);
+      if (duplicate) {
+        setLastScanError('This ticket is already queued for offline sync.');
+        setLastScanResult(null);
+        return;
+      }
+
       await saveOfflineScan(inputToProcess, selectedEventId);
       setOfflineCount(prev => prev + 1);
       setLastScanResult({ ticketId: inputToProcess, admits: 'OFFLINE MODE', tierName: 'SAVED LOCALLY' });
@@ -235,6 +244,41 @@ export default function ScannerPage() {
           </div>
         )}
       </div>
+
+      {/* Sync Result Notification — shown after reconnect sync (GAP-3 fix) */}
+      {syncResult && (
+        <div className="space-y-2">
+          {syncResult.synced > 0 && (
+            <div className="flex items-center gap-3 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 px-4 py-3 rounded-xl text-sm font-medium">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+              {syncResult.synced} offline {syncResult.synced === 1 ? 'scan' : 'scans'} synchronized successfully.
+            </div>
+          )}
+          {syncResult.failed.length > 0 && (
+            <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 space-y-2">
+              <p className="text-amber-400 text-sm font-semibold flex items-center gap-2">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>
+                {syncResult.failed.length} {syncResult.failed.length === 1 ? 'scan requires' : 'scans require'} attention
+              </p>
+              <ul className="space-y-1.5">
+                {syncResult.failed.map((f) => (
+                  <li key={f.id} className="text-xs text-amber-300 font-mono pl-2 border-l border-amber-500/40">
+                    <span className="font-semibold">{f.ticketId}</span>
+                    <span className="text-amber-400/70 ml-2">— {f.reason}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          <button
+            type="button"
+            onClick={() => setSyncResult(null)}
+            className="text-xs text-text-muted hover:text-white transition-colors"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
 
       {/* Configuration Box */}
       <div className="glass rounded-2xl border border-border-subtle p-6 space-y-4">
