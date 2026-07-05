@@ -9,19 +9,21 @@ const RETRY_DELAY_MS = 5000;
 
 let retryCount = 0;
 
-const connectOptions: mongoose.ConnectOptions = {
-  serverSelectionTimeoutMS: 10000,
-  socketTimeoutMS: 45000,
-  maxPoolSize: 20,
-  minPoolSize: 2,
-  maxIdleTimeMS: 30000,
-  bufferCommands: false,
-  autoIndex: process.env.NODE_ENV !== 'production',
-};
-
 export async function connectDatabase(): Promise<void> {
   const env = getEnv();
   const uri = env.MONGODB_URI;
+
+  const connectOptions: mongoose.ConnectOptions = {
+    serverSelectionTimeoutMS: 10000,
+    socketTimeoutMS: 45000,
+    maxPoolSize: 20,
+    minPoolSize: 2,
+    maxIdleTimeMS: 30000,
+    bufferCommands: false,
+    autoIndex: process.env.NODE_ENV !== 'production',
+    heartbeatFrequencyMS: env.MONGODB_HEARTBEAT_MS,
+    family: 4, // Force IPv4 to avoid Render dual-stack lookup latency
+  };
 
   mongoose.connection.on('connected', () => {
     logger.info('✅ MongoDB connected successfully');
@@ -36,20 +38,28 @@ export async function connectDatabase(): Promise<void> {
     logger.warn('⚠️  MongoDB disconnected');
   });
 
-  await attemptConnect(uri);
+  await attemptConnect(uri, connectOptions);
 }
 
-async function attemptConnect(uri: string): Promise<void> {
+async function attemptConnect(
+  uri: string,
+  options: mongoose.ConnectOptions
+): Promise<void> {
   try {
-    await mongoose.connect(uri, connectOptions);
+    await mongoose.connect(uri, options);
   } catch (err) {
     retryCount++;
-    logger.error({ err, attempt: retryCount }, `MongoDB connection failed (attempt ${retryCount}/${MAX_RETRIES})`);
+    logger.error(
+      { err, attempt: retryCount },
+      `MongoDB connection failed (attempt ${retryCount}/${MAX_RETRIES})`
+    );
 
     if (retryCount < MAX_RETRIES) {
-      logger.info(`Retrying MongoDB connection in ${RETRY_DELAY_MS / 1000}s...`);
+      logger.info(
+        `Retrying MongoDB connection in ${RETRY_DELAY_MS / 1000}s...`
+      );
       await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY_MS));
-      return attemptConnect(uri);
+      return attemptConnect(uri, options);
     } else {
       logger.error('Max MongoDB retry attempts reached. Exiting.');
       process.exit(1);

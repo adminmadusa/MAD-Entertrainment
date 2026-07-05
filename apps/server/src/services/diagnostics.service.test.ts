@@ -1,4 +1,4 @@
-import { Types } from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 import { isRedisConnected } from '../config/redis';
@@ -102,6 +102,29 @@ describe('Diagnostics Service', () => {
       expect(report.redis.connected).toBe(false);
       expect(report.queues.length).toBe(0);
       expect(report.dlq.totalFailedCount).toBe(1);
+    });
+
+    it('should safely populate database HA topology metadata properties with defaults', async () => {
+      // Mock mongoose readyState to disconnected state
+      const originalReadyState = mongoose.connection.readyState;
+      Object.defineProperty(mongoose.connection, 'readyState', {
+        get: () => 0,
+        configurable: true,
+      });
+
+      const report = await DiagnosticsService.generateReport();
+
+      expect(report.database).toBeDefined();
+      expect(report.database.state).toBe('disconnected');
+      expect(report.database.topologyType).toBe('Unknown');
+      expect(report.database.replicaSetName).toBe('Unknown');
+      expect(report.database.primaryHost).toBe('Unknown');
+
+      // Restore original readyState
+      Object.defineProperty(mongoose.connection, 'readyState', {
+        get: () => originalReadyState,
+        configurable: true,
+      });
     });
   });
 
