@@ -2,7 +2,7 @@
 
 - **Owner**: Repository Governance Owner
 - **Status**: Active
-- **Version**: 2.1
+- **Version**: 2.2
 - **Review Cycle**: Ongoing
 - **Last Updated**: 2026-07-05
 - **Related Documents:**
@@ -73,6 +73,7 @@ The following items have been fully implemented, verified, merged into `develop`
 | ARCH-005 — Admin Bookings page extraction (235 lines) | prior | ✅ |
 | GOV-001 — Server ESLint flat config & Vitest coverage thresholds | #485 | ✅ |
 | ARCH-006 — EventMemoriesCard.tsx extraction (157 lines, merge SHA b8bbb48) | #487 | ✅ |
+| ARCH-007A — SeatConsistencyService extraction (1293 → 1097 lines, merge SHA ca7e3f5) | #489 | ✅ |
 
 ---
 
@@ -230,20 +231,27 @@ Backlog — Not Started
 
 ---
 
-### ARCH-007 — consistency.service.ts Decomposition
+### ARCH-007 — consistency.service.ts Decomposition (Staged)
 
 **Priority:** Medium
 
-#### Goal
+#### Discovery status
 
-Extract the independent consistency-check task runners out of `apps/server/src/services/consistency.service.ts` (1292 lines). Each check type is an isolated diagnostic task with no cross-dependency at the service level.
+Completed. Full call graph verified across all 17 methods and 12 operations in `runRepairCycle()`. Architecture frozen.
 
-#### Suggested Extraction Boundaries
+#### Staged Extraction Plan
 
-* `consistency/booking-consistency.service.ts` — booking state checks
-* `consistency/ticket-consistency.service.ts` — ticket assignment and status checks
-* `consistency/event-consistency.service.ts` — event availability checks
-* `consistency.service.ts` — orchestration coordinator only (target: < 300 lines)
+| PR | Scope | Domain | Risk | Status |
+|----|-------|--------|------|--------|
+| ARCH-007A — `SeatConsistencyService` | `countRedisLocks`, `cleanupPhantomRedisLocks`, `repairStaleSeatReservations`, `countEventInventoryMismatches`, `repairEventInventoryMismatches` | Seat/Inventory | 🟢 Very Low | ✅ Merged #489 |
+| ARCH-007B — `BookingConsistencyService` | `expireStaleBookings`, `repairUnticketedConfirmedBookings`, `countUnticketedConfirmedBookings` | Booking | 🟢 Low | ⏳ Next |
+| ARCH-007C — `NotificationConsistencyService` | `repairStuckNotifications`, `countStuckNotifications`, `repairOrphanedConfirmedDeliveries`, `countOrphanedConfirmedDeliveries` | Notification | 🟡 Medium | ⏳ Backlog |
+| ARCH-007D — `RefundConsistencyService` | `repairStuckProcessingRefunds`, `countStuckProcessingRefunds`, `repairOrphanedRefundNotifications`, `countOrphanedRefundNotifications`, `repairOrphanedCancellationNotifications`, `countOrphanedCancellationNotifications` | Refund | 🔴 High | ⏳ Backlog |
+| ARCH-007E — `PaymentConsistencyService` | `countPaidPaymentMismatches`, `repairPaidPaymentMismatches` | Payment | 🔴 Highest | ⏳ Backlog |
+
+All sub-services will live under `apps/server/src/services/consistency/`.
+
+`ConsistencyService.runRepairCycle()` and `ConsistencyService.generateReport()` remain the public API throughout all stages.
 
 #### Files
 
@@ -251,13 +259,21 @@ Modify:
 * `apps/server/src/services/consistency.service.ts`
 * `apps/server/src/services/consistency.service.test.ts`
 
+Create:
+* `apps/server/src/services/consistency/booking-consistency.service.ts`
+* `apps/server/src/services/consistency/notification-consistency.service.ts`
+* `apps/server/src/services/consistency/refund-consistency.service.ts`
+* `apps/server/src/services/consistency/payment-consistency.service.ts`
+
 #### Risk
 
-Medium (server-side, requires careful test coverage alignment)
+Medium overall — each individual PR is scoped to reduce risk.
 
 #### Status
 
-Backlog — Not Started
+ARCH-007A — ✅ Complete (PR #489)
+ARCH-007B — ⏳ Next
+ARCH-007C through 007E — Backlog
 
 ---
 
@@ -356,20 +372,19 @@ Backlog — Not Started
 >   xargs wc -l | sort -rn | awk '$1 > 300 && !/total/'
 > ```
 
-### Large File Inventory — 2026-07-05 (updated post-ARCH-006)
+### Large File Inventory — 2026-07-05 (updated post-ARCH-007A)
 
 Files exceeding 300 lines (production code only):
 
 | File | Lines | Layer | Status |
 |------|:-----:|-------|--------|
-| `consistency.service.ts` | 1292 | Service | ⚠️ ARCH-007 — Backlog |
 | `booking.service.ts` (admin) | 1282 | Service | ⚠️ ARCH-008 — Backlog |
+| `consistency.service.ts` | 1095 | Service | ⚠️ ARCH-007B–E — In Progress |
 | `booking.service.ts` (public) | 825 | Service | ⚠️ Review Required |
 | `payment-refund.service.ts` | 745 | Service | ⚠️ Review Required |
 | `refund.service.ts` (admin) | 718 | Service | ⚠️ Review Required |
 | `auth.service.ts` | 632 | Service | ⚠️ Postponed (high-risk) |
 | `booking.controller.ts` | 629 | Controller | ⚠️ Review Required |
-| `EventMemoriesCard.tsx` (admin) | 157 | Component | ✅ Resolved (ARCH-006, PR #487) |
 | `sockets/index.ts` | 606 | Infrastructure | ⚠️ Postponed (high-risk) |
 | `payment-webhook.service.ts` | 524 | Service | 🟡 Acceptable |
 | `DjDetailClient.tsx` | 517 | Component | 🟡 Acceptable |
@@ -382,6 +397,7 @@ Files exceeding 300 lines (production code only):
 | `TicketSelectionContent.tsx` | 486 | Component | 🟡 Acceptable |
 | `payment.service.ts` | 486 | Service | ✅ Resolved (ARCH-001) |
 | `scanner/page.tsx` (admin) | 486 | Component | 🟡 Acceptable |
+| `EventMemoriesCard.tsx` (admin) | 157 | Component | ✅ Resolved (ARCH-006, PR #487) |
 
 **Legend:**
 - ✅ Resolved — within limits via prior extraction
