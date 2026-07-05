@@ -2,7 +2,7 @@
 
 - **Owner**: Repository Governance Owner
 - **Status**: Active
-- **Version**: 2.7
+- **Version**: 2.8
 - **Review Cycle**: Ongoing
 - **Last Updated**: 2026-07-05
 - **Related Documents:**
@@ -79,6 +79,7 @@ The following items have been fully implemented, verified, merged into `develop`
 | ARCH-007D — RefundConsistencyService extraction (628 → 361 lines, merge SHA 7038774) | #495 | ✅ |
 | ARCH-007E — PaymentConsistencyService extraction (361 → 223 lines, merge SHA 29b4e71) | #499 | ✅ |
 | ARCH-008 — admin/booking.service.ts Decomposition (1282 → 3 lines, merge SHA 00570d8) | #503 | ✅ |
+| ARCH-009 — public booking.controller.ts Decomposition (629 → 4 lines, merge SHA 677c8ab) | #503/local | ✅ |
 
 ---
 
@@ -391,7 +392,7 @@ Files exceeding 300 lines (production code only):
 | `payment-refund.service.ts` | 745 | Service | ⚠️ Review Required |
 | `refund.service.ts` (admin) | 718 | Service | ⚠️ Review Required |
 | `auth.service.ts` | 632 | Service | ⚠️ Postponed (high-risk) |
-| `booking.controller.ts` | 629 | Controller | ⚠️ Review Required |
+| `booking.controller.ts` | 4 | Controller | ✅ Resolved (ARCH-009) |
 | `sockets/index.ts` | 606 | Infrastructure | ⚠️ Postponed (high-risk) |
 | `payment-webhook.service.ts` | 524 | Service | 🟡 Acceptable |
 | `DjDetailClient.tsx` | 517 | Component | 🟡 Acceptable |
