@@ -179,6 +179,10 @@ const envSchema = z.object({
     .string()
     .min(32)
     .default('a_secret_key_of_32_characters_long_for_dev'),
+
+  BOOKING_OWNERSHIP_GRACE_MS: z.coerce
+    .number()
+    .default(600000), // Default to 10 minutes (600,000 ms)
 });
 
 export type Env = z.infer<typeof envSchema>;

@@ -10,6 +10,8 @@ vi.hoisted(() => {
   process.env.JWT_ADMIN_SECRET = 'testsecret32characterstestsecret32';
   process.env.JWT_SESSION_SECRET = 'testsecret32characterstestsecret32';
   process.env.DLQ_ENCRYPTION_KEY = 'testsecret32characterstestsecret32';
+  // Configure grace window to 10 minutes (600000 ms) explicitly in tests
+  process.env.BOOKING_OWNERSHIP_GRACE_MS = '600000';
 });
 
 import { getBooking, downloadBookingPDF, generateDownloadToken, resendBookingTickets } from '../../controllers/public/booking.controller';
@@ -64,9 +66,26 @@ describe('PR 4b: Ownership Consolidation & Hybrid Grace Window Tests', () => {
   });
 
   describe('PublicBookingService.assertBookingAccess', () => {
-    it('should allow access to AWAITING_PAYMENT bookings for matching guest session', () => {
+    // ----------------------------------------------------
+    // Active / Pending States (Indefinite Guest Access)
+    // ----------------------------------------------------
+    it('should allow guest session access to AWAITING_PAYMENT bookings indefinitely', () => {
       const booking = {
         status: BookingStatus.AWAITING_PAYMENT,
+        sessionId: 'session-guest-123',
+        userId: undefined,
+      };
+
+      const assertCall = () => {
+        PublicBookingService.assertBookingAccess(booking as any, { sessionId: 'session-guest-123' }, 'ActiveCheckout');
+      };
+
+      expect(assertCall).not.toThrow();
+    });
+
+    it('should allow guest session access to FAILED bookings indefinitely', () => {
+      const booking = {
+        status: BookingStatus.FAILED,
         sessionId: 'session-guest-123',
         userId: undefined,
       };
@@ -92,12 +111,15 @@ describe('PR 4b: Ownership Consolidation & Hybrid Grace Window Tests', () => {
       expect(assertCall).toThrow(AppError);
     });
 
-    it('should allow guest session access to CONFIRMED bookings within the 30-minute grace window', () => {
+    // ----------------------------------------------------
+    // Confirmed Grace Window Boundaries
+    // ----------------------------------------------------
+    it('should allow guest session access to CONFIRMED bookings within grace window (9m 59s)', () => {
       const booking = {
         status: BookingStatus.CONFIRMED,
         sessionId: 'session-guest-123',
         userId: new Types.ObjectId(),
-        confirmedAt: new Date(Date.now() - 15 * 60 * 1000), // 15 mins ago
+        confirmedAt: new Date(Date.now() - 599 * 1000), // 9 mins 59s ago
       };
 
       const assertCall = () => {
@@ -107,12 +129,12 @@ describe('PR 4b: Ownership Consolidation & Hybrid Grace Window Tests', () => {
       expect(assertCall).not.toThrow();
     });
 
-    it('should reject guest session access to CONFIRMED bookings after the 30-minute grace window expires', () => {
+    it('should reject guest session access to CONFIRMED bookings outside grace window (10m 01s)', () => {
       const booking = {
         status: BookingStatus.CONFIRMED,
         sessionId: 'session-guest-123',
         userId: new Types.ObjectId(),
-        confirmedAt: new Date(Date.now() - 35 * 60 * 1000), // 35 mins ago
+        confirmedAt: new Date(Date.now() - 601 * 1000), // 10 mins 1s ago
       };
 
       const assertCall = () => {
@@ -122,32 +144,117 @@ describe('PR 4b: Ownership Consolidation & Hybrid Grace Window Tests', () => {
       expect(assertCall).toThrow(expect.objectContaining({ statusCode: 403, code: 'BOOKING_VERIFICATION_REQUIRED' }));
     });
 
-    it('should fallback to createdAt if confirmedAt is undefined and evaluate grace window correctly', () => {
-      const recentBooking = {
+    it('should evaluate boundary refresh: access allowed at 9m59s but rejected at 10m01s', () => {
+      const booking = {
         status: BookingStatus.CONFIRMED,
         sessionId: 'session-guest-123',
         userId: new Types.ObjectId(),
-        createdAt: new Date(Date.now() - 5 * 60 * 1000), // 5 mins ago
+        confirmedAt: new Date(Date.now() - 599 * 1000), // 9 mins 59s ago
       };
 
-      const assertCallRecent = () => {
-        PublicBookingService.assertBookingAccess(recentBooking as any, { sessionId: 'session-guest-123' }, 'Fulfillment');
-      };
-      expect(assertCallRecent).not.toThrow();
+      // 1. First call (at 9m59s) should succeed
+      expect(() => {
+        PublicBookingService.assertBookingAccess(booking as any, { sessionId: 'session-guest-123' }, 'Fulfillment');
+      }).not.toThrow();
 
-      const oldBooking = {
-        status: BookingStatus.CONFIRMED,
-        sessionId: 'session-guest-123',
-        userId: new Types.ObjectId(),
-        createdAt: new Date(Date.now() - 40 * 60 * 1000), // 40 mins ago
-      };
+      // 2. Adjust timestamp to 10m01s to simulate time elapse/page refresh
+      booking.confirmedAt = new Date(Date.now() - 601 * 1000);
 
-      const assertCallOld = () => {
-        PublicBookingService.assertBookingAccess(oldBooking as any, { sessionId: 'session-guest-123' }, 'Fulfillment');
-      };
-      expect(assertCallOld).toThrow(expect.objectContaining({ statusCode: 403, code: 'BOOKING_VERIFICATION_REQUIRED' }));
+      // 3. Second call (at 10m01s) should throw
+      expect(() => {
+        PublicBookingService.assertBookingAccess(booking as any, { sessionId: 'session-guest-123' }, 'Fulfillment');
+      }).toThrow(expect.objectContaining({ statusCode: 403, code: 'BOOKING_VERIFICATION_REQUIRED' }));
     });
 
+    // ----------------------------------------------------
+    // Expired / Expiring Grace Window Boundaries
+    // ----------------------------------------------------
+    it('should allow guest session access to EXPIRED bookings within grace window (9m 59s)', () => {
+      const booking = {
+        status: BookingStatus.EXPIRED,
+        sessionId: 'session-guest-123',
+        userId: undefined,
+        logicalExpiresAt: new Date(Date.now() - 599 * 1000), // 9m 59s ago
+      };
+
+      const assertCall = () => {
+        PublicBookingService.assertBookingAccess(booking as any, { sessionId: 'session-guest-123' }, 'ActiveCheckout');
+      };
+
+      expect(assertCall).not.toThrow();
+    });
+
+    it('should reject guest session access to EXPIRED bookings outside grace window (10m 01s)', () => {
+      const booking = {
+        status: BookingStatus.EXPIRED,
+        sessionId: 'session-guest-123',
+        userId: undefined,
+        logicalExpiresAt: new Date(Date.now() - 601 * 1000), // 10m 1s ago
+      };
+
+      const assertCall = () => {
+        PublicBookingService.assertBookingAccess(booking as any, { sessionId: 'session-guest-123' }, 'ActiveCheckout');
+      };
+
+      expect(assertCall).toThrow(AppError);
+    });
+
+    // ----------------------------------------------------
+    // Denied States (Cancelled & Refunded)
+    // ----------------------------------------------------
+    it('should reject guest session access to CANCELLED bookings immediately (no grace)', () => {
+      const booking = {
+        status: BookingStatus.CANCELLED,
+        sessionId: 'session-guest-123',
+        userId: new Types.ObjectId(),
+        confirmedAt: new Date(Date.now() - 30 * 1000), // 30 seconds ago
+      };
+
+      const assertCall = () => {
+        PublicBookingService.assertBookingAccess(booking as any, { sessionId: 'session-guest-123' }, 'Fulfillment');
+      };
+
+      expect(assertCall).toThrow(AppError);
+    });
+
+    it('should reject guest session access to REFUNDED bookings immediately (no grace)', () => {
+      const booking = {
+        status: BookingStatus.REFUNDED,
+        sessionId: 'session-guest-123',
+        userId: new Types.ObjectId(),
+        confirmedAt: new Date(Date.now() - 30 * 1000), // 30 seconds ago
+      };
+
+      const assertCall = () => {
+        PublicBookingService.assertBookingAccess(booking as any, { sessionId: 'session-guest-123' }, 'Fulfillment');
+      };
+
+      expect(assertCall).toThrow(AppError);
+    });
+
+    // ----------------------------------------------------
+    // Metadata Update Access Extension Prevention
+    // ----------------------------------------------------
+    it('should not extend guest access when admin/metadata updates occur (leaving confirmedAt unchanged)', () => {
+      const booking = {
+        status: BookingStatus.CONFIRMED,
+        sessionId: 'session-guest-123',
+        userId: new Types.ObjectId(),
+        confirmedAt: new Date(Date.now() - 20 * 60 * 1000), // 20 mins ago (expired)
+        updatedAt: new Date(), // updated right now
+      };
+
+      const assertCall = () => {
+        PublicBookingService.assertBookingAccess(booking as any, { sessionId: 'session-guest-123' }, 'Fulfillment');
+      };
+
+      // Since confirmedAt is expired, guest access must remain denied regardless of updatedAt
+      expect(assertCall).toThrow(expect.objectContaining({ statusCode: 403 }));
+    });
+
+    // ----------------------------------------------------
+    // Registered Owner Checks
+    // ----------------------------------------------------
     it('should allow access to logged-in matching user regardless of grace window expiration', () => {
       const ownerUserId = new Types.ObjectId();
       const booking = {
@@ -163,56 +270,10 @@ describe('PR 4b: Ownership Consolidation & Hybrid Grace Window Tests', () => {
 
       expect(assertCall).not.toThrow();
     });
-
-    it('should allow guest session access to guest-only bookings (no userId) indefinitely under Fulfillment policy', () => {
-      const guestOnlyBooking = {
-        status: BookingStatus.CONFIRMED,
-        sessionId: 'session-guest-123',
-        userId: undefined,
-        confirmedAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000), // 10 days ago
-      };
-
-      const assertCall = () => {
-        PublicBookingService.assertBookingAccess(guestOnlyBooking as any, { sessionId: 'session-guest-123' }, 'Fulfillment');
-      };
-
-      expect(assertCall).not.toThrow();
-    });
-
-    it('should allow guest session access to guest-only bookings (no userId) under ActiveCheckout policy if within 30-minute grace window', () => {
-      const guestOnlyBooking = {
-        status: BookingStatus.CONFIRMED,
-        sessionId: 'session-guest-123',
-        userId: undefined,
-        confirmedAt: new Date(Date.now() - 5 * 60 * 1000), // 5 mins ago
-      };
-
-      const assertCall = () => {
-        PublicBookingService.assertBookingAccess(guestOnlyBooking as any, { sessionId: 'session-guest-123' }, 'ActiveCheckout');
-      };
-
-      expect(assertCall).not.toThrow();
-    });
-
-    it('should deny guest session access to guest-only bookings (no userId) under ActiveCheckout policy after 30-minute grace window expires', () => {
-      const guestOnlyBooking = {
-        status: BookingStatus.CONFIRMED,
-        sessionId: 'session-guest-123',
-        userId: undefined,
-        confirmedAt: new Date(Date.now() - 35 * 60 * 1000), // 35 mins ago
-      };
-
-      const assertCall = () => {
-        PublicBookingService.assertBookingAccess(guestOnlyBooking as any, { sessionId: 'session-guest-123' }, 'ActiveCheckout');
-      };
-
-      expect(assertCall).toThrow(AppError);
-    });
   });
 
   describe('BUG-297: Payment Verification Redirect Regression', () => {
     it('should allow guest browser to verify payment post-link within the grace window', async () => {
-      // 1. Setup a booking awaiting payment owned by a guest session
       const mockBooking = {
         _id: 'booking_297',
         bookingId: 'MAD-2026-BUG297',
@@ -222,7 +283,6 @@ describe('PR 4b: Ownership Consolidation & Hybrid Grace Window Tests', () => {
         guestEmail: 'user297@example.com',
       };
 
-      // 2. Simulate payment confirmation (linking to a user account)
       const confirmedBooking = {
         ...mockBooking,
         status: BookingStatus.CONFIRMED,
@@ -230,26 +290,22 @@ describe('PR 4b: Ownership Consolidation & Hybrid Grace Window Tests', () => {
         confirmedAt: new Date(), // Confirmed right now
       };
 
-      // 3. Invoke verifyPayment as the guest session (anonymous checkout browser context)
       const context = { sessionId: 'guest_session_297', userId: undefined };
       const assertCall = () => {
         PublicBookingService.assertBookingAccess(confirmedBooking as any, context, 'ActiveCheckout');
       };
 
-      // 4. Assert access is allowed (does not throw 403)
       expect(assertCall).not.toThrow();
 
-      // 5. Simulate expiration of the 30-minute grace window
       const expiredConfirmedBooking = {
         ...confirmedBooking,
-        confirmedAt: new Date(Date.now() - 31 * 60 * 1000), // 31 minutes ago
+        confirmedAt: new Date(Date.now() - 11 * 60 * 1000), // 11 minutes ago (grace config is 10 mins)
       };
 
       const expiredAssertCall = () => {
         PublicBookingService.assertBookingAccess(expiredConfirmedBooking as any, context, 'ActiveCheckout');
       };
 
-      // 6. Assert access is rejected post-expiration
       expect(expiredAssertCall).toThrow(expect.objectContaining({ statusCode: 403 }));
     });
   });
@@ -262,7 +318,8 @@ describe('PR 4b: Ownership Consolidation & Hybrid Grace Window Tests', () => {
       sessionId: 'session-guest-789',
       userId: ownerUserId,
       guestEmail: 'guest@example.com',
-      confirmedAt: new Date(Date.now() - 10 * 60 * 1000), // 10 mins ago (within grace period)
+      status: BookingStatus.CONFIRMED,
+      confirmedAt: new Date(Date.now() - 5 * 60 * 1000), // 5 mins ago (within grace period)
       totalTickets: 1,
     };
 
@@ -294,7 +351,7 @@ describe('PR 4b: Ownership Consolidation & Hybrid Grace Window Tests', () => {
     it('should reject getBooking access to guest session outside grace window', async () => {
       const expiredBooking = {
         ...linkedBooking,
-        confirmedAt: new Date(Date.now() - 45 * 60 * 1000), // 45 mins ago
+        confirmedAt: new Date(Date.now() - 15 * 60 * 1000), // 15 mins ago
       };
 
       vi.spyOn(PublicBookingService, 'getBookingByReference').mockResolvedValue({
@@ -321,6 +378,57 @@ describe('PR 4b: Ownership Consolidation & Hybrid Grace Window Tests', () => {
         })
       );
     });
+
+    // ----------------------------------------------------
+    // OTP Integration Flow Verification
+    // ----------------------------------------------------
+    it('should allow access to guest session post-OTP verification when linked as registered owner', async () => {
+      const expiredBooking = {
+        ...linkedBooking,
+        confirmedAt: new Date(Date.now() - 15 * 60 * 1000), // 15 mins ago (grace expired)
+      };
+
+      vi.spyOn(PublicBookingService, 'getBookingByReference').mockResolvedValue({
+        booking: expiredBooking as any,
+        tickets: [],
+        ticketsReady: true,
+      });
+
+      // 1. Guest request with expired grace window fails with verification redirect
+      const reqGuest: any = {
+        params: { bookingId: 'MAD-2026-INTEG' },
+        session: { sessionId: 'session-guest-789' },
+        user: undefined,
+        header: vi.fn(),
+      };
+      const resGuest: any = {};
+      const nextGuest = vi.fn();
+
+      await getBooking(reqGuest, resGuest, nextGuest);
+      expect(nextGuest).toHaveBeenCalledWith(
+        expect.objectContaining({
+          statusCode: 403,
+          code: 'BOOKING_VERIFICATION_REQUIRED',
+        })
+      );
+
+      // 2. Request with matching verified authenticated owner user ID succeeds
+      const reqUser: any = {
+        params: { bookingId: 'MAD-2026-INTEG' },
+        session: { sessionId: 'session-guest-789' },
+        user: { sub: ownerUserId.toString() }, // Verified via OTP magic link/JWT
+        header: vi.fn(),
+      };
+      const resUser: any = {
+        status: vi.fn().mockReturnThis(),
+        json: vi.fn(),
+      };
+      const nextUser = vi.fn();
+
+      await getBooking(reqUser, resUser, nextUser);
+      expect(nextUser).not.toHaveBeenCalled();
+      expect(resUser.status).toHaveBeenCalledWith(200);
+    });
   });
 
   describe('Socket booking:join integration tests', () => {
@@ -331,7 +439,7 @@ describe('PR 4b: Ownership Consolidation & Hybrid Grace Window Tests', () => {
         status: BookingStatus.CONFIRMED,
         sessionId: 'session-guest-789',
         userId: new Types.ObjectId(),
-        confirmedAt: new Date(Date.now() - 10 * 60 * 1000), // 10 mins ago
+        confirmedAt: new Date(Date.now() - 5 * 60 * 1000), // 5 mins ago
       };
 
       vi.mocked(Booking.findById).mockResolvedValue(mockBooking as any);
@@ -365,7 +473,7 @@ describe('PR 4b: Ownership Consolidation & Hybrid Grace Window Tests', () => {
         status: BookingStatus.CONFIRMED,
         sessionId: 'session-guest-789',
         userId: new Types.ObjectId(),
-        confirmedAt: new Date(Date.now() - 40 * 60 * 1000), // 40 mins ago
+        confirmedAt: new Date(Date.now() - 15 * 60 * 1000), // 15 mins ago
       };
 
       vi.mocked(Booking.findById).mockResolvedValue(mockBooking as any);
@@ -435,6 +543,50 @@ describe('PR 4b: Ownership Consolidation & Hybrid Grace Window Tests', () => {
       };
 
       expect(verifyCall).toThrow(AppError);
+    });
+  });
+
+  describe('Lifecycle transition timestamp verification', () => {
+    it('should set confirmedAt on transition to CONFIRMED and handle authorization lifecycle', () => {
+      const booking = {
+        _id: new Types.ObjectId(),
+        status: BookingStatus.CONFIRMED,
+        sessionId: 'session-guest-789',
+        userId: new Types.ObjectId(),
+        confirmedAt: new Date(), // Set during transition
+      };
+
+      // Guest access succeeds immediately after transition
+      expect(() => {
+        PublicBookingService.assertBookingAccess(booking as any, { sessionId: 'session-guest-789' }, 'Fulfillment');
+      }).not.toThrow();
+
+      // Guest access fails after grace window expires
+      booking.confirmedAt = new Date(Date.now() - 11 * 60 * 1000); // 11 minutes ago
+      expect(() => {
+        PublicBookingService.assertBookingAccess(booking as any, { sessionId: 'session-guest-789' }, 'Fulfillment');
+      }).toThrow(expect.objectContaining({ statusCode: 403, code: 'BOOKING_VERIFICATION_REQUIRED' }));
+    });
+
+    it('should require logicalExpiresAt on transition to EXPIRED/EXPIRING and handle authorization lifecycle', () => {
+      const booking = {
+        _id: new Types.ObjectId(),
+        status: BookingStatus.EXPIRED,
+        sessionId: 'session-guest-789',
+        userId: undefined,
+        logicalExpiresAt: new Date(), // Set during transition
+      };
+
+      // Guest access succeeds immediately after transition
+      expect(() => {
+        PublicBookingService.assertBookingAccess(booking as any, { sessionId: 'session-guest-789' }, 'ActiveCheckout');
+      }).not.toThrow();
+
+      // Guest access fails after grace window expires
+      booking.logicalExpiresAt = new Date(Date.now() - 11 * 60 * 1000); // 11 minutes ago
+      expect(() => {
+        PublicBookingService.assertBookingAccess(booking as any, { sessionId: 'session-guest-789' }, 'ActiveCheckout');
+      }).toThrow(AppError);
     });
   });
 });

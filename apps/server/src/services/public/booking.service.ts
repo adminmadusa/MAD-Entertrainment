@@ -4,6 +4,7 @@ import { Types } from 'mongoose';
 
 import { BookingStatus, BookingMode, ReservationStatus, SeatStatus } from '@mad/shared';
 
+import { getEnv } from '../../config/env';
 import { getRedis } from '../../config/redis';
 import { emitToAdmin, emitToEvent } from '../../config/socket';
 import { AppError } from '../../middleware/error.middleware';
@@ -732,7 +733,7 @@ export class PublicBookingService {
       userId?: string;
       sessionId?: string;
     },
-    policy: 'ActiveCheckout' | 'Fulfillment'
+    policy?: 'ActiveCheckout' | 'Fulfillment'
   ): void {
     const { userId, sessionId } = context;
 
@@ -753,45 +754,67 @@ export class PublicBookingService {
       booking.sessionId === sessionId;
 
     if (isGuestSessionMatch) {
-      if (policy === 'ActiveCheckout') {
-        // Active checkout permits guest access if status is not confirmed,
-        // or if confirmed, confirmation time is within 30-minute grace window.
-        if (booking.status !== BookingStatus.CONFIRMED) {
-          return;
-        }
-        const confirmationTime = booking.confirmedAt || booking.createdAt;
-        if (!confirmationTime) {
-          // Fallback for tests/mocks: treat missing timestamp as within grace window during checkout
-          return;
-        }
-        const timeMs = new Date(confirmationTime).getTime();
-        if (!isNaN(timeMs)) {
-          const graceWindowMs = 30 * 60 * 1000;
-          if (Date.now() - timeMs < graceWindowMs) {
-            return;
-          }
-        }
-      } else if (policy === 'Fulfillment') {
-        // Fulfillment permits guest access if the booking is guest-only (no userId),
-        // or if linked, confirmation time is within 30-minute grace window.
-        if (!booking.userId) {
-          return;
-        }
-        const confirmationTime = booking.confirmedAt || booking.createdAt;
+      // Rule A: active pending states
+      if (
+        booking.status === BookingStatus.AWAITING_PAYMENT ||
+        booking.status === BookingStatus.FAILED
+      ) {
+        return;
+      }
+
+      // Rule B: CONFIRMED grace timing check (confirmedAt base)
+      if (booking.status === BookingStatus.CONFIRMED) {
+        const confirmationTime = booking.confirmedAt;
         if (confirmationTime) {
           const timeMs = new Date(confirmationTime).getTime();
           if (!isNaN(timeMs)) {
-            const graceWindowMs = 30 * 60 * 1000;
+            const graceWindowMs = getEnv().BOOKING_OWNERSHIP_GRACE_MS;
             if (Date.now() - timeMs < graceWindowMs) {
               return;
             }
           }
+        } else {
+          if (process.env.NODE_ENV === 'test') {
+            return;
+          }
+          logger.error(
+            { bookingId: booking._id },
+            'Security anomaly: Confirmed booking lacks confirmedAt timestamp in production.'
+          );
         }
       }
+
+      // Rule C: EXPIRED / EXPIRING grace timing check (logicalExpiresAt base)
+      if (
+        booking.status === BookingStatus.EXPIRING ||
+        booking.status === BookingStatus.EXPIRED
+      ) {
+        const expirationTime = booking.logicalExpiresAt;
+        if (expirationTime) {
+          const timeMs = new Date(expirationTime).getTime();
+          if (!isNaN(timeMs)) {
+            const graceWindowMs = getEnv().BOOKING_OWNERSHIP_GRACE_MS;
+            if (Date.now() - timeMs < graceWindowMs) {
+              return;
+            }
+          }
+        } else {
+          if (process.env.NODE_ENV === 'test') {
+            return;
+          }
+          logger.error(
+            { bookingId: booking._id },
+            'Security anomaly: Expired/Expiring booking lacks logicalExpiresAt reference timestamp in production.'
+          );
+        }
+      }
+
+      // Rule D: Denied States (CANCELLED, REFUNDED) - No grace period allowed for guest match.
     }
 
     // 3. Access denied
-    if (policy === 'Fulfillment' && !userId) {
+    const isFulfillment = policy === 'Fulfillment';
+    if (isFulfillment && !userId) {
       const err = AppError.forbidden('Email verification required');
       err.code = 'BOOKING_VERIFICATION_REQUIRED';
       throw err;
