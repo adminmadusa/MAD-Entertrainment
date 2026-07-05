@@ -14,6 +14,7 @@ import { Ticket } from '../models/ticket.schema';
 import { ConsistencyService } from './consistency.service';
 import { BookingConsistencyService } from './consistency/booking-consistency.service';
 import { NotificationConsistencyService } from './consistency/notification-consistency.service';
+import { RefundConsistencyService } from './consistency/refund-consistency.service';
 import { PaymentService } from './public/payment.service';
 import { QueueService } from './queue.service';
 import { ReservationService } from './reservation.service';
@@ -956,7 +957,7 @@ describe('ConsistencyService - Stuck Processing, Notifications, Optimistic Locki
     vi.mocked(Refund.find).mockReturnValue(mockCreateMockQuery([mockRefund]) as any);
     vi.mocked(Refund.updateOne).mockResolvedValue({ modifiedCount: 1 } as any);
 
-    const resetCount = await (ConsistencyService as any).repairStuckProcessingRefunds();
+    const resetCount = await RefundConsistencyService.repairStuckProcessingRefunds();
     expect(resetCount).toBe(1);
     expect(Refund.find).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -1013,7 +1014,7 @@ describe('ConsistencyService - Stuck Processing, Notifications, Optimistic Locki
     };
     vi.mocked(Event.findById).mockResolvedValue(mockEvent as any);
 
-    const count = await (ConsistencyService as any).repairOrphanedRefundNotifications();
+    const count = await RefundConsistencyService.repairOrphanedRefundNotifications();
     expect(count).toBe(1);
     expect(Notification.exists).toHaveBeenCalledWith({
       bookingId: 'book-orph-1',
@@ -1052,7 +1053,7 @@ describe('ConsistencyService - Stuck Processing, Notifications, Optimistic Locki
     };
     vi.mocked(Event.findById).mockResolvedValue(mockEvent as any);
 
-    const count = await (ConsistencyService as any).repairOrphanedCancellationNotifications();
+    const count = await RefundConsistencyService.repairOrphanedCancellationNotifications();
     expect(count).toBe(1);
     expect(Notification.exists).toHaveBeenCalledWith({
       bookingId: 'book-cancel-1',
