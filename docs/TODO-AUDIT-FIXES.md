@@ -2,7 +2,7 @@
 
 - **Owner**: Repository Governance Owner
 - **Status**: Active
-- **Version**: 2.0
+- **Version**: 2.1
 - **Review Cycle**: Ongoing
 - **Last Updated**: 2026-07-05
 - **Related Documents:**
@@ -72,10 +72,30 @@ The following items have been fully implemented, verified, merged into `develop`
 | ARCH-004 — tickets/page.tsx extraction (376 lines) | prior | ✅ |
 | ARCH-005 — Admin Bookings page extraction (235 lines) | prior | ✅ |
 | GOV-001 — Server ESLint flat config & Vitest coverage thresholds | #485 | ✅ |
+| ARCH-006 — EventMemoriesCard.tsx extraction (157 lines, merge SHA b8bbb48) | #487 | ✅ |
 
 ---
 
 ## Open Backlog Items
+
+### ARCH-006 — EventMemoriesCard.tsx Extraction
+
+**Status: ✅ Completed — PR #487, merged 2026-07-05 (SHA b8bbb48)**
+
+Decomposed `EventMemoriesCard.tsx` (611 lines) into six focused modules:
+
+| File | Lines |
+|------|------:|
+| `EventMemoriesCard.tsx` | 157 |
+| `useEventMemoriesHandlers.ts` | 253 |
+| `MemoriesGallery.tsx` | 196 |
+| `MemoriesPublicationControls.tsx` | 93 |
+| `event-memories.types.ts` | 30 |
+| `event-memories.constants.ts` | 40 |
+
+`useEventMemoriesHandlers.ts` at 253 lines exceeds the 250-line hook preferred limit by 3 lines. Accepted — upload workflow is a single cohesive concern; further splitting would create unnecessary indirection.
+
+---
 
 ### DOCS-001 — Large File Inventory Automation
 
@@ -206,35 +226,7 @@ Backlog — Not Started
 
 ### ARCH-006 — EventMemoriesCard.tsx Extraction
 
-**Priority:** Medium
-
-#### Goal
-
-Decompose `apps/admin/src/components/events/EventMemoriesCard.tsx` (611 lines) into focused sub-components. The file currently mixes image gallery rendering, upload handling, and delete confirmation concerns.
-
-#### Suggested Extraction Boundaries
-
-* `EventMemoriesGallery.tsx` — gallery grid and lightbox display
-* `EventMemoryUploader.tsx` — upload form and progress state
-* `EventMemoryDeleteConfirm.tsx` — delete confirmation modal
-
-#### Files
-
-Modify:
-* `apps/admin/src/components/events/EventMemoriesCard.tsx`
-
-Create:
-* `apps/admin/src/components/events/EventMemoriesGallery.tsx`
-* `apps/admin/src/components/events/EventMemoryUploader.tsx`
-* `apps/admin/src/components/events/EventMemoryDeleteConfirm.tsx`
-
-#### Risk
-
-Low (admin-only, purely presentational)
-
-#### Status
-
-Backlog — Not Started
+**Status: ✅ Completed — see Completed Items section above.**
 
 ---
 
@@ -364,7 +356,7 @@ Backlog — Not Started
 >   xargs wc -l | sort -rn | awk '$1 > 300 && !/total/'
 > ```
 
-### Large File Inventory — 2026-07-05
+### Large File Inventory — 2026-07-05 (updated post-ARCH-006)
 
 Files exceeding 300 lines (production code only):
 
@@ -377,7 +369,7 @@ Files exceeding 300 lines (production code only):
 | `refund.service.ts` (admin) | 718 | Service | ⚠️ Review Required |
 | `auth.service.ts` | 632 | Service | ⚠️ Postponed (high-risk) |
 | `booking.controller.ts` | 629 | Controller | ⚠️ Review Required |
-| `EventMemoriesCard.tsx` (admin) | 611 | Component | ⚠️ ARCH-006 — Backlog |
+| `EventMemoriesCard.tsx` (admin) | 157 | Component | ✅ Resolved (ARCH-006, PR #487) |
 | `sockets/index.ts` | 606 | Infrastructure | ⚠️ Postponed (high-risk) |
 | `payment-webhook.service.ts` | 524 | Service | 🟡 Acceptable |
 | `DjDetailClient.tsx` | 517 | Component | 🟡 Acceptable |
