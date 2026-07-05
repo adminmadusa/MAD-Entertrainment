@@ -1,9 +1,11 @@
 # MAD Entertrainment — API Contracts
 
-Status: Active
-Version: 1.0
-Owner: Repository Architecture & API Governance
-Review Cycle: Quarterly
+- **Status**: Active
+- **Version**: 1.0
+- **Owner**: Repository Architecture & API Governance
+- **Review Cycle**: Ongoing
+- **Last Updated**: 2026-07-05
+- **Last Reviewed**: 2026-07-05
 
 Supersedes:
 - None (First version establishing the API Contract SSOT)

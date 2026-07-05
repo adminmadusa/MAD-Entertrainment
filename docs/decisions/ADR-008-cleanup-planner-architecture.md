@@ -6,7 +6,7 @@
 - **Authors**: AI Architecture Agent & Repository Owner
 - **Reviewers**: Repository Governance Owner, Architecture Review Board
 - **Decision Category**: Platform Architecture
-- **Related Documents**: [ADR-006](ADR-006-public-contract-freeze.md), [ADR-007](ADR-007-rule-engine-architecture.md), [governance_roadmap.md](../../../.gemini/antigravity-ide/brain/f4cd9fff-aa45-46e3-9614-728336e2d561/governance_roadmap.md)
+- **Related Documents**: [ADR-006](ADR-006-public-contract-freeze.md), [ADR-007](ADR-007-rule-engine-architecture.md)
 - **Related Pull Requests**: #452 (Phase 2), #453 (Phase 2.5), #454 (Phase 3)
 - **Phase**: Roadmap Phase 4
 
@@ -260,29 +260,43 @@ a duplicate? is it safe to delete?) — that belongs to the planner.
 
 ---
 
-## Implementation Plan (Phase 4)
-
-**Step 1 — CleanupPlanner**
-- Create `platform/planning/cleanup-planner.ts`
-- Implement `plan(findings)` with confidence gate
-- Unit tests: all `ActionType` mappings, confidence gate, unknown ruleIds
-
-**Step 2 — GitCommandBuilder**
-- Create `platform/planning/git-command-builder.ts`
-- Implement `build(action)` and `buildAll(actions)`
-- Unit tests: all `ActionType` commands, edge cases
-
-**Step 3 — Integrate with writers** *(scoped — only shell writer)*
-- Shell writer reads `CleanupAction[]` instead of `shellCommand` strings
-- JSON output includes `actions: CleanupAction[]` — no shell strings
 
 ---
 
-## Exit Criteria (from Roadmap)
+## Technical & Operational Impact
 
-- ✓ ADR-008 merged and indexed in `ADR_INDEX.md`
-- ✓ `CleanupPlanner` contains zero shell commands
-- ✓ `GitCommandBuilder` contains zero business logic
-- ✓ All writers consume `CleanupAction[]`
-- ✓ Full CI test suite passes
-- ✓ `pnpm run build` passes
+### Migration Strategy
+Create `platform/planning/cleanup-planner.ts` and `platform/planning/git-command-builder.ts`. Update the runner and writers to consume structured `CleanupAction[]` objects rather than raw strings.
+
+### Operational Impact
+Isolates command generation, making the execution queue auditable and safe.
+
+### Security Impact
+Prevents shell injections by isolating shell compilation within the GitCommandBuilder.
+
+### Performance Impact
+No execution latency or runtime overhead.
+
+### Testing Strategy
+Unit tests for all `ActionType` mappings, confidence gates, builder commands, and edge cases.
+
+### Rollback Strategy
+Fallback to legacy procedural generation of `ActionItem` models in the runner.
+
+---
+
+## Future Considerations
+The following exit criteria are tracked for this phase:
+- ADR-008 merged and indexed in `ADR_INDEX.md`
+- `CleanupPlanner` contains zero shell commands
+- `GitCommandBuilder` contains zero business logic
+- All writers consume `CleanupAction[]`
+- Full CI test suite passes
+- `pnpm run build` passes
+
+---
+
+## References
+- [ADR-006](ADR-006-public-contract-freeze.md)
+- [ADR-007](ADR-007-rule-engine-architecture.md)
+- [REPOSITORY_GOVERNANCE.md](../../REPOSITORY_GOVERNANCE.md)
