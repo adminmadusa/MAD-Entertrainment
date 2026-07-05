@@ -13,6 +13,7 @@ import { SeatLayout } from '../models/seat-layout.schema';
 import { Ticket } from '../models/ticket.schema';
 import { ConsistencyService } from './consistency.service';
 import { BookingConsistencyService } from './consistency/booking-consistency.service';
+import { NotificationConsistencyService } from './consistency/notification-consistency.service';
 import { PaymentService } from './public/payment.service';
 import { QueueService } from './queue.service';
 import { ReservationService } from './reservation.service';
@@ -547,7 +548,7 @@ describe('ConsistencyService - Pipeline Watchdog (PR-T4A)', () => {
 
     vi.mocked(QueueService.enqueue).mockRejectedValue(new Error('Queue offline'));
 
-    const count = await (ConsistencyService as any).repairStuckNotifications();
+    const count = await NotificationConsistencyService.repairStuckNotifications();
 
     expect(count).toBe(0);
     expect(QueueService.enqueue).toHaveBeenCalled();
@@ -575,7 +576,7 @@ describe('ConsistencyService - Pipeline Watchdog (PR-T4A)', () => {
     vi.mocked(QueueService.enqueue).mockResolvedValue(undefined);
     vi.mocked(Notification.updateOne).mockResolvedValue({ modifiedCount: 1 } as any);
 
-    const count = await (ConsistencyService as any).repairStuckNotifications();
+    const count = await NotificationConsistencyService.repairStuckNotifications();
 
     expect(count).toBe(1);
     expect(QueueService.enqueue).toHaveBeenCalledWith(
@@ -624,7 +625,7 @@ describe('ConsistencyService - Pipeline Watchdog (PR-T4A)', () => {
     vi.mocked(QueueService.enqueue).mockResolvedValue(undefined);
     vi.mocked(Notification.updateOne).mockResolvedValue({ modifiedCount: 0 } as any);
 
-    const count = await (ConsistencyService as any).repairStuckNotifications();
+    const count = await NotificationConsistencyService.repairStuckNotifications();
 
     expect(count).toBe(0);
   });
@@ -669,7 +670,7 @@ describe('ConsistencyService - Pipeline Watchdog (PR-T4A)', () => {
     vi.mocked(QueueService.enqueue).mockResolvedValue(undefined);
     vi.mocked(Notification.updateOne).mockResolvedValue({ modifiedCount: 1 } as any);
 
-    const count = await (ConsistencyService as any).repairStuckNotifications();
+    const count = await NotificationConsistencyService.repairStuckNotifications();
 
     expect(count).toBe(1);
     expect(QueueService.enqueue).toHaveBeenCalledWith(
@@ -727,7 +728,7 @@ describe('ConsistencyService - Pipeline Watchdog (PR-T4A)', () => {
     vi.mocked(QueueService.enqueue).mockResolvedValue(undefined);
     vi.mocked(Notification.updateOne).mockResolvedValue({ modifiedCount: 1 } as any);
 
-    const count = await (ConsistencyService as any).repairStuckNotifications();
+    const count = await NotificationConsistencyService.repairStuckNotifications();
 
     expect(count).toBe(1);
     expect(QueueService.enqueue).toHaveBeenCalledWith(
@@ -759,7 +760,7 @@ describe('ConsistencyService - Pipeline Watchdog (PR-T4A)', () => {
       .mockResolvedValueOnce(false as any) // first call in loop
       .mockResolvedValueOnce(false as any); // final verification check
 
-    const count = await (ConsistencyService as any).repairOrphanedConfirmedDeliveries();
+    const count = await NotificationConsistencyService.repairOrphanedConfirmedDeliveries();
 
     expect(count).toBe(1);
     expect(QueueService.enqueue).toHaveBeenCalledWith(
@@ -792,7 +793,7 @@ describe('ConsistencyService - Pipeline Watchdog (PR-T4A)', () => {
       .mockResolvedValueOnce(false as any) // first check
       .mockResolvedValueOnce(true as any); // final check
 
-    const count = await (ConsistencyService as any).repairOrphanedConfirmedDeliveries();
+    const count = await NotificationConsistencyService.repairOrphanedConfirmedDeliveries();
 
     expect(count).toBe(0);
     expect(QueueService.enqueue).not.toHaveBeenCalled();
@@ -819,8 +820,8 @@ describe('ConsistencyService - Pipeline Watchdog (PR-T4A)', () => {
 
   // Test 7: Integration in runRepairCycle
   it('should execute pipeline watchdog repair methods in runRepairCycle', async () => {
-    const stuckSpy = vi.spyOn(ConsistencyService as any, 'repairStuckNotifications').mockResolvedValue(5);
-    const orphanedSpy = vi.spyOn(ConsistencyService as any, 'repairOrphanedConfirmedDeliveries').mockResolvedValue(7);
+    const stuckSpy = vi.spyOn(NotificationConsistencyService, 'repairStuckNotifications').mockResolvedValue(5);
+    const orphanedSpy = vi.spyOn(NotificationConsistencyService, 'repairOrphanedConfirmedDeliveries').mockResolvedValue(7);
 
     vi.mocked(Reservation.countDocuments).mockResolvedValue(0);
     vi.mocked(Booking.countDocuments).mockResolvedValue(0);
