@@ -403,6 +403,8 @@ Every file requires ownership.
 
 Avoid dumping unrelated utilities into generic folders.
 
+* **Governance Cache**: The `.governance/` folder is exclusively local. It is listed in `.gitignore` and must remain untracked by Git at all times. If `.governance/` files appear in `git status`, run `git rm -r --cached .governance/` immediately to untrack them and prevent commit noise.
+
 ---
 
 # BRANCH SAFETY
