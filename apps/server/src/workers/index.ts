@@ -1,6 +1,6 @@
 import { startBookingWorker, stopBookingWorker } from './booking.worker';
-import { startPDFWorker, stopPDFWorker } from './pdf.worker';
 import { startEmailWorker, stopEmailWorker } from './email.worker';
+import { startPDFWorker, stopPDFWorker } from './pdf.worker';
 
 /**
  * Boot up all background workers

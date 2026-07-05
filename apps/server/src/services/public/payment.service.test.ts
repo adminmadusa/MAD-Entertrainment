@@ -1,21 +1,24 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import crypto from 'crypto';
+
 import mongoose from 'mongoose';
-import { PaymentService } from './payment.service';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+
 import { BookingStatus, PaymentStatus } from '@mad/shared';
-import { Booking } from '../../models/booking.schema';
-import { Payment } from '../../models/payment.schema';
-import { Refund } from '../../models/refund.schema';
-import { Coupon } from '../../models/coupon.schema';
-import { Event } from '../../models/event.schema';
-import { Reservation } from '../../models/reservation.schema';
-import { SeatLayout } from '../../models/seat-layout.schema';
-import { UserModel } from '../../models/user.schema';
-import { Ticket } from '../../models/ticket.schema';
+
 import { getEnv } from '../../config/env';
 import { getStripe } from '../../config/stripe';
-import { ReservationService } from '../reservation.service';
+import { Booking } from '../../models/booking.schema';
+import { Coupon } from '../../models/coupon.schema';
+import { Event } from '../../models/event.schema';
+import { Payment } from '../../models/payment.schema';
+import { Refund } from '../../models/refund.schema';
+import { Reservation } from '../../models/reservation.schema';
+import { SeatLayout } from '../../models/seat-layout.schema';
+import { Ticket } from '../../models/ticket.schema';
+import { UserModel } from '../../models/user.schema';
 import { QueueService } from '../queue.service';
-import crypto from 'crypto';
+import { ReservationService } from '../reservation.service';
+import { PaymentService } from './payment.service';
 
 const { mockSession } = vi.hoisted(() => {
   const session = {

@@ -1,5 +1,6 @@
-import { EventStatus } from '@mad/shared';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+import { EventStatus } from '@mad/shared';
 
 import { Event } from '../models/event.schema';
 import { auditLog } from '../utils/audit';

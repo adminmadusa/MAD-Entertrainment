@@ -1,12 +1,13 @@
-import { EventStatus, SeatStatus, EventMemoryPublicationState } from '@mad/shared';
-import type { FilterQuery } from 'mongoose';
 import jwt from 'jsonwebtoken';
+import type { FilterQuery } from 'mongoose';
 
+import { EventStatus, SeatStatus, EventMemoryPublicationState } from '@mad/shared';
+
+import { getEnv } from '../../config/env';
 import { getRedis } from '../../config/redis';
 import { AppError } from '../../middleware/error.middleware';
 import { Event, IEvent } from '../../models/event.schema';
 import { SeatLayout, ISeatLayout } from '../../models/seat-layout.schema';
-import { getEnv } from '../../config/env';
 import { auditLog } from '../../utils/audit';
 
 export function verifyPreviewToken(token: string): {

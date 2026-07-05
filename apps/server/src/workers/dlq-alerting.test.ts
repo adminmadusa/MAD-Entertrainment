@@ -1,7 +1,11 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
 import * as Sentry from '@sentry/node';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+
 import { DeadLetterJob } from '../models/dead-letter-job.schema';
 import { logger } from '../utils/logger';
+import { startBookingWorker } from './booking.worker';
+import { startEmailWorker } from './email.worker';
+import { startPDFWorker } from './pdf.worker';
 
 vi.mock('bullmq', () => {
   const mockFailedListeners: Record<string, Function> = {};
@@ -27,11 +31,6 @@ vi.mock('bullmq', () => {
     Queue: class {},
   };
 });
-
-// Import workers AFTER vi.mock('bullmq') is set up
-import { startBookingWorker } from './booking.worker';
-import { startPDFWorker } from './pdf.worker';
-import { startEmailWorker } from './email.worker';
 
 vi.mock('@sentry/node', () => ({
   captureException: vi.fn(),

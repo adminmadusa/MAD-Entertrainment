@@ -1,5 +1,5 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { Types } from 'mongoose';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Hoist mock environment setup
 vi.hoisted(() => {
@@ -10,14 +10,14 @@ vi.hoisted(() => {
   process.env.DLQ_ENCRYPTION_KEY = 'testsecret32characterstestsecret32';
 });
 
+import { getBooking, downloadBookingPDF, generateDownloadToken, resendBookingTickets } from '../../controllers/public/booking.controller';
+import { AppError } from '../../middleware/error.middleware';
 import { Booking } from '../../models/booking.schema';
 import { Ticket } from '../../models/ticket.schema';
-import { AppError } from '../../middleware/error.middleware';
-import { getBooking, downloadBookingPDF, generateDownloadToken, resendBookingTickets } from '../../controllers/public/booking.controller';
-import { canViewTicketQR } from './ticket-ownership.service';
-import { PaymentService } from './payment.service';
-import { PublicBookingService } from './booking.service';
 import { registerSocketHandlers } from '../../sockets/index';
+import { PublicBookingService } from './booking.service';
+import { PaymentService } from './payment.service';
+import { canViewTicketQR } from './ticket-ownership.service';
 
 vi.mock('../../models/booking.schema', () => ({
   Booking: {

@@ -5,9 +5,9 @@ import { getQueueConnection, getQueueName } from '../config/queue.config';
 import { isRedisConnected } from '../config/redis';
 import { getSocketTelemetry } from '../config/socket';
 import { DeadLetterJob } from '../models/dead-letter-job.schema';
-import { QueueService } from './queue.service';
-import { logger } from '../utils/logger';
 import { decryptPayload, isEncrypted } from '../utils/encryption';
+import { logger } from '../utils/logger';
+import { QueueService } from './queue.service';
 
 
 export interface QueueHealthStats {

@@ -1,32 +1,32 @@
 import crypto from 'crypto';
-import { BookingStatus, ReservationStatus, SeatStatus, InventoryState, PaymentStatus, NotificationType } from '@mad/shared';
 
 import mongoose, { Types, ClientSession } from 'mongoose';
-import { createNotificationSafe } from '../notification.service';
 
+import { BookingStatus, ReservationStatus, SeatStatus, InventoryState, PaymentStatus, NotificationType } from '@mad/shared';
+
+import { getQueueName } from '../../config/queue.config';
 import { emitToAdmin, emitToEvent, emitToBooking } from '../../config/socket';
+import { eventCancellationHtml } from '../../lib/email';
 import { AppError } from '../../middleware/error.middleware';
-import { Booking } from '../../models/booking.schema';
-import { Event } from '../../models/event.schema';
-import { SeatLayout } from '../../models/seat-layout.schema';
-import { UserModel } from '../../models/user.schema';
-import { Ticket } from '../../models/ticket.schema';
 import { AdminModel } from '../../models/admin.schema';
 import { AuditLogModel } from '../../models/audit-log.schema';
-import { Payment } from '../../models/payment.schema';
+import { Booking } from '../../models/booking.schema';
 import { Coupon } from '../../models/coupon.schema';
-import { Refund } from '../../models/refund.schema';
-import { logger } from '../../utils/logger';
-import { auditLog } from '../../utils/audit';
-import { runInTransaction } from '../../utils/transaction';
-import { ReservationService } from '../reservation.service';
-import { CacheService } from '../cache.service';
-import { QueueService } from '../queue.service';
-import { getQueueName } from '../../config/queue.config';
-import { BookingsSummaryResponse } from '../../types/admin/booking.types';
+import { Event } from '../../models/event.schema';
 import { Notification } from '../../models/notification.schema';
-
-import { eventCancellationHtml } from '../../lib/email';
+import { Payment } from '../../models/payment.schema';
+import { Refund } from '../../models/refund.schema';
+import { SeatLayout } from '../../models/seat-layout.schema';
+import { Ticket } from '../../models/ticket.schema';
+import { UserModel } from '../../models/user.schema';
+import type { BookingsSummaryResponse } from '../../types/admin/booking.types';
+import { auditLog } from '../../utils/audit';
+import { logger } from '../../utils/logger';
+import { runInTransaction } from '../../utils/transaction';
+import { CacheService } from '../cache.service';
+import { createNotificationSafe } from '../notification.service';
+import { QueueService } from '../queue.service';
+import { ReservationService } from '../reservation.service';
 
 /**
  * Maps a Mongoose Booking document onto a safe Normalized AdminBooking DTO representation.

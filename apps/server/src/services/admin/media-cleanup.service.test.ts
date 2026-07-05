@@ -34,8 +34,8 @@ vi.mock('./upload.service', () => ({
   },
 }));
 
-import { safeDeleteImages, cleanupTemporaryAssets } from './media-cleanup.service';
 import { Event } from '../../models/event.schema';
+import { safeDeleteImages, cleanupTemporaryAssets } from './media-cleanup.service';
 import { UploadService } from './upload.service';
 
 describe('MediaCleanupService', () => {

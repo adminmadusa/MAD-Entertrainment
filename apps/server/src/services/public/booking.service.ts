@@ -1,9 +1,11 @@
 import crypto from 'crypto';
-import { BookingStatus, BookingMode, ReservationStatus, SeatStatus } from '@mad/shared';
+
 import { Types } from 'mongoose';
 
-import { emitToAdmin, emitToEvent } from '../../config/socket';
+import { BookingStatus, BookingMode, ReservationStatus, SeatStatus } from '@mad/shared';
+
 import { getRedis } from '../../config/redis';
+import { emitToAdmin, emitToEvent } from '../../config/socket';
 import { AppError } from '../../middleware/error.middleware';
 import { Booking, IBooking } from '../../models/booking.schema';
 import { Coupon } from '../../models/coupon.schema';
@@ -12,10 +14,10 @@ import { IReservation } from '../../models/reservation.schema';
 import { SeatLayout } from '../../models/seat-layout.schema';
 import { Ticket } from '../../models/ticket.schema';
 import { UserModel } from '../../models/user.schema';
-import { logger } from '../../utils/logger';
 import { auditLog } from '../../utils/audit';
-import { ReservationService } from '../reservation.service';
+import { logger } from '../../utils/logger';
 import { runInTransaction } from '../../utils/transaction';
+import { ReservationService } from '../reservation.service';
 
 export class PublicBookingService {
   static generateSelectionFingerprint(data: {

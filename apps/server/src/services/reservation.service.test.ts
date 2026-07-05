@@ -10,12 +10,12 @@ vi.mock('../config/env', () => ({
   })),
 }));
 
-import { ReservationService } from './reservation.service';
-import { Reservation } from '../models/reservation.schema';
+import { emitToAdmin, emitToEvent } from '../config/socket';
 import { Event } from '../models/event.schema';
+import { Reservation } from '../models/reservation.schema';
 import { SeatLayout } from '../models/seat-layout.schema';
 import { CacheService } from './cache.service';
-import { emitToAdmin, emitToEvent } from '../config/socket';
+import { ReservationService } from './reservation.service';
 
 vi.mock('../models/reservation.schema', () => ({
   Reservation: {

@@ -1,5 +1,5 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { Types } from 'mongoose';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('../../config/env', () => ({
   getEnv: () => ({
@@ -11,9 +11,9 @@ vi.mock('../../config/env', () => ({
   }),
 }));
 
-import { Ticket } from '../../models/ticket.schema';
-import { Booking } from '../../models/booking.schema';
 import { AppError } from '../../middleware/error.middleware';
+import { Booking } from '../../models/booking.schema';
+import { Ticket } from '../../models/ticket.schema';
 import {
   assertPurchaserOwnsTicket,
   assertAttendeeOwnsTicket,

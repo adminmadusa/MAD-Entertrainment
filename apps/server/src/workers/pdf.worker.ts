@@ -1,18 +1,19 @@
-import { Worker, WorkerOptions, Job } from 'bullmq';
 import * as Sentry from '@sentry/node';
+import { Worker, WorkerOptions, Job } from 'bullmq';
 
-import { getQueueConnection, getQueueName, getQueuePrefix } from '../config/queue.config';
+import { NotificationType } from '@mad/shared';
+
 import { getEnv } from '../config/env';
+import { getQueueConnection, getQueueName, getQueuePrefix } from '../config/queue.config';
 import { isRedisConnected } from '../config/redis';
 import { Booking } from '../models/booking.schema';
-import { Event } from '../models/event.schema';
 import { DeadLetterJob } from '../models/dead-letter-job.schema';
+import { Event } from '../models/event.schema';
 import { Notification } from '../models/notification.schema';
-import { QueueService } from '../services/queue.service';
 import { createNotificationSafe } from '../services/notification.service';
-import { generateTicketPDF } from '../utils/pdf';
-import { NotificationType } from '@mad/shared';
+import { QueueService } from '../services/queue.service';
 import { logger } from '../utils/logger';
+import { generateTicketPDF } from '../utils/pdf';
 
 const QUEUE_NAME = getQueueName('pdf-queue');
 

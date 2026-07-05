@@ -1,5 +1,6 @@
-import { Notification, INotification } from '../../models/notification.schema';
 import mongoose from 'mongoose';
+
+import { Notification, INotification } from '../../models/notification.schema';
 import { sendEmail } from '../../utils/email';
 import { logger } from '../../utils/logger';
 

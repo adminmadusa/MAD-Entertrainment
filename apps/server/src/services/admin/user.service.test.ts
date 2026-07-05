@@ -1,6 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Types } from 'mongoose';
-
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 vi.mock('../../config/env', () => ({
   getEnv: vi.fn(() => ({
     NODE_ENV: 'test',
@@ -21,12 +20,12 @@ vi.mock('../../utils/logger', () => ({
   },
 }));
 
-import { AdminUserService } from './user.service';
-import { UserModel } from '../../models/user.schema';
 import { Booking } from '../../models/booking.schema';
-import { Ticket } from '../../models/ticket.schema';
-import { Refund } from '../../models/refund.schema';
 import { Payment } from '../../models/payment.schema';
+import { Refund } from '../../models/refund.schema';
+import { Ticket } from '../../models/ticket.schema';
+import { UserModel } from '../../models/user.schema';
+import { AdminUserService } from './user.service';
 
 vi.mock('../../models/user.schema', () => ({
   UserModel: {

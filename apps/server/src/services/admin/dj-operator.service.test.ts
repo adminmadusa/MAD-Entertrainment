@@ -29,8 +29,8 @@ vi.mock('../cache.service', () => ({
   },
 }));
 
-import * as djOperatorService from './dj-operator.service';
 import { DJOperator } from '../../models/dj-operator.schema';
+import * as djOperatorService from './dj-operator.service';
 import { safeDeleteImages } from './media-cleanup.service';
 
 describe('Admin DJ Operator Service', () => {

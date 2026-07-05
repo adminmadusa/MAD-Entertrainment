@@ -1,15 +1,17 @@
+import { Types } from 'mongoose';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { AuthService } from './auth.service';
+
+import { NotificationType } from '@mad/shared';
+
+import { getRedis, isRedisConnected } from '../../config/redis';
+import { magicLinkHtml } from '../../lib/email';
+import { Booking } from '../../models/booking.schema';
+import { MagicTokenModel } from '../../models/magic-token.schema';
 import { RefreshTokenModel } from '../../models/refresh-token.schema';
 import { UserModel } from '../../models/user.schema';
-import { MagicTokenModel } from '../../models/magic-token.schema';
-import { Booking } from '../../models/booking.schema';
-import { QueueService } from '../queue.service';
 import { createNotificationSafe } from '../notification.service';
-import { magicLinkHtml } from '../../lib/email';
-import { getRedis, isRedisConnected } from '../../config/redis';
-import { Types } from 'mongoose';
-import { NotificationType } from '@mad/shared';
+import { QueueService } from '../queue.service';
+import { AuthService } from './auth.service';
 
 vi.mock('../../config/env', () => ({
   getEnv: vi.fn(() => ({

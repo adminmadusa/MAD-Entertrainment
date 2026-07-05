@@ -1,21 +1,24 @@
 import crypto from 'crypto';
-import { Types } from 'mongoose';
+
 import { OAuth2Client } from 'google-auth-library';
+import { Types } from 'mongoose';
+
+import { NotificationType } from '@mad/shared';
+
 import { getEnv } from '../../config/env';
 import { getQueueName } from '../../config/queue.config';
+import { getRedis, isRedisConnected } from '../../config/redis';
+import { magicLinkHtml } from '../../lib/email';
 import { AppError } from '../../middleware/error.middleware';
-import { UserModel, IUser } from '../../models/user.schema';
+import { Booking } from '../../models/booking.schema';
 import { MagicTokenModel } from '../../models/magic-token.schema';
 import { RefreshTokenModel } from '../../models/refresh-token.schema';
-import { Booking } from '../../models/booking.schema';
-import { createNotificationSafe } from '../notification.service';
-import { QueueService } from '../queue.service';
-import { magicLinkHtml } from '../../lib/email';
+import { UserModel, IUser } from '../../models/user.schema';
 import { normalizeEmail } from '../../utils/email';
-import { getRedis, isRedisConnected } from '../../config/redis';
-import { NotificationType } from '@mad/shared';
 import { signUserToken } from '../../utils/jwt';
 import { logger } from '../../utils/logger';
+import { createNotificationSafe } from '../notification.service';
+import { QueueService } from '../queue.service';
 
 export class AuthService {
   /**

@@ -1,13 +1,15 @@
+import * as Sentry from '@sentry/node';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { PaymentService } from './payment.service';
+
 import { BookingStatus, PaymentStatus, NotificationType } from '@mad/shared';
+
 import { Booking } from '../../models/booking.schema';
+import { Notification } from '../../models/notification.schema';
 import { Payment } from '../../models/payment.schema';
 import { Refund } from '../../models/refund.schema';
-import { Notification } from '../../models/notification.schema';
 import { cancelBooking, executeCancelBookingSideEffects } from '../admin/booking.service';
 import { QueueService } from '../queue.service';
-import * as Sentry from '@sentry/node';
+import { PaymentService } from './payment.service';
 
 // Mock Session for MongoDB Transactions
 const { mockSession } = vi.hoisted(() => {
