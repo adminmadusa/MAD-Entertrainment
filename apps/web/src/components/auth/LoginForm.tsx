@@ -1,5 +1,6 @@
 'use client';
 
+import '@sentry/node';
 import Link from 'next/link';
 import React, { useEffect, useRef } from 'react';
 
