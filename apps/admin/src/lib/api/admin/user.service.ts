@@ -1,5 +1,5 @@
-import { PaginationMeta } from '@mad/types';
 import { adminApiClient } from '@/lib/api/client';
+import type { PaginationMeta } from '@mad/types';
 
 export interface UserListItem {
   id: string | null;

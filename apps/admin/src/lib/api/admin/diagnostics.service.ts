@@ -1,5 +1,5 @@
 import { adminApiClient } from '@/lib/api/client';
-import { Notification, PaginatedDataResponse } from '@mad/types';
+import type { Notification, PaginatedDataResponse } from '@mad/types';
 
 export interface ConsistencyReport {
   generatedAt: string;

@@ -1,6 +1,6 @@
-import { PaginationMeta } from '@mad/types';
-import { EventStatus, EventMemoryPublicationState } from '@mad/shared';
 import { adminApiClient } from '@/lib/api/client';
+import { EventStatus, EventMemoryPublicationState } from '@mad/shared';
+import type { PaginationMeta } from '@mad/types';
 
 
 export interface EventTier {

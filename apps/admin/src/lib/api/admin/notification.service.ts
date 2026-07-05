@@ -1,6 +1,5 @@
-import { Notification, PaginatedDataResponse, PaginatedItemsResponse } from '@mad/types';
-
 import { adminApiClient } from '@/lib/api/client';
+import type { Notification, PaginatedDataResponse, PaginatedItemsResponse } from '@mad/types';
 
 export type NotificationsResponse = PaginatedDataResponse<Notification>;
 

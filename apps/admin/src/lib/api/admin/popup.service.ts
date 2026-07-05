@@ -1,6 +1,5 @@
-import { PopupCampaign, PaginatedDataResponse, PaginatedItemsResponse } from '@mad/types';
-
 import { adminApiClient } from '@/lib/api/client';
+import type { PopupCampaign, PaginatedDataResponse, PaginatedItemsResponse } from '@mad/types';
 
 export type PopupsResponse = PaginatedDataResponse<PopupCampaign>;
 
