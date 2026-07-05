@@ -1,5 +1,5 @@
 import mongoose, { Types } from 'mongoose';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 import { isRedisConnected } from '../config/redis';
 import { DeadLetterJob } from '../models/dead-letter-job.schema';
@@ -70,9 +70,23 @@ vi.mock('../utils/logger', () => ({
 }));
 
 describe('Diagnostics Service', () => {
+  let originalReadyState: number;
+
   beforeEach(() => {
     vi.clearAllMocks();
     redisConnectedState = true;
+    originalReadyState = mongoose.connection.readyState;
+    Object.defineProperty(mongoose.connection, 'readyState', {
+      get: () => 1,
+      configurable: true,
+    });
+  });
+
+  afterEach(() => {
+    Object.defineProperty(mongoose.connection, 'readyState', {
+      get: () => originalReadyState,
+      configurable: true,
+    });
   });
 
   describe('generateReport', () => {
@@ -119,12 +133,142 @@ describe('Diagnostics Service', () => {
       expect(report.database.topologyType).toBe('Unknown');
       expect(report.database.replicaSetName).toBe('Unknown');
       expect(report.database.primaryHost).toBe('Unknown');
+      expect(report.database.members).toEqual([]);
 
       // Restore original readyState
       Object.defineProperty(mongoose.connection, 'readyState', {
         get: () => originalReadyState,
         configurable: true,
       });
+    });
+
+    it('should correctly populate and sort replica set members from MongoDB topology description', async () => {
+      const originalGetClient = mongoose.connection.getClient;
+      const mockServers = new Map([
+        ['host2:27017', { address: 'host2:27017', type: 'RSSecondary' }],
+        ['host1:27017', { address: 'host1:27017', type: 'RSPrimary' }],
+      ]);
+      const mockClient = {
+        topology: {
+          description: {
+            type: 'ReplicaSetWithPrimary',
+            setName: 'rs0',
+            servers: mockServers,
+          },
+        },
+      };
+
+      mongoose.connection.getClient = vi.fn().mockReturnValue(mockClient);
+
+      const report = await DiagnosticsService.generateReport();
+
+      expect(report.database.topologyType).toBe('ReplicaSetWithPrimary');
+      expect(report.database.replicaSetName).toBe('rs0');
+      expect(report.database.primaryHost).toBe('host1:27017');
+      // Assert sorted order by address
+      expect(report.database.members).toEqual([
+        { address: 'host1:27017', type: 'RSPrimary' },
+        { address: 'host2:27017', type: 'RSSecondary' },
+      ]);
+
+      mongoose.connection.getClient = originalGetClient;
+    });
+
+    it('should handle undefined topology in client safely', async () => {
+      const originalGetClient = mongoose.connection.getClient;
+      const mockClient = {
+        topology: undefined,
+      };
+
+      mongoose.connection.getClient = vi.fn().mockReturnValue(mockClient);
+
+      const report = await DiagnosticsService.generateReport();
+
+      expect(report.database.topologyType).toBe('Unknown');
+      expect(report.database.replicaSetName).toBe('Unknown');
+      expect(report.database.primaryHost).toBe('Unknown');
+      expect(report.database.members).toEqual([]);
+
+      mongoose.connection.getClient = originalGetClient;
+    });
+
+    it('should handle empty servers map in topology safely', async () => {
+      const originalGetClient = mongoose.connection.getClient;
+      const mockClient = {
+        topology: {
+          description: {
+            type: 'ReplicaSetNoPrimary',
+            setName: 'rs0',
+            servers: new Map(),
+          },
+        },
+      };
+
+      mongoose.connection.getClient = vi.fn().mockReturnValue(mockClient);
+
+      const report = await DiagnosticsService.generateReport();
+
+      expect(report.database.topologyType).toBe('ReplicaSetNoPrimary');
+      expect(report.database.replicaSetName).toBe('rs0');
+      expect(report.database.primaryHost).toBe('Unknown');
+      expect(report.database.members).toEqual([]);
+
+      mongoose.connection.getClient = originalGetClient;
+    });
+
+    it('should fallback primaryHost to Unknown if no primary server is present', async () => {
+      const originalGetClient = mongoose.connection.getClient;
+      const mockServers = new Map([
+        ['host1:27017', { address: 'host1:27017', type: 'RSSecondary' }],
+        ['host2:27017', { address: 'host2:27017', type: 'RSSecondary' }],
+      ]);
+      const mockClient = {
+        topology: {
+          description: {
+            type: 'ReplicaSetNoPrimary',
+            setName: 'rs0',
+            servers: mockServers,
+          },
+        },
+      };
+
+      mongoose.connection.getClient = vi.fn().mockReturnValue(mockClient);
+
+      const report = await DiagnosticsService.generateReport();
+
+      expect(report.database.primaryHost).toBe('Unknown');
+      expect(report.database.members).toEqual([
+        { address: 'host1:27017', type: 'RSSecondary' },
+        { address: 'host2:27017', type: 'RSSecondary' },
+      ]);
+
+      mongoose.connection.getClient = originalGetClient;
+    });
+
+    it('should use fallback values if server metadata is malformed', async () => {
+      const originalGetClient = mongoose.connection.getClient;
+      const mockServers = new Map([
+        ['host1:27017', { address: undefined, type: undefined }],
+      ]);
+      const mockClient = {
+        topology: {
+          description: {
+            type: 'ReplicaSetNoPrimary',
+            setName: 'rs0',
+            servers: mockServers,
+          },
+        },
+      };
+
+      mongoose.connection.getClient = vi.fn().mockReturnValue(mockClient);
+
+      const report = await DiagnosticsService.generateReport();
+
+      expect(report.database.members).toEqual([
+        { address: 'Unknown', type: 'Unknown' },
+      ]);
+
+      mongoose.connection.getClient = originalGetClient;
     });
   });
 
