@@ -1,9 +1,11 @@
 'use client';
 
 import React from 'react';
-import { TicketProfile, TicketGroup, TicketConfig } from '@mad/types';
+
+import type { TicketProfile, TicketGroup, TicketConfig } from '@mad/types';
+
 import { Field, inputCls } from './Field';
-import { TicketTierInput } from './types';
+import type { TicketTierInput } from './types';
 
 const TICKET_TIER_NAMES = [
   'general',

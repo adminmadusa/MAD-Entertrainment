@@ -1,9 +1,10 @@
 'use client';
 
+import { motion } from 'framer-motion';
+
+import { AdminBooking } from '@/lib/api/admin/booking.service';
 import { BookingStatus, getBookingStatusLabel } from '@mad/shared';
 import { formatDateTime, formatEventDate } from '@mad/utils';
-import { motion } from 'framer-motion';
-import { AdminBooking } from '@/lib/api/admin/booking.service';
 
 const STATUS_COLORS: Record<string, string> = {
   confirmed: 'bg-green-500/10 text-green-400 border-green-500/30',

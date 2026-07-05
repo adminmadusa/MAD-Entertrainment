@@ -4,13 +4,13 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { useState } from 'react';
-import { EVENT_STATUS_METADATA, type EventStatus, AdminRole } from '@mad/shared';
-import { formatEventDate } from '@mad/utils';
-import { useAdminAuth } from '@/providers/AdminAuthProvider';
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@mad/ui';
 
 import { adminGetEvents, adminDeleteEvent, type AdminEvent } from '@/lib/api/admin/event.service';
 import { extractApiError } from '@/lib/api/client';
+import { useAdminAuth } from '@/providers/AdminAuthProvider';
+import { EVENT_STATUS_METADATA, type EventStatus, AdminRole } from '@mad/shared';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@mad/ui';
+import { formatEventDate } from '@mad/utils';
 
 const EVENT_STATUS_FILTER_OPTIONS = Object.entries(EVENT_STATUS_METADATA);
 const getEventStatusMeta = (status?: EventStatus) =>

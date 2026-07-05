@@ -2,12 +2,12 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
+
+import ErrorState from '@/components/states/ErrorState';
+import { adminGetNotifications, adminRetryNotification } from '@/lib/api/admin/notification.service';
 import { useAdminAuth } from '@/providers/AdminAuthProvider';
 import { AdminRole } from '@mad/shared';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@mad/ui';
-
-import { adminGetNotifications, adminRetryNotification } from '@/lib/api/admin/notification.service';
-import ErrorState from '@/components/states/ErrorState';
 
 export default function AdminNotificationsPage() {
   const { admin } = useAdminAuth();

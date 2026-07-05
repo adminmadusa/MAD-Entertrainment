@@ -1,4 +1,4 @@
-import { TicketTierInput } from './types';
+import type { TicketTierInput } from './types';
 
 export const TICKET_TIER_NAMES = [
   'general',

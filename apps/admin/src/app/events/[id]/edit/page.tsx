@@ -1,38 +1,25 @@
 'use client';
 
-import {
-  BookingMode,
-  TicketTier,
-  EventStatus,
-  EventMemoryPublicationState,
-  EVENT_STATUS_TRANSITIONS,
-  type EventLifecycleStatus,
-} from '@mad/shared';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { useParams, useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 
-import {
-  adminGetEvent,
-  adminUpdateEvent,
-  type AdminEventUpdatePayload,
-  type CloudinaryImage,
-} from '@/lib/api/admin/event.service';
-import { adminGetCategories } from '@/lib/api/admin/category.service';
-import { adminGetTiers } from '@/lib/api/admin/tier.service';
-import { adminGetTicketProfiles } from '@/lib/api/admin/ticket-profile.service';
-import { extractApiError } from '@/lib/api/client';
-
-import { EventAttendanceCard } from '@/components/events/EventAttendanceCard';
-import { EventMediaCard } from '@/components/events/EventMediaCard';
-import { EventBasicInfoCard } from '@/components/events/EventBasicInfoCard';
 import { EventAdditionalDetailsCard } from '@/components/events/EventAdditionalDetailsCard';
+import { EventAttendanceCard } from '@/components/events/EventAttendanceCard';
+import { EventBasicInfoCard } from '@/components/events/EventBasicInfoCard';
+import { EventEditActions } from '@/components/events/EventEditActions';
+import { EventMediaCard } from '@/components/events/EventMediaCard';
+import { EventMemoriesCard, type MemoriesState } from '@/components/events/EventMemoriesCard';
+import { EventRequirementsCard } from '@/components/events/EventRequirementsCard';
 import { EventScheduleCard } from '@/components/events/EventScheduleCard';
 import { EventTicketingCard, type TicketTierInput } from '@/components/events/EventTicketingCard';
-import { EventRequirementsCard } from '@/components/events/EventRequirementsCard';
-import { EventEditActions } from '@/components/events/EventEditActions';
-import { EventMemoriesCard, type MemoriesState } from '@/components/events/EventMemoriesCard';
+import { adminGetCategories } from '@/lib/api/admin/category.service';
+import { adminGetEvent, adminUpdateEvent, type AdminEventUpdatePayload, type CloudinaryImage, } from '@/lib/api/admin/event.service';
+import { adminGetTicketProfiles } from '@/lib/api/admin/ticket-profile.service';
+import { adminGetTiers } from '@/lib/api/admin/tier.service';
+import { extractApiError } from '@/lib/api/client';
+import { BookingMode, TicketTier, EventStatus, EventMemoryPublicationState, EVENT_STATUS_TRANSITIONS, type EventLifecycleStatus, } from '@mad/shared';
 
 const defaultTier = (): TicketTierInput => ({
   name: 'general',

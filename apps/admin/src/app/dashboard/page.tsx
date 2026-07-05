@@ -2,23 +2,18 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Suspense, useState } from 'react';
-import dynamic from 'next/dynamic';
 
-import { useAdminAuth } from '@/providers/AdminAuthProvider';
-import { AdminRole, EventStatus, BOOKING_REFERENCE_REGEX } from '@mad/shared';
-import { formatDateTime } from '@mad/utils';
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@mad/ui';
-import {
-  adminGetDashboardSummary,
-  adminGetRevenueChart,
-  adminGetAttendanceSummary,
-  adminGetAttendanceRankings,
-} from '@/lib/api/admin/analytics.service';
+import { adminGetDashboardSummary, adminGetRevenueChart, adminGetAttendanceSummary, adminGetAttendanceRankings, } from '@/lib/api/admin/analytics.service';
 import { adminGetConsistencyReport, adminGetWebhooks, adminGetEmailLogs } from '@/lib/api/admin/diagnostics.service';
 import { adminGetEvents } from '@/lib/api/admin/event.service';
+import { useAdminAuth } from '@/providers/AdminAuthProvider';
+import { AdminRole, EventStatus, BOOKING_REFERENCE_REGEX } from '@mad/shared';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@mad/ui';
+import { formatDateTime } from '@mad/utils';
 
 const RevenueChartWidget = dynamic(
   () => import('@/components/dashboard/RevenueChartWidget'),

@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion';
 import { useState } from 'react';
+
 import { AdminBooking } from '@/lib/api/admin/booking.service';
 
 export interface CancelBookingModalProps {

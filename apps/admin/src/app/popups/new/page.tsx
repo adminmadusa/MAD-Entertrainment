@@ -1,15 +1,15 @@
 'use client';
 
-import { PopupCampaign } from '@mad/types';
 import { useMutation } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { FormField } from '@mad/ui';
 
 import { CloudinaryUpload } from '@/components/CloudinaryUpload';
 import { adminCreatePopup } from '@/lib/api/admin/popup.service';
 import { extractApiError } from '@/lib/api/client';
+import type { PopupCampaign } from '@mad/types';
+import { FormField } from '@mad/ui';
 
 
 interface CloudinaryAsset {

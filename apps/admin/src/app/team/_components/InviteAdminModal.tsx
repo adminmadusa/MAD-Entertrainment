@@ -1,8 +1,9 @@
 'use client';
 
-import { AdminRole } from '@mad/shared';
 import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
+
+import { AdminRole } from '@mad/shared';
 
 const inputCls =
   'w-full px-4 py-2.5 rounded-xl bg-background border border-border-subtle text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-purple transition-colors';

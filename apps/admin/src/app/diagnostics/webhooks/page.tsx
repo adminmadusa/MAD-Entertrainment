@@ -1,15 +1,15 @@
 'use client';
 import { useQuery } from '@tanstack/react-query';
-import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { formatDateTime } from '@mad/utils';
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@mad/ui';
+import { useState } from 'react';
 
-import { adminGetWebhooks } from '@/lib/api/admin/diagnostics.service';
 import ErrorState from '@/components/states/ErrorState';
-import { QUERY_KEYS, AdminRole } from '@mad/shared';
+import { adminGetWebhooks } from '@/lib/api/admin/diagnostics.service';
 import { useAdminAuth } from '@/providers/AdminAuthProvider';
+import { QUERY_KEYS, AdminRole } from '@mad/shared';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@mad/ui';
+import { formatDateTime } from '@mad/utils';
 
 export default function WebhookDiagnosticsPage() {
   const { admin } = useAdminAuth();
