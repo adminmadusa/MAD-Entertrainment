@@ -1,5 +1,5 @@
 import { adminApiClient } from '@/lib/api/client';
-import { TicketProfile } from '@mad/types';
+import type { TicketProfile } from '@mad/types';
 
 export async function adminGetTicketProfiles(): Promise<TicketProfile[]> {
   const { data } = await adminApiClient.get<{ data: { profiles: TicketProfile[] } }>('/admin/ticket-profiles');

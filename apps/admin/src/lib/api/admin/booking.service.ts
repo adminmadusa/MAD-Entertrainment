@@ -1,5 +1,5 @@
-import { PaginatedItemsResponse, PaginationMeta } from '@mad/types';
 import { adminApiClient } from '@/lib/api/client';
+import type { PaginatedItemsResponse, PaginationMeta } from '@mad/types';
 
 export interface AdminBooking {
   _id: string;

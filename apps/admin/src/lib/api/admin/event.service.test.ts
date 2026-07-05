@@ -1,7 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { EventStatus } from '@mad/shared';
-import { adminCreateEvent, adminGetEvent, adminGetEvents, adminUpdateEvent, type AdminEvent } from './event.service';
+
 import { adminApiClient } from '@/lib/api/client';
+import { EventStatus } from '@mad/shared';
+
+import { adminCreateEvent, adminGetEvent, adminGetEvents, adminUpdateEvent, type AdminEvent } from './event.service';
 
 // Mock the admin API client
 vi.mock('@/lib/api/client', () => ({
