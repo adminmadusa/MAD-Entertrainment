@@ -95,6 +95,37 @@ Every release must satisfy the following checklist before merge:
 ### [Unreleased]
 *Planned or unreleased changes currently residing in the develop branch.*
 
+---
+
+### [@mad/ui v1.2.0] — Phase 2A: UI Package Infrastructure — 2026-07-06
+
+#### Added
+- **Package export map** — `package.json` `"exports"` field is now the authoritative public API surface for `@mad/ui`. Stable entry points: `@mad/ui`, `@mad/ui/icons`, `@mad/ui/styles/*`, `@mad/ui/themes/mad`, `@mad/ui/themes/default`, `@mad/ui/tailwind/preset`, `@mad/ui/testing`.
+- **`lib/cn.ts`** — `clsx` + `tailwind-merge` class merging utility, exported via root barrel.
+- **Icon library** (`@mad/ui/icons`) — `lucide-react` integrated as the canonical icon library. All icons re-exported through a single curated barrel. Backward-compat aliases for `CalendarIcon` and `SearchIcon` preserved.
+- **Default theme** (`@mad/ui/themes/default`) — neutral dark palette implementing the full Theme Contract; starting point for future Esparex product themes.
+- **Component folder hierarchy** — `src/primitives/`, `src/composites/`, `src/layouts/`, `src/internal/` directories established for Phase 2B component implementations.
+- **`API_STABILITY.md`** — lifecycle states and breaking change policy for all components.
+- **`THEME_CONTRACT.md`** — required CSS custom property specification every theme must implement.
+- **`future-themes.md`** — planned theme roadmap (farmer, crm, portfolio) documented without creating empty placeholder folders.
+- **ADR-001** through **ADR-004** — Architecture Decision Records explaining: UI package boundary, theme contract, public API freeze rule, component lifecycle model.
+- **`docs/design-system/releases/1.2.0.md`** — detailed release notes for this version.
+- **Component manifest generator** — `gather-ui-baseline.ts` extended to emit `component-manifest.json` (schema v1.1) alongside `ui-baseline.json`.
+
+#### Changed
+- `src/components/*.tsx` files converted to backward-compatible re-export shims pointing to new canonical locations in `primitives/`, `composites/`, `layouts/`. All existing imports unchanged.
+- `packages/ui` version bumped: `1.1.0` → `1.2.0`.
+- New dependencies added to `packages/ui`: `clsx@^2.1.1`, `tailwind-merge@^3.3.1`, `lucide-react@^0.511.0`.
+
+#### Deprecated
+None.
+
+#### Removed
+None.
+
+---
+
+
 ### [v1.2.0] - 2026-07-04
 *Completed Repository Governance Platform and automated Git Hygiene Engine. Completes Roadmap Phases 1–8.*
 
