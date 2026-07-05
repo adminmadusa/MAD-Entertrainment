@@ -12,6 +12,7 @@ import { Reservation } from '../models/reservation.schema';
 import { SeatLayout } from '../models/seat-layout.schema';
 import { Ticket } from '../models/ticket.schema';
 import { ConsistencyService } from './consistency.service';
+import { BookingConsistencyService } from './consistency/booking-consistency.service';
 import { PaymentService } from './public/payment.service';
 import { QueueService } from './queue.service';
 import { ReservationService } from './reservation.service';
@@ -206,7 +207,7 @@ describe('ConsistencyService - expireStaleBookings and Concurrency Protection', 
 
     vi.mocked(ReservationService.transitionForBooking).mockResolvedValue([{ reservationId: 'r-123', quantity: 2 }] as any);
 
-    const expiredCount = await ConsistencyService.expireStaleBookings();
+    const expiredCount = await BookingConsistencyService.expireStaleBookings();
 
     expect(expiredCount).toBe(1);
     expect(mockBooking.save).toHaveBeenCalled();
@@ -281,8 +282,8 @@ describe('ConsistencyService - expireStaleBookings and Concurrency Protection', 
 
     // Simulate two concurrent worker executions running in parallel
     const [workerAResult, workerBResult] = await Promise.all([
-      ConsistencyService.expireStaleBookings(),
-      ConsistencyService.expireStaleBookings()
+      BookingConsistencyService.expireStaleBookings(),
+      BookingConsistencyService.expireStaleBookings()
     ]);
 
     // Worker A successfully processed exactly 1 expired booking
@@ -306,7 +307,7 @@ describe('ConsistencyService - expireStaleBookings and Concurrency Protection', 
       }),
     } as any);
 
-    const expiredCount = await ConsistencyService.expireStaleBookings();
+    const expiredCount = await BookingConsistencyService.expireStaleBookings();
 
     expect(expiredCount).toBe(0);
     expect(Booking.updateMany).toHaveBeenCalledWith(
@@ -337,7 +338,7 @@ describe('ConsistencyService - Confirmed Booking Ticket Watchdog', () => {
     vi.mocked(Ticket.countDocuments).mockResolvedValue(0);
     vi.mocked(Booking.exists).mockResolvedValue(true as any);
 
-    const reEnqueued = await (ConsistencyService as any).repairUnticketedConfirmedBookings();
+    const reEnqueued = await BookingConsistencyService.repairUnticketedConfirmedBookings();
 
     expect(reEnqueued).toBe(1);
     expect(Ticket.countDocuments).toHaveBeenCalledWith({ bookingId: 'b-confirmed-1' });
@@ -362,7 +363,7 @@ describe('ConsistencyService - Confirmed Booking Ticket Watchdog', () => {
     vi.mocked(Booking.find).mockReturnValue(mockQuery as any);
     vi.mocked(Ticket.countDocuments).mockResolvedValue(1);
 
-    const reEnqueued = await (ConsistencyService as any).repairUnticketedConfirmedBookings();
+    const reEnqueued = await BookingConsistencyService.repairUnticketedConfirmedBookings();
 
     expect(reEnqueued).toBe(0);
     expect(Booking.exists).not.toHaveBeenCalled();
@@ -384,7 +385,7 @@ describe('ConsistencyService - Confirmed Booking Ticket Watchdog', () => {
       .mockResolvedValueOnce(0) // candidate 1
       .mockResolvedValueOnce(1); // candidate 2
 
-    const reEnqueued = await (ConsistencyService as any).repairUnticketedConfirmedBookings();
+    const reEnqueued = await BookingConsistencyService.repairUnticketedConfirmedBookings();
 
     expect(reEnqueued).toBe(1);
     expect(QueueService.enqueue).toHaveBeenCalledTimes(1);
@@ -409,7 +410,7 @@ describe('ConsistencyService - Confirmed Booking Ticket Watchdog', () => {
     vi.mocked(Ticket.countDocuments).mockResolvedValue(0);
     vi.mocked(QueueService.enqueue).mockRejectedValue(new Error('Redis connection failure'));
 
-    const reEnqueued = await (ConsistencyService as any).repairUnticketedConfirmedBookings();
+    const reEnqueued = await BookingConsistencyService.repairUnticketedConfirmedBookings();
 
     expect(reEnqueued).toBe(0);
     expect(QueueService.enqueue).toHaveBeenCalled();
@@ -432,7 +433,7 @@ describe('ConsistencyService - Confirmed Booking Ticket Watchdog', () => {
       .mockResolvedValueOnce(2) // b-2 has 2 tickets
       .mockResolvedValueOnce(0); // b-3 has 0 tickets
 
-    const count = await (ConsistencyService as any).countUnticketedConfirmedBookings();
+    const count = await BookingConsistencyService.countUnticketedConfirmedBookings();
 
     expect(count).toBe(2);
     expect(Ticket.countDocuments).toHaveBeenCalledTimes(3);
@@ -448,7 +449,7 @@ describe('ConsistencyService - Confirmed Booking Ticket Watchdog', () => {
     };
     vi.mocked(Booking.find).mockReturnValue(mockQuery as any);
 
-    const reEnqueued = await (ConsistencyService as any).repairUnticketedConfirmedBookings();
+    const reEnqueued = await BookingConsistencyService.repairUnticketedConfirmedBookings();
 
     expect(reEnqueued).toBe(0);
     expect(Ticket.countDocuments).not.toHaveBeenCalled();
@@ -457,8 +458,8 @@ describe('ConsistencyService - Confirmed Booking Ticket Watchdog', () => {
 
   // Test 7 — runRepairCycle integrates the new watchdog
   it('should integrate the new watchdog into runRepairCycle', async () => {
-    const repairSpy = vi.spyOn(ConsistencyService as any, 'repairUnticketedConfirmedBookings').mockResolvedValue(3);
-    const countSpy = vi.spyOn(ConsistencyService as any, 'countUnticketedConfirmedBookings').mockResolvedValue(2);
+    const repairSpy = vi.spyOn(BookingConsistencyService, 'repairUnticketedConfirmedBookings').mockResolvedValue(3);
+    const countSpy = vi.spyOn(BookingConsistencyService, 'countUnticketedConfirmedBookings').mockResolvedValue(2);
 
     // Mock other models called by generateReport / runRepairCycle to prevent crashes
     vi.mocked(Reservation.countDocuments).mockResolvedValue(10);
@@ -487,7 +488,7 @@ describe('ConsistencyService - Confirmed Booking Ticket Watchdog', () => {
     };
     vi.mocked(Booking.find).mockReturnValue(mockQuery as any);
 
-    await (ConsistencyService as any).repairUnticketedConfirmedBookings();
+    await BookingConsistencyService.repairUnticketedConfirmedBookings();
 
     expect(Booking.find).toHaveBeenCalledWith({
       status: BookingStatus.CONFIRMED,
@@ -510,7 +511,7 @@ describe('ConsistencyService - Confirmed Booking Ticket Watchdog', () => {
     vi.mocked(Ticket.countDocuments).mockResolvedValue(0);
     vi.mocked(Booking.exists).mockResolvedValue(null as any);
 
-    const reEnqueued = await (ConsistencyService as any).repairUnticketedConfirmedBookings();
+    const reEnqueued = await BookingConsistencyService.repairUnticketedConfirmedBookings();
 
     expect(reEnqueued).toBe(0);
     expect(Booking.exists).toHaveBeenCalledWith({ _id: 'b-confirmed-deleted' });
