@@ -15,6 +15,7 @@ import { ConsistencyService } from './consistency.service';
 import { BookingConsistencyService } from './consistency/booking-consistency.service';
 import { NotificationConsistencyService } from './consistency/notification-consistency.service';
 import { RefundConsistencyService } from './consistency/refund-consistency.service';
+import { PaymentConsistencyService } from './consistency/payment-consistency.service';
 import { PaymentService } from './public/payment.service';
 import { QueueService } from './queue.service';
 import { ReservationService } from './reservation.service';
@@ -857,7 +858,7 @@ describe('ConsistencyService - Paid Payment Recovery Watchdog', () => {
       .mockReturnValueOnce(mockCreateMockQuery({ status: BookingStatus.AWAITING_PAYMENT }) as any) // pay-1
       .mockReturnValueOnce(mockCreateMockQuery({ status: BookingStatus.CONFIRMED }) as any); // pay-2
 
-    const count = await (ConsistencyService as any).countPaidPaymentMismatches();
+    const count = await PaymentConsistencyService.countPaidPaymentMismatches();
     expect(count).toBe(1);
     expect(Payment.find).toHaveBeenCalled();
   });
@@ -881,7 +882,7 @@ describe('ConsistencyService - Paid Payment Recovery Watchdog', () => {
 
     vi.mocked(PaymentService.confirmBooking).mockResolvedValue({ status: BookingStatus.CONFIRMED } as any);
 
-    const repaired = await (ConsistencyService as any).repairPaidPaymentMismatches();
+    const repaired = await PaymentConsistencyService.repairPaidPaymentMismatches();
     expect(repaired).toBe(1);
     expect(PaymentService.confirmBooking).toHaveBeenCalledWith(mockBooking, mockPayment);
     expect(PaymentService.triggerRefundRequest).not.toHaveBeenCalled();
@@ -907,7 +908,7 @@ describe('ConsistencyService - Paid Payment Recovery Watchdog', () => {
 
     vi.mocked(PaymentService.confirmBooking).mockResolvedValue(null as any); // confirmBooking returns null/falsy
 
-    const repaired = await (ConsistencyService as any).repairPaidPaymentMismatches();
+    const repaired = await PaymentConsistencyService.repairPaidPaymentMismatches();
     expect(repaired).toBe(1);
     expect(PaymentService.confirmBooking).toHaveBeenCalledWith(mockBooking, mockPayment);
     expect(mockPayment.status).toBe(PaymentStatus.FAILED);
@@ -931,7 +932,7 @@ describe('ConsistencyService - Paid Payment Recovery Watchdog', () => {
     vi.mocked(Payment.find).mockReturnValue(mockCreateMockQuery([mockPayment]) as any);
     vi.mocked(Booking.findById).mockReturnValue(mockCreateMockQuery(mockBooking) as any);
 
-    const repaired = await (ConsistencyService as any).repairPaidPaymentMismatches();
+    const repaired = await PaymentConsistencyService.repairPaidPaymentMismatches();
     expect(repaired).toBe(1);
     expect(PaymentService.confirmBooking).not.toHaveBeenCalled();
     expect(mockPayment.status).toBe(PaymentStatus.FAILED);
