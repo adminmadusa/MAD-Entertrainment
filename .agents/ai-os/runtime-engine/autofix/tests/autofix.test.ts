@@ -13,7 +13,7 @@ import { DatabaseFixer } from '../fixers/database/fixer';
 import { SecurityFixer } from '../fixers/security/fixer';
 import { AccessibilityFixer } from '../fixers/accessibility/fixer';
 import { DocumentationFixer } from '../fixers/documentation/fixer';
-import { writeFileSync, readFileSync } from 'fs';
+import { writeFileSync, readFileSync, mkdirSync } from 'fs';
 import { join } from 'path';
 
 // Ensure fixers are registered
@@ -66,7 +66,9 @@ describe('AI OS Executable Auto-Fix Engine Suites', () => {
   });
 
   it('should successfully backup and rollback files updates', async () => {
-    const testFile = join(process.cwd(), 'scratch/rollback_test.txt');
+    const scratchDir = join(process.cwd(), 'scratch');
+    mkdirSync(scratchDir, { recursive: true });
+    const testFile = join(scratchDir, 'rollback_test.txt');
     writeFileSync(testFile, 'initial', 'utf8');
 
     rollbackManager.backup('pat_roll', testFile, 'initial');
@@ -79,7 +81,9 @@ describe('AI OS Executable Auto-Fix Engine Suites', () => {
   });
 
   it('should execute dry-runs without changing file content', async () => {
-    const testFile = join(process.cwd(), 'scratch/dryrun_test.txt');
+    const scratchDir = join(process.cwd(), 'scratch');
+    mkdirSync(scratchDir, { recursive: true });
+    const testFile = join(scratchDir, 'dryrun_test.txt');
     writeFileSync(testFile, 'const val: any = 1;', 'utf8');
 
     const runner = new FixRunner();
