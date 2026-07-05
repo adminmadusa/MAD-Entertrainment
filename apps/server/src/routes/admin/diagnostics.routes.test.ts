@@ -136,18 +136,42 @@ describe('diagnostics.routes.ts', () => {
   });
 
   describe('GET /system', () => {
-    it('does NOT require requireSuperAdmin (accessible to standard Admin)', () => {
+    it('requires requireSuperAdmin (SuperAdmin only)', () => {
       const handlers = getHandlers('get', '/system');
-      expect(handlers).not.toContain(requireSuperAdmin);
+      expect(handlers).toContain(requireSuperAdmin);
       expect(handlers).toContain(controller.getSystemDiagnostics);
+    });
+
+    it('denies access for standard Admin/Unauthenticated (behavioral)', async () => {
+      const handlers = getHandlers('get', '/system');
+      vi.mocked(requireSuperAdmin).mockImplementationOnce((req: any, res: any, next: any) => {
+        res.status(403).json({ success: false, message: 'Super admin access required' });
+      });
+      const req: any = {};
+      const res: any = { status: vi.fn().mockReturnThis(), json: vi.fn().mockReturnThis() };
+      await runChain(handlers, req, res);
+      expect(res.status).toHaveBeenCalledWith(403);
+      expect(controller.getSystemDiagnostics).not.toHaveBeenCalled();
     });
   });
 
   describe('GET /dlq', () => {
-    it('is registered and does NOT require requireSuperAdmin', () => {
+    it('requires requireSuperAdmin (SuperAdmin only)', () => {
       const handlers = getHandlers('get', '/dlq');
-      expect(handlers).not.toContain(requireSuperAdmin);
+      expect(handlers).toContain(requireSuperAdmin);
       expect(handlers).toContain(controller.listDeadLetterJobs);
+    });
+
+    it('denies access for standard Admin/Unauthenticated (behavioral)', async () => {
+      const handlers = getHandlers('get', '/dlq');
+      vi.mocked(requireSuperAdmin).mockImplementationOnce((req: any, res: any, next: any) => {
+        res.status(403).json({ success: false, message: 'Super admin access required' });
+      });
+      const req: any = {};
+      const res: any = { status: vi.fn().mockReturnThis(), json: vi.fn().mockReturnThis() };
+      await runChain(handlers, req, res);
+      expect(res.status).toHaveBeenCalledWith(403);
+      expect(controller.listDeadLetterJobs).not.toHaveBeenCalled();
     });
   });
 
@@ -179,13 +203,27 @@ describe('diagnostics.routes.ts', () => {
   });
 
   describe('GET /queues', () => {
-    it('has getQueuesStatus as the final handler', () => {
+    it('requires requireSuperAdmin (SuperAdmin only)', () => {
       const handlers = getHandlers('get', '/queues');
+      expect(handlers).toContain(requireSuperAdmin);
       expect(handlers[handlers.length - 1]).toBe(controller.getQueuesStatus);
+    });
+
+    it('denies access for standard Admin/Unauthenticated (behavioral)', async () => {
+      const handlers = getHandlers('get', '/queues');
+      vi.mocked(requireSuperAdmin).mockImplementationOnce((req: any, res: any, next: any) => {
+        res.status(403).json({ success: false, message: 'Super admin access required' });
+      });
+      const req: any = {};
+      const res: any = { status: vi.fn().mockReturnThis(), json: vi.fn().mockReturnThis() };
+      await runChain(handlers, req, res);
+      expect(res.status).toHaveBeenCalledWith(403);
+      expect(controller.getQueuesStatus).not.toHaveBeenCalled();
     });
 
     it('successfully calls getQueuesStatus controller', async () => {
       const handlers = getHandlers('get', '/queues');
+      vi.mocked(requireSuperAdmin).mockImplementationOnce((req: any, res: any, next: any) => next());
       const req: any = {};
       const res: any = { status: vi.fn().mockReturnThis(), json: vi.fn().mockReturnThis() };
       await runChain(handlers, req, res);

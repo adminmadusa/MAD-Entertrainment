@@ -30,19 +30,19 @@ router.get('/consistency', requireSuperAdmin, getConsistencyDiagnostics);
 router.post('/consistency/repair', requireSuperAdmin, repairConsistency);
 router.get('/reservations', requireSuperAdmin, validateQuery(listReservationsQuerySchema), listReservations);
 
-// General health diagnostics (accessible to Admin & SuperAdmin)
-router.get('/system', getSystemDiagnostics);
+// General health diagnostics (accessible to SuperAdmin only)
+router.get('/system', requireSuperAdmin, getSystemDiagnostics);
 
 // Dead Letter Queue management
-router.get('/dlq', validateQuery(listDlqQuerySchema), listDeadLetterJobs);
+router.get('/dlq', requireSuperAdmin, validateQuery(listDlqQuerySchema), listDeadLetterJobs);
 router.get('/dlq/:id', adminLimiter, requireSuperAdmin, validateParams(retryFailedJobParamSchema), getDeadLetterJob);
 router.post('/dlq/:id/retry', adminLimiter, requireSuperAdmin, validateParams(retryFailedJobParamSchema), retryFailedJob);
 router.post('/dlq/retry-all', adminLimiter, requireSuperAdmin, retryAllFailedJobs);
 
 // Queue Controls
-// GET  /queues         — ADMIN + SUPER_ADMIN (read-only metrics + pause state)
+// GET  /queues         — SUPER_ADMIN only
 // POST /queues/:name/* — SUPER_ADMIN only (mutations)
-router.get('/queues', getQueuesStatus);
+router.get('/queues', requireSuperAdmin, getQueuesStatus);
 router.post('/queues/:name/pause', requireSuperAdmin, validateParams(queueNameParamSchema), pauseQueueHandler);
 router.post('/queues/:name/resume', requireSuperAdmin, validateParams(queueNameParamSchema), resumeQueueHandler);
 router.post('/queues/:name/drain', requireSuperAdmin, validateParams(queueNameParamSchema), drainQueueHandler);
