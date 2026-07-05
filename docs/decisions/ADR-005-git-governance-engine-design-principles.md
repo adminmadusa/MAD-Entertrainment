@@ -159,7 +159,29 @@ The Git Governance Engine does **not**:
 
 ---
 
-## Future Roadmap
+## Technical & Operational Impact
+
+### Migration Strategy
+The Git Governance Engine is integrated as a local static utility and CI step. No runtime database migrations or live schema changes are required.
+
+### Operational Impact
+The engine will run locally and as part of workspace build verification. It outputs report files under `reports/governance/`.
+
+### Security Impact
+The engine performs read-only Git metadata evaluations and secret scanning checks. It does not execute destructive actions on branches without developer authorization.
+
+### Performance Impact
+Execution is designed to complete in under 2 seconds, minimizing compile/CI pipeline latency.
+
+### Testing Strategy
+Rules and schema validation are covered by standard Vitest unit and integration suites.
+
+### Rollback Strategy
+If the engine causes build blockages, its execution gate can be temporarily disabled or bypassed in CI by removing the build command hooks.
+
+---
+
+## Future Considerations
 
 The following future milestones separate the accepted core design from planned enhancements:
 

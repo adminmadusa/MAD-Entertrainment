@@ -6,7 +6,7 @@
 - **Authors**: AI Architecture Agent & Repository Owner
 - **Reviewers**: Repository Governance Owner, Architecture Review Board
 - **Decision Category**: Platform Architecture
-- **Related Documents**: [governance_roadmap.md](../../../.gemini/antigravity-ide/brain/f4cd9fff-aa45-46e3-9614-728336e2d561/governance_roadmap.md), [ADR-005](ADR-005-git-governance-engine-design-principles.md)
+- **Related Documents**: [ADR-005](ADR-005-git-governance-engine-design-principles.md)
 - **Related Pull Requests**: #451 (chore/git-governance-engine — merged)
 - **Phase**: Roadmap Phase 2
 
@@ -393,25 +393,40 @@ is describing what was built, not governing what will be built.
 **Deferred to v1.1.** Appropriate for external API consumers. Not required
 for an internal TypeScript monorepo platform at v1.0.
 
----
-
-## Implementation Plan (Phase 2)
-
-1. Create `scripts/governance/platform/contracts/` directory
-2. Write each frozen interface into its own file (`engine-context.ts`, `finding.ts`, etc.)
-3. Write `platform.json` manifest
-4. Write provider manifest schema (`provider-manifest.schema.json`)
-5. Update existing engine files to import from `platform/contracts/` instead of local models
-6. Verify `pnpm run build` passes with zero type errors
-
-> **No new runtime logic is added in Phase 2.**
-> This phase is purely interface declaration and directory structure.
 
 ---
 
-## Exit Criteria (from Roadmap)
+## Technical & Operational Impact
 
-- ✓ ADR-006 merged and indexed in `ADR_INDEX.md`
-- ✓ All contract interfaces declared in `platform/contracts/` with no implementation logic
-- ✓ `pnpm run build` passes
-- ✓ No existing consumers have been modified to change behaviour
+### Migration Strategy
+Move all shared interfaces to `scripts/governance/platform/contracts/` and update references to use imports from this central location. Ensure `pnpm run build` passes with zero type errors.
+
+### Operational Impact
+Freezes public contracts for v1.0, ensuring long-term compatibility for subsequent engine features.
+
+### Security Impact
+No direct runtime impact. Enforces compile-time types for safety.
+
+### Performance Impact
+No execution latency or runtime overhead.
+
+### Testing Strategy
+Verified by typescript compiler checking all workspace components against the frozen types.
+
+### Rollback Strategy
+Restore original imports from local models and remove the dedicated contracts directory.
+
+---
+
+## Future Considerations
+The following exit criteria are tracked for this phase:
+- ADR-006 merged and indexed in `ADR_INDEX.md`
+- All contract interfaces declared in `platform/contracts/` with no implementation logic
+- `pnpm run build` passes
+- No existing consumers have been modified to change behaviour
+
+---
+
+## References
+- [ADR-005](ADR-005-git-governance-engine-design-principles.md)
+- [REPOSITORY_GOVERNANCE.md](../../REPOSITORY_GOVERNANCE.md)

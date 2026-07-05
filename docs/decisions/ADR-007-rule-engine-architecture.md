@@ -6,7 +6,7 @@
 - **Authors**: AI Architecture Agent & Repository Owner
 - **Reviewers**: Repository Governance Owner, Architecture Review Board
 - **Decision Category**: Platform Architecture
-- **Related Documents**: [ADR-006](ADR-006-public-contract-freeze.md), [governance_roadmap.md](../../../.gemini/antigravity-ide/brain/f4cd9fff-aa45-46e3-9614-728336e2d561/governance_roadmap.md)
+- **Related Documents**: [ADR-006](ADR-006-public-contract-freeze.md)
 - **Related Pull Requests**: #452 (Phase 2 — contracts), #453 (Phase 2.5 — tests)
 - **Phase**: Roadmap Phase 3
 
@@ -235,44 +235,43 @@ rule set, static registration is simpler and more debuggable.
 rule set. Parallel execution within dependency levels is a Phase 3 v1.1
 optimization.
 
+
 ---
 
-## Implementation Plan (Phase 3)
+## Technical & Operational Impact
 
-**Step 1 — RuleRegistry**
-- Create `platform/engine/rule-registry.ts`
-- Implement `register()`, `resolveExecutionOrder()`, topological sort
-- Unit tests for: registration, deduplication, dependency ordering,
-  circular dependency detection
+### Migration Strategy
+Create `platform/engine/rule-registry.ts` and migrate existing rule logic (stale branch checks, dead branch checks, naming conventions) from procedural analyzers into individual `GovernanceRule` classes. Update runner `run.ts` to execute through the registry.
 
-**Step 2 — Migrate rules (one at a time, regression-verified)**
-- `StaleBranchRule` from `analyzers/lifecycle.ts`
-- `OrphanedBranchRule` from `analyzers/dead-branches.ts`
-- `DuplicateTreeRule` from `analyzers/duplicates.ts`
-- `IntegrationLagRule` from `analyzers/ancestry.ts`
-- `BranchNamingRule` (new — extracted from existing naming checks in runner)
+### Operational Impact
+Implements a topological sort execution registry, decoupling rule details from runner coordination.
 
-**Step 3 — Update runner**
-- Replace direct analyzer imports with `RuleRegistry` calls in `run.ts`
-- `EngineContext` passed to every rule
+### Security Impact
+Provides structured, isolated environments for rule checks, keeping operations read-only.
 
-**Step 4 — Delete old analyzer files**
-- Only after regression verification confirms identical findings
+### Performance Impact
+Stateless executions and clean sort orders ensure total execution time remains under 2 seconds.
 
-**Step 5 — Verify**
-- All 25 compatibility tests still pass
-- Full 305-test suite passes
+### Testing Strategy
+Unit tests for registration, deduplication, dependency sorting, and circular reference checks.
+
+### Rollback Strategy
+Revert runner `run.ts` to directly call the legacy procedural analyzer modules.
+
+---
+
+## Future Considerations
+The following exit criteria are tracked for this phase:
+- ADR-007 merged and indexed in `ADR_INDEX.md`
+- All four Git analyzers migrated to discrete rule classes
+- `RuleRegistry` DAG ordering verified by unit tests
+- No direct `analyzers/` imports in `run.ts` or `run-sections.ts`
+- Full CI test suite passes (no regressions)
 - `pnpm run build` passes
-- Engine execution time remains ≤ 2 seconds
+- Engine runtime ≤ 2 seconds
 
 ---
 
-## Exit Criteria (from Roadmap)
-
-- ✓ ADR-007 merged and indexed in `ADR_INDEX.md`
-- ✓ All four Git analyzers migrated to discrete rule classes
-- ✓ `RuleRegistry` DAG ordering verified by unit tests
-- ✓ No direct `analyzers/` imports in `run.ts` or `run-sections.ts`
-- ✓ Full CI test suite passes (no regressions)
-- ✓ `pnpm run build` passes
-- ✓ Engine runtime ≤ 2 seconds
+## References
+- [ADR-006](ADR-006-public-contract-freeze.md)
+- [REPOSITORY_GOVERNANCE.md](../../REPOSITORY_GOVERNANCE.md)
