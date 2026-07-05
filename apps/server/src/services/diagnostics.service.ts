@@ -8,6 +8,10 @@ import { DeadLetterJob } from '../models/dead-letter-job.schema';
 import { decryptPayload, isEncrypted } from '../utils/encryption';
 import { logger } from '../utils/logger';
 import { QueueService } from './queue.service';
+interface MongoTopologyServer {
+  address?: string;
+  type?: string;
+}
 
 
 export interface QueueHealthStats {
@@ -29,6 +33,7 @@ export interface SystemDiagnosticsReport {
     topologyType?: string;
     replicaSetName?: string;
     primaryHost?: string;
+    members?: MongoTopologyServer[];
   };
   redis: {
     connected: boolean;
@@ -113,15 +118,24 @@ export class DiagnosticsService {
     }
     const topology = client?.topology?.description;
     let primaryHost = 'Unknown';
+    const members: Array<{ address: string; type: string }> = [];
+
     if (topology?.servers) {
       try {
-        const servers = Array.from(topology.servers.values()) as any[];
+        const servers = Array.from(topology.servers.values()) as MongoTopologyServer[];
         const primaryServer = servers.find((s) => s.type === 'RSPrimary');
         if (primaryServer) {
           primaryHost = primaryServer.address || 'Unknown';
         }
-      } catch (e) {
-        // Suppress parser errors
+        servers.forEach((s) => {
+          members.push({
+            address: s.address || 'Unknown',
+            type: s.type || 'Unknown',
+          });
+        });
+        members.sort((a, b) => a.address.localeCompare(b.address));
+      } catch (error) {
+        logger.debug({ error }, 'Unable to parse MongoDB topology metadata');
       }
     }
 
@@ -134,6 +148,7 @@ export class DiagnosticsService {
         topologyType: topology?.type ?? 'Unknown',
         replicaSetName: topology?.setName ?? 'Unknown',
         primaryHost,
+        members,
       },
       redis: {
         connected: redisActive,
