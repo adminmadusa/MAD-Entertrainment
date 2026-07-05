@@ -1,4 +1,5 @@
 import React from 'react';
+
 import { type AdminEvent } from '@/lib/api/admin/event.service';
 
 export interface EventAttendanceCardProps {

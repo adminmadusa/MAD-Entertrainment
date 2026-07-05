@@ -1,6 +1,8 @@
 import React from 'react';
-import { ImageAsset } from '@mad/types';
+
 import { CloudinaryUpload } from '@/components/CloudinaryUpload';
+import type { ImageAsset } from '@mad/types';
+
 import { DJMediaCardProps } from './types';
 
 export const DJMediaCard: React.FC<DJMediaCardProps> = ({

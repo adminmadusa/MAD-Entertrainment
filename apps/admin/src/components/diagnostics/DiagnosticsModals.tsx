@@ -1,8 +1,9 @@
 import { DeadLetterJobDetails, DeadLetterJobMetadata } from '@/lib/api/admin/diagnostics.service';
+
 import { DlqInspectorDrawer } from './DlqInspectorDrawer';
-import { RetryJobModal } from './RetryJobModal';
-import { RetryAllModal } from './RetryAllModal';
 import { DrainQueueModal } from './DrainQueueModal';
+import { RetryAllModal } from './RetryAllModal';
+import { RetryJobModal } from './RetryJobModal';
 
 export interface DiagnosticsModalsProps {
   inspectingJobId: string | null;

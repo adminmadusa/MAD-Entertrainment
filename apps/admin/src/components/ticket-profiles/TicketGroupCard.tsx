@@ -1,7 +1,9 @@
 import React from 'react';
-import { type GroupInput, type TicketInput, inputCls } from './types';
+
 import { type AdminTier } from '@/lib/api/admin/tier.service';
+
 import { TicketTierCard } from './TicketTierCard';
+import { type GroupInput, type TicketInput, inputCls } from './types';
 
 export interface TicketGroupCardProps {
   group: GroupInput;
