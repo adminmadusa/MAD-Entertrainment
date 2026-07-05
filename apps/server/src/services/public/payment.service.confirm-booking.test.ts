@@ -16,24 +16,26 @@
  *   Suite 5 — Transaction integrity assertions
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
 import mongoose from 'mongoose';
-import { PaymentService } from './payment.service';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+
 import { BookingStatus, PaymentStatus, ReservationStatus } from '@mad/shared';
+
+import { getEnv } from '../../config/env';
 import { Booking } from '../../models/booking.schema';
+import { Coupon } from '../../models/coupon.schema';
+import { Event } from '../../models/event.schema';
+import { Notification } from '../../models/notification.schema';
 import { Payment } from '../../models/payment.schema';
 import { Refund } from '../../models/refund.schema';
-import { Event } from '../../models/event.schema';
 import { Reservation } from '../../models/reservation.schema';
 import { SeatLayout } from '../../models/seat-layout.schema';
 import { Ticket } from '../../models/ticket.schema';
-import { Coupon } from '../../models/coupon.schema';
 import { UserModel } from '../../models/user.schema';
-import { Notification } from '../../models/notification.schema';
-import { getEnv } from '../../config/env';
+import { CacheService } from '../cache.service';
 import { QueueService } from '../queue.service';
 import { ReservationService } from '../reservation.service';
-import { CacheService } from '../cache.service';
+import { PaymentService } from './payment.service';
 
 // ─── Session Mock ─────────────────────────────────────────────────────────────
 

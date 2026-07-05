@@ -1,12 +1,14 @@
-import { TicketProfile, ITicketProfile } from '../../models/ticket-profile.schema';
-import { Event } from '../../models/event.schema';
-import { CacheService } from '../cache.service';
 import { Types } from 'mongoose';
-import { Reservation } from '../../models/reservation.schema';
-import { Booking } from '../../models/booking.schema';
-import { Ticket } from '../../models/ticket.schema';
-import { AppError } from '../../middleware/error.middleware';
+
 import { EventStatus, type EventLifecycleStatus } from '@mad/shared';
+
+import { AppError } from '../../middleware/error.middleware';
+import { Booking } from '../../models/booking.schema';
+import { Event } from '../../models/event.schema';
+import { Reservation } from '../../models/reservation.schema';
+import { TicketProfile, ITicketProfile } from '../../models/ticket-profile.schema';
+import { Ticket } from '../../models/ticket.schema';
+import { CacheService } from '../cache.service';
 
 const ACTIVE_PROFILE_EVENT_STATUSES: readonly EventLifecycleStatus[] = [
   EventStatus.DRAFT,

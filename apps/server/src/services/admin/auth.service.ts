@@ -1,7 +1,8 @@
-import { AdminModel } from '../../models/admin.schema';
-import { AppError } from '../../middleware/error.middleware';
-import { signAdminToken } from '../../utils/jwt';
 import { AdminRole } from '@mad/shared';
+
+import { AppError } from '../../middleware/error.middleware';
+import { AdminModel } from '../../models/admin.schema';
+import { signAdminToken } from '../../utils/jwt';
 
 export const adminAuthService = {
   async login(email: string, password: string) {

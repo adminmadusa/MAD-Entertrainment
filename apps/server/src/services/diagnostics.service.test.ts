@@ -1,9 +1,9 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Types } from 'mongoose';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-import { DiagnosticsService } from './diagnostics.service';
 import { isRedisConnected } from '../config/redis';
 import { DeadLetterJob } from '../models/dead-letter-job.schema';
+import { DiagnosticsService } from './diagnostics.service';
 import { QueueService } from './queue.service';
 
 // Local toggle variables for strict state control

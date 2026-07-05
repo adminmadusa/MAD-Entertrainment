@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { CacheService } from './cache.service';
+
 import { getRedis, isRedisConnected } from '../config/redis';
+import { CacheService } from './cache.service';
 
 vi.mock('../config/redis', () => ({
   getRedis: vi.fn(),

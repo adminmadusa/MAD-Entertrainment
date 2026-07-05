@@ -1,5 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
 import crypto from 'crypto';
+
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 // Mock env configuration
 vi.mock('../../config/env', () => ({
@@ -25,8 +26,8 @@ vi.mock('../../config/cloudinary', () => ({
   },
 }));
 
-import { UploadService } from './upload.service';
 import { AppError } from '../../middleware/error.middleware';
+import { UploadService } from './upload.service';
 
 describe('UploadService', () => {
   beforeEach(() => {

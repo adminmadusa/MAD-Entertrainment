@@ -1,28 +1,30 @@
+import mongoose from 'mongoose';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+
 import { BookingStatus, ReservationStatus } from '@mad/shared';
-import { correctBookingEmail, resendBookingTickets, getBookingsSummary, cancelBooking, expireBooking, getBookings, getBookingById } from './booking.service';
-import { Booking } from '../../models/booking.schema';
-import { UserModel } from '../../models/user.schema';
-import { Ticket } from '../../models/ticket.schema';
-import { Payment } from '../../models/payment.schema';
-import { Event } from '../../models/event.schema';
-import { Coupon } from '../../models/coupon.schema';
-import { Refund } from '../../models/refund.schema';
+
+import { emitToAdmin, emitToEvent, emitToBooking } from '../../config/socket';
 import { AuditLogModel } from '../../models/audit-log.schema';
+import { Booking } from '../../models/booking.schema';
+import { Coupon } from '../../models/coupon.schema';
+import { Event } from '../../models/event.schema';
+import { Notification } from '../../models/notification.schema';
+import { Payment } from '../../models/payment.schema';
+import { Refund } from '../../models/refund.schema';
+import { Ticket } from '../../models/ticket.schema';
+import { UserModel } from '../../models/user.schema';
+import { auditLog } from '../../utils/audit';
+import { CacheService } from '../cache.service';
+import { createNotificationSafe } from '../notification.service';
+import { QueueService } from '../queue.service';
+import { ReservationService } from '../reservation.service';
+import { correctBookingEmail, resendBookingTickets, getBookingsSummary, cancelBooking, expireBooking, getBookings, getBookingById } from './booking.service';
 
 vi.mock('../../models/coupon.schema', () => ({
   Coupon: {
     updateOne: vi.fn(),
   },
 }));
-import { ReservationService } from '../reservation.service';
-import { CacheService } from '../cache.service';
-import { QueueService } from '../queue.service';
-import { auditLog } from '../../utils/audit';
-import mongoose from 'mongoose';
-import { createNotificationSafe } from '../notification.service';
-import { Notification } from '../../models/notification.schema';
-import { emitToAdmin, emitToEvent, emitToBooking } from '../../config/socket';
 
 vi.mock('mongoose', async (importOriginal) => {
   const original = await importOriginal<typeof import('mongoose')>();

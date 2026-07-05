@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
 import mongoose, { Types } from 'mongoose';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 // ─────────────────────────────────────────────────────────────
 // Hoisted Mock Variables
@@ -134,16 +134,16 @@ vi.mock('../../utils/logger', () => ({
   logger: { warn: vi.fn(), info: vi.fn(), error: vi.fn(), debug: vi.fn() },
 }));
 
-import { PublicBookingService } from './booking.service';
+import { emitToEvent, emitToAdmin } from '../../config/socket';
 import { Booking } from '../../models/booking.schema';
-import { UserModel } from '../../models/user.schema';
-import { Ticket } from '../../models/ticket.schema';
 import { Event } from '../../models/event.schema';
 import { SeatLayout } from '../../models/seat-layout.schema';
-import { ReservationService } from '../reservation.service';
-import { CacheService } from '../cache.service';
-import { emitToEvent, emitToAdmin } from '../../config/socket';
+import { Ticket } from '../../models/ticket.schema';
+import { UserModel } from '../../models/user.schema';
 import { auditLog } from '../../utils/audit';
+import { CacheService } from '../cache.service';
+import { ReservationService } from '../reservation.service';
+import { PublicBookingService } from './booking.service';
 
 // ─────────────────────────────────────────────────────────────
 // Helpers

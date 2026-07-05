@@ -16,9 +16,9 @@
  */
 
 import { ClientSession } from 'mongoose';
+
 import { BookingStatus, PaymentStatus, ReservationStatus, SeatStatus, NotificationType } from '@mad/shared';
 
-import { ReservationService } from '../reservation.service';
 import { emitToAdmin, emitToBooking, emitToEvent } from '../../config/socket';
 import { Booking, IBooking } from '../../models/booking.schema';
 import { Event } from '../../models/event.schema';
@@ -26,6 +26,7 @@ import { Payment, IPayment } from '../../models/payment.schema';
 import { Reservation } from '../../models/reservation.schema';
 import { SeatLayout } from '../../models/seat-layout.schema';
 import { logger } from '../../utils/logger';
+import { ReservationService } from '../reservation.service';
 
 export class PaymentInventoryService {
   // ─── Late Recovery Capacity Validation ──────────────────────────────────────

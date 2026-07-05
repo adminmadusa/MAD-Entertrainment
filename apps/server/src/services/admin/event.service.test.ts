@@ -30,14 +30,15 @@ vi.mock('@mad/shared', async (importOriginal) => {
   };
 });
 
-import * as eventService from './event.service';
 import { EventStatus, HTTP_STATUS, EventMemoryPublicationState } from '@mad/shared';
-import { Event } from '../../models/event.schema';
+
 import { Booking } from '../../models/booking.schema';
-import { Ticket } from '../../models/ticket.schema';
+import { Event } from '../../models/event.schema';
 import { TicketProfile } from '../../models/ticket-profile.schema';
-import { CacheService } from '../cache.service';
+import { Ticket } from '../../models/ticket.schema';
 import { createEventSchema } from '../../validations/admin-content.validation';
+import { CacheService } from '../cache.service';
+import * as eventService from './event.service';
 
 vi.mock('../../models/event.schema', () => ({
   Event: Object.assign(vi.fn(function (this: any, data: any) {

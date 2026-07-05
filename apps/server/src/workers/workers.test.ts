@@ -1,18 +1,17 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Types } from 'mongoose';
-
-import { processBookingConfirm } from './booking.worker';
-import { processPDFGenerate } from './pdf.worker';
-import { processEmailDispatch, handleJobExecution } from './email.worker';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 import { Booking } from '../models/booking.schema';
 import { Event } from '../models/event.schema';
-import { Ticket } from '../models/ticket.schema';
-import { Notification } from '../models/notification.schema';
 import { MagicTokenModel } from '../models/magic-token.schema';
+import { Notification } from '../models/notification.schema';
+import { Ticket } from '../models/ticket.schema';
 import { QueueService } from '../services/queue.service';
-import { generateTicketPDF } from '../utils/pdf';
 import { sendEmail } from '../utils/email';
+import { generateTicketPDF } from '../utils/pdf';
+import { processBookingConfirm } from './booking.worker';
+import { processEmailDispatch, handleJobExecution } from './email.worker';
+import { processPDFGenerate } from './pdf.worker';
 
 vi.mock('../config/env', () => ({
   getEnv: vi.fn(() => ({

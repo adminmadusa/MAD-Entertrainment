@@ -1,29 +1,29 @@
-import { BookingStatus, PaymentStatus, ReservationStatus, SeatStatus, NotificationType } from '@mad/shared';
-
-import { getRedis, isRedisConnected } from '../config/redis';
-import { emitToAdmin, emitToEvent } from '../config/socket';
-import { Booking } from '../models/booking.schema';
-import { Event } from '../models/event.schema';
-import { Payment } from '../models/payment.schema';
-import { Reservation } from '../models/reservation.schema';
-import { SeatLayout } from '../models/seat-layout.schema';
-import { Notification } from '../models/notification.schema';
-import { logger } from '../utils/logger';
-import { runWithContext, getTraceContext } from '../utils/context';
-import { auditLog } from '../utils/audit';
 import crypto from 'crypto';
 
-import { ReservationService } from './reservation.service';
-import { Ticket } from '../models/ticket.schema';
-import { QueueService } from './queue.service';
-import { getQueueName } from '../config/queue.config';
-import { Refund } from '../models/refund.schema';
-import { PaymentService } from './public/payment.service';
-import { PaymentRefundService } from './public/payment-refund.service';
-import { fullRefundHtml, partialRefundHtml, eventCancellationHtml, paymentFailureHtml } from '../lib/email';
+import { BookingStatus, PaymentStatus, ReservationStatus, SeatStatus, NotificationType } from '@mad/shared';
+
 import { getEnv } from '../config/env';
-import { createNotificationSafe } from './notification.service';
+import { getQueueName, getQueueConnection } from '../config/queue.config';
+import { getRedis, isRedisConnected } from '../config/redis';
+import { emitToAdmin, emitToEvent } from '../config/socket';
+import { fullRefundHtml, partialRefundHtml, eventCancellationHtml, paymentFailureHtml } from '../lib/email';
+import { Booking } from '../models/booking.schema';
+import { Event } from '../models/event.schema';
+import { Notification } from '../models/notification.schema';
+import { Payment } from '../models/payment.schema';
+import { Refund } from '../models/refund.schema';
+import { Reservation } from '../models/reservation.schema';
+import { SeatLayout } from '../models/seat-layout.schema';
+import { Ticket } from '../models/ticket.schema';
+import { auditLog } from '../utils/audit';
+import { runWithContext, getTraceContext } from '../utils/context';
+import { logger } from '../utils/logger';
 import { expireBooking } from './admin/booking.service';
+import { createNotificationSafe } from './notification.service';
+import { PaymentRefundService } from './public/payment-refund.service';
+import { PaymentService } from './public/payment.service';
+import { QueueService } from './queue.service';
+import { ReservationService } from './reservation.service';
 
 const UNTICKETED_BOOKING_WINDOW_MS = 48 * 60 * 60 * 1000;
 const UNTICKETED_PAGE_SIZE = 25;

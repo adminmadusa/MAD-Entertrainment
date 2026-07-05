@@ -1,5 +1,5 @@
-import { getStripe, isStripeEnabled } from '../../config/stripe';
 import { getEnv } from '../../config/env';
+import { getStripe, isStripeEnabled } from '../../config/stripe';
 
 export class StripeAdapter {
   static isEnabled(): boolean {

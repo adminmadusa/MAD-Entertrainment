@@ -1,18 +1,20 @@
+import mongoose from 'mongoose';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { ConsistencyService } from './consistency.service';
+
 import { BookingStatus, PaymentStatus, ReservationStatus, SeatStatus, NotificationType } from '@mad/shared';
+
 import { Booking } from '../models/booking.schema';
 import { Event } from '../models/event.schema';
-import { SeatLayout } from '../models/seat-layout.schema';
-import { ReservationService } from './reservation.service';
-import { Ticket } from '../models/ticket.schema';
-import { QueueService } from './queue.service';
-import { Reservation } from '../models/reservation.schema';
-import { Payment } from '../models/payment.schema';
 import { Notification } from '../models/notification.schema';
-import { PaymentService } from './public/payment.service';
+import { Payment } from '../models/payment.schema';
 import { Refund } from '../models/refund.schema';
-import mongoose from 'mongoose';
+import { Reservation } from '../models/reservation.schema';
+import { SeatLayout } from '../models/seat-layout.schema';
+import { Ticket } from '../models/ticket.schema';
+import { ConsistencyService } from './consistency.service';
+import { PaymentService } from './public/payment.service';
+import { QueueService } from './queue.service';
+import { ReservationService } from './reservation.service';
 
 vi.mock('mongoose', async (importOriginal) => {
   const original = await importOriginal<typeof import('mongoose')>();
