@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
-import { CacheService } from '../../services/cache.service';
+
 import * as popupService from '../../services/admin/popup.service';
+import { CacheService } from '../../services/cache.service';
 
 const ACTIVE_POPUPS_CACHE_KEY = 'popups:active';
 

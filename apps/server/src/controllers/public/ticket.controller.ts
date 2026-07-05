@@ -2,13 +2,14 @@ import { NextFunction, Request, Response } from 'express';
 import qrcode from 'qrcode';
 
 import { BookingStatus } from '@mad/shared';
+
 import { AppError } from '../../middleware/error.middleware';
 import { Booking } from '../../models/booking.schema';
 import { Ticket } from '../../models/ticket.schema';
-import { logger } from '../../utils/logger';
-import { sendSuccess } from '../../utils/response';
 import { canViewTicketQR, buildQrCodeImageUrl, verifyTicketQrToken } from '../../services/public/ticket-ownership.service';
 import * as ticketService from '../../services/public/ticket.service';
+import { logger } from '../../utils/logger';
+import { sendSuccess } from '../../utils/response';
 
 /**
  * GET /api/public/tickets/:ticketId/qr

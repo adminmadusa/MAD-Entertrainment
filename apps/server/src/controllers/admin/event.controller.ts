@@ -1,8 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 
-import * as eventService from '../../services/admin/event.service';
 import { getEnv } from '../../config/env';
+import * as eventService from '../../services/admin/event.service';
 import { auditLog } from '../../utils/audit';
 
 export const EVENT_MEMORIES_PREVIEW_TOKEN_TTL_MINUTES = 15;

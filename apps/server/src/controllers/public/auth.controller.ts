@@ -1,8 +1,9 @@
 import { Request, Response } from 'express';
-import { AuthService } from '../../services/public/auth.service';
-import { UserModel } from '../../models/user.schema';
+
 import { getEnv } from '../../config/env';
 import { AppError } from '../../middleware/error.middleware';
+import { UserModel } from '../../models/user.schema';
+import { AuthService } from '../../services/public/auth.service';
 import { logger } from '../../utils/logger';
 import { requiresOnboarding } from '../../utils/user';
 

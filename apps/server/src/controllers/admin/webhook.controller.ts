@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+
 import { WebhookEvent } from '../../models/webhook-event.schema';
 
 export const getWebhooks = async (req: Request, res: Response, next: NextFunction) => {

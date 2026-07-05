@@ -1,10 +1,10 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Request, Response, NextFunction } from 'express';
 import { Types } from 'mongoose';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-import { lookupTickets, scanTicket } from './scanner.controller';
-import { Ticket } from '../../models/ticket.schema';
 import { Booking } from '../../models/booking.schema';
+import { Ticket } from '../../models/ticket.schema';
+import { lookupTickets, scanTicket } from './scanner.controller';
 
 vi.mock('../../models/ticket.schema', () => ({
   Ticket: {

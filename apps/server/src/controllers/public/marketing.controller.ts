@@ -1,8 +1,10 @@
-import { Request, Response, NextFunction } from 'express';
 import crypto from 'crypto';
-import { Suppression } from '../../models/suppression.schema';
+
+import { Request, Response, NextFunction } from 'express';
+
 import { getEnv } from '../../config/env';
 import { AppError } from '../../middleware/error.middleware';
+import { Suppression } from '../../models/suppression.schema';
 import { logger } from '../../utils/logger';
 
 export class MarketingController {

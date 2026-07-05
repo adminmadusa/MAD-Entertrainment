@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+
 import * as teamService from '../../services/admin/team.service';
 
 export const getAdmins = async (req: Request, res: Response, next: NextFunction) => {

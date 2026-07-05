@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
-import { adminAuthService } from '../../services/admin/auth.service';
+
 import { AppError } from '../../middleware/error.middleware';
+import { adminAuthService } from '../../services/admin/auth.service';
 
 export const adminAuthController = {
   async login(req: Request, res: Response) {
