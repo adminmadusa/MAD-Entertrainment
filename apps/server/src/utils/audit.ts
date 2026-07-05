@@ -1,6 +1,6 @@
-import { logger } from './logger';
-import { getTraceContext } from './context';
 import { AuditLogModel } from '../models/audit-log.schema';
+import { getTraceContext } from './context';
+import { logger } from './logger';
 
 export interface AuditLogPayload {
   action: string;

@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
+
 import { decodeJwt, isTokenExpired } from './jwt';
 
 // Helper to construct mock JWTs with base64url encoding

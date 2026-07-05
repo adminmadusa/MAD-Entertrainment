@@ -1,5 +1,6 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import mongoose from 'mongoose';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+
 import { runInTransaction, _resetTransactionSupport } from './transaction';
 
 vi.mock('../config/env', () => ({

@@ -1,8 +1,9 @@
 import axios from 'axios';
+
 import { getEnv } from '../config/env';
-import { logger } from './logger';
 import { auditLog } from './audit';
-import { SendEmailInput } from './email.types';
+import type { SendEmailInput } from './email.types';
+import { logger } from './logger';
 
 
 /**

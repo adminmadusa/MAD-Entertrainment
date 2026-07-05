@@ -1,6 +1,7 @@
 'use client';
 
 import React, { type ReactNode, useRef } from 'react';
+
 import { useFocusTrap } from '../hooks/useFocusTrap';
 
 export interface ModalProps {

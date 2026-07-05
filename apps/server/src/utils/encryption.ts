@@ -1,4 +1,5 @@
 import crypto from 'crypto';
+
 import { getEnv } from '../config/env';
 
 const ALGORITHM = 'aes-256-gcm';
