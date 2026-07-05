@@ -804,6 +804,224 @@ Test environments share the same Render backend.
 A bug is not considered reproducible until deployment parity has been verified.
 ---
 
+# SKILL SELECTION & PROMPT INTELLIGENCE RULES
+
+## Mandatory Prompt Understanding
+
+Before responding to any request, thoroughly analyze the prompt to determine its actual objective.
+
+Do not produce immediate implementation steps or generic responses.
+
+First identify:
+
+* Primary objective
+* Business context
+* Technical context
+* Affected domain
+* Technologies involved
+* Risk level
+* Repository area
+* Expected outcome
+
+If the prompt is ambiguous, ask clarifying questions instead of making assumptions.
+
+---
+
+## Intelligent Skill Selection (Mandatory)
+
+Every response must begin by determining which skills are required.
+
+Never answer without selecting the appropriate skills.
+
+Possible skill categories include:
+
+### Core Skills
+
+* Architecture Review
+* Repository Governance
+* Code Quality Audit
+* TypeScript Audit
+* React Audit
+* Security Audit
+* Performance Audit
+* Accessibility Audit
+* API Contract Audit
+* Database Integrity Audit
+* Testing Strategy
+* Documentation Review
+
+### Domain Skills
+
+* Authentication Audit
+* Authorization (RBAC) Audit
+* OTP Flow Audit
+* Booking Audit
+* Payment Audit
+* Webhook Audit
+* Ticket Audit
+* QR Validation Audit
+* Notification Audit
+* Queue & Worker Audit
+* Event Management Audit
+* Checkout Audit
+* Dashboard Audit
+* Admin Audit
+* Scanner Audit
+
+### Infrastructure Skills
+
+* Deployment Audit
+* Environment Audit
+* CI/CD Audit
+* Docker Audit
+* Redis Audit
+* MongoDB Audit
+* BullMQ Audit
+* Cloud Storage Audit
+
+---
+
+## Skill Justification (Required)
+
+For every selected skill, explain:
+
+* Why it was selected.
+* Which part of the prompt triggered it.
+* What risks it will evaluate.
+* What evidence it will collect.
+* What outcome it is expected to produce.
+
+Do not list unnecessary skills.
+
+Only use skills that directly relate to the problem.
+
+---
+
+## Rule Selection (Mandatory)
+
+Automatically identify the governance and engineering rules that apply.
+
+Examples include:
+
+* Repository Governance Rules
+* Architecture Rules
+* Security Rules
+* API Contract Rules
+* Authentication Rules
+* Authorization Rules
+* Payment Integrity Rules
+* Transaction Integrity Rules
+* Data Integrity Rules
+* Accessibility Standards
+* Performance Standards
+* Code Quality Standards
+* Testing Standards
+* Deployment Verification Rules
+
+Explain why each rule applies.
+
+---
+
+## Evidence-Driven Analysis
+
+Never rely on assumptions.
+
+Every recommendation must be supported by:
+
+* Repository evidence
+* Existing implementation
+* Architecture
+* Existing patterns
+* Technology stack
+* Governance standards
+* Relevant documentation
+* Test evidence (where available)
+
+If evidence is unavailable, clearly state what additional information is required.
+
+---
+
+## Recommended Additional Skills
+
+If the prompt reveals related concerns, recommend additional skills that should also be executed.
+
+For each recommendation include:
+
+* Skill name
+* Reason
+* Expected benefit
+* Priority (Critical / High / Medium / Low)
+
+Example:
+
+Current Request: Authentication Issue
+
+Automatically Recommend:
+
+* Authentication Audit
+* Security Audit
+* API Contract Audit
+* Performance Audit
+* Testing Strategy
+
+Reason: Authentication changes affect security, API contracts, session management, and regression risk.
+
+---
+
+## Root Cause Before Solution
+
+Never jump directly to implementation.
+
+Always determine:
+
+* What is happening?
+* Why is it happening?
+* Where is it happening?
+* Which systems are affected?
+* What is the root cause?
+* What evidence supports the conclusion?
+
+Only after completing this analysis should implementation recommendations be provided.
+
+---
+
+## No Blind Responses
+
+The following are prohibited:
+
+* Generic advice without context.
+* Assumption-based recommendations.
+* Copy-paste framework guidance.
+* Suggesting refactoring without repository evidence.
+* Recommending libraries without justification.
+* Ignoring existing architecture or governance.
+
+Every response must be specific to the repository, architecture, and evidence.
+
+---
+
+## Final Output Requirements
+
+Every technical response should include:
+
+1. Prompt Understanding
+2. Selected Skills
+3. Skill Justification
+4. Applicable Rules & Standards
+5. Root Cause Analysis
+6. Evidence Reviewed
+7. Risk Assessment
+8. Recommended Solution
+9. Alternative Solutions
+10. Testing & Validation Strategy
+11. Additional Recommended Skills
+12. Follow-up Recommendations
+13. Backlog Items (Out of Scope)
+
+Do not implement code until the analysis, skill selection, and governance review are complete.
+
+---
+
 # FINAL MAD GOLDEN RULE
 
 Do not optimize for speed.
