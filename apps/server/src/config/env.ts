@@ -13,6 +13,8 @@ const envSchema = z.object({
 
   MONGODB_URI: z.string().url(),
 
+  MONGODB_HEARTBEAT_MS: z.coerce.number().default(5000),
+
   REDIS_URL: z.string().url().optional(),
 
   // ─────────────────────────────────────────

@@ -26,6 +26,9 @@ export interface SystemDiagnosticsReport {
     state: string;
     readyState: number;
     connectionsCount: number;
+    topologyType?: string;
+    replicaSetName?: string;
+    primaryHost?: string;
   };
   redis: {
     connected: boolean;
@@ -99,12 +102,38 @@ export class DiagnosticsService {
 
     const socketTelemetry = getSocketTelemetry();
 
+    const conn = mongoose.connection;
+    let client: any = null;
+    try {
+      if (conn && conn.readyState === 1 && typeof conn.getClient === 'function') {
+        client = conn.getClient();
+      }
+    } catch (e) {
+      // Suppress connection extraction failures
+    }
+    const topology = client?.topology?.description;
+    let primaryHost = 'Unknown';
+    if (topology?.servers) {
+      try {
+        const servers = Array.from(topology.servers.values()) as any[];
+        const primaryServer = servers.find((s) => s.type === 'RSPrimary');
+        if (primaryServer) {
+          primaryHost = primaryServer.address || 'Unknown';
+        }
+      } catch (e) {
+        // Suppress parser errors
+      }
+    }
+
     return {
       timestamp: new Date().toISOString(),
       database: {
-        state: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
-        readyState: mongoose.connection.readyState,
-        connectionsCount: (mongoose.connection as any).base?.connections?.length || 1,
+        state: conn.readyState === 1 ? 'connected' : 'disconnected',
+        readyState: conn.readyState,
+        connectionsCount: (conn as any).base?.connections?.length || 1,
+        topologyType: topology?.type ?? 'Unknown',
+        replicaSetName: topology?.setName ?? 'Unknown',
+        primaryHost,
       },
       redis: {
         connected: redisActive,
