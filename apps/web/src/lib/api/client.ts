@@ -94,6 +94,12 @@ async function executeTokenRefresh(originalExpiredToken: string): Promise<string
   }
 
   if (typeof window !== 'undefined') {
+    // If the token was cleared in localStorage (e.g. user logged out) while the call was in-flight,
+    // we should abort writing the new token to avoid stale auth states.
+    if (!localStorage.getItem(STORAGE_KEYS.USER_TOKEN)) {
+      throw new Error('Session terminated during token refresh');
+    }
+
     localStorage.setItem(STORAGE_KEYS.USER_TOKEN, newToken);
     // Notify AuthProvider on the same tab to sync React state.
     window.dispatchEvent(new CustomEvent('auth:refreshed', { detail: { token: newToken } }));
@@ -212,6 +218,25 @@ apiClient.interceptors.response.use(
         ? (localStorage.getItem(STORAGE_KEYS.USER_TOKEN) ?? '')
         : '';
 
+    // ── Pre-Refresh Freshness Check (Candidate D / Same-Tab Race Prevention) ──
+    // If the token in localStorage is already newer and valid, we do not start
+    // a new refresh cycle. Simply retry the request with the new token.
+    const requestToken = originalRequest.headers?.Authorization
+      ? String(originalRequest.headers.Authorization).replace('Bearer ', '')
+      : '';
+
+    if (
+      originalExpiredToken &&
+      !isTokenExpired(originalExpiredToken) &&
+      originalExpiredToken !== requestToken
+    ) {
+      originalRequest._retry = true;
+      if (originalRequest.headers) {
+        originalRequest.headers.Authorization = `Bearer ${originalExpiredToken}`;
+      }
+      return apiClient(originalRequest);
+    }
+
     // ── Queue waiting requests while a refresh is in progress ──
     if (isRefreshing) {
       return new Promise<string>((resolve, reject) => {
@@ -259,6 +284,21 @@ apiClient.interceptors.response.use(
 
     try {
       const newToken = await performRefresh();
+
+      // If the user logged out while the refresh was in flight, reject the queue and abort
+      const activeToken = typeof window !== 'undefined'
+        ? localStorage.getItem(STORAGE_KEYS.USER_TOKEN)
+        : null;
+      if (!activeToken) {
+        const logoutError = new AxiosError(
+          'Session terminated during token refresh',
+          'ERR_CANCELLED',
+          originalRequest
+        );
+        processQueue(logoutError, null);
+        return Promise.reject(logoutError);
+      }
+
       if (originalRequest.headers) {
         originalRequest.headers.Authorization = `Bearer ${newToken}`;
       }
