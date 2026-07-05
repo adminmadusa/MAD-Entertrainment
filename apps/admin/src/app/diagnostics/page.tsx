@@ -52,7 +52,7 @@ export default function DiagnosticsPage() {
     queryKey: QUERY_KEYS.admin.diagnostics.consistency(),
     queryFn: adminGetConsistencyReport,
     refetchInterval: 30_000,
-    enabled: isAdmin,
+    enabled: isSuperAdmin,
   });
 
   // Fetch reservations
@@ -60,7 +60,7 @@ export default function DiagnosticsPage() {
     queryKey: QUERY_KEYS.admin.diagnostics.reservations(reservationStatus),
     queryFn: () => adminGetReservations(reservationStatus || undefined),
     refetchInterval: 30_000,
-    enabled: isAdmin && activeSubTab === 'reservations',
+    enabled: isSuperAdmin && activeSubTab === 'reservations',
   });
 
   // Fetch system health (including BullMQ queue details)
@@ -68,7 +68,7 @@ export default function DiagnosticsPage() {
     queryKey: ['admin', 'diagnostics', 'health'],
     queryFn: adminGetSystemHealth,
     refetchInterval: 15_000,
-    enabled: isAdmin,
+    enabled: isSuperAdmin,
   });
 
   // Fetch DLQ paginated list
@@ -76,7 +76,7 @@ export default function DiagnosticsPage() {
     queryKey: ['admin', 'diagnostics', 'dlq', dlqPage, dlqLimit, dlqQueue, dlqSearch],
     queryFn: () => adminGetDlqJobs({ page: dlqPage, limit: dlqLimit, queueName: dlqQueue || undefined, search: dlqSearch || undefined }),
     refetchInterval: 30_000,
-    enabled: isAdmin,
+    enabled: isSuperAdmin,
   });
 
   // Fetch queue controls
@@ -84,7 +84,7 @@ export default function DiagnosticsPage() {
     queryKey: ['admin', 'diagnostics', 'queue-controls'],
     queryFn: adminGetQueues,
     refetchInterval: 15_000,
-    enabled: isAdmin && activeSubTab === 'queues',
+    enabled: isSuperAdmin && activeSubTab === 'queues',
   });
 
   // Consistency repair mutation
@@ -161,7 +161,7 @@ export default function DiagnosticsPage() {
     }
   };
 
-  if (!isAdmin) {
+  if (!isSuperAdmin) {
     return <DiagnosticsAccessDenied />;
   }
 

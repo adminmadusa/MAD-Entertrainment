@@ -248,6 +248,26 @@ GOV-001 — Server ESLint Audit
 Status: Backlog
 Priority: Medium
 
+PROD-001 — Secure Diagnostic API Routes
+Status: Backlog
+Priority: Critical
+Source: MAD-500 Audit
+
+PROD-002 — MongoDB Replica Set High Availability Configuration
+Status: Backlog
+Priority: Critical
+Source: MAD-500 Audit
+
+SEC-001 — Axios Client Token Refresh Concurrency Lock
+Status: Backlog
+Priority: High
+Source: MAD-500 Audit
+
+SCAN-001 — Mobile Scanner Offline Caching
+Status: Backlog
+Priority: High
+Source: MAD-500 Audit
+
 ### Known High-Risk File
 
 * `apps/server/src/services/public/payment.service.ts`
