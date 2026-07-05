@@ -1,6 +1,7 @@
 import React from 'react';
-import { type TicketProfile } from '@mad/types';
+
 import { type AdminTier } from '@/lib/api/admin/tier.service';
+import type { TicketProfile } from '@mad/types';
 import { FormField } from '@mad/ui';
 
 

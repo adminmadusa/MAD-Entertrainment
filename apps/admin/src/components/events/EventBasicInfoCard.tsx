@@ -1,6 +1,7 @@
 import React from 'react';
-import { EVENT_CATEGORY_LABELS, EventStatus } from '@mad/shared';
+
 import { type AdminCategory } from '@/lib/api/admin/category.service';
+import { EVENT_CATEGORY_LABELS, EventStatus } from '@mad/shared';
 import { FormField } from '@mad/ui';
 
 

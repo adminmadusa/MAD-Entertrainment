@@ -1,4 +1,5 @@
 import React from 'react';
+
 import { EventGalleryUpload } from '@/components/EventGalleryUpload';
 import { type CloudinaryImage } from '@/lib/api/admin/event.service';
 

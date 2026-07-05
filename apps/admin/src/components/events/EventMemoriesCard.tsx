@@ -1,15 +1,11 @@
 'use client';
 
 import React, { useRef, useState, useCallback } from 'react';
-import { FormField } from '@mad/ui';
-import {
-  EventStatus,
-  EventMemoryPublicationState,
-  MAX_MEMORIES_GALLERY_LIMIT,
-} from '@mad/shared';
 
-import { adminApiClient } from '@/lib/api/client';
 import { type CloudinaryImage } from '@/lib/api/admin/event.service';
+import { adminApiClient } from '@/lib/api/client';
+import { EventStatus, EventMemoryPublicationState, MAX_MEMORIES_GALLERY_LIMIT, } from '@mad/shared';
+import { FormField } from '@mad/ui';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 

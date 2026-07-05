@@ -1,5 +1,5 @@
 import { TicketTier } from '@mad/shared';
-import { type TicketGroup } from '@mad/types';
+import type { TicketGroup } from '@mad/types';
 
 export interface TicketInput {
   tier: TicketTier;

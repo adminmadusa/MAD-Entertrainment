@@ -1,19 +1,14 @@
 'use client';
 
-import { EventCategory } from '@mad/shared';
-import { Coupon } from '@mad/types';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
-import {
-  CouponFormState,
-  defaultCouponForm,
-  mapCouponToFormState,
-  validateCouponForm,
-  CATEGORY_LABELS,
-  inputCls,
-} from './coupon-form.types';
+
+import { EventCategory } from '@mad/shared';
+import type { Coupon } from '@mad/types';
 import { FormField } from '@mad/ui';
+
+import { CouponFormState, defaultCouponForm, mapCouponToFormState, validateCouponForm, CATEGORY_LABELS, inputCls, } from './coupon-form.types';
 
 
 interface CouponFormProps {
@@ -268,4 +263,3 @@ export function CouponForm({
     </form>
   );
 }
-

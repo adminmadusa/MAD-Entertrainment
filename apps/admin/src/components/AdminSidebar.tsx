@@ -4,8 +4,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
-import { useAdminAuth } from '@/providers/AdminAuthProvider';
 import { canAccessRoute } from '@/lib/rbac/navigation-permissions';
+import { useAdminAuth } from '@/providers/AdminAuthProvider';
 
 interface NavItem {
   label: string;

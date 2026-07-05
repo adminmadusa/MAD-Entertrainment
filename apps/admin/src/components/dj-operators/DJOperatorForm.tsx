@@ -1,11 +1,13 @@
-import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-import { DJOperator, ImageAsset } from '@mad/types';
+import React, { useState, useEffect } from 'react';
+
+import type { DJOperator, ImageAsset } from '@mad/types';
+
 import { DJBasicInfoCard } from './DJBasicInfoCard';
+import { DJFormActions } from './DJFormActions';
 import { DJMediaCard } from './DJMediaCard';
 import { DJSocialLinksCard } from './DJSocialLinksCard';
-import { DJFormActions } from './DJFormActions';
 
 interface DJOperatorFormProps {
   title: string;

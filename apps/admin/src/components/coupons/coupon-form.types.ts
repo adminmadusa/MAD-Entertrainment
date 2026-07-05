@@ -1,5 +1,5 @@
 import { EventCategory } from '@mad/shared';
-import { Coupon } from '@mad/types';
+import type { Coupon } from '@mad/types';
 
 export interface CouponFormState {
   code: string;

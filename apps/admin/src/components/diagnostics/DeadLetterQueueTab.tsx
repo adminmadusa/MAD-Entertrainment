@@ -1,6 +1,6 @@
 import { DeadLetterJobMetadata, DlqPaginatedResponse } from '@/lib/api/admin/diagnostics.service';
-import { formatDateTime } from '@mad/utils';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@mad/ui';
+import { formatDateTime } from '@mad/utils';
 
 export interface DeadLetterQueueTabProps {
   dlqResponse: DlqPaginatedResponse | undefined;
