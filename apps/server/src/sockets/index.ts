@@ -1,21 +1,19 @@
-import { SeatStatus } from '@mad/shared';
-import { Types } from 'mongoose';
-import { Socket } from 'socket.io';
 import crypto from 'crypto';
 
+import { Types } from 'mongoose';
+import { Socket } from 'socket.io';
+
+import { SeatStatus } from '@mad/shared';
+
 import { getRedis } from '../config/redis';
+import { AppError } from '../middleware/error.middleware';
 import { Booking } from '../models/booking.schema';
 import { SeatLayout } from '../models/seat-layout.schema';
-import { logger } from '../utils/logger';
-import { runWithContext } from '../utils/context';
-import { auditLog } from '../utils/audit';
-import {
-  socketEventJoinSchema,
-  socketBookingJoinSchema,
-  socketSeatActionSchema,
-} from '../validations/payment.validation';
-import { AppError } from '../middleware/error.middleware';
 import { PublicBookingService } from '../services/public/booking.service';
+import { auditLog } from '../utils/audit';
+import { runWithContext } from '../utils/context';
+import { logger } from '../utils/logger';
+import { socketEventJoinSchema, socketBookingJoinSchema, socketSeatActionSchema } from '../validations/payment.validation';
 
 // Helper to get Redis key for a seat lock
 function getSeatLockKey(eventId: string, seatId: string): string {

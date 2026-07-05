@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+
 import { AdminUserService } from '../../services/admin/user.service';
 
 /**

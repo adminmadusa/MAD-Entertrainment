@@ -1,8 +1,9 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Request, Response, NextFunction } from 'express';
 import { Types } from 'mongoose';
-import { getUsers, getUserById, getGuestUserByEmail, toggleUserActive } from './user.controller';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+
 import { AdminUserService } from '../../services/admin/user.service';
+import { getUsers, getUserById, getGuestUserByEmail, toggleUserActive } from './user.controller';
 
 vi.mock('../../services/admin/user.service', () => ({
   AdminUserService: {

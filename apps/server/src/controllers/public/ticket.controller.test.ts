@@ -1,3 +1,4 @@
+import qrcode from 'qrcode';
 import { vi, beforeEach, describe, expect, it } from 'vitest';
 
 vi.hoisted(() => {
@@ -7,17 +8,14 @@ vi.hoisted(() => {
   process.env.JWT_SESSION_SECRET = 'this_is_a_very_long_jwt_session_secret_with_more_than_32_characters';
 });
 
-import qrcode from 'qrcode';
-
-
-
 import { BookingStatus } from '@mad/shared';
+
 import { AppError } from '../../middleware/error.middleware';
 import { Booking } from '../../models/booking.schema';
 import { Ticket } from '../../models/ticket.schema';
-import { getTicketQR, assignTicket, claimTicket, revokeTicket, getMyTickets } from './ticket.controller';
 import { canViewTicketQR, generateTicketQrToken } from '../../services/public/ticket-ownership.service';
 import * as ticketService from '../../services/public/ticket.service';
+import { getTicketQR, assignTicket, claimTicket, revokeTicket, getMyTickets } from './ticket.controller';
 
 
 vi.mock('qrcode', () => ({

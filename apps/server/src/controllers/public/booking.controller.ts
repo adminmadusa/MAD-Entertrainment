@@ -1,19 +1,21 @@
 import crypto from 'crypto';
-import { Request, Response, NextFunction } from 'express';
-import { requiresOnboarding } from '../../utils/user';
 
-import { sendSuccess } from '../../utils/response';
-import { AppError } from '../../middleware/error.middleware';
-import { signSessionToken } from '../../utils/jwt';
-import { PublicBookingService } from '../../services/public/booking.service';
-import { BookingRecoveryService } from '../../services/public/booking-recovery.service';
-import { auditLog } from '../../utils/audit';
-import { generateTicketPDF } from '../../utils/pdf';
-import { QueueService } from '../../services/queue.service';
-import { getQueueName } from '../../config/queue.config';
-import { CacheService } from '../../services/cache.service';
+import { Request, Response, NextFunction } from 'express';
+
 import { getEnv } from '../../config/env';
+import { getQueueName } from '../../config/queue.config';
+import { AppError } from '../../middleware/error.middleware';
+import { CacheService } from '../../services/cache.service';
+import { AuthService } from '../../services/public/auth.service';
+import { BookingRecoveryService } from '../../services/public/booking-recovery.service';
+import { PublicBookingService } from '../../services/public/booking.service';
 import { buildQrCodeImageUrl } from '../../services/public/ticket-ownership.service';
+import { QueueService } from '../../services/queue.service';
+import { auditLog } from '../../utils/audit';
+import { signSessionToken } from '../../utils/jwt';
+import { generateTicketPDF } from '../../utils/pdf';
+import { sendSuccess } from '../../utils/response';
+import { requiresOnboarding } from '../../utils/user';
 
 const maskTransactionId = (id: string): string => {
   if (!id || id.length <= 8) return '****';
@@ -421,8 +423,6 @@ export async function resendBookingTickets(
 // ─────────────────────────────────────────────
 // Recover Booking Email
 // ─────────────────────────────────────────────
-
-import { AuthService } from '../../services/public/auth.service';
 
 // ─────────────────────────────────────────────
 // Recover Booking Email

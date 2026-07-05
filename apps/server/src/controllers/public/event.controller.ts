@@ -1,8 +1,9 @@
 import { Request, Response, NextFunction } from 'express';
-import { PublicEventService } from '../../services/public/event.service';
+
 import { CacheService } from '../../services/cache.service';
-import { sendSuccess } from '../../utils/response';
+import { PublicEventService } from '../../services/public/event.service';
 import { logger } from '../../utils/logger';
+import { sendSuccess } from '../../utils/response';
 
 type PublicEventListResult = Awaited<ReturnType<typeof PublicEventService.listEvents>>;
 type PublicEventDetailResult = Awaited<ReturnType<typeof PublicEventService.getEventBySlug>>;

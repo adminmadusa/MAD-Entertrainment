@@ -1,15 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+
 import { Booking } from '../../models/booking.schema';
 import { Event } from '../../models/event.schema';
-import { Ticket } from '../../models/ticket.schema';
-import { Refund } from '../../models/refund.schema';
 import { Payment } from '../../models/payment.schema';
-import {
-  getSummary,
-  getRevenue,
-  getAttendanceSummary,
-  getAttendanceRankings
-} from './analytics.controller';
+import { Refund } from '../../models/refund.schema';
+import { Ticket } from '../../models/ticket.schema';
+import { getSummary, getRevenue, getAttendanceSummary, getAttendanceRankings } from './analytics.controller';
 
 vi.mock('../../models/booking.schema', () => ({
   Booking: {

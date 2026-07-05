@@ -1,8 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
 import { Types } from 'mongoose';
-import { Ticket } from '../../models/ticket.schema';
-import { Booking } from '../../models/booking.schema';
+
 import { BookingStatus } from '@mad/shared';
+
+import { Booking } from '../../models/booking.schema';
+import { Ticket } from '../../models/ticket.schema';
 
 export const scanTicket = async (req: Request, res: Response, next: NextFunction) => {
   try {

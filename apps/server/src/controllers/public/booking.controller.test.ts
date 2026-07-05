@@ -1,5 +1,5 @@
-import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { Types } from 'mongoose';
+import { vi, describe, it, expect, beforeEach } from 'vitest';
 
 vi.hoisted(() => {
   process.env.MONGODB_URI = 'mongodb://localhost:27017/test';
@@ -8,13 +8,12 @@ vi.hoisted(() => {
   process.env.JWT_SESSION_SECRET = 'this_is_a_very_long_jwt_session_secret_with_more_than_32_characters';
 });
 
-import { createBooking, recoverBooking, verifyRecoveredBookingOTP, getBooking, downloadBookingPDF, resendBookingTickets } from './booking.controller';
-import { PublicBookingService } from '../../services/public/booking.service';
-
-import { BookingRecoveryService } from '../../services/public/booking-recovery.service';
-import { AuthService } from '../../services/public/auth.service';
-import { auditLog } from '../../utils/audit';
 import { AppError } from '../../middleware/error.middleware';
+import { AuthService } from '../../services/public/auth.service';
+import { BookingRecoveryService } from '../../services/public/booking-recovery.service';
+import { PublicBookingService } from '../../services/public/booking.service';
+import { auditLog } from '../../utils/audit';
+import { createBooking, recoverBooking, verifyRecoveredBookingOTP, getBooking, downloadBookingPDF, resendBookingTickets } from './booking.controller';
 
 vi.mock('../../services/public/booking.service', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../../services/public/booking.service')>();
