@@ -1,7 +1,9 @@
 'use client';
 
 import React from 'react';
+
 import { EVENT_CATEGORY_LABELS } from '@mad/shared';
+
 import { Field, inputCls } from './Field';
 
 interface EventBasicInfoSectionProps {

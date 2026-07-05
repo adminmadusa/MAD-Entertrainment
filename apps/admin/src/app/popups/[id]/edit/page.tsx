@@ -1,15 +1,15 @@
 'use client';
 
-import { PopupCampaign } from '@mad/types';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { useRouter, useParams } from 'next/navigation';
 import { useState, useEffect } from 'react';
-import { FormField } from '@mad/ui';
 
 import { CloudinaryUpload } from '@/components/CloudinaryUpload';
 import { adminGetPopup, adminUpdatePopup } from '@/lib/api/admin/popup.service';
 import { extractApiError } from '@/lib/api/client';
+import type { PopupCampaign } from '@mad/types';
+import { FormField } from '@mad/ui';
 
 
 interface CloudinaryAsset {
@@ -323,8 +323,6 @@ export default function EditPopupPage() {
     </div>
   );
 }
-
-
 
 const inputCls =
   'w-full px-4 py-2.5 rounded-xl bg-background border border-border-subtle text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-purple transition-colors';

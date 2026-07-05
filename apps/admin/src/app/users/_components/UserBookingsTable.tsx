@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { BookingStatus, BOOKING_STATUS_META } from '@mad/shared';
-import { formatDateTime, formatEventDate } from '@mad/utils';
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@mad/ui';
+
 import { UserDetailResponse } from '@/lib/api/admin/user.service';
+import { BookingStatus, BOOKING_STATUS_META } from '@mad/shared';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@mad/ui';
+import { formatDateTime, formatEventDate } from '@mad/utils';
 
 interface UserBookingsTableProps {
   bookings: UserDetailResponse['data']['bookings'];

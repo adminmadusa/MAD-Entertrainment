@@ -1,18 +1,18 @@
 'use client';
 
-import { QUERY_KEYS, AdminRole } from '@mad/shared';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
-import { useAdminAuth } from '@/providers/AdminAuthProvider';
-import { adminGetConsistencyReport, adminGetReservations, adminRepairConsistency, adminGetDlqJobs, adminGetDlqJobPayload, adminRetryDlqJob, adminRetryAllDlqJobs, adminGetSystemHealth, adminGetQueues, adminPauseQueue, adminResumeQueue, adminDrainQueue, DeadLetterJobMetadata, DeadLetterJobDetails } from '@/lib/api/admin/diagnostics.service';
 
-import { DiagnosticsHealthTab } from '@/components/diagnostics/DiagnosticsHealthTab';
-import { QueueControlsTab } from '@/components/diagnostics/QueueControlsTab';
 import { DeadLetterQueueTab } from '@/components/diagnostics/DeadLetterQueueTab';
-import { ReservationLedgerTab } from '@/components/diagnostics/ReservationLedgerTab';
-import { DiagnosticsNavigation } from '@/components/diagnostics/DiagnosticsNavigation';
 import { DiagnosticsAccessDenied } from '@/components/diagnostics/DiagnosticsAccessDenied';
+import { DiagnosticsHealthTab } from '@/components/diagnostics/DiagnosticsHealthTab';
 import { DiagnosticsModals } from '@/components/diagnostics/DiagnosticsModals';
+import { DiagnosticsNavigation } from '@/components/diagnostics/DiagnosticsNavigation';
+import { QueueControlsTab } from '@/components/diagnostics/QueueControlsTab';
+import { ReservationLedgerTab } from '@/components/diagnostics/ReservationLedgerTab';
+import { adminGetConsistencyReport, adminGetReservations, adminRepairConsistency, adminGetDlqJobs, adminGetDlqJobPayload, adminRetryDlqJob, adminRetryAllDlqJobs, adminGetSystemHealth, adminGetQueues, adminPauseQueue, adminResumeQueue, adminDrainQueue, DeadLetterJobMetadata, DeadLetterJobDetails } from '@/lib/api/admin/diagnostics.service';
+import { useAdminAuth } from '@/providers/AdminAuthProvider';
+import { QUERY_KEYS, AdminRole } from '@mad/shared';
 
 export default function DiagnosticsPage() {
   const { admin } = useAdminAuth();

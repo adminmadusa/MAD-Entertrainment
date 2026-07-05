@@ -1,8 +1,10 @@
 'use client';
 
 import React from 'react';
+
 import { EventGalleryUpload } from '@/components/EventGalleryUpload';
-import { CloudinaryImage } from './types';
+
+import type { CloudinaryImage } from './types';
 
 interface EventMediaSectionProps {
   coverImage: CloudinaryImage | null;

@@ -1,7 +1,7 @@
 'use client';
 
-import { BookingStatus, getBookingStatusLabel } from '@mad/shared';
 import { AdminBooking } from '@/lib/api/admin/booking.service';
+import { BookingStatus, getBookingStatusLabel } from '@mad/shared';
 
 export interface BookingFiltersProps {
   search: string;

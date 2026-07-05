@@ -1,6 +1,5 @@
 'use client';
 
-import { AdminRole } from '@mad/shared';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import React, { useState } from 'react';
@@ -8,14 +7,15 @@ import React, { useState } from 'react';
 import ErrorState from '@/components/states/ErrorState';
 import LoadingState from '@/components/states/LoadingState';
 import { useAdminAuth } from '@/providers/AdminAuthProvider';
+import { AdminRole } from '@mad/shared';
 
-import { useUserDetail } from '../../_hooks/use-user-detail.hook';
-import UserProfileCard from '../../_components/UserProfileCard';
-import UserStatsSummary from '../../_components/UserStatsSummary';
 import UserBookingsTable from '../../_components/UserBookingsTable';
-import UserTicketsTable from '../../_components/UserTicketsTable';
+import UserProfileCard from '../../_components/UserProfileCard';
 import UserRefundsTable from '../../_components/UserRefundsTable';
+import UserStatsSummary from '../../_components/UserStatsSummary';
 import UserTabsHeader from '../../_components/UserTabsHeader';
+import UserTicketsTable from '../../_components/UserTicketsTable';
+import { useUserDetail } from '../../_hooks/use-user-detail.hook';
 
 export default function GuestUserDetailPage() {
   const params = useParams() as { email: string };

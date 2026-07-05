@@ -1,11 +1,10 @@
 'use client';
 
-import { AdminRole } from '@mad/shared';
-import { Admin } from '@mad/types';
-import { formatDateTime } from '@mad/utils';
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@mad/ui';
-
 import { AdminUser } from '@/lib/api/admin/auth.service';
+import { AdminRole } from '@mad/shared';
+import type { Admin } from '@mad/types';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@mad/ui';
+import { formatDateTime } from '@mad/utils';
 
 const ROLE_LABELS: Record<AdminRole, string> = {
   [AdminRole.SUPER_ADMIN]: 'Super Admin',

@@ -2,8 +2,9 @@
 
 import { motion } from 'framer-motion';
 import { useState } from 'react';
-import { extractApiError } from '@/lib/api/client';
+
 import { AdminBooking } from '@/lib/api/admin/booking.service';
+import { extractApiError } from '@/lib/api/client';
 
 export interface CorrectEmailModalProps {
   booking: AdminBooking;

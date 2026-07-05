@@ -1,7 +1,9 @@
 'use client';
 
 import React from 'react';
+
 import { EventStatus } from '@mad/shared';
+
 import { Field, inputCls } from './Field';
 
 interface EventPublishSectionProps {
