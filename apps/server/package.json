@@ -9,7 +9,7 @@
     "build": "rm -rf dist tsconfig.tsbuildinfo && tsc -p tsconfig.json",
     "start": "node dist/apps/server/src/server.js",
     "type-check": "tsc -p tsconfig.json --noEmit",
-    "lint": "echo 'No linting configured'",
+    "lint": "eslint src --cache --max-warnings 0",
     "clean": "rm -rf dist .turbo tsconfig.tsbuildinfo",
     "test": "vitest run --root ../.. --config vitest.config.ts"
   },
@@ -53,6 +53,7 @@
     "zod": "^3.25.76"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.4",
     "@types/compression": "^1.8.1",
     "@types/cookie-parser": "^1.4.10",
     "@types/cors": "^2.8.19",
@@ -66,7 +67,10 @@
     "@types/react-dom": "^19.0.0",
     "@types/swagger-ui-express": "^4.1.8",
     "autocannon": "^8.0.0",
+    "eslint": "^9.39.4",
+    "globals": "^16.4.0",
     "tsx": "^4.21.0",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.61.1"
   }
 }
