@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+
 import * as jwtUtils from './jwt';
 
 // Mock the env configuration

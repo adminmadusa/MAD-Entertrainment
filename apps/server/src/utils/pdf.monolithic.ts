@@ -1,8 +1,9 @@
 import PDFDocument from 'pdfkit';
 import qrcode from 'qrcode';
+
 import { Ticket } from '../models/ticket.schema';
-import { logger } from './logger';
 import { getPurchaserPDFTicketState } from '../services/public/ticket-ownership.service';
+import { logger } from './logger';
 
 /**
  * Generates the ticket PDF buffer using the monolithic engine.

@@ -1,4 +1,4 @@
-import { JwtPayload } from '@mad/types';
+import type { JwtPayload } from '@mad/types';
 
 /**
  * Decodes a JWT token payload safely in any environment (Browser, SSR, Node, Edge).

@@ -1,11 +1,10 @@
-import nodemailer from 'nodemailer';
 import * as Sentry from '@sentry/node';
+import nodemailer from 'nodemailer';
 
 import { getEnv } from '../config/env';
-import { logger } from './logger';
 import { auditLog } from './audit';
-
 import type { EmailAttachment, SendEmailInput } from './email.types';
+import { logger } from './logger';
 
 export type { EmailAttachment, SendEmailInput } from './email.types';
 

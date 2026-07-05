@@ -1,7 +1,8 @@
+import { EventCategory, EVENT_CATEGORY_LABELS, TicketTier } from '@mad/shared';
+
 import { Category } from '../models/category.schema';
 import { Tier } from '../models/tier.schema';
 import { logger } from './logger';
-import { EventCategory, EVENT_CATEGORY_LABELS, TicketTier } from '@mad/shared';
 
 export const seedCategoriesAndTiers = async () => {
   try {

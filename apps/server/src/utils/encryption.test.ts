@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
+
 import * as envConfig from '../config/env';
 import { encryptPayload, decryptPayload, isEncrypted } from './encryption';
 

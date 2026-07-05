@@ -1,8 +1,9 @@
-import { getEnv } from '../config/env';
-import { logger } from './logger';
 import * as Sentry from '@sentry/node';
-import { generateTicketPDF as generateMonolithic } from './pdf.monolithic';
+
+import { getEnv } from '../config/env';
 import { generateTicketPDF as generateModular } from '../lib/pdf/ticket/generate-ticket-pdf';
+import { logger } from './logger';
+import { generateTicketPDF as generateMonolithic } from './pdf.monolithic';
 
 /**
  * Generates the ticket PDF buffer.
