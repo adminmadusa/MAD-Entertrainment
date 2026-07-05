@@ -2,7 +2,7 @@
 
 - **Owner**: Repository Governance Owner
 - **Status**: Active
-- **Version**: 2.6
+- **Version**: 2.7
 - **Review Cycle**: Ongoing
 - **Last Updated**: 2026-07-05
 - **Related Documents:**
@@ -78,6 +78,7 @@ The following items have been fully implemented, verified, merged into `develop`
 | ARCH-007C — NotificationConsistencyService extraction (996 → 628 lines, merge SHA 373a1e0) | #493 | ✅ |
 | ARCH-007D — RefundConsistencyService extraction (628 → 361 lines, merge SHA 7038774) | #495 | ✅ |
 | ARCH-007E — PaymentConsistencyService extraction (361 → 223 lines, merge SHA 29b4e71) | #499 | ✅ |
+| ARCH-008 — admin/booking.service.ts Decomposition (1282 → 3 lines, merge SHA 00570d8) | #503 | ✅ |
 
 ---
 
@@ -309,7 +310,7 @@ Medium (admin transactional logic; paired test file is 1915 lines)
 
 #### Status
 
-Backlog — Not Started
+✅ Completed — see Completed Items section above.
 
 ---
 
@@ -384,7 +385,7 @@ Files exceeding 300 lines (production code only):
 
 | File | Lines | Layer | Status |
 |------|:-----:|-------|--------|
-| `booking.service.ts` (admin) | 1282 | Service | ⚠️ ARCH-008 — Backlog |
+| `booking.service.ts` (admin) | 3 | Service | ✅ Resolved (ARCH-008) |
 | `consistency.service.ts` | 223 | Service | ✅ Resolved (ARCH-007) |
 | `booking.service.ts` (public) | 825 | Service | ⚠️ Review Required |
 | `payment-refund.service.ts` | 745 | Service | ⚠️ Review Required |
