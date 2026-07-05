@@ -51,6 +51,15 @@ jobs:
       - name: Run Type Checking
         run: pnpm run type-check
 
+      - name: Run CI Governance Abstraction Checks (Blocking)
+        run: npx tsx scripts/ci-governance-check.ts
+
+      - name: Run CI Governance Documentation Validation (Advisory)
+        run: pnpm run governance:docs --incremental
+        continue-on-error: true
+        env:
+          GOVERNANCE_MIN_HEALTH_SCORE: 50
+
 
       - name: Build Workspace
         run: pnpm run build
