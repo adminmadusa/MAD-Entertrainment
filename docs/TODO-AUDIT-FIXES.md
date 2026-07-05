@@ -2,7 +2,7 @@
 
 - **Owner**: Repository Governance Owner
 - **Status**: Active
-- **Version**: 2.5
+- **Version**: 2.6
 - **Review Cycle**: Ongoing
 - **Last Updated**: 2026-07-05
 - **Related Documents:**
@@ -77,6 +77,7 @@ The following items have been fully implemented, verified, merged into `develop`
 | ARCH-007B — BookingConsistencyService extraction (1097 → 996 lines, merge SHA f81141b) | #491 | ✅ |
 | ARCH-007C — NotificationConsistencyService extraction (996 → 628 lines, merge SHA 373a1e0) | #493 | ✅ |
 | ARCH-007D — RefundConsistencyService extraction (628 → 361 lines, merge SHA 7038774) | #495 | ✅ |
+| ARCH-007E — PaymentConsistencyService extraction (361 → 223 lines, merge SHA 29b4e71) | #499 | ✅ |
 
 ---
 
@@ -250,7 +251,7 @@ Completed. Full call graph verified across all 17 methods and 12 operations in `
 | ARCH-007B — `BookingConsistencyService` | `expireStaleBookings`, `repairUnticketedConfirmedBookings`, `countUnticketedConfirmedBookings` | Booking | 🟢 Low | ✅ Merged #491 |
 | ARCH-007C — `NotificationConsistencyService` | `repairStuckNotifications`, `countStuckNotifications`, `repairOrphanedConfirmedDeliveries`, `countOrphanedConfirmedDeliveries` | Notification | 🟡 Medium | ✅ Merged #493 |
 | ARCH-007D — `RefundConsistencyService` | `repairStuckProcessingRefunds`, `countStuckProcessingRefunds`, `repairOrphanedRefundNotifications`, `countOrphanedRefundNotifications`, `repairOrphanedCancellationNotifications`, `countOrphanedCancellationNotifications` | Refund | 🔴 High | ✅ Merged #495 |
-| ARCH-007E — `PaymentConsistencyService` | `countPaidPaymentMismatches`, `repairPaidPaymentMismatches` | Payment | 🔴 Highest | ⏳ Next |
+| ARCH-007E — `PaymentConsistencyService` | `countPaidPaymentMismatches`, `repairPaidPaymentMismatches` | Payment | 🔴 Highest | ✅ Merged #499 |
 
 All sub-services will live under `apps/server/src/services/consistency/`.
 
@@ -278,7 +279,7 @@ ARCH-007A — ✅ Complete (PR #489)
 ARCH-007B — ✅ Complete (PR #491)
 ARCH-007C — ✅ Complete (PR #493)
 ARCH-007D — ✅ Complete (PR #495)
-ARCH-007E — ⏳ Next
+ARCH-007E — ✅ Complete (PR #499)
 
 ---
 
@@ -384,7 +385,7 @@ Files exceeding 300 lines (production code only):
 | File | Lines | Layer | Status |
 |------|:-----:|-------|--------|
 | `booking.service.ts` (admin) | 1282 | Service | ⚠️ ARCH-008 — Backlog |
-| `consistency.service.ts` | 361 | Service | ⚠️ ARCH-007E — In Progress |
+| `consistency.service.ts` | 223 | Service | ✅ Resolved (ARCH-007) |
 | `booking.service.ts` (public) | 825 | Service | ⚠️ Review Required |
 | `payment-refund.service.ts` | 745 | Service | ⚠️ Review Required |
 | `refund.service.ts` (admin) | 718 | Service | ⚠️ Review Required |
