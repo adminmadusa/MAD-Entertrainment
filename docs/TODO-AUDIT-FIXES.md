@@ -2,7 +2,7 @@
 
 - **Owner**: Repository Governance Owner
 - **Status**: Active
-- **Version**: 2.2
+- **Version**: 2.3
 - **Review Cycle**: Ongoing
 - **Last Updated**: 2026-07-05
 - **Related Documents:**
@@ -74,6 +74,7 @@ The following items have been fully implemented, verified, merged into `develop`
 | GOV-001 — Server ESLint flat config & Vitest coverage thresholds | #485 | ✅ |
 | ARCH-006 — EventMemoriesCard.tsx extraction (157 lines, merge SHA b8bbb48) | #487 | ✅ |
 | ARCH-007A — SeatConsistencyService extraction (1293 → 1097 lines, merge SHA ca7e3f5) | #489 | ✅ |
+| ARCH-007B — BookingConsistencyService extraction (1097 → 996 lines, merge SHA f81141b) | #491 | ✅ |
 
 ---
 
@@ -244,8 +245,8 @@ Completed. Full call graph verified across all 17 methods and 12 operations in `
 | PR | Scope | Domain | Risk | Status |
 |----|-------|--------|------|--------|
 | ARCH-007A — `SeatConsistencyService` | `countRedisLocks`, `cleanupPhantomRedisLocks`, `repairStaleSeatReservations`, `countEventInventoryMismatches`, `repairEventInventoryMismatches` | Seat/Inventory | 🟢 Very Low | ✅ Merged #489 |
-| ARCH-007B — `BookingConsistencyService` | `expireStaleBookings`, `repairUnticketedConfirmedBookings`, `countUnticketedConfirmedBookings` | Booking | 🟢 Low | ⏳ Next |
-| ARCH-007C — `NotificationConsistencyService` | `repairStuckNotifications`, `countStuckNotifications`, `repairOrphanedConfirmedDeliveries`, `countOrphanedConfirmedDeliveries` | Notification | 🟡 Medium | ⏳ Backlog |
+| ARCH-007B — `BookingConsistencyService` | `expireStaleBookings`, `repairUnticketedConfirmedBookings`, `countUnticketedConfirmedBookings` | Booking | 🟢 Low | ✅ Merged #491 |
+| ARCH-007C — `NotificationConsistencyService` | `repairStuckNotifications`, `countStuckNotifications`, `repairOrphanedConfirmedDeliveries`, `countOrphanedConfirmedDeliveries` | Notification | 🟡 Medium | ⏳ Next |
 | ARCH-007D — `RefundConsistencyService` | `repairStuckProcessingRefunds`, `countStuckProcessingRefunds`, `repairOrphanedRefundNotifications`, `countOrphanedRefundNotifications`, `repairOrphanedCancellationNotifications`, `countOrphanedCancellationNotifications` | Refund | 🔴 High | ⏳ Backlog |
 | ARCH-007E — `PaymentConsistencyService` | `countPaidPaymentMismatches`, `repairPaidPaymentMismatches` | Payment | 🔴 Highest | ⏳ Backlog |
 
@@ -272,8 +273,9 @@ Medium overall — each individual PR is scoped to reduce risk.
 #### Status
 
 ARCH-007A — ✅ Complete (PR #489)
-ARCH-007B — ⏳ Next
-ARCH-007C through 007E — Backlog
+ARCH-007B — ✅ Complete (PR #491)
+ARCH-007C — ⏳ Next
+ARCH-007D through 007E — Backlog
 
 ---
 
@@ -379,7 +381,7 @@ Files exceeding 300 lines (production code only):
 | File | Lines | Layer | Status |
 |------|:-----:|-------|--------|
 | `booking.service.ts` (admin) | 1282 | Service | ⚠️ ARCH-008 — Backlog |
-| `consistency.service.ts` | 1095 | Service | ⚠️ ARCH-007B–E — In Progress |
+| `consistency.service.ts` | 996 | Service | ⚠️ ARCH-007C–E — In Progress |
 | `booking.service.ts` (public) | 825 | Service | ⚠️ Review Required |
 | `payment-refund.service.ts` | 745 | Service | ⚠️ Review Required |
 | `refund.service.ts` (admin) | 718 | Service | ⚠️ Review Required |
