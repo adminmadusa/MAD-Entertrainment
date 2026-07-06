@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { useEffect, useRef, useState } from 'react';
 
 import type { Ticket } from '@mad/types';
+import { Modal } from '@mad/ui';
 
 interface ExtendedTicket extends Ticket {
   assignmentStatus?: 'unassigned' | 'pending' | 'claimed';
@@ -227,19 +228,17 @@ export function EntryPassGrid({ tickets }: EntryPassGridProps) {
       )}
 
       {/* QR Zoom Modal (Light themed, high contrast for entry scanner validation) */}
-      {zoomedTicket && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200"
-          onClick={() => setZoomedTicket(null)}
-          onKeyDown={handleModalKeyDown}
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="qr-modal-title"
-        >
-          <div
-            className="bg-white rounded-3xl p-6 sm:p-8 flex flex-col items-center max-w-sm w-full text-center relative shadow-2xl animate-in zoom-in-95 duration-200"
-            onClick={(e) => e.stopPropagation()}
-          >
+      <Modal
+        isOpen={!!zoomedTicket}
+        onClose={() => setZoomedTicket(null)}
+        size="sm"
+        showCloseButton={false}
+        closeOnBackdropClick={true}
+        ariaLabelledBy="qr-modal-title"
+        className="bg-white rounded-3xl p-6 sm:p-8 flex flex-col items-center max-w-sm w-full text-center relative shadow-2xl animate-in zoom-in-95 duration-200"
+      >
+        {zoomedTicket ? (
+          <>
             {/* Close Button */}
             <button
               type="button"
@@ -288,9 +287,9 @@ export function EntryPassGrid({ tickets }: EntryPassGridProps) {
                 </p>
               </div>
             </div>
-          </div>
-        </div>
-      )}
+          </>
+        ) : null}
+      </Modal>
     </div>
   );
 }

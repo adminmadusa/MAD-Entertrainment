@@ -43,4 +43,8 @@ export interface ModalProps {
    * Accessible id referencing the description element.
    */
   ariaDescribedBy?: string;
+  /**
+   * Custom classes for the modal content container.
+   */
+  className?: string;
 }
