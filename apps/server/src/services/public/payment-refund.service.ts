@@ -51,6 +51,7 @@ import type {
   NormalizedRefundPayload,
 } from './payment.types';
 import { StripeRefundService } from './payment/stripe-refund.service';
+import { RazorpayRefundService } from './payment/razorpay-refund.service';
 
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -252,24 +253,11 @@ export class PaymentRefundService {
     eventType: string,
     webhookEventId: string
   ): Promise<{ status: 'completed' | 'failed' | 'anomaly' | 'skipped'; refundId?: string; paymentId?: string }> {
-    const gatewayPaymentId = refundEntity.payment_id;
-    const gatewayRefundId = refundEntity.id;
-    const amountInPaise = refundEntity.amount;
-    const gatewayStatus = eventType === 'refund.processed' ? 'processed' : 'failed';
-
-    if (!gatewayRefundId) {
-      logger.warn({ paymentId: gatewayPaymentId, webhookEventId, eventType }, 'Razorpay webhook received but missing gatewayRefundId');
+    const parseResult = RazorpayRefundService.parseRazorpayRefund(refundEntity, eventType, webhookEventId);
+    if (parseResult.status === 'skipped') {
       return { status: 'skipped' };
     }
-
-    return PaymentRefundService.reconcileRefundWebhook({
-      gateway: 'razorpay',
-      gatewayPaymentId,
-      gatewayRefundId,
-      amountMajorUnits: amountInPaise / 100,
-      gatewayStatus,
-      webhookEventId
-    });
+    return PaymentRefundService.reconcileRefundWebhook(parseResult.data);
   }
 
   // ─── Core Reconciliation (Private) ─────────────────────────────────────────
