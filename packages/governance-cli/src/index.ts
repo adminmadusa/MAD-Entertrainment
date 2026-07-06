@@ -30,18 +30,8 @@ import { ChangelogCommand } from './commands/ChangelogCommand';
 import { ReleaseCommand } from './commands/ReleaseCommand';
 import { BaselineCommand } from './commands/BaselineCommand';
 
-// Import domain services
-import { TemplateService } from './services/templates/TemplateService';
-import { ChangelogService } from './services/release/ChangelogService';
-import { VersionService } from './services/release/VersionService';
-import { ReleaseService } from './services/release/ReleaseService';
-import { BaselineService } from './services/baseline/BaselineService';
-import { RoadmapService } from './services/roadmap/RoadmapService';
-import { GitTagService } from './services/git/GitTagService';
-
-// Import providers and adapters
-import { GitCommitProvider } from './providers/changelog/GitCommitProvider';
-import { PnpmRepositoryAdapter } from './adapters/repository/PnpmRepositoryAdapter';
+// Import build service container
+import { buildServiceContainer } from './services/container';
 
 async function main() {
   let repoRoot = resolve(process.cwd());
@@ -81,27 +71,8 @@ async function main() {
     renderer = new MarkdownRenderer();
   }
 
-  // Instantiate domain services and DI containers
-  const commitProvider = new GitCommitProvider(git);
-  const repoAdapter = new PnpmRepositoryAdapter(repoRoot);
-
-  const tagService = new GitTagService(git);
-  const templateService = new TemplateService(fs);
-  const changelogService = new ChangelogService(commitProvider);
-  const versionService = new VersionService(repoAdapter);
-  const releaseService = new ReleaseService(git, tagService, changelogService, versionService);
-  const baselineService = new BaselineService(fs, repoRoot, config.documentation.root);
-  const roadmapService = new RoadmapService(fs, repoRoot, config.documentation.roadmap);
-
-  const services = {
-    release: releaseService,
-    version: versionService,
-    changelog: changelogService,
-    baseline: baselineService,
-    roadmap: roadmapService,
-    template: templateService,
-    tag: tagService,
-  };
+  // Instantiate domain services container using factory assembler
+  const services = buildServiceContainer(fs, git, repoRoot, config);
 
   // 3. Build Registry
   const registry = new CommandRegistry();

@@ -12,21 +12,17 @@ export class PnpmAdapter implements PackageManagerAdapter {
     return pkg.version ?? '0.1.0';
   }
 
-  async setWorkspaceVersion(rootPath: string, version: string, dryRun: boolean): Promise<string[]> {
+  async setWorkspaceVersion(rootPath: string, version: string, packages: string[], dryRun: boolean): Promise<string[]> {
     const bumped: string[] = [];
-    const targets = [
-      join(rootPath, 'package.json'),
-      join(rootPath, 'packages/governance-cli/package.json')
-    ];
 
-    for (const t of targets) {
+    for (const t of packages) {
       if (existsSync(t)) {
         if (!dryRun) {
           const pkg = JSON.parse(readFileSync(t, 'utf8'));
           pkg.version = version;
           writeFileSync(t, JSON.stringify(pkg, null, 2) + '\n');
         }
-        bumped.push(t);
+        bumped.push(t.replace(rootPath + '/', ''));
       }
     }
     return bumped;

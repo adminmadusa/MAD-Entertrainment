@@ -21,7 +21,7 @@ export class BaselineService {
       const stat = statSync(fullPath);
       if (stat && stat.isDirectory()) {
         results.push(...this.getFiles(fullPath));
-      } else if (file.endsWith('.md')) {
+      } else if (/\.(md|json|yaml|yml)$/.test(file)) {
         results.push(fullPath);
       }
     }

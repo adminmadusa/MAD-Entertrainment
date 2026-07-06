@@ -27,11 +27,12 @@ export class ReleaseCommand extends Command {
       };
     }
 
+    const defaultBranch = context.config.repository.defaultBranch;
     const hasExecuteFlag = args.includes('--execute');
     context.logger.info(`Starting release pipeline workflow for v${targetVer}...`);
 
     // 1. Prepare Release
-    const prep = await context.services.release.prepare(targetVer);
+    const prep = await context.services.release.prepare(targetVer, defaultBranch);
 
     // 2. Validate Release
     const validation = await context.services.release.validate(prep);
@@ -59,7 +60,8 @@ export class ReleaseCommand extends Command {
     }
 
     // 3. Preview Release
-    await context.services.release.preview(prep);
+    const previewText = await context.services.release.preview(prep);
+    console.log('\n' + previewText + '\n');
 
     if (!hasExecuteFlag) {
       context.logger.warn('Defaulting to dry-run (prepare/preview). Run with --execute flag to apply changes.');

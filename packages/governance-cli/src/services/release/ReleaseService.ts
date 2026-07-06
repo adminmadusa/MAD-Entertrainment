@@ -19,13 +19,13 @@ export class ReleaseService {
     private versionService: VersionService
   ) {}
 
-  async prepare(version: string): Promise<ReleasePreparation> {
+  async prepare(version: string, defaultBranch: string): Promise<ReleasePreparation> {
     const currentVersion = await this.versionService.getCurrentVersion();
-    const defaultBranch = 'develop'; // or retrieve from config dynamically
     const commits = await this.git.getCommitMessages(defaultBranch);
     
     // Generate release notes
     const changelog = await this.changelogService.generate(defaultBranch, 'HEAD');
+    const changedPackages = await this.versionService.getWorkspacePackages();
     
     const warnings: string[] = [];
     if (commits.length === 0) {
@@ -36,7 +36,7 @@ export class ReleaseService {
       version,
       currentVersion,
       changelog,
-      changedPackages: ['package.json', 'packages/governance-cli/package.json'],
+      changedPackages,
       tagsToCreate: [`v${version}`],
       commits,
       warnings,
@@ -65,14 +65,17 @@ export class ReleaseService {
     };
   }
 
-  async preview(prep: ReleasePreparation): Promise<void> {
-    console.log('\n--- RELEASE PREVIEW ---');
-    console.log(`Bumping Version: ${prep.currentVersion} ➔ ${prep.version}`);
-    console.log(`Tags to Create:  ${prep.tagsToCreate.join(', ')}`);
-    console.log(`Packages affected: ${prep.changedPackages.join(', ')}`);
-    console.log('\n--- GENERATED CHANGELOG ---');
-    console.log(prep.changelog);
-    console.log('-----------------------\n');
+  async preview(prep: ReleasePreparation): Promise<string> {
+    return `
+--- RELEASE PREVIEW ---
+Bumping Version: ${prep.currentVersion} ➔ ${prep.version}
+Tags to Create:  ${prep.tagsToCreate.join(', ')}
+Packages affected: ${prep.changedPackages.join(', ')}
+
+--- GENERATED CHANGELOG ---
+${prep.changelog}
+-----------------------
+`.trim();
   }
 
   async execute(prep: ReleasePreparation, dryRun: boolean): Promise<ReleaseResult> {

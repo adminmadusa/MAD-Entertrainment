@@ -19,15 +19,24 @@ export class RoadmapCommand extends Command {
 
   async execute(context: ExecutionContext, args: string[]): Promise<OutputModel<RoadmapResult>> {
     context.logger.info('Loading workspace milestone roadmaps...');
-    const phases = await context.services.roadmap.loadRoadmap();
+    try {
+      const phases = await context.services.roadmap.loadRoadmap();
 
-    return {
-      type: 'roadmap',
-      success: true,
-      exitCode: ExitCode.SUCCESS,
-      data: {
-        phases,
-      },
-    };
+      return {
+        type: 'roadmap',
+        success: true,
+        exitCode: ExitCode.SUCCESS,
+        data: {
+          phases,
+        },
+      };
+    } catch (e: any) {
+      context.logger.error(e.message);
+      return {
+        type: 'roadmap',
+        success: false,
+        exitCode: ExitCode.CONFIG_ERROR,
+      };
+    }
   }
 }
