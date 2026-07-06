@@ -14,7 +14,7 @@
   - [Post-Launch Engineering Roadmap](ROADMAP.md)
   - [Staged Remediation Plan](remediation-plan.md)
   - [Verification Results](verification-results.md)
-  - [PR4 Decisions Needed](PR4-DECISION-NEEDED.md)
+  - [PR4 Decisions Needed (Resolved)](PR4-DECISION-NEEDED.md)
 
 ---
 
@@ -80,6 +80,7 @@ The following items have been fully implemented, verified, merged into `develop`
 | ARCH-007E — PaymentConsistencyService extraction (361 → 223 lines, merge SHA 29b4e71) | #499 | ✅ |
 | ARCH-008 — admin/booking.service.ts Decomposition (1282 → 3 lines, merge SHA 00570d8) | #503 | ✅ |
 | ARCH-009 — public booking.controller.ts Decomposition (629 → 4 lines, merge SHA 677c8ab) | #503/local | ✅ |
+| PR4-DECISION-NEEDED — Align Booking Ownership Model (Hybrid Grace Window) | #483 | ✅ |
 
 ---
 

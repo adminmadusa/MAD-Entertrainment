@@ -1,6 +1,19 @@
 # booking/ticket ownership model decision
 
-This document outlines the current divergence in the booking/ticket ownership validation logic and presents three potential alignment options neutrally for architectural review.
+> [!NOTE]
+> **Status: RESOLVED (2026-07-05)**  
+> **Resolution**: Option 3 (Hybrid Grace Window) was selected, implemented, and merged to `develop` via **PR #483** (`refactor(booking): align booking ownership validation with hybrid grace window (PR4)`).
+> All 8 access points have been aligned under a single, centralized authorization routine: `PublicBookingService.assertBookingAccess()`.
+>
+> **Centralized Implementation Details:**
+> - Guest session access is allowed indefinitely while a booking is in active checkout states (`AWAITING_PAYMENT`, `FAILED`).
+> - After a transaction completes (`CONFIRMED`, `EXPIRING`, `EXPIRED`), guest session access is strictly limited to the configured grace window `BOOKING_OWNERSHIP_GRACE_MS` (default: 10 minutes), anchored to the booking's `confirmedAt` or `logicalExpiresAt` lifecycle timestamps.
+> - Access is immediately revoked for `CANCELLED` and `REFUNDED` bookings.
+> - Authenticated registered owners (`booking.userId`) always maintain access, bypassing the grace window.
+>
+> This document remains for historical reference.
+
+---
 
 ## Current Divergence
 
