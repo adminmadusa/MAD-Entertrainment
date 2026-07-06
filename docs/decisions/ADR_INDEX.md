@@ -12,5 +12,5 @@ This index maintains the chronological list of all architectural decisions made 
 | **ADR-006** | Repository Governance Platform — Public Contract Freeze | Accepted | Platform Architecture | 2026-07-04 | [ADR-006](ADR-006-public-contract-freeze.md) |
 | **ADR-007** | Rule Engine Architecture | Accepted | Platform Architecture | 2026-07-04 | [ADR-007](ADR-007-rule-engine-architecture.md) |
 | **ADR-008** | Cleanup Planner Architecture | Accepted | Platform Architecture | 2026-07-04 | [ADR-008](ADR-008-cleanup-planner-architecture.md) |
-| **ADR-009** | PaymentRefundService Decomposition | Proposed | Architecture / Payments | 2026-07-06 | [ADR-009](ADR-009-payment-refund-decomposition.md) |
-| **ADR-010** | Admin Refund Service Decomposition | Proposed | Architecture / Admin Services | 2026-07-06 | [ADR-010](ADR-010-admin-refund-decomposition.md) |
+| **ADR-009** | PaymentRefundService Decomposition | Implemented | Architecture / Payments | 2026-07-06 | [ADR-009](ADR-009-payment-refund-decomposition.md) |
+| **ADR-010** | Admin Refund Service Decomposition | Implemented | Architecture / Admin Services | 2026-07-06 | [ADR-010](ADR-010-admin-refund-decomposition.md) |
