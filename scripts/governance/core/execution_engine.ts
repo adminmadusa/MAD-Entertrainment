@@ -21,6 +21,10 @@ import { SecurityValidator } from '../validators/security_validator';
 import { PerformanceValidator } from '../validators/performance_validator';
 import { ArchitectureValidator } from '../validators/architecture_validator';
 import { RepositoryHygieneValidator } from '../validators/repository_hygiene_validator';
+import { CircularImportValidator } from '../validators/circular_import_validator';
+import { DeepImportValidator } from '../validators/deep_import_validator';
+import { BarrelFileValidator } from '../validators/barrel_file_validator';
+import { TodoInventoryValidator } from '../validators/todo_inventory_validator';
 
 export class ExecutionEngine {
   private static initialized = false;
@@ -151,6 +155,35 @@ export class ExecutionEngine {
       supportedRules: ['VAL-HYG-001', 'VAL-HYG-002', 'VAL-HYG-003', 'VAL-HYG-004', 'VAL-HYG-005', 'VAL-HYG-006'],
       supportedFileTypes: ['.ts', '.tsx', '.js', '.jsx', '.md'],
       priority: 95,
+    });
+
+    // GOV-003 — Repository Governance Audit Enforcement
+    ValidatorRegistry.registerValidator(new CircularImportValidator(), {
+      id: 'CircularImportValidator',
+      supportedRules: ['VAL-ARC-005', 'VAL-ARC-005b'],
+      supportedFileTypes: ['.ts', '.tsx'],
+      priority: 91,
+    });
+
+    ValidatorRegistry.registerValidator(new DeepImportValidator(), {
+      id: 'DeepImportValidator',
+      supportedRules: ['VAL-ARC-006'],
+      supportedFileTypes: ['.ts', '.tsx'],
+      priority: 92,
+    });
+
+    ValidatorRegistry.registerValidator(new BarrelFileValidator(), {
+      id: 'BarrelFileValidator',
+      supportedRules: ['VAL-ARC-007'],
+      supportedFileTypes: ['.ts', '.tsx'],
+      priority: 93,
+    });
+
+    ValidatorRegistry.registerValidator(new TodoInventoryValidator(), {
+      id: 'TodoInventoryValidator',
+      supportedRules: ['VAL-HYG-007'],
+      supportedFileTypes: ['.ts', '.tsx', '.js', '.jsx'],
+      priority: 96,
     });
 
     // 4. Validate Registry
