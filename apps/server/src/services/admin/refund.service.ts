@@ -12,12 +12,12 @@ import { Refund, IRefund } from '../../models/refund.schema';
 import { Ticket } from '../../models/ticket.schema';
 import { auditLog } from '../../utils/audit';
 import { logger } from '../../utils/logger';
-import { runInTransaction } from '../../utils/transaction';
 import { createNotificationSafe } from '../notification.service';
 import { QueueService } from '../queue.service';
-import { cancelBooking, executeCancelBookingSideEffects } from './booking.service';
+import { executeCancelBookingSideEffects } from './booking.service';
 import { RefundValidationService } from './refund/refund-validation.service';
 import { RefundGatewayService } from './refund/refund-gateway.service';
+import { RefundLifecycleService } from './refund/refund-lifecycle.service';
 
 export const createRefund = async (data: {
   bookingId: string;
@@ -37,68 +37,15 @@ export const createRefund = async (data: {
   const idempotencyKey = data.idempotencyKey || `manual-refund-${crypto.randomUUID()}`;
 
   try {
-    const result = await runInTransaction(async (session) => {
-      // 2. Fetch and verify Payment record exists
-      const payment = await Payment.findById(data.paymentId).session(session);
-      if (!payment) {
-        throw AppError.notFound('Payment record not found');
-      }
-
-      // Delegate payment validation constraints (early validation check)
-      RefundValidationService.validateRefundCreationConstraints({
-        bookingId: data.bookingId,
-        paymentId: data.paymentId,
-        amount: data.amount,
-        payment,
-        booking: null,
-        existingSum: 0,
-      });
-
-      // 3. Fetch and verify Booking record exists and is CONFIRMED
-      const booking = await Booking.findById(data.bookingId).session(session);
-      if (!booking) {
-        throw AppError.notFound('Booking record not found');
-      }
-
-      // Check for existing refund request with same idempotency key if provided
-      const existingRefund = await Refund.findOne({
-        idempotencyKey: idempotencyKey,
-        status: { $in: [RefundStatus.REQUESTED, RefundStatus.PROCESSING, RefundStatus.COMPLETED] },
-      }).session(session);
-      if (existingRefund) {
-        logger.info({ idempotencyKey }, 'Refund request already exists. Skipping duplicate.');
-        return existingRefund;
-      }
-
-      // 4. Fetch existing refunds to compute cumulative balance
-      const existingRefunds = await Refund.find({
-        paymentId: payment._id,
-        status: { $in: [RefundStatus.PROCESSING, RefundStatus.COMPLETED] },
-      }).session(session);
-      const existingSum = existingRefunds.reduce((sum, r) => sum + r.amount, 0);
-
-      // Delegate final validation constraints (booking and sum checks)
-      RefundValidationService.validateRefundCreationConstraints({
-        bookingId: data.bookingId,
-        paymentId: data.paymentId,
-        amount: data.amount,
-        payment,
-        booking,
-        existingSum,
-      });
-
-      const refund = new Refund({
-        bookingId: data.bookingId,
-        paymentId: data.paymentId,
-        amount: data.amount,
-        reason: data.reason,
-        status: RefundStatus.REQUESTED,
-        idempotencyKey,
-        origin: data.origin || 'manual',
-        recoveryReason: data.recoveryReason,
-        cancelTickets: data.cancelTickets || false,
-      });
-      return await refund.save({ session });
+    const result = await RefundLifecycleService.createRefundRecord({
+      bookingId: data.bookingId,
+      paymentId: data.paymentId,
+      amount: data.amount,
+      reason: data.reason,
+      idempotencyKey,
+      origin: data.origin,
+      recoveryReason: data.recoveryReason,
+      cancelTickets: data.cancelTickets,
     });
     return result;
   } catch (err: any) {
@@ -160,64 +107,29 @@ export const processRefund = async (
     payment: any;
     booking: any;
     totalRefundedSoFar: number;
+    scannedTicketsCount: number;
   } | null = null;
 
   try {
     // Phase 1: Claim and Reserve within a transaction session
-    phase1Result = await runInTransaction(async (session) => {
-      // 1. Atomic claim of the refund record
-      const refund = await Refund.findOneAndUpdate(
-        { _id: id, status: RefundStatus.REQUESTED },
-        { $set: { status: RefundStatus.PROCESSING } },
-        { session, new: true }
-      );
-      if (!refund) {
-        throw AppError.badRequest('Refund request not found or has already been processed');
-      }
+    phase1Result = await RefundLifecycleService.claimRefundRecord(id);
+  } catch (err: any) {
+    logger.error({ err, refundId: id }, 'Error in Phase 1 of processing refund. Reverting status to requested.');
+    await RefundLifecycleService.revertClaimRefundRecord(id).catch((revertErr) => {
+      logger.error({ revertErr, refundId: id }, 'Failed to revert refund status to requested.');
+    });
+    throw err;
+  }
 
-      // 2. Lock the parent Payment document as a serialization aid
-      const payment = await Payment.findOneAndUpdate(
-        { _id: refund.paymentId },
-        { $set: { updatedAt: new Date() } },
-        { new: true }
-      ).session(session);
-      if (!payment) {
-        throw AppError.notFound('Payment record not found');
-      }
+  const { refund, payment, booking, totalRefundedSoFar, scannedTicketsCount } = phase1Result;
+  let result = null;
 
-      const booking = await Booking.findById(refund.bookingId).session(session);
-      if (!booking) {
-        throw AppError.notFound('Booking record not found');
-      }
-
-      // Early integrity assertion (Run before database queries to prevent hangs / mock leakage)
-      RefundValidationService.assertProductionRefundIntegrity(
-        [id, refund.paymentId.toString(), payment.gatewayPaymentId, payment.gatewayOrderId, gatewayRefundId],
-        {
-          bookingId: refund.bookingId.toString(),
-          paymentId: refund.paymentId.toString(),
-          gateway: payment.gateway,
-          requestSource: 'process_refund',
-        }
-      );
-
-      // If rejecting, we don't need validation checks or cumulative balance checks
-      if (action === 'reject') {
-        return { refund, payment, booking, totalRefundedSoFar: 0 };
-      }
-
-      // Fetch dynamic ticket/refund count state
-      const scannedTickets = await Ticket.find({ bookingId: booking._id, scannedAt: { $ne: null } }).session(session as any);
-      const scannedTicketsCount = scannedTickets.length;
-
-      const existingRefunds = await Refund.find({
-        paymentId: payment._id,
-        status: { $in: [RefundStatus.PROCESSING, RefundStatus.COMPLETED] },
-        _id: { $ne: refund._id }
-      }).session(session);
-      const totalRefundedSoFar = existingRefunds.reduce((sum, r) => sum + r.amount, 0);
-
-      // Delegate all validations to RefundValidationService
+  try {
+    // 5. Action Reject Path
+    if (action === 'reject') {
+      result = await RefundLifecycleService.rejectRefund(refund, adminNotes);
+    } else {
+      // Validate processing constraints
       RefundValidationService.validateRefundProcessingConstraints({
         refund,
         payment,
@@ -228,34 +140,6 @@ export const processRefund = async (
         actor,
       });
 
-      return { refund, payment, booking, totalRefundedSoFar };
-    });
-  } catch (err: any) {
-    logger.error({ err, refundId: id }, 'Error in Phase 1 of processing refund. Reverting status to requested.');
-    await Refund.updateOne(
-      { _id: id, status: RefundStatus.PROCESSING },
-      { $set: { status: RefundStatus.REQUESTED } }
-    ).catch((revertErr) => {
-      logger.error({ revertErr, refundId: id }, 'Failed to revert refund status to requested.');
-    });
-    throw err;
-  }
-
-  const { refund, payment, booking, totalRefundedSoFar } = phase1Result;
-  let result = null;
-
-  try {
-    // 5. Action Reject Path
-    if (action === 'reject') {
-      const rejectResult = await runInTransaction(async (session) => {
-        refund.status = RefundStatus.FAILED;
-        refund.adminNotes = adminNotes;
-        refund.processedAt = new Date();
-        await refund.save({ session });
-        return { updated: refund, cancelPostCommitPayload: null };
-      });
-      result = rejectResult;
-    } else {
       // 6. Action Approve Path: Execute gateway refund API call (Phase 2)
       let finalGatewayRefundId = gatewayRefundId;
 
@@ -292,75 +176,28 @@ export const processRefund = async (
       }
 
       if (finalGatewayRefundId) {
-        await Refund.updateOne(
-          { _id: refund._id },
-          { $set: { gatewayRefundId: finalGatewayRefundId } }
-        ).catch((err) => {
-          logger.error({ err, refundId: refund._id }, 'Failed to persist gatewayRefundId immediately.');
+        await RefundLifecycleService.persistGatewayRefundId(refund._id.toString(), finalGatewayRefundId).catch((err) => {
+          logger.error({ err, refundId: refund._id.toString() }, 'Failed to persist gatewayRefundId immediately.');
         });
         refund.gatewayRefundId = finalGatewayRefundId;
       }
 
       // Phase 3: Finalization (inside second transaction session)
-      const approveResult = await runInTransaction(async (session) => {
-        refund.status = RefundStatus.COMPLETED;
-        refund.adminNotes = adminNotes;
-        if (finalGatewayRefundId) {
-          refund.gatewayRefundId = finalGatewayRefundId;
-        }
-        refund.processedAt = new Date();
-        await refund.save({ session });
-
-        const freshBooking = await Booking.findById(booking._id).session(session) || booking;
-        const isFullRefund = (totalRefundedSoFar + refund.amount) === payment.amount;
-        const newPaymentStatus = isFullRefund ? PaymentStatus.REFUNDED : PaymentStatus.PARTIALLY_REFUNDED;
-
-        let cancelPostCommitPayload = null;
-
-        // Call cancelBooking conditionally first
-        if (isFullRefund) {
-          if (freshBooking.status === BookingStatus.CONFIRMED) {
-            // PRICING-003: Propagate actor so cancelBooking's scan-check respects the already-validated override
-            const cancelResult = await cancelBooking(refund.bookingId.toString(), adminNotes || 'Admin Refund Processed', session, BookingStatus.REFUNDED, actor);
-            if (cancelResult && cancelResult.postCommitPayload) {
-              cancelPostCommitPayload = cancelResult.postCommitPayload;
-            }
-          } else if (freshBooking.status === BookingStatus.CANCELLED) {
-            const b = await Booking.findById(booking._id).session(session);
-            if (b) {
-              b.status = BookingStatus.REFUNDED;
-              b.bookingVersion += 1;
-              await b.save({ session });
-            }
-          }
-        } else if (refund.cancelTickets) {
-          if (freshBooking.status === BookingStatus.CONFIRMED) {
-            // PRICING-003: Propagate actor so cancelBooking's scan-check respects the already-validated override
-            const cancelResult = await cancelBooking(refund.bookingId.toString(), adminNotes || 'Admin Refund Processed', session, BookingStatus.CANCELLED, actor);
-            if (cancelResult && cancelResult.postCommitPayload) {
-              cancelPostCommitPayload = cancelResult.postCommitPayload;
-            }
-          }
-        }
-
-        // Update payment status
-        await Payment.findByIdAndUpdate(
-          refund.paymentId,
-          { status: newPaymentStatus },
-          { session }
-        );
-
-        return { updated: refund, cancelPostCommitPayload };
+      result = await RefundLifecycleService.finalizeRefundApproval({
+        refund,
+        adminNotes,
+        gatewayRefundId: finalGatewayRefundId,
+        totalRefundedSoFar,
+        bookingId: booking._id.toString(),
+        paymentId: payment._id.toString(),
+        cancelTickets: refund.cancelTickets,
+        actor,
       });
-      result = approveResult;
     }
   } catch (err: any) {
     // Phase 4: Conditional Failure Recovery
     logger.error({ err, refundId: id }, 'Error processing refund. Reverting status to requested.');
-    await Refund.updateOne(
-      { _id: id, status: RefundStatus.PROCESSING },
-      { $set: { status: RefundStatus.REQUESTED } }
-    ).catch((revertErr) => {
+    await RefundLifecycleService.revertClaimRefundRecord(id).catch((revertErr) => {
       logger.error({ revertErr, refundId: id }, 'Failed to revert refund status to requested.');
     });
     throw err;
