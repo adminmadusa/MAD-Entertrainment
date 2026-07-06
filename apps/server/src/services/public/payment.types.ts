@@ -30,3 +30,16 @@ export interface RazorpayRefundWebhookPayload {
   payment_id: string;
   amount: number;
 }
+
+export interface NormalizedRefundData {
+  gateway: 'stripe' | 'razorpay';
+  gatewayPaymentId: string;
+  gatewayRefundId: string;
+  amountMajorUnits: number;
+  gatewayStatus: string;
+  webhookEventId: string;
+}
+
+export type NormalizedRefundPayload =
+  | { status: 'skipped' }
+  | { status: 'process'; data: NormalizedRefundData };
