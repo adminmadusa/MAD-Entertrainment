@@ -17,7 +17,7 @@ import {
 } from './Drawer.styles';
 
 export const Drawer = forwardRef<HTMLDivElement, DrawerProps>(
-  ({ isOpen, onClose, side = 'right', title, children }, ref) => {
+  ({ isOpen, onClose, side = 'right', title, children, className, showHeader = true }, ref) => {
     const drawerRef = useFocusTrap<HTMLDivElement>({
       isActive: isOpen,
       onClose,
@@ -36,25 +36,27 @@ export const Drawer = forwardRef<HTMLDivElement, DrawerProps>(
           tabIndex={-1}
           role="dialog"
           aria-modal="true"
-          className={cn(drawerContentBaseClasses, drawerSides[side])}
+          className={cn(drawerContentBaseClasses, drawerSides[side], className)}
         >
-          <div className={drawerHeaderClasses}>
-            {title ? (
-              <h5 className={drawerTitleClasses}>{title}</h5>
-            ) : (
-              <div />
-            )}
-            <IconButton
-              variant="ghost"
-              size="sm"
-              aria-label="Close drawer"
-              onClick={onClose}
-              className={drawerCloseClasses}
-            >
-              <X className="h-5 w-5" />
-            </IconButton>
-          </div>
-          <div className={drawerBodyClasses}>{children}</div>
+          {showHeader && (
+            <div className={drawerHeaderClasses}>
+              {title ? (
+                <h5 className={drawerTitleClasses}>{title}</h5>
+              ) : (
+                <div />
+              )}
+              <IconButton
+                variant="ghost"
+                size="sm"
+                aria-label="Close drawer"
+                onClick={onClose}
+                className={drawerCloseClasses}
+              >
+                <X className="h-5 w-5" />
+              </IconButton>
+            </div>
+          )}
+          <div className={cn(drawerBodyClasses, !showHeader && 'p-0')}>{children}</div>
         </div>
       </>
     );

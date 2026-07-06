@@ -7,7 +7,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { extractApiError } from '@/lib/api/client';
 import { ensureGuestBookingSession, publicCreateBooking } from '@/lib/api/public.service';
 import type { Event as EventData } from '@mad/types';
-import { Button } from '@mad/ui';
+import { Button, Modal } from '@mad/ui';
 import { ReserveTicketsInput } from '@mad/validations';
 
 interface TicketSelectionContentProps {
@@ -290,45 +290,41 @@ export function TicketSelectionContent({
       </div>
 
       {/* Celebration Modal */}
-      {showCelebration && (
-        <div
-          className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
-          role="dialog"
-          aria-modal="true"
-          onKeyDown={(e) => {
-            if (e.key === 'Escape' || e.key === 'Enter') {
-              setShowCelebration(false);
-            }
-          }}
-        >
-          <div className="bg-[#1a1d2d] border border-white/10 rounded-3xl p-8 max-w-xs w-full text-center shadow-2xl animate-in fade-in zoom-in duration-200">
-            <div className="relative w-24 h-24 mx-auto mb-6">
-              {/* Fake confetti effect */}
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-20 h-20 bg-emerald-500/20 rounded-full animate-ping opacity-75" />
-              </div>
-              <div className="w-16 h-16 rounded-full bg-emerald-500/10 border-2 border-emerald-500 flex items-center justify-center mx-auto relative z-10 shadow-[0_0_20px_rgba(16,185,129,0.3)]">
-                <svg className="w-8 h-8 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                </svg>
-              </div>
+      <Modal
+        isOpen={showCelebration}
+        onClose={() => setShowCelebration(false)}
+        size="sm"
+        closeOnBackdropClick={true}
+        ariaLabelledBy="celebration-title"
+        className="bg-[#1a1d2d] border border-white/10 rounded-3xl p-8 max-w-xs shadow-2xl"
+      >
+        <div className="text-center">
+          <div className="relative w-24 h-24 mx-auto mb-6">
+            {/* Fake confetti effect */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-20 h-20 bg-emerald-500/20 rounded-full animate-ping opacity-75" />
             </div>
-            <h3 className="text-white font-black text-xl mb-2">Promo Code Saved</h3>
-            <div className="text-text-secondary text-sm mb-6 space-y-1">
-              <p>Code: <span className="text-white font-mono font-bold">{couponCode}</span></p>
-              <p className="text-[11px] text-text-muted italic">Discount eligibility will be confirmed during checkout.</p>
+            <div className="w-16 h-16 rounded-full bg-emerald-500/10 border-2 border-emerald-500 flex items-center justify-center mx-auto relative z-10 shadow-[0_0_20px_rgba(16,185,129,0.3)]">
+              <svg className="w-8 h-8 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+              </svg>
             </div>
-            <button
-              type="button"
-              autoFocus
-              onClick={() => setShowCelebration(false)}
-              className="w-full bg-gradient-to-r from-accent-purple to-accent-pink py-3 rounded-xl font-bold text-white shadow-glow hover:scale-[1.02] active:scale-95 transition-all"
-            >
-              OK
-            </button>
           </div>
+          <h3 id="celebration-title" className="text-white font-black text-xl mb-2">Promo Code Saved</h3>
+          <div className="text-text-secondary text-sm mb-6 space-y-1">
+            <p>Code: <span className="text-white font-mono font-bold">{couponCode}</span></p>
+            <p className="text-[11px] text-text-muted italic">Discount eligibility will be confirmed during checkout.</p>
+          </div>
+          <button
+            type="button"
+            autoFocus
+            onClick={() => setShowCelebration(false)}
+            className="w-full bg-gradient-to-r from-accent-purple to-accent-pink py-3 rounded-xl font-bold text-white shadow-glow hover:scale-[1.02] active:scale-95 transition-all"
+          >
+            OK
+          </button>
         </div>
-      )}
+      </Modal>
 
       {/* Ticket Tiers List */}
       <div className="space-y-6">

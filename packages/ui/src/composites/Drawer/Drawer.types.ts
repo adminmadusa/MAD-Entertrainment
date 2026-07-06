@@ -1,6 +1,6 @@
 import { ReactNode } from 'react';
 
-export type DrawerSide = 'bottom' | 'left' | 'right';
+export type DrawerSide = 'bottom' | 'left' | 'right' | 'top';
 
 export interface DrawerProps {
   /**
@@ -24,4 +24,13 @@ export interface DrawerProps {
    * Drawer body content.
    */
   children?: ReactNode;
+  /**
+   * Custom classes for the drawer content container.
+   */
+  className?: string;
+  /**
+   * Toggles the drawer header section.
+   * @default true
+   */
+  showHeader?: boolean;
 }

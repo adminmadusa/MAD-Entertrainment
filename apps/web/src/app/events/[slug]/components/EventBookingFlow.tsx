@@ -6,7 +6,7 @@ import { forwardRef, useEffect, useImperativeHandle, useRef, useState, type Reac
 import { CheckoutContent } from '@/components/booking/CheckoutContent';
 import { TicketSelectionContent } from '@/components/booking/TicketSelectionContent';
 import type { Event as EventData } from '@mad/types';
-import { useFocusTrap } from '@mad/ui';
+import { Modal } from '@mad/ui';
 
 export type EventBookingFlowHandle = {
   openBooking: () => void;
@@ -30,19 +30,7 @@ export const EventBookingFlow = forwardRef<EventBookingFlowHandle, EventBookingF
     const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState(false);
     const [checkoutBookingId, setCheckoutBookingId] = useState<string | null>(null);
 
-    const bookingModalRef = useFocusTrap<HTMLDivElement>({
-      isActive: isBookingModalOpen,
-      onClose: () => setIsBookingModalOpen(false),
-    });
 
-    const checkoutModalRef = useFocusTrap<HTMLDivElement>({
-      isActive: isCheckoutModalOpen,
-      onClose: () => {
-        setIsPending(false);
-        setIsCheckoutModalOpen(false);
-        setCheckoutBookingId(null);
-      },
-    });
 
     useImperativeHandle(ref, () => ({
       openBooking: () => setIsBookingModalOpen(true),
@@ -90,19 +78,15 @@ export const EventBookingFlow = forwardRef<EventBookingFlowHandle, EventBookingF
     return (
       <>
         {/* Ticket Selection Modal overlay */}
-        {isBookingModalOpen && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm md:p-4 animate-fade-in">
-            {/* Backdrop click to close */}
-            <div className="absolute inset-0" onClick={() => setIsBookingModalOpen(false)} />
-
-            <div
-              ref={bookingModalRef}
-              tabIndex={-1}
-              role="dialog"
-              aria-modal="true"
-              aria-labelledby="booking-modal-title"
-              className="w-full h-full md:h-[650px] max-w-4xl bg-[#0d111d] md:rounded-2xl border border-white/10 overflow-hidden relative flex flex-col md:flex-row shadow-2xl z-10 focus:outline-none"
-            >
+        <Modal
+          isOpen={isBookingModalOpen}
+          onClose={() => setIsBookingModalOpen(false)}
+          size="lg"
+          showCloseButton={false}
+          closeOnBackdropClick={true}
+          ariaLabelledBy="booking-modal-title"
+          className="w-full h-full md:h-[650px] max-w-4xl bg-[#0d111d] md:rounded-2xl border border-white/10 overflow-hidden relative flex flex-col md:flex-row shadow-2xl z-10 focus:outline-none p-0"
+        >
               {/* Close button */}
               <button
                 type="button"
@@ -217,28 +201,22 @@ export const EventBookingFlow = forwardRef<EventBookingFlowHandle, EventBookingF
                   )}
                 </div>
               </div>
-            </div>
-          </div>
-        )}
+        </Modal>
 
         {/* Desktop Checkout Modal overlay */}
-        {isCheckoutModalOpen && checkoutBookingId && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm md:p-4 animate-fade-in">
-            {/* Backdrop click to close */}
-            <div className="absolute inset-0" onClick={() => {
-              setIsPending(false);
-              setIsCheckoutModalOpen(false);
-              setCheckoutBookingId(null);
-            }} />
-
-            <div
-              ref={checkoutModalRef}
-              tabIndex={-1}
-              role="dialog"
-              aria-modal="true"
-              aria-labelledby="checkout-modal-title"
-              className="w-full h-full md:max-h-[95vh] max-w-4xl bg-[#0d111d] md:rounded-2xl border border-white/10 overflow-y-auto shadow-2xl relative z-10 p-6 custom-scrollbar focus:outline-none"
-            >
+        <Modal
+          isOpen={isCheckoutModalOpen && !!checkoutBookingId}
+          onClose={() => {
+            setIsPending(false);
+            setIsCheckoutModalOpen(false);
+            setCheckoutBookingId(null);
+          }}
+          size="lg"
+          showCloseButton={false}
+          closeOnBackdropClick={true}
+          ariaLabelledBy="checkout-modal-title"
+          className="w-full h-full md:max-h-[95vh] max-w-4xl bg-[#0d111d] md:rounded-2xl border border-white/10 overflow-y-auto shadow-2xl relative z-10 p-6 custom-scrollbar focus:outline-none"
+        >
               <CheckoutContent
                 bookingId={checkoutBookingId}
                 isModal={true}
@@ -253,9 +231,7 @@ export const EventBookingFlow = forwardRef<EventBookingFlowHandle, EventBookingF
                   setCheckoutBookingId(null);
                 }}
               />
-            </div>
-          </div>
-        )}
+        </Modal>
       </>
     );
   }

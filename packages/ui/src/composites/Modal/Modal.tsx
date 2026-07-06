@@ -24,6 +24,7 @@ export function Modal({
   enableSwipeToClose = false,
   ariaLabelledBy,
   ariaDescribedBy,
+  className,
 }: ModalProps) {
   const modalRef = useFocusTrap<HTMLDivElement>({
     isActive: isOpen,
@@ -103,7 +104,8 @@ export function Modal({
         onTouchEnd={handleTouchEnd}
         className={cn(
           modalContentClasses,
-          modalSizes[size]
+          modalSizes[size],
+          className
         )}
       >
         {showCloseButton && (

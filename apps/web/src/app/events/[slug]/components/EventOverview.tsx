@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 
-import { useFocusTrap } from '@mad/ui';
+import { Drawer } from '@mad/ui';
 
 type EventOverviewProps = {
   description: string;
@@ -13,10 +13,7 @@ type EventOverviewProps = {
 export function EventOverview({ description, organizerName, category }: EventOverviewProps) {
   const [isOverviewOpen, setIsOverviewOpen] = useState(false);
 
-  const overviewRef = useFocusTrap<HTMLDivElement>({
-    isActive: isOverviewOpen,
-    onClose: () => setIsOverviewOpen(false),
-  });
+
 
   const descriptionPreview = description.length > 150
     ? `${description.substring(0, 150)}...`
@@ -69,47 +66,28 @@ export function EventOverview({ description, organizerName, category }: EventOve
       </div>
 
       {/* Overview Modal Drawer */}
-      {isOverviewOpen && (
-        <div className="fixed inset-0 z-[100] flex justify-end bg-black/60 backdrop-blur-sm">
-          {/* Backdrop click to close */}
-          <div className="absolute inset-0" onClick={() => setIsOverviewOpen(false)} />
-
-          <div
-            ref={overviewRef}
-            tabIndex={-1}
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="overview-modal-title"
-            className="w-full max-w-md bg-[#0d111d] h-full shadow-2xl relative z-10 border-l border-white/10 p-6 flex flex-col justify-between animate-slide-in focus:outline-none"
-          >
-            <div className="space-y-6">
-              <div className="flex items-center justify-between border-b border-white/10 pb-4">
-                <h3 id="overview-modal-title" className="text-white font-bold text-lg">Overview</h3>
-                <button
-                  type="button"
-                  onClick={() => setIsOverviewOpen(false)}
-                  aria-label="Close overview drawer"
-                  className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-text-secondary hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-accent-purple"
-                >
-                  ✕
-                </button>
-              </div>
-              <div className="overflow-y-auto max-h-[80vh] text-text-secondary text-sm leading-relaxed pr-2 custom-scrollbar">
-                {description}
-              </div>
-            </div>
-            <div className="pt-4 border-t border-white/10 flex justify-end">
-              <button
-                type="button"
-                onClick={() => setIsOverviewOpen(false)}
-                className="px-5 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white text-xs font-semibold"
-              >
-                Close Drawer
-              </button>
-            </div>
+      <Drawer
+        isOpen={isOverviewOpen}
+        onClose={() => setIsOverviewOpen(false)}
+        side="right"
+        title="Overview"
+        className="w-full max-w-md bg-[#0d111d] h-full border-l border-white/10 focus:outline-none"
+      >
+        <div className="flex flex-col h-full justify-between">
+          <div className="overflow-y-auto max-h-[72vh] text-text-secondary text-sm leading-relaxed pr-2 custom-scrollbar">
+            {description}
+          </div>
+          <div className="pt-4 border-t border-white/10 flex justify-end">
+            <button
+              type="button"
+              onClick={() => setIsOverviewOpen(false)}
+              className="px-5 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white text-xs font-semibold"
+            >
+              Close Drawer
+            </button>
           </div>
         </div>
-      )}
+      </Drawer>
     </>
   );
 }
