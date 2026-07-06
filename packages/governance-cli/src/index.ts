@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
-import { resolve } from 'path';
+import { resolve, dirname, join } from 'path';
+import { existsSync } from 'fs';
 import { getDefaults, ExitCode, GovernanceConfig } from './config/schema';
 import { ExecutionContext } from './core/context';
 import { CommandRegistry } from './core/command';
@@ -17,9 +18,22 @@ import { Renderer } from './renderers/Renderer';
 // Core commands
 import { HelpCommand } from './commands/HelpCommand';
 import { VersionCommand } from './commands/VersionCommand';
+import { InitCommand } from './commands/InitCommand';
+import { DoctorCommand } from './commands/DoctorCommand';
+import { StatusCommand } from './commands/StatusCommand';
+import { CleanupCommand } from './commands/CleanupCommand';
+import { WalkthroughCommand } from './commands/WalkthroughCommand';
+import { PRCommand } from './commands/PRCommand';
+import { BacklogCommand } from './commands/BacklogCommand';
 
 async function main() {
-  const repoRoot = resolve(process.cwd());
+  let repoRoot = resolve(process.cwd());
+  while (repoRoot !== dirname(repoRoot)) {
+    if (existsSync(join(repoRoot, 'pnpm-workspace.yaml')) || existsSync(join(repoRoot, '.git'))) {
+      break;
+    }
+    repoRoot = dirname(repoRoot);
+  }
 
   // 1. Startup Lifecycle: Load Configuration
   const config: GovernanceConfig = getDefaults();
@@ -63,9 +77,16 @@ async function main() {
     },
   };
 
-  // Register Core commands
+  // Register Core & Productivity commands
   builder.registerCommand(new HelpCommand());
   builder.registerCommand(new VersionCommand());
+  builder.registerCommand(new InitCommand());
+  builder.registerCommand(new DoctorCommand());
+  builder.registerCommand(new StatusCommand());
+  builder.registerCommand(new CleanupCommand());
+  builder.registerCommand(new WalkthroughCommand());
+  builder.registerCommand(new PRCommand());
+  builder.registerCommand(new BacklogCommand());
 
   // Load configured plugins (stub for 3.6A core)
   for (const plugin of config.plugins) {

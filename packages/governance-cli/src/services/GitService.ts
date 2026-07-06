@@ -6,7 +6,12 @@ export interface GitService {
   isAncestor(branch: string, base: string): Promise<boolean>;
   hasTreeDifference(branch: string, base: string): Promise<boolean>;
   deleteLocalBranch(branch: string, force: boolean): Promise<void>;
+  deleteRemoteBranch(remote: string, branch: string): Promise<void>;
   pruneRemoteReferences(): Promise<void>;
+  checkout(branch: string): Promise<void>;
+  pull(remote: string, branch: string): Promise<void>;
+  getChangedFiles(base: string): Promise<string[]>;
+  getCommitMessages(base: string): Promise<string[]>;
 }
 
 export class GitCliService implements GitService {
@@ -14,6 +19,24 @@ export class GitCliService implements GitService {
 
   private run(cmd: string): string {
     return execSync(cmd, { cwd: this.cwd, encoding: 'utf8' }).trim();
+  }
+
+  async getChangedFiles(base: string): Promise<string[]> {
+    try {
+      const output = this.run(`git diff --name-only ${base}...HEAD`);
+      return output.split('\n').map(f => f.trim()).filter(Boolean);
+    } catch {
+      return [];
+    }
+  }
+
+  async getCommitMessages(base: string): Promise<string[]> {
+    try {
+      const output = this.run(`git log --oneline ${base}...HEAD`);
+      return output.split('\n').map(l => l.trim()).filter(Boolean);
+    } catch {
+      return [];
+    }
   }
 
   async isWorkingTreeClean(): Promise<boolean> {
@@ -56,7 +79,19 @@ export class GitCliService implements GitService {
     this.run(`git branch ${flag} ${branch}`);
   }
 
+  async deleteRemoteBranch(remote: string, branch: string): Promise<void> {
+    this.run(`git push ${remote} --delete ${branch}`);
+  }
+
   async pruneRemoteReferences(): Promise<void> {
     this.run('git fetch --prune');
+  }
+
+  async checkout(branch: string): Promise<void> {
+    this.run(`git checkout ${branch}`);
+  }
+
+  async pull(remote: string, branch: string): Promise<void> {
+    this.run(`git pull ${remote} ${branch}`);
   }
 }
