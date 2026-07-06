@@ -1,11 +1,11 @@
 import { ExitCode } from '../config/schema';
 import { ExecutionContext } from './context';
 
-export interface OutputModel {
+export interface OutputModel<T = unknown> {
   type: string;
   success: boolean;
   exitCode: ExitCode;
-  data?: any;
+  data?: T;
 }
 
 export interface CommandMetadata {
@@ -28,6 +28,7 @@ export abstract class Command {
 
 export class CommandRegistry {
   private commands = new Map<string, Command>();
+  private nameMap = new Map<string, string>();
   private aliasMap = new Map<string, string>();
 
   register(command: Command): void {
@@ -35,27 +36,28 @@ export class CommandRegistry {
     if (this.commands.has(meta.id)) {
       throw new Error(`Duplicate command ID registered: ${meta.id}`);
     }
+    if (this.nameMap.has(meta.name)) {
+      throw new Error(`Duplicate command name registered: ${meta.name}`);
+    }
+    
     this.commands.set(meta.id, command);
-
-    // Register primary name as trigger
-    this.commands.set(meta.name, command);
+    this.nameMap.set(meta.name, meta.id);
 
     // Register aliases
     for (const alias of meta.aliases) {
-      if (this.aliasMap.has(alias)) {
-        throw new Error(`Duplicate alias registered: ${alias}`);
+      if (this.aliasMap.has(alias) || this.nameMap.has(alias)) {
+        throw new Error(`Duplicate alias or name registered: ${alias}`);
       }
-      this.aliasMap.set(alias, meta.name);
+      this.aliasMap.set(alias, meta.id);
     }
   }
 
   get(nameOrAlias: string): Command | undefined {
-    const primaryName = this.aliasMap.get(nameOrAlias) ?? nameOrAlias;
-    return this.commands.get(primaryName);
+    const targetId = this.nameMap.get(nameOrAlias) ?? this.aliasMap.get(nameOrAlias) ?? nameOrAlias;
+    return this.commands.get(targetId);
   }
 
   getAllUnique(): Command[] {
-    const uniques = new Set<Command>(this.commands.values());
-    return Array.from(uniques);
+    return Array.from(this.commands.values());
   }
 }

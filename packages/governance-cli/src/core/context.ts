@@ -4,6 +4,7 @@ import { RepositoryService } from '../services/RepositoryService';
 import { FileSystemService } from '../services/FileSystemService';
 import { Logger } from '../services/Logger';
 import { Renderer } from '../renderers/Renderer';
+import { CommandRegistry } from './command';
 
 export interface ExecutionContext {
   config: GovernanceConfig;
@@ -13,6 +14,7 @@ export interface ExecutionContext {
   fs: FileSystemService;
   logger: Logger;
   renderer: Renderer;
+  registry: CommandRegistry;
   dryRun: boolean;
   verbose: boolean;
 }

@@ -1,5 +1,4 @@
-import { Command } from '../core/command';
-import { Renderer } from '../renderers/Renderer';
+import { GovernancePlugin } from '../core/plugin';
 
 export enum ExitCode {
   SUCCESS = 0,
@@ -24,18 +23,6 @@ export enum ExitCode {
 
   // Internal CLI Failures (60-69)
   INTERNAL_ERROR = 60,
-}
-
-export interface PluginBuilder {
-  registerCommand(command: Command): void;
-  registerRenderer(renderer: Renderer): void;
-}
-
-export interface GovernancePlugin {
-  id: string;
-  name: string;
-  version: string;
-  register(builder: PluginBuilder): void;
 }
 
 export interface RepositoryConfig {

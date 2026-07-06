@@ -1,7 +1,6 @@
 import { Command, CommandMetadata, OutputModel } from '../core/command';
 import { ExecutionContext } from '../core/context';
 import { ExitCode } from '../config/schema';
-import { CommandRegistry } from '../core/command';
 
 export class HelpCommand extends Command {
   readonly metadata: CommandMetadata = {
@@ -17,12 +16,8 @@ export class HelpCommand extends Command {
     requiresCleanTree: false,
   };
 
-  constructor(private registry: CommandRegistry) {
-    super();
-  }
-
   async execute(context: ExecutionContext, args: string[]): Promise<OutputModel> {
-    const commandsMetadata = this.registry.getAllUnique().map(c => c.metadata);
+    const commandsMetadata = context.registry.getAllUnique().map(c => c.metadata);
     return {
       type: 'help',
       success: true,

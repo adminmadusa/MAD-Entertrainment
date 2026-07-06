@@ -4,7 +4,7 @@ import { resolve } from 'path';
 import { getDefaults, ExitCode, GovernanceConfig } from './config/schema';
 import { ExecutionContext } from './core/context';
 import { CommandRegistry } from './core/command';
-import { PluginBuilder } from './config/schema';
+import { PluginBuilder } from './core/plugin';
 import { ConsoleLogger } from './services/Logger';
 import { GitCliService } from './services/GitService';
 import { LocalRepositoryService } from './services/RepositoryService';
@@ -64,7 +64,7 @@ async function main() {
   };
 
   // Register Core commands
-  builder.registerCommand(new HelpCommand(registry));
+  builder.registerCommand(new HelpCommand());
   builder.registerCommand(new VersionCommand());
 
   // Load configured plugins (stub for 3.6A core)
@@ -119,6 +119,7 @@ async function main() {
     fs,
     logger,
     renderer,
+    registry,
     dryRun,
     verbose,
   };
