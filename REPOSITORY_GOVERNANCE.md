@@ -208,7 +208,65 @@ stateDiagram-v2
 - **Lifecycle Boundaries**:
   - Strict mapping: **1 Issue = 1 Branch = 1 PR**. Reusing merged branches or combining issues is prohibited.
   - Stale branches (behind `develop` by more than 30 commits) must be rebased or deleted.
-  - Immediately delete branches upon merge.
+  - Immediately delete branches upon merge in accordance with **RULE-GIT-001** and **RULE-GIT-002**.
+
+### Git Branch Cleanup Standard (RULE-GIT-001)
+
+#### Preconditions
+Before deleting a feature branch:
+- The associated Pull Request is merged.
+- The working tree is clean (no uncommitted or unstaged changes).
+- All CI/CD checks have passed.
+
+#### Cleanup Protocol Steps
+1. **Verify Working Tree**:
+   Run `git status` and confirm there is `nothing to commit, working tree clean`.
+2. **Synchronize Target**:
+   Switch to `develop` and pull the latest changes:
+   ```bash
+   git checkout develop
+   git pull origin develop
+   ```
+3. **Verify PR Merge Status**:
+   Confirm the Pull Request has been merged on GitHub.
+4. **Verify Merge Strategy & Commit Reachability**:
+   - Check ancestor reachability:
+     ```bash
+     git merge-base --is-ancestor feature-branch develop
+     ```
+   - If true: Proceed.
+   - If false: Verify patch equivalence (for squash or rebase merges) using:
+     ```bash
+     git cherry develop feature-branch
+     ```
+     - Expected: All output entries must be prefixed with `-` (patch-equivalent already merged). If any `+` entry exists, STOP immediately; the branch contains unique work.
+5. **Delete Local Branch**:
+   Run safe delete:
+   ```bash
+   git branch -d feature-branch
+   ```
+   Only if the PR is merged and patch equivalence is verified (all `-` entries in `git cherry`), you may force-delete:
+   ```bash
+   git branch -D feature-branch
+   ```
+6. **Delete Remote Branch**:
+   ```bash
+   git push origin --delete feature-branch
+   ```
+7. **Prune References**:
+   ```bash
+   git fetch --prune
+   ```
+8. **Final Verification**:
+   Verify that `git status`, `git branch`, and `git branch -r` confirm a clean working tree and that the feature branch has been removed locally and remotely.
+
+### Working Tree State Rule (RULE-GIT-002)
+A feature branch **must not** be deleted while the local repository contains uncommitted or unstaged changes. 
+
+If the working tree is not clean, you must do one of the following before starting the cleanup protocol:
+- **Commit** the changes.
+- **Stash** the changes.
+- **Discard** the changes.
 
 ### Pull Request & Review Requirements
 No Pull Request may be merged without satisfying the following:

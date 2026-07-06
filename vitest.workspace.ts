@@ -97,6 +97,25 @@ export default [
         '**/.next/**'
       ]
     }
+  },
+  {
+    extends: 'apps/web/vitest.config.ts',
+    test: {
+      name: 'ui',
+      environment: 'jsdom',
+      globals: true,
+      include: [
+        'packages/ui/src/**/*.test.{ts,tsx}'
+      ],
+      exclude: [
+        '**/node_modules/**',
+        '**/dist/**',
+        '**/.next/**'
+      ],
+      setupFiles: [
+        'apps/web/vitest.setup.ts'
+      ]
+    }
   }
 ];
 

@@ -97,6 +97,20 @@ Every release must satisfy the following checklist before merge:
 
 ---
 
+### [@mad/ui v1.3.0] — Phase 2B: Shared Component Implementations — 2026-07-06
+
+#### Added
+- **22 core UI components** — implemented all planned primitives, composites, and layouts under `@mad/ui` with standard types, styling mappings, vitest specifications, and markdown contracts.
+- **`vitest.workspace.ts` extension** — added `ui` project definition targeting `jsdom` testing environment to compile and execute UI components specifications.
+- **`component-manifest.json` update** — baseline v1.3.0 registers all 22 components as `preview` with `since: "1.3.0"`.
+- **`docs/design-system/releases/1.3.0.md`** — release notes detailing v1.3.0 deliverables.
+
+#### Changed
+- Root barrel (`packages/ui/src/index.tsx`) updated to export all new primitives, composites, and layouts.
+- Marked `Textarea.tsx` with `"use client"` directive to support client state character counts within SSR boundaries.
+
+---
+
 ### [@mad/ui v1.2.0] — Phase 2A: UI Package Infrastructure — 2026-07-06
 
 #### Added
