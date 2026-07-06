@@ -483,13 +483,66 @@ Mandatory branch lifecycle rules:
 ## 2. Workstream Branches (feat/*, fix/*, refactor/*, etc.)
 * Strict boundary: 1 Issue = 1 Branch = 1 PR.
 * Reusing merged branches or combining multiple issues is forbidden.
-* Immediately after a PR is merged and verified in staging/production, delete both the local and remote branches.
+* Immediately after a PR is merged and verified in staging/production, delete both the local and remote branches in accordance with **RULE-GIT-001** and **RULE-GIT-002**.
 
-## 3. Stale Branch Policy
+## 3. RULE-GIT-001 — Branch Cleanup Verification Protocol
+* **Preconditions**:
+  * PR is merged.
+  * Working tree is clean.
+  * No uncommitted changes.
+  * All CI/CD checks passed.
+* **Step 1 — Verify Working Tree**:
+  `git status` must show `nothing to commit, working tree clean`.
+* **Step 2 — Synchronize Develop**:
+  ```bash
+  git checkout develop
+  git pull origin develop
+  ```
+* **Step 3 — Verify PR Merge**:
+  Confirm the pull request has been merged on GitHub.
+* **Step 4 — Verify Merge Strategy & Commit Reachability**:
+  Run:
+  ```bash
+  git merge-base --is-ancestor feature-branch develop
+  ```
+  If true: Continue.
+  If false: Run:
+  ```bash
+  git cherry develop feature-branch
+  ```
+  Expected:
+  ```
+  -
+  -
+  -
+  ```
+  Only `-` entries indicate patch-equivalent commits already exist on `develop`. Any `+` entry means the branch still contains unique work. Stop immediately.
+* **Step 5 — Delete Local Branch**:
+  Safe delete: `git branch -d feature-branch`.
+  Only if PR is merged and patch equivalence is verified, you may run: `git branch -D feature-branch`.
+* **Step 6 — Delete Remote Branch**:
+  `git push origin --delete feature-branch`.
+* **Step 7 — Prune References**:
+  `git fetch --prune`.
+* **Step 8 — Final Verification**:
+  Ensure `git status`, `git branch`, and `git branch -r` confirm:
+  * Clean working tree.
+  * Feature branch removed locally.
+  * Feature branch removed remotely.
+
+## 4. RULE-GIT-002 — No Branch Cleanup with Local Changes
+* A feature branch **must not** be deleted while the repository contains uncommitted or unstaged changes.
+* Verification: `git status` must be clean.
+* If the working tree is not clean, one of the following must occur before cleanup:
+  * Commit the changes.
+  * Stash the changes.
+  * Discard the changes.
+
+## 5. Stale Branch Policy
 * Any branch behind develop by > 30 commits is stale.
 * Stale branches must be rebased and continued, or closed and deleted.
 
-## 4. Weekly Cleanup Schedule
+## 6. Weekly Cleanup Schedule
 * Human developers and AI agents must review local and remote branches weekly to prune stale or merged branches.
 
 ---
