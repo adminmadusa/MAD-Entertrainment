@@ -1,0 +1,24 @@
+import { HTMLAttributes, ReactNode } from 'react';
+
+export interface ErrorStateProps extends HTMLAttributes<HTMLDivElement> {
+  /**
+   * Title error message.
+   */
+  title: string;
+  /**
+   * Supporting message describing the error.
+   */
+  description?: string;
+  /**
+   * Optional custom icon.
+   */
+  icon?: ReactNode;
+  /**
+   * Fired when clicking the retry action button. If provided, renders default retry CTA.
+   */
+  onRetry?: () => void;
+  /**
+   * Custom CTA action button (replaces retry button).
+   */
+  action?: ReactNode;
+}
