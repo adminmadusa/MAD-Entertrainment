@@ -34,6 +34,8 @@ export interface DocumentationConfig {
   backlog: string;
   roadmap: string;
   root: string;
+  walkthroughs: string;
+  plans: string;
 }
 
 export interface PullRequestConfig {
@@ -64,6 +66,8 @@ export const getDefaults = (): GovernanceConfig => ({
     backlog: process.env.GOVERNANCE_BACKLOG_PATH ?? 'docs/design-system/backlog/BACKLOG.md',
     roadmap: process.env.GOVERNANCE_ROADMAP_PATH ?? 'ROADMAP.md',
     root: process.env.GOVERNANCE_DOCS_ROOT ?? 'docs/',
+    walkthroughs: process.env.GOVERNANCE_WALKTHROUGHS_PATH ?? 'docs/walkthroughs/',
+    plans: process.env.GOVERNANCE_PLANS_PATH ?? 'implementation_plan.md',
   },
   pullRequests: {
     template: process.env.GOVERNANCE_PR_TEMPLATE ?? '.github/pull_request_template.md',
