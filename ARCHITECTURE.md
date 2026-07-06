@@ -424,7 +424,7 @@ The repository enforces code standards at three levels:
 ### Current Implementation
 High-risk systems are located in isolated directories:
 - **Authentication**: JWT signing, OTP validation, and session cookies are located in `apps/server/src/services/public/auth.service.ts`.
-- **Payments**: Razorpay/Stripe integrations, webhook validations, and database reconciliation are in `apps/server/src/services/public/payment.service.ts` and `admin/refund.service.ts`.
+- **Payments**: Razorpay/Stripe integrations, webhook validations, and database reconciliation are in `apps/server/src/services/public/payment-refund.service.ts` (with `payment/` helpers) and `admin/refund.service.ts` (with `refund/` helpers).
 - **Bookings & Locks**: Capacity locking and Mongoose TTL configurations are in `apps/server/src/services/reservation.service.ts` and `apps/server/src/models/booking.schema.ts`.
 
 *Evidence*:

@@ -1,7 +1,7 @@
 # ADR-009: PaymentRefundService Decomposition
 
 ## Metadata
-- **Status**: Proposed
+- **Status**: Implemented
 - **Date**: 2026-07-06
 - **Authors**: Antigravity AI Pair
 - **Reviewers**: Repository Governance Owner
