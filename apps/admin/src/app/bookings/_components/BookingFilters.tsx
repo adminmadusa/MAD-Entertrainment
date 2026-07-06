@@ -2,6 +2,7 @@
 
 import { AdminBooking } from '@/lib/api/admin/booking.service';
 import { BookingStatus, getBookingStatusLabel } from '@mad/shared';
+import { Input, Button } from '@mad/ui';
 
 export interface BookingFiltersProps {
   search: string;
@@ -68,14 +69,15 @@ export default function BookingFilters({
   };
 
   return (
-    <div className="flex flex-wrap gap-3">
-      <input
-        type="search"
-        placeholder="Search by reference or email..."
-        value={search}
-        onChange={(e) => onSearchChange(e.target.value)}
-        className="w-full md:w-auto min-w-[20rem] px-4 py-2.5 rounded-xl bg-background-card border border-border-subtle text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-purple"
-      />
+    <div className="flex flex-wrap gap-3 items-center">
+      <div className="w-full md:w-auto min-w-[20rem]">
+        <Input
+          type="search"
+          placeholder="Search by reference or email..."
+          value={search}
+          onChange={(e) => onSearchChange(e.target.value)}
+        />
+      </div>
 
       <select
         value={eventFilter}
@@ -103,13 +105,13 @@ export default function BookingFilters({
         ))}
       </select>
 
-      <button
+      <Button
         onClick={handleExportCSV}
         disabled={bookings.length === 0}
-        className="px-4 py-2.5 bg-white/5 hover:bg-white/10 border border-border-subtle rounded-xl text-sm font-semibold text-white transition-colors disabled:opacity-50"
+        variant="secondary"
       >
         Export CSV
-      </button>
+      </Button>
     </div>
   );
 }

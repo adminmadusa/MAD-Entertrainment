@@ -3,7 +3,7 @@
 import { AdminUser } from '@/lib/api/admin/auth.service';
 import { AdminRole } from '@mad/shared';
 import type { Admin } from '@mad/types';
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@mad/ui';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, EmptyState } from '@mad/ui';
 import { formatDateTime } from '@mad/utils';
 
 const ROLE_LABELS: Record<AdminRole, string> = {
@@ -75,8 +75,8 @@ export default function TeamTable({
     if (admins.length === 0) {
       return (
         <TableRow>
-          <TableCell colSpan={6} className="py-16 text-center text-text-muted">
-            No admin users registered.
+          <TableCell colSpan={6} className="py-16">
+            <EmptyState title="No admin users registered" description="There are currently no back-office administrative accounts setup." />
           </TableCell>
         </TableRow>
       );

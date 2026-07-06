@@ -4,7 +4,7 @@ import { useMemo } from 'react';
 
 import { AdminBooking } from '@/lib/api/admin/booking.service';
 import { BookingStatus, getBookingStatusLabel } from '@mad/shared';
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@mad/ui';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, EmptyState } from '@mad/ui';
 import { formatDateTime } from '@mad/utils';
 
 const STATUS_COLORS: Record<string, string> = {
@@ -85,8 +85,8 @@ export default function BookingsTable({
     if (sortedBookings.length === 0) {
       return (
         <TableRow>
-          <TableCell colSpan={7} className="py-16 text-center text-text-muted">
-            No bookings found.
+          <TableCell colSpan={7} className="py-16">
+            <EmptyState title="No bookings found" description="Try adjusting your filter criteria or search query." />
           </TableCell>
         </TableRow>
       );

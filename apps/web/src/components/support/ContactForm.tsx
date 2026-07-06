@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { Alert, FormField, Input, Textarea } from '@mad/ui';
 
 import { submitContactForm } from '@/app/actions/contact.actions';
 
@@ -56,41 +57,36 @@ export function ContactForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {status === 'error' && (
-        <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-xl text-sm">
+        <Alert variant="danger" className="animate-in fade-in duration-300">
           {errorMessage}
-        </div>
+        </Alert>
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="space-y-2">
-          <label htmlFor="name" className="text-white text-sm font-medium">Full Name <span className="text-red-500">*</span></label>
-          <input
+        <FormField label="Full Name" htmlFor="name" required>
+          <Input
             type="text"
             id="name"
             name="name"
             required
             disabled={status === 'submitting'}
-            className="w-full bg-white/5 border border-border-subtle rounded-xl px-4 py-3 text-white focus:outline-none focus:border-accent-purple transition-colors disabled:opacity-50"
             placeholder="John Doe"
           />
-        </div>
+        </FormField>
 
-        <div className="space-y-2">
-          <label htmlFor="email" className="text-white text-sm font-medium">Email Address <span className="text-red-500">*</span></label>
-          <input
+        <FormField label="Email Address" htmlFor="email" required>
+          <Input
             type="email"
             id="email"
             name="email"
             required
             disabled={status === 'submitting'}
-            className="w-full bg-white/5 border border-border-subtle rounded-xl px-4 py-3 text-white focus:outline-none focus:border-accent-purple transition-colors disabled:opacity-50"
             placeholder="john@example.com"
           />
-        </div>
+        </FormField>
       </div>
 
-      <div className="space-y-2">
-        <label htmlFor="issueType" className="text-white text-sm font-medium">Issue Type <span className="text-red-500">*</span></label>
+      <FormField label="Issue Type" htmlFor="issueType" required>
         <select
           id="issueType"
           name="issueType"
@@ -107,54 +103,50 @@ export function ContactForm() {
           <option value="event" className="bg-bg-secondary">Event Question</option>
           <option value="account" className="bg-bg-secondary">Account Question</option>
         </select>
-      </div>
+      </FormField>
 
       {(showBookingRef || showTransactionId) && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-white/5 p-4 rounded-xl border border-border-subtle/50">
-          <div className={`space-y-2 ${!showBookingRef && 'opacity-50 pointer-events-none hidden md:block'}`}>
-            <label htmlFor="bookingRef" className="text-white text-sm font-medium flex items-center justify-between">
-              Booking Reference
-              <span className="text-text-muted text-xs font-normal text-right">Optional</span>
-            </label>
-            <input
-              type="text"
-              id="bookingRef"
-              name="bookingRef"
-              disabled={status === 'submitting' || !showBookingRef}
-              className="w-full bg-white/5 border border-border-subtle rounded-xl px-4 py-3 text-white focus:outline-none focus:border-accent-purple transition-colors disabled:opacity-50"
-              placeholder="e.g. MAD-2026-ABC123"
-            />
-          </div>
+          {showBookingRef ? (
+            <FormField label="Booking Reference" htmlFor="bookingRef" hint="Optional">
+              <Input
+                type="text"
+                id="bookingRef"
+                name="bookingRef"
+                disabled={status === 'submitting'}
+                placeholder="e.g. MAD-2026-ABC123"
+              />
+            </FormField>
+          ) : (
+            <div className="hidden md:block opacity-0 pointer-events-none" />
+          )}
 
-          <div className={`space-y-2 ${!showTransactionId && 'opacity-50 pointer-events-none hidden md:block'}`}>
-            <label htmlFor="transactionId" className="text-white text-sm font-medium flex items-center justify-between">
-              Transaction ID
-              <span className="text-text-muted text-xs font-normal text-right">Optional</span>
-            </label>
-            <input
-              type="text"
-              id="transactionId"
-              name="transactionId"
-              disabled={status === 'submitting' || !showTransactionId}
-              className="w-full bg-white/5 border border-border-subtle rounded-xl px-4 py-3 text-white focus:outline-none focus:border-accent-purple transition-colors disabled:opacity-50"
-              placeholder="e.g. pay_Qwerty123456"
-            />
-          </div>
+          {showTransactionId ? (
+            <FormField label="Transaction ID" htmlFor="transactionId" hint="Optional">
+              <Input
+                type="text"
+                id="transactionId"
+                name="transactionId"
+                disabled={status === 'submitting'}
+                placeholder="e.g. pay_Qwerty123456"
+              />
+            </FormField>
+          ) : (
+            <div className="hidden md:block opacity-0 pointer-events-none" />
+          )}
         </div>
       )}
 
-      <div className="space-y-2">
-        <label htmlFor="message" className="text-white text-sm font-medium">Message <span className="text-red-500">*</span></label>
-        <textarea
+      <FormField label="Message" htmlFor="message" required>
+        <Textarea
           id="message"
           name="message"
           required
           rows={5}
           disabled={status === 'submitting'}
-          className="w-full bg-white/5 border border-border-subtle rounded-xl px-4 py-3 text-white focus:outline-none focus:border-accent-purple transition-colors resize-y text-[16px] disabled:opacity-50"
           placeholder="How can we help you?"
         />
-      </div>
+      </FormField>
 
       <button
         type="submit"
