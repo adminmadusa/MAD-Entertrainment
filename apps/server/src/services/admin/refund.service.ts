@@ -1,10 +1,7 @@
 import crypto from 'crypto';
 
-import * as Sentry from '@sentry/node';
-
 import { BookingStatus, NotificationType, PaymentStatus, RefundStatus } from '@mad/shared';
 
-import { getEnv } from '../../config/env';
 import { getQueueName } from '../../config/queue.config';
 import { getRazorpay } from '../../config/razorpay';
 import { getStripe } from '../../config/stripe';
@@ -22,118 +19,7 @@ import { runInTransaction } from '../../utils/transaction';
 import { createNotificationSafe } from '../notification.service';
 import { QueueService } from '../queue.service';
 import { cancelBooking, executeCancelBookingSideEffects } from './booking.service';
-
-const assertProductionRefundIntegrity = (
-  identifiers: (string | undefined)[],
-  context: {
-    bookingId?: string;
-    paymentId?: string;
-    gateway?: string;
-    requestSource?: string;
-  } = {}
-): void => {
-  const env = getEnv();
-  const isProd = env.NODE_ENV === 'production' || env.APP_ENV === 'production';
-  if (!isProd) return;
-
-  const metadata = {
-    bookingId: context.bookingId,
-    paymentId: context.paymentId,
-    environment: env.NODE_ENV || env.APP_ENV,
-    requestSource: context.requestSource,
-    gateway: context.gateway,
-  };
-
-  // Rule 1: Reject env.MOCK_PAYMENTS === true
-  if (env.MOCK_PAYMENTS) {
-    const errorMsg = 'MOCK_PAYMENTS_PRODUCTION_BLOCKED: Mock payments cannot be enabled in production environments.';
-    logger.error(metadata, errorMsg);
-    auditLog({
-      action: 'MOCK_PAYMENTS_PRODUCTION_BLOCKED',
-      status: 'failure',
-      description: errorMsg,
-      metadata,
-    });
-    try {
-      Sentry.captureException(new Error(errorMsg), {
-        tags: { type: 'MOCK_PAYMENTS_PRODUCTION_BLOCKED', environment: metadata.environment, gateway: metadata.gateway },
-        extra: metadata,
-      });
-    } catch (err) {
-      logger.error(err, 'Failed to log MOCK_PAYMENTS_PRODUCTION_BLOCKED to Sentry');
-    }
-    throw new Error(errorMsg);
-  }
-
-  if (context.gateway === 'mock') {
-    assertProductionMockRefundRuntimeBlocked(context);
-  }
-
-  // Rule 2: Reject mock identifiers
-  const mockPatterns = ['pi_mock_', 'pay_mock_', 'order_mock_', '_secret_mock', 'mock-ref-'];
-  for (const id of identifiers) {
-    if (!id) continue;
-    if (mockPatterns.some((pattern) => id.includes(pattern))) {
-      const errorMsg = `MOCK_PAYMENT_IDENTIFIER_DETECTED: Mock identifier "${id}" submitted in production.`;
-      const localMetadata = { ...metadata, paymentId: id };
-      logger.error(localMetadata, errorMsg);
-      auditLog({
-        action: 'MOCK_PAYMENT_IDENTIFIER_DETECTED',
-        status: 'failure',
-        description: errorMsg,
-        metadata: localMetadata,
-      });
-      try {
-        Sentry.captureException(new Error(errorMsg), {
-          tags: { type: 'MOCK_PAYMENT_IDENTIFIER_DETECTED', environment: localMetadata.environment, gateway: localMetadata.gateway },
-          extra: localMetadata,
-        });
-      } catch (err) {
-        logger.error(err, 'Failed to log MOCK_PAYMENT_IDENTIFIER_DETECTED to Sentry');
-      }
-      throw new Error(errorMsg);
-    }
-  }
-};
-
-const assertProductionMockRefundRuntimeBlocked = (
-  context: {
-    bookingId?: string;
-    paymentId?: string;
-    gateway?: string;
-    requestSource?: string;
-  } = {}
-): void => {
-  const env = getEnv();
-  const isProd = env.NODE_ENV === 'production' || env.APP_ENV === 'production';
-  if (!isProd) return;
-
-  const metadata = {
-    bookingId: context.bookingId,
-    paymentId: context.paymentId,
-    environment: env.NODE_ENV || env.APP_ENV,
-    requestSource: context.requestSource,
-    gateway: context.gateway,
-  };
-
-  const errorMsg = 'MOCK_PAYMENT_RUNTIME_BLOCKED: Mock payment execution path reached in production.';
-  logger.error(metadata, errorMsg);
-  auditLog({
-    action: 'MOCK_PAYMENT_RUNTIME_BLOCKED',
-    status: 'failure',
-    description: errorMsg,
-    metadata,
-  });
-  try {
-    Sentry.captureException(new Error(errorMsg), {
-      tags: { type: 'MOCK_PAYMENT_RUNTIME_BLOCKED', environment: metadata.environment, gateway: metadata.gateway },
-      extra: metadata,
-    });
-  } catch (err) {
-    logger.error(err, 'Failed to log MOCK_PAYMENT_RUNTIME_BLOCKED to Sentry');
-  }
-  throw new Error(errorMsg);
-};
+import { RefundValidationService } from './refund/refund-validation.service';
 
 export const createRefund = async (data: {
   bookingId: string;
@@ -160,38 +46,20 @@ export const createRefund = async (data: {
         throw AppError.notFound('Payment record not found');
       }
 
-      assertProductionRefundIntegrity(
-        [data.paymentId, payment.gatewayPaymentId, payment.gatewayOrderId],
-        {
-          bookingId: data.bookingId,
-          paymentId: data.paymentId,
-          gateway: payment.gateway,
-          requestSource: 'create_refund',
-        }
-      );
+      // Delegate payment validation constraints (early validation check)
+      RefundValidationService.validateRefundCreationConstraints({
+        bookingId: data.bookingId,
+        paymentId: data.paymentId,
+        amount: data.amount,
+        payment,
+        booking: null,
+        existingSum: 0,
+      });
 
-      // 3. Payment ↔ Booking Relationship Verification
-      if (payment.bookingId.toString() !== data.bookingId) {
-        throw AppError.badRequest('Payment does not belong to booking');
-      }
-
-      // 4. Payment status validation (Must be PAID or PARTIALLY_REFUNDED)
-      if (payment.status !== PaymentStatus.PAID && payment.status !== PaymentStatus.PARTIALLY_REFUNDED) {
-        throw AppError.badRequest('Only successful paid or partially refunded payments can be refunded');
-      }
-
-      // 5. Fetch and verify Booking record exists and is CONFIRMED
+      // 3. Fetch and verify Booking record exists and is CONFIRMED
       const booking = await Booking.findById(data.bookingId).session(session);
       if (!booking) {
         throw AppError.notFound('Booking record not found');
-      }
-      if (booking.status !== BookingStatus.CONFIRMED) {
-        throw AppError.badRequest('Only confirmed bookings can be refunded');
-      }
-
-      // 6. Individual Amount Cap Check
-      if (data.amount > payment.amount) {
-        throw AppError.badRequest('Refund amount cannot exceed original payment amount');
       }
 
       // Check for existing refund request with same idempotency key if provided
@@ -204,16 +72,22 @@ export const createRefund = async (data: {
         return existingRefund;
       }
 
-      // 7. Cumulative Refund Check (Summing processing and completed)
+      // 4. Fetch existing refunds to compute cumulative balance
       const existingRefunds = await Refund.find({
         paymentId: payment._id,
         status: { $in: [RefundStatus.PROCESSING, RefundStatus.COMPLETED] },
       }).session(session);
       const existingSum = existingRefunds.reduce((sum, r) => sum + r.amount, 0);
-      if (existingSum + data.amount > payment.amount) {
-        const remaining = payment.amount - existingSum;
-        throw AppError.badRequest(`Cumulative refund amount exceeds original payment amount (Paid: ₹${payment.amount}, Refunded/Processing: ₹${existingSum}, Max Remaining: ₹${remaining})`);
-      }
+
+      // Delegate final validation constraints (booking and sum checks)
+      RefundValidationService.validateRefundCreationConstraints({
+        bookingId: data.bookingId,
+        paymentId: data.paymentId,
+        amount: data.amount,
+        payment,
+        booking,
+        existingSum,
+      });
 
       const refund = new Refund({
         bookingId: data.bookingId,
@@ -318,7 +192,8 @@ export const processRefund = async (
         throw AppError.notFound('Booking record not found');
       }
 
-      assertProductionRefundIntegrity(
+      // Early integrity assertion (Run before database queries to prevent hangs / mock leakage)
+      RefundValidationService.assertProductionRefundIntegrity(
         [id, refund.paymentId.toString(), payment.gatewayPaymentId, payment.gatewayOrderId, gatewayRefundId],
         {
           bookingId: refund.bookingId.toString(),
@@ -328,59 +203,15 @@ export const processRefund = async (
         }
       );
 
-      // If rejecting, we don't need cumulative balance checks
+      // If rejecting, we don't need validation checks or cumulative balance checks
       if (action === 'reject') {
         return { refund, payment, booking, totalRefundedSoFar: 0 };
       }
 
-      const isAutoRecovery = refund.origin === 'auto_recovery';
+      // Fetch dynamic ticket/refund count state
+      const scannedTickets = await Ticket.find({ bookingId: booking._id, scannedAt: { $ne: null } }).session(session as any);
+      const scannedTicketsCount = scannedTickets.length;
 
-      // PRICING-003: Check-in protection — block refund if any ticket is scanned (auto_recovery path is exempt)
-      if (!isAutoRecovery) {
-        const scannedTickets = await Ticket.find({ bookingId: booking._id, scannedAt: { $ne: null } }).session(session as any);
-        if ((scannedTickets as any[]).length > 0) {
-          if (!manualOverride) {
-            throw AppError.badRequest('Refund blocked: Booking contains checked-in tickets');
-          }
-          if (!actor || actor.role !== 'super_admin') {
-            throw AppError.forbidden('Only super_admin can override refunds for bookings with checked-in tickets');
-          }
-        }
-      }
-
-      // 3. Validation path differentiation (B2)
-      if (isAutoRecovery) {
-        if (!refund.recoveryReason) {
-          throw AppError.badRequest('Auto-recovery refund requires a recovery reason');
-        }
-        if (
-          payment.status !== PaymentStatus.PAID &&
-          payment.status !== PaymentStatus.PARTIALLY_REFUNDED &&
-          payment.status !== PaymentStatus.FAILED
-        ) {
-          throw AppError.badRequest('Invalid payment status for auto-recovery refund');
-        }
-        if (
-          booking.status !== BookingStatus.CONFIRMED &&
-          booking.status !== BookingStatus.CANCELLED &&
-          booking.status !== BookingStatus.FAILED &&
-          booking.status !== BookingStatus.EXPIRED
-        ) {
-          throw AppError.badRequest('Invalid booking status for auto-recovery refund');
-        }
-      } else {
-        if (payment.status === PaymentStatus.REFUNDED) {
-          throw AppError.badRequest('Payment has already been fully refunded');
-        }
-        if (payment.status !== PaymentStatus.PAID && payment.status !== PaymentStatus.PARTIALLY_REFUNDED) {
-          throw AppError.badRequest('Only successful paid or partially refunded payments can be refunded');
-        }
-        if (booking.status !== BookingStatus.CONFIRMED && booking.status !== BookingStatus.CANCELLED) {
-          throw AppError.badRequest('Only confirmed or cancelled bookings can be refunded');
-        }
-      }
-
-      // 4. Cumulative processed refunds cap check (including processing and completed, excluding current)
       const existingRefunds = await Refund.find({
         paymentId: payment._id,
         status: { $in: [RefundStatus.PROCESSING, RefundStatus.COMPLETED] },
@@ -388,9 +219,16 @@ export const processRefund = async (
       }).session(session);
       const totalRefundedSoFar = existingRefunds.reduce((sum, r) => sum + r.amount, 0);
 
-      if (totalRefundedSoFar + refund.amount > payment.amount) {
-        throw AppError.badRequest(`Refund amount exceeds remaining captured balance (Paid: ₹${payment.amount}, Refunded/Processing: ₹${totalRefundedSoFar}, Attempted: ₹${refund.amount})`);
-      }
+      // Delegate all validations to RefundValidationService
+      RefundValidationService.validateRefundProcessingConstraints({
+        refund,
+        payment,
+        booking,
+        scannedTicketsCount,
+        totalRefundedSoFar,
+        manualOverride,
+        actor,
+      });
 
       return { refund, payment, booking, totalRefundedSoFar };
     });
@@ -474,7 +312,7 @@ export const processRefund = async (
           });
           finalGatewayRefundId = response.id;
         } else if (payment.gateway === 'mock' || !payment.gateway) {
-          assertProductionMockRefundRuntimeBlocked({
+          RefundValidationService.assertProductionMockRefundRuntimeBlocked({
             bookingId: refund.bookingId.toString(),
             paymentId: refund.paymentId.toString(),
             gateway: payment.gateway,
