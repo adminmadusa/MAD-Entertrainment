@@ -49,6 +49,7 @@ import type {
   StripeRefundWebhookPayload,
   RazorpayRefundWebhookPayload,
   NormalizedRefundPayload,
+  NormalizedRefundData,
 } from './payment.types';
 import { StripeRefundService } from './payment/stripe-refund.service';
 import { RazorpayRefundService } from './payment/razorpay-refund.service';
@@ -262,14 +263,9 @@ export class PaymentRefundService {
 
   // ─── Core Reconciliation (Private) ─────────────────────────────────────────
 
-  private static async reconcileRefundWebhook(params: {
-    gateway: 'stripe' | 'razorpay';
-    gatewayPaymentId: string;
-    gatewayRefundId: string;
-    amountMajorUnits: number;
-    gatewayStatus: string;
-    webhookEventId: string;
-  }): Promise<{ status: 'completed' | 'failed' | 'anomaly' | 'skipped'; refundId?: string; paymentId?: string }> {
+  private static async reconcileRefundWebhook(
+    params: NormalizedRefundData
+  ): Promise<{ status: 'completed' | 'failed' | 'anomaly' | 'skipped'; refundId?: string; paymentId?: string }> {
     const { gateway, gatewayPaymentId, gatewayRefundId, amountMajorUnits, gatewayStatus, webhookEventId } = params;
     const isSucceeded = gatewayStatus === 'succeeded' || gatewayStatus === 'processed';
     const isFailed = gatewayStatus === 'failed';
