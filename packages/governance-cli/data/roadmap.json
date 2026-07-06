@@ -45,13 +45,13 @@
     {
       "id": "3.6C",
       "name": "Release Automation",
-      "status": "current",
+      "status": "complete",
       "description": "Extracting Release, Version, Baseline, Roadmap, and Template services."
     },
     {
       "id": "3.7",
       "name": "UI/UX Remediation",
-      "status": "planned",
+      "status": "current",
       "description": "Migrating legacy HTML forms and dashboard elements to @mad/ui composites."
     },
     {
