@@ -31,7 +31,7 @@ describe('Governance Rule Execution Engine', () => {
   it('should initialize and register all standard validators successfully', () => {
     ExecutionEngine.initialize();
     const allValidators = ValidatorRegistry.getAllValidators();
-    expect(allValidators.length).toBe(16);
+    expect(allValidators.length).toBe(20);
 
     const markdownVal = ValidatorRegistry.getValidator('MarkdownValidator');
     expect(markdownVal).toBeDefined();
@@ -48,8 +48,9 @@ describe('Governance Rule Execution Engine', () => {
 
   it('should sort validators by priority during planning', () => {
     ExecutionEngine.initialize();
+    const allValidators = ValidatorRegistry.getAllValidators();
     const plan = ExecutionPlanner.plan();
-    expect(plan.orderedValidators.length).toBe(16);
+    expect(plan.orderedValidators.length).toBe(allValidators.length);
 
     // Verify ordering by priority
     const priorities = plan.orderedValidators.map(v => v.priority);
@@ -92,9 +93,10 @@ describe('Governance Rule Execution Engine', () => {
 
   it('should collect execution metrics and report outcomes', async () => {
     ExecutionEngine.initialize();
+    const allValidators = ValidatorRegistry.getAllValidators();
     const report = await ExecutionEngine.execute([], {});
-    expect(report.results.length).toBe(16);
-    expect(report.metrics.length).toBe(16);
+    expect(report.results.length).toBe(allValidators.length);
+    expect(report.metrics.length).toBe(allValidators.length);
     expect(report.totalExecutionTimeMs).toBeGreaterThanOrEqual(0);
     expect(report.metrics.every(m => m.filesProcessed === 0)).toBe(true);
   });
