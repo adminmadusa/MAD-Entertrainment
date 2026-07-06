@@ -255,7 +255,7 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
 
   if (booking && booking.status === BookingStatus.CONFIRMED) {
     return (
-      <div className={isModal ? "relative text-white p-6 text-center space-y-6" : "pt-24 pb-24 min-h-screen bg-[#0d111d] text-white relative overflow-x-hidden flex flex-col items-center justify-center w-full px-4"}>
+      <div className={isModal ? "relative text-white p-6 text-center space-y-6" : "pt-24 pb-24 min-h-screen bg-background text-white relative overflow-x-hidden flex flex-col items-center justify-center w-full px-4"}>
         {!isModal && (
           <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-accent-purple/5 rounded-full blur-[150px] pointer-events-none" />
         )}
@@ -335,13 +335,13 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
   }
 
   return (
-    <div className={isModal ? "relative text-white" : "pt-24 pb-24 min-h-screen bg-[#0d111d] text-white relative overflow-x-hidden flex flex-col items-center justify-center"}>
+    <div className={isModal ? "relative text-white" : "pt-24 pb-24 min-h-screen bg-background text-white relative overflow-x-hidden flex flex-col items-center justify-center"}>
       {!isModal && (
         <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-accent-purple/5 rounded-full blur-[150px] pointer-events-none" />
       )}
 
       {/* Sticky Top Checkout Header */}
-      <div className={isModal ? "sticky top-0 bg-[#0d111d] border-b border-white/10 py-3 z-50 shadow-md" : "fixed top-0 left-0 right-0 bg-[#0d111d]/90 backdrop-blur-md border-b border-white/10 py-3 z-50 shadow-md"}>
+      <div className={isModal ? "sticky top-0 bg-background border-b border-white/10 py-3 z-50 shadow-md" : "fixed top-0 left-0 right-0 bg-background/90 backdrop-blur-md border-b border-white/10 py-3 z-50 shadow-md"}>
         <div className="container-mad max-w-4xl px-4 flex items-center justify-between">
           <button
             type="button"
@@ -449,7 +449,7 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
 
       {/* Sticky Place Order Footer (Mobile Only) */}
       {!viewport.isKeyboardOpen && (
-        <div className={isModal ? "sticky bottom-0 z-40 bg-[#0d111d]/95 border-t border-white/10 py-3 mt-8 shadow-2xl lg:hidden" : "fixed bottom-0 left-0 right-0 z-40 bg-[#0d111d]/95 backdrop-blur-lg border-t border-white/10 shadow-2xl lg:hidden"}>
+        <div className={isModal ? "sticky bottom-0 z-40 bg-background/95 border-t border-white/10 py-3 mt-8 shadow-2xl lg:hidden" : "fixed bottom-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-lg border-t border-white/10 shadow-2xl lg:hidden"}>
           <div className="container-mad max-w-4xl px-4 py-3 pb-[calc(1rem+env(safe-area-inset-bottom))] flex items-center gap-4">
             <div className="flex-1">
               <div className="text-[10px] text-text-muted font-semibold uppercase tracking-wider">Total Amount</div>

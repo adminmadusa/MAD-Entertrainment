@@ -85,7 +85,7 @@ export const EventBookingFlow = forwardRef<EventBookingFlowHandle, EventBookingF
           showCloseButton={false}
           closeOnBackdropClick={true}
           ariaLabelledBy="booking-modal-title"
-          className="w-full h-full md:h-[650px] max-w-4xl bg-[#0d111d] md:rounded-2xl border border-white/10 overflow-hidden relative flex flex-col md:flex-row shadow-2xl z-10 focus:outline-none p-0"
+          className="w-full h-full md:h-[650px] max-w-4xl bg-background md:rounded-2xl border border-white/10 overflow-hidden relative flex flex-col md:flex-row shadow-2xl z-10 focus:outline-none p-0"
         >
               {/* Close button */}
               <button
@@ -98,7 +98,7 @@ export const EventBookingFlow = forwardRef<EventBookingFlowHandle, EventBookingF
               </button>
 
               {/* Left Panel: Ticket selection */}
-              <div className="w-full md:w-3/5 p-6 md:p-8 flex flex-col h-full border-r border-white/5 bg-[#0d111d] overflow-hidden">
+              <div className="w-full md:w-3/5 p-6 md:p-8 flex flex-col h-full border-r border-white/5 bg-background overflow-hidden">
                 {/* Fixed Header */}
                 <div className="pb-4 border-b border-white/5 shrink-0 pr-12">
                   <h3 id="booking-modal-title" className="text-base font-bold text-white leading-snug">{event.title}</h3>
@@ -126,7 +126,7 @@ export const EventBookingFlow = forwardRef<EventBookingFlowHandle, EventBookingF
                 </div>
 
                 {/* Modal Sticky Bottom Action Footer */}
-                <div className="border-t border-white/10 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] mt-4 flex items-center justify-between bg-[#0d111d] shrink-0">
+                <div className="border-t border-white/10 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] mt-4 flex items-center justify-between bg-background shrink-0">
                   {modalFooterBadge}
                   <button
                     type="button"
@@ -142,7 +142,7 @@ export const EventBookingFlow = forwardRef<EventBookingFlowHandle, EventBookingF
               </div>
 
               {/* Right Panel: Cart/Event Image summary */}
-              <div className="hidden md:flex md:w-2/5 bg-[#121625] flex-col border-l border-white/5">
+              <div className="hidden md:flex md:w-2/5 bg-bg-card flex-col border-l border-white/5">
                 {/* Event Image */}
                 <div className="aspect-[16/9] w-full overflow-hidden bg-black/40 relative border-b border-white/10">
                   {event.bannerImage?.url && (
@@ -215,7 +215,7 @@ export const EventBookingFlow = forwardRef<EventBookingFlowHandle, EventBookingF
           showCloseButton={false}
           closeOnBackdropClick={true}
           ariaLabelledBy="checkout-modal-title"
-          className="w-full h-full md:max-h-[95vh] max-w-4xl bg-[#0d111d] md:rounded-2xl border border-white/10 overflow-y-auto shadow-2xl relative z-10 p-6 custom-scrollbar focus:outline-none"
+          className="w-full h-full md:max-h-[95vh] max-w-4xl bg-background md:rounded-2xl border border-white/10 overflow-y-auto shadow-2xl relative z-10 p-6 custom-scrollbar focus:outline-none"
         >
               <CheckoutContent
                 bookingId={checkoutBookingId}
