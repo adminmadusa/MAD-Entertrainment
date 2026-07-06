@@ -1,11 +1,10 @@
 import { Types } from 'mongoose';
-import { ReservationStatus } from '@mad/shared';
 import { IBooking } from '../../models/booking.schema';
-import { ReservationService } from '../reservation.service';
 import { BookingQueryResult, MyBookingsResult, BookingAccessContext, CreateBookingRequest, SaveCheckoutRequest } from './booking/booking.types';
 import { BookingQueryService } from './booking/booking-query.service';
 import { BookingAccessService } from './booking/booking-access.service';
 import { BookingCreationService } from './booking/booking-creation.service';
+import { BookingStateService } from './booking/booking-state.service';
 
 export class PublicBookingService {
   static generateSelectionFingerprint(data: {
@@ -28,13 +27,12 @@ export class PublicBookingService {
     return BookingCreationService.createBooking(data, sessionId, userId);
   }
 
-  static async markReservationsPendingPayment(bookingId: string, paymentReference?: string, paymentId?: Types.ObjectId) {
-    return ReservationService.transitionForBooking(bookingId, ReservationStatus.PENDING_PAYMENT, {
-      paymentReference,
-      paymentId,
-      reason: 'payment-intent-created',
-      correlationId: bookingId,
-    });
+  static async markReservationsPendingPayment(
+    bookingId: string,
+    paymentReference?: string,
+    paymentId?: Types.ObjectId
+  ) {
+    return BookingStateService.markReservationsPendingPayment(bookingId, paymentReference, paymentId);
   }
 
   static async getBookingByReference(bookingId: string): Promise<BookingQueryResult> {
