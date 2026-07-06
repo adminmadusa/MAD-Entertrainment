@@ -51,7 +51,7 @@
     {
       "id": "3.7",
       "name": "UI/UX Remediation",
-      "status": "current",
+      "status": "complete",
       "description": "Migrating legacy HTML forms and dashboard elements to @mad/ui composites."
     },
     {

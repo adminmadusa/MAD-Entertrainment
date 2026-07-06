@@ -296,7 +296,7 @@ export function TicketSelectionContent({
         size="sm"
         closeOnBackdropClick={true}
         ariaLabelledBy="celebration-title"
-        className="bg-[#1a1d2d] border border-white/10 rounded-3xl p-8 max-w-xs shadow-2xl"
+        className="bg-bg-card border border-white/10 rounded-3xl p-8 max-w-xs shadow-2xl"
       >
         <div className="text-center">
           <div className="relative w-24 h-24 mx-auto mb-6">
@@ -444,7 +444,7 @@ export function TicketSelectionContent({
 
       {/* Mobile Sticky bottom footer when not rendered inside modal */}
       {!isModal && (
-        <div className="fixed bottom-0 left-0 right-0 bg-[#0d111d]/95 backdrop-blur-lg border-t border-white/10 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] z-50 shadow-2xl">
+        <div className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-lg border-t border-white/10 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] z-50 shadow-2xl">
           <div className="container-mad max-w-2xl px-4 space-y-3">
             <div className="flex items-center justify-between">
               {ticketsLeft <= 50 ? (

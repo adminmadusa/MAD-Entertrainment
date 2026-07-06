@@ -41,7 +41,7 @@ export function CheckoutPayment({ selectedGateway, onChangeGateway }: CheckoutPa
             className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all ${
               selectedGateway === 'stripe'
                 ? 'bg-accent-purple/10 border-accent-purple'
-                : 'bg-[#121625] border-white/5 hover:border-white/10'
+                : 'bg-bg-card border-white/5 hover:border-white/10'
             }`}
           >
             <div className="flex items-center gap-3">
@@ -64,7 +64,7 @@ export function CheckoutPayment({ selectedGateway, onChangeGateway }: CheckoutPa
         ) : (
           /* Stripe — rendered as disabled with a clear warning subtext */
           <label
-            className="flex flex-col p-3 rounded-xl border bg-[#121625] border-white/5 opacity-50 cursor-not-allowed transition-all"
+            className="flex flex-col p-3 rounded-xl border bg-bg-card border-white/5 opacity-50 cursor-not-allowed transition-all"
           >
             <div className="flex items-center justify-between w-full">
               <div className="flex items-center gap-3">

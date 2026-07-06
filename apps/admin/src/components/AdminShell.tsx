@@ -7,6 +7,7 @@ import { canAccessRoute, DEFAULT_ROUTE_BY_ROLE } from '@/lib/rbac/navigation-per
 import { useAdminAuth } from '@/providers/AdminAuthProvider';
 
 import { AdminSidebar } from './AdminSidebar';
+import { LoadingState } from '@mad/ui';
 
 
 const PUBLIC_ADMIN_PATHS = ['/login'];
@@ -37,13 +38,8 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
     }
   }, [isAuthenticated, isLoading, isPublicPage, pathname, admin, router]);
 
-  // Loading state
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-accent-purple border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
+    return <LoadingState label="Loading administrative console..." className="min-h-screen bg-background" />;
   }
 
   // Public pages (login) — render without shell
@@ -52,13 +48,8 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   // Not authenticated — return null (redirect happens in useEffect)
   if (!isAuthenticated) return null;
 
-  // Authenticated, but not authorized for this specific route — redirect is enqueued
   if (admin?.role && !isPublicPage && !canAccessRoute(pathname, admin.role)) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-accent-purple border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
+    return <LoadingState label="Redirecting..." className="min-h-screen bg-background" />;
   }
 
   const handleLogout = async () => {
@@ -68,6 +59,14 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex h-screen bg-background overflow-hidden relative">
+      {/* Skip to main content link for keyboard accessibility */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-accent-purple focus:text-white focus:rounded-xl focus:outline-none focus:ring-2 focus:ring-accent-purple focus:ring-offset-2 focus:ring-offset-background"
+      >
+        Skip to content
+      </a>
+
       {/* Mobile Backdrop Overlay */}
       {mobileSidebarOpen && (
         <div
@@ -123,7 +122,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 overflow-y-auto p-6">
+        <main id="main-content" tabIndex={-1} className="flex-1 overflow-y-auto p-6 focus:outline-none">
           {children}
         </main>
       </div>

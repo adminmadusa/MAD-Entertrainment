@@ -71,7 +71,7 @@ export function EventOverview({ description, organizerName, category }: EventOve
         onClose={() => setIsOverviewOpen(false)}
         side="right"
         title="Overview"
-        className="w-full max-w-md bg-[#0d111d] h-full border-l border-white/10 focus:outline-none"
+        className="w-full max-w-md bg-background h-full border-l border-white/10 focus:outline-none"
       >
         <div className="flex flex-col h-full justify-between">
           <div className="overflow-y-auto max-h-[72vh] text-text-secondary text-sm leading-relaxed pr-2 custom-scrollbar">
