@@ -1,8 +1,7 @@
 'use client';
 
 import React from 'react';
-import { FormField } from '@mad/ui';
-import { inputCls } from './constants';
+import { FormField, Input } from '@mad/ui';
 
 interface EventScheduleSectionProps {
   startDate: string;
@@ -22,19 +21,19 @@ export function EventScheduleSection({
       <h2 className="text-white font-semibold">Schedule</h2>
       <div className="grid grid-cols-2 gap-4">
         <FormField label="Start Date & Time" htmlFor="event-start-date" required>
-          <input
+          <Input
+            id="event-start-date"
             type="datetime-local"
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
-            className={inputCls}
           />
         </FormField>
         <FormField label="End Date & Time" htmlFor="event-end-date">
-          <input
+          <Input
+            id="event-end-date"
             type="datetime-local"
             value={endDate}
             onChange={(e) => setEndDate(e.target.value)}
-            className={inputCls}
           />
         </FormField>
       </div>

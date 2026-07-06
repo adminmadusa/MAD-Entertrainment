@@ -1,8 +1,8 @@
 import React from 'react';
 
-import { FormField } from '@mad/ui';
+import { FormField, Input, Textarea } from '@mad/ui';
 
-import { DJBasicInfoCardProps, inputCls } from './types';
+import { DJBasicInfoCardProps } from './types';
 
 // Re-export FormField as Field to maintain backward compatibility with DJSocialLinksCard
 export { FormField as Field };
@@ -25,56 +25,52 @@ export const DJBasicInfoCard: React.FC<DJBasicInfoCardProps> = ({
     <div className="glass rounded-2xl border border-border-subtle p-6 space-y-5">
       <h2 className="text-white font-semibold">Basic Information</h2>
       <FormField label="DJ Name / Stage Name *" htmlFor="dj-name">
-        <input
+        <Input
           id="dj-name"
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="e.g. DJ Shaan"
           required
-          className={inputCls}
         />
       </FormField>
       <div className="grid grid-cols-2 gap-4">
         <FormField label={isEdit ? 'Slug' : 'Slug (optional)'} htmlFor="dj-slug">
-          <input
+          <Input
             id="dj-slug"
             value={slug}
             onChange={(e) => setSlug(e.target.value)}
             placeholder="e.g. dj-shaan"
-            className={inputCls}
           />
         </FormField>
         <FormField label="Specialties / Genres (comma-separated)" htmlFor="dj-specialties">
-          <input
+          <Input
             id="dj-specialties"
             value={specialties}
             onChange={(e) => setSpecialties(e.target.value)}
             placeholder="e.g. Techno, House, Progressive"
-            className={inputCls}
           />
         </FormField>
       </div>
       <div className="grid grid-cols-2 gap-4">
         <FormField label="Experience (Years)" htmlFor="dj-experience-years">
-          <input
+          <Input
             id="dj-experience-years"
             type="number"
             min="0"
             value={experienceYears}
             onChange={(e) => setExperienceYears(e.target.value)}
             placeholder="e.g. 5"
-            className={inputCls}
           />
         </FormField>
       </div>
       <FormField label="Bio (optional)" htmlFor="dj-bio">
-        <textarea
+        <Textarea
           id="dj-bio"
           value={bio}
           onChange={(e) => setBio(e.target.value)}
           placeholder="Describe the DJ's profile, residency status, and gigs..."
           rows={4}
-          className={`${inputCls} resize-none`}
+          className="resize-none"
         />
       </FormField>
     </div>

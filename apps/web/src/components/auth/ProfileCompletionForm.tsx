@@ -8,7 +8,7 @@ import { publicUpdateProfile } from '@/lib/api/public.service';
 import { mapZodErrorToFields } from '@/lib/validation/mapZodError';
 import { useAuth } from '@/providers/AuthProvider';
 import type { AuthUser } from '@/types/auth';
-import { Button } from '@mad/ui';
+import { Button, Alert, FormField, Input } from '@mad/ui';
 import { updateProfileSchema, normalizePhone } from '@mad/validations';
 
 interface ProfileCompletionFormProps {
@@ -100,76 +100,52 @@ export function ProfileCompletionForm({
       </div>
 
       {displayError && (
-        <div
-          role="alert"
-          aria-live="assertive"
-          className="p-4 bg-error/10 border border-error/30 rounded-2xl text-xs text-red-400 text-center animate-in fade-in duration-300"
-        >
+        <Alert variant="danger" className="animate-in fade-in duration-300">
           {displayError}
-        </div>
+        </Alert>
       )}
 
       <div className="space-y-3 sm:space-y-4">
-        <div className="space-y-2">
-          <label htmlFor="firstName" className="text-xs font-semibold text-text-secondary uppercase tracking-wider ml-1">
-            First Name{' '}
-            <span className="text-red-400" aria-hidden="true">*</span>
-            <span className="sr-only">(required)</span>
-          </label>
-          <input
+        <FormField label="First Name" htmlFor="firstName" required>
+          <Input
             id="firstName"
             type="text"
             required
-            aria-required="true"
             autoComplete="given-name"
             disabled={isPending}
             enterKeyHint="next"
             value={firstName}
             onChange={(e) => setFirstName(e.target.value)}
             placeholder="John"
-            className="w-full bg-white/5 border border-border-subtle rounded-xl px-4 py-3 text-base lg:text-sm text-white placeholder:text-text-secondary focus:outline-none focus:border-accent-purple focus:ring-1 focus:ring-accent-purple transition-all duration-300"
           />
-        </div>
+        </FormField>
 
-        <div className="space-y-2">
-          <label htmlFor="lastName" className="text-xs font-semibold text-text-secondary uppercase tracking-wider ml-1">
-            Last Name{' '}
-            <span className="text-red-400" aria-hidden="true">*</span>
-            <span className="sr-only">(required)</span>
-          </label>
-          <input
+        <FormField label="Last Name" htmlFor="lastName" required>
+          <Input
             id="lastName"
             type="text"
             required
-            aria-required="true"
             autoComplete="family-name"
             disabled={isPending}
             enterKeyHint="next"
             value={lastName}
             onChange={(e) => setLastName(e.target.value)}
             placeholder="Doe"
-            className="w-full bg-white/5 border border-border-subtle rounded-xl px-4 py-3 text-base lg:text-sm text-white placeholder:text-text-secondary focus:outline-none focus:border-accent-purple focus:ring-1 focus:ring-accent-purple transition-all duration-300"
           />
-        </div>
+        </FormField>
 
-        <div className="space-y-2">
-          <label htmlFor="mobileNumber" className="text-xs font-semibold text-text-secondary uppercase tracking-wider ml-1">
-            Mobile Number
-          </label>
-          <input
+        <FormField label="Mobile Number" htmlFor="mobileNumber" hint="Include country code (e.g. +91)">
+          <Input
             id="mobileNumber"
             type="tel"
             autoComplete="tel"
-            aria-describedby="mobile-hint"
             disabled={isPending}
             enterKeyHint="done"
             value={mobileNumber}
             onChange={(e) => setMobileNumber(e.target.value)}
             placeholder="+919876543210"
-            className="w-full bg-white/5 border border-border-subtle rounded-xl px-4 py-3 text-base lg:text-sm text-white placeholder:text-text-secondary focus:outline-none focus:border-accent-purple focus:ring-1 focus:ring-accent-purple transition-all duration-300"
           />
-          <p id="mobile-hint" className="text-[10px] text-text-secondary ml-1">Include country code (e.g. +91)</p>
-        </div>
+        </FormField>
       </div>
 
       <div className="space-y-3">

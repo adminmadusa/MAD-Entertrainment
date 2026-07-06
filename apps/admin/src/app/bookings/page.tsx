@@ -10,7 +10,7 @@ import { adminGetBookings, adminCancelBooking, adminCorrectBookingEmail, adminRe
 import { adminGetEvents } from '@/lib/api/admin/event.service';
 import { useAdminAuth } from '@/providers/AdminAuthProvider';
 import { BookingStatus, AdminRole } from '@mad/shared';
-import { ErrorState } from '@mad/ui';
+import { ErrorState, LoadingState } from '@mad/ui';
 
 import BookingDetailsModal from './_components/BookingDetailsModal';
 import BookingFilters from './_components/BookingFilters';
@@ -228,7 +228,7 @@ function BookingsContent() {
 
 export default function AdminBookingsPage() {
   return (
-    <Suspense fallback={<div className="py-12 text-center text-text-muted">Loading bookings...</div>}>
+    <Suspense fallback={<LoadingState label="Loading bookings..." />}>
       <BookingsContent />
     </Suspense>
   );

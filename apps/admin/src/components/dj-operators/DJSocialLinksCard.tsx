@@ -1,7 +1,8 @@
 import React from 'react';
 
 import { Field } from './DJBasicInfoCard';
-import { DJSocialLinksCardProps, inputCls } from './types';
+import { Input } from '@mad/ui';
+import { DJSocialLinksCardProps } from './types';
 
 export const DJSocialLinksCard: React.FC<DJSocialLinksCardProps> = ({
   instagram,
@@ -26,72 +27,65 @@ export const DJSocialLinksCard: React.FC<DJSocialLinksCardProps> = ({
       <h2 className="text-white font-semibold">Social & Streaming Profiles</h2>
       <div className="grid grid-cols-2 gap-4">
         <Field label="Instagram URL" htmlFor="dj-instagram">
-          <input
+          <Input
             id="dj-instagram"
             value={instagram}
             onChange={(e) => setInstagram(e.target.value)}
             placeholder="https://instagram.com/..."
-            className={inputCls}
           />
         </Field>
         <Field label="SoundCloud Profile URL" htmlFor="dj-soundcloud">
-          <input
+          <Input
             id="dj-soundcloud"
             value={soundcloud}
             onChange={(e) => setSoundcloud(e.target.value)}
             placeholder="https://soundcloud.com/..."
-            className={inputCls}
           />
         </Field>
       </div>
       <div className="grid grid-cols-2 gap-4">
         <Field label="YouTube Channel URL" htmlFor="dj-youtube">
-          <input
+          <Input
             id="dj-youtube"
             value={youtube}
             onChange={(e) => setYoutube(e.target.value)}
             placeholder="https://youtube.com/..."
-            className={inputCls}
           />
         </Field>
         <Field label="Facebook Page URL" htmlFor="dj-facebook">
-          <input
+          <Input
             id="dj-facebook"
             value={facebook}
             onChange={(e) => setFacebook(e.target.value)}
             placeholder="https://facebook.com/..."
-            className={inputCls}
           />
         </Field>
       </div>
       <div className="grid grid-cols-2 gap-4">
         <Field label="Twitter/X Profile URL" htmlFor="dj-twitter">
-          <input
+          <Input
             id="dj-twitter"
             value={twitter}
             onChange={(e) => setTwitter(e.target.value)}
             placeholder="https://twitter.com/..."
-            className={inputCls}
           />
         </Field>
         <Field label="Spotify Artist URL" htmlFor="dj-spotify">
-          <input
+          <Input
             id="dj-spotify"
             value={spotify}
             onChange={(e) => setSpotify(e.target.value)}
             placeholder="https://open.spotify.com/artist/..."
-            className={inputCls}
           />
         </Field>
       </div>
       <div className="grid grid-cols-2 gap-4">
         <Field label="Personal / Agency Website URL" htmlFor="dj-website">
-          <input
+          <Input
             id="dj-website"
             value={website}
             onChange={(e) => setWebsite(e.target.value)}
             placeholder="https://..."
-            className={inputCls}
           />
         </Field>
       </div>

@@ -4,7 +4,7 @@ import React from 'react';
 
 import type { TicketProfile, TicketGroup, TicketConfig } from '@mad/types';
 
-import { FormField } from '@mad/ui';
+import { FormField, Input } from '@mad/ui';
 import { inputCls } from './constants';
 import type { TicketTierInput } from './types';
 
@@ -138,7 +138,7 @@ export function EventTicketSection({
                   </select>
                 </FormField>
                 <FormField label="Price (₹)" htmlFor={`tier-price-${i}`}>
-                  <input
+                  <Input
                     id={`tier-price-${i}`}
                     type="number"
                     min="0"
@@ -148,13 +148,12 @@ export function EventTicketSection({
                     }
                     placeholder="0"
                     required
-                    className={inputCls}
                   />
                 </FormField>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <FormField label="Capacity" htmlFor={`tier-capacity-${i}`} required>
-                  <input
+                  <Input
                     id={`tier-capacity-${i}`}
                     type="number"
                     min="1"
@@ -164,7 +163,6 @@ export function EventTicketSection({
                     }
                     placeholder="100"
                     required
-                    className={inputCls}
                   />
                 </FormField>
               </div>
@@ -230,7 +228,7 @@ export function EventTicketSection({
                               <label className="text-[10px] text-text-muted uppercase block">
                                 Capacity
                               </label>
-                              <input
+                              <Input
                                 type="number"
                                 min={1}
                                 value={override.totalCapacity !== undefined ? override.totalCapacity : ''}
@@ -242,7 +240,7 @@ export function EventTicketSection({
                                     e.target.value === '' ? undefined : Number(e.target.value)
                                   )
                                 }
-                                className="w-28 px-3 py-1.5 rounded-lg bg-background-card border border-border-subtle text-xs text-text-primary focus:outline-none focus:border-accent-purple"
+                                className="w-28 text-xs py-1.5"
                               />
                             </div>
                             <div className="space-y-1 pt-4">
