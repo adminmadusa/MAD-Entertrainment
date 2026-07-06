@@ -212,6 +212,20 @@ const nextConfig: NextConfig = {
 
   // ─── Headers ──────────────────────────────────────────────
   async headers() {
+    const isDev = process.env.NODE_ENV === 'development';
+    const csp = [
+      "default-src 'self'",
+      "script-src 'self' 'unsafe-inline'",
+      "style-src 'self' 'unsafe-inline'",
+      "font-src 'self'",
+      "img-src 'self' data: blob: https://res.cloudinary.com https://images.unsplash.com",
+      "connect-src 'self'",
+      "frame-ancestors 'none'",
+      "object-src 'none'",
+      "base-uri 'self'",
+      "form-action 'self'",
+    ].join('; ');
+
     return [
       {
         source: '/(.*)',
@@ -223,6 +237,15 @@ const nextConfig: NextConfig = {
             key: 'Permissions-Policy',
             value: 'camera=(), microphone=(), geolocation=(self)',
           },
+          ...(!isDev
+            ? [
+                { key: 'Content-Security-Policy', value: csp },
+                {
+                  key: 'Strict-Transport-Security',
+                  value: 'max-age=31536000; includeSubDomains',
+                },
+              ]
+            : []),
         ],
       },
       {
