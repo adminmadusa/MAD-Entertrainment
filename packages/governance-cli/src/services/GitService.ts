@@ -12,6 +12,8 @@ export interface GitService {
   pull(remote: string, branch: string): Promise<void>;
   getChangedFiles(base: string): Promise<string[]>;
   getCommitMessages(base: string): Promise<string[]>;
+  createTag(tag: string, message: string): Promise<void>;
+  commit(message: string): Promise<void>;
 }
 
 export class GitCliService implements GitService {
@@ -93,5 +95,13 @@ export class GitCliService implements GitService {
 
   async pull(remote: string, branch: string): Promise<void> {
     this.run(`git pull ${remote} ${branch}`);
+  }
+
+  async createTag(tag: string, message: string): Promise<void> {
+    this.run(`git tag -a ${tag} -m "${message}"`);
+  }
+
+  async commit(message: string): Promise<void> {
+    this.run(`git commit -a -m "${message}"`);
   }
 }

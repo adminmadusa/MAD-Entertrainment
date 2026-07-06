@@ -25,6 +25,23 @@ import { CleanupCommand } from './commands/CleanupCommand';
 import { WalkthroughCommand } from './commands/WalkthroughCommand';
 import { PRCommand } from './commands/PRCommand';
 import { BacklogCommand } from './commands/BacklogCommand';
+import { RoadmapCommand } from './commands/RoadmapCommand';
+import { ChangelogCommand } from './commands/ChangelogCommand';
+import { ReleaseCommand } from './commands/ReleaseCommand';
+import { BaselineCommand } from './commands/BaselineCommand';
+
+// Import domain services
+import { TemplateService } from './services/templates/TemplateService';
+import { ChangelogService } from './services/release/ChangelogService';
+import { VersionService } from './services/release/VersionService';
+import { ReleaseService } from './services/release/ReleaseService';
+import { BaselineService } from './services/baseline/BaselineService';
+import { RoadmapService } from './services/roadmap/RoadmapService';
+import { GitTagService } from './services/git/GitTagService';
+
+// Import providers and adapters
+import { GitCommitProvider } from './providers/changelog/GitCommitProvider';
+import { PnpmRepositoryAdapter } from './adapters/repository/PnpmRepositoryAdapter';
 
 async function main() {
   let repoRoot = resolve(process.cwd());
@@ -64,6 +81,28 @@ async function main() {
     renderer = new MarkdownRenderer();
   }
 
+  // Instantiate domain services and DI containers
+  const commitProvider = new GitCommitProvider(git);
+  const repoAdapter = new PnpmRepositoryAdapter(repoRoot);
+
+  const tagService = new GitTagService(git);
+  const templateService = new TemplateService(fs);
+  const changelogService = new ChangelogService(commitProvider);
+  const versionService = new VersionService(repoAdapter);
+  const releaseService = new ReleaseService(git, tagService, changelogService, versionService);
+  const baselineService = new BaselineService(fs, repoRoot, config.documentation.root);
+  const roadmapService = new RoadmapService(fs, repoRoot, config.documentation.roadmap);
+
+  const services = {
+    release: releaseService,
+    version: versionService,
+    changelog: changelogService,
+    baseline: baselineService,
+    roadmap: roadmapService,
+    template: templateService,
+    tag: tagService,
+  };
+
   // 3. Build Registry
   const registry = new CommandRegistry();
 
@@ -87,6 +126,10 @@ async function main() {
   builder.registerCommand(new WalkthroughCommand());
   builder.registerCommand(new PRCommand());
   builder.registerCommand(new BacklogCommand());
+  builder.registerCommand(new RoadmapCommand());
+  builder.registerCommand(new ChangelogCommand());
+  builder.registerCommand(new ReleaseCommand());
+  builder.registerCommand(new BaselineCommand());
 
   // Load configured plugins (stub for 3.6A core)
   for (const plugin of config.plugins) {
@@ -141,6 +184,7 @@ async function main() {
     logger,
     renderer,
     registry,
+    services,
     dryRun,
     verbose,
   };
