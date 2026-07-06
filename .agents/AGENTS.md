@@ -6,6 +6,60 @@ This document defines the mandatory **Execution Protocol**, **Repository Preserv
 
 ---
 
+# GLOBAL MANDATORY GATE — IMPLEMENTATION DECISION GATE
+
+No implementation or file modification may begin until the Implementation Readiness Audit has concluded with one of the approved outcomes.
+
+Every new feature, function, button, link, API, database change, bug fix, refactor, or enhancement must first have a GitHub issue created, then undergo a repository audit to verify whether the requested functionality already exists or is partially implemented.
+
+Every request must follow this sequence:
+
+```text
+Request
+   ↓
+Issue Created
+   ↓
+Implementation Readiness Audit
+   ↓
+Repository Search
+   ↓
+Implementation Decision Gate
+   ↓
+Approved?
+   ├── Already Implemented → Close/Document
+   ├── Partially Implemented → Extend Existing
+   ├── Rejected → Close Request
+   └── Not Implemented → Create Branch
+                                ↓
+                          Implement
+```
+
+Every request must end with exactly one decision:
+* [ ] Already Implemented
+* [ ] Partially Implemented
+* [ ] Not Implemented
+* [ ] Rejected
+
+### Decision Outcomes & Actions:
+
+1. **Outcome A — Already Implemented**
+   - **Conditions**: Feature exists, behaviour matches requirements, and tests pass.
+   - **Action**: STOP. Do NOT implement. Reject any implementation PR. Create documentation updates only if required. Close or convert the issue. No production code changes are permitted.
+
+2. **Outcome B — Partially Implemented**
+   - **Conditions**: Feature exists but is incomplete.
+   - **Action**: Extend the existing implementation. Reuse existing architecture. Do not duplicate logic. Permits extending existing code only.
+
+3. **Outcome C — Not Implemented**
+   - **Conditions**: Feature does not exist.
+   - **Action**: Proceed with implementation following the approved governance workflow. Permits new implementation on a new branch.
+
+4. **Outcome D — Rejected**
+   - **Conditions**: Duplicate issue, duplicate feature, invalid request, architecture conflict, superseded by another issue, or out of scope.
+   - **Action**: Close the request immediately without implementation.
+
+---
+
 # PART 1 — EXECUTION PROTOCOL
 
 Before modifying any code, documentation, scripts, or configurations, you must execute and document the following 13 phases.
