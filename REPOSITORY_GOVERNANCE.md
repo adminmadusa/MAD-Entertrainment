@@ -229,27 +229,40 @@ Before deleting a feature branch:
    ```
 3. **Verify PR Merge Status**:
    Confirm the Pull Request has been merged on GitHub.
-4. **Verify Merge Strategy & Commit Reachability**:
-   - Check ancestor reachability:
-     ```bash
-     git merge-base --is-ancestor feature-branch develop
-     ```
-   - If true: Proceed.
-   - If false: Verify patch equivalence (for squash or rebase merges) using:
-     ```bash
-     git cherry develop feature-branch
-     ```
-     - Expected: All output entries must be prefixed with `-` (patch-equivalent already merged). If any `+` entry exists, STOP immediately; the branch contains unique work.
+4. **Verify Integration (Merge-Strategy-Agnostic)**:
+   Apply both checks — they handle all three merge strategies (merge commit, squash, rebase):
+
+   **Step 4a — Ancestor Reachability** (works for standard merge commits):
+   ```bash
+   git merge-base --is-ancestor feature-branch develop
+   ```
+   - Exit code `0` (true): The branch tip is a direct ancestor of `develop`. Proceed to step 5.
+   - Exit code `1` (false): The commit is not reachable by ancestry. This is expected for squash or rebase merges. Continue to Step 4b.
+
+   **Step 4b — Tree Equivalence** (works for squash and rebase merges):
+   ```bash
+   git diff develop feature-branch
+   ```
+   - Empty output: The working trees are identical. All code is integrated. Proceed to step 5.
+   - Non-empty output: STOP. The branch contains unique changes not yet in `develop`.
+
+   **Step 4c — Patch Equivalence (Optional Confirmation)**:
+   ```bash
+   git cherry develop feature-branch
+   ```
+   - All lines prefixed with `-`: Patch-equivalent commits exist on `develop`. Safe to delete.
+   - Any line prefixed with `+`: STOP. The branch contains at least one unique patch not yet integrated.
+
 5. **Delete Local Branch**:
    Run safe delete:
    ```bash
    git branch -d feature-branch
    ```
-   Only if the PR is merged and patch equivalence is verified (all `-` entries in `git cherry`), you may force-delete:
+   Only if the PR is merged and both Step 4a/4b confirm integration, you may force-delete:
    ```bash
    git branch -D feature-branch
    ```
-6. **Delete Remote Branch**:
+6. **Delete Remote Branch** (if not already deleted on GitHub):
    ```bash
    git push origin --delete feature-branch
    ```
@@ -258,7 +271,12 @@ Before deleting a feature branch:
    git fetch --prune
    ```
 8. **Final Verification**:
-   Verify that `git status`, `git branch`, and `git branch -r` confirm a clean working tree and that the feature branch has been removed locally and remotely.
+   Confirm all three checks pass:
+   ```bash
+   git status      # must show: nothing to commit, working tree clean
+   git branch      # feature branch must NOT appear
+   git branch -r   # remote tracking ref must NOT appear
+   ```
 
 ### Working Tree State Rule (RULE-GIT-002)
 A feature branch **must not** be deleted while the local repository contains uncommitted or unstaged changes. 
