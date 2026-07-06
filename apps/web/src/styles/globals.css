@@ -1,106 +1,15 @@
+/**
+ * Shared design tokens and base resets (pure CSS, no Tailwind directives).
+ * Source of truth: packages/ui/src/styles/shared.css
+ *
+ * ROLLBACK: Remove this @import and paste shared.css :root + resets inline.
+ * Rollback is per-app and does not affect apps/admin.
+ */
+@import '@mad/ui/styles/shared.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-/* ─── CSS Custom Properties ──────────────────────────────────── */
-:root {
-  --color-bg: #0B0F1A;
-  --color-bg-secondary: #111827;
-  --color-bg-card: #161D2F;
-  --color-accent-purple: #7C3AED;
-  --color-accent-pink: #EC4899;
-  --color-accent-cyan: #06B6D4;
-  --color-text-primary: #FFFFFF;
-  --color-text-secondary: #9CA3AF;
-  --color-text-muted: #6B7280;
-
-  /* Fonts */
-  --font-outfit: 'Outfit', system-ui, sans-serif;
-
-  /* Transitions */
-  --transition-smooth: cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
-  --transition-fast: 150ms;
-  --transition-base: 250ms;
-  --transition-slow: 400ms;
-
-  /* Glassmorphism */
-  --glass-bg: rgba(22, 29, 47, 0.6);
-  --glass-border: rgba(255, 255, 255, 0.08);
-  --glass-shadow: 0 4px 24px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05);
-}
-
-/* ─── Base Resets ────────────────────────────────────────────── */
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-html {
-  font-size: 16px;
-  scroll-behavior: smooth;
-  -webkit-text-size-adjust: 100%;
-  text-size-adjust: 100%;
-}
-
-body {
-  background-color: var(--color-bg);
-  color: var(--color-text-primary);
-  font-family: var(--font-outfit);
-  font-feature-settings: 'liga' 1, 'kern' 1;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  min-height: 100vh;
-  overflow-x: hidden;
-}
-
-/* ─── Selection ─────────────────────────────────────────────── */
-::selection {
-  background-color: rgba(124, 58, 237, 0.4);
-  color: #ffffff;
-}
-
-/* ─── Scrollbar ──────────────────────────────────────────────── */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: var(--color-bg-secondary);
-}
-
-::-webkit-scrollbar-thumb {
-  background: rgba(124, 58, 237, 0.5);
-  border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(124, 58, 237, 0.8);
-}
-
-/* ─── Focus Styles ───────────────────────────────────────────── */
-:focus-visible {
-  outline: 2px solid var(--color-accent-purple);
-  outline-offset: 2px;
-  border-radius: 4px;
-}
-
-/* ─── Links ──────────────────────────────────────────────────── */
-a {
-  color: inherit;
-  text-decoration: none;
-}
-
-/* ─── Images ─────────────────────────────────────────────────── */
-img,
-video {
-  max-width: 100%;
-  height: auto;
-}
 
 /* ─── Component Utilities ────────────────────────────────────── */
 @layer components {
@@ -191,7 +100,7 @@ video {
     }
   }
 
-  /* Noise Overlay */
+  /* Noise Overlay (web: uses /images/noise.png static asset) */
   .noise-overlay::after {
     content: '';
     position: absolute;
@@ -235,7 +144,7 @@ video {
     display: none;
   }
 
-  /* ─── Phase 2: Premium Cards & Hover Interactions ─── */
+  /* ─── Premium Cards & Hover Interactions (web-only) ─── */
   .card-interactive {
     transition: transform var(--transition-base) var(--transition-bounce),
                 box-shadow var(--transition-base) var(--transition-smooth),
@@ -294,7 +203,7 @@ video {
     z-index: 2;
   }
 
-  /* ─── Phase 3: Typography & Neon Glows ─── */
+  /* ─── Typography & Neon Glows (web-only) ─── */
   .text-glow-neon {
     text-shadow: 0 0 20px rgba(124, 58, 237, 0.4), 
                  0 0 40px rgba(124, 58, 237, 0.2);
@@ -313,83 +222,46 @@ video {
 
 /* ─── Keyframes ──────────────────────────────────────────────── */
 @keyframes shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
 }
 
 @keyframes gradient-shift {
-  0%, 100% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
 }
 
 @keyframes float {
-  0%, 100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-12px);
-  }
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-12px); }
 }
 
 @keyframes glow-pulse {
-  0%, 100% {
-    box-shadow: 0 0 20px rgba(124, 58, 237, 0.3);
-  }
-  50% {
-    box-shadow: 0 0 60px rgba(124, 58, 237, 0.6);
-  }
+  0%, 100% { box-shadow: 0 0 20px rgba(124, 58, 237, 0.3); }
+  50% { box-shadow: 0 0 60px rgba(124, 58, 237, 0.6); }
 }
 
 @keyframes marquee {
-  0% {
-    transform: translateX(0%);
-  }
-  100% {
-    transform: translateX(-50%);
-  }
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-50%); }
 }
 
-
-/* ─── Phase 4 Keyframes & Animations ───────────────────────── */
+/* ─── Ambient Background Animations (web-only) ──────────────── */
 @keyframes ambient-shift-1 {
-  0%, 100% {
-    transform: translate(0, 0) scale(1);
-  }
-  33% {
-    transform: translate(10%, 15%) scale(1.1);
-  }
-  66% {
-    transform: translate(-5%, -10%) scale(0.95);
-  }
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(10%, 15%) scale(1.1); }
+  66% { transform: translate(-5%, -10%) scale(0.95); }
 }
 
 @keyframes ambient-shift-2 {
-  0%, 100% {
-    transform: translate(0, 0) scale(1);
-  }
-  33% {
-    transform: translate(-15%, -10%) scale(0.9);
-  }
-  66% {
-    transform: translate(5%, 15%) scale(1.08);
-  }
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(-15%, -10%) scale(0.9); }
+  66% { transform: translate(5%, 15%) scale(1.08); }
 }
 
 @keyframes ambient-shift-3 {
-  0%, 100% {
-    transform: translate(0, 0) scale(1);
-  }
-  50% {
-    transform: translate(-10%, 10%) scale(1.15);
-  }
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(-10%, 10%) scale(1.15); }
 }
 
 .animate-ambient-shift-1 {
@@ -435,12 +307,8 @@ video {
 
 /* ─── Safari Viewport Height & Momentum Scrolling Overrides ─── */
 @supports (height: 100dvh) {
-  .min-h-screen {
-    min-height: 100dvh;
-  }
-  .h-screen {
-    height: 100dvh;
-  }
+  .min-h-screen { min-height: 100dvh; }
+  .h-screen { height: 100dvh; }
 }
 
 .overflow-x-auto,
@@ -451,21 +319,10 @@ video {
 }
 
 @keyframes scroll-dot {
-  0% {
-    transform: translateY(0);
-    opacity: 0;
-  }
-  30% {
-    opacity: 1;
-  }
-  80% {
-    transform: translateY(6px);
-    opacity: 0;
-  }
-  100% {
-    transform: translateY(0);
-    opacity: 0;
-  }
+  0% { transform: translateY(0); opacity: 0; }
+  30% { opacity: 1; }
+  80% { transform: translateY(6px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 0; }
 }
 
 .animate-scroll-dot {
@@ -474,73 +331,43 @@ video {
 
 /* Mobile Bottom Sheet Adaptations for @mad/ui Modal (AUTH-010) */
 @media (max-width: 640px) {
-  /* Target the outer fixed overlay flex container and align children to bottom */
   div.fixed.inset-0.z-50.flex.items-center.justify-center {
     align-items: flex-end;
   }
 
-  /* Force the modal box to occupy full width, remove bottom rounded corners, add top rounded corners, and include safe area bottom padding */
   div.fixed.inset-0.z-50.flex.items-center.justify-center > div[role="dialog"] {
     max-width: 100% !important;
     width: 100% !important;
     border-bottom-left-radius: 0 !important;
     border-bottom-right-radius: 0 !important;
-    border-top-left-radius: 1.5rem !important; /* rounded-t-3xl */
+    border-top-left-radius: 1.5rem !important;
     border-top-right-radius: 1.5rem !important;
     padding-bottom: calc(1.5rem + env(safe-area-inset-bottom)) !important;
     transform-origin: bottom center;
-    /* Smooth native-like bottom-sheet entry animation */
     animation: bottomSheetSlideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
 }
 
 @keyframes bottomSheetSlideUp {
-  from {
-    transform: translateY(100%);
-  }
-  to {
-    transform: translateY(0);
-  }
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
 }
 
 /* ─── Hero Entry Animations (UI-009B1) ─────────────────────── */
 @keyframes heroFadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .animate-hero-fade-in {
-  /* Resilient animation: Do not set opacity: 0 on the class itself.
-     If CSS animations fail, elements remain visible (opacity: 1).
-     'both' fill mode applies 'from' styles during the delay period. */
   animation: heroFadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-.animation-delay-200 {
-  animation-delay: 200ms;
-}
-
-.animation-delay-300 {
-  animation-delay: 300ms;
-}
-
-.animation-delay-350 {
-  animation-delay: 350ms;
-}
-
-.animation-delay-400 {
-  animation-delay: 400ms;
-}
-
-.animation-delay-450 {
-  animation-delay: 450ms;
-}
+.animation-delay-200 { animation-delay: 200ms; }
+.animation-delay-300 { animation-delay: 300ms; }
+.animation-delay-350 { animation-delay: 350ms; }
+.animation-delay-400 { animation-delay: 400ms; }
+.animation-delay-450 { animation-delay: 450ms; }
 
 @media (prefers-reduced-motion: reduce) {
   .animate-hero-fade-in {
@@ -549,5 +376,3 @@ video {
     animation: none !important;
   }
 }
-
-
