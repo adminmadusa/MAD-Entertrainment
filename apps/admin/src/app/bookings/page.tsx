@@ -6,11 +6,11 @@ import { useSearchParams } from 'next/navigation';
 import { useState, useEffect, Suspense, useMemo } from 'react';
 
 import BookingsSummaryWidget from '@/components/bookings/BookingsSummaryWidget';
-import ErrorState from '@/components/states/ErrorState';
 import { adminGetBookings, adminCancelBooking, adminCorrectBookingEmail, adminResendBookingTickets, adminGetBookingsSummary, type AdminBooking, } from '@/lib/api/admin/booking.service';
 import { adminGetEvents } from '@/lib/api/admin/event.service';
 import { useAdminAuth } from '@/providers/AdminAuthProvider';
 import { BookingStatus, AdminRole } from '@mad/shared';
+import { ErrorState } from '@mad/ui';
 
 import BookingDetailsModal from './_components/BookingDetailsModal';
 import BookingFilters from './_components/BookingFilters';

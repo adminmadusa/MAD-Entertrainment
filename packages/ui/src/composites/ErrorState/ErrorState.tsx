@@ -12,8 +12,11 @@ import {
 } from './ErrorState.styles';
 
 export const ErrorState = forwardRef<HTMLDivElement, ErrorStateProps>(
-  ({ className, title, description, icon, onRetry, action, ...props }, ref) => {
+  ({ className, title, description, message, icon, onRetry, retry, action, ...props }, ref) => {
     const activeIcon = icon !== undefined ? icon : <AlertTriangle className={errorStateIconClasses} />;
+    const activeTitle = title || message || 'Something went wrong.';
+    const activeDescription = (title || message) ? description : undefined;
+    const activeRetry = onRetry || retry;
 
     return (
       <div
@@ -23,14 +26,14 @@ export const ErrorState = forwardRef<HTMLDivElement, ErrorStateProps>(
         {...props}
       >
         {activeIcon && <div className="shrink-0">{activeIcon}</div>}
-        <h4 className={errorStateTitleClasses}>{title}</h4>
-        {description && <p className={errorStateDescriptionClasses}>{description}</p>}
-        {(action || onRetry) && (
+        <h4 className={errorStateTitleClasses}>{activeTitle}</h4>
+        {activeDescription && <p className={errorStateDescriptionClasses}>{activeDescription}</p>}
+        {(action || activeRetry) && (
           <div className={errorStateActionClasses}>
             {action !== undefined ? (
               action
             ) : (
-              <Button variant="outline" size="sm" onClick={onRetry}>
+              <Button variant="outline" size="sm" onClick={activeRetry}>
                 Retry
               </Button>
             )}

@@ -5,10 +5,9 @@ import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import React, { useState, useEffect } from 'react';
 
-import ErrorState from '@/components/states/ErrorState';
-import LoadingState from '@/components/states/LoadingState';
 import { useAdminAuth } from '@/providers/AdminAuthProvider';
 import { AdminRole } from '@mad/shared';
+import { ErrorState, LoadingState } from '@mad/ui';
 
 import UserAlertBanner from '../_components/UserAlertBanner';
 import UserBookingsTable from '../_components/UserBookingsTable';
