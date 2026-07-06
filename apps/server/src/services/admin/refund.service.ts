@@ -3,10 +3,7 @@ import crypto from 'crypto';
 import { BookingStatus, NotificationType, PaymentStatus, RefundStatus } from '@mad/shared';
 
 import { getQueueName } from '../../config/queue.config';
-import { getRazorpay } from '../../config/razorpay';
-import { getStripe } from '../../config/stripe';
 import { fullRefundHtml, partialRefundHtml } from '../../lib/email';
-import { createRazorpayRefund } from '../../lib/razorpay/refund.client';
 import { AppError } from '../../middleware/error.middleware';
 import { Booking } from '../../models/booking.schema';
 import { Notification } from '../../models/notification.schema';
@@ -20,6 +17,7 @@ import { createNotificationSafe } from '../notification.service';
 import { QueueService } from '../queue.service';
 import { cancelBooking, executeCancelBookingSideEffects } from './booking.service';
 import { RefundValidationService } from './refund/refund-validation.service';
+import { RefundGatewayService } from './refund/refund-gateway.service';
 
 export const createRefund = async (data: {
   bookingId: string;
@@ -285,43 +283,12 @@ export const processRefund = async (
           description: `Manual override executed for refund ${refund._id}. Reason: ${overrideReason}`,
         });
       } else {
-        if (payment.gateway === 'stripe') {
-          const stripe = getStripe();
-          if (!payment.gatewayOrderId) {
-            throw AppError.badRequest('Missing gatewayOrderId for Stripe payment');
-          }
-          try {
-            const stripeRefund = await stripe.refunds.create({
-              payment_intent: payment.gatewayOrderId,
-              amount: Math.round(refund.amount * 100),
-            }, {
-              idempotencyKey: refund._id.toString(),
-            });
-            finalGatewayRefundId = stripeRefund.id;
-          } catch (err: any) {
-            throw AppError.badRequest(`Stripe refund failed: ${err.message}`);
-          }
-        } else if (payment.gateway === 'razorpay') {
-          if (!payment.gatewayPaymentId) {
-            throw AppError.badRequest('Missing gatewayPaymentId for Razorpay payment');
-          }
-          const response = await createRazorpayRefund({
-            paymentId: payment.gatewayPaymentId,
-            amountPaise: Math.round(refund.amount * 100),
-            idempotencyKey: refund._id.toString(),
-          });
-          finalGatewayRefundId = response.id;
-        } else if (payment.gateway === 'mock' || !payment.gateway) {
-          RefundValidationService.assertProductionMockRefundRuntimeBlocked({
-            bookingId: refund.bookingId.toString(),
-            paymentId: refund.paymentId.toString(),
-            gateway: payment.gateway,
-            requestSource: 'process_refund',
-          });
-          finalGatewayRefundId = finalGatewayRefundId || `mock-ref-${crypto.randomUUID().slice(0, 8)}`;
-        } else {
-          throw AppError.badRequest(`Unsupported payment gateway: ${payment.gateway}`);
-        }
+        const response = await RefundGatewayService.executeGatewayRefund({
+          payment,
+          refund,
+          gatewayRefundId,
+        });
+        finalGatewayRefundId = response.id;
       }
 
       if (finalGatewayRefundId) {
