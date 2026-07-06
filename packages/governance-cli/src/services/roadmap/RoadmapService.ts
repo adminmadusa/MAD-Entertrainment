@@ -10,7 +10,7 @@ export class RoadmapService {
   ) {}
 
   async loadRoadmap(): Promise<RoadmapPhase[]> {
-    const roadmapPath = join(this.repoRoot, this.configRoadmapPath.replace(/\.md$/, '.json'));
+    const roadmapPath = join(this.repoRoot, this.configRoadmapPath);
     const exists = await this.fs.exists(roadmapPath);
     if (!exists) {
       throw new Error(`Roadmap database file not found at: ${roadmapPath}. Create a roadmap.json file to map milestones.`);

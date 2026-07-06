@@ -8,7 +8,7 @@ const config: GovernanceConfig = {
   },
   documentation: {
     backlog: 'docs/design-system/backlog/BACKLOG.md',
-    roadmap: 'ROADMAP.md',
+    roadmap: 'packages/governance-cli/data/roadmap.json',
     root: 'docs/',
     walkthroughs: 'docs/walkthroughs/',
     plans: 'implementation_plan.md',

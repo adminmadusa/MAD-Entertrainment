@@ -64,7 +64,7 @@ export const getDefaults = (): GovernanceConfig => ({
   },
   documentation: {
     backlog: process.env.GOVERNANCE_BACKLOG_PATH ?? 'docs/design-system/backlog/BACKLOG.md',
-    roadmap: process.env.GOVERNANCE_ROADMAP_PATH ?? 'ROADMAP.md',
+    roadmap: process.env.GOVERNANCE_ROADMAP_PATH ?? 'packages/governance-cli/data/roadmap.json',
     root: process.env.GOVERNANCE_DOCS_ROOT ?? 'docs/',
     walkthroughs: process.env.GOVERNANCE_WALKTHROUGHS_PATH ?? 'docs/walkthroughs/',
     plans: process.env.GOVERNANCE_PLANS_PATH ?? 'implementation_plan.md',
