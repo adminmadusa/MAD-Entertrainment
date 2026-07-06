@@ -4,13 +4,12 @@ import { RefundStatus } from '@mad/shared';
 
 import { AppError } from '../../middleware/error.middleware';
 import { Refund, IRefund } from '../../models/refund.schema';
-import { auditLog } from '../../utils/audit';
-import { logger } from '../../utils/logger';
 import { executeCancelBookingSideEffects } from './booking.service';
 import { RefundValidationService } from './refund/refund-validation.service';
 import { RefundGatewayService } from './refund/refund-gateway.service';
 import { RefundLifecycleService } from './refund/refund-lifecycle.service';
 import { RefundNotificationService } from './refund/refund-notification.service';
+import { RefundAuditService } from './refund/refund-audit.service';
 
 export const createRefund = async (data: {
   bookingId: string;
@@ -44,7 +43,7 @@ export const createRefund = async (data: {
   } catch (err: any) {
     const isDuplicateKey = err.code === 11000 || err.code === '11000' || err.message?.includes('E11000');
     if (isDuplicateKey) {
-      logger.warn({ idempotencyKey }, 'Duplicate refund request creation race detected. Recovering existing refund.');
+      RefundAuditService.logDuplicateRefundRace(idempotencyKey);
       const existing = await Refund.findOne({
         idempotencyKey,
       });
@@ -107,9 +106,9 @@ export const processRefund = async (
     // Phase 1: Claim and Reserve within a transaction session
     phase1Result = await RefundLifecycleService.claimRefundRecord(id);
   } catch (err: any) {
-    logger.error({ err, refundId: id }, 'Error in Phase 1 of processing refund. Reverting status to requested.');
+    RefundAuditService.logProcessPhase1Error(id, err);
     await RefundLifecycleService.revertClaimRefundRecord(id).catch((revertErr) => {
-      logger.error({ revertErr, refundId: id }, 'Failed to revert refund status to requested.');
+      RefundAuditService.logRevertClaimError(id, revertErr);
     });
     throw err;
   }
@@ -144,20 +143,13 @@ export const processRefund = async (
           throw AppError.badRequest('Manual override requires a gateway refund ID');
         }
         // Emit manual override audit event
-        auditLog({
-          action: 'REFUND_MANUAL_OVERRIDE',
-          // PRICING-003: Use real actor identity instead of hardcoded 'system'
-          actor: { type: 'admin', id: actor?.id || 'system' },
-          status: 'success',
-          metadata: {
-            refundId: refund._id.toString(),
-            paymentId: payment._id.toString(),
-            bookingId: booking._id.toString(),
-            amount: refund.amount,
-            gatewayRefundId,
-            overrideReason,
-          },
-          description: `Manual override executed for refund ${refund._id}. Reason: ${overrideReason}`,
+        RefundAuditService.logManualOverride({
+          refund,
+          payment,
+          booking,
+          gatewayRefundId,
+          overrideReason,
+          actor,
         });
       } else {
         const response = await RefundGatewayService.executeGatewayRefund({
@@ -170,7 +162,7 @@ export const processRefund = async (
 
       if (finalGatewayRefundId) {
         await RefundLifecycleService.persistGatewayRefundId(refund._id.toString(), finalGatewayRefundId).catch((err) => {
-          logger.error({ err, refundId: refund._id.toString() }, 'Failed to persist gatewayRefundId immediately.');
+          RefundAuditService.logGatewayPersistError(refund._id.toString(), err);
         });
         refund.gatewayRefundId = finalGatewayRefundId;
       }
@@ -189,9 +181,9 @@ export const processRefund = async (
     }
   } catch (err: any) {
     // Phase 4: Conditional Failure Recovery
-    logger.error({ err, refundId: id }, 'Error processing refund. Reverting status to requested.');
+    RefundAuditService.logProcessError(id, err);
     await RefundLifecycleService.revertClaimRefundRecord(id).catch((revertErr) => {
-      logger.error({ revertErr, refundId: id }, 'Failed to revert refund status to requested.');
+      RefundAuditService.logRevertClaimError(id, revertErr);
     });
     throw err;
   }
@@ -204,7 +196,7 @@ export const processRefund = async (
       try {
         await executeCancelBookingSideEffects(cancelPostCommitPayload);
       } catch (err) {
-        logger.error({ err }, 'Error executing booking cancel side effects post-commit in processRefund');
+        RefundAuditService.logCancelSideEffectsError(err);
       }
     }
 
