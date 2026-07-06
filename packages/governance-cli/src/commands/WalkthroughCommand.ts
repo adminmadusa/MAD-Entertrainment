@@ -75,7 +75,7 @@ output: markdown
       .replace(/{{VERIFICATION_LOGS}}/g, '- [ ] All verification logs completed');
 
     const fileName = `walkthrough-${branchName.replace(/[^a-zA-Z0-9]/g, '-')}.md`;
-    const outputPath = join(context.repoRoot, 'docs/walkthroughs', fileName);
+    const outputPath = join(context.repoRoot, context.config.documentation.walkthroughs, fileName);
 
     context.logger.info(`Writing walkthrough to ${outputPath}`);
     if (!context.dryRun) {

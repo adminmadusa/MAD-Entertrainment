@@ -10,6 +10,8 @@ const config: GovernanceConfig = {
     backlog: 'docs/design-system/backlog/BACKLOG.md',
     roadmap: 'ROADMAP.md',
     root: 'docs/',
+    walkthroughs: 'docs/walkthroughs/',
+    plans: 'implementation_plan.md',
   },
   pullRequests: {
     template: '.github/pull_request_template.md',

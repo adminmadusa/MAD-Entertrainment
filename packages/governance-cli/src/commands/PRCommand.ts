@@ -25,18 +25,15 @@ export class PRCommand extends Command {
 
     // 1. Load implementation plan details if present
     let planSummary = 'No implementation plan details found.';
-    const planRootPath = join(context.repoRoot, 'implementation_plan.md');
-    const planBrainPath = join('/Users/admin/.gemini/antigravity-ide/brain/a6a7cf4f-2535-442b-b93d-b011211a7814/implementation_plan.md');
-    
-    let planExists = await context.fs.exists(planRootPath);
-    let activePlanPath = planRootPath;
-    if (!planExists) {
-      planExists = await context.fs.exists(planBrainPath);
-      activePlanPath = planBrainPath;
-    }
+    const planConfigPath = context.config.documentation.plans;
+    const planRootPath = planConfigPath.startsWith('/') 
+      ? planConfigPath 
+      : join(context.repoRoot, planConfigPath);
+
+    const planExists = await context.fs.exists(planRootPath);
 
     if (planExists) {
-      const planContent = await context.fs.read(activePlanPath);
+      const planContent = await context.fs.read(planRootPath);
       // Extract top header description block
       const paragraphs = planContent.split('\n\n');
       const intro = paragraphs.find(p => p.trim() && !p.startsWith('#') && !p.startsWith('---'));
@@ -48,7 +45,7 @@ export class PRCommand extends Command {
     // 2. Load walkthrough details if present
     let walkthroughSummary = 'No walkthrough logs found.';
     const safeBranch = branchName.replace(/[^a-zA-Z0-9]/g, '-');
-    const walkthroughPath = join(context.repoRoot, 'docs/walkthroughs', `walkthrough-${safeBranch}.md`);
+    const walkthroughPath = join(context.repoRoot, context.config.documentation.walkthroughs, `walkthrough-${safeBranch}.md`);
     const walkthroughExists = await context.fs.exists(walkthroughPath);
 
     if (walkthroughExists) {
@@ -86,7 +83,7 @@ ${commits ? commitsListMd : '- No commits on current task branch'}
 - [ ] Did we clean up the branch usingRULE-GIT-001?
 `;
 
-    const prOutputPath = join(context.repoRoot, 'docs/pull-requests', `pr-${safeBranch}.md`);
+    const prOutputPath = join(context.repoRoot, context.config.pullRequests.targetPath, `pr-${safeBranch}.md`);
 
     context.logger.info(`Writing PR template description to ${prOutputPath}`);
     if (!context.dryRun) {

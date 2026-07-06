@@ -19,6 +19,7 @@ With the core framework of `packages/governance-cli` established and verified, w
 - [packages/governance-cli/src/services/GitService.ts](file:///Users/admin/Desktop/MAD Entertrainment/packages/governance-cli/src/services/GitService.ts)
 
 ## Commit History
+- dbe9f98e docs(governance-cli): generate Phase 3.6B walkthrough and PR artifacts
 - 33643adf feat(governance-cli): implement repository productivity commands
 
 ## Quality Gate Verification
