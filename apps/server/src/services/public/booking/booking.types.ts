@@ -12,3 +12,8 @@ export interface MyBookingsResult {
   tickets: ITicket[];
   ticketsReadyMap: Record<string, boolean>;
 }
+
+export interface BookingAccessContext {
+  userId?: string;
+  sessionId?: string;
+}
