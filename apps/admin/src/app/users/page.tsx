@@ -5,12 +5,10 @@ import Link from 'next/link';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import React, { useState, useEffect, useCallback } from 'react';
 
-import ErrorState from '@/components/states/ErrorState';
-import LoadingState from '@/components/states/LoadingState';
 import { adminGetUsers, UserListItem } from '@/lib/api/admin/user.service';
 import { useAdminAuth } from '@/providers/AdminAuthProvider';
 import { AdminRole } from '@mad/shared';
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@mad/ui';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, ErrorState, LoadingState } from '@mad/ui';
 import { formatDateTime } from '@mad/utils';
 
 export default function UsersDirectoryPage() {

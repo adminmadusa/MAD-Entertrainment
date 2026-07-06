@@ -97,6 +97,20 @@ Every release must satisfy the following checklist before merge:
 
 ---
 
+### [@mad/ui v1.4.0] — Phase 2.5: Adoption & Component Promotion — 2026-07-06
+
+#### Added
+- **`docs/design-system/releases/1.4.0.md`** — release notes detailing Phase 2.5 deliverables.
+- **Stable component lifecycle baseline** — baseline v1.4.0 registers all 22 components as `stable` with `since: "1.4.0"`.
+
+#### Changed
+- Deleted duplicate `ErrorState.tsx` and `LoadingState.tsx` components from `apps/admin` states, and converted all 13 import sites to point directly to `@mad/ui`.
+- Refactored `apps/web` `HomeSkeletons.tsx` to compose visual shimmers using the shared `@mad/ui` `Skeleton` component rather than raw custom styles.
+- Deleted all backward-compatibility shims inside `packages/ui/src/components/` and removed their exports from `packages/ui/src/index.tsx`.
+- Extended `ErrorState` primitive to accept `message` and `retry` props as optional aliases for backward compatibility.
+
+---
+
 ### [@mad/ui v1.3.0] — Phase 2B: Shared Component Implementations — 2026-07-06
 
 #### Added

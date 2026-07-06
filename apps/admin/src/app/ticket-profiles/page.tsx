@@ -5,13 +5,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { useState } from 'react';
 
-import ErrorState from '@/components/states/ErrorState';
 import { adminGetTicketProfiles, adminDeleteTicketProfile, adminUpdateTicketProfile } from '@/lib/api/admin/ticket-profile.service';
 import { extractApiError } from '@/lib/api/client';
 import { useAdminAuth } from '@/providers/AdminAuthProvider';
 import { AdminRole } from '@mad/shared';
 import type { TicketProfile } from '@mad/types';
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@mad/ui';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, ErrorState } from '@mad/ui';
 import { formatDate } from '@mad/utils';
 
 export default function AdminTicketProfilesPage() {
