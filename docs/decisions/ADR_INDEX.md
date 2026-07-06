@@ -15,3 +15,4 @@ This index maintains the chronological list of all architectural decisions made 
 | **ADR-009** | PaymentRefundService Decomposition | Implemented | Architecture / Payments | 2026-07-06 | [ADR-009](ADR-009-payment-refund-decomposition.md) |
 | **ADR-010** | Admin Refund Service Decomposition | Implemented | Architecture / Admin Services | 2026-07-06 | [ADR-010](ADR-010-admin-refund-decomposition.md) |
 | **ADR-011** | Database Governance Standard for MongoDB & Mongoose | Accepted | Architecture / Database Governance | 2026-07-06 | [ADR-011](ADR-011-database-governance-standard.md) |
+| **ADR-012** | Ticket Scanner Redesign Architecture | Accepted | Architecture / UI / Security / API / Governance | 2026-07-06 | [ADR-012](ADR-012-ticket-scanner-redesign.md) |
