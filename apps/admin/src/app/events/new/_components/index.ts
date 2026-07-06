@@ -6,6 +6,5 @@ export { EventMediaSection } from './EventMediaSection';
 export { EventAdvancedSettingsSection } from './EventAdvancedSettingsSection';
 export { EventPublishSection } from './EventPublishSection';
 export { EventFormActions } from './EventFormActions';
-export { Field } from './Field';
 export * from './constants';
 export * from './types';
