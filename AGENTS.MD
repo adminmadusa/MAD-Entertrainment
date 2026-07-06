@@ -733,6 +733,58 @@ No assumptions.
 
 Evidence required.
 
+No implementation or file modification may begin until the Implementation Readiness Audit has concluded with one of the approved outcomes.
+
+Every new feature, function, button, link, API, database change, bug fix, refactor, or enhancement must first have a GitHub issue created, then undergo a repository audit to verify whether the requested functionality already exists or is partially implemented.
+
+Every request must end with exactly one decision:
+
+* Already Implemented
+* Partially Implemented
+* Not Implemented
+* Rejected
+
+Only the "Not Implemented" outcome permits proceeding with new implementation, testing, pull request creation, review, and merge.
+
+"Partially Implemented" permits extending the existing implementation only (reusing existing architecture, no duplicate logic).
+
+"Already Implemented" requires no production code changes; the request must be rejected or closed.
+
+"Rejected" closes the request immediately without implementation.
+
+## IMPLEMENTATION DECISION GATE
+
+After the Implementation Readiness Audit, exactly one outcome is permitted:
+
+### Outcome A — Already Implemented
+* **Conditions**: Feature exists, behaviour matches requirements, and tests pass.
+* **Action**: Do NOT implement. Reject any implementation PR. Create documentation updates only if required. Close or convert the issue.
+
+### Outcome B — Partially Implemented
+* **Conditions**: Feature exists but is incomplete.
+* **Action**: Extend the existing implementation. Reuse existing architecture. Do not duplicate logic.
+
+### Outcome C — Not Implemented
+* **Conditions**: Feature does not exist.
+* **Action**: Proceed with implementation following the approved governance workflow.
+
+### Outcome D — Rejected
+* **Conditions**: Duplicate issue, duplicate feature, invalid request, architecture conflict, superseded by another issue, or out of scope.
+* **Action**: Close the request immediately without implementation.
+
+## FINAL APPROVAL CHECKLIST
+Before ending the audit, human developers and AI agents must complete this checklist:
+
+* [ ] Already Implemented
+* [ ] Partially Implemented
+* [ ] Not Implemented
+* [ ] Rejected
+
+* If **Already Implemented**: STOP. Do not write code. Do not create duplicate services. Do not refactor. Recommend documentation updates only (if necessary).
+* If **Partially Implemented**: Implement only the missing functionality.
+* If **Not Implemented**: Proceed to the implementation planning phase.
+* If **Rejected**: Close the request without implementation.
+
 ---
 
 # IMPLEMENTATION WORKFLOW
