@@ -66,6 +66,55 @@ export class ConsoleRenderer implements Renderer {
         }
       }
       console.log('==================================================\n');
+    } else if (model.type === 'roadmap') {
+      const phases = (model.data as any)?.phases ?? [];
+      console.log('\n==================================================');
+      console.log('🗺️   Governance Milestones & Roadmap');
+      console.log('==================================================');
+      for (const p of phases) {
+        const symbol = p.status === 'complete' ? '✓' : (p.status === 'current' ? '▶' : '⚙');
+        const color = p.status === 'complete' ? '\x1b[32m' : (p.status === 'current' ? '\x1b[33m' : '\x1b[90m');
+        const clear = '\x1b[0m';
+        console.log(`  ${color}${symbol}${clear}  Phase ${p.id.padEnd(6)} : ${p.name.padEnd(28)} [${p.status.toUpperCase()}]`);
+        console.log(`                 ${p.description}`);
+      }
+      console.log('==================================================\n');
+    } else if (model.type === 'changelog') {
+      const text = (model.data as any)?.changelogText ?? '';
+      console.log('\n==================================================');
+      console.log('📝  Generated Semantic Release Changelog');
+      console.log('==================================================');
+      console.log(text);
+      console.log('==================================================\n');
+    } else if (model.type === 'release') {
+      const d = model.data as any;
+      console.log('\n==================================================');
+      console.log('🚀  Governance CLI Release Pipeline');
+      console.log('==================================================');
+      if (d.prepared && !d.executed) {
+        console.log(`  Status: Prepared (Dry-Run mode)`);
+        console.log(`  Version increment: ${d.prep.currentVersion} ➔ ${d.prep.version}`);
+      } else {
+        console.log(`  Status: Executed Successfully`);
+        console.log(`  Bumped Packages:   ${d.bumpedPackages.join(', ')}`);
+        console.log(`  Created Git Tags:  ${d.tagsCreated.join(', ')}`);
+      }
+      console.log('==================================================\n');
+    } else if (model.type === 'baseline') {
+      const d = model.data as any;
+      console.log('\n==================================================');
+      console.log('🔍  Governance Baseline Hash Integrity');
+      console.log('==================================================');
+      if (d.syncedFiles.length > 0) {
+        console.log(`  Status: Synchronized (${d.syncedFiles.length} file hashes updated)`);
+      } else {
+        console.log(`  Status: Audited`);
+        console.log(`  Integrity: ${d.status === 'ok' ? 'PASSED' : 'OUT-OF-SYNC'}`);
+        if (d.mismatches.length > 0) {
+          console.log(`  Mismatches found:  ${d.mismatches.length} files modified`);
+        }
+      }
+      console.log('==================================================\n');
     } else {
       console.log(`[CONSOLE] Result: ${model.success ? 'Success' : 'Failed'}`);
       if (model.data) {

@@ -1,0 +1,64 @@
+{
+  "phases": [
+    {
+      "id": "1",
+      "name": "Design System Foundation",
+      "status": "complete",
+      "description": "Shared design tokens, theme contract, global styles, and theme preset mapping."
+    },
+    {
+      "id": "2A",
+      "name": "UI Infrastructure",
+      "status": "complete",
+      "description": "Monorepo workspace package structures, icon system, and export boundaries."
+    },
+    {
+      "id": "2B",
+      "name": "Shared Components",
+      "status": "complete",
+      "description": "22 primitive components matching accessibility and mobile responsive rules."
+    },
+    {
+      "id": "2.5",
+      "name": "Adoption & Freeze",
+      "status": "complete",
+      "description": "Shim removals, active package mapping across admin and web apps, and freeze tag."
+    },
+    {
+      "id": "3",
+      "name": "UX Pattern Library",
+      "status": "complete",
+      "description": "19 UX pattern documents, 3 journey maps, and compliance templates."
+    },
+    {
+      "id": "3.6A",
+      "name": "Governance CLI Core",
+      "status": "complete",
+      "description": "Extensible core framework, registries, context DI, and format renderers."
+    },
+    {
+      "id": "3.6B",
+      "name": "Productivity Commands",
+      "status": "complete",
+      "description": "Automating Doctor, Status dashboard, git branch Cleanup, Walkthroughs, and PRs."
+    },
+    {
+      "id": "3.6C",
+      "name": "Release Automation",
+      "status": "current",
+      "description": "Extracting Release, Version, Baseline, Roadmap, and Template services."
+    },
+    {
+      "id": "3.7",
+      "name": "UI/UX Remediation",
+      "status": "planned",
+      "description": "Migrating legacy HTML forms and dashboard elements to @mad/ui composites."
+    },
+    {
+      "id": "4",
+      "name": "Governance Enforcement",
+      "status": "planned",
+      "description": "Token AST checks, layout parser validators, and blocking PR CI pipeline gates."
+    }
+  ]
+}

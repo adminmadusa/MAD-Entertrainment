@@ -25,6 +25,13 @@ import { CleanupCommand } from './commands/CleanupCommand';
 import { WalkthroughCommand } from './commands/WalkthroughCommand';
 import { PRCommand } from './commands/PRCommand';
 import { BacklogCommand } from './commands/BacklogCommand';
+import { RoadmapCommand } from './commands/RoadmapCommand';
+import { ChangelogCommand } from './commands/ChangelogCommand';
+import { ReleaseCommand } from './commands/ReleaseCommand';
+import { BaselineCommand } from './commands/BaselineCommand';
+
+// Import build service container
+import { buildServiceContainer } from './services/container';
 
 async function main() {
   let repoRoot = resolve(process.cwd());
@@ -64,6 +71,9 @@ async function main() {
     renderer = new MarkdownRenderer();
   }
 
+  // Instantiate domain services container using factory assembler
+  const services = buildServiceContainer(fs, git, repoRoot, config);
+
   // 3. Build Registry
   const registry = new CommandRegistry();
 
@@ -87,6 +97,10 @@ async function main() {
   builder.registerCommand(new WalkthroughCommand());
   builder.registerCommand(new PRCommand());
   builder.registerCommand(new BacklogCommand());
+  builder.registerCommand(new RoadmapCommand());
+  builder.registerCommand(new ChangelogCommand());
+  builder.registerCommand(new ReleaseCommand());
+  builder.registerCommand(new BaselineCommand());
 
   // Load configured plugins (stub for 3.6A core)
   for (const plugin of config.plugins) {
@@ -141,6 +155,7 @@ async function main() {
     logger,
     renderer,
     registry,
+    services,
     dryRun,
     verbose,
   };
