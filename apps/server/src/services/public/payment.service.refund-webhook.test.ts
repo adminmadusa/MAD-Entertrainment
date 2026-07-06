@@ -7,7 +7,8 @@ import { Booking } from '../../models/booking.schema';
 import { Notification } from '../../models/notification.schema';
 import { Payment } from '../../models/payment.schema';
 import { Refund } from '../../models/refund.schema';
-import { cancelBooking, executeCancelBookingSideEffects } from '../admin/booking.service';
+import { BookingLifecycleService } from './booking/booking-lifecycle.service';
+const { cancelBooking, executeCancelBookingSideEffects } = BookingLifecycleService;
 import { QueueService } from '../queue.service';
 import { PaymentService } from './payment.service';
 
@@ -105,13 +106,19 @@ const createMockQuery = (val: any) => {
   return query as any;
 };
 
-vi.mock('../admin/booking.service', () => ({
-  cancelBooking: vi.fn().mockResolvedValue({
+vi.mock('./booking/booking-lifecycle.service', () => {
+  const cancelBooking = vi.fn().mockResolvedValue({
     booking: { _id: 'b-123', status: 'refunded' },
     postCommitPayload: 'mock-payload',
-  }),
-  executeCancelBookingSideEffects: vi.fn(),
-}));
+  });
+  const executeCancelBookingSideEffects = vi.fn();
+  return {
+    BookingLifecycleService: {
+      cancelBooking,
+      executeCancelBookingSideEffects,
+    }
+  };
+});
 
 vi.mock('../queue.service', () => ({
   QueueService: {
