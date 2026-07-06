@@ -1,8 +1,8 @@
 'use client';
 
 import React from 'react';
-
-import { Field, inputCls } from './Field';
+import { FormField } from '@mad/ui';
+import { inputCls } from './constants';
 
 interface EventAdvancedSettingsSectionProps {
   tags: string;
@@ -34,14 +34,15 @@ export function EventAdvancedSettingsSection({
       {/* Options */}
       <div className="glass rounded-2xl border border-border-subtle p-6 space-y-5">
         <h2 className="text-white font-semibold">Options</h2>
-        <Field label="Tags (comma-separated)">
+        <FormField label="Tags (comma-separated)" htmlFor="event-tags">
           <input
+            id="event-tags"
             value={tags}
             onChange={(e) => setTags(e.target.value)}
             placeholder="EDM, outdoor, live"
             className={inputCls}
           />
-        </Field>
+        </FormField>
 
         <div className="flex flex-wrap gap-6">
           <label className="flex items-center gap-3 cursor-pointer select-none">

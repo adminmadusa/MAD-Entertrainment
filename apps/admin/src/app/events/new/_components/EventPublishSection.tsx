@@ -1,10 +1,9 @@
 'use client';
 
 import React from 'react';
-
 import { EventStatus } from '@mad/shared';
-
-import { Field, inputCls } from './Field';
+import { FormField } from '@mad/ui';
+import { inputCls } from './constants';
 
 interface EventPublishSectionProps {
   status: EventStatus;
@@ -13,7 +12,7 @@ interface EventPublishSectionProps {
 
 export function EventPublishSection({ status, setStatus }: EventPublishSectionProps) {
   return (
-    <Field label="Status">
+    <FormField label="Status" htmlFor="event-status">
       <select
         id="event-status"
         value={status}
@@ -27,6 +26,6 @@ export function EventPublishSection({ status, setStatus }: EventPublishSectionPr
           Published
         </option>
       </select>
-    </Field>
+    </FormField>
   );
 }

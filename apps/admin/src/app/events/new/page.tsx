@@ -13,7 +13,7 @@ import { extractApiError } from '@/lib/api/client';
 import { BookingMode, TicketTier, EventStatus } from '@mad/shared';
 import type { TicketProfile } from '@mad/types';
 
-import { EventBasicInfoSection, EventScheduleSection, EventVenueSection, EventTicketSection, EventMediaSection, EventAdvancedSettingsSection, EventPublishSection, EventFormActions, Field, inputCls, defaultTier, TicketTierInput, CloudinaryImage } from './_components';
+import { EventBasicInfoSection, EventScheduleSection, EventVenueSection, EventTicketSection, EventMediaSection, EventAdvancedSettingsSection, EventPublishSection, EventFormActions, defaultTier, TicketTierInput, CloudinaryImage } from './_components';
 
 export default function CreateEventPage() {
   const router = useRouter();

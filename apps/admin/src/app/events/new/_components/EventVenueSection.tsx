@@ -1,8 +1,8 @@
 'use client';
 
 import React from 'react';
-
-import { Field, inputCls } from './Field';
+import { FormField } from '@mad/ui';
+import { inputCls } from './constants';
 
 interface EventVenueSectionProps {
   venueName: string;
@@ -14,7 +14,7 @@ export function EventVenueSection({
   setVenueName,
 }: EventVenueSectionProps) {
   return (
-    <Field label="Venue *">
+    <FormField label="Venue" htmlFor="event-venue" required>
       <div className="relative">
         <input
           id="event-venue"
@@ -41,6 +41,6 @@ export function EventVenueSection({
           </svg>
         </span>
       </div>
-    </Field>
+    </FormField>
   );
 }

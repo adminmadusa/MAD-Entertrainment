@@ -4,7 +4,8 @@ import React from 'react';
 
 import type { TicketProfile, TicketGroup, TicketConfig } from '@mad/types';
 
-import { Field, inputCls } from './Field';
+import { FormField } from '@mad/ui';
+import { inputCls } from './constants';
 import type { TicketTierInput } from './types';
 
 const TICKET_TIER_NAMES = [
@@ -58,45 +59,43 @@ export function EventTicketSection({
   title,
 }: EventTicketSectionProps) {
   return (
-    <div className="glass rounded-2xl border border-border-subtle p-6 space-y-6">
-      <div className="flex items-center justify-between border-b border-white/5 pb-4">
-        <h2 className="text-white font-semibold text-base">Ticketing Configuration</h2>
-        <div className="flex bg-white/5 p-1 rounded-xl border border-white/10">
+    <div className="glass rounded-2xl border border-border-subtle p-6 space-y-5">
+      <div className="flex items-center justify-between">
+        <h2 className="text-white font-semibold">Ticketing Configuration</h2>
+        <div className="flex bg-background rounded-lg p-0.5 border border-border-subtle">
           <button
             type="button"
             onClick={() => setTicketingType('custom')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+            className={`px-3 py-1 text-xs font-medium rounded-md transition-all ${
               ticketingType === 'custom'
-                ? 'bg-accent-purple text-white shadow-md'
-                : 'text-text-secondary hover:text-white'
+                ? 'bg-accent-purple text-white shadow-sm'
+                : 'text-text-muted hover:text-text-secondary'
             }`}
           >
-            Custom Tiers
+            Custom
           </button>
           <button
             type="button"
             onClick={() => setTicketingType('profile')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+            className={`px-3 py-1 text-xs font-medium rounded-md transition-all ${
               ticketingType === 'profile'
-                ? 'bg-accent-purple text-white shadow-md'
-                : 'text-text-secondary hover:text-white'
+                ? 'bg-accent-purple text-white shadow-sm'
+                : 'text-text-muted hover:text-text-secondary'
             }`}
           >
-            Ticket Profile
+            Profile
           </button>
         </div>
       </div>
 
       {ticketingType === 'custom' ? (
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <span className="text-text-secondary text-sm font-medium">
-              Define custom ticket tiers for this event
-            </span>
+          <div className="flex justify-between items-center">
+            <span className="text-sm font-semibold text-white">Ticket Tiers</span>
             <button
               type="button"
               onClick={addTier}
-              className="text-accent-purple text-sm font-medium hover:text-accent-purple-light transition-colors"
+              className="text-accent-purple text-xs font-medium hover:underline"
             >
               + Add Tier
             </button>
@@ -118,8 +117,9 @@ export function EventTicketSection({
                 )}
               </div>
               <div className="grid grid-cols-2 gap-4">
-                <Field label="Tier Name">
+                <FormField label="Tier Name" htmlFor={`tier-name-${i}`}>
                   <select
+                    id={`tier-name-${i}`}
                     value={tier.name}
                     onChange={(e) => updateTier(i, 'name', e.target.value)}
                     className={inputCls}
@@ -136,9 +136,10 @@ export function EventTicketSection({
                           </option>
                         ))}
                   </select>
-                </Field>
-                <Field label="Price (₹)">
+                </FormField>
+                <FormField label="Price (₹)" htmlFor={`tier-price-${i}`}>
                   <input
+                    id={`tier-price-${i}`}
                     type="number"
                     min="0"
                     value={tier.price}
@@ -149,11 +150,12 @@ export function EventTicketSection({
                     required
                     className={inputCls}
                   />
-                </Field>
+                </FormField>
               </div>
               <div className="grid grid-cols-2 gap-4">
-                <Field label="Capacity *">
+                <FormField label="Capacity" htmlFor={`tier-capacity-${i}`} required>
                   <input
+                    id={`tier-capacity-${i}`}
                     type="number"
                     min="1"
                     value={tier.capacity}
@@ -164,15 +166,16 @@ export function EventTicketSection({
                     required
                     className={inputCls}
                   />
-                </Field>
+                </FormField>
               </div>
             </div>
           ))}
         </div>
       ) : (
         <div className="space-y-4">
-          <Field label="Select Ticket Profile *">
+          <FormField label="Select Ticket Profile" htmlFor="ticket-profile" required>
             <select
+              id="ticket-profile"
               value={selectedProfileId}
               onChange={(e) => {
                 setSelectedProfileId(e.target.value);
@@ -190,7 +193,7 @@ export function EventTicketSection({
                 </option>
               ))}
             </select>
-          </Field>
+          </FormField>
 
           {activeProfile && (
             <div className="space-y-6 pt-4 border-t border-white/5">
