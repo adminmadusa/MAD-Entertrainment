@@ -13,3 +13,4 @@ This index maintains the chronological list of all architectural decisions made 
 | **ADR-007** | Rule Engine Architecture | Accepted | Platform Architecture | 2026-07-04 | [ADR-007](ADR-007-rule-engine-architecture.md) |
 | **ADR-008** | Cleanup Planner Architecture | Accepted | Platform Architecture | 2026-07-04 | [ADR-008](ADR-008-cleanup-planner-architecture.md) |
 | **ADR-009** | PaymentRefundService Decomposition | Proposed | Architecture / Payments | 2026-07-06 | [ADR-009](ADR-009-payment-refund-decomposition.md) |
+| **ADR-010** | Admin Refund Service Decomposition | Proposed | Architecture / Admin Services | 2026-07-06 | [ADR-010](ADR-010-admin-refund-decomposition.md) |
