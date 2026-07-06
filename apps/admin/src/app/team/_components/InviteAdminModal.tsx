@@ -1,6 +1,6 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { Modal } from '@mad/ui';
 import { useEffect, useState } from 'react';
 
 import { AdminRole } from '@mad/shared';
@@ -52,15 +52,17 @@ export default function InviteAdminModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.95 }}
-        className="glass-strong rounded-2xl border border-border-subtle p-6 max-w-md w-full space-y-4"
-      >
-        <div>
-          <h3 className="text-white font-bold text-lg">Invite Admin User</h3>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      size="md"
+      showCloseButton={false}
+      closeOnBackdropClick={true}
+      ariaLabelledBy="invite-admin-title"
+      className="glass-strong border border-border-subtle p-6 max-w-md space-y-4"
+    >
+      <div>
+        <h3 id="invite-admin-title" className="text-white font-bold text-lg">Invite Admin User</h3>
           <p className="text-text-muted text-xs">Assign access credentials and roles</p>
         </div>
 
@@ -141,7 +143,6 @@ export default function InviteAdminModal({
             </button>
           </div>
         </form>
-      </motion.div>
-    </div>
+    </Modal>
   );
 }

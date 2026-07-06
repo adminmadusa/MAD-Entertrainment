@@ -1,4 +1,5 @@
 import { DeadLetterJobMetadata } from '@/lib/api/admin/diagnostics.service';
+import { Modal } from '@mad/ui';
 
 export interface RetryJobModalProps {
   confirmRetryJob: DeadLetterJobMetadata;
@@ -14,9 +15,16 @@ export function RetryJobModal({
   isPending,
 }: RetryJobModalProps) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-      <div className="glass w-full max-w-md border border-border-subtle rounded-2xl p-6 shadow-2xl space-y-4">
-        <h3 className="text-base font-bold text-white">Replay Dead Letter Job</h3>
+    <Modal
+      isOpen={!!confirmRetryJob}
+      onClose={onClose}
+      size="md"
+      showCloseButton={false}
+      closeOnBackdropClick={true}
+      ariaLabelledBy="retry-job-title"
+      className="glass border border-border-subtle p-6 max-w-md space-y-4"
+    >
+      <h3 id="retry-job-title" className="text-base font-bold text-white">Replay Dead Letter Job</h3>
         <p className="text-xs text-text-secondary leading-relaxed">
           Are you sure you want to manually re-enqueue this job? This will retry the background task immediately.
         </p>
@@ -59,7 +67,6 @@ export function RetryJobModal({
             {isPending ? 'Retrying...' : 'Re-enqueue Job'}
           </button>
         </div>
-      </div>
-    </div>
+    </Modal>
   );
 }

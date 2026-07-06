@@ -1,6 +1,6 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { Modal } from '@mad/ui';
 import { useState } from 'react';
 
 import { AdminRole } from '@mad/shared';
@@ -32,15 +32,17 @@ export default function ChangeRoleModal({
   const error = localError || serverError;
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.95 }}
-        className="glass-strong rounded-2xl border border-border-subtle p-6 max-w-md w-full space-y-4"
-      >
-        <div>
-          <h3 className="text-white font-bold text-lg">Change Admin Role</h3>
+    <Modal
+      isOpen={!!target}
+      onClose={onClose}
+      size="md"
+      showCloseButton={false}
+      closeOnBackdropClick={true}
+      ariaLabelledBy="change-role-title"
+      className="glass-strong border border-border-subtle p-6 max-w-md space-y-4"
+    >
+      <div>
+        <h3 id="change-role-title" className="text-white font-bold text-lg">Change Admin Role</h3>
           <p className="text-text-muted text-xs">
             Update dashboard permissions for{' '}
             <strong className="text-white">{target.name}</strong>
@@ -97,7 +99,6 @@ export default function ChangeRoleModal({
             </button>
           </div>
         </form>
-      </motion.div>
-    </div>
+    </Modal>
   );
 }
