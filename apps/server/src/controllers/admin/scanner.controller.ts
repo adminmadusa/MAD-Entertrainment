@@ -60,13 +60,14 @@ export const scanTicket = async (req: Request, res: Response, next: NextFunction
         guestName: result.guestName,
         attendeeEmail: result.attendeeEmail,
         scannedAt: result.scannedAt,
-        userAgent: req.headers['user-agent'],
+        userAgent: req.headers?.['user-agent'],
         ip: req.ip,
       },
     });
 
     if (result.status === 'INVALID' || result.status === 'WRONG_EVENT') {
-      return res.status(400).json({
+      const statusCode = result.message?.includes('not found') || result.message?.includes('not exist') ? 404 : 400;
+      return res.status(statusCode).json({
         success: false,
         message: result.message || 'Ticket validation failed.',
       });
@@ -92,7 +93,7 @@ export const scanTicket = async (req: Request, res: Response, next: NextFunction
         scannedAt: result.scannedAt,
       },
     });
-  } catch (error) {
+  } catch (error: any) {
     next(error);
   }
 };
