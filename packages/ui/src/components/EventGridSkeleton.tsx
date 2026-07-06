@@ -1,11 +1,15 @@
-import React from 'react';
-
-export function EventGridSkeleton({ count = 4, className = '' }: { count?: number; className?: string }) {
-  return (
-    <div className={className} aria-hidden="true">
-      {Array.from({ length: count }).map((_, index) => (
-        <div key={index} className="h-72 animate-pulse rounded-2xl bg-white/10" />
-      ))}
-    </div>
-  );
-}
+/**
+ * @deprecated Import path — shim only.
+ * This file exists for backward compatibility during Phase 2 migration.
+ * It will be deleted in Phase 2.5 (v1.4.0) once all consumers have
+ * migrated to the canonical import path.
+ *
+ * Canonical: import { Skeleton, EventGridSkeleton } from '@mad/ui';
+ * (routes through src/primitives/Skeleton/index.ts)
+ *
+ * Note: EventGridSkeleton is preserved as a named re-export from the
+ * Skeleton primitive for backward compatibility.
+ *
+ * Per ADR-003: this file ONLY re-exports. It does not add logic or wrappers.
+ */
+export * from '../primitives/Skeleton';
