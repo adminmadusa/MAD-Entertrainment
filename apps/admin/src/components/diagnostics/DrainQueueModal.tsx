@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Modal } from '@mad/ui';
 
 export interface DrainQueueModalProps {
   drainTargetQueue: string;
@@ -17,12 +18,19 @@ export function DrainQueueModal({
   const expectedText = `drain-${drainTargetQueue}`;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-      <div className="glass max-w-md w-full rounded-2xl border border-red-500/30 p-6 space-y-6 animate-in zoom-in-95 duration-200">
-        <div className="space-y-2">
-          <h3 className="text-lg font-bold text-white flex items-center gap-2">
-            <span className="text-red-500">⚠️</span> Destructive Action
-          </h3>
+    <Modal
+      isOpen={!!drainTargetQueue}
+      onClose={onClose}
+      size="md"
+      showCloseButton={false}
+      closeOnBackdropClick={true}
+      ariaLabelledBy="drain-queue-title"
+      className="glass border border-red-500/30 p-6 max-w-md space-y-6"
+    >
+      <div className="space-y-2">
+        <h3 id="drain-queue-title" className="text-lg font-bold text-white flex items-center gap-2">
+          <span className="text-red-500">⚠️</span> Destructive Action
+        </h3>
           <p className="text-text-muted text-sm leading-relaxed">
             You are about to drain all jobs from <strong className="text-white">{drainTargetQueue}</strong>. This will
             permanently remove all waiting and delayed jobs in the queue. This action cannot be undone.
@@ -61,7 +69,6 @@ export function DrainQueueModal({
             {isPending ? 'Draining...' : 'Confirm Drain'}
           </button>
         </div>
-      </div>
-    </div>
+    </Modal>
   );
 }

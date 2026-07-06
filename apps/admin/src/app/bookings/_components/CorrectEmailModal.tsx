@@ -1,6 +1,6 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { Modal } from '@mad/ui';
 import { useState } from 'react';
 
 import { AdminBooking } from '@/lib/api/admin/booking.service';
@@ -57,15 +57,17 @@ export default function CorrectEmailModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.95 }}
-        className="glass-strong rounded-2xl border border-border-subtle p-6 max-w-md w-full space-y-4"
-      >
-        <div>
-          <h3 className="text-white font-bold text-lg">Correct Booking Email</h3>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      size="md"
+      showCloseButton={false}
+      closeOnBackdropClick={true}
+      ariaLabelledBy="correct-email-title"
+      className="glass-strong border border-border-subtle p-6 max-w-md space-y-4"
+    >
+      <div>
+        <h3 id="correct-email-title" className="text-white font-bold text-lg">Correct Booking Email</h3>
           <p className="text-text-muted text-xs">Update recipient email for guest booking</p>
         </div>
 
@@ -127,7 +129,6 @@ export default function CorrectEmailModal({
             </button>
           </div>
         </form>
-      </motion.div>
-    </div>
+    </Modal>
   );
 }

@@ -1,4 +1,5 @@
 import { DeadLetterJobDetails } from '@/lib/api/admin/diagnostics.service';
+import { Drawer } from '@mad/ui';
 
 export interface DlqInspectorDrawerProps {
   inspectingJobId: string;
@@ -22,8 +23,14 @@ export function DlqInspectorDrawer({
   onCopyPayload,
 }: DlqInspectorDrawerProps) {
   return (
-    <div className="fixed inset-0 z-50 flex justify-end bg-black/60 backdrop-blur-sm transition-opacity">
-      <div className="w-full max-w-2xl bg-background-card border-l border-border-subtle h-full shadow-2xl flex flex-col animate-slide-in">
+    <Drawer
+      isOpen={!!inspectingJobId}
+      onClose={onClose}
+      side="right"
+      showHeader={false}
+      className="w-full max-w-2xl bg-background-card border-l border-border-subtle h-full shadow-2xl focus:outline-none"
+    >
+      <div className="flex flex-col h-full justify-between">
         {/* Drawer Header */}
         <div className="p-6 border-b border-border-subtle flex items-center justify-between bg-white/[0.01]">
           <div>
@@ -121,6 +128,6 @@ export function DlqInspectorDrawer({
           )}
         </div>
       </div>
-    </div>
+    </Drawer>
   );
 }
