@@ -151,32 +151,59 @@ export class PaymentVerifyService {
     const { paymentIntentId, razorpay_order_id, razorpay_payment_id } =
       gatewayPayload || {};
 
+    const paymentIntentIdSafe =
+      paymentIntentId === undefined || paymentIntentId === null
+        ? undefined
+        : typeof paymentIntentId === 'string' && paymentIntentId.trim()
+        ? paymentIntentId.trim()
+        : null;
+    const razorpayOrderIdSafe =
+      razorpay_order_id === undefined || razorpay_order_id === null
+        ? undefined
+        : typeof razorpay_order_id === 'string' && razorpay_order_id.trim()
+        ? razorpay_order_id.trim()
+        : null;
+    const razorpayPaymentIdSafe =
+      razorpay_payment_id === undefined || razorpay_payment_id === null
+        ? undefined
+        : typeof razorpay_payment_id === 'string' && razorpay_payment_id.trim()
+        ? razorpay_payment_id.trim()
+        : null;
+
+    if (
+      paymentIntentIdSafe === null ||
+      razorpayOrderIdSafe === null ||
+      razorpayPaymentIdSafe === null
+    ) {
+      throw AppError.badRequest('Invalid payment identifier format');
+    }
+
     this.assertProductionPaymentIntegrity(
-      [paymentIntentId, razorpay_order_id, razorpay_payment_id],
+      [paymentIntentIdSafe, razorpayOrderIdSafe, razorpayPaymentIdSafe],
       {
         bookingId: booking._id.toString(),
-        gateway: paymentIntentId ? 'stripe' : 'razorpay',
+        gateway: paymentIntentIdSafe ? 'stripe' : 'razorpay',
         requestSource: 'frontend_verify',
       }
     );
 
     let payment;
-    if (paymentIntentId) {
+    if (paymentIntentIdSafe) {
       payment = await Payment.findOne({
         bookingId: booking._id,
-        gatewayOrderId: paymentIntentId,
+        gatewayOrderId: paymentIntentIdSafe,
         gateway: 'stripe',
       }).sort({ createdAt: -1 });
-    } else if (razorpay_order_id) {
+    } else if (razorpayOrderIdSafe) {
       payment = await Payment.findOne({
         bookingId: booking._id,
-        gatewayOrderId: razorpay_order_id,
+        gatewayOrderId: razorpayOrderIdSafe,
         gateway: 'razorpay',
       }).sort({ createdAt: -1 });
-    } else if (razorpay_payment_id) {
+    } else if (razorpayPaymentIdSafe) {
       payment = await Payment.findOne({
         bookingId: booking._id,
-        gatewayPaymentId: razorpay_payment_id,
+        gatewayPaymentId: razorpayPaymentIdSafe,
         gateway: 'razorpay',
       }).sort({ createdAt: -1 });
     } else {
