@@ -9,6 +9,7 @@ export interface RuntimeTelemetryEntry {
 }
 
 export interface RuntimeTelemetrySummary {
+  schemaVersion: string;
   runDate: string;
   rulesExecuted: string[];
   totalRuns: number;

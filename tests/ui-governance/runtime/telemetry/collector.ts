@@ -27,6 +27,7 @@ export class TelemetryCollector {
     }
 
     return {
+      schemaVersion: '1.0.0',
       runDate: new Date().toISOString().split('T')[0],
       rulesExecuted: Array.from(rules),
       totalRuns: this.entries.length,

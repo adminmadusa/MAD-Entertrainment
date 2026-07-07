@@ -1,7 +1,3 @@
-/**
- * Client-side script evaluated in browser to check for horizontal overflows.
- * Evaluates document elements and reports detailed bounding rect misalignments.
- */
 export interface DOMOverflowItem {
   selector: string;
   outerHTML: string;
@@ -12,22 +8,28 @@ export interface DOMOverflowItem {
   };
 }
 
+export interface AccessibilityViolationItem {
+  selector: string;
+  outerHTML: string;
+  message: string;
+}
+
+// Common helper to generate a unique CSS selector for an element
+export function getUniqueSelector(el: HTMLElement): string {
+  if (el.id) return `#${el.id}`;
+  let path = el.tagName.toLowerCase();
+  let parent = el.parentElement;
+  while (parent) {
+    const index = Array.from(parent.children).indexOf(el) + 1;
+    path = `${parent.tagName.toLowerCase()} > ${path}:nth-child(${index})`;
+    el = parent;
+    parent = parent.parentElement;
+  }
+  return path;
+}
+
 export function detectDOMOverflows(viewportWidth: number): DOMOverflowItem[] {
   const overflows: DOMOverflowItem[] = [];
-
-  // Helper to generate a unique CSS selector for an element
-  const getUniqueSelector = (el: HTMLElement): string => {
-    if (el.id) return `#${el.id}`;
-    let path = el.tagName.toLowerCase();
-    let parent = el.parentElement;
-    while (parent) {
-      const index = Array.from(parent.children).indexOf(el) + 1;
-      path = `${parent.tagName.toLowerCase()} > ${path}:nth-child(${index})`;
-      el = parent;
-      parent = parent.parentElement;
-    }
-    return path;
-  };
 
   const allElements = document.querySelectorAll('*');
   for (let i = 0; i < allElements.length; i++) {
@@ -44,7 +46,6 @@ export function detectDOMOverflows(viewportWidth: number): DOMOverflowItem[] {
     }
 
     const rect = el.getBoundingClientRect();
-    // Check if right bound exceeds viewport width by more than a 0.5px subpixel rendering margin
     if (rect.right > viewportWidth + 0.5 && rect.width > 0) {
       // Make sure overflow-x hidden is not ignoring it
       let isIgnoredByOverflow = false;
@@ -74,3 +75,74 @@ export function detectDOMOverflows(viewportWidth: number): DOMOverflowItem[] {
 
   return overflows;
 }
+
+export const AccessibilityDOM = {
+  detectImageAltViolations(): AccessibilityViolationItem[] {
+    const violations: AccessibilityViolationItem[] = [];
+
+    // Find all <img> elements
+    const images = document.querySelectorAll('img');
+
+    // Helper to check if an element or any of its parents is hidden or decorative
+    const isHiddenOrDecorative = (el: HTMLElement): boolean => {
+      let curr: HTMLElement | null = el;
+      while (curr) {
+        const style = window.getComputedStyle(curr);
+        if (
+          style.display === 'none' ||
+          style.visibility === 'hidden' ||
+          style.opacity === '0' ||
+          curr.hasAttribute('hidden')
+        ) {
+          return true;
+        }
+
+        const role = curr.getAttribute('role');
+        const ariaHidden = curr.getAttribute('aria-hidden');
+        if (
+          role === 'presentation' ||
+          role === 'none' ||
+          ariaHidden === 'true'
+        ) {
+          return true;
+        }
+
+        curr = curr.parentElement;
+      }
+      return false;
+    };
+
+    for (let i = 0; i < images.length; i++) {
+      const img = images[i] as HTMLElement;
+
+      // Skip if hidden or decorative
+      if (isHiddenOrDecorative(img)) {
+        continue;
+      }
+
+      const alt = img.getAttribute('alt');
+
+      // 1. Missing alt attribute
+      if (alt === null) {
+        violations.push({
+          selector: getUniqueSelector(img),
+          outerHTML: img.outerHTML.substring(0, 150),
+          message: 'Image element is missing the alt attribute.'
+        });
+        continue;
+      }
+
+      // 2. Empty alt text on non-decorative images
+      // (Since we already filtered out images with role="presentation"/"none" or aria-hidden="true")
+      if (alt.trim() === '') {
+        violations.push({
+          selector: getUniqueSelector(img),
+          outerHTML: img.outerHTML.substring(0, 150),
+          message: 'Image element has empty alt attribute but is not marked as decorative (requires role="presentation", role="none", or aria-hidden="true").'
+        });
+      }
+    }
+
+    return violations;
+  }
+};

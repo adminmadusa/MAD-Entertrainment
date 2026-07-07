@@ -7,12 +7,17 @@ import { RuntimeRegistry } from '../runtime/registry';
 import { detectDOMOverflows, DOMOverflowItem } from '../utils/dom';
 
 export class HorizontalOverflowValidator implements RuntimeValidator {
-  readonly ruleId = 'VAL-UI-023';
-  readonly tags = ['responsive', 'playwright'];
+  readonly metadata = {
+    ruleId: 'VAL-UI-023',
+    category: 'responsive' as const,
+    tags: ['responsive', 'playwright'],
+    requiresDOM: true,
+    supportsScreenshots: true
+  };
 
   public async run(page: Page, viewport: Viewport, url: string): Promise<RuntimeFinding[]> {
     const findings: RuntimeFinding[] = [];
-    const ruleMeta = RuleLoader.getRuleMetadata(this.ruleId);
+    const ruleMeta = RuleLoader.getRuleMetadata(this.metadata.ruleId);
 
     // 1. Check document.documentElement.scrollWidth
     const docScrollWidth = await page.evaluate(() => document.documentElement.scrollWidth);
@@ -24,7 +29,7 @@ export class HorizontalOverflowValidator implements RuntimeValidator {
 
     if (hasGlobalOverflow) {
       findings.push({
-        ruleId: this.ruleId,
+        ruleId: this.metadata.ruleId,
         severity: ruleMeta.severity,
         page: url,
         viewport: `${viewport.width}x${viewport.height}`,
@@ -43,7 +48,7 @@ export class HorizontalOverflowValidator implements RuntimeValidator {
 
     for (const item of overflowingElements) {
       findings.push({
-        ruleId: this.ruleId,
+        ruleId: this.metadata.ruleId,
         severity: ruleMeta.severity,
         page: url,
         viewport: `${viewport.width}x${viewport.height}`,

@@ -69,7 +69,7 @@ export class RuntimeRunner {
 
           // Record telemetry
           TelemetryCollector.addEntry({
-            ruleId: validator.ruleId,
+            ruleId: validator.metadata.ruleId,
             page: route,
             viewport: `${viewport.width}x${viewport.height}`,
             durationMs,
@@ -82,7 +82,7 @@ export class RuntimeRunner {
           if (findings.length > 0) {
             const evidenceDir = resolve(
               workspaceRoot,
-              `tests/ui-governance/evidence/screenshots/${validator.ruleId}/${target.app}`
+              `tests/ui-governance/evidence/screenshots/${validator.metadata.ruleId}/${target.app}`
             );
             if (!existsSync(evidenceDir)) {
               mkdirSync(evidenceDir, { recursive: true });

@@ -4,7 +4,7 @@ export class RuntimeRegistry {
   private static validators = new Map<string, RuntimeValidator>();
 
   public static register(validator: RuntimeValidator) {
-    this.validators.set(validator.ruleId, validator);
+    this.validators.set(validator.metadata.ruleId, validator);
   }
 
   public static getValidator(ruleId: string): RuntimeValidator | undefined {
@@ -14,7 +14,7 @@ export class RuntimeRegistry {
   public static getValidatorsByTag(tag: string): RuntimeValidator[] {
     const list: RuntimeValidator[] = [];
     for (const validator of this.validators.values()) {
-      if (validator.tags.includes(tag)) {
+      if (validator.metadata.tags.includes(tag)) {
         list.push(validator);
       }
     }
