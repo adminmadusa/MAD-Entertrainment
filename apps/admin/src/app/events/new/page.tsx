@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
+import { EventRequirementsCard } from '@/components/events/EventRequirementsCard';
 import { adminGetCategories } from '@/lib/api/admin/category.service';
 import { adminCreateEvent, AdminEvent } from '@/lib/api/admin/event.service';
 import { adminGetTicketProfiles } from '@/lib/api/admin/ticket-profile.service';
@@ -13,7 +14,7 @@ import { extractApiError } from '@/lib/api/client';
 import { BookingMode, TicketTier, EventStatus } from '@mad/shared';
 import type { TicketProfile } from '@mad/types';
 
-import { EventBasicInfoSection, EventScheduleSection, EventVenueSection, EventTicketSection, EventMediaSection, EventAdvancedSettingsSection, EventPublishSection, EventFormActions, defaultTier, TicketTierInput, CloudinaryImage } from './_components';
+import { EventBasicInfoSection, EventScheduleSection, EventVenueSection, EventTicketSection, EventMediaSection, EventPublishSection, EventFormActions, defaultTier, TicketTierInput, CloudinaryImage } from './_components';
 
 export default function CreateEventPage() {
   const router = useRouter();
@@ -264,7 +265,7 @@ export default function CreateEventPage() {
           title={title}
         />
 
-        <EventAdvancedSettingsSection
+        <EventRequirementsCard
           tags={tags}
           setTags={setTags}
           isFeatured={isFeatured}
