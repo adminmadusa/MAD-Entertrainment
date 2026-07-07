@@ -113,7 +113,7 @@ Add `alt="[description]"` to informative images describing what the image shows 
 
 - VAL-UI-021 — Image Missing Dimensions (CLS Risk)
 - Refer to [REGISTRY.md](../REGISTRY.md) for all UI category rules.
-- Refer to [ACCESSIBILITY_GUIDELINES.md](../../../ACCESSIBILITY_GUIDELINES.md#7-images--media) for full guidance.
+- Refer to [UI_UX_GOVERNANCE.md](../../../UI_UX_GOVERNANCE.md) for full accessibility guidance.
 
 ---
 

@@ -376,3 +376,368 @@ Measurable governance metrics are established to support future automation check
 ### Repository Standard
 - Pre-commit or pre-push hooks must execute `pnpm lint` and `pnpm test`.
 - All PR submissions must attach terminal evidence of clean builds.
+
+
+---
+
+## 13. Naming Conventions
+
+#### Purpose
+
+This document defines standard naming conventions across the monorepo for directories, files, components, classes, variables, constants, hooks, scripts, configurations, and documentation. Adhering to these conventions maintains consistency, readability, and compatibility with automated linting rules.
+
+---
+
+### Scope
+
+This policy applies to all files and directories written, generated, or renamed inside the repository.
+
+---
+
+### Naming Standards
+
+#### 1. Directories
+* **Convention**: `kebab-case` (lowercase words separated by hyphens).
+* **Allowed Characters**: `a-z`, `0-9`, `-`
+* **Examples**:
+  - `apps/admin`
+  - `packages/shared`
+  - `scripts/governance`
+  - `src/components/button`
+* **Exceptions**: Directory names representing Next.js route groups (e.g. `(auth)`) or dynamic segments (e.g. `[id]`) follow Next.js framework conventions.
+
+#### 2. Source Files (React / UI Components)
+* **Convention**: `PascalCase` (words capitalised, no separators).
+* **Extension**: `.tsx`
+* **Examples**:
+  - `CoolButton.tsx`
+  - `dj-operators/DJFormActions.tsx`
+  - `InviteAdminModal.tsx`
+
+#### 3. Source Files (Logic / Functions / Services / Utilities)
+* **Convention**: `snake_case` or `kebab-case` based on context.
+  - Server-side logic and utility files: `snake_case` (words separated by underscores).
+  - Scripts and CLI entry points: `kebab-case` (words separated by hyphens).
+* **Extensions**: `.ts`, `.js`
+* **Examples**:
+  - `scripts/governance/core/finding_manager.ts` (snake_case for engine core)
+  - `scripts/cleanup-ports.js` (kebab-case for script run directly)
+  - `packages/shared/src/utils/date_formatter.ts`
+
+#### 4. React Components (Classes / Functions)
+* **Convention**: `PascalCase` for component declarations.
+* **Examples**:
+  ```tsx
+  export function InviteAdminModal() { ... }
+  ```
+
+#### 5. Custom React Hooks
+* **Convention**: CamelCase starting with `use`.
+* **Examples**:
+  - `useAuth`
+  - `useActiveBookings`
+  - `useDebouncedState`
+
+#### 6. Variables and Functions
+* **Convention**: `camelCase` (first letter lowercase, subsequent words capitalised).
+* **Examples**:
+  - `const activeFindingIds = new Set<string>();`
+  - `function matchOrCreateFinding(violation: StatelessViolation): Finding`
+
+#### 7. Constants
+* **Convention**: `UPPER_SNAKE_CASE` (all uppercase words separated by underscores).
+* **Examples**:
+  - `const MAX_RETRY_ATTEMPTS = 3;`
+  - `export const SHARED_BUTTON_STYLES = "bg-blue-600 text-white";`
+
+#### 8. Types and Interfaces
+* **Convention**: `PascalCase` for declaration names. Avoid prefixing interfaces with `I` (e.g. `IFinding` is forbidden; use `Finding` instead).
+* **Examples**:
+  - `export interface FindingOccurrence { ... }`
+  - `export type FindingStatus = 'NEW' | 'CLOSED';`
+
+#### 9. Configuration Files
+* **Convention**: Framework standard conventions (usually `kebab-case` or `camelCase`).
+* **Examples**:
+  - `turbo.json`
+  - `tsconfig.base.json`
+  - `eslint.config.mjs`
+  - `postcss.config.js`
+  - `vercel.json`
+
+#### 10. Documentation files
+* **Convention**: `UPPER_SNAKE_CASE` or `kebab-case` based on hierarchy.
+  - Root policies / manuals: `UPPER_SNAKE_CASE`
+  - ADRs: `ADR-###-description-kebab-case`
+* **Extension**: `.md`
+* **Examples**:
+  - `README.md`
+  - `REPOSITORY_GOVERNANCE.md`
+  - `docs/decisions/ADR-002-governance-persistence-v2.md`
+
+---
+
+### Allowed Practices
+
+- Using standard camelCase for in-memory temporary variables.
+- Grouping related components under a subdirectory named in `kebab-case`.
+
+---
+
+### Forbidden Practices
+
+- Creating files with spaces in their names (e.g. `My Component.tsx`).
+- Mixing PascalCase and snake_case in the same directory (e.g., having `date_formatter.ts` and `StringHelper.ts` side by side).
+- Using names with trailing numbers indicating copies (e.g. `Button2.tsx`, `ButtonCopy.tsx`).
+
+---
+
+### Exceptions
+
+- Dynamic route folders in Next.js applications (e.g. `[id]/page.tsx`).
+
+---
+
+---
+
+## 14. File Lifecycle
+
+#### Purpose
+
+This document classifies all file and directory lifecycles within the repository. It defines which files are permanently required, which are generated automatically, which are ignored by version control, and who owns each file type. It also specifies cleanup expectations and rules regarding manual modifications of generated artifacts.
+
+---
+
+### Scope
+
+This policy applies to all files existing or generated during build, test, and development phases inside this repository.
+
+---
+
+### File Classification Registry
+
+All files in this repository fall into one of four classifications:
+
+#### 1. Required Files
+These files must always exist, be tracked under git, and never be deleted.
+
+| File Name | Purpose | Ownership |
+|---|---|---|
+| `README.md` | General landing page and developer orientation | Platform Team |
+| `LICENSE` | Intellectual property and licensing terms | Legal / Owners |
+| `CHANGELOG.md` | Historical record of all version releases | Release Manager |
+| `pnpm-workspace.yaml` | Declaration of monorepo workspace directories | DevOps |
+| `turbo.json` | Configuration for Turborepo task pipeline | DevOps |
+| `package.json` (Root) | Root project dependencies and task scripts | DevOps |
+| `REPOSITORY_GOVERNANCE.md` | Core repository workflow governance policies | Architecture Board |
+| `AGENTS.MD` | Operations policy manual for human/AI developers | Governance Owner |
+
+#### 2. Generated Artifacts
+Files or directories created by build processes, testing runs, or code generators.
+
+| Directory / File | Generated By | Manual Edits Allowed? | Cleanup Expectation |
+|---|---|---|---|
+| `dist/` | Production compile (`pnpm build`) | **NO** | Recreated on clean build |
+| `.next/` | Next.js build compilation | **NO** | Recreated on build run |
+| `coverage/` | Test runner coverage reporting | **NO** | Safe to delete locally |
+| `reports/` | Governance audit checks | **NO** | Automated update in CI |
+| `node_modules/` | Package installer (`pnpm install`) | **NO** | Cleaned via `pnpm clean` |
+
+#### 3. Optional Files
+Files that may be present to customize local environments or IDE behavior, but do not block compilation if missing.
+
+- `.env.local` / `.env` (Excluded from git tracking)
+- `.vscode/` or `.idea/` configs
+
+#### 4. Ignored Files
+Temporary files, cache folders, and operating system artifacts that must never be committed to git.
+
+- `.DS_Store`
+- `npm-debug.log` / `pnpm-debug.log`
+- `tmp/` / `temp/`
+- `/scratch/` (Used for temporary developer scratch scripts)
+
+---
+
+### Allowed Practices
+
+- Deleting `dist/` or `.next/` directories locally to troubleshoot build cache issues.
+- Modifying required files (such as adding a package dependency inside `package.json`) and committing them.
+- Creating temporary files under `/scratch/` for isolated testing.
+
+---
+
+### Forbidden Practices
+
+- Manually editing files within `dist/` or `.next/` directories.
+- Force-committing files listed in `.gitignore` (such as local `.env` files or node_modules).
+- Creating un-ignored scratch folders outside of designated ignore paths (such as `apps/web/temp_testing/`).
+
+---
+
+---
+
+## 15. Workspace Policy
+
+#### Purpose
+
+This document defines the rules and boundaries for workspaces in the pnpm monorepo. It ensures separation of concerns, maintains clean build boundaries, and protects shared libraries from application-specific logic leakage.
+
+---
+
+### Scope
+
+This policy applies to all subdirectories under `apps/*` and `packages/*` declared as workspace packages in `pnpm-workspace.yaml`.
+
+---
+
+### Workspace Categories
+
+Workspaces are classified into exactly two categories:
+
+#### 1. Application Workspaces (`apps/*`)
+Deployable targets that represent the final runtime bundles.
+- `@mad/web`: User-facing web application (Next.js/React).
+- `@mad/admin`: Administrative dashboard (Next.js/React).
+- `@mad/server`: Backend API and service layer (Express.js/Node.js).
+
+#### 2. Package Workspaces (`packages/*`)
+Reusable, shared library targets consumed by applications or other packages.
+- `@mad/ui`: Shared design system components (React/CSS).
+- `@mad/shared`: Cross-cutting utilities and shared domain configuration.
+- `@mad/types`: Global TypeScript typings and contract declarations.
+- `@mad/utils`: Reusable helper functions and formatting routines.
+- `@mad/validations`: Validation schemas (Zod).
+
+---
+
+### Boundary Rules
+
+#### W-001 — Application Isolation
+No workspace under `apps/` may import code, types, or configurations from another workspace under `apps/`. Cross-application integration must occur strictly via public APIs, WebSockets, or shared data stores.
+
+#### W-002 — Dependency Direction Limit
+Package workspaces (`packages/*`) must never import from or depend on application workspaces (`apps/*`). All code in `packages/` must be entirely self-contained and application-agnostic.
+
+#### W-003 — UI Package Constraints
+The `@mad/ui` package must remain framework-agnostic (beyond React) and must never contain business logic, database queries, Sentry reporting, environment variable configurations, or API-client invocations. It is purely presentational.
+
+#### W-004 — Validation Package Constraints
+The `@mad/validations` package contains parsing and validation rules. It must never depend on the `@mad/ui` component library.
+
+---
+
+### Allowed Practices
+
+- Consuming shared components from `@mad/ui` inside both `@mad/web` and `@mad/admin`.
+- Importing schemas from `@mad/validations` in both `@mad/server` (for request validation) and `@mad/web` / `@mad/admin` (for form validation).
+- Adding workspace-specific dev dependencies for testing or local building.
+
+---
+
+### Forbidden Practices
+
+- Importing `@mad/server` logic inside `@mad/web` or `@mad/admin`.
+- Copy-pasting TypeScript interface definitions between `@mad/web` and `@mad/admin` instead of publishing them in `@mad/types`.
+- Adding React-based styling components to non-UI packages like `@mad/utils` or `@mad/validations`.
+
+---
+
+### Exceptions
+
+- The server app `@mad/server` may consume `@mad/types` and `@mad/validations` but must not import `@mad/ui` as it is a headless Node.js environment.
+
+---
+
+---
+
+## 16. Dependency Policy
+
+#### Purpose
+
+This document establishes rules for dependencies within the MAD Entertrainment monorepo. It details permitted and prohibited dependency paths to support automated dependency validators and to ensure build caching can run optimally without cycle-induced cache busting.
+
+---
+
+### Scope
+
+This policy governs:
+- Direct imports in source files (`import ... from '...'` or `require('...')`).
+- Workspace-level dependencies declared in `package.json` configurations.
+- Third-party packages installed via `pnpm`.
+
+---
+
+### Allowed Dependency Flow
+
+The permitted direction of dependency flows between monorepo workspaces is strictly defined as follows:
+
+```
+[ Application Workspaces ]
+       │            │
+       ▼            ▼
+  [ @mad/ui ]   [ @mad/validations ]
+       │            │
+       ▼            ▼
+   [ @mad/utils / @mad/types ]
+       │
+       ▼
+   [ @mad/shared ]
+```
+
+#### Table of Allowed Direct Dependencies
+
+| Workspace | Allowed Internal Dependencies |
+|---|---|
+| `@mad/web` | `@mad/ui`, `@mad/validations`, `@mad/utils`, `@mad/types`, `@mad/shared` |
+| `@mad/admin` | `@mad/ui`, `@mad/validations`, `@mad/utils`, `@mad/types`, `@mad/shared` |
+| `@mad/server` | `@mad/validations`, `@mad/utils`, `@mad/types`, `@mad/shared` |
+| `@mad/ui` | `@mad/types`, `@mad/shared` |
+| `@mad/validations` | `@mad/types`, `@mad/shared` |
+| `@mad/utils` | `@mad/types`, `@mad/shared` |
+| `@mad/types` | `@mad/shared` |
+| `@mad/shared` | None |
+
+---
+
+### Dependency Rules
+
+#### D-001 — Circular Dependency Prohibition
+Circular dependency loops of any length are strictly forbidden (e.g., A → B → A, or A → B → C → A). This applies to file-level imports and workspace-level dependencies.
+
+#### D-002 — Third-Party Dependency Version Synchronization
+To ensure single-version consistency inside the monorepo:
+- Shared third-party packages (e.g., `zod`, `react`, `typescript`) must use identical version ranges in all `package.json` files where they are declared.
+- Root `package.json` overrides must be used to enforce specific sub-dependency resolutions across the workspace.
+
+#### D-003 — Framework Lock-in Prevention
+Shared libraries (`@mad/shared`, `@mad/utils`, `@mad/types`, `@mad/validations`) must remain framework-agnostic. They must not depend on or import Next.js, Express.js, React, or browser-specific objects unless scoped to UI-specific packages.
+
+#### D-004 — Peer Dependency Enforcement
+If a shared package requires a specific runtime host (e.g., `@mad/ui` requiring `react`), it must declare that host as a `peerDependency` in its `package.json` to ensure the consuming application supplies the singleton instance.
+
+---
+
+### Allowed Practices
+
+- Utilizing `@mad/validations` in frontend forms and backend controllers.
+- Updating dependencies collectively via Turborepo commands.
+- Declaring common TypeScript configuration rules in `tsconfig.base.json` at the root and extending them in workspace-specific `tsconfig.json` configurations.
+
+---
+
+### Forbidden Practices
+
+- Importing components from `@mad/ui` inside backend-focused modules (such as database migrations or background queue workers).
+- Using relative paths (`../../`) to import modules outside of the current workspace directory; all external references must resolve via workspace package names (e.g. `@mad/shared`).
+
+---
+
+### Exceptions
+
+- Scripts under `scripts/` (e.g., governance engine tools) may import dev-specific helper libraries that are not packaged for production distribution.
+
+---
+
+---
+
