@@ -16,6 +16,7 @@ import { RepositoryHealthValidator } from '../validators/repository_health_valid
 import { UIDesignValidator } from '../validators/ui_design_validator';
 import { AccessibilityValidator } from '../validators/accessibility_validator';
 import { SharedComponentValidator } from '../validators/shared_component_validator';
+import { UXStateValidator } from '../validators/ux_state_validator';
 import { DeadAssetDuplicateValidator } from '../validators/dead_asset_duplicate_validator';
 import { SecurityValidator } from '../validators/security_validator';
 import { PerformanceValidator } from '../validators/performance_validator';
@@ -103,15 +104,22 @@ export class ExecutionEngine {
 
     ValidatorRegistry.registerValidator(new UIDesignValidator(), {
       id: 'UIDesignValidator',
-      supportedRules: ['VAL-UI-007', 'VAL-UI-008', 'AST-PARSE-WARNING'],
-      supportedFileTypes: ['.ts', '.tsx', '.js', '.jsx'],
+      supportedRules: ['VAL-UI-007', 'VAL-UI-008', 'AST-PARSE-WARNING', 'VAL-UI-021', 'VAL-UI-022', 'VAL-UI-023', 'VAL-UI-024', 'VAL-UI-025'],
+      supportedFileTypes: ['.ts', '.tsx', '.js', '.jsx', '.css', '.scss'],
       priority: 60,
     });
 
     ValidatorRegistry.registerValidator(new AccessibilityValidator(), {
       id: 'AccessibilityValidator',
-      supportedRules: ['VAL-UI-002', 'VAL-UI-003', 'VAL-UI-009'],
+      supportedRules: ['VAL-UI-002', 'VAL-UI-003', 'VAL-UI-009', 'VAL-UI-020'],
       supportedFileTypes: ['.ts', '.tsx', '.js', '.jsx'],
+      priority: 60,
+    });
+
+    ValidatorRegistry.registerValidator(new UXStateValidator(), {
+      id: 'UXStateValidator',
+      supportedRules: ['VAL-UX-001', 'VAL-UX-002', 'VAL-UX-003'],
+      supportedFileTypes: ['.ts', '.tsx'],
       priority: 60,
     });
 

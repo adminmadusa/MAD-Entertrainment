@@ -86,6 +86,28 @@ describe('UI and Accessibility AST Validators', () => {
       const result = await validator.run(['apps/web/src/components/Clicky.tsx'], {});
       expect(result.warnings.some(e => e.rule === 'VAL-UI-009')).toBe(true);
     });
+
+    it('should detect <img> elements missing alt text', async () => {
+      vi.mocked(fs.existsSync).mockReturnValue(true);
+      vi.mocked(fs.readFileSync).mockReturnValue(`
+        export function MyImg() {
+          return <img src="image.jpg" />;
+        }
+      `);
+      const result = await validator.run(['apps/web/src/components/MyImg.tsx'], {});
+      expect(result.errors.some(e => e.rule === 'VAL-UI-020')).toBe(true);
+    });
+
+    it('should NOT flag <img> elements with alt text', async () => {
+      vi.mocked(fs.existsSync).mockReturnValue(true);
+      vi.mocked(fs.readFileSync).mockReturnValue(`
+        export function MyImg() {
+          return <img src="image.jpg" alt="Description" />;
+        }
+      `);
+      const result = await validator.run(['apps/web/src/components/MyImg.tsx'], {});
+      expect(result.errors.some(e => e.rule === 'VAL-UI-020')).toBe(false);
+    });
   });
 
   describe('SharedComponentValidator', () => {
