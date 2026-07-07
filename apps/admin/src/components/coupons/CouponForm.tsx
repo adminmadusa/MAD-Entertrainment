@@ -2,13 +2,20 @@
 
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 import { EventCategory } from '@mad/shared';
 import type { Coupon } from '@mad/types';
-import { FormField, Input, Textarea, Alert } from '@mad/ui';
+import { Alert, FormField, Input, Textarea } from '@mad/ui';
 
-import { CouponFormState, defaultCouponForm, mapCouponToFormState, validateCouponForm, CATEGORY_LABELS, inputCls, } from './coupon-form.types';
+import {
+  CATEGORY_LABELS,
+  CouponFormState,
+  defaultCouponForm,
+  inputCls,
+  mapCouponToFormState,
+  validateCouponForm,
+} from './coupon-form.utils';
 
 interface CouponFormProps {
   initialData?: Coupon | null;
