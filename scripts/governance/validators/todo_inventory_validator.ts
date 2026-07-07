@@ -90,7 +90,7 @@ export class TodoInventoryValidator implements GovernanceValidator {
     let undocumentedCount = 0;
 
     for (const file of eligible) {
-      const content = FileContentCache.get(file);
+      const content = FileContentCache.getFileContent(file);
       if (!content) continue;
 
       const lines = content.split('\n');
