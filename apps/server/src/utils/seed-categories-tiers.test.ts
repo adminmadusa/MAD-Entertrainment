@@ -1,4 +1,15 @@
-import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll, beforeEach, vi } from 'vitest';
+
+vi.mock('../config/env', () => ({
+  getEnv: vi.fn(() => ({
+    NODE_ENV: 'test',
+    MONGODB_URI: 'mongodb://localhost:27017/test',
+    JWT_SECRET: '12345678901234567890123456789012',
+    JWT_ADMIN_SECRET: '12345678901234567890123456789012',
+    JWT_SESSION_SECRET: '12345678901234567890123456789012',
+  })),
+}));
+
 import mongoose from 'mongoose';
 import { Category } from '../models/category.schema';
 import { Tier } from '../models/tier.schema';
