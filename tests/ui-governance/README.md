@@ -191,10 +191,8 @@ When implementing tests in this directory:
 ## Related Documents
 
 - [UI_UX_GOVERNANCE.md](../../UI_UX_GOVERNANCE.md) — authoritative policy (UI-001)
-- [ACCESSIBILITY_GUIDELINES.md](../../ACCESSIBILITY_GUIDELINES.md) — WCAG AA requirements
-- [RESPONSIVE_GUIDELINES.md](../../RESPONSIVE_GUIDELINES.md) — breakpoint specifications
-- [INTERACTION_GUIDELINES.md](../../INTERACTION_GUIDELINES.md) — state pattern requirements
-- [docs/governance/REGISTRY.md](../../docs/governance/REGISTRY.md) — rule registry
+- [UI_UX_GOVERNANCE.md](../../UI_UX_GOVERNANCE.md) — canonical UI/UX standards
+- [docs/governance/ENGINE.md](../../docs/governance/ENGINE.md) — governance engine architecture
 
 ---
 

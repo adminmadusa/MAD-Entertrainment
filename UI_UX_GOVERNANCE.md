@@ -11,7 +11,7 @@
 | **Last Updated** | 2026-07-07 |
 | **Supersedes** | N/A (initial standard) |
 | **Review Frequency** | Quarterly |
-| **Related Standards** | [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md), [COMPONENT_GUIDELINES.md](COMPONENT_GUIDELINES.md), [RESPONSIVE_GUIDELINES.md](RESPONSIVE_GUIDELINES.md), [ACCESSIBILITY_GUIDELINES.md](ACCESSIBILITY_GUIDELINES.md), [INTERACTION_GUIDELINES.md](INTERACTION_GUIDELINES.md), [UI_PATTERNS.md](UI_PATTERNS.md) |
+| **Related Standards** | None (SSOT) |
 | **Related Documents** | [AGENTS.MD](AGENTS.MD), [REPOSITORY_GOVERNANCE.md](REPOSITORY_GOVERNANCE.md), [ARCHITECTURE.md](ARCHITECTURE.md), [.agents/skills/ui-ux/SKILL.md](.agents/skills/ui-ux/SKILL.md) |
 
 ---
@@ -588,12 +588,6 @@ This document is the authoritative UI/UX policy. The following documents provide
 
 | Document | Scope | Status |
 |----------|-------|--------|
-| [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md) | Typography, color tokens, spacing, radius, elevation, iconography | Active |
-| [COMPONENT_GUIDELINES.md](COMPONENT_GUIDELINES.md) | Component ownership, reuse, composition, deprecation | Active |
-| [RESPONSIVE_GUIDELINES.md](RESPONSIVE_GUIDELINES.md) | Breakpoints, grid, container widths, fluid layouts | Active |
-| [ACCESSIBILITY_GUIDELINES.md](ACCESSIBILITY_GUIDELINES.md) | Keyboard, focus, ARIA, WCAG AA requirements | Active |
-| [INTERACTION_GUIDELINES.md](INTERACTION_GUIDELINES.md) | Loading, success, error, confirmation, animation budget | Active |
-| [UI_PATTERNS.md](UI_PATTERNS.md) | Standard layouts: dashboard, form, scanner, table, dialog, wizard | Active |
 
 If any sub-document conflicts with this document, this document takes precedence.
 
