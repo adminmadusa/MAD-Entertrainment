@@ -8,7 +8,6 @@ import { useState, useEffect } from 'react';
 import { EventAdditionalDetailsCard } from '@/components/events/EventAdditionalDetailsCard';
 import { EventAttendanceCard } from '@/components/events/EventAttendanceCard';
 import { EventBasicInfoCard } from '@/components/events/EventBasicInfoCard';
-import { EventEditActions } from '@/components/events/EventEditActions';
 import { EventMediaCard } from '@/components/events/EventMediaCard';
 import { EventMemoriesCard, type MemoriesState } from '@/components/events/EventMemoriesCard';
 import { EventRequirementsCard } from '@/components/events/EventRequirementsCard';
@@ -20,6 +19,7 @@ import { adminGetTicketProfiles } from '@/lib/api/admin/ticket-profile.service';
 import { adminGetTiers } from '@/lib/api/admin/tier.service';
 import { extractApiError } from '@/lib/api/client';
 import { BookingMode, TicketTier, EventStatus, EventMemoryPublicationState, EVENT_STATUS_TRANSITIONS, type EventLifecycleStatus, } from '@mad/shared';
+import { AdminFormActions } from '@mad/ui';
 
 const defaultTier = (): TicketTierInput => ({
   name: 'general',
@@ -344,9 +344,12 @@ export default function EditEventPage() {
           onChange={setMemories}
         />
 
-        <EventEditActions
+        <AdminFormActions
           onCancel={() => router.back()}
           isPending={updateMutation.isPending}
+          submitLabel="Save Changes"
+          pendingLabel="Saving..."
+          submitId="event-submit"
         />
       </form>
     </div>

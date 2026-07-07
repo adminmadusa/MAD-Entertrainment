@@ -40,6 +40,7 @@ export * from './composites/EmptyState';
 export * from './composites/ErrorState';
 export * from './composites/LoadingState';
 export * from './composites/ScrollIndicator';
+export * from './composites/AdminFormActions';
 
 // Layouts
 export * from './layouts/Card';

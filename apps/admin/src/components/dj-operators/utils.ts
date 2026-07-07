@@ -56,9 +56,4 @@ export interface DJSocialLinksCardProps {
   setIsActive: (val: boolean) => void;
 }
 
-export interface DJFormActionsProps {
-  onCancel: () => void;
-  submitLabel: string;
-  pendingLabel: string;
-  isPending: boolean;
-}
+

@@ -4,10 +4,10 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 import { ProfileBasicInfoCard } from '@/components/ticket-profiles/ProfileBasicInfoCard';
-import { ProfileFormActions } from '@/components/ticket-profiles/ProfileFormActions';
 import { TicketGroupCard } from '@/components/ticket-profiles/TicketGroupCard';
 import type { AdminTier } from '@/lib/api/admin/tier.service';
 import type { TicketProfile } from '@mad/types';
+import { AdminFormActions } from '@mad/ui';
 
 import {
   buildTicketProfilePayload,
@@ -181,8 +181,9 @@ export function TicketProfileForm({
         ))}
       </div>
 
-      <ProfileFormActions
+      <AdminFormActions
         submitLabel={initialData ? 'Save Changes' : 'Create Profile'}
+        pendingLabel="Saving..."
         isPending={isPending}
         onCancel={() => router.back()}
       />

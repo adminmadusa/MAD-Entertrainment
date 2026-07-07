@@ -13,8 +13,9 @@ import { adminGetTiers } from '@/lib/api/admin/tier.service';
 import { extractApiError } from '@/lib/api/client';
 import { BookingMode, TicketTier, EventStatus } from '@mad/shared';
 import type { TicketProfile } from '@mad/types';
+import { AdminFormActions } from '@mad/ui';
 
-import { EventBasicInfoSection, EventScheduleSection, EventVenueSection, EventTicketSection, EventMediaSection, EventPublishSection, EventFormActions, defaultTier, TicketTierInput, CloudinaryImage } from './_components';
+import { EventBasicInfoSection, EventScheduleSection, EventVenueSection, EventTicketSection, EventMediaSection, EventPublishSection, defaultTier, TicketTierInput, CloudinaryImage } from './_components';
 
 export default function CreateEventPage() {
   const router = useRouter();
@@ -278,9 +279,12 @@ export default function CreateEventPage() {
           setAgeRestriction={setAgeRestriction}
         />
 
-        <EventFormActions
+        <AdminFormActions
           isPending={createMutation.isPending}
           onCancel={() => router.back()}
+          submitLabel="Create Event"
+          pendingLabel="Creating..."
+          submitId="event-submit"
         />
       </form>
     </div>
