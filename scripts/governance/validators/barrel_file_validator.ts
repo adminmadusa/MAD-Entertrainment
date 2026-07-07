@@ -215,7 +215,7 @@ export class BarrelFileValidator implements GovernanceValidator {
       .filter(f => isBarrelFile(f) && !isExcluded(f));
 
     for (const barrel of barrels) {
-      const content = FileContentCache.get(barrel);
+      const content = FileContentCache.getFileContent(barrel);
       if (content === null) continue;
 
       const entries = extractExports(content);

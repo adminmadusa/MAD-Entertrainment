@@ -40,6 +40,7 @@ export const governanceConfig = {
     excludedPaths: [
       'scripts/governance',
       '.agents',
+      'docs/archive',
     ] as string[],
     documentationExclusions: [
       'docs/archive',

@@ -3,6 +3,7 @@
 ## Metadata
 - **Status**: Implemented
 - **Date**: 2026-07-06
+- **Owner**: Architecture Review Board
 - **Authors**: Antigravity AI Pair
 - **Reviewers**: Repository Governance Owner
 - **Decision Category**: Architecture | Payments
@@ -91,5 +92,20 @@ This refactor will happen in five incremental, reviewable pull requests:
 - Core test suite (`payment.service.test.ts` and `payment.service.refund-webhook.test.ts`) must run and pass.
 - Public method signatures will remain identical to avoid regressions.
 
+### Operational Impact
+Improves system operational maintainability and debugging logs during payment refunds.
+
+### Security Impact
+Ensures secure Webhook signature parsing occurs in isolated services.
+
+### Performance Impact
+Reduces server memory foot-print by removing redundant library imports.
+
 ### Rollback Strategy
 If any issues occur, revert the facade updates in `PaymentRefundService` and remove the new `payment/` subdirectory files.
+
+## Future Considerations
+Consolidation of other payment operations (e.g. checkout, booking confirmation) under the same adapter model.
+
+## References
+- [ARCHITECTURE.md](../../ARCHITECTURE.md)

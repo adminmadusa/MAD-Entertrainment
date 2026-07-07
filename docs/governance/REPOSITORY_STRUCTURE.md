@@ -6,8 +6,7 @@
 - **Baseline Version**: 1
 - **Last Updated**: 2026-07-03
 - **Related Documents**:
-  - [REPOSITORY_POLICY.md](./REPOSITORY_POLICY.md)
-  - [WORKSPACE_POLICY.md](./WORKSPACE_POLICY.md)
+  - [REPOSITORY_GOVERNANCE.md](../../REPOSITORY_GOVERNANCE.md)
 
 ---
 
@@ -107,8 +106,7 @@ This policy applies to all directories and files residing at the root level of t
 
 ## Related Documents
 
-- [REPOSITORY_POLICY.md](./REPOSITORY_POLICY.md)
-- [WORKSPACE_POLICY.md](./WORKSPACE_POLICY.md)
+- [REPOSITORY_GOVERNANCE.md](../../REPOSITORY_GOVERNANCE.md)
 
 ---
 

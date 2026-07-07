@@ -99,7 +99,7 @@ ui-governance:
       continue-on-error: true  # Advisory mode initially
 ```
 
-**Breakpoints under test**: 320px, 375px, 768px, 1024px, 1440px (as per [RESPONSIVE_GUIDELINES.md](../../RESPONSIVE_GUIDELINES.md))
+**Breakpoints under test**: 320px, 375px, 768px, 1024px, 1440px (as per [UI_UX_GOVERNANCE.md](../../UI_UX_GOVERNANCE.md))
 
 ---
 

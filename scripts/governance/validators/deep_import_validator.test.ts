@@ -4,7 +4,7 @@ import { DeepImportValidator } from './deep_import_validator';
 
 vi.mock('../core/ast_parser_cache', () => ({
   FileContentCache: {
-    get: vi.fn(),
+    getFileContent: vi.fn(),
   },
 }));
 
@@ -16,7 +16,7 @@ vi.mock('../core/governance.config', () => ({
 }));
 
 import { FileContentCache } from '../core/ast_parser_cache';
-const mockGet = vi.mocked(FileContentCache.get);
+const mockGet = vi.mocked(FileContentCache.getFileContent);
 
 describe('DeepImportValidator', () => {
   let validator: DeepImportValidator;
