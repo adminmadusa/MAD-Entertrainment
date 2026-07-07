@@ -89,7 +89,7 @@ export class BaselineService {
       const metadataFilePath = join(this.repoRoot, '.governance/baseline/metadata.json');
 
       await this.fs.write(checksumsFilePath, JSON.stringify(checksums, null, 2) + '\n');
-      
+
       const metadata = {
         updatedAt: new Date().toISOString(),
         filesCount: syncedFiles.length,

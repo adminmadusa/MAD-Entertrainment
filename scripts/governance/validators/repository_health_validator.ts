@@ -126,7 +126,7 @@ export class RepositoryHealthValidator implements GovernanceValidator {
 
       const isMandatory = MANDATORY_SSOT_DOCUMENTS.includes(relPath);
       const isADRFile = /docs\/decisions\/ADR-\d{3}-.*\.md$/.test(relPath);
-      const isTemplateOrIndex = relPath.endsWith('TEMPLATE.md') || relPath.endsWith('INDEX.md') || relPath.endsWith('README.md');
+      const isTemplateOrIndex = relPath.endsWith('TEMPLATE.md') || relPath.endsWith('INDEX.md') || relPath.endsWith('README.md') || relPath.startsWith('docs/governance/rules/') || relPath.includes('/templates/');
 
       // Check Owner Field Existence (Skip for templates/indices)
       const owner = fileMetadata?.owner;

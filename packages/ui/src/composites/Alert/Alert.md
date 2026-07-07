@@ -1,10 +1,10 @@
 # Alert
 
-**ID:** UI-CP-002  
-**Status:** Preview  
-**Since:** 1.3.0  
-**Last Reviewed:** 2026-07-06  
-**Owner:** platform  
+**ID:** UI-CP-002
+**Status:** Preview
+**Since:** 1.3.0
+**Last Reviewed:** 2026-07-06
+**Owner:** platform
 **Group:** composites
 
 ## Props

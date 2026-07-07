@@ -16,7 +16,7 @@ export class RoadmapService {
     if (!exists) {
       throw new Error(`Roadmap database file not found at: ${roadmapPath}. Create a roadmap.json file to map milestones.`);
     }
-    
+
     try {
       const content = await this.fs.read(roadmapPath);
       const data = JSON.parse(content);

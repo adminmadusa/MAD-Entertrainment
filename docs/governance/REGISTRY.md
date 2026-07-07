@@ -1,3 +1,7 @@
+---
+owner: Repository Governance Owner
+---
+
 # Governance Rules Registry
 
 This directory contains the complete, authoritative documentation for all governance rules enforced in the MAD Entertrainment repository.

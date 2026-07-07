@@ -30,8 +30,6 @@ export const EventBookingFlow = forwardRef<EventBookingFlowHandle, EventBookingF
     const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState(false);
     const [checkoutBookingId, setCheckoutBookingId] = useState<string | null>(null);
 
-
-
     useImperativeHandle(ref, () => ({
       openBooking: () => setIsBookingModalOpen(true),
     }));

@@ -1,6 +1,7 @@
 # UI Governance Telemetry Report
 
 ## Metadata
+* **Owner**: Repository Governance Owner
 * **Report Date**: 2026-07-07
 * **Sprint / Milestone**: Operational Validation (PR-2 Refinement)
 * **Dataset Size**: 5 branches (26 files scanned)

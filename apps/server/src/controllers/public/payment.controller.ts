@@ -180,7 +180,7 @@ export async function stripeWebhook(req: Request, res: Response): Promise<void> 
         event.id,
         event.type
       );
-      
+
       // Update WebhookEvent traceability (RFND-L02)
       if (result.refundId) {
         webhookEvent.rawPayload = {
@@ -191,12 +191,12 @@ export async function stripeWebhook(req: Request, res: Response): Promise<void> 
       if (result.paymentId) {
         webhookEvent.paymentId = result.paymentId as any;
       }
-      
+
       if (result.status === 'anomaly') {
         logger.warn({ eventId: event.id, result }, 'Stripe refund anomaly occurred.');
       }
     }
-    
+
     webhookEvent.status = 'success';
     webhookEvent.processedAt = new Date();
     await webhookEvent.save();
@@ -278,7 +278,7 @@ export async function razorpayWebhook(req: Request, res: Response): Promise<void
   try {
     body = JSON.parse(rawBody.toString('utf8'));
     eventType = body.event;
-    
+
     if (eventType.startsWith('refund.')) {
       razorpayRefundId = body.payload?.refund?.entity?.id;
       razorpayPaymentId = body.payload?.refund?.entity?.payment_id;
@@ -398,7 +398,7 @@ export async function razorpayWebhook(req: Request, res: Response): Promise<void
         currency
       );
       result = { status: confirmResult.status, bookingId: confirmResult.bookingId };
-      
+
       webhookEvent.status = 'success';
       webhookEvent.bookingId = result.bookingId ? (result.bookingId as any) : undefined;
       webhookEvent.processedAt = new Date();

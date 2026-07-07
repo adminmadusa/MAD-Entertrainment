@@ -1,6 +1,7 @@
 # UI Governance Baseline Report
 
 ## Metadata
+* **Owner**: Repository Governance Owner
 * **Baseline Date**: 2026-07-07
 * **Standard Version**: UI-001 (Version 1.1.0)
 * **Governance Framework Version**: v2.0.0

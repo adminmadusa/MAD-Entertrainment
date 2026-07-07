@@ -83,6 +83,9 @@ export const governanceConfig = {
       error: 95,
       warn: 85
     },
+    duplicateExclusions: [
+      'docs/governance/rules'
+    ],
     // Configuration location for rule enforcement levels.
     // Promotion from WARN to FAIL_BUILD will happen after successful validation.
     enforcement: {

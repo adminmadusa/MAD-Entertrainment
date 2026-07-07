@@ -567,15 +567,15 @@ function TicketTiersTab({ canMutate, qc, showToast }: TabProps) {
 
       {/* Grid Layout (Desktop 2-col, Mobile 1-col) */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-        
+
         {/* Left column: Visual Configurator Form */}
         {canMutate && (
           <div className="lg:col-span-1 space-y-6">
-            
+
             {/* Live Preview Ticket Card */}
             <div className="glass rounded-2xl border border-border-subtle p-5 overflow-hidden relative flex flex-col justify-between h-48 bg-gradient-to-br from-white/5 to-white/0 shadow-glow-sm">
               <div className="absolute top-0 right-0 w-24 h-24 rounded-full filter blur-2xl opacity-20" style={{ backgroundColor: colorInput }} />
-              
+
               <div className="flex justify-between items-start">
                 <div className="flex items-center gap-2.5">
                   <div

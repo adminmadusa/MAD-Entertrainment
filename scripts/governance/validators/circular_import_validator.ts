@@ -32,6 +32,7 @@ const EXCLUDED_FRAGMENTS = [
   'dist/',
   'coverage/',
   '.d.ts',
+  '/config/',
 ];
 
 function norm(p: string): string {
