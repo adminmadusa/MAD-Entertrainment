@@ -4,7 +4,7 @@ import { BarrelFileValidator } from './barrel_file_validator';
 
 vi.mock('../core/ast_parser_cache', () => ({
   FileContentCache: {
-    get: vi.fn(),
+    getFileContent: vi.fn(),
   },
 }));
 
@@ -18,7 +18,7 @@ vi.mock('fs', async (importOriginal) => {
 });
 
 import { FileContentCache } from '../core/ast_parser_cache';
-const mockGet = vi.mocked(FileContentCache.get);
+const mockGet = vi.mocked(FileContentCache.getFileContent);
 
 describe('BarrelFileValidator', () => {
   let validator: BarrelFileValidator;

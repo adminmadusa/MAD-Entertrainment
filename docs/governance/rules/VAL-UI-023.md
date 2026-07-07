@@ -71,7 +71,8 @@ UI
 ### ✅ Compliant
 
 ```css
-.card-container { max-width: 100
+.card-container { max-width: 100%; }
+```
 
 ### ❌ Non-Compliant
 

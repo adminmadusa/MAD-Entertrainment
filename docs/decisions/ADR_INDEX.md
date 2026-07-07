@@ -16,3 +16,7 @@ This index maintains the chronological list of all architectural decisions made 
 | **ADR-010** | Admin Refund Service Decomposition | Implemented | Architecture / Admin Services | 2026-07-06 | [ADR-010](ADR-010-admin-refund-decomposition.md) |
 | **ADR-011** | Database Governance Standard for MongoDB & Mongoose | Accepted | Architecture / Database Governance | 2026-07-06 | [ADR-011](ADR-011-database-governance-standard.md) |
 | **ADR-012** | Ticket Scanner Redesign Architecture | Accepted | Architecture / UI / Security / API / Governance | 2026-07-06 | [ADR-012](ADR-012-ticket-scanner-redesign.md) |
+| **ADR-013** | UI Package Public API Boundary | Accepted | Architecture / UI | 2026-07-06 | [ADR-013](ADR-013-ui-package-boundary.md) |
+| **ADR-014** | Theme Contract | Accepted | Architecture / UI | 2026-07-06 | [ADR-014](ADR-014-theme-contract.md) |
+| **ADR-015** | Public API Freeze During Infrastructure Changes | Accepted | Architecture / UI | 2026-07-06 | [ADR-015](ADR-015-public-api-freeze.md) |
+| **ADR-016** | Component Lifecycle Model | Accepted | Architecture / UI | 2026-07-06 | [ADR-016](ADR-016-component-lifecycle.md) |

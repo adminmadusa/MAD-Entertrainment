@@ -143,11 +143,7 @@ Every developer making changes in the repository must adhere to the following se
    ```
 4. **Follow Branch Cleanup:** When a PR is merged, run the branch cleanup protocol (`RULE-GIT-001`) immediately to keep local/remote tracking references clean.
 
----
-
-## Execution Engine
-
-# Governance Execution Engine
+## 5. Governance Execution Engine
 
 The Governance Execution Engine is the centralized orchestration coordinator that executes governance scans on the codebase. It replaces the old hardcoded loader loops and isolates validator execution, handling filter dispatching, dependency ordering, timing diagnostics, and memory footprint tracking.
 

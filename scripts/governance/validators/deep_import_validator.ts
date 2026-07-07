@@ -146,7 +146,7 @@ export class DeepImportValidator implements GovernanceValidator {
       });
 
     for (const file of eligible) {
-      const content = FileContentCache.get(file);
+      const content = FileContentCache.getFileContent(file);
       if (!content) continue;
 
       const imports = extractImports(content);
