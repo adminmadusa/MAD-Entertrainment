@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 import { DJOperatorForm } from '@/components/dj-operators/DJOperatorForm';
-import { formatApiError } from '@/components/dj-operators/types';
+import { formatApiError } from '@/components/dj-operators/utils';
 import { adminCreateDJ } from '@/lib/api/admin/dj.service';
 
 export default function CreateDJPage() {
