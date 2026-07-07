@@ -77,7 +77,8 @@ export const governanceConfig = {
       '.agents/AGENTS.md',
       'docs/decisions/README.md',
       'docs/decisions/ADR_INDEX.md',
-      'docs/decisions/ADR_TEMPLATE.md'
+      'docs/decisions/ADR_TEMPLATE.md',
+      'docs/governance/REGISTRY.md'
     ],
     duplicateThreshold: {
       error: 95,

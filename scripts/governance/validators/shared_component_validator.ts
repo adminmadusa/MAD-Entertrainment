@@ -111,13 +111,11 @@ export class SharedComponentValidator implements GovernanceValidator {
           const { line } = ts.getLineAndCharacterOfPosition(sourceFile, node.getStart());
 
           if (tagName === 'button') {
-            reportWarning(line, 'VAL-UI-005', 'Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.');
-            reportWarning(line, 'VAL-UI-010', 'Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.');
+            reportWarning(line, 'VAL-UI-005', 'Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui. (Related Rule: VAL-UI-010)');
           }
 
           if (tagName === 'table') {
-            reportWarning(line, 'VAL-UI-004', 'Raw <table> element used in portal. Use a reusable shared Table component.');
-            reportWarning(line, 'VAL-UI-010', 'Shared Component Enforcement: Bypassed shared Table component in favor of raw HTML table element.');
+            reportWarning(line, 'VAL-UI-004', 'Raw <table> element used in portal. Use a reusable shared Table component. (Related Rule: VAL-UI-010)');
           }
         }
 
@@ -126,8 +124,7 @@ export class SharedComponentValidator implements GovernanceValidator {
           const name = node.name.text;
           if (name === 'Field' && file !== 'apps/admin/src/app/events/new/_components/Field.tsx') {
             const { line } = ts.getLineAndCharacterOfPosition(sourceFile, node.getStart());
-            reportWarning(line, 'VAL-UI-006', 'Local duplication of <Field> wrapper. Use a shared components package.');
-            reportWarning(line, 'VAL-UI-010', 'Shared Component Enforcement: Local duplication of Field component wrapper. Import Field from shared library instead.');
+            reportWarning(line, 'VAL-UI-006', 'Local duplication of <Field> wrapper. Use a shared components package. (Related Rule: VAL-UI-010)');
           }
         }
 
@@ -135,8 +132,7 @@ export class SharedComponentValidator implements GovernanceValidator {
           const name = node.name.text;
           if (name === 'Field' && file !== 'apps/admin/src/app/events/new/_components/Field.tsx') {
             const { line } = ts.getLineAndCharacterOfPosition(sourceFile, node.getStart());
-            reportWarning(line, 'VAL-UI-006', 'Local duplication of <Field> wrapper. Use a shared components package.');
-            reportWarning(line, 'VAL-UI-010', 'Shared Component Enforcement: Local duplication of Field component wrapper. Import Field from shared library instead.');
+            reportWarning(line, 'VAL-UI-006', 'Local duplication of <Field> wrapper. Use a shared components package. (Related Rule: VAL-UI-010)');
           }
         }
 

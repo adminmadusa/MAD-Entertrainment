@@ -9,6 +9,7 @@
   - [REPOSITORY_GOVERNANCE.md](REPOSITORY_GOVERNANCE.md)
   - [AGENTS.MD](AGENTS.MD)
   - [CONTRIBUTING.md](CONTRIBUTING.md)
+  - [Governance Registry](docs/governance/REGISTRY.md)
 
 ---
 
