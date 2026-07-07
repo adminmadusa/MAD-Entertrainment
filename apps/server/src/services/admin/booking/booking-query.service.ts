@@ -14,7 +14,7 @@ import { CacheService } from '../../cache.service';
 /**
  * Maps a Mongoose Booking document onto a safe Normalized AdminBooking DTO representation with dynamic attendance.
  */
-export const mapBookingToAdminDTO = (booking: any, ticketsList: any[], auditLogs: any[]) => {
+const mapBookingToAdminDTO = (booking: any, ticketsList: any[], auditLogs: any[]) => {
   const isSeatBased = booking.tickets?.[0]?.seats?.length > 0;
   const mode = booking.eventId?.bookingMode || (isSeatBased ? 'seat_based' : 'general_admission');
 
@@ -96,7 +96,7 @@ export const mapBookingToAdminDTO = (booking: any, ticketsList: any[], auditLogs
  * Merges logs matching by bookingId and bookingReference, deduplicates by _id,
  * and preserves descending createdAt chronological sorting order.
  */
-export const getAuditLogsForBooking = (
+const getAuditLogsForBooking = (
   bookingId: string,
   bookingRef: string,
   logsByBookingId: Record<string, any[]>

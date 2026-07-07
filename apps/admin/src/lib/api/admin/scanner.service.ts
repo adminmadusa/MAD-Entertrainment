@@ -20,19 +20,6 @@ export interface ValidationResult {
   guestName?: string;
 }
 
-export interface LookupResponse {
-  booking?: {
-    bookingId: string;
-    status: string;
-    guestName?: string;
-  };
-  tickets: {
-    ticketId: string;
-    tierName: string;
-    admits: number;
-    scannedAt: string | null;
-  }[];
-}
 
 export interface ScannerStats {
   totalTickets: number;
@@ -59,7 +46,7 @@ export interface ScannerHistoryItem {
   offline: boolean;
 }
 
-export interface ScannerHistoryResponse {
+interface ScannerHistoryResponse {
   items: ScannerHistoryItem[];
   pagination: {
     page: number;
@@ -86,12 +73,6 @@ export async function adminScanTicket(
   return data.data;
 }
 
-export async function adminLookupTickets(reference: string, eventId: string): Promise<LookupResponse> {
-  const { data } = await adminApiClient.get<{ status: string; data: LookupResponse }>(`/admin/scanner/lookup/${reference}`, {
-    params: { eventId },
-  });
-  return data.data;
-}
 
 export async function adminGetScannerStats(eventId: string): Promise<ScannerStats> {
   const { data } = await adminApiClient.get<{ status: string; data: ScannerStats }>(`/admin/scanner/events/${eventId}/stats`);
