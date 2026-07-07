@@ -27,6 +27,42 @@ export class RepositoryHygieneValidator implements GovernanceValidator {
     const warnings: ValidationError[] = [];
     const startTime = Date.now();
 
+    // VAL-HYG-008: Check if current branch is protected (develop, live, main, master) and working tree has modifications
+    let branchName = 'unknown';
+    try {
+      const { execSync } = require('child_process');
+      branchName = execSync('git rev-parse --abbrev-ref HEAD', { cwd: workspaceRoot, encoding: 'utf8' }).trim();
+    } catch {}
+
+    const isProtectedBranch = ['develop', 'live', 'main', 'master'].includes(branchName);
+    if (isProtectedBranch) {
+      let hasModifiedFiles = false;
+      try {
+        const { execSync } = require('child_process');
+        const diffStatus = execSync('git status --porcelain', { cwd: workspaceRoot, encoding: 'utf8' }).trim();
+        const linesList = diffStatus.split('\n').filter(Boolean);
+        // Look for staged/unstaged changes, ignoring untracked files (??) or the .governance folder
+        const trackedChanges = linesList.filter(l => !l.startsWith('??') && !l.includes('.governance/'));
+        if (trackedChanges.length > 0) {
+          hasModifiedFiles = true;
+        }
+      } catch {}
+
+      if (hasModifiedFiles) {
+        errors.push({
+          file: '.git',
+          rule: 'VAL-HYG-008',
+          severity: 'CRITICAL',
+          message: `Direct modification on protected branch "${branchName}" detected! Working directly on protected branches violates git boundary safety.
+Remediation Steps:
+  1. Stash your changes: git stash
+  2. Create/Switch to a feature branch: git checkout -b feat/your-feature-name
+  3. Reapply your changes: git stash pop`,
+          line: 0,
+        });
+      }
+    }
+
     const filteredFiles = files.filter(file => {
       const norm = file.replace(/\\/g, '/');
 

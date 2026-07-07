@@ -160,7 +160,7 @@ export class ExecutionEngine {
 
     ValidatorRegistry.registerValidator(new RepositoryHygieneValidator(), {
       id: 'RepositoryHygieneValidator',
-      supportedRules: ['VAL-HYG-001', 'VAL-HYG-002', 'VAL-HYG-003', 'VAL-HYG-004', 'VAL-HYG-005', 'VAL-HYG-006'],
+      supportedRules: ['VAL-HYG-001', 'VAL-HYG-002', 'VAL-HYG-003', 'VAL-HYG-004', 'VAL-HYG-005', 'VAL-HYG-006', 'VAL-HYG-008'],
       supportedFileTypes: ['.ts', '.tsx', '.js', '.jsx', '.md'],
       priority: 95,
     });

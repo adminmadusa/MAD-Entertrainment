@@ -255,3 +255,35 @@ UI-001 Pull Request Checklist
 [ ] Mobile screenshot attached
 [ ] All UI-001 merge gate conditions cleared
 ```
+
+---
+
+# PART 5 — TASK COMPLETION EVIDENCE GATE
+
+To prevent premature task completion declarations and enforce the Git boundary, marking a task or milestone as **"Complete" is strictly forbidden** unless the AI agent provides verified repository evidence for each of the following phases:
+
+1. **Feature Branch Creation**
+   - Must show the active task-specific branch (e.g. `feat/*`, `fix/*`).
+   - *Evidence*: `git branch --show-current` output.
+2. **Staged and Committed Code**
+   - Working tree must be completely clean.
+   - *Evidence*: `git status` output showing `nothing to commit, working tree clean` and the commit SHA via `git log -1`.
+3. **Pushed to Remote Origin**
+   - The changes must be successfully pushed to the remote repository.
+   - *Evidence*: `git push` command execution output.
+4. **Pull Request Created**
+   - A pull request must be opened targeting the protected branch.
+   - *Evidence*: PR number, title, and PR URL.
+5. **CI Gating Verification**
+   - CI build/tests must succeed on the branch.
+   - *Evidence*: Verification of the GitHub Actions run status.
+6. **Merge to Protected Branch**
+   - The pull request must be approved and merged.
+   - *Evidence*: Merge commit SHA.
+7. **Branch Cleanup**
+   - Local and remote task branches must be deleted post-merge.
+   - *Evidence*: Safe deletion confirmation (`git branch -d` and `git push origin --delete`).
+8. **Develop Sync**
+   - Switch back to `develop` and pull origin to synchronize the local state.
+   - *Evidence*: `git checkout develop && git pull origin develop` output.
+
