@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { type TicketInput, miniInputCls } from './types';
+import { type TicketInput, miniInputCls } from './utils';
 
 export interface OfferRulesSectionProps {
   ticket: TicketInput;

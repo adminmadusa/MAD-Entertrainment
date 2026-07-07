@@ -3,7 +3,7 @@ import React from 'react';
 import { type AdminTier } from '@/lib/api/admin/tier.service';
 
 import { TicketTierCard } from './TicketTierCard';
-import { type GroupInput, type TicketInput, inputCls } from './types';
+import { type GroupInput, type TicketInput, inputCls } from './utils';
 
 export interface TicketGroupCardProps {
   group: GroupInput;

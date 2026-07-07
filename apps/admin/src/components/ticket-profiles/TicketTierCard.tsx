@@ -4,7 +4,7 @@ import { type AdminTier } from '@/lib/api/admin/tier.service';
 import { TicketTier } from '@mad/shared';
 
 import { OfferRulesSection } from './OfferRulesSection';
-import { type TicketInput, inputCls } from './types';
+import { type TicketInput, inputCls } from './utils';
 
 export interface TicketTierCardProps {
   ticket: TicketInput;
