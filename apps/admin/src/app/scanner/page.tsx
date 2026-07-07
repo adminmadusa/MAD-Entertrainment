@@ -33,7 +33,6 @@ export default function ScannerPage() {
     historyPagination,
     isLoadingHistory,
     submitScan,
-    triggerOfflineSync,
   } = useScannerState();
 
   // Fetch active events for selection

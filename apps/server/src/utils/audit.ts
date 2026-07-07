@@ -27,7 +27,9 @@ export function auditLog(payload: AuditLogPayload) {
     correlationId: context?.correlationId,
   };
 
-  logger.info({ audit: true, ...logData }, `[AUDIT] ${payload.action}: ${payload.description || ''}`);
+  const safeAction = String(payload.action).replace(/[\r\n]/g, '');
+  const safeDescription = String(payload.description || '').replace(/[\r\n]/g, '');
+  logger.info({ audit: true, ...logData }, `[AUDIT] ${safeAction}: ${safeDescription}`);
 
   // Asynchronously save to MongoDB AuditLog collection
   AuditLogModel.create(logData).catch((err) => {

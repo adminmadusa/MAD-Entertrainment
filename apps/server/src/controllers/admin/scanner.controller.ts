@@ -146,8 +146,6 @@ export const lookupTickets = async (req: Request, res: Response, next: NextFunct
       });
     }
 
-    const scannerId = req.admin?.sub;
-
     if (reference.startsWith('MAD-')) {
       const booking = await Booking.findOne({ bookingId: reference });
       if (!booking) {

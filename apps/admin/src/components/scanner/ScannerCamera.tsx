@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useHtml5QrScanner, CameraDevice } from '../../hooks/useHtml5QrScanner';
+import { useHtml5QrScanner } from '../../hooks/useHtml5QrScanner';
 
 interface ScannerCameraProps {
   isOffline: boolean;

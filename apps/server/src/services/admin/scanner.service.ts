@@ -30,10 +30,10 @@ export async function validateAndCheckInTicket(payload: ScanRequestPayload): Pro
   const { ticketId, eventId, scannerId, requestId } = payload;
 
   // 1. Idempotency Check via Audit Logs
-  if (requestId) {
+  if (requestId && typeof requestId === 'string') {
     const existingLog = await AuditLogModel.findOne({
       action: 'TICKET_SCAN',
-      'metadata.requestId': requestId,
+      'metadata.requestId': { $eq: requestId },
       status: 'success',
     });
     if (existingLog) {
@@ -51,7 +51,10 @@ export async function validateAndCheckInTicket(payload: ScanRequestPayload): Pro
   }
 
   // 2. Fetch Ticket
-  const ticket = await Ticket.findOne({ ticketId });
+  if (typeof ticketId !== 'string') {
+    return { status: 'INVALID', ticketId: String(ticketId), message: 'Invalid ticket reference: Ticket not found.' };
+  }
+  const ticket = await Ticket.findOne({ ticketId: { $eq: ticketId } });
   if (!ticket) {
     return { status: 'INVALID', ticketId, message: 'Invalid ticket reference: Ticket not found.' };
   }
