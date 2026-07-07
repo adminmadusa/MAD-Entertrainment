@@ -10,6 +10,92 @@ import { checkSuppression } from '../core/suppression';
 
 const workspaceRoot = resolve(__dirname, '../../..');
 
+const isStaticSource = (expr: ts.Expression, sourceFile: ts.SourceFile): boolean => {
+  // 1. Literal Array
+  if (ts.isArrayLiteralExpression(expr)) {
+    return true;
+  }
+
+  // 2. Call Expression (static factories like Array.from, Object.keys, etc.)
+  if (ts.isCallExpression(expr)) {
+    const callText = expr.expression.getText(sourceFile);
+    if (
+      callText === 'Array.from' ||
+      callText === 'Object.keys' ||
+      callText === 'Object.values' ||
+      callText === 'Object.entries'
+    ) {
+      return true;
+    }
+  }
+
+  // 3. Identifier
+  if (ts.isIdentifier(expr)) {
+    const idName = expr.text;
+
+    // UPPER_CASE constants
+    if (/^[A-Z0-9_]+$/.test(idName)) {
+      return true;
+    }
+
+    let isStaticConst = false;
+    let isImported = false;
+
+    const findDecl = (n: ts.Node) => {
+      if (isStaticConst || isImported) return;
+
+      // Check imports
+      if (ts.isImportSpecifier(n) && n.name.text === idName) {
+        isImported = true;
+        return;
+      }
+      if (ts.isImportClause(n) && n.name && n.name.text === idName) {
+        isImported = true;
+        return;
+      }
+      if (ts.isNamespaceImport(n) && n.name.text === idName) {
+        isImported = true;
+        return;
+      }
+
+      // Check static variable declarations
+      if (ts.isVariableDeclaration(n) && ts.isIdentifier(n.name) && n.name.text === idName) {
+        if (n.initializer) {
+          if (
+            ts.isArrayLiteralExpression(n.initializer) ||
+            ts.isObjectLiteralExpression(n.initializer) ||
+            ts.isStringLiteral(n.initializer) ||
+            ts.isNoSubstitutionTemplateLiteral(n.initializer) ||
+            ts.isNumericLiteral(n.initializer)
+          ) {
+            isStaticConst = true;
+            return;
+          }
+        }
+      }
+
+      ts.forEachChild(n, findDecl);
+    };
+
+    findDecl(sourceFile);
+
+    if (isStaticConst || isImported) {
+      return true;
+    }
+  }
+
+  // 4. Property Access
+  if (ts.isPropertyAccessExpression(expr)) {
+    let leftmost: ts.Expression = expr.expression;
+    while (ts.isPropertyAccessExpression(leftmost)) {
+      leftmost = leftmost.expression;
+    }
+    return isStaticSource(leftmost, sourceFile);
+  }
+
+  return false;
+};
+
 export class UXStateValidator implements GovernanceValidator {
   readonly name = 'UXStateValidator';
 
@@ -171,27 +257,32 @@ export class UXStateValidator implements GovernanceValidator {
         if (ts.isCallExpression(node) && ts.isPropertyAccessExpression(node.expression)) {
           const propName = node.expression.name.text;
           if (propName === 'map') {
-            const callerText = node.expression.expression.getText(sourceFile);
-            // Verify if callerText.length or EmptyState is present in the file
-            const fileText = sourceFile.text;
-            const hasLengthCheck =
-              fileText.includes(`${callerText}.length`) ||
-              fileText.includes('EmptyState') ||
-              fileText.includes('empty');
+            const callerExpr = node.expression.expression;
+            const callerText = callerExpr.getText(sourceFile);
 
-            if (!hasLengthCheck) {
-              const { line } = ts.getLineAndCharacterOfPosition(sourceFile, node.getStart());
-              const supp = checkSuppression(lines, line, 'VAL-UX-002');
-              if (!supp.isSuppressed) {
-                const rule = RuleRegistry.getRule('VAL-UX-002');
-                warnings.push({
-                  file,
-                  line: line + 1,
-                  rule: 'VAL-UX-002',
-                  severity: (rule?.severity as any) || 'HIGH',
-                  snippet: lines[line]?.trim(),
-                  message: `List rendering of "${callerText}" detected via .map() without checking for empty state or rendering <EmptyState />.`,
-                });
+            // Filter out static data sources to prevent false positives
+            if (!isStaticSource(callerExpr, sourceFile)) {
+              // Verify if callerText.length or EmptyState is present in the file
+              const fileText = sourceFile.text;
+              const hasLengthCheck =
+                fileText.includes(`${callerText}.length`) ||
+                fileText.includes('EmptyState') ||
+                fileText.includes('empty');
+
+              if (!hasLengthCheck) {
+                const { line } = ts.getLineAndCharacterOfPosition(sourceFile, node.getStart());
+                const supp = checkSuppression(lines, line, 'VAL-UX-002');
+                if (!supp.isSuppressed) {
+                  const rule = RuleRegistry.getRule('VAL-UX-002');
+                  warnings.push({
+                    file,
+                    line: line + 1,
+                    rule: 'VAL-UX-002',
+                    severity: (rule?.severity as any) || 'HIGH',
+                    snippet: lines[line]?.trim(),
+                    message: `List rendering of "${callerText}" detected via .map() without checking for empty state or rendering <EmptyState />.`,
+                  });
+                }
               }
             }
           }
