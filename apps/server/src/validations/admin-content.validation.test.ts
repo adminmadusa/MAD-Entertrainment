@@ -1,6 +1,7 @@
-import { BookingStatus, EventCategory, PopupTrigger } from '@mad/shared';
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
+
+import { BookingStatus, EventCategory, PopupTrigger } from '@mad/shared';
 
 import {
   adminBookingIdentifierParamSchema,

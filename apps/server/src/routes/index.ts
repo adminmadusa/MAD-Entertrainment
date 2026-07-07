@@ -6,10 +6,10 @@ import healthRoutes from './health.routes';
 import publicBookingRoutes from './public/booking.routes';
 import publicDJOperatorRoutes from './public/dj-operator.routes';
 import publicEventRoutes from './public/event.routes';
+import publicMarketingRoutes from './public/marketing.routes';
 import publicPaymentRoutes from './public/payment.routes';
 import publicPopupRoutes from './public/popup.routes';
 import publicTicketRoutes from './public/ticket.routes';
-import publicMarketingRoutes from './public/marketing.routes';
 
 const router: Router = Router();
 

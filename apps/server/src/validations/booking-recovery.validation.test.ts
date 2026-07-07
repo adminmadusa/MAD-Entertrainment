@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+
 import { recoverBookingSchema, verifyRecoveredBookingOTPSchema } from './booking-recovery.validation';
 
 describe('Booking Recovery Validation Schema', () => {

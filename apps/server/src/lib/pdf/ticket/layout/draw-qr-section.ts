@@ -1,9 +1,10 @@
 import PDFDocument from "pdfkit";
 import QRCode from "qrcode";
+
+import { getPurchaserPDFTicketState } from "../../../../services/public/ticket-ownership.service";
 import { COLORS } from "../utils/colors";
 import { SPACING } from "../utils/spacing";
 import { TYPOGRAPHY } from "../utils/typography";
-import { getPurchaserPDFTicketState } from "../../../../services/public/ticket-ownership.service";
 
 export async function drawQRSection(
   doc: typeof PDFDocument,

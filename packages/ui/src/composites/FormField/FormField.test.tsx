@@ -1,8 +1,9 @@
+import { render, screen } from '@testing-library/react';
 import React from 'react';
 import { describe, it, expect } from 'vitest';
-import { render, screen } from '@testing-library/react';
-import { FormField } from './FormField';
+
 import { Input } from '../../primitives/Input';
+import { FormField } from './FormField';
 
 describe('FormField Component', () => {
   it('renders label and associated input correctly', () => {

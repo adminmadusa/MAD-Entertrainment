@@ -1,14 +1,14 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { adminGetEvents } from '@/lib/api/admin/event.service';
-import { formatEventDate } from '@mad/utils';
 
-import { useScannerState } from '@/hooks/useScannerState';
+import { ScanHistory } from '@/components/scanner/ScanHistory';
 import { ScannerCamera } from '@/components/scanner/ScannerCamera';
 import { ScannerStats } from '@/components/scanner/ScannerStats';
-import { ScanHistory } from '@/components/scanner/ScanHistory';
 import { TicketValidationModal } from '@/components/scanner/TicketValidationModal';
+import { useScannerState } from '@/hooks/useScannerState';
+import { adminGetEvents } from '@/lib/api/admin/event.service';
+import { formatEventDate } from '@mad/utils';
 
 export default function ScannerPage() {
   const {

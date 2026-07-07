@@ -1,10 +1,11 @@
 import { Types } from 'mongoose';
+
 import { IBooking } from '../../models/booking.schema';
-import { BookingQueryResult, MyBookingsResult, BookingAccessContext, CreateBookingRequest, SaveCheckoutRequest } from './booking/booking.types';
-import { BookingQueryService } from './booking/booking-query.service';
 import { BookingAccessService } from './booking/booking-access.service';
 import { BookingCreationService } from './booking/booking-creation.service';
+import { BookingQueryService } from './booking/booking-query.service';
 import { BookingStateService } from './booking/booking-state.service';
+import type { BookingQueryResult, MyBookingsResult, BookingAccessContext, CreateBookingRequest, SaveCheckoutRequest } from './booking/booking.types';
 
 export class PublicBookingService {
   static generateSelectionFingerprint(data: {

@@ -1,10 +1,10 @@
 'use client';
 
-import { Modal } from '@mad/ui';
 import { useState } from 'react';
 
 import { AdminRole } from '@mad/shared';
 import type { Admin } from '@mad/types';
+import { Modal } from '@mad/ui';
 
 const inputCls =
   'w-full px-4 py-2.5 rounded-xl bg-background border border-border-subtle text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-purple transition-colors';

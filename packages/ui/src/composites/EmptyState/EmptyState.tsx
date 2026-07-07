@@ -1,6 +1,6 @@
 import React, { forwardRef } from 'react';
+
 import { cn } from '../../lib/cn';
-import { EmptyStateProps } from './EmptyState.types';
 import {
   emptyStateContainerClasses,
   emptyStateIconClasses,
@@ -8,6 +8,7 @@ import {
   emptyStateDescriptionClasses,
   emptyStateActionClasses,
 } from './EmptyState.styles';
+import type { EmptyStateProps } from './EmptyState.types';
 
 export const EmptyState = forwardRef<HTMLDivElement, EmptyStateProps>(
   ({ className, title, description, icon, action, ...props }, ref) => {

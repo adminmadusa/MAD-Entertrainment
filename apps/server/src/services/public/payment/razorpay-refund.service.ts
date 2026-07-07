@@ -1,5 +1,5 @@
 import { logger } from '../../../utils/logger';
-import { RazorpayRefundWebhookPayload, NormalizedRefundPayload } from '../payment.types';
+import type { RazorpayRefundWebhookPayload, NormalizedRefundPayload } from '../payment.types';
 
 export class RazorpayRefundService {
   static parseRazorpayRefund(

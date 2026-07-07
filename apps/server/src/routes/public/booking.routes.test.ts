@@ -1,8 +1,9 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
-import router from './booking.routes';
-import { bookingLimiter, recoveryLimiter } from '../../middleware/rate.middleware';
-import { optionalAuth } from '../../middleware/auth.middleware';
+
 import { createBooking, recoverBooking } from '../../controllers/public/booking.controller';
+import { optionalAuth } from '../../middleware/auth.middleware';
+import { bookingLimiter, recoveryLimiter } from '../../middleware/rate.middleware';
+import router from './booking.routes';
 
 vi.mock('../../controllers/public/booking.controller', () => ({
   createBooking: vi.fn((req: any, res: any) => res.status(201).json({ success: true })),

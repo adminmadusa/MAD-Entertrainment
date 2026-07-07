@@ -1,6 +1,8 @@
 import crypto from 'crypto';
-import { InventoryState, ReservationStatus, TicketTier } from '@mad/shared';
+
 import { Schema, model, Document, Types } from 'mongoose';
+
+import { InventoryState, ReservationStatus, TicketTier } from '@mad/shared';
 
 export interface IReservation extends Document {
   reservationId: string;

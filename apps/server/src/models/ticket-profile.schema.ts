@@ -1,4 +1,5 @@
 import mongoose, { Schema, model, Document } from 'mongoose';
+
 import { TicketTier } from '@mad/shared';
 
 export interface ITicketOfferRules {

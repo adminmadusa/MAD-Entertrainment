@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
+
 import { useHtml5QrScanner } from '../../hooks/useHtml5QrScanner';
 
 interface ScannerCameraProps {

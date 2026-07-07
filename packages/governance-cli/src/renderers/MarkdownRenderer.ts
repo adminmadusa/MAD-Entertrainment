@@ -1,5 +1,5 @@
-import { Renderer } from './Renderer';
 import { OutputModel } from '../core/command';
+import { Renderer } from './Renderer';
 
 export class MarkdownRenderer implements Renderer {
   async render<T extends OutputModel>(model: T): Promise<void> {

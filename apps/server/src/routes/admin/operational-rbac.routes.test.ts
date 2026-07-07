@@ -1,7 +1,9 @@
-import { AdminRole } from '@mad/shared';
 import { describe, expect, it, vi } from 'vitest';
-import { verifyAdminToken } from '../../utils/jwt';
+
+import { AdminRole } from '@mad/shared';
+
 import { requireAdmin, requireSuperAdmin, requireRole } from '../../middleware/auth.middleware';
+import { verifyAdminToken } from '../../utils/jwt';
 
 vi.mock('../../utils/logger', () => ({
   logger: {

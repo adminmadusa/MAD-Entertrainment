@@ -1,14 +1,15 @@
 'use client';
 
 import React, { useState, forwardRef } from 'react';
+
 import { cn } from '../../lib/cn';
-import { TooltipProps } from './Tooltip.types';
 import {
   tooltipTriggerClasses,
   tooltipBubbleClasses,
   tooltipActiveClasses,
   tooltipSides,
 } from './Tooltip.styles';
+import type { TooltipProps } from './Tooltip.types';
 
 export const Tooltip = forwardRef<HTMLDivElement, TooltipProps>(
   ({ content, side = 'top', children }, ref) => {

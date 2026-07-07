@@ -1,23 +1,24 @@
-import 'express-async-errors';
 import compression from 'compression';
-import cors from 'cors';
 import cookieParser from 'cookie-parser';
+import cors from 'cors';
 import express, { Application } from 'express';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import swaggerUi from 'swagger-ui-express';
 
-import { generateOpenApiDocument } from './config/openapi';
 import { getEnv } from './config/env';
+import { generateOpenApiDocument } from './config/openapi';
 import { noStoreApiCache } from './middleware/cache.middleware';
 import { correlationMiddleware } from './middleware/correlation.middleware';
 import { errorHandler, notFoundHandler } from './middleware/error.middleware';
 import { generalLimiter } from './middleware/rate.middleware';
-import './models';
+import { botMitigation } from './middleware/security.middleware';
 import routes from './routes';
 import { logger } from './utils/logger';
-import { botMitigation } from './middleware/security.middleware';
 import { isOriginAllowed } from './utils/origin-validator';
+
+import 'express-async-errors';
+import './models';
 
 export function createApp(): Application {
   const app = express();

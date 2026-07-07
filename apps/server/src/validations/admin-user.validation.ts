@@ -1,4 +1,5 @@
 import { z } from 'zod';
+
 import { objectIdSchema } from '@mad/validations';
 
 const adminPaginationLimitSchema = z.coerce.number().int().positive().max(100);

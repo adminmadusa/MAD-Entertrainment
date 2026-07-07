@@ -17,7 +17,7 @@
 
 ## Problem Statement
 We lacked a standardized, reviewable database governance standard for MongoDB schema updates, indexing, and transaction scopes.
-The MAD Entertainment platform relies on MongoDB with Mongoose as its primary data store. While governance policies exist for architecture boundaries, repository management, authentication, payments, and general code quality, there has been no formal governance standard for database design and implementation. Database-related changes (such as schema updates, indexing strategies, and transaction boundaries) have been reviewed on an ad-hoc, case-by-case basis. 
+The MAD Entertainment platform relies on MongoDB with Mongoose as its primary data store. While governance policies exist for architecture boundaries, repository management, authentication, payments, and general code quality, there has been no formal governance standard for database design and implementation. Database-related changes (such as schema updates, indexing strategies, and transaction boundaries) have been reviewed on an ad-hoc, case-by-case basis.
 
 As the application continues to scale, this lack of standardized governance increases the risk of:
 - Performance regressions from index starvation or unindexed collection scans.

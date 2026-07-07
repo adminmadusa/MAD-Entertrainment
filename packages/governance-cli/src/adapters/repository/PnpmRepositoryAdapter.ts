@@ -1,8 +1,9 @@
-import { RepositoryAdapter } from './RepositoryAdapter';
-import { PackageManagerAdapter } from '../package-manager/PackageManagerAdapter';
-import { PnpmAdapter } from '../package-manager/PnpmAdapter';
 import { readdirSync, existsSync } from 'fs';
 import { join } from 'path';
+
+import { PackageManagerAdapter } from '../package-manager/PackageManagerAdapter';
+import { PnpmAdapter } from '../package-manager/PnpmAdapter';
+import { RepositoryAdapter } from './RepositoryAdapter';
 
 export class PnpmRepositoryAdapter implements RepositoryAdapter {
   constructor(private rootPath: string) {}

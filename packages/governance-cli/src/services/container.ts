@@ -1,7 +1,7 @@
-import { FileSystemService } from './FileSystemService';
-import { GitService } from './GitService';
 import { GovernanceConfig } from '../config/schema';
 import { ServiceContainer } from '../core/context';
+import { FileSystemService } from './FileSystemService';
+import { GitService } from './GitService';
 
 // Import domain services
 import { TemplateService } from './templates/TemplateService';

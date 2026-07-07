@@ -1,6 +1,9 @@
-import { AdminRole } from '@mad/shared';
 import { Request, Response, NextFunction } from 'express';
 
+import { AdminRole } from '@mad/shared';
+
+import { AdminModel } from '../models/admin.schema';
+import { auditLog } from '../utils/audit';
 import {
   verifyUserToken,
   verifyAdminToken,
@@ -9,17 +12,11 @@ import {
   JwtUserPayload,
   JwtAdminPayload,
 } from '../utils/jwt';
-
 import { logger } from '../utils/logger';
-
 import {
   sendUnauthorized,
   sendForbidden,
 } from '../utils/response';
-
-import { AdminModel } from '../models/admin.schema';
-import { auditLog } from '../utils/audit';
-
 
 // ─────────────────────────────────────────────
 // Extend Express Request

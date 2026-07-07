@@ -1,6 +1,7 @@
 import { execSync } from 'child_process';
-import type { NextConfig } from 'next';
+
 import withPWAInit from '@ducanh2912/next-pwa';
+import type { NextConfig } from 'next';
 
 const cacheVersion = (() => {
   try {

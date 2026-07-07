@@ -5,8 +5,8 @@ import { BookingStatus } from '@mad/shared';
 
 import { Booking } from '../../models/booking.schema';
 import { Ticket } from '../../models/ticket.schema';
-import { auditLog } from '../../utils/audit';
 import * as scannerService from '../../services/admin/scanner.service';
+import { auditLog } from '../../utils/audit';
 
 export const scanTicket = async (req: Request, res: Response, next: NextFunction) => {
   try {

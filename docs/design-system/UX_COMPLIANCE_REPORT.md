@@ -1,19 +1,19 @@
 # UX Compliance Audit Report
 
-**Audit Date:** 2026-07-06  
-**Status:** Approved  
-**Version:** 1.0.0  
-**Auditor:** AI Governance Agent  
-**Target:** apps/web, apps/admin  
-**Design System Release:** design-system-v1.4.0  
+**Audit Date:** 2026-07-06
+**Status:** Approved
+**Version:** 1.0.0
+**Auditor:** AI Governance Agent
+**Target:** apps/web, apps/admin
+**Design System Release:** design-system-v1.4.0
 
 ---
 
 ## Executive Summary
 
-This report documents the compliance of `apps/web` and `apps/admin` against the newly published UX pattern specifications (`UX-AUTH-001` through `UX-DLG-002`). 
+This report documents the compliance of `apps/web` and `apps/admin` against the newly published UX pattern specifications (`UX-AUTH-001` through `UX-DLG-002`).
 
-The baseline design system components (`@mad/ui` v1.4.0) are fully adopted in primary views, but substantial **adoption gaps** exist where application-level views use raw HTML inputs, custom spinners, or ad-hoc layout logic instead of composition primitives (such as `FormField`). 
+The baseline design system components (`@mad/ui` v1.4.0) are fully adopted in primary views, but substantial **adoption gaps** exist where application-level views use raw HTML inputs, custom spinners, or ad-hoc layout logic instead of composition primitives (such as `FormField`).
 
 Additionally, the **admin login view** exhibits total non-compliance, using zero `@mad/ui` primitives. These gaps represent the primary technical debt to resolve before automated UX governance enforcement (Phase 4) is deployed.
 

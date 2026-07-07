@@ -1,6 +1,7 @@
-import { HTTP_STATUS } from '@mad/shared';
-import { ErrorRequestHandler, RequestHandler } from 'express';
 import * as Sentry from '@sentry/node';
+import { ErrorRequestHandler, RequestHandler } from 'express';
+
+import { HTTP_STATUS } from '@mad/shared';
 
 import { getEnv } from '../config/env';
 import { logger } from '../utils/logger';

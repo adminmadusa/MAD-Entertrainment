@@ -1,9 +1,10 @@
 import { BookingStatus } from '@mad/shared';
+
 import { getEnv } from '../../../config/env';
 import { AppError } from '../../../middleware/error.middleware';
 import { IBooking } from '../../../models/booking.schema';
 import { logger } from '../../../utils/logger';
-import { BookingAccessContext } from './booking.types';
+import type { BookingAccessContext } from './booking.types';
 
 export class BookingAccessService {
   static assertBookingAccess(

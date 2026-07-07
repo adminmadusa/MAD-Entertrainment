@@ -1,8 +1,8 @@
 'use client';
 
 import React, { forwardRef, useState } from 'react';
+
 import { cn } from '../../lib/cn';
-import { TextareaProps } from './Textarea.types';
 import {
   textareaContainerClasses,
   textareaDefaultBorder,
@@ -12,6 +12,7 @@ import {
   countWrapperClasses,
   errorTextClasses,
 } from './Textarea.styles';
+import type { TextareaProps } from './Textarea.types';
 
 export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
   (

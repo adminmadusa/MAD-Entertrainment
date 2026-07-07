@@ -3,23 +3,18 @@ import crypto from 'crypto';
 import { BookingStatus, PaymentStatus, ReservationStatus } from '@mad/shared';
 
 import { emitToAdmin, emitToEvent } from '../config/socket';
-
 import { Booking } from '../models/booking.schema';
 import { Payment } from '../models/payment.schema';
 import { Reservation } from '../models/reservation.schema';
 import { auditLog } from '../utils/audit';
 import { runWithContext, getTraceContext } from '../utils/context';
 import { logger } from '../utils/logger';
-
-import { SeatConsistencyService } from './consistency/seat-consistency.service';
 import { BookingConsistencyService, UNTICKETED_BOOKING_WINDOW_MS } from './consistency/booking-consistency.service';
 import { NotificationConsistencyService } from './consistency/notification-consistency.service';
-import { RefundConsistencyService } from './consistency/refund-consistency.service';
 import { PaymentConsistencyService } from './consistency/payment-consistency.service';
+import { RefundConsistencyService } from './consistency/refund-consistency.service';
+import { SeatConsistencyService } from './consistency/seat-consistency.service';
 import { ReservationService } from './reservation.service';
-
-
-
 
 export interface ConsistencyReport {
   generatedAt: string;

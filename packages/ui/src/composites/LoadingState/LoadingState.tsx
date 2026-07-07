@@ -1,12 +1,13 @@
 import React, { forwardRef } from 'react';
+
 import { cn } from '../../lib/cn';
 import { Spinner } from '../../primitives/Spinner';
-import { LoadingStateProps } from './LoadingState.types';
 import {
   loadingStateContainerClasses,
   loadingStateLabelClasses,
   loadingSpinnerClasses,
 } from './LoadingState.styles';
+import type { LoadingStateProps } from './LoadingState.types';
 
 export const LoadingState = forwardRef<HTMLDivElement, LoadingStateProps>(
   ({ className, label = 'Loading content...', ...props }, ref) => {

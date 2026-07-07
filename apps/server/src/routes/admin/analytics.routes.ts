@@ -1,7 +1,9 @@
 import { Router } from 'express';
+
 import { AdminRole } from '@mad/shared';
-import { requireAdmin, requireRole } from '../../middleware/auth.middleware';
+
 import * as analyticsController from '../../controllers/admin/analytics.controller';
+import { requireAdmin, requireRole } from '../../middleware/auth.middleware';
 
 const router: Router = Router();
 

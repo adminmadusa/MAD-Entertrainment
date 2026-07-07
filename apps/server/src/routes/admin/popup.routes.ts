@@ -1,5 +1,7 @@
 import { Router } from 'express';
+
 import { AdminRole } from '@mad/shared';
+
 import * as popupController from '../../controllers/admin/popup.controller';
 import { requireAdmin, requireRole } from '../../middleware/auth.middleware';
 import { validate } from '../../middleware/validation.middleware';

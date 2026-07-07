@@ -1,6 +1,9 @@
 import crypto from 'crypto';
+
 import { Types } from 'mongoose';
+
 import { BookingStatus, BookingMode, ReservationStatus, SeatStatus } from '@mad/shared';
+
 import { getEnv } from '../../../config/env';
 import { getRedis } from '../../../config/redis';
 import { emitToAdmin, emitToEvent } from '../../../config/socket';
@@ -15,8 +18,8 @@ import { auditLog } from '../../../utils/audit';
 import { logger } from '../../../utils/logger';
 import { runInTransaction } from '../../../utils/transaction';
 import { ReservationService } from '../../reservation.service';
-import { CreateBookingRequest, SaveCheckoutRequest } from './booking.types';
 import { BookingAccessService } from './booking-access.service';
+import type { CreateBookingRequest, SaveCheckoutRequest } from './booking.types';
 
 export class BookingCreationService {
   static generateSelectionFingerprint(data: {

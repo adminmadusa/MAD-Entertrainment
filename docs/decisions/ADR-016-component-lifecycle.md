@@ -45,10 +45,10 @@ The full breaking-change policy per state is defined in [API_STABILITY.md](../de
 
 ## Alternatives Considered
 
-**Option A: No lifecycle model — all components are treated as stable**  
+**Option A: No lifecycle model — all components are treated as stable**
 Rejected. Early-stage components need the freedom to iterate. A single "stable" status would either prevent necessary evolution or lead to silent breaking changes.
 
-**Option B: semver per component**  
+**Option B: semver per component**
 Considered. Per-component semver is how some large design systems (e.g. Carbon) operate. Rejected for now because it adds tooling complexity that isn't justified at the current scale. Package-level semver combined with the lifecycle state model provides sufficient granularity.
 
 ---

@@ -13,9 +13,9 @@
 ---
 
 ## Context
-As the MAD Entertrainment workspace evolved, managing branch hygiene shifted from an ad-hoc cleanup task ("which branches can I delete?") to a strict verification and proof exercise ("what can I prove about the repository?"). 
+As the MAD Entertrainment workspace evolved, managing branch hygiene shifted from an ad-hoc cleanup task ("which branches can I delete?") to a strict verification and proof exercise ("what can I prove about the repository?").
 
-To prevent errors, protect production systems, and allow automated tools (including AI coding agents) to safely operate on Git branches, we need a formalized set of architectural principles and stable interface schemas. 
+To prevent errors, protect production systems, and allow automated tools (including AI coding agents) to safely operate on Git branches, we need a formalized set of architectural principles and stable interface schemas.
 
 The Git Governance Engine is defined strictly as an **audit and decision-support system**, not an autonomous repository management system. It does not perform writes or mutations on Git repositories directly without human review.
 

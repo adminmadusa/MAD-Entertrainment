@@ -1,4 +1,4 @@
-import { ButtonProps } from '../Button/Button.types';
+import type { ButtonProps } from '../Button/Button.types';
 
 export interface IconButtonProps extends Omit<ButtonProps, 'leftIcon' | 'rightIcon' | 'fullWidth'> {
   /**

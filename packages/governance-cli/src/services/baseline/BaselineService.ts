@@ -1,7 +1,8 @@
-import { FileSystemService } from '../FileSystemService';
-import { join } from 'path';
 import { createHash } from 'crypto';
 import { readdirSync, statSync, readFileSync, existsSync } from 'fs';
+import { join } from 'path';
+
+import { FileSystemService } from '../FileSystemService';
 
 export class BaselineService {
   constructor(

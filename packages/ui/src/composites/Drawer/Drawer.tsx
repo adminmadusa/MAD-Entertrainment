@@ -1,11 +1,11 @@
 'use client';
 
 import React, { forwardRef } from 'react';
-import { cn } from '../../lib/cn';
+
 import { useFocusTrap } from '../../hooks/useFocusTrap';
-import { IconButton } from '../../primitives/IconButton';
 import { X } from '../../icons';
-import { DrawerProps } from './Drawer.types';
+import { cn } from '../../lib/cn';
+import { IconButton } from '../../primitives/IconButton';
 import {
   drawerBackdropClasses,
   drawerContentBaseClasses,
@@ -15,6 +15,7 @@ import {
   drawerBodyClasses,
   drawerCloseClasses,
 } from './Drawer.styles';
+import type { DrawerProps } from './Drawer.types';
 
 export const Drawer = forwardRef<HTMLDivElement, DrawerProps>(
   ({ isOpen, onClose, side = 'right', title, children, className, showHeader = true }, ref) => {

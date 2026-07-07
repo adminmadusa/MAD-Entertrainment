@@ -1,11 +1,11 @@
 'use client';
 
 import React, { useRef } from 'react';
-import { cn } from '../../lib/cn';
+
 import { useFocusTrap } from '../../hooks/useFocusTrap';
 import { X } from '../../icons';
+import { cn } from '../../lib/cn';
 import { IconButton } from '../../primitives/IconButton';
-import { ModalProps } from './Modal.types';
 import {
   modalSizes,
   modalBackdropClasses,
@@ -13,6 +13,7 @@ import {
   modalCloseButtonClasses,
   modalCloseIconClasses,
 } from './Modal.styles';
+import type { ModalProps } from './Modal.types';
 
 export function Modal({
   isOpen,

@@ -1,6 +1,7 @@
-import { FileSystemService } from '../FileSystemService';
-import { RoadmapPhase } from '../../models/RoadmapResult';
 import { join } from 'path';
+
+import { RoadmapPhase } from '../../models/RoadmapResult';
+import { FileSystemService } from '../FileSystemService';
 
 export class RoadmapService {
   constructor(

@@ -5,10 +5,9 @@ import { useState, useEffect } from 'react';
 
 import { canAccessRoute, DEFAULT_ROUTE_BY_ROLE } from '@/lib/rbac/navigation-permissions';
 import { useAdminAuth } from '@/providers/AdminAuthProvider';
-
-import { AdminSidebar } from './AdminSidebar';
 import { LoadingState } from '@mad/ui';
 
+import { AdminSidebar } from './AdminSidebar';
 
 const PUBLIC_ADMIN_PATHS = ['/login'];
 

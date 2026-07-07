@@ -1,8 +1,10 @@
-import 'dotenv/config';
 import mongoose from 'mongoose';
-import { Event } from '../src/models/event.schema';
+
 import { getEnv } from '../src/config/env';
+import { Event } from '../src/models/event.schema';
 import { logger } from '../src/utils/logger';
+
+import 'dotenv/config';
 
 async function runAudit() {
   const env = getEnv();
