@@ -66,29 +66,40 @@ export function ScanHistory({
       </div>
 
       {/* History List */}
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto max-h-[360px] overflow-y-auto pr-1">
         <table className="w-full text-left text-xs border-collapse">
           <thead>
-            <tr className="border-b border-white/5 text-text-muted font-semibold">
-              <th className="py-2.5">Ticket ID</th>
-              <th className="py-2.5">Guest</th>
-              <th className="py-2.5">Tier</th>
-              <th className="py-2.5">Time</th>
-              <th className="py-2.5">Source</th>
-              <th className="py-2.5 text-right">Result</th>
+            <tr className="sticky top-0 bg-[#0f111a] border-b border-white/5 text-text-muted font-semibold z-10">
+              <th className="py-2.5 bg-[#0f111a]">Ticket ID</th>
+              <th className="py-2.5 bg-[#0f111a]">Guest</th>
+              <th className="py-2.5 bg-[#0f111a]">Tier</th>
+              <th className="py-2.5 bg-[#0f111a]">Time</th>
+              <th className="py-2.5 bg-[#0f111a]">Source</th>
+              <th className="py-2.5 bg-[#0f111a] text-right">Result</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-white/5">
             {isLoading ? (
               <tr>
-                <td colSpan={6} className="py-8 text-center text-text-secondary">
+                <td colSpan={6} className="py-12 text-center text-text-secondary">
+                  <div className="inline-block w-5 h-5 border-2 border-accent-purple border-t-transparent rounded-full animate-spin mr-2" />
                   Loading history logs...
                 </td>
               </tr>
             ) : items.length === 0 ? (
               <tr>
-                <td colSpan={6} className="py-8 text-center text-text-muted">
-                  No scan history records found matching current criteria.
+                <td colSpan={6} className="py-8">
+                  <div className="flex flex-col items-center justify-center py-6 text-center space-y-3">
+                    <div className="w-12 h-12 bg-white/5 text-white/30 rounded-full flex items-center justify-center border border-white/5">
+                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-white/70">No scans recorded</p>
+                      <p className="text-xxs text-text-muted mt-1 max-w-[200px] mx-auto">
+                        Waiting for the first attendee or matching search criteria...
+                      </p>
+                    </div>
+                  </div>
                 </td>
               </tr>
             ) : (

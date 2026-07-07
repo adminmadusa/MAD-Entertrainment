@@ -11,6 +11,7 @@ import {
   ScanResponse,
 } from '../lib/api/admin/scanner.service';
 import { extractApiError } from '../lib/api/client';
+import { playSuccess, playFailure } from '../lib/audio/gate-audio';
 
 export type ScannerModeState =
   | 'Idle'
@@ -149,6 +150,7 @@ export function useScannerState({ initialEventId = '' }: UseScannerStateProps = 
         scannedAt: data.scannedAt,
         message: 'Ticket scanned and verified successfully.',
       });
+      playSuccess();
       // Invalidate queries
       queryClient.invalidateQueries({ queryKey: ['scanner-stats', selectedEventId] });
       queryClient.invalidateQueries({ queryKey: ['scanner-history', selectedEventId] });
@@ -156,6 +158,7 @@ export function useScannerState({ initialEventId = '' }: UseScannerStateProps = 
     onError: (err: any) => {
       const apiErr = extractApiError(err);
       const isDuplicate = apiErr.message?.includes('already used') || apiErr.message?.includes('Already checked');
+      playFailure();
 
       if (isDuplicate) {
         const details = apiErr.details as any;
@@ -199,6 +202,7 @@ export function useScannerState({ initialEventId = '' }: UseScannerStateProps = 
               ticketId,
               message: 'This ticket is already queued for offline sync.',
             });
+            playFailure();
             return;
           }
 
@@ -214,6 +218,7 @@ export function useScannerState({ initialEventId = '' }: UseScannerStateProps = 
             admits: 1,
             message: 'Scan saved locally and queued for synchronization.',
           });
+          playSuccess();
         } catch (err) {
           setScannerState('Error');
           setLastValidationResult({
@@ -221,6 +226,7 @@ export function useScannerState({ initialEventId = '' }: UseScannerStateProps = 
             ticketId,
             message: 'Failed to write offline scan to local database.',
           });
+          playFailure();
         }
       } else {
         scanMutation.mutate({ ticketId, requestId });
