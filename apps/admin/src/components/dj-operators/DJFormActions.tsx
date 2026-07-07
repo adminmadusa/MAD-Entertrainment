@@ -1,6 +1,6 @@
 import React from 'react';
 
-import type { DJFormActionsProps } from './types';
+import type { DJFormActionsProps } from './utils';
 
 export const DJFormActions: React.FC<DJFormActionsProps> = ({
   onCancel,
