@@ -64,7 +64,7 @@ output: markdown
 
     // Format files list
     const fileListMd = files.map(f => `- [${f}](file://${join(context.repoRoot, f)})`).join('\n');
-    
+
     // Replace variables
     let body = templateContent
       .replace(/---[\s\S]*?---/, '') // Remove YAML frontmatter block

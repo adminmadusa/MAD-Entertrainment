@@ -229,11 +229,11 @@ describe('apiClient Concurrency and Token Refresh', () => {
     mockAdapter.mockImplementation(async (config: InternalAxiosRequestConfig) => {
       if (config.url?.includes('/auth/refresh')) {
         refreshCalls++;
-        
+
         // Simulate logout mid-flight *before* the refresh call completes
         localStorage.removeItem(STORAGE_KEYS.USER_TOKEN);
         localStorage.removeItem(STORAGE_KEYS.USER_DATA);
-        
+
         await refreshPromise;
         return {
           data: { data: { token: 'new-token' } },

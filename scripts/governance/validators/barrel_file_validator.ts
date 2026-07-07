@@ -45,11 +45,11 @@ function isExcluded(file: string): boolean {
 
 function isBarrelFile(file: string): boolean {
   const n = norm(file);
-  // Only packages/*/src/index.ts or packages/*/index.ts are enforced
-  return (
-    n.startsWith('packages/') &&
-    (n.endsWith('/index.ts') || n.endsWith('/index.tsx'))
-  );
+  // Only package root index.ts/index.tsx files are enforced (packages/<name>/src/index.ts or packages/<name>/index.ts)
+  const match = n.match(/^packages\/[^/]+\/(src\/)?index\.tsx?$/);
+  // Exclude non-library packages like governance-cli
+  if (n.startsWith('packages/governance-cli/')) return false;
+  return !!match;
 }
 
 // ─── Export extraction ───────────────────────────────────────────────────────
@@ -220,8 +220,9 @@ export class BarrelFileValidator implements GovernanceValidator {
 
       const entries = extractExports(content);
 
-      // Check: Empty barrel
-      if (entries.length === 0) {
+      // Check: Empty barrel (no exports of any kind, either inline or re-exports)
+      const hasAnyExport = /^\s*export\s+/m.test(content);
+      if (entries.length === 0 && !hasAnyExport) {
         warnings.push({
           file: barrel,
           line: 1,

@@ -5,7 +5,7 @@ export class ChangelogService {
 
   async generate(fromRef: string, toRef: string): Promise<string> {
     const commits = await this.commitProvider.getCommits(fromRef, toRef);
-    
+
     const features: string[] = [];
     const fixes: string[] = [];
     const docs: string[] = [];
@@ -31,7 +31,7 @@ export class ChangelogService {
     }
 
     let markdown = '';
-    
+
     if (features.length > 0) {
       markdown += '\n### 🚀 Features\n' + features.map(x => `- ${x}`).join('\n') + '\n';
     }

@@ -49,17 +49,6 @@ export interface ConsistencyReport {
 
 
 export class ConsistencyService {
-
-
-
-
-
-
-
-
-
-
-
   static async runRepairCycle(): Promise<ConsistencyReport> {
     const correlationId = `repair-cycle-${crypto.randomUUID().slice(0, 8)}`;
     return runWithContext({ correlationId }, async () => {

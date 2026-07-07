@@ -1,3 +1,7 @@
+---
+owner: Platform
+---
+
 # Phase 4 — Governance Automation Backlog
 
 Deferred items that require Phase 4 tooling infrastructure to implement.

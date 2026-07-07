@@ -1,3 +1,7 @@
+---
+owner: Repository Governance Owner
+---
+
 # Governance Execution Engine
 
 This document describes the technical architecture of the automated governance engine located in `scripts/governance/` and `tests/ui-governance/`.

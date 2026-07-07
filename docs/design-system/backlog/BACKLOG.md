@@ -1,3 +1,7 @@
+---
+owner: Platform
+---
+
 # UX Pattern Backlog Registry
 
 This file is the canonical registry of capability gaps discovered during Phase 3 pattern authoring.

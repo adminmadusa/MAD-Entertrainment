@@ -402,8 +402,12 @@ export class DocumentationValidator implements GovernanceValidator {
     // 4. Duplicate Document Detection (VAL-DOC-006)
     // Run pairwise Jaccard similarity checks on all files in scope
     const sortedFilePaths = Array.from(fileTokensMap.keys()).sort();
+    const duplicateExclusions: string[] = (docGovConfig as any).duplicateExclusions || [];
     for (let i = 0; i < sortedFilePaths.length; i++) {
       const fileA = sortedFilePaths[i];
+      if (duplicateExclusions.some(p => fileA === p || fileA.startsWith(p + '/'))) {
+        continue;
+      }
       const tokensA = fileTokensMap.get(fileA)!;
       const contentA = fileContentMap.get(fileA) || '';
       const statusA = fileStatusMap.get(fileA);
@@ -416,6 +420,9 @@ export class DocumentationValidator implements GovernanceValidator {
 
       for (let j = i + 1; j < sortedFilePaths.length; j++) {
         const fileB = sortedFilePaths[j];
+        if (duplicateExclusions.some(p => fileB === p || fileB.startsWith(p + '/'))) {
+          continue;
+        }
         const tokensB = fileTokensMap.get(fileB)!;
         const contentB = fileContentMap.get(fileB) || '';
         const statusB = fileStatusMap.get(fileB);
