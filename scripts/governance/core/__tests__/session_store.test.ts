@@ -1,5 +1,5 @@
 // scripts/governance/core/__tests__/session_store.test.ts
-import { existsSync, rmSync } from 'fs';
+import { existsSync, rmSync, readdirSync } from 'fs';
 import { resolve } from 'path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
@@ -7,21 +7,29 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { SessionStore, type SessionMetadata } from '../session_store';
 
 const workspaceRoot = resolve(process.cwd(), 'temp-tests/session-store');
-const sandboxSessionsDir = resolve(workspaceRoot, '.governance/autofix/sessions');
 
 describe('SessionStore', () => {
   let store: SessionStore;
 
   beforeEach(() => {
-    if (existsSync(sandboxSessionsDir)) {
-      rmSync(sandboxSessionsDir, { recursive: true, force: true });
+    if (existsSync(workspaceRoot)) {
+      rmSync(workspaceRoot, { recursive: true, force: true });
     }
     store = new SessionStore(workspaceRoot);
   });
 
   afterEach(() => {
-    if (existsSync(sandboxSessionsDir)) {
-      rmSync(sandboxSessionsDir, { recursive: true, force: true });
+    if (existsSync(workspaceRoot)) {
+      rmSync(workspaceRoot, { recursive: true, force: true });
+    }
+    const parentDir = resolve(workspaceRoot, '..');
+    if (existsSync(parentDir)) {
+      try {
+        const files = readdirSync(parentDir);
+        if (files.length === 0) {
+          rmSync(parentDir, { recursive: true, force: true });
+        }
+      } catch (e) {}
     }
   });
 

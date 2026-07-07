@@ -36,6 +36,7 @@ yarn.lock
 # Local runtime files
 tmp/
 temp/
+test-results/
 
 # Framework/tool caches
 .angular/
