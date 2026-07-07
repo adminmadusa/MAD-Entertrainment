@@ -253,17 +253,21 @@ async function run() {
     const construct = def?.id === 'DeadAssetDuplicateValidator' ||
                       def?.id === 'UIDesignValidator' ||
                       def?.id === 'AccessibilityValidator' ||
+                      def?.id === 'UXStateValidator' ||
                       def?.id === 'SharedComponentValidator' ? 'UIElement' : 'Document';
 
-    let confidence = 1.0;
-    if (def?.id === 'UIDesignValidator' || def?.id === 'SharedComponentValidator' || def?.id === 'DeadAssetDuplicateValidator') {
-      confidence = 0.9;
-    }
-
     for (const error of allErrors) {
-      let finalConfidence = confidence;
-      if (def?.id === 'AccessibilityValidator') {
-        finalConfidence = error.rule === 'VAL-UI-002' || error.rule === 'VAL-UI-003' ? 1.0 : 0.9;
+      let finalConfidence = 1.0;
+      const rule = RuleRegistry.getRule(error.rule);
+      if (rule) {
+        finalConfidence = rule.confidence;
+      } else {
+        if (def?.id === 'UIDesignValidator' || def?.id === 'SharedComponentValidator' || def?.id === 'DeadAssetDuplicateValidator') {
+          finalConfidence = 0.9;
+        }
+        if (def?.id === 'AccessibilityValidator') {
+          finalConfidence = error.rule === 'VAL-UI-002' || error.rule === 'VAL-UI-003' ? 1.0 : 0.9;
+        }
       }
       statelessViolations.push({
         rule: error.rule,

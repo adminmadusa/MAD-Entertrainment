@@ -206,6 +206,33 @@ export class AccessibilityValidator implements GovernanceValidator {
               );
             }
           }
+
+          // Rule: VAL-UI-020 - Image missing alt attribute
+          if (tagName === 'img') {
+            let hasAlt = false;
+            if (node.attributes && node.attributes.properties) {
+              for (const prop of node.attributes.properties) {
+                if (ts.isJsxAttribute(prop) && prop.name && ts.isIdentifier(prop.name) && prop.name.text === 'alt') {
+                  hasAlt = true;
+                  break;
+                }
+              }
+            }
+            if (!hasAlt) {
+              const { line } = ts.getLineAndCharacterOfPosition(sourceFile, node.getStart());
+              const rule020 = RuleRegistry.getRule('VAL-UI-020');
+              const severity020 = rule020?.severity || 'CRITICAL';
+              const targetArray020 = (severity020 === 'CRITICAL' || severity020 === 'ERROR') ? errors : warnings;
+
+              reportFinding(
+                line,
+                'VAL-UI-020',
+                'Image element <img> is missing an alt attribute. All informative images must have descriptive alt text; decorative images must use alt="".',
+                targetArray020,
+                severity020
+              );
+            }
+          }
         }
 
         ts.forEachChild(node, walk);

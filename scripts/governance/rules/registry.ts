@@ -163,6 +163,11 @@ export class RuleRegistry {
     return Array.from(this.rules.values()).filter(r => r.ciPolicy === policy);
   }
 
+  public static getRulesByTag(tag: string): RuleDefinition[] {
+    this.initialize();
+    return Array.from(this.rules.values()).filter(r => r.tags.includes(tag));
+  }
+
   public static ruleExists(id: string): boolean {
     this.initialize();
     return this.rules.has(id);

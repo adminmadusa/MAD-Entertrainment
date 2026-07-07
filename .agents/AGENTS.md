@@ -184,3 +184,106 @@ An investigation must stop when:
 3. New investigation steps are producing confirmation rather than new evidence.
 4. A practical remediation has already been identified.
 5. Additional work is only improving explanation rather than changing conclusions.
+
+---
+
+# PART 4 — UI/UX GOVERNANCE
+
+## Reference Standard
+
+All UI/UX standards are canonically defined in [UI_UX_GOVERNANCE.md](../UI_UX_GOVERNANCE.md) (UI-001).
+
+This document is the **Single Source of Truth** for all front-end design standards in the MAD Entertrainment repository.
+
+## Authority Order for UI Work
+
+| Priority | Source |
+|----------|--------|
+| 1 | Repository Source Code |
+| 2 | `UI_UX_GOVERNANCE.md` |
+| 3 | `.agents/skills/ui-ux/SKILL.md` |
+| 4 | This file (`AGENTS.md`) |
+| 5 | External Best Practices |
+
+If a conflict exists between any skill, rule, or external reference and `UI_UX_GOVERNANCE.md`, the governance document takes precedence.
+
+## Mandatory Compliance Rules
+
+Every AI agent performing any UI work must:
+
+1. **Read `UI_UX_GOVERNANCE.md` first** — before writing any code, component, or style.
+2. **Complete all 10 pre-implementation audit phases** as defined in UI-001 Section 19.
+3. **Search `packages/ui` before creating any new component** — reuse existing shared components.
+4. **Attach screenshot evidence** (desktop + tablet + mobile) to every UI GitHub issue and PR.
+5. **Clear the UI-001 merge gate** before any UI PR may be approved.
+
+## UI PR Merge Gate (Summary)
+
+A UI pull request cannot be merged if any of the following exist:
+
+- Mobile layout broken.
+- Responsive layout fails at any required breakpoint (320px, 375px, 768px, 1024px, 1440px).
+- Duplicate UI components introduced without justification.
+- Existing shared component from `packages/ui` ignored without justification.
+- Missing loading, empty, or error states.
+- Poor accessibility (fails WCAG AA).
+- Touch targets smaller than 44×44px.
+- Desktop and mobile screenshots not attached.
+
+Refer to [UI_UX_GOVERNANCE.md](../UI_UX_GOVERNANCE.md) Section 22 for the complete merge gate checklist.
+
+## UI Pull Request Checklist
+
+Every UI pull request must include this checklist in its PR description:
+
+```
+UI-001 Pull Request Checklist
+
+[ ] Mobile-first layout implemented
+[ ] Responsive at all required breakpoints (320px, 375px, 768px, 1024px, 1440px)
+[ ] Tabs used instead of deep menus where appropriate
+[ ] Buttons aligned consistently
+[ ] Consistent spacing applied
+[ ] No horizontal scrolling
+[ ] Loading state implemented
+[ ] Empty state implemented
+[ ] Error state implemented
+[ ] Accessibility verified (WCAG AA)
+[ ] Shared components reused (packages/ui searched first)
+[ ] Desktop screenshot attached
+[ ] Tablet screenshot attached
+[ ] Mobile screenshot attached
+[ ] All UI-001 merge gate conditions cleared
+```
+
+---
+
+# PART 5 — TASK COMPLETION EVIDENCE GATE
+
+To prevent premature task completion declarations and enforce the Git boundary, marking a task or milestone as **"Complete" is strictly forbidden** unless the AI agent provides verified repository evidence for each of the following phases:
+
+1. **Feature Branch Creation**
+   - Must show the active task-specific branch (e.g. `feat/*`, `fix/*`).
+   - *Evidence*: `git branch --show-current` output.
+2. **Staged and Committed Code**
+   - Working tree must be completely clean.
+   - *Evidence*: `git status` output showing `nothing to commit, working tree clean` and the commit SHA via `git log -1`.
+3. **Pushed to Remote Origin**
+   - The changes must be successfully pushed to the remote repository.
+   - *Evidence*: `git push` command execution output.
+4. **Pull Request Created**
+   - A pull request must be opened targeting the protected branch.
+   - *Evidence*: PR number, title, and PR URL.
+5. **CI Gating Verification**
+   - CI build/tests must succeed on the branch.
+   - *Evidence*: Verification of the GitHub Actions run status.
+6. **Merge to Protected Branch**
+   - The pull request must be approved and merged.
+   - *Evidence*: Merge commit SHA.
+7. **Branch Cleanup**
+   - Local and remote task branches must be deleted post-merge.
+   - *Evidence*: Safe deletion confirmation (`git branch -d` and `git push origin --delete`).
+8. **Develop Sync**
+   - Switch back to `develop` and pull origin to synchronize the local state.
+   - *Evidence*: `git checkout develop && git pull origin develop` output.
+
