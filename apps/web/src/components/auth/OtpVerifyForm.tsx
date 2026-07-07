@@ -1,7 +1,8 @@
 'use client';
 
 import React from 'react';
-import { Button } from '@mad/ui';
+
+import { Button, Alert, FormField, Input } from '@mad/ui';
 
 export interface OtpVerifyFormProps {
   email: string;
@@ -64,48 +65,39 @@ export function OtpVerifyForm({
         </div>
 
         <div className="space-y-3">
-          <label htmlFor="otp" className="text-xs font-semibold text-text-secondary uppercase tracking-wider ml-1 block text-center">
-            6-Digit Passcode
-          </label>
-          <input
-            id="otp"
-            type="text"
-            required
-            maxLength={6}
-            pattern="[0-9]*"
-            inputMode="numeric"
-            autoComplete="one-time-code"
-            enterKeyHint="done"
-            value={otp}
-            onChange={(e) => setOtp(e.target.value.replace(/[^0-9]/g, ''))}
-            onPaste={handlePaste}
-            placeholder="000000"
-            className="w-full text-center font-black bg-white/5 border border-border-subtle rounded-2xl text-white placeholder:text-text-secondary focus:outline-none focus:border-accent-purple focus:ring-1 focus:ring-accent-purple transition-all duration-300 font-mono text-xl sm:text-3xl py-2.5 sm:py-4 tracking-[0.3em] sm:tracking-[0.6em] pl-[0.3em] sm:pl-[0.6em]"
-          />
+          <FormField label="6-Digit Passcode" htmlFor="otp" className="text-center [&>label]:text-center [&>label]:block">
+            <Input
+              id="otp"
+              type="text"
+              required
+              maxLength={6}
+              pattern="[0-9]*"
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              enterKeyHint="done"
+              value={otp}
+              onChange={(e) => setOtp(e.target.value.replace(/[^0-9]/g, ''))}
+              onPaste={handlePaste}
+              placeholder="000000"
+              className="text-center font-black font-mono text-xl sm:text-3xl py-2.5 sm:py-4 tracking-[0.3em] sm:tracking-[0.6em] pl-[0.3em] sm:pl-[0.6em]"
+            />
+          </FormField>
           {/* OTP Validation error rendering */}
           {verifyCooldownRemaining > 0 && (
-            <div 
-              role="alert"
-              aria-live="assertive"
-              className="text-center text-xs text-red-500 font-medium mt-2 animate-in fade-in duration-200"
-            >
+            <Alert variant="danger" className="mt-2 text-center animate-in fade-in duration-200">
               Verification attempts temporarily paused. Try again in {formatTime(verifyCooldownRemaining)}.
-            </div>
+            </Alert>
           )}
           {verifyCooldownRemaining <= 0 && error && (
-            <div 
-              role="alert"
-              aria-live="assertive"
-              className="text-center text-xs text-red-500 font-medium mt-2 animate-in fade-in duration-200"
-            >
+            <Alert variant="danger" className="mt-2 text-center animate-in fade-in duration-200">
               {error}
-            </div>
+            </Alert>
           )}
         </div>
       </div>
 
       {/* Sticky Row Actions */}
-      <div className="max-sm:sticky max-sm:bottom-0 max-sm:-mx-6 max-sm:px-6 max-sm:py-4 max-sm:bg-[#0d111d] max-sm:border-t max-sm:border-white/10 max-sm:pb-8 max-sm:pb-[calc(2rem+env(safe-area-inset-bottom))] grid grid-cols-2 gap-3 w-full z-10 mt-6 sm:mt-8">
+      <div className="max-sm:sticky max-sm:bottom-0 max-sm:-mx-6 max-sm:px-6 max-sm:py-4 max-sm:bg-background max-sm:border-t max-sm:border-white/10 max-sm:pb-8 max-sm:pb-[calc(2rem+env(safe-area-inset-bottom))] grid grid-cols-2 gap-3 w-full z-10 mt-6 sm:mt-8">
         <Button
           type="submit"
           variant="primary"

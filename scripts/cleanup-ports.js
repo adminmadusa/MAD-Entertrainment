@@ -37,7 +37,7 @@ for (const port of PORTS) {
       for (const pid of pids) {
         if (protectedPids.has(pid)) continue;
         pidsToTerminate.add(pid);
-        
+
         // Trace ancestors of the port-holding process to gather stale parent watchers (e.g. tsx, next dev)
         let ancestorPid = pid;
         while (ancestorPid) {

@@ -1,18 +1,17 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Types } from 'mongoose';
-
-import { processBookingConfirm } from './booking.worker';
-import { processPDFGenerate } from './pdf.worker';
-import { processEmailDispatch, handleJobExecution } from './email.worker';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 import { Booking } from '../models/booking.schema';
 import { Event } from '../models/event.schema';
-import { Ticket } from '../models/ticket.schema';
-import { Notification } from '../models/notification.schema';
 import { MagicTokenModel } from '../models/magic-token.schema';
+import { Notification } from '../models/notification.schema';
+import { Ticket } from '../models/ticket.schema';
 import { QueueService } from '../services/queue.service';
-import { generateTicketPDF } from '../utils/pdf';
 import { sendEmail } from '../utils/email';
+import { generateTicketPDF } from '../utils/pdf';
+import { processBookingConfirm } from './booking.worker';
+import { processEmailDispatch, handleJobExecution } from './email.worker';
+import { processPDFGenerate } from './pdf.worker';
 
 vi.mock('../config/env', () => ({
   getEnv: vi.fn(() => ({
@@ -372,7 +371,7 @@ describe('Asynchronous Workers', () => {
 
       vi.mocked(Booking.findById).mockResolvedValue(mockBooking as any);
       vi.mocked(Event.findById).mockResolvedValue(mockEvent as any);
-      
+
       const fakePdfBuffer = Buffer.from('fake-pdf-content');
       vi.mocked(generateTicketPDF).mockResolvedValue(fakePdfBuffer);
       vi.mocked(Notification.findOne).mockResolvedValue(null);
@@ -421,7 +420,7 @@ describe('Asynchronous Workers', () => {
 
       vi.mocked(Booking.findById).mockResolvedValue(mockBooking as any);
       vi.mocked(Event.findById).mockResolvedValue(mockEvent as any);
-      
+
       vi.mocked(Notification.findOne).mockResolvedValue({
         status: 'sent',
         isSent: true,
@@ -455,7 +454,7 @@ describe('Asynchronous Workers', () => {
 
       vi.mocked(Booking.findById).mockResolvedValue(mockBooking as any);
       vi.mocked(Event.findById).mockResolvedValue(mockEvent as any);
-      
+
       const fakePdfBuffer = Buffer.from('fake-pdf-content');
       vi.mocked(generateTicketPDF).mockResolvedValue(fakePdfBuffer);
       vi.mocked(Notification.findOne).mockResolvedValue({
@@ -824,7 +823,7 @@ describe('Asynchronous Workers', () => {
 
       // Verify SMTP send was skipped
       expect(sendEmail).not.toHaveBeenCalled();
-      
+
       // Verify Notification log is updated to sent/complete to avoid dangling states
       expect(Notification.updateOne).toHaveBeenCalledWith(
         { jobId },

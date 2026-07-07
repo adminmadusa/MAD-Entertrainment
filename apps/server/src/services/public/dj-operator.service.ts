@@ -1,5 +1,5 @@
-import { DJOperator } from '../../models/dj-operator.schema';
 import { AppError } from '../../middleware/error.middleware';
+import { DJOperator } from '../../models/dj-operator.schema';
 
 export class PublicDJOperatorService {
   static async listDJOperators(filters: { search?: string; page?: number; limit?: number; includeTotal?: boolean }) {

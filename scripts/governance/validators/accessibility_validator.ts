@@ -1,11 +1,13 @@
 // scripts/governance/validators/accessibility_validator.ts
-import { readFileSync, existsSync } from 'fs';
+import { existsSync } from 'fs';
 import { resolve } from 'path';
 import * as ts from 'typescript';
 import { GovernanceValidator } from '../core/validator';
 import { ValidationResult, ValidationError } from '../core/types';
 import { governanceConfig } from '../core/governance.config';
 import { RuleRegistry } from '../rules/registry';
+import { FileContentCache, ASTParserCache } from '../core/ast_parser_cache';
+import { checkSuppression } from '../core/suppression';
 
 const workspaceRoot = resolve(__dirname, '../../..');
 
@@ -48,29 +50,20 @@ export class AccessibilityValidator implements GovernanceValidator {
         continue;
       }
 
-      let content: string;
-      try {
-        content = readFileSync(fullPath, 'utf8');
-      } catch (err) {
+      const content = FileContentCache.getFileContent(file);
+      if (content === null) {
         continue;
       }
 
-      let sourceFile: ts.SourceFile;
-      try {
-        sourceFile = ts.createSourceFile(
-          fullPath,
-          content,
-          ts.ScriptTarget.Latest,
-          true
-        );
-      } catch (err: any) {
+      const sourceFile = ASTParserCache.getSourceFile(file);
+      if (!sourceFile) {
         parserFailures++;
         warnings.push({
           file,
           line: 1,
           rule: 'AST-PARSE-WARNING',
           severity: 'WARNING',
-          message: `Failed to parse file AST: ${err?.message || err}`,
+          message: `Failed to parse file AST via cache`,
         });
         continue;
       }
@@ -79,6 +72,41 @@ export class AccessibilityValidator implements GovernanceValidator {
       const hasSharedModalImport =
         content.includes("import { Modal } from '@mad/ui'") ||
         content.includes("import Modal");
+
+      const reportFinding = (
+        line: number,
+        ruleId: string,
+        baseMessage: string,
+        targetArray: ValidationError[],
+        severity: 'INFO' | 'WARNING' | 'ERROR' | 'CRITICAL'
+      ) => {
+        const supp = checkSuppression(lines, line, ruleId);
+        if (supp.isSuppressed) {
+          warnings.push({
+            file,
+            line: line + 1,
+            rule: ruleId,
+            severity: 'WARNING',
+            snippet: lines[line]?.trim(),
+            message: `[SUPPRESSED] ${baseMessage} Justification: ${supp.justification}`,
+          });
+        } else {
+          let note = '';
+          if (supp.restricted) {
+            note = ' (Note: governance-ignore was rejected because inline suppression is disallowed for HIGH/CRITICAL rules.)';
+          } else if (supp.failedAttempt) {
+            note = ' (Note: governance-ignore was skipped because a valid Reason/justification comment was not found.)';
+          }
+          targetArray.push({
+            file,
+            line: line + 1,
+            rule: ruleId,
+            severity,
+            snippet: lines[line]?.trim(),
+            message: `${baseMessage}${note}`,
+          });
+        }
+      };
 
       const walk = (node: ts.Node) => {
         // Find custom modal backdrop elements
@@ -140,28 +168,26 @@ export class AccessibilityValidator implements GovernanceValidator {
               const severity002 = rule002?.severity || 'ERROR';
               const targetArray002 = severity002 === 'ERROR' ? errors : warnings;
 
-              targetArray002.push({
-                file,
-                line: line + 1,
-                rule: 'VAL-UI-002',
-                severity: severity002,
-                snippet: lines[line]?.trim(),
-                message: 'Custom backdrop & modal container coded. Use shared <Modal> component from @mad/ui to avoid styles drift.',
-              });
+              reportFinding(
+                line,
+                'VAL-UI-002',
+                'Custom backdrop & modal container coded. Use shared <Modal> component from @mad/ui to avoid styles drift.',
+                targetArray002,
+                severity002
+              );
 
               if (!hasRoleDialog && !hasAriaModal) {
                 const rule003 = RuleRegistry.getRule('VAL-UI-003');
                 const severity003 = rule003?.severity || 'ERROR';
                 const targetArray003 = severity003 === 'ERROR' ? errors : warnings;
 
-                targetArray003.push({
-                  file,
-                  line: line + 1,
-                  rule: 'VAL-UI-003',
-                  severity: severity003,
-                  snippet: lines[line]?.trim(),
-                  message: 'Custom modal backdrop is missing role="dialog" or aria-modal="true" accessibility tags.',
-                });
+                reportFinding(
+                  line,
+                  'VAL-UI-003',
+                  'Custom modal backdrop is missing role="dialog" or aria-modal="true" accessibility tags.',
+                  targetArray003,
+                  severity003
+                );
               }
             }
           }
@@ -171,14 +197,13 @@ export class AccessibilityValidator implements GovernanceValidator {
           if (hasOnClick && tagName !== 'button' && tagName !== 'a' && !tagName.match(/^[A-Z]/)) {
             const { line } = ts.getLineAndCharacterOfPosition(sourceFile, node.getStart());
             if (!hasTabIndex || !hasRole) {
-              warnings.push({
-                file,
-                line: line + 1,
-                rule: 'VAL-UI-009',
-                severity: 'WARNING',
-                snippet: lines[line]?.trim(),
-                message: `Element <${tagName}> with click handler lacks a tabIndex or role attribute, breaking keyboard accessibility.`,
-              });
+              reportFinding(
+                line,
+                'VAL-UI-009',
+                `Element <${tagName}> with click handler lacks a tabIndex or role attribute, breaking keyboard accessibility.`,
+                warnings,
+                'WARNING'
+              );
             }
           }
         }

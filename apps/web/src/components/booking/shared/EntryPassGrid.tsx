@@ -1,6 +1,8 @@
-import { Ticket } from '@mad/types';
 import { motion } from 'framer-motion';
 import { useEffect, useRef, useState } from 'react';
+
+import type { Ticket } from '@mad/types';
+import { Modal } from '@mad/ui';
 
 interface ExtendedTicket extends Ticket {
   assignmentStatus?: 'unassigned' | 'pending' | 'claimed';
@@ -140,7 +142,7 @@ export function EntryPassGrid({ tickets }: EntryPassGridProps) {
                     <div className="w-44 h-44 rounded-xl border border-white/5 bg-white/[0.03] backdrop-blur-md flex flex-col items-center justify-center p-4 text-center space-y-2 relative overflow-hidden group">
                       {/* Subtle light glow effect */}
                       <div className="absolute -inset-px bg-gradient-to-r from-accent-purple/20 to-accent-blue/20 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                      
+
                       <div className="relative z-10 flex flex-col items-center space-y-2">
                         <div className="p-2.5 rounded-full bg-accent-purple/10 text-accent-purple-light">
                           {assignmentStatus === 'pending' ? (
@@ -153,7 +155,7 @@ export function EntryPassGrid({ tickets }: EntryPassGridProps) {
                             </svg>
                           )}
                         </div>
-                        
+
                         <div className="text-white font-bold text-xs uppercase tracking-wider leading-tight">
                           {assignmentStatus === 'pending' ? 'Ticket Assigned' : 'Ticket Claimed'}
                         </div>
@@ -226,19 +228,17 @@ export function EntryPassGrid({ tickets }: EntryPassGridProps) {
       )}
 
       {/* QR Zoom Modal (Light themed, high contrast for entry scanner validation) */}
-      {zoomedTicket && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200"
-          onClick={() => setZoomedTicket(null)}
-          onKeyDown={handleModalKeyDown}
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="qr-modal-title"
-        >
-          <div
-            className="bg-white rounded-3xl p-6 sm:p-8 flex flex-col items-center max-w-sm w-full text-center relative shadow-2xl animate-in zoom-in-95 duration-200"
-            onClick={(e) => e.stopPropagation()}
-          >
+      <Modal
+        isOpen={!!zoomedTicket}
+        onClose={() => setZoomedTicket(null)}
+        size="sm"
+        showCloseButton={false}
+        closeOnBackdropClick={true}
+        ariaLabelledBy="qr-modal-title"
+        className="bg-white rounded-3xl p-6 sm:p-8 flex flex-col items-center max-w-sm w-full text-center relative shadow-2xl animate-in zoom-in-95 duration-200"
+      >
+        {zoomedTicket ? (
+          <>
             {/* Close Button */}
             <button
               type="button"
@@ -287,9 +287,9 @@ export function EntryPassGrid({ tickets }: EntryPassGridProps) {
                 </p>
               </div>
             </div>
-          </div>
-        </div>
-      )}
+          </>
+        ) : null}
+      </Modal>
     </div>
   );
 }

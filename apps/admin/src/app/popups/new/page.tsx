@@ -1,6 +1,5 @@
 'use client';
 
-import { PopupCampaign } from '@mad/types';
 import { useMutation } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
@@ -9,6 +8,8 @@ import { useState } from 'react';
 import { CloudinaryUpload } from '@/components/CloudinaryUpload';
 import { adminCreatePopup } from '@/lib/api/admin/popup.service';
 import { extractApiError } from '@/lib/api/client';
+import type { PopupCampaign } from '@mad/types';
+import { FormField } from '@mad/ui';
 
 
 interface CloudinaryAsset {
@@ -118,7 +119,7 @@ export default function CreatePopupPage() {
         {/* Basic configuration */}
         <div className="glass rounded-2xl border border-border-subtle p-6 space-y-5">
           <h2 className="text-white font-semibold">Campaign Setup</h2>
-          <Field label="Campaign Name *">
+          <FormField label="Campaign Name *">
             <input
               id="popup-name"
               value={name}
@@ -127,8 +128,8 @@ export default function CreatePopupPage() {
               required
               className={inputCls}
             />
-          </Field>
-          <Field label="Popup Title *">
+          </FormField>
+          <FormField label="Popup Title *">
             <input
               id="popup-title"
               value={title}
@@ -137,8 +138,8 @@ export default function CreatePopupPage() {
               required
               className={inputCls}
             />
-          </Field>
-          <Field label="Description (optional)">
+          </FormField>
+          <FormField label="Description (optional)">
             <textarea
               id="popup-description"
               value={description}
@@ -147,24 +148,24 @@ export default function CreatePopupPage() {
               rows={3}
               className={`${inputCls} resize-none`}
             />
-          </Field>
+          </FormField>
           <div className="grid grid-cols-2 gap-4">
-            <Field label="CTA Button Text (optional)">
+            <FormField label="CTA Button Text (optional)">
               <input
                 value={ctaText}
                 onChange={(e) => setCtaText(e.target.value)}
                 placeholder="e.g. Claim Offer"
                 className={inputCls}
               />
-            </Field>
-            <Field label="CTA Destination URL (optional)">
+            </FormField>
+            <FormField label="CTA Destination URL (optional)">
               <input
                 value={ctaUrl}
                 onChange={(e) => setCtaUrl(e.target.value)}
                 placeholder="e.g. https://mad.com/events/sunburn"
                 className={inputCls}
               />
-            </Field>
+            </FormField>
           </div>
         </div>
 
@@ -172,15 +173,15 @@ export default function CreatePopupPage() {
         <div className="glass rounded-2xl border border-border-subtle p-6 space-y-5">
           <h2 className="text-white font-semibold">Trigger & Constraints</h2>
           <div className="grid grid-cols-2 gap-4">
-            <Field label="Trigger Type">
+            <FormField label="Trigger Type">
               <select value={trigger} onChange={(e) => setTrigger(e.target.value)} className={inputCls}>
                 <option value="on_load" className="bg-background-card">On Load</option>
                 <option value="after_delay" className="bg-background-card">After Delay</option>
                 <option value="on_exit" className="bg-background-card">Exit Intent</option>
                 <option value="on_scroll" className="bg-background-card">Scroll Percentage</option>
               </select>
-            </Field>
-            <Field label="Trigger Delay (ms / percent value)">
+            </FormField>
+            <FormField label="Trigger Delay (ms / percent value)">
               <input
                 type="number"
                 min="0"
@@ -188,10 +189,10 @@ export default function CreatePopupPage() {
                 onChange={(e) => setTriggerDelay(Number(e.target.value))}
                 className={inputCls}
               />
-            </Field>
+            </FormField>
           </div>
           <div className="grid grid-cols-2 gap-4">
-            <Field label="Cooldown Hours">
+            <FormField label="Cooldown Hours">
               <input
                 type="number"
                 min="1"
@@ -199,54 +200,54 @@ export default function CreatePopupPage() {
                 onChange={(e) => setCooldownHours(Number(e.target.value))}
                 className={inputCls}
               />
-            </Field>
-            <Field label="Priority (higher = shown first)">
+            </FormField>
+            <FormField label="Priority (higher = shown first)">
               <input
                 type="number"
                 value={priority}
                 onChange={(e) => setPriority(Number(e.target.value))}
                 className={inputCls}
               />
-            </Field>
+            </FormField>
           </div>
         </div>
 
         {/* Scope and Date targeting */}
         <div className="glass rounded-2xl border border-border-subtle p-6 space-y-5">
           <h2 className="text-white font-semibold">Scope & Targeting</h2>
-          <Field label="Show on pages (comma-separated, blank for all)">
+          <FormField label="Show on pages (comma-separated, blank for all)">
             <input
               value={showOnPages}
               onChange={(e) => setShowOnPages(e.target.value)}
               placeholder="e.g. /, /events, /venues"
               className={inputCls}
             />
-          </Field>
-          <Field label="Linked Event ID (optional)">
+          </FormField>
+          <FormField label="Linked Event ID (optional)">
             <input
               value={linkedEventId}
               onChange={(e) => setLinkedEventId(e.target.value)}
               placeholder="e.g. 6a11621b76456c3977198702"
               className={inputCls}
             />
-          </Field>
+          </FormField>
           <div className="grid grid-cols-2 gap-4">
-            <Field label="Start Date">
+            <FormField label="Start Date">
               <input
                 type="datetime-local"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
                 className={inputCls}
               />
-            </Field>
-            <Field label="End Date">
+            </FormField>
+            <FormField label="End Date">
               <input
                 type="datetime-local"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
                 className={inputCls}
               />
-            </Field>
+            </FormField>
           </div>
           <div className="flex items-center gap-3 cursor-pointer select-none py-1">
             <input
@@ -285,14 +286,6 @@ export default function CreatePopupPage() {
   );
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div className="space-y-1.5">
-      <label className="text-text-secondary text-sm font-medium block">{label}</label>
-      {children}
-    </div>
-  );
-}
 
 const inputCls =
   'w-full px-4 py-2.5 rounded-xl bg-background border border-border-subtle text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-purple transition-colors';

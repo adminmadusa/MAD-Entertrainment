@@ -1,6 +1,6 @@
-import { logger } from './logger';
-import { getTraceContext } from './context';
 import { AuditLogModel } from '../models/audit-log.schema';
+import { getTraceContext } from './context';
+import { logger } from './logger';
 
 export interface AuditLogPayload {
   action: string;
@@ -27,7 +27,9 @@ export function auditLog(payload: AuditLogPayload) {
     correlationId: context?.correlationId,
   };
 
-  logger.info({ audit: true, ...logData }, `[AUDIT] ${payload.action}: ${payload.description || ''}`);
+  const safeAction = String(payload.action).replace(/[\r\n]/g, '');
+  const safeDescription = String(payload.description || '').replace(/[\r\n]/g, '');
+  logger.info({ audit: true, ...logData }, `[AUDIT] ${safeAction}: ${safeDescription}`);
 
   // Asynchronously save to MongoDB AuditLog collection
   AuditLogModel.create(logData).catch((err) => {

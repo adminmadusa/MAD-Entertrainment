@@ -1,14 +1,16 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import { ArrowRight } from '@mad/ui';
-import { useAuth } from '@/providers/AuthProvider';
+
 import { useAuthModal } from '@/providers/AuthModalProvider';
+import { useAuth } from '@/providers/AuthProvider';
+import { ArrowRight } from '@mad/ui';
+
 import { NavLink } from './NavLink';
 import { UserDropdown } from './UserDropdown';
-import dynamic from 'next/dynamic';
 
 const MobileNavigation = dynamic(
   () => import('./MobileNavigation').then((mod) => mod.MobileNavigation),

@@ -2,7 +2,8 @@
 
 import React from 'react';
 import { EVENT_CATEGORY_LABELS } from '@mad/shared';
-import { Field, inputCls } from './Field';
+import { FormField, Input, Textarea } from '@mad/ui';
+import { inputCls } from './constants';
 
 interface EventBasicInfoSectionProps {
   title: string;
@@ -44,18 +45,17 @@ export function EventBasicInfoSection({
       {/* Basic Info */}
       <div className="glass rounded-2xl border border-border-subtle p-6 space-y-5">
         <h2 className="text-white font-semibold">Basic Information</h2>
-        <Field label="Event Title *">
-          <input
+        <FormField label="Event Title" htmlFor="event-title" required>
+          <Input
             id="event-title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="e.g. Sunburn Festival 2025"
             required
-            className={inputCls}
           />
-        </Field>
+        </FormField>
         <div className="grid grid-cols-2 gap-4">
-          <Field label="Category">
+          <FormField label="Category" htmlFor="event-category">
             <select
               id="event-category"
               value={category}
@@ -74,56 +74,54 @@ export function EventBasicInfoSection({
                     </option>
                   ))}
             </select>
-          </Field>
+          </FormField>
           {publishField}
           {venueField}
         </div>
-        <Field label="Full Description *">
-          <textarea
+        <FormField label="Full Description" htmlFor="event-description" required>
+          <Textarea
             id="event-description"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Describe the event in detail..."
             required
             rows={5}
-            className={`${inputCls} resize-none`}
+            className="resize-none"
           />
-        </Field>
+        </FormField>
       </div>
 
       {/* Additional Details */}
       <div className="glass rounded-2xl border border-border-subtle p-6 space-y-5">
         <h2 className="text-white font-semibold">Additional Details</h2>
         <div className="grid grid-cols-2 gap-4">
-          <Field label="Organizer Name">
-            <input
+          <FormField label="Organizer Name" htmlFor="event-organizer">
+            <Input
               id="event-organizer"
               value={organizerName}
               onChange={(e) => setOrganizerName(e.target.value)}
               placeholder="e.g. Ellen Colby, The MARM Farm"
-              className={inputCls}
             />
-          </Field>
-          <Field label="Highlights (comma separated)">
-            <input
+          </FormField>
+          <FormField label="Highlights (comma separated)" htmlFor="event-highlights">
+            <Input
               id="event-highlights"
               value={highlightsInput}
               onChange={(e) => setHighlightsInput(e.target.value)}
               placeholder="e.g. 12 hours, In person, Family friendly"
-              className={inputCls}
             />
-          </Field>
+          </FormField>
         </div>
-        <Field label="Refund Policy">
-          <textarea
+        <FormField label="Refund Policy" htmlFor="event-refund-policy">
+          <Textarea
             id="event-refund-policy"
             value={refundPolicy}
             onChange={(e) => setRefundPolicy(e.target.value)}
             placeholder="e.g. Refunds up to 7 days before event"
             rows={2}
-            className={`${inputCls} resize-none`}
+            className="resize-none"
           />
-        </Field>
+        </FormField>
       </div>
     </>
   );

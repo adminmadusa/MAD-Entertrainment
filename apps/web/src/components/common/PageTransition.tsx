@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { useEffect, useState } from 'react';
 
 // ─── Section Reveal Animation ─────────────────────────────────
 
@@ -22,10 +22,10 @@ const directionVariants = {
 
 /**
  * Section Reveal Animation using framer-motion.
- * 
+ *
  * WARNING: Do NOT use this component for above-the-fold content, Hero sections,
- * or LCP (Largest Contentful Paint) candidate elements. The client-side 
- * mounted-state guard triggers post-hydration layout shifts and animation 
+ * or LCP (Largest Contentful Paint) candidate elements. The client-side
+ * mounted-state guard triggers post-hydration layout shifts and animation
  * delays that severely impact Core Web Vitals. Use native CSS animations instead.
  */
 export function Reveal({ children, delay = 0, direction = 'up', className = '', trigger = 'scroll' }: RevealProps) {

@@ -1,6 +1,8 @@
 import type { Config } from 'tailwindcss';
+import sharedPreset from '@mad/ui/tailwind/preset';
 
 const config: Config = {
+  presets: [sharedPreset as Config],
   content: [
     './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
     './src/components/**/*.{js,ts,jsx,tsx,mdx}',
@@ -17,16 +19,8 @@ const config: Config = {
         'display-sm': ['clamp(1.8rem, 4vw, 2.5rem)', { lineHeight: '1.1' }],
       },
       colors: {
-        background: 'var(--color-bg)',
-        'bg-secondary': 'var(--color-bg-secondary)',
-        'bg-card': 'var(--color-bg-card)',
-        'text-primary': 'var(--color-text-primary)',
-        'text-secondary': 'var(--color-text-secondary)',
-        'text-muted': 'var(--color-text-muted)',
-        primary: 'var(--color-accent-purple)',
-        accent: 'var(--color-accent-pink)',
-        cyan: 'var(--color-accent-cyan)',
         'accent-purple': 'var(--color-accent-purple)',
+        // governance-ignore VAL-UI-007: Tailwind config defines design tokens and requires raw hex values; this IS the token definition layer
         'accent-purple-light': '#a78bfa',
         'accent-pink': 'var(--color-accent-pink)',
         'accent-cyan': 'var(--color-accent-cyan)',
@@ -37,4 +31,5 @@ const config: Config = {
     require('@tailwindcss/typography'),
   ],
 };
+
 export default config;

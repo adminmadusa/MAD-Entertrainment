@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { isOriginAllowed } from './origin-validator';
+
 import * as envConfig from '../config/env';
+import { isOriginAllowed } from './origin-validator';
 
 vi.mock('../config/env', () => ({
   getEnv: vi.fn(),

@@ -1,9 +1,11 @@
-import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { CheckoutDetailsInput, checkoutDetailsSchema } from '@mad/validations';
-import { useAuth } from '@/providers/AuthProvider';
+import { useEffect, useState } from 'react';
+import { FormField, Input } from '@mad/ui';
+
 import { mapZodErrorToFields } from '@/lib/validation/mapZodError';
-import { Event } from '@mad/types';
+import { useAuth } from '@/providers/AuthProvider';
+import type { Event } from '@mad/types';
+import { CheckoutDetailsInput, checkoutDetailsSchema } from '@mad/validations';
 
 interface CheckoutFormProps {
   event?: Event | null;
@@ -93,7 +95,7 @@ export function CheckoutForm({ event, isExpired, isDisabled, onSubmit, onErrorSe
 
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors);
-      
+
       const firstErrorKey = Object.keys(errors)[0];
       let elementId = '';
       if (firstErrorKey === 'firstName') elementId = 'checkout-first-name';
@@ -125,9 +127,8 @@ export function CheckoutForm({ event, isExpired, isDisabled, onSubmit, onErrorSe
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-1">
-            <label htmlFor="checkout-first-name" className="text-xs text-text-secondary font-medium">First name *</label>
-            <input
+          <FormField label="First name" htmlFor="checkout-first-name" required error={fieldErrors.firstName}>
+            <Input
               id="checkout-first-name"
               type="text"
               value={firstName}
@@ -137,14 +138,10 @@ export function CheckoutForm({ event, isExpired, isDisabled, onSubmit, onErrorSe
                 setFieldErrors((prev) => ({ ...prev, firstName: '' }));
               }}
               placeholder="First name"
-              className={`w-full px-4 py-2.5 min-h-[44px] rounded-xl bg-background border text-base lg:text-sm text-white focus:outline-none transition-colors ${fieldErrors.firstName ? 'border-red-500' : 'border-white/10 focus:border-accent-purple'
-                }`}
             />
-            {fieldErrors.firstName && <p className="text-red-400 text-xs" role="status" aria-live="polite">{fieldErrors.firstName}</p>}
-          </div>
-          <div className="space-y-1">
-            <label htmlFor="checkout-last-name" className="text-xs text-text-secondary font-medium">Last name *</label>
-            <input
+          </FormField>
+          <FormField label="Last name" htmlFor="checkout-last-name" required error={fieldErrors.lastName}>
+            <Input
               id="checkout-last-name"
               type="text"
               value={lastName}
@@ -154,17 +151,19 @@ export function CheckoutForm({ event, isExpired, isDisabled, onSubmit, onErrorSe
                 setFieldErrors((prev) => ({ ...prev, lastName: '' }));
               }}
               placeholder="Last name"
-              className={`w-full px-4 py-2.5 min-h-[44px] rounded-xl bg-background border text-base lg:text-sm text-white focus:outline-none transition-colors ${fieldErrors.lastName ? 'border-red-500' : 'border-white/10 focus:border-accent-purple'
-                }`}
             />
-            {fieldErrors.lastName && <p className="text-red-400 text-xs" role="status" aria-live="polite">{fieldErrors.lastName}</p>}
-          </div>
+          </FormField>
         </div>
 
         <div className={`grid grid-cols-1 ${!user ? 'md:grid-cols-2' : ''} gap-4`}>
-          <div className="space-y-1">
-            <label htmlFor="checkout-email" className="text-xs text-text-secondary font-medium">Email address *</label>
-            <input
+          <FormField
+            label="Email address"
+            htmlFor="checkout-email"
+            required
+            error={fieldErrors.guestEmail}
+            hint={user ? 'Verified via your connected account.' : undefined}
+          >
+            <Input
               id="checkout-email"
               type="email"
               value={guestEmail}
@@ -175,25 +174,21 @@ export function CheckoutForm({ event, isExpired, isDisabled, onSubmit, onErrorSe
                 setFieldErrors((prev) => ({ ...prev, guestEmail: '', guestEmailConfirm: '' }));
               }}
               placeholder="email@example.com"
-              className={`w-full px-4 py-2.5 min-h-[44px] rounded-xl bg-background border text-base lg:text-sm focus:outline-none transition-colors ${user ? 'text-text-muted/60 bg-white/5 cursor-not-allowed border-white/5' : 'text-white bg-background ' + (fieldErrors.guestEmail ? 'border-red-500' : 'border-white/10 focus:border-accent-purple')
-                }`}
+              className={user ? 'text-text-muted/60 bg-white/5 cursor-not-allowed border-white/5' : undefined}
             />
-            {fieldErrors.guestEmail && <p className="text-red-400 text-xs" role="status" aria-live="polite">{fieldErrors.guestEmail}</p>}
-            {user && <p className="text-[10px] text-text-muted/60 mt-1">Verified via your connected account.</p>}
-          </div>
+          </FormField>
 
           {!user && (() => {
             const normalizedEmail = guestEmail.trim().toLowerCase();
             const normalizedConfirm = guestEmailConfirm.trim().toLowerCase();
-            const emailsMatch = 
-              normalizedEmail.length > 0 && 
-              normalizedConfirm.length > 0 && 
+            const emailsMatch =
+              normalizedEmail.length > 0 &&
+              normalizedConfirm.length > 0 &&
               normalizedEmail === normalizedConfirm;
 
             return (
-              <div className="space-y-1">
-                <label htmlFor="checkout-email-confirm" className="text-xs text-text-secondary font-medium">Confirm email *</label>
-                <input
+              <FormField label="Confirm email" htmlFor="checkout-email-confirm" required error={fieldErrors.guestEmailConfirm}>
+                <Input
                   id="checkout-email-confirm"
                   type="email"
                   value={guestEmailConfirm}
@@ -203,34 +198,26 @@ export function CheckoutForm({ event, isExpired, isDisabled, onSubmit, onErrorSe
                     setFieldErrors((prev) => ({ ...prev, guestEmailConfirm: '' }));
                   }}
                   placeholder="Confirm email address"
-                  className={`w-full px-4 py-2.5 min-h-[44px] rounded-xl bg-background border text-base lg:text-sm text-white focus:outline-none transition-colors ${fieldErrors.guestEmailConfirm ? 'border-red-500' : 'border-white/10 focus:border-accent-purple'
-                    }`}
                 />
-                {fieldErrors.guestEmailConfirm && <p className="text-red-400 text-xs" role="status" aria-live="polite">{fieldErrors.guestEmailConfirm}</p>}
                 {!fieldErrors.guestEmailConfirm && emailsMatch && (
                   <p className="text-emerald-400 text-xs mt-1 font-semibold" role="status" aria-live="polite">✓ Emails match</p>
                 )}
-              </div>
+              </FormField>
             );
           })()}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-1">
-            <label htmlFor="checkout-phone" className="text-xs text-text-secondary font-medium">Mobile Number <span className="text-[10px] text-text-muted/60 lowercase">(Optional – used for event updates only)</span></label>
-            <input
+          <FormField label="Mobile Number" htmlFor="checkout-phone" hint="Optional – used for event updates only" error={fieldErrors.guestPhone}>
+            <Input
               id="checkout-phone"
               type="tel"
               value={guestPhone}
               disabled={isDisabled}
               onChange={(e) => setGuestPhone(e.target.value)}
               placeholder="+91 98765 43210"
-              className={`w-full px-4 py-2.5 min-h-[44px] rounded-xl bg-background border text-base lg:text-sm text-white focus:outline-none transition-colors ${fieldErrors.guestPhone ? 'border-red-500' : 'border-white/10 focus:border-accent-purple'
-                }`}
             />
-            {fieldErrors.guestPhone && <p className="text-red-400 text-xs">{fieldErrors.guestPhone}</p>}
-          </div>
-
+          </FormField>
         </div>
 
         {/* Subscriptions */}

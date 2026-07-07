@@ -1,11 +1,14 @@
-import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-import { DJOperator, ImageAsset } from '@mad/types';
+import React, { useState, useEffect } from 'react';
+import { Alert } from '@mad/ui';
+
+import type { DJOperator, ImageAsset } from '@mad/types';
+
 import { DJBasicInfoCard } from './DJBasicInfoCard';
+import { DJFormActions } from './DJFormActions';
 import { DJMediaCard } from './DJMediaCard';
 import { DJSocialLinksCard } from './DJSocialLinksCard';
-import { DJFormActions } from './DJFormActions';
 
 interface DJOperatorFormProps {
   title: string;
@@ -149,13 +152,9 @@ export const DJOperatorForm: React.FC<DJOperatorFormProps> = ({
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {error && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="px-4 py-3 bg-error/10 border border-error/30 rounded-xl text-sm text-red-400"
-          >
+          <Alert variant="danger" className="animate-in fade-in duration-300">
             {error}
-          </motion.div>
+          </Alert>
         )}
 
         <DJMediaCard

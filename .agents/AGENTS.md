@@ -1,214 +1,186 @@
-# Workspace Investigation Standards
-Version: 1.0
+# AI Agent Operating System
+Version: 2.0
+Last Updated: 2026-07-04
 
-## Purpose
-This document defines investigation and root-cause analysis standards for this workspace.
-
-These standards supplement the repository [AGENTS.MD](../AGENTS.MD) and apply only to debugging, incident response, root-cause analysis, and forensic investigations.
-
-If any conflict exists, the repository [AGENTS.MD](../AGENTS.MD) takes precedence.
+This document defines the mandatory **Execution Protocol**, **Repository Preservation Rules**, and **Investigation Workflow** for all AI agents operating in this workspace.
 
 ---
 
-# GOV-INV-001 — Root Cause Investigation Governance Standard
+# GLOBAL MANDATORY GATE — IMPLEMENTATION DECISION GATE
 
-## Purpose
+No implementation or file modification may begin until the Implementation Readiness Audit has concluded with one of the approved outcomes.
+
+Every new feature, function, button, link, API, database change, bug fix, refactor, or enhancement must first have a GitHub issue created, then undergo a repository audit to verify whether the requested functionality already exists or is partially implemented.
+
+Every request must follow this sequence:
+
+```text
+Request
+   ↓
+Issue Created
+   ↓
+Implementation Readiness Audit
+   ↓
+Repository Search
+   ↓
+Implementation Decision Gate
+   ↓
+Approved?
+   ├── Already Implemented → Close/Document
+   ├── Partially Implemented → Extend Existing
+   ├── Rejected → Close Request
+   └── Not Implemented → Create Branch
+                                ↓
+                          Implement
+```
+
+Every request must end with exactly one decision:
+* [ ] Already Implemented
+* [ ] Partially Implemented
+* [ ] Not Implemented
+* [ ] Rejected
+
+### Decision Outcomes & Actions:
+
+1. **Outcome A — Already Implemented**
+   - **Conditions**: Feature exists, behaviour matches requirements, and tests pass.
+   - **Action**: STOP. Do NOT implement. Reject any implementation PR. Create documentation updates only if required. Close or convert the issue. No production code changes are permitted.
+
+2. **Outcome B — Partially Implemented**
+   - **Conditions**: Feature exists but is incomplete.
+   - **Action**: Extend the existing implementation. Reuse existing architecture. Do not duplicate logic. Permits extending existing code only.
+
+3. **Outcome C — Not Implemented**
+   - **Conditions**: Feature does not exist.
+   - **Action**: Proceed with implementation following the approved governance workflow. Permits new implementation on a new branch.
+
+4. **Outcome D — Rejected**
+   - **Conditions**: Duplicate issue, duplicate feature, invalid request, architecture conflict, superseded by another issue, or out of scope.
+   - **Action**: Close the request immediately without implementation.
+
+---
+
+# PART 1 — EXECUTION PROTOCOL
+
+Before modifying any code, documentation, scripts, or configurations, you must execute and document the following 13 phases.
+
+## Phase 1 — Task Classification
+Analyze the request and explicitly state:
+- **Task Category**: (e.g., Bug Fix, Feature, Refactor, Performance, Security, etc.)
+- **Primary Objective**: What is the core goal of the task?
+- **Scope**: Affected apps, packages, modules, or services.
+- **Risk Level**: (Low / Medium / High) with justification.
+
+## Phase 2 — Skill Selection
+- Review available skills under `.agents/skills/`.
+- Identify the **Primary Skill** and any **Supporting Skills** appropriate for the task.
+- Explain why these skills are selected.
+
+## Phase 3 — Repository Discovery
+- Search the workspace to identify existing components, helpers, utilities, schemas, or hooks that relate to this task.
+- Enforce reuse: never duplicate existing solutions.
+
+## Phase 4 — Existing Solution Search
+- Look for previous patterns or implementations of similar features in the codebase to align styling, naming, and structure.
+
+## Phase 5 — Dependency Impact Analysis
+- Map out the dependency path of files you intend to change.
+- Evaluate the risk of breaking downstream consumer modules or introducing cycles.
+
+## Phase 6 — Git Status & Branch Analysis
+- Verify that the active local branch name aligns with the task (e.g., `fix/*`, `feat/*`, `refactor/*`).
+- Ensure the working tree is clean before editing.
+
+## Phase 7 — Root Cause Analysis
+- For bugs, isolate the root cause from visible symptoms using facts and logs.
+- Formulate and test hypotheses.
+
+## Phase 8 — Implementation Plan
+- Document the planned changes file-by-file.
+- Explicitly call out any design trade-offs.
+
+## Phase 9 — Validation Plan
+- Define how you will verify correctness (e.g., specific test commands, manual validation steps, build commands).
+
+## Phase 10 — Execution
+- Implement changes incrementally.
+- Work in reviewable, logical commits.
+
+## Phase 11 — Post-Implementation Verification
+- Run `pnpm run build`, `pnpm run lint`, `pnpm run type-check`, and relevant tests.
+- Address any regressions immediately.
+
+## Phase 12 — Repository Cleanup
+- Remove any temporary scratch files, debug logs, unused imports, or trailing whitespaces.
+- Verify that untracked workspace noise was not introduced.
+
+## Phase 13 — PR Readiness Review
+- Validate against the 11-question quality gate in the repository rules.
+
+---
+
+# PART 2 — REPOSITORY PRESERVATION RULES
+
+The AI must preserve repository cleanliness. You must adhere to the following guardrails:
+- **No Workspace Noise**: Do not commit or track temporary files, build directories, local config overrides, or `.governance/` outputs.
+- **Strict Reuse**: Extend existing abstractions and shared modules. Never duplicate validation schemas, utility functions, or UI components.
+- **Minimally Scoped Changes**: Scope edits to the smallest set of files necessary. No unsolicited, opportunistic refactoring.
+- **Strict Branch Lifecycles**: Work must happen on feature or fix branches, never directly on protected branches.
+
+---
+
+# PART 3 — INVESTIGATION WORKFLOW (GOV-INV)
+
+## GOV-INV-001 — Root Cause Investigation Governance Standard
 Prevent incorrect conclusions, confirmation bias, unnecessary deep investigations, and wasted engineering effort by enforcing a disciplined, evidence-based investigation process.
-
 This standard applies to all production incidents, development issues, performance investigations, security investigations, CI/CD failures, framework issues, dependency problems, and infrastructure debugging.
 
----
-
-## Core Principle
+### Core Principle
 > **A plausible explanation is never a verified root cause.**
 
 No hypothesis may be promoted to a root cause until it survives independent verification and repeated attempts at falsification.
 
----
-
-## Mandatory Investigation Workflow
-
-### Phase 1 — Observe
-Collect only facts.
-Record:
-* symptoms
-* logs
-* stack traces
-* screenshots
-* timestamps
-* environment
-* versions
-* reproduction steps
-
-Do **not** explain anything yet.
-
-Output:
-* Verified Facts
-* Unknowns
+### Mandatory Investigation Workflow
+1. **Observe**: Collect only facts (symptoms, logs, stack traces, screenshots, timestamps, environment, versions, reproduction steps). Do not explain anything yet.
+2. **Generate Multiple Hypotheses**: Generate at least three independent hypotheses. Never investigate only the first explanation.
+3. **Search Upstream First**: Before runtime instrumentation, search framework issues, release notes, changelogs, maintainer discussions, known limitations, and dependency issues. If an official explanation already exists, stop.
+4. **Create a Minimal Reproduction**: Reproduce outside the production repository whenever possible.
+5. **Perform Falsification**: Do not attempt to prove the leading hypothesis; seek experiments to prove it wrong.
+6. **Evidence Classification**: Every finding must be classified as defined in GOV-INV-002.
+7. **Confidence Assignment**: Every major conclusion must include confidence (High, Medium, Low).
+8. **Stop Conditions**: Stop immediately if exit criteria defined in GOV-INV-003 are met.
 
 ---
 
-### Phase 2 — Generate Multiple Hypotheses
-Generate at least three independent hypotheses.
-Never investigate only the first explanation.
-Example:
-* application bug
-* framework limitation
-* dependency regression
-* environment issue
-* operating system limit
-* infrastructure problem
-* configuration error
-
-No hypothesis receives priority without evidence.
-
----
-
-### Phase 3 — Search Upstream First
-Before runtime instrumentation:
-Search:
-* framework issues
-* release notes
-* changelogs
-* maintainer discussions
-* known limitations
-* dependency issues
-
-If an official explanation already exists:
-Stop.
-Do not rediscover known behavior.
-
----
-
-### Phase 4 — Create a Minimal Reproduction
-Reproduce outside the production repository whenever possible.
-Requirements:
-* isolated repository
-* minimum dependencies
-* same framework version
-* same runtime
-* same operating system
-
-Goal:
-Determine whether the issue is:
-* repository-specific
-* framework-specific
-* environment-specific
-
----
-
-### Phase 5 — Perform Falsification
-Do not attempt to prove the leading hypothesis.
-Instead ask:
-> "What experiment would prove this hypothesis is wrong?"
-
-The investigation is incomplete until the primary hypothesis has survived deliberate attempts to falsify it.
-
----
-
-### Phase 6 — Evidence Classification
-Every finding must be classified as exactly one of the types defined in GOV-INV-002.
-
----
-
-### Phase 7 — Confidence Assignment
-Every major conclusion must include confidence:
-* **High**: multiple independent evidence sources
-* **Medium**: strong evidence, limited independent verification
-* **Low**: plausible, additional validation required
-
----
-
-### Phase 8 — Stop Conditions
-The investigation must stop immediately if any of the conditions defined in GOV-INV-003 are met.
-Do not continue tracing framework internals once the investigation becomes confirmatory rather than exploratory.
-
----
-
-# GOV-INV-002 — Claims Must Match Evidence
-
-## Purpose
+## GOV-INV-002 — Claims Must Match Evidence
 Prevent investigations from overstating certainty.
 
----
+### Rule
+Every conclusion must use language that accurately reflects the available evidence. Do not present an inference as a verified fact, a hypothesis as a root cause, or an opinion as a framework bug.
 
-## Rule
-Every conclusion must use language that accurately reflects the available evidence.
-Do not present an inference as a verified fact.
-Do not present a hypothesis as a root cause.
-Do not present an opinion as a framework bug.
-
----
-
-## Required Classification
+### Required Classification
 Every major conclusion must be explicitly labeled as one of:
-* **Verified Fact**
-* **Experimental Result**
-* **Inference**
-* **Hypothesis**
-* **Unknown**
+- **Verified Fact**
+- **Experimental Result**
+- **Inference**
+- **Hypothesis**
+- **Unknown**
 
-The classification must remain unchanged until sufficient independent evidence exists.
+### Evidence Promotion Rules
+A conclusion may only be promoted to **Verified Fact** when supported by at least two independent evidence categories (e.g., runtime instrumentation, minimal reproduction, official source code, official documentation).
 
----
-
-## Evidence Promotion Rules
-A conclusion may only be promoted to **Verified Fact** when supported by at least two independent evidence categories, such as:
-* Runtime instrumentation
-* Minimal reproduction
-* Official source code
-* Official documentation
-* Maintainer confirmation
-* Accepted upstream issue
-* Merged framework fix
-
-Multiple observations from the same category count as only one source.
+### Framework Bug Claims
+Never classify behavior as a framework bug unless it is reproduced in an isolated repository, independent of application code, reproduced across supported versions, and no existing upstream issue explains it.
 
 ---
 
-## Framework Bug Claims
-Never classify behavior as a framework bug unless all of the following are true:
-* Reproduced in an isolated repository.
-* Independent of application code.
-* Reproduced across supported versions.
-* Existing documentation does not describe it.
-* No existing upstream issue already explains it.
-* The expected behavior can be justified using official documentation or framework design.
-* A minimal reproduction is available.
-
-Until then, classify it as:
-* Possible framework defect
-* Undocumented framework limitation
-* Unexpected framework behavior
-
----
-
-## Principle
-Evidence determines confidence.
-Confidence never determines evidence.
-
----
-
-# GOV-INV-003 — Investigation Exit Criteria
-
-## Purpose
+## GOV-INV-003 — Investigation Exit Criteria
 Prevent investigations from continuing after sufficient evidence has been collected.
 
----
-
-## Rules
-An investigation must stop when ALL of the following are true:
+### Rule
+An investigation must stop when:
 1. The root cause has High confidence.
 2. Remaining uncertainties do not change the engineering decision.
 3. New investigation steps are producing confirmation rather than new evidence.
 4. A practical remediation has already been identified.
 5. Additional work is only improving explanation rather than changing conclusions.
-
-If these conditions are met:
-- Document remaining unknowns.
-- Record confidence levels.
-- Record assumptions.
-- Produce engineering recommendations.
-- End the investigation.
-
-Do not continue tracing deeper framework internals unless doing so could materially change the diagnosis or remediation.

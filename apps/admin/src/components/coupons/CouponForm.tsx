@@ -1,18 +1,15 @@
 'use client';
 
-import { EventCategory } from '@mad/shared';
-import { Coupon } from '@mad/types';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
-import {
-  CouponFormState,
-  defaultCouponForm,
-  mapCouponToFormState,
-  validateCouponForm,
-  CATEGORY_LABELS,
-  inputCls,
-} from './coupon-form.types';
+
+import { EventCategory } from '@mad/shared';
+import type { Coupon } from '@mad/types';
+import { FormField, Input, Textarea, Alert } from '@mad/ui';
+
+import { CouponFormState, defaultCouponForm, mapCouponToFormState, validateCouponForm, CATEGORY_LABELS, inputCls, } from './coupon-form.types';
+
 
 interface CouponFormProps {
   initialData?: Coupon | null;
@@ -70,28 +67,26 @@ export function CouponForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {displayedError && (
-        <motion.div
-          initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-          className="px-4 py-3 bg-error/10 border border-error/30 rounded-xl text-sm text-red-400"
-        >
+        <Alert variant="danger" className="animate-in fade-in duration-300">
           {displayedError}
-        </motion.div>
+        </Alert>
       )}
 
       {/* General Details */}
       <div className="glass rounded-2xl border border-border-subtle p-6 space-y-5">
         <h2 className="text-white font-semibold">General Details</h2>
         <div className="grid grid-cols-2 gap-4">
-          <Field label="Coupon Code *">
-            <input
+          <FormField label="Coupon Code *" htmlFor="coupon-code">
+            <Input
               id="coupon-code" value={formState.code} required
               onChange={e => setFormState(p => ({ ...p, code: e.target.value }))}
               placeholder="e.g. SUMMER50"
-              className="w-full px-4 py-2.5 rounded-xl bg-background border border-border-subtle text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-purple font-mono uppercase transition-colors"
+              className="font-mono uppercase text-sm text-text-primary"
             />
-          </Field>
-          <Field label="Discount Type">
+          </FormField>
+          <FormField label="Discount Type" htmlFor="discount-type">
             <select
+              id="discount-type"
               value={formState.discountType}
               onChange={e => setFormState(p => ({ ...p, discountType: e.target.value as 'percentage' | 'fixed' }))}
               className={inputCls}
@@ -99,76 +94,76 @@ export function CouponForm({
               <option value="percentage" className="bg-background-card">Percentage (%)</option>
               <option value="fixed" className="bg-background-card">Fixed Amount (₹)</option>
             </select>
-          </Field>
+          </FormField>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
-          <Field label={formState.discountType === 'percentage' ? 'Discount Percentage (%) *' : 'Discount Amount (₹) *'}>
-            <input
+          <FormField label={formState.discountType === 'percentage' ? 'Discount Percentage (%) *' : 'Discount Amount (₹) *'} htmlFor="discount-value">
+            <Input
+              id="discount-value"
               type="number" min="0" required
-              max={formState.discountType === 'percentage' ? '100' : undefined}
+              max={formState.discountType === 'percentage' ? 100 : undefined}
               value={formState.discountValue}
               onChange={e => setFormState(p => ({ ...p, discountValue: Number(e.target.value) }))}
-              className={inputCls}
             />
-          </Field>
-          <Field label="Max Discount (₹, blank for unlimited)">
-            <input
+          </FormField>
+          <FormField label="Max Discount (₹, blank for unlimited)" htmlFor="max-discount">
+            <Input
+              id="max-discount"
               type="number" min="0"
               value={formState.maxDiscount}
               onChange={e => setFormState(p => ({ ...p, maxDiscount: e.target.value }))}
               disabled={formState.discountType === 'fixed'}
               placeholder={formState.discountType === 'fixed' ? 'N/A' : 'Unlimited'}
-              className={`${inputCls} disabled:opacity-40`}
             />
-          </Field>
+          </FormField>
         </div>
 
-        <Field label="Description (optional)">
-          <textarea
+        <FormField label="Description (optional)" htmlFor="coupon-description">
+          <Textarea
             id="coupon-description" value={formState.description} rows={3}
             onChange={e => setFormState(p => ({ ...p, description: e.target.value }))}
             placeholder="e.g. 15% discount up to ₹500 on all festival tickets"
-            className={`${inputCls} resize-none`}
+            className="resize-none"
           />
-        </Field>
+        </FormField>
       </div>
 
       {/* Rules & Validity */}
       <div className="glass rounded-2xl border border-border-subtle p-6 space-y-5">
         <h2 className="text-white font-semibold">Rules & Validity</h2>
         <div className="grid grid-cols-2 gap-4">
-          <Field label="Min Order Amount (₹)">
-            <input
+          <FormField label="Min Order Amount (₹)" htmlFor="min-order-amount">
+            <Input
+              id="min-order-amount"
               type="number" min="0" value={formState.minOrderAmount}
               onChange={e => setFormState(p => ({ ...p, minOrderAmount: Number(e.target.value) }))}
-              className={inputCls}
             />
-          </Field>
-          <Field label="Usage Limit (Total times redeemable)">
-            <input
+          </FormField>
+          <FormField label="Usage Limit (Total times redeemable)" htmlFor="usage-limit">
+            <Input
+              id="usage-limit"
               type="number" min="1" required value={formState.usageLimit}
               onChange={e => setFormState(p => ({ ...p, usageLimit: Number(e.target.value) }))}
-              className={inputCls}
             />
-          </Field>
+          </FormField>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
-          <Field label="Valid From *">
-            <input
+          <FormField label="Valid From *" htmlFor="valid-from">
+            <Input
+              id="valid-from"
               type="datetime-local" required value={formState.validFrom}
               onChange={e => setFormState(p => ({ ...p, validFrom: e.target.value }))}
-              className={inputCls}
             />
-          </Field>
-          <Field label="Valid Until *">
-            <input
+          </FormField>
+          <FormField label="Valid Until *" htmlFor="valid-until">
+            <Input
+              id="valid-until"
               type="datetime-local" required value={formState.validUntil}
               onChange={e => setFormState(p => ({ ...p, validUntil: e.target.value }))}
-              className={inputCls}
             />
-          </Field>
+          </FormField>
         </div>
       </div>
 
@@ -264,14 +259,5 @@ export function CouponForm({
         </button>
       </div>
     </form>
-  );
-}
-
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div className="space-y-1.5">
-      <label className="text-text-secondary text-sm font-medium block">{label}</label>
-      {children}
-    </div>
   );
 }

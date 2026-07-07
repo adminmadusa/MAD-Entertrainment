@@ -1,16 +1,18 @@
 'use client';
 
-import { BookingStatus } from '@mad/shared';
-import type { Booking, Ticket, Event } from '@mad/types';
+import dynamic from 'next/dynamic';
+import Link from 'next/link';
+
 import { BookingHeaderCard } from '@/components/booking/shared/BookingHeaderCard';
 import { TicketActions } from '@/components/booking/shared/TicketActions';
-import dynamic from 'next/dynamic';
+import { useCountdown } from '@/hooks/use-countdown.hook';
+import { formatDate, formatDateTime } from '@/utils/date';
+import { BookingStatus } from '@mad/shared';
+import type { Booking, Ticket, Event } from '@mad/types';
 
 const EntryPassGrid = dynamic(() => import('@/components/booking/shared/EntryPassGrid').then(mod => mod.EntryPassGrid), {
   ssr: false,
 });
-import { useCountdown } from '@/hooks/use-countdown.hook';
-import Link from 'next/link';
 
 const getEventCategoryStyles = (category?: string) => {
   const cat = (category || '').toLowerCase();
@@ -91,7 +93,7 @@ interface BookingCardProps {
   ticketsReady: boolean;
   isPast?: boolean;
   isTarget?: boolean;
-  
+
   // Accordion Props
   collapsible?: boolean;
   isExpanded?: boolean;
@@ -103,7 +105,7 @@ interface BookingCardProps {
   resendCooldown: number;
   onDownload: () => void;
   onResend: () => void;
-  
+
   // Custom context e.g. for guest lookup / token passing
   pollCount?: number;
   isFetchingSingle?: boolean;
@@ -218,7 +220,7 @@ export function BookingCard({
             <div>
               <span className="text-[10px] text-text-muted uppercase tracking-wider block">Purchased On</span>
               <span className="text-white font-semibold font-sans">
-                {new Date(booking.createdAt).toLocaleDateString(undefined, { dateStyle: 'medium' })} {new Date(booking.createdAt).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
+                {formatDate(booking.createdAt, { dateStyle: 'medium' })} {formatDateTime(booking.createdAt, { hour: '2-digit', minute: '2-digit' })}
               </span>
             </div>
           )}
@@ -273,7 +275,7 @@ export function BookingCard({
               </div>
               <p className="text-text-muted text-[11px] sm:text-xs flex flex-wrap items-center gap-x-2 gap-y-0.5">
                 {eventInfo?.startDate && (
-                  <span>Event Date: {new Date(eventInfo.startDate).toLocaleDateString(undefined, { dateStyle: 'medium' })}</span>
+                  <span>Event Date: {formatDate(eventInfo.startDate, { dateStyle: 'medium' })}</span>
                 )}
                 {eventInfo?.venue && (
                   <span className="truncate max-w-[150px] sm:max-w-none">| {eventInfo.venue}</span>

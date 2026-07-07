@@ -1,6 +1,7 @@
 import { cache } from 'react';
+
 import { publicGetDJBySlug } from '@/lib/api/public.service';
-import { DJOperator } from '@mad/types';
+import type { DJOperator } from '@mad/types';
 
 /**
  * Request-scoped cached helper to retrieve DJ operator by slug on the server.

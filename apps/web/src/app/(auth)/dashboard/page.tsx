@@ -1,14 +1,15 @@
 'use client';
 
-import { BookingStatus } from '@mad/shared';
-import type { Event } from '@mad/types';
+import dynamic from 'next/dynamic';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState, Suspense, useMemo } from 'react';
 
+import { ProfileCompletionForm } from '@/components/auth/ProfileCompletionForm';
 import { useBookings } from '@/hooks/use-bookings.hook';
 import { useAuth } from '@/providers/AuthProvider';
-import { ProfileCompletionForm } from '@/components/auth/ProfileCompletionForm';
-import dynamic from 'next/dynamic';
+import { BookingStatus } from '@mad/shared';
+import type { Event } from '@mad/types';
+
 import { DashboardTicketsTab, BookingCardSkeleton, DashboardAccountTab, DashboardSupportTab } from './_components';
 
 type TabType = 'tickets' | 'account' | 'support';
@@ -141,12 +142,6 @@ function DashboardContent() {
       (ticketsReadyMap[expandedBooking._id?.toString() ?? ''] ?? false)
     );
   }, [expandedBooking, ticketsReadyMap]);
-
-
-
-
-
-
 
   if (isAuthenticated && onboardingRequired) {
     return (

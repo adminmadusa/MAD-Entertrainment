@@ -1,16 +1,16 @@
 'use client';
 
-import { DJOperator } from '@mad/types';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { useState } from 'react';
-import { useAdminAuth } from '@/providers/AdminAuthProvider';
-import { AdminRole } from '@mad/shared';
 
 import { adminGetDJs, adminDeleteDJ, adminUpdateDJ } from '@/lib/api/admin/dj.service';
 import { extractApiError } from '@/lib/api/client';
-import ErrorState from '@/components/states/ErrorState';
+import { useAdminAuth } from '@/providers/AdminAuthProvider';
+import { AdminRole } from '@mad/shared';
+import type { DJOperator } from '@mad/types';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, ErrorState } from '@mad/ui';
 
 
 export default function AdminDJsPage() {
@@ -46,32 +46,32 @@ export default function AdminDJsPage() {
   const renderTableBody = () => {
     if (isLoading) {
       return Array.from({ length: 5 }).map((_, i) => (
-        <tr key={i} className="border-b border-border-subtle/50 animate-pulse">
-          <td className="py-4 px-5"><div className="h-4 bg-white/5 rounded w-48" /></td>
-          <td className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-48" /></td>
-          <td className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-20" /></td>
-          <td className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-12" /></td>
-          <td className="py-4 px-5"><div className="h-4 bg-white/5 rounded w-20 ml-auto" /></td>
-        </tr>
+        <TableRow key={i} className="border-b border-border-subtle/50 animate-pulse">
+          <TableCell className="py-4 px-5"><div className="h-4 bg-white/5 rounded w-48" /></TableCell>
+          <TableCell className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-48" /></TableCell>
+          <TableCell className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-20" /></TableCell>
+          <TableCell className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-12" /></TableCell>
+          <TableCell className="py-4 px-5"><div className="h-4 bg-white/5 rounded w-20 ml-auto" /></TableCell>
+        </TableRow>
       ));
     }
 
     if (djs.length === 0) {
       return (
-        <tr>
-          <td colSpan={5} className="py-16 text-center text-text-muted">
+        <TableRow>
+          <TableCell colSpan={5} className="py-16 text-center text-text-muted">
             No DJ Operators found.{' '}
             <Link href="/dj-operators/new" className="text-accent-purple hover:underline">
               Create one →
             </Link>
-          </td>
-        </tr>
+          </TableCell>
+        </TableRow>
       );
     }
 
     return djs.map((dj) => (
-      <tr key={dj._id} className="border-b border-border-subtle/40 hover:bg-white/2 transition-colors">
-        <td className="py-4 px-5">
+      <TableRow key={dj._id} className="border-b border-border-subtle/40 hover:bg-white/2 transition-colors">
+        <TableCell className="py-4 px-5">
           <div className="flex items-center gap-3">
             {dj.profileImage?.url ? (
               // eslint-disable-next-line @next/next/no-img-element
@@ -86,11 +86,11 @@ export default function AdminDJsPage() {
               <p className="text-text-muted text-xs truncate">{dj.slug}</p>
             </div>
           </div>
-        </td>
-        <td className="py-4 px-4 text-text-secondary">
+        </TableCell>
+        <TableCell className="py-4 px-4 text-text-secondary">
           <p className="truncate max-w-xs text-xs">{dj.bio || '—'}</p>
-        </td>
-        <td className="py-4 px-4 text-text-secondary">
+        </TableCell>
+        <TableCell className="py-4 px-4 text-text-secondary">
           <div className="flex flex-wrap gap-1 max-w-40">
             {dj.specialties && dj.specialties.length > 0 ? (
               dj.specialties.map((s) => (
@@ -102,8 +102,8 @@ export default function AdminDJsPage() {
               <span className="text-text-muted text-xs">—</span>
             )}
           </div>
-        </td>
-        <td className="py-4 px-4">
+        </TableCell>
+        <TableCell className="py-4 px-4">
           {canMutateDJs ? (
             <button
               onClick={() => statusMutation.mutate({ id: dj._id, isActive: !dj.isActive })}
@@ -124,8 +124,8 @@ export default function AdminDJsPage() {
               {dj.isActive ? 'Active' : 'Inactive'}
             </span>
           )}
-        </td>
-        <td className="py-4 px-5">
+        </TableCell>
+        <TableCell className="py-4 px-5">
           {canMutateDJs ? (
             <div className="flex items-center justify-end gap-2">
               <Link
@@ -144,8 +144,8 @@ export default function AdminDJsPage() {
           ) : (
             <div className="text-right text-text-muted">—</div>
           )}
-        </td>
-      </tr>
+        </TableCell>
+      </TableRow>
     ));
   };
 
@@ -194,22 +194,20 @@ export default function AdminDJsPage() {
 
       {/* Table */}
       <div className="glass rounded-2xl border border-border-subtle overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-border-subtle">
-                <th className="text-left text-text-muted font-medium py-3.5 px-5">DJ Operator</th>
-                <th className="text-left text-text-muted font-medium py-3.5 px-4">Bio</th>
-                <th className="text-left text-text-muted font-medium py-3.5 px-4">Specialties</th>
-                <th className="text-left text-text-muted font-medium py-3.5 px-4">Status</th>
-                <th className="text-right text-text-muted font-medium py-3.5 px-5">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {renderTableBody()}
-            </tbody>
-          </table>
-        </div>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="py-3.5 px-5">DJ Operator</TableHead>
+              <TableHead className="py-3.5 px-4">Bio</TableHead>
+              <TableHead className="py-3.5 px-4">Specialties</TableHead>
+              <TableHead className="py-3.5 px-4">Status</TableHead>
+              <TableHead className="py-3.5 px-5 text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {renderTableBody()}
+          </TableBody>
+        </Table>
 
         {/* Pagination */}
         {pagination && pagination.totalPages > 1 && (
@@ -247,7 +245,7 @@ export default function AdminDJsPage() {
               exit={{ opacity: 0, scale: 0.95 }}
               className="glass-strong rounded-2xl border border-border-subtle p-6 max-w-sm w-full"
             >
-              <h3 className="text-white font-bold text-lg mb-2">Delete DJ Operator?</h3>
+              <h2 className="text-white font-bold text-lg mb-2">Delete DJ Operator?</h2>
               <p className="text-text-secondary text-sm mb-1">
                 <strong className="text-white">{deleteTarget.name}</strong> will be permanently deleted.
               </p>

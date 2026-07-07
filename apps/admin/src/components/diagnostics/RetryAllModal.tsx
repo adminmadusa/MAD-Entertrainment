@@ -1,3 +1,5 @@
+import { Modal } from '@mad/ui';
+
 export interface RetryAllModalProps {
   dlqCount: number;
   onClose: () => void;
@@ -12,11 +14,18 @@ export function RetryAllModal({
   isPending,
 }: RetryAllModalProps) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-      <div className="glass w-full max-w-md border border-red-500/30 rounded-2xl p-6 shadow-2xl space-y-4">
-        <h3 className="text-base font-bold text-white flex items-center gap-2">
-          <span className="text-red-500">⚠️</span> Bulk Replay Safety Authorization
-        </h3>
+    <Modal
+      isOpen={dlqCount > 0}
+      onClose={onClose}
+      size="md"
+      showCloseButton={false}
+      closeOnBackdropClick={true}
+      ariaLabelledBy="retry-all-title"
+      className="glass border border-red-500/30 p-6 max-w-md space-y-4"
+    >
+      <h3 id="retry-all-title" className="text-base font-bold text-white flex items-center gap-2">
+        <span className="text-red-500">⚠️</span> Bulk Replay Safety Authorization
+      </h3>
         <p className="text-xs text-text-secondary leading-relaxed">
           You are about to replay all currently failing jobs in the Dead Letter Queue.
         </p>
@@ -48,7 +57,6 @@ export function RetryAllModal({
             {isPending ? 'Processing...' : `Replay All ${dlqCount} Jobs`}
           </button>
         </div>
-      </div>
-    </div>
+    </Modal>
   );
 }

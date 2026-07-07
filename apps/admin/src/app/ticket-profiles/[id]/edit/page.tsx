@@ -3,21 +3,14 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useParams, useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
+
+import { ProfileBasicInfoCard } from '@/components/ticket-profiles/ProfileBasicInfoCard';
+import { ProfileFormActions } from '@/components/ticket-profiles/ProfileFormActions';
+import { TicketGroupCard } from '@/components/ticket-profiles/TicketGroupCard';
+import { defaultGroup, defaultTicket, validateTicketProfile, buildTicketProfilePayload, type GroupInput, type TicketInput, } from '@/components/ticket-profiles/types';
 import { adminGetTicketProfile, adminUpdateTicketProfile } from '@/lib/api/admin/ticket-profile.service';
 import { adminGetTiers } from '@/lib/api/admin/tier.service';
 import { extractApiError } from '@/lib/api/client';
-
-import {
-  defaultGroup,
-  defaultTicket,
-  validateTicketProfile,
-  buildTicketProfilePayload,
-  type GroupInput,
-  type TicketInput,
-} from '@/components/ticket-profiles/types';
-import { ProfileBasicInfoCard } from '@/components/ticket-profiles/ProfileBasicInfoCard';
-import { TicketGroupCard } from '@/components/ticket-profiles/TicketGroupCard';
-import { ProfileFormActions } from '@/components/ticket-profiles/ProfileFormActions';
 
 export default function EditTicketProfilePage() {
   const { id } = useParams() as { id: string };

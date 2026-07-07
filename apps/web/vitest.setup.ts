@@ -1,6 +1,7 @@
-import '@testing-library/jest-dom';
 import React from 'react';
-import { vi, beforeEach } from 'vitest';
+import { beforeEach, vi } from 'vitest';
+
+import '@testing-library/jest-dom';
 
 // Mock window.scrollTo since JSDOM does not implement it
 window.scrollTo = vi.fn();

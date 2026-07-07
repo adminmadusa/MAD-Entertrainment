@@ -29,15 +29,10 @@ vi.mock('../../utils/audit', () => ({
   auditLog: vi.fn(),
 }));
 
-import {
-  getQueuesStatus,
-  pauseQueueHandler,
-  resumeQueueHandler,
-  drainQueueHandler,
-} from './diagnostics.controller';
+import { AppError } from '../../middleware/error.middleware';
 import { QueueService } from '../../services/queue.service';
 import { auditLog } from '../../utils/audit';
-import { AppError } from '../../middleware/error.middleware';
+import { getQueuesStatus, pauseQueueHandler, resumeQueueHandler, drainQueueHandler } from './diagnostics.controller';
 
 const mockRequest = (params = {}, body = {}, admin?: any) => {
   return {

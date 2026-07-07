@@ -1,12 +1,14 @@
 'use client';
 
+import { useQueryClient } from '@tanstack/react-query';
+import { createContext, useContext, useEffect, useState, useCallback, useMemo } from 'react';
+
+import { isAxiosError } from '@/lib/api/client';
 import { publicGetMe, publicLogout } from '@/lib/api/public.service';
 import { STORAGE_KEYS } from '@mad/shared';
-import { useQueryClient } from '@tanstack/react-query';
-import { AuthUser } from '../types/auth';
-import { createContext, useContext, useEffect, useState, useCallback, useMemo } from 'react';
-import axios from 'axios';
 import { isTokenExpired } from '@mad/utils';
+
+import type { AuthUser } from '../types/auth';
 
 
 interface AuthContextValue {
@@ -59,7 +61,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setToken(storedToken);
             const storedUser = localStorage.getItem(STORAGE_KEYS.USER_DATA);
             if (storedUser) setUser(JSON.parse(storedUser));
-            
+
             // Re-validate profile in background
             const { onboardingRequired: obReq, ...userProfile } = await publicGetMe();
             setUser(userProfile);
@@ -83,7 +85,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       } catch (err) {
         let shouldEvict = false;
-        if (axios.isAxiosError(err)) {
+        if (isAxiosError(err)) {
           const status = err.response?.status;
           if (status === 401 || status === 403) {
             shouldEvict = true;

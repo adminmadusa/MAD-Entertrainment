@@ -1,7 +1,8 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { Modal } from '@mad/ui';
 import { useState } from 'react';
+
 import { AdminBooking } from '@/lib/api/admin/booking.service';
 
 export interface CancelBookingModalProps {
@@ -24,14 +25,16 @@ export default function CancelBookingModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.95 }}
-        className="glass-strong rounded-2xl border border-border-subtle p-6 max-w-sm w-full space-y-4"
-      >
-        <h3 className="text-white font-bold">Cancel Booking</h3>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      size="sm"
+      showCloseButton={false}
+      closeOnBackdropClick={true}
+      ariaLabelledBy="cancel-modal-title"
+      className="glass-strong border border-border-subtle p-6 max-w-sm space-y-4"
+    >
+      <h3 id="cancel-modal-title" className="text-white font-bold">Cancel Booking</h3>
         <p className="text-text-secondary text-sm">
           Booking <span className="text-accent-purple font-mono">{booking.bookingId}</span> will be cancelled.
         </p>
@@ -61,7 +64,6 @@ export default function CancelBookingModal({
             {isPending ? 'Cancelling...' : 'Confirm Cancel'}
           </button>
         </div>
-      </motion.div>
-    </div>
+    </Modal>
   );
 }

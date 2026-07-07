@@ -1,4 +1,5 @@
 import { ConsistencyReport, SystemHealthReport } from '@/lib/api/admin/diagnostics.service';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@mad/ui';
 
 export interface DiagnosticsHealthTabProps {
   health: SystemHealthReport | undefined;
@@ -65,43 +66,41 @@ export function DiagnosticsHealthTab({
           <h2 className="text-white font-bold text-sm">Async Worker Queues (BullMQ)</h2>
           <p className="text-text-muted text-xs mt-0.5">Metrics from active background job processors.</p>
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-xs">
-            <thead>
-              <tr className="border-b border-border-subtle text-text-muted text-left">
-                <th className="py-3 px-4 font-medium">Queue Name</th>
-                <th className="py-3 px-4 font-medium text-center">Active</th>
-                <th className="py-3 px-4 font-medium text-center">Waiting</th>
-                <th className="py-3 px-4 font-medium text-center">Delayed</th>
-                <th className="py-3 px-4 font-medium text-center">Completed</th>
-                <th className="py-3 px-4 font-medium text-center">Failed</th>
-                <th className="py-3 px-4 font-medium text-right">Oldest Job Age</th>
-              </tr>
-            </thead>
-            <tbody>
-              {health?.queues?.map((q) => (
-                <tr key={q.name} className="border-b border-border-subtle/40 hover:bg-white/[0.02]">
-                  <td className="py-3 px-4 font-semibold text-white">{q.name}</td>
-                  <td className="py-3 px-4 text-center text-blue-400 font-bold">{q.active}</td>
-                  <td className="py-3 px-4 text-center text-yellow-500 font-bold">{q.waiting}</td>
-                  <td className="py-3 px-4 text-center text-purple-400">{q.delayed}</td>
-                  <td className="py-3 px-4 text-center text-green-400">{q.completed}</td>
-                  <td className="py-3 px-4 text-center text-red-500 font-bold">{q.failed}</td>
-                  <td className="py-3 px-4 text-right text-text-secondary">
-                    {q.oldestWaitingJobAgeMs > 0 ? `${(q.oldestWaitingJobAgeMs / 1000).toFixed(1)}s` : '—'}
-                  </td>
-                </tr>
-              ))}
-              {isHealthLoading && (
-                <tr>
-                  <td colSpan={7} className="py-8 text-center text-text-muted">
-                    Loading queue health statistics...
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+        <Table className="text-xs">
+          <TableHeader>
+            <TableRow className="text-left text-text-muted">
+              <TableHead className="py-3 px-4 font-medium">Queue Name</TableHead>
+              <TableHead className="py-3 px-4 font-medium text-center">Active</TableHead>
+              <TableHead className="py-3 px-4 font-medium text-center">Waiting</TableHead>
+              <TableHead className="py-3 px-4 font-medium text-center">Delayed</TableHead>
+              <TableHead className="py-3 px-4 font-medium text-center">Completed</TableHead>
+              <TableHead className="py-3 px-4 font-medium text-center">Failed</TableHead>
+              <TableHead className="py-3 px-4 font-medium text-right">Oldest Job Age</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {health?.queues?.map((q) => (
+              <TableRow key={q.name} className="border-b border-border-subtle/40 hover:bg-white/[0.02]">
+                <TableCell className="py-3 px-4 font-semibold text-white">{q.name}</TableCell>
+                <TableCell className="py-3 px-4 text-center text-blue-400 font-bold">{q.active}</TableCell>
+                <TableCell className="py-3 px-4 text-center text-yellow-500 font-bold">{q.waiting}</TableCell>
+                <TableCell className="py-3 px-4 text-center text-purple-400">{q.delayed}</TableCell>
+                <TableCell className="py-3 px-4 text-center text-green-400">{q.completed}</TableCell>
+                <TableCell className="py-3 px-4 text-center text-red-500 font-bold">{q.failed}</TableCell>
+                <TableCell className="py-3 px-4 text-right text-text-secondary">
+                  {q.oldestWaitingJobAgeMs > 0 ? `${(q.oldestWaitingJobAgeMs / 1000).toFixed(1)}s` : '—'}
+                </TableCell>
+              </TableRow>
+            ))}
+            {isHealthLoading && (
+              <TableRow>
+                <TableCell colSpan={7} className="py-8 text-center text-text-muted">
+                  Loading queue health statistics...
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
       </div>
 
       {/* Consistency report watchdog stats */}

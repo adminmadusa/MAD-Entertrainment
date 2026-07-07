@@ -1,5 +1,7 @@
 import { ClientSession } from 'mongoose';
+
 import { BookingStatus, PaymentStatus, ReservationStatus, NotificationType } from '@mad/shared';
+
 import { getEnv } from '../../config/env';
 import { AppError } from '../../middleware/error.middleware';
 import { Booking, IBooking } from '../../models/booking.schema';
@@ -9,8 +11,8 @@ import { Payment, IPayment } from '../../models/payment.schema';
 import { Ticket } from '../../models/ticket.schema';
 import { UserModel } from '../../models/user.schema';
 import { logger } from '../../utils/logger';
-import { ReservationService } from '../reservation.service';
 import { createNotificationSafe } from '../notification.service';
+import { ReservationService } from '../reservation.service';
 import { PaymentInventoryService } from './payment-inventory.service';
 import { PaymentRefundService } from './payment-refund.service';
 
@@ -91,7 +93,7 @@ export class PaymentBookingService {
           ? 'LATE_PAYMENT_RECOVERY_REJECTED_SEATS_TAKEN'
           : 'LATE_PAYMENT_RECOVERY_REJECTED_CAPACITY_EXHAUSTED';
         await _payment.save({ session });
-        
+
         const refundTrigger = options?.triggerRefundRequest || PaymentRefundService.triggerRefundRequest;
         await refundTrigger(
           booking,

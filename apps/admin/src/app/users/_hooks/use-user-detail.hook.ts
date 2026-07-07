@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+
 import { adminGetRegisteredDetail, adminGetGuestDetail, adminToggleUserActive, UserDetailResponse } from '@/lib/api/admin/user.service';
 
 interface UseUserDetailOptions {

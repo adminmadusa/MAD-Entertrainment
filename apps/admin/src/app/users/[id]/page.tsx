@@ -1,23 +1,22 @@
 'use client';
 
-import { AdminRole } from '@mad/shared';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import React, { useState, useEffect } from 'react';
 
-import ErrorState from '@/components/states/ErrorState';
-import LoadingState from '@/components/states/LoadingState';
 import { useAdminAuth } from '@/providers/AdminAuthProvider';
+import { AdminRole } from '@mad/shared';
+import { ErrorState, LoadingState } from '@mad/ui';
 
-import { useUserDetail } from '../_hooks/use-user-detail.hook';
-import UserProfileCard from '../_components/UserProfileCard';
-import UserStatsSummary from '../_components/UserStatsSummary';
-import UserBookingsTable from '../_components/UserBookingsTable';
-import UserTicketsTable from '../_components/UserTicketsTable';
-import UserRefundsTable from '../_components/UserRefundsTable';
 import UserAlertBanner from '../_components/UserAlertBanner';
+import UserBookingsTable from '../_components/UserBookingsTable';
+import UserProfileCard from '../_components/UserProfileCard';
+import UserRefundsTable from '../_components/UserRefundsTable';
+import UserStatsSummary from '../_components/UserStatsSummary';
 import UserTabsHeader from '../_components/UserTabsHeader';
-import dynamic from 'next/dynamic';
+import UserTicketsTable from '../_components/UserTicketsTable';
+import { useUserDetail } from '../_hooks/use-user-detail.hook';
 
 const UserConfirmModal = dynamic(() => import('../_components/UserConfirmModal'), {
   ssr: false,

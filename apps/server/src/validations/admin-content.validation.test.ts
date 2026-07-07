@@ -15,6 +15,8 @@ import {
   processRefundSchema,
   scannerLookupSchema,
   scannerScanSchema,
+  scannerStatsSchema,
+  scannerHistorySchema,
   updateDJOperatorSchema,
   updateEventSchema,
   updateCategorySchema,
@@ -96,6 +98,9 @@ describe('admin mutation validation schemas', () => {
     ['update ticket profile', updateTicketProfileSchema, { params: { id: objectId }, body: { name: 'Updated profile' } }],
     ['scanner lookup booking reference', scannerLookupSchema, { params: { reference: 'MAD-2026-ABCDE' }, query: { eventId: objectId } }],
     ['scanner lookup ticket reference', scannerLookupSchema, { params: { reference: 'TKT-MAD-2026-ABCDE-001' }, query: { eventId: objectId } }],
+    ['scanner stats', scannerStatsSchema, { params: { eventId: objectId } }],
+    ['scanner history basic', scannerHistorySchema, { params: { eventId: objectId } }],
+    ['scanner history filtering', scannerHistorySchema, { params: { eventId: objectId }, query: { page: '2', limit: '20', status: 'SUCCESS', operator: objectId, search: 'TKT' } }],
   ])('accepts valid payload for %s', (_name, schema, payload) => {
     expectAccepted(schema, payload);
   });
@@ -114,6 +119,8 @@ describe('admin mutation validation schemas', () => {
     ['update tier', updateTierSchema, { params: { id: objectId }, body: { name: '' } }],
     ['scanner lookup bad reference pattern', scannerLookupSchema, { params: { reference: '../bad' }, query: { eventId: objectId } }],
     ['scanner lookup long reference', scannerLookupSchema, { params: { reference: 'A'.repeat(101) }, query: { eventId: objectId } }],
+    ['scanner stats no eventId', scannerStatsSchema, { params: {} }],
+    ['scanner history bad query field', scannerHistorySchema, { params: { eventId: objectId }, query: { unexpected: 'field' } }],
   ])('rejects invalid payload for %s', (_name, schema, payload) => {
     expectRejected(schema, payload);
   });
@@ -131,6 +138,8 @@ describe('admin mutation validation schemas', () => {
     ['refund booking id', createRefundSchema, { body: { bookingId: 'bad', paymentId: otherObjectId, amount: 100 } }],
     ['scanner event id', scannerScanSchema, { body: { ticketId: 'TKT-001', eventId: 'bad' } }],
     ['scanner lookup event id', scannerLookupSchema, { params: { reference: 'TKT-001' }, query: { eventId: 'bad' } }],
+    ['scanner stats event id', scannerStatsSchema, { params: { eventId: 'bad' } }],
+    ['scanner history event id', scannerHistorySchema, { params: { eventId: 'bad' } }],
   ])('rejects invalid ObjectId for %s', (_name, schema, payload) => {
     expectRejected(schema, payload);
   });

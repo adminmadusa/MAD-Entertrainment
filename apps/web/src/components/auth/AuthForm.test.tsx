@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { screen, act, fireEvent } from '@testing-library/react';
+import { act, fireEvent, screen } from '@testing-library/react';
 import React from 'react';
-import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { AuthForm } from './AuthForm';
 
@@ -380,7 +380,7 @@ describe('AuthForm Component Smoke Tests', () => {
   describe('Close Button Visibility', () => {
     it('should show close button on all screens when onClose is passed', async () => {
       const mockClose = vi.fn();
-      
+
       mockUseAuth.mockReturnValue({
         login: mockLogin,
         logout: mockLogout,
@@ -393,7 +393,7 @@ describe('AuthForm Component Smoke Tests', () => {
       const { unmount } = renderComponent({ mode: 'login', onClose: mockClose });
       let closeBtn = screen.getByRole('button', { name: /close/i });
       expect(closeBtn).toBeInTheDocument();
-      
+
       await act(async () => {
         fireEvent.click(closeBtn);
       });

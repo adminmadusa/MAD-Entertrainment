@@ -1,10 +1,12 @@
 // scripts/governance/validators/shared_component_validator.ts
-import { readFileSync, existsSync } from 'fs';
+import { existsSync } from 'fs';
 import { resolve } from 'path';
 import * as ts from 'typescript';
 import { GovernanceValidator } from '../core/validator';
 import { ValidationResult, ValidationError } from '../core/types';
 import { governanceConfig } from '../core/governance.config';
+import { FileContentCache, ASTParserCache } from '../core/ast_parser_cache';
+import { checkSuppression } from '../core/suppression';
 
 const workspaceRoot = resolve(__dirname, '../../..');
 
@@ -53,34 +55,54 @@ export class SharedComponentValidator implements GovernanceValidator {
         continue;
       }
 
-      let content: string;
-      try {
-        content = readFileSync(fullPath, 'utf8');
-      } catch (err) {
+      const content = FileContentCache.getFileContent(file);
+      if (content === null) {
         continue;
       }
 
-      let sourceFile: ts.SourceFile;
-      try {
-        sourceFile = ts.createSourceFile(
-          fullPath,
-          content,
-          ts.ScriptTarget.Latest,
-          true
-        );
-      } catch (err: any) {
+      const sourceFile = ASTParserCache.getSourceFile(file);
+      if (!sourceFile) {
         parserFailures++;
         warnings.push({
           file,
           line: 1,
           rule: 'AST-PARSE-WARNING',
           severity: 'WARNING',
-          message: `Failed to parse file AST: ${err?.message || err}`,
+          message: `Failed to parse file AST via cache`,
         });
         continue;
       }
 
       const lines = content.split('\n');
+
+      const reportWarning = (line: number, ruleId: string, baseMessage: string) => {
+        const supp = checkSuppression(lines, line, ruleId);
+        if (supp.isSuppressed) {
+          warnings.push({
+            file,
+            line: line + 1,
+            rule: ruleId,
+            severity: 'WARNING',
+            snippet: lines[line]?.trim(),
+            message: `[SUPPRESSED] ${baseMessage} Justification: ${supp.justification}`,
+          });
+        } else {
+          let note = '';
+          if (supp.restricted) {
+            note = ' (Note: governance-ignore was rejected because inline suppression is disallowed for HIGH/CRITICAL rules.)';
+          } else if (supp.failedAttempt) {
+            note = ' (Note: governance-ignore was skipped because a valid Reason/justification comment was not found.)';
+          }
+          warnings.push({
+            file,
+            line: line + 1,
+            rule: ruleId,
+            severity: 'WARNING',
+            snippet: lines[line]?.trim(),
+            message: `${baseMessage}${note}`,
+          });
+        }
+      };
 
       const walk = (node: ts.Node) => {
         // Detect raw HTML tags in JSX
@@ -89,41 +111,13 @@ export class SharedComponentValidator implements GovernanceValidator {
           const { line } = ts.getLineAndCharacterOfPosition(sourceFile, node.getStart());
 
           if (tagName === 'button') {
-            warnings.push({
-              file,
-              line: line + 1,
-              rule: 'VAL-UI-005',
-              severity: 'WARNING',
-              snippet: lines[line]?.trim(),
-              message: 'Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.',
-            });
-            warnings.push({
-              file,
-              line: line + 1,
-              rule: 'VAL-UI-010',
-              severity: 'WARNING',
-              snippet: lines[line]?.trim(),
-              message: 'Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.',
-            });
+            reportWarning(line, 'VAL-UI-005', 'Raw HTML <button> tag used. Standardize using the shared Button component from @mad/ui.');
+            reportWarning(line, 'VAL-UI-010', 'Shared Component Enforcement: Bypassed shared Button component in favor of raw HTML button element.');
           }
 
           if (tagName === 'table') {
-            warnings.push({
-              file,
-              line: line + 1,
-              rule: 'VAL-UI-004',
-              severity: 'WARNING',
-              snippet: lines[line]?.trim(),
-              message: 'Raw <table> element used in portal. Use a reusable shared Table component.',
-            });
-            warnings.push({
-              file,
-              line: line + 1,
-              rule: 'VAL-UI-010',
-              severity: 'WARNING',
-              snippet: lines[line]?.trim(),
-              message: 'Shared Component Enforcement: Bypassed shared Table component in favor of raw HTML table element.',
-            });
+            reportWarning(line, 'VAL-UI-004', 'Raw <table> element used in portal. Use a reusable shared Table component.');
+            reportWarning(line, 'VAL-UI-010', 'Shared Component Enforcement: Bypassed shared Table component in favor of raw HTML table element.');
           }
         }
 
@@ -132,22 +126,8 @@ export class SharedComponentValidator implements GovernanceValidator {
           const name = node.name.text;
           if (name === 'Field' && file !== 'apps/admin/src/app/events/new/_components/Field.tsx') {
             const { line } = ts.getLineAndCharacterOfPosition(sourceFile, node.getStart());
-            warnings.push({
-              file,
-              line: line + 1,
-              rule: 'VAL-UI-006',
-              severity: 'WARNING',
-              snippet: lines[line]?.trim(),
-              message: 'Local duplication of <Field> wrapper. Use a shared components package.',
-            });
-            warnings.push({
-              file,
-              line: line + 1,
-              rule: 'VAL-UI-010',
-              severity: 'WARNING',
-              snippet: lines[line]?.trim(),
-              message: 'Shared Component Enforcement: Local duplication of Field component wrapper. Import Field from shared library instead.',
-            });
+            reportWarning(line, 'VAL-UI-006', 'Local duplication of <Field> wrapper. Use a shared components package.');
+            reportWarning(line, 'VAL-UI-010', 'Shared Component Enforcement: Local duplication of Field component wrapper. Import Field from shared library instead.');
           }
         }
 
@@ -155,22 +135,8 @@ export class SharedComponentValidator implements GovernanceValidator {
           const name = node.name.text;
           if (name === 'Field' && file !== 'apps/admin/src/app/events/new/_components/Field.tsx') {
             const { line } = ts.getLineAndCharacterOfPosition(sourceFile, node.getStart());
-            warnings.push({
-              file,
-              line: line + 1,
-              rule: 'VAL-UI-006',
-              severity: 'WARNING',
-              snippet: lines[line]?.trim(),
-              message: 'Local duplication of <Field> wrapper. Use a shared components package.',
-            });
-            warnings.push({
-              file,
-              line: line + 1,
-              rule: 'VAL-UI-010',
-              severity: 'WARNING',
-              snippet: lines[line]?.trim(),
-              message: 'Shared Component Enforcement: Local duplication of Field component wrapper. Import Field from shared library instead.',
-            });
+            reportWarning(line, 'VAL-UI-006', 'Local duplication of <Field> wrapper. Use a shared components package.');
+            reportWarning(line, 'VAL-UI-010', 'Shared Component Enforcement: Local duplication of Field component wrapper. Import Field from shared library instead.');
           }
         }
 

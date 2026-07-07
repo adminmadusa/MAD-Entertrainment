@@ -1,8 +1,9 @@
 import { Request, Response, NextFunction } from 'express';
-import { PublicEventService } from '../../services/public/event.service';
+
 import { CacheService } from '../../services/cache.service';
-import { sendSuccess } from '../../utils/response';
+import { PublicEventService } from '../../services/public/event.service';
 import { logger } from '../../utils/logger';
+import { sendSuccess } from '../../utils/response';
 
 type PublicEventListResult = Awaited<ReturnType<typeof PublicEventService.listEvents>>;
 type PublicEventDetailResult = Awaited<ReturnType<typeof PublicEventService.getEventBySlug>>;
@@ -84,7 +85,7 @@ export async function getEventBySlug(req: Request, res: Response, next: NextFunc
 export async function getEventSeatLayout(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const eventId = req.params.eventId;
-    
+
     // Live seats changing frequently - query directly
     const layout = await PublicEventService.getEventSeatLayout(eventId);
     sendSuccess(res, layout, 'Seat layout retrieved');

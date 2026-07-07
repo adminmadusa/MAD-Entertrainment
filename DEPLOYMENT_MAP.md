@@ -1,10 +1,10 @@
 # MAD Entertrainment — Deployment Map
 
-Status: Active  
-Version: 1.0  
-Owner: DevOps & Platform Engineering  
-Review Cycle: Quarterly  
-Last Updated: 2026-06-25  
+Status: Active
+Version: 1.0
+Owner: DevOps & Platform Engineering
+Review Cycle: Quarterly
+Last Updated: 2026-06-25
 
 Supersedes:
 - None (First version establishing the Deployment SSOT)
@@ -41,7 +41,7 @@ README.md
 ## Document Governance
 
 ### Deployment Change Policy
-This document serves as the canonical Single Source of Truth (SSOT) for the deployment topology, release workflows, CI/CD pipelines, environments, and rollback strategies of the **MAD Entertrainment** platform. 
+This document serves as the canonical Single Source of Truth (SSOT) for the deployment topology, release workflows, CI/CD pipelines, environments, and rollback strategies of the **MAD Entertrainment** platform.
 
 The document **must** be updated whenever any of the following change:
 - Hosting provider
@@ -99,7 +99,7 @@ The platform manages four distinct deployment environments.
 | **Purpose** | Sandbox coding | PR validation | Integration testing | Live customer traffic |
 | **Branch** | Local workspace | Pull Request | `develop` | `live` |
 | **Hosting** | Local machine | Vercel Serverless | Vercel Serverless | Vercel Serverless (Web/Admin), Render Node Container (API) |
-| **URL** | `http://localhost:3000` (Web)<br>`http://localhost:3002` (Admin) | Vercel Preview URL | `https://test.esparex.in` | `https://mad.esparex.in` (Web)<br>`https://madmin.esparex.in` (Admin)<br>`https://apm.esparex.in/api` (API) |
+| **URL** | `http://localhost:3000` (Web)<br>`http://localhost:3002` (Admin) | Vercel Preview URL | `https://testmad.esparex.in` (Web)<br>`https://testmadmin.esparex.in` (Admin) | `https://mad.esparex.in` (Web)<br>`https://madmin.esparex.in` (Admin)<br>`https://apm.esparex.in/api` (API) |
 | **Database** | Local MongoDB | MongoDB Atlas Sandbox | MongoDB Atlas Shared | MongoDB Atlas Prod |
 | **Redis** | Local Redis | Mock / None | Redis Cloud Shared | Redis Cloud Prod |
 | **Storage** | Local FS / Mock | Cloudinary Sandbox | Cloudinary Sandbox | Cloudinary Production |
@@ -114,7 +114,7 @@ The platform manages four distinct deployment environments.
 
 #### Current Deployment Constraint (Shared Backend Setup)
 Our staging/testing environment operates under a shared-backend constraint:
-- **Topology**: The Vercel Test frontend (`test.esparex.in`, built from the `develop` branch) routes its requests to the production Render API backend (`apm.esparex.in`, built from the `live` branch).
+- **Topology**: The Vercel Test frontend (`testmad.esparex.in`, built from the `develop` branch) routes its requests to the production Render API backend (`apm.esparex.in`, built from the `live` branch).
 - **Operational Impact**:
   - Test activity performed on the staging URL (e.g. testing booking flows, database updates) directly modifies the production database cluster and enqueues jobs in the production Redis instance.
   - Environment-specific behavior and data differences must be understood before testing. Testing operators must coordinate actions to prevent contamination of production metrics.
@@ -135,7 +135,7 @@ The table below assesses the operational risk level based on the configuration o
 - Deployment configurations must accurately document shared or isolated database cluster boundaries.
 
 ### Future Recommendations
-- See *Appendix: Future Deployment Considerations* — Proposal 1: "Dedicated Staging Backend API" for proposals to isolate staging backends on Render.  
+- See *Appendix: Future Deployment Considerations* — Proposal 1: "Dedicated Staging Backend API" for proposals to isolate staging backends on Render.
   *Status*: Possible Future Enhancement (Not Approved) · Untracked
 
 ---
@@ -177,7 +177,7 @@ graph TD
 - All HTTP calls from Vercel frontends must route through the `/api/*` proxy rewrite to avoid CORS preflight latency.
 
 ### Future Recommendations
-- See *Appendix: Future Deployment Considerations* — Proposal 2: "Microservice Decoupling of BullMQ Workers" for worker isolation.  
+- See *Appendix: Future Deployment Considerations* — Proposal 2: "Microservice Decoupling of BullMQ Workers" for worker isolation.
   *Status*: Possible Future Enhancement (Not Approved) · Untracked
 
 ---
@@ -254,7 +254,7 @@ sequenceDiagram
 - **Build Isolation**: Build commands in backend environments must use target filters (`pnpm --filter @mad/server... build`) to prevent compiling Next.js frontends on stateful Render API nodes.
 
 ### Future Recommendations
-- See *Appendix: Future Deployment Considerations* — Proposal 3: "Automated Client API Code Generation" for build integrations.  
+- See *Appendix: Future Deployment Considerations* — Proposal 3: "Automated Client API Code Generation" for build integrations.
   *Status*: Possible Future Enhancement (Not Approved) · Untracked
 
 ---
@@ -309,7 +309,7 @@ The platform integrates with several third-party software and cloud service prov
 - Safe fallback paths and user-friendly error handlers must be implemented for all external service interfaces. Uptime checkers must alert operations when service endpoints fail.
 
 ### Future Recommendations
-- See *Appendix: Future Deployment Considerations* — Proposal 4: "Message Broker Architecture" for queue brokers.  
+- See *Appendix: Future Deployment Considerations* — Proposal 4: "Message Broker Architecture" for queue brokers.
   *Status*: Possible Future Enhancement (Not Approved) · Untracked
 
 ---
@@ -356,7 +356,7 @@ The repository enforces security policies at compile, code, and hosting levels:
 - **Continuous Audits**: Pushes and PRs must run TruffleHog secrets scanning. Dependency audits must block critical/high vulnerabilities unless excepted.
 
 ### Future Recommendations
-- See *Appendix: Future Deployment Considerations* — Proposal 5: "Multi-Factor Authentication (MFA)" for administrative security.  
+- See *Appendix: Future Deployment Considerations* — Proposal 5: "Multi-Factor Authentication (MFA)" for administrative security.
   *Status*: Possible Future Enhancement (Not Approved) · Untracked
 
 ---
@@ -411,7 +411,7 @@ Observability is mapped to three targets:
 
 ## 12. Appendix: Future Deployment Considerations
 
-The following proposals represent potential future enhancements. They are not approved for implementation and serve as informational reference points only to prevent undocumented roadmaps.
+The proposals listed below outline potential future deployment enhancements. They are not approved for active work and are included strictly for informational context to keep future roadmap paths documented.
 
 ### Proposal 1: Dedicated Staging Backend API
 - **Description**: Spin up a staging Render Node API instance connecting to a dedicated staging MongoDB cluster.

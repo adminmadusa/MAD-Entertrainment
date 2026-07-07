@@ -1,8 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { adminAuthController } from './auth.controller';
-import { adminAuthService } from '../../services/admin/auth.service';
+
 import { AdminModel } from '../../models/admin.schema';
+import { adminAuthService } from '../../services/admin/auth.service';
 import { verifyAdminToken } from '../../utils/jwt';
+import { adminAuthController } from './auth.controller';
 
 vi.mock('../../config/env', () => ({
   getEnv: vi.fn(() => ({
@@ -64,7 +65,7 @@ describe('Admin Authentication Tests', () => {
       expect(decoded.sub).toBe(mockAdmin._id);
       expect(decoded.email).toBe(mockAdmin.email);
       expect(decoded.role).toBe(mockAdmin.role);
-      
+
       // Ensure the legacy id property is NOT in the payload
       expect((decoded as any).id).toBeUndefined();
     });

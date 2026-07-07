@@ -5,9 +5,13 @@ import { getQueueConnection, getQueueName } from '../config/queue.config';
 import { isRedisConnected } from '../config/redis';
 import { getSocketTelemetry } from '../config/socket';
 import { DeadLetterJob } from '../models/dead-letter-job.schema';
-import { QueueService } from './queue.service';
-import { logger } from '../utils/logger';
 import { decryptPayload, isEncrypted } from '../utils/encryption';
+import { logger } from '../utils/logger';
+import { QueueService } from './queue.service';
+interface MongoTopologyServer {
+  address?: string;
+  type?: string;
+}
 
 
 export interface QueueHealthStats {
@@ -26,6 +30,10 @@ export interface SystemDiagnosticsReport {
     state: string;
     readyState: number;
     connectionsCount: number;
+    topologyType?: string;
+    replicaSetName?: string;
+    primaryHost?: string;
+    members?: MongoTopologyServer[];
   };
   redis: {
     connected: boolean;
@@ -99,12 +107,48 @@ export class DiagnosticsService {
 
     const socketTelemetry = getSocketTelemetry();
 
+    const conn = mongoose.connection;
+    let client: any = null;
+    try {
+      if (conn && conn.readyState === 1 && typeof conn.getClient === 'function') {
+        client = conn.getClient();
+      }
+    } catch (e) {
+      // Suppress connection extraction failures
+    }
+    const topology = client?.topology?.description;
+    let primaryHost = 'Unknown';
+    const members: Array<{ address: string; type: string }> = [];
+
+    if (topology?.servers) {
+      try {
+        const servers = Array.from(topology.servers.values()) as MongoTopologyServer[];
+        const primaryServer = servers.find((s) => s.type === 'RSPrimary');
+        if (primaryServer) {
+          primaryHost = primaryServer.address || 'Unknown';
+        }
+        servers.forEach((s) => {
+          members.push({
+            address: s.address || 'Unknown',
+            type: s.type || 'Unknown',
+          });
+        });
+        members.sort((a, b) => a.address.localeCompare(b.address));
+      } catch (error) {
+        logger.debug({ error }, 'Unable to parse MongoDB topology metadata');
+      }
+    }
+
     return {
       timestamp: new Date().toISOString(),
       database: {
-        state: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
-        readyState: mongoose.connection.readyState,
-        connectionsCount: (mongoose.connection as any).base?.connections?.length || 1,
+        state: conn.readyState === 1 ? 'connected' : 'disconnected',
+        readyState: conn.readyState,
+        connectionsCount: (conn as any).base?.connections?.length || 1,
+        topologyType: topology?.type ?? 'Unknown',
+        replicaSetName: topology?.setName ?? 'Unknown',
+        primaryHost,
+        members,
       },
       redis: {
         connected: redisActive,

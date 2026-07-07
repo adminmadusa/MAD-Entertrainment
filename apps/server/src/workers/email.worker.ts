@@ -1,17 +1,18 @@
-import { Worker, WorkerOptions, Job } from 'bullmq';
 import * as Sentry from '@sentry/node';
+import { Worker, WorkerOptions, Job } from 'bullmq';
 import { Types } from 'mongoose';
 
-import { getQueueConnection, getQueueName, getQueuePrefix } from '../config/queue.config';
+import { NotificationType } from '@mad/shared';
+
 import { getEnv } from '../config/env';
+import { getQueueConnection, getQueueName, getQueuePrefix } from '../config/queue.config';
 import { isRedisConnected } from '../config/redis';
 import { DeadLetterJob } from '../models/dead-letter-job.schema';
-import { Notification } from '../models/notification.schema';
 import { MagicTokenModel } from '../models/magic-token.schema';
+import { Notification } from '../models/notification.schema';
 import { createNotificationSafe } from '../services/notification.service';
 import { sendEmail, normalizeEmail } from '../utils/email';
 import { logger } from '../utils/logger';
-import { NotificationType } from '@mad/shared';
 
 /**
  * Helper to classify SMTP error messages into permanent vs transient categories.
@@ -172,20 +173,20 @@ export async function handleJobExecution(jobId: string, data: any, attemptsMade:
         await processEmailDispatch(to, subject, html, attachments, bookingId, eventId, notificationType, messageId);
       }
     );
-    
-    await Notification.updateOne({ jobId }, { 
-      $set: { status: 'sent', processedAt: new Date(), isSent: true } 
+
+    await Notification.updateOne({ jobId }, {
+      $set: { status: 'sent', processedAt: new Date(), isSent: true }
     });
   } catch (err: any) {
-    await Notification.updateOne({ jobId }, { 
-      $set: { 
-        status: 'failed', 
-        errorMessage: err.message, 
+    await Notification.updateOne({ jobId }, {
+      $set: {
+        status: 'failed',
+        errorMessage: err.message,
         processedAt: new Date(),
         retryCount: attemptsMade
       }
     });
-    
+
     if (isPermanentSMTPError(err.message)) {
       logger.warn(
         {

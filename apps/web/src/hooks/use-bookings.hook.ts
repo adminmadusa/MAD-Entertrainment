@@ -1,19 +1,17 @@
 'use client';
 
-import { useState, useEffect, useMemo, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useEffect, useMemo, useRef, useState } from 'react';
+
+import { apiClient, extractApiError } from '@/lib/api/client';
+import { publicGetMyBookings, publicResendTicketEmail } from '@/lib/api/public.service';
+import { useAuth } from '@/providers/AuthProvider';
 import { BookingStatus, QUERY_KEYS } from '@mad/shared';
 import type { Booking, Ticket, Event } from '@mad/types';
-import {
-  publicGetMyBookings,
-  publicResendTicketEmail,
-} from '@/lib/api/public.service';
-import { apiClient, extractApiError } from '@/lib/api/client';
-import { useAuth } from '@/providers/AuthProvider';
 
 export function useBookings() {
   const { isAuthenticated } = useAuth();
-  
+
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const [resendingId, setResendingId] = useState<string | null>(null);
   const [resendCooldowns, setResendCooldowns] = useState<Record<string, number>>({});
@@ -137,7 +135,7 @@ export function useBookings() {
     filteredBookings.forEach((b) => {
       const eventInfo = b.eventId as unknown as Partial<Event>;
       const startDate = eventInfo?.startDate ? new Date(eventInfo.startDate) : null;
-      
+
       const isCancelledStatus = [BookingStatus.CANCELLED, BookingStatus.REFUNDED].includes(b.status as BookingStatus);
       if (isCancelledStatus) {
         cancelled.push(b);

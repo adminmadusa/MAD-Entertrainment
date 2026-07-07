@@ -49,9 +49,24 @@ pnpm type-check && pnpm lint && pnpm test && pnpm build && pnpm governance:docs
 
 ## 5. Immediate Engineering Focus
 Future PR work should prioritize:
-1. Feature additions and enhancements.
-2. User interface bugs and customer feedback.
-3. Functional fixes.
-4. Business logic improvements.
+1. Operational reliability and business risk reduction (MAD-500 outcomes).
+2. Functional fixes and security hardening.
+3. Feature additions and enhancements.
+4. User interface bugs and customer feedback.
 
-Refactors or performance auditing workstreams are deferred unless a concrete regression or production issue is identified.
+---
+
+## 6. Prioritized Epic Roadmap (Post MAD-500)
+Based on the End-to-End Production Runtime Audit, engineering priorities are organized in the following phases:
+
+### Phase 1: Critical Reliability & Security Hardening
+- **PROD-001**: Restrict and secure diagnostic API routes (`/api/admin/diagnostics/*`) to SuperAdmin authorization.
+- **PROD-002**: Configure MongoDB Replica Set Cluster connection topologies to ensure High Availability database failover.
+
+### Phase 2: High Priority Transaction & Scanner Hardening
+- **SEC-001**: Implement concurrency locking queue in Axios frontend interceptors to prevent multi-tab token reuse rotation logouts.
+- **SCAN-001**: Implement local storage check-in databases in mobile scanners to enable offline venue ticket validation.
+
+### Phase 3: Technical Debt Reduction & Refactoring
+- **ARCH-001**: Modularize `payment.service.ts` to separate Stripe/Razorpay adapters and validation logic, aligning with file size limits.
+- **ADMIN-001**: Integrate interactive gateway refund buttons inside the admin dashboard cards.

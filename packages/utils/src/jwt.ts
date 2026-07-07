@@ -1,4 +1,4 @@
-import { JwtPayload } from '@mad/types';
+import type { JwtPayload } from '@mad/types';
 
 /**
  * Decodes a JWT token payload safely in any environment (Browser, SSR, Node, Edge).
@@ -14,7 +14,7 @@ export function decodeJwt(token: string | null | undefined): JwtPayload | null {
     const payload = parts[1];
     const base64 = payload.replace(/-/g, '+').replace(/_/g, '/');
     const padded = base64.padEnd(base64.length + (4 - (base64.length % 4)) % 4, '=');
-    
+
     // Cross-platform safe atob extraction
     const rawBinary = typeof globalThis.atob === 'function'
       ? globalThis.atob(padded)
@@ -43,10 +43,10 @@ export function isTokenExpired(token: string | null | undefined): boolean {
   if (!token) return true;
   const decoded = decodeJwt(token);
   if (!decoded) return true;
-  
+
   if (typeof decoded.exp !== 'number') {
     return false; // Treat tokens without exp claim as non-expiring
   }
-  
+
   return decoded.exp * 1000 < Date.now();
 }

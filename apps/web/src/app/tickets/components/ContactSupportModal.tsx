@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+
 import { Modal, ArrowLeft } from '@mad/ui';
 
 interface ContactSupportModalProps {

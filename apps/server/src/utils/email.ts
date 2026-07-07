@@ -1,23 +1,13 @@
-import nodemailer from 'nodemailer';
 import * as Sentry from '@sentry/node';
+import nodemailer from 'nodemailer';
 
 import { getEnv } from '../config/env';
-import { logger } from './logger';
 import { auditLog } from './audit';
+import type { EmailAttachment, SendEmailInput } from './email.types';
+import { logger } from './logger';
 
-export interface EmailAttachment {
-  filename: string;
-  content: Buffer;
-  contentType?: string;
-}
+export type { EmailAttachment, SendEmailInput } from './email.types';
 
-export interface SendEmailInput {
-  to: string;
-  subject: string;
-  html: string;
-  attachments?: EmailAttachment[];
-  messageId?: string;
-}
 
 let transporter: nodemailer.Transporter | null = null;
 
@@ -223,4 +213,3 @@ export async function sendEmail(input: SendEmailInput): Promise<void> {
 export function normalizeEmail(email: string): string {
   return email.trim().toLowerCase();
 }
-

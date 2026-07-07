@@ -1,5 +1,6 @@
-import { HTTP_STATUS } from '@mad/shared';
 import { Response } from 'express';
+
+import { HTTP_STATUS } from '@mad/shared';
 
 export function sendSuccess<T>(
   res: Response,

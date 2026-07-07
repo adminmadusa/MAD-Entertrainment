@@ -1,5 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Types } from 'mongoose';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+
 import { BookingStatus, PaymentStatus, ReservationStatus, SeatStatus } from '@mad/shared';
 
 vi.mock('../../config/env', () => ({
@@ -12,13 +13,13 @@ vi.mock('../../config/env', () => ({
   })),
 }));
 
-import { PaymentInventoryService } from './payment-inventory.service';
+import { emitToEvent, emitToBooking, emitToAdmin } from '../../config/socket';
 import { Booking } from '../../models/booking.schema';
 import { Event } from '../../models/event.schema';
-import { ReservationService } from '../reservation.service';
-import { SeatLayout } from '../../models/seat-layout.schema';
 import { Reservation } from '../../models/reservation.schema';
-import { emitToEvent, emitToBooking, emitToAdmin } from '../../config/socket';
+import { SeatLayout } from '../../models/seat-layout.schema';
+import { ReservationService } from '../reservation.service';
+import { PaymentInventoryService } from './payment-inventory.service';
 
 vi.mock('../../models/booking.schema', () => ({
   Booking: {

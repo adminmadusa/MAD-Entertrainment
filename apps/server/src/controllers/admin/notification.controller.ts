@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+
 import * as notificationService from '../../services/admin/notification.service';
 
 export const getNotifications = async (req: Request, res: Response, next: NextFunction) => {

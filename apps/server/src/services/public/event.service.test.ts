@@ -7,8 +7,9 @@ process.env.REDIS_URL = 'redis://localhost:6379';
 process.env.PORT = '8080';
 process.env.NODE_ENV = 'test';
 
-import { describe, it, expect, vi, beforeEach, beforeAll } from 'vitest';
 import jwt from 'jsonwebtoken';
+import { describe, it, expect, vi, beforeEach, beforeAll } from 'vitest';
+
 import { EventStatus, EventMemoryPublicationState } from '@mad/shared';
 
 // We dynamically import these modules in beforeAll to prevent Vitest hoisting from running imports before environment variables are set
@@ -30,7 +31,7 @@ vi.mock('../../utils/audit', () => ({
 
 describe('PublicEventService - Secure Preview Infrastructure', () => {
   const adminSecret = 'test_jwt_secret_with_32_characters_long_minimum';
-  
+
   beforeAll(async () => {
     // Dynamically load service and model after env vars are set
     const serviceMod = await import('./event.service');

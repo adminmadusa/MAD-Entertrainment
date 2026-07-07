@@ -1,8 +1,11 @@
-import fs from 'fs/promises';
-import path from 'path';
+import fs from 'node:fs/promises';
+import path from 'node:path';
+
+import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { Metadata } from 'next';
+
 import { legalDocuments } from '@/content/legalDocuments';
+
 import { LegalViewer } from '../components/LegalViewer';
 
 interface LegalDocPageProps {
@@ -18,7 +21,7 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: LegalDocPageProps): Promise<Metadata> {
   const resolvedParams = await params;
   const docMeta = legalDocuments.find((d) => d.slug === resolvedParams.doc);
-  
+
   if (!docMeta) {
     return {
       title: 'Document Not Found | MAD Entertainment',
@@ -54,10 +57,10 @@ export default async function LegalDocPage({ params }: LegalDocPageProps) {
   }
 
   return (
-    <LegalViewer 
-      title={docMeta.title} 
-      lastUpdated={docMeta.lastUpdated} 
-      markdownContent={content} 
+    <LegalViewer
+      title={docMeta.title}
+      lastUpdated={docMeta.lastUpdated}
+      markdownContent={content}
     />
   );
 }

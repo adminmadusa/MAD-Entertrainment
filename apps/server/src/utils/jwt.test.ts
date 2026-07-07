@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+
 import * as jwtUtils from './jwt';
 
 // Mock the env configuration
@@ -35,7 +36,7 @@ describe('JWT Utilities', () => {
       const payload = { sub: 'user123', email: 'test@example.com' };
       const token = jwtUtils.signUserToken(payload);
       expect(typeof token).toBe('string');
-      
+
       const verified = jwtUtils.verifyUserToken(token);
       expect(verified.sub).toBe(payload.sub);
       expect(verified.email).toBe(payload.email);
@@ -51,7 +52,7 @@ describe('JWT Utilities', () => {
       const payload = { sub: 'admin123', email: 'admin@example.com', role: 'SUPER_ADMIN' as any };
       const token = jwtUtils.signAdminToken(payload);
       expect(typeof token).toBe('string');
-      
+
       const verified = jwtUtils.verifyAdminToken(token);
       expect(verified.sub).toBe(payload.sub);
       expect(verified.role).toBe(payload.role);
@@ -63,7 +64,7 @@ describe('JWT Utilities', () => {
       const sessionId = 'session-999';
       const token = jwtUtils.signSessionToken(sessionId);
       expect(typeof token).toBe('string');
-      
+
       const verifiedId = jwtUtils.verifySessionToken(token);
       expect(verifiedId).toBe(sessionId);
     });

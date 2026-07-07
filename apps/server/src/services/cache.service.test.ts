@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { CacheService } from './cache.service';
+
 import { getRedis, isRedisConnected } from '../config/redis';
+import { CacheService } from './cache.service';
 
 vi.mock('../config/redis', () => ({
   getRedis: vi.fn(),
@@ -66,7 +67,7 @@ describe('Cache Service', () => {
     it('should set serialized JSON value with custom TTL', async () => {
       vi.mocked(isRedisConnected).mockReturnValue(true);
       const value = { data: 'my-cache' };
-      
+
       await CacheService.set('user:session', value, 120);
       expect(mockRedis.set).toHaveBeenCalledWith('mad:cache:user:session', JSON.stringify(value), 'EX', 120);
     });

@@ -1,16 +1,9 @@
 import React from 'react';
 
+import { FormField } from '@mad/ui';
+
 const inputCls =
   'w-full px-4 py-2.5 rounded-xl bg-background border border-border-subtle text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-purple transition-colors';
-
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div className="space-y-1.5">
-      <label className="text-text-secondary text-sm font-medium block">{label}</label>
-      {children}
-    </div>
-  );
-}
 
 export interface EventScheduleCardProps {
   startDate: string;
@@ -29,7 +22,7 @@ export const EventScheduleCard = React.memo(function EventScheduleCard({
     <div className="glass rounded-2xl border border-border-subtle p-6 space-y-5">
       <h2 className="text-white font-semibold">Schedule</h2>
       <div className="grid grid-cols-2 gap-4">
-        <Field label="Start Date & Time *">
+        <FormField label="Start Date & Time *">
           <input
             id="event-start-date"
             type="datetime-local"
@@ -38,15 +31,15 @@ export const EventScheduleCard = React.memo(function EventScheduleCard({
             required
             className={inputCls}
           />
-        </Field>
-        <Field label="End Date & Time">
+        </FormField>
+        <FormField label="End Date & Time">
           <input
             type="datetime-local"
             value={endDate}
             onChange={(e) => setEndDate(e.target.value)}
             className={inputCls}
           />
-        </Field>
+        </FormField>
       </div>
     </div>
   );

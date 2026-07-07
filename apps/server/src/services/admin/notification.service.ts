@@ -1,6 +1,8 @@
-import { Notification, INotification } from '../../models/notification.schema';
 import mongoose from 'mongoose';
+
+import { Notification, INotification } from '../../models/notification.schema';
 import { sendEmail } from '../../utils/email';
+import { logger } from '../../utils/logger';
 
 export const getNotifications = async (
   page: number = 1,
@@ -72,7 +74,7 @@ export const retryNotification = async (id: string): Promise<INotification | nul
     notification.errorMessage = err.message;
     notification.processedAt = new Date();
     await notification.save();
-    console.error(`[Notification Service] Retry failed for notification ${id}:`, err);
+    logger.error({ err, notificationId: id }, '[Notification Service] Retry failed for notification');
     throw err;
   }
 

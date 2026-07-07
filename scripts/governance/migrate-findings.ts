@@ -4,6 +4,7 @@ import { resolve, join } from 'path';
 import { createHash } from 'crypto';
 import { Finding, FindingOccurrence, FindingStatus, HistoryEvent, GovernanceManifest } from './core/types';
 import { FingerprintEngine } from './core/fingerprint';
+import { canonicalizeJson } from './core/json_utils';
 
 const workspaceRoot = resolve(__dirname, '../..');
 const govDir = resolve(workspaceRoot, '.governance');
@@ -162,14 +163,14 @@ function runMigration() {
       targetDir = suppressedDir;
     }
     const destPath = join(targetDir, `${f.id}.json`);
-    writeFileSync(destPath, JSON.stringify(f, null, 2), 'utf8');
+    writeFileSync(destPath, canonicalizeJson(f), 'utf8');
   }
 
   // 5. Verification Matrix
   const afterOccurrencesCount = migratedFindings.reduce((acc, f) => acc + (f.evidence.occurrences?.length || 0), 0);
   const afterRules = new Set(migratedFindings.map(f => f.rule));
   const afterFiles = new Set(migratedFindings.map(f => f.evidence.path));
-  
+
   const fingerprintsSet = new Set<string>();
   let duplicateFingerprintsCount = 0;
   for (const f of migratedFindings) {
@@ -234,7 +235,7 @@ function runMigration() {
       filesArchived: migratedFindings.filter(f => f.status === 'CLOSED').length,
     }
   };
-  writeFileSync(manifestPath, JSON.stringify(manifest, null, 2), 'utf8');
+  writeFileSync(manifestPath, canonicalizeJson(manifest), 'utf8');
 
   // 7. Cleanup legacy flat files from disk
   console.log('🗑️ Cleaning up legacy flat findings files...');
@@ -264,7 +265,7 @@ function runMigration() {
 
 function rollback(reason: string) {
   console.log(`🚨 Rollback triggered due to: ${reason}`);
-  
+
   // Save FailureRecoveryMetadata
   const failureLogPath = join(govDir, 'migration-failure.json');
   const failureLog = {
@@ -273,7 +274,7 @@ function rollback(reason: string) {
     exceptionSummary: reason,
     rollbackStatus: 'SUCCESS' as const,
   };
-  
+
   try {
     // 1. Delete new state directories if created
     const dirsToDelete = [activeDir, closedDir, suppressedDir, archiveFindingsDir, archiveHistoryDir];
@@ -303,11 +304,11 @@ function rollback(reason: string) {
     // Clear backup directory
     rmSync(backupDir, { recursive: true, force: true });
 
-    writeFileSync(failureLogPath, JSON.stringify(failureLog, null, 2), 'utf8');
+    writeFileSync(failureLogPath, canonicalizeJson(failureLog), 'utf8');
     console.log('✅ Rollback completed successfully. Legacy data restored.');
   } catch (err: any) {
     failureLog.rollbackStatus = 'FAILED';
-    writeFileSync(failureLogPath, JSON.stringify(failureLog, null, 2), 'utf8');
+    writeFileSync(failureLogPath, canonicalizeJson(failureLog), 'utf8');
     console.error('💥 Rollback failed to restore legacy files!', err);
   }
 }

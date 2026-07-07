@@ -1,3 +1,4 @@
+import { Types } from 'mongoose';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 vi.hoisted(() => {
@@ -7,13 +8,12 @@ vi.hoisted(() => {
   process.env.JWT_SESSION_SECRET = 'this_is_a_very_long_jwt_session_secret_with_more_than_32_characters';
 });
 
-import { Types } from 'mongoose';
 import { PaymentStatus, BookingStatus } from '@mad/shared';
 
-import { BookingRecoveryService, maskEmail } from './booking-recovery.service';
-import { Payment } from '../../models/payment.schema';
-import { Booking } from '../../models/booking.schema';
 import { AppError } from '../../middleware/error.middleware';
+import { Booking } from '../../models/booking.schema';
+import { Payment } from '../../models/payment.schema';
+import { BookingRecoveryService, maskEmail } from './booking-recovery.service';
 
 vi.mock('../../models/payment.schema', () => ({
   Payment: {

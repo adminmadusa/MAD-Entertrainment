@@ -1,4 +1,5 @@
 import crypto from 'crypto';
+
 import { cloudinary } from '../../config/cloudinary';
 import { AppError } from '../../middleware/error.middleware';
 
@@ -20,7 +21,7 @@ export class UploadService {
           folder: `mad-entertrainment/${folderPath}`,
           public_id: secureFilename,
           // Hard-enforce formatting on Cloudinary's side as a second layer of defense
-          format: 'webp', 
+          format: 'webp',
           resource_type: 'image',
         },
         (error, result) => {

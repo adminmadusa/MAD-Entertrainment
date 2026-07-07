@@ -1,15 +1,16 @@
-import { ArrowRight } from '@mad/ui';
 import type { Metadata } from 'next';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { Suspense } from 'react';
-import dynamic from 'next/dynamic';
 
 import { Reveal, StaggerContainer, StaggerItem } from '@/components/common/PageTransition';
+import { FeaturedEventsSkeleton } from '@/components/ui/HomeSkeletons';
+import { serverGetFeaturedEvents } from '@/lib/api/server.service';
+import { ArrowRight } from '@mad/ui';
+
 const FeaturedEventsSection = dynamic(() => import('@/components/ui/FeaturedEventsSection').then(mod => mod.FeaturedEventsSection), {
   ssr: true,
 });
-import { FeaturedEventsSkeleton } from '@/components/ui/HomeSkeletons';
-import { serverGetFeaturedEvents } from '@/lib/api/server.service';
 
 export const metadata: Metadata = {
   title: 'MAD Entertrainment — Book Shows, Events & DJ Nights',
@@ -41,8 +42,6 @@ async function FeaturedEventsServerSection() {
   return <FeaturedEventsSection initialEvents={events} />;
 }
 
-
-
 // ─── Main HomePage Component (Instant TTFB / Streaming) ───────────
 
 export default function HomePage() {
@@ -69,8 +68,6 @@ export default function HomePage() {
       <Suspense fallback={<FeaturedEventsSkeleton />}>
         <FeaturedEventsServerSection />
       </Suspense>
-
-
 
       {/* ─── How It Works ─────────────────────────────────── */}
       <HowItWorksSection />
@@ -143,8 +140,6 @@ function HeroSection() {
     </section>
   );
 }
-
-
 
 // ─── How It Works ─────────────────────────────────────────────
 
@@ -274,4 +269,3 @@ function CTASection() {
     </section>
   );
 }
-

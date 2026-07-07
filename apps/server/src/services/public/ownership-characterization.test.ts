@@ -1,5 +1,7 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { Types } from 'mongoose';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+import { BookingStatus } from '@mad/shared';
 
 // Hoist mock environment setup
 vi.hoisted(() => {
@@ -8,16 +10,17 @@ vi.hoisted(() => {
   process.env.JWT_ADMIN_SECRET = 'testsecret32characterstestsecret32';
   process.env.JWT_SESSION_SECRET = 'testsecret32characterstestsecret32';
   process.env.DLQ_ENCRYPTION_KEY = 'testsecret32characterstestsecret32';
+  process.env.BOOKING_OWNERSHIP_GRACE_MS = '600000';
 });
 
+import { getBooking, downloadBookingPDF, generateDownloadToken, resendBookingTickets } from '../../controllers/public/booking.controller';
+import { AppError } from '../../middleware/error.middleware';
 import { Booking } from '../../models/booking.schema';
 import { Ticket } from '../../models/ticket.schema';
-import { AppError } from '../../middleware/error.middleware';
-import { getBooking, downloadBookingPDF, generateDownloadToken, resendBookingTickets } from '../../controllers/public/booking.controller';
-import { canViewTicketQR } from './ticket-ownership.service';
-import { PaymentService } from './payment.service';
-import { PublicBookingService } from './booking.service';
 import { registerSocketHandlers } from '../../sockets/index';
+import { PublicBookingService } from './booking.service';
+import { PaymentService } from './payment.service';
+import { canViewTicketQR } from './ticket-ownership.service';
 
 vi.mock('../../models/booking.schema', () => ({
   Booking: {
@@ -38,7 +41,15 @@ vi.mock('../../services/public/booking.service', async (importOriginal) => {
   return {
     PublicBookingService: {
       getBookingByReference: vi.fn(),
-      saveCheckoutDetails: vi.fn(),
+      saveCheckoutDetails: vi.fn(async (bookingId, data, sessionId, userId) => {
+        const query = Types.ObjectId.isValid(bookingId) ? { _id: bookingId } : { bookingId };
+        const booking = await Booking.findOne(query);
+        if (!booking) {
+          throw AppError.notFound('Booking not found');
+        }
+        actual.PublicBookingService.assertBookingAccess(booking, { userId, sessionId }, 'ActiveCheckout');
+        return booking;
+      }),
       assertBookingAccess: actual.PublicBookingService.assertBookingAccess,
     },
   };
@@ -74,10 +85,16 @@ describe('PR 4a: Booking Ownership Characterization Tests', () => {
     sessionId: 'session-guest-123',
     userId: new Types.ObjectId(), // Linked to an authenticated user
     guestEmail: 'guest@example.com',
+    status: BookingStatus.CONFIRMED,
     totalTickets: 1,
     // confirmedAt far in the past — outside grace window — so guest session is denied (BOOKING_VERIFICATION_REQUIRED)
     confirmedAt: new Date(Date.now() - 60 * 60 * 1000), // 60 minutes ago
     createdAt: new Date(Date.now() - 60 * 60 * 1000),
+  };
+
+  const recentLinkedBooking = {
+    ...linkedBooking,
+    confirmedAt: new Date(), // confirmed right now (within grace window)
   };
 
   beforeEach(() => {
@@ -88,7 +105,7 @@ describe('PR 4a: Booking Ownership Characterization Tests', () => {
   // STAGE 1: Strict Ownership Sites (Should reject guest session access with 403)
   // ───────────────────────────────────────────────────────────────────────────
   describe('STRICT SITES (current behavior rejects guest access after user account linkage)', () => {
-    
+
     it('CURRENT BEHAVIOR (strict): getBooking blocks guest access after account link — see PR4 decision doc', async () => {
       vi.mocked(PublicBookingService.getBookingByReference).mockResolvedValue({
         booking: linkedBooking as any,
@@ -195,7 +212,7 @@ describe('PR 4a: Booking Ownership Characterization Tests', () => {
 
     it('CURRENT BEHAVIOR (strict): canViewTicketQR blocks guest access after account link — see PR4 decision doc', async () => {
       const ticket = { status: 'active', assignmentStatus: 'unassigned', bookingId: mockBookingId };
-      
+
       vi.mocked(Booking.findById).mockReturnValue({
         lean: vi.fn().mockResolvedValue(linkedBooking),
       } as any);
@@ -206,22 +223,28 @@ describe('PR 4a: Booking Ownership Characterization Tests', () => {
   });
 
   // ───────────────────────────────────────────────────────────────────────────
-  // STAGE 2: Lax Ownership Sites (Should permit guest session access)
+  // STAGE 2: Hybrid Sites (behavior permits guest access only within the grace window)
   // ───────────────────────────────────────────────────────────────────────────
-  describe('LAX SITES (current behavior permits guest access even after user account linkage)', () => {
-    
-    it('CURRENT BEHAVIOR (lax): PaymentService.assertBookingOwnership allows guest verification post-link — see PR4 decision doc', () => {
-      const assertCall = () => {
+  describe('HYBRID SITES (behavior permits guest access only within the grace window)', () => {
+
+    it('PaymentService.assertBookingOwnership allows guest verification within grace window, blocks after expiration', () => {
+      // 1. Within grace window should succeed
+      expect(() => {
+        (PaymentService as any).assertBookingOwnership(recentLinkedBooking, {
+          sessionId: 'session-guest-123',
+        });
+      }).not.toThrow();
+
+      // 2. Outside grace window should fail
+      expect(() => {
         (PaymentService as any).assertBookingOwnership(linkedBooking, {
           sessionId: 'session-guest-123',
         });
-      };
-
-      expect(assertCall).not.toThrow();
+      }).toThrow(AppError);
     });
 
-    it('CURRENT BEHAVIOR (lax): PublicBookingService.saveCheckoutDetails allows guest updates post-link — see PR4 decision doc', async () => {
-      vi.mocked(Booking.findOne).mockResolvedValue(linkedBooking as any);
+    it('PublicBookingService.saveCheckoutDetails allows guest updates post-link only within grace window', async () => {
+      vi.mocked(Booking.findOne).mockResolvedValue(recentLinkedBooking as any);
 
       const updateCall = async () => {
         await PublicBookingService.saveCheckoutDetails(
@@ -238,10 +261,15 @@ describe('PR 4a: Booking Ownership Characterization Tests', () => {
       };
 
       await expect(updateCall()).resolves.not.toThrow();
+
+      // Outside grace window:
+      vi.mocked(Booking.findOne).mockResolvedValue(linkedBooking as any);
+      await expect(updateCall()).rejects.toThrow(AppError);
     });
 
-    it('CURRENT BEHAVIOR (lax): Socket booking:join allows guest connection post-link', async () => {
-      vi.mocked(Booking.findById).mockResolvedValue(linkedBooking as any);
+    it('Socket booking:join allows guest connection only within grace window', async () => {
+      // 1. Within grace window: socket join succeeds
+      vi.mocked(Booking.findById).mockResolvedValue(recentLinkedBooking as any);
 
       const socket: any = {
         id: 'socket-123',
@@ -255,16 +283,42 @@ describe('PR 4a: Booking Ownership Characterization Tests', () => {
 
       registerSocketHandlers(socket);
 
-      // Extract the 'booking:join' listener
       const joinCall = socket.on.mock.calls.find((call) => call[0] === 'booking:join');
       expect(joinCall).toBeDefined();
 
-      const listener = joinCall[1];
+      let listener = joinCall[1];
       await listener({ bookingId: mockBookingId.toString() });
 
       // Verify that join was successful and did not trigger a 403 emission
       expect(socket.join).toHaveBeenCalledWith(`booking:${mockBookingId.toString()}`);
       expect(socket.emit).toHaveBeenCalledWith('booking:join:status', { success: true, bookingId: mockBookingId.toString() });
+
+      // 2. Outside grace window: socket join fails
+      vi.clearAllMocks();
+      vi.mocked(Booking.findById).mockResolvedValue(linkedBooking as any);
+
+      const socketExpired: any = {
+        id: 'socket-123',
+        data: {
+          sessionId: 'session-guest-123',
+        },
+        on: vi.fn(),
+        join: vi.fn(),
+        emit: vi.fn(),
+      };
+
+      registerSocketHandlers(socketExpired);
+
+      const joinCallExpired = socketExpired.on.mock.calls.find((call) => call[0] === 'booking:join');
+      let listenerExpired = joinCallExpired[1];
+      await listenerExpired({ bookingId: mockBookingId.toString() });
+
+      expect(socketExpired.join).not.toHaveBeenCalled();
+      expect(socketExpired.emit).toHaveBeenCalledWith('booking:join:status', {
+        success: false,
+        bookingId: mockBookingId.toString(),
+        message: 'Forbidden: You do not own this booking',
+      });
     });
   });
 });

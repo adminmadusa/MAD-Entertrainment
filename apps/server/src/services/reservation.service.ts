@@ -1,16 +1,16 @@
-import { BookingMode, InventoryState, ReservationStatus, SeatStatus, TicketTier, HTTP_STATUS } from '@mad/shared';
 import { Types, ClientSession } from 'mongoose';
+
+import { BookingMode, InventoryState, ReservationStatus, SeatStatus, TicketTier, HTTP_STATUS } from '@mad/shared';
 
 import { getRedis } from '../config/redis';
 import { emitToAdmin, emitToEvent } from '../config/socket';
 import { AppError } from '../middleware/error.middleware';
 import { Event } from '../models/event.schema';
-import { CacheService } from './cache.service';
 import { Reservation, IReservation } from '../models/reservation.schema';
 import { SeatLayout } from '../models/seat-layout.schema';
-import { logger } from '../utils/logger';
 import { auditLog } from '../utils/audit';
-
+import { logger } from '../utils/logger';
+import { CacheService } from './cache.service';
 import { assertReservationTransition, reservationToInventoryState } from './inventory-state.service';
 
 const ACTIVE_RESERVATION_STATUSES = [
@@ -255,7 +255,7 @@ export class ReservationService {
       });
 
       const previousStatus = reservation.status;
-      
+
       // Perform database-level atomic update to prevent double transition and double capacity releases
       const updatedReservation = await Reservation.findOneAndUpdate(
         { _id: reservation._id, status: previousStatus },

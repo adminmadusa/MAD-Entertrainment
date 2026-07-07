@@ -16,5 +16,5 @@ if (
 // injected at build time by Vercel or locally via .env files.
 // No fallback values are provided – the build will fail if the vars are missing.
 
-export const API_URL = process.env.NEXT_PUBLIC_API_URL!;
+export const API_URL = typeof window !== 'undefined' ? '/api' : process.env.NEXT_PUBLIC_API_URL!;
 export const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL!;

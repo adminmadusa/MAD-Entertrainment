@@ -1,6 +1,6 @@
 # Admin Mobile Shell UX Audit
-**MAD Entertrainment Admin Platform**  
-*Document Status: Draft / Audit Only*  
+**MAD Entertrainment Admin Platform**
+*Document Status: Draft / Audit Only*
 *Target Branch: `feat/admin-mobile-shell`*
 
 ---
@@ -24,13 +24,13 @@ graph TD
     ErrorBoundary --> AdminShell["AdminShell (apps/admin/src/components/AdminShell.tsx)"]
 
     AdminShell --> FlexContainer["div class='flex h-screen bg-background overflow-hidden'"]
-    
+
     FlexContainer --> AdminSidebar["AdminSidebar (apps/admin/src/components/AdminSidebar.tsx)"]
     FlexContainer --> MainArea["div class='flex flex-col flex-1 min-w-0 overflow-hidden'"]
-    
+
     MainArea --> Topbar["Header class='h-16 flex-shrink-0 flex items-center justification-between px-6 border-b ...'"]
     MainArea --> PageContent["Main class='flex-1 overflow-y-auto p-6'"]
-    
+
     PageContent --> ActiveView["Active Page View (Dashboard, Bookings, Events, Talent, etc.)"]
 ```
 
@@ -164,7 +164,7 @@ To achieve the mobile shell UX refactor, we only need to modify **two key layout
     ```tsx
     // Root container styling
     className={`
-      fixed inset-y-0 left-0 z-50 flex flex-col h-full bg-background-card border-r border-border-subtle 
+      fixed inset-y-0 left-0 z-50 flex flex-col h-full bg-background-card border-r border-border-subtle
       md:static md:translate-x-0 transition-transform duration-300 ease-in-out
       ${mobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
     `}

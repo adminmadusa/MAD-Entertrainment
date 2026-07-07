@@ -1,6 +1,5 @@
-import { Coupon, PaginatedDataResponse, PaginatedItemsResponse } from '@mad/types';
-
 import { adminApiClient } from '@/lib/api/client';
+import type { Coupon, PaginatedDataResponse, PaginatedItemsResponse } from '@mad/types';
 
 export type CouponsResponse = PaginatedDataResponse<Coupon>;
 

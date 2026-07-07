@@ -1,16 +1,10 @@
 import React from 'react';
 
+import { FormField } from '@mad/ui';
+
 const inputCls =
   'w-full px-4 py-2.5 rounded-xl bg-background border border-border-subtle text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-purple transition-colors';
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div className="space-y-1.5">
-      <label className="text-text-secondary text-sm font-medium block">{label}</label>
-      {children}
-    </div>
-  );
-}
 
 export interface EventAdditionalDetailsCardProps {
   organizerName: string;
@@ -33,7 +27,7 @@ export const EventAdditionalDetailsCard = React.memo(function EventAdditionalDet
     <div className="glass rounded-2xl border border-border-subtle p-6 space-y-5">
       <h2 className="text-white font-semibold">Additional Details</h2>
       <div className="grid grid-cols-2 gap-4">
-        <Field label="Organizer Name">
+        <FormField label="Organizer Name">
           <input
             id="event-organizer"
             value={organizerName}
@@ -41,8 +35,8 @@ export const EventAdditionalDetailsCard = React.memo(function EventAdditionalDet
             placeholder="e.g. Ellen Colby, The MARM Farm"
             className={inputCls}
           />
-        </Field>
-        <Field label="Highlights (comma separated)">
+        </FormField>
+        <FormField label="Highlights (comma separated)">
           <input
             id="event-highlights"
             value={highlightsInput}
@@ -50,9 +44,9 @@ export const EventAdditionalDetailsCard = React.memo(function EventAdditionalDet
             placeholder="e.g. 12 hours, In person, Family friendly"
             className={inputCls}
           />
-        </Field>
+        </FormField>
       </div>
-      <Field label="Refund Policy">
+      <FormField label="Refund Policy">
         <textarea
           id="event-refund-policy"
           value={refundPolicy}
@@ -61,7 +55,7 @@ export const EventAdditionalDetailsCard = React.memo(function EventAdditionalDet
           rows={2}
           className={`${inputCls} resize-none`}
         />
-      </Field>
+      </FormField>
     </div>
   );
 });

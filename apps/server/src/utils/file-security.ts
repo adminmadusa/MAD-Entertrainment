@@ -1,7 +1,9 @@
-import path from 'path';
 import crypto from 'crypto';
-import { AppError } from '../middleware/error.middleware';
+import path from 'path';
+
 import { UPLOAD_CONSTANTS } from '@mad/validations';
+
+import { AppError } from '../middleware/error.middleware';
 
 /**
  * Validates the file extension to prevent double extensions (e.g. image.php.png)
@@ -80,7 +82,7 @@ export function validateMagicBytes(buffer: Buffer, mimetype: string) {
 }
 
 /**
- * Generates a completely secure, random UUID filename to prevent 
+ * Generates a completely secure, random UUID filename to prevent
  * path traversal, overwrites, or execution based on filename guessing.
  */
 export function generateSecureFilename() {

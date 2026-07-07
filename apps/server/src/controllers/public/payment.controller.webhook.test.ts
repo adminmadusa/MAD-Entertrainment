@@ -1,12 +1,14 @@
 /**
  * Payment Controller — Webhook Integrity Guards Tests
  */
-import { describe, it, expect, vi, beforeEach } from 'vitest';
 import crypto from 'crypto';
-import { razorpayWebhook, stripeWebhook } from './payment.controller';
+
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+
+import { getStripe } from '../../config/stripe';
 import { WebhookEvent } from '../../models/webhook-event.schema';
 import { PaymentService } from '../../services/public/payment.service';
-import { getStripe } from '../../config/stripe';
+import { razorpayWebhook, stripeWebhook } from './payment.controller';
 
 // ─── Module mocks ─────────────────────────────────────────────
 
@@ -408,7 +410,7 @@ describe('stripeWebhook — audit trail preservation', () => {
   it('preserves the original status of a Stripe success record after duplicate delivery', async () => {
     const eventId = 'evt_stripe_test_456';
     mockStripeConstructEvent(eventId);
-    
+
     const req = makeStripeRequest(eventId);
     const res = makeResponse();
 
@@ -670,4 +672,3 @@ describe('razorpayWebhook — refund reconciliation routing', () => {
     expect(res.status).toHaveBeenCalledWith(200);
   });
 });
-

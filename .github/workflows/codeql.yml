@@ -1,0 +1,52 @@
+# GOV-002: CodeQL Security Analysis
+# Runs automated static application security testing (SAST) for JavaScript/TypeScript.
+# Complements TruffleHog (secret scanning) and dependency-audit.ts (known CVEs)
+# by analysing application source code for code-level vulnerabilities.
+#
+# Issue: https://github.com/adminmadusa/MAD-Entertrainment/issues/544
+
+name: CodeQL Security Analysis
+
+on:
+  push:
+    branches:
+      - develop
+      - live
+  pull_request:
+    branches:
+      - develop
+      - live
+  schedule:
+    # Run every Sunday at 00:00 UTC to catch new advisories on the default branch.
+    - cron: "0 0 * * 0"
+
+jobs:
+  analyze:
+    name: Analyze (javascript-typescript)
+    runs-on: ubuntu-latest
+
+    permissions:
+      # Required to read repository contents.
+      contents: read
+      # Required to upload SARIF results to GitHub Code Scanning.
+      security-events: write
+      # Required for CodeQL to post PR annotations.
+      actions: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript-typescript
+          # Use the default security-and-quality query suite.
+          queries: security-and-quality
+
+      # CodeQL auto-builds JavaScript/TypeScript; no manual build step required.
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:javascript-typescript"

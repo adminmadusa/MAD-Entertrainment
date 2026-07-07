@@ -1,29 +1,22 @@
 'use client';
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { BookingStatus, AdminRole } from '@mad/shared';
 import { AnimatePresence } from 'framer-motion';
-import { useState, useEffect, Suspense, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { useAdminAuth } from '@/providers/AdminAuthProvider';
+import { useState, useEffect, Suspense, useMemo } from 'react';
 
-import {
-  adminGetBookings,
-  adminCancelBooking,
-  adminCorrectBookingEmail,
-  adminResendBookingTickets,
-  adminGetBookingsSummary,
-  type AdminBooking,
-} from '@/lib/api/admin/booking.service';
-import { adminGetEvents } from '@/lib/api/admin/event.service';
 import BookingsSummaryWidget from '@/components/bookings/BookingsSummaryWidget';
-import ErrorState from '@/components/states/ErrorState';
+import { adminGetBookings, adminCancelBooking, adminCorrectBookingEmail, adminResendBookingTickets, adminGetBookingsSummary, type AdminBooking, } from '@/lib/api/admin/booking.service';
+import { adminGetEvents } from '@/lib/api/admin/event.service';
+import { useAdminAuth } from '@/providers/AdminAuthProvider';
+import { BookingStatus, AdminRole } from '@mad/shared';
+import { ErrorState, LoadingState } from '@mad/ui';
 
+import BookingDetailsModal from './_components/BookingDetailsModal';
 import BookingFilters from './_components/BookingFilters';
 import BookingsTable from './_components/BookingsTable';
 import CancelBookingModal from './_components/CancelBookingModal';
 import CorrectEmailModal from './_components/CorrectEmailModal';
-import BookingDetailsModal from './_components/BookingDetailsModal';
 
 const BOOKING_STATUS_FILTERS = [
   BookingStatus.AWAITING_PAYMENT,
@@ -235,7 +228,7 @@ function BookingsContent() {
 
 export default function AdminBookingsPage() {
   return (
-    <Suspense fallback={<div className="py-12 text-center text-text-muted">Loading bookings...</div>}>
+    <Suspense fallback={<LoadingState label="Loading bookings..." />}>
       <BookingsContent />
     </Suspense>
   );

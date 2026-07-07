@@ -1,4 +1,5 @@
 import { Metadata } from 'next';
+
 import { SupportHubClient } from '@/components/support/SupportHubClient';
 
 export const metadata: Metadata = {

@@ -1,0 +1,15 @@
+{
+  "id": "git",
+  "name": "Git Governance Provider",
+  "version": "1.0.0",
+  "engine": "^1.0.0",
+  "api": "1.0",
+  "description": "Reference implementation of GovernanceProvider for Git repository analysis. Covers branch hygiene, lifecycle classification, duplicate detection, and repository health scoring.",
+  "rules": [
+    "git.branch.stale",
+    "git.branch.orphaned",
+    "git.branch.duplicate",
+    "git.branch.naming",
+    "git.ancestry.lag"
+  ]
+}

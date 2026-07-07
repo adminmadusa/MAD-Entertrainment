@@ -1,6 +1,5 @@
-import { Admin, PaginatedDataResponse, PaginatedItemsResponse } from '@mad/types';
-
 import { adminApiClient } from '@/lib/api/client';
+import type { Admin, PaginatedDataResponse, PaginatedItemsResponse } from '@mad/types';
 
 export type AdminsResponse = PaginatedDataResponse<Admin>;
 

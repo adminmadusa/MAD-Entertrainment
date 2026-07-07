@@ -1,11 +1,13 @@
 import { Request, Response, NextFunction } from 'express';
+
+import { NotificationType } from '@mad/shared';
+
+import { getQueueName } from '../../config/queue.config';
+import { AppError } from '../../middleware/error.middleware';
 import { Booking } from '../../models/booking.schema';
 import { Suppression } from '../../models/suppression.schema';
 import { UserModel } from '../../models/user.schema';
 import { QueueService } from '../../services/queue.service';
-import { getQueueName } from '../../config/queue.config';
-import { NotificationType } from '@mad/shared';
-import { AppError } from '../../middleware/error.middleware';
 import { logger } from '../../utils/logger';
 
 export class MarketingController {

@@ -1,36 +1,29 @@
 'use client';
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { AnimatePresence } from 'framer-motion';
+import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
-import dynamic from 'next/dynamic';
-
-import { QUERY_KEYS, BookingStatus } from '@mad/shared';
-import { Event, Booking, Ticket } from '@mad/types';
-import { useCountdown } from '@/hooks/use-countdown.hook';
 import { useCheckoutViewportController } from '@/hooks/use-checkout-viewport-controller';
+import { useCountdown } from '@/hooks/use-countdown.hook';
 import { extractApiError } from '@/lib/api/client';
+import { publicGetBookingDetails, publicCreatePaymentIntent, publicVerifyPayment, publicSaveCheckoutDetails, getStoredGuestBookingSession, type PaymentIntentResponse } from '@/lib/api/public.service';
 import { loadScriptOnce } from '@/lib/utils/load-script-once';
-import { 
-  publicGetBookingDetails, 
-  publicCreatePaymentIntent, 
-  publicVerifyPayment, 
-  publicSaveCheckoutDetails,
-  getStoredGuestBookingSession,
-  PaymentIntentResponse
-} from '@/lib/api/public.service';
+import { BookingStatus, QUERY_KEYS } from '@mad/shared';
+import type { Booking, Event, Ticket } from '@mad/types';
 import { CheckoutDetailsInput } from '@mad/validations';
 
+import { CheckoutForm } from './checkout/CheckoutForm';
+import { CheckoutPayment } from './checkout/CheckoutPayment';
+import { CheckoutPricing } from './checkout/CheckoutPricing';
 import { useCheckoutNavGuard } from './checkout/useCheckoutNavGuard';
+
 const LeaveCheckoutModal = dynamic(() => import('./checkout/LeaveCheckoutModal').then(mod => mod.LeaveCheckoutModal), {
   ssr: false,
 });
-import { CheckoutForm } from './checkout/CheckoutForm';
-import { CheckoutPricing } from './checkout/CheckoutPricing';
-import { CheckoutPayment } from './checkout/CheckoutPayment';
 
 interface RazorpayInstance {
   open(): void;
@@ -90,8 +83,6 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
 
   const booking = details?.booking;
   const event = asEvent((booking as Booking | undefined)?.eventId);
-
-
 
   const handleViewTickets = () => {
     allowNavigation();
@@ -183,6 +174,7 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
             email: booking.guestEmail,
           },
           theme: {
+            // governance-ignore VAL-UI-007: Razorpay payment gateway API requires a literal hex color value; CSS variables are not supported by this external SDK
             color: '#8b5cf6',
           },
           modal: {
@@ -263,11 +255,11 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
 
   if (booking && booking.status === BookingStatus.CONFIRMED) {
     return (
-      <div className={isModal ? "relative text-white p-6 text-center space-y-6" : "pt-24 pb-24 min-h-screen bg-[#0d111d] text-white relative overflow-x-hidden flex flex-col items-center justify-center w-full px-4"}>
+      <div className={isModal ? "relative text-white p-6 text-center space-y-6" : "pt-24 pb-24 min-h-screen bg-background text-white relative overflow-x-hidden flex flex-col items-center justify-center w-full px-4"}>
         {!isModal && (
           <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-accent-purple/5 rounded-full blur-[150px] pointer-events-none" />
         )}
-        
+
         <div className="max-w-md w-full glass rounded-3xl border border-white/10 p-8 text-center space-y-6 shadow-glow relative z-10">
           {/* Glowing Checkmark */}
           <div className="flex justify-center">
@@ -296,8 +288,6 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
           <p className="text-xs text-text-muted leading-relaxed">
             We have sent your confirmation email and tickets to <span className="text-white font-semibold">{booking.guestEmail || 'your email'}</span>.
           </p>
-
-
 
           {/* Action Buttons */}
           <div className="pt-2 flex flex-col gap-3">
@@ -345,13 +335,13 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
   }
 
   return (
-    <div className={isModal ? "relative text-white" : "pt-24 pb-24 min-h-screen bg-[#0d111d] text-white relative overflow-x-hidden flex flex-col items-center justify-center"}>
+    <div className={isModal ? "relative text-white" : "pt-24 pb-24 min-h-screen bg-background text-white relative overflow-x-hidden flex flex-col items-center justify-center"}>
       {!isModal && (
         <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-accent-purple/5 rounded-full blur-[150px] pointer-events-none" />
       )}
 
       {/* Sticky Top Checkout Header */}
-      <div className={isModal ? "sticky top-0 bg-[#0d111d] border-b border-white/10 py-3 z-50 shadow-md" : "fixed top-0 left-0 right-0 bg-[#0d111d]/90 backdrop-blur-md border-b border-white/10 py-3 z-50 shadow-md"}>
+      <div className={isModal ? "sticky top-0 bg-background border-b border-white/10 py-3 z-50 shadow-md" : "fixed top-0 left-0 right-0 bg-background/90 backdrop-blur-md border-b border-white/10 py-3 z-50 shadow-md"}>
         <div className="container-mad max-w-4xl px-4 flex items-center justify-between">
           <button
             type="button"
@@ -361,7 +351,7 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
           >
             ←
           </button>
-          
+
           <div className="text-center">
             <h1 id="checkout-modal-title" className="text-sm font-bold text-white tracking-wide">Checkout</h1>
             <div className={`text-[10px] font-semibold mt-0.5 ${isExpired ? 'text-red-400' : 'text-accent-cyan animate-pulse'}`}>
@@ -390,7 +380,7 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           {/* Left Column: Event summary card & Billing details */}
           <div className="lg:col-span-8 space-y-4">
-            
+
             {/* Event Summary Card */}
             {event && (
               <div className="glass rounded-2xl border border-white/5 p-4 flex gap-4 items-center">
@@ -459,7 +449,7 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
 
       {/* Sticky Place Order Footer (Mobile Only) */}
       {!viewport.isKeyboardOpen && (
-        <div className={isModal ? "sticky bottom-0 z-40 bg-[#0d111d]/95 border-t border-white/10 py-3 mt-8 shadow-2xl lg:hidden" : "fixed bottom-0 left-0 right-0 z-40 bg-[#0d111d]/95 backdrop-blur-lg border-t border-white/10 shadow-2xl lg:hidden"}>
+        <div className={isModal ? "sticky bottom-0 z-40 bg-background/95 border-t border-white/10 py-3 mt-8 shadow-2xl lg:hidden" : "fixed bottom-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-lg border-t border-white/10 shadow-2xl lg:hidden"}>
           <div className="container-mad max-w-4xl px-4 py-3 pb-[calc(1rem+env(safe-area-inset-bottom))] flex items-center gap-4">
             <div className="flex-1">
               <div className="text-[10px] text-text-muted font-semibold uppercase tracking-wider">Total Amount</div>
@@ -487,7 +477,7 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
           </div>
         )}
       </AnimatePresence>
-      
+
       {/* Leave Checkout Confirmation Modal */}
       <LeaveCheckoutModal
         isOpen={isLeaveModalOpen}

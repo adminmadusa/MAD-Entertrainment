@@ -1,8 +1,9 @@
 import { describe, it, expect } from 'vitest';
+
 import { formatDate, formatDateTime, formatEventDate } from './date';
 
 describe('Date Utilities - GOV-001F1 Extraction', () => {
-  
+
   describe('formatDate', () => {
     // TC-001: Valid date with defaults (UTC)
     it('should format a valid date with default options (UTC, en-US)', () => {
@@ -94,7 +95,7 @@ describe('Date Utilities - GOV-001F1 Extraction', () => {
     it('should format event dates using manual, timezone-invariant UTC getters', () => {
       const dateStr = '2026-05-23T00:00:00.000Z';
       expect(formatEventDate(dateStr)).toBe('Sat, May 23, 2026');
-      
+
       const dateObj = new Date('2026-05-23T18:30:00.000Z');
       expect(formatEventDate(dateObj)).toBe('Sat, May 23, 2026');
     });

@@ -1,18 +1,19 @@
-import { Worker, WorkerOptions, Job } from 'bullmq';
 import * as Sentry from '@sentry/node';
+import { Worker, WorkerOptions, Job } from 'bullmq';
 
-import { getQueueConnection, getQueueName, getQueuePrefix } from '../config/queue.config';
+import { NotificationType } from '@mad/shared';
+
 import { getEnv } from '../config/env';
+import { getQueueConnection, getQueueName, getQueuePrefix } from '../config/queue.config';
 import { isRedisConnected } from '../config/redis';
 import { Booking } from '../models/booking.schema';
-import { Event } from '../models/event.schema';
 import { DeadLetterJob } from '../models/dead-letter-job.schema';
+import { Event } from '../models/event.schema';
 import { Notification } from '../models/notification.schema';
-import { QueueService } from '../services/queue.service';
 import { createNotificationSafe } from '../services/notification.service';
-import { generateTicketPDF } from '../utils/pdf';
-import { NotificationType } from '@mad/shared';
+import { QueueService } from '../services/queue.service';
 import { logger } from '../utils/logger';
+import { generateTicketPDF } from '../utils/pdf';
 
 const QUEUE_NAME = getQueueName('pdf-queue');
 
@@ -61,7 +62,7 @@ export async function processPDFGenerate(
       <h2>Hi ${booking.guestName},</h2>
       <p>Your booking <strong>${booking.bookingId}</strong> for the event <strong>"${event.title || 'MAD Event'}"</strong> has been successfully confirmed!</p>
       <p>Please find your ticket attached as a PDF document. You can present the QR code at the gate for entry.</p>
-      
+
       <div style="margin: 30px 0; text-align: center;">
         <a href="${ticketUrl}" style="background-color: #8B5CF6; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block; margin-bottom: 10px;">View Ticket Online</a>
         <br/>
@@ -78,8 +79,6 @@ export async function processPDFGenerate(
       <p>MAD Entertainment Team</p>
     </div>
   `;
-
-
 
   // Unify notification creation under createNotificationSafe
   const notification = await createNotificationSafe({

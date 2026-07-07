@@ -1,0 +1,37 @@
+import React, { forwardRef } from 'react';
+import { cn } from '../../lib/cn';
+import { Label } from '../../primitives/Label';
+import { FormFieldProps } from './FormField.types';
+import { formFieldContainerClasses, formFieldErrorClasses } from './FormField.styles';
+
+export const FormField = forwardRef<HTMLDivElement, FormFieldProps>(
+  ({ className, label, htmlFor, hint, error, required = false, children, ...props }, ref) => {
+    const errorId = htmlFor ? `${htmlFor}-error` : undefined;
+
+    const childrenWithProps = React.Children.map(children, (child) => {
+      if (React.isValidElement(child)) {
+        const element = child as React.ReactElement<any>;
+        const childProps: Record<string, any> = {};
+        if (error) {
+          childProps.error = error;
+        }
+        if (htmlFor && !element.props.id) {
+          childProps.id = htmlFor;
+        }
+        return React.cloneElement(element, childProps);
+      }
+      return child;
+    });
+
+    return (
+      <div ref={ref} className={cn(formFieldContainerClasses, className)} {...props}>
+        <Label htmlFor={htmlFor} required={required} hint={hint}>
+          {label}
+        </Label>
+        {childrenWithProps}
+      </div>
+    );
+  }
+);
+
+FormField.displayName = 'FormField';

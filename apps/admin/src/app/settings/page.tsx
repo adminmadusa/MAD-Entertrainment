@@ -3,13 +3,12 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
-import { useAdminAuth } from '@/providers/AdminAuthProvider';
-import { AdminRole } from '@mad/shared';
-
 
 import { adminGetCategories, adminCreateCategory, adminUpdateCategory, adminDeleteCategory, type AdminCategory } from '@/lib/api/admin/category.service';
 import { adminGetTiers, adminCreateTier, adminUpdateTier, adminDeleteTier, type AdminTier } from '@/lib/api/admin/tier.service';
 import { extractApiError } from '@/lib/api/client';
+import { useAdminAuth } from '@/providers/AdminAuthProvider';
+import { AdminRole } from '@mad/shared';
 
 export default function SettingsPage() {
   const { admin } = useAdminAuth();

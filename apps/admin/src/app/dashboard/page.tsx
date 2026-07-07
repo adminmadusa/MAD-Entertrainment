@@ -2,22 +2,18 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Suspense, useState } from 'react';
-import dynamic from 'next/dynamic';
 
-import { useAdminAuth } from '@/providers/AdminAuthProvider';
-import { AdminRole, EventStatus, BOOKING_REFERENCE_REGEX } from '@mad/shared';
-import { formatDateTime } from '@mad/utils';
-import {
-  adminGetDashboardSummary,
-  adminGetRevenueChart,
-  adminGetAttendanceSummary,
-  adminGetAttendanceRankings,
-} from '@/lib/api/admin/analytics.service';
+import { adminGetDashboardSummary, adminGetRevenueChart, adminGetAttendanceSummary, adminGetAttendanceRankings, } from '@/lib/api/admin/analytics.service';
 import { adminGetConsistencyReport, adminGetWebhooks, adminGetEmailLogs } from '@/lib/api/admin/diagnostics.service';
 import { adminGetEvents } from '@/lib/api/admin/event.service';
+import { useAdminAuth } from '@/providers/AdminAuthProvider';
+import { AdminRole, EventStatus, BOOKING_REFERENCE_REGEX } from '@mad/shared';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@mad/ui';
+import { formatDateTime } from '@mad/utils';
 
 const RevenueChartWidget = dynamic(
   () => import('@/components/dashboard/RevenueChartWidget'),
@@ -226,7 +222,7 @@ function DashboardContent() {
             <h2 className="text-white font-semibold">Global Operational Search</h2>
             <p className="text-text-muted text-xs mt-0.5">Locate customer bookings instantly by email or reference number</p>
           </div>
-          
+
           <form onSubmit={handleGlobalSearch} className="space-y-2">
             <div className="flex flex-col sm:flex-row gap-3">
               <input
@@ -353,7 +349,7 @@ function DashboardContent() {
               {todaysEvents.length} Active {todaysEvents.length === 1 ? 'Event' : 'Events'}
             </span>
           </div>
-          
+
           {isEventsLoading ? (
             <div className="p-8 text-center text-text-muted animate-pulse">Loading active schedule...</div>
           ) : todaysEvents.length === 0 ? (
@@ -369,7 +365,7 @@ function DashboardContent() {
                 const sold = event.ticketsSold ?? 0;
                 const capacity = event.totalCapacity ?? 1;
                 const pct = Math.min(100, Math.round((sold / capacity) * 100));
-                
+
                 return (
                   <div key={event._id} className="p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-white/2 transition-colors">
                     <div className="space-y-1">
@@ -382,16 +378,16 @@ function DashboardContent() {
                         Gates: {formatDateTime(event.startDate, { hour: '2-digit', minute: '2-digit' })}
                       </p>
                     </div>
-                    
+
                     <div className="w-full sm:w-48 space-y-1.5">
                       <div className="flex justify-between text-xs">
                         <span className="text-text-secondary">Capacity Sold ({pct}%)</span>
                         <span className="text-white font-semibold">{sold} / {capacity}</span>
                       </div>
                       <div className="w-full bg-white/5 border border-white/10 rounded-full h-2.5 overflow-hidden">
-                        <div 
-                          className="bg-accent-purple h-full rounded-full transition-all duration-500" 
-                          style={{ width: `${pct}%` }} 
+                        <div
+                          className="bg-accent-purple h-full rounded-full transition-all duration-500"
+                          style={{ width: `${pct}%` }}
                         />
                       </div>
                     </div>
@@ -427,26 +423,24 @@ function DashboardContent() {
           <div className="px-6 py-4 border-b border-border-subtle">
             <h2 className="text-white font-semibold">Top Events by Revenue</h2>
           </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-border-subtle">
-                  <th className="text-left text-text-muted font-medium py-3 px-6">Event</th>
-                  <th className="text-left text-text-muted font-medium py-3 px-4">Bookings</th>
-                  <th className="text-right text-text-muted font-medium py-3 px-6">Net Revenue</th>
-                </tr>
-              </thead>
-              <tbody>
-                {summary.topEvents.map((ev) => (
-                  <tr key={ev._id} className="border-b border-border-subtle/40 hover:bg-white/2">
-                    <td className="py-3.5 px-6 text-text-primary">{ev.event?.title ?? 'Deleted Event'}</td>
-                    <td className="py-3.5 px-4 text-text-secondary">{ev.count}</td>
-                    <td className="py-3.5 px-6 text-right text-white font-semibold">₹{ev.revenue.toLocaleString('en-IN')}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="py-3 px-6">Event</TableHead>
+                <TableHead className="py-3 px-4">Bookings</TableHead>
+                <TableHead className="py-3 px-6 text-right">Net Revenue</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {summary.topEvents.map((ev) => (
+                <TableRow key={ev._id} className="border-b border-border-subtle/40 hover:bg-white/2">
+                  <TableCell className="py-3.5 px-6 text-text-primary">{ev.event?.title ?? 'Deleted Event'}</TableCell>
+                  <TableCell className="py-3.5 px-4 text-text-secondary">{ev.count}</TableCell>
+                  <TableCell className="py-3.5 px-6 text-right text-white font-semibold">₹{ev.revenue.toLocaleString('en-IN')}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         </div>
       )}
     </div>

@@ -1,13 +1,11 @@
 import { Request, Response } from 'express';
-import { AppError } from '../../middleware/error.middleware';
-import { sendSuccess } from '../../utils/response';
-import { 
-  validateFilenameAndExtension, 
-  validateMagicBytes, 
-  generateSecureFilename 
-} from '../../utils/file-security';
-import { UploadService } from '../../services/admin/upload.service';
+
 import { uploadImageQuerySchema } from '@mad/validations';
+
+import { AppError } from '../../middleware/error.middleware';
+import { UploadService } from '../../services/admin/upload.service';
+import { validateFilenameAndExtension, validateMagicBytes, generateSecureFilename } from '../../utils/file-security';
+import { sendSuccess } from '../../utils/response';
 
 export const uploadImage = async (req: Request, res: Response) => {
   // 1. Ensure file exists (multer handles parsing it into req.file)

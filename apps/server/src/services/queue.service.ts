@@ -2,8 +2,8 @@ import { Queue, QueueOptions } from 'bullmq';
 
 import { getQueueConnection, getQueuePrefix, getQueueName } from '../config/queue.config';
 import { isRedisConnected } from '../config/redis';
-import { logger } from '../utils/logger';
 import { AppError } from '../middleware/error.middleware';
+import { logger } from '../utils/logger';
 
 export interface QueueControlStatus {
   name: string;

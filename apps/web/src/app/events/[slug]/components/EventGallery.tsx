@@ -1,8 +1,9 @@
 'use client';
 
-import { Event as EventData } from '@mad/types';
 import Image from 'next/image';
 import { useState } from 'react';
+
+import type { Event as EventData } from '@mad/types';
 
 type EventGalleryProps = {
   images?: EventData['galleryImages'];

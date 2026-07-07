@@ -1,4 +1,4 @@
-import { Booking } from '@mad/types';
+import type { Booking } from '@mad/types';
 
 interface CheckoutPricingProps {
   booking: Booking;

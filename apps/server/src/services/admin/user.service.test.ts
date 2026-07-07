@@ -1,6 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Types } from 'mongoose';
-
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 vi.mock('../../config/env', () => ({
   getEnv: vi.fn(() => ({
     NODE_ENV: 'test',
@@ -21,12 +20,12 @@ vi.mock('../../utils/logger', () => ({
   },
 }));
 
-import { AdminUserService } from './user.service';
-import { UserModel } from '../../models/user.schema';
 import { Booking } from '../../models/booking.schema';
-import { Ticket } from '../../models/ticket.schema';
-import { Refund } from '../../models/refund.schema';
 import { Payment } from '../../models/payment.schema';
+import { Refund } from '../../models/refund.schema';
+import { Ticket } from '../../models/ticket.schema';
+import { UserModel } from '../../models/user.schema';
+import { AdminUserService } from './user.service';
 
 vi.mock('../../models/user.schema', () => ({
   UserModel: {
@@ -152,7 +151,7 @@ describe('AdminUserService unit tests', () => {
     it('aggregates user metadata, confirmed spends using payments, and refunds correctly', async () => {
       const userId = new Types.ObjectId('60d5ec482f8fb814c489705a');
       const bookingId = new Types.ObjectId('60d5ec482f8fb814c489705b');
-      
+
       vi.mocked(UserModel.findById).mockReturnValue({
         lean: vi.fn().mockResolvedValue({
           _id: userId,

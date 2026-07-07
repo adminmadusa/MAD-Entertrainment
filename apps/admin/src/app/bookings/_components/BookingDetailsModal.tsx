@@ -1,9 +1,10 @@
 'use client';
 
+import { Modal } from '@mad/ui';
+
+import { AdminBooking } from '@/lib/api/admin/booking.service';
 import { BookingStatus, getBookingStatusLabel } from '@mad/shared';
 import { formatDateTime, formatEventDate } from '@mad/utils';
-import { motion } from 'framer-motion';
-import { AdminBooking } from '@/lib/api/admin/booking.service';
 
 const STATUS_COLORS: Record<string, string> = {
   confirmed: 'bg-green-500/10 text-green-400 border-green-500/30',
@@ -55,18 +56,20 @@ export default function BookingDetailsModal({
   const sendBestEvents = customer?.sendBestEvents ? 'Yes' : 'No';
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-40 p-4">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.95 }}
-        className="glass-strong rounded-2xl border border-border-subtle p-6 max-w-lg w-full space-y-5 overflow-y-auto max-h-[90vh] scrollbar-thin"
-      >
-        <div className="flex items-center justify-between border-b border-white/10 pb-3">
-          <div>
-            <span className="text-xs text-text-muted font-mono uppercase tracking-wider">Booking ID</span>
-            <h3 className="text-white text-lg font-black font-mono mt-0.5">{booking.bookingId}</h3>
-          </div>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      size="lg"
+      showCloseButton={false}
+      closeOnBackdropClick={true}
+      ariaLabelledBy="booking-details-title"
+      className="glass-strong border border-border-subtle p-6 max-w-lg overflow-y-auto max-h-[90vh] scrollbar-thin space-y-5"
+    >
+      <div className="flex items-center justify-between border-b border-white/10 pb-3">
+        <div>
+          <span id="booking-details-title" className="text-xs text-text-muted font-mono uppercase tracking-wider">Booking ID</span>
+          <h3 className="text-white text-lg font-black font-mono mt-0.5">{booking.bookingId}</h3>
+        </div>
           <span className={`text-xs px-3 py-1 rounded-full border font-semibold ${STATUS_COLORS[booking.status] ?? 'text-text-muted border-border-subtle'}`}>
             {getBookingStatusLabel(booking.status)}
           </span>
@@ -258,7 +261,6 @@ export default function BookingDetailsModal({
             </button>
           )}
         </div>
-      </motion.div>
-    </div>
+    </Modal>
   );
 }

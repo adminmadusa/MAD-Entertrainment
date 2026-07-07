@@ -11,7 +11,22 @@
     "test": "vitest run",
     "clean": "turbo clean && rm -rf node_modules .turbo",
     "audit-data": "tsx ./scripts/gather-audit-data.ts",
-    "governance:docs": "tsx scripts/governance/index.ts"
+    "governance:init": "pnpm --filter @esparex/governance-cli start init",
+    "governance:doctor": "pnpm --filter @esparex/governance-cli start doctor",
+    "governance:status": "pnpm --filter @esparex/governance-cli start status",
+    "governance:cleanup": "pnpm --filter @esparex/governance-cli start cleanup",
+    "governance:walkthrough": "pnpm --filter @esparex/governance-cli start walkthrough",
+    "governance:pr": "pnpm --filter @esparex/governance-cli start pr",
+    "governance:backlog": "pnpm --filter @esparex/governance-cli start backlog",
+    "governance:roadmap": "pnpm --filter @esparex/governance-cli start roadmap",
+    "governance:changelog": "pnpm --filter @esparex/governance-cli start changelog",
+    "governance:release": "pnpm --filter @esparex/governance-cli start release",
+    "governance:baseline": "pnpm --filter @esparex/governance-cli start baseline",
+    "governance:docs": "tsx scripts/governance/index.ts",
+    "governance:fix": "tsx scripts/governance/cli/fix.ts",
+    "governance:session": "tsx scripts/governance/cli/session.ts",
+    "governance:rollback": "tsx scripts/governance/cli/rollback.ts",
+    "governance:ui-baseline": "tsx scripts/governance/gather-ui-baseline.ts"
   },
   "devDependencies": {
     "@playwright/test": "^1.60.0",

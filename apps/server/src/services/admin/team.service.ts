@@ -1,8 +1,9 @@
 import bcrypt from 'bcryptjs';
-import { AdminModel, IAdmin } from '../../models/admin.schema';
-import { runInTransaction } from '../../utils/transaction';
-import { auditLog } from '../../utils/audit';
+
 import { AppError } from '../../middleware/error.middleware';
+import { AdminModel, IAdmin } from '../../models/admin.schema';
+import { auditLog } from '../../utils/audit';
+import { runInTransaction } from '../../utils/transaction';
 
 export const getAdmins = async (
   page: number = 1,

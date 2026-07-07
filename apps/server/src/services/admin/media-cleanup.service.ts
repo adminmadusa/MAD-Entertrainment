@@ -1,7 +1,7 @@
-import { logger } from '../../utils/logger';
-import { UploadService } from './upload.service';
 import { cloudinary } from '../../config/cloudinary';
 import { Event } from '../../models/event.schema';
+import { logger } from '../../utils/logger';
+import { UploadService } from './upload.service';
 
 /**
  * Perform asynchronous, fire-and-forget deletion of Cloudinary assets.

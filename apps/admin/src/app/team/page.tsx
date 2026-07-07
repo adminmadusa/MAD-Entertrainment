@@ -1,23 +1,15 @@
 'use client';
 
-import { AdminRole } from '@mad/shared';
-import { Admin } from '@mad/types';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
 
-import {
-  adminCreateAdmin,
-  adminGetAdmins,
-  adminResetAdminPassword,
-  adminToggleAdminActive,
-  adminUpdateAdmin,
-  adminUpdateAdminRole,
-} from '@/lib/api/admin/team.service';
+import { adminCreateAdmin, adminGetAdmins, adminResetAdminPassword, adminToggleAdminActive, adminUpdateAdmin, adminUpdateAdminRole, } from '@/lib/api/admin/team.service';
 import { adminApiClient, extractApiError } from '@/lib/api/client';
-import ErrorState from '@/components/states/ErrorState';
-import LoadingState from '@/components/states/LoadingState';
 import { useAdminAuth } from '@/providers/AdminAuthProvider';
+import { AdminRole } from '@mad/shared';
+import type { Admin } from '@mad/types';
+import { ErrorState, LoadingState } from '@mad/ui';
 
 import ChangeRoleModal from './_components/ChangeRoleModal';
 import EditAdminModal from './_components/EditAdminModal';

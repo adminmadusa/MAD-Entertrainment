@@ -1,48 +1,22 @@
 import { Router } from 'express';
-import { z } from 'zod';
 import { AdminRole } from '@mad/shared';
 
 import * as bookingController from '../../controllers/admin/booking.controller';
 import { requireAdmin, requireRole } from '../../middleware/auth.middleware';
 import { validate, validateQuery } from '../../middleware/validation.middleware';
-import { adminBookingIdentifierParamSchema, adminBookingsQuerySchema, adminIdParamSchema } from '../../validations/admin-content.validation';
+import {
+  adminBookingIdentifierParamSchema,
+  adminBookingsQuerySchema,
+  cancelBookingSchema,
+  correctBookingEmailSchema,
+  resendBookingTicketsSchema,
+  bookingsSummarySchema,
+} from '../../validations/admin-content.validation';
 
 const router: Router = Router();
 
 // All routes require admin
 router.use(requireAdmin);
-
-// Validation schema for cancel booking request
-const cancelBookingSchema = z.object({
-  body: z.object({
-    reason: z.string().max(500, 'Reason must be under 500 characters').optional(),
-  }),
-  params: adminIdParamSchema.shape.params,
-});
-
-// Validation schema for email correction request
-const correctBookingEmailSchema = z.object({
-  body: z.object({
-    newEmail: z.string().email('Invalid email address'),
-    reason: z
-      .string()
-      .min(5, 'Reason must be at least 5 characters')
-      .max(500, 'Reason must be under 500 characters'),
-  }),
-  params: adminIdParamSchema.shape.params,
-});
-
-// Validation schema for ticket resend request
-const resendBookingTicketsSchema = z.object({
-  params: adminIdParamSchema.shape.params,
-});
-
-// Validation schema for bookings summary request
-const bookingsSummarySchema = z.object({
-  query: z.object({
-    eventId: z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid event ID format').optional(),
-  }),
-});
 
 router.get('/', requireRole(AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.MANAGER, AdminRole.SUPPORT), validateQuery(adminBookingsQuerySchema), bookingController.getBookings);
 router.get('/summary', requireRole(AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.MANAGER, AdminRole.SUPPORT), validate(bookingsSummarySchema), bookingController.getBookingsSummary);

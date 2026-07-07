@@ -1,13 +1,13 @@
-import { Worker, WorkerOptions, Job } from 'bullmq';
 import * as Sentry from '@sentry/node';
+import { Worker, WorkerOptions, Job } from 'bullmq';
 
-import { getQueueConnection, getQueueName, getQueuePrefix } from '../config/queue.config';
 import { getEnv } from '../config/env';
+import { getQueueConnection, getQueueName, getQueuePrefix } from '../config/queue.config';
 import { isRedisConnected } from '../config/redis';
 import { Booking } from '../models/booking.schema';
+import { DeadLetterJob } from '../models/dead-letter-job.schema';
 import { Event } from '../models/event.schema';
 import { Ticket } from '../models/ticket.schema';
-import { DeadLetterJob } from '../models/dead-letter-job.schema';
 import { QueueService } from '../services/queue.service';
 import { logger } from '../utils/logger';
 
@@ -168,7 +168,7 @@ export function startBookingWorker(): void {
       logger.error({ err, jobId: job?.id }, 'Booking confirm job failed in BullMQ');
       if (job && job.attemptsMade >= (job.opts.attempts || 3)) {
         let dlqPersisted = false;
-        
+
         // 1. DLQ Persistence
         try {
           await DeadLetterJob.create({

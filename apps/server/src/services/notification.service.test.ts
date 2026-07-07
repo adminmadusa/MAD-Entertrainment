@@ -1,7 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { createNotificationSafe } from './notification.service';
+
 import { Notification } from '../models/notification.schema';
 import { auditLog } from '../utils/audit';
+import { createNotificationSafe } from './notification.service';
 
 vi.mock('../models/notification.schema', () => ({
   Notification: {

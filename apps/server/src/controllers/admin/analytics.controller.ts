@@ -1,10 +1,12 @@
 import { Request, Response, NextFunction } from 'express';
+
+import { BookingStatus, PaymentStatus } from '@mad/shared';
+
 import { Booking } from '../../models/booking.schema';
 import { Event } from '../../models/event.schema';
-import { Ticket } from '../../models/ticket.schema';
-import { Refund } from '../../models/refund.schema';
 import { Payment } from '../../models/payment.schema';
-import { BookingStatus, PaymentStatus } from '@mad/shared';
+import { Refund } from '../../models/refund.schema';
+import { Ticket } from '../../models/ticket.schema';
 import { CacheService } from '../../services/cache.service';
 
 export const getSummary = async (req: Request, res: Response, next: NextFunction) => {
@@ -16,7 +18,7 @@ export const getSummary = async (req: Request, res: Response, next: NextFunction
     }
 
     const totalBookings = await Booking.countDocuments({ status: BookingStatus.CONFIRMED });
-    
+
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
     const recentBookings = await Booking.countDocuments({

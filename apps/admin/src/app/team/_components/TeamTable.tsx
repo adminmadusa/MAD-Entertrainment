@@ -1,10 +1,10 @@
 'use client';
 
-import { AdminRole } from '@mad/shared';
-import { Admin } from '@mad/types';
-import { formatDateTime } from '@mad/utils';
-
 import { AdminUser } from '@/lib/api/admin/auth.service';
+import { AdminRole } from '@mad/shared';
+import type { Admin } from '@mad/types';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, EmptyState } from '@mad/ui';
+import { formatDateTime } from '@mad/utils';
 
 const ROLE_LABELS: Record<AdminRole, string> = {
   [AdminRole.SUPER_ADMIN]: 'Super Admin',
@@ -61,47 +61,47 @@ export default function TeamTable({
   const renderRows = () => {
     if (isLoading) {
       return Array.from({ length: 3 }).map((_, i) => (
-        <tr key={i} className="border-b border-border-subtle/50 animate-pulse">
-          <td className="py-4 px-5"><div className="h-4 bg-white/5 rounded w-48" /></td>
-          <td className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-20" /></td>
-          <td className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-24" /></td>
-          <td className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-24" /></td>
-          <td className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-16" /></td>
-          <td className="py-4 px-5"><div className="h-4 bg-white/5 rounded w-12 ml-auto" /></td>
-        </tr>
+        <TableRow key={i} className="border-b border-border-subtle/50 animate-pulse">
+          <TableCell className="py-4 px-5"><div className="h-4 bg-white/5 rounded w-48" /></TableCell>
+          <TableCell className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-20" /></TableCell>
+          <TableCell className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-24" /></TableCell>
+          <TableCell className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-24" /></TableCell>
+          <TableCell className="py-4 px-4"><div className="h-4 bg-white/5 rounded w-16" /></TableCell>
+          <TableCell className="py-4 px-5"><div className="h-4 bg-white/5 rounded w-12 ml-auto" /></TableCell>
+        </TableRow>
       ));
     }
 
     if (admins.length === 0) {
       return (
-        <tr>
-          <td colSpan={6} className="py-16 text-center text-text-muted">
-            No admin users registered.
-          </td>
-        </tr>
+        <TableRow>
+          <TableCell colSpan={6} className="py-16">
+            <EmptyState title="No admin users registered" description="There are currently no back-office administrative accounts setup." />
+          </TableCell>
+        </TableRow>
       );
     }
 
     return admins.map((admin) => (
-      <tr key={admin._id} className="border-b border-border-subtle/40 hover:bg-white/2 transition-colors">
-        <td className="py-4 px-5">
+      <TableRow key={admin._id} className="border-b border-border-subtle/40 hover:bg-white/2 transition-colors">
+        <TableCell className="py-4 px-5">
           <div>
             <p className="text-text-primary font-medium">{admin.name}</p>
             <p className="text-text-muted text-xs">{admin.email}</p>
           </div>
-        </td>
-        <td className="py-4 px-4">
+        </TableCell>
+        <TableCell className="py-4 px-4">
           <span className={`text-xs px-2 py-0.5 rounded font-medium border ${ROLE_BADGE_STYLES[admin.role as AdminRole] || ROLE_BADGE_STYLES[AdminRole.ADMIN]}`}>
             {ROLE_LABELS[admin.role as AdminRole] || admin.role}
           </span>
-        </td>
-        <td className="py-4 px-4 text-text-secondary whitespace-nowrap">
+        </TableCell>
+        <TableCell className="py-4 px-4 text-text-secondary whitespace-nowrap">
           {admin.createdAt ? formatDateTime(admin.createdAt) : '—'}
-        </td>
-        <td className="py-4 px-4 text-text-secondary whitespace-nowrap">
+        </TableCell>
+        <TableCell className="py-4 px-4 text-text-secondary whitespace-nowrap">
           {admin.lastLogin ? formatDateTime(admin.lastLogin) : 'Invited • Awaiting First Login'}
-        </td>
-        <td className="py-4 px-4">
+        </TableCell>
+        <TableCell className="py-4 px-4">
           <span className={`text-xs px-2.5 py-1 rounded-full border font-medium ${
             admin.isActive
               ? 'bg-green-500/10 text-green-400 border-green-500/30'
@@ -109,8 +109,8 @@ export default function TeamTable({
           }`}>
             {admin.isActive ? 'Active' : 'Inactive'}
           </span>
-        </td>
-        <td className="py-4 px-5">
+        </TableCell>
+        <TableCell className="py-4 px-5">
           <div className="flex items-center justify-end gap-2">
             {currentAdmin?.role === AdminRole.SUPER_ADMIN ? (
               <>
@@ -156,28 +156,26 @@ export default function TeamTable({
               <span className="text-text-muted text-xs">—</span>
             )}
           </div>
-        </td>
-      </tr>
+        </TableCell>
+      </TableRow>
     ));
   };
 
   return (
     <div className="glass rounded-2xl border border-border-subtle overflow-hidden">
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-border-subtle">
-              <th className="text-left text-text-muted font-medium py-3.5 px-5">Member</th>
-              <th className="text-left text-text-muted font-medium py-3.5 px-4">Role</th>
-              <th className="text-left text-text-muted font-medium py-3.5 px-4">Created</th>
-              <th className="text-left text-text-muted font-medium py-3.5 px-4">Last Active</th>
-              <th className="text-left text-text-muted font-medium py-3.5 px-4">Status</th>
-              <th className="text-right text-text-muted font-medium py-3.5 px-5">Actions</th>
-            </tr>
-          </thead>
-          <tbody>{renderRows()}</tbody>
-        </table>
-      </div>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="py-3.5 px-5">Member</TableHead>
+            <TableHead className="py-3.5 px-4">Role</TableHead>
+            <TableHead className="py-3.5 px-4">Created</TableHead>
+            <TableHead className="py-3.5 px-4">Last Active</TableHead>
+            <TableHead className="py-3.5 px-4">Status</TableHead>
+            <TableHead className="py-3.5 px-5 text-right">Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>{renderRows()}</TableBody>
+      </Table>
 
       {pagination && pagination.totalPages > 1 && (
         <div className="flex items-center justify-between px-5 py-3 border-t border-border-subtle">

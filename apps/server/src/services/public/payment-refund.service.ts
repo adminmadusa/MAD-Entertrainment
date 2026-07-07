@@ -24,11 +24,6 @@ import { ClientSession } from 'mongoose';
 
 import { BookingStatus, NotificationType, PaymentStatus, RefundStatus, ReservationStatus, SeatStatus } from '@mad/shared';
 
-import { cancelBooking, executeCancelBookingSideEffects } from '../admin/booking.service';
-import { CacheService } from '../cache.service';
-import { createNotificationSafe } from '../notification.service';
-import { QueueService } from '../queue.service';
-import { ReservationService } from '../reservation.service';
 import { getEnv } from '../../config/env';
 import { getQueueName } from '../../config/queue.config';
 import { emitToAdmin, emitToBooking, emitToEvent } from '../../config/socket';
@@ -43,12 +38,23 @@ import { SeatLayout } from '../../models/seat-layout.schema';
 import { auditLog } from '../../utils/audit';
 import { logger } from '../../utils/logger';
 import { runInTransaction } from '../../utils/transaction';
+import { BookingLifecycleService } from './booking/booking-lifecycle.service';
+const { cancelBooking, executeCancelBookingSideEffects } = BookingLifecycleService;
+import { CacheService } from '../cache.service';
+import { createNotificationSafe } from '../notification.service';
+import { QueueService } from '../queue.service';
+import { ReservationService } from '../reservation.service';
 import { PaymentInventoryService } from './payment-inventory.service';
-import {
+import type {
   StripeChargeWebhookPayload,
   StripeRefundWebhookPayload,
   RazorpayRefundWebhookPayload,
-} from './payment.service';
+  NormalizedRefundPayload,
+  NormalizedRefundData,
+} from './payment.types';
+import { StripeRefundService } from './payment/stripe-refund.service';
+import { RazorpayRefundService } from './payment/razorpay-refund.service';
+
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -233,43 +239,11 @@ export class PaymentRefundService {
     webhookEventId: string,
     eventType: string
   ): Promise<{ status: 'completed' | 'failed' | 'anomaly' | 'skipped'; refundId?: string; paymentId?: string }> {
-    let gatewayPaymentId: string;
-    let gatewayRefundId: string | undefined;
-    let gatewayStatus = 'succeeded';
-    let amountInCents = 0;
-
-    if (eventType === 'charge.refunded') {
-      const charge = chargeOrRefund as StripeChargeWebhookPayload;
-      gatewayPaymentId = charge.id;
-      gatewayRefundId = charge.refunds?.data?.[0]?.id;
-      amountInCents = charge.refunds?.data?.[0]?.amount || 0;
-    } else {
-      const refund = chargeOrRefund as StripeRefundWebhookPayload;
-      gatewayPaymentId = refund.charge;
-      gatewayRefundId = refund.id;
-      gatewayStatus = refund.status;
-      amountInCents = refund.amount || 0;
-    }
-
-    if (!gatewayRefundId) {
-      logger.warn({ chargeId: gatewayPaymentId, webhookEventId, eventType }, 'Stripe webhook received but missing gatewayRefundId');
+    const parseResult = StripeRefundService.parseStripeRefund(chargeOrRefund, webhookEventId, eventType);
+    if (parseResult.status === 'skipped') {
       return { status: 'skipped' };
     }
-
-    // Stripe status mappings: only complete if succeeded
-    if (eventType === 'refund.updated' && gatewayStatus !== 'succeeded' && gatewayStatus !== 'failed') {
-      logger.info({ gatewayRefundId, gatewayStatus, webhookEventId }, 'Stripe refund updated with non-terminal status - skipping');
-      return { status: 'skipped' };
-    }
-
-    return PaymentRefundService.reconcileRefundWebhook({
-      gateway: 'stripe',
-      gatewayPaymentId,
-      gatewayRefundId,
-      amountMajorUnits: amountInCents / 100,
-      gatewayStatus,
-      webhookEventId
-    });
+    return PaymentRefundService.reconcileRefundWebhook(parseResult.data);
   }
 
   /**
@@ -281,36 +255,18 @@ export class PaymentRefundService {
     eventType: string,
     webhookEventId: string
   ): Promise<{ status: 'completed' | 'failed' | 'anomaly' | 'skipped'; refundId?: string; paymentId?: string }> {
-    const gatewayPaymentId = refundEntity.payment_id;
-    const gatewayRefundId = refundEntity.id;
-    const amountInPaise = refundEntity.amount;
-    const gatewayStatus = eventType === 'refund.processed' ? 'processed' : 'failed';
-
-    if (!gatewayRefundId) {
-      logger.warn({ paymentId: gatewayPaymentId, webhookEventId, eventType }, 'Razorpay webhook received but missing gatewayRefundId');
+    const parseResult = RazorpayRefundService.parseRazorpayRefund(refundEntity, eventType, webhookEventId);
+    if (parseResult.status === 'skipped') {
       return { status: 'skipped' };
     }
-
-    return PaymentRefundService.reconcileRefundWebhook({
-      gateway: 'razorpay',
-      gatewayPaymentId,
-      gatewayRefundId,
-      amountMajorUnits: amountInPaise / 100,
-      gatewayStatus,
-      webhookEventId
-    });
+    return PaymentRefundService.reconcileRefundWebhook(parseResult.data);
   }
 
   // ─── Core Reconciliation (Private) ─────────────────────────────────────────
 
-  private static async reconcileRefundWebhook(params: {
-    gateway: 'stripe' | 'razorpay';
-    gatewayPaymentId: string;
-    gatewayRefundId: string;
-    amountMajorUnits: number;
-    gatewayStatus: string;
-    webhookEventId: string;
-  }): Promise<{ status: 'completed' | 'failed' | 'anomaly' | 'skipped'; refundId?: string; paymentId?: string }> {
+  private static async reconcileRefundWebhook(
+    params: NormalizedRefundData
+  ): Promise<{ status: 'completed' | 'failed' | 'anomaly' | 'skipped'; refundId?: string; paymentId?: string }> {
     const { gateway, gatewayPaymentId, gatewayRefundId, amountMajorUnits, gatewayStatus, webhookEventId } = params;
     const isSucceeded = gatewayStatus === 'succeeded' || gatewayStatus === 'processed';
     const isFailed = gatewayStatus === 'failed';

@@ -1,13 +1,13 @@
 'use client';
 
-import { Event as EventData } from '@mad/types';
-import { Button } from '@mad/ui';
 import { useMutation } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect, useCallback, useMemo } from 'react';
 
 import { extractApiError } from '@/lib/api/client';
 import { ensureGuestBookingSession, publicCreateBooking } from '@/lib/api/public.service';
+import type { Event as EventData } from '@mad/types';
+import { Button, Modal } from '@mad/ui';
 import { ReserveTicketsInput } from '@mad/validations';
 
 interface TicketSelectionContentProps {
@@ -92,13 +92,13 @@ export function TicketSelectionContent({
     onError: (err) => {
       const apiError = extractApiError(err).message;
       setError(apiError);
-      
+
       // If error might be coupon related, clear the success state
       if (apiError.toLowerCase().includes('coupon') || apiError.toLowerCase().includes('promo')) {
         setCouponApplied(false);
         setCouponMessage({ type: 'error', text: '⚠ Unable to apply promo code. Please check and try again.' });
       }
-      
+
       if (setIsPendingChange) setIsPendingChange(false);
     },
   });
@@ -175,7 +175,7 @@ export function TicketSelectionContent({
     }
 
     if (setIsPendingChange) setIsPendingChange(true);
-    
+
     // Only send coupon code if it's explicitly applied
     createBookingMutation.mutate({
       eventId,
@@ -260,7 +260,7 @@ export function TicketSelectionContent({
             </button>
           )}
         </form>
-        
+
         {/* Coupon Applied Details Block */}
         {couponApplied && (
           <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-3 mt-3 flex items-start gap-3">
@@ -279,7 +279,7 @@ export function TicketSelectionContent({
 
         {/* Error Messages (if any) */}
         {couponMessage && couponMessage.type === 'error' && (
-          <div 
+          <div
             className="text-[11px] font-medium pt-1 text-red-400"
             role="status"
             aria-live="polite"
@@ -290,45 +290,41 @@ export function TicketSelectionContent({
       </div>
 
       {/* Celebration Modal */}
-      {showCelebration && (
-        <div 
-          className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" 
-          role="dialog" 
-          aria-modal="true"
-          onKeyDown={(e) => {
-            if (e.key === 'Escape' || e.key === 'Enter') {
-              setShowCelebration(false);
-            }
-          }}
-        >
-          <div className="bg-[#1a1d2d] border border-white/10 rounded-3xl p-8 max-w-xs w-full text-center shadow-2xl animate-in fade-in zoom-in duration-200">
-            <div className="relative w-24 h-24 mx-auto mb-6">
-              {/* Fake confetti effect */}
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-20 h-20 bg-emerald-500/20 rounded-full animate-ping opacity-75" />
-              </div>
-              <div className="w-16 h-16 rounded-full bg-emerald-500/10 border-2 border-emerald-500 flex items-center justify-center mx-auto relative z-10 shadow-[0_0_20px_rgba(16,185,129,0.3)]">
-                <svg className="w-8 h-8 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                </svg>
-              </div>
+      <Modal
+        isOpen={showCelebration}
+        onClose={() => setShowCelebration(false)}
+        size="sm"
+        closeOnBackdropClick={true}
+        ariaLabelledBy="celebration-title"
+        className="bg-bg-card border border-white/10 rounded-3xl p-8 max-w-xs shadow-2xl"
+      >
+        <div className="text-center">
+          <div className="relative w-24 h-24 mx-auto mb-6">
+            {/* Fake confetti effect */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-20 h-20 bg-emerald-500/20 rounded-full animate-ping opacity-75" />
             </div>
-            <h3 className="text-white font-black text-xl mb-2">Promo Code Saved</h3>
-            <div className="text-text-secondary text-sm mb-6 space-y-1">
-              <p>Code: <span className="text-white font-mono font-bold">{couponCode}</span></p>
-              <p className="text-[11px] text-text-muted italic">Discount eligibility will be confirmed during checkout.</p>
+            <div className="w-16 h-16 rounded-full bg-emerald-500/10 border-2 border-emerald-500 flex items-center justify-center mx-auto relative z-10 shadow-[0_0_20px_rgba(16,185,129,0.3)]">
+              <svg className="w-8 h-8 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+              </svg>
             </div>
-            <button 
-              type="button"
-              autoFocus
-              onClick={() => setShowCelebration(false)} 
-              className="w-full bg-gradient-to-r from-accent-purple to-accent-pink py-3 rounded-xl font-bold text-white shadow-glow hover:scale-[1.02] active:scale-95 transition-all"
-            >
-              OK
-            </button>
           </div>
+          <h3 id="celebration-title" className="text-white font-black text-xl mb-2">Promo Code Saved</h3>
+          <div className="text-text-secondary text-sm mb-6 space-y-1">
+            <p>Code: <span className="text-white font-mono font-bold">{couponCode}</span></p>
+            <p className="text-[11px] text-text-muted italic">Discount eligibility will be confirmed during checkout.</p>
+          </div>
+          <button
+            type="button"
+            autoFocus
+            onClick={() => setShowCelebration(false)}
+            className="w-full bg-gradient-to-r from-accent-purple to-accent-pink py-3 rounded-xl font-bold text-white shadow-glow hover:scale-[1.02] active:scale-95 transition-all"
+          >
+            OK
+          </button>
         </div>
-      )}
+      </Modal>
 
       {/* Ticket Tiers List */}
       <div className="space-y-6">
@@ -388,7 +384,7 @@ export function TicketSelectionContent({
                         <p className="text-xs text-text-muted leading-relaxed">
                           {tier.description || 'General Entry Ticket'}
                         </p>
-                        
+
                         <div className="flex items-center gap-2">
                           {isFree ? (
                             <span className="text-emerald-400 font-black text-sm uppercase tracking-wider">
@@ -448,7 +444,7 @@ export function TicketSelectionContent({
 
       {/* Mobile Sticky bottom footer when not rendered inside modal */}
       {!isModal && (
-        <div className="fixed bottom-0 left-0 right-0 bg-[#0d111d]/95 backdrop-blur-lg border-t border-white/10 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] z-50 shadow-2xl">
+        <div className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-lg border-t border-white/10 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] z-50 shadow-2xl">
           <div className="container-mad max-w-2xl px-4 space-y-3">
             <div className="flex items-center justify-between">
               {ticketsLeft <= 50 ? (

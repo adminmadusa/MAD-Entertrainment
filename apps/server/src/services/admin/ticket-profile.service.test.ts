@@ -10,14 +10,15 @@ vi.mock('../../config/env', () => ({
   })),
 }));
 
-import * as ticketProfileService from './ticket-profile.service';
-import { TicketProfile } from '../../models/ticket-profile.schema';
+import { EventStatus } from '@mad/shared';
+
+import { Booking } from '../../models/booking.schema';
 import { Event } from '../../models/event.schema';
 import { Reservation } from '../../models/reservation.schema';
-import { Booking } from '../../models/booking.schema';
+import { TicketProfile } from '../../models/ticket-profile.schema';
 import { Ticket } from '../../models/ticket.schema';
 import { CacheService } from '../cache.service';
-import { EventStatus } from '@mad/shared';
+import * as ticketProfileService from './ticket-profile.service';
 
 vi.mock('../../models/ticket-profile.schema', () => ({
   TicketProfile: {

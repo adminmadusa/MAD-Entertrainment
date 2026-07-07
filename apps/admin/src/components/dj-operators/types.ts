@@ -1,6 +1,7 @@
 import React from 'react';
-import { ImageAsset } from '@mad/types';
+
 import { extractApiError } from '@/lib/api/client';
+import type { ImageAsset } from '@mad/types';
 
 export const inputCls =
   'w-full px-4 py-2.5 rounded-xl bg-background border border-border-subtle text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-purple transition-colors';

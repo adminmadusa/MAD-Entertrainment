@@ -4,11 +4,11 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 import { useRouter, useParams } from 'next/navigation';
 import { useState } from 'react';
 
+import { buildUpdateCouponPayload } from '@/components/coupons/coupon-form.types';
+import { CouponForm } from '@/components/coupons/CouponForm';
 import { adminGetCoupon, adminUpdateCoupon } from '@/lib/api/admin/coupon.service';
 import { adminGetEvents } from '@/lib/api/admin/event.service';
 import { extractApiError } from '@/lib/api/client';
-import { CouponForm } from '@/components/coupons/CouponForm';
-import { buildUpdateCouponPayload } from '@/components/coupons/coupon-form.types';
 
 export default function EditCouponPage() {
   const router = useRouter();

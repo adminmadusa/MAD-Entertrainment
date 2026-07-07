@@ -1,16 +1,9 @@
 import React from 'react';
 
+import { FormField } from '@mad/ui';
+
 const inputCls =
   'w-full px-4 py-2.5 rounded-xl bg-background border border-border-subtle text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-purple transition-colors';
-
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div className="space-y-1.5">
-      <label className="text-text-secondary text-sm font-medium block">{label}</label>
-      {children}
-    </div>
-  );
-}
 
 export interface EventRequirementsCardProps {
   requireTerms: boolean;
@@ -42,14 +35,14 @@ export const EventRequirementsCard = React.memo(function EventRequirementsCard({
       {/* Options */}
       <div className="glass rounded-2xl border border-border-subtle p-6 space-y-5">
         <h2 className="text-white font-semibold">Options</h2>
-        <Field label="Tags (comma separated)">
+        <FormField label="Tags (comma separated)">
           <input
             value={tags}
             onChange={(e) => setTags(e.target.value)}
             placeholder="EDM, outdoor, live"
             className={inputCls}
           />
-        </Field>
+        </FormField>
 
         <div className="flex flex-wrap gap-6">
           <label className="flex items-center gap-3 cursor-pointer select-none">

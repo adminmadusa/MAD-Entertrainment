@@ -51,7 +51,7 @@ export default function RevenueChartWidget({ revenue }: RevenueChartWidgetProps)
               if (active && payload && payload.length) {
                 const data = payload[0].payload;
                 return (
-                  <div className="bg-[#1a1a1a] border border-[#333] p-4 rounded-xl space-y-1.5 shadow-glow-sm">
+                  <div className="bg-bg-card border border-border-subtle p-4 rounded-xl space-y-1.5 shadow-glow-sm">
                     <p className="text-text-muted text-xs font-semibold">{label}</p>
                     <p className="text-white text-xs font-medium">
                       Gross: <span className="text-emerald-400 font-semibold">₹{data.dailyGrossRevenue.toLocaleString('en-IN')}</span>
@@ -59,7 +59,7 @@ export default function RevenueChartWidget({ revenue }: RevenueChartWidgetProps)
                     <p className="text-white text-xs font-medium">
                       Refunds: <span className="text-red-400 font-semibold">₹{data.dailyRefundAmount.toLocaleString('en-IN')}</span>
                     </p>
-                    <div className="border-t border-[#ffffff15] pt-1.5 mt-1.5">
+                    <div className="border-t border-white/10 pt-1.5 mt-1.5">
                       <p className="text-white text-xs font-bold">
                         Net: <span className="text-accent-purple font-bold">₹{data.dailyNetRevenue.toLocaleString('en-IN')}</span>
                       </p>

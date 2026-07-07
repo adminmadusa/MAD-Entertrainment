@@ -1,8 +1,10 @@
 'use client';
 
-import React, { useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { Button } from '@mad/ui';
+import React, { useEffect, useRef } from 'react';
+
+import { Button, Alert, FormField, Input } from '@mad/ui';
+
 import { useGoogleSignIn } from './hooks/useGoogleSignIn';
 
 interface GoogleCredentialResponse {
@@ -79,56 +81,32 @@ export function LoginForm({
   return (
     <div className="space-y-4 sm:space-y-6">
       {/* Alert Banners */}
-      {(() => {
-        if (requestCooldownRemaining > 0) {
-          return (
-            <div 
-              role="status"
-              aria-live="polite"
-              className="p-4 bg-accent-purple/10 border border-accent-purple/30 rounded-2xl text-xs text-purple-300 text-center animate-in fade-in duration-300"
-            >
-              Verification code sent. New code available in {formatTime(requestCooldownRemaining)}.
-            </div>
-          );
-        }
-        if (verifyCooldownRemaining > 0) {
-          return (
-            <div 
-              role="alert"
-              aria-live="assertive"
-              className="p-4 bg-error/10 border border-error/30 rounded-2xl text-xs text-red-400 text-center animate-in fade-in duration-300 space-y-1"
-            >
-              <p className="font-bold">For your security, verification attempts are temporarily paused.</p>
-              <p>Please try again in:</p>
-              <p className="font-mono text-lg font-black tracking-wider text-amber-400">
-                {formatTime(verifyCooldownRemaining)}
-              </p>
-            </div>
-          );
-        }
-        if (error) {
-          return (
-            <div 
-              role="alert"
-              aria-live="assertive"
-              className="p-4 bg-error/10 border border-error/30 rounded-2xl text-xs text-red-400 text-center animate-in fade-in duration-300"
-            >
-              {error}
-            </div>
-          );
-        }
-        return null;
-      })()}
-
-
+      {requestCooldownRemaining > 0 && (
+        <Alert variant="info" role="status" className="animate-in fade-in duration-300">
+          Verification code sent. New code available in {formatTime(requestCooldownRemaining)}.
+        </Alert>
+      )}
+      {verifyCooldownRemaining > 0 && (
+        <Alert variant="danger" className="animate-in fade-in duration-300">
+          <div className="space-y-1">
+            <p className="font-bold">For your security, verification attempts are temporarily paused.</p>
+            <p>Please try again in:</p>
+            <p className="font-mono text-lg font-black tracking-wider text-amber-400">
+              {formatTime(verifyCooldownRemaining)}
+            </p>
+          </div>
+        </Alert>
+      )}
+      {verifyCooldownRemaining <= 0 && error && (
+        <Alert variant="danger" className="animate-in fade-in duration-300">
+          {error}
+        </Alert>
+      )}
 
       <form onSubmit={onSubmit} className="space-y-4 sm:space-y-5">
         <div className="space-y-4 sm:space-y-5">
-          <div className="space-y-2">
-            <label htmlFor="email" className="text-xs font-semibold text-text-secondary uppercase tracking-wider ml-1">
-              Email Address
-            </label>
-            <input
+          <FormField label="Email Address" htmlFor="email" required>
+            <Input
               id="email"
               type="email"
               required
@@ -136,9 +114,8 @@ export function LoginForm({
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
-              className="w-full bg-white/5 border border-border-subtle rounded-xl px-4 py-3.5 text-base lg:text-sm text-white placeholder:text-text-secondary focus:outline-none focus:border-accent-purple focus:ring-1 focus:ring-accent-purple transition-all duration-300"
             />
-          </div>
+          </FormField>
 
           <Button
             type="submit"

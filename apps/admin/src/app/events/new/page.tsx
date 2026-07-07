@@ -1,32 +1,19 @@
 'use client';
 
-import { BookingMode, TicketTier, EventStatus } from '@mad/shared';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
-import { adminCreateEvent, AdminEvent } from '@/lib/api/admin/event.service';
-import { TicketProfile } from '@mad/types';
 import { adminGetCategories } from '@/lib/api/admin/category.service';
-import { adminGetTiers } from '@/lib/api/admin/tier.service';
+import { adminCreateEvent, AdminEvent } from '@/lib/api/admin/event.service';
 import { adminGetTicketProfiles } from '@/lib/api/admin/ticket-profile.service';
+import { adminGetTiers } from '@/lib/api/admin/tier.service';
 import { extractApiError } from '@/lib/api/client';
-import {
-  EventBasicInfoSection,
-  EventScheduleSection,
-  EventVenueSection,
-  EventTicketSection,
-  EventMediaSection,
-  EventAdvancedSettingsSection,
-  EventPublishSection,
-  EventFormActions,
-  Field,
-  inputCls,
-  defaultTier,
-  TicketTierInput,
-  CloudinaryImage
-} from './_components';
+import { BookingMode, TicketTier, EventStatus } from '@mad/shared';
+import type { TicketProfile } from '@mad/types';
+
+import { EventBasicInfoSection, EventScheduleSection, EventVenueSection, EventTicketSection, EventMediaSection, EventAdvancedSettingsSection, EventPublishSection, EventFormActions, defaultTier, TicketTierInput, CloudinaryImage } from './_components';
 
 export default function CreateEventPage() {
   const router = useRouter();
@@ -46,7 +33,7 @@ export default function CreateEventPage() {
   const [posterImage, setPosterImage] = useState<CloudinaryImage | null>(null);
   const [galleryImages, setGalleryImages] = useState<CloudinaryImage[]>([]);
   const [tiers, setTiers] = useState<TicketTierInput[]>([defaultTier()]);
-  
+
   // Ticket Profile and Overrides state
   const [ticketingType, setTicketingType] = useState<'custom' | 'profile'>('custom');
   const [selectedProfileId, setSelectedProfileId] = useState('');
@@ -123,7 +110,7 @@ export default function CreateEventPage() {
       const generatedSlug = title.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^[-]+|[-]+$/g, '');
 
       const isProfileType = ticketingType === 'profile';
-      
+
       const payload: Partial<AdminEvent> & { bookingMode?: string } = {
         title: title.trim(),
         slug: generatedSlug,
@@ -160,7 +147,7 @@ export default function CreateEventPage() {
             isActive: vals.isActive !== undefined ? vals.isActive : undefined,
           }))
           .filter((o) => o.totalCapacity !== undefined || o.isActive !== undefined);
-        
+
         // EVT-008A: Temporary compatibility workaround.
         // Profile-based event creation still requires totalCapacity >= 1.
         // Remove when the profile create contract lets the server derive capacity without a placeholder.
@@ -298,5 +285,3 @@ export default function CreateEventPage() {
     </div>
   );
 }
-
-

@@ -1,108 +1,17 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
 
+/**
+ * Shared design tokens and base resets (pure CSS, no Tailwind directives).
+ * Source of truth: packages/ui/src/styles/shared.css
+ *
+ * ROLLBACK: Remove this @import and paste shared.css :root + resets inline.
+ * Rollback is per-app and does not affect apps/web.
+ */
+@import '@mad/ui/styles/shared.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-/* ─── CSS Custom Properties ──────────────────────────────────── */
-:root {
-  --color-bg: #0B0F1A;
-  --color-bg-secondary: #111827;
-  --color-bg-card: #161D2F;
-  --color-accent-purple: #7C3AED;
-  --color-accent-pink: #EC4899;
-  --color-accent-cyan: #06B6D4;
-  --color-text-primary: #FFFFFF;
-  --color-text-secondary: #9CA3AF;
-  --color-text-muted: #6B7280;
-
-  /* Fonts */
-  --font-outfit: 'Outfit', system-ui, sans-serif;
-
-  /* Transitions */
-  --transition-smooth: cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
-  --transition-fast: 150ms;
-  --transition-base: 250ms;
-  --transition-slow: 400ms;
-
-  /* Glassmorphism */
-  --glass-bg: rgba(22, 29, 47, 0.6);
-  --glass-border: rgba(255, 255, 255, 0.08);
-  --glass-shadow: 0 4px 24px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05);
-}
-
-/* ─── Base Resets ────────────────────────────────────────────── */
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-html {
-  font-size: 16px;
-  scroll-behavior: smooth;
-  -webkit-text-size-adjust: 100%;
-  text-size-adjust: 100%;
-}
-
-body {
-  background-color: var(--color-bg);
-  color: var(--color-text-primary);
-  font-family: var(--font-outfit);
-  font-feature-settings: 'liga' 1, 'kern' 1;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  min-height: 100vh;
-  overflow-x: hidden;
-}
-
-/* ─── Selection ─────────────────────────────────────────────── */
-::selection {
-  background-color: rgba(124, 58, 237, 0.4);
-  color: #ffffff;
-}
-
-/* ─── Scrollbar ──────────────────────────────────────────────── */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: var(--color-bg-secondary);
-}
-
-::-webkit-scrollbar-thumb {
-  background: rgba(124, 58, 237, 0.5);
-  border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(124, 58, 237, 0.8);
-}
-
-/* ─── Focus Styles ───────────────────────────────────────────── */
-:focus-visible {
-  outline: 2px solid var(--color-accent-purple);
-  outline-offset: 2px;
-  border-radius: 4px;
-}
-
-/* ─── Links ──────────────────────────────────────────────────── */
-a {
-  color: inherit;
-  text-decoration: none;
-}
-
-/* ─── Images ─────────────────────────────────────────────────── */
-img,
-video {
-  max-width: 100%;
-  height: auto;
-}
 
 /* ─── Component Utilities ────────────────────────────────────── */
 @layer components {
@@ -193,7 +102,7 @@ video {
     }
   }
 
-  /* Noise Overlay */
+  /* Noise Overlay (admin: inline SVG, no static asset dependency) */
   .noise-overlay::after {
     content: '';
     position: absolute;
@@ -239,51 +148,31 @@ video {
 
 /* ─── Keyframes ──────────────────────────────────────────────── */
 @keyframes shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
 }
 
 @keyframes gradient-shift {
-  0%, 100% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
 }
 
 @keyframes float {
-  0%, 100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-12px);
-  }
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-12px); }
 }
 
 @keyframes glow-pulse {
-  0%, 100% {
-    box-shadow: 0 0 20px rgba(124, 58, 237, 0.3);
-  }
-  50% {
-    box-shadow: 0 0 60px rgba(124, 58, 237, 0.6);
-  }
+  0%, 100% { box-shadow: 0 0 20px rgba(124, 58, 237, 0.3); }
+  50% { box-shadow: 0 0 60px rgba(124, 58, 237, 0.6); }
 }
 
 @keyframes marquee {
-  0% {
-    transform: translateX(0%);
-  }
-  100% {
-    transform: translateX(-50%);
-  }
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-50%); }
 }
 
-/* ─── Page Transitions ───────────────────────────────────────── */
+/* ─── Page Transitions (admin-only) ─────────────────────────── */
 .page-enter {
   opacity: 0;
   transform: translateY(8px);

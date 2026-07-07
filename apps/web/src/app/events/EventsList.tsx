@@ -1,7 +1,5 @@
 'use client';
 
-import { EventCategory, EVENT_CATEGORY_LABELS } from '@mad/shared';
-import { EventGridSkeleton, CalendarIcon } from '@mad/ui';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
@@ -11,6 +9,8 @@ import { useState } from 'react';
 
 import { publicGetEvents } from '@/lib/api/public.service';
 import { formatEventDate } from '@/utils/date';
+import { EventCategory, EVENT_CATEGORY_LABELS } from '@mad/shared';
+import { CalendarIcon, EventGridSkeleton } from '@mad/ui';
 
 
 export function EventsList() {

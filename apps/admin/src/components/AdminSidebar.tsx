@@ -4,8 +4,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
-import { useAdminAuth } from '@/providers/AdminAuthProvider';
 import { canAccessRoute } from '@/lib/rbac/navigation-permissions';
+import { useAdminAuth } from '@/providers/AdminAuthProvider';
 
 interface NavItem {
   label: string;
@@ -117,7 +117,7 @@ export function AdminSidebar({ collapsed, onToggle, mobileOpen = false, onMobile
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 overflow-y-auto py-4 px-2 space-y-6 scrollbar-hide">
+      <nav className="flex-1 overflow-y-auto py-4 px-2 space-y-6 scrollbar-hide" aria-label="Admin primary navigation">
         {navGroups.map((group) => {
           const visibleItems = group.items.filter(
             (item) => !admin?.role || canAccessRoute(item.href, admin.role)
@@ -176,8 +176,9 @@ export function AdminSidebar({ collapsed, onToggle, mobileOpen = false, onMobile
                       <Link
                         href={item.href}
                         title={collapsed ? item.label : undefined}
+                        aria-current={active ? 'page' : undefined}
                         className={[
-                          'flex items-center gap-3 px-2 py-2.5 rounded-xl transition-all duration-150 group relative',
+                          'flex items-center gap-3 px-2 py-2.5 rounded-xl transition-all duration-150 group relative focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-inset',
                           active
                             ? 'bg-accent-purple/15 text-accent-purple-light'
                             : 'text-text-secondary hover:text-text-primary hover:bg-white/5',

@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Field, inputCls } from './Field';
+import { FormField, Input } from '@mad/ui';
 
 interface EventAdvancedSettingsSectionProps {
   tags: string;
@@ -33,14 +33,14 @@ export function EventAdvancedSettingsSection({
       {/* Options */}
       <div className="glass rounded-2xl border border-border-subtle p-6 space-y-5">
         <h2 className="text-white font-semibold">Options</h2>
-        <Field label="Tags (comma-separated)">
-          <input
+        <FormField label="Tags (comma-separated)" htmlFor="event-tags">
+          <Input
+            id="event-tags"
             value={tags}
             onChange={(e) => setTags(e.target.value)}
             placeholder="EDM, outdoor, live"
-            className={inputCls}
           />
-        </Field>
+        </FormField>
 
         <div className="flex flex-wrap gap-6">
           <label className="flex items-center gap-3 cursor-pointer select-none">
@@ -94,14 +94,13 @@ export function EventAdvancedSettingsSection({
                 <option value="">Custom</option>
               </select>
               {ageRestriction === '' && (
-                <input
+                <Input
                   type="number"
                   min="1"
                   placeholder="Enter age"
                   onBlur={(e) => {
                     if (e.target.value) setAgeRestriction(Number(e.target.value));
                   }}
-                  className="w-full px-4 py-2 mt-2 bg-background border border-white/10 rounded-xl text-white focus:outline-none focus:border-accent-purple"
                 />
               )}
             </div>

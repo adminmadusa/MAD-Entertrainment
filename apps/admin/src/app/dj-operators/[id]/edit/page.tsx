@@ -1,6 +1,5 @@
 'use client';
 
-import { DJOperator } from '@mad/types';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { useRouter, useParams } from 'next/navigation';
 import { useState } from 'react';
@@ -8,6 +7,7 @@ import { useState } from 'react';
 import { DJOperatorForm } from '@/components/dj-operators/DJOperatorForm';
 import { formatApiError } from '@/components/dj-operators/types';
 import { adminGetDJ, adminUpdateDJ } from '@/lib/api/admin/dj.service';
+import type { DJOperator } from '@mad/types';
 
 export default function EditDJPage() {
   const router = useRouter();

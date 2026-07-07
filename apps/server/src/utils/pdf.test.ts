@@ -1,9 +1,10 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { generateTicketPDF } from './pdf';
-import { Ticket } from '../models/ticket.schema';
 import qrcode from 'qrcode';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+
 import { getEnv } from '../config/env';
 import { generateTicketPDF as generateModular } from '../lib/pdf/ticket/generate-ticket-pdf';
+import { Ticket } from '../models/ticket.schema';
+import { generateTicketPDF } from './pdf';
 
 // Mock Models
 vi.mock('../models/ticket.schema', () => ({

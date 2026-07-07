@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+
 import * as couponService from '../../services/admin/coupon.service';
 
 export const createCoupon = async (req: Request, res: Response, next: NextFunction) => {

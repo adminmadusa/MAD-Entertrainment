@@ -1,6 +1,6 @@
 # Artists vs DJ Operators Architecture Audit
-**MAD Entertrainment Platform**  
-*Document Status: Draft / Audit Only*  
+**MAD Entertrainment Platform**
+*Document Status: Draft / Audit Only*
 *Target Branch: `audit/artists-module-removal`*
 
 ---
@@ -9,7 +9,7 @@
 
 This audit evaluates the relationship, code overlap, and business alignment between the **Artists** (`/artists`) and **DJ Operators** (`/dj-operators`) modules across the **MAD Entertrainment** monorepo. Conceptually, both modules model the exact same business entity: **performer talent** hired for events. However, because the platform focuses primarily on live DJ-driven music experiences, the DJ Operators module has emerged as the actively maintained, primary business asset, while the Artists module remains a duplicate, un-linked, and orphaned legacy resource.
 
-By performing a comprehensive dependency analysis, we have confirmed that the Artists module is **entirely invisible to customers**, un-referenced in the event creation and editing UI, and serves no functional purpose in the current administration workflows. 
+By performing a comprehensive dependency analysis, we have confirmed that the Artists module is **entirely invisible to customers**, un-referenced in the event creation and editing UI, and serves no functional purpose in the current administration workflows.
 
 Therefore, we recommend **Option A: Remove Artists completely**. This will clean up massive code bloat (saving 11+ source files and reducing visual and database clutter) without introducing any functional regressions.
 
@@ -24,14 +24,14 @@ graph TD
     AdminSidebar["Admin Sidebar"] -- "Links to /artists" --> AdminArtists["Admin Artists (/artists)"]
     AdminArtists --> EditArtist["Edit Screen (/artists/[id]/edit)"]
     AdminArtists --> NewArtist["New Screen (/artists/new)"]
-    
+
     NewArtist -- "Queries" --> AdminArtistService["admin/artist.service.ts"]
     AdminArtistService -- "API Call" --> AdminArtistAPI["POST /api/admin/artists"]
-    
+
     AdminArtistAPI --> AdminArtistController["admin/artist.controller.ts"]
     AdminArtistController --> AdminArtistDbService["admin/artist.service.ts (Server)"]
     AdminArtistDbService --> ArtistModel["Mongoose: Artist Schema (artist.schema.ts)"]
-    
+
     EventModel["Mongoose: Event Schema"] -.-> |"Orphaned ref: artistIds"| ArtistModel
 ```
 
@@ -41,18 +41,18 @@ graph TD
 graph TD
     Navbar["Customer Navbar"] -- "Links to /dj-operators" --> WebDJs["Web DJs (/dj-operators)"]
     WebDJs --> WebDJDetail["Web DJ Detail (/dj-operators/[slug])"]
-    
+
     AdminSidebar2["Admin Sidebar"] -- "Links to /dj-operators" --> AdminDJs["Admin DJs (/dj-operators)"]
     AdminDJs --> EditDJ["Edit Screen (/dj-operators/[id]/edit)"]
     AdminDJs --> NewDJ["New Screen (/dj-operators/new)"]
-    
+
     NewDJ -- "Queries" --> AdminDJService["admin/dj.service.ts"]
     AdminDJService -- "API Call" --> AdminDJAPI["POST /api/admin/dj-operators"]
-    
+
     AdminDJAPI --> AdminDJController["admin/dj.controller.ts"]
     AdminDJController --> AdminDJDbService["admin/dj-operator.service.ts (Server)"]
     AdminDJDbService --> DJModel["Mongoose: DJOperator Schema (dj-operator.schema.ts)"]
-    
+
     EventModel2["Mongoose: Event Schema"] -.-> |"Ref: djOperatorIds"| DJModel
 ```
 
@@ -64,43 +64,43 @@ Our deep-dive into the source files of `apps/admin`, `apps/web`, and `apps/serve
 
 ### 1. Artists Module Audit
 
-1.  **Is Artists visible to customers?**  
+1.  **Is Artists visible to customers?**
     **No.** The customer web client (`apps/web`) contains **no `/artists` route or page**. The public navigation Navbar and Footer do not link to any `/artists` path.
-2.  **Is Artists visible to admins?**  
+2.  **Is Artists visible to admins?**
     **Yes.** The admin application contains the list screen (`/artists`), a new performer screen (`/artists/new`), and editing screens (`/artists/[id]/edit`).
-3.  **Is Artists linked from navigation?**  
+3.  **Is Artists linked from navigation?**
     *   **Customer Web**: **No** (any broken/dead links were fully purged in Stage 1).
     *   **Admin Dashboard**: **Yes**, in `AdminSidebar.tsx` as a primary sidebar link (`{ label: 'Artists', href: '/artists', ... }`).
-4.  **Is Artists referenced by Events?**  
+4.  **Is Artists referenced by Events?**
     *   **Database Schema**: **Yes**. `event.schema.ts` defines `artistIds: [{ type: Schema.Types.ObjectId, ref: 'Artist' }]`.
     *   **Administration UI**: **No.** The event creation form (`events/new/page.tsx`) and edit forms **contain zero input fields** to assign or select artists for an event.
-5.  **Is Artists referenced by Bookings?**  
+5.  **Is Artists referenced by Bookings?**
     **No.** Bookings only reference events and customer details; they have no connection to performers.
-6.  **Is Artists referenced by Ticket Profiles?**  
+6.  **Is Artists referenced by Ticket Profiles?**
     **No.**
-7.  **Is Artists referenced by DJ Operators?**  
+7.  **Is Artists referenced by DJ Operators?**
     **No.**
-8.  **Is Artists only placeholder/demo content?**  
+8.  **Is Artists only placeholder/demo content?**
     **No.** It has fully implemented schemas, controllers, and services. However, since it is not linked or editable inside event creation, it behaves essentially as an orphaned, dead-end feature in the actual administration workflow.
-9.  **Are there active APIs supporting Artists?**  
+9.  **Are there active APIs supporting Artists?**
     **Yes.** Active backend CRUD routes under `/api/artists` (public) and `/api/admin/artists` (admin) exist.
-10. **Would removing Artists break any workflows?**  
+10. **Would removing Artists break any workflows?**
     **No operational business workflows** would be broken. Because the UI does not allow admins to assign artists to events, and customers cannot browse them, the module is effectively dormant.
 
 ---
 
 ### 2. DJ Operators Module Audit
 
-1.  **Is DJ Operators a primary business feature?**  
+1.  **Is DJ Operators a primary business feature?**
     **Yes.** Booking DJ operators, showcasing DJ talent portfolios, and managing active DJ lineups represent the core business model of MAD Entertainment.
-2.  **Is DJ Operators actively exposed on the public website?**  
+2.  **Is DJ Operators actively exposed on the public website?**
     **Yes.** Fully integrated client routes (`/dj-operators`, `/dj-operators/[slug]`), sitemaps, search query caches, and homepage highlights (`DjOperatorsSection`) exist and are actively loaded.
-3.  **Is DJ Operators used in events?**  
+3.  **Is DJ Operators used in events?**
     *   **Database Schema**: **Yes**, via `djOperatorIds: [{ type: Schema.Types.ObjectId, ref: 'DJOperator' }]`.
     *   **Administration UI**: **No.** Like Artists, the event creation and edit UI does not yet expose a selection widget, meaning the database relationship is currently prepared but unused in the administration form.
-4.  **Is DJ Operators replacing Artists conceptually?**  
+4.  **Is DJ Operators replacing Artists conceptually?**
     **Yes.** Performers are booked as DJ Operators, making the "Artists" concept redundant.
-5.  **Are both modules solving the same business problem?**  
+5.  **Are both modules solving the same business problem?**
     **Yes.** They both represent performer talent bios, genres, profile images, and slugs.
 
 ---
@@ -143,7 +143,7 @@ We classify the risk of **complete removal of the Artists module** as: **LOW / M
 
 ### Why?
 *   **Zero Operational Risk**: Since the frontend customer web application does not render or route `/artists`, and the admin events creator has no UI widget to select artists, removing it will not impact booking, checkout, payment, or platform operations.
-*   **Mongoose Relationship Risk**: The only notable risk is that the Event schema (`event.schema.ts`) and Event services (`event.service.ts`) explicitly define and populate the `artistIds` attribute. If the `Artist` model is deleted without removing these populate methods, the server will crash at runtime (mongoose schema compilation errors). 
+*   **Mongoose Relationship Risk**: The only notable risk is that the Event schema (`event.schema.ts`) and Event services (`event.service.ts`) explicitly define and populate the `artistIds` attribute. If the `Artist` model is deleted without removing these populate methods, the server will crash at runtime (mongoose schema compilation errors).
 *   **Mitigation**: The removal must be executed as a complete, coordinated monorepo PR that purges frontend routes, service adapters, server routes, mongoose schemas, and populate queries simultaneously.
 
 ---

@@ -9,6 +9,11 @@ import { ReportEngine } from './report_engine';
 import { GatingAction, ConfidenceEngine } from './confidence_engine';
 import { Finding, StatelessViolation, RepositorySnapshot } from './types';
 import { writeJsonIfChanged, persistenceStats } from './json_utils';
+import { SessionStore } from './session_store';
+import { RollbackHistory } from './rollback_history';
+import { AnalyticsEngine } from './analytics_engine';
+import { AnalyticsStore } from './analytics_store';
+import { FixRegistry } from './fix_registry';
 
 export class AuditEngine {
   private static workspaceRoot = resolve(__dirname, '../../..');
@@ -43,6 +48,7 @@ export class AuditEngine {
     options: {
       isIncremental?: boolean;
       changedFiles?: string[];
+      scannedFiles?: string[];
       commitSha?: string;
       branchName?: string;
       validatorTimeMs?: number;
@@ -67,7 +73,15 @@ export class AuditEngine {
 
     // 2. Reconcile statuses (resolve resolved findings, tag regressions)
     console.log('🔄 Reconciling finding lifecycle states...');
-    this.lifecycleManager.reconcile(activeFindingIds);
+    this.lifecycleManager.reconcile(activeFindingIds, {
+      isIncremental: options.isIncremental,
+      scannedFiles: options.scannedFiles,
+    });
+
+    // 2.5. Finalize active finding occurrences and apply write suppression if structurally unchanged
+    for (const id of activeFindingIds) {
+      this.findingManager.finalizeFinding(id);
+    }
 
     // 3. Load and run governance plugins (if any exist)
     this.executePlugins(rawViolations);
@@ -105,6 +119,41 @@ export class AuditEngine {
     if (options.isIncremental && prAffectedFiles.size > 0) {
       this.reportEngine.generatePRReport(allFindings, prAffectedFiles);
     }
+
+    // 7.5. Compile and Write Analytics Datasets
+    console.log('📊 Compiling governance analytics...');
+    if (FixRegistry.getAll().length === 0) {
+      FixRegistry.registerDefaultFixers(); // Ensure fixers are registered for supports checks
+    }
+    const sessionStore = new SessionStore(AuditEngine.workspaceRoot);
+    const rollbackProvider = {
+      list: () => RollbackHistory.list(AuditEngine.workspaceRoot),
+    };
+    const trendProvider = {
+      getTrends: () => {
+        const file = join(AuditEngine.workspaceRoot, '.governance/metrics/trend-metrics.json');
+        if (existsSync(file)) {
+          try {
+            return JSON.parse(readFileSync(file, 'utf8'));
+          } catch {
+            return [];
+          }
+        }
+        return [];
+      },
+    };
+    const generatedAt = new Date().toISOString();
+    const analyticsResult = AnalyticsEngine.compile(
+      allFindings,
+      metrics,
+      sessionStore,
+      rollbackProvider,
+      this.findingManager,
+      FixRegistry,
+      trendProvider,
+      generatedAt
+    );
+    AnalyticsStore.write(analyticsResult, generatedAt, AuditEngine.workspaceRoot);
 
     // 8. Determine Gating & Build Failures
     // Check if any active violation in scope triggers FAIL_BUILD
@@ -146,7 +195,7 @@ export class AuditEngine {
     const activeFindingsCount = allFindings.filter(f => f.status === 'NEW' || f.status === 'CONFIRMED' || f.status === 'REGRESSION').length;
     const closedFindingsCount = allFindings.filter(f => f.status === 'CLOSED').length;
     const suppressedFindingsCount = allFindings.filter(f => f.status === 'FALSE_POSITIVE' || f.status === 'IGNORED').length;
-    
+
     const snapshotData = {
       timestamp: new Date().toISOString(),
       activeCount: activeFindingsCount,
@@ -164,8 +213,9 @@ export class AuditEngine {
       persistenceStats.trendWritten++;
     }
 
-    // 11. Generate manifest.json
+    // 11. Generate manifest.json and manifest.local.json
     const manifestPath = join(FindingManager.govDir, 'manifest.json');
+    const manifestLocalPath = join(FindingManager.govDir, 'manifest.local.json');
     let historySnapshots = 0;
     if (existsSync(FindingManager.archiveHistoryDir)) {
       historySnapshots = readdirSync(FindingManager.archiveHistoryDir).filter(f => f.endsWith('.json')).length;
@@ -176,10 +226,13 @@ export class AuditEngine {
       manifestVersion: 1,
       migrationVersion: 1,
       engineVersion: '1.0.0',
+    };
+
+    const manifestLocal = {
+      lastAudit: new Date().toISOString(),
+      lastMigration: '2026-06-30T15:28:59Z',
       findingCount: allFindings.length,
       historySnapshots,
-      lastMigration: '2026-06-30T15:28:59Z',
-      lastAudit: new Date().toISOString(),
       performance: {
         findingsScanned: allFindings.length,
         filesScanned: options.changedFiles ? options.changedFiles.length : 0,
@@ -190,7 +243,9 @@ export class AuditEngine {
         filesArchived: closedFindingsCount,
       }
     };
+
     writeJsonIfChanged(manifestPath, manifest);
+    writeJsonIfChanged(manifestLocalPath, manifestLocal);
 
     return {
       success: finalGating !== 'FAIL_BUILD',

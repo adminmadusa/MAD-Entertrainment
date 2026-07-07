@@ -1,7 +1,8 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { QueueService } from './queue.service';
+
 import { isRedisConnected } from '../config/redis';
 import { AppError } from '../middleware/error.middleware';
+import { QueueService } from './queue.service';
 
 // Local state toggles to control mock behavior dynamically across tests
 let redisConnectedState = true;
@@ -116,7 +117,7 @@ describe('Queue Service', () => {
       redisConnectedState = false;
 
       const payload = { bookingId: 'b-111' };
-      
+
       await expect(
         QueueService.enqueue('booking-queue', 'booking:confirm', payload, 'lock-id')
       ).rejects.toThrow('Queue connection error: Redis is offline');
@@ -129,7 +130,7 @@ describe('Queue Service', () => {
       queueShouldThrow = true;
 
       const payload = { email: 'test@example.com' };
-      
+
       await expect(
         QueueService.enqueue('notification-queue', 'email:send', payload, 'email-id')
       ).rejects.toThrow('Redis connection lost');
@@ -150,7 +151,7 @@ describe('Queue Service', () => {
       });
 
       const payload = { email: 'test@example.com' };
-      
+
       await expect(
         QueueService.enqueue('notification-queue', 'email:send', payload, 'email-id')
       ).rejects.toThrow('Queue connection error: Redis is offline');
@@ -243,11 +244,11 @@ describe('Queue Service', () => {
   describe('closeAll', () => {
     it('should close all active BullMQ queue connections', async () => {
       redisConnectedState = true;
-      
+
       // Enqueue to initialize queues
       await QueueService.enqueue('queue-a', 'job', {});
       const queueA = lastQueueInstance;
-      
+
       await QueueService.enqueue('queue-b', 'job', {});
       const queueB = lastQueueInstance;
 

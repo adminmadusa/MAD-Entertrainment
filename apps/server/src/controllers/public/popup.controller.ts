@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
-import { PublicPopupService } from '../../services/public/popup.service';
+
 import { CacheService } from '../../services/cache.service';
+import { PublicPopupService } from '../../services/public/popup.service';
 import { sendSuccess } from '../../utils/response';
 
 export async function getActivePopups(req: Request, res: Response, next: NextFunction): Promise<void> {

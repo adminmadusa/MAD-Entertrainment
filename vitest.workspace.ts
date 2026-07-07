@@ -81,5 +81,41 @@ export default [
         '**/dist/**'
       ]
     }
+  },
+  {
+    test: {
+      name: 'ai-os',
+      environment: 'node',
+      globals: true,
+      include: [
+        '.agents/ai-os/runtime-engine/**/*.test.ts'
+      ],
+      exclude: [
+        '**/node_modules/**',
+        '**/dist/**',
+        '**/e2e/**',
+        '**/.next/**'
+      ]
+    }
+  },
+  {
+    extends: 'apps/web/vitest.config.ts',
+    test: {
+      name: 'ui',
+      environment: 'jsdom',
+      globals: true,
+      include: [
+        'packages/ui/src/**/*.test.{ts,tsx}'
+      ],
+      exclude: [
+        '**/node_modules/**',
+        '**/dist/**',
+        '**/.next/**'
+      ],
+      setupFiles: [
+        'apps/web/vitest.setup.ts'
+      ]
+    }
   }
 ];
+

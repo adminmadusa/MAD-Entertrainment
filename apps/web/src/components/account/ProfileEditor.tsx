@@ -1,9 +1,11 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+
 import { useAuth } from '@/providers/AuthProvider';
-import { ProfileViewCard } from './ProfileViewCard';
+
 import { ProfileCompletionForm } from '../auth/ProfileCompletionForm';
+import { ProfileViewCard } from './ProfileViewCard';
 
 export function ProfileEditor() {
   const { user } = useAuth();

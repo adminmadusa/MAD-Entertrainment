@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+
 import { WebhookEvent } from '../../models/webhook-event.schema';
 
 export const getWebhooks = async (req: Request, res: Response, next: NextFunction) => {
@@ -15,7 +16,7 @@ export const getWebhooks = async (req: Request, res: Response, next: NextFunctio
     const query: any = {};
     if (provider) query.provider = provider;
     if (status) query.status = status;
-    
+
     if (startDate || endDate) {
       query.receivedAt = {};
       if (startDate) query.receivedAt.$gte = startDate;

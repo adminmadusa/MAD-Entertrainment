@@ -1,28 +1,30 @@
+import mongoose from 'mongoose';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+
 import { BookingStatus, ReservationStatus } from '@mad/shared';
-import { correctBookingEmail, resendBookingTickets, getBookingsSummary, cancelBooking, expireBooking, getBookings, getBookingById } from './booking.service';
-import { Booking } from '../../models/booking.schema';
-import { UserModel } from '../../models/user.schema';
-import { Ticket } from '../../models/ticket.schema';
-import { Payment } from '../../models/payment.schema';
-import { Event } from '../../models/event.schema';
-import { Coupon } from '../../models/coupon.schema';
-import { Refund } from '../../models/refund.schema';
+
+import { emitToAdmin, emitToEvent, emitToBooking } from '../../config/socket';
 import { AuditLogModel } from '../../models/audit-log.schema';
+import { Booking } from '../../models/booking.schema';
+import { Coupon } from '../../models/coupon.schema';
+import { Event } from '../../models/event.schema';
+import { Notification } from '../../models/notification.schema';
+import { Payment } from '../../models/payment.schema';
+import { Refund } from '../../models/refund.schema';
+import { Ticket } from '../../models/ticket.schema';
+import { UserModel } from '../../models/user.schema';
+import { auditLog } from '../../utils/audit';
+import { CacheService } from '../cache.service';
+import { createNotificationSafe } from '../notification.service';
+import { QueueService } from '../queue.service';
+import { ReservationService } from '../reservation.service';
+import { correctBookingEmail, resendBookingTickets, getBookingsSummary, cancelBooking, expireBooking, getBookings, getBookingById } from './booking.service';
 
 vi.mock('../../models/coupon.schema', () => ({
   Coupon: {
     updateOne: vi.fn(),
   },
 }));
-import { ReservationService } from '../reservation.service';
-import { CacheService } from '../cache.service';
-import { QueueService } from '../queue.service';
-import { auditLog } from '../../utils/audit';
-import mongoose from 'mongoose';
-import { createNotificationSafe } from '../notification.service';
-import { Notification } from '../../models/notification.schema';
-import { emitToAdmin, emitToEvent, emitToBooking } from '../../config/socket';
 
 vi.mock('mongoose', async (importOriginal) => {
   const original = await importOriginal<typeof import('mongoose')>();
@@ -960,7 +962,7 @@ describe('Admin Booking Service Backend Tests', () => {
         withTransaction: vi.fn().mockRejectedValue(new Error('Database transaction abort')),
         endSession: vi.fn().mockResolvedValue(undefined),
       };
-      
+
       vi.mocked(mongoose.startSession).mockResolvedValueOnce(mockSession as any);
 
       await expect(cancelBooking('booking-123', 'Customer request')).rejects.toThrow('Database transaction abort');
@@ -1497,7 +1499,7 @@ describe('Admin Booking Service Backend Tests', () => {
     it('should retrieve paginated bookings list and match DTO payload schema contract', async () => {
       const mockEventId = new mongoose.Types.ObjectId();
       const mockBookingId = new mongoose.Types.ObjectId();
-      
+
       const mockBookings = [
         {
           _id: mockBookingId,
@@ -1544,7 +1546,7 @@ describe('Admin Booking Service Backend Tests', () => {
 
       // Mock Mongoose calls for getBookings
       vi.mocked(Booking.countDocuments).mockResolvedValue(1);
-      
+
       const mockLean = vi.fn().mockResolvedValue(mockBookings);
       const mockLimit = vi.fn().mockReturnValue({ lean: mockLean });
       const mockSkip = vi.fn().mockReturnValue({ limit: mockLimit });
@@ -1594,7 +1596,7 @@ describe('Admin Booking Service Backend Tests', () => {
       // Verify payload structure parity via maintainable matchers (Omit fragile full-object exact comparisons)
       expect(result.data).toHaveLength(1);
       const dto = result.data[0];
-      
+
       expect(dto).toEqual(
         expect.objectContaining({
           _id: mockBookingId.toString(),
@@ -1650,7 +1652,7 @@ describe('Admin Booking Service Backend Tests', () => {
     it('should retrieve a single booking by ID with pre-loaded logs and tickets', async () => {
       const mockEventId = new mongoose.Types.ObjectId();
       const mockBookingId = new mongoose.Types.ObjectId();
-      
+
       const mockBooking = {
         _id: mockBookingId,
         bookingId: 'MAD-2026-TEST1',
@@ -1716,7 +1718,7 @@ describe('Admin Booking Service Backend Tests', () => {
       expect(Booking.findOne).toHaveBeenCalledTimes(1);
       expect(Ticket.find).toHaveBeenCalledTimes(1);
       expect(AuditLogModel.find).toHaveBeenCalledTimes(1);
-      
+
       expect(result).toEqual(
         expect.objectContaining({
           bookingId: 'MAD-2026-TEST1',
@@ -1729,7 +1731,7 @@ describe('Admin Booking Service Backend Tests', () => {
     it('should pass regression tests for guest, authenticated, cancelled bookings, replaced tickets, and empty sets', async () => {
       const mockEventId = new mongoose.Types.ObjectId();
       const mockBookingId = new mongoose.Types.ObjectId();
-      
+
       const mockBookings = [
         {
           _id: mockBookingId,
@@ -1792,7 +1794,7 @@ describe('Admin Booking Service Backend Tests', () => {
     it('should dynamically verify projection coverage against mapper requirements', async () => {
       const mockEventId = new mongoose.Types.ObjectId();
       const mockBookingId = new mongoose.Types.ObjectId();
-      
+
       const projectedBookingOnly = {
         _id: mockBookingId,
         bookingId: 'MAD-2026-PROJ1',

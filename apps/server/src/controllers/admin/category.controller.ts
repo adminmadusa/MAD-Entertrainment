@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+
 import * as categoryService from '../../services/admin/category.service';
 
 export const createCategory = async (req: Request, res: Response, next: NextFunction) => {

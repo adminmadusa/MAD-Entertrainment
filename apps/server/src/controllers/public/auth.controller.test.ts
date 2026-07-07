@@ -1,8 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { AuthController } from './auth.controller';
+
+import { AppError } from '../../middleware/error.middleware';
 import { UserModel } from '../../models/user.schema';
 import { AuthService } from '../../services/public/auth.service';
-import { AppError } from '../../middleware/error.middleware';
+import { AuthController } from './auth.controller';
 
 vi.mock('../../models/user.schema', () => ({
   UserModel: {
@@ -453,4 +454,3 @@ describe('Public Auth Controller - Profile Management Tests', () => {
     });
   });
 });
-

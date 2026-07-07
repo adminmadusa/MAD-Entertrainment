@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
 import mongoose, { Types } from 'mongoose';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 // ─────────────────────────────────────────────────────────────
 // Hoisted Mock Variables
@@ -134,16 +134,16 @@ vi.mock('../../utils/logger', () => ({
   logger: { warn: vi.fn(), info: vi.fn(), error: vi.fn(), debug: vi.fn() },
 }));
 
-import { PublicBookingService } from './booking.service';
+import { emitToEvent, emitToAdmin } from '../../config/socket';
 import { Booking } from '../../models/booking.schema';
-import { UserModel } from '../../models/user.schema';
-import { Ticket } from '../../models/ticket.schema';
 import { Event } from '../../models/event.schema';
 import { SeatLayout } from '../../models/seat-layout.schema';
-import { ReservationService } from '../reservation.service';
-import { CacheService } from '../cache.service';
-import { emitToEvent, emitToAdmin } from '../../config/socket';
+import { Ticket } from '../../models/ticket.schema';
+import { UserModel } from '../../models/user.schema';
 import { auditLog } from '../../utils/audit';
+import { CacheService } from '../cache.service';
+import { ReservationService } from '../reservation.service';
+import { PublicBookingService } from './booking.service';
 
 // ─────────────────────────────────────────────────────────────
 // Helpers
@@ -711,14 +711,14 @@ describe('PublicBookingService.getMyBookings — ownership and reconciliation ma
 
     it('Identical Retry: Returns existing booking with isReused: true and makes no DB/reservation updates', async () => {
       vi.mocked(Event.findById).mockResolvedValue(mockEvent as any);
-      
+
       const payload = {
         eventId: mockEvent._id.toString(),
         tickets: [{ tier: 'GA_EARLY', quantity: 2 }],
       };
-      
+
       const fp = PublicBookingService.generateSelectionFingerprint(payload);
-      
+
       const existingBookingMock = {
         _id: new Types.ObjectId('60c72b2f9b1d8e25b8d29b01'),
         bookingId: 'MAD-2026-ABCDE',
@@ -1002,7 +1002,7 @@ describe('PublicBookingService.getMyBookings — ownership and reconciliation ma
       };
 
       vi.mocked(Event.findById).mockResolvedValue(mockEvent as any);
-      
+
       const mockPostCommit = vi.fn().mockResolvedValue(undefined);
       const mockReservations = [
         { reservationId: 'RES-001', tier: 'GA_EARLY', quantity: 2, status: 'reserved' },

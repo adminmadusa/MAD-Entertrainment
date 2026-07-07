@@ -1,15 +1,15 @@
 'use client';
 
-import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { motion, AnimatePresence, useReducedMotion, PanInfo } from 'framer-motion';
+import { AnimatePresence, motion, type PanInfo, useReducedMotion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowRight, ArrowLeft } from '@mad/ui';
-import { ImageAsset, DJOperator } from '@mad/types';
+import { useState } from 'react';
 
+import { useMounted, useWindowWidth } from '@/hooks/use-window.hook';
 import { publicGetDJBySlug } from '@/lib/api/public.service';
-import { useWindowWidth, useMounted } from '@/hooks/use-window.hook';
+import type { DJOperator, ImageAsset } from '@mad/types';
+import { ArrowLeft, ArrowRight } from '@mad/ui';
 
 // ─── SVG Icons ────────────────────────────────────────────────
 
@@ -163,8 +163,8 @@ function GalleryCarousel({ galleryImages = [] }: { galleryImages?: ImageAsset[] 
   }
 
   return (
-    <div 
-      className="relative w-full max-w-4xl mx-auto mt-6 focus:outline-none flex flex-col items-center" 
+    <div
+      className="relative w-full max-w-4xl mx-auto mt-6 focus:outline-none flex flex-col items-center"
       style={{ perspective: '1200px' }}
       tabIndex={0}
       onKeyDown={handleKeyDown}
@@ -173,10 +173,10 @@ function GalleryCarousel({ galleryImages = [] }: { galleryImages?: ImageAsset[] 
       aria-label="DJ Media Gallery Carousel"
     >
       {/* Centered relative wrapper of the exact active card dimensions */}
-      <div 
+      <div
         className="relative pointer-events-none flex items-center justify-center"
-        style={{ 
-          width: `${cardWidth}px`, 
+        style={{
+          width: `${cardWidth}px`,
           height: `${cardHeight}px`,
           transformStyle: 'preserve-3d'
         }}
@@ -190,10 +190,10 @@ function GalleryCarousel({ galleryImages = [] }: { galleryImages?: ImageAsset[] 
 
             const isActive = absoluteOffset === 0;
             const spread = windowWidth < 640 ? 110 : 180;
-            
+
             const x = absoluteOffset * spread;
             const z = isActive ? 0 : -150 - Math.abs(absoluteOffset) * 60;
-            
+
             let rotateY = 0;
             if (!isActive) {
               rotateY = absoluteOffset > 0 ? -25 : 25;
@@ -269,14 +269,14 @@ function GalleryCarousel({ galleryImages = [] }: { galleryImages?: ImageAsset[] 
 
       {images.length > 1 && (
         <div className="w-full relative mt-6 h-12 flex items-center justify-center">
-          <button 
+          <button
             onClick={prevSlide}
             className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 z-30 p-2 sm:p-3 rounded-full glass border border-border-subtle text-white hover:text-accent-pink hover:border-accent-pink/50 transition-all focus:outline-none shadow-lg pointer-events-auto"
             aria-label="Previous image"
           >
             <ArrowLeft size={16} />
           </button>
-          <button 
+          <button
             onClick={nextSlide}
             className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 z-30 p-2 sm:p-3 rounded-full glass border border-border-subtle text-white hover:text-accent-pink hover:border-accent-pink/50 transition-all focus:outline-none shadow-lg pointer-events-auto"
             aria-label="Next image"
@@ -290,8 +290,8 @@ function GalleryCarousel({ galleryImages = [] }: { galleryImages?: ImageAsset[] 
                 key={idx}
                 onClick={() => setActiveIndex(idx)}
                 className={`w-1.5 h-1.5 rounded-full transition-all duration-300 pointer-events-auto ${
-                  idx === activeIndex 
-                    ? 'bg-accent-pink w-5 shadow-glow-sm' 
+                  idx === activeIndex
+                    ? 'bg-accent-pink w-5 shadow-glow-sm'
                     : 'bg-border-subtle hover:bg-accent-pink/50'
                 }`}
                 aria-label={`Go to slide ${idx + 1}`}
@@ -374,11 +374,11 @@ export default function DJDetailClient({ slug, initialDJ }: DJDetailClientProps)
         ) : (
           <div className="absolute inset-0 bg-gradient-to-br from-background-secondary to-background z-0" />
         )}
-        
+
         {/* Banner Details */}
         <div className="container-mad w-full relative z-10">
           <div className="flex flex-col md:flex-row gap-6 md:gap-10 items-center md:items-end">
-            
+
             {/* Small Profile Image Card */}
             <div className="relative w-36 sm:w-48 lg:w-64 aspect-[3/4] rounded-2xl overflow-hidden border-2 border-white/10 shadow-2xl bg-white/5 image-overlay-vignette group flex-shrink-0">
               {dj.profileImage?.url ? (
@@ -434,13 +434,13 @@ export default function DJDetailClient({ slug, initialDJ }: DJDetailClientProps)
 
               {/* Quick Action buttons */}
               <div className="hidden md:flex flex-wrap justify-center md:justify-start gap-3 pt-2">
-                <Link 
+                <Link
                   href="/events"
                   className="px-5 py-2.5 text-xs font-bold text-white btn-gradient rounded-xl shadow-glow-sm hover:scale-105 active:scale-100 transition-transform block text-center"
                 >
                   Book Tickets
                 </Link>
-                <a 
+                <a
                   href={`mailto:bookings@madentertainment.in?subject=Booking Inquiry: ${dj.name}`}
                   className="px-5 py-2.5 text-xs font-semibold text-text-primary glass border border-border-subtle hover:border-accent-purple/40 hover:bg-accent-purple/5 rounded-xl transition-all block text-center"
                 >
@@ -457,7 +457,7 @@ export default function DJDetailClient({ slug, initialDJ }: DJDetailClientProps)
       <section className="relative z-20 mt-8 pb-28 md:pb-20">
         <div className="container-mad">
           <div className="max-w-4xl mx-auto space-y-8">
-            
+
             {/* Media Gallery Carousel */}
             {dj.galleryImages && dj.galleryImages.length > 0 && (
               <div className="glass p-5 md:p-8 rounded-3xl border border-border-subtle bg-bg-card/30 backdrop-blur-md">
@@ -499,13 +499,13 @@ export default function DJDetailClient({ slug, initialDJ }: DJDetailClientProps)
 
       {/* Sticky Mobile Bottom Navigation Menu */}
       <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-background/80 backdrop-blur-lg border-t border-border-subtle/50 p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] flex gap-3 shadow-glow-sm">
-        <Link 
+        <Link
           href="/events"
           className="flex-1 py-3 text-sm font-bold text-white btn-gradient rounded-xl shadow-glow-sm active:scale-[0.98] transition-transform text-center flex items-center justify-center"
         >
           Book Tickets
         </Link>
-        <a 
+        <a
           href={`mailto:bookings@madentertainment.in?subject=Booking Inquiry: ${dj.name}`}
           className="flex-1 py-3 text-sm font-semibold text-text-primary glass border border-border-subtle hover:border-accent-purple/40 hover:bg-accent-purple/5 rounded-xl transition-all text-center flex items-center justify-center"
         >

@@ -1,9 +1,11 @@
 import crypto from 'crypto';
-import { describe, it, expect, vi, beforeEach, afterAll } from 'vitest';
 import Module from 'module';
-import { registerSocketHandlers } from './index';
+
+import { describe, it, expect, vi, beforeEach, afterAll } from 'vitest';
+
 import { SeatLayout } from '../models/seat-layout.schema';
 import { auditLog } from '../utils/audit';
+import { registerSocketHandlers } from './index';
 
 const mockRedis = {
   get: vi.fn(),
@@ -91,7 +93,7 @@ describe('Socket Handlers (Public Namespace)', () => {
     mockRedis.expire.mockReset();
     mockRedis.isRedisConnected.mockReset();
     mockEventModel.exists.mockReset();
-    
+
     // Default behaviors
     mockRedis.isRedisConnected.mockReturnValue(true);
 
