@@ -115,4 +115,80 @@ describe('UXStateValidator', () => {
     const result = await runWithTempFile('List2.tsx', content);
     expect(result.warnings.some(w => w.rule === 'VAL-UX-002')).toBe(false);
   });
+
+  it('should NOT flag VAL-UX-002 for literal arrays', async () => {
+    const content = `
+      export function List() {
+        return (
+          <div>
+            {[1, 2, 3].map(x => <span key={x}>{x}</span>)}
+          </div>
+        );
+      }
+    `;
+    const result = await runWithTempFile('LiteralList.tsx', content);
+    expect(result.warnings.some(w => w.rule === 'VAL-UX-002')).toBe(false);
+  });
+
+  it('should NOT flag VAL-UX-002 for static array constants defined in the file', async () => {
+    const content = `
+      const PRESETS = ['red', 'green', 'blue'];
+      export function PresetList() {
+        return (
+          <div>
+            {PRESETS.map(p => <span key={p}>{p}</span>)}
+          </div>
+        );
+      }
+    `;
+    const result = await runWithTempFile('StaticConstList.tsx', content);
+    expect(result.warnings.some(w => w.rule === 'VAL-UX-002')).toBe(false);
+  });
+
+  it('should NOT flag VAL-UX-002 for imported static configuration arrays', async () => {
+    const content = `
+      import { navGroups } from './config';
+      export function Navigation() {
+        return (
+          <nav>
+            {navGroups.map(g => <div key={g.id}>{g.title}</div>)}
+          </nav>
+        );
+      }
+    `;
+    const result = await runWithTempFile('ImportedConfigList.tsx', content);
+    expect(result.warnings.some(w => w.rule === 'VAL-UX-002')).toBe(false);
+  });
+
+  it('should flag VAL-UX-002 for React state arrays when empty check is missing', async () => {
+    const content = `
+      import { useState } from 'react';
+      export function ItemsView() {
+        const [items, setItems] = useState([]);
+        return (
+          <div>
+            {items.map(item => <div key={item.id}>{item.name}</div>)}
+          </div>
+        );
+      }
+    `;
+    const result = await runWithTempFile('ReactStateList.tsx', content);
+    expect(result.warnings.some(w => w.rule === 'VAL-UX-002')).toBe(true);
+  });
+
+  it('should flag VAL-UX-002 for useMemo derived dynamic arrays when empty check is missing', async () => {
+    const content = `
+      import { useMemo } from 'react';
+      export function ItemsView({ items }) {
+        const filtered = useMemo(() => items.filter(i => i.active), [items]);
+        return (
+          <div>
+            {filtered.map(item => <div key={item.id}>{item.name}</div>)}
+          </div>
+        );
+      }
+    `;
+    const result = await runWithTempFile('DerivedMemoList.tsx', content);
+    expect(result.warnings.some(w => w.rule === 'VAL-UX-002')).toBe(true);
+  });
 });
