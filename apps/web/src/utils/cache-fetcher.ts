@@ -1,5 +1,7 @@
 import { cache } from 'react';
 
+import { publicGetDJBySlug, publicGetEventBySlug } from '@/lib/api/public.service';
+
 /**
  * Request-scoped cached helper builder.
  * Wraps a service function in React's request-scoped cache.
@@ -11,3 +13,6 @@ export function createCachedFetcher<T, Args extends unknown[]>(
 ): (...args: Args) => Promise<T> {
   return cache(fetcher);
 }
+
+export const getCachedDJ = createCachedFetcher(publicGetDJBySlug);
+export const getCachedEvent = createCachedFetcher(publicGetEventBySlug);
