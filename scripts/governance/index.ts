@@ -15,6 +15,8 @@ import { AuditEngine } from './core/audit_engine';
 import { StatelessViolation } from './core/types';
 import { persistenceStats } from './core/json_utils';
 
+import { RuleRegistry } from './rules/registry';
+
 const workspaceRoot = resolve(__dirname, '../..');
 
 function getAllMarkdownFiles(workspaceRoot: string): string[] {
