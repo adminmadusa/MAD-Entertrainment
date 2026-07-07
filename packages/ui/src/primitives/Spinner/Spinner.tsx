@@ -1,7 +1,8 @@
 import React, { forwardRef } from 'react';
+
 import { cn } from '../../lib/cn';
-import { SpinnerProps } from './Spinner.types';
 import { spinnerSizes } from './Spinner.styles';
+import type { SpinnerProps } from './Spinner.types';
 
 export const Spinner = forwardRef<HTMLSpanElement, SpinnerProps>(
   ({ className, size = 'md', 'aria-label': ariaLabel = 'Loading', ...props }, ref) => {

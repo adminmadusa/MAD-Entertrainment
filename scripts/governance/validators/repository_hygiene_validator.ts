@@ -247,7 +247,21 @@ Remediation Steps:
         const isTypeOnly = imp.importClause?.isTypeOnly === true;
         const line = sourceFile.getLineAndCharacterOfPosition(imp.getStart()).line + 1;
 
-        if (!isTypeOnly && (pathVal.includes('/types') || pathVal.endsWith('/types') || pathVal.endsWith('types') || pathVal.includes('packages/types'))) {
+        // Skip if already a `import type` declaration
+        if (isTypeOnly) continue;
+
+        // Check if this import uses inline type modifiers (mixed import).
+        // e.g. import { value, type MyType } from '...'
+        // These cannot be simply converted to `import type` and should not be flagged.
+        const hasMixedTypeBindings =
+          imp.importClause?.namedBindings &&
+          ts.isNamedImports(imp.importClause.namedBindings) &&
+          imp.importClause.namedBindings.elements.some(el => el.isTypeOnly);
+
+        if (
+          !hasMixedTypeBindings &&
+          (pathVal.includes('/types') || pathVal.endsWith('/types') || pathVal.endsWith('types') || pathVal.includes('packages/types'))
+        ) {
           warnings.push({
             file: relPath,
             rule: 'VAL-HYG-003',
@@ -297,11 +311,14 @@ Remediation Steps:
     const classified = imports.map(imp => {
       const pathVal = ts.isStringLiteral(imp.moduleSpecifier) ? imp.moduleSpecifier.text : '';
       const line = sourceFile.getLineAndCharacterOfPosition(imp.getStart()).line + 1;
+      // Use getFullStart for end-line calculation to handle multiline imports correctly
+      const endLine = sourceFile.getLineAndCharacterOfPosition(imp.getEnd()).line + 1;
       return {
         node: imp,
         path: pathVal,
         group: getGroupIndex(imp),
         line,
+        endLine,
       };
     });
 
@@ -339,11 +356,12 @@ Remediation Steps:
       if (grp.length > 0) {
         if (lastNonEmptyGroupIndex !== -1) {
           // Verify that the line number difference between the first import of this group
-          // and the last import of the previous group is > 1 (i.e. at least one blank line)
+          // and the last import of the previous group is > 1 (i.e. at least one blank line).
+          // Use endLine of the previous group's last import to correctly handle multiline imports.
           const lastImportOfPrevGroup = groups[lastNonEmptyGroupIndex][groups[lastNonEmptyGroupIndex].length - 1];
           const firstImportOfThisGroup = grp[0];
 
-          if (firstImportOfThisGroup.line <= lastImportOfPrevGroup.line + 1) {
+          if (firstImportOfThisGroup.line <= lastImportOfPrevGroup.endLine + 1) {
             warnings.push({
               file: relPath,
               rule: 'VAL-HYG-001',
@@ -374,8 +392,9 @@ Remediation Steps:
           return;
         }
 
-        // Verify NO blank lines within the same group
-        if (grp[j].line > grp[j - 1].line + 1) {
+        // Verify NO blank lines within the same group.
+        // Use endLine of the previous import to correctly handle multiline imports.
+        if (grp[j].line > grp[j - 1].endLine + 1) {
           warnings.push({
             file: relPath,
             rule: 'VAL-HYG-001',

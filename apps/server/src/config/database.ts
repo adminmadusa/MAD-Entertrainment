@@ -1,7 +1,6 @@
 import mongoose from 'mongoose';
 
 import { logger } from '../utils/logger';
-
 import { getEnv } from './env';
 
 const MAX_RETRIES = 5;

@@ -1,8 +1,10 @@
-import { Ticket } from '../../models/ticket.schema';
-import { Booking } from '../../models/booking.schema';
-import { AuditLogModel } from '../../models/audit-log.schema';
-import { BookingStatus } from '@mad/shared';
 import { Types } from 'mongoose';
+
+import { BookingStatus } from '@mad/shared';
+
+import { AuditLogModel } from '../../models/audit-log.schema';
+import { Booking } from '../../models/booking.schema';
+import { Ticket } from '../../models/ticket.schema';
 
 export interface ScanRequestPayload {
   ticketId: string;

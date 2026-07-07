@@ -1,5 +1,5 @@
-import * as React from "react";
 import { Section, Text, Link } from "@react-email/components";
+import * as React from "react";
 
 export function EmailFooter() {
   const currentYear = new Date().getFullYear();

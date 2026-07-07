@@ -1,9 +1,9 @@
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import React, { useState, useEffect } from 'react';
-import { Alert } from '@mad/ui';
 
 import type { DJOperator, ImageAsset } from '@mad/types';
+import { Alert } from '@mad/ui';
 
 import { DJBasicInfoCard } from './DJBasicInfoCard';
 import { DJFormActions } from './DJFormActions';

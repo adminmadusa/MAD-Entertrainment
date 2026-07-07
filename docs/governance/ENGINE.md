@@ -8,7 +8,7 @@ This document describes the technical architecture of the automated governance e
 
 ## 1. Purpose
 
-This document defines the structural relationship between code quality, architectural constraints, Git branch lifecycles, and design tokens/UX patterns in the MAD Entertrainment repository. 
+This document defines the structural relationship between code quality, architectural constraints, Git branch lifecycles, and design tokens/UX patterns in the MAD Entertrainment repository.
 
 As a repository scales into a multi-product platform, manual peer reviews become insufficient. This architecture acts as the blueprint for **automated enforcement (Phase 4)**, mapping human-readable specifications to static analysis rules.
 
@@ -324,4 +324,3 @@ interface ValidatorDefinition {
 No rule metadata (like severity, owners, or documentation links) is defined here; those properties reside exclusively in the centralized `RuleRegistry`.
 
 ---
-

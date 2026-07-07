@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useEffect } from 'react';
+
 import { ValidationResult } from '../../lib/api/admin/scanner.service';
 
 interface TicketValidationModalProps {

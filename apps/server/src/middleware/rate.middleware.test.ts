@@ -1,7 +1,8 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
 import rateLimit from 'express-rate-limit';
-import { initRateLimiters, authLimiter, bookingLimiter } from './rate.middleware';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+
 import { isRedisConnected, getRedis } from '../config/redis';
+import { initRateLimiters, authLimiter, bookingLimiter } from './rate.middleware';
 
 // We mock express-rate-limit so we can capture the options and call handler directly
 vi.mock('express-rate-limit', async () => {

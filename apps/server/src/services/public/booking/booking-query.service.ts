@@ -1,10 +1,12 @@
 import { Types } from 'mongoose';
+
 import { BookingStatus } from '@mad/shared';
+
 import { AppError } from '../../../middleware/error.middleware';
 import { Booking } from '../../../models/booking.schema';
 import { Ticket } from '../../../models/ticket.schema';
 import { UserModel } from '../../../models/user.schema';
-import { BookingQueryResult, MyBookingsResult } from './booking.types';
+import type { BookingQueryResult, MyBookingsResult } from './booking.types';
 
 export class BookingQueryService {
   static async getBookingByReference(bookingId: string): Promise<BookingQueryResult> {

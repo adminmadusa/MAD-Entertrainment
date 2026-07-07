@@ -45,10 +45,10 @@ No default export changes. No prop type widening or narrowing. No additional log
 
 ## Alternatives Considered
 
-**Option A: Migrate all consumers in the same PR**  
+**Option A: Migrate all consumers in the same PR**
 Rejected. Touching both `packages/ui` and application code in the same PR creates a large diff that is difficult to review and increases regression risk.
 
-**Option B: Delete old files immediately**  
+**Option B: Delete old files immediately**
 Rejected. Immediate deletion breaks any application import that references the old canonical path before the consumer has been updated. Shims allow a clean, incremental migration through Phase 2.5.
 
 ---

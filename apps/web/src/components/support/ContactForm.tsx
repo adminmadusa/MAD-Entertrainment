@@ -1,9 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { Alert, FormField, Input, Textarea } from '@mad/ui';
 
 import { submitContactForm } from '@/app/actions/contact.actions';
+import { Alert, FormField, Input, Textarea } from '@mad/ui';
 
 export function ContactForm() {
   const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');

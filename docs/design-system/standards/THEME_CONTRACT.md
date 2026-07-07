@@ -1,8 +1,8 @@
 # Theme Contract
 
-**Owner:** Platform  
-**Status:** Active  
-**Since:** @mad/ui v1.2.0  
+**Owner:** Platform
+**Status:** Active
+**Since:** @mad/ui v1.2.0
 **Last Reviewed:** 2026-07-06
 
 ---

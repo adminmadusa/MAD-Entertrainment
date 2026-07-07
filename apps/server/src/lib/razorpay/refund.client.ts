@@ -1,5 +1,7 @@
 import axios from 'axios';
+
 import { HTTP_STATUS } from '@mad/shared';
+
 import { getEnv } from '../../config/env';
 import { AppError } from '../../middleware/error.middleware';
 import { logger } from '../../utils/logger';

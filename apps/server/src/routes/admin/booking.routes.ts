@@ -1,4 +1,5 @@
 import { Router } from 'express';
+
 import { AdminRole } from '@mad/shared';
 
 import * as bookingController from '../../controllers/admin/booking.controller';

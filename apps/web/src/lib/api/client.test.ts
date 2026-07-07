@@ -1,8 +1,10 @@
-import { describe, it, expect, beforeEach, afterEach, vi, type Mock } from 'vitest';
 import axios, { AxiosError, type AxiosAdapter, type InternalAxiosRequestConfig, type AxiosRequestConfig } from 'axios';
-import { apiClient } from './client';
+import { describe, it, expect, beforeEach, afterEach, vi, type Mock } from 'vitest';
+
 import { STORAGE_KEYS } from '@mad/shared';
 import * as utils from '@mad/utils';
+
+import { apiClient } from './client';
 
 // Mock token expiration to return true for expired, false for new
 vi.mock('@mad/utils', async () => {

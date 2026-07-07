@@ -10,7 +10,6 @@ import { FormField, Input, Textarea, Alert } from '@mad/ui';
 
 import { CouponFormState, defaultCouponForm, mapCouponToFormState, validateCouponForm, CATEGORY_LABELS, inputCls, } from './coupon-form.types';
 
-
 interface CouponFormProps {
   initialData?: Coupon | null;
   onSubmit: (state: CouponFormState) => void;

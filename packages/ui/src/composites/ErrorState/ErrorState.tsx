@@ -1,8 +1,8 @@
 import React, { forwardRef } from 'react';
+
+import { AlertTriangle } from '../../icons';
 import { cn } from '../../lib/cn';
 import { Button } from '../../primitives/Button';
-import { AlertTriangle } from '../../icons';
-import { ErrorStateProps } from './ErrorState.types';
 import {
   errorStateContainerClasses,
   errorStateIconClasses,
@@ -10,6 +10,7 @@ import {
   errorStateDescriptionClasses,
   errorStateActionClasses,
 } from './ErrorState.styles';
+import type { ErrorStateProps } from './ErrorState.types';
 
 export const ErrorState = forwardRef<HTMLDivElement, ErrorStateProps>(
   ({ className, title, description, message, icon, onRetry, retry, action, ...props }, ref) => {

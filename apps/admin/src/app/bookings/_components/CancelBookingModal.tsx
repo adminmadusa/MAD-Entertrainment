@@ -1,9 +1,9 @@
 'use client';
 
-import { Modal } from '@mad/ui';
 import { useState } from 'react';
 
 import { AdminBooking } from '@/lib/api/admin/booking.service';
+import { Modal } from '@mad/ui';
 
 export interface CancelBookingModalProps {
   booking: AdminBooking;

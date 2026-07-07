@@ -1,5 +1,6 @@
-import { AdminRole } from '@mad/shared';
 import { describe, expect, it, vi } from 'vitest';
+
+import { AdminRole } from '@mad/shared';
 
 vi.mock('../../utils/logger', () => ({
   logger: {

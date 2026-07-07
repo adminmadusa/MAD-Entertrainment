@@ -1,4 +1,5 @@
 import { Schema, model, Document } from 'mongoose';
+
 import { encryptPayload, isEncrypted } from '../utils/encryption';
 
 export interface IDeadLetterJob extends Document {

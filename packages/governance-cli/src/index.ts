@@ -1,19 +1,20 @@
 #!/usr/bin/env node
 
-import { resolve, dirname, join } from 'path';
 import { existsSync } from 'fs';
+import { resolve, dirname, join } from 'path';
+
 import { getDefaults, ExitCode, GovernanceConfig } from './config/schema';
-import { ExecutionContext } from './core/context';
 import { CommandRegistry } from './core/command';
+import { ExecutionContext } from './core/context';
 import { PluginBuilder } from './core/plugin';
-import { ConsoleLogger } from './services/Logger';
-import { GitCliService } from './services/GitService';
-import { LocalRepositoryService } from './services/RepositoryService';
-import { NodeFileSystemService } from './services/FileSystemService';
 import { ConsoleRenderer } from './renderers/ConsoleRenderer';
 import { JsonRenderer } from './renderers/JsonRenderer';
 import { MarkdownRenderer } from './renderers/MarkdownRenderer';
 import { Renderer } from './renderers/Renderer';
+import { NodeFileSystemService } from './services/FileSystemService';
+import { GitCliService } from './services/GitService';
+import { ConsoleLogger } from './services/Logger';
+import { LocalRepositoryService } from './services/RepositoryService';
 
 // Core commands
 import { HelpCommand } from './commands/HelpCommand';

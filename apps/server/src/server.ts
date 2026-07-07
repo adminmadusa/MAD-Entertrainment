@@ -1,5 +1,6 @@
-import 'dotenv/config';
 import { validateEnv, getEnv } from './config/env';
+
+import 'dotenv/config';
 
 // Validate env variables first
 validateEnv();

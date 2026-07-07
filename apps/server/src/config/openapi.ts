@@ -1,5 +1,4 @@
 import { OpenAPIRegistry, OpenApiGeneratorV3, extendZodWithOpenApi } from '@asteasolutions/zod-to-openapi';
-
 import { z } from 'zod';
 
 // Extend Zod with OpenAPI properties (like description, example, etc.)

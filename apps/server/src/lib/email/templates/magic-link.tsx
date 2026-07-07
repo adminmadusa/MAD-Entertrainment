@@ -1,4 +1,3 @@
-import * as React from "react";
 import {
   Html,
   Head,
@@ -9,6 +8,8 @@ import {
   Heading,
   Preview,
 } from "@react-email/components";
+import * as React from "react";
+
 import { renderTemplate } from "../render-template";
 
 export interface MagicLinkEmailData {

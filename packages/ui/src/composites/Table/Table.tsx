@@ -1,15 +1,6 @@
 import React, { forwardRef } from 'react';
+
 import { cn } from '../../lib/cn';
-import {
-  TableProps,
-  TableHeaderProps,
-  TableBodyProps,
-  TableFooterProps,
-  TableRowProps,
-  TableHeadProps,
-  TableCellProps,
-  TableCaptionProps,
-} from './Table.types';
 import {
   tableWrapperClasses,
   tableClasses,
@@ -21,6 +12,16 @@ import {
   tableCellClasses,
   tableCaptionClasses,
 } from './Table.styles';
+import type {
+  TableProps,
+  TableHeaderProps,
+  TableBodyProps,
+  TableFooterProps,
+  TableRowProps,
+  TableHeadProps,
+  TableCellProps,
+  TableCaptionProps,
+} from './Table.types';
 
 export const Table = forwardRef<HTMLTableElement, TableProps>(
   ({ className, ...props }, ref) => (

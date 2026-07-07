@@ -1,6 +1,6 @@
 # Future Themes
 
-**Owner:** Platform  
+**Owner:** Platform
 **Last Updated:** 2026-07-06
 
 ---

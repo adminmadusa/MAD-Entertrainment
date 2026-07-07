@@ -1,4 +1,5 @@
 import PDFDocument from "pdfkit";
+
 import { COLORS } from "../utils/colors";
 import { SPACING } from "../utils/spacing";
 import { TYPOGRAPHY } from "../utils/typography";

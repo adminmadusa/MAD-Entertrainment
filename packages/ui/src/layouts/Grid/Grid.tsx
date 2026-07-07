@@ -1,6 +1,6 @@
 import React, { forwardRef } from 'react';
+
 import { cn } from '../../lib/cn';
-import { GridProps } from './Grid.types';
 import {
   gridBaseClasses,
   gridGaps,
@@ -10,6 +10,7 @@ import {
   gridLgColsMap,
   gridXlColsMap,
 } from './Grid.styles';
+import type { GridProps } from './Grid.types';
 
 export const Grid = forwardRef<HTMLDivElement, GridProps>(
   ({ className, cols = 1, gap = 'md', ...props }, ref) => {

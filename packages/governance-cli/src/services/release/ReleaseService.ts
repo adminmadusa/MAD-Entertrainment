@@ -1,7 +1,7 @@
 import { ReleasePreparation } from '../../models/ReleasePreparation';
 import { ReleaseResult } from '../../models/ReleaseResult';
-import { GitService } from '../GitService';
 import { GitTagService } from '../git/GitTagService';
+import { GitService } from '../GitService';
 import { ChangelogService } from './ChangelogService';
 import { VersionService } from './VersionService';
 

@@ -1,9 +1,10 @@
-import * as React from "react";
 import { Section, Text, Row, Column, Heading } from "@react-email/components";
-import { EmailLayout } from "./components/EmailLayout";
-import { EmailHeader } from "./components/EmailHeader";
-import { EmailFooter } from "./components/EmailFooter";
+import * as React from "react";
+
 import { renderTemplate } from "../render-template";
+import { EmailFooter } from "./components/EmailFooter";
+import { EmailHeader } from "./components/EmailHeader";
+import { EmailLayout } from "./components/EmailLayout";
 
 export interface BookingConfirmationData {
   customerName: string;

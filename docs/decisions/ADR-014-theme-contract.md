@@ -37,10 +37,10 @@ In Phase 4, the contract will be enforced by an automated validator that runs as
 
 ## Alternatives Considered
 
-**Option A: No formal contract — themes define whatever they want**  
+**Option A: No formal contract — themes define whatever they want**
 Rejected. Components would need per-token fallback values throughout all CSS, making maintenance very expensive and inconsistent.
 
-**Option B: Inherit from a base theme file**  
+**Option B: Inherit from a base theme file**
 Considered. CSS inheritance/cascade means child themes would need `@import` of the base first. This is possible, but makes it harder to audit what each theme defines. A contract with explicit token ownership is cleaner.
 
 ---

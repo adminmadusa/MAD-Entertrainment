@@ -49,10 +49,10 @@ Everything not listed in `"exports"` is considered internal and may change at an
 
 ## Alternatives Considered
 
-**Option A: Barrel-only (`src/index.tsx` is the only entry point)**  
+**Option A: Barrel-only (`src/index.tsx` is the only entry point)**
 Rejected because CSS files and TypeScript config files cannot be re-exported through a JS barrel. Separate entry points for styles and the Tailwind preset are necessary.
 
-**Option B: Expose `src/` directly (no exports map)**  
+**Option B: Expose `src/` directly (no exports map)**
 Rejected because it couples all consumers to the internal directory layout. Any reorganization becomes a breaking change.
 
 ---

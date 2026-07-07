@@ -3,8 +3,8 @@
 import React from 'react';
 
 import type { TicketProfile, TicketGroup, TicketConfig } from '@mad/types';
-
 import { FormField, Input } from '@mad/ui';
+
 import { inputCls } from './constants';
 import type { TicketTierInput } from './types';
 

@@ -4,7 +4,6 @@ import React from 'react';
 
 import { MAX_MEMORIES_GALLERY_LIMIT } from '@mad/shared';
 
-
 import { type MemoryGalleryItem, type UploadEntry } from './event-memories.types';
 
 // ─── Props ───────────────────────────────────────────────────────────────────

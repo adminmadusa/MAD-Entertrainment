@@ -1,6 +1,6 @@
+import { ExitCode } from '../config/schema';
 import { Command, CommandMetadata, OutputModel } from '../core/command';
 import { ExecutionContext } from '../core/context';
-import { ExitCode } from '../config/schema';
 
 export class HelpCommand extends Command {
   readonly metadata: CommandMetadata = {

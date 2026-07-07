@@ -1,7 +1,8 @@
 import React, { forwardRef } from 'react';
+
 import { cn } from '../../lib/cn';
-import { SkeletonProps, EventGridSkeletonProps } from './Skeleton.types';
 import { skeletonBaseClasses } from './Skeleton.styles';
+import type { SkeletonProps, EventGridSkeletonProps } from './Skeleton.types';
 
 export const Skeleton = forwardRef<HTMLDivElement, SkeletonProps>(
   ({ className, width, height, rounded = true, style, ...props }, ref) => {

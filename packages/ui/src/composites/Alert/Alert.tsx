@@ -1,6 +1,5 @@
 import React, { forwardRef } from 'react';
-import { cn } from '../../lib/cn';
-import { IconButton } from '../../primitives/IconButton';
+
 import {
   Info,
   CheckCircle2,
@@ -8,7 +7,8 @@ import {
   AlertCircle,
   X,
 } from '../../icons';
-import { AlertProps } from './Alert.types';
+import { cn } from '../../lib/cn';
+import { IconButton } from '../../primitives/IconButton';
 import {
   alertContainerClasses,
   alertVariants,
@@ -17,6 +17,7 @@ import {
   alertContentClasses,
   alertCloseClasses,
 } from './Alert.styles';
+import type { AlertProps } from './Alert.types';
 
 const defaultIcons = {
   info: <Info className={alertIconClasses} />,

@@ -1,4 +1,5 @@
 import { Router } from 'express';
+
 import { AuthController } from '../../controllers/public/auth.controller';
 import { requireAuth } from '../../middleware/auth.middleware';
 import { authLimiter } from '../../middleware/rate.middleware';

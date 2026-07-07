@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+
 import { Notification } from './notification.schema';
 
 describe('Notification Schema Index Definitions', () => {

@@ -1,9 +1,10 @@
-import { EventCategory } from '@mad/shared';
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 
-import { listEventsQuerySchema } from './payment.validation';
+import { EventCategory } from '@mad/shared';
+
 import { listDJOperatorsQuerySchema } from './dj-operator.validation';
+import { listEventsQuerySchema } from './payment.validation';
 
 function expectAccepted(schema: z.ZodTypeAny, payload: unknown) {
   const result = schema.safeParse(payload);

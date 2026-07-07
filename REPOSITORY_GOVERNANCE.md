@@ -279,7 +279,7 @@ Before deleting a feature branch:
    ```
 
 ### Working Tree State Rule (RULE-GIT-002)
-A feature branch **must not** be deleted while the local repository contains uncommitted or unstaged changes. 
+A feature branch **must not** be deleted while the local repository contains uncommitted or unstaged changes.
 
 If the working tree is not clean, you must do one of the following before starting the cleanup protocol:
 - **Commit** the changes.
@@ -740,4 +740,3 @@ If a shared package requires a specific runtime host (e.g., `@mad/ui` requiring 
 ---
 
 ---
-

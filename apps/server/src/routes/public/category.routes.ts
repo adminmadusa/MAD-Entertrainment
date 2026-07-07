@@ -1,4 +1,5 @@
 import { Router } from 'express';
+
 import { getCategories } from '../../services/admin/category.service';
 
 const router: Router = Router();

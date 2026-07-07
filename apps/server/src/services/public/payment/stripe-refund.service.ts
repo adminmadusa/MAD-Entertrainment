@@ -1,5 +1,5 @@
 import { logger } from '../../../utils/logger';
-import { StripeChargeWebhookPayload, StripeRefundWebhookPayload, NormalizedRefundPayload } from '../payment.types';
+import type { StripeChargeWebhookPayload, StripeRefundWebhookPayload, NormalizedRefundPayload } from '../payment.types';
 
 export class StripeRefundService {
   static parseStripeRefund(

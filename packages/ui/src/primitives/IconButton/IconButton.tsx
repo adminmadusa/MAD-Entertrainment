@@ -1,8 +1,9 @@
 import React, { forwardRef } from 'react';
+
 import { cn } from '../../lib/cn';
 import { Button } from '../Button';
-import { IconButtonProps } from './IconButton.types';
 import { iconButtonSizes } from './IconButton.styles';
+import type { IconButtonProps } from './IconButton.types';
 
 export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
   ({ className, children, 'aria-label': ariaLabel, size = 'md', ...props }, ref) => {

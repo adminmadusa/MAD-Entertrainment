@@ -1,6 +1,6 @@
 import React, { forwardRef } from 'react';
+
 import { cn } from '../../lib/cn';
-import { StackProps } from './Stack.types';
 import {
   stackBaseClasses,
   stackDirections,
@@ -8,6 +8,7 @@ import {
   stackAligns,
   stackJustifies,
 } from './Stack.styles';
+import type { StackProps } from './Stack.types';
 
 export const Stack = forwardRef<HTMLDivElement, StackProps>(
   (

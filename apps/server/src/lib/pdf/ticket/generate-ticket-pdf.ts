@@ -1,11 +1,12 @@
 import PDFDocument from "pdfkit";
+
 import { Ticket } from "../../../models/ticket.schema";
-import { drawTicketCard } from "./layout/draw-ticket-card";
-import { drawHeader } from "./layout/draw-header";
-import { drawEventDetails } from "./layout/draw-event-details";
 import { drawAttendeeDetails } from "./layout/draw-attendee-details";
-import { drawQRSection } from "./layout/draw-qr-section";
+import { drawEventDetails } from "./layout/draw-event-details";
 import { drawFooter } from "./layout/draw-footer";
+import { drawHeader } from "./layout/draw-header";
+import { drawQRSection } from "./layout/draw-qr-section";
+import { drawTicketCard } from "./layout/draw-ticket-card";
 
 /**
  * Generates a fully-designed, production-ready, scan-ready PDF ticket attachment buffer.

@@ -1,6 +1,8 @@
 import crypto from 'crypto';
-import { BookingStatus, TicketTier } from '@mad/shared';
+
 import { Schema, model, Document, Types } from 'mongoose';
+
+import { BookingStatus, TicketTier } from '@mad/shared';
 
 export interface IBooking extends Document {
   bookingId: string;

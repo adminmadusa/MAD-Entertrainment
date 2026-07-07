@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+
 import { Ticket } from './ticket.schema';
 
 describe('Ticket Schema Validation Tests', () => {

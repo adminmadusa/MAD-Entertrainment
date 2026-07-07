@@ -1,5 +1,6 @@
-import { EventCategory, BookingMode, EventStatus, TicketTier, EventMemoryPublicationState } from '@mad/shared';
 import { Schema, model, Document, Types } from 'mongoose';
+
+import { EventCategory, BookingMode, EventStatus, TicketTier, EventMemoryPublicationState } from '@mad/shared';
 
 const cloudinaryImageSchema = new Schema(
   {

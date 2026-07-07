@@ -1,11 +1,12 @@
 import React, { forwardRef } from 'react';
+
 import { cn } from '../../lib/cn';
-import { ProgressProps } from './Progress.types';
 import {
   progressContainerClasses,
   progressFillBaseClasses,
   progressVariants,
 } from './Progress.styles';
+import type { ProgressProps } from './Progress.types';
 
 export const Progress = forwardRef<HTMLDivElement, ProgressProps>(
   ({ className, value, label, variant = 'default', ...props }, ref) => {

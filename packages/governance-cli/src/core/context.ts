@@ -1,9 +1,9 @@
 import { GovernanceConfig } from '../config/schema';
-import { GitService } from '../services/GitService';
-import { RepositoryService } from '../services/RepositoryService';
-import { FileSystemService } from '../services/FileSystemService';
-import { Logger } from '../services/Logger';
 import { Renderer } from '../renderers/Renderer';
+import { FileSystemService } from '../services/FileSystemService';
+import { GitService } from '../services/GitService';
+import { Logger } from '../services/Logger';
+import { RepositoryService } from '../services/RepositoryService';
 import { CommandRegistry } from './command';
 
 // Import domain services

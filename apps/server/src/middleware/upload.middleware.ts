@@ -1,5 +1,7 @@
 import multer from 'multer';
+
 import { UPLOAD_CONSTANTS } from '@mad/validations';
+
 import { AppError } from './error.middleware';
 
 // We use memory storage because we want to pass the buffer directly

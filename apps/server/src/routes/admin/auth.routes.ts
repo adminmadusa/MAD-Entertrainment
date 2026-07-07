@@ -1,4 +1,5 @@
 import { Router } from 'express';
+
 import { adminAuthController } from '../../controllers/admin/auth.controller';
 import { requireAdmin } from '../../middleware/auth.middleware';
 import { adminLimiter } from '../../middleware/rate.middleware';

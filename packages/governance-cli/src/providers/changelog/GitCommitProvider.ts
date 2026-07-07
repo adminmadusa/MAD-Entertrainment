@@ -1,5 +1,5 @@
-import { CommitProvider } from './CommitProvider';
 import { GitService } from '../../services/GitService';
+import { CommitProvider } from './CommitProvider';
 
 export class GitCommitProvider implements CommitProvider {
   constructor(private git: GitService) {}
