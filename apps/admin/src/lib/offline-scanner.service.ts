@@ -16,9 +16,9 @@ const DB_VERSION = 2;
 
 // ─── Types ────────────────────────────────────────────────────
 
-export type SyncStatus = 'pending' | 'synced' | 'failed';
+type SyncStatus = 'pending' | 'synced' | 'failed';
 
-export interface OfflineScan {
+interface OfflineScan {
   id?: number;
   ticketId: string;
   eventId: string;
@@ -32,18 +32,18 @@ export interface OfflineScan {
   lastAttemptAt?: number;
 }
 
-export interface FailedScan {
+interface FailedScan {
   id: number;
   ticketId: string;
   reason: string;
 }
 
-export interface SyncResult {
+interface SyncResult {
   synced: number;
   failed: FailedScan[];
 }
 
-export type ScanFn = (ticketId: string, eventId: string) => Promise<unknown>;
+type ScanFn = (ticketId: string, eventId: string) => Promise<unknown>;
 
 // ─── IndexedDB Initialisation ─────────────────────────────────
 
@@ -74,20 +74,6 @@ function initDB(): Promise<IDBDatabase> {
 
 // ─── Read Operations ──────────────────────────────────────────
 
-/**
- * Returns all records regardless of sync status.
- * Use `getPendingScans` for the actionable subset.
- */
-export async function getOfflineScans(): Promise<OfflineScan[]> {
-  const db = await initDB();
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction(STORE_NAME, 'readonly');
-    const store = tx.objectStore(STORE_NAME);
-    const request = store.getAll();
-    request.onsuccess = () => resolve(request.result as OfflineScan[]);
-    request.onerror = () => reject(request.error);
-  });
-}
 
 /**
  * Returns only records with `syncStatus === 'pending'`.
@@ -105,21 +91,6 @@ export async function getPendingScans(): Promise<OfflineScan[]> {
   });
 }
 
-/**
- * Returns only records with `syncStatus === 'failed'`.
- * Displayed to the operator as conflicts requiring attention.
- */
-export async function getFailedScans(): Promise<OfflineScan[]> {
-  const db = await initDB();
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction(STORE_NAME, 'readonly');
-    const store = tx.objectStore(STORE_NAME);
-    const index = store.index('syncStatus');
-    const request = index.getAll('failed');
-    request.onsuccess = () => resolve(request.result as OfflineScan[]);
-    request.onerror = () => reject(request.error);
-  });
-}
 
 /**
  * Returns true if a pending scan for this ticketId + eventId already exists
@@ -170,7 +141,7 @@ export async function saveOfflineScan(
  * Deletes records by ID. Filters out undefined/null IDs before deletion
  * to prevent silent IndexedDB failures from incomplete records (GAP-5 fix).
  */
-export async function clearOfflineScans(ids: number[]): Promise<void> {
+async function clearOfflineScans(ids: number[]): Promise<void> {
   const validIds = ids.filter((id): id is number => id != null);
   if (validIds.length === 0) return;
 
@@ -253,25 +224,4 @@ export async function syncScans(scanFn: ScanFn): Promise<SyncResult> {
   await clearOfflineScans(syncedIds);
 
   return { synced: syncedIds.length, failed };
-}
-
-/**
- * Retries only failed scans. Allows operators to retry after a temporary
- * server error without re-submitting already-synced records.
- */
-export async function retryFailedScans(scanFn: ScanFn): Promise<SyncResult> {
-  const failed = await getFailedScans();
-  if (failed.length === 0) return { synced: 0, failed: [] };
-
-  // Reset failed records back to pending so syncScans can process them.
-  await Promise.all(
-    failed.map((s) =>
-      updateScan(s.id as number, {
-        syncStatus: 'pending',
-        failureReason: undefined,
-      })
-    )
-  );
-
-  return syncScans(scanFn);
 }
