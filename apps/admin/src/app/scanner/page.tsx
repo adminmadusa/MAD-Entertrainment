@@ -63,7 +63,7 @@ export default function ScannerPage() {
             </div>
           ) : (
             <div className="bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2">
-              <span className="w-2 h-2 bg-emerald-500 rounded-full" />
+              <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
               Live Connected
             </div>
           )}
