@@ -10,7 +10,7 @@ interface TicketValidationModalProps {
   autoDismissMs?: number;
 }
 
-export function TicketValidationModal({ result, onClose, autoDismissMs = 4000 }: TicketValidationModalProps) {
+export function TicketValidationModal({ result, onClose, autoDismissMs = 1500 }: TicketValidationModalProps) {
   useEffect(() => {
     if (!result) return;
     const timer = setTimeout(() => {

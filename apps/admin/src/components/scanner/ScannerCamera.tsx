@@ -1,6 +1,4 @@
-'use client';
-
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useHtml5QrScanner } from '../../hooks/useHtml5QrScanner';
 
 interface ScannerCameraProps {
@@ -10,6 +8,9 @@ interface ScannerCameraProps {
 }
 
 export function ScannerCamera({ isOffline, onScan, scannerState }: ScannerCameraProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
   const {
     devices,
     selectedDeviceId,
@@ -39,6 +40,28 @@ export function ScannerCamera({ isOffline, onScan, scannerState }: ScannerCamera
     }
   }, [selectedDeviceId, startScanner, isScanning, permissionState]);
 
+  // Fullscreen support handlers
+  const toggleFullscreen = () => {
+    if (!containerRef.current) return;
+    try {
+      if (!document.fullscreenElement) {
+        containerRef.current.requestFullscreen?.().then(() => setIsFullscreen(true)).catch(() => {});
+      } else {
+        document.exitFullscreen?.().then(() => setIsFullscreen(false)).catch(() => {});
+      }
+    } catch (err) {
+      console.warn('Fullscreen API error:', err);
+    }
+  };
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
+
   const handleManualSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (manualCode.trim()) {
@@ -48,7 +71,23 @@ export function ScannerCamera({ isOffline, onScan, scannerState }: ScannerCamera
   };
 
   return (
-    <div className="glass rounded-2xl border border-border-subtle p-6 space-y-6 bg-background-card/50">
+    <div
+      ref={containerRef}
+      className={`glass rounded-2xl border border-border-subtle p-6 space-y-6 transition-all ${
+        isFullscreen ? 'bg-[#0f111a] w-full h-full max-w-none flex flex-col justify-center p-8' : 'bg-background-card/50'
+      }`}
+    >
+      <style>{`
+        @keyframes scanner-sweep {
+          0% { transform: translateY(0); opacity: 0.7; }
+          50% { transform: translateY(240px); opacity: 1; }
+          100% { transform: translateY(0); opacity: 0.7; }
+        }
+        .scanner-line {
+          animation: scanner-sweep 2.5s ease-in-out infinite;
+        }
+      `}</style>
+
       {/* Header and Controls */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -61,28 +100,44 @@ export function ScannerCamera({ isOffline, onScan, scannerState }: ScannerCamera
           </p>
         </div>
 
-        {/* Camera Selector */}
-        {devices.length > 0 && (
-          <div className="flex items-center gap-2">
-            <label htmlFor="camera-select" className="text-xs text-text-secondary font-medium">Camera:</label>
-            <select
-              id="camera-select"
-              value={selectedDeviceId}
-              onChange={(e) => switchCamera(e.target.value)}
-              className="bg-background border border-border-subtle text-white text-xs rounded-lg px-2.5 py-1.5 focus:border-accent-purple focus:ring-1 focus:ring-accent-purple outline-none"
-            >
-              {devices.map((device) => (
-                <option key={device.id} value={device.id}>
-                  {device.label}
-                </option>
-              ))}
-            </select>
-          </div>
-        )}
+        {/* Camera Selector & Fullscreen Toggle */}
+        <div className="flex items-center gap-3">
+          {devices.length > 0 && (
+            <div className="flex items-center gap-2">
+              <label htmlFor="camera-select" className="text-xs text-text-secondary font-medium">Camera:</label>
+              <select
+                id="camera-select"
+                value={selectedDeviceId}
+                onChange={(e) => switchCamera(e.target.value)}
+                className="bg-background border border-border-subtle text-white text-xs rounded-lg px-2.5 py-1.5 focus:border-accent-purple focus:ring-1 focus:ring-accent-purple outline-none"
+              >
+                {devices.map((device) => (
+                  <option key={device.id} value={device.id}>
+                    {device.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          {/* Fullscreen Trigger */}
+          <button
+            onClick={toggleFullscreen}
+            type="button"
+            className="p-1.5 rounded-lg border border-white/10 hover:border-white/20 bg-white/5 text-white/80 hover:text-white transition-all"
+            title={isFullscreen ? 'Exit Full Screen' : 'Enter Full Screen'}
+          >
+            {isFullscreen ? (
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 14h6v6m10-6h-6v6M4 10h6V4m10 6h-6V4"/></svg>
+            ) : (
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+            )}
+          </button>
+        </div>
       </div>
 
       {/* Media Window Container */}
-      <div className="relative aspect-square w-full max-w-md mx-auto overflow-hidden rounded-2xl border border-white/10 bg-background flex flex-col items-center justify-center">
+      <div className="relative aspect-square w-full max-w-md mx-auto overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-background via-[#0f111a] to-background-card flex flex-col items-center justify-center shadow-inner">
         {/* html5-qrcode target preview */}
         <div
           id={containerId}
@@ -91,7 +146,7 @@ export function ScannerCamera({ isOffline, onScan, scannerState }: ScannerCamera
 
         {/* Not Scanning Overlay State */}
         {!isScanning && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center space-y-4">
+          <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center space-y-5">
             {isInitializing ? (
               <>
                 <div className="w-10 h-10 border-4 border-accent-purple border-t-transparent rounded-full animate-spin" />
@@ -109,17 +164,22 @@ export function ScannerCamera({ isOffline, onScan, scannerState }: ScannerCamera
               </>
             ) : (
               <>
-                <div className="w-12 h-12 bg-white/5 text-text-muted rounded-full flex items-center justify-center">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                <div className="w-14 h-14 bg-white/5 text-white/40 rounded-full flex items-center justify-center border border-white/10 shadow-glow-sm">
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
                 </div>
-                <div>
-                  <p className="text-sm font-bold text-white">Camera is currently inactive</p>
+                <div className="flex flex-col items-center">
+                  <p className="text-sm font-bold text-white tracking-wide">Scanner Camera Inactive</p>
                   <button
                     onClick={startScanner}
-                    className="mt-3 px-4 py-2 bg-accent-purple text-white text-xs font-semibold rounded-lg hover:bg-accent-purple-light transition-all"
+                    type="button"
+                    className="mt-4 px-6 py-3 bg-accent-purple hover:bg-accent-purple-light text-white text-xs font-bold rounded-xl shadow-glow-sm transition-all hover:scale-[1.02] active:scale-[0.98] flex items-center gap-2"
                   >
-                    Activate Camera
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3" /></svg>
+                    Start Camera Scan
                   </button>
+                  <p className="text-text-muted text-[10px] mt-3 max-w-[220px]">
+                    Position yourself at the event gate and grant browser camera access to scan barcodes.
+                  </p>
                 </div>
               </>
             )}
@@ -129,13 +189,25 @@ export function ScannerCamera({ isOffline, onScan, scannerState }: ScannerCamera
 
         {/* scanning guidelines box overlay */}
         {isScanning && (
-          <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-            <div className="w-64 h-64 border-2 border-dashed border-accent-purple/80 rounded-xl relative">
-              <span className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-accent-purple" />
-              <span className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-accent-purple" />
-              <span className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-accent-purple" />
-              <span className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-accent-purple" />
+          <div className="absolute inset-0 pointer-events-none flex flex-col items-center justify-between p-4">
+            <div className="bg-black/60 backdrop-blur-sm px-3.5 py-1.5 rounded-full border border-white/5 mt-2">
+              <p className="text-[10px] text-emerald-400 font-bold tracking-widest uppercase">
+                Align QR Code Within Frame
+              </p>
             </div>
+
+            <div className="w-60 h-60 relative my-auto">
+              {/* Corner indicators */}
+              <span className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-emerald-400 rounded-tl-xl" />
+              <span className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-emerald-400 rounded-tr-xl" />
+              <span className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-emerald-400 rounded-bl-xl" />
+              <span className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-emerald-400 rounded-br-xl" />
+              
+              {/* Animation scanner horizontal line */}
+              <div className="absolute inset-x-2 top-0 h-[3px] bg-gradient-to-r from-transparent via-emerald-400 to-transparent shadow-[0_0_8px_#10b981] rounded-full scanner-line" />
+            </div>
+
+            <div className="h-4" />
           </div>
         )}
       </div>
