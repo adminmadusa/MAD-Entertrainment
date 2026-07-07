@@ -256,34 +256,70 @@ UI-001 Pull Request Checklist
 [ ] All UI-001 merge gate conditions cleared
 ```
 
----
-
 # PART 5 — TASK COMPLETION EVIDENCE GATE
 
-To prevent premature task completion declarations and enforce the Git boundary, marking a task or milestone as **"Complete" is strictly forbidden** unless the AI agent provides verified repository evidence for each of the following phases:
+To prevent premature task completion declarations and enforce the Git boundary, marking a task or milestone as **"Complete" is strictly forbidden** unless the AI agent provides verified repository evidence for each state transition.
 
-1. **Feature Branch Creation**
-   - Must show the active task-specific branch (e.g. `feat/*`, `fix/*`).
-   - *Evidence*: `git branch --show-current` output.
-2. **Staged and Committed Code**
-   - Working tree must be completely clean.
-   - *Evidence*: `git status` output showing `nothing to commit, working tree clean` and the commit SHA via `git log -1`.
-3. **Pushed to Remote Origin**
-   - The changes must be successfully pushed to the remote repository.
-   - *Evidence*: `git push` command execution output.
-4. **Pull Request Created**
-   - A pull request must be opened targeting the protected branch.
-   - *Evidence*: PR number, title, and PR URL.
-5. **CI Gating Verification**
-   - CI build/tests must succeed on the branch.
-   - *Evidence*: Verification of the GitHub Actions run status.
-6. **Merge to Protected Branch**
-   - The pull request must be approved and merged.
-   - *Evidence*: Merge commit SHA.
-7. **Branch Cleanup**
-   - Local and remote task branches must be deleted post-merge.
-   - *Evidence*: Safe deletion confirmation (`git branch -d` and `git push origin --delete`).
-8. **Develop Sync**
-   - Switch back to `develop` and pull origin to synchronize the local state.
-   - *Evidence*: `git checkout develop && git pull origin develop` output.
+## Task States & Transitions
+
+```mermaid
+stateDiagram-sync
+    PLANNED --> APPROVED : Plan Approved
+    APPROVED --> BRANCH_CREATED : Branch Checked Out
+    BRANCH_CREATED --> IMPLEMENTING : Code Modified
+    IMPLEMENTING --> TESTED : Tests Passed
+    TESTED --> COMMITTED : Changes Staged & Committed
+    COMMITTED --> PUSHED : Pushed to Remote
+    PUSHED --> PR_CREATED : PR Opened
+    PR_CREATED --> CI_PASSED : CI Gating Passed
+    CI_PASSED --> MERGED : PR Approved & Merged
+    MERGED --> BRANCH_CLEANUP : Local & Remote Branch Deleted
+    BRANCH_CLEANUP --> DEVELOP_SYNCED : develop Checked Out & Pulled
+    DEVELOP_SYNCED --> COMPLETED : Task Complete
+```
+
+A task **MUST NOT** transition to `COMPLETED` unless every preceding state has been successfully completed and verified with explicit repository evidence. If any step is incomplete or evidence is missing, the task status MUST NOT be set to `COMPLETED`.
+
+---
+
+## Mandatory Evidence Checklist
+
+Every task progression must compile and output the following verified evidence:
+
+### 1. PLANNED & APPROVED
+- **Verification**: Approved implementation plan file exists.
+- **Evidence**: `implementation_plan.md` path.
+
+### 2. BRANCH_CREATED
+- **Verification**: Current branch name matches branch policy boundaries (`feat/*`, `fix/*`, `refactor/*`, `audit/*`, `docs/*`, `test/*`, `chore/*`, `seo/*`).
+- **Evidence**: `git branch --show-current` output.
+
+### 3. TESTED & COMMITTED
+- **Verification**: Working tree is clean with no uncommitted changes, and the latest commit is logged.
+- **Evidence**: 
+  - `git status` output showing `nothing to commit, working tree clean`.
+  - Most recent commit SHA via `git log -1 --oneline`.
+
+### 4. PUSHED
+- **Verification**: Remote tracking branch is created and pushed.
+- **Evidence**: `git push` command response showing transfer updates.
+
+### 5. PR_CREATED
+- **Verification**: Pull request opened targeting the appropriate branch (e.g. `develop`).
+- **Evidence**: PR number, title, and PR URL.
+
+### 6. CI_PASSED
+- **Verification**: CI pipeline checks run and pass on the branch.
+- **Evidence**: GitHub Actions run check status.
+
+### 7. MERGED
+- **Verification**: PR merged into target branch.
+- **Evidence**: Merge commit SHA.
+
+### 8. BRANCH_CLEANUP & DEVELOP_SYNC
+- **Verification**: Task branch deleted locally and remotely, local `develop` synchronized with origin.
+- **Evidence**:
+  - `git branch -d` and `git push origin --delete` outputs.
+  - `git checkout develop && git pull origin develop` output showing fast-forward sync.
+
 
