@@ -10,8 +10,7 @@ export const targets: UITarget[] = [
     baseUrl: 'http://localhost:3000',
     routes: [
       '/',
-      '/auth/login',
-      '/auth/register'
+      '/login'
     ]
   },
   {
@@ -20,7 +19,7 @@ export const targets: UITarget[] = [
     routes: [
       '/scanner',
       '/ticket-management',
-      '/auth/login'
+      '/login'
     ]
   }
 ];
