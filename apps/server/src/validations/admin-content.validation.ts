@@ -237,6 +237,12 @@ export const updateCategorySchema = z.object({
 // -- Tier Validation --
 const tierBodySchema = z.object({
   name: z.string().trim().min(1, 'Tier name is required').max(100),
+  icon: z.enum(['ticket', 'star', 'medal', 'crown', 'lock', 'users', 'heart', 'clock', 'gift']).optional(),
+  color: z.string().trim().regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, 'Invalid hex color format').optional(),
+  description: z.string().trim().max(500).optional(),
+  isActive: z.boolean().optional(),
+  defaultVisibility: z.boolean().optional(),
+  sortIndex: z.number().int().min(0).optional(),
 }).strict();
 
 export const createTierSchema = z.object({

@@ -12,7 +12,7 @@ export const createTier = async (data: Partial<ITier>): Promise<ITier> => {
 };
 
 export const getTiers = async (): Promise<ITier[]> => {
-  return await Tier.find({ isDeleted: { $ne: true } }).sort({ name: 1 });
+  return await Tier.find({ isDeleted: { $ne: true } }).sort({ sortIndex: 1, name: 1 });
 };
 
 export const updateTier = async (id: string, data: Partial<ITier>): Promise<ITier | null> => {

@@ -333,4 +333,45 @@ describe('event image validations', () => {
       },
     });
   });
+
+  describe('Ticket Tier Validation Schema Tests', () => {
+    it('accepts correct tier values', () => {
+      expectAccepted(createTierSchema, {
+        body: {
+          name: 'VIP Standard',
+          color: '#6366F1',
+          icon: 'star',
+          description: 'Access to front rows',
+          isActive: true,
+          defaultVisibility: true,
+          sortIndex: 3,
+        },
+      });
+    });
+
+    it('rejects invalid hex colors', () => {
+      expectRejected(createTierSchema, {
+        body: {
+          name: 'VIP Standard',
+          color: 'indigo-500', // Invalid HEX format
+        },
+      });
+
+      expectRejected(createTierSchema, {
+        body: {
+          name: 'VIP Standard',
+          color: '#GGG111', // Invalid HEX characters
+        },
+      });
+    });
+
+    it('rejects invalid icon choices', () => {
+      expectRejected(createTierSchema, {
+        body: {
+          name: 'VIP Standard',
+          icon: 'not-in-enum-allowlist', // Invalid icon type
+        },
+      });
+    });
+  });
 });
