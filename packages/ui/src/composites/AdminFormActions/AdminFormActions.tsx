@@ -1,13 +1,20 @@
-'use client';
-
 import React from 'react';
 
-interface EventFormActionsProps {
+export interface AdminFormActionsProps {
   isPending: boolean;
   onCancel: () => void;
+  submitLabel: string;
+  pendingLabel?: string;
+  submitId?: string;
 }
 
-export function EventFormActions({ isPending, onCancel }: EventFormActionsProps) {
+export const AdminFormActions = React.memo(function AdminFormActions({
+  isPending,
+  onCancel,
+  submitLabel,
+  pendingLabel = 'Saving...',
+  submitId,
+}: AdminFormActionsProps) {
   return (
     <div className="flex gap-4 pb-6">
       <button
@@ -18,13 +25,13 @@ export function EventFormActions({ isPending, onCancel }: EventFormActionsProps)
         Cancel
       </button>
       <button
-        id="event-submit"
+        id={submitId}
         type="submit"
         disabled={isPending}
         className="flex-1 py-3 btn-gradient text-white font-bold rounded-xl shadow-glow-sm disabled:opacity-60 transition-all"
       >
-        {isPending ? 'Creating...' : 'Create Event'}
+        {isPending ? pendingLabel : submitLabel}
       </button>
     </div>
   );
-}
+});
