@@ -2,6 +2,20 @@ import { Request, Response, NextFunction } from 'express';
 import { Types } from 'mongoose';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
+vi.mock('../../config/env', () => ({
+  getEnv: vi.fn(() => ({
+    NODE_ENV: 'test',
+    MONGODB_URI: 'mongodb://localhost:27017/test',
+    JWT_SECRET: 'testsecret',
+    JWT_ADMIN_SECRET: 'testsecret',
+    JWT_SESSION_SECRET: 'testsecret',
+  })),
+}));
+
+vi.mock('../../utils/audit', () => ({
+  auditLog: vi.fn(),
+}));
+
 import { Booking } from '../../models/booking.schema';
 import { Ticket } from '../../models/ticket.schema';
 import { lookupTickets, scanTicket } from './scanner.controller';
@@ -19,6 +33,14 @@ vi.mock('../../models/booking.schema', () => ({
   Booking: {
     findOne: vi.fn(),
     findById: vi.fn(),
+  },
+}));
+
+vi.mock('../../models/audit-log.schema', () => ({
+  AuditLogModel: {
+    findOne: vi.fn().mockResolvedValue(null),
+    countDocuments: vi.fn(),
+    find: vi.fn(),
   },
 }));
 

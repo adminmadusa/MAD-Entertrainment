@@ -5,10 +5,12 @@ import { BookingStatus } from '@mad/shared';
 
 import { Booking } from '../../models/booking.schema';
 import { Ticket } from '../../models/ticket.schema';
+import { auditLog } from '../../utils/audit';
+import * as scannerService from '../../services/admin/scanner.service';
 
 export const scanTicket = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { ticketId, eventId } = req.body;
+    const { ticketId, eventId, requestId, source = 'manual', offline = false } = req.body;
 
     if (!ticketId || !eventId) {
       return res.status(400).json({
@@ -25,94 +27,107 @@ export const scanTicket = async (req: Request, res: Response, next: NextFunction
       });
     }
 
-    const ticket = await Ticket.findOne({ ticketId });
+    const result = await scannerService.validateAndCheckInTicket({
+      ticketId,
+      eventId,
+      scannerId,
+      requestId,
+      source,
+      offline,
+    });
 
-    if (!ticket) {
-      return res.status(404).json({
-        success: false,
-        message: 'Invalid ticket reference: Ticket not found.',
-      });
-    }
+    const isSuccess = result.status === 'SUCCESS';
+    const auditStatus = isSuccess ? 'success' : 'failure';
 
-    if (String(ticket.eventId) !== String(eventId)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Validation failed: This ticket is registered for a different event.',
-      });
-    }
-
-    const isEntryValid =
-      ticket.status === 'active' &&
-      (
-        ticket.assignmentStatus === 'unassigned' ||
-        ticket.assignmentStatus === 'claimed'
-      );
-
-    if (!isEntryValid) {
-      return res.status(400).json({
-        success: false,
-        message: 'Ticket is not valid for entry',
-      });
-    }
-
-    if (ticket.scannedAt) {
-      return res.status(400).json({
-        success: false,
-        message: `Ticket already used: Checked in at ${new Date(ticket.scannedAt).toLocaleTimeString('en-IN')} on ${new Date(ticket.scannedAt).toLocaleDateString('en-IN')}.`,
-        details: {
-          scannedAt: ticket.scannedAt.toISOString(),
-        },
-      });
-    }
-
-    const booking = await Booking.findById(ticket.bookingId);
-    if (!booking) {
-      return res.status(404).json({
-        success: false,
-        message: 'Invalid ticket reference: Associated booking not found.',
-      });
-    }
-
-    if (booking.status !== BookingStatus.CONFIRMED) {
-      return res.status(400).json({
-        success: false,
-        message: `Validation failed: Booking is ${booking.status.toUpperCase()}. Only confirmed bookings can be scanned.`,
-      });
-    }
-
-    // Atomically check-in the ticket
-    const updatedTicket = await Ticket.findOneAndUpdate(
-      {
-        _id: ticket._id,
-        status: 'active',
-        $or: [{ scannedAt: { $exists: false } }, { scannedAt: null }]
+    // Dispatch audit log using structured event statuses
+    auditLog({
+      action: 'TICKET_SCAN',
+      actor: {
+        type: 'admin',
+        id: scannerId,
       },
-      { $set: { scannedAt: new Date(), scannedById: new Types.ObjectId(scannerId) } },
-      { new: true }
-    );
+      status: auditStatus,
+      description: `Ticket check-in attempt for ${ticketId} (Event: ${eventId}). Result: ${result.status}.`,
+      metadata: {
+        ticketId,
+        eventId,
+        requestId,
+        scanSource: source,
+        offline,
+        result: result.status,
+        tierName: result.tierName,
+        admits: result.admits,
+        guestName: result.guestName,
+        attendeeEmail: result.attendeeEmail,
+        scannedAt: result.scannedAt,
+        userAgent: req.headers?.['user-agent'],
+        ip: req.ip,
+      },
+    });
 
-    if (!updatedTicket) {
-      const alreadyCheckedTicket = await Ticket.findById(ticket._id);
+    if (result.status === 'INVALID' || result.status === 'WRONG_EVENT') {
+      const statusCode = result.message?.includes('not found') || result.message?.includes('not exist') ? 404 : 400;
+      return res.status(statusCode).json({
+        success: false,
+        message: result.message || 'Ticket validation failed.',
+      });
+    }
+
+    if (result.status === 'ALREADY_SCANNED') {
       return res.status(400).json({
         success: false,
-        message: `Ticket already used: Checked in at ${alreadyCheckedTicket?.scannedAt ? new Date(alreadyCheckedTicket.scannedAt).toLocaleTimeString('en-IN') : 'an unknown time'} on ${alreadyCheckedTicket?.scannedAt ? new Date(alreadyCheckedTicket.scannedAt).toLocaleDateString('en-IN') : 'an unknown date'}.`,
+        message: result.message || 'Ticket already used.',
         details: {
-          scannedAt: alreadyCheckedTicket?.scannedAt
-            ? alreadyCheckedTicket.scannedAt.toISOString()
-            : new Date().toISOString(),
+          scannedAt: result.scannedAt,
         },
       });
     }
 
-    res.status(200).json({
+    return res.status(200).json({
       status: 'success',
-      message: 'Ticket scanned and verified successfully.',
+      message: result.message || 'Ticket scanned and verified successfully.',
       data: {
-        ticketId: updatedTicket.ticketId,
-        tierName: updatedTicket.tierName,
-        admits: updatedTicket.admits || 1,
-        scannedAt: updatedTicket.scannedAt?.toISOString(),
+        ticketId: result.ticketId,
+        tierName: result.tierName,
+        admits: result.admits,
+        scannedAt: result.scannedAt,
       },
+    });
+  } catch (error: any) {
+    next(error);
+  }
+};
+
+export const getScannerStats = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { eventId } = req.params;
+    const stats = await scannerService.getScannerStats(eventId);
+    return res.status(200).json({
+      status: 'success',
+      data: stats,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getScannerHistory = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { eventId } = req.params;
+    const { page, limit, status, operator, search } = req.query;
+
+    const filters = {
+      page: page ? Number(page) : undefined,
+      limit: limit ? Number(limit) : undefined,
+      status: status ? String(status) : undefined,
+      operator: operator ? String(operator) : undefined,
+      search: search ? String(search) : undefined,
+    };
+
+    const history = await scannerService.getScannerHistory(eventId, filters);
+    return res.status(200).json({
+      status: 'success',
+      data: history,
     });
   } catch (error) {
     next(error);
@@ -142,8 +157,6 @@ export const lookupTickets = async (req: Request, res: Response, next: NextFunct
 
       const tickets = await Ticket.find({ bookingId: booking._id, eventId, status: 'active' });
       if (!tickets.length) {
-        // If booking is confirmed but no tickets exist yet, the background worker
-        // is still generating them. Return 202 so the caller can retry gracefully.
         if (booking.status === BookingStatus.CONFIRMED) {
           return res.status(202).json({
             success: false,

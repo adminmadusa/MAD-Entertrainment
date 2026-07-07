@@ -199,6 +199,25 @@ export const scannerLookupSchema = z.object({
   }).strict(),
 });
 
+export const scannerStatsSchema = z.object({
+  params: z.object({
+    eventId: objectIdSchema,
+  }).strict(),
+});
+
+export const scannerHistorySchema = z.object({
+  params: z.object({
+    eventId: objectIdSchema,
+  }).strict(),
+  query: z.object({
+    page: z.string().optional(),
+    limit: z.string().optional(),
+    status: z.string().optional(),
+    operator: z.string().optional(),
+    search: z.string().optional(),
+  }).strict().optional(),
+});
+
 // -- Category Validation --
 const categoryBodySchema = z.object({
   name: z.string().trim().min(1, 'Category name is required').max(100),
