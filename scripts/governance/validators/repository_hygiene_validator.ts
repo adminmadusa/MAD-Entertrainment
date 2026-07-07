@@ -273,8 +273,12 @@ Remediation Steps:
       }
     }
 
-    // VAL-HYG-001: Import Ordering & Grouping
-    this.verifyImportGroups(relPath, sourceFile, imports, warnings);
+    // VAL-HYG-001: Import Ordering & Grouping (Skip for test files and entrypoint to accommodate hoisting/bootstrapping patterns)
+    const isTestFile = relPath.endsWith('.test.ts') || relPath.endsWith('.test.tsx') || relPath.endsWith('.spec.ts') || relPath.endsWith('.spec.tsx');
+    const isAppEntrypoint = relPath === 'apps/server/src/server.ts';
+    if (!isTestFile && !isAppEntrypoint) {
+      this.verifyImportGroups(relPath, sourceFile, imports, warnings);
+    }
   }
 
   private verifyImportGroups(

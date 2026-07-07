@@ -38,12 +38,11 @@ import { SeatLayout } from '../../models/seat-layout.schema';
 import { auditLog } from '../../utils/audit';
 import { logger } from '../../utils/logger';
 import { runInTransaction } from '../../utils/transaction';
-import { BookingLifecycleService } from './booking/booking-lifecycle.service';
-const { cancelBooking, executeCancelBookingSideEffects } = BookingLifecycleService;
 import { CacheService } from '../cache.service';
 import { createNotificationSafe } from '../notification.service';
 import { QueueService } from '../queue.service';
 import { ReservationService } from '../reservation.service';
+import { BookingLifecycleService } from './booking/booking-lifecycle.service';
 import { PaymentInventoryService } from './payment-inventory.service';
 import type {
   StripeChargeWebhookPayload,
@@ -52,8 +51,10 @@ import type {
   NormalizedRefundPayload,
   NormalizedRefundData,
 } from './payment.types';
-import { StripeRefundService } from './payment/stripe-refund.service';
 import { RazorpayRefundService } from './payment/razorpay-refund.service';
+import { StripeRefundService } from './payment/stripe-refund.service';
+
+const { cancelBooking, executeCancelBookingSideEffects } = BookingLifecycleService;
 
 
 // ─────────────────────────────────────────────────────────────────────────────

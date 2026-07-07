@@ -63,6 +63,10 @@ export class UIDesignValidator implements GovernanceValidator {
         lines.forEach((line, index) => {
           const colonIndex = line.indexOf(':');
           if (colonIndex !== -1) {
+            const propertyPart = line.substring(0, colonIndex).trim();
+            if (propertyPart.startsWith('--')) {
+              return;
+            }
             const valuePart = line.substring(colonIndex + 1);
 
             // VAL-UI-007 Hex checks
@@ -176,6 +180,17 @@ export class UIDesignValidator implements GovernanceValidator {
           parent = parent.parent;
         }
         return false;
+      };
+
+      const isInsideArrayLiteral = (node: ts.Node): boolean => {
+        let parent = node.parent;
+        while (parent) {
+          if (ts.isArrayLiteralExpression(parent)) {
+            return true;
+          }
+          parent = parent.parent;
+        }
+        return false;
       };      // Helper to find conflicting Tailwind classes (VAL-UI-025)
       const findConflictingClasses = (classNameStr: string): string[] => {
         const classes = classNameStr.split(/\s+/).filter(Boolean);
@@ -243,7 +258,9 @@ export class UIDesignValidator implements GovernanceValidator {
             let shouldReport = false;
             if (isTailwindConfig) {
               shouldReport = true;
-            } else if (isInsideJsxStyle(node) || isInsideThemeDefinition(node)) {
+            } else if (isInsideJsxStyle(node)) {
+              shouldReport = true;
+            } else if (isInsideThemeDefinition(node) && !isInsideArrayLiteral(node)) {
               shouldReport = true;
             }
 

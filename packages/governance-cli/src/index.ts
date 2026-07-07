@@ -3,6 +3,19 @@
 import { existsSync } from 'fs';
 import { resolve, dirname, join } from 'path';
 
+import { BacklogCommand } from './commands/BacklogCommand';
+import { BaselineCommand } from './commands/BaselineCommand';
+import { ChangelogCommand } from './commands/ChangelogCommand';
+import { CleanupCommand } from './commands/CleanupCommand';
+import { DoctorCommand } from './commands/DoctorCommand';
+import { HelpCommand } from './commands/HelpCommand';
+import { InitCommand } from './commands/InitCommand';
+import { PRCommand } from './commands/PRCommand';
+import { ReleaseCommand } from './commands/ReleaseCommand';
+import { RoadmapCommand } from './commands/RoadmapCommand';
+import { StatusCommand } from './commands/StatusCommand';
+import { VersionCommand } from './commands/VersionCommand';
+import { WalkthroughCommand } from './commands/WalkthroughCommand';
 import { getDefaults, ExitCode, GovernanceConfig } from './config/schema';
 import { CommandRegistry } from './core/command';
 import { ExecutionContext } from './core/context';
@@ -11,28 +24,11 @@ import { ConsoleRenderer } from './renderers/ConsoleRenderer';
 import { JsonRenderer } from './renderers/JsonRenderer';
 import { MarkdownRenderer } from './renderers/MarkdownRenderer';
 import { Renderer } from './renderers/Renderer';
+import { buildServiceContainer } from './services/container';
 import { NodeFileSystemService } from './services/FileSystemService';
 import { GitCliService } from './services/GitService';
 import { ConsoleLogger } from './services/Logger';
 import { LocalRepositoryService } from './services/RepositoryService';
-
-// Core commands
-import { HelpCommand } from './commands/HelpCommand';
-import { VersionCommand } from './commands/VersionCommand';
-import { InitCommand } from './commands/InitCommand';
-import { DoctorCommand } from './commands/DoctorCommand';
-import { StatusCommand } from './commands/StatusCommand';
-import { CleanupCommand } from './commands/CleanupCommand';
-import { WalkthroughCommand } from './commands/WalkthroughCommand';
-import { PRCommand } from './commands/PRCommand';
-import { BacklogCommand } from './commands/BacklogCommand';
-import { RoadmapCommand } from './commands/RoadmapCommand';
-import { ChangelogCommand } from './commands/ChangelogCommand';
-import { ReleaseCommand } from './commands/ReleaseCommand';
-import { BaselineCommand } from './commands/BaselineCommand';
-
-// Import build service container
-import { buildServiceContainer } from './services/container';
 
 async function main() {
   let repoRoot = resolve(process.cwd());

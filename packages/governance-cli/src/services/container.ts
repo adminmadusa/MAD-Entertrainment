@@ -1,20 +1,16 @@
+import { PnpmRepositoryAdapter } from '../adapters/repository/PnpmRepositoryAdapter';
 import { GovernanceConfig } from '../config/schema';
 import { ServiceContainer } from '../core/context';
-import { FileSystemService } from './FileSystemService';
-import { GitService } from './GitService';
-
-// Import domain services
-import { TemplateService } from './templates/TemplateService';
-import { ChangelogService } from './release/ChangelogService';
-import { VersionService } from './release/VersionService';
-import { ReleaseService } from './release/ReleaseService';
-import { BaselineService } from './baseline/BaselineService';
-import { RoadmapService } from './roadmap/RoadmapService';
-import { GitTagService } from './git/GitTagService';
-
-// Import providers and adapters
 import { GitCommitProvider } from '../providers/changelog/GitCommitProvider';
-import { PnpmRepositoryAdapter } from '../adapters/repository/PnpmRepositoryAdapter';
+import { BaselineService } from './baseline/BaselineService';
+import { FileSystemService } from './FileSystemService';
+import { GitTagService } from './git/GitTagService';
+import { GitService } from './GitService';
+import { ChangelogService } from './release/ChangelogService';
+import { ReleaseService } from './release/ReleaseService';
+import { VersionService } from './release/VersionService';
+import { RoadmapService } from './roadmap/RoadmapService';
+import { TemplateService } from './templates/TemplateService';
 
 export function buildServiceContainer(
   fs: FileSystemService,
