@@ -1,6 +1,6 @@
 import mongoose, { Schema, Document, Model } from 'mongoose';
 
-export interface ISuppression extends Document {
+interface ISuppression extends Document {
   email: string;
   reason?: string;
   source?: 'unsubscribe' | 'bounce' | 'complaint';
