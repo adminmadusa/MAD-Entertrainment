@@ -2,7 +2,6 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { RuleRegistry } from '../../rules/registry';
 import { ValidatorRegistry } from '../validator_registry';
 import { ExecutionPlanner } from '../execution_planner';
-import { ExecutionScheduler } from '../execution_scheduler';
 import { ExecutionEngine } from '../execution_engine';
 import { GovernanceValidator } from '../validator';
 import { ValidationResult } from '../types';

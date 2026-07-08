@@ -1,6 +1,6 @@
 // scripts/governance/core/dependency_analyzer.ts
 import { readFileSync, existsSync, statSync } from 'fs';
-import { resolve, dirname, join, relative } from 'path';
+import { resolve, dirname, relative } from 'path';
 import * as ts from 'typescript';
 import { governanceConfig } from './governance.config';
 

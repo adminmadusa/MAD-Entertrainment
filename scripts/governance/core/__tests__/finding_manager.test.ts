@@ -123,7 +123,6 @@ describe('FindingManager (State Persistence & Serialization)', () => {
 
   it('should support rename matching when RenameDetector registers a file rename', () => {
     const originalFinding = fm.getAllFindings()[0];
-    const oldPath = originalFinding.evidence.path;
     const newPath = 'apps/web/src/components/CoolButton.tsx';
 
     const violation: StatelessViolation = {

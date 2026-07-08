@@ -1,6 +1,6 @@
 // scripts/governance/core/execution_engine.ts
 import { RuleRegistry } from '../rules/registry';
-import { ValidatorRegistry, ValidatorDefinition } from './validator_registry';
+import { ValidatorRegistry } from './validator_registry';
 import { ExecutionPlanner } from './execution_planner';
 import { ExecutionScheduler, ExecutionReport } from './execution_scheduler';
 

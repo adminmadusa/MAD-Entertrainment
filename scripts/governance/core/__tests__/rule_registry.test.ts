@@ -78,7 +78,6 @@ describe('RuleRegistry (Governance Rules Central Registry)', () => {
   it('should fail fast on duplicate rule IDs during registration', () => {
     // We mock rules metadata import or simulate duplicate loading.
     // In RuleRegistry, duplicate IDs throw an error.
-    const originalRules = (RuleRegistry as any).rules;
 
     // Attempting to register duplicates manually is blocked by initialize structure,
     // but we can prove the validation logic throws if initialized with duplicate IDs:
@@ -105,7 +104,6 @@ describe('RuleRegistry (Governance Rules Central Registry)', () => {
     expect(() => {
       // Simulate initialize logic manually on a collection
       const registryMap = new Map<string, RuleDefinition>();
-      const names = new Set<string>();
 
       const list = [mockRule1, mockRule2];
       for (const r of list) {
@@ -139,7 +137,6 @@ describe('RuleRegistry (Governance Rules Central Registry)', () => {
     const mockRule2 = { ...mockRule1, id: 'VAL-DUP-002' };
 
     expect(() => {
-      const registryMap = new Map<string, RuleDefinition>();
       const names = new Set<string>();
 
       const list = [mockRule1, mockRule2];
