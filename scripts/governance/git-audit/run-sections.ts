@@ -42,7 +42,6 @@ function main() {
 
     // Reachability
     const isMerged = checkReachableFromDevelop(name);
-    const reachableFromLive = checkReachableFromLive(name);
     const remediationIntegrated = checkReachableFromRemediation(name);
 
     // Squash Merged / Patch Equivalence

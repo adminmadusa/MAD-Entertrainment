@@ -1,6 +1,6 @@
 // scripts/governance/reports/github_reporter.ts
 
-import { writeFileSync, appendFileSync } from 'fs';
+import { writeFileSync } from 'fs';
 import { ValidationResult } from '../core/types';
 
 function escapeAnnotationMessage(msg: string): string {

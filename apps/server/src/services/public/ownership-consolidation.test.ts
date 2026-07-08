@@ -17,7 +17,6 @@ vi.hoisted(() => {
 import { getBooking } from '../../controllers/public/booking.controller';
 import { AppError } from '../../middleware/error.middleware';
 import { Booking } from '../../models/booking.schema';
-import { Ticket } from '../../models/ticket.schema';
 import { registerSocketHandlers } from '../../sockets/index';
 import { PublicBookingService } from './booking.service';
 import { PaymentService } from './payment.service';
