@@ -1,16 +1,11 @@
 import { describe, it, expect } from "vitest";
-import * as React from "react";
 
-import BookingConfirmationEmail, {
-  bookingConfirmationHtml,
-} from "./booking-confirmation";
-import EventCancellationEmail, {
-  eventCancellationHtml,
-} from "./event-cancellation";
-import FullRefundEmail, { fullRefundHtml } from "./full-refund";
-import PartialRefundEmail, { partialRefundHtml } from "./partial-refund";
-import PaymentFailureEmail, { paymentFailureHtml } from "./payment-failure";
-import TicketDeliveryEmail, { ticketDeliveryHtml } from "./ticket-delivery";
+import { bookingConfirmationHtml } from "./booking-confirmation";
+import { eventCancellationHtml } from "./event-cancellation";
+import { fullRefundHtml } from "./full-refund";
+import { partialRefundHtml } from "./partial-refund";
+import { paymentFailureHtml } from "./payment-failure";
+import { ticketDeliveryHtml } from "./ticket-delivery";
 
 describe("Email Templates Render Tests", () => {
   describe("Booking Confirmation Email", () => {
