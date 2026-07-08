@@ -196,18 +196,16 @@ export function TicketSelectionContent({
     };
   }, [checkoutTriggerRef, handleCheckoutSubmit]);
 
-  const { selectedCount, subtotal } = useMemo(() => {
-    let count = 0;
+  const { subtotal } = useMemo(() => {
     let total = 0;
     event.ticketTiers.forEach((tier) => {
       const qty = quantities[tier.tier] || 0;
       if (qty > 0) {
-        count += qty;
         const price = Math.max(0, tier.price - (tier.discount || 0));
         total += price * qty;
       }
     });
-    return { selectedCount: count, subtotal: total };
+    return { subtotal: total };
   }, [quantities, event.ticketTiers]);
 
   return (

@@ -3,11 +3,10 @@
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 
 import { useAuthModal } from '@/providers/AuthModalProvider';
 import { useAuth } from '@/providers/AuthProvider';
-import { ArrowRight } from '@mad/ui';
 
 import { NavLink } from './NavLink';
 import { UserDropdown } from './UserDropdown';
@@ -86,53 +85,6 @@ export function Navbar() {
   // Close mobile menu on every route change
   useEffect(() => {
     setMobileOpen(false);
-  }, [pathname]);
-
-  const [footerIntersecting, setFooterIntersecting] = useState(false);
-
-  // Safe MutationObserver-based IntersectionObserver hook without timeouts
-  useEffect(() => {
-    if (pathname !== '/') {
-      setFooterIntersecting(false);
-      return;
-    }
-
-    let observer: IntersectionObserver | null = null;
-    const footer = document.querySelector('footer');
-
-    const setupObserver = (target: Element) => {
-      observer = new IntersectionObserver(
-        ([entry]) => {
-          setFooterIntersecting(entry.isIntersecting);
-        },
-        {
-          rootMargin: '0px 0px 100px 0px',
-          threshold: 0,
-        }
-      );
-      observer.observe(target);
-    };
-
-    if (footer) {
-      setupObserver(footer);
-    } else {
-      const mutationObserver = new MutationObserver(() => {
-        const target = document.querySelector('footer');
-        if (target) {
-          setupObserver(target);
-          mutationObserver.disconnect();
-        }
-      });
-      mutationObserver.observe(document.body, { childList: true, subtree: true });
-      return () => {
-        mutationObserver.disconnect();
-        if (observer) observer.disconnect();
-      };
-    }
-
-    return () => {
-      if (observer) observer.disconnect();
-    };
   }, [pathname]);
 
   if (isCheckoutOrBook) return null;

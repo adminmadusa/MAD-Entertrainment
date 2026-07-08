@@ -4,7 +4,6 @@ import Link from 'next/link';
 import { useState } from 'react';
 
 import { BookingCard } from '@/components/booking/shared/BookingCard';
-import { BookingStatus } from '@mad/shared';
 import type { Booking, Ticket } from '@mad/types';
 
 export function BookingCardSkeleton() {
