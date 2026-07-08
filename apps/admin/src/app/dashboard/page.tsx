@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { Suspense, useState } from 'react';
 
 import { adminGetDashboardSummary, adminGetRevenueChart, adminGetAttendanceSummary, adminGetAttendanceRankings, } from '@/lib/api/admin/analytics.service';
@@ -32,7 +32,7 @@ const AttendanceRankingsWidget = dynamic(
 
 function DashboardContent() {
   const { admin } = useAdminAuth();
-  const searchParams = useSearchParams();
+
   const router = useRouter();
   const [globalSearchQuery, setGlobalSearchQuery] = useState('');
   const [globalSearchError, setGlobalSearchError] = useState('');

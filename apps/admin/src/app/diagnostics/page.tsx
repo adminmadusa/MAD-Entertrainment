@@ -18,7 +18,6 @@ export default function DiagnosticsPage() {
   const { admin } = useAdminAuth();
   const queryClient = useQueryClient();
   const isSuperAdmin = admin?.role === AdminRole.SUPER_ADMIN;
-  const isAdmin = admin?.role === AdminRole.ADMIN || isSuperAdmin;
 
   // Tabs state: health, queues, dlq, reservations
   const [activeSubTab, setActiveSubTab] = useState<'health' | 'queues' | 'dlq' | 'reservations'>('health');
@@ -48,7 +47,7 @@ export default function DiagnosticsPage() {
   const [drainTargetQueue, setDrainTargetQueue] = useState<string | null>(null);
 
   // Fetch consistency report
-  const { data: report, isLoading: isReportLoading } = useQuery({
+  const { data: report } = useQuery({
     queryKey: QUERY_KEYS.admin.diagnostics.consistency(),
     queryFn: adminGetConsistencyReport,
     refetchInterval: 30_000,
