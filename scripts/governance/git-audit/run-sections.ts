@@ -141,8 +141,7 @@ function main() {
 
     const deletionReport = validateDeletionPolicy(verification, b.isLocal);
 
-    // Decision Logic
-    let decision = 'BLOCKED';
+    let decision: string;
     if (lifecycleState === 'Protected') {
       decision = 'KEEP';
     } else if (lifecycleState === 'Archived') {

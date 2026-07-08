@@ -93,7 +93,6 @@ export class AdrValidator implements GovernanceValidator {
           severity: 'ERROR',
           message: `Filename "${adrFile}" does not match the ADR convention: "ADR-XXX-description.md" (e.g. ADR-001-booking-ownership.md)`
         });
-        fileFailed = true;
         failedCount++;
         continue;
       }

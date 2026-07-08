@@ -101,7 +101,6 @@ export class InteractiveApprovalPolicy {
         break;
       } else if (choice === 'q') {
         // Quit — no files will be modified
-        cancelled = true;
         reporter.showSessionSummary(approved.size, skippedCount, true);
         return {
           plan: ApprovalPlan.empty(),
