@@ -69,7 +69,7 @@ function normalizeSocialLinks(socialLinks: unknown): { platform: string; url: st
       };
     }).filter(link => link.platform && link.url);
   }
-  if (typeof socialLinks === 'object' && socialLinks !== null) {
+  if (typeof socialLinks === 'object') {
     return Object.entries(socialLinks as Record<string, unknown>)
       .map(([platform, url]) => ({
         platform,
