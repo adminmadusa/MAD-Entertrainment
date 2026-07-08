@@ -2,7 +2,6 @@ import { describe, expect, it, vi, beforeEach } from 'vitest';
 
 import { AdminRole } from '@mad/shared';
 
-import { requireAdmin, requireRole } from '../../middleware/auth.middleware';
 import { AppError } from '../../middleware/error.middleware';
 import { validate, validateQuery } from '../../middleware/validation.middleware';
 import {

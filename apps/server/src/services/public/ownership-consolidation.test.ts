@@ -1,7 +1,7 @@
 import { Types } from 'mongoose';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { BookingStatus, PaymentStatus } from '@mad/shared';
+import { BookingStatus } from '@mad/shared';
 
 // Hoist mock environment setup
 vi.hoisted(() => {
@@ -14,14 +14,13 @@ vi.hoisted(() => {
   process.env.BOOKING_OWNERSHIP_GRACE_MS = '600000';
 });
 
-import { getBooking, downloadBookingPDF, generateDownloadToken, resendBookingTickets } from '../../controllers/public/booking.controller';
+import { getBooking } from '../../controllers/public/booking.controller';
 import { AppError } from '../../middleware/error.middleware';
 import { Booking } from '../../models/booking.schema';
 import { Ticket } from '../../models/ticket.schema';
 import { registerSocketHandlers } from '../../sockets/index';
 import { PublicBookingService } from './booking.service';
 import { PaymentService } from './payment.service';
-import { canViewTicketQR, canDownloadTicketPDF } from './ticket-ownership.service';
 
 vi.mock('../../models/booking.schema', () => ({
   Booking: {

@@ -1,5 +1,4 @@
 import { Request, Response, NextFunction } from 'express';
-import { Types } from 'mongoose';
 
 import { BookingStatus } from '@mad/shared';
 

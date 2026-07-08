@@ -6,7 +6,6 @@ import { getQueueName } from '../../config/queue.config';
 import { AppError } from '../../middleware/error.middleware';
 import { Booking } from '../../models/booking.schema';
 import { Suppression } from '../../models/suppression.schema';
-import { UserModel } from '../../models/user.schema';
 import { QueueService } from '../../services/queue.service';
 import { logger } from '../../utils/logger';
 

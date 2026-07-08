@@ -7,7 +7,6 @@ import { registerAdminSocketHandlers, registerSocketHandlers } from '../sockets'
 import { verifyAdminToken, verifySessionToken, verifyUserToken, extractBearerToken } from '../utils/jwt';
 import { logger } from '../utils/logger';
 import { isOriginAllowed } from '../utils/origin-validator';
-import { getEnv } from './env';
 
 let io: SocketIOServer | undefined;
 

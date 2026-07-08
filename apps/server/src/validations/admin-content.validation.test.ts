@@ -3,30 +3,7 @@ import { z } from 'zod';
 
 import { BookingStatus, EventCategory, PopupTrigger } from '@mad/shared';
 
-import {
-  adminBookingIdentifierParamSchema,
-  adminBookingsQuerySchema,
-  adminIdParamSchema,
-  createCategorySchema,
-  createCouponSchema,
-  createEventSchema,
-  createPopupSchema,
-  createRefundSchema,
-  createTierSchema,
-  processRefundSchema,
-  scannerLookupSchema,
-  scannerScanSchema,
-  scannerStatsSchema,
-  scannerHistorySchema,
-  updateDJOperatorSchema,
-  updateEventSchema,
-  updateCategorySchema,
-  updateCouponSchema,
-  updatePopupSchema,
-  updateTicketProfileSchema,
-  updateTierSchema,
-  deleteUploadSchema,
-} from './admin-content.validation';
+import { adminBookingIdentifierParamSchema, adminBookingsQuerySchema, adminIdParamSchema, createCategorySchema, createCouponSchema, createEventSchema, createPopupSchema, createRefundSchema, createTierSchema, processRefundSchema, scannerLookupSchema, scannerScanSchema, scannerStatsSchema, scannerHistorySchema, updateDJOperatorSchema, updateEventSchema, updateCategorySchema, updateCouponSchema, updatePopupSchema, updateTicketProfileSchema, updateTierSchema } from './admin-content.validation';
 
 const objectId = '507f1f77bcf86cd799439011';
 const otherObjectId = '507f1f77bcf86cd799439012';

@@ -1,6 +1,5 @@
 import * as Sentry from '@sentry/node';
 import { Worker, WorkerOptions, Job } from 'bullmq';
-import { Types } from 'mongoose';
 
 import { NotificationType } from '@mad/shared';
 

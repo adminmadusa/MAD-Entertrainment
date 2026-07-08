@@ -1,4 +1,4 @@
-import { Queue, Job } from 'bullmq';
+import { Queue } from 'bullmq';
 import mongoose from 'mongoose';
 
 import { getQueueConnection, getQueueName } from '../config/queue.config';

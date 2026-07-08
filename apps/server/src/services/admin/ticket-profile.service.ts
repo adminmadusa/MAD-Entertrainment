@@ -1,4 +1,3 @@
-import { Types } from 'mongoose';
 
 import { EventStatus, type EventLifecycleStatus } from '@mad/shared';
 
