@@ -74,14 +74,6 @@ export function EntryPassGrid({ tickets }: EntryPassGridProps) {
       };
     }
   }, [zoomedTicket]);
-
-  const handleModalKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
-    if (e.key === 'Tab') {
-      e.preventDefault();
-      closeButtonRef.current?.focus();
-    }
-  };
-
   const scrollToTicket = (index: number) => {
     if (scrollContainerRef.current) {
       const container = scrollContainerRef.current;
