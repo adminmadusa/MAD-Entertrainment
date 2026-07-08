@@ -55,5 +55,3 @@ export interface DJSocialLinksCardProps {
   isActive: boolean;
   setIsActive: (val: boolean) => void;
 }
-
-
