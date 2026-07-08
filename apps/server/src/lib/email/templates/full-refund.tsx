@@ -1,7 +1,8 @@
+import { Section, Text } from "@react-email/components";
 import * as React from "react";
 
 import { renderTemplate } from "../render-template";
-import { RefundEmailBase, sharedStyles } from "./components/RefundEmailBase";
+import { EmailBase, emailSharedStyles } from "./components/EmailBase";
 
 export interface FullRefundData {
   customerName: string;
@@ -43,7 +44,7 @@ export default function FullRefundEmail({
   const currencySymbol = currency === "INR" ? "₹" : currency;
 
   return (
-    <RefundEmailBase
+    <EmailBase
       previewText={`Refund Completed — ${bookingReference}`}
       badgeText="✓ REFUND COMPLETED"
       badgeStyle={{
@@ -54,23 +55,31 @@ export default function FullRefundEmail({
       title="Refund Successful"
       description={
         <>
-          Hi <strong style={sharedStyles.whiteText}>{customerName}</strong>,
+          Hi <strong style={emailSharedStyles.whiteText}>{customerName}</strong>,
           <br />
           your refund has been processed successfully. Here are the details of the refund.
         </>
       }
-      fields={[
-        { label: "Booking Reference", value: bookingReference, valueStyle: sharedStyles.bookingRef },
-        { label: "Event Name", value: eventTitle, valueStyle: sharedStyles.eventTitle },
-        {
-          label: "Refunded Amount",
-          value: `${currencySymbol}${refundAmount.toLocaleString("en-IN")}`,
-          valueStyle: sharedStyles.fullRefundAmount,
-        },
-        { label: "Refund Date", value: refundDate, valueStyle: sharedStyles.normalValueText },
-        { label: "Settlement Timeline", value: settlementTimeline, valueStyle: sharedStyles.normalValueText },
-      ]}
-    />
+    >
+      <Section style={emailSharedStyles.detailBox}>
+        <Text style={emailSharedStyles.detailLabel}>Booking Reference</Text>
+        <Text style={emailSharedStyles.bookingRef}>{bookingReference}</Text>
+
+        <Text style={emailSharedStyles.detailLabel}>Event Name</Text>
+        <Text style={emailSharedStyles.eventTitle}>{eventTitle}</Text>
+
+        <Text style={emailSharedStyles.detailLabel}>Refunded Amount</Text>
+        <Text style={emailSharedStyles.fullRefundAmount}>
+          {`${currencySymbol}${refundAmount.toLocaleString("en-IN")}`}
+        </Text>
+
+        <Text style={emailSharedStyles.detailLabel}>Refund Date</Text>
+        <Text style={emailSharedStyles.detailValueText}>{refundDate}</Text>
+
+        <Text style={emailSharedStyles.detailLabel}>Settlement Timeline</Text>
+        <Text style={emailSharedStyles.detailValueText}>{settlementTimeline}</Text>
+      </Section>
+    </EmailBase>
   );
 }
 

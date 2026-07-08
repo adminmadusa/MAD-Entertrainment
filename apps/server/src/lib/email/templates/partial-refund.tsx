@@ -1,7 +1,8 @@
+import { Section, Text } from "@react-email/components";
 import * as React from "react";
 
 import { renderTemplate } from "../render-template";
-import { RefundEmailBase, sharedStyles } from "./components/RefundEmailBase";
+import { EmailBase, emailSharedStyles } from "./components/EmailBase";
 
 export interface PartialRefundData {
   customerName: string;
@@ -42,35 +43,8 @@ export default function PartialRefundEmail({
 
   const currencySymbol = currency === "INR" ? "₹" : currency;
 
-  const fields = [
-    { label: "Booking Reference", value: bookingReference, valueStyle: sharedStyles.bookingRef },
-    {
-      label: "Original Order Amount",
-      value: `${currencySymbol}${originalAmount.toLocaleString("en-IN")}`,
-      valueStyle: sharedStyles.normalValueText,
-    },
-    {
-      label: "Refunded Amount",
-      value: `${currencySymbol}${refundAmount.toLocaleString("en-IN")}`,
-      valueStyle: sharedStyles.partialRefundAmount,
-    },
-    {
-      label: "Remaining Balance",
-      value: `${currencySymbol}${remainingAmount.toLocaleString("en-IN")}`,
-      valueStyle: sharedStyles.normalValueText,
-    },
-  ];
-
-  if (reason) {
-    fields.push({
-      label: "Reason",
-      value: reason,
-      valueStyle: sharedStyles.normalValueText,
-    });
-  }
-
   return (
-    <RefundEmailBase
+    <EmailBase
       previewText={`Partial Refund Completed — ${bookingReference}`}
       badgeText="✓ PARTIAL REFUND COMPLETED"
       badgeStyle={{
@@ -81,13 +55,39 @@ export default function PartialRefundEmail({
       title="Partial Refund Successful"
       description={
         <>
-          Hi <strong style={sharedStyles.whiteText}>{customerName}</strong>,
+          Hi <strong style={emailSharedStyles.whiteText}>{customerName}</strong>,
           <br />
           your partial refund has been processed. Here is the refund breakdown.
         </>
       }
-      fields={fields}
-    />
+    >
+      <Section style={emailSharedStyles.detailBox}>
+        <Text style={emailSharedStyles.detailLabel}>Booking Reference</Text>
+        <Text style={emailSharedStyles.bookingRef}>{bookingReference}</Text>
+
+        <Text style={emailSharedStyles.detailLabel}>Original Order Amount</Text>
+        <Text style={emailSharedStyles.detailValueText}>
+          {`${currencySymbol}${originalAmount.toLocaleString("en-IN")}`}
+        </Text>
+
+        <Text style={emailSharedStyles.detailLabel}>Refunded Amount</Text>
+        <Text style={emailSharedStyles.partialRefundAmount}>
+          {`${currencySymbol}${refundAmount.toLocaleString("en-IN")}`}
+        </Text>
+
+        <Text style={emailSharedStyles.detailLabel}>Remaining Balance</Text>
+        <Text style={emailSharedStyles.detailValueText}>
+          {`${currencySymbol}${remainingAmount.toLocaleString("en-IN")}`}
+        </Text>
+
+        {reason && (
+          <>
+            <Text style={emailSharedStyles.detailLabel}>Reason</Text>
+            <Text style={emailSharedStyles.detailValueText}>{reason}</Text>
+          </>
+        )}
+      </Section>
+    </EmailBase>
   );
 }
 

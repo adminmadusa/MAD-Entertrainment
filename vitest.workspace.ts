@@ -12,6 +12,7 @@ export default [
       globals: true,
       include: [
         'apps/server/src/**/*.test.ts',
+        'apps/server/src/**/*.test.tsx',
         'packages/*/src/**/*.test.ts'
       ],
       exclude: [
