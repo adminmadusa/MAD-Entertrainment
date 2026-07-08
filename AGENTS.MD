@@ -269,6 +269,8 @@ Reuse existing implementation.
 
 # DEAD CODE POLICY
 
+Every created or modified file must be completely free of unused imports, unused variables, and unused types to prevent static analysis (e.g. CodeQL / GitHub Advanced Security) alert triggers.
+
 Before every PR:
 
 Review:
