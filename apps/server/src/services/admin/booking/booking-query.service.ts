@@ -1,6 +1,6 @@
 import mongoose, { Types } from 'mongoose';
 
-import { BookingStatus, PaymentStatus, ReservationStatus } from '@mad/shared';
+import { BookingStatus, PaymentStatus } from '@mad/shared';
 
 import { AuditLogModel } from '../../../models/audit-log.schema';
 import { Booking } from '../../../models/booking.schema';
@@ -8,7 +8,6 @@ import { Payment } from '../../../models/payment.schema';
 import { Refund } from '../../../models/refund.schema';
 import { Ticket } from '../../../models/ticket.schema';
 import type { BookingsSummaryResponse } from '../../../types/admin/booking.types';
-import { logger } from '../../../utils/logger';
 import { CacheService } from '../../cache.service';
 
 /**

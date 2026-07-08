@@ -14,7 +14,7 @@ import { runInTransaction } from '../../utils/transaction';
 import { createNotificationSafe } from '../notification.service';
 import { QueueService } from '../queue.service';
 import { cancelBooking } from './booking.service';
-import { createRefund, processRefund, getRefunds } from './refund.service';
+import { createRefund, processRefund } from './refund.service';
 
 vi.mock('../../lib/razorpay/refund.client', () => ({
   createRazorpayRefund: vi.fn(),

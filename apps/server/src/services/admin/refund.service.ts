@@ -1,6 +1,5 @@
 import crypto from 'crypto';
 
-import { RefundStatus } from '@mad/shared';
 
 import { AppError } from '../../middleware/error.middleware';
 import { Refund, IRefund } from '../../models/refund.schema';

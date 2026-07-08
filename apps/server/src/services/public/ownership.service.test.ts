@@ -14,7 +14,6 @@ vi.mock('../../config/env', () => ({
   }),
 }));
 
-import { AppError } from '../../middleware/error.middleware';
 import { Booking } from '../../models/booking.schema';
 import { Ticket } from '../../models/ticket.schema';
 import {

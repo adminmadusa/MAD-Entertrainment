@@ -19,7 +19,7 @@
 import mongoose from 'mongoose';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-import { BookingStatus, PaymentStatus, ReservationStatus } from '@mad/shared';
+import { BookingStatus, PaymentStatus } from '@mad/shared';
 
 import { getEnv } from '../../config/env';
 import { Booking } from '../../models/booking.schema';

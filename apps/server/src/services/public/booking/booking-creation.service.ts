@@ -4,7 +4,6 @@ import { Types } from 'mongoose';
 
 import { BookingStatus, BookingMode, ReservationStatus, SeatStatus } from '@mad/shared';
 
-import { getEnv } from '../../../config/env';
 import { getRedis } from '../../../config/redis';
 import { emitToAdmin, emitToEvent } from '../../../config/socket';
 import { AppError } from '../../../middleware/error.middleware';
@@ -13,7 +12,6 @@ import { Coupon } from '../../../models/coupon.schema';
 import { Event } from '../../../models/event.schema';
 import { IReservation } from '../../../models/reservation.schema';
 import { SeatLayout } from '../../../models/seat-layout.schema';
-import { UserModel } from '../../../models/user.schema';
 import { auditLog } from '../../../utils/audit';
 import { logger } from '../../../utils/logger';
 import { runInTransaction } from '../../../utils/transaction';

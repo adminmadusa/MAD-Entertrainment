@@ -1,7 +1,7 @@
 import * as Sentry from '@sentry/node';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-import { BookingStatus, PaymentStatus, NotificationType } from '@mad/shared';
+import { BookingStatus, PaymentStatus } from '@mad/shared';
 
 import { Booking } from '../../models/booking.schema';
 import { Notification } from '../../models/notification.schema';

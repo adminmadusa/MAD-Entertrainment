@@ -1,4 +1,4 @@
-import mongoose, { Types, ClientSession } from 'mongoose';
+import { ClientSession } from 'mongoose';
 
 import { BookingStatus, ReservationStatus, SeatStatus, PaymentStatus, NotificationType } from '@mad/shared';
 

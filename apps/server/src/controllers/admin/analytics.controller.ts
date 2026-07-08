@@ -6,7 +6,6 @@ import { Booking } from '../../models/booking.schema';
 import { Event } from '../../models/event.schema';
 import { Payment } from '../../models/payment.schema';
 import { Refund } from '../../models/refund.schema';
-import { Ticket } from '../../models/ticket.schema';
 import { CacheService } from '../../services/cache.service';
 
 export const getSummary = async (req: Request, res: Response, next: NextFunction) => {

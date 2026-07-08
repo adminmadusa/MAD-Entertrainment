@@ -1,6 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { AppError } from '../../middleware/error.middleware';
 import { UserModel } from '../../models/user.schema';
 import { AuthService } from '../../services/public/auth.service';
 import { AuthController } from './auth.controller';

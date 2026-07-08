@@ -6,7 +6,7 @@ import { getEnv } from '../../config/env';
 import { getQueueName } from '../../config/queue.config';
 import { AppError } from '../../middleware/error.middleware';
 import { Booking } from '../../models/booking.schema';
-import { Ticket, ITicket } from '../../models/ticket.schema';
+import { Ticket } from '../../models/ticket.schema';
 import { auditLog } from '../../utils/audit';
 import { logger } from '../../utils/logger';
 import { runInTransaction } from '../../utils/transaction';

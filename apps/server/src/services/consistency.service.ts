@@ -9,7 +9,7 @@ import { Reservation } from '../models/reservation.schema';
 import { auditLog } from '../utils/audit';
 import { runWithContext, getTraceContext } from '../utils/context';
 import { logger } from '../utils/logger';
-import { BookingConsistencyService, UNTICKETED_BOOKING_WINDOW_MS } from './consistency/booking-consistency.service';
+import { BookingConsistencyService } from './consistency/booking-consistency.service';
 import { NotificationConsistencyService } from './consistency/notification-consistency.service';
 import { PaymentConsistencyService } from './consistency/payment-consistency.service';
 import { RefundConsistencyService } from './consistency/refund-consistency.service';

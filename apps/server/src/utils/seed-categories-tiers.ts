@@ -1,4 +1,4 @@
-import { EventCategory, EVENT_CATEGORY_LABELS, TicketTier } from '@mad/shared';
+import { EVENT_CATEGORY_LABELS } from '@mad/shared';
 
 import { Category } from '../models/category.schema';
 import { Tier } from '../models/tier.schema';
