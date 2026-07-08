@@ -1,5 +1,5 @@
 import { readFileSync } from 'fs';
-import { resolve, dirname, relative, isAbsolute } from 'path';
+import { resolve, dirname, relative } from 'path';
 import { Fixer, FixResultItem } from '../fix_types';
 import { FixContext } from '../fix_context';
 import { StatelessViolation } from '../types';

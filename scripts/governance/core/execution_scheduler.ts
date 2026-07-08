@@ -1,6 +1,6 @@
 // scripts/governance/core/execution_scheduler.ts
 import { ValidatorDefinition } from './validator_registry';
-import { ValidationResult, ValidationError } from './types';
+import { ValidationResult } from './types';
 import { FileContentCache, ASTParserCache } from './ast_parser_cache';
 
 export interface ValidatorExecutionMetrics {

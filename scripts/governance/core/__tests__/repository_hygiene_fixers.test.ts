@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { existsSync, mkdirSync, rmSync, writeFileSync, readFileSync } from 'fs';
-import { resolve, join, dirname } from 'path';
+import { existsSync, mkdirSync, rmSync, writeFileSync } from 'fs';
+import { resolve, join } from 'path';
 import { TrailingWhitespaceFixer } from '../fixers/trailing_whitespace_fixer';
 import { EofNewlineFixer } from '../fixers/eof_newline_fixer';
 import { BlankLineFixer } from '../fixers/blank_line_fixer';

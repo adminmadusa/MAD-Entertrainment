@@ -1,7 +1,7 @@
 // scripts/governance/core/finding_manager.ts
 import { existsSync, mkdirSync, readFileSync, readdirSync, statSync } from 'fs';
 import { resolve, join } from 'path';
-import { Finding, FindingException, FindingStatus, HistoryEvent, StatelessViolation, FindingOccurrence } from './types';
+import { Finding, FindingException, HistoryEvent, StatelessViolation, FindingOccurrence } from './types';
 import { RuleRegistry } from '../rules/registry';
 import { RenameDetector } from './rename_detector';
 import { writeJsonIfChanged, persistenceStats } from './json_utils';
@@ -275,7 +275,6 @@ export class FindingManager {
    */
   public matchOrCreateFinding(violation: StatelessViolation, claimedFindingIds: Set<string> = new Set()): Finding {
     const rule = RuleRegistry.getRule(violation.rule);
-    const category = rule?.category || 'HYGIENE';
     const ruleVersion = rule?.version || '1.0.0';
     const engineVersion = '1.0.0';
 

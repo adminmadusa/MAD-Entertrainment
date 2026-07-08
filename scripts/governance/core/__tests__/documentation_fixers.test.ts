@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { existsSync, readFileSync, writeFileSync, mkdirSync, rmSync } from 'fs';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { existsSync, writeFileSync, mkdirSync, rmSync } from 'fs';
 import { resolve, join } from 'path';
 import { MalformedAtxHeadingFixer } from '../fixers/malformed_atx_heading_fixer';
 import { FilenameCasingFixer } from '../fixers/filename_casing_fixer';

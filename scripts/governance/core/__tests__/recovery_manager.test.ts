@@ -5,7 +5,6 @@ import { join, resolve } from 'path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { ShellGitMetadataProvider } from '../git_metadata_provider';
 import { writeJsonIfChanged } from '../json_utils';
 import { RecoveryManager } from '../recovery_manager';
 import type { RollbackBackup } from '../rollback_manager';

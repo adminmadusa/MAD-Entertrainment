@@ -1,12 +1,12 @@
 import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest';
-import { existsSync, mkdirSync, readFileSync, rmSync } from 'fs';
+import { existsSync, mkdirSync, rmSync } from 'fs';
 import { resolve, join } from 'path';
 import { AuditEngine } from '../audit_engine';
 import { FindingManager } from '../finding_manager';
 import { ReportEngine } from '../report_engine';
 import { MetricsEngine } from '../metrics_engine';
 import { RuleRegistry } from '../../rules/registry';
-import { StatelessViolation, Finding } from '../types';
+import { StatelessViolation } from '../types';
 
 const sandboxRoot = resolve(__dirname, '../../../../scratch/test-audit-engine');
 

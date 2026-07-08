@@ -1,6 +1,6 @@
 // scripts/governance/core/reporter.ts
 
-import { ValidationResult, ValidationError } from './types';
+import { ValidationResult } from './types';
 
 export class ConsoleReporter {
   public static report(results: ValidationResult[]): { totalErrors: number; totalWarnings: number } {
