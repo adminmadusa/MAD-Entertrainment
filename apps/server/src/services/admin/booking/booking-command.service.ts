@@ -1,6 +1,6 @@
 import crypto from 'crypto';
 
-import mongoose, { Types, ClientSession } from 'mongoose';
+import { Types, ClientSession } from 'mongoose';
 
 import { BookingStatus } from '@mad/shared';
 

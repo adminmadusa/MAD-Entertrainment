@@ -14,7 +14,6 @@ vi.mock('../../config/env', () => ({
 }));
 
 import { emitToEvent, emitToBooking, emitToAdmin } from '../../config/socket';
-import { Booking } from '../../models/booking.schema';
 import { Event } from '../../models/event.schema';
 import { Reservation } from '../../models/reservation.schema';
 import { SeatLayout } from '../../models/seat-layout.schema';

@@ -4,13 +4,11 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { BookingStatus, PaymentStatus } from '@mad/shared';
 
 import { Booking } from '../../models/booking.schema';
-import { Notification } from '../../models/notification.schema';
 import { Payment } from '../../models/payment.schema';
 import { Refund } from '../../models/refund.schema';
 import { BookingLifecycleService } from './booking/booking-lifecycle.service';
 
 const { cancelBooking, executeCancelBookingSideEffects } = BookingLifecycleService;
-import { QueueService } from '../queue.service';
 import { PaymentService } from './payment.service';
 
 // Mock Session for MongoDB Transactions
