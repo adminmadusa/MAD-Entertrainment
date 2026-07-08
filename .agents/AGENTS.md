@@ -126,6 +126,7 @@ The AI must preserve repository cleanliness. You must adhere to the following gu
 - **Strict Reuse**: Extend existing abstractions and shared modules. Never duplicate validation schemas, utility functions, or UI components.
 - **Minimally Scoped Changes**: Scope edits to the smallest set of files necessary. No unsolicited, opportunistic refactoring.
 - **Strict Branch Lifecycles**: Work must happen on feature or fix branches, never directly on protected branches.
+- **No Unused Code or Imports**: Every created or modified file must be completely free of unused imports, unused variables, and unused types to prevent static analysis (e.g. CodeQL / GitHub Advanced Security) alert triggers.
 
 ---
 
