@@ -50,9 +50,8 @@ export class PaymentBookingService {
     options?: ConfirmationOptions
   ): Promise<ConfirmationTransactionResult> {
     // 0. Atomic payment status transition inside transaction
-    let claimedPayment = _payment;
     if (_payment.status === PaymentStatus.PENDING) {
-      claimedPayment = await Payment.findOneAndUpdate(
+      const claimedPayment = await Payment.findOneAndUpdate(
         { _id: _payment._id, status: PaymentStatus.PENDING },
         {
           $set: {

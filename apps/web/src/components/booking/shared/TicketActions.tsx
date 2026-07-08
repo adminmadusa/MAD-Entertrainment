@@ -19,13 +19,6 @@ export function TicketActions({
 }: TicketActionsProps) {
   const isResendingCooldown = cooldown !== undefined && cooldown > 0;
 
-  let resendAriaLabel = 'Resend tickets to your email';
-  if (resending) {
-    resendAriaLabel = 'Sending tickets to your email';
-  } else if (isResendingCooldown) {
-    resendAriaLabel = `Resend available in ${cooldown} seconds`;
-  }
-
   const getResendButtonStyles = () => {
     if (resending) {
       return 'bg-white/5 border border-white/10 text-white/60 cursor-not-allowed';

@@ -25,7 +25,6 @@ export interface AdditionalMetrics {
 
 export class BranchHygieneScorer {
   public static score(branches: RegisteredBranch[]): { score: number; deductions: Deduction[] } {
-    let score = 100;
     const deductions: Deduction[] = [];
 
     // 1. Lingering merged/patch-equivalent local branches
@@ -83,7 +82,7 @@ export class BranchHygieneScorer {
     }
 
     const totalDeductions = deductions.reduce((sum, d) => sum + d.points, 0);
-    score = Math.max(0, 100 - totalDeductions);
+    const score = Math.max(0, 100 - totalDeductions);
 
     return { score, deductions };
   }
@@ -94,7 +93,6 @@ export class RepositoryHealthScorer {
     branches: RegisteredBranch[],
     metrics: AdditionalMetrics
   ): { score: number; deductions: Deduction[] } {
-    let score = 100;
     const deductions: Deduction[] = [];
 
     // 1. Working tree status
@@ -139,7 +137,7 @@ export class RepositoryHealthScorer {
     }
 
     const totalDeductions = deductions.reduce((sum, d) => sum + d.points, 0);
-    score = Math.max(0, 100 - totalDeductions);
+    const score = Math.max(0, 100 - totalDeductions);
 
     return { score, deductions };
   }
@@ -147,7 +145,6 @@ export class RepositoryHealthScorer {
 
 export class TechnicalDebtScorer {
   public static score(branches: RegisteredBranch[]): { score: number; deductions: Deduction[] } {
-    let score = 100;
     const deductions: Deduction[] = [];
 
     // 1. Duplicate candidate branches
@@ -187,7 +184,7 @@ export class TechnicalDebtScorer {
     }
 
     const totalDeductions = deductions.reduce((sum, d) => sum + d.points, 0);
-    score = Math.max(0, 100 - totalDeductions);
+    const score = Math.max(0, 100 - totalDeductions);
 
     return { score, deductions };
   }
@@ -198,7 +195,6 @@ export class GitGovernanceScorer {
     branches: RegisteredBranch[],
     metrics: AdditionalMetrics
   ): { score: number; deductions: Deduction[] } {
-    let score = 100;
     const deductions: Deduction[] = [];
 
     // 1. Branch naming prefix violations
@@ -256,7 +252,7 @@ export class GitGovernanceScorer {
     }
 
     const totalDeductions = deductions.reduce((sum, d) => sum + d.points, 0);
-    score = Math.max(0, 100 - totalDeductions);
+    const score = Math.max(0, 100 - totalDeductions);
 
     return { score, deductions };
   }

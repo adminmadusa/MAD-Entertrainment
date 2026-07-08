@@ -213,13 +213,13 @@ function main() {
     const v = rb.verification;
     const state = rb.lifecycleState;
 
-    let action = 'Keep';
-    let status: 'Execute Now' | 'Pending' | 'Blocked' = 'Blocked';
-    let risk: 'Low' | 'Medium' | 'High' | 'N/A' = 'N/A';
-    let reason = 'Protected or active development branch';
-    let preconditions: string[] = [];
-    let rollbackStrategy = 'N/A';
-    let estimatedEffort = 'N/A';
+    let action: string;
+    let status: 'Execute Now' | 'Pending' | 'Blocked';
+    let risk: 'Low' | 'Medium' | 'High' | 'N/A';
+    let reason: string;
+    let preconditions: string[];
+    let rollbackStrategy: string;
+    let estimatedEffort: string;
     let shellCommand = '';
     
     // Evaluate strict deletion policy

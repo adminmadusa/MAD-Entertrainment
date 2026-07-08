@@ -24,7 +24,7 @@ export class EofNewlineFixer implements Fixer {
       };
     }
 
-    let fixedContent = content;
+    let fixedContent: string;
 
     // Normalize EOF newline to exactly one \n
     if (!content.endsWith('\n')) {

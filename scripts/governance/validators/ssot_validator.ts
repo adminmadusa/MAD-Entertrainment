@@ -234,7 +234,6 @@ export class SsotValidator implements GovernanceValidator {
     let metadataLines: string[] = [];
     let inMetadataBlock = false;
     let foundMetadata = false;
-    let startLine = 0;
 
     // Scan to find metadata. It can be a list under "## Metadata" or at the very start.
     for (let i = 0; i < Math.min(lines.length, 50); i++) {
@@ -243,7 +242,6 @@ export class SsotValidator implements GovernanceValidator {
       if (line.toLowerCase() === '## metadata') {
         inMetadataBlock = true;
         foundMetadata = true;
-        startLine = i + 1;
         continue;
       }
 
