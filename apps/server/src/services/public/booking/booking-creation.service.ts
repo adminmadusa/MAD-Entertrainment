@@ -522,7 +522,7 @@ export class BookingCreationService {
       throw err;
     }
 
-    const { allSeatIds, reservationBySeat, postCommitCallbacks } = txResult;
+    const { allSeatIds, postCommitCallbacks } = txResult;
 
     // Side effects (Redis lock release, WebSocket emissions, Cache invalidation, and Audit logging) run strictly outside the transaction boundary.
     if (event.bookingMode === BookingMode.SEAT_BASED) {
