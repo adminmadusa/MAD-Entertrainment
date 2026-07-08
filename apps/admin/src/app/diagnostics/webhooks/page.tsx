@@ -205,6 +205,18 @@ export default function WebhookDiagnosticsPage() {
 
       {/* Table */}
       <div className="glass rounded-2xl border border-border-subtle overflow-hidden flex flex-col min-h-[400px]">
+        <Table>
+          <TableHeader className="bg-surface-hover/30">
+            <TableRow>
+              {['Timestamp', 'Provider', 'Event Type', 'Booking ID', 'Status', 'Error Message'].map((h) => (
+                <TableHead key={h} className="py-3.5 px-4 whitespace-nowrap uppercase text-xs tracking-wider">
+                  {h}
+                </TableHead>
+              ))}
+            </TableRow>
+          </TableHeader>
+          <TableBody>{renderTableBody()}</TableBody>
+        </Table>
 
         {/* Pagination */}
         {pagination && pagination.totalPages > 1 && (

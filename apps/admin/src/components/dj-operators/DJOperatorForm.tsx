@@ -1,4 +1,3 @@
-import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import React, { useState, useEffect } from 'react';
 
