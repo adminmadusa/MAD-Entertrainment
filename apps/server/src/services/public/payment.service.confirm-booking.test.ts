@@ -626,7 +626,6 @@ describe('TEST-001 — confirmBooking Transaction Integration', () => {
         status: BookingStatus.CONFIRMED,
         paymentId, // same payment won
       };
-      const alreadyConfirmedDoc = { ...booking, status: BookingStatus.CONFIRMED, paymentId };
 
       vi.mocked(Payment.findOne).mockResolvedValue(payment as any);
       vi.mocked(Event.findById).mockResolvedValue(event as any);

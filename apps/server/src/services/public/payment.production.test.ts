@@ -1,5 +1,5 @@
 import * as Sentry from '@sentry/node';
-import mongoose, { Types } from 'mongoose';
+import { Types } from 'mongoose';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 import { BookingStatus, PaymentStatus } from '@mad/shared';

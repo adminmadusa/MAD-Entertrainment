@@ -1,7 +1,6 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 
 import { createBooking, recoverBooking } from '../../controllers/public/booking.controller';
-import { optionalAuth } from '../../middleware/auth.middleware';
 import { bookingLimiter, recoveryLimiter } from '../../middleware/rate.middleware';
 import router from './booking.routes';
 

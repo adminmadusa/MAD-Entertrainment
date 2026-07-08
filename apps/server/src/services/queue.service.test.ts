@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
-import { isRedisConnected } from '../config/redis';
 import { QueueService } from './queue.service';
 
 // Local state toggles to control mock behavior dynamically across tests

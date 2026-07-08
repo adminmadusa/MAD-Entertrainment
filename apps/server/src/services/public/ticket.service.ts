@@ -52,7 +52,7 @@ export async function assignTicket(
   }
 
   // 2. Perform the update inside a transaction session
-  const updatedTicket = await runInTransaction(async (session) => {
+  await runInTransaction(async (session) => {
     const updated = await Ticket.findOneAndUpdate(
       {
         ticketId,
@@ -175,7 +175,7 @@ export async function claimTicket(
   }
 
   // 2. Perform the update inside a transaction session
-  const updatedTicket = await runInTransaction(async (session) => {
+  await runInTransaction(async (session) => {
     const updated = await Ticket.findOneAndUpdate(
       {
         ticketId,
