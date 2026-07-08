@@ -12,7 +12,6 @@ import { FixLifecycleIntegrator } from '../core/fix_lifecycle_integrator';
 import { FixRegistry } from '../core/fix_registry';
 import { LifecycleManager } from '../core/lifecycle_manager';
 import { RecoveryManager } from '../core/recovery_manager';
-import { RollbackManager } from '../core/rollback_manager';
 import { SessionManager } from '../core/session_manager';
 import { SessionStore } from '../core/session_store';
 import type { VerificationResult } from '../core/verification_result';

@@ -306,8 +306,7 @@ async function run() {
 
   const globalTotalTimeMs = Date.now() - globalStartTime;
 
-  // Print results summary to console (retaining backward compatibility)
-  const { totalErrors } = ConsoleReporter.report(results);
+  ConsoleReporter.report(results);
 
   // Write JSON report
   const reportContent = JsonReporter.report(results, globalTotalTimeMs);

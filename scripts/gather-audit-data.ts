@@ -24,7 +24,6 @@ function log(msg: string) {
 
 function getWorkspacePackages(): string[] {
   const workspaceYaml = readFileSync("pnpm-workspace.yaml", "utf8");
-  const match = workspaceYaml.match(/packages:\s*\n\s*-\s*(.*)/);
   // simple fallback: assume packages/*
   return readdirSync("packages", { withFileTypes: true })
     .filter((d) => d.isDirectory())

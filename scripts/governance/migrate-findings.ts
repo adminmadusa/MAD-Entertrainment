@@ -2,7 +2,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync, readdirSync, rmSync, cpSync } from 'fs';
 import { resolve, join } from 'path';
 import { createHash } from 'crypto';
-import { Finding, FindingOccurrence, FindingStatus, HistoryEvent, GovernanceManifest } from './core/types';
+import { Finding, FindingOccurrence, FindingStatus, GovernanceManifest } from './core/types';
 import { FingerprintEngine } from './core/fingerprint';
 import { canonicalizeJson } from './core/json_utils';
 

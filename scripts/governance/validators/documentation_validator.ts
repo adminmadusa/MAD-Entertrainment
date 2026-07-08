@@ -1,7 +1,7 @@
 // scripts/governance/validators/documentation_validator.ts
 
-import { existsSync, readFileSync, readdirSync, statSync, writeFileSync } from 'fs';
-import { resolve, relative, dirname, basename, join } from 'path';
+import { existsSync, readFileSync, statSync, writeFileSync } from 'fs';
+import { resolve, dirname } from 'path';
 import { createHash } from 'crypto';
 import { GovernanceValidator } from '../core/validator';
 import { ValidationResult, ValidationError, GovernanceMetadata } from '../core/types';
@@ -326,9 +326,6 @@ export class DocumentationValidator implements GovernanceValidator {
 
             if (targetRelPath) {
               outgoing.add(targetRelPath);
-
-              // Resolve relative path to workspace root
-              const resolvedPath = resolve(workspaceRoot, targetRelPath);
 
               const pathStatus = checkPathCasing(workspaceRoot, targetRelPath);
 
