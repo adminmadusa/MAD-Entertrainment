@@ -77,3 +77,9 @@ audit_data.json
 .agents/ai-os/runtime/cache/
 .agents/ai-os/runtime/indexes/
 skills-lock.json
+
+# Local IDE and AI artifacts
+.cursor/
+git-mcp/
+.gemini/
+.claude/
