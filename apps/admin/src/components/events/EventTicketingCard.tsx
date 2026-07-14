@@ -124,8 +124,9 @@ export const EventTicketingCard = React.memo(function EventTicketingCard({
                 )}
               </div>
               <div className="grid grid-cols-2 gap-4">
-                <FormField label="Tier Name">
+                <FormField label="Tier Name" htmlFor={`tier-name-${i}`}>
                   <select
+                    id={`tier-name-${i}`}
                     value={tier.name}
                     onChange={(e) => onUpdateTier(i, 'name', e.target.value)}
                     className={inputCls}
@@ -143,8 +144,9 @@ export const EventTicketingCard = React.memo(function EventTicketingCard({
                         ))}
                   </select>
                 </FormField>
-                <FormField label="Price (₹)">
+                <FormField label="Price (₹)" htmlFor={`tier-price-${i}`}>
                   <input
+                    id={`tier-price-${i}`}
                     type="number"
                     min="0"
                     value={tier.price}
@@ -158,8 +160,9 @@ export const EventTicketingCard = React.memo(function EventTicketingCard({
                 </FormField>
               </div>
               <div className="grid grid-cols-2 gap-4">
-                <FormField label="Capacity *">
+                <FormField label="Capacity *" htmlFor={`tier-capacity-${i}`}>
                   <input
+                    id={`tier-capacity-${i}`}
                     type="number"
                     min="1"
                     value={tier.capacity}
@@ -177,8 +180,9 @@ export const EventTicketingCard = React.memo(function EventTicketingCard({
         </div>
       ) : (
         <div className="space-y-4">
-          <FormField label="Select Ticket Profile *">
+          <FormField label="Select Ticket Profile *" htmlFor="profile-select">
             <select
+              id="profile-select"
               value={selectedProfileId}
               onChange={(e) => {
                 setSelectedProfileId(e.target.value);
@@ -239,8 +243,9 @@ export const EventTicketingCard = React.memo(function EventTicketingCard({
                               />
                             </div>
                             <div className="space-y-1 pt-4">
-                              <label className="flex items-center gap-2 cursor-pointer select-none">
+                              <label htmlFor={`override-visible-${ticket.tier}`} className="flex items-center gap-2 cursor-pointer select-none">
                                 <input
+                                  id={`override-visible-${ticket.tier}`}
                                   type="checkbox"
                                   checked={override.isActive !== undefined ? override.isActive : true}
                                   onChange={(e) =>

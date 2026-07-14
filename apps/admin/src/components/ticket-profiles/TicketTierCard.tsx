@@ -45,8 +45,9 @@ export const TicketTierCard = React.memo(function TicketTierCard({
       {/* Ticket Config Row 1 */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="space-y-1.5">
-          <label className="text-text-secondary text-xs font-medium">System Tier Enum</label>
+          <label htmlFor={`ticket-tier-${gIdx}-${tIdx}`} className="text-text-secondary text-xs font-medium">System Tier Enum</label>
           <select
+            id={`ticket-tier-${gIdx}-${tIdx}`}
             value={ticket.tier}
             onChange={(e) => onUpdateField(gIdx, tIdx, 'tier', e.target.value)}
             className={inputCls}
@@ -65,10 +66,11 @@ export const TicketTierCard = React.memo(function TicketTierCard({
           </select>
         </div>
         <div className="space-y-1.5 sm:col-span-2">
-          <label className="text-text-secondary text-xs font-medium">
+          <label htmlFor={`ticket-name-${gIdx}-${tIdx}`} className="text-text-secondary text-xs font-medium">
             Display Name (use {"{eventName}"} for auto-mapping) *
           </label>
           <input
+            id={`ticket-name-${gIdx}-${tIdx}`}
             value={ticket.name}
             onChange={(e) => onUpdateField(gIdx, tIdx, 'name', e.target.value)}
             placeholder="e.g. {eventName} VIP Pass"
@@ -81,8 +83,9 @@ export const TicketTierCard = React.memo(function TicketTierCard({
       {/* Ticket Config Row 2 */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <div className="space-y-1.5">
-          <label className="text-text-secondary text-xs font-medium">Price (₹)</label>
+          <label htmlFor={`ticket-price-${gIdx}-${tIdx}`} className="text-text-secondary text-xs font-medium">Price (₹)</label>
           <input
+            id={`ticket-price-${gIdx}-${tIdx}`}
             type="number"
             min={0}
             value={ticket.price}
@@ -101,8 +104,9 @@ export const TicketTierCard = React.memo(function TicketTierCard({
           />
         </div>
         <div className="space-y-1.5">
-          <label className="text-text-secondary text-xs font-medium">Capacity Limit</label>
+          <label htmlFor={`ticket-capacity-${gIdx}-${tIdx}`} className="text-text-secondary text-xs font-medium">Capacity Limit</label>
           <input
+            id={`ticket-capacity-${gIdx}-${tIdx}`}
             type="number"
             min={1}
             value={ticket.totalCapacity}
@@ -120,8 +124,9 @@ export const TicketTierCard = React.memo(function TicketTierCard({
           />
         </div>
         <div className="space-y-1.5">
-          <label className="text-text-secondary text-xs font-medium">Max Qty / Booking</label>
+          <label htmlFor={`ticket-max-qty-${gIdx}-${tIdx}`} className="text-text-secondary text-xs font-medium">Max Qty / Booking</label>
           <input
+            id={`ticket-max-qty-${gIdx}-${tIdx}`}
             type="number"
             min={1}
             value={ticket.maxPerBooking}
@@ -138,8 +143,9 @@ export const TicketTierCard = React.memo(function TicketTierCard({
           />
         </div>
         <div className="space-y-1.5">
-          <label className="text-text-secondary text-xs font-medium">Min Qty / Booking</label>
+          <label htmlFor={`ticket-min-qty-${gIdx}-${tIdx}`} className="text-text-secondary text-xs font-medium">Min Qty / Booking</label>
           <input
+            id={`ticket-min-qty-${gIdx}-${tIdx}`}
             type="number"
             min={1}
             value={ticket.minPerBooking}
@@ -160,8 +166,9 @@ export const TicketTierCard = React.memo(function TicketTierCard({
       {/* Ticket Config Row 3 */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="space-y-1.5 flex items-end pb-3">
-          <label className="flex items-center gap-3 cursor-pointer select-none">
+          <label htmlFor={`ticket-isfree-${gIdx}-${tIdx}`} className="flex items-center gap-3 cursor-pointer select-none">
             <input
+              id={`ticket-isfree-${gIdx}-${tIdx}`}
               type="checkbox"
               checked={ticket.isFree}
               onChange={(e) => {
@@ -178,8 +185,9 @@ export const TicketTierCard = React.memo(function TicketTierCard({
           </label>
         </div>
         <div className="space-y-1.5 sm:col-span-2">
-          <label className="text-text-secondary text-xs font-medium">Tier Description</label>
+          <label htmlFor={`ticket-desc-${gIdx}-${tIdx}`} className="text-text-secondary text-xs font-medium">Tier Description</label>
           <input
+            id={`ticket-desc-${gIdx}-${tIdx}`}
             value={ticket.description}
             onChange={(e) => onUpdateField(gIdx, tIdx, 'description', e.target.value)}
             placeholder="Brief description of perks..."
