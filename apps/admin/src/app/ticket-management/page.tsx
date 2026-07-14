@@ -251,7 +251,7 @@ function TicketProfilesTab({ canMutate, qc, showToast }: TabProps) {
     if (profiles.length === 0) {
       return (
         <TableRow>
-          <TableCell colSpan={6} className="py-16 text-center text-text-muted text-sm">
+          <TableCell colSpan={7} className="py-16 text-center text-text-muted text-sm">
             No ticket profiles found.{' '}
             <Link href="/ticket-profiles/new" className="text-accent-purple hover:underline font-semibold">
               Create one →
@@ -263,6 +263,20 @@ function TicketProfilesTab({ canMutate, qc, showToast }: TabProps) {
 
     return profiles.map((profile) => (
       <TableRow key={profile._id} className="border-b border-border-subtle/40 hover:bg-white/2 transition-colors">
+        <TableCell className="w-12 px-4 text-center">
+          <input
+            type="checkbox"
+            className="rounded border-border-subtle bg-surface focus:ring-accent-purple focus:ring-offset-background"
+            checked={selectedProfiles.has(profile._id)}
+            onChange={(e) => {
+              const newSet = new Set(selectedProfiles);
+              if (e.target.checked) newSet.add(profile._id);
+              else newSet.delete(profile._id);
+              setSelectedProfiles(newSet);
+            }}
+            aria-label={`Select ${profile.name}`}
+          />
+        </TableCell>
         <TableCell className="py-4 px-5">
           <div>
             <span className="text-white font-bold text-sm block">
@@ -355,6 +369,21 @@ function TicketProfilesTab({ canMutate, qc, showToast }: TabProps) {
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="w-12 px-4 text-center">
+                <input
+                  type="checkbox"
+                  className="rounded border-border-subtle bg-surface focus:ring-accent-purple focus:ring-offset-background"
+                  checked={profiles.length > 0 && selectedProfiles.size === profiles.length}
+                  onChange={(e) => {
+                    if (e.target.checked) {
+                      setSelectedProfiles(new Set(profiles.map((p) => p._id)));
+                    } else {
+                      setSelectedProfiles(new Set());
+                    }
+                  }}
+                  aria-label="Select all profiles"
+                />
+              </TableHead>
               <TableHead className="py-3.5 px-5">Profile Name & Description</TableHead>
               <TableHead className="py-3.5 px-4">Groups</TableHead>
               <TableHead className="py-3.5 px-4">Total Ticket Tiers</TableHead>
@@ -407,6 +436,35 @@ function TicketProfilesTab({ canMutate, qc, showToast }: TabProps) {
           </div>
         )}
       </Modal>
+
+      {/* Floating Action Bar */}
+      <FloatingActionBar
+        selectedCount={selectedProfiles.size}
+        onClearSelection={() => setSelectedProfiles(new Set())}
+      >
+        <button
+          onClick={() => bulkStatusMutation.mutate({ ids: Array.from(selectedProfiles), isActive: true })}
+          disabled={bulkStatusMutation.isPending || bulkDeleteMutation.isPending}
+          className="px-3 py-1.5 text-sm font-medium text-white hover:text-green-400 bg-white/5 hover:bg-green-500/20 border border-transparent hover:border-green-500/30 rounded-lg transition-all"
+        >
+          {bulkStatusMutation.isPending ? 'Processing...' : 'Activate'}
+        </button>
+        <button
+          onClick={() => bulkStatusMutation.mutate({ ids: Array.from(selectedProfiles), isActive: false })}
+          disabled={bulkStatusMutation.isPending || bulkDeleteMutation.isPending}
+          className="px-3 py-1.5 text-sm font-medium text-white hover:text-yellow-400 bg-white/5 hover:bg-yellow-500/20 border border-transparent hover:border-yellow-500/30 rounded-lg transition-all"
+        >
+          {bulkStatusMutation.isPending ? 'Processing...' : 'Deactivate'}
+        </button>
+        <div className="w-px h-4 bg-border-default mx-1" />
+        <button
+          onClick={() => bulkDeleteMutation.mutate(Array.from(selectedProfiles))}
+          disabled={bulkDeleteMutation.isPending || bulkStatusMutation.isPending}
+          className="px-3 py-1.5 text-sm font-medium text-white hover:text-red-400 bg-white/5 hover:bg-red-500/20 border border-transparent hover:border-red-500/30 rounded-lg transition-all"
+        >
+          {bulkDeleteMutation.isPending ? 'Processing...' : 'Delete'}
+        </button>
+      </FloatingActionBar>
     </div>
   );
 }
