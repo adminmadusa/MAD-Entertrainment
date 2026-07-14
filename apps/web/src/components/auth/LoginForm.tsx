@@ -80,6 +80,15 @@ export function LoginForm({
 
   return (
     <div className="space-y-4 sm:space-y-6">
+      <div className="text-center">
+        <h2 id="auth-modal-title" className="text-xl font-bold text-white">
+          Sign In
+        </h2>
+        <p className="text-xs text-text-muted mt-1">
+          Enter your email to continue
+        </p>
+      </div>
+
       {/* Alert Banners */}
       {requestCooldownRemaining > 0 && (
         <Alert variant="info" role="status" className="animate-in fade-in duration-300">
