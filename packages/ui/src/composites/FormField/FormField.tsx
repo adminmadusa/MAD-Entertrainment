@@ -17,6 +17,9 @@ export const FormField = forwardRef<HTMLDivElement, FormFieldProps>(
         if (htmlFor && !element.props.id) {
           childProps.id = htmlFor;
         }
+        if (required && element.props['aria-required'] === undefined) {
+          childProps['aria-required'] = 'true';
+        }
         return React.cloneElement(element, childProps);
       }
       return child;
