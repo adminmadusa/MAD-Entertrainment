@@ -1,9 +1,9 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 
 import { EventStatus } from '@mad/shared';
-import { FormField } from '@mad/ui';
+import { FormField, Modal } from '@mad/ui';
 
 import { inputCls, STATE_BADGE, STATE_LABELS } from './event-memories.constants';
 import {
@@ -41,6 +41,14 @@ export const EventMemoriesCard = React.memo(function EventMemoriesCard({
     handleStateChange,
     openPreview,
   } = useEventMemoriesHandlers({ value, onChange, eventSlug });
+
+  const [deleteImageIdx, setDeleteImageIdx] = useState<number | null>(null);
+
+  const confirmDeleteImage = () => {
+    if (deleteImageIdx === null) return;
+    removeGalleryItem(deleteImageIdx);
+    setDeleteImageIdx(null);
+  };
 
   return (
     <div className="glass rounded-2xl border border-border-subtle p-6 space-y-6">
@@ -88,6 +96,7 @@ export const EventMemoriesCard = React.memo(function EventMemoriesCard({
       {uploadWarning && (
         <div
           role="alert"
+          aria-live="polite"
           className="px-4 py-2.5 bg-error/10 border border-error/20 rounded-xl text-xs text-red-400"
         >
           {uploadWarning}
@@ -141,7 +150,7 @@ export const EventMemoriesCard = React.memo(function EventMemoriesCard({
         galleryInputRef={galleryInputRef}
         onFileChange={handleFileChange}
         onMove={moveGalleryItem}
-        onRemove={removeGalleryItem}
+        onRemove={setDeleteImageIdx}
         onClearUpload={clearUploadEntry}
       />
 
@@ -152,6 +161,35 @@ export const EventMemoriesCard = React.memo(function EventMemoriesCard({
         onStateChange={handleStateChange}
         onOpenPreview={openPreview}
       />
+
+      <Modal
+        isOpen={deleteImageIdx !== null}
+        onClose={() => setDeleteImageIdx(null)}
+        size="sm"
+        showCloseButton={false}
+        closeOnBackdropClick={true}
+        ariaLabelledBy="delete-image-confirm-modal-title"
+        className="glass-strong border border-border-subtle p-6 max-w-sm"
+      >
+        <h2 id="delete-image-confirm-modal-title" className="text-white font-bold text-lg mb-2">Remove Image?</h2>
+        <p className="text-text-secondary text-sm mb-5">
+          Are you sure you want to remove this image? This action will immediately delete the image from storage.
+        </p>
+        <div className="flex gap-3">
+          <button
+            onClick={() => setDeleteImageIdx(null)}
+            className="flex-1 py-2.5 glass border border-border-subtle rounded-xl text-sm font-medium text-text-secondary hover:text-white transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={confirmDeleteImage}
+            className="flex-1 py-2.5 bg-error/80 hover:bg-error rounded-xl text-white text-sm font-medium transition-colors"
+          >
+            Remove
+          </button>
+        </div>
+      </Modal>
     </div>
   );
 });

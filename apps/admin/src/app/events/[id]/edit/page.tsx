@@ -287,6 +287,7 @@ export default function EditEventPage() {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
+            aria-live="polite"
             className="px-4 py-3 bg-error/10 border border-error/30 rounded-xl text-sm text-red-400"
           >
             {error}

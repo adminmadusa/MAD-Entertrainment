@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
 
 import { CloudinaryUpload } from '@/components/CloudinaryUpload';
 import type { PopupCampaign } from '@mad/types';
-import { FormField } from '@mad/ui';
+import { FormField, Input, Textarea } from '@mad/ui';
 
 import {
   defaultPopupForm,
@@ -58,6 +58,7 @@ export function PopupForm({
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
+          aria-live="polite"
           className="px-4 py-3 bg-error/10 border border-error/30 rounded-xl text-sm text-red-400"
         >
           {displayedError}
@@ -80,50 +81,46 @@ export function PopupForm({
       <div className="glass rounded-2xl border border-border-subtle p-6 space-y-5">
         <h2 className="text-white font-semibold">Campaign Setup</h2>
         <FormField label="Campaign Name *">
-          <input
+          <Input
             id="popup-name"
             value={formState.name}
             onChange={(e) => setFormState((p) => ({ ...p, name: e.target.value }))}
             placeholder="e.g. Summer Festival Early Bird Promotion"
             required
-            className={inputCls}
           />
         </FormField>
         <FormField label="Popup Title *">
-          <input
+          <Input
             id="popup-title"
             value={formState.title}
             onChange={(e) => setFormState((p) => ({ ...p, title: e.target.value }))}
             placeholder="e.g. Get 20% Off Sunburn Passes!"
             required
-            className={inputCls}
           />
         </FormField>
         <FormField label="Description (optional)">
-          <textarea
+          <Textarea
             id="popup-description"
             value={formState.description}
             onChange={(e) => setFormState((p) => ({ ...p, description: e.target.value }))}
             placeholder="Offer description or details..."
             rows={3}
-            className={`${inputCls} resize-none`}
+            className="resize-none"
           />
         </FormField>
         <div className="grid grid-cols-2 gap-4">
           <FormField label="CTA Button Text (optional)">
-            <input
+            <Input
               value={formState.ctaText}
               onChange={(e) => setFormState((p) => ({ ...p, ctaText: e.target.value }))}
               placeholder="e.g. Claim Offer"
-              className={inputCls}
             />
           </FormField>
           <FormField label="CTA Destination URL (optional)">
-            <input
+            <Input
               value={formState.ctaUrl}
               onChange={(e) => setFormState((p) => ({ ...p, ctaUrl: e.target.value }))}
               placeholder="e.g. https://mad.com/events/sunburn"
-              className={inputCls}
             />
           </FormField>
         </div>
@@ -146,31 +143,28 @@ export function PopupForm({
             </select>
           </FormField>
           <FormField label="Trigger Delay (ms / percent value)">
-            <input
+            <Input
               type="number"
               min="0"
               value={formState.triggerDelay}
               onChange={(e) => setFormState((p) => ({ ...p, triggerDelay: Number(e.target.value) }))}
-              className={inputCls}
             />
           </FormField>
         </div>
         <div className="grid grid-cols-2 gap-4">
           <FormField label="Cooldown Hours">
-            <input
+            <Input
               type="number"
               min="1"
               value={formState.cooldownHours}
               onChange={(e) => setFormState((p) => ({ ...p, cooldownHours: Number(e.target.value) }))}
-              className={inputCls}
             />
           </FormField>
           <FormField label="Priority (higher = shown first)">
-            <input
+            <Input
               type="number"
               value={formState.priority}
               onChange={(e) => setFormState((p) => ({ ...p, priority: Number(e.target.value) }))}
-              className={inputCls}
             />
           </FormField>
         </div>
@@ -180,36 +174,32 @@ export function PopupForm({
       <div className="glass rounded-2xl border border-border-subtle p-6 space-y-5">
         <h2 className="text-white font-semibold">Scope & Targeting</h2>
         <FormField label="Show on pages (comma-separated, blank for all)">
-          <input
+          <Input
             value={formState.showOnPages}
             onChange={(e) => setFormState((p) => ({ ...p, showOnPages: e.target.value }))}
             placeholder="e.g. /, /events, /venues"
-            className={inputCls}
           />
         </FormField>
         <FormField label="Linked Event ID (optional)">
-          <input
+          <Input
             value={formState.linkedEventId}
             onChange={(e) => setFormState((p) => ({ ...p, linkedEventId: e.target.value }))}
             placeholder="e.g. 6a11621b76456c3977198702"
-            className={inputCls}
           />
         </FormField>
         <div className="grid grid-cols-2 gap-4">
           <FormField label="Start Date">
-            <input
+            <Input
               type="datetime-local"
               value={formState.startDate}
               onChange={(e) => setFormState((p) => ({ ...p, startDate: e.target.value }))}
-              className={inputCls}
             />
           </FormField>
           <FormField label="End Date">
-            <input
+            <Input
               type="datetime-local"
               value={formState.endDate}
               onChange={(e) => setFormState((p) => ({ ...p, endDate: e.target.value }))}
-              className={inputCls}
             />
           </FormField>
         </div>

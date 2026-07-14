@@ -11,7 +11,7 @@ import { extractApiError } from '@/lib/api/client';
 import { useAdminAuth } from '@/providers/AdminAuthProvider';
 import { AdminRole } from '@mad/shared';
 import type { TicketProfile } from '@mad/types';
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, ErrorState } from '@mad/ui';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, ErrorState, Modal } from '@mad/ui';
 import { formatDate } from '@mad/utils';
 
 // Color Presets for swatches
@@ -342,42 +342,43 @@ function TicketProfilesTab({ canMutate, qc, showToast }: TabProps) {
       </div>
 
       {/* Reusable dialog modal */}
-      <AnimatePresence>
+      <Modal
+        isOpen={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        size="sm"
+        showCloseButton={false}
+        closeOnBackdropClick={true}
+        ariaLabelledBy="delete-profile-modal-title"
+        className="glass-strong border border-border-subtle p-6 max-w-sm"
+      >
         {deleteTarget && (
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="glass-strong rounded-2xl border border-border-subtle p-6 max-w-sm w-full"
-            >
-              <h2 className="text-white font-bold text-lg mb-2">Delete Ticket Profile?</h2>
-              <p className="text-text-secondary text-sm mb-1">
-                Profile <strong className="text-white">{deleteTarget.name}</strong> will be permanently deleted.
-              </p>
-              <p className="text-error text-xs mb-5 font-semibold">This action cannot be undone.</p>
-              {deleteMutation.error && (
-                <p className="text-red-400 text-xs mb-3">{extractApiError(deleteMutation.error).message}</p>
-              )}
-              <div className="flex gap-3">
-                <button
-                  onClick={() => setDeleteTarget(null)}
-                  className="flex-1 py-2.5 glass border border-border-subtle rounded-xl text-sm font-medium text-text-secondary hover:text-white transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={() => deleteMutation.mutate(deleteTarget._id)}
-                  disabled={deleteMutation.isPending}
-                  className="flex-1 py-2.5 bg-error/80 hover:bg-error rounded-xl text-white text-sm font-medium transition-colors disabled:opacity-60"
-                >
-                  {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
-                </button>
-              </div>
-            </motion.div>
+          <div>
+            <h2 id="delete-profile-modal-title" className="text-white font-bold text-lg mb-2">Delete Ticket Profile?</h2>
+            <p className="text-text-secondary text-sm mb-1">
+              Profile <strong className="text-white">{deleteTarget.name}</strong> will be permanently deleted.
+            </p>
+            <p className="text-error text-xs mb-5 font-semibold">This action cannot be undone.</p>
+            {deleteMutation.error && (
+              <p className="text-red-400 text-xs mb-3">{extractApiError(deleteMutation.error).message}</p>
+            )}
+            <div className="flex gap-3">
+              <button
+                onClick={() => setDeleteTarget(null)}
+                className="flex-1 py-2.5 glass border border-border-subtle rounded-xl text-sm font-medium text-text-secondary hover:text-white transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => deleteMutation.mutate(deleteTarget._id)}
+                disabled={deleteMutation.isPending}
+                className="flex-1 py-2.5 bg-error/80 hover:bg-error rounded-xl text-white text-sm font-medium transition-colors disabled:opacity-60"
+              >
+                {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
+              </button>
+            </div>
           </div>
         )}
-      </AnimatePresence>
+      </Modal>
     </div>
   );
 }
@@ -397,6 +398,7 @@ function TicketTiersTab({ canMutate, qc, showToast }: TabProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
   const [validationError, setValidationError] = useState<string | null>(null);
+  const [deleteTierId, setDeleteTierId] = useState<string | null>(null);
 
   const { data: tiers = [], isLoading, error } = useQuery({
     queryKey: ['adminTiers'],
@@ -487,8 +489,13 @@ function TicketTiersTab({ canMutate, qc, showToast }: TabProps) {
   };
 
   const handleDelete = (id: string) => {
-    if (!confirm('Are you sure you want to delete this ticket tier? Existing events referencing it will continue to render normally.')) return;
-    deleteMutation.mutate(id);
+    setDeleteTierId(id);
+  };
+
+  const confirmDeleteTier = () => {
+    if (!deleteTierId) return;
+    deleteMutation.mutate(deleteTierId);
+    setDeleteTierId(null);
   };
 
   if (error) {
@@ -560,7 +567,7 @@ function TicketTiersTab({ canMutate, qc, showToast }: TabProps) {
       </div>
 
       {validationError && (
-        <div className="px-4 py-3 bg-error/10 border border-error/30 rounded-xl text-sm text-red-400">
+        <div aria-live="polite" className="px-4 py-3 bg-error/10 border border-error/30 rounded-xl text-sm text-red-400">
           {validationError}
         </div>
       )}
@@ -808,126 +815,156 @@ function TicketTiersTab({ canMutate, qc, showToast }: TabProps) {
       </div>
 
       {/* Editing Dialog Modal */}
-      <AnimatePresence>
+      <Modal
+        isOpen={!!editingTier}
+        onClose={() => setEditingTier(null)}
+        size="md"
+        showCloseButton={false}
+        closeOnBackdropClick={true}
+        ariaLabelledBy="edit-tier-modal-title"
+        className="glass-strong border border-border-subtle p-6 max-w-md"
+      >
         {editingTier && (
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="glass-strong rounded-2xl border border-border-subtle p-6 max-w-md w-full space-y-4"
-            >
-              <h2 className="text-white font-bold text-lg">Edit Ticket Tier</h2>
-              <form onSubmit={handleEditSave} className="space-y-4">
-                <div>
-                  <label className="text-text-secondary text-xs font-bold block mb-1">Tier Name</label>
-                  <input
-                    value={editingTier.name}
-                    onChange={(e) => setEditingTier({ ...editingTier, name: e.target.value })}
-                    required
-                    className="w-full px-4 py-2 rounded-xl bg-background border border-border-subtle text-sm text-text-primary focus:outline-none focus:border-accent-purple"
-                  />
-                </div>
+          <div className="space-y-4">
+            <h2 id="edit-tier-modal-title" className="text-white font-bold text-lg">Edit Ticket Tier</h2>
+            <form onSubmit={handleEditSave} className="space-y-4">
+              <div>
+                <label className="text-text-secondary text-xs font-bold block mb-1">Tier Name</label>
+                <input
+                  value={editingTier.name}
+                  onChange={(e) => setEditingTier({ ...editingTier, name: e.target.value })}
+                  required
+                  className="w-full px-4 py-2 rounded-xl bg-background border border-border-subtle text-sm text-text-primary focus:outline-none focus:border-accent-purple"
+                />
+              </div>
 
-                <div>
-                  <label className="text-text-secondary text-xs font-bold block mb-1">Description</label>
-                  <textarea
-                    value={editingTier.description || ''}
-                    onChange={(e) => setEditingTier({ ...editingTier, description: e.target.value })}
-                    rows={2}
-                    className="w-full px-4 py-2 rounded-xl bg-background border border-border-subtle text-sm text-text-primary focus:outline-none focus:border-accent-purple resize-none"
-                  />
-                </div>
+              <div>
+                <label className="text-text-secondary text-xs font-bold block mb-1">Description</label>
+                <textarea
+                  value={editingTier.description || ''}
+                  onChange={(e) => setEditingTier({ ...editingTier, description: e.target.value })}
+                  rows={2}
+                  className="w-full px-4 py-2 rounded-xl bg-background border border-border-subtle text-sm text-text-primary focus:outline-none focus:border-accent-purple resize-none"
+                />
+              </div>
 
-                {/* Color edit swatches */}
-                <div>
-                  <label className="text-text-secondary text-xs font-bold block mb-1">Accent Color</label>
-                  <div className="flex flex-wrap gap-1.5 mb-2">
-                    {COLOR_PRESETS.map((preset) => (
-                      <button
-                        key={preset.hex}
-                        type="button"
-                        onClick={() => setEditingTier({ ...editingTier, color: preset.hex })}
-                        className={`w-5 h-5 rounded-full border transition-all ${
-                          editingTier.color === preset.hex ? 'scale-110 border-white' : 'border-transparent'
-                        }`}
-                        style={{ backgroundColor: preset.hex }}
-                      />
-                    ))}
-                  </div>
-                  <input
-                    value={editingTier.color || ''}
-                    onChange={(e) => setEditingTier({ ...editingTier, color: e.target.value })}
-                    className="w-full px-4 py-2 rounded-xl bg-background border border-border-subtle text-xs text-text-primary focus:outline-none focus:border-accent-purple font-mono"
-                  />
-                </div>
-
-                {/* Icon edit picker */}
-                <div>
-                  <label className="text-text-secondary text-xs font-bold block mb-1">Icon Badge</label>
-                  <div className="grid grid-cols-5 gap-1.5">
-                    {ICON_PRESETS.map((icon) => (
-                      <button
-                        key={icon.id}
-                        type="button"
-                        onClick={() => setEditingTier({ ...editingTier, icon: icon.id })}
-                        className={`py-1.5 rounded-lg border flex items-center justify-center transition-all ${
-                          editingTier.icon === icon.id
-                            ? 'bg-accent-purple/10 text-accent-purple-light border-accent-purple/30'
-                            : 'glass border-border-subtle text-text-secondary hover:text-white'
-                        }`}
-                      >
-                        {getTierIcon(icon.id)}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-text-secondary text-xs font-bold block mb-1">Sort Position</label>
-                    <input
-                      type="number"
-                      min="0"
-                      value={editingTier.sortIndex ?? 0}
-                      onChange={(e) => setEditingTier({ ...editingTier, sortIndex: Number(e.target.value) })}
-                      className="w-full px-4 py-2 rounded-xl bg-background border border-border-subtle text-sm text-text-primary focus:outline-none focus:border-accent-purple font-mono"
+              {/* Color edit swatches */}
+              <div>
+                <label className="text-text-secondary text-xs font-bold block mb-1">Accent Color</label>
+                <div className="flex flex-wrap gap-1.5 mb-2">
+                  {COLOR_PRESETS.map((preset) => (
+                    <button
+                      key={preset.hex}
+                      type="button"
+                      onClick={() => setEditingTier({ ...editingTier, color: preset.hex })}
+                      className={`w-5 h-5 rounded-full border transition-all ${
+                        editingTier.color === preset.hex ? 'scale-110 border-white' : 'border-transparent'
+                      }`}
+                      style={{ backgroundColor: preset.hex }}
                     />
-                  </div>
-                  <div className="flex flex-col justify-end pb-2">
-                    <label className="flex items-center gap-2 text-text-secondary text-xs font-bold cursor-pointer select-none">
-                      <input
-                        type="checkbox"
-                        checked={editingTier.defaultVisibility !== false}
-                        onChange={(e) => setEditingTier({ ...editingTier, defaultVisibility: e.target.checked })}
-                        className="rounded bg-background border-border-subtle text-accent-purple focus:ring-accent-purple"
-                      />
-                      Visible
-                    </label>
-                  </div>
+                  ))}
                 </div>
+                <input
+                  value={editingTier.color || ''}
+                  onChange={(e) => setEditingTier({ ...editingTier, color: e.target.value })}
+                  className="w-full px-4 py-2 rounded-xl bg-background border border-border-subtle text-xs text-text-primary focus:outline-none focus:border-accent-purple font-mono"
+                />
+              </div>
 
-                <div className="flex gap-3 pt-2">
-                  <button
-                    type="button"
-                    onClick={() => setEditingTier(null)}
-                    className="flex-1 py-2.5 glass border border-border-subtle rounded-xl text-sm font-medium text-text-secondary hover:text-white transition-colors"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={updateMutation.isPending}
-                    className="flex-1 py-2.5 btn-gradient text-white text-sm font-bold rounded-xl shadow-glow-sm disabled:opacity-60 transition-all"
-                  >
-                    {updateMutation.isPending ? 'Saving...' : 'Save Changes'}
-                  </button>
+              {/* Icon edit picker */}
+              <div>
+                <label className="text-text-secondary text-xs font-bold block mb-1">Icon Badge</label>
+                <div className="grid grid-cols-5 gap-1.5">
+                  {ICON_PRESETS.map((icon) => (
+                    <button
+                      key={icon.id}
+                      type="button"
+                      onClick={() => setEditingTier({ ...editingTier, icon: icon.id })}
+                      className={`py-1.5 rounded-lg border flex items-center justify-center transition-all ${
+                        editingTier.icon === icon.id
+                          ? 'bg-accent-purple/10 text-accent-purple-light border-accent-purple/30'
+                          : 'glass border-border-subtle text-text-secondary hover:text-white'
+                      }`}
+                    >
+                      {getTierIcon(icon.id)}
+                    </button>
+                  ))}
                 </div>
-              </form>
-            </motion.div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-text-secondary text-xs font-bold block mb-1">Sort Position</label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={editingTier.sortIndex ?? 0}
+                    onChange={(e) => setEditingTier({ ...editingTier, sortIndex: Number(e.target.value) })}
+                    className="w-full px-4 py-2 rounded-xl bg-background border border-border-subtle text-sm text-text-primary focus:outline-none focus:border-accent-purple font-mono"
+                  />
+                </div>
+                <div className="flex flex-col justify-end pb-2">
+                  <label className="flex items-center gap-2 text-text-secondary text-xs font-bold cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={editingTier.defaultVisibility !== false}
+                      onChange={(e) => setEditingTier({ ...editingTier, defaultVisibility: e.target.checked })}
+                      className="rounded bg-background border-border-subtle text-accent-purple focus:ring-accent-purple"
+                    />
+                    Visible
+                  </label>
+                </div>
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setEditingTier(null)}
+                  className="flex-1 py-2.5 glass border border-border-subtle rounded-xl text-sm font-medium text-text-secondary hover:text-white transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={updateMutation.isPending}
+                  className="flex-1 py-2.5 btn-gradient text-white text-sm font-bold rounded-xl shadow-glow-sm disabled:opacity-60 transition-all"
+                >
+                  {updateMutation.isPending ? 'Saving...' : 'Save Changes'}
+                </button>
+              </div>
+            </form>
           </div>
         )}
-      </AnimatePresence>
+      </Modal>
+
+      <Modal
+        isOpen={!!deleteTierId}
+        onClose={() => setDeleteTierId(null)}
+        size="sm"
+        showCloseButton={false}
+        closeOnBackdropClick={true}
+        ariaLabelledBy="delete-tier-confirm-modal-title"
+        className="glass-strong border border-border-subtle p-6 max-w-sm"
+      >
+        <h2 id="delete-tier-confirm-modal-title" className="text-white font-bold text-lg mb-2">Delete Ticket Tier?</h2>
+        <p className="text-text-secondary text-sm mb-5">
+          Are you sure you want to delete this ticket tier? Existing events referencing it will continue to render normally.
+        </p>
+        <div className="flex gap-3">
+          <button
+            onClick={() => setDeleteTierId(null)}
+            className="flex-1 py-2.5 glass border border-border-subtle rounded-xl text-sm font-medium text-text-secondary hover:text-white transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={confirmDeleteTier}
+            className="flex-1 py-2.5 bg-error/80 hover:bg-error rounded-xl text-white text-sm font-medium transition-colors"
+          >
+            Delete
+          </button>
+        </div>
+      </Modal>
     </div>
   );
 }

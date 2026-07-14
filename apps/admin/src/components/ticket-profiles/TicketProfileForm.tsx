@@ -141,7 +141,7 @@ export function TicketProfileForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {displayedError && (
-        <div className="px-4 py-3 bg-error/10 border border-error/30 rounded-xl text-sm text-red-400">
+        <div aria-live="polite" className="px-4 py-3 bg-error/10 border border-error/30 rounded-xl text-sm text-red-400">
           {displayedError}
         </div>
       )}

@@ -6,7 +6,7 @@ import { useState } from 'react';
 import { adminGetRefunds, adminProcessRefund, type AdminRefund } from '@/lib/api/admin/booking.service';
 import { useAdminAuth } from '@/providers/AdminAuthProvider';
 import { AdminRole } from '@mad/shared';
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, ErrorState } from '@mad/ui';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, ErrorState, Modal } from '@mad/ui';
 import { formatDateTime, formatEventDate } from '@mad/utils';
 
 
@@ -175,7 +175,15 @@ export default function AdminRefundsPage() {
         )}
       </div>
 
-      <AnimatePresence>
+      <Modal
+        isOpen={!!processTarget}
+        onClose={() => setProcessTarget(null)}
+        size="md"
+        showCloseButton={false}
+        closeOnBackdropClick={true}
+        ariaLabelledBy="process-refund-modal-title"
+        className="glass-strong border border-border-subtle p-6 max-w-2xl"
+      >
         {processTarget && (() => {
           const booking = processTarget.bookingId as any;
           const customer = booking?.guestInfo ?? booking?.userId;
@@ -183,104 +191,97 @@ export default function AdminRefundsPage() {
           const payment = processTarget.paymentId as any;
 
           return (
-            <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                className="glass-strong rounded-2xl border border-border-subtle p-6 max-w-2xl w-full grid grid-cols-1 md:grid-cols-2 gap-6 overflow-y-auto max-h-[90vh]"
-              >
-                {/* Context Column (Left) */}
-                <div className="space-y-4 text-sm border-r border-white/5 pr-4 md:block hidden">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 overflow-y-auto max-h-[90vh]">
+              {/* Context Column (Left) */}
+              <div className="space-y-4 text-sm border-r border-white/5 pr-4 md:block hidden">
 
-                  <div>
-                    <span className="text-[10px] text-text-muted uppercase tracking-wider block font-semibold">Booking ID</span>
-                    <span className="text-accent-purple font-mono font-bold">{booking?.bookingId ?? '—'}</span>
-                  </div>
-
-                  <div>
-                    <span className="text-[10px] text-text-muted uppercase tracking-wider block font-semibold">Customer Info</span>
-                    <p className="text-white font-medium">{customer?.name ?? '—'}</p>
-                    <p className="text-text-secondary text-xs">{customer?.email ?? '—'}</p>
-                    {customer?.phone && <p className="text-text-secondary text-xs">{customer.phone}</p>}
-                  </div>
-
-                  <div>
-                    <span className="text-[10px] text-text-muted uppercase tracking-wider block font-semibold">Event Parameters</span>
-                    <p className="text-white font-semibold">{event?.title ?? '—'}</p>
-                    {event?.startDate && (
-                      <p className="text-text-muted text-xs mt-0.5">
-                        {formatEventDate(event.startDate)}
-                      </p>
-                    )}
-                    {event?.venue && <p className="text-text-muted text-xs mt-0.5">{event.venue}</p>}
-                  </div>
-
-                  <div>
-                    <span className="text-[10px] text-text-muted uppercase tracking-wider block font-semibold">Payment / Gateway details</span>
-                    <p className="text-white font-medium">₹{payment?.amount?.toLocaleString('en-IN') ?? '—'} via <span className="uppercase text-accent-purple font-mono">{payment?.gateway ?? '—'}</span></p>
-                    {payment?.gatewayPaymentId && <p className="text-text-muted font-mono text-[10px] truncate mt-0.5" title={payment.gatewayPaymentId}>ID: {payment.gatewayPaymentId}</p>}
-                  </div>
-
-                  <div>
-                    <span className="text-[10px] text-text-muted uppercase tracking-wider block font-semibold">Requested Refund Reason</span>
-                    <p className="text-text-secondary italic text-xs bg-white/3 p-2 rounded-lg mt-1">&ldquo;{processTarget.reason ?? 'No reason provided'}&rdquo;</p>
-                  </div>
+                <div>
+                  <span className="text-[10px] text-text-muted uppercase tracking-wider block font-semibold">Booking ID</span>
+                  <span className="text-accent-purple font-mono font-bold">{booking?.bookingId ?? '—'}</span>
                 </div>
 
-                {/* Action Column (Right) */}
-                <div className="space-y-4 flex flex-col justify-between">
-                  <div className="space-y-4">
-                    <div>
-                      <h2 className="text-white font-bold text-lg">Process Refund</h2>
-                      <p className="text-text-muted text-xs">Authorize or reject refund request</p>
-                    </div>
+                <div>
+                  <span className="text-[10px] text-text-muted uppercase tracking-wider block font-semibold">Customer Info</span>
+                  <p className="text-white font-medium">{customer?.name ?? '—'}</p>
+                  <p className="text-text-secondary text-xs">{customer?.email ?? '—'}</p>
+                  {customer?.phone && <p className="text-text-secondary text-xs">{customer.phone}</p>}
+                </div>
 
-                    {/* Mobiles-only quick summary */}
-                    <div className="md:hidden block bg-white/3 rounded-xl p-3 text-xs space-y-1">
-                      <p className="text-white">Booking: <span className="font-mono font-semibold text-accent-purple">{booking?.bookingId}</span></p>
-                      <p className="text-white">Customer: {customer?.name}</p>
-                      <p className="text-white font-medium">Amount: ₹{processTarget.amount.toLocaleString('en-IN')}</p>
-                      {processTarget.reason && <p className="text-text-secondary italic">Reason: &ldquo;{processTarget.reason}&rdquo;</p>}
-                    </div>
+                <div>
+                  <span className="text-[10px] text-text-muted uppercase tracking-wider block font-semibold">Event Parameters</span>
+                  <p className="text-white font-semibold">{event?.title ?? '—'}</p>
+                  {event?.startDate && (
+                    <p className="text-text-muted text-xs mt-0.5">
+                      {formatEventDate(event.startDate)}
+                    </p>
+                  )}
+                  {event?.venue && <p className="text-text-muted text-xs mt-0.5">{event.venue}</p>}
+                </div>
 
-                    <div className="bg-white/5 border border-white/10 rounded-xl p-3 text-center">
-                      <span className="text-xs text-text-muted block">Refund Amount</span>
-                      <span className="text-2xl font-black text-white">₹{processTarget.amount.toLocaleString('en-IN')}</span>
-                    </div>
+                <div>
+                  <span className="text-[10px] text-text-muted uppercase tracking-wider block font-semibold">Payment / Gateway details</span>
+                  <p className="text-white font-medium">₹{payment?.amount?.toLocaleString('en-IN') ?? '—'} via <span className="uppercase text-accent-purple font-mono">{payment?.gateway ?? '—'}</span></p>
+                  {payment?.gatewayPaymentId && <p className="text-text-muted font-mono text-[10px] truncate mt-0.5" title={payment.gatewayPaymentId}>ID: {payment.gatewayPaymentId}</p>}
+                </div>
 
-                    <div className="flex gap-3">
-                      {(['approve', 'reject'] as const).map((a) => (
-                        <button key={a} type="button" onClick={() => setAction(a)}
-                          className={`flex-1 py-2 rounded-xl text-sm font-medium border transition-all capitalize ${getActionClass(a)}`}>
-                          {a}
-                        </button>
-                      ))}
-                    </div>
+                <div>
+                  <span className="text-[10px] text-text-muted uppercase tracking-wider block font-semibold">Requested Refund Reason</span>
+                  <p className="text-text-secondary italic text-xs bg-white/3 p-2 rounded-lg mt-1">&ldquo;{processTarget.reason ?? 'No reason provided'}&rdquo;</p>
+                </div>
+              </div>
+
+              {/* Action Column (Right) */}
+              <div className="space-y-4 flex flex-col justify-between">
+                <div className="space-y-4">
+                  <div>
+                    <h2 id="process-refund-modal-title" className="text-white font-bold text-lg">Process Refund</h2>
+                    <p className="text-text-muted text-xs">Authorize or reject refund request</p>
+                  </div>
+
+                  {/* Mobiles-only quick summary */}
+                  <div className="md:hidden block bg-white/3 rounded-xl p-3 text-xs space-y-1">
+                    <p className="text-white">Booking: <span className="font-mono font-semibold text-accent-purple">{booking?.bookingId}</span></p>
+                    <p className="text-white">Customer: {customer?.name}</p>
+                    <p className="text-white font-medium">Amount: ₹{processTarget.amount.toLocaleString('en-IN')}</p>
+                    {processTarget.reason && <p className="text-text-secondary italic">Reason: &ldquo;{processTarget.reason}&rdquo;</p>}
+                  </div>
+
+                  <div className="bg-white/5 border border-white/10 rounded-xl p-3 text-center">
+                    <span className="text-xs text-text-muted block">Refund Amount</span>
+                    <span className="text-2xl font-black text-white">₹{processTarget.amount.toLocaleString('en-IN')}</span>
+                  </div>
+
+                  <div className="flex gap-3">
+                    {(['approve', 'reject'] as const).map((a) => (
+                      <button key={a} type="button" onClick={() => setAction(a)}
+                        className={`flex-1 py-2 rounded-xl text-sm font-medium border transition-all capitalize ${getActionClass(a)}`}>
+                        {a}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-sm text-text-secondary">Admin Notes</label>
+                    <input value={adminNotes} onChange={(e) => setAdminNotes(e.target.value)} placeholder="Notes for audit log..." className="w-full px-4 py-2.5 rounded-xl bg-background border border-border-subtle text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-purple" />
+                  </div>
+                  {action === 'approve' && (
                     <div className="space-y-1.5">
-                      <label className="text-sm text-text-secondary">Admin Notes</label>
-                      <input value={adminNotes} onChange={(e) => setAdminNotes(e.target.value)} placeholder="Notes for audit log..." className="w-full px-4 py-2.5 rounded-xl bg-background border border-border-subtle text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-purple" />
+                      <label className="text-sm text-text-secondary">Gateway Refund ID (optional)</label>
+                      <input value={gatewayId} onChange={(e) => setGatewayId(e.target.value)} placeholder="e.g. rfnd_xxx from Razorpay" className="w-full px-4 py-2.5 rounded-xl bg-background border border-border-subtle text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-purple" />
                     </div>
-                    {action === 'approve' && (
-                      <div className="space-y-1.5">
-                        <label className="text-sm text-text-secondary">Gateway Refund ID (optional)</label>
-                        <input value={gatewayId} onChange={(e) => setGatewayId(e.target.value)} placeholder="e.g. rfnd_xxx from Razorpay" className="w-full px-4 py-2.5 rounded-xl bg-background border border-border-subtle text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-purple" />
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex gap-3 pt-2">
-                    <button type="button" onClick={() => setProcessTarget(null)} className="flex-1 py-2.5 glass border border-border-subtle rounded-xl text-sm text-text-secondary">Cancel</button>
-                    <button type="button" onClick={() => processMutation.mutate()} disabled={processMutation.isPending}
-                      className={`flex-1 py-2.5 rounded-xl text-white text-sm font-medium disabled:opacity-60 ${action === 'approve' ? 'bg-green-600 hover:bg-green-500' : 'bg-red-600 hover:bg-red-500'}`}>
-                      {processMutation.isPending ? 'Processing...' : `Confirm ${action}`}
-                    </button>
-                  </div>
+                  )}
                 </div>
-              </motion.div>
+                <div className="flex gap-3 pt-2">
+                  <button type="button" onClick={() => setProcessTarget(null)} className="flex-1 py-2.5 glass border border-border-subtle rounded-xl text-sm text-text-secondary">Cancel</button>
+                  <button type="button" onClick={() => processMutation.mutate()} disabled={processMutation.isPending}
+                    className={`flex-1 py-2.5 rounded-xl text-white text-sm font-medium disabled:opacity-60 ${action === 'approve' ? 'bg-green-600 hover:bg-green-500' : 'bg-red-600 hover:bg-red-500'}`}>
+                    {processMutation.isPending ? 'Processing...' : `Confirm ${action}`}
+                  </button>
+                </div>
+              </div>
             </div>
           );
         })()}
-      </AnimatePresence>
+      </Modal>
     </div>
   );
 }
