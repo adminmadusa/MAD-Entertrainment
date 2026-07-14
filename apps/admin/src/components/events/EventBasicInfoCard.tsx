@@ -49,7 +49,7 @@ export const EventBasicInfoCard = React.memo(function EventBasicInfoCard({
   return (
     <div className="glass rounded-2xl border border-border-subtle p-6 space-y-5">
       <h2 className="text-white font-semibold">Basic Information</h2>
-      <FormField label="Event Title *">
+      <FormField label="Event Title *" htmlFor="event-title">
         <input
           id="event-title"
           value={title}
@@ -60,7 +60,7 @@ export const EventBasicInfoCard = React.memo(function EventBasicInfoCard({
         />
       </FormField>
       <div className="grid grid-cols-2 gap-4">
-        <FormField label="Category">
+        <FormField label="Category" htmlFor="event-category">
           <select
             id="event-category"
             value={category}
@@ -80,7 +80,7 @@ export const EventBasicInfoCard = React.memo(function EventBasicInfoCard({
                 ))}
           </select>
         </FormField>
-        <FormField label="Status">
+        <FormField label="Status" htmlFor="event-status">
           <select
             id="event-status"
             value={status}
@@ -94,7 +94,7 @@ export const EventBasicInfoCard = React.memo(function EventBasicInfoCard({
             ))}
           </select>
         </FormField>
-        <FormField label="Venue *">
+        <FormField label="Venue *" htmlFor="event-venue">
           <div className="relative">
             <input
               id="event-venue"
@@ -123,7 +123,7 @@ export const EventBasicInfoCard = React.memo(function EventBasicInfoCard({
           </div>
         </FormField>
       </div>
-      <FormField label="Full Description *">
+      <FormField label="Full Description *" htmlFor="event-description">
         <textarea
           id="event-description"
           value={description}
