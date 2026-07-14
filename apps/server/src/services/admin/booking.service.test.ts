@@ -72,7 +72,6 @@ const mockTicketCountQuery = {
 const mockTicketExistsQuery = {
   session: vi.fn().mockResolvedValue(null),
 };
-const mockTicketUpdateManyQuery = Promise.resolve({ modifiedCount: 1 });
 vi.mock('../../models/ticket.schema', () => ({
   Ticket: {
     find: vi.fn().mockImplementation(() => mockTicketFindQuery),
@@ -402,7 +401,6 @@ describe('Admin Booking Service Backend Tests', () => {
       vi.mocked(Ticket.insertMany).mockResolvedValueOnce([{}] as any);
 
       // Simulate a real session object being passed through
-      const fakeSession = { id: 'fake-session-obj' };
       vi.mocked(mongoose.startSession).mockResolvedValueOnce({
         withTransaction: vi.fn().mockImplementation(async (fn) => fn()),
         endSession: vi.fn().mockResolvedValue(undefined),

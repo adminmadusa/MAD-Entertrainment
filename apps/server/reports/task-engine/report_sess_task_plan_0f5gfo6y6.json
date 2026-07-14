@@ -1,0 +1,17 @@
+{
+  "metadata": {
+    "sessionId": "sess_task_plan_0f5gfo6y6",
+    "taskId": "TASK-888",
+    "timestamp": 1784007364046,
+    "durationMs": 0
+  },
+  "summary": {
+    "success": true,
+    "criticalCount": 0,
+    "highCount": 0,
+    "mediumCount": 0,
+    "lowCount": 0
+  },
+  "findings": [],
+  "recommendations": []
+}

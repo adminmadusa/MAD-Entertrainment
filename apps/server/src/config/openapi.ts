@@ -15,7 +15,7 @@ export const registry = new OpenAPIRegistry();
 // ─── Register Shared Schemas ─────────────────────────────────
 const checkoutModel = registry.register('CheckoutInput', checkoutSchema);
 const paymentVerificationModel = registry.register('PaymentVerificationInput', paymentVerificationSchema);
-const adminDlqRetryModel = registry.register('AdminDlqRetryInput', adminDlqRetrySchema);
+registry.register('AdminDlqRetryInput', adminDlqRetrySchema);
 
 // ─── Register REST API Routes ────────────────────────────────
 

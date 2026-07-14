@@ -78,7 +78,7 @@ export const createAdmin = async (
       targetId: admin._id.toString(),
       targetRole: admin.role,
       targetEmail: admin.email,
-      actorRole: requestingAdminRole || 'super_admin',
+      actorRole: requestingAdminRole,
     },
     description: `Created administrative account for ${admin.email} with role ${admin.role}`,
   });

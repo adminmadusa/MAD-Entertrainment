@@ -137,23 +137,6 @@ const textStyle: React.CSSProperties = {
   textAlign: "center" as const,
 };
 
-const buttonContainer: React.CSSProperties = {
-  textAlign: "center" as const,
-  marginBottom: "24px",
-};
-
-const buttonStyle: React.CSSProperties = {
-  backgroundColor: "#8b5cf6",
-  borderRadius: "12px",
-  color: "#ffffff",
-  fontSize: "16px",
-  fontWeight: 600,
-  textDecoration: "none",
-  textAlign: "center" as const,
-  display: "inline-block",
-  padding: "14px 30px",
-  border: "1px solid #7c3aed",
-};
 
 const subtextStyle: React.CSSProperties = {
   margin: "0 0 28px",
@@ -163,25 +146,6 @@ const subtextStyle: React.CSSProperties = {
   textAlign: "center" as const,
 };
 
-const linkStyle: React.CSSProperties = {
-  color: "#a78bfa",
-  textDecoration: "underline",
-  wordBreak: "break-all" as const,
-};
-
-const dividerStyle: React.CSSProperties = {
-  borderColor: "#2a2a2a",
-  margin: "24px 0",
-};
-
-const otpTitleStyle: React.CSSProperties = {
-  margin: "0 0 12px",
-  fontSize: "18px",
-  fontWeight: 700,
-  color: "#ffffff",
-  textAlign: "center" as const,
-  fontFamily: "Outfit, sans-serif",
-};
 
 const otpCardStyle: React.CSSProperties = {
   background: "#111111",

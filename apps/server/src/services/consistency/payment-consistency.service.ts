@@ -95,7 +95,7 @@ export class PaymentConsistencyService {
           );
 
           try {
-            const confirmResult = await (PaymentService as any).confirmBooking(booking, payment);
+            await (PaymentService as any).confirmBooking(booking, payment);
 
             const updatedBooking = await Booking.findById(booking._id).select('status').lean();
             if (updatedBooking?.status === BookingStatus.CONFIRMED) {

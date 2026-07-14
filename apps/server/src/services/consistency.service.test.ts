@@ -1,4 +1,3 @@
-import mongoose from 'mongoose';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 import { BookingStatus, PaymentStatus, ReservationStatus, SeatStatus, NotificationType } from '@mad/shared';
@@ -1286,7 +1285,7 @@ describe('ConsistencyService - Stuck Processing, Notifications, Optimistic Locki
     (Event as any).updateOne = vi.fn().mockResolvedValue({ modifiedCount: 1 });
 
     // Should not throw despite the malformed document
-    const report = await expect(ConsistencyService.runRepairCycle()).resolves.toBeDefined();
+    await expect(ConsistencyService.runRepairCycle()).resolves.toBeDefined();
 
     // Warning must have been emitted with booking identifiers
     expect(logger.warn).toHaveBeenCalledWith(
