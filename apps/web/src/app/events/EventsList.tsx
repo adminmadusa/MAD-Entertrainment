@@ -9,7 +9,7 @@ import { useState } from 'react';
 
 import { publicGetEvents } from '@/lib/api/public.service';
 import { formatEventDate } from '@/utils/date';
-import { EventCategory, EVENT_CATEGORY_LABELS } from '@mad/shared';
+import { EventCategory, EVENT_CATEGORY_LABELS, EventMemoryPublicationState } from '@mad/shared';
 import { CalendarIcon, EventGridSkeleton } from '@mad/ui';
 
 
@@ -63,46 +63,59 @@ export function EventsList() {
 
         return (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {events.map((event) => (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                key={event._id}
-                className="group relative glass rounded-2xl border border-border-subtle overflow-hidden hover:border-accent-purple/40 hover:shadow-glow-sm transition-all duration-300 flex flex-col h-full focus-within:ring-2 focus-within:ring-accent-purple focus-within:border-accent-purple/40"
-              >
-                <Link
-                  href={`/events/${event.slug}`}
-                  id={`event-card-${event.slug}`}
-                  className="flex flex-col h-full focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple"
-                  aria-label={event.isSoldOut ? `View details for ${event.title}` : `Book tickets for ${event.title}`}
+            {events.map((event) => {
+              let cardAriaLabel = `Book tickets for ${event.title}`;
+              if (event.status === 'completed') {
+                cardAriaLabel = `View recap for completed event ${event.title}`;
+              } else if (event.isSoldOut) {
+                cardAriaLabel = `View details for ${event.title}`;
+              }
+
+              return (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  key={event._id}
+                  className="group relative glass rounded-2xl border border-border-subtle overflow-hidden hover:border-accent-purple/40 hover:shadow-glow-sm transition-all duration-300 flex flex-col h-full focus-within:ring-2 focus-within:ring-accent-purple focus-within:border-accent-purple/40"
                 >
-                  {/* Banner Image */}
-                  <div className="aspect-[4/3] w-full overflow-hidden relative bg-white/5 flex-shrink-0">
-                    {event.bannerImage?.url ? (
-                      <Image
-                        src={event.bannerImage.url}
-                        alt=""
-                        fill
-                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 300px"
-                        className="object-cover group-hover:scale-105 transition-transform duration-500"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-accent-purple text-5xl" aria-hidden="true">
-                        🎧
-                      </div>
-                    )}
+                  <Link
+                    href={`/events/${event.slug}`}
+                    id={`event-card-${event.slug}`}
+                    className="flex flex-col h-full focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple"
+                    aria-label={cardAriaLabel}
+                  >
+                    {/* Banner Image */}
+                    <div className="aspect-[4/3] w-full overflow-hidden relative bg-white/5 flex-shrink-0">
+                      {event.bannerImage?.url ? (
+                        <Image
+                          src={event.bannerImage.url}
+                          alt=""
+                          fill
+                          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 300px"
+                          className="object-cover group-hover:scale-105 transition-transform duration-500"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-accent-purple text-5xl" aria-hidden="true">
+                          🎧
+                        </div>
+                      )}
 
-                    {/* Category Badge */}
-                    <span className="absolute top-3 left-3 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider bg-black/60 backdrop-blur-md text-accent-purple-light rounded-full border border-accent-purple/20">
-                      {EVENT_CATEGORY_LABELS[event.category as EventCategory] || event.category}
-                    </span>
-
-                    {event.isSoldOut && (
-                      <span className="absolute inset-0 bg-black/60 backdrop-blur-[2px] flex items-center justify-center text-white font-bold text-sm tracking-wider">
-                        SOLD OUT
+                      {/* Category Badge */}
+                      <span className="absolute top-3 left-3 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider bg-black/60 backdrop-blur-md text-accent-purple-light rounded-full border border-accent-purple/20">
+                        {EVENT_CATEGORY_LABELS[event.category as EventCategory] || event.category}
                       </span>
-                    )}
-                  </div>
+
+                      {event.status === 'completed' && (
+                        <span className="absolute inset-0 bg-black/60 backdrop-blur-[2px] flex items-center justify-center text-text-muted font-bold text-sm tracking-wider">
+                          ENDED
+                        </span>
+                      )}
+                      {event.status !== 'completed' && event.isSoldOut && (
+                        <span className="absolute inset-0 bg-black/60 backdrop-blur-[2px] flex items-center justify-center text-white font-bold text-sm tracking-wider">
+                          SOLD OUT
+                        </span>
+                      )}
+                    </div>
 
                   {/* Card Content */}
                   <div className="p-5 flex flex-col flex-grow">
@@ -118,22 +131,39 @@ export function EventsList() {
                     </p>
                   </div>
 
-                  <div className="px-5 pb-5 pt-4 border-t border-border-subtle/40 flex items-center justify-between mt-auto bg-black/10 w-full">
-                    <div>
-                      <div className="text-[10px] text-text-muted font-medium">Tickets from</div>
-                      <div className="text-white font-black text-sm">
-                        ₹{event.ticketTiers?.length > 0 ? Math.min(...event.ticketTiers.map((t) => t.price)) : 0}
+                  {event.status === 'completed' ? (
+                    <div className="px-5 pb-5 pt-4 border-t border-border-subtle/40 flex items-center justify-between mt-auto bg-black/10 w-full">
+                      <span className="text-[10px] text-text-muted font-medium italic">
+                        Tickets Closed
+                      </span>
+                      {event.memories && event.memories.publicationState === EventMemoryPublicationState.PUBLISHED && event.memories.gallery?.length > 0 ? (
+                        <div className="px-3.5 py-2 text-xs font-bold text-white bg-gradient-to-r from-pink-500 to-rose-600 rounded-xl shadow-glow-pink-sm group-hover:scale-105 transition-transform text-center">
+                          View Moments
+                        </div>
+                      ) : (
+                        <div className="px-3.5 py-2 text-xs font-bold text-text-muted bg-white/5 border border-white/5 rounded-xl text-center cursor-not-allowed">
+                          Completed
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="px-5 pb-5 pt-4 border-t border-border-subtle/40 flex items-center justify-between mt-auto bg-black/10 w-full">
+                      <div>
+                        <div className="text-[10px] text-text-muted font-medium">Tickets from</div>
+                        <div className="text-white font-black text-sm">
+                          ₹{event.ticketTiers?.length > 0 ? Math.min(...event.ticketTiers.map((t) => t.price)) : 0}
+                        </div>
+                      </div>
+                      <div
+                        className="px-3.5 py-2 text-xs font-bold text-white btn-gradient rounded-xl shadow-glow-sm group-hover:scale-105 transition-transform"
+                      >
+                        {event.isSoldOut ? 'Details' : 'Book Now'}
                       </div>
                     </div>
-                    <div
-                      className="px-3.5 py-2 text-xs font-bold text-white btn-gradient rounded-xl shadow-glow-sm group-hover:scale-105 transition-transform"
-                    >
-                      {event.isSoldOut ? 'Details' : 'Book Now'}
-                    </div>
-                  </div>
+                  )}
                 </Link>
               </motion.div>
-            ))}
+            )})}
           </div>
         );
       })()}

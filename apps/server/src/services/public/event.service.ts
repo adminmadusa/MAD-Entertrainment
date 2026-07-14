@@ -35,15 +35,20 @@ export function verifyPreviewToken(token: string): {
 
 
 export class PublicEventService {
-  static async listEvents(filters: { category?: string; search?: string; page?: number; limit?: number; includeTotal?: boolean }) {
+  static async listEvents(filters: { category?: string; status?: string; search?: string; page?: number; limit?: number; includeTotal?: boolean }) {
     const page = filters.page || 1;
     const limit = filters.limit || 12;
     const skip = (page - 1) * limit;
 
     const query: FilterQuery<IEvent> = {
-      status: EventStatus.PUBLISHED,
       isDeleted: { $ne: true },
     };
+
+    if (filters.status) {
+      query.status = filters.status;
+    } else {
+      query.status = EventStatus.PUBLISHED;
+    }
 
     if (filters.category) {
       query.category = filters.category;
@@ -68,7 +73,7 @@ export class PublicEventService {
         .sort({ startDate: 1 })
         .skip(skip)
         .limit(limit)
-        .select('title slug description category bannerImage startDate ticketTiers.price isSoldOut venue')
+        .select('title slug description category bannerImage startDate endDate ticketTiers.price isSoldOut venue memories status')
         .lean<Partial<IEvent>[]>();
       total = events.length;
     } else {
@@ -77,7 +82,7 @@ export class PublicEventService {
           .sort({ startDate: 1 })
           .skip(skip)
           .limit(limit)
-          .select('title slug description category bannerImage startDate ticketTiers.price isSoldOut venue')
+          .select('title slug description category bannerImage startDate endDate ticketTiers.price isSoldOut venue memories status')
           .lean<Partial<IEvent>[]>(),
         Event.countDocuments(query, queryOptions),
       ]);

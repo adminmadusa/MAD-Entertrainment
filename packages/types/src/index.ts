@@ -110,6 +110,7 @@ export type Event = {
   showTime?: string;
   venue: string;
   startDate: string | Date;
+  endDate?: string | Date;
   bannerImage?: ImageAsset;
   posterImage?: ImageAsset;
   galleryImages?: ImageAsset[];

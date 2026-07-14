@@ -5,10 +5,14 @@ import { Suspense } from 'react';
 
 import { Reveal, StaggerContainer, StaggerItem } from '@/components/common/PageTransition';
 import { FeaturedEventsSkeleton } from '@/components/ui/HomeSkeletons';
-import { serverGetFeaturedEvents } from '@/lib/api/server.service';
+import { serverGetFeaturedEvents, serverGetCompletedEvents } from '@/lib/api/server.service';
 import { ArrowRight } from '@mad/ui';
 
 const FeaturedEventsSection = dynamic(() => import('@/components/ui/FeaturedEventsSection').then(mod => mod.FeaturedEventsSection), {
+  ssr: true,
+});
+
+const CompletedEventsSection = dynamic(() => import('@/components/ui/CompletedEventsSection').then(mod => mod.CompletedEventsSection), {
   ssr: true,
 });
 
@@ -42,6 +46,11 @@ async function FeaturedEventsServerSection() {
   return <FeaturedEventsSection initialEvents={events} />;
 }
 
+async function CompletedEventsServerSection() {
+  const events = await serverGetCompletedEvents();
+  return <CompletedEventsSection initialEvents={events} />;
+}
+
 // ─── Main HomePage Component (Instant TTFB / Streaming) ───────────
 
 export default function HomePage() {
@@ -67,6 +76,11 @@ export default function HomePage() {
       {/* ─── Featured Events (Streamed) ────────────────────── */}
       <Suspense fallback={<FeaturedEventsSkeleton />}>
         <FeaturedEventsServerSection />
+      </Suspense>
+
+      {/* ─── Completed Events & Moments (Streamed) ──────────── */}
+      <Suspense fallback={<FeaturedEventsSkeleton />}>
+        <CompletedEventsServerSection />
       </Suspense>
 
       {/* ─── How It Works ─────────────────────────────────── */}
