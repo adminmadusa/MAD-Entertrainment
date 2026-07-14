@@ -1,6 +1,7 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
+import { AnimatePresence } from 'framer-motion';
 
 import { ScanHistory } from '@/components/scanner/ScanHistory';
 import { ScannerCamera } from '@/components/scanner/ScannerCamera';
@@ -174,10 +175,15 @@ export default function ScannerPage() {
       </div>
 
       {/* Validation Result Modal Dialog Overlay */}
-      <TicketValidationModal
-        result={lastValidationResult}
-        onClose={() => setLastValidationResult(null)}
-      />
+      <AnimatePresence>
+        {lastValidationResult && (
+          <TicketValidationModal
+            key="validation-modal"
+            result={lastValidationResult}
+            onClose={() => setLastValidationResult(null)}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
