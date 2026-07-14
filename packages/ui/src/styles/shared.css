@@ -107,6 +107,22 @@ body {
   border-radius: 4px;
 }
 
+/* Focus Ring Utility Class */
+.focus-ring {
+  transition: outline-offset var(--transition-fast) var(--transition-smooth),
+              outline-color var(--transition-fast) var(--transition-smooth);
+}
+
+.focus-ring:focus {
+  outline: none;
+}
+
+.focus-ring:focus-visible {
+  outline: 2px solid var(--color-accent-purple);
+  outline-offset: 2px;
+}
+
+
 /* ─── Links ──────────────────────────────────────────────────── */
 a {
   color: inherit;
