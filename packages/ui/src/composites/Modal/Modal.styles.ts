@@ -7,8 +7,10 @@ export const modalSizes = {
 };
 
 // Base Styles
-export const modalBackdropBaseClasses = 'fixed inset-0 z-50 flex bg-black/80 backdrop-blur-[2px] transition-opacity duration-200';
-export const modalContentBaseClasses = 'bg-surface-secondary relative w-full shadow-2xl focus:outline-none cursor-default transition-all duration-300';
+// Use transition-[transform,opacity] instead of transition-all to avoid
+// triggering unnecessary style recalculations on layout properties.
+export const modalBackdropBaseClasses = 'fixed inset-0 z-50 flex bg-black/80 backdrop-blur-[2px] transition-opacity duration-fast ease-smooth';
+export const modalContentBaseClasses = 'bg-surface-secondary relative w-full shadow-2xl focus:outline-none cursor-default transition-[transform,opacity] duration-base ease-smooth';
 
 // Presentation Styles
 export const modalBackdropPresentations = {
@@ -21,13 +23,13 @@ export const modalContentPresentations = {
   'bottom-sheet': 'border-t sm:border border-border rounded-t-2xl sm:rounded-2xl p-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] sm:pb-6 max-h-[calc(100dvh-env(safe-area-inset-top))] sm:max-h-none overflow-y-auto sm:overflow-visible',
 };
 
-// Initial state for mount animations
+// Initial/exit state — applied when isVisible = false
 export const modalContentInitialStates = {
   'centered': 'opacity-0 scale-95',
   'bottom-sheet': 'translate-y-full sm:translate-y-0 sm:opacity-0 sm:scale-95',
 };
 
-// Active state for animations
+// Active state — applied when isVisible = true
 export const modalContentActiveStates = {
   'centered': 'opacity-100 scale-100',
   'bottom-sheet': 'translate-y-0 opacity-100 scale-100',

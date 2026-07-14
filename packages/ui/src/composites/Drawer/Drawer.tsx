@@ -3,6 +3,8 @@
 import React, { forwardRef } from 'react';
 
 import { useFocusTrap } from '../../hooks/useFocusTrap';
+import { useDelayedUnmount } from '../../hooks/useDelayedUnmount';
+import { MotionTokens } from '../../lib/motionTokens';
 import { X } from '../../icons';
 import { cn } from '../../lib/cn';
 import { IconButton } from '../../primitives/IconButton';
@@ -15,21 +17,27 @@ import {
   drawerBodyClasses,
   drawerCloseClasses,
 } from './Drawer.styles';
-import type { DrawerProps } from './Drawer.types';
+import type { DrawerProps } from './Drawer.types'
 
 export const Drawer = forwardRef<HTMLDivElement, DrawerProps>(
   ({ isOpen, onClose, side = 'right', title, children, className, showHeader = true }, ref) => {
+    const { isRendered, isVisible } = useDelayedUnmount(
+      isOpen,
+      0,
+      MotionTokens.drawer.exit,
+    );
+
     const drawerRef = useFocusTrap<HTMLDivElement>({
       isActive: isOpen,
       onClose,
     });
 
-    if (!isOpen) return null;
+    if (!isRendered) return null;
 
     return (
       <>
         <div
-          className={drawerBackdropClasses}
+          className={cn(drawerBackdropClasses, isVisible ? 'opacity-100' : 'opacity-0')}
           onClick={onClose}
         />
         <div
@@ -37,7 +45,12 @@ export const Drawer = forwardRef<HTMLDivElement, DrawerProps>(
           tabIndex={-1}
           role="dialog"
           aria-modal="true"
-          className={cn(drawerContentBaseClasses, drawerSides[side], className)}
+          className={cn(
+            drawerContentBaseClasses,
+            drawerSides[side],
+            isVisible ? 'translate-x-0 opacity-100' : side === 'right' ? 'translate-x-full opacity-0' : side === 'left' ? '-translate-x-full opacity-0' : side === 'bottom' ? 'translate-y-full opacity-0' : '-translate-y-full opacity-0',
+            className,
+          )}
         >
           {showHeader && (
             <div className={drawerHeaderClasses}>

@@ -7,9 +7,11 @@
  */
 // ─── Hooks ───────────────────────────────────────────────────────────────────
 export * from './hooks/useFocusTrap';
+export * from './hooks/useDelayedUnmount';
 
 // ─── Utilities ────────────────────────────────────────────────────────────────
 export * from './lib/cn';
+export * from './lib/motionTokens';
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
 // Note: icons are also available as a separate entry point: @mad/ui/icons
