@@ -98,7 +98,7 @@ export default function ScannerPage() {
             setSelectedEventId(e.target.value);
             setLastValidationResult(null);
           }}
-          className="w-full bg-background border border-border-subtle rounded-xl px-4 py-3 text-white text-sm focus:border-accent-purple focus:ring-1 focus:ring-accent-purple transition-all outline-none"
+          className="w-full bg-background border border-border-subtle rounded-xl px-4 py-3 min-h-[44px] text-white text-sm focus-ring transition-all"
           disabled={isLoadingEvents}
         >
           <option value="">-- Choose target event to validate --</option>
@@ -112,8 +112,32 @@ export default function ScannerPage() {
 
       {selectedEventId ? (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-          {/* Scanner Stream / Camera Feed Box */}
-          <div className="lg:col-span-5 space-y-6">
+          {/* Stats Box (On mobile, this is first; on desktop, it sits in the right column) */}
+          <div className="order-1 lg:order-2 lg:col-span-7 space-y-6">
+            <ScannerStats
+              stats={stats}
+              isLoading={isLoadingStats}
+            />
+
+            <div className="hidden lg:block">
+              {!isOffline && (
+                <ScanHistory
+                  items={historyItems}
+                  isLoading={isLoadingHistory}
+                  page={historyPage}
+                  setPage={setHistoryPage}
+                  totalPages={historyPagination.totalPages}
+                  filterStatus={historyFilterStatus}
+                  setFilterStatus={setHistoryFilterStatus}
+                  search={historySearch}
+                  setSearch={setHistorySearch}
+                />
+              )}
+            </div>
+          </div>
+
+          {/* Scanner Stream / Camera Feed Box (On mobile it goes second; on desktop it is the left column) */}
+          <div className="order-2 lg:order-1 lg:col-span-5 space-y-6">
             <ScannerCamera
               isOffline={isOffline}
               onScan={submitScan}
@@ -121,13 +145,8 @@ export default function ScannerPage() {
             />
           </div>
 
-          {/* Stats & History logs Box */}
-          <div className="lg:col-span-7 space-y-6">
-            <ScannerStats
-              stats={stats}
-              isLoading={isLoadingStats}
-            />
-
+          {/* Mobile scan history goes at the absolute bottom */}
+          <div className="order-3 lg:hidden w-full">
             {!isOffline && (
               <ScanHistory
                 items={historyItems}
@@ -148,6 +167,11 @@ export default function ScannerPage() {
           Please select an event above to initialize and open the scanner console.
         </div>
       )}
+
+      {/* SR live region status announcement */}
+      <div className="sr-only" role="status" aria-live="polite">
+        {lastValidationResult ? `Scan ${lastValidationResult.status.replace('_', ' ')}: ${lastValidationResult.message}` : ''}
+      </div>
 
       {/* Validation Result Modal Dialog Overlay */}
       <TicketValidationModal

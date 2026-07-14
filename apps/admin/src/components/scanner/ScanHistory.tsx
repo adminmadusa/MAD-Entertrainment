@@ -49,13 +49,13 @@ export function ScanHistory({
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search ticket / guest..."
-            className="bg-background border border-border-subtle text-white text-xs rounded-lg px-3 py-1.5 focus:border-accent-purple outline-none w-44"
+            className="bg-background border border-border-subtle text-white text-xs rounded-lg px-3 py-1.5 focus-ring w-44"
           />
 
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
-            className="bg-background border border-border-subtle text-white text-xs rounded-lg px-2.5 py-1.5 focus:border-accent-purple outline-none"
+            className="bg-background border border-border-subtle text-white text-xs rounded-lg px-2.5 py-1.5 focus-ring"
           >
             <option value="">All Statuses</option>
             <option value="SUCCESS">Success</option>
