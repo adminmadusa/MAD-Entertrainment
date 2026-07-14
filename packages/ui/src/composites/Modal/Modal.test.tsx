@@ -37,7 +37,7 @@ describe('Modal Component', () => {
   });
 
   it('renders with default centered presentation', () => {
-    const { container } = render(
+    render(
       <Modal isOpen={true} onClose={vi.fn()}>
         <div>Modal Content</div>
       </Modal>
@@ -49,7 +49,7 @@ describe('Modal Component', () => {
   });
 
   it('renders with bottom-sheet presentation', () => {
-    const { container } = render(
+    render(
       <Modal isOpen={true} presentation="bottom-sheet" onClose={vi.fn()}>
         <div>Modal Content</div>
       </Modal>
