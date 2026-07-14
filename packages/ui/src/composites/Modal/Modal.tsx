@@ -3,6 +3,8 @@
 import React, { useRef } from 'react';
 
 import { useFocusTrap } from '../../hooks/useFocusTrap';
+import { useDelayedUnmount } from '../../hooks/useDelayedUnmount';
+import { MotionTokens } from '../../lib/motionTokens';
 import { X } from '../../icons';
 import { cn } from '../../lib/cn';
 import { IconButton } from '../../primitives/IconButton';
@@ -32,6 +34,12 @@ export function Modal({
   ariaDescribedBy,
   className,
 }: ModalProps) {
+  const { isRendered, isVisible } = useDelayedUnmount(
+    isOpen,
+    0,
+    MotionTokens.modal.exit,
+  );
+
   const modalRef = useFocusTrap<HTMLDivElement>({
     isActive: isOpen,
     onClose,
@@ -41,22 +49,12 @@ export function Modal({
   const touchStartTime = useRef(0);
   const touchCurrentY = useRef(0);
   const isDragging = useRef(false);
-  const [isMounted, setIsMounted] = React.useState(false);
 
-  React.useEffect(() => {
-    if (isOpen) {
-      const timer = requestAnimationFrame(() => setIsMounted(true));
-      return () => cancelAnimationFrame(timer);
-    } else {
-      setIsMounted(false);
-    }
-  }, [isOpen]);
-
-  if (!isOpen) return null;
+  if (!isRendered) return null;
 
   const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
     if (!enableSwipeToClose || presentation !== 'bottom-sheet') return;
-    if (e.currentTarget.scrollTop > 0) return; // Prevent dragging if scrolling internal content
+    if (e.currentTarget.scrollTop > 0) return;
     touchStartY.current = e.touches[0].clientY;
     touchStartTime.current = Date.now();
     isDragging.current = true;
@@ -84,13 +82,15 @@ export function Modal({
     const element = e.currentTarget;
 
     if (diffY > 120 && velocity > 0.5) {
-      element.style.transition = 'transform 0.2s ease-out';
+      // Swipe dismiss: animate out then call onClose
+      element.style.transition = `transform ${MotionTokens.modal.exit}ms ease-in`;
       element.style.transform = 'translateY(100%)';
       setTimeout(() => {
         onClose();
-      }, 200);
+      }, MotionTokens.modal.exit);
     } else {
-      element.style.transition = 'transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+      // Swipe cancel: bounce back using design system bounce token
+      element.style.transition = `transform ${MotionTokens.modal.enter}ms var(--transition-bounce)`;
       element.style.transform = 'translateY(0)';
     }
 
@@ -102,7 +102,7 @@ export function Modal({
       className={cn(
         modalBackdropBaseClasses,
         modalBackdropPresentations[presentation],
-        isMounted ? 'opacity-100' : 'opacity-0',
+        isVisible ? 'opacity-100' : 'opacity-0',
         closeOnBackdropClick && 'cursor-pointer'
       )}
       onClick={(e) => {
@@ -124,7 +124,7 @@ export function Modal({
         className={cn(
           modalContentBaseClasses,
           modalContentPresentations[presentation],
-          isMounted ? modalContentActiveStates[presentation] : modalContentInitialStates[presentation],
+          isVisible ? modalContentActiveStates[presentation] : modalContentInitialStates[presentation],
           modalSizes[size],
           className
         )}

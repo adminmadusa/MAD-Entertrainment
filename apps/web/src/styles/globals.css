@@ -329,29 +329,7 @@
   animation: scroll-dot 1.8s infinite ease-in-out;
 }
 
-/* Mobile Bottom Sheet Adaptations for @mad/ui Modal (AUTH-010) */
-@media (max-width: 640px) {
-  div.fixed.inset-0.z-50.flex.items-center.justify-center {
-    align-items: flex-end;
-  }
 
-  div.fixed.inset-0.z-50.flex.items-center.justify-center > div[role="dialog"] {
-    max-width: 100% !important;
-    width: 100% !important;
-    border-bottom-left-radius: 0 !important;
-    border-bottom-right-radius: 0 !important;
-    border-top-left-radius: 1.5rem !important;
-    border-top-right-radius: 1.5rem !important;
-    padding-bottom: calc(1.5rem + env(safe-area-inset-bottom)) !important;
-    transform-origin: bottom center;
-    animation: bottomSheetSlideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  }
-}
-
-@keyframes bottomSheetSlideUp {
-  from { transform: translateY(100%); }
-  to { transform: translateY(0); }
-}
 
 /* ─── Hero Entry Animations (UI-009B1) ─────────────────────── */
 @keyframes heroFadeInUp {
