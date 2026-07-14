@@ -35,6 +35,7 @@ export function FindTicketsModal({
       onClose={onClose}
       closeOnBackdropClick={true}
       enableSwipeToClose={true}
+      presentation="bottom-sheet"
       ariaLabelledBy="find-title"
       ariaDescribedBy="find-desc"
     >

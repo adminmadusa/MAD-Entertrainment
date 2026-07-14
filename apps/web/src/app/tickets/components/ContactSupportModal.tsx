@@ -45,6 +45,7 @@ export function ContactSupportModal({
       onClose={onClose}
       closeOnBackdropClick={true}
       enableSwipeToClose={true}
+      presentation="bottom-sheet"
       ariaLabelledBy="support-title"
       ariaDescribedBy="support-desc"
     >
