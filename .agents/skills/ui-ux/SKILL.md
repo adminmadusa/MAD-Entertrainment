@@ -1,18 +1,18 @@
 ---
 name: "ui-ux"
 description: "Repository-aware UI/UX investigator enforcing feature-scoped audits for MAD UI/UX Governance (UI-001). Adaptively audits component reuse, React architecture, design tokens, responsiveness, and accessibility based on the specific feature context."
-version: "4.0"
+version: "4.1"
 owner: "UI/UX Designer"
 last_updated: "2026-07-14"
 depends_on: "None"
-supersedes: "3.0"
+supersedes: "4.0"
 scope: "UI-UX"
 priority: "Supporting"
 governance_standard: "UI-001"
 governance_document: "UI_UX_GOVERNANCE.md"
 ---
 
-# UI & UX Auditing Skill — v4.0
+# UI & UX Auditing Skill — v4.1
 
 ## Governing Standard
 
@@ -30,6 +30,8 @@ Rules:
 ## Purpose
 
 Operationalize the MAD UI/UX Governance Standard (UI-001) by acting as a feature-scoped investigator. Instead of scanning the entire repository, this skill narrows the scope to a specific feature (e.g., Login Screen, Dashboard) and adaptively discovers context, component reuse, accessibility issues, and React architecture relevant only to that feature.
+
+Audits must transition from simple code reviews to **true experience audits** by combining repository evidence, runtime interaction scenarios, and visual validation.
 
 ---
 
@@ -88,132 +90,143 @@ Never scan unrelated parts of the repository.
 ```text
 Feature Discovery
         ↓
-Page/Route Discovery
+Repository Context Diagram
         ↓
 Component Inventory
         ↓
-Dependency Analysis
+Determine Applicable Audits
         ↓
-Determine Applicable Audits (e.g., Auth UX, Form Audit)
+Collect Repository Evidence
         ↓
-Run Only Relevant Audits
+Collect Visual Evidence
         ↓
-Collect Evidence
+Collect Interaction Evidence
         ↓
-Generate Findings
+Generate Quality Summary
 ```
 
 ---
 
-## Adaptive Execution
+## Repository Context Diagram (Mandatory)
 
-Only run audits relevant to the discovered feature scope.
+Every audit must include a hierarchical diagram showing how the feature is composed from the route down to the backend API. This helps reviewers understand the architecture quickly.
 
-Examples for a Login Screen feature:
-- If authentication flows exist → Audit Auth UX (OTP, cooldown, session persistence).
-- If forms exist → Audit Form UX (accessibility, autofill, focus management).
-- If dialogs exist → Audit dialogs (focus trap, ARIA).
-- If API calls exist → Audit Integration UX (validation mapping, error handling).
-
-If no matching artifact exists, skip that audit without reporting it.
-
----
-
-## Evidence Requirements
-
-Every finding should explicitly include:
-
+Example:
 ```text
-Severity: [Critical / High / Medium / Low]
-Confidence: [High / Medium / Low]
-
-Evidence:
-- File: [path]
-- Component: [name]
-- Line/function: [where possible]
-
-Impact: [User or repository impact]
-
-Recommendation: [Actionable fix]
+Login
+↓
+Auth Layout
+↓
+AuthForm
+├── LoginForm
+├── OtpVerifyForm
+└── ProfileCompletionForm
+↓
+useAuth
+↓
+React Query
+↓
+public.service.ts
+↓
+Backend API
 ```
-
-Do not speculate. If evidence cannot be found, explicitly state:
-"Not enough repository evidence."
 
 ---
 
-## Reuse & Duplication Audits
+## Mandatory Evidence Sections
+
+Instead of a generic list of findings, every audit must be categorized into three mandatory evidence sections. Every issue must reference one or more of these.
+
+### 1. Repository Evidence (Deep Code Trace)
+
+Do not provide shallow evidence like "File: AuthForm.tsx". You must explain **why** the conclusion was reached by tracing the code logic.
+
+You must explicitly distinguish the nature of your finding:
+- `Verified by code inspection`
+- `Likely behavior`
+- `Runtime verification required`
+
+Never recommend a refactor (e.g., moving state) based solely on static inspection without answering:
+* Is the state actually causing a measurable issue?
+* Is it shared by multiple child components intentionally?
+* Would moving it duplicate state or complicate the flow?
+
+### 2. Visual Evidence
+
+A true UI audit requires visual proof. Verify and document:
+* Screenshots (where applicable/requested)
+* Viewport widths and breakpoints
+* Overflow detection
+* Spacing issues
+* Alignment
+* Layout consistency
+
+### 3. Interaction Evidence
+
+The audit must document simulated user behavior and edge cases. Do not rely entirely on static analysis. Verify:
+* Spam clicking CTAs
+* Rotating the device/phone
+* Invalid input handling (e.g., pasting invalid OTPs)
+* Network disconnects during critical actions
+* Switching tabs during countdowns/polling
+* Browser back button behavior
+* Keyboard open/close layout shifts
+* Slow network simulations
+
+---
+
+## Reuse, Consistency & Duplication Audits
 
 ### Component Reuse Audit
+Verify whether the feature reuses existing shared components instead of creating local duplicates. You **must** provide a Component Inventory with a Duplicate Score:
 
-Verify whether the feature reuses existing shared components instead of creating local duplicates. Check for existing:
-- Buttons, Inputs, OTP Inputs, Cards, Dialogs, Loaders, Alerts, Toasts
+```text
+Component Inventory
 
-Before recommending reuse:
-1. Search shared UI packages.
-2. Search local feature components.
-3. Compare APIs and responsibilities.
-4. Determine whether consolidation is safe.
+Shared
+Button ✓
+Input ✓
+Alert ✓
 
-Never recommend replacing a component solely because it has a similar name.
+Local
+OtpVerifyForm
+LoginForm
 
-### Duplicate Detection
+Duplicate Score
+0 duplicates found
+```
 
-Only report duplicates when behavior substantially overlaps within the scope of the feature and the shared `packages/ui`.
+### Consistency Audit
+Verify visual and structural consistency across similar flows (e.g., Login vs Signup, or Login vs Profile Completion).
+* Are headings identical?
+* Are button styles consistent?
+* Are animations reused?
+* Are spacing tokens consistent?
 
----
-
-## Specialized Audits
-
-### React Audit
-- Unnecessary rerenders
-- State ownership
-- React Query usage (if applicable)
-- Hydration issues
-- Memoization
-- Client/server boundaries
-- Effect dependencies
-
-### Design System Audit
-Check adherence to the project's design system:
-- Colors, Typography, Spacing, Border radius, Shadows, Icons, Motion, Dark mode
-
-### Mobile UX Audit
-- Responsive layout (320px → 1440px)
-- Safe area handling
-- Touch targets (≥44×44 px)
-- Keyboard behavior and scroll behavior
-- Viewport handling
-
-### Accessibility Audit
-- WCAG compliance and Color contrast
-- ARIA attributes and Screen reader support
-- Focus indicators and Tab order
-- Error announcements
-
-### Authentication / Backend Integration Audit
-Verify alignment with the backend for the specific feature:
-- API contract, Request/response shape
-- Validation consistency and Error mapping
-- Token handling / session behavior
-- Rate limiting / cooldowns
+### Design Token Verification
+Do not just look for hardcoded values. Explicitly verify the usage of:
+* CSS variables
+* Tailwind theme tokens
+* Semantic colors
+* Spacing scale
+* Typography tokens
 
 ---
 
-## Final Deliverables
+## Final Quality Summary
 
-The audit should end with:
+End the audit with a simple, standardized quality summary table to give stakeholders an immediate understanding of the feature's health.
 
-* Executive Summary
-* Critical Issues
-* High-Priority Improvements
-* Accessibility Findings
-* Mobile UX Findings
-* Component Reuse Opportunities
-* Backend Alignment Issues
-* Performance Findings
-* Repository Hygiene Findings
-* Prioritized Action Plan (Fix Now → Fix Next → Technical Debt)
+| Category           | Result         |
+| ------------------ | -------------- |
+| Mobile UX          | ✅ Pass / ⚠ / ❌|
+| Desktop UX         | ✅ Pass / ⚠ / ❌|
+| Accessibility      | ✅ Pass / ⚠ / ❌|
+| Performance        | ✅ Pass / ⚠ / ❌|
+| Component Reuse    | ✅ Pass / ⚠ / ❌|
+| Design System      | ✅ Pass / ⚠ / ❌|
+| Backend Alignment  | ✅ Pass / ⚠ / ❌|
+| Repository Hygiene | ✅ Pass / ⚠ / ❌|
 
 ---
 
