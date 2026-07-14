@@ -252,18 +252,7 @@ export function AuthForm({
 
   return (
     <div className={`space-y-4 sm:space-y-6 relative ${className}`}>
-      {onClose && (
-        <button
-          type="button"
-          onClick={handleClose}
-          className="absolute -top-4 -right-4 text-white hover:text-white/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple rounded-md min-h-[44px] min-w-[44px] z-50 transition-all flex items-center justify-center"
-          aria-label="Close"
-        >
-          <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
-            <path d="M18 6L6 18M6 6l12 12" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </button>
-      )}
+
 
       {/* SCREEN 1: Request OTP Form */}
       {step === 'request' && (

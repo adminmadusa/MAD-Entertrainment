@@ -173,7 +173,8 @@ export function AuthModalProvider({ children }: AuthModalProviderProps) {
       <Modal
         isOpen={isOpen}
         onClose={handleCloseRequest}
-        showCloseButton={false}
+        showCloseButton={true}
+        presentation="bottom-sheet"
         closeOnBackdropClick={!isDirty} // Disable backdrop close if dirty
         enableSwipeToClose={!isDirty} // Disable swipe close if dirty
         ariaLabelledBy="auth-modal-title"
