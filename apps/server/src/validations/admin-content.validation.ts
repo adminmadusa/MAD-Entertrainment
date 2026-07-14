@@ -188,6 +188,9 @@ export const scannerScanSchema = z.object({
   body: z.object({
     ticketId: z.string().trim().min(1, 'Ticket ID is required').max(100),
     eventId: objectIdSchema,
+    requestId: z.string().optional(),
+    source: z.enum(['camera', 'manual', 'hardware']).optional(),
+    offline: z.boolean().optional(),
   }).strict(),
 });
 

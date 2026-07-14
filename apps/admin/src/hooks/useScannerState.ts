@@ -185,6 +185,8 @@ export function useScannerState({ initialEventId = '' }: UseScannerStateProps = 
   const submitScan = useCallback(
     async (ticketId: string) => {
       if (!selectedEventId || !ticketId.trim()) return;
+      if (scannerState === 'Processing') return;
+      
       setScannerState('Processing');
       setLastValidationResult(null);
 
@@ -233,7 +235,7 @@ export function useScannerState({ initialEventId = '' }: UseScannerStateProps = 
         scanMutation.mutate({ ticketId, requestId });
       }
     },
-    [selectedEventId, isOffline, scanMutation, refreshOfflineCount]
+    [selectedEventId, isOffline, scanMutation, refreshOfflineCount, scannerState]
   );
 
   // 8. Offline synchronization trigger

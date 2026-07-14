@@ -1,6 +1,6 @@
 'use client';
 
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useEffect } from 'react';
 
 import { ValidationResult } from '../../lib/api/admin/scanner.service';
@@ -26,9 +26,8 @@ export function TicketValidationModal({ result, onClose, autoDismissMs = 1500 }:
   const isDuplicate = result.status === 'ALREADY_SCANNED';
 
   return (
-    <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-end justify-center p-4 pointer-events-none mb-4">
-        <motion.div
+    <div className="fixed inset-0 z-50 flex items-end justify-center p-4 pointer-events-none mb-4">
+      <motion.div
           initial={{ opacity: 0, scale: 0.95, y: 80 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 80 }}
@@ -108,6 +107,5 @@ export function TicketValidationModal({ result, onClose, autoDismissMs = 1500 }:
           </button>
         </motion.div>
       </div>
-    </AnimatePresence>
   );
 }
