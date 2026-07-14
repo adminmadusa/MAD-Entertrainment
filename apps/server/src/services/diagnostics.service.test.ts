@@ -1,7 +1,6 @@
 import mongoose, { Types } from 'mongoose';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
-import { isRedisConnected } from '../config/redis';
 import { DeadLetterJob } from '../models/dead-letter-job.schema';
 import { DiagnosticsService } from './diagnostics.service';
 import { QueueService } from './queue.service';

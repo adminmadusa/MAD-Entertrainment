@@ -34,7 +34,6 @@ import { EventStatus, HTTP_STATUS, EventMemoryPublicationState } from '@mad/shar
 
 import { Booking } from '../../models/booking.schema';
 import { Event } from '../../models/event.schema';
-import { TicketProfile } from '../../models/ticket-profile.schema';
 import { Ticket } from '../../models/ticket.schema';
 import { CacheService } from '../cache.service';
 import * as eventService from './event.service';

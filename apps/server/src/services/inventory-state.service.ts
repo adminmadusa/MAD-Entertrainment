@@ -3,16 +3,6 @@ import { InventoryState, ReservationStatus } from '@mad/shared';
 import { AppError } from '../middleware/error.middleware';
 import { logger } from '../utils/logger';
 
-const INVENTORY_TRANSITIONS: Record<InventoryState, InventoryState[]> = {
-  [InventoryState.AVAILABLE]: [InventoryState.RESERVED],
-  [InventoryState.RESERVED]: [InventoryState.PENDING_PAYMENT, InventoryState.EXPIRED],
-  [InventoryState.PENDING_PAYMENT]: [InventoryState.BOOKED, InventoryState.FAILED],
-  [InventoryState.BOOKED]: [InventoryState.REFUNDED, InventoryState.CANCELLED],
-  [InventoryState.EXPIRED]: [],
-  [InventoryState.FAILED]: [],
-  [InventoryState.REFUNDED]: [],
-  [InventoryState.CANCELLED]: [],
-};
 
 const RESERVATION_TRANSITIONS: Record<ReservationStatus, ReservationStatus[]> = {
   [ReservationStatus.RESERVED]: [ReservationStatus.PENDING_PAYMENT, ReservationStatus.EXPIRED, ReservationStatus.CANCELLED],

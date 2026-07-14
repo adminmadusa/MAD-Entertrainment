@@ -120,7 +120,7 @@ export default function CreateEventPage() {
         category,
         status,
         bookingMode: BookingMode.GENERAL_ADMISSION,
-        bannerImage: coverImage ?? undefined,
+        bannerImage: coverImage,
         posterImage: posterImage ?? undefined,
         galleryImages: galleryImages.length > 0 ? galleryImages : undefined,
         venue: venueName.trim(),

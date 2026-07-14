@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 import { NotificationType } from '@mad/shared';
 
-import { getRedis, isRedisConnected } from '../../config/redis';
+import { isRedisConnected } from '../../config/redis';
 import { magicLinkHtml } from '../../lib/email';
 import { Booking } from '../../models/booking.schema';
 import { MagicTokenModel } from '../../models/magic-token.schema';

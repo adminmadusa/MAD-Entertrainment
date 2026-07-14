@@ -184,7 +184,7 @@ export default function EditEventPage() {
         status,
         eventVersion: event?.eventVersion,
         bookingMode: BookingMode.GENERAL_ADMISSION,
-        bannerImage: bannerImage ?? undefined,
+        bannerImage,
         posterImage: posterImage ?? undefined,
         galleryImages: galleryImages.length > 0 ? galleryImages : undefined,
         venue: venue.trim(),

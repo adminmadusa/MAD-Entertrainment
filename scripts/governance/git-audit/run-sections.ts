@@ -2,7 +2,7 @@ import { collectAllBranches } from './collectors/branches';
 import { collectWorktrees } from './collectors/worktrees';
 import { collectTagsForBranch } from './collectors/tags';
 import { analyzeAiOsStack } from './analyzers/stack-analysis';
-import { checkReachableFromDevelop, checkReachableFromLive, checkReachableFromRemediation } from './analyzers/ancestry';
+import { checkReachableFromDevelop, checkReachableFromRemediation } from './analyzers/ancestry';
 import { analyzePatchEquivalence } from './analyzers/patch-equivalence';
 import { analyzeDuplicateBranches } from './analyzers/duplicates';
 import { determineLifecycleState } from './analyzers/lifecycle';
