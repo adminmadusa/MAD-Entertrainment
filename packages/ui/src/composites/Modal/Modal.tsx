@@ -8,8 +8,12 @@ import { cn } from '../../lib/cn';
 import { IconButton } from '../../primitives/IconButton';
 import {
   modalSizes,
-  modalBackdropClasses,
-  modalContentClasses,
+  modalBackdropBaseClasses,
+  modalBackdropPresentations,
+  modalContentBaseClasses,
+  modalContentPresentations,
+  modalContentInitialStates,
+  modalContentActiveStates,
   modalCloseButtonClasses,
   modalCloseIconClasses,
 } from './Modal.styles';
@@ -23,6 +27,7 @@ export function Modal({
   children,
   closeOnBackdropClick = false,
   enableSwipeToClose = false,
+  presentation = 'centered',
   ariaLabelledBy,
   ariaDescribedBy,
   className,
@@ -36,11 +41,22 @@ export function Modal({
   const touchStartTime = useRef(0);
   const touchCurrentY = useRef(0);
   const isDragging = useRef(false);
+  const [isMounted, setIsMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    if (isOpen) {
+      const timer = requestAnimationFrame(() => setIsMounted(true));
+      return () => cancelAnimationFrame(timer);
+    } else {
+      setIsMounted(false);
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
   const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
-    if (!enableSwipeToClose) return;
+    if (!enableSwipeToClose || presentation !== 'bottom-sheet') return;
+    if (e.currentTarget.scrollTop > 0) return; // Prevent dragging if scrolling internal content
     touchStartY.current = e.touches[0].clientY;
     touchStartTime.current = Date.now();
     isDragging.current = true;
@@ -48,7 +64,7 @@ export function Modal({
   };
 
   const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
-    if (!enableSwipeToClose || !isDragging.current) return;
+    if (!enableSwipeToClose || presentation !== 'bottom-sheet' || !isDragging.current) return;
     const currentY = e.touches[0].clientY;
     const diffY = currentY - touchStartY.current;
 
@@ -59,7 +75,7 @@ export function Modal({
   };
 
   const handleTouchEnd = (e: React.TouchEvent<HTMLDivElement>) => {
-    if (!enableSwipeToClose || !isDragging.current) return;
+    if (!enableSwipeToClose || presentation !== 'bottom-sheet' || !isDragging.current) return;
     isDragging.current = false;
 
     const diffY = touchCurrentY.current;
@@ -84,7 +100,9 @@ export function Modal({
   return (
     <div
       className={cn(
-        modalBackdropClasses,
+        modalBackdropBaseClasses,
+        modalBackdropPresentations[presentation],
+        isMounted ? 'opacity-100' : 'opacity-0',
         closeOnBackdropClick && 'cursor-pointer'
       )}
       onClick={(e) => {
@@ -104,7 +122,9 @@ export function Modal({
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
         className={cn(
-          modalContentClasses,
+          modalContentBaseClasses,
+          modalContentPresentations[presentation],
+          isMounted ? modalContentActiveStates[presentation] : modalContentInitialStates[presentation],
           modalSizes[size],
           className
         )}

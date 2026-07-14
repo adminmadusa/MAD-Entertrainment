@@ -76,3 +76,4 @@ audit_data.json
 # AI Operating System runtime artifacts
 .agents/ai-os/runtime/cache/
 .agents/ai-os/runtime/indexes/
+skills-lock.json

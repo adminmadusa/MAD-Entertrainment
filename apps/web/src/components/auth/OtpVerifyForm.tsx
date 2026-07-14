@@ -97,7 +97,7 @@ export function OtpVerifyForm({
       </div>
 
       {/* Sticky Row Actions */}
-      <div className="max-sm:sticky max-sm:bottom-0 max-sm:-mx-6 max-sm:px-6 max-sm:py-4 max-sm:bg-background max-sm:border-t max-sm:border-white/10 max-sm:pb-8 max-sm:pb-[calc(2rem+env(safe-area-inset-bottom))] grid grid-cols-2 gap-3 w-full z-10 mt-6 sm:mt-8">
+      <div className="max-sm:sticky max-sm:bottom-0 max-sm:-mx-6 max-sm:px-6 max-sm:py-4 max-sm:bg-background max-sm:border-t max-sm:border-white/10 max-sm:pb-8 grid grid-cols-2 gap-3 w-full z-10 mt-6 sm:mt-8">
         <Button
           type="submit"
           variant="primary"
