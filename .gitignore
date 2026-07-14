@@ -84,3 +84,12 @@ git-mcp/
 .gemini/
 .claude/
 .kilocode/
+# Caveman optional local developer tools
+.agents/skills/cavecrew/
+.agents/skills/caveman/
+.agents/skills/caveman-commit/
+.agents/skills/caveman-compress/
+.agents/skills/caveman-help/
+.agents/skills/caveman-review/
+.agents/skills/caveman-stats/
+skills-lock.json
