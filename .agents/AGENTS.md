@@ -324,3 +324,22 @@ Every task progression must compile and output the following verified evidence:
   - `git checkout develop && git pull origin develop` output showing fast-forward sync.
 
 
+# PART 6 — STANDARDIZED UI/UX AUDIT STRUCTURE
+
+Every UI/UX and experience audit must adhere to the following 15-point structure:
+
+1. Executive Summary
+2. UX Health Score
+3. Repository Context
+4. Component Inventory
+5. User Journey Audit
+6. Feature-Specific Audit
+7. Accessibility Audit
+8. Mobile Audit
+9. Performance Audit
+10. Cognitive Load Assessment
+11. Verified Findings
+12. Do Not Change
+13. Implementation Roadmap
+14. Regression Checklist
+15. Final Readiness
