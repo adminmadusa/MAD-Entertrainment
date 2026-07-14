@@ -72,8 +72,9 @@ export function EventsList() {
               >
                 <Link
                   href={`/events/${event.slug}`}
-                  className="flex flex-col flex-grow focus:outline-none"
-                  aria-label={`View details for ${event.title}`}
+                  id={`event-card-${event.slug}`}
+                  className="flex flex-col h-full focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple"
+                  aria-label={event.isSoldOut ? `View details for ${event.title}` : `Book tickets for ${event.title}`}
                 >
                   {/* Banner Image */}
                   <div className="aspect-[4/3] w-full overflow-hidden relative bg-white/5 flex-shrink-0">
@@ -116,25 +117,21 @@ export function EventsList() {
                       {event.description}
                     </p>
                   </div>
-                </Link>
 
-                <div className="px-5 pb-5 pt-4 border-t border-border-subtle/40 flex items-center justify-between mt-auto bg-black/10">
-                  <div>
-                    <div className="text-[10px] text-text-muted font-medium">Tickets from</div>
-                    <div className="text-white font-black text-sm">
-                      ₹{event.ticketTiers?.length > 0 ? Math.min(...event.ticketTiers.map((t) => t.price)) : 0}
+                  <div className="px-5 pb-5 pt-4 border-t border-border-subtle/40 flex items-center justify-between mt-auto bg-black/10 w-full">
+                    <div>
+                      <div className="text-[10px] text-text-muted font-medium">Tickets from</div>
+                      <div className="text-white font-black text-sm">
+                        ₹{event.ticketTiers?.length > 0 ? Math.min(...event.ticketTiers.map((t) => t.price)) : 0}
+                      </div>
+                    </div>
+                    <div
+                      className="px-3.5 py-2 text-xs font-bold text-white btn-gradient rounded-xl shadow-glow-sm group-hover:scale-105 transition-transform"
+                    >
+                      {event.isSoldOut ? 'Details' : 'Book Now'}
                     </div>
                   </div>
-                  {/* Single anchor — no Link>button nesting */}
-                  <Link
-                    href={`/events/${event.slug}`}
-                    id={`event-card-book-${event.slug}`}
-                    className="px-3.5 py-2 text-xs font-bold text-white btn-gradient rounded-xl shadow-glow-sm group-hover:scale-105 transition-transform"
-                    aria-label={event.isSoldOut ? `View details for ${event.title}` : `Book tickets for ${event.title}`}
-                  >
-                    {event.isSoldOut ? 'Details' : 'Book Now'}
-                  </Link>
-                </div>
+                </Link>
               </motion.div>
             ))}
           </div>

@@ -183,11 +183,11 @@ export const FeaturedEventsSection = memo(function FeaturedEventsSection({ initi
                       aria-label={`${index + 1} of ${events.length}: ${event.title}`}
                       aria-hidden={!isActive}
                     >
-                      {/* Wrap the image, date, title, and description in a link */}
                       <Link
                         href={`/events/${event.slug}`}
-                        className={`flex flex-col flex-grow focus:outline-none ${!isActive ? 'pointer-events-none' : ''}`}
-                        aria-label={`View details for ${event.title}`}
+                        id={`featured-event-card-${event.slug}`}
+                        className={`flex flex-col h-full focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple ${!isActive ? 'pointer-events-none' : ''}`}
+                        aria-label={event.isSoldOut ? `View details for ${event.title}` : `Book tickets for ${event.title}`}
                         tabIndex={isActive ? 0 : -1}
                       >
                         {/* Banner Image */}
@@ -202,7 +202,7 @@ export const FeaturedEventsSection = memo(function FeaturedEventsSection({ initi
                               className="object-cover group-hover:scale-105 transition-transform duration-500"
                             />
                           ) : (
-                            <div className="w-full h-full flex items-center justify-center text-accent-purple text-5xl">
+                            <div className="w-full h-full flex items-center justify-center text-accent-purple text-5xl" aria-hidden="true">
                               🎧
                             </div>
                           )}
@@ -235,27 +235,21 @@ export const FeaturedEventsSection = memo(function FeaturedEventsSection({ initi
                             {event.description}
                           </p>
                         </div>
-                      </Link>
 
-                      <div className={`px-4 pb-4 pt-3 border-t border-border-subtle/40 flex items-center justify-between mt-auto bg-black/40 transition-opacity ${!isActive ? 'opacity-50' : ''}`}>
-                        <div>
-                          <div className="text-[9px] sm:text-[10px] text-text-muted font-medium">Tickets from</div>
-                           <div className="text-white font-black text-xs sm:text-sm">
-                            ₹{event.ticketTiers && event.ticketTiers.length > 0 ? Math.min(...event.ticketTiers.map((t) => t.price)) : 0}
+                        <div className={`px-4 pb-4 pt-3 border-t border-border-subtle/40 flex items-center justify-between mt-auto bg-black/40 transition-opacity w-full ${!isActive ? 'opacity-50' : ''}`}>
+                          <div>
+                            <div className="text-[9px] sm:text-[10px] text-text-muted font-medium">Tickets from</div>
+                             <div className="text-white font-black text-xs sm:text-sm">
+                              ₹{event.ticketTiers && event.ticketTiers.length > 0 ? Math.min(...event.ticketTiers.map((t) => t.price)) : 0}
+                            </div>
+                          </div>
+                          <div
+                            className="px-2.5 py-1.5 sm:px-3.5 sm:py-2 text-[10px] sm:text-xs font-bold text-white btn-gradient rounded-xl shadow-glow-sm group-hover:scale-105 transition-all text-center inline-block"
+                          >
+                            {event.isSoldOut ? 'Details' : 'Book Now'}
                           </div>
                         </div>
-                        <Link
-                          href={`/events/${event.slug}`}
-                          id={`event-card-book-${event.slug}`}
-                          tabIndex={isActive ? 0 : -1}
-                          aria-label={event.isSoldOut ? `View details for ${event.title}` : `Book tickets for ${event.title}`}
-                          className={`px-2.5 py-1.5 sm:px-3.5 sm:py-2 text-[10px] sm:text-xs font-bold text-white btn-gradient rounded-xl shadow-glow-sm group-hover:scale-105 transition-all text-center inline-block focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
-                            !isActive ? 'pointer-events-none opacity-50 cursor-not-allowed' : ''
-                          }`}
-                        >
-                          {event.isSoldOut ? 'Details' : 'Book Now'}
-                        </Link>
-                      </div>
+                      </Link>
                     </motion.div>
                   );
                 })}
