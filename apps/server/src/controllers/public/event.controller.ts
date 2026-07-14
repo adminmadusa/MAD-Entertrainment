@@ -11,12 +11,13 @@ type PublicEventDetailResult = Awaited<ReturnType<typeof PublicEventService.getE
 export async function listEvents(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const category = typeof req.query.category === 'string' ? req.query.category : undefined;
+    const status = typeof req.query.status === 'string' ? req.query.status : undefined;
     const search = typeof req.query.search === 'string' ? req.query.search : undefined;
     const page = Number(req.query.page || 1);
     const limit = Number(req.query.limit || 12);
     const includeTotal = req.query.includeTotal !== 'false';
 
-    const cacheKey = `events:list:${category || 'all'}:${search || 'none'}:${page}:${limit}:${includeTotal}`;
+    const cacheKey = `events:list:${category || 'all'}:${status || 'all'}:${search || 'none'}:${page}:${limit}:${includeTotal}`;
     const startTime = performance.now();
 
     const cached = await CacheService.get<PublicEventListResult>(cacheKey);
@@ -28,7 +29,7 @@ export async function listEvents(req: Request, res: Response, next: NextFunction
     }
 
     const queryStartTime = performance.now();
-    const result = await PublicEventService.listEvents({ category, search, page, limit, includeTotal });
+    const result = await PublicEventService.listEvents({ category, status, search, page, limit, includeTotal });
     const queryDuration = performance.now() - queryStartTime;
 
     // Cache for 60 seconds (1 minute)

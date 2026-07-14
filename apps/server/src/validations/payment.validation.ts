@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { EventCategory, BOOKING_REFERENCE_REGEX } from '@mad/shared';
+import { EventCategory, EventStatus, BOOKING_REFERENCE_REGEX } from '@mad/shared';
 import { objectIdSchema, checkoutSchema as createBookingSchema, reserveTicketsSchema, checkoutDetailsSchema } from '@mad/validations';
 
 export { createBookingSchema, reserveTicketsSchema, checkoutDetailsSchema };
@@ -26,6 +26,7 @@ export const bookingReferenceParamSchema = z.object({
 
 export const listEventsQuerySchema = z.object({
   category: z.nativeEnum(EventCategory).optional(),
+  status: z.nativeEnum(EventStatus).optional(),
   search: z.string().max(200).optional(),
   page: z.coerce.number().int().positive().default(1),
   limit: paginationLimitSchema.default(12),

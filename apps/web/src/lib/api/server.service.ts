@@ -132,6 +132,20 @@ export async function serverGetFeaturedEvents(): Promise<Event[]> {
   return Array.isArray(payload.events) ? payload.events : [];
 }
 
+export async function serverGetCompletedEvents(): Promise<Event[]> {
+  const payload = await safeServerFetch<{ events: Event[] }>(
+    '/events?status=completed&page=1&limit=6',
+    {
+      fallback: { events: [] },
+      revalidate: 60,
+      timeoutMs: 8000,
+      retries: 1,
+      label: 'Completed Events',
+    }
+  );
+  return Array.isArray(payload.events) ? payload.events : [];
+}
+
 export async function serverGetDJs(): Promise<DJOperator[]> {
   const payload = await safeServerFetch<{
     data?: DJOperator[];
