@@ -146,11 +146,6 @@ export function useEventMemoriesHandlers({
     setUploadWarning('');
     const target = gallery[idx];
 
-    const confirmDelete = window.confirm(
-      'Are you sure you want to remove this image? This action will immediately delete the image from storage.'
-    );
-    if (!confirmDelete) return;
-
     if (target?.publicId) {
       adminApiClient
         .delete('/admin/uploads', { data: { publicId: target.publicId } })

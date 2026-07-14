@@ -104,6 +104,7 @@ export default function AdminLoginPage() {
                 animate={{ opacity: 1, y: 0 }}
                 className="flex items-start gap-3 px-4 py-3 bg-error/10 border border-error/30 rounded-xl text-sm text-red-400"
                 role="alert"
+                aria-live="polite"
               >
                 <ErrorIcon />
                 <span>{error}</span>

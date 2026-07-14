@@ -9,7 +9,7 @@ import { adminGetEvents, adminDeleteEvent, type AdminEvent } from '@/lib/api/adm
 import { extractApiError } from '@/lib/api/client';
 import { useAdminAuth } from '@/providers/AdminAuthProvider';
 import { EVENT_STATUS_METADATA, type EventStatus, AdminRole } from '@mad/shared';
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@mad/ui';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, Modal } from '@mad/ui';
 import { formatEventDate } from '@mad/utils';
 
 const EVENT_STATUS_FILTER_OPTIONS = Object.entries(EVENT_STATUS_METADATA);
@@ -278,43 +278,44 @@ export default function AdminEventsPage() {
       </div>
 
       {/* Delete Confirm Modal */}
-      <AnimatePresence>
+      <Modal
+        isOpen={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        size="sm"
+        showCloseButton={false}
+        closeOnBackdropClick={true}
+        ariaLabelledBy="delete-event-modal-title"
+        className="glass-strong border border-border-subtle p-6 max-w-sm"
+      >
         {deleteTarget && (
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="glass-strong rounded-2xl border border-border-subtle p-6 max-w-sm w-full"
-            >
-              <h2 className="text-white font-bold text-lg mb-2">Delete Event?</h2>
-              <p className="text-text-secondary text-sm mb-1">
-                <strong className="text-white">{deleteTarget.title}</strong> will be permanently deleted
-                along with its Cloudinary images.
-              </p>
-              <p className="text-error text-xs mb-5">This action cannot be undone.</p>
-              {deleteMutation.error && (
-                <p className="text-red-400 text-xs mb-3">{extractApiError(deleteMutation.error).message}</p>
-              )}
-              <div className="flex gap-3">
-                <button
-                  onClick={() => setDeleteTarget(null)}
-                  className="flex-1 py-2.5 glass border border-border-subtle rounded-xl text-sm font-medium text-text-secondary hover:text-white transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={() => deleteMutation.mutate(deleteTarget._id)}
-                  disabled={deleteMutation.isPending}
-                  className="flex-1 py-2.5 bg-error/80 hover:bg-error rounded-xl text-white text-sm font-medium transition-colors disabled:opacity-60"
-                >
-                  {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
-                </button>
-              </div>
-            </motion.div>
+          <div>
+            <h2 id="delete-event-modal-title" className="text-white font-bold text-lg mb-2">Delete Event?</h2>
+            <p className="text-text-secondary text-sm mb-1">
+              <strong className="text-white">{deleteTarget.title}</strong> will be permanently deleted
+              along with its Cloudinary images.
+            </p>
+            <p className="text-error text-xs mb-5">This action cannot be undone.</p>
+            {deleteMutation.error && (
+              <p className="text-red-400 text-xs mb-3">{extractApiError(deleteMutation.error).message}</p>
+            )}
+            <div className="flex gap-3">
+              <button
+                onClick={() => setDeleteTarget(null)}
+                className="flex-1 py-2.5 glass border border-border-subtle rounded-xl text-sm font-medium text-text-secondary hover:text-white transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => deleteMutation.mutate(deleteTarget._id)}
+                disabled={deleteMutation.isPending}
+                className="flex-1 py-2.5 bg-error/80 hover:bg-error rounded-xl text-white text-sm font-medium transition-colors disabled:opacity-60"
+              >
+                {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
+              </button>
+            </div>
           </div>
         )}
-      </AnimatePresence>
+      </Modal>
 
 
     </div>

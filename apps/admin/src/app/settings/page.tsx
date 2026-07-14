@@ -8,6 +8,7 @@ import { adminGetCategories, adminCreateCategory, adminUpdateCategory, adminDele
 import { extractApiError } from '@/lib/api/client';
 import { useAdminAuth } from '@/providers/AdminAuthProvider';
 import { AdminRole } from '@mad/shared';
+import { Modal } from '@mad/ui';
 
 export default function SettingsPage() {
   const { admin } = useAdminAuth();
@@ -17,6 +18,7 @@ export default function SettingsPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState('');
   const [error, setError] = useState('');
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
 
   // Categories Queries
   const { data: categories = [], isLoading: loadingCategories } = useQuery({
@@ -64,9 +66,14 @@ export default function SettingsPage() {
   };
 
   const handleDelete = (id: string) => {
-    if (!confirm('Are you sure you want to delete this configuration? Past events and bookings using it will remain preserved.')) return;
+    setDeleteTargetId(id);
+  };
+
+  const confirmDelete = () => {
+    if (!deleteTargetId) return;
     setError('');
-    deleteCategoryMutation.mutate(id);
+    deleteCategoryMutation.mutate(deleteTargetId);
+    setDeleteTargetId(null);
   };
 
   const renderListContent = () => {
@@ -155,6 +162,7 @@ export default function SettingsPage() {
       {/* Error */}
       {error && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+          aria-live="polite"
           className="px-4 py-3 bg-error/10 border border-error/30 rounded-xl text-sm text-red-400">
           {error}
         </motion.div>
@@ -199,6 +207,35 @@ export default function SettingsPage() {
           {renderListContent()}
         </div>
       </div>
+
+      <Modal
+        isOpen={!!deleteTargetId}
+        onClose={() => setDeleteTargetId(null)}
+        size="sm"
+        showCloseButton={false}
+        closeOnBackdropClick={true}
+        ariaLabelledBy="delete-category-modal-title"
+        className="glass-strong border border-border-subtle p-6 max-w-sm"
+      >
+        <h2 id="delete-category-modal-title" className="text-white font-bold text-lg mb-2">Delete Configuration?</h2>
+        <p className="text-text-secondary text-sm mb-5">
+          Are you sure you want to delete this configuration? Past events and bookings using it will remain preserved.
+        </p>
+        <div className="flex gap-3">
+          <button
+            onClick={() => setDeleteTargetId(null)}
+            className="flex-1 py-2.5 glass border border-border-subtle rounded-xl text-sm font-medium text-text-secondary hover:text-white transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={confirmDelete}
+            className="flex-1 py-2.5 bg-error/80 hover:bg-error rounded-xl text-white text-sm font-medium transition-colors"
+          >
+            Delete
+          </button>
+        </div>
+      </Modal>
     </div>
   );
 }
