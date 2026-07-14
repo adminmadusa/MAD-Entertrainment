@@ -117,7 +117,7 @@ export const bulkDeleteEvents = async (req: Request, res: Response, next: NextFu
     if (!Array.isArray(ids) || ids.length === 0) {
       throw AppError.badRequest('Must provide an array of ids');
     }
-    const adminId = (req as any).admin.id;
+    const adminId = (req as any).admin.sub;
     const result = await eventService.bulkDeleteEvents(ids, adminId);
     res.status(200).json({ success: true, data: result });
   } catch (error) {

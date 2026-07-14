@@ -63,7 +63,7 @@ export const bulkDeleteTicketProfiles = async (req: Request, res: Response, next
     if (!Array.isArray(ids) || ids.length === 0) {
       throw AppError.badRequest('Must provide an array of ids');
     }
-    const adminId = (req as any).admin.id;
+    const adminId = (req as any).admin.sub;
     const result = await ticketProfileService.bulkDeleteTicketProfiles(ids, adminId);
     res.status(200).json({ success: true, data: result });
   } catch (error) {
@@ -80,7 +80,7 @@ export const bulkUpdateTicketProfileStatus = async (req: Request, res: Response,
     if (typeof isActive !== 'boolean') {
       throw AppError.badRequest('isActive must be a boolean');
     }
-    const adminId = (req as any).admin.id;
+    const adminId = (req as any).admin.sub;
     const result = await ticketProfileService.bulkUpdateTicketProfileStatus(ids, isActive, adminId);
     res.status(200).json({ success: true, data: result });
   } catch (error) {
