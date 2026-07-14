@@ -541,3 +541,9 @@ export const bookingsSummarySchema = z.object({
     eventId: z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid event ID format').optional(),
   }),
 });
+
+export const adminBulkIdsSchema = z.object({
+  body: z.object({
+    ids: z.array(z.string().trim().min(1)).min(1, 'At least one ID must be provided'),
+  }),
+});

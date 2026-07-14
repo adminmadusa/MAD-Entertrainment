@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 
 import { getEnv } from '../../config/env';
+import { AppError } from '../../middleware/error.middleware';
 import * as eventService from '../../services/admin/event.service';
 import { auditLog } from '../../utils/audit';
 
@@ -105,6 +106,20 @@ export const getPreviewToken = async (req: Request, res: Response, next: NextFun
         expiresAt: expiresAt.toISOString(),
       },
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const bulkDeleteEvents = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { ids } = req.body;
+    if (!Array.isArray(ids) || ids.length === 0) {
+      throw AppError.badRequest('Must provide an array of ids');
+    }
+    const adminId = (req as any).admin.id;
+    const result = await eventService.bulkDeleteEvents(ids, adminId);
+    res.status(200).json({ success: true, data: result });
   } catch (error) {
     next(error);
   }

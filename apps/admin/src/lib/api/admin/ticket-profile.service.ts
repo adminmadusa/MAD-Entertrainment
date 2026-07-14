@@ -24,3 +24,13 @@ export async function adminUpdateTicketProfile(id: string, payload: Partial<Tick
 export async function adminDeleteTicketProfile(id: string): Promise<void> {
   await adminApiClient.delete(`/admin/ticket-profiles/${id}`);
 }
+
+export async function adminBulkDeleteTicketProfiles(ids: string[]): Promise<any> {
+  const { data } = await adminApiClient.post('/admin/ticket-profiles/bulk/delete', { ids });
+  return data.data;
+}
+
+export async function adminBulkUpdateTicketProfileStatus(ids: string[], isActive: boolean): Promise<any> {
+  const { data } = await adminApiClient.post('/admin/ticket-profiles/bulk/status', { ids, isActive });
+  return data.data;
+}

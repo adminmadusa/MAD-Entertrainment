@@ -5,11 +5,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { useState } from 'react';
 
-import { adminGetEvents, adminDeleteEvent, type AdminEvent } from '@/lib/api/admin/event.service';
+import { adminGetEvents, adminDeleteEvent, adminBulkDeleteEvents, type AdminEvent } from '@/lib/api/admin/event.service';
 import { extractApiError } from '@/lib/api/client';
 import { useAdminAuth } from '@/providers/AdminAuthProvider';
 import { EVENT_STATUS_METADATA, type EventStatus, AdminRole } from '@mad/shared';
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, Modal } from '@mad/ui';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, Modal, FloatingActionBar } from '@mad/ui';
 import { formatEventDate } from '@mad/utils';
 
 const EVENT_STATUS_FILTER_OPTIONS = Object.entries(EVENT_STATUS_METADATA);
@@ -26,6 +26,14 @@ export default function AdminEventsPage() {
   const [statusFilter, setStatusFilter] = useState<EventStatus | ''>('');
   const [page, setPage] = useState(1);
   const [deleteTarget, setDeleteTarget] = useState<AdminEvent | null>(null);
+
+  const [selectedEvents, setSelectedEvents] = useState<Set<string>>(new Set());
+  const [toastMessage, setToastMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+
+  const showToast = (type: 'success' | 'error', text: string) => {
+    setToastMessage({ type, text });
+    setTimeout(() => setToastMessage(null), 4000);
+  };
 
   const [sortField, setSortField] = useState<'title' | 'category' | 'startDate' | 'status' | null>(null);
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
@@ -50,6 +58,23 @@ export default function AdminEventsPage() {
       qc.invalidateQueries({ queryKey: ['admin-events'] });
       setDeleteTarget(null);
     },
+  });
+
+  const bulkDeleteMutation = useMutation({
+    mutationFn: (ids: string[]) => adminBulkDeleteEvents(ids),
+    onSuccess: (data) => {
+      qc.invalidateQueries({ queryKey: ['admin-events'] });
+      setSelectedEvents(new Set());
+      const { successCount, failedCount } = data;
+      if (failedCount > 0) {
+        showToast('error', `Deleted ${successCount} events. ${failedCount} failed.`);
+      } else {
+        showToast('success', `Deleted ${successCount} events successfully.`);
+      }
+    },
+    onError: (err: any) => {
+      showToast('error', err.response?.data?.message || 'Failed to bulk delete events');
+    }
   });
 
   const events = Array.isArray(data?.items) ? data?.items : [];
@@ -230,6 +255,22 @@ export default function AdminEventsPage() {
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="py-3.5 px-5 w-12">
+                <input
+                  type="checkbox"
+                  checked={events.length > 0 && events.every(e => selectedEvents.has(e._id))}
+                  onChange={(e) => {
+                    const newSet = new Set(selectedEvents);
+                    if (e.target.checked) {
+                      events.forEach(ev => newSet.add(ev._id));
+                    } else {
+                      events.forEach(ev => newSet.delete(ev._id));
+                    }
+                    setSelectedEvents(newSet);
+                  }}
+                  className="w-4 h-4 rounded border-border-subtle text-accent-purple focus:ring-accent-purple/50 bg-background-card"
+                />
+              </TableHead>
               <TableHead onClick={() => handleSort('title')} className="py-3.5 px-5 cursor-pointer hover:text-white transition-colors select-none">
                 Event {sortField === 'title' ? (sortOrder === 'asc' ? '▲' : '▼') : ''}
               </TableHead>
@@ -318,6 +359,27 @@ export default function AdminEventsPage() {
       </Modal>
 
 
+
+      <FloatingActionBar 
+        selectedCount={selectedEvents.size} 
+        onClearSelection={() => setSelectedEvents(new Set())}
+      >
+        <button
+          onClick={() => bulkDeleteMutation.mutate(Array.from(selectedEvents))}
+          disabled={bulkDeleteMutation.isPending}
+          className="px-4 py-2 text-sm font-semibold bg-error/80 hover:bg-error text-white rounded-lg transition-colors disabled:opacity-50"
+        >
+          {bulkDeleteMutation.isPending ? 'Deleting...' : 'Delete Selected'}
+        </button>
+      </FloatingActionBar>
+
+      {toastMessage && (
+        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-bottom-2 fade-in">
+          <div className={`px-4 py-3 rounded-xl shadow-elevation-high border ${toastMessage.type === 'success' ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400' : 'bg-error/10 border-error/30 text-red-400'}`}>
+            {toastMessage.text}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -435,3 +435,13 @@ export interface JwtPayload {
   aud?: string;
   [key: string]: unknown;
 }
+
+export interface BulkOperationResult {
+  successCount: number;
+  failedCount: number;
+  results: {
+    id: string;
+    status: 'success' | 'failed';
+    reason?: string;
+  }[];
+}

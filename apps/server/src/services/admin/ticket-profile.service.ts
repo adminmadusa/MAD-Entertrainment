@@ -1,5 +1,5 @@
 
-import { EventStatus, type EventLifecycleStatus } from '@mad/shared';
+import { EventStatus, type EventLifecycleStatus, type BulkOperationResult } from '@mad/shared';
 
 import { AppError } from '../../middleware/error.middleware';
 import { Booking } from '../../models/booking.schema';
@@ -7,6 +7,7 @@ import { Event } from '../../models/event.schema';
 import { Reservation } from '../../models/reservation.schema';
 import { TicketProfile, ITicketProfile } from '../../models/ticket-profile.schema';
 import { Ticket } from '../../models/ticket.schema';
+import { auditLog } from '../../utils/audit';
 import { CacheService } from '../cache.service';
 
 const ACTIVE_PROFILE_EVENT_STATUSES: readonly EventLifecycleStatus[] = [
@@ -269,4 +270,66 @@ export const deleteTicketProfile = async (id: string): Promise<ITicketProfile | 
   await ensureTicketProfileCanBeDeleted(id);
   const deleted = await TicketProfile.findByIdAndUpdate(id, { isDeleted: true }, { new: true });
   return deleted;
+};
+
+export const bulkDeleteTicketProfiles = async (ids: string[], adminId: string): Promise<BulkOperationResult> => {
+  const results: BulkOperationResult['results'] = [];
+  let successCount = 0;
+  let failedCount = 0;
+
+  for (const id of ids) {
+    try {
+      const deleted = await deleteTicketProfile(id);
+      if (deleted) {
+        results.push({ id, status: 'success' });
+        successCount++;
+      } else {
+        results.push({ id, status: 'failed', reason: 'Ticket Profile not found' });
+        failedCount++;
+      }
+    } catch (error: any) {
+      results.push({ id, status: 'failed', reason: error.message || 'Unknown error' });
+      failedCount++;
+    }
+  }
+
+  auditLog({
+    action: 'BULK_DELETE_TICKET_PROFILES',
+    actor: { type: 'admin', id: adminId },
+    status: 'success',
+    metadata: { ids, successCount, failedCount, results },
+  });
+
+  return { successCount, failedCount, results };
+};
+
+export const bulkUpdateTicketProfileStatus = async (ids: string[], isActive: boolean, adminId: string): Promise<BulkOperationResult> => {
+  const results: BulkOperationResult['results'] = [];
+  let successCount = 0;
+  let failedCount = 0;
+
+  for (const id of ids) {
+    try {
+      const updated = await updateTicketProfile(id, { isActive });
+      if (updated) {
+        results.push({ id, status: 'success' });
+        successCount++;
+      } else {
+        results.push({ id, status: 'failed', reason: 'Ticket Profile not found' });
+        failedCount++;
+      }
+    } catch (error: any) {
+      results.push({ id, status: 'failed', reason: error.message || 'Unknown error' });
+      failedCount++;
+    }
+  }
+
+  auditLog({
+    action: 'BULK_STATUS_TICKET_PROFILES',
+    actor: { type: 'admin', id: adminId },
+    status: 'success',
+    metadata: { ids, isActive, successCount, failedCount, results },
+  });
+
+  return { successCount, failedCount, results };
 };

@@ -5,13 +5,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { useState } from 'react';
 
-import { adminGetTicketProfiles, adminDeleteTicketProfile, adminUpdateTicketProfile } from '@/lib/api/admin/ticket-profile.service';
+import { adminGetTicketProfiles, adminDeleteTicketProfile, adminUpdateTicketProfile, adminBulkDeleteTicketProfiles, adminBulkUpdateTicketProfileStatus } from '@/lib/api/admin/ticket-profile.service';
 import { adminGetTiers, adminCreateTier, adminUpdateTier, adminDeleteTier, type AdminTier } from '@/lib/api/admin/tier.service';
 import { extractApiError } from '@/lib/api/client';
 import { useAdminAuth } from '@/providers/AdminAuthProvider';
 import { AdminRole } from '@mad/shared';
 import type { TicketProfile } from '@mad/types';
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, ErrorState, Modal } from '@mad/ui';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, ErrorState, Modal, FloatingActionBar } from '@mad/ui';
 import { formatDate } from '@mad/utils';
 
 // Color Presets for swatches
@@ -170,6 +170,7 @@ interface TabProps {
 
 function TicketProfilesTab({ canMutate, qc, showToast }: TabProps) {
   const [deleteTarget, setDeleteTarget] = useState<TicketProfile | null>(null);
+  const [selectedProfiles, setSelectedProfiles] = useState<Set<string>>(new Set());
 
   const { data: profiles = [], isLoading, error } = useQuery({
     queryKey: ['admin-ticket-profiles'],
@@ -192,6 +193,33 @@ function TicketProfilesTab({ canMutate, qc, showToast }: TabProps) {
       qc.invalidateQueries({ queryKey: ['admin-ticket-profiles'] });
       showToast('Status updated successfully');
     },
+  });
+
+  const bulkDeleteMutation = useMutation({
+    mutationFn: (ids: string[]) => adminBulkDeleteTicketProfiles(ids),
+    onSuccess: (data) => {
+      qc.invalidateQueries({ queryKey: ['admin-ticket-profiles'] });
+      setSelectedProfiles(new Set());
+      const { successCount, failedCount } = data;
+      showToast(failedCount > 0 ? `Deleted ${successCount} profiles. ${failedCount} failed.` : `Deleted ${successCount} profiles successfully.`);
+    },
+    onError: (err: any) => {
+      showToast(err.response?.data?.message || 'Failed to bulk delete');
+    }
+  });
+
+  const bulkStatusMutation = useMutation({
+    mutationFn: ({ ids, isActive }: { ids: string[], isActive: boolean }) => adminBulkUpdateTicketProfileStatus(ids, isActive),
+    onSuccess: (data, variables) => {
+      qc.invalidateQueries({ queryKey: ['admin-ticket-profiles'] });
+      setSelectedProfiles(new Set());
+      const { successCount, failedCount } = data;
+      const actionStr = variables.isActive ? 'Activated' : 'Deactivated';
+      showToast(failedCount > 0 ? `${actionStr} ${successCount} profiles. ${failedCount} failed.` : `${actionStr} ${successCount} profiles successfully.`);
+    },
+    onError: (err: any) => {
+      showToast(err.response?.data?.message || 'Failed to update status');
+    }
   });
 
   if (error) {
