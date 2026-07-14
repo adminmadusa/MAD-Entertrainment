@@ -47,7 +47,7 @@ export function OtpVerifyForm({
       {/* Scrollable Content Area */}
       <div className="flex-grow">
         <div className="text-center mb-6 space-y-2">
-          <h2 id="auth-modal-title" className="text-2xl font-black text-white tracking-tight">Secure Login</h2>
+          <h2 className="text-2xl font-black text-white tracking-tight">Secure Login</h2>
           <p className="text-text-secondary text-xs leading-relaxed">
             Enter the verification code sent to
           </p>
