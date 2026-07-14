@@ -50,7 +50,7 @@ export default function ChangeRoleModal({
         </div>
 
         {error && (
-          <div className="px-4 py-2.5 bg-error/10 border border-error/30 rounded-xl text-xs text-red-400">
+          <div className="px-4 py-2.5 bg-error/10 border border-error/30 rounded-xl text-xs text-red-400" role="alert" aria-live="assertive">
             {error}
           </div>
         )}
@@ -68,11 +68,13 @@ export default function ChangeRoleModal({
           className="space-y-4"
         >
           <div className="space-y-1.5">
-            <label className="text-text-secondary text-xs font-medium block">Dashboard Role</label>
+            <label htmlFor="dashboard-role" className="text-text-secondary text-xs font-medium block">Dashboard Role</label>
             <select
+              id="dashboard-role"
               value={selectedRole}
               onChange={(e) => setSelectedRole(e.target.value as AdminRole)}
               className={inputCls}
+              aria-invalid={!!error ? 'true' : undefined}
             >
               <option value={AdminRole.SUPER_ADMIN} className="bg-background-card">Super Admin</option>
               <option value={AdminRole.ADMIN} className="bg-background-card">Admin</option>

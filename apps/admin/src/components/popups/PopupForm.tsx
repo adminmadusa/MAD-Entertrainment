@@ -59,6 +59,7 @@ export function PopupForm({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           aria-live="polite"
+          role="alert"
           className="px-4 py-3 bg-error/10 border border-error/30 rounded-xl text-sm text-red-400"
         >
           {displayedError}
@@ -130,11 +131,13 @@ export function PopupForm({
       <div className="glass rounded-2xl border border-border-subtle p-6 space-y-5">
         <h2 className="text-white font-semibold">Trigger & Constraints</h2>
         <div className="grid grid-cols-2 gap-4">
-          <FormField label="Trigger Type">
+          <FormField label="Trigger Type" htmlFor="trigger-type">
             <select
+              id="trigger-type"
               value={formState.trigger}
               onChange={(e) => setFormState((p) => ({ ...p, trigger: e.target.value }))}
               className={inputCls}
+              aria-invalid={!!displayedError ? 'true' : undefined}
             >
               <option value="on_load" className="bg-background-card">On Load</option>
               <option value="after_delay" className="bg-background-card">After Delay</option>
@@ -211,7 +214,7 @@ export function PopupForm({
             onChange={(e) => setFormState((p) => ({ ...p, isActive: e.target.checked }))}
             className="w-4 h-4 accent-accent-purple rounded"
           />
-          <label htmlFor="popup-active" className="text-text-secondary text-sm">
+          <label htmlFor="popup-active" className="text-text-secondary text-sm cursor-pointer">
             Mark this popup campaign as active immediately
           </label>
         </div>
