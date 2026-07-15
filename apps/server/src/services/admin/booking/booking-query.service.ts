@@ -129,7 +129,9 @@ export const getBookings = async (
   limit: number = 10,
   search?: string,
   status?: string,
-  eventId?: string
+  eventId?: string,
+  sortField?: string,
+  sortOrder?: 'asc' | 'desc'
 ) => {
   const skip = (page - 1) * limit;
   const filter: any = {};
@@ -150,6 +152,17 @@ export const getBookings = async (
       { guestName: searchRegex },
     ];
   }
+
+  const SORT_FIELDS: Record<string, string> = {
+    bookingId: 'bookingId',
+    totalAmount: 'totalAmount',
+    createdAt: 'createdAt',
+  };
+  const validSortField = sortField ? (SORT_FIELDS[sortField] ?? 'createdAt') : 'createdAt';
+  const sortDirection = sortOrder === 'asc' ? 1 : -1;
+  const sortOptions: any = { [validSortField]: sortDirection };
+  if (validSortField !== 'createdAt') sortOptions.createdAt = -1;
+  sortOptions._id = 1;
 
   const total = await Booking.countDocuments(filter);
   const bookingProjection = {
@@ -178,7 +191,7 @@ export const getBookings = async (
       path: 'eventId',
       select: '_id title startDate bannerImage bookingMode'
     })
-    .sort({ createdAt: -1 })
+    .sort(sortOptions)
     .skip(skip)
     .limit(limit)
     .lean();

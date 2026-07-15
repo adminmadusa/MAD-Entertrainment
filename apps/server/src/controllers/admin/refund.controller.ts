@@ -20,8 +20,10 @@ export const getRefunds = async (req: Request, res: Response, next: NextFunction
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 15;
     const status = req.query.status as string;
+    const sortField = req.query.sortField as string | undefined;
+    const sortOrder = req.query.sortOrder as 'asc' | 'desc' | undefined;
 
-    const result = await refundService.getRefunds(page, limit, status);
+    const result = await refundService.getRefunds(page, limit, status, sortField, sortOrder);
     res.status(200).json({
       success: true,
       data: result.refunds,

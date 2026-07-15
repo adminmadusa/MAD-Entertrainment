@@ -34,8 +34,14 @@ export default function AdminRefundsPage() {
   };
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ['admin-refunds', { page, status: statusFilter }],
-    queryFn: () => adminGetRefunds({ page: String(page), limit: '15', ...(statusFilter && { status: statusFilter }) }),
+    queryKey: ['admin-refunds', { page, status: statusFilter, sortField, sortOrder }],
+    queryFn: () => adminGetRefunds({ 
+      page: String(page), 
+      limit: '15', 
+      ...(statusFilter && { status: statusFilter }),
+      ...(sortField && { sortField }),
+      ...(sortOrder && { sortOrder })
+    }),
   });
 
   const processMutation = useMutation({
@@ -45,22 +51,6 @@ export default function AdminRefundsPage() {
 
   const refunds = data?.items ?? [];
   const pagination = data?.pagination;
-
-  const sortedRefunds = [...refunds].sort((a, b) => {
-    if (!sortField) return 0;
-    const aVal = a[sortField];
-    const bVal = b[sortField];
-    if (typeof aVal === 'string' && typeof bVal === 'string') {
-      const aStr = aVal.toLowerCase();
-      const bStr = bVal.toLowerCase();
-      if (aStr < bStr) return sortOrder === 'asc' ? -1 : 1;
-      if (aStr > bStr) return sortOrder === 'asc' ? 1 : -1;
-      return 0;
-    }
-    if (aVal < bVal) return sortOrder === 'asc' ? -1 : 1;
-    if (aVal > bVal) return sortOrder === 'asc' ? 1 : -1;
-    return 0;
-  });
 
   const getActionClass = (a: 'approve' | 'reject') => {
     if (action === a) {
@@ -80,7 +70,7 @@ export default function AdminRefundsPage() {
       ));
     }
 
-    if (sortedRefunds.length === 0) {
+    if (refunds.length === 0) {
       return (
         <TableRow>
           <TableCell colSpan={6} className="py-8">
@@ -95,7 +85,7 @@ export default function AdminRefundsPage() {
       );
     }
 
-    return sortedRefunds.map((refund) => (
+    return refunds.map((refund) => (
       <TableRow key={refund._id} className="border-b border-border-subtle/40 hover:bg-white/2">
         <TableCell className="py-3.5 px-4 font-mono text-xs text-accent-purple">
           {(refund.bookingId as { bookingId?: string })?.bookingId ?? String(refund.bookingId).slice(-8)}
