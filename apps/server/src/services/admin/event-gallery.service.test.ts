@@ -5,6 +5,15 @@ import { Event } from '../../models/event.schema';
 import { Types } from 'mongoose';
 import mongoose from 'mongoose';
 
+vi.mock('../../config/env', () => ({
+  getEnv: vi.fn().mockReturnValue({
+    MONGODB_URI: 'mongodb://localhost:27017/test',
+    JWT_SECRET: 'super-secret-jwt-key-for-users-12345',
+    JWT_ADMIN_SECRET: 'super-secret-jwt-key-for-admin-12345',
+    JWT_SESSION_SECRET: 'super-secret-jwt-key-for-session-12345',
+  })
+}));
+
 vi.mock('../../models/event-gallery.schema');
 vi.mock('../../models/event-gallery-settings.schema');
 vi.mock('../../models/event.schema');
