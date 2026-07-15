@@ -9,7 +9,7 @@ import { adminGetEvents, adminDeleteEvent, adminBulkDeleteEvents, adminDuplicate
 import { extractApiError } from '@/lib/api/client';
 import { useAdminAuth } from '@/providers/AdminAuthProvider';
 import { EVENT_STATUS_METADATA, EVENT_STATUS_TRANSITIONS, EventStatus, AdminRole } from '@mad/shared';
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, Modal, FloatingActionBar, EmptyState } from '@mad/ui';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, Modal, FloatingActionBar, EmptyState, Checkbox, useBulkSelection } from '@mad/ui';
 import { CalendarDays, Search } from '@mad/ui/icons';
 import { formatEventDate } from '@mad/utils';
 
@@ -28,7 +28,8 @@ export default function AdminEventsPage() {
   const [page, setPage] = useState(1);
   const [deleteTarget, setDeleteTarget] = useState<AdminEvent | null>(null);
 
-  const [selectedEvents, setSelectedEvents] = useState<Set<string>>(new Set());
+  const eventIds = (Array.isArray(data?.items) ? data?.items : []).map((e) => e._id);
+  const { selectedIds, selectedCount, isSelected, toggle, selectAll, clearSelection, allSelected, indeterminate } = useBulkSelection({ pageIds: eventIds });
   const [toastMessage, setToastMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
   // Optimistic status overrides keyed by event ID
   const [optimisticStatuses, setOptimisticStatuses] = useState<Record<string, EventStatus>>({});
@@ -97,7 +98,7 @@ export default function AdminEventsPage() {
     mutationFn: (ids: string[]) => adminBulkDeleteEvents(ids),
     onSuccess: (data) => {
       qc.invalidateQueries({ queryKey: ['admin-events'] });
-      setSelectedEvents(new Set());
+      clearSelection();
       const { successCount, failedCount } = data;
       if (failedCount > 0) {
         showToast('error', `Deleted ${successCount} events. ${failedCount} failed.`);
@@ -154,17 +155,10 @@ export default function AdminEventsPage() {
       return (
         <TableRow key={event._id} className="border-b border-border-subtle/40 hover:bg-white/2 transition-colors">
           <TableCell sticky="start" className="py-4 px-5">
-            <input
-              type="checkbox"
-              checked={selectedEvents.has(event._id)}
-              onChange={(e) => {
-                e.stopPropagation();
-                const newSet = new Set(selectedEvents);
-                if (e.target.checked) newSet.add(event._id);
-                else newSet.delete(event._id);
-                setSelectedEvents(newSet);
-              }}
-              className="w-4 h-4 rounded border-border-subtle text-accent-purple focus:ring-accent-purple/50 bg-background-card"
+            <Checkbox
+              checked={isSelected(event._id)}
+              onChange={() => toggle(event._id)}
+              aria-label={`Select event ${event.title}`}
             />
           </TableCell>
           <TableCell sticky="start" stickyOffset="3rem" showStickyDivider className="py-4 px-5">
@@ -325,19 +319,11 @@ export default function AdminEventsPage() {
           <TableHeader stickyHeader>
             <TableRow>
               <TableHead sticky="start" className="py-3.5 px-5 w-12">
-                <input
-                  type="checkbox"
-                  checked={events.length > 0 && events.every(e => selectedEvents.has(e._id))}
-                  onChange={(e) => {
-                    const newSet = new Set(selectedEvents);
-                    if (e.target.checked) {
-                      events.forEach(ev => newSet.add(ev._id));
-                    } else {
-                      events.forEach(ev => newSet.delete(ev._id));
-                    }
-                    setSelectedEvents(newSet);
-                  }}
-                  className="w-4 h-4 rounded border-border-subtle text-accent-purple focus:ring-accent-purple/50 bg-background-card"
+                <Checkbox
+                  checked={allSelected}
+                  indeterminate={indeterminate}
+                  onChange={() => allSelected ? clearSelection() : selectAll()}
+                  aria-label="Select all events on this page"
                 />
               </TableHead>
               <TableHead sticky="start" stickyOffset="3rem" showStickyDivider onClick={() => handleSort('title')} className="py-3.5 px-5 cursor-pointer hover:text-white transition-colors select-none">
@@ -429,12 +415,12 @@ export default function AdminEventsPage() {
 
 
 
-      <FloatingActionBar 
-        selectedCount={selectedEvents.size} 
-        onClearSelection={() => setSelectedEvents(new Set())}
+      <FloatingActionBar
+        selectedCount={selectedCount}
+        onClearSelection={clearSelection}
       >
         <button
-          onClick={() => bulkDeleteMutation.mutate(Array.from(selectedEvents))}
+          onClick={() => bulkDeleteMutation.mutate(Array.from(selectedIds))}
           disabled={bulkDeleteMutation.isPending}
           className="px-4 py-2 text-sm font-semibold bg-error/80 hover:bg-error text-white rounded-lg transition-colors disabled:opacity-50"
         >
