@@ -1,5 +1,6 @@
-import { TicketTier } from '@mad/shared';
 import { Document, model, Schema, Types } from 'mongoose';
+
+import { TicketTier } from '@mad/shared';
 
 export interface ITicket extends Document {
   ticketId: string;

@@ -13,8 +13,6 @@ type EventOverviewProps = {
 export function EventOverview({ description, organizerName, category }: EventOverviewProps) {
   const [isOverviewOpen, setIsOverviewOpen] = useState(false);
 
-
-
   const descriptionPreview = description.length > 150
     ? `${description.substring(0, 150)}...`
     : description;

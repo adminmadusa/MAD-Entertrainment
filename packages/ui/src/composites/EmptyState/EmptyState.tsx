@@ -1,20 +1,21 @@
 import React, { forwardRef } from 'react';
+
 import { cn } from '../../lib/cn';
-import { EmptyStateProps } from './EmptyState.types';
 import {
-  emptyStateContainerClasses,
+  emptyStateContainerVariants,
   emptyStateIconClasses,
   emptyStateTitleClasses,
   emptyStateDescriptionClasses,
   emptyStateActionClasses,
 } from './EmptyState.styles';
+import type { EmptyStateProps } from './EmptyState.types';
 
 export const EmptyState = forwardRef<HTMLDivElement, EmptyStateProps>(
-  ({ className, title, description, icon, action, ...props }, ref) => {
+  ({ className, title, description, icon, action, variant = 'card', ...props }, ref) => {
     return (
       <div
         ref={ref}
-        className={cn(emptyStateContainerClasses, className)}
+        className={cn(emptyStateContainerVariants({ variant }), className)}
         {...props}
       >
         {icon && <div className={emptyStateIconClasses}>{icon}</div>}

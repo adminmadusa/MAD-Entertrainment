@@ -12,8 +12,10 @@ export const getBookings = async (req: Request, res: Response, next: NextFunctio
     const search = req.query.search as string | undefined;
     const status = req.query.status as string | undefined;
     const eventId = req.query.eventId as string | undefined;
+    const sortField = req.query.sortField as string | undefined;
+    const sortOrder = req.query.sortOrder as 'asc' | 'desc' | undefined;
 
-    const result = await bookingService.getBookings(page, limit, search, status, eventId);
+    const result = await bookingService.getBookings(page, limit, search, status, eventId, sortField, sortOrder);
     res.status(200).json({
       success: true,
       data: result,

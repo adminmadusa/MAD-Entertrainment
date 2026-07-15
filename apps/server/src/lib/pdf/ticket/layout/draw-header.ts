@@ -1,4 +1,5 @@
 import PDFDocument from "pdfkit";
+
 import { COLORS } from "../utils/colors";
 import { SPACING } from "../utils/spacing";
 import { TYPOGRAPHY } from "../utils/typography";
@@ -22,8 +23,8 @@ export function drawHeader(doc: typeof PDFDocument, ticket: any): void {
 
   // 2. Compute dynamic ticket status/tier badge colors and text
   const tier = (ticket?.tier || "general_admission").toLowerCase();
-  let badgeColor = COLORS.ACCENT_GA;
-  let badgeText = "ADMIT ONE";
+  let badgeColor: string;
+  let badgeText: string;
 
   if (tier === "vip") {
     badgeColor = COLORS.ACCENT_VIP;

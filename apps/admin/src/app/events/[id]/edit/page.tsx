@@ -8,9 +8,7 @@ import { useState, useEffect } from 'react';
 import { EventAdditionalDetailsCard } from '@/components/events/EventAdditionalDetailsCard';
 import { EventAttendanceCard } from '@/components/events/EventAttendanceCard';
 import { EventBasicInfoCard } from '@/components/events/EventBasicInfoCard';
-import { EventEditActions } from '@/components/events/EventEditActions';
 import { EventMediaCard } from '@/components/events/EventMediaCard';
-import { EventMemoriesCard, type MemoriesState } from '@/components/events/EventMemoriesCard';
 import { EventRequirementsCard } from '@/components/events/EventRequirementsCard';
 import { EventScheduleCard } from '@/components/events/EventScheduleCard';
 import { EventTicketingCard, type TicketTierInput } from '@/components/events/EventTicketingCard';
@@ -19,7 +17,8 @@ import { adminGetEvent, adminUpdateEvent, type AdminEventUpdatePayload, type Clo
 import { adminGetTicketProfiles } from '@/lib/api/admin/ticket-profile.service';
 import { adminGetTiers } from '@/lib/api/admin/tier.service';
 import { extractApiError } from '@/lib/api/client';
-import { BookingMode, TicketTier, EventStatus, EventMemoryPublicationState, EVENT_STATUS_TRANSITIONS, type EventLifecycleStatus, } from '@mad/shared';
+import { BookingMode, TicketTier, EventStatus, EVENT_STATUS_TRANSITIONS, type EventLifecycleStatus, deriveEventLifecycleState } from '@mad/shared';
+import { AdminFormActions } from '@mad/ui';
 
 const defaultTier = (): TicketTierInput => ({
   name: 'general',
@@ -29,14 +28,6 @@ const defaultTier = (): TicketTierInput => ({
 
 const isEventLifecycleStatus = (status: EventStatus): status is EventLifecycleStatus =>
   Object.prototype.hasOwnProperty.call(EVENT_STATUS_TRANSITIONS, status);
-
-const DEFAULT_MEMORIES_STATE: MemoriesState = {
-  publicationState: EventMemoryPublicationState.DRAFT,
-  heading: '',
-  thankYouMessage: '',
-  highlightsInput: '',
-  gallery: [],
-};
 
 export default function EditEventPage() {
   const { id } = useParams() as { id: string };
@@ -48,6 +39,8 @@ export default function EditEventPage() {
   const [status, setStatus] = useState<EventStatus>(EventStatus.DRAFT);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+  const [ticketSalesCloseMode, setTicketSalesCloseMode] = useState<string>('EVENT_START');
+  const [ticketSalesCloseDate, setTicketSalesCloseDate] = useState('');
   const [tags, setTags] = useState('');
   const [isFeatured, setIsFeatured] = useState(false);
   const [requireTerms, setRequireTerms] = useState(true);
@@ -62,7 +55,6 @@ export default function EditEventPage() {
   const [organizerName, setOrganizerName] = useState('');
   const [refundPolicy, setRefundPolicy] = useState('');
   const [highlightsInput, setHighlightsInput] = useState('');
-  const [memories, setMemories] = useState<MemoriesState>(DEFAULT_MEMORIES_STATE);
 
   // Ticket Profile and Overrides state
   const [ticketingType, setTicketingType] = useState<'custom' | 'profile'>('custom');
@@ -93,6 +85,8 @@ export default function EditEventPage() {
       setStatus(event.status || EventStatus.DRAFT);
       setStartDate(event.startDate ? new Date(event.startDate).toISOString().slice(0, 16) : '');
       setEndDate(event.endDate ? new Date(event.endDate).toISOString().slice(0, 16) : '');
+      setTicketSalesCloseMode(event.ticketSalesCloseMode || 'EVENT_START');
+      setTicketSalesCloseDate(event.ticketSalesCloseDate ? new Date(event.ticketSalesCloseDate).toISOString().slice(0, 16) : '');
       setVenue(event.venue || '');
       setOrganizerName(event.organizerName || '');
       setRefundPolicy(event.refundPolicy || '');
@@ -119,19 +113,6 @@ export default function EditEventPage() {
         setTiers(event.ticketTiers && event.ticketTiers.length > 0
           ? event.ticketTiers.map((t) => ({ name: t.name, price: t.price, capacity: t.totalCapacity || t.quantity || 100 }))
           : [defaultTier()]);
-      }
-
-      // Hydrate memories from server response
-      if (event.memories) {
-        setMemories({
-          publicationState: event.memories.publicationState,
-          heading: event.memories.heading ?? '',
-          thankYouMessage: event.memories.thankYouMessage ?? '',
-          highlightsInput: event.memories.highlights?.join(', ') ?? '',
-          gallery: (event.memories.gallery ?? []).map((img, i) => ({ ...img, order: i })),
-        });
-      } else {
-        setMemories(DEFAULT_MEMORIES_STATE);
       }
     }
   }, [event]);
@@ -184,7 +165,7 @@ export default function EditEventPage() {
         status,
         eventVersion: event?.eventVersion,
         bookingMode: BookingMode.GENERAL_ADMISSION,
-        bannerImage: bannerImage ?? undefined,
+        bannerImage,
         posterImage: posterImage ?? undefined,
         galleryImages: galleryImages.length > 0 ? galleryImages : undefined,
         venue: venue.trim(),
@@ -195,11 +176,15 @@ export default function EditEventPage() {
         requireAgeConfirmation,
         ageRestriction: requireAgeConfirmation && ageRestriction ? Number(ageRestriction) : undefined,
         tags: tags.split(',').map((t) => t.trim()).filter(Boolean),
-        highlights: highlightsInput.split(',').map((h) => h.trim()).filter(Boolean),
+        highlights: Array.from(new Set(highlightsInput.split(',').map((h) => h.trim()).filter(Boolean))),
+        ticketSalesCloseMode: ticketSalesCloseMode,
         refundPolicy: refundPolicy.trim() || undefined,
         organizerName: organizerName.trim() || undefined,
-        memories: buildMemoriesPayload(),
       };
+
+      if (ticketSalesCloseMode === 'CUSTOM_DATE' && ticketSalesCloseDate) {
+        payload.ticketSalesCloseDate = new Date(ticketSalesCloseDate).toISOString();
+      }
 
       if (isProfileType) {
         if (!selectedProfileId) return setError('Please select a ticket profile.');
@@ -236,24 +221,6 @@ export default function EditEventPage() {
     }
   };
 
-  // Build memories sub-document for the save payload.
-  const buildMemoriesPayload = () => {
-    return {
-      publicationState: memories.publicationState,
-      heading: memories.heading.trim() || undefined,
-      thankYouMessage: memories.thankYouMessage.trim() || undefined,
-      highlights: memories.highlightsInput
-        .split(',')
-        .map((h) => h.trim())
-        .filter(Boolean),
-      gallery: memories.gallery.map((img, i) => ({
-        url: img.url,
-        publicId: img.publicId,
-        order: i,
-      })),
-    };
-  };
-
   if (isEventLoading) {
     return (
       <div className="py-12 flex justify-center items-center">
@@ -287,6 +254,7 @@ export default function EditEventPage() {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
+            aria-live="polite"
             className="px-4 py-3 bg-error/10 border border-error/30 rounded-xl text-sm text-red-400"
           >
             {error}
@@ -303,6 +271,7 @@ export default function EditEventPage() {
           title={title} setTitle={setTitle}
           category={category} setCategory={setCategory}
           status={status} setStatus={setStatus}
+          lifecycle={deriveEventLifecycleState({ status, startDate, endDate } as any)}
           venue={venue} setVenue={setVenue}
           description={description} setDescription={setDescription}
           dbCategories={dbCategories} statusOptions={statusOptions}
@@ -317,6 +286,10 @@ export default function EditEventPage() {
         <EventScheduleCard
           startDate={startDate} setStartDate={setStartDate}
           endDate={endDate} setEndDate={setEndDate}
+          ticketSalesCloseMode={ticketSalesCloseMode}
+          setTicketSalesCloseMode={setTicketSalesCloseMode}
+          ticketSalesCloseDate={ticketSalesCloseDate}
+          setTicketSalesCloseDate={setTicketSalesCloseDate}
         />
 
         <EventTicketingCard
@@ -336,17 +309,12 @@ export default function EditEventPage() {
           isFeatured={isFeatured} setIsFeatured={setIsFeatured}
         />
 
-        {/* Event Memories — only rendered when status is COMPLETED */}
-        <EventMemoriesCard
-          eventStatus={status}
-          eventSlug={event?.slug ?? ''}
-          value={memories}
-          onChange={setMemories}
-        />
-
-        <EventEditActions
+        <AdminFormActions
           onCancel={() => router.back()}
           isPending={updateMutation.isPending}
+          submitLabel="Save Changes"
+          pendingLabel="Saving..."
+          submitId="event-submit"
         />
       </form>
     </div>

@@ -1,6 +1,6 @@
 import mongoose, { Types } from 'mongoose';
 
-import { BookingStatus, PaymentStatus, ReservationStatus } from '@mad/shared';
+import { BookingStatus, PaymentStatus } from '@mad/shared';
 
 import { AuditLogModel } from '../../../models/audit-log.schema';
 import { Booking } from '../../../models/booking.schema';
@@ -8,13 +8,12 @@ import { Payment } from '../../../models/payment.schema';
 import { Refund } from '../../../models/refund.schema';
 import { Ticket } from '../../../models/ticket.schema';
 import type { BookingsSummaryResponse } from '../../../types/admin/booking.types';
-import { logger } from '../../../utils/logger';
 import { CacheService } from '../../cache.service';
 
 /**
  * Maps a Mongoose Booking document onto a safe Normalized AdminBooking DTO representation with dynamic attendance.
  */
-export const mapBookingToAdminDTO = (booking: any, ticketsList: any[], auditLogs: any[]) => {
+const mapBookingToAdminDTO = (booking: any, ticketsList: any[], auditLogs: any[]) => {
   const isSeatBased = booking.tickets?.[0]?.seats?.length > 0;
   const mode = booking.eventId?.bookingMode || (isSeatBased ? 'seat_based' : 'general_admission');
 
@@ -96,7 +95,7 @@ export const mapBookingToAdminDTO = (booking: any, ticketsList: any[], auditLogs
  * Merges logs matching by bookingId and bookingReference, deduplicates by _id,
  * and preserves descending createdAt chronological sorting order.
  */
-export const getAuditLogsForBooking = (
+const getAuditLogsForBooking = (
   bookingId: string,
   bookingRef: string,
   logsByBookingId: Record<string, any[]>
@@ -130,7 +129,9 @@ export const getBookings = async (
   limit: number = 10,
   search?: string,
   status?: string,
-  eventId?: string
+  eventId?: string,
+  sortField?: string,
+  sortOrder?: 'asc' | 'desc'
 ) => {
   const skip = (page - 1) * limit;
   const filter: any = {};
@@ -151,6 +152,17 @@ export const getBookings = async (
       { guestName: searchRegex },
     ];
   }
+
+  const SORT_FIELDS: Record<string, string> = {
+    bookingId: 'bookingId',
+    totalAmount: 'totalAmount',
+    createdAt: 'createdAt',
+  };
+  const validSortField = sortField ? (SORT_FIELDS[sortField] ?? 'createdAt') : 'createdAt';
+  const sortDirection = sortOrder === 'asc' ? 1 : -1;
+  const sortOptions: any = { [validSortField]: sortDirection };
+  if (validSortField !== 'createdAt') sortOptions.createdAt = -1;
+  sortOptions._id = 1;
 
   const total = await Booking.countDocuments(filter);
   const bookingProjection = {
@@ -179,7 +191,7 @@ export const getBookings = async (
       path: 'eventId',
       select: '_id title startDate bannerImage bookingMode'
     })
-    .sort({ createdAt: -1 })
+    .sort(sortOptions)
     .skip(skip)
     .limit(limit)
     .lean();

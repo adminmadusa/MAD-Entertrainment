@@ -2,6 +2,7 @@
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import dynamic from 'next/dynamic';
+import { MotionConfig } from 'framer-motion';
 import { useEffect, useState } from 'react';
 
 import { AuthModalProvider } from './AuthModalProvider';
@@ -86,16 +87,18 @@ export function Providers({ children }: ProvidersProps) {
   }, []);
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <AuthModalProvider>
-          {children}
-          <PopupManager />
-        </AuthModalProvider>
-      </AuthProvider>
-      {process.env.NODE_ENV === 'development' && (
-        <ReactQueryDevtools initialIsOpen={false} />
-      )}
-    </QueryClientProvider>
+    <MotionConfig reducedMotion="user">
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <AuthModalProvider>
+            {children}
+            <PopupManager />
+          </AuthModalProvider>
+        </AuthProvider>
+        {process.env.NODE_ENV === 'development' && (
+          <ReactQueryDevtools initialIsOpen={false} />
+        )}
+      </QueryClientProvider>
+    </MotionConfig>
   );
 }

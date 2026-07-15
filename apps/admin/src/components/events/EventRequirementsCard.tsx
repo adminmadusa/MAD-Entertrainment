@@ -35,8 +35,9 @@ export const EventRequirementsCard = React.memo(function EventRequirementsCard({
       {/* Options */}
       <div className="glass rounded-2xl border border-border-subtle p-6 space-y-5">
         <h2 className="text-white font-semibold">Options</h2>
-        <FormField label="Tags (comma separated)">
+        <FormField label="Tags (comma separated)" htmlFor="event-tags">
           <input
+            id="event-tags"
             value={tags}
             onChange={(e) => setTags(e.target.value)}
             placeholder="EDM, outdoor, live"
@@ -45,8 +46,9 @@ export const EventRequirementsCard = React.memo(function EventRequirementsCard({
         </FormField>
 
         <div className="flex flex-wrap gap-6">
-          <label className="flex items-center gap-3 cursor-pointer select-none">
+          <label htmlFor="event-is-featured" className="flex items-center gap-3 cursor-pointer select-none">
             <input
+              id="event-is-featured"
               type="checkbox"
               checked={isFeatured}
               onChange={(e) => setIsFeatured(e.target.checked)}
@@ -61,8 +63,9 @@ export const EventRequirementsCard = React.memo(function EventRequirementsCard({
       <div className="glass p-6 rounded-2xl border border-white/5 space-y-4">
         <h3 className="text-white font-bold text-lg mb-2">Registration Requirements</h3>
         <div className="space-y-4 text-sm">
-          <label className="flex items-center gap-3 cursor-pointer">
+          <label htmlFor="event-require-terms" className="flex items-center gap-3 cursor-pointer">
             <input
+              id="event-require-terms"
               type="checkbox"
               checked={requireTerms}
               onChange={(e) => setRequireTerms(e.target.checked)}
@@ -70,8 +73,9 @@ export const EventRequirementsCard = React.memo(function EventRequirementsCard({
             />
             <span className="text-text-secondary">Require Terms & Conditions</span>
           </label>
-          <label className="flex items-center gap-3 cursor-pointer">
+          <label htmlFor="event-require-age" className="flex items-center gap-3 cursor-pointer">
             <input
+              id="event-require-age"
               type="checkbox"
               checked={requireAgeConfirmation}
               onChange={(e) => setRequireAgeConfirmation(e.target.checked)}
@@ -81,8 +85,9 @@ export const EventRequirementsCard = React.memo(function EventRequirementsCard({
           </label>
           {requireAgeConfirmation && (
             <div className="pl-7">
-              <label className="block text-text-secondary mb-2">Age Requirement</label>
+              <label htmlFor="event-age-restriction" className="block text-text-secondary mb-2">Age Requirement</label>
               <select
+                id="event-age-restriction"
                 value={ageRestriction}
                 onChange={(e) => setAgeRestriction(e.target.value === '' ? '' : Number(e.target.value))}
                 className="px-4 py-2 bg-background border border-white/10 rounded-xl text-white focus:outline-none focus:border-accent-purple"
@@ -95,6 +100,8 @@ export const EventRequirementsCard = React.memo(function EventRequirementsCard({
               </select>
               {ageRestriction === '' && (
                 <input
+                  id="event-age-custom"
+                  aria-label="Custom Age Requirement"
                   type="number"
                   min="1"
                   placeholder="Enter age"

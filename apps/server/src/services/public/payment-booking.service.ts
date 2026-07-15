@@ -15,6 +15,7 @@ import { createNotificationSafe } from '../notification.service';
 import { ReservationService } from '../reservation.service';
 import { PaymentInventoryService } from './payment-inventory.service';
 import { PaymentRefundService } from './payment-refund.service';
+import { canBook } from '@mad/shared';
 
 export interface ConfirmationTransactionResult {
   success: boolean;
@@ -50,9 +51,8 @@ export class PaymentBookingService {
     options?: ConfirmationOptions
   ): Promise<ConfirmationTransactionResult> {
     // 0. Atomic payment status transition inside transaction
-    let claimedPayment = _payment;
     if (_payment.status === PaymentStatus.PENDING) {
-      claimedPayment = await Payment.findOneAndUpdate(
+      const claimedPayment = await Payment.findOneAndUpdate(
         { _id: _payment._id, status: PaymentStatus.PENDING },
         {
           $set: {
@@ -76,9 +76,9 @@ export class PaymentBookingService {
       _payment.paidAt = claimedPayment.paidAt;
     }
 
-    // Check event start/end date constraints
+    // Check event ticket sales closure constraints
     const now = new Date();
-    if (now >= new Date(event.startDate) || (event.endDate && now > new Date(event.endDate))) {
+    if (!canBook(event as any)) {
       throw new Error('EVENT_EXPIRED_DURING_CONFIRMATION');
     }
 

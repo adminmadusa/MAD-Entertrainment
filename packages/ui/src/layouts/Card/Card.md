@@ -1,10 +1,10 @@
 # Card
 
-**ID:** UI-LY-001  
-**Status:** Preview  
-**Since:** 1.3.0  
-**Last Reviewed:** 2026-07-06  
-**Owner:** platform  
+**ID:** UI-LY-001
+**Status:** Preview
+**Since:** 1.3.0
+**Last Reviewed:** 2026-07-06
+**Owner:** platform
 **Group:** layouts
 
 ## Props

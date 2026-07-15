@@ -1,5 +1,6 @@
-import { SeatStatus, TicketTier } from '@mad/shared';
 import { Schema, model, Document, Types } from 'mongoose';
+
+import { SeatStatus, TicketTier } from '@mad/shared';
 
 export interface ISeatLayout extends Document {
   eventId: Types.ObjectId;

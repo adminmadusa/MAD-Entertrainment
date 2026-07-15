@@ -1,8 +1,10 @@
-import 'dotenv/config';
 import mongoose from 'mongoose';
+
 import { connectDatabase, disconnectDatabase } from '../src/config/database';
 import { Notification } from '../src/models/notification.schema';
 import { logger } from '../src/utils/logger';
+
+import 'dotenv/config';
 
 // Fixed Archive Collection Name as approved
 const ARCHIVE_COLLECTION = 'notifications_archive_pr1b';

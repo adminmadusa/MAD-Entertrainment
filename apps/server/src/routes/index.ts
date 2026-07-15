@@ -1,21 +1,37 @@
 import { Router } from 'express';
 
+import adminAnalyticsRoutes from './admin/analytics.routes';
+import adminAuthRoutes from './admin/auth.routes';
+import adminBookingRoutes from './admin/booking.routes';
+import adminCategoryRoutes from './admin/category.routes';
+import adminCouponRoutes from './admin/coupon.routes';
 import adminDiagnosticsRoutes from './admin/diagnostics.routes';
+import adminDjOperatorRoutes from './admin/dj-operator.routes';
+import adminEventRoutes from './admin/event.routes';
+import adminMarketingRoutes from './admin/marketing.routes';
+import adminNotificationRoutes from './admin/notification.routes';
+import adminPopupRoutes from './admin/popup.routes';
+import adminRefundRoutes from './admin/refund.routes';
+import adminScannerRoutes from './admin/scanner.routes';
+import adminTeamRoutes from './admin/team.routes';
+import adminTicketProfileRoutes from './admin/ticket-profile.routes';
+import adminTierRoutes from './admin/tier.routes';
+import adminUploadRoutes from './admin/upload.routes';
+import adminUserRoutes from './admin/user.routes';
+import adminWebhookRoutes from './admin/webhook.routes';
 import devRoutes from './dev.routes';
 import healthRoutes from './health.routes';
+import publicAuthRoutes from './public/auth.routes';
 import publicBookingRoutes from './public/booking.routes';
+import publicCategoryRoutes from './public/category.routes';
 import publicDJOperatorRoutes from './public/dj-operator.routes';
 import publicEventRoutes from './public/event.routes';
+import publicMarketingRoutes from './public/marketing.routes';
 import publicPaymentRoutes from './public/payment.routes';
 import publicPopupRoutes from './public/popup.routes';
 import publicTicketRoutes from './public/ticket.routes';
-import publicMarketingRoutes from './public/marketing.routes';
 
 const router: Router = Router();
-
-import publicAuthRoutes from './public/auth.routes';
-import publicCategoryRoutes from './public/category.routes';
-
 
 // ─── Health ───────────────────────────────────────────────────
 router.use('/health', healthRoutes);
@@ -37,34 +53,20 @@ router.use('/public/tickets', publicTicketRoutes);
 router.use('/marketing', publicMarketingRoutes);
 
 // ─── Admin: Auth ──────────────────────────────────────────────
-import adminAuthRoutes from './admin/auth.routes';
 router.use('/admin/auth', adminAuthRoutes);
 
 // ─── Admin: Uploads (Cloudinary) ─────────────────────────────
-import adminUploadRoutes from './admin/upload.routes';
 router.use('/admin/uploads', adminUploadRoutes);
 
 // ─── Admin: Phase 3 — Content CRUD ───────────────────────────
-import adminEventRoutes from './admin/event.routes';
-import adminDjOperatorRoutes from './admin/dj-operator.routes';
-
 router.use('/admin/events', adminEventRoutes);
 router.use('/admin/dj-operators', adminDjOperatorRoutes);
 
 // ─── Admin: Phase 4 — Bookings & Refunds ─────────────────────
-import adminBookingRoutes from './admin/booking.routes';
-import adminRefundRoutes from './admin/refund.routes';
 router.use('/admin/bookings', adminBookingRoutes);
 router.use('/admin/refunds', adminRefundRoutes);
 
 // ─── Admin: Phase 5 — Coupons & Analytics ────────────────────
-import adminCouponRoutes from './admin/coupon.routes';
-import adminAnalyticsRoutes from './admin/analytics.routes';
-import adminCategoryRoutes from './admin/category.routes';
-import adminTierRoutes from './admin/tier.routes';
-import adminTicketProfileRoutes from './admin/ticket-profile.routes';
-import adminWebhookRoutes from './admin/webhook.routes';
-
 router.use('/admin/coupons', adminCouponRoutes);
 router.use('/admin/analytics', adminAnalyticsRoutes);
 router.use('/admin/diagnostics', adminDiagnosticsRoutes);
@@ -73,15 +75,7 @@ router.use('/admin/categories', adminCategoryRoutes);
 router.use('/admin/tiers', adminTierRoutes);
 router.use('/admin/ticket-profiles', adminTicketProfileRoutes);
 
-
 // ─── Admin: Phase 7 — Popups, Notifications, Team ────────────
-import adminScannerRoutes from './admin/scanner.routes';
-import adminNotificationRoutes from './admin/notification.routes';
-import adminTeamRoutes from './admin/team.routes';
-import adminPopupRoutes from './admin/popup.routes';
-import adminUserRoutes from './admin/user.routes';
-import adminMarketingRoutes from './admin/marketing.routes';
-
 router.use('/admin/popups', adminPopupRoutes);
 router.use('/admin/notifications', adminNotificationRoutes);
 router.use('/admin/team', adminTeamRoutes);

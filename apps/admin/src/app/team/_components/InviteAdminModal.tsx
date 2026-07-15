@@ -1,9 +1,9 @@
 'use client';
 
-import { Modal } from '@mad/ui';
 import { useEffect, useState } from 'react';
 
 import { AdminRole } from '@mad/shared';
+import { Modal } from '@mad/ui';
 
 const inputCls =
   'w-full px-4 py-2.5 rounded-xl bg-background border border-border-subtle text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-purple transition-colors';
@@ -67,44 +67,50 @@ export default function InviteAdminModal({
         </div>
 
         {error && (
-          <div className="px-4 py-2.5 bg-error/10 border border-error/30 rounded-xl text-xs text-red-400">
+          <div className="px-4 py-2.5 bg-error/10 border border-error/30 rounded-xl text-xs text-red-400" role="alert" aria-live="assertive">
             {error}
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-1.5">
-            <label className="text-text-secondary text-xs font-medium block">Full Name</label>
+            <label htmlFor="invite-name" className="text-text-secondary text-xs font-medium block">Full Name</label>
             <input
+              id="invite-name"
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. John Doe"
               required
               className={inputCls}
+              aria-invalid={!!error ? 'true' : undefined}
             />
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-text-secondary text-xs font-medium block">Email Address</label>
+            <label htmlFor="invite-email" className="text-text-secondary text-xs font-medium block">Email Address</label>
             <input
+              id="invite-email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="e.g. john@madentertrainment.com"
               required
               className={inputCls}
+              aria-invalid={!!error ? 'true' : undefined}
             />
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-text-secondary text-xs font-medium block">Access Password</label>
+            <label htmlFor="invite-password" className="text-text-secondary text-xs font-medium block">Access Password</label>
             <input
+              id="invite-password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Min 8 characters, complex"
               required
               className={inputCls}
+              aria-invalid={!!error ? 'true' : undefined}
             />
             <p className="text-[10px] text-text-muted leading-relaxed">
               Must contain at least 8 chars, 1 uppercase, 1 lowercase, 1 number, and 1 special character.
@@ -112,11 +118,13 @@ export default function InviteAdminModal({
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-text-secondary text-xs font-medium block">Dashboard Role</label>
+            <label htmlFor="invite-role" className="text-text-secondary text-xs font-medium block">Dashboard Role</label>
             <select
+              id="invite-role"
               value={role}
               onChange={(e) => setRole(e.target.value as AdminRole)}
               className={inputCls}
+              aria-invalid={!!error ? 'true' : undefined}
             >
               <option value={AdminRole.SUPER_ADMIN} className="bg-background-card">Super Admin</option>
               <option value={AdminRole.ADMIN} className="bg-background-card">Admin</option>

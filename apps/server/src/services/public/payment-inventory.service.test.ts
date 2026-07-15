@@ -1,7 +1,7 @@
 import { Types } from 'mongoose';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-import { BookingStatus, PaymentStatus, ReservationStatus, SeatStatus } from '@mad/shared';
+import { BookingStatus, ReservationStatus } from '@mad/shared';
 
 vi.mock('../../config/env', () => ({
   getEnv: vi.fn(() => ({
@@ -14,7 +14,6 @@ vi.mock('../../config/env', () => ({
 }));
 
 import { emitToEvent, emitToBooking, emitToAdmin } from '../../config/socket';
-import { Booking } from '../../models/booking.schema';
 import { Event } from '../../models/event.schema';
 import { Reservation } from '../../models/reservation.schema';
 import { SeatLayout } from '../../models/seat-layout.schema';

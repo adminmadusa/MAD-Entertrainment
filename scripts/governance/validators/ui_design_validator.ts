@@ -63,7 +63,13 @@ export class UIDesignValidator implements GovernanceValidator {
         lines.forEach((line, index) => {
           const colonIndex = line.indexOf(':');
           if (colonIndex !== -1) {
+            const propertyPart = line.substring(0, colonIndex).trim();
+            if (propertyPart.startsWith('--')) {
+              return;
+            }
             const valuePart = line.substring(colonIndex + 1);
+
+            // VAL-UI-007 Hex checks
             const matches = valuePart.match(hexPattern);
             if (matches) {
               for (const hexMatch of matches) {
@@ -91,6 +97,31 @@ export class UIDesignValidator implements GovernanceValidator {
                     severity: 'WARNING',
                     snippet: line.trim(),
                     message: `Hardcoded color '${hexMatch}' detected. Standardize using design tokens/theme variables.${note}`,
+                  });
+                }
+              }
+            }
+
+            // VAL-UI-023: Check overflow-x: hidden on root containers in CSS
+            if (line.includes('overflow-x') && line.includes('hidden')) {
+              let bodyOrHtmlNearby = false;
+              for (let i = Math.max(0, index - 5); i <= index; i++) {
+                const prevLine = lines[i].toLowerCase();
+                if (prevLine.includes('body') || prevLine.includes('html') || prevLine.includes(':root')) {
+                  bodyOrHtmlNearby = true;
+                  break;
+                }
+              }
+              if (bodyOrHtmlNearby) {
+                const supp = checkSuppression(lines, index, 'VAL-UI-023');
+                if (!supp.isSuppressed) {
+                  warnings.push({
+                    file,
+                    line: index + 1,
+                    rule: 'VAL-UI-023',
+                    severity: 'HIGH',
+                    snippet: line.trim(),
+                    message: 'Applying overflow-x: hidden on root body/html containers in CSS masks layout defects and is forbidden.',
                   });
                 }
               }
@@ -151,34 +182,97 @@ export class UIDesignValidator implements GovernanceValidator {
         return false;
       };
 
+      const isInsideArrayLiteral = (node: ts.Node): boolean => {
+        let parent = node.parent;
+        while (parent) {
+          if (ts.isArrayLiteralExpression(parent)) {
+            return true;
+          }
+          parent = parent.parent;
+        }
+        return false;
+      };      // Helper to find conflicting Tailwind classes (VAL-UI-025)
+      const findConflictingClasses = (classNameStr: string): string[] => {
+        const classes = classNameStr.split(/\s+/).filter(Boolean);
+        const seen = new Map<string, string>(); // modifierKey + ':' + category -> fullClass
+        const duplicates: string[] = [];
+        
+        for (const c of classes) {
+          const parts = c.split(':');
+          const base = parts[parts.length - 1];
+          const modifiers = parts.slice(0, parts.length - 1).sort().join(':');
+          
+          let category = '';
+          if (/^(p|pt|pr|pb|pl|px|py)-/.test(base)) {
+            category = 'padding-' + base.split('-')[0];
+          } else if (/^(m|mt|mr|mb|ml|mx|my)-/.test(base)) {
+            category = 'margin-' + base.split('-')[0];
+          } else if (/^(gap|gap-x|gap-y)-/.test(base)) {
+            category = 'gap-' + (base.startsWith('gap-x') ? 'x' : base.startsWith('gap-y') ? 'y' : 'all');
+          } else if (base === 'flex' || base === 'grid' || base === 'block' || base === 'inline' || base === 'hidden') {
+            category = 'display';
+          }
+          
+          const exactKey = modifiers + ':' + base;
+          if (seen.has(exactKey)) {
+            duplicates.push(`Duplicate Tailwind class "${c}"`);
+            continue;
+          }
+          seen.set(exactKey, c);
+          
+          if (category) {
+            const catKey = modifiers + ':' + category;
+            if (seen.has(catKey)) {
+              const existing = seen.get(catKey)!;
+              duplicates.push(`Conflicting Tailwind classes "${existing}" and "${c}"`);
+            } else {
+              seen.set(catKey, c);
+            }
+          }
+        }
+        return duplicates;
+      };
+
       // AST Walker for Rules
       const walk = (node: ts.Node) => {
-        // Rule 1: VAL-UI-007 - Hardcoded Colors (Hex colors check)
         const isEmailOrPdfTemplate =
           file.includes('apps/server/src/lib/email/templates') ||
           file.includes('apps/server/src/lib/pdf/ticket') ||
-          // Next.js global error boundaries must use inline styles — CSS design tokens are unavailable
           file.endsWith('global-error.tsx');
+
+        // Rule 1: VAL-UI-007 (Hex) & VAL-UI-022 (rgb/hsl) - Hardcoded Colors
         if (!isEmailOrPdfTemplate && (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node))) {
           const text = node.text;
           const exactHexPattern = /^#([0-9a-fA-F]{3,4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/;
-          if (exactHexPattern.test(text)) {
+          const rgbHslPattern = /^(rgb|rgba|hsl|hsla)\(.*?\)$/i;
+          const isHex = exactHexPattern.test(text);
+          const isRgbOrHsl = rgbHslPattern.test(text);
+
+          if (isHex || isRgbOrHsl) {
+            const ruleId = isHex ? 'VAL-UI-007' : 'VAL-UI-022';
+            const severity = isHex ? 'WARNING' : 'MEDIUM';
+            const ruleMsg = isHex
+              ? `Hardcoded color '${text}' detected. Standardize using design tokens/theme variables.`
+              : `Hardcoded color '${text}' detected in JSX style. Standardize using design tokens.`;
+
             let shouldReport = false;
             if (isTailwindConfig) {
               shouldReport = true;
-            } else if (isInsideJsxStyle(node) || isInsideThemeDefinition(node)) {
+            } else if (isInsideJsxStyle(node)) {
+              shouldReport = true;
+            } else if (isInsideThemeDefinition(node) && !isInsideArrayLiteral(node)) {
               shouldReport = true;
             }
 
             if (shouldReport) {
               const { line } = ts.getLineAndCharacterOfPosition(sourceFile, node.getStart());
-              const supp = checkSuppression(lines, line, 'VAL-UI-007');
+              const supp = checkSuppression(lines, line, ruleId);
               if (supp.isSuppressed) {
                 warnings.push({
                   file,
                   line: line + 1,
-                  rule: 'VAL-UI-007',
-                  severity: 'WARNING',
+                  rule: ruleId,
+                  severity,
                   snippet: lines[line]?.trim(),
                   message: `[SUPPRESSED] Hardcoded color '${text}' detected. Justification: ${supp.justification}`,
                 });
@@ -192,10 +286,117 @@ export class UIDesignValidator implements GovernanceValidator {
                 warnings.push({
                   file,
                   line: line + 1,
-                  rule: 'VAL-UI-007',
-                  severity: 'WARNING',
+                  rule: ruleId,
+                  severity,
                   snippet: lines[line]?.trim(),
-                  message: `Hardcoded color '${text}' detected. Standardize using design tokens/theme variables.${note}`,
+                  message: `${ruleMsg}${note}`,
+                });
+              }
+            }
+          }
+        }
+
+        // Rule 3: VAL-UI-021 (Image Dimensions) & VAL-UI-023 (Overflow-X on Root element class)
+        if (ts.isJsxOpeningElement(node) || ts.isJsxSelfClosingElement(node)) {
+          const tagName = node.tagName.getText(sourceFile);
+
+          // VAL-UI-021: Image missing explicit dimensions
+          if (tagName === 'img') {
+            let hasWidth = false;
+            let hasHeight = false;
+            node.attributes.properties.forEach(prop => {
+              if (ts.isJsxAttribute(prop) && prop.name && ts.isIdentifier(prop.name)) {
+                const attrName = prop.name.text;
+                if (attrName === 'width') hasWidth = true;
+                if (attrName === 'height') hasHeight = true;
+              }
+            });
+            if (!hasWidth || !hasHeight) {
+              const { line } = ts.getLineAndCharacterOfPosition(sourceFile, node.getStart());
+              const supp = checkSuppression(lines, line, 'VAL-UI-021');
+              if (!supp.isSuppressed) {
+                warnings.push({
+                  file,
+                  line: line + 1,
+                  rule: 'VAL-UI-021',
+                  severity: 'HIGH',
+                  snippet: lines[line]?.trim(),
+                  message: 'Image element <img> is missing explicit width or height attributes. Omitting dimensions causes layout shifts.',
+                });
+              }
+            }
+          }
+
+          // VAL-UI-023: Overflow-X hidden on root containers in className
+          if (tagName === 'html' || tagName === 'body') {
+            node.attributes.properties.forEach(prop => {
+              if (ts.isJsxAttribute(prop) && prop.name.text === 'className' && prop.initializer) {
+                let classVal = '';
+                if (ts.isStringLiteral(prop.initializer)) {
+                  classVal = prop.initializer.text;
+                } else if (ts.isJsxExpression(prop.initializer) && prop.initializer.expression && ts.isStringLiteral(prop.initializer.expression)) {
+                  classVal = prop.initializer.expression.text;
+                }
+                if (classVal.includes('overflow-x-hidden')) {
+                  const { line } = ts.getLineAndCharacterOfPosition(sourceFile, node.getStart());
+                  const supp = checkSuppression(lines, line, 'VAL-UI-023');
+                  if (!supp.isSuppressed) {
+                    warnings.push({
+                      file,
+                      line: line + 1,
+                      rule: 'VAL-UI-023',
+                      severity: 'HIGH',
+                      snippet: lines[line]?.trim(),
+                      message: 'Applying overflow-x: hidden on root <html>/<body> containers masks layout defects and is forbidden.',
+                    });
+                  }
+                }
+              }
+            });
+          }
+        }
+
+        // Rule 4: VAL-UI-024 (Tailwind Spacing) & VAL-UI-025 (Duplicate utilities) in className attributes
+        if (ts.isJsxAttribute(node) && node.name.text === 'className' && node.initializer) {
+          let classVal = '';
+          if (ts.isStringLiteral(node.initializer)) {
+            classVal = node.initializer.text;
+          } else if (ts.isJsxExpression(node.initializer) && node.initializer.expression && ts.isStringLiteral(node.initializer.expression)) {
+            classVal = node.initializer.expression.text;
+          }
+
+          if (classVal) {
+            const { line } = ts.getLineAndCharacterOfPosition(sourceFile, node.getStart());
+
+            // Check VAL-UI-024: Arbitrary Tailwind Spacing, e.g. mt-[17px]
+            const arbitrarySpacingRegex = /\b(m|p|gap|space)(t|r|b|l|x|y)?-\[(\d+|[.\d]+)(px|rem|em|%|vh|vw)\]/g;
+            let match;
+            while ((match = arbitrarySpacingRegex.exec(classVal)) !== null) {
+              const supp = checkSuppression(lines, line, 'VAL-UI-024');
+              if (!supp.isSuppressed) {
+                warnings.push({
+                  file,
+                  line: line + 1,
+                  rule: 'VAL-UI-024',
+                  severity: 'LOW',
+                  snippet: lines[line]?.trim(),
+                  message: `Arbitrary Tailwind spacing class "${match[0]}" detected. Standardize using design system tokens.`,
+                });
+              }
+            }
+
+            // Check VAL-UI-025: Duplicate Tailwind Utilities
+            const conflicts = findConflictingClasses(classVal);
+            if (conflicts.length > 0) {
+              const supp = checkSuppression(lines, line, 'VAL-UI-025');
+              if (!supp.isSuppressed) {
+                warnings.push({
+                  file,
+                  line: line + 1,
+                  rule: 'VAL-UI-025',
+                  severity: 'LOW',
+                  snippet: lines[line]?.trim(),
+                  message: `Duplicate or conflicting Tailwind utilities found: ${conflicts.join(', ')}`,
                 });
               }
             }
@@ -204,7 +405,6 @@ export class UIDesignValidator implements GovernanceValidator {
 
         ts.forEachChild(node, walk);
       };
-
       // Rule 2: VAL-UI-008 - Heading Hierarchy (h1 -> h2 -> h3 -> etc.)
       const headings: { level: number; line: number }[] = [];
       const collectHeadings = (node: ts.Node) => {

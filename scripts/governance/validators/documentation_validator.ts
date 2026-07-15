@@ -1,7 +1,7 @@
 // scripts/governance/validators/documentation_validator.ts
 
-import { existsSync, readFileSync, readdirSync, statSync, writeFileSync } from 'fs';
-import { resolve, relative, dirname, basename, join } from 'path';
+import { existsSync, readFileSync, statSync, writeFileSync } from 'fs';
+import { resolve, dirname } from 'path';
 import { createHash } from 'crypto';
 import { GovernanceValidator } from '../core/validator';
 import { ValidationResult, ValidationError, GovernanceMetadata } from '../core/types';
@@ -327,9 +327,6 @@ export class DocumentationValidator implements GovernanceValidator {
             if (targetRelPath) {
               outgoing.add(targetRelPath);
 
-              // Resolve relative path to workspace root
-              const resolvedPath = resolve(workspaceRoot, targetRelPath);
-
               const pathStatus = checkPathCasing(workspaceRoot, targetRelPath);
 
               if (pathStatus.status === 'NOT_FOUND') {
@@ -402,8 +399,12 @@ export class DocumentationValidator implements GovernanceValidator {
     // 4. Duplicate Document Detection (VAL-DOC-006)
     // Run pairwise Jaccard similarity checks on all files in scope
     const sortedFilePaths = Array.from(fileTokensMap.keys()).sort();
+    const duplicateExclusions: string[] = (docGovConfig as any).duplicateExclusions || [];
     for (let i = 0; i < sortedFilePaths.length; i++) {
       const fileA = sortedFilePaths[i];
+      if (duplicateExclusions.some(p => fileA === p || fileA.startsWith(p + '/'))) {
+        continue;
+      }
       const tokensA = fileTokensMap.get(fileA)!;
       const contentA = fileContentMap.get(fileA) || '';
       const statusA = fileStatusMap.get(fileA);
@@ -416,6 +417,9 @@ export class DocumentationValidator implements GovernanceValidator {
 
       for (let j = i + 1; j < sortedFilePaths.length; j++) {
         const fileB = sortedFilePaths[j];
+        if (duplicateExclusions.some(p => fileB === p || fileB.startsWith(p + '/'))) {
+          continue;
+        }
         const tokensB = fileTokensMap.get(fileB)!;
         const contentB = fileContentMap.get(fileB) || '';
         const statusB = fileStatusMap.get(fileB);

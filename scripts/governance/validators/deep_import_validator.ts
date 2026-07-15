@@ -22,23 +22,11 @@
 //   - test files (*.test.ts, *.spec.ts)
 //   - node_modules / .next / dist / coverage
 
-import * as path from 'path';
 import { GovernanceValidator } from '../core/validator';
 import { ValidationResult, ValidationError } from '../core/types';
 import { FileContentCache } from '../core/ast_parser_cache';
 import { governanceConfig } from '../core/governance.config';
 
-// ─── Public API package list ─────────────────────────────────────────────────
-// These are the ONLY approved import entry-points for @mad/* packages.
-// Importing any path deeper than these is a violation.
-
-const MAD_PUBLIC_PACKAGES = new Set([
-  '@mad/ui',
-  '@mad/types',
-  '@mad/shared',
-  '@mad/utils',
-  '@mad/validations',
-]);
 
 // ─── Import extraction (line-by-line for speed) ──────────────────────────────
 
@@ -146,7 +134,7 @@ export class DeepImportValidator implements GovernanceValidator {
       });
 
     for (const file of eligible) {
-      const content = FileContentCache.get(file);
+      const content = FileContentCache.getFileContent(file);
       if (!content) continue;
 
       const imports = extractImports(content);

@@ -242,7 +242,7 @@ export function BookingCard({
           onClick={onToggleExpand}
           aria-expanded={isExpanded}
           aria-controls={`booking-content-${booking.bookingId}`}
-          className="w-full text-left p-4 sm:p-5 flex items-center justify-between gap-3 sm:gap-4 focus:outline-none min-h-[44px]"
+          className="w-full text-left p-4 sm:p-5 flex items-center justify-between gap-3 sm:gap-4 focus-ring rounded-2xl min-h-[44px]"
         >
           <div className="flex items-center gap-3 sm:gap-4 flex-grow min-w-0">
             {imageUrl ? (

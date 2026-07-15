@@ -7,11 +7,10 @@ import { Event } from '../../models/event.schema';
 import { Notification } from '../../models/notification.schema';
 import { Payment } from '../../models/payment.schema';
 import { Refund } from '../../models/refund.schema';
-import { logger } from '../../utils/logger';
 import { auditLog } from '../../utils/audit';
+import { logger } from '../../utils/logger';
 import { createNotificationSafe } from '../notification.service';
 import { QueueService } from '../queue.service';
-import { UNTICKETED_BOOKING_WINDOW_MS } from './booking-consistency.service';
 
 export class RefundConsistencyService {
   static async countStuckProcessingRefunds(): Promise<number> {

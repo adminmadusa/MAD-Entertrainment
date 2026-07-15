@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { existsSync, readFileSync, writeFileSync, mkdirSync, rmSync, readdirSync } from 'fs';
+import { existsSync, readFileSync, mkdirSync, rmSync, readdirSync } from 'fs';
 import { resolve, join } from 'path';
 import { AutoFixEngine } from '../autofix_engine';
 import { SafeOnlyExecutionPolicy } from '../execution_policy';

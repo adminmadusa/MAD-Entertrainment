@@ -106,6 +106,11 @@ export async function publicGetEventBySlug(slug: string): Promise<Event> {
   return data.data;
 }
 
+export async function publicGetGallery(slug: string): Promise<{ items: import('@mad/types').EventGalleryItem[]; settings: import('@mad/types').EventGallerySettings | null }> {
+  const { data } = await apiClient.get<{ data: { items: import('@mad/types').EventGalleryItem[]; settings: import('@mad/types').EventGallerySettings | null } }>(`/events/${slug}/gallery`);
+  return data.data;
+}
+
 // ─── DJ Operators ─────────────────────────────────────────────
 
 export type PublicDJsResponse = PaginatedDataResponse<DJOperator>;

@@ -5,20 +5,21 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
 
 import { adminGetCategories, adminCreateCategory, adminUpdateCategory, adminDeleteCategory, type AdminCategory } from '@/lib/api/admin/category.service';
-import { adminGetTiers, adminCreateTier, adminUpdateTier, adminDeleteTier, type AdminTier } from '@/lib/api/admin/tier.service';
 import { extractApiError } from '@/lib/api/client';
 import { useAdminAuth } from '@/providers/AdminAuthProvider';
 import { AdminRole } from '@mad/shared';
+import { Modal, EmptyState } from '@mad/ui';
+import { LayoutList } from '@mad/ui/icons';
 
 export default function SettingsPage() {
   const { admin } = useAdminAuth();
   const queryClient = useQueryClient();
-  const [activeTab, setActiveTab] = useState<'categories' | 'tiers'>('categories');
   const canMutateSettings = !!admin?.role && [AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.MANAGER].includes(admin.role as AdminRole);
   const [nameInput, setNameInput] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState('');
   const [error, setError] = useState('');
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
 
   // Categories Queries
   const { data: categories = [], isLoading: loadingCategories } = useQuery({
@@ -52,93 +53,52 @@ export default function SettingsPage() {
     onError: (err) => setError(extractApiError(err).message),
   });
 
-  // Tiers Queries
-  const { data: tiers = [], isLoading: loadingTiers } = useQuery({
-    queryKey: ['adminTiers'],
-    queryFn: adminGetTiers,
-  });
-
-  const createTierMutation = useMutation({
-    mutationFn: adminCreateTier,
-    onSuccess: () => {
-      setNameInput('');
-      queryClient.invalidateQueries({ queryKey: ['adminTiers'] });
-    },
-    onError: (err) => setError(extractApiError(err).message),
-  });
-
-  const updateTierMutation = useMutation({
-    mutationFn: ({ id, payload }: { id: string; payload: Partial<AdminTier> }) => adminUpdateTier(id, payload),
-    onSuccess: () => {
-      setEditingId(null);
-      queryClient.invalidateQueries({ queryKey: ['adminTiers'] });
-    },
-    onError: (err) => setError(extractApiError(err).message),
-  });
-
-  const deleteTierMutation = useMutation({
-    mutationFn: adminDeleteTier,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['adminTiers'] });
-    },
-    onError: (err) => setError(extractApiError(err).message),
-  });
-
   const handleAdd = (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     if (!nameInput.trim()) return;
-
-    if (activeTab === 'categories') {
-      createCategoryMutation.mutate({ name: nameInput.trim() });
-    } else {
-      createTierMutation.mutate({ name: nameInput.trim() });
-    }
+    createCategoryMutation.mutate({ name: nameInput.trim() });
   };
 
   const handleSaveEdit = (id: string) => {
     setError('');
     if (!editingName.trim()) return;
-
-    if (activeTab === 'categories') {
-      updateCategoryMutation.mutate({ id, payload: { name: editingName.trim() } });
-    } else {
-      updateTierMutation.mutate({ id, payload: { name: editingName.trim() } });
-    }
+    updateCategoryMutation.mutate({ id, payload: { name: editingName.trim() } });
   };
 
   const handleDelete = (id: string) => {
-    if (!confirm('Are you sure you want to delete this configuration? Past events and bookings using it will remain preserved.')) return;
-    setError('');
-    if (activeTab === 'categories') {
-      deleteCategoryMutation.mutate(id);
-    } else {
-      deleteTierMutation.mutate(id);
-    }
+    setDeleteTargetId(id);
   };
 
-  const items = activeTab === 'categories' ? categories : tiers;
-  const isLoading = activeTab === 'categories' ? loadingCategories : loadingTiers;
+  const confirmDelete = () => {
+    if (!deleteTargetId) return;
+    setError('');
+    deleteCategoryMutation.mutate(deleteTargetId);
+    setDeleteTargetId(null);
+  };
 
   const renderListContent = () => {
-    if (isLoading) {
+    if (loadingCategories) {
       return (
         <div className="p-12 text-center text-text-muted text-sm animate-pulse">Loading list...</div>
       );
     }
 
-    if (items.length === 0) {
+    if (categories.length === 0) {
       return (
-        <div className="p-12 text-center text-text-muted text-sm capitalize">
-          No custom {activeTab} defined yet. Add one on the left!
-        </div>
+        <EmptyState
+          variant="card"
+          icon={<LayoutList />}
+          title="No custom categories defined yet."
+          description="Add one on the left!"
+        />
       );
     }
 
     return (
       <div className="divide-y divide-border-subtle/50">
         <AnimatePresence>
-          {(items as (AdminCategory | AdminTier)[]).map((item) => (
+          {categories.map((item) => (
             <motion.div
               key={item._id}
               initial={{ opacity: 0 }}
@@ -200,36 +160,13 @@ export default function SettingsPage() {
     <div className="max-w-4xl mx-auto space-y-8">
       <div>
         <h1 className="text-2xl font-black text-white">System Settings</h1>
-        <p className="text-text-muted text-sm mt-0.5">Manage dynamic Event Categories and Ticket Tiers visually</p>
-      </div>
-
-      {/* Tabs */}
-      <div className="flex border-b border-border-subtle">
-        <button
-          onClick={() => { setActiveTab('categories'); setError(''); setEditingId(null); }}
-          className={`px-6 py-3 font-semibold text-sm transition-all border-b-2 -mb-[2px] ${
-            activeTab === 'categories'
-              ? 'border-accent-purple text-accent-purple-light'
-              : 'border-transparent text-text-secondary hover:text-text-primary'
-          }`}
-        >
-          Event Categories
-        </button>
-        <button
-          onClick={() => { setActiveTab('tiers'); setError(''); setEditingId(null); }}
-          className={`px-6 py-3 font-semibold text-sm transition-all border-b-2 -mb-[2px] ${
-            activeTab === 'tiers'
-              ? 'border-accent-purple text-accent-purple-light'
-              : 'border-transparent text-text-secondary hover:text-text-primary'
-          }`}
-        >
-          Ticket Tiers
-        </button>
+        <p className="text-text-muted text-sm mt-0.5">Manage dynamic Event Categories visually</p>
       </div>
 
       {/* Error */}
       {error && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+          aria-live="polite"
           className="px-4 py-3 bg-error/10 border border-error/30 rounded-xl text-sm text-red-400">
           {error}
         </motion.div>
@@ -239,21 +176,21 @@ export default function SettingsPage() {
         {/* Quick Add Form */}
         {canMutateSettings && (
           <div className="glass rounded-2xl border border-border-subtle p-6 space-y-4">
-            <h2 className="text-white font-semibold capitalize">Add Custom {activeTab === 'categories' ? 'Category' : 'Tier'}</h2>
+            <h2 className="text-white font-semibold">Add Custom Category</h2>
             <form onSubmit={handleAdd} className="space-y-4">
               <div>
-                <label className="text-text-secondary text-xs font-semibold block mb-1.5 capitalize">{activeTab === 'categories' ? 'Category' : 'Tier'} Name</label>
+                <label className="text-text-secondary text-xs font-semibold block mb-1.5">Category Name</label>
                 <input
                   value={nameInput}
                   onChange={(e) => setNameInput(e.target.value)}
-                  placeholder={activeTab === 'categories' ? 'e.g. Pool Party' : 'e.g. VIP Backstage'}
+                  placeholder="e.g. Pool Party"
                   required
                   className="w-full px-4 py-2.5 rounded-xl bg-background border border-border-subtle text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-purple transition-colors"
                 />
               </div>
               <button
                 type="submit"
-                disabled={createCategoryMutation.isPending || createTierMutation.isPending}
+                disabled={createCategoryMutation.isPending}
                 className="w-full py-2.5 btn-gradient text-white text-sm font-bold rounded-xl shadow-glow-sm disabled:opacity-60 transition-all"
               >
                 Add Entry
@@ -262,18 +199,47 @@ export default function SettingsPage() {
           </div>
         )}
 
-        {/* Categories/Tiers List */}
+        {/* Categories List */}
         <div className={`${canMutateSettings ? 'md:col-span-2' : 'md:col-span-3'} glass rounded-2xl border border-border-subtle overflow-hidden`}>
           <div className="px-6 py-4 border-b border-border-subtle flex justify-between items-center">
-            <h2 className="text-white font-semibold capitalize">Active {activeTab}</h2>
+            <h2 className="text-white font-semibold">Active Categories</h2>
             <span className="text-xs bg-accent-purple/10 text-accent-purple-light font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">
-              {items.length} {activeTab === 'categories' ? 'Total' : 'Tiers'}
+              {categories.length} Total
             </span>
           </div>
 
           {renderListContent()}
         </div>
       </div>
+
+      <Modal
+        isOpen={!!deleteTargetId}
+        onClose={() => setDeleteTargetId(null)}
+        size="sm"
+        showCloseButton={false}
+        closeOnBackdropClick={true}
+        ariaLabelledBy="delete-category-modal-title"
+        className="glass-strong border border-border-subtle p-6 max-w-sm"
+      >
+        <h2 id="delete-category-modal-title" className="text-white font-bold text-lg mb-2">Delete Configuration?</h2>
+        <p className="text-text-secondary text-sm mb-5">
+          Are you sure you want to delete this configuration? Past events and bookings using it will remain preserved.
+        </p>
+        <div className="flex gap-3">
+          <button
+            onClick={() => setDeleteTargetId(null)}
+            className="flex-1 py-2.5 glass border border-border-subtle rounded-xl text-sm font-medium text-text-secondary hover:text-white transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={confirmDelete}
+            className="flex-1 py-2.5 bg-error/80 hover:bg-error rounded-xl text-white text-sm font-medium transition-colors"
+          >
+            Delete
+          </button>
+        </div>
+      </Modal>
     </div>
   );
 }

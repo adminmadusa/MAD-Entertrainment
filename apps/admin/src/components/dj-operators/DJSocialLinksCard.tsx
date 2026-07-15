@@ -1,8 +1,9 @@
 import React from 'react';
 
-import { Field } from './DJBasicInfoCard';
 import { Input } from '@mad/ui';
-import { DJSocialLinksCardProps } from './types';
+
+import { Field } from './DJBasicInfoCard';
+import type { DJSocialLinksCardProps } from './utils';
 
 export const DJSocialLinksCard: React.FC<DJSocialLinksCardProps> = ({
   instagram,

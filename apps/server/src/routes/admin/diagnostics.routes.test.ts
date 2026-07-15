@@ -77,7 +77,7 @@ vi.mock('../../utils/logger', () => ({
 
 // ─── Import AFTER mocks are registered ────────────────────────
 import router from './diagnostics.routes';
-import { requireAdmin, requireSuperAdmin } from '../../middleware/auth.middleware';
+import { requireSuperAdmin } from '../../middleware/auth.middleware';
 import { adminLimiter } from '../../middleware/rate.middleware';
 import * as controller from '../../controllers/admin/diagnostics.controller';
 

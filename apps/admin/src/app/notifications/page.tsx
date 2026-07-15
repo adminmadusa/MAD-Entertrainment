@@ -6,7 +6,8 @@ import { useState } from 'react';
 import { adminGetNotifications, adminRetryNotification } from '@/lib/api/admin/notification.service';
 import { useAdminAuth } from '@/providers/AdminAuthProvider';
 import { AdminRole } from '@mad/shared';
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, ErrorState } from '@mad/ui';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, ErrorState, EmptyState } from '@mad/ui';
+import { Send, Search } from '@mad/ui/icons';
 
 export default function AdminNotificationsPage() {
   const { admin } = useAdminAuth();
@@ -52,8 +53,13 @@ export default function AdminNotificationsPage() {
     if (notifications.length === 0) {
       return (
         <TableRow>
-          <TableCell colSpan={6} className="py-16 text-center text-text-muted">
-            No transmission logs found.
+          <TableCell colSpan={6} className="py-8">
+            <EmptyState
+              variant="table"
+              icon={channelFilter !== '' || statusFilter !== '' ? <Search /> : <Send />}
+              title={channelFilter !== '' || statusFilter !== '' ? "No results match your search." : "No transmission logs found."}
+              description={channelFilter !== '' || statusFilter !== '' ? "Try changing your filters." : undefined}
+            />
           </TableCell>
         </TableRow>
       );

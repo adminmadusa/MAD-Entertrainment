@@ -311,7 +311,7 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center p-12 bg-transparent">
+      <div className="flex items-center justify-center p-12 bg-transparent" role="status" aria-live="polite">
         <div className="text-white/40 animate-pulse text-sm">Loading checkout...</div>
       </div>
     );
@@ -449,8 +449,8 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
 
       {/* Sticky Place Order Footer (Mobile Only) */}
       {!viewport.isKeyboardOpen && (
-        <div className={isModal ? "sticky bottom-0 z-40 bg-background/95 border-t border-white/10 py-3 mt-8 shadow-2xl lg:hidden" : "fixed bottom-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-lg border-t border-white/10 shadow-2xl lg:hidden"}>
-          <div className="container-mad max-w-4xl px-4 py-3 pb-[calc(1rem+env(safe-area-inset-bottom))] flex items-center gap-4">
+        <div className={isModal ? "sticky bottom-0 z-40 bg-background/95 border-t border-white/10 py-2 mt-4 shadow-2xl lg:hidden" : "fixed bottom-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-lg border-t border-white/10 shadow-2xl lg:hidden"}>
+          <div className={`container-mad max-w-4xl px-4 flex items-center gap-4 ${isModal ? 'py-2' : 'py-3 pb-[calc(1rem+env(safe-area-inset-bottom))]'}`}>
             <div className="flex-1">
               <div className="text-[10px] text-text-muted font-semibold uppercase tracking-wider">Total Amount</div>
               <div className="text-white font-black text-lg">₹{booking.totalAmount}</div>
@@ -470,7 +470,7 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
       {/* Payment Processing Loader Backdrop */}
       <AnimatePresence>
         {isProcessing && (
-          <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex flex-col items-center justify-center z-[100] space-y-4">
+          <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex flex-col items-center justify-center z-[100] space-y-4" role="status" aria-live="assertive">
             <div className="w-12 h-12 rounded-full border-4 border-accent-purple border-t-transparent animate-spin" />
             <p className="text-white font-bold text-sm tracking-wider">Verifying payment with bank servers...</p>
             <p className="text-text-muted text-xs">Please do not refresh this page.</p>

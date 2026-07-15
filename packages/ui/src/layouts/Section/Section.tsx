@@ -1,7 +1,8 @@
 import React, { forwardRef } from 'react';
+
 import { cn } from '../../lib/cn';
-import { SectionProps } from './Section.types';
 import { sectionBaseClasses, sectionSpacings } from './Section.styles';
+import type { SectionProps } from './Section.types';
 
 export const Section = forwardRef<HTMLElement, SectionProps>(
   ({ className, spacing = 'md', 'aria-label': ariaLabel, ...props }, ref) => {

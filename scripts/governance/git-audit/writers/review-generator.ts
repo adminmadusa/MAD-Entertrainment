@@ -9,8 +9,6 @@
 import fs from 'fs';
 import path from 'path';
 import { RegisteredBranch } from '../models/registry';
-import { BranchLifecycleState } from '../../platform/contracts';
-
 const DECISIONS_PATH = '/Users/admin/Desktop/MAD Entertrainment/.agents/branch_review_decisions.md';
 
 interface ReviewDecision {

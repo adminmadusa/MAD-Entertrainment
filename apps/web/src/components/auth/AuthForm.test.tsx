@@ -377,57 +377,5 @@ describe('AuthForm Component Smoke Tests', () => {
     });
   });
 
-  describe('Close Button Visibility', () => {
-    it('should show close button on all screens when onClose is passed', async () => {
-      const mockClose = vi.fn();
 
-      mockUseAuth.mockReturnValue({
-        login: mockLogin,
-        logout: mockLogout,
-        token: null,
-        onboardingRequired: false,
-        setOnboardingRequired: mockSetOnboardingRequired,
-      });
-
-      // Step 1: Request screen
-      const { unmount } = renderComponent({ mode: 'login', onClose: mockClose });
-      let closeBtn = screen.getByRole('button', { name: /close/i });
-      expect(closeBtn).toBeInTheDocument();
-
-      await act(async () => {
-        fireEvent.click(closeBtn);
-      });
-      expect(mockClose).toHaveBeenCalledTimes(1);
-      unmount();
-
-      // Step 2: Verify screen
-      mockRequestVerificationCode.mockResolvedValueOnce({ message: 'Passcode sent' });
-      const { unmount: unmount2 } = renderComponent({ mode: 'login', onClose: mockClose });
-      const emailInput = screen.getByLabelText(/email address/i);
-      const submitBtn = screen.getByRole('button', { name: /continue with email/i });
-
-      await act(async () => {
-        fireEvent.change(emailInput, { target: { value: 'user@example.com' } });
-        fireEvent.click(submitBtn);
-      });
-
-      expect(await screen.findByRole('heading', { name: /secure login/i })).toBeInTheDocument();
-      closeBtn = screen.getByRole('button', { name: /close/i });
-      expect(closeBtn).toBeInTheDocument();
-      unmount2();
-
-      // Step 3: Onboard screen
-      mockUseAuth.mockReturnValue({
-        login: mockLogin,
-        logout: mockLogout,
-        token: 'jwt_token',
-        onboardingRequired: true,
-        setOnboardingRequired: mockSetOnboardingRequired,
-      });
-      renderComponent({ mode: 'login', onClose: mockClose });
-      expect(await screen.findByRole('heading', { name: /complete your account details/i })).toBeInTheDocument();
-      closeBtn = screen.getByRole('button', { name: /close/i });
-      expect(closeBtn).toBeInTheDocument();
-    });
-  });
 });

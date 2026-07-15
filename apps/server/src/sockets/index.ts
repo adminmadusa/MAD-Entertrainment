@@ -6,7 +6,6 @@ import { Socket } from 'socket.io';
 import { SeatStatus } from '@mad/shared';
 
 import { getRedis } from '../config/redis';
-import { AppError } from '../middleware/error.middleware';
 import { Booking } from '../models/booking.schema';
 import { SeatLayout } from '../models/seat-layout.schema';
 import { PublicBookingService } from '../services/public/booking.service';

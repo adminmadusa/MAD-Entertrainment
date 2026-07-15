@@ -83,4 +83,8 @@ refundSchema.index(
   { sparse: true, name: 'idx_refund_gateway_refund_id' }
 );
 
+refundSchema.index({ amount: 1 });
+refundSchema.index({ status: 1, createdAt: -1 });
+refundSchema.index({ createdAt: -1 });
+
 export const Refund = model<IRefund>('Refund', refundSchema);

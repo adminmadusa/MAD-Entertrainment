@@ -3,10 +3,9 @@ import { collectWorktrees } from './collectors/worktrees';
 import { collectDanglingCommitsCount } from './collectors/commits';
 import { collectTagsForBranch } from './collectors/tags';
 import { analyzeAiOsStack } from './analyzers/stack-analysis';
-import { checkReachableFromDevelop, checkReachableFromLive, checkReachableFromRemediation } from './analyzers/ancestry';
+import { checkReachableFromDevelop, checkReachableFromRemediation } from './analyzers/ancestry';
 import { analyzePatchEquivalence } from './analyzers/patch-equivalence';
 import { analyzeDuplicateBranches } from './analyzers/duplicates';
-import { determineLifecycleState } from './analyzers/lifecycle';
 import { analyzeHealthScore } from './analyzers/health-score';
 import { isProtectedBranch } from './validators/protection-validator';
 import { validateDeletionPolicy } from './validators/deletion-validator';
@@ -42,7 +41,6 @@ function main() {
 
   // Check the specific deletion gates for the AI OS Stack Tip (Phase 20)
   const phase20Local = rawBranches.find(b => b.name === 'feat/ai-os-phase-20-task-engine');
-  const phase20RemoteExists = rawBranches.some(b => b.name === 'origin/feat/ai-os-phase-20-task-engine');
   
   let isPhase20Merged = false;
   let isPhase20Active = false;
@@ -64,7 +62,6 @@ function main() {
 
     // Ancestry / Reachability
     const isMerged = checkReachableFromDevelop(name);
-    const reachableFromLive = checkReachableFromLive(name);
     const remediationIntegrated = checkReachableFromRemediation(name);
 
     // Squash Merged / Patch Equivalence
@@ -213,13 +210,13 @@ function main() {
     const v = rb.verification;
     const state = rb.lifecycleState;
 
-    let action = 'Keep';
-    let status: 'Execute Now' | 'Pending' | 'Blocked' = 'Blocked';
-    let risk: 'Low' | 'Medium' | 'High' | 'N/A' = 'N/A';
-    let reason = 'Protected or active development branch';
-    let preconditions: string[] = [];
-    let rollbackStrategy = 'N/A';
-    let estimatedEffort = 'N/A';
+    let action: string;
+    let status: 'Execute Now' | 'Pending' | 'Blocked';
+    let risk: 'Low' | 'Medium' | 'High' | 'N/A';
+    let reason: string;
+    let preconditions: string[];
+    let rollbackStrategy: string;
+    let estimatedEffort: string;
     let shellCommand = '';
     
     // Evaluate strict deletion policy

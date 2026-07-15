@@ -9,6 +9,7 @@
   - [REPOSITORY_GOVERNANCE.md](REPOSITORY_GOVERNANCE.md)
   - [AGENTS.MD](AGENTS.MD)
   - [CONTRIBUTING.md](CONTRIBUTING.md)
+  - [Governance Registry](docs/governance/REGISTRY.md)
 
 ---
 
@@ -112,11 +113,7 @@ Avoid introducing overlapping governance checks when existing tooling already co
 
 ## Backlog & Audit Tracking
 
-Repository audit findings, technical debt, governance findings, and future improvements are tracked in:
-
-* [docs/TODO-AUDIT-FIXES.md](docs/TODO-AUDIT-FIXES.md)
-
-Backlog items must not interrupt an active implementation task unless there is a critical production issue.
+Repository audit findings, technical debt, and governance findings are tracked under active GitHub issues.
 
 ---
 
@@ -145,4 +142,3 @@ seo/<task-name>
 Do not commit directly to protected branches.
 
 For contribution guidelines, see [CONTRIBUTING.md](CONTRIBUTING.md).
-

@@ -1,6 +1,7 @@
-import { PackageManagerAdapter } from './PackageManagerAdapter';
 import { readFileSync, writeFileSync, existsSync } from 'fs';
 import { join } from 'path';
+
+import { PackageManagerAdapter } from './PackageManagerAdapter';
 
 export class PnpmAdapter implements PackageManagerAdapter {
   async getWorkspaceVersion(rootPath: string): Promise<string> {

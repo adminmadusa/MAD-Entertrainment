@@ -1,7 +1,8 @@
-import 'dotenv/config';
 import { connectDatabase, disconnectDatabase } from '../src/config/database';
 import { AdminModel } from '../src/models/admin.schema';
 import { logger } from '../src/utils/logger';
+
+import 'dotenv/config';
 
 async function runMigration() {
   logger.info('🚀 Starting Admin Role Casing Normalization Migration...');

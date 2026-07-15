@@ -1,11 +1,11 @@
-import { Server } from 'http';
-import { Server as SocketIOServer } from 'socket.io';
 import crypto from 'crypto';
+import { Server } from 'http';
+
+import { Server as SocketIOServer } from 'socket.io';
 
 import { registerAdminSocketHandlers, registerSocketHandlers } from '../sockets';
 import { verifyAdminToken, verifySessionToken, verifyUserToken, extractBearerToken } from '../utils/jwt';
 import { logger } from '../utils/logger';
-import { getEnv } from './env';
 import { isOriginAllowed } from '../utils/origin-validator';
 
 let io: SocketIOServer | undefined;

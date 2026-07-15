@@ -40,6 +40,7 @@ export const governanceConfig = {
     excludedPaths: [
       'scripts/governance',
       '.agents',
+      'docs/archive',
     ] as string[],
     documentationExclusions: [
       'docs/archive',
@@ -76,12 +77,16 @@ export const governanceConfig = {
       '.agents/AGENTS.md',
       'docs/decisions/README.md',
       'docs/decisions/ADR_INDEX.md',
-      'docs/decisions/ADR_TEMPLATE.md'
+      'docs/decisions/ADR_TEMPLATE.md',
+      'docs/governance/REGISTRY.md'
     ],
     duplicateThreshold: {
       error: 95,
       warn: 85
     },
+    duplicateExclusions: [
+      'docs/governance/rules'
+    ],
     // Configuration location for rule enforcement levels.
     // Promotion from WARN to FAIL_BUILD will happen after successful validation.
     enforcement: {

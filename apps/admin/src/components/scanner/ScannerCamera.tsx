@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
+
 import { useHtml5QrScanner } from '../../hooks/useHtml5QrScanner';
 
 interface ScannerCameraProps {
@@ -88,56 +89,19 @@ export function ScannerCamera({ isOffline, onScan, scannerState }: ScannerCamera
         }
       `}</style>
 
-      {/* Header and Controls */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-lg font-bold text-white flex items-center gap-2">
-            <span className="w-2.5 h-2.5 bg-accent-purple rounded-full animate-pulse" />
-            Live Scan Stream
-          </h2>
-          <p className="text-text-muted text-xs mt-1">
-            {isOffline ? 'Running in Offline Cache Mode' : 'Connected to Gate Validation API'}
-          </p>
-        </div>
-
-        {/* Camera Selector & Fullscreen Toggle */}
-        <div className="flex items-center gap-3">
-          {devices.length > 0 && (
-            <div className="flex items-center gap-2">
-              <label htmlFor="camera-select" className="text-xs text-text-secondary font-medium">Camera:</label>
-              <select
-                id="camera-select"
-                value={selectedDeviceId}
-                onChange={(e) => switchCamera(e.target.value)}
-                className="bg-background border border-border-subtle text-white text-xs rounded-lg px-2.5 py-1.5 focus:border-accent-purple focus:ring-1 focus:ring-accent-purple outline-none"
-              >
-                {devices.map((device) => (
-                  <option key={device.id} value={device.id}>
-                    {device.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
-
-          {/* Fullscreen Trigger */}
-          <button
-            onClick={toggleFullscreen}
-            type="button"
-            className="p-1.5 rounded-lg border border-white/10 hover:border-white/20 bg-white/5 text-white/80 hover:text-white transition-all"
-            title={isFullscreen ? 'Exit Full Screen' : 'Enter Full Screen'}
-          >
-            {isFullscreen ? (
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 14h6v6m10-6h-6v6M4 10h6V4m10 6h-6V4"/></svg>
-            ) : (
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
-            )}
-          </button>
-        </div>
+      {/* Header */}
+      <div>
+        <h2 className="text-lg font-bold text-white flex items-center gap-2">
+          <span className="w-2.5 h-2.5 bg-accent-purple rounded-full animate-pulse" />
+          Live Scan Stream
+        </h2>
+        <p className="text-text-muted text-xs mt-1">
+          {isOffline ? 'Running in Offline Cache Mode' : 'Connected to Gate Validation API'}
+        </p>
       </div>
 
-      {/* Media Window Container */}
-      <div className="relative aspect-square w-full max-w-md mx-auto overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-background via-[#0f111a] to-background-card flex flex-col items-center justify-center shadow-inner">
+      {/* Media Window Container (aspect-square on desktop, aspect-[3/4] on mobile) */}
+      <div className="relative aspect-[3/4] sm:aspect-square w-full max-w-md mx-auto overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-background via-[#0f111a] to-background-card flex flex-col items-center justify-center shadow-inner">
         {/* html5-qrcode target preview */}
         <div
           id={containerId}
@@ -172,7 +136,7 @@ export function ScannerCamera({ isOffline, onScan, scannerState }: ScannerCamera
                   <button
                     onClick={startScanner}
                     type="button"
-                    className="mt-4 px-6 py-3 bg-accent-purple hover:bg-accent-purple-light text-white text-xs font-bold rounded-xl shadow-glow-sm transition-all hover:scale-[1.02] active:scale-[0.98] flex items-center gap-2"
+                    className="mt-4 px-6 py-3.5 min-h-[44px] bg-accent-purple hover:bg-accent-purple-light text-white text-xs font-bold rounded-xl shadow-glow-sm transition-all hover:scale-[1.02] active:scale-[0.98] flex items-center gap-2 focus-ring"
                   >
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3" /></svg>
                     Start Camera Scan
@@ -202,7 +166,7 @@ export function ScannerCamera({ isOffline, onScan, scannerState }: ScannerCamera
               <span className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-emerald-400 rounded-tr-xl" />
               <span className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-emerald-400 rounded-bl-xl" />
               <span className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-emerald-400 rounded-br-xl" />
-              
+
               {/* Animation scanner horizontal line */}
               <div className="absolute inset-x-2 top-0 h-[3px] bg-gradient-to-r from-transparent via-emerald-400 to-transparent shadow-[0_0_8px_#10b981] rounded-full scanner-line" />
             </div>
@@ -212,34 +176,74 @@ export function ScannerCamera({ isOffline, onScan, scannerState }: ScannerCamera
         )}
       </div>
 
-      {/* Scanner Controls (Torch, Pause/Resume) */}
-      {isScanning && (
-        <div className="flex justify-center items-center gap-4">
-          {hasTorch && (
+      {/* Relocated controls below the camera feed */}
+      <div className="flex flex-col gap-4 pt-2">
+        {/* Device Selectors & Fullscreen Trigger (when cameras are available) */}
+        {devices.length > 0 && (
+          <div className="flex items-center justify-between gap-3 w-full max-w-md mx-auto">
+            <div className="flex items-center gap-2 flex-grow">
+              <label htmlFor="camera-select" className="text-xs text-text-secondary font-bold uppercase tracking-wider">Camera:</label>
+              <select
+                id="camera-select"
+                value={selectedDeviceId}
+                onChange={(e) => switchCamera(e.target.value)}
+                className="flex-grow bg-background border border-border-subtle text-white text-xs rounded-xl px-4 py-3 min-h-[44px] focus-ring outline-none transition-all"
+              >
+                {devices.map((device) => (
+                  <option key={device.id} value={device.id}>
+                    {device.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Fullscreen Trigger */}
             <button
-              onClick={toggleTorch}
-              className={`p-3 rounded-xl border transition-all ${
-                isTorchOn
-                  ? 'bg-amber-500/20 border-amber-500/50 text-amber-400'
-                  : 'bg-white/5 border-white/10 text-text-muted hover:text-white'
-              }`}
-              title="Toggle Flashlight"
+              onClick={toggleFullscreen}
+              type="button"
+              className="p-3 min-h-[44px] min-w-[44px] rounded-xl border border-white/10 hover:border-white/20 bg-white/5 text-white/80 hover:text-white transition-all flex items-center justify-center focus-ring"
+              title={isFullscreen ? 'Exit Full Screen' : 'Enter Full Screen'}
             >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 2H9v12h6z"/><path d="M12 14v8"/></svg>
+              {isFullscreen ? (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 14h6v6m10-6h-6v6M4 10h6V4m10 6h-6V4"/></svg>
+              ) : (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+              )}
             </button>
-          )}
-          <button
-            onClick={stopScanner}
-            className="px-4 py-2 bg-red-500/15 border border-red-500/30 text-red-400 text-xs font-semibold rounded-lg hover:bg-red-500/25 transition-all"
-          >
-            Pause Camera
-          </button>
-        </div>
-      )}
+          </div>
+        )}
+
+        {/* Torch and Pause Scanner controls */}
+        {isScanning && (
+          <div className="flex justify-center items-center gap-3 w-full max-w-md mx-auto">
+            {hasTorch && (
+              <button
+                onClick={toggleTorch}
+                type="button"
+                className={`p-3 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl border transition-all focus-ring ${
+                  isTorchOn
+                    ? 'bg-amber-500/20 border-amber-500/50 text-amber-400'
+                    : 'bg-white/5 border-white/10 text-text-muted hover:text-white'
+                }`}
+                title="Toggle Flashlight"
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 2H9v12h6z"/><path d="M12 14v8"/></svg>
+              </button>
+            )}
+            <button
+              onClick={stopScanner}
+              type="button"
+              className="flex-1 py-3 px-4 min-h-[44px] bg-red-500/15 border border-red-500/30 text-red-400 text-xs font-bold rounded-xl hover:bg-red-500/25 transition-all focus-ring"
+            >
+              Pause Camera
+            </button>
+          </div>
+        )}
+      </div>
 
       {/* Manual Input Fallback */}
-      <form onSubmit={handleManualSubmit} className="pt-2 border-t border-white/5">
-        <label htmlFor="manual-entry" className="block text-xs font-semibold text-text-secondary mb-2 uppercase tracking-wider">
+      <form onSubmit={handleManualSubmit} className="pt-4 border-t border-white/5 space-y-2">
+        <label htmlFor="manual-entry" className="block text-xs font-bold text-text-secondary mb-2 uppercase tracking-wider">
           Manual Code / Keyboard Scanner Entry
         </label>
         <div className="flex gap-2">
@@ -249,13 +253,13 @@ export function ScannerCamera({ isOffline, onScan, scannerState }: ScannerCamera
             value={manualCode}
             onChange={(e) => setManualCode(e.target.value)}
             placeholder="Enter Ticket ID (e.g. TKT-XXXX-XXX)"
-            className="flex-1 bg-background border border-border-subtle rounded-xl px-4 py-2.5 text-white text-xs font-mono focus:border-accent-purple focus:ring-1 focus:ring-accent-purple outline-none transition-all"
+            className="flex-1 bg-background border border-border-subtle rounded-xl px-4 py-3 min-h-[44px] text-xs font-mono focus-ring outline-none transition-all"
             autoComplete="off"
           />
           <button
             type="submit"
             disabled={!manualCode.trim() || scannerState === 'Processing'}
-            className="px-5 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 text-white text-xs font-bold rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-6 py-3 min-h-[44px] bg-white/5 hover:bg-white/10 border border-white/10 text-white text-xs font-bold rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed focus-ring"
           >
             Submit
           </button>

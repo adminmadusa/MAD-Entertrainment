@@ -1,4 +1,4 @@
-import { BookingStatus, TicketTier, EventCategory, BookingMode, EventStatus, PaymentStatus, EventMemoryPublicationState } from '@mad/shared';
+import { BookingStatus, TicketTier, EventCategory, BookingMode, EventStatus, PaymentStatus } from '@mad/shared';
 
 export type ApiError = {
   message: string;
@@ -89,15 +89,6 @@ export type TicketOverride = {
   minPerBooking?: number;
 };
 
-export type EventMemoryConfig = {
-  publicationState: EventMemoryPublicationState;
-  heading?: string;
-  thankYouMessage?: string;
-  highlights?: string[];
-  gallery: (ImageAsset & { order: number })[];
-  publishedAt?: string | Date;
-};
-
 export type Event = {
   _id: string;
   title: string;
@@ -110,9 +101,9 @@ export type Event = {
   showTime?: string;
   venue: string;
   startDate: string | Date;
+  endDate?: string | Date;
   bannerImage?: ImageAsset;
   posterImage?: ImageAsset;
-  galleryImages?: ImageAsset[];
   djOperatorIds?: string[];
   ticketTiers: TicketTierConfig[];
   isSoldOut?: boolean;
@@ -139,7 +130,6 @@ export type Event = {
   showCountdown?: boolean;
   isEarlyBird?: boolean;
   earlyBirdDeadline?: string | Date;
-  memories?: EventMemoryConfig | null;
 };
 
 export type Seat = {
@@ -433,4 +423,83 @@ export interface JwtPayload {
   iss?: string;
   aud?: string;
   [key: string]: unknown;
+}
+
+export interface BulkOperationResult {
+  successCount: number;
+  failedCount: number;
+  results: {
+    id: string;
+    status: 'success' | 'failed';
+    reason?: string;
+  }[];
+}
+
+export interface BulkActionConfig<TId = string> {
+  id: string;
+  label: string;
+  icon?: unknown;
+  variant?: 'default' | 'destructive';
+  disabled?: boolean;
+  requireConfirmation?: boolean;
+  confirmationMessage?: string;
+  loadingLabel?: string;
+  successLabel?: string;
+  permission?: string;
+  danger?: boolean;
+}
+
+export interface BulkActionResult {
+  actionId: string;
+  successCount: number;
+  failedCount: number;
+  results: { id: string; status: 'success' | 'failed'; reason?: string }[];
+}
+
+export interface BulkProgress {
+  actionId: string;
+  total: number;
+  completed: number;
+  failed: number;
+}
+
+export enum MediaType {
+  IMAGE = 'IMAGE',
+  VIDEO = 'VIDEO',
+}
+
+export enum MediaVisibility {
+  PUBLIC = 'PUBLIC',
+  PRIVATE = 'PRIVATE',
+}
+
+export interface EventGalleryItem {
+  id: string;
+  eventId: string;
+  mediaType: MediaType;
+  url: string;
+  publicId: string;
+  thumbnail?: string;
+  caption?: string;
+  sortOrder: number;
+  isCover: boolean;
+  visibility: MediaVisibility;
+  uploadedBy?: string;
+  assetProvider: string;
+  assetVersion?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface EventGallerySettings {
+  id: string;
+  eventId: string;
+  heading?: string;
+  thankYouMessage?: string;
+  highlights?: string[];
+  published: boolean;
+  publishedAt?: string;
+  publishedBy?: string;
+  createdAt: string;
+  updatedAt: string;
 }

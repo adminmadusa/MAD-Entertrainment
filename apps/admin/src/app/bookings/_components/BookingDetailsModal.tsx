@@ -1,9 +1,8 @@
 'use client';
 
-import { Modal } from '@mad/ui';
-
 import { AdminBooking } from '@/lib/api/admin/booking.service';
 import { BookingStatus, getBookingStatusLabel } from '@mad/shared';
+import { Modal } from '@mad/ui';
 import { formatDateTime, formatEventDate } from '@mad/utils';
 
 const STATUS_COLORS: Record<string, string> = {

@@ -1,7 +1,8 @@
 import { Router } from 'express';
+
+import { uploadImage, deleteUpload } from '../../controllers/admin/upload.controller';
 import { requireAdmin } from '../../middleware/auth.middleware';
 import { uploadMiddleware } from '../../middleware/upload.middleware';
-import { uploadImage, deleteUpload } from '../../controllers/admin/upload.controller';
 import { validate } from '../../middleware/validation.middleware';
 import { deleteUploadSchema } from '../../validations/admin-content.validation';
 

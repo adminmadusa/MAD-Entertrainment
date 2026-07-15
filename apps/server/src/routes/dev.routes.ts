@@ -1,8 +1,8 @@
 import { Router } from 'express';
 
 import { getEnv } from '../config/env';
-import { verifyTransporter } from '../utils/email.js';
 import { requireAdmin } from '../middleware/auth.middleware';
+import { verifyTransporter } from '../utils/email.js';
 
 const router: Router = Router();
 

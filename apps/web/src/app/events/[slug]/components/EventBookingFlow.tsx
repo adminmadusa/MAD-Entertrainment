@@ -30,8 +30,6 @@ export const EventBookingFlow = forwardRef<EventBookingFlowHandle, EventBookingF
     const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState(false);
     const [checkoutBookingId, setCheckoutBookingId] = useState<string | null>(null);
 
-
-
     useImperativeHandle(ref, () => ({
       openBooking: () => setIsBookingModalOpen(true),
     }));
@@ -82,20 +80,12 @@ export const EventBookingFlow = forwardRef<EventBookingFlowHandle, EventBookingF
           isOpen={isBookingModalOpen}
           onClose={() => setIsBookingModalOpen(false)}
           size="lg"
-          showCloseButton={false}
+          showCloseButton={true}
+          presentation="bottom-sheet"
           closeOnBackdropClick={true}
           ariaLabelledBy="booking-modal-title"
-          className="w-full h-full md:h-[650px] max-w-4xl bg-background md:rounded-2xl border border-white/10 overflow-hidden relative flex flex-col md:flex-row shadow-2xl z-10 focus:outline-none p-0"
+          className="md:h-[650px] max-w-4xl bg-background md:rounded-2xl border border-white/10 overflow-hidden relative flex flex-col md:flex-row shadow-2xl z-10 focus:outline-none p-0"
         >
-              {/* Close button */}
-              <button
-                type="button"
-                onClick={() => setIsBookingModalOpen(false)}
-                aria-label="Close ticket selection modal"
-                className="absolute right-4 top-4 w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center text-text-secondary hover:text-white transition-colors z-20 focus:outline-none focus:ring-2 focus:ring-accent-purple"
-              >
-                ✕
-              </button>
 
               {/* Left Panel: Ticket selection */}
               <div className="w-full md:w-3/5 p-6 md:p-8 flex flex-col h-full border-r border-white/5 bg-background overflow-hidden">
@@ -126,7 +116,7 @@ export const EventBookingFlow = forwardRef<EventBookingFlowHandle, EventBookingF
                 </div>
 
                 {/* Modal Sticky Bottom Action Footer */}
-                <div className="border-t border-white/10 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] mt-4 flex items-center justify-between bg-background shrink-0">
+                <div className="border-t border-white/10 pt-4 pb-4 mt-4 flex items-center justify-between bg-background shrink-0">
                   {modalFooterBadge}
                   <button
                     type="button"
@@ -213,9 +203,10 @@ export const EventBookingFlow = forwardRef<EventBookingFlowHandle, EventBookingF
           }}
           size="lg"
           showCloseButton={false}
+          presentation="bottom-sheet"
           closeOnBackdropClick={true}
           ariaLabelledBy="checkout-modal-title"
-          className="w-full h-full md:max-h-[95vh] max-w-4xl bg-background md:rounded-2xl border border-white/10 overflow-y-auto shadow-2xl relative z-10 p-6 custom-scrollbar focus:outline-none"
+          className="md:max-h-[95vh] max-w-4xl bg-background md:rounded-2xl border border-white/10 overflow-y-auto shadow-2xl relative z-10 p-6 custom-scrollbar focus:outline-none"
         >
               <CheckoutContent
                 bookingId={checkoutBookingId}

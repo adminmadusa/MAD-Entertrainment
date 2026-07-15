@@ -5,11 +5,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { useState } from 'react';
 
-import { adminGetEvents, adminDeleteEvent, type AdminEvent } from '@/lib/api/admin/event.service';
+import { adminGetEvents, adminDeleteEvent, adminBulkDeleteEvents, adminDuplicateEvent, adminUpdateEvent, type AdminEvent } from '@/lib/api/admin/event.service';
 import { extractApiError } from '@/lib/api/client';
 import { useAdminAuth } from '@/providers/AdminAuthProvider';
-import { EVENT_STATUS_METADATA, type EventStatus, AdminRole } from '@mad/shared';
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@mad/ui';
+import { EVENT_STATUS_METADATA, EVENT_STATUS_TRANSITIONS, EventStatus, AdminRole } from '@mad/shared';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, Modal, FloatingActionBar, EmptyState, Checkbox, useBulkSelection } from '@mad/ui';
+import { CalendarDays, Search } from '@mad/ui/icons';
 import { formatEventDate } from '@mad/utils';
 
 const EVENT_STATUS_FILTER_OPTIONS = Object.entries(EVENT_STATUS_METADATA);
@@ -27,6 +28,15 @@ export default function AdminEventsPage() {
   const [page, setPage] = useState(1);
   const [deleteTarget, setDeleteTarget] = useState<AdminEvent | null>(null);
 
+  const [toastMessage, setToastMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+  // Optimistic status overrides keyed by event ID
+  const [optimisticStatuses, setOptimisticStatuses] = useState<Record<string, EventStatus>>({});
+
+  const showToast = (type: 'success' | 'error', text: string) => {
+    setToastMessage({ type, text });
+    setTimeout(() => setToastMessage(null), 4000);
+  };
+
   const [sortField, setSortField] = useState<'title' | 'category' | 'startDate' | 'status' | null>(null);
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
@@ -40,9 +50,12 @@ export default function AdminEventsPage() {
   };
 
   const { data, isLoading } = useQuery({
-    queryKey: ['admin-events', { page, search, status: statusFilter }],
-    queryFn: () => adminGetEvents({ page, limit: 15, search, status: statusFilter }),
+    queryKey: ['admin-events', { page, search, status: statusFilter, sortField, sortOrder }],
+    queryFn: () => adminGetEvents({ page, limit: 15, search, status: statusFilter, ...(sortField && { sortField }), ...(sortOrder && { sortOrder }) }),
   });
+
+  const eventIds = (Array.isArray(data?.items) ? data?.items : []).map((e) => e._id);
+  const { selectedIds, selectedCount, isSelected, toggle, selectAll, clearSelection, allSelected, indeterminate } = useBulkSelection({ pageIds: eventIds });
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => adminDeleteEvent(id),
@@ -52,24 +65,55 @@ export default function AdminEventsPage() {
     },
   });
 
+  const duplicateMutation = useMutation({
+    mutationFn: (id: string) => adminDuplicateEvent(id, {}, Date.now().toString()),
+    onSuccess: (data) => {
+      qc.invalidateQueries({ queryKey: ['admin-events'] });
+      showToast('success', 'Event duplicated successfully');
+    },
+    onError: (err: any) => {
+      showToast('error', err.response?.data?.message || 'Failed to duplicate event');
+    }
+  });
+
+  const statusUpdateMutation = useMutation({
+    mutationFn: ({ id, status, eventVersion }: { id: string; status: EventStatus; eventVersion: number }) =>
+      adminUpdateEvent(id, { status, eventVersion }),
+    onMutate: ({ id, status }) => {
+      // Optimistic update
+      setOptimisticStatuses((prev) => ({ ...prev, [id]: status }));
+    },
+    onSuccess: (_, { id }) => {
+      qc.invalidateQueries({ queryKey: ['admin-events'] });
+      setOptimisticStatuses((prev) => { const next = { ...prev }; delete next[id]; return next; });
+      showToast('success', 'Event status updated');
+    },
+    onError: (err: any, { id }) => {
+      // Rollback optimistic update
+      setOptimisticStatuses((prev) => { const next = { ...prev }; delete next[id]; return next; });
+      showToast('error', err.response?.data?.message || 'Failed to update event status');
+    },
+  });
+
+  const bulkDeleteMutation = useMutation({
+    mutationFn: (ids: string[]) => adminBulkDeleteEvents(ids),
+    onSuccess: (data) => {
+      qc.invalidateQueries({ queryKey: ['admin-events'] });
+      clearSelection();
+      const { successCount, failedCount } = data;
+      if (failedCount > 0) {
+        showToast('error', `Deleted ${successCount} events. ${failedCount} failed.`);
+      } else {
+        showToast('success', `Deleted ${successCount} events successfully.`);
+      }
+    },
+    onError: (err: any) => {
+      showToast('error', err.response?.data?.message || 'Failed to bulk delete events');
+    }
+  });
+
   const events = Array.isArray(data?.items) ? data?.items : [];
   const pagination = data?.pagination;
-
-  const sortedEvents = [...events].sort((a, b) => {
-    if (!sortField) return 0;
-    const aVal = a[sortField] ?? '';
-    const bVal = b[sortField] ?? '';
-    if (typeof aVal === 'string' && typeof bVal === 'string') {
-      const aStr = aVal.toLowerCase();
-      const bStr = bVal.toLowerCase();
-      if (aStr < bStr) return sortOrder === 'asc' ? -1 : 1;
-      if (aStr > bStr) return sortOrder === 'asc' ? 1 : -1;
-      return 0;
-    }
-    if (aVal < bVal) return sortOrder === 'asc' ? -1 : 1;
-    if (aVal > bVal) return sortOrder === 'asc' ? 1 : -1;
-    return 0;
-  });
 
   const renderTableBody = () => {
     if (isLoading) {
@@ -85,25 +129,40 @@ export default function AdminEventsPage() {
       ));
     }
 
-    if (sortedEvents.length === 0) {
+    if (events.length === 0) {
+      const isFiltered = search.trim() !== '' || statusFilter !== '';
       return (
         <TableRow>
-          <TableCell colSpan={6} className="py-16 text-center text-text-muted">
-            No events found.{' '}
-            <Link href="/events/new" className="text-accent-purple hover:underline">
-              Create one →
-            </Link>
+          <TableCell colSpan={6} className="py-8">
+            <EmptyState
+              variant="table"
+              icon={isFiltered ? <Search /> : <CalendarDays />}
+              title={isFiltered ? "No results match your search." : "No events created yet."}
+              description={isFiltered ? "Try changing your filters or search criteria." : undefined}
+              action={!isFiltered ? (
+                <Link href="/events/new" className="px-4 py-2 mt-2 text-sm font-medium text-white bg-accent-purple hover:bg-accent-purple/90 rounded-xl transition-colors">
+                  Create Event
+                </Link>
+              ) : undefined}
+            />
           </TableCell>
         </TableRow>
       );
     }
 
-    return sortedEvents.map((event) => {
+    return events.map((event) => {
       const statusMeta = getEventStatusMeta(event.status);
 
       return (
         <TableRow key={event._id} className="border-b border-border-subtle/40 hover:bg-white/2 transition-colors">
-          <TableCell className="py-4 px-5">
+          <TableCell sticky="start" className="py-4 px-5">
+            <Checkbox
+              checked={isSelected(event._id)}
+              onChange={() => toggle(event._id)}
+              aria-label={`Select event ${event.title}`}
+            />
+          </TableCell>
+          <TableCell sticky="start" stickyOffset="3rem" showStickyDivider className="py-4 px-5">
             <div className="flex items-center gap-3">
               {event.bannerImage?.url ? (
                 // eslint-disable-next-line @next/next/no-img-element
@@ -136,17 +195,40 @@ export default function AdminEventsPage() {
             )}
           </TableCell>
           <TableCell className="py-4 px-4">
-            {statusMeta ? (
-              <span className={`text-xs px-2.5 py-1 rounded-full border font-medium ${statusMeta.className}`}>
-                {statusMeta.label}
-              </span>
-            ) : event.status ? (
-              <span className="text-xs px-2.5 py-1 rounded-full border font-medium border-border-subtle text-text-muted">
-                {event.status.replace('_', ' ')}
-              </span>
-            ) : (
-              <span className="text-xs px-2.5 py-1 rounded-full border border-yellow-500/30 bg-yellow-500/10 text-yellow-400 font-semibold animate-pulse inline-flex items-center gap-1">
-                ⚠️ Missing Status
+            {canMutateEvents && event.status ? (() => {
+              const currentStatus = optimisticStatuses[event._id] ?? event.status as EventStatus;
+              const currentMeta = EVENT_STATUS_METADATA[currentStatus];
+              const allowedTransitions = EVENT_STATUS_TRANSITIONS[currentStatus] ?? [];
+              const isPending = statusUpdateMutation.isPending && statusUpdateMutation.variables?.id === event._id;
+              return (
+                <select
+                  id={`status-select-${event._id}`}
+                  value={currentStatus}
+                  disabled={isPending || allowedTransitions.length === 0}
+                  onChange={(e) => {
+                    const newStatus = e.target.value as EventStatus;
+                    statusUpdateMutation.mutate({ id: event._id, status: newStatus, eventVersion: event.eventVersion ?? 1 });
+                  }}
+                  aria-label={`Change status for ${event.title}`}
+                  className={`text-xs px-2.5 py-1 rounded-full border font-medium cursor-pointer bg-transparent appearance-none pr-5 disabled:opacity-60 disabled:cursor-not-allowed transition-colors ${
+                    currentMeta?.className ?? 'border-border-subtle text-text-muted'
+                  }`}
+                  style={{ backgroundImage: 'none' }}
+                >
+                  {/* Current status always present */}
+                  <option value={currentStatus}>{currentMeta?.label ?? currentStatus}</option>
+                  {allowedTransitions.map((s) => (
+                    <option key={s} value={s}>
+                      {EVENT_STATUS_METADATA[s]?.label ?? s}
+                    </option>
+                  ))}
+                </select>
+              );
+            })() : (
+              <span className={`text-xs px-2.5 py-1 rounded-full border font-medium ${
+                statusMeta?.className ?? 'border-border-subtle text-text-muted'
+              }`}>
+                {statusMeta?.label ?? event.status?.replace('_', ' ') ?? '⚠️ Missing'}
               </span>
             )}
           </TableCell>
@@ -158,7 +240,7 @@ export default function AdminEventsPage() {
               ★
             </span>
           </TableCell>
-          <TableCell className="py-4 px-5">
+          <TableCell sticky="end" showStickyDivider className="py-4 px-5">
             {canMutateEvents ? (
               <div className="flex items-center justify-end gap-2">
                 <Link
@@ -167,6 +249,13 @@ export default function AdminEventsPage() {
                 >
                   Edit
                 </Link>
+                <button
+                  onClick={() => duplicateMutation.mutate(event._id)}
+                  disabled={duplicateMutation.isPending}
+                  className="px-3 py-1.5 text-xs font-medium glass border border-border-subtle rounded-lg text-text-secondary hover:text-white hover:border-brand-primary/40 transition-all disabled:opacity-50"
+                >
+                  Duplicate
+                </button>
                 <button
                   onClick={() => setDeleteTarget(event)}
                   className="px-3 py-1.5 text-xs font-medium glass border border-border-subtle rounded-lg text-text-muted hover:text-red-400 hover:border-red-500/40 transition-all"
@@ -228,9 +317,17 @@ export default function AdminEventsPage() {
       {/* Table */}
       <div className="glass rounded-2xl border border-border-subtle overflow-hidden">
         <Table>
-          <TableHeader>
+          <TableHeader stickyHeader>
             <TableRow>
-              <TableHead onClick={() => handleSort('title')} className="py-3.5 px-5 cursor-pointer hover:text-white transition-colors select-none">
+              <TableHead sticky="start" className="py-3.5 px-5 w-12">
+                <Checkbox
+                  checked={allSelected}
+                  indeterminate={indeterminate}
+                  onChange={() => allSelected ? clearSelection() : selectAll()}
+                  aria-label="Select all events on this page"
+                />
+              </TableHead>
+              <TableHead sticky="start" stickyOffset="3rem" showStickyDivider onClick={() => handleSort('title')} className="py-3.5 px-5 cursor-pointer hover:text-white transition-colors select-none">
                 Event {sortField === 'title' ? (sortOrder === 'asc' ? '▲' : '▼') : ''}
               </TableHead>
               <TableHead onClick={() => handleSort('category')} className="py-3.5 px-4 cursor-pointer hover:text-white transition-colors select-none">
@@ -243,7 +340,7 @@ export default function AdminEventsPage() {
                 Status {sortField === 'status' ? (sortOrder === 'asc' ? '▲' : '▼') : ''}
               </TableHead>
               <TableHead className="py-3.5 px-4">Featured</TableHead>
-              <TableHead className="py-3.5 px-5 text-right">Actions</TableHead>
+              <TableHead sticky="end" showStickyDivider className="py-3.5 px-5 text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -278,45 +375,67 @@ export default function AdminEventsPage() {
       </div>
 
       {/* Delete Confirm Modal */}
-      <AnimatePresence>
+      <Modal
+        isOpen={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        size="sm"
+        showCloseButton={false}
+        closeOnBackdropClick={true}
+        ariaLabelledBy="delete-event-modal-title"
+        className="glass-strong border border-border-subtle p-6 max-w-sm"
+      >
         {deleteTarget && (
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="glass-strong rounded-2xl border border-border-subtle p-6 max-w-sm w-full"
-            >
-              <h2 className="text-white font-bold text-lg mb-2">Delete Event?</h2>
-              <p className="text-text-secondary text-sm mb-1">
-                <strong className="text-white">{deleteTarget.title}</strong> will be permanently deleted
-                along with its Cloudinary images.
-              </p>
-              <p className="text-error text-xs mb-5">This action cannot be undone.</p>
-              {deleteMutation.error && (
-                <p className="text-red-400 text-xs mb-3">{extractApiError(deleteMutation.error).message}</p>
-              )}
-              <div className="flex gap-3">
-                <button
-                  onClick={() => setDeleteTarget(null)}
-                  className="flex-1 py-2.5 glass border border-border-subtle rounded-xl text-sm font-medium text-text-secondary hover:text-white transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={() => deleteMutation.mutate(deleteTarget._id)}
-                  disabled={deleteMutation.isPending}
-                  className="flex-1 py-2.5 bg-error/80 hover:bg-error rounded-xl text-white text-sm font-medium transition-colors disabled:opacity-60"
-                >
-                  {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
-                </button>
-              </div>
-            </motion.div>
+          <div>
+            <h2 id="delete-event-modal-title" className="text-white font-bold text-lg mb-2">Delete Event?</h2>
+            <p className="text-text-secondary text-sm mb-1">
+              <strong className="text-white">{deleteTarget.title}</strong> will be permanently deleted
+              along with its Cloudinary images.
+            </p>
+            <p className="text-error text-xs mb-5">This action cannot be undone.</p>
+            {deleteMutation.error && (
+              <p className="text-red-400 text-xs mb-3">{extractApiError(deleteMutation.error).message}</p>
+            )}
+            <div className="flex gap-3">
+              <button
+                onClick={() => setDeleteTarget(null)}
+                className="flex-1 py-2.5 glass border border-border-subtle rounded-xl text-sm font-medium text-text-secondary hover:text-white transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => deleteMutation.mutate(deleteTarget._id)}
+                disabled={deleteMutation.isPending}
+                className="flex-1 py-2.5 bg-error/80 hover:bg-error rounded-xl text-white text-sm font-medium transition-colors disabled:opacity-60"
+              >
+                {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
+              </button>
+            </div>
           </div>
         )}
-      </AnimatePresence>
+      </Modal>
 
 
+
+      <FloatingActionBar
+        selectedCount={selectedCount}
+        onClearSelection={clearSelection}
+      >
+        <button
+          onClick={() => bulkDeleteMutation.mutate(Array.from(selectedIds))}
+          disabled={bulkDeleteMutation.isPending}
+          className="px-4 py-2 text-sm font-semibold bg-error/80 hover:bg-error text-white rounded-lg transition-colors disabled:opacity-50"
+        >
+          {bulkDeleteMutation.isPending ? 'Deleting...' : 'Delete Selected'}
+        </button>
+      </FloatingActionBar>
+
+      {toastMessage && (
+        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-bottom-2 fade-in">
+          <div className={`px-4 py-3 rounded-xl shadow-elevation-high border ${toastMessage.type === 'success' ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400' : 'bg-error/10 border-error/30 text-red-400'}`}>
+            {toastMessage.text}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

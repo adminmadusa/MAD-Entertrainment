@@ -4,15 +4,12 @@ import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 import { publicGetDJs } from '@/lib/api/public.service';
 import { SearchIcon } from '@mad/ui';
 
 export default function DJsPage() {
-  const router = useRouter();
-
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
 

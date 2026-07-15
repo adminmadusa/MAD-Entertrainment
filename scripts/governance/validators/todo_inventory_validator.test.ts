@@ -4,7 +4,7 @@ import { TodoInventoryValidator } from './todo_inventory_validator';
 
 vi.mock('../core/ast_parser_cache', () => ({
   FileContentCache: {
-    get: vi.fn(),
+    getFileContent: vi.fn(),
   },
 }));
 
@@ -13,7 +13,7 @@ vi.mock('../core/governance.config', () => ({
 }));
 
 import { FileContentCache } from '../core/ast_parser_cache';
-const mockGet = vi.mocked(FileContentCache.get);
+const mockGetFileContent = vi.mocked(FileContentCache.getFileContent);
 
 describe('TodoInventoryValidator', () => {
   let validator: TodoInventoryValidator;
@@ -24,7 +24,7 @@ describe('TodoInventoryValidator', () => {
   });
 
   it('should pass when all TODOs have a ticket reference', async () => {
-    mockGet.mockReturnValue(`
+    mockGetFileContent.mockReturnValue(`
 // TODO(#123): fix the payment edge case
 // FIXME(#456): remove this workaround after upgrade
 const x = 1;
@@ -38,7 +38,7 @@ const x = 1;
   });
 
   it('should pass when TODO has owner attribution', async () => {
-    mockGet.mockReturnValue(`
+    mockGetFileContent.mockReturnValue(`
 // TODO(@platform-team): refactor this once auth is migrated
     `);
 
@@ -48,7 +48,7 @@ const x = 1;
   });
 
   it('should pass when TODO has a Jira/Linear ticket reference', async () => {
-    mockGet.mockReturnValue(`
+    mockGetFileContent.mockReturnValue(`
 // TODO(MAD-1234): migrate to new queue system
     `);
 
@@ -58,7 +58,7 @@ const x = 1;
   });
 
   it('should warn on bare TODO with no reference', async () => {
-    mockGet.mockReturnValue(`
+    mockGetFileContent.mockReturnValue(`
 // TODO: fix this later
     `);
 
@@ -71,7 +71,7 @@ const x = 1;
   });
 
   it('should warn on bare FIXME', async () => {
-    mockGet.mockReturnValue(`
+    mockGetFileContent.mockReturnValue(`
 // FIXME
     `);
 
@@ -82,7 +82,7 @@ const x = 1;
   });
 
   it('should warn on bare HACK comment', async () => {
-    mockGet.mockReturnValue(`
+    mockGetFileContent.mockReturnValue(`
 // HACK: temporary workaround for now
     `);
 
@@ -93,7 +93,7 @@ const x = 1;
 
   it('should NOT warn on XXXXX booking reference placeholders', async () => {
     // These are format strings in documentation, not technical debt
-    mockGet.mockReturnValue(`
+    mockGetFileContent.mockReturnValue(`
 // Format: MAD-YYYY-XXXXX
 const ref = 'MAD-2026-XXXXX';
 placeholder = 'TKT-XXXX-XXX...';
@@ -106,7 +106,7 @@ placeholder = 'TKT-XXXX-XXX...';
   });
 
   it('should not fail CI (Phase 1 — success is always true)', async () => {
-    mockGet.mockReturnValue(`
+    mockGetFileContent.mockReturnValue(`
 // TODO: undocumented technical debt
 // FIXME: another undocumented item
     `);
@@ -120,7 +120,7 @@ placeholder = 'TKT-XXXX-XXX...';
   });
 
   it('should exclude test files', async () => {
-    mockGet.mockReturnValue(`// TODO: undocumented`);
+    mockGetFileContent.mockReturnValue(`// TODO: undocumented`);
 
     const result = await validator.run(
       ['apps/server/src/service.test.ts'],
@@ -132,7 +132,7 @@ placeholder = 'TKT-XXXX-XXX...';
   });
 
   it('should exclude files in excluded paths', async () => {
-    mockGet.mockReturnValue(`// TODO: undocumented`);
+    mockGetFileContent.mockReturnValue(`// TODO: undocumented`);
 
     const result = await validator.run(
       ['scripts/governance/validators/some_validator.ts'],
@@ -143,7 +143,7 @@ placeholder = 'TKT-XXXX-XXX...';
   });
 
   it('should report the correct line number', async () => {
-    mockGet.mockReturnValue(`const a = 1;
+    mockGetFileContent.mockReturnValue(`const a = 1;
 const b = 2;
 // TODO: fix this
 const c = 3;`);

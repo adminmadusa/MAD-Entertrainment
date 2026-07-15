@@ -1,7 +1,7 @@
 import { ReleasePreparation } from '../../models/ReleasePreparation';
 import { ReleaseResult } from '../../models/ReleaseResult';
-import { GitService } from '../GitService';
 import { GitTagService } from '../git/GitTagService';
+import { GitService } from '../GitService';
 import { ChangelogService } from './ChangelogService';
 import { VersionService } from './VersionService';
 
@@ -22,11 +22,11 @@ export class ReleaseService {
   async prepare(version: string, defaultBranch: string): Promise<ReleasePreparation> {
     const currentVersion = await this.versionService.getCurrentVersion();
     const commits = await this.git.getCommitMessages(defaultBranch);
-    
+
     // Generate release notes
     const changelog = await this.changelogService.generate(defaultBranch, 'HEAD');
     const changedPackages = await this.versionService.getWorkspacePackages();
-    
+
     const warnings: string[] = [];
     if (commits.length === 0) {
       warnings.push('No commit diffs detected on current branch relative to default base.');
@@ -80,11 +80,11 @@ ${prep.changelog}
 
   async execute(prep: ReleasePreparation, dryRun: boolean): Promise<ReleaseResult> {
     const bumpedPackages = await this.versionService.bump(prep.version, dryRun);
-    
+
     if (!dryRun) {
       // Commit version bump changes
       await this.git.commit(`chore(release): release v${prep.version}`);
-      
+
       // Tag commits
       for (const tag of prep.tagsToCreate) {
         await this.tagService.createTag(tag, `Release version ${prep.version}`, false);

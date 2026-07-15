@@ -1,8 +1,8 @@
 # API Stability Policy
 
-**Owner:** Platform  
-**Status:** Active  
-**Since:** @mad/ui v1.2.0  
+**Owner:** Platform
+**Status:** Active
+**Since:** @mad/ui v1.2.0
 **Last Reviewed:** 2026-07-06
 
 ---
@@ -95,6 +95,6 @@ Phase 4 will introduce CI gates that:
 
 ## References
 
-- [Component Manifest Schema](../../.governance/baselines/)
-- [CHANGELOG.md](../../../../CHANGELOG.md)
+- [Component Manifest Schema](../../../.governance/baselines/)
+- [CHANGELOG.md](../../../CHANGELOG.md)
 - [THEME_CONTRACT.md](./THEME_CONTRACT.md)

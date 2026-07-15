@@ -1,5 +1,5 @@
-import { Command } from './command';
 import { Renderer } from '../renderers/Renderer';
+import { Command } from './command';
 
 export interface PluginBuilder {
   registerCommand(command: Command): void;

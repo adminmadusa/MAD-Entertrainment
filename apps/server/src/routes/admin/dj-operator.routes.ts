@@ -1,9 +1,11 @@
 import { Router } from 'express';
+
 import { AdminRole } from '@mad/shared';
+
 import * as djOperatorController from '../../controllers/admin/dj-operator.controller';
+import { requireAdmin, requireRole } from '../../middleware/auth.middleware';
 import { validate } from '../../middleware/validation.middleware';
 import { adminIdParamSchema, createDJOperatorSchema, updateDJOperatorSchema } from '../../validations/admin-content.validation';
-import { requireAdmin, requireRole } from '../../middleware/auth.middleware';
 
 const router: Router = Router();
 

@@ -39,7 +39,7 @@ export class CommandRegistry {
     if (this.nameMap.has(meta.name)) {
       throw new Error(`Duplicate command name registered: ${meta.name}`);
     }
-    
+
     this.commands.set(meta.id, command);
     this.nameMap.set(meta.name, meta.id);
 

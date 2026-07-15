@@ -1,8 +1,10 @@
 'use client';
 
 import React from 'react';
+
 import { EVENT_CATEGORY_LABELS } from '@mad/shared';
 import { FormField, Input, Textarea } from '@mad/ui';
+
 import { inputCls } from './constants';
 
 interface EventBasicInfoSectionProps {

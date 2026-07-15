@@ -1,4 +1,5 @@
 import { Router } from 'express';
+
 import * as teamController from '../../controllers/admin/team.controller';
 import { requireAdmin, requireSuperAdmin } from '../../middleware/auth.middleware';
 import { validate } from '../../middleware/validation.middleware';

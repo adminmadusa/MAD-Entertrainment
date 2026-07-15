@@ -17,9 +17,9 @@ import {
 import { requireAdmin, requireSuperAdmin } from '../../middleware/auth.middleware';
 import { adminLimiter } from '../../middleware/rate.middleware';
 import { validateQuery, validateParams } from '../../middleware/validation.middleware';
+import { listDlqQuerySchema } from '../../validations/diagnostics.validation';
 import { listReservationsQuerySchema, retryFailedJobParamSchema } from '../../validations/payment.validation';
 import { queueNameParamSchema } from '../../validations/queue.validation';
-import { listDlqQuerySchema } from '../../validations/diagnostics.validation';
 
 const router: Router = Router();
 

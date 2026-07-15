@@ -1,4 +1,4 @@
-import { Notification, INotification } from '../models/notification.schema';
+import { Notification } from '../models/notification.schema';
 import { auditLog } from '../utils/audit';
 
 /**

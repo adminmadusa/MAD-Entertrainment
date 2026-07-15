@@ -1,6 +1,7 @@
 import React, { forwardRef } from 'react';
+
 import { cn } from '../../lib/cn';
-import { ScrollIndicatorProps } from './ScrollIndicator.types';
+import type { ScrollIndicatorProps } from './ScrollIndicator.types';
 
 export const ScrollIndicator = forwardRef<HTMLDivElement, ScrollIndicatorProps>(
   ({ className, ...props }, ref) => {

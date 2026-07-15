@@ -20,7 +20,7 @@
 
 import { execSync } from 'child_process';
 import { existsSync, mkdirSync, readdirSync, statSync, writeFileSync } from 'fs';
-import { join, relative } from 'path';
+import { join } from 'path';
 
 // ─── Configuration ─────────────────────────────────────────────────────────────
 

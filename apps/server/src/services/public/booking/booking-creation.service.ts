@@ -1,7 +1,9 @@
 import crypto from 'crypto';
+
 import { Types } from 'mongoose';
+
 import { BookingStatus, BookingMode, ReservationStatus, SeatStatus } from '@mad/shared';
-import { getEnv } from '../../../config/env';
+
 import { getRedis } from '../../../config/redis';
 import { emitToAdmin, emitToEvent } from '../../../config/socket';
 import { AppError } from '../../../middleware/error.middleware';
@@ -10,13 +12,13 @@ import { Coupon } from '../../../models/coupon.schema';
 import { Event } from '../../../models/event.schema';
 import { IReservation } from '../../../models/reservation.schema';
 import { SeatLayout } from '../../../models/seat-layout.schema';
-import { UserModel } from '../../../models/user.schema';
 import { auditLog } from '../../../utils/audit';
 import { logger } from '../../../utils/logger';
 import { runInTransaction } from '../../../utils/transaction';
 import { ReservationService } from '../../reservation.service';
-import { CreateBookingRequest, SaveCheckoutRequest } from './booking.types';
+import { canBook } from '@mad/shared';
 import { BookingAccessService } from './booking-access.service';
+import type { CreateBookingRequest, SaveCheckoutRequest } from './booking.types';
 
 export class BookingCreationService {
   static generateSelectionFingerprint(data: {
@@ -194,12 +196,9 @@ export class BookingCreationService {
     let totalGst = 0;
     const finalTickets: any[] = [];
 
-    // Check event start/end date constraints
+    // Check event ticket sales closure constraints
     const now = new Date();
-    if (now >= new Date(event.startDate)) {
-      throw AppError.badRequest('This event is no longer available for booking.');
-    }
-    if (event.endDate && now > new Date(event.endDate)) {
+    if (!canBook(event as any)) {
       throw AppError.badRequest('This event is no longer available for booking.');
     }
 
@@ -521,7 +520,7 @@ export class BookingCreationService {
       throw err;
     }
 
-    const { reservations, allSeatIds, reservationBySeat, postCommitCallbacks } = txResult;
+    const { allSeatIds, postCommitCallbacks } = txResult;
 
     // Side effects (Redis lock release, WebSocket emissions, Cache invalidation, and Audit logging) run strictly outside the transaction boundary.
     if (event.bookingMode === BookingMode.SEAT_BASED) {

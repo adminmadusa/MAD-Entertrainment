@@ -1,7 +1,6 @@
 import axios from 'axios';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-import { getEnv } from '../config/env';
 import { auditLog } from './audit';
 import { sendViaZeptoMail } from './zeptomail';
 

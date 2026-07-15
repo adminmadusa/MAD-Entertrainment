@@ -1,6 +1,6 @@
 import { Metadata, ResolvingMetadata } from 'next';
 
-import { getCachedDJ } from '@/utils/cached-dj';
+import { getCachedDJ } from '@/utils/cache-fetcher';
 import { buildBreadcrumbJsonLd, SITE_URL } from '@/utils/seo';
 
 import DJDetailClient from './DjDetailClient';

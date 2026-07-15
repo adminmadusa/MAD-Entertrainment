@@ -19,7 +19,7 @@
 import mongoose from 'mongoose';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-import { BookingStatus, PaymentStatus, ReservationStatus } from '@mad/shared';
+import { BookingStatus, PaymentStatus } from '@mad/shared';
 
 import { getEnv } from '../../config/env';
 import { Booking } from '../../models/booking.schema';
@@ -626,7 +626,6 @@ describe('TEST-001 — confirmBooking Transaction Integration', () => {
         status: BookingStatus.CONFIRMED,
         paymentId, // same payment won
       };
-      const alreadyConfirmedDoc = { ...booking, status: BookingStatus.CONFIRMED, paymentId };
 
       vi.mocked(Payment.findOne).mockResolvedValue(payment as any);
       vi.mocked(Event.findById).mockResolvedValue(event as any);

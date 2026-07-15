@@ -21,10 +21,12 @@
     "test": "echo 'No tests configured for UI library'"
   },
   "dependencies": {
+    "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.511.0",
     "react": "^19.0.0",
-    "tailwind-merge": "^3.3.1"
+    "tailwind-merge": "^3.3.1",
+    "@mad/types": "workspace:*"
   },
   "devDependencies": {
     "@types/react": "^19.0.4",

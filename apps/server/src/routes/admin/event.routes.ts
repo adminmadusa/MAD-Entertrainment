@@ -1,9 +1,13 @@
 import { Router } from 'express';
+
 import { AdminRole } from '@mad/shared';
+
 import * as eventController from '../../controllers/admin/event.controller';
-import { validate } from '../../middleware/validation.middleware';
-import { adminEventsQuerySchema, adminIdParamSchema, createEventSchema, updateEventSchema } from '../../validations/admin-content.validation';
 import { requireAdmin, requireRole } from '../../middleware/auth.middleware';
+import { validate } from '../../middleware/validation.middleware';
+import { adminEventsQuerySchema, adminIdParamSchema, createEventSchema, updateEventSchema, adminBulkIdsSchema } from '../../validations/admin-content.validation';
+
+import eventGalleryRouter from './event-gallery.routes';
 
 const router: Router = Router();
 
@@ -14,7 +18,11 @@ router.post('/', requireRole(AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.M
 router.get('/', validate(adminEventsQuerySchema), eventController.getEvents);
 router.get('/:id', validate(adminIdParamSchema), eventController.getEventById);
 router.put('/:id', requireRole(AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.MANAGER), validate(updateEventSchema), eventController.updateEvent);
-router.post('/:id/preview-token', requireRole(AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.MANAGER), validate(adminIdParamSchema), eventController.getPreviewToken);
+
+router.post('/:id/duplicate', requireRole(AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.MANAGER), validate(adminIdParamSchema), eventController.duplicateEvent);
 router.delete('/:id', requireRole(AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.MANAGER), validate(adminIdParamSchema), eventController.deleteEvent);
+router.post('/bulk/delete', requireRole(AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.MANAGER), validate(adminBulkIdsSchema), eventController.bulkDeleteEvents);
+
+router.use('/:eventId/gallery', eventGalleryRouter);
 
 export default router;

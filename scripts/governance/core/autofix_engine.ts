@@ -1,6 +1,6 @@
 // scripts/governance/core/autofix_engine.ts
 import { existsSync, readFileSync } from 'fs';
-import { relative, resolve } from 'path';
+import { resolve } from 'path';
 
 import { AuditEngine } from './audit_engine';
 import type { AutoFixObserver } from './autofix_observer';

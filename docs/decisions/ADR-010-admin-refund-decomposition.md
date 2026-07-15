@@ -3,6 +3,7 @@
 ## Metadata
 - **Status**: Implemented
 - **Date**: 2026-07-06
+- **Owner**: Architecture Review Board
 - **Authors**: Antigravity AI Pair
 - **Reviewers**: Repository Governance Owner
 - **Decision Category**: Architecture | Admin Services
@@ -63,13 +64,13 @@ graph TD
     Facade --> Gateway[RefundGatewayService]
     Facade --> Notify[RefundNotificationService]
     Facade --> Audit[RefundAuditService]
-    
+
     %% Infrastructure Layer
     Gateway --> Stripe[Stripe SDK]
     Gateway --> Razor[Razorpay Client]
-    
+
     Notify --> Queue[QueueService / Notification Queue]
-    
+
     %% Domain Layer
     Life --> DB[Mongoose Models: Refund, Payment, Booking]
     Life --> BookingService[Admin BookingService - cancelBooking]
@@ -131,21 +132,37 @@ Admin refunds require two separate database transactions (due to the blocking na
 ### `RefundAuditService`
 * **Justification**: Standardizes audit structures (actor, metadata, descriptions) for compliance tracking.
 
----
+## Alternatives Considered
+- **Option A: Single monolithic file**: Rejected. Sizing boundaries exceed the preferred limits for active maintenance.
+- **Option B: Subfolders inside admin controller**: Rejected. It couples database lifecycle states with HTTP controller instances.
 
-## 6. Incremental Refactoring Roadmap
+## Consequences
+- **Pros**: Clear single-responsibility services, isolated transaction boundaries, high cohesion.
+- **Cons**: Introduce helper orchestration complexity.
 
-To ensure zero downtime and reviewable change sizes, we will execute this refactoring in six incremental stages:
+## Technical & Operational Impact
 
-1. **Stage 1 (This Stage)**: Discovery & Planning (ADR committed, no code changes).
-2. **Stage 2**: Extract validation logic into `RefundValidationService`.
-3. **Stage 3**: Extract gateway adapters into `RefundGatewayService`.
-4. **Stage 4**: Extract email notification generation into `RefundNotificationService`.
-5. **Stage 5**: Extract audit logging/Sentry mappings into `RefundAuditService`.
-6. **Stage 6**: Refactor `refund.service.ts` into a lightweight facade coordination layer.
+### Migration Strategy
+This refactor will happen incrementally over 6 stages mapping boundaries, extracting validation, lifecycles, and final integration.
 
----
+### Operational Impact
+Reduces administrative errors and provides precise diagnostic logs on transaction failover.
 
-## Verification Strategy
-- Run full typecheck and linting suites.
-- Target all admin refund tests: `vitest run apps/server/src/services/admin/booking.service.test.ts`.
+### Security Impact
+Enforces strict superAdmin validation locks in database services.
+
+### Performance Impact
+Ensures fast database lock releases by separating long-running external API dispatch calls from database scopes.
+
+### Testing Strategy
+Verified by administrative refund unit test suite: `vitest run apps/server/src/services/admin/booking.service.test.ts`.
+
+### Rollback Strategy
+Any database transaction issues can be rolled back by reverting the coordination layer facade changes.
+
+## Future Considerations
+Enforce similar state machine facades for bookings and seating locking mechanisms.
+
+## References
+- [ADR-009-payment-refund-decomposition.md](ADR-009-payment-refund-decomposition.md)
+- [REPOSITORY_GOVERNANCE.md](../../REPOSITORY_GOVERNANCE.md)

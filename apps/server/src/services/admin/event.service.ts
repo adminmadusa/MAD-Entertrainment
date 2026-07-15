@@ -1,6 +1,6 @@
 import type { FilterQuery } from 'mongoose';
 
-import { EventStatus, EVENT_STATUS_TRANSITIONS, type EventLifecycleStatus, EventMemoryPublicationState } from '@mad/shared';
+import { EventStatus, EVENT_STATUS_TRANSITIONS, type EventLifecycleStatus, type BulkOperationResult, EVENT_DUPLICATION_POLICY } from '@mad/shared';
 
 import { AppError } from '../../middleware/error.middleware';
 import { Booking } from '../../models/booking.schema';
@@ -14,8 +14,7 @@ import { resolveEventTickets } from './ticket-profile.service';
 
 export const validateEventImagesPayload = (
   bannerImage?: { publicId?: string; hash?: string },
-  posterImage?: { publicId?: string; hash?: string },
-  galleryImages?: { publicId?: string; hash?: string }[]
+  posterImage?: { publicId?: string; hash?: string }
 ): void => {
   const seenPublicIds = new Set<string>();
   const seenHashes = new Set<string>();
@@ -38,15 +37,6 @@ export const validateEventImagesPayload = (
 
   check(bannerImage);
   check(posterImage);
-  if (galleryImages && Array.isArray(galleryImages)) {
-    const totalCount = (bannerImage ? 1 : 0) + (posterImage ? 1 : 0) + galleryImages.length;
-    if (totalCount > 15) {
-      throw AppError.badRequest('Total event images cannot exceed 15');
-    }
-    for (const img of galleryImages) {
-      check(img);
-    }
-  }
 };
 
 export const assertEventStatusTransition = (
@@ -114,7 +104,7 @@ const getEventAttendanceMetrics = async (event: IEvent): Promise<EventAttendance
 };
 
 export const createEvent = async (data: Partial<IEvent>): Promise<IEvent> => {
-  validateEventImagesPayload(data.bannerImage, data.posterImage, data.galleryImages);
+  validateEventImagesPayload(data.bannerImage, data.posterImage);
   assertInitialEventStatus(data.status);
 
   if (data.title && !data.slug) {
@@ -160,7 +150,7 @@ export const createEvent = async (data: Partial<IEvent>): Promise<IEvent> => {
 export const getEvents = async (
   page: number = 1,
   limit: number = 10,
-  filters: { search?: string; status?: string } = {}
+  filters: { search?: string; status?: string; sortField?: string; sortOrder?: 'asc' | 'desc' } = {}
 ): Promise<{ events: IEvent[]; total: number; pages: number }> => {
   const skip = (page - 1) * limit;
   const query: FilterQuery<IEvent> = { isDeleted: { $ne: true } };
@@ -178,10 +168,23 @@ export const getEvents = async (
     ];
   }
 
+  const SORT_FIELDS: Record<string, string> = {
+    title: 'title',
+    category: 'category',
+    startDate: 'startDate',
+    status: 'status',
+    createdAt: 'createdAt'
+  };
+  const validSortField = filters.sortField ? (SORT_FIELDS[filters.sortField] ?? 'createdAt') : 'createdAt';
+  const sortDirection = filters.sortOrder === 'asc' ? 1 : -1;
+  const sortOptions: any = { [validSortField]: sortDirection };
+  if (validSortField !== 'createdAt') sortOptions.createdAt = -1;
+  sortOptions._id = 1;
+
   const total = await Event.countDocuments(query);
   const events = await Event.find(query)
     .populate('djOperatorIds', 'name')
-    .sort({ createdAt: -1 })
+    .sort(sortOptions)
     .skip(skip)
     .limit(limit);
 
@@ -193,7 +196,7 @@ export const getEvents = async (
 };
 
 export const getEventById = async (id: string): Promise<EventWithAttendance | null> => {
-  const event = await Event.findById(id)
+  const event = await Event.findById(String(id))
     .populate('djOperatorIds', 'name');
   if (!event) return null;
 
@@ -204,19 +207,22 @@ export const getEventById = async (id: string): Promise<EventWithAttendance | nu
 };
 
 export const updateEvent = async (id: string, data: Partial<IEvent>): Promise<EventWithAttendance | null> => {
-  const existing = await Event.findById(id);
+  const existing = await Event.findById(String(id));
   if (!existing) return null;
 
-  const expectedVersion = data.eventVersion;
-  if (expectedVersion === undefined || expectedVersion === null) {
+  const rawExpectedVersion = data.eventVersion;
+  if (rawExpectedVersion === undefined || rawExpectedVersion === null) {
     throw AppError.badRequest('Event version is required for update');
   }
+  if (typeof rawExpectedVersion !== 'number' || !Number.isFinite(rawExpectedVersion) || !Number.isInteger(rawExpectedVersion)) {
+    throw AppError.badRequest('Event version must be a valid integer');
+  }
+  const expectedVersion = rawExpectedVersion;
 
   const mergedBanner = data.bannerImage !== undefined ? data.bannerImage : existing.bannerImage;
   const mergedPoster = data.posterImage !== undefined ? data.posterImage : existing.posterImage;
-  const mergedGallery = data.galleryImages !== undefined ? data.galleryImages : existing.galleryImages;
 
-  validateEventImagesPayload(mergedBanner, mergedPoster, mergedGallery);
+  validateEventImagesPayload(mergedBanner, mergedPoster);
 
   if (data.status !== undefined) {
     assertEventStatusTransition(existing.status, data.status);
@@ -256,25 +262,6 @@ export const updateEvent = async (id: string, data: Partial<IEvent>): Promise<Ev
     data.isSoldOut = data.totalCapacity > 0 && (existing.soldCount || 0) >= data.totalCapacity;
   }
 
-  // ─── Event Memories: publication state transition guard ────────────────────
-  if (data.memories !== undefined && data.memories !== null) {
-    const incomingState = data.memories.publicationState;
-    const existingState = existing.memories?.publicationState;
-
-    // publishedAt records the FIRST time memories were published.
-    // It is preserved on subsequent publish operations (e.g. HIDDEN → PUBLISHED)
-    // so that the public-facing "published since" date is stable.
-    if (
-      incomingState === EventMemoryPublicationState.PUBLISHED &&
-      existingState !== EventMemoryPublicationState.PUBLISHED
-    ) {
-      // Preserve a prior publishedAt if it exists (re-publication after hide);
-      // otherwise stamp now for the first time.
-      const preservedPublishedAt = existing.memories?.publishedAt ?? new Date();
-      data.memories = { ...data.memories, publishedAt: preservedPublishedAt };
-    }
-  }
-
   const oldBannerId = existing.bannerImage?.publicId;
   const newBannerId = data.bannerImage?.publicId;
   const bannerReplaced = newBannerId && oldBannerId && oldBannerId !== newBannerId;
@@ -283,20 +270,9 @@ export const updateEvent = async (id: string, data: Partial<IEvent>): Promise<Ev
   const newPosterId = data.posterImage?.publicId;
   const posterReplaced = newPosterId && oldPosterId && oldPosterId !== newPosterId;
 
-  const oldGalleryIds = existing.galleryImages?.map((img) => img.publicId) || [];
-  const newGalleryIds = data.galleryImages?.map((img) => img.publicId) || [];
-  const removedGalleryIds = oldGalleryIds.filter((id) => id && !newGalleryIds.includes(id));
-
-  // ─── Event Memories: gallery image cleanup ─────────────────────────────────
-  const oldMemoryGalleryIds = existing.memories?.gallery?.map((img) => img.publicId) || [];
-  const newMemoryGalleryIds = data.memories?.gallery?.map((img) => img.publicId) || [];
-  const removedMemoryGalleryIds = data.memories !== undefined
-    ? oldMemoryGalleryIds.filter((pid) => pid && !newMemoryGalleryIds.includes(pid))
-    : [];
-
   const { eventVersion: _eventVersion, ...updateData } = data;
   const updated = await Event.findOneAndUpdate(
-    { _id: id, eventVersion: expectedVersion },
+    { _id: String(id), eventVersion: expectedVersion },
     { $set: updateData, $inc: { eventVersion: 1 } },
     { new: true }
   );
@@ -308,41 +284,12 @@ export const updateEvent = async (id: string, data: Partial<IEvent>): Promise<Ev
   const publicIdsToDelete: string[] = [];
   if (bannerReplaced && oldBannerId) publicIdsToDelete.push(oldBannerId);
   if (posterReplaced && oldPosterId) publicIdsToDelete.push(oldPosterId);
-  if (removedGalleryIds.length > 0) publicIdsToDelete.push(...removedGalleryIds);
-  if (removedMemoryGalleryIds.length > 0) publicIdsToDelete.push(...removedMemoryGalleryIds);
+
 
   if (publicIdsToDelete.length > 0) {
     safeDeleteImages(publicIdsToDelete, 'Event', 'update');
   }
 
-  // ─── Event Memories: audit log (transition-aware) ─────────────────────────
-  if (data.memories !== undefined) {
-    const incomingState = data.memories?.publicationState;
-    const existingState = existing.memories?.publicationState;
-
-    let auditAction: string;
-    if (incomingState === EventMemoryPublicationState.PUBLISHED && existingState !== EventMemoryPublicationState.PUBLISHED) {
-      auditAction = 'event.memories.published';
-    } else if (incomingState === EventMemoryPublicationState.HIDDEN && existingState === EventMemoryPublicationState.PUBLISHED) {
-      auditAction = 'event.memories.hidden';
-    } else if (data.memories === null) {
-      auditAction = 'event.memories.cleared';
-    } else {
-      auditAction = 'event.memories.updated';
-    }
-
-    auditLog({
-      action: auditAction,
-      status: 'success',
-      metadata: {
-        eventId: id,
-        previousState: existingState,
-        publicationState: updated.memories?.publicationState,
-        galleryCount: updated.memories?.gallery?.length ?? 0,
-      },
-      description: `Event memories ${auditAction.split('.').pop()} for event ${id}`,
-    });
-  }
 
   return {
     ...updated.toObject(),
@@ -351,27 +298,162 @@ export const updateEvent = async (id: string, data: Partial<IEvent>): Promise<Ev
 };
 
 export const deleteEvent = async (id: string): Promise<IEvent | null> => {
-  const bookingExists = await Booking.exists({ eventId: id });
+  const bookingExists = await Booking.exists({ eventId: String(id) });
   if (bookingExists) {
     throw AppError.badRequest('Cannot delete event with existing bookings');
   }
-  const existing = await Event.findById(id);
+  const existing = await Event.findById(String(id));
   if (!existing) return null;
 
-  const deleted = await Event.findByIdAndUpdate(id, { isDeleted: true, deletedAt: new Date() }, { new: true });
+  const deleted = await Event.findByIdAndUpdate(String(id), { isDeleted: true, deletedAt: new Date() }, { new: true });
   if (deleted) {
     const publicIdsToDelete: string[] = [];
     if (existing.bannerImage?.publicId) publicIdsToDelete.push(existing.bannerImage.publicId);
     if (existing.posterImage?.publicId) publicIdsToDelete.push(existing.posterImage.publicId);
-    if (existing.galleryImages) {
-      for (const img of existing.galleryImages) {
-        if (img.publicId) publicIdsToDelete.push(img.publicId);
-      }
-    }
     if (publicIdsToDelete.length > 0) {
       safeDeleteImages(publicIdsToDelete, 'Event', 'delete');
     }
   }
   await CacheService.delPattern('events:*');
   return deleted;
+};
+
+export interface DuplicateEventOptions {
+  sourceEventId: string;
+  title?: string;
+  date?: string;
+  venue?: string;
+  publish?: boolean;
+  adminId: string;
+}
+
+export const duplicateEvent = async (options: DuplicateEventOptions): Promise<IEvent> => {
+  const { sourceEventId, title, date, venue, publish, adminId } = options;
+
+  const originalEvent = await Event.findById(String(sourceEventId)).lean();
+  if (!originalEvent) {
+    throw AppError.notFound('Source event not found');
+  }
+
+  // Clone using policy
+  const newEventData: Partial<IEvent> = {};
+  
+  EVENT_DUPLICATION_POLICY.copied.forEach((field) => {
+    if (originalEvent[field as keyof typeof originalEvent] !== undefined) {
+      // Deep clone to avoid reference issues (esp for arrays like ticketTiers, images)
+      (newEventData as any)[field] = JSON.parse(JSON.stringify(originalEvent[field as keyof typeof originalEvent]));
+    }
+  });
+
+  // Apply overrides
+  newEventData.title = title || `${originalEvent.title} (Copy)`;
+  if (date) {
+    newEventData.startDate = new Date(date);
+    // If original had endDate, try to maintain duration, otherwise leave unset or just don't copy
+    if (originalEvent.endDate && originalEvent.startDate) {
+      const duration = new Date(originalEvent.endDate).getTime() - new Date(originalEvent.startDate).getTime();
+      newEventData.endDate = new Date(newEventData.startDate.getTime() + duration);
+    }
+  }
+  if (venue) {
+    newEventData.venue = venue;
+  }
+
+  newEventData.status = publish ? EventStatus.PUBLISHED : EventStatus.DRAFT;
+  newEventData.slug = newEventData.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+
+  // Ensure unique slug
+  let slug = newEventData.slug.toLowerCase().trim();
+  let isUnique = false;
+  let count = 0;
+  while (!isUnique) {
+    const currentSlug = count === 0 ? slug : `${slug}-${count}`;
+    const existing = await Event.findOne({ slug: currentSlug, isDeleted: { $ne: true } });
+    if (!existing) {
+      newEventData.slug = currentSlug;
+      isUnique = true;
+    } else {
+      count++;
+    }
+  }
+
+  // Reset ticket tier sold counts
+  if (newEventData.ticketTiers) {
+    newEventData.ticketTiers = newEventData.ticketTiers.map(tier => ({
+      ...tier,
+      soldCount: 0,
+    }));
+  }
+
+  // Start transaction
+  const session = await Event.startSession();
+  session.startTransaction();
+  try {
+    const duplicatedEvent = new Event(newEventData);
+    await duplicatedEvent.save({ session });
+
+    auditLog({
+      action: 'DUPLICATE_EVENT',
+      actor: { type: 'admin', id: adminId },
+      status: 'success',
+      metadata: { 
+        sourceEventId, 
+        newEventId: duplicatedEvent._id,
+        options
+      },
+    });
+
+    await session.commitTransaction();
+    session.endSession();
+
+    await CacheService.delPattern('events:*');
+    return duplicatedEvent;
+  } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+    
+    auditLog({
+      action: 'DUPLICATE_EVENT',
+      actor: { type: 'admin', id: adminId },
+      status: 'failure',
+      metadata: { 
+        sourceEventId, 
+        options,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      },
+    });
+
+    throw error;
+  }
+};
+
+export const bulkDeleteEvents = async (ids: string[], adminId: string): Promise<BulkOperationResult> => {
+  const results: BulkOperationResult['results'] = [];
+  let successCount = 0;
+  let failedCount = 0;
+
+  for (const id of ids) {
+    try {
+      const deleted = await deleteEvent(id);
+      if (deleted) {
+        results.push({ id, status: 'success' });
+        successCount++;
+      } else {
+        results.push({ id, status: 'failed', reason: 'Event not found' });
+        failedCount++;
+      }
+    } catch (error: any) {
+      results.push({ id, status: 'failed', reason: error.message || 'Unknown error' });
+      failedCount++;
+    }
+  }
+
+  auditLog({
+    action: 'BULK_DELETE_EVENTS',
+    actor: { type: 'admin', id: adminId },
+    status: 'success',
+    metadata: { ids, successCount, failedCount, results },
+  });
+
+  return { successCount, failedCount, results };
 };

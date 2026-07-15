@@ -1,19 +1,17 @@
 import { GovernanceConfig } from '../config/schema';
-import { GitService } from '../services/GitService';
-import { RepositoryService } from '../services/RepositoryService';
-import { FileSystemService } from '../services/FileSystemService';
-import { Logger } from '../services/Logger';
 import { Renderer } from '../renderers/Renderer';
-import { CommandRegistry } from './command';
-
-// Import domain services
+import { BaselineService } from '../services/baseline/BaselineService';
+import { FileSystemService } from '../services/FileSystemService';
+import { GitTagService } from '../services/git/GitTagService';
+import { GitService } from '../services/GitService';
+import { Logger } from '../services/Logger';
+import { ChangelogService } from '../services/release/ChangelogService';
 import { ReleaseService } from '../services/release/ReleaseService';
 import { VersionService } from '../services/release/VersionService';
-import { ChangelogService } from '../services/release/ChangelogService';
-import { BaselineService } from '../services/baseline/BaselineService';
+import { RepositoryService } from '../services/RepositoryService';
 import { RoadmapService } from '../services/roadmap/RoadmapService';
 import { TemplateService } from '../services/templates/TemplateService';
-import { GitTagService } from '../services/git/GitTagService';
+import { CommandRegistry } from './command';
 
 export interface ServiceContainer {
   release: ReleaseService;

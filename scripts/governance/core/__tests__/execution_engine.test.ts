@@ -2,7 +2,6 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { RuleRegistry } from '../../rules/registry';
 import { ValidatorRegistry } from '../validator_registry';
 import { ExecutionPlanner } from '../execution_planner';
-import { ExecutionScheduler } from '../execution_scheduler';
 import { ExecutionEngine } from '../execution_engine';
 import { GovernanceValidator } from '../validator';
 import { ValidationResult } from '../types';
@@ -31,12 +30,16 @@ describe('Governance Rule Execution Engine', () => {
   it('should initialize and register all standard validators successfully', () => {
     ExecutionEngine.initialize();
     const allValidators = ValidatorRegistry.getAllValidators();
-    expect(allValidators.length).toBe(20);
+    expect(allValidators.length).toBe(21);
 
     const markdownVal = ValidatorRegistry.getValidator('MarkdownValidator');
     expect(markdownVal).toBeDefined();
     expect(markdownVal?.supportedFileTypes).toContain('.md');
     expect(markdownVal?.priority).toBe(10);
+
+    const uxVal = ValidatorRegistry.getValidator('UXStateValidator');
+    expect(uxVal).toBeDefined();
+    expect(uxVal?.supportedRules).toContain('VAL-UX-001');
   });
 
   it('should fail fast on duplicate validator registrations', () => {

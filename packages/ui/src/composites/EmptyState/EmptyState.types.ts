@@ -17,4 +17,8 @@ export interface EmptyStateProps extends HTMLAttributes<HTMLDivElement> {
    * Optional primary action element (e.g. Button or link).
    */
   action?: ReactNode;
+  /**
+   * Display variant. Use 'table' to remove borders and padding for dense layouts like embedded table cells.
+   */
+  variant?: 'card' | 'inline' | 'table';
 }

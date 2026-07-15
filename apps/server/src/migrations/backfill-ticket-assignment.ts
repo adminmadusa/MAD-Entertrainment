@@ -1,7 +1,8 @@
-import 'dotenv/config';
 import { connectDatabase, disconnectDatabase, isDatabaseConnected } from '../config/database';
 import { Ticket } from '../models/ticket.schema';
 import { logger } from '../utils/logger';
+
+import 'dotenv/config';
 
 export async function backfillTicketAssignment(): Promise<{ matchedCount: number; modifiedCount: number }> {
   logger.info('🚀 Starting Ticket Assignment Status Backfill Migration...');

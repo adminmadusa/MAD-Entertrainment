@@ -1,3 +1,7 @@
+---
+owner: Platform
+---
+
 # Phase 4 — Governance Automation Backlog
 
 Deferred items that require Phase 4 tooling infrastructure to implement.
@@ -18,12 +22,12 @@ violating the One Task Rule.
 
 ### P4-001 — `pnpm governance:branch-cleanup <branch-name>`
 
-**Priority:** High  
-**Source:** Recommendation made after PR #510 cleanup (2026-07-06)  
-**Status:** Open  
+**Priority:** High
+**Source:** Recommendation made after PR #510 cleanup (2026-07-06)
+**Status:** Open
 **Target Phase:** 4
 
-**Description:**  
+**Description:**
 Automate RULE-GIT-001 as a repository script that performs the entire branch
 cleanup protocol and emits a structured pass/fail report.
 

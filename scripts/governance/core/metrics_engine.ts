@@ -1,6 +1,6 @@
 // scripts/governance/core/metrics_engine.ts
 import { existsSync, readFileSync } from 'fs';
-import { resolve, join } from 'path';
+import { join } from 'path';
 import { Finding, GovernanceMetrics, PerformanceGuardrails } from './types';
 import { RuleRegistry } from '../rules/registry';
 import { metricsDir } from './finding_manager';

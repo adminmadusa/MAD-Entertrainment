@@ -16,6 +16,9 @@ export const apiClient: AxiosInstance = axios.create({
   baseURL: BASE_URL,
   timeout: 30000,
   withCredentials: true,
+  withXSRFToken: true, // Enables automatic X-XSRF-TOKEN header for cross-origin requests (Axios >=1.6)
+  xsrfCookieName: 'XSRF-TOKEN',
+  xsrfHeaderName: 'X-XSRF-TOKEN',
   headers: {
     'Content-Type': 'application/json',
     Accept: 'application/json',

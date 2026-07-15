@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef } from 'react';
 
 import { adminApiClient } from '@/lib/api/client';
 
@@ -206,7 +206,7 @@ export function EventGalleryUpload({
   return (
     <div className="space-y-6">
       {warningMessage && (
-        <div className="px-4 py-2 bg-error/10 border border-error/20 rounded-xl text-xs text-red-400">
+        <div aria-live="polite" className="px-4 py-2 bg-error/10 border border-error/20 rounded-xl text-xs text-red-400">
           {warningMessage}
         </div>
       )}

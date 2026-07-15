@@ -1,5 +1,6 @@
-import { NotificationType } from '@mad/shared';
 import { Document, model, Schema, Types } from 'mongoose';
+
+import { NotificationType } from '@mad/shared';
 
 export interface INotification extends Document {
   type: NotificationType;

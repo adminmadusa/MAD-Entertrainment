@@ -44,43 +44,6 @@ export function EntryPassGrid({ tickets }: EntryPassGridProps) {
     return () => container.removeEventListener('scroll', onScroll);
   }, [tickets.length]);
 
-  const lastActiveElementRef = useRef<HTMLElement | null>(null);
-  const closeButtonRef = useRef<HTMLButtonElement>(null);
-
-  // Handle Escape key and focus trapping/restoration
-  useEffect(() => {
-    if (zoomedTicket) {
-      lastActiveElementRef.current = document.activeElement as HTMLElement;
-
-      const timer = setTimeout(() => {
-        closeButtonRef.current?.focus();
-      }, 50);
-
-      const handleKeyDown = (e: KeyboardEvent) => {
-        if (e.key === 'Escape') {
-          setZoomedTicket(null);
-        }
-      };
-
-      window.addEventListener('keydown', handleKeyDown);
-
-      return () => {
-        clearTimeout(timer);
-        window.removeEventListener('keydown', handleKeyDown);
-        if (lastActiveElementRef.current) {
-          lastActiveElementRef.current.focus();
-          lastActiveElementRef.current = null;
-        }
-      };
-    }
-  }, [zoomedTicket]);
-
-  const handleModalKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
-    if (e.key === 'Tab') {
-      e.preventDefault();
-      closeButtonRef.current?.focus();
-    }
-  };
 
   const scrollToTicket = (index: number) => {
     if (scrollContainerRef.current) {
@@ -172,7 +135,7 @@ export function EntryPassGrid({ tickets }: EntryPassGridProps) {
                     <button
                       type="button"
                       onClick={() => setZoomedTicket(ticket)}
-                      className="group cursor-pointer relative overflow-hidden rounded-xl border border-white/10 hover:border-accent-purple/50 bg-white p-2 transition-all focus:outline-none focus:ring-2 focus:ring-accent-purple"
+                      className="group cursor-pointer relative overflow-hidden rounded-xl border border-white/10 hover:border-accent-purple/50 bg-white p-2 transition-all focus-ring"
                       aria-label="Tap to enlarge QR code"
                     >
                       {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -242,9 +205,8 @@ export function EntryPassGrid({ tickets }: EntryPassGridProps) {
             {/* Close Button */}
             <button
               type="button"
-              ref={closeButtonRef}
               onClick={() => setZoomedTicket(null)}
-              className="absolute top-4 right-4 w-11 h-11 flex items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 text-slate-800 transition-colors focus:outline-none focus:ring-2 focus:ring-accent-purple"
+              className="absolute top-4 right-4 w-11 h-11 flex items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 text-slate-800 transition-colors focus-ring"
               aria-label="Close QR Code"
             >
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>

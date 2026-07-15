@@ -7,9 +7,12 @@
  */
 // ─── Hooks ───────────────────────────────────────────────────────────────────
 export * from './hooks/useFocusTrap';
+export * from './hooks/useDelayedUnmount';
+export * from './hooks/useBulkSelection';
 
 // ─── Utilities ────────────────────────────────────────────────────────────────
 export * from './lib/cn';
+export * from './lib/motionTokens';
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
 // Note: icons are also available as a separate entry point: @mad/ui/icons
@@ -23,6 +26,7 @@ export * from './primitives/Button';
 export * from './primitives/IconButton';
 export * from './primitives/Input';
 export * from './primitives/Textarea';
+export * from './primitives/Checkbox';
 export * from './primitives/Label';
 export * from './primitives/Badge';
 export * from './primitives/Spinner';
@@ -40,10 +44,11 @@ export * from './composites/EmptyState';
 export * from './composites/ErrorState';
 export * from './composites/LoadingState';
 export * from './composites/ScrollIndicator';
+export * from './composites/AdminFormActions';
+export * from './composites/Stepper';
 
 // Layouts
 export * from './layouts/Card';
 export * from './layouts/Section';
 export * from './layouts/Stack';
 export * from './layouts/Grid';
-

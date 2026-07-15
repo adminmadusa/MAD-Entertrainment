@@ -11,6 +11,7 @@ const EVENT_STATUS_LABELS: Partial<Record<EventStatus, string>> = {
   [EventStatus.POSTPONED]: 'Postponed',
   [EventStatus.COMPLETED]: 'Completed',
   [EventStatus.CANCELLED]: 'Cancelled',
+  [EventStatus.ARCHIVED]: 'Archived',
 };
 
 const inputCls =
@@ -24,6 +25,7 @@ export interface EventBasicInfoCardProps {
   setCategory: (val: string) => void;
   status: EventStatus;
   setStatus: (val: EventStatus) => void;
+  lifecycle?: string;
   venue: string;
   setVenue: (val: string) => void;
   description: string;
@@ -39,6 +41,7 @@ export const EventBasicInfoCard = React.memo(function EventBasicInfoCard({
   setCategory,
   status,
   setStatus,
+  lifecycle,
   venue,
   setVenue,
   description,
@@ -48,8 +51,15 @@ export const EventBasicInfoCard = React.memo(function EventBasicInfoCard({
 }: EventBasicInfoCardProps) {
   return (
     <div className="glass rounded-2xl border border-border-subtle p-6 space-y-5">
-      <h2 className="text-white font-semibold">Basic Information</h2>
-      <FormField label="Event Title *">
+      <div className="flex items-center justify-between">
+        <h2 className="text-white font-semibold">Basic Information</h2>
+        {lifecycle && (
+          <span className="text-xs px-2.5 py-1 rounded-full border font-medium uppercase bg-white/5 border-white/10 text-text-secondary">
+            Lifecycle: <span className="text-white">{lifecycle}</span>
+          </span>
+        )}
+      </div>
+      <FormField label="Event Title *" htmlFor="event-title">
         <input
           id="event-title"
           value={title}
@@ -60,7 +70,7 @@ export const EventBasicInfoCard = React.memo(function EventBasicInfoCard({
         />
       </FormField>
       <div className="grid grid-cols-2 gap-4">
-        <FormField label="Category">
+        <FormField label="Category" htmlFor="event-category">
           <select
             id="event-category"
             value={category}
@@ -80,7 +90,7 @@ export const EventBasicInfoCard = React.memo(function EventBasicInfoCard({
                 ))}
           </select>
         </FormField>
-        <FormField label="Status">
+        <FormField label="Status" htmlFor="event-status">
           <select
             id="event-status"
             value={status}
@@ -94,7 +104,7 @@ export const EventBasicInfoCard = React.memo(function EventBasicInfoCard({
             ))}
           </select>
         </FormField>
-        <FormField label="Venue *">
+        <FormField label="Venue *" htmlFor="event-venue">
           <div className="relative">
             <input
               id="event-venue"
@@ -123,7 +133,7 @@ export const EventBasicInfoCard = React.memo(function EventBasicInfoCard({
           </div>
         </FormField>
       </div>
-      <FormField label="Full Description *">
+      <FormField label="Full Description *" htmlFor="event-description">
         <textarea
           id="event-description"
           value={description}

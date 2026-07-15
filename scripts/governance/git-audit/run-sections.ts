@@ -2,7 +2,7 @@ import { collectAllBranches } from './collectors/branches';
 import { collectWorktrees } from './collectors/worktrees';
 import { collectTagsForBranch } from './collectors/tags';
 import { analyzeAiOsStack } from './analyzers/stack-analysis';
-import { checkReachableFromDevelop, checkReachableFromLive, checkReachableFromRemediation } from './analyzers/ancestry';
+import { checkReachableFromDevelop, checkReachableFromRemediation } from './analyzers/ancestry';
 import { analyzePatchEquivalence } from './analyzers/patch-equivalence';
 import { analyzeDuplicateBranches } from './analyzers/duplicates';
 import { determineLifecycleState } from './analyzers/lifecycle';
@@ -42,7 +42,6 @@ function main() {
 
     // Reachability
     const isMerged = checkReachableFromDevelop(name);
-    const reachableFromLive = checkReachableFromLive(name);
     const remediationIntegrated = checkReachableFromRemediation(name);
 
     // Squash Merged / Patch Equivalence
@@ -141,8 +140,7 @@ function main() {
 
     const deletionReport = validateDeletionPolicy(verification, b.isLocal);
 
-    // Decision Logic
-    let decision = 'BLOCKED';
+    let decision: string;
     if (lifecycleState === 'Protected') {
       decision = 'KEEP';
     } else if (lifecycleState === 'Archived') {

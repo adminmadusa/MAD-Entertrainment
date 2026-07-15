@@ -1,5 +1,5 @@
-import { fileURLToPath } from 'url';
 import { dirname, resolve } from 'path';
+import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -12,6 +12,7 @@ export default [
       globals: true,
       include: [
         'apps/server/src/**/*.test.ts',
+        'apps/server/src/**/*.test.tsx',
         'packages/*/src/**/*.test.ts'
       ],
       exclude: [
@@ -118,4 +119,3 @@ export default [
     }
   }
 ];
-

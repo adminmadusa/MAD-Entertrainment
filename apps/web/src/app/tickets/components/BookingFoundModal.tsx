@@ -31,6 +31,7 @@ export function BookingFoundModal({
       onClose={onClose}
       closeOnBackdropClick={true}
       enableSwipeToClose={true}
+      presentation="bottom-sheet"
       ariaLabelledBy="found-title"
       ariaDescribedBy="found-desc"
     >

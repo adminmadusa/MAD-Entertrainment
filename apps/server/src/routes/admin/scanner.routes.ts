@@ -1,4 +1,5 @@
 import { Router } from 'express';
+
 import * as scannerController from '../../controllers/admin/scanner.controller';
 import { requireAdmin } from '../../middleware/auth.middleware';
 import { validate } from '../../middleware/validation.middleware';

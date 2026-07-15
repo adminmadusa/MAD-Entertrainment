@@ -1,13 +1,14 @@
-import { AdminRole } from '@mad/shared';
 import { describe, expect, it, vi, beforeEach } from 'vitest';
-import { requireAdmin, requireRole } from '../../middleware/auth.middleware';
+
+import { AdminRole } from '@mad/shared';
+
+import { AppError } from '../../middleware/error.middleware';
 import { validate, validateQuery } from '../../middleware/validation.middleware';
 import {
   adminUsersQuerySchema,
   adminUserByIdSchema,
   adminUserByEmailSchema,
 } from '../../validations/admin-user.validation';
-import { AppError } from '../../middleware/error.middleware';
 
 vi.mock('../../utils/logger', () => ({
   logger: {

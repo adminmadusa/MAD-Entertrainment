@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@mad/ui';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, EmptyState } from '@mad/ui';
+import { Receipt } from '@mad/ui/icons';
 import { formatDateTime } from '@mad/utils';
 
 interface UserRefundItem {
@@ -34,27 +35,32 @@ export default function UserRefundsTable({
   return (
     <div className="glass rounded-2xl border border-border-subtle overflow-hidden">
       <Table>
-        <TableHeader className="bg-white/[0.01]">
+        <TableHeader stickyHeader className="bg-white/[0.01]">
           <TableRow>
-            <TableHead className="py-3 px-5">Refund ID</TableHead>
+            <TableHead sticky="start" showStickyDivider className="py-3 px-5">Refund ID</TableHead>
             <TableHead className="py-3 px-4">Booking ID</TableHead>
             <TableHead className="py-3 px-4">Reason</TableHead>
             <TableHead className="py-3 px-4">Status</TableHead>
             <TableHead className="py-3 px-4">Processed Date</TableHead>
-            <TableHead className="py-3 px-5 text-right">Amount</TableHead>
+            <TableHead sticky="end" showStickyDivider className="py-3 px-5 text-right">Amount</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {paginatedRefunds.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={6} className="py-12 text-center text-text-muted">
-                No refund logs registered.
+              <TableCell colSpan={6} className="py-8">
+                <EmptyState
+                  variant="table"
+                  icon={<Receipt />}
+                  title="No refunds found."
+                  description="This user has not requested any refunds."
+                />
               </TableCell>
             </TableRow>
           ) : (
             paginatedRefunds.map((r) => (
               <TableRow key={r.refundId} className="border-b border-border-subtle/30 hover:bg-white/2 transition-colors">
-                <TableCell className="py-3.5 px-5 font-mono text-xs text-white">{r.refundId}</TableCell>
+                <TableCell sticky="start" showStickyDivider className="py-3.5 px-5 font-mono text-xs text-white">{r.refundId}</TableCell>
                 <TableCell className="py-3.5 px-4 font-mono text-xs text-text-secondary">{r.bookingId}</TableCell>
                 <TableCell className="py-3.5 px-4 text-text-secondary text-xs italic">
                   {r.reason || 'No reason specified'}
@@ -71,7 +77,7 @@ export default function UserRefundsTable({
                 <TableCell className="py-3.5 px-4 text-text-secondary text-xs">
                   {r.processedAt ? formatDateTime(r.processedAt) : 'Pending'}
                 </TableCell>
-                <TableCell className="py-3.5 px-5 text-right font-semibold text-white">
+                <TableCell sticky="end" showStickyDivider className="py-3.5 px-5 text-right font-semibold text-white">
                   {new Intl.NumberFormat('en-IN', {
                     style: 'currency',
                     currency: r.currency,

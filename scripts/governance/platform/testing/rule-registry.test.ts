@@ -16,7 +16,6 @@ import {
   MissingDependencyError,
 } from '../engine/rule-registry';
 import type { GovernanceRule, EngineContext, Finding } from '../contracts/index';
-import { Confidence } from '../contracts/index';
 import { StaleBranchRule } from '../rules/StaleBranchRule';
 import { OrphanedBranchRule } from '../rules/OrphanedBranchRule';
 import { DuplicateTreeRule } from '../rules/DuplicateTreeRule';

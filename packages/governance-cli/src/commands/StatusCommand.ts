@@ -1,9 +1,10 @@
+import { execSync } from 'child_process';
+import { readdirSync } from 'fs';
+import { join } from 'path';
+
+import { ExitCode } from '../config/schema';
 import { Command, CommandMetadata, OutputModel } from '../core/command';
 import { ExecutionContext } from '../core/context';
-import { ExitCode } from '../config/schema';
-import { execSync } from 'child_process';
-import { join } from 'path';
-import { readdirSync } from 'fs';
 
 export class StatusCommand extends Command {
   readonly metadata: CommandMetadata = {

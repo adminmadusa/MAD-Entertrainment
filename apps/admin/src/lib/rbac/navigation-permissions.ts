@@ -6,6 +6,7 @@ export const ROUTE_PERMISSIONS: Record<string, string[]> = {
   '/users': [AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.MANAGER, AdminRole.SUPPORT],
   '/bookings': [AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.MANAGER, AdminRole.SUPPORT],
   '/ticket-profiles': [AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.MANAGER, AdminRole.SUPPORT],
+  '/ticket-management': [AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.MANAGER, AdminRole.SUPPORT],
   '/events': [AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.MANAGER, AdminRole.SUPPORT],
   '/refunds': [AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.SUPPORT],
   '/scanner': [AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.MANAGER, AdminRole.SUPPORT, AdminRole.SCANNER],
@@ -42,7 +43,7 @@ export function canAccessRoute(path: string, role: string): boolean {
   // Specific subpath checks for creation and editing (e.g. /new, /:id/edit)
   const isSubpath = path !== matchedPrefix;
   if (isSubpath) {
-    const restrictedSubpathModules = ['/events', '/ticket-profiles', '/coupons', '/popups'];
+    const restrictedSubpathModules = ['/events', '/ticket-profiles', '/ticket-management', '/coupons', '/popups'];
     if (restrictedSubpathModules.includes(matchedPrefix)) {
       // Creation and modification operations are restricted to super_admin, admin, manager
       return [AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.MANAGER].includes(role as AdminRole);

@@ -1,8 +1,9 @@
 import React, { forwardRef } from 'react';
+
 import { cn } from '../../lib/cn';
 import { Spinner } from '../Spinner';
-import { ButtonProps } from './Button.types';
 import { buttonSizes, buttonVariants } from './Button.styles';
+import type { ButtonProps } from './Button.types';
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   (

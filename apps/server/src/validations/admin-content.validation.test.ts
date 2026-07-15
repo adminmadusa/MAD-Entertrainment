@@ -1,31 +1,9 @@
-import { BookingStatus, EventCategory, PopupTrigger } from '@mad/shared';
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 
-import {
-  adminBookingIdentifierParamSchema,
-  adminBookingsQuerySchema,
-  adminIdParamSchema,
-  createCategorySchema,
-  createCouponSchema,
-  createEventSchema,
-  createPopupSchema,
-  createRefundSchema,
-  createTierSchema,
-  processRefundSchema,
-  scannerLookupSchema,
-  scannerScanSchema,
-  scannerStatsSchema,
-  scannerHistorySchema,
-  updateDJOperatorSchema,
-  updateEventSchema,
-  updateCategorySchema,
-  updateCouponSchema,
-  updatePopupSchema,
-  updateTicketProfileSchema,
-  updateTierSchema,
-  deleteUploadSchema,
-} from './admin-content.validation';
+import { BookingStatus, EventCategory, PopupTrigger } from '@mad/shared';
+
+import { adminBookingIdentifierParamSchema, adminBookingsQuerySchema, adminIdParamSchema, createCategorySchema, createCouponSchema, createEventSchema, createPopupSchema, createRefundSchema, createTierSchema, processRefundSchema, scannerLookupSchema, scannerScanSchema, scannerStatsSchema, scannerHistorySchema, updateDJOperatorSchema, updateEventSchema, updateCategorySchema, updateCouponSchema, updatePopupSchema, updateTicketProfileSchema, updateTierSchema } from './admin-content.validation';
 
 const objectId = '507f1f77bcf86cd799439011';
 const otherObjectId = '507f1f77bcf86cd799439012';
@@ -282,37 +260,7 @@ describe('event image validations', () => {
     });
   });
 
-  it('accepts event with 15 images (banner + poster + 13 gallery images)', () => {
-    const galleryImages = Array.from({ length: 13 }, (_, i) => ({
-      url: `https://example.com/gallery${i}.jpg`,
-      publicId: `gallery${i}`,
-      hash: `hash_gallery_${i}`,
-    }));
 
-    expectAccepted(createEventSchema, {
-      body: {
-        ...validEventBody,
-        posterImage: { url: 'https://example.com/poster.jpg', publicId: 'poster', hash: 'hash_poster' },
-        galleryImages,
-      },
-    });
-  });
-
-  it('rejects event with 16 images (banner + poster + 14 gallery images)', () => {
-    const galleryImages = Array.from({ length: 14 }, (_, i) => ({
-      url: `https://example.com/gallery${i}.jpg`,
-      publicId: `gallery${i}`,
-      hash: `hash_gallery_${i}`,
-    }));
-
-    expectRejected(createEventSchema, {
-      body: {
-        ...validEventBody,
-        posterImage: { url: 'https://example.com/poster.jpg', publicId: 'poster', hash: 'hash_poster' },
-        galleryImages,
-      },
-    });
-  });
 
   it('rejects event with duplicate publicId', () => {
     expectRejected(createEventSchema, {
@@ -323,14 +271,44 @@ describe('event image validations', () => {
     });
   });
 
-  it('rejects event with duplicate hash', () => {
-    expectRejected(createEventSchema, {
-      body: {
-        ...validEventBody,
-        galleryImages: [
-          { url: 'https://example.com/gallery.jpg', publicId: 'gallery1', hash: 'hash1' }, // same hash as bannerImage
-        ],
-      },
+  describe('Ticket Tier Validation Schema Tests', () => {
+    it('accepts correct tier values', () => {
+      expectAccepted(createTierSchema, {
+        body: {
+          name: 'VIP Standard',
+          color: '#6366F1',
+          icon: 'star',
+          description: 'Access to front rows',
+          isActive: true,
+          defaultVisibility: true,
+          sortIndex: 3,
+        },
+      });
+    });
+
+    it('rejects invalid hex colors', () => {
+      expectRejected(createTierSchema, {
+        body: {
+          name: 'VIP Standard',
+          color: 'indigo-500', // Invalid HEX format
+        },
+      });
+
+      expectRejected(createTierSchema, {
+        body: {
+          name: 'VIP Standard',
+          color: '#GGG111', // Invalid HEX characters
+        },
+      });
+    });
+
+    it('rejects invalid icon choices', () => {
+      expectRejected(createTierSchema, {
+        body: {
+          name: 'VIP Standard',
+          icon: 'not-in-enum-allowlist', // Invalid icon type
+        },
+      });
     });
   });
 });

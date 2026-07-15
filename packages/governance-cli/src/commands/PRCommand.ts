@@ -1,7 +1,8 @@
+import { join } from 'path';
+
+import { ExitCode } from '../config/schema';
 import { Command, CommandMetadata, OutputModel } from '../core/command';
 import { ExecutionContext } from '../core/context';
-import { ExitCode } from '../config/schema';
-import { join } from 'path';
 
 export class PRCommand extends Command {
   readonly metadata: CommandMetadata = {
@@ -26,8 +27,8 @@ export class PRCommand extends Command {
     // 1. Load implementation plan details if present
     let planSummary = 'No implementation plan details found.';
     const planConfigPath = context.config.documentation.plans;
-    const planRootPath = planConfigPath.startsWith('/') 
-      ? planConfigPath 
+    const planRootPath = planConfigPath.startsWith('/')
+      ? planConfigPath
       : join(context.repoRoot, planConfigPath);
 
     const planExists = await context.fs.exists(planRootPath);

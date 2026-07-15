@@ -39,6 +39,7 @@ export function OtpVerificationModal({
       onClose={onClose}
       closeOnBackdropClick={true}
       enableSwipeToClose={true}
+      presentation="bottom-sheet"
       ariaLabelledBy="otp-title"
       ariaDescribedBy="otp-desc"
     >

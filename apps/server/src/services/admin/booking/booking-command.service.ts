@@ -1,5 +1,7 @@
 import crypto from 'crypto';
-import mongoose, { Types, ClientSession } from 'mongoose';
+
+import { Types, ClientSession } from 'mongoose';
+
 import { BookingStatus } from '@mad/shared';
 
 import { getQueueName } from '../../../config/queue.config';
@@ -12,9 +14,8 @@ import { UserModel } from '../../../models/user.schema';
 import { auditLog } from '../../../utils/audit';
 import { logger } from '../../../utils/logger';
 import { runInTransaction } from '../../../utils/transaction';
-import { QueueService } from '../../queue.service';
-
 import { BookingLifecycleService, CancelBookingPostCommitPayload } from '../../public/booking/booking-lifecycle.service';
+import { QueueService } from '../../queue.service';
 
 export { CancelBookingPostCommitPayload };
 

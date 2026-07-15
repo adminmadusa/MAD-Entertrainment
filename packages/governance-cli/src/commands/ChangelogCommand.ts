@@ -1,7 +1,8 @@
+import { join } from 'path';
+
+import { ExitCode } from '../config/schema';
 import { Command, CommandMetadata, OutputModel } from '../core/command';
 import { ExecutionContext } from '../core/context';
-import { ExitCode } from '../config/schema';
-import { join } from 'path';
 
 export class ChangelogCommand extends Command {
   readonly metadata: CommandMetadata = {
@@ -19,11 +20,11 @@ export class ChangelogCommand extends Command {
 
   async execute(context: ExecutionContext, args: string[]): Promise<OutputModel> {
     const defaultBranch = context.config.repository.defaultBranch;
-    
+
     // Find --from flag if specified
     const fromIdx = args.indexOf('--from');
     const fromRef = fromIdx !== -1 && args[fromIdx + 1] ? args[fromIdx + 1] : defaultBranch;
-    
+
     context.logger.info(`Extracting changes notes starting from reference: ${fromRef}`);
     const changelogText = await context.services.changelog.generate(fromRef, 'HEAD');
 

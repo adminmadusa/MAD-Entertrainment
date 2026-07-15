@@ -1,5 +1,6 @@
 import { cloudinary } from '../../config/cloudinary';
 import { Event } from '../../models/event.schema';
+import { EventGallery } from '../../models/event-gallery.schema';
 import { logger } from '../../utils/logger';
 import { UploadService } from './upload.service';
 
@@ -81,16 +82,18 @@ export const cleanupTemporaryAssets = async (): Promise<{ deletedCount: number; 
       if (createdAt < twentyFourHoursAgo) {
         const publicId = resource.public_id;
 
-        // Safety check: verify database references
-        const isReferenced = await Event.exists({
+        const isReferencedInEvent = await Event.exists({
           $or: [
             { 'bannerImage.publicId': publicId },
             { 'posterImage.publicId': publicId },
-            { 'galleryImages.publicId': publicId },
           ],
         });
 
-        if (!isReferenced) {
+        const isReferencedInGallery = await EventGallery.exists({
+          'items.publicId': publicId,
+        });
+
+        if (!isReferencedInEvent && !isReferencedInGallery) {
           await UploadService.deleteImage(publicId);
           deletedCount++;
         }

@@ -1,8 +1,14 @@
 import { ReactNode } from 'react';
 
 export type ModalSize = 'sm' | 'md' | 'lg' | 'xl' | 'full';
+export type ModalPresentation = 'centered' | 'bottom-sheet';
 
 export interface ModalProps {
+  /**
+   * Defines the visual presentation mode of the modal.
+   * @default 'centered'
+   */
+  presentation?: ModalPresentation;
   /**
    * Controlled visibility of the modal.
    */

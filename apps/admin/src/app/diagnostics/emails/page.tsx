@@ -8,7 +8,8 @@ import { useState } from 'react';
 import { adminGetEmailLogs } from '@/lib/api/admin/diagnostics.service';
 import { useAdminAuth } from '@/providers/AdminAuthProvider';
 import { QUERY_KEYS, AdminRole } from '@mad/shared';
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, ErrorState } from '@mad/ui';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, ErrorState, EmptyState } from '@mad/ui';
+import { Mail, Search } from '@mad/ui/icons';
 import { formatDateTime } from '@mad/utils';
 
 export default function EmailDiagnosticsPage() {
@@ -84,8 +85,13 @@ export default function EmailDiagnosticsPage() {
     if (emails.length === 0) {
       return (
         <TableRow>
-          <TableCell colSpan={7} className="py-16 text-center text-text-muted">
-            No email logs found.
+          <TableCell colSpan={7} className="py-8">
+            <EmptyState
+              variant="table"
+              icon={statusFilter !== '' ? <Search /> : <Mail />}
+              title={statusFilter !== '' ? "No results match your search." : "No email logs found."}
+              description={statusFilter !== '' ? "Try changing your filters." : undefined}
+            />
           </TableCell>
         </TableRow>
       );

@@ -1,4 +1,5 @@
 import { Router } from 'express';
+
 import { MarketingController } from '../../controllers/public/marketing.controller';
 
 const router: Router = Router();

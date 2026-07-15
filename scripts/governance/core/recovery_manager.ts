@@ -1,7 +1,7 @@
 // scripts/governance/core/recovery_manager.ts
 import { createHash } from 'crypto';
 import { existsSync, readFileSync } from 'fs';
-import { resolve, join } from 'path';
+import { resolve } from 'path';
 
 import type { GitMetadata } from './git_metadata_provider';
 import { RollbackHistory } from './rollback_history';

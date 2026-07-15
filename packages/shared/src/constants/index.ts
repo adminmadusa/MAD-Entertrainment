@@ -31,18 +31,49 @@ export enum EventStatus {
   PUBLISHED = 'published',
   CANCELLED = 'cancelled',
   POSTPONED = 'postponed',
-  COMPLETED = 'completed',
+  COMPLETED = 'completed', // Deprecated, will be removed in the future
+  ARCHIVED = 'archived',
 }
 
 export type EventLifecycleStatus = EventStatus;
 
 export const EVENT_STATUS_TRANSITIONS: Readonly<Record<EventLifecycleStatus, readonly EventLifecycleStatus[]>> = {
   [EventStatus.DRAFT]: [EventStatus.PUBLISHED, EventStatus.CANCELLED],
-  [EventStatus.PUBLISHED]: [EventStatus.POSTPONED, EventStatus.COMPLETED, EventStatus.CANCELLED],
+  [EventStatus.PUBLISHED]: [EventStatus.POSTPONED, EventStatus.COMPLETED, EventStatus.ARCHIVED, EventStatus.CANCELLED],
   [EventStatus.POSTPONED]: [EventStatus.PUBLISHED, EventStatus.CANCELLED],
-  [EventStatus.COMPLETED]: [],
+  [EventStatus.COMPLETED]: [EventStatus.ARCHIVED],
+  [EventStatus.ARCHIVED]: [],
   [EventStatus.CANCELLED]: [],
 };
+
+// ─── Event Duplication Policy ────────────────────────────────
+export const EVENT_DUPLICATION_POLICY = {
+  copied: [
+    'title', // Title is copied but modified by naming strategy
+    'description',
+    'category',
+    'bookingMode',
+    'bannerImage',
+    'posterImage',
+    'startDate',
+    'endDate',
+    'doorsOpenTime',
+    'showTime',
+    'venue',
+    'djOperatorIds',
+    'ticketTiers',
+  ],
+  reset: [
+    '_id',
+    'slug',
+    'createdAt',
+    'updatedAt',
+    'eventVersion',
+  ],
+  regenerated: [
+    'status', // Defaults to DRAFT
+  ]
+} as const;
 
 export type EventStatusTone = 'success' | 'warning' | 'danger' | 'info' | 'neutral';
 
@@ -77,6 +108,11 @@ export const EVENT_STATUS_METADATA: Record<EventLifecycleStatus, EventStatusMeta
     label: 'Cancelled',
     tone: 'danger',
     className: 'bg-red-500/10 text-red-400 border-red-500/30',
+  },
+  [EventStatus.ARCHIVED]: {
+    label: 'Archived',
+    tone: 'neutral',
+    className: 'bg-gray-500/10 text-gray-400 border-gray-500/30',
   },
 };
 
@@ -215,6 +251,13 @@ export enum PaymentMethod {
   STRIPE_CARD = 'stripe_card',
 }
 
+// ─── Ticket Sales Close Mode ─────────────────────────────────
+export enum TicketSalesCloseMode {
+  EVENT_START = 'EVENT_START',
+  EVENT_END = 'EVENT_END',
+  CUSTOM_DATE = 'CUSTOM_DATE',
+}
+
 // ─── Ticket Tier ─────────────────────────────────────────────
 export enum TicketTier {
   GENERAL = 'general',
@@ -311,12 +354,6 @@ export const SEAT_LOCK_TTL_SECONDS = 10 * 60; // 10 minutes
 export const MAX_TICKETS_PER_BOOKING = 10;
 
 // ─── Event Memory Publication State ──────────────────────────
-export enum EventMemoryPublicationState {
-  DRAFT = 'DRAFT',
-  PREVIEW = 'PREVIEW',
-  PUBLISHED = 'PUBLISHED',
-  HIDDEN = 'HIDDEN',
-}
 
 // ─── Event Memory Gallery Limits ──────────────────────────────
 export const DEFAULT_MEMORIES_GALLERY_LIMIT = 30;

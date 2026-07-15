@@ -1,11 +1,10 @@
 // scripts/governance/core/__tests__/recovery_manager.test.ts
 import { createHash } from 'crypto';
-import { existsSync, mkdirSync, rmSync, writeFileSync } from 'fs';
+import { existsSync, mkdirSync, rmSync, writeFileSync, readdirSync } from 'fs';
 import { join, resolve } from 'path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { ShellGitMetadataProvider } from '../git_metadata_provider';
 import { writeJsonIfChanged } from '../json_utils';
 import { RecoveryManager } from '../recovery_manager';
 import type { RollbackBackup } from '../rollback_manager';
@@ -25,11 +24,8 @@ describe('RecoveryManager', () => {
   let rm: RecoveryManager;
 
   beforeEach(() => {
-    if (existsSync(sandboxSessionsDir)) {
-      rmSync(sandboxSessionsDir, { recursive: true, force: true });
-    }
-    if (existsSync(sandboxBackupsDir)) {
-      rmSync(sandboxBackupsDir, { recursive: true, force: true });
+    if (existsSync(workspaceRoot)) {
+      rmSync(workspaceRoot, { recursive: true, force: true });
     }
     mkdirSync(sandboxSessionsDir, { recursive: true });
     mkdirSync(sandboxBackupsDir, { recursive: true });
@@ -43,14 +39,17 @@ describe('RecoveryManager', () => {
   });
 
   afterEach(() => {
-    if (existsSync(sandboxSessionsDir)) {
-      rmSync(sandboxSessionsDir, { recursive: true, force: true });
+    if (existsSync(workspaceRoot)) {
+      rmSync(workspaceRoot, { recursive: true, force: true });
     }
-    if (existsSync(sandboxBackupsDir)) {
-      rmSync(sandboxBackupsDir, { recursive: true, force: true });
-    }
-    if (existsSync(testFile)) {
-      rmSync(testFile, { force: true });
+    const parentDir = resolve(workspaceRoot, '..');
+    if (existsSync(parentDir)) {
+      try {
+        const files = readdirSync(parentDir);
+        if (files.length === 0) {
+          rmSync(parentDir, { recursive: true, force: true });
+        }
+      } catch (e) {}
     }
   });
 

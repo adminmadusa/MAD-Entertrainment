@@ -1,9 +1,11 @@
-import 'dotenv/config';
+import { NotificationType } from '@mad/shared';
+
 import { connectDatabase, disconnectDatabase } from '../src/config/database';
 import { Notification } from '../src/models/notification.schema';
 import { createNotificationSafe } from '../src/services/notification.service';
-import { NotificationType } from '@mad/shared';
 import { logger } from '../src/utils/logger';
+
+import 'dotenv/config';
 
 async function verifyUniqueConstraint() {
   logger.info('🚀 Starting Unique Constraint & Legacy Null Allowance Verification...');

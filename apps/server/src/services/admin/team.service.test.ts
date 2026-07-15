@@ -20,7 +20,6 @@ vi.mock('../../utils/logger', () => ({
   },
 }));
 
-import { AppError } from '../../middleware/error.middleware';
 import { AdminModel } from '../../models/admin.schema';
 import { auditLog } from '../../utils/audit';
 import { createAdmin, toggleAdminActive, updateAdmin, updateAdminRole, resetAdminPassword } from './team.service';

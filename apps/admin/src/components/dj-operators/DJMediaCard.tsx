@@ -3,7 +3,7 @@ import React from 'react';
 import { CloudinaryUpload } from '@/components/CloudinaryUpload';
 import type { ImageAsset } from '@mad/types';
 
-import { DJMediaCardProps } from './types';
+import type { DJMediaCardProps } from './utils';
 
 export const DJMediaCard: React.FC<DJMediaCardProps> = ({
   profileImage,

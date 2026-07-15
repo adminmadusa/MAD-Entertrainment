@@ -1,5 +1,5 @@
-export const drawerBackdropClasses = 'fixed inset-0 z-50 bg-black/80 backdrop-blur-[2px] transition-opacity duration-base';
-export const drawerContentBaseClasses = 'fixed bg-surface-secondary border-border shadow-2xl focus:outline-none flex flex-col transition-transform duration-base';
+export const drawerBackdropClasses = 'fixed inset-0 z-50 bg-black/80 backdrop-blur-[2px] transition-opacity duration-fast ease-smooth';
+export const drawerContentBaseClasses = 'fixed bg-surface-secondary border-border shadow-2xl focus:outline-none flex flex-col transition-[transform,opacity] duration-base ease-smooth';
 
 export const drawerSides = {
   bottom: 'bottom-0 left-0 right-0 max-h-[90vh] rounded-t-2xl border-t w-full',

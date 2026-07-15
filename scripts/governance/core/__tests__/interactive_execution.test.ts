@@ -1,5 +1,5 @@
 // scripts/governance/core/__tests__/interactive_execution.test.ts
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 
 import { ApprovalPlan } from '../approval_plan';
 import {

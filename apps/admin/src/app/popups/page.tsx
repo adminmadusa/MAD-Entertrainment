@@ -10,7 +10,8 @@ import { extractApiError } from '@/lib/api/client';
 import { useAdminAuth } from '@/providers/AdminAuthProvider';
 import { AdminRole } from '@mad/shared';
 import type { PopupCampaign } from '@mad/types';
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, ErrorState } from '@mad/ui';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, ErrorState, Modal, EmptyState } from '@mad/ui';
+import { Globe } from '@mad/ui/icons';
 
 
 export default function AdminPopupsPage() {
@@ -58,11 +59,17 @@ export default function AdminPopupsPage() {
     if (popups.length === 0) {
       return (
         <TableRow>
-          <TableCell colSpan={6} className="py-16 text-center text-text-muted">
-            No popup campaigns found.{' '}
-            <Link href="/popups/new" className="text-accent-purple hover:underline">
-              Create one →
-            </Link>
+          <TableCell colSpan={6} className="py-8">
+            <EmptyState
+              variant="table"
+              icon={<Globe />}
+              title="No popup campaigns created yet."
+              action={
+                <Link href="/popups/new" className="px-4 py-2 mt-2 text-sm font-medium text-white bg-accent-purple hover:bg-accent-purple/90 rounded-xl transition-colors">
+                  Create Popup
+                </Link>
+              }
+            />
           </TableCell>
         </TableRow>
       );
@@ -216,42 +223,43 @@ export default function AdminPopupsPage() {
       </div>
 
       {/* Delete Confirm Modal */}
-      <AnimatePresence>
+      <Modal
+        isOpen={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        size="sm"
+        showCloseButton={false}
+        closeOnBackdropClick={true}
+        ariaLabelledBy="delete-popup-modal-title"
+        className="glass-strong border border-border-subtle p-6 max-w-sm"
+      >
         {deleteTarget && (
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="glass-strong rounded-2xl border border-border-subtle p-6 max-w-sm w-full"
-            >
-              <h2 className="text-white font-bold text-lg mb-2">Delete Popup?</h2>
-              <p className="text-text-secondary text-sm mb-1">
-                <strong className="text-white">{deleteTarget.name}</strong> will be permanently deleted.
-              </p>
-              <p className="text-error text-xs mb-5">This action cannot be undone.</p>
-              {deleteMutation.error && (
-                <p className="text-red-400 text-xs mb-3">{extractApiError(deleteMutation.error).message}</p>
-              )}
-              <div className="flex gap-3">
-                <button
-                  onClick={() => setDeleteTarget(null)}
-                  className="flex-1 py-2.5 glass border border-border-subtle rounded-xl text-sm font-medium text-text-secondary hover:text-white transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={() => deleteMutation.mutate(deleteTarget._id)}
-                  disabled={deleteMutation.isPending}
-                  className="flex-1 py-2.5 bg-error/80 hover:bg-error rounded-xl text-white text-sm font-medium transition-colors disabled:opacity-60"
-                >
-                  {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
-                </button>
-              </div>
-            </motion.div>
+          <div>
+            <h2 id="delete-popup-modal-title" className="text-white font-bold text-lg mb-2">Delete Popup?</h2>
+            <p className="text-text-secondary text-sm mb-1">
+              <strong className="text-white">{deleteTarget.name}</strong> will be permanently deleted.
+            </p>
+            <p className="text-error text-xs mb-5">This action cannot be undone.</p>
+            {deleteMutation.error && (
+              <p className="text-red-400 text-xs mb-3">{extractApiError(deleteMutation.error).message}</p>
+            )}
+            <div className="flex gap-3">
+              <button
+                onClick={() => setDeleteTarget(null)}
+                className="flex-1 py-2.5 glass border border-border-subtle rounded-xl text-sm font-medium text-text-secondary hover:text-white transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => deleteMutation.mutate(deleteTarget._id)}
+                disabled={deleteMutation.isPending}
+                className="flex-1 py-2.5 bg-error/80 hover:bg-error rounded-xl text-white text-sm font-medium transition-colors disabled:opacity-60"
+              >
+                {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
+              </button>
+            </div>
           </div>
         )}
-      </AnimatePresence>
+      </Modal>
     </div>
   );
 }

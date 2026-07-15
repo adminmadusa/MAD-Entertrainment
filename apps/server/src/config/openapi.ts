@@ -1,5 +1,4 @@
 import { OpenAPIRegistry, OpenApiGeneratorV3, extendZodWithOpenApi } from '@asteasolutions/zod-to-openapi';
-
 import { z } from 'zod';
 
 // Extend Zod with OpenAPI properties (like description, example, etc.)
@@ -9,6 +8,12 @@ import {
   checkoutSchema,
   paymentVerificationSchema,
   adminDlqRetrySchema,
+  addGalleryItemsSchema,
+  updateGalleryItemSchema,
+  setCoverImageSchema,
+  updateGalleryVisibilitySchema,
+  reorderGalleryItemsSchema,
+  updateGallerySettingsSchema,
 } from '@mad/validations';
 
 export const registry = new OpenAPIRegistry();
@@ -16,7 +21,13 @@ export const registry = new OpenAPIRegistry();
 // ─── Register Shared Schemas ─────────────────────────────────
 const checkoutModel = registry.register('CheckoutInput', checkoutSchema);
 const paymentVerificationModel = registry.register('PaymentVerificationInput', paymentVerificationSchema);
-const adminDlqRetryModel = registry.register('AdminDlqRetryInput', adminDlqRetrySchema);
+registry.register('AdminDlqRetryInput', adminDlqRetrySchema);
+registry.register('AddGalleryItemsInput', addGalleryItemsSchema);
+registry.register('UpdateGalleryItemInput', updateGalleryItemSchema);
+registry.register('SetCoverImageInput', setCoverImageSchema);
+registry.register('UpdateGalleryVisibilityInput', updateGalleryVisibilitySchema);
+registry.register('ReorderGalleryItemsInput', reorderGalleryItemsSchema);
+registry.register('UpdateGallerySettingsInput', updateGallerySettingsSchema);
 
 // ─── Register REST API Routes ────────────────────────────────
 
@@ -196,6 +207,106 @@ registry.registerPath({
     },
     401: { description: 'Unauthorized' },
   },
+});
+
+registry.registerPath({
+  method: 'get',
+  path: '/api/events/{slug}/gallery',
+  summary: 'Get public event gallery',
+  description: 'Returns only PUBLIC items and published gallery settings.',
+  request: {
+    params: z.object({
+      slug: z.string()
+    })
+  },
+  responses: {
+    200: { description: 'Success' },
+    404: { description: 'Not found or not published' }
+  }
+});
+
+registry.registerPath({
+  method: 'get',
+  path: '/api/admin/events/{eventId}/gallery',
+  summary: 'Admin: Get event gallery',
+  description: 'Returns all items (public/private) and gallery settings.',
+  request: { params: z.object({ eventId: z.string() }) },
+  responses: { 200: { description: 'Success' } }
+});
+
+registry.registerPath({
+  method: 'post',
+  path: '/api/admin/events/{eventId}/gallery/items',
+  summary: 'Admin: Add gallery items',
+  request: {
+    params: z.object({ eventId: z.string() }),
+    body: {
+      content: { 'application/json': { schema: addGalleryItemsSchema } }
+    }
+  },
+  responses: { 200: { description: 'Success' } }
+});
+
+registry.registerPath({
+  method: 'patch',
+  path: '/api/admin/events/{eventId}/gallery/items/order',
+  summary: 'Admin: Bulk reorder gallery items',
+  request: {
+    params: z.object({ eventId: z.string() }),
+    body: {
+      content: { 'application/json': { schema: reorderGalleryItemsSchema } }
+    }
+  },
+  responses: { 200: { description: 'Success' } }
+});
+
+registry.registerPath({
+  method: 'patch',
+  path: '/api/admin/events/{eventId}/gallery/items/{itemId}/cover',
+  summary: 'Admin: Set cover image',
+  request: {
+    params: z.object({ eventId: z.string(), itemId: z.string() }),
+    body: {
+      content: { 'application/json': { schema: setCoverImageSchema } }
+    }
+  },
+  responses: { 200: { description: 'Success' } }
+});
+
+registry.registerPath({
+  method: 'patch',
+  path: '/api/admin/events/{eventId}/gallery/items/{itemId}',
+  summary: 'Admin: Update gallery item',
+  request: {
+    params: z.object({ eventId: z.string(), itemId: z.string() }),
+    body: {
+      content: { 'application/json': { schema: updateGalleryItemSchema } }
+    }
+  },
+  responses: { 200: { description: 'Success' } }
+});
+
+registry.registerPath({
+  method: 'delete',
+  path: '/api/admin/events/{eventId}/gallery/items/{itemId}',
+  summary: 'Admin: Delete gallery item',
+  request: {
+    params: z.object({ eventId: z.string(), itemId: z.string() })
+  },
+  responses: { 200: { description: 'Success' } }
+});
+
+registry.registerPath({
+  method: 'patch',
+  path: '/api/admin/events/{eventId}/gallery/settings',
+  summary: 'Admin: Update gallery settings',
+  request: {
+    params: z.object({ eventId: z.string() }),
+    body: {
+      content: { 'application/json': { schema: updateGallerySettingsSchema } }
+    }
+  },
+  responses: { 200: { description: 'Success' } }
 });
 
 export function generateOpenApiDocument(): any {

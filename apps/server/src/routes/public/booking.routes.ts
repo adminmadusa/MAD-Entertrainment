@@ -12,16 +12,13 @@ import {
     verifyRecoveredBookingOTP,
     generateDownloadToken,
 } from '../../controllers/public/booking.controller';
-
-import { recoverBookingSchema, verifyRecoveredBookingOTPSchema } from '../../validations/booking-recovery.validation';
-
 import {
     requireAuth,
     optionalAuth,
 } from '../../middleware/auth.middleware';
-import { authLimiter, resendLimiter, generalLimiter, bookingLimiter, recoveryLimiter } from '../../middleware/rate.middleware';
-
+import { resendLimiter, generalLimiter, bookingLimiter, recoveryLimiter } from '../../middleware/rate.middleware';
 import { validateBody, validateParams } from '../../middleware/validation.middleware';
+import { recoverBookingSchema, verifyRecoveredBookingOTPSchema } from '../../validations/booking-recovery.validation';
 import { reserveTicketsSchema, checkoutDetailsSchema, bookingReferenceParamSchema } from '../../validations/payment.validation';
 
 const router: Router = Router();

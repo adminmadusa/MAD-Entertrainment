@@ -1,7 +1,8 @@
+import { join } from 'path';
+
+import { ExitCode } from '../config/schema';
 import { Command, CommandMetadata, OutputModel } from '../core/command';
 import { ExecutionContext } from '../core/context';
-import { ExitCode } from '../config/schema';
-import { join } from 'path';
 
 interface BacklogItem {
   id: string;

@@ -26,7 +26,8 @@
     "governance:fix": "tsx scripts/governance/cli/fix.ts",
     "governance:session": "tsx scripts/governance/cli/session.ts",
     "governance:rollback": "tsx scripts/governance/cli/rollback.ts",
-    "governance:ui-baseline": "tsx scripts/governance/gather-ui-baseline.ts"
+    "governance:ui-baseline": "tsx scripts/governance/gather-ui-baseline.ts",
+    "test:ui-governance": "playwright test --config=playwright.config.ts"
   },
   "devDependencies": {
     "@playwright/test": "^1.60.0",

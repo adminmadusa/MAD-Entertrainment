@@ -1,7 +1,8 @@
+import { join } from 'path';
+
+import { ExitCode } from '../config/schema';
 import { Command, CommandMetadata, OutputModel } from '../core/command';
 import { ExecutionContext } from '../core/context';
-import { ExitCode } from '../config/schema';
-import { join } from 'path';
 
 export class WalkthroughCommand extends Command {
   readonly metadata: CommandMetadata = {
@@ -63,7 +64,7 @@ output: markdown
 
     // Format files list
     const fileListMd = files.map(f => `- [${f}](file://${join(context.repoRoot, f)})`).join('\n');
-    
+
     // Replace variables
     let body = templateContent
       .replace(/---[\s\S]*?---/, '') // Remove YAML frontmatter block

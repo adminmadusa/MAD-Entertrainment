@@ -3,10 +3,11 @@
 ## Metadata
 - **Status**: Accepted
 - **Date**: 2026-07-06
+- **Owner**: Architecture Review Board
 - **Authors**: Antigravity AI
 - **Reviewers**: Repository Governance Owner
 - **Decision Category**: Architecture / UI / Security / API / Governance
-- **Related Documents**: [ARCHITECTURE.md](../../ARCHITECTURE.md), [AGENTS.md](../../AGENTS.md)
+- **Related Documents**: [ARCHITECTURE.md](../../ARCHITECTURE.md), [AGENTS.MD](../../AGENTS.MD)
 - **Related GitHub Issues**: #502
 - **Related Pull Requests**: None
 
@@ -99,6 +100,14 @@ export interface ValidationResult {
 - **Append-only Audit Logs**: Every success/failure scan attempt writes to the existing `AuditLog` infrastructure mapping unique metadata (operator, device, scan source). Audit records are append-only.
 - **Statistics & History**: Derived from tickets dynamically to prevent multi-source drift. Stats and history routes are read-only. Invalidation uses the shared React Query client.
 
+## Alternatives Considered
+- **Option A: Native Mobile scanner App**: Rejected because of high deployment friction across volunteer scan operators.
+- **Option B: Standard keyboard QR entry**: Too slow and error-prone for real-time gate entry operations.
+
+## Consequences
+- **Pros**: Zero install web portal, cross-device compatibility, camera permission safety.
+- **Cons**: Requires secure HTTPS context to request media devices.
+
 ---
 
 ## Technical & Operational Impact
@@ -123,7 +132,14 @@ Existing physical keyboard scanning pages will be completely replaced. Backward-
 ### Rollback Strategy
 If critical device failures occur, reverting commits to restore the legacy `ScannerPage` is supported, retaining database consistency since the underlying schemas and domain services are extended rather than replaced.
 
+### Operational Impact
+Allows real-time gate metrics scanning monitoring and volunteer check-in support.
+
 ---
 
 ## Future Considerations
 If multiple concurrent scanner devices overload the database, query aggregation for statistics could be cached in Redis with a write-through invalidation strategy.
+
+## References
+- [REPOSITORY_GOVERNANCE.md](../../REPOSITORY_GOVERNANCE.md)
+- [ARCHITECTURE.md](../../ARCHITECTURE.md)

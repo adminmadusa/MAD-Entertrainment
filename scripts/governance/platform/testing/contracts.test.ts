@@ -376,11 +376,6 @@ describe('Area 5 — Event publication (EventBroker contract)', () => {
 // ---------------------------------------------------------------------------
 
 describe('Area 6 — Manifest compatibility (platform.json schema)', () => {
-  const platformManifestPath = resolve(
-    __dirname,
-    '../platform.json'
-  );
-
   // Replace __dirname-style resolution with import.meta approach for ESM
   const manifestRaw = readFileSync(
     resolve(process.cwd(), 'scripts/governance/platform/platform.json'),

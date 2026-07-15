@@ -37,14 +37,14 @@ export default function UserTicketsTable({
   return (
     <div className="glass rounded-2xl border border-border-subtle overflow-hidden">
       <Table>
-        <TableHeader className="bg-white/[0.01]">
+        <TableHeader stickyHeader className="bg-white/[0.01]">
           <TableRow>
-            <TableHead className="py-3 px-5">Ticket ID</TableHead>
+            <TableHead sticky="start" showStickyDivider className="py-3 px-5">Ticket ID</TableHead>
             <TableHead className="py-3 px-4">Event</TableHead>
             <TableHead className="py-3 px-4">Tier</TableHead>
             <TableHead className="py-3 px-4">Booking ID</TableHead>
             <TableHead className="py-3 px-4">QR Status</TableHead>
-            <TableHead className="py-3 px-5 text-right">Scanned At</TableHead>
+            <TableHead sticky="end" showStickyDivider className="py-3 px-5 text-right">Scanned At</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -57,7 +57,7 @@ export default function UserTicketsTable({
           ) : (
             paginatedTickets.map((t) => (
               <TableRow key={t.ticketId} className="border-b border-border-subtle/30 hover:bg-white/2 transition-colors">
-                <TableCell className="py-3.5 px-5 font-mono text-xs text-white">{t.ticketId}</TableCell>
+                <TableCell sticky="start" showStickyDivider className="py-3.5 px-5 font-mono text-xs text-white">{t.ticketId}</TableCell>
                 <TableCell className="py-3.5 px-4 text-text-primary">
                   {t.eventId ? (
                     <div>
@@ -80,7 +80,7 @@ export default function UserTicketsTable({
                     {t.scannedAt ? 'Redeemed' : 'Valid'}
                   </span>
                 </TableCell>
-                <TableCell className="py-3.5 px-5 text-right text-text-secondary text-xs">
+                <TableCell sticky="end" showStickyDivider className="py-3.5 px-5 text-right text-text-secondary text-xs">
                   {t.scannedAt
                     ? new Date(t.scannedAt).toLocaleDateString('en-IN', {
                         day: 'numeric',

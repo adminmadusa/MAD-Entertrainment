@@ -1,5 +1,7 @@
 import { Router } from 'express';
+
 import { AdminRole } from '@mad/shared';
+
 import { MarketingController } from '../../controllers/admin/marketing.controller';
 import { requireAdmin, requireRole } from '../../middleware/auth.middleware';
 

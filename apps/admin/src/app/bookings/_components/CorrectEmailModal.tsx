@@ -1,10 +1,10 @@
 'use client';
 
-import { Modal } from '@mad/ui';
 import { useState } from 'react';
 
 import { AdminBooking } from '@/lib/api/admin/booking.service';
 import { extractApiError } from '@/lib/api/client';
+import { Modal } from '@mad/ui';
 
 export interface CorrectEmailModalProps {
   booking: AdminBooking;

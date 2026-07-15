@@ -27,6 +27,42 @@ export class RepositoryHygieneValidator implements GovernanceValidator {
     const warnings: ValidationError[] = [];
     const startTime = Date.now();
 
+    // VAL-HYG-008: Check if current branch is protected (develop, live, main, master) and working tree has modifications
+    let branchName = 'unknown';
+    try {
+      const { execSync } = require('child_process');
+      branchName = execSync('git rev-parse --abbrev-ref HEAD', { cwd: workspaceRoot, encoding: 'utf8' }).trim();
+    } catch {}
+
+    const isProtectedBranch = ['develop', 'live', 'main', 'master'].includes(branchName);
+    if (isProtectedBranch) {
+      let hasModifiedFiles = false;
+      try {
+        const { execSync } = require('child_process');
+        const diffStatus = execSync('git status --porcelain', { cwd: workspaceRoot, encoding: 'utf8' }).trim();
+        const linesList = diffStatus.split('\n').filter(Boolean);
+        // Look for staged/unstaged changes, ignoring untracked files (??) or the .governance folder
+        const trackedChanges = linesList.filter(l => !l.startsWith('??') && !l.includes('.governance/'));
+        if (trackedChanges.length > 0) {
+          hasModifiedFiles = true;
+        }
+      } catch {}
+
+      if (hasModifiedFiles) {
+        errors.push({
+          file: '.git',
+          rule: 'VAL-HYG-008',
+          severity: 'CRITICAL',
+          message: `Direct modification on protected branch "${branchName}" detected! Working directly on protected branches violates git boundary safety.
+Remediation Steps:
+  1. Stash your changes: git stash
+  2. Create/Switch to a feature branch: git checkout -b feat/your-feature-name
+  3. Reapply your changes: git stash pop`,
+          line: 0,
+        });
+      }
+    }
+
     const filteredFiles = files.filter(file => {
       const norm = file.replace(/\\/g, '/');
 
@@ -211,7 +247,21 @@ export class RepositoryHygieneValidator implements GovernanceValidator {
         const isTypeOnly = imp.importClause?.isTypeOnly === true;
         const line = sourceFile.getLineAndCharacterOfPosition(imp.getStart()).line + 1;
 
-        if (!isTypeOnly && (pathVal.includes('/types') || pathVal.endsWith('/types') || pathVal.endsWith('types') || pathVal.includes('packages/types'))) {
+        // Skip if already a `import type` declaration
+        if (isTypeOnly) continue;
+
+        // Check if this import uses inline type modifiers (mixed import).
+        // e.g. import { value, type MyType } from '...'
+        // These cannot be simply converted to `import type` and should not be flagged.
+        const hasMixedTypeBindings =
+          imp.importClause?.namedBindings &&
+          ts.isNamedImports(imp.importClause.namedBindings) &&
+          imp.importClause.namedBindings.elements.some(el => el.isTypeOnly);
+
+        if (
+          !hasMixedTypeBindings &&
+          (pathVal.includes('/types') || pathVal.endsWith('/types') || pathVal.endsWith('types') || pathVal.includes('packages/types'))
+        ) {
           warnings.push({
             file: relPath,
             rule: 'VAL-HYG-003',
@@ -223,8 +273,12 @@ export class RepositoryHygieneValidator implements GovernanceValidator {
       }
     }
 
-    // VAL-HYG-001: Import Ordering & Grouping
-    this.verifyImportGroups(relPath, sourceFile, imports, warnings);
+    // VAL-HYG-001: Import Ordering & Grouping (Skip for test files and entrypoint to accommodate hoisting/bootstrapping patterns)
+    const isTestFile = relPath.endsWith('.test.ts') || relPath.endsWith('.test.tsx') || relPath.endsWith('.spec.ts') || relPath.endsWith('.spec.tsx');
+    const isAppEntrypoint = relPath === 'apps/server/src/server.ts';
+    if (!isTestFile && !isAppEntrypoint) {
+      this.verifyImportGroups(relPath, sourceFile, imports, warnings);
+    }
   }
 
   private verifyImportGroups(
@@ -261,11 +315,14 @@ export class RepositoryHygieneValidator implements GovernanceValidator {
     const classified = imports.map(imp => {
       const pathVal = ts.isStringLiteral(imp.moduleSpecifier) ? imp.moduleSpecifier.text : '';
       const line = sourceFile.getLineAndCharacterOfPosition(imp.getStart()).line + 1;
+      // Use getFullStart for end-line calculation to handle multiline imports correctly
+      const endLine = sourceFile.getLineAndCharacterOfPosition(imp.getEnd()).line + 1;
       return {
         node: imp,
         path: pathVal,
         group: getGroupIndex(imp),
         line,
+        endLine,
       };
     });
 
@@ -303,11 +360,12 @@ export class RepositoryHygieneValidator implements GovernanceValidator {
       if (grp.length > 0) {
         if (lastNonEmptyGroupIndex !== -1) {
           // Verify that the line number difference between the first import of this group
-          // and the last import of the previous group is > 1 (i.e. at least one blank line)
+          // and the last import of the previous group is > 1 (i.e. at least one blank line).
+          // Use endLine of the previous group's last import to correctly handle multiline imports.
           const lastImportOfPrevGroup = groups[lastNonEmptyGroupIndex][groups[lastNonEmptyGroupIndex].length - 1];
           const firstImportOfThisGroup = grp[0];
 
-          if (firstImportOfThisGroup.line <= lastImportOfPrevGroup.line + 1) {
+          if (firstImportOfThisGroup.line <= lastImportOfPrevGroup.endLine + 1) {
             warnings.push({
               file: relPath,
               rule: 'VAL-HYG-001',
@@ -338,8 +396,9 @@ export class RepositoryHygieneValidator implements GovernanceValidator {
           return;
         }
 
-        // Verify NO blank lines within the same group
-        if (grp[j].line > grp[j - 1].line + 1) {
+        // Verify NO blank lines within the same group.
+        // Use endLine of the previous import to correctly handle multiline imports.
+        if (grp[j].line > grp[j - 1].endLine + 1) {
           warnings.push({
             file: relPath,
             rule: 'VAL-HYG-001',

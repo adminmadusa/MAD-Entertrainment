@@ -19,8 +19,6 @@ function setupFile(content: string): void {
 }
 
 const PROD_LAYOUT = 'apps/web/src/app/layout.tsx';
-const PROD_PAGE   = 'apps/web/src/app/page.tsx';
-const ADMIN_LAYOUT = 'apps/admin/src/app/layout.tsx';
 
 // ─── Setup ──────────────────────────────────────────────────────────────
 

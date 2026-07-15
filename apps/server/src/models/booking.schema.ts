@@ -1,6 +1,8 @@
 import crypto from 'crypto';
-import { BookingStatus, TicketTier } from '@mad/shared';
+
 import { Schema, model, Document, Types } from 'mongoose';
+
+import { BookingStatus, TicketTier } from '@mad/shared';
 
 export interface IBooking extends Document {
   bookingId: string;
@@ -131,6 +133,7 @@ bookingSchema.index({ guestPhone: 1, createdAt: -1 });
 bookingSchema.index({ eventId: 1, status: 1, totalTickets: 1 });
 bookingSchema.index({ userId: 1, createdAt: -1 });
 bookingSchema.index({ status: 1, createdAt: -1 });
+bookingSchema.index({ totalAmount: 1 });
 
 bookingSchema.index(
   { sessionId: 1, eventId: 1 },

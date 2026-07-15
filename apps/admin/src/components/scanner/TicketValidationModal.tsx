@@ -1,7 +1,8 @@
 'use client';
 
+import { motion } from 'framer-motion';
 import { useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+
 import { ValidationResult } from '../../lib/api/admin/scanner.service';
 
 interface TicketValidationModalProps {
@@ -25,19 +26,18 @@ export function TicketValidationModal({ result, onClose, autoDismissMs = 1500 }:
   const isDuplicate = result.status === 'ALREADY_SCANNED';
 
   return (
-    <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95, y: 15 }}
+    <div className="fixed inset-0 z-50 flex items-end justify-center p-4 pointer-events-none mb-4">
+      <motion.div
+          initial={{ opacity: 0, scale: 0.95, y: 80 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.95, y: 15 }}
-          transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
-          className={`w-full max-w-md overflow-hidden rounded-3xl border shadow-glow-sm p-6 text-center space-y-4 ${
+          exit={{ opacity: 0, scale: 0.95, y: 80 }}
+          transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
+          className={`w-full max-w-md overflow-hidden rounded-3xl border shadow-2xl p-6 text-center space-y-4 pointer-events-auto backdrop-blur-md ${
             isSuccess
-              ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
+              ? 'bg-emerald-950/95 border-emerald-500/50 text-emerald-300'
               : isDuplicate
-              ? 'bg-amber-500/10 border-amber-500/30 text-amber-400'
-              : 'bg-red-500/10 border-red-500/30 text-red-400'
+              ? 'bg-amber-950/95 border-amber-500/50 text-amber-300'
+              : 'bg-red-950/95 border-red-500/50 text-red-300'
           }`}
         >
           {/* Animated Status Icon */}
@@ -95,7 +95,7 @@ export function TicketValidationModal({ result, onClose, autoDismissMs = 1500 }:
           {/* Close button */}
           <button
             onClick={onClose}
-            className={`w-full py-2.5 rounded-xl text-xs font-bold transition-all border ${
+            className={`w-full py-3.5 min-h-[44px] rounded-xl text-xs font-bold transition-all border focus-ring ${
               isSuccess
                 ? 'bg-emerald-500/20 hover:bg-emerald-500/35 border-emerald-500/40 text-white'
                 : isDuplicate
@@ -107,6 +107,5 @@ export function TicketValidationModal({ result, onClose, autoDismissMs = 1500 }:
           </button>
         </motion.div>
       </div>
-    </AnimatePresence>
   );
 }

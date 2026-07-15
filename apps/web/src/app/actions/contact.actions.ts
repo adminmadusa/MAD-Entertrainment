@@ -5,8 +5,6 @@ export async function submitContactForm(formData: FormData) {
     const name = formData.get('name') as string;
     const email = formData.get('email') as string;
     const issueType = formData.get('issueType') as string;
-    const bookingRef = formData.get('bookingRef') as string | null;
-    const transactionId = formData.get('transactionId') as string | null;
     const message = formData.get('message') as string;
 
     if (!name || !email || !issueType || !message) {

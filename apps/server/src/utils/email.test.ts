@@ -1,8 +1,6 @@
 import * as Sentry from '@sentry/node';
-import nodemailer from 'nodemailer';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-import { getEnv } from '../config/env';
 import { auditLog } from './audit';
 
 // Hoist variables to avoid ReferenceError

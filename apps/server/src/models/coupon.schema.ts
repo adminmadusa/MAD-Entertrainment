@@ -1,5 +1,6 @@
-import { EventCategory } from '@mad/shared';
 import { Document, model, Schema, Types } from 'mongoose';
+
+import { EventCategory } from '@mad/shared';
 
 export interface ICoupon extends Document {
   code: string;

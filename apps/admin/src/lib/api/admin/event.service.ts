@@ -1,5 +1,5 @@
 import { adminApiClient } from '@/lib/api/client';
-import { EventStatus, EventMemoryPublicationState } from '@mad/shared';
+import { EventStatus } from '@mad/shared';
 import type { PaginationMeta } from '@mad/types';
 
 
@@ -41,6 +41,8 @@ export interface AdminEvent {
   venue: string;
   startDate: string;
   endDate?: string;
+  ticketSalesCloseMode?: string;
+  ticketSalesCloseDate?: string;
   ticketTiers: EventTier[];
   totalCapacity: number;
   eventVersion: number;
@@ -68,14 +70,6 @@ export interface AdminEvent {
   attendancePercentage?: number;
   noShowCount?: number;
   noShowPercentage?: number;
-  memories?: {
-    publicationState: EventMemoryPublicationState;
-    heading?: string;
-    thankYouMessage?: string;
-    highlights?: string[];
-    gallery: (CloudinaryImage & { order: number })[];
-    publishedAt?: string;
-  } | null;
 }
 
 export interface EventsResponse {
@@ -104,9 +98,18 @@ export interface EventFilters {
   limit?: number;
   status?: EventStatusFilter;
   search?: string;
+  sortField?: string;
+  sortOrder?: 'asc' | 'desc';
 }
 
 export type AdminEventUpdatePayload = Partial<AdminEvent> & Pick<AdminEvent, 'eventVersion'>;
+
+export interface DuplicateEventRequest {
+  title?: string;
+  date?: string;
+  venue?: string;
+  publish?: boolean;
+}
 
 export async function adminGetEvents(filters: EventFilters = {}): Promise<{ items: AdminEvent[]; pagination: PaginationMeta }> {
   const params = new URLSearchParams();
@@ -143,4 +146,18 @@ export async function adminUpdateEvent(id: string, payload: AdminEventUpdatePayl
 
 export async function adminDeleteEvent(id: string): Promise<void> {
   await adminApiClient.delete(`/admin/events/${id}`);
+}
+
+export async function adminBulkDeleteEvents(ids: string[]): Promise<any> {
+  const { data } = await adminApiClient.post('/admin/events/bulk/delete', { ids });
+  return data.data;
+}
+
+export async function adminDuplicateEvent(id: string, payload: DuplicateEventRequest, idempotencyKey: string): Promise<AdminEvent> {
+  const { data } = await adminApiClient.post<EventResponse>(`/admin/events/${id}/duplicate`, payload, {
+    headers: {
+      'Idempotency-Key': idempotencyKey,
+    }
+  });
+  return data.data.event;
 }

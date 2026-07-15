@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest';
+
+import { ExitCode } from '../../config/schema';
 import { CommandRegistry, Command, CommandMetadata, OutputModel } from '../command';
 import { ExecutionContext } from '../context';
-import { ExitCode } from '../../config/schema';
 
 class DummyCommand extends Command {
   readonly metadata: CommandMetadata = {

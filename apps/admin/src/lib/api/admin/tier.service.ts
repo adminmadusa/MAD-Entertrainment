@@ -4,6 +4,12 @@ export interface AdminTier {
   _id: string;
   name: string;
   slug: string;
+  icon?: string;
+  color?: string;
+  description?: string;
+  isActive?: boolean;
+  defaultVisibility?: boolean;
+  sortIndex?: number;
   createdAt: string;
 }
 

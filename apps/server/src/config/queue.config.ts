@@ -1,6 +1,7 @@
 import { ConnectionOptions } from 'bullmq';
-import { getEnv } from './env';
+
 import { logger } from '../utils/logger';
+import { getEnv } from './env';
 
 export function getQueueName(baseName: string): string {
   const appEnv = process.env.APP_ENV || process.env.NODE_ENV || 'local';

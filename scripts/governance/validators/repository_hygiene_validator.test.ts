@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { existsSync, mkdirSync, rmSync, writeFileSync } from 'fs';
 import { resolve, join, dirname } from 'path';
 import { RepositoryHygieneValidator } from './repository_hygiene_validator';
@@ -166,6 +166,63 @@ describe('RepositoryHygieneValidator', () => {
       const res = await validator.run([file1, file2], { requiredDocuments: [], ownershipMatrix: [] });
       expect(res.warnings.length).toBe(0);
       expect(res.errors.length).toBe(0);
+    });
+
+    it('should flag VAL-HYG-008 when on develop branch with modified tracked files', async () => {
+      const cp = require('child_process');
+      const origExecSync = cp.execSync;
+
+      // Mock cp.execSync to simulate develop branch and modified files
+      cp.execSync = vi.fn((cmd: string) => {
+        if (cmd.includes('rev-parse --abbrev-ref HEAD')) return 'develop';
+        if (cmd.includes('status --porcelain')) return 'M  src/index.ts';
+        return '';
+      });
+
+      try {
+        const res = await validator.run([], { requiredDocuments: [], ownershipMatrix: [] });
+        expect(res.errors.some(e => e.rule === 'VAL-HYG-008')).toBe(true);
+      } finally {
+        cp.execSync = origExecSync;
+      }
+    });
+
+    it('should NOT flag VAL-HYG-008 when on a feature branch', async () => {
+      const cp = require('child_process');
+      const origExecSync = cp.execSync;
+
+      // Mock cp.execSync to simulate feature branch
+      cp.execSync = vi.fn((cmd: string) => {
+        if (cmd.includes('rev-parse --abbrev-ref HEAD')) return 'feat/my-feature';
+        if (cmd.includes('status --porcelain')) return 'M  src/index.ts';
+        return '';
+      });
+
+      try {
+        const res = await validator.run([], { requiredDocuments: [], ownershipMatrix: [] });
+        expect(res.errors.some(e => e.rule === 'VAL-HYG-008')).toBe(false);
+      } finally {
+        cp.execSync = origExecSync;
+      }
+    });
+
+    it('should NOT flag VAL-HYG-008 when on develop with clean working tree', async () => {
+      const cp = require('child_process');
+      const origExecSync = cp.execSync;
+
+      // Mock cp.execSync to simulate clean develop branch
+      cp.execSync = vi.fn((cmd: string) => {
+        if (cmd.includes('rev-parse --abbrev-ref HEAD')) return 'develop';
+        if (cmd.includes('status --porcelain')) return '';
+        return '';
+      });
+
+      try {
+        const res = await validator.run([], { requiredDocuments: [], ownershipMatrix: [] });
+        expect(res.errors.some(e => e.rule === 'VAL-HYG-008')).toBe(false);
+      } finally {
+        cp.execSync = origExecSync;
+      }
     });
   });
 });

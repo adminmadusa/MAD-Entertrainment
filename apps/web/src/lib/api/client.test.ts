@@ -1,8 +1,10 @@
-import { describe, it, expect, beforeEach, afterEach, vi, type Mock } from 'vitest';
 import axios, { AxiosError, type AxiosAdapter, type InternalAxiosRequestConfig, type AxiosRequestConfig } from 'axios';
-import { apiClient } from './client';
+import { describe, it, expect, beforeEach, afterEach, vi, type Mock } from 'vitest';
+
 import { STORAGE_KEYS } from '@mad/shared';
 import * as utils from '@mad/utils';
+
+import { apiClient } from './client';
 
 // Mock token expiration to return true for expired, false for new
 vi.mock('@mad/utils', async () => {
@@ -227,11 +229,11 @@ describe('apiClient Concurrency and Token Refresh', () => {
     mockAdapter.mockImplementation(async (config: InternalAxiosRequestConfig) => {
       if (config.url?.includes('/auth/refresh')) {
         refreshCalls++;
-        
+
         // Simulate logout mid-flight *before* the refresh call completes
         localStorage.removeItem(STORAGE_KEYS.USER_TOKEN);
         localStorage.removeItem(STORAGE_KEYS.USER_DATA);
-        
+
         await refreshPromise;
         return {
           data: { data: { token: 'new-token' } },

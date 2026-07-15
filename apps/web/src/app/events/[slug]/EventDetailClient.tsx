@@ -7,12 +7,10 @@ import Link from 'next/link';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 
 import { publicGetEventBySlug } from '@/lib/api/public.service';
-import { QUERY_KEYS, EventStatus } from '@mad/shared';
+import { QUERY_KEYS, EventStatus, deriveEventLifecycleState, canBook } from '@mad/shared';
 import type { Event as EventData } from '@mad/types';
 
 import type { EventBookingFlowHandle } from './components/EventBookingFlow';
-import { EventGallery } from './components/EventGallery';
-import { EventMemoriesRecap } from './components/EventMemoriesRecap';
 import { EventOverview } from './components/EventOverview';
 import { EventStickyCTA } from './components/EventStickyCTA';
 
@@ -80,6 +78,9 @@ export default function EventDetailClient({ slug, initialEvent }: EventDetailCli
       </div>
     );
   }
+
+  const lifecycle = deriveEventLifecycleState(event);
+  const isBookable = canBook(event);
 
   const showDateTime = new Date(event.startDate).toLocaleDateString('en-US', {
     weekday: 'long',
@@ -291,20 +292,11 @@ export default function EventDetailClient({ slug, initialEvent }: EventDetailCli
               </span>
             </div>
 
-            {event.status === EventStatus.COMPLETED && event.memories && (
-              <EventMemoriesRecap memories={event.memories} />
-            )}
-
             <EventOverview
               description={event.description}
               organizerName={event.organizerName}
               category={event.category}
             />
-
-            {/* Only render promotional event gallery if memories are not published */}
-            {!(event.status === EventStatus.COMPLETED && event.memories) && (
-              <EventGallery images={event.galleryImages} />
-            )}
 
             {/* Good to know + Refund policy */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -412,7 +404,7 @@ export default function EventDetailClient({ slug, initialEvent }: EventDetailCli
             isFavorited={isFavorited}
             onGetTickets={() => bookingFlowRef.current?.openBooking()}
             onToggleFavorite={() => setIsFavorited(!isFavorited)}
-            isCompleted={event.status === EventStatus.COMPLETED}
+            isCompleted={lifecycle === 'completed'}
           />
 
         </div>

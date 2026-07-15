@@ -81,6 +81,7 @@ export default function BookingFilters({
 
       <select
         value={eventFilter}
+        aria-label="Filter by Event"
         onChange={(e) => onEventFilterChange(e.target.value)}
         className="flex-1 min-w-[12rem] px-4 py-2.5 rounded-xl bg-background-card border border-border-subtle text-sm text-text-primary focus:outline-none focus:border-accent-purple"
       >
@@ -94,6 +95,7 @@ export default function BookingFilters({
 
       <select
         value={statusFilter}
+        aria-label="Filter by Status"
         onChange={(e) => onStatusFilterChange(e.target.value)}
         className="px-4 py-2.5 rounded-xl bg-background-card border border-border-subtle text-sm text-text-primary focus:outline-none focus:border-accent-purple"
       >

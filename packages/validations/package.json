@@ -12,7 +12,9 @@
     "test": "echo 'No tests configured for validations library'"
   },
   "dependencies": {
-    "zod": "^3.25.76"
+    "zod": "^3.25.76",
+    "@mad/types": "workspace:*",
+    "@mad/shared": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5.9.3"

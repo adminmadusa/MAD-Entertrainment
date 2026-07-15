@@ -1,8 +1,10 @@
 'use client';
 
 import React from 'react';
+
 import { EventStatus } from '@mad/shared';
 import { FormField } from '@mad/ui';
+
 import { inputCls } from './constants';
 
 interface EventPublishSectionProps {

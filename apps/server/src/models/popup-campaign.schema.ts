@@ -1,5 +1,6 @@
-import { PopupTrigger } from '@mad/shared';
 import mongoose, { Schema, Document } from 'mongoose';
+
+import { PopupTrigger } from '@mad/shared';
 
 export interface IPopupCampaign extends Document {
   name: string;

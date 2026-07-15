@@ -1,5 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Types } from 'mongoose';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+
 import { BookingStatus } from '@mad/shared';
 
 vi.mock('../../config/env', () => ({

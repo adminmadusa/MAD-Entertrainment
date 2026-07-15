@@ -146,9 +146,16 @@ export const FeaturedEventsSection = memo(function FeaturedEventsSection({ initi
                   }
                   const opacity = isActive ? 1 : Math.max(0, 1 - Math.abs(absoluteOffset) * 0.4);
                   const zIndex = 20 - Math.abs(absoluteOffset);
-
+                  
                   // Don't render cards that are too far away
                   if (Math.abs(absoluteOffset) > 2) return null;
+
+                  let cardAriaLabel = `Book tickets for ${event.title}`;
+                  if (event.status === 'completed') {
+                    cardAriaLabel = `View recap for completed event ${event.title}`;
+                  } else if (event.isSoldOut) {
+                    cardAriaLabel = `View details for ${event.title}`;
+                  }
 
                   return (
                     <motion.div
@@ -172,6 +179,10 @@ export const FeaturedEventsSection = memo(function FeaturedEventsSection({ initi
                       dragElastic={0.4}
                       onDragEnd={handleDragEnd}
                       style={{
+                        x,
+                        transform: enable3D
+                          ? `translateX(${x}px) translateZ(${z}px) rotateY(${rotateY}deg)`
+                          : `translateX(${x}px) scale(${isActive ? 1 : 0.85})`,
                         zIndex,
                         position: "absolute",
                         transformStyle: enable3D ? "preserve-3d" : "flat"
@@ -183,11 +194,11 @@ export const FeaturedEventsSection = memo(function FeaturedEventsSection({ initi
                       aria-label={`${index + 1} of ${events.length}: ${event.title}`}
                       aria-hidden={!isActive}
                     >
-                      {/* Wrap the image, date, title, and description in a link */}
                       <Link
                         href={`/events/${event.slug}`}
-                        className={`flex flex-col flex-grow focus:outline-none ${!isActive ? 'pointer-events-none' : ''}`}
-                        aria-label={`View details for ${event.title}`}
+                        id={`featured-event-card-${event.slug}`}
+                        className={`flex flex-col h-full focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple ${!isActive ? 'pointer-events-none' : ''}`}
+                        aria-label={cardAriaLabel}
                         tabIndex={isActive ? 0 : -1}
                       >
                         {/* Banner Image */}
@@ -202,7 +213,7 @@ export const FeaturedEventsSection = memo(function FeaturedEventsSection({ initi
                               className="object-cover group-hover:scale-105 transition-transform duration-500"
                             />
                           ) : (
-                            <div className="w-full h-full flex items-center justify-center text-accent-purple text-5xl">
+                            <div className="w-full h-full flex items-center justify-center text-accent-purple text-5xl" aria-hidden="true">
                               🎧
                             </div>
                           )}
@@ -215,7 +226,12 @@ export const FeaturedEventsSection = memo(function FeaturedEventsSection({ initi
                             {EVENT_CATEGORY_LABELS[event.category as EventCategory] || event.category}
                           </span>
 
-                          {event.isSoldOut && (
+                          {event.status === 'completed' && (
+                            <span className="absolute inset-0 bg-black/60 backdrop-blur-[2px] flex items-center justify-center text-text-muted font-bold text-sm tracking-wider">
+                              ENDED
+                            </span>
+                          )}
+                          {event.status !== 'completed' && event.isSoldOut && (
                             <span className="absolute inset-0 bg-black/60 backdrop-blur-[2px] flex items-center justify-center text-white font-bold text-sm tracking-wider">
                               SOLD OUT
                             </span>
@@ -235,27 +251,32 @@ export const FeaturedEventsSection = memo(function FeaturedEventsSection({ initi
                             {event.description}
                           </p>
                         </div>
-                      </Link>
 
-                      <div className={`px-4 pb-4 pt-3 border-t border-border-subtle/40 flex items-center justify-between mt-auto bg-black/40 transition-opacity ${!isActive ? 'opacity-50' : ''}`}>
-                        <div>
-                          <div className="text-[9px] sm:text-[10px] text-text-muted font-medium">Tickets from</div>
-                           <div className="text-white font-black text-xs sm:text-sm">
-                            ₹{event.ticketTiers && event.ticketTiers.length > 0 ? Math.min(...event.ticketTiers.map((t) => t.price)) : 0}
+                        {event.status === 'completed' ? (
+                          <div className={`px-4 pb-4 pt-3 border-t border-border-subtle/40 flex items-center justify-between mt-auto bg-black/40 transition-opacity w-full ${!isActive ? 'opacity-50' : ''}`}>
+                            <span className="text-[10px] sm:text-xs font-semibold text-text-muted italic">
+                              Tickets Closed
+                            </span>
+                            <div className="px-2.5 py-1.5 sm:px-3.5 sm:py-2 text-[10px] sm:text-xs font-bold text-text-muted bg-white/5 border border-white/5 rounded-xl text-center inline-block">
+                              Completed
+                            </div>
                           </div>
-                        </div>
-                        <Link
-                          href={`/events/${event.slug}`}
-                          id={`event-card-book-${event.slug}`}
-                          tabIndex={isActive ? 0 : -1}
-                          aria-label={event.isSoldOut ? `View details for ${event.title}` : `Book tickets for ${event.title}`}
-                          className={`px-2.5 py-1.5 sm:px-3.5 sm:py-2 text-[10px] sm:text-xs font-bold text-white btn-gradient rounded-xl shadow-glow-sm group-hover:scale-105 transition-all text-center inline-block focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
-                            !isActive ? 'pointer-events-none opacity-50 cursor-not-allowed' : ''
-                          }`}
-                        >
-                          {event.isSoldOut ? 'Details' : 'Book Now'}
-                        </Link>
-                      </div>
+                        ) : (
+                          <div className={`px-4 pb-4 pt-3 border-t border-border-subtle/40 flex items-center justify-between mt-auto bg-black/40 transition-opacity w-full ${!isActive ? 'opacity-50' : ''}`}>
+                            <div>
+                              <div className="text-[9px] sm:text-[10px] text-text-muted font-medium">Tickets from</div>
+                              <div className="text-white font-black text-xs sm:text-sm">
+                                ₹{event.ticketTiers && event.ticketTiers.length > 0 ? Math.min(...event.ticketTiers.map((t) => t.price)) : 0}
+                              </div>
+                            </div>
+                            <div
+                              className="px-2.5 py-1.5 sm:px-3.5 sm:py-2 text-[10px] sm:text-xs font-bold text-white btn-gradient rounded-xl shadow-glow-sm group-hover:scale-105 transition-all text-center inline-block"
+                            >
+                              {event.isSoldOut ? 'Details' : 'Book Now'}
+                            </div>
+                          </div>
+                        )}
+                      </Link>
                     </motion.div>
                   );
                 })}

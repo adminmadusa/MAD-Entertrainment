@@ -1,5 +1,6 @@
 import { z } from 'zod';
-import { EventCategory, BookingMode, BookingStatus, EventStatus, PopupTrigger, TicketTier, type EventLifecycleStatus, BOOKING_REFERENCE_REGEX, EventMemoryPublicationState, MAX_MEMORIES_GALLERY_LIMIT } from '@mad/shared';
+
+import { EventCategory, BookingMode, BookingStatus, EventStatus, PopupTrigger, TicketTier, type EventLifecycleStatus, BOOKING_REFERENCE_REGEX, TicketSalesCloseMode } from '@mad/shared';
 import { objectIdSchema } from '@mad/validations';
 
 // -- Common schemas --
@@ -187,6 +188,9 @@ export const scannerScanSchema = z.object({
   body: z.object({
     ticketId: z.string().trim().min(1, 'Ticket ID is required').max(100),
     eventId: objectIdSchema,
+    requestId: z.string().optional(),
+    source: z.enum(['camera', 'manual', 'hardware']).optional(),
+    offline: z.boolean().optional(),
   }).strict(),
 });
 
@@ -237,6 +241,12 @@ export const updateCategorySchema = z.object({
 // -- Tier Validation --
 const tierBodySchema = z.object({
   name: z.string().trim().min(1, 'Tier name is required').max(100),
+  icon: z.enum(['ticket', 'star', 'medal', 'crown', 'lock', 'users', 'heart', 'clock', 'gift']).optional(),
+  color: z.string().trim().regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, 'Invalid hex color format').optional(),
+  description: z.string().trim().max(500).optional(),
+  isActive: z.boolean().optional(),
+  defaultVisibility: z.boolean().optional(),
+  sortIndex: z.number().int().min(0).optional(),
 }).strict();
 
 export const createTierSchema = z.object({
@@ -293,7 +303,6 @@ type EventImageValidationAsset = {
 type EventImageValidationBody = {
   bannerImage?: EventImageValidationAsset;
   posterImage?: EventImageValidationAsset;
-  galleryImages?: EventImageValidationAsset[];
 };
 const eventLifecycleStatuses = Object.values(EventStatus) as [EventLifecycleStatus, ...EventLifecycleStatus[]];
 
@@ -302,17 +311,15 @@ const eventLifecycleStatusSchema = z.enum(eventLifecycleStatuses);
 export const validateEventImages = (body: EventImageValidationBody, ctx: z.RefinementCtx) => {
   const banner = body.bannerImage;
   const poster = body.posterImage;
-  const gallery = body.galleryImages;
 
   const hasBanner = !!banner;
   const hasPoster = !!poster;
-  const galleryCount = Array.isArray(gallery) ? gallery.length : 0;
-  const totalCount = (hasBanner ? 1 : 0) + (hasPoster ? 1 : 0) + galleryCount;
+  const totalCount = (hasBanner ? 1 : 0) + (hasPoster ? 1 : 0);
   if (totalCount > 15) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
       message: 'Total event images cannot exceed 15',
-      path: ['galleryImages'],
+      path: ['bannerImage'],
     });
   }
 
@@ -345,24 +352,7 @@ export const validateEventImages = (body: EventImageValidationBody, ctx: z.Refin
 
   checkImg(banner, 'bannerImage');
   checkImg(poster, 'posterImage');
-  if (Array.isArray(gallery)) {
-    gallery.forEach((img, idx) => {
-      checkImg(img, ['galleryImages', idx]);
-    });
-  }
 };
-
-const eventMemoryItemSchema = cloudinaryImageSchema.extend({
-  order: z.number().int().nonnegative().default(0),
-});
-
-const eventMemorySchema = z.object({
-  publicationState: z.nativeEnum(EventMemoryPublicationState).default(EventMemoryPublicationState.DRAFT),
-  heading: z.string().max(200).optional(),
-  thankYouMessage: z.string().max(2000).optional(),
-  highlights: z.array(z.string()).optional(),
-  gallery: z.array(eventMemoryItemSchema).max(MAX_MEMORIES_GALLERY_LIMIT).default([]),
-}).strict().nullable().optional();
 
 const eventBodySchema = z.object({
   title: z.string().min(1).max(200),
@@ -373,11 +363,12 @@ const eventBodySchema = z.object({
   bookingMode: z.nativeEnum(BookingMode),
   bannerImage: cloudinaryImageSchema,
   posterImage: cloudinaryImageSchema.optional(),
-  galleryImages: z.array(cloudinaryImageSchema).optional(),
   startDate: z.string().datetime(),
   endDate: z.string().datetime().optional(),
   doorsOpenTime: z.string().optional(),
   showTime: z.string().optional(),
+  ticketSalesCloseMode: z.nativeEnum(TicketSalesCloseMode).optional(),
+  ticketSalesCloseDate: z.string().datetime().optional(),
   venue: z.string().min(1),
 
   djOperatorIds: z.array(z.string()).optional(),
@@ -431,7 +422,6 @@ const eventBodySchema = z.object({
     maxPerBooking: z.number().int().min(1).optional(),
     minPerBooking: z.number().int().min(1).optional(),
   })).optional(),
-  memories: eventMemorySchema,
 });
 
 export const createEventSchema = z.object({
@@ -529,5 +519,11 @@ export const resendBookingTicketsSchema = z.object({
 export const bookingsSummarySchema = z.object({
   query: z.object({
     eventId: z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid event ID format').optional(),
+  }),
+});
+
+export const adminBulkIdsSchema = z.object({
+  body: z.object({
+    ids: z.array(z.string().trim().min(1)).min(1, 'At least one ID must be provided'),
   }),
 });

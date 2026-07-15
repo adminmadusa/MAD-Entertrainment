@@ -6,7 +6,7 @@ import { getEnv } from '../../config/env';
 import { getQueueName } from '../../config/queue.config';
 import { AppError } from '../../middleware/error.middleware';
 import { Booking } from '../../models/booking.schema';
-import { Ticket, ITicket } from '../../models/ticket.schema';
+import { Ticket } from '../../models/ticket.schema';
 import { auditLog } from '../../utils/audit';
 import { logger } from '../../utils/logger';
 import { runInTransaction } from '../../utils/transaction';
@@ -52,7 +52,7 @@ export async function assignTicket(
   }
 
   // 2. Perform the update inside a transaction session
-  const updatedTicket = await runInTransaction(async (session) => {
+  await runInTransaction(async (session) => {
     const updated = await Ticket.findOneAndUpdate(
       {
         ticketId,
@@ -175,7 +175,7 @@ export async function claimTicket(
   }
 
   // 2. Perform the update inside a transaction session
-  const updatedTicket = await runInTransaction(async (session) => {
+  await runInTransaction(async (session) => {
     const updated = await Ticket.findOneAndUpdate(
       {
         ticketId,

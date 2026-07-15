@@ -1,18 +1,25 @@
 'use client';
 
 import React, { useRef } from 'react';
-import { cn } from '../../lib/cn';
+
 import { useFocusTrap } from '../../hooks/useFocusTrap';
+import { useDelayedUnmount } from '../../hooks/useDelayedUnmount';
+import { MotionTokens } from '../../lib/motionTokens';
 import { X } from '../../icons';
+import { cn } from '../../lib/cn';
 import { IconButton } from '../../primitives/IconButton';
-import { ModalProps } from './Modal.types';
 import {
   modalSizes,
-  modalBackdropClasses,
-  modalContentClasses,
+  modalBackdropBaseClasses,
+  modalBackdropPresentations,
+  modalContentBaseClasses,
+  modalContentPresentations,
+  modalContentInitialStates,
+  modalContentActiveStates,
   modalCloseButtonClasses,
   modalCloseIconClasses,
 } from './Modal.styles';
+import type { ModalProps } from './Modal.types';
 
 export function Modal({
   isOpen,
@@ -22,10 +29,17 @@ export function Modal({
   children,
   closeOnBackdropClick = false,
   enableSwipeToClose = false,
+  presentation = 'centered',
   ariaLabelledBy,
   ariaDescribedBy,
   className,
 }: ModalProps) {
+  const { isRendered, isVisible } = useDelayedUnmount(
+    isOpen,
+    0,
+    MotionTokens.modal.exit,
+  );
+
   const modalRef = useFocusTrap<HTMLDivElement>({
     isActive: isOpen,
     onClose,
@@ -36,10 +50,11 @@ export function Modal({
   const touchCurrentY = useRef(0);
   const isDragging = useRef(false);
 
-  if (!isOpen) return null;
+  if (!isRendered) return null;
 
   const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
-    if (!enableSwipeToClose) return;
+    if (!enableSwipeToClose || presentation !== 'bottom-sheet') return;
+    if (e.currentTarget.scrollTop > 0) return;
     touchStartY.current = e.touches[0].clientY;
     touchStartTime.current = Date.now();
     isDragging.current = true;
@@ -47,7 +62,7 @@ export function Modal({
   };
 
   const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
-    if (!enableSwipeToClose || !isDragging.current) return;
+    if (!enableSwipeToClose || presentation !== 'bottom-sheet' || !isDragging.current) return;
     const currentY = e.touches[0].clientY;
     const diffY = currentY - touchStartY.current;
 
@@ -58,7 +73,7 @@ export function Modal({
   };
 
   const handleTouchEnd = (e: React.TouchEvent<HTMLDivElement>) => {
-    if (!enableSwipeToClose || !isDragging.current) return;
+    if (!enableSwipeToClose || presentation !== 'bottom-sheet' || !isDragging.current) return;
     isDragging.current = false;
 
     const diffY = touchCurrentY.current;
@@ -67,13 +82,15 @@ export function Modal({
     const element = e.currentTarget;
 
     if (diffY > 120 && velocity > 0.5) {
-      element.style.transition = 'transform 0.2s ease-out';
+      // Swipe dismiss: animate out then call onClose
+      element.style.transition = `transform ${MotionTokens.modal.exit}ms ease-in`;
       element.style.transform = 'translateY(100%)';
       setTimeout(() => {
         onClose();
-      }, 200);
+      }, MotionTokens.modal.exit);
     } else {
-      element.style.transition = 'transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+      // Swipe cancel: bounce back using design system bounce token
+      element.style.transition = `transform ${MotionTokens.modal.enter}ms var(--transition-bounce)`;
       element.style.transform = 'translateY(0)';
     }
 
@@ -83,7 +100,9 @@ export function Modal({
   return (
     <div
       className={cn(
-        modalBackdropClasses,
+        modalBackdropBaseClasses,
+        modalBackdropPresentations[presentation],
+        isVisible ? 'opacity-100' : 'opacity-0',
         closeOnBackdropClick && 'cursor-pointer'
       )}
       onClick={(e) => {
@@ -103,7 +122,9 @@ export function Modal({
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
         className={cn(
-          modalContentClasses,
+          modalContentBaseClasses,
+          modalContentPresentations[presentation],
+          isVisible ? modalContentActiveStates[presentation] : modalContentInitialStates[presentation],
           modalSizes[size],
           className
         )}

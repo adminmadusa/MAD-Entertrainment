@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
+
 import { checkoutSchema, reserveTicketsSchema } from '@mad/validations';
 
 function expectAccepted(schema: z.ZodTypeAny, payload: unknown) {

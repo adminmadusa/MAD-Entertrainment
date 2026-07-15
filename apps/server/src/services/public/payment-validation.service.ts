@@ -127,7 +127,7 @@ export class PaymentValidationService {
     intent: any;
     isMock: boolean;
   }): void {
-    const { booking, payment, intent, isMock } = params;
+    const { booking, intent, isMock } = params;
 
     if (isMock) {
       // Mock path: no Stripe API checks — proof is the pi_mock_ prefix under MOCK_PAYMENTS.

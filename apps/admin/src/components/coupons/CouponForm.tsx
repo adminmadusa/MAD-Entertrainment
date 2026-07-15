@@ -1,15 +1,20 @@
 'use client';
 
-import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 import { EventCategory } from '@mad/shared';
 import type { Coupon } from '@mad/types';
-import { FormField, Input, Textarea, Alert } from '@mad/ui';
+import { Alert, FormField, Input, Textarea } from '@mad/ui';
 
-import { CouponFormState, defaultCouponForm, mapCouponToFormState, validateCouponForm, CATEGORY_LABELS, inputCls, } from './coupon-form.types';
-
+import {
+  CATEGORY_LABELS,
+  CouponFormState,
+  defaultCouponForm,
+  inputCls,
+  mapCouponToFormState,
+  validateCouponForm,
+} from './coupon-form.utils';
 
 interface CouponFormProps {
   initialData?: Coupon | null;
@@ -67,7 +72,7 @@ export function CouponForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {displayedError && (
-        <Alert variant="danger" className="animate-in fade-in duration-300">
+        <Alert variant="danger" className="animate-in fade-in duration-300" role="alert" aria-live="assertive">
           {displayedError}
         </Alert>
       )}
@@ -90,6 +95,7 @@ export function CouponForm({
               value={formState.discountType}
               onChange={e => setFormState(p => ({ ...p, discountType: e.target.value as 'percentage' | 'fixed' }))}
               className={inputCls}
+              aria-invalid={!!displayedError ? 'true' : undefined}
             >
               <option value="percentage" className="bg-background-card">Percentage (%)</option>
               <option value="fixed" className="bg-background-card">Fixed Amount (₹)</option>
@@ -211,10 +217,15 @@ export function CouponForm({
                       }`}
                     >
                       <input
-                        type="checkbox" checked={isSelected} readOnly
+                        type="checkbox" 
+                        id={`event-${event._id}`}
+                        checked={isSelected} 
+                        readOnly
                         className="w-3.5 h-3.5 accent-accent-purple rounded"
                       />
-                      <span className="text-xs font-medium">{event.title}</span>
+                      <label htmlFor={`event-${event._id}`} className="text-xs font-medium cursor-pointer">
+                        {event.title}
+                      </label>
                     </div>
                   );
                 })}
@@ -235,7 +246,7 @@ export function CouponForm({
             onChange={e => setFormState(p => ({ ...p, isActive: e.target.checked }))}
             className="w-4 h-4 accent-accent-purple rounded"
           />
-          <label htmlFor="coupon-active" className="text-text-secondary text-sm">
+          <label htmlFor="coupon-active" className="text-text-secondary text-sm cursor-pointer">
             Mark this coupon as active immediately
           </label>
         </div>

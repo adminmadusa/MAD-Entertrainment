@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 import type { FilterQuery } from 'mongoose';
 
-import { EventStatus, SeatStatus, EventMemoryPublicationState } from '@mad/shared';
+import { EventStatus, SeatStatus } from '@mad/shared';
 
 import { getEnv } from '../../config/env';
 import { getRedis } from '../../config/redis';
@@ -35,25 +35,67 @@ export function verifyPreviewToken(token: string): {
 
 
 export class PublicEventService {
-  static async listEvents(filters: { category?: string; search?: string; page?: number; limit?: number; includeTotal?: boolean }) {
+  static async listEvents(filters: { category?: string; status?: string; search?: string; isFeatured?: boolean; page?: number; limit?: number; includeTotal?: boolean }) {
     const page = filters.page || 1;
     const limit = filters.limit || 12;
     const skip = (page - 1) * limit;
 
     const query: FilterQuery<IEvent> = {
-      status: EventStatus.PUBLISHED,
       isDeleted: { $ne: true },
     };
+
+    const now = new Date();
+
+    if (filters.status) {
+      if (filters.status === 'completed') {
+        query.$or = [
+          { endDate: { $lt: now } },
+          { endDate: { $exists: false }, startDate: { $lt: now } },
+          { endDate: null, startDate: { $lt: now } },
+        ];
+      } else if (filters.status === 'published' || filters.status === 'upcoming') {
+        query.status = EventStatus.PUBLISHED;
+        query.$or = [
+          { endDate: { $gte: now } },
+          { endDate: { $exists: false }, startDate: { $gte: now } },
+          { endDate: null, startDate: { $gte: now } },
+        ];
+      } else {
+        query.status = filters.status;
+      }
+    } else {
+      // Default: Only show published and NOT completed (i.e. upcoming / live)
+      query.status = EventStatus.PUBLISHED;
+      query.$or = [
+        { endDate: { $gte: now } },
+        { endDate: { $exists: false }, startDate: { $gte: now } },
+        { endDate: null, startDate: { $gte: now } },
+      ];
+    }
+
+    if (filters.isFeatured !== undefined) {
+      query.isFeatured = filters.isFeatured;
+    }
 
     if (filters.category) {
       query.category = filters.category;
     }
 
     if (filters.search) {
-      query.$or = [
+      const searchOr = [
         { title: { $regex: filters.search, $options: 'i' } },
         { description: { $regex: filters.search, $options: 'i' } },
       ];
+      
+      if (query.$or) {
+        query.$and = [
+          { $or: query.$or },
+          { $or: searchOr }
+        ];
+        delete query.$or;
+      } else {
+        query.$or = searchOr;
+      }
     }
 
     const skipCount = filters.includeTotal === false;
@@ -68,7 +110,7 @@ export class PublicEventService {
         .sort({ startDate: 1 })
         .skip(skip)
         .limit(limit)
-        .select('title slug description category bannerImage startDate ticketTiers.price isSoldOut venue')
+        .select('title slug description category bannerImage startDate endDate ticketTiers.price isSoldOut venue status')
         .lean<Partial<IEvent>[]>();
       total = events.length;
     } else {
@@ -77,7 +119,7 @@ export class PublicEventService {
           .sort({ startDate: 1 })
           .skip(skip)
           .limit(limit)
-          .select('title slug description category bannerImage startDate ticketTiers.price isSoldOut venue')
+          .select('title slug description category bannerImage startDate endDate ticketTiers.price isSoldOut venue status')
           .lean<Partial<IEvent>[]>(),
         Event.countDocuments(query, queryOptions),
       ]);
@@ -86,7 +128,7 @@ export class PublicEventService {
     return { events, total };
   }
 
-  static async getEventBySlug(slug: string, previewToken?: string) {
+  static async getEventBySlug(slug: string) {
     // 5-second query timeout to prevent Safari streaming stalls
     const queryOptions = { maxTimeMS: 5000 };
 
@@ -110,36 +152,6 @@ export class PublicEventService {
 
     if (event.ticketTiers) {
       event.ticketTiers = event.ticketTiers.filter(tier => tier.isDeleted !== true);
-    }
-
-    let isPreviewValid = false;
-    if (previewToken) {
-      const decoded = verifyPreviewToken(previewToken);
-      if (decoded.valid && decoded.eventId && String(decoded.eventId) === String(event._id)) {
-        isPreviewValid = true;
-
-        // Audit preview accessed (only after token is valid and event matches)
-        auditLog({
-          action: 'event.memories.preview.accessed',
-          status: 'success',
-          metadata: {
-            eventId: String(event._id),
-            adminId: decoded.adminId,
-            timestamp: new Date().toISOString(),
-          },
-          description: `Preview token accessed for event ${event._id} by admin ${decoded.adminId}`,
-        });
-      }
-    }
-
-    // Suppress memories from the public response unless they are actively PUBLISHED or a valid preview token is provided.
-    // DRAFT, PREVIEW, and HIDDEN states must never reach public consumers.
-    if (
-      event.memories &&
-      event.memories.publicationState !== EventMemoryPublicationState.PUBLISHED &&
-      !isPreviewValid
-    ) {
-      event.memories = null;
     }
 
     return event;

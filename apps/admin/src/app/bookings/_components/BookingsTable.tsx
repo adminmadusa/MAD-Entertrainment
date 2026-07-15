@@ -5,6 +5,7 @@ import { useMemo } from 'react';
 import { AdminBooking } from '@/lib/api/admin/booking.service';
 import { BookingStatus, getBookingStatusLabel } from '@mad/shared';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, EmptyState } from '@mad/ui';
+import { Search } from '@mad/ui/icons';
 import { formatDateTime } from '@mad/utils';
 
 const STATUS_COLORS: Record<string, string> = {
@@ -50,25 +51,6 @@ export default function BookingsTable({
   onPageChange,
   currentPage,
 }: BookingsTableProps) {
-  // Sort bookings internally
-  const sortedBookings = useMemo(() => {
-    return [...bookings].sort((a, b) => {
-      if (!sortField) return 0;
-      const aVal = a[sortField];
-      const bVal = b[sortField];
-      if (typeof aVal === 'string' && typeof bVal === 'string') {
-        const aStr = aVal.toLowerCase();
-        const bStr = bVal.toLowerCase();
-        if (aStr < bStr) return sortOrder === 'asc' ? -1 : 1;
-        if (aStr > bStr) return sortOrder === 'asc' ? 1 : -1;
-        return 0;
-      }
-      if (aVal < bVal) return sortOrder === 'asc' ? -1 : 1;
-      if (aVal > bVal) return sortOrder === 'asc' ? 1 : -1;
-      return 0;
-    });
-  }, [bookings, sortField, sortOrder]);
-
   const renderTableBody = () => {
     if (isLoading) {
       return Array.from({ length: 6 }).map((_, i) => (
@@ -82,17 +64,22 @@ export default function BookingsTable({
       ));
     }
 
-    if (sortedBookings.length === 0) {
+    if (bookings.length === 0) {
       return (
         <TableRow>
-          <TableCell colSpan={7} className="py-16">
-            <EmptyState title="No bookings found" description="Try adjusting your filter criteria or search query." />
+          <TableCell colSpan={7} className="py-8">
+            <EmptyState 
+              variant="table"
+              icon={<Search />}
+              title="No results match your search." 
+              description="Try changing your filters or search criteria." 
+            />
           </TableCell>
         </TableRow>
       );
     }
 
-    return sortedBookings.map((booking) => {
+    return bookings.map((booking) => {
       const customer = booking.userId ?? booking.guestInfo;
       const customerName = (customer as { name?: string })?.name ?? '—';
       const customerEmail = (customer as { email?: string })?.email ?? '—';
@@ -102,7 +89,7 @@ export default function BookingsTable({
           onClick={() => onRowClick(booking)}
           className="border-b border-border-subtle/40 hover:bg-white/2 cursor-pointer transition-colors"
         >
-          <TableCell className="py-4 px-5 font-mono text-xs text-accent-purple">{booking.bookingId}</TableCell>
+          <TableCell sticky="start" showStickyDivider className="py-4 px-5 font-mono text-xs text-accent-purple">{booking.bookingId}</TableCell>
           <TableCell className="py-4 px-4">
             <p className="text-text-primary text-sm">{customerName}</p>
             <p className="text-text-muted text-xs">{customerEmail}</p>
@@ -140,7 +127,7 @@ export default function BookingsTable({
           <TableCell className="py-4 px-4 text-text-muted text-xs">
             {formatDateTime(booking.createdAt)}
           </TableCell>
-          <TableCell className="py-4 px-5 text-right">
+          <TableCell sticky="end" showStickyDivider className="py-4 px-5 text-right">
             {canMutateBookings && booking.status === BookingStatus.CONFIRMED && (
               <button
                 onClick={(e) => {
@@ -166,9 +153,11 @@ export default function BookingsTable({
   return (
     <div className="glass rounded-2xl border border-border-subtle overflow-hidden">
       <Table>
-        <TableHeader>
+        <TableHeader stickyHeader>
           <TableRow>
             <TableHead
+              sticky="start"
+              showStickyDivider
               onClick={() => onSort('bookingId')}
               className="py-3.5 px-5 cursor-pointer hover:text-white transition-colors select-none"
             >
@@ -189,7 +178,7 @@ export default function BookingsTable({
             >
               Date{renderSortArrow('createdAt')}
             </TableHead>
-            <TableHead className="py-3.5 px-5 text-right">Action</TableHead>
+            <TableHead sticky="end" showStickyDivider className="py-3.5 px-5 text-right">Action</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>{renderTableBody()}</TableBody>

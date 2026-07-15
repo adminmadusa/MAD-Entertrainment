@@ -2,7 +2,7 @@ import React from 'react';
 
 import { FormField, Input, Textarea } from '@mad/ui';
 
-import { DJBasicInfoCardProps } from './types';
+import type { DJBasicInfoCardProps } from './utils';
 
 // Re-export FormField as Field to maintain backward compatibility with DJSocialLinksCard
 export { FormField as Field };

@@ -17,12 +17,12 @@
 
 import { ClientSession } from 'mongoose';
 
-import { BookingStatus, PaymentStatus, ReservationStatus, SeatStatus, NotificationType } from '@mad/shared';
+import { BookingStatus, ReservationStatus, SeatStatus } from '@mad/shared';
 
 import { emitToAdmin, emitToBooking, emitToEvent } from '../../config/socket';
-import { Booking, IBooking } from '../../models/booking.schema';
+import { IBooking } from '../../models/booking.schema';
 import { Event } from '../../models/event.schema';
-import { Payment, IPayment } from '../../models/payment.schema';
+import { IPayment } from '../../models/payment.schema';
 import { Reservation } from '../../models/reservation.schema';
 import { SeatLayout } from '../../models/seat-layout.schema';
 import { logger } from '../../utils/logger';

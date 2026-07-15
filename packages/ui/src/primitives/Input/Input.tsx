@@ -1,6 +1,6 @@
 import React, { forwardRef } from 'react';
+
 import { cn } from '../../lib/cn';
-import { InputProps } from './Input.types';
 import {
   inputContainerClasses,
   inputDefaultBorder,
@@ -11,6 +11,7 @@ import {
   suffixWrapperClasses,
   errorTextClasses,
 } from './Input.styles';
+import type { InputProps } from './Input.types';
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
   ({ className, error, prefix, suffix, disabled, id, 'aria-describedby': ariaDescribedby, ...props }, ref) => {

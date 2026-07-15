@@ -1,5 +1,6 @@
-import { PaymentStatus } from '@mad/shared';
 import { Document, model, Schema, Types } from 'mongoose';
+
+import { PaymentStatus } from '@mad/shared';
 
 export interface IPayment extends Document {
   bookingId: Types.ObjectId;

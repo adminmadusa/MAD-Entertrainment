@@ -1,6 +1,5 @@
-import { Types } from 'mongoose';
 
-import { EventStatus, type EventLifecycleStatus } from '@mad/shared';
+import { EventStatus, type EventLifecycleStatus, type BulkOperationResult } from '@mad/shared';
 
 import { AppError } from '../../middleware/error.middleware';
 import { Booking } from '../../models/booking.schema';
@@ -8,6 +7,7 @@ import { Event } from '../../models/event.schema';
 import { Reservation } from '../../models/reservation.schema';
 import { TicketProfile, ITicketProfile } from '../../models/ticket-profile.schema';
 import { Ticket } from '../../models/ticket.schema';
+import { auditLog } from '../../utils/audit';
 import { CacheService } from '../cache.service';
 
 const ACTIVE_PROFILE_EVENT_STATUSES: readonly EventLifecycleStatus[] = [
@@ -180,7 +180,7 @@ export const updateTicketProfile = async (
   id: string,
   data: Partial<ITicketProfile>
 ): Promise<ITicketProfile | null> => {
-  const existingProfile = await TicketProfile.findById(id);
+  const existingProfile = await TicketProfile.findById(String(id));
   if (!existingProfile) return null;
 
   if (data.groups) {
@@ -190,7 +190,7 @@ export const updateTicketProfile = async (
 
     if (removedTiers.length > 0) {
       const events = await Event.find({
-        ticketProfileId: id,
+        ticketProfileId: String(id),
         status: { $in: ACTIVE_PROFILE_EVENT_STATUSES },
         isDeleted: { $ne: true },
       });
@@ -222,7 +222,8 @@ export const updateTicketProfile = async (
     }
   }
 
-  const updated = await TicketProfile.findByIdAndUpdate(id, data, { new: true });
+  existingProfile.set(data);
+  const updated = await existingProfile.save();
   if (updated) {
     await syncProfileEvents(updated._id.toString());
   }
@@ -233,7 +234,7 @@ const DELETE_BLOCKED_MESSAGE = 'Ticket Profile is referenced by active events an
 
 const ensureTicketProfileCanBeDeleted = async (profileId: string) => {
   const referencedEvents = await Event.find({
-    ticketProfileId: profileId,
+    ticketProfileId: String(profileId),
     isDeleted: { $ne: true },
   });
 
@@ -268,6 +269,68 @@ const ensureTicketProfileCanBeDeleted = async (profileId: string) => {
 
 export const deleteTicketProfile = async (id: string): Promise<ITicketProfile | null> => {
   await ensureTicketProfileCanBeDeleted(id);
-  const deleted = await TicketProfile.findByIdAndUpdate(id, { isDeleted: true }, { new: true });
+  const deleted = await TicketProfile.findByIdAndUpdate(String(id), { isDeleted: true }, { new: true });
   return deleted;
+};
+
+export const bulkDeleteTicketProfiles = async (ids: string[], adminId: string): Promise<BulkOperationResult> => {
+  const results: BulkOperationResult['results'] = [];
+  let successCount = 0;
+  let failedCount = 0;
+
+  for (const id of ids) {
+    try {
+      const deleted = await deleteTicketProfile(id);
+      if (deleted) {
+        results.push({ id, status: 'success' });
+        successCount++;
+      } else {
+        results.push({ id, status: 'failed', reason: 'Ticket Profile not found' });
+        failedCount++;
+      }
+    } catch (error: any) {
+      results.push({ id, status: 'failed', reason: error.message || 'Unknown error' });
+      failedCount++;
+    }
+  }
+
+  auditLog({
+    action: 'BULK_DELETE_TICKET_PROFILES',
+    actor: { type: 'admin', id: adminId },
+    status: 'success',
+    metadata: { ids, successCount, failedCount, results },
+  });
+
+  return { successCount, failedCount, results };
+};
+
+export const bulkUpdateTicketProfileStatus = async (ids: string[], isActive: boolean, adminId: string): Promise<BulkOperationResult> => {
+  const results: BulkOperationResult['results'] = [];
+  let successCount = 0;
+  let failedCount = 0;
+
+  for (const id of ids) {
+    try {
+      const updated = await updateTicketProfile(id, { isActive });
+      if (updated) {
+        results.push({ id, status: 'success' });
+        successCount++;
+      } else {
+        results.push({ id, status: 'failed', reason: 'Ticket Profile not found' });
+        failedCount++;
+      }
+    } catch (error: any) {
+      results.push({ id, status: 'failed', reason: error.message || 'Unknown error' });
+      failedCount++;
+    }
+  }
+
+  auditLog({
+    action: 'BULK_STATUS_TICKET_PROFILES',
+    actor: { type: 'admin', id: adminId },
+    status: 'success',
+    metadata: { ids, isActive, successCount, failedCount, results },
+  });
+
+  return { successCount, failedCount, results };
 };

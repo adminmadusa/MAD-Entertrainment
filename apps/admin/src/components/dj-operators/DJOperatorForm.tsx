@@ -1,12 +1,10 @@
-import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import React, { useState, useEffect } from 'react';
-import { Alert } from '@mad/ui';
 
 import type { DJOperator, ImageAsset } from '@mad/types';
+import { Alert, AdminFormActions } from '@mad/ui';
 
 import { DJBasicInfoCard } from './DJBasicInfoCard';
-import { DJFormActions } from './DJFormActions';
 import { DJMediaCard } from './DJMediaCard';
 import { DJSocialLinksCard } from './DJSocialLinksCard';
 
@@ -197,11 +195,12 @@ export const DJOperatorForm: React.FC<DJOperatorFormProps> = ({
           setIsActive={setIsActive}
         />
 
-        <DJFormActions
+        <AdminFormActions
           onCancel={() => router.back()}
           submitLabel={submitLabel}
           pendingLabel={pendingLabel}
           isPending={isPending}
+          submitId="dj-submit"
         />
       </form>
     </div>

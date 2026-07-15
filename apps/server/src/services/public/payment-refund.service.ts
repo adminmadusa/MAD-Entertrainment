@@ -22,38 +22,28 @@
 import * as Sentry from '@sentry/node';
 import { ClientSession } from 'mongoose';
 
-import { BookingStatus, NotificationType, PaymentStatus, RefundStatus, ReservationStatus, SeatStatus } from '@mad/shared';
+import { BookingStatus, NotificationType, PaymentStatus, RefundStatus } from '@mad/shared';
 
 import { getEnv } from '../../config/env';
 import { getQueueName } from '../../config/queue.config';
-import { emitToAdmin, emitToBooking, emitToEvent } from '../../config/socket';
 import { fullRefundHtml, partialRefundHtml, paymentFailureHtml } from '../../lib/email';
-import { AppError } from '../../middleware/error.middleware';
 import { Booking, IBooking } from '../../models/booking.schema';
 import { Event } from '../../models/event.schema';
 import { Notification } from '../../models/notification.schema';
 import { Payment, IPayment } from '../../models/payment.schema';
 import { Refund } from '../../models/refund.schema';
-import { SeatLayout } from '../../models/seat-layout.schema';
 import { auditLog } from '../../utils/audit';
 import { logger } from '../../utils/logger';
 import { runInTransaction } from '../../utils/transaction';
-import { BookingLifecycleService } from './booking/booking-lifecycle.service';
-const { cancelBooking, executeCancelBookingSideEffects } = BookingLifecycleService;
-import { CacheService } from '../cache.service';
 import { createNotificationSafe } from '../notification.service';
 import { QueueService } from '../queue.service';
-import { ReservationService } from '../reservation.service';
+import { BookingLifecycleService } from './booking/booking-lifecycle.service';
 import { PaymentInventoryService } from './payment-inventory.service';
-import type {
-  StripeChargeWebhookPayload,
-  StripeRefundWebhookPayload,
-  RazorpayRefundWebhookPayload,
-  NormalizedRefundPayload,
-  NormalizedRefundData,
-} from './payment.types';
-import { StripeRefundService } from './payment/stripe-refund.service';
+import type { StripeChargeWebhookPayload, StripeRefundWebhookPayload, RazorpayRefundWebhookPayload, NormalizedRefundData } from './payment.types';
 import { RazorpayRefundService } from './payment/razorpay-refund.service';
+import { StripeRefundService } from './payment/stripe-refund.service';
+
+const { cancelBooking, executeCancelBookingSideEffects } = BookingLifecycleService;
 
 
 // ─────────────────────────────────────────────────────────────────────────────

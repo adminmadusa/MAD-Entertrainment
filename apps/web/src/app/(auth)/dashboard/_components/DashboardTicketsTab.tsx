@@ -4,7 +4,6 @@ import Link from 'next/link';
 import { useState } from 'react';
 
 import { BookingCard } from '@/components/booking/shared/BookingCard';
-import { BookingStatus } from '@mad/shared';
 import type { Booking, Ticket } from '@mad/types';
 
 export function BookingCardSkeleton() {
@@ -116,7 +115,7 @@ export function DashboardTicketsTab({
           aria-selected={activeTicketSubTab === 'upcoming'}
           aria-controls="subtab-panel-upcoming"
           onClick={() => setActiveTicketSubTab('upcoming')}
-          className={`flex-shrink-0 px-5 py-2.5 text-xs font-extrabold rounded-xl transition-all duration-300 min-h-[44px] flex items-center justify-center whitespace-nowrap ${
+          className={`flex-shrink-0 px-5 py-2.5 text-xs font-extrabold rounded-xl transition-all duration-300 min-h-[44px] flex items-center justify-center whitespace-nowrap focus-ring ${
             activeTicketSubTab === 'upcoming'
               ? 'bg-accent-purple text-white shadow-md'
               : 'text-text-secondary hover:text-white hover:bg-white/5'
@@ -131,7 +130,7 @@ export function DashboardTicketsTab({
           aria-selected={activeTicketSubTab === 'past'}
           aria-controls="subtab-panel-past"
           onClick={() => setActiveTicketSubTab('past')}
-          className={`flex-shrink-0 px-5 py-2.5 text-xs font-extrabold rounded-xl transition-all duration-300 min-h-[44px] flex items-center justify-center whitespace-nowrap ${
+          className={`flex-shrink-0 px-5 py-2.5 text-xs font-extrabold rounded-xl transition-all duration-300 min-h-[44px] flex items-center justify-center whitespace-nowrap focus-ring ${
             activeTicketSubTab === 'past'
               ? 'bg-accent-purple text-white shadow-md'
               : 'text-text-secondary hover:text-white hover:bg-white/5'
@@ -146,7 +145,7 @@ export function DashboardTicketsTab({
           aria-selected={activeTicketSubTab === 'cancelled'}
           aria-controls="subtab-panel-cancelled"
           onClick={() => setActiveTicketSubTab('cancelled')}
-          className={`flex-shrink-0 px-5 py-2.5 text-xs font-extrabold rounded-xl transition-all duration-300 min-h-[44px] flex items-center justify-center whitespace-nowrap ${
+          className={`flex-shrink-0 px-5 py-2.5 text-xs font-extrabold rounded-xl transition-all duration-300 min-h-[44px] flex items-center justify-center whitespace-nowrap focus-ring ${
             activeTicketSubTab === 'cancelled'
               ? 'bg-accent-purple text-white shadow-md'
               : 'text-text-secondary hover:text-white hover:bg-white/5'
@@ -182,7 +181,12 @@ export function DashboardTicketsTab({
     return (
       <div className="space-y-6">
         {renderSubTabs()}
-        <div className="glass rounded-3xl border border-border-subtle p-12 text-center space-y-4">
+        <div
+          role="tabpanel"
+          id={`subtab-panel-${activeTicketSubTab}`}
+          aria-labelledby={`subtab-${activeTicketSubTab}`}
+          className="glass rounded-3xl border border-border-subtle p-12 text-center space-y-4"
+        >
           <div className="text-4xl">🎟️</div>
           <h4 className="text-white font-bold text-base capitalize">No {activeTicketSubTab} bookings</h4>
           <p className="text-text-secondary text-xs max-w-sm mx-auto leading-relaxed">
@@ -206,7 +210,12 @@ export function DashboardTicketsTab({
   return (
     <div className="space-y-6">
       {renderSubTabs()}
-      <div className="space-y-4">
+      <div
+        role="tabpanel"
+        id={`subtab-panel-${activeTicketSubTab}`}
+        aria-labelledby={`subtab-${activeTicketSubTab}`}
+        className="space-y-4"
+      >
         {subTabBookings.map((b) => (
           <BookingCard
             key={b._id}

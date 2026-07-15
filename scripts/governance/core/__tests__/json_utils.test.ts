@@ -1,6 +1,6 @@
 // scripts/governance/core/__tests__/json_utils.test.ts
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { existsSync, readFileSync, writeFileSync, rmSync } from 'fs';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { existsSync, readFileSync, rmSync } from 'fs';
 import { join } from 'path';
 import {
   sortObjectKeys,

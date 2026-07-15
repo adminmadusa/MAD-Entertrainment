@@ -1,4 +1,5 @@
 import type { Config } from 'tailwindcss';
+
 import sharedPreset from '@mad/ui/tailwind/preset';
 
 const config: Config = {

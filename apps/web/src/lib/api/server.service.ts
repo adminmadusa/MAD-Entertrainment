@@ -120,13 +120,53 @@ export async function safeServerFetch<T>(
 
 export async function serverGetFeaturedEvents(): Promise<Event[]> {
   const payload = await safeServerFetch<{ events: Event[] }>(
-    '/events?page=1&limit=6',
+    '/events?isFeatured=true&page=1&limit=6',
     {
       fallback: { events: [] },
       revalidate: 60,
       timeoutMs: 8000,
       retries: 1,
       label: 'Featured Events',
+    }
+  );
+  
+  const featuredEvents = Array.isArray(payload.events) ? [...payload.events] : [];
+
+  // Fallback: If less than 6 featured events, fill the remaining with newest upcoming events
+  if (featuredEvents.length < 6) {
+    const fallbackPayload = await safeServerFetch<{ events: Event[] }>(
+      `/events?page=1&limit=${6 + featuredEvents.length}`,
+      {
+        fallback: { events: [] },
+        revalidate: 60,
+        timeoutMs: 8000,
+        retries: 1,
+        label: 'Fallback Featured Events',
+      }
+    );
+    const fallbackEvents = Array.isArray(fallbackPayload.events) ? fallbackPayload.events : [];
+    
+    const featuredIds = new Set(featuredEvents.map(e => String(e._id)));
+    for (const event of fallbackEvents) {
+      if (!featuredIds.has(String(event._id))) {
+        featuredEvents.push(event);
+        if (featuredEvents.length >= 6) break;
+      }
+    }
+  }
+
+  return featuredEvents;
+}
+
+export async function serverGetCompletedEvents(): Promise<Event[]> {
+  const payload = await safeServerFetch<{ events: Event[] }>(
+    '/events?status=completed&page=1&limit=6',
+    {
+      fallback: { events: [] },
+      revalidate: 60,
+      timeoutMs: 8000,
+      retries: 1,
+      label: 'Completed Events',
     }
   );
   return Array.isArray(payload.events) ? payload.events : [];
@@ -158,4 +198,18 @@ export async function serverGetDJs(): Promise<DJOperator[]> {
     return payload.djs;
   }
   return [];
+}
+
+export async function serverGetGallery(slug: string): Promise<{ items: import('@mad/types').EventGalleryItem[]; settings: import('@mad/types').EventGallerySettings | null }> {
+  const payload = await safeServerFetch<{ items: import('@mad/types').EventGalleryItem[]; settings: import('@mad/types').EventGallerySettings | null }>(
+    `/events/${slug}/gallery`,
+    {
+      fallback: { items: [], settings: null },
+      revalidate: 60,
+      timeoutMs: 5000,
+      retries: 1,
+      label: 'Event Gallery',
+    }
+  );
+  return payload;
 }

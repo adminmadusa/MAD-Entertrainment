@@ -1,7 +1,7 @@
 import type { Metadata, ResolvingMetadata } from 'next';
 
 import { publicGetEventBySlug } from '@/lib/api/public.service';
-import { getCachedEvent } from '@/utils/cached-event';
+import { getCachedEvent } from '@/utils/cache-fetcher';
 import { buildBreadcrumbJsonLd, SITE_URL } from '@/utils/seo';
 
 import EventDetailClient from './EventDetailClient';
