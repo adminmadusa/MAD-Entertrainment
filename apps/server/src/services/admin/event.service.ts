@@ -206,7 +206,7 @@ export const getEvents = async (
 };
 
 export const getEventById = async (id: string): Promise<EventWithAttendance | null> => {
-  const event = await Event.findById(id)
+  const event = await Event.findById(String(id))
     .populate('djOperatorIds', 'name');
   if (!event) return null;
 
@@ -217,7 +217,7 @@ export const getEventById = async (id: string): Promise<EventWithAttendance | nu
 };
 
 export const updateEvent = async (id: string, data: Partial<IEvent>): Promise<EventWithAttendance | null> => {
-  const existing = await Event.findById(id);
+  const existing = await Event.findById(String(id));
   if (!existing) return null;
 
   const expectedVersion = data.eventVersion;
@@ -309,7 +309,7 @@ export const updateEvent = async (id: string, data: Partial<IEvent>): Promise<Ev
 
   const { eventVersion: _eventVersion, ...updateData } = data;
   const updated = await Event.findOneAndUpdate(
-    { _id: id, eventVersion: expectedVersion },
+    { _id: String(id), eventVersion: expectedVersion },
     { $set: updateData, $inc: { eventVersion: 1 } },
     { new: true }
   );
@@ -401,7 +401,7 @@ export interface DuplicateEventOptions {
 export const duplicateEvent = async (options: DuplicateEventOptions): Promise<IEvent> => {
   const { sourceEventId, title, date, venue, publish, adminId } = options;
 
-  const originalEvent = await Event.findById(sourceEventId).lean();
+  const originalEvent = await Event.findById(String(sourceEventId)).lean();
   if (!originalEvent) {
     throw AppError.notFound('Source event not found');
   }
