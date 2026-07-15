@@ -3,6 +3,7 @@
 import { AnimatePresence, motion, type PanInfo, useReducedMotion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { memo, useCallback, useRef, useState } from 'react';
 
 import { Reveal } from '@/components/common/PageTransition';
@@ -19,6 +20,7 @@ export const FeaturedEventsSection = memo(function FeaturedEventsSection({ initi
 
   const prefersReducedMotion = useReducedMotion();
   const mounted = useMounted();
+  const router = useRouter();
 
   const events = initialEvents;
 
@@ -150,12 +152,8 @@ export const FeaturedEventsSection = memo(function FeaturedEventsSection({ initi
                   // Don't render cards that are too far away
                   if (Math.abs(absoluteOffset) > 2) return null;
 
-                  let cardAriaLabel = `Book tickets for ${event.title}`;
-                  if (event.status === 'completed') {
-                    cardAriaLabel = `View recap for completed event ${event.title}`;
-                  } else if (event.isSoldOut) {
-                    cardAriaLabel = `View details for ${event.title}`;
-                  }
+                  let cardAriaLabel = `View details for ${event.title}`;
+                  const cta = event.bookingCTA || { text: 'Details', disabled: false, variant: 'primary', action: 'VIEW' };
 
                   return (
                     <motion.div
@@ -226,14 +224,9 @@ export const FeaturedEventsSection = memo(function FeaturedEventsSection({ initi
                             {EVENT_CATEGORY_LABELS[event.category as EventCategory] || event.category}
                           </span>
 
-                          {event.status === 'completed' && (
-                            <span className="absolute inset-0 bg-black/60 backdrop-blur-[2px] flex items-center justify-center text-text-muted font-bold text-sm tracking-wider">
-                              ENDED
-                            </span>
-                          )}
-                          {event.status !== 'completed' && event.isSoldOut && (
+                          {cta.action === 'NONE' && (
                             <span className="absolute inset-0 bg-black/60 backdrop-blur-[2px] flex items-center justify-center text-white font-bold text-sm tracking-wider">
-                              SOLD OUT
+                              {cta.text.toUpperCase()}
                             </span>
                           )}
                         </div>
@@ -252,30 +245,35 @@ export const FeaturedEventsSection = memo(function FeaturedEventsSection({ initi
                           </p>
                         </div>
 
-                        {event.status === 'completed' ? (
-                          <div className={`px-4 pb-4 pt-3 border-t border-border-subtle/40 flex items-center justify-between mt-auto bg-black/40 transition-opacity w-full ${!isActive ? 'opacity-50' : ''}`}>
-                            <span className="text-[10px] sm:text-xs font-semibold text-text-muted italic">
-                              Tickets Closed
-                            </span>
-                            <div className="px-2.5 py-1.5 sm:px-3.5 sm:py-2 text-[10px] sm:text-xs font-bold text-text-muted bg-white/5 border border-white/5 rounded-xl text-center inline-block">
-                              Completed
+                        <div className={`px-4 pb-4 pt-3 border-t border-border-subtle/40 flex items-center justify-between mt-auto bg-black/40 transition-opacity w-full ${!isActive ? 'opacity-50' : ''}`}>
+                          <div>
+                            <div className="text-[9px] sm:text-[10px] text-text-muted font-medium">Tickets from</div>
+                            <div className="text-white font-black text-xs sm:text-sm">
+                              ₹{event.ticketTiers && event.ticketTiers.length > 0 ? Math.min(...event.ticketTiers.map((t) => t.price)) : 0}
                             </div>
                           </div>
-                        ) : (
-                          <div className={`px-4 pb-4 pt-3 border-t border-border-subtle/40 flex items-center justify-between mt-auto bg-black/40 transition-opacity w-full ${!isActive ? 'opacity-50' : ''}`}>
-                            <div>
-                              <div className="text-[9px] sm:text-[10px] text-text-muted font-medium">Tickets from</div>
-                              <div className="text-white font-black text-xs sm:text-sm">
-                                ₹{event.ticketTiers && event.ticketTiers.length > 0 ? Math.min(...event.ticketTiers.map((t) => t.price)) : 0}
-                              </div>
-                            </div>
-                            <div
-                              className="px-2.5 py-1.5 sm:px-3.5 sm:py-2 text-[10px] sm:text-xs font-bold text-white btn-gradient rounded-xl shadow-glow-sm group-hover:scale-105 transition-all text-center inline-block"
-                            >
-                              {event.isSoldOut ? 'Details' : 'Book Now'}
-                            </div>
-                          </div>
-                        )}
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              if (cta.action === 'NONE' || cta.disabled) return;
+                              if (cta.action === 'BOOK') {
+                                router.push(`/events/${event.slug}?modal=booking`);
+                              } else {
+                                router.push(`/events/${event.slug}`);
+                              }
+                            }}
+                            disabled={cta.disabled}
+                            className={`px-2.5 py-1.5 sm:px-3.5 sm:py-2 text-[10px] sm:text-xs font-bold rounded-xl transition-all text-center inline-block ${
+                              cta.disabled 
+                                ? 'bg-white/5 border border-white/5 text-text-muted cursor-not-allowed'
+                                : 'text-white btn-gradient shadow-glow-sm hover:scale-105'
+                            }`}
+                          >
+                            {cta.text}
+                          </button>
+                        </div>
                       </Link>
                     </motion.div>
                   );

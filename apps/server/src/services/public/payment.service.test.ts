@@ -989,6 +989,7 @@ describe('Payment Service', () => {
 
       vi.mocked(Event.findById).mockResolvedValue({
         _id: 'e-123',
+        status: 'published',
         soldCount: 99,
         reservedCount: 0,
         totalCapacity: 100,
@@ -1029,6 +1030,7 @@ describe('Payment Service', () => {
 
       vi.mocked(Event.findById).mockResolvedValue({
         _id: 'e-123',
+        status: 'published',
         soldCount: 0,
         reservedCount: 0,
         totalCapacity: 100,
@@ -1218,6 +1220,7 @@ describe('Payment Service', () => {
       vi.mocked(Booking.findById).mockResolvedValue(mockBooking as any);
       vi.mocked(Event.findById).mockResolvedValue({
         _id: 'e-123',
+        status: 'published',
         soldCount: 0,
         reservedCount: 0,
         totalCapacity: 100,
@@ -1273,6 +1276,7 @@ describe('Payment Service', () => {
 
       vi.mocked(Event.findById).mockResolvedValue({
         _id: 'e-123',
+        status: 'published',
         soldCount: 99,
         reservedCount: 0,
         totalCapacity: 100,
@@ -1337,6 +1341,7 @@ describe('Payment Service', () => {
       vi.mocked(Event.findOneAndUpdate).mockResolvedValue({} as any);
       vi.mocked(Event.findById).mockResolvedValue({
         _id: 'e-123',
+        status: 'published',
         title: 'MAD Event',
         ticketTiers: [{ tier: 'general', soldCount: 10, totalCapacity: 100, name: 'General' }],
       } as any);
@@ -1390,6 +1395,7 @@ describe('Payment Service', () => {
       vi.mocked(Event.findOneAndUpdate).mockResolvedValue({} as any);
       vi.mocked(Event.findById).mockResolvedValue({
         _id: 'e-123',
+        status: 'published',
         title: 'MAD Event',
         ticketTiers: [{ tier: 'general', soldCount: 10, totalCapacity: 100, name: 'General' }],
       } as any);
@@ -1451,6 +1457,7 @@ describe('Payment Service', () => {
       vi.mocked(Event.findOneAndUpdate).mockResolvedValue({} as any);
       vi.mocked(Event.findById).mockResolvedValue({
         _id: 'e-123',
+        status: 'published',
         title: 'MAD Event',
         ticketTiers: [{ tier: 'general', soldCount: 10, totalCapacity: 100, name: 'General' }],
       } as any);
@@ -1674,7 +1681,7 @@ describe('Payment Service', () => {
       expect(PaymentService['failPaymentAndReleaseInventory']).toHaveBeenCalledWith(
         mockBooking,
         mockPayment,
-        'Event has already started or ended.',
+        'Event booking is closed: BOOKING_CLOSED',
         'auto_recovery',
         'PAYMENT_VALIDATION_FAILURE'
       );
@@ -1722,6 +1729,7 @@ describe('Payment Service', () => {
 
       const mockEvent = {
         _id: mockBooking.eventId,
+        status: 'published',
         bookingMode: 'general',
         ticketTiers: [
           {

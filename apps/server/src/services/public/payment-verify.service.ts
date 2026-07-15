@@ -12,7 +12,7 @@ import { logger } from '../../utils/logger';
 import { PaymentOwnershipContext } from './payment-intent.service';
 import { PaymentValidationService } from './payment-validation.service';
 import { StripeAdapter } from './stripe.adapter';
-import { canBook } from '@mad/shared';
+import { deriveBookingEligibility } from '@mad/shared';
 
 export interface PaymentVerifyPersistence {
   confirmBooking(
@@ -283,15 +283,17 @@ export class PaymentVerifyService {
     }
 
     const now = new Date();
-    if (!canBook(event as any)) {
+    // Final validation check for event status and tickets availability
+    const eligibility = deriveBookingEligibility(event as any);
+    if (!eligibility.bookingAllowed) {
       await persistence.failPaymentAndReleaseInventory(
         booking,
         payment,
-        'Event has already started or ended.',
+        `Event booking is closed: ${eligibility.bookingReason}`,
         'auto_recovery',
         'PAYMENT_VALIDATION_FAILURE'
       );
-      throw AppError.badRequest('This event is no longer available for booking.');
+      throw AppError.badRequest(`This event is no longer available for booking. Reason: ${eligibility.bookingReason}`);
     }
 
     let confirmedBooking: IBooking | null = null;

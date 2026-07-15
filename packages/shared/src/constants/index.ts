@@ -46,6 +46,37 @@ export const EVENT_STATUS_TRANSITIONS: Readonly<Record<EventLifecycleStatus, rea
   [EventStatus.CANCELLED]: [],
 };
 
+// ─── Event State (Frontend UI Mapping) ───────────────────────
+export enum EventState {
+  DRAFT = 'DRAFT',
+  PENDING = 'PENDING',
+  PUBLISHED = 'PUBLISHED',
+  UPCOMING = 'UPCOMING',
+  LIVE = 'LIVE',
+  BOOKING_NOT_STARTED = 'BOOKING_NOT_STARTED',
+  BOOKING_CLOSED = 'BOOKING_CLOSED',
+  SOLD_OUT = 'SOLD_OUT',
+  COMPLETED = 'COMPLETED',
+  CANCELLED = 'CANCELLED',
+  EXPIRED = 'EXPIRED',
+  ARCHIVED = 'ARCHIVED',
+  HIDDEN = 'HIDDEN',
+}
+
+// ─── Booking Reason ──────────────────────────────────────────
+export enum BookingReason {
+  BOOKABLE = 'BOOKABLE',
+  EVENT_COMPLETED = 'EVENT_COMPLETED',
+  EVENT_CANCELLED = 'EVENT_CANCELLED',
+  BOOKING_CLOSED = 'BOOKING_CLOSED',
+  BOOKING_NOT_STARTED = 'BOOKING_NOT_STARTED',
+  SOLD_OUT = 'SOLD_OUT',
+  CAPACITY_REACHED = 'CAPACITY_REACHED',
+  TICKET_DISABLED = 'TICKET_DISABLED',
+  EVENT_UNPUBLISHED = 'EVENT_UNPUBLISHED',
+  EVENT_ARCHIVED = 'EVENT_ARCHIVED',
+}
+
 // ─── Event Duplication Policy ────────────────────────────────
 export const EVENT_DUPLICATION_POLICY = {
   copied: [

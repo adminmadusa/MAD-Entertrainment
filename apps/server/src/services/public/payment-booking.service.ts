@@ -15,7 +15,7 @@ import { createNotificationSafe } from '../notification.service';
 import { ReservationService } from '../reservation.service';
 import { PaymentInventoryService } from './payment-inventory.service';
 import { PaymentRefundService } from './payment-refund.service';
-import { canBook } from '@mad/shared';
+import { deriveBookingEligibility } from '@mad/shared';
 
 export interface ConfirmationTransactionResult {
   success: boolean;
@@ -76,9 +76,11 @@ export class PaymentBookingService {
       _payment.paidAt = claimedPayment.paidAt;
     }
 
-    // Check event ticket sales closure constraints
-    const now = new Date();
-    if (!canBook(event as any)) {
+    const eligibility = deriveBookingEligibility(event as any);
+    if (!eligibility.bookingAllowed) {
+      if (eligibility.bookingReason === 'SOLD_OUT' || eligibility.bookingReason === 'CAPACITY_REACHED') {
+        throw new Error('EVENT_CAPACITY_ALLOCATION_FAILED');
+      }
       throw new Error('EVENT_EXPIRED_DURING_CONFIRMATION');
     }
 
