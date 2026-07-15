@@ -445,3 +445,31 @@ export interface BulkOperationResult {
     reason?: string;
   }[];
 }
+
+export interface BulkActionConfig<TId = string> {
+  id: string;
+  label: string;
+  icon?: unknown;
+  variant?: 'default' | 'destructive';
+  disabled?: boolean;
+  requireConfirmation?: boolean;
+  confirmationMessage?: string;
+  loadingLabel?: string;
+  successLabel?: string;
+  permission?: string;
+  danger?: boolean;
+}
+
+export interface BulkActionResult {
+  actionId: string;
+  successCount: number;
+  failedCount: number;
+  results: { id: string; status: 'success' | 'failed'; reason?: string }[];
+}
+
+export interface BulkProgress {
+  actionId: string;
+  total: number;
+  completed: number;
+  failed: number;
+}

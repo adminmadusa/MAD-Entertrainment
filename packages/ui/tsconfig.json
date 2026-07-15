@@ -11,5 +11,8 @@
     "noEmit": false
   },
   "include": ["src/**/*.ts", "src/**/*.tsx"],
-  "exclude": ["dist", "node_modules", "src/**/*.test.ts", "src/**/*.test.tsx"]
+  "exclude": ["dist", "node_modules", "src/**/*.test.ts", "src/**/*.test.tsx"],
+  "references": [
+    { "path": "../types" }
+  ]
 }
