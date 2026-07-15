@@ -4,6 +4,7 @@ import { getEnv } from '../../config/env';
 import { AppError } from '../../middleware/error.middleware';
 import { UserModel } from '../../models/user.schema';
 import { AuthService } from '../../services/public/auth.service';
+import { clearXsrfCookie, setXsrfCookie } from '../../utils/cookie';
 import { logger } from '../../utils/logger';
 import { requiresOnboarding } from '../../utils/user';
 
@@ -67,6 +68,9 @@ export class AuthController {
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days TTL
     });
 
+    // Set CSRF Token cookie
+    setXsrfCookie(res, result.csrfToken);
+
     const onboardingRequired = requiresOnboarding(result.user);
 
     res.status(200).json({
@@ -109,6 +113,9 @@ export class AuthController {
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days TTL
     });
 
+    // Set CSRF Token cookie
+    setXsrfCookie(res, result.csrfToken);
+
     const onboardingRequired = requiresOnboarding(result.user);
 
     res.status(200).json({
@@ -138,7 +145,8 @@ export class AuthController {
       throw AppError.unauthorized('Refresh token is required');
     }
 
-    const result = await AuthService.refreshSession(refreshToken);
+    const providedCsrfToken = req.headers['x-xsrf-token'] || req.headers['x-csrf-token'];
+    const result = await AuthService.refreshSession(refreshToken, providedCsrfToken as string);
 
     // Set secure rotated HTTP-only refresh token cookie (SameSite None for cross-site in production)
     const env = getEnv();
@@ -150,6 +158,9 @@ export class AuthController {
       domain: env.COOKIE_DOMAIN || (isProd ? '.esparex.in' : undefined),
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days TTL
     });
+
+    // Set CSRF Token cookie
+    setXsrfCookie(res, result.csrfToken);
 
     res.status(200).json({
       success: true,
@@ -176,6 +187,9 @@ export class AuthController {
       sameSite: isProd ? 'none' : 'lax',
       domain: env.COOKIE_DOMAIN || (isProd ? '.esparex.in' : undefined),
     });
+
+    // Clear CSRF Token cookie
+    clearXsrfCookie(res);
 
     res.status(200).json({
       success: true,
