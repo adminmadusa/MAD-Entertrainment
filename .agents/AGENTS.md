@@ -343,3 +343,206 @@ Every UI/UX and experience audit must adhere to the following 15-point structure
 13. Implementation Roadmap
 14. Regression Checklist
 15. Final Readiness
+
+---
+
+# PART 7 — MANDATORY REPOSITORY HYGIENE & SECURITY RULES (NON-NEGOTIABLE)
+
+## Code Cleanliness
+
+The repository **MUST** remain clean after every implementation.
+
+The AI **MUST NOT** introduce any of the following:
+
+### Unused Code
+
+* Unused variables
+* Unused constants
+* Unused imports
+* Unused exports
+* Unused functions
+* Unused methods
+* Unused classes
+* Unused interfaces
+* Unused types
+* Unused enums
+* Unused hooks
+* Unused React state
+* Unused refs
+* Unused effects
+* Unused props
+* Unused context values
+* Unused API responses
+* Unused helper utilities
+* Unused files
+* Dead code
+* Commented-out code
+* Temporary debugging code
+* TODO/FIXME placeholders unless explicitly requested
+
+---
+
+## Import Rules
+
+Every import must satisfy all of the following:
+
+* Imported and used.
+* Correct ownership.
+* No duplicate imports.
+* No circular dependencies.
+* No wildcard imports unless justified.
+* Remove unused imports before completion.
+
+---
+
+## Variable Rules
+
+Every variable must:
+
+* Be used.
+* Have a single responsibility.
+* Use meaningful names.
+* Be scoped as narrowly as possible.
+* Avoid unnecessary `let`; prefer `const`.
+
+---
+
+## File Hygiene
+
+Do not leave behind:
+
+* Temporary files
+* Backup files
+* Duplicate files
+* Experimental files
+* Legacy compatibility code beyond the approved migration plan
+* Unused assets
+* Empty directories
+
+---
+
+## Secrets & Security
+
+The AI **MUST NEVER**:
+
+* Hardcode API keys
+* Hardcode passwords
+* Hardcode JWT secrets
+* Hardcode OAuth credentials
+* Hardcode database connection strings
+* Hardcode Cloudinary credentials
+* Hardcode Stripe or Razorpay secrets
+* Hardcode SMTP credentials
+* Hardcode encryption keys
+* Hardcode access tokens
+* Commit `.env` files
+* Log secrets to the console
+* Return secrets in API responses
+* Expose secrets in frontend bundles
+* Store secrets in source code
+
+All secrets must come from validated environment variables.
+
+---
+
+## Logging Rules
+
+Remove before completion:
+
+* `console.log`
+* `console.debug`
+* `console.trace`
+* Temporary logging
+* Debug prints
+* Development-only diagnostics
+
+Use the project's approved logging framework where logging is required.
+
+---
+
+## Error Handling
+
+Do not:
+
+* Swallow exceptions
+* Leave empty `catch` blocks
+* Ignore promise rejections
+* Return generic errors without context
+
+All errors must follow the project's standard error-handling pattern.
+
+---
+
+## Type Safety
+
+Do not introduce:
+
+* `any` (unless explicitly justified)
+* `@ts-ignore`
+* `@ts-nocheck`
+* Unsafe type assertions
+* Ignored compiler warnings
+
+Use shared types and validators whenever possible.
+
+---
+
+## Dependency Hygiene
+
+Do not:
+
+* Add unused dependencies
+* Duplicate existing libraries
+* Introduce overlapping packages
+* Upgrade dependencies outside the approved scope
+
+---
+
+## Verification (Mandatory)
+
+Before considering the task complete, the AI must verify:
+
+* No unused imports.
+* No unused variables.
+* No dead code.
+* No commented-out code.
+* No temporary debugging code.
+* No hardcoded secrets.
+* No exposed credentials.
+* No lint warnings.
+* No TypeScript errors.
+* No build failures.
+* No test regressions.
+
+---
+
+## Completion Gate
+
+The AI **MUST NOT** claim the task is complete until all of the following pass:
+
+* `pnpm run lint`
+* `pnpm run type-check`
+* `pnpm run test` (where applicable)
+* `pnpm run build` (where applicable)
+
+Any failures must be fixed before creating a commit, pushing code, or opening a pull request.
+
+---
+
+## Zero-Tolerance Rule
+
+The implementation is **not complete** if any of the following remain:
+
+* Unused imports
+* Unused variables
+* Dead code
+* Legacy code outside the approved migration plan
+* Debug code
+* Commented-out code
+* Hardcoded secrets
+* Lint warnings
+* TypeScript errors
+* Build failures
+* Test failures
+
+The repository must be left **clean, secure, production-ready, and fully compliant with repository governance** before the task can be considered complete.

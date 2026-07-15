@@ -7,6 +7,8 @@ import { requireAdmin, requireRole } from '../../middleware/auth.middleware';
 import { validate } from '../../middleware/validation.middleware';
 import { adminEventsQuerySchema, adminIdParamSchema, createEventSchema, updateEventSchema, adminBulkIdsSchema } from '../../validations/admin-content.validation';
 
+import eventGalleryRouter from './event-gallery.routes';
+
 const router: Router = Router();
 
 // All routes require admin
@@ -20,5 +22,7 @@ router.post('/:id/preview-token', requireRole(AdminRole.SUPER_ADMIN, AdminRole.A
 router.post('/:id/duplicate', requireRole(AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.MANAGER), validate(adminIdParamSchema), eventController.duplicateEvent);
 router.delete('/:id', requireRole(AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.MANAGER), validate(adminIdParamSchema), eventController.deleteEvent);
 router.post('/bulk/delete', requireRole(AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.MANAGER), validate(adminBulkIdsSchema), eventController.bulkDeleteEvents);
+
+router.use('/:eventId/gallery', eventGalleryRouter);
 
 export default router;

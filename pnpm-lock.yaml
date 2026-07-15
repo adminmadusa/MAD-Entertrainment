@@ -442,6 +442,12 @@ importers:
 
   packages/validations:
     dependencies:
+      '@mad/shared':
+        specifier: workspace:*
+        version: link:../shared
+      '@mad/types':
+        specifier: workspace:*
+        version: link:../types
       zod:
         specifier: ^3.25.76
         version: 3.25.76
