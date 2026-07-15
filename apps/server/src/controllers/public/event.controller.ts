@@ -48,14 +48,6 @@ export async function listEvents(req: Request, res: Response, next: NextFunction
 export async function getEventBySlug(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const slug = req.params.slug;
-    const previewToken = req.query.preview as string;
-
-    if (previewToken) {
-      // Preview request: bypass cache completely
-      const event = await PublicEventService.getEventBySlug(slug, previewToken);
-      sendSuccess(res, event, 'Event details retrieved (preview)');
-      return;
-    }
 
     const cacheKey = `events:detail:slug:${slug}`;
     const startTime = performance.now();

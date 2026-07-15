@@ -9,7 +9,7 @@ import { Reveal } from '@/components/common/PageTransition';
 import { useMounted, useWindowWidth } from '@/hooks/use-window.hook';
 import { formatEventDate } from '@/utils/date';
 import { getOptimizedImageUrl } from '@/utils/image';
-import { EventCategory, EVENT_CATEGORY_LABELS, EventMemoryPublicationState } from '@mad/shared';
+import { EventCategory, EVENT_CATEGORY_LABELS } from '@mad/shared';
 import type { Event } from '@mad/types';
 import { ArrowLeft, ArrowRight, CalendarIcon } from '@mad/ui';
 
@@ -257,15 +257,9 @@ export const FeaturedEventsSection = memo(function FeaturedEventsSection({ initi
                             <span className="text-[10px] sm:text-xs font-semibold text-text-muted italic">
                               Tickets Closed
                             </span>
-                            {event.memories && event.memories.publicationState === EventMemoryPublicationState.PUBLISHED && event.memories.gallery?.length > 0 ? (
-                              <div className="px-2.5 py-1.5 sm:px-3.5 sm:py-2 text-[10px] sm:text-xs font-bold text-white bg-gradient-to-r from-pink-500 to-rose-600 rounded-xl shadow-glow-pink-sm group-hover:scale-105 transition-all text-center inline-block">
-                                View Moments
-                              </div>
-                            ) : (
-                              <div className="px-2.5 py-1.5 sm:px-3.5 sm:py-2 text-[10px] sm:text-xs font-bold text-text-muted bg-white/5 border border-white/5 rounded-xl text-center inline-block">
-                                Completed
-                              </div>
-                            )}
+                            <div className="px-2.5 py-1.5 sm:px-3.5 sm:py-2 text-[10px] sm:text-xs font-bold text-text-muted bg-white/5 border border-white/5 rounded-xl text-center inline-block">
+                              Completed
+                            </div>
                           </div>
                         ) : (
                           <div className={`px-4 pb-4 pt-3 border-t border-border-subtle/40 flex items-center justify-between mt-auto bg-black/40 transition-opacity w-full ${!isActive ? 'opacity-50' : ''}`}>

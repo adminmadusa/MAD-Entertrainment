@@ -8,7 +8,7 @@ import { motion } from 'framer-motion';
 import { Reveal } from '@/components/common/PageTransition';
 import { formatEventDate } from '@/utils/date';
 import { getOptimizedImageUrl } from '@/utils/image';
-import { EventCategory, EVENT_CATEGORY_LABELS, EventMemoryPublicationState } from '@mad/shared';
+import { EventCategory, EVENT_CATEGORY_LABELS } from '@mad/shared';
 import type { Event } from '@mad/types';
 import { CalendarIcon } from '@mad/ui';
 
@@ -41,14 +41,6 @@ export const CompletedEventsSection = memo(function CompletedEventsSection({
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {events.map((event, index) => {
-            const hasMoments =
-              event.memories &&
-              event.memories.publicationState === EventMemoryPublicationState.PUBLISHED &&
-              event.memories.gallery &&
-              event.memories.gallery.length > 0;
-
-            const momentsCount = event.memories?.gallery?.length || 0;
-
             return (
               <Reveal key={event._id} delay={index * 100}>
                 <motion.div
@@ -91,12 +83,6 @@ export const CompletedEventsSection = memo(function CompletedEventsSection({
                         {EVENT_CATEGORY_LABELS[event.category as EventCategory] || event.category}
                       </span>
 
-                      {/* Photo count badge */}
-                      {hasMoments && (
-                        <span className="absolute bottom-3 left-3 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider bg-accent-pink/90 backdrop-blur-md text-white rounded-full flex items-center gap-1 shadow-glow-pink-sm">
-                          📸 {momentsCount} {momentsCount > 1 ? 'Photos' : 'Photo'}
-                        </span>
-                      )}
                     </div>
 
                     {/* Card Content */}
@@ -118,15 +104,9 @@ export const CompletedEventsSection = memo(function CompletedEventsSection({
                       <span className="text-[10px] sm:text-xs font-semibold text-text-muted italic">
                         Tickets Closed
                       </span>
-                      {hasMoments ? (
-                        <div className="px-3.5 py-2 text-[10px] sm:text-xs font-bold text-white bg-gradient-to-r from-pink-500 to-rose-600 rounded-xl shadow-glow-pink-sm group-hover:scale-105 transition-all text-center">
-                          View Moments
-                        </div>
-                      ) : (
-                        <div className="px-3.5 py-2 text-[10px] sm:text-xs font-bold text-text-muted bg-white/5 border border-white/5 rounded-xl text-center cursor-not-allowed">
-                          Completed
-                        </div>
-                      )}
+                      <div className="px-3.5 py-2 text-[10px] sm:text-xs font-bold text-text-muted bg-white/5 border border-white/5 rounded-xl text-center cursor-not-allowed">
+                        Completed
+                      </div>
                     </div>
                   </Link>
                 </motion.div>

@@ -9,7 +9,7 @@ import { useState } from 'react';
 
 import { publicGetEvents } from '@/lib/api/public.service';
 import { formatEventDate } from '@/utils/date';
-import { EventCategory, EVENT_CATEGORY_LABELS, EventMemoryPublicationState } from '@mad/shared';
+import { EventCategory, EVENT_CATEGORY_LABELS } from '@mad/shared';
 import { CalendarIcon, EventGridSkeleton } from '@mad/ui';
 
 
@@ -136,15 +136,9 @@ export function EventsList() {
                       <span className="text-[10px] text-text-muted font-medium italic">
                         Tickets Closed
                       </span>
-                      {event.memories && event.memories.publicationState === EventMemoryPublicationState.PUBLISHED && event.memories.gallery?.length > 0 ? (
-                        <div className="px-3.5 py-2 text-xs font-bold text-white bg-gradient-to-r from-pink-500 to-rose-600 rounded-xl shadow-glow-pink-sm group-hover:scale-105 transition-transform text-center">
-                          View Moments
-                        </div>
-                      ) : (
-                        <div className="px-3.5 py-2 text-xs font-bold text-text-muted bg-white/5 border border-white/5 rounded-xl text-center cursor-not-allowed">
-                          Completed
-                        </div>
-                      )}
+                      <div className="px-3.5 py-2 text-xs font-bold text-text-muted bg-white/5 border border-white/5 rounded-xl text-center cursor-not-allowed">
+                        Completed
+                      </div>
                     </div>
                   ) : (
                     <div className="px-5 pb-5 pt-4 border-t border-border-subtle/40 flex items-center justify-between mt-auto bg-black/10 w-full">

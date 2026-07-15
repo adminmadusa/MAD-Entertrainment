@@ -55,7 +55,6 @@ export const EVENT_DUPLICATION_POLICY = {
     'bookingMode',
     'bannerImage',
     'posterImage',
-    'galleryImages',
     'startDate',
     'endDate',
     'doorsOpenTime',
@@ -355,12 +354,6 @@ export const SEAT_LOCK_TTL_SECONDS = 10 * 60; // 10 minutes
 export const MAX_TICKETS_PER_BOOKING = 10;
 
 // ─── Event Memory Publication State ──────────────────────────
-export enum EventMemoryPublicationState {
-  DRAFT = 'DRAFT',
-  PREVIEW = 'PREVIEW',
-  PUBLISHED = 'PUBLISHED',
-  HIDDEN = 'HIDDEN',
-}
 
 // ─── Event Memory Gallery Limits ──────────────────────────────
 export const DEFAULT_MEMORIES_GALLERY_LIMIT = 30;
