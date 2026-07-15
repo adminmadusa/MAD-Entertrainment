@@ -7,13 +7,13 @@ owner: MAD Engineering Governance
 | Field | Value |
 |-------|-------|
 | **Standard** | UI-001 |
-| **Version** | 1.1.0 |
+| **Version** | 1.3.0 |
 | **Status** | Active |
 | **Owner** | MAD Engineering Governance |
 | **Approver** | Engineering Lead |
 | **Effective Date** | 2026-07-07 |
-| **Last Updated** | 2026-07-07 |
-| **Supersedes** | N/A (initial standard) |
+| **Last Updated** | 2026-07-15 |
+| **Supersedes** | 1.2.0 |
 | **Review Frequency** | Quarterly |
 | **Related Standards** | None (SSOT) |
 | **Related Documents** | [AGENTS.MD](AGENTS.MD), [REPOSITORY_GOVERNANCE.md](REPOSITORY_GOVERNANCE.md), [ARCHITECTURE.md](ARCHITECTURE.md), [.agents/skills/ui-ux/SKILL.md](.agents/skills/ui-ux/SKILL.md) |
@@ -123,7 +123,7 @@ No broken layouts. No overlapping elements. No clipped content. No hidden action
 
 ### Required Breakpoint Verification
 
-Every UI audit and PR must verify correct rendering at:
+Every UI audit and PR must verify correct rendering at the **Core Breakpoints**. These require screenshot evidence (see Section 24) and are the basis for the merge gate and scorecard.
 
 | Breakpoint | Width |
 |------------|-------|
@@ -132,6 +132,14 @@ Every UI audit and PR must verify correct rendering at:
 | Tablet     | 768px |
 | Laptop     | 1024px |
 | Desktop    | 1440px |
+
+In addition, every UI audit must spot-check rendering at the **Extended Widths** below, since these represent the most common real-world device viewports. No screenshot evidence is required at these widths, but any layout break found at them is a merge-blocking finding under Section 24, same as a Core Breakpoint break.
+
+| Extended Width | Represents |
+|-----------------|------------|
+| 360px | Common Android device width |
+| 390px | iPhone 12/13/14/15 |
+| 430px | iPhone Pro Max |
 
 ---
 
@@ -234,6 +242,7 @@ Forms must:
 - Support keyboard navigation.
 - Support autofill.
 - Minimize required fields.
+- Render input text at a minimum of 16px on any device. Smaller sizes trigger unwanted zoom-on-focus on iOS Safari, which breaks layout on refocus/blur.
 
 ---
 
@@ -348,6 +357,20 @@ Every screen must support:
 - ARIA attributes where appropriate.
 - Minimum 44×44px touch targets.
 
+### Required Verification Methods
+
+Accessibility compliance must be verified, not assumed:
+
+- Keyboard-only navigation test (no mouse).
+- Screen reader label verification.
+- Automated contrast audit against WCAG AA (e.g. axe, Lighthouse), not a visual eyeball check.
+
+### Motion Accessibility
+
+- Respect the user's `prefers-reduced-motion` setting: when set, non-essential animation and transition effects must be disabled or reduced to a near-instant state change.
+- Never convey essential information (state changes, errors, required actions) through animation alone — pair it with a static, non-animated indicator (text, icon, color).
+- Where an animation is decorative rather than essential, it must be safely removable without any loss of function.
+
 ---
 
 ## 16. Design Consistency
@@ -370,6 +393,10 @@ Standardize:
 - Spacing
 
 No component should introduce a new visual style without justification.
+
+No component may use a hardcoded color, spacing, radius, or size value. Every value must resolve to a defined design token, regardless of the styling technology in use (CSS-in-JS, Tailwind, plain CSS, or otherwise).
+
+New design tokens must be added to the shared design system rather than introduced ad hoc within individual components.
 
 ---
 
@@ -414,9 +441,101 @@ UI should:
 - Avoid unnecessary re-renders.
 - Minimize bundle size impact.
 
+### Performance Budgets
+
+| Metric | Budget |
+|--------|--------|
+| Cumulative Layout Shift (CLS) | < 0.1 |
+| Image dimensions | Must be declared (explicit width/height or aspect-ratio) on every image, no exceptions |
+| Hydration | No visible layout shift between server-rendered and hydrated state |
+| Re-renders | No component re-renders on state changes it does not depend on (verify with React DevTools Profiler) |
+
+A screen exceeding the CLS budget or shipping an image without declared dimensions is a merge-blocking finding under Section 26.
+
 ---
 
-## 19. Mandatory UI Audit Phases
+## 19. Sticky CTA & Safe-Area Standard
+
+Any mobile screen built around a single primary action (checkout, confirmation, submission) must anchor that action in a persistent bottom bar rather than placing it at the end of scrollable content — the primary action must always be reachable without scrolling.
+
+Requirements:
+
+- Persistent action bar anchored to the viewport bottom, always visible while the screen is active.
+- Account for device safe areas (e.g. the iOS home indicator) so the action bar is never obscured or overlapped by system UI.
+- Scrollable page content must reserve space equal to the action bar's height so the last content item is never hidden behind it.
+- A screen uses either a persistent bottom tab navigation **or** a persistent primary-action bar — never both stacked in the same screen. Tab-nav screens requiring a quick action use a floating action affordance instead.
+- Overlapping UI surfaces (bottom navigation, sticky action bars, dropdowns, modals, toasts) must follow a defined stacking order so a higher-priority surface (e.g. a modal) always renders above a lower-priority one (e.g. a sticky action bar), with no ad hoc per-component stacking values.
+
+---
+
+## 20. Overlay & Modal Interaction Standard
+
+Applies to any dismissible overlay surface — modal, dialog, drawer, bottom sheet, or popover.
+
+### Required close behavior
+
+All three must work on every overlay, with no exceptions:
+
+- An explicit close control, with a minimum 44×44px hit target.
+- Tapping/clicking the backdrop dismisses the overlay, without dismissing it when the click originates inside the overlay's own content.
+- The Escape key dismisses the overlay for keyboard users.
+
+### Required accessibility markup
+
+- The overlay container is marked as a dialog and as modal to assistive technology.
+- The overlay is labelled — by its visible title where one exists, or by a short description where it doesn't.
+- Focus is trapped within the overlay while it is open (keyboard focus does not leak to content behind it).
+- Focus is restored to the triggering element when the overlay closes. Any generated ID used for this labelling must be stable and collision-safe across server-rendered and client-rendered output, using whatever mechanism the framework in use provides for that (e.g. React's `useId()`).
+
+### Required background behavior
+
+- Background scroll must be locked for the entire duration any overlay is open, including on platforms (notably iOS Safari) where a simple overflow rule does not stop scrolling and a more complete lock is required.
+- The scroll position of the page behind the overlay must be preserved and restored when the overlay closes.
+
+### Reuse requirement
+
+This is the Component-First Rule (Section 17) applied to interaction behavior, not just visual markup: every overlay-type component must consume a single shared implementation of this close/scroll-lock/focus behavior rather than each component reimplementing it independently. A component that duplicates this logic instead of reusing the shared implementation is a governance violation for the same reason a duplicated visual component is — it creates a second place for the behavior to drift out of sync.
+
+---
+
+## 21. Browser Compatibility Standard
+
+Every UI feature must render and function correctly on:
+
+- Chrome
+- Safari (macOS and iOS)
+- Firefox
+- Edge
+
+This is not optional for features that rely on sticky positioning, overlays, focus management, or scroll locking (Sections 19–20), since these behave inconsistently across engines — most notably iOS Safari, which requires explicit handling already called out in Section 20's background-behavior requirements.
+
+### Minimum Verification
+
+- Manual smoke test on Safari iOS for any screen using sticky positioning, overlays, or scroll locking.
+- Manual smoke test on the remaining three browsers for any screen with novel layout or interaction patterns (i.e. not a straightforward reuse of an already-verified shared component).
+- A screen that only reuses existing, already-verified shared components (Section 17) does not require a fresh cross-browser pass.
+
+Cross-browser verification failures are a merge-blocking finding under Section 26, same as a responsive layout break.
+
+---
+
+## 22. Sticky Table & Data Grid Standard
+
+Applies to any data grid or table that uses sticky headers, sticky columns, or both (e.g. admin data grids).
+
+Requirements:
+
+- Header row remains visible (sticky) during vertical scroll.
+- The identifier column (e.g. ID, name, or primary key) remains visible (sticky) during horizontal scroll.
+- Any action column (edit/delete/etc.) remains visible (sticky) during horizontal scroll.
+- Sticky headers and sticky columns use the shared stacking-order tokens from Section 19, not ad hoc per-component z-index values.
+- No table content is ever visible underneath a sticky header or sticky column — sticky cells must have a solid background token, not a transparent one.
+
+A duplicated sticky-table implementation instead of a shared one is a governance violation under the Component-First Rule (Section 17).
+
+---
+
+## 23. Mandatory UI Audit Phases
 
 Before implementation, the following ten phases are mandatory. No code may be written until all phases are complete.
 
@@ -433,20 +552,22 @@ Before implementation, the following ten phases are mandatory. No code may be wr
       ↓
 6.  Component Search    — Search packages/ui; justify any new components
       ↓
-7.  Performance Review  — Lazy-load, virtualization, CLS, re-render check
+7.  Performance Review  — Lazy-load, virtualization, CLS budget, re-render check
       ↓
-8.  Responsive Validation — Test at 320px, 375px, 768px, 1024px, 1440px
+8.  Responsive Validation — Test at 320px, 375px, 768px, 1024px, 1440px; spot-check 360px, 390px, 430px
       ↓
-9.  Screenshot Evidence — Capture and attach desktop + tablet + mobile shots
+9.  Cross-Browser Review — Chrome, Safari (macOS + iOS), Firefox, Edge where required by Section 21
       ↓
-10. Approval            — Receive sign-off before proceeding
+10. Screenshot Evidence — Capture and attach desktop + tablet + mobile shots
       ↓
-11. Implementation      — Build against the approved wireframe
+11. Approval            — Receive sign-off before proceeding
+      ↓
+12. Implementation      — Build against the approved wireframe
 ```
 
 ---
 
-## 20. Required Audit Evidence
+## 24. Required Audit Evidence
 
 Every UI audit must produce photographic evidence at the required breakpoints.
 
@@ -463,7 +584,7 @@ Screenshots must be attached to the GitHub issue and the pull request before rev
 
 ---
 
-## 21. UI Governance Scorecard
+## 25. UI Governance Scorecard
 
 Every UI audit must score the implementation against these targets and produce an overall PASS or FAIL decision.
 
@@ -501,7 +622,7 @@ A **PASS** verdict does not bypass the merge gate — all merge gate conditions 
 
 ---
 
-## 22. Merge Gate
+## 26. Merge Gate
 
 A UI feature cannot be merged if any of the following exist:
 
@@ -523,12 +644,22 @@ A UI feature cannot be merged if any of the following exist:
 - [ ] Excessive nested menus used instead of tabs.
 - [ ] Touch targets smaller than 44×44px.
 - [ ] Desktop and mobile screenshots not attached to PR.
+- [ ] Input font size below 16px on any device.
+- [ ] Hardcoded color, spacing, radius, or size value not resolved to a design token.
+- [ ] Overlay (modal/drawer/sheet/popover) missing required close behavior, ARIA markup, focus trap/restoration, or background scroll lock.
+- [ ] Overlay behavior reimplemented in a component instead of reusing the shared implementation.
+- [ ] Sticky CTA missing safe-area handling, or stacked directly on top of a bottom tab nav.
+- [ ] Layout break on Safari iOS, Safari macOS, Chrome, Firefox, or Edge for a screen requiring cross-browser verification under Section 21.
+- [ ] Animation does not respect `prefers-reduced-motion`, or essential information is conveyed by animation alone.
+- [ ] New design token introduced ad hoc in a component instead of the shared design system.
+- [ ] CLS budget exceeded, or an image shipped without declared dimensions.
+- [ ] Sticky data grid missing sticky header, sticky identifier column, sticky action column, or reimplementing sticky-table behavior instead of reusing the shared implementation.
 
 All checkboxes must be cleared before merge is permitted.
 
 ---
 
-## 23. UI Pull Request Checklist
+## 27. UI Pull Request Checklist
 
 Every UI pull request must include this checklist in its description:
 
@@ -549,12 +680,18 @@ UI-001 Pull Request Checklist
 [ ] Desktop screenshot attached
 [ ] Tablet screenshot attached
 [ ] Mobile screenshot attached
+[ ] Extended-width spot check (360px, 390px, 430px) performed
+[ ] Cross-browser check performed (Chrome, Safari macOS, Safari iOS, Firefox, Edge) where required by Section 21
+[ ] prefers-reduced-motion respected; no essential info conveyed by animation alone
+[ ] All new colors/spacing/radii/sizes resolve to shared design tokens (no ad hoc tokens)
+[ ] Performance budgets met (CLS < 0.1, image dimensions declared)
+[ ] Sticky table requirements met (if applicable)
 [ ] All UI-001 merge gate conditions cleared
 ```
 
 ---
 
-## 24. AI Execution Rules
+## 28. AI Execution Rules
 
 Every AI agent implementing or auditing UI must follow this sequence without exception:
 
@@ -571,7 +708,9 @@ Component Search (packages/ui)
   ↓
 Performance Review
   ↓
-Responsive Validation (320px → 1440px)
+Responsive Validation (320px → 1440px, spot-check 360/390/430px)
+  ↓
+Cross-Browser Review (Chrome, Safari macOS + iOS, Firefox, Edge)
   ↓
 Screenshot Evidence
   ↓
@@ -586,7 +725,7 @@ No merge before clearing the merge gate.
 
 ---
 
-## 25. Related Standards
+## 29. Related Standards
 
 This document is the authoritative UI/UX policy. The following documents provide detailed implementation guidance for specific sub-domains. Each is subordinate to this document.
 
@@ -601,5 +740,7 @@ If any sub-document conflicts with this document, this document takes precedence
 
 | Version | Date       | Author                       | Description |
 |---------|------------|------------------------------|-------------|
+| 1.3.0   | 2026-07-15 | MAD Engineering Governance   | Add Section 21 (Browser Compatibility Standard) and Section 22 (Sticky Table & Data Grid Standard); expand Section 2 breakpoints with 360px/390px/430px extended-width spot checks; add motion accessibility rules to Section 15; add ad hoc token prohibition to Section 16; add measurable performance budgets to Section 18; expand Merge Gate, PR Checklist, Audit Phases, and AI Execution Rules with cross-browser, motion, token, performance, and sticky-table conditions; renumber former Sections 21–27 to 23–29 |
+| 1.2.0   | 2026-07-15 | MAD Engineering Governance   | Add Section 19 (Sticky CTA & Safe-Area Standard) and Section 20 (Overlay & Modal Interaction Standard); add 16px minimum input font-size rule to Section 8; add explicit token-only rule to Section 16; add accessibility verification methods to Section 15; expand Merge Gate with overlay, sticky CTA, and token-only conditions; renumber former Sections 20–25 to 22–27 |
 | 1.1.0   | 2026-07-07 | MAD Engineering Governance   | Add Section 0 (wireframe-first gate); expand Section 19 to 11 phases; upgrade Section 21 to full governance scorecard; add Section 25 (Related Standards); expand metadata header with Approver, Effective Date, Supersedes, Review Frequency |
 | 1.0.0   | 2026-07-07 | MAD Engineering Governance   | Initial standard (UI-001) |
