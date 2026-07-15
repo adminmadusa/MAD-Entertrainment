@@ -14,12 +14,20 @@ const preset: Partial<Config> = {
         background: 'var(--color-bg)',
         'bg-secondary': 'var(--color-bg-secondary)',
         'bg-card': 'var(--color-bg-card)',
+        'bg-card-hover': 'var(--color-bg-card-hover)',
         'text-primary': 'var(--color-text-primary)',
         'text-secondary': 'var(--color-text-secondary)',
         'text-muted': 'var(--color-text-muted)',
         primary: 'var(--color-accent-purple)',
         accent: 'var(--color-accent-pink)',
         cyan: 'var(--color-accent-cyan)',
+      },
+      zIndex: {
+        'sticky-cell': '10',
+        'sticky-header': '20',
+        dropdown: '30',
+        popover: '40',
+        dialog: '50',
       },
       transitionDuration: {
         fast: 'var(--transition-fast)',   // 150ms

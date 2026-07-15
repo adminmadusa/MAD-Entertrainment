@@ -102,7 +102,7 @@ export default function BookingsTable({
           onClick={() => onRowClick(booking)}
           className="border-b border-border-subtle/40 hover:bg-white/2 cursor-pointer transition-colors"
         >
-          <TableCell className="py-4 px-5 font-mono text-xs text-accent-purple">{booking.bookingId}</TableCell>
+          <TableCell sticky="start" showStickyDivider className="py-4 px-5 font-mono text-xs text-accent-purple">{booking.bookingId}</TableCell>
           <TableCell className="py-4 px-4">
             <p className="text-text-primary text-sm">{customerName}</p>
             <p className="text-text-muted text-xs">{customerEmail}</p>
@@ -140,7 +140,7 @@ export default function BookingsTable({
           <TableCell className="py-4 px-4 text-text-muted text-xs">
             {formatDateTime(booking.createdAt)}
           </TableCell>
-          <TableCell className="py-4 px-5 text-right">
+          <TableCell sticky="end" showStickyDivider className="py-4 px-5 text-right">
             {canMutateBookings && booking.status === BookingStatus.CONFIRMED && (
               <button
                 onClick={(e) => {
@@ -166,9 +166,11 @@ export default function BookingsTable({
   return (
     <div className="glass rounded-2xl border border-border-subtle overflow-hidden">
       <Table>
-        <TableHeader>
+        <TableHeader stickyHeader>
           <TableRow>
             <TableHead
+              sticky="start"
+              showStickyDivider
               onClick={() => onSort('bookingId')}
               className="py-3.5 px-5 cursor-pointer hover:text-white transition-colors select-none"
             >
@@ -189,7 +191,7 @@ export default function BookingsTable({
             >
               Date{renderSortArrow('createdAt')}
             </TableHead>
-            <TableHead className="py-3.5 px-5 text-right">Action</TableHead>
+            <TableHead sticky="end" showStickyDivider className="py-3.5 px-5 text-right">Action</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>{renderTableBody()}</TableBody>

@@ -77,7 +77,7 @@ export default function AdminTicketProfilesPage() {
 
     return profiles.map((profile) => (
       <TableRow key={profile._id} className="border-b border-border-subtle/40 hover:bg-white/2 transition-colors">
-        <TableCell className="py-4 px-5">
+        <TableCell sticky="start" showStickyDivider className="py-4 px-5">
           <div>
             <span className="text-white font-bold text-sm block">
               {profile.name}
@@ -122,7 +122,7 @@ export default function AdminTicketProfilesPage() {
             </span>
           )}
         </TableCell>
-        <TableCell className="py-4 px-5">
+        <TableCell sticky="end" showStickyDivider className="py-4 px-5">
           {canMutateProfiles ? (
             <div className="flex items-center justify-end gap-2">
               <Link
@@ -174,14 +174,14 @@ export default function AdminTicketProfilesPage() {
       {/* Table */}
       <div className="glass rounded-2xl border border-border-subtle overflow-hidden">
         <Table>
-          <TableHeader>
+          <TableHeader stickyHeader>
             <TableRow>
-              <TableHead className="py-3.5 px-5">Profile Name & Description</TableHead>
+              <TableHead sticky="start" showStickyDivider className="py-3.5 px-5">Profile Name & Description</TableHead>
               <TableHead className="py-3.5 px-4">Groups</TableHead>
               <TableHead className="py-3.5 px-4">Total Ticket Tiers</TableHead>
               <TableHead className="py-3.5 px-4">Created On</TableHead>
               <TableHead className="py-3.5 px-4">Status</TableHead>
-              <TableHead className="py-3.5 px-5 text-right">Actions</TableHead>
+              <TableHead sticky="end" showStickyDivider className="py-3.5 px-5 text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
