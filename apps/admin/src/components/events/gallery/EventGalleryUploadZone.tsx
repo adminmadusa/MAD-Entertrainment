@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useRef, useState } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import { adminApiClient } from '@/lib/api/client';
 import { adminAddGalleryItems, type GalleryItemPayload } from '@/lib/api/admin/event-gallery.service';
 import { MediaType } from '@mad/types';

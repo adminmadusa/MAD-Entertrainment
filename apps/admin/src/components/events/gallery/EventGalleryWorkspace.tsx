@@ -1,7 +1,7 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import React, { useState } from 'react';
+import React from 'react';
 
 import { adminGetGallery } from '@/lib/api/admin/event-gallery.service';
 import { EventGalleryGrid } from './EventGalleryGrid';
