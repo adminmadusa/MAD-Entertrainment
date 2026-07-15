@@ -28,8 +28,6 @@ export default function AdminEventsPage() {
   const [page, setPage] = useState(1);
   const [deleteTarget, setDeleteTarget] = useState<AdminEvent | null>(null);
 
-  const eventIds = (Array.isArray(data?.items) ? data?.items : []).map((e) => e._id);
-  const { selectedIds, selectedCount, isSelected, toggle, selectAll, clearSelection, allSelected, indeterminate } = useBulkSelection({ pageIds: eventIds });
   const [toastMessage, setToastMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
   // Optimistic status overrides keyed by event ID
   const [optimisticStatuses, setOptimisticStatuses] = useState<Record<string, EventStatus>>({});
@@ -55,6 +53,9 @@ export default function AdminEventsPage() {
     queryKey: ['admin-events', { page, search, status: statusFilter, sortField, sortOrder }],
     queryFn: () => adminGetEvents({ page, limit: 15, search, status: statusFilter, ...(sortField && { sortField }), ...(sortOrder && { sortOrder }) }),
   });
+
+  const eventIds = (Array.isArray(data?.items) ? data?.items : []).map((e) => e._id);
+  const { selectedIds, selectedCount, isSelected, toggle, selectAll, clearSelection, allSelected, indeterminate } = useBulkSelection({ pageIds: eventIds });
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => adminDeleteEvent(id),
