@@ -1,6 +1,7 @@
 import { HTMLAttributes, ThHTMLAttributes, TdHTMLAttributes } from 'react';
 
 export type TableProps = HTMLAttributes<HTMLTableElement>;
+export type { ActionPhase } from './FloatingActionBar';
 export interface TableHeaderProps extends HTMLAttributes<HTMLTableSectionElement> {
   stickyHeader?: boolean;
 }

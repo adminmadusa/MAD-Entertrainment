@@ -8,6 +8,7 @@
 // ─── Hooks ───────────────────────────────────────────────────────────────────
 export * from './hooks/useFocusTrap';
 export * from './hooks/useDelayedUnmount';
+export * from './hooks/useBulkSelection';
 
 // ─── Utilities ────────────────────────────────────────────────────────────────
 export * from './lib/cn';
@@ -25,6 +26,7 @@ export * from './primitives/Button';
 export * from './primitives/IconButton';
 export * from './primitives/Input';
 export * from './primitives/Textarea';
+export * from './primitives/Checkbox';
 export * from './primitives/Label';
 export * from './primitives/Badge';
 export * from './primitives/Spinner';
