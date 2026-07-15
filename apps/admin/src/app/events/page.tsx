@@ -5,10 +5,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { useState } from 'react';
 
-import { adminGetEvents, adminDeleteEvent, adminBulkDeleteEvents, adminDuplicateEvent, type AdminEvent } from '@/lib/api/admin/event.service';
+import { adminGetEvents, adminDeleteEvent, adminBulkDeleteEvents, adminDuplicateEvent, adminUpdateEvent, type AdminEvent } from '@/lib/api/admin/event.service';
 import { extractApiError } from '@/lib/api/client';
 import { useAdminAuth } from '@/providers/AdminAuthProvider';
-import { EVENT_STATUS_METADATA, type EventStatus, AdminRole } from '@mad/shared';
+import { EVENT_STATUS_METADATA, EVENT_STATUS_TRANSITIONS, EventStatus, AdminRole } from '@mad/shared';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, Modal, FloatingActionBar, EmptyState } from '@mad/ui';
 import { CalendarDays, Search } from '@mad/ui/icons';
 import { formatEventDate } from '@mad/utils';
@@ -30,6 +30,8 @@ export default function AdminEventsPage() {
 
   const [selectedEvents, setSelectedEvents] = useState<Set<string>>(new Set());
   const [toastMessage, setToastMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+  // Optimistic status overrides keyed by event ID
+  const [optimisticStatuses, setOptimisticStatuses] = useState<Record<string, EventStatus>>({});
 
   const showToast = (type: 'success' | 'error', text: string) => {
     setToastMessage({ type, text });
@@ -70,6 +72,25 @@ export default function AdminEventsPage() {
     onError: (err: any) => {
       showToast('error', err.response?.data?.message || 'Failed to duplicate event');
     }
+  });
+
+  const statusUpdateMutation = useMutation({
+    mutationFn: ({ id, status, eventVersion }: { id: string; status: EventStatus; eventVersion: number }) =>
+      adminUpdateEvent(id, { status, eventVersion }),
+    onMutate: ({ id, status }) => {
+      // Optimistic update
+      setOptimisticStatuses((prev) => ({ ...prev, [id]: status }));
+    },
+    onSuccess: (_, { id }) => {
+      qc.invalidateQueries({ queryKey: ['admin-events'] });
+      setOptimisticStatuses((prev) => { const next = { ...prev }; delete next[id]; return next; });
+      showToast('success', 'Event status updated');
+    },
+    onError: (err: any, { id }) => {
+      // Rollback optimistic update
+      setOptimisticStatuses((prev) => { const next = { ...prev }; delete next[id]; return next; });
+      showToast('error', err.response?.data?.message || 'Failed to update event status');
+    },
   });
 
   const bulkDeleteMutation = useMutation({
@@ -179,17 +200,40 @@ export default function AdminEventsPage() {
             )}
           </TableCell>
           <TableCell className="py-4 px-4">
-            {statusMeta ? (
-              <span className={`text-xs px-2.5 py-1 rounded-full border font-medium ${statusMeta.className}`}>
-                {statusMeta.label}
-              </span>
-            ) : event.status ? (
-              <span className="text-xs px-2.5 py-1 rounded-full border font-medium border-border-subtle text-text-muted">
-                {event.status.replace('_', ' ')}
-              </span>
-            ) : (
-              <span className="text-xs px-2.5 py-1 rounded-full border border-yellow-500/30 bg-yellow-500/10 text-yellow-400 font-semibold animate-pulse inline-flex items-center gap-1">
-                ⚠️ Missing Status
+            {canMutateEvents && event.status ? (() => {
+              const currentStatus = optimisticStatuses[event._id] ?? event.status as EventStatus;
+              const currentMeta = EVENT_STATUS_METADATA[currentStatus];
+              const allowedTransitions = EVENT_STATUS_TRANSITIONS[currentStatus] ?? [];
+              const isPending = statusUpdateMutation.isPending && statusUpdateMutation.variables?.id === event._id;
+              return (
+                <select
+                  id={`status-select-${event._id}`}
+                  value={currentStatus}
+                  disabled={isPending || allowedTransitions.length === 0}
+                  onChange={(e) => {
+                    const newStatus = e.target.value as EventStatus;
+                    statusUpdateMutation.mutate({ id: event._id, status: newStatus, eventVersion: event.eventVersion ?? 1 });
+                  }}
+                  aria-label={`Change status for ${event.title}`}
+                  className={`text-xs px-2.5 py-1 rounded-full border font-medium cursor-pointer bg-transparent appearance-none pr-5 disabled:opacity-60 disabled:cursor-not-allowed transition-colors ${
+                    currentMeta?.className ?? 'border-border-subtle text-text-muted'
+                  }`}
+                  style={{ backgroundImage: 'none' }}
+                >
+                  {/* Current status always present */}
+                  <option value={currentStatus}>{currentMeta?.label ?? currentStatus}</option>
+                  {allowedTransitions.map((s) => (
+                    <option key={s} value={s}>
+                      {EVENT_STATUS_METADATA[s]?.label ?? s}
+                    </option>
+                  ))}
+                </select>
+              );
+            })() : (
+              <span className={`text-xs px-2.5 py-1 rounded-full border font-medium ${
+                statusMeta?.className ?? 'border-border-subtle text-text-muted'
+              }`}>
+                {statusMeta?.label ?? event.status?.replace('_', ' ') ?? '⚠️ Missing'}
               </span>
             )}
           </TableCell>
