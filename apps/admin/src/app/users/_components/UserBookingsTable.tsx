@@ -26,14 +26,14 @@ export default function UserBookingsTable({
   return (
     <div className="glass rounded-2xl border border-border-subtle overflow-hidden">
       <Table>
-        <TableHeader className="bg-white/[0.01]">
+        <TableHeader stickyHeader className="bg-white/[0.01]">
           <TableRow>
-            <TableHead className="py-3 px-5">Booking ID</TableHead>
+            <TableHead sticky="start" showStickyDivider className="py-3 px-5">Booking ID</TableHead>
             <TableHead className="py-3 px-4">Event</TableHead>
             <TableHead className="py-3 px-4">Status</TableHead>
             <TableHead className="py-3 px-4">Date</TableHead>
             <TableHead className="py-3 px-4">Tickets</TableHead>
-            <TableHead className="py-3 px-5 text-right">Paid</TableHead>
+            <TableHead sticky="end" showStickyDivider className="py-3 px-5 text-right">Paid</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -46,7 +46,7 @@ export default function UserBookingsTable({
           ) : (
             paginatedBookings.map((b) => (
               <TableRow key={b._id} className="border-b border-border-subtle/30 hover:bg-white/2 transition-colors">
-                <TableCell className="py-3.5 px-5 font-mono text-xs text-white">{b.bookingId}</TableCell>
+                <TableCell sticky="start" showStickyDivider className="py-3.5 px-5 font-mono text-xs text-white">{b.bookingId}</TableCell>
                 <TableCell className="py-3.5 px-4 text-text-primary">
                   {b.eventId ? (
                     <div>
@@ -72,7 +72,7 @@ export default function UserBookingsTable({
                   {formatDateTime(b.purchaseDate)}
                 </TableCell>
                 <TableCell className="py-3.5 px-4 text-text-primary font-medium">{b.ticketCount}</TableCell>
-                <TableCell className="py-3.5 px-5 text-right font-semibold text-white">
+                <TableCell sticky="end" showStickyDivider className="py-3.5 px-5 text-right font-semibold text-white">
                   {new Intl.NumberFormat('en-IN', {
                     style: 'currency',
                     currency: b.currency,

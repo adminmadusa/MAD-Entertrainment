@@ -37,10 +37,14 @@ export const Table = forwardRef<HTMLTableElement, TableProps>(
 Table.displayName = 'Table';
 
 export const TableHeader = forwardRef<HTMLTableSectionElement, TableHeaderProps>(
-  ({ className, ...props }, ref) => (
+  ({ className, stickyHeader, ...props }, ref) => (
     <thead
       ref={ref}
-      className={cn(tableHeaderClasses, className)}
+      className={cn(
+        tableHeaderClasses,
+        stickyHeader && 'sticky top-0 z-sticky-header [&_th]:bg-bg-card',
+        className
+      )}
       {...props}
     />
   )
@@ -80,11 +84,28 @@ export const TableRow = forwardRef<HTMLTableRowElement, TableRowProps>(
 );
 TableRow.displayName = 'TableRow';
 
+const getStickyClasses = (sticky?: 'start' | 'end', showDivider?: boolean) => {
+  if (!sticky) return '';
+  return cn(
+    'sticky z-sticky-cell bg-bg-card group-hover:bg-bg-card-hover',
+    sticky === 'start' && 'start-0',
+    sticky === 'end' && 'end-0',
+    showDivider && sticky === 'start' && 'shadow-[1px_0_0_var(--glass-border)]',
+    showDivider && sticky === 'end' && 'shadow-[-1px_0_0_var(--glass-border)]'
+  );
+};
+
+const getStickyStyle = (sticky?: 'start' | 'end', stickyOffset?: number | string) => {
+  if (!sticky || stickyOffset === undefined) return undefined;
+  return sticky === 'start' ? { insetInlineStart: stickyOffset } : { insetInlineEnd: stickyOffset };
+};
+
 export const TableHead = forwardRef<HTMLTableCellElement, TableHeadProps>(
-  ({ className, ...props }, ref) => (
+  ({ className, sticky, stickyOffset, showStickyDivider, style, ...props }, ref) => (
     <th
       ref={ref}
-      className={cn(tableHeadClasses, className)}
+      className={cn(tableHeadClasses, getStickyClasses(sticky, showStickyDivider), className)}
+      style={{ ...style, ...getStickyStyle(sticky, stickyOffset) }}
       {...props}
     />
   )
@@ -92,10 +113,11 @@ export const TableHead = forwardRef<HTMLTableCellElement, TableHeadProps>(
 TableHead.displayName = 'TableHead';
 
 export const TableCell = forwardRef<HTMLTableCellElement, TableCellProps>(
-  ({ className, ...props }, ref) => (
+  ({ className, sticky, stickyOffset, showStickyDivider, style, ...props }, ref) => (
     <td
       ref={ref}
-      className={cn(tableCellClasses, className)}
+      className={cn(tableCellClasses, getStickyClasses(sticky, showStickyDivider), className)}
+      style={{ ...style, ...getStickyStyle(sticky, stickyOffset) }}
       {...props}
     />
   )

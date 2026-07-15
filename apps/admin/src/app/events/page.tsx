@@ -128,7 +128,21 @@ export default function AdminEventsPage() {
 
       return (
         <TableRow key={event._id} className="border-b border-border-subtle/40 hover:bg-white/2 transition-colors">
-          <TableCell className="py-4 px-5">
+          <TableCell sticky="start" className="py-4 px-5">
+            <input
+              type="checkbox"
+              checked={selectedEvents.has(event._id)}
+              onChange={(e) => {
+                e.stopPropagation();
+                const newSet = new Set(selectedEvents);
+                if (e.target.checked) newSet.add(event._id);
+                else newSet.delete(event._id);
+                setSelectedEvents(newSet);
+              }}
+              className="w-4 h-4 rounded border-border-subtle text-accent-purple focus:ring-accent-purple/50 bg-background-card"
+            />
+          </TableCell>
+          <TableCell sticky="start" stickyOffset="3rem" showStickyDivider className="py-4 px-5">
             <div className="flex items-center gap-3">
               {event.bannerImage?.url ? (
                 // eslint-disable-next-line @next/next/no-img-element
@@ -183,7 +197,7 @@ export default function AdminEventsPage() {
               ★
             </span>
           </TableCell>
-          <TableCell className="py-4 px-5">
+          <TableCell sticky="end" showStickyDivider className="py-4 px-5">
             {canMutateEvents ? (
               <div className="flex items-center justify-end gap-2">
                 <Link
@@ -253,9 +267,9 @@ export default function AdminEventsPage() {
       {/* Table */}
       <div className="glass rounded-2xl border border-border-subtle overflow-hidden">
         <Table>
-          <TableHeader>
+          <TableHeader stickyHeader>
             <TableRow>
-              <TableHead className="py-3.5 px-5 w-12">
+              <TableHead sticky="start" className="py-3.5 px-5 w-12">
                 <input
                   type="checkbox"
                   checked={events.length > 0 && events.every(e => selectedEvents.has(e._id))}
@@ -271,7 +285,7 @@ export default function AdminEventsPage() {
                   className="w-4 h-4 rounded border-border-subtle text-accent-purple focus:ring-accent-purple/50 bg-background-card"
                 />
               </TableHead>
-              <TableHead onClick={() => handleSort('title')} className="py-3.5 px-5 cursor-pointer hover:text-white transition-colors select-none">
+              <TableHead sticky="start" stickyOffset="3rem" showStickyDivider onClick={() => handleSort('title')} className="py-3.5 px-5 cursor-pointer hover:text-white transition-colors select-none">
                 Event {sortField === 'title' ? (sortOrder === 'asc' ? '▲' : '▼') : ''}
               </TableHead>
               <TableHead onClick={() => handleSort('category')} className="py-3.5 px-4 cursor-pointer hover:text-white transition-colors select-none">
@@ -284,7 +298,7 @@ export default function AdminEventsPage() {
                 Status {sortField === 'status' ? (sortOrder === 'asc' ? '▲' : '▼') : ''}
               </TableHead>
               <TableHead className="py-3.5 px-4">Featured</TableHead>
-              <TableHead className="py-3.5 px-5 text-right">Actions</TableHead>
+              <TableHead sticky="end" showStickyDivider className="py-3.5 px-5 text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

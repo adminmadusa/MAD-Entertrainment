@@ -84,7 +84,7 @@ export default function TeamTable({
 
     return admins.map((admin) => (
       <TableRow key={admin._id} className="border-b border-border-subtle/40 hover:bg-white/2 transition-colors">
-        <TableCell className="py-4 px-5">
+        <TableCell sticky="start" showStickyDivider className="py-4 px-5">
           <div>
             <p className="text-text-primary font-medium">{admin.name}</p>
             <p className="text-text-muted text-xs">{admin.email}</p>
@@ -110,7 +110,7 @@ export default function TeamTable({
             {admin.isActive ? 'Active' : 'Inactive'}
           </span>
         </TableCell>
-        <TableCell className="py-4 px-5">
+        <TableCell sticky="end" showStickyDivider className="py-4 px-5">
           <div className="flex items-center justify-end gap-2">
             {currentAdmin?.role === AdminRole.SUPER_ADMIN ? (
               <>
@@ -164,14 +164,14 @@ export default function TeamTable({
   return (
     <div className="glass rounded-2xl border border-border-subtle overflow-hidden">
       <Table>
-        <TableHeader>
+        <TableHeader stickyHeader>
           <TableRow>
-            <TableHead className="py-3.5 px-5">Member</TableHead>
+            <TableHead sticky="start" showStickyDivider className="py-3.5 px-5">Member</TableHead>
             <TableHead className="py-3.5 px-4">Role</TableHead>
             <TableHead className="py-3.5 px-4">Created</TableHead>
             <TableHead className="py-3.5 px-4">Last Active</TableHead>
             <TableHead className="py-3.5 px-4">Status</TableHead>
-            <TableHead className="py-3.5 px-5 text-right">Actions</TableHead>
+            <TableHead sticky="end" showStickyDivider className="py-3.5 px-5 text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>{renderRows()}</TableBody>
