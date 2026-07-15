@@ -129,7 +129,33 @@ export async function serverGetFeaturedEvents(): Promise<Event[]> {
       label: 'Featured Events',
     }
   );
-  return Array.isArray(payload.events) ? payload.events : [];
+  
+  const featuredEvents = Array.isArray(payload.events) ? [...payload.events] : [];
+
+  // Fallback: If less than 6 featured events, fill the remaining with newest upcoming events
+  if (featuredEvents.length < 6) {
+    const fallbackPayload = await safeServerFetch<{ events: Event[] }>(
+      `/events?page=1&limit=${6 + featuredEvents.length}`,
+      {
+        fallback: { events: [] },
+        revalidate: 60,
+        timeoutMs: 8000,
+        retries: 1,
+        label: 'Fallback Featured Events',
+      }
+    );
+    const fallbackEvents = Array.isArray(fallbackPayload.events) ? fallbackPayload.events : [];
+    
+    const featuredIds = new Set(featuredEvents.map(e => String(e._id)));
+    for (const event of fallbackEvents) {
+      if (!featuredIds.has(String(event._id))) {
+        featuredEvents.push(event);
+        if (featuredEvents.length >= 6) break;
+      }
+    }
+  }
+
+  return featuredEvents;
 }
 
 export async function serverGetCompletedEvents(): Promise<Event[]> {
