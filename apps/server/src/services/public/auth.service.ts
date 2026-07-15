@@ -165,7 +165,7 @@ export class AuthService {
   static async verifyMagicLinkOrOTP(
     otp: string,
     email: string
-  ): Promise<{ user: IUser; accessToken: string; refreshToken: string }> {
+  ): Promise<{ user: IUser; accessToken: string; refreshToken: string; csrfToken: string }> {
     if (!otp || !email) {
       throw AppError.badRequest('Verification code and email are required');
     }
@@ -227,9 +227,9 @@ export class AuthService {
     await this.hydrateUserProfile(user._id.toString(), userEmail);
 
     // 4. Issue session tokens
-    const { accessToken, refreshToken } = await this.issueTokens(user._id.toString(), user.email, 'user');
+    const { accessToken, refreshToken, csrfToken } = await this.issueTokens(user._id.toString(), user.email, 'user');
 
-    return { user, accessToken, refreshToken };
+    return { user, accessToken, refreshToken, csrfToken };
   }
 
   /**
@@ -237,7 +237,7 @@ export class AuthService {
    */
   static async verifyGoogleToken(
     idToken: string
-  ): Promise<{ user: IUser; accessToken: string; refreshToken: string }> {
+  ): Promise<{ user: IUser; accessToken: string; refreshToken: string; csrfToken: string }> {
     if (!idToken) {
       throw AppError.badRequest('Google ID Token is required');
     }
@@ -355,17 +355,18 @@ export class AuthService {
     await this.hydrateUserProfile(user._id.toString(), userEmail);
 
     // Issue tokens
-    const { accessToken, refreshToken } = await this.issueTokens(user._id.toString(), user.email, 'user');
+    const { accessToken, refreshToken, csrfToken } = await this.issueTokens(user._id.toString(), user.email, 'user');
 
-    return { user, accessToken, refreshToken };
+    return { user, accessToken, refreshToken, csrfToken };
   }
 
   /**
    * Refreshes JWT session implementing secure Refresh Token Rotation (RTR).
    */
   static async refreshSession(
-    refreshTokenString: string
-  ): Promise<{ accessToken: string; refreshToken: string }> {
+    refreshTokenString: string,
+    providedCsrfToken: string
+  ): Promise<{ accessToken: string; refreshToken: string; csrfToken: string }> {
     if (!refreshTokenString) {
       throw AppError.unauthorized('Refresh token is required');
     }
@@ -401,6 +402,7 @@ export class AuthService {
               return {
                 accessToken,
                 refreshToken: successorRecord.token,
+                csrfToken: successorRecord.csrfToken,
               };
             }
           }
@@ -450,6 +452,7 @@ export class AuthService {
               return {
                 accessToken,
                 refreshToken: successorRecord.token,
+                csrfToken: successorRecord.csrfToken,
               };
             }
           }
@@ -460,6 +463,11 @@ export class AuthService {
 
     let accessToken = '';
     let newRecord = null;
+
+    // CSRF validation: verify token matches the session's stored CSRF token
+    if (!providedCsrfToken || providedCsrfToken !== tokenRecord.csrfToken) {
+      throw AppError.unauthorized('CSRF_TOKEN_INVALID');
+    }
 
     if (tokenRecord.userId) {
       // User Refresh Flow
@@ -474,9 +482,13 @@ export class AuthService {
         role: 'user',
       });
 
+      // Generate new CSRF token (rotate with refresh token)
+      const newCsrfToken = crypto.randomBytes(32).toString('hex');
+
       newRecord = await RefreshTokenModel.create({
         userId: user._id,
         token: newRefreshTokenString,
+        csrfToken: newCsrfToken,
         expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days expiration
       });
     } else if (tokenRecord.adminId) {
@@ -489,6 +501,7 @@ export class AuthService {
     return {
       accessToken,
       refreshToken: newRecord.token,
+      csrfToken: newRecord.csrfToken,
     };
   }
 
@@ -508,7 +521,7 @@ export class AuthService {
     id: string,
     email: string,
     role: string
-  ): Promise<{ accessToken: string; refreshToken: string }> {
+  ): Promise<{ accessToken: string; refreshToken: string; csrfToken: string }> {
     // 1. Access Token (Short-lived JWT)
     const accessToken = signUserToken({
       sub: id,
@@ -518,15 +531,18 @@ export class AuthService {
 
     // 2. Refresh Token (Long-lived random string)
     const refreshTokenString = crypto.randomBytes(32).toString('hex');
+    // 3. CSRF Token (bound to refresh session, rotated on every refresh)
+    const csrfToken = crypto.randomBytes(32).toString('hex');
     const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days session
 
     await RefreshTokenModel.create({
       userId: new Types.ObjectId(id),
       token: refreshTokenString,
+      csrfToken,
       expiresAt,
     });
 
-    return { accessToken, refreshToken: refreshTokenString };
+    return { accessToken, refreshToken: refreshTokenString, csrfToken };
   }
 
   /**

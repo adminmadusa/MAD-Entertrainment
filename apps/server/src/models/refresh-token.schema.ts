@@ -4,6 +4,7 @@ export interface IRefreshToken extends Document {
   userId?: Types.ObjectId;
   adminId?: Types.ObjectId;
   token: string;
+  csrfToken: string;
   expiresAt: Date;
   isRevoked: boolean;
   replacedByToken?: string;
@@ -28,6 +29,10 @@ const refreshTokenSchema = new Schema<IRefreshToken>(
       required: true,
       unique: true,
       index: true,
+    },
+    csrfToken: {
+      type: String,
+      required: true,
     },
     expiresAt: {
       type: Date,

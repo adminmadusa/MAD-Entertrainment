@@ -1,6 +1,7 @@
 import { Router } from 'express';
 
 import { AuthController } from '../../controllers/public/auth.controller';
+import { csrfProtection } from '../../middleware/security/csrf.middleware';
 import { requireAuth } from '../../middleware/auth.middleware';
 import { authLimiter } from '../../middleware/rate.middleware';
 import { validateBody } from '../../middleware/validation.middleware';
@@ -28,11 +29,11 @@ router.post('/magic-link', authLimiter, validateBody(magicLinkSchema), AuthContr
 // Verify Magic Link token or OTP input (protected by auth-specific rate limiter to block brute-force codes)
 router.post('/verify', authLimiter, validateBody(verifyAuthSchema), AuthController.verifyMagicLinkOrOTP);
 
-// Refresh Session Token (protected by auth-specific rate limiter)
-router.post('/refresh', authLimiter, validateBody(refreshAuthSchema), AuthController.refresh);
+// Refresh Session Token (protected by auth-specific rate limiter + CSRF)
+router.post('/refresh', authLimiter, csrfProtection, validateBody(refreshAuthSchema), AuthController.refresh);
 
-// User Logout
-router.post('/logout', validateBody(logoutAuthSchema), AuthController.logout);
+// User Logout (protected by CSRF)
+router.post('/logout', csrfProtection, validateBody(logoutAuthSchema), AuthController.logout);
 
 // Retrieve currently logged-in user profile details
 router.get('/me', requireAuth, AuthController.getMe);
