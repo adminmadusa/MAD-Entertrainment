@@ -220,10 +220,14 @@ export const updateEvent = async (id: string, data: Partial<IEvent>): Promise<Ev
   const existing = await Event.findById(String(id));
   if (!existing) return null;
 
-  const expectedVersion = data.eventVersion;
-  if (expectedVersion === undefined || expectedVersion === null) {
+  const rawExpectedVersion = data.eventVersion;
+  if (rawExpectedVersion === undefined || rawExpectedVersion === null) {
     throw AppError.badRequest('Event version is required for update');
   }
+  if (typeof rawExpectedVersion !== 'number' || !Number.isFinite(rawExpectedVersion) || !Number.isInteger(rawExpectedVersion)) {
+    throw AppError.badRequest('Event version must be a valid integer');
+  }
+  const expectedVersion = rawExpectedVersion;
 
   const mergedBanner = data.bannerImage !== undefined ? data.bannerImage : existing.bannerImage;
   const mergedPoster = data.posterImage !== undefined ? data.posterImage : existing.posterImage;
