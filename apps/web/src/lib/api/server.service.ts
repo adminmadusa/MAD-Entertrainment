@@ -120,7 +120,7 @@ export async function safeServerFetch<T>(
 
 export async function serverGetFeaturedEvents(): Promise<Event[]> {
   const payload = await safeServerFetch<{ events: Event[] }>(
-    '/events?page=1&limit=6',
+    '/events?isFeatured=true&page=1&limit=6',
     {
       fallback: { events: [] },
       revalidate: 60,
