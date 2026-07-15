@@ -351,14 +351,14 @@ export const updateEvent = async (id: string, data: Partial<IEvent>): Promise<Ev
 };
 
 export const deleteEvent = async (id: string): Promise<IEvent | null> => {
-  const bookingExists = await Booking.exists({ eventId: id });
+  const bookingExists = await Booking.exists({ eventId: String(id) });
   if (bookingExists) {
     throw AppError.badRequest('Cannot delete event with existing bookings');
   }
-  const existing = await Event.findById(id);
+  const existing = await Event.findById(String(id));
   if (!existing) return null;
 
-  const deleted = await Event.findByIdAndUpdate(id, { isDeleted: true, deletedAt: new Date() }, { new: true });
+  const deleted = await Event.findByIdAndUpdate(String(id), { isDeleted: true, deletedAt: new Date() }, { new: true });
   if (deleted) {
     const publicIdsToDelete: string[] = [];
     if (existing.bannerImage?.publicId) publicIdsToDelete.push(existing.bannerImage.publicId);
