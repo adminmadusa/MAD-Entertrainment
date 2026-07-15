@@ -222,7 +222,8 @@ export const updateTicketProfile = async (
     }
   }
 
-  const updated = await TicketProfile.findByIdAndUpdate(String(id), { $set: data }, { new: true });
+  existingProfile.set(data);
+  const updated = await existingProfile.save();
   if (updated) {
     await syncProfileEvents(updated._id.toString());
   }
