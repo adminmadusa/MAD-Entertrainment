@@ -81,7 +81,7 @@ describe('AdminEventGalleryService', () => {
 
       (EventGallery.findOne as any).mockResolvedValue(mockItem);
 
-      const updated = await AdminEventGalleryService.updateItem(eventId, '1', {
+      await AdminEventGalleryService.updateItem(eventId, '1', {
         caption: 'new',
         visibility: MediaVisibility.PRIVATE
       });
