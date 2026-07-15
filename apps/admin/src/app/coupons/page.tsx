@@ -10,7 +10,8 @@ import { extractApiError } from '@/lib/api/client';
 import { useAdminAuth } from '@/providers/AdminAuthProvider';
 import { AdminRole } from '@mad/shared';
 import type { Coupon } from '@mad/types';
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, ErrorState, Modal } from '@mad/ui';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, ErrorState, Modal, EmptyState } from '@mad/ui';
+import { Tag } from '@mad/ui/icons';
 import { formatDate } from '@mad/utils';
 
 
@@ -60,11 +61,17 @@ export default function AdminCouponsPage() {
     if (coupons.length === 0) {
       return (
         <TableRow>
-          <TableCell colSpan={6} className="py-16 text-center text-text-muted">
-            No coupons found.{' '}
-            <Link href="/coupons/new" className="text-accent-purple hover:underline">
-              Create one →
-            </Link>
+          <TableCell colSpan={6} className="py-8">
+            <EmptyState
+              variant="table"
+              icon={<Tag />}
+              title="No coupons created yet."
+              action={
+                <Link href="/coupons/new" className="px-4 py-2 mt-2 text-sm font-medium text-white bg-accent-purple hover:bg-accent-purple/90 rounded-xl transition-colors">
+                  Create Coupon
+                </Link>
+              }
+            />
           </TableCell>
         </TableRow>
       );

@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 
 import { UserDetailResponse } from '@/lib/api/admin/user.service';
 import { BookingStatus, BOOKING_STATUS_META } from '@mad/shared';
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@mad/ui';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, EmptyState } from '@mad/ui';
+import { CalendarDays } from '@mad/ui/icons';
 import { formatDateTime, formatEventDate } from '@mad/utils';
 
 interface UserBookingsTableProps {
@@ -39,8 +40,13 @@ export default function UserBookingsTable({
         <TableBody>
           {paginatedBookings.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={6} className="py-12 text-center text-text-muted">
-                No bookings registered.
+              <TableCell colSpan={6} className="py-8">
+                <EmptyState
+                  variant="table"
+                  icon={<CalendarDays />}
+                  title="No bookings found."
+                  description="This user has not made any bookings."
+                />
               </TableCell>
             </TableRow>
           ) : (

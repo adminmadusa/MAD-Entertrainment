@@ -7,7 +7,8 @@ import { useState } from 'react';
 import { adminGetWebhooks } from '@/lib/api/admin/diagnostics.service';
 import { useAdminAuth } from '@/providers/AdminAuthProvider';
 import { QUERY_KEYS, AdminRole } from '@mad/shared';
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, ErrorState } from '@mad/ui';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, ErrorState, EmptyState } from '@mad/ui';
+import { Link2, Search } from '@mad/ui/icons';
 import { formatDateTime } from '@mad/utils';
 
 export default function WebhookDiagnosticsPage() {
@@ -77,7 +78,16 @@ export default function WebhookDiagnosticsPage() {
 
     if (webhooks.length === 0) {
       return (
-        <TableRow><TableCell colSpan={6} className="py-16 text-center text-text-muted">No webhooks found.</TableCell></TableRow>
+        <TableRow>
+          <TableCell colSpan={6} className="py-8">
+            <EmptyState
+              variant="table"
+              icon={providerFilter !== '' || statusFilter !== '' ? <Search /> : <Link2 />}
+              title={providerFilter !== '' || statusFilter !== '' ? "No results match your search." : "No webhooks found."}
+              description={providerFilter !== '' || statusFilter !== '' ? "Try changing your filters." : undefined}
+            />
+          </TableCell>
+        </TableRow>
       );
     }
 

@@ -8,7 +8,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { adminGetUsers } from '@/lib/api/admin/user.service';
 import { useAdminAuth } from '@/providers/AdminAuthProvider';
 import { AdminRole } from '@mad/shared';
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, ErrorState } from '@mad/ui';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, ErrorState, EmptyState } from '@mad/ui';
+import { Users, Search } from '@mad/ui/icons';
 import { formatDateTime } from '@mad/utils';
 
 export default function UsersDirectoryPage() {
@@ -134,8 +135,13 @@ export default function UsersDirectoryPage() {
     if (items.length === 0) {
       return (
         <TableRow>
-          <TableCell colSpan={6} className="py-16 text-center text-text-muted">
-            {searchParam ? 'No customers match your search criteria.' : 'No customer records found.'}
+          <TableCell colSpan={6} className="py-8">
+            <EmptyState
+              variant="table"
+              icon={searchParam ? <Search /> : <Users />}
+              title={searchParam ? "No results match your search." : "No customer records found."}
+              description={searchParam ? "Try changing your search criteria." : undefined}
+            />
           </TableCell>
         </TableRow>
       );

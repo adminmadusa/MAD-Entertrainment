@@ -6,7 +6,8 @@ import { useState } from 'react';
 import { adminGetRefunds, adminProcessRefund, type AdminRefund } from '@/lib/api/admin/booking.service';
 import { useAdminAuth } from '@/providers/AdminAuthProvider';
 import { AdminRole } from '@mad/shared';
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, ErrorState, Modal } from '@mad/ui';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, Modal, EmptyState, ErrorState } from '@mad/ui';
+import { Receipt, Search } from '@mad/ui/icons';
 import { formatDateTime, formatEventDate } from '@mad/utils';
 
 
@@ -81,7 +82,16 @@ export default function AdminRefundsPage() {
 
     if (sortedRefunds.length === 0) {
       return (
-        <TableRow><TableCell colSpan={6} className="py-16 text-center text-text-muted">No refunds found.</TableCell></TableRow>
+        <TableRow>
+          <TableCell colSpan={6} className="py-8">
+            <EmptyState
+              variant="table"
+              icon={statusFilter !== '' ? <Search /> : <Receipt />}
+              title={statusFilter !== '' ? "No results match your search." : "No refunds processed yet."}
+              description={statusFilter !== '' ? "Try changing your filters." : undefined}
+            />
+          </TableCell>
+        </TableRow>
       );
     }
 

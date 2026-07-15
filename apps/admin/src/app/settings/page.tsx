@@ -8,7 +8,8 @@ import { adminGetCategories, adminCreateCategory, adminUpdateCategory, adminDele
 import { extractApiError } from '@/lib/api/client';
 import { useAdminAuth } from '@/providers/AdminAuthProvider';
 import { AdminRole } from '@mad/shared';
-import { Modal } from '@mad/ui';
+import { Modal, EmptyState } from '@mad/ui';
+import { LayoutList } from '@mad/ui/icons';
 
 export default function SettingsPage() {
   const { admin } = useAdminAuth();
@@ -85,9 +86,12 @@ export default function SettingsPage() {
 
     if (categories.length === 0) {
       return (
-        <div className="p-12 text-center text-text-muted text-sm">
-          No custom categories defined yet. Add one on the left!
-        </div>
+        <EmptyState
+          variant="card"
+          icon={<LayoutList />}
+          title="No custom categories defined yet."
+          description="Add one on the left!"
+        />
       );
     }
 

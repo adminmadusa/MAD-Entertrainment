@@ -115,6 +115,10 @@ export {
   BarChart2,
   TrendingUp,
   Package,
+  Mail,
+  Link2,
+  Send,
+  LayoutList,
 } from 'lucide-react';
 
 // ─── Backward-compatible aliases ───────────────────────────────────────────────
