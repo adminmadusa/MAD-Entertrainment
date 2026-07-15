@@ -18,7 +18,7 @@ import { adminGetEvent, adminUpdateEvent, type AdminEventUpdatePayload, type Clo
 import { adminGetTicketProfiles } from '@/lib/api/admin/ticket-profile.service';
 import { adminGetTiers } from '@/lib/api/admin/tier.service';
 import { extractApiError } from '@/lib/api/client';
-import { BookingMode, TicketTier, EventStatus, EventMemoryPublicationState, EVENT_STATUS_TRANSITIONS, type EventLifecycleStatus, } from '@mad/shared';
+import { BookingMode, TicketTier, EventStatus, EventMemoryPublicationState, EVENT_STATUS_TRANSITIONS, type EventLifecycleStatus, deriveEventLifecycleState } from '@mad/shared';
 import { AdminFormActions } from '@mad/ui';
 
 const defaultTier = (): TicketTierInput => ({
@@ -313,6 +313,7 @@ export default function EditEventPage() {
           title={title} setTitle={setTitle}
           category={category} setCategory={setCategory}
           status={status} setStatus={setStatus}
+          lifecycle={deriveEventLifecycleState({ status, startDate, endDate } as any)}
           venue={venue} setVenue={setVenue}
           description={description} setDescription={setDescription}
           dbCategories={dbCategories} statusOptions={statusOptions}
@@ -353,7 +354,8 @@ export default function EditEventPage() {
         {/* Event Memories — only rendered when status is COMPLETED */}
         <EventMemoriesCard
           eventStatus={status}
-          eventSlug={event?.slug ?? ''}
+          lifecycle={deriveEventLifecycleState({ status, startDate, endDate } as any)}
+          eventSlug={event?.slug || ''}
           value={memories}
           onChange={setMemories}
         />

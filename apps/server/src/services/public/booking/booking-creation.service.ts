@@ -16,7 +16,7 @@ import { auditLog } from '../../../utils/audit';
 import { logger } from '../../../utils/logger';
 import { runInTransaction } from '../../../utils/transaction';
 import { ReservationService } from '../../reservation.service';
-import { isEventTicketSalesClosed } from '../../../utils/event-availability.util';
+import { canBook } from '@mad/shared';
 import { BookingAccessService } from './booking-access.service';
 import type { CreateBookingRequest, SaveCheckoutRequest } from './booking.types';
 
@@ -198,7 +198,7 @@ export class BookingCreationService {
 
     // Check event ticket sales closure constraints
     const now = new Date();
-    if (isEventTicketSalesClosed(event, now)) {
+    if (!canBook(event as any)) {
       throw AppError.badRequest('This event is no longer available for booking.');
     }
 

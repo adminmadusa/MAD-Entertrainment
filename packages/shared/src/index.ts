@@ -1,4 +1,5 @@
 export * from './constants';
+export * from './utils/event-lifecycle';
 
 export interface BulkOperationResult {
   successCount: number;

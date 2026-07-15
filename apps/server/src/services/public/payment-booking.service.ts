@@ -15,7 +15,7 @@ import { createNotificationSafe } from '../notification.service';
 import { ReservationService } from '../reservation.service';
 import { PaymentInventoryService } from './payment-inventory.service';
 import { PaymentRefundService } from './payment-refund.service';
-import { isEventTicketSalesClosed } from '../../utils/event-availability.util';
+import { canBook } from '@mad/shared';
 
 export interface ConfirmationTransactionResult {
   success: boolean;
@@ -78,7 +78,7 @@ export class PaymentBookingService {
 
     // Check event ticket sales closure constraints
     const now = new Date();
-    if (isEventTicketSalesClosed(event, now)) {
+    if (!canBook(event as any)) {
       throw new Error('EVENT_EXPIRED_DURING_CONFIRMATION');
     }
 

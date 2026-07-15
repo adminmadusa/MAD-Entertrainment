@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { type AdminCategory } from '@/lib/api/admin/category.service';
-import { EVENT_CATEGORY_LABELS, EventStatus } from '@mad/shared';
+import { EVENT_CATEGORY_LABELS, EventStatus, deriveEventLifecycleState } from '@mad/shared';
 import { FormField } from '@mad/ui';
 
 
@@ -11,6 +11,7 @@ const EVENT_STATUS_LABELS: Partial<Record<EventStatus, string>> = {
   [EventStatus.POSTPONED]: 'Postponed',
   [EventStatus.COMPLETED]: 'Completed',
   [EventStatus.CANCELLED]: 'Cancelled',
+  [EventStatus.ARCHIVED]: 'Archived',
 };
 
 const inputCls =
@@ -24,6 +25,7 @@ export interface EventBasicInfoCardProps {
   setCategory: (val: string) => void;
   status: EventStatus;
   setStatus: (val: EventStatus) => void;
+  lifecycle?: string;
   venue: string;
   setVenue: (val: string) => void;
   description: string;
@@ -39,6 +41,7 @@ export const EventBasicInfoCard = React.memo(function EventBasicInfoCard({
   setCategory,
   status,
   setStatus,
+  lifecycle,
   venue,
   setVenue,
   description,
@@ -48,7 +51,14 @@ export const EventBasicInfoCard = React.memo(function EventBasicInfoCard({
 }: EventBasicInfoCardProps) {
   return (
     <div className="glass rounded-2xl border border-border-subtle p-6 space-y-5">
-      <h2 className="text-white font-semibold">Basic Information</h2>
+      <div className="flex items-center justify-between">
+        <h2 className="text-white font-semibold">Basic Information</h2>
+        {lifecycle && (
+          <span className="text-xs px-2.5 py-1 rounded-full border font-medium uppercase bg-white/5 border-white/10 text-text-secondary">
+            Lifecycle: <span className="text-white">{lifecycle}</span>
+          </span>
+        )}
+      </div>
       <FormField label="Event Title *" htmlFor="event-title">
         <input
           id="event-title"

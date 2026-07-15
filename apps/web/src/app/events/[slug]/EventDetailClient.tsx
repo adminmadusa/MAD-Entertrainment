@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 
 import { publicGetEventBySlug } from '@/lib/api/public.service';
-import { QUERY_KEYS, EventStatus } from '@mad/shared';
+import { QUERY_KEYS, EventStatus, deriveEventLifecycleState, canBook } from '@mad/shared';
 import type { Event as EventData } from '@mad/types';
 
 import type { EventBookingFlowHandle } from './components/EventBookingFlow';
@@ -80,6 +80,9 @@ export default function EventDetailClient({ slug, initialEvent }: EventDetailCli
       </div>
     );
   }
+
+  const lifecycle = deriveEventLifecycleState(event);
+  const isBookable = canBook(event);
 
   const showDateTime = new Date(event.startDate).toLocaleDateString('en-US', {
     weekday: 'long',
@@ -291,7 +294,7 @@ export default function EventDetailClient({ slug, initialEvent }: EventDetailCli
               </span>
             </div>
 
-            {event.status === EventStatus.COMPLETED && event.memories && (
+            {lifecycle === 'completed' && event.status !== EventStatus.ARCHIVED && event.memories && (
               <EventMemoriesRecap memories={event.memories} />
             )}
 
@@ -302,7 +305,7 @@ export default function EventDetailClient({ slug, initialEvent }: EventDetailCli
             />
 
             {/* Only render promotional event gallery if memories are not published */}
-            {!(event.status === EventStatus.COMPLETED && event.memories) && (
+            {!(lifecycle === 'completed' && event.status !== EventStatus.ARCHIVED && event.memories) && (
               <EventGallery images={event.galleryImages} />
             )}
 
@@ -412,7 +415,7 @@ export default function EventDetailClient({ slug, initialEvent }: EventDetailCli
             isFavorited={isFavorited}
             onGetTickets={() => bookingFlowRef.current?.openBooking()}
             onToggleFavorite={() => setIsFavorited(!isFavorited)}
-            isCompleted={event.status === EventStatus.COMPLETED}
+            isCompleted={lifecycle === 'completed'}
           />
 
         </div>
