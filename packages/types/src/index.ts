@@ -473,3 +473,44 @@ export interface BulkProgress {
   completed: number;
   failed: number;
 }
+
+export enum MediaType {
+  IMAGE = 'IMAGE',
+  VIDEO = 'VIDEO',
+}
+
+export enum MediaVisibility {
+  PUBLIC = 'PUBLIC',
+  PRIVATE = 'PRIVATE',
+}
+
+export interface EventGalleryItem {
+  id: string;
+  eventId: string;
+  mediaType: MediaType;
+  url: string;
+  publicId: string;
+  thumbnail?: string;
+  caption?: string;
+  sortOrder: number;
+  isCover: boolean;
+  visibility: MediaVisibility;
+  uploadedBy?: string;
+  assetProvider: string;
+  assetVersion?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface EventGallerySettings {
+  id: string;
+  eventId: string;
+  heading?: string;
+  thankYouMessage?: string;
+  highlights?: string[];
+  published: boolean;
+  publishedAt?: string;
+  publishedBy?: string;
+  createdAt: string;
+  updatedAt: string;
+}
