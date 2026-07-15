@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 import type { FilterQuery } from 'mongoose';
 
-import { EventStatus, SeatStatus } from '@mad/shared';
+import { EventStatus, SeatStatus, deriveBookingEligibility } from '@mad/shared';
 
 import { getEnv } from '../../config/env';
 import { getRedis } from '../../config/redis';
@@ -125,7 +125,13 @@ export class PublicEventService {
       ]);
     }
 
-    return { events, total };
+    return {
+      events: events.map(e => ({
+        ...e,
+        ...deriveBookingEligibility(e as any)
+      })),
+      total,
+    } as any;
   }
 
   static async getEventBySlug(slug: string) {
@@ -154,7 +160,10 @@ export class PublicEventService {
       event.ticketTiers = event.ticketTiers.filter(tier => tier.isDeleted !== true);
     }
 
-    return event;
+    return {
+      ...event,
+      ...deriveBookingEligibility(event as any)
+    } as any;
   }
 
   static async getEventSeatLayout(eventId: string) {

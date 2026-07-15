@@ -1,3 +1,4 @@
+import type { EventBookingCTA } from '@mad/types';
 import type { ReactNode } from 'react';
 
 type EventStickyCTAProps = {
@@ -11,7 +12,7 @@ type EventStickyCTAProps = {
   isFavorited: boolean;
   onGetTickets: () => void;
   onToggleFavorite: () => void;
-  isCompleted?: boolean;
+  cta: EventBookingCTA;
 };
 
 export function EventStickyCTA({
@@ -25,7 +26,7 @@ export function EventStickyCTA({
   isFavorited,
   onGetTickets,
   onToggleFavorite,
-  isCompleted = false,
+  cta,
 }: EventStickyCTAProps) {
   return (
     <>
@@ -33,7 +34,7 @@ export function EventStickyCTA({
       <div className="hidden lg:block lg:col-span-5 self-start lg:sticky lg:top-24">
         <div className="glass rounded-2xl border border-white/10 p-6 space-y-5 shadow-2xl">
           <div>
-            {isCompleted ? (
+            {cta.action === 'NONE' ? (
               <div className="text-2xl font-black text-text-muted mt-0.5 leading-none">
                 Sales Closed
               </div>
@@ -70,7 +71,7 @@ export function EventStickyCTA({
             </div>
           </div>
 
-          {isCompleted ? (
+          {cta.action === 'NONE' ? (
             <div className="space-y-2">
               <div className="flex items-center justify-between text-xs">
                 <span className="text-text-muted">Status</span>
@@ -99,27 +100,23 @@ export function EventStickyCTA({
             </div>
           )}
 
-          {isCompleted ? (
-            <button
-              type="button"
-              disabled
-              className="w-full py-4 bg-white/5 border border-white/10 text-text-muted font-black text-sm rounded-xl cursor-not-allowed inline-flex items-center justify-center gap-2"
-              aria-label="Ticket bookings closed"
-            >
-              Event Ended
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={onGetTickets}
-              className="w-full py-4 bg-gradient-to-r from-accent-purple to-accent-pink hover:from-accent-purple-light hover:to-accent-pink/80 text-white font-black text-sm rounded-xl shadow-glow transition-all duration-300 hover:scale-[1.02] active:scale-95 inline-flex items-center justify-center gap-2"
-            >
+          <button
+            type="button"
+            onClick={onGetTickets}
+            disabled={cta.disabled}
+            className={`w-full py-4 font-black text-sm rounded-xl transition-all duration-300 inline-flex items-center justify-center gap-2 ${
+              cta.disabled
+                ? 'bg-white/5 border border-white/10 text-text-muted cursor-not-allowed'
+                : 'bg-gradient-to-r from-accent-purple to-accent-pink hover:from-accent-purple-light hover:to-accent-pink/80 text-white shadow-glow hover:scale-[1.02] active:scale-95'
+            }`}
+          >
+            {!cta.disabled && (
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
               </svg>
-              Get tickets
-            </button>
-          )}
+            )}
+            {cta.text}
+          </button>
 
           <button
             type="button"
@@ -137,7 +134,7 @@ export function EventStickyCTA({
             <svg className="w-3.5 h-3.5 text-text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
             </svg>
-            <span>{isCompleted ? 'Ticket sales ended' : 'Secure checkout · No hidden fees'}</span>
+            <span>{cta.action === 'NONE' ? 'Ticket sales ended' : 'Secure checkout · No hidden fees'}</span>
           </div>
         </div>
       </div>
@@ -148,26 +145,21 @@ export function EventStickyCTA({
           <div>
             <div className="text-xs text-text-muted font-medium">Ticket status</div>
             <div className="text-base font-black text-text-muted">
-              {isCompleted ? 'Sales Closed' : priceLabel}
+              {cta.action === 'NONE' ? 'Sales Closed' : priceLabel}
             </div>
           </div>
-          {isCompleted ? (
-            <button
-              type="button"
-              disabled
-              className="px-8 py-3.5 bg-white/5 border border-white/10 text-text-muted font-black text-sm rounded-xl cursor-not-allowed"
-            >
-              Event Ended
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={onGetTickets}
-              className="px-8 py-3.5 bg-gradient-to-r from-accent-purple to-accent-pink hover:from-accent-purple-light hover:to-accent-pink/80 text-white font-black text-sm rounded-xl shadow-glow transition-all duration-300 hover:scale-105 active:scale-95"
-            >
-              Get tickets
-            </button>
-          )}
+          <button
+            type="button"
+            onClick={onGetTickets}
+            disabled={cta.disabled}
+            className={`px-8 py-3.5 font-black text-sm rounded-xl transition-all duration-300 ${
+              cta.disabled
+                ? 'bg-white/5 border border-white/10 text-text-muted cursor-not-allowed'
+                : 'bg-gradient-to-r from-accent-purple to-accent-pink hover:from-accent-purple-light hover:to-accent-pink/80 text-white shadow-glow hover:scale-105 active:scale-95'
+            }`}
+          >
+            {cta.text}
+          </button>
         </div>
       </div>
     </>

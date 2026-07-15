@@ -16,7 +16,7 @@ import { PublicBookingService } from './booking.service';
 import { PaymentValidationService } from './payment-validation.service';
 import { RazorpayAdapter } from './razorpay.adapter';
 import { StripeAdapter } from './stripe.adapter';
-import { canBook } from '@mad/shared';
+import { deriveBookingEligibility } from '@mad/shared';
 
 export type PaymentOwnershipContext = {
   userId?: string;
@@ -126,9 +126,9 @@ export class PaymentIntentService {
       throw AppError.notFound('Event not found or not published');
     }
 
-    const now = new Date();
-    if (!canBook(event as any)) {
-      throw AppError.badRequest('This event is no longer available for booking.');
+    const eligibility = deriveBookingEligibility(event as any);
+    if (!eligibility.bookingAllowed) {
+      throw AppError.badRequest(`This event is no longer available for booking. Reason: ${eligibility.bookingReason}`);
     }
 
     if (booking.totalAmount === 0) {

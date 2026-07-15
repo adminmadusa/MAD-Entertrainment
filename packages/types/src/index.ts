@@ -89,6 +89,13 @@ export type TicketOverride = {
   minPerBooking?: number;
 };
 
+export interface EventBookingCTA {
+  text: string;
+  disabled: boolean;
+  variant: 'primary' | 'secondary' | 'disabled';
+  action: 'BOOK' | 'VIEW' | 'NONE';
+}
+
 export type Event = {
   _id: string;
   title: string;
@@ -130,6 +137,12 @@ export type Event = {
   showCountdown?: boolean;
   isEarlyBird?: boolean;
   earlyBirdDeadline?: string | Date;
+
+  // Booking Eligibility (Single Source of Truth from Backend)
+  bookingAllowed?: boolean;
+  bookingReason?: string;
+  eventState?: string;
+  bookingCTA?: EventBookingCTA;
 };
 
 export type Seat = {

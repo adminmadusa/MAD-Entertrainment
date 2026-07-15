@@ -4,10 +4,11 @@ import { useQuery } from '@tanstack/react-query';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 
 import { publicGetEventBySlug } from '@/lib/api/public.service';
-import { QUERY_KEYS, EventStatus, deriveEventLifecycleState, canBook } from '@mad/shared';
+import { QUERY_KEYS, EventStatus } from '@mad/shared';
 import type { Event as EventData } from '@mad/types';
 
 import type { EventBookingFlowHandle } from './components/EventBookingFlow';
@@ -37,6 +38,9 @@ export default function EventDetailClient({ slug, initialEvent }: EventDetailCli
   // mutation bypasses React's render cycle entirely.
   const heroImageRef = useRef<HTMLDivElement | null>(null);
   const bookingFlowRef = useRef<EventBookingFlowHandle>(null);
+  
+  const searchParams = useSearchParams();
+  const router = useRouter();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -63,6 +67,22 @@ export default function EventDetailClient({ slug, initialEvent }: EventDetailCli
     initialDataUpdatedAt: initialEvent ? Date.now() : undefined,
   });
 
+  const cta = event?.bookingCTA || { text: 'Book Now', disabled: false, variant: 'primary', action: 'BOOK' };
+
+  useEffect(() => {
+    if (searchParams.get('modal') === 'booking' && cta.action === 'BOOK') {
+      // Defer slightly to ensure ref is mounted and layout is stable
+      const timer = setTimeout(() => {
+        bookingFlowRef.current?.openBooking();
+      }, 100);
+      
+      // Clear the search param from URL so it doesn't re-trigger on navigation
+      router.replace(`/events/${slug}`, { scroll: false });
+      
+      return () => clearTimeout(timer);
+    }
+  }, [searchParams, cta.action, router, slug]);
+
   if (isLoadingEvent) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-background">
@@ -78,9 +98,6 @@ export default function EventDetailClient({ slug, initialEvent }: EventDetailCli
       </div>
     );
   }
-
-  const lifecycle = deriveEventLifecycleState(event);
-  const isBookable = canBook(event);
 
   const showDateTime = new Date(event.startDate).toLocaleDateString('en-US', {
     weekday: 'long',
@@ -404,7 +421,7 @@ export default function EventDetailClient({ slug, initialEvent }: EventDetailCli
             isFavorited={isFavorited}
             onGetTickets={() => bookingFlowRef.current?.openBooking()}
             onToggleFavorite={() => setIsFavorited(!isFavorited)}
-            isCompleted={lifecycle === 'completed'}
+            cta={cta}
           />
 
         </div>

@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 import { publicGetEvents } from '@/lib/api/public.service';
@@ -15,6 +15,7 @@ import { CalendarIcon, EventGridSkeleton } from '@mad/ui';
 
 export function EventsList() {
   const searchParams = useSearchParams();
+  const router = useRouter();
 
   const urlCategory = searchParams.get('category') ?? '';
   const [page, setPage] = useState(1);
@@ -64,12 +65,8 @@ export function EventsList() {
         return (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {events.map((event) => {
-              let cardAriaLabel = `Book tickets for ${event.title}`;
-              if (event.status === 'completed') {
-                cardAriaLabel = `View recap for completed event ${event.title}`;
-              } else if (event.isSoldOut) {
-                cardAriaLabel = `View details for ${event.title}`;
-              }
+              let cardAriaLabel = `View details for ${event.title}`;
+              const cta = event.bookingCTA || { text: 'Details', disabled: false, variant: 'primary', action: 'VIEW' };
 
               return (
                 <motion.div
@@ -105,14 +102,9 @@ export function EventsList() {
                         {EVENT_CATEGORY_LABELS[event.category as EventCategory] || event.category}
                       </span>
 
-                      {event.status === 'completed' && (
-                        <span className="absolute inset-0 bg-black/60 backdrop-blur-[2px] flex items-center justify-center text-text-muted font-bold text-sm tracking-wider">
-                          ENDED
-                        </span>
-                      )}
-                      {event.status !== 'completed' && event.isSoldOut && (
+                      {cta.action === 'NONE' && (
                         <span className="absolute inset-0 bg-black/60 backdrop-blur-[2px] flex items-center justify-center text-white font-bold text-sm tracking-wider">
-                          SOLD OUT
+                          {cta.text.toUpperCase()}
                         </span>
                       )}
                     </div>
@@ -131,30 +123,35 @@ export function EventsList() {
                     </p>
                   </div>
 
-                  {event.status === 'completed' ? (
-                    <div className="px-5 pb-5 pt-4 border-t border-border-subtle/40 flex items-center justify-between mt-auto bg-black/10 w-full">
-                      <span className="text-[10px] text-text-muted font-medium italic">
-                        Tickets Closed
-                      </span>
-                      <div className="px-3.5 py-2 text-xs font-bold text-text-muted bg-white/5 border border-white/5 rounded-xl text-center cursor-not-allowed">
-                        Completed
+                  <div className="px-5 pb-5 pt-4 border-t border-border-subtle/40 flex items-center justify-between mt-auto bg-black/10 w-full">
+                    <div>
+                      <div className="text-[10px] text-text-muted font-medium">Tickets from</div>
+                      <div className="text-white font-black text-sm">
+                        ₹{event.ticketTiers?.length > 0 ? Math.min(...event.ticketTiers.map((t) => t.price)) : 0}
                       </div>
                     </div>
-                  ) : (
-                    <div className="px-5 pb-5 pt-4 border-t border-border-subtle/40 flex items-center justify-between mt-auto bg-black/10 w-full">
-                      <div>
-                        <div className="text-[10px] text-text-muted font-medium">Tickets from</div>
-                        <div className="text-white font-black text-sm">
-                          ₹{event.ticketTiers?.length > 0 ? Math.min(...event.ticketTiers.map((t) => t.price)) : 0}
-                        </div>
-                      </div>
-                      <div
-                        className="px-3.5 py-2 text-xs font-bold text-white btn-gradient rounded-xl shadow-glow-sm group-hover:scale-105 transition-transform"
-                      >
-                        {event.isSoldOut ? 'Details' : 'Book Now'}
-                      </div>
-                    </div>
-                  )}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        if (cta.action === 'NONE' || cta.disabled) return;
+                        if (cta.action === 'BOOK') {
+                          router.push(`/events/${event.slug}?modal=booking`);
+                        } else {
+                          router.push(`/events/${event.slug}`);
+                        }
+                      }}
+                      disabled={cta.disabled}
+                      className={`px-3.5 py-2 text-xs font-bold rounded-xl transition-transform text-center ${
+                        cta.disabled
+                          ? 'bg-white/5 border border-white/5 text-text-muted cursor-not-allowed'
+                          : 'text-white btn-gradient shadow-glow-sm hover:scale-105'
+                      }`}
+                    >
+                      {cta.text}
+                    </button>
+                  </div>
                 </Link>
               </motion.div>
             )})}
