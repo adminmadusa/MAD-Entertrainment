@@ -44,6 +44,36 @@ export const EVENT_STATUS_TRANSITIONS: Readonly<Record<EventLifecycleStatus, rea
   [EventStatus.CANCELLED]: [],
 };
 
+// ─── Event Duplication Policy ────────────────────────────────
+export const EVENT_DUPLICATION_POLICY = {
+  copied: [
+    'title', // Title is copied but modified by naming strategy
+    'description',
+    'category',
+    'bookingMode',
+    'bannerImage',
+    'posterImage',
+    'galleryImages',
+    'startDate',
+    'endDate',
+    'doorsOpenTime',
+    'showTime',
+    'venue',
+    'djOperatorIds',
+    'ticketTiers',
+  ],
+  reset: [
+    '_id',
+    'slug',
+    'createdAt',
+    'updatedAt',
+    'eventVersion',
+  ],
+  regenerated: [
+    'status', // Defaults to DRAFT
+  ]
+} as const;
+
 export type EventStatusTone = 'success' | 'warning' | 'danger' | 'info' | 'neutral';
 
 export type EventStatusMeta = {
