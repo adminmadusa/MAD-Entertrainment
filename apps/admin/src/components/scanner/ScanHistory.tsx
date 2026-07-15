@@ -1,6 +1,8 @@
 'use client';
 
 import { ScannerHistoryItem } from '../../lib/api/admin/scanner.service';
+import { EmptyState } from '@mad/ui';
+import { Scan, Search } from '@mad/ui/icons';
 
 interface ScanHistoryProps {
   items: ScannerHistoryItem[];
@@ -89,17 +91,12 @@ export function ScanHistory({
             ) : items.length === 0 ? (
               <tr>
                 <td colSpan={6} className="py-8">
-                  <div className="flex flex-col items-center justify-center py-6 text-center space-y-3">
-                    <div className="w-12 h-12 bg-white/5 text-white/30 rounded-full flex items-center justify-center border border-white/5">
-                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold text-white/70">No scans recorded</p>
-                      <p className="text-xxs text-text-muted mt-1 max-w-[200px] mx-auto">
-                        Waiting for the first attendee or matching search criteria...
-                      </p>
-                    </div>
-                  </div>
+                  <EmptyState
+                    variant="table"
+                    icon={search.trim() !== '' ? <Search /> : <Scan />}
+                    title={search.trim() !== '' ? "No results match your search." : "No scans recorded yet."}
+                    description={search.trim() !== '' ? "Try changing your search criteria." : "Waiting for the first attendee."}
+                  />
                 </td>
               </tr>
             ) : (

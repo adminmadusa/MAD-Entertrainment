@@ -11,7 +11,8 @@ import { extractApiError } from '@/lib/api/client';
 import { useAdminAuth } from '@/providers/AdminAuthProvider';
 import { AdminRole } from '@mad/shared';
 import type { TicketProfile } from '@mad/types';
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, ErrorState, Modal, FloatingActionBar } from '@mad/ui';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, ErrorState, Modal, FloatingActionBar, EmptyState } from '@mad/ui';
+import { Ticket, Search } from '@mad/ui/icons';
 import { formatDate } from '@mad/utils';
 
 // Color Presets for swatches
@@ -251,11 +252,17 @@ function TicketProfilesTab({ canMutate, qc, showToast }: TabProps) {
     if (profiles.length === 0) {
       return (
         <TableRow>
-          <TableCell colSpan={7} className="py-16 text-center text-text-muted text-sm">
-            No ticket profiles found.{' '}
-            <Link href="/ticket-profiles/new" className="text-accent-purple hover:underline font-semibold">
-              Create one →
-            </Link>
+          <TableCell colSpan={7} className="py-8">
+            <EmptyState
+              variant="table"
+              icon={<Ticket />}
+              title="No ticket profiles created yet."
+              action={
+                <Link href="/ticket-profiles/new" className="px-4 py-2 mt-2 text-sm font-medium text-white bg-accent-purple hover:bg-accent-purple/90 rounded-xl transition-colors">
+                  Create Ticket Profile
+                </Link>
+              }
+            />
           </TableCell>
         </TableRow>
       );
@@ -819,9 +826,12 @@ function TicketTiersTab({ canMutate, qc, showToast }: TabProps) {
           {isLoading ? (
             <div className="p-12 text-center text-text-muted text-sm animate-pulse">Loading tiers...</div>
           ) : filteredTiers.length === 0 ? (
-            <div className="p-12 text-center text-text-muted text-sm border border-dashed border-border-subtle rounded-2xl glass">
-              No matching ticket tiers defined. Configure presets on the left.
-            </div>
+            <EmptyState
+              variant="card"
+              icon={searchQuery || statusFilter !== 'all' ? <Search /> : <Ticket />}
+              title={searchQuery || statusFilter !== 'all' ? "No results match your search." : "No ticket tiers defined yet."}
+              description={searchQuery || statusFilter !== 'all' ? "Try changing your filters or search criteria." : "Configure presets on the left."}
+            />
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {filteredTiers.map((tier) => (

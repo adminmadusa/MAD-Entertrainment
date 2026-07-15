@@ -9,7 +9,8 @@ import { adminGetEvents, adminDeleteEvent, adminBulkDeleteEvents, type AdminEven
 import { extractApiError } from '@/lib/api/client';
 import { useAdminAuth } from '@/providers/AdminAuthProvider';
 import { EVENT_STATUS_METADATA, type EventStatus, AdminRole } from '@mad/shared';
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, Modal, FloatingActionBar } from '@mad/ui';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, Modal, FloatingActionBar, EmptyState } from '@mad/ui';
+import { CalendarDays, Search } from '@mad/ui/icons';
 import { formatEventDate } from '@mad/utils';
 
 const EVENT_STATUS_FILTER_OPTIONS = Object.entries(EVENT_STATUS_METADATA);
@@ -111,13 +112,21 @@ export default function AdminEventsPage() {
     }
 
     if (sortedEvents.length === 0) {
+      const isFiltered = search.trim() !== '' || statusFilter !== '';
       return (
         <TableRow>
-          <TableCell colSpan={6} className="py-16 text-center text-text-muted">
-            No events found.{' '}
-            <Link href="/events/new" className="text-accent-purple hover:underline">
-              Create one →
-            </Link>
+          <TableCell colSpan={6} className="py-8">
+            <EmptyState
+              variant="table"
+              icon={isFiltered ? <Search /> : <CalendarDays />}
+              title={isFiltered ? "No results match your search." : "No events created yet."}
+              description={isFiltered ? "Try changing your filters or search criteria." : undefined}
+              action={!isFiltered ? (
+                <Link href="/events/new" className="px-4 py-2 mt-2 text-sm font-medium text-white bg-accent-purple hover:bg-accent-purple/90 rounded-xl transition-colors">
+                  Create Event
+                </Link>
+              ) : undefined}
+            />
           </TableCell>
         </TableRow>
       );

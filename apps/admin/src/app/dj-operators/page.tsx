@@ -10,7 +10,8 @@ import { extractApiError } from '@/lib/api/client';
 import { useAdminAuth } from '@/providers/AdminAuthProvider';
 import { AdminRole } from '@mad/shared';
 import type { DJOperator } from '@mad/types';
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, ErrorState, Modal } from '@mad/ui';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, ErrorState, Modal, EmptyState } from '@mad/ui';
+import { Music, Search } from '@mad/ui/icons';
 
 
 export default function AdminDJsPage() {
@@ -59,11 +60,18 @@ export default function AdminDJsPage() {
     if (djs.length === 0) {
       return (
         <TableRow>
-          <TableCell colSpan={5} className="py-16 text-center text-text-muted">
-            No DJ Operators found.{' '}
-            <Link href="/dj-operators/new" className="text-accent-purple hover:underline">
-              Create one →
-            </Link>
+          <TableCell colSpan={5} className="py-8">
+            <EmptyState
+              variant="table"
+              icon={search.trim() !== '' ? <Search /> : <Music />}
+              title={search.trim() !== '' ? "No results match your search." : "No DJ Operators created yet."}
+              description={search.trim() !== '' ? "Try changing your search criteria." : undefined}
+              action={search.trim() === '' ? (
+                <Link href="/dj-operators/new" className="px-4 py-2 mt-2 text-sm font-medium text-white bg-accent-purple hover:bg-accent-purple/90 rounded-xl transition-colors">
+                  Create DJ Operator
+                </Link>
+              ) : undefined}
+            />
           </TableCell>
         </TableRow>
       );

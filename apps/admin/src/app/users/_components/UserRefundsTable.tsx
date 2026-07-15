@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@mad/ui';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, EmptyState } from '@mad/ui';
+import { Receipt } from '@mad/ui/icons';
 import { formatDateTime } from '@mad/utils';
 
 interface UserRefundItem {
@@ -47,8 +48,13 @@ export default function UserRefundsTable({
         <TableBody>
           {paginatedRefunds.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={6} className="py-12 text-center text-text-muted">
-                No refund logs registered.
+              <TableCell colSpan={6} className="py-8">
+                <EmptyState
+                  variant="table"
+                  icon={<Receipt />}
+                  title="No refunds found."
+                  description="This user has not requested any refunds."
+                />
               </TableCell>
             </TableRow>
           ) : (

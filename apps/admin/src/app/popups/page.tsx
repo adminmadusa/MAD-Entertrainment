@@ -10,7 +10,8 @@ import { extractApiError } from '@/lib/api/client';
 import { useAdminAuth } from '@/providers/AdminAuthProvider';
 import { AdminRole } from '@mad/shared';
 import type { PopupCampaign } from '@mad/types';
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, ErrorState, Modal } from '@mad/ui';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, ErrorState, Modal, EmptyState } from '@mad/ui';
+import { Globe } from '@mad/ui/icons';
 
 
 export default function AdminPopupsPage() {
@@ -58,11 +59,17 @@ export default function AdminPopupsPage() {
     if (popups.length === 0) {
       return (
         <TableRow>
-          <TableCell colSpan={6} className="py-16 text-center text-text-muted">
-            No popup campaigns found.{' '}
-            <Link href="/popups/new" className="text-accent-purple hover:underline">
-              Create one →
-            </Link>
+          <TableCell colSpan={6} className="py-8">
+            <EmptyState
+              variant="table"
+              icon={<Globe />}
+              title="No popup campaigns created yet."
+              action={
+                <Link href="/popups/new" className="px-4 py-2 mt-2 text-sm font-medium text-white bg-accent-purple hover:bg-accent-purple/90 rounded-xl transition-colors">
+                  Create Popup
+                </Link>
+              }
+            />
           </TableCell>
         </TableRow>
       );
