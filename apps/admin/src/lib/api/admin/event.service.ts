@@ -104,6 +104,8 @@ export interface EventFilters {
   limit?: number;
   status?: EventStatusFilter;
   search?: string;
+  sortField?: string;
+  sortOrder?: 'asc' | 'desc';
 }
 
 export type AdminEventUpdatePayload = Partial<AdminEvent> & Pick<AdminEvent, 'eventVersion'>;

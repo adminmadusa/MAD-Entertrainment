@@ -57,13 +57,26 @@ export const createRefund = async (data: {
 export const getRefunds = async (
   page: number = 1,
   limit: number = 15,
-  status?: string
+  status?: string,
+  sortField?: string,
+  sortOrder?: 'asc' | 'desc'
 ): Promise<{ refunds: IRefund[]; total: number; totalPages: number }> => {
   const skip = (page - 1) * limit;
   const filter: Record<string, any> = {};
   if (status) {
     filter.status = status;
   }
+
+  const SORT_FIELDS: Record<string, string> = {
+    amount: 'amount',
+    createdAt: 'createdAt',
+    status: 'status'
+  };
+  const validSortField = sortField ? (SORT_FIELDS[sortField] ?? 'createdAt') : 'createdAt';
+  const sortDirection = sortOrder === 'asc' ? 1 : -1;
+  const sortOptions: any = { [validSortField]: sortDirection };
+  if (validSortField !== 'createdAt') sortOptions.createdAt = -1;
+  sortOptions._id = 1;
 
   const total = await Refund.countDocuments(filter);
   const refunds = await Refund.find(filter)
@@ -73,7 +86,7 @@ export const getRefunds = async (
       populate: { path: 'eventId', select: 'title startDate venue' }
     })
     .populate('paymentId', 'gatewayPaymentId amount status gateway')
-    .sort({ createdAt: -1 })
+    .sort(sortOptions)
     .skip(skip)
     .limit(limit);
 

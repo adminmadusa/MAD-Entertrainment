@@ -49,8 +49,8 @@ export default function AdminEventsPage() {
   };
 
   const { data, isLoading } = useQuery({
-    queryKey: ['admin-events', { page, search, status: statusFilter }],
-    queryFn: () => adminGetEvents({ page, limit: 15, search, status: statusFilter }),
+    queryKey: ['admin-events', { page, search, status: statusFilter, sortField, sortOrder }],
+    queryFn: () => adminGetEvents({ page, limit: 15, search, status: statusFilter, ...(sortField && { sortField }), ...(sortOrder && { sortOrder }) }),
   });
 
   const deleteMutation = useMutation({
@@ -81,22 +81,6 @@ export default function AdminEventsPage() {
   const events = Array.isArray(data?.items) ? data?.items : [];
   const pagination = data?.pagination;
 
-  const sortedEvents = [...events].sort((a, b) => {
-    if (!sortField) return 0;
-    const aVal = a[sortField] ?? '';
-    const bVal = b[sortField] ?? '';
-    if (typeof aVal === 'string' && typeof bVal === 'string') {
-      const aStr = aVal.toLowerCase();
-      const bStr = bVal.toLowerCase();
-      if (aStr < bStr) return sortOrder === 'asc' ? -1 : 1;
-      if (aStr > bStr) return sortOrder === 'asc' ? 1 : -1;
-      return 0;
-    }
-    if (aVal < bVal) return sortOrder === 'asc' ? -1 : 1;
-    if (aVal > bVal) return sortOrder === 'asc' ? 1 : -1;
-    return 0;
-  });
-
   const renderTableBody = () => {
     if (isLoading) {
       return Array.from({ length: 5 }).map((_, i) => (
@@ -111,7 +95,7 @@ export default function AdminEventsPage() {
       ));
     }
 
-    if (sortedEvents.length === 0) {
+    if (events.length === 0) {
       const isFiltered = search.trim() !== '' || statusFilter !== '';
       return (
         <TableRow>
@@ -132,7 +116,7 @@ export default function AdminEventsPage() {
       );
     }
 
-    return sortedEvents.map((event) => {
+    return events.map((event) => {
       const statusMeta = getEventStatusMeta(event.status);
 
       return (

@@ -51,25 +51,6 @@ export default function BookingsTable({
   onPageChange,
   currentPage,
 }: BookingsTableProps) {
-  // Sort bookings internally
-  const sortedBookings = useMemo(() => {
-    return [...bookings].sort((a, b) => {
-      if (!sortField) return 0;
-      const aVal = a[sortField];
-      const bVal = b[sortField];
-      if (typeof aVal === 'string' && typeof bVal === 'string') {
-        const aStr = aVal.toLowerCase();
-        const bStr = bVal.toLowerCase();
-        if (aStr < bStr) return sortOrder === 'asc' ? -1 : 1;
-        if (aStr > bStr) return sortOrder === 'asc' ? 1 : -1;
-        return 0;
-      }
-      if (aVal < bVal) return sortOrder === 'asc' ? -1 : 1;
-      if (aVal > bVal) return sortOrder === 'asc' ? 1 : -1;
-      return 0;
-    });
-  }, [bookings, sortField, sortOrder]);
-
   const renderTableBody = () => {
     if (isLoading) {
       return Array.from({ length: 6 }).map((_, i) => (
@@ -83,7 +64,7 @@ export default function BookingsTable({
       ));
     }
 
-    if (sortedBookings.length === 0) {
+    if (bookings.length === 0) {
       return (
         <TableRow>
           <TableCell colSpan={7} className="py-8">
@@ -98,7 +79,7 @@ export default function BookingsTable({
       );
     }
 
-    return sortedBookings.map((booking) => {
+    return bookings.map((booking) => {
       const customer = booking.userId ?? booking.guestInfo;
       const customerName = (customer as { name?: string })?.name ?? '—';
       const customerEmail = (customer as { email?: string })?.email ?? '—';

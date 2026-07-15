@@ -160,7 +160,7 @@ export const createEvent = async (data: Partial<IEvent>): Promise<IEvent> => {
 export const getEvents = async (
   page: number = 1,
   limit: number = 10,
-  filters: { search?: string; status?: string } = {}
+  filters: { search?: string; status?: string; sortField?: string; sortOrder?: 'asc' | 'desc' } = {}
 ): Promise<{ events: IEvent[]; total: number; pages: number }> => {
   const skip = (page - 1) * limit;
   const query: FilterQuery<IEvent> = { isDeleted: { $ne: true } };
@@ -178,10 +178,23 @@ export const getEvents = async (
     ];
   }
 
+  const SORT_FIELDS: Record<string, string> = {
+    title: 'title',
+    category: 'category',
+    startDate: 'startDate',
+    status: 'status',
+    createdAt: 'createdAt'
+  };
+  const validSortField = filters.sortField ? (SORT_FIELDS[filters.sortField] ?? 'createdAt') : 'createdAt';
+  const sortDirection = filters.sortOrder === 'asc' ? 1 : -1;
+  const sortOptions: any = { [validSortField]: sortDirection };
+  if (validSortField !== 'createdAt') sortOptions.createdAt = -1;
+  sortOptions._id = 1;
+
   const total = await Event.countDocuments(query);
   const events = await Event.find(query)
     .populate('djOperatorIds', 'name')
-    .sort({ createdAt: -1 })
+    .sort(sortOptions)
     .skip(skip)
     .limit(limit);
 

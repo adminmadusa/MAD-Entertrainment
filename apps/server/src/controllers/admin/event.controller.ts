@@ -23,7 +23,9 @@ export const getEvents = async (req: Request, res: Response, next: NextFunction)
     const limit = Number(req.query.limit) || 15;
     const search = req.query.search as string;
     const status = req.query.status as string;
-    const result = await eventService.getEvents(page, limit, { search, status });
+    const sortField = req.query.sortField as string | undefined;
+    const sortOrder = req.query.sortOrder as 'asc' | 'desc' | undefined;
+    const result = await eventService.getEvents(page, limit, { search, status, sortField, sortOrder });
     res.status(200).json({ success: true, data: result, message: 'Events fetched successfully' });
   } catch (error) {
     next(error);
