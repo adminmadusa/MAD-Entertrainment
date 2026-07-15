@@ -98,12 +98,12 @@ describe('AuthService - refreshSession', () => {
   });
 
   it('should throw error if refresh token is missing', async () => {
-    await expect(AuthService.refreshSession('')).rejects.toThrow('Refresh token is required');
+    await expect(AuthService.refreshSession('', '')).rejects.toThrow('Refresh token is required');
   });
 
   it('should throw error if refresh token is not found in database', async () => {
     vi.mocked(RefreshTokenModel.findOne).mockResolvedValue(null);
-    await expect(AuthService.refreshSession('unknown-token')).rejects.toThrow('Invalid session');
+    await expect(AuthService.refreshSession('unknown-token', 'any-csrf')).rejects.toThrow('Invalid session');
   });
 
   it('should perform normal refresh rotation successfully', async () => {
@@ -111,6 +111,7 @@ describe('AuthService - refreshSession', () => {
     const mockTokenRecord = {
       _id: 'token-id-123',
       token: 'valid-token-abc',
+      csrfToken: 'valid-csrf-token',
       isRevoked: false,
       expiresAt: expiredAt,
       userId: 'user-id-999',
@@ -119,6 +120,7 @@ describe('AuthService - refreshSession', () => {
 
     const mockSuccessorRecord = {
       token: 'new-rotated-token-xyz',
+      csrfToken: 'new-csrf-token',
     };
 
     vi.mocked(RefreshTokenModel.findOne).mockResolvedValue(mockTokenRecord as any);
@@ -126,11 +128,12 @@ describe('AuthService - refreshSession', () => {
     vi.mocked(UserModel.findById).mockResolvedValue({ _id: 'user-id-999', email: 'user@example.com', isActive: true } as any);
     vi.mocked(RefreshTokenModel.create).mockResolvedValue(mockSuccessorRecord as any);
 
-    const result = await AuthService.refreshSession('valid-token-abc');
+    const result = await AuthService.refreshSession('valid-token-abc', 'valid-csrf-token');
 
     expect(result).toBeDefined();
     expect(result.accessToken).toBe('mock-access-token');
     expect(result.refreshToken).toBe('new-rotated-token-xyz');
+    expect(result.csrfToken).toBe('new-csrf-token');
     expect(RefreshTokenModel.findOneAndUpdate).toHaveBeenCalledWith(
       { _id: 'token-id-123', isRevoked: false },
       { $set: { isRevoked: true, replacedByToken: expect.any(String) } },
@@ -142,6 +145,7 @@ describe('AuthService - refreshSession', () => {
     const mockTokenRecord = {
       _id: 'token-id-123',
       token: 'expired-token-123',
+      csrfToken: 'some-csrf-token',
       isRevoked: false,
       expiresAt: new Date(Date.now() - 10000), // expired 10 seconds ago
       userId: 'user-id-999',
@@ -149,7 +153,7 @@ describe('AuthService - refreshSession', () => {
 
     vi.mocked(RefreshTokenModel.findOne).mockResolvedValue(mockTokenRecord as any);
 
-    await expect(AuthService.refreshSession('expired-token-123')).rejects.toThrow('Session has expired');
+    await expect(AuthService.refreshSession('expired-token-123', 'some-csrf-token')).rejects.toThrow('Session has expired');
   });
 
   it('should handle legitimate concurrent refresh requests within grace period', async () => {
@@ -157,6 +161,7 @@ describe('AuthService - refreshSession', () => {
     const mockTokenRecord = {
       _id: 'token-id-123',
       token: 'recently-revoked-token',
+      csrfToken: 'some-csrf-token',
       isRevoked: true,
       expiresAt: new Date(Date.now() + 600000),
       replacedByToken: 'valid-successor-token',
@@ -166,6 +171,7 @@ describe('AuthService - refreshSession', () => {
 
     const mockSuccessorRecord = {
       token: 'valid-successor-token',
+      csrfToken: 'successor-csrf-token',
       isRevoked: false,
       expiresAt: new Date(Date.now() + 600000),
       userId: 'user-id-999',
@@ -177,7 +183,7 @@ describe('AuthService - refreshSession', () => {
 
     vi.mocked(UserModel.findById).mockResolvedValue({ _id: 'user-id-999', email: 'user@example.com', isActive: true } as any);
 
-    const result = await AuthService.refreshSession('recently-revoked-token');
+    const result = await AuthService.refreshSession('recently-revoked-token', 'some-csrf-token');
 
     expect(result).toBeDefined();
     expect(result.accessToken).toBe('mock-access-token');
@@ -190,6 +196,7 @@ describe('AuthService - refreshSession', () => {
     const mockTokenRecord = {
       _id: 'token-id-123',
       token: 'active-token-abc',
+      csrfToken: 'active-csrf-token',
       isRevoked: false,
       expiresAt: new Date(Date.now() + 600000),
       userId: 'user-id-999',
@@ -209,6 +216,7 @@ describe('AuthService - refreshSession', () => {
 
     const mockSuccessorRecord = {
       token: 'winner-successor-token',
+      csrfToken: 'winner-csrf-token',
       isRevoked: false,
       expiresAt: new Date(Date.now() + 600000),
       userId: 'user-id-999',
@@ -218,7 +226,7 @@ describe('AuthService - refreshSession', () => {
     vi.mocked(RefreshTokenModel.findOne).mockResolvedValueOnce(mockSuccessorRecord as any);
     vi.mocked(UserModel.findById).mockResolvedValue({ _id: 'user-id-999', email: 'user@example.com', isActive: true } as any);
 
-    const result = await AuthService.refreshSession('active-token-abc');
+    const result = await AuthService.refreshSession('active-token-abc', 'active-csrf-token');
 
     expect(result).toBeDefined();
     expect(result.accessToken).toBe('mock-access-token');
@@ -230,6 +238,7 @@ describe('AuthService - refreshSession', () => {
     const mockTokenRecord = {
       _id: 'token-id-123',
       token: 'stale-revoked-token',
+      csrfToken: 'some-csrf',
       isRevoked: true,
       expiresAt: new Date(Date.now() + 600000),
       replacedByToken: 'successor-token',
@@ -239,7 +248,7 @@ describe('AuthService - refreshSession', () => {
 
     vi.mocked(RefreshTokenModel.findOne).mockResolvedValue(mockTokenRecord as any);
 
-    await expect(AuthService.refreshSession('stale-revoked-token')).rejects.toThrow('Session compromised');
+    await expect(AuthService.refreshSession('stale-revoked-token', 'some-csrf')).rejects.toThrow('Session compromised');
 
     expect(RefreshTokenModel.updateMany).toHaveBeenCalledWith({ userId: 'user-id-999' }, { isRevoked: true });
   });
