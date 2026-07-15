@@ -45,6 +45,7 @@ export * from './composites/ErrorState';
 export * from './composites/LoadingState';
 export * from './composites/ScrollIndicator';
 export * from './composites/AdminFormActions';
+export * from './composites/Stepper';
 
 // Layouts
 export * from './layouts/Card';
