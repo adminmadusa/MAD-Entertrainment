@@ -16,6 +16,7 @@ import { PublicBookingService } from './booking.service';
 import { PaymentValidationService } from './payment-validation.service';
 import { RazorpayAdapter } from './razorpay.adapter';
 import { StripeAdapter } from './stripe.adapter';
+import { canBook } from '@mad/shared';
 
 export type PaymentOwnershipContext = {
   userId?: string;
@@ -126,10 +127,7 @@ export class PaymentIntentService {
     }
 
     const now = new Date();
-    if (
-      now >= new Date(event.startDate) ||
-      (event.endDate && now > new Date(event.endDate))
-    ) {
+    if (!canBook(event as any)) {
       throw AppError.badRequest('This event is no longer available for booking.');
     }
 

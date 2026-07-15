@@ -35,7 +35,7 @@ export function verifyPreviewToken(token: string): {
 
 
 export class PublicEventService {
-  static async listEvents(filters: { category?: string; status?: string; search?: string; page?: number; limit?: number; includeTotal?: boolean }) {
+  static async listEvents(filters: { category?: string; status?: string; search?: string; isFeatured?: boolean; page?: number; limit?: number; includeTotal?: boolean }) {
     const page = filters.page || 1;
     const limit = filters.limit || 12;
     const skip = (page - 1) * limit;
@@ -44,10 +44,37 @@ export class PublicEventService {
       isDeleted: { $ne: true },
     };
 
+    const now = new Date();
+
     if (filters.status) {
-      query.status = filters.status;
+      if (filters.status === 'completed') {
+        query.$or = [
+          { endDate: { $lt: now } },
+          { endDate: { $exists: false }, startDate: { $lt: now } },
+          { endDate: null, startDate: { $lt: now } },
+        ];
+      } else if (filters.status === 'published' || filters.status === 'upcoming') {
+        query.status = EventStatus.PUBLISHED;
+        query.$or = [
+          { endDate: { $gte: now } },
+          { endDate: { $exists: false }, startDate: { $gte: now } },
+          { endDate: null, startDate: { $gte: now } },
+        ];
+      } else {
+        query.status = filters.status;
+      }
     } else {
+      // Default: Only show published and NOT completed (i.e. upcoming / live)
       query.status = EventStatus.PUBLISHED;
+      query.$or = [
+        { endDate: { $gte: now } },
+        { endDate: { $exists: false }, startDate: { $gte: now } },
+        { endDate: null, startDate: { $gte: now } },
+      ];
+    }
+
+    if (filters.isFeatured !== undefined) {
+      query.isFeatured = filters.isFeatured;
     }
 
     if (filters.category) {
@@ -55,10 +82,20 @@ export class PublicEventService {
     }
 
     if (filters.search) {
-      query.$or = [
+      const searchOr = [
         { title: { $regex: filters.search, $options: 'i' } },
         { description: { $regex: filters.search, $options: 'i' } },
       ];
+      
+      if (query.$or) {
+        query.$and = [
+          { $or: query.$or },
+          { $or: searchOr }
+        ];
+        delete query.$or;
+      } else {
+        query.$or = searchOr;
+      }
     }
 
     const skipCount = filters.includeTotal === false;

@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { EventCategory, BookingMode, BookingStatus, EventStatus, PopupTrigger, TicketTier, type EventLifecycleStatus, BOOKING_REFERENCE_REGEX, EventMemoryPublicationState, MAX_MEMORIES_GALLERY_LIMIT } from '@mad/shared';
+import { EventCategory, BookingMode, BookingStatus, EventStatus, PopupTrigger, TicketTier, type EventLifecycleStatus, BOOKING_REFERENCE_REGEX, EventMemoryPublicationState, MAX_MEMORIES_GALLERY_LIMIT, TicketSalesCloseMode } from '@mad/shared';
 import { objectIdSchema } from '@mad/validations';
 
 // -- Common schemas --
@@ -388,6 +388,8 @@ const eventBodySchema = z.object({
   endDate: z.string().datetime().optional(),
   doorsOpenTime: z.string().optional(),
   showTime: z.string().optional(),
+  ticketSalesCloseMode: z.nativeEnum(TicketSalesCloseMode).optional(),
+  ticketSalesCloseDate: z.string().datetime().optional(),
   venue: z.string().min(1),
 
   djOperatorIds: z.array(z.string()).optional(),

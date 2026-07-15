@@ -13,7 +13,7 @@ export function startEventLifecycleWorker(): void {
     if (running) return;
     running = true;
     try {
-      await EventLifecycleService.completeExpiredEvents();
+      await EventLifecycleService.archiveOldEvents();
     } catch (err) {
       logger.error({ err }, 'Event lifecycle worker cycle failed');
     } finally {

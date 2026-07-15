@@ -16,6 +16,7 @@ export interface MemoriesState {
 
 export interface EventMemoriesCardProps {
   eventStatus: EventStatus;
+  lifecycle?: string;
   eventSlug: string;
   value: MemoriesState;
   onChange: (next: MemoriesState) => void;

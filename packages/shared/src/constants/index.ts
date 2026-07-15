@@ -31,16 +31,18 @@ export enum EventStatus {
   PUBLISHED = 'published',
   CANCELLED = 'cancelled',
   POSTPONED = 'postponed',
-  COMPLETED = 'completed',
+  COMPLETED = 'completed', // Deprecated, will be removed in the future
+  ARCHIVED = 'archived',
 }
 
 export type EventLifecycleStatus = EventStatus;
 
 export const EVENT_STATUS_TRANSITIONS: Readonly<Record<EventLifecycleStatus, readonly EventLifecycleStatus[]>> = {
   [EventStatus.DRAFT]: [EventStatus.PUBLISHED, EventStatus.CANCELLED],
-  [EventStatus.PUBLISHED]: [EventStatus.POSTPONED, EventStatus.COMPLETED, EventStatus.CANCELLED],
+  [EventStatus.PUBLISHED]: [EventStatus.POSTPONED, EventStatus.COMPLETED, EventStatus.ARCHIVED, EventStatus.CANCELLED],
   [EventStatus.POSTPONED]: [EventStatus.PUBLISHED, EventStatus.CANCELLED],
-  [EventStatus.COMPLETED]: [],
+  [EventStatus.COMPLETED]: [EventStatus.ARCHIVED],
+  [EventStatus.ARCHIVED]: [],
   [EventStatus.CANCELLED]: [],
 };
 
@@ -107,6 +109,11 @@ export const EVENT_STATUS_METADATA: Record<EventLifecycleStatus, EventStatusMeta
     label: 'Cancelled',
     tone: 'danger',
     className: 'bg-red-500/10 text-red-400 border-red-500/30',
+  },
+  [EventStatus.ARCHIVED]: {
+    label: 'Archived',
+    tone: 'neutral',
+    className: 'bg-gray-500/10 text-gray-400 border-gray-500/30',
   },
 };
 
@@ -243,6 +250,13 @@ export enum PaymentMethod {
   NET_BANKING = 'net_banking',
   WALLET = 'wallet',
   STRIPE_CARD = 'stripe_card',
+}
+
+// ─── Ticket Sales Close Mode ─────────────────────────────────
+export enum TicketSalesCloseMode {
+  EVENT_START = 'EVENT_START',
+  EVENT_END = 'EVENT_END',
+  CUSTOM_DATE = 'CUSTOM_DATE',
 }
 
 // ─── Ticket Tier ─────────────────────────────────────────────

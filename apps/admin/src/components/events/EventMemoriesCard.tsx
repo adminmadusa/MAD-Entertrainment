@@ -22,6 +22,7 @@ export type { EventMemoriesCardProps, MemoriesState, MemoryGalleryItem };
 
 export const EventMemoriesCard = React.memo(function EventMemoriesCard({
   eventStatus,
+  lifecycle,
   eventSlug,
   value,
   onChange,
@@ -68,7 +69,7 @@ export const EventMemoriesCard = React.memo(function EventMemoriesCard({
       </div>
 
       {/* Visibility warning for non-COMPLETED events */}
-      {eventStatus !== EventStatus.COMPLETED && (
+      {!(lifecycle === 'completed' && eventStatus !== EventStatus.ARCHIVED) && (
         <div className="flex gap-2.5 px-4 py-3 bg-yellow-500/10 border border-yellow-500/20 rounded-xl text-xs text-yellow-400">
           <svg
             className="w-4 h-4 mt-0.5 shrink-0"
@@ -86,8 +87,7 @@ export const EventMemoriesCard = React.memo(function EventMemoriesCard({
           <div>
             <span className="font-bold">Preparation Mode:</span> Memories can be set
             up now, but they will only be displayed on the public event page once the
-            event status is updated to <span className="font-bold">Completed</span> in
-            the Basic Information card.
+            event lifecycle is <span className="font-bold">Completed</span> and it is not <span className="font-bold">Archived</span>.
           </div>
         </div>
       )}

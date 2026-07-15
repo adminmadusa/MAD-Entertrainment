@@ -18,7 +18,7 @@ import { adminGetEvent, adminUpdateEvent, type AdminEventUpdatePayload, type Clo
 import { adminGetTicketProfiles } from '@/lib/api/admin/ticket-profile.service';
 import { adminGetTiers } from '@/lib/api/admin/tier.service';
 import { extractApiError } from '@/lib/api/client';
-import { BookingMode, TicketTier, EventStatus, EventMemoryPublicationState, EVENT_STATUS_TRANSITIONS, type EventLifecycleStatus, } from '@mad/shared';
+import { BookingMode, TicketTier, EventStatus, EventMemoryPublicationState, EVENT_STATUS_TRANSITIONS, type EventLifecycleStatus, deriveEventLifecycleState } from '@mad/shared';
 import { AdminFormActions } from '@mad/ui';
 
 const defaultTier = (): TicketTierInput => ({
@@ -48,6 +48,8 @@ export default function EditEventPage() {
   const [status, setStatus] = useState<EventStatus>(EventStatus.DRAFT);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+  const [ticketSalesCloseMode, setTicketSalesCloseMode] = useState<string>('EVENT_START');
+  const [ticketSalesCloseDate, setTicketSalesCloseDate] = useState('');
   const [tags, setTags] = useState('');
   const [isFeatured, setIsFeatured] = useState(false);
   const [requireTerms, setRequireTerms] = useState(true);
@@ -93,6 +95,8 @@ export default function EditEventPage() {
       setStatus(event.status || EventStatus.DRAFT);
       setStartDate(event.startDate ? new Date(event.startDate).toISOString().slice(0, 16) : '');
       setEndDate(event.endDate ? new Date(event.endDate).toISOString().slice(0, 16) : '');
+      setTicketSalesCloseMode(event.ticketSalesCloseMode || 'EVENT_START');
+      setTicketSalesCloseDate(event.ticketSalesCloseDate ? new Date(event.ticketSalesCloseDate).toISOString().slice(0, 16) : '');
       setVenue(event.venue || '');
       setOrganizerName(event.organizerName || '');
       setRefundPolicy(event.refundPolicy || '');
@@ -195,11 +199,16 @@ export default function EditEventPage() {
         requireAgeConfirmation,
         ageRestriction: requireAgeConfirmation && ageRestriction ? Number(ageRestriction) : undefined,
         tags: tags.split(',').map((t) => t.trim()).filter(Boolean),
-        highlights: highlightsInput.split(',').map((h) => h.trim()).filter(Boolean),
+        highlights: Array.from(new Set(highlightsInput.split(',').map((h) => h.trim()).filter(Boolean))),
+        ticketSalesCloseMode: ticketSalesCloseMode,
         refundPolicy: refundPolicy.trim() || undefined,
         organizerName: organizerName.trim() || undefined,
         memories: buildMemoriesPayload(),
       };
+
+      if (ticketSalesCloseMode === 'CUSTOM_DATE' && ticketSalesCloseDate) {
+        payload.ticketSalesCloseDate = new Date(ticketSalesCloseDate).toISOString();
+      }
 
       if (isProfileType) {
         if (!selectedProfileId) return setError('Please select a ticket profile.');
@@ -304,6 +313,7 @@ export default function EditEventPage() {
           title={title} setTitle={setTitle}
           category={category} setCategory={setCategory}
           status={status} setStatus={setStatus}
+          lifecycle={deriveEventLifecycleState({ status, startDate, endDate } as any)}
           venue={venue} setVenue={setVenue}
           description={description} setDescription={setDescription}
           dbCategories={dbCategories} statusOptions={statusOptions}
@@ -318,6 +328,10 @@ export default function EditEventPage() {
         <EventScheduleCard
           startDate={startDate} setStartDate={setStartDate}
           endDate={endDate} setEndDate={setEndDate}
+          ticketSalesCloseMode={ticketSalesCloseMode}
+          setTicketSalesCloseMode={setTicketSalesCloseMode}
+          ticketSalesCloseDate={ticketSalesCloseDate}
+          setTicketSalesCloseDate={setTicketSalesCloseDate}
         />
 
         <EventTicketingCard
@@ -340,7 +354,8 @@ export default function EditEventPage() {
         {/* Event Memories — only rendered when status is COMPLETED */}
         <EventMemoriesCard
           eventStatus={status}
-          eventSlug={event?.slug ?? ''}
+          lifecycle={deriveEventLifecycleState({ status, startDate, endDate } as any)}
+          eventSlug={event?.slug || ''}
           value={memories}
           onChange={setMemories}
         />

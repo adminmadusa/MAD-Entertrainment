@@ -1,6 +1,6 @@
 import { Schema, model, Document, Types } from 'mongoose';
 
-import { EventCategory, BookingMode, EventStatus, TicketTier, EventMemoryPublicationState } from '@mad/shared';
+import { EventCategory, BookingMode, EventStatus, TicketTier, EventMemoryPublicationState, TicketSalesCloseMode } from '@mad/shared';
 
 const cloudinaryImageSchema = new Schema(
   {
@@ -73,6 +73,8 @@ export interface IEvent extends Document {
   doorsOpenTime?: string;
   showTime?: string;
   venue: string;
+  ticketSalesCloseMode: TicketSalesCloseMode;
+  ticketSalesCloseDate?: Date;
 
   djOperatorIds?: Types.ObjectId[];
   ticketTiers: {
@@ -200,6 +202,8 @@ const eventSchema = new Schema<IEvent>(
     endDate: Date,
     doorsOpenTime: String,
     showTime: String,
+    ticketSalesCloseMode: { type: String, enum: Object.values(TicketSalesCloseMode), default: TicketSalesCloseMode.EVENT_START },
+    ticketSalesCloseDate: Date,
 
     venue: { type: String, required: true, index: true },
 
