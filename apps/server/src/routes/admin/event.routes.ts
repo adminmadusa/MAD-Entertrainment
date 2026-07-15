@@ -5,7 +5,7 @@ import { AdminRole } from '@mad/shared';
 import * as eventController from '../../controllers/admin/event.controller';
 import { requireAdmin, requireRole } from '../../middleware/auth.middleware';
 import { validate } from '../../middleware/validation.middleware';
-import { adminEventsQuerySchema, adminIdParamSchema, createEventSchema, updateEventSchema } from '../../validations/admin-content.validation';
+import { adminEventsQuerySchema, adminIdParamSchema, createEventSchema, updateEventSchema, adminBulkIdsSchema } from '../../validations/admin-content.validation';
 
 const router: Router = Router();
 
@@ -18,5 +18,6 @@ router.get('/:id', validate(adminIdParamSchema), eventController.getEventById);
 router.put('/:id', requireRole(AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.MANAGER), validate(updateEventSchema), eventController.updateEvent);
 router.post('/:id/preview-token', requireRole(AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.MANAGER), validate(adminIdParamSchema), eventController.getPreviewToken);
 router.delete('/:id', requireRole(AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.MANAGER), validate(adminIdParamSchema), eventController.deleteEvent);
+router.post('/bulk/delete', requireRole(AdminRole.SUPER_ADMIN, AdminRole.ADMIN, AdminRole.MANAGER), validate(adminBulkIdsSchema), eventController.bulkDeleteEvents);
 
 export default router;

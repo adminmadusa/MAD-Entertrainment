@@ -1,6 +1,6 @@
 import type { FilterQuery } from 'mongoose';
 
-import { EventStatus, EVENT_STATUS_TRANSITIONS, type EventLifecycleStatus, EventMemoryPublicationState } from '@mad/shared';
+import { EventStatus, EVENT_STATUS_TRANSITIONS, type EventLifecycleStatus, EventMemoryPublicationState, type BulkOperationResult } from '@mad/shared';
 
 import { AppError } from '../../middleware/error.middleware';
 import { Booking } from '../../models/booking.schema';
@@ -351,14 +351,14 @@ export const updateEvent = async (id: string, data: Partial<IEvent>): Promise<Ev
 };
 
 export const deleteEvent = async (id: string): Promise<IEvent | null> => {
-  const bookingExists = await Booking.exists({ eventId: id });
+  const bookingExists = await Booking.exists({ eventId: String(id) });
   if (bookingExists) {
     throw AppError.badRequest('Cannot delete event with existing bookings');
   }
-  const existing = await Event.findById(id);
+  const existing = await Event.findById(String(id));
   if (!existing) return null;
 
-  const deleted = await Event.findByIdAndUpdate(id, { isDeleted: true, deletedAt: new Date() }, { new: true });
+  const deleted = await Event.findByIdAndUpdate(String(id), { isDeleted: true, deletedAt: new Date() }, { new: true });
   if (deleted) {
     const publicIdsToDelete: string[] = [];
     if (existing.bannerImage?.publicId) publicIdsToDelete.push(existing.bannerImage.publicId);
@@ -374,4 +374,35 @@ export const deleteEvent = async (id: string): Promise<IEvent | null> => {
   }
   await CacheService.delPattern('events:*');
   return deleted;
+};
+
+export const bulkDeleteEvents = async (ids: string[], adminId: string): Promise<BulkOperationResult> => {
+  const results: BulkOperationResult['results'] = [];
+  let successCount = 0;
+  let failedCount = 0;
+
+  for (const id of ids) {
+    try {
+      const deleted = await deleteEvent(id);
+      if (deleted) {
+        results.push({ id, status: 'success' });
+        successCount++;
+      } else {
+        results.push({ id, status: 'failed', reason: 'Event not found' });
+        failedCount++;
+      }
+    } catch (error: any) {
+      results.push({ id, status: 'failed', reason: error.message || 'Unknown error' });
+      failedCount++;
+    }
+  }
+
+  auditLog({
+    action: 'BULK_DELETE_EVENTS',
+    actor: { type: 'admin', id: adminId },
+    status: 'success',
+    metadata: { ids, successCount, failedCount, results },
+  });
+
+  return { successCount, failedCount, results };
 };

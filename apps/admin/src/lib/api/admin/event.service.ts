@@ -144,3 +144,8 @@ export async function adminUpdateEvent(id: string, payload: AdminEventUpdatePayl
 export async function adminDeleteEvent(id: string): Promise<void> {
   await adminApiClient.delete(`/admin/events/${id}`);
 }
+
+export async function adminBulkDeleteEvents(ids: string[]): Promise<any> {
+  const { data } = await adminApiClient.post('/admin/events/bulk/delete', { ids });
+  return data.data;
+}
