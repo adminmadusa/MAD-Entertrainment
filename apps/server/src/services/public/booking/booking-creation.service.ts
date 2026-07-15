@@ -16,6 +16,7 @@ import { auditLog } from '../../../utils/audit';
 import { logger } from '../../../utils/logger';
 import { runInTransaction } from '../../../utils/transaction';
 import { ReservationService } from '../../reservation.service';
+import { isEventTicketSalesClosed } from '../../../utils/event-availability.util';
 import { BookingAccessService } from './booking-access.service';
 import type { CreateBookingRequest, SaveCheckoutRequest } from './booking.types';
 
@@ -195,12 +196,9 @@ export class BookingCreationService {
     let totalGst = 0;
     const finalTickets: any[] = [];
 
-    // Check event start/end date constraints
+    // Check event ticket sales closure constraints
     const now = new Date();
-    if (now >= new Date(event.startDate)) {
-      throw AppError.badRequest('This event is no longer available for booking.');
-    }
-    if (event.endDate && now > new Date(event.endDate)) {
+    if (isEventTicketSalesClosed(event, now)) {
       throw AppError.badRequest('This event is no longer available for booking.');
     }
 

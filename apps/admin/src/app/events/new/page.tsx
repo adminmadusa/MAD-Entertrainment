@@ -26,6 +26,8 @@ export default function CreateEventPage() {
   const [status, setStatus] = useState<EventStatus>(EventStatus.DRAFT);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+  const [ticketSalesCloseMode, setTicketSalesCloseMode] = useState<string>('EVENT_START');
+  const [ticketSalesCloseDate, setTicketSalesCloseDate] = useState('');
   const [tags, setTags] = useState('');
   const [isFeatured, setIsFeatured] = useState(false);
   const [requireTerms, setRequireTerms] = useState(true);
@@ -131,10 +133,15 @@ export default function CreateEventPage() {
         requireAgeConfirmation,
         ageRestriction: requireAgeConfirmation && ageRestriction ? Number(ageRestriction) : undefined,
         tags: tags.split(',').map((t) => t.trim()).filter(Boolean),
-        highlights: highlightsInput.split(',').map(h => h.trim()).filter(Boolean),
+        highlights: Array.from(new Set(highlightsInput.split(',').map((h) => h.trim()).filter(Boolean))),
+        ticketSalesCloseMode: ticketSalesCloseMode,
         refundPolicy: refundPolicy.trim() || undefined,
         organizerName: organizerName.trim() || undefined,
       };
+
+      if (ticketSalesCloseMode === 'CUSTOM_DATE' && ticketSalesCloseDate) {
+        payload.ticketSalesCloseDate = new Date(ticketSalesCloseDate).toISOString();
+      }
 
       if (isProfileType) {
         if (!selectedProfileId) {
@@ -247,6 +254,10 @@ export default function CreateEventPage() {
           setStartDate={setStartDate}
           endDate={endDate}
           setEndDate={setEndDate}
+          ticketSalesCloseMode={ticketSalesCloseMode}
+          setTicketSalesCloseMode={setTicketSalesCloseMode}
+          ticketSalesCloseDate={ticketSalesCloseDate}
+          setTicketSalesCloseDate={setTicketSalesCloseDate}
         />
 
         <EventTicketSection

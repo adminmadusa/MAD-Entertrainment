@@ -41,6 +41,8 @@ export interface AdminEvent {
   venue: string;
   startDate: string;
   endDate?: string;
+  ticketSalesCloseMode?: string;
+  ticketSalesCloseDate?: string;
   ticketTiers: EventTier[];
   totalCapacity: number;
   eventVersion: number;

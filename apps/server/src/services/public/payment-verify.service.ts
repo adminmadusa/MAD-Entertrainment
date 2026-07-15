@@ -12,6 +12,7 @@ import { logger } from '../../utils/logger';
 import { PaymentOwnershipContext } from './payment-intent.service';
 import { PaymentValidationService } from './payment-validation.service';
 import { StripeAdapter } from './stripe.adapter';
+import { isEventTicketSalesClosed } from '../../utils/event-availability.util';
 
 export interface PaymentVerifyPersistence {
   confirmBooking(
@@ -282,10 +283,7 @@ export class PaymentVerifyService {
     }
 
     const now = new Date();
-    if (
-      now >= new Date(event.startDate) ||
-      (event.endDate && now > new Date(event.endDate))
-    ) {
+    if (isEventTicketSalesClosed(event, now)) {
       await persistence.failPaymentAndReleaseInventory(
         booking,
         payment,
