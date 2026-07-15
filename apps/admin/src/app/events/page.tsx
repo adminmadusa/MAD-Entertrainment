@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { useState } from 'react';
 
-import { adminGetEvents, adminDeleteEvent, adminBulkDeleteEvents, type AdminEvent } from '@/lib/api/admin/event.service';
+import { adminGetEvents, adminDeleteEvent, adminBulkDeleteEvents, adminDuplicateEvent, type AdminEvent } from '@/lib/api/admin/event.service';
 import { extractApiError } from '@/lib/api/client';
 import { useAdminAuth } from '@/providers/AdminAuthProvider';
 import { EVENT_STATUS_METADATA, type EventStatus, AdminRole } from '@mad/shared';
@@ -59,6 +59,17 @@ export default function AdminEventsPage() {
       qc.invalidateQueries({ queryKey: ['admin-events'] });
       setDeleteTarget(null);
     },
+  });
+
+  const duplicateMutation = useMutation({
+    mutationFn: (id: string) => adminDuplicateEvent(id, {}, Date.now().toString()),
+    onSuccess: (data) => {
+      qc.invalidateQueries({ queryKey: ['admin-events'] });
+      showToast('success', 'Event duplicated successfully');
+    },
+    onError: (err: any) => {
+      showToast('error', err.response?.data?.message || 'Failed to duplicate event');
+    }
   });
 
   const bulkDeleteMutation = useMutation({
@@ -199,6 +210,13 @@ export default function AdminEventsPage() {
                 >
                   Edit
                 </Link>
+                <button
+                  onClick={() => duplicateMutation.mutate(event._id)}
+                  disabled={duplicateMutation.isPending}
+                  className="px-3 py-1.5 text-xs font-medium glass border border-border-subtle rounded-lg text-text-secondary hover:text-white hover:border-brand-primary/40 transition-all disabled:opacity-50"
+                >
+                  Duplicate
+                </button>
                 <button
                   onClick={() => setDeleteTarget(event)}
                   className="px-3 py-1.5 text-xs font-medium glass border border-border-subtle rounded-lg text-text-muted hover:text-red-400 hover:border-red-500/40 transition-all"
