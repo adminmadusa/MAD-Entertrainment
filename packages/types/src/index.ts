@@ -1,4 +1,4 @@
-import { BookingStatus, TicketTier, EventCategory, BookingMode, EventStatus, PaymentStatus, EventMemoryPublicationState } from '@mad/shared';
+import { BookingStatus, TicketTier, EventCategory, BookingMode, EventStatus, PaymentStatus } from '@mad/shared';
 
 export type ApiError = {
   message: string;
@@ -89,15 +89,6 @@ export type TicketOverride = {
   minPerBooking?: number;
 };
 
-export type EventMemoryConfig = {
-  publicationState: EventMemoryPublicationState;
-  heading?: string;
-  thankYouMessage?: string;
-  highlights?: string[];
-  gallery: (ImageAsset & { order: number })[];
-  publishedAt?: string | Date;
-};
-
 export type Event = {
   _id: string;
   title: string;
@@ -113,7 +104,6 @@ export type Event = {
   endDate?: string | Date;
   bannerImage?: ImageAsset;
   posterImage?: ImageAsset;
-  galleryImages?: ImageAsset[];
   djOperatorIds?: string[];
   ticketTiers: TicketTierConfig[];
   isSoldOut?: boolean;
@@ -140,7 +130,6 @@ export type Event = {
   showCountdown?: boolean;
   isEarlyBird?: boolean;
   earlyBirdDeadline?: string | Date;
-  memories?: EventMemoryConfig | null;
 };
 
 export type Seat = {

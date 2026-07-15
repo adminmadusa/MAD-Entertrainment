@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 import type { FilterQuery } from 'mongoose';
 
-import { EventStatus, SeatStatus, EventMemoryPublicationState } from '@mad/shared';
+import { EventStatus, SeatStatus } from '@mad/shared';
 
 import { getEnv } from '../../config/env';
 import { getRedis } from '../../config/redis';
@@ -110,7 +110,7 @@ export class PublicEventService {
         .sort({ startDate: 1 })
         .skip(skip)
         .limit(limit)
-        .select('title slug description category bannerImage startDate endDate ticketTiers.price isSoldOut venue memories status')
+        .select('title slug description category bannerImage startDate endDate ticketTiers.price isSoldOut venue status')
         .lean<Partial<IEvent>[]>();
       total = events.length;
     } else {
@@ -119,7 +119,7 @@ export class PublicEventService {
           .sort({ startDate: 1 })
           .skip(skip)
           .limit(limit)
-          .select('title slug description category bannerImage startDate endDate ticketTiers.price isSoldOut venue memories status')
+          .select('title slug description category bannerImage startDate endDate ticketTiers.price isSoldOut venue status')
           .lean<Partial<IEvent>[]>(),
         Event.countDocuments(query, queryOptions),
       ]);
@@ -128,7 +128,7 @@ export class PublicEventService {
     return { events, total };
   }
 
-  static async getEventBySlug(slug: string, previewToken?: string) {
+  static async getEventBySlug(slug: string) {
     // 5-second query timeout to prevent Safari streaming stalls
     const queryOptions = { maxTimeMS: 5000 };
 
@@ -152,36 +152,6 @@ export class PublicEventService {
 
     if (event.ticketTiers) {
       event.ticketTiers = event.ticketTiers.filter(tier => tier.isDeleted !== true);
-    }
-
-    let isPreviewValid = false;
-    if (previewToken) {
-      const decoded = verifyPreviewToken(previewToken);
-      if (decoded.valid && decoded.eventId && String(decoded.eventId) === String(event._id)) {
-        isPreviewValid = true;
-
-        // Audit preview accessed (only after token is valid and event matches)
-        auditLog({
-          action: 'event.memories.preview.accessed',
-          status: 'success',
-          metadata: {
-            eventId: String(event._id),
-            adminId: decoded.adminId,
-            timestamp: new Date().toISOString(),
-          },
-          description: `Preview token accessed for event ${event._id} by admin ${decoded.adminId}`,
-        });
-      }
-    }
-
-    // Suppress memories from the public response unless they are actively PUBLISHED or a valid preview token is provided.
-    // DRAFT, PREVIEW, and HIDDEN states must never reach public consumers.
-    if (
-      event.memories &&
-      event.memories.publicationState !== EventMemoryPublicationState.PUBLISHED &&
-      !isPreviewValid
-    ) {
-      event.memories = null;
     }
 
     return event;

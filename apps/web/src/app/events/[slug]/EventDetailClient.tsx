@@ -11,8 +11,6 @@ import { QUERY_KEYS, EventStatus, deriveEventLifecycleState, canBook } from '@ma
 import type { Event as EventData } from '@mad/types';
 
 import type { EventBookingFlowHandle } from './components/EventBookingFlow';
-import { EventGallery } from './components/EventGallery';
-import { EventMemoriesRecap } from './components/EventMemoriesRecap';
 import { EventOverview } from './components/EventOverview';
 import { EventStickyCTA } from './components/EventStickyCTA';
 
@@ -294,20 +292,11 @@ export default function EventDetailClient({ slug, initialEvent }: EventDetailCli
               </span>
             </div>
 
-            {lifecycle === 'completed' && event.status !== EventStatus.ARCHIVED && event.memories && (
-              <EventMemoriesRecap memories={event.memories} />
-            )}
-
             <EventOverview
               description={event.description}
               organizerName={event.organizerName}
               category={event.category}
             />
-
-            {/* Only render promotional event gallery if memories are not published */}
-            {!(lifecycle === 'completed' && event.status !== EventStatus.ARCHIVED && event.memories) && (
-              <EventGallery images={event.galleryImages} />
-            )}
 
             {/* Good to know + Refund policy */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

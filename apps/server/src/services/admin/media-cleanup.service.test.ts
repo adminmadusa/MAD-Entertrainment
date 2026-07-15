@@ -28,6 +28,12 @@ vi.mock('../../models/event.schema', () => ({
   },
 }));
 
+vi.mock('../../models/event-gallery.schema', () => ({
+  EventGallery: {
+    exists: vi.fn(),
+  },
+}));
+
 vi.mock('./upload.service', () => ({
   UploadService: {
     deleteImage: vi.fn(),
@@ -35,6 +41,7 @@ vi.mock('./upload.service', () => ({
 }));
 
 import { Event } from '../../models/event.schema';
+import { EventGallery } from '../../models/event-gallery.schema';
 import { safeDeleteImages, cleanupTemporaryAssets } from './media-cleanup.service';
 import { UploadService } from './upload.service';
 
@@ -104,10 +111,15 @@ describe('MediaCleanupService', () => {
         const conditions = query.$or;
         const hasReferenced = conditions.some((c: any) =>
           c['bannerImage.publicId']?.includes('hash_referenced') ||
-          c['posterImage.publicId']?.includes('hash_referenced') ||
-          c['galleryImages.publicId']?.includes('hash_referenced')
+          c['posterImage.publicId']?.includes('hash_referenced')
         );
         return hasReferenced ? ({ _id: 'event-1' } as any) : null;
+      });
+
+      // Mock EventGallery.exists
+      vi.mocked(EventGallery.exists).mockImplementation(async (query: any) => {
+        const hasReferenced = query['items.publicId']?.includes('hash_referenced');
+        return hasReferenced ? ({ _id: 'gallery-1' } as any) : null;
       });
 
       vi.mocked(UploadService.deleteImage).mockResolvedValue(undefined);

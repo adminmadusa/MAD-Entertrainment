@@ -260,54 +260,13 @@ describe('event image validations', () => {
     });
   });
 
-  it('accepts event with 15 images (banner + poster + 13 gallery images)', () => {
-    const galleryImages = Array.from({ length: 13 }, (_, i) => ({
-      url: `https://example.com/gallery${i}.jpg`,
-      publicId: `gallery${i}`,
-      hash: `hash_gallery_${i}`,
-    }));
 
-    expectAccepted(createEventSchema, {
-      body: {
-        ...validEventBody,
-        posterImage: { url: 'https://example.com/poster.jpg', publicId: 'poster', hash: 'hash_poster' },
-        galleryImages,
-      },
-    });
-  });
-
-  it('rejects event with 16 images (banner + poster + 14 gallery images)', () => {
-    const galleryImages = Array.from({ length: 14 }, (_, i) => ({
-      url: `https://example.com/gallery${i}.jpg`,
-      publicId: `gallery${i}`,
-      hash: `hash_gallery_${i}`,
-    }));
-
-    expectRejected(createEventSchema, {
-      body: {
-        ...validEventBody,
-        posterImage: { url: 'https://example.com/poster.jpg', publicId: 'poster', hash: 'hash_poster' },
-        galleryImages,
-      },
-    });
-  });
 
   it('rejects event with duplicate publicId', () => {
     expectRejected(createEventSchema, {
       body: {
         ...validEventBody,
         posterImage: { url: 'https://example.com/poster.jpg', publicId: 'banner1', hash: 'hash_poster' }, // same publicId as bannerImage
-      },
-    });
-  });
-
-  it('rejects event with duplicate hash', () => {
-    expectRejected(createEventSchema, {
-      body: {
-        ...validEventBody,
-        galleryImages: [
-          { url: 'https://example.com/gallery.jpg', publicId: 'gallery1', hash: 'hash1' }, // same hash as bannerImage
-        ],
       },
     });
   });

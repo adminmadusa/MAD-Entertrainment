@@ -9,7 +9,6 @@ import { EventAdditionalDetailsCard } from '@/components/events/EventAdditionalD
 import { EventAttendanceCard } from '@/components/events/EventAttendanceCard';
 import { EventBasicInfoCard } from '@/components/events/EventBasicInfoCard';
 import { EventMediaCard } from '@/components/events/EventMediaCard';
-import { EventMemoriesCard, type MemoriesState } from '@/components/events/EventMemoriesCard';
 import { EventRequirementsCard } from '@/components/events/EventRequirementsCard';
 import { EventScheduleCard } from '@/components/events/EventScheduleCard';
 import { EventTicketingCard, type TicketTierInput } from '@/components/events/EventTicketingCard';
@@ -18,7 +17,7 @@ import { adminGetEvent, adminUpdateEvent, type AdminEventUpdatePayload, type Clo
 import { adminGetTicketProfiles } from '@/lib/api/admin/ticket-profile.service';
 import { adminGetTiers } from '@/lib/api/admin/tier.service';
 import { extractApiError } from '@/lib/api/client';
-import { BookingMode, TicketTier, EventStatus, EventMemoryPublicationState, EVENT_STATUS_TRANSITIONS, type EventLifecycleStatus, deriveEventLifecycleState } from '@mad/shared';
+import { BookingMode, TicketTier, EventStatus, EVENT_STATUS_TRANSITIONS, type EventLifecycleStatus, deriveEventLifecycleState } from '@mad/shared';
 import { AdminFormActions } from '@mad/ui';
 
 const defaultTier = (): TicketTierInput => ({
@@ -29,14 +28,6 @@ const defaultTier = (): TicketTierInput => ({
 
 const isEventLifecycleStatus = (status: EventStatus): status is EventLifecycleStatus =>
   Object.prototype.hasOwnProperty.call(EVENT_STATUS_TRANSITIONS, status);
-
-const DEFAULT_MEMORIES_STATE: MemoriesState = {
-  publicationState: EventMemoryPublicationState.DRAFT,
-  heading: '',
-  thankYouMessage: '',
-  highlightsInput: '',
-  gallery: [],
-};
 
 export default function EditEventPage() {
   const { id } = useParams() as { id: string };
@@ -64,7 +55,6 @@ export default function EditEventPage() {
   const [organizerName, setOrganizerName] = useState('');
   const [refundPolicy, setRefundPolicy] = useState('');
   const [highlightsInput, setHighlightsInput] = useState('');
-  const [memories, setMemories] = useState<MemoriesState>(DEFAULT_MEMORIES_STATE);
 
   // Ticket Profile and Overrides state
   const [ticketingType, setTicketingType] = useState<'custom' | 'profile'>('custom');
@@ -123,19 +113,6 @@ export default function EditEventPage() {
         setTiers(event.ticketTiers && event.ticketTiers.length > 0
           ? event.ticketTiers.map((t) => ({ name: t.name, price: t.price, capacity: t.totalCapacity || t.quantity || 100 }))
           : [defaultTier()]);
-      }
-
-      // Hydrate memories from server response
-      if (event.memories) {
-        setMemories({
-          publicationState: event.memories.publicationState,
-          heading: event.memories.heading ?? '',
-          thankYouMessage: event.memories.thankYouMessage ?? '',
-          highlightsInput: event.memories.highlights?.join(', ') ?? '',
-          gallery: (event.memories.gallery ?? []).map((img, i) => ({ ...img, order: i })),
-        });
-      } else {
-        setMemories(DEFAULT_MEMORIES_STATE);
       }
     }
   }, [event]);
@@ -203,7 +180,6 @@ export default function EditEventPage() {
         ticketSalesCloseMode: ticketSalesCloseMode,
         refundPolicy: refundPolicy.trim() || undefined,
         organizerName: organizerName.trim() || undefined,
-        memories: buildMemoriesPayload(),
       };
 
       if (ticketSalesCloseMode === 'CUSTOM_DATE' && ticketSalesCloseDate) {
@@ -243,24 +219,6 @@ export default function EditEventPage() {
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to update event');
     }
-  };
-
-  // Build memories sub-document for the save payload.
-  const buildMemoriesPayload = () => {
-    return {
-      publicationState: memories.publicationState,
-      heading: memories.heading.trim() || undefined,
-      thankYouMessage: memories.thankYouMessage.trim() || undefined,
-      highlights: memories.highlightsInput
-        .split(',')
-        .map((h) => h.trim())
-        .filter(Boolean),
-      gallery: memories.gallery.map((img, i) => ({
-        url: img.url,
-        publicId: img.publicId,
-        order: i,
-      })),
-    };
   };
 
   if (isEventLoading) {
@@ -349,15 +307,6 @@ export default function EditEventPage() {
           ageRestriction={ageRestriction} setAgeRestriction={setAgeRestriction}
           tags={tags} setTags={setTags}
           isFeatured={isFeatured} setIsFeatured={setIsFeatured}
-        />
-
-        {/* Event Memories — only rendered when status is COMPLETED */}
-        <EventMemoriesCard
-          eventStatus={status}
-          lifecycle={deriveEventLifecycleState({ status, startDate, endDate } as any)}
-          eventSlug={event?.slug || ''}
-          value={memories}
-          onChange={setMemories}
         />
 
         <AdminFormActions

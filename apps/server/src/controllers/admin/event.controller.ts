@@ -6,8 +6,6 @@ import { AppError } from '../../middleware/error.middleware';
 import * as eventService from '../../services/admin/event.service';
 import { auditLog } from '../../utils/audit';
 
-export const EVENT_MEMORIES_PREVIEW_TOKEN_TTL_MINUTES = 15;
-
 export const createEvent = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const event = await eventService.createEvent(req.body);
@@ -107,50 +105,7 @@ export const deleteEvent = async (req: Request, res: Response, next: NextFunctio
   }
 };
 
-export const getPreviewToken = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const eventId = req.params.id;
-    const event = await eventService.getEventById(eventId);
-    if (!event) {
-      return res.status(404).json({ success: false, message: 'Event not found' });
-    }
 
-    const adminId = (req as any).user?.sub;
-    const expiresAt = new Date(Date.now() + EVENT_MEMORIES_PREVIEW_TOKEN_TTL_MINUTES * 60 * 1000);
-
-    const token = jwt.sign(
-      {
-        eventId,
-        adminId,
-        issuedAt: Date.now(),
-        expiresAt: expiresAt.getTime(),
-      },
-      getEnv().JWT_ADMIN_SECRET,
-      { expiresIn: `${EVENT_MEMORIES_PREVIEW_TOKEN_TTL_MINUTES}m` }
-    );
-
-    auditLog({
-      action: 'event.memories.preview.generated',
-      status: 'success',
-      metadata: {
-        eventId,
-        adminId,
-        expiresAt: expiresAt.toISOString(),
-      },
-      description: `Preview token generated for event ${eventId} by admin ${adminId}`,
-    });
-
-    res.status(200).json({
-      success: true,
-      data: {
-        token,
-        expiresAt: expiresAt.toISOString(),
-      },
-    });
-  } catch (error) {
-    next(error);
-  }
-};
 
 export const bulkDeleteEvents = async (req: Request, res: Response, next: NextFunction) => {
   try {
