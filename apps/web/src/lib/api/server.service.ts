@@ -199,3 +199,17 @@ export async function serverGetDJs(): Promise<DJOperator[]> {
   }
   return [];
 }
+
+export async function serverGetGallery(slug: string): Promise<{ items: import('@mad/types').EventGalleryItem[]; settings: import('@mad/types').EventGallerySettings | null }> {
+  const payload = await safeServerFetch<{ items: import('@mad/types').EventGalleryItem[]; settings: import('@mad/types').EventGallerySettings | null }>(
+    `/events/${slug}/gallery`,
+    {
+      fallback: { items: [], settings: null },
+      revalidate: 60,
+      timeoutMs: 5000,
+      retries: 1,
+      label: 'Event Gallery',
+    }
+  );
+  return payload;
+}
