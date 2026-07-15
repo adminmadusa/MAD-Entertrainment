@@ -11,7 +11,7 @@ import { extractApiError } from '@/lib/api/client';
 import { useAdminAuth } from '@/providers/AdminAuthProvider';
 import { AdminRole } from '@mad/shared';
 import type { TicketProfile } from '@mad/types';
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, ErrorState, Modal, FloatingActionBar, EmptyState } from '@mad/ui';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, ErrorState, Modal, FloatingActionBar, EmptyState, Checkbox, useBulkSelection } from '@mad/ui';
 import { Ticket, Search } from '@mad/ui/icons';
 import { formatDate } from '@mad/utils';
 
@@ -171,12 +171,14 @@ interface TabProps {
 
 function TicketProfilesTab({ canMutate, qc, showToast }: TabProps) {
   const [deleteTarget, setDeleteTarget] = useState<TicketProfile | null>(null);
-  const [selectedProfiles, setSelectedProfiles] = useState<Set<string>>(new Set());
 
   const { data: profiles = [], isLoading, error } = useQuery({
     queryKey: ['admin-ticket-profiles'],
     queryFn: adminGetTicketProfiles,
   });
+
+  const profileIds = profiles.map((p) => p._id);
+  const { selectedIds, selectedCount, isSelected, toggle, selectAll, clearSelection, allSelected, indeterminate } = useBulkSelection({ pageIds: profileIds });
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => adminDeleteTicketProfile(id),
@@ -200,7 +202,7 @@ function TicketProfilesTab({ canMutate, qc, showToast }: TabProps) {
     mutationFn: (ids: string[]) => adminBulkDeleteTicketProfiles(ids),
     onSuccess: (data) => {
       qc.invalidateQueries({ queryKey: ['admin-ticket-profiles'] });
-      setSelectedProfiles(new Set());
+      clearSelection();
       const { successCount, failedCount } = data;
       showToast(failedCount > 0 ? `Deleted ${successCount} profiles. ${failedCount} failed.` : `Deleted ${successCount} profiles successfully.`);
     },
@@ -213,7 +215,7 @@ function TicketProfilesTab({ canMutate, qc, showToast }: TabProps) {
     mutationFn: ({ ids, isActive }: { ids: string[], isActive: boolean }) => adminBulkUpdateTicketProfileStatus(ids, isActive),
     onSuccess: (data, variables) => {
       qc.invalidateQueries({ queryKey: ['admin-ticket-profiles'] });
-      setSelectedProfiles(new Set());
+      clearSelection();
       const { successCount, failedCount } = data;
       const actionStr = variables.isActive ? 'Activated' : 'Deactivated';
       showToast(failedCount > 0 ? `${actionStr} ${successCount} profiles. ${failedCount} failed.` : `${actionStr} ${successCount} profiles successfully.`);
@@ -271,16 +273,9 @@ function TicketProfilesTab({ canMutate, qc, showToast }: TabProps) {
     return profiles.map((profile) => (
       <TableRow key={profile._id} className="border-b border-border-subtle/40 hover:bg-white/2 transition-colors">
         <TableCell className="w-12 px-4 text-center">
-          <input
-            type="checkbox"
-            className="rounded border-border-subtle bg-surface focus:ring-accent-purple focus:ring-offset-background"
-            checked={selectedProfiles.has(profile._id)}
-            onChange={(e) => {
-              const newSet = new Set(selectedProfiles);
-              if (e.target.checked) newSet.add(profile._id);
-              else newSet.delete(profile._id);
-              setSelectedProfiles(newSet);
-            }}
+          <Checkbox
+            checked={isSelected(profile._id)}
+            onChange={() => toggle(profile._id)}
             aria-label={`Select ${profile.name}`}
           />
         </TableCell>
@@ -377,17 +372,10 @@ function TicketProfilesTab({ canMutate, qc, showToast }: TabProps) {
           <TableHeader>
             <TableRow>
               <TableHead className="w-12 px-4 text-center">
-                <input
-                  type="checkbox"
-                  className="rounded border-border-subtle bg-surface focus:ring-accent-purple focus:ring-offset-background"
-                  checked={profiles.length > 0 && selectedProfiles.size === profiles.length}
-                  onChange={(e) => {
-                    if (e.target.checked) {
-                      setSelectedProfiles(new Set(profiles.map((p) => p._id)));
-                    } else {
-                      setSelectedProfiles(new Set());
-                    }
-                  }}
+                <Checkbox
+                  checked={allSelected}
+                  indeterminate={indeterminate}
+                  onChange={() => allSelected ? clearSelection() : selectAll()}
                   aria-label="Select all profiles"
                 />
               </TableHead>
@@ -446,18 +434,18 @@ function TicketProfilesTab({ canMutate, qc, showToast }: TabProps) {
 
       {/* Floating Action Bar */}
       <FloatingActionBar
-        selectedCount={selectedProfiles.size}
-        onClearSelection={() => setSelectedProfiles(new Set())}
+        selectedCount={selectedCount}
+        onClearSelection={clearSelection}
       >
         <button
-          onClick={() => bulkStatusMutation.mutate({ ids: Array.from(selectedProfiles), isActive: true })}
+          onClick={() => bulkStatusMutation.mutate({ ids: Array.from(selectedIds), isActive: true })}
           disabled={bulkStatusMutation.isPending || bulkDeleteMutation.isPending}
           className="px-3 py-1.5 text-sm font-medium text-white hover:text-green-400 bg-white/5 hover:bg-green-500/20 border border-transparent hover:border-green-500/30 rounded-lg transition-all"
         >
           {bulkStatusMutation.isPending ? 'Processing...' : 'Activate'}
         </button>
         <button
-          onClick={() => bulkStatusMutation.mutate({ ids: Array.from(selectedProfiles), isActive: false })}
+          onClick={() => bulkStatusMutation.mutate({ ids: Array.from(selectedIds), isActive: false })}
           disabled={bulkStatusMutation.isPending || bulkDeleteMutation.isPending}
           className="px-3 py-1.5 text-sm font-medium text-white hover:text-yellow-400 bg-white/5 hover:bg-yellow-500/20 border border-transparent hover:border-yellow-500/30 rounded-lg transition-all"
         >
@@ -465,7 +453,7 @@ function TicketProfilesTab({ canMutate, qc, showToast }: TabProps) {
         </button>
         <div className="w-px h-4 bg-border-default mx-1" />
         <button
-          onClick={() => bulkDeleteMutation.mutate(Array.from(selectedProfiles))}
+          onClick={() => bulkDeleteMutation.mutate(Array.from(selectedIds))}
           disabled={bulkDeleteMutation.isPending || bulkStatusMutation.isPending}
           className="px-3 py-1.5 text-sm font-medium text-white hover:text-red-400 bg-white/5 hover:bg-red-500/20 border border-transparent hover:border-red-500/30 rounded-lg transition-all"
         >
