@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { Button, Alert, FormField, Input } from '@mad/ui';
+import { Button, FormField, Input } from '@mad/ui';
 
 export interface OtpVerifyFormProps {
   email: string;
@@ -82,16 +82,16 @@ export function OtpVerifyForm({
               className="text-center font-black font-mono text-xl sm:text-3xl py-2.5 sm:py-4 tracking-[0.3em] sm:tracking-[0.6em] pl-[0.3em] sm:pl-[0.6em]"
             />
           </FormField>
-          {/* OTP Validation error rendering */}
+          {/* OTP error rendering — inline below field, OTP preserved for retry */}
           {verifyCooldownRemaining > 0 && (
-            <Alert variant="danger" className="mt-2 text-center animate-in fade-in duration-200">
+            <p role="alert" className="mt-1.5 text-xs text-center text-amber-400 font-semibold animate-in fade-in duration-200">
               Verification attempts temporarily paused. Try again in {formatTime(verifyCooldownRemaining)}.
-            </Alert>
+            </p>
           )}
           {verifyCooldownRemaining <= 0 && error && (
-            <Alert variant="danger" className="mt-2 text-center animate-in fade-in duration-200">
+            <p role="alert" className="mt-1.5 text-xs text-center text-red-400 animate-in fade-in duration-200">
               {error}
-            </Alert>
+            </p>
           )}
         </div>
       </div>
