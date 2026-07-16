@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { EventCategory, BookingMode, BookingStatus, EventStatus, PopupTrigger, TicketTier, type EventLifecycleStatus, BOOKING_REFERENCE_REGEX, TicketSalesCloseMode } from '@mad/shared';
+import { EventCategory, BookingStatus, PopupTrigger, TicketTier, BOOKING_REFERENCE_REGEX } from '@mad/shared';
 import { objectIdSchema } from '@mad/validations';
 
 // -- Common schemas --
