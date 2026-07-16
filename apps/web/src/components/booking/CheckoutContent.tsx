@@ -5,7 +5,7 @@ import { AnimatePresence } from 'framer-motion';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 import { useCheckoutViewportController } from '@/hooks/use-checkout-viewport-controller';
 import { useCountdown } from '@/hooks/use-countdown.hook';
@@ -45,9 +45,10 @@ interface CheckoutContentProps {
   isModal: boolean;
   onBack: () => void;
   onClose: () => void;
+  onConfirmed?: () => void;
 }
 
-export function CheckoutContent({ bookingId, isModal, onBack, onClose }: CheckoutContentProps) {
+export function CheckoutContent({ bookingId, isModal, onBack, onClose, onConfirmed }: CheckoutContentProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
 
@@ -83,6 +84,13 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
 
   const booking = details?.booking;
   const event = asEvent((booking as Booking | undefined)?.eventId);
+
+  // Trigger onConfirmed when booking status is confirmed
+  useEffect(() => {
+    if (booking && booking.status === BookingStatus.CONFIRMED && onConfirmed) {
+      onConfirmed();
+    }
+  }, [booking, onConfirmed]);
 
   const handleViewTickets = () => {
     allowNavigation();

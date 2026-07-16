@@ -26,6 +26,7 @@ export const EventBookingFlow = forwardRef<EventBookingFlowHandle, EventBookingF
 
     const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState(false);
     const [checkoutBookingId, setCheckoutBookingId] = useState<string | null>(null);
+    const [isConfirmed, setIsConfirmed] = useState(false);
 
     useImperativeHandle(ref, () => ({
       openBooking: () => setIsBookingModalOpen(true),
@@ -77,17 +78,23 @@ export const EventBookingFlow = forwardRef<EventBookingFlowHandle, EventBookingF
             setIsPending(false);
             setIsCheckoutModalOpen(false);
             setCheckoutBookingId(null);
+            setIsConfirmed(false);
           }}
-          size="lg"
+          size={isConfirmed ? "sm" : "lg"}
           showCloseButton={false}
           presentation="bottom-sheet"
           closeOnBackdropClick={true}
           ariaLabelledBy="checkout-modal-title"
-          className="md:max-h-[95vh] max-w-4xl bg-background md:rounded-2xl border border-white/10 overflow-y-auto shadow-2xl relative z-10 p-6 custom-scrollbar focus:outline-none"
+          className={
+            isConfirmed
+              ? "max-w-md bg-background md:rounded-2xl border border-white/10 shadow-2xl relative z-10 p-6 focus:outline-none animate-in fade-in zoom-in-95 duration-300"
+              : "md:max-h-[95vh] max-w-4xl bg-background md:rounded-2xl border border-white/10 overflow-y-auto shadow-2xl relative z-10 p-6 custom-scrollbar focus:outline-none"
+          }
         >
               <CheckoutContent
                 bookingId={checkoutBookingId}
                 isModal={true}
+                onConfirmed={() => setIsConfirmed(true)}
                 onBack={() => {
                   setIsPending(false);
                   setIsCheckoutModalOpen(false);
@@ -97,6 +104,7 @@ export const EventBookingFlow = forwardRef<EventBookingFlowHandle, EventBookingF
                   setIsPending(false);
                   setIsCheckoutModalOpen(false);
                   setCheckoutBookingId(null);
+                  setIsConfirmed(false);
                 }}
               />
         </Modal>
