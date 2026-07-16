@@ -28,6 +28,7 @@ export const listEventsQuerySchema = z.object({
   category: z.nativeEnum(EventCategory).optional(),
   status: z.nativeEnum(EventStatus).optional(),
   search: z.string().max(200).optional(),
+  isFeatured: booleanQuerySchema.optional(),
   page: z.coerce.number().int().positive().default(1),
   limit: paginationLimitSchema.default(12),
   includeTotal: booleanQuerySchema.optional(),
