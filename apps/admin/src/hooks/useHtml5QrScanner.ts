@@ -40,19 +40,38 @@ export function useHtml5QrScanner({ onScanSuccess, onScanFailure }: UseHtml5QrSc
         }));
       setDevices(videoDevices);
 
-      // Restore saved preferred camera
+      let activeDeviceId = '';
+      if (scannerRef.current) {
+        try {
+          const activeCam = scannerRef.current.getActiveCamera();
+          if (activeCam && activeCam.id) {
+            activeDeviceId = activeCam.id;
+          }
+        } catch {
+          // ignore
+        }
+      }
+
+      // Restore saved preferred camera or select rear camera
       const savedDevice = localStorage.getItem('mad-preferred-camera');
-      if (savedDevice && videoDevices.some((d) => d.id === savedDevice)) {
-        setSelectedDeviceId(savedDevice);
-      } else if (videoDevices.length > 0) {
-        // Prefer rear camera (has "back" or "environment" or "rear")
+      setSelectedDeviceId((prevId) => {
+        if (activeDeviceId) {
+          return activeDeviceId;
+        }
+        if (savedDevice && videoDevices.some((d) => d.id === savedDevice)) {
+          return savedDevice;
+        }
+        if (prevId && videoDevices.some((d) => d.id === prevId)) {
+          return prevId;
+        }
+        // Prefer rear camera (has "back", "rear", or "environment")
         const rearCamera = videoDevices.find((d) =>
           d.label.toLowerCase().includes('back') ||
           d.label.toLowerCase().includes('rear') ||
           d.label.toLowerCase().includes('environment')
         );
-        setSelectedDeviceId(rearCamera?.id || videoDevices[0].id);
-      }
+        return rearCamera?.id || videoDevices[0]?.id || '';
+      });
     } catch (err: any) {
       console.error('Failed to enumerate media devices:', err);
     }
@@ -72,16 +91,39 @@ export function useHtml5QrScanner({ onScanSuccess, onScanFailure }: UseHtml5QrSc
     };
   }, [refreshDevices]);
 
-  // 3. Initialize devices on mount
+  // 3. Initialize devices on mount with capability checks
   useEffect(() => {
+    if (typeof window !== 'undefined') {
+      if (!window.isSecureContext) {
+        setError('Camera validation requires a secure HTTPS connection.');
+        return;
+      }
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        setError('Camera scanning is not supported by your browser.');
+        return;
+      }
+    }
     refreshDevices();
   }, [refreshDevices]);
 
   // 4. Initialize and Start Scanner
-  const startScanner = useCallback(async (deviceId: string) => {
-    if (!deviceId) return;
+  const startScanner = useCallback(async (deviceId?: string) => {
     setIsInitializing(true);
     setError(null);
+
+    // Prerequisite checks
+    if (typeof window !== 'undefined') {
+      if (!window.isSecureContext) {
+        setError('Camera validation requires a secure HTTPS connection.');
+        setIsInitializing(false);
+        return;
+      }
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        setError('Camera scanning is not supported by your browser.');
+        setIsInitializing(false);
+        return;
+      }
+    }
 
     try {
       const { Html5Qrcode } = await import('html5-qrcode');
@@ -98,8 +140,9 @@ export function useHtml5QrScanner({ onScanSuccess, onScanFailure }: UseHtml5QrSc
       const html5QrCode = new Html5Qrcode(containerId);
       scannerRef.current = html5QrCode;
 
+      const cameraOption = deviceId || { facingMode: 'environment' };
       await html5QrCode.start(
-        deviceId,
+        cameraOption,
         {
           fps: 10,
           qrbox: (width, height) => {
@@ -124,6 +167,9 @@ export function useHtml5QrScanner({ onScanSuccess, onScanFailure }: UseHtml5QrSc
       const capabilities = html5QrCode.getRunningTrackCapabilities();
       setHasTorch(!!(capabilities as any)?.torch);
       setIsTorchOn(false);
+
+      // Refresh devices to get labels and IDs after permission is granted
+      await refreshDevices();
     } catch (err: any) {
       console.error('Html5Qrcode initialization error:', err);
       setIsScanning(false);
@@ -136,7 +182,7 @@ export function useHtml5QrScanner({ onScanSuccess, onScanFailure }: UseHtml5QrSc
     } finally {
       setIsInitializing(false);
     }
-  }, [onScanSuccess, onScanFailure]);
+  }, [onScanSuccess, onScanFailure, refreshDevices]);
 
   // 5. Stop Scanner
   const stopScanner = useCallback(async () => {
