@@ -213,15 +213,15 @@ describe('Admin Refund Service Tests', () => {
       ).rejects.toThrow('Booking record not found');
     });
 
-    it('should reject if booking status is not confirmed', async () => {
+    it('should reject if booking status is neither confirmed nor cancelled', async () => {
       const mockPayment = { _id: 'p-123', bookingId: 'b-123', status: PaymentStatus.PAID, amount: 500 };
-      const mockBooking = { _id: 'b-123', status: BookingStatus.CANCELLED };
+      const mockBooking = { _id: 'b-123', status: BookingStatus.FAILED };
       vi.mocked(Payment.findById).mockImplementation(() => createMockQuery(mockPayment));
       vi.mocked(Booking.findById).mockImplementation(() => createMockQuery(mockBooking));
 
       await expect(
         createRefund({ bookingId: 'b-123', paymentId: 'p-123', amount: 100, reason: 'Test' })
-      ).rejects.toThrow('Only confirmed bookings can be refunded');
+      ).rejects.toThrow('Only confirmed or cancelled bookings can be refunded');
     });
 
     it('should reject if individual refund amount exceeds original payment amount', async () => {

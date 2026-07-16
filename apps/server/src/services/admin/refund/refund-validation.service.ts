@@ -171,9 +171,9 @@ export class RefundValidationService {
     }
 
     if (booking) {
-      // 6. Booking status check (Must be CONFIRMED)
-      if (booking.status !== BookingStatus.CONFIRMED) {
-        throw AppError.badRequest('Only confirmed bookings can be refunded');
+      // 6. Booking status check (Must be CONFIRMED or CANCELLED)
+      if (booking.status !== BookingStatus.CONFIRMED && booking.status !== BookingStatus.CANCELLED) {
+        throw AppError.badRequest('Only confirmed or cancelled bookings can be refunded');
       }
 
       // 7. Cumulative Refund Check
