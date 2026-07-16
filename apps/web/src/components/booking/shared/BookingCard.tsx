@@ -4,7 +4,6 @@ import dynamic from 'next/dynamic';
 import Link from 'next/link';
 
 import { BookingHeaderCard } from '@/components/booking/shared/BookingHeaderCard';
-import { TicketActions } from '@/components/booking/shared/TicketActions';
 import { useCountdown } from '@/hooks/use-countdown.hook';
 import { formatDate, formatDateTime } from '@/utils/date';
 import { BookingStatus, getBookingLifecycle, buildVenueMapLink, type BookingForLifecycle, type BaseEventForLifecycle } from '@mad/shared';
@@ -155,7 +154,21 @@ export function BookingCard({
 
   // Context-aware Quick Actions
   const renderQuickActions = () => {
-    if (lifecycle === 'upcoming') {
+    if (lifecycle === 'upcoming' || lifecycle === 'live') {
+      let resendContent;
+      if (resending) {
+        resendContent = <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />;
+      } else if (resendCooldown > 0) {
+        resendContent = <span className="font-mono">{resendCooldown}s</span>;
+      } else {
+        resendContent = (
+          <>
+            <span>📩</span>
+            <span className="hidden sm:inline">Resend Tickets</span>
+          </>
+        );
+      }
+
       return (
         <>
           {eventInfo?.venue && (
@@ -186,39 +199,21 @@ export function BookingCard({
             ) : (
               <>
                 <span>📥</span>
-                <span className="hidden sm:inline">Download</span>
+                <span className="hidden sm:inline">Download PDF</span>
               </>
             )}
           </button>
-        </>
-      );
-    }
-
-    if (lifecycle === 'live') {
-      return (
-        <>
-          {eventInfo?.venue && (
-            <a
-              href={buildVenueMapLink(eventInfo.venue)}
-              target="_blank"
-              rel="noopener noreferrer"
-              title="Get Directions"
-              onClick={(e) => e.stopPropagation()}
-              className="px-3 py-1.5 flex items-center justify-center gap-1.5 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 text-white text-xs min-h-[36px] transition-all font-bold"
-            >
-              <span>📍</span>
-              <span className="hidden sm:inline">Location</span>
-            </a>
-          )}
           <button
             type="button"
             onClick={(e) => {
               e.stopPropagation();
-              onToggleExpand?.();
+              onResend();
             }}
-            className="px-3 py-1.5 text-[10px] sm:text-xs font-black uppercase rounded-lg btn-gradient text-white shadow-glow-sm hover:scale-[1.02] transition-all min-h-[36px] flex items-center justify-center"
+            disabled={resending || resendCooldown > 0}
+            title="Resend Tickets"
+            className="px-3 py-1.5 flex items-center justify-center gap-1.5 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 text-white text-xs min-h-[36px] transition-all disabled:opacity-50 font-bold"
           >
-            View QR
+            {resendContent}
           </button>
         </>
       );
@@ -289,15 +284,8 @@ export function BookingCard({
 
             return (
               <div className="space-y-4 pt-3 border-t border-border-subtle/30">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-2">
+                <div className="pb-2">
                   <h3 className="text-white font-bold text-sm">Entry Passes</h3>
-                  <TicketActions
-                    downloading={downloading}
-                    resending={resending}
-                    cooldown={resendCooldown}
-                    onDownload={onDownload}
-                    onResend={onResend}
-                  />
                 </div>
                 <EntryPassGrid tickets={tickets} />
               </div>
