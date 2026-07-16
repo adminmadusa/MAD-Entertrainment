@@ -232,14 +232,7 @@ export default function AdminEventsPage() {
               </span>
             )}
           </TableCell>
-          <TableCell className="py-4 px-4">
-            <span
-              className={`text-lg ${event.isFeatured ? 'text-yellow-400' : 'text-text-muted'}`}
-              title={event.isFeatured ? 'Featured Event' : 'Standard Event'}
-            >
-              ★
-            </span>
-          </TableCell>
+
           <TableCell sticky="end" showStickyDivider className="py-4 px-5">
             {canMutateEvents ? (
               <div className="flex items-center justify-end gap-2">
@@ -339,7 +332,7 @@ export default function AdminEventsPage() {
               <TableHead onClick={() => handleSort('status')} className="py-3.5 px-4 cursor-pointer hover:text-white transition-colors select-none">
                 Status {sortField === 'status' ? (sortOrder === 'asc' ? '▲' : '▼') : ''}
               </TableHead>
-              <TableHead className="py-3.5 px-4">Featured</TableHead>
+
               <TableHead sticky="end" showStickyDivider className="py-3.5 px-5 text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>

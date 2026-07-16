@@ -42,7 +42,6 @@ export default function EditEventPage() {
   const [ticketSalesCloseMode, setTicketSalesCloseMode] = useState<string>('EVENT_START');
   const [ticketSalesCloseDate, setTicketSalesCloseDate] = useState('');
   const [tags, setTags] = useState('');
-  const [isFeatured, setIsFeatured] = useState(false);
   const [requireTerms, setRequireTerms] = useState(true);
   const [requireAgeConfirmation, setRequireAgeConfirmation] = useState(false);
   const [ageRestriction, setAgeRestriction] = useState<number | ''>(18);
@@ -92,7 +91,6 @@ export default function EditEventPage() {
       setRefundPolicy(event.refundPolicy || '');
       setHighlightsInput(event.highlights?.join(', ') || '');
       setTags(event.tags?.join(', ') || '');
-      setIsFeatured(!!event.isFeatured);
       setRequireTerms(event.requireTerms ?? true);
       setRequireAgeConfirmation(!!event.requireAgeConfirmation);
       setAgeRestriction(event.ageRestriction ?? 18);
@@ -171,7 +169,6 @@ export default function EditEventPage() {
         venue: venue.trim(),
         startDate: new Date(startDate).toISOString(),
         endDate: endDate ? new Date(endDate).toISOString() : undefined,
-        isFeatured,
         requireTerms,
         requireAgeConfirmation,
         ageRestriction: requireAgeConfirmation && ageRestriction ? Number(ageRestriction) : undefined,
@@ -306,7 +303,6 @@ export default function EditEventPage() {
           requireAgeConfirmation={requireAgeConfirmation} setRequireAgeConfirmation={setRequireAgeConfirmation}
           ageRestriction={ageRestriction} setAgeRestriction={setAgeRestriction}
           tags={tags} setTags={setTags}
-          isFeatured={isFeatured} setIsFeatured={setIsFeatured}
         />
 
         <AdminFormActions

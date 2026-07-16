@@ -17,7 +17,6 @@ interface EventReviewSectionProps {
   requireAgeConfirmation: boolean;
   ageRestriction: number | '';
   tags: string;
-  isFeatured: boolean;
   ticketingType: 'custom' | 'profile';
   tiers: TicketTierInput[];
   selectedProfileId: string;
@@ -41,7 +40,6 @@ export const EventReviewSection: React.FC<EventReviewSectionProps> = ({
   requireAgeConfirmation,
   ageRestriction,
   tags,
-  isFeatured,
   ticketingType,
   tiers,
   selectedProfileId,
@@ -173,9 +171,8 @@ export const EventReviewSection: React.FC<EventReviewSectionProps> = ({
               </div>
             </div>
             <div>
-              <span className="text-text-muted block mb-1">Tags & Features</span>
+              <span className="text-text-muted block mb-1">Tags</span>
               <div className="space-y-1">
-                {isFeatured && <Badge variant="info" className="mr-2">Featured</Badge>}
                 {tags.split(',').filter(Boolean).map(t => (
                   <Badge key={t} variant="default" className="mr-1 mb-1">{t.trim()}</Badge>
                 ))}

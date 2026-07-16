@@ -51,7 +51,6 @@ export default function CreateEventPage() {
   const [ticketSalesCloseMode, setTicketSalesCloseMode] = useState<string>('EVENT_START');
   const [ticketSalesCloseDate, setTicketSalesCloseDate] = useState('');
   const [tags, setTags] = useState('');
-  const [isFeatured, setIsFeatured] = useState(false);
   const [requireTerms, setRequireTerms] = useState(true);
   const [requireAgeConfirmation, setRequireAgeConfirmation] = useState(false);
   const [ageRestriction, setAgeRestriction] = useState<number | ''>(18);
@@ -157,7 +156,6 @@ export default function CreateEventPage() {
         venue: venueName.trim(),
         startDate: new Date(startDate).toISOString(),
         endDate: endDate ? new Date(endDate).toISOString() : undefined,
-        isFeatured,
         requireTerms,
         requireAgeConfirmation,
         ageRestriction: requireAgeConfirmation && ageRestriction ? Number(ageRestriction) : undefined,
@@ -283,7 +281,6 @@ export default function CreateEventPage() {
           />
           <EventRequirementsCard
             tags={tags} setTags={setTags}
-            isFeatured={isFeatured} setIsFeatured={setIsFeatured}
             requireTerms={requireTerms} setRequireTerms={setRequireTerms}
             requireAgeConfirmation={requireAgeConfirmation} setRequireAgeConfirmation={setRequireAgeConfirmation}
             ageRestriction={ageRestriction} setAgeRestriction={setAgeRestriction}
@@ -312,7 +309,7 @@ export default function CreateEventPage() {
             status={status} startDate={startDate} endDate={endDate}
             ticketSalesCloseMode={ticketSalesCloseMode} ticketSalesCloseDate={ticketSalesCloseDate}
             requireTerms={requireTerms} requireAgeConfirmation={requireAgeConfirmation}
-            ageRestriction={ageRestriction} tags={tags} isFeatured={isFeatured}
+            ageRestriction={ageRestriction} tags={tags}
             ticketingType={ticketingType} tiers={tiers} selectedProfileId={selectedProfileId}
             coverImage={coverImage} posterImage={posterImage} galleryImages={galleryImages}
             onEditStep={setCurrentStep}
