@@ -37,10 +37,10 @@ export default function AdminEventsPage() {
     setTimeout(() => setToastMessage(null), 4000);
   };
 
-  const [sortField, setSortField] = useState<'title' | 'category' | 'startDate' | 'status' | null>(null);
+  const [sortField, setSortField] = useState<'title' | 'startDate' | null>(null);
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
-  const handleSort = (field: 'title' | 'category' | 'startDate' | 'status') => {
+  const handleSort = (field: 'title' | 'startDate') => {
     if (sortField === field) {
       setSortOrder((prev) => (prev === 'asc' ? 'desc' : 'asc'));
     } else {
@@ -286,25 +286,48 @@ export default function AdminEventsPage() {
         )}
       </div>
 
-      {/* Filters */}
-      <div className="flex flex-wrap gap-3">
-        <input
-          type="search"
-          placeholder="Search events..."
-          value={search}
-          onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-          className="flex-1 min-w-48 px-4 py-2.5 rounded-xl bg-background-card border border-border-subtle text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-purple transition-colors"
-        />
-        <select
-          value={statusFilter}
-          onChange={(e) => { setStatusFilter(e.target.value as EventStatus | ''); setPage(1); }}
-          className="px-4 py-2.5 rounded-xl bg-background-card border border-border-subtle text-sm text-text-primary focus:outline-none focus:border-accent-purple transition-colors"
-        >
-          <option value="">All Statuses</option>
+      {/* Search & Tabs */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        {/* Tab Buttons */}
+        <div className="flex flex-wrap bg-white/5 border border-border-subtle p-1 rounded-xl gap-1">
+          <button
+            onClick={() => { setStatusFilter(''); setPage(1); }}
+            className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
+              statusFilter === ''
+                ? 'bg-accent-purple text-white shadow-glow-sm'
+                : 'text-text-secondary hover:text-white'
+            }`}
+          >
+            All Statuses
+          </button>
           {EVENT_STATUS_FILTER_OPTIONS.map(([value, meta]) => (
-            <option key={value} value={value}>{meta.label}</option>
+            <button
+              key={value}
+              onClick={() => { setStatusFilter(value as EventStatus); setPage(1); }}
+              className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
+                statusFilter === value
+                  ? 'bg-accent-purple text-white shadow-glow-sm'
+                  : 'text-text-secondary hover:text-white'
+              }`}
+            >
+              {meta.label}
+            </button>
           ))}
-        </select>
+        </div>
+
+        {/* Search */}
+        <div className="relative w-full md:w-72">
+          <input
+            type="search"
+            placeholder="Search events..."
+            value={search}
+            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+            className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-background-card border border-border-subtle text-xs text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-purple transition-colors"
+          />
+          <svg className="absolute left-3 top-3 h-4 w-4 text-text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+            <circle cx="11" cy="11" r="8" /><line x1="21" x2="16.65" y1="21" y2="16.65" />
+          </svg>
+        </div>
       </div>
 
       {/* Table */}
@@ -320,17 +343,17 @@ export default function AdminEventsPage() {
                   aria-label="Select all events on this page"
                 />
               </TableHead>
-              <TableHead sticky="start" stickyOffset="3rem" showStickyDivider onClick={() => handleSort('title')} className="py-3.5 px-5 cursor-pointer hover:text-white transition-colors select-none">
+              <TableHead onClick={() => handleSort('title')} className="py-3.5 px-5 cursor-pointer hover:text-white transition-colors select-none">
                 Event {sortField === 'title' ? (sortOrder === 'asc' ? '▲' : '▼') : ''}
               </TableHead>
-              <TableHead onClick={() => handleSort('category')} className="py-3.5 px-4 cursor-pointer hover:text-white transition-colors select-none">
-                Category {sortField === 'category' ? (sortOrder === 'asc' ? '▲' : '▼') : ''}
+              <TableHead className="py-3.5 px-4 text-text-secondary select-none">
+                Category
               </TableHead>
               <TableHead onClick={() => handleSort('startDate')} className="py-3.5 px-4 cursor-pointer hover:text-white transition-colors select-none">
                 Date {sortField === 'startDate' ? (sortOrder === 'asc' ? '▲' : '▼') : ''}
               </TableHead>
-              <TableHead onClick={() => handleSort('status')} className="py-3.5 px-4 cursor-pointer hover:text-white transition-colors select-none">
-                Status {sortField === 'status' ? (sortOrder === 'asc' ? '▲' : '▼') : ''}
+              <TableHead className="py-3.5 px-4 text-text-secondary select-none">
+                Status
               </TableHead>
 
               <TableHead sticky="end" showStickyDivider className="py-3.5 px-5 text-right">Actions</TableHead>
