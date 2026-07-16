@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { EventCategory, EventStatus, BOOKING_REFERENCE_REGEX } from '@mad/shared';
+import { BOOKING_REFERENCE_REGEX } from '@mad/shared';
 import { objectIdSchema, checkoutSchema as createBookingSchema, reserveTicketsSchema, checkoutDetailsSchema } from '@mad/validations';
 
 export { createBookingSchema, reserveTicketsSchema, checkoutDetailsSchema };
@@ -22,20 +22,6 @@ const paginationLimitSchema = z.coerce.number().int().positive().max(100);
 
 export const bookingReferenceParamSchema = z.object({
   bookingId: bookingReferenceSchema,
-}).strict();
-
-export const listEventsQuerySchema = z.object({
-  category: z.nativeEnum(EventCategory).optional(),
-  status: z.nativeEnum(EventStatus).optional(),
-  search: z.string().max(200).optional(),
-  page: z.coerce.number().int().positive().default(1),
-  limit: paginationLimitSchema.default(12),
-  includeTotal: booleanQuerySchema.optional(),
-}).strict();
-
-
-export const getEventSeatLayoutParamSchema = z.object({
-  eventId: objectIdSchema,
 }).strict();
 
 export const createPaymentIntentSchema = z.object({
