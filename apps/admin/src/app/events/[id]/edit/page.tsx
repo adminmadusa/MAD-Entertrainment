@@ -36,7 +36,7 @@ export default function EditEventPage() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState<string>('concert');
-  const [status, setStatus] = useState<EventStatus>(EventStatus.DRAFT);
+  const [status, setStatus] = useState<EventStatus>(EventStatus.PUBLISHED);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [ticketSalesCloseMode, setTicketSalesCloseMode] = useState<string>('EVENT_START');
@@ -82,7 +82,7 @@ export default function EditEventPage() {
       setTitle(event.title || '');
       setDescription(event.description || '');
       setCategory(event.category || 'concert');
-      setStatus(event.status || EventStatus.DRAFT);
+      setStatus(event.status || EventStatus.PUBLISHED);
       setStartDate(event.startDate ? new Date(event.startDate).toISOString().slice(0, 16) : '');
       setEndDate(event.endDate ? new Date(event.endDate).toISOString().slice(0, 16) : '');
       setTicketSalesCloseMode(event.ticketSalesCloseMode || 'EVENT_START');

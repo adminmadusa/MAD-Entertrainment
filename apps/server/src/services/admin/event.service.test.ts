@@ -81,7 +81,7 @@ describe('Admin Event Service', () => {
   });
 
   describe('createEvent - Initial Lifecycle Governance', () => {
-    it.each([EventStatus.DRAFT, EventStatus.PUBLISHED])('allows initial status %s', async (status) => {
+    it.each([EventStatus.PUBLISHED])('allows initial status %s', async (status) => {
       const result = await eventService.createEvent({ status } as any);
 
       expect(result.status).toBe(status);

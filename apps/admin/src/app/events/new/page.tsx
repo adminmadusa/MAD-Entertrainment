@@ -21,7 +21,6 @@ import {
   EventVenueSection, 
   EventTicketSection, 
   EventMediaSection, 
-  EventPublishSection, 
   EventReviewSection,
   defaultTier, 
   TicketTierInput, 
@@ -45,7 +44,7 @@ export default function CreateEventPage() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState<string>('concert');
-  const [status, setStatus] = useState<EventStatus>(EventStatus.DRAFT);
+  const [status, setStatus] = useState<EventStatus>(EventStatus.PUBLISHED);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [ticketSalesCloseMode, setTicketSalesCloseMode] = useState<string>('EVENT_START');
@@ -305,8 +304,6 @@ export default function CreateEventPage() {
       {/* STEP 5: Review & Publish */}
       {currentStep === 4 && (
         <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-6">
-          <EventPublishSection status={status} setStatus={setStatus} />
-          
           <EventReviewSection
             title={title} category={category} description={description} venueName={venueName}
             status={status} startDate={startDate} endDate={endDate}

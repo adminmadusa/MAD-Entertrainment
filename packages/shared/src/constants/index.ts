@@ -102,7 +102,7 @@ export const EVENT_DUPLICATION_POLICY = {
     'eventVersion',
   ],
   regenerated: [
-    'status', // Defaults to DRAFT
+    'status', // Defaults to PUBLISHED
   ]
 } as const;
 

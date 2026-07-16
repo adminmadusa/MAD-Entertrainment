@@ -153,7 +153,7 @@ const eventSchema = new Schema<IEvent>(
     slug: { type: String, required: true, unique: true, lowercase: true, index: true },
     description: { type: String, required: true, maxlength: 5000 },
     category: { type: String, required: true, index: true },
-    status: { type: String, enum: Object.values(EventStatus), default: EventStatus.DRAFT, index: true },
+    status: { type: String, enum: Object.values(EventStatus), default: EventStatus.PUBLISHED, index: true },
     bookingMode: { type: String, enum: Object.values(BookingMode), required: true },
 
     bannerImage: { type: cloudinaryImageSchema, required: true },
