@@ -9,9 +9,7 @@ type EventStickyCTAProps = {
   scarcityStatus: ReactNode;
   availabilityText: string;
   availabilityPercent: number;
-  isFavorited: boolean;
   onGetTickets: () => void;
-  onToggleFavorite: () => void;
   cta: EventBookingCTA;
 };
 
@@ -23,9 +21,7 @@ export function EventStickyCTA({
   scarcityStatus,
   availabilityText,
   availabilityPercent,
-  isFavorited,
   onGetTickets,
-  onToggleFavorite,
   cta,
 }: EventStickyCTAProps) {
   return (
@@ -118,18 +114,6 @@ export function EventStickyCTA({
             {cta.text}
           </button>
 
-          <button
-            type="button"
-            onClick={onToggleFavorite}
-            className={`w-full py-3 rounded-xl border font-semibold text-sm transition-all active:scale-95 ${
-              isFavorited
-                ? 'border-accent-pink bg-accent-pink/10 text-accent-pink'
-                : 'border-white/10 bg-white/3 hover:bg-white/8 text-white hover:border-white/20'
-            }`}
-          >
-            {isFavorited ? '❤️ Saved to wishlist' : '♡ Add to wishlist'}
-          </button>
-
           <div className="flex items-center justify-center gap-1.5 text-[10px] text-text-muted pt-1 border-t border-white/5">
             <svg className="w-3.5 h-3.5 text-text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
@@ -143,7 +127,9 @@ export function EventStickyCTA({
       <div className="fixed bottom-0 left-0 right-0 bg-background/90 backdrop-blur-lg border-t border-white/10 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] z-50 shadow-2xl lg:hidden">
         <div className="container-mad max-w-7xl px-4 flex items-center justify-between gap-4">
           <div>
-            <div className="text-xs text-text-muted font-medium">Ticket status</div>
+            <div className="text-xs text-text-muted font-medium">
+              {cta.action === 'NONE' ? 'Status' : 'Starting from'}
+            </div>
             <div className="text-base font-black text-text-muted">
               {cta.action === 'NONE' ? 'Sales Closed' : priceLabel}
             </div>
