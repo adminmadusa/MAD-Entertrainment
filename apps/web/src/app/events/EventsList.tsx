@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 import { publicGetEvents } from '@/lib/api/public.service';
@@ -14,24 +14,22 @@ import { CalendarIcon, EventGridSkeleton } from '@mad/ui';
 
 
 export function EventsList() {
-  const searchParams = useSearchParams();
   const router = useRouter();
-
-  const urlCategory = searchParams.get('category') ?? '';
   const [page, setPage] = useState(1);
 
   const { data, isLoading } = useQuery({
-    queryKey: ['public-events', urlCategory, page],
+    queryKey: ['public-events', page],
     queryFn: () =>
       publicGetEvents({
-        category: urlCategory || undefined,
         page,
         limit: 12,
       }),
-    // PERF-018E: Keep list data fresh for 30 s so back-navigation shows
-    // cached results immediately instead of re-fetching and flashing skeletons.
-    staleTime: 30_000,
-    gcTime: 5 * 60_000,
+    staleTime: 60 * 1000,
+    gcTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
+    retry: 1,
   });
 
   const events = data?.data ?? [];
