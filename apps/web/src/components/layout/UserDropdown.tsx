@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useState, useEffect, useRef } from 'react';
 
 import { useAuthModal } from '@/providers/AuthModalProvider';
@@ -9,6 +10,7 @@ import { useAuth } from '@/providers/AuthProvider';
 export function UserDropdown() {
   const { isAuthenticated, user, logout } = useAuth();
   const { openAuthModal } = useAuthModal();
+  const router = useRouter();
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -19,6 +21,7 @@ export function UserDropdown() {
   const handleLogout = async () => {
     setDropdownOpen(false);
     await logout();
+    router.push('/');
   };
 
   // Close dropdown on click outside or escape press

@@ -44,10 +44,10 @@ function DashboardContent() {
     cancelledBookings,
   } = useBookings();
 
-  // Auth Redirect check
+  // Auth Redirect check — send unauthenticated users to home, not legacy /login
   useEffect(() => {
     if (!isAuthLoading && !isAuthenticated) {
-      router.replace('/login');
+      router.replace('/');
     }
   }, [isAuthenticated, isAuthLoading, router]);
 
