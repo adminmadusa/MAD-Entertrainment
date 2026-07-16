@@ -137,26 +137,6 @@ export function BookingCard({
   // Derive booking lifecycle state
   const lifecycle = getBookingLifecycle(booking as unknown as BookingForLifecycle);
 
-  let badgeStyle = '';
-  let badgeLabel = '';
-
-  if (lifecycle === 'upcoming') {
-    badgeStyle = 'border-blue-500/30 text-blue-400 bg-blue-500/10';
-    badgeLabel = 'Upcoming';
-  } else if (lifecycle === 'live') {
-    badgeStyle = 'border-green-500/30 text-green-400 bg-green-500/10';
-    badgeLabel = 'Live';
-  } else if (lifecycle === 'past') {
-    badgeStyle = 'border-slate-500/30 text-slate-400 bg-slate-500/10';
-    badgeLabel = 'Past';
-  } else if (lifecycle === 'cancelled') {
-    badgeStyle = 'border-red-500/30 text-red-400 bg-red-500/10';
-    badgeLabel = 'Cancelled';
-  } else if (lifecycle === 'refunded') {
-    badgeStyle = 'border-purple-500/30 text-purple-400 bg-purple-500/10';
-    badgeLabel = 'Refunded';
-  }
-
   const cardStyleClasses = collapsible
     ? `glass rounded-2xl border transition-all duration-300 overflow-hidden ${
         isExpanded
@@ -387,9 +367,6 @@ export function BookingCard({
                 <h3 className="text-white font-bold text-xs sm:text-sm leading-snug truncate">
                   {eventInfo?.title || 'Booking Details'}
                 </h3>
-                <span className={`text-[8px] sm:text-[9px] px-2 py-0.5 rounded-full border font-black uppercase tracking-wider ${badgeStyle}`}>
-                  {badgeLabel}
-                </span>
               </div>
               <p className="text-text-muted text-[10px] sm:text-xs flex flex-wrap items-center gap-x-2 gap-y-0.5">
                 {eventInfo?.startDate && (

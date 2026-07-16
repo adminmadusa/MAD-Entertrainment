@@ -118,9 +118,6 @@ function DashboardContent() {
   const showSkeleton = isAuthLoading || !isAuthenticated;
   const userName = user?.name || [user?.firstName, user?.lastName].filter(Boolean).join(' ') || 'Account User';
 
-  // Quick stats: derived from existing bookings data, no extra API calls
-  const upcomingCount = upcomingBookings.length + liveBookings.length;
-
   // Sticky bar guard: only when confirmed booking expanded AND tickets ready
   const expandedBooking = useMemo(() => {
     return expandedBookingId
@@ -172,42 +169,6 @@ function DashboardContent() {
             </p>
           </div>
         </div>
-
-        {/* Dashboard Summary Statistics Strip */}
-        {!isBookingsLoading && bookings.length > 0 && (
-          <div className="glass p-3.5 rounded-2xl border border-white/5 grid grid-cols-3 sm:flex sm:flex-wrap items-center justify-between gap-3 text-center sm:text-left">
-            <div className="px-2">
-              <span className="text-[10px] text-text-muted uppercase tracking-wider block font-bold">Upcoming</span>
-              <span className="text-white font-black text-base sm:text-lg">{upcomingBookings.length}</span>
-            </div>
-            <div className="h-6 w-px bg-white/10 hidden sm:block" />
-            <div className="px-2">
-              <span className="text-[10px] text-text-muted uppercase tracking-wider block font-bold flex items-center justify-center sm:justify-start gap-1">
-                <span className="relative flex h-1.5 w-1.5">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-green-500"></span>
-                </span>
-                Live
-              </span>
-              <span className="text-white font-black text-base sm:text-lg">{liveBookings.length}</span>
-            </div>
-            <div className="h-6 w-px bg-white/10 hidden sm:block" />
-            <div className="px-2">
-              <span className="text-[10px] text-text-muted uppercase tracking-wider block font-bold">Past</span>
-              <span className="text-white font-black text-base sm:text-lg">{pastBookings.length}</span>
-            </div>
-            <div className="h-6 w-px bg-white/10 hidden sm:block" />
-            <div className="px-2">
-              <span className="text-[10px] text-text-muted uppercase tracking-wider block font-bold">Cancelled</span>
-              <span className="text-white font-black text-base sm:text-lg">{cancelledBookings.length}</span>
-            </div>
-            <div className="h-6 w-px bg-white/10 hidden sm:block" />
-            <div className="px-2">
-              <span className="text-[10px] text-text-muted uppercase tracking-wider block font-bold">Refunded</span>
-              <span className="text-white font-black text-base sm:text-lg">{refundedBookings.length}</span>
-            </div>
-          </div>
-        )}
 
         {errorMsg && (
           <div className="p-4 bg-error/10 border border-error/30 rounded-2xl text-xs text-red-400 text-center">

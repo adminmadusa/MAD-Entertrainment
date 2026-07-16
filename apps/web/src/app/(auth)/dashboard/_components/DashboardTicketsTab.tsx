@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 
 import { BookingCard } from '@/components/booking/shared/BookingCard';
-import type { Booking, Ticket, Event } from '@mad/types';
+import type { Booking, Ticket } from '@mad/types';
 
 export function BookingCardSkeleton() {
   return (
@@ -63,7 +63,6 @@ export function DashboardTicketsTab({
   refundedBookings,
 }: DashboardTicketsTabProps) {
   const [activeTicketSubTab, setActiveTicketSubTab] = useState<'upcoming' | 'live' | 'past' | 'cancelled' | 'refunded'>('upcoming');
-  const [searchQuery, setSearchQuery] = useState('');
 
   if (isBookingsLoading) {
     return (
@@ -102,19 +101,6 @@ export function DashboardTicketsTab({
   } else if (activeTicketSubTab === 'refunded') {
     currentTabBookings = refundedBookings;
   }
-
-  // Filter current tab bookings by search query
-  const filteredTabBookings = currentTabBookings.filter((b) => {
-    const q = searchQuery.trim().toLowerCase();
-    if (!q) return true;
-
-    const eventInfo = b.eventId as unknown as Event;
-    const titleMatch = eventInfo?.title?.toLowerCase().includes(q) || false;
-    const venueMatch = eventInfo?.venue?.toLowerCase().includes(q) || false;
-    const refMatch = b.bookingId?.toLowerCase().includes(q) || false;
-
-    return titleMatch || venueMatch || refMatch;
-  });
 
   const getEmptyMessage = () => {
     switch (activeTicketSubTab) {
@@ -158,7 +144,6 @@ export function DashboardTicketsTab({
             aria-controls={`subtab-panel-${tab.key}`}
             onClick={() => {
               setActiveTicketSubTab(tab.key);
-              setSearchQuery(''); // Clear search on tab switch
             }}
             className={`flex-shrink-0 px-4 py-2 text-xs font-extrabold rounded-xl transition-all duration-300 min-h-[44px] flex items-center justify-center whitespace-nowrap focus-ring ${
               activeTicketSubTab === tab.key
@@ -195,18 +180,8 @@ export function DashboardTicketsTab({
 
   return (
     <div className="space-y-5">
-      {/* Sticky Search and Category filter headers */}
-      <div className="sticky top-[80px] z-20 space-y-4 bg-background/95 backdrop-blur-md pb-4 pt-1 border-b border-white/5">
-        <div className="relative">
-          <input
-            type="text"
-            placeholder="Search by event, venue, or reference ID..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-white/[0.03] hover:bg-white/[0.05] border border-white/10 focus:border-accent-purple/50 focus:bg-white/[0.07] px-4 py-2.5 pl-10 rounded-xl text-xs text-white placeholder-text-muted focus:outline-none transition-all duration-300"
-          />
-          <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-muted text-xs select-none">🔍</span>
-        </div>
+      {/* Sticky Category filter headers (Search removed) */}
+      <div className="sticky top-[80px] z-20 bg-background/95 backdrop-blur-md pb-4 pt-1 border-b border-white/5">
         {renderSubTabs()}
       </div>
 
@@ -216,16 +191,16 @@ export function DashboardTicketsTab({
         aria-labelledby={`subtab-${activeTicketSubTab}`}
         className="space-y-4"
       >
-        {filteredTabBookings.length === 0 ? (
+        {currentTabBookings.length === 0 ? (
           <div className="glass rounded-3xl border border-border-subtle p-10 text-center space-y-4">
             <div className="text-3xl">🎟️</div>
             <h4 className="text-white font-bold text-sm">No results</h4>
             <p className="text-text-secondary text-xs max-w-sm mx-auto leading-relaxed">
-              {searchQuery ? `No matches found for "${searchQuery}" in this category.` : getEmptyMessage()}
+              {getEmptyMessage()}
             </p>
           </div>
         ) : (
-          filteredTabBookings.map((b) => (
+          currentTabBookings.map((b) => (
             <BookingCard
               key={b._id}
               booking={b}
