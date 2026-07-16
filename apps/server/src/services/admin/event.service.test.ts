@@ -81,15 +81,16 @@ describe('Admin Event Service', () => {
   });
 
   describe('createEvent - Initial Lifecycle Governance', () => {
-    it.each([EventStatus.DRAFT, EventStatus.PUBLISHED])('allows initial status %s', async (status) => {
-      const result = await eventService.createEvent({ status } as any);
+    it('allows initial status published', async () => {
+      const result = await eventService.createEvent({ status: EventStatus.PUBLISHED } as any);
 
-      expect(result.status).toBe(status);
-      expect(Event).toHaveBeenCalledWith({ status });
+      expect(result.status).toBe(EventStatus.PUBLISHED);
+      expect(Event).toHaveBeenCalledWith({ status: EventStatus.PUBLISHED });
       expect(CacheService.delPattern).toHaveBeenCalledWith('events:*');
     });
 
     it.each([
+      EventStatus.DRAFT,
       EventStatus.COMPLETED,
       EventStatus.CANCELLED,
       EventStatus.POSTPONED,

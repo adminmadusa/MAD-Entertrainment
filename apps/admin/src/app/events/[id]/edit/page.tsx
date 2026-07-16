@@ -36,7 +36,7 @@ export default function EditEventPage() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState<string>('concert');
-  const [status, setStatus] = useState<EventStatus>(EventStatus.DRAFT);
+  const [status, setStatus] = useState<EventStatus>(EventStatus.PUBLISHED);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [ticketSalesCloseMode, setTicketSalesCloseMode] = useState<string>('EVENT_START');

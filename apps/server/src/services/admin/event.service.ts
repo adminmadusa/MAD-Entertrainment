@@ -59,7 +59,6 @@ const isEventLifecycleStatus = (status: EventStatus): status is EventLifecycleSt
   Object.prototype.hasOwnProperty.call(EVENT_STATUS_TRANSITIONS, status);
 
 const INITIAL_EVENT_STATUSES: readonly EventStatus[] = [
-  EventStatus.DRAFT,
   EventStatus.PUBLISHED,
 ];
 
@@ -359,7 +358,7 @@ export const duplicateEvent = async (options: DuplicateEventOptions): Promise<IE
     newEventData.venue = venue;
   }
 
-  newEventData.status = publish ? EventStatus.PUBLISHED : EventStatus.DRAFT;
+  newEventData.status = EventStatus.PUBLISHED;
   newEventData.slug = newEventData.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 
   // Ensure unique slug
