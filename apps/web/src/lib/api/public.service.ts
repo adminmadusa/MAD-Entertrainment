@@ -78,10 +78,8 @@ export interface PublicDJsApiResponse {
 
 export type PublicEventsResponse = PaginatedDataResponse<Event>;
 
-export async function publicGetEvents(filters: { category?: string; search?: string; page?: number; limit?: number } = {}): Promise<PublicEventsResponse> {
+export async function publicGetEvents(filters: { page?: number; limit?: number } = {}): Promise<PublicEventsResponse> {
   const params = new URLSearchParams();
-  if (filters.category) params.set('category', filters.category);
-  if (filters.search) params.set('search', filters.search);
   if (filters.page) params.set('page', String(filters.page));
   if (filters.limit) params.set('limit', String(filters.limit));
 
