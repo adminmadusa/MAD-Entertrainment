@@ -229,6 +229,20 @@ export default function EditEventPage() {
     );
   }
 
+  if (!event) {
+    return (
+      <div className="py-12 flex flex-col items-center justify-center gap-4 text-center">
+        <p className="text-text-muted text-sm">Event not found or has been deleted.</p>
+        <button
+          onClick={() => router.push('/events')}
+          className="px-4 py-2 text-sm rounded-xl bg-accent-purple/10 border border-accent-purple/30 text-accent-purple hover:bg-accent-purple/20 transition-colors"
+        >
+          Back to Events
+        </button>
+      </div>
+    );
+  }
+
   const allowedNextStatuses = isEventLifecycleStatus(status) ? EVENT_STATUS_TRANSITIONS[status] : [];
   const statusOptions = Array.from(new Set<EventStatus>([status, ...allowedNextStatuses]));
 
