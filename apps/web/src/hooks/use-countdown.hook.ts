@@ -17,19 +17,23 @@ export function useCountdown(targetDate: Date | string | undefined): CountdownSt
     isExpired: true,
   });
 
+  // Normalize targetDate to primitive timestamp or undefined to avoid infinite re-render loop on Date object reference changes
+  let targetTime: number | undefined;
+  if (targetDate) {
+    targetTime = targetDate instanceof Date ? targetDate.getTime() : new Date(targetDate).getTime();
+  }
+
   useEffect(() => {
-    if (!targetDate) {
+    if (!targetTime || isNaN(targetTime)) {
       setTimeLeft((prev) => ({ ...prev, isExpired: true }));
       return;
     }
-
-    const target = new Date(targetDate).getTime();
 
     let timer: NodeJS.Timeout;
 
     const updateTimer = () => {
       const now = new Date().getTime();
-      const difference = target - now;
+      const difference = targetTime - now;
 
       if (difference <= 0) {
         setTimeLeft({
@@ -63,7 +67,7 @@ export function useCountdown(targetDate: Date | string | undefined): CountdownSt
     timer = setInterval(updateTimer, 1000);
 
     return () => clearInterval(timer);
-  }, [targetDate]);
+  }, [targetTime]);
 
   return timeLeft;
 }
