@@ -7,10 +7,9 @@ import { Drawer } from '@mad/ui';
 type EventOverviewProps = {
   description: string;
   organizerName?: string | null;
-  category?: string | null;
 };
 
-export function EventOverview({ description, organizerName, category }: EventOverviewProps) {
+export function EventOverview({ description, organizerName }: EventOverviewProps) {
   const [isOverviewOpen, setIsOverviewOpen] = useState(false);
 
   const descriptionPreview = description.length > 150
@@ -20,30 +19,16 @@ export function EventOverview({ description, organizerName, category }: EventOve
   return (
     <>
       {/* Organizer card */}
-      <div className="glass rounded-2xl border border-white/5 p-5 flex items-center justify-between gap-4 hover:border-white/10 transition-colors">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center font-bold text-lg text-accent-purple-light flex-shrink-0">
-            {organizerName?.charAt(0).toUpperCase() || 'M'}
-          </div>
-          <div>
-            <div className="flex items-center gap-1.5 text-sm font-bold text-white">
-              <span>{organizerName || 'MAD Organizer'}</span>
-              <span className="text-[10px] text-accent-cyan px-2 py-0.5 bg-accent-cyan/10 rounded-full border border-accent-cyan/20">
-                Top organizer
-              </span>
-            </div>
-            <div className="text-xs text-text-muted mt-0.5">
-              20.5k followers · {category} events
-            </div>
-          </div>
+      <div className="glass rounded-2xl border border-white/5 p-5 flex items-center gap-4 hover:border-white/10 transition-colors">
+        <div className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center font-bold text-lg text-accent-purple-light flex-shrink-0">
+          {organizerName?.charAt(0).toUpperCase() || 'M'}
         </div>
-        <button
-          type="button"
-          onClick={() => alert('Following organizer!')}
-          className="flex-shrink-0 px-5 py-2 text-xs font-semibold rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white transition-all active:scale-95"
-        >
-          + Follow
-        </button>
+        <div>
+          <div className="text-sm font-bold text-white">
+            {organizerName || 'MAD Organizer'}
+          </div>
+          <div className="text-xs text-text-muted mt-0.5">Event Organizer</div>
+        </div>
       </div>
 
       {/* Overview */}
