@@ -17,7 +17,6 @@ import type { Booking, Event, Ticket } from '@mad/types';
 import { CheckoutDetailsInput } from '@mad/validations';
 
 import { CheckoutForm } from './checkout/CheckoutForm';
-import { CheckoutPayment } from './checkout/CheckoutPayment';
 import { CheckoutPricing } from './checkout/CheckoutPricing';
 import { useCheckoutNavGuard } from './checkout/useCheckoutNavGuard';
 
@@ -451,19 +450,32 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
 
             {/* Event Summary Card */}
             {event && (
-              <div className="glass rounded-2xl border border-white/5 p-4 flex gap-4 items-center">
-                {event.bannerImage?.url && (
-                  <div className="relative w-20 h-20 bg-black/20 rounded-xl border border-white/10 overflow-hidden">
-                    <Image src={event.bannerImage.url} alt={event.title} fill sizes="80px" className="object-contain" />
+              <div className="glass rounded-2xl border border-white/5 p-4 space-y-3">
+                <div className="flex gap-4 items-center">
+                  {event.bannerImage?.url && (
+                    <div className="relative w-20 h-20 bg-black/20 rounded-xl border border-white/10 overflow-hidden flex-shrink-0">
+                      <Image src={event.bannerImage.url} alt={event.title} fill sizes="80px" className="object-contain" />
+                    </div>
+                  )}
+                  <div className="space-y-1 min-w-0">
+                    <h2 className="text-sm font-bold text-white line-clamp-1">{event.title}</h2>
+                    <p className="text-xs text-text-muted">
+                      {new Date(event.startDate).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'UTC' })} · {event.showTime}
+                    </p>
+                    <p className="text-xs text-accent-purple-light font-bold">₹{booking.totalAmount}</p>
+                  </div>
+                </div>
+                {/* Selected ticket quantities */}
+                {booking.tickets && booking.tickets.length > 0 && (
+                  <div className="border-t border-white/5 pt-3 space-y-1.5">
+                    {booking.tickets.map((t, index) => (
+                      <div key={index} className="flex items-center gap-2 text-xs text-text-secondary">
+                        <span>🎟️</span>
+                        <span className="font-medium">{t.quantity} × {t.tierName}</span>
+                      </div>
+                    ))}
                   </div>
                 )}
-                <div className="space-y-1">
-                  <h2 className="text-sm font-bold text-white line-clamp-1">{event.title}</h2>
-                  <p className="text-xs text-text-muted">
-                    {new Date(event.startDate).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'UTC' })} · {event.showTime}
-                  </p>
-                  <p className="text-xs text-accent-purple-light font-bold">₹{booking.totalAmount}</p>
-                </div>
               </div>
             )}
 
@@ -483,18 +495,13 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
           <div className="lg:col-span-4 space-y-4">
             <CheckoutPricing booking={booking} />
 
-            <CheckoutPayment
-              selectedGateway={selectedGateway}
-              onChangeGateway={setSelectedGateway}
-            />
-
             {/* Place Order & Terms (Always Visible) */}
             <div className="glass rounded-2xl border border-white/5 p-5 space-y-3">
               <button
                 type="submit"
                 form="checkout-form"
                 disabled={isExpired || saveDetailsMutation.isPending || paymentIntentMutation.isPending || isProcessing}
-                className="w-full px-8 py-3 rounded-xl bg-gradient-to-r from-accent-purple to-accent-pink hover:from-accent-purple-light hover:to-accent-pink/80 text-white font-black text-sm transition-all hover:scale-[1.02] active:scale-95 shadow-glow disabled:opacity-50"
+                className="hidden lg:block w-full px-8 py-3 rounded-xl bg-gradient-to-r from-accent-purple to-accent-pink hover:from-accent-purple-light hover:to-accent-pink/80 text-white font-black text-sm transition-all hover:scale-[1.02] active:scale-95 shadow-glow disabled:opacity-50"
               >
                 {buttonText}
               </button>

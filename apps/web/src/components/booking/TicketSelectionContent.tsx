@@ -10,6 +10,16 @@ import type { Event as EventData } from '@mad/types';
 import { Button, Modal } from '@mad/ui';
 import { ReserveTicketsInput } from '@mad/validations';
 
+/**
+ * Converts internal ticket identifiers into user-friendly display names.
+ * e.g. "early_bird" → "Early Bird", "vip-pass" → "Vip Pass"
+ */
+function formatDisplayName(name: string): string {
+  return name
+    .replace(/[_-]/g, ' ')
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
 interface TicketSelectionContentProps {
   event: EventData;
   onClose?: () => void;
@@ -257,7 +267,7 @@ export function TicketSelectionContent({
                     >
                       <div className="space-y-2 flex-1">
                         <div className="flex flex-wrap items-center gap-2">
-                          <span className="text-base font-bold text-white">{tier.name}</span>
+                          <span className="text-base font-bold text-white">{formatDisplayName(tier.name)}</span>
                           {tier.groupSize && tier.groupSize > 1 && (
                             <span className="text-[9px] text-emerald-400 font-semibold px-2 py-0.5 bg-emerald-500/10 rounded-full border border-emerald-500/20">
                               Admits {tier.groupSize}
@@ -342,67 +352,6 @@ export function TicketSelectionContent({
         </div>
       </div>
 
-      {/* Promo Code Block */}
-      <div className="glass rounded-2xl border border-white/5 p-4 space-y-2">
-        <label htmlFor="promo-code-input" className="text-xs text-text-secondary font-semibold">Promo Code</label>
-        <form onSubmit={handleApplyCoupon} className="flex gap-2">
-          <input
-            id="promo-code-input"
-            type="text"
-            value={couponCode}
-            onChange={handleCouponChange}
-            placeholder="Enter code"
-            className="flex-1 px-4 py-2.5 rounded-xl bg-background border border-white/10 text-base lg:text-sm font-mono uppercase text-white focus:outline-none focus:border-accent-purple transition-colors"
-          />
-          {!couponApplied ? (
-            <button
-              type="submit"
-              disabled={!couponCode.trim()}
-              className="px-6 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 font-bold text-xs text-white transition-all disabled:opacity-40"
-            >
-              Apply
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={handleRemoveCoupon}
-              className="px-5 py-2.5 rounded-xl border border-red-500/30 text-red-400 hover:bg-red-500/10 font-bold text-xs transition-all flex items-center gap-1.5"
-            >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-              </svg>
-              Remove
-            </button>
-          )}
-        </form>
-
-        {/* Coupon Applied Details Block */}
-        {couponApplied && (
-          <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-3 mt-3 flex items-start gap-3">
-             <span className="text-emerald-400 text-lg">
-               <svg className="w-5 h-5 text-emerald-400 inline-block align-text-top" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                 <path strokeLinecap="round" strokeLinejoin="round" d="M7 7h.01M6 20a1 1 0 001-1v-2.586a1 1 0 01.293-.707l7.586-7.586a1 1 0 000-1.414l-4-4a1 1 0 00-1.414 0L2.293 11.293A1 1 0 012 12v6a2 2 0 002 2h2z" />
-               </svg>
-             </span>
-             <div>
-               <div className="text-emerald-400 font-bold text-sm">Coupon Applied</div>
-               <div className="text-text-secondary text-xs mt-0.5">Code: <span className="font-mono text-white font-bold">{couponCode}</span></div>
-               <div className="text-emerald-400/80 text-[10px] mt-1 italic">Discount details will be calculated at checkout.</div>
-             </div>
-          </div>
-        )}
-
-        {/* Error Messages (if any) */}
-        {couponMessage && couponMessage.type === 'error' && (
-          <div
-            className="text-[11px] font-medium pt-1 text-red-400"
-            role="status"
-            aria-live="polite"
-          >
-            {couponMessage.text}
-          </div>
-        )}
-      </div>
 
       {/* Celebration Modal */}
       <Modal

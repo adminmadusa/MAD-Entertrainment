@@ -128,7 +128,7 @@ export default function EventDetailClient({ slug, initialEvent }: EventDetailCli
     <div className="min-h-screen bg-background text-white relative overflow-x-hidden">
 
       {/* ── FULL-BLEED CINEMATIC HERO ─────────────────────────── */}
-      <div className="relative w-full h-[58vh] min-h-[400px] overflow-hidden">
+      <div className="relative w-full h-[38vh] min-h-[220px] md:h-[58vh] md:min-h-[400px] overflow-hidden">
         {/* Background glow */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-accent-purple/5 rounded-full blur-[180px] pointer-events-none" />
 
@@ -228,7 +228,7 @@ export default function EventDetailClient({ slug, initialEvent }: EventDetailCli
         </div>
 
         {/* ── TWO-COLUMN GRID ──────────────────────────────────── */}
-        <div className="pt-8 pb-32 lg:pb-16 grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        <div className="pt-5 pb-20 lg:pb-16 grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
 
           {/* ── MAIN COLUMN ────────────────────────────────────── */}
           <div className="lg:col-span-7 space-y-8">
@@ -281,19 +281,9 @@ export default function EventDetailClient({ slug, initialEvent }: EventDetailCli
 
             {/* Location */}
             <div className="glass rounded-2xl border border-white/5 p-5 space-y-4 hover:border-white/10 transition-colors">
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <h2 className="text-base font-bold text-white">Location</h2>
-                  <div className="text-sm text-text-secondary mt-1">{event.venue}</div>
-                </div>
-                <a
-                  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.venue || '')}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex-shrink-0 flex items-center gap-1.5 text-xs font-semibold text-accent-cyan hover:text-accent-cyan/80 transition-colors"
-                >
-                  ↗ Maps
-                </a>
+              <div>
+                <h2 className="text-base font-bold text-white">Location</h2>
+                <div className="text-sm text-text-secondary mt-1">{event.venue}</div>
               </div>
 
               <a
@@ -306,8 +296,8 @@ export default function EventDetailClient({ slug, initialEvent }: EventDetailCli
               </a>
             </div>
 
-            {/* Mobile spacer above sticky footer */}
-            <div className="h-24 lg:hidden" aria-hidden="true" />
+            {/* Mobile spacer above sticky footer — kept minimal */}
+            <div className="h-6 lg:hidden" aria-hidden="true" />
           </div>
 
           <EventStickyCTA

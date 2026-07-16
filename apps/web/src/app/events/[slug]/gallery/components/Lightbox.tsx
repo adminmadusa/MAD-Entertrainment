@@ -50,22 +50,35 @@ export function Lightbox({ items, currentIndex, onClose, onChange }: LightboxPro
 
   // Swipe support using simple touch events
   const [touchStart, setTouchStart] = React.useState<number | null>(null);
-  
+  const [touchStartY, setTouchStartY] = React.useState<number | null>(null);
+
   const handleTouchStart = (e: React.TouchEvent) => {
     setTouchStart(e.targetTouches[0].clientX);
+    setTouchStartY(e.targetTouches[0].clientY);
   };
-  
+
   const handleTouchEnd = (e: React.TouchEvent) => {
-    if (touchStart === null) return;
+    if (touchStart === null || touchStartY === null) return;
     const touchEnd = e.changedTouches[0].clientX;
-    const diff = touchStart - touchEnd;
-    
+    const touchEndY = e.changedTouches[0].clientY;
+    const diffX = touchStart - touchEnd;
+    const diffY = touchStartY - touchEndY;
+
+    // Swipe down to dismiss (vertical takes priority)
+    if (diffY < -80) {
+      onClose();
+      setTouchStart(null);
+      setTouchStartY(null);
+      return;
+    }
+
     // Swipe left (next)
-    if (diff > 50) handleNext();
+    if (diffX > 50) handleNext();
     // Swipe right (prev)
-    if (diff < -50) handlePrev();
-    
+    if (diffX < -50) handlePrev();
+
     setTouchStart(null);
+    setTouchStartY(null);
   };
 
   return (
@@ -78,10 +91,11 @@ export function Lightbox({ items, currentIndex, onClose, onChange }: LightboxPro
         role="dialog"
         aria-modal="true"
         aria-label="Image gallery lightbox"
+        onClick={onClose}
       >
         {/* Close button */}
         <button
-          onClick={onClose}
+          onClick={(e) => { e.stopPropagation(); onClose(); }}
           className="absolute top-4 right-4 z-50 p-2 text-white/70 hover:text-white bg-black/20 hover:bg-black/40 rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
           aria-label="Close lightbox"
         >
@@ -94,10 +108,11 @@ export function Lightbox({ items, currentIndex, onClose, onChange }: LightboxPro
         </div>
 
         {/* Main Image Area */}
-        <div 
+        <div
           className="relative w-full h-full flex items-center justify-center p-4 md:p-12"
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
+          onClick={(e) => e.stopPropagation()}
         >
           {/* Previous Button */}
           {currentIndex > 0 && (
