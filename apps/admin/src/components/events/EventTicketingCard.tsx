@@ -144,7 +144,7 @@ export const EventTicketingCard = React.memo(function EventTicketingCard({
                         ))}
                   </select>
                 </FormField>
-                <FormField label="Price (₹)" htmlFor={`tier-price-${i}`}>
+                <FormField label="Price per Ticket (₹)" htmlFor={`tier-price-${i}`}>
                   <input
                     id={`tier-price-${i}`}
                     type="number"
@@ -160,7 +160,7 @@ export const EventTicketingCard = React.memo(function EventTicketingCard({
                 </FormField>
               </div>
               <div className="grid grid-cols-2 gap-4">
-                <FormField label="Capacity *" htmlFor={`tier-capacity-${i}`}>
+                <FormField label="Ticket Capacity Limit *" htmlFor={`tier-capacity-${i}`}>
                   <input
                     id={`tier-capacity-${i}`}
                     type="number"

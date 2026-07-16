@@ -9,6 +9,7 @@ import { ensureGuestBookingSession, publicCreateBooking } from '@/lib/api/public
 import type { Event as EventData } from '@mad/types';
 import { Button, Modal } from '@mad/ui';
 import { ReserveTicketsInput } from '@mad/validations';
+import { calculateBookingTotals, formatTicketCount } from '@/utils/booking-calculations';
 
 interface TicketSelectionContentProps {
   event: EventData;
@@ -117,16 +118,8 @@ export function TicketSelectionContent({
     setQuantities(next);
 
     if (onQuantitiesChange) {
-      let totalCount = 0;
-      let sub = 0;
-      event.ticketTiers.forEach((t) => {
-        const qty = next[t.tier] || 0;
-        if (qty > 0) {
-          totalCount += qty;
-          sub += Math.max(0, t.price - (t.discount || 0)) * qty;
-        }
-      });
-      onQuantitiesChange(next, sub, totalCount);
+      const { totalTickets, subtotal } = calculateBookingTotals(next, event.ticketTiers);
+      onQuantitiesChange(next, subtotal, totalTickets);
     }
   }, [quantities, event.ticketTiers, onQuantitiesChange]);
 
@@ -196,17 +189,10 @@ export function TicketSelectionContent({
     };
   }, [checkoutTriggerRef, handleCheckoutSubmit]);
 
-  const { subtotal } = useMemo(() => {
-    let total = 0;
-    event.ticketTiers.forEach((tier) => {
-      const qty = quantities[tier.tier] || 0;
-      if (qty > 0) {
-        const price = Math.max(0, tier.price - (tier.discount || 0));
-        total += price * qty;
-      }
-    });
-    return { subtotal: total };
-  }, [quantities, event.ticketTiers]);
+  const { subtotal } = useMemo(
+    () => calculateBookingTotals(quantities, event.ticketTiers),
+    [quantities, event.ticketTiers]
+  );
 
   return (
     <div className={`space-y-6 text-white ${isModal ? '' : 'container-mad max-w-2xl px-4 pb-32 pt-6'}`}>
@@ -249,42 +235,43 @@ export function TicketSelectionContent({
                   const offer = tier.offerRules;
                   const discount = tier.discount || 0;
                   const finalPrice = isFree ? 0 : Math.max(0, tier.price - discount);
+                  const qty = quantities[tier.tier] || 0;
 
                   return (
                     <div
                       key={tier.tier}
-                      className="glass rounded-2xl border border-white/5 p-5 flex items-center justify-between gap-6 hover:border-white/15 transition-all"
+                      className="glass rounded-2xl border border-white/5 p-5 flex flex-col gap-4 hover:border-white/15 transition-all"
                     >
-                      <div className="space-y-2 flex-1">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <span className="text-base font-bold text-white">{tier.name}</span>
-                          {tier.groupSize && tier.groupSize > 1 && (
-                            <span className="text-[9px] text-emerald-400 font-semibold px-2 py-0.5 bg-emerald-500/10 rounded-full border border-emerald-500/20">
-                              Admits {tier.groupSize}
-                            </span>
-                          )}
-                          {isFree && (
-                            <span className="text-[9px] text-emerald-400 font-bold px-2 py-0.5 bg-emerald-500/15 rounded-full border border-emerald-500/30">
-                              FREE TICKET
-                            </span>
-                          )}
-                          {offer && offer.discountType !== 'none' && (
-                            <span className="text-[9px] text-accent-pink font-semibold px-2 py-0.5 bg-accent-pink/10 rounded-full border border-accent-pink/20">
-                              {offer.discountType === 'percentage'
-                                ? `${offer.discountValue}% OFF`
-                                : `₹${offer.discountValue} OFF`}
-                            </span>
-                          )}
-                          {offer && offer.buyQty && offer.freeTicketQty && (
-                            <span className="text-[9px] text-accent-cyan font-semibold px-2 py-0.5 bg-accent-cyan/10 rounded-full border border-accent-cyan/20">
-                              Buy {offer.buyQty} Get {offer.freeTicketQty} Free
-                            </span>
-                          )}
-                        </div>
+                      <div className="space-y-1.5">
+                        <span className="text-base font-bold text-white block">
+                          {tier.name}{qty > 0 ? ` • ${formatTicketCount(qty)}` : ''}
+                        </span>
+                        <span className="text-xs font-semibold text-text-secondary block">
+                          {formatTicketCount(qty)} Selected
+                        </span>
+                        {isFree && (
+                          <span className="inline-block text-[9px] text-emerald-400 font-bold px-2 py-0.5 bg-emerald-500/15 rounded-full border border-emerald-500/30 w-max">
+                            FREE TICKET
+                          </span>
+                        )}
+                        {offer && offer.discountType !== 'none' && (
+                          <span className="inline-block text-[9px] text-accent-pink font-semibold px-2 py-0.5 bg-accent-pink/10 rounded-full border border-accent-pink/20 w-max">
+                            {offer.discountType === 'percentage'
+                              ? `${offer.discountValue}% OFF`
+                              : `₹${offer.discountValue} OFF`}
+                          </span>
+                        )}
+                        {offer && offer.buyQty && offer.freeTicketQty && (
+                          <span className="inline-block text-[9px] text-accent-cyan font-semibold px-2 py-0.5 bg-accent-cyan/10 rounded-full border border-accent-cyan/20 w-max">
+                            Buy {offer.buyQty} Get {offer.freeTicketQty} Free
+                          </span>
+                        )}
                         <p className="text-xs text-text-muted leading-relaxed">
                           {tier.description || 'General Entry Ticket'}
                         </p>
+                      </div>
 
+                      <div className="flex items-center justify-between mt-2 pt-2 border-t border-white/5">
                         <div className="flex items-center gap-2">
                           {isFree ? (
                             <span className="text-emerald-400 font-black text-sm uppercase tracking-wider">
@@ -302,36 +289,28 @@ export function TicketSelectionContent({
                           )}
                         </div>
 
-                        {tier.availabilityWindow?.endDate && (
-                          <div className="text-[10px] text-accent-cyan">
-                            Sales end on {new Date(tier.availabilityWindow.endDate).toLocaleDateString('en-US', {
-                              timeZone: 'UTC',
-                            })}
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Counter */}
-                      <div className="flex items-center gap-3 bg-background border border-white/10 rounded-xl p-1 shadow-inner">
-                        <button
-                          type="button"
-                          onClick={() => handleQtyChange(tier.tier, -1)}
-                          aria-label={`Decrease ${tier.name} tickets`}
-                          className="w-10 h-10 rounded-lg hover:bg-white/5 flex items-center justify-center text-white text-base font-bold active:scale-90 transition-transform focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple"
-                        >
-                          -
-                        </button>
-                        <span className="w-5 text-center text-sm font-semibold text-white">
-                          {quantities[tier.tier] || 0}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => handleQtyChange(tier.tier, 1)}
-                          aria-label={`Increase ${tier.name} tickets`}
-                          className="w-10 h-10 rounded-lg hover:bg-white/5 flex items-center justify-center text-white text-base font-bold active:scale-90 transition-transform focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple"
-                        >
-                          +
-                        </button>
+                        {/* Counter */}
+                        <div className="flex items-center gap-3 bg-background border border-white/10 rounded-xl p-1 shadow-inner">
+                          <button
+                            type="button"
+                            onClick={() => handleQtyChange(tier.tier, -1)}
+                            aria-label={`Decrease ${tier.name} tickets`}
+                            className="w-10 h-10 rounded-lg hover:bg-white/5 flex items-center justify-center text-white text-base font-bold active:scale-90 transition-transform focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple"
+                          >
+                            -
+                          </button>
+                          <span className="w-5 text-center text-sm font-semibold text-white">
+                            {qty}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => handleQtyChange(tier.tier, 1)}
+                            aria-label={`Increase ${tier.name} tickets`}
+                            className="w-10 h-10 rounded-lg hover:bg-white/5 flex items-center justify-center text-white text-base font-bold active:scale-90 transition-transform focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple"
+                          >
+                            +
+                          </button>
+                        </div>
                       </div>
                     </div>
                   );

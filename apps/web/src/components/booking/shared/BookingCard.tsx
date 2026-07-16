@@ -9,6 +9,8 @@ import { useCountdown } from '@/hooks/use-countdown.hook';
 import { formatDate, formatDateTime } from '@/utils/date';
 import { BookingStatus } from '@mad/shared';
 import type { Booking, Ticket, Event } from '@mad/types';
+import { formatTicketCount } from '@/utils/booking-calculations';
+import { TicketSummaryItem } from '@/components/booking/shared/TicketSummaryItem';
 
 const EntryPassGrid = dynamic(() => import('@/components/booking/shared/EntryPassGrid').then(mod => mod.EntryPassGrid), {
   ssr: false,
@@ -202,6 +204,21 @@ export function BookingCard({
           return <TicketStatusMessage status={booking.status} />;
         })()}
 
+        {booking.status === BookingStatus.CONFIRMED && booking.tickets && booking.tickets.length > 0 && (
+          <div className="pt-4 border-t border-white/5 space-y-2">
+            <span className="text-[10px] text-text-muted uppercase tracking-wider block font-bold">Your Tickets</span>
+            <div className="space-y-1">
+              {booking.tickets.map((t, index) => (
+                <TicketSummaryItem
+                  key={index}
+                  tierName={t.tierName}
+                  quantity={t.quantity}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Metadata Details Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 pt-4 border-t border-white/5 text-xs text-text-secondary">
           <div>
@@ -226,7 +243,7 @@ export function BookingCard({
           )}
           <div>
             <span className="text-[10px] text-text-muted uppercase tracking-wider block">Total Tickets</span>
-            <span className="text-white font-semibold">{booking.totalTickets} Passes</span>
+            <span className="text-white font-semibold">{formatTicketCount(booking.totalTickets)}</span>
           </div>
         </div>
       </div>
@@ -286,7 +303,7 @@ export function BookingCard({
 
           <div className="flex items-center gap-2 sm:gap-3 shrink-0 ml-2">
             <span className="text-text-secondary text-xs font-semibold whitespace-nowrap bg-white/5 px-2.5 py-1 rounded-lg">
-              {booking.totalTickets} {booking.totalTickets === 1 ? 'Pass' : 'Passes'}
+              {formatTicketCount(booking.totalTickets)}
             </span>
             <span
               className="text-text-secondary text-xs transition-transform duration-300 w-6 h-6 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10"

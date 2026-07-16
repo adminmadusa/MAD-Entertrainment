@@ -7,6 +7,8 @@ import { CheckoutContent } from '@/components/booking/CheckoutContent';
 import { TicketSelectionContent } from '@/components/booking/TicketSelectionContent';
 import type { Event as EventData } from '@mad/types';
 import { Modal } from '@mad/ui';
+import { formatTicketCount } from '@/utils/booking-calculations';
+import { TicketSummaryItem } from '@/components/booking/shared/TicketSummaryItem';
 
 export type EventBookingFlowHandle = {
   openBooking: () => void;
@@ -50,7 +52,7 @@ export const EventBookingFlow = forwardRef<EventBookingFlowHandle, EventBookingF
       modalFooterBadge = (
         <div className="flex flex-col">
           <span className="text-xs text-text-muted font-medium">
-            {selectedCount} {selectedCount === 1 ? 'ticket' : 'tickets'}
+            {formatTicketCount(selectedCount)}
           </span>
           <span className="text-base font-black text-accent-purple-light">₹{subtotal}</span>
         </div>
@@ -165,13 +167,12 @@ export const EventBookingFlow = forwardRef<EventBookingFlowHandle, EventBookingF
                           if (!tier) return null;
                           const price = Math.max(0, tier.price - (tier.discount || 0));
                           return (
-                            <div key={tierKey} className="flex justify-between items-center text-xs">
-                              <div>
-                                <span className="font-bold text-white">{qty}x</span>{' '}
-                                <span className="text-text-secondary">{tier.name}</span>
-                              </div>
-                              <span className="font-semibold text-accent-purple-light">₹{price * qty}</span>
-                            </div>
+                            <TicketSummaryItem
+                              key={tierKey}
+                              tierName={tier.name}
+                              quantity={qty}
+                              price={price * qty}
+                            />
                           );
                         })}
                       </div>
