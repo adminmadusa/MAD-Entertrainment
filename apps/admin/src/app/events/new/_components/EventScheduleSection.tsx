@@ -8,10 +8,10 @@ interface EventScheduleSectionProps {
   setStartDate: (val: string) => void;
   endDate: string;
   setEndDate: (val: string) => void;
-  ticketSalesCloseMode: string;
-  setTicketSalesCloseMode: (val: string) => void;
-  ticketSalesCloseDate: string;
-  setTicketSalesCloseDate: (val: string) => void;
+  bookingStartDate: string;
+  setBookingStartDate: (val: string) => void;
+  bookingEndDate: string;
+  setBookingEndDate: (val: string) => void;
 }
 
 export function EventScheduleSection(props: EventScheduleSectionProps) {

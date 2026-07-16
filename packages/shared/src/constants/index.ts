@@ -93,6 +93,8 @@ export const EVENT_DUPLICATION_POLICY = {
     'venue',
     'djOperatorIds',
     'ticketTiers',
+    'bookingStartDate',
+    'bookingEndDate',
   ],
   reset: [
     '_id',
@@ -282,12 +284,6 @@ export enum PaymentMethod {
   STRIPE_CARD = 'stripe_card',
 }
 
-// ─── Ticket Sales Close Mode ─────────────────────────────────
-export enum TicketSalesCloseMode {
-  EVENT_START = 'EVENT_START',
-  EVENT_END = 'EVENT_END',
-  CUSTOM_DATE = 'CUSTOM_DATE',
-}
 
 // ─── Ticket Tier ─────────────────────────────────────────────
 export enum TicketTier {

@@ -5,8 +5,8 @@ export interface BaseEventForBooking {
   status: string;
   startDate: Date | string;
   endDate?: Date | string | null;
-  ticketSalesCloseMode?: string;
-  ticketSalesCloseDate?: Date | string | null;
+  bookingStartDate?: Date | string | null;
+  bookingEndDate?: Date | string | null;
   isSoldOut?: boolean;
   totalCapacity?: number;
   ticketsSold?: number;

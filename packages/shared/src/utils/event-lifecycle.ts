@@ -13,8 +13,8 @@ export interface BaseEventForLifecycle {
   status: string;
   startDate: Date | string;
   endDate?: Date | string | null;
-  ticketSalesCloseMode?: string;
-  ticketSalesCloseDate?: Date | string | null;
+  bookingStartDate?: Date | string | null;
+  bookingEndDate?: Date | string | null;
 }
 
 /**
@@ -64,22 +64,19 @@ export function canBook(event: BaseEventForLifecycle): boolean {
     return false;
   }
 
-  // Check ticket sales close policy
   const now = new Date().getTime();
-  const mode = event.ticketSalesCloseMode || 'EVENT_START';
 
-  switch (mode) {
-    case 'EVENT_END':
-      if (!event.endDate) return true;
-      return now < new Date(event.endDate).getTime();
-      
-    case 'CUSTOM_DATE':
-      if (!event.ticketSalesCloseDate) return true;
-      return now < new Date(event.ticketSalesCloseDate).getTime();
-      
-    case 'EVENT_START':
-    default:
-      if (!event.startDate) return true;
-      return now < new Date(event.startDate).getTime();
+  if (event.bookingStartDate && now < new Date(event.bookingStartDate).getTime()) {
+    return false;
   }
+
+  const closeTime = event.bookingEndDate
+    ? new Date(event.bookingEndDate).getTime()
+    : (event.startDate ? new Date(event.startDate).getTime() : null);
+
+  if (closeTime && now >= closeTime) {
+    return false;
+  }
+
+  return true;
 }

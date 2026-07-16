@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { EventCategory, EventStatus, BookingMode, TicketTier, TicketSalesCloseMode, type EventLifecycleStatus } from '@mad/shared';
+import { EventCategory, EventStatus, BookingMode, TicketTier, type EventLifecycleStatus } from '@mad/shared';
 import { objectIdSchema } from '@mad/validations';
 
 // ─── Common / Helpers ──────────────────────────────────────────
@@ -98,6 +98,50 @@ export const validateEventImages = (body: EventImageValidationBody, ctx: z.Refin
   checkImg(poster, 'posterImage');
 };
 
+const validateEventDates = (body: any, ctx: z.RefinementCtx) => {
+  const start = body.startDate ? new Date(body.startDate).getTime() : null;
+  const end = body.endDate ? new Date(body.endDate).getTime() : null;
+  const bookStart = body.bookingStartDate ? new Date(body.bookingStartDate).getTime() : null;
+  const bookEnd = body.bookingEndDate ? new Date(body.bookingEndDate).getTime() : null;
+
+  if (start && end && end <= start) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'Event end date must be after event start date',
+      path: ['endDate'],
+    });
+  }
+
+  if (bookStart && bookEnd && bookEnd <= bookStart) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'Booking close date must be after booking open date',
+      path: ['bookingEndDate'],
+    });
+  }
+
+  if (bookStart && start && start <= bookStart) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'Booking open date must be before event start date',
+      path: ['bookingStartDate'],
+    });
+  }
+
+  if (bookEnd && start && start < bookEnd) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'Booking close date must be before or equal to event start date',
+      path: ['bookingEndDate'],
+    });
+  }
+};
+
+const validateEventFields = (body: any, ctx: z.RefinementCtx) => {
+  validateEventImages(body, ctx);
+  validateEventDates(body, ctx);
+};
+
 const eventBodySchema = z.object({
   title: z.string().min(1).max(200),
   slug: z.string().min(1),
@@ -111,8 +155,8 @@ const eventBodySchema = z.object({
   endDate: z.string().datetime().optional(),
   doorsOpenTime: z.string().optional(),
   showTime: z.string().optional(),
-  ticketSalesCloseMode: z.nativeEnum(TicketSalesCloseMode).optional(),
-  ticketSalesCloseDate: z.string().datetime().optional(),
+  bookingStartDate: z.string().datetime().optional(),
+  bookingEndDate: z.string().datetime().optional(),
   venue: z.string().min(1),
 
   djOperatorIds: z.array(z.string()).optional(),
@@ -168,14 +212,14 @@ const eventBodySchema = z.object({
 });
 
 export const createEventSchema = z.object({
-  body: eventBodySchema.superRefine(validateEventImages),
+  body: eventBodySchema.superRefine(validateEventFields),
 });
 
 export const updateEventSchema = z.object({
   params: adminIdParamSchema.shape.params,
   body: eventBodySchema.partial().extend({
     eventVersion: z.number().int().nonnegative(),
-  }).superRefine(validateEventImages),
+  }).superRefine(validateEventFields),
 });
 
 export const adminEventsQuerySchema = z.object({

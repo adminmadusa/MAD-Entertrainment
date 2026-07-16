@@ -11,8 +11,8 @@ interface EventReviewSectionProps {
   status: EventStatus;
   startDate: string;
   endDate: string;
-  ticketSalesCloseMode: string;
-  ticketSalesCloseDate: string;
+  bookingStartDate: string;
+  bookingEndDate: string;
   requireTerms: boolean;
   requireAgeConfirmation: boolean;
   ageRestriction: number | '';
@@ -34,8 +34,8 @@ export const EventReviewSection: React.FC<EventReviewSectionProps> = ({
   status,
   startDate,
   endDate,
-  ticketSalesCloseMode,
-  ticketSalesCloseDate,
+  bookingStartDate,
+  bookingEndDate,
   requireTerms,
   requireAgeConfirmation,
   ageRestriction,
@@ -110,10 +110,15 @@ export const EventReviewSection: React.FC<EventReviewSectionProps> = ({
             <span className="text-white font-medium">{endDate ? new Date(endDate).toLocaleString() : '—'}</span>
           </div>
           <div>
-            <span className="text-text-muted block mb-1">Ticket Sales Close</span>
+            <span className="text-text-muted block mb-1">Booking Opens</span>
             <span className="text-white font-medium">
-              {ticketSalesCloseMode}
-              {ticketSalesCloseMode === 'CUSTOM_DATE' && ticketSalesCloseDate ? ` (${new Date(ticketSalesCloseDate).toLocaleString()})` : ''}
+              {bookingStartDate ? new Date(bookingStartDate).toLocaleString() : 'Immediately on publish'}
+            </span>
+          </div>
+          <div>
+            <span className="text-text-muted block mb-1">Booking Closes</span>
+            <span className="text-white font-medium">
+              {bookingEndDate ? new Date(bookingEndDate).toLocaleString() : (startDate ? new Date(startDate).toLocaleString() : '—')}
             </span>
           </div>
         </div>
