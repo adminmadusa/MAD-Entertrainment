@@ -48,11 +48,8 @@ export class PublicEventService {
 
     if (filters.status) {
       if (filters.status === 'completed') {
-        query.$or = [
-          { endDate: { $lt: now } },
-          { endDate: { $exists: false }, startDate: { $lt: now } },
-          { endDate: null, startDate: { $lt: now } },
-        ];
+        // Only events explicitly marked as completed in their lifecycle
+        query.status = EventStatus.COMPLETED;
       } else if (filters.status === 'published' || filters.status === 'upcoming') {
         query.status = EventStatus.PUBLISHED;
         query.$or = [

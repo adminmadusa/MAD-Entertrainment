@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { Suspense } from 'react';
 
@@ -8,13 +7,8 @@ import { FeaturedEventsSkeleton } from '@/components/ui/HomeSkeletons';
 import { serverGetFeaturedEvents, serverGetCompletedEvents } from '@/lib/api/server.service';
 import { ArrowRight } from '@mad/ui';
 
-const FeaturedEventsSection = dynamic(() => import('@/components/ui/FeaturedEventsSection').then(mod => mod.FeaturedEventsSection), {
-  ssr: true,
-});
-
-const CompletedEventsSection = dynamic(() => import('@/components/ui/CompletedEventsSection').then(mod => mod.CompletedEventsSection), {
-  ssr: true,
-});
+import { FeaturedEventsSection } from '@/components/ui/FeaturedEventsSection';
+import { CompletedEventsSection } from '@/components/ui/CompletedEventsSection';
 
 export const metadata: Metadata = {
   title: 'MAD Entertrainment — Book Shows, Events & DJ Nights',
