@@ -26,3 +26,16 @@ export function calculateBookingTotals(
 export function formatTicketCount(qty: number): string {
   return `${qty} ${qty === 1 ? 'Ticket' : 'Tickets'}`;
 }
+
+/**
+ * Formats raw/internal slug string to human readable name.
+ * e.g. "early_bird" -> "Early Bird", "platinum" -> "Platinum"
+ */
+export function formatDisplayName(name: string): string {
+  if (!name) return '';
+  return name
+    .split(/[-_]/)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
+

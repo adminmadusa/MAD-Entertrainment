@@ -208,7 +208,7 @@ export function CheckoutForm({ event, isExpired, isDisabled, onSubmit, onErrorSe
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField label="Mobile Number" htmlFor="checkout-phone" hint="Optional – used for event updates only" error={fieldErrors.guestPhone}>
+          <FormField label="Mobile Number (Optional)" htmlFor="checkout-phone" error={fieldErrors.guestPhone}>
             <Input
               id="checkout-phone"
               type="tel"
