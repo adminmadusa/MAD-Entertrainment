@@ -3,7 +3,9 @@ import Link from 'next/link';
 import { Suspense } from 'react';
 
 import { Reveal, StaggerContainer, StaggerItem } from '@/components/common/PageTransition';
+import { CompletedEventsSection } from '@/components/ui/CompletedEventsSection';
 import { UpcomingEventsSkeleton } from '@/components/ui/HomeSkeletons';
+import { UpcomingEventsSection } from '@/components/ui/UpcomingEventsSection';
 import { serverGetUpcomingEvents, serverGetCompletedEvents } from '@/lib/api/server.service';
 import { ArrowRight } from '@mad/ui';
 
