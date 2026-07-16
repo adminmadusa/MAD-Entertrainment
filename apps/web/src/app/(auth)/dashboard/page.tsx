@@ -40,8 +40,10 @@ function DashboardContent() {
     handleDownloadPDF,
     handleResendTickets,
     upcomingBookings,
+    liveBookings,
     pastBookings,
     cancelledBookings,
+    refundedBookings,
   } = useBookings();
 
   // Auth Redirect check — send unauthenticated users to home, not legacy /login
@@ -92,6 +94,7 @@ function DashboardContent() {
     try {
       setErrorMsg('');
       setInfoMsg('');
+      setExpandedBookingId(bookingId);
       if (typeof navigator !== 'undefined' && navigator.share) {
         await navigator.share({
           title: 'MAD Entertrainment — My Ticket',
@@ -116,16 +119,7 @@ function DashboardContent() {
   const userName = user?.name || [user?.firstName, user?.lastName].filter(Boolean).join(' ') || 'Account User';
 
   // Quick stats: derived from existing bookings data, no extra API calls
-  const upcomingCount = useMemo(() => {
-    const quickStatsNow = new Date();
-    return bookings.filter((b) => {
-      const eventInfo = b.eventId as unknown as Partial<Event>;
-      const startDate = eventInfo?.startDate ? new Date(eventInfo.startDate) : null;
-      if (b.status !== BookingStatus.CONFIRMED) return false;
-      if (!startDate) return true;
-      return startDate >= quickStatsNow;
-    }).length;
-  }, [bookings]);
+  const upcomingCount = upcomingBookings.length + liveBookings.length;
 
   // Sticky bar guard: only when confirmed booking expanded AND tickets ready
   const expandedBooking = useMemo(() => {
@@ -144,11 +138,11 @@ function DashboardContent() {
 
   if (isAuthenticated && onboardingRequired) {
     return (
-      <div className="pt-20 sm:pt-28 pb-16 min-h-screen bg-background relative overflow-hidden">
+      <div className="pt-16 sm:pt-20 pb-10 min-h-screen bg-background relative overflow-hidden">
         <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-accent-purple/10 rounded-full blur-[130px] pointer-events-none" />
         <div className="absolute -bottom-10 -right-10 w-[300px] h-[300px] bg-purple-500/5 rounded-full blur-[100px] pointer-events-none" />
 
-        <div className="container-mad max-w-md relative z-10 w-full px-4 mt-8 sm:mt-12">
+        <div className="container-mad max-w-md relative z-10 w-full px-4 mt-6 sm:mt-8">
           <div className="glass-strong rounded-3xl border border-border-subtle p-5 sm:p-8 shadow-2xl transition-all duration-500 hover:border-white/10">
             <ProfileCompletionForm
               initialFirstName={user?.firstName || ''}
@@ -163,25 +157,57 @@ function DashboardContent() {
   }
 
   return (
-    <div className="pt-20 sm:pt-28 pb-16 min-h-screen bg-background relative overflow-hidden">
+    <div className="pt-16 sm:pt-20 pb-12 min-h-screen bg-background relative overflow-hidden">
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-accent-purple/10 rounded-full blur-[130px] pointer-events-none" />
       <div className="absolute -bottom-10 -right-10 w-[300px] h-[300px] bg-purple-500/5 rounded-full blur-[100px] pointer-events-none" />
 
-      <div className={`container-mad max-w-3xl relative z-10 px-4 space-y-8${stickyBarVisible ? ' pb-28 sm:pb-0' : ''}`}>
-        <div className="space-y-2">
-          <h1 className="text-display-sm font-black text-white tracking-tight">
-            Welcome, {userName}
-          </h1>
-          <p className="text-text-secondary text-sm">
-            Access your secure entry tickets, manage your details, and get support.
-          </p>
-          {!isBookingsLoading && upcomingCount > 0 && (
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-accent-purple/15 border border-accent-purple/25 text-accent-purple-light text-xs font-semibold">
-              <span>🎟️</span>
-              {upcomingCount} Upcoming Event{upcomingCount !== 1 ? 's' : ''}
-            </div>
-          )}
+      <div className={`container-mad max-w-3xl relative z-10 px-4 space-y-6${stickyBarVisible ? ' pb-28 sm:pb-0' : ''}`}>
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div className="space-y-1">
+            <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+              My Dashboard
+            </h1>
+            <p className="text-text-secondary text-xs sm:text-sm">
+              Welcome back, <span className="text-white font-bold">{userName}</span>
+            </p>
+          </div>
         </div>
+
+        {/* Dashboard Summary Statistics Strip */}
+        {!isBookingsLoading && bookings.length > 0 && (
+          <div className="glass p-3.5 rounded-2xl border border-white/5 grid grid-cols-3 sm:flex sm:flex-wrap items-center justify-between gap-3 text-center sm:text-left">
+            <div className="px-2">
+              <span className="text-[10px] text-text-muted uppercase tracking-wider block font-bold">Upcoming</span>
+              <span className="text-white font-black text-base sm:text-lg">{upcomingBookings.length}</span>
+            </div>
+            <div className="h-6 w-px bg-white/10 hidden sm:block" />
+            <div className="px-2">
+              <span className="text-[10px] text-text-muted uppercase tracking-wider block font-bold flex items-center justify-center sm:justify-start gap-1">
+                <span className="relative flex h-1.5 w-1.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-green-500"></span>
+                </span>
+                Live
+              </span>
+              <span className="text-white font-black text-base sm:text-lg">{liveBookings.length}</span>
+            </div>
+            <div className="h-6 w-px bg-white/10 hidden sm:block" />
+            <div className="px-2">
+              <span className="text-[10px] text-text-muted uppercase tracking-wider block font-bold">Past</span>
+              <span className="text-white font-black text-base sm:text-lg">{pastBookings.length}</span>
+            </div>
+            <div className="h-6 w-px bg-white/10 hidden sm:block" />
+            <div className="px-2">
+              <span className="text-[10px] text-text-muted uppercase tracking-wider block font-bold">Cancelled</span>
+              <span className="text-white font-black text-base sm:text-lg">{cancelledBookings.length}</span>
+            </div>
+            <div className="h-6 w-px bg-white/10 hidden sm:block" />
+            <div className="px-2">
+              <span className="text-[10px] text-text-muted uppercase tracking-wider block font-bold">Refunded</span>
+              <span className="text-white font-black text-base sm:text-lg">{refundedBookings.length}</span>
+            </div>
+          </div>
+        )}
 
         {errorMsg && (
           <div className="p-4 bg-error/10 border border-error/30 rounded-2xl text-xs text-red-400 text-center">
@@ -195,18 +221,18 @@ function DashboardContent() {
         )}
 
         {showSkeleton ? (
-          <div className="space-y-8">
+          <div className="space-y-6">
             <div className="w-full h-12 bg-white/10 rounded-2xl animate-pulse" />
             <BookingCardSkeleton />
             <BookingCardSkeleton />
           </div>
         ) : (
-          <div className="space-y-8">
+          <div className="space-y-6">
             {/* Tab Bar */}
             <div
               role="tablist"
               aria-label="Dashboard navigation"
-              className="glass p-1.5 rounded-2xl border border-white/5 flex gap-1 w-full sm:w-max overflow-x-auto"
+              className="glass p-1 rounded-xl border border-white/5 flex gap-1 w-full sm:w-max overflow-x-auto scrollbar-none"
             >
               <button
                 type="button"
@@ -215,7 +241,7 @@ function DashboardContent() {
                 aria-controls="subtab-panel-tickets"
                 aria-selected={activeTab === 'tickets'}
                 onClick={() => handleTabChange('tickets')}
-                className={`flex-shrink-0 px-6 py-2.5 text-xs font-extrabold rounded-xl transition-all duration-300 min-h-[44px] flex items-center justify-center whitespace-nowrap ${
+                className={`flex-shrink-0 px-5 py-2 text-xs font-extrabold rounded-lg transition-all duration-300 min-h-[40px] flex items-center justify-center whitespace-nowrap ${
                   activeTab === 'tickets'
                     ? 'bg-accent-purple text-white shadow-md'
                     : 'text-text-secondary hover:text-white hover:bg-white/5'
@@ -230,7 +256,7 @@ function DashboardContent() {
                 aria-controls="subtab-panel-account"
                 aria-selected={activeTab === 'account'}
                 onClick={() => handleTabChange('account')}
-                className={`flex-shrink-0 px-6 py-2.5 text-xs font-extrabold rounded-xl transition-all duration-300 min-h-[44px] flex items-center justify-center whitespace-nowrap ${
+                className={`flex-shrink-0 px-5 py-2 text-xs font-extrabold rounded-lg transition-all duration-300 min-h-[40px] flex items-center justify-center whitespace-nowrap ${
                   activeTab === 'account'
                     ? 'bg-accent-purple text-white shadow-md'
                     : 'text-text-secondary hover:text-white hover:bg-white/5'
@@ -245,7 +271,7 @@ function DashboardContent() {
                 aria-controls="subtab-panel-support"
                 aria-selected={activeTab === 'support'}
                 onClick={() => handleTabChange('support')}
-                className={`flex-shrink-0 px-6 py-2.5 text-xs font-extrabold rounded-xl transition-all duration-300 min-h-[44px] flex items-center justify-center whitespace-nowrap ${
+                className={`flex-shrink-0 px-5 py-2 text-xs font-extrabold rounded-lg transition-all duration-300 min-h-[40px] flex items-center justify-center whitespace-nowrap ${
                   activeTab === 'support'
                     ? 'bg-accent-purple text-white shadow-md'
                     : 'text-text-secondary hover:text-white hover:bg-white/5'
@@ -274,8 +300,10 @@ function DashboardContent() {
                     onDownload={handleDownloadPDF}
                     onResend={handleResendTickets}
                     upcomingBookings={upcomingBookings}
+                    liveBookings={liveBookings}
                     pastBookings={pastBookings}
                     cancelledBookings={cancelledBookings}
+                    refundedBookings={refundedBookings}
                   />
                 </div>
               )}

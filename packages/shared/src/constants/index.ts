@@ -390,6 +390,9 @@ export const MAX_MEMORIES_GALLERY_LIMIT = 50;
 export const POPUP_COOLDOWN_HOURS = 24;
 export const POPUP_SESSION_KEY_PREFIX = 'mad_popup_';
 
+// ─── Default Event Duration ──────────────────────────────────
+export const DEFAULT_EVENT_DURATION_HOURS = 4;
+
 // ─── API Routes ──────────────────────────────────────────────
 export const API_ROUTES = {
   HEALTH: '/api/health',
