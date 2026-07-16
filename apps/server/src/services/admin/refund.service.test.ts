@@ -194,13 +194,13 @@ describe('Admin Refund Service Tests', () => {
       ).rejects.toThrow('Payment does not belong to booking');
     });
 
-    it('should reject if payment status is not paid or partially refunded', async () => {
+    it('should reject if payment status is not paid, partially refunded, or cancelled', async () => {
       const mockPayment = { _id: 'p-123', bookingId: 'b-123', status: PaymentStatus.FAILED, amount: 500 };
       vi.mocked(Payment.findById).mockImplementation(() => createMockQuery(mockPayment));
 
       await expect(
         createRefund({ bookingId: 'b-123', paymentId: 'p-123', amount: 100, reason: 'Test' })
-      ).rejects.toThrow('Only successful paid or partially refunded payments can be refunded');
+      ).rejects.toThrow('Only successful paid, partially refunded or cancelled payments can be refunded');
     });
 
     it('should reject if booking record is not found', async () => {

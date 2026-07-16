@@ -115,14 +115,6 @@ export default function RootLayout({ children }: RootLayoutProps) {
     '@type': 'WebSite',
     name: 'MAD Entertrainment',
     url: 'https://madentertainment.in',
-    potentialAction: {
-      '@type': 'SearchAction',
-      target: {
-        '@type': 'EntryPoint',
-        urlTemplate: 'https://madentertainment.in/events?search={search_term_string}',
-      },
-      'query-input': 'required name=search_term_string',
-    },
   };
 
   const organizationJsonLd = {

@@ -81,7 +81,7 @@ export default function EditEventPage() {
       setTitle(event.title || '');
       setDescription(event.description || '');
       setCategory(event.category || 'concert');
-      setStatus(event.status || EventStatus.DRAFT);
+      setStatus(event.status || EventStatus.PUBLISHED);
       setStartDate(event.startDate ? new Date(event.startDate).toISOString().slice(0, 16) : '');
       setEndDate(event.endDate ? new Date(event.endDate).toISOString().slice(0, 16) : '');
       setBookingStartDate(event.bookingStartDate ? new Date(event.bookingStartDate).toISOString().slice(0, 16) : '');
@@ -219,6 +219,20 @@ export default function EditEventPage() {
     return (
       <div className="py-12 flex justify-center items-center">
         <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-accent-purple" />
+      </div>
+    );
+  }
+
+  if (!event) {
+    return (
+      <div className="py-12 flex flex-col items-center justify-center gap-4 text-center">
+        <p className="text-text-muted text-sm">Event not found or has been deleted.</p>
+        <button
+          onClick={() => router.push('/events')}
+          className="px-4 py-2 text-sm rounded-xl bg-accent-purple/10 border border-accent-purple/30 text-accent-purple hover:bg-accent-purple/20 transition-colors"
+        >
+          Back to Events
+        </button>
       </div>
     );
   }

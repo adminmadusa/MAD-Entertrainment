@@ -1,7 +1,4 @@
 import type { Metadata } from 'next';
-import { Suspense } from 'react';
-
-import { EventGridSkeleton } from '@mad/ui';
 
 import { EventsList } from './EventsList';
 
@@ -40,14 +37,8 @@ export default function PublicEventsPage() {
           </p>
         </div>
 
-        {/* Client-side interactive list wrapped in Suspense for useSearchParams */}
-        <Suspense
-          fallback={
-            <EventGridSkeleton count={8} />
-          }
-        >
-          <EventsList />
-        </Suspense>
+        {/* Client-side interactive list fetching data on mount */}
+        <EventsList />
       </div>
     </div>
   );

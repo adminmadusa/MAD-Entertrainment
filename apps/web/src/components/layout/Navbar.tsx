@@ -2,7 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useState, useEffect, useMemo, useCallback } from 'react';
 
 import { useAuthModal } from '@/providers/AuthModalProvider';
@@ -18,6 +18,7 @@ const MobileNavigation = dynamic(
 
 export function Navbar() {
   const pathname = usePathname();
+  const router = useRouter();
   const isCheckoutOrBook = pathname?.startsWith('/checkout/');
 
   const [scrolled, setScrolled] = useState(false);
@@ -48,7 +49,8 @@ export function Navbar() {
   const handleLogout = useCallback(async () => {
     await logout();
     setMobileOpen(false);
-  }, [logout]);
+    router.push('/');
+  }, [logout, router]);
 
   const handleCloseMobile = useCallback(() => {
     setMobileOpen(false);

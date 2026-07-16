@@ -296,9 +296,6 @@ export const deleteUploadSchema = z.object({
   }).strict(),
 });
 
-
-
-
 // -- Ticket Profile Validation --
 const ticketOfferRulesSchema = z.object({
   discountType: z.enum(['percentage', 'flat', 'none']),
