@@ -33,4 +33,8 @@ export interface DrawerProps {
    * @default true
    */
   showHeader?: boolean;
+  /**
+   * Optional HTML ID.
+   */
+  id?: string;
 }

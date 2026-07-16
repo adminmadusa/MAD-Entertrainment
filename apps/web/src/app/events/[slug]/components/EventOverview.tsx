@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 import { Drawer } from '@mad/ui';
 
@@ -11,6 +11,17 @@ type EventOverviewProps = {
 
 export function EventOverview({ description, organizerName }: EventOverviewProps) {
   const [isOverviewOpen, setIsOverviewOpen] = useState(false);
+
+  useEffect(() => {
+    if (!isOverviewOpen) return;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [isOverviewOpen]);
 
   const descriptionPreview = description.length > 150
     ? `${description.substring(0, 150)}...`
@@ -40,7 +51,10 @@ export function EventOverview({ description, organizerName }: EventOverviewProps
             <button
               type="button"
               onClick={() => setIsOverviewOpen(true)}
-              className="text-accent-cyan hover:text-accent-cyan/80 font-semibold inline-flex items-center gap-1 mt-2 hover:underline"
+              aria-expanded={isOverviewOpen}
+              aria-haspopup="dialog"
+              aria-controls="event-overview-drawer"
+              className="text-accent-cyan hover:text-accent-cyan/80 font-semibold inline-flex items-center gap-1 mt-2 hover:underline min-h-[44px] py-2"
             >
               Read more →
             </button>
@@ -54,6 +68,7 @@ export function EventOverview({ description, organizerName }: EventOverviewProps
         onClose={() => setIsOverviewOpen(false)}
         side="right"
         title="Overview"
+        id="event-overview-drawer"
         className="w-full max-w-md bg-background h-full border-l border-white/10 focus:outline-none"
       >
         <div className="flex flex-col h-full justify-between">

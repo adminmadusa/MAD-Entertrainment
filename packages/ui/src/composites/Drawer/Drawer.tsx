@@ -20,7 +20,7 @@ import {
 import type { DrawerProps } from './Drawer.types'
 
 export const Drawer = forwardRef<HTMLDivElement, DrawerProps>(
-  ({ isOpen, onClose, side = 'right', title, children, className, showHeader = true }, ref) => {
+  ({ isOpen, onClose, side = 'right', title, children, className, showHeader = true, id }, ref) => {
     const { isRendered, isVisible } = useDelayedUnmount(
       isOpen,
       0,
@@ -42,6 +42,7 @@ export const Drawer = forwardRef<HTMLDivElement, DrawerProps>(
           tabIndex={-1}
           role="dialog"
           aria-modal="true"
+          id={id}
           className={cn(
             drawerContentBaseClasses,
             drawerSides[side],
