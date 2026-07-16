@@ -136,16 +136,22 @@ export function BookingCard({
 
   // Derive booking lifecycle state
   const lifecycle = getBookingLifecycle(booking as unknown as BookingForLifecycle);
+  const isLapsed = lifecycle === 'past' || lifecycle === 'cancelled' || lifecycle === 'refunded';
 
-  const cardStyleClasses = collapsible
-    ? `glass rounded-2xl border transition-all duration-300 overflow-hidden ${
-        isExpanded
-          ? 'border-accent-purple shadow-glow-purple/10 bg-white/[0.02]'
-          : 'border-white/5 hover:border-white/10'
-      } ${isPast ? 'opacity-85' : ''}`
-    : `glass rounded-3xl border border-border-subtle p-4 sm:p-5 md:p-6 space-y-4 shadow-xl transition-all duration-300 hover:border-white/10 ${
-        isTarget ? 'ring-2 ring-accent-purple/50 border-accent-purple shadow-glow-purple' : ''
-      } ${isPast ? 'opacity-85' : ''}`;
+  let cardStyleClasses = '';
+  if (collapsible) {
+    let stateBorderClass = 'border-white/5 hover:border-white/10';
+    if (isExpanded && !isLapsed) {
+      stateBorderClass = 'border-accent-purple shadow-glow-purple/10 bg-white/[0.02]';
+    } else if (isLapsed) {
+      stateBorderClass = 'border-white/5';
+    }
+    cardStyleClasses = `glass rounded-2xl border transition-all duration-300 overflow-hidden ${stateBorderClass} ${isPast ? 'opacity-85' : ''}`;
+  } else {
+    cardStyleClasses = `glass rounded-3xl border border-border-subtle p-4 sm:p-5 md:p-6 space-y-4 shadow-xl transition-all duration-300 hover:border-white/10 ${
+      isTarget ? 'ring-2 ring-accent-purple/50 border-accent-purple shadow-glow-purple' : ''
+    } ${isPast ? 'opacity-85' : ''}`;
+  }
 
   // Context-aware Quick Actions
   const renderQuickActions = () => {
@@ -159,9 +165,10 @@ export function BookingCard({
               rel="noopener noreferrer"
               title="Get Directions"
               onClick={(e) => e.stopPropagation()}
-              className="w-9 h-9 flex items-center justify-center rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 text-white text-xs min-h-[36px] min-w-[36px] transition-all"
+              className="px-3 py-1.5 flex items-center justify-center gap-1.5 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 text-white text-xs min-h-[36px] transition-all font-bold"
             >
-              📍
+              <span>📍</span>
+              <span className="hidden sm:inline">Location</span>
             </a>
           )}
           <button
@@ -172,12 +179,15 @@ export function BookingCard({
             }}
             disabled={downloading}
             title="Download PDF"
-            className="w-9 h-9 flex items-center justify-center rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 text-white text-xs min-h-[36px] min-w-[36px] transition-all disabled:opacity-50"
+            className="px-3 py-1.5 flex items-center justify-center gap-1.5 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 text-white text-xs min-h-[36px] transition-all disabled:opacity-50 font-bold"
           >
             {downloading ? (
               <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
             ) : (
-              '📥'
+              <>
+                <span>📥</span>
+                <span className="hidden sm:inline">Download</span>
+              </>
             )}
           </button>
         </>
@@ -194,9 +204,10 @@ export function BookingCard({
               rel="noopener noreferrer"
               title="Get Directions"
               onClick={(e) => e.stopPropagation()}
-              className="w-9 h-9 flex items-center justify-center rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 text-white text-xs min-h-[36px] min-w-[36px] transition-all"
+              className="px-3 py-1.5 flex items-center justify-center gap-1.5 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 text-white text-xs min-h-[36px] transition-all font-bold"
             >
-              📍
+              <span>📍</span>
+              <span className="hidden sm:inline">Location</span>
             </a>
           )}
           <button
@@ -315,10 +326,12 @@ export function BookingCard({
             <span className="text-[10px] text-text-muted uppercase tracking-wider block">Venue</span>
             <span className="text-white font-semibold">{eventInfo?.venue || 'N/A'}</span>
           </div>
-          <div>
-            <span className="text-[10px] text-text-muted uppercase tracking-wider block">Show Time</span>
-            <span className="text-white font-semibold">{eventInfo?.showTime || 'N/A'}</span>
-          </div>
+          {eventInfo?.showTime && eventInfo.showTime !== 'N/A' && (
+            <div>
+              <span className="text-[10px] text-text-muted uppercase tracking-wider block">Show Time</span>
+              <span className="text-white font-semibold">{eventInfo.showTime}</span>
+            </div>
+          )}
           {booking.createdAt && (
             <div>
               <span className="text-[10px] text-text-muted uppercase tracking-wider block">Purchased On</span>
@@ -337,6 +350,8 @@ export function BookingCard({
   };
 
   if (collapsible) {
+    const showExpanded = isExpanded && !isLapsed;
+
     return (
       <div id={`booking-accordion-${booking.bookingId}`} className={cardStyleClasses}>
         <div className="p-3 sm:p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -344,10 +359,13 @@ export function BookingCard({
           <button
             type="button"
             id={`booking-header-${booking.bookingId}`}
-            onClick={onToggleExpand}
-            aria-expanded={isExpanded}
+            onClick={!isLapsed ? onToggleExpand : undefined}
+            aria-expanded={showExpanded}
+            aria-disabled={isLapsed}
             aria-controls={`booking-content-${booking.bookingId}`}
-            className="flex items-center gap-3 flex-grow min-w-0 text-left focus-visible:outline-none min-h-[44px]"
+            className={`flex items-center gap-3 flex-grow min-w-0 text-left focus-visible:outline-none min-h-[44px] ${
+              isLapsed ? 'cursor-default pointer-events-none' : ''
+            }`}
           >
             {imageUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
@@ -396,19 +414,21 @@ export function BookingCard({
               {renderQuickActions()}
             </div>
 
-            <button
-              type="button"
-              onClick={onToggleExpand}
-              aria-label={isExpanded ? 'Collapse Details' : 'Expand Details'}
-              className="text-text-secondary text-xs transition-transform duration-300 w-9 h-9 flex items-center justify-center rounded-xl bg-white/5 hover:bg-white/10 min-w-[36px] min-h-[36px]"
-              style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0)' }}
-            >
-              ▼
-            </button>
+            {!isLapsed && (
+              <button
+                type="button"
+                onClick={onToggleExpand}
+                aria-label={isExpanded ? 'Collapse Details' : 'Expand Details'}
+                className="text-text-secondary text-xs transition-transform duration-300 w-9 h-9 flex items-center justify-center rounded-xl bg-white/5 hover:bg-white/10 min-w-[36px] min-h-[36px]"
+                style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0)' }}
+              >
+                ▼
+              </button>
+            )}
           </div>
         </div>
 
-        {isExpanded && (
+        {showExpanded && (
           <div id={`booking-content-${booking.bookingId}`} role="region" aria-labelledby={`booking-header-${booking.bookingId}`}>
             {renderContent()}
           </div>
