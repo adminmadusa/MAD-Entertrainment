@@ -66,60 +66,60 @@ export function ProfileViewCard({ user, onEditClick }: ProfileViewCardProps) {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <div className="relative group">
-            <button
-              type="button"
-              disabled={isUploading}
-              onClick={handlePhotoClick}
-              aria-label="Change profile photo"
-              className="w-16 h-16 rounded-full overflow-hidden border border-white/10 focus:outline-none focus:ring-2 focus:ring-accent-purple relative flex items-center justify-center transition-all duration-300 hover:opacity-90 active:scale-95 disabled:opacity-50"
-            >
-              {user?.picture ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={user.picture}
-                  alt={userName}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className="w-full h-full bg-gradient-brand flex items-center justify-center text-white text-2xl font-black shadow-glow-sm select-none">
-                  {userName.charAt(0).toUpperCase()}
-                </div>
-              )}
-              {isUploading ? (
-                <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                </div>
-              ) : (
-                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity duration-300">
-                  <span className="text-[10px] text-white font-bold uppercase tracking-wider text-center px-1">Change</span>
-                </div>
-              )}
-            </button>
-            <input
-              type="file"
-              ref={fileInputRef}
-              onChange={handleFileChange}
-              accept="image/png, image/jpeg, image/webp"
-              className="hidden"
-            />
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+        <div className="flex items-start gap-4">
+          <div className="flex flex-col items-center gap-1.5 flex-shrink-0">
+            <div className="relative group">
+              <button
+                type="button"
+                disabled={isUploading}
+                onClick={handlePhotoClick}
+                aria-label="Change profile photo"
+                className="w-16 h-16 rounded-full overflow-hidden border border-white/10 focus:outline-none focus:ring-2 focus:ring-accent-purple relative flex items-center justify-center transition-all duration-300 hover:opacity-90 active:scale-95 disabled:opacity-50"
+              >
+                {user?.picture ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={user.picture}
+                    alt={userName}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gradient-brand flex items-center justify-center text-white text-2xl font-black shadow-glow-sm select-none">
+                    {userName.charAt(0).toUpperCase()}
+                  </div>
+                )}
+                {isUploading ? (
+                  <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  </div>
+                ) : (
+                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity duration-300">
+                    <span className="text-[10px] text-white font-bold uppercase tracking-wider text-center px-1">Change</span>
+                  </div>
+                )}
+              </button>
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileChange}
+                accept="image/png, image/jpeg, image/webp"
+                className="hidden"
+              />
+            </div>
+            {user?.picture && !isUploading && (
+              <button
+                type="button"
+                onClick={handleDeletePhoto}
+                className="text-[10px] font-extrabold text-red-400 hover:text-red-300 transition-colors uppercase tracking-wider min-h-[20px] flex items-center justify-center"
+              >
+                Remove
+              </button>
+            )}
           </div>
 
-          <div>
-            <div className="flex items-center gap-3">
-              <h2 className="text-white font-bold text-xl">Account Details</h2>
-              {user?.picture && !isUploading && (
-                <button
-                  type="button"
-                  onClick={handleDeletePhoto}
-                  className="text-[10px] font-bold text-red-400 hover:text-red-300 transition-colors uppercase tracking-wider"
-                >
-                  Remove Photo
-                </button>
-              )}
-            </div>
+          <div className="pt-1">
+            <h2 className="text-white font-bold text-xl">Account Details</h2>
             <p className="text-text-secondary text-xs mt-1">Manage your account details and linked contact information</p>
             {errorMsg && <p className="text-red-400 text-[10px] font-semibold mt-1" role="alert">⚠️ {errorMsg}</p>}
           </div>
