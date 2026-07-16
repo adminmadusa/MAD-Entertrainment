@@ -305,3 +305,19 @@ export async function publicVerifyRecoveredBookingOTP(
   );
   return data.data;
 }
+
+export async function publicUploadProfilePhoto(file: File): Promise<{ picture: string }> {
+  const formData = new FormData();
+  formData.append('photo', file);
+  const { data } = await apiClient.post<{ data: { picture: string } }>('/auth/profile/photo', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+  return data.data;
+}
+
+export async function publicDeleteProfilePhoto(): Promise<{ success: boolean; message: string }> {
+  const { data } = await apiClient.delete<{ success: boolean; message: string }>('/auth/profile/photo');
+  return data;
+}

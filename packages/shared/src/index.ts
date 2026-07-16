@@ -1,5 +1,7 @@
 export * from './constants';
 export * from './utils/event-lifecycle';
+export * from './utils/booking-lifecycle';
+export * from './utils/map-link';
 export type {
   BaseEventForBooking,
   EventBookingCTA,
