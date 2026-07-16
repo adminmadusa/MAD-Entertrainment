@@ -11,6 +11,7 @@ import { TicketValidationModal } from '@/components/scanner/TicketValidationModa
 import { useScannerState } from '@/hooks/useScannerState';
 import { adminGetEvents } from '@/lib/api/admin/event.service';
 import { ScannerHistoryItem } from '@/lib/api/admin/scanner.service';
+import { EventStatus } from '@mad/shared';
 import { formatEventDate } from '@mad/utils';
 
 type ActiveTab = 'scan' | 'verify';
@@ -91,8 +92,8 @@ export default function ScannerPage() {
 
   // Fetch active events for selection
   const { data: eventsRes, isLoading: isLoadingEvents } = useQuery({
-    queryKey: ['admin-events', { status: 'published' }],
-    queryFn: () => adminGetEvents({ limit: 100 }),
+    queryKey: ['admin-events', { status: EventStatus.PUBLISHED }],
+    queryFn: () => adminGetEvents({ limit: 100, status: EventStatus.PUBLISHED }),
   });
 
   const events = eventsRes?.items || [];
