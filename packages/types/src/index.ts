@@ -109,6 +109,8 @@ export type Event = {
   venue: string;
   startDate: string | Date;
   endDate?: string | Date;
+  bookingStartDate?: string | Date;
+  bookingEndDate?: string | Date;
   bannerImage?: ImageAsset;
   posterImage?: ImageAsset;
   djOperatorIds?: string[];

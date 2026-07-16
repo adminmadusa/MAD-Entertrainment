@@ -36,8 +36,10 @@ interface DashboardTicketsTabProps {
   onDownload: (bookingId: string) => void;
   onResend: (bookingId: string) => void;
   upcomingBookings: Booking[];
+  liveBookings: Booking[];
   pastBookings: Booking[];
   cancelledBookings: Booking[];
+  refundedBookings: Booking[];
 }
 
 export function DashboardTicketsTab({
@@ -55,10 +57,12 @@ export function DashboardTicketsTab({
   onDownload,
   onResend,
   upcomingBookings,
+  liveBookings,
   pastBookings,
   cancelledBookings,
+  refundedBookings,
 }: DashboardTicketsTabProps) {
-  const [activeTicketSubTab, setActiveTicketSubTab] = useState<'upcoming' | 'past' | 'cancelled'>('upcoming');
+  const [activeTicketSubTab, setActiveTicketSubTab] = useState<'upcoming' | 'live' | 'past' | 'cancelled' | 'refunded'>('upcoming');
 
   if (isBookingsLoading) {
     return (
@@ -87,72 +91,69 @@ export function DashboardTicketsTab({
     );
   }
 
-  let subTabBookings = upcomingBookings;
-  if (activeTicketSubTab === 'past') {
-    subTabBookings = pastBookings;
+  let currentTabBookings = upcomingBookings;
+  if (activeTicketSubTab === 'live') {
+    currentTabBookings = liveBookings;
+  } else if (activeTicketSubTab === 'past') {
+    currentTabBookings = pastBookings;
   } else if (activeTicketSubTab === 'cancelled') {
-    subTabBookings = cancelledBookings;
+    currentTabBookings = cancelledBookings;
+  } else if (activeTicketSubTab === 'refunded') {
+    currentTabBookings = refundedBookings;
   }
 
-  let emptyMessage = "You don't have any cancelled or refunded bookings.";
-  if (activeTicketSubTab === 'upcoming') {
-    emptyMessage = "You don't have any upcoming event bookings.";
-  } else if (activeTicketSubTab === 'past') {
-    emptyMessage = "You don't have any past event history.";
-  }
+  const getEmptyMessage = () => {
+    switch (activeTicketSubTab) {
+      case 'live':
+        return 'No live events right now.';
+      case 'upcoming':
+        return "You don't have any upcoming event bookings.";
+      case 'past':
+        return 'Your attended events will appear here.';
+      case 'cancelled':
+        return 'No cancelled bookings.';
+      case 'refunded':
+        return 'No refunded bookings.';
+      default:
+        return 'No bookings found.';
+    }
+  };
 
   const renderSubTabs = () => {
+    const tabs: { key: typeof activeTicketSubTab; label: string; count: number }[] = [
+      { key: 'upcoming', label: 'Upcoming', count: upcomingBookings.length },
+      { key: 'live', label: 'Live', count: liveBookings.length },
+      { key: 'past', label: 'Past Events', count: pastBookings.length },
+      { key: 'cancelled', label: 'Cancelled', count: cancelledBookings.length },
+      { key: 'refunded', label: 'Refunded', count: refundedBookings.length },
+    ];
+
     return (
       <div
-        className="glass p-1.5 rounded-2xl border border-white/5 flex gap-1 overflow-x-auto whitespace-nowrap scrollbar-none w-full mb-6"
+        className="glass p-1.5 rounded-2xl border border-white/5 flex gap-1 overflow-x-auto whitespace-nowrap scrollbar-none w-full"
         role="tablist"
         aria-label="Ticket categories"
       >
-        <button
-          type="button"
-          role="tab"
-          id="subtab-upcoming"
-          aria-selected={activeTicketSubTab === 'upcoming'}
-          aria-controls="subtab-panel-upcoming"
-          onClick={() => setActiveTicketSubTab('upcoming')}
-          className={`flex-shrink-0 px-5 py-2.5 text-xs font-extrabold rounded-xl transition-all duration-300 min-h-[44px] flex items-center justify-center whitespace-nowrap focus-ring ${
-            activeTicketSubTab === 'upcoming'
-              ? 'bg-accent-purple text-white shadow-md'
-              : 'text-text-secondary hover:text-white hover:bg-white/5'
-          }`}
-        >
-          Upcoming ({upcomingBookings.length})
-        </button>
-        <button
-          type="button"
-          role="tab"
-          id="subtab-past"
-          aria-selected={activeTicketSubTab === 'past'}
-          aria-controls="subtab-panel-past"
-          onClick={() => setActiveTicketSubTab('past')}
-          className={`flex-shrink-0 px-5 py-2.5 text-xs font-extrabold rounded-xl transition-all duration-300 min-h-[44px] flex items-center justify-center whitespace-nowrap focus-ring ${
-            activeTicketSubTab === 'past'
-              ? 'bg-accent-purple text-white shadow-md'
-              : 'text-text-secondary hover:text-white hover:bg-white/5'
-          }`}
-        >
-          Past Events ({pastBookings.length})
-        </button>
-        <button
-          type="button"
-          role="tab"
-          id="subtab-cancelled"
-          aria-selected={activeTicketSubTab === 'cancelled'}
-          aria-controls="subtab-panel-cancelled"
-          onClick={() => setActiveTicketSubTab('cancelled')}
-          className={`flex-shrink-0 px-5 py-2.5 text-xs font-extrabold rounded-xl transition-all duration-300 min-h-[44px] flex items-center justify-center whitespace-nowrap focus-ring ${
-            activeTicketSubTab === 'cancelled'
-              ? 'bg-accent-purple text-white shadow-md'
-              : 'text-text-secondary hover:text-white hover:bg-white/5'
-          }`}
-        >
-          Cancelled & Refunded ({cancelledBookings.length})
-        </button>
+        {tabs.map((tab) => (
+          <button
+            key={tab.key}
+            type="button"
+            role="tab"
+            id={`subtab-${tab.key}`}
+            aria-selected={activeTicketSubTab === tab.key}
+            aria-controls={`subtab-panel-${tab.key}`}
+            onClick={() => {
+              setActiveTicketSubTab(tab.key);
+            }}
+            className={`flex-shrink-0 px-4 py-2 text-xs font-extrabold rounded-xl transition-all duration-300 min-h-[44px] flex items-center justify-center whitespace-nowrap focus-ring ${
+              activeTicketSubTab === tab.key
+                ? 'bg-accent-purple text-white shadow-md font-black'
+                : 'text-text-secondary hover:text-white hover:bg-white/5'
+            }`}
+          >
+            {tab.label} ({tab.count})
+          </button>
+        ))}
       </div>
     );
   };
@@ -177,64 +178,48 @@ export function DashboardTicketsTab({
     );
   }
 
-  if (subTabBookings.length === 0) {
-    return (
-      <div className="space-y-6">
-        {renderSubTabs()}
-        <div
-          role="tabpanel"
-          id={`subtab-panel-${activeTicketSubTab}`}
-          aria-labelledby={`subtab-${activeTicketSubTab}`}
-          className="glass rounded-3xl border border-border-subtle p-12 text-center space-y-4"
-        >
-          <div className="text-4xl">🎟️</div>
-          <h4 className="text-white font-bold text-base capitalize">No {activeTicketSubTab} bookings</h4>
-          <p className="text-text-secondary text-xs max-w-sm mx-auto leading-relaxed">
-            {emptyMessage}
-          </p>
-          {activeTicketSubTab === 'upcoming' && (
-            <div className="pt-2">
-              <Link
-                href="/events"
-                className="px-6 py-2.5 bg-accent-purple hover:bg-accent-purple-light text-white text-xs font-bold rounded-xl transition-all shadow-md inline-block"
-              >
-                Browse Events
-              </Link>
-            </div>
-          )}
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="space-y-6">
-      {renderSubTabs()}
+    <div className="space-y-5">
+      {/* Sticky Category filter headers (Search removed) */}
+      <div className="sticky top-[80px] z-20 bg-background/95 backdrop-blur-md pb-4 pt-1 border-b border-white/5">
+        {renderSubTabs()}
+      </div>
+
       <div
         role="tabpanel"
         id={`subtab-panel-${activeTicketSubTab}`}
         aria-labelledby={`subtab-${activeTicketSubTab}`}
         className="space-y-4"
       >
-        {subTabBookings.map((b) => (
-          <BookingCard
-            key={b._id}
-            booking={b}
-            tickets={tickets.filter(
-              (t) => t.bookingId === b._id || t.bookingId?.toString() === b._id?.toString()
-            )}
-            ticketsReady={ticketsReadyMap[b._id?.toString() ?? ''] ?? false}
-            isPast={activeTicketSubTab === 'past'}
-            collapsible={true}
-            isExpanded={expandedBookingId === b.bookingId}
-            onToggleExpand={() => onToggleExpand(b.bookingId)}
-            downloading={downloadingId === b.bookingId}
-            resending={resendingId === b.bookingId}
-            resendCooldown={resendCooldowns[b.bookingId] || 0}
-            onDownload={() => onDownload(b.bookingId)}
-            onResend={() => onResend(b.bookingId)}
-          />
-        ))}
+        {currentTabBookings.length === 0 ? (
+          <div className="glass rounded-3xl border border-border-subtle p-10 text-center space-y-4">
+            <div className="text-3xl">🎟️</div>
+            <h4 className="text-white font-bold text-sm">No results</h4>
+            <p className="text-text-secondary text-xs max-w-sm mx-auto leading-relaxed">
+              {getEmptyMessage()}
+            </p>
+          </div>
+        ) : (
+          currentTabBookings.map((b) => (
+            <BookingCard
+              key={b._id}
+              booking={b}
+              tickets={tickets.filter(
+                (t) => t.bookingId === b._id || t.bookingId?.toString() === b._id?.toString()
+              )}
+              ticketsReady={ticketsReadyMap[b._id?.toString() ?? ''] ?? false}
+              isPast={activeTicketSubTab === 'past'}
+              collapsible={true}
+              isExpanded={expandedBookingId === b.bookingId}
+              onToggleExpand={() => onToggleExpand(b.bookingId)}
+              downloading={downloadingId === b.bookingId}
+              resending={resendingId === b.bookingId}
+              resendCooldown={resendCooldowns[b.bookingId] || 0}
+              onDownload={() => onDownload(b.bookingId)}
+              onResend={() => onResend(b.bookingId)}
+            />
+          ))
+        )}
       </div>
     </div>
   );

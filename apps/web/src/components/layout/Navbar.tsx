@@ -2,7 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useState, useEffect, useMemo, useCallback } from 'react';
 
 import { useAuthModal } from '@/providers/AuthModalProvider';
@@ -18,7 +18,11 @@ const MobileNavigation = dynamic(
 
 export function Navbar() {
   const pathname = usePathname();
+  const router = useRouter();
   const isCheckoutOrBook = pathname?.startsWith('/checkout/');
+  // Darker nav contrast scoped to event detail pages only — keeps home page
+  // and all other routes using the standard transparent-on-load behaviour.
+  const isEventDetail = pathname?.startsWith('/events/') && pathname !== '/events';
 
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -48,7 +52,8 @@ export function Navbar() {
   const handleLogout = useCallback(async () => {
     await logout();
     setMobileOpen(false);
-  }, [logout]);
+    router.push('/');
+  }, [logout, router]);
 
   const handleCloseMobile = useCallback(() => {
     setMobileOpen(false);
@@ -89,13 +94,17 @@ export function Navbar() {
 
   if (isCheckoutOrBook) return null;
 
+  const unscrolledNavClass = isEventDetail
+    ? 'bg-background/60 backdrop-blur-md border-white/5 py-5'
+    : 'bg-transparent border-transparent py-5';
+
   return (
     <header
       className={[
         'fixed top-0 left-0 right-0 z-50 transition-all duration-300 border-b',
         scrolled
           ? 'bg-background/75 backdrop-blur-md border-white/5 py-3 shadow-lg shadow-black/20'
-          : 'bg-transparent border-transparent py-5',
+          : unscrolledNavClass,
       ].join(' ')}
     >
       <nav className="container-mad flex items-center justify-between">

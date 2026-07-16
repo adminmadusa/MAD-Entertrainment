@@ -93,7 +93,7 @@ const bookingSchema = new Schema<IBooking>(
       },
     ],
     totalTickets: { type: Number, required: true, min: 1 },
-    subtotal: { type: Number, required: true, min: 0 },
+    subtotal: { type: Number, min: 0, default: 0 },
     convenienceFee: { type: Number, default: 0 },
     gst: { type: Number, default: 0 },
     discount: { type: Number, default: 0 },

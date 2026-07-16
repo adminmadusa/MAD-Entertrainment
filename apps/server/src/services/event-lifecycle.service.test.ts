@@ -90,4 +90,53 @@ describe('EventLifecycleService', () => {
     expect(secondRun.modifiedCount).toBe(0);
     expect(Event.updateMany).toHaveBeenCalledTimes(2);
   });
+
+  describe('completeEndedEvents', () => {
+    it('marks ended published events as completed', async () => {
+      const now = new Date('2026-06-22T12:00:00.000Z');
+      vi.mocked(Event.updateMany).mockResolvedValue({ matchedCount: 3, modifiedCount: 3 } as any);
+
+      const result = await EventLifecycleService.completeEndedEvents(now);
+
+      expect(Event.updateMany).toHaveBeenCalledWith(
+        {
+          status: EventStatus.PUBLISHED,
+          endDate: { $exists: true, $lt: now },
+          isDeleted: { $ne: true },
+        },
+        {
+          $set: { status: EventStatus.COMPLETED },
+          $inc: { eventVersion: 1 },
+        }
+      );
+      expect(result).toEqual({ matchedCount: 3, modifiedCount: 3 });
+      expect(logger.info).toHaveBeenCalledWith(
+        { matchedCount: 3, modifiedCount: 3, evaluatedAt: now.toISOString() },
+        'Automatically completed ended events'
+      );
+      expect(auditLog).toHaveBeenCalledWith(
+        expect.objectContaining({
+          action: 'EVENTS_AUTO_COMPLETED',
+          actor: { type: 'system' },
+          status: 'success',
+          metadata: expect.objectContaining({
+            matchedCount: 3,
+            modifiedCount: 3,
+            evaluatedAt: now.toISOString(),
+          }),
+        })
+      );
+    });
+
+    it('does not log or audit if no events were modified', async () => {
+      const now = new Date('2026-06-22T12:00:00.000Z');
+      vi.mocked(Event.updateMany).mockResolvedValue({ matchedCount: 0, modifiedCount: 0 } as any);
+
+      const result = await EventLifecycleService.completeEndedEvents(now);
+
+      expect(result).toEqual({ matchedCount: 0, modifiedCount: 0 });
+      expect(logger.info).not.toHaveBeenCalled();
+      expect(auditLog).not.toHaveBeenCalled();
+    });
+  });
 });

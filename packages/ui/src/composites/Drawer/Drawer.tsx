@@ -36,10 +36,7 @@ export const Drawer = forwardRef<HTMLDivElement, DrawerProps>(
 
     return (
       <>
-        <div
-          className={cn(drawerBackdropClasses, isVisible ? 'opacity-100' : 'opacity-0')}
-          onClick={onClose}
-        />
+        {/* Backdrop removed per user request */}
         <div
           ref={drawerRef}
           tabIndex={-1}

@@ -160,9 +160,13 @@ export class RefundValidationService {
       throw AppError.badRequest('Payment does not belong to booking');
     }
 
-    // 4. Payment status validation (Must be PAID or PARTIALLY_REFUNDED)
-    if (payment.status !== PaymentStatus.PAID && payment.status !== PaymentStatus.PARTIALLY_REFUNDED) {
-      throw AppError.badRequest('Only successful paid or partially refunded payments can be refunded');
+    // 4. Payment status validation (Must be PAID, PARTIALLY_REFUNDED or CANCELLED)
+    if (
+      payment.status !== PaymentStatus.PAID &&
+      payment.status !== PaymentStatus.PARTIALLY_REFUNDED &&
+      payment.status !== PaymentStatus.CANCELLED
+    ) {
+      throw AppError.badRequest('Only successful paid, partially refunded or cancelled payments can be refunded');
     }
 
     // 5. Individual Amount Cap Check
@@ -171,9 +175,9 @@ export class RefundValidationService {
     }
 
     if (booking) {
-      // 6. Booking status check (Must be CONFIRMED)
-      if (booking.status !== BookingStatus.CONFIRMED) {
-        throw AppError.badRequest('Only confirmed bookings can be refunded');
+      // 6. Booking status check (Must be CONFIRMED or CANCELLED)
+      if (booking.status !== BookingStatus.CONFIRMED && booking.status !== BookingStatus.CANCELLED) {
+        throw AppError.badRequest('Only confirmed or cancelled bookings can be refunded');
       }
 
       // 7. Cumulative Refund Check
@@ -247,8 +251,12 @@ export class RefundValidationService {
       if (payment.status === PaymentStatus.REFUNDED) {
         throw AppError.badRequest('Payment has already been fully refunded');
       }
-      if (payment.status !== PaymentStatus.PAID && payment.status !== PaymentStatus.PARTIALLY_REFUNDED) {
-        throw AppError.badRequest('Only successful paid or partially refunded payments can be refunded');
+      if (
+        payment.status !== PaymentStatus.PAID &&
+        payment.status !== PaymentStatus.PARTIALLY_REFUNDED &&
+        payment.status !== PaymentStatus.CANCELLED
+      ) {
+        throw AppError.badRequest('Only successful paid, partially refunded or cancelled payments can be refunded');
       }
       if (booking.status !== BookingStatus.CONFIRMED && booking.status !== BookingStatus.CANCELLED) {
         throw AppError.badRequest('Only confirmed or cancelled bookings can be refunded');

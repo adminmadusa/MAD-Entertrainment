@@ -36,13 +36,12 @@ export default function EditEventPage() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState<string>('concert');
-  const [status, setStatus] = useState<EventStatus>(EventStatus.DRAFT);
+  const [status, setStatus] = useState<EventStatus>(EventStatus.PUBLISHED);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
-  const [ticketSalesCloseMode, setTicketSalesCloseMode] = useState<string>('EVENT_START');
-  const [ticketSalesCloseDate, setTicketSalesCloseDate] = useState('');
+  const [bookingStartDate, setBookingStartDate] = useState('');
+  const [bookingEndDate, setBookingEndDate] = useState('');
   const [tags, setTags] = useState('');
-  const [isFeatured, setIsFeatured] = useState(false);
   const [requireTerms, setRequireTerms] = useState(true);
   const [requireAgeConfirmation, setRequireAgeConfirmation] = useState(false);
   const [ageRestriction, setAgeRestriction] = useState<number | ''>(18);
@@ -82,17 +81,16 @@ export default function EditEventPage() {
       setTitle(event.title || '');
       setDescription(event.description || '');
       setCategory(event.category || 'concert');
-      setStatus(event.status || EventStatus.DRAFT);
+      setStatus(event.status || EventStatus.PUBLISHED);
       setStartDate(event.startDate ? new Date(event.startDate).toISOString().slice(0, 16) : '');
       setEndDate(event.endDate ? new Date(event.endDate).toISOString().slice(0, 16) : '');
-      setTicketSalesCloseMode(event.ticketSalesCloseMode || 'EVENT_START');
-      setTicketSalesCloseDate(event.ticketSalesCloseDate ? new Date(event.ticketSalesCloseDate).toISOString().slice(0, 16) : '');
+      setBookingStartDate(event.bookingStartDate ? new Date(event.bookingStartDate).toISOString().slice(0, 16) : '');
+      setBookingEndDate(event.bookingEndDate ? new Date(event.bookingEndDate).toISOString().slice(0, 16) : '');
       setVenue(event.venue || '');
       setOrganizerName(event.organizerName || '');
       setRefundPolicy(event.refundPolicy || '');
       setHighlightsInput(event.highlights?.join(', ') || '');
       setTags(event.tags?.join(', ') || '');
-      setIsFeatured(!!event.isFeatured);
       setRequireTerms(event.requireTerms ?? true);
       setRequireAgeConfirmation(!!event.requireAgeConfirmation);
       setAgeRestriction(event.ageRestriction ?? 18);
@@ -171,20 +169,16 @@ export default function EditEventPage() {
         venue: venue.trim(),
         startDate: new Date(startDate).toISOString(),
         endDate: endDate ? new Date(endDate).toISOString() : undefined,
-        isFeatured,
+        bookingStartDate: bookingStartDate ? new Date(bookingStartDate).toISOString() : undefined,
+        bookingEndDate: bookingEndDate ? new Date(bookingEndDate).toISOString() : undefined,
         requireTerms,
         requireAgeConfirmation,
         ageRestriction: requireAgeConfirmation && ageRestriction ? Number(ageRestriction) : undefined,
         tags: tags.split(',').map((t) => t.trim()).filter(Boolean),
         highlights: Array.from(new Set(highlightsInput.split(',').map((h) => h.trim()).filter(Boolean))),
-        ticketSalesCloseMode: ticketSalesCloseMode,
         refundPolicy: refundPolicy.trim() || undefined,
         organizerName: organizerName.trim() || undefined,
       };
-
-      if (ticketSalesCloseMode === 'CUSTOM_DATE' && ticketSalesCloseDate) {
-        payload.ticketSalesCloseDate = new Date(ticketSalesCloseDate).toISOString();
-      }
 
       if (isProfileType) {
         if (!selectedProfileId) return setError('Please select a ticket profile.');
@@ -225,6 +219,20 @@ export default function EditEventPage() {
     return (
       <div className="py-12 flex justify-center items-center">
         <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-accent-purple" />
+      </div>
+    );
+  }
+
+  if (!event) {
+    return (
+      <div className="py-12 flex flex-col items-center justify-center gap-4 text-center">
+        <p className="text-text-muted text-sm">Event not found or has been deleted.</p>
+        <button
+          onClick={() => router.push('/events')}
+          className="px-4 py-2 text-sm rounded-xl bg-accent-purple/10 border border-accent-purple/30 text-accent-purple hover:bg-accent-purple/20 transition-colors"
+        >
+          Back to Events
+        </button>
       </div>
     );
   }
@@ -286,10 +294,10 @@ export default function EditEventPage() {
         <EventScheduleCard
           startDate={startDate} setStartDate={setStartDate}
           endDate={endDate} setEndDate={setEndDate}
-          ticketSalesCloseMode={ticketSalesCloseMode}
-          setTicketSalesCloseMode={setTicketSalesCloseMode}
-          ticketSalesCloseDate={ticketSalesCloseDate}
-          setTicketSalesCloseDate={setTicketSalesCloseDate}
+          bookingStartDate={bookingStartDate}
+          setBookingStartDate={setBookingStartDate}
+          bookingEndDate={bookingEndDate}
+          setBookingEndDate={setBookingEndDate}
         />
 
         <EventTicketingCard
@@ -306,7 +314,6 @@ export default function EditEventPage() {
           requireAgeConfirmation={requireAgeConfirmation} setRequireAgeConfirmation={setRequireAgeConfirmation}
           ageRestriction={ageRestriction} setAgeRestriction={setAgeRestriction}
           tags={tags} setTags={setTags}
-          isFeatured={isFeatured} setIsFeatured={setIsFeatured}
         />
 
         <AdminFormActions

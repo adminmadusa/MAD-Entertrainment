@@ -1,9 +1,7 @@
 'use client';
 
 import React from 'react';
-
-import { EventGalleryUpload } from '@/components/EventGalleryUpload';
-
+import { EventMediaCard } from '@/components/events/EventMediaCard';
 import type { CloudinaryImage } from './types';
 
 interface EventMediaSectionProps {
@@ -24,19 +22,13 @@ export function EventMediaSection({
   setGalleryImages,
 }: EventMediaSectionProps) {
   return (
-    <div className="glass rounded-2xl border border-border-subtle p-6">
-      <h2 className="text-white font-semibold mb-4">Event Media (Banner, Poster, & Gallery)</h2>
-      <EventGalleryUpload
-        bannerImage={coverImage}
-        posterImage={posterImage}
-        galleryImages={galleryImages}
-        onChange={(b, p, g) => {
-          setCoverImage(b);
-          setPosterImage(p);
-          setGalleryImages(g);
-        }}
-        maxTotalImages={15}
-      />
-    </div>
+    <EventMediaCard
+      bannerImage={coverImage}
+      setBannerImage={setCoverImage}
+      posterImage={posterImage}
+      setPosterImage={setPosterImage}
+      galleryImages={galleryImages}
+      setGalleryImages={setGalleryImages}
+    />
   );
 }

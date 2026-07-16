@@ -13,6 +13,7 @@ import {
   inputCls,
   mapPopupToFormState,
   PopupFormState,
+  POPUP_PAGE_OPTIONS,
 } from './popup-form.utils';
 
 interface PopupFormProps {
@@ -176,13 +177,49 @@ export function PopupForm({
       {/* Scope and Date targeting */}
       <div className="glass rounded-2xl border border-border-subtle p-6 space-y-5">
         <h2 className="text-white font-semibold">Scope & Targeting</h2>
-        <FormField label="Show on pages (comma-separated, blank for all)">
-          <Input
-            value={formState.showOnPages}
-            onChange={(e) => setFormState((p) => ({ ...p, showOnPages: e.target.value }))}
-            placeholder="e.g. /, /events, /venues"
-          />
-        </FormField>
+
+        {/* Target pages — multi-checkbox, predefined marketing routes */}
+        <div>
+          <p className="text-sm text-text-secondary mb-3">
+            Target Pages
+            <span className="ml-1 text-text-muted">(select where this popup may appear)</span>
+          </p>
+          <div className="grid grid-cols-2 gap-2">
+            {POPUP_PAGE_OPTIONS.map((opt) => (
+              <label
+                key={opt.value}
+                className="flex items-center gap-2.5 cursor-pointer select-none p-2.5 rounded-xl border border-border-subtle hover:border-accent-purple/40 hover:bg-white/2 transition-colors"
+              >
+                <input
+                  type="checkbox"
+                  checked={formState.showOnPages.includes(opt.value)}
+                  onChange={(e) =>
+                    setFormState((p) => ({
+                      ...p,
+                      showOnPages: e.target.checked
+                        ? [...p.showOnPages, opt.value]
+                        : p.showOnPages.filter((v) => v !== opt.value),
+                    }))
+                  }
+                  className="w-4 h-4 accent-accent-purple rounded flex-shrink-0"
+                />
+                <span className="text-sm text-text-primary">{opt.label}</span>
+              </label>
+            ))}
+          </div>
+
+          {/* Warning when no pages selected */}
+          {formState.showOnPages.length === 0 && (
+            <p role="alert" className="mt-3 flex items-start gap-2 text-xs text-amber-400">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="mt-0.5 flex-shrink-0" aria-hidden="true">
+                <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+                <line x1="12" y1="9" x2="12" y2="13" />
+                <line x1="12" y1="17" x2="12.01" y2="17" />
+              </svg>
+              No pages selected. This popup will not appear to any users until at least one page is chosen.
+            </p>
+          )}
+        </div>
         <FormField label="Linked Event ID (optional)">
           <Input
             value={formState.linkedEventId}

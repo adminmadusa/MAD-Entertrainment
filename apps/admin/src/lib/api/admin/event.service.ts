@@ -41,12 +41,11 @@ export interface AdminEvent {
   venue: string;
   startDate: string;
   endDate?: string;
-  ticketSalesCloseMode?: string;
-  ticketSalesCloseDate?: string;
+  bookingStartDate?: string;
+  bookingEndDate?: string;
   ticketTiers: EventTier[];
   totalCapacity: number;
   eventVersion: number;
-  isFeatured: boolean;
   requireTerms?: boolean;
   requireAgeConfirmation?: boolean;
   ageRestriction?: number;

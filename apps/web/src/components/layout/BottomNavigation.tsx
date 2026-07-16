@@ -80,9 +80,8 @@ export function shouldShowBottomNav(pathname: string | null): boolean {
   const isEventDetail = pathname.startsWith('/events/');
   const isDjDetail = pathname.startsWith('/dj-operators/');
   const isCheckout = pathname.startsWith('/checkout/');
-  const isLogin = pathname === '/login';
 
-  if (isEventDetail || isDjDetail || isCheckout || isLogin) {
+  if (isEventDetail || isDjDetail || isCheckout) {
     return false;
   }
 

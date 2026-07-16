@@ -59,7 +59,6 @@ const isEventLifecycleStatus = (status: EventStatus): status is EventLifecycleSt
   Object.prototype.hasOwnProperty.call(EVENT_STATUS_TRANSITIONS, status);
 
 const INITIAL_EVENT_STATUSES: readonly EventStatus[] = [
-  EventStatus.DRAFT,
   EventStatus.PUBLISHED,
 ];
 
@@ -348,18 +347,25 @@ export const duplicateEvent = async (options: DuplicateEventOptions): Promise<IE
   // Apply overrides
   newEventData.title = title || `${originalEvent.title} (Copy)`;
   if (date) {
+    const startShift = new Date(date).getTime() - new Date(originalEvent.startDate).getTime();
     newEventData.startDate = new Date(date);
     // If original had endDate, try to maintain duration, otherwise leave unset or just don't copy
     if (originalEvent.endDate && originalEvent.startDate) {
       const duration = new Date(originalEvent.endDate).getTime() - new Date(originalEvent.startDate).getTime();
       newEventData.endDate = new Date(newEventData.startDate.getTime() + duration);
     }
+    if (originalEvent.bookingStartDate) {
+      newEventData.bookingStartDate = new Date(new Date(originalEvent.bookingStartDate).getTime() + startShift);
+    }
+    if (originalEvent.bookingEndDate) {
+      newEventData.bookingEndDate = new Date(new Date(originalEvent.bookingEndDate).getTime() + startShift);
+    }
   }
   if (venue) {
     newEventData.venue = venue;
   }
 
-  newEventData.status = publish ? EventStatus.PUBLISHED : EventStatus.DRAFT;
+  newEventData.status = EventStatus.PUBLISHED;
   newEventData.slug = newEventData.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 
   // Ensure unique slug

@@ -38,7 +38,6 @@ export function AuthModalProvider({ children }: AuthModalProviderProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
   const [returnTo, setReturnTo] = useState<string | null>(null);
-  const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
 
   // Synchronize modal state with URL
   const syncWithUrl = useCallback((open: boolean, redirectUrl?: string | null) => {
@@ -78,33 +77,15 @@ export function AuthModalProvider({ children }: AuthModalProviderProps) {
   }, [syncWithUrl]);
 
   const handleCloseRequest = useCallback(() => {
-    if (isDirty) {
-      setIsConfirmationOpen(true);
-    } else {
-      closeAuthModal();
-    }
-  }, [isDirty, closeAuthModal]);
-
-  const handleConfirmDiscard = useCallback(() => {
-    setIsConfirmationOpen(false);
-    setIsDirty(false);
     closeAuthModal();
   }, [closeAuthModal]);
 
-  const handleCancelDiscard = useCallback(() => {
-    setIsConfirmationOpen(false);
-  }, []);
-
   const isOpenRef = useRef(isOpen);
-  const isDirtyRef = useRef(isDirty);
 
   useEffect(() => {
     isOpenRef.current = isOpen;
   }, [isOpen]);
 
-  useEffect(() => {
-    isDirtyRef.current = isDirty;
-  }, [isDirty]);
 
   // Listen for Next.js/Browser history navigation (back/forward buttons)
   useEffect(() => {
@@ -114,20 +95,11 @@ export function AuthModalProvider({ children }: AuthModalProviderProps) {
       const params = new URLSearchParams(window.location.search);
       const hasAuth = params.get('auth') === 'true';
       const currentIsOpen = isOpenRef.current;
-      const currentIsDirty = isDirtyRef.current;
 
       if (!hasAuth && currentIsOpen) {
-        if (currentIsDirty) {
-          // Put auth=true back to prevent navigation away, and trigger confirmation
-          const currentParams = new URLSearchParams(window.location.search);
-          currentParams.set('auth', 'true');
-          window.history.pushState(null, '', `?${currentParams.toString()}`);
-          setIsConfirmationOpen(true);
-        } else {
-          setIsOpen(false);
-          setIsDirty(false);
-          setReturnTo(null);
-        }
+        setIsOpen(false);
+        setIsDirty(false);
+        setReturnTo(null);
       } else if (hasAuth && !currentIsOpen) {
         setIsOpen(true);
         setReturnTo(validateReturnTo(params.get('returnTo')));
@@ -175,8 +147,8 @@ export function AuthModalProvider({ children }: AuthModalProviderProps) {
         onClose={handleCloseRequest}
         showCloseButton={true}
         presentation="bottom-sheet"
-        closeOnBackdropClick={!isDirty} // Disable backdrop close if dirty
-        enableSwipeToClose={!isDirty} // Disable swipe close if dirty
+        closeOnBackdropClick={true}
+        enableSwipeToClose={true}
         ariaLabelledBy="auth-modal-title"
         ariaDescribedBy="auth-modal-description"
       >
@@ -187,43 +159,6 @@ export function AuthModalProvider({ children }: AuthModalProviderProps) {
             onClose={handleCloseRequest}
             onDirtyChange={setIsDirty}
           />
-        </div>
-      </Modal>
-
-      {/* Discard Changes Accessible Confirmation Dialog */}
-      <Modal
-        isOpen={isConfirmationOpen}
-        onClose={handleCancelDiscard}
-        showCloseButton={false}
-        closeOnBackdropClick={false}
-        enableSwipeToClose={false}
-        ariaLabelledBy="confirm-title"
-        ariaDescribedBy="confirm-desc"
-      >
-        <div className="space-y-6 text-center">
-          <h3 id="confirm-title" className="text-xl font-bold text-white tracking-tight">
-            Discard Changes?
-          </h3>
-          <p id="confirm-desc" className="text-text-secondary text-sm leading-relaxed">
-            You have unsaved sign-in progress. Are you sure you want to discard your changes and close?
-          </p>
-
-          <div className="flex flex-col sm:flex-row gap-3 pt-2">
-            <button
-              type="button"
-              onClick={handleConfirmDiscard}
-              className="w-full py-2.5 px-4 rounded-xl text-sm font-semibold bg-red-500 hover:bg-red-600 text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
-            >
-              Discard
-            </button>
-            <button
-              type="button"
-              onClick={handleCancelDiscard}
-              className="w-full py-2.5 px-4 rounded-xl text-sm font-semibold bg-white/10 hover:bg-white/15 text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
-            >
-              Keep Editing
-            </button>
-          </div>
         </div>
       </Modal>
     </AuthModalContext.Provider>

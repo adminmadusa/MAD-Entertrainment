@@ -93,6 +93,8 @@ export const EVENT_DUPLICATION_POLICY = {
     'venue',
     'djOperatorIds',
     'ticketTiers',
+    'bookingStartDate',
+    'bookingEndDate',
   ],
   reset: [
     '_id',
@@ -102,7 +104,7 @@ export const EVENT_DUPLICATION_POLICY = {
     'eventVersion',
   ],
   regenerated: [
-    'status', // Defaults to DRAFT
+    'status', // Defaults to PUBLISHED
   ]
 } as const;
 
@@ -282,12 +284,6 @@ export enum PaymentMethod {
   STRIPE_CARD = 'stripe_card',
 }
 
-// ─── Ticket Sales Close Mode ─────────────────────────────────
-export enum TicketSalesCloseMode {
-  EVENT_START = 'EVENT_START',
-  EVENT_END = 'EVENT_END',
-  CUSTOM_DATE = 'CUSTOM_DATE',
-}
 
 // ─── Ticket Tier ─────────────────────────────────────────────
 export enum TicketTier {
@@ -393,6 +389,9 @@ export const MAX_MEMORIES_GALLERY_LIMIT = 50;
 // ─── Popup Cooldown ──────────────────────────────────────────
 export const POPUP_COOLDOWN_HOURS = 24;
 export const POPUP_SESSION_KEY_PREFIX = 'mad_popup_';
+
+// ─── Default Event Duration ──────────────────────────────────
+export const DEFAULT_EVENT_DURATION_HOURS = 4;
 
 // ─── API Routes ──────────────────────────────────────────────
 export const API_ROUTES = {

@@ -3,11 +3,10 @@ import React from 'react';
 import { Skeleton } from '@mad/ui';
 
 /**
- * FeaturedEventsSkeleton
- * Mimics the 3D cover flow carousel layout to prevent layout shift.
- * Shows a main active card in the center and two flanked inactive cards on larger viewports.
+ * UpcomingEventsSkeleton
+ * Renders exactly 6 cards to match the Upcoming limit.
  */
-export function FeaturedEventsSkeleton() {
+export function UpcomingEventsSkeleton() {
   return (
     <section
       className="py-16 overflow-hidden"

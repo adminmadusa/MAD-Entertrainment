@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { EventCategory } from '@mad/shared';
 
 import { listDJOperatorsQuerySchema } from './dj-operator.validation';
-import { listEventsQuerySchema } from './payment.validation';
+import { listEventsQuerySchema } from './event.validation';
 
 function expectAccepted(schema: z.ZodTypeAny, payload: unknown) {
   const result = schema.safeParse(payload);

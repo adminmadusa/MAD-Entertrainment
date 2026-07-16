@@ -11,13 +11,12 @@ interface EventReviewSectionProps {
   status: EventStatus;
   startDate: string;
   endDate: string;
-  ticketSalesCloseMode: string;
-  ticketSalesCloseDate: string;
+  bookingStartDate: string;
+  bookingEndDate: string;
   requireTerms: boolean;
   requireAgeConfirmation: boolean;
   ageRestriction: number | '';
   tags: string;
-  isFeatured: boolean;
   ticketingType: 'custom' | 'profile';
   tiers: TicketTierInput[];
   selectedProfileId: string;
@@ -35,13 +34,12 @@ export const EventReviewSection: React.FC<EventReviewSectionProps> = ({
   status,
   startDate,
   endDate,
-  ticketSalesCloseMode,
-  ticketSalesCloseDate,
+  bookingStartDate,
+  bookingEndDate,
   requireTerms,
   requireAgeConfirmation,
   ageRestriction,
   tags,
-  isFeatured,
   ticketingType,
   tiers,
   selectedProfileId,
@@ -112,10 +110,15 @@ export const EventReviewSection: React.FC<EventReviewSectionProps> = ({
             <span className="text-white font-medium">{endDate ? new Date(endDate).toLocaleString() : '—'}</span>
           </div>
           <div>
-            <span className="text-text-muted block mb-1">Ticket Sales Close</span>
+            <span className="text-text-muted block mb-1">Booking Opens</span>
             <span className="text-white font-medium">
-              {ticketSalesCloseMode}
-              {ticketSalesCloseMode === 'CUSTOM_DATE' && ticketSalesCloseDate ? ` (${new Date(ticketSalesCloseDate).toLocaleString()})` : ''}
+              {bookingStartDate ? new Date(bookingStartDate).toLocaleString() : 'Immediately on publish'}
+            </span>
+          </div>
+          <div>
+            <span className="text-text-muted block mb-1">Booking Closes</span>
+            <span className="text-white font-medium">
+              {bookingEndDate ? new Date(bookingEndDate).toLocaleString() : (startDate ? new Date(startDate).toLocaleString() : '—')}
             </span>
           </div>
         </div>
@@ -173,9 +176,8 @@ export const EventReviewSection: React.FC<EventReviewSectionProps> = ({
               </div>
             </div>
             <div>
-              <span className="text-text-muted block mb-1">Tags & Features</span>
+              <span className="text-text-muted block mb-1">Tags</span>
               <div className="space-y-1">
-                {isFeatured && <Badge variant="info" className="mr-2">Featured</Badge>}
                 {tags.split(',').filter(Boolean).map(t => (
                   <Badge key={t} variant="default" className="mr-1 mb-1">{t.trim()}</Badge>
                 ))}

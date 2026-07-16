@@ -1,7 +1,8 @@
 import jwt from 'jsonwebtoken';
 import type { FilterQuery } from 'mongoose';
 
-import { EventStatus, SeatStatus, deriveBookingEligibility } from '@mad/shared';
+import { EventStatus, SeatStatus } from '@mad/shared';
+import { deriveBookingEligibility } from '@mad/shared/src/utils/booking-eligibility.engine';
 
 import { getEnv } from '../../config/env';
 import { getRedis } from '../../config/redis';
@@ -35,7 +36,7 @@ export function verifyPreviewToken(token: string): {
 
 
 export class PublicEventService {
-  static async listEvents(filters: { category?: string; status?: string; search?: string; isFeatured?: boolean; page?: number; limit?: number; includeTotal?: boolean }) {
+  static async listEvents(filters: { category?: string; status?: string; search?: string; page?: number; limit?: number; includeTotal?: boolean }) {
     const page = filters.page || 1;
     const limit = filters.limit || 12;
     const skip = (page - 1) * limit;
@@ -48,11 +49,8 @@ export class PublicEventService {
 
     if (filters.status) {
       if (filters.status === 'completed') {
-        query.$or = [
-          { endDate: { $lt: now } },
-          { endDate: { $exists: false }, startDate: { $lt: now } },
-          { endDate: null, startDate: { $lt: now } },
-        ];
+        // Only events explicitly marked as completed in their lifecycle
+        query.status = EventStatus.COMPLETED;
       } else if (filters.status === 'published' || filters.status === 'upcoming') {
         query.status = EventStatus.PUBLISHED;
         query.$or = [
@@ -71,10 +69,6 @@ export class PublicEventService {
         { endDate: { $exists: false }, startDate: { $gte: now } },
         { endDate: null, startDate: { $gte: now } },
       ];
-    }
-
-    if (filters.isFeatured !== undefined) {
-      query.isFeatured = filters.isFeatured;
     }
 
     if (filters.category) {
