@@ -39,8 +39,8 @@ export default function EditEventPage() {
   const [status, setStatus] = useState<EventStatus>(EventStatus.PUBLISHED);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
-  const [ticketSalesCloseMode, setTicketSalesCloseMode] = useState<string>('EVENT_START');
-  const [ticketSalesCloseDate, setTicketSalesCloseDate] = useState('');
+  const [bookingStartDate, setBookingStartDate] = useState('');
+  const [bookingEndDate, setBookingEndDate] = useState('');
   const [tags, setTags] = useState('');
   const [requireTerms, setRequireTerms] = useState(true);
   const [requireAgeConfirmation, setRequireAgeConfirmation] = useState(false);
@@ -84,8 +84,8 @@ export default function EditEventPage() {
       setStatus(event.status || EventStatus.PUBLISHED);
       setStartDate(event.startDate ? new Date(event.startDate).toISOString().slice(0, 16) : '');
       setEndDate(event.endDate ? new Date(event.endDate).toISOString().slice(0, 16) : '');
-      setTicketSalesCloseMode(event.ticketSalesCloseMode || 'EVENT_START');
-      setTicketSalesCloseDate(event.ticketSalesCloseDate ? new Date(event.ticketSalesCloseDate).toISOString().slice(0, 16) : '');
+      setBookingStartDate(event.bookingStartDate ? new Date(event.bookingStartDate).toISOString().slice(0, 16) : '');
+      setBookingEndDate(event.bookingEndDate ? new Date(event.bookingEndDate).toISOString().slice(0, 16) : '');
       setVenue(event.venue || '');
       setOrganizerName(event.organizerName || '');
       setRefundPolicy(event.refundPolicy || '');
@@ -169,19 +169,16 @@ export default function EditEventPage() {
         venue: venue.trim(),
         startDate: new Date(startDate).toISOString(),
         endDate: endDate ? new Date(endDate).toISOString() : undefined,
+        bookingStartDate: bookingStartDate ? new Date(bookingStartDate).toISOString() : undefined,
+        bookingEndDate: bookingEndDate ? new Date(bookingEndDate).toISOString() : undefined,
         requireTerms,
         requireAgeConfirmation,
         ageRestriction: requireAgeConfirmation && ageRestriction ? Number(ageRestriction) : undefined,
         tags: tags.split(',').map((t) => t.trim()).filter(Boolean),
         highlights: Array.from(new Set(highlightsInput.split(',').map((h) => h.trim()).filter(Boolean))),
-        ticketSalesCloseMode: ticketSalesCloseMode,
         refundPolicy: refundPolicy.trim() || undefined,
         organizerName: organizerName.trim() || undefined,
       };
-
-      if (ticketSalesCloseMode === 'CUSTOM_DATE' && ticketSalesCloseDate) {
-        payload.ticketSalesCloseDate = new Date(ticketSalesCloseDate).toISOString();
-      }
 
       if (isProfileType) {
         if (!selectedProfileId) return setError('Please select a ticket profile.');
@@ -297,10 +294,10 @@ export default function EditEventPage() {
         <EventScheduleCard
           startDate={startDate} setStartDate={setStartDate}
           endDate={endDate} setEndDate={setEndDate}
-          ticketSalesCloseMode={ticketSalesCloseMode}
-          setTicketSalesCloseMode={setTicketSalesCloseMode}
-          ticketSalesCloseDate={ticketSalesCloseDate}
-          setTicketSalesCloseDate={setTicketSalesCloseDate}
+          bookingStartDate={bookingStartDate}
+          setBookingStartDate={setBookingStartDate}
+          bookingEndDate={bookingEndDate}
+          setBookingEndDate={setBookingEndDate}
         />
 
         <EventTicketingCard

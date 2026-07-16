@@ -80,16 +80,15 @@ describe('Admin Event Service', () => {
     vi.mocked(Event.findOne).mockResolvedValue(null);
   });
 
-  describe('createEvent - Initial Lifecycle Governance', () => {
-    it.each([EventStatus.PUBLISHED])('allows initial status %s', async (status) => {
-      const result = await eventService.createEvent({ status } as any);
-
-      expect(result.status).toBe(status);
-      expect(Event).toHaveBeenCalledWith({ status });
+  describe('createEvent - Initial Lifecycle Governance', () =>
+       
+      expect(result.status).toBe(EventStatus.PUBLISHED);
+      expect(Event).toHaveBeenCalledWith({ status: EventStatus.PUBLISHED });
       expect(CacheService.delPattern).toHaveBeenCalledWith('events:*');
     });
 
     it.each([
+      EventStatus.DRAFT,
       EventStatus.COMPLETED,
       EventStatus.CANCELLED,
       EventStatus.POSTPONED,

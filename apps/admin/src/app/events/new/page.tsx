@@ -47,8 +47,8 @@ export default function CreateEventPage() {
   const [status] = useState<EventStatus>(EventStatus.PUBLISHED);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
-  const [ticketSalesCloseMode, setTicketSalesCloseMode] = useState<string>('EVENT_START');
-  const [ticketSalesCloseDate, setTicketSalesCloseDate] = useState('');
+  const [bookingStartDate, setBookingStartDate] = useState('');
+  const [bookingEndDate, setBookingEndDate] = useState('');
   const [tags, setTags] = useState('');
   const [requireTerms, setRequireTerms] = useState(true);
   const [requireAgeConfirmation, setRequireAgeConfirmation] = useState(false);
@@ -160,14 +160,11 @@ export default function CreateEventPage() {
         ageRestriction: requireAgeConfirmation && ageRestriction ? Number(ageRestriction) : undefined,
         tags: tags.split(',').map((t) => t.trim()).filter(Boolean),
         highlights: Array.from(new Set(highlightsInput.split(',').map((h) => h.trim()).filter(Boolean))),
-        ticketSalesCloseMode,
+        bookingStartDate: bookingStartDate ? new Date(bookingStartDate).toISOString() : undefined,
+        bookingEndDate: bookingEndDate ? new Date(bookingEndDate).toISOString() : undefined,
         refundPolicy: refundPolicy.trim() || undefined,
         organizerName: organizerName.trim() || undefined,
       };
-
-      if (ticketSalesCloseMode === 'CUSTOM_DATE' && ticketSalesCloseDate) {
-        payload.ticketSalesCloseDate = new Date(ticketSalesCloseDate).toISOString();
-      }
 
       if (isProfileType) {
         payload.ticketProfileId = selectedProfileId;
@@ -262,8 +259,8 @@ export default function CreateEventPage() {
           <EventScheduleSection
             startDate={startDate} setStartDate={setStartDate}
             endDate={endDate} setEndDate={setEndDate}
-            ticketSalesCloseMode={ticketSalesCloseMode} setTicketSalesCloseMode={setTicketSalesCloseMode}
-            ticketSalesCloseDate={ticketSalesCloseDate} setTicketSalesCloseDate={setTicketSalesCloseDate}
+            bookingStartDate={bookingStartDate} setBookingStartDate={setBookingStartDate}
+            bookingEndDate={bookingEndDate} setBookingEndDate={setBookingEndDate}
           />
         </motion.div>
       )}
@@ -301,10 +298,11 @@ export default function CreateEventPage() {
       {/* STEP 5: Review & Publish */}
       {currentStep === 4 && (
         <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-6">
+          
           <EventReviewSection
             title={title} category={category} description={description} venueName={venueName}
             status={status} startDate={startDate} endDate={endDate}
-            ticketSalesCloseMode={ticketSalesCloseMode} ticketSalesCloseDate={ticketSalesCloseDate}
+            bookingStartDate={bookingStartDate} bookingEndDate={bookingEndDate}
             requireTerms={requireTerms} requireAgeConfirmation={requireAgeConfirmation}
             ageRestriction={ageRestriction} tags={tags}
             ticketingType={ticketingType} tiers={tiers} selectedProfileId={selectedProfileId}
