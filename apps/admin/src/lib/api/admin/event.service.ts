@@ -46,7 +46,6 @@ export interface AdminEvent {
   ticketTiers: EventTier[];
   totalCapacity: number;
   eventVersion: number;
-  isFeatured: boolean;
   requireTerms?: boolean;
   requireAgeConfirmation?: boolean;
   ageRestriction?: number;

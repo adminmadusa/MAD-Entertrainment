@@ -3,12 +3,9 @@ import Link from 'next/link';
 import { Suspense } from 'react';
 
 import { Reveal, StaggerContainer, StaggerItem } from '@/components/common/PageTransition';
-import { FeaturedEventsSkeleton } from '@/components/ui/HomeSkeletons';
-import { serverGetFeaturedEvents, serverGetCompletedEvents } from '@/lib/api/server.service';
+import { UpcomingEventsSkeleton } from '@/components/ui/HomeSkeletons';
+import { serverGetUpcomingEvents, serverGetCompletedEvents } from '@/lib/api/server.service';
 import { ArrowRight } from '@mad/ui';
-
-import { FeaturedEventsSection } from '@/components/ui/FeaturedEventsSection';
-import { CompletedEventsSection } from '@/components/ui/CompletedEventsSection';
 
 export const metadata: Metadata = {
   title: 'MAD Entertrainment — Book Shows, Events & DJ Nights',
@@ -35,9 +32,9 @@ export const revalidate = 60;
 
 // ─── Parallel Server Data Loaders ─────────────────────────────────
 
-async function FeaturedEventsServerSection() {
-  const events = await serverGetFeaturedEvents();
-  return <FeaturedEventsSection initialEvents={events} />;
+async function UpcomingEventsServerSection() {
+  const events = await serverGetUpcomingEvents(6);
+  return <UpcomingEventsSection initialEvents={events} />;
 }
 
 async function CompletedEventsServerSection() {
@@ -67,13 +64,13 @@ export default function HomePage() {
       {/* ─── Hero Section ─────────────────────────────────── */}
       <HeroSection />
 
-      {/* ─── Featured Events (Streamed) ────────────────────── */}
-      <Suspense fallback={<FeaturedEventsSkeleton />}>
-        <FeaturedEventsServerSection />
+      {/* ─── Upcoming Events (Streamed) ────────────────────── */}
+      <Suspense fallback={<UpcomingEventsSkeleton />}>
+        <UpcomingEventsServerSection />
       </Suspense>
 
       {/* ─── Completed Events & Moments (Streamed) ──────────── */}
-      <Suspense fallback={<FeaturedEventsSkeleton />}>
+      <Suspense fallback={<UpcomingEventsSkeleton />}>
         <CompletedEventsServerSection />
       </Suspense>
 

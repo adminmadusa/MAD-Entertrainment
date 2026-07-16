@@ -124,7 +124,6 @@ export interface IEvent extends Document {
   soldCount: number;
   reservedCount: number;
   eventVersion: number;
-  isFeatured: boolean;
   isSoldOut: boolean;
   seatLayoutId?: Types.ObjectId;
   tags?: string[];
@@ -191,7 +190,6 @@ const eventSchema = new Schema<IEvent>(
     soldCount: { type: Number, default: 0, min: 0 },
     reservedCount: { type: Number, default: 0, min: 0 },
     eventVersion: { type: Number, default: 1, min: 1 },
-    isFeatured: { type: Boolean, default: false, index: true },
     isSoldOut: { type: Boolean, default: false },
 
     seatLayoutId: { type: Schema.Types.ObjectId, ref: 'SeatLayout' },
@@ -223,7 +221,6 @@ const eventSchema = new Schema<IEvent>(
 // ─── Indexes ──────────────────────────────────────────────────
 eventSchema.index({ startDate: 1, status: 1 });
 eventSchema.index({ category: 1, status: 1, startDate: 1 });
-eventSchema.index({ isFeatured: 1, status: 1 });
 eventSchema.index({ isDeleted: 1, status: 1, startDate: 1 });
 eventSchema.index({ title: 1 });
 eventSchema.index({ title: 'text', description: 'text', tags: 'text' });

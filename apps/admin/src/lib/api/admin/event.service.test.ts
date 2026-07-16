@@ -26,7 +26,6 @@ const eventFixture: AdminEvent = {
   ticketTiers: [],
   totalCapacity: 100,
   eventVersion: 1,
-  isFeatured: false,
   createdAt: '2026-05-01T00:00:00.000Z',
 };
 
