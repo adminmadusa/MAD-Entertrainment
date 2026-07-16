@@ -45,6 +45,8 @@ export const adminBookingsQuerySchema = z.object({
   search: z.string().max(200).optional(),
   status: z.nativeEnum(BookingStatus).optional(),
   eventId: objectIdSchema.optional(),
+  sortField: z.string().max(50).optional(),
+  sortOrder: z.enum(['asc', 'desc']).optional(),
 }).strict();
 
 // -- Coupon Validation --
