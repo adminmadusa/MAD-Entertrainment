@@ -35,7 +35,7 @@ export function verifyPreviewToken(token: string): {
 
 
 export class PublicEventService {
-  static async listEvents(filters: { category?: string; status?: string; search?: string; isFeatured?: boolean; page?: number; limit?: number; includeTotal?: boolean }) {
+  static async listEvents(filters: { category?: string; status?: string; search?: string; page?: number; limit?: number; includeTotal?: boolean }) {
     const page = filters.page || 1;
     const limit = filters.limit || 12;
     const skip = (page - 1) * limit;
@@ -71,10 +71,6 @@ export class PublicEventService {
         { endDate: { $exists: false }, startDate: { $gte: now } },
         { endDate: null, startDate: { $gte: now } },
       ];
-    }
-
-    if (filters.isFeatured !== undefined) {
-      query.isFeatured = filters.isFeatured;
     }
 
     if (filters.category) {

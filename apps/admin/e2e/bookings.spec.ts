@@ -42,7 +42,6 @@ test.beforeEach(async ({ page }) => {
               venue: 'Main Arena',
               startDate: '2026-07-15T18:00:00Z',
               totalCapacity: 500,
-              isFeatured: true,
               createdAt: '2026-06-01T12:00:00Z',
               ticketTiers: [],
             },

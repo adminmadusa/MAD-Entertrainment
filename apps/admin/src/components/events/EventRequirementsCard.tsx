@@ -14,8 +14,6 @@ export interface EventRequirementsCardProps {
   setAgeRestriction: (val: number | '') => void;
   tags: string;
   setTags: (val: string) => void;
-  isFeatured: boolean;
-  setIsFeatured: (val: boolean) => void;
 }
 
 export const EventRequirementsCard = React.memo(function EventRequirementsCard({
@@ -27,8 +25,6 @@ export const EventRequirementsCard = React.memo(function EventRequirementsCard({
   setAgeRestriction,
   tags,
   setTags,
-  isFeatured,
-  setIsFeatured,
 }: EventRequirementsCardProps) {
   return (
     <>
@@ -44,19 +40,6 @@ export const EventRequirementsCard = React.memo(function EventRequirementsCard({
             className={inputCls}
           />
         </FormField>
-
-        <div className="flex flex-wrap gap-6">
-          <label htmlFor="event-is-featured" className="flex items-center gap-3 cursor-pointer select-none">
-            <input
-              id="event-is-featured"
-              type="checkbox"
-              checked={isFeatured}
-              onChange={(e) => setIsFeatured(e.target.checked)}
-              className="w-4 h-4 accent-accent-purple rounded"
-            />
-            <span className="text-text-secondary text-sm">Feature on homepage</span>
-          </label>
-        </div>
       </div>
 
       {/* Registration Requirements */}

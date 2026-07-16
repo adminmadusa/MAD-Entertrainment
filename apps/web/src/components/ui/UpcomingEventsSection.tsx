@@ -14,7 +14,7 @@ import { EventCategory, EVENT_CATEGORY_LABELS } from '@mad/shared';
 import type { Event } from '@mad/types';
 import { ArrowLeft, ArrowRight, CalendarIcon } from '@mad/ui';
 
-export const FeaturedEventsSection = memo(function FeaturedEventsSection({ initialEvents = [] }: { initialEvents: Event[] }) {
+export const UpcomingEventsSection = memo(function UpcomingEventsSection({ initialEvents = [] }: { initialEvents: Event[] }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -68,7 +68,7 @@ export const FeaturedEventsSection = memo(function FeaturedEventsSection({ initi
   return (
     <section
       className="pt-8 pb-16 overflow-hidden"
-      aria-label="Featured events"
+      aria-label="Upcoming events"
       role="region"
     >
       <div className="container-mad">
@@ -81,7 +81,7 @@ export const FeaturedEventsSection = memo(function FeaturedEventsSection({ initi
                 Don&apos;t Miss Out
               </p>
               <h2 className="text-display-sm font-black text-white">
-                Featured Events
+                Upcoming Events
               </h2>
             </div>
             <Link
@@ -113,7 +113,7 @@ export const FeaturedEventsSection = memo(function FeaturedEventsSection({ initi
             style={{ perspective: '1200px' }}
             role="group"
             aria-roledescription="carousel"
-            aria-label="Upcoming featured events"
+            aria-label="Upcoming events"
             tabIndex={0}
             onKeyDown={handleKeyDown}
           >
@@ -194,7 +194,7 @@ export const FeaturedEventsSection = memo(function FeaturedEventsSection({ initi
                     >
                       <Link
                         href={`/events/${event.slug}`}
-                        id={`featured-event-card-${event.slug}`}
+                        id={`upcoming-event-card-${event.slug}`}
                         className={`flex flex-col h-full focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple ${!isActive ? 'pointer-events-none' : ''}`}
                         aria-label={cardAriaLabel}
                         tabIndex={isActive ? 0 : -1}

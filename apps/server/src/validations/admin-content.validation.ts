@@ -399,7 +399,6 @@ const eventBodySchema = z.object({
     )
     .optional(),
   totalCapacity: z.number().int().min(1),
-  isFeatured: z.boolean().optional(),
   seatLayoutId: z.string().optional(),
   tags: z.array(z.string()).optional(),
   ageRestriction: z.number().int().min(0).optional(),
