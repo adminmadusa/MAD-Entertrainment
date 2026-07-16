@@ -228,5 +228,7 @@ export const adminEventsQuerySchema = z.object({
     limit: z.coerce.number().int().positive().max(100).default(15),
     search: z.string().max(200).optional(),
     status: eventLifecycleStatusSchema.optional(),
+    sortField: z.string().max(50).optional(),
+    sortOrder: z.enum(['asc', 'desc']).optional(),
   }).strict(),
 });
