@@ -1,4 +1,4 @@
-import { EventState, BookingReason, EventStatus } from '../constants';
+import { EventState, BookingReason, EventStatus } from '../constants/index';
 import { deriveEventLifecycleState, canBook } from './event-lifecycle';
 
 export interface BaseEventForBooking {
