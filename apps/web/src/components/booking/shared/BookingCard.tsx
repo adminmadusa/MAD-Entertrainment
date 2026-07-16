@@ -153,8 +153,8 @@ export function BookingCard({
 
             if (!ticketsReady) {
               return (
-                <div className="space-y-3 pt-4 border-t border-border-subtle/30">
-                  <h3 className="text-white font-bold text-sm">Entry Passes</h3>
+                 <div className="space-y-3 pt-4 border-t border-border-subtle/30">
+                  <h3 className="text-white font-bold text-sm">Your Tickets</h3>
                   {pollsExhausted ? (
                     <div className="glass-strong rounded-2xl border border-border-subtle p-6 text-center text-text-secondary text-sm">
                       Your tickets are being processed and will appear in your email shortly.
@@ -168,7 +168,7 @@ export function BookingCard({
                         </svg>
                         Generating your tickets...
                       </div>
-                      <p className="text-text-muted text-xs">This usually takes a few seconds. Your entry passes will appear here automatically.</p>
+                      <p className="text-text-muted text-xs">This usually takes a few seconds. Your tickets will appear here automatically.</p>
                     </div>
                   )}
                 </div>
@@ -178,7 +178,7 @@ export function BookingCard({
             return (
               <div className="space-y-4 pt-4 border-t border-border-subtle/30">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-2">
-                  <h3 className="text-white font-bold text-sm">Entry Passes</h3>
+                  <h3 className="text-white font-bold text-sm">Your Tickets</h3>
                   <TicketActions
                     downloading={downloading}
                     resending={resending}

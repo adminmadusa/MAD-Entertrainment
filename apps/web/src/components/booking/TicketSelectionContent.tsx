@@ -219,7 +219,7 @@ export function TicketSelectionContent({
           {Object.entries(
             event.ticketTiers.reduce<Record<string, TicketTierWithOptionalFields[]>>((acc, tier) => {
               const tierWithMeta = tier as TicketTierWithOptionalFields;
-              const groupName = tierWithMeta.groupName || 'Passes';
+              const groupName = tierWithMeta.groupName || 'Tickets';
               if (!acc[groupName]) acc[groupName] = [];
               acc[groupName].push(tierWithMeta);
               return acc;
