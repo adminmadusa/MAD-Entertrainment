@@ -1,11 +1,11 @@
 export * from './constants';
 export * from './utils/event-lifecycle';
-export {
+export type {
   BaseEventForBooking,
   EventBookingCTA,
-  EventBookingState,
-  deriveBookingEligibility
+  EventBookingState
 } from './utils/booking-eligibility.engine';
+export { deriveBookingEligibility } from './utils/booking-eligibility.engine';
 
 export interface BulkOperationResult {
   successCount: number;
