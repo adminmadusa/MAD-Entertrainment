@@ -20,6 +20,7 @@ import { CheckoutForm } from './checkout/CheckoutForm';
 import { CheckoutPayment } from './checkout/CheckoutPayment';
 import { CheckoutPricing } from './checkout/CheckoutPricing';
 import { useCheckoutNavGuard } from './checkout/useCheckoutNavGuard';
+import { TicketSummaryItem } from './shared/TicketSummaryItem';
 
 const LeaveCheckoutModal = dynamic(() => import('./checkout/LeaveCheckoutModal').then(mod => mod.LeaveCheckoutModal), {
   ssr: false,
@@ -328,17 +329,15 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose }: Checkou
 
           {/* Ticket Summary Section */}
           <div className="bg-white/2 border border-white/5 rounded-2xl p-4 sm:p-5 text-left space-y-3">
-            <span className="text-[10px] text-text-muted font-bold uppercase tracking-wider block border-b border-white/5 pb-2">Order Details</span>
+            <span className="text-[10px] text-text-muted font-bold uppercase tracking-wider block border-b border-white/5 pb-2">Your Tickets</span>
             <div className="space-y-2">
               {booking.tickets.map((t, index) => (
-                <div key={index} className="flex justify-between items-center text-xs">
-                  <span className="text-text-secondary font-medium">
-                    {t.quantity}x {t.tierName}
-                  </span>
-                  <span className="text-white font-semibold font-mono">
-                    ₹{t.subtotal.toLocaleString('en-IN')}
-                  </span>
-                </div>
+                <TicketSummaryItem
+                  key={index}
+                  tierName={t.tierName}
+                  quantity={t.quantity}
+                  price={t.subtotal}
+                />
               ))}
             </div>
             <div className="flex justify-between items-center text-sm font-bold pt-3 border-t border-white/5">

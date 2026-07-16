@@ -83,7 +83,7 @@ export const TicketTierCard = React.memo(function TicketTierCard({
       {/* Ticket Config Row 2 */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <div className="space-y-1.5">
-          <label htmlFor={`ticket-price-${gIdx}-${tIdx}`} className="text-text-secondary text-xs font-medium">Price (₹)</label>
+          <label htmlFor={`ticket-price-${gIdx}-${tIdx}`} className="text-text-secondary text-xs font-medium">Price per Ticket (₹)</label>
           <input
             id={`ticket-price-${gIdx}-${tIdx}`}
             type="number"
@@ -104,7 +104,7 @@ export const TicketTierCard = React.memo(function TicketTierCard({
           />
         </div>
         <div className="space-y-1.5">
-          <label htmlFor={`ticket-capacity-${gIdx}-${tIdx}`} className="text-text-secondary text-xs font-medium">Capacity Limit</label>
+          <label htmlFor={`ticket-capacity-${gIdx}-${tIdx}`} className="text-text-secondary text-xs font-medium">Ticket Capacity Limit</label>
           <input
             id={`ticket-capacity-${gIdx}-${tIdx}`}
             type="number"
@@ -124,7 +124,7 @@ export const TicketTierCard = React.memo(function TicketTierCard({
           />
         </div>
         <div className="space-y-1.5">
-          <label htmlFor={`ticket-max-qty-${gIdx}-${tIdx}`} className="text-text-secondary text-xs font-medium">Max Qty / Booking</label>
+          <label htmlFor={`ticket-max-qty-${gIdx}-${tIdx}`} className="text-text-secondary text-xs font-medium">Max Tickets / Booking</label>
           <input
             id={`ticket-max-qty-${gIdx}-${tIdx}`}
             type="number"
@@ -143,7 +143,7 @@ export const TicketTierCard = React.memo(function TicketTierCard({
           />
         </div>
         <div className="space-y-1.5">
-          <label htmlFor={`ticket-min-qty-${gIdx}-${tIdx}`} className="text-text-secondary text-xs font-medium">Min Qty / Booking</label>
+          <label htmlFor={`ticket-min-qty-${gIdx}-${tIdx}`} className="text-text-secondary text-xs font-medium">Min Tickets / Booking</label>
           <input
             id={`ticket-min-qty-${gIdx}-${tIdx}`}
             type="number"

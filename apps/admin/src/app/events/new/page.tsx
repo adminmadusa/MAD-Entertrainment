@@ -6,6 +6,11 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 import { EventRequirementsCard } from '@/components/events/EventRequirementsCard';
+import { EventBasicInfoCard } from '@/components/events/EventBasicInfoCard';
+import { EventAdditionalDetailsCard } from '@/components/events/EventAdditionalDetailsCard';
+import { EventScheduleCard } from '@/components/events/EventScheduleCard';
+import { EventTicketingCard } from '@/components/events/EventTicketingCard';
+import { EventMediaCard } from '@/components/events/EventMediaCard';
 import { adminGetCategories } from '@/lib/api/admin/category.service';
 import { adminCreateEvent, AdminEvent } from '@/lib/api/admin/event.service';
 import { adminGetTicketProfiles } from '@/lib/api/admin/ticket-profile.service';
@@ -16,11 +21,6 @@ import type { TicketProfile } from '@mad/types';
 import { Button, Stepper } from '@mad/ui';
 
 import { 
-  EventBasicInfoSection, 
-  EventScheduleSection, 
-  EventVenueSection, 
-  EventTicketSection, 
-  EventMediaSection, 
   EventReviewSection,
   defaultTier, 
   TicketTierInput, 
@@ -238,17 +238,28 @@ export default function CreateEventPage() {
 
       {/* STEP 1: Basic Information */}
       {currentStep === 0 && (
-        <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
-          <EventBasicInfoSection
-            title={title} setTitle={setTitle}
-            category={category} setCategory={setCategory}
-            description={description} setDescription={setDescription}
-            organizerName={organizerName} setOrganizerName={setOrganizerName}
-            highlightsInput={highlightsInput} setHighlightsInput={setHighlightsInput}
-            refundPolicy={refundPolicy} setRefundPolicy={setRefundPolicy}
+        <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-6">
+          <EventBasicInfoCard
+            title={title}
+            setTitle={setTitle}
+            category={category}
+            setCategory={setCategory}
+            status={status}
+            setStatus={() => {}}
+            venue={venueName}
+            setVenue={setVenueName}
+            description={description}
+            setDescription={setDescription}
             dbCategories={dbCategories}
-            venueField={<EventVenueSection venueName={venueName} setVenueName={setVenueName} />}
-            publishField={null}
+            statusOptions={[EventStatus.PUBLISHED]}
+          />
+          <EventAdditionalDetailsCard
+            organizerName={organizerName}
+            setOrganizerName={setOrganizerName}
+            highlightsInput={highlightsInput}
+            setHighlightsInput={setHighlightsInput}
+            refundPolicy={refundPolicy}
+            setRefundPolicy={setRefundPolicy}
           />
         </motion.div>
       )}
@@ -256,7 +267,7 @@ export default function CreateEventPage() {
       {/* STEP 2: Schedule */}
       {currentStep === 1 && (
         <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-6">
-          <EventScheduleSection
+          <EventScheduleCard
             startDate={startDate} setStartDate={setStartDate}
             endDate={endDate} setEndDate={setEndDate}
             bookingStartDate={bookingStartDate} setBookingStartDate={setBookingStartDate}
@@ -268,12 +279,21 @@ export default function CreateEventPage() {
       {/* STEP 3: Ticket Configuration & Requirements */}
       {currentStep === 2 && (
         <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-6">
-          <EventTicketSection
-            ticketingType={ticketingType} setTicketingType={setTicketingType}
-            tiers={tiers} addTier={addTier} removeTier={removeTier} updateTier={updateTier}
-            dbTiers={dbTiers} selectedProfileId={selectedProfileId} setSelectedProfileId={setSelectedProfileId}
-            setOverrides={setOverrides} dbProfiles={dbProfiles} activeProfile={activeProfile}
-            overrides={overrides} handleOverrideChange={handleOverrideChange} title={title}
+          <EventTicketingCard
+            ticketingType={ticketingType}
+            setTicketingType={setTicketingType}
+            tiers={tiers}
+            onAddTier={addTier}
+            onRemoveTier={removeTier}
+            onUpdateTier={updateTier}
+            dbTiers={dbTiers}
+            selectedProfileId={selectedProfileId}
+            setSelectedProfileId={setSelectedProfileId}
+            dbProfiles={dbProfiles}
+            activeProfile={activeProfile}
+            overrides={overrides}
+            onOverrideChange={handleOverrideChange}
+            eventTitle={title}
           />
           <EventRequirementsCard
             tags={tags} setTags={setTags}
@@ -287,8 +307,8 @@ export default function CreateEventPage() {
       {/* STEP 4: Media Uploads */}
       {currentStep === 3 && (
         <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
-          <EventMediaSection
-            coverImage={coverImage} setCoverImage={setCoverImage}
+          <EventMediaCard
+            bannerImage={coverImage} setBannerImage={setCoverImage}
             posterImage={posterImage} setPosterImage={setPosterImage}
             galleryImages={galleryImages} setGalleryImages={setGalleryImages}
           />
