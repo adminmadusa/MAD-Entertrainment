@@ -1,5 +1,12 @@
 import type { ImageAsset, PopupCampaign } from '@mad/types';
 
+export const POPUP_PAGE_OPTIONS = [
+  { value: '/',            label: 'Home Page' },
+  { value: '/events',      label: 'Events Listing' },
+  { value: '/past-events', label: 'Past Events' },
+  { value: '/gallery',     label: 'Gallery' },
+];
+
 export interface PopupFormState {
   name: string;
   title: string;
@@ -11,7 +18,7 @@ export interface PopupFormState {
   cooldownHours: number;
   priority: number;
   isActive: boolean;
-  showOnPages: string;
+  showOnPages: string[];
   linkedEventId: string;
   startDate: string;
   endDate: string;
@@ -33,7 +40,7 @@ export function defaultPopupForm(): PopupFormState {
     cooldownHours: 24,
     priority: 0,
     isActive: true,
-    showOnPages: '',
+    showOnPages: [],
     linkedEventId: '',
     startDate: '',
     endDate: '',
@@ -54,7 +61,7 @@ export function mapPopupToFormState(popup: PopupCampaign | null | undefined): Po
     cooldownHours: popup.cooldownHours ?? 24,
     priority: popup.priority ?? 0,
     isActive: popup.isActive ?? true,
-    showOnPages: popup.showOnPages?.join(', ') || '',
+    showOnPages: popup.showOnPages || [],
     linkedEventId: popup.linkedEventId ? String(popup.linkedEventId) : '',
     startDate: popup.startDate ? new Date(popup.startDate).toISOString().slice(0, 16) : '',
     endDate: popup.endDate ? new Date(popup.endDate).toISOString().slice(0, 16) : '',
@@ -74,7 +81,7 @@ export function buildPopupPayload(state: PopupFormState): Partial<PopupCampaign>
     cooldownHours: Number(state.cooldownHours),
     priority: Number(state.priority),
     isActive: state.isActive,
-    showOnPages: state.showOnPages ? state.showOnPages.split(',').map((p) => p.trim()).filter(Boolean) : undefined,
+    showOnPages: state.showOnPages,
     linkedEventId: state.linkedEventId.trim() || undefined,
     startDate: state.startDate ? new Date(state.startDate).toISOString() : undefined,
     endDate: state.endDate ? new Date(state.endDate).toISOString() : undefined,
