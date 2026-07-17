@@ -86,6 +86,14 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose, onConfirm
   const currency = booking?.currency || 'USD';
   const event = asEvent((booking as Booking | undefined)?.eventId);
 
+  // Dynamically select gateway based on booking currency (INR -> Razorpay, others -> Stripe)
+  useEffect(() => {
+    if (booking?.currency) {
+      const isINR = booking.currency.toUpperCase() === 'INR';
+      setSelectedGateway(isINR ? 'razorpay' : 'stripe');
+    }
+  }, [booking?.currency]);
+
   // Trigger onConfirmed when booking status is confirmed
   useEffect(() => {
     if (booking && booking.status === BookingStatus.CONFIRMED && onConfirmed) {
