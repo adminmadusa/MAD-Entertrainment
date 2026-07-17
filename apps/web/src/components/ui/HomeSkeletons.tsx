@@ -1,6 +1,6 @@
-import React from 'react';
-
 import { Skeleton } from '@mad/ui';
+
+const COMPLETED_EVENTS_SKELETON_COUNT = 3;
 
 /**
  * UpcomingEventsSkeleton
@@ -90,6 +90,67 @@ export function UpcomingEventsSkeleton() {
               <Skeleton width={64} height={28} rounded="rounded-lg" />
             </div>
           </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/**
+ * CompletedEventsSkeleton
+ * Renders exactly 3 cards matching the Completed grid.
+ */
+export function CompletedEventsSkeleton() {
+  return (
+    <section
+      className="py-16 overflow-hidden bg-background/20"
+      aria-hidden="true"
+    >
+      <div className="container-mad">
+        {/* Header Shimmer */}
+        <div className="mb-10">
+          <Skeleton className="mb-2" width={112} height={16} />
+          <Skeleton width={192} height={32} />
+        </div>
+
+        {/* Grid List */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {Array.from({ length: COMPLETED_EVENTS_SKELETON_COUNT }).map((_, index) => (
+            <div
+              key={index}
+              className="flex flex-col h-[400px] sm:h-[450px] bg-white/2 border border-white/5 rounded-2xl overflow-hidden pointer-events-none"
+            >
+              {/* Image Banner Shimmer */}
+              <div className="aspect-[4/3] w-full relative bg-white/5 flex-shrink-0">
+                <Skeleton className="absolute inset-0" rounded={false} />
+                {/* Ended Indicator */}
+                <Skeleton className="absolute top-3 left-3" width={48} height={20} rounded="rounded-full" />
+                {/* Category Badge */}
+                <Skeleton className="absolute top-3 right-3" width={64} height={20} rounded="rounded-full" />
+              </div>
+
+              {/* Card Details Shimmer */}
+              <div className="p-4 sm:p-5 flex-grow flex flex-col justify-between bg-black/10">
+                <div className="space-y-3">
+                  {/* Date */}
+                  <Skeleton width={96} height={12} />
+                  {/* Title */}
+                  <Skeleton width={192} height={20} />
+                  {/* Description */}
+                  <div className="space-y-2">
+                    <Skeleton className="w-full" height={12} />
+                    <Skeleton className="w-5/6" height={12} />
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Panel Shimmer */}
+              <div className="px-4 pb-4 sm:px-5 sm:pb-5 pt-3 border-t border-white/5 flex justify-between items-center bg-black/40">
+                <Skeleton width={80} height={12} />
+                <Skeleton width={72} height={28} rounded="rounded-xl" />
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </section>
