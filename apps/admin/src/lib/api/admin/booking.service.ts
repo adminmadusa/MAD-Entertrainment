@@ -236,31 +236,19 @@ export async function adminGetRefunds(params: Record<string, string> = {}): Prom
   try {
     const qs = new URLSearchParams(params);
     const { data } = await adminApiClient.get<{
-      data: AdminRefund[] | { refunds: AdminRefund[]; pagination?: { page?: number; limit?: number; total?: number; totalPages?: number } };
-      pagination?: { page?: number; limit?: number; total?: number; totalPages?: number };
+      data: {
+        refunds: AdminRefund[];
+        pagination: { page: number; limit: number; total: number; totalPages: number };
+      };
     }>(`/admin/refunds?${qs}`);
 
-    const paginationSource = (data?.data && typeof data.data === 'object' && 'pagination' in data.data ? data.data.pagination : null) || data?.pagination;
-    let items: AdminRefund[] = [];
-    if (Array.isArray(data?.data)) {
-      items = data.data;
-    } else if (data?.data && typeof data.data === 'object') {
-      if ('refunds' in data.data && Array.isArray(data.data.refunds)) {
-        items = data.data.refunds;
-      } else {
-        const foundArray = Object.values(data.data).find((v): v is AdminRefund[] => Array.isArray(v));
-        if (foundArray) {
-          items = foundArray;
-        }
-      }
-    }
     return {
-      items,
+      items: data?.data?.refunds ?? [],
       pagination: {
-        page: paginationSource?.page ?? 1,
-        limit: paginationSource?.limit ?? 15,
-        total: paginationSource?.total ?? 0,
-        totalPages: paginationSource?.totalPages ?? 1,
+        page: data?.data?.pagination?.page ?? 1,
+        limit: data?.data?.pagination?.limit ?? 15,
+        total: data?.data?.pagination?.total ?? 0,
+        totalPages: data?.data?.pagination?.totalPages ?? 1,
       },
     };
   } catch (error) {
