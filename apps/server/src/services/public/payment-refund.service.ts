@@ -678,13 +678,4 @@ export class PaymentRefundService {
     }
   }
 
-  // ─── Socket Utility ─────────────────────────────────────────────────────────
-
-  private static safeEmit(label: string, emit: () => void, data: Record<string, unknown>) {
-    try {
-      emit();
-    } catch (err) {
-      logger.debug({ err, ...data }, `Socket emit skipped: ${label}`);
-    }
-  }
 }

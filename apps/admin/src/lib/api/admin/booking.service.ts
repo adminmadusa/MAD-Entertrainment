@@ -281,11 +281,6 @@ export async function adminProcessRefund(id: string, action: 'approve' | 'reject
   await adminApiClient.patch(`/admin/refunds/${id}/process`, { action, adminNotes, gatewayRefundId });
 }
 
-export async function adminCreateRefund(payload: { bookingId: string; paymentId: string; amount: number; reason?: string }): Promise<AdminRefund> {
-  const { data } = await adminApiClient.post<{ data: AdminRefund }>('/admin/refunds', payload);
-  return data.data;
-}
-
 export async function adminCorrectBookingEmail(id: string, newEmail: string, reason: string): Promise<AdminBooking> {
   const { data } = await adminApiClient.patch<{ data: AdminBooking }>(`/admin/bookings/${id}/correct-email`, {
     newEmail,

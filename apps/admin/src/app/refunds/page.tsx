@@ -1,11 +1,10 @@
 'use client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { AnimatePresence, motion } from 'framer-motion';
 import { useState } from 'react';
 
 import { adminGetRefunds, adminProcessRefund, type AdminRefund } from '@/lib/api/admin/booking.service';
 import { useAdminAuth } from '@/providers/AdminAuthProvider';
-import { AdminRole } from '@mad/shared';
+import { AdminRole, QUERY_KEYS } from '@mad/shared';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, Modal, EmptyState, ErrorState } from '@mad/ui';
 import { Receipt, Search } from '@mad/ui/icons';
 import { formatDateTime, formatEventDate } from '@mad/utils';
@@ -34,7 +33,7 @@ export default function AdminRefundsPage() {
   };
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ['admin-refunds', { page, status: statusFilter, sortField, sortOrder }],
+    queryKey: QUERY_KEYS.admin.refunds.list({ page, status: statusFilter, sortField, sortOrder }),
     queryFn: () => adminGetRefunds({ 
       page: String(page), 
       limit: '15', 
@@ -46,7 +45,7 @@ export default function AdminRefundsPage() {
 
   const processMutation = useMutation({
     mutationFn: () => adminProcessRefund(processTarget!._id, action, adminNotes, gatewayId),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['admin-refunds'] }); setProcessTarget(null); setAdminNotes(''); setGatewayId(''); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: QUERY_KEYS.admin.refunds.all }); setProcessTarget(null); setAdminNotes(''); setGatewayId(''); },
   });
 
   const refunds = data?.items ?? [];
