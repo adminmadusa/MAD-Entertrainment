@@ -37,7 +37,7 @@ type PaymentOwnershipContext = {
 };
 
 export class PaymentService {
-  private static assertBookingOwnership(booking: IBooking, ownershipContext: PaymentOwnershipContext): void {
+  static assertBookingOwnership(booking: IBooking, ownershipContext: PaymentOwnershipContext): void {
     if (ownershipContext.trustedInternal) {
       return;
     }

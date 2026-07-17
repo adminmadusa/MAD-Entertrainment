@@ -20,7 +20,7 @@ export class StatusCommand extends Command {
     requiresCleanTree: false,
   };
 
-  async execute(context: ExecutionContext, args: string[]): Promise<OutputModel> {
+  async execute(context: ExecutionContext, _args: string[]): Promise<OutputModel> {
     context.logger.info('Gathering repository status metrics...');
 
     const branch = await context.git.getCurrentBranch();

@@ -16,7 +16,7 @@ export class HelpCommand extends Command {
     requiresCleanTree: false,
   };
 
-  async execute(context: ExecutionContext, args: string[]): Promise<OutputModel> {
+  async execute(context: ExecutionContext, _args: string[]): Promise<OutputModel> {
     const commandsMetadata = context.registry.getAllUnique().map(c => c.metadata);
     return {
       type: 'help',
