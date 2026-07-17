@@ -1,6 +1,6 @@
 'use client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 
 import { adminGetRefunds, adminProcessRefund, type AdminRefund, type AdminBooking } from '@/lib/api/admin/booking.service';
 import { useAdminAuth } from '@/providers/AdminAuthProvider';
@@ -27,6 +27,7 @@ export default function AdminRefundsPage() {
   const [statusFilter, setStatusFilter] = useState('');
   const [page, setPage] = useState(1);
   const [processTarget, setProcessTarget] = useState<AdminRefund | null>(null);
+  const isSubmitting = useRef(false);
   const canProcessRefund = !!admin?.role && [AdminRole.SUPER_ADMIN, AdminRole.ADMIN].includes(admin.role as AdminRole);
   const [action, setAction] = useState<'approve' | 'reject'>('approve');
   const [adminNotes, setAdminNotes] = useState('');
@@ -65,17 +66,23 @@ export default function AdminRefundsPage() {
   };
 
   const processMutation = useMutation({
-    mutationFn: () => adminProcessRefund(
-      processTarget!._id,
-      action,
-      adminNotes,
-      gatewayId,
-      manualOverride,
-      overrideReason
-    ),
+    mutationFn: () => {
+      isSubmitting.current = true;
+      return adminProcessRefund(
+        processTarget!._id,
+        action,
+        adminNotes,
+        gatewayId,
+        manualOverride,
+        overrideReason
+      );
+    },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: QUERY_KEYS.admin.refunds.all });
       resetStates();
+    },
+    onSettled: () => {
+      isSubmitting.current = false;
     },
   });
 
@@ -359,7 +366,10 @@ export default function AdminRefundsPage() {
                   <button type="button" onClick={resetStates} className="flex-1 py-2.5 glass border border-border-subtle rounded-xl text-sm text-text-secondary">Cancel</button>
                   <button
                     type="button"
-                    onClick={() => processMutation.mutate()}
+                    onClick={() => {
+                      if (isSubmitting.current) return;
+                      processMutation.mutate();
+                    }}
                     disabled={
                       processMutation.isPending ||
                       (action === 'approve' && booking?.ticketsScanned !== undefined && booking.ticketsScanned > 0 && (
