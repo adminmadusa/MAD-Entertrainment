@@ -31,10 +31,15 @@ export default function EditEventPage() {
     queryFn: () => adminGetEvent(id)
   });
 
+  const isSubmitting = useRef(false);
+
   const updateMutation = useMutation({
     mutationFn: (payload: any) => adminUpdateEvent(id, payload),
     onSuccess: () => router.push('/events'),
     onError: (err) => setError(extractApiError(err).message),
+    onSettled: () => {
+      isSubmitting.current = false;
+    },
   });
 
   const handleNext = () => {
@@ -53,6 +58,7 @@ export default function EditEventPage() {
 
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
+    if (isSubmitting.current) return;
     setError('');
 
     if (formRef.current?.validateStep(4) && event) {
@@ -68,8 +74,10 @@ export default function EditEventPage() {
           eventVersion: event.eventVersion,
         };
 
+        isSubmitting.current = true;
         updateMutation.mutate(updatePayload);
       } catch (err) {
+        isSubmitting.current = false;
         setError(extractApiError(err).message || 'Failed to update event');
       }
     }
