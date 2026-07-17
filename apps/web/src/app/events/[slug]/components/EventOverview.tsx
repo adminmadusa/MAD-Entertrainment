@@ -45,7 +45,7 @@ export function EventOverview({ description = '', organizerName }: EventOverview
               aria-expanded={isOverviewOpen}
               aria-haspopup="dialog"
               aria-controls="event-overview-drawer"
-              className="text-accent-cyan hover:text-accent-cyan/80 font-semibold inline-flex items-center gap-1 mt-2 hover:underline cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-cyan/50 rounded"
+              className="text-accent-cyan hover:text-accent-cyan/80 font-semibold inline-flex items-center gap-1 mt-2 hover:underline cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-cyan/50 rounded min-h-[44px] py-2"
             >
               Read more →
             </button>
@@ -70,7 +70,7 @@ export function EventOverview({ description = '', organizerName }: EventOverview
             <button
               type="button"
               onClick={() => setIsOverviewOpen(false)}
-              className="px-5 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white text-xs font-semibold"
+              className="px-5 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white text-xs font-semibold cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-cyan/50"
             >
               Close Drawer
             </button>
