@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 
 import { type AdminTier } from '@/lib/api/admin/tier.service';
 import { TicketTier } from '@mad/shared';
@@ -15,6 +15,8 @@ export interface TicketTierCardProps {
   onUpdateField: (gIdx: number, tIdx: number, field: keyof TicketInput, value: unknown) => void;
   dbTiers: AdminTier[];
   allSelectedTiers: string[];
+  isExpanded: boolean;
+  onToggleExpand: () => void;
 }
 
 export const TicketTierCard = React.memo(function TicketTierCard({
@@ -26,9 +28,9 @@ export const TicketTierCard = React.memo(function TicketTierCard({
   onUpdateField,
   dbTiers,
   allSelectedTiers,
+  isExpanded,
+  onToggleExpand,
 }: TicketTierCardProps) {
-  const [isExpanded, setIsExpanded] = useState(tIdx === 0);
-
   // Collapsed View
   if (!isExpanded) {
     return (
@@ -57,7 +59,7 @@ export const TicketTierCard = React.memo(function TicketTierCard({
           )}
           <button
             type="button"
-            onClick={() => setIsExpanded(true)}
+            onClick={onToggleExpand}
             className="text-accent-purple text-xs font-bold hover:underline flex items-center gap-1"
           >
             Expand Details ▼
@@ -87,7 +89,7 @@ export const TicketTierCard = React.memo(function TicketTierCard({
           )}
           <button
             type="button"
-            onClick={() => setIsExpanded(false)}
+            onClick={onToggleExpand}
             className="text-accent-purple text-xs font-bold hover:underline"
           >
             Collapse ▲
