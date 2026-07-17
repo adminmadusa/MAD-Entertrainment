@@ -24,7 +24,7 @@ const formatFriendlyDate = (dateStr: string) => {
       dateStyle: 'medium',
       timeStyle: 'short',
     });
-  } catch (e) {
+  } catch (_e) {
     return '—';
   }
 };

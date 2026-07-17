@@ -445,6 +445,7 @@ export interface BulkOperationResult {
 }
 export interface BulkActionConfig<TId = string> {
     id: string;
+    _unusedType?: TId;
     label: string;
     icon?: unknown;
     variant?: 'default' | 'destructive';

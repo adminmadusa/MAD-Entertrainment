@@ -44,7 +44,7 @@ describe('apiClient Concurrency and Token Refresh', () => {
     };
     if (typeof navigator !== 'undefined' && !nav.locks) {
       nav.locks = {
-        request: vi.fn(async (name: string, options: unknown, callback: () => Promise<unknown>) => {
+        request: vi.fn(async (_name: string, _options: unknown, callback: () => Promise<unknown>) => {
           return callback();
         }),
       };

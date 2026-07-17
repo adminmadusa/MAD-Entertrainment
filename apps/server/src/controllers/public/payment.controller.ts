@@ -290,7 +290,7 @@ export async function razorpayWebhook(req: Request, res: Response): Promise<void
       amount = body.payload?.payment?.entity?.amount;
       currency = body.payload?.payment?.entity?.currency;
     }
-  } catch (err: any) {
+  } catch (_err: any) {
     res.status(400).send('Malformed JSON payload');
     return;
   }

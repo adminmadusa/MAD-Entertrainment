@@ -12,11 +12,6 @@ export const bookingReferenceSchema = z
   .regex(BOOKING_REFERENCE_REGEX, 'Invalid booking reference format (expected MAD-YYYY-XXXXX)')
   .max(20);
 
-const booleanQuerySchema = z
-  .union([z.boolean(), z.enum(['true', 'false'])])
-  .transform((value) => String(value));
-
-const paginationLimitSchema = z.coerce.number().int().positive().max(100);
 
 // ─── REST Endpoint Payloads ─────────────────────────────────────
 

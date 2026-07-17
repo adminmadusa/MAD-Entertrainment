@@ -133,7 +133,7 @@ export function deriveGalleryState(
 }
 
 export function deriveCapabilities(
-  lifecycle: EventLifecycle,
+  _lifecycle: EventLifecycle,
   bookingStatus: BookingState,
   galleryStatus: 'NONE' | 'DRAFT' | 'PUBLISHED'
 ) {

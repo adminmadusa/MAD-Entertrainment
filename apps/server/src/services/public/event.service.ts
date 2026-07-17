@@ -10,8 +10,6 @@ import { getRedis } from '../../config/redis';
 import { AppError } from '../../middleware/error.middleware';
 import { Event, IEvent } from '../../models/event.schema';
 import { SeatLayout, ISeatLayout } from '../../models/seat-layout.schema';
-import { auditLog } from '../../utils/audit';
-
 export function verifyPreviewToken(token: string): {
   valid: boolean;
   eventId?: string;
@@ -29,7 +27,7 @@ export function verifyPreviewToken(token: string): {
         expiresAt: decoded.exp ? decoded.exp * 1000 : undefined,
       };
     }
-  } catch (err) {
+  } catch (_err) {
     // Suppress token verification errors and return invalid
   }
   return { valid: false };
@@ -64,7 +62,7 @@ export class PublicEventService {
     if (filters.exclude) {
       try {
         matchStage._id = { $ne: new Types.ObjectId(filters.exclude) };
-      } catch (err) {
+      } catch (_err) {
         // Ignore invalid ObjectId
       }
     }

@@ -8,7 +8,7 @@ import { Payment } from '../../models/payment.schema';
 import { Refund } from '../../models/refund.schema';
 import { CacheService } from '../../services/cache.service';
 
-export const getSummary = async (req: Request, res: Response, next: NextFunction) => {
+export const getSummary = async (_req: Request, res: Response, next: NextFunction) => {
   try {
     const CACHE_KEY = 'analytics:summary';
     const cachedData = await CacheService.get(CACHE_KEY);
@@ -290,7 +290,7 @@ export const getRevenue = async (req: Request, res: Response, next: NextFunction
   }
 };
 
-export const getAttendanceSummary = async (req: Request, res: Response, next: NextFunction) => {
+export const getAttendanceSummary = async (_req: Request, res: Response, next: NextFunction) => {
   try {
     const CACHE_KEY = 'analytics:attendance:summary';
     const cachedData = await CacheService.get(CACHE_KEY);
@@ -369,7 +369,7 @@ export const getAttendanceSummary = async (req: Request, res: Response, next: Ne
   }
 };
 
-export const getAttendanceRankings = async (req: Request, res: Response, next: NextFunction) => {
+export const getAttendanceRankings = async (_req: Request, res: Response, next: NextFunction) => {
   try {
     const CACHE_KEY = 'analytics:attendance:rankings';
     const cachedData = await CacheService.get(CACHE_KEY);

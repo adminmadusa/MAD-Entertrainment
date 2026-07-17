@@ -30,7 +30,7 @@ vi.mock('@mad/shared', async (importOriginal) => {
   };
 });
 
-import { EventStatus, HTTP_STATUS, EventMemoryPublicationState } from '@mad/shared';
+import { EventStatus, HTTP_STATUS } from '@mad/shared';
 
 import { Booking } from '../../models/booking.schema';
 import { Event } from '../../models/event.schema';

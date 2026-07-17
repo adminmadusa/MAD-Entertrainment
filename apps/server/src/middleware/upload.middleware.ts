@@ -16,7 +16,7 @@ export const uploadMiddleware = multer({
     // Limit to 1 file per request to prevent abuse
     files: 1,
   },
-  fileFilter: (req, file, cb) => {
+  fileFilter: (_req, file, cb) => {
     // Check mime type BEFORE the file is fully downloaded to memory
     if (!UPLOAD_CONSTANTS.ALLOWED_MIME_TYPES.includes(file.mimetype as any)) {
       return cb(AppError.badRequest(`Invalid file type. Allowed: ${UPLOAD_CONSTANTS.ALLOWED_MIME_TYPES.join(', ')}`));
