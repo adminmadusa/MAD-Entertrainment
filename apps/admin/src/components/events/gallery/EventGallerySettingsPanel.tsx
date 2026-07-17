@@ -69,7 +69,7 @@ export const EventGallerySettingsPanel = React.memo(function EventGallerySetting
         onClick={() => setIsExpanded(!isExpanded)}
       >
         <h2 className="text-white font-semibold text-lg">Gallery Settings</h2>
-        <button className="lg:hidden text-text-muted">
+        <button className="lg:hidden text-text-secondary">
           {isExpanded ? '▼' : '▶'}
         </button>
       </div>
@@ -80,7 +80,7 @@ export const EventGallerySettingsPanel = React.memo(function EventGallerySetting
         <div className={`flex items-center justify-between p-4 bg-background-dark/50 rounded-xl border border-border-subtle ${disabled ? 'opacity-55' : ''}`}>
           <div>
             <div className="font-medium text-white">Published Status</div>
-            <div className="text-xs text-text-muted mt-1">Make gallery visible to users</div>
+            <div className="text-xs text-text-secondary mt-1">Make gallery visible to users</div>
           </div>
           <button
             type="button"
@@ -101,7 +101,7 @@ export const EventGallerySettingsPanel = React.memo(function EventGallerySetting
         {/* Text Fields */}
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-text-muted mb-1.5">Heading</label>
+            <label className="block text-sm font-medium text-text-secondary mb-1.5">Heading</label>
             <input
               type="text"
               value={heading}
@@ -109,14 +109,14 @@ export const EventGallerySettingsPanel = React.memo(function EventGallerySetting
               onBlur={handleSaveTextSettings}
               disabled={disabled}
               placeholder="e.g. Relive the Magic"
-              className={`w-full bg-surface-elevated border border-border-subtle rounded-xl px-4 py-2.5 text-white placeholder-text-muted focus:outline-none focus:border-accent-purple ${
+              className={`w-full bg-surface-elevated border border-border-subtle rounded-xl px-4 py-2.5 text-white placeholder-text-secondary focus:outline-none focus:border-accent-purple focus:ring-2 focus:ring-accent-purple/50 ${
                 disabled ? 'cursor-not-allowed opacity-55' : ''
               }`}
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-text-muted mb-1.5">Thank You Message</label>
+            <label className="block text-sm font-medium text-text-secondary mb-1.5">Thank You Message</label>
             <textarea
               value={thankYouMessage}
               onChange={(e) => setThankYouMessage(e.target.value)}
@@ -124,14 +124,14 @@ export const EventGallerySettingsPanel = React.memo(function EventGallerySetting
               disabled={disabled}
               placeholder="e.g. Thank you for making it a night to remember."
               rows={3}
-              className={`w-full bg-surface-elevated border border-border-subtle rounded-xl px-4 py-2.5 text-white placeholder-text-muted focus:outline-none focus:border-accent-purple resize-none ${
+              className={`w-full bg-surface-elevated border border-border-subtle rounded-xl px-4 py-2.5 text-white placeholder-text-secondary focus:outline-none focus:border-accent-purple focus:ring-2 focus:ring-accent-purple/50 resize-none ${
                 disabled ? 'cursor-not-allowed opacity-55' : ''
               }`}
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-text-muted mb-1.5">Highlights (comma separated)</label>
+            <label className="block text-sm font-medium text-text-secondary mb-1.5">Highlights (comma separated)</label>
             <input
               type="text"
               value={highlightsInput}
@@ -139,7 +139,7 @@ export const EventGallerySettingsPanel = React.memo(function EventGallerySetting
               onBlur={handleSaveTextSettings}
               disabled={disabled}
               placeholder="e.g. DJ Snake, VIP Lounge"
-              className={`w-full bg-surface-elevated border border-border-subtle rounded-xl px-4 py-2.5 text-white placeholder-text-muted focus:outline-none focus:border-accent-purple ${
+              className={`w-full bg-surface-elevated border border-border-subtle rounded-xl px-4 py-2.5 text-white placeholder-text-secondary focus:outline-none focus:border-accent-purple focus:ring-2 focus:ring-accent-purple/50 ${
                 disabled ? 'cursor-not-allowed opacity-55' : ''
               }`}
             />
@@ -148,7 +148,7 @@ export const EventGallerySettingsPanel = React.memo(function EventGallerySetting
 
         {/* Operational Stats */}
         <div className="pt-4 border-t border-border-subtle">
-          <div className="text-sm text-text-muted space-y-2">
+          <div className="text-sm text-text-secondary space-y-2">
             <div className="flex justify-between">
               <span>Media Count</span>
               <span className="text-white">{mediaCount} items</span>

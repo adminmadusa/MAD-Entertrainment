@@ -8,7 +8,7 @@ import { adminGetEvents, adminDeleteEvent, adminBulkDeleteEvents, adminUpdateEve
 import { extractApiError } from '@/lib/api/client';
 import { useAdminAuth } from '@/providers/AdminAuthProvider';
 import { EVENT_STATUS_METADATA, EVENT_STATUS_TRANSITIONS, EventStatus, AdminRole } from '@mad/shared';
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, Modal, FloatingActionBar, EmptyState, Checkbox, useBulkSelection } from '@mad/ui';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, Modal, FloatingActionBar, EmptyState, Checkbox, useBulkSelection, TablePagination } from '@mad/ui';
 import { CalendarDays, Search } from '@mad/ui/icons';
 import { formatEventDate } from '@mad/utils';
 
@@ -162,7 +162,7 @@ export default function AdminEventsPage() {
               )}
               <div className="min-w-0">
                 <p className="text-text-primary font-medium truncate max-w-52">{event.title || 'Untitled Event'}</p>
-                <p className="text-text-muted text-xs truncate">{event.slug || 'no-slug'}</p>
+                <p className="text-text-secondary text-xs truncate">{event.slug || 'no-slug'}</p>
               </div>
             </div>
           </TableCell>
@@ -179,15 +179,15 @@ export default function AdminEventsPage() {
             {event.startDate ? (
               <div className="flex flex-col gap-0.5 text-xs">
                 <div>
-                  <span className="text-text-muted">Starts:</span> {formatEventDate(event.startDate)}
+                  <span className="text-text-secondary">Starts:</span> {formatEventDate(event.startDate)}
                 </div>
                 {event.endDate && (
-                  <div className="text-[11px] text-text-muted">
-                    <span className="text-text-muted/70">Ends:</span> {formatEventDate(event.endDate)}
+                  <div className="text-[11px] text-text-secondary">
+                    <span className="text-text-secondary/70">Ends:</span> {formatEventDate(event.endDate)}
                   </div>
                 )}
                 {(event.bookingStartDate || event.bookingEndDate) && (
-                  <div className="text-[10px] text-text-muted/80 border-t border-white/5 pt-0.5 mt-0.5 flex flex-col gap-0.5">
+                  <div className="text-[10px] text-text-secondary/80 border-t border-white/5 pt-0.5 mt-0.5 flex flex-col gap-0.5">
                     {event.bookingStartDate && (
                       <div>
                         <span className="font-medium text-accent-purple-light">Book Opens:</span> {formatEventDate(event.bookingStartDate)}
@@ -202,7 +202,7 @@ export default function AdminEventsPage() {
                 )}
               </div>
             ) : (
-              <span className="text-text-muted">N/A</span>
+              <span className="text-text-secondary">N/A</span>
             )}
           </TableCell>
           <TableCell className="py-4 px-4">
@@ -222,7 +222,7 @@ export default function AdminEventsPage() {
                   }}
                   aria-label={`Change status for ${event.title}`}
                   className={`text-xs px-2.5 py-1 rounded-full border font-medium cursor-pointer bg-transparent appearance-none pr-5 disabled:opacity-60 disabled:cursor-not-allowed transition-colors ${
-                    currentMeta?.className ?? 'border-border-subtle text-text-muted'
+                    currentMeta?.className ?? 'border-border-subtle text-text-secondary'
                   }`}
                   style={{ backgroundImage: 'none' }}
                 >
@@ -237,7 +237,7 @@ export default function AdminEventsPage() {
               );
             })() : (
               <span className={`text-xs px-2.5 py-1 rounded-full border font-medium ${
-                statusMeta?.className ?? 'border-border-subtle text-text-muted'
+                statusMeta?.className ?? 'border-border-subtle text-text-secondary'
               }`}>
                 {statusMeta?.label ?? event.status?.replace('_', ' ') ?? '⚠️ Missing'}
               </span>
@@ -256,13 +256,13 @@ export default function AdminEventsPage() {
 
                 <button
                   onClick={() => setDeleteTarget(event)}
-                  className="px-3 py-1.5 text-xs font-medium glass border border-border-subtle rounded-lg text-text-muted hover:text-red-400 hover:border-red-500/40 transition-all"
+                  className="px-3 py-1.5 text-xs font-medium glass border border-border-subtle rounded-lg text-text-secondary hover:text-red-400 hover:border-red-500/40 transition-all"
                 >
                   Delete
                 </button>
               </div>
             ) : (
-              <div className="text-right text-text-muted">—</div>
+              <div className="text-right text-text-secondary">—</div>
             )}
           </TableCell>
         </TableRow>
@@ -276,7 +276,7 @@ export default function AdminEventsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-black text-white">Events</h1>
-          <p className="text-text-muted text-sm mt-0.5">
+          <p className="text-text-secondary text-sm mt-0.5">
             {pagination?.total ?? 0} events total
           </p>
         </div>
@@ -327,7 +327,7 @@ export default function AdminEventsPage() {
             placeholder="Search events..."
             value={search}
             onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-            className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-background-card border border-border-subtle text-xs text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-purple transition-colors"
+            className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-background-card border border-border-subtle text-xs text-text-primary placeholder:text-text-secondary focus:outline-none focus:border-accent-purple focus:ring-2 focus:ring-accent-purple/50 transition-colors"
           />
           <svg className="absolute left-3 top-3 h-4 w-4 text-text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
             <circle cx="11" cy="11" r="8" /><line x1="21" x2="16.65" y1="21" y2="16.65" />
@@ -337,7 +337,7 @@ export default function AdminEventsPage() {
 
       {/* Table */}
       <div className="glass rounded-2xl border border-border-subtle overflow-hidden">
-        <Table>
+        <Table className="min-w-[900px]">
           <TableHeader stickyHeader>
             <TableRow>
               <TableHead sticky="start" className="py-3.5 px-5 w-12">
@@ -370,28 +370,14 @@ export default function AdminEventsPage() {
         </Table>
 
         {/* Pagination */}
-        {pagination && pagination.totalPages > 1 && (
-          <div className="flex items-center justify-between px-5 py-3 border-t border-border-subtle">
-            <p className="text-text-muted text-xs">
-              Page {pagination.page} of {pagination.totalPages} · {pagination.total} events
-            </p>
-            <div className="flex gap-2">
-              <button
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                disabled={page === 1}
-                className="px-3 py-1.5 text-xs glass border border-border-subtle rounded-lg disabled:opacity-40 text-text-secondary hover:text-white transition-all"
-              >
-                ← Prev
-              </button>
-              <button
-                onClick={() => setPage((p) => p + 1)}
-                disabled={page >= pagination.totalPages}
-                className="px-3 py-1.5 text-xs glass border border-border-subtle rounded-lg disabled:opacity-40 text-text-secondary hover:text-white transition-all"
-              >
-                Next →
-              </button>
-            </div>
-          </div>
+        {pagination && (
+          <TablePagination
+            currentPage={pagination.page}
+            totalPages={pagination.totalPages}
+            onPageChange={setPage}
+            totalRecords={pagination.total}
+            recordsLabel="events"
+          />
         )}
       </div>
 

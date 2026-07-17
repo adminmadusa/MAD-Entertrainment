@@ -24,10 +24,15 @@ export default function CreateEventPage() {
   const [currentStep, setCurrentStep] = useState(0);
   const [error, setError] = useState('');
 
+  const isSubmitting = useRef(false);
+
   const createMutation = useMutation({
     mutationFn: adminCreateEvent,
     onSuccess: () => router.push('/events'),
     onError: (err) => setError(extractApiError(err).message),
+    onSettled: () => {
+      isSubmitting.current = false;
+    },
   });
 
   const handleNext = () => {
@@ -46,14 +51,17 @@ export default function CreateEventPage() {
 
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
+    if (isSubmitting.current) return;
     setError('');
 
     if (!formRef.current?.validateStep(4)) return;
 
     try {
       const payload = formRef.current.getPayload();
+      isSubmitting.current = true;
       createMutation.mutate(payload);
     } catch (err) {
+      isSubmitting.current = false;
       setError(extractApiError(err).message || 'Failed to handle event creation');
     }
   };

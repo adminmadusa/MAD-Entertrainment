@@ -16,7 +16,7 @@ const EVENT_STATUS_LABELS: Partial<Record<EventStatus, string>> = {
 };
 
 const inputCls =
-  'w-full px-4 py-2.5 rounded-xl bg-background border border-border-subtle text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-purple transition-colors';
+  'w-full px-4 py-2.5 rounded-xl bg-background border border-border-subtle text-sm text-text-primary placeholder:text-text-secondary focus:outline-none focus:border-accent-purple focus:ring-2 focus:ring-accent-purple/50 transition-colors';
 
 
 export interface EventBasicInfoCardProps {
