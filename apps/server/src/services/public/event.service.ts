@@ -78,7 +78,7 @@ export class PublicEventService {
 
     if (state === 'active') {
       matchStage.status = EventStatus.PUBLISHED;
-    } else if (state === 'past') {
+    } else if (state === 'past' || state === 'completed') {
       matchStage.status = { $in: [EventStatus.PUBLISHED, EventStatus.COMPLETED] };
     } else {
       matchStage.status = { $in: [EventStatus.PUBLISHED, EventStatus.COMPLETED, EventStatus.POSTPONED] };
@@ -208,7 +208,7 @@ export class PublicEventService {
 
     if (state === 'active') {
       pipeline.push({ $match: { lifecycle: "UPCOMING" } });
-    } else if (state === 'past') {
+    } else if (state === 'past' || state === 'completed') {
       pipeline.push({ $match: { lifecycle: { $in: ["LIVE", "COMPLETED"] } } });
     }
 
