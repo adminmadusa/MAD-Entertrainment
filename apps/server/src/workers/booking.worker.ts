@@ -123,7 +123,7 @@ export async function processBookingConfirm(bookingId: string): Promise<void> {
 }
 
 // Handler mapping for both local fallback events and BullMQ worker jobs
-async function handleJobExecution(jobId: string, data: any): Promise<void> {
+async function handleJobExecution(_jobId: string, data: any): Promise<void> {
   await Sentry.startSpan(
     {
       op: 'queue.process',

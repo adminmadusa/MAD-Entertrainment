@@ -75,7 +75,7 @@ if (process.env.NODE_ENV !== 'test') {
       await migrateEventDates();
       await disconnectDatabase();
       process.exit(0);
-    } catch (err) {
+    } catch (_err) {
       process.exit(1);
     }
   })();

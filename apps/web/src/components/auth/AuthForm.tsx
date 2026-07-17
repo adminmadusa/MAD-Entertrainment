@@ -15,12 +15,6 @@ import { LoginForm } from './LoginForm';
 import { OtpVerifyForm } from './OtpVerifyForm';
 import { ProfileCompletionForm } from './ProfileCompletionForm';
 
-interface GoogleCredentialResponse {
-  credential?: string;
-  clientId?: string;
-  select_by?: string;
-}
-
 export interface AuthFormProps {
   mode: 'login';
   onSuccess?: (data: AuthResponse) => void;
@@ -36,7 +30,7 @@ export function AuthForm({
   onSuccess,
   className = '',
   initialEmail,
-  onClose,
+  onClose: _onClose,
   onDirtyChange,
 }: AuthFormProps) {
   const { login, logout, token, setOnboardingRequired, onboardingRequired, user } = useAuth();
@@ -235,15 +229,6 @@ export function AuthForm({
     setOtp('');
   };
 
-  const handleClose = () => {
-    if (onClose) {
-      onClose();
-    } else {
-      setOtp('');
-      setError('');
-      setStep('request');
-    }
-  };
 
   const handleOnboardingCancel = () => {
     logout();

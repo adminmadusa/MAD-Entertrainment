@@ -46,7 +46,7 @@ export const EventReviewSection: React.FC<EventReviewSectionProps> = ({
   selectedProfileId,
   coverImage,
   posterImage,
-  galleryImages,
+  galleryImages: _galleryImages,
   onEditStep,
 }) => {
   return (

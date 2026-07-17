@@ -44,7 +44,7 @@ if (process.env.NODE_ENV !== 'test') {
       await backfillTicketAssignment();
       await disconnectDatabase();
       process.exit(0);
-    } catch (err) {
+    } catch (_err) {
       process.exit(1);
     }
   })();

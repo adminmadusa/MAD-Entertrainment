@@ -9,6 +9,8 @@
     "allowSyntheticDefaultImports": true,
     "skipLibCheck": true,
     "strict": false,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
     "forceConsistentCasingInFileNames": true,
     "paths": {
       "@mad/shared": ["./packages/shared/src"],

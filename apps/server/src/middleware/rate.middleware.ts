@@ -181,7 +181,7 @@ export function initRateLimiters(): void {
     keyGenerator: (req: any) => {
       return req.params.bookingId || req.ip || '';
     },
-    handler: (req: any, res: any) => {
+    handler: (_req: any, res: any) => {
       res.status(429).json({
         success: false,
         message: 'Too many resend attempts. Please try again after an hour.',
@@ -216,7 +216,7 @@ export function initRateLimiters(): void {
     keyGenerator: (req: any) => {
       return req.user?.sub || req.ip || '';
     },
-    handler: (req: any, res: any) => {
+    handler: (_req: any, res: any) => {
       res.status(429).json({
         success: false,
         message: 'Too many assign requests. Please try again after an hour.',
@@ -234,7 +234,7 @@ export function initRateLimiters(): void {
     keyGenerator: (req: any) => {
       return req.user?.sub || req.ip || '';
     },
-    handler: (req: any, res: any) => {
+    handler: (_req: any, res: any) => {
       res.status(429).json({
         success: false,
         message: 'Too many claim requests. Please try again after an hour.',
@@ -252,7 +252,7 @@ export function initRateLimiters(): void {
     keyGenerator: (req: any) => {
       return req.params.ticketId || req.ip || '';
     },
-    handler: (req: any, res: any) => {
+    handler: (_req: any, res: any) => {
       res.status(429).json({
         success: false,
         message: 'Too many revoke requests for this ticket. Please try again tomorrow.',

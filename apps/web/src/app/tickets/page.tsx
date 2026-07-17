@@ -274,7 +274,7 @@ function TicketRetrievalContent() {
         setSupportError(result.message || 'Failed to submit. Please try again.');
         setLiveMessage('Support request submission failed.');
       }
-    } catch (err) {
+    } catch (_err) {
       setSupportStatus('error');
       setSupportError('Failed to connect to the support server.');
       setLiveMessage('Support request submission failed.');

@@ -1,10 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
-
-import { getEnv } from '../../config/env';
 import { AppError } from '../../middleware/error.middleware';
 import * as eventService from '../../services/admin/event.service';
-import { auditLog } from '../../utils/audit';
 
 export const createEvent = async (req: Request, res: Response, next: NextFunction) => {
   try {

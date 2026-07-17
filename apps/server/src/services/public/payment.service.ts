@@ -1,4 +1,4 @@
-import { Types, ClientSession } from 'mongoose';
+import { ClientSession } from 'mongoose';
 
 import { BookingStatus, PaymentStatus } from '@mad/shared';
 
@@ -8,18 +8,16 @@ import { emitToAdmin, emitToBooking, emitToEvent } from '../../config/socket';
 import { Booking, IBooking } from '../../models/booking.schema';
 import { Event } from '../../models/event.schema';
 import { Notification } from '../../models/notification.schema';
-import { Payment, IPayment } from '../../models/payment.schema';
+import { IPayment } from '../../models/payment.schema';
 import { sendEmail } from '../../utils/email';
 import { logger } from '../../utils/logger';
 import { generateTicketPDF } from '../../utils/pdf';
 import { runInTransaction } from '../../utils/transaction';
 import { CacheService } from '../cache.service';
 import { QueueService } from '../queue.service';
-import { PublicBookingService } from './booking.service';
 import { PaymentBookingService } from './payment-booking.service';
 import { PaymentIntentService } from './payment-intent.service';
 import { PaymentRefundService } from './payment-refund.service';
-import { PaymentValidationService } from './payment-validation.service';
 import { PaymentVerifyService } from './payment-verify.service';
 import { PaymentWebhookService } from './payment-webhook.service';
 import type { StripeChargeWebhookPayload, StripeRefundWebhookPayload, RazorpayRefundWebhookPayload } from './payment.types';
@@ -38,40 +36,7 @@ type PaymentOwnershipContext = {
 };
 
 export class PaymentService {
-  private static assertBookingOwnership(booking: IBooking, ownershipContext: PaymentOwnershipContext): void {
-    if (ownershipContext.trustedInternal) {
-      return;
-    }
 
-    PublicBookingService.assertBookingAccess(
-      booking,
-      { userId: ownershipContext.userId, sessionId: ownershipContext.sessionId },
-      'ActiveCheckout'
-    );
-  }
-
-  private static assertProductionPaymentIntegrity(
-    identifiers: (string | undefined)[],
-    context: {
-      bookingId?: string;
-      paymentId?: string;
-      gateway?: string;
-      requestSource?: string;
-    } = {}
-  ): void {
-    PaymentValidationService.assertProductionPaymentIntegrity(identifiers, getEnv(), context);
-  }
-
-  private static assertProductionMockRuntimeBlocked(
-    context: {
-      bookingId?: string;
-      paymentId?: string;
-      gateway?: string;
-      requestSource?: string;
-    } = {}
-  ): void {
-    PaymentValidationService.assertProductionMockRuntimeBlocked(getEnv(), context);
-  }
 
   static async createPaymentIntent(
     bookingId: string,
@@ -287,7 +252,7 @@ export class PaymentService {
             _payment.failedAt = new Date();
             try {
               await _payment.save();
-            } catch (saveErr) {
+            } catch (_saveErr) {
               // ignore
             }
             await this.triggerRefundRequest(booking, _payment, _payment.failureReason).catch(() => {});
@@ -301,7 +266,7 @@ export class PaymentService {
       _payment.failureReason = reason;
       try {
         await _payment.save();
-      } catch (saveErr) {
+      } catch (_saveErr) {
         // ignore
       }
       await this.triggerRefundRequest(
@@ -420,43 +385,6 @@ export class PaymentService {
     return booking;
   }
 
-  private static async createPendingPayment(
-    bookingId: Types.ObjectId,
-    gateway: 'stripe' | 'razorpay',
-    amount: number,
-    currency: string,
-    couponId: Types.ObjectId | undefined,
-    gatewayOrderId: string
-  ): Promise<IPayment> {
-    try {
-      return await Payment.create({
-        bookingId,
-        gateway,
-        status: PaymentStatus.PENDING,
-        amount,
-        currency,
-        couponId,
-        gatewayOrderId,
-      });
-    } catch (err: any) {
-      const isDuplicateKey = err.code === 11000 || err.code === '11000' || err.message?.includes('E11000');
-      if (isDuplicateKey) {
-        logger.warn(
-          { bookingId, gateway, gatewayOrderId },
-          'Concurrent pending payment creation race detected. Recovering existing pending payment.'
-        );
-        const existing = await Payment.findOne({
-          bookingId,
-          gateway,
-          status: PaymentStatus.PENDING,
-        });
-        if (existing) {
-          return existing;
-        }
-      }
-      throw err;
-    }
-  }
 
   static async reconcileStripeRefundWebhook(
     chargeOrRefund: StripeChargeWebhookPayload | StripeRefundWebhookPayload,

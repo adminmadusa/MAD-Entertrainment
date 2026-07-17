@@ -107,11 +107,6 @@ export function CheckoutContent({ bookingId, isModal, onBack, onClose, onConfirm
     if (isModal) onClose();
   };
 
-  const handleContinueBrowsing = () => {
-    allowNavigation();
-    router.push('/');
-    if (isModal) onClose();
-  };
 
   const countdown = useCountdown(booking?.logicalExpiresAt || booking?.expiresAt);
   const isExpired = countdown.isExpired;

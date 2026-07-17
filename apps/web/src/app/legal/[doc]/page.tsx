@@ -50,7 +50,7 @@ export default async function LegalDocPage({ params }: LegalDocPageProps) {
 
   try {
     content = await fs.readFile(contentPath, 'utf8');
-  } catch (error) {
+  } catch (_error) {
     // If the file doesn't exist, we fallback to a placeholder text or throw an error.
     console.error(`Failed to read markdown for ${docMeta.slug}`);
     content = 'Content is currently being updated.';

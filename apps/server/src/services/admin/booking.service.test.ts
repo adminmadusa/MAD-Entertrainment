@@ -59,7 +59,7 @@ vi.mock('../../models/booking.schema', () => ({
 }));
 
 const mockTicketFindQuery = {
-  session: vi.fn().mockImplementation(function(sess) {
+  session: vi.fn().mockImplementation(function(_sess) {
     const p = Promise.resolve([]);
     (p as any).lean = vi.fn().mockResolvedValue([]);
     return p;
