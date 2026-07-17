@@ -37,4 +37,9 @@ export interface DrawerProps {
    * Optional HTML ID.
    */
   id?: string;
+  /**
+   * Toggles locking the body scroll while the drawer is open.
+   * @default true
+   */
+  lockScroll?: boolean;
 }
