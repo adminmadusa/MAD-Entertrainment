@@ -116,7 +116,7 @@ export function deriveBookingState(
 
 export function deriveGalleryState(
   event: EventCapabilitiesInput,
-  lifecycle: EventLifecycle
+  bookingStatus: BookingState
 ): { status: 'NONE' | 'DRAFT' | 'PUBLISHED'; itemCount: number } {
   const itemCount = event.galleryItemCount ?? 0;
   const published = event.galleryPublished === true;
@@ -125,7 +125,7 @@ export function deriveGalleryState(
     return { status: 'NONE', itemCount };
   }
   
-  if (published && lifecycle === EventLifecycle.COMPLETED) {
+  if (published && bookingStatus === BookingState.CLOSED) {
     return { status: 'PUBLISHED', itemCount };
   }
 
@@ -137,10 +137,13 @@ export function deriveCapabilities(
   bookingStatus: BookingState,
   galleryStatus: 'NONE' | 'DRAFT' | 'PUBLISHED'
 ) {
-  const canBook = bookingStatus === BookingState.OPEN && (lifecycle === EventLifecycle.UPCOMING || lifecycle === EventLifecycle.LIVE);
-  const canViewGallery = lifecycle === EventLifecycle.COMPLETED && galleryStatus === 'PUBLISHED';
-  const canUploadGallery = lifecycle === EventLifecycle.COMPLETED;
-  const canPublishGallery = lifecycle === EventLifecycle.COMPLETED;
+  // Booking is allowed as long as booking status is OPEN
+  const canBook = bookingStatus === BookingState.OPEN;
+
+  // Gallery view and upload capabilities are allowed as soon as booking closes
+  const canViewGallery = bookingStatus === BookingState.CLOSED && galleryStatus === 'PUBLISHED';
+  const canUploadGallery = bookingStatus === BookingState.CLOSED;
+  const canPublishGallery = bookingStatus === BookingState.CLOSED;
 
   return {
     canBook,
@@ -154,7 +157,7 @@ export function deriveEventCapabilities(event: EventCapabilitiesInput): EventCap
   const lifecycle = deriveEventLifecycle(event);
   const visibility = deriveVisibility(event);
   const booking = deriveBookingState(event, lifecycle);
-  const gallery = deriveGalleryState(event, lifecycle);
+  const gallery = deriveGalleryState(event, booking.status);
   const capabilities = deriveCapabilities(lifecycle, booking.status, gallery.status);
 
   return {

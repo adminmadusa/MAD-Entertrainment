@@ -5,7 +5,7 @@ import { Event } from '../../models/event.schema';
 import { AppError } from '../../middleware/error.middleware';
 import mongoose from 'mongoose';
 import { AddGalleryItemsInput, ReorderGalleryItemsInput, UpdateGalleryItemInput, UpdateGallerySettingsInput } from '@mad/validations';
-import { deriveEventLifecycle, EventLifecycle } from '@mad/shared';
+import { deriveEventCapabilities } from '@mad/shared';
 
 export class AdminEventGalleryService {
   /**
@@ -33,7 +33,7 @@ export class AdminEventGalleryService {
     const event = await Event.findById(eventId).select('_id status startDate endDate bookingStartDate bookingEndDate').lean();
     if (!event) throw new AppError('Event not found', 404);
 
-    const lifecycle = deriveEventLifecycle({
+    const caps = deriveEventCapabilities({
       status: event.status,
       startDate: event.startDate,
       endDate: event.endDate,
@@ -41,8 +41,8 @@ export class AdminEventGalleryService {
       bookingEndDate: event.bookingEndDate
     });
 
-    if (lifecycle !== EventLifecycle.COMPLETED) {
-      throw new AppError('Galleries can only be modified for completed events', 400);
+    if (!caps.capabilities.canPublishGallery) {
+      throw new AppError('Galleries can only be modified once booking is closed', 400);
     }
 
     let settings = await EventGallerySettings.findOne({ eventId });
@@ -73,7 +73,7 @@ export class AdminEventGalleryService {
     const event = await Event.findById(eventId).select('_id status startDate endDate bookingStartDate bookingEndDate').lean();
     if (!event) throw new AppError('Event not found', 404);
 
-    const lifecycle = deriveEventLifecycle({
+    const caps = deriveEventCapabilities({
       status: event.status,
       startDate: event.startDate,
       endDate: event.endDate,
@@ -81,8 +81,8 @@ export class AdminEventGalleryService {
       bookingEndDate: event.bookingEndDate
     });
 
-    if (lifecycle !== EventLifecycle.COMPLETED) {
-      throw new AppError('Galleries can only be modified for completed events', 400);
+    if (!caps.capabilities.canUploadGallery) {
+      throw new AppError('Galleries can only be modified once booking is closed', 400);
     }
 
     // Prevent duplicates by publicId
