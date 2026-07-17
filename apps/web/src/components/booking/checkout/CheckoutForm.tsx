@@ -138,6 +138,7 @@ export function CheckoutForm({ event, isExpired, isDisabled, onSubmit, onErrorSe
                 setFieldErrors((prev) => ({ ...prev, firstName: '' }));
               }}
               placeholder="First name"
+              className="text-base md:text-sm"
             />
           </FormField>
           <FormField label="Last name" htmlFor="checkout-last-name" required error={fieldErrors.lastName}>
@@ -151,6 +152,7 @@ export function CheckoutForm({ event, isExpired, isDisabled, onSubmit, onErrorSe
                 setFieldErrors((prev) => ({ ...prev, lastName: '' }));
               }}
               placeholder="Last name"
+              className="text-base md:text-sm"
             />
           </FormField>
         </div>
@@ -174,7 +176,7 @@ export function CheckoutForm({ event, isExpired, isDisabled, onSubmit, onErrorSe
                 setFieldErrors((prev) => ({ ...prev, guestEmail: '', guestEmailConfirm: '' }));
               }}
               placeholder="email@example.com"
-              className={user ? 'text-text-muted/60 bg-white/5 cursor-not-allowed border-white/5' : undefined}
+              className={user ? 'text-base md:text-sm text-text-muted/60 bg-white/5 cursor-not-allowed border-white/5' : 'text-base md:text-sm'}
             />
           </FormField>
 
@@ -198,6 +200,7 @@ export function CheckoutForm({ event, isExpired, isDisabled, onSubmit, onErrorSe
                     setFieldErrors((prev) => ({ ...prev, guestEmailConfirm: '' }));
                   }}
                   placeholder="Confirm email address"
+                  className="text-base md:text-sm"
                 />
                 {!fieldErrors.guestEmailConfirm && emailsMatch && (
                   <p className="text-emerald-400 text-xs mt-1 font-semibold" role="status" aria-live="polite">✓ Emails match</p>
@@ -216,29 +219,30 @@ export function CheckoutForm({ event, isExpired, isDisabled, onSubmit, onErrorSe
               disabled={isDisabled}
               onChange={(e) => setGuestPhone(e.target.value)}
               placeholder="+91 98765 43210"
+              className="text-base md:text-sm"
             />
           </FormField>
         </div>
 
         {/* Subscriptions */}
         <div className="space-y-2 pt-3 border-t border-white/5">
-          <label className="flex items-center gap-3 min-h-[44px] cursor-pointer text-[11px] text-text-secondary leading-normal">
+          <label className="flex items-center gap-3 min-h-[44px] cursor-pointer text-xs text-text-secondary leading-normal">
             <input
               type="checkbox"
               checked={keepUpdated}
               disabled={isDisabled}
               onChange={(e) => setKeepUpdated(e.target.checked)}
-              className="rounded border-white/10 bg-background accent-accent-purple shrink-0"
+              className="w-5 h-5 rounded border-white/10 bg-background accent-accent-purple shrink-0"
             />
             <span>Keep me updated on more events and news from this event organizer.</span>
           </label>
-          <label className="flex items-center gap-3 min-h-[44px] cursor-pointer text-[11px] text-text-secondary leading-normal">
+          <label className="flex items-center gap-3 min-h-[44px] cursor-pointer text-xs text-text-secondary leading-normal">
             <input
               type="checkbox"
               checked={sendBestEvents}
               disabled={isDisabled}
               onChange={(e) => setSendBestEvents(e.target.checked)}
-              className="rounded border-white/10 bg-background accent-accent-purple shrink-0"
+              className="w-5 h-5 rounded border-white/10 bg-background accent-accent-purple shrink-0"
             />
             <span>Send me emails about the best events happening nearby or online.</span>
           </label>
@@ -271,7 +275,7 @@ export function CheckoutForm({ event, isExpired, isDisabled, onSubmit, onErrorSe
                     setFieldErrors((prev) => ({ ...prev, ageConfirmed: '' }));
                   }
                 }}
-                className={`w-4 h-4 rounded bg-background accent-accent-purple shrink-0 ${fieldErrors.ageConfirmed ? 'border border-red-500' : 'border-white/20'
+                className={`w-5 h-5 rounded bg-background accent-accent-purple shrink-0 ${fieldErrors.ageConfirmed ? 'border border-red-500' : 'border-white/20'
                   }`}
               />
               <span>I confirm that I am {event?.ageRestriction || 18} years of age or older and legally eligible to attend this event.</span>
