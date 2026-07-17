@@ -151,7 +151,7 @@ export default function BookingsTable({
 
   return (
     <div className="glass rounded-2xl border border-border-subtle overflow-hidden">
-      <Table>
+      <Table className="min-w-[900px]">
         <TableHeader stickyHeader>
           <TableRow>
             <TableHead
