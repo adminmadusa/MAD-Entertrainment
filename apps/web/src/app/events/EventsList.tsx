@@ -73,9 +73,9 @@ export function EventsList() {
 
               // Derive UI mapping from semantic states
               let badgeElement = null;
-              let ctaText = 'Details';
+              let ctaText: string;
               let ctaDisabled = false;
-              let ctaAction = 'VIEW';
+              let ctaAction: 'VIEW' | 'BOOK' | 'NONE' | 'GALLERY';
               let overlayText = null;
 
               if (event.lifecycle === 'COMPLETED') {

@@ -1,8 +1,7 @@
 import jwt from 'jsonwebtoken';
-import mongoose, { type FilterQuery, Types } from 'mongoose';
+import { type FilterQuery, Types } from 'mongoose';
 
 import { EventStatus, SeatStatus, deriveEventCapabilities } from '@mad/shared';
-import { deriveBookingEligibility } from '@mad/shared/src/utils/booking-eligibility.engine';
 import { EventGallery } from '../../models/event-gallery.schema';
 import { EventGallerySettings } from '../../models/event-gallery-settings.schema';
 
