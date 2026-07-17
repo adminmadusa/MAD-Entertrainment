@@ -1,12 +1,13 @@
 import React from 'react';
 
+import { formatMoney } from '@mad/shared';
 import { formatDisplayName } from '@/utils/booking-calculations';
 
 interface TicketSummaryItemProps {
   tierName: string;
   quantity: number;
   price?: number;
-  pricePrefix?: string;
+  currency?: string;
   className?: string;
 }
 
@@ -14,7 +15,7 @@ export function TicketSummaryItem({
   tierName,
   quantity,
   price,
-  pricePrefix = '₹',
+  currency = 'USD',
   className = '',
 }: TicketSummaryItemProps) {
   if (quantity <= 0) return null;
@@ -26,10 +27,11 @@ export function TicketSummaryItem({
       </div>
       {price !== undefined && (
         <span className="font-semibold text-accent-purple-light font-mono">
-          {pricePrefix}{price.toLocaleString('en-IN')}
+          {formatMoney(price, currency)}
         </span>
       )}
     </div>
   );
 }
+
 
