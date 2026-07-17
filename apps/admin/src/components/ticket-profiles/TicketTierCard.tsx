@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 import { type AdminTier } from '@/lib/api/admin/tier.service';
 import { TicketTier } from '@mad/shared';
@@ -27,21 +27,71 @@ export const TicketTierCard = React.memo(function TicketTierCard({
   dbTiers,
   allSelectedTiers,
 }: TicketTierCardProps) {
-  return (
-    <div className="p-5 bg-white/3 rounded-xl border border-white/5 space-y-4 relative">
-      <div className="flex items-center justify-between">
-        <span className="text-text-secondary text-xs font-bold uppercase">
-          Tier {tIdx + 1}
-        </span>
-        {canRemove && (
+  const [isExpanded, setIsExpanded] = useState(tIdx === 0);
+
+  // Collapsed View
+  if (!isExpanded) {
+    return (
+      <div className="p-4 bg-white/[0.02] hover:bg-white/[0.04] rounded-xl border border-white/5 flex items-center justify-between gap-4 transition-all">
+        <div className="flex items-center gap-3">
+          <span className="text-text-secondary text-[11px] font-bold uppercase tracking-wider">
+            Tier {tIdx + 1}:
+          </span>
+          <span className="text-white font-extrabold text-sm">
+            {ticket.name || <span className="text-text-muted/40 italic">Unnamed Tier</span>}
+          </span>
+          <span className="text-accent-purple-light text-xs font-semibold">
+            ({ticket.isFree ? 'Free' : ticket.price !== '' ? `₹${ticket.price}` : '₹0'})
+          </span>
+        </div>
+
+        <div className="flex items-center gap-4">
+          {canRemove && (
+            <button
+              type="button"
+              onClick={() => onRemove(gIdx, tIdx)}
+              className="text-red-400/80 hover:text-red-400 text-xs font-medium transition-colors"
+            >
+              Remove
+            </button>
+          )}
           <button
             type="button"
-            onClick={() => onRemove(gIdx, tIdx)}
-            className="text-red-400 text-xs hover:underline"
+            onClick={() => setIsExpanded(true)}
+            className="text-accent-purple text-xs font-bold hover:underline flex items-center gap-1"
           >
-            Remove Tier
+            Expand Details ▼
           </button>
-        )}
+        </div>
+      </div>
+    );
+  }
+
+  // Expanded View
+  return (
+    <div className="p-5 bg-white/[0.02] rounded-xl border border-white/5 space-y-4 relative transition-all">
+      <div className="flex items-center justify-between border-b border-white/5 pb-3">
+        <span className="text-text-secondary text-xs font-bold uppercase tracking-wider">
+          Tier {tIdx + 1} Configuration
+        </span>
+        <div className="flex items-center gap-4">
+          {canRemove && (
+            <button
+              type="button"
+              onClick={() => onRemove(gIdx, tIdx)}
+              className="text-red-400/80 hover:text-red-400 text-xs font-medium transition-colors"
+            >
+              Remove Tier
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => setIsExpanded(false)}
+            className="text-accent-purple text-xs font-bold hover:underline"
+          >
+            Collapse ▲
+          </button>
+        </div>
       </div>
 
       {/* Ticket Config Row 1 */}
@@ -96,14 +146,15 @@ export const TicketTierCard = React.memo(function TicketTierCard({
             min={0}
             value={ticket.price}
             disabled={ticket.isFree}
-            onChange={(e) =>
-              onUpdateField(
-                gIdx,
-                tIdx,
-                'price',
-                e.target.value === '' ? '' : Number(e.target.value)
-              )
-            }
+            onChange={(e) => {
+              const val = e.target.value === '' ? '' : Number(e.target.value);
+              onUpdateField(gIdx, tIdx, 'price', val);
+              if (val === 0) {
+                onUpdateField(gIdx, tIdx, 'isFree', true);
+              } else if (typeof val === 'number' && val > 0) {
+                onUpdateField(gIdx, tIdx, 'isFree', false);
+              }
+            }}
             placeholder="e.g. 1500"
             required={!ticket.isFree}
             className={`${inputCls} disabled:opacity-50`}
