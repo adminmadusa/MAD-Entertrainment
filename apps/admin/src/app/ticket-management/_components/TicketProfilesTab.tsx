@@ -12,7 +12,6 @@ import {
   adminBulkUpdateTicketProfileStatus
 } from '@/lib/api/admin/ticket-profile.service';
 import { extractApiError } from '@/lib/api/client';
-import { AdminRole } from '@mad/shared';
 import type { TicketProfile } from '@mad/types';
 import {
   Table,

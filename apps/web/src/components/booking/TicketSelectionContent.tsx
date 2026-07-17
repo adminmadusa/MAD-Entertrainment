@@ -7,7 +7,6 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { extractApiError } from '@/lib/api/client';
 import { ensureGuestBookingSession, publicCreateBooking } from '@/lib/api/public.service';
 import type { Event as EventData } from '@mad/types';
-import { Button } from '@mad/ui';
 import { ReserveTicketsInput } from '@mad/validations';
 
 import { PromoCodeForm } from './PromoCodeForm';
