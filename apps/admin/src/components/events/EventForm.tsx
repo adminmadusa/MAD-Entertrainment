@@ -14,7 +14,14 @@ import { adminGetCategories } from '@/lib/api/admin/category.service';
 import { type CloudinaryImage, type AdminEvent } from '@/lib/api/admin/event.service';
 import { adminGetTicketProfiles } from '@/lib/api/admin/ticket-profile.service';
 import { adminGetTiers } from '@/lib/api/admin/tier.service';
-import { BookingMode, TicketTier, EventStatus } from '@mad/shared';
+import {
+  BookingMode,
+  TicketTier,
+  EventStatus,
+  EVENT_STATUS_TRANSITIONS,
+  deriveEventLifecycleState,
+  type EventLifecycleStatus,
+} from '@mad/shared';
 import type { TicketProfile } from '@mad/types';
 import { EventReviewSection } from '@/app/events/new/_components/EventReviewSection';
 
@@ -263,6 +270,13 @@ export const EventForm = forwardRef<EventFormHandle, EventFormProps>(function Ev
   // Render Layout
   const isCreateWizard = activeStep !== undefined;
 
+  const isEventLifecycleStatus = (s: EventStatus): s is EventLifecycleStatus =>
+    Object.prototype.hasOwnProperty.call(EVENT_STATUS_TRANSITIONS, s);
+
+  const allowedNextStatuses = isEventLifecycleStatus(status) ? EVENT_STATUS_TRANSITIONS[status] : [];
+  const statusOptions = Array.from(new Set<EventStatus>([status, ...allowedNextStatuses]));
+  const lifecycle = deriveEventLifecycleState({ status, startDate, endDate } as any);
+
   return (
     <div className="space-y-6">
       {displayError && (
@@ -413,11 +427,13 @@ export const EventForm = forwardRef<EventFormHandle, EventFormProps>(function Ev
             setCategory={setCategory}
             status={status}
             setStatus={setStatus}
+            lifecycle={lifecycle}
             venue={venue}
             setVenue={setVenue}
             description={description}
             setDescription={setDescription}
             dbCategories={dbCategories}
+            statusOptions={statusOptions}
           />
 
           <EventAdditionalDetailsCard
