@@ -8,7 +8,7 @@ export interface AdminBooking {
   totalAmount: number;
   currency: string;
   mode: string;
-  eventId?: { _id: string; title: string; startDate: string; coverImage?: { url: string } } | null;
+  eventId?: { _id: string; title: string; startDate: string; venue?: string; coverImage?: { url: string } } | null;
   userId?: {
     _id: string;
     name: string;
@@ -277,8 +277,21 @@ export async function adminGetRefunds(params: Record<string, string> = {}): Prom
   }
 }
 
-export async function adminProcessRefund(id: string, action: 'approve' | 'reject', adminNotes?: string, gatewayRefundId?: string): Promise<void> {
-  await adminApiClient.patch(`/admin/refunds/${id}/process`, { action, adminNotes, gatewayRefundId });
+export async function adminProcessRefund(
+  id: string,
+  action: 'approve' | 'reject',
+  adminNotes?: string,
+  gatewayRefundId?: string,
+  manualOverride?: boolean,
+  overrideReason?: string
+): Promise<void> {
+  await adminApiClient.patch(`/admin/refunds/${id}/process`, {
+    action,
+    adminNotes,
+    gatewayRefundId,
+    manualOverride,
+    overrideReason,
+  });
 }
 
 export async function adminCorrectBookingEmail(id: string, newEmail: string, reason: string): Promise<AdminBooking> {
