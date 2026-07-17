@@ -173,7 +173,7 @@ export default function AdminRefundsPage() {
       </div>
 
       <div className="glass rounded-2xl border border-border-subtle overflow-hidden">
-        <Table>
+        <Table className="min-w-[900px]">
           <TableHeader>
             <TableRow>
               <TableHead className="py-3.5 px-4">Booking</TableHead>

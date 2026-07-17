@@ -163,7 +163,7 @@ export default function TeamTable({
 
   return (
     <div className="glass rounded-2xl border border-border-subtle overflow-hidden">
-      <Table>
+      <Table className="min-w-[800px]">
         <TableHeader stickyHeader>
           <TableRow>
             <TableHead sticky="start" showStickyDivider className="py-3.5 px-5">Member</TableHead>

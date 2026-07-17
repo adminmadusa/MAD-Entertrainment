@@ -333,7 +333,7 @@ export default function UsersDirectoryPage() {
       {/* Main Grid View */}
       {/* Desktop/Tablet Table Grid */}
       <div className="hidden md:block glass rounded-2xl border border-border-subtle overflow-hidden">
-        <Table>
+        <Table className="min-w-[900px]">
           <TableHeader>
             <TableRow className="bg-white/[0.01]">
               <TableHead
