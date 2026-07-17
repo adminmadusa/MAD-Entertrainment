@@ -25,7 +25,7 @@ export function UpcomingEventsSkeleton() {
         {/* Carousel Visual Skeleton */}
         <div className="relative w-full max-w-6xl mx-auto h-[450px] sm:h-[500px] mt-8 flex items-center justify-center">
           {/* Left Flank Card (Visible only on desktop/tablet) */}
-          <div className="hidden md:flex flex-col w-[280px] h-[380px] bg-white/2 border border-white/5 rounded-2xl overflow-hidden opacity-30 transform -translate-x-48 scale-85 pointer-events-none">
+          <div className="hidden md:flex flex-col w-[272px] h-[382px] bg-white/2 border border-white/5 rounded-2xl overflow-hidden opacity-30 transform -translate-x-48 scale-85 pointer-events-none">
             <Skeleton className="aspect-[4/3] w-full" rounded={false} />
             <div className="p-4 flex-grow space-y-3">
               <Skeleton width={80} height={12} />
@@ -75,7 +75,7 @@ export function UpcomingEventsSkeleton() {
           </div>
 
           {/* Right Flank Card (Visible only on desktop/tablet) */}
-          <div className="hidden md:flex flex-col w-[280px] h-[380px] bg-white/2 border border-white/5 rounded-2xl overflow-hidden opacity-30 transform translate-x-48 scale-85 pointer-events-none">
+          <div className="hidden md:flex flex-col w-[272px] h-[382px] bg-white/2 border border-white/5 rounded-2xl overflow-hidden opacity-30 transform translate-x-48 scale-85 pointer-events-none">
             <Skeleton className="aspect-[4/3] w-full" rounded={false} />
             <div className="p-4 flex-grow space-y-3">
               <Skeleton width={80} height={12} />

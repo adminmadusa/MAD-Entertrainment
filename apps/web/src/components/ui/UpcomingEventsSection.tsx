@@ -1,11 +1,11 @@
 'use client';
 
 import { AnimatePresence, motion, type PanInfo, useReducedMotion } from 'framer-motion';
-import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { memo, useCallback, useRef, useState } from 'react';
 
+import { ImageWrapper } from '@/components/common/ImageWrapper';
 import { Reveal } from '@/components/common/PageTransition';
 import { useMounted, useWindowWidth } from '@/hooks/use-window.hook';
 import { formatEventDate } from '@/utils/date';
@@ -56,13 +56,20 @@ export const UpcomingEventsSection = memo(function UpcomingEventsSection({ initi
 
   // Mobile Drag / Swipe handling using Framer Motion gesture metadata
   const handleDragEnd = useCallback((_event: unknown, info: PanInfo) => {
+    if (events.length <= 1) return;
+
     const threshold = 50; // swipe threshold in pixels
-    if (info.offset.x < -threshold) {
+    const velocityThreshold = 300; // velocity threshold in px/s
+
+    const isSwipeLeft = info.offset.x < -threshold || info.velocity.x < -velocityThreshold;
+    const isSwipeRight = info.offset.x > threshold || info.velocity.x > velocityThreshold;
+
+    if (isSwipeLeft) {
       nextSlide();
-    } else if (info.offset.x > threshold) {
+    } else if (isSwipeRight) {
       prevSlide();
     }
-  }, [nextSlide, prevSlide]);
+  }, [events.length, nextSlide, prevSlide]);
 
 
   return (
@@ -102,14 +109,14 @@ export const UpcomingEventsSection = memo(function UpcomingEventsSection({ initi
               </svg>
             </div>
             <h3 className="text-white font-bold text-lg">No Active Events</h3>
-            <p className="text-text-muted text-sm max-w-xs mx-auto mt-1">
+            <p className="text-text-secondary text-sm max-w-xs mx-auto mt-1">
               Check back soon for upcoming shows, DJ nights, and entertainment experiences!
             </p>
           </div>
         ) : (
           <div
             ref={containerRef}
-            className="relative w-full max-w-6xl mx-auto h-[450px] sm:h-[500px] mt-8 focus:outline-none"
+            className="relative w-full max-w-6xl mx-auto h-[450px] sm:h-[500px] mt-8 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-offset-4 focus-visible:ring-offset-background rounded-2xl"
             style={{ perspective: '1200px' }}
             role="group"
             aria-roledescription="carousel"
@@ -173,7 +180,7 @@ export const UpcomingEventsSection = memo(function UpcomingEventsSection({ initi
                         damping: 20,
                         mass: 1,
                       }}
-                      drag="x"
+                      drag={events.length > 1 ? "x" : false}
                       dragConstraints={{ left: 0, right: 0 }}
                       dragElastic={0.4}
                       onDragEnd={handleDragEnd}
@@ -203,7 +210,7 @@ export const UpcomingEventsSection = memo(function UpcomingEventsSection({ initi
                         {/* Banner Image */}
                         <div className="aspect-[4/3] w-full overflow-hidden relative bg-white/5 flex-shrink-0">
                           {event.bannerImage?.url ? (
-                            <Image
+                            <ImageWrapper
                               src={getOptimizedImageUrl(event.bannerImage.url, 600)}
                               alt={`Promotional poster for ${event.title}`}
                               fill
@@ -234,7 +241,7 @@ export const UpcomingEventsSection = memo(function UpcomingEventsSection({ initi
 
                         {/* Card Content */}
                         <div className="p-4 flex flex-col flex-grow bg-black/20">
-                          <div className="text-text-muted text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                          <div className="text-text-secondary text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider mb-2 flex items-center gap-1.5">
                             <CalendarIcon className="w-3.5 h-3.5 text-accent-purple-light" />
                             {formatEventDate(event.startDate)}
                           </div>
@@ -248,7 +255,7 @@ export const UpcomingEventsSection = memo(function UpcomingEventsSection({ initi
 
                         <div className={`px-4 pb-4 pt-3 border-t border-border-subtle/40 flex items-center justify-between mt-auto bg-black/40 transition-opacity w-full ${!isActive ? 'opacity-50' : ''}`}>
                           <div>
-                            <div className="text-[9px] sm:text-[10px] text-text-muted font-medium">Tickets from</div>
+                            <div className="text-[9px] sm:text-[10px] text-text-secondary font-medium">Tickets from</div>
                             <div className="text-white font-black text-xs sm:text-sm">
                               {formatMoney(event.ticketTiers && event.ticketTiers.length > 0 ? Math.min(...event.ticketTiers.map((t) => t.price)) : 0, event.currency)}
                             </div>

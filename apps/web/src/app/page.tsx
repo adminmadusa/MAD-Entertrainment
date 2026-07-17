@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { Suspense } from 'react';
 
 import { Reveal, StaggerContainer, StaggerItem } from '@/components/common/PageTransition';
+import { SectionBoundary } from '@/components/common/SectionBoundary';
 import { CompletedEventsSection } from '@/components/ui/CompletedEventsSection';
 import { UpcomingEventsSkeleton, CompletedEventsSkeleton } from '@/components/ui/HomeSkeletons';
 import { UpcomingEventsSection } from '@/components/ui/UpcomingEventsSection';
@@ -67,14 +67,14 @@ export default function HomePage() {
       <HeroSection />
 
       {/* ─── Upcoming Events (Streamed) ────────────────────── */}
-      <Suspense fallback={<UpcomingEventsSkeleton />}>
+      <SectionBoundary loadingFallback={<UpcomingEventsSkeleton />}>
         <UpcomingEventsServerSection />
-      </Suspense>
+      </SectionBoundary>
 
       {/* ─── Completed Events & Moments (Streamed) ──────────── */}
-      <Suspense fallback={<CompletedEventsSkeleton />}>
+      <SectionBoundary loadingFallback={<CompletedEventsSkeleton />}>
         <CompletedEventsServerSection />
-      </Suspense>
+      </SectionBoundary>
 
       {/* ─── How It Works ─────────────────────────────────── */}
       <HowItWorksSection />
