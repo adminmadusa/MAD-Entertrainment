@@ -16,6 +16,7 @@ import { runInTransaction } from '../../utils/transaction';
 import { CacheService } from '../cache.service';
 import { QueueService } from '../queue.service';
 import { PaymentBookingService } from './payment-booking.service';
+import { PublicBookingService } from './booking.service';
 import { PaymentIntentService } from './payment-intent.service';
 import { PaymentRefundService } from './payment-refund.service';
 import { PaymentVerifyService } from './payment-verify.service';
@@ -36,6 +37,17 @@ type PaymentOwnershipContext = {
 };
 
 export class PaymentService {
+  private static assertBookingOwnership(booking: IBooking, ownershipContext: PaymentOwnershipContext): void {
+    if (ownershipContext.trustedInternal) {
+      return;
+    }
+
+    PublicBookingService.assertBookingAccess(
+      booking,
+      { userId: ownershipContext.userId, sessionId: ownershipContext.sessionId },
+      'ActiveCheckout'
+    );
+  }
 
 
   static async createPaymentIntent(

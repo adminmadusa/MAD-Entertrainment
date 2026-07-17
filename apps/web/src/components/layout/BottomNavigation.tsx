@@ -7,70 +7,7 @@ import React, { Suspense } from 'react';
 import { useAuthModal } from '@/providers/AuthModalProvider';
 import { useAuth } from '@/providers/AuthProvider';
 import { CalendarIcon } from '@mad/ui';
-
-// ─── Custom Icons inline to preserve UI package stability ──────
-
-function HomeIcon({ className = '', size = 20 }: { className?: string; size?: number }) {
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-      aria-hidden="true"
-    >
-      <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-      <polyline points="9 22 9 12 15 12 15 22" />
-    </svg>
-  );
-}
-
-function TicketIcon({ className = '', size = 20 }: { className?: string; size?: number }) {
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-      aria-hidden="true"
-    >
-      <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z" />
-      <path d="M13 5v2" />
-      <path d="M13 17v2" />
-      <path d="M13 11v2" />
-    </svg>
-  );
-}
-
-function UserIcon({ className = '', size = 20 }: { className?: string; size?: number }) {
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-      aria-hidden="true"
-    >
-      <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
-      <circle cx="12" cy="7" r="4" />
-    </svg>
-  );
-}
+import { Home, Ticket, User } from '@mad/ui/icons';
 
 export function shouldShowBottomNav(pathname: string | null): boolean {
   if (!pathname) return false;
@@ -153,7 +90,7 @@ function BottomNavigationContent() {
           }`}
           aria-label="Navigate to Home"
         >
-          <HomeIcon size={20} className="mb-1" />
+          <Home size={20} className="mb-1" />
           <span className="text-[10px] font-medium tracking-tight">Home</span>
         </Link>
 
@@ -182,7 +119,7 @@ function BottomNavigationContent() {
             }`}
             aria-label="Navigate to My Tickets"
           >
-            <TicketIcon size={20} className="mb-1" />
+            <Ticket size={20} className="mb-1" />
             <span className="text-[10px] font-medium tracking-tight">My Tickets</span>
           </Link>
         ) : (
@@ -193,7 +130,7 @@ function BottomNavigationContent() {
             }`}
             aria-label="Navigate to My Tickets"
           >
-            <TicketIcon size={20} className="mb-1" />
+            <Ticket size={20} className="mb-1" />
             <span className="text-[10px] font-medium tracking-tight">My Tickets</span>
           </Link>
         )}
@@ -207,7 +144,7 @@ function BottomNavigationContent() {
             }`}
             aria-label="Navigate to Profile"
           >
-            <UserIcon size={20} className="mb-1" />
+            <User size={20} className="mb-1" />
             <span className="text-[10px] font-medium tracking-tight">Profile</span>
           </Link>
         ) : (
@@ -217,7 +154,7 @@ function BottomNavigationContent() {
             className="flex flex-col items-center justify-center flex-1 h-full text-text-secondary hover:text-white transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-purple focus-visible:ring-inset"
             aria-label="Open Login Modal"
           >
-            <UserIcon size={20} className="mb-1" />
+            <User size={20} className="mb-1" />
             <span className="text-[10px] font-medium tracking-tight">Login</span>
           </button>
         )}
