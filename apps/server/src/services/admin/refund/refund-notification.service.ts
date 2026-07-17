@@ -16,7 +16,7 @@ export class RefundNotificationService {
    * Renders appropriate refund emails, prevents duplicate dispatch, and enqueues to notification queue.
    */
   static async sendRefundNotification(updated: IRefund): Promise<void> {
-    if (updated.status !== RefundStatus.COMPLETED || updated.reconciledAt) {
+    if (updated.status !== RefundStatus.COMPLETED) {
       return;
     }
 
@@ -155,6 +155,16 @@ export class RefundNotificationService {
         timestamp: new Date().toISOString(),
         success: false
       }, 'Failed to prepare refund email post-commit.');
+    }
+  }
+
+  /**
+   * Helper to load the refund document and trigger notification by ID.
+   */
+  static async sendRefundNotificationById(refundId: string): Promise<void> {
+    const refund = await Refund.findById(refundId);
+    if (refund) {
+      await this.sendRefundNotification(refund);
     }
   }
 }

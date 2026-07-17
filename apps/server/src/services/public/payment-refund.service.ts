@@ -26,7 +26,7 @@ import { BookingStatus, NotificationType, PaymentStatus, RefundStatus } from '@m
 
 import { getEnv } from '../../config/env';
 import { getQueueName } from '../../config/queue.config';
-import { fullRefundHtml, partialRefundHtml, paymentFailureHtml } from '../../lib/email';
+import { paymentFailureHtml } from '../../lib/email';
 import { Booking, IBooking } from '../../models/booking.schema';
 import { Event } from '../../models/event.schema';
 import { Notification } from '../../models/notification.schema';
@@ -42,6 +42,7 @@ import { PaymentInventoryService } from './payment-inventory.service';
 import type { StripeChargeWebhookPayload, StripeRefundWebhookPayload, RazorpayRefundWebhookPayload, NormalizedRefundData } from './payment.types';
 import { RazorpayRefundService } from './payment/razorpay-refund.service';
 import { StripeRefundService } from './payment/stripe-refund.service';
+import { RefundNotificationService } from '../admin/refund/refund-notification.service';
 
 const { cancelBooking, executeCancelBookingSideEffects } = BookingLifecycleService;
 
@@ -373,7 +374,7 @@ export class PaymentRefundService {
           // Trigger email notification for the auto-created refund
           if (result.isNewRefund) {
             try {
-              await PaymentRefundService.triggerRefundEmailNotification(result.refundId);
+              await RefundNotificationService.sendRefundNotificationById(result.refundId);
             } catch (err) {
               logger.error({ err, refundId: result.refundId }, 'Failed to trigger auto-created refund notification email');
             }
@@ -544,7 +545,7 @@ export class PaymentRefundService {
       // Trigger email notification if webhook was the thread that completed the transition
       if (result.status === 'completed' && result.transitioned) {
         try {
-          await PaymentRefundService.triggerRefundEmailNotification(result.refundId);
+          await RefundNotificationService.sendRefundNotificationById(result.refundId);
         } catch (err) {
           logger.error({ err, refundId: result.refundId }, 'Failed to trigger reconciled refund notification email');
         }
@@ -554,127 +555,6 @@ export class PaymentRefundService {
     } catch (err: any) {
       logger.error({ err, refundId: refund._id }, `Error during ${gateway} refund webhook reconciliation`);
       throw err;
-    }
-  }
-
-  // ─── Post-Commit Refund Email Notification (Private) ───────────────────────
-
-  private static async triggerRefundEmailNotification(refundId: string): Promise<void> {
-    try {
-      const refund = await Refund.findById(refundId);
-      if (!refund || refund.status !== RefundStatus.COMPLETED) {
-        return;
-      }
-
-      const booking = await Booking.findById(refund.bookingId).populate('eventId');
-      if (!booking || !booking.guestEmail) {
-        return;
-      }
-
-      const event = booking.eventId as any;
-      const refundAmount = refund.amount;
-      const totalAmount = booking.totalAmount;
-
-      let emailHtml = '';
-      let subject = '';
-      let notificationType: NotificationType | undefined;
-
-      const completedRefunds = await Refund.find({
-        paymentId: refund.paymentId,
-        status: RefundStatus.COMPLETED
-      });
-      const totalRefunded = completedRefunds.reduce((sum, r) => sum + r.amount, 0);
-      const payment = await Payment.findById(refund.paymentId);
-      const isFullRefund = payment ? totalRefunded === payment.amount : false;
-
-      if (isFullRefund) {
-        const existingNotification = await Notification.findOne({
-          jobId: { $regex: `^refund-${refund._id}` }
-        });
-
-        if (!existingNotification) {
-          const formattedRefundDate = new Date(refund.processedAt || new Date()).toLocaleDateString('en-IN', {
-            weekday: 'long',
-            day: 'numeric',
-            month: 'long',
-            year: 'numeric',
-          });
-
-          emailHtml = await fullRefundHtml({
-            customerName: booking.guestName,
-            bookingReference: booking.bookingId,
-            eventTitle: event?.title || 'MAD Event',
-            refundAmount: refundAmount,
-            refundDate: formattedRefundDate,
-            settlementTimeline: '5-7 business days',
-            currency: booking.currency || 'USD',
-          });
-
-          subject = `Refund Processed for ${booking.bookingId}`;
-          notificationType = NotificationType.FULL_REFUND;
-        }
-      } else {
-        const existingNotification = await Notification.findOne({
-          jobId: { $regex: `^refund-${refund._id}` }
-        });
-
-        if (!existingNotification) {
-          emailHtml = await partialRefundHtml({
-            customerName: booking.guestName,
-            bookingReference: booking.bookingId,
-            originalAmount: totalAmount,
-            refundAmount: refundAmount,
-            remainingAmount: Math.max(0, totalAmount - totalRefunded),
-            reason: refund.reason || 'Tier adjustment refund',
-            currency: booking.currency || 'USD',
-          });
-
-          subject = `Partial Refund Processed for ${booking.bookingId}`;
-          notificationType = NotificationType.PARTIAL_REFUND;
-        }
-      }
-
-      if (emailHtml && notificationType) {
-        const jobId = `refund-${refund._id}-${Date.now()}`;
-        // CQ-02 notification array consistency fix
-        await createNotificationSafe({
-          jobId,
-          status: 'queued',
-          queuedAt: new Date(),
-          type: notificationType,
-          channel: 'email',
-          recipient: booking.guestEmail,
-          subject,
-          isSent: false,
-          retryCount: 0,
-          bookingId: booking._id,
-          eventId: event?._id
-        });
-
-        await QueueService.enqueue(
-          getQueueName('notification-queue'),
-          'email-dispatch',
-          {
-            to: booking.guestEmail,
-            subject,
-            html: emailHtml,
-            notificationType,
-            bookingId: booking._id.toString(),
-            eventId: event?._id?.toString() || booking.eventId?.toString() || '',
-          },
-          jobId
-        );
-
-        logger.info({
-          emailType: isFullRefund ? 'FULL_REFUND' : 'PARTIAL_REFUND',
-          recipient: booking.guestEmail,
-          bookingId: booking._id.toString(),
-          refundId: refund._id.toString(),
-          jobId,
-        }, 'Successfully enqueued refund notification email job via webhook reconciliation');
-      }
-    } catch (err) {
-      logger.error({ err, refundId }, 'Error triggering email notification in webhook reconciliation');
     }
   }
 
