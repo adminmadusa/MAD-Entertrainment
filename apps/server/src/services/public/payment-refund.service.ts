@@ -80,7 +80,7 @@ export class PaymentRefundService {
           bookingId: booking._id,
           paymentId: payment._id,
           amount: booking.totalAmount,
-          currency: booking.currency || 'INR',
+          currency: booking.currency || 'USD',
           reason: reason || 'LATE_PAYMENT_RECOVERY_REJECTED',
           status: 'requested',
           idempotencyKey,
@@ -607,7 +607,7 @@ export class PaymentRefundService {
             refundAmount: refundAmount,
             refundDate: formattedRefundDate,
             settlementTimeline: '5-7 business days',
-            currency: booking.currency || 'INR',
+            currency: booking.currency || 'USD',
           });
 
           subject = `Refund Processed for ${booking.bookingId}`;
@@ -626,7 +626,7 @@ export class PaymentRefundService {
             refundAmount: refundAmount,
             remainingAmount: Math.max(0, totalAmount - totalRefunded),
             reason: refund.reason || 'Tier adjustment refund',
-            currency: booking.currency || 'INR',
+            currency: booking.currency || 'USD',
           });
 
           subject = `Partial Refund Processed for ${booking.bookingId}`;

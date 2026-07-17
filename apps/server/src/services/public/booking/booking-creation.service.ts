@@ -295,7 +295,7 @@ export class BookingCreationService {
       }
     }
 
-    // Pricing calculations (₹30 per ticket convenience fee, 18% GST on convenience fee + subtotal GST)
+    // Pricing calculations (fixed convenience fee per ticket + event tax applied on subtotal)
     const convenienceFee = 30 * totalTicketsCount;
     const convenienceFeeGst = Math.round((convenienceFee * 18) / 100);
     const gst = totalGst + convenienceFeeGst;
@@ -319,7 +319,9 @@ export class BookingCreationService {
       }
 
       if (coupon.minOrderAmount && subtotal < coupon.minOrderAmount) {
-        throw AppError.badRequest(`Minimum subtotal order amount of ₹${coupon.minOrderAmount} is required for this coupon`);
+        const eventCountry = event.countryCode || 'US';
+        const countryConfig = getCountryConfig(eventCountry);
+        throw AppError.badRequest(`Minimum subtotal order amount of ${countryConfig.symbol}${coupon.minOrderAmount} is required for this coupon`);
       }
 
       // Scope checks

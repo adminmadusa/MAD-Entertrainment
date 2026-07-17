@@ -84,7 +84,7 @@ export class NotificationConsistencyService {
               refundAmount: refund.amount,
               refundDate: formattedRefundDate,
               settlementTimeline: '5-7 business days',
-              currency: booking.currency || 'INR',
+              currency: booking.currency || 'USD',
             });
             subject = `Refund Processed for ${booking.bookingId}`;
           } else {
@@ -95,7 +95,7 @@ export class NotificationConsistencyService {
               refundAmount: refund.amount,
               remainingAmount: Math.max(0, totalAmount - totalRefunded),
               reason: refund.reason || 'Tier adjustment refund',
-              currency: booking.currency || 'INR',
+              currency: booking.currency || 'USD',
             });
             subject = `Partial Refund Processed for ${booking.bookingId}`;
           }

@@ -67,7 +67,7 @@ export class PaymentConsistencyService {
                 bookingId: payment.bookingId,
                 paymentId: payment._id,
                 amount: payment.amount,
-                currency: payment.currency || 'INR',
+                currency: payment.currency || 'USD',
                 reason: 'BOOKING_UNRECOVERABLE',
                 status: 'requested',
                 idempotencyKey,

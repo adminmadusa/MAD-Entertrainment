@@ -228,7 +228,7 @@ export class PaymentValidationService {
     }
 
     // 5. Currency validation — case-insensitive.
-    const expectedCurrency = (booking.currency || 'INR').toLowerCase();
+    const expectedCurrency = (booking.currency || 'USD').toLowerCase();
     const receivedCurrency = (intent.currency || '').toLowerCase();
 
     if (receivedCurrency !== expectedCurrency) {
@@ -391,8 +391,8 @@ export class PaymentValidationService {
 
     // Currency validation — defense-in-depth.
     if (payment.currency !== undefined && booking.currency !== undefined) {
-      const expectedCurrency = (booking.currency || 'INR').toLowerCase();
-      const paymentCurrency = (payment.currency || 'INR').toLowerCase();
+      const expectedCurrency = (booking.currency || 'USD').toLowerCase();
+      const paymentCurrency = (payment.currency || 'USD').toLowerCase();
       if (paymentCurrency !== expectedCurrency) {
         logger.error(
           {
