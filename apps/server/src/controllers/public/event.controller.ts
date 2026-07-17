@@ -11,13 +11,19 @@ type PublicEventDetailResult = Awaited<ReturnType<typeof PublicEventService.getE
 export async function listEvents(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const category = typeof req.query.category === 'string' ? req.query.category : undefined;
-    const status = typeof req.query.status === 'string' ? req.query.status : undefined;
     const search = typeof req.query.search === 'string' ? req.query.search : undefined;
     const page = Number(req.query.page || 1);
     const limit = Number(req.query.limit || 12);
     const includeTotal = req.query.includeTotal !== 'false';
 
-    const cacheKey = `events:list:${category || 'all'}:${status || 'all'}:${search || 'none'}:${page}:${limit}:${includeTotal}`;
+    const state = typeof req.query.state === 'string'
+      ? req.query.state
+      : (typeof req.query.status === 'string' ? req.query.status : 'active');
+
+    const sort = typeof req.query.sort === 'string' ? req.query.sort : undefined;
+    const exclude = typeof req.query.exclude === 'string' ? req.query.exclude : undefined;
+
+    const cacheKey = `events:list:${category || 'all'}:${state}:${sort || 'none'}:${exclude || 'none'}:${search || 'none'}:${page}:${limit}:${includeTotal}`;
     const startTime = performance.now();
 
     const cached = await CacheService.get<PublicEventListResult>(cacheKey);
@@ -29,7 +35,7 @@ export async function listEvents(req: Request, res: Response, next: NextFunction
     }
 
     const queryStartTime = performance.now();
-    const result = await PublicEventService.listEvents({ category, status, search, page, limit, includeTotal });
+    const result = await PublicEventService.listEvents({ category, state, sort, exclude, search, page, limit, includeTotal });
     const queryDuration = performance.now() - queryStartTime;
 
     // Cache for 60 seconds (1 minute)

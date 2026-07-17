@@ -59,7 +59,7 @@ export default function EventGalleryPage() {
         </Link>
       </div>
 
-      <EventGalleryWorkspace eventId={id} />
+      <EventGalleryWorkspace eventId={id} capabilities={event.capabilities} />
     </div>
   );
 }

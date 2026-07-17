@@ -9,11 +9,13 @@ import { MediaType } from '@mad/types';
 export interface EventGalleryUploadZoneProps {
   eventId: string;
   onUploadComplete: () => void;
+  disabled?: boolean;
 }
 
 export const EventGalleryUploadZone = React.memo(function EventGalleryUploadZone({
   eventId,
   onUploadComplete,
+  disabled,
 }: EventGalleryUploadZoneProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -33,7 +35,7 @@ export const EventGalleryUploadZone = React.memo(function EventGalleryUploadZone
   });
 
   const handleFiles = async (files: FileList | null) => {
-    if (!files || files.length === 0) return;
+    if (disabled || !files || files.length === 0) return;
     setError(null);
 
     const filesArray = Array.from(files).filter(f => f.type.startsWith('image/'));
@@ -89,7 +91,7 @@ export const EventGalleryUploadZone = React.memo(function EventGalleryUploadZone
 
   const onDragOver = (e: React.DragEvent) => {
     e.preventDefault();
-    setIsDragging(true);
+    if (!disabled) setIsDragging(true);
   };
 
   const onDragLeave = () => {
@@ -99,7 +101,7 @@ export const EventGalleryUploadZone = React.memo(function EventGalleryUploadZone
   const onDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
-    handleFiles(e.dataTransfer.files);
+    if (!disabled) handleFiles(e.dataTransfer.files);
   };
 
   return (
@@ -115,19 +117,25 @@ export const EventGalleryUploadZone = React.memo(function EventGalleryUploadZone
         onDragLeave={onDragLeave}
         onDrop={onDrop}
         onClick={() => {
-          if (uploadingFiles.length === 0 && !addItemsMutation.isPending) {
+          if (!disabled && uploadingFiles.length === 0 && !addItemsMutation.isPending) {
             fileInputRef.current?.click();
           }
         }}
         className={`border-2 border-dashed rounded-2xl p-8 text-center transition-colors ${
-          isDragging
+          disabled
+            ? 'border-border-subtle/50 bg-surface-elevated/40 opacity-40 cursor-not-allowed'
+            : isDragging
             ? 'border-accent-purple bg-accent-purple/5'
             : 'border-border-subtle bg-surface-elevated hover:bg-surface-elevated/80 hover:border-text-muted cursor-pointer'
         } ${uploadingFiles.length > 0 || addItemsMutation.isPending ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}
       >
-        <div className="text-4xl mb-3">⬆️</div>
-        <h3 className="text-white font-medium mb-1">Upload Gallery Images</h3>
-        <p className="text-text-muted text-sm mb-4">Drag & drop images here or click to browse</p>
+        <div className="text-4xl mb-3">🔒</div>
+        <h3 className="text-white font-medium mb-1">
+          {disabled ? 'Gallery Uploads Locked' : 'Upload Gallery Images'}
+        </h3>
+        <p className="text-text-muted text-sm mb-4">
+          {disabled ? 'This event has not completed yet' : 'Drag & drop images here or click to browse'}
+        </p>
         <input
           type="file"
           ref={fileInputRef}
@@ -135,6 +143,7 @@ export const EventGalleryUploadZone = React.memo(function EventGalleryUploadZone
           multiple
           accept="image/*"
           className="hidden"
+          disabled={disabled}
         />
 
         {/* Upload Progress */}

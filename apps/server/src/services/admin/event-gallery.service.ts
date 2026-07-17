@@ -5,6 +5,7 @@ import { Event } from '../../models/event.schema';
 import { AppError } from '../../middleware/error.middleware';
 import mongoose from 'mongoose';
 import { AddGalleryItemsInput, ReorderGalleryItemsInput, UpdateGalleryItemInput, UpdateGallerySettingsInput } from '@mad/validations';
+import { deriveEventCapabilities } from '@mad/shared';
 
 export class AdminEventGalleryService {
   /**
@@ -29,8 +30,20 @@ export class AdminEventGalleryService {
    * Updates the gallery settings (heading, publication state, etc.)
    */
   static async updateSettings(eventId: string, data: UpdateGallerySettingsInput, adminId: string) {
-    const event = await Event.findById(eventId).select('_id').lean();
+    const event = await Event.findById(eventId).select('_id status startDate endDate bookingStartDate bookingEndDate').lean();
     if (!event) throw new AppError('Event not found', 404);
+
+    const caps = deriveEventCapabilities({
+      status: event.status,
+      startDate: event.startDate,
+      endDate: event.endDate,
+      bookingStartDate: event.bookingStartDate,
+      bookingEndDate: event.bookingEndDate
+    });
+
+    if (!caps.capabilities.canPublishGallery) {
+      throw new AppError('Galleries can only be modified once booking is closed', 400);
+    }
 
     let settings = await EventGallerySettings.findOne({ eventId });
     if (!settings) {
@@ -57,8 +70,20 @@ export class AdminEventGalleryService {
    * Uploads/registers new gallery items.
    */
   static async addItems(eventId: string, data: AddGalleryItemsInput, adminId: string) {
-    const event = await Event.findById(eventId).select('_id').lean();
+    const event = await Event.findById(eventId).select('_id status startDate endDate bookingStartDate bookingEndDate').lean();
     if (!event) throw new AppError('Event not found', 404);
+
+    const caps = deriveEventCapabilities({
+      status: event.status,
+      startDate: event.startDate,
+      endDate: event.endDate,
+      bookingStartDate: event.bookingStartDate,
+      bookingEndDate: event.bookingEndDate
+    });
+
+    if (!caps.capabilities.canUploadGallery) {
+      throw new AppError('Galleries can only be modified once booking is closed', 400);
+    }
 
     // Prevent duplicates by publicId
     const existingPublicIds = await EventGallery.find({ eventId }).distinct('publicId');

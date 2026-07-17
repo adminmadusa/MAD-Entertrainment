@@ -85,6 +85,9 @@ export async function publicGetEvents(
     search?: string;
     category?: string;
     status?: string;
+    state?: string;
+    sort?: string;
+    exclude?: string;
   } = {}
 ): Promise<PublicEventsResponse> {
   const params = new URLSearchParams();
@@ -93,6 +96,9 @@ export async function publicGetEvents(
   if (filters.search) params.set('search', filters.search);
   if (filters.category) params.set('category', filters.category);
   if (filters.status) params.set('status', filters.status);
+  if (filters.state) params.set('state', filters.state);
+  if (filters.sort) params.set('sort', filters.sort);
+  if (filters.exclude) params.set('exclude', filters.exclude);
 
   const page = filters.page || 1;
   const limit = filters.limit || 12;

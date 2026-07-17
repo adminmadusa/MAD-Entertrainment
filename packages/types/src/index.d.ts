@@ -133,6 +133,27 @@ export type Event = {
     isEarlyBird?: boolean;
     earlyBirdDeadline?: string | Date;
     memories?: EventMemoryConfig | null;
+    
+    // Decoupled Status States
+    lifecycle?: string;
+    visibility?: {
+        public: boolean;
+        discoverable: boolean;
+    };
+    booking?: {
+        status: string;
+        reason: string;
+    };
+    gallery?: {
+        status: 'NONE' | 'DRAFT' | 'PUBLISHED';
+        itemCount: number;
+    };
+    capabilities?: {
+        canBook: boolean;
+        canViewGallery: boolean;
+        canUploadGallery: boolean;
+        canPublishGallery: boolean;
+    };
 };
 export type Seat = {
     seatId: string;

@@ -8,7 +8,7 @@ import { useEffect, useRef, useState } from 'react';
 
 import { publicGetEventBySlug } from '@/lib/api/public.service';
 import { QUERY_KEYS, formatMoney } from '@mad/shared';
-import type { Event as EventData } from '@mad/types';
+import type { Event as EventData, EventBookingCTA } from '@mad/types';
 
 import type { EventBookingFlowHandle } from './components/EventBookingFlow';
 import { EventOverview } from './components/EventOverview';
@@ -67,7 +67,56 @@ export default function EventDetailClient({ slug, initialEvent }: EventDetailCli
     initialDataUpdatedAt: initialEvent ? Date.now() : undefined,
   });
 
-  const cta = event?.bookingCTA || { text: 'Book Now', disabled: false, variant: 'primary', action: 'BOOK' };
+  let cta: EventBookingCTA = { text: 'Book Now', disabled: false, variant: 'primary', action: 'BOOK' };
+  
+  if (event) {
+    if (event.lifecycle === 'COMPLETED') {
+      cta = {
+        text: 'Happy Moments',
+        disabled: false,
+        variant: 'secondary',
+        action: 'GALLERY'
+      };
+    } else if (event.lifecycle === 'LIVE') {
+      if (event.booking?.status === 'OPEN') {
+        cta = {
+          text: 'Join Now',
+          disabled: false,
+          variant: 'primary',
+          action: 'BOOK'
+        };
+      } else {
+        cta = {
+          text: 'In Progress',
+          disabled: true,
+          variant: 'disabled',
+          action: 'NONE'
+        };
+      }
+    } else {
+      if (event.booking?.status === 'OPEN') {
+        cta = {
+          text: 'Book Now',
+          disabled: false,
+          variant: 'primary',
+          action: 'BOOK'
+        };
+      } else {
+        let text = 'Booking Closed';
+        if (event.booking?.reason === 'SOLD_OUT' || event.booking?.reason === 'CAPACITY_REACHED') {
+          text = 'Sold Out';
+        } else if (event.booking?.reason === 'BOOKING_NOT_STARTED') {
+          text = 'Coming Soon';
+        }
+        cta = {
+          text,
+          disabled: true,
+          variant: 'disabled',
+          action: 'NONE'
+        };
+      }
+    }
+  }
 
   useEffect(() => {
     if (searchParams.get('modal') === 'booking' && cta.action === 'BOOK') {
@@ -162,17 +211,28 @@ export default function EventDetailClient({ slug, initialEvent }: EventDetailCli
         {/* Side fades for wide screens */}
         <div className="absolute inset-0 bg-gradient-to-r from-background/20 via-transparent to-background/20" />
 
-        {/* Category badge anchored to hero bottom */}
-        {event.category && (
-          <div className="absolute bottom-6 left-4 md:left-8 flex items-center gap-2 z-20">
+        {/* Category & Lifecycle badges anchored to hero bottom */}
+        <div className="absolute bottom-6 left-4 md:left-8 flex items-center gap-2 z-20">
+          {event.category && (
             <span className="inline-flex items-center gap-1.5 text-[10px] uppercase font-bold tracking-widest px-3 py-1.5 glass border border-white/10 text-text-secondary rounded-full">
               <svg className="w-3 h-3 text-text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
               </svg>
               {event.category}
             </span>
-          </div>
-        )}
+          )}
+          {event.lifecycle === 'LIVE' && (
+            <span className="inline-flex items-center gap-1.5 text-[10px] uppercase font-black tracking-widest px-3 py-1.5 bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 rounded-full shadow-glow-sm">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              Live Now
+            </span>
+          )}
+          {event.lifecycle === 'COMPLETED' && (
+            <span className="inline-flex items-center gap-1.5 text-[10px] uppercase font-bold tracking-widest px-3 py-1.5 bg-white/5 border border-white/10 text-text-muted rounded-full">
+              Ended
+            </span>
+          )}
+        </div>
       </div>
 
       {/* ── CONTENT BELOW HERO ───────────────────────────────── */}
@@ -305,7 +365,13 @@ export default function EventDetailClient({ slug, initialEvent }: EventDetailCli
 
           <EventStickyCTA
             priceLabel={priceDisplay}
-            onGetTickets={() => bookingFlowRef.current?.openBooking()}
+            onGetTickets={() => {
+              if (cta.action === 'BOOK') {
+                bookingFlowRef.current?.openBooking();
+              } else if (cta.action === 'GALLERY') {
+                router.push(`/events/${slug}/gallery`);
+              }
+            }}
             cta={cta}
           />
 

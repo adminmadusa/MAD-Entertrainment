@@ -10,7 +10,7 @@ import { Reveal } from '@/components/common/PageTransition';
 import { useMounted, useWindowWidth } from '@/hooks/use-window.hook';
 import { formatEventDate } from '@/utils/date';
 import { getOptimizedImageUrl } from '@/utils/image';
-import { EventCategory, EVENT_CATEGORY_LABELS, formatMoney } from '@mad/shared';
+import { EventCategory, EVENT_CATEGORY_LABELS, formatMoney, deriveBookingEligibility } from '@mad/shared';
 import type { Event } from '@mad/types';
 import { ArrowLeft, ArrowRight, CalendarIcon } from '@mad/ui';
 
@@ -68,7 +68,7 @@ export const UpcomingEventsSection = memo(function UpcomingEventsSection({ initi
   return (
     <section
       className="pt-8 pb-16 overflow-hidden"
-      aria-label="Upcoming events"
+      aria-label="Active events"
       role="region"
     >
       <div className="container-mad">
@@ -81,7 +81,7 @@ export const UpcomingEventsSection = memo(function UpcomingEventsSection({ initi
                 Don&apos;t Miss Out
               </p>
               <h2 className="text-display-sm font-black text-white">
-                Upcoming Events
+                Active Events
               </h2>
             </div>
             <Link
@@ -113,7 +113,7 @@ export const UpcomingEventsSection = memo(function UpcomingEventsSection({ initi
             style={{ perspective: '1200px' }}
             role="group"
             aria-roledescription="carousel"
-            aria-label="Upcoming events"
+            aria-label="Active events"
             tabIndex={0}
             onKeyDown={handleKeyDown}
           >
@@ -153,7 +153,8 @@ export const UpcomingEventsSection = memo(function UpcomingEventsSection({ initi
                   if (Math.abs(absoluteOffset) > 2) return null;
 
                   let cardAriaLabel = `View details for ${event.title}`;
-                  const cta = event.bookingCTA || { text: 'Details', disabled: false, variant: 'primary', action: 'VIEW' };
+                  const eligibility = deriveBookingEligibility(event);
+                  const cta = eligibility.bookingCTA;
 
                   return (
                     <motion.div

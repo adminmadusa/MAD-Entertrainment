@@ -75,6 +75,27 @@ export interface AdminEvent {
   taxLabel?: string;
   taxPercentage?: number;
   locale?: string;
+
+  // Decoupled Status States
+  lifecycle?: string;
+  visibility?: {
+    public: boolean;
+    discoverable: boolean;
+  };
+  booking?: {
+    status: string;
+    reason: string;
+  };
+  gallery?: {
+    status: 'NONE' | 'DRAFT' | 'PUBLISHED';
+    itemCount: number;
+  };
+  capabilities?: {
+    canBook: boolean;
+    canViewGallery: boolean;
+    canUploadGallery: boolean;
+    canPublishGallery: boolean;
+  };
 }
 
 export interface EventsResponse {
