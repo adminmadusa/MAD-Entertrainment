@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 import { Drawer } from '@mad/ui';
 
@@ -28,7 +28,7 @@ export function EventOverview({ description = '', organizerName }: EventOverview
           <div className="text-sm font-bold text-white">
             {organizerName || 'MAD Organizer'}
           </div>
-          <div className="text-xs text-text-muted mt-0.5">Event Organizer</div>
+          <div className="text-xs text-text-secondary mt-0.5">Event Organizer</div>
         </div>
       </div>
 
@@ -42,7 +42,10 @@ export function EventOverview({ description = '', organizerName }: EventOverview
               type="button"
               onClick={() => setIsOverviewOpen(true)}
               aria-label="Read more about event overview"
-              className="text-accent-cyan hover:text-accent-cyan/80 font-semibold inline-flex items-center gap-1 mt-2 hover:underline"
+              aria-expanded={isOverviewOpen}
+              aria-haspopup="dialog"
+              aria-controls="event-overview-drawer"
+              className="text-accent-cyan hover:text-accent-cyan/80 font-semibold inline-flex items-center gap-1 mt-2 hover:underline cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-cyan/50 rounded"
             >
               Read more →
             </button>
