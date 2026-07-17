@@ -177,7 +177,7 @@ export default function EventDetailClient({ slug, initialEvent }: EventDetailCli
   const doorsOpenText = event.doorsOpenTime || event.showTime || 'TBA';
 
   return (
-    <div className="min-h-screen bg-background text-white relative overflow-x-hidden">
+    <div className="min-h-screen bg-background text-white relative">
 
       {/* ── FULL-BLEED CINEMATIC HERO ─────────────────────────── */}
       <div className="relative w-full h-[38vh] min-h-[220px] md:h-[58vh] md:min-h-[400px] overflow-hidden">
