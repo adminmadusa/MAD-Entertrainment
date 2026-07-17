@@ -68,6 +68,7 @@ export const EventForm = forwardRef<EventFormHandle, EventFormProps>(function Ev
   const [organizerName, setOrganizerName] = useState('');
   const [refundPolicy, setRefundPolicy] = useState('');
   const [highlightsInput, setHighlightsInput] = useState('');
+  const [countryCode, setCountryCode] = useState('US');
   const [localError, setLocalError] = useState('');
 
   // Queries
@@ -94,6 +95,7 @@ export const EventForm = forwardRef<EventFormHandle, EventFormProps>(function Ev
       setOrganizerName(initialValues.organizerName || '');
       setRefundPolicy(initialValues.refundPolicy || '');
       setHighlightsInput(initialValues.highlights?.join(', ') || '');
+      setCountryCode(initialValues.countryCode || 'US');
       setTags(initialValues.tags?.join(', ') || '');
       setRequireTerms(initialValues.requireTerms ?? true);
       setRequireAgeConfirmation(!!initialValues.requireAgeConfirmation);
@@ -218,6 +220,11 @@ export const EventForm = forwardRef<EventFormHandle, EventFormProps>(function Ev
       bookingEndDate: bookingEndDate ? new Date(bookingEndDate).toISOString() : undefined,
       refundPolicy: refundPolicy.trim() || undefined,
       organizerName: organizerName.trim() || undefined,
+      countryCode,
+      currency: countryCode === 'IN' ? 'INR' : 'USD',
+      taxLabel: countryCode === 'IN' ? 'GST' : 'Sales Tax',
+      taxPercentage: countryCode === 'IN' ? 18 : 0,
+      locale: countryCode === 'IN' ? 'en-IN' : 'en-US',
     };
 
     if (isProfileType) {
@@ -306,6 +313,8 @@ export const EventForm = forwardRef<EventFormHandle, EventFormProps>(function Ev
                 setDescription={setDescription}
                 dbCategories={dbCategories}
                 hideStatus
+                countryCode={countryCode}
+                setCountryCode={setCountryCode}
               />
               <EventAdditionalDetailsCard
                 organizerName={organizerName}
@@ -434,6 +443,8 @@ export const EventForm = forwardRef<EventFormHandle, EventFormProps>(function Ev
             setDescription={setDescription}
             dbCategories={dbCategories}
             statusOptions={statusOptions}
+            countryCode={countryCode}
+            setCountryCode={setCountryCode}
           />
 
           <EventAdditionalDetailsCard

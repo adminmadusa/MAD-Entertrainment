@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { type AdminCategory } from '@/lib/api/admin/category.service';
-import { EVENT_CATEGORY_LABELS, EventStatus } from '@mad/shared';
+import { EVENT_CATEGORY_LABELS, EventStatus, getCountryConfig, COUNTRY_CONFIG } from '@mad/shared';
 import { FormField, Input, Textarea } from '@mad/ui';
 import { EventVenueInput } from './EventVenueInput';
 
@@ -34,6 +34,8 @@ export interface EventBasicInfoCardProps {
   dbCategories: AdminCategory[];
   statusOptions?: EventStatus[];
   hideStatus?: boolean;
+  countryCode: string;
+  setCountryCode: (val: string) => void;
 }
 
 export const EventBasicInfoCard = React.memo(function EventBasicInfoCard({
@@ -51,6 +53,8 @@ export const EventBasicInfoCard = React.memo(function EventBasicInfoCard({
   dbCategories,
   statusOptions = [],
   hideStatus = false,
+  countryCode,
+  setCountryCode,
 }: EventBasicInfoCardProps) {
   return (
     <div className="glass rounded-2xl border border-border-subtle p-6 space-y-5">
@@ -110,6 +114,32 @@ export const EventBasicInfoCard = React.memo(function EventBasicInfoCard({
         )}
         <EventVenueInput venue={venue} setVenue={setVenue} required />
       </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-white/5 pt-4">
+        <FormField label="Country Location" htmlFor="event-country">
+          <select
+            id="event-country"
+            value={countryCode}
+            onChange={(e) => setCountryCode(e.target.value)}
+            className={inputCls}
+          >
+            {Object.values(COUNTRY_CONFIG).map((c) => (
+              <option key={c.countryCode} value={c.countryCode} className="bg-background-card">
+                {c.countryName} {c.countryCode === 'US' ? '(Default)' : ''}
+              </option>
+            ))}
+          </select>
+        </FormField>
+        <div className="space-y-1">
+          <span className="text-text-secondary text-xs font-semibold block mb-1">Localization Parameters (Auto-Resolved)</span>
+          <div className="p-3 bg-white/3 border border-white/5 rounded-xl text-xs space-y-1 text-text-muted">
+            <p>Currency: <span className="text-white font-bold">{getCountryConfig(countryCode).currency} ({getCountryConfig(countryCode).symbol})</span></p>
+            <p>Tax Name: <span className="text-white font-bold">{getCountryConfig(countryCode).taxLabel}</span></p>
+            <p>Default Tax: <span className="text-white font-bold">{getCountryConfig(countryCode).defaultTax}%</span></p>
+          </div>
+        </div>
+      </div>
+
       <FormField label="Full Description" htmlFor="event-description" required>
         <Textarea
           id="event-description"
