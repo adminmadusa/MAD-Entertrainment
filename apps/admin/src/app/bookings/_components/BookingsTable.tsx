@@ -3,7 +3,7 @@
 
 import { AdminBooking } from '@/lib/api/admin/booking.service';
 import { BookingStatus, getBookingStatusLabel } from '@mad/shared';
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, EmptyState } from '@mad/ui';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, EmptyState, TablePagination } from '@mad/ui';
 import { Search } from '@mad/ui/icons';
 import { formatDateTime } from '@mad/utils';
 
@@ -183,27 +183,11 @@ export default function BookingsTable({
         <TableBody>{renderTableBody()}</TableBody>
       </Table>
       {pagination && pagination.totalPages > 1 && (
-        <div className="flex items-center justify-between px-5 py-3 border-t border-border-subtle">
-          <p className="text-text-muted text-xs">
-            Page {pagination.page} of {pagination.totalPages}
-          </p>
-          <div className="flex gap-2">
-            <button
-              onClick={() => onPageChange(Math.max(1, currentPage - 1))}
-              disabled={currentPage === 1}
-              className="px-3 py-1.5 text-xs glass border border-border-subtle rounded-lg disabled:opacity-40 text-text-secondary"
-            >
-              ← Prev
-            </button>
-            <button
-              onClick={() => onPageChange(currentPage + 1)}
-              disabled={currentPage >= pagination.totalPages}
-              className="px-3 py-1.5 text-xs glass border border-border-subtle rounded-lg disabled:opacity-40 text-text-secondary"
-            >
-              Next →
-            </button>
-          </div>
-        </div>
+        <TablePagination
+          currentPage={currentPage}
+          totalPages={pagination.totalPages}
+          onPageChange={onPageChange}
+        />
       )}
     </div>
   );

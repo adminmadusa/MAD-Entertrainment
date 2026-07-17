@@ -3,7 +3,7 @@
 import { AdminUser } from '@/lib/api/admin/auth.service';
 import { AdminRole } from '@mad/shared';
 import type { Admin } from '@mad/types';
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, EmptyState } from '@mad/ui';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, TablePagination, EmptyState } from '@mad/ui';
 import { formatDateTime } from '@mad/utils';
 
 const ROLE_LABELS: Record<AdminRole, string> = {
@@ -178,27 +178,13 @@ export default function TeamTable({
       </Table>
 
       {pagination && pagination.totalPages > 1 && (
-        <div className="flex items-center justify-between px-5 py-3 border-t border-border-subtle">
-          <p className="text-text-muted text-xs">
-            Page {pagination.page} of {pagination.totalPages} · {pagination.total} members
-          </p>
-          <div className="flex gap-2">
-            <button
-              onClick={() => onPageChange(Math.max(1, page - 1))}
-              disabled={page === 1}
-              className="px-3 py-1.5 text-xs glass border border-border-subtle rounded-lg disabled:opacity-40 text-text-secondary hover:text-white transition-all"
-            >
-              ← Prev
-            </button>
-            <button
-              onClick={() => onPageChange(page + 1)}
-              disabled={page >= pagination.totalPages}
-              className="px-3 py-1.5 text-xs glass border border-border-subtle rounded-lg disabled:opacity-40 text-text-secondary hover:text-white transition-all"
-            >
-              Next →
-            </button>
-          </div>
-        </div>
+        <TablePagination
+          currentPage={page}
+          totalPages={pagination.totalPages}
+          onPageChange={onPageChange}
+          totalRecords={pagination.total}
+          recordsLabel="members"
+        />
       )}
     </div>
   );

@@ -8,7 +8,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { adminGetUsers } from '@/lib/api/admin/user.service';
 import { useAdminAuth } from '@/providers/AdminAuthProvider';
 import { AdminRole } from '@mad/shared';
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, ErrorState, EmptyState } from '@mad/ui';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, ErrorState, EmptyState, TablePagination } from '@mad/ui';
 import { Users, Search } from '@mad/ui/icons';
 import { formatDateTime } from '@mad/utils';
 
@@ -361,29 +361,14 @@ export default function UsersDirectoryPage() {
           <TableBody>{renderTableRows()}</TableBody>
         </Table>
 
-        {/* Desktop Pagination */}
         {pagination && pagination.totalPages > 1 && (
-          <div className="flex items-center justify-between px-5 py-3 border-t border-border-subtle bg-white/[0.01]">
-            <p className="text-text-muted text-xs">
-              Page {pagination.page} of {pagination.totalPages} · Total {pagination.total} records
-            </p>
-            <div className="flex gap-2">
-              <button
-                onClick={() => updateUrlParams({ page: Math.max(1, pageParam - 1) })}
-                disabled={pageParam === 1}
-                className="px-3 py-1.5 text-xs glass border border-border-subtle rounded-lg disabled:opacity-40 text-text-secondary hover:text-white transition-all"
-              >
-                ← Prev
-              </button>
-              <button
-                onClick={() => updateUrlParams({ page: pageParam + 1 })}
-                disabled={pageParam >= pagination.totalPages}
-                className="px-3 py-1.5 text-xs glass border border-border-subtle rounded-lg disabled:opacity-40 text-text-secondary hover:text-white transition-all"
-              >
-                Next →
-              </button>
-            </div>
-          </div>
+          <TablePagination
+            currentPage={pageParam}
+            totalPages={pagination.totalPages}
+            onPageChange={(page) => updateUrlParams({ page })}
+            totalRecords={pagination.total}
+            recordsLabel="records"
+          />
         )}
       </div>
 
